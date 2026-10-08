@@ -20,6 +20,7 @@ import {
   publishRecipientSegments,
   publishRecipientSpecific,
   publishRetryEmail,
+  publishRetryError,
   publishRevertToDraft,
   publishScheduleDate,
   publishScheduleTime,
@@ -71,6 +72,11 @@ export const publishScreen = {
   emailSizeWarning: () => page.getByTestId(publishEmailSizeWarning),
   alreadySent: () => page.getByTestId(publishAlreadySent),
   retryEmailButton: () => page.getByTestId(publishRetryEmail),
+  retryError: () => page.getByTestId(publishRetryError),
+  checkRetryAvailability: () =>
+    page
+      .getByTestId(publishEmailErrorStep)
+      .getByRole('button', { name: 'Check retry availability', exact: true }),
   revertToDraft: () => page.getByTestId(publishRevertToDraft),
   tkReminder: () => page.getByTestId(tkReminderDialog),
   publicPreviewWarning: () => page.getByTestId(publicPreviewWarningDialog),

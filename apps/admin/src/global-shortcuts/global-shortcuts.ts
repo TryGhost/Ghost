@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useLocation, useNavigate } from '@tryghost/admin-x-framework';
 import { useAdminSidebarVisibility } from '@/layout/sidebar-visibility';
+import { useSettingsReturnToState } from '@/layout/settings-navigation';
 import { useIsEmberOwnedRoute } from '@/routes';
 import { isMacPlatform } from '@/utils/is-mac-platform';
 
@@ -39,6 +40,7 @@ export function useGlobalShortcuts(isSignedIn: boolean): void {
   const isEmberOwned = useIsEmberOwnedRoute(pathname);
   const canOpenSettings = useAdminSidebarVisibility() && isSignedIn;
   const navigate = useNavigate();
+  const settingsReturnToState = useSettingsReturnToState();
 
   useEffect(() => {
     if (isEmberOwned) {
@@ -52,11 +54,11 @@ export function useGlobalShortcuts(isSignedIn: boolean): void {
       }
       event.preventDefault();
       if (shortcut === 'openSettings' && canOpenSettings) {
-        navigate('/settings');
+        navigate('/settings', { state: settingsReturnToState });
       }
     };
 
     document.addEventListener('keydown', onKeyDown);
     return () => document.removeEventListener('keydown', onKeyDown);
-  }, [canOpenSettings, isEmberOwned, navigate]);
+  }, [canOpenSettings, isEmberOwned, navigate, settingsReturnToState]);
 }

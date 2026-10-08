@@ -1,4 +1,5 @@
 import AutomationStatusBadge from './automation-status-badge';
+import AutomationListActions from './automation-list-actions';
 import React from 'react';
 import type { AutomationBrowseItem } from '@tryghost/admin-x-framework/api/automations';
 import { Link } from '@tryghost/admin-x-framework';
@@ -51,6 +52,7 @@ const handleRowClick = (event: React.MouseEvent<HTMLTableRowElement>) => {
 interface AutomationsListProps {
   automations?: AutomationBrowseItem[];
   isLoading?: boolean;
+  canManage: boolean;
 }
 
 const AutomationsListSkeleton: React.FC = () => {
@@ -97,6 +99,9 @@ const AutomationsList: React.FC<AutomationsListProps> = ({
   automations = [],
   isLoading = false,
 }) => {
+  // TODO(NY-1689) Soon, we'll add support for "Archive" actions, which will let us show this. We'll delete this line and start reading from the `canManage` prop.
+  const canManage = false;
+
   if (isLoading) {
     return <AutomationsListSkeleton />;
   }
@@ -127,6 +132,11 @@ const AutomationsList: React.FC<AutomationsListProps> = ({
             <TableHead className="w-28 lg:px-4" scope="col">
               Status
             </TableHead>
+            {canManage && (
+              <TableHead className="w-16" scope="col">
+                <span className="sr-only">Actions</span>
+              </TableHead>
+            )}
           </TableRow>
         </TableHeader>
       )}
@@ -158,7 +168,12 @@ const AutomationsList: React.FC<AutomationsListProps> = ({
           return (
             <TableRow
               key={automation.id}
-              className="grid w-full cursor-pointer grid-cols-[repeat(3,minmax(0,1fr))_auto] items-center gap-x-4 gap-y-3 px-2 py-6 hover:bg-table-row-hover has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-[-2px] has-[:focus-visible]:outline-focus-ring lg:table-row lg:gap-0 lg:p-0"
+              className={cn(
+                'grid w-full cursor-pointer items-center gap-x-4 gap-y-3 px-2 py-6 hover:bg-table-row-hover has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-[-2px] has-[:focus-visible]:outline-focus-ring lg:table-row lg:gap-0 lg:p-0',
+                canManage
+                  ? 'grid-cols-[repeat(3,minmax(0,1fr))_auto_auto]'
+                  : 'grid-cols-[repeat(3,minmax(0,1fr))_auto]',
+              )}
               data-testid="automation-list-row"
               onClick={handleRowClick}
             >
@@ -204,6 +219,14 @@ const AutomationsList: React.FC<AutomationsListProps> = ({
               >
                 <AutomationStatusBadge status={automation.status} />
               </TableCell>
+              {canManage && (
+                <TableCell
+                  className="col-start-5 row-start-1 w-auto p-0 text-right lg:table-cell lg:w-16 lg:p-4"
+                  onClick={(event) => event.stopPropagation()}
+                >
+                  <AutomationListActions automation={automation} />
+                </TableCell>
+              )}
             </TableRow>
           );
         })}

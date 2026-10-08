@@ -19,6 +19,8 @@ export type SettingsLink = string | InternalLink | ExternalLink;
 export function useSettingsNavigation() {
   const navigate = useNavigate();
   const location = useLocation();
+  // Carried across in-settings navigation so "Back to app" keeps its target.
+  const routeState: unknown = location.state;
   const { externalNavigate } = useFramework();
   const { scrollToSection } = useScrollSectionContext();
 
@@ -51,14 +53,14 @@ export function useSettingsNavigation() {
           scrollToSection(pathOnly.split('/')[0]);
           return;
         }
-        navigate(target + targetSearch, { replace: link.replace });
+        navigate(target + targetSearch, { replace: link.replace, state: routeState });
         scrollToSection(pathOnly.split('/')[0]);
         return;
       }
 
-      navigate(target + targetSearch, { replace: link.replace });
+      navigate(target + targetSearch, { replace: link.replace, state: routeState });
     },
-    [externalNavigate, navigate, location.pathname, location.search, scrollToSection],
+    [externalNavigate, navigate, location.pathname, location.search, routeState, scrollToSection],
   );
 
   return { route, updateRoute };

@@ -39,17 +39,14 @@ import { createSlugPort } from './slug-port';
 import { buildSaveSnapshot, type EditorSaveSnapshot } from './snapshot';
 import { latestRevisionOf, newPostProjection, projectionOf, type EditorRecord } from './projection';
 import {
-  AUTHORS_REQUIRED,
-  PUBLISHED_AT_MUST_BE_PAST,
   SETTINGS_FIELD_KEYS,
   VALIDATED_SETTINGS_FIELD_KEYS,
   identityFor,
-  publishedAtInFuture,
-  settingsFieldError,
+  invalidField,
   tiersIncomplete,
-  titleError,
   validatedFieldsOf,
   type EditorSettingsPatch,
+  type InvalidField,
   type EditorSettingsFields,
   type SettingsFieldKey,
 } from './settings-fields';
@@ -206,6 +203,8 @@ export interface EditorSession {
   dispatchExplicit: () => Promise<SaveCompletion>;
   /** Retries a failed save: a settings save on a post that is not a draft as one, else explicitly. */
   retrySave: () => Promise<SaveCompletion>;
+  /** The field an explicit save of the live document would be refused over, by the save's own validator. */
+  invalidField: () => InvalidField | null;
   dispatchPublish: (options?: PublishOptions) => Promise<SaveCompletion>;
   dispatchSchedule: (options: ScheduleOptions) => Promise<SaveCompletion>;
   dispatchRevert: () => Promise<SaveCompletion>;
@@ -625,29 +624,35 @@ export function createEditorSession({
     projection: EditablePostPatch,
     settingsOnly: boolean,
   ): string | null {
-    const creatingDraft = request.snapshot.id === null && request.target.status === 'draft';
-    // The canvas fields a settings save leaves for Update are checked by Update.
-    const invalid =
-      (settingsOnly ? null : titleError(request.title)) ??
-      settingsFieldError(
-        validatedFieldsOf(live),
-        creatingDraft,
-        settingsOnly ? VALIDATED_SETTINGS_FIELD_KEYS.filter(heldForUpdate) : [],
-      );
-    if (invalid) {
-      return invalid;
-    }
-    // A status command with no time of its own carries whatever the sidebar
-    // staged; Core validates the publish time for scheduled posts only.
-    if (
-      request.target.publishedAt !== publishedAt &&
-      publishedAtInFuture(request.target.status, request.target.publishedAt)
-    ) {
-      return PUBLISHED_AT_MUST_BE_PAST;
-    }
-    // Only an emptied list reaches the request; an untouched create is credited
-    // to the current user while the payload is built.
-    return projection.authors?.length === 0 ? AUTHORS_REQUIRED : null;
+    return (
+      invalidField({
+        // The canvas fields a settings save leaves for Update are checked by Update.
+        title: settingsOnly ? null : request.title,
+        fields: validatedFieldsOf(live),
+        isNew: request.snapshot.id === null && request.target.status === 'draft',
+        skip: settingsOnly ? VALIDATED_SETTINGS_FIELD_KEYS.filter(heldForUpdate) : [],
+        // A status command with no time of its own carries whatever the sidebar staged.
+        changedPublishTime:
+          request.target.publishedAt !== publishedAt
+            ? { status: request.target.status, publishedAt: request.target.publishedAt }
+            : null,
+        // Only an emptied list reaches the request; an untouched create is credited
+        // to the current user while the payload is built.
+        authors: projection.authors,
+      })?.message ?? null
+    );
+  }
+
+  // What an explicit save of the live document would be refused over.
+  function liveInvalidField(): InvalidField | null {
+    const current = livePublishedAt();
+    return invalidField({
+      title: live.title,
+      fields: validatedFieldsOf(live),
+      isNew: identity.id === null && status === 'draft',
+      changedPublishTime: current !== publishedAt ? { status, publishedAt: current } : null,
+      authors: tracker.isFieldDirty('authors') ? live.authors : undefined,
+    });
   }
 
   function prepare(
@@ -1077,6 +1082,7 @@ export function createEditorSession({
         ? engine.dispatch('settings', { retry: true })
         : engine.dispatch('explicit');
     },
+    invalidField: liveInvalidField,
     dispatchPublish: (options) => engine.dispatch('publish', options),
     dispatchSchedule: (options) => engine.dispatch('schedule', options),
     dispatchRevert: () => engine.dispatch('revert'),

@@ -459,3 +459,51 @@ describe('useEditorSession search index', () => {
     });
   });
 });
+
+describe('useEditorSession sign-in asked for outside a save', () => {
+  it('opens the sign-in dialog and answers every request once the writer signs in', async () => {
+    const { result } = setup();
+    expect(result.current.reauthOpen).toBe(false);
+
+    let first: Promise<boolean> = Promise.resolve(false);
+    let second: Promise<boolean> = Promise.resolve(false);
+    act(() => {
+      first = result.current.requestReauth();
+      second = result.current.requestReauth();
+    });
+    expect(result.current.reauthOpen).toBe(true);
+
+    act(() => result.current.reauthSucceeded());
+
+    await expect(first).resolves.toBe(true);
+    await expect(second).resolves.toBe(true);
+    expect(result.current.reauthOpen).toBe(false);
+    expect(result.current.state.kind).toBe('idle');
+  });
+
+  it('answers false when the writer abandons it, leaving the engine alone', async () => {
+    const { result } = setup();
+
+    let request: Promise<boolean> = Promise.resolve(true);
+    act(() => {
+      request = result.current.requestReauth();
+    });
+    act(() => result.current.reauthAbandoned());
+
+    await expect(request).resolves.toBe(false);
+    expect(result.current.reauthOpen).toBe(false);
+    expect(result.current.state.kind).toBe('idle');
+  });
+
+  it('answers false when the editor goes while it waits', async () => {
+    const { result, unmount } = setup();
+
+    let request: Promise<boolean> = Promise.resolve(true);
+    act(() => {
+      request = result.current.requestReauth();
+    });
+    unmount();
+
+    await expect(request).resolves.toBe(false);
+  });
+});

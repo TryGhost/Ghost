@@ -20,7 +20,8 @@ export const editorStatus = 'editor-status';
 export const editorScheduleCountdown = 'editor-schedule-countdown';
 export const editorFeatureImage = 'editor-feature-image';
 export const editorFeatureImageCaption = 'editor-feature-image-caption';
-export const editorSaveErrorBanner = 'editor-save-error-banner';
+/** The status line's report of a failed or refused save, with its retry where one applies. */
+export const editorSaveError = 'editor-save-error';
 export const editorNewerVersionNotice = 'editor-newer-version-notice';
 export const tkIndicator = 'tk-indicator';
 export const tkIndicatorExcerpt = 'tk-indicator-excerpt';

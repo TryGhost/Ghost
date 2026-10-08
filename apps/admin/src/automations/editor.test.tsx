@@ -1062,11 +1062,13 @@ describe('AutomationEditor', () => {
   });
 
   it.each([
-    { status: 'inactive' as const, label: 'Save', nextStatus: 'inactive' },
-    { status: 'inactive' as const, label: 'Publish', nextStatus: 'active' },
-    { status: 'active' as const, label: 'Publish changes', nextStatus: 'active' },
-    { status: 'active' as const, label: 'Turn off', nextStatus: 'inactive' },
-  ])('saves settings only on explicit $label', async ({ status, label, nextStatus }) => {
+    { status: 'inactive', label: 'Save', nextStatus: 'inactive' },
+    { status: 'archived', label: 'Save', nextStatus: 'archived' },
+    { status: 'archived', label: 'Publish', nextStatus: 'active' },
+    { status: 'inactive', label: 'Publish', nextStatus: 'active' },
+    { status: 'active', label: 'Publish changes', nextStatus: 'active' },
+    { status: 'active', label: 'Turn off', nextStatus: 'inactive' },
+  ] as const)('saves settings only on explicit $label', async ({ status, label, nextStatus }) => {
     mockLabs.current = { automationRunAnalytics: true, automationsPerTier: true };
     mockUseReadAutomation.mockReturnValue({
       data: { automations: [{ ...automationDetail, status }] },
@@ -1102,10 +1104,18 @@ describe('AutomationEditor', () => {
     const [payload, options] = mockEditMutation.mutate.mock.calls[0];
     act(() => options.onSuccess?.({ automations: [{ ...automationDetail, ...payload }] }));
     expect(screen.getByRole('textbox', { name: 'Name' })).toHaveValue('New name');
-    if (nextStatus === 'inactive') {
-      expect(screen.getByRole('button', { name: 'Save' })).toBeDisabled();
-    } else {
-      expect(screen.getByRole('button', { name: 'Published' })).toBeDisabled();
+    switch (nextStatus) {
+      case 'active':
+        expect(screen.getByRole('button', { name: 'Published' })).toBeDisabled();
+        break;
+      case 'inactive':
+      case 'archived':
+        expect(screen.getByRole('button', { name: 'Save' })).toBeDisabled();
+        break;
+      default: {
+        const _exhaustive: never = nextStatus;
+        throw new Error(`Unexpected nextStatus: ${String(_exhaustive)}`);
+      }
     }
   });
 

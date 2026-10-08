@@ -2,14 +2,20 @@ import { apiUrl } from '@tryghost/admin-x-framework/helpers';
 import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react';
 import { useFetchApi } from '@tryghost/admin-x-framework/hooks';
 import { useEmailSendingStatus, useRetryEmail } from '@tryghost/admin-x-framework/api/emails';
-import { publishedPostCountResponseSchema } from './api-response-schemas';
-import { createPublishOptions } from './publish-options';
+import { postEmailResponseSchema, publishedPostCountResponseSchema } from './api-response-schemas';
+import { LimitCheckError, createPublishOptions } from './publish-options';
+import { reportPublishFailure } from './report-publish-failure';
 import {
+  CompletionFailureError,
+  DROPPED_MESSAGE,
+  RETRY_ELIGIBILITY_FAILED_MESSAGE,
+  UNEXPECTED_MESSAGE,
   describeCompletionFailure,
   describeRejectedAction,
   type CompletionFailure,
 } from './completion-message';
 import { EDITOR_REQUEST_OPTIONS } from '@/editor/request-options';
+import { isSessionInvalid } from '@/editor/session/error-mapping';
 import { useMinimumDuration } from '@/hooks/use-minimum-duration';
 import { writePublishCelebration } from './celebration-handoff';
 import type { PublishFlowPost } from './flow-post';
@@ -40,6 +46,13 @@ export interface PublishFlowOptions {
   /** The machine's clock, injected for tests. */
   now?: () => Date;
   dispatch: PublishDispatcher;
+  /**
+   * Asks the writer to sign in again, resolving true once they have. A limit check,
+   * an eligibility read or an email retry that finds the session gone asks, and is
+   * repeated once the writer is back. A repeat that finds it gone again fails rather
+   * than asking again.
+   */
+  requestReauth?: () => Promise<boolean>;
   showCompletion?: boolean;
   onBeforePublish?: () => Promise<void>;
   onCompleted?: (info: { postId: string; isScheduled: boolean; hasEmail: boolean }) => void;
@@ -64,12 +77,16 @@ export interface PublishFlow extends PublishOptionActions {
   limitsChecked: boolean;
   /** A failed limit check blocks review until the user retries it successfully. */
   limitsFailure: string | null;
+  /** True while the publish request itself is in flight; closing then would hide its outcome. */
+  publishInFlight: boolean;
   /** Publish intent captured on entering confirm, so saving cannot change the copy. */
   captured: {
     willPublish: boolean;
     willEmail: boolean;
     willOnlyEmail: boolean;
     isScheduled: boolean;
+    /** An email type was chosen with no recipients, so the post publishes without one. */
+    skipsEmail: boolean;
   };
   retryLimits: () => void;
   toConfirm: () => void;
@@ -77,8 +94,12 @@ export interface PublishFlow extends PublishOptionActions {
   confirmPublish: () => Promise<void>;
   retryEmail: () => Promise<void>;
   retryStatus: ConfirmStatus;
-  retryFailure: string | null;
+  retryFailure: CompletionFailure | null;
   canRetryEmail: boolean;
+  /** Whether the email can be retried could not be read, so the retry is not offered. */
+  retryEligibilityFailed: boolean;
+  checkingRetryEligibility: boolean;
+  checkRetryEligibility: () => void;
   /** Abandons any asynchronous continuation before the caller closes the modal. */
   cancel: () => void;
 }
@@ -98,6 +119,16 @@ export function initialEmailError(post: PublishFlowPost): string | null {
   return didEmailFail ? post.email?.error || UNKNOWN_EMAIL_ERROR : null;
 }
 
+function captureIntent(state: PublishOptionsState): PublishFlow['captured'] {
+  return {
+    willPublish: state.willPublish,
+    willEmail: state.willEmail,
+    willOnlyEmail: state.willOnlyEmail,
+    isScheduled: state.isScheduled,
+    skipsEmail: state.missingRecipients && state.willPublish,
+  };
+}
+
 export function usePublishFlow({
   post,
   site,
@@ -105,6 +136,7 @@ export function usePublishFlow({
   limits,
   now,
   dispatch,
+  requestReauth,
   showCompletion = true,
   onBeforePublish,
   onCompleted,
@@ -117,6 +149,35 @@ export function usePublishFlow({
   // the identity of props a re-rendering caller rebuilds.
   const inputs = useRef({ post, site, user, limits, now });
   inputs.current = { post, site, user, limits, now };
+  const requestReauthRef = useRef(requestReauth);
+  requestReauthRef.current = requestReauth;
+  const activeRef = useRef(true);
+
+  /** Signs the writer in again when `error` is an expired session; true once they are back. */
+  const reauthenticated = useCallback(async (error: unknown): Promise<boolean> => {
+    const reauth = requestReauthRef.current;
+    return Boolean(reauth && isSessionInvalid(error) && (await reauth()));
+  }, []);
+
+  /**
+   * Runs `attempt`; a failure on an expired session asks the writer to sign in and,
+   * once they have, runs it once more. A session that is gone again straight after a
+   * sign-in fails rather than asking again, so the writer is never asked in a loop;
+   * their next action asks.
+   */
+  const withSignIn = useCallback(
+    async <T>(attempt: () => Promise<T>): Promise<T> => {
+      try {
+        return await attempt();
+      } catch (error) {
+        if (!activeRef.current || !(await reauthenticated(error)) || !activeRef.current) {
+          throw error;
+        }
+      }
+      return attempt();
+    },
+    [reauthenticated],
+  );
 
   const machine = useMemo(() => {
     const current = inputs.current;
@@ -157,8 +218,25 @@ export function usePublishFlow({
     [machine],
   );
 
-  const emailId = post.email?.id ?? null;
-  const activeRef = useRef(true);
+  // A failed send's email can be missing its id, which only a reload can supply.
+  const [emailId, setEmailId] = useState(post.email?.id ?? null);
+
+  const reloadEmailId = useCallback(
+    async (postId: string) => {
+      const data = postEmailResponseSchema.parse(
+        await fetchApi<unknown>(
+          apiUrl(`/posts/${postId}/`, { include: 'email' }),
+          EDITOR_REQUEST_OPTIONS,
+        ),
+      );
+      const reloadedId = data.posts.at(0)?.email?.id;
+
+      if (reloadedId && activeRef.current) {
+        setEmailId(reloadedId);
+      }
+    },
+    [fetchApi],
+  );
 
   const [step, setStep] = useState<PublishStep>(() =>
     initialEmailError(post) ? 'email-error' : 'options',
@@ -172,8 +250,10 @@ export function usePublishFlow({
   const [completedAt, setCompletedAt] = useState<string | null>(null);
   const [checkedMachine, setCheckedMachine] = useState<PublishOptionsMachine | null>(null);
   const [limitsFailure, setLimitsFailure] = useState<string | null>(null);
+  const [publishInFlight, setPublishInFlight] = useState(false);
   const [retryStatus, setRetryStatus] = useState<ConfirmStatus>('idle');
-  const [retryFailure, setRetryFailure] = useState<string | null>(null);
+  const [retryFailure, setRetryFailure] = useState<CompletionFailure | null>(null);
+  const [findingEmail, setFindingEmail] = useState(false);
   const retryEligibility = useEmailSendingStatus(emailId ?? '', {
     // Paused while a retry runs so the send in progress cannot hide its own button;
     // re-enabling refetches, so every way a retry ends refreshes eligibility.
@@ -191,24 +271,98 @@ export function usePublishFlow({
     retryEligibility.isFetchedAfterMount &&
     sending?.status === 'failed' &&
     sending.retryable === true;
+  // Ember's "Check retry availability": an unread eligibility is said so, not hidden.
+  // Without an email id there is nothing to read, so the check reloads the post for one.
+  const retryEligibilityFailed =
+    step === 'email-error' &&
+    retryStatus !== 'running' &&
+    (!emailId || (retryEligibility.isError && retryEligibility.data === undefined));
+  const checkingRetryEligibility = findingEmail || retryEligibility.isFetching;
+  const eligibilityError = retryEligibility.error;
 
-  const [captured, setCaptured] = useState(() => {
+  // Reported once each time the writer is told: a failed background read keeps the last
+  // good decision on screen, so its error is never shown, and refetches that fail again
+  // while the failure is already showing are the same failure.
+  const eligibilityFailureReportedRef = useRef(false);
+  useEffect(() => {
+    if (!retryEligibilityFailed) {
+      eligibilityFailureReportedRef.current = false;
+      return;
+    }
+    if (eligibilityError && !eligibilityFailureReportedRef.current) {
+      eligibilityFailureReportedRef.current = true;
+      reportPublishFailure('retry-eligibility', RETRY_ELIGIBILITY_FAILED_MESSAGE, {
+        error: eligibilityError,
+        postId: post.id,
+      });
+    }
+  }, [eligibilityError, post.id, retryEligibilityFailed]);
+
+  const refetchEligibility = retryEligibility.refetch;
+  const refetchEligibilityRef = useRef(refetchEligibility);
+  refetchEligibilityRef.current = refetchEligibility;
+  // Set once a failed eligibility read has asked for sign-in. Background reads that fail
+  // again do not ask again until a read succeeds or the writer checks again themselves.
+  const eligibilitySignInAskedRef = useRef(false);
+  if (retryEligibility.isSuccess && !retryEligibility.isFetching) {
+    eligibilitySignInAskedRef.current = false;
+  }
+
+  // An eligibility read that found the session gone asks for sign-in and reads again.
+  useEffect(() => {
+    if (
+      !eligibilityError ||
+      step !== 'email-error' ||
+      eligibilitySignInAskedRef.current ||
+      !isSessionInvalid(eligibilityError)
+    ) {
+      return;
+    }
+    eligibilitySignInAskedRef.current = true;
+    void reauthenticated(eligibilityError).then((signedIn) => {
+      if (signedIn && activeRef.current) {
+        void refetchEligibilityRef.current();
+      }
+    });
+  }, [eligibilityError, reauthenticated, step]);
+
+  const checkRetryEligibility = useCallback(() => {
+    eligibilitySignInAskedRef.current = false;
+    if (emailId) {
+      void refetchEligibility();
+      return;
+    }
+
+    setFindingEmail(true);
+    // A post whose email still has no id stays unchecked; the writer can check again.
+    withSignIn(() => reloadEmailId(post.id))
+      .catch((error: unknown) => {
+        if (activeRef.current) {
+          reportPublishFailure('retry-eligibility', RETRY_ELIGIBILITY_FAILED_MESSAGE, {
+            error,
+            postId: post.id,
+          });
+        }
+      })
+      .finally(() => {
+        if (activeRef.current) {
+          setFindingEmail(false);
+        }
+      });
+  }, [emailId, post.id, refetchEligibility, reloadEmailId, withSignIn]);
+
+  const [captured, setCaptured] = useState<PublishFlow['captured']>(() => {
     if (initialEmailError(post)) {
       return {
         willPublish: post.status === 'published' && post.emailOnly !== true,
         willEmail: true,
         willOnlyEmail: post.emailOnly === true || post.status === 'sent',
         isScheduled: false,
+        skipsEmail: false,
       };
     }
 
-    const initialState = machine.getState();
-    return {
-      willPublish: initialState.willPublish,
-      willEmail: initialState.willEmail,
-      willOnlyEmail: initialState.willOnlyEmail,
-      isScheduled: initialState.isScheduled,
-    };
+    return captureIntent(machine.getState());
   });
   const completedRef = useRef(false);
   const publishRunningRef = useRef(false);
@@ -221,37 +375,65 @@ export function usePublishFlow({
   } | null>(null);
 
   const checkLimits = useCallback(async () => {
-    const generation = limitCheckGenerationRef.current + 1;
-    limitCheckGenerationRef.current = generation;
-    setCheckedMachine(null);
-    setLimitsFailure(null);
-    const existing = limitCheckRef.current;
-    const check =
-      existing?.machine === machine
-        ? existing
-        : { machine, promise: machine.checkLimits().then(() => undefined) };
-    limitCheckRef.current = check;
+    // Repeated once, only after the writer signs in again on an expired session; a
+    // session gone again straight after that sign-in fails rather than asking again.
+    for (let signedInAgain = false; ; signedInAgain = true) {
+      const generation = limitCheckGenerationRef.current + 1;
+      limitCheckGenerationRef.current = generation;
+      const isCurrent = () => activeRef.current && generation === limitCheckGenerationRef.current;
+      setCheckedMachine(null);
+      setLimitsFailure(null);
+      const existing = limitCheckRef.current;
+      const check =
+        existing?.machine === machine
+          ? existing
+          : { machine, promise: machine.checkLimits().then(() => undefined) };
+      limitCheckRef.current = check;
 
-    try {
-      await check.promise;
-    } catch (error) {
-      if (activeRef.current && generation === limitCheckGenerationRef.current) {
-        const { message } = describeRejectedAction(error);
-        setLimitsFailure(`Couldn’t check publishing limits. ${message}`);
+      let rejection: { error: unknown } | null = null;
+      try {
+        await check.promise;
+      } catch (error) {
+        rejection = { error };
+      } finally {
+        if (limitCheckRef.current === check) {
+          limitCheckRef.current = null;
+        }
+      }
+
+      if (!isCurrent()) {
+        return;
+      }
+
+      if (!rejection) {
+        setCheckedMachine(machine);
         refresh();
+        return;
       }
-      return;
-    } finally {
-      if (limitCheckRef.current === check) {
-        limitCheckRef.current = null;
-      }
-    }
 
-    if (activeRef.current && generation === limitCheckGenerationRef.current) {
-      setCheckedMachine(machine);
+      const { error } = rejection;
+      const checkFailure = error instanceof LimitCheckError;
+      const cause = checkFailure ? error.cause : error;
+      const signedIn = !signedInAgain && (await reauthenticated(cause));
+      if (!isCurrent()) {
+        return;
+      }
+      if (signedIn) {
+        continue;
+      }
+
+      const { message } = describeRejectedAction(cause);
+      const shown = `${
+        checkFailure && error.limit === 'emails'
+          ? 'Couldn’t check email limits.'
+          : 'Couldn’t check publishing limits.'
+      } ${message}`;
+      setLimitsFailure(shown);
+      reportPublishFailure('limit-check', shown, { error, postId: inputs.current.post.id });
       refresh();
+      return;
     }
-  }, [machine]);
+  }, [machine, reauthenticated]);
 
   // A schedule chosen before the editor sat idle may now be in the past.
   useEffect(() => {
@@ -306,12 +488,7 @@ export function usePublishFlow({
     if (!limitsChecked || !state.canPublish) {
       return;
     }
-    setCaptured({
-      willPublish: state.willPublish,
-      willEmail: state.willEmail,
-      willOnlyEmail: state.willOnlyEmail,
-      isScheduled: state.isScheduled,
-    });
+    setCaptured(captureIntent(state));
     setFailure(null);
     setConfirmStatus('idle');
     setStep('confirm');
@@ -379,8 +556,9 @@ export function usePublishFlow({
 
     if (!command) {
       publishRunningRef.current = false;
-      setFailure({ message: 'This post can no longer be published from here. Reload the editor.' });
+      setFailure({ message: DROPPED_MESSAGE });
       setConfirmStatus('failure');
+      reportPublishFailure('no-command', DROPPED_MESSAGE, { postId: post.id });
       return;
     }
 
@@ -391,8 +569,13 @@ export function usePublishFlow({
     } catch (error) {
       if (activeRef.current) {
         publishRunningRef.current = false;
-        setFailure(describeRejectedAction(error));
+        const shown = describeRejectedAction(error, UNEXPECTED_MESSAGE);
+        setFailure(shown);
         setConfirmStatus('failure');
+        // A save that settled as failed was reported by the session; anything else is a fault.
+        if (!(error instanceof CompletionFailureError)) {
+          reportPublishFailure('pre-publish-save', shown.message, { error, postId: post.id });
+        }
       }
       return;
     }
@@ -410,13 +593,18 @@ export function usePublishFlow({
 
     let completion: SaveCompletion;
 
+    setPublishInFlight(true);
     try {
       completion = await dispatch(command);
     } catch (error) {
       if (activeRef.current) {
         publishRunningRef.current = false;
-        setFailure(describeRejectedAction(error));
+        setPublishInFlight(false);
+        const shown = describeRejectedAction(error, UNEXPECTED_MESSAGE);
+        setFailure(shown);
         setConfirmStatus('failure');
+        // The dispatch settles every save it runs; a rejection is a fault in getting there.
+        reportPublishFailure('publish-request', shown.message, { error, postId: post.id });
       }
       return;
     }
@@ -424,6 +612,7 @@ export function usePublishFlow({
     if (!activeRef.current) {
       return;
     }
+    setPublishInFlight(false);
     const completionFailure = describeCompletionFailure(completion);
 
     if (completionFailure) {
@@ -442,7 +631,7 @@ export function usePublishFlow({
     }
 
     complete(isScheduled, willEmail);
-  }, [complete, dispatch, handoffMinimum, machine, onBeforePublish, state]);
+  }, [complete, dispatch, handoffMinimum, machine, onBeforePublish, post.id, state]);
 
   const retryEmail = useCallback(async () => {
     if (retryRunningRef.current || !canRetryEmail || !emailId) {
@@ -455,12 +644,15 @@ export function usePublishFlow({
     setRetryStatus('running');
 
     try {
-      await retryEmailRequest({ id: emailId, sessionExpiryRedirect: false });
+      // A retry that found the session gone is sent again once the writer signs in.
+      await withSignIn(() => retryEmailRequest({ id: emailId, sessionExpiryRedirect: false }));
     } catch (error) {
       if (activeRef.current) {
+        const retryError = describeRejectedAction(error, UNKNOWN_RETRY_ERROR);
         retryRunningRef.current = false;
-        setRetryFailure(error instanceof Error ? error.message : UNKNOWN_RETRY_ERROR);
+        setRetryFailure(retryError);
         setRetryStatus('failure');
+        reportPublishFailure('retry-request', retryError.message, { error, postId: post.id });
       }
       return;
     }
@@ -475,7 +667,16 @@ export function usePublishFlow({
       setRetryStatus('success');
     }
     complete(false, true);
-  }, [canRetryEmail, complete, emailId, handoffMinimum, retryEmailRequest, showCompletion]);
+  }, [
+    canRetryEmail,
+    complete,
+    emailId,
+    handoffMinimum,
+    post.id,
+    retryEmailRequest,
+    showCompletion,
+    withSignIn,
+  ]);
 
   return {
     ...optionActions,
@@ -488,6 +689,7 @@ export function usePublishFlow({
     completedAt,
     limitsChecked,
     limitsFailure,
+    publishInFlight,
     captured,
     retryLimits: () => void checkLimits(),
     toConfirm,
@@ -497,6 +699,9 @@ export function usePublishFlow({
     retryStatus,
     retryFailure,
     canRetryEmail,
+    retryEligibilityFailed,
+    checkingRetryEligibility,
+    checkRetryEligibility,
     cancel,
   };
 }

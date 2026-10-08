@@ -69,9 +69,19 @@ function createDom({
   return dom;
 }
 
+function dispatchAuthReply(dom: JSDOM, data: string, sender: Window | null) {
+  dom.window.dispatchEvent(
+    new dom.window.MessageEvent('message', {
+      origin: 'https://admin.example.com',
+      data,
+      source: sender,
+    }),
+  );
+}
+
 async function runToolbar(
   dom: JSDOM,
-  response: MockReply | ((message: AuthFrameMessage) => MockReply),
+  response: MockReply | ((message: AuthFrameMessage, authWindow: Window) => MockReply),
 ) {
   dom.window.eval(source);
   dom.window.document.dispatchEvent(new dom.window.Event('DOMContentLoaded'));
@@ -82,18 +92,18 @@ async function runToolbar(
   assert.ok(frame, 'auth frame should be created');
   assert.ok(frame.contentWindow, 'auth frame should have a window');
 
-  frame.contentWindow.postMessage = (payload: string) => {
+  const authWindow = frame.contentWindow;
+  authWindow.postMessage = (payload: string) => {
     const message: AuthFrameMessage = JSON.parse(payload);
-    const result = typeof response === 'function' ? response(message) : response;
-    dom.window.dispatchEvent(
-      new dom.window.MessageEvent('message', {
-        origin: 'https://admin.example.com',
-        data: JSON.stringify({
-          uid: message.uid,
-          error: result?.error || null,
-          result: result?.result || null,
-        }),
+    const result = typeof response === 'function' ? response(message, authWindow) : response;
+    dispatchAuthReply(
+      dom,
+      JSON.stringify({
+        uid: message.uid,
+        error: result?.error || null,
+        result: result?.result || null,
       }),
+      authWindow,
     );
   };
 
@@ -143,6 +153,53 @@ describe('admin-toolbar', function () {
 
     assert.equal(root, null);
     assert.equal(frame.isConnected, false);
+    dom.window.close();
+  });
+
+  it('ignores auth replies from other windows', async function () {
+    const dom = createDom();
+    const otherFrame = dom.window.document.createElement('iframe');
+    dom.window.document.body.appendChild(otherFrame);
+
+    const { root, frame } = await runToolbar(dom, (message) => {
+      dispatchAuthReply(
+        dom,
+        JSON.stringify({ uid: message.uid, error: null, result: { users: [editorUser()] } }),
+        otherFrame.contentWindow,
+      );
+      return { result: { errors: [{ message: 'Unauthorized' }] } };
+    });
+
+    assert.equal(root, null);
+    assert.equal(frame.isConnected, false);
+    dom.window.close();
+  });
+
+  it('ignores malformed auth replies', async function () {
+    const dom = createDom();
+    const errors: unknown[] = [];
+    dom.window.addEventListener('error', (event) => {
+      errors.push(event.error);
+    });
+
+    const { root } = await runToolbar(dom, (message, authWindow) => {
+      for (const data of [
+        'null',
+        '"text"',
+        '42',
+        JSON.stringify({
+          uid: String(message.uid),
+          error: null,
+          result: { users: [{ name: 'Other', roles: [{ name: 'Author' }] }] },
+        }),
+      ]) {
+        dispatchAuthReply(dom, data, authWindow);
+      }
+      return { result: { users: [editorUser()] } };
+    });
+
+    assert.deepEqual(errors, []);
+    assert.ok(root);
     dom.window.close();
   });
 

@@ -235,9 +235,8 @@ describe('Editor analytics breadcrumb', () => {
     await userEvent.keyboard('{End} more');
     await userEvent.keyboard('{Meta>}s{/Meta}');
 
-    await expect
-      .element(editorScreen.status())
-      .toHaveTextContent('Something went wrong while loading posts');
+    // A 500 without a reason is worded by the editor, not by the transport's endpoint summary.
+    await expect.element(editorScreen.status()).toHaveTextContent('Couldn’t save this post.');
   });
 });
 

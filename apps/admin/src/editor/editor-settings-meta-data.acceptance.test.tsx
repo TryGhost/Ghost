@@ -3,6 +3,7 @@ import { page, userEvent } from 'vitest/browser';
 import {
   settingsMetaDataBackButton,
   settingsMetaDataRow,
+  settingsXCardRow,
 } from '@tryghost/test-data/selectors/editor';
 
 import {
@@ -22,6 +23,7 @@ import {
 } from '@test-utils/acceptance';
 import { editorScreen } from '@/editor/editor.screen';
 import { previewScreen } from '@/editor/preview/preview.screen';
+import { publishScreen } from '@/editor/publish/publish.screen';
 
 const POST_ID = 'abc123';
 const LOADED_AT = '2026-01-01T00:00:00.000Z';
@@ -58,6 +60,14 @@ function fakeSavablePost(overrides: Partial<SavedPost> = {}) {
     meta_description: null,
     tags: [],
     ...overrides,
+  });
+}
+
+/** The site's member total, which the publish inputs read before Publish is offered. */
+function fakeMembersTotal() {
+  fakeAdminEndpoint('GET', /^\/members\/\?.*order=id/, {
+    members: [],
+    meta: { pagination: { page: 1, limit: 1, pages: 1, total: 20, next: null, prev: null } },
   });
 }
 
@@ -152,9 +162,7 @@ describe('Post settings meta data', () => {
 
       await userEvent.keyboard('{Meta>}s{/Meta}');
 
-      await expect
-        .element(editorScreen.saveErrorBanner())
-        .toHaveTextContent('Please enter a valid URL');
+      await expect.element(editorScreen.saveError()).toHaveTextContent('Please enter a valid URL');
       expect(saveApi.requests).toHaveLength(0);
 
       await editorScreen.settingsCanonicalUrl().fill('https://original.example.com/story/');
@@ -339,6 +347,7 @@ describe('Post settings meta data', () => {
 
   it('refuses to save a meta title longer than the field holds', async () => {
     const saveApi = fakeSavablePost();
+    fakeMembersTotal();
     await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
     await openMetaData();
 
@@ -351,16 +360,66 @@ describe('Post settings meta data', () => {
     await expect.element(editorScreen.settingsMetaTitle()).toHaveAttribute('aria-invalid', 'true');
     // Refused where the writer is typing rather than as a save they did not ask for.
     await expect.poll(unsavedChangesGuarded).toBe(true);
-    await expect(editorScreen.saveErrorBanner()).toHaveCount(0);
+    await expect(editorScreen.saveError()).toHaveCount(0);
     expect(saveApi.requests).toHaveLength(0);
 
     await userEvent.keyboard('{Meta>}s{/Meta}');
 
     await expect
-      .element(editorScreen.saveErrorBanner())
+      .element(editorScreen.saveError())
       .toHaveTextContent('Meta title cannot be longer than 300 characters.');
     expect(saveApi.requests).toHaveLength(0);
+
+    // Publish is refused too, and swaps another open pane for the field's own.
+    await editorScreen.settingsSubviewBack(settingsMetaDataBackButton).click();
+    await editorScreen.settingsSubviewRow(settingsXCardRow).click();
+    await expect.element(editorScreen.settingsXTitle()).toBeVisible();
+    await expect.element(editorScreen.publishButton()).toBeEnabled();
+    await editorScreen.publishButton().click();
+
+    await expect.element(editorScreen.settingsMetaTitle()).toHaveFocus();
+    await expect(editorScreen.settingsXTitle()).toHaveCount(0);
+    await expect
+      .element(editorScreen.saveError())
+      .toHaveTextContent('Meta title cannot be longer than 300 characters.');
+    await expect(publishScreen.root()).toHaveCount(0);
+    expect(saveApi.requests).toHaveLength(0);
   });
+
+  it.each([
+    { state: 'still invalid', correctedTitle: null },
+    { state: 'corrected', correctedTitle: 'Valid meta title' },
+  ])(
+    'does not replay a field reveal after reopening settings with a $state title',
+    async ({ correctedTitle }) => {
+      fakeSavablePost();
+      fakeMembersTotal();
+      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+      await openMetaData();
+
+      await editorScreen.settingsMetaTitle().fill('a'.repeat(301));
+      await editorScreen.publishButton().click();
+      await expect.element(editorScreen.settingsMetaTitle()).toHaveFocus();
+
+      if (correctedTitle) {
+        await editorScreen.settingsMetaTitle().fill(correctedTitle);
+      }
+      await editorScreen.settingsToggle().click();
+      await settleTransitions();
+      await expect(editorScreen.settingsSidebar()).toHaveCount(0);
+
+      await editorScreen.settingsToggle().click();
+      await settleTransitions();
+      await expect.element(editorScreen.settingsSubviewRow(settingsMetaDataRow)).toBeVisible();
+      await expect.element(editorScreen.settingsToggle()).toHaveFocus();
+
+      if (!correctedTitle) {
+        await editorScreen.publishButton().click();
+        await expect.element(editorScreen.settingsMetaTitle()).toHaveFocus();
+        await expect(publishScreen.root()).toHaveCount(0);
+      }
+    },
+  );
 
   it('previews the post’s own title and excerpt until the meta fields carry their own', async () => {
     fakeSavablePost({ custom_excerpt: 'The excerpt this post already has' });

@@ -99,6 +99,11 @@
           "cwd": "apps/comments-ui",
           "command": "vite build --watch --mode development"
         }
+      },
+      "lint": {
+        "dependsOn": [
+          "^build"
+        ]
       }
     },
     "tags": [

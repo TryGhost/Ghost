@@ -16,17 +16,13 @@ import {
   recipientsConfirmLabel,
 } from '@/editor/publish/publish-copy';
 import type { PublishFlowPost } from '@/editor/publish/flow-post';
+import type { PublishFlow } from '@/editor/publish/use-publish-flow';
 import type { PublishOptionsState } from '@/editor/publish/publish-options';
 
 export interface CompleteStepProps {
   post: PublishFlowPost;
   state: PublishOptionsState;
-  captured: {
-    willPublish: boolean;
-    willEmail: boolean;
-    willOnlyEmail: boolean;
-    isScheduled: boolean;
-  };
+  captured: PublishFlow['captured'];
   timezone: string;
   siteTitle?: string;
   /** Published-post total including this one; null for pages, schedules and email-only. */
@@ -49,7 +45,7 @@ function RevertToDraft({ onRevertToDraft }: { onRevertToDraft?: () => void }) {
           className="h-auto min-h-11 max-w-full px-5 py-2 whitespace-normal"
           data-testid={publishRevertToDraft}
           size="lg"
-          variant="outline"
+          variant="secondary"
           onClick={onRevertToDraft}
         >
           Unschedule and revert to draft &rarr;
@@ -133,7 +129,7 @@ export function CompleteStep({
             <RevertToDraft onRevertToDraft={onRevertToDraft} />
           ) : (
             <Inline>
-              <Button className="px-5" size="lg" variant="outline" asChild>
+              <Button className="px-5" size="lg" variant="secondary" asChild>
                 <a data-testid={publishBackToDashboard} href="#/analytics">
                   <LucideIcon.ArrowLeft />
                   Back to dashboard

@@ -37,8 +37,8 @@ import {
  * @typedef {object} ReactAppConfigOptions
  * @property {boolean} [typescript=true]
  *   When false: vanilla JS app, no typescript-eslint extends, no
- *   @typescript-eslint/* rules. LEGACY for sodo-search and announcement-bar
- *   (should migrate to TS eventually).
+ *   @typescript-eslint/* rules. LEGACY for announcement-bar (should migrate
+ *   to TS eventually).
  * @property {boolean} [reactRefresh=true]
  *   When false: skip eslint-plugin-react-refresh. Set false for UMD-bundled
  *   apps (comments-ui, signup-form) and vanilla JS apps — react-refresh is a
@@ -339,7 +339,7 @@ export function reactAppConfig(options = {}) {
       },
     });
   } else {
-    // Vanilla JS (sodo-search, announcement-bar). LEGACY: should migrate to TS.
+    // Vanilla JS (announcement-bar). LEGACY: should migrate to TS.
     srcBlocks.push({
       files: srcGlobs ?? defaultJsSrcGlobs,
       ...js.configs.recommended,

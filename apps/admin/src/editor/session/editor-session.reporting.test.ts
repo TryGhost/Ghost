@@ -38,7 +38,12 @@ describe('createEditorSession reporting', () => {
     expect(failures).toHaveLength(1);
     expect(failures[0]).toMatchObject({
       command: { kind: 'explicit', requiresRevision: true, requiresReconfirmation: false },
-      error: { kind: 'conflict', message: collision.message, cause: collision },
+      // Core's reason, not the transport's summary of the request.
+      error: {
+        kind: 'conflict',
+        message: 'Saving failed! Someone else is editing this post.',
+        cause: collision,
+      },
       persisted: true,
       postId: 'abc123',
       status: 'published',

@@ -326,23 +326,6 @@ describe('reportSaveFailure', () => {
     );
   });
 
-  it('reports an abandoned re-authentication as the session failure it was', () => {
-    const cause = new Error('Unauthorized');
-
-    reportSaveFailure(
-      failure({ error: { kind: 'session-invalid', message: 'Unauthorized', cause } }),
-      'post',
-    );
-
-    expect(Sentry.captureException).toHaveBeenCalledWith(
-      titled('SaveSessionInvalidError', 'Unauthorized', cause),
-      {
-        tags: { ...TAGS, save_error_kind: 'session-invalid' },
-        extra: { post_id: 'post-1', duration_ms: 120 },
-      },
-    );
-  });
-
   it('reports a persisted post that is gone as a message carrying the post id', () => {
     reportSaveFailure(
       failure({ error: { kind: 'not-found', message: 'Post not found', cause: new Error('404') } }),
@@ -383,6 +366,11 @@ describe('reportSaveFailure', () => {
     ['a validation failure', { kind: 'validation', message: 'Title is too long' }],
     ['a host limit', { kind: 'host-limit', message: 'Upgrade required' }],
     ['a writer who lost access', { kind: 'forbidden', message: 'Permission error' }],
+    // Signing in again is its recovery, abandoned or not.
+    [
+      'an expired session',
+      { kind: 'session-invalid', message: 'Unauthorized', cause: new Error('Unauthorized') },
+    ],
     [
       'an unreachable server',
       { kind: 'transport', message: 'Unreachable', cause: new ServerUnreachableError() },

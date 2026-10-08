@@ -35,10 +35,10 @@ function removeSourceFormats(frame) {
  */
 function selectAllAllowedColumns(frame) {
   if (!frame.options.columns && !frame.options.selectRaw) {
-    // Because we're returning columns directly from the schema we need to remove info columns like @@UNIQUE_CONSTRAINTS@@ and @@INDEXES@@
-    frame.options.selectRaw = _.keys(
-      _.omit(postsSchema, ['lexical', 'mobiledoc', '@@INDEXES@@', '@@UNIQUE_CONSTRAINTS@@']),
-    ).join(',');
+    // Keys starting with @@, like @@INDEXES@@, describe the table rather than a column
+    frame.options.selectRaw = Object.keys(postsSchema)
+      .filter((column) => !column.startsWith('@@') && !['lexical', 'mobiledoc'].includes(column))
+      .join(',');
   } else if (frame.options.columns) {
     frame.options.columns = frame.options.columns.filter((column) => {
       return !['mobiledoc', 'lexical'].includes(column);

@@ -97,13 +97,15 @@ command in the runnable queue, so navigating away does not wait indefinitely.
 The live document remains the source of truth: Update enables, the post stays
 dirty, and leaving requires a save or confirmation.
 
-All saves use the same preparation validator. An incomplete tier pairing on a
+All saves use the same preparation validator, and `invalidField()` reads the
+field an explicit save of the live document would be refused over from it, so
+the header refuses a publish by the save's own rules. An incomplete tier pairing on a
 post that exists, an over-long title, excerpt, code injection or meta/social
 field, an invalid canonical URL, an emptied author list, or a newly staged
 future publish time holds a background save with a validation blocker. Body
 autosave, title and image commits follow the same rule, including an already
-armed timer or queued request. The editor explains why changes are waiting even
-when the settings panel is closed. A saved future publish time is not itself
+armed timer or queued request. The field names its rule where it is edited, and
+the status line does once a save the writer asks for is refused. A saved future publish time is not itself
 invalid.
 
 A post the server has not created yet is not held to the tier rule. Its saves
@@ -180,14 +182,20 @@ as one character, and every other field by code point.
 
 A failure the transport reports is mapped onto the same kinds, so the engine's
 state machine reads them the same way. An `UPDATE_COLLISION` code becomes
-`conflict`.
+`conflict`, and so does an `UpdateCollisionError` without one: Core's email
+service refuses a publish whose newsletter or audience changed while it was
+being published that way.
 
 The server refuses a save that still sends `scheduled` for a post it has since
 published with a validation error. That also becomes `conflict`, since only the
 server's newer copy lets the writer save again.
 
 Of the other failures, a session-expired, unauthorized or 401 failure becomes
-`session-invalid`; any other `NoPermissionError`, which is how Core refuses a
+`session-invalid`. That includes the 403 "Authorization failed" Core answers for
+a session it no longer accepts: Core gives it no type or code, so the framework's
+response handler reads the message once and throws `UnauthorizedError`, and the
+editor reads the class rather than comparing the text again. Any other
+`NoPermissionError`, which is how Core refuses a
 writer who may no longer edit the post, becomes `forbidden`; a host-limit
 failure becomes `host-limit`; an unreachable server, a maintenance response and
 a timeout become `transport`; a validation failure, a payload the server
@@ -196,17 +204,27 @@ outright has to suppress background saves the way a validation failure does or
 it retries on every edit; a 404 becomes `not-found`; and anything else becomes
 `unknown`.
 
-A `validation`, `host-limit` or `forbidden` failure the server reports carries
-the server's reason as its message. The server sends that reason as the error's
-context beside a generic summary, and the summary is used only when there is no
-context. The save-error banner shows a host limit's reason with its "please
+A refusal the server reports (a 4xx: validation, a host limit, permissions, a
+bad request such as an archived newsletter) carries the server's reason as its
+message. The server sends that reason as the error's context beside a generic
+summary ("Validation error, cannot edit post."), and the summary is used only
+when there is no context. A 5xx is a fault whose text is for logs, so it shows
+the session's own save failure ("Couldn’t save this post."), as does a response
+that gave no reason; neither shows the transport's summary of the request, which
+names the endpoint ("Something went wrong while loading posts"). That summary is
+recognised by class (the transport's bare `APIError` or `JSONError`), never by
+its text. Core's email service refuses a send with an `EmailError` only when the
+post has no newsletter to send to, with no code and a sentence naming a model
+relation, so the class reads as "The newsletter couldn’t be sent. Check the
+post’s newsletter and try again." An expired session and an unreachable server
+keep their own wording. The status line shows a host limit's reason with its "please
 upgrade" phrase linked to the host's upgrade screen, `/pro` unless the host
-configures another, and keeps the content and the banner's retry.
+configures another, and keeps the content and the retry beside it.
 
 An `unknown` failure the API answered, or one the session describes itself,
-shows its own message. One thrown in the browser instead, such as a
+shows that message. One thrown in the browser instead, such as a
 `TypeError`, reads as "Something went wrong while saving. Please try again." in
-the banner, the status line, the publish flow and the preview alike; the error
+the status line, the publish flow and the preview alike; the error
 keeps its own message and cause for reporting.
 
 ## Adopting the server's answer
@@ -395,7 +413,11 @@ the unsaved content where they are, and the next save shows the server's refusal
 or the collision. A save refused because the writer may no longer edit the post
 stops saving for good, as one that finds the post deleted does: the banner says
 they can no longer edit it and offers their content to copy, and there is no
-retry, since the server would refuse every later save too.
+retry, since the server would refuse every later save too. A publish, schedule,
+unpublish or unschedule Core refuses that way is different: Core also refuses a
+status change on its own rules, such as a Contributor's publish, so the refusal
+is that command's failure, shown in the publish flow and the status line, and the
+post stays editable.
 
 What a halted queue looks like is the session's caller's decision, not the
 engine's: `reauth-pending` and `conflict` are states, not UI. The writer gets a
@@ -418,8 +440,16 @@ code, or a resend that fails, is named inside the dialog and nothing else
 changes. Once the session is back the held save goes out on its own; a
 status change it was carrying, such as a publish, is re-confirmed rather than
 sent unasked. Clicking outside the dialog does nothing; Escape or Cancel abandons
-it, which moves the queue to the save-error banner with the content kept, and the
-banner's retry brings the dialog back.
+it, which reports the failed save in the status line with the content kept, and
+its retry brings the dialog back. A status change abandoned this way is retried
+from where it was asked for, not from the status line.
+
+Reads and requests outside the engine's saves ask for the same dialog through
+`requestReauth()`, which resolves true once the writer has signed in and false
+when they abandon it; requests made while it is open share it, and an editor
+that goes while one waits answers false. The publish inputs, the publish flow's
+limit checks, its retry-eligibility read and the email retry use it, and each
+runs again once the writer is back rather than repeating a refused request.
 
 ## The view React subscribes to
 
@@ -479,8 +509,7 @@ Failures never reach the writer as thrown errors; the session reports them. Ever
 request that ran and failed is reported once, with the command it ran, the
 error, whether the post already had a server id, the post's persisted status,
 the id, and how long the request took. Queued work a failure dropped is not
-reported on its own. An expired session is reported only when re-authentication
-is abandoned, not when it is retried. A leave the engine answers with a
+reported on its own. A leave the engine answers with a
 confirmation is reported with the reason codes the tracker holds the post dirty
 for; one the editor asks about because the engine missed its deadline is not.
 A draft disposed with a title but a slug still derived from the default title is
@@ -493,10 +522,13 @@ the other two are faults.
 
 Sentry receives these through the editor's own reporter, with the response
 status and URL when the transport answered. Validation failures, host limits, a
-refusal of a writer who may no longer edit the post and an unreachable server
-are not sent: none of them is a fault in the editor. A failed request that took
+refusal of a writer who may no longer edit the post, an expired session (signing
+in again is its recovery, whether or not the writer does) and an unreachable
+server are not sent: none of them is a fault in the editor. `isExpectedSaveError()`
+holds that rule, and the publish flow reports by it too. A failed request that took
 more than two seconds is sent as a second event with its timing. Every error
-banner the writer is shown — a failed save, a collision, a deleted post — is
+the writer is shown — a failed save in the status line, a collision or a
+deleted post in its banner — is
 also sent once as a message carrying the text they read. A Koenig instance that
 crashes its error boundary is reported as a Lexical failure. Sentry stays
 optional: without a DSN the calls are no-ops, and an error is still logged to

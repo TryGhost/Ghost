@@ -70,6 +70,13 @@ that cannot write it, falls back to the section list rather than an empty panel.
 The panel owns which pane is open, so closing the panel or leaving the editor
 drops it and the panel is next opened on the section list.
 
+The screen can ask the panel to take the writer to a field, as a refused
+publish does. The panel shows the field's section, closing another pane or
+opening the field's own, and focuses the field once it is there, including a
+code editor that is still loading. Each field marks the element it is edited in
+with `data-settings-field`, and `SETTINGS_FIELD_SECTIONS` in `sections.ts` names
+the section each field the save checks lives in.
+
 Returning to the section list and reopening the same social-card pane keeps an
 in-progress image upload pending. Its file picker and Unsplash button stay
 disabled until the upload succeeds or fails.

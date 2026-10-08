@@ -50,6 +50,11 @@ const features: Feature[] = [
     flag: 'csvContentImporter',
   },
   {
+    title: 'Admin 7 · Settings navigation',
+    description: 'Preview Settings in the Admin navigation shell.',
+    flag: 'admin7settings',
+  },
+  {
     title: 'Email Unique ID',
     description:
       'Enables {uniqueid} variable in emails for unique image URLs to bypass ESP image caching',
