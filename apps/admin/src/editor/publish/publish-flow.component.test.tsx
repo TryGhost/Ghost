@@ -18,6 +18,8 @@ import {
 import { PublishFlowModal } from '@/editor/publish/publish-flow-modal';
 import { UpdateFlowModal } from '@/editor/publish/update-flow-modal';
 import { publishScreen } from '@/editor/publish/publish.screen';
+import { CompletionFailureError } from '@/editor/publish/completion-message';
+import { LimitCheckError } from '@/editor/publish/publish-options';
 import type { PublishFlowPost } from '@/editor/publish/flow-post';
 import type {
   PublishDispatch,
@@ -602,11 +604,34 @@ describe('Publish flow', () => {
     await publishScreen.recipientFree().click();
 
     await expect.element(publishScreen.continueButton()).toBeDisabled();
+    await expect
+      .element(publishScreen.options())
+      .toHaveTextContent('Choose at least one recipient to send this email.');
     publishScreen
       .continueButton()
       .element()
       .dispatchEvent(new MouseEvent('click', { bubbles: true }));
     await expect.element(publishScreen.options()).toBeInTheDocument();
+  });
+
+  it('says a publish and email with no recipients will not be emailed', async () => {
+    const { dispatch } = await renderPublishFlow();
+
+    await publishScreen.setting('email-recipients').click();
+    await publishScreen.recipientFree().click();
+
+    await expect
+      .element(publishScreen.options())
+      .toHaveTextContent('No recipients are selected, so this post will be published without');
+    await publishScreen.continueButton().click();
+
+    await expect
+      .element(publishScreen.confirm())
+      .toHaveTextContent('It won’t be sent as a newsletter, because no recipients are selected.');
+    await publishScreen.confirmButton().click();
+
+    await expect.poll(() => dispatch.mock.calls.length).toBe(1);
+    expect(dispatch).toHaveBeenCalledWith({ kind: 'publish', options: {} });
   });
 
   it('keeps recipient section height stable while a new newsletter count loads', async () => {
@@ -906,7 +931,55 @@ describe('Publish flow', () => {
     await expect
       .element(publishScreen.confirmError())
       .toHaveTextContent('Your session was restored. Confirm again to publish.');
+    // Nothing failed, so it is a note rather than an alert.
+    await expect.element(publishScreen.confirmError()).toHaveAttribute('role', 'status');
     await expect.element(publishScreen.confirm()).toBeInTheDocument();
+  });
+
+  it('cannot be closed while the publish request is in flight', async () => {
+    let finishDispatch: (completion: SaveCompletion) => void = () => {};
+    const dispatch = vi.fn(
+      () =>
+        new Promise<SaveCompletion>((resolve) => {
+          finishDispatch = resolve;
+        }),
+    );
+    const onClose = vi.fn();
+    const { onCompleted } = await renderPublishFlow({ dispatch, onClose });
+
+    await publishScreen.continueButton().click();
+    await publishScreen.confirmButton().click();
+    await expect.poll(() => dispatch.mock.calls.length).toBe(1);
+
+    await expect.element(publishScreen.closeButton()).toBeDisabled();
+    await userEvent.keyboard('{Escape}');
+    expect(onClose).not.toHaveBeenCalled();
+
+    finishDispatch(saved());
+
+    await expect.poll(() => onCompleted.mock.calls.length).toBe(1);
+  });
+
+  it('shows the reason a pre-publish save was refused, upgrade link included', async () => {
+    const onBeforePublish = () =>
+      Promise.reject(
+        new CompletionFailureError({
+          message: 'Your plan is full, please upgrade to publish more.',
+          parts: [
+            { text: 'Your plan is full, ', kind: 'text' },
+            { text: 'please upgrade', kind: 'upgrade' },
+            { text: ' to publish more.', kind: 'text' },
+          ],
+        }),
+      );
+    await renderPublishFlow({ onBeforePublish });
+
+    await publishScreen.continueButton().click();
+    await publishScreen.confirmButton().click();
+
+    await expect
+      .element(publishScreen.confirmError().getByRole('link', { name: 'please upgrade' }))
+      .toBeInTheDocument();
   });
 
   it('explains a collision instead of completing', async () => {
@@ -997,6 +1070,30 @@ describe('Publish flow', () => {
     await expect
       .poll(() => publishScreen.continueButton().element().hasAttribute('disabled'))
       .toBe(false);
+  });
+
+  it('tells an email count that failed apart from a reached email limit', async () => {
+    let attempt = 0;
+    const checkSendingLimit = vi.fn(() => {
+      attempt += 1;
+      return attempt === 1
+        ? Promise.reject(new LimitCheckError('emails', new Error('Network request failed')))
+        : Promise.resolve();
+    });
+    await renderPublishFlow({ limits: { checkSendingLimit } });
+
+    await expect
+      .element(publishScreen.limitsError())
+      .toHaveTextContent('Couldn’t check email limits. Network request failed');
+    await expect.element(publishScreen.continueButton()).toBeDisabled();
+    await publishScreen.limitsError().getByRole('button', { name: 'Try again' }).click();
+
+    await expect
+      .poll(() => publishScreen.continueButton().element().hasAttribute('disabled'))
+      .toBe(false);
+    await expect
+      .element(publishScreen.setting('publish-type'))
+      .toHaveTextContent('Publish and email');
   });
 
   it('blocks on an unreadable limit and retries it safely', async () => {
@@ -1194,8 +1291,28 @@ describe('Publish flow', () => {
     },
   );
 
-  it('hides retry when an existing failed email status cannot be read', async () => {
-    const statusApi = fakeAdminEndpoint('GET', `/emails/${EMAIL_ID}/status/`, {}, { status: 404 });
+  it('says when an existing failed email status cannot be read, and checks it again', async () => {
+    let statusAvailable = false;
+    const statusApi = fakeAdminEndpoint('GET', `/emails/${EMAIL_ID}/status/`, () =>
+      statusAvailable
+        ? {
+            email_statuses: [
+              {
+                id: EMAIL_ID,
+                sending: {
+                  status: 'failed',
+                  retryable: true,
+                  failed_during: 'submitting',
+                  progress: { completed: 0, total: 20, estimated_seconds_remaining: null },
+                },
+              },
+            ],
+          }
+        : new Response(JSON.stringify({ errors: [{ message: 'Status unavailable' }] }), {
+            status: 500,
+            headers: { 'content-type': 'application/json' },
+          }),
+    );
     await renderPublishFlow({
       post: draft({
         status: 'published',
@@ -1211,6 +1328,17 @@ describe('Publish flow', () => {
     await expect.poll(() => statusApi.requests.length).toBe(1);
     await expect.element(publishScreen.emailError()).toHaveTextContent('Sending failed');
     await expect.element(publishScreen.retryEmailButton()).not.toBeInTheDocument();
+    await expect
+      .element(publishScreen.emailError())
+      .toHaveTextContent(
+        'Could not check whether this email can be retried. Please try checking again.',
+      );
+
+    statusAvailable = true;
+    await publishScreen.checkRetryAvailability().click();
+
+    await expect.element(publishScreen.retryEmailButton()).toHaveTextContent('Retry sending email');
+    await expect(publishScreen.checkRetryAvailability()).toHaveCount(0);
   });
 
   it('offers a retry when the email fails after a successful publish', async () => {
@@ -1262,6 +1390,65 @@ describe('Publish flow', () => {
 
     await expect.poll(() => retryApi.requests.length).toBe(1);
     await expect.element(publishScreen.retryEmailButton()).not.toBeInTheDocument();
+    // Core's reason, not the transport's "Something went wrong while loading emails".
+    await expect
+      .element(publishScreen.retryError())
+      .toHaveTextContent('Delivery outcome is unknown');
+  });
+
+  it('links the upgrade phrase when a host limit refuses the retry', async () => {
+    fakeEmailPolling({ status: 'failed', error: 'Sending failed' });
+    fakeAdminEndpoint(
+      'PUT',
+      `/emails/${EMAIL_ID}/retry/`,
+      {
+        errors: [
+          {
+            type: 'HostLimitError',
+            message: 'Your plan is over its email limit, please upgrade to keep sending.',
+          },
+        ],
+      },
+      { status: 403 },
+    );
+    await renderPublishFlow();
+
+    await publishScreen.continueButton().click();
+    await publishScreen.confirmButton().click();
+    await publishScreen.retryEmailButton().click();
+
+    await expect
+      .element(publishScreen.retryError())
+      .toHaveTextContent('Your plan is over its email limit');
+    await expect
+      .element(publishScreen.retryError().getByRole('link', { name: 'please upgrade' }))
+      .toBeInTheDocument();
+  });
+
+  it('holds an unconfirmed send for the writer before handing it to a caller that navigates', async () => {
+    fakeAdminEndpoint(
+      'GET',
+      new RegExp(`^/posts/${POST_ID}/\\?`),
+      { errors: [{ message: 'Authorization failed' }] },
+      { status: 401 },
+    );
+    const { onCompleted } = await renderPublishFlow({ showCompletion: false });
+
+    await publishScreen.continueButton().click();
+    await publishScreen.confirmButton().click();
+
+    await expect
+      .element(publishScreen.completeNote())
+      .toHaveTextContent('couldn’t confirm the newsletter was sent');
+    expect(onCompleted).not.toHaveBeenCalled();
+
+    await publishScreen.completeContinue().click();
+
+    expect(onCompleted).toHaveBeenCalledWith({
+      postId: POST_ID,
+      isScheduled: false,
+      hasEmail: true,
+    });
   });
 
   it('keeps the email retry pending during navigation without showing completion', async () => {
@@ -1366,7 +1553,7 @@ describe('Publish flow', () => {
     await expect(page.getByText('Specific people')).toHaveCount(0);
   });
 
-  it('hides retry when the failed email has no id', async () => {
+  it('offers to check again when the failed email has no id', async () => {
     await renderPublishFlow({
       post: draft({
         status: 'published',
@@ -1374,7 +1561,13 @@ describe('Publish flow', () => {
       }),
     });
 
+    await expect.element(publishScreen.checkRetryAvailability()).toBeVisible();
     await expect.element(publishScreen.retryEmailButton()).not.toBeInTheDocument();
+
+    // The reload finds the email's id, which the eligibility read needs.
+    await publishScreen.checkRetryAvailability().click();
+
+    await expect.element(publishScreen.retryEmailButton()).toBeVisible();
   });
 
   it('describes an at-open failed email-only post as created, not published', async () => {
@@ -1586,6 +1779,33 @@ describe('Update flow', () => {
       .poll(() => publishScreen.revertToDraft().element().hasAttribute('disabled'))
       .toBe(false);
     expect(onClose).not.toHaveBeenCalled();
+  });
+
+  it('links the upgrade phrase when a host limit refuses the revert', async () => {
+    const dispatch = completesWith(
+      failed('host-limit', 'Your plan is full, please upgrade to make changes.'),
+    );
+
+    await render(
+      <InAppProviders>
+        <UpdateFlowModal
+          dispatch={dispatch}
+          post={draft({ status: 'published', publishedAt: '2026-09-01T09:00:00.000Z' })}
+          site={SITE}
+          timezone="Etc/UTC"
+          user={USER}
+          onClose={() => {}}
+        />
+      </InAppProviders>,
+    );
+
+    await publishScreen.revertToDraft().click();
+
+    await expect
+      .element(
+        publishScreen.updateFlow().getByRole('alert').getByRole('link', { name: 'please upgrade' }),
+      )
+      .toBeInTheDocument();
   });
 
   it('abandons a pending revert when the update flow closes', async () => {

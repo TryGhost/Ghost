@@ -2,19 +2,30 @@ import { act, renderHook, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { createElement, type ReactNode } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { SCHEDULE_PASSED, usePublishFlow, type PublishFlowOptions } from './use-publish-flow';
-import type { EmailConfirmationOutcome } from './email-confirmation';
-import type { NewsletterInput } from './publish-options';
+import { JSONError, type ErrorResponse } from '@tryghost/admin-x-framework/errors';
+import {
+  EMAIL_UNCONFIRMED,
+  SCHEDULE_PASSED,
+  usePublishFlow,
+  type PublishFlowOptions,
+} from './use-publish-flow';
+import { EmailRetryRequestError, type EmailConfirmationOutcome } from './email-confirmation';
+import { LimitCheckError, type NewsletterInput } from './publish-options';
+import { reportPublishFailure } from './report-publish-failure';
 
 const transport = vi.hoisted(() => ({ fetchApi: vi.fn(), retryEmail: vi.fn() }));
-const eligibility = vi.hoisted(() => ({ isError: false }));
+const eligibility = vi.hoisted(() => ({ isError: false, hasData: true }));
 vi.mock('@tryghost/admin-x-framework/hooks', () => ({ useFetchApi: () => transport.fetchApi }));
 vi.mock('@tryghost/admin-x-framework/api/emails', () => ({
   useEmailSendingStatus: () => ({
     isFetchedAfterMount: true,
     isError: eligibility.isError,
+    isFetching: false,
+    error: eligibility.isError ? new Error('Status read failed') : null,
     refetch: vi.fn(),
-    data: { email_statuses: [{ sending: { status: 'failed', retryable: true } }] },
+    data: eligibility.hasData
+      ? { email_statuses: [{ sending: { status: 'failed', retryable: true } }] }
+      : undefined,
   }),
   useRetryEmail: () => ({ mutateAsync: transport.retryEmail }),
 }));
@@ -22,6 +33,7 @@ vi.mock('@tryghost/admin-x-framework/api/emails', () => ({
 // A confirmation each spec settles itself; tearing the flow down settles it as cancelled.
 const confirmation = vi.hoisted(() => ({
   settle: undefined as ((outcome: EmailConfirmationOutcome) => void) | undefined,
+  fail: undefined as ((error: unknown) => void) | undefined,
 }));
 vi.mock('./email-confirmation', async (importOriginal) => ({
   ...(await importOriginal<typeof import('./email-confirmation')>()),
@@ -31,12 +43,15 @@ vi.mock('./email-confirmation', async (importOriginal) => ({
         confirmation.settle = resolve;
       }),
     retryAndConfirm: () =>
-      new Promise<EmailConfirmationOutcome>((resolve) => {
+      new Promise<EmailConfirmationOutcome>((resolve, reject) => {
         confirmation.settle = resolve;
+        confirmation.fail = reject;
       }),
     cancel: () => confirmation.settle?.({ kind: 'cancelled' }),
   }),
 }));
+
+vi.mock('./report-publish-failure', () => ({ reportPublishFailure: vi.fn() }));
 
 const NOW = new Date('2026-09-02T10:00:00.000Z');
 const SCHEDULED_AT = '2026-09-03T10:00:00.000Z';
@@ -76,6 +91,8 @@ function wrapper({ children }: { children: ReactNode }) {
 
 afterEach(() => {
   eligibility.isError = false;
+  eligibility.hasData = true;
+  confirmation.fail = undefined;
   localStorage.clear();
   vi.clearAllMocks();
   confirmation.settle = undefined;
@@ -423,5 +440,175 @@ describe('failed newsletter retry', () => {
     expect(result.current.step).toBe('email-error');
     expect(result.current.emailErrorMessage).toBe('Unknown error');
     expect(result.current.retryStatus).toBe('idle');
+  });
+});
+
+const FAILED_EMAIL = {
+  id: 'email-1',
+  status: 'failed' as const,
+  error: 'The email service was unavailable.',
+  email_count: 20,
+  opened_count: 0,
+};
+
+/** A flow opened on a published post whose send failed, retrying it. */
+async function startRetry(overrides: Partial<PublishFlowOptions> = {}) {
+  const inputs = { ...options(), onCompleted: vi.fn(), ...overrides };
+  inputs.post = { ...inputs.post, status: 'published', email: FAILED_EMAIL };
+  const { result } = renderHook(() => usePublishFlow(inputs), { wrapper });
+  await waitFor(() => expect(result.current.limitsChecked).toBe(true));
+
+  let retrying: Promise<void> = Promise.resolve();
+  act(() => {
+    retrying = result.current.retryEmail();
+  });
+  await waitFor(() => expect(confirmation.fail).toBeDefined());
+
+  return { inputs, result, retrying };
+}
+
+describe('a retry Core refuses or cannot answer', () => {
+  it('shows the reason Core gave, not the transport’s summary', async () => {
+    const { result, retrying } = await startRetry();
+    const refusal = new JSONError(
+      new Response(null, { status: 400 }),
+      {
+        errors: [{ message: 'Cannot retry email because the delivery outcome is unknown' }],
+      } as ErrorResponse,
+      'Something went wrong while loading emails, please try again.',
+    );
+
+    await act(async () => {
+      confirmation.fail?.(new EmailRetryRequestError(refusal));
+      await retrying;
+    });
+
+    expect(result.current.retryStatus).toBe('failure');
+    expect(result.current.retryFailure).toEqual({
+      message: 'Cannot retry email because the delivery outcome is unknown',
+    });
+    expect(reportPublishFailure).toHaveBeenCalledWith(
+      'retry-request',
+      'Cannot retry email because the delivery outcome is unknown',
+      { error: refusal, postId: 'post-1' },
+    );
+  });
+
+  it('does not call an accepted retry failed when reading it back fails', async () => {
+    const { inputs, result, retrying } = await startRetry();
+
+    await act(async () => {
+      confirmation.fail?.(new Error('Network request failed'));
+      await retrying;
+    });
+
+    expect(result.current.retryFailure).toBeNull();
+    expect(result.current.emailNote).toBe(EMAIL_UNCONFIRMED);
+    expect(result.current.step).toBe('complete');
+    expect(inputs.onCompleted).toHaveBeenCalledWith({
+      postId: 'post-1',
+      isScheduled: false,
+      hasEmail: true,
+    });
+  });
+});
+
+describe('an email the flow could not confirm', () => {
+  it('waits for the writer to read the note when the caller hides completion', async () => {
+    const { inputs, result, retrying } = await startRetry({ showCompletion: false });
+
+    await act(async () => {
+      confirmation.settle?.({ kind: 'timeout' });
+      await retrying;
+    });
+
+    expect(result.current.step).toBe('complete');
+    expect(result.current.emailNote).toBe(EMAIL_UNCONFIRMED);
+    expect(result.current.awaitingAcknowledgement).toBe(true);
+    expect(inputs.onCompleted).not.toHaveBeenCalled();
+    expect(reportPublishFailure).toHaveBeenCalledWith('email-unconfirmed', EMAIL_UNCONFIRMED, {
+      postId: 'post-1',
+    });
+
+    act(() => result.current.acknowledgeCompletion());
+
+    expect(result.current.awaitingAcknowledgement).toBe(false);
+    expect(inputs.onCompleted).toHaveBeenCalledTimes(1);
+    expect(localStorage.getItem('ghost-last-published-post')).not.toBeNull();
+  });
+
+  it('hands a confirmed send straight to the caller that hides completion', async () => {
+    const { inputs, result, retrying } = await startRetry({ showCompletion: false });
+
+    await act(async () => {
+      confirmation.settle?.({ kind: 'submitted' });
+      await retrying;
+    });
+
+    expect(result.current.awaitingAcknowledgement).toBe(false);
+    expect(inputs.onCompleted).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('retry eligibility that cannot be read', () => {
+  it('says so instead of hiding the retry', () => {
+    eligibility.isError = true;
+    eligibility.hasData = false;
+    const inputs = options();
+    inputs.post = { ...inputs.post, status: 'published', email: FAILED_EMAIL };
+    const { result } = renderHook(() => usePublishFlow(inputs), { wrapper });
+
+    expect(result.current.canRetryEmail).toBe(false);
+    expect(result.current.retryEligibilityFailed).toBe(true);
+    expect(reportPublishFailure).toHaveBeenCalledWith(
+      'retry-eligibility',
+      expect.stringContaining('Could not check'),
+      expect.objectContaining({ postId: 'post-1' }),
+    );
+  });
+
+  it('reloads the post for an email id it does not have', async () => {
+    transport.fetchApi.mockResolvedValue({
+      posts: [{ id: 'post-1', status: 'published', email: { ...FAILED_EMAIL, id: 'email-9' } }],
+    });
+    const inputs = options();
+    inputs.post = {
+      ...inputs.post,
+      status: 'published',
+      email: { ...FAILED_EMAIL, id: undefined },
+    };
+    const { result } = renderHook(() => usePublishFlow(inputs), { wrapper });
+    expect(result.current.retryEligibilityFailed).toBe(true);
+
+    act(() => result.current.checkRetryEligibility());
+
+    await waitFor(() => expect(result.current.retryEligibilityFailed).toBe(false));
+    expect(transport.fetchApi).toHaveBeenCalledWith(
+      expect.stringContaining('/posts/post-1/'),
+      expect.anything(),
+    );
+  });
+});
+
+describe('a limit that could not be checked', () => {
+  it.each([
+    ['emails', 'Couldn’t check email limits. Network request failed'],
+    ['members', 'Couldn’t check publishing limits. Network request failed'],
+  ] as const)('names the %s check and offers it again', async (limit, shown) => {
+    const inputs = options();
+    const failure = new LimitCheckError(limit, new Error('Network request failed'));
+    inputs.limits =
+      limit === 'emails'
+        ? { checkSendingLimit: () => Promise.reject(failure) }
+        : { checkPublishingLimit: () => Promise.reject(failure) };
+    const { result } = renderHook(() => usePublishFlow(inputs), { wrapper });
+
+    await waitFor(() => expect(result.current.limitsFailure).toBe(shown));
+    expect(result.current.limitsChecked).toBe(false);
+    expect(result.current.state.emailBlock).toBeNull();
+    expect(reportPublishFailure).toHaveBeenCalledWith('limit-check', shown, {
+      error: failure,
+      postId: 'post-1',
+    });
   });
 });

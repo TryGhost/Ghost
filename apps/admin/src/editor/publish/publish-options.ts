@@ -82,12 +82,35 @@ export interface EmailVerificationHold {
   message?: string | null;
 }
 
+/**
+ * A limit port's rejection when the limit could not be checked at all, as
+ * opposed to a limit that was reached. It propagates out of `checkLimits()`
+ * like a failed settings refresh, rather than becoming a block.
+ */
+export class LimitCheckError extends Error {
+  readonly limit: 'emails' | 'members';
+
+  constructor(limit: 'emails' | 'members', cause: unknown) {
+    super(cause instanceof Error && cause.message ? cause.message : `Couldn’t count ${limit}.`, {
+      cause,
+    });
+    this.name = 'LimitCheckError';
+    this.limit = limit;
+  }
+}
+
 export interface PublishLimitPorts {
   /** Awaited before the sending checks so a fresh hold is seen. A rejection propagates. */
   refreshSettings?: () => Promise<void>;
-  /** Resolves when sending is allowed; rejects with the host's message when the email limit would be exceeded. */
+  /**
+   * Resolves when sending is allowed; rejects with the host's message when the email limit would
+   * be exceeded, or with a `LimitCheckError` when the limit could not be checked.
+   */
   checkSendingLimit?: () => Promise<void>;
-  /** Resolves when publishing is allowed; rejects with the host's message when over the member limit. */
+  /**
+   * Resolves when publishing is allowed; rejects with the host's message when over the member
+   * limit, or with a `LimitCheckError` when the limit could not be checked.
+   */
   checkPublishingLimit?: () => Promise<void>;
   /** Read after `refreshSettings`. */
   getEmailVerification?: () => EmailVerificationHold;
@@ -150,6 +173,8 @@ export interface PublishOptionsState {
   readonly emailDisabledReason: EmailDisabledReason | null;
   readonly emailBlock: EmailBlock | null;
   readonly publishBlock: PublishBlock | null;
+  /** An email type is selected and email is on offer, but no recipients are chosen. */
+  readonly missingRecipients: boolean;
   /** Draft-only, and false when email-only has no executable email. */
   readonly canPublish: boolean;
   readonly isDirty: boolean;
@@ -426,6 +451,16 @@ export function createPublishOptions({
     );
   };
 
+  // A failed-email retry sends to the segment persisted with that email, whatever is picked.
+  const missingRecipients = (): boolean =>
+    isDraft &&
+    !post.email &&
+    publishType !== 'publish' &&
+    !emailUnavailable &&
+    !emailDisabled() &&
+    newsletter !== null &&
+    !recipientFilter();
+
   const publishTypeOptions = (): PublishTypeOption[] => {
     const disabled = emailDisabled();
 
@@ -471,6 +506,7 @@ export function createPublishOptions({
       emailDisabledReason: emailDisabledReason(),
       emailBlock,
       publishBlock,
+      missingRecipients: missingRecipients(),
       canPublish: isDraft && (publishType !== 'send' || emails),
       isDirty: isDirty(),
     };
@@ -508,6 +544,9 @@ export function createPublishOptions({
         };
       }
     } catch (error) {
+      if (error instanceof LimitCheckError) {
+        throw error;
+      }
       emailBlock = { kind: 'sending-limit', message: errorMessage(error) };
     }
   };
@@ -520,6 +559,9 @@ export function createPublishOptions({
     try {
       await limits.checkPublishingLimit?.();
     } catch (error) {
+      if (error instanceof LimitCheckError) {
+        throw error;
+      }
       const message = errorMessage(error);
       publishBlock = { kind: 'host-limit', message, parts: splitUpgradeMessage(message) };
     }
@@ -572,7 +614,10 @@ export function createPublishOptions({
       emailBlock = null;
       publishBlock = null;
 
-      const [sendingResult] = await Promise.allSettled([runSendingCheck(), runPublishingCheck()]);
+      const [sendingResult, publishingResult] = await Promise.allSettled([
+        runSendingCheck(),
+        runPublishingCheck(),
+      ]);
 
       // A block that lands after the user picked an email type still demotes that pick.
       if (!publishTypeTouched || emailDisabled()) {
@@ -583,10 +628,14 @@ export function createPublishOptions({
         initial = { ...initial, publishType };
       }
 
-      // A settings refresh failure remains observable to callers, but only after
-      // the publishing check has settled so no late block can race the UI ready.
+      // A settings refresh or a limit that could not be checked remains observable
+      // to callers, but only once both checks have settled so no late block can
+      // race the UI ready.
       if (sendingResult.status === 'rejected') {
         throw sendingResult.reason;
+      }
+      if (publishingResult.status === 'rejected') {
+        throw publishingResult.reason;
       }
 
       return { emailBlock, publishBlock };

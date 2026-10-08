@@ -1,4 +1,7 @@
 import { Banner, Button } from '@tryghost/shade/components';
+import { FailureBanner } from './failure-banner';
+import { RETRY_ELIGIBILITY_FAILED } from '@/editor/publish/use-publish-flow';
+import type { CompletionFailure } from '@/editor/publish/completion-message';
 import { Inline, Stack, Text } from '@tryghost/shade/primitives';
 import { isPartialEmailFailure } from '@/editor/publish/email-confirmation';
 import {
@@ -16,7 +19,11 @@ export interface CompleteWithEmailErrorStepProps {
   willOnlyEmail: boolean;
   mailgunConfigured: boolean;
   status: ConfirmStatus;
-  retryFailure: string | null;
+  retryFailure: CompletionFailure | null;
+  /** Whether the email can be retried could not be read. */
+  eligibilityFailed: boolean;
+  checkingEligibility: boolean;
+  onCheckEligibility: () => void;
   onRetry: () => void;
 }
 
@@ -28,6 +35,9 @@ export function CompleteWithEmailErrorStep({
   mailgunConfigured,
   status,
   retryFailure,
+  eligibilityFailed,
+  checkingEligibility,
+  onCheckEligibility,
   onRetry,
 }: CompleteWithEmailErrorStepProps) {
   const partial = isPartialEmailFailure(emailErrorMessage);
@@ -52,10 +62,22 @@ export function CompleteWithEmailErrorStep({
         )}
       </Text>
 
-      {retryFailure ? (
-        <Banner data-testid={publishRetryError} role="alert" variant="destructive">
-          {retryFailure}
-        </Banner>
+      {retryFailure ? <FailureBanner failure={retryFailure} testId={publishRetryError} /> : null}
+
+      {eligibilityFailed ? (
+        <Stack align="start" gap="md">
+          <Banner className="w-full" role="alert" variant="destructive">
+            {RETRY_ELIGIBILITY_FAILED}
+          </Banner>
+          <Button
+            disabled={checkingEligibility}
+            size="lg"
+            variant="destructive"
+            onClick={onCheckEligibility}
+          >
+            {checkingEligibility ? 'Checking' : 'Check retry availability'}
+          </Button>
+        </Stack>
       ) : null}
 
       {canRetry && (

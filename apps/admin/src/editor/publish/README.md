@@ -85,7 +85,7 @@ The last two are set by `checkLimits()`.
 
 Following visibility maps a public or members-only post to everyone (`status:free,status:-free`), a paid post to `status:-free`, and a tiers-restricted post to its tier segments (`tier:<slug>` joined by commas, or no filter when it has no tiers). Any other visibility value is used verbatim as the filter.
 
-`setRecipientFilter(null)` is a real choice — "no recipients" — and is distinct from never having chosen.
+`setRecipientFilter(null)` is a real choice — "no recipients" — and is distinct from never having chosen. `missingRecipients` reports it while an email type is selected and email is on offer: Email only then cannot continue, and Publish and email publishes without an email. The options step says which under the recipients row, and the confirm step says the post won't be sent as a newsletter.
 
 Core represents the special segments as `all` and `none`. Inputs and explicit selections normalize those API sentinels to the editor's expanded everyone filter and `null`.
 
@@ -134,9 +134,11 @@ The sending check awaits `refreshSettings()` before anything else, so a hold app
 
 The publishing check runs for admins only, since nobody else can read the member count. A rejection becomes a `host-limit` block with the host's message split into `parts`, where the segment marked `upgrade` is the phrase to render as an upgrade link. The message is returned as data, never as markup.
 
+A port that could not check its limit at all — the count read failed — rejects with a `LimitCheckError` naming the limit instead. That is not a block: it rejects `checkLimits()` once both checks have settled, as a failed settings refresh does, so the flow says it couldn't check and offers Try again rather than presenting a failed count as a reached limit.
+
 Both blocks feed the state directly. An email block disables the email publish types and re-applies the initial-type rules, so the selection falls back to `publish`; that demotion also applies to a type the user picked before the block landed, since a block that arrives late must not leave an unsendable type selected.
 
-The editor supplies the ports through `usePublishLimits()`, which backs them with the framework's limiter and the editor's settings and config reads. The limiter loads only the two limits the flow checks (`members` and `emails` under the host's `hostSettings.limits`), so opening the editor never reads the staff lists the other limits count. `refreshSettings` refetches the site settings and rejects when that read fails; `checkSendingLimit` asks the limiter whether one more send would exceed the monthly `emails` limit, counting the recipients of every email created since the period started; `checkPublishingLimit` asks whether the site is already over its `members` limit; and `getEmailVerification` reads `email_verification_required` from the refreshed settings, with the host's `hostSettings.emailVerification.emailSendingDisabledMessage` as its copy. A site without a limit configured, or one whose limiter has not loaded, passes every check. The ports read the latest hook values each time they run, so the machine can capture them once at creation.
+The editor supplies the ports through `usePublishLimits()`, which backs them with the framework's limiter and the editor's settings and config reads. Only a `HostLimitError` from the limiter is a reached limit; any other rejection becomes a `LimitCheckError`. The limiter counts a failed member read as zero members, which passes, so the members port also reads the member-count query's state after the check and fails closed when that read failed during it. The limiter loads only the two limits the flow checks (`members` and `emails` under the host's `hostSettings.limits`), so opening the editor never reads the staff lists the other limits count. `refreshSettings` refetches the site settings and rejects when that read fails; `checkSendingLimit` asks the limiter whether one more send would exceed the monthly `emails` limit, counting the recipients of every email created since the period started; `checkPublishingLimit` asks whether the site is already over its `members` limit; and `getEmailVerification` reads `email_verification_required` from the refreshed settings, with the host's `hostSettings.emailVerification.emailSendingDisabledMessage` as its copy. A site without a limit configured, or one whose limiter has not loaded, passes every check. The ports read the latest hook values each time they run, so the machine can capture them once at creation.
 
 ## Dirty state and reset
 
@@ -177,14 +179,20 @@ Two interstitials can stand in front of the flow. A post with unresolved TK mark
 
 Confirming runs `onBeforePublish` (the editor's pre-save cleanup), dispatches the command from `toDispatch()`, and branches on the [completion](../engine/README.md#queue-semantics) the engine returns:
 
-| Completion              | Result                                                             |
-| ----------------------- | ------------------------------------------------------------------ |
-| `saved`                 | Confirms the email of an immediate send, unless `improveSendingUI` |
-| `needs-retry`           | Back to confirm, told the session is back; the user confirms again |
-| `failed` (`conflict`)   | The collision message, in place                                    |
-| `failed` (`host-limit`) | The host's message, with the upgrade phrase rendered as a link     |
-| `failed` (`validation`) | The validation message, in place                                   |
-| `dropped`/`superseded`  | The post is no longer publishable from here                        |
+| Completion              | Result                                                                  |
+| ----------------------- | ----------------------------------------------------------------------- |
+| `saved`                 | Confirms the email of an immediate send, unless `improveSendingUI`      |
+| `needs-retry`           | Back to confirm with a note, not an error; the user confirms again      |
+| `failed` (`conflict`)   | The collision message, in place                                         |
+| `failed` (`host-limit`) | The host's message, with the upgrade phrase rendered as a link          |
+| `failed` (`validation`) | The validation message, in place                                        |
+| `failed` (`not-found`)  | The post was deleted, so it can't be published                          |
+| `dropped` (`halted`)    | The post may have been deleted or be out of reach; reloading won't help |
+| `dropped`/`superseded`  | The post is no longer publishable from here; reload the editor          |
+
+A pre-publish save or dispatch that rejects is read for the reason Core gave (`describeRejectedAction()`), never the transport's summary of the request; a rejection carrying a `CompletionFailureError` keeps its structured copy, host-limit link included. The update flow renders its failures the same way.
+
+While the publish request itself is in flight, Close and Escape do nothing: closing then would abandon the outcome unseen, a publish that lands never navigating and one that fails never saying so. The request settles on its own, and closing works again once it has.
 
 A schedule is checked against the clock twice, since the chosen time can pass while the flow sits open or while `onBeforePublish` waits on a sign-in: at the click, before anything is saved, and again before the command is dispatched. A scheduled time that has fallen below `minScheduledAt` is refused in place and the user goes back to choose another. The second refusal can leave the draft saved by `onBeforePublish`, but never publishes or schedules it. Scheduling stays on: switching it off would turn the confirmed schedule into an immediate publish.
 
@@ -196,13 +204,21 @@ A publish that emails immediately is not done when the save acknowledges: the em
 
 A `failed` outcome moves to the email-error step with the message the API stored. A `cancelled` one completes nothing: cancellation only happens when the flow is being torn down, so treating it as success would write the celebration handoff and tell the caller to navigate after the user had already closed the modal. Every other outcome completes the flow — a timeout, an unpublish, or no email at all are all "nothing left to wait for" — with `not-needed` reporting no email, so the caller does not route to analytics for a send that never happened.
 
-A reload that throws — a transport failure, or the 401 the redirect opt-out below turns into a rejection — completes the flow with a note instead. The post is published by that point and only the email's fate is unknown, so the alternatives are both wrong: claiming the email failed would invent a fact, and leaving the button running would strand the user on a disabled control for a publish that already succeeded.
+A reload that throws — a transport failure, or the 401 the redirect opt-out below turns into a rejection — completes the flow with a note instead. A caller with `showCompletion={false}` navigates on `onCompleted`, which would present an unconfirmed send as a confirmed one, so for it the flow shows the complete step with the note and calls `onCompleted` only once the writer chooses Continue. The post is published by that point and only the email's fate is unknown, so the alternatives are both wrong: claiming the email failed would invent a fact, and leaving the button running would strand the user on a disabled control for a publish that already succeeded.
 
 The email's id is only knowable from a reload, so the poller's reload records it for the retry. For the same reason the flow polls rather than short-circuiting on a known email: the acknowledged save result carries no email, and the pre-save one would resolve the confirmation to "not needed" immediately. Closing the flow cancels the poll and marks every pending pre-save, save, confirmation and retry continuation as abandoned, so none can complete the post journey after the caller closes it.
 
 The poller reads the post around the query cache, so the cached post reads never see what it found. Once a confirmation settles with any outcome but `cancelled`, after a publish or a retry, the flow invalidates the post reads so whatever is drawn from them catches up with the send. A reload that throws leaves them alone, since a refetch would most likely fail the same way.
 
 With the `improveSendingUI` flag on, a publish that emails immediately is complete as soon as its save is acknowledged. The flow does not poll, so that publish never moves to the email-error step and the flow invalidates no post reads after it; the caller is told the post has an email, so it can route to post analytics, which reports the send's progress and any failure. Retrying a failed send from the email-error step still waits on the confirmation with the flag on.
+
+## Retrying a failed email
+
+The email-error step offers the retry only when Core says the failed send is retryable, labelled "Send remaining emails" when the stored error says it was partially sent and "Retry sending email" otherwise. When that eligibility cannot be read, or the flow does not know the email's id, the step says it could not check and offers "Check retry availability", which reads it again (reloading the post first when the id is unknown). A retry Core refuses shows Core's reason, with a host limit's upgrade phrase linked. Once Core has accepted a retry, a failure to read back how it went is not a failed retry: the flow completes with the same unconfirmed note as a publish.
+
+## Reporting
+
+`reportPublishFailure()` reports to Sentry the unexpected failures the flow shows: a limit that could not be checked, a publish-input or retry-eligibility read that failed, a retry request that failed, an email that failed or could not be confirmed, and a publish with no command to dispatch. A refusal Core sent (any 4xx, validation and host limits included) or a lost connection is the writer's to act on and is not reported, as `reportSaveFailure()` treats saves.
 
 ## Requests
 

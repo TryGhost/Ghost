@@ -1,4 +1,4 @@
-import { Banner, Button } from '@tryghost/shade/components';
+import { Button } from '@tryghost/shade/components';
 import { Box, Inline, Stack, Text } from '@tryghost/shade/primitives';
 import { formatNumber } from '@tryghost/shade/utils';
 import { PageHeader } from '@tryghost/shade/patterns';
@@ -18,6 +18,7 @@ import {
   updateFlowTitle,
 } from '@tryghost/test-data/selectors/editor';
 import { FullscreenDialog } from '@/editor/fullscreen-dialog';
+import { FailureBanner } from './components/failure-banner';
 import { createPublishOptions } from './publish-options';
 import {
   describeCompletionFailure,
@@ -239,11 +240,7 @@ function KeyedUpdateFlowModal({
             </Text>
           ) : null}
 
-          {failure ? (
-            <Banner role="alert" variant="destructive">
-              {failure.message}
-            </Banner>
-          ) : null}
+          {failure ? <FailureBanner failure={failure} /> : null}
 
           {canRevert ? (
             <Inline justify="start">

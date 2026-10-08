@@ -36,7 +36,23 @@ export interface CompleteStepProps {
   completedAt: string | null;
   /** Shown when the publish landed but something after it could not be confirmed. */
   note?: string | null;
+  /**
+   * Set when the caller is waiting for the writer to read the note before it
+   * moves on; the step offers Continue in place of its other way out.
+   */
+  onAcknowledge?: () => void;
   onRevertToDraft?: () => void;
+}
+
+function Acknowledge({ onAcknowledge }: { onAcknowledge: () => void }) {
+  return (
+    <Inline>
+      <Button className="px-5" size="lg" onClick={onAcknowledge}>
+        Continue
+        <LucideIcon.ArrowRight />
+      </Button>
+    </Inline>
+  );
 }
 
 function RevertToDraft({ onRevertToDraft }: { onRevertToDraft?: () => void }) {
@@ -71,6 +87,7 @@ export function CompleteStep({
   postCount,
   completedAt,
   note,
+  onAcknowledge,
   onRevertToDraft,
 }: CompleteStepProps) {
   const { count } = useMembersCount(state.fullRecipientFilter, {
@@ -144,12 +161,15 @@ export function CompleteStep({
             </Text>
           )}
           {captured.isScheduled ? <RevertToDraft onRevertToDraft={onRevertToDraft} /> : null}
+          {onAcknowledge ? <Acknowledge onAcknowledge={onAcknowledge} /> : null}
         </Stack>
       ) : (
         <Stack gap="xl">
           <PostBookmark post={post} siteTitle={siteTitle} />
           {captured.isScheduled ? (
             <RevertToDraft onRevertToDraft={onRevertToDraft} />
+          ) : onAcknowledge ? (
+            <Acknowledge onAcknowledge={onAcknowledge} />
           ) : (
             <Inline>
               <Button className="px-5" size="lg" variant="outline" asChild>

@@ -42,6 +42,18 @@ interface RunState {
   settleCancelled: () => void;
 }
 
+/**
+ * The retry request itself failed, so nothing was retried. Any other rejection
+ * from `retryAndConfirm()` comes after Core accepted the retry, while reading
+ * back how it went.
+ */
+export class EmailRetryRequestError extends Error {
+  constructor(cause: unknown) {
+    super(cause instanceof Error ? cause.message : 'The email retry request failed.', { cause });
+    this.name = 'EmailRetryRequestError';
+  }
+}
+
 // A partially delivered send is only distinguishable by the word "partially"
 // appearing in the error message the API stores on the email.
 export function isPartialEmailFailure(error?: string | null): boolean {
@@ -212,7 +224,11 @@ export function createEmailConfirmation(options: EmailConfirmationOptions): Emai
 
     retryAndConfirm(postId, emailId) {
       return run('retry', postId, async (state) => {
-        await retry(emailId);
+        try {
+          await retry(emailId);
+        } catch (error) {
+          throw new EmailRetryRequestError(error);
+        }
 
         if (state.cancelled) {
           return { kind: 'cancelled' };

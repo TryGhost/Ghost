@@ -7,6 +7,7 @@ import { z } from 'zod';
 import { newslettersSearchParams } from '@/editor/browse-params';
 import { EDITOR_REQUEST_OPTIONS } from '@/editor/request-options';
 import { useEditorSettings, useSiteTimezone } from '@/editor/use-editor-settings';
+import { reportPublishFailure } from './report-publish-failure';
 import type { PublishSiteInput, PublishUserInput } from './publish-options';
 
 // Core's `all_blocked_email_domains` is array-valued, so a scalar-only union rejects a real response.
@@ -136,6 +137,17 @@ export interface PublishInputs {
   retry: () => void;
 }
 
+// Several editor surfaces read the inputs; a failed read is reported once, not once per reader.
+const reportedInputErrors = new WeakSet<object>();
+
+function reportInputError(error: unknown): void {
+  if (typeof error !== 'object' || error === null || reportedInputErrors.has(error)) {
+    return;
+  }
+  reportedInputErrors.add(error);
+  reportPublishFailure('publish-inputs', 'The publish settings could not be loaded.', { error });
+}
+
 function publishInputError(error: unknown): Error | null {
   if (!error) {
     return null;
@@ -247,6 +259,17 @@ export function usePublishInputs(): PublishInputs {
     newslettersQuery.error,
     settingsQuery.error,
   ]);
+  const queryError =
+    settingsQuery.error ??
+    configQuery.error ??
+    newslettersQuery.error ??
+    currentUserQuery.error ??
+    memberCountError;
+
+  useEffect(() => {
+    reportInputError(queryError);
+  }, [queryError]);
+
   const retry = useCallback(() => {
     void Promise.all([
       settingsQuery.refetch(),

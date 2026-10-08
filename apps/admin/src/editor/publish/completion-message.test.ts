@@ -1,13 +1,24 @@
 import { describe, expect, it } from 'vitest';
-import { APIError } from '@tryghost/admin-x-framework/errors';
+import {
+  APIError,
+  HostLimitError,
+  JSONError,
+  ServerUnreachableError,
+  ValidationError,
+  type ErrorResponse,
+} from '@tryghost/admin-x-framework/errors';
 import {
   CONFLICT_MESSAGE,
+  CompletionFailureError,
+  DELETED_MESSAGE,
   DROPPED_MESSAGE,
+  HALTED_MESSAGE,
   REAUTH_MESSAGE,
   SESSION_ABANDONED_MESSAGE,
   UNEXPECTED_MESSAGE,
   UNREACHABLE_MESSAGE,
   describeCompletionFailure,
+  describeRejectedAction,
   describeSaveError,
 } from '@/editor/publish/completion-message';
 import type { SaveCompletion, SaveError, SaveErrorKind } from '@/editor/engine/save-engine';
@@ -28,7 +39,10 @@ describe('describeCompletionFailure', () => {
   });
 
   it('sends a re-auth interruption back to confirm with an explanation', () => {
-    expect(describeCompletionFailure({ kind: 'needs-retry' })).toEqual({ message: REAUTH_MESSAGE });
+    expect(describeCompletionFailure({ kind: 'needs-retry' })).toEqual({
+      message: REAUTH_MESSAGE,
+      tone: 'info',
+    });
     expect(describeCompletionFailure(failed('session-invalid'))).toEqual({
       message: SESSION_ABANDONED_MESSAGE,
     });
@@ -57,6 +71,13 @@ describe('describeCompletionFailure', () => {
       { text: 'please upgrade', kind: 'upgrade' },
       { text: ' to continue.', kind: 'text' },
     ]);
+  });
+
+  it('does not tell the writer to reload a post that was deleted or is out of reach', () => {
+    expect(describeCompletionFailure(failed('not-found'))).toEqual({ message: DELETED_MESSAGE });
+    expect(describeCompletionFailure({ kind: 'dropped', reason: 'halted' })).toEqual({
+      message: HALTED_MESSAGE,
+    });
   });
 
   it('treats a dropped or superseded command as no longer publishable', () => {
@@ -104,5 +125,66 @@ describe('describeSaveError', () => {
     expect(describeSaveError({ ...error, cause: new Error('boom') })).toEqual(
       describeSaveError(error),
     );
+  });
+});
+
+function apiBody(error: Partial<ErrorResponse['errors'][number]>): ErrorResponse {
+  return { errors: [error as ErrorResponse['errors'][number]] };
+}
+
+function response(status: number) {
+  return new Response(null, { status });
+}
+
+describe('describeRejectedAction', () => {
+  it('reads the reason Core gave rather than the transport’s summary', () => {
+    const error = new JSONError(
+      response(400),
+      apiBody({ message: 'Cannot retry email because the delivery outcome is unknown' }),
+      'Something went wrong while loading emails, please try again.',
+    );
+
+    expect(describeRejectedAction(error)).toEqual({
+      message: 'Cannot retry email because the delivery outcome is unknown',
+    });
+  });
+
+  it('prefers the context Core explains a rewritten message with', () => {
+    const error = new ValidationError(
+      response(422),
+      apiBody({ message: 'Validation error', context: 'Only failed emails can be retried' }),
+    );
+
+    expect(describeRejectedAction(error).message).toBe('Only failed emails can be retried');
+  });
+
+  it('keeps a host limit’s upgrade phrase linkable', () => {
+    const error = new HostLimitError(
+      response(403),
+      apiBody({ message: 'Your plan is over its email limit, please upgrade to send more.' }),
+    );
+
+    expect(describeRejectedAction(error).parts).toContainEqual({
+      text: 'please upgrade',
+      kind: 'upgrade',
+    });
+  });
+
+  it('keeps a described failure carried through a rejection', () => {
+    const failure = { message: 'Your plan is full, please upgrade.', parts: [] };
+
+    expect(describeRejectedAction(new CompletionFailureError(failure))).toBe(failure);
+  });
+
+  it('falls back when the response carried no reason, and says when it never arrived', () => {
+    expect(describeRejectedAction(new APIError(response(502)), 'Retry failed')).toEqual({
+      message: 'Retry failed',
+    });
+    expect(describeRejectedAction(new ServerUnreachableError())).toEqual({
+      message: UNREACHABLE_MESSAGE,
+    });
+    expect(describeRejectedAction(new Error('The save engine stopped'))).toEqual({
+      message: 'The save engine stopped',
+    });
   });
 });

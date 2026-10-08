@@ -1,10 +1,10 @@
-import { Banner, Button } from '@tryghost/shade/components';
+import { Button } from '@tryghost/shade/components';
 import { Inline, Stack, Text } from '@tryghost/shade/primitives';
 import { LucideIcon } from '@tryghost/shade/utils';
 import { getRecipientType } from '@tryghost/admin-x-framework/utils/recipient-filter';
 import { useMembersCount } from '@tryghost/admin-x-framework/api/members';
 import { EDITOR_REQUEST_OPTIONS } from '@/editor/request-options';
-import { LimitMessage } from './limit-message';
+import { FailureBanner } from './failure-banner';
 import {
   publishBackToSettings,
   publishConfirm,
@@ -27,20 +27,18 @@ export interface ConfirmStepProps {
   post: PublishFlowPost;
   state: PublishOptionsState;
   /** Captured on entering this step so saving cannot change the copy. */
-  captured: { willPublish: boolean; willEmail: boolean; willOnlyEmail: boolean };
+  captured: {
+    willPublish: boolean;
+    willEmail: boolean;
+    willOnlyEmail: boolean;
+    /** An email type was chosen with nobody to send to, so only the publish happens. */
+    skipsEmail?: boolean;
+  };
   timezone: string;
   status: ConfirmStatus;
   failure: CompletionFailure | null;
   onConfirm: () => void;
   onBack: () => void;
-}
-
-function FailureMessage({ failure }: { failure: CompletionFailure }) {
-  if (!failure.parts) {
-    return <>{failure.message}</>;
-  }
-
-  return <LimitMessage parts={failure.parts} />;
 }
 
 export function ConfirmStep({
@@ -120,13 +118,12 @@ export function ConfirmStep({
             )}
           </>
         ) : null}
+        {captured.willPublish && captured.skipsEmail ? (
+          <> It won’t be sent as a newsletter, because no recipients are selected.</>
+        ) : null}
       </Text>
 
-      {failure ? (
-        <Banner data-testid={publishConfirmError} role="alert" variant="destructive">
-          <FailureMessage failure={failure} />
-        </Banner>
-      ) : null}
+      {failure ? <FailureBanner failure={failure} testId={publishConfirmError} /> : null}
 
       <Inline gap="sm" justify="between" wrap>
         <Button
