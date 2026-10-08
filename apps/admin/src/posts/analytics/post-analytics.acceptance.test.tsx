@@ -56,12 +56,21 @@ function seededPost(overrides: Partial<ReturnType<typeof post>> = {}) {
   });
 }
 
-/** Pipe requests sent without the routed post's uuid: site-wide queries the post views discard. */
-function unscopedPipeRequests(...pipes: TinybirdPipeCapture[]): string[] {
-  return pipes
+/**
+ * Waits for every named pipe to be queried, then asserts none was sent without
+ * the routed post's uuid: a site-wide query the post views would discard.
+ */
+async function expectPipesScopedToPost(pipes: Record<string, TinybirdPipeCapture>) {
+  for (const [name, pipe] of Object.entries(pipes)) {
+    await expect
+      .poll(() => pipe.requests.length, { message: `${name} was never queried` })
+      .toBeGreaterThan(0);
+  }
+  const unscopedRequests = Object.values(pipes)
     .flatMap((pipe) => pipe.requests)
     .filter(({ params }) => params.get('post_uuid') !== POST_UUID)
     .map(({ url }) => url);
+  expect(unscopedRequests).toEqual([]);
 }
 
 /**
@@ -725,8 +734,7 @@ describe('Post analytics overview', () => {
     pendingPost.resolve([seededPost()]);
 
     await expect.element(postAnalyticsScreen.uniqueVisitors()).toHaveTextContent('250');
-    await expect.poll(() => activeVisitorsApi.requests.length).toBeGreaterThan(0);
-    expect(unscopedPipeRequests(activeVisitorsApi, kpisApi, topSourcesApi)).toEqual([]);
+    await expectPipesScopedToPost({ activeVisitorsApi, kpisApi, topSourcesApi });
   });
 
   it('keeps the post context when switching to the web tab', async () => {
@@ -904,10 +912,7 @@ describe('Post analytics web', () => {
     pendingPost.resolve([seededPost()]);
 
     await expect.element(postAnalyticsScreen.sourceRow('google.com')).toHaveTextContent('170');
-    await expect.poll(() => activeVisitorsApi.requests.length).toBeGreaterThan(0);
-    expect(
-      unscopedPipeRequests(activeVisitorsApi, kpisApi, topLocationsApi, topSourcesApi),
-    ).toEqual([]);
+    await expectPipesScopedToPost({ activeVisitorsApi, kpisApi, topLocationsApi, topSourcesApi });
   });
 
   it('filters the post analytics pipes when a location row is clicked', async () => {
