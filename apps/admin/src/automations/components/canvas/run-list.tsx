@@ -1,5 +1,5 @@
 import type { PerformanceDateRange } from '@/automations/utils/performance-date-range';
-import React, { forwardRef, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import React, { forwardRef, useEffect, useState } from 'react';
 import type {
   AutomationRun,
   AutomationRunStatusFilter,
@@ -21,12 +21,11 @@ import { useAutomationRuns } from '@/automations/hooks/use-automation-runs';
 import { useInfiniteVirtualScroll } from '@/shared/virtual-list';
 import { mapAutomationRun } from '@/automations/utils/automation-runs';
 import type { RunSortDirection } from '@/automations/types';
+import { useStickyRunSummary } from './use-sticky-run-summary';
 import { CompletedGlyph, ExitedGlyph, InProgressGlyph } from './run-status-icons';
 
 const ROW_HEIGHT = 72;
 const INITIAL_SKELETON_ROWS = 10;
-// Match the prototype: reveal just before the padded summary boundary reaches the top.
-const STICKY_BOUNDARY_OFFSET = 12;
 
 const statusIcons = {
   in_progress: { Icon: InProgressGlyph, color: 'text-state-info' },
@@ -195,47 +194,18 @@ export const RunList: React.FC<{
   const loadingVisible = isLoading && showLoading;
 
   const SortIcon = direction === 'asc' ? LucideIcon.ArrowUp : LucideIcon.ArrowDown;
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const summaryRef = useRef<HTMLDivElement>(null);
-  const headerRef = useRef<HTMLTableSectionElement>(null);
-  const stickyBarRef = useRef<HTMLDivElement>(null);
-  const listRef = useRef<HTMLDivElement>(null);
-  const [summaryHidden, setSummaryHidden] = useState(false);
-  const [scrollMargin, setScrollMargin] = useState(0);
-
-  useLayoutEffect(() => {
-    if (summaryRef.current) {
-      summaryRef.current.inert = summaryHidden;
-    }
-  }, [summaryHidden]);
-
-  useLayoutEffect(() => {
-    const scroller = scrollRef.current;
-    const summaryElement = summaryRef.current;
-    const header = headerRef.current;
-    const bar = stickyBarRef.current;
-    const list = listRef.current;
-    if (!scroller || !summaryElement || !header || !bar || !list) {
-      return;
-    }
-    const measure = () => {
-      const barHeight = bar.getBoundingClientRect().height;
-      // The header follows the bar through each animation frame. Measure its natural
-      // height, not its sticky position, when locating the virtualized rows.
-      scroller.style.setProperty('--sticky-status-height', `${barHeight}px`);
-      setScrollMargin(summaryElement.offsetHeight + barHeight + header.offsetHeight);
-      // Keep a viewport of space below the summary, even with only a few runs.
-      // Otherwise shrinking the bar could clamp scrolling across the sticky boundary.
-      list.style.minHeight = `${Math.max(0, scroller.clientHeight - barHeight)}px`;
-    };
-    measure();
-    const observer = new ResizeObserver(measure);
-    observer.observe(summaryElement);
-    observer.observe(header);
-    observer.observe(bar);
-    observer.observe(scroller);
-    return () => observer.disconnect();
-  }, []);
+  const {
+    scrollRef,
+    summaryRef,
+    headerRef,
+    stickyBarRef,
+    compactSummaryRef,
+    listRef,
+    summaryHidden,
+    showStickySummary,
+    scrollMargin,
+    onScroll,
+  } = useStickyRunSummary({ queryScope, dateRange, hasStickySummary: !!stickySummary });
 
   const items = runs ?? [];
   const isScanning = scanning && !isError && !isNextPageError && !updating;
@@ -253,11 +223,6 @@ export const RunList: React.FC<{
     scrollMargin,
     getScrollElement: (element) => element,
   });
-  useLayoutEffect(() => {
-    scrollRef.current?.scrollTo({ top: 0 });
-    setSummaryHidden(false);
-  }, [queryScope, dateRange]);
-  const showStickySummary = summaryHidden && !!stickySummary;
 
   return (
     <div
@@ -265,12 +230,7 @@ export const RunList: React.FC<{
       className="min-h-0 flex-1 overflow-y-auto"
       data-testid="automation-runs-scroll"
       style={{ overflowAnchor: 'none' }}
-      onScroll={(event) => {
-        const height = summaryRef.current?.offsetHeight ?? 0;
-        setSummaryHidden(
-          height > 0 && event.currentTarget.scrollTop > height - STICKY_BOUNDARY_OFFSET,
-        );
-      }}
+      onScroll={onScroll}
     >
       <Box
         ref={summaryRef}
@@ -287,11 +247,7 @@ export const RunList: React.FC<{
         )}
       >
         <Grid
-          ref={(element) => {
-            if (element) {
-              element.inert = !showStickySummary;
-            }
-          }}
+          ref={compactSummaryRef}
           aria-hidden={!showStickySummary || undefined}
           className={cn(
             'transition-[grid-template-rows,opacity] duration-200 ease-out motion-reduce:transition-none',
