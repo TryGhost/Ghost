@@ -160,6 +160,9 @@ a half seconds once it lands and "Retry" after a failure; a contributor's Save r
 a draft from the update flow shows "Post reverted to a draft." ("Page" for a
 page).
 
+A post that has never been saved has no status line. The save that creates it
+reads "Saving…" there, and a first save that fails says why.
+
 ## Link suggestions
 
 The link toolbar loads content search indexes on first use and shares them with

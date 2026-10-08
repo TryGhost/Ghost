@@ -170,8 +170,9 @@ describe('Editor analytics breadcrumb', () => {
     });
 
     await expect.element(editorScreen.backLink('post')).toHaveAttribute('href', '#/posts');
-    await expect.element(editorScreen.status()).toHaveTextContent('New');
     await expect(editorScreen.analyticsBackLink()).toHaveCount(0);
+    // Nothing has been saved, so there is no status to show either way.
+    await expect(editorScreen.status()).toHaveCount(0);
   });
 
   it.each([

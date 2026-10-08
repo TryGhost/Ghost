@@ -449,6 +449,13 @@ an ID, so the button appears only once the post exists, and every role that can
 open the editor is offered it — which posts each of them may actually delete is
 the API's answer, not the panel's.
 
+The button is the last thing in the section list. When the list is shorter
+than the panel it sits at the panel's foot rather than straight after the last
+section; when the list is longer, it follows the last section and is reached by
+scrolling to the end. Before the first save the list ends at the last section,
+with no space held for the button, and an open pane hides it along with the
+other sections.
+
 Confirming names the post and says the deletion is permanent. Cancelling returns
 focus to the Delete button. An expired session asks the writer to sign in, in
 place, before retrying, so their draft stays open. Abandoning the sign-in keeps

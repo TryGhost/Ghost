@@ -25,7 +25,6 @@ describe('EditorStatus', () => {
     const { rerender } = render(
       <EditorStatus state={{ kind: 'preparing', intent: 'autosave' }} isDirty />,
     );
-    expect(screen.getByText('New')).toBeInTheDocument();
     expect(screen.queryByText('Saving…')).not.toBeInTheDocument();
 
     rerender(<EditorStatus state={{ kind: 'idle' }} isDirty />);
@@ -33,6 +32,33 @@ describe('EditorStatus', () => {
 
     rerender(<EditorStatus state={{ kind: 'saving', intent: 'autosave' }} isDirty />);
     expect(screen.getByText('Saving…')).toBeInTheDocument();
+  });
+
+  it('shows nothing for a post that has never been saved', () => {
+    const { container, rerender } = render(<EditorStatus state={{ kind: 'idle' }} isDirty />);
+    expect(container).toBeEmptyDOMElement();
+
+    rerender(<EditorStatus isDirty={false} state={{ kind: 'idle' }} />);
+    expect(container).toBeEmptyDOMElement();
+
+    rerender(
+      <EditorStatus isDirty={false} record={{ status: 'draft' }} state={{ kind: 'idle' }} />,
+    );
+    expect(screen.getByText('Draft - Saved')).toBeInTheDocument();
+  });
+
+  it('reports a first save that failed', () => {
+    render(
+      <EditorStatus
+        state={{
+          kind: 'error',
+          intent: 'autosave',
+          error: { kind: 'validation', message: 'Title is too long.' },
+        }}
+        isDirty
+      />,
+    );
+    expect(screen.getByText('Title is too long.')).toBeInTheDocument();
   });
 });
 

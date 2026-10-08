@@ -77,8 +77,11 @@ export interface PostEditorHandle {
 
 const capitalize = (value: string) => value.charAt(0).toUpperCase() + value.slice(1);
 
+// Ember's global stylesheet, still loaded around the React editor, gives every
+// textarea a 100px min-height and a 250–500px width; the fields opt out of both
+// so they span the writing column and grow from a single line.
 const fieldClassName =
-  'block w-full resize-none overflow-hidden border-0 bg-transparent p-0 outline-none';
+  'block w-full max-w-none min-w-0 min-h-0 resize-none overflow-hidden border-0 bg-transparent p-0 outline-none';
 
 function useAutosize(ref: React.RefObject<HTMLTextAreaElement | null>, value: string) {
   const measure = useCallback(() => {
@@ -99,14 +102,18 @@ function useAutosize(ref: React.RefObject<HTMLTextAreaElement | null>, value: st
     }
     // measuring inside the observer callback would resize the observed element mid-loop
     let frame = 0;
-    const observer = new ResizeObserver(() => {
+    const schedule = () => {
       cancelAnimationFrame(frame);
       frame = requestAnimationFrame(measure);
-    });
+    };
+    const observer = new ResizeObserver(schedule);
     observer.observe(element);
+    // A web font arriving rewraps the text without resizing the field
+    document.fonts?.addEventListener('loadingdone', schedule);
     return () => {
       cancelAnimationFrame(frame);
       observer.disconnect();
+      document.fonts?.removeEventListener('loadingdone', schedule);
     };
   }, [ref, measure]);
 }
@@ -468,7 +475,7 @@ export function PostEditor({
                 autoFocus={autofocusTitle}
                 className={cn(
                   fieldClassName,
-                  'heading-font-features mb-4 min-h-0 max-w-none min-w-0 pb-1 text-[4.8rem] leading-[1.1] font-bold tracking-[-0.017em] text-foreground placeholder:font-bold placeholder:text-muted-foreground max-[769px]:text-[3.6rem] max-[501px]:text-[2.8rem]',
+                  'heading-font-features mb-4 pb-1 text-[4.8rem] leading-[1.1] font-bold tracking-[-0.017em] text-foreground placeholder:font-bold placeholder:text-editor-placeholder max-[769px]:text-[3.6rem] max-[501px]:text-[2.8rem]',
                   titleAndFeatureImageHidden && 'opacity-50 focus:opacity-100',
                 )}
                 data-testid={editorTitleInput}
@@ -490,7 +497,7 @@ export function PostEditor({
               <div className="relative">
                 {excerptHasTk && (
                   <TkIndicator
-                    className="top-1 -left-12"
+                    className="top-1 -right-14"
                     testId={tkIndicatorExcerpt}
                     onClick={focusExcerpt}
                   />
@@ -502,7 +509,7 @@ export function PostEditor({
                   aria-label="Excerpt"
                   className={cn(
                     fieldClassName,
-                    'text-xl leading-normal tracking-tight text-text-secondary placeholder:text-muted-foreground',
+                    'text-[2rem] leading-[1.5] font-[440] tracking-[-0.018em] text-foreground/90 placeholder:font-normal placeholder:text-editor-placeholder',
                   )}
                   data-testid={editorExcerptInput}
                   placeholder="Add an excerpt"
@@ -515,11 +522,11 @@ export function PostEditor({
                 <hr
                   className={cn(
                     'mt-4',
-                    excerptError ? 'mb-2 border-destructive' : 'mb-6 border-border',
+                    excerptError ? 'mb-0 border-destructive' : 'mb-12 border-border-default',
                   )}
                 />
                 {excerptError ? (
-                  <FieldError className="mb-6" id={excerptErrorId}>
+                  <FieldError className="mt-2 mb-12" id={excerptErrorId}>
                     {excerptError}
                   </FieldError>
                 ) : null}

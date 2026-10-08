@@ -33,7 +33,7 @@ import { PublishDateSection } from './publish-date-section';
 import { AuthorsSection } from './authors-section';
 import { CodeInjectionSection } from './code-injection-section';
 import { DeleteSection } from './delete-section';
-import { type EditorSettingsPort, useEditorSettingsPort } from './editor-settings-port';
+import { type EditorSettingsPort, isNewPost, useEditorSettingsPort } from './editor-settings-port';
 import { KeyboardShortcutsSection } from './keyboard-shortcuts-section';
 import { MetaDataSection } from './meta-data-section';
 import { PostHistorySection } from './post-history-section';
@@ -183,10 +183,17 @@ export function PostSettingsSidebar({
         <MemoShowTitleSection currentUser={currentUser} session={session} />
       ) : null,
     template: <MemoTemplateSection postType={postType} session={session} />,
-    delete: <MemoDeleteSection postType={postType} session={session} />,
     'code-injection': <MemoCodeInjectionSection postType={postType} session={session} />,
     'meta-data': <MemoMetaDataSection session={session} siteUrl={siteUrl} />,
     'keyboard-shortcuts': <MemoKeyboardShortcutsSection />,
+    // The list's last entry, pushed to the panel's foot while the list is
+    // shorter than the panel. A post with nothing to delete yet gets nothing,
+    // not an empty wrapper.
+    delete: isNewPost(session) ? null : (
+      <Box className="mt-auto">
+        <MemoDeleteSection postType={postType} session={session} />
+      </Box>
+    ),
     'x-card': (
       <MemoSocialCardSection
         cardConfig={cardConfig}
