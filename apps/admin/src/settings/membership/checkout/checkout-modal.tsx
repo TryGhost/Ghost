@@ -15,10 +15,6 @@ import {
   SelectTrigger,
   SelectValue,
   Switch,
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
 } from '@tryghost/shade/components';
 import { Inline } from '@tryghost/shade/primitives';
 import { LucideIcon } from '@tryghost/shade/utils';
@@ -163,7 +159,7 @@ const DesignSettings: React.FC<{
   ];
 
   return (
-    <FieldSet className="mt-8">
+    <FieldSet>
       <FieldGroup>
         <Field orientation="horizontal">
           <FieldContent>
@@ -273,17 +269,6 @@ const DesignSettings: React.FC<{
   );
 };
 
-const Sidebar: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-  <div className="pt-4">
-    <Tabs defaultValue="design" variant="underline">
-      <TabsList>
-        <TabsTrigger value="design">Design</TabsTrigger>
-      </TabsList>
-      <TabsContent value="design">{children}</TabsContent>
-    </Tabs>
-  </div>
-);
-
 const modalProps = {
   cancelLabel: 'Close',
   height: 720,
@@ -323,11 +308,7 @@ const CheckoutEditor: React.FC<{
           displayName={displayName}
         />
       }
-      sidebar={
-        <Sidebar>
-          <DesignSettings state={formState} onChange={(next) => updateForm(() => next)} />
-        </Sidebar>
-      }
+      sidebar={<DesignSettings state={formState} onChange={(next) => updateForm(() => next)} />}
       siteLinkMenu={previewMenu}
       onClose={onClose}
       onOk={async () => {
@@ -361,13 +342,13 @@ const CheckoutModal: React.FC = () => {
           <CheckoutPreview design={STRIPE_DEFAULT_DESIGN} displayName={displayName} loading />
         }
         sidebar={
-          <Sidebar>
+          <div>
             {isError ? (
-              <p className="mt-8 text-sm text-destructive">
+              <p className="text-sm text-destructive">
                 Your checkout settings couldn&apos;t be loaded. Close this and try again.
               </p>
             ) : null}
-          </Sidebar>
+          </div>
         }
         onClose={close}
       />
