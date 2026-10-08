@@ -151,7 +151,7 @@ const UNANSWERED_FIELD_WARNINGS: {
 }[] = [
   {
     unanswered: tiersUnanswered,
-    message: 'Choose tiers before this automation can be published.',
+    message: 'Select at least 1 tier',
   },
   {
     unanswered: labelUnanswered,

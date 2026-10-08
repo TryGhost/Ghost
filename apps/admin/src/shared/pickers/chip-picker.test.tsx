@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { useEffect, useState } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ChipPicker } from './chip-picker';
@@ -114,5 +114,49 @@ describe('ChipPicker reorder', () => {
     expect(chip).not.toHaveAttribute('aria-describedby');
     expect(chip).toHaveClass('touch-manipulation');
     expect(document.querySelector('[id^="DndLiveRegion"]')).not.toBeNull();
+  });
+});
+
+describe('ChipPicker groups', () => {
+  it('heads each run of rows with its group, and keeps the keyboard walking every row', () => {
+    const onAdd = vi.fn();
+    render(
+      <ChipPicker<Option & { archived: boolean }, Option>
+        emptyMessage="No options found"
+        getGroup={(option) => (option.archived ? 'Archived' : 'Active')}
+        getKey={(option) => option.id}
+        getLabel={(option) => option.name}
+        inputLabel="Options"
+        options={[
+          { id: 'gold', name: 'Gold', archived: false },
+          { id: 'silver', name: 'Silver', archived: false },
+          { id: 'bronze', name: 'Bronze', archived: true },
+        ]}
+        placeholder="Select options..."
+        selected={[]}
+        onAdd={onAdd}
+        onRemove={vi.fn()}
+      />,
+    );
+    fireEvent.click(screen.getByRole('combobox'));
+
+    const active = screen.getByRole('group', { name: 'Active' });
+    const archived = screen.getByRole('group', { name: 'Archived' });
+    expect(
+      within(active)
+        .getAllByRole('option')
+        .map((row) => row.textContent),
+    ).toEqual(['Gold', 'Silver']);
+    expect(
+      within(archived)
+        .getAllByRole('option')
+        .map((row) => row.textContent),
+    ).toEqual(['Bronze']);
+
+    fireEvent.keyDown(screen.getByRole('combobox'), { key: 'ArrowDown' });
+    fireEvent.keyDown(screen.getByRole('combobox'), { key: 'ArrowDown' });
+    fireEvent.keyDown(screen.getByRole('combobox'), { key: 'Enter' });
+
+    expect(onAdd).toHaveBeenCalledWith({ id: 'bronze', name: 'Bronze', archived: true });
   });
 });

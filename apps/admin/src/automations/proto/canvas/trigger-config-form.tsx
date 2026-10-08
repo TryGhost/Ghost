@@ -1,15 +1,15 @@
-import React, { useState } from 'react';
+import React, { useId, useState } from 'react';
 import {
   Button,
   FieldError,
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-  RadioGroup,
-  RadioGroupItem,
-  inputSurface,
+  Label,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from '@tryghost/shade/components';
-import { LucideIcon, cn } from '@tryghost/shade/utils';
+import { LucideIcon } from '@tryghost/shade/utils';
 import { Stack } from '@tryghost/shade/primitives';
 import {
   ALL_TIER_IDS,
@@ -34,11 +34,10 @@ import {
 import type { PickerOption } from '@/automations/proto/shared/option-picker';
 import { useArchivedTierIds, useStripeConnected } from '@/automations/proto/shared/store';
 import { PickerRow } from '@/automations/proto/shared/option-picker';
-import { CheckboxList, CheckboxRow } from '@/automations/proto/shared/checkbox-list';
+import { ChipPicker } from '@/shared/pickers/chip-picker';
 import { canCreateLabel, createLabel, useLabels } from '@/automations/proto/shared/labels';
 import { conditionsSentence, useSegments } from '@/automations/proto/shared/segments';
 import { SearchableSelectField } from '@/automations/proto/shared/searchable-select-field';
-import { useDismissOnPanePress } from './flow-utils';
 
 // The trigger's settings, rendered inside the node card alongside every other
 // step's inline form: what starts the automation, which tiers it watches, and
@@ -131,22 +130,15 @@ export const TriggerEmptyState: React.FC<{
   );
 };
 
-// A radio in a row, CheckboxRow's shape exactly — whole-row label target, the
-// same SelectItem metrics — so the two kinds of row in this popover read as one
-// list at two depths.
-//
-// It took an optional second line once, for the "any" mode's consequence. Both
-// rows are one line now (see the RadioGroup below), so the prop went with the
-// copy rather than sitting here unused waiting for someone to find a use for it.
-const RadioRow: React.FC<{
-  value: string;
-  label: string;
-}> = ({ value, label }) => (
-  <label className="flex cursor-pointer items-center gap-2.5 rounded-xs px-2 py-1.5 transition-colors hover:bg-interactive-hover">
-    <RadioGroupItem value={value} />
-    <span className="min-w-0 truncate text-control">{label}</span>
-  </label>
-);
+// The paid trigger's two modes, as the mode Select offers them. 'all' is a
+// policy (it follows tiers created later); 'selected' is a named list — see
+// TriggerConfig.tierMode.
+const TIER_MODE_OPTIONS: { value: TriggerConfig['tierMode']; label: string }[] = [
+  { value: 'all', label: 'Any paid tier' },
+  { value: 'selected', label: 'Selected tier(s)' },
+];
+
+type TierOption = (typeof TIER_OPTIONS)[number];
 
 interface TriggerConfigFormProps {
   config: TriggerConfig;
@@ -157,14 +149,6 @@ interface TriggerConfigFormProps {
   // and went when locked cards stopped rendering this form at all (the canvas
   // draws them header-only; see triggerBodyEmpty there).
   showExits?: boolean;
-  // Increments when this trigger's field should open itself — the canvas's nudge
-  // after the creation sequence settles on a trigger that has a question to ask
-  // (see fieldRevealPending there). The canvas owns when; this form owns the
-  // popovers, so the instruction crosses as a counter rather than shared state.
-  //
-  // One signal for both fields because only one of them can be on screen: the
-  // trigger decides which question the card asks.
-  revealFieldSignal?: number;
   // The SAVED config's tiers. An archived tier is offered while it's in the
   // current selection OR here — so unticking one stays reversible for exactly
   // as long as the removal is unsaved, the same undo horizon as every other
@@ -181,20 +165,17 @@ export const TriggerFieldsForm: React.FC<TriggerConfigFormProps> = ({
   config,
   onChange,
   showExits = true,
-  revealFieldSignal,
   error,
   savedTierIds = [],
 }) => {
   const tierIds = config.tierIds;
   const allMode = config.tierMode === 'all';
-  // Selected mode with nothing named — the field's placeholder state, and the
-  // one the validators call unanswered (see tiersUnanswered).
-  const noTier = !allMode && tierIds.length === 0;
+  const tierModeId = useId();
+  const tiersErrorId = useId();
   // Site state, read here like Stripe is in the empty-state picker: which
   // tiers have gone quiet decides what the field and its rows say.
   const archivedTierIds = useArchivedTierIds();
   const selectedTiers = TIER_OPTIONS.filter((tier) => tierIds.includes(tier.id));
-  const [tiersOpen, setTiersOpen] = useState(false);
   const showTiers = hasTiers(config);
   // Label and segment: the same control, one with creation and one without —
   // see shared/searchable-select-field, which owns their search and dropdown.
@@ -206,23 +187,6 @@ export const TriggerFieldsForm: React.FC<TriggerConfigFormProps> = ({
   // The lifecycle change — a closed set of three, so Shade's compound trigger
   // with no search at all.
   const showChange = hasChange(config);
-  const [changeOpen, setChangeOpen] = useState(false);
-  // Compared against the mount-time value rather than watched in an effect, so
-  // a form that MOUNTS with a signal already counted up (re-picking the paid
-  // trigger later, a remount mid-session) doesn't fire a stale nudge — only a
-  // signal that moves while the form is on screen opens the popover.
-  const [prevRevealSignal, setPrevRevealSignal] = useState(revealFieldSignal);
-  if (revealFieldSignal !== prevRevealSignal) {
-    setPrevRevealSignal(revealFieldSignal);
-    if (showTiers) {
-      setTiersOpen(true);
-    }
-    if (showChange) {
-      setChangeOpen(true);
-    }
-  }
-  useDismissOnPanePress(tiersOpen, () => setTiersOpen(false));
-  useDismissOnPanePress(changeOpen, () => setChangeOpen(false));
 
   const setTiers = (next: string[]) => onChange({ ...config, tierIds: next });
   const setLabel = (labelId: string | null) => onChange({ ...config, labelId });
@@ -252,217 +216,100 @@ export const TriggerFieldsForm: React.FC<TriggerConfigFormProps> = ({
                 read as a pile rather than a form. Everything is a select, so the card is
                 one shape end to end and each row's label says what it's for. */}
 
-      {/* Tiers, on the paid trigger only — the one setting any trigger still has.
-                
-                "Any paid tier" is a row in the list rather than the absence of one. It
-                was the absence for a while, which read as an unanswered field: the trigger
-                showed greyed placeholder text for what was actually a deliberate, valid
-                answer.
+      {/* TIERS, on the paid trigger only — as TWO fields, the post editor's
+                access section exactly (editor/settings/access-section): a Select
+                for the mode, then, only under "Selected tier(s)", the shared
+                ChipPicker for which ones.
 
-                It also LOCKS the rows below it. They're ticked, because "any" does include
-                every one of them, and disabled, because unticking one from there was the
-                one interaction in this field nobody could predict: it silently turned an
-                "any tier" automation into a two-tier one, and the row you pressed was the
-                only one that ended up off. Making them inert says the choice above owns
-                them — untick it first, then pick. One fewer way to end up somewhere you
-                didn't ask for.
+                It was one field-that-opens holding a radio pair and a checkbox
+                list in a popover. The split keeps what that got right — a mode
+                choice and an item choice are different questions and look it —
+                and drops the bespoke surface: both halves are now controls the
+                rest of Admin already uses, with their keyboard and screen-reader
+                behaviour, rather than a button wearing input chrome.
 
-                Unticking "Any paid tier" empties the list rather than selecting nothing
-                in particular: an empty field reads as unanswered, which is exactly what
-                you are at that moment.
-                
-                Unticking everything is still reachable and still means an automation that
-                could never run. It carries no message here: validation is being solved as
-                its own thing rather than per-field, so this reads as unanswered — see
-                `Select` in the trigger — and the objection is raised somewhere that can
-                speak for the whole card. */}
-      {/* A FIELD THAT OPENS, not a form on the card. The tiers were a labelled
-                combobox with the exit sentence loose underneath — the card carrying
-                its whole configuration on its face. Now the card shows one line: the
-                current answer in input chrome (inputSurface, the same recipe every
-                Shade control wears) with a pencil naming the interaction, and the
-                press opens a wider popover holding the checkboxes AND the exit
-                explanation together. The exits ride with the tiers because they're
-                consequences of this exact choice — reading them at the moment of
-                choosing is when they're worth reading.
-
-                No "Tiers" label above the field: the value ("Any paid tier") says
-                what the field holds, and the card's header already says what kind
-                of thing is being configured. A pencil rather than a chevron — this
-                opens an editing surface, not an option list dropping out of a
-                select. */}
+                The sentence label belongs to the mode Select (a real <label>);
+                the chip field is named "Tiers" for assistive tech and reads as
+                the Select's continuation visually, the way it does in the
+                editor. The error and the exits sit under whichever field is
+                last. */}
       {showTiers && (
         <div className="flex flex-col gap-2">
-          {/* The explanation and the field, fused into label-and-answer: the
-                    sentence runs INTO the field ("…upgrades or signs up to:" →
-                    "Any paid tier"), so the card says what the trigger does and
-                    who it watches as one thought instead of a description and a
-                    control circling the same fact. Full foreground, not the
-                    caption's muted — it's the field's label now, not commentary —
-                    and gap-2, the label-to-field distance every form uses. The
-                    colon is what keeps every field state grammatical, including
-                    the "Choose tiers" placeholder, which reads as an instruction
-                    after it. (The read canvas keeps the full written-out sentence
-                    — it has no field for a label to point at; the copy itself
-                    lives with the stems in trigger-config.) */}
-          <span className="text-control">{PAID_TIERS_FIELD_LABEL}</span>
-          <Popover modal={false} open={tiersOpen} onOpenChange={setTiersOpen}>
-            <PopoverTrigger asChild>
-              <button
-                aria-invalid={error ? true : undefined}
-                aria-label="Edit tiers"
-                // hover:bg-muted on top of the input chrome — an input doesn't
-                // hover, but this is a button wearing input clothes, and a field
-                // that opens something has to say so before the press.
-                className={cn(
-                  inputSurface('self'),
-                  'group/field flex h-9 w-full items-center justify-between gap-2 px-3 text-base',
-                  'transition-colors hover:bg-muted',
-                )}
-                type="button"
-              >
-                {/* Named tiers render as per-tier spans so an archived one can
-                            dim on its own — "Bronze (archived)" muted beside a
-                            full-colour "Gold" says which half of the answer has gone
-                            quiet without dimming the whole value. */}
-                <span className={cn('truncate', noTier && 'text-muted-foreground')}>
-                  {noTier
-                    ? 'Choose tiers'
-                    : allMode
-                      ? 'Any paid tier'
-                      : selectedTiers.map((tier, index) => (
-                          <React.Fragment key={tier.id}>
-                            {index > 0 && ', '}
-                            <span
-                              className={cn(
-                                archivedTierIds.includes(tier.id) && 'text-muted-foreground',
-                              )}
-                            >
-                              {tierDisplayName(tier.name, archivedTierIds.includes(tier.id))}
-                            </span>
-                          </React.Fragment>
-                        ))}
-                </span>
-                {/* Revealed by hovering or focusing the field, like every
-                            field-that-opens (see the email content field): at rest the
-                            value is the point, and the pen is the interaction's label.
-                            The width stays reserved so nothing shifts. */}
-                <LucideIcon.Pen
-                  className="size-4 shrink-0 text-muted-foreground opacity-0 transition-opacity group-hover/field:opacity-100 group-focus-visible/field:opacity-100 motion-reduce:transition-none"
-                  strokeWidth={2}
-                />
-              </button>
-            </PopoverTrigger>
-            {/* Sized to the FIELD, via the width Radix reports for the trigger —
-                    the popover reads as the field opened up, not a separate surface
-                    that happens to appear nearby (Shade's Combobox sizes its list the
-                    same way). "always" so it tracks its card when the canvas pans. */}
-            <PopoverContent
-              align="start"
-              className="w-(--radix-popover-trigger-width) p-0"
-              updatePositionStrategy="always"
+          {/* leading-normal / font-normal: Shade's Label is a one-line medium
+                    caption by default, and this is a sentence that wraps and
+                    matches the span labels the other trigger fields use. */}
+          <Label className="leading-normal font-normal" htmlFor={tierModeId}>
+            {PAID_TIERS_FIELD_LABEL}
+          </Label>
+          <Select
+            value={config.tierMode}
+            // Flipping mode clears the list either way: an answer given under
+            // one mode isn't an answer under the other, and "Selected tier(s)"
+            // starts EMPTY on purpose — pre-filling every tier would look like
+            // "any" without following tiers created later.
+            onValueChange={(mode) =>
+              onChange({ ...config, tierMode: mode as TriggerConfig['tierMode'], tierIds: [] })
+            }
+          >
+            <SelectTrigger
+              // The mode can't be the unanswered half — only an empty chip
+              // field can — so the Select never wears the error itself.
+              id={tierModeId}
             >
-              {/* Two modes as RADIOS, then the list — GitHub's install screen,
-                        which is where the review pointed. The shape before it was one
-                        checkbox list with "Any paid tier" locking the rows beneath it
-                        checked-and-disabled: a mode pretending to be a list item, which
-                        gave this field the one interaction nobody could predict. A mode
-                        choice and an item choice are different kinds of question, and
-                        now they look like it.
-
-                        "Any paid tier" carried a second line for a while — that it
-                        follows tiers created later. It's gone as noise: two rows in a
-                        small popover don't need a paragraph between them, and the
-                        radio pair already draws the only distinction that matters
-                        (a policy vs a named list). The fact it stated is real and
-                        still true; if it needs saying, it belongs where someone is
-                        deciding, not permanently under one of two options. */}
-              <div className="p-2">
-                <RadioGroup
-                  className="flex flex-col gap-0"
-                  value={config.tierMode}
-                  // Flipping mode clears the list either way: an answer given under
-                  // one mode isn't an answer under the other, and Select starts
-                  // EMPTY on purpose — GitHub's "select at least one". Pre-checking
-                  // everything would recreate the exact ambiguity the split removes
-                  // (a full checklist that looks like "all" but won't follow future
-                  // tiers).
-                  onValueChange={(mode) =>
-                    onChange({ ...config, tierMode: mode as 'all' | 'selected', tierIds: [] })
-                  }
-                >
-                  <RadioRow label="Any paid tier" value="all" />
-                  <RadioRow label="Select paid tiers" value="selected" />
-                </RadioGroup>
-                {/* Revealed by the second radio, indented under it the way
-                            GitHub's repository list sits under its option. ml-6 aligns
-                            the boxes with the radio labels above (16px control +
-                            10px gap). */}
-                {!allMode && (
-                  <div className="ml-6">
-                    {/* An archived tier is offered only while it's in the CURRENT
-                                selection or the SAVED one: marked "(archived)", muted,
-                                and yours to untick — and to re-tick, because until the
-                                removal is saved the saved config still holds it, and an
-                                unsaved edit has to stay reversible in place (the only
-                                other road back is leaving the screen and discarding
-                                everything). Once the removal is committed the row is
-                                gone: picking a tier nobody can join is configuring
-                                against nothing (Ghost's other tier pickers offer active
-                                tiers only). Under "Any paid tier" nothing marks at all —
-                                that's a policy over whatever is joinable, and an
-                                archived tier just exits the set. */}
-                    <CheckboxList>
-                      {TIER_OPTIONS.filter(
-                        (tier) =>
-                          !archivedTierIds.includes(tier.id) ||
-                          tierIds.includes(tier.id) ||
-                          savedTierIds.includes(tier.id),
-                      ).map((tier) => (
-                        <CheckboxRow
-                          key={tier.id}
-                          checked={tierIds.includes(tier.id)}
-                          label={tierDisplayName(tier.name, archivedTierIds.includes(tier.id))}
-                          muted={archivedTierIds.includes(tier.id)}
-                          onCheckedChange={(checked) =>
-                            setTiers(
-                              // Kept in ALL_TIER_IDS order however they're ticked, so
-                              // the field's summary always lists tiers the way the
-                              // site orders them.
-                              checked
-                                ? ALL_TIER_IDS.filter(
-                                    (id) => id === tier.id || tierIds.includes(id),
-                                  )
-                                : tierIds.filter((id) => id !== tier.id),
-                            )
-                          }
-                        />
-                      ))}
-                    </CheckboxList>
-                  </div>
-                )}
-              </div>
-            </PopoverContent>
-          </Popover>
-          {/* The exits, on the CARD under the field — not footered inside the
-                    popover, where they lived until the label trigger arrived and put
-                    its own copy here.
-
-                    The popover's version was defensible on its own terms: the exits
-                    follow from the tiers, so reading them at the moment of choosing
-                    is when they're worth reading. What it couldn't survive was a
-                    second trigger with a field, because the label field's dropdown
-                    closes the instant you pick — a consequence stapled to the bottom
-                    of it would be read by nobody. So one of the two triggers was
-                    going to state its exits on the card, and the other inside a
-                    surface you have to open. Two placements for one sentence, on
-                    the same kind of card, decided by which control the field
-                    happened to use.
-
-                    On the card, for both. Whatever the popover gained by fusing
-                    the sentence to the choice, it cost more in making the trigger
-                    card mean different things depending on which trigger it held. */}
-          {error && <FieldError>{error}</FieldError>}
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {TIER_MODE_OPTIONS.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          {!allMode && (
+            <ChipPicker<TierOption, TierOption>
+              chipClassName={() => 'text-(length:--text-control)'}
+              chipVariant={() => 'secondary'}
+              describedBy={error ? tiersErrorId : undefined}
+              emptyMessage="No tiers found"
+              getKey={(tier) => tier.id}
+              getLabel={(tier) => tierDisplayName(tier.name, archivedTierIds.includes(tier.id))}
+              inputLabel="Tiers"
+              invalid={Boolean(error)}
+              matches={(tier, term) => tier.name.toLowerCase().includes(term.toLowerCase())}
+              // ACTIVE tiers only, and no group headings — unlike the editor,
+              // an automation can't usefully watch a tier nobody can join. The
+              // one exception is a tier archived AFTER it was chosen: it stays
+              // offered while it's in the current selection or the saved one,
+              // so removing its chip is reversible until that removal is saved.
+              options={TIER_OPTIONS.filter(
+                (tier) =>
+                  !archivedTierIds.includes(tier.id) ||
+                  tierIds.includes(tier.id) ||
+                  savedTierIds.includes(tier.id),
+              )}
+              placeholder="Select tiers..."
+              renderOption={(tier, { chosen }) => (
+                <>
+                  <span className="truncate">
+                    {tierDisplayName(tier.name, archivedTierIds.includes(tier.id))}
+                  </span>
+                  {chosen && <LucideIcon.Check className="ms-auto size-4 shrink-0 text-primary" />}
+                </>
+              )}
+              selected={selectedTiers}
+              // Kept in ALL_TIER_IDS order however they're picked, so the chips
+              // always list tiers the way the site orders them.
+              onAdd={(tier) =>
+                setTiers(ALL_TIER_IDS.filter((id) => id === tier.id || tierIds.includes(id)))
+              }
+              onRemove={(id) => setTiers(tierIds.filter((tierId) => tierId !== id))}
+            />
+          )}
+          {/* The exits, on the CARD under the fields — the same placement every
+                    trigger with a field uses, so the card means one thing whichever
+                    trigger it holds. */}
+          {error && <FieldError id={tiersErrorId}>{error}</FieldError>}
           {showExits && (
             <p className="text-control text-muted-foreground">{exitSentence(config)}</p>
           )}

@@ -130,7 +130,7 @@ const UNANSWERED_FIELD_WARNINGS: {
 }[] = [
   {
     unanswered: tiersUnanswered,
-    message: 'Choose tiers before this automation can be published.',
+    message: 'Select at least 1 tier',
   },
   {
     unanswered: labelUnanswered,
@@ -334,9 +334,6 @@ type StepNodeData = {
   // itself: swapping the trigger discards the settings and exits configured under
   // the old one, which is a warning the canvas owns.
   onRequestTriggerChange?: (type: TriggerType) => void;
-  // Increments when the trigger's field should open itself — the canvas owns the
-  // clock (it knows when its sequence has settled), the form owns the popover.
-  fieldRevealSignal?: number;
   // The saved config's tiers — see the EditCanvas prop of the same name.
   savedTierIds?: string[];
   // The create-button variant's handler — see the EditCanvas prop.
@@ -392,13 +389,6 @@ export const INTRO_LEAVING_MS = 120;
 export const INTRO_GROWING_MS = 260;
 // The line, and the exit card starting just before the line finishes reaching it.
 export const INTRO_CONNECTING_MS = 300;
-// After the sequence settles, one more beat before the trigger's field opens on
-// a trigger chosen fresh (see fieldRevealPending). A beat rather than
-// immediately: the popover is the nudge — "this is the question left to answer"
-// — and it lands as the sequence's closing move, after everything else has
-// stopped, which is what makes it the thing the eye ends on. Longer than a
-// reaction-shot pause would start to read as the canvas doing things on its own.
-const FIELD_REVEAL_DELAY_MS = 200;
 
 // The proto's one easing curve — see shared/motion.
 const INTRO_EASE = PROTO_EASE;
@@ -799,7 +789,6 @@ const StepNode: React.FC<NodeProps> = ({ data }) => {
                     <TriggerFieldsForm
                       config={triggerConfig}
                       error={d.triggerFieldError}
-                      revealFieldSignal={d.fieldRevealSignal}
                       savedTierIds={d.savedTierIds}
                       // Phase 1's triggers stay simple: the exit sentence belongs to
                       // the general-model lanes, where exits are part of what's being
@@ -1382,23 +1371,13 @@ export const EditCanvas: React.FC<EditCanvasProps> = ({
   const laneStepOptions = STEP_PICKER_OPTIONS.filter(
     (option) => option.value !== 'update_member' || laneOffersStep(lane, 'update_member'),
   );
-  const [fieldRevealPending, setFieldRevealPending] = useState(false);
-  // Incremented when the popover should open; the trigger card watches it. A
-  // counter rather than a boolean so a second creation flow in one mount (the
-  // canvas is keyed by automation, but cheap is cheap) reads as a new event.
-  const [fieldRevealSignal, setFieldRevealSignal] = useState(0);
   if (prevUnset !== unset) {
     setPrevUnset(unset);
     setIntroPhase(unset ? null : 'leaving');
-    // Any fresh trigger WITH A FIELD arms the nudge, not just an unanswered
-    // one: the tier config arrives on the 'all' default, and the popover opening
-    // is what puts that default in front of the publisher instead of leaving it
-    // answered in a field nobody looked at (see triggerConfigFor). The label
-    // trigger arrives genuinely unanswered, so the same beat does more there —
-    // it's the only thing that tells you the trigger isn't finished.
-    if (!unset && triggerConfig && triggerHasField(triggerConfig)) {
-      setFieldRevealPending(true);
-    }
+    // Nothing opens itself once the sequence settles. A fresh trigger's field
+    // used to — the nudge toward the question left to answer — and it's gone:
+    // every trigger field is a dropdown, and a menu dropping uninvited captures
+    // the pointer over a card the publisher was about to do something else with.
   }
   // Each beat schedules only the one after it, so the sequence is a chain rather
   // than three timers set at once — which would need the cleanup to know which of
@@ -1420,20 +1399,6 @@ export const EditCanvas: React.FC<EditCanvasProps> = ({
     const timer = setTimeout(() => setIntroPhase(next[introPhase]), after[introPhase]);
     return () => clearTimeout(timer);
   }, [introPhase]);
-
-  // The sequence's true last beat, when one is owed: introPhase returning to
-  // null is "the canvas has stopped moving", and the popover opens one beat
-  // after that — see FIELD_REVEAL_DELAY_MS for why it trails.
-  useEffect(() => {
-    if (!fieldRevealPending || introPhase !== null) {
-      return;
-    }
-    const timer = setTimeout(() => {
-      setFieldRevealPending(false);
-      setFieldRevealSignal((s) => s + 1);
-    }, FIELD_REVEAL_DELAY_MS);
-    return () => clearTimeout(timer);
-  }, [fieldRevealPending, introPhase]);
 
   // The card still asking its question: either nothing is chosen, or something just
   // was and the options haven't finished leaving.
@@ -1592,7 +1557,6 @@ export const EditCanvas: React.FC<EditCanvasProps> = ({
         introPhase: introPhase ?? undefined,
         enterDelay: enterDelay(0),
         onRequestTriggerChange: requestTriggerChange,
-        fieldRevealSignal,
         savedTierIds,
         onCreateAutomation,
       },
@@ -1812,7 +1776,6 @@ export const EditCanvas: React.FC<EditCanvasProps> = ({
     introPhase,
     requestTriggerChange,
     alwaysShowInserts,
-    fieldRevealSignal,
     savedTierIds,
     onCreateAutomation,
     exitsOnTriggerCard,
