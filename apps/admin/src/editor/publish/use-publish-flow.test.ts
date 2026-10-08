@@ -7,8 +7,15 @@ import type { EmailConfirmationOutcome } from './email-confirmation';
 import type { NewsletterInput } from './publish-options';
 
 const transport = vi.hoisted(() => ({ fetchApi: vi.fn(), retryEmail: vi.fn() }));
+const eligibility = vi.hoisted(() => ({ isError: false }));
 vi.mock('@tryghost/admin-x-framework/hooks', () => ({ useFetchApi: () => transport.fetchApi }));
 vi.mock('@tryghost/admin-x-framework/api/emails', () => ({
+  useEmailSendingStatus: () => ({
+    isFetchedAfterMount: true,
+    isError: eligibility.isError,
+    refetch: vi.fn(),
+    data: { email_statuses: [{ sending: { status: 'failed', retryable: true } }] },
+  }),
   useRetryEmail: () => ({ mutateAsync: transport.retryEmail }),
 }));
 
@@ -68,6 +75,7 @@ function wrapper({ children }: { children: ReactNode }) {
 }
 
 afterEach(() => {
+  eligibility.isError = false;
   localStorage.clear();
   vi.clearAllMocks();
   confirmation.settle = undefined;
@@ -367,6 +375,25 @@ describe('sends under improveSendingUI', () => {
 });
 
 describe('failed newsletter retry', () => {
+  it('keeps the last successful eligibility after a background read fails', () => {
+    const inputs = options();
+    inputs.post = {
+      ...inputs.post,
+      status: 'published',
+      email: {
+        id: 'email-1',
+        status: 'failed',
+        error: 'Sending failed',
+        email_count: 20,
+        opened_count: 0,
+      },
+    };
+    const { result, rerender } = renderHook(() => usePublishFlow(inputs), { wrapper });
+    expect(result.current.canRetryEmail).toBe(true);
+    eligibility.isError = true;
+    rerender();
+    expect(result.current.canRetryEmail).toBe(true);
+  });
   it.each([null, ''])('keeps a failed retry recoverable with error %j', async (error) => {
     const inputs = options();
     inputs.post = {

@@ -1851,6 +1851,19 @@ describe('Editor header actions', () => {
         publishChrome({ newsletters: 1 });
         fakeSavablePost();
         failSendOnConfirmation(status);
+        fakeAdminEndpoint('GET', '/emails/email-1/status/', {
+          email_statuses: [
+            {
+              id: 'email-1',
+              sending: {
+                status: 'failed',
+                retryable: true,
+                failed_during: 'submitting',
+                progress: { completed: 0, total: 20, estimated_seconds_remaining: null },
+              },
+            },
+          ],
+        });
         await renderAdminApp(`/editor/post/${POST_ID}`, MAILGUN_ON);
 
         await sendThroughFlow(emailOnly);
