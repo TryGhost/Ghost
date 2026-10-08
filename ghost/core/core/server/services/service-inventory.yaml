@@ -1730,12 +1730,12 @@ services:
     kind: directory
     disposition: retain
     status: audited
-    auditedAt: c2999f4e13da6360bceced808bb52c4a04b5ad03
+    auditedAt: c637a47a1e5d452c7c5607aab228abd43ec6e2b5
     entryPoints:
       - indexnow-ping/index.ts
     notes: >-
-      Preserve post-event gating, live settings and request error reporting. Root lifecycle,
-      verification-route compatibility and production retry behavior still need contracts.
+      Preserve post-event gating, live settings and request error reporting. Root and publishing
+      baselines cover current delivery; cleanup and production retry behavior remain open.
     contracts:
       exports:
         summary: >-
@@ -1754,11 +1754,14 @@ services:
           services, request, logging and model events, constructs the implementation, assigns
           service, then subscribes. Later init calls skip construction and subscription.
           The wrapper is the only runtime construction path found; class tests inject fakes
-          except for the real request helper.
+          except for the real request helper. Root tests assert no subscriptions before init,
+          retained instance identity and one callback per event after repeated init, and
+          exercise the wired request helper. The construction-path census is source-only.
         sources:
           - core/server/services/indexnow-ping/index.ts
           - core/server/services/indexnow-ping/indexnow-ping-service.ts
-        tests: []
+        tests:
+          - test/unit/server/services/indexnow-ping/index.test.js
       consumers:
         summary: >-
           Boot is the only runtime root importer. Post model events invoke the listener for
@@ -1766,7 +1769,10 @@ services:
           Import events and events without changed SEO fields return early; others pass post
           JSON plus authors and tags to a detached ping. No runtime deep constructor or direct
           ping caller was found. The frontend key-verification middleware independently reads
-          the same setting; it does not import this service.
+          the same setting; it does not import this service. Root tests cover both event names,
+          import/no-SEO-change suppression and author/tag forwarding. The HTTP test publishes
+          through a collection requiring both relations. Transaction commit/rollback timing
+          and real import suppression remain source-only.
         sources:
           - core/boot.js
           - core/server/models/post.js
@@ -1777,6 +1783,8 @@ services:
           - core/frontend/web/middleware/serve-indexnow-key.js
         tests:
           - test/unit/server/services/indexnow-ping/indexnow-ping-service.test.js
+          - test/unit/server/services/indexnow-ping/index.test.js
+          - test/e2e-server/indexnow-publishing.isolated.test.ts
       startup:
         summary: >-
           Boot initializes settings and dynamic routing before calling init in its required
@@ -1784,7 +1792,10 @@ services:
           completes synchronously without checking key availability or sending a request;
           disabled/private/development configurations still subscribe. The settings model
           generates the key as a default, and frontend middleware serves its matching path.
-          Synchronous init failure rejects required startup.
+          Synchronous init failure rejects required startup. The HTTP test adds the production
+          IndexNow definition to the reduced test settings schema, then asserts the generated
+          key and matching verification response. Boot ordering, backend-only startup and
+          init failure are source-only.
         sources:
           - core/boot.js
           - core/server/services/indexnow-ping/index.ts
@@ -1792,7 +1803,8 @@ services:
           - core/server/models/settings.js
           - core/frontend/web/site.js
           - core/frontend/web/middleware/serve-indexnow-key.js
-        tests: []
+        tests:
+          - test/e2e-server/indexnow-publishing.isolated.test.ts
       lifetime:
         summary: >-
           The wrapper retains one implementation and its bound listener. Direct subscribeEvents
@@ -1800,14 +1812,19 @@ services:
           another instance's callback. Repeated wrapper init does not restore externally
           removed listeners. Neither wrapper nor implementation exposes reset, unsubscribe or
           shutdown. EventEmitter delivery is synchronous; ping completion is detached, with no
-          serialization, deduplication of pending work or retained completion handle.
+          serialization, deduplication of pending work or retained completion handle. Root tests
+          assert repeated-init identity, single delivery and synchronous request start while
+          the response is held. The HTTP test asserts publication completes before the ping
+          reply. Externally removed subscriptions and missing cleanup are source-only.
         sources:
           - core/server/services/indexnow-ping/index.ts
           - core/server/services/indexnow-ping/indexnow-ping-service.ts
           - core/server/lib/common/events.js
           - core/boot.js
           - core/server/ghost-server.ts
-        tests: []
+        tests:
+          - test/unit/server/services/indexnow-ping/index.test.js
+          - test/e2e-server/indexnow-publishing.isolated.test.ts
       configuration:
         summary: >-
           Each ping reads live environment, site privacy, privacy.useIndexNow, key and URL
@@ -1815,8 +1832,12 @@ services:
           slugs skip delivery. SEO fields and the IndexNow endpoint are module constants.
           Requests carry url, key and keyLocation with a five-second request timeout. Key
           lookup accepts any truthy value, while the verification middleware requires an exact
-          matching 32-character lowercase hex path. Class tests cover representative gates
-          and the url query, but not live changes, keyLocation or the verification route.
+          matching 32-character lowercase hex path. Class tests cover representative gates. Root
+          tests change environment/privacy/settings/key and URL providers without reinit,
+          match all three encoded query parameters and assert the configured timeout value.
+          HTTP coverage checks a generated key, a subdirectory keyLocation and its real
+          verification response, including body, content type and cache header. Invalid-key
+          paths and actual timeout/retry timing are not asserted.
         sources:
           - core/server/services/indexnow-ping/indexnow-ping-service.ts
           - core/server/services/indexnow-ping/constants.ts
@@ -1824,6 +1845,8 @@ services:
           - core/server/models/settings.js
         tests:
           - test/unit/server/services/indexnow-ping/indexnow-ping-service.test.js
+          - test/unit/server/services/indexnow-ping/index.test.js
+          - test/e2e-server/indexnow-publishing.isolated.test.ts
       resources:
         summary: >-
           The implementation owns two model-event registrations and starts untracked HTTP
@@ -1850,7 +1873,10 @@ services:
           rejection is silently swallowed by the listener. Production GETs inherit Got
           retries despite the no-retry comment; the request helper disables retries under
           test environments. Class HTTP tests establish final classification, not production
-          attempts, timeout duration or event-to-persistence failure isolation.
+          attempts or timeout duration. Root tests preserve synchronous model errors and swallowed
+          pre-try config rejection. The HTTP test holds a transport request until publication
+          completes, rejects it, asserts the warning and reads the persisted published post.
+          Partial-subscription failure, logging failures and production retries are source-only.
         sources:
           - core/server/services/indexnow-ping/index.ts
           - core/server/services/indexnow-ping/indexnow-ping-service.ts
@@ -1859,28 +1885,28 @@ services:
           - vitest.config.ts
         tests:
           - test/unit/server/services/indexnow-ping/indexnow-ping-service.test.js
+          - test/unit/server/services/indexnow-ping/index.test.js
+          - test/e2e-server/indexnow-publishing.isolated.test.ts
     unverified: []
     blockers:
       - >-
-        Add root/boot contracts for exports, initialization identity, disabled first init,
-        partial subscription failure and restart after listener removal. The class subscription
-        test only checks event names and call count on a fake bus, not callback identity or
-        duplicate prevention. Decide listener disposal and pending-request drain ownership.
+        Add lifecycle contracts for partial subscription failure, listener disposal, restart
+        and draining pending requests. Repeated init and disabled-first-init delivery are
+        covered, but boot ordering/backend-only behavior remain source-only.
       - >-
-        Pin the real post-model/event/URL-service boundary, including transactional publication,
-        import suppression and author/tag-filtered routes. Current tests invoke the class with
-        fake models and URL services; no assertion establishes full publishing-path behavior.
-        Characterize synchronous model errors, pre-try config failures and logging failures.
+        Transaction commit/rollback timing and actual import-path suppression remain untested.
+        The publishing HTTP test covers one tag-and-author-filtered route and a transport
+        failure after publication; it does not establish all persistence failure paths.
+        Characterize logging failures if the conversion changes their handling.
       - >-
-        Cover live setting changes, complete query encoding/keyLocation, subdirectory sites
-        and the actual key-verification route. The route and ping accept different key shapes;
-        existing getApiKey tests deliberately accept a non-hex key. Test the generated-key
-        contract before changing either side.
+        Ping accepts any truthy key while verification requires a matching lowercase hex
+        path. The generated-key happy path is covered; invalid/missing verification keys
+        and rotation through the HTTP settings API remain untested.
       - >-
         Resolve the no-retry comment against actual transport behavior: production Got GETs
         permit two retries for eligible statuses/errors, while test mode disables retries.
-        Characterize production backoff/timeouts and stop with pending requests; the current
-        HTTP classification tests do not establish these lifecycle contracts.
+        Characterize production backoff/timeouts and stop with pending requests; configured
+        timeout arguments and test-mode HTTP outcomes do not prove elapsed-time bounds.
   integrations:
     kind: directory
     disposition: retain
