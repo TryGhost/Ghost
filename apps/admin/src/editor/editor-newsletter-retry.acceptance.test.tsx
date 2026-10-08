@@ -47,15 +47,7 @@ function publishChrome() {
   });
 }
 
-/** The publish flow's email confirmation reads the post with its email alone. */
-function isConfirmationRead(url: string): boolean {
-  return new URL(url).searchParams.get('include') === 'email';
-}
-
-/**
- * A post whose newsletter failed, answering a retry as Core does: the retry
- * leaves the email pending, and it is sent by the time the flow polls for it.
- */
+/** A post whose newsletter failed, answering a retry as Core does by leaving the email pending. */
 function fakeFailedSend(overrides: Partial<Post>, error: string | null = SEND_ERROR) {
   const failedEmail: NonNullable<Post['email']> = {
     id: EMAIL_ID,
@@ -79,12 +71,9 @@ function fakeFailedSend(overrides: Partial<Post>, error: string | null = SEND_ER
   });
   let email = failedEmail;
 
-  fakeAdminEndpoint('GET', new RegExp(`^/posts/${POST_ID}/\\?`), ({ url }) => {
-    if (email.status === 'pending' && isConfirmationRead(url)) {
-      email = { ...email, status: 'submitted', error: null };
-    }
-    return { posts: [{ ...failed, email }] };
-  });
+  fakeAdminEndpoint('GET', new RegExp(`^/posts/${POST_ID}/\\?`), () => ({
+    posts: [{ ...failed, email }],
+  }));
 
   // The flow shows Retry only when Core says the failed send is retryable.
   fakeAdminEndpoint('GET', `/emails/${EMAIL_ID}/status/`, {

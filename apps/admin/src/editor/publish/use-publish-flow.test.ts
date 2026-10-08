@@ -8,7 +8,6 @@ import {
   usePublishFlow,
   type PublishFlowOptions,
 } from './use-publish-flow';
-import type { EmailConfirmationOutcome } from './email-confirmation';
 import type { NewsletterInput } from './publish-options';
 import type { SaveCompletion } from '@/editor/engine/save-engine';
 
@@ -23,21 +22,6 @@ vi.mock('@tryghost/admin-x-framework/api/emails', () => ({
     data: { email_statuses: [{ sending: { status: 'failed', retryable: true } }] },
   }),
   useRetryEmail: () => ({ mutateAsync: transport.retryEmail }),
-}));
-
-// A confirmation each spec settles itself; tearing the flow down settles it as cancelled.
-const confirmation = vi.hoisted(() => ({
-  settle: undefined as ((outcome: EmailConfirmationOutcome) => void) | undefined,
-}));
-vi.mock('./email-confirmation', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('./email-confirmation')>()),
-  createEmailConfirmation: () => ({
-    retryAndConfirm: () =>
-      new Promise<EmailConfirmationOutcome>((resolve) => {
-        confirmation.settle = resolve;
-      }),
-    cancel: () => confirmation.settle?.({ kind: 'cancelled' }),
-  }),
 }));
 
 const NOW = new Date('2026-09-02T10:00:00.000Z');
@@ -80,7 +64,6 @@ afterEach(() => {
   eligibility.isError = false;
   localStorage.clear();
   vi.clearAllMocks();
-  confirmation.settle = undefined;
 });
 
 describe('publish option actions', () => {
@@ -242,64 +225,6 @@ describe('a schedule that passes before it is confirmed', () => {
   });
 });
 
-describe('post reads after a retried send', () => {
-  /** Retries a failed send, leaving the flow waiting on its email confirmation. */
-  async function retryFailedSend() {
-    const client = new QueryClient();
-    const invalidateQueries = vi.spyOn(client, 'invalidateQueries');
-    const inputs = options();
-    inputs.post = {
-      ...inputs.post,
-      status: 'published',
-      email: {
-        id: 'email-1',
-        status: 'failed',
-        error: 'The email service was unavailable.',
-        email_count: 20,
-        opened_count: 0,
-      },
-    };
-    const { result } = renderHook(() => usePublishFlow(inputs), {
-      wrapper: ({ children }: { children: ReactNode }) =>
-        createElement(QueryClientProvider, { client }, children),
-    });
-    await waitFor(() => expect(result.current.limitsChecked).toBe(true));
-
-    let retrying: Promise<void> = Promise.resolve();
-    act(() => {
-      retrying = result.current.retryEmail();
-    });
-    await waitFor(() => expect(confirmation.settle).toBeDefined());
-
-    return { result, invalidateQueries, retrying };
-  }
-
-  it.each([
-    ['submitted', { kind: 'submitted' }],
-    ['failed again', { kind: 'failed', error: null, partial: false }],
-  ] as const)('refreshes them once the send has %s', async (_case, outcome) => {
-    const { invalidateQueries, retrying } = await retryFailedSend();
-
-    await act(async () => {
-      confirmation.settle?.(outcome);
-      await retrying;
-    });
-
-    expect(invalidateQueries).toHaveBeenCalledWith({ queryKey: ['PostsResponseType'] });
-  });
-
-  it('leaves them alone when the flow is closed before the send is confirmed', async () => {
-    const { result, invalidateQueries, retrying } = await retryFailedSend();
-
-    await act(async () => {
-      result.current.cancel();
-      await retrying;
-    });
-
-    expect(invalidateQueries).not.toHaveBeenCalled();
-  });
-});
-
 describe('sends', () => {
   const FAILED_EMAIL = {
     id: 'email-1',
@@ -377,10 +302,7 @@ describe('sends', () => {
       hasEmail: true,
     });
     await act(() => publishing);
-    // Nothing waits on the send itself; post analytics reports its progress.
-    expect(confirmation.settle).toBeUndefined();
     expect(result.current.step).toBe('complete');
-    expect(result.current.emailNote).toBeNull();
   });
 
   it('hands a send off as soon as a save slower than the minimum lands', async () => {
@@ -409,29 +331,40 @@ describe('sends', () => {
     expect(localStorage.getItem('ghost-last-published-post')).toBeNull();
   });
 
-  it('still waits on the email when a failed send is retried', async () => {
+  it('hands a retried send off once it has run for the minimum length', async () => {
     const inputs = options();
     inputs.post = { ...inputs.post, status: 'published', email: FAILED_EMAIL };
     inputs.onCompleted = vi.fn();
+    transport.retryEmail.mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          setTimeout(resolve, 400);
+        }),
+    );
     const { result } = renderHook(() => usePublishFlow(inputs), { wrapper });
     await waitFor(() => expect(result.current.limitsChecked).toBe(true));
 
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout', 'Date'] });
     let retrying: Promise<void> = Promise.resolve();
     act(() => {
       retrying = result.current.retryEmail();
     });
-    await waitFor(() => expect(confirmation.settle).toBeDefined());
-    expect(inputs.onCompleted).not.toHaveBeenCalled();
 
-    await act(async () => {
-      confirmation.settle?.({ kind: 'submitted' });
-      await retrying;
+    await advance(MIN_EMAIL_HANDOFF_LENGTH - 1);
+    expect(transport.retryEmail).toHaveBeenCalledWith({
+      id: 'email-1',
+      sessionExpiryRedirect: false,
     });
+    expect(inputs.onCompleted).not.toHaveBeenCalled();
+    expect(result.current.retryStatus).toBe('running');
+
+    await advance(1);
     expect(inputs.onCompleted).toHaveBeenCalledWith({
       postId: 'post-1',
       isScheduled: false,
       hasEmail: true,
     });
+    await act(() => retrying);
   });
 });
 
@@ -455,7 +388,8 @@ describe('failed newsletter retry', () => {
     rerender();
     expect(result.current.canRetryEmail).toBe(true);
   });
-  it.each([null, ''])('keeps a failed retry recoverable with error %j', async (error) => {
+  it('keeps a rejected retry recoverable', async () => {
+    transport.retryEmail.mockRejectedValueOnce(new Error('Delivery outcome is unknown'));
     const inputs = options();
     inputs.post = {
       ...inputs.post,
@@ -471,18 +405,11 @@ describe('failed newsletter retry', () => {
     const { result } = renderHook(() => usePublishFlow(inputs), { wrapper });
     await waitFor(() => expect(result.current.limitsChecked).toBe(true));
 
-    let retrying: Promise<void> = Promise.resolve();
-    act(() => {
-      retrying = result.current.retryEmail();
-    });
-
-    await act(async () => {
-      confirmation.settle?.({ kind: 'failed', error, partial: false });
-      await retrying;
-    });
+    await act(() => result.current.retryEmail());
 
     expect(result.current.step).toBe('email-error');
-    expect(result.current.emailErrorMessage).toBe('Unknown error');
-    expect(result.current.retryStatus).toBe('idle');
+    expect(result.current.emailErrorMessage).toBe('The email service was unavailable.');
+    expect(result.current.retryStatus).toBe('failure');
+    expect(result.current.retryFailure).toBe('Delivery outcome is unknown');
   });
 });

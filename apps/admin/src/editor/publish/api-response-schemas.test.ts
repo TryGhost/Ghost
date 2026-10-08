@@ -1,39 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import {
-  confirmationResponseSchema,
-  publishedPostCountResponseSchema,
-} from '@/editor/publish/api-response-schemas';
+import { publishedPostCountResponseSchema } from '@/editor/publish/api-response-schemas';
 
 describe('publish API response schemas', () => {
-  it('accepts the confirmation projection used by the email poller', () => {
-    expect(
-      confirmationResponseSchema.parse({
-        posts: [
-          {
-            id: 'post-1',
-            status: 'published',
-            email: {
-              id: 'email-1',
-              email_count: 10,
-              opened_count: 2,
-              status: 'submitted',
-            },
-          },
-        ],
-      }),
-    ).toMatchObject({ posts: [{ email: { status: 'submitted' } }] });
-  });
-
-  it.each([
-    ['an empty post collection', { posts: [] }],
-    [
-      'an incomplete email record',
-      { posts: [{ status: 'published', email: { id: 'email-1', status: 'submitted' } }] },
-    ],
-  ])('rejects %s', (_name, response) => {
-    expect(confirmationResponseSchema.safeParse(response).success).toBe(false);
-  });
-
   it('accepts a non-negative published post total', () => {
     expect(
       publishedPostCountResponseSchema.parse({ meta: { pagination: { total: 41 } } }),

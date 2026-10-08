@@ -225,7 +225,6 @@ function PublishFlowDialog({
             <CompleteStep
               captured={flow.captured}
               completedAt={flow.completedAt}
-              note={flow.emailNote}
               post={post}
               postCount={flow.postCount}
               siteTitle={siteTitle}

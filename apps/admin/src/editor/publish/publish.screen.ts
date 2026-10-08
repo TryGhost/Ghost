@@ -5,7 +5,6 @@ import {
   publishAlreadySent,
   publishBackToSettings,
   publishConfirm,
-  publishCompleteNote,
   publishConfirmError,
   publishContinue,
   publishEmailSizeWarning,
@@ -48,7 +47,6 @@ export const publishScreen = {
   options: () => page.getByTestId(publishFlowOptions),
   confirm: () => page.getByTestId(publishFlowConfirm),
   complete: () => page.getByTestId(publishFlowComplete),
-  completeNote: () => page.getByTestId(publishCompleteNote),
   emailError: () => page.getByTestId(publishEmailErrorStep),
   /** The collapsed row's toggle button. */
   setting: (name: keyof typeof SETTINGS) => page.getByTestId(SETTINGS[name]).getByRole('button'),

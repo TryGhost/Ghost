@@ -76,19 +76,18 @@ Retry beside Publish, Unpublish or Unschedule, and for a post whose status line
 offers "Sent" or the retry. A published post's status line reads "Published
 and sending to N members" while its email is on its way and "Published and
 sent to N members" once it is submitted; an email-only send reads "Sent to N
-members" throughout. A publish that emails does not wait for the send, so the
-status line shows it as the save left it; a retry waits for the flow's email
-confirmation to find it submitted.
+members" throughout. Neither a publish that emails nor a retry waits for the
+send, so the status line shows it as the save or retry left it.
 
 After successful completion, the editor follows the publish flow's celebration
 handoff to the destination screen. Pages return to `/pages`; scheduled posts
 and posts without email return to `/posts`. Immediately published posts with
 email, including email-only sends and posts that were emailed previously, open
-`/posts/analytics/:id`. Failed saves keep the flow open so the writer can
-retry. A publish that emails opens analytics once it saves, but no sooner than
-1.5 seconds after the writer confirms, and a send that fails after that is
-reported there rather than in the flow; retrying a failed send from the status
-line still waits for the email.
+`/posts/analytics/:id`. Failed saves and rejected retries keep the flow open
+so the writer can try again. A publish that emails, or a retry of a failed
+send, opens analytics once Core accepts it, but no sooner than 1.5 seconds
+after the writer confirms; the send's progress, and any failure after that, is
+reported there rather than in the flow.
 
 ## Leaving the editor
 

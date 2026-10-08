@@ -14,15 +14,18 @@ import {tracked} from '@glimmer/tracking';
 import {use} from 'ember-could-get-used-to-this';
 
 const SHOW_SAVE_STATUS_DURATION = 3000;
-export const CONFIRM_EMAIL_POLL_LENGTH = 1000;
-export const CONFIRM_EMAIL_MAX_POLL_LENGTH = 15 * 1000;
-// The least time a send shows its running state before handing off to post
-// analytics, so the hand-off isn't instant
-export const MIN_EMAIL_HANDOFF_LENGTH = 1500;
+// The least time a send or a retried send shows its running state before
+// handing off to post analytics, so the hand-off isn't instant
+const MIN_EMAIL_HANDOFF_LENGTH = 1500;
 
-// How much of the minimum hand-off time is left for a send confirmed at `startedAt`
-export function remainingEmailHandOff(startedAt, now = Date.now()) {
-    return Math.max(0, MIN_EMAIL_HANDOFF_LENGTH - (now - startedAt));
+// Waits out what is left of the minimum hand-off time for a send confirmed at
+// `startedAt`; a task delegates to it with `yield*`
+export function* waitForEmailHandOff(startedAt) {
+    const remaining = MIN_EMAIL_HANDOFF_LENGTH - (Date.now() - startedAt);
+
+    if (remaining > 0) {
+        yield timeout(envConfig.environment === 'test' ? 1 : remaining);
+    }
 }
 
 // This component exists for the duration of the editor screen being open.
@@ -265,7 +268,7 @@ export default class PublishManagement extends Component {
         yield this.args.afterPublish(result);
 
         if (willEmailImmediately) {
-            yield this.handOffEmailTask.perform(startedAt);
+            yield* waitForEmailHandOff(startedAt);
         }
 
         return result;
@@ -285,17 +288,6 @@ export default class PublishManagement extends Component {
     }
 
     @taskGroup saveButtonTaskGroup;
-
-    @task
-    *handOffEmailTask(startedAt) {
-        const remaining = remainingEmailHandOff(startedAt);
-
-        if (remaining > 0) {
-            yield timeout(envConfig.environment === 'test' ? 1 : remaining);
-        }
-
-        return true;
-    }
 
     @task
     *revertToDraftTask() {

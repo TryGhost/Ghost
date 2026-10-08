@@ -108,26 +108,6 @@ function fakePublishedCount(total: number) {
   });
 }
 
-/** What a retried send's confirmation reads back. */
-function fakeEmailPolling(...states: Array<{ status: string; error?: string | null }>) {
-  let index = 0;
-
-  return fakeAdminEndpoint('GET', new RegExp(`^/posts/${POST_ID}/\\?`), () => {
-    const email = states[Math.min(index, states.length - 1)];
-    index += 1;
-
-    return {
-      posts: [
-        {
-          id: POST_ID,
-          status: 'published',
-          email: { id: EMAIL_ID, email_count: 20, opened_count: 0, ...email },
-        },
-      ],
-    };
-  });
-}
-
 function completesWith(completion: SaveCompletion) {
   return vi.fn((command: PublishDispatch): Promise<SaveCompletion> => {
     void command;
@@ -1049,30 +1029,6 @@ describe('Publish flow', () => {
     expect(onCompleted).toHaveBeenCalledTimes(1);
   });
 
-  it('never claims a retried email-only send landed when the reload has no email', async () => {
-    fakeAdminEndpoint('GET', new RegExp(`^/posts/${POST_ID}/\\?`), {
-      posts: [{ id: POST_ID, status: 'sent', email: null }],
-    });
-    fakeAdminEndpoint('PUT', `/emails/${EMAIL_ID}/retry/`, { emails: [] });
-    const { onCompleted } = await renderPublishFlow({ post: failedSend('sent') });
-
-    await publishScreen.retryEmailButton().click();
-
-    await expect
-      .element(publishScreen.completeNote())
-      .toHaveTextContent('couldn’t confirm the newsletter was sent');
-    // Nothing on the step may assert a send, or celebrate one.
-    await expect.element(publishScreen.complete()).toHaveTextContent('Your post has been created');
-    await expect.element(publishScreen.complete()).not.toHaveTextContent('has been sent');
-    await expect.element(publishScreen.complete()).not.toHaveTextContent('was sent to');
-    await expect.element(publishScreen.complete()).not.toHaveTextContent('Boom');
-    expect(onCompleted).toHaveBeenCalledWith({
-      postId: POST_ID,
-      isScheduled: false,
-      hasEmail: false,
-    });
-  });
-
   it('shows a validation failure in place', async () => {
     const dispatch = completesWith(failed('validation', 'Title cannot be longer than 255'));
     await renderPublishFlow({ dispatch });
@@ -1149,16 +1105,49 @@ describe('Publish flow', () => {
     await expect.element(publishScreen.retryEmailButton()).not.toBeInTheDocument();
   });
 
-  it('retries a failed send and completes once it is submitted', async () => {
-    fakeEmailPolling({ status: 'submitted' });
+  it('hands a retried send off without waiting for it to be submitted', async () => {
     const retryApi = fakeAdminEndpoint('PUT', `/emails/${EMAIL_ID}/retry/`, { emails: [] });
-    await renderPublishFlow({ post: failedSend() });
+    const postReads = fakeAdminEndpoint('GET', new RegExp(`^/posts/${POST_ID}/\\?`), {
+      posts: [],
+    });
+    const { onCompleted } = await renderPublishFlow({ post: failedSend() });
 
     await expect.element(publishScreen.emailError()).toHaveTextContent('Sending failed');
     await publishScreen.retryEmailButton().click();
 
+    // The retry has been accepted, but the button keeps its running state for the hand-off.
+    await expect.poll(() => retryApi.requests.length).toBe(1);
+    await expect.element(publishScreen.retryEmailButton()).toHaveTextContent('Sending');
+    await expect.element(publishScreen.retryEmailButton()).toBeDisabled();
+    expect(onCompleted).not.toHaveBeenCalled();
+
     await expect.element(publishScreen.complete()).toBeInTheDocument();
+    expect(onCompleted).toHaveBeenCalledWith({
+      postId: POST_ID,
+      isScheduled: false,
+      hasEmail: true,
+    });
     expect(retryApi.requests).toHaveLength(1);
+    expect(postReads.requests).toHaveLength(0);
+  });
+
+  it('offers to send the remaining emails of a partially sent newsletter', async () => {
+    await renderPublishFlow({
+      post: draft({
+        status: 'published',
+        email: {
+          id: EMAIL_ID,
+          status: 'failed',
+          error: 'An error occurred, and your newsletter was only partially sent.',
+          email_count: 20,
+          opened_count: 0,
+        },
+      }),
+    });
+
+    await expect
+      .element(publishScreen.retryEmailButton())
+      .toHaveTextContent('Send remaining emails');
   });
 
   it('refreshes retry eligibility when Core rejects the retry', async () => {
@@ -1195,7 +1184,6 @@ describe('Publish flow', () => {
   });
 
   it('keeps the email retry pending during navigation without showing completion', async () => {
-    fakeEmailPolling({ status: 'submitted' });
     const retryApi = fakeAdminEndpoint('PUT', `/emails/${EMAIL_ID}/retry/`, { emails: [] });
     const { onCompleted } = await renderPublishFlow({
       post: failedSend(),

@@ -1,6 +1,5 @@
 import { Banner, Button } from '@tryghost/shade/components';
 import { Inline, Stack, Text } from '@tryghost/shade/primitives';
-import { isPartialEmailFailure } from '@/editor/publish/email-confirmation';
 import {
   publishEmailErrorStep,
   publishRetryEmail,
@@ -8,6 +7,12 @@ import {
 } from '@tryghost/test-data/selectors/editor';
 import type { ConfirmStatus } from '@/editor/publish/use-publish-flow';
 import type { PublishFlowPost } from '@/editor/publish/flow-post';
+
+// A partially delivered send is only distinguishable by the word "partially"
+// appearing in the error message the API stores on the email.
+function isPartialEmailFailure(error: string): boolean {
+  return error.includes('partially');
+}
 
 export interface CompleteWithEmailErrorStepProps {
   canRetry: boolean;

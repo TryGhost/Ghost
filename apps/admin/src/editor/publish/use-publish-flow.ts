@@ -1,15 +1,8 @@
 import { apiUrl } from '@tryghost/admin-x-framework/helpers';
 import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react';
-import { useQueryClient } from '@tanstack/react-query';
 import { useFetchApi } from '@tryghost/admin-x-framework/hooks';
 import { useEmailSendingStatus, useRetryEmail } from '@tryghost/admin-x-framework/api/emails';
-import { pagesDataType } from '@tryghost/admin-x-framework/api/pages';
-import { postsDataType } from '@tryghost/admin-x-framework/api/posts';
-import {
-  confirmationResponseSchema,
-  publishedPostCountResponseSchema,
-} from './api-response-schemas';
-import { createEmailConfirmation } from './email-confirmation';
+import { publishedPostCountResponseSchema } from './api-response-schemas';
 import { createPublishOptions } from './publish-options';
 import {
   describeCompletionFailure,
@@ -19,7 +12,6 @@ import {
 import { EDITOR_REQUEST_OPTIONS } from '@/editor/request-options';
 import { useMinimumDuration } from '@/hooks/use-minimum-duration';
 import { writePublishCelebration } from './celebration-handoff';
-import type { EmailConfirmationOutcome } from './email-confirmation';
 import type { PublishFlowPost } from './flow-post';
 import type {
   PublishDispatcher,
@@ -35,8 +27,8 @@ export type PublishStep = 'options' | 'confirm' | 'complete' | 'email-error';
 export type ConfirmStatus = 'idle' | 'running' | 'success' | 'failure';
 
 /**
- * The least time a send shows its running state before handing off to post
- * analytics, so the hand-off is not instant.
+ * The least time a send or a retried send shows its running state before
+ * handing off to post analytics, so the hand-off is not instant.
  */
 export const MIN_EMAIL_HANDOFF_LENGTH = 1500;
 
@@ -72,8 +64,6 @@ export interface PublishFlow extends PublishOptionActions {
   limitsChecked: boolean;
   /** A failed limit check blocks review until the user retries it successfully. */
   limitsFailure: string | null;
-  /** Set when the publish landed but its email could not be confirmed either way. */
-  emailNote: string | null;
   /** Publish intent captured on entering confirm, so saving cannot change the copy. */
   captured: {
     willPublish: boolean;
@@ -95,8 +85,6 @@ export interface PublishFlow extends PublishOptionActions {
 
 const UNKNOWN_EMAIL_ERROR = 'Unknown error';
 const UNKNOWN_RETRY_ERROR = 'Unknown Error occurred when attempting to resend';
-export const EMAIL_UNCONFIRMED =
-  'We couldn’t confirm the newsletter was sent. Check the post’s email status from the posts list.';
 export const SCHEDULE_PASSED =
   'The scheduled time has passed. Go back and choose a future date and time.';
 
@@ -122,7 +110,6 @@ export function usePublishFlow({
   onCompleted,
 }: PublishFlowOptions): PublishFlow {
   const fetchApi = useFetchApi();
-  const queryClient = useQueryClient();
   const { mutateAsync: retryEmailRequest } = useRetryEmail();
   const [, refresh] = useReducer((tick: number) => tick + 1, 0);
 
@@ -170,49 +157,8 @@ export function usePublishFlow({
     [machine],
   );
 
-  // The email is created by the save, so its id is only knowable from a reload.
-  const [emailId, setEmailId] = useState(post.email?.id ?? null);
+  const emailId = post.email?.id ?? null;
   const activeRef = useRef(true);
-
-  const confirmation = useMemo(
-    () =>
-      createEmailConfirmation({
-        reload: async (postId) => {
-          const data = confirmationResponseSchema.parse(
-            await fetchApi<unknown>(
-              apiUrl(`/posts/${postId}/`, { include: 'email' }),
-              EDITOR_REQUEST_OPTIONS,
-            ),
-          );
-          const reloaded = data.posts.at(0);
-
-          if (!reloaded) {
-            throw new Error('The published post was missing from its reload response.');
-          }
-
-          if (reloaded.email?.id && activeRef.current) {
-            setEmailId(reloaded.email.id);
-          }
-          return { email: reloaded.email ?? null };
-        },
-        retry: async (id) => {
-          await retryEmailRequest({ id, sessionExpiryRedirect: false });
-        },
-      }),
-    [fetchApi, retryEmailRequest],
-  );
-
-  // The poll reads around the query cache, so a settled send refreshes the post reads.
-  const refreshPostReads = useCallback(
-    (outcome: EmailConfirmationOutcome) => {
-      if (outcome.kind !== 'cancelled') {
-        void queryClient.invalidateQueries({
-          queryKey: [post.displayName === 'page' ? pagesDataType : postsDataType],
-        });
-      }
-    },
-    [post.displayName, queryClient],
-  );
 
   const [step, setStep] = useState<PublishStep>(() =>
     initialEmailError(post) ? 'email-error' : 'options',
@@ -226,7 +172,6 @@ export function usePublishFlow({
   const [completedAt, setCompletedAt] = useState<string | null>(null);
   const [checkedMachine, setCheckedMachine] = useState<PublishOptionsMachine | null>(null);
   const [limitsFailure, setLimitsFailure] = useState<string | null>(null);
-  const [emailNote, setEmailNote] = useState<string | null>(null);
   const [retryStatus, setRetryStatus] = useState<ConfirmStatus>('idle');
   const [retryFailure, setRetryFailure] = useState<string | null>(null);
   const retryEligibility = useEmailSendingStatus(emailId ?? '', {
@@ -318,11 +263,8 @@ export function usePublishFlow({
     };
   }, [checkLimits, machine]);
 
-  const confirmationRef = useRef(confirmation);
-  confirmationRef.current = confirmation;
   const cancel = useCallback(() => {
     activeRef.current = false;
-    confirmationRef.current.cancel();
     limitCheckGenerationRef.current += 1;
   }, []);
 
@@ -508,41 +450,32 @@ export function usePublishFlow({
     }
 
     retryRunningRef.current = true;
+    handoffMinimum.start();
     setRetryFailure(null);
     setRetryStatus('running');
 
     try {
-      const outcome = await confirmation.retryAndConfirm(post.id, emailId);
-      refreshPostReads(outcome);
-
-      if (!activeRef.current) {
-        return;
-      }
-
-      if (outcome.kind === 'failed' || outcome.kind === 'cancelled') {
-        retryRunningRef.current = false;
-        if (outcome.kind === 'failed') {
-          setEmailErrorMessage(outcome.error || UNKNOWN_EMAIL_ERROR);
-        }
-        setRetryStatus('idle');
-        return;
-      }
-
-      if (outcome.kind !== 'submitted') {
-        setEmailNote(EMAIL_UNCONFIRMED);
-      }
-      if (showCompletion) {
-        setRetryStatus('success');
-      }
-      complete(false, outcome.kind !== 'not-needed');
+      await retryEmailRequest({ id: emailId, sessionExpiryRedirect: false });
     } catch (error) {
       if (activeRef.current) {
         retryRunningRef.current = false;
         setRetryFailure(error instanceof Error ? error.message : UNKNOWN_RETRY_ERROR);
         setRetryStatus('failure');
       }
+      return;
     }
-  }, [canRetryEmail, complete, confirmation, emailId, post.id, refreshPostReads, showCompletion]);
+
+    // Like a publish, the retried send is handed to post analytics rather than awaited.
+    await handoffMinimum.elapsed();
+
+    if (!activeRef.current) {
+      return;
+    }
+    if (showCompletion) {
+      setRetryStatus('success');
+    }
+    complete(false, true);
+  }, [canRetryEmail, complete, emailId, handoffMinimum, retryEmailRequest, showCompletion]);
 
   return {
     ...optionActions,
@@ -555,7 +488,6 @@ export function usePublishFlow({
     completedAt,
     limitsChecked,
     limitsFailure,
-    emailNote,
     captured,
     retryLimits: () => void checkLimits(),
     toConfirm,

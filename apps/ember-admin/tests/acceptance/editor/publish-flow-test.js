@@ -879,6 +879,33 @@ describe('Acceptance: Publish flow', function () {
             expect(statusReads).to.equal(2);
         });
 
+        it('hands a retried send off to post analytics', async function () {
+            this.server.get('/emails/:id/status/', (schema, {params}) => {
+                return {email_statuses: [{id: params.id, sending: {
+                    status: 'failed', failed_during: 'submitting', retryable: true,
+                    progress: {completed: 0, total: 7, estimated_seconds_remaining: null}
+                }}]};
+            });
+            let retries = 0;
+            this.server.put('/emails/:id/retry/', ({emails}, {params}) => {
+                retries += 1;
+                return emails.find(params.id).update({status: 'pending'});
+            });
+            let emailReads = 0;
+            this.server.get('/emails/:id/', ({emails}, {params}) => {
+                emailReads += 1;
+                return emails.find(params.id);
+            });
+
+            const {post} = await openFailedSend(this.server);
+            await waitFor('.gh-publish-cta button');
+            await click('.gh-publish-cta button');
+
+            await waitUntil(() => currentURL() === `/posts/analytics/${post.id}`);
+            expect(retries, 'retry requests').to.equal(1);
+            expect(emailReads, 'email reloads').to.equal(0);
+        });
+
         for (const retryableAfterRejection of [false, true]) {
             it(`refreshes API retry eligibility to ${retryableAfterRejection} when the retry is rejected`, async function () {
                 let retryable = true;
