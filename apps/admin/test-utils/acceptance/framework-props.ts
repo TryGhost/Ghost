@@ -20,6 +20,9 @@ export function createFrameworkProps(
         retry: false,
         networkMode: 'always',
       },
+      mutations: {
+        networkMode: 'always',
+      },
     },
   });
 
