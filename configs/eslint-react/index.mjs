@@ -396,9 +396,8 @@ export function reactAppConfig(options = {}) {
       plugins: basePlugins,
       settings: baseSettings,
       rules: {
-        ...(typescript
-          ? tsReactAppRules
-          : { ...js.configs.recommended.rules, ...reactFlat.rules, ...jsReactAppRules }),
+        ...js.configs.recommended.rules,
+        ...(typescript ? tsReactAppRules : { ...reactFlat.rules, ...jsReactAppRules }),
         ...mochaRulesOff(ghostPlugin),
         ...extraTestRules,
       },
