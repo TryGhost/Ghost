@@ -1,7 +1,7 @@
 import * as i18nLibModule from '@tryghost/i18n/registry/signup-form';
-import React, { ComponentProps } from 'react';
-import pages, { Page, PageName } from './pages';
-import { AppContextProvider, AppContextType } from './app-context';
+import React, { type ComponentProps } from 'react';
+import pages, { type Page, type PageName } from './pages';
+import { AppContextProvider, type AppContextType } from './app-context';
 import { ContentBox } from './components/content-box';
 import { Frame } from './components/frame';
 import { setupGhostApi } from './utils/api';

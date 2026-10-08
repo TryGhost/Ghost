@@ -1,11 +1,20 @@
 import { reactAppConfig } from '@internal/cfg-eslint-react';
 
-// LEGACY: vanilla JS (no TypeScript). sodo-search should migrate to TS — small
-// surface (~6 components) so the migration is 1–2 days. Until then, the
-// typescript: false flag is the escape hatch.
-export default reactAppConfig({
-  typescript: false,
-  reactRefresh: false, // bundled as UMD for theme distribution
-  sortImports: true,
-  ignores: ['umd/**/*', 'dist/**/*'],
-});
+export default [
+  ...reactAppConfig({
+    reactRefresh: false, // bundled as UMD for theme distribution
+    sortImports: true,
+    ignores: ['umd/**/*', 'dist/**/*'],
+    extraSrcRules: {
+      // Preact core sets SVG attributes verbatim, so they must stay kebab-case
+      'react/no-unknown-property': [
+        'error',
+        { ignore: ['stroke-linecap', 'stroke-linejoin', 'stroke-width'] },
+      ],
+    },
+  }),
+  {
+    // Rendered with Preact; stops eslint-plugin-react from looking for a `react` install
+    settings: { react: { version: '18.3' } },
+  },
+];

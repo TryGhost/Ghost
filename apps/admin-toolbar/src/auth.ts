@@ -1,6 +1,19 @@
 import { AUTH_TIMEOUT } from './constants';
+import type { StaffUser } from './user';
 
-export function createAuthFrame(adminUrl) {
+interface UsersResponse {
+  users?: StaffUser[];
+}
+
+interface AuthFrameReply {
+  uid: number;
+  error: string | null;
+  result: UsersResponse | null;
+}
+
+type ReplyHandler = (error: AuthFrameReply['error'], result: AuthFrameReply['result']) => void;
+
+export function createAuthFrame(adminUrl: string) {
   const frame = document.createElement('iframe');
   frame.dataset.frame = 'admin-auth';
   frame.src = `${adminUrl}auth-frame/`;
@@ -11,9 +24,9 @@ export function createAuthFrame(adminUrl) {
   return frame;
 }
 
-export function createAdminApi(adminUrl, frame) {
+export function createAdminApi(adminUrl: string, frame: HTMLIFrameElement) {
   let uid = 0;
-  const handlers = {};
+  const handlers: Record<number, ReplyHandler> = {};
   const adminOrigin = new URL(adminUrl).origin;
 
   window.addEventListener('message', function (event) {
@@ -21,7 +34,7 @@ export function createAdminApi(adminUrl, frame) {
       return;
     }
 
-    let data;
+    let data: AuthFrameReply;
     try {
       data = JSON.parse(event.data);
     } catch {
@@ -37,8 +50,8 @@ export function createAdminApi(adminUrl, frame) {
     handler(data.error, data.result);
   });
 
-  function call(action, args) {
-    return new Promise((resolve, reject) => {
+  function call(action: string, args?: Record<string, unknown>) {
+    return new Promise<AuthFrameReply['result']>((resolve, reject) => {
       uid += 1;
       const currentUid = uid;
       const timeout = window.setTimeout(() => {
@@ -74,7 +87,7 @@ export function createAdminApi(adminUrl, frame) {
   };
 }
 
-export function canShowToolbar(user) {
+export function canShowToolbar(user: StaffUser) {
   const allowedRoles = new Set(['owner', 'administrator', 'editor']);
   return (user?.roles || []).some((role) => allowedRoles.has((role?.name || '').toLowerCase()));
 }

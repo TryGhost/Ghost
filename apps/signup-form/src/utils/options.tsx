@@ -1,5 +1,5 @@
 import React from 'react';
-import { SignupFormOptions } from '../app-context';
+import type { SignupFormOptions } from '../app-context';
 
 export function useOptions(scriptTag: HTMLElement) {
   const buildOptions = React.useCallback(() => {

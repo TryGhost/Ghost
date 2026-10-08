@@ -1,7 +1,7 @@
 import PencilIcon from '../../../images/icons/pencil.svg?react';
 import React from 'react';
 import TrashIcon from '../../../images/icons/trash.svg?react';
-import { Comment, useAppContext } from '../../../app-context';
+import { type Comment, useAppContext } from '../../../app-context';
 
 type Props = {
   comment: Comment;

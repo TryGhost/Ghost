@@ -1,6 +1,14 @@
+import type { ToolbarConfig } from './config';
+import type { IconName } from './icons';
 import { adminHref, commentsHref } from './links';
 
-export function getToolbarActions(config) {
+export interface ToolbarAction {
+  href: string;
+  icon: IconName;
+  label: string;
+}
+
+export function getToolbarActions(config: ToolbarConfig): ToolbarAction[] {
   if (config.pageContext === 'home') {
     return getHomepageActions(config);
   }
@@ -32,8 +40,8 @@ export function getToolbarActions(config) {
   return [];
 }
 
-function getHomepageActions(config) {
-  const actions = [];
+function getHomepageActions(config: ToolbarConfig) {
+  const actions: ToolbarAction[] = [];
 
   if (config.siteAnalyticsEnabled) {
     actions.push({
@@ -74,8 +82,8 @@ function getHomepageActions(config) {
   return actions;
 }
 
-function getPostActions(config) {
-  const actions = [
+function getPostActions(config: ToolbarConfig) {
+  const actions: ToolbarAction[] = [
     {
       href: adminHref(config.adminUrl, `posts/analytics/${config.resourceId}`),
       icon: 'analytics',

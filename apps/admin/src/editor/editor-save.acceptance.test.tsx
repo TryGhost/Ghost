@@ -213,10 +213,9 @@ describe('Post editor saving', () => {
 
     await userEvent.keyboard(' edited');
 
-    await expect.poll(() => saveApi.requests.length).toBeGreaterThan(0);
-    const saved = submittedBody(saveApi);
-    expect(saved).toContain(' edited');
-    expect(saved).not.toContain('#123456');
+    // Fast autosave can send a partial edit before the keyboard sequence finishes.
+    await expect.poll(() => submittedBody(saveApi)).toContain(' edited');
+    expect(submittedBody(saveApi)).not.toContain('#123456');
   });
 
   it('creates a new post on the first edit and swaps the URL without remounting', async () => {

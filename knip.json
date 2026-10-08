@@ -83,9 +83,6 @@
         "eslint-plugin-tailwindcss"
       ]
     },
-    "apps/sodo-search": {
-      "ignoreDependencies": ["@tryghost/debug", "@testing-library/jest-dom"]
-    },
     "koenig/koenig-lexical": {
       "ignoreDependencies": ["@storybook/react", "prettier-plugin-organize-attributes"]
     }
