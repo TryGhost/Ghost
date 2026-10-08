@@ -110,7 +110,7 @@ services:
     kind: directory
     disposition: retain
     status: audited
-    auditedAt: 39c7c0c6b6f5592d7184628aaca1b724432763f3
+    auditedAt: 115d62e1c2f6793d434500072d74b705bdce6b0c
     entryPoints:
       - announcement-bar-service/index.js
     notes: >-
@@ -187,11 +187,16 @@ services:
           and stale shutdown. Root/controller tests cover retained consumers, synchronous live
           reads and fresh result objects across calls. Real-boot tests cover server cleanup,
           explicit and fixture-owned no-server restarts, and old apps remaining in maintenance.
+          A fixture unit test checks that imported and required helpers stop the same owner
+          before advancing startup.
         sources:
           - core/boot.js
           - core/server/lib/service-lifecycle/index.ts
           - core/server/services/announcement-bar-service/announcement-bar-settings.js
+          - test/utils/e2e-framework.ts
+          - test/utils/e2e-utils.js
         tests:
+          - test/unit/e2e-boot-ownership.test.ts
           - test/unit/server/lib/service-lifecycle.test.ts
           - test/unit/server/services/announcement-bar/index.test.ts
           - test/unit/api/endpoints/announcements.test.ts
