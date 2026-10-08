@@ -350,13 +350,22 @@ export const poll = async ({
 
   let nextPollAt = nextStepReadyAt;
 
-  // If the batch is full, we might have more steps to execute later.
+  // tl;dr: this may enqueue 1 unnecessary poll. That's worth it.
   //
-  // This could request an unnecessary poll if `steps.length === MAX_STEPS_PER_BATCH`.
+  // If the batch is full, that means one of two things:
   //
-  // Alternatively, we could do additional database operations to reliably determine whether an extra poll is needed.
-  // For example, we could fetch `MAX_STEPS_PER_BATCH + 1`, or select `COUNT(*)`. I think that complexity is not
-  // worth it.
+  // 1. The number of remaining steps after this batch is positive. In other
+  //    words, this batch doesn't cover everything.
+  // 2. The number of remaining steps after this batch is 0. In other words,
+  //    this is the last batch (for now).
+  //
+  // With the current design, we can't tell the difference! That is suboptimal.
+  //
+  // We *could* fix this by doing another query. But we don't because:
+  //
+  // - for most batches, we'd be doing an unnecessary query
+  // - unnecessary polls do not impact correctness. At worst, they are a waste
+  // - it would add complexity
   if (steps.length >= MAX_STEPS_PER_BATCH) {
     nextPollAt = dateMin(nextPollAt, new Date());
   }
