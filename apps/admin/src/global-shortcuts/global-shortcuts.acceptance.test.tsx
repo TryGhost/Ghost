@@ -21,6 +21,8 @@ describe('App-wide shortcuts', () => {
   it('returns to the opening route after Settings is opened with the shortcut', async () => {
     allowUnhandledRequests();
     await renderAdminApp('/site', { labs: { admin7settings: true } });
+    // Boot can consume the shortcut before the signed-in app can navigate.
+    await expect.element(sidebarScreen.shellNav()).toBeVisible();
 
     await expect.poll(() => globalShortcutsScreen.press('openSettings')).toBe(true);
     await expect.poll(currentRoute).toBe('/settings');

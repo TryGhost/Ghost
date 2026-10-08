@@ -88,6 +88,8 @@ describe('Settings layout', () => {
 
     await sidebarScreen.navLink('Settings').click();
     await expect.poll(currentRoute).toBe('/settings');
+    // The URL changes before Settings mounts its Escape handler.
+    await expect.element(settingsScreen.titleAndDescription()).toBeVisible();
 
     await userEvent.keyboard('{Escape}');
     await expect.poll(currentRoute).toBe('/tags');
