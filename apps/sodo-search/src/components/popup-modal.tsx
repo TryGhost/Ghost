@@ -41,6 +41,7 @@ const FRAME_STYLES = `
     }
 `;
 
+const INPUT_ID = 'sodo-search-input';
 const RESULTS_ID = 'sodo-search-results';
 
 function resultElementId(id: string) {
@@ -116,6 +117,7 @@ function SearchBox({
         aria-expanded={allResults.length > 0}
         aria-label={t('Search posts, tags and authors')}
         className="grow -my-5 py-5 -ms-3 ps-3 text-[1.65rem] focus-visible:outline-none placeholder:text-gray-400 outline-none truncate"
+        id={INPUT_ID}
         placeholder={t('Search posts, tags and authors')}
         role="combobox"
         value={searchValue || ''}
@@ -524,11 +526,9 @@ function Results({
   selectedResult,
   setSelectedResult,
 }: { view: ResultsView } & SelectionProps) {
-  const { t } = useAppContext();
-
   return (
     <div className="overflow-y-auto max-h-[calc(100vh-172px)] sm:max-h-[70vh] -mt-[1px]">
-      <div aria-label={t('Search results')} id={RESULTS_ID} role="listbox">
+      <div aria-labelledby={INPUT_ID} id={RESULTS_ID} role="listbox">
         <AuthorResults
           authors={view.authors}
           selectedResult={selectedResult}

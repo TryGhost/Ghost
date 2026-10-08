@@ -114,7 +114,7 @@ describe('Search accessibility', () => {
 
     expect(input).toHaveAccessibleName('Search posts, tags and authors');
     expect(input).toHaveAttribute('aria-expanded', 'true');
-    const listbox = screen.getByRole('listbox', { name: 'Search results' });
+    const listbox = screen.getByRole('listbox', { name: 'Search posts, tags and authors' });
     expect(input).toHaveAttribute('aria-controls', listbox.id);
 
     const options = screen.getAllByRole('option');
