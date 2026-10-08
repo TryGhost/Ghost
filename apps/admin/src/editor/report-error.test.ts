@@ -13,6 +13,7 @@ import { body, record, sessionHarness } from '@/editor/session/__test-utils__/se
 import { preloadKoenig } from '@/settings/components/koenig-loader';
 import {
   reportEditorError,
+  reportEditorNotice,
   reportKoenigError,
   reportKoenigRenderError,
   reportLeaveConfirmation,
@@ -105,6 +106,23 @@ describe('reportEditorError', () => {
       tags: { lexical: true },
       contexts: { koenig: { version: '1.2.3' } },
     });
+  });
+});
+
+describe('reportEditorNotice', () => {
+  it('sends the message with the given tags, never as an exception', () => {
+    reportEditorNotice('LocalStorage quota exceeded. Removing old revisions.', {
+      tags: { localRevisions: 'quotaExceeded' },
+    });
+
+    expect(Sentry.captureMessage).toHaveBeenCalledTimes(1);
+    expect(Sentry.captureMessage).toHaveBeenCalledWith(
+      'LocalStorage quota exceeded. Removing old revisions.',
+      { tags: { localRevisions: 'quotaExceeded' } },
+    );
+    expect(Sentry.captureException).not.toHaveBeenCalled();
+    // eslint-disable-next-line no-console
+    expect(console.error).not.toHaveBeenCalled();
   });
 });
 

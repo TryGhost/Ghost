@@ -36,6 +36,7 @@ import type { PostType } from '@/editor/card-config';
 import { createLocalRevisionWriter } from '@/editor/local-revisions';
 import {
   reportEditorError,
+  reportEditorNotice,
   reportLeaveConfirmation,
   reportSaveFailure,
 } from '@/editor/report-error';
@@ -257,6 +258,7 @@ export function useEditorSession({
         type: postType,
         storage: () => window.localStorage,
         onError: reportEditorError,
+        onNotice: reportEditorNotice,
       }),
       transport: {
         create: async (payload: EditorCreatePayload) => {

@@ -32,6 +32,11 @@ export function reportEditorError(error: unknown, context?: EditorErrorContext):
   Sentry.captureException(error, context);
 }
 
+/** Reports a recovery the editor made on its own, as a message rather than a fault. */
+export function reportEditorNotice(message: string, context?: EditorErrorContext): void {
+  Sentry.captureMessage(message, context);
+}
+
 /** Reports a Lexical failure from any of the editor's Koenig instances. */
 export function reportKoenigError(error: unknown): void {
   reportEditorError(error, {

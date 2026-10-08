@@ -54,6 +54,7 @@ beforeEach(() => {
 
 vi.mock('@/editor/report-error', () => ({
   reportEditorError: vi.fn(),
+  reportEditorNotice: vi.fn(),
   reportLeaveConfirmation: vi.fn(),
   reportSaveFailure: vi.fn(),
 }));
