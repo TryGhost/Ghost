@@ -279,6 +279,31 @@ test('closes on a backdrop click', async () => {
   await vi.waitFor(() => expect(popupDocument()).toBeNull());
 });
 
+function searchIndexRequests() {
+  return vi
+    .mocked(window.fetch)
+    .mock.calls.filter(([url]) => String(url).includes('/ghost/api/content/search-index/'));
+}
+
+test('starts loading the index when a trigger is hovered, before it is clicked', async () => {
+  mountApp();
+  expect(searchIndexRequests()).toHaveLength(0);
+
+  await userEvent.hover(document.querySelector('[data-ghost-search]')!);
+
+  await vi.waitFor(() => expect(searchIndexRequests()).toHaveLength(3));
+  expect(popupDocument()).toBeNull();
+});
+
+test('starts loading the index when a trigger is focused', async () => {
+  mountApp();
+
+  document.querySelector<HTMLElement>('[data-ghost-search]')!.focus();
+
+  await vi.waitFor(() => expect(searchIndexRequests()).toHaveLength(3));
+  expect(popupDocument()).toBeNull();
+});
+
 test('opens from the #/search hash and removes it from the URL', async () => {
   window.history.replaceState(null, '', '#/search');
   mountApp();

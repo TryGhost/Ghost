@@ -64,6 +64,16 @@ export default function App({ adminUrl, apiKey, stylesUrl, locale }: AppProps) {
     setSearchValue('');
   }, []);
 
+  const startIndex = useCallback(() => {
+    if (indexStarted.current) {
+      return;
+    }
+    indexStarted.current = true;
+    searchIndex.init().then(() => {
+      setIndexComplete(true);
+    });
+  }, [searchIndex]);
+
   // Layout effect so triggers, Cmd+K and #/search work from mount, not after the next frame
   useLayoutEffect(() => {
     scrollbarWidth.current = getScrollbarWidth();
@@ -110,16 +120,27 @@ export default function App({ adminUrl, apiKey, stylesUrl, locale }: AppProps) {
       }, 150);
     };
 
+    // Hovering or focusing a trigger starts loading the index ahead of the click
+    const handleIntent = (e: Event) => {
+      if (e.target instanceof Element && e.target.closest(TRIGGER_SELECTOR)) {
+        startIndex();
+      }
+    };
+
     handleSearchUrl();
 
     document.addEventListener('keydown', handleKeyDown);
     // Delegated so triggers added later work; capture phase so theme handlers can't stop the click first
     document.addEventListener('click', handleClick, true);
+    document.addEventListener('pointerover', handleIntent, true);
+    document.addEventListener('focusin', handleIntent, true);
     window.addEventListener('hashchange', handleSearchUrl, false);
 
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
       document.removeEventListener('click', handleClick, true);
+      document.removeEventListener('pointerover', handleIntent, true);
+      document.removeEventListener('focusin', handleIntent, true);
       window.removeEventListener('hashchange', handleSearchUrl, false);
     };
   }, []);
@@ -130,12 +151,7 @@ export default function App({ adminUrl, apiKey, stylesUrl, locale }: AppProps) {
       return;
     }
 
-    if (!indexStarted.current) {
-      indexStarted.current = true;
-      searchIndex.init().then(() => {
-        setIndexComplete(true);
-      });
-    }
+    startIndex();
 
     // Remove background scroll while the popup is open
     const body = document.body;
@@ -166,7 +182,7 @@ export default function App({ adminUrl, apiKey, stylesUrl, locale }: AppProps) {
       returnFocus.current?.focus();
       returnFocus.current = null;
     };
-  }, [showPopup, searchIndex]);
+  }, [showPopup, startIndex]);
 
   if (!showPopup) {
     return null;
