@@ -106,4 +106,15 @@ describe('useMinimumDuration', () => {
     expect(elapsed.settled).toBe(true);
     expect(vi.getTimerCount()).toBe(0);
   });
+
+  it('settles at once without a timer when waited on after unmount', async () => {
+    const { result, unmount } = renderHook(() => useMinimumDuration(MINIMUM));
+    const { start, elapsed } = result.current;
+    start();
+    unmount();
+
+    start();
+    await expect(elapsed()).resolves.toBeUndefined();
+    expect(vi.getTimerCount()).toBe(0);
+  });
 });
