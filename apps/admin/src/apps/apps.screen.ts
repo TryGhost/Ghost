@@ -29,7 +29,6 @@ export const appsScreen = {
   details: () => page.getByTestId(sel.appDetails),
   needsApproval: () => page.getByTestId(sel.appNeedsApproval),
   historyEntries: () => page.getByTestId(sel.appHistoryEntry),
-  historyUnavailable: () => page.getByTestId(sel.appHistoryUnavailable),
   uninstallDialog: () => page.getByTestId(sel.appUninstallDialog),
   integrationKeyNote: () => page.getByTestId(sel.appUninstallIntegrationKeyNote),
 

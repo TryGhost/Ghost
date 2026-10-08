@@ -486,24 +486,6 @@ describe('Installing an app', () => {
     expect(previewApi.requests).toHaveLength(0);
   });
 
-  it('says when this site’s Ghost can’t install apps yet', async () => {
-    fakeAdminEndpoint(
-      'GET',
-      '/apps/installations/',
-      apiError(404, { type: 'NotFoundError', code: 'NOT_FOUND' }),
-    );
-    fakePreview(apiError(404, { type: 'NotFoundError', code: 'NOT_FOUND' }));
-
-    await renderAdminApp(INSTALL_ROUTE, { labs });
-
-    await expect.element(appsScreen.installDialog()).toHaveTextContent('Couldn’t load app details');
-    await expect.element(appsScreen.installDialog()).toHaveTextContent('newer version of Ghost');
-    await appsScreen.okButton().click();
-
-    await expect.poll(currentRoute).toBe('/apps');
-    await expect.element(page.getByText('Apps need a newer version of Ghost.')).toBeVisible();
-  });
-
   it('lists what is wrong with an invalid app for its developer, and installs nothing', async () => {
     fakeInstallations();
     fakePreview(

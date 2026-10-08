@@ -12,7 +12,6 @@ import {
   useBrowseAppInstallations,
 } from '@tryghost/admin-x-framework/api/app-installations';
 import { getErrorMessage } from '@tryghost/admin-x-framework/errors';
-import { isUnsupported } from './lib/install-failure';
 
 /** Fills the page with what it's given in the middle: a state the list can't show yet. */
 const Centered: React.FC<{ children: React.ReactNode }> = ({ children }) => (
@@ -21,23 +20,18 @@ const Centered: React.FC<{ children: React.ReactNode }> = ({ children }) => (
 
 /** The site's apps, and where the install flow lands. */
 export const AppsListing: React.FC = () => {
-  // Failures are shown in place: an older Ghost without apps answers 404, which isn't an error.
+  // Failures are shown in place.
   const { data, isLoading, error } = useBrowseAppInstallations({ defaultErrorHandler: false });
   const installations = data?.app_installations ?? [];
   const [uninstalling, setUninstalling] = useState<AppInstallation | null>(null);
 
   let body: React.ReactNode;
   if (error) {
-    const unsupported = isUnsupported(error);
     body = (
       <Centered>
         <EmptyIndicator
-          description={
-            unsupported
-              ? 'Apps need a newer version of Ghost.'
-              : getErrorMessage(error, 'Something went wrong. Please try again.')
-          }
-          title={unsupported ? 'This site can’t install apps yet' : 'Couldn’t load apps'}
+          description={getErrorMessage(error, 'Something went wrong. Please try again.')}
+          title="Couldn’t load apps"
         >
           <LucideIcon.LayoutGrid />
         </EmptyIndicator>
