@@ -152,8 +152,8 @@ or parse failure keeps the last known good overrides.
 
 To preview a flagged Admin feature, add `labs` to the query string inside the
 Admin hash route, for example `/ghost/#/editor/post?labs=editorReact`. Use
-comma-separated names (`?labs=editorReact,globalSearchReact`) or repeated
-parameters (`?labs=editorReact&labs=globalSearchReact`) to enable multiple flags.
+comma-separated names (`?labs=editorReact,billingReact`) or repeated
+parameters (`?labs=editorReact&labs=billingReact`) to enable multiple flags.
 
 Admin stores the list in `sessionStorage` under `ghost-admin:labs-overrides`.
 It persists across navigation and reloads in the same tab for that browser
