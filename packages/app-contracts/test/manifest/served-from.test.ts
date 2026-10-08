@@ -2,7 +2,12 @@ import assert from 'node:assert/strict';
 
 import { describe, it } from 'vitest';
 
-import { isDevelopmentApp, movedBetween, servedFrom } from '../../src/manifest/index.ts';
+import {
+  appPageUrl,
+  isDevelopmentApp,
+  movedBetween,
+  servedFrom,
+} from '../../src/manifest/index.ts';
 import type { AppManifest } from '../../src/manifest/index.ts';
 
 const at = (manifestUrl: string, pageUrl: string) => ({
@@ -21,6 +26,7 @@ describe('servedFrom', function () {
 
     assert.equal(servedFrom(manifest), 'podcast.example.com');
     assert.equal(isDevelopmentApp(manifest), false);
+    assert.equal(appPageUrl(manifest), 'https://podcast.example.com/admin');
   });
 
   it('marks an app served from the developer’s machine', function () {

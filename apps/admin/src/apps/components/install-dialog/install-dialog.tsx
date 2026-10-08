@@ -9,6 +9,7 @@ import { Failed } from './failed';
 import { InstallReview } from './install-review';
 import { Loading } from './loading';
 import { type InstallFailure, apiErrorOf, installFailureOf } from '@/apps/lib/install-failure';
+import { appRoute } from '@/apps/lib/routes';
 import { useInstallFlow } from '@/apps/lib/use-install-flow';
 
 /** Shown on a review that replaced the one the publisher was looking at. */
@@ -42,10 +43,11 @@ export const InstallDialog: React.FC<{ manifestUrl: string | null }> = ({ manife
   const confirmReviewed = async (reviewed: AppInstallationPreview) => {
     setConfirmFailure(undefined);
     try {
-      await confirm(reviewed);
+      const installed = await confirm(reviewed);
       const { name } = reviewed.manifest;
       toast.success(reviewed.installation ? `Changes to ${name} approved` : `${name} installed`);
-      navigate('/apps', { replace: true });
+      // A fresh install opens the app; approving changes stays where it was managed.
+      navigate(installed ? appRoute(installed.id) : '/apps', { replace: true });
     } catch (error) {
       const apiError = apiErrorOf(error);
       const code = apiError?.code;

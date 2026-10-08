@@ -49,15 +49,34 @@ const guardFrameNavigations: BrowserCommand<[]> = async ({ page }) => {
   );
 };
 
-const fakeFrameOrigin: BrowserCommand<[origin: string, html: string]> = async (
+const fakeFrameOrigin: BrowserCommand<[origin: string, html: string, delayMs?: number]> = async (
   { page },
   origin,
   html,
+  delayMs = 0,
 ) => {
   const fakedOrigin = new URL(origin).origin;
   const matcher = (url: URL) => url.origin === fakedOrigin;
-  const handler: FrameRouteHandler = (route) =>
-    route.fulfill({ contentType: 'text/html', body: html });
+  const handler: FrameRouteHandler = async (route) => {
+    if (delayMs > 0) {
+      await new Promise<void>((resolve) => {
+        setTimeout(resolve, delayMs);
+      });
+    }
+    try {
+      await route.fulfill({ contentType: 'text/html', body: html });
+    } catch {
+      // The frame gave up waiting and was removed, or the spec ended: nothing to answer.
+    }
+  };
+  await page.route(matcher, handler);
+  frameFakes.set(page, [...(frameFakes.get(page) ?? []), { matcher, handler }]);
+};
+
+const failFrameOrigin: BrowserCommand<[origin: string]> = async ({ page }, origin) => {
+  const failedOrigin = new URL(origin).origin;
+  const matcher = (url: URL) => url.origin === failedOrigin;
+  const handler: FrameRouteHandler = (route) => route.abort('connectionrefused');
   await page.route(matcher, handler);
   frameFakes.set(page, [...(frameFakes.get(page) ?? []), { matcher, handler }]);
 };
@@ -111,7 +130,7 @@ export default defineConfig({
       enabled: true,
       headless: true,
       provider: playwright(),
-      commands: { fakeFrameOrigin, guardFrameNavigations, resetFakeFrameOrigins },
+      commands: { fakeFrameOrigin, failFrameOrigin, guardFrameNavigations, resetFakeFrameOrigins },
       instances: [{ browser: 'chromium' }],
       // Failure screenshots land in __screenshots__/ (gitignored).
       screenshotFailures: true,

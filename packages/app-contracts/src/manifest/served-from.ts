@@ -14,6 +14,11 @@ function pageUrl(manifest: AppManifest): URL {
   return new URL(page.url);
 }
 
+/** The URL of the page the app shows in Admin, as Admin frames it. */
+export function appPageUrl(manifest: AppManifest): string {
+  return pageUrl(manifest).href;
+}
+
 /**
  * Where an app is served from, in plain words: the host its page loads from, such as
  * `podcast.example.com`. Not where its manifest was read from, which may differ.
