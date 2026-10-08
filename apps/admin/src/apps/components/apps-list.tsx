@@ -20,7 +20,7 @@ import { AppIcon } from './app-icon';
 import { DevelopmentBadge } from './development-badge';
 import { appDetailsRoute, appReviewRoute } from '@/apps/lib/routes';
 import { isDevelopmentApp } from '@/apps/lib/served-from';
-import { openRowLink, openRowLinkInNewTab } from '@/shared/row-link';
+import { openRowLink, openRowLinkInNewTab } from '@/apps/lib/row-link';
 
 interface AppsListProps {
   installations: AppInstallation[];
