@@ -45,11 +45,29 @@ export function fakeInstallations(initial: AppInstallation[] = []) {
 /** Reading one installation, whatever it includes. */
 export const readPath = (id: string) => new RegExp(`^/apps/installations/${id}/(\\?|$)`);
 
-/** The app's page as Admin opens it: the installation it reads, and the page it frames. */
-export async function fakeAppPage(read: AppInstallation, html = '<h1>Podcast app</h1>') {
+/** Re-checking one installation's manifest, which the app's page does when it opens. */
+export const refreshPath = (id: string) => `/apps/installations/${id}/refresh/`;
+
+/**
+ * The app's page as Admin opens it: the refresh of its manifest, the installation it
+ * reads, and the page it frames. `refreshed` is what the refresh answers, when it differs
+ * from what was installed.
+ */
+export async function fakeAppPage(
+  read: AppInstallation,
+  {
+    html = '<h1>Podcast app</h1>',
+    refreshed = read,
+  }: { html?: string; refreshed?: AppInstallation } = {},
+) {
+  let current = read;
+  const refreshApi = fakeAdminEndpoint('POST', refreshPath(read.id), () => {
+    current = refreshed;
+    return { app_installations: [refreshed] };
+  });
   const readApi = fakeAdminEndpoint('GET', readPath(read.id), () => ({
-    app_installations: [read],
+    app_installations: [current],
   }));
   await fakeFrameOrigin(APP_PAGE_URL, html);
-  return readApi;
+  return { readApi, refreshApi };
 }

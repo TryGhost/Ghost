@@ -126,6 +126,17 @@ export const useApproveAppInstallation = createMutation<
   invalidateQueries: changedDataTypes,
 });
 
+/**
+ * Has Ghost re-check an installed app's manifest, at app session start: silent changes
+ * apply, changes that need approval suspend the app, and an unreachable or invalid
+ * manifest leaves the approved one in place. Answers with the installation as it stands.
+ */
+export const useRefreshAppInstallation = createMutation<AppInstallationsResponseType, string>({
+  method: 'POST',
+  path: (id) => `/apps/installations/${id}/refresh/`,
+  invalidateQueries: { dataType },
+});
+
 /** Ends an installation. Ghost keeps the record, so it can still be read afterwards. */
 export const useUninstallAppInstallation = createMutation<unknown, string>({
   method: 'DELETE',

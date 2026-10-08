@@ -26,6 +26,7 @@ import {
   labs,
   manifest,
   readPath,
+  refreshPath,
 } from './apps.test-utils';
 
 const DETAILS_ROUTE = '/apps/details/installation-1';
@@ -107,13 +108,16 @@ describe('Managing apps', () => {
 
   it('opens an app from the list, in a sandboxed frame from the app’s own URL', async () => {
     fakeInstallations([installation()]);
-    await fakeAppPage(installation());
+    const { refreshApi } = await fakeAppPage(installation());
 
     await renderAdminApp('/apps', { labs });
     await appsScreen.row('Podcast').getByText('Publish episodes and embed players.').click();
 
     await expect.poll(currentRoute).toBe(APP_ROUTE);
     const frame = appsScreen.frame();
+    // The app's manifest is re-checked before anything of the app is served.
+    await expect.element(frame).toBeVisible();
+    expect(refreshApi.requests).toHaveLength(1);
     await expect.element(frame).toHaveAttribute('src', APP_PAGE_URL);
     await expect.element(frame).toHaveAttribute('sandbox', APP_FRAME_SANDBOX);
     await expect.element(frame).toHaveAttribute('allow', expect.stringContaining("camera 'none'"));
@@ -125,8 +129,7 @@ describe('Managing apps', () => {
 
   it('opens an app’s details from the row’s menu, and the app from its details', async () => {
     fakeInstallations([installation()]);
-    fakeDetails(installation({ history: [installedOn('2026-10-01T10:00:00.000Z')] }));
-    await fakeFrameOrigin(APP_PAGE_URL, '<h1>Podcast app</h1>');
+    await fakeAppPage(installation({ history: [installedOn('2026-10-01T10:00:00.000Z')] }));
 
     await renderAdminApp('/apps', { labs });
     await appsScreen.rowActions('Podcast').click();
@@ -141,10 +144,10 @@ describe('Managing apps', () => {
   });
 
   it('calls an app unresponsive when its page doesn’t load in time, and tries again', async () => {
-    fakeDetails(installation());
     const previous = appFrameTimeouts.ready;
     appFrameTimeouts.ready = 300;
     try {
+      await fakeAppPage(installation());
       // A page that takes longer than Admin waits.
       await fakeFrameOrigin(APP_PAGE_URL, '<h1>Podcast app</h1>', 5_000);
       await renderAdminApp(APP_ROUTE, { labs });
@@ -199,9 +202,10 @@ describe('Managing apps', () => {
   });
 
   it('calls an app unresponsive straight away when its server can’t be reached', async () => {
-    fakeAdminEndpoint('GET', readPath('installation-1'), () => ({
-      app_installations: [installation()],
-    }));
+    const read = installation();
+    fakeAdminEndpoint('GET', readPath(read.id), () => ({ app_installations: [read] }));
+    // Ghost keeps the approved manifest when it can't reach the app, so the re-check answers.
+    fakeAdminEndpoint('POST', refreshPath(read.id), () => ({ app_installations: [read] }));
     await failFrameOrigin(APP_PAGE_URL);
 
     // Well within the time Admin would otherwise wait for the frame.
@@ -213,12 +217,11 @@ describe('Managing apps', () => {
 
   it('refuses to frame an app whose page is on Admin’s own address', async () => {
     // Accepted before Admin moved here, say. Nothing of it loads: no frame, no page fetch.
+    // The re-check on opening still answers, as the stored manifest is what it has.
     const onAdmin = manifest({
       surfaces: [{ type: 'admin_page', url: `${window.location.origin}/ghost/app/` }],
     });
-    fakeAdminEndpoint('GET', readPath('installation-1'), () => ({
-      app_installations: [installation({ manifest: onAdmin })],
-    }));
+    await fakeAppPage(installation({ manifest: onAdmin }));
 
     await renderAdminApp(APP_ROUTE, { labs });
 
@@ -233,9 +236,7 @@ describe('Managing apps', () => {
     const onSite = manifest({
       surfaces: [{ type: 'admin_page', url: 'https://blog.example.com/app/' }],
     });
-    fakeAdminEndpoint('GET', readPath('installation-1'), () => ({
-      app_installations: [installation({ manifest: onSite })],
-    }));
+    await fakeAppPage(installation({ manifest: onSite }));
 
     await renderAdminApp(APP_ROUTE, { labs, boot: { browseSite: { response: site } } });
 
@@ -257,7 +258,7 @@ describe('Managing apps', () => {
   it('doesn’t load a suspended app, and leads to the review instead', async () => {
     const suspended = installation({ status: 'suspended' });
     fakeInstallations([suspended]);
-    fakeDetails(suspended);
+    await fakeAppPage(suspended);
     fakeReview();
 
     await renderAdminApp(APP_ROUTE, { labs });
@@ -271,8 +272,39 @@ describe('Managing apps', () => {
       .toBe(`/apps/install?manifest=${encodeURIComponent(MANIFEST_URL)}`);
   });
 
+  it('shows the review instead of the app when re-checking its manifest suspends it', async () => {
+    // The approved manifest keeps serving while the newer one waits.
+    const { refreshApi } = await fakeAppPage(installation(), {
+      refreshed: installation({ status: 'suspended' }),
+    });
+
+    await renderAdminApp(APP_ROUTE, { labs });
+
+    await expect.element(appsScreen.needsApproval()).toHaveTextContent('Podcast needs approval');
+    await expect.element(appsScreen.frame()).not.toBeInTheDocument();
+    expect(refreshApi.requests).toHaveLength(1);
+  });
+
+  it('still opens the app when its manifest can’t be re-checked', async () => {
+    fakeAdminEndpoint(
+      'POST',
+      refreshPath('installation-1'),
+      () =>
+        new Response(JSON.stringify({ errors: [{ message: 'Ghost is having a moment.' }] }), {
+          status: 500,
+          headers: { 'content-type': 'application/json' },
+        }),
+    );
+    fakeDetails(installation());
+    await fakeFrameOrigin(APP_PAGE_URL, '<h1>Podcast app</h1>');
+
+    await renderAdminApp(APP_ROUTE, { labs });
+
+    await expect.element(appsScreen.frame()).toBeVisible();
+  });
+
   it('doesn’t load an uninstalled app', async () => {
-    fakeDetails(installation({ status: 'uninstalled' }));
+    await fakeAppPage(installation({ status: 'uninstalled' }));
 
     await renderAdminApp(APP_ROUTE, { labs });
 
@@ -281,15 +313,13 @@ describe('Managing apps', () => {
   });
 
   it('says when an app page doesn’t exist', async () => {
-    fakeAdminEndpoint(
-      'GET',
-      readPath('missing'),
-      () =>
-        new Response(JSON.stringify({ errors: [{ message: 'App installation not found.' }] }), {
-          status: 404,
-          headers: { 'content-type': 'application/json' },
-        }),
-    );
+    const notFound = () =>
+      new Response(JSON.stringify({ errors: [{ message: 'App installation not found.' }] }), {
+        status: 404,
+        headers: { 'content-type': 'application/json' },
+      });
+    fakeAdminEndpoint('GET', readPath('missing'), notFound);
+    fakeAdminEndpoint('POST', refreshPath('missing'), notFound);
 
     await renderAdminApp('/apps/missing', { labs });
 
