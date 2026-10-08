@@ -5,7 +5,7 @@ describe('search index', function () {
   test('initializes search index', async () => {
     const adminUrl = 'http://localhost:3000';
     const apiKey = '69010382388f9de5869ad6e558';
-    const searchIndex = new SearchIndex({ adminUrl, apiKey, storage: localStorage });
+    const searchIndex = new SearchIndex({ adminUrl, apiKey });
 
     const scope = nock('http://localhost:3000/ghost/api/content')
       .get('/search-index/posts/?key=69010382388f9de5869ad6e558')
@@ -35,7 +35,7 @@ describe('search index', function () {
   test('allows to search for indexed posts and authors', async () => {
     const adminUrl = 'http://localhost:3000';
     const apiKey = '69010382388f9de5869ad6e558';
-    const searchIndex = new SearchIndex({ adminUrl, apiKey, storage: localStorage });
+    const searchIndex = new SearchIndex({ adminUrl, apiKey });
 
     nock('http://localhost:3000/ghost/api/content')
       .get('/search-index/posts/?key=69010382388f9de5869ad6e558')
@@ -122,7 +122,7 @@ describe('search index', function () {
   test('searching works when dir = rtl also', async () => {
     const adminUrl = 'http://localhost:3000';
     const apiKey = '69010382388f9de5869ad6e558';
-    const searchIndex = new SearchIndex({ adminUrl, apiKey, dir: 'rtl', storage: localStorage });
+    const searchIndex = new SearchIndex({ adminUrl, apiKey, dir: 'rtl' });
 
     nock('http://localhost:3000/ghost/api/content')
       .get('/search-index/posts/?key=69010382388f9de5869ad6e558')
@@ -210,7 +210,7 @@ describe('search index', function () {
   test('searching handles CJK characters correctly', async () => {
     const adminUrl = 'http://localhost:3000';
     const apiKey = '69010382388f9de5869ad6e558';
-    const searchIndex = new SearchIndex({ adminUrl, apiKey, dir: 'ltr', storage: localStorage });
+    const searchIndex = new SearchIndex({ adminUrl, apiKey, dir: 'ltr' });
 
     nock('http://localhost:3000/ghost/api/content')
       .get('/search-index/posts/?key=69010382388f9de5869ad6e558')
@@ -307,7 +307,7 @@ describe('search index', function () {
   test('searching handles hebrew characters correctly', async () => {
     const adminUrl = 'http://localhost:3000';
     const apiKey = '69010382388f9de5869ad6e558';
-    const searchIndex = new SearchIndex({ adminUrl, apiKey, storage: localStorage });
+    const searchIndex = new SearchIndex({ adminUrl, apiKey });
 
     nock('http://localhost:3000/ghost/api/content')
       .get('/search-index/posts/?key=69010382388f9de5869ad6e558')
@@ -394,7 +394,7 @@ describe('search index', function () {
   test('additional special characters & punctuation', async () => {
     const adminUrl = 'http://localhost:3000';
     const apiKey = '69010382388f9de5869ad6e558';
-    const searchIndex = new SearchIndex({ adminUrl, apiKey, dir: 'ltr', storage: localStorage });
+    const searchIndex = new SearchIndex({ adminUrl, apiKey, dir: 'ltr' });
 
     nock('http://localhost:3000/ghost/api/content')
       .get('/search-index/posts/?key=69010382388f9de5869ad6e558')

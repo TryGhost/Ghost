@@ -93,7 +93,7 @@ export default class SearchIndex {
   authorsIndex: Document<SearchAuthor>;
   tagsIndex: Document<SearchTag>;
 
-  constructor({ adminUrl, apiKey, dir }: { adminUrl: string; apiKey?: string; dir: string }) {
+  constructor({ adminUrl, apiKey, dir }: { adminUrl: string; apiKey?: string; dir?: string }) {
     // flexsearch's own `rtl` option matches nothing at all in 0.8.x, even for
     // ASCII, so right-to-left support comes from reverse tokenisation alone.
     const tokenize = dir === 'rtl' ? 'reverse' : 'forward';

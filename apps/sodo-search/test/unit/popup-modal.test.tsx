@@ -29,16 +29,12 @@ describe('Results keyboard navigation', () => {
     );
   };
 
-  let originalLocation;
-
   beforeEach(() => {
-    originalLocation = window.location;
-    delete window.location;
-    window.location = { href: 'https://example.com/' };
+    vi.stubGlobal('location', { href: 'https://example.com/' });
   });
 
   afterEach(() => {
-    window.location = originalLocation;
+    vi.unstubAllGlobals();
   });
 
   test('navigates to the selected result on Enter', () => {

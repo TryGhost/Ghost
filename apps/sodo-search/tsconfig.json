@@ -21,7 +21,10 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "erasableSyntaxOnly": true,
-    "noFallthroughCasesInSwitch": true
+    "noFallthroughCasesInSwitch": true,
+
+    /* Vitest */
+    "types": ["vitest/globals"]
   },
-  "include": ["src"]
+  "include": ["src", "test"]
 }

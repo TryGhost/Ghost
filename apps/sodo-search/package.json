@@ -21,6 +21,7 @@
     "test": "pnpm run '/^test:(types|unit)$/'",
     "test:types": "tsc --noEmit --incremental false",
     "test:unit": "vitest run",
+    "test:acceptance": "vitest run -c vitest.acceptance.config.mjs",
     "lint": "pnpm run '/^lint:/'",
     "lint:code": "eslint src test --cache",
     "lint:types": "pnpm test:types",
@@ -39,6 +40,7 @@
     "@testing-library/jest-dom": "catalog:",
     "@testing-library/preact": "catalog:",
     "@typescript/native": "catalog:",
+    "@vitest/browser-playwright": "catalog:",
     "@vitest/coverage-v8": "catalog:",
     "autoprefixer": "10.5.4",
     "eslint": "catalog:",
@@ -76,7 +78,8 @@
     },
     "tags": [
       "i18n",
-      "public-app"
+      "public-app",
+      "playwright"
     ]
   }
 }
