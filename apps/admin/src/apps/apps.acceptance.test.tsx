@@ -77,6 +77,7 @@ const fakeReview = () =>
         installation: {
           id: 'installation-1',
           status: 'suspended',
+          revision: 0,
           manifest_url: MANIFEST_URL,
           manifest: manifest(),
           changes: [{ path: 'name', requires_approval: true }],
