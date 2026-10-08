@@ -4,12 +4,12 @@ import LikeCount from './buttons/like-count';
 import MoreButton from './buttons/more-button';
 import PinnedLabel from './pinned-label';
 import React, { useCallback } from 'react';
-import Replies, { RepliesProps } from './replies';
+import Replies, { type RepliesProps } from './replies';
 import ReplyButton from './buttons/reply-button';
 import ReplyForm from './forms/reply-form';
 import ThreadedReplies from './threaded-replies';
 import { Avatar, BlankAvatar } from './avatar';
-import { Comment, OpenCommentForm, useAppContext } from '../../app-context';
+import { type Comment, type OpenCommentForm, useAppContext } from '../../app-context';
 import { Transition } from '@headlessui/react';
 import {
   buildCommentPermalink,

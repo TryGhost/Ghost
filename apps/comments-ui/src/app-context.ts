@@ -1,8 +1,8 @@
 // Ref: https://reactjs.org/docs/context.html
 import React, { useContext } from 'react';
-import { ActionType, Actions, SyncActionType, SyncActions } from './actions';
-import { AdminApi } from './utils/admin-api';
-import { Page } from './pages';
+import type { ActionType, Actions, SyncActionType, SyncActions } from './actions';
+import type { AdminApi } from './utils/admin-api';
+import type { Page } from './pages';
 
 export type Member = {
   id: string;
