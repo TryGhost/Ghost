@@ -3,7 +3,7 @@ import type { StripeCheckoutBorderStyle } from '@tryghost/checkout';
 import type { StripeCheckoutDesign } from '@tryghost/admin-x-framework/api/stripe-checkout-config';
 import { Color } from '@tryghost/color-utils';
 import { LucideIcon } from '@tryghost/shade/utils';
-import { Skeleton } from '@tryghost/shade/components';
+import { Badge, Skeleton } from '@tryghost/shade/components';
 import { STRIPE_FONTS_CSS, fontFamilyOf } from './stripe-fonts';
 
 // The sketch is drawn at desktop size and shrunk with `zoom`, which (unlike a transform)
@@ -54,8 +54,13 @@ const SketchSkeleton: React.FC = () => (
 const CheckoutPreview: React.FC<{
   design: StripeCheckoutDesign;
   displayName: string;
+  /**
+   * Set when checkout asks for a shipping address. `audience` names the tiers it is asked on,
+   * or is empty when every paid tier asks.
+   */
+  shipping?: { audience: string };
   loading?: boolean;
-}> = ({ design, displayName, loading }) => {
+}> = ({ design, displayName, shipping, loading }) => {
   const { radius, boxRadius } = CORNER_RADII[design.border_style];
 
   return (
@@ -109,6 +114,28 @@ const CheckoutPreview: React.FC<{
                   <Placeholder>email@example.com</Placeholder>
                 </div>
               </div>
+              {shipping && (
+                <div className="flex flex-col gap-1.5">
+                  <span className="flex items-center justify-between gap-2 text-[16px] font-semibold">
+                    Shipping address
+                    {shipping.audience && (
+                      <Badge className="font-sans" size="sm" variant="warning">
+                        {shipping.audience}
+                      </Badge>
+                    )}
+                  </span>
+                  <div
+                    className="flex flex-col border border-neutral-200 [&>*+*]:border-t [&>*+*]:border-neutral-200"
+                    style={{ borderRadius: boxRadius }}
+                  >
+                    {['Full name', 'Country or region', 'Address'].map((placeholder) => (
+                      <div key={placeholder} className="flex h-9 items-center px-3">
+                        <Placeholder>{placeholder}</Placeholder>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
               <div className="flex flex-col gap-1.5">
                 <span className="text-[16px] font-semibold">Payment method</span>
                 <div

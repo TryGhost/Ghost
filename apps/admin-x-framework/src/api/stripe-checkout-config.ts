@@ -14,8 +14,29 @@ export type StripeCheckoutDesignSetting =
   | { customize: false }
   | ({ customize: true } & StripeCheckoutDesign);
 
+/**
+ * `collect: false` means checkout doesn't ask for a shipping address. `collect: true` names
+ * the custom fields the address and the recipient's name are saved into.
+ */
+export type StripeCheckoutShippingSetting =
+  | { collect: false }
+  | {
+      collect: true;
+      /** Left out, it covers every paid tier, including tiers added later. */
+      tier_ids?: string[];
+      /** Left out, Stripe ships everywhere it can. */
+      allowed_countries?: string[];
+      address: { custom_field_key: string };
+      name: { custom_field_key: string };
+    };
+
 export type StripeCheckoutConfig = {
   design: StripeCheckoutDesignSetting;
+  /**
+   * Missing while shipping can't be collected: its private flag is off, or Ghost is older
+   * than the setting.
+   */
+  shipping?: StripeCheckoutShippingSetting;
 };
 
 export interface StripeCheckoutConfigResponseType {
@@ -64,10 +85,17 @@ export const useReadStripeCheckoutBranding = createQuery<StripeCheckoutBrandingR
 });
 
 /** A preview of the design on a real Stripe Checkout page for one paid tier. */
+/** Shipping as a preview asks for it. Where the answers are saved doesn't matter there. */
+export type StripeCheckoutPreviewShipping =
+  | { collect: false }
+  | { collect: true; tier_ids?: string[]; allowed_countries?: string[] };
+
 export type StripeCheckoutPreviewRequest = {
   tier_id: string;
   cadence: 'month' | 'year';
   design: StripeCheckoutDesignSetting;
+  /** Left out, the preview asks for an address as the saved settings say. */
+  shipping?: StripeCheckoutPreviewShipping;
 };
 
 export interface StripeCheckoutPreviewResponseType {

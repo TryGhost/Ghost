@@ -3,6 +3,16 @@ import { Locator, Page } from '@playwright/test';
 
 export type CheckoutCorners = 'Squared' | 'Rounded' | 'Pill';
 
+/** How checkout collects a shipping address. A field is chosen, or created when it's new. */
+export interface ShippingChoice {
+  /** Left out, every paid tier asks, including tiers added later. */
+  tiers?: string[];
+  /** Left out, Stripe ships everywhere. Named as the countries picker lists them. */
+  countries?: string[];
+  addressField: { choose: string } | { create: string };
+  nameField: { choose: string } | { create: string };
+}
+
 /** The Stripe Checkout settings, opened from the Tiers section of Settings. */
 export class CheckoutSettingsModal {
   private readonly page: Page;
@@ -22,6 +32,15 @@ export class CheckoutSettingsModal {
   readonly savedButton: Locator;
   readonly closeButton: Locator;
   readonly unsavedChangesDialog: Locator;
+  readonly designTab: Locator;
+  readonly fieldsTab: Locator;
+  readonly shippingSwitch: Locator;
+  readonly collectForPicker: Locator;
+  readonly shipsToSelect: Locator;
+  readonly countriesPicker: Locator;
+  readonly addressFieldPicker: Locator;
+  readonly nameFieldPicker: Locator;
+  readonly previewShipping: Locator;
 
   constructor(page: Page) {
     this.page = page;
@@ -46,6 +65,85 @@ export class CheckoutSettingsModal {
     this.unsavedChangesDialog = page.getByRole('alertdialog', {
       name: 'Are you sure you want to leave this page?',
     });
+    this.designTab = this.modal.getByRole('tab', { name: 'Design' });
+    this.fieldsTab = this.modal.getByRole('tab', { name: 'Fields' });
+    this.shippingSwitch = this.modal.getByRole('switch', { name: 'Shipping address' });
+    this.collectForPicker = this.modal.getByRole('combobox', { name: 'Collect for' });
+    this.shipsToSelect = this.modal.getByRole('combobox', { name: 'Ships to' });
+    this.countriesPicker = this.modal.getByRole('combobox', { name: 'Countries' });
+    this.addressFieldPicker = this.modal.getByRole('combobox', { name: 'Save address as' });
+    this.nameFieldPicker = this.modal.getByRole('combobox', { name: 'Save name as' });
+    this.previewShipping = this.preview.getByText('Shipping address', { exact: true });
+  }
+
+  /** The tiers the sketch's shipping address is tagged with, when it's limited to some. */
+  previewShippingTag(text: string): Locator {
+    return this.preview.getByText(text, { exact: true });
+  }
+
+  fieldError(message: string): Locator {
+    return this.modal.getByText(message, { exact: true });
+  }
+
+  async openFieldsTab(): Promise<void> {
+    await this.fieldsTab.click();
+  }
+
+  async collectShipping(choice: ShippingChoice): Promise<void> {
+    await this.shippingSwitch.setChecked(true);
+    if (choice.tiers) {
+      await this.limitTiers(choice.tiers);
+    }
+    if (choice.countries) {
+      await this.chooseOption(this.shipsToSelect, 'Specific countries');
+      await this.pickMany(this.countriesPicker, choice.countries);
+    }
+    await this.setDestination(this.addressFieldPicker, 'Save address as', choice.addressField);
+    await this.setDestination(this.nameFieldPicker, 'Save name as', choice.nameField);
+  }
+
+  /** Unticks every tier but these, from the default of every paid tier ticked. */
+  private async limitTiers(names: string[]): Promise<void> {
+    await this.collectForPicker.click();
+    // allTextContents() doesn't wait, so wait for the list before reading it.
+    await this.page.getByRole('option').first().waitFor();
+    const ticked = await this.page.getByRole('option').allTextContents();
+    for (const name of ticked.filter((tier) => !names.includes(tier))) {
+      await this.page.getByRole('option', { name, exact: true }).click();
+    }
+    await this.page.keyboard.press('Escape');
+  }
+
+  private async chooseOption(select: Locator, name: string): Promise<void> {
+    await select.click();
+    await this.page.getByRole('option', { name, exact: true }).click();
+  }
+
+  private async pickMany(picker: Locator, names: string[]): Promise<void> {
+    await picker.click();
+    for (const name of names) {
+      await this.page.getByRole('option', { name, exact: true }).click();
+    }
+    await this.page.keyboard.press('Escape');
+  }
+
+  private async setDestination(
+    picker: Locator,
+    label: string,
+    field: ShippingChoice['addressField'],
+  ): Promise<void> {
+    await picker.click();
+    if ('choose' in field) {
+      await this.page.getByRole('option', { name: field.choose, exact: true }).click();
+      return;
+    }
+    await this.page.getByRole('option', { name: 'Add custom field' }).click();
+    await this.page
+      .getByRole('textbox', { name: `New custom field for ${label}` })
+      .fill(field.create);
+    // The new field's Save is in the picker's popover, which opens after the modal's own Save.
+    await this.page.getByRole('button', { name: 'Save', exact: true }).last().click();
+    await picker.filter({ hasText: field.create }).waitFor();
   }
 
   corners(name: CheckoutCorners): Locator {
