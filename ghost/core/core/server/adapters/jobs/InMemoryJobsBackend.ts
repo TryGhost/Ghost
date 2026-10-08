@@ -107,11 +107,15 @@ export default class InMemoryJobsBackend extends JobsBackendBase {
         message: `Cannot enqueue job "${envelope.type}" before the jobs backend is started.`,
       });
     }
-    const name = routing?.queue ?? DEFAULT_QUEUE;
+    this._pushToLane(envelope, routing?.queue ?? DEFAULT_QUEUE);
+  }
+
+  // Resolve a lane by name and push an envelope onto it, creating the lane
+  // lazily. Lanes are created on demand: the default lane, and any queue name
+  // no handler declared, each get their own lane at the default concurrency.
+  private _pushToLane(envelope: JobEnvelope, name: string): void {
     let queue = this._queues.get(name);
     if (!queue) {
-      // Lanes are created lazily: the default lane, and any queue name no
-      // handler declared, each get their own lane at the default concurrency.
       queue = this._makeQueue(this._defaultConcurrency);
       this._queues.set(name, queue);
     }
