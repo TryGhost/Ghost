@@ -14,10 +14,10 @@ import { getSchedulerPollTime } from './scheduler-poll-time';
 // @ts-expect-error This module currently lacks type definitions.
 import emailAnalyticsJobs from '../email-analytics/jobs';
 import { StartAutomationsPollEvent } from './events/start-automations-poll-event';
-
-const logging = require('@tryghost/logging');
-const { welcomeEmailAutomationPoll } = require('./welcome-email-automation-poll');
-const memberWelcomeEmailService = require('../member-welcome-emails/service');
+import logging from '@tryghost/logging';
+import { welcomeEmailAutomationPoll } from './welcome-email-automation-poll';
+// @ts-expect-error This module currently lacks type definitions.
+import memberWelcomeEmailService from '../member-welcome-emails/service';
 
 type AutomationsServiceOptions = {
   apiUrl: string;
