@@ -17,24 +17,32 @@ export const AppInstallationRow = z.object({
   ...DbAppInstallationManifest.pick({ manifest_url: true, manifest: true }).shape,
 });
 
-/**
- * A manifest an installation ran or was asked to approve. Together with staff history,
- * these are the app's history: installed, updated, suspended, approved.
- */
-export const AppInstallationManifestRow = DbAppInstallationManifest.pick({
-  id: true,
-  manifest_url: true,
-  manifest: true,
-  requires_approval: true,
-  created_at: true,
-});
+/** The staff user who decided something in an installation's history. */
+export interface HistoryActor {
+  id: string;
+  /** Null when the user no longer exists. */
+  name: string | null;
+}
 
-export type AppInstallationManifest = z.output<typeof AppInstallationManifestRow>;
+/**
+ * One thing that happened to an installation, as the Admin API returns it with
+ * `include=history`. Decisions by people (`installed`, `changes_approved`, `uninstalled`)
+ * come from staff history and name who decided; what Ghost did by itself, applying an
+ * update (`updated`) or holding changes for approval (`suspended`), has nobody.
+ */
+export interface AppInstallationHistoryEntry {
+  id: string;
+  event: 'installed' | 'updated' | 'suspended' | 'changes_approved' | 'uninstalled';
+  actor: HistoryActor | null;
+  created_at: Date;
+  /** For an approval that moved the app: the host it is served from since. */
+  moved_to?: string;
+}
 
 /** One site's approval of one app, as the Admin API returns it. */
 export type AppInstallation = z.output<typeof AppInstallationRow> & {
-  /** Only when asked for: every manifest the installation has run or been asked to approve, newest first. */
-  manifests?: AppInstallationManifest[];
+  /** Only when asked for: what happened to the installation, newest first. */
+  history?: AppInstallationHistoryEntry[];
 };
 
 /**
