@@ -329,7 +329,7 @@ describe('sends under improveSendingUI', () => {
   async function confirmSend(inputs: PublishFlowOptions, publishType?: 'send') {
     inputs.improveSendingUI = true;
     inputs.onCompleted = vi.fn();
-    const { result } = renderHook(() => usePublishFlow(inputs), { wrapper });
+    const { result, unmount } = renderHook(() => usePublishFlow(inputs), { wrapper });
     await waitFor(() => expect(result.current.limitsChecked).toBe(true));
     if (publishType) {
       act(() => result.current.setPublishType(publishType));
@@ -343,7 +343,7 @@ describe('sends under improveSendingUI', () => {
       publishing = result.current.confirmPublish();
     });
 
-    return { result, publishing };
+    return { result, publishing, unmount };
   }
 
   /** A save the server acknowledges after `delay`. */
@@ -412,14 +412,11 @@ describe('sends under improveSendingUI', () => {
   it('completes nothing when the flow is torn down during the hold', async () => {
     const inputs = options();
     inputs.dispatch = savesAfter(400);
-    const { result, publishing } = await confirmSend(inputs);
+    const { publishing, unmount } = await confirmSend(inputs);
     await advance(800);
 
-    await act(async () => {
-      result.current.cancel();
-      await publishing;
-    });
-    await advance(MIN_EMAIL_HANDOFF_LENGTH);
+    unmount();
+    await act(() => publishing);
 
     expect(inputs.onCompleted).not.toHaveBeenCalled();
     expect(localStorage.getItem('ghost-last-published-post')).toBeNull();

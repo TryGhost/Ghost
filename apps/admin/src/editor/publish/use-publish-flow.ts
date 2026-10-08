@@ -17,6 +17,7 @@ import {
   type CompletionFailure,
 } from './completion-message';
 import { EDITOR_REQUEST_OPTIONS } from '@/editor/request-options';
+import { useMinimumDuration } from '@/hooks/use-minimum-duration';
 import { writePublishCelebration } from './celebration-handoff';
 import type { EmailConfirmationOutcome } from './email-confirmation';
 import type { PublishFlowPost } from './flow-post';
@@ -273,8 +274,7 @@ export function usePublishFlow({
   const completedRef = useRef(false);
   const publishRunningRef = useRef(false);
   const retryRunningRef = useRef(false);
-  // Releases a send's hand-off hold early, so a torn-down flow leaves no timer behind.
-  const releaseHandoffRef = useRef<(() => void) | null>(null);
+  const handoffMinimum = useMinimumDuration(MIN_EMAIL_HANDOFF_LENGTH);
   const limitCheckGenerationRef = useRef(0);
   const limitCheckRef = useRef<{
     machine: PublishOptionsMachine;
@@ -329,30 +329,8 @@ export function usePublishFlow({
   const cancel = useCallback(() => {
     activeRef.current = false;
     confirmationRef.current.cancel();
-    releaseHandoffRef.current?.();
     limitCheckGenerationRef.current += 1;
   }, []);
-
-  const holdUntil = useCallback(
-    (deadline: number) =>
-      new Promise<void>((resolve) => {
-        const remaining = deadline - Date.now();
-
-        if (remaining <= 0) {
-          resolve();
-          return;
-        }
-
-        const release = () => {
-          clearTimeout(timer);
-          releaseHandoffRef.current = null;
-          resolve();
-        };
-        const timer = setTimeout(release, remaining);
-        releaseHandoffRef.current = release;
-      }),
-    [],
-  );
 
   // StrictMode replays this effect's cleanup before its second setup. Restore
   // activity on setup so that development mode does not leave the flow inert.
@@ -486,8 +464,7 @@ export function usePublishFlow({
     }
 
     publishRunningRef.current = true;
-    // A send's running state lasts at least this long, however quickly it saves.
-    const handoffAt = Date.now() + MIN_EMAIL_HANDOFF_LENGTH;
+    handoffMinimum.start();
     setFailure(null);
     setConfirmStatus('running');
     // Closing mid-save, or mid-hold, would strand a published post short of its hand-off.
@@ -578,7 +555,7 @@ export function usePublishFlow({
     }
 
     if (willEmailImmediately) {
-      await holdUntil(handoffAt);
+      await handoffMinimum.elapsed();
     }
 
     complete(isScheduled, willEmail);
@@ -587,7 +564,7 @@ export function usePublishFlow({
     complete,
     confirmation,
     dispatch,
-    holdUntil,
+    handoffMinimum,
     improveSendingUI,
     machine,
     onBeforePublish,
