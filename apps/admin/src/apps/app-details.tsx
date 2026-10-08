@@ -27,8 +27,9 @@ import { AccessIndicator } from './components/access-indicator';
 import { AppIcon } from './components/app-icon';
 import { AppsGate } from './components/apps-gate';
 import { DevelopmentBadge } from './components/development-badge';
+import { CapabilitySummary } from './components/surface-icon';
 import { UninstallDialog } from './components/uninstall-dialog';
-import { appAccess } from './lib/access';
+import { ACCOUNT_ACCESS } from './lib/access';
 import { type AppHistoryEntry, appHistory, installedBy } from './lib/history';
 import { appReviewRoute } from './lib/routes';
 import { isDevelopmentApp } from './lib/served-from';
@@ -137,10 +138,13 @@ const Details: React.FC<{ installation: AppInstallation }> = ({ installation }) 
       </dl>
 
       {status !== 'uninstalled' && (
-        <AccessIndicator
-          intro="Apps use the account of whoever opens them, so this app can do everything they can."
-          items={appAccess(manifest)}
-        />
+        <>
+          <CapabilitySummary manifest={manifest} />
+          <AccessIndicator
+            intro="Apps use the account of whoever opens them, so this app can do everything they can."
+            items={ACCOUNT_ACCESS}
+          />
+        </>
       )}
 
       <Stack gap="sm">
