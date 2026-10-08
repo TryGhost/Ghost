@@ -1,5 +1,3 @@
-import type { AppManifest } from '@tryghost/admin-x-framework/api/app-installations';
-
 /**
  * How long an app's page gets to load before Admin calls it unresponsive. Settable so
  * acceptance specs don't wait it out.
@@ -16,8 +14,9 @@ export const appFrameTimeouts = { ready: 12_000 };
 export const APP_FRAME_SANDBOX = 'allow-scripts allow-same-origin allow-forms';
 
 /**
- * Which browser features the frame gets: none. Features that default to the frame's own
- * origin are already off for a cross-origin frame; these are the ones that default to on.
+ * Which browser features the frame gets: none. Being cross-origin is what keeps them off,
+ * as each of these defaults to the top document's own origin; this list says so
+ * explicitly, so a feature can only be granted here, on purpose, with the app's origin.
  */
 export const APP_FRAME_ALLOW = [
   'autoplay',
@@ -36,13 +35,6 @@ export const APP_FRAME_ALLOW = [
 ]
   .map((feature) => `${feature} 'none'`)
   .join('; ');
-
-/** The URL of the page the app shows in Admin. */
-export function appPageUrl(manifest: AppManifest): string {
-  const page =
-    manifest.surfaces.find((surface) => surface.type === 'admin_page') ?? manifest.surfaces[0];
-  return page.url;
-}
 
 /**
  * Whether a page is on an origin Ghost itself is served from. Ghost refuses such a URL

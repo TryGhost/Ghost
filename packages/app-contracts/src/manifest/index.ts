@@ -33,6 +33,7 @@ export {
 } from './schema.ts';
 export { isLocalhost } from './localhost.ts';
 export {
+  appPageUrl,
   isDevelopmentApp,
   movedBetween,
   servedFrom,
