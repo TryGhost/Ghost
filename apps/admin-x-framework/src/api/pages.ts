@@ -14,6 +14,7 @@ import {
   buildPostReadParams,
   serializePostPayload,
 } from './post-contract';
+import { isSearchIndexQuery } from './search-index';
 import { tagsDataType } from './tags';
 import type {
   CreateContentData,
@@ -126,13 +127,18 @@ export const useAddPage = createMutation<PageResponseType, AddPagePayload>({
   invalidateQueries: { dataType: [dataType, tagsDataType] },
 });
 
+// The search-index lists are left out, as for posts: the caller refreshes them
+// when an edit changes what they list.
 export const useEditPage = createMutation<PageResponseType, EditPagePayload>({
   method: 'PUT',
   path: ({ page }) => `/pages/${page.id}/`,
   searchParams: ({ options }) => buildPageWriteParams(options),
   body: ({ page }) => ({ pages: [serializePostPayload(page, 'page')] }),
   requestOptions: ({ sessionExpiryRedirect }) => ({ sessionExpiryRedirect }),
-  invalidateQueries: { dataType: [dataType, tagsDataType] },
+  invalidateQueries: {
+    dataType: [dataType, tagsDataType],
+    predicate: (query) => !isSearchIndexQuery(query),
+  },
 });
 
 export interface DeletePagePayload {
