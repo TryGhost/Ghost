@@ -994,6 +994,9 @@ importers:
       '@tryghost/admin-x-framework':
         specifier: workspace:*
         version: link:../admin-x-framework
+      '@tryghost/app-contracts':
+        specifier: workspace:*
+        version: link:../../packages/app-contracts
       '@tryghost/checkout':
         specifier: workspace:*
         version: link:../../packages/checkout
@@ -1245,6 +1248,9 @@ importers:
       '@tanstack/react-query':
         specifier: 'catalog:'
         version: 5.101.4(react@18.3.1)
+      '@tryghost/app-contracts':
+        specifier: workspace:*
+        version: link:../../packages/app-contracts
       '@tryghost/checkout':
         specifier: workspace:*
         version: link:../../packages/checkout
