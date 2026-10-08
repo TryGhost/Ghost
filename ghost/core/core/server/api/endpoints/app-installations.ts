@@ -65,11 +65,11 @@ const controller = {
   read: {
     headers: noCacheInvalidation,
     options: ['id', 'include'],
-    validation: { options: { id: { required: true }, include: { values: ['manifests'] } } },
+    validation: { options: { id: { required: true }, include: { values: ['history'] } } },
     permissions: true,
     query(frame: ReadFrame) {
       return service!.read(frame.options.id, {
-        withManifests: frame.options.withRelated?.includes('manifests') ?? false,
+        withHistory: frame.options.withRelated?.includes('history') ?? false,
       });
     },
   },

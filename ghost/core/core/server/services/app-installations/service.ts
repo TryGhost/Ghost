@@ -10,24 +10,50 @@ import {
   type AppManifest,
   type ParseManifestOptions,
 } from '@tryghost/app-contracts/manifest';
-import { toDatabaseDate } from '../../lib/db-types/date';
+import { DbDate, toDatabaseDate } from '../../lib/db-types/date';
 import type { RecordAppInstallationAction, RequestContext } from './actions';
 import {
-  AppInstallationManifestRow,
   AppInstallationRow,
   CurrentInstallationRow,
   PendingManifestRow,
   type AppInstallation,
-  type AppInstallationManifest,
   type CurrentInstallation,
 } from './codec';
 import type { FetchManifest } from './fetch-manifest';
-import { StoredManifest, type AppInstallationStatus } from './schema';
+import { buildHistory, type HistoryAction } from './history';
+import { DbAppInstallationManifest, StoredManifest, type AppInstallationStatus } from './schema';
 
 const INSTALLATIONS = 'app_installations';
 const MANIFESTS = 'app_installation_manifests';
 
-export type { AppInstallation, AppInstallationManifest } from './codec';
+/** A manifest row as the history reads it. */
+const HistoryManifestRow = DbAppInstallationManifest.pick({
+  id: true,
+  manifest_url: true,
+  manifest: true,
+  requires_approval: true,
+  created_at: true,
+});
+
+/** A staff history row for an installation, joined with the user who acted. */
+const HistoryActionRow = z
+  .object({
+    id: z.string(),
+    event: z.string(),
+    actor_id: z.string(),
+    actor_name: z.string().nullable(),
+    context: z.string().nullable(),
+    created_at: DbDate,
+  })
+  .transform((row): HistoryAction => ({
+    id: row.id,
+    event: row.event,
+    context: row.context,
+    created_at: row.created_at,
+    actor: { id: row.actor_id, name: row.actor_name },
+  }));
+
+export type { AppInstallation, AppInstallationHistoryEntry } from './codec';
 
 /** One field that differs from what the publisher approved. */
 export interface AppManifestChange {
@@ -165,37 +191,58 @@ export class AppInstallationsService {
   }
 
   /**
-   * One installation by ID, whether it has ended or not, and on request every manifest it
-   * has run or been asked to approve.
+   * One installation by ID, whether it has ended or not, and on request what happened to
+   * it: installed, updated, held for approval, approved, moved, uninstalled.
    */
   async read(
     id: string,
-    { withManifests = false }: { withManifests?: boolean } = {},
+    { withHistory = false }: { withHistory?: boolean } = {},
   ): Promise<AppInstallation> {
     const [row] = await this.withApprovedManifest().where('installation.id', id);
     if (!row) {
       throw new errors.NotFoundError({ message: 'App installation not found.' });
     }
     const installation: AppInstallation = z.decode(AppInstallationRow, row);
-    if (withManifests) {
-      installation.manifests = await this.manifestsOf(id);
+    if (withHistory) {
+      installation.history = await this.historyOf(id);
     }
     return installation;
   }
 
-  private async manifestsOf(id: string): Promise<AppInstallationManifest[]> {
-    const rows = await this.knex(MANIFESTS)
+  /**
+   * The installation's history from its two records: the manifests it has run or been
+   * asked to approve, and staff history, where decisions by people are kept.
+   */
+  private async historyOf(id: string): Promise<AppInstallation['history']> {
+    const manifestRows = await this.knex(MANIFESTS)
       .where({ installation_id: id })
-      .orderBy('created_at', 'desc')
-      .orderBy('id', 'desc')
-      .select<z.input<typeof AppInstallationManifestRow>[]>(
+      .orderBy('created_at', 'asc')
+      .orderBy('id', 'asc')
+      .select<z.input<typeof HistoryManifestRow>[]>(
         'id',
         'manifest_url',
         'manifest',
         'requires_approval',
         'created_at',
       );
-    return rows.map((manifestRow) => z.decode(AppInstallationManifestRow, manifestRow));
+    const actionRows = await this.knex('actions as action')
+      // Only staff users act on installations, and a user's name is what the history says.
+      .leftJoin('users as actor', 'actor.id', 'action.actor_id')
+      .where({ 'action.resource_type': 'app_installation', 'action.resource_id': id })
+      .orderBy('action.created_at', 'asc')
+      .orderBy('action.id', 'asc')
+      .select<z.input<typeof HistoryActionRow>[]>(
+        'action.id',
+        'action.event',
+        'action.actor_id',
+        'action.context',
+        'action.created_at',
+        'actor.name as actor_name',
+      );
+    return buildHistory(
+      manifestRows.map((manifestRow) => z.decode(HistoryManifestRow, manifestRow)),
+      actionRows.map((actionRow) => z.decode(HistoryActionRow, actionRow)),
+    );
   }
 
   /**

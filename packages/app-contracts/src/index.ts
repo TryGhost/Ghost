@@ -12,6 +12,13 @@
 export { APP_ID_MAX_LENGTH, isValidAppId } from './manifest/id.ts';
 export { URL_MAX_LENGTH } from './manifest/limits.ts';
 export { isLocalhost } from './manifest/localhost.ts';
+export {
+  isDevelopmentApp,
+  movedBetween,
+  servedFrom,
+  type AppMove,
+  type ServedManifest,
+} from './manifest/served-from.ts';
 export type {
   AppIcon,
   AppManifest,

@@ -684,15 +684,15 @@ describe('App installations Admin API', function () {
       assert.equal(body.app_installations[0].status, 'uninstalled');
     });
 
-    it('leaves out the manifests unless they are asked for', async function () {
+    it('leaves out the history unless it is asked for', async function () {
       const installation = await install();
 
       const { body } = await agent.get(`apps/installations/${installation.id}/`).expectStatus(200);
 
-      assert.equal(body.app_installations[0].manifests, undefined);
+      assert.equal(body.app_installations[0].history, undefined);
     });
 
-    it('lists every manifest the installation has run, newest first', async function () {
+    it('tells what happened to the installation, newest first, and who decided', async function () {
       const installed = await install();
       serve(manifest({ name: 'Podcasts' }));
       const { digest, installation } = await preview();
@@ -705,27 +705,46 @@ describe('App installations Admin API', function () {
           ],
         })
         .expectStatus(200);
+      await agent.delete(`apps/installations/${installed.id}/`).expectStatus(204);
 
       const { body } = await agent
-        .get(`apps/installations/${installed.id}/?include=manifests`)
+        .get(`apps/installations/${installed.id}/?include=history`)
         .expectStatus(200);
 
-      const { manifests } = body.app_installations[0];
+      const { history } = body.app_installations[0];
       assert.deepEqual(
-        manifests.map((row: any) => [row.manifest.name, row.requires_approval]),
+        history.map((entry: any) => [entry.event, entry.actor?.name]),
         [
-          ['Podcasts', true],
-          ['Podcast', false],
+          ['uninstalled', 'Joe Bloggs'],
+          ['changes_approved', 'Joe Bloggs'],
+          ['installed', 'Joe Bloggs'],
         ],
       );
-      assert.deepEqual(Object.keys(manifests[0]).sort(), [
-        'created_at',
-        'id',
-        'manifest',
-        'manifest_url',
-        'requires_approval',
-      ]);
-      assert.equal(manifests[0].manifest_url, MANIFEST_URL);
+      assert.deepEqual(Object.keys(history[0]).sort(), ['actor', 'created_at', 'event', 'id']);
+      assert.equal(history[2].actor.id, owner.actor.id);
+      assert.match(history[0].created_at, /^\d{4}-\d{2}-\d{2}T/);
+    });
+
+    it('says where an approval moved the app to', async function () {
+      const installed = await install();
+      const movedTo = 'https://audio.example.org/ghost-app.json';
+      serve(manifest(), movedTo);
+      const { digest, installation } = await preview(movedTo);
+      serve(manifest(), movedTo);
+      await agent
+        .put(`apps/installations/${installed.id}/`)
+        .body({
+          app_installations: [{ manifest_url: movedTo, digest, revision: installation.revision }],
+        })
+        .expectStatus(200);
+
+      const { body } = await agent
+        .get(`apps/installations/${installed.id}/?include=history`)
+        .expectStatus(200);
+
+      const [approval] = body.app_installations[0].history;
+      assert.equal(approval.event, 'changes_approved');
+      assert.equal(approval.moved_to, 'audio.example.org');
     });
 
     it('answers 404 for an installation that does not exist', async function () {
