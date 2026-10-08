@@ -1340,13 +1340,14 @@ services:
     kind: directory
     disposition: retain
     status: audited
-    auditedAt: c2999f4e13da6360bceced808bb52c4a04b5ad03
+    auditedAt: 89b81d4d103bd3c7d258049d7cf206d19d46565c
     entryPoints:
       - gift-links/index.ts
     notes: >-
       Preserve deferred database binding, single live link per post, historical tokens and the
-      public access/cache boundary. Root restart, transaction faults and cache-enabled revocation
-      need stronger contracts before migration.
+      public access/cache boundary. Root initialization and early-imported consumers have focused
+      baseline coverage. Scope ownership and database rebinding need adoption tests; transaction
+      faults and cache-enabled revocation remain separate gaps.
     contracts:
       exports:
         summary: >-
@@ -1356,7 +1357,8 @@ services:
           giftLinks, getPostByToken returns that shape or null, and removeAll returns a number.
           Deep serializers map token/createdAt to gift_links token/created_at and removal count
           to meta.count. Admin tests assert list/field allowlists, replacement and count shape;
-          no focused test pins root exports, detached calls or binding identity.
+          root units pin pre-init absence, undefined init return and repeated-init identity through
+          the real root. Class methods still require their receiver.
         sources:
           - core/server/services/gift-links/index.ts
           - core/server/services/gift-links/service.ts
@@ -1364,6 +1366,7 @@ services:
           - core/server/services/gift-links/serializers.ts
           - core/server/api/endpoints/utils/serializers/output/gift-links.ts
         tests:
+          - test/unit/server/services/gift-links/index.test.ts
           - test/e2e-api/admin/gift-links.test.ts
           - test/integration/services/gift-links.test.ts
       construction:
@@ -1373,8 +1376,9 @@ services:
           and publishes one GiftLinksService retaining knex and the callback. Later init calls
           preserve it. No separate production deep construction was found. The constructor
           validates neither dependency nor database readiness; an early init can publish an
-          unusable captured dependency. Integration tests construct the class with real model
-          knex and matching recorder wiring; they do not enforce the root's deferred construction.
+          unusable captured dependency. Root units assert that import does not read knex, first
+          init captures it, and repeated init retains that binding. Integration tests exercise the
+          class against the real database. Early-init misuse is source-only.
         sources:
           - core/server/services/gift-links/index.ts
           - core/server/services/gift-links/service.ts
@@ -1382,6 +1386,7 @@ services:
           - core/server/data/db/index.js
           - core/server/data/db/connection.ts
         tests:
+          - test/unit/server/services/gift-links/index.test.ts
           - test/integration/services/gift-links.test.ts
       consumers:
         summary: >-
@@ -1395,7 +1400,9 @@ services:
           analytics helpers without exposing a member. Real HTTP tests pin access/redirects,
           response headers, toast overrides and rendered analytics attributes, not analytics
           ingestion. Admin role tests cover Owner success and Author/Contributor browse denial,
-          not every mutation/role or integration actor path.
+          not every mutation/role. Root units additionally load the real Admin and gift-access
+          consumers before init, then assert token-resolution output/error identity and removal
+          count/action-recorder wiring. These query-level tests do not run permission checks.
         sources:
           - core/boot.js
           - core/server/api/endpoints/gift-links.ts
@@ -1410,6 +1417,7 @@ services:
           - core/frontend/helpers/ghost_head.js
           - core/frontend/helpers/ghost_foot.js
         tests:
+          - test/unit/server/services/gift-links/index.test.ts
           - test/e2e-api/admin/gift-links.test.ts
           - test/e2e-api/content/gift-links.test.ts
           - test/e2e-frontend/gift-links.test.ts
@@ -1422,8 +1430,9 @@ services:
           consumers dereference service directly. Gift-access key resolution additionally needs
           the live-link tables, while the paid-member shim reads Product models. Root and deep
           codec/serializer imports do not need service initialization. Frontend/Admin suites
-          exercise booted composition, but no focused test covers pre-init access, failed/early
-          init, publication timing or booting again with a different database instance.
+          exercise booted composition. Root units pin pre-init absence and usable late binding
+          through early-imported consumers. They do not test database-before-init boot ordering,
+          init failures or rebinding across boots.
         sources:
           - core/boot.js
           - core/server/services/gift-links/index.ts
@@ -1431,6 +1440,7 @@ services:
           - core/server/api/endpoints/utils/gift-link-access.ts
           - core/server/services/members/create-paid-member-shim.ts
         tests:
+          - test/unit/server/services/gift-links/index.test.ts
           - test/e2e-api/admin/gift-links.test.ts
           - test/e2e-frontend/gift-links.test.ts
       lifetime:
@@ -1443,7 +1453,8 @@ services:
           link, not concurrent ensure returning the same token. Tests pin sequential ensure,
           replaced-token rejection, removal scope/count and uniqueness. Concurrent Admin ensures
           assert one surviving returned token, without forcing both reads before mint or pinning
-          which caller wins. Public key units stub token lookup; actual cached revocation is untested.
+          which caller wins. Public key units stub token lookup; actual cached revocation is
+          untested. Root units pin instance and database-binding identity across repeated init.
         sources:
           - core/server/services/gift-links/index.ts
           - core/server/services/gift-links/service.ts
@@ -1451,6 +1462,7 @@ services:
           - core/server/api/endpoints/utils/gift-link-access.ts
           - core/server/api/endpoints/posts-public.js
         tests:
+          - test/unit/server/services/gift-links/index.test.ts
           - test/integration/services/gift-links.test.ts
           - test/e2e-api/admin/gift-links.test.ts
           - test/unit/api/endpoints/utils/gift-link-access.test.ts
@@ -1534,9 +1546,9 @@ services:
     unverified: []
     blockers:
       - >-
-        Pin deferred root construction, live binding/identity, early and failed init, and
-        repeated boot with shared database dependencies. Existing deep-service and booted HTTP
-        tests do not establish safe rebinding or recovery from initialization before DB readiness.
+        Add scoped startup/shutdown and database rebinding tests with the lifecycle conversion.
+        Baseline root units cover deferred binding and repeated-init identity; they do not prove
+        boot waits for database readiness, safely rebinds on restart, or recovers from early init.
       - >-
         Force transaction failures between history insertion and live-association upsert, and
         characterize overlapping ensure/create/removeAll, token collision and history retention.
