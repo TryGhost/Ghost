@@ -1,13 +1,20 @@
-import { MutableRefObject, RefObject, useCallback, useEffect, useMemo, useRef } from 'react';
-import { NavActions } from '../../../utils/nav-actions';
+import {
+  type MutableRefObject,
+  type RefObject,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+} from 'react';
 import { ROOT_DIV_ID } from '../../../utils/constants';
-import { ThreadWindow } from '../../../utils/thread-graph';
 import {
   parseCommentIdFromHash,
   scrollToElement,
   scrollToElementInstantly,
 } from '../../../utils/helpers';
 import { useAppContext } from '../../../app-context';
+import type { NavActions } from '../../../utils/nav-actions';
+import type { ThreadWindow } from '../../../utils/thread-graph';
 
 /**
  * Find the iframe element that contains the current window, if any.

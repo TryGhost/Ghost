@@ -1183,6 +1183,40 @@ describe('Automations API', function () {
   });
 
   describe('edit', function () {
+    it('can disable an automation without changing anything else', async function () {
+      const { body: browseBody } = await agent.get('automations').expectStatus(200);
+      const id = browseBody.automations[0].id;
+      const { body: beforeBody } = await agent.get(`automations/${id}`).expectStatus(200);
+      const initial = beforeBody.automations[0];
+
+      const { body } = await agent
+        .put(`automations/${id}`)
+        .body({ automations: [{ status: 'inactive' }] })
+        .expectStatus(200)
+        .expect(cacheInvalidateHeaderNotSet());
+      assert.deepEqual(body.automations[0], {
+        ...initial,
+        status: 'inactive',
+        updated_at: body.automations[0].updated_at,
+      });
+    });
+
+    it('rejects status-only activation', async function () {
+      const { body: browseBody } = await agent.get('automations').expectStatus(200);
+      const id = browseBody.automations[0].id;
+      const { body: beforeBody } = await agent.get(`automations/${id}`).expectStatus(200);
+      const { body } = await agent
+        .put(`automations/${id}`)
+        .body({ automations: [{ status: 'active' }] })
+        .expectStatus(422);
+      assert.match(
+        body.errors[0].context,
+        /Status-only automation edits can only set status to inactive/,
+      );
+      const { body: afterBody } = await agent.get(`automations/${id}`).expectStatus(200);
+      assert.deepEqual(afterBody, beforeBody);
+    });
+
     it('replaces the graph and returns automation details', async function () {
       const { body: browseBody } = await agent.get('automations').expectStatus(200);
 
@@ -1370,6 +1404,21 @@ describe('Automations API', function () {
       assert.deepEqual(automation.actions, actions);
       assert.deepEqual(automation.edges, edges);
     });
+
+    for (const graph of [{ actions: [buildWaitAction()] }, { edges: [] }]) {
+      it(`rejects ${Object.keys(graph)[0]} without the other graph field`, async function () {
+        const { body: browseBody } = await agent.get('automations').expectStatus(200);
+        const id = browseBody.automations[0].id;
+        const { body: beforeBody } = await agent.get(`automations/${id}`).expectStatus(200);
+        const { body } = await agent
+          .put(`automations/${id}`)
+          .body({ automations: [{ status: 'inactive', ...graph }] })
+          .expectStatus(422);
+        assert.match(body.errors[0].context, /Invalid automation edit payload/);
+        const { body: afterBody } = await agent.get(`automations/${id}`).expectStatus(200);
+        assert.deepEqual(afterBody, beforeBody);
+      });
+    }
 
     it('rejects an automation with more than 50 actions', async function () {
       const { body: browseBody } = await agent.get('automations').expectStatus(200);

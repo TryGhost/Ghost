@@ -83,6 +83,7 @@ catalog:
   '@tanstack/react-query': 5.101.4
   '@tanstack/react-virtual': 3.14.13
   '@testing-library/jest-dom': 6.9.1
+  '@testing-library/preact': 3.2.4
   '@testing-library/react': 14.3.1
   '@tryghost/brute-knex': 3.2.2
   '@tryghost/color-utils': 0.2.21

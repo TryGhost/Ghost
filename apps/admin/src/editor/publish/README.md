@@ -210,7 +210,7 @@ The email's id is only knowable from a reload, so the poller's reload records it
 
 The poller reads the post around the query cache, so the cached post reads never see what it found. Once a confirmation settles with any outcome but `cancelled`, after a publish or a retry, the flow invalidates the post reads so whatever is drawn from them catches up with the send. A reload that throws refreshes them too, since the send's fate is unknown and the reads should catch up with it once they can.
 
-With the `improveSendingUI` flag on, a publish that emails immediately is complete as soon as its save is acknowledged. The flow does not poll, so that publish never moves to the email-error step and the flow invalidates no post reads after it; the caller is told the post has an email, so it can route to post analytics, which reports the send's progress and any failure. Retrying a failed send from the email-error step still waits on the confirmation with the flag on.
+With the `improveSendingUI` flag on, a publish that emails immediately does not poll. `useMinimumDuration` keeps its running state for at least `MIN_EMAIL_HANDOFF_LENGTH` (1.5 seconds) from the click, so the hand-off to analytics is not instant: once the save is acknowledged the flow holds for whatever remains, and a slower save hands off as soon as it lands. A torn-down flow releases the hold and completes nothing. Without a poll, that publish never moves to the email-error step and the flow invalidates no post reads after it; the caller is told the post has an email, so it can route to post analytics, which reports the send's progress and any failure. Retrying a failed send from the email-error step still waits on the confirmation with the flag on.
 
 ## Retrying a failed email
 

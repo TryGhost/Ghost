@@ -95,18 +95,20 @@ export type EditAutomationData = {
   name?: string;
   description?: string;
   status: AutomationStatus;
-  actions: AutomationAction[];
-  edges: AutomationEdge[];
 } & (
-  | {
-      trigger_tier_scope?: null | 'free' | 'all_paid';
-      trigger_tier_ids?: null;
-    }
-  | {
-      trigger_tier_scope: 'selected_paid';
-      trigger_tier_ids: string[];
-    }
-);
+  | { actions: AutomationAction[]; edges: AutomationEdge[] }
+  | { actions?: never; edges?: never }
+) &
+  (
+    | {
+        trigger_tier_scope?: null | 'free' | 'all_paid';
+        trigger_tier_ids?: null;
+      }
+    | {
+        trigger_tier_scope: 'selected_paid';
+        trigger_tier_ids: string[];
+      }
+  );
 
 export type AutomatedEmailRecipientWithMailgunId = {
   id: string;

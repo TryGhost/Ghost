@@ -162,6 +162,8 @@ Caddyfile
 # Sodo-Search
 /apps/sodo-search/public/main.css
 /apps/sodo-search/umd
+/apps/sodo-search/.vitest-attachments
+/apps/sodo-search/test/acceptance/__screenshots__
 
 # Signup Form and local environments
 /apps/signup-form/umd

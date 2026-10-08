@@ -32,26 +32,29 @@ const Automation = ghostBookshelf.Model.extend(
 
       const previousStatus = model.previous('status');
       const currentStatus = model.get('status');
-      const isNewModel = previousStatus === undefined;
-      const isEnableTransition =
-        currentStatus === 'active' && (isNewModel || previousStatus === 'inactive');
-      const isDisableTransition = previousStatus === 'active' && currentStatus === 'inactive';
 
-      if (!isEnableTransition && !isDisableTransition) {
+      const previousActive = previousStatus === 'active';
+      const currentActive = currentStatus === 'active';
+
+      /** @type {'enabled' | 'disabled'} */
+      let transitionType;
+      if (!previousActive && currentActive) {
+        transitionType = 'enabled';
+      } else if (previousActive && !currentActive) {
+        transitionType = 'disabled';
+      } else {
         return;
       }
 
       logging.info(
         {
           system: {
-            event: isEnableTransition ? 'welcome_email.enabled' : 'welcome_email.disabled',
+            event: `welcome_email.${transitionType}`,
             automation_id: model.id,
             slug,
           },
         },
-        isEnableTransition
-          ? 'Welcome email automation enabled'
-          : 'Welcome email automation disabled',
+        `Welcome email automation ${transitionType}`,
       );
     },
   },

@@ -23,6 +23,7 @@ import {
 } from './completion-message';
 import { EDITOR_REQUEST_OPTIONS } from '@/editor/request-options';
 import { isSessionInvalid } from '@/editor/session/error-mapping';
+import { useMinimumDuration } from '@/hooks/use-minimum-duration';
 import { writePublishCelebration } from './celebration-handoff';
 import type { EmailConfirmationOutcome } from './email-confirmation';
 import type { PublishFlowPost } from './flow-post';
@@ -38,6 +39,12 @@ import type { SaveCompletion } from '@/editor/engine/save-engine';
 
 export type PublishStep = 'options' | 'confirm' | 'complete' | 'email-error';
 export type ConfirmStatus = 'idle' | 'running' | 'success' | 'failure';
+
+/**
+ * With `improveSendingUI` on, the least time a send shows its running state
+ * before handing off to post analytics, so the hand-off is not instant.
+ */
+export const MIN_EMAIL_HANDOFF_LENGTH = 1500;
 
 export interface PublishFlowOptions {
   post: PublishFlowPost;
@@ -55,7 +62,7 @@ export interface PublishFlowOptions {
    */
   requestReauth?: () => Promise<boolean>;
   showCompletion?: boolean;
-  /** The `improveSendingUI` lab: a publish that emails completes without confirming the send. */
+  /** The `improveSendingUI` lab: a publish that emails completes without confirming the send, after `MIN_EMAIL_HANDOFF_LENGTH`. */
   improveSendingUI?: boolean;
   onBeforePublish?: () => Promise<void>;
   onCompleted?: (info: { postId: string; isScheduled: boolean; hasEmail: boolean }) => void;
@@ -418,6 +425,7 @@ export function usePublishFlow({
   const completedRef = useRef(false);
   const publishRunningRef = useRef(false);
   const retryRunningRef = useRef(false);
+  const handoffMinimum = useMinimumDuration(MIN_EMAIL_HANDOFF_LENGTH);
   const limitCheckGenerationRef = useRef(0);
   const limitCheckRef = useRef<{
     machine: PublishOptionsMachine;
@@ -681,6 +689,7 @@ export function usePublishFlow({
     }
 
     publishRunningRef.current = true;
+    handoffMinimum.start();
     setFailure(null);
     setConfirmStatus('running');
 
@@ -783,12 +792,17 @@ export function usePublishFlow({
       return;
     }
 
+    if (willEmailImmediately) {
+      await handoffMinimum.elapsed();
+    }
+
     complete(isScheduled, willEmail);
   }, [
     applyEmailOutcome,
     complete,
     confirmation,
     dispatch,
+    handoffMinimum,
     improveSendingUI,
     invalidatePostReads,
     machine,
