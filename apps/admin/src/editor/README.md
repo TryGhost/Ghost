@@ -169,6 +169,14 @@ saves reuse the loaded lists without another index request. Resource
 invalidations make the next link search wait for fresh data. The shared parser
 retains URLs, visibility and published dates for the toolbar's link decorations.
 
+Saving the post being edited leaves the lists alone unless the save changed
+something they hold, since each one is every post, page or tag on the site. A
+save whose title, slug, status, URL, visibility or publish time no longer
+matches the post's entry in the posts or pages list refreshes that list, and
+one that carries a tag missing from the tags list, such as a tag the save
+created, refreshes the tags list. Body autosaves and settings that are not
+listed reuse the loaded lists.
+
 ## Snippets
 
 `use-post-snippets.tsx` gives Koenig's card menu every snippet on the site,

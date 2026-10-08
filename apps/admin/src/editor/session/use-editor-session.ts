@@ -52,6 +52,7 @@ import type { PublishDispatcher } from '@/editor/publish/publish-options';
 import type { EditorRecord } from './projection';
 import type { EditorSettingsFields, EditorSettingsPatch } from './settings-fields';
 import { EDITOR_REQUEST_OPTIONS } from '@/editor/request-options';
+import { searchIndexQueryKey, searchIndexesBehind } from '@/shared/search-index';
 
 /** What a reload found: the server's copy, a post that is no longer there, or a read that failed. */
 export type ReloadOutcome = 'reloaded' | 'gone' | 'failed';
@@ -233,6 +234,12 @@ export function useEditorSession({
       // The loader opens the post again from this entry, possibly before the read
       // that follows the save has landed; a later version a read put there stays.
       onSaveAcknowledged: (saved) => {
+        // An edit leaves the search index alone, so only a save that changed
+        // what it lists sends global search and editor links back for it.
+        const listKey = postType === 'page' ? 'pages' : 'posts';
+        for (const key of searchIndexesBehind(queryClient, listKey, saved)) {
+          void queryClient.invalidateQueries({ queryKey: searchIndexQueryKey(key) });
+        }
         queryClient.setQueryData<EditorReadResponse>(
           editorRead(postType, saved.id).queryKey,
           (cached) => {
