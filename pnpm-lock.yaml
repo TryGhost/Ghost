@@ -1437,6 +1437,9 @@ importers:
       '@internal/cfg-eslint-react':
         specifier: workspace:*
         version: link:../../configs/eslint-react
+      '@internal/cfg-typescript':
+        specifier: workspace:*
+        version: link:../../configs/typescript
       '@internal/cfg-vite-public-app':
         specifier: workspace:*
         version: link:../../configs/vite-public-app
@@ -2185,6 +2188,9 @@ importers:
       '@internal/cfg-eslint-react':
         specifier: workspace:*
         version: link:../../configs/eslint-react
+      '@internal/cfg-typescript':
+        specifier: workspace:*
+        version: link:../../configs/typescript
       '@internal/cfg-vite-public-app':
         specifier: workspace:*
         version: link:../../configs/vite-public-app
