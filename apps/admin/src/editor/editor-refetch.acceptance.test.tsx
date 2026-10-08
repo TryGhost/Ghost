@@ -364,12 +364,12 @@ describe('Post editor refetch', () => {
     const theirSaveAt = shared.stored().updated_at;
     window.location.hash = `#/editor/post/${POST_ID}`;
     await expect.poll(() => readApi.requests.length).toBe(2);
-    // The read from before their save answers last.
     held[1].resolve();
-    held[0].resolve();
-
     await expect.element(editorScreen.titleInput()).toHaveValue('Their title');
     await expect.element(editorScreen.body()).toHaveTextContent('Their words');
+    // The read from before their save answers last; the save below would collide
+    // had it replaced what the editor opened on.
+    held[0].resolve();
     await appendToBody(' and mine');
     await saveShortcut();
 
