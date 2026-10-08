@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import sinon from 'sinon';
 import supertest from 'supertest';
 import type { GhostServer } from '../../core/server/ghost-server';
+import type { ExplorePingService as ExploreService } from '../../core/server/services/explore-ping/explore-ping-service';
 
 const nock = require('nock');
 const { startGhost, configUtils } = require('../utils/e2e-framework');
@@ -39,12 +40,12 @@ describe('Explore ping during boot', function () {
         process.rawListeners(event),
       ]),
     );
+    const initialized = Promise.withResolvers<void>();
     const received = Promise.withResolvers<Record<string, unknown>>();
     const release = Promise.withResolvers<void>();
     let boot: Promise<GhostServer> | undefined;
     let ghostServer: GhostServer | undefined;
     let allowExplore = false;
-    let collectGrowth = false;
 
     configUtils.set('sentry:disabled', true);
     configUtils.set('explore:update_url', 'https://explore.example/update');
@@ -53,7 +54,21 @@ describe('Explore ping during boot', function () {
     notify.resetNotifications();
     const ready = sandbox.spy(notify, 'notifyServerReady');
     const serverStart = sandbox.spy(GhostServerClass.prototype, 'start');
-    const ping = sandbox.spy(ExplorePingService.prototype, 'ping');
+    const originalPing = ExplorePingService.prototype.ping;
+    const ping = sandbox
+      .stub(ExplorePingService.prototype, 'ping')
+      .callsFake(function (this: ExploreService) {
+        const sharedSettings = this.settingsCache;
+        this.settingsCache = {
+          get(key: string) {
+            if (['explore_ping', 'explore_ping_growth', 'stripe_connect_livemode'].includes(key)) {
+              return true;
+            }
+            return sharedSettings.get(key);
+          },
+        };
+        return originalPing.call(this);
+      });
     const originalModule = require.cache[EXPLORE_PATH];
     assert.ok(originalModule);
     const originalInit = explore.init;
@@ -65,26 +80,14 @@ describe('Explore ping during boot', function () {
     // their test-environment behavior; the root unit tests cover the real policy.
     const init = (...args: unknown[]) => {
       allowExplore = true;
-      collectGrowth = true;
       try {
         return originalInit(...args);
       } finally {
         allowExplore = false;
+        initialized.resolve();
       }
     };
     require.cache[EXPLORE_PATH] = { ...originalModule, exports: { ...explore, init } };
-    const originalGet = settingsCache.get.bind(settingsCache);
-    sandbox.stub(settingsCache, 'get').callsFake((...args: unknown[]) => {
-      const [key] = args;
-      if (
-        collectGrowth &&
-        typeof key === 'string' &&
-        ['explore_ping', 'explore_ping_growth', 'stripe_connect_livemode'].includes(key)
-      ) {
-        return true;
-      }
-      return originalGet(...args);
-    });
     const endpoint = nock('https://explore.example')
       .post('/update')
       .matchHeader('Content-Type', 'application/json')
@@ -98,6 +101,9 @@ describe('Explore ping during boot', function () {
       const bootPromise: Promise<GhostServer> = startGhost({ frontend: true, server: true });
       boot = bootPromise;
       void bootPromise.catch(() => {});
+      // Database reset and the rest of boot happen before Explore starts.
+      // Apply the payload deadline only once its initializer has run.
+      await Promise.race([initialized.promise, bootPromise]);
       const payload = await within(received.promise, 'Boot never sent its Explore payload');
       // Real Posts, Members and Stats roots query the default database fixtures.
       // In particular, the real Stats API yields its zero-MRR currency entry;
@@ -124,6 +130,8 @@ describe('Explore ping during boot', function () {
       ghostServer = await within(bootPromise, 'Boot waited for the Explore response');
       sinon.assert.calledOnceWithExactly(ready);
       sinon.assert.calledOnce(ping);
+      assert.equal(settingsCache.get('stripe_connect_livemode'), null);
+      assert.equal(settingsCache.get('explore_ping_growth'), false);
       await supertest(configUtils.getServerUrl()).get('/ghost/api/admin/site/').expect(200);
       assert.equal(completed, false, 'Ping finished before the Explore response');
       release.resolve();
