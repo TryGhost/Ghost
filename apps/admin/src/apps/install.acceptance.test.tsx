@@ -234,7 +234,7 @@ describe('Installing an app', () => {
     await expect.poll(currentRoute).toBe('/apps');
     await expect.element(page.getByText('Changes to Podcasts approved')).toBeVisible();
     expect(approveApi.requests.map(({ body }) => body)).toEqual([
-      { app_installations: [{ manifest_url: MANIFEST_URL, digest: 'digest-2' }] },
+      { app_installations: [{ manifest_url: MANIFEST_URL, digest: 'digest-2', revision: 0 }] },
     ]);
   });
 
