@@ -260,9 +260,36 @@ describe('Post editor refetch', () => {
     expect(shared.stored().lexical).toContain('Hello from React and more');
   });
 
-  it('reopens on its own save before the read after it lands, and saves again without a conflict', async () => {
+  it('opens on the version another writer saved since the post was last opened', async () => {
     const shared = fakeSharedPost();
-    const { queryClient } = await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await expect.element(editorScreen.titleInput()).toHaveValue('Hello from React');
+    await editorScreen.backLink('post').click();
+    await expect.poll(currentRoute).toBe('/posts');
+    await expect(editorScreen.titleInput()).toHaveCount(0);
+
+    // The copy read on the first visit is still fresh in the cache.
+    shared.theySave({ title: 'Their title', lexical: buildLexicalParagraph('Their words') });
+    const theirs = shared.stored();
+    window.location.hash = `#/editor/post/${POST_ID}`;
+
+    await expect.element(editorScreen.titleInput()).toHaveValue('Their title');
+    await expect.element(editorScreen.body()).toHaveTextContent('Their words');
+    expect(shared.readApi.requests).toHaveLength(2);
+
+    await appendToBody(' and mine');
+    await saveShortcut();
+
+    await expect.poll(() => shared.saveApi.requests.length).toBe(1);
+    expect(submittedPost(shared.saveApi)).toMatchObject({ updated_at: theirs.updated_at });
+    await expect.poll(unsavedChangesGuarded).toBe(false);
+    await expect(editorScreen.conflictBanner()).toHaveCount(0);
+    expect(shared.stored().lexical).toContain('Their words and mine');
+  });
+
+  it('opens on the read after its own save when reopened before that read lands', async () => {
+    const shared = fakeSharedPost();
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
     await expect.element(editorScreen.titleInput()).toHaveValue('Hello from React');
     const releaseReads = shared.holdReads();
 
@@ -276,12 +303,49 @@ describe('Post editor refetch', () => {
     await editorScreen.backLink('post').click();
     await expect.poll(currentRoute).toBe('/posts');
     await expect(editorScreen.titleInput()).toHaveCount(0);
+    // Their save lands before the read that follows this tab's save is answered,
+    // so the copy that save left in the cache is already behind.
+    shared.theySave({ title: 'Their title', lexical: buildLexicalParagraph('Their words') });
+    window.location.hash = `#/editor/post/${POST_ID}`;
+    await expect.poll(currentRoute).toBe(`/editor/post/${POST_ID}`);
+    releaseReads();
+
+    await expect.element(editorScreen.titleInput()).toHaveValue('Their title');
+    await expect.element(editorScreen.body()).toHaveTextContent('Their words');
+    await appendToBody(' and mine');
+    await saveShortcut();
+
+    await expect.poll(() => shared.saveApi.requests.length).toBe(2);
+    expect(submittedPost(shared.saveApi)).toMatchObject({ updated_at: THEIR_SAVE_AT });
+    await expect.poll(unsavedChangesGuarded).toBe(false);
+    await expect(editorScreen.conflictBanner()).toHaveCount(0);
+    expect(shared.stored().lexical).toContain('Their words and mine');
+  });
+
+  it('opens the copy its own save left when the read that reopens the post fails', async () => {
+    const shared = fakeSharedPost();
+    const { queryClient } = await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await expect.element(editorScreen.titleInput()).toHaveValue('Hello from React');
+
+    await editorScreen.titleInput().fill('My title');
+    await expect.poll(unsavedChangesGuarded).toBe(true);
+    await saveShortcut();
+    await expect.poll(() => shared.saveApi.requests.length).toBe(1);
+    await editorReadLanded(queryClient, shared.stored());
+
+    await editorScreen.backLink('post').click();
+    await expect.poll(currentRoute).toBe('/posts');
+    await expect(editorScreen.titleInput()).toHaveCount(0);
+    const failedReads = fakeAdminEndpoint('GET', READ_ROUTE, () =>
+      Response.json(
+        { errors: [{ type: 'InternalServerError', message: 'Internal server error' }] },
+        { status: 500 },
+      ),
+    );
     window.location.hash = `#/editor/post/${POST_ID}`;
 
     await expect.element(editorScreen.titleInput()).toHaveValue('My title');
-    releaseReads();
-    await editorReadLanded(queryClient, shared.stored());
-
+    expect(failedReads.requests.length).toBeGreaterThan(0);
     await appendToBody(' and more');
     await saveShortcut();
 
@@ -331,20 +395,19 @@ describe('Post editor refetch', () => {
     },
   );
 
-  it('returns an Author to the list when the refetch of a reopened post finds them removed', async () => {
+  it('returns an Author to the list when the read of a reopened post finds them removed', async () => {
     fakePostsListScreen();
     const shared = fakeSharedPost(
       { authors: [{ id: CURRENT_USER_ID }] },
       { canSave: (stored) => mayEdit('Author', stored) },
     );
-    const { queryClient } = await renderAdminApp(`/editor/post/${POST_ID}`, bootAs('Author'));
+    await renderAdminApp(`/editor/post/${POST_ID}`, bootAs('Author'));
     await expect.element(editorScreen.titleInput()).toHaveValue('Hello from React');
     await editorScreen.backLink('post').click();
     await expect(editorScreen.root()).toHaveCount(0);
 
+    // The cached copy from the first visit is still fresh and still lists them.
     shared.theySave({ authors: [{ id: 'other-user' }] });
-    // A save to any post marks every post read stale, so the reopen starts from the cached copy.
-    await queryClient.invalidateQueries({ queryKey: [postsDataType] });
     window.location.hash = `/editor/post/${POST_ID}`;
 
     await expect.poll(() => shared.readApi.requests.length).toBeGreaterThan(1);

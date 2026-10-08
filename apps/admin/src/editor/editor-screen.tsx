@@ -592,20 +592,25 @@ function useLexicalConversion(postType: PostType) {
 function EditorLoader({ postType, id }: { postType: PostType; id?: string }) {
   // A create replaces the URL with the id it acquired; the load must not restart.
   const [openedId] = useState(id);
-  // Access and conversion are judged until the opening read settles. Later
+  // Access and conversion are judged on the read the post opens with. Later
   // reads belong to the session; unmounting the editor would dispose it.
   const [openedWith, setOpenedWith] = useState<EditorRecord>();
   const navigate = useNavigate();
   const { pathname, search } = useLocation();
   const { data: currentUser } = useCurrentUser({ requestOptions: EDITOR_REQUEST_OPTIONS });
+  // Opening reads the post again even when a copy is cached: the session saves
+  // against the version it opens on, so a copy from an earlier visit would collide
+  // with whatever another writer has saved since.
   const postQuery = useEditorPost(openedId ?? '', {
     enabled: postType === 'post' && !!openedId,
     defaultErrorHandler: false,
+    refetchOnMount: 'always',
     requestOptions: EDITOR_REQUEST_OPTIONS,
   });
   const pageQuery = useEditorPage(openedId ?? '', {
     enabled: postType === 'page' && !!openedId,
     defaultErrorHandler: false,
+    refetchOnMount: 'always',
     requestOptions: EDITOR_REQUEST_OPTIONS,
   });
   const query = postType === 'page' ? pageQuery : postQuery;
@@ -624,7 +629,8 @@ function EditorLoader({ postType, id }: { postType: PostType; id?: string }) {
     }
   }, [sessionExpired, pathname, search]);
 
-  const opening = openedWith ? undefined : loaded;
+  // A cached copy is not judged while the opening read is still in flight.
+  const opening = openedWith || query.isFetching ? undefined : loaded;
   const returnToList = !!currentUser && !!opening && shouldReturnToList(currentUser, opening);
   useEffect(() => {
     if (returnToList) {
@@ -666,7 +672,7 @@ function EditorLoader({ postType, id }: { postType: PostType; id?: string }) {
     );
   }
 
-  if (query.isPending || !currentUser || returnToList) {
+  if (query.isPending || query.isFetching || !currentUser || returnToList) {
     return <EditorLoading />;
   }
 
@@ -694,11 +700,9 @@ function EditorLoader({ postType, id }: { postType: PostType; id?: string }) {
     record = converted.record;
   }
 
-  // Latched while rendering once the read settles: a reopened post's cached
-  // copy may be stale, so the refetch in flight still decides.
-  if (!query.isFetching) {
-    setOpenedWith(record);
-  }
+  // Latched while rendering, now the opening read has settled. A cached copy only
+  // gets this far when that read failed.
+  setOpenedWith(record);
   return <EditorSurface postType={postType} record={record} />;
 }
 
