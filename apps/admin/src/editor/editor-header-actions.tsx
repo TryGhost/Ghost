@@ -1,24 +1,17 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { Fragment, useCallback, useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useEmberOwnedRouteMatcher } from '@/routes';
 import { useNavigate } from '@tryghost/admin-x-framework';
-import {
-  Button,
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuTrigger,
-} from '@tryghost/shade/components';
+import { Button } from '@tryghost/shade/components';
 import { useShade } from '@tryghost/shade/app';
 import { PageHeader } from '@tryghost/shade/patterns';
 import { Inline, Text } from '@tryghost/shade/primitives';
-import { LucideIcon, cn } from '@tryghost/shade/utils';
+import { cn } from '@tryghost/shade/utils';
 import { getSettingValue } from '@tryghost/admin-x-framework/api/settings';
 import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import { isContributorUser, type User } from '@tryghost/admin-x-framework/api/users';
 import {
   editorHeaderActions,
-  editorMoreActionsButton,
   editorPublishInputsError,
 } from '@tryghost/test-data/selectors/editor';
 import type { PostType } from './card-config';
@@ -44,6 +37,7 @@ import {
   useSaveShortcut,
 } from './use-editor-shortcuts';
 import { useSaveButtonPhase, useSaveFeedback, type SaveButtonPhase } from './use-save-feedback';
+import { useSmallScreen } from './use-small-screen';
 
 export type OpenFlow = 'none' | 'publish' | 'update';
 
@@ -84,8 +78,8 @@ async function requireSaved(pending: Promise<SaveCompletion>): Promise<void> {
 
 /**
  * One header control. From the small breakpoint up it is a button in the header
- * row; below it, an item in the header's "More actions" menu. Both are rendered
- * from the same item, so they cannot drift apart.
+ * row; below it, a button in the editor's bottom bar. Both come from the same
+ * item, so they cannot drift apart.
  */
 type HeaderItem =
   | {
@@ -94,9 +88,12 @@ type HeaderItem =
       label: string;
       onSelect: () => void;
       disabled?: boolean;
+      /** Advertised in the header's tooltip; the bottom bar names no shortcuts. */
       shortcut?: string;
-      /** The post's main action, Publish or Update. */
+      /** The post's main action, Publish or Update, in the header's success colour. */
       emphasis?: boolean;
+      /** Publish, a primary button in the bottom bar. */
+      primary?: boolean;
       /** Unpublish and Unschedule keep their quieter button. */
       quiet?: boolean;
       /** A contributor's Save keeps its plain button. */
@@ -108,143 +105,73 @@ const EMPHASIS_BUTTON =
   'font-semibold text-state-success hover:text-state-success disabled:text-text-secondary/60 disabled:opacity-100';
 
 /**
- * The header's items: inline buttons from the small breakpoint up, and below it
- * one "More actions" menu beside the settings toggle. The copy that does not
- * apply is display: none, so neither the keyboard nor a screen reader reaches it.
+ * The header's controls, in the header row, or, below the small breakpoint, in
+ * the bottom bar the editor hands over. Only the controls move: the flows and
+ * previews they open stay mounted where they are, so crossing the breakpoint
+ * keeps an open flow and its choices.
  */
-function HeaderItems({ items }: { items: HeaderItem[] }) {
+function HeaderItems({ items, bottomBar }: { items: HeaderItem[]; bottomBar: HTMLElement | null }) {
   const { isAdmin7 } = useShade();
-  const triggerRef = useRef<HTMLButtonElement>(null);
-  // An item runs once the menu has closed and handed focus back, so a refusal's
-  // field or an opened flow keeps the focus the menu would otherwise take back.
-  const selected = useRef<(() => void) | null>(null);
-  const select = (action: () => void) => () => {
-    selected.current = action;
-  };
-
-  if (!items.length) {
-    return null;
-  }
-
-  return (
-    <>
-      {items.map((item) =>
-        item.kind === 'inputs-error' ? (
-          <InlineInputsError key={item.id} item={item} />
-        ) : item.plain ? (
+  const atBottom = !!bottomBar;
+  const controls = items.map((item) => {
+    if (item.kind === 'inputs-error') {
+      return (
+        <Fragment key={item.id}>
+          <Text
+            className="bg-background/80 text-destructive backdrop-blur-sm"
+            data-testid={editorPublishInputsError}
+            role="alert"
+            size="sm"
+          >
+            {item.message}
+          </Text>
           <Button
-            key={item.id}
-            className="max-sm:hidden"
-            disabled={item.disabled}
+            className="bg-background/80 backdrop-blur-sm"
             size={isAdmin7 ? 'default' : 'sm'}
-            onClick={item.onSelect}
+            variant="ghost"
+            onClick={item.onRetry}
           >
-            {item.label}
+            Retry
           </Button>
-        ) : (
-          <PageHeader.Action
-            key={item.id}
-            className={cn(
-              'bg-background/80 backdrop-blur-sm max-sm:hidden',
-              item.emphasis && EMPHASIS_BUTTON,
-            )}
-            disabled={item.disabled}
-            fallbackSize="sm"
-            fallbackVariant={item.quiet ? 'ghost' : undefined}
-            label={item.label}
-            shortcut={item.shortcut}
-            onClick={item.onSelect}
-          >
-            {item.label}
-          </PageHeader.Action>
-        ),
-      )}
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <PageHeader.Action
-            ref={triggerRef}
-            className="bg-background/80 backdrop-blur-sm sm:hidden"
-            fallbackSize="sm"
-            fallbackVariant="ghost"
-            label={editorMoreActionsButton}
-            // As on the settings toggle beside it: a touch screen has no hover to explain it.
-            tooltip={false}
-            iconOnly
-          >
-            <LucideIcon.Ellipsis />
-          </PageHeader.Action>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent
-          align="end"
-          className="max-w-(--radix-dropdown-menu-content-available-width)"
-          sideOffset={8}
-          onCloseAutoFocus={(event) => {
-            const action = selected.current;
-            if (!action) {
-              return;
-            }
-            selected.current = null;
-            event.preventDefault();
-            triggerRef.current?.focus();
-            action();
-          }}
+        </Fragment>
+      );
+    }
+    if (item.plain || (atBottom && item.primary)) {
+      return (
+        <Button
+          key={item.id}
+          disabled={item.disabled}
+          size={isAdmin7 ? 'default' : 'sm'}
+          onClick={item.onSelect}
         >
-          {items.map((item) =>
-            item.kind === 'inputs-error' ? (
-              <MenuInputsError key={item.id} item={item} onRetry={select(item.onRetry)} />
-            ) : (
-              <DropdownMenuItem
-                key={item.id}
-                className={cn(
-                  item.emphasis && 'font-semibold text-state-success focus:text-state-success',
-                )}
-                disabled={item.disabled}
-                onSelect={select(item.onSelect)}
-              >
-                {/* Only the label: a small screen's keyboard, if any, has no use for the hint. */}
-                {item.label}
-              </DropdownMenuItem>
-            ),
-          )}
-        </DropdownMenuContent>
-      </DropdownMenu>
-    </>
-  );
-}
-
-type InputsErrorItem = Extract<HeaderItem, { kind: 'inputs-error' }>;
-
-function InlineInputsError({ item }: { item: InputsErrorItem }) {
-  const { isAdmin7 } = useShade();
-  return (
-    <>
-      <Text
-        className="bg-background/80 text-destructive backdrop-blur-sm max-sm:hidden"
-        data-testid={editorPublishInputsError}
-        role="alert"
-        size="sm"
+          {item.label}
+        </Button>
+      );
+    }
+    return (
+      <PageHeader.Action
+        key={item.id}
+        className={cn('bg-background/80 backdrop-blur-sm', item.emphasis && EMPHASIS_BUTTON)}
+        disabled={item.disabled}
+        fallbackSize="sm"
+        fallbackVariant={item.quiet ? 'ghost' : undefined}
+        label={item.label}
+        shortcut={atBottom ? undefined : item.shortcut}
+        onClick={item.onSelect}
       >
-        {item.message}
-      </Text>
-      <Button
-        className="bg-background/80 backdrop-blur-sm max-sm:hidden"
-        size={isAdmin7 ? 'default' : 'sm'}
-        variant="ghost"
-        onClick={item.onRetry}
-      >
-        Retry
-      </Button>
-    </>
-  );
-}
+        {item.label}
+      </PageHeader.Action>
+    );
+  });
 
-/** In the menu the failure explains the disabled actions beneath it, and Retry follows it. */
-function MenuInputsError({ item, onRetry }: { item: InputsErrorItem; onRetry: () => void }) {
-  return (
-    <>
-      <DropdownMenuLabel className="font-normal text-destructive">{item.message}</DropdownMenuLabel>
-      <DropdownMenuItem onSelect={onRetry}>Retry</DropdownMenuItem>
-    </>
+  if (!bottomBar) {
+    return <>{controls}</>;
+  }
+  return createPortal(
+    <Inline className="min-w-0" data-testid={editorHeaderActions} gap="sm" justify="end" wrap>
+      {controls}
+    </Inline>,
+    bottomBar,
   );
 }
 
@@ -264,6 +191,8 @@ export interface EditorHeaderActionsProps {
   offersEmailRetry: boolean;
   /** Takes the writer to the field an explicit save would refuse, and returns it. */
   revealInvalidField: () => InvalidField | null;
+  /** The editor's bottom bar, which holds the controls below the small breakpoint. */
+  bottomBar: HTMLElement | null;
 }
 
 /**
@@ -281,7 +210,9 @@ export function EditorHeaderActions({
   onOpenFlow,
   offersEmailRetry,
   revealInvalidField,
+  bottomBar: bottomBarSlot,
 }: EditorHeaderActionsProps) {
+  const bottomBar = useSmallScreen() ? bottomBarSlot : null;
   const { persistedId } = session;
   const record = session.loadedRecord;
   const [previewOpen, setPreviewOpen] = useState(false);
@@ -380,10 +311,12 @@ export function EditorHeaderActions({
     : null;
 
   return (
-    <Inline data-testid={editorHeaderActions} gap="md" justify="end" wrap>
+    // Below the small breakpoint the controls, and this name for them, are in the bottom bar.
+    <Inline data-testid={bottomBar ? undefined : editorHeaderActions} gap="md" justify="end" wrap>
       {isContributor ? (
         <>
           <HeaderItems
+            bottomBar={bottomBar}
             items={[
               ...(previewItem ? [previewItem] : []),
               {
@@ -400,6 +333,7 @@ export function EditorHeaderActions({
         </>
       ) : (
         <PublishActions
+          bottomBar={bottomBar}
           feedback={feedback}
           isDraft={isDraft}
           isSaving={isSaving}
@@ -422,6 +356,7 @@ export function EditorHeaderActions({
 
 interface PublishActionsProps {
   session: EditorSessionHandle;
+  bottomBar: HTMLElement | null;
   feedback: ReturnType<typeof useSaveFeedback>;
   post: PublishFlowPost;
   tkCount: number;
@@ -445,6 +380,7 @@ interface PublishActionsProps {
  */
 function PublishActions({
   session,
+  bottomBar,
   feedback,
   post,
   tkCount,
@@ -622,6 +558,7 @@ function PublishActions({
           label: 'Publish',
           disabled: !inputs.isReady,
           emphasis: true,
+          primary: true,
           shortcut: publishShortcutLabel(),
           onSelect: openPublishFlow,
         },
@@ -659,7 +596,7 @@ function PublishActions({
 
   return (
     <>
-      <HeaderItems items={items} />
+      <HeaderItems bottomBar={bottomBar} items={items} />
       {isDraft ? (
         <PostPreviewModal
           {...preview}

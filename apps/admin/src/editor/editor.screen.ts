@@ -23,7 +23,6 @@ import {
   editorHelpLink,
   editorLeaveDialog,
   editorLoadError,
-  editorMoreActionsButton,
   editorNewerVersionNotice,
   editorNewsletterDetailsButton,
   editorPreviewButton,
@@ -209,6 +208,7 @@ export const editorScreen = {
       .getByTestId(editorStatus)
       .getByRole('button', { name: editorSentStatusButton, exact: true }),
 
+  /** In the header row, or below the small breakpoint in the bottom bar. */
   headerActions: () => page.getByTestId(editorHeaderActions),
   previewButton: () =>
     page.getByTestId(editorHeaderActions).getByRole('button', { name: editorPreviewButton }),
@@ -230,11 +230,6 @@ export const editorScreen = {
   /** A header button by its whole label, for a save button whose label tracks its save. */
   headerButton: (label: string) =>
     page.getByTestId(editorHeaderActions).getByRole('button', { name: label, exact: true }),
-  /** Below the small breakpoint the header's actions are items in this menu. */
-  moreActionsButton: () =>
-    page.getByTestId(editorHeaderActions).getByRole('button', { name: editorMoreActionsButton }),
-  moreActionsMenu: () => page.getByRole('menu'),
-  moreActionsItem: (label: string) => page.getByRole('menuitem', { name: label }),
   saveToast: (title: string) => page.getByRole('listitem').filter({ hasText: title }),
   publishInputsError: () => page.getByTestId(editorPublishInputsError),
   retryPublishInputs: () =>

@@ -199,14 +199,16 @@ The header row's actions line up with the settings toggle. A status that wraps
 keeps its first line level with the back link's label and grows downward.
 
 Below Tailwind's `sm` breakpoint the status stays on the header row beside the
-back link, and the header's actions move into a "More actions" menu beside the
-settings toggle. `editor-header-actions.tsx` renders the inline buttons and the
-menu items from one list, hiding whichever does not apply with `display: none`,
-so both keep the same order, disabled states, refusals and flows, and the
-keyboard shortcuts are unchanged. The menu names no shortcuts. An item runs once
-the menu has closed and handed focus back, so a refused action's field keeps
-focus. A failed publish inputs load shows its message above a Retry item there,
-above the actions it disables.
+back link, and the header's actions move to the bottom bar: the word count sits
+in the bottom-left corner, the actions in the bottom right, and the help link is
+hidden. Publish is a primary button there, and the bar names no shortcuts,
+which still work. `editor-header-actions.tsx` builds one list of controls and,
+below the breakpoint, portals them into a slot `post-editor.tsx` keeps in its
+footer, so the header and the bar share order, disabled states, refusals and
+flows. Only the controls move; the flows they open stay mounted, so crossing
+the breakpoint keeps an open flow. A failed publish inputs load shows its
+message and Retry there too. While the on-screen keyboard is open the bar's
+actions are hidden with the word count.
 
 ## Link suggestions
 

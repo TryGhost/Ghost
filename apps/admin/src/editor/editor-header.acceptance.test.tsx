@@ -2126,65 +2126,42 @@ describe('Editor header actions', () => {
 });
 
 /**
- * Below the small breakpoint the header's actions are items in a "More actions"
- * menu beside the settings toggle, each behaving as its button does.
+ * Below the small breakpoint the header's actions sit in the editor's bottom
+ * bar, each behaving as it does in the header.
  */
 describe('Editor header actions on a small screen', () => {
   afterEach(async () => {
     await page.viewport(1280, 800);
   });
 
-  async function openMoreActions() {
-    await editorScreen.moreActionsButton().click();
-    await expect.element(editorScreen.moreActionsMenu()).toBeVisible();
-  }
-
-  /** Each item is exactly its label: the menu names no keyboard shortcuts. */
-  function menuLabels() {
-    return editorScreen
-      .moreActionsMenu()
-      .getByRole('menuitem')
-      .elements()
-      .map((item) => item.textContent?.trim());
-  }
-
-  it('offers a draft’s Preview and Publish and opens the publish flow from Publish', async () => {
+  it('opens the publish flow from the bottom bar’s Publish', async () => {
     await page.viewport(390, 844);
     publishChrome();
     fakeSavablePost();
     await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
-    await expect.element(editorScreen.moreActionsButton()).toBeVisible();
-    await expect(editorScreen.publishButton()).toHaveCount(0);
-    await expect(editorScreen.previewButton()).toHaveCount(0);
+    await expect.element(editorScreen.publishButton()).toBeEnabled();
+    expect(
+      editorScreen
+        .headerActions()
+        .getByRole('button')
+        .elements()
+        .map((b) => b.textContent),
+    ).toEqual(['Preview', 'Publish']);
 
-    await openMoreActions();
-    await expect.poll(menuLabels).toEqual(['Preview', 'Publish']);
-    await expect
-      .element(editorScreen.moreActionsItem('Publish'))
-      .not.toHaveAttribute('aria-disabled');
-    await expect.element(editorScreen.moreActionsItem('Publish')).toHaveClass('text-state-success');
-    await editorScreen.moreActionsItem('Publish').click();
-
+    await editorScreen.publishButton().click();
     await expect.element(publishScreen.options()).toBeVisible();
-    await expect(editorScreen.moreActionsMenu()).toHaveCount(0);
   });
 
-  it('refuses Publish on an over-long title, naming the rule and focusing the title', async () => {
+  it('refuses the bottom bar’s Publish on an over-long title, focusing the title', async () => {
     await page.viewport(390, 844);
     publishChrome();
     const saveApi = fakeSavablePost();
     await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
-    await expect.element(editorScreen.moreActionsButton()).toBeVisible();
+    await expect.element(editorScreen.publishButton()).toBeEnabled();
 
     await editorScreen.titleInput().fill('a'.repeat(TITLE_MAX + 1));
-    await editorScreen.body().click();
-    await openMoreActions();
-    await expect
-      .element(editorScreen.moreActionsItem('Publish'))
-      .not.toHaveAttribute('aria-disabled');
-    await editorScreen.moreActionsItem('Publish').click();
+    await editorScreen.publishButton().click();
 
-    // The menu hands focus back before the refusal takes the writer to the field.
     await expect.element(editorScreen.titleInput()).toHaveFocus();
     await expect.element(editorScreen.saveError()).toHaveTextContent(TITLE_TOO_LONG);
     await expect.element(editorScreen.saveError()).toHaveClass('text-destructive');
@@ -2200,29 +2177,15 @@ describe('Editor header actions on a small screen', () => {
       published_at: '2026-02-01T10:00:00.000Z',
     });
     await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
-    await expect.element(editorScreen.moreActionsButton()).toBeVisible();
-
-    await openMoreActions();
-    await expect.poll(menuLabels).toEqual(['Unpublish', 'Update']);
-    await expect
-      .element(editorScreen.moreActionsItem('Update'))
-      .toHaveAttribute('aria-disabled', 'true');
-    await userEvent.keyboard('{Escape}');
-    await expect(editorScreen.moreActionsMenu()).toHaveCount(0);
+    await expect.element(editorScreen.unpublishButton()).toBeEnabled();
+    await expect.element(editorScreen.updateButton()).toBeDisabled();
 
     await typeIntoBody(' and more');
-    await openMoreActions();
-    await expect
-      .element(editorScreen.moreActionsItem('Update'))
-      .not.toHaveAttribute('aria-disabled');
-    await editorScreen.moreActionsItem('Update').click();
+    await expect.element(editorScreen.updateButton()).toBeEnabled();
+    await editorScreen.updateButton().click();
     await expect.poll(() => saveApi.requests.length, SAVE_POLL).toBe(1);
 
-    await openMoreActions();
-    await expect
-      .element(editorScreen.moreActionsItem('Unpublish'))
-      .not.toHaveAttribute('aria-disabled');
-    await editorScreen.moreActionsItem('Unpublish').click();
+    await editorScreen.unpublishButton().click();
     await expect.element(publishScreen.updateFlow()).toBeVisible();
   });
 });

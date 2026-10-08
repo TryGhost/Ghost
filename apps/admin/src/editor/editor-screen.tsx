@@ -311,6 +311,8 @@ function EditorContent({
     setSettingsOpen((open) => !open);
   }, []);
   const postEditorRef = useRef<PostEditorHandle>(null);
+  // Below the small breakpoint the header's controls sit in the editor's bottom bar.
+  const [bottomBar, setBottomBar] = useState<HTMLDivElement | null>(null);
   const [settingsReveal, setSettingsReveal] = useState<SettingsFieldReveal | null>(null);
   /**
    * Takes the writer to the first field an explicit save would refuse, as the
@@ -426,6 +428,7 @@ function EditorContent({
               ) : null}
               <PageHeader.ActionGroup className="col-start-3 ml-auto gap-x-[calc(var(--spacing)*3*(1-var(--editor-settings-progress)))] editor-settings-motion-[column-gap]">
                 <EditorHeaderActions
+                  bottomBar={bottomBar}
                   currentUser={currentUser}
                   offersEmailRetry={offersEmailRetry}
                   openFlow={openFlow}
@@ -450,6 +453,7 @@ function EditorContent({
               <PostEditor
                 key={session.contentKey}
                 {...session.bind}
+                actionsSlotRef={setBottomBar}
                 autofocusTitle={!record}
                 cardConfig={currentCardConfig}
                 excerptError={settingsFieldErrorFor('custom_excerpt', session.settings)}

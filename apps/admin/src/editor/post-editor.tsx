@@ -64,6 +64,8 @@ export interface PostEditorProps {
   onTkCountChange?: (count: number) => void;
   /** Rendered in the footer after the word count. */
   wordCountAccessory?: React.ReactNode;
+  /** Below the small breakpoint, the footer's place for the header's actions. */
+  actionsSlotRef?: React.Ref<HTMLDivElement>;
   /** Lets the screen take the writer to the title or the excerpt. */
   handleRef?: React.Ref<PostEditorHandle>;
   /** From a settings panel toggle until everything moving with the panel has arrived. */
@@ -190,6 +192,7 @@ export function PostEditor({
   registerEditorApi,
   onTkCountChange,
   wordCountAccessory,
+  actionsSlotRef,
   handleRef,
   settingsMoving = false,
 }: PostEditorProps) {
@@ -548,8 +551,13 @@ export function PostEditor({
           />
         </Stack>
       </div>
+      {/* Below the small breakpoint the footer spans the screen: the word count at
+          the left, the header's actions at the right, and no help link. Only its
+          controls take pointer input, so the document between them stays reachable.
+          Actions that wrap grow upward, leaving the word count in the corner. */}
       <Inline
-        className="absolute right-[calc(var(--spacing)*(4+2*var(--editor-settings-progress,0)))] bottom-3 z-20 editor-settings-motion-[right] max-[500px]:right-3"
+        align="end"
+        className="absolute right-[calc(var(--spacing)*(4+2*var(--editor-settings-progress,0)))] bottom-3 z-20 editor-settings-motion-[right] max-[500px]:inset-x-3 max-sm:pointer-events-none max-sm:*:pointer-events-auto min-[500px]:max-sm:left-4"
         gap="sm"
       >
         {!isKeyboardOpen && (
@@ -571,9 +579,15 @@ export function PostEditor({
           </Text>
         )}
         {wordCountAccessory}
+        <Inline
+          ref={actionsSlotRef}
+          // The on-screen keyboard would cover them, as it would the word count.
+          className={cn('ml-auto min-w-0 sm:hidden', isKeyboardOpen && 'hidden')}
+          justify="end"
+        />
         <Button
           className={cn(
-            'bg-background/80 text-text-secondary backdrop-blur-sm hover:text-foreground',
+            'bg-background/80 text-text-secondary backdrop-blur-sm hover:text-foreground max-sm:hidden',
             isAdmin7 && '[&_svg]:stroke-2!',
           )}
           shape="pill"

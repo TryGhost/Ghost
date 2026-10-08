@@ -196,8 +196,6 @@ export const editorUpdateButton = 'Update';
 export const editorSaveButton = 'Save';
 export const editorUnpublishButton = 'Unpublish';
 export const editorUnscheduleButton = 'Unschedule';
-/** The small-screen menu holding the header's actions. */
-export const editorMoreActionsButton = 'More actions';
 export const editorRetryNewsletterButton = 'Retry now';
 export const editorNewsletterDetailsButton = 'View details';
 export const editorSentStatusButton = 'Sent';
