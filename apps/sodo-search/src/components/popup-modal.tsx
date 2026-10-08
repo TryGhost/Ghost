@@ -294,7 +294,7 @@ function getMatchIndexes({ text, highlight }: { text: string; highlight: string 
   let highlightRegexText = '';
   highlight?.split(' ').forEach((d, idx) => {
     // escape regex syntax in search queries
-    const e = String(d).replace(/\W/g, '\\&');
+    const e = String(d).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     if (idx > 0) {
       highlightRegexText += `|^` + e + `|\\s` + e;
     } else {

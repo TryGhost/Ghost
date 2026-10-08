@@ -148,3 +148,18 @@ describe('Search accessibility', () => {
     expect(screen.getByRole('button', { name: 'Clear search' })).toBeInTheDocument();
   });
 });
+
+describe('Search highlighting', () => {
+  test.each([
+    ['café', 'Café culture', 'Café'],
+    ['привет', 'Привет мир', 'Привет'],
+    ['c++', 'C++ tips', 'C++'],
+    ['new', 'New post', 'New'],
+  ])('highlights %s in "%s"', (query, title, highlighted) => {
+    renderSearch([{ id: 'post', title, excerpt: '', url: 'https://example.com/post/' }], query);
+
+    expect(screen.getByRole('option').querySelector('span.font-bold')).toHaveTextContent(
+      highlighted,
+    );
+  });
+});
