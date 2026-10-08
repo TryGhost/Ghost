@@ -74,7 +74,8 @@ export const usePostSuccessModal = () => {
     }
 
     const showPostCount = !!postCount;
-    const isEmailStillSending = emailStatus === 'pending' || emailStatus === 'submitting';
+    // The modal opens straight after a send is handed off, so only a submitted email reads as sent.
+    const isEmailStillSending = !didEmailFail && emailStatus !== 'submitted';
     const emailCount = didEmailFail ? 0 : post.email?.email_count;
 
     // Build description with React elements to match Ember modal format with bold text

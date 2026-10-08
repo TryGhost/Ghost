@@ -480,6 +480,25 @@ describe('usePostSuccessModal', () => {
     expect(screen.getByText(/Your email is being sent to/)).toBeTruthy();
   });
 
+  test('treats an email whose status is not known yet as still sending', async ({
+    server,
+    wrapper,
+  }) => {
+    mockPosts(server, [
+      buildPost({
+        email_only: true,
+        email: { email_count: 50, opened_count: 0 },
+      }),
+    ]);
+    mockLocalStorage.getItem.mockReturnValue(JSON.stringify({ id: 'post-123', type: 'post' }));
+
+    const { result } = renderHook(() => usePostSuccessModal(), { wrapper });
+
+    await waitFor(() => expect(result.current.modalProps).toBeTruthy());
+    render(result.current.modalProps?.description);
+    expect(screen.getByText(/Your email is being sent to/)).toBeTruthy();
+  });
+
   test('claims no delivery for a published post whose email failed', async ({
     server,
     wrapper,
