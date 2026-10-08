@@ -146,7 +146,7 @@ catalog:
   eslint-plugin-react: 7.37.5
   eslint-plugin-react-hooks: 5.2.0
   eslint-plugin-react-refresh: 0.5.7
-  eslint-plugin-tailwindcss: 4.0.4
+  eslint-plugin-tailwindcss: 4.2.0
   express: 4.22.3
   flexsearch: 0.7.43
   fs-extra: 11.3.6
