@@ -315,6 +315,9 @@ const AutomationsList: React.FC = () => {
                 automations={visible}
                 basePath={lanePath(LANE)}
                 publishBlocked={(entry) => !canPublishAutomation(entry, stripeConnected)}
+                // Descoped for this release: rows open with the name. The
+                // lifecycle and GA lanes keep the trigger icon.
+                showTriggerIcon={false}
                 onArchive={handleArchive}
                 onDuplicate={handleDuplicate}
                 onToggleStatus={handleToggleStatus}
