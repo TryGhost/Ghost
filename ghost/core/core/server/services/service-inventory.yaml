@@ -4196,8 +4196,8 @@ services:
       - stripe-checkout-config/index.ts
     notes: >-
       Site-wide Stripe Checkout config, read live by the Stripe API for every checkout it
-      creates, previews of a design on a real Stripe Checkout page, and the branding set in
-      the Stripe dashboard.
+      creates and by the checkout webhook to save a collected shipping address, previews of a
+      design on a real Stripe Checkout page, and the branding set in the Stripe dashboard.
     contracts:
       exports:
         summary: >-
