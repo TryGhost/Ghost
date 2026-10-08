@@ -8,12 +8,13 @@ import { StripeCheckoutConfigService } from './service';
 
 export { StripeCheckoutConfigService } from './service';
 export type {
+  PreviewShipping,
   ShippingCollection,
   StripeCheckoutBranding,
   StripeCheckoutConfig,
   StripeCheckoutDesign,
 } from './models';
-export { SHIPPING_FLAG, collectsShippingFor } from './models';
+export { SHIPPING_FLAG, collectsShippingFor, countriesToAsk, shippingCountriesFor } from './models';
 export { CheckoutBrandingService } from './branding-service';
 export { CheckoutPreviewService } from './preview-service';
 export {
@@ -53,11 +54,12 @@ export function init(): void {
     stripeConnected: () => require('../stripe').api.configured,
     readTier: (id) => require('../tiers').api.read(id),
     // The same checkout a signup by someone who isn't a member yet gets, in the given design.
-    createPreviewLink: ({ tier, cadence, design, returnUrl, expiresInSeconds }) =>
+    createPreviewLink: ({ tier, cadence, design, shipping, returnUrl, expiresInSeconds }) =>
       require('../members').api.paymentsService.getPaymentLink({
         tier,
         cadence,
         design,
+        shipping,
         successUrl: returnUrl,
         cancelUrl: returnUrl,
         expiresInSeconds,

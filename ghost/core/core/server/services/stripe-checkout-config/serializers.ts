@@ -105,6 +105,17 @@ export const CheckoutPreviewInput = z.strictObject({
   tier_id: z.string().regex(/^[0-9a-f]{24}$/, { error: 'Choose a tier to preview checkout for.' }),
   cadence: z.enum(['month', 'year']).default('month'),
   design: DesignInput,
+  /** Unsaved shipping to preview. Left out, the checkout asks as the saved settings say. */
+  shipping: z
+    .discriminatedUnion('collect', [
+      z.strictObject({ collect: z.literal(false) }),
+      z.strictObject({
+        collect: z.literal(true),
+        tier_ids: TierIdsInput.optional(),
+        allowed_countries: CountriesInput.optional(),
+      }),
+    ])
+    .optional(),
 });
 export type CheckoutPreviewInput = z.output<typeof CheckoutPreviewInput>;
 

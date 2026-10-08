@@ -411,6 +411,47 @@ describe('StripeAPI', function () {
       sinon.assert.calledOnce(mockStripe.checkout.sessions.create);
     });
 
+    it('creates the session again without shipping when Stripe refuses the countries', async function () {
+      const logged = sinon.stub(logging, 'error');
+      const refusal = Object.assign(new Error('Invalid allowed_countries'), {
+        type: 'StripeInvalidRequestError',
+        param: 'shipping_address_collection[allowed_countries][0]',
+      });
+      mockStripe.checkout.sessions.create.onFirstCall().rejects(refusal);
+      mockStripe.checkout.sessions.create.onSecondCall().resolves({ id: 'cs_no_address' });
+      const shipping = {
+        tierIds: null,
+        allowedCountries: ['XX'],
+        addressCustomFieldKey: 'delivery_address',
+        nameCustomFieldKey: null,
+        collectable: true,
+      };
+      const shippingApi = new StripeAPI({
+        labs: {
+          isSet: (flag) => ['stripeCheckoutDesign', 'stripeCheckoutCollection'].includes(flag),
+        },
+        stripeCheckoutConfig: {
+          service: { read: async () => ({ design: null, shipping }) },
+          shippingCountriesFor: () => shipping.allowedCountries,
+        },
+      });
+      shippingApi.configure({
+        checkoutSessionSuccessUrl: '/success',
+        checkoutSessionCancelUrl: '/cancel',
+        secretKey: '',
+      });
+
+      const session = await shippingApi.createCheckoutSession('priceId', null, {
+        tierId: 'tier_1',
+      });
+
+      assert.equal(session.id, 'cs_no_address');
+      const [asking, plain] = mockStripe.checkout.sessions.create.getCalls();
+      assert.deepEqual(asking.firstArg.shipping_address_collection, { allowed_countries: ['XX'] });
+      assert.equal(plain.firstArg.shipping_address_collection, undefined);
+      sinon.assert.calledOnce(logged);
+    });
+
     it('does not retry a refusal that is not about the design', async function () {
       const refusal = Object.assign(new Error('No such customer'), {
         type: 'StripeInvalidRequestError',
