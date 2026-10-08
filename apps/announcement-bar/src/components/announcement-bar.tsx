@@ -1,12 +1,16 @@
-import React from 'react';
-
 import './announcement-bar.css';
-import CloseIcon from '../icons/clear.svg?react';
+import { CloseIcon } from '../icons/close-icon';
+import { useEffect, useState } from 'preact/hooks';
+import type { AnnouncementSettings } from '../utils/api';
 
-export function AnnouncementBar({ settings = {} }) {
-  const [visible, setVisible] = React.useState(shouldShowBar(settings.announcement));
+type AnnouncementBarProps = {
+  settings?: AnnouncementSettings;
+};
 
-  React.useEffect(() => {
+export function AnnouncementBar({ settings = {} }: AnnouncementBarProps) {
+  const [visible, setVisible] = useState(() => shouldShowBar(settings.announcement));
+
+  useEffect(() => {
     if (!settings.announcement) {
       return;
     }
@@ -33,10 +37,10 @@ export function AnnouncementBar({ settings = {} }) {
   return (
     <div className={className}>
       <div
-        className="gh-announcement-bar-content"
         dangerouslySetInnerHTML={{ __html: settings.announcement }}
+        className="gh-announcement-bar-content"
       ></div>
-      <button aria-label="close" onClick={handleButtonClick}>
+      <button aria-label="close" type="button" onClick={handleButtonClick}>
         <CloseIcon />
       </button>
     </div>
@@ -46,10 +50,8 @@ export function AnnouncementBar({ settings = {} }) {
 const BAR_VISIBILITY_STORAGE_KEY = 'isAnnouncementBarVisible';
 const BAR_CONTENT_STORAGE_KEY = 'announcementBarContent';
 
-function shouldShowBar(content) {
-  const contentChanged = isContentChanged(content);
-
-  if (contentChanged) {
+function shouldShowBar(content: string | undefined) {
+  if (content && isContentChanged(content)) {
     setBarVisibility(true);
     setContent(content);
 
@@ -60,21 +62,19 @@ function shouldShowBar(content) {
   return !!isBarVisible;
 }
 
-function setContent(content) {
+function setContent(content: string) {
   sessionStorage.setItem(BAR_CONTENT_STORAGE_KEY, content);
 }
 
-function isContentChanged(content) {
-  if (!content) {
-    return false;
-  }
+function isContentChanged(content: string) {
   const prevContent = sessionStorage.getItem(BAR_CONTENT_STORAGE_KEY);
 
   return content !== prevContent;
 }
-function setBarVisibility(state) {
+
+function setBarVisibility(state: boolean) {
   if (state) {
-    sessionStorage.setItem(BAR_VISIBILITY_STORAGE_KEY, state);
+    sessionStorage.setItem(BAR_VISIBILITY_STORAGE_KEY, String(state));
   } else {
     sessionStorage.removeItem(BAR_VISIBILITY_STORAGE_KEY);
   }
