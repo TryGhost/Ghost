@@ -55,6 +55,7 @@ import {
 } from 'react';
 import { useLocation } from '@tryghost/admin-x-framework';
 import { isReturningFromScreen } from '@/layout/screen-transition';
+import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import { usePostAnalyticsCounts } from './hooks/use-post-analytics-counts';
 import { usePostsList } from './hooks/use-posts-list';
 
@@ -157,6 +158,7 @@ export function PostsListScreen({ resource }: { resource: PostResource }) {
   // Returning from the editor, the first frame is just the header and a spinner so
   // the screen transition doesn't wait on every row; they render right after.
   const [rowsReady, setRowsReady] = useState(() => !isReturningFromScreen());
+  const screenTransitions = useFeatureFlag('admin7ScreenTransitions');
   useEffect(() => {
     if (!rowsReady) {
       startTransition(() => setRowsReady(true));
@@ -369,7 +371,11 @@ export function PostsListScreen({ resource }: { resource: PostResource }) {
           </ListPage.Header>
           <ListPage.Body>
             {isLoading ? (
-              <Stack align="center" className="flex-1" justify="center">
+              <Stack
+                align="center"
+                className={screenTransitions ? 'delayed-fade-in flex-1' : 'flex-1'}
+                justify="center"
+              >
                 <LoadingIndicator size="lg" />
               </Stack>
             ) : isError ? (

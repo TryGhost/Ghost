@@ -133,8 +133,8 @@ current screen and sidebar out first, then fades the surface in; leaving one
 cross-fades straight back, and the posts list then renders its rows after a
 first frame with a spinner. The Settings boundary only animates with
 `admin7settings` on. Ember-owned routes and browser back and forward navigation
-keep the instant swap. The flag also replaces the editors' loading spinners with
-skeleton shells.
+keep the instant swap. With the flag on, the editors' and posts list's loading
+spinners wait 500ms before fading in, so fast loads never flash one.
 
 ## How values are resolved
 

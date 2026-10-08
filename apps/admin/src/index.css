@@ -546,6 +546,11 @@ html[data-screen-transition='return']::view-transition-new(admin-mobile-nav):onl
   }
 }
 
+/* Loading spinners wait before fading in, so a fast load never flashes one. */
+.delayed-fade-in {
+  animation: screen-transition-fade-in 200ms var(--ease-standard) 500ms both;
+}
+
 @keyframes screen-transition-fade-out {
   to {
     opacity: 0;

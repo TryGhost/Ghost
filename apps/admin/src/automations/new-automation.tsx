@@ -9,7 +9,6 @@ import { LucideIcon } from '@tryghost/shade/utils';
 import { Background, ReactFlow } from '@xyflow/react';
 import AutomationHeader from './components/automation-header';
 import { AutomationCanvasControls } from './components/canvas/controls';
-import { AutomationCanvasSkeleton } from './components/canvas/canvas-skeleton';
 import { CANVAS_ZOOM_CONFIG } from './components/canvas/use-canvas-viewport';
 import { canvasBackground } from './components/canvas/canvas-background';
 import { useVisibleAutomations } from './hooks/use-visible-automations';
@@ -108,26 +107,9 @@ const NewAutomationLoading: React.FC = () => {
     return <LoadingIndicator size="lg" />;
   }
   return (
-    <Stack className="fixed inset-0 z-50 bg-background" gap="none">
-      <AutomationHeader
-        automation={undefined}
-        isLoadingAutomation={true}
-        isPublishButtonEnabled={false}
-        isSaveButtonEnabled={false}
-        isTurnOffButtonEnabled={false}
-        publishButtonChildren="Publish"
-        publishButtonVariant="default"
-        saveButtonChildren="Save"
-        saveButtonVariant="outline"
-        validationFeedback={null}
-        validationFeedbackEnabled={false}
-        onDismissValidationFeedback={() => {}}
-        onPublish={() => {}}
-        onSave={() => {}}
-        onTurnOff={() => {}}
-      />
-      <AutomationCanvasSkeleton />
-    </Stack>
+    <div className="delayed-fade-in">
+      <LoadingIndicator size="lg" />
+    </div>
   );
 };
 

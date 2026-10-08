@@ -52,7 +52,6 @@ import { useBrowseConfig } from '@tryghost/admin-x-framework/api/config';
 import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import { useLocation, useNavigate, useSearchParams } from '@tryghost/admin-x-framework';
 import type { EmailModalMode } from '@/automations/components/types';
-import { AutomationCanvasSkeleton } from './canvas-skeleton';
 import { CANVAS_ZOOM_CONFIG, useCanvasViewport } from './use-canvas-viewport';
 import type { CanvasContentBounds } from './use-canvas-viewport';
 
@@ -909,15 +908,14 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
   );
 
   if (isLoading) {
-    if (screenTransitionsEnabled) {
-      return <AutomationCanvasSkeleton defaultViewport={initialViewport} />;
-    }
     return (
       <div
         className="flex flex-1 items-center justify-center bg-surface-page"
         data-testid="automation-canvas-loading"
       >
-        <LoadingIndicator size="lg" />
+        <div className={screenTransitionsEnabled ? 'delayed-fade-in' : undefined}>
+          <LoadingIndicator size="lg" />
+        </div>
       </div>
     );
   }

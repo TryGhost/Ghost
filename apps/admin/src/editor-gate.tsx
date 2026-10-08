@@ -1,7 +1,7 @@
 import { Navigate } from '@tryghost/admin-x-framework';
 import { FlagGatedRoute } from './flag-gated-route';
 import { lazy } from 'react';
-import { EditorSkeleton, lazyEditorScreen } from './editor/api';
+import { EditorLoading, lazyEditorScreen } from './editor/api';
 import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import { useForceUpgrade } from './billing/api';
 import { useFlagGatedRouteOwner } from './use-flag-gated-route-owner';
@@ -26,13 +26,13 @@ export function EditorGate() {
     if (forceUpgrade) {
       return <Navigate to="/pro" replace />;
     }
-    return screenTransitions && editorOwner === 'react' ? <EditorSkeleton /> : null;
+    return screenTransitions && editorOwner === 'react' ? <EditorLoading /> : null;
   }
 
   return (
     <FlagGatedRoute
       component={EditorReact}
-      fallback={screenTransitions ? <EditorSkeleton /> : null}
+      fallback={screenTransitions ? <EditorLoading /> : null}
       flag="editorReact"
     />
   );

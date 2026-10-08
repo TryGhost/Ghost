@@ -15,7 +15,7 @@ import { getPostListReturnUrl } from '@/posts/api';
 import { reloadAdmin } from '@/auth/api';
 import { NotFound } from '@/shared/not-found';
 import { Navigate, useLocation, useNavigate, useParams } from '@tryghost/admin-x-framework';
-import { Button, LoadingIndicator } from '@tryghost/shade/components';
+import { Button } from '@tryghost/shade/components';
 import { DirtyConfirmDialog, PageHeader } from '@tryghost/shade/patterns';
 import { Box, Grid, Inline, Stack, Text } from '@tryghost/shade/primitives';
 import { LucideIcon } from '@tryghost/shade/utils';
@@ -46,7 +46,7 @@ import {
 } from './card-config';
 import { EditorHeaderActions, type OpenFlow } from './editor-header-actions';
 import { readEditorReturn } from './editor-return';
-import { EditorSkeleton } from './editor-skeleton';
+import { EditorLoading } from './editor-loading';
 import { EditorStatus } from './editor-status';
 import { EmailSizeWarning } from './email-size-warning';
 import { PostEditor, type PostEditorHandle } from './post-editor';
@@ -71,20 +71,6 @@ import { editorRead, useEditorSession } from './session/use-editor-session';
 import { usePostCardConfig } from './use-post-card-config';
 import { usePostSnippets } from './use-post-snippets';
 import type { EditorRecord } from './session/projection';
-
-function EditorLoading() {
-  const screenTransitions = useFeatureFlag('admin7ScreenTransitions', {
-    requestOptions: EDITOR_REQUEST_OPTIONS,
-  });
-  if (screenTransitions) {
-    return <EditorSkeleton />;
-  }
-  return (
-    <Stack align="center" className="h-full" justify="center">
-      <LoadingIndicator size="lg" />
-    </Stack>
-  );
-}
 
 function EditorLoadError({ message, onRetry }: { message: string; onRetry: () => void }) {
   return (
