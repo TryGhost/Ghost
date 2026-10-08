@@ -1,14 +1,19 @@
+import * as Sentry from '@sentry/react';
 import { afterEach, describe, expect, it, onTestFinished, vi } from 'vitest';
 import {
+  type EndpointCapture,
   allowUnhandledRequests,
   configResponse,
   currentRoute,
   currentUserResponse,
   fakeAdminEndpoint,
+  fakeEndpoint,
   fakeFrameOrigin,
   fakeTags,
   fakeUsers,
   renderAdminApp,
+  settleRequests,
+  siteResponse,
   staffRole,
   staffUser,
   type StaffRoleName,
@@ -111,6 +116,7 @@ async function renderBilling(
     labs = {},
     billingReact = true,
     appearance,
+    sentryDsn,
   }: {
     role?: StaffRoleName;
     appearance?: 'dark' | 'light';
@@ -118,6 +124,7 @@ async function renderBilling(
     hostSettings?: Record<string, unknown> | (() => Record<string, unknown>);
     labs?: Record<string, boolean>;
     billingReact?: boolean;
+    sentryDsn?: string;
   } = {},
 ) {
   const config = configResponse();
@@ -126,11 +133,17 @@ async function renderBilling(
   if (appearance) {
     me.users[0].accessibility = JSON.stringify({ nightShift: appearance });
   }
+  const site = siteResponse();
+  if (sentryDsn) {
+    site.site.sentry_dsn = sentryDsn;
+    site.site.sentry_env = 'testing';
+  }
   const hostSettingsNow = typeof hostSettings === 'function' ? hostSettings : () => hostSettings;
 
   await renderAdminApp(path, {
     labs: { ...labs, billingReact },
     boot: {
+      browseSite: { response: site },
       browseConfig: {
         response: () => ({
           config: {
@@ -742,5 +755,88 @@ describe('Ghost(Pro) billing', () => {
 
     await expect.element(sidebarScreen.shellNav()).toBeVisible();
     await expect.element(billingScreen.frame()).not.toBeInTheDocument();
+  });
+
+  describe('when the billing app never becomes ready', () => {
+    const SENTRY_DSN = 'https://public@o0.ingest.sentry.io/1';
+    const ENVELOPE_URL = 'https://o0.ingest.sentry.io/api/1/envelope/';
+
+    /** The error events in the NDJSON envelopes the ingest fake received. */
+    function sentryEvents(ingest: EndpointCapture): Sentry.Event[] {
+      return ingest.requests.flatMap(({ body }) => {
+        const [, ...lines] = String(body).split('\n');
+        const events: Sentry.Event[] = [];
+        for (let index = 0; index + 1 < lines.length; index += 2) {
+          if ((JSON.parse(lines[index]) as { type: string }).type === 'event') {
+            events.push(JSON.parse(lines[index + 1]) as Sentry.Event);
+          }
+        }
+        return events;
+      });
+    }
+
+    afterEach(async () => {
+      vi.useRealTimers();
+      // Flush while the ingest fake is still registered, then unbind the closed client
+      await Sentry.close();
+      const hub = Sentry.getCurrentHub();
+      hub.bindClient(undefined);
+      hub.getScope().clear();
+      hub.getIsolationScope().clear();
+    });
+
+    it('shows the load error and reports it to Sentry as the billing monitor', async () => {
+      fakeTags([]);
+      const ingest = fakeEndpoint('POST', ENVELOPE_URL, {});
+      await fakeFrameOrigin(BILLING_ORIGIN, billingStandIn());
+      const messages = standInMessages();
+      await renderBilling('/tags', { sentryDsn: SENTRY_DSN });
+      await expect.element(tagsScreen.newTagLink()).toBeVisible();
+      await expect.poll(() => Sentry.getClient()).toBeDefined();
+
+      // Opening billing restarts the load monitor, so only its timers are faked
+      vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+      window.location.hash = '#/pro/plans';
+      await expect.element(billingScreen.frame()).toBeVisible();
+      await expect.poll(() => loads(messages).at(-1)?.pathname).toBe('/plans');
+      // A 10s attempt, a 1s retry delay, then a second 10s attempt
+      vi.advanceTimersByTime(21_000);
+      vi.useRealTimers();
+
+      await expect.element(billingScreen.loadError()).toBeVisible();
+      await expect
+        .poll(() => sentryEvents(ingest)[0])
+        .toMatchObject({
+          level: 'warning',
+          message: 'Billing app failed to become ready',
+          exception: { values: [{ type: 'Error', value: 'Billing app failed to become ready' }] },
+          fingerprint: ['billing-app-load-failure', document.visibilityState, '2'],
+          contexts: {
+            ghost: {
+              billing_monitor: {
+                attempts: 2,
+                attempt_source: 'retry',
+                attempt_phase: 'shell_ready',
+                iframe_reload_reason: 'timeout_retry',
+                configured_billing_origin: BILLING_ORIGIN,
+                is_force_upgrade: false,
+                ready_received: false,
+                billing_window_open: true,
+              },
+            },
+          },
+          tags: {
+            source: 'billing-app-load-monitor',
+            billing_shell: 'react',
+            attempt_source: 'retry',
+            attempt_phase: 'shell_ready',
+            route: 'pro.pro-sub',
+            path: '#/pro/plans',
+          },
+        });
+      await settleRequests();
+      await Sentry.flush();
+      expect(sentryEvents(ingest)).toHaveLength(1);
+    });
   });
 });

@@ -1,16 +1,10 @@
-import * as Sentry from '@sentry/ember';
 import EmberObject from '@ember/object';
 import Service from '@ember/service';
-import sentryTestKit from 'sentry-testkit/browser';
 import sinon from 'sinon';
 import {describe, it} from 'mocha';
 import {expect} from 'chai';
-import {getSentryTestConfig} from '../../helpers/sentry';
 import {run} from '@ember/runloop';
 import {setupTest} from 'ember-mocha';
-import {waitUntil} from '@ember/test-helpers';
-
-const {sentryTransport, testkit} = sentryTestKit();
 
 const buildMockModel = () => {
     return EmberObject.create({
@@ -112,42 +106,6 @@ describe('Unit: Service: state-bridge', function () {
 
             await service.applyBillingSubscriptionUpdate({subscription: {status: 'active'}});
             expect(config.hostSettings.forceUpgrade).to.be.false;
-        });
-    });
-
-    describe('#captureBillingAppLoadFailure', function () {
-        const report = {
-            billingMonitor: {attempts: 2, document_visibility_state: 'visible'},
-            tags: {source: 'billing-app-load-monitor', billing_shell: 'react', route: 'pro.index'}
-        };
-
-        before(function () {
-            Sentry.init(getSentryTestConfig(sentryTransport));
-        });
-
-        beforeEach(function () {
-            testkit.reset();
-        });
-
-        it("reports in the billing service's event shape", async function () {
-            config.sentry_dsn = 'https://example.com/sentry';
-
-            service.captureBillingAppLoadFailure(report);
-
-            await waitUntil(() => testkit.reports().length > 0);
-            const [event] = testkit.reports();
-            expect(event.message).to.equal('Billing app failed to become ready');
-            expect(event.level).to.equal('warning');
-            expect(event.originalReport.fingerprint).to.deep.equal(['billing-app-load-failure', 'visible', '2']);
-            expect(event.tags).to.deep.include({source: 'billing-app-load-monitor', billing_shell: 'react', route: 'pro.index'});
-        });
-
-        it('does not report when Sentry is not configured', function () {
-            config.sentry_dsn = null;
-
-            service.captureBillingAppLoadFailure(report);
-
-            expect(testkit.reports()).to.have.length(0);
         });
     });
 

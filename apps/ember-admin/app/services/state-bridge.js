@@ -327,26 +327,6 @@ export default class StateBridgeService extends Service.extend(Evented) {
         }
     }
 
-    // React's billing app has no Sentry client; report through Ember's with
-    // the billing service's event shape so both shells land in one issue
-    @action
-    captureBillingAppLoadFailure({billingMonitor, tags}) {
-        if (!this.config.sentry_dsn) {
-            return;
-        }
-
-        Sentry.captureException('Billing app failed to become ready', {
-            level: 'warning',
-            fingerprint: [
-                'billing-app-load-failure',
-                billingMonitor.document_visibility_state,
-                String(billingMonitor.attempts)
-            ],
-            contexts: {ghost: {billing_monitor: billingMonitor}},
-            tags
-        });
-    }
-
     // A billing search result for the billing route already showing is a no-op
     // Ember transition, so React hands the sub-route to the billing app directly
     @action
