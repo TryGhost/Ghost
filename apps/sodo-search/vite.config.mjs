@@ -8,6 +8,9 @@ export default publicAppViteConfig({
   entry: 'src/index.tsx',
   framework: 'preact',
   svgr: false,
+  // UMD would register as an anonymous AMD module (and never run) on pages with RequireJS
+  libFormat: 'iife',
+  libName: 'GhostSodoSearch',
   sourcemap: false,
   cssCodeSplit: false,
   overrides: {

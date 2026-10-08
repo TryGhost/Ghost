@@ -25,8 +25,14 @@ function getScrollbarWidth() {
   return scrollbarWidth;
 }
 
-function getCustomTriggerButtons() {
-  return document.querySelectorAll('[data-ghost-search]');
+const TRIGGER_SELECTOR = '[data-ghost-search]';
+
+export function isSearchShortcut(
+  e: Pick<KeyboardEvent, 'key' | 'metaKey' | 'ctrlKey'>,
+  isMac: boolean,
+) {
+  // Ctrl+K is "delete to end of line" in macOS text fields, so Macs only get Cmd+K
+  return e.key === 'k' && (e.metaKey || (!isMac && e.ctrlKey));
 }
 
 function isSearchUrl() {
@@ -62,15 +68,19 @@ export default function App({ adminUrl, apiKey, stylesUrl, locale }: AppProps) {
       }
     };
 
+    const isMac = /Mac|iPhone|iPad/.test(navigator.platform);
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'k' && e.metaKey) {
+      if (isSearchShortcut(e, isMac) && document.querySelector(TRIGGER_SELECTOR)) {
         setShowPopup(true);
         e.preventDefault();
         e.stopPropagation();
       }
     };
 
-    const handleTriggerClick = (e: Event) => {
+    const handleClick = (e: MouseEvent) => {
+      if (!(e.target instanceof Element) || !e.target.closest(TRIGGER_SELECTOR)) {
+        return;
+      }
       e.preventDefault();
       setShowPopup(true);
 
@@ -91,20 +101,14 @@ export default function App({ adminUrl, apiKey, stylesUrl, locale }: AppProps) {
 
     handleSearchUrl();
 
-    const customTriggerButtons = getCustomTriggerButtons();
-    if (customTriggerButtons.length) {
-      document.addEventListener('keydown', handleKeyDown);
-    }
-    customTriggerButtons.forEach((button) => {
-      button.addEventListener('click', handleTriggerClick);
-    });
+    document.addEventListener('keydown', handleKeyDown);
+    // Delegated so triggers added later work; capture phase so theme handlers can't stop the click first
+    document.addEventListener('click', handleClick, true);
     window.addEventListener('hashchange', handleSearchUrl, false);
 
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
-      customTriggerButtons.forEach((button) => {
-        button.removeEventListener('click', handleTriggerClick);
-      });
+      document.removeEventListener('click', handleClick, true);
       window.removeEventListener('hashchange', handleSearchUrl, false);
     };
   }, []);

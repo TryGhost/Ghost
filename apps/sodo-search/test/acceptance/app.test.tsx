@@ -211,6 +211,33 @@ test('opens on Cmd+K when the page has a search trigger', async () => {
   await openedPopup();
 });
 
+test('ignores the shortcut until the page has a search trigger', async () => {
+  document.querySelector('[data-ghost-search]')!.remove();
+  mountApp();
+
+  await userEvent.keyboard('{Meta>}k{/Meta}');
+  await new Promise(requestAnimationFrame);
+  expect(popupDocument()).toBeNull();
+
+  document.body.insertAdjacentHTML('beforeend', '<button data-ghost-search>Search</button>');
+  await userEvent.keyboard('{Meta>}k{/Meta}');
+  await openedPopup();
+});
+
+test('opens from a trigger added after mount, even inside an element that stops click propagation', async () => {
+  mountApp();
+  const wrapper = document.createElement('div');
+  wrapper.innerHTML = '<a href="#/elsewhere" data-ghost-search><span>Find</span></a>';
+  wrapper.addEventListener('click', (e) => e.stopPropagation());
+  document.body.appendChild(wrapper);
+
+  await userEvent.click(wrapper.querySelector('span')!);
+  await openedPopup();
+  expect(window.location.hash).toBe('');
+
+  wrapper.remove();
+});
+
 test('renders right-to-left with translations for an RTL locale', async () => {
   mountApp('ar');
   const doc = await openFromTrigger();
