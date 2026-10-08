@@ -303,12 +303,10 @@ describe('admin-toolbar', function () {
   it('uses isolated tooltip wrappers for toolbar action links', async function () {
     const dom = createDom({ resourceType: 'post', resourceId: 'post-id' });
     const { root } = await runToolbar(dom, { result: { users: [editorUser()] } });
-    const actionLinks = Array.from(
-      shadowOf(root).querySelectorAll<HTMLElement>('.gh-admin-toolbar-link'),
+    const actionLinks = Array.from(shadowOf(root).querySelectorAll('.gh-admin-toolbar-link'));
+    const tooltips = Array.from(shadowOf(root).querySelectorAll('.gh-admin-toolbar-tooltip')).map(
+      (tooltip) => tooltip.textContent,
     );
-    const tooltips = Array.from(
-      shadowOf(root).querySelectorAll<HTMLElement>('.gh-admin-toolbar-tooltip'),
-    ).map((tooltip) => tooltip.textContent);
 
     assert.equal(actionLinks.length, 3);
     for (const link of actionLinks) {
@@ -604,9 +602,7 @@ describe('admin-toolbar', function () {
     const dom = createDom({ resourceType: 'post', resourceId: 'post-id' });
     const { root } = await runToolbar(dom, { result: { users: [editorUser()] } });
 
-    const initialTooltipCount = shadowOf(root).querySelectorAll<HTMLElement>(
-      '.gh-admin-toolbar-tooltip',
-    ).length;
+    const initialTooltipCount = shadowOf(root).querySelectorAll('.gh-admin-toolbar-tooltip').length;
 
     assert.ok(initialTooltipCount > 0);
 
@@ -618,7 +614,7 @@ describe('admin-toolbar', function () {
     assert.notEqual(shadowOf(root).querySelector('.gh-admin-toolbar-menu'), null);
     assert.equal(root?.classList.contains('gh-admin-toolbar-menu-open'), true);
     assert.equal(
-      shadowOf(root).querySelectorAll<HTMLElement>('.gh-admin-toolbar-tooltip').length,
+      shadowOf(root).querySelectorAll('.gh-admin-toolbar-tooltip').length,
       initialTooltipCount,
     );
     dom.window.close();

@@ -1,5 +1,3 @@
-/* eslint ghost/ghost-custom/no-native-error: off */
-
 import { createElement as h, render } from 'preact';
 
 import { createAdminApi, canShowToolbar, createAuthFrame } from './auth';

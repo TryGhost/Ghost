@@ -1,9 +1,4 @@
-import {
-  createElement as h,
-  type ComponentChildren,
-  type TargetedEvent,
-  type TargetedFocusEvent,
-} from 'preact';
+import { createElement as h, type ComponentChildren, type TargetedEvent } from 'preact';
 import { useEffect, useLayoutEffect, useRef, useState } from 'preact/hooks';
 
 import { getToolbarActions, type ToolbarAction } from './actions';
@@ -229,7 +224,7 @@ export function Toolbar({ config, user }: { config: ToolbarConfig; user: StaffUs
     'nav',
     {
       className: `gh-admin-toolbar${isMinimized ? ' gh-admin-toolbar-minimized-mode' : ''}${isMinimizedExpanded ? ' gh-admin-toolbar-minimized-expanded' : ''}`,
-      onFocusOut: (event: TargetedFocusEvent<HTMLElement>) => {
+      onFocusOut: (event) => {
         if (isMinimized && !event.currentTarget.contains(event.relatedTarget as Node | null)) {
           collapseMinimizedToolbar();
         }
