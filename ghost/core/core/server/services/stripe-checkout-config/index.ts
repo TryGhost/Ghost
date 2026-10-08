@@ -1,11 +1,19 @@
+import errors from '@tryghost/errors';
 import urlUtils from '../../../shared/url-utils';
+import * as metafields from '../members-metafields';
 import { CheckoutBrandingService } from './branding-service';
 import { CheckoutPreviewService, type PreviewableTier } from './preview-service';
 import { recordCheckoutConfigAction, type RecordCheckoutConfigAction } from './actions';
 import { StripeCheckoutConfigService } from './service';
 
 export { StripeCheckoutConfigService } from './service';
-export type { StripeCheckoutBranding, StripeCheckoutConfig, StripeCheckoutDesign } from './models';
+export type {
+  ShippingCollection,
+  StripeCheckoutBranding,
+  StripeCheckoutConfig,
+  StripeCheckoutDesign,
+} from './models';
+export { SHIPPING_FLAG, collectsShippingFor } from './models';
 export { CheckoutBrandingService } from './branding-service';
 export { CheckoutPreviewService } from './preview-service';
 export {
@@ -32,7 +40,13 @@ export function init(): void {
 
   const recordAction: RecordCheckoutConfigAction = (input) =>
     recordCheckoutConfigAction({ Action: models.Action, ...input });
-  service = new StripeCheckoutConfigService({ knex, recordAction });
+  // Boot sets up the custom fields services first, as shipping saves into custom fields.
+  if (!metafields.bindings) {
+    throw new errors.IncorrectUsageError({
+      message: 'The custom fields services must be set up before the Stripe Checkout config.',
+    });
+  }
+  service = new StripeCheckoutConfigService({ knex, recordAction, bindings: metafields.bindings });
 
   // Looked up on each use: Stripe, tiers and members are set up later in boot.
   previewService = new CheckoutPreviewService({
