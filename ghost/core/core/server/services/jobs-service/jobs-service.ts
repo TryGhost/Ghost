@@ -1,6 +1,7 @@
 import errors from '@tryghost/errors';
 import cronValidate from 'cron-validate';
 import ObjectID from 'bson-objectid';
+import type { Knex } from 'knex';
 import type {
   JobsBackendBase,
   JobEnvelope,
@@ -14,16 +15,50 @@ import { Job, JobConstructor, JobHandler } from './job';
 export interface JobsLogger {
   error(...args: unknown[]): void;
   info(...args: unknown[]): void;
+  // Optional: the real @tryghost/logging always has it, but a minimal test
+  // logger need not, and only the SQLite-fallback warning uses it.
+  warn?(...args: unknown[]): void;
 }
 
 export interface JobsErrorReporter {
   captureException(err: unknown, captureContext?: { tags?: Record<string, string> }): void;
 }
 
+// The jobs service depends on only the slice of the outbox store and relay it
+// uses, so the concrete classes are wired in boot without a module cycle.
+export interface OutboxStore {
+  insert(
+    entry: { id: string; envelope: DispatchEnvelope },
+    options?: { transacting?: Knex.Transaction },
+  ): Promise<void>;
+}
+
+export interface OutboxRelayLike {
+  start(): void;
+  stop(): Promise<void>;
+}
+
+export interface JobsOutboxWiring {
+  store: OutboxStore;
+  relay: OutboxRelayLike;
+}
+
+export interface DispatchOptions {
+  // When given, the outbox row is written in the caller's transaction, so the
+  // caller's DB change and the pending job commit or roll back together.
+  transacting?: Knex.Transaction;
+}
+
 export interface JobsServiceOptions {
   backend: JobsBackendBase;
   logging: JobsLogger;
   sentry?: JobsErrorReporter;
+  // Present only when the outbox is active (enabled AND the DB is MySQL);
+  // dispatch then commits a durable row instead of enqueueing directly.
+  outbox?: JobsOutboxWiring;
+  // The outbox was enabled but the database cannot support it (not MySQL);
+  // the service stays on the legacy path and warns once at start.
+  logOutboxUnavailable?: boolean;
 }
 
 type Deliverer = (payload: string) => Promise<void> | void;
@@ -47,14 +82,18 @@ export class JobsService {
   readonly #backend: JobsBackendBase;
   readonly #logging: JobsLogger;
   readonly #sentry?: JobsErrorReporter;
+  readonly #outbox?: JobsOutboxWiring;
+  readonly #logOutboxUnavailable: boolean;
   readonly #registry = new Map<string, Deliverer>();
   readonly #queueByType = new Map<string, string>();
   readonly #queues = new Map<string, QueueDeclaration>();
 
-  constructor({ backend, logging, sentry }: JobsServiceOptions) {
+  constructor({ backend, logging, sentry, outbox, logOutboxUnavailable }: JobsServiceOptions) {
     this.#backend = backend;
     this.#logging = logging;
     this.#sentry = sentry;
+    this.#outbox = outbox;
+    this.#logOutboxUnavailable = logOutboxUnavailable ?? false;
   }
 
   handle<T extends Job, D>(
@@ -115,11 +154,25 @@ export class JobsService {
    * handler to run. Enqueue errors reject this promise. Resolution does not
    * guarantee execution: the backend controls what happens to work during shutdown.
    */
-  async dispatch(job: Job): Promise<void> {
+  async dispatch(job: Job, { transacting }: DispatchOptions = {}): Promise<void> {
     const envelope = this.#buildEnvelope(job);
     // A fresh dispatch ID per submission; a durable backend dedupes an
     // at-least-once redelivery on it, and the in-memory backend ignores it.
     const id = new ObjectID().toHexString();
+
+    if (this.#outbox) {
+      // Commit a durable row and resolve after the write. With a transaction
+      // the caller controls the commit; without one the insert self-commits.
+      await this.#outbox.store.insert({ id, envelope }, { transacting });
+      return;
+    }
+
+    if (transacting) {
+      throw new errors.IncorrectUsageError({
+        message:
+          'jobsService.dispatch cannot honour a transaction while the outbox is inactive; atomicity with the caller transaction is not available on the legacy direct path.',
+      });
+    }
     await this.#backend.enqueue(id, envelope);
   }
 
@@ -150,9 +203,23 @@ export class JobsService {
       processor: (envelope) => this.#process(envelope),
       queues: Object.fromEntries(this.#queues),
     });
+    // The relay forwards to the backend, so it only starts once the backend is
+    // accepting work. Rows dispatched before start() wait for the next poll.
+    if (this.#outbox) {
+      this.#outbox.relay.start();
+    } else if (this.#logOutboxUnavailable) {
+      this.#logging.warn?.(
+        '[Jobs] services:jobs:outbox is enabled but the database is not MySQL; using the legacy direct-dispatch path.',
+      );
+    }
   }
 
   async shutdown(options?: JobsShutdownOptions): Promise<void> {
+    // Stop the relay before the backend so no further hand-offs are attempted
+    // against a backend that is shutting down.
+    if (this.#outbox) {
+      await this.#outbox.relay.stop();
+    }
     await this.#backend.shutdown(options);
   }
 

@@ -51,7 +51,7 @@ class FakeBackend implements JobsBackendBase {
 }
 
 function makeLogger() {
-  const calls = { error: [] as unknown[][], info: [] as unknown[][] };
+  const calls = { error: [] as unknown[][], info: [] as unknown[][], warn: [] as unknown[][] };
   const logging: JobsLogger = {
     error: (...args) => {
       calls.error.push(args);
@@ -59,8 +59,33 @@ function makeLogger() {
     info: (...args) => {
       calls.info.push(args);
     },
+    warn: (...args) => {
+      calls.warn.push(args);
+    },
   };
   return { logging, calls };
+}
+
+function makeOutbox() {
+  const inserts: { id: string; envelope: DispatchEnvelope; transacting?: unknown }[] = [];
+  const relayCalls: string[] = [];
+  const store = {
+    async insert(
+      entry: { id: string; envelope: DispatchEnvelope },
+      options?: { transacting?: unknown },
+    ): Promise<void> {
+      inserts.push({ ...entry, transacting: options?.transacting });
+    },
+  };
+  const relay = {
+    start(): void {
+      relayCalls.push('start');
+    },
+    async stop(): Promise<void> {
+      relayCalls.push('stop');
+    },
+  };
+  return { inserts, relayCalls, store, relay };
 }
 
 function makeSentry() {
@@ -89,11 +114,21 @@ describe('JobsService', function () {
     logger = makeLogger();
   });
 
-  function makeService(overrides: { sentry?: JobsErrorReporter } = {}) {
+  function makeService(
+    overrides: {
+      sentry?: JobsErrorReporter;
+      outbox?: ReturnType<typeof makeOutbox>;
+      logOutboxUnavailable?: boolean;
+    } = {},
+  ) {
     return new JobsService({
       backend,
       logging: logger.logging,
       sentry: overrides.sentry,
+      outbox: overrides.outbox
+        ? { store: overrides.outbox.store, relay: overrides.outbox.relay }
+        : undefined,
+      logOutboxUnavailable: overrides.logOutboxUnavailable,
     });
   }
 
@@ -237,6 +272,83 @@ describe('JobsService', function () {
         () => service.dispatch(new GreetJob({ name: 'Ada' })),
         (error: unknown) => error === rejected,
       );
+    });
+  });
+
+  describe('dispatch via outbox', function () {
+    it('active: inserts a dispatch row with id and envelope and does not touch the backend', async function () {
+      const outbox = makeOutbox();
+      const service = makeService({ outbox });
+
+      await service.dispatch(new GreetJob({ name: 'Ada' }));
+
+      assert.equal(outbox.inserts.length, 1);
+      assert.equal(typeof outbox.inserts[0]!.id, 'string');
+      assert.ok(outbox.inserts[0]!.id.length > 0);
+      const envelope = outbox.inserts[0]!.envelope;
+      assert.equal(envelope.version, 1);
+      const job = envelope.payload.job as { type: string; payload: string };
+      assert.equal(job.type, 'greet');
+      assert.deepEqual(JSON.parse(job.payload), { name: 'Ada' });
+      assert.equal(
+        backend.enqueued.length,
+        0,
+        'the backend is not called directly on the outbox path',
+      );
+    });
+
+    it('active: writes the row in the caller transaction when one is given', async function () {
+      const outbox = makeOutbox();
+      const service = makeService({ outbox });
+      const transacting = { marker: 'tx' } as unknown;
+
+      await service.dispatch(new GreetJob({ name: 'Ada' }), {
+        transacting: transacting as never,
+      });
+
+      assert.equal(outbox.inserts[0]!.transacting, transacting);
+    });
+
+    it('inactive: dispatches directly to the backend', async function () {
+      const service = makeService();
+
+      await service.dispatch(new GreetJob({ name: 'Ada' }));
+
+      assert.equal(backend.enqueued.length, 1);
+    });
+
+    it('inactive: rejects a transacting dispatch it cannot honour atomically', async function () {
+      const service = makeService();
+
+      await assert.rejects(
+        () => service.dispatch(new GreetJob({ name: 'Ada' }), { transacting: {} as never }),
+        /outbox/i,
+      );
+      assert.equal(backend.enqueued.length, 0);
+    });
+
+    it('active: starts the relay after the backend and stops it before the backend', async function () {
+      const outbox = makeOutbox();
+      const service = makeService({ outbox });
+
+      await service.start();
+      assert.deepEqual(outbox.relayCalls, ['start']);
+
+      await service.shutdown();
+      assert.deepEqual(outbox.relayCalls, ['start', 'stop']);
+      assert.equal(backend.shutdownCalls.length, 1);
+    });
+
+    it('warns at start when the outbox is enabled on an unsupported database', async function () {
+      const service = makeService({ logOutboxUnavailable: true });
+
+      await service.start();
+
+      assert.ok(
+        logger.calls.warn.some((args) => /outbox/i.test(String(args[0]))),
+        'a warning naming the outbox is logged',
+      );
+      assert.ok(backend.startOptions, 'the backend still starts on the legacy path');
     });
   });
 

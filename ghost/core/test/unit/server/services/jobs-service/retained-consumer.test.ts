@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import sinon from 'sinon';
+import type { Knex } from 'knex';
 import InMemoryJobsBackend from '../../../../../core/server/adapters/jobs/InMemoryJobsBackend';
 import type ProcessWebmentionJob from '../../../../../core/server/services/mentions/process-webmention-job';
 
@@ -14,6 +15,13 @@ describe('jobs-service retained consumers', function () {
   let jobsService: typeof import('../../../../../core/server/services/jobs-service');
   let backend: InMemoryJobsBackend;
   let previousModule: NodeModule | undefined;
+
+  // Boot injects knex + config; these stubs keep the outbox inactive so the
+  // retained-consumer identity is exercised on the legacy in-memory path.
+  const initArgs = {
+    knex: { client: { config: { client: 'sqlite3' } } } as unknown as Knex,
+    config: { get: () => undefined },
+  };
 
   beforeEach(function () {
     // Isolate this lifecycle from other files sharing the CommonJS registry,
@@ -39,7 +47,7 @@ describe('jobs-service retained consumers', function () {
   });
 
   it('keeps a retained MentionController dispatching to the current handler after restart', async function () {
-    const service = jobsService.init();
+    const service = jobsService.init(initArgs);
     const controller = new MentionController();
     const api = { processWebmention: sinon.stub().resolves() };
     await controller.init({
@@ -76,7 +84,7 @@ describe('jobs-service retained consumers', function () {
       payload: { extension: { sequence: 1 } },
     });
 
-    const restartedService = jobsService.init();
+    const restartedService = jobsService.init(initArgs);
     // Delivery alone can pass with a replacement service because the adapter
     // manager also retains its backend. Consumers still require this identity.
     assert.equal(restartedService, service);

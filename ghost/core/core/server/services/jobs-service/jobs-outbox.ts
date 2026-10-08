@@ -31,6 +31,15 @@ interface ClaimedRow {
   envelope: string;
 }
 
+// The dateTime columns have no sub-second precision, and MySQL rounds a
+// fractional value on insert - which could round available_at UP, leaving a
+// freshly inserted row briefly ineligible. Flooring to the whole second keeps a
+// stored instant at or before its real time, so a fresh row is eligible at
+// once. (The retry bump stays full-precision: the retry delay dwarfs a second.)
+function floorToSecond(date: Date): Date {
+  return new Date(Math.floor(date.getTime() / 1000) * 1000);
+}
+
 // All access to the jobs_outbox table. MySQL-only by construction: the relay's
 // claim uses FOR UPDATE SKIP LOCKED unconditionally, so multiple containers per
 // site can poll the same table safely. Timestamps are JS Date instants; the
@@ -43,7 +52,7 @@ export class JobsOutbox {
   }
 
   async insert({ id, envelope }: OutboxEntry, { transacting }: InsertOptions = {}): Promise<void> {
-    const now = new Date();
+    const now = floorToSecond(new Date());
     const row = {
       id,
       envelope: JSON.stringify(envelope),

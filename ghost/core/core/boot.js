@@ -760,7 +760,8 @@ async function bootGhost({ backend = true, frontend = true, server = true } = {}
       await initAppService();
     }
 
-    const jobsService = require('./server/services/jobs-service').init();
+    const knex = require('./server/data/db').knex;
+    const jobsService = require('./server/services/jobs-service').init({ knex, config });
 
     await initServices({ ghostServer, config, prometheusClient, jobsService });
 

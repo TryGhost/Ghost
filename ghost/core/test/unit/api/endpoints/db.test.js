@@ -84,7 +84,12 @@ describe('DB controller', function () {
     let dispatch;
 
     beforeEach(function () {
-      const service = jobsService.init();
+      // Boot injects knex + config; these stubs keep the outbox inactive (the
+      // dispatch is stubbed anyway, this just satisfies init's signature).
+      const service = jobsService.init({
+        knex: { client: { config: { client: 'sqlite3' } } },
+        config: { get: () => undefined },
+      });
       jobsServiceInitialised = true;
       dispatch = sinon.stub(service, 'dispatch').resolves();
     });
