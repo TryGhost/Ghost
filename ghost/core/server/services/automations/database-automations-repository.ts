@@ -43,6 +43,8 @@ import {
   type DatabaseDate,
 } from '../../lib/db-types/date';
 import { getStaleLockCutoff } from './stale-lock-cutoff';
+import { limitService } from '../limits';
+import { lockAutomationLimit } from './automation-limit';
 import type { ExclusifyUnion, ReadonlyDeep } from 'type-fest';
 
 // Keep within api_automation_run_search's complete-match run_ids limit.
@@ -377,6 +379,10 @@ export function createDatabaseAutomationsRepository({
 
     async add(data) {
       return await knex.transaction(async (trx) => {
+        await lockAutomationLimit(trx, data.status);
+        if (data.status === 'active') {
+          await limitService.errorIfWouldGoOverLimit('limitAutomations', { transacting: trx });
+        }
         const tierIds = data.trigger_tier_ids ?? [];
         if (tierIds.length > 0) {
           // Lock the products so they aren't archived or deleted while we're adding.
@@ -437,10 +443,16 @@ export function createDatabaseAutomationsRepository({
 
     async edit(id: string, data: EditAutomationData): Promise<Automation | null> {
       return await knex.transaction(async (trx) => {
+        await lockAutomationLimit(trx, data.status);
+
         const automation = await loadAutomation(trx, id);
 
         if (!automation) {
           return null;
+        }
+
+        if (automation.status !== 'active' && data.status === 'active') {
+          await limitService.errorIfWouldGoOverLimit('limitAutomations', { transacting: trx });
         }
 
         const now = new Date();
