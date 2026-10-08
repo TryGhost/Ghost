@@ -1,5 +1,5 @@
 import type { AppManifest } from '@tryghost/app-contracts';
-import { createMutation, createQuery } from '../utils/api/hooks';
+import { createMutation, createQuery, createQueryWithId } from '../utils/api/hooks';
 
 export type { AppManifest } from '@tryghost/app-contracts';
 
@@ -15,6 +15,22 @@ export interface AppInstallation {
   manifest: AppManifest;
   created_at: string;
   updated_at: string | null;
+  /** Only when read with `include=history`. */
+  history?: AppInstallationHistoryEntry[];
+}
+
+/**
+ * One thing that happened to an installation, newest first. Decisions by people name who
+ * decided; what Ghost did by itself, applying an update or holding changes for approval,
+ * has nobody.
+ */
+export interface AppInstallationHistoryEntry {
+  id: string;
+  event: 'installed' | 'updated' | 'suspended' | 'changes_approved' | 'uninstalled';
+  actor: { id: string; name: string | null } | null;
+  created_at: string;
+  /** For an approval that moved the app: the host it is served from since. */
+  moved_to?: string;
 }
 
 /** One field that differs from what was approved before. */
@@ -60,10 +76,19 @@ export interface ReviewedAppManifest {
 }
 
 const dataType = 'AppInstallationsResponseType';
+// Installing, approving and uninstalling are all recorded in staff history.
+const changedDataTypes = { dataType: [dataType, 'ActionsResponseType'] };
 
 export const useBrowseAppInstallations = createQuery<AppInstallationsResponseType>({
   dataType,
   path: '/apps/installations/',
+});
+
+/** One installation, ended or not, with what happened to it. */
+export const useReadAppInstallation = createQueryWithId<AppInstallationsResponseType>({
+  dataType,
+  path: (id) => `/apps/installations/${id}/`,
+  defaultSearchParams: { include: 'history' },
 });
 
 /** Has Ghost fetch and check an app's manifest. Stores nothing, so nothing is invalidated. */
@@ -83,7 +108,7 @@ export const useAddAppInstallation = createMutation<
   method: 'POST',
   path: () => '/apps/installations/',
   body: (reviewed) => ({ app_installations: [reviewed] }),
-  invalidateQueries: { dataType },
+  invalidateQueries: changedDataTypes,
 });
 
 /**
@@ -98,5 +123,12 @@ export const useApproveAppInstallation = createMutation<
   method: 'PUT',
   path: ({ id }) => `/apps/installations/${id}/`,
   body: ({ id: _id, ...reviewed }) => ({ app_installations: [reviewed] }),
-  invalidateQueries: { dataType },
+  invalidateQueries: changedDataTypes,
+});
+
+/** Ends an installation. Ghost keeps the record, so it can still be read afterwards. */
+export const useUninstallAppInstallation = createMutation<unknown, string>({
+  method: 'DELETE',
+  path: (id) => `/apps/installations/${id}/`,
+  invalidateQueries: changedDataTypes,
 });

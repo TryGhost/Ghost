@@ -32,3 +32,10 @@ export {
   type AppSurfaceType,
 } from './schema.ts';
 export { isLocalhost } from './localhost.ts';
+export {
+  isDevelopmentApp,
+  movedBetween,
+  servedFrom,
+  type AppMove,
+  type ServedManifest,
+} from './served-from.ts';

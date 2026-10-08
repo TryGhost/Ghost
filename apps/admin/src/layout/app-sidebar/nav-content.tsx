@@ -15,6 +15,7 @@ import {
   canManageMembers,
   canManageTags,
 } from '@tryghost/admin-x-framework/api/users';
+import { canManageApps } from '@/apps/api';
 import { NavMenuItem } from './nav-menu-item';
 import { useNavigationExpanded } from './hooks/use-navigation-preferences';
 import { NavSavedViews } from './nav-saved-views';
@@ -83,12 +84,14 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
   const hasMemberViews = memberViews.length > 0;
   const memberCount = useMemberCount();
   const automationsEnabled = useFeatureFlag('automations');
+  const appsEnabled = useFeatureFlag('apps');
   const isMembersRouteActive = useIsActiveLink({ path: 'members', activeOnSubpath: true });
   const isMemberActivityActive = useIsActiveLink({ path: 'members-activity' });
 
   const showTags = currentUser && canManageTags(currentUser);
   const showMembers = currentUser && canManageMembers(currentUser);
   const showAutomations = currentUser && canManageAutomations(currentUser);
+  const showApps = appsEnabled && currentUser && canManageApps(currentUser);
   const commentsEnabled = getSettingValue<string>(settingsData?.settings, 'comments_enabled');
   const showComments = !!showMembers && commentsEnabled !== 'off';
   const postViews = [...postNavigation.defaultViews, ...postNavigation.customViews];
@@ -183,6 +186,15 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
               <NavMenuItem.Link to="automations" activeOnSubpath>
                 <LucideIcon.Zap />
                 <NavMenuItem.Label>Automations</NavMenuItem.Label>
+              </NavMenuItem.Link>
+            </NavMenuItem>
+          )}
+
+          {showApps && (
+            <NavMenuItem>
+              <NavMenuItem.Link to="apps" activeOnSubpath>
+                <LucideIcon.LayoutGrid />
+                <NavMenuItem.Label>Apps</NavMenuItem.Label>
               </NavMenuItem.Link>
             </NavMenuItem>
           )}

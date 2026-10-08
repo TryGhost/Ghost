@@ -7,8 +7,11 @@ describe('the root entry point', () => {
     expect(Object.keys(root).sort()).toEqual([
       'APP_ID_MAX_LENGTH',
       'URL_MAX_LENGTH',
+      'isDevelopmentApp',
       'isLocalhost',
       'isValidAppId',
+      'movedBetween',
+      'servedFrom',
     ]);
   });
 });

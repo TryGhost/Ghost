@@ -1,4 +1,4 @@
-import { APIError, JSONError, getErrorMessage } from '@tryghost/admin-x-framework/errors';
+import { JSONError, getErrorMessage } from '@tryghost/admin-x-framework/errors';
 
 /** Something the app's developer has to fix, with what Ghost said about it. */
 export interface InstallProblem {
@@ -14,21 +14,10 @@ export type InstallFailure =
   | { kind: 'problems'; problems: InstallProblem[] }
   /** The install link doesn't say which app to install, so there is nothing to check. */
   | { kind: 'incomplete-link' }
-  /** This site's Ghost is older than Admin and can't install apps yet. */
-  | { kind: 'unsupported' }
   /** Anything else, such as Ghost itself being unreachable. */
   | { kind: 'error'; message: string };
 
 const FALLBACK_MESSAGE = 'Something went wrong. Please try again.';
-
-/**
- * Whether Ghost answered that it has no such endpoint. Admin and Ghost deploy separately,
- * so Admin can be newer than the Ghost it talks to; none of the apps endpoints answer 404
- * otherwise, an unknown installation aside.
- */
-export function isUnsupported(error: unknown): boolean {
-  return error instanceof APIError && error.response?.status === 404;
-}
 
 /** The first error of an Admin API error response, if that's what was thrown. */
 export function apiErrorOf(error: unknown) {
@@ -87,8 +76,6 @@ export function installFailureOf(error: unknown): InstallFailure {
       };
     }
     default:
-      return isUnsupported(error)
-        ? { kind: 'unsupported' }
-        : { kind: 'error', message: getErrorMessage(error, FALLBACK_MESSAGE) };
+      return { kind: 'error', message: getErrorMessage(error, FALLBACK_MESSAGE) };
   }
 }
