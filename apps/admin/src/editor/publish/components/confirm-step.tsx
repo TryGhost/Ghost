@@ -119,19 +119,21 @@ export function ConfirmStep({
 
       {failure ? <FailureBanner failure={failure} testId={publishConfirmError} /> : null}
 
-      <Inline gap="sm" justify="between" wrap>
+      <Inline gap="sm" justify="start" wrap>
+        {/* Round, and as tall as the publish button beside it. */}
         <Button
+          aria-label="Back to settings"
+          className="size-11 shrink-0"
           data-testid={publishBackToSettings}
           disabled={status === 'running'}
-          size="lg"
-          variant="outline"
+          size="icon"
+          variant="secondary"
           onClick={onBack}
         >
           <LucideIcon.ArrowLeft />
-          Back to settings
         </Button>
         <Button
-          className="ml-auto h-auto min-h-11 max-w-full bg-state-success py-2 whitespace-normal text-white hover:bg-state-success/90"
+          className="h-auto min-h-11 max-w-full bg-state-success py-2 whitespace-normal text-white hover:bg-state-success/90"
           data-testid={publishConfirm}
           disabled={status === 'running'}
           size="lg"

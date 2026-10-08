@@ -64,7 +64,7 @@ function RevertToDraft({ onRevertToDraft }: { onRevertToDraft?: () => void }) {
           className="h-auto min-h-11 max-w-full px-5 py-2 whitespace-normal"
           data-testid={publishRevertToDraft}
           size="lg"
-          variant="outline"
+          variant="secondary"
           onClick={onRevertToDraft}
         >
           Unschedule and revert to draft &rarr;
@@ -168,7 +168,7 @@ export function CompleteStep({
             <Acknowledge onAcknowledge={onAcknowledge} />
           ) : (
             <Inline>
-              <Button className="px-5" size="lg" variant="outline" asChild>
+              <Button className="px-5" size="lg" variant="secondary" asChild>
                 <a data-testid={publishBackToDashboard} href="#/analytics">
                   <LucideIcon.ArrowLeft />
                   Back to dashboard

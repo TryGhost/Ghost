@@ -253,7 +253,7 @@ function KeyedUpdateFlowModal({
                 data-testid={publishRevertToDraft}
                 disabled={running}
                 size="lg"
-                variant="outline"
+                variant="secondary"
                 onClick={() => void revert()}
               >
                 {isScheduled
