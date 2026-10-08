@@ -19,11 +19,16 @@ export interface FetchedManifest {
 
 export type FetchManifest = (manifestUrl: string) => Promise<FetchedManifest>;
 
+/** The HTTP status the app answered with, if it answered at all. */
+function statusOf(err: unknown): number | undefined {
+  return (err as { response?: { statusCode?: number } } | null)?.response?.statusCode;
+}
+
 // Says only that the app answered with an error, never why a request failed otherwise, so
 // the preview cannot be used to map the network Ghost runs in. The reason is logged, so an
 // operator can still tell a timeout from a certificate problem.
 function unreachable(manifestUrl: string, err: unknown) {
-  const status = (err as { response?: { statusCode?: number } } | null)?.response?.statusCode;
+  const status = statusOf(err);
   logging.warn(`Could not load the app manifest at ${manifestUrl}`);
   logging.warn(err);
   return new errors.ValidationError({
@@ -90,18 +95,23 @@ export function createManifestFetcher({
 
     const pending = request(fetchUrl(current), {
       headers: { accept: 'application/json', ...hostHeader(current) },
-      timeout: { request: TIMEOUT_MS },
       retry: { limit: 0 },
       maxRedirects: MAX_REDIRECTS,
-      signal: abort.signal,
+      // One deadline for the whole fetch, redirects included: got's own timeout starts
+      // over on every hop, which would let a slow app hold a preview for several times
+      // as long.
+      signal: AbortSignal.any([abort.signal, AbortSignal.timeout(TIMEOUT_MS)]),
       // Decided here rather than in a redirect hook: got asks this before any hook runs,
       // so a redirect to another host is refused before the outbound guard looks its
       // target up, and Ghost never resolves a host it was always going to refuse.
       followRedirect: (response) => {
-        const location = response.headers.location;
-        if (!location) {
+        // got asks on every response, a plain 200 included, not only on redirects.
+        const rawLocation = response.headers.location;
+        if (!rawLocation) {
           return true;
         }
+        // Headers arrive as latin1; got reads the location as UTF-8, and so does this.
+        const location = Buffer.from(rawLocation, 'binary').toString('utf8');
         const target = new URL(location, response.url);
         // Undo the alias, so the redirect is judged by where the browser would go.
         if (isAliased(current) && target.hostname === alias) {
@@ -117,8 +127,12 @@ export function createManifestFetcher({
       hooks: {
         beforeRedirect: [
           (options) => {
-            options.url = fetchUrl(current);
-            Object.assign(options.headers, hostHeader(current));
+            // Only an aliased hop needs its address rewritten; everywhere else got's own
+            // reading of the redirect stands.
+            if (isAliased(current)) {
+              options.url = fetchUrl(current);
+              Object.assign(options.headers, hostHeader(current));
+            }
           },
         ],
       },
@@ -130,8 +144,9 @@ export function createManifestFetcher({
       }
     });
 
-    // Decoded by got from the response's charset; the size limit above still applies, as
-    // it watches the download rather than the result.
+    // got decodes the body as UTF-8 whatever the response says, which is what JSON is
+    // expected in. The size limit above still applies, as it watches the download rather
+    // than the result.
     let text: string;
     try {
       text = await pending.text();
@@ -139,7 +154,11 @@ export function createManifestFetcher({
       if (refusedRedirect) {
         throw redirected(manifestUrl, refusedRedirect);
       }
-      if (tooLarge) {
+      // Only a manifest is held to the limit: a large error page is still an error page,
+      // reported with its status. The status is only known once the headers are in, so
+      // the download is stopped first and told apart here.
+      const status = statusOf(err);
+      if (tooLarge && (status === undefined || (status >= 200 && status < 300))) {
         throw new errors.ValidationError({
           message: `The app’s manifest is larger than ${MANIFEST_MAX_BYTES / 1024} KB.`,
           code: 'APP_MANIFEST_TOO_LARGE',

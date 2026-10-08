@@ -123,6 +123,41 @@ describe('createManifestFetcher', function () {
     });
   });
 
+  it('follows a redirect to a path with characters outside ASCII', async function () {
+    // On the wire the location is UTF-8 bytes, which Node hands over as latin1.
+    nock('https://podcast.example.com')
+      .get('/ghost-app.json')
+      .reply(302, '', { location: Buffer.from('/v2/manifést.json', 'utf8').toString('latin1') })
+      .get('/v2/manif%C3%A9st.json')
+      .reply(200, MANIFEST);
+
+    const result = await fetcher()('https://podcast.example.com/ghost-app.json');
+
+    assert.equal(result.url, 'https://podcast.example.com/v2/manif%C3%A9st.json');
+    assert.deepEqual(result.body, MANIFEST);
+  });
+
+  it('reports a large error page as unreachable, with its status', async function () {
+    nock('https://podcast.example.com')
+      .get('/ghost-app.json')
+      .reply(404, 'x'.repeat(100 * 1024));
+
+    await assert.rejects(fetcher()('https://podcast.example.com/ghost-app.json'), {
+      code: 'APP_MANIFEST_UNREACHABLE',
+      context: 'https://podcast.example.com/ghost-app.json answered with HTTP 404',
+    });
+  });
+
+  it('refuses a manifest larger than it can store', async function () {
+    nock('https://podcast.example.com')
+      .get('/ghost-app.json')
+      .reply(200, JSON.stringify({ ...MANIFEST, pad: 'x'.repeat(100 * 1024) }));
+
+    await assert.rejects(fetcher()('https://podcast.example.com/ghost-app.json'), {
+      code: 'APP_MANIFEST_TOO_LARGE',
+    });
+  });
+
   it('accepts a manifest that starts with a byte order mark', async function () {
     nock('https://podcast.example.com')
       .get('/ghost-app.json')
