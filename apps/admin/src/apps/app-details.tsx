@@ -34,10 +34,14 @@ import { type AppHistoryEntry, appHistory, installedBy } from './lib/history';
 import { appReviewRoute } from './lib/routes';
 import { isDevelopmentApp } from './lib/served-from';
 
+// Not a definition list: Ember's stylesheet floats every `dl dt` and indents `dl dd`,
+// and it still applies to React pages.
 const Fact: React.FC<{ label: string; children: React.ReactNode }> = ({ label, children }) => (
-  <div className="grid grid-cols-[8rem_1fr] gap-4 py-3">
-    <dt className="text-muted-foreground">{label}</dt>
-    <dd className="m-0 min-w-0 break-words">{children}</dd>
+  <div className="grid grid-cols-[8rem_1fr] gap-4 py-3" data-testid="app-fact">
+    <Text as="span" tone="secondary">
+      {label}
+    </Text>
+    <span className="min-w-0 break-words">{children}</span>
   </div>
 );
 
@@ -81,79 +85,84 @@ const Details: React.FC<{ installation: AppInstallation }> = ({ installation }) 
   const installer = installedBy(actions);
 
   return (
-    <Stack gap="xl">
-      <Inline align="start" gap="lg">
-        <AppIcon manifest={manifest} size="lg" />
-        <Stack gap="xs">
-          <Inline gap="xs">
-            <Text as="h1" size="xl" weight="semibold">
-              {manifest.name}
-            </Text>
-            {isDevelopmentApp(manifest) && <DevelopmentBadge />}
-            {status === 'suspended' && <Badge variant="warning">Needs approval</Badge>}
-            {status === 'uninstalled' && <Badge variant="secondary">Uninstalled</Badge>}
-          </Inline>
-          <Text tone="secondary">{manifest.description}</Text>
+    // Like a member's page: who the app is and what it does down the side, what it gets and
+    // what happened to it alongside.
+    <div className="flex flex-col gap-8 lg:flex-row lg:items-start lg:gap-12">
+      <aside className="flex w-full shrink-0 flex-col gap-6 lg:w-80">
+        <Stack gap="md">
+          <AppIcon manifest={manifest} size="xl" />
+          <Stack gap="xs">
+            <Inline gap="xs" wrap>
+              <Text as="h1" size="xl" weight="semibold">
+                {manifest.name}
+              </Text>
+              {isDevelopmentApp(manifest) && <DevelopmentBadge />}
+              {status === 'suspended' && <Badge variant="warning">Needs approval</Badge>}
+              {status === 'uninstalled' && <Badge variant="secondary">Uninstalled</Badge>}
+            </Inline>
+            <Text tone="secondary">{manifest.description}</Text>
+          </Stack>
         </Stack>
-      </Inline>
 
-      {status === 'suspended' && (
-        <Banner data-testid="app-needs-approval" size="md" variant="warning">
-          <Inline gap="md" justify="between">
-            <Text as="p" size="sm">
-              {manifest.name} has been updated and needs more access. It won’t open until you
-              approve the changes.
-            </Text>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => navigate(appReviewRoute(installation.manifest_url))}
+        {status !== 'uninstalled' && <CapabilitySummary manifest={manifest} />}
+
+        <div className="divide-y border-y">
+          <Fact label="Made by">
+            <a
+              className="hover:underline"
+              href={manifest.author.url}
+              rel="noopener noreferrer"
+              target="_blank"
             >
-              Review changes
-            </Button>
-          </Inline>
-        </Banner>
-      )}
+              {manifest.author.name}
+            </a>
+          </Fact>
+          <Fact label="Installed">
+            {formatDisplayDate(installation.created_at)}
+            {installer && (
+              <Text as="span" tone="secondary">
+                {' '}
+                by {installer}
+              </Text>
+            )}
+          </Fact>
+        </div>
+      </aside>
 
-      <dl className="m-0 divide-y border-y">
-        <Fact label="Made by">
-          <a
-            className="hover:underline"
-            href={manifest.author.url}
-            rel="noopener noreferrer"
-            target="_blank"
-          >
-            {manifest.author.name}
-          </a>
-        </Fact>
-        <Fact label="Installed">
-          {formatDisplayDate(installation.created_at)}
-          {installer && (
-            <Text as="span" tone="secondary">
-              {' '}
-              by {installer}
-            </Text>
-          )}
-        </Fact>
-      </dl>
+      <Stack className="min-w-0 flex-1" gap="xl">
+        {status === 'suspended' && (
+          <Banner data-testid="app-needs-approval" size="md" variant="warning">
+            <Inline gap="md" justify="between">
+              <Text as="p" size="sm">
+                {manifest.name} has been updated and needs more access. It won’t open until you
+                approve the changes.
+              </Text>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => navigate(appReviewRoute(installation.manifest_url))}
+              >
+                Review changes
+              </Button>
+            </Inline>
+          </Banner>
+        )}
 
-      {status !== 'uninstalled' && (
-        <>
-          <CapabilitySummary manifest={manifest} />
+        {status !== 'uninstalled' && (
           <AccessIndicator
             intro="Apps use the account of whoever opens them, so this app can do everything they can."
             items={ACCOUNT_ACCESS}
           />
-        </>
-      )}
+        )}
 
-      <Stack gap="sm">
-        <Text as="h2" size="lg" weight="semibold">
-          History
-        </Text>
-        <History entries={appHistory(actions, installation.manifests ?? [])} />
+        <Stack gap="sm">
+          <Text as="h2" size="lg" weight="semibold">
+            History
+          </Text>
+          <History entries={appHistory(actions, installation.manifests ?? [])} />
+        </Stack>
       </Stack>
-    </Stack>
+    </div>
   );
 };
 
