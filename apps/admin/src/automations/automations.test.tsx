@@ -18,6 +18,12 @@ vi.mock('@tryghost/admin-x-framework/api/automations', async () => {
   return {
     ...actual,
     useBrowseAutomations: mockUseBrowseAutomations,
+    useSetAutomationStatus: () => ({
+      mutate: vi.fn(),
+      reset: vi.fn(),
+      isPending: false,
+      isError: false,
+    }),
   };
 });
 
@@ -169,8 +175,10 @@ describe('Automations', () => {
     const button = screen.getByRole('button', { name: 'New automation' });
     if (disabled) {
       expect(button).toBeDisabled();
+      expect(screen.queryByRole('button', { name: /Actions for/ })).not.toBeInTheDocument();
     } else {
       expect(button).toBeEnabled();
+      expect(screen.queryByRole('button', { name: /Actions for/ })).not.toBeInTheDocument();
     }
   });
 
@@ -253,5 +261,59 @@ describe('Automations', () => {
 
     expect(screen.getByText('Free member welcome flow')).toBeInTheDocument();
     expect(screen.queryByText('Paid member welcome flow')).not.toBeInTheDocument();
+  });
+
+  it('hides archived automations by default and shows the status filter', () => {
+    mockUseBrowseAutomations.mockReturnValue({
+      data: {
+        automations: [
+          ...automations,
+          { ...automations[0], id: 'archived', name: 'Archived flow', status: 'archived' },
+        ],
+      },
+      isLoading: false,
+    });
+    renderPage();
+    expect(screen.getByRole('combobox', { name: 'Automations to show' })).toHaveTextContent(
+      'Active automations',
+    );
+    expect(screen.queryByRole('link', { name: 'Archived flow' })).not.toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Free member welcome flow' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Paid member welcome flow' })).toBeInTheDocument();
+  });
+
+  it('omits the status filter when the only archived automation is hidden by Stripe', () => {
+    mockUseBrowseSettings.mockReturnValue({ data: { settings: [] }, isLoading: false });
+    mockUseBrowseAutomations.mockReturnValue({
+      data: { automations: [automations[0], { ...automations[1], status: 'archived' }] },
+      isLoading: false,
+    });
+    renderPage();
+    expect(screen.queryByRole('combobox', { name: 'Automations to show' })).not.toBeInTheDocument();
+  });
+
+  it('resets the filter when the page remounts', () => {
+    mockUseBrowseAutomations.mockReturnValue({
+      data: {
+        automations: [
+          ...automations,
+          { ...automations[0], id: 'archived', name: 'Archived flow', status: 'archived' },
+        ],
+      },
+      isLoading: false,
+    });
+    const page = renderPage();
+    fireEvent.keyDown(screen.getByRole('combobox', { name: 'Automations to show' }), {
+      key: 'Enter',
+    });
+    fireEvent.click(screen.getByRole('option', { name: 'Archived automations' }));
+    expect(screen.getByRole('combobox', { name: 'Automations to show' })).toHaveTextContent(
+      'Archived automations',
+    );
+    page.unmount();
+    renderPage();
+    expect(screen.getByRole('combobox', { name: 'Automations to show' })).toHaveTextContent(
+      'Active automations',
+    );
   });
 });

@@ -94,6 +94,42 @@ const AutomationHeader: React.FC<AutomationHeaderProps> = ({
     );
   };
 
+  let statusAction: React.ReactNode;
+  switch (status) {
+    case undefined:
+      statusAction = null;
+      break;
+    case 'active':
+      statusAction = withValidationFeedback(
+        'unpublish',
+        <Button
+          disabled={!isTurnOffButtonEnabled}
+          variant={isAdmin7 ? 'ghost' : 'outline'}
+          onClick={onTurnOff}
+        >
+          Turn off
+        </Button>,
+      );
+      break;
+    case 'inactive':
+    case 'archived':
+      statusAction = withValidationFeedback(
+        'save',
+        <Button
+          disabled={!isSaveButtonEnabled}
+          variant={isAdmin7 && saveButtonVariant === 'outline' ? 'ghost' : saveButtonVariant}
+          onClick={onSave}
+        >
+          {saveButtonChildren}
+        </Button>,
+      );
+      break;
+    default: {
+      const _exhaustive: never = status;
+      throw new Error(`Unhandled status: ${String(_exhaustive)}`);
+    }
+  }
+
   return (
     <header className="relative z-10 flex h-14 shrink-0 items-center justify-between border-b border-border-default bg-surface-elevated px-4">
       <Inline className="min-w-0" gap="sm">
@@ -112,28 +148,7 @@ const AutomationHeader: React.FC<AutomationHeaderProps> = ({
         )}
       </Inline>
       <Inline className="shrink-0" gap="sm">
-        {status === 'active' &&
-          withValidationFeedback(
-            'unpublish',
-            <Button
-              disabled={!isTurnOffButtonEnabled}
-              variant={isAdmin7 ? 'ghost' : 'outline'}
-              onClick={onTurnOff}
-            >
-              Turn off
-            </Button>,
-          )}
-        {status === 'inactive' &&
-          withValidationFeedback(
-            'save',
-            <Button
-              disabled={!isSaveButtonEnabled}
-              variant={isAdmin7 && saveButtonVariant === 'outline' ? 'ghost' : saveButtonVariant}
-              onClick={onSave}
-            >
-              {saveButtonChildren}
-            </Button>,
-          )}
+        {statusAction}
         {withValidationFeedback(
           'publish',
           <Button
