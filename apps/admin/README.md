@@ -111,13 +111,13 @@ pnpm dev
 
 This builds Ember's development assets once before starting Vite. React,
 Admin Framework, Shade and Portal continue watching for changes. Ember still
-boots in the browser for the bridge, flag-off editor/auth screens and `/pro/*`;
+boots in the browser for the bridge, the flag-off editor and `/pro/*`;
 its source edits take effect after restarting the command. Use `pnpm dev:ember`
 when you need Ember's live-reload server and continuous rebuilds.
 
 Development commands do not change Labs settings. To preview the React editor
-and auth screens in one browser tab, open
-`http://localhost:2368/ghost/#/signin?labs=editorReact,authReact`. These
+in one browser tab, open
+`http://localhost:2368/ghost/#/editor/post?labs=editorReact`. These
 [session overrides](../../docs/practices/feature-flags.md#admin-session-overrides)
 survive navigation and reloads in that tab; use `?labs=` to clear them.
 

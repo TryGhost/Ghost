@@ -2,7 +2,7 @@ import ctrlOrCmd from 'ghost-admin/utils/ctrl-or-cmd';
 import moment from 'moment-timezone';
 import sinon from 'sinon';
 import {Response} from 'miragejs';
-import {authenticateSession, invalidateSession} from 'ember-simple-auth/test-support';
+import {authenticateSession} from 'ember-simple-auth/test-support';
 import {beforeEach, describe, it} from 'mocha';
 import {blur, click, currentRouteName, currentURL, fillIn, find, findAll, triggerEvent, typeIn, waitFor} from '@ember/test-helpers';
 import {datepickerSelect} from 'ember-power-datepicker/test-support';
@@ -23,16 +23,6 @@ describe('Acceptance: Editor', function () {
 
     beforeEach(async function () {
         this.server.loadFixtures('configs');
-    });
-
-    it('redirects to signin when not authenticated', async function () {
-        const author = this.server.create('user'); // necessary for post-author association
-        this.server.create('post', {authors: [author]});
-
-        await invalidateSession();
-        await visit('/editor/post/1');
-
-        expect(currentURL(), 'currentURL').to.equal('/signin');
     });
 
     it('does not redirect to staff page when authenticated as contributor', async function () {

@@ -48,7 +48,7 @@ import {
 } from '@tryghost/admin-x-framework/api/users';
 
 import { NotFound } from './shared/not-found';
-import { type AuthRouteHandle, authRoutes, useAuthScreensOwner } from './auth/api';
+import { authRoutes } from './auth/api';
 
 const appRoutes: RouteObject[] = [
   {
@@ -235,7 +235,6 @@ export const routes: RouteObject[] = [
 export function useEmberOwnedRouteMatcher(): (pathname: string) => boolean {
   const editorOwner = useFlagGatedRouteOwner('editorReact');
   const billingOwner = useFlagGatedRouteOwner('billingReact');
-  const authScreensOwner = useAuthScreensOwner();
 
   return useCallback(
     (pathname: string) => {
@@ -249,12 +248,9 @@ export function useEmberOwnedRouteMatcher(): (pathname: string) => boolean {
       if (leaf.Component === BillingRoute) {
         return billingOwner !== 'react';
       }
-      if ((leaf.handle as AuthRouteHandle | undefined)?.authScreen) {
-        return authScreensOwner !== 'react';
-      }
       return false;
     },
-    [editorOwner, billingOwner, authScreensOwner],
+    [editorOwner, billingOwner],
   );
 }
 

@@ -101,12 +101,6 @@ const features: Feature[] = [
     flag: 'editorReact',
   },
   {
-    title: 'React sign-in screens',
-    description:
-      'Serves sign in, 2FA verification, password reset, staff invite signup, setup and sign out from the React app instead of the Ember screens. Takes effect on the next page load.',
-    flag: 'authReact',
-  },
-  {
     title: 'Machine payments',
     description:
       'Let AI agents pay for access to paid-members markdown (.md) URLs via Stripe Machine Payments Protocol',

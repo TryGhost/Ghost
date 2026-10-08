@@ -1,11 +1,10 @@
 import {Response} from 'miragejs';
 import {authenticateSession} from 'ember-simple-auth/test-support';
 import {beforeEach, describe, it} from 'mocha';
-import {blur, click, fillIn, find, findAll, visit} from '@ember/test-helpers';
+import {blur, fillIn, find, findAll, visit} from '@ember/test-helpers';
 import {expect} from 'chai';
 import {setupApplicationTest} from 'ember-mocha';
 import {setupMirage} from 'ember-cli-mirage/test-support';
-import {versionMismatchResponse} from 'ghost-admin/mirage/utils';
 
 const htmlErrorResponse = function () {
     return new Response(
@@ -18,23 +17,6 @@ const htmlErrorResponse = function () {
 describe('Acceptance: Error Handling', function () {
     const hooks = setupApplicationTest();
     setupMirage(hooks);
-
-    describe('VersionMismatch errors', function () {
-        describe('logged out', function () {
-            it('displays alert', async function () {
-                this.server.post('/session', versionMismatchResponse);
-
-                await visit('/signin');
-                await fillIn('[name="identification"]', 'test@example.com');
-                await fillIn('[name="password"]', 'password');
-                await click('[data-test-button="sign-in"]');
-
-                // has the refresh to update alert
-                expect(findAll('.gh-alert').length).to.equal(1);
-                expect(find('.gh-alert').textContent).to.match(/refresh/);
-            });
-        });
-    });
 
     describe('CloudFlare errors', function () {
         beforeEach(async function () {

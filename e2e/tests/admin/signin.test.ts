@@ -46,6 +46,25 @@ test.describe('Ghost Admin - Signin Redirect', () => {
     await expect(editor.titleInput).toBeVisible();
   });
 
+  test('a cold load of a deep link returns to it after signin', async ({
+    page,
+    ghostAccountOwner,
+  }) => {
+    await logout(page);
+
+    // Leave the admin first, so opening the link is a cold load.
+    await page.goto('about:blank');
+    await page.goto('/ghost/#/posts?type=draft');
+
+    const loginPage = new LoginPage(page);
+    await expect(loginPage.signInButton).toBeVisible();
+    await loginPage.signIn(ghostAccountOwner.email, ghostAccountOwner.password);
+
+    // No drafts exist, so the screen shows its empty state rather than the list.
+    await expect(new PostsPage(page).pageTitle).toBeVisible();
+    await expect(page).toHaveURL(/#\/posts\/?\?type=draft$/);
+  });
+
   test('query params on a deep link survive signin redirect', async ({
     page,
     ghostAccountOwner,
