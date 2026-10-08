@@ -36,7 +36,6 @@ setup, development variants, and troubleshooting.
 Ghost/
 ├── apps/              # Admin and public frontend apps
 │   ├── admin/          # React Admin
-│   ├── ember-admin/    # Legacy Ember Admin
 │   ├── portal/         # Member Portal
 │   ├── comments-ui/    # Comments
 │   └── shade/          # Admin design system

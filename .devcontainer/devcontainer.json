@@ -57,7 +57,6 @@
     "1025": { "label": "Mailpit SMTP" },
     "8025": { "label": "Mailpit Web" },
     "5174": { "label": "Admin (Vite)" },
-    "4200": { "label": "Ember live-reload" },
     "4173": { "label": "Koenig Lexical (optional)" }
   },
 
