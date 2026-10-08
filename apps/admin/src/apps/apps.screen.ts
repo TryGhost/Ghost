@@ -21,7 +21,6 @@ export const appsScreen = {
   problems: () => page.getByTestId(sel.appInstallProblems),
   unreachable: () => page.getByTestId(sel.appInstallUnreachable),
   changes: () => page.getByTestId(sel.appManifestChange),
-  managers: () => page.getByTestId(sel.appManager),
 
   installButton: () => button(sel.installButton),
   approveChangesButton: () => button(sel.approveChangesButton),

@@ -9,12 +9,9 @@ import {
   currentRoute,
   currentUserResponse,
   fakeAdminEndpoint,
-  fakeUsers,
   renderAdminApp,
   staffRole,
-  staffUser,
 } from '@test-utils/acceptance';
-import { MANAGER_FILTER } from './lib/app-managers';
 import { appsScreen } from './apps.screen';
 
 const MANIFEST_URL = 'https://podcast.example.com/ghost-app.json';
@@ -270,8 +267,9 @@ describe('Installing an app', () => {
     await expect
       .element(appsScreen.moveWarning())
       .toHaveTextContent('moves Podcast from podcast.example.com to evil.example');
+    await expect(appsScreen.changes()).toHaveCount(1);
     await expect
-      .element(appsScreen.changes().nth(1))
+      .element(appsScreen.changes().first())
       .toHaveTextContent('https://podcast.example.com/adminhttps://evil.example/admin');
 
     await appsScreen.approveChangesButton().click();
@@ -334,10 +332,16 @@ describe('Installing an app', () => {
     );
     // Someone else approved a move first, so the review now starts from that.
     const moved = preview({
-      manifest: manifest({ name: 'Podcasts' }),
+      manifest: manifest({
+        name: 'Podcasts',
+        surfaces: [{ type: 'admin_page', url: 'https://new.example.com/admin' }],
+      }),
       digest: 'digest-2',
       installation: {
-        ...existing([{ path: 'manifest_url', requires_approval: true }]),
+        ...existing([
+          { path: 'manifest_url', requires_approval: true },
+          { path: 'surfaces[0].url', requires_approval: true },
+        ]),
         revision: 1,
         manifest_url: 'https://new.example.com/ghost-app.json',
       },
@@ -350,7 +354,7 @@ describe('Installing an app', () => {
     await appsScreen.approveChangesButton().click();
 
     await expect.element(appsScreen.notice()).toHaveTextContent('has changed since you opened it');
-    await expect.element(appsScreen.changes()).toHaveTextContent('new.example.com');
+    await expect.element(appsScreen.moveWarning()).toHaveTextContent('to new.example.com');
     expect(previewApi.requests).toHaveLength(1);
     expect(approveApi.requests).toHaveLength(1);
   });
@@ -583,28 +587,18 @@ describe('Installing an app', () => {
   });
 
   it('tells staff who can’t install apps who can, without checking the app', async () => {
-    const owner = staffUser({
-      name: 'Site Owner',
-      email: 'owner@example.com',
-      roles: [staffRole({ name: 'Owner' })],
-    });
-    const admin = staffUser({
-      name: 'Site Admin',
-      email: 'admin@example.com',
-      roles: [staffRole({ name: 'Administrator' })],
-    });
-    const usersApi = fakeUsers([owner, admin]);
     const me = currentUserResponse();
     me.users[0].roles = [staffRole({ name: 'Editor' })];
 
     // No preview is faked: a request to check the app would fail the test.
     await renderAdminApp(INSTALL_ROUTE, { labs, boot: { browseMe: { response: me } } });
 
-    await expect.element(appsScreen.notAllowedDialog()).toBeVisible();
-    await expect(appsScreen.managers()).toHaveCount(2);
-    await expect.element(appsScreen.managers().first()).toHaveTextContent('Site OwnerOwner');
-    await expect.element(appsScreen.managers().last()).toHaveTextContent('Site AdminAdministrator');
-    expect(usersApi.requests.map(({ filter }) => filter)).toEqual([MANAGER_FILTER]);
+    await expect
+      .element(appsScreen.notAllowedDialog())
+      .toHaveTextContent('Only the site owner and administrators can install apps');
     await expect.element(appsScreen.installDialog()).not.toBeInTheDocument();
+    await appsScreen.okButton().click();
+
+    await expect.poll(currentRoute).toBe('/');
   });
 });

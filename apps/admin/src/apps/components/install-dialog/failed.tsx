@@ -16,7 +16,8 @@ interface FailedProps {
   failure: InstallFailure;
   attempted: Attempted;
   onClose: () => void;
-  onRetry: () => void;
+  /** Only for failures trying again can fix. */
+  onRetry?: () => void;
 }
 
 const TITLES: Record<Attempted, string> = {
@@ -42,7 +43,7 @@ function describe(failure: InstallFailure): string {
 
 /** Why it stopped, with Try again when that could help. */
 export const Failed: React.FC<FailedProps> = ({ failure, attempted, onClose, onRetry }) => {
-  const retryable = failure.kind === 'unreachable' || failure.kind === 'error';
+  const retryable = onRetry && (failure.kind === 'unreachable' || failure.kind === 'error');
   return (
     <>
       {/* The details belong to the copy above them, closer than the dialog's own gap. */}

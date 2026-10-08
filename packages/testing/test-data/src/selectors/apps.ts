@@ -16,7 +16,6 @@ export const appInstallProblems = 'app-install-problems';
 export const appInstallUnreachable = 'app-install-unreachable';
 export const appManifestChange = 'app-manifest-change';
 export const appDevelopmentBadge = 'app-development-badge';
-export const appManager = 'app-manager';
 export const accessIndicator = 'access-indicator';
 export const accessItem = 'access-item';
 

@@ -1,10 +1,8 @@
 import React from 'react';
-import { AppsFlagGate } from './components/apps-flag-gate';
+import { AppsGate } from './components/apps-gate';
 import { AppsListing } from './apps';
 import { AskAdminDialog } from './components/ask-admin-dialog';
 import { InstallDialog } from './components/install-dialog/install-dialog';
-import { canManageApps } from './permissions';
-import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
 import { useNavigate, useSearchParams } from '@tryghost/admin-x-framework';
 
 /**
@@ -14,25 +12,12 @@ import { useNavigate, useSearchParams } from '@tryghost/admin-x-framework';
 const AppInstall: React.FC = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const { data: currentUser } = useCurrentUser();
-
-  if (!currentUser) {
-    return null;
-  }
-
-  if (!canManageApps(currentUser)) {
-    return (
-      <AppsFlagGate>
-        <AskAdminDialog onClose={() => navigate('/', { replace: true })} />
-      </AppsFlagGate>
-    );
-  }
 
   return (
-    <AppsFlagGate>
+    <AppsGate denied={<AskAdminDialog onClose={() => navigate('/', { replace: true })} />}>
       <AppsListing />
       <InstallDialog manifestUrl={searchParams.get('manifest')} />
-    </AppsFlagGate>
+    </AppsGate>
   );
 };
 

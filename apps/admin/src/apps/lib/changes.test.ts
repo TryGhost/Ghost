@@ -35,23 +35,23 @@ describe('describeChanges', () => {
       ]),
     ).toEqual([
       {
-        field: 'author.name',
-        label: 'Developer',
-        before: 'Example Audio',
-        after: 'Example',
-        requiresApproval: true,
-      },
-      {
         field: 'name',
         label: 'Name',
         before: 'Podcast',
         after: 'Podcasts',
         requiresApproval: true,
       },
+      {
+        field: 'author.name',
+        label: 'Developer',
+        before: 'Example Audio',
+        after: 'Example',
+        requiresApproval: true,
+      },
     ]);
   });
 
-  it('shows an app that moved as where it checks for updates and where its page runs', () => {
+  it('shows an app that moved as where its page runs, not as a row of its own', () => {
     const reviewed = {
       manifest_url: 'https://podcast.example.net/ghost-app.json',
       manifest: manifest({
@@ -65,11 +65,6 @@ describe('describeChanges', () => {
         { path: 'surfaces[0].url', requires_approval: true },
       ]).map(({ label, before, after }) => [label, before, after]),
     ).toEqual([
-      [
-        'Checks for updates at',
-        'https://podcast.example.com/ghost-app.json',
-        'https://podcast.example.net/ghost-app.json',
-      ],
       ['Page in Admin', 'https://podcast.example.com/admin', 'https://podcast.example.net/admin'],
     ]);
   });
@@ -113,7 +108,7 @@ describe('describeChanges', () => {
     ]);
   });
 
-  it('shows a field Admin does not know yet by its path', () => {
+  it('shows a field Admin does not know yet by its name, as JSON', () => {
     const reviewed = {
       manifest_url: approved.manifest_url,
       manifest: { ...manifest(), cards: [{ name: 'player' }] } as AppManifest,
@@ -123,10 +118,10 @@ describe('describeChanges', () => {
       describeChanges(approved, reviewed, [{ path: 'cards[0].name', requires_approval: true }]),
     ).toEqual([
       {
-        field: 'cards[0].name',
-        label: 'cards[0].name',
+        field: 'cards',
+        label: 'cards',
         before: null,
-        after: 'player',
+        after: '[{"name":"player"}]',
         requiresApproval: true,
       },
     ]);

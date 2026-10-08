@@ -1,6 +1,6 @@
 import React from 'react';
 import AppsList from './components/apps-list';
-import { AppsFlagGate } from './components/apps-flag-gate';
+import { AppsGate } from './components/apps-gate';
 import { Badge, EmptyIndicator, LoadingIndicator } from '@tryghost/shade/components';
 import { Box, Container } from '@tryghost/shade/primitives';
 import { ListPage } from '@tryghost/shade/page-templates';
@@ -86,9 +86,9 @@ export const AppsListing: React.FC = () => {
 };
 
 const Apps: React.FC = () => (
-  <AppsFlagGate>
+  <AppsGate>
     <AppsListing />
-  </AppsFlagGate>
+  </AppsGate>
 );
 
 export default Apps;
