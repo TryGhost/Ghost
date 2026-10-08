@@ -225,6 +225,7 @@ function EditorContent({
   // Closed on every editor entry, as the menu it replaces was.
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [settingsPresent, setSettingsPresent] = useState(false);
+  const [settingsReveal, setSettingsReveal] = useState<SettingsFieldReveal | null>(null);
   // From a toggle until everything moving with the panel has arrived. Meanwhile
   // the editor sizes Koenig's breakout cards from the moving layout.
   const [settingsMoving, setSettingsMoving] = useState(false);
@@ -306,6 +307,8 @@ function EditorContent({
   }, []);
   const toggleSettings = useCallback(() => {
     settingsToggleRef.current?.focus();
+    // A manual toggle ends the reveal, so reopening starts on the section list.
+    setSettingsReveal(null);
     setSettingsMoving(true);
     setSettingsPresent(true);
     setSettingsOpen((open) => !open);
@@ -313,7 +316,6 @@ function EditorContent({
   const postEditorRef = useRef<PostEditorHandle>(null);
   // Below the small breakpoint the header's controls sit in the editor's bottom bar.
   const [bottomBar, setBottomBar] = useState<HTMLDivElement | null>(null);
-  const [settingsReveal, setSettingsReveal] = useState<SettingsFieldReveal | null>(null);
   /**
    * Takes the writer to the first field an explicit save would refuse, as the
    * save's own validator reads it, and returns that field. The email subject is

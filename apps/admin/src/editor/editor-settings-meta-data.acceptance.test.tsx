@@ -386,6 +386,41 @@ describe('Post settings meta data', () => {
     expect(saveApi.requests).toHaveLength(0);
   });
 
+  it.each([
+    { state: 'still invalid', correctedTitle: null },
+    { state: 'corrected', correctedTitle: 'Valid meta title' },
+  ])(
+    'does not replay a field reveal after reopening settings with a $state title',
+    async ({ correctedTitle }) => {
+      fakeSavablePost();
+      fakeMembersTotal();
+      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+      await openMetaData();
+
+      await editorScreen.settingsMetaTitle().fill('a'.repeat(301));
+      await editorScreen.publishButton().click();
+      await expect.element(editorScreen.settingsMetaTitle()).toHaveFocus();
+
+      if (correctedTitle) {
+        await editorScreen.settingsMetaTitle().fill(correctedTitle);
+      }
+      await editorScreen.settingsToggle().click();
+      await settleTransitions();
+      await expect(editorScreen.settingsSidebar()).toHaveCount(0);
+
+      await editorScreen.settingsToggle().click();
+      await settleTransitions();
+      await expect.element(editorScreen.settingsSubviewRow(settingsMetaDataRow)).toBeVisible();
+      await expect.element(editorScreen.settingsToggle()).toHaveFocus();
+
+      if (!correctedTitle) {
+        await editorScreen.publishButton().click();
+        await expect.element(editorScreen.settingsMetaTitle()).toHaveFocus();
+        await expect(publishScreen.root()).toHaveCount(0);
+      }
+    },
+  );
+
   it('previews the post’s own title and excerpt until the meta fields carry their own', async () => {
     fakeSavablePost({ custom_excerpt: 'The excerpt this post already has' });
     await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
