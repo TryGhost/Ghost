@@ -2,7 +2,7 @@ import { act, renderHook, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { createElement, type ReactNode } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { usePublishFlow, type PublishFlowOptions } from './use-publish-flow';
+import { SCHEDULE_PASSED, usePublishFlow, type PublishFlowOptions } from './use-publish-flow';
 import type { EmailConfirmationOutcome } from './email-confirmation';
 import type { NewsletterInput } from './publish-options';
 
@@ -126,6 +126,109 @@ describe('publish option actions', () => {
     act(() => setNewsletter(WEEKLY));
     expect(result.current.state.newsletter?.slug).toBe('weekly');
     expect(inputs.dispatch).not.toHaveBeenCalled();
+  });
+});
+
+describe('a schedule that passes before it is confirmed', () => {
+  /** Schedules at the default ten minutes ahead, reviews it, then lets the time pass. */
+  async function reviewThenWait() {
+    let clock = NOW;
+    const inputs = { ...options(), now: () => clock, onBeforePublish: vi.fn() };
+    const { result } = renderHook(() => usePublishFlow(inputs), { wrapper });
+    await waitFor(() => expect(result.current.limitsChecked).toBe(true));
+
+    act(() => result.current.setIsScheduled(true));
+    act(() => result.current.toConfirm());
+    clock = new Date(NOW.getTime() + 11 * 60 * 1000);
+
+    return { inputs, result };
+  }
+
+  it('saves nothing and asks for a new time', async () => {
+    const { inputs, result } = await reviewThenWait();
+
+    await act(() => result.current.confirmPublish());
+
+    expect(inputs.onBeforePublish).not.toHaveBeenCalled();
+    expect(inputs.dispatch).not.toHaveBeenCalled();
+    expect(result.current.step).toBe('confirm');
+    expect(result.current.confirmStatus).toBe('failure');
+    expect(result.current.failure).toEqual({ message: SCHEDULE_PASSED });
+    // Still scheduled: the refusal never turns the choice into an immediate publish.
+    expect(result.current.state.isScheduled).toBe(true);
+  });
+
+  it('refuses a time that passes while the editor saves first', async () => {
+    let clock = NOW;
+    // A save held by a sign-in can outlast the chosen time.
+    let finishSave = () => {};
+    const onBeforePublish = vi.fn(
+      () =>
+        new Promise<void>((resolve) => {
+          finishSave = resolve;
+        }),
+    );
+    const inputs = { ...options(), now: () => clock, onBeforePublish };
+    const { result } = renderHook(() => usePublishFlow(inputs), { wrapper });
+    await waitFor(() => expect(result.current.limitsChecked).toBe(true));
+    act(() => result.current.setIsScheduled(true));
+    act(() => result.current.toConfirm());
+
+    let confirming: Promise<void> = Promise.resolve();
+    act(() => {
+      confirming = result.current.confirmPublish();
+    });
+    expect(onBeforePublish).toHaveBeenCalledTimes(1);
+
+    // The time passes only while the save is still pending.
+    clock = new Date(NOW.getTime() + 11 * 60 * 1000);
+    await act(async () => {
+      finishSave();
+      await confirming;
+    });
+
+    expect(inputs.dispatch).not.toHaveBeenCalled();
+    expect(result.current.confirmStatus).toBe('failure');
+    expect(result.current.failure).toEqual({ message: SCHEDULE_PASSED });
+    expect(result.current.state.isScheduled).toBe(true);
+    // No longer running, so the writer can go back for another time.
+    act(() => result.current.toOptions());
+    expect(result.current.step).toBe('options');
+  });
+
+  it('still schedules when the time is ahead once the editor has saved', async () => {
+    let clock = NOW;
+    const onBeforePublish = vi.fn(() => {
+      clock = new Date(NOW.getTime() + 60 * 1000);
+      return Promise.resolve();
+    });
+    const inputs = { ...options(), now: () => clock, onBeforePublish };
+    const { result } = renderHook(() => usePublishFlow(inputs), { wrapper });
+    await waitFor(() => expect(result.current.limitsChecked).toBe(true));
+    act(() => result.current.setIsScheduled(true));
+    act(() => result.current.toConfirm());
+
+    await act(() => result.current.confirmPublish());
+
+    expect(result.current.failure).toBeNull();
+    expect(vi.mocked(inputs.dispatch).mock.calls[0]?.[0]).toMatchObject({ kind: 'schedule' });
+  });
+
+  it('schedules once a future time is chosen', async () => {
+    const { inputs, result } = await reviewThenWait();
+    await act(() => result.current.confirmPublish());
+
+    act(() => result.current.toOptions());
+    act(() => result.current.setScheduledAt(new Date(SCHEDULED_AT)));
+    act(() => result.current.toConfirm());
+    expect(result.current.failure).toBeNull();
+    await act(() => result.current.confirmPublish());
+
+    expect(inputs.dispatch).toHaveBeenCalledTimes(1);
+    expect(vi.mocked(inputs.dispatch).mock.calls[0]?.[0]).toMatchObject({
+      kind: 'schedule',
+      options: { publishedAt: SCHEDULED_AT },
+    });
   });
 });
 
