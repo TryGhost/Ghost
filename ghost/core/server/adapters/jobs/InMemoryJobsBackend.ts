@@ -1,11 +1,12 @@
 import errors from '@tryghost/errors';
+import ObjectID from 'bson-objectid';
 import fastq from 'fastq';
 import type { queueAsPromised } from 'fastq';
 import { JobsBackendBase } from '@tryghost/adapter-base-jobs';
 import type {
   JobProcessor,
   JobEnvelope,
-  JobRouting,
+  DispatchEnvelope,
   JobsStartOptions,
   RecurringSchedule,
   JobsShutdownOptions,
@@ -98,13 +99,14 @@ export default class InMemoryJobsBackend extends JobsBackendBase {
     }
   }
 
-  enqueue(envelope: JobEnvelope, routing?: JobRouting): void {
+  enqueue(id: string, envelope: DispatchEnvelope): void {
     if (this._stopped) {
       return;
     }
+    const { job, routing } = envelope.payload;
     if (!this._processor) {
       throw new errors.IncorrectUsageError({
-        message: `Cannot enqueue job "${envelope.type}" before the jobs backend is started.`,
+        message: `Cannot enqueue job "${job.type}" before the jobs backend is started.`,
       });
     }
     const name = routing?.queue ?? DEFAULT_QUEUE;
@@ -115,7 +117,7 @@ export default class InMemoryJobsBackend extends JobsBackendBase {
       queue = this._makeQueue(this._defaultConcurrency);
       this._queues.set(name, queue);
     }
-    queue.push(envelope);
+    queue.push(job);
   }
 
   private async _deliver(envelope: JobEnvelope): Promise<void> {
@@ -126,22 +128,19 @@ export default class InMemoryJobsBackend extends JobsBackendBase {
     }
   }
 
-  scheduleRecurring(
-    envelope: JobEnvelope,
-    { cron }: RecurringSchedule,
-    routing?: JobRouting,
-  ): void {
+  scheduleRecurring(envelope: DispatchEnvelope, { cron }: RecurringSchedule): void {
     if (this._stopped) {
       return;
     }
+    const { job } = envelope.payload;
     if (!this._processor) {
       throw new errors.IncorrectUsageError({
-        message: `Cannot schedule recurring job "${envelope.type}" before the jobs backend is started.`,
+        message: `Cannot schedule recurring job "${job.type}" before the jobs backend is started.`,
       });
     }
     // First schedule per type wins; a re-registration must not disturb a
     // schedule that is already running (parity with a durable backend).
-    if (this._recurring.has(envelope.type)) {
+    if (this._recurring.has(job.type)) {
       return;
     }
 
@@ -150,12 +149,12 @@ export default class InMemoryJobsBackend extends JobsBackendBase {
       // A throw inside a later timer callback would be an uncaughtException;
       // a recurring tick must never take the process down.
       try {
-        this.enqueue(envelope, routing);
+        this.enqueue(new ObjectID().toHexString(), envelope);
       } catch (err) {
-        logging.error(`Recurring job "${envelope.type}" tick failed to enqueue`, err);
+        logging.error(`Recurring job "${job.type}" tick failed to enqueue`, err);
       }
     }, parsed);
-    this._recurring.set(envelope.type, timer);
+    this._recurring.set(job.type, timer);
   }
 
   private _clearRecurring(type: string): void {
