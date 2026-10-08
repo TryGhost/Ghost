@@ -3,7 +3,7 @@ import { CircleAnimatedIcon, ClearIcon, SearchIcon } from './icons';
 import { Fragment } from 'preact';
 import { isCJK } from '../search-index';
 import { useAppContext } from '../app-context';
-import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'preact/hooks';
 import type { JSX } from 'preact';
 import type { SearchAuthor, SearchPost, SearchTag } from '../search-index';
 
@@ -74,8 +74,10 @@ function useSearchResults() {
 function SearchBox({
   allResults,
   selectedResult,
-  setSelectedResult,
-}: { allResults: SearchResult[] } & SelectionProps) {
+}: {
+  allResults: SearchResult[];
+  selectedResult: string | null;
+}) {
   const { searchValue, setSearchValue, closePopup, inputRef, t } = useAppContext();
   const containerRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -120,22 +122,6 @@ function SearchBox({
         onInput={(e) => {
           setSearchValue(e.currentTarget.value);
         }}
-        onKeyDown={(e) => {
-          // keyCode 229 is the IME composition key for legacy browsers
-          if (e.isComposing || e.keyCode === 229) {
-            return;
-          }
-          const selectedIdx = allResults.findIndex((d) => d.id === selectedResult);
-          if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
-            e.preventDefault();
-            const next = allResults[selectedIdx + (e.key === 'ArrowDown' ? 1 : -1)];
-            if (next) {
-              setSelectedResult(next.id);
-            }
-          } else if (e.key === 'Enter' && allResults[selectedIdx]) {
-            window.location.href = allResults[selectedIdx].url;
-          }
-        }}
       />
       <Loading />
       <CancelButton />
@@ -144,7 +130,7 @@ function SearchBox({
 }
 
 function SearchClearIcon() {
-  const { searchValue = '', setSearchValue, t } = useAppContext();
+  const { searchValue = '', setSearchValue, inputRef, t } = useAppContext();
   if (!searchValue) {
     return <SearchIcon aria-hidden="true" className="text-neutral-900" />;
   }
@@ -155,6 +141,7 @@ function SearchClearIcon() {
       type="button"
       onClick={() => {
         setSearchValue('');
+        inputRef.current?.focus();
       }}
     >
       <ClearIcon
@@ -410,10 +397,9 @@ function ShowMoreButton({ onShowMore }: { onShowMore: () => void }) {
 function PostResults({
   posts,
   hasMore,
-  onShowMore,
   selectedResult,
   setSelectedResult,
-}: { posts: SearchPost[]; hasMore: boolean; onShowMore: () => void } & SelectionProps) {
+}: { posts: SearchPost[]; hasMore: boolean } & SelectionProps) {
   const { t } = useAppContext();
   if (!posts?.length) {
     return null;
@@ -421,7 +407,12 @@ function PostResults({
   return (
     <div
       aria-labelledby="sodo-search-posts-label"
-      className="border-t border-neutral-200 py-3 px-4 sm:px-7"
+      // The Show more button below supplies the bottom spacing when it is shown
+      className={
+        hasMore
+          ? 'border-t border-neutral-200 pt-3 px-4 sm:px-7'
+          : 'border-t border-neutral-200 py-3 px-4 sm:px-7'
+      }
       role="group"
     >
       <div
@@ -434,7 +425,6 @@ function PostResults({
       {posts.map((d) => (
         <PostListItem key={d.title} post={d} {...{ selectedResult, setSelectedResult }} />
       ))}
-      {hasMore && <ShowMoreButton onShowMore={onShowMore} />}
     </div>
   );
 }
@@ -537,29 +527,31 @@ function Results({
   const { t } = useAppContext();
 
   return (
-    <div
-      aria-label={t('Search results')}
-      className="overflow-y-auto max-h-[calc(100vh-172px)] sm:max-h-[70vh] -mt-[1px]"
-      id={RESULTS_ID}
-      role="listbox"
-    >
-      <AuthorResults
-        authors={view.authors}
-        selectedResult={selectedResult}
-        setSelectedResult={setSelectedResult}
-      />
-      <TagResults
-        selectedResult={selectedResult}
-        setSelectedResult={setSelectedResult}
-        tags={view.tags}
-      />
-      <PostResults
-        hasMore={view.hasMorePosts}
-        posts={view.posts}
-        selectedResult={selectedResult}
-        setSelectedResult={setSelectedResult}
-        onShowMore={view.showMorePosts}
-      />
+    <div className="overflow-y-auto max-h-[calc(100vh-172px)] sm:max-h-[70vh] -mt-[1px]">
+      <div aria-label={t('Search results')} id={RESULTS_ID} role="listbox">
+        <AuthorResults
+          authors={view.authors}
+          selectedResult={selectedResult}
+          setSelectedResult={setSelectedResult}
+        />
+        <TagResults
+          selectedResult={selectedResult}
+          setSelectedResult={setSelectedResult}
+          tags={view.tags}
+        />
+        <PostResults
+          hasMore={view.hasMorePosts}
+          posts={view.posts}
+          selectedResult={selectedResult}
+          setSelectedResult={setSelectedResult}
+        />
+      </div>
+      {/* Outside the listbox, which may only contain options */}
+      {view.hasMorePosts && (
+        <div className="px-4 sm:px-7 pb-3">
+          <ShowMoreButton onShowMore={view.showMorePosts} />
+        </div>
+      )}
     </div>
   );
 }
@@ -573,25 +565,24 @@ function NoResultsBox() {
   );
 }
 
-function trapFocus(e: JSX.TargetedKeyboardEvent<HTMLDivElement>) {
-  if (e.key !== 'Tab') {
-    return;
-  }
-  const focusable = [...e.currentTarget.querySelectorAll<HTMLElement>('input, button')].filter(
+function trapFocus(e: KeyboardEvent, dialog: HTMLElement) {
+  const focusable = [...dialog.querySelectorAll<HTMLElement>('input, button')].filter(
     (element) => element.getClientRects().length > 0,
   );
-  const first = focusable[0];
-  const last = focusable[focusable.length - 1];
-  const active = e.currentTarget.ownerDocument.activeElement;
-  if (e.shiftKey ? active === first : active === last) {
+  if (!focusable.length) {
+    return;
+  }
+  const index = focusable.indexOf(dialog.ownerDocument.activeElement as HTMLElement);
+  if (index === -1 || (e.shiftKey ? index === 0 : index === focusable.length - 1)) {
     e.preventDefault();
-    (e.shiftKey ? last : first)?.focus();
+    focusable[e.shiftKey ? focusable.length - 1 : 0].focus();
   }
 }
 
 export function Search() {
-  const { closePopup, searchValue, t } = useAppContext();
+  const { closePopup, indexComplete, searchValue, t } = useAppContext();
   const results = useSearchResults();
+  const dialogRef = useRef<HTMLDivElement>(null);
   const [state, setState] = useState({
     results,
     selectedId: null as string | null,
@@ -619,6 +610,46 @@ export function Search() {
     },
   };
 
+  // On the frame's document, so arrows, Enter and Tab keep working after focus leaves the input
+  useLayoutEffect(() => {
+    const dialog = dialogRef.current;
+    if (!dialog) {
+      return;
+    }
+    const doc = dialog.ownerDocument;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // keyCode 229 is the IME composition key for legacy browsers
+      if (e.isComposing || e.keyCode === 229) {
+        return;
+      }
+      if (e.key === 'Tab') {
+        trapFocus(e, dialog);
+        return;
+      }
+      const target = e.target as HTMLElement;
+      const selectedIdx = visibleResults.findIndex((d) => d.id === selectedResult);
+      if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+        if (target.tagName === 'INPUT') {
+          e.preventDefault();
+        }
+        const next = visibleResults[selectedIdx + (e.key === 'ArrowDown' ? 1 : -1)];
+        if (next) {
+          setSelectedResult(next.id);
+        }
+      } else if (
+        e.key === 'Enter' &&
+        !target.closest?.('a, button') &&
+        visibleResults[selectedIdx]
+      ) {
+        window.location.href = visibleResults[selectedIdx].url;
+      }
+    };
+    doc.addEventListener('keydown', handleKeyDown);
+    return () => {
+      doc.removeEventListener('keydown', handleKeyDown);
+    };
+  });
+
   return (
     <div
       className="h-screen w-screen pt-20 antialiased z-50 relative ghost-display"
@@ -630,17 +661,13 @@ export function Search() {
       }}
     >
       <div
+        ref={dialogRef}
         aria-label={t('Search posts, tags and authors')}
         aria-modal="true"
         className="bg-white w-full max-w-[95vw] sm:max-w-lg rounded-lg shadow-xl m-auto relative translate-z-0 animate-popup"
         role="dialog"
-        onKeyDown={trapFocus}
       >
-        <SearchBox
-          allResults={visibleResults}
-          selectedResult={selectedResult}
-          setSelectedResult={setSelectedResult}
-        />
+        <SearchBox allResults={visibleResults} selectedResult={selectedResult} />
         {visibleResults.length > 0 && (
           <Results
             selectedResult={selectedResult}
@@ -649,7 +676,9 @@ export function Search() {
           />
         )}
         {/* Always rendered, so screen readers announce the message when it appears */}
-        <div role="status">{!visibleResults.length && searchValue && <NoResultsBox />}</div>
+        <div role="status">
+          {indexComplete && !visibleResults.length && searchValue && <NoResultsBox />}
+        </div>
       </div>
     </div>
   );

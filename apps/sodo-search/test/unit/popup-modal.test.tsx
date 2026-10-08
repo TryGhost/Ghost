@@ -1,7 +1,7 @@
 import AppContext from '../../src/app-context';
 import { Search } from '../../src/components/popup-modal';
 import { createRef } from 'preact';
-import { fireEvent, render, screen } from '@testing-library/preact';
+import { fireEvent, render, screen, within } from '@testing-library/preact';
 import type { AppContextType } from '../../src/app-context';
 import type SearchIndex from '../../src/search-index';
 
@@ -20,12 +20,19 @@ const posts = [
   },
 ];
 
-const renderSearch = (results = posts, searchValue = 'post') => {
+const manyPosts = Array.from({ length: 15 }, (_, i) => ({
+  id: `post-${i + 1}`,
+  title: `Post ${i + 1}`,
+  excerpt: '',
+  url: `https://example.com/post-${i + 1}/`,
+}));
+
+const renderSearch = (results = posts, searchValue = 'post', indexComplete = true) => {
   const context: AppContextType = {
     searchIndex: {
       search: () => ({ posts: results, authors: [], tags: [] }),
     } as unknown as SearchIndex,
-    indexComplete: true,
+    indexComplete,
     searchValue,
     setSearchValue: () => {},
     closePopup: () => {},
@@ -73,6 +80,25 @@ describe('Search keyboard navigation', () => {
 
     expect(window.location.href).toBe('https://example.com/');
   });
+
+  test('keeps arrow keys and Enter working after focus leaves the input', () => {
+    const input = renderSearch();
+    const options = screen.getAllByRole('option');
+
+    fireEvent.keyDown(document.body, { key: 'ArrowDown' });
+    expect(input).toHaveAttribute('aria-activedescendant', options[1].id);
+
+    fireEvent.keyDown(document.body, { key: 'Enter' });
+    expect(window.location.href).toBe('https://example.com/second-post/');
+  });
+
+  test('leaves Enter on a button to the button', () => {
+    renderSearch();
+
+    fireEvent.keyDown(screen.getByRole('button', { name: 'Clear search' }), { key: 'Enter' });
+
+    expect(window.location.href).toBe('https://example.com/');
+  });
 });
 
 describe('Search accessibility', () => {
@@ -116,12 +142,6 @@ describe('Search accessibility', () => {
   });
 
   test('keeps keyboard selection within the results that are shown', () => {
-    const manyPosts = Array.from({ length: 15 }, (_, i) => ({
-      id: `post-${i + 1}`,
-      title: `Post ${i + 1}`,
-      excerpt: '',
-      url: `https://example.com/post-${i + 1}/`,
-    }));
     const input = renderSearch(manyPosts);
     const options = screen.getAllByRole('option');
     expect(options).toHaveLength(11);
@@ -132,6 +152,27 @@ describe('Search accessibility', () => {
 
     expect(input).toHaveAttribute('aria-activedescendant', options[10].id);
     expect(options[10]).toHaveAttribute('aria-selected', 'true');
+  });
+
+  test('keeps the Show more button outside the listbox', () => {
+    renderSearch(manyPosts);
+
+    expect(within(screen.getByRole('listbox')).queryByRole('button')).toBeNull();
+    expect(screen.getByRole('button', { name: 'Show more results' })).toBeInTheDocument();
+  });
+
+  test('only says nothing matches once the index has loaded', () => {
+    renderSearch([], 'zzz', false);
+
+    expect(screen.getByRole('status')).toBeEmptyDOMElement();
+  });
+
+  test('returns focus to the input after clearing the query', () => {
+    const input = renderSearch();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Clear search' }));
+
+    expect(input).toHaveFocus();
   });
 
   test('announces when nothing matches', () => {

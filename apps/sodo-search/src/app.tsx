@@ -179,7 +179,7 @@ export default function App({ adminUrl, apiKey, stylesUrl, locale }: AppProps) {
       } catch {
         // Ignore any errors for scroll handling
       }
-      returnFocus.current?.focus();
+      returnFocus.current?.focus({ preventScroll: true });
       returnFocus.current = null;
     };
   }, [showPopup, startIndex]);

@@ -237,6 +237,10 @@ test('keeps Tab focus inside the dialog', async () => {
 
   await userEvent.keyboard('{Shift>}{Tab}{/Shift}');
   expect(doc.activeElement).toBe(showMoreButton);
+
+  (doc.activeElement as HTMLElement).blur();
+  await userEvent.keyboard('{Tab}');
+  expect(doc.activeElement).toBe(clearButton);
 });
 
 test('leaves focus where the user moved it when the search index finishes loading', async () => {
