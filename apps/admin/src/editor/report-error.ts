@@ -37,24 +37,38 @@ export function reportEditorNotice(message: string, context?: EditorErrorContext
   Sentry.captureMessage(message, context);
 }
 
-/** Reports a Lexical failure from any of the editor's Koenig instances. */
-export function reportKoenigError(error: unknown): void {
-  reportEditorError(error, {
-    tags: { lexical: true },
-    contexts: { koenig: { version: loadedKoenigVersion() } },
-  });
+/** The post editor's visible Koenig instance, or the hidden one its change baseline comes from. */
+export type KoenigInstanceRole = 'primary' | 'secondary';
+
+export interface KoenigErrorReporters {
+  onError: (error: unknown) => void;
+  onRenderError: (error: unknown, info: ErrorInfo) => void;
 }
 
-/** Reports a Koenig instance that crashed its error boundary, with where in the tree. */
-export function reportKoenigRenderError(error: unknown, info: ErrorInfo): void {
-  reportEditorError(error, {
-    tags: { lexical: true },
-    contexts: {
-      koenig: { version: loadedKoenigVersion() },
-      react: { componentStack: info.componentStack },
-    },
+/**
+ * Reports Lexical failures from a Koenig instance, tagged with its role when it has one.
+ * The role is bound here because Lexical passes its editor as onError's second argument.
+ */
+export function koenigErrorReporters(instance?: KoenigInstanceRole): KoenigErrorReporters {
+  const context = (contexts?: EditorErrorContext['contexts']): EditorErrorContext => ({
+    tags: definedTags({ lexical: true, koenig_instance: instance }),
+    contexts: { koenig: { version: loadedKoenigVersion() }, ...contexts },
   });
+
+  return {
+    onError: (error) => reportEditorError(error, context()),
+    onRenderError: (error, info) =>
+      reportEditorError(error, context({ react: { componentStack: info.componentStack } })),
+  };
 }
+
+const anyKoenigInstance = koenigErrorReporters();
+
+/** Reports a Lexical failure from any of the editor's Koenig instances. */
+export const reportKoenigError = anyKoenigInstance.onError;
+
+/** Reports a Koenig instance that crashed its error boundary, with where in the tree. */
+export const reportKoenigRenderError = anyKoenigInstance.onRenderError;
 
 function definedTags(tags: Record<string, TagValue | undefined>): Record<string, TagValue> {
   return Object.fromEntries(

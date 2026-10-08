@@ -12,6 +12,7 @@ import type { EditorSaveFailure } from '@/editor/session/editor-session';
 import { body, record, sessionHarness } from '@/editor/session/__test-utils__/session-harness';
 import { preloadKoenig } from '@/settings/components/koenig-loader';
 import {
+  koenigErrorReporters,
   reportEditorError,
   reportEditorNotice,
   reportKoenigError,
@@ -140,6 +141,47 @@ describe('reportKoenigRenderError', () => {
         react: { componentStack: '\n    at KoenigComposer' },
       },
     });
+  });
+});
+
+describe('koenigErrorReporters', () => {
+  it.each(['primary', 'secondary'] as const)(
+    'tags a Lexical failure in the %s instance with its role',
+    async (instance) => {
+      await preloadKoenig();
+      const error = new Error('lexical exploded');
+
+      koenigErrorReporters(instance).onError(error);
+
+      expect(Sentry.captureException).toHaveBeenCalledWith(error, {
+        tags: { lexical: true, koenig_instance: instance },
+        contexts: { koenig: { version: '1.2.3' } },
+      });
+    },
+  );
+
+  it('tags a boundary crash with the instance role and where in the tree', async () => {
+    await preloadKoenig();
+    const error = new Error('render exploded');
+
+    koenigErrorReporters('secondary').onRenderError(error, {
+      componentStack: '\n    at KoenigComposer',
+    });
+
+    expect(Sentry.captureException).toHaveBeenCalledWith(error, {
+      tags: { lexical: true, koenig_instance: 'secondary' },
+      contexts: {
+        koenig: { version: '1.2.3' },
+        react: { componentStack: '\n    at KoenigComposer' },
+      },
+    });
+  });
+
+  it('reports without a role for a Koenig instance outside the post body', () => {
+    reportKoenigError(new Error('caption exploded'));
+
+    const context = vi.mocked(Sentry.captureException).mock.calls[0][1] as { tags: object };
+    expect(context.tags).toStrictEqual({ lexical: true });
   });
 });
 
