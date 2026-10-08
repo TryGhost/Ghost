@@ -36,3 +36,10 @@ export const CurrentInstallationRow = z.object({
 });
 
 export type CurrentInstallation = z.output<typeof CurrentInstallationRow>;
+
+/** What tells a manifest waiting for approval apart from the one just reviewed. */
+export const PendingManifestRow = DbAppInstallationManifest.pick({
+  id: true,
+  manifest_url: true,
+  digest: true,
+});

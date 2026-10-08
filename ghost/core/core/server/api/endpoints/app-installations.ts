@@ -1,5 +1,6 @@
 import type { Controller, Frame } from '@tryghost/api-framework';
 import errors from '@tryghost/errors';
+import { z } from 'zod';
 import { actingContext, service } from '../../services/app-installations';
 
 interface InstallationOptions {
@@ -18,30 +19,32 @@ type WriteFrame = Frame<{
 }>;
 
 /**
- * What a publisher confirms: the manifest URL they reviewed and the digest of the manifest
- * they were shown. The manifest itself never comes from the browser.
+ * What a publisher confirms: the manifest URL they reviewed and the digest of what they
+ * were shown. The manifest itself never comes from the browser.
  */
+const ReviewedManifest = z.object({ manifest_url: z.string(), digest: z.string() });
+
+/** What approving confirms on top: the revision of the installation the review was shown against. */
+const ReviewedRevision = z.object({ revision: z.number().int().nonnegative() });
+
 function reviewed(frame: WriteFrame): { manifestUrl: string; digest: string } {
-  const [input] = frame.data.app_installations;
-  const manifestUrl = input?.manifest_url;
-  const digest = input?.digest;
-  if (typeof manifestUrl !== 'string' || typeof digest !== 'string') {
+  const parsed = ReviewedManifest.safeParse(frame.data.app_installations[0]);
+  if (!parsed.success) {
     throw new errors.ValidationError({
       message: 'Expected the manifest_url and digest of the reviewed manifest.',
     });
   }
-  return { manifestUrl, digest };
+  return { manifestUrl: parsed.data.manifest_url, digest: parsed.data.digest };
 }
 
-/** What approving confirms on top: the revision of the installation the review was shown against. */
 function reviewedChange(frame: WriteFrame) {
-  const revision = frame.data.app_installations[0]?.revision;
-  if (typeof revision !== 'number' || !Number.isInteger(revision) || revision < 0) {
+  const parsed = ReviewedRevision.safeParse(frame.data.app_installations[0]);
+  if (!parsed.success) {
     throw new errors.ValidationError({
       message: 'Expected the revision of the installation that was reviewed.',
     });
   }
-  return { ...reviewed(frame), revision };
+  return { ...reviewed(frame), revision: parsed.data.revision };
 }
 
 const noCacheInvalidation = { cacheInvalidate: false };

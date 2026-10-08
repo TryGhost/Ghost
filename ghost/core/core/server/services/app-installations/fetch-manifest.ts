@@ -21,7 +21,14 @@ export type FetchManifest = (manifestUrl: string) => Promise<FetchedManifest>;
 
 /** The HTTP status the app answered with, if it answered at all. */
 function statusOf(err: unknown): number | undefined {
-  return (err as { response?: { statusCode?: number } } | null)?.response?.statusCode;
+  if (typeof err !== 'object' || err === null || !('response' in err)) {
+    return undefined;
+  }
+  const { response } = err;
+  if (typeof response !== 'object' || response === null || !('statusCode' in response)) {
+    return undefined;
+  }
+  return typeof response.statusCode === 'number' ? response.statusCode : undefined;
 }
 
 // Says only that the app answered with an error, never why a request failed otherwise, so
