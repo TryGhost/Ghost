@@ -60,10 +60,6 @@ export class AutomationsService {
      * The in-memory timer can be more precise than the scheduler, and
      * avoids reliance on an external service. The scheduler will wake up
      * the server if it's stopped.
-     *
-     * (In an upcoming change (NY-1396), we plan to make the scheduler less
-     * precise to reduce load--that will make the in-memory timer more
-     * useful, but it's still useful now.)
      */
     const enqueuePollAt = async (date: Readonly<Date>): Promise<void> => {
       const isRequestedDateInTheFuture = new Date() < date;
