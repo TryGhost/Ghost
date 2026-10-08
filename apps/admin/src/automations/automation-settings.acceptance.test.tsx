@@ -80,53 +80,30 @@ describe('Automation settings', () => {
     await expect.element(page.getByRole('button', { name: 'Save', exact: true })).toBeDisabled();
   });
 
-  it.each([
-    { performance: false, settings: false },
-    { performance: false, settings: true },
-    { performance: true, settings: false },
-    { performance: true, settings: true },
-  ])(
-    'gates sidebar tabs (Performance: $performance, Settings: $settings)',
-    async ({ performance, settings }) => {
-      const { counts, list } = setup();
+  it.each([false, true])(
+    'gates the Settings tab while retaining Performance (settings: %s)',
+    async (settings) => {
+      setup();
       await renderAdminApp('/automations/first', {
         ...flags,
-        labs: { ...flags.labs, automationRunAnalytics: performance, automationsPerTier: settings },
+        labs: { ...flags.labs, automationsPerTier: settings },
       });
       await expect.element(page.getByTestId('automation-canvas')).toBeVisible();
       const toggle = page.getByRole('button', { name: 'Show automation sidebar' });
-      if (!performance && !settings) {
-        await expect.element(toggle).not.toBeInTheDocument();
-        await expect
-          .element(page.getByRole('tablist', { name: 'Automation sidebar' }))
-          .not.toBeInTheDocument();
+      await toggle.click();
+      await expect
+        .element(page.getByRole('tab', { name: 'Performance' }))
+        .toHaveAttribute('aria-selected', 'true');
+      if (settings) {
+        await page.getByRole('tab', { name: 'Settings' }).click();
+        await expect.element(nameField()).toBeVisible();
+        await expect.element(descriptionField()).toBeVisible();
       } else {
-        await toggle.click();
-        await expect
-          .element(page.getByRole('tab', { name: performance ? 'Performance' : 'Settings' }))
-          .toHaveAttribute('aria-selected', 'true');
-        if (performance) {
-          await expect.element(page.getByRole('tab', { name: 'Performance' })).toBeVisible();
-        } else {
-          await expect
-            .element(page.getByRole('tab', { name: 'Performance' }))
-            .not.toBeInTheDocument();
-        }
-        if (settings) {
-          await page.getByRole('tab', { name: 'Settings' }).click();
-          await expect.element(nameField()).toBeVisible();
-          await expect.element(descriptionField()).toBeVisible();
-        } else {
-          await expect.element(page.getByRole('tab', { name: 'Settings' })).not.toBeInTheDocument();
-          await expect.element(nameField()).not.toBeInTheDocument();
-        }
-        await page.getByRole('button', { name: 'Hide automation sidebar' }).click();
-        await expect.element(toggle).toBeVisible();
+        await expect.element(page.getByRole('tab', { name: 'Settings' })).not.toBeInTheDocument();
+        await expect.element(nameField()).not.toBeInTheDocument();
       }
-      if (!performance) {
-        expect(counts.requests).toHaveLength(0);
-        expect(list.requests).toHaveLength(0);
-      }
+      await page.getByRole('button', { name: 'Hide automation sidebar' }).click();
+      await expect.element(toggle).toBeVisible();
     },
   );
 });

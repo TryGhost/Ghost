@@ -83,15 +83,6 @@ const serve = () => {
 };
 
 describe('Editable email cards', () => {
-  it('keeps the existing editor when run analytics is off', async () => {
-    serve();
-    await renderAdminApp('/automations/first', { labs: { automations: true } });
-    await expect.element(page.getByRole('button', { name: 'Send email: Welcome' })).toBeVisible();
-    await expect(emailCards()).toHaveCount(0);
-    await page.getByRole('button', { name: 'Send email: Welcome' }).click();
-    await expect.element(page.getByPlaceholder('Subject line')).toHaveValue('Welcome');
-  });
-
   it('uses the three-dot menu instead of right-click actions', async () => {
     const save = serve();
     await renderAdminApp('/automations/first', flags);

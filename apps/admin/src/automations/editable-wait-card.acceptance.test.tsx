@@ -25,15 +25,6 @@ const serve = (status: AutomationDetail['status'] = 'inactive') => {
 const waits = () => editingCanvas().getByRole('article', { name: /^Wait:/ });
 
 describe('Inline wait editing', () => {
-  it('keeps legacy sidebar editing when the flag is off', async () => {
-    serve();
-    await renderAdminApp('/automations/first', { labs: { automations: true } });
-    await page.getByRole('button', { name: 'Wait: 1 day' }).click();
-    await page.getByRole('textbox', { name: 'Wait for' }).fill('2');
-    await expect.element(page.getByRole('button', { name: 'Wait: 2 days' })).toBeVisible();
-    await expect(waits()).toHaveCount(0);
-  });
-
   it('edits independent wait cards and persists whole days as hours', async () => {
     const save = serve();
     await renderAdminApp('/automations/first', flags);

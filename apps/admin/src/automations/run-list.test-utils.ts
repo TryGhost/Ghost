@@ -16,7 +16,6 @@ export const flags = {
   boot: performanceBoot,
   labs: {
     automations: true,
-    automationRunAnalytics: true,
     automationsPerTier: true,
   },
 };

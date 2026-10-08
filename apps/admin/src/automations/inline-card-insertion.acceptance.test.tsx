@@ -72,25 +72,6 @@ describe('Inline card insertion', () => {
         expect(save.requests).toHaveLength(0);
       });
     }
-
-    it(`retains the settings sidebar when adding ${type} with the flag off`, async () => {
-      setup();
-      await renderAdminApp('/automations/first', { labs: { automations: true } });
-      await page.getByRole('button', { name: 'Add step', exact: true }).click();
-      await page
-        .getByTestId('step-picker')
-        .getByRole('button', { name: new RegExp(`^${type}`) })
-        .click();
-      const sidebar = page.getByRole('complementary', { name: 'Step details' });
-      await expect.element(sidebar).toBeVisible();
-      await expect
-        .element(
-          type === 'Email'
-            ? sidebar.getByPlaceholder('Subject line')
-            : sidebar.getByRole('textbox', { name: 'Wait for' }),
-        )
-        .toBeVisible();
-    });
   }
 
   it('dismisses the step picker when pressing the canvas', async () => {
