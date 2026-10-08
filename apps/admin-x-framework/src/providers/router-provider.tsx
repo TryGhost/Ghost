@@ -167,31 +167,54 @@ export interface NavigateOptions extends ReactRouterNavigateOptions {
 /**
  * Decides whether an in-router navigation to `pathname` (absolute, without the
  * router's basename) runs as a view transition. Apps provide one with
- * ViewTransitionResolverProvider; without one, navigations never transition.
+ * ViewTransitionControllerProvider; without one, navigations never transition.
  */
-export type ViewTransitionResolver = (pathname: string) => boolean;
+export interface ViewTransitionController {
+  shouldTransition: (pathname: string) => boolean;
+  /**
+   * Runs before a transitioning navigation, which waits for the promise and is
+   * dropped when it resolves false. Returning nothing navigates at once.
+   */
+  beforeTransition?: (pathname: string) => Promise<boolean> | undefined;
+}
 
-const ViewTransitionResolverContext = React.createContext<ViewTransitionResolver>(() => false);
+const ViewTransitionControllerContext = React.createContext<ViewTransitionController>({
+  shouldTransition: () => false,
+});
 
-export const ViewTransitionResolverProvider = ViewTransitionResolverContext.Provider;
+export const ViewTransitionControllerProvider = ViewTransitionControllerContext.Provider;
 
 const ABSOLUTE_URL = /^(?:[a-z][a-z\d+.-]*:|\/\/)/i;
+
+/** Runs `navigate` after the controller's `beforeTransition`, when it has one. */
+function navigateAfterTransitionStart(
+  controller: ViewTransitionController,
+  pathname: string,
+  navigate: () => void,
+): void {
+  const ready = controller.beforeTransition?.(pathname);
+  if (!ready) {
+    navigate();
+    return;
+  }
+  void ready.then((proceed) => {
+    if (proceed) {
+      navigate();
+    }
+  });
+}
 
 export function useNavigate() {
   const navigate = useReactRouterNavigate();
   const { externalNavigate } = useFramework();
-  const resolveViewTransition = useContext(ViewTransitionResolverContext);
+  const controller = useContext(ViewTransitionControllerContext);
   const routePathname = useResolvedPath('.').pathname;
   const locationPathname = useLocation().pathname;
 
   // Read at call time so the returned function keeps its identity across navigations
-  const viewTransitionFor = useRef<(to: string, relative?: RelativeRoutingType) => boolean>(
-    () => false,
-  );
-  viewTransitionFor.current = (to, relative) =>
-    resolveViewTransition(
-      resolvePath(to, relative === 'path' ? locationPathname : routePathname).pathname,
-    );
+  const pathnameFor = useRef<(to: string, relative?: RelativeRoutingType) => string>((to) => to);
+  pathnameFor.current = (to, relative) =>
+    resolvePath(to, relative === 'path' ? locationPathname : routePathname).pathname;
 
   return useCallback(
     (to: string | number, options?: NavigateOptions) => {
@@ -205,36 +228,70 @@ export function useNavigate() {
         return;
       }
 
-      if (
-        options?.viewTransition === undefined &&
-        viewTransitionFor.current(to, options?.relative)
-      ) {
-        navigate(to, { ...options, viewTransition: true });
+      const pathname = pathnameFor.current(to, options?.relative);
+      if (options?.viewTransition === undefined && controller.shouldTransition(pathname)) {
+        navigateAfterTransitionStart(controller, pathname, () =>
+          navigate(to, { ...options, viewTransition: true }),
+        );
         return;
       }
 
       navigate(to, options);
     },
-    [navigate, externalNavigate],
+    [controller, navigate, externalNavigate],
+  );
+}
+
+function isPlainLeftClick(event: React.MouseEvent<HTMLAnchorElement>, target?: string): boolean {
+  return (
+    event.button === 0 &&
+    (!target || target === '_self') &&
+    !(event.metaKey || event.altKey || event.ctrlKey || event.shiftKey)
   );
 }
 
 /**
  * React Router's Link, which also runs as a view transition when the app's
- * ViewTransitionResolver asks for one and the caller has not set it.
+ * ViewTransitionController asks for one and the caller has not set it.
  */
 export const Link = React.forwardRef<HTMLAnchorElement, LinkProps>(function Link(
-  { viewTransition, ...props },
+  { viewTransition, onClick, ...props },
   ref,
 ) {
-  const resolveViewTransition = useContext(ViewTransitionResolverContext);
+  const controller = useContext(ViewTransitionControllerContext);
+  const navigate = useReactRouterNavigate();
   const { pathname } = useResolvedPath(props.to, { relative: props.relative });
   const isAbsoluteUrl = typeof props.to === 'string' && ABSOLUTE_URL.test(props.to);
-  const resolvedViewTransition =
-    viewTransition ?? (!isAbsoluteUrl && !props.reloadDocument && resolveViewTransition(pathname));
+  const transitions =
+    viewTransition ??
+    (!isAbsoluteUrl && !props.reloadDocument && controller.shouldTransition(pathname));
+
+  const handleClick = (event: React.MouseEvent<HTMLAnchorElement>) => {
+    onClick?.(event);
+    if (
+      !transitions ||
+      viewTransition !== undefined ||
+      !controller.beforeTransition ||
+      event.defaultPrevented ||
+      !isPlainLeftClick(event, props.target)
+    ) {
+      return;
+    }
+    // Take the click from React Router's own handler so the navigation can wait
+    event.preventDefault();
+    const { to, replace, state, preventScrollReset, relative } = props;
+    navigateAfterTransitionStart(controller, pathname, () =>
+      navigate(to, { replace, state, preventScrollReset, relative, viewTransition: true }),
+    );
+  };
 
   return (
-    <ReactRouterLink ref={ref} {...props} viewTransition={resolvedViewTransition || undefined} />
+    <ReactRouterLink
+      ref={ref}
+      {...props}
+      viewTransition={transitions || undefined}
+      onClick={handleClick}
+    />
   );
 });
 

@@ -88,12 +88,12 @@ export type AdminRouteHandle = {
   screenTransition?: boolean;
   settingsSidebar?: boolean;
 };
-export type { ViewTransitionResolver } from './providers/router-provider';
+export type { ViewTransitionController } from './providers/router-provider';
 export {
   Link,
   RouterProvider,
   useNavigate,
-  ViewTransitionResolverProvider,
+  ViewTransitionControllerProvider,
   useRouteHasParams,
   resetScrollPosition,
   ScrollRestoration,

@@ -43,8 +43,18 @@ import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
 import { usePostsFilterState } from './hooks/use-posts-filter-state';
 import { getPostListReturnUrl, rememberStickyPostFilters } from './posts-sticky-filters';
 import { syncEmberPostListQueryParams } from '@/ember-bridge';
-import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import {
+  lazy,
+  startTransition,
+  Suspense,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { useLocation } from '@tryghost/admin-x-framework';
+import { isReturningFromScreen } from '@/layout/screen-transition';
 import { usePostAnalyticsCounts } from './hooks/use-post-analytics-counts';
 import { usePostsList } from './hooks/use-posts-list';
 
@@ -134,8 +144,25 @@ export function PostsListScreen({ resource }: { resource: PostResource }) {
   const isRestrictedAuthor = Boolean(currentUser && isAuthorOrContributor(currentUser));
   const ownAuthorSlug = currentUser && isRestrictedAuthor ? currentUser.slug : null;
 
-  const { items, isLoading, isError, hasNextPage, isFetchingNextPage, fetchNextPage, totalItems } =
-    usePostsList({ resource, params, context: { ownAuthorSlug } });
+  const {
+    items,
+    isLoading: isListLoading,
+    isError,
+    hasNextPage,
+    isFetchingNextPage,
+    fetchNextPage,
+    totalItems,
+  } = usePostsList({ resource, params, context: { ownAuthorSlug } });
+
+  // Returning from the editor, the first frame is just the header and a spinner so
+  // the screen transition doesn't wait on every row; they render right after.
+  const [rowsReady, setRowsReady] = useState(() => !isReturningFromScreen());
+  useEffect(() => {
+    if (!rowsReady) {
+      startTransition(() => setRowsReady(true));
+    }
+  }, [rowsReady]);
+  const isLoading = isListLoading || !rowsReady;
 
   useScrollRestoration({ parentRef: listRef, isLoading, resetOnNavigation: true });
 

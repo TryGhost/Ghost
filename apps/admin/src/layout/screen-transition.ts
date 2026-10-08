@@ -46,3 +46,12 @@ export function shouldRunScreenTransition({
 
   return settingsSidebarEnabled || !(fromSurface?.settingsSidebar || toSurface?.settingsSidebar);
 }
+
+/**
+ * Whether the current navigation is a screen transition leaving a full-screen
+ * surface. The screen it returns to can render a cheap first frame and fill in
+ * after, since the view transition waits on its first render.
+ */
+export function isReturningFromScreen(): boolean {
+  return document.documentElement.dataset.screenTransition === 'return';
+}

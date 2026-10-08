@@ -460,7 +460,7 @@ body.react-admin [data-test-table='members'] tr {
 }
 
 ::view-transition-new(admin-sidebar):only-child {
-  animation: screen-transition-sidebar-in 200ms var(--ease-standard) 200ms both;
+  animation: screen-transition-sidebar-in 250ms var(--ease-standard) 50ms both;
 }
 
 ::view-transition-old(admin-mobile-nav):only-child {
@@ -469,6 +469,67 @@ body.react-admin [data-test-table='members'] tr {
 
 ::view-transition-new(admin-mobile-nav):only-child {
   animation: screen-transition-mobile-nav-in 200ms var(--ease-standard) 200ms both;
+}
+
+/* Most transitions fade the old screen out on the live page before navigating
+   (ScreenTransitionProvider), so a slow render of the next screen happens while
+   nothing is visible. The view transition then only reveals the new screen. */
+html[data-screen-exit] .screen-exit-content {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 200ms var(--ease-standard);
+}
+
+html[data-screen-exit='hide-sidebar'] .screen-exit-sidebar {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(-100px);
+  transition:
+    opacity 200ms var(--ease-standard),
+    transform 200ms var(--ease-standard);
+}
+
+html[data-screen-exit='hide-sidebar'] .screen-exit-mobile-nav {
+  transform: translateY(100%);
+  transition: transform 200ms var(--ease-standard);
+}
+
+html[data-screen-transition='after-exit']::view-transition-old(root) {
+  animation: none;
+}
+
+html[data-screen-transition='after-exit']::view-transition-old(admin-sidebar),
+html[data-screen-transition='after-exit']::view-transition-old(admin-mobile-nav) {
+  display: none;
+}
+
+html[data-screen-transition='after-exit']::view-transition-new(root) {
+  animation: screen-transition-fade-in 200ms var(--ease-standard) both;
+  mix-blend-mode: normal;
+}
+
+html[data-screen-transition='after-exit']::view-transition-new(admin-sidebar):only-child {
+  animation: screen-transition-sidebar-in 250ms var(--ease-standard) both;
+}
+
+html[data-screen-transition='after-exit']::view-transition-new(admin-mobile-nav):only-child {
+  animation: screen-transition-mobile-nav-in 200ms var(--ease-standard) both;
+}
+
+html[data-screen-transition='return']::view-transition-old(root) {
+  animation: screen-transition-fade-out 150ms var(--ease-standard) both;
+}
+
+html[data-screen-transition='return']::view-transition-new(root) {
+  animation: screen-transition-fade-in 150ms var(--ease-standard) both;
+}
+
+html[data-screen-transition='return']::view-transition-new(admin-sidebar):only-child {
+  animation: screen-transition-sidebar-in 250ms var(--ease-standard) both;
+}
+
+html[data-screen-transition='return']::view-transition-new(admin-mobile-nav):only-child {
+  animation: screen-transition-mobile-nav-in 200ms var(--ease-standard) both;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -499,13 +560,15 @@ body.react-admin [data-test-table='members'] tr {
 
 @keyframes screen-transition-sidebar-out {
   to {
-    transform: translateX(-100%);
+    opacity: 0;
+    transform: translateX(-100px);
   }
 }
 
 @keyframes screen-transition-sidebar-in {
   from {
-    transform: translateX(-100%);
+    opacity: 0;
+    transform: translateX(-100px);
   }
 }
 

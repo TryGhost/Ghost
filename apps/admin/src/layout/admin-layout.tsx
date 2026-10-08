@@ -55,7 +55,8 @@ const pageChromeClassName = [
 
 const SIDEBAR_PANEL_CLASS_NAME = '[&>[data-sidebar=sidebar]]:relative';
 // Lands on the desktop panel only; the mobile sidebar is a sheet that ignores it.
-const SIDEBAR_SCREEN_TRANSITION_CLASS_NAME = '[view-transition-name:admin-sidebar]';
+const SIDEBAR_SCREEN_TRANSITION_CLASS_NAME =
+  'screen-exit-sidebar [view-transition-name:admin-sidebar]';
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -165,6 +166,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
               'flex-1 focus:outline-hidden',
               sidebarVisible ? pageChromeClassName : 'min-h-0',
               isSettingsRoute && 'min-h-0',
+              screenTransitions && 'screen-exit-content',
             )}
           >
             <ActivityPubHostLayoutProvider value={sidebarVisible ? networkPageChrome : undefined}>
