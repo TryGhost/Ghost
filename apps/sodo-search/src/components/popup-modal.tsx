@@ -530,18 +530,6 @@ type ResultsView = {
   showMorePosts: () => void;
 };
 
-function SearchResultBox({ view, ...selection }: { view: ResultsView } & SelectionProps) {
-  const { searchValue } = useAppContext();
-
-  if (view.authors.length || view.tags.length || view.posts.length) {
-    return <Results view={view} {...selection} />;
-  } else if (searchValue) {
-    return <NoResultsBox />;
-  }
-
-  return null;
-}
-
 function Results({
   view,
   selectedResult,
@@ -603,7 +591,7 @@ function trapFocus(e: JSX.TargetedKeyboardEvent<HTMLDivElement>) {
 }
 
 export function Search() {
-  const { closePopup, t } = useAppContext();
+  const { closePopup, searchValue, t } = useAppContext();
   const results = useSearchResults();
   const [state, setState] = useState({
     results,
@@ -654,11 +642,15 @@ export function Search() {
           selectedResult={selectedResult}
           setSelectedResult={setSelectedResult}
         />
-        <SearchResultBox
-          selectedResult={selectedResult}
-          setSelectedResult={setSelectedResult}
-          view={view}
-        />
+        {visibleResults.length > 0 && (
+          <Results
+            selectedResult={selectedResult}
+            setSelectedResult={setSelectedResult}
+            view={view}
+          />
+        )}
+        {/* Always rendered, so screen readers announce the message when it appears */}
+        <div role="status">{!visibleResults.length && searchValue && <NoResultsBox />}</div>
       </div>
     </div>
   );
@@ -675,7 +667,7 @@ function FrameHead({ stylesUrl }: { stylesUrl?: string }) {
 }
 
 export default function PopupModal() {
-  const { closePopup, dir, stylesUrl } = useAppContext();
+  const { closePopup, dir, stylesUrl, t } = useAppContext();
 
   return (
     <div className="gh-root-frame" style={MODAL_CONTAINER_STYLE}>
@@ -683,7 +675,7 @@ export default function PopupModal() {
         dir={dir}
         head={<FrameHead stylesUrl={stylesUrl} />}
         style={FRAME_STYLE}
-        title="portal-popup"
+        title={t('Search posts, tags and authors')}
       >
         <div
           className="absolute top-0 bottom-0 left-0 right-0 block backdrop-blur-[2px] animate-fadein z-0 bg-gradient-to-br from-[rgba(0,0,0,0.2)] to-[rgba(0,0,0,0.1)]"

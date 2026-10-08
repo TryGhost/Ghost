@@ -125,6 +125,9 @@ test('opens from a [data-ghost-search] trigger with the input focused and page s
   const doc = await openFromTrigger();
 
   expect(document.body.style.overflow).toBe('hidden');
+  expect(document.querySelector('.gh-root-frame iframe')!.getAttribute('title')).toBe(
+    'Search posts, tags and authors',
+  );
   expect(doc.documentElement.getAttribute('dir')).toBe('ltr');
   expect(doc.querySelector('input')!.placeholder).toBe('Search posts, tags and authors');
 });

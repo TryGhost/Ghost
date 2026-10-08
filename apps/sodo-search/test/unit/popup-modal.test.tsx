@@ -20,13 +20,13 @@ const posts = [
   },
 ];
 
-const renderSearch = (results = posts) => {
+const renderSearch = (results = posts, searchValue = 'post') => {
   const context: AppContextType = {
     searchIndex: {
       search: () => ({ posts: results, authors: [], tags: [] }),
     } as unknown as SearchIndex,
     indexComplete: true,
-    searchValue: 'post',
+    searchValue,
     setSearchValue: () => {},
     closePopup: () => {},
     inputRef: createRef(),
@@ -132,6 +132,14 @@ describe('Search accessibility', () => {
 
     expect(input).toHaveAttribute('aria-activedescendant', options[10].id);
     expect(options[10]).toHaveAttribute('aria-selected', 'true');
+  });
+
+  test('announces when nothing matches', () => {
+    renderSearch([], 'zzz');
+
+    expect(screen.getByRole('status')).toHaveTextContent('No matches found');
+    expect(screen.queryByRole('listbox')).toBeNull();
+    expect(screen.getByRole('combobox')).toHaveAttribute('aria-expanded', 'false');
   });
 
   test('names the icon-only clear button', () => {
