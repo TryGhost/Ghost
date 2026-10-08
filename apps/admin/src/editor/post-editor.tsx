@@ -17,7 +17,7 @@ import {
   buttonVariants,
 } from '@tryghost/shade/components';
 import { LucideIcon, cn, formatNumber } from '@tryghost/shade/utils';
-import { useEditorChromeEntrance } from './chrome-entrance';
+import { useScreenEntrance } from '@/layout/screen-transition';
 import { useFocusContext } from '@tryghost/shade/app';
 import { focusKoenigEditorOnBottomClick } from '@tryghost/admin-x-framework';
 import {
@@ -208,7 +208,7 @@ export function PostEditor({
   const editorApiRef = useRef<KoenigInstance | null>(null);
   const skipFocusEditorRef = useRef(false);
   const [wordCount, setWordCount] = useState(0);
-  const chromeEntrance = useEditorChromeEntrance();
+  const chromeEntrance = useScreenEntrance();
   const [bodyTkCount, setBodyTkCount] = useState(0);
   const [featureImageTkCount, setFeatureImageTkCount] = useState(0);
 

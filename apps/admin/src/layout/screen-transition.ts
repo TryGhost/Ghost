@@ -1,3 +1,4 @@
+import { createContext, useContext } from 'react';
 import type { AdminRouteHandle } from '@tryghost/admin-x-framework';
 
 function isScreenTransitionHandle(handle: unknown): handle is AdminRouteHandle {
@@ -59,4 +60,14 @@ export function isReturningFromScreen(): boolean {
 /** Whether the current navigation is a screen transition entering a full-screen surface. */
 export function isEnteringScreen(): boolean {
   return document.documentElement.dataset.screenTransition === 'after-exit';
+}
+
+/**
+ * Whether the screen around it opened through a screen transition, so its chrome
+ * can animate in as it first renders. Set by ScreenEntranceProvider.
+ */
+export const ScreenEntranceContext = createContext(false);
+
+export function useScreenEntrance(): boolean {
+  return useContext(ScreenEntranceContext);
 }

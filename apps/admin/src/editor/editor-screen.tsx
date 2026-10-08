@@ -47,8 +47,8 @@ import {
 import { EditorHeaderActions, type OpenFlow } from './editor-header-actions';
 import { readEditorReturn } from './editor-return';
 import { EditorLoading } from './editor-loading';
-import { EditorChromeEntranceContext, useEditorChromeEntrance } from './chrome-entrance';
-import { isEnteringScreen } from '@/layout/screen-transition';
+import { ScreenEntranceProvider } from '@/layout/screen-entrance-provider';
+import { useScreenEntrance } from '@/layout/screen-transition';
 import { EditorStatus } from './editor-status';
 import { EmailSizeWarning } from './email-size-warning';
 import { PostEditor, type PostEditorHandle } from './post-editor';
@@ -182,7 +182,7 @@ function EditorContent({
     currentUserId: currentUser?.id,
   });
   const [tkCount, setTkCount] = useState(0);
-  const chromeEntrance = useEditorChromeEntrance();
+  const chromeEntrance = useScreenEntrance();
   const [openFlow, setOpenFlow] = useState<OpenFlow>('none');
   const openPublishFlow = useCallback(() => setOpenFlow('publish'), []);
   const openUpdateFlow = useCallback(() => setOpenFlow('update'), []);
@@ -771,16 +771,6 @@ function EditorLoader({ postType, id }: { postType: PostType; id?: string }) {
   return <EditorSurface postType={postType} record={record} />;
 }
 
-/** Latches, per session, whether the editor opened through a screen transition. */
-function EditorChromeEntrance({ children }: { children: ReactNode }) {
-  const [entering] = useState(isEnteringScreen);
-  return (
-    <EditorChromeEntranceContext.Provider value={entering}>
-      {children}
-    </EditorChromeEntranceContext.Provider>
-  );
-}
-
 export default function EditorScreen() {
   const editorPath = useParams()['*'] ?? '';
   const { key: sessionKey, markCreated } = useEditorScreenSessionKey();
@@ -797,9 +787,9 @@ export default function EditorScreen() {
   return (
     <EditorSessionKeyProvider value={sessionKey}>
       <EditorSessionCreatedProvider value={markCreated}>
-        <EditorChromeEntrance key={sessionKey}>
+        <ScreenEntranceProvider key={sessionKey}>
           <EditorLoader id={id} postType={typeSegment} />
-        </EditorChromeEntrance>
+        </ScreenEntranceProvider>
       </EditorSessionCreatedProvider>
     </EditorSessionKeyProvider>
   );
