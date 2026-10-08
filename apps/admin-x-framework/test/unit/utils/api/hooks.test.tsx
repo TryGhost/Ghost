@@ -2,6 +2,7 @@ import { InfiniteData, QueryClient, QueryClientProvider } from '@tanstack/react-
 import { act, renderHook, waitFor } from '@testing-library/react';
 import React, { ReactNode } from 'react';
 import { FrameworkProvider } from '../../../../src/providers/framework-provider';
+import { renderHookWithProviders } from '../../../../src/test/test-utils';
 import {
   createInfiniteQuery,
   createMutation,
@@ -651,25 +652,6 @@ describe('API hooks', () => {
           queryClient.setQueryData(['NarrowedDataType', 'index'], { test: 2 });
 
           const onInvalidate = vi.fn();
-          const spyWrapper: React.FC<{ children: ReactNode }> = ({ children }) => (
-            <FrameworkProvider
-              externalNavigate={() => {}}
-              ghostVersion="5.x"
-              unsplashConfig={{
-                Authorization: '',
-                'Accept-Version': '',
-                'Content-Type': '',
-                'App-Pragma': '',
-                'X-Unsplash-Cache': true,
-              }}
-              onDelete={() => {}}
-              onInvalidate={onInvalidate}
-              onUpdate={() => {}}
-            >
-              <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
-            </FrameworkProvider>
-          );
-
           const useTestMutation = createMutation({
             path: () => '/test/',
             method: 'PUT',
@@ -679,7 +661,10 @@ describe('API hooks', () => {
             },
           });
 
-          const { result } = renderHook(() => useTestMutation(), { wrapper: spyWrapper });
+          const { result } = renderHookWithProviders(() => useTestMutation(), {
+            queryClient,
+            frameworkProps: { onInvalidate },
+          });
 
           await result.current.mutateAsync({});
 

@@ -53,7 +53,7 @@ import type { PublishDispatcher } from '@/editor/publish/publish-options';
 import type { EditorRecord } from './projection';
 import type { EditorSettingsFields, EditorSettingsPatch } from './settings-fields';
 import { EDITOR_REQUEST_OPTIONS } from '@/editor/request-options';
-import { searchIndexQueryKey, searchIndexesBehind } from '@/shared/search-index';
+import { syncSearchIndexes } from '@/shared/search-index';
 
 /**
  * What a reload found: the server's copy, a post that is no longer there, or a
@@ -226,6 +226,18 @@ export function useEditorSession({
     autosaveDebounceMs.current = bootedDebounceMs(configData?.config.editorAutosaveDebounceMs);
   });
 
+  // Post and page edits leave the search-index lists alone, so the record each
+  // write is answered with is written into them on its way to the session.
+  const listed = <Saved extends EditorRecord | undefined>(
+    key: 'posts' | 'pages',
+    saved: Saved,
+  ): Saved => {
+    if (saved) {
+      syncSearchIndexes(queryClient, key, saved);
+    }
+    return saved;
+  };
+
   // Construction must start no timer, request or outside subscription:
   // StrictMode may call this twice and discard the first session undisposed.
   const [session] = useState<EditorSession>(() =>
@@ -239,12 +251,6 @@ export function useEditorSession({
       // The loader opens the post again from this entry when the read that reopens
       // it fails; a later version a read put there stays.
       onSaveAcknowledged: (saved) => {
-        // An edit leaves the search index alone, so only a save that changed
-        // what it lists sends global search and editor links back for it.
-        const listKey = postType === 'page' ? 'pages' : 'posts';
-        for (const key of searchIndexesBehind(queryClient, listKey, saved)) {
-          void queryClient.invalidateQueries({ queryKey: searchIndexQueryKey(key) });
-        }
         queryClient.setQueryData<EditorReadResponse>(
           editorRead(postType, saved.id).queryKey,
           (cached) => {
@@ -264,6 +270,9 @@ export function useEditorSession({
         onError: reportEditorError,
         onNotice: reportEditorNotice,
       }),
+      // Each write reaches the search-index lists as soon as it is answered, here
+      // rather than in the session's acknowledgement, which a session the writer
+      // has left by then never reaches.
       transport: {
         create: async (payload: EditorCreatePayload) => {
           const current = transport.current;
@@ -272,13 +281,13 @@ export function useEditorSession({
               page: { ...payload, status: pageStatus(payload.status) },
               sessionExpiryRedirect: false,
             });
-            return pages[0];
+            return listed('pages', pages[0]);
           }
           const { posts } = await current.addPost({
             post: payload,
             sessionExpiryRedirect: false,
           });
-          return posts[0];
+          return listed('posts', posts[0]);
         },
         update: async (payload: EditorEditPayload, options: PostWriteOptions) => {
           const current = transport.current;
@@ -288,14 +297,14 @@ export function useEditorSession({
               options,
               sessionExpiryRedirect: false,
             });
-            return pages[0];
+            return listed('pages', pages[0]);
           }
           const { posts } = await current.editPost({
             post: payload,
             options,
             sessionExpiryRedirect: false,
           });
-          return posts[0];
+          return listed('posts', posts[0]);
         },
         generateSlug: (text, postId) =>
           transport.current.generateSlug({

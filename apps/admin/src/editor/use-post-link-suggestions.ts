@@ -48,7 +48,8 @@ const isEntity = (item: SearchIndexItem): item is SearchIndexItem & SearchIndexE
 const isPost = (item: SearchIndexItem): item is SearchIndexItem & SearchIndexPost =>
   typeof item.title === 'string';
 
-// Link toolbar data is fetched on first use; content lists follow resource mutations.
+// Link toolbar data is fetched on first use; content lists follow resource mutations
+// (see searchIndexQueryOptions).
 export function usePostLinkSuggestions({
   postType,
   homepageUrl,

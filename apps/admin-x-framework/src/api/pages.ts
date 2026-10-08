@@ -127,8 +127,8 @@ export const useAddPage = createMutation<PageResponseType, AddPagePayload>({
   invalidateQueries: { dataType: [dataType, tagsDataType] },
 });
 
-// The search-index lists are left out, as for posts: the caller refreshes them
-// when an edit changes what they list.
+// The search-index lists are left out, as for posts: the caller writes the
+// page it saved into them.
 export const useEditPage = createMutation<PageResponseType, EditPagePayload>({
   method: 'PUT',
   path: ({ page }) => `/pages/${page.id}/`,

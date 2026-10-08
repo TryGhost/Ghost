@@ -9,6 +9,7 @@ import { dispatchedIntents } from './__test-utils__/save-engine-spy';
 import { record } from './__test-utils__/session-harness';
 import { reportLeaveConfirmation, reportSaveFailure } from '@/editor/report-error';
 import type { SaveCompletion } from '@/editor/engine/save-engine';
+import { searchIndexQueryKey } from '@/shared/search-index';
 import { deferred } from '@/utils/deferred';
 import type { EditorRecord } from './projection';
 import { useEditorSession } from './use-editor-session';
@@ -420,5 +421,41 @@ describe('useEditorSession reload', () => {
     settle(read);
 
     expect(await reloading).toBe('abandoned');
+  });
+});
+
+describe('useEditorSession search index', () => {
+  const postsList = searchIndexQueryKey('posts');
+
+  beforeEach(() => queryClient.clear());
+
+  it('writes a save that lands after the writer left into the posts list', async () => {
+    const loaded = record();
+    queryClient.setQueryData(postsList, {
+      posts: [{ id: loaded.id, title: loaded.title, slug: loaded.slug }],
+    });
+    const answer = deferred<{ posts: EditorRecord[] }>();
+    postApi.edit.mockReturnValueOnce(answer.promise);
+    const { result, unmount } = setup(loaded);
+
+    act(() => result.current.bind.onTitleChange('Saved after leaving'));
+    let saving!: Promise<SaveCompletion>;
+    act(() => {
+      saving = result.current.saveExplicit();
+    });
+    await waitFor(() => expect(postApi.edit).toHaveBeenCalledTimes(1));
+    unmount();
+    // Disposal follows the unmount by a tick, so the answer reaches a disposed session.
+    await new Promise((resolve) => {
+      setTimeout(resolve);
+    });
+    answer.resolve({
+      posts: [record({ title: 'Saved after leaving', updated_at: '2026-01-01T00:00:01.000Z' })],
+    });
+    await saving;
+
+    expect(queryClient.getQueryData(postsList)).toMatchObject({
+      posts: [{ id: loaded.id, title: 'Saved after leaving' }],
+    });
   });
 });

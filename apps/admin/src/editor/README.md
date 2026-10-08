@@ -169,13 +169,15 @@ saves reuse the loaded lists without another index request. Resource
 invalidations make the next link search wait for fresh data. The shared parser
 retains URLs, visibility and published dates for the toolbar's link decorations.
 
-Saving the post being edited leaves the lists alone unless the save changed
-something they hold, since each one is every post, page or tag on the site. A
-save whose title, slug, status, URL, visibility or publish time no longer
-matches the post's entry in the posts or pages list refreshes that list, and
-one that carries a tag missing from the tags list, such as a tag the save
-created, refreshes the tags list. Body autosaves and settings that are not
-listed reuse the loaded lists.
+Saving the post being edited never reads the lists again, since each one is
+every post, page or tag on the site. Each save writes the post as the server
+answered it into the loaded lists instead: its entry moves to the front of the
+posts or pages list, and any of its tags the tags list lacks, such as one the
+save created, is added to the front of that one. This happens as each save is
+answered, including one that lands after the writer has left the editor. A list
+whose read is still in flight when a save lands, its first included, gets the
+save once that read lands, since the read may predate it; the read itself is
+neither cancelled nor repeated.
 
 ## Snippets
 
