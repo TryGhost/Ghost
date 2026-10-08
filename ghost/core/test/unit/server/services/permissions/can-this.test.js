@@ -1,17 +1,32 @@
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
+const errors = require('@tryghost/errors');
 const testUtils = require('../../../../utils');
 const _ = require('lodash');
 const models = require('../../../../../core/server/models');
 const permissions = require('../../../../../core/server/services/permissions');
 const providers = require('../../../../../core/server/services/permissions/providers');
+const rolePermissions = require('../../../../../core/server/services/permissions/role-permissions');
+const { limitService } = require('../../../../../core/server/services/limits');
+const logging = require('@tryghost/logging');
 
 describe('Permissions', function () {
   let fakePermissions = [];
   let findPostSpy;
   let findTagSpy;
+  let loggingError;
+
+  // Grant comparison runs alongside the model's rules, without I/O, and is
+  // not awaited by canThis. Wait for diagnostics before restoring stubs.
+  const comparisonSettled = () =>
+    new Promise((resolve) => {
+      setImmediate(resolve);
+    });
 
   beforeEach(function () {
+    fakePermissions = loadFakePermissions();
+    loggingError = sinon.stub(logging, 'error');
+
     sinon.stub(models.Permission, 'findAll').callsFake(function () {
       return Promise.resolve(models.Permissions.forge(fakePermissions));
     });
@@ -29,10 +44,19 @@ describe('Permissions', function () {
     findTagSpy = sinon.stub(models.Tag, 'findOne').callsFake(function () {
       return Promise.resolve({});
     });
+
+    return permissions.init();
   });
 
-  afterEach(function () {
-    sinon.restore();
+  afterEach(async function () {
+    try {
+      // The stubs in these tests describe databases that agree with the
+      // in-memory role permissions, so the comparison has nothing to report.
+      await comparisonSettled();
+      sinon.assert.notCalled(loggingError);
+    } finally {
+      sinon.restore();
+    }
   });
 
   /**
@@ -67,12 +91,6 @@ describe('Permissions', function () {
   }
 
   describe('CanThis', function () {
-    beforeEach(function () {
-      fakePermissions = loadFakePermissions();
-
-      return permissions.init();
-    });
-
     it('canThisResult gets build properly', function () {
       const canThisResult = permissions.canThis();
 
@@ -220,7 +238,7 @@ describe('Permissions', function () {
           // Fake the response from providers.user, which contains permissions and roles
           return Promise.resolve({
             permissions: [],
-            roles: undefined,
+            roles: [{ name: 'Contributor' }],
           });
         });
 
@@ -240,9 +258,8 @@ describe('Permissions', function () {
         const userProviderStub = sinon.stub(providers, 'user').callsFake(function () {
           // Fake the response from providers.user, which contains permissions and roles
           return Promise.resolve({
-            permissions: models.Permissions.forge(testUtils.DataGenerator.Content.permissions)
-              .models,
-            roles: undefined,
+            permissions: testUtils.DataGenerator.Content.permissions,
+            roles: [{ name: 'Administrator' }],
           });
         });
 
@@ -258,9 +275,8 @@ describe('Permissions', function () {
         const userProviderStub = sinon.stub(providers, 'user').callsFake(function () {
           // Fake the response from providers.user, which contains permissions and roles
           return Promise.resolve({
-            permissions: models.Permissions.forge(testUtils.DataGenerator.Content.permissions)
-              .models,
-            roles: undefined,
+            permissions: testUtils.DataGenerator.Content.permissions,
+            roles: [{ name: 'Administrator' }],
           });
         });
 
@@ -300,8 +316,7 @@ describe('Permissions', function () {
         const apiKeyProviderStub = sinon.stub(providers, 'apiKey').callsFake(() => {
           // Fake the response from providers.user, which contains permissions and roles
           return Promise.resolve({
-            permissions: models.Permissions.forge(testUtils.DataGenerator.Content.permissions)
-              .models,
+            permissions: testUtils.DataGenerator.Content.permissions,
             // This should be JSON, so no need to run it through the model layer. 5 === admin api key
             roles: [testUtils.DataGenerator.Content.roles[5]],
           });
@@ -326,16 +341,14 @@ describe('Permissions', function () {
       it('Current behavior: User with permission + API key with permission (should pass with current logic)', async function () {
         const userProviderStub = sinon.stub(providers, 'user').callsFake(function () {
           return Promise.resolve({
-            permissions: models.Permissions.forge(testUtils.DataGenerator.Content.permissions)
-              .models,
-            roles: undefined,
+            permissions: testUtils.DataGenerator.Content.permissions,
+            roles: [{ name: 'Administrator' }],
           });
         });
 
         const apiKeyProviderStub = sinon.stub(providers, 'apiKey').callsFake(() => {
           return Promise.resolve({
-            permissions: models.Permissions.forge(testUtils.DataGenerator.Content.permissions)
-              .models,
+            permissions: testUtils.DataGenerator.Content.permissions,
             roles: [testUtils.DataGenerator.Content.roles[5]], // admin api key role
           });
         });
@@ -355,9 +368,8 @@ describe('Permissions', function () {
       it('Fixed behavior: User with permission + API key without permission (now uses USER permission and passes)', async function () {
         const userProviderStub = sinon.stub(providers, 'user').callsFake(function () {
           return Promise.resolve({
-            permissions: models.Permissions.forge(testUtils.DataGenerator.Content.permissions)
-              .models,
-            roles: undefined,
+            permissions: testUtils.DataGenerator.Content.permissions,
+            roles: [{ name: 'Administrator' }],
           });
         });
 
@@ -385,14 +397,13 @@ describe('Permissions', function () {
         const userProviderStub = sinon.stub(providers, 'user').callsFake(function () {
           return Promise.resolve({
             permissions: [], // User has no permissions
-            roles: undefined,
+            roles: [{ name: 'Contributor' }],
           });
         });
 
         const apiKeyProviderStub = sinon.stub(providers, 'apiKey').callsFake(() => {
           return Promise.resolve({
-            permissions: models.Permissions.forge(testUtils.DataGenerator.Content.permissions)
-              .models,
+            permissions: testUtils.DataGenerator.Content.permissions,
             roles: [testUtils.DataGenerator.Content.roles[5]],
           });
         });
@@ -418,7 +429,7 @@ describe('Permissions', function () {
         const userProviderStub = sinon.stub(providers, 'user').callsFake(function () {
           return Promise.resolve({
             permissions: [],
-            roles: undefined,
+            roles: [{ name: 'Contributor' }],
           });
         });
 
@@ -477,9 +488,8 @@ describe('Permissions', function () {
         it('Expected: User with permission + API key without permission (should use USER permission and pass)', async function () {
           const userProviderStub = sinon.stub(providers, 'user').callsFake(function () {
             return Promise.resolve({
-              permissions: models.Permissions.forge(testUtils.DataGenerator.Content.permissions)
-                .models,
-              roles: undefined,
+              permissions: testUtils.DataGenerator.Content.permissions,
+              roles: [{ name: 'Administrator' }],
             });
           });
 
@@ -506,14 +516,13 @@ describe('Permissions', function () {
           const userProviderStub = sinon.stub(providers, 'user').callsFake(function () {
             return Promise.resolve({
               permissions: [], // User has no permissions
-              roles: undefined,
+              roles: [{ name: 'Contributor' }],
             });
           });
 
           const apiKeyProviderStub = sinon.stub(providers, 'apiKey').callsFake(() => {
             return Promise.resolve({
-              permissions: models.Permissions.forge(testUtils.DataGenerator.Content.permissions)
-                .models,
+              permissions: testUtils.DataGenerator.Content.permissions,
               roles: [testUtils.DataGenerator.Content.roles[5]],
             });
           });
@@ -564,16 +573,14 @@ describe('Permissions', function () {
         it('Expected: Author user + API key cannot update the visibility of their own post', async function () {
           const userProviderStub = sinon.stub(providers, 'user').callsFake(function () {
             return Promise.resolve({
-              permissions: models.Permissions.forge(testUtils.DataGenerator.Content.permissions)
-                .models,
+              permissions: testUtils.DataGenerator.Content.permissions,
               roles: [testUtils.DataGenerator.Content.roles[2]], // Author role
             });
           });
 
           const apiKeyProviderStub = sinon.stub(providers, 'apiKey').callsFake(function () {
             return Promise.resolve({
-              permissions: models.Permissions.forge(testUtils.DataGenerator.Content.permissions)
-                .models,
+              permissions: testUtils.DataGenerator.Content.permissions,
               roles: [testUtils.DataGenerator.Content.roles[5]], // Admin Integration
             });
           });
@@ -599,13 +606,250 @@ describe('Permissions', function () {
     });
   });
 
+  describe('in-memory grant comparison', function () {
+    it('logs different grants without changing a database denial', async function () {
+      sinon.stub(providers, 'user').resolves({
+        // The database granted nothing to this Administrator; the map grants edit:tag
+        permissions: [],
+        roles: [{ name: 'Administrator' }],
+      });
+
+      await assert.rejects(permissions.canThis({ user: 'user-1' }).edit.tag({ id: 1 }), {
+        errorType: 'NoPermissionError',
+      });
+      await comparisonSettled();
+
+      sinon.assert.calledOnce(loggingError);
+      const err = loggingError.firstCall.args[0];
+      assert.equal(err.code, 'PERMISSIONS_PARITY_MISMATCH');
+      assert.equal(err.errorType, 'InternalServerError');
+      assert.equal(err.message, 'Permission grants differ with in-memory role permissions');
+      assert.deepEqual(err.errorDetails, {
+        action: 'edit',
+        object: 'tag',
+        user: { id: 'user-1', roles: ['Administrator'] },
+        apiKey: null,
+        grants: {
+          database: { hasUserPermission: false, hasApiKeyPermission: true },
+          inMemory: { hasUserPermission: true, hasApiKeyPermission: true },
+        },
+      });
+
+      // This test expects the report; the file-level afterEach expects silence
+      loggingError.resetHistory();
+    });
+
+    it('stays silent when both decide the same', async function () {
+      sinon.stub(providers, 'user').resolves({
+        permissions: testUtils.DataGenerator.Content.permissions,
+        roles: [{ name: 'Administrator' }],
+      });
+
+      await permissions.canThis({ user: {} }).edit.tag({ id: 1 });
+      await comparisonSettled();
+
+      sinon.assert.notCalled(loggingError);
+    });
+
+    it('runs model rules once with the database grants and preserves their result', async function () {
+      sinon.stub(providers, 'user').resolves({
+        permissions: [],
+        roles: [{ name: 'Contributor' }],
+      });
+      const result = { excludedAttrs: ['authors', 'tags'] };
+      const permissibleStub = sinon.stub(models.Post, 'permissible').resolves(result);
+
+      const actual = await permissions.canThis({ user: 'contributor-1' }).edit.post({ id: 1 });
+      await comparisonSettled();
+
+      sinon.assert.calledOnce(permissibleStub);
+      assert.deepEqual(permissibleStub.firstCall.args[4].user.permissions, []);
+      assert.equal(permissibleStub.firstCall.args[5], undefined);
+      assert.equal(permissibleStub.firstCall.args[6], true);
+      assert.equal(actual, result);
+
+      // The model allowed the request, but the underlying grants still differ.
+      sinon.assert.calledOnce(loggingError);
+      assert.deepEqual(loggingError.firstCall.args[0].errorDetails.grants, {
+        database: { hasUserPermission: false, hasApiKeyPermission: true },
+        inMemory: { hasUserPermission: true, hasApiKeyPermission: true },
+      });
+      loggingError.resetHistory();
+    });
+
+    it('logs each distinct difference once', async function () {
+      // The database granted nothing to this Editor; the map lets Editors edit posts
+      sinon.stub(providers, 'user').resolves({ permissions: [], roles: [{ name: 'Editor' }] });
+
+      for (const user of ['user-1', 'user-2']) {
+        await assert.rejects(permissions.canThis({ user }).edit.post({ id: 1 }), {
+          errorType: 'NoPermissionError',
+        });
+      }
+      await comparisonSettled();
+
+      sinon.assert.calledOnce(loggingError);
+      assert.deepEqual(loggingError.firstCall.args[0].errorDetails.user, {
+        id: 'user-1',
+        roles: ['Editor'],
+      });
+      loggingError.resetHistory();
+    });
+
+    it('preserves provider failures without attempting comparison', async function () {
+      sinon.stub(providers, 'user').rejects(new errors.NotFoundError({ message: 'gone' }));
+
+      await assert.rejects(permissions.canThis({ user: 'user-1' }).edit.tag({ id: 1 }), {
+        errorType: 'NotFoundError',
+      });
+      await comparisonSettled();
+
+      sinon.assert.notCalled(loggingError);
+    });
+
+    it('includes the API key for integration requests', async function () {
+      sinon.stub(providers, 'apiKey').resolves({
+        permissions: [],
+        roles: [{ name: 'Admin Integration' }],
+      });
+
+      await assert.rejects(
+        permissions.canThis({ api_key: { id: 'key-1', type: 'admin' } }).edit.tag({ id: 1 }),
+        { errorType: 'NoPermissionError' },
+      );
+      await comparisonSettled();
+
+      sinon.assert.calledOnce(loggingError);
+      assert.deepEqual(loggingError.firstCall.args[0].errorDetails, {
+        action: 'edit',
+        object: 'tag',
+        user: null,
+        apiKey: { id: 'key-1', roles: ['Admin Integration'] },
+        grants: {
+          database: { hasUserPermission: true, hasApiKeyPermission: false },
+          inMemory: { hasUserPermission: true, hasApiKeyPermission: true },
+        },
+      });
+      loggingError.resetHistory();
+    });
+
+    it('preserves database grants that the in-memory map does not grant', async function () {
+      sinon.stub(providers, 'user').resolves({
+        permissions: [{ action_type: 'edit', object_type: 'tag' }],
+        roles: [{ name: 'Author' }],
+      });
+
+      await permissions.canThis({ user: 'author-1' }).edit.tag();
+      await comparisonSettled();
+
+      sinon.assert.calledOnce(loggingError);
+      assert.deepEqual(loggingError.firstCall.args[0].errorDetails.grants, {
+        database: { hasUserPermission: true, hasApiKeyPermission: true },
+        inMemory: { hasUserPermission: false, hasApiKeyPermission: true },
+      });
+      loggingError.resetHistory();
+    });
+
+    it('treats absent and false grants as the same denial', async function () {
+      sinon.stub(providers, 'user').resolves({ permissions: [], roles: [{ name: 'Author' }] });
+
+      await assert.rejects(permissions.canThis({ user: 'author-1' }).edit.tag(), {
+        errorType: 'NoPermissionError',
+      });
+      await comparisonSettled();
+
+      sinon.assert.notCalled(loggingError);
+    });
+
+    it('does not change the request result when in-memory comparison fails', async function () {
+      const roles = [{ name: 'Administrator' }];
+      sinon.stub(providers, 'user').resolves({
+        permissions: [{ action_type: 'edit', object_type: 'tag' }],
+        roles,
+      });
+      const comparisonError = new errors.InternalServerError({ message: 'map unavailable' });
+      sinon.stub(roles, 'map').throws(comparisonError);
+
+      await permissions.canThis({ user: 'admin-1' }).edit.tag();
+      await comparisonSettled();
+
+      sinon.assert.calledOnce(loggingError);
+      assert.deepEqual(loggingError.firstCall.args[0], {
+        err: comparisonError,
+        message: 'Permissions parity check could not run',
+      });
+      loggingError.resetHistory();
+    });
+
+    it('does not reread a post that disappears after authorization', async function () {
+      const author = testUtils.DataGenerator.Content.users[0];
+      const userProviderStub = sinon.stub(providers, 'user').resolves({
+        permissions: rolePermissions.forRoles(['Author']),
+        roles: [{ name: 'Author' }],
+      });
+      // A second read would observe the deletion and fail the old comparison.
+      findPostSpy.onSecondCall().resolves(null);
+
+      await permissions.canThis({ user: author.id }).destroy.post('post-1');
+      await comparisonSettled();
+
+      sinon.assert.calledOnce(userProviderStub);
+      sinon.assert.calledOnce(findPostSpy);
+      sinon.assert.notCalled(loggingError);
+    });
+
+    it('reads the post and checks publishing limits only once', async function () {
+      const userProviderStub = sinon.stub(providers, 'user').resolves({
+        permissions: rolePermissions.forRoles(['Administrator']),
+        roles: [{ name: 'Administrator' }],
+      });
+      findPostSpy.resolves(models.Post.forge({ id: 'post-1', status: 'draft' }));
+      sinon.stub(limitService, 'isLimited').withArgs('members').returns(true);
+      const limitCheck = sinon.stub(limitService, 'errorIfIsOverLimit').resolves();
+
+      await permissions.canThis({ user: 'admin-1' }).edit.post('post-1', { status: 'published' });
+      await comparisonSettled();
+
+      sinon.assert.calledOnce(userProviderStub);
+      sinon.assert.calledOnce(findPostSpy);
+      sinon.assert.calledOnceWithExactly(limitCheck, 'members');
+    });
+
+    it('does not duplicate user reads or nested role-assignment checks', async function () {
+      fakePermissions.push({ name: 'Assign role', action_type: 'assign', object_type: 'role' });
+      await permissions.init();
+
+      const userProviderStub = sinon.stub(providers, 'user').resolves({
+        permissions: rolePermissions.forRoles(['Administrator']),
+        roles: [{ id: 'admin-role', name: 'Administrator' }],
+      });
+      const user = models.User.forge({ id: 'target-user', status: 'active' });
+      user.related('roles').set([{ id: 'author-role', name: 'Author' }]);
+      const userRead = sinon.stub(models.User, 'findOne').resolves(user);
+      const ownerRead = sinon.stub(models.User, 'getOwnerUser').resolves({ id: 'owner-user' });
+      const role = models.Role.forge({ id: 'editor-role', name: 'Editor' });
+      const roleRead = sinon.stub(models.Role, 'findOne').resolves(role);
+
+      await permissions.canThis({ user: 'admin-1' }).edit.user('target-user', {
+        roles: [{ id: role.id, name: 'Editor' }],
+      });
+      await comparisonSettled();
+
+      // One provider load for edit.user and one for its existing assign.role check.
+      sinon.assert.calledTwice(userProviderStub);
+      sinon.assert.calledOnce(userRead);
+      sinon.assert.calledOnce(ownerRead);
+      sinon.assert.calledOnce(roleRead);
+    });
+  });
+
   describe('permissible (overridden)', function () {
     it('can use permissible function on model to forbid something (post model)', async function () {
       const userProviderStub = sinon.stub(providers, 'user').callsFake(function () {
         // Fake the response from providers.user, which contains permissions and roles
         return Promise.resolve({
-          permissions: models.Permissions.forge(testUtils.DataGenerator.Content.permissions).models,
-          roles: undefined,
+          permissions: testUtils.DataGenerator.Content.permissions,
+          roles: [{ name: 'Administrator' }],
         });
       });
 
@@ -641,8 +885,8 @@ describe('Permissions', function () {
       const userProviderStub = sinon.stub(providers, 'user').callsFake(function () {
         // Fake the response from providers.user, which contains permissions and roles
         return Promise.resolve({
-          permissions: models.Permissions.forge(testUtils.DataGenerator.Content.permissions).models,
-          roles: undefined,
+          permissions: testUtils.DataGenerator.Content.permissions,
+          roles: [{ name: 'Administrator' }],
         });
       });
 

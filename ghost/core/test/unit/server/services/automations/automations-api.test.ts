@@ -164,6 +164,61 @@ describe('automations API', function () {
   describe('edit', function () {
     const automationId = ObjectId().toHexString();
 
+    it('allows disabling an automation without submitting its graph', async function () {
+      const saved = { id: automationId, status: 'inactive' };
+      repositoryEdit.mockResolvedValue(saved);
+      assert.strictEqual(await automationsApi.edit(automationId, { status: 'inactive' }), saved);
+      assert.deepEqual(repositoryEdit.mock.calls[0], [automationId, { status: 'inactive' }]);
+    });
+
+    it.each([
+      ['actions', { actions: [buildWaitAction()] }, /edges:/],
+      ['edges', { edges: [] }, /actions:/],
+    ])('rejects %s without the other graph field', async function (_, graph, expectedError) {
+      await assert.rejects(
+        automationsApi.edit(automationId, { status: 'inactive', ...graph }),
+        expectedError,
+      );
+      assert.equal(repositoryEdit.mock.calls.length, 0);
+    });
+
+    it.each([
+      { name: 'Renamed flow' },
+      { description: 'Updated description' },
+      { trigger_tier_scope: 'free' },
+      { trigger_tier_ids: null },
+    ])('rejects status-only edits with extra fields: %j', async function (extraFields) {
+      await assert.rejects(
+        automationsApi.edit(automationId, { status: 'inactive', ...extraFields }),
+        { errorType: 'ValidationError' },
+      );
+      expect(repositoryEdit).not.toHaveBeenCalled();
+    });
+
+    it('returns "not found" for status-only edits of unknown automations', async function () {
+      repositoryEdit.mockResolvedValue(null);
+      await assert.rejects(automationsApi.edit(automationId, { status: 'inactive' }), {
+        errorType: 'NotFoundError',
+      });
+    });
+
+    it('rejects status-only activations', async function () {
+      await assert.rejects(automationsApi.edit(automationId, { status: 'active' }), {
+        errorType: 'ValidationError',
+        property: 'status',
+        message: 'Status-only automation edits can only set status to inactive.',
+      });
+      expect(repositoryEdit).not.toHaveBeenCalled();
+    });
+
+    it('allows activation when the full graph is submitted', async function () {
+      const payload = { status: 'active', actions: [buildSendEmailAction()], edges: [] };
+      const saved = { id: automationId, ...payload };
+      repositoryEdit.mockResolvedValue(saved);
+      assert.strictEqual(await automationsApi.edit(automationId, payload), saved);
+      expect(repositoryEdit).toHaveBeenCalledExactlyOnceWith(automationId, payload);
+    });
+
     it('trims optional name and description before saving', async function () {
       const actions = [buildWaitAction()];
       repositoryEdit.mockResolvedValue({ id: automationId });

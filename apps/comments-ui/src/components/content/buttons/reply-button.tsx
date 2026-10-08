@@ -1,5 +1,5 @@
 import ReplyIcon from '../../../images/icons/reply.svg?react';
-import { Comment, useAppContext } from '../../../app-context';
+import { type Comment, useAppContext } from '../../../app-context';
 
 type Props = {
   comment: Comment;

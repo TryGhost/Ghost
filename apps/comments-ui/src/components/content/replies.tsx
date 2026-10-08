@@ -1,6 +1,6 @@
 import CommentComponent from './comment';
 import RepliesPagination from './replies-pagination';
-import { Comment, useAppContext } from '../../app-context';
+import { type Comment, useAppContext } from '../../app-context';
 import { useRef, useState } from 'react';
 
 const INITIAL_REPLIES_SHOWN = 3;

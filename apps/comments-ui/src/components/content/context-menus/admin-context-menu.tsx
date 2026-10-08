@@ -5,7 +5,7 @@ import PencilIcon from '../../../images/icons/pencil.svg?react';
 import PinIcon from '../../../images/icons/pin.svg?react';
 import PinOffIcon from '../../../images/icons/pin-off.svg?react';
 import TrashIcon from '../../../images/icons/trash.svg?react';
-import { Comment, useAppContext } from '../../../app-context';
+import { type Comment, useAppContext } from '../../../app-context';
 
 type Props = {
   comment: Comment;

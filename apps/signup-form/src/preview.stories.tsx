@@ -1,7 +1,7 @@
 import * as i18nLibModule from '@tryghost/i18n/registry/signup-form';
 import React, { useState } from 'react';
-import pages, { Page, PageName } from './pages';
-import { AppContextProvider, SignupFormOptions } from './app-context';
+import pages, { type Page, type PageName } from './pages';
+import { AppContextProvider, type SignupFormOptions } from './app-context';
 import { ContentBox } from './components/content-box';
 import { userEvent, within } from 'storybook/test';
 import type { Meta, StoryObj } from '@storybook/react-vite';
