@@ -265,7 +265,7 @@ describe('Post settings authors', () => {
     await userEvent.keyboard('{Meta>}s{/Meta}');
 
     await expect
-      .element(editorScreen.saveErrorBanner())
+      .element(editorScreen.saveError())
       .toHaveTextContent('At least one author is required.');
     expect(saveApi.requests).toHaveLength(0);
 
@@ -345,7 +345,7 @@ describe('Post settings authors', () => {
     // Exercise a real body autosave too, with the normal production debounce.
     await editorScreen.body().fill('Body edited while authors are invalid');
     await expect.element(editorScreen.pendingSaveNotice()).toBeVisible();
-    await expect(editorScreen.saveErrorBanner()).toHaveCount(0);
+    await expect(editorScreen.saveError()).toHaveCount(0);
     expect(saveApi.requests).toHaveLength(0);
 
     // Crediting someone again lets the staged image through with the authors.
@@ -375,7 +375,7 @@ describe('Post settings authors', () => {
 
     await expect.element(editorScreen.settingsSlug()).toHaveValue('brand-new-name');
     await expect.element(editorScreen.settingsAuthorsError()).toBeVisible();
-    await expect(editorScreen.saveErrorBanner()).toHaveCount(0);
+    await expect(editorScreen.saveError()).toHaveCount(0);
     expect(saveApi.requests).toHaveLength(0);
 
     // Crediting someone again lets the staged title and slug through with the authors.
@@ -520,7 +520,7 @@ describe('Post settings authors', () => {
     expect(submittedPost(createApi).authors).toEqual([{ id: OWNER_ID }]);
   });
 
-  it('refuses a publish while nobody is credited', async () => {
+  it('refuses to open the publish flow while nobody is credited', async () => {
     const saveApi = fakeSavablePost();
     // The publish machine reads the site's member total, which the boot entry
     // counts in a different shape.
@@ -533,16 +533,20 @@ describe('Post settings authors', () => {
 
     await editorScreen.removeAuthor('Owner User').click();
     await expect.element(editorScreen.settingsAuthorsError()).toBeVisible();
+    await editorScreen.settingsToggle().click();
+    await expect(editorScreen.settingsSidebar()).toHaveCount(0);
 
+    await expect.element(editorScreen.publishButton()).toBeEnabled();
     await editorScreen.publishButton().click();
-    await expect.element(publishScreen.options()).toBeVisible();
-    await publishScreen.continueButton().click();
-    await publishScreen.confirmButton().click();
 
+    // Refused as Ember refuses it: the status line names the rule, and the
+    // panel opens on the field.
     await expect
-      .element(publishScreen.confirmError())
+      .element(editorScreen.saveError())
       .toHaveTextContent('At least one author is required.');
-    await expect(publishScreen.complete()).toHaveCount(0);
+    await expect.element(editorScreen.settingsAuthorsInput()).toHaveFocus();
+    await expect(editorScreen.pendingSaveNotice()).toHaveCount(0);
+    await expect(publishScreen.root()).toHaveCount(0);
     expect(saveApi.requests).toHaveLength(0);
   });
 

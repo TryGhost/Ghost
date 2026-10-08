@@ -34,6 +34,7 @@ import { CONFLICT_MESSAGE, UNEXPECTED_MESSAGE } from '@/editor/publish/completio
 import { publishScreen } from '@/editor/publish/publish.screen';
 import { POST_DELETED } from '@/editor/session/error-mapping';
 import {
+  EMAIL_SUBJECT_TOO_LONG,
   EXCERPT_MAX,
   EXCERPT_TOO_LONG,
   TITLE_MAX,
@@ -938,6 +939,14 @@ describe('Editor header actions', () => {
     await expect.element(publishScreen.confirmError()).toHaveTextContent('Validation failed');
     await expect(publishScreen.complete()).toHaveCount(0);
     expect(saveApi.requests).toHaveLength(1);
+
+    // The status line reports the failure too, but a retry there would save the
+    // post without publishing it: the flow is where a publish is retried.
+    await userEvent.keyboard('{Escape}');
+    await expect(publishScreen.root()).toHaveCount(0);
+    await expect.element(editorScreen.saveError()).toHaveTextContent('Title cannot be that long.');
+    await expect(editorScreen.retrySave()).toHaveCount(0);
+    expect(saveApi.requests).toHaveLength(1);
   });
 
   it('shows a generic reason when publishing fails in the browser', async () => {
@@ -1019,13 +1028,61 @@ describe('Editor header actions', () => {
 
     await expect.element(editorScreen.titleInput()).toHaveFocus();
     await expect.element(editorScreen.titleInput()).toHaveAccessibleDescription(TITLE_TOO_LONG);
-    await expect.element(editorScreen.saveErrorBanner()).toHaveTextContent(TITLE_TOO_LONG);
+    // The status line names the rule in place of the status; nothing else repeats it.
+    await expect.element(editorScreen.status()).toHaveTextContent(TITLE_TOO_LONG);
+    await expect.element(editorScreen.saveError()).toHaveTextContent(TITLE_TOO_LONG);
+    await expect.element(editorScreen.saveError()).toHaveClass('text-destructive');
+    await expect(editorScreen.retrySave()).toHaveCount(0);
+    await expect(editorScreen.pendingSaveNotice()).toHaveCount(0);
     await expect(publishScreen.root()).toHaveCount(0);
     expect(saveApi.requests).toHaveLength(0);
 
     await editorScreen.titleInput().fill('A title the server keeps');
     await open();
     await expect.element(publishScreen.options()).toBeVisible();
+  });
+
+  it('closes the preview and focuses an over-long title instead of publishing from it', async () => {
+    publishChrome();
+    const saveApi = fakeSavablePost();
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await expect.element(editorScreen.publishButton()).toBeEnabled();
+
+    await editorScreen.titleInput().fill('a'.repeat(TITLE_MAX + 1));
+    await editorScreen.previewButton().click();
+    await expect.element(previewScreen.saveFailed()).toHaveTextContent(TITLE_TOO_LONG);
+
+    await previewScreen.publishButton().click();
+
+    await expect(previewScreen.modal()).toHaveCount(0);
+    await expect.element(editorScreen.titleInput()).toHaveFocus();
+    await expect.element(editorScreen.saveError()).toHaveTextContent(TITLE_TOO_LONG);
+    await expect(publishScreen.root()).toHaveCount(0);
+    expect(saveApi.requests).toHaveLength(0);
+  });
+
+  it('opens the preview on an over-long email subject instead of the publish flow', async () => {
+    publishChrome({ newsletters: 1 });
+    const saveApi = fakeSavablePost();
+    fakeAdminEndpoint('GET', /^\/email_previews\/posts\//, {
+      email_previews: [
+        { subject: 'Hello from React', html: '<p>Email body</p>', plaintext: 'Email body' },
+      ],
+    });
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave(MAILGUN_ON));
+    await editorScreen.previewButton().click();
+    await previewScreen.emailTab().click();
+    await previewScreen.emailSubject().fill('a'.repeat(301));
+    await previewScreen.closeButton().click();
+    await expect(previewScreen.modal()).toHaveCount(0);
+
+    await editorScreen.publishButton().click();
+
+    // The subject is edited in the preview, which names the rule beside it.
+    await expect.element(previewScreen.saveFailed()).toHaveTextContent(EMAIL_SUBJECT_TOO_LONG);
+    await expect.element(previewScreen.emailSubject()).toHaveAttribute('aria-invalid', 'true');
+    await expect(publishScreen.root()).toHaveCount(0);
+    expect(saveApi.requests).toHaveLength(0);
   });
 
   it.each([
@@ -1061,13 +1118,36 @@ describe('Editor header actions', () => {
 
       await expect.element(excerpt()).toHaveFocus();
       await expect.element(excerpt()).toHaveAccessibleDescription(EXCERPT_TOO_LONG);
-      await expect.element(editorScreen.saveErrorBanner()).toHaveTextContent(EXCERPT_TOO_LONG);
+      await expect.element(editorScreen.saveError()).toHaveTextContent(EXCERPT_TOO_LONG);
       await expect(publishScreen.root()).toHaveCount(0);
       expect(saveApi.requests).toHaveLength(0);
 
       await excerpt().fill('An excerpt the server keeps');
       await editorScreen.publishButton().click();
       await expect.element(publishScreen.options()).toBeVisible();
+    },
+  );
+
+  it.each([
+    ['published', '2026-02-01T10:00:00.000Z', 'unpublishButton'],
+    ['scheduled', '2030-02-01T10:00:00.000Z', 'unscheduleButton'],
+  ] as const)(
+    'keeps the %s post’s update flow shut until the publish inputs load',
+    async (status, publishedAt, button) => {
+      publishChrome();
+      fakeSavablePost({ status, published_at: publishedAt });
+      failNewsletters();
+      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+
+      await expect.element(editorScreen.publishInputsError()).toBeVisible();
+      await expect.element(editorScreen[button]()).toBeDisabled();
+
+      restoreNewsletters();
+      await editorScreen.retryPublishInputs().click();
+      await expect(editorScreen.publishInputsError()).toHaveCount(0);
+      // Nothing clicked earlier opens the flow unasked.
+      await expect(publishScreen.updateFlow()).toHaveCount(0);
+      await expect.element(editorScreen[button]()).toBeEnabled();
     },
   );
 
@@ -1086,7 +1166,7 @@ describe('Editor header actions', () => {
       await editorScreen.headerButton(label).click();
 
       await expect.element(editorScreen.titleInput()).toHaveFocus();
-      await expect.element(editorScreen.saveErrorBanner()).toHaveTextContent(TITLE_TOO_LONG);
+      await expect.element(editorScreen.saveError()).toHaveTextContent(TITLE_TOO_LONG);
       await expect(publishScreen.updateFlow()).toHaveCount(0);
       expect(saveApi.requests).toHaveLength(0);
     },
@@ -1716,6 +1796,38 @@ describe('Editor header actions', () => {
       await expect(publishScreen.complete()).toHaveCount(0);
       expect(submittedPost(refusedPublish)).toMatchObject({ status: 'published' });
       expect(refusedPublish.requests).toHaveLength(1);
+    });
+
+    it('links the upgrade when the save before a publish is refused over a limit', async () => {
+      publishChrome();
+      fakeEmailsSent(100);
+      fakeSavablePost();
+      const refusedSave = fakeAdminEndpoint(
+        'PUT',
+        new RegExp(`^/posts/${POST_ID}/\\?`),
+        {
+          errors: [
+            {
+              type: 'HostLimitError',
+              message: 'Host Limit error, cannot edit post.',
+              context: MEMBERS_LIMIT_MESSAGE,
+            },
+          ],
+        },
+        { status: 403 },
+      );
+      await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave(onHostPlan({ members: 20 })));
+
+      await expect.element(editorScreen.publishButton()).toBeEnabled();
+      await typeIntoBody(' and more');
+      await publishThroughFlow();
+
+      await expect
+        .element(publishScreen.confirmError().getByRole('link', { name: 'please upgrade' }))
+        .toHaveAttribute('href', '#/pro');
+      // The unsaved work was refused, so the publish it carries was never sent.
+      expect(submittedPost(refusedSave)).toMatchObject({ status: 'draft' });
+      expect(refusedSave.requests).toHaveLength(1);
     });
 
     it('offers no email while a send would exceed the monthly emails limit', async () => {

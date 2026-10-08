@@ -314,7 +314,7 @@ describe('Editor publish journeys', () => {
     await expect.element(editorScreen.publishButton()).toBeEnabled();
 
     await chooseAccess('Paid-members only');
-    await expect.element(editorScreen.saveErrorBanner()).toBeVisible();
+    await expect.element(editorScreen.saveError()).toBeVisible();
     await userEvent.keyboard('{Meta>}{Shift>}p{/Shift}{/Meta}');
 
     await expect

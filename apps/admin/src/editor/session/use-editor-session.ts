@@ -130,8 +130,10 @@ export interface EditorSessionHandle {
   getSaveSnapshot: EditorSession['getSaveSnapshot'];
   /** The body the writer is looking at, which a save has not necessarily seen yet. */
   getLiveLexical: EditorSession['getLiveLexical'];
-  /** Retries the save the error banner reports. */
+  /** Retries the failed save the status line reports. */
   retrySave: () => void;
+  /** The field an explicit save would be refused over, read from the save's own validator. */
+  invalidField: EditorSession['invalidField'];
   /** An explicit save whose completion the caller acts on, such as before a publish or preview. */
   saveExplicit: () => Promise<SaveCompletion>;
   /** Runs the publish flow's commands through the engine, the only writer. */
@@ -602,6 +604,7 @@ export function useEditorSession({
       getSaveSnapshot: session.getSaveSnapshot,
       getLiveLexical: session.getLiveLexical,
       retrySave,
+      invalidField: session.invalidField,
       saveExplicit: session.dispatchExplicit,
       dispatchPublish,
       reauthSucceeded: session.reauthSucceeded,

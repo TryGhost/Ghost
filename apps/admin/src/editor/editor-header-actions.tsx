@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { useEmberOwnedRouteMatcher } from '@/routes';
 import { useNavigate } from '@tryghost/admin-x-framework';
 import { Button } from '@tryghost/shade/components';
@@ -19,11 +19,12 @@ import { postPreviewUrl } from './preview/preview-url';
 import { PublishFlowModal } from './publish/publish-flow-modal';
 import { UpdateFlowModal } from './publish/update-flow-modal';
 import type { PublishFlowPost } from './publish/flow-post';
-import { describeCompletionFailure } from './publish/completion-message';
+import { CompletionFailureError, describeCompletionFailure } from './publish/completion-message';
 import { usePublishInputs } from './publish/use-publish-inputs';
 import { usePublishLimits } from './publish/use-publish-limits';
 import { useEditorSettings } from './use-editor-settings';
 import { stateSaveError } from './session/error-mapping';
+import type { InvalidField } from './session/settings-fields';
 import type { EditorSessionHandle } from './session/use-editor-session';
 import type { SaveCompletion } from './engine/save-engine';
 import {
@@ -54,7 +55,10 @@ const SAVE_LABELS: Record<SaveButtonPhase, string> = {
   failure: 'Retry',
 };
 
-/** Turns a save the caller depends on into a rejection the flow renders in place. */
+/**
+ * Turns a save the caller depends on into a rejection the flow renders in place.
+ * The failure travels whole, so a host limit's upgrade phrase stays a link.
+ */
 async function requireSaved(pending: Promise<SaveCompletion>): Promise<void> {
   const completion = await pending;
 
@@ -65,7 +69,7 @@ async function requireSaved(pending: Promise<SaveCompletion>): Promise<void> {
   const failure = describeCompletionFailure(completion);
 
   if (failure) {
-    throw new Error(failure.message);
+    throw new CompletionFailureError(failure);
   }
 }
 
@@ -83,8 +87,8 @@ export interface EditorHeaderActionsProps {
   onOpenFlow: (flow: OpenFlow) => void;
   /** Whether the status line offers a failed send's retry, which needs the publish inputs. */
   offersEmailRetry: boolean;
-  /** Takes the writer to a field the save would refuse; true when there is one. */
-  revealInvalidField: () => boolean;
+  /** Takes the writer to the field an explicit save would refuse, and returns it. */
+  revealInvalidField: () => InvalidField | null;
 }
 
 /**
@@ -221,7 +225,7 @@ interface PublishActionsProps {
   offersEmailRetry: boolean;
   openFlow: OpenFlow;
   preview: HeaderPreviewProps;
-  revealInvalidField: () => boolean;
+  revealInvalidField: () => InvalidField | null;
   onOpenFlow: (flow: OpenFlow) => void;
   onPreview: () => void;
 }
@@ -285,14 +289,24 @@ function PublishActions({
     setOpenedFromPreview(false);
     onOpenFlow('none');
   }, [onOpenFlow]);
-  // Refused the way Cmd-S is: the save banner names the field's rule and nothing is sent.
-  const refuseInvalid = useCallback(() => {
-    if (!revealInvalidField()) {
+  const { onOpenChange: setPreviewOpen } = preview;
+  // Publish, Unpublish, Unschedule and the shortcut open nothing while a field
+  // breaks its rule. Each is refused the way Cmd-S is: the save the writer asked
+  // for names the rule in the status line, nothing is sent, and the writer is
+  // taken to the field.
+  const refuseInvalid = useCallback((): boolean => {
+    const invalid = revealInvalidField();
+    if (!invalid) {
       return false;
+    }
+    // The subject is edited in the preview, whose own save is refused beside the field.
+    if (invalid.key === 'email_subject' && isDraft) {
+      setPreviewOpen(true);
+      return true;
     }
     void session.saveExplicit();
     return true;
-  }, [revealInvalidField, session]);
+  }, [isDraft, revealInvalidField, session, setPreviewOpen]);
   const openPublishFlow = useCallback(() => {
     if (refuseInvalid()) {
       return;
@@ -300,7 +314,25 @@ function PublishActions({
     setOpenedFromPreview(false);
     onOpenFlow('publish');
   }, [onOpenFlow, refuseInvalid]);
-  const { onOpenChange: setPreviewOpen } = preview;
+  const openUpdateFlow = useCallback(() => {
+    if (!refuseInvalid()) {
+      onOpenFlow('update');
+    }
+  }, [onOpenFlow, refuseInvalid]);
+  // The field and the status line are behind the preview, so a refusal from its
+  // Publish waits for it to close and takes the focus it would hand back.
+  const refuseOnPreviewClose = useRef(false);
+  const previewCloseAutoFocus = useCallback(
+    (event: Event) => {
+      if (!refuseOnPreviewClose.current) {
+        return;
+      }
+      refuseOnPreviewClose.current = false;
+      event.preventDefault();
+      refuseInvalid();
+    },
+    [refuseInvalid],
+  );
   const changePreviewOpen = useCallback(
     (open: boolean) => {
       setPreviewOpen(open);
@@ -311,10 +343,15 @@ function PublishActions({
     [closeFlow, setPreviewOpen],
   );
   const publishFromPreview = useCallback(() => {
+    if (session.invalidField()) {
+      refuseOnPreviewClose.current = true;
+      setPreviewOpen(false);
+      return;
+    }
     setOpenedFromPreview(true);
     setPreviewOpen(false);
     onOpenFlow('publish');
-  }, [onOpenFlow, setPreviewOpen]);
+  }, [onOpenFlow, session, setPreviewOpen]);
 
   // The chord stays off while the preview is open: the preview's own Publish
   // button is the only way into the flow from there.
@@ -367,6 +404,7 @@ function PublishActions({
             animate={openFlow !== 'publish'}
             fallbackNewsletterSlug={flowNewsletterSlug}
             publishDisabled={!inputs.isReady}
+            onCloseAutoFocus={previewCloseAutoFocus}
             onOpenChange={changePreviewOpen}
             onPublish={publishFromPreview}
           />
@@ -377,14 +415,13 @@ function PublishActions({
           {offersUpdateFlow ? (
             <PageHeader.Action
               className="bg-background/80 backdrop-blur-sm"
+              // The update flow is built from the publish inputs; a click before
+              // they load would open it unasked once they do.
+              disabled={!inputs.isReady}
               fallbackSize="sm"
               fallbackVariant="ghost"
               label={post.status === 'scheduled' ? 'Unschedule' : 'Unpublish'}
-              onClick={() => {
-                if (!refuseInvalid()) {
-                  onOpenFlow('update');
-                }
-              }}
+              onClick={openUpdateFlow}
             >
               {post.status === 'scheduled' ? 'Unschedule' : 'Unpublish'}
             </PageHeader.Action>
@@ -395,7 +432,8 @@ function PublishActions({
             fallbackSize="sm"
             label={UPDATE_LABELS[update.phase]}
             onClick={() => {
-              // The save refuses an invalid field itself; this only takes the writer to it.
+              // The save refuses an invalid field itself, naming it in the status
+              // line; this only takes the writer to it.
               revealInvalidField();
               void update.run();
             }}

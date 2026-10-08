@@ -202,6 +202,7 @@ export function AccessSection({ session, postType }: AccessSectionProps) {
           aria-describedby={tiersMissing ? tiersErrorId : undefined}
           aria-invalid={tiersMissing}
           aria-label="Tiers"
+          data-settings-field="tiers"
           data-testid={settingsTiersPicker}
           gap="md"
           role="group"

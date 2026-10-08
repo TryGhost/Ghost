@@ -923,6 +923,11 @@ describe('Floating editor shell', () => {
     'keeps the $status action translucent and blurred against the $theme canvas',
     async ({ status, theme }) => {
       fakeLongDocument('post', status);
+      // The site's member total, which the publish inputs read before the action is enabled.
+      fakeAdminEndpoint('GET', /^\/members\/\?.*order=id/, {
+        members: [],
+        meta: { pagination: { page: 1, limit: 1, pages: 1, total: 20, next: null, prev: null } },
+      });
       const me = currentUserResponse();
       me.users[0].accessibility = JSON.stringify({ nightShift: theme });
       await renderAdminApp('/editor/post/abc123', {
@@ -932,7 +937,7 @@ describe('Floating editor shell', () => {
       await expect.element(editorScreen.body()).toBeVisible();
       const action =
         status === 'published' ? editorScreen.unpublishButton() : editorScreen.unscheduleButton();
-      await expect.element(action).toBeVisible();
+      await expect.element(action).toBeEnabled();
       await expect
         .poll(() => document.documentElement.classList.contains('dark'))
         .toBe(theme === 'dark');
@@ -948,13 +953,20 @@ describe('Floating editor shell', () => {
     async (width) => {
       await page.viewport(width, 800);
       fakeLongDocument('post');
+      // A collision's banner, unlike a failed save, sits beneath the header.
       fakeAdminEndpoint(
         'PUT',
         /^\/posts\/abc123\/\?/,
         {
-          errors: [{ type: 'UnauthorizedError', message: 'Authorization failed' }],
+          errors: [
+            {
+              code: 'UPDATE_COLLISION',
+              type: 'UpdateCollisionError',
+              message: 'Saving failed! Someone else is editing this post.',
+            },
+          ],
         },
-        { status: 401 },
+        { status: 409 },
       );
       await renderAdminApp('/editor/post/abc123', FLAG_ON);
       await expect.element(editorScreen.body()).toBeVisible();
@@ -966,11 +978,9 @@ describe('Floating editor shell', () => {
       await editorScreen.body().click();
       await userEvent.keyboard('{End} more');
       await userEvent.keyboard('{Meta>}s{/Meta}');
-      await expect.element(editorScreen.reauthDialog()).toBeVisible();
-      await userEvent.keyboard('{Escape}');
-      await expect.element(editorScreen.saveErrorBanner()).toBeVisible();
+      await expect.element(editorScreen.conflictBanner()).toBeVisible();
 
-      const banner = editorScreen.saveErrorBanner().element().getBoundingClientRect();
+      const banner = editorScreen.conflictBanner().element().getBoundingClientRect();
       expect(banner.top).toBeGreaterThanOrEqual(headerBefore.bottom);
       expect(pane.getBoundingClientRect().top).toBeGreaterThanOrEqual(banner.bottom);
       expect(pane.clientHeight).toBeLessThan(paneHeight);
@@ -983,7 +993,7 @@ describe('Floating editor shell', () => {
 
       pane.scrollTo({ top: 700 });
       await expect.poll(() => pane.scrollTop).toBe(700);
-      expect(editorScreen.saveErrorBanner().element().getBoundingClientRect().top).toBe(banner.top);
+      expect(editorScreen.conflictBanner().element().getBoundingClientRect().top).toBe(banner.top);
       expect(document.documentElement.scrollHeight).toBeLessThanOrEqual(window.innerHeight);
       expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(window.innerWidth);
       expect(banner.left).toBeGreaterThanOrEqual(0);

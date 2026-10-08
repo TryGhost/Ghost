@@ -270,7 +270,7 @@ describe('Post editor session expiry', () => {
     await editorScreen.cancelReauth().click();
 
     await expect(editorScreen.reauthDialog()).toHaveCount(0);
-    await expect.element(editorScreen.saveErrorBanner()).toHaveTextContent('session expired');
+    await expect.element(editorScreen.saveError()).toHaveTextContent('session expired');
     await expect.element(editorScreen.body()).toHaveTextContent('Hello from React and more');
     expect(saveApi.requests).toHaveLength(1);
 
@@ -288,7 +288,7 @@ describe('Post editor session expiry', () => {
     await userEvent.keyboard('{Escape}');
 
     await expect(editorScreen.reauthDialog()).toHaveCount(0);
-    await expect.element(editorScreen.saveErrorBanner()).toHaveTextContent('session expired');
+    await expect.element(editorScreen.saveError()).toHaveTextContent('session expired');
     await expect.element(editorScreen.body()).toHaveTextContent('Hello from React and more');
     expect(saveApi.requests).toHaveLength(1);
   });

@@ -97,7 +97,9 @@ command in the runnable queue, so navigating away does not wait indefinitely.
 The live document remains the source of truth: Update enables, the post stays
 dirty, and leaving requires a save or confirmation.
 
-All saves use the same preparation validator. An incomplete tier pairing on a
+All saves use the same preparation validator, and `invalidField()` reads the
+field an explicit save of the live document would be refused over from it, so
+the header refuses a publish by the save's own rules. An incomplete tier pairing on a
 post that exists, an over-long title, excerpt, code injection or meta/social
 field, an invalid canonical URL, an emptied author list, or a newly staged
 future publish time holds a background save with a validation blocker. Body
@@ -199,14 +201,14 @@ it retries on every edit; a 404 becomes `not-found`; and anything else becomes
 A `validation`, `host-limit` or `forbidden` failure the server reports carries
 the server's reason as its message. The server sends that reason as the error's
 context beside a generic summary, and the summary is used only when there is no
-context. The save-error banner shows a host limit's reason with its "please
+context. The status line shows a host limit's reason with its "please
 upgrade" phrase linked to the host's upgrade screen, `/pro` unless the host
-configures another, and keeps the content and the banner's retry.
+configures another, and keeps the content and the retry beside it.
 
 An `unknown` failure the API answered, or one the session describes itself,
 shows its own message. One thrown in the browser instead, such as a
 `TypeError`, reads as "Something went wrong while saving. Please try again." in
-the banner, the status line, the publish flow and the preview alike; the error
+the status line, the publish flow and the preview alike; the error
 keeps its own message and cause for reporting.
 
 ## Adopting the server's answer
@@ -418,8 +420,9 @@ code, or a resend that fails, is named inside the dialog and nothing else
 changes. Once the session is back the held save goes out on its own; a
 status change it was carrying, such as a publish, is re-confirmed rather than
 sent unasked. Clicking outside the dialog does nothing; Escape or Cancel abandons
-it, which moves the queue to the save-error banner with the content kept, and the
-banner's retry brings the dialog back.
+it, which reports the failed save in the status line with the content kept, and
+its retry brings the dialog back. A status change abandoned this way is retried
+from where it was asked for, not from the status line.
 
 ## The view React subscribes to
 
@@ -496,7 +499,8 @@ status and URL when the transport answered. Validation failures, host limits, a
 refusal of a writer who may no longer edit the post and an unreachable server
 are not sent: none of them is a fault in the editor. A failed request that took
 more than two seconds is sent as a second event with its timing. Every error
-banner the writer is shown — a failed save, a collision, a deleted post — is
+the writer is shown — a failed save in the status line, a collision or a
+deleted post in its banner — is
 also sent once as a message carrying the text they read. A Koenig instance that
 crashes its error boundary is reported as a Lexical failure. Sentry stays
 optional: without a DSN the calls are no-ops, and an error is still logged to

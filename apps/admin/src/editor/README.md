@@ -26,7 +26,7 @@ again.
 | [`preview/`](preview/README.md)                  | The modal that shows a post as the site renders it or as the newsletter it would be sent as                          |
 | `editor-screen.tsx`                              | The route: loads the post, builds the session, and lays out the header, the surface and the sidebar                  |
 | `post-editor.tsx`, `koenig-post-editor.tsx`      | The title, excerpt and feature image around the Koenig instances, and the Koenig integration itself                  |
-| `editor-header-actions.tsx`, `editor-status.tsx` | The header's publish and preview controls, and the line saying where the post stands, with a failed send's retry     |
+| `editor-header-actions.tsx`, `editor-status.tsx` | The header's publish and preview controls, and the line saying where the post stands or why a save failed            |
 | `use-save-feedback.tsx`, `save-toast.ts`         | The toast and button progress that report an explicit save, and the pure copy they show                              |
 | `card-config.ts`, `use-post-card-config.ts`      | What Koenig's cards are told about the site and the post they are being edited in                                    |
 | `local-revisions.ts`                             | Browser-local copies of drafts holding unsaved work: how they are stored, trimmed and read back                      |
@@ -63,11 +63,19 @@ then starts at its email-failure step. Whether a post qualifies is decided by
 the flow's own `initialEmailError()`, and the button is offered only to roles
 Core lets retry an email, so an Author sees the failure without it.
 
-While the title or a settings field breaks its rule, the header's Publish, its
-shortcut, Unpublish and Unschedule open nothing: each is refused as a save the
-writer asks for is, with the field's message, and moves focus to the title or
-excerpt, opening the settings panel when the field lives there. Update moves
-focus the same way.
+While the post breaks a rule a save checks, the header's Publish, its shortcut,
+the preview's Publish, Unpublish and Unschedule open nothing, as in Ember. The
+rules are the save's own: an over-long title, excerpt, email subject, meta,
+social card or code injection field, an invalid canonical URL, specific-tier
+access with no tier, an empty author list, and a publish date staged for a time
+that has not passed. Each opener is refused as a save the writer asks for is:
+the status line names the rule in red in place of the status, nothing is sent,
+and the writer is taken to the field. The title and the excerpt under it take
+focus; a field in the settings panel opens the panel, and the field's pane when
+it has one, and takes focus there. The email subject is edited in the preview,
+so the preview opens, its own save refused beside the subject. A refusal from
+the preview's Publish closes the preview first. Update is refused by its save
+and takes the writer to the field the same way.
 
 Every opener stays unavailable until the publish inputs have loaded, and so
 does the update flow behind Unpublish, Unschedule and a sent post's "Sent" in
@@ -162,6 +170,23 @@ page).
 
 A post that has never been saved has no status line. The save that creates it
 reads "Saving…" there, and a first save that fails says why.
+
+## Save problems
+
+The status line is where a failed or refused save is reported: its reason, in
+red, replaces the status until a later save lands, and stays shown when the
+header otherwise hides the status line. A host limit's reason links its "please
+upgrade" phrase to the host's upgrade screen. Retry beside the reason repeats a
+failed save. There is none for a save the editor refused before sending, since
+only fixing the field ends it, nor for a failed publish, schedule or unpublish:
+a retry there would save the post without changing its status, so the publish
+or update flow is where those are retried. While a collision blocks the next
+save, its banner offers the ways out instead.
+
+What the status line cannot hold has a banner beneath the header: a collision,
+a deleted post, lost access and a crashed editor, each with Reload or Copy
+content, a newer version saved elsewhere, and changes held back by a field's
+rule, until a save the writer asks for is refused over it.
 
 ## Link suggestions
 

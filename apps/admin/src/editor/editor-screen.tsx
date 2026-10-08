@@ -9,7 +9,6 @@ import {
   useRef,
   useState,
 } from 'react';
-import { flushSync } from 'react-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { AdminLink } from '@/shared/admin-link';
 import { getPostListReturnUrl } from '@/posts/api';
@@ -55,13 +54,10 @@ import { buildPublishFlowPost } from './publish/flow-post';
 import { PAID_TIERS_SEARCH_PARAMS } from './browse-params';
 import { initialEmailError } from './publish/use-publish-flow';
 import { SessionBanners } from './session/session-banners';
-import {
-  VALIDATED_SETTINGS_FIELD_KEYS,
-  settingsFieldErrorFor,
-  titleError,
-} from './session/settings-fields';
+import { type InvalidField, settingsFieldErrorFor, titleError } from './session/settings-fields';
 import { ReauthDialog } from './session/reauth-dialog';
-import { PostSettingsSidebar } from './settings/post-settings-sidebar';
+import { PostSettingsSidebar, type SettingsFieldReveal } from './settings/post-settings-sidebar';
+import { isSettingsPanelField } from './settings/sections';
 import { useFeatureImageBinding } from './session/feature-image-binding';
 import { EDITOR_REQUEST_OPTIONS } from './request-options';
 import { useEditorLeaveGuard } from './session/use-leave-guard';
@@ -315,29 +311,33 @@ function EditorContent({
     setSettingsOpen((open) => !open);
   }, []);
   const postEditorRef = useRef<PostEditorHandle>(null);
-  const settingsExcerptRef = useRef<HTMLTextAreaElement>(null);
-  /** Takes the writer to the first field a save would refuse; true when there is one. */
-  const revealInvalidField = useCallback((): boolean => {
-    const field = titleError(session.bind.title)
-      ? 'title'
-      : VALIDATED_SETTINGS_FIELD_KEYS.find((key) => settingsFieldErrorFor(key, session.settings));
-    if (field === 'title') {
+  const [settingsReveal, setSettingsReveal] = useState<SettingsFieldReveal | null>(null);
+  /**
+   * Takes the writer to the first field an explicit save would refuse, as the
+   * save's own validator reads it, and returns that field. The email subject is
+   * edited in the preview, which the caller opens.
+   */
+  const revealInvalidField = useCallback((): InvalidField | null => {
+    const invalid = session.invalidField();
+    if (!invalid) {
+      return null;
+    }
+    const { key } = invalid;
+    if (key === 'title') {
       postEditorRef.current?.focusTitle();
-    } else if (field === 'custom_excerpt' && showExcerpt) {
+    } else if (key === 'custom_excerpt' && showExcerpt) {
       postEditorRef.current?.focusExcerpt();
-    } else if (field && field !== 'email_subject') {
-      // Rendered at once, so the excerpt is there to take focus.
-      flushSync(() => {
+    } else if (isSettingsPanelField(key)) {
+      // The panel shows the field's section, opening its pane, and focuses it.
+      if (!settingsOpen) {
         setSettingsMoving(true);
         setSettingsPresent(true);
         setSettingsOpen(true);
-      });
-      if (field === 'custom_excerpt') {
-        settingsExcerptRef.current?.focus();
       }
+      setSettingsReveal({ field: key });
     }
-    return field !== undefined;
-  }, [session.bind.title, session.settings, showExcerpt]);
+    return invalid;
+  }, [session, settingsOpen, showExcerpt]);
   const featureImage = useFeatureImageBinding(session, session.loadedRecord, session.contentKey);
   const leaveGuard = useEditorLeaveGuard(session, postType);
   const liveVisibility = session.settings.visibility;
@@ -398,10 +398,12 @@ function EditorContent({
             {!analyticsReturn || didEmailFail || session.state.kind === 'error' ? (
               <EditorStatus
                 isDirty={session.isDirty()}
+                pendingSave={session.pendingSave}
                 record={statusRecord}
                 state={session.state}
                 onOpenPublishFlow={offersEmailRetry ? openPublishFlow : undefined}
                 onOpenUpdateFlow={canPublish ? openUpdateFlow : undefined}
+                onRetrySave={session.retrySave}
               />
             ) : null}
             <PageHeader.ActionGroup className="ml-auto gap-x-[calc(var(--spacing)*3*(1-var(--editor-settings-progress)))] editor-settings-motion-[column-gap] max-sm:col-start-2 max-sm:row-start-1 sm:col-start-3">
@@ -432,7 +434,6 @@ function EditorContent({
             pendingSave={session.pendingSave}
             state={session.state}
             onReload={session.reload}
-            onRetrySave={session.retrySave}
           />
           <ReauthDialog
             email={currentUser?.email ?? ''}
@@ -473,11 +474,11 @@ function EditorContent({
         <PostSettingsSidebar
           cardConfig={currentCardConfig}
           currentUser={currentUser}
-          excerptRef={settingsExcerptRef}
           featureImage={featureImage.featureImage}
           frameRef={settingsFrameRef}
           hasInlineExcerpt={showExcerpt}
           postType={postType}
+          reveal={settingsReveal}
           session={session}
           siteUrl={cardConfig.siteUrl}
         />

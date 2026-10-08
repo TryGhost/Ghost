@@ -89,6 +89,8 @@ export interface PostPreviewModalProps {
   /** Keeps the Publish button disabled while the caller cannot open its publish flow. */
   publishDisabled?: boolean;
   onOpenChange: (open: boolean) => void;
+  /** Called as the closed preview hands focus back; preventing it keeps focus where the caller puts it. */
+  onCloseAutoFocus?: (event: Event) => void;
 }
 
 export function PostPreviewModal({
@@ -105,6 +107,7 @@ export function PostPreviewModal({
   onPublish,
   publishDisabled = false,
   onOpenChange,
+  onCloseAutoFocus,
 }: PostPreviewModalProps) {
   const [format, setFormat] = useState<PreviewFormat>('browser');
   const [device, setDevice] = useState<PreviewDevice>('desktop');
@@ -467,6 +470,7 @@ export function PostPreviewModal({
       layout="header"
       open={open}
       title="Preview"
+      onCloseAutoFocus={onCloseAutoFocus}
       onOpenChange={onOpenChange}
     >
       <Inline

@@ -578,11 +578,11 @@ describe('Post editor saving', () => {
     await expect.element(editorScreen.titleInput()).toHaveAttribute('aria-invalid', 'true');
     await expect.element(editorScreen.titleInput()).toHaveAccessibleDescription(TITLE_TOO_LONG);
     await expect.element(editorScreen.pendingSaveNotice()).toHaveTextContent(TITLE_TOO_LONG);
-    await expect(editorScreen.saveErrorBanner()).toHaveCount(0);
+    await expect(editorScreen.saveError()).toHaveCount(0);
 
     await userEvent.keyboard('{Meta>}s{/Meta}');
 
-    await expect.element(editorScreen.saveErrorBanner()).toHaveTextContent(TITLE_TOO_LONG);
+    await expect.element(editorScreen.saveError()).toHaveTextContent(TITLE_TOO_LONG);
     expect(saveApi.requests).toHaveLength(0);
 
     await editorScreen.titleInput().fill('A title the server keeps');
@@ -619,11 +619,11 @@ describe('Post editor saving', () => {
       await expect.element(excerpt()).toHaveAttribute('aria-invalid', 'true');
       await expect.element(excerpt()).toHaveAccessibleDescription(EXCERPT_TOO_LONG);
       await expect.element(editorScreen.pendingSaveNotice()).toHaveTextContent(EXCERPT_TOO_LONG);
-      await expect(editorScreen.saveErrorBanner()).toHaveCount(0);
+      await expect(editorScreen.saveError()).toHaveCount(0);
 
       await userEvent.keyboard('{Meta>}s{/Meta}');
 
-      await expect.element(editorScreen.saveErrorBanner()).toHaveTextContent(EXCERPT_TOO_LONG);
+      await expect.element(editorScreen.saveError()).toHaveTextContent(EXCERPT_TOO_LONG);
       expect(saveApi.requests).toHaveLength(0);
 
       await excerpt().fill('An excerpt the server keeps');
@@ -655,9 +655,9 @@ describe('Post editor saving', () => {
 
     await appendToBody(' and more');
 
-    await expect.element(editorScreen.saveErrorBanner()).toHaveTextContent(CAPTION_REFUSED);
+    await expect.element(editorScreen.saveError()).toHaveTextContent(CAPTION_REFUSED);
     await expect
-      .element(editorScreen.saveErrorBanner())
+      .element(editorScreen.saveError())
       .not.toHaveTextContent('Validation error, cannot edit post.');
     expect(refusedSave.requests).toHaveLength(1);
   });
@@ -683,9 +683,9 @@ describe('Post editor saving', () => {
 
     await appendToBody(' and more');
 
-    await expect.element(editorScreen.saveErrorBanner()).toHaveTextContent(PLAN_LIMIT_REACHED);
+    await expect.element(editorScreen.saveError()).toHaveTextContent(PLAN_LIMIT_REACHED);
     await expect
-      .element(editorScreen.saveErrorBanner().getByRole('link', { name: 'please upgrade' }))
+      .element(editorScreen.saveError().getByRole('link', { name: 'please upgrade' }))
       .toHaveAttribute('href', '#/pro');
     await expect.element(editorScreen.body()).toHaveTextContent('Hello from React and more');
     expect(refusedSave.requests).toHaveLength(1);
