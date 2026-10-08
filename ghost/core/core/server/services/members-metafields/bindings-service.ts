@@ -45,14 +45,8 @@ export class MetafieldBindingsService {
     this.values = values;
   }
 
-  async bind(
-    db: Knex,
-    productId: string,
-    port: string,
-    metafieldKey: string,
-    now: Date,
-  ): Promise<string> {
-    const existing = await db(BINDINGS_TABLE).where({ product_id: productId, port }).first();
+  async bind(db: Knex, port: string, metafieldKey: string, now: Date): Promise<string> {
+    const existing = await db(BINDINGS_TABLE).where({ port }).first();
     if (existing?.metafield_key === metafieldKey) {
       await db(BINDINGS_TABLE).where('id', existing.id).update({ updated_at: now });
       return existing.id;
@@ -64,7 +58,6 @@ export class MetafieldBindingsService {
     const bindingId = new ObjectID().toHexString();
     await db(BINDINGS_TABLE).insert({
       id: bindingId,
-      product_id: productId,
       port,
       metafield_key: metafieldKey,
       created_at: now,
@@ -74,8 +67,8 @@ export class MetafieldBindingsService {
   }
 
   /** Stops the writing. Whatever hangs off the binding cascades with it. */
-  async remove(db: Knex, productId: string, port: string): Promise<void> {
-    await db(BINDINGS_TABLE).where({ product_id: productId, port }).del();
+  async remove(db: Knex, port: string): Promise<void> {
+    await db(BINDINGS_TABLE).where({ port }).del();
   }
 
   /**
@@ -83,15 +76,11 @@ export class MetafieldBindingsService {
    *
    * Nobody supplied these in a sense the site can name — a payment page asked, and a
    * machine reported the answers — so what is recorded against them is the binding that
-   * routed each one. That resolves back to the tier that asked, what it was collected
-   * as, and the field it landed in, which is everything worth knowing about how the
-   * value arrived.
+   * routed each one. That resolves back to what it was collected as and the field it
+   * landed in, which is everything worth knowing about how the value arrived.
    */
-  async planCollected(
-    productId: string,
-    collected: Array<{ port: string; value: unknown }>,
-  ): Promise<RoutedPlans> {
-    return this.planThrough(productId, collected, (binding) => ({
+  async planCollected(collected: Array<{ port: string; value: unknown }>): Promise<RoutedPlans> {
+    return this.planThrough(collected, (binding) => ({
       writtenBy: { type: 'binding', id: binding.bindingId },
       source: 'checkout',
     }));
@@ -106,10 +95,9 @@ export class MetafieldBindingsService {
    */
   async planSuppliedByMember(
     memberId: string,
-    productId: string,
     supplied: Array<{ port: string; value: unknown }>,
   ): Promise<RoutedPlans> {
-    return this.planThrough(productId, supplied, () => ({
+    return this.planThrough(supplied, () => ({
       writtenBy: { type: 'member', id: memberId },
       source: 'checkout',
     }));
@@ -127,7 +115,6 @@ export class MetafieldBindingsService {
    * a member filling in a form is owed the news.
    */
   private async planThrough(
-    productId: string,
     values: Array<{ port: string; value: unknown }>,
     attribute: Attribution,
   ): Promise<RoutedPlans> {
@@ -139,7 +126,7 @@ export class MetafieldBindingsService {
         // Inside, because working out where a value goes can fail the same way checking
         // it can, and a value nobody could place is no more reason to abandon the rest
         // than one the catalog refused.
-        const destination = await this.resolve(productId, port);
+        const destination = await this.resolve(port);
         if (!destination) {
           continue;
         }
@@ -159,10 +146,9 @@ export class MetafieldBindingsService {
     return { plans, failure };
   }
 
-  private async resolve(productId: string, port: string): Promise<BoundField | null> {
+  private async resolve(port: string): Promise<BoundField | null> {
     const row = await this.knex(BINDINGS_TABLE)
       .join(FIELDS_TABLE, `${BINDINGS_TABLE}.metafield_key`, `${FIELDS_TABLE}.key`)
-      .where(`${BINDINGS_TABLE}.product_id`, productId)
       .where(`${BINDINGS_TABLE}.port`, port)
       // An archived destination is still where this goes, and still not somewhere a value
       // can land, so the write drops rather than waiting.
@@ -184,7 +170,6 @@ export class MetafieldBindingsService {
         {
           event: { name: 'members.metafields.binding_unreadable' },
           err: bound.error,
-          productId,
           port,
         },
         'A binding could not be read',

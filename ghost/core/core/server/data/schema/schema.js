@@ -1108,24 +1108,19 @@ module.exports = {
     created_at: { type: 'dateTime', nullable: false },
     updated_at: { type: 'dateTime', nullable: true },
   },
-  // Where a source sends what it collected. The source is who collects, the port is that
-  // source's own name for the thing, and the destination is the publisher's field, which
-  // they can repoint without the source knowing. The row is the collecting: there is one
-  // and the source writes through it, or there is none and it does not.
+  // Where a source sends what it collected. The port is the source's own name for the
+  // thing, and the destination is the publisher's field, which they can repoint without the
+  // source knowing. The row is the collecting: there is one and the source writes through
+  // it, or there is none and it does not.
   //
-  // A second kind of source becomes a `source_type` beside a widened id. What it must not
-  // become is a second table holding destinations.
+  // Stripe Checkout is the only source, and it collects into the same field whichever tier
+  // was bought, so a port is bound once for the site. A second kind of source becomes a
+  // `source_type` beside the port. What it must not become is a second table holding
+  // destinations.
   members_metafield_bindings: {
     id: { type: 'string', maxlength: 24, nullable: false, primary: true },
-    product_id: {
-      type: 'string',
-      maxlength: 24,
-      nullable: false,
-      references: 'products.id',
-      cascadeDelete: true,
-    },
-    port: { type: 'string', maxlength: 191, nullable: false },
-    // Indexed rather than unique: several sources landing in one field is expected.
+    port: { type: 'string', maxlength: 191, nullable: false, unique: true },
+    // Indexed rather than unique: several ports landing in one field is allowed.
     metafield_key: {
       type: 'string',
       maxlength: 191,
@@ -1135,9 +1130,6 @@ module.exports = {
     },
     created_at: { type: 'dateTime', nullable: false },
     updated_at: { type: 'dateTime', nullable: true },
-    '@@UNIQUE_CONSTRAINTS@@': [
-      { columns: ['product_id', 'port'], indexName: 'members_metafield_bindings_unique' },
-    ],
     '@@INDEXES@@': [['metafield_key']],
   },
   members_metafield_values: {
@@ -1177,11 +1169,11 @@ module.exports = {
     // Shaped like `actions`: a type and an id, no foreign key. A type because not every
     // write comes through a binding — a person edits a member's fields, an import reads a
     // file — and an id so the writer can be resolved back rather than merely named. A
-    // binding id resolves to the tier, the port and the field it routed into, which is
-    // everything worth knowing about how a value got here.
+    // binding id resolves to the port and the field it routed into, which is everything
+    // worth knowing about how a value got here.
     //
     // No foreign key, because provenance has to outlive its cause: that a value arrived
-    // through a tier's shipping port stays true after someone deletes that binding, even
+    // through the shipping port stays true after someone deletes that binding, even
     // though it stops being joinable.
     //
     // The type is the namespace the id resolves in, so every row carries one. The id is
