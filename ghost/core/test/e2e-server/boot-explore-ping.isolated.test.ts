@@ -101,7 +101,7 @@ describe('Explore ping during boot', function () {
       const bootPromise: Promise<GhostServer> = startGhost({ frontend: true, server: true });
       boot = bootPromise;
       void bootPromise.catch(() => {});
-      // Database reset and the rest of boot happen before Explore starts.
+      // Database reset and earlier boot stages happen before Explore starts.
       // Apply the payload deadline only once its initializer has run.
       await Promise.race([initialized.promise, bootPromise]);
       const payload = await within(received.promise, 'Boot never sent its Explore payload');
