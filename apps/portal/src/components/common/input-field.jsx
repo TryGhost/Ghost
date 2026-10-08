@@ -53,7 +53,7 @@ function InputField({
     (hideLabel ? 'gh-portal-input-label hidden' : 'gh-portal-input-label') +
     tw` mb-0.5 text-sm font-semibold tracking-[0px] text-gray-950`;
   const inputClasses = errorMessage || invalid ? 'gh-portal-input error' : 'gh-portal-input';
-  const fieldClasses = tw`mb-4 block w-full appearance-none rounded-md border border-solid border-gray-300 bg-transparent px-3 text-base tracking-[0.2px] [-webkit-appearance:none] [color:inherit] [outline:none] [transition:border-color_0.25s_ease-in-out] placeholder:text-gray-500 focus:border-gray-500 group-[:not(.preview)]/popup:disabled:bg-gray-50 group-[:not(.preview)]/popup:disabled:text-gray-400 group-[:not(.preview)]/popup:disabled:placeholder:text-gray-400 [&.error]:border-red group-[:not(.preview)]/popup:[&[readonly]::placeholder]:text-gray-400 group-[:not(.preview)]/popup:[&[readonly]]:bg-gray-50 group-[:not(.preview)]/popup:[&[readonly]]:text-gray-400`;
+  const fieldClasses = tw`mb-4 block w-full appearance-none rounded-md border border-solid border-gray-300 bg-transparent px-3 text-base tracking-[0.2px] [-webkit-appearance:none] [color:inherit] [outline:none] [transition:border-color_0.25s_ease-in-out] placeholder:text-gray-500 focus:border-gray-500 group-[:not(.preview)]/popup:disabled:bg-gray-50 group-[:not(.preview)]/popup:disabled:text-gray-400 group-[:not(.preview)]/popup:disabled:placeholder:text-gray-400 aria-[invalid=true]:border-red group-[:not(.preview)]/popup:[&[readonly]::placeholder]:text-gray-400 group-[:not(.preview)]/popup:[&[readonly]]:bg-gray-50 group-[:not(.preview)]/popup:[&[readonly]]:text-gray-400`;
   const inputHeightClasses = 'h-11 py-0 max-[1440px]:h-[42px]';
   if (isCookiesDisabled()) {
     disabled = true;
