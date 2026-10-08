@@ -132,7 +132,7 @@ const disableNetwork = () => {
  * Publishing that content triggers real webmention discovery
  * (mention-sending-service.js), which fetches every external link —
  * nock-blocked here, so the real fetch throws and mention-discovery-service.js
- * error-logs it on every publish. Reply with a plain page (no rel="webmention"
+ * logs it on every publish. Reply with a plain page (no rel="webmention"
  * link/header) instead of blocking the connection: same "no endpoint found"
  * outcome discovery would reach for a real site that doesn't support
  * webmentions, without eating a real connection error. Tests that exercise

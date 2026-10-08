@@ -72,7 +72,15 @@ describe('automations API', function () {
   });
 
   describe('add', function () {
-    const valid = { name: 'New automation', description: '', trigger_tier_scope: 'free' };
+    const actions = [buildWaitAction(), buildSendEmailAction()];
+    const valid = {
+      name: 'New automation',
+      description: '',
+      trigger_tier_scope: 'free',
+      status: 'active',
+      actions,
+      edges: [buildEdge(actions[0], actions[1])],
+    };
 
     it('adds automations', async function () {
       const tierIds = [ObjectId().toHexString(), ObjectId().toHexString()];
@@ -110,7 +118,21 @@ describe('automations API', function () {
         { ...valid, trigger_tier_scope: 'selected_paid', trigger_tier_ids: ['invalid'] },
         { ...valid, trigger_tier_ids: [ObjectId().toHexString()] },
         { ...valid, trigger_tier_scope: 'all_paid', trigger_tier_ids: [ObjectId().toHexString()] },
-        { ...valid, status: 'active' },
+        ...['name', 'description', 'status', 'actions', 'edges'].map((field) => ({
+          ...valid,
+          [field]: undefined,
+        })),
+        { ...valid, status: 'invalid' },
+        { ...valid, actions: [actions[0], actions[0]] },
+        { ...valid, edges: [] },
+        { ...valid, edges: [buildEdge(actions[0], buildWaitAction())] },
+        { ...valid, actions: [buildSendEmailAction({ email_lexical: 'invalid' })], edges: [] },
+        { ...valid, actions: [buildSendEmailAction({ email_subject: '' })], edges: [] },
+        {
+          ...valid,
+          actions: [buildSendEmailAction({ email_lexical: EMPTY_EMAIL_LEXICAL })],
+          edges: [],
+        },
         { ...valid, slug: 'member-welcome-email-free' },
         { ...valid, actions: [] },
         { ...valid, id: ObjectId().toHexString() },
@@ -123,6 +145,19 @@ describe('automations API', function () {
           });
         }),
       );
+      expect(repositoryAdd).not.toHaveBeenCalled();
+    });
+
+    it('allows empty email drafts when inactive', async function () {
+      const payload = {
+        ...valid,
+        status: 'inactive',
+        actions: [buildSendEmailAction({ email_subject: '', email_lexical: EMPTY_EMAIL_LEXICAL })],
+        edges: [],
+      };
+      await automationsApi.add(payload);
+      expect(repositoryAdd).toHaveBeenCalledExactlyOnceWith(payload);
+      expect(repositoryEdit).not.toHaveBeenCalled();
     });
   });
 

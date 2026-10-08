@@ -128,10 +128,6 @@ module.exports = {
     return apiFramework.pipeline(require('./member-metafields'), localUtils);
   },
 
-  get tiersCheckoutConfig() {
-    return apiFramework.pipeline(require('./tiers-checkout-config'), localUtils);
-  },
-
   get memberCommenting() {
     return apiFramework.pipeline(require('./member-commenting'), localUtils);
   },
@@ -334,6 +330,10 @@ module.exports = {
 
   get giftsMembers() {
     return apiFramework.pipeline(require('./gifts-members'), localUtils, 'members');
+  },
+
+  get appInstallations() {
+    return apiFramework.pipeline(require('./app-installations'), localUtils);
   },
 
   get giftLinks() {

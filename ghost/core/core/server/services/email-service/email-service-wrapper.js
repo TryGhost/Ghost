@@ -17,6 +17,10 @@ class EmailServiceWrapper {
 
   init({ ghostServer, jobsService } = {}) {
     if (this.service) {
+      // An in-process restart (test harness) keeps this service but boots a
+      // new server, whose stop must drain it and whose start re-arms it.
+      this.batchSendingService.onStart();
+      this.registerShutdownTasks(ghostServer);
       return;
     }
     assert(jobsService, 'Email service requires the jobs service');
@@ -134,23 +138,13 @@ class EmailServiceWrapper {
     });
     const sendingStatusService = new SendingStatusService({ knex: db.knex });
 
-    if (ghostServer) {
-      // Two phases: stop claiming batches immediately, drain in-flight ones later.
-      // Draining alone would leave workers claiming new batches for the whole HTTP
-      // server drain, each a fresh orphan candidate.
-      ghostServer.registerPreStopTask(
-        () => batchSendingService.onPreStop(),
-        'Email batch sending (stop claiming)',
-      );
-      ghostServer.registerCleanupTask(
-        () => batchSendingService.onShutdown(),
-        'Email batch sending',
-      );
-    }
+    this.batchSendingService = batchSendingService;
+    this.registerShutdownTasks(ghostServer);
 
     this.renderer = emailRenderer;
 
     this.service = new EmailService({
+      sendingStatusService,
       batchSendingService,
       sendingService,
       models: {
@@ -177,6 +171,23 @@ class EmailServiceWrapper {
       getRequiredUrlRelations,
       sendingStatusService,
     });
+  }
+
+  registerShutdownTasks(ghostServer) {
+    if (!ghostServer) {
+      return;
+    }
+    // Two phases: stop claiming batches immediately, drain in-flight ones later.
+    // Draining alone would leave workers claiming new batches for the whole HTTP
+    // server drain, each a fresh orphan candidate.
+    ghostServer.registerPreStopTask(
+      () => this.batchSendingService.onPreStop(),
+      'Email batch sending (stop claiming)',
+    );
+    ghostServer.registerCleanupTask(
+      () => this.batchSendingService.onShutdown(),
+      'Email batch sending',
+    );
   }
 }
 

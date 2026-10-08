@@ -38,6 +38,7 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           install-args: --filter @tryghost/koenig-lexical...
+          store-cache: 'false'
 
       - name: Build demo
         run: pnpm nx run @tryghost/koenig-lexical:build:demo

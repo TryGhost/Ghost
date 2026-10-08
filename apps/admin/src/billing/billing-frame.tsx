@@ -16,6 +16,7 @@ import {
   applyEmberBillingSubscriptionUpdate,
   reportEmberBillingLoadFailure,
 } from '@/ember-bridge';
+import { useThemeContext } from '@/providers/theme-context';
 import { useFlagGatedRouteOwner } from '@/use-flag-gated-route-owner';
 import { BillingAppConnection } from './billing-app-connection';
 import { useBillingScreenOpen } from './billing-screen';
@@ -23,9 +24,8 @@ import {
   type BillingAppMessage,
   EXCEEDED_ALERT_HTML,
   EXCEEDED_ALERT_KEY,
-  OVERDUE_ALERT_HTML,
-  OVERDUE_ALERT_KEY,
   PREVIOUS_PAGE_DESTINATION,
+  activeDunning,
   adminDestinationRoute,
   billingAdminPath,
   billingAlerts,
@@ -35,6 +35,7 @@ import {
   isBillingPath,
   markDunningPaymentSettled,
   parseBillingSubscription,
+  readDunningPaymentSettledFor,
   takePayNowReturnRoute,
 } from './billing-protocol';
 import {
@@ -90,7 +91,7 @@ function BillingAppFrame({
   // rendered the next location — the path keeps that render from counting as open
   const visible = useBillingScreenOpen() && isBillingPath(location.pathname);
   const automations = useFeatureFlag('automations');
-  const dunningWarnings = useFeatureFlag('dunningWarnings');
+  const { resolvedTheme } = useThemeContext();
 
   const locationRef = useRef(location);
   locationRef.current = location;
@@ -103,9 +104,8 @@ function BillingAppFrame({
     () =>
       new BillingAppConnection(billingUrl, {
         // As Ember's pro routes queue the route before its iframe exists: a
-        // child route loads without the query, the root keeps `?action=…`
-        getLocationSubRoute: () =>
-          initialBillingSubRoute(locationRef.current.pathname, locationRef.current.search),
+        // child route loads without the query
+        getLocationSubRoute: () => initialBillingSubRoute(locationRef.current.pathname),
         getReportContext: () => ({
           isForceUpgrade: forceUpgradeRef.current === true,
           routeName: billingSubRoute(locationRef.current.pathname) ? 'pro.pro-sub' : 'pro.index',
@@ -118,7 +118,6 @@ function BillingAppFrame({
 
   // null until the billing app's token request has resolved who is asking
   const isOwnerRef = useRef<boolean | null>(null);
-  const checkoutRouteRef = useRef<string | null>(null);
   // The Admin path just synced from a billing app route report, consumed by
   // the navigation it causes so that report is not echoed back to the app
   const syncedPathRef = useRef<string | null>(null);
@@ -131,6 +130,16 @@ function BillingAppFrame({
   );
 
   useEffect(() => connection.setVisible(visible), [connection, visible]);
+
+  // The billing app asks for its first theme; only later changes are pushed
+  const sentThemeRef = useRef(resolvedTheme);
+  useEffect(() => {
+    if (!loaded || sentThemeRef.current === resolvedTheme) {
+      return;
+    }
+    sentThemeRef.current = resolvedTheme;
+    connection.post({ query: 'themeUpdate', response: resolvedTheme });
+  }, [connection, loaded, resolvedTheme]);
 
   // Another owner (or none) after this frame leaves must not inherit its reports
   useEffect(() => {
@@ -148,14 +157,6 @@ function BillingAppFrame({
     const syncedPath = syncedPathRef.current;
     syncedPathRef.current = null;
     if (!visible || syncedPath === `${location.pathname}${location.search}`) {
-      return;
-    }
-
-    const action = new URLSearchParams(location.search).get('action');
-    if (action) {
-      if (action === 'checkout') {
-        connection.navigateToSubRoute(checkoutRouteRef.current);
-      }
       return;
     }
 
@@ -228,9 +229,7 @@ function BillingAppFrame({
 
   const navigateToAdmin = (destination: unknown) => {
     if (destination === PREVIOUS_PAGE_DESTINATION) {
-      const dunning = dunningWarnings
-        ? parseDunningConfig(config?.config.hostSettings?.billing?.dunning)
-        : null;
+      const dunning = parseDunningConfig(config?.config.hostSettings?.billing?.dunning);
       if (dunning) {
         markDunningPaymentSettled(dunning.paymentFailedAt);
       }
@@ -253,12 +252,8 @@ function BillingAppFrame({
     message: BillingAppMessage,
     subscription: NonNullable<SubscriptionState['subscription']>,
   ) => {
-    const checkoutRoute = isBillingAppRoute(message.checkoutRoute)
-      ? message.checkoutRoute
-      : '/plans';
-
     // As Ember's billing iframe does: listeners and alerts wait for the plan's
-    // fresh config, so a changed dunning block decides the overdue alert
+    // fresh config, so a changed dunning block lands with the subscription
     void queryClient.refetchQueries({ queryKey: ['SettingsResponseType'] }).catch(() => {});
     latestReportRef.current += 1;
     const report = latestReportRef.current;
@@ -267,7 +262,6 @@ function BillingAppFrame({
       // Ember's limits failing to reload must not hold back React's state
       applyEmberBillingSubscriptionUpdate({
         subscription,
-        checkoutRoute,
       }).catch(() => {}),
     ]);
 
@@ -277,26 +271,17 @@ function BillingAppFrame({
     }
 
     setBillingSubscriptionState({ subscription });
-    checkoutRouteRef.current = checkoutRoute;
 
     const freshConfig = queryClient.getQueriesData<ConfigResponseType>({
       queryKey: ['ConfigResponseType'],
     })[0]?.[1];
-    const dunningWarningsActive =
-      dunningWarnings &&
-      parseDunningConfig(freshConfig?.config.hostSettings?.billing?.dunning) !== null;
-    const { overdue, exceeded } = billingAlerts(
-      { ...message, subscription },
-      { dunningWarningsActive },
-    );
+    const dunning = activeDunning(freshConfig?.config.hostSettings?.billing?.dunning, {
+      subscriptionStatus: subscription.status,
+      paymentSettledFor: readDunningPaymentSettledFor(),
+    });
 
-    // Shown to every user: only the owner can act, but everyone is affected
-    if (overdue) {
-      showAlert(alerts, OVERDUE_ALERT_KEY, 'error', OVERDUE_ALERT_HTML);
-    } else {
-      alerts.remove((alert) => alert.key === OVERDUE_ALERT_KEY);
-    }
-    if (exceeded) {
+    const { exceeded } = billingAlerts(message);
+    if (exceeded && !dunning) {
       showAlert(alerts, EXCEEDED_ALERT_KEY, 'warn', EXCEEDED_ALERT_HTML);
     } else {
       alerts.remove((alert) => alert.key === EXCEEDED_ALERT_KEY);
@@ -324,6 +309,10 @@ function BillingAppFrame({
     }
     if (message.request === 'forceUpgradeInfo') {
       void sendForceUpgradeInfo();
+    }
+    if (message.request === 'theme') {
+      sentThemeRef.current = resolvedTheme;
+      connection.post({ request: 'theme', response: resolvedTheme });
     }
     if (message.request === 'navigateToAdmin') {
       navigateToAdmin(message.destination);

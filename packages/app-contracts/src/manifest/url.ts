@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-const URL_MAX_LENGTH = 2000;
+import { URL_MAX_LENGTH } from './limits.ts';
 
 // `URL` has already normalised the host by the time these run: every spelling of an IPv4
 // address is dotted decimal, and an IPv4-mapped IPv6 address is two hex groups.
@@ -22,9 +22,14 @@ function isLocalhost(hostname: string): boolean {
 
 /**
  * Checks a URL after it has been resolved, never before: a relative value can resolve to
- * another scheme or host, and only the result says what Ghost would load.
+ * another scheme or host, and only the result says what Ghost would load. The length is
+ * measured here for the same reason, as the resolved URL is what is stored and checked
+ * again later: a short relative path can resolve to more than the limit.
  */
 export function checkResolvedUrl(url: URL, allowLocalhost: boolean): string | null {
+  if (url.href.length > URL_MAX_LENGTH) {
+    return `Expected at most ${URL_MAX_LENGTH} characters`;
+  }
   if (url.username || url.password) {
     return 'Expected a URL without a username or password';
   }
@@ -46,6 +51,12 @@ export interface UrlRules {
 }
 
 /**
+ * How the manifest's shape gets its URL fields: one rule for every URL in it, asked once
+ * per field. `linkOnly` marks a URL that is only ever linked to, never loaded.
+ */
+export type UrlField = (linkOnly?: boolean) => z.ZodType<string, string>;
+
+/**
  * A URL Ghost will load: resolved against the manifest's own URL, and never on an origin
  * Ghost is served from. `linkOnly` lifts that last rule for a URL that is only ever
  * linked to, which a publisher's own app may well point at their own site.
@@ -65,12 +76,6 @@ export function urlField({ base, ghostOrigins, allowLocalhost }: UrlRules, linkO
         });
         return z.NEVER;
       }
-      // Measured once resolved, as that is what is stored and checked again later: a short
-      // relative path can resolve to more than the limit.
-      if (url.href.length > URL_MAX_LENGTH) {
-        ctx.addIssue({ code: 'custom', message: `Expected at most ${URL_MAX_LENGTH} characters` });
-        return z.NEVER;
-      }
       const problem = checkResolvedUrl(url, allowLocalhost);
       if (problem) {
         ctx.addIssue({ code: 'custom', message: problem });
@@ -86,3 +91,10 @@ export function urlField({ base, ghostOrigins, allowLocalhost }: UrlRules, linkO
       return url.href;
     });
 }
+
+/**
+ * A URL as a manifest holds it once `parseManifest` has accepted it: absolute, and
+ * already checked. Nothing is resolved or checked again, so a manifest accepted before the
+ * site's URL changed still reads back.
+ */
+export const absoluteUrl: UrlField = () => z.url('Expected an absolute URL');

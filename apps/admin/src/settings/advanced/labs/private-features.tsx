@@ -20,6 +20,11 @@ const features: Feature[] = [
     flag: 'automations',
   },
   {
+    title: 'Archive automations',
+    description: 'Let members archive and restore automations.',
+    flag: 'automationsArchive',
+  },
+  {
     title: 'Automations per tier',
     description: 'Allow automations to be configured for individual tiers.',
     flag: 'automationsPerTier',
@@ -100,12 +105,6 @@ const features: Feature[] = [
     description:
       'Serves sign in, 2FA verification, password reset, staff invite signup, setup and sign out from the React app instead of the Ember screens. Takes effect on the next page load.',
     flag: 'authReact',
-  },
-  {
-    title: 'Self-serve archives',
-    description:
-      'Replaces the individual export buttons with a single "Export data" flow for downloading a full site archive',
-    flag: 'selfServeArchives',
   },
   {
     title: 'Machine payments',

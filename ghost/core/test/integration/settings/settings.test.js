@@ -1,6 +1,7 @@
 const assert = require('node:assert/strict');
 const db = require('../../../core/server/data/db');
 const testUtils = require('../../utils');
+const dbUtils = require('../../utils/db-utils');
 
 /**
  * @NOTE
@@ -12,7 +13,11 @@ const testUtils = require('../../utils');
  */
 
 describe('Settings', function () {
-  beforeAll(testUtils.setup());
+  beforeAll(async function () {
+    // Files share a database within a worker; start from the default fixtures.
+    await dbUtils.reset({ truncate: true });
+    await testUtils.setup()();
+  });
 
   // Allowlist: Only this list needs updating when a core setting is added/removed/renamed
   const coreSettingKeys = [

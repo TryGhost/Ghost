@@ -141,7 +141,11 @@ describe('Automations API', function () {
   });
 
   describe('add', function () {
+    const actions = [buildWaitAction(), buildSendEmailAction()];
     const payload = {
+      status: 'active',
+      actions,
+      edges: buildLinearEdges(actions),
       name: 'Created automation',
       description: 'Welcome selected members',
       trigger_tier_scope: 'free',
@@ -172,6 +176,10 @@ describe('Automations API', function () {
       const actionIds = await models.Base.knex('automation_actions')
         .whereIn('automation_id', models.Base.knex('automations').whereNull('slug').select('id'))
         .pluck('id');
+      await models.Base.knex('automation_action_edges')
+        .whereIn('source_action_id', actionIds)
+        .orWhereIn('target_action_id', actionIds)
+        .delete();
       await models.Base.knex('automation_action_revisions')
         .whereIn('action_id', actionIds)
         .delete();
@@ -192,12 +200,28 @@ describe('Automations API', function () {
         const created = body.automations[0];
         assert.equal(created.name, payload.name);
         assert.equal(created.description, payload.description);
-        assert.equal(created.status, 'inactive');
+        assert.equal(created.status, payload.status);
         assert.equal(created.slug, null);
         assert.equal(created.trigger_tier_scope, 'free');
         assert.deepEqual(created.trigger_tier_ids, null);
-        assert.deepEqual(created.actions, []);
-        assert.deepEqual(created.edges, []);
+        assert.deepEqual(
+          created.actions,
+          payload.actions.map((action) =>
+            action.type === 'send_email'
+              ? {
+                  ...action,
+                  stats: {
+                    email_sent_count: 0,
+                    email_opened_count: 0,
+                    email_clicked_count: 0,
+                    opened_rate: null,
+                    clicked_rate: null,
+                  },
+                }
+              : action,
+          ),
+        );
+        assert.deepEqual(created.edges, payload.edges);
 
         const { body: read } = await agent.get(`automations/${created.id}`).expectStatus(200);
         assert.deepEqual(read.automations[0], created);
@@ -277,7 +301,7 @@ describe('Automations API', function () {
       const { body } = await agent
         .post('automations')
         .body({
-          automations: [{ name: payload.name, description: payload.description, ...triggerData }],
+          automations: [{ ...payload, trigger_tier_scope: undefined, ...triggerData }],
         })
         .expectStatus(201);
       assert.equal(body.automations[0].trigger_tier_scope, triggerData.trigger_tier_scope ?? null);
@@ -296,16 +320,19 @@ describe('Automations API', function () {
       assert.equal((await models.Base.knex('automations').where({ name: payload.name })).length, 1);
     });
 
-    it('requires description', async function () {
-      await agent
-        .post('automations')
-        .body({ automations: [{ name: payload.name, trigger_tier_scope: 'free' }] })
-        .expectStatus(422);
-      assert.equal(
-        await models.Base.knex('automations').where({ name: payload.name }).first(),
-        undefined,
-      );
-    });
+    it.each(['name', 'description', 'status', 'actions', 'edges'])(
+      'requires %s',
+      async function (field) {
+        await agent
+          .post('automations')
+          .body({ automations: [{ ...payload, [field]: undefined }] })
+          .expectStatus(422);
+        assert.equal(
+          await models.Base.knex('automations').where({ name: payload.name }).first(),
+          undefined,
+        );
+      },
+    );
 
     it('only adds the first automation from the request', async function () {
       const { body } = await agent
@@ -323,6 +350,8 @@ describe('Automations API', function () {
       {},
       { automations: [] },
       { automations: [{ ...payload, name: '' }] },
+      { automations: [{ ...payload, edges: [] }] },
+      { automations: [{ ...payload, status: 'invalid' }] },
       { automations: [{ ...payload, trigger_tier_scope: 'selected_paid', trigger_tier_ids: [] }] },
     ])('rejects malformed request %j', async function (data) {
       await agent

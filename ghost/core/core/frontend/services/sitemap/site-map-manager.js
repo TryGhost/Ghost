@@ -9,7 +9,7 @@ const UsersMapGenerator = require('./user-map-generator');
 const TagsMapGenerator = require('./tags-map-generator');
 
 // Frontend-internal routing domain events (RouteRegistered / RoutesReset)
-const routingEvents = require('../routing/events');
+const { routingEvents } = require('../routing/events');
 
 // What the sitemap XML reads off each resource, beyond the columns URL
 // computation needs: lastmod dates, image nodes, and the canonical_url skip

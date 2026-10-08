@@ -15,6 +15,12 @@ autoDedupe: true
 minimumReleaseAge: 4320 # 3 days in minutes; matches Renovate's minimumReleaseAge
 blockExoticSubdeps: true
 
+ignoredOptionalDependencies:
+  # dtrace-provider is pulled in optionally via bunyan, but only works on
+  # macOS Intel (not Apple Silicon) with SIP disabled, so effectively it's
+  # adding more work for no benefit
+  - dtrace-provider
+
 allowBuilds:
   # Permitted builds are version-scoped. Adding or updating a permitted version
   # requires an explicit Platform security review.
@@ -26,7 +32,6 @@ allowBuilds:
   'better-sqlite3@12.11.1': true
   'core-js@2.6.12': true
   cpu-features: false
-  'dtrace-provider@0.8.8': true
   'esbuild@0.25.12 || 0.28.2': true
   'fsevents@1.2.13 || 2.3.2 || 2.3.3': true
   'msw@2.14.6': true

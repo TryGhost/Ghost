@@ -22,7 +22,15 @@ export interface ManifestError {
 }
 
 export type ParseManifestResult =
-  | { success: true; manifest: AppManifest }
+  | {
+      success: true;
+      manifest: AppManifest;
+      /**
+       * The manifest's URL as it was checked, which is the one to keep: the URL parser
+       * trims and normalises what it is given, so the string handed in may differ.
+       */
+      manifestUrl: string;
+    }
   | { success: false; errors: ManifestError[] };
 
 function formatPath(path: PropertyKey[]): string {
@@ -69,7 +77,7 @@ export function parseManifest(input: unknown, options: ParseManifestOptions): Pa
 
   const result = manifestSchema({ base, ghostOrigins, allowLocalhost }).safeParse(input);
   if (result.success) {
-    return { success: true, manifest: result.data };
+    return { success: true, manifest: result.data, manifestUrl: base.href };
   }
   return {
     success: false,

@@ -11,6 +11,7 @@ const boot = require('../../core/boot');
 const models = require('../../core/server/models');
 const settingsService = require('../../core/server/services/settings/settings-service');
 const adapterManager = require('../../core/server/services/adapter-manager').default;
+const jobsService = require('../../core/server/services/jobs-service');
 
 // Other Test Utilities
 const configUtils = require('./config-utils');
@@ -108,6 +109,7 @@ const prepareContentFolder = async (options) => {
 const _startGhost = async (options) => {
   // Stop the server -- noops if it's not running
   await stopGhost();
+  await jobsService.shutdown();
 
   urlServiceUtils.resetRouters();
 

@@ -70,9 +70,7 @@ export interface SubscriptionState {
   };
 }
 
-export interface BillingSubscriptionUpdate extends SubscriptionState {
-  checkoutRoute: string;
-}
+export type BillingSubscriptionUpdate = SubscriptionState;
 
 export interface SidebarVisibilityChangeEvent {
   isVisible: boolean;

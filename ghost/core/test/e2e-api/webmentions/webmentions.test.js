@@ -10,6 +10,7 @@ const assert = require('node:assert/strict');
 const urlUtils = require('../../../core/shared/url-utils').default;
 const nock = require('nock');
 const sinon = require('sinon');
+const supertest = require('supertest');
 const mentionsService = require('../../../core/server/services/mentions');
 const DomainEvents = require('@tryghost/domain-events');
 
@@ -486,6 +487,18 @@ describe('Webmentions (receiving)', function () {
 
     assert(mention);
     assert.equal(mention.get('verified'), true);
+  });
+
+  it('rejects a webmention body larger than 64kb', async function () {
+    await supertest(agent.app)
+      .post('/webmentions/receive/')
+      .type('form')
+      .send({
+        source: 'http://testpage.com/oversized-article/',
+        target: urlUtils.getSiteUrl(),
+        content: 'a'.repeat(64 * 1024),
+      })
+      .expect(413);
   });
 
   // NOTE: this test needs to be last; it will disrupt other tests based on the fact we can't
