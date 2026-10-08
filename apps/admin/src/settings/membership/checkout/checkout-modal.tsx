@@ -21,10 +21,12 @@ import { LucideIcon } from '@tryghost/shade/utils';
 import { PreviewModalContent } from '@/settings/components/preview-modal';
 import { STRIPE_FONTS_CSS, STRIPE_FONT_OPTIONS, fontFamilyOf } from './stripe-fonts';
 import {
+  type StripeCheckoutBranding,
   type StripeCheckoutDesign,
   type StripeCheckoutDesignSetting,
   useCreateStripeCheckoutPreview,
   useEditStripeCheckoutConfig,
+  useReadStripeCheckoutBranding,
   useReadStripeCheckoutConfig,
 } from '@tryghost/admin-x-framework/api/stripe-checkout-config';
 import {
@@ -39,8 +41,8 @@ import { useGlobalData } from '@/settings/providers/global-data-context';
 import { toast } from 'sonner';
 import { useSettingsNavigation } from '@/settings/hooks/use-settings-navigation';
 
-// Stripe's own defaults, from its Customize Checkout page. Customizing starts from these,
-// because Ghost can't read the design set in the publisher's Stripe dashboard yet.
+// Stripe's own defaults, from its Customize Checkout page, for when the design in the Stripe
+// dashboard can't be read.
 const STRIPE_DEFAULT_DESIGN: StripeCheckoutDesign = {
   button_color: '#0074d4',
   background_color: '#ffffff',
@@ -50,7 +52,12 @@ const STRIPE_DEFAULT_DESIGN: StripeCheckoutDesign = {
 
 type DesignFormState = { customize: boolean; design: StripeCheckoutDesign };
 
-const formStateOf = (setting: StripeCheckoutDesignSetting): DesignFormState =>
+// Customizing starts from the Stripe dashboard design, so switching it on changes nothing until
+// one of the settings does.
+const formStateOf = (
+  setting: StripeCheckoutDesignSetting,
+  dashboardDesign: StripeCheckoutDesign,
+): DesignFormState =>
   setting.customize
     ? {
         customize: true,
@@ -61,10 +68,36 @@ const formStateOf = (setting: StripeCheckoutDesignSetting): DesignFormState =>
           font_family: setting.font_family,
         },
       }
-    : { customize: false, design: STRIPE_DEFAULT_DESIGN };
+    : { customize: false, design: dashboardDesign };
 
 const designSettingOf = ({ customize, design }: DesignFormState): StripeCheckoutDesignSetting =>
   customize ? { customize: true, ...design } : { customize: false };
+
+type SketchBranding = Omit<StripeCheckoutBranding, 'design'> & { design: StripeCheckoutDesign };
+
+/**
+ * The checkout branding in the Stripe dashboard. Until Stripe is connected, or when Stripe
+ * can't be asked, the site title and Stripe's own defaults stand in for it, and the defaults
+ * stand in for a design Ghost can't show.
+ */
+function useStripeBranding(): { branding: SketchBranding; loading: boolean } {
+  const { settings, config } = useGlobalData();
+  const [title] = getSettingValues<string>(settings, ['title']);
+  // No error toast: the stand-in is shown instead, as it is on a Ghost too old to read this.
+  const { data, isLoading } = useReadStripeCheckoutBranding({
+    enabled: checkStripeEnabled(settings, config),
+    defaultErrorHandler: false,
+  });
+
+  const read = data?.checkout_branding[0];
+  return {
+    branding: {
+      display_name: read?.display_name ?? (title || 'Your publication'),
+      design: read?.design ?? STRIPE_DEFAULT_DESIGN,
+    },
+    loading: isLoading,
+  };
+}
 
 /**
  * "Preview in Stripe": one item per active paid tier, each opening a real Stripe Checkout page
@@ -280,13 +313,13 @@ const modalProps = {
 
 const CheckoutEditor: React.FC<{
   setting: StripeCheckoutDesignSetting;
-  displayName: string;
+  branding: SketchBranding;
   onClose: () => void;
-}> = ({ setting, displayName, onClose }) => {
+}> = ({ setting, branding, onClose }) => {
   const handleError = useHandleError();
   const { mutateAsync: editConfig } = useEditStripeCheckoutConfig();
   const { formState, saveState, updateForm, handleSave, okProps } = useForm<DesignFormState>({
-    initialState: formStateOf(setting),
+    initialState: formStateOf(setting, branding.design),
     savingDelay: 500,
     onSave: async (state) => {
       await editConfig({ design: designSettingOf(state) });
@@ -304,8 +337,8 @@ const CheckoutEditor: React.FC<{
       okVariant={okProps.variant}
       preview={
         <CheckoutPreview
-          design={formState.customize ? formState.design : STRIPE_DEFAULT_DESIGN}
-          displayName={displayName}
+          design={formState.customize ? formState.design : branding.design}
+          displayName={branding.display_name}
         />
       }
       sidebar={<DesignSettings state={formState} onChange={(next) => updateForm(() => next)} />}
@@ -324,22 +357,19 @@ const CheckoutEditor: React.FC<{
 
 const CheckoutModal: React.FC = () => {
   const { updateRoute } = useSettingsNavigation();
-  const { settings } = useGlobalData();
-  const [title] = getSettingValues<string>(settings, ['title']);
-  // Stripe shows the business name set in the Stripe dashboard, which Ghost can't read yet.
-  const displayName = title || 'Your publication';
   const { data, isError } = useReadStripeCheckoutConfig();
+  const { branding, loading } = useStripeBranding();
   const setting = data?.checkout_config[0]?.design;
   const close = () => updateRoute('tiers');
 
-  if (!setting) {
+  if (!setting || loading) {
     return (
       <PreviewModalContent
         {...modalProps}
         buttonsDisabled={true}
         okLabel="Save"
         preview={
-          <CheckoutPreview design={STRIPE_DEFAULT_DESIGN} displayName={displayName} loading />
+          <CheckoutPreview design={branding.design} displayName={branding.display_name} loading />
         }
         sidebar={
           <div>
@@ -355,7 +385,7 @@ const CheckoutModal: React.FC = () => {
     );
   }
 
-  return <CheckoutEditor displayName={displayName} setting={setting} onClose={close} />;
+  return <CheckoutEditor branding={branding} setting={setting} onClose={close} />;
 };
 
 // The route stays registered, but with the stripeCheckoutDesign flag off it goes straight
