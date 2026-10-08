@@ -2669,4 +2669,25 @@ module.exports = {
     requires_approval: { type: 'boolean', nullable: false, defaultTo: false },
     created_at: { type: 'dateTime', nullable: false },
   },
+  // Durable hand-off point between a committed DB change and the jobs backend.
+  // The jobs service inserts a row (in the caller's transaction when given one)
+  // and the relay forwards it to the backend, deleting it only once the backend
+  // confirms acceptance. Still in development: see ./in-development.ts.
+  jobs_outbox: {
+    // Stable dispatch ID (ObjectID), assigned before insert and reused on every
+    // relay retry so the hand-off is at-least-once keyed on it.
+    id: { type: 'string', maxlength: 24, nullable: false, primary: true },
+    // Versioned, serialised dispatch envelope the relay forwards unchanged. An
+    // envelope larger than this is a bug in the job's payload, not the outbox's
+    // concern; a dispatch-time length check names the job before MySQL rejects
+    // the oversized insert inside the dispatch transaction.
+    envelope: { type: 'text', maxlength: 65535, nullable: false },
+    created_at: { type: 'dateTime', nullable: false },
+    // Earliest instant the relay may attempt submission; initially the creation
+    // time, moved forward by the retry delay after a failed attempt. The index
+    // serves the relay's eligibility-ordered claim query (InnoDB appends the PK,
+    // so its order is effectively (available_at, id)).
+    available_at: { type: 'dateTime', nullable: false },
+    '@@INDEXES@@': [['available_at']],
+  },
 };

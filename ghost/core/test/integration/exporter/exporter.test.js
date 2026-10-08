@@ -56,6 +56,7 @@ describe('Exporter', function () {
       'integrations',
       'invites',
       'jobs',
+      'jobs_outbox',
       'labels',
       'machine_payment_events',
       'members',
