@@ -211,6 +211,14 @@ export interface StripeCheckoutSessionRequest {
   shipping_address_collection?: { allowed_countries: string[] };
   tax_id_collection?: { enabled: boolean };
   phone_number_collection?: { enabled: boolean };
+  // The page's design, as the publisher saved it. Absent when Stripe uses the design set in
+  // the Stripe dashboard.
+  branding_settings?: {
+    button_color: string;
+    background_color: string;
+    border_style: string;
+    font_family: string;
+  };
 }
 
 export interface RecordedStripeCheckoutSession {
