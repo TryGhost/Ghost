@@ -31,7 +31,6 @@ const messages = {
 // during independent deployments.
 const GA_FEATURES = [
   'automationAnalytics',
-  'automationRunAnalytics',
   'selfServeArchives',
   'editorReact',
   'billingReact',

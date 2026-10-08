@@ -30,11 +30,6 @@ const features: Feature[] = [
     flag: 'automationsPerTier',
   },
   {
-    title: 'Automation run analytics',
-    description: 'Track run-level analytics for automations.',
-    flag: 'automationRunAnalytics',
-  },
-  {
     title: 'Stripe Automatic Tax (private beta)',
     description: 'Use Stripe Automatic Tax at Stripe Checkout. Needs to be enabled in Stripe',
     flag: 'stripeAutomaticTax',
