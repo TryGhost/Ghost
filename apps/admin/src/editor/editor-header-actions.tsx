@@ -92,8 +92,6 @@ type HeaderItem =
       shortcut?: string;
       /** The post's main action, Publish or Update, in the header's success colour. */
       emphasis?: boolean;
-      /** Publish, a primary button in the bottom bar. */
-      primary?: boolean;
       /** Unpublish and Unschedule keep their quieter button. */
       quiet?: boolean;
       /** A contributor's Save keeps its plain button. */
@@ -113,7 +111,9 @@ const EMPHASIS_BUTTON =
 function HeaderItems({ items, bottomBar }: { items: HeaderItem[]; bottomBar: HTMLElement | null }) {
   const { isAdmin7 } = useShade();
   const atBottom = !!bottomBar;
-  const controls = items.map((item) => {
+  // The bar's rightmost action, Publish, Update or Save, is its primary button.
+  const lastAction = items.map((item) => item.kind).lastIndexOf('action');
+  const controls = items.map((item, index) => {
     if (item.kind === 'inputs-error') {
       return (
         <Fragment key={item.id}>
@@ -136,7 +136,7 @@ function HeaderItems({ items, bottomBar }: { items: HeaderItem[]; bottomBar: HTM
         </Fragment>
       );
     }
-    if (item.plain || (atBottom && item.primary)) {
+    if (item.plain || (atBottom && index === lastAction)) {
       return (
         <Button
           key={item.id}
@@ -558,7 +558,6 @@ function PublishActions({
           label: 'Publish',
           disabled: !inputs.isReady,
           emphasis: true,
-          primary: true,
           shortcut: publishShortcutLabel(),
           onSelect: openPublishFlow,
         },

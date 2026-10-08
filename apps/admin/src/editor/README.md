@@ -201,7 +201,8 @@ keeps its first line level with the back link's label and grows downward.
 Below Tailwind's `sm` breakpoint the status stays on the header row beside the
 back link, and the header's actions move to the bottom bar: the word count sits
 in the bottom-left corner, the actions in the bottom right, and the help link is
-hidden. Publish is a primary button there, and the bar names no shortcuts,
+hidden. The bar's rightmost action, Publish, Update or Save, is a primary
+button there, and the bar names no shortcuts,
 which still work. `editor-header-actions.tsx` builds one list of controls and,
 below the breakpoint, portals them into a slot `post-editor.tsx` keeps in its
 footer, so the header and the bar share order, disabled states, refusals and

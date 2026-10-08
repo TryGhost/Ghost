@@ -564,6 +564,16 @@ describe('Floating editor shell', () => {
 
       // Unpublish or Unschedule and Update, plus Retry when the load failed.
       await expectSmallScreenLayout(inputs === 'failed' ? 3 : 2);
+      // Update, the bar's rightmost action, is its primary button, disabled until
+      // something changes; the others keep their header looks.
+      const actions = editorScreen.headerActions().getByRole('button').elements();
+      expect(actions.at(-1)).toBe(editorScreen.updateButton().element());
+      await expect.element(editorScreen.updateButton()).toHaveClass('bg-primary');
+      await expect.element(editorScreen.updateButton()).not.toHaveClass('text-state-success');
+      await expect.element(editorScreen.updateButton()).toBeDisabled();
+      const secondary =
+        status === 'scheduled' ? editorScreen.unscheduleButton() : editorScreen.unpublishButton();
+      await expect.element(secondary).not.toHaveClass('bg-primary');
       expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(window.innerWidth);
     },
   );
