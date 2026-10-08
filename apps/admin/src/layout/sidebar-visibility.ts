@@ -8,6 +8,7 @@ import {
 import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
 import { canAccessSettings, isEditorUser } from '@tryghost/admin-x-framework/api/users';
+import { useIsMobile } from '@tryghost/shade/utils';
 
 function hidesAdminSidebar(handle: unknown): handle is AdminRouteHandle {
   return (
@@ -27,11 +28,6 @@ function showsSettingsSidebar(handle: unknown): handle is AdminRouteHandle {
   );
 }
 
-/**
- * True when the current route swaps the shell navigation for the Settings
- * navigation. Only users who get the full Settings screen have that navigation;
- * Editors (Staff only) and Authors (their profile) keep the app navigation.
- */
 export function useIsSettingsSidebarRoute(): boolean {
   const matches = useMatches();
   const admin7Settings = useFeatureFlag('admin7settings');
@@ -49,11 +45,12 @@ export function useIsSettingsSidebarRoute(): boolean {
 export function useRouteHidesAdminSidebar(): boolean {
   const matches = useMatches();
   const admin7Settings = useFeatureFlag('admin7settings');
+  const isMobile = useIsMobile();
 
-  // Without admin7settings, Settings is still a full-screen takeover.
   return matches.some(
     (match) =>
-      hidesAdminSidebar(match.handle) || (!admin7Settings && showsSettingsSidebar(match.handle)),
+      hidesAdminSidebar(match.handle) ||
+      ((!admin7Settings || isMobile) && showsSettingsSidebar(match.handle)),
   );
 }
 

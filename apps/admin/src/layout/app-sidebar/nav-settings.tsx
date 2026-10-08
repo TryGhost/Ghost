@@ -4,15 +4,13 @@ import { SidebarGroup, SidebarGroupContent, SidebarMenu } from '@tryghost/shade/
 import { LucideIcon } from '@tryghost/shade/utils';
 import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
 import { canAccessSettings } from '@tryghost/admin-x-framework/api/users';
-import { useLocation } from '@tryghost/admin-x-framework';
 import { NavMenuItem } from './nav-menu-item';
-import { settingsReturnToState } from '@/layout/settings-navigation';
+import { useSettingsReturnToState } from '@/layout/settings-navigation';
 
 function NavSettings({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
   const { data: currentUser } = useCurrentUser();
-  const location = useLocation();
   const showSettings = currentUser && canAccessSettings(currentUser);
-  const returnTo = `${location.pathname}${location.search}${location.hash}`;
+  const settingsReturnToState = useSettingsReturnToState();
 
   return (
     <SidebarGroup {...props}>
@@ -20,7 +18,7 @@ function NavSettings({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
         <SidebarMenu>
           {showSettings && (
             <NavMenuItem>
-              <NavMenuItem.Link state={settingsReturnToState(returnTo)} to="settings">
+              <NavMenuItem.Link state={settingsReturnToState} to="settings">
                 <LucideIcon.Settings />
                 <NavMenuItem.Label>Settings</NavMenuItem.Label>
               </NavMenuItem.Link>

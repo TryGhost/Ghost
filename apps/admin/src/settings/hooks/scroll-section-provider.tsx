@@ -22,8 +22,7 @@ const scrollToSection = (
 const scrollSidebarNav = (navElement: HTMLLIElement, doneInitialScroll: boolean) => {
   const sidebar = document.getElementById('settings-sidebar-scroller');
 
-  // With admin7settings on mobile, the nav only exists while its sheet is open,
-  // so the registered element can be detached and the scroller missing.
+  // The navigation can be unmounted while the shell swaps sidebars.
   if (!sidebar || !navElement.isConnected) {
     return;
   }

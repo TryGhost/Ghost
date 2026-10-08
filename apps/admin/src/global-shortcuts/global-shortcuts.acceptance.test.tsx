@@ -18,6 +18,17 @@ describe('App-wide shortcuts', () => {
     await expect.element(sidebarScreen.shellNav()).not.toBeInTheDocument();
   });
 
+  it('returns to the opening route after Settings is opened with the shortcut', async () => {
+    allowUnhandledRequests();
+    await renderAdminApp('/site', { labs: { admin7settings: true } });
+
+    await expect.poll(() => globalShortcutsScreen.press('openSettings')).toBe(true);
+    await expect.poll(currentRoute).toBe('/settings');
+
+    await sidebarScreen.shellNav().getByRole('button', { name: 'Back to app' }).click();
+    await expect.poll(currentRoute).toBe('/site');
+  });
+
   it('stays put on Cmd/Ctrl+, while the screen hides the sidebar', async () => {
     // The settings app owns its request graph; this spec asserts only the navigation.
     allowUnhandledRequests();

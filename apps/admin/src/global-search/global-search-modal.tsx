@@ -15,6 +15,7 @@ import {
 import { cn } from '@tryghost/shade/utils';
 import { useLocation, useNavigate } from '@tryghost/admin-x-framework';
 import { navigateEmberBillingSubRoute } from '@/ember-bridge';
+import { useSettingsReturnToState } from '@/layout/settings-navigation';
 import { useEmberOwnedRouteMatcher } from '@/routes';
 import { getSearchDestination } from './search-destination';
 import type { SearchResult } from './searchables';
@@ -82,6 +83,7 @@ function GlobalSearchPanel({ onClose }: { onClose: () => void }) {
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const isEmberOwned = useEmberOwnedRouteMatcher();
+  const settingsReturnToState = useSettingsReturnToState();
 
   const openResult = (result: SearchResult) => {
     const destination = getSearchDestination(result);
@@ -100,7 +102,10 @@ function GlobalSearchPanel({ onClose }: { onClose: () => void }) {
       return;
     }
 
-    navigate(destination.path, { crossApp: isEmberOwned(destination.path) });
+    navigate(destination.path, {
+      crossApp: isEmberOwned(destination.path),
+      state: /^\/settings(?:[/?#]|$)/.test(destination.path) ? settingsReturnToState : undefined,
+    });
   };
 
   const hasTerm = term.trim() !== '';

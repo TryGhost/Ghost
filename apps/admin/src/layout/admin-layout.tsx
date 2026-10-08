@@ -8,6 +8,7 @@ import { cn } from '@tryghost/shade/utils';
 import AppSidebar from './app-sidebar';
 import SettingsSidebar from './app-sidebar/settings-sidebar';
 import { SettingsNavigationSlotContext } from './settings-navigation';
+import { SidebarSwapTransition } from './sidebar-swap-transition';
 import { MobileNavBar } from './app-sidebar/mobile-nav-bar';
 import { SkipLink } from './skip-link';
 import { ContributorUserMenu } from './app-sidebar/user-menu';
@@ -51,6 +52,8 @@ const pageChromeClassName = [
   '[&_[data-view-site-preview]]:border-[var(--border-subtle)]!',
 ].join(' ');
 
+const SIDEBAR_PANEL_CLASS_NAME = '[&>[data-sidebar=sidebar]]:relative';
+
 interface AdminLayoutProps {
   children: React.ReactNode;
 }
@@ -73,7 +76,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
     if (dunningLocked) {
       insetRef.current?.scrollTo?.(0, 0);
     }
-  }, [dunningLocked]);
+  }, [dunningLocked, sidebarVisible, isSettingsRoute]);
 
   // The covered regions become `inert` while the takeover is up: aria-modal is
   // only a semantic hint, so without this the covered page stays reachable by
@@ -130,17 +133,18 @@ export function AdminLayout({ children }: AdminLayoutProps) {
           (isSettingsRoute ? (
             <SettingsSidebar
               ref={sidebarRef}
-              className={cn(dunningLocked && 'opacity-40')}
+              className={cn(SIDEBAR_PANEL_CLASS_NAME, dunningLocked && 'opacity-40')}
               slotRef={setSettingsNavigationSlot}
               variant="floating"
             />
           ) : (
             <AppSidebar
               ref={sidebarRef}
-              className={cn(dunningLocked && 'opacity-40')}
+              className={cn(SIDEBAR_PANEL_CLASS_NAME, dunningLocked && 'opacity-40')}
               variant="floating"
             />
           ))}
+        <SidebarSwapTransition settingsRoute={isSettingsRoute} sidebarRef={sidebarRef} />
         <SidebarInset
           ref={insetRef}
           className={cn(

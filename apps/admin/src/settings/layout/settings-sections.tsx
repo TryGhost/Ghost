@@ -35,7 +35,7 @@ const Settings: React.FC = () => {
 
   // Sections sit 64px apart, matching the page's top and bottom padding.
   return (
-    <Stack className="mx-auto max-w-[760px] gap-16 px-(--page-gutter) py-16" gap="none">
+    <Stack className="mx-auto max-w-[760px] gap-16 px-8 py-16 tablet:px-(--page-gutter)" gap="none">
       {sections}
     </Stack>
   );

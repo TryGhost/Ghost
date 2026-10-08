@@ -204,6 +204,35 @@ describe('Cmd-K search', () => {
     await expect.element(globalSearchScreen.dialog()).not.toBeInTheDocument();
   });
 
+  it('returns to the opening route after opening a Staff result in Settings', async () => {
+    allowUnhandledRequests();
+    await renderAdminApp('/tags', { labs: { admin7settings: true } });
+    await openAndSearch('first user');
+
+    await globalSearchScreen.option(/First user/).click();
+    await expect.poll(currentRoute).toBe('/settings/staff/first-user');
+
+    await sidebarScreen.shellNav().getByRole('button', { name: 'Back to app' }).click();
+    await expect.poll(currentRoute).toBe('/tags');
+  });
+
+  it('keeps the original return route when Cmd-K opens another Settings result', async () => {
+    allowUnhandledRequests();
+    await renderAdminApp('/tags', { labs: { admin7settings: true } });
+    await openAndSearch('first user');
+
+    await globalSearchScreen.option(/First user/).click();
+    await expect.poll(currentRoute).toBe('/settings/staff/first-user');
+
+    await openWithShortcut();
+    await globalSearchScreen.search('first user');
+    await globalSearchScreen.option(/First user/).click();
+    await expect.poll(currentRoute).toBe('/settings/staff/first-user');
+
+    await sidebarScreen.shellNav().getByRole('button', { name: 'Back to app' }).click();
+    await expect.poll(currentRoute).toBe('/tags');
+  });
+
   it('hands a post to the Ember editor', async () => {
     await renderAdminApp('/tags');
     await openAndSearch('first post');

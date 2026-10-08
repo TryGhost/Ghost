@@ -5,8 +5,10 @@ import { getSettingValue, useBrowseSettings } from '@tryghost/admin-x-framework/
 import { useBrowseSite } from '@tryghost/admin-x-framework/api/site';
 import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
 import { isContributorUser } from '@tryghost/admin-x-framework/api/users';
+import { Link } from '@tryghost/admin-x-framework';
 import { useOpenGlobalSearch } from '@/global-search/global-search-context';
 import { searchShortcutLabel } from '@/global-search/search-shortcut';
+import { useSettingsReturnToState } from '@/layout/settings-navigation';
 
 function AppSidebarHeader({ ...props }: React.ComponentProps<typeof SidebarHeader>) {
   const { data: currentUser } = useCurrentUser();
@@ -17,6 +19,7 @@ function AppSidebarHeader({ ...props }: React.ComponentProps<typeof SidebarHeade
   const isPrivate = getSettingValue<boolean>(settings.data?.settings, 'is_private') ?? false;
   const showSearch = currentUser && !isContributorUser(currentUser);
   const openGlobalSearch = useOpenGlobalSearch();
+  const settingsReturnToState = useSettingsReturnToState();
 
   return (
     <SidebarHeader {...props}>
@@ -31,7 +34,12 @@ function AppSidebarHeader({ ...props }: React.ComponentProps<typeof SidebarHeade
                 {title}
               </div>
               {isPrivate && (
-                <a aria-label="Open access settings" className="shrink-0" href="#/settings/members">
+                <Link
+                  aria-label="Open access settings"
+                  className="shrink-0"
+                  state={settingsReturnToState}
+                  to="/settings/members"
+                >
                   <Badge
                     className="gap-1 border-transparent bg-orange-100 px-1.5 py-0 text-[11px] leading-5 font-semibold text-orange-700 transition-colors hover:bg-orange-200 dark:bg-orange-500/20 dark:text-orange-300 dark:hover:bg-orange-500/30"
                     variant="secondary"
@@ -39,7 +47,7 @@ function AppSidebarHeader({ ...props }: React.ComponentProps<typeof SidebarHeade
                     <LucideIcon.Lock className="size-3" strokeWidth={2.25} />
                     Private
                   </Badge>
-                </a>
+                </Link>
               )}
             </div>
           </div>

@@ -4,11 +4,13 @@ import { page, userEvent } from 'vitest/browser';
 import {
   currentRoute,
   fakeAnalyticsOverview,
+  currentUserResponse,
   fakeSettingsScreens,
   fakeTags,
   fakeTiers,
   renderAdminApp,
   settingsResponse,
+  staffRole,
   tier,
 } from '@test-utils/acceptance';
 import { sidebarScreen } from '@/layout/sidebar.screen';
@@ -38,6 +40,32 @@ describe('Settings layout', () => {
     await expect.poll(currentRoute).toBe('/tags');
   });
 
+  it('lets keyboard users reach Settings sections', async () => {
+    fakeSettingsScreens();
+    fakeAnalyticsOverview();
+    await renderAdminApp('/settings', { labs: { admin7settings: true } });
+
+    await expect.element(settingsScreen.search()).toHaveFocus();
+    await userEvent.tab();
+
+    await expect
+      .element(page.getByRole('button', { name: 'Title & description', exact: true }))
+      .toHaveFocus();
+  });
+
+  it('keeps the Settings content scrollable inside the shell', async () => {
+    fakeSettingsScreens();
+    fakeAnalyticsOverview();
+    await renderAdminApp('/settings', { labs: { admin7settings: true } });
+
+    const scroller = () => document.getElementById('settings-scroller');
+    await expect.poll(scroller).not.toBeNull();
+    await expect.poll(() => scroller()!.scrollHeight - scroller()!.clientHeight).toBeGreaterThan(0);
+
+    scroller()!.scrollTo({ top: scroller()!.scrollHeight });
+    await expect.poll(() => scroller()!.scrollTop).toBeGreaterThan(0);
+  });
+
   it('falls back to the landing route when nothing opened settings', async () => {
     fakeSettingsScreens();
     fakeAnalyticsOverview();
@@ -54,7 +82,6 @@ describe('Settings layout', () => {
 
     await sidebarScreen.navLink('Settings').click();
     await expect.poll(currentRoute).toBe('/settings');
-    await expect.element(settingsScreen.search()).toHaveFocus();
 
     await userEvent.keyboard('{Escape}');
     await expect.poll(currentRoute).toBe('/tags');
@@ -122,7 +149,7 @@ describe('Settings layout', () => {
   });
 });
 
-describe('Settings navigation on mobile', () => {
+describe('Settings layout on mobile', () => {
   const toggleSidebar = () => page.getByRole('button', { name: 'Toggle Sidebar' });
   // On mobile these app-nav links only exist inside the sidebar sheet, not the bottom bar.
   const sheetLink = (name: string) => page.getByRole('link', { name, exact: true });
@@ -131,55 +158,74 @@ describe('Settings navigation on mobile', () => {
     await page.viewport(1280, 800);
   });
 
-  it('shows the settings nav in the sheet and closes it after navigating', async () => {
-    fakeSettingsScreens();
-    fakeAnalyticsOverview();
-    await page.viewport(390, 844);
-    await renderAdminApp('/settings', { labs: { admin7settings: true } });
-
-    await toggleSidebar().click();
-    await expect.element(settingsScreen.navItem('Design & branding')).toBeVisible();
-    // The sheet must not steal focus into search (and pop the phone keyboard).
-    await expect.element(settingsScreen.search()).not.toHaveFocus();
-
-    await settingsScreen.navItem('Design & branding').click();
-    await expect.poll(currentRoute).toBe('/settings/design');
-    await expect(settingsScreen.search()).toHaveCount(0);
-
-    // Scrolling after the sheet unmounted must not touch the detached nav.
-    document.getElementById('settings-scroller')?.scrollBy({ top: 400 });
-    await expect.element(settingsScreen.navigation()).toBeInTheDocument();
-  });
-
-  it('keeps the settings nav after resizing between mobile and desktop', async () => {
-    fakeSettingsScreens();
-    fakeAnalyticsOverview();
-    await renderAdminApp('/settings', { labs: { admin7settings: true } });
-    await expect.element(settingsScreen.navItem('Design & branding')).toBeVisible();
-
-    await page.viewport(390, 844);
-    await toggleSidebar().click();
-    await expect.element(settingsScreen.navItem('Design & branding')).toBeVisible();
-
-    await page.viewport(1280, 800);
-    await expect.element(settingsScreen.navItem('Design & branding')).toBeVisible();
-  });
-
-  it('closes the sheet when going back to the app', async () => {
+  it('keeps search and the back button on the page', async () => {
     fakeSettingsScreens();
     fakeTags([]);
     await page.viewport(390, 844);
     await renderAdminApp('/tags', { labs: { admin7settings: true } });
 
-    // On mobile the app nav, including Settings, lives in the sheet.
     await toggleSidebar().click();
     await sheetLink('Settings').click();
     await expect.poll(currentRoute).toBe('/settings');
 
-    await toggleSidebar().click();
+    await expect.element(settingsScreen.search()).toBeVisible();
+    await expect.element(settingsScreen.exitButton()).toBeVisible();
+    await expect(toggleSidebar()).toHaveCount(0);
+    await expect.element(settingsScreen.search()).not.toHaveFocus();
+
+    expect(settingsScreen.exitButton().element().getBoundingClientRect().left).toBe(32);
+    expect(
+      page.getByRole('heading', { name: 'General settings' }).element().getBoundingClientRect()
+        .left,
+    ).toBe(32);
+
     await settingsScreen.exitButton().click();
     await expect.poll(currentRoute).toBe('/tags');
-    await expect.element(page.getByRole('heading', { name: 'Tags' })).toBeVisible();
-    await expect(sheetLink('Drafts')).toHaveCount(0);
+  });
+
+  it('keeps search and the back button on the page for Editors', async () => {
+    fakeSettingsScreens();
+    await page.viewport(390, 844);
+    const me = currentUserResponse();
+    me.users[0].roles = [staffRole({ name: 'Editor' })];
+    await renderAdminApp('/settings/staff', {
+      labs: { admin7settings: true },
+      boot: { browseMe: { response: me } },
+    });
+
+    await expect.element(settingsScreen.search()).toBeVisible();
+    await expect.element(settingsScreen.exitButton()).toBeVisible();
+    await expect(toggleSidebar()).toHaveCount(0);
+
+    expect(settingsScreen.exitButton().element().getBoundingClientRect().left).toBeCloseTo(
+      page.getByRole('heading', { name: 'Settings' }).element().getBoundingClientRect().left,
+      0,
+    );
+  });
+
+  it('shows every section and a no-result message for an unmatched search', async () => {
+    fakeSettingsScreens();
+    fakeAnalyticsOverview();
+    await page.viewport(390, 844);
+    await renderAdminApp('/settings', { labs: { admin7settings: true } });
+
+    await settingsScreen.search().fill('zzzz');
+
+    await expect.element(page.getByText('No result', { exact: true })).toBeVisible();
+    await expect.element(page.getByRole('heading', { name: 'Title & description' })).toBeVisible();
+  });
+
+  it('keeps the Settings controls after resizing between mobile and desktop', async () => {
+    fakeSettingsScreens();
+    fakeAnalyticsOverview();
+    await renderAdminApp('/settings', { labs: { admin7settings: true } });
+
+    await page.viewport(390, 844);
+    await expect.element(settingsScreen.search()).toBeVisible();
+    await expect.element(settingsScreen.exitButton()).toBeVisible();
+
+    await page.viewport(1280, 800);
+    await expect.element(settingsScreen.search()).toBeVisible();
+    await expect.element(settingsScreen.exitButton()).toBeVisible();
   });
 });

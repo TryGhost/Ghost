@@ -6,21 +6,11 @@ import { useExitSettings } from '@/settings/hooks/use-exit-settings';
 import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import { FullscreenCloseButton } from '@/shared/fullscreen-close-button';
 
-interface ExitSettingsButtonProps {
-  /** Called after leaving Settings, e.g. to close the mobile sheet the button sits in. */
-  onNavigate?: () => void;
-}
-
-const ExitSettingsButton: React.FC<ExitSettingsButtonProps> = ({ onNavigate }) => {
+const ExitSettingsButton: React.FC = () => {
   const { isDirty } = useGlobalDirtyState();
   const { confirm, dialogProps } = useDirtyConfirmation();
   const exitSettings = useExitSettings();
   const admin7Settings = useFeatureFlag('admin7settings');
-
-  const navigateAway = () => {
-    exitSettings();
-    onNavigate?.();
-  };
 
   return (
     <>
@@ -33,7 +23,7 @@ const ExitSettingsButton: React.FC<ExitSettingsButtonProps> = ({ onNavigate }) =
           title="Back to app (ESC)"
           type="button"
           variant="outline"
-          onClick={() => confirm(isDirty, navigateAway)}
+          onClick={() => confirm(isDirty, exitSettings)}
         >
           <LucideIcon.ArrowLeft />
         </Button>
@@ -43,7 +33,7 @@ const ExitSettingsButton: React.FC<ExitSettingsButtonProps> = ({ onNavigate }) =
           data-testid="exit-settings"
           id="done-button"
           title="Close (ESC)"
-          onClick={() => confirm(isDirty, navigateAway)}
+          onClick={() => confirm(isDirty, exitSettings)}
         />
       )}
       <DirtyConfirmDialog {...dialogProps} />

@@ -332,7 +332,7 @@ describe('Sidebar navigation', () => {
     await expect.element(sidebarScreen.shellNav()).not.toBeInTheDocument();
   });
 
-  it('swaps the shell navigation for settings navigation', async () => {
+  it('swaps the shell navigation for Settings navigation on desktop', async () => {
     // The settings app owns its request graph; this spec asserts only the shell navigation.
     allowUnhandledRequests();
     await renderAdminApp('/site', { labs: { admin7settings: true } });
@@ -347,7 +347,7 @@ describe('Sidebar navigation', () => {
       .toBeVisible();
   });
 
-  it('shows the settings navigation when a settings route is loaded directly', async () => {
+  it('shows Settings navigation when a settings route is loaded directly', async () => {
     // The settings app owns its request graph; this spec asserts only the shell navigation.
     allowUnhandledRequests();
     await renderAdminApp('/settings/staff', { labs: { admin7settings: true } });
@@ -359,7 +359,7 @@ describe('Sidebar navigation', () => {
       .toBeVisible();
   });
 
-  it('keeps the app navigation for editors, who only see Staff in settings', async () => {
+  it('keeps the app navigation for editors, who only see Staff in Settings', async () => {
     // The settings app owns its request graph; this spec asserts only the shell navigation.
     allowUnhandledRequests();
     const me = currentUserResponse();

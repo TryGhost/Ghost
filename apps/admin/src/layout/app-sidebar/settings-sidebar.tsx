@@ -1,21 +1,23 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 
 import { Sidebar, SidebarContent } from '@tryghost/shade/components';
+import { Stack } from '@tryghost/shade/primitives';
 import { cn } from '@tryghost/shade/utils';
 
 const FADE_HEIGHT = 48;
 
-function SettingsNavigationFade() {
-  // Distance left to scroll, so the fade eases out as the last item arrives
-  // instead of covering it at the bottom.
+function SettingsNavigationFade({ slot }: { slot: HTMLElement | null }) {
   const [remainingScroll, setRemainingScroll] = useState(0);
 
   useEffect(() => {
+    if (!slot) {
+      return;
+    }
+
     let detach: (() => void) | undefined;
-    let frameId: number | undefined;
 
     const attach = () => {
-      const scroller = document.getElementById('settings-sidebar-scroller');
+      const scroller = slot.querySelector<HTMLElement>('#settings-sidebar-scroller');
       if (!scroller) {
         return false;
       }
@@ -41,21 +43,20 @@ function SettingsNavigationFade() {
       return true;
     };
 
-    const waitForScroller = () => {
-      if (!attach()) {
-        frameId = requestAnimationFrame(waitForScroller);
+    const slotObserver = new MutationObserver(() => {
+      if (attach()) {
+        slotObserver.disconnect();
       }
-    };
-
-    waitForScroller();
+    });
+    if (!attach()) {
+      slotObserver.observe(slot, { childList: true, subtree: true });
+    }
 
     return () => {
-      if (frameId) {
-        cancelAnimationFrame(frameId);
-      }
+      slotObserver.disconnect();
       detach?.();
     };
-  }, []);
+  }, [slot]);
 
   if (remainingScroll <= 1) {
     return null;
@@ -76,6 +77,15 @@ interface SettingsSidebarProps extends React.ComponentProps<typeof Sidebar> {
 
 const SettingsSidebar = React.forwardRef<HTMLDivElement, SettingsSidebarProps>(
   function SettingsSidebar({ className, slotRef, ...props }, ref) {
+    const [slot, setSlot] = useState<HTMLDivElement | null>(null);
+    const handleSlotRef = useCallback(
+      (element: HTMLDivElement | null) => {
+        setSlot(element);
+        slotRef(element);
+      },
+      [slotRef],
+    );
+
     return (
       <Sidebar
         ref={ref}
@@ -83,9 +93,9 @@ const SettingsSidebar = React.forwardRef<HTMLDivElement, SettingsSidebarProps>(
         data-testid="admin-sidebar"
         {...props}
       >
-        <SidebarContent className="relative overflow-hidden px-5 pt-5 pb-0">
-          <div ref={slotRef} className="flex min-h-0 flex-1 flex-col" />
-          <SettingsNavigationFade />
+        <SidebarContent className="relative overflow-hidden pt-5 pb-0">
+          <Stack ref={handleSlotRef} className="min-h-0 flex-1" gap="none" />
+          <SettingsNavigationFade slot={slot} />
         </SidebarContent>
       </Sidebar>
     );

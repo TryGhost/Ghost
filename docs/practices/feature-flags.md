@@ -120,6 +120,12 @@ ActivityPub uses Shade's current default. Core temporarily retains `admin7Pill`
 in `GA_FEATURES` so older Admin builds receive an enabled value during independent
 deployments. Remove that GA entry once those older builds are no longer supported.
 
+The `admin7settings` milestone swaps the shell navigation for the Settings
+navigation on desktop. Mobile retains the full-screen Settings takeover, with
+its return control and search inside Settings. The flag-off path preserves the
+legacy Settings layout. Editors retain the app navigation because their Settings
+access is limited; Authors only receive their profile route.
+
 ## How values are resolved
 
 For normal Labs flags, later sources in this list override earlier ones:

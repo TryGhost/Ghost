@@ -11,6 +11,7 @@ const useMatchesMock = vi.fn<() => RouteMatch[]>();
 const useEmberSidebarVisibilityMock = vi.fn<() => boolean>();
 const syncEmberFullScreenMock = vi.fn<(isFullScreen: boolean) => () => void>();
 const useFeatureFlagMock = vi.fn<() => boolean>();
+const useIsMobileMock = vi.fn<() => boolean>();
 
 vi.mock('@tryghost/admin-x-framework', () => ({
   useLocation: () => useLocationMock(),
@@ -30,6 +31,10 @@ vi.mock('@tryghost/admin-x-framework/hooks', () => ({
   useFeatureFlag: () => useFeatureFlagMock(),
 }));
 
+vi.mock('@tryghost/shade/utils', () => ({
+  useIsMobile: () => useIsMobileMock(),
+}));
+
 describe('useAdminSidebarVisibility', () => {
   beforeEach(() => {
     useLocationMock.mockReturnValue({ pathname: '/posts' });
@@ -37,6 +42,7 @@ describe('useAdminSidebarVisibility', () => {
     useMatchesMock.mockReturnValue([]);
     useEmberSidebarVisibilityMock.mockReturnValue(true);
     useFeatureFlagMock.mockReturnValue(false);
+    useIsMobileMock.mockReturnValue(false);
   });
 
   it('ignores stale Ember fullscreen state on a React screen', async () => {
@@ -113,7 +119,7 @@ describe('useAdminSidebarVisibility', () => {
     expect(result.current).toBe(true);
   });
 
-  it('uses the Settings sidebar only when admin7settings is enabled', async () => {
+  it('uses the Settings sidebar on desktop only when admin7settings is enabled', async () => {
     const { useAdminSidebarVisibility } = await import('./sidebar-visibility');
 
     useMatchesMock.mockReturnValue([{ handle: { settingsSidebar: true } }]);
@@ -124,6 +130,10 @@ describe('useAdminSidebarVisibility', () => {
     useFeatureFlagMock.mockReturnValue(true);
     rerender();
     expect(result.current).toBe(true);
+
+    useIsMobileMock.mockReturnValue(true);
+    rerender();
+    expect(result.current).toBe(false);
   });
 });
 
@@ -150,6 +160,7 @@ describe('useSyncEmberFullScreen', () => {
     const { useSyncEmberFullScreen } = await import('./sidebar-visibility');
     syncEmberFullScreenMock.mockReturnValue(vi.fn());
     useFeatureFlagMock.mockReturnValue(false);
+    useIsMobileMock.mockReturnValue(false);
 
     useMatchesMock.mockReturnValue([{}, { handle: { settingsSidebar: true } }]);
     const { rerender } = renderHook(() => useSyncEmberFullScreen());

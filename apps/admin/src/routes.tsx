@@ -165,8 +165,8 @@ const appRoutes: RouteObject[] = [
     children: activityPubRoutes,
   },
   {
-    // The shell swaps its primary navigation for the Settings navigation at
-    // first paint, before the lazy settings chunk has resolved.
+    // The shell swaps its primary navigation for Settings on desktop before
+    // the lazy settings chunk has resolved. Mobile keeps its full takeover.
     path: `settings`,
     lazy: lazyComponent(lazySettingsScreen),
     children: settingsRouteChildren,

@@ -1,11 +1,21 @@
 import { describe, expect, it } from 'vitest';
-import { getSettingsReturnTo, settingsReturnToState } from './settings-navigation';
+import {
+  getSettingsReturnTo,
+  preserveSettingsReturnToState,
+  settingsReturnToState,
+} from './settings-navigation';
 
 describe('getSettingsReturnTo', () => {
   it('returns the stored in-app path', () => {
     expect(getSettingsReturnTo(settingsReturnToState('/posts?type=draft#top'))).toBe(
       '/posts?type=draft#top',
     );
+  });
+
+  it('retains an existing app return target', () => {
+    expect(
+      preserveSettingsReturnToState(settingsReturnToState('/posts?type=draft'), '/settings/staff'),
+    ).toEqual(settingsReturnToState('/posts?type=draft'));
   });
 
   it('ignores missing or malformed state', () => {
