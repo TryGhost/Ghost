@@ -5,6 +5,7 @@
 export { settingsRouteChildren } from './routes';
 export { canAccessSettingsRoute } from './settings-access';
 export { ThemeValidationIssueList } from './site/theme/theme-validation-details';
+export { LimitModalContent } from './components/limit-modal';
 
 // Lazy entry, not a component re-export: the shell mounts it behind `lazy:`,
 // so a static re-export would pull the chunk into the shell bundle.
