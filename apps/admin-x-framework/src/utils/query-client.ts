@@ -19,6 +19,11 @@ const queryClient =
         retry: false,
         networkMode: 'always',
       },
+      mutations: {
+        // The default 'online' mode pauses writes while the browser reports
+        // offline, leaving their promises pending instead of failing
+        networkMode: 'always',
+      },
     },
   });
 
