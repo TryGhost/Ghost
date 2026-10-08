@@ -48,6 +48,8 @@ export function useStickyRunSummary({
       // The header follows the bar through each animation frame. Measure its natural
       // height, not its sticky position, when locating the virtualized rows.
       scroller.style.setProperty('--sticky-status-height', `${barHeight}px`);
+      // Keep browser focus scrolling clear of the sticky controls.
+      scroller.style.scrollPaddingTop = `${barHeight + header.offsetHeight}px`;
       setScrollMargin(summaryElement.offsetHeight + barHeight + header.offsetHeight);
       // Keep a viewport of space below the summary, even with only a few runs.
       // Otherwise shrinking the bar could clamp scrolling across the sticky boundary.

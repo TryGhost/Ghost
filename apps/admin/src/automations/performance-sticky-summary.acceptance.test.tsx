@@ -1,6 +1,6 @@
 import { act } from 'react';
 import { expect, it } from 'vitest';
-import { page } from 'vitest/browser';
+import { page, userEvent } from 'vitest/browser';
 import { fakeAdminEndpoint, renderAdminApp, settleTransitions } from '@test-utils/acceptance';
 import {
   flags,
@@ -71,4 +71,53 @@ it('reveals sticky status chips after the cards scroll away and restores the sum
   expect(
     expandedCards.getBoundingClientRect().bottom - scroller.getBoundingClientRect().top,
   ).toBeCloseTo(cardsBottom, 0);
+});
+
+it('keeps a row focused with Shift+Tab below the sticky controls', async () => {
+  prepareStatuses();
+  fakeAdminEndpoint('GET', /\/automations\/first\/runs\/\?/, {
+    automation_runs: Array.from({ length: 30 }, (_, index) =>
+      run({
+        id: `run-${index}`,
+        member: {
+          id: `member-${index}`,
+          name: `Member ${index}`,
+          email: `member${index}@example.test`,
+        },
+      }),
+    ),
+    meta: { pagination: { limit: 50, next_cursor: null } },
+  });
+  await renderAdminApp('/automations/first', flags);
+  await openAutomationSidebar();
+  const scroller = runsScroller();
+  const rowButton = (index: number) =>
+    page.getByRole('button', { name: new RegExp(`^View run history for Member ${index},`) });
+  await act(async () => {
+    scroller.scrollTop = 1000;
+    scroller.dispatchEvent(new Event('scroll'));
+    await new Promise(requestAnimationFrame);
+  });
+  await settleTransitions();
+  await expect.element(rowButton(12)).toBeInTheDocument();
+  // Position the previous button behind the sticky header, then navigate to it.
+  await act(async () => {
+    scroller.scrollTop +=
+      rowButton(11).element().getBoundingClientRect().top -
+      scroller.getBoundingClientRect().top -
+      4;
+    scroller.dispatchEvent(new Event('scroll'));
+    await new Promise(requestAnimationFrame);
+  });
+  await settleTransitions();
+  rowButton(12).element().focus({ preventScroll: true });
+  await userEvent.tab({ shift: true });
+  await expect.element(rowButton(11)).toHaveFocus();
+  const header = scroller.querySelector('thead')!;
+  await expect
+    .poll(
+      () =>
+        rowButton(11).element().getBoundingClientRect().top - header.getBoundingClientRect().bottom,
+    )
+    .toBeGreaterThanOrEqual(0);
 });
