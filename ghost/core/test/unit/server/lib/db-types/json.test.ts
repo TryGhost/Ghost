@@ -20,9 +20,12 @@ describe('DbJson', function () {
       const result = StoredSettings.safeDecode('{not json');
 
       assert.strictEqual(result.success, false);
+      assert.strictEqual(result.error?.issues.length, 1);
+      const [issue] = result.error?.issues ?? [];
+      assert.ok(issue?.code === 'invalid_format');
       assert.deepStrictEqual(
-        result.error?.issues.map(({ code, message, path }) => ({ code, message, path })),
-        [{ code: 'custom', message: 'The stored value is not JSON.', path: [] }],
+        { format: issue.format, message: issue.message, path: issue.path },
+        { format: 'json', message: 'The stored value is not JSON.', path: [] },
       );
     });
 
