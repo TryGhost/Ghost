@@ -10,6 +10,7 @@ import {
   useState,
 } from 'react';
 import { flushSync } from 'react-dom';
+import { useQueryClient } from '@tanstack/react-query';
 import { AdminLink } from '@/shared/admin-link';
 import { getPostListReturnUrl } from '@/posts/api';
 import { reloadAdmin } from '@/auth/api';
@@ -69,7 +70,7 @@ import {
   EditorSessionKeyProvider,
   useEditorScreenSessionKey,
 } from './session/session-key';
-import { useEditorSession } from './session/use-editor-session';
+import { editorRead, useEditorSession } from './session/use-editor-session';
 import { usePostCardConfig } from './use-post-card-config';
 import { usePostSnippets } from './use-post-snippets';
 import type { EditorRecord } from './session/projection';
@@ -597,8 +598,9 @@ function EditorLoader({ postType, id }: { postType: PostType; id?: string }) {
   const [openedWith, setOpenedWith] = useState<EditorRecord>();
   const navigate = useNavigate();
   const { pathname, search } = useLocation();
+  const queryClient = useQueryClient();
   const { data: currentUser } = useCurrentUser({ requestOptions: EDITOR_REQUEST_OPTIONS });
-  // The loader starts the opening read itself, below, so mounting starts none.
+  // Mounting never refetches a cached copy: the loader sends that read itself, below.
   const postQuery = useEditorPost(openedId ?? '', {
     enabled: postType === 'post' && !!openedId,
     defaultErrorHandler: false,
@@ -620,22 +622,42 @@ function EditorLoader({ postType, id }: { postType: PostType; id?: string }) {
   // Opening reads the post again even when a copy is cached: the session saves
   // against the version it opens on, so a copy from an earlier visit would collide
   // with whatever another writer has saved since. A read still in flight from that
-  // visit may have been answered before their save, so it is replaced, not joined.
-  // With nothing cached, mounting loads the post anyway.
-  const [cachedAtOpen] = useState(() => query.data !== undefined);
+  // visit may have been answered before their save, so it is replaced, not joined,
+  // even when it is that visit's first. With neither, mounting loads the post.
+  const [earlierVisit] = useState<'cached' | 'reading' | null>(() => {
+    if (query.data !== undefined) {
+      return 'cached';
+    }
+    const inFlight =
+      !!openedId &&
+      queryClient.getQueryState(editorRead(postType, openedId).queryKey)?.fetchStatus ===
+        'fetching';
+    return inFlight ? 'reading' : null;
+  });
   const [openingReadSettled, setOpeningReadSettled] = useState(false);
   const openingReadStarted = useRef(false);
   useEffect(() => {
-    if (!cachedAtOpen || openingReadStarted.current) {
+    if (!earlierVisit || !openedId || openingReadStarted.current) {
       return;
     }
     openingReadStarted.current = true;
-    void query.refetch({ cancelRefetch: true }).then(() => setOpeningReadSettled(true));
+    const read = async () => {
+      // With nothing cached, a refetch would join the read in flight.
+      if (earlierVisit === 'reading') {
+        await queryClient.cancelQueries({
+          queryKey: editorRead(postType, openedId).queryKey,
+          exact: true,
+        });
+      }
+      await query.refetch({ cancelRefetch: true });
+      setOpeningReadSettled(true);
+    };
+    void read();
   });
-  // Settled once the read this mount started has succeeded or failed. The earlier
+  // Settled once the read this mount sent has succeeded or failed. An earlier
   // visit's read landing before that one starts does not count, and a later
   // refetch, such as the one a conversion's save starts, does not hold it back.
-  const opened = cachedAtOpen ? openingReadSettled : query.isFetchedAfterMount;
+  const opened = earlierVisit ? openingReadSettled : query.isFetchedAfterMount;
 
   // Only the opening read's own failure counts, never one a cached copy still
   // carries. A deleted post or an expired session decides the screen even with a
@@ -654,8 +676,9 @@ function EditorLoader({ postType, id }: { postType: PostType; id?: string }) {
     }
   }, [sessionExpired, pathname, search]);
 
-  // Nothing is judged on a cached copy before the opening read settles.
-  const opening = openedWith || !opened ? undefined : loaded;
+  // Nothing is judged on a cached copy before the opening read settles, nor on one
+  // that read has ruled out.
+  const opening = openedWith || !opened || definitive ? undefined : loaded;
   const returnToList = !!currentUser && !!opening && shouldReturnToList(currentUser, opening);
   useEffect(() => {
     if (returnToList) {

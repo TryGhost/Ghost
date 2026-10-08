@@ -22,6 +22,7 @@ import {
   type RenderAdminAppOptions,
 } from '@test-utils/acceptance';
 import { editorScreen } from '@/editor/editor.screen';
+import { postsListScreen } from '@/posts/list/posts-list.screen';
 import { deferred } from '@/utils/deferred';
 
 const POST_ID = 'abc123';
@@ -336,6 +337,24 @@ describe('Post editor refetch', () => {
     await expect.poll(unsavedChangesGuarded).toBe(false);
     await expect(editorScreen.conflictBanner()).toHaveCount(0);
     expect(shared.stored().lexical).toContain('Their words and mine');
+  });
+
+  it('sends a read of its own when reopened before its first read lands', async () => {
+    const shared = fakeSharedPost();
+    const releaseReads = shared.holdReads();
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await expect.poll(() => shared.readApi.requests.length).toBe(1);
+
+    // The writer leaves while the post is still loading, and nothing is cached yet.
+    window.location.hash = '#/posts';
+    await expect.element(postsListScreen.page('posts')).toBeVisible();
+    shared.theySave({ title: 'Their title', lexical: buildLexicalParagraph('Their words') });
+    window.location.hash = `#/editor/post/${POST_ID}`;
+    await expect.poll(() => shared.readApi.requests.length).toBe(2);
+    releaseReads();
+
+    await expect.element(editorScreen.titleInput()).toHaveValue('Their title');
+    await expect.element(editorScreen.body()).toHaveTextContent('Their words');
   });
 
   it('opens the copy its own save left when the read that reopens the post fails', async () => {
