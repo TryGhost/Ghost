@@ -22,6 +22,12 @@ describe('historyTitle', () => {
     expect(historyTitle(entry('uninstalled'))).toBe('Uninstalled');
   });
 
+  it('still calls an event it has no words for a change', () => {
+    expect(historyTitle(entry('refreshed' as AppInstallationHistoryEntry['event']))).toBe(
+      'Changed',
+    );
+  });
+
   it('says where an approval moved the app to', () => {
     expect(historyTitle(entry('changes_approved', { moved_to: 'podcast.example.net' }))).toBe(
       'Moved to podcast.example.net',

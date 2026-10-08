@@ -1,6 +1,9 @@
 import type { AppInstallationHistoryEntry } from '@tryghost/admin-x-framework/api/app-installations';
 
-/** What happened, in a few words, for the app's history on its detail page. */
+/**
+ * What happened, in a few words, for the app's history on its detail page. A newer Ghost
+ * may record something this Admin has no words for yet, which is still a change.
+ */
 export function historyTitle(entry: AppInstallationHistoryEntry): string {
   switch (entry.event) {
     case 'installed':
@@ -13,6 +16,8 @@ export function historyTitle(entry: AppInstallationHistoryEntry): string {
       return entry.moved_to ? `Moved to ${entry.moved_to}` : 'Changes approved';
     case 'uninstalled':
       return 'Uninstalled';
+    default:
+      return 'Changed';
   }
 }
 
