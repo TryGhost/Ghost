@@ -1,4 +1,9 @@
-import { Banner, Button } from '@tryghost/shade/components';
+import { Button } from '@tryghost/shade/components';
+import { FailureBanner } from './failure-banner';
+import {
+  RETRY_ELIGIBILITY_FAILED_MESSAGE,
+  type CompletionFailure,
+} from '@/editor/publish/completion-message';
 import { Inline, Stack, Text } from '@tryghost/shade/primitives';
 import { isPartialEmailFailure } from '@/editor/publish/email-confirmation';
 import {
@@ -16,9 +21,15 @@ export interface CompleteWithEmailErrorStepProps {
   willOnlyEmail: boolean;
   mailgunConfigured: boolean;
   status: ConfirmStatus;
-  retryFailure: string | null;
+  retryFailure: CompletionFailure | null;
+  /** Whether the email can be retried could not be read. */
+  eligibilityFailed: boolean;
+  checkingEligibility: boolean;
+  onCheckEligibility: () => void;
   onRetry: () => void;
 }
+
+const ELIGIBILITY_FAILURE: CompletionFailure = { message: RETRY_ELIGIBILITY_FAILED_MESSAGE };
 
 export function CompleteWithEmailErrorStep({
   canRetry,
@@ -28,6 +39,9 @@ export function CompleteWithEmailErrorStep({
   mailgunConfigured,
   status,
   retryFailure,
+  eligibilityFailed,
+  checkingEligibility,
+  onCheckEligibility,
   onRetry,
 }: CompleteWithEmailErrorStepProps) {
   const partial = isPartialEmailFailure(emailErrorMessage);
@@ -52,10 +66,20 @@ export function CompleteWithEmailErrorStep({
         )}
       </Text>
 
-      {retryFailure ? (
-        <Banner data-testid={publishRetryError} role="alert" variant="destructive">
-          {retryFailure}
-        </Banner>
+      {retryFailure ? <FailureBanner failure={retryFailure} testId={publishRetryError} /> : null}
+
+      {eligibilityFailed ? (
+        <Stack align="start" gap="md">
+          <FailureBanner className="w-full" failure={ELIGIBILITY_FAILURE} />
+          <Button
+            disabled={checkingEligibility}
+            size="lg"
+            variant="destructive"
+            onClick={onCheckEligibility}
+          >
+            {checkingEligibility ? 'Checking' : 'Check retry availability'}
+          </Button>
+        </Stack>
       ) : null}
 
       {canRetry && (

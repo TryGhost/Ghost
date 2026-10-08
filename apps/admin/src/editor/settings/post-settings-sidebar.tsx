@@ -37,7 +37,13 @@ import { type EditorSettingsPort, isNewPost, useEditorSettingsPort } from './edi
 import { KeyboardShortcutsSection } from './keyboard-shortcuts-section';
 import { MetaDataSection } from './meta-data-section';
 import { PostHistorySection } from './post-history-section';
-import { SETTINGS_SECTION_ORDER, type SettingsSectionId } from './sections';
+import { focusSettingsField } from './focus-settings-field';
+import {
+  SETTINGS_FIELD_SECTIONS,
+  SETTINGS_SECTION_ORDER,
+  type SettingsPanelField,
+  type SettingsSectionId,
+} from './sections';
 import { SettingsSection } from './settings-section';
 import { SubviewContext, useSubviewController } from './settings-subview-context';
 import { ShowTitleSection } from './show-title-section';
@@ -61,13 +67,7 @@ const MemoTagsSection = memo(TagsSection);
 const MemoTemplateSection = memo(TemplateSection);
 const MemoUrlSection = memo(UrlSection);
 
-const ExcerptSection = memo(function ExcerptSection({
-  session,
-  inputRef,
-}: {
-  session: EditorSettingsPort;
-  inputRef?: Ref<HTMLTextAreaElement>;
-}) {
+const ExcerptSection = memo(function ExcerptSection({ session }: { session: EditorSettingsPort }) {
   const inputId = useId();
   const errorId = useId();
   const error = settingsFieldErrorFor('custom_excerpt', session.settings);
@@ -76,9 +76,9 @@ const ExcerptSection = memo(function ExcerptSection({
     <SettingsSection>
       <Label htmlFor={inputId}>Excerpt</Label>
       <Textarea
-        ref={inputRef}
         aria-describedby={error ? errorId : undefined}
         aria-invalid={!!error}
+        data-settings-field="custom_excerpt"
         data-testid={settingsExcerptInput}
         id={inputId}
         rows={3}
@@ -115,6 +115,11 @@ const FeaturedSection = memo(function FeaturedSection({
   );
 });
 
+/** A request to take the writer to a settings field; each request is a new object. */
+export interface SettingsFieldReveal {
+  field: SettingsPanelField;
+}
+
 export interface PostSettingsSidebarProps {
   session: EditorSessionHandle;
   postType: PostType;
@@ -127,8 +132,12 @@ export interface PostSettingsSidebarProps {
   currentUser?: User;
   /** The excerpt renders under the title instead, so the sidebar leaves it out. */
   hasInlineExcerpt?: boolean;
-  /** The excerpt field, for the screen to take the writer to. */
-  excerptRef?: Ref<HTMLTextAreaElement>;
+  /**
+   * A field to take the writer to, such as one a refused save named: the panel
+   * shows its section, opening the section's pane if it has one, and focuses it.
+   * A new request, even for the same field, goes again.
+   */
+  reveal?: SettingsFieldReveal | null;
   /** The panel's frame, whose width transition the screen waits on before unmounting it. */
   frameRef?: Ref<HTMLDivElement | null>;
 }
@@ -145,10 +154,11 @@ export function PostSettingsSidebar({
   featureImage,
   currentUser,
   hasInlineExcerpt = false,
-  excerptRef,
+  reveal,
   frameRef,
 }: PostSettingsSidebarProps) {
   const ownFrameRef = useRef<HTMLDivElement>(null);
+  const asideRef = useRef<HTMLElement>(null);
   useImperativeHandle(frameRef, () => ownFrameRef.current, []);
   // The panel mounts in the render that opens it, and a new element has no
   // earlier style to transition from. It renders closed first, its style is
@@ -167,12 +177,30 @@ export function PostSettingsSidebar({
   // Ember hides the authors field from Authors and Contributors alike.
   const canCreditOthers = !!currentUser && !isAuthorOrContributor(currentUser);
   const subviews = useSubviewController();
+  const [focusing, setFocusing] = useState<SettingsFieldReveal | null>(null);
+
+  // Only a new request reveals: closing the pane afterwards must not reopen it.
+  useEffect(() => {
+    if (reveal) {
+      subviews.reveal(SETTINGS_FIELD_SECTIONS[reveal.field]);
+      setFocusing(reveal);
+    }
+  }, [reveal]);
+
+  // Runs again once the pane opens, after the pane has focused its own back button.
+  useEffect(() => {
+    const root = asideRef.current;
+    if (!focusing || !root) {
+      return;
+    }
+    return focusSettingsField(root, focusing.field, () => setFocusing(null));
+  }, [focusing, subviews.open]);
 
   const sections: Record<SettingsSectionId, ReactNode> = {
     url: <MemoUrlSection postType={postType} session={session} siteUrl={siteUrl} />,
     'publish-date': <MemoPublishDateSection session={session} />,
     tags: canTag ? <MemoTagsSection session={session} /> : null,
-    excerpt: hasInlineExcerpt ? null : <ExcerptSection inputRef={excerptRef} session={session} />,
+    excerpt: hasInlineExcerpt ? null : <ExcerptSection session={session} />,
     featured: canManagePost ? <FeaturedSection postType={postType} session={session} /> : null,
     access: canManagePost ? <MemoAccessSection postType={postType} session={session} /> : null,
     authors: canCreditOthers ? (
@@ -247,8 +275,9 @@ export function PostSettingsSidebar({
         style={entering ? ({ '--editor-settings-progress': 0 } as CSSProperties) : undefined}
       >
         <aside
+          ref={asideRef}
           aria-label={open?.title ?? panelLabel}
-          className="my-2 mr-2 h-[calc(100%-var(--spacing)*4)] w-[calc(var(--editor-settings-width)-var(--spacing)*2)] overflow-hidden rounded-xl border border-border bg-sidebar"
+          className="my-2 mr-2 h-[calc(100%-var(--spacing)*4)] w-[calc(var(--editor-settings-width)-var(--spacing)*2)] overflow-hidden rounded-xl border border-border bg-sidebar max-[500px]:m-0 max-[500px]:h-full max-[500px]:w-(--editor-settings-width) max-[500px]:rounded-none max-[500px]:border-0"
           data-testid={postSettingsSidebar}
         >
           <Stack
@@ -257,7 +286,12 @@ export function PostSettingsSidebar({
           >
             {open ? null : (
               <Box className="z-10 shrink-0 bg-sidebar">
-                <Inline align="center" className="px-4 py-3" gap="sm" justify="between">
+                <Inline
+                  align="center"
+                  className="px-4 py-3 max-[500px]:px-3"
+                  gap="sm"
+                  justify="between"
+                >
                   <Text as="h2" className="pl-1" size="lg" weight="semibold">
                     {panelLabel}
                   </Text>

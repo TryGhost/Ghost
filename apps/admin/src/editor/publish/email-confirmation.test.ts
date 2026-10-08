@@ -3,6 +3,7 @@ import {
   CONFIRM_EMAIL_MAX_POLL_LENGTH,
   CONFIRM_EMAIL_POLL_LENGTH,
   type EmailConfirmationPost,
+  EmailRetryRequestError,
   createEmailConfirmation,
   isPartialEmailFailure,
 } from './email-confirmation';
@@ -224,14 +225,32 @@ describe('createEmailConfirmation', () => {
     expect(reload).toHaveBeenCalledTimes(2);
   });
 
-  it('rejects when the retry request fails', async () => {
+  it('rejects with the request error when the retry request fails', async () => {
     const transportError = new Error('Unable to connect');
     const reload = vi.fn(() => Promise.resolve(pending));
     const retry = vi.fn().mockRejectedValue(transportError);
     const confirmation = createEmailConfirmation({ reload, retry });
 
-    await expect(confirmation.retryAndConfirm('post-1', 'email-1')).rejects.toBe(transportError);
+    const rejection: unknown = await confirmation
+      .retryAndConfirm('post-1', 'email-1')
+      .catch((error: unknown) => error);
+
+    expect(rejection).toBeInstanceOf(EmailRetryRequestError);
+    expect((rejection as EmailRetryRequestError).cause).toBe(transportError);
     expect(reload).not.toHaveBeenCalled();
+  });
+
+  it('rejects with the reload error, not a request error, once the retry was accepted', async () => {
+    const transportError = new Error('Network request failed');
+    const reload = vi.fn().mockRejectedValue(transportError);
+    const retry = vi.fn(() => Promise.resolve());
+    const confirmation = createEmailConfirmation({ reload, retry });
+
+    const result = confirmation.retryAndConfirm('post-1', 'email-1');
+    const assertion = expect(result).rejects.toBe(transportError);
+    await advance(1);
+
+    await assertion;
   });
 
   it('settles as cancelled and clears the pending timer when cancelled mid-poll', async () => {

@@ -278,7 +278,7 @@ describe('Post settings access', () => {
     await expect(editorScreen.settingsTier('Free')).toHaveCount(0);
     // Staged rather than refused, so the writer sees no save error for it.
     await expect.element(editorScreen.status()).toHaveTextContent('Draft');
-    await expect(editorScreen.saveErrorBanner()).toHaveCount(0);
+    await expect(editorScreen.saveError()).toHaveCount(0);
 
     await editorScreen.settingsTier('Gold').click();
 
@@ -582,7 +582,7 @@ describe('Post settings access', () => {
     await userEvent.keyboard('{Meta>}s{/Meta}');
 
     await expect
-      .element(editorScreen.saveErrorBanner())
+      .element(editorScreen.saveError())
       .toHaveTextContent('Please select at least one tier.');
     expect(saveApi.requests).toHaveLength(0);
     await expect.element(editorScreen.updateButton()).toBeEnabled();

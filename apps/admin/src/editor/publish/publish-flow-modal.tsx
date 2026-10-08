@@ -42,6 +42,8 @@ export interface PublishFlowModalProps {
   improveSendingUI?: boolean;
   /** The caller supplies the save engine's dispatch. */
   dispatch: PublishDispatcher;
+  /** Asks the writer to sign in again; resolves true once they have. */
+  requestReauth?: () => Promise<boolean>;
   onBeforePublish?: () => Promise<void>;
   onClose: () => void;
   /** Hears the flow's selected newsletter while it is open, and `undefined` once it closes. */
@@ -70,6 +72,7 @@ function KeyedPublishFlowModal({
   paywallImprovements = false,
   improveSendingUI,
   dispatch,
+  requestReauth,
   onBeforePublish,
   onClose,
   onNewsletterChange,
@@ -120,6 +123,7 @@ function KeyedPublishFlowModal({
       limits={limits}
       now={now}
       post={post}
+      requestReauth={requestReauth}
       showCompletion={showCompletion}
       site={site}
       siteTitle={siteTitle}
@@ -149,6 +153,7 @@ function PublishFlowDialog({
   siteTitle,
   improveSendingUI,
   dispatch,
+  requestReauth,
   onBeforePublish,
   onClose,
   onNewsletterChange,
@@ -163,6 +168,7 @@ function PublishFlowDialog({
     limits,
     now,
     dispatch,
+    requestReauth,
     showCompletion,
     improveSendingUI,
     onBeforePublish,
@@ -176,7 +182,19 @@ function PublishFlowDialog({
     return () => onNewsletterChange?.(undefined);
   }, [newsletterSlug, onNewsletterChange]);
 
+  // While the publish request is in flight, closing would abandon its outcome
+  // unseen: a publish that lands would never navigate and one that fails would
+  // never say so. The request settles on its own, so close waits for it.
+  // A publish held for the writer to read its unconfirmed email has landed, so any way
+  // out acknowledges it: cancelling would leave the caller never told it completed.
   const close = () => {
+    if (flow.publishInFlight) {
+      return;
+    }
+    if (flow.awaitingAcknowledgement) {
+      flow.acknowledgeCompletion();
+      return;
+    }
     flow.cancel();
     onClose();
   };
@@ -197,7 +215,7 @@ function PublishFlowDialog({
           <PageHeader.ActionGroup>
             {step === 'complete' ? null : (
               <>
-                <Button variant="ghost" onClick={close}>
+                <Button disabled={flow.publishInFlight} variant="ghost" onClick={close}>
                   Close
                 </Button>
                 {flow.emailErrorMessage || !onPreview ? null : (
@@ -219,12 +237,15 @@ function PublishFlowDialog({
           {step === 'email-error' && flow.emailErrorMessage ? (
             <CompleteWithEmailErrorStep
               canRetry={flow.canRetryEmail}
+              checkingEligibility={flow.checkingRetryEligibility}
+              eligibilityFailed={flow.retryEligibilityFailed}
               emailErrorMessage={flow.emailErrorMessage}
               mailgunConfigured={site.mailgunConfigured}
               post={post}
               retryFailure={flow.retryFailure}
               status={flow.retryStatus}
               willOnlyEmail={state.willOnlyEmail}
+              onCheckEligibility={flow.checkRetryEligibility}
               onRetry={() => void flow.retryEmail()}
             />
           ) : step === 'complete' ? (
@@ -237,6 +258,7 @@ function PublishFlowDialog({
               siteTitle={siteTitle}
               state={state}
               timezone={timezone}
+              onAcknowledge={flow.awaitingAcknowledgement ? flow.acknowledgeCompletion : undefined}
               onRevertToDraft={onRevertToDraft}
             />
           ) : step === 'confirm' ? (

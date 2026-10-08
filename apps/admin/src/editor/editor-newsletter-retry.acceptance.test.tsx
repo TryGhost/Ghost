@@ -174,6 +174,58 @@ describe('Editor newsletter retry', () => {
     },
   );
 
+  it('shows the reason Core refused a retry with', async () => {
+    publishChrome();
+    fakeFailedSend({ status: 'published' });
+    // Registered after fakeFailedSend's retry fake, so this one answers.
+    const retryApi = fakeAdminEndpoint(
+      'PUT',
+      `/emails/${EMAIL_ID}/retry/`,
+      {
+        errors: [
+          {
+            type: 'IncorrectUsageError',
+            message: 'Cannot retry email because the delivery outcome is unknown',
+          },
+        ],
+      },
+      { status: 400 },
+    );
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+
+    await editorScreen.viewNewsletterDetails().click();
+    await publishScreen.retryEmailButton().click();
+
+    await expect
+      .element(publishScreen.retryError())
+      .toHaveTextContent('Cannot retry email because the delivery outcome is unknown');
+    await expect.element(publishScreen.retryError()).not.toHaveTextContent('Something went wrong');
+    expect(retryApi.requests).toHaveLength(1);
+    expect(currentRoute()).toBe(`/editor/post/${POST_ID}`);
+  });
+
+  it('says when it cannot tell whether a failed send can be retried', async () => {
+    publishChrome();
+    fakeFailedSend({ status: 'published' });
+    fakeAdminEndpoint(
+      'GET',
+      `/emails/${EMAIL_ID}/status/`,
+      { errors: [{ type: 'InternalServerError', message: 'Status unavailable' }] },
+      { status: 500 },
+    );
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+
+    await editorScreen.viewNewsletterDetails().click();
+
+    await expect
+      .element(publishScreen.emailError())
+      .toHaveTextContent(
+        'Could not check whether this email can be retried. Please try checking again.',
+      );
+    await expect.element(publishScreen.checkRetryAvailability()).toBeVisible();
+    await expect(publishScreen.retryEmailButton()).toHaveCount(0);
+  });
+
   it('holds the way back into the flow until the publish inputs load', async () => {
     publishChrome();
     const newslettersLoaded = deferred<void>();

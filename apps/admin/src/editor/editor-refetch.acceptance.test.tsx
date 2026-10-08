@@ -467,7 +467,7 @@ describe('Post editor refetch', () => {
         .element(editorScreen.conflictBanner())
         .toHaveTextContent('You no longer have permission to edit this post');
       await expect.element(editorScreen.copyConflictedContent()).toBeVisible();
-      await expect(editorScreen.saveErrorBanner()).toHaveCount(0);
+      await expect(editorScreen.saveError()).toHaveCount(0);
       expect(shared.saveApi.requests).toHaveLength(2);
       await expect.element(editorScreen.titleInput()).toHaveValue('My title');
       await expect.element(editorScreen.body()).toHaveTextContent('Hello from React and mine');

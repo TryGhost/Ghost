@@ -1,4 +1,4 @@
-import { LucideIcon } from '@tryghost/shade/utils';
+import { cn, LucideIcon } from '@tryghost/shade/utils';
 import { useCallback, useState } from 'react';
 import { useDebounce } from 'use-debounce';
 import { escapeNqlString } from '@tryghost/nql-string';
@@ -39,6 +39,8 @@ interface TagPickerProps {
   onSearchChange?: (search: string) => void;
   maxLength?: number;
   testIds?: { field?: string; input?: string; list?: string; chip?: string };
+  /** Extra classes for every chip, on top of the internal-tag styling. */
+  chipClassName?: string;
 }
 
 /**
@@ -60,6 +62,7 @@ export function TagPicker({
   onSearchChange,
   maxLength,
   testIds,
+  chipClassName,
 }: TagPickerProps) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
@@ -94,9 +97,10 @@ export function TagPicker({
   return (
     <ChipPicker<Tag, TagLike>
       chipClassName={(tag) =>
-        isInternalTag(tag)
-          ? 'border-border bg-secondary/30 text-secondary-foreground/70'
-          : undefined
+        cn(
+          isInternalTag(tag) && 'border-border bg-secondary/30 text-secondary-foreground/70',
+          chipClassName,
+        ) || undefined
       }
       chipVariant={(tag) => (isInternalTag(tag) ? 'outline' : 'secondary')}
       createRow={{

@@ -676,7 +676,7 @@ describe('Post editor update collision', () => {
     await expect.poll(() => saveApi.requests.length).toBe(1);
     expect(postIn(saveApi.lastRequest)).toMatchObject({ status: 'scheduled' });
     await expect.element(editorScreen.conflictBanner()).toBeVisible();
-    await expect(editorScreen.saveErrorBanner()).toHaveCount(0);
+    await expect(editorScreen.saveError()).toHaveCount(0);
 
     await editorScreen.copyConflictedContent().click();
     await expect.poll(() => copied.length).toBe(1);

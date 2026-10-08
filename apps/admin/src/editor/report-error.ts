@@ -9,6 +9,7 @@ import { loadedKoenigVersion } from '@/settings/components/koenig-loader';
 import type { PostType } from '@/editor/card-config';
 import type { SaveError } from '@/editor/engine/save-engine';
 import type { EditorLeaveConfirmation, EditorSaveFailure } from '@/editor/session/editor-session';
+import { toSaveError } from '@/editor/session/error-mapping';
 
 type TagValue = boolean | number | string;
 
@@ -95,9 +96,31 @@ function saveFailureError(error: SaveError): Error {
 }
 
 /**
- * Reports a request that settled as failed. Validation, host limits, a writer
- * who lost access to the post and an unreachable server are not faults in the
- * editor and are not reported; every other failure is, once, with what the
+ * Whether a failure is not a fault in the editor, and so is not reported: a refusal
+ * the writer reads and acts on (validation, a host limit, a writer who lost access
+ * to the post, an expired session, whose recovery is signing in again) or a
+ * connection that never reached the server. A missing post, a collision, a 5xx, a
+ * timeout, maintenance and anything unrecognised are reported. Saves and the publish
+ * flow both read this.
+ */
+export function isExpectedSaveError(error: SaveError): boolean {
+  return (
+    error.kind === 'validation' ||
+    error.kind === 'host-limit' ||
+    error.kind === 'forbidden' ||
+    error.kind === 'session-invalid' ||
+    error.cause instanceof ServerUnreachableError
+  );
+}
+
+/** `isExpectedSaveError()` for a failure outside a save, read the way a save's would be. */
+export function isExpectedFailure(error: unknown): boolean {
+  return isExpectedSaveError(toSaveError(error, ''));
+}
+
+/**
+ * Reports a request that settled as failed, unless it was expected
+ * (`isExpectedSaveError()`): every other failure is reported once, with what the
  * request was.
  */
 export function reportSaveFailure(failure: EditorSaveFailure, postType: PostType): void {
@@ -124,12 +147,7 @@ export function reportSaveFailure(failure: EditorSaveFailure, postType: PostType
     });
   }
 
-  if (
-    error.kind === 'validation' ||
-    error.kind === 'host-limit' ||
-    error.kind === 'forbidden' ||
-    error.cause instanceof ServerUnreachableError
-  ) {
+  if (isExpectedSaveError(error)) {
     return;
   }
 

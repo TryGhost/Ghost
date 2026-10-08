@@ -17,17 +17,13 @@ import {
   recipientsConfirmLabel,
 } from '@/editor/publish/publish-copy';
 import type { PublishFlowPost } from '@/editor/publish/flow-post';
+import type { PublishFlow } from '@/editor/publish/use-publish-flow';
 import type { PublishOptionsState } from '@/editor/publish/publish-options';
 
 export interface CompleteStepProps {
   post: PublishFlowPost;
   state: PublishOptionsState;
-  captured: {
-    willPublish: boolean;
-    willEmail: boolean;
-    willOnlyEmail: boolean;
-    isScheduled: boolean;
-  };
+  captured: PublishFlow['captured'];
   timezone: string;
   siteTitle?: string;
   /** Published-post total including this one; null for pages, schedules and email-only. */
@@ -36,7 +32,23 @@ export interface CompleteStepProps {
   completedAt: string | null;
   /** Shown when the publish landed but something after it could not be confirmed. */
   note?: string | null;
+  /**
+   * Set when the caller is waiting for the writer to read the note before it
+   * moves on; the step offers Continue in place of its other way out.
+   */
+  onAcknowledge?: () => void;
   onRevertToDraft?: () => void;
+}
+
+function Acknowledge({ onAcknowledge }: { onAcknowledge: () => void }) {
+  return (
+    <Inline>
+      <Button className="px-5" size="lg" onClick={onAcknowledge}>
+        Continue
+        <LucideIcon.ArrowRight />
+      </Button>
+    </Inline>
+  );
 }
 
 function RevertToDraft({ onRevertToDraft }: { onRevertToDraft?: () => void }) {
@@ -52,7 +64,7 @@ function RevertToDraft({ onRevertToDraft }: { onRevertToDraft?: () => void }) {
           className="h-auto min-h-11 max-w-full px-5 py-2 whitespace-normal"
           data-testid={publishRevertToDraft}
           size="lg"
-          variant="outline"
+          variant="secondary"
           onClick={onRevertToDraft}
         >
           Unschedule and revert to draft &rarr;
@@ -71,6 +83,7 @@ export function CompleteStep({
   postCount,
   completedAt,
   note,
+  onAcknowledge,
   onRevertToDraft,
 }: CompleteStepProps) {
   const { count } = useMembersCount(state.fullRecipientFilter, {
@@ -144,15 +157,18 @@ export function CompleteStep({
             </Text>
           )}
           {captured.isScheduled ? <RevertToDraft onRevertToDraft={onRevertToDraft} /> : null}
+          {onAcknowledge ? <Acknowledge onAcknowledge={onAcknowledge} /> : null}
         </Stack>
       ) : (
         <Stack gap="xl">
           <PostBookmark post={post} siteTitle={siteTitle} />
           {captured.isScheduled ? (
             <RevertToDraft onRevertToDraft={onRevertToDraft} />
+          ) : onAcknowledge ? (
+            <Acknowledge onAcknowledge={onAcknowledge} />
           ) : (
             <Inline>
-              <Button className="px-5" size="lg" variant="outline" asChild>
+              <Button className="px-5" size="lg" variant="secondary" asChild>
                 <a data-testid={publishBackToDashboard} href="#/analytics">
                   <LucideIcon.ArrowLeft />
                   Back to dashboard
