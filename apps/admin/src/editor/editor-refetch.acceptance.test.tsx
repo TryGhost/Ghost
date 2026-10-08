@@ -22,6 +22,7 @@ import {
   type RenderAdminAppOptions,
 } from '@test-utils/acceptance';
 import { editorScreen } from '@/editor/editor.screen';
+import { postsListScreen } from '@/posts/list/posts-list.screen';
 import { deferred } from '@/utils/deferred';
 
 const POST_ID = 'abc123';
@@ -333,6 +334,47 @@ describe('Post editor refetch', () => {
 
     await expect.poll(() => shared.saveApi.requests.length).toBe(2);
     expect(submittedPost(shared.saveApi)).toMatchObject({ updated_at: THEIR_SAVE_AT });
+    await expect.poll(unsavedChangesGuarded).toBe(false);
+    await expect(editorScreen.conflictBanner()).toHaveCount(0);
+    expect(shared.stored().lexical).toContain('Their words and mine');
+  });
+
+  it('sends a read of its own when reopened before its first read lands', async () => {
+    const shared = fakeSharedPost();
+    // The two opening reads each answer with the post as it stood when they
+    // started, once released; later reads answer at once.
+    const held: Array<ReturnType<typeof deferred<void>>> = [];
+    const readApi = fakeAdminEndpoint('GET', READ_ROUTE, async () => {
+      const answer = { posts: [shared.stored()] };
+      if (held.length < 2) {
+        const gate = deferred<void>();
+        held.push(gate);
+        await gate.promise;
+      }
+      return answer;
+    });
+    onTestFinished(() => held.forEach((gate) => gate.resolve()));
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await expect.poll(() => readApi.requests.length).toBe(1);
+
+    // The writer leaves while the post is still loading, and nothing is cached yet.
+    window.location.hash = '#/posts';
+    await expect.element(postsListScreen.page('posts')).toBeVisible();
+    shared.theySave({ title: 'Their title', lexical: buildLexicalParagraph('Their words') });
+    const theirSaveAt = shared.stored().updated_at;
+    window.location.hash = `#/editor/post/${POST_ID}`;
+    await expect.poll(() => readApi.requests.length).toBe(2);
+    held[1].resolve();
+    await expect.element(editorScreen.titleInput()).toHaveValue('Their title');
+    await expect.element(editorScreen.body()).toHaveTextContent('Their words');
+    // The read from before their save answers last; the save below would collide
+    // had it replaced what the editor opened on.
+    held[0].resolve();
+    await appendToBody(' and mine');
+    await saveShortcut();
+
+    await expect.poll(() => shared.saveApi.requests.length).toBe(1);
+    expect(submittedPost(shared.saveApi)).toMatchObject({ updated_at: theirSaveAt });
     await expect.poll(unsavedChangesGuarded).toBe(false);
     await expect(editorScreen.conflictBanner()).toHaveCount(0);
     expect(shared.stored().lexical).toContain('Their words and mine');

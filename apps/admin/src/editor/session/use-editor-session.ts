@@ -163,7 +163,7 @@ function bootedDebounceMs(value: unknown): number | undefined {
 }
 
 /** The screen's read of the post: its URL, and the cache entry the loader and the session share. */
-function editorRead(postType: PostType, id: string) {
+export function editorRead(postType: PostType, id: string) {
   const path = postType === 'page' ? `/pages/${id}/` : `/posts/${id}/`;
   const url = apiUrl(path, buildPostEditorReadParams());
   return { url, queryKey: [postType === 'page' ? pagesDataType : postsDataType, url] as const };
