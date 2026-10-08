@@ -20,6 +20,7 @@ import {
 } from '@tryghost/test-data/selectors/editor';
 import type { PendingSave, SaveError, SaveEngineState } from '@/editor/engine/save-engine';
 import { EDITOR_CONFIRM_DIALOG_LAYER } from '@/editor/layering';
+import { ErrorLine } from '@/editor/publish/components/failure-banner';
 import { reportShownAlert } from '@/editor/report-error';
 import { POST_DELETED, terminalSaveError } from './error-mapping';
 import type { ReloadOutcome } from './use-editor-session';
@@ -94,32 +95,27 @@ function ConflictBanner({
   return (
     <>
       <Banner
-        className="mx-4 mt-3 shrink-0 bg-destructive text-destructive-foreground"
+        className="mx-4 mt-3 shrink-0"
         data-testid={editorConflictBanner}
         role="alert"
         size="sm"
         variant="destructive"
       >
         <Inline align="center" gap="sm" justify="center" wrap>
-          <Text className="text-center text-inherit">{message}</Text>
+          <Text as="div" className="text-center">
+            <ErrorLine className="inline-flex">{message}</ErrorLine>
+          </Text>
           <Inline align="center" gap="sm" justify="center">
             {!halt && (
               <Button
-                className="border-destructive-foreground/40 text-destructive-foreground hover:bg-destructive-foreground/10 hover:text-destructive-foreground"
                 disabled={reloading}
-                size="sm"
-                variant="outline"
+                variant="destructive"
                 onClick={() => (hasUnsavedContent() ? setConfirming(true) : void reload())}
               >
                 Reload
               </Button>
             )}
-            <Button
-              className="text-destructive-foreground hover:bg-destructive-foreground/10 hover:text-destructive-foreground"
-              size="sm"
-              variant="ghost"
-              onClick={() => void copyContent()}
-            >
+            <Button variant="outline" onClick={() => void copyContent()}>
               Copy content
             </Button>
           </Inline>

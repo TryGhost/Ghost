@@ -10,7 +10,7 @@ import {
   editorStatus,
 } from '@tryghost/test-data/selectors/editor';
 import { formatPostTime } from '@/posts/list/post-time';
-import { FailureMessage } from './publish/components/failure-banner';
+import { ErrorLine, FailureMessage } from './publish/components/failure-banner';
 import { hostLimitFailure } from './publish/completion-message';
 import { usePublishInputs } from './publish/use-publish-inputs';
 import { reportShownAlert } from './report-error';
@@ -75,12 +75,13 @@ function EmailFailureAction({ label, onOpen }: { label: string; onOpen: () => vo
     <>
       {' '}
       <Button
-        className="h-auto p-0 text-destructive"
+        className="h-auto gap-1 p-0 text-destructive"
         disabled={!isReady}
         variant="link"
         onClick={onOpen}
       >
-        {label}
+        <span className="underline underline-offset-4">{label}</span>
+        <span aria-hidden="true">&rarr;</span>
       </Button>
     </>
   );
@@ -114,7 +115,7 @@ function SaveProblem({
   }, [message, error]);
 
   return (
-    <span className="text-destructive" data-testid={editorSaveError}>
+    <ErrorLine className="text-destructive" data-testid={editorSaveError}>
       <span role="alert">
         <FailureMessage
           failure={error.kind === 'host-limit' ? hostLimitFailure(message) : { message }}
@@ -128,7 +129,7 @@ function SaveProblem({
           </Button>
         </>
       ) : null}
-    </span>
+    </ErrorLine>
   );
 }
 
@@ -156,12 +157,12 @@ function StatusBody({
       return <>{view.saved ? 'Draft - Saved' : 'Draft'}</>;
     case 'sent':
       return view.failed ? (
-        <>
+        <ErrorLine className="text-destructive">
           Failed to send newsletter.
           {onOpenPublishFlow ? (
             <EmailFailureAction label="Retry now" onOpen={onOpenPublishFlow} />
           ) : null}
-        </>
+        </ErrorLine>
       ) : onOpenUpdateFlow ? (
         <>
           <SentAction onOpen={onOpenUpdateFlow} /> to {members(view.count)}
@@ -187,29 +188,39 @@ function StatusBody({
           )}
         </>
       );
-    default:
+    default: {
+      const published = view.url ? (
+        <a
+          className={view.email === 'failed' ? undefined : 'hover:text-foreground'}
+          href={view.url}
+          rel="noopener noreferrer"
+          target="_blank"
+        >
+          Published
+        </a>
+      ) : (
+        'Published'
+      );
+
+      if (view.email === 'failed') {
+        return (
+          <ErrorLine className="text-destructive">
+            {published} but failed to send newsletter.
+            {onOpenPublishFlow ? (
+              <EmailFailureAction label="View details" onOpen={onOpenPublishFlow} />
+            ) : null}
+          </ErrorLine>
+        );
+      }
+
       return (
         <>
-          {view.url ? (
-            <a
-              className="hover:text-foreground"
-              href={view.url}
-              rel="noopener noreferrer"
-              target="_blank"
-            >
-              Published
-            </a>
-          ) : (
-            'Published'
-          )}
+          {published}
           {view.email === 'sending' && ` and sending to ${members(view.count)}`}
           {view.email === 'sent' && ` and sent to ${members(view.count)}`}
-          {view.email === 'failed' && ' but failed to send newsletter.'}
-          {view.email === 'failed' && onOpenPublishFlow ? (
-            <EmailFailureAction label="View details" onOpen={onOpenPublishFlow} />
-          ) : null}
         </>
       );
+    }
   }
 }
 
