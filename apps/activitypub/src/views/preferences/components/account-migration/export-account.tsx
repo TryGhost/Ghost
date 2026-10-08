@@ -236,9 +236,7 @@ const ExportAccount: React.FC = () => {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction variant="destructive" onClick={handleConfirmMove}>
-              Move followers
-            </AlertDialogAction>
+            <AlertDialogAction onClick={handleConfirmMove}>Move followers</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
