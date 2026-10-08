@@ -8,17 +8,26 @@ import {
   currentRoute,
   currentUserResponse,
   fakeAdminEndpoint,
+  fakeFrameOrigin,
   fakeTags,
   renderAdminApp,
   staffRole,
 } from '@test-utils/acceptance';
+import { APP_FRAME_SANDBOX, appFrameTimeouts } from './lib/frame';
 import { appsScreen } from './apps.screen';
-import { MANIFEST_URL, fakeInstallations, installation, labs, manifest } from './apps.test-utils';
+import {
+  APP_PAGE_URL,
+  MANIFEST_URL,
+  fakeAppPage,
+  fakeInstallations,
+  installation,
+  labs,
+  manifest,
+  readPath,
+} from './apps.test-utils';
 
 const DETAILS_ROUTE = '/apps/details/installation-1';
-
-/** Reading one installation, whatever it includes. */
-const readPath = (id: string) => new RegExp(`^/apps/installations/${id}/(\\?|$)`);
+const APP_ROUTE = '/apps/installation-1';
 
 const jamie = { id: 'user-1', name: 'Jamie Larson' };
 
@@ -94,18 +103,107 @@ describe('Managing apps', () => {
     await expect.element(appsScreen.sidebarLink()).not.toBeInTheDocument();
   });
 
-  it('opens an app’s details from the list', async () => {
+  it('opens an app from the list, in a sandboxed frame from the app’s own URL', async () => {
     fakeInstallations([installation()]);
-    fakeDetails(installation({ history: [installedOn('2026-10-01T10:00:00.000Z')] }));
+    await fakeAppPage(installation());
 
     await renderAdminApp('/apps', { labs });
     await appsScreen.row('Podcast').getByText('Publish episodes and embed players.').click();
 
-    await expect.poll(currentRoute).toBe(DETAILS_ROUTE);
-    await expect.element(appsScreen.details()).toHaveTextContent('Podcast');
+    await expect.poll(currentRoute).toBe(APP_ROUTE);
+    const frame = appsScreen.frame();
+    await expect.element(frame).toHaveAttribute('src', APP_PAGE_URL);
+    await expect.element(frame).toHaveAttribute('sandbox', APP_FRAME_SANDBOX);
+    await expect.element(frame).toHaveAttribute('allow', expect.stringContaining("camera 'none'"));
+    await expect
+      .element(frame)
+      .toHaveAttribute('referrerpolicy', 'strict-origin-when-cross-origin');
+    await expect.element(frame).toBeVisible();
   });
 
-  it('opens an app’s details in a new tab from a modified click on its row', async () => {
+  it('opens an app’s details from the row’s menu, and the app from its details', async () => {
+    fakeInstallations([installation()]);
+    fakeDetails(installation({ history: [installedOn('2026-10-01T10:00:00.000Z')] }));
+    await fakeFrameOrigin(APP_PAGE_URL, '<h1>Podcast app</h1>');
+
+    await renderAdminApp('/apps', { labs });
+    await appsScreen.rowActions('Podcast').click();
+    await appsScreen.menuItem('Details').click();
+
+    await expect.poll(currentRoute).toBe(DETAILS_ROUTE);
+    await expect.element(appsScreen.details()).toHaveTextContent('Podcast');
+    await appsScreen.openLink().click();
+
+    await expect.poll(currentRoute).toBe(APP_ROUTE);
+    await expect.element(appsScreen.frame()).toBeVisible();
+  });
+
+  it('calls an app unresponsive when its page doesn’t load in time, and tries again', async () => {
+    fakeDetails(installation());
+    const previous = appFrameTimeouts.ready;
+    appFrameTimeouts.ready = 300;
+    try {
+      // A page that takes longer than Admin waits.
+      await fakeFrameOrigin(APP_PAGE_URL, '<h1>Podcast app</h1>', 5_000);
+      await renderAdminApp(APP_ROUTE, { labs });
+
+      await expect
+        .element(appsScreen.notResponding())
+        .toHaveTextContent('Podcast isn’t responding');
+      await expect.element(appsScreen.frame()).not.toBeInTheDocument();
+
+      await fakeFrameOrigin(APP_PAGE_URL, '<h1>Podcast app</h1>');
+      await appsScreen.tryAgainButton().click();
+
+      await expect.element(appsScreen.frame()).toBeVisible();
+    } finally {
+      appFrameTimeouts.ready = previous;
+    }
+  });
+
+  it('doesn’t load a suspended app, and leads to the review instead', async () => {
+    const suspended = installation({ status: 'suspended' });
+    fakeInstallations([suspended]);
+    fakeDetails(suspended);
+    fakeReview();
+
+    await renderAdminApp(APP_ROUTE, { labs });
+
+    await expect.element(appsScreen.needsApproval()).toHaveTextContent('Podcast needs approval');
+    await expect.element(appsScreen.frame()).not.toBeInTheDocument();
+    await appsScreen.reviewChangesButton().click();
+
+    await expect
+      .poll(currentRoute)
+      .toBe(`/apps/install?manifest=${encodeURIComponent(MANIFEST_URL)}`);
+  });
+
+  it('doesn’t load an uninstalled app', async () => {
+    fakeDetails(installation({ status: 'uninstalled' }));
+
+    await renderAdminApp(APP_ROUTE, { labs });
+
+    await expect.element(appsScreen.notInstalled()).toHaveTextContent('This app isn’t installed');
+    await expect.element(appsScreen.frame()).not.toBeInTheDocument();
+  });
+
+  it('says when an app page doesn’t exist', async () => {
+    fakeAdminEndpoint(
+      'GET',
+      readPath('missing'),
+      () =>
+        new Response(JSON.stringify({ errors: [{ message: 'App installation not found.' }] }), {
+          status: 404,
+          headers: { 'content-type': 'application/json' },
+        }),
+    );
+
+    await renderAdminApp('/apps/missing', { labs });
+
+    await expect.element(appsScreen.notInstalled()).toBeVisible();
+  });
+
+  it('opens an app in a new tab from a modified click on its row', async () => {
     fakeInstallations([installation()]);
     const openSpy = vi.spyOn(window, 'open').mockReturnValue(null);
 
@@ -116,7 +214,7 @@ describe('Managing apps', () => {
       .click({ modifiers: ['ControlOrMeta'] });
 
     expect(openSpy).toHaveBeenCalledWith(
-      expect.stringMatching(/#\/apps\/details\/installation-1$/),
+      expect.stringMatching(/#\/apps\/installation-1$/),
       '_blank',
       'noopener',
     );
@@ -250,7 +348,8 @@ describe('Managing apps', () => {
     await expect
       .element(appsScreen.row('Podcast').getByTestId('app-needs-approval-badge'))
       .toHaveTextContent('Needs approval');
-    await appsScreen.row('Podcast').getByText('Publish episodes and embed players.').click();
+    await appsScreen.rowActions('Podcast').click();
+    await appsScreen.menuItem('Details').click();
 
     await expect
       .element(appsScreen.needsApproval())

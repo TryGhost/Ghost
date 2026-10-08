@@ -2,10 +2,11 @@ import type {
   AppInstallation,
   AppManifest,
 } from '@tryghost/admin-x-framework/api/app-installations';
-import { fakeAdminEndpoint } from '@test-utils/acceptance';
+import { fakeAdminEndpoint, fakeFrameOrigin } from '@test-utils/acceptance';
 
 /** Shared by the apps acceptance specs. */
 export const MANIFEST_URL = 'https://podcast.example.com/ghost-app.json';
+export const APP_PAGE_URL = 'https://podcast.example.com/admin';
 export const labs = { apps: true };
 
 export const manifest = (overrides: Partial<AppManifest> = {}): AppManifest => ({
@@ -39,4 +40,16 @@ export function fakeInstallations(initial: AppInstallation[] = []) {
       installed = next;
     },
   };
+}
+
+/** Reading one installation, whatever it includes. */
+export const readPath = (id: string) => new RegExp(`^/apps/installations/${id}/(\\?|$)`);
+
+/** The app's page as Admin opens it: the installation it reads, and the page it frames. */
+export async function fakeAppPage(read: AppInstallation, html = '<h1>Podcast app</h1>') {
+  const readApi = fakeAdminEndpoint('GET', readPath(read.id), () => ({
+    app_installations: [read],
+  }));
+  await fakeFrameOrigin(APP_PAGE_URL, html);
+  return readApi;
 }

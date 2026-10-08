@@ -14,11 +14,11 @@ import {
 } from '@tryghost/shade/components';
 import { Inline } from '@tryghost/shade/primitives';
 import { LucideIcon } from '@tryghost/shade/utils';
-import { Link } from '@tryghost/admin-x-framework';
+import { Link, useNavigate } from '@tryghost/admin-x-framework';
 import type { AppInstallation } from '@tryghost/admin-x-framework/api/app-installations';
 import { AppIcon } from './app-icon';
 import { DevelopmentBadge } from './development-badge';
-import { appDetailsRoute, appReviewRoute } from '@/apps/lib/routes';
+import { appDetailsRoute, appReviewRoute, appRoute } from '@/apps/lib/routes';
 import { isDevelopmentApp } from '@/apps/lib/served-from';
 import { openRowLink, openRowLinkInNewTab } from '@/apps/lib/row-link';
 
@@ -28,10 +28,12 @@ interface AppsListProps {
 }
 
 /**
- * The site's installed apps, like Automations and Tags. A row leads to the app's details;
- * opening the app itself comes with app pages.
+ * The site's installed apps, like Automations and Tags. A row opens the app; managing it
+ * is in the row's menu.
  */
 const AppsList: React.FC<AppsListProps> = ({ installations, onUninstall }) => {
+  const navigate = useNavigate();
+
   return (
     <Table aria-label="Apps" className="table-auto" data-testid="apps-list">
       <TableBody>
@@ -53,7 +55,7 @@ const AppsList: React.FC<AppsListProps> = ({ installations, onUninstall }) => {
                   <AppIcon manifest={manifest} size="lg" />
                   <span className="min-w-0">
                     <Inline gap="xs">
-                      <Link className="text-md font-semibold" to={appDetailsRoute(id)}>
+                      <Link className="text-md font-semibold" to={appRoute(id)}>
                         {manifest.name}
                       </Link>
                       {isDevelopmentApp(manifest) && <DevelopmentBadge />}
@@ -72,9 +74,13 @@ const AppsList: React.FC<AppsListProps> = ({ installations, onUninstall }) => {
               </TableHead>
               <TableCell className="p-4">
                 <Inline gap="xs" justify="end">
-                  {status === 'suspended' && (
+                  {status === 'suspended' ? (
                     <Button variant="outline" asChild>
                       <Link to={appReviewRoute(installation.manifest_url)}>Review changes</Link>
+                    </Button>
+                  ) : (
+                    <Button variant="outline" asChild>
+                      <Link to={appRoute(id)}>Open</Link>
                     </Button>
                   )}
                   <DropdownMenu>
@@ -88,6 +94,9 @@ const AppsList: React.FC<AppsListProps> = ({ installations, onUninstall }) => {
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
+                      <DropdownMenuItem onSelect={() => navigate(appDetailsRoute(id))}>
+                        Details
+                      </DropdownMenuItem>
                       <DropdownMenuItem
                         className="text-destructive focus:text-destructive"
                         onSelect={() => onUninstall(installation)}
