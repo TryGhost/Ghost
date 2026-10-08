@@ -22,7 +22,15 @@ export interface ManifestError {
 }
 
 export type ParseManifestResult =
-  | { success: true; manifest: AppManifest }
+  | {
+      success: true;
+      manifest: AppManifest;
+      /**
+       * The manifest's URL as it was checked, which is the one to keep: the URL parser
+       * trims and normalises what it is given, so the string handed in may differ.
+       */
+      manifestUrl: string;
+    }
   | { success: false; errors: ManifestError[] };
 
 function formatPath(path: PropertyKey[]): string {
@@ -32,6 +40,22 @@ function formatPath(path: PropertyKey[]): string {
     }
     return result ? `${result}.${String(part)}` : String(part);
   }, '');
+}
+
+/**
+ * Checks the address a manifest is read from, by the same rules as the URLs inside it.
+ * Returns what is wrong with it, or null. Run it before fetching, so Ghost never requests
+ * an address it would refuse anyway (plain HTTP, or one carrying credentials).
+ */
+export function checkManifestUrl(manifestUrl: string, allowLocalhost = false): string | null {
+  let url: URL;
+  try {
+    url = new URL(manifestUrl);
+  } catch {
+    return 'Expected the manifest at a URL';
+  }
+  const problem = checkResolvedUrl(url, allowLocalhost);
+  return problem ? `${problem} for the manifest itself` : null;
 }
 
 /**
@@ -53,23 +77,15 @@ export function parseManifest(input: unknown, options: ParseManifestOptions): Pa
     };
   }
 
-  let base: URL;
-  try {
-    base = new URL(options.manifestUrl);
-  } catch {
-    return { success: false, errors: [{ path: '', message: 'Expected the manifest at a URL' }] };
-  }
-  const baseProblem = checkResolvedUrl(base, allowLocalhost);
+  const baseProblem = checkManifestUrl(options.manifestUrl, allowLocalhost);
   if (baseProblem) {
-    return {
-      success: false,
-      errors: [{ path: '', message: `${baseProblem} for the manifest itself` }],
-    };
+    return { success: false, errors: [{ path: '', message: baseProblem }] };
   }
+  const base = new URL(options.manifestUrl);
 
   const result = manifestSchema({ base, ghostOrigins, allowLocalhost }).safeParse(input);
   if (result.success) {
-    return { success: true, manifest: result.data };
+    return { success: true, manifest: result.data, manifestUrl: base.href };
   }
   return {
     success: false,

@@ -1,6 +1,7 @@
 import {
   DUNNING_PAYMENT_SETTLED_STORAGE_KEY,
   DUNNING_PAY_RETURN_ROUTE_STORAGE_KEY,
+  parseDunningConfig,
 } from '@tryghost/admin-x-framework/api/dunning';
 import { z } from 'zod';
 import type { SubscriptionState } from '@/ember-bridge';
@@ -13,7 +14,6 @@ export interface BillingAppMessage {
   request?: unknown;
   route?: unknown;
   destination?: unknown;
-  checkoutRoute?: unknown;
   exceededLimits?: unknown;
 }
 
@@ -57,17 +57,13 @@ export function billingAdminPath(subRoute: string): string {
 /**
  * The billing app route the iframe loads for an Admin URL, as Ember's pro
  * routes queue it before the iframe exists: a child route loads without its
- * query, the overview keeps `?action=…`, and non-billing pages load the root.
+ * query, and non-billing pages load the root.
  */
-export function initialBillingSubRoute(pathname: string, search: string): string | null {
+export function initialBillingSubRoute(pathname: string): string | null {
   if (!isBillingPath(pathname)) {
     return null;
   }
-  const subRoute = billingSubRoute(pathname);
-  if (subRoute) {
-    return subRoute;
-  }
-  return new URLSearchParams(search).has('action') ? search : '/';
+  return billingSubRoute(pathname) ?? '/';
 }
 
 /**
@@ -143,26 +139,48 @@ export function markDunningPaymentSettled(paymentFailedAt: Date): void {
   }
 }
 
-export const OVERDUE_ALERT_KEY = 'billing.overdue';
+/** `paymentFailedAt` of the failure a completed payment settled this session. */
+export function readDunningPaymentSettledFor(): string | null {
+  try {
+    return window.sessionStorage.getItem(DUNNING_PAYMENT_SETTLED_STORAGE_KEY);
+  } catch {
+    return null;
+  }
+}
+
+export function activeDunning(
+  value: unknown,
+  {
+    subscriptionStatus,
+    paymentSettledFor,
+  }: {
+    subscriptionStatus: unknown;
+    paymentSettledFor: string | null;
+  },
+) {
+  const dunning = parseDunningConfig(value);
+
+  if (
+    !dunning ||
+    subscriptionStatus === 'active' ||
+    paymentSettledFor === dunning.paymentFailedAt.toISOString()
+  ) {
+    return null;
+  }
+
+  return dunning;
+}
+
 export const EXCEEDED_ALERT_KEY = 'billing.exceeded';
 
-export const OVERDUE_ALERT_HTML = `Your billing details need updating. The site owner must <a href="#${BILLING_ROUTE_ROOT}/update-card">update payment information</a> to avoid suspension.`;
-export const EXCEEDED_ALERT_HTML = `Your audience has grown! To continue publishing, the site owner must <a href="#${BILLING_ROUTE_ROOT}?action=checkout">confirm pricing for this number of members</a>.`;
+export const EXCEEDED_ALERT_HTML = `Your audience has grown! To continue publishing, the site owner must <a href="#${BILLING_ROUTE_ROOT}/plans">confirm pricing for this number of members</a>.`;
 
-/**
- * Which billing alerts a subscription report calls for. The dunning warnings
- * replace the overdue alert, but only while they can use the host's dunning
- * config — otherwise the overdue alert must stay available.
- */
-export function billingAlerts(
-  message: { subscription?: { status: string }; exceededLimits?: unknown; checkoutRoute?: unknown },
-  { dunningWarningsActive }: { dunningWarningsActive: boolean },
-): { overdue: boolean; exceeded: boolean } {
-  const status = message.subscription?.status;
+export function billingAlerts(message: { exceededLimits?: unknown }): {
+  exceeded: boolean;
+} {
   const exceededLimits = Array.isArray(message.exceededLimits) ? message.exceededLimits : [];
 
   return {
-    overdue: (status === 'past_due' || status === 'unpaid') && !dunningWarningsActive,
-    exceeded: exceededLimits.includes('members') && Boolean(message.checkoutRoute),
+    exceeded: exceededLimits.includes('members'),
   };
 }

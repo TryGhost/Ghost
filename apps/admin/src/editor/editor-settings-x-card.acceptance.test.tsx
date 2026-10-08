@@ -23,6 +23,7 @@ import {
   type StaffRoleName,
 } from '@test-utils/acceptance';
 import { editorScreen } from '@/editor/editor.screen';
+import { publishScreen } from '@/editor/publish/publish.screen';
 import { deferred } from '@/utils/deferred';
 
 const POST_ID = 'abc123';
@@ -73,6 +74,14 @@ function fakeSavablePost(overrides: Partial<SavedPost> = {}) {
 function fakeImageUpload() {
   return fakeAdminEndpoint('POST', '/images/upload/', {
     images: [{ url: UPLOADED, ref: null }],
+  });
+}
+
+/** The site's member total, which the publish inputs read before Publish is offered. */
+function fakeMembersTotal() {
+  fakeAdminEndpoint('GET', /^\/members\/\?.*order=id/, {
+    members: [],
+    meta: { pagination: { page: 1, limit: 1, pages: 1, total: 20, next: null, prev: null } },
   });
 }
 
@@ -369,6 +378,7 @@ describe('Post settings X card', () => {
 
   it('refuses to save an X title longer than the field holds', async () => {
     const saveApi = fakeSavablePost();
+    fakeMembersTotal();
     await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
     await openXCard();
 
@@ -381,14 +391,28 @@ describe('Post settings X card', () => {
     await expect.element(editorScreen.settingsXTitle()).toHaveAttribute('aria-invalid', 'true');
     // Refused where the writer is typing rather than as a save they did not ask for.
     await expect.poll(unsavedChangesGuarded).toBe(true);
-    await expect(editorScreen.saveErrorBanner()).toHaveCount(0);
+    await expect(editorScreen.saveError()).toHaveCount(0);
     expect(saveApi.requests).toHaveLength(0);
 
     await userEvent.keyboard('{Meta>}s{/Meta}');
 
     await expect
-      .element(editorScreen.saveErrorBanner())
+      .element(editorScreen.saveError())
       .toHaveTextContent('X title cannot be longer than 300 characters.');
+    expect(saveApi.requests).toHaveLength(0);
+
+    // Publish is refused too, and opens the closed panel on the pane the field is in.
+    await editorScreen.settingsToggle().click();
+    await expect(editorScreen.settingsSidebar()).toHaveCount(0);
+    await expect.element(editorScreen.publishButton()).toBeEnabled();
+    await editorScreen.publishButton().click();
+
+    await expect.element(editorScreen.settingsSubviewPane()).toBeVisible();
+    await expect.element(editorScreen.settingsXTitle()).toHaveFocus();
+    await expect
+      .element(editorScreen.saveError())
+      .toHaveTextContent('X title cannot be longer than 300 characters.');
+    await expect(publishScreen.root()).toHaveCount(0);
     expect(saveApi.requests).toHaveLength(0);
   });
 
@@ -412,7 +436,7 @@ describe('Post settings X card', () => {
     await userEvent.keyboard('{Meta>}s{/Meta}');
 
     await expect
-      .element(editorScreen.saveErrorBanner())
+      .element(editorScreen.saveError())
       .toHaveTextContent('X description cannot be longer than 500 characters.');
     expect(saveApi.requests).toHaveLength(0);
   });

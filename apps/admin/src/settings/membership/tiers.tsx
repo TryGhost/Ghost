@@ -24,6 +24,9 @@ import {
   TabsContent,
   TabsList,
   TabsTrigger,
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
 } from '@tryghost/shade/components';
 import { ChevronDown } from 'lucide-react';
 import { HostLimitError } from '@tryghost/admin-x-framework/errors';
@@ -41,12 +44,11 @@ import {
   useBrowseTiers,
 } from '@tryghost/admin-x-framework/api/tiers';
 import { currencySelectGroups, validateCurrencyAmount } from '@tryghost/admin-x-framework';
-import { formatNumber } from '@tryghost/shade/utils';
+import { LucideIcon, cn, formatNumber } from '@tryghost/shade/utils';
 import { useConfirmation } from '@/settings/providers/confirmation-context';
 import { useGlobalData } from '@/settings/providers/global-data-context';
 import { useFeatureFlag, useHandleError, useLimiter } from '@tryghost/admin-x-framework/hooks';
 import { useSettingsNavigation } from '@/settings/hooks/use-settings-navigation';
-import { useTierCheckoutCollection } from './tiers/use-tier-checkout-collection';
 import { useUpgradeRoute } from '@/settings/hooks/use-upgrade-route';
 import { withErrorBoundary } from '@/settings/components/with-error-boundary';
 
@@ -69,10 +71,33 @@ const StripeConnectedButton: React.FC<{ className?: string; onClick: () => void 
   );
 };
 
+/** "Connected to Stripe", joined by a button that opens the checkout settings. */
+const StripeConnectedGroup: React.FC<{
+  className?: string;
+  onConnectClick: () => void;
+  onCustomizeClick: () => void;
+}> = ({ className, onConnectClick, onCustomizeClick }) => (
+  <div className={cn('inline-flex', className)}>
+    <StripeConnectedButton className="grow rounded-r-none border-r-0" onClick={onConnectClick} />
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <Button
+          aria-label="Customize checkout"
+          className="h-[34px] rounded-l-none"
+          size="icon"
+          type="button"
+          variant="outline"
+          onClick={onCustomizeClick}
+        >
+          <LucideIcon.Settings2 />
+        </Button>
+      </TooltipTrigger>
+      <TooltipContent>Customize checkout</TooltipContent>
+    </Tooltip>
+  </div>
+);
+
 const Tiers: React.FC<{ keywords: string[] }> = ({ keywords }) => {
-  // Warms the tier-independent checkout-config read (cached, one request) so the tier
-  // modal's deferred first paint has nothing left to wait for by the time one opens.
-  useTierCheckoutCollection(undefined);
   const [selectedTab, setSelectedTab] = useState('active-tiers');
   const [currencyOpen, setCurrencyOpen] = useState(false);
   const [machinePaymentsAmountError, setMachinePaymentsAmountError] = useState<
@@ -108,6 +133,7 @@ const Tiers: React.FC<{ keywords: string[] }> = ({ keywords }) => {
   const llmsEnabled = llmsEnabledValue !== false;
   const machinePaymentsEnabled = machinePaymentsEnabledValue === true;
   const hasMachinePaymentsLab = useFeatureFlag('machinePayments');
+  const hasCheckoutDesignLab = useFeatureFlag('stripeCheckoutDesign');
   // Admin and core deploy independently — only render controls once the
   // settings key exists in the browse payload (labs alone is not enough).
   const backendSupportsMachinePayments = settings?.some(
@@ -202,11 +228,19 @@ const Tiers: React.FC<{ keywords: string[] }> = ({ keywords }) => {
     );
   }
 
+  const connectedButton = (className: string) =>
+    hasCheckoutDesignLab ? (
+      <StripeConnectedGroup
+        className={className}
+        onConnectClick={() => void openConnectModal()}
+        onCustomizeClick={() => updateRoute('tiers/checkout')}
+      />
+    ) : (
+      <StripeConnectedButton className={className} onClick={() => void openConnectModal()} />
+    );
+
   const stripeButton = stripeEnabled ? (
-    <StripeConnectedButton
-      className="hidden tablet:!visible tablet:!inline-flex"
-      onClick={() => void openConnectModal()}
-    />
+    connectedButton('hidden tablet:!visible tablet:!inline-flex')
   ) : (
     <StripeButton
       className="hidden tablet:!visible tablet:!block"
@@ -225,7 +259,7 @@ const Tiers: React.FC<{ keywords: string[] }> = ({ keywords }) => {
     >
       <div className="w-full tablet:hidden">
         {stripeEnabled ? (
-          <StripeConnectedButton className="w-full" onClick={() => void openConnectModal()} />
+          connectedButton('w-full')
         ) : (
           <StripeButton onClick={() => void openConnectModal()} />
         )}

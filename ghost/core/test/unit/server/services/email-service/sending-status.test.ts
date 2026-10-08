@@ -34,6 +34,22 @@ function batch({
 }
 
 describe('buildSendingStatus', function () {
+  it('does not allow retrying a failure with a submitting batch, even alongside ordinary failures', function () {
+    const result = buildSendingStatus(email({ status: 'failed', recipientCount: 40 }), [
+      batch({ status: 'submitted', createdAt: '12:00:00' }),
+      batch({ status: 'failed', createdAt: '12:00:10' }),
+      batch({ status: 'pending', createdAt: '12:00:20' }),
+      batch({ status: 'submitting', createdAt: '12:00:30' }),
+    ]);
+    assert.equal(result.status, 'failed');
+    assert.equal(Reflect.get(result, 'retryable'), false);
+  });
+
+  it('allows retrying a preparation failure without batches', function () {
+    const result = buildSendingStatus(email({ status: 'failed', recipientCount: 40 }), []);
+    assert.equal(Reflect.get(result, 'retryable'), true);
+  });
+
   it('reports a pending email without batches as preparing', function () {
     assert.deepEqual(buildSendingStatus(email({ status: 'pending', recipientCount: 100 }), []), {
       status: 'preparing',
@@ -163,6 +179,7 @@ describe('buildSendingStatus', function () {
         status: 'failed',
         progress: { completed: 10, total: 20, estimatedSecondsRemaining: null },
         failedDuring: 'submitting',
+        retryable: true,
       },
     );
   });
@@ -179,6 +196,7 @@ describe('buildSendingStatus', function () {
         status: 'failed',
         progress: { completed: 10, total: 20, estimatedSecondsRemaining: null },
         failedDuring: 'preparing',
+        retryable: true,
       },
     );
   });

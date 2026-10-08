@@ -10,6 +10,7 @@ import {
   offer,
   renderAdminApp,
   settingsResponse,
+  unsavedChangesGuarded,
 } from '@test-utils/acceptance';
 import * as sel from '@tryghost/test-data/selectors/settings';
 import { settingsScreen } from '@/settings/settings.screen';
@@ -473,7 +474,10 @@ describe('Navigation settings', () => {
 
     // Text that matches nothing keeps the dropdown shut, so Escape reaches the modal
     await existingItem().getByLabelText('URL').click();
-    await userEvent.keyboard('zzz{Escape}');
+    await userEvent.keyboard('zzz');
+    await expect.poll(unsavedChangesGuarded).toBe(true);
+    await expect(suggestions()).toHaveCount(0);
+    await userEvent.keyboard('{Escape}');
 
     await expect.element(settingsScreen.confirmationModal()).toHaveTextContent(/leave/i);
     await settingsScreen.confirmationAction('Stay').click();
@@ -509,6 +513,8 @@ describe('Navigation settings', () => {
 
     await newItem().getByLabelText('URL').click();
     await userEvent.keyboard('zzz');
+    // Wait for the unsaved-changes guard as well as the dropdown before leaving.
+    await expect.poll(unsavedChangesGuarded).toBe(true);
     // Wait for the debounced search to close the list, so Escape reaches the modal
     await expect(suggestions()).toHaveCount(0);
     await userEvent.keyboard('{Escape}');

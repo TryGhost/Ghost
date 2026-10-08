@@ -3,6 +3,7 @@ const path = require('path');
 const execFileSync = require('child_process').execFileSync;
 
 const MIGRATIONS_PATH = 'ghost/core/core/server/data/migrations/versions';
+const VERSIONS_DIR = '/migrations/versions/';
 const PACKAGE_JSON_PATH = 'ghost/core/package.json';
 
 /**
@@ -54,6 +55,34 @@ function getSafeVersion() {
     raw: pkg.version,
     safe: match[0],
   };
+}
+
+/**
+ * Migrations added by a `git diff --name-status` listing. A rename counts as
+ * an add unless it keeps its path within the versions directory, so moving
+ * the whole directory adds nothing but moving a file into a version folder does.
+ */
+function addedMigrations(nameStatus) {
+  const versionsRelative = (file) => {
+    const index = file.indexOf(VERSIONS_DIR);
+    return index === -1 ? null : file.slice(index + VERSIONS_DIR.length);
+  };
+
+  return nameStatus
+    .split('\n')
+    .filter(Boolean)
+    .map((line) => line.split('\t'))
+    .filter(([status, from, to]) => {
+      if (status === 'A') {
+        return from.startsWith(MIGRATIONS_PATH + '/');
+      }
+      return (
+        status.startsWith('R') &&
+        to.startsWith(MIGRATIONS_PATH + '/') &&
+        versionsRelative(from) !== versionsRelative(to)
+      );
+    })
+    .map(([status, from, to]) => (status === 'A' ? from : to));
 }
 
 /**
@@ -154,23 +183,19 @@ function checkStalePlacements(safeVersion, lastPublishedMinor, baseSha, compareS
     );
   }
 
-  const newFiles = runGit([
-    'diff',
-    '--name-only',
-    '--diff-filter=A',
-    mergeBaseSha,
-    compareSha,
-    '--',
-    MIGRATIONS_PATH,
-  ]);
+  // No pathspec: rename detection needs both sides in the diff, so a moved
+  // migrations directory reads as renames rather than adds.
+  const newFiles = addedMigrations(
+    runGit(['diff', '--name-status', '--find-renames', mergeBaseSha, compareSha]),
+  );
 
-  if (!newFiles) {
+  if (newFiles.length === 0) {
     return null;
   }
 
   const stale = [];
 
-  for (const file of newFiles.split('\n').filter(Boolean)) {
+  for (const file of newFiles) {
     // Extract the version folder from the path
     // e.g. ghost/core/core/server/data/migrations/versions/6.27/some-migration.js → 6.27
     const relativePath = file.replace(MIGRATIONS_PATH + '/', '');

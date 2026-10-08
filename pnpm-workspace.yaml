@@ -15,6 +15,12 @@ autoDedupe: true
 minimumReleaseAge: 4320 # 3 days in minutes; matches Renovate's minimumReleaseAge
 blockExoticSubdeps: true
 
+ignoredOptionalDependencies:
+  # dtrace-provider is pulled in optionally via bunyan, but only works on
+  # macOS Intel (not Apple Silicon) with SIP disabled, so effectively it's
+  # adding more work for no benefit
+  - dtrace-provider
+
 allowBuilds:
   # Permitted builds are version-scoped. Adding or updating a permitted version
   # requires an explicit Platform security review.
@@ -26,7 +32,6 @@ allowBuilds:
   'better-sqlite3@12.11.1': true
   'core-js@2.6.12': true
   cpu-features: false
-  'dtrace-provider@0.8.8': true
   'esbuild@0.25.12 || 0.28.2': true
   'fsevents@1.2.13 || 2.3.2 || 2.3.3': true
   'msw@2.14.6': true
@@ -73,11 +78,12 @@ catalog:
   '@storybook/addon-docs': 10.4.6
   '@storybook/addon-links': 10.4.6
   '@storybook/react-vite': 10.4.6
-  '@tailwindcss/postcss': 4.2.2
-  '@tailwindcss/vite': 4.2.2
+  '@tailwindcss/postcss': 4.3.3
+  '@tailwindcss/vite': 4.3.3
   '@tanstack/react-query': 5.101.4
   '@tanstack/react-virtual': 3.14.13
   '@testing-library/jest-dom': 6.9.1
+  '@testing-library/preact': 3.2.4
   '@testing-library/react': 14.3.1
   '@tryghost/brute-knex': 3.2.2
   '@tryghost/color-utils': 0.2.21
@@ -157,13 +163,13 @@ catalog:
   knex: 2.4.2
   knex-migrator: 6.2.1
   lodash: 4.18.1
-  lru-cache: 11.5.2
+  lru-cache: 11.5.3
   luxon: 3.7.2
   lucide-react: 1.23.0
   microdiff: 1.5.0
   mingo: 2.5.3
   moment: 2.31.0
-  moment-timezone: 0.6.4
+  moment-timezone: 0.6.5
   msw: 2.14.6
   nock: 14.0.17
   node-html-markdown: 2.0.0
@@ -184,7 +190,7 @@ catalog:
   storybook: 10.4.6
   stylelint: 17.14.1
   supertest: 7.2.2
-  tailwindcss: 4.2.2
+  tailwindcss: 4.3.3
   temporal-polyfill: 0.3.2
   tldts: ^7.4.4
   tsx: 4.23.12

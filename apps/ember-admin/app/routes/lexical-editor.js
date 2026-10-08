@@ -62,9 +62,9 @@ function buildAnalyticsSourcePath(transition, model) {
 }
 
 export default AuthenticatedRoute.extend({
-    feature: service(),
     notifications: service(),
     router: service(),
+    stateBridge: service(),
     ui: service(),
 
     classNames: ['editor'],
@@ -75,9 +75,9 @@ export default AuthenticatedRoute.extend({
     beforeModel(transition) {
         this._super(...arguments);
 
-        // Strictly boolean: a non-boolean labs value must not hand the route
-        // to React.
-        if (this.feature.editorReact !== true) {
+        // The answer React reads, so both routers agree while an open editor
+        // holds its owner.
+        if (this.stateBridge.isFeatureEnabled('editorReact') !== true) {
             return;
         }
 
@@ -100,6 +100,7 @@ export default AuthenticatedRoute.extend({
     activate() {
         this._super(...arguments);
         this.ui.set('isFullScreen', true);
+        this.stateBridge.setEmberEditorActive(true);
     },
 
     setupController(controller, model, transition) {
@@ -117,6 +118,7 @@ export default AuthenticatedRoute.extend({
     deactivate() {
         this._super(...arguments);
         this.ui.set('isFullScreen', false);
+        this.stateBridge.setEmberEditorActive(false);
     },
 
     actions: {

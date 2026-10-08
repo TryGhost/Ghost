@@ -22,6 +22,7 @@ import type {
   AutomationAction,
   AutomationEdge,
   AutomationEmailStats,
+  AutomationStatus,
   AutomationSummary,
   AutomationRunMember,
   AutomationRunHistory,
@@ -99,7 +100,7 @@ type AutomationSummaryRow = {
   slug: null | string;
   name: string;
   description: string;
-  status: string;
+  status: AutomationStatus;
   created_at: DatabaseDate;
   updated_at: DatabaseDate;
 };
@@ -399,7 +400,7 @@ export function createDatabaseAutomationsRepository({
           slug: null,
           name: data.name,
           description: data.description,
-          status: 'inactive',
+          status: data.status,
           trigger_tier_scope: data.trigger_tier_scope ?? null,
           created_at: now,
           updated_at: now,
@@ -427,6 +428,8 @@ export function createDatabaseAutomationsRepository({
             tierIds.map((productId) => ({ automation_id: automation.id, product_id: productId })),
           );
         }
+
+        await replaceAutomationGraph(trx, automation.id, data.actions, data.edges);
 
         return await buildAutomation(trx, automation);
       });
@@ -482,10 +485,23 @@ export function createDatabaseAutomationsRepository({
           }
         }
 
-        await replaceAutomationGraph(trx, updatedAutomation.id, data.actions, data.edges);
+        if (data.actions !== undefined) {
+          await replaceAutomationGraph(trx, updatedAutomation.id, data.actions, data.edges);
+        }
 
-        if (updatedAutomation.status === 'inactive') {
-          await cancelCancelablePendingStepsForAutomation(trx, updatedAutomation.id, now);
+        switch (updatedAutomation.status) {
+          case 'active':
+            break;
+          case 'inactive':
+          case 'archived':
+            await cancelCancelablePendingStepsForAutomation(trx, updatedAutomation.id, now);
+            break;
+          default: {
+            const _exhaustive: never = updatedAutomation.status;
+            throw new errors.InternalServerError({
+              message: `Unexpected automation status: ${_exhaustive}`,
+            });
+          }
         }
 
         return await buildAutomation(trx, updatedAutomation);

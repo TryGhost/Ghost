@@ -72,7 +72,15 @@ describe('automations API', function () {
   });
 
   describe('add', function () {
-    const valid = { name: 'New automation', description: '', trigger_tier_scope: 'free' };
+    const actions = [buildWaitAction(), buildSendEmailAction()];
+    const valid = {
+      name: 'New automation',
+      description: '',
+      trigger_tier_scope: 'free',
+      status: 'active',
+      actions,
+      edges: [buildEdge(actions[0], actions[1])],
+    };
 
     it('adds automations', async function () {
       const tierIds = [ObjectId().toHexString(), ObjectId().toHexString()];
@@ -110,7 +118,21 @@ describe('automations API', function () {
         { ...valid, trigger_tier_scope: 'selected_paid', trigger_tier_ids: ['invalid'] },
         { ...valid, trigger_tier_ids: [ObjectId().toHexString()] },
         { ...valid, trigger_tier_scope: 'all_paid', trigger_tier_ids: [ObjectId().toHexString()] },
-        { ...valid, status: 'active' },
+        ...['name', 'description', 'status', 'actions', 'edges'].map((field) => ({
+          ...valid,
+          [field]: undefined,
+        })),
+        { ...valid, status: 'invalid' },
+        { ...valid, actions: [actions[0], actions[0]] },
+        { ...valid, edges: [] },
+        { ...valid, edges: [buildEdge(actions[0], buildWaitAction())] },
+        { ...valid, actions: [buildSendEmailAction({ email_lexical: 'invalid' })], edges: [] },
+        { ...valid, actions: [buildSendEmailAction({ email_subject: '' })], edges: [] },
+        {
+          ...valid,
+          actions: [buildSendEmailAction({ email_lexical: EMPTY_EMAIL_LEXICAL })],
+          edges: [],
+        },
         { ...valid, slug: 'member-welcome-email-free' },
         { ...valid, actions: [] },
         { ...valid, id: ObjectId().toHexString() },
@@ -123,11 +145,99 @@ describe('automations API', function () {
           });
         }),
       );
+      expect(repositoryAdd).not.toHaveBeenCalled();
     });
+
+    it.each(['inactive', 'archived'] as const)(
+      'allows empty email drafts when %s',
+      async function (status) {
+        const payload = {
+          ...valid,
+          status,
+          actions: [
+            buildSendEmailAction({ email_subject: '', email_lexical: EMPTY_EMAIL_LEXICAL }),
+          ],
+          edges: [],
+        };
+        await automationsApi.add(payload);
+        expect(repositoryAdd).toHaveBeenCalledExactlyOnceWith(payload);
+        expect(repositoryEdit).not.toHaveBeenCalled();
+      },
+    );
   });
 
   describe('edit', function () {
     const automationId = ObjectId().toHexString();
+
+    it.each(['inactive', 'archived'] as const)(
+      'allows status-only edits to %s',
+      async function (status) {
+        const saved = { id: automationId, status };
+        repositoryEdit.mockResolvedValue(saved);
+        assert.strictEqual(await automationsApi.edit(automationId, { status }), saved);
+        assert.deepEqual(repositoryEdit.mock.calls[0], [automationId, { status }]);
+      },
+    );
+
+    it.each([
+      ['actions', { actions: [buildWaitAction()] }, /edges:/],
+      ['edges', { edges: [] }, /actions:/],
+    ])('rejects %s without the other graph field', async function (_, graph, expectedError) {
+      await assert.rejects(
+        automationsApi.edit(automationId, { status: 'inactive', ...graph }),
+        expectedError,
+      );
+      assert.equal(repositoryEdit.mock.calls.length, 0);
+    });
+
+    it.each([
+      { name: 'Renamed flow' },
+      { description: 'Updated description' },
+      { trigger_tier_scope: 'free' },
+      { trigger_tier_ids: null },
+    ])('rejects status-only edits with extra fields: %j', async function (extraFields) {
+      await assert.rejects(
+        automationsApi.edit(automationId, { status: 'inactive', ...extraFields }),
+        { errorType: 'ValidationError' },
+      );
+      expect(repositoryEdit).not.toHaveBeenCalled();
+    });
+
+    it('returns "not found" for status-only edits of unknown automations', async function () {
+      repositoryEdit.mockResolvedValue(null);
+      await assert.rejects(automationsApi.edit(automationId, { status: 'inactive' }), {
+        errorType: 'NotFoundError',
+      });
+    });
+
+    it('rejects status-only activations', async function () {
+      await assert.rejects(automationsApi.edit(automationId, { status: 'active' }), {
+        errorType: 'ValidationError',
+        property: 'status',
+        message: 'Status-only automation edits can only set status to inactive or archived.',
+      });
+      expect(repositoryEdit).not.toHaveBeenCalled();
+    });
+
+    it('allows activation when the full graph is submitted', async function () {
+      const payload = { status: 'active', actions: [buildSendEmailAction()], edges: [] };
+      const saved = { id: automationId, ...payload };
+      repositoryEdit.mockResolvedValue(saved);
+      assert.strictEqual(await automationsApi.edit(automationId, payload), saved);
+      expect(repositoryEdit).toHaveBeenCalledExactlyOnceWith(automationId, payload);
+    });
+
+    it('allows a full-graph archived edit with empty email drafts', async function () {
+      const payload = {
+        status: 'archived',
+        actions: [buildSendEmailAction({ email_subject: '', email_lexical: EMPTY_EMAIL_LEXICAL })],
+        edges: [],
+      };
+      const saved = { id: automationId, ...payload };
+      repositoryEdit.mockResolvedValue(saved);
+      assert.strictEqual(await automationsApi.edit(automationId, payload), saved);
+      expect(repositoryEdit).toHaveBeenCalledExactlyOnceWith(automationId, payload);
+    });
 
     it('trims optional name and description before saving', async function () {
       const actions = [buildWaitAction()];
@@ -291,16 +401,19 @@ describe('automations API', function () {
       );
     });
 
-    it('rejects a send email action with invalid JSON', async function () {
-      await assert.rejects(
-        automationsApi.edit(automationId, {
-          status: 'inactive',
-          actions: [buildSendEmailAction({ email_lexical: '{"root":' })],
-          edges: [],
-        }),
-        /well-formed Lexical document/,
-      );
-    });
+    it.each(['inactive', 'archived'] as const)(
+      'rejects invalid email JSON when %s',
+      async function (status) {
+        await assert.rejects(
+          automationsApi.edit(automationId, {
+            status,
+            actions: [buildSendEmailAction({ email_lexical: '{"root":' })],
+            edges: [],
+          }),
+          /well-formed Lexical document/,
+        );
+      },
+    );
 
     it('rejects an active send email action with invalid JSON as malformed Lexical', async function () {
       await assert.rejects(

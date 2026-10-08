@@ -26,7 +26,7 @@ again.
 | [`preview/`](preview/README.md)                  | The modal that shows a post as the site renders it or as the newsletter it would be sent as                          |
 | `editor-screen.tsx`                              | The route: loads the post, builds the session, and lays out the header, the surface and the sidebar                  |
 | `post-editor.tsx`, `koenig-post-editor.tsx`      | The title, excerpt and feature image around the Koenig instances, and the Koenig integration itself                  |
-| `editor-header-actions.tsx`, `editor-status.tsx` | The header's publish and preview controls, and the line saying where the post stands, with a failed send's retry     |
+| `editor-header-actions.tsx`, `editor-status.tsx` | The header's publish and preview controls, and the line saying where the post stands or why a save failed            |
 | `use-save-feedback.tsx`, `save-toast.ts`         | The toast and button progress that report an explicit save, and the pure copy they show                              |
 | `card-config.ts`, `use-post-card-config.ts`      | What Koenig's cards are told about the site and the post they are being edited in                                    |
 | `local-revisions.ts`                             | Browser-local copies of drafts holding unsaved work: how they are stored, trimmed and read back                      |
@@ -63,33 +63,44 @@ then starts at its email-failure step. Whether a post qualifies is decided by
 the flow's own `initialEmailError()`, and the button is offered only to roles
 Core lets retry an email, so an Author sees the failure without it.
 
-While the title or a settings field breaks its rule, the header's Publish, its
-shortcut, Unpublish and Unschedule open nothing: each is refused as a save the
-writer asks for is, with the field's message, and moves focus to the title or
-excerpt, opening the settings panel when the field lives there. Update moves
-focus the same way.
+While the post breaks a rule a save checks, the header's Preview and Publish,
+their shortcuts, the preview's Publish, Unpublish and Unschedule open nothing. The
+rules are the save's own: an over-long title, excerpt, email subject, meta,
+social card or code injection field, an invalid canonical URL, specific-tier
+access with no tier, an empty author list, and a publish date staged for a time
+that has not passed. Each opener is refused as a save the writer asks for is:
+the status line names the rule in red in place of the status, nothing is sent,
+and the writer is taken to the field. The title and the excerpt under it take
+focus; a field in the settings panel opens the panel, and the field's pane when
+it has one, and takes focus there. The email subject is edited in the preview,
+so the preview opens on its email tab, its own save refused beside the subject. The preview's
+Publish refuses an over-long subject in place: the preview stays open and turns
+to its email tab, where the rule is named beside the subject. A refusal of any
+other field from the preview's Publish closes the preview first. Update is refused by its save
+and takes the writer to the field the same way.
 
 Every opener stays unavailable until the publish inputs have loaded, and so
 does the update flow behind Unpublish, Unschedule and a sent post's "Sent" in
 the status line. When they fail to load, the header shows the error with a
 Retry beside Publish, Unpublish or Unschedule, and for a post whose status line
-offers "Sent" or the retry. After a retry, or a publish that
-emails, a published post's status line reads "Published and sending to N
-members" while the email is on its way and "Published and sent to N members"
-once the flow's email confirmation finds it submitted; an email-only send reads
-"Sent to N members" throughout. With the `improveSendingUI` flag on, a publish
-does not wait for that confirmation, so the status line shows the send as the
-save left it.
+offers "Sent" or the retry. A read that found the session gone asks for the
+password in the editor's sign-in dialog first and reads again once the writer
+is back; cancelling it leaves the error, a later background read that fails the
+same way does not ask again, and Retry asks again. A published post's status
+line reads "Published and sending to N members" while its email is on its way
+and "Published and sent to N members" once it is submitted; an email-only send
+reads "Sent to N members" throughout. Neither a publish that emails nor a retry
+waits for the send, so the status line shows it as the save or retry left it.
 
 After successful completion, the editor follows the publish flow's celebration
 handoff to the destination screen. Pages return to `/pages`; scheduled posts
 and posts without email return to `/posts`. Immediately published posts with
 email, including email-only sends and posts that were emailed previously, open
-`/posts/analytics/:id`. Failed saves and failed sends keep the flow open so the
-writer can retry. With the flag on, a publish that emails opens analytics as
-soon as it saves, and a send that fails after that is reported there rather
-than in the flow; retrying a failed send from the status line still waits for
-the email.
+`/posts/analytics/:id`. Failed saves and rejected retries keep the flow open
+so the writer can try again. A publish that emails, or a retry of a failed
+send, opens analytics once Core accepts it, but no sooner than 1.5 seconds
+after the writer confirms; the send's progress, and any failure after that, is
+reported there rather than in the flow.
 
 ## Leaving the editor
 
@@ -159,6 +170,63 @@ a half seconds once it lands and "Retry" after a failure; a contributor's Save r
 "Saving" and "Saved". Cmd/Ctrl+S leaves both buttons alone. Reverting a post to
 a draft from the update flow shows "Post reverted to a draft." ("Page" for a
 page).
+
+A post that has never been saved has no status line. The save that creates it
+reads "Saving…" there, and a first save that fails says why.
+
+## Save problems
+
+The status line is where a failed or refused save is reported: its reason, in
+red, replaces the status until a later save lands, and stays shown when the
+header otherwise hides the status line. A host limit's reason links its "please
+upgrade" phrase to the host's upgrade screen. Retry beside the reason repeats a
+failed save. There is none for a save the editor refused before sending, since
+only fixing the field ends it, nor for a failed publish, schedule or unpublish:
+a retry there would save the post without changing its status, so the publish
+or update flow is where those are retried. While a collision blocks the next
+save, its banner offers the ways out instead.
+
+What the status line cannot hold has a banner above the header, which moves
+down with the settings toggle beneath it: a collision, a deleted post, lost
+access and a crashed editor, each with Reload or Copy content, and a newer
+version saved elsewhere. Changes held back by a field's rule have no banner;
+the field names its rule, and the status line does once a save the writer asks
+for is refused over it.
+
+The header row's actions line up with the settings toggle. A status that wraps
+keeps its first line level with the back link's label and grows downward.
+
+Below Tailwind's `sm` breakpoint the status stays on the header row beside the
+back link, and the header's actions move to the bottom bar: the word count sits
+in the bottom-left corner, the actions in the bottom right, and the help link is
+hidden. The bar's rightmost action, Publish, Update or Save, is a primary
+button there, and the bar names no shortcuts,
+which still work. `editor-header-actions.tsx` builds one list of controls and,
+below the breakpoint, portals them into a slot `post-editor.tsx` keeps in its
+footer, so the header and the bar share order, disabled states, refusals and
+flows. Only the controls move; the flows they open stay mounted, so crossing
+the breakpoint keeps an open flow. A failed publish inputs load shows its
+message and Retry there too. While the on-screen keyboard is open the bar's
+actions are hidden with the word count.
+
+## Link suggestions
+
+The link toolbar loads content search indexes on first use and shares them with
+global search in the React Query cache. Staff edits update the saved name, slug
+and URL in both searches; deletion removes the staff entry. Preference-only
+saves reuse the loaded lists without another index request. Resource
+invalidations make the next link search wait for fresh data. The shared parser
+retains URLs, visibility and published dates for the toolbar's link decorations.
+
+Saving the post being edited never reads the lists again, since each one is
+every post, page or tag on the site. Each save writes the post as the server
+answered it into the loaded lists instead: its entry moves to the front of the
+posts or pages list, and any of its tags the tags list lacks, such as one the
+save created, is added to the front of that one. This happens as each save is
+answered, including one that lands after the writer has left the editor. A list
+whose read is still in flight when a save lands, its first included, gets the
+save once that read lands, since the read may predate it; the read itself is
+neither cancelled nor repeated.
 
 ## Snippets
 

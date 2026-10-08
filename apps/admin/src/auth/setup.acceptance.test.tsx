@@ -19,7 +19,7 @@ beforeEach(() => {
 
 it('sends a set-up site to sign in', async () => {
   fakeSetupStatus({ status: true });
-  await renderAdminApp('/setup', signedOut({ authReact: true }));
+  await renderAdminApp('/setup', signedOut());
 
   await expect.poll(currentRoute).toBe('/signin');
 });
@@ -31,7 +31,7 @@ it('prefills the configured site details, focused on the title', async () => {
     name: 'Jamie O&apos;Neil',
     email: 'jamie@example.com',
   });
-  await renderAdminApp('/setup', signedOut({ authReact: true }));
+  await renderAdminApp('/setup', signedOut());
 
   await expect.element(authScreen.siteTitleInput()).toHaveValue("Jamie's Blog");
   await expect.element(authScreen.siteTitleInput()).toHaveFocus();
@@ -41,7 +41,7 @@ it('prefills the configured site details, focused on the title', async () => {
 
 it('checks every field on submit', async () => {
   fakeSetupStatus({ status: false });
-  await renderAdminApp('/setup', signedOut({ authReact: true }));
+  await renderAdminApp('/setup', signedOut());
 
   await authScreen.startPublishingButton().click();
 
@@ -65,7 +65,7 @@ it('creates the owner, signs in and starts onboarding', async () => {
     status: 201,
     contentType: 'text/plain; charset=utf-8',
   });
-  await renderAdminApp('/setup', signedOut({ authReact: true }));
+  await renderAdminApp('/setup', signedOut());
 
   await authScreen.siteTitleInput().fill('  The Daily Awesome  ');
   await authScreen.fullNameInput().fill('Jamie Larson');
@@ -102,7 +102,7 @@ it('shows why the server refused the details', async () => {
     },
     { status: 422 },
   );
-  await renderAdminApp('/setup', signedOut({ authReact: true }));
+  await renderAdminApp('/setup', signedOut());
 
   await authScreen.siteTitleInput().fill('The Daily Awesome');
   await authScreen.fullNameInput().fill('Jamie Larson');
@@ -129,7 +129,7 @@ it('sends the new owner to sign in when signing in right after setup fails', asy
     { errors: [{ type: 'UnauthorizedError', message: 'Access Denied.' }] },
     { status: 401 },
   );
-  await renderAdminApp('/setup', signedOut({ authReact: true }));
+  await renderAdminApp('/setup', signedOut());
 
   await authScreen.siteTitleInput().fill('The Daily Awesome');
   await authScreen.fullNameInput().fill('Jamie Larson');
@@ -157,7 +157,7 @@ it('moves on to sign in when the server reports the site is already set up', asy
     },
     { status: 403 },
   );
-  await renderAdminApp('/setup', signedOut({ authReact: true }));
+  await renderAdminApp('/setup', signedOut());
 
   await authScreen.siteTitleInput().fill('The Daily Awesome');
   await authScreen.fullNameInput().fill('Jamie Larson');
@@ -175,7 +175,7 @@ it('lets the owner submit again when neither setup nor the server answered', asy
     status: 502,
     contentType: 'text/html',
   });
-  await renderAdminApp('/setup', signedOut({ authReact: true }));
+  await renderAdminApp('/setup', signedOut());
 
   await authScreen.siteTitleInput().fill('The Daily Awesome');
   await authScreen.fullNameInput().fill('Jamie Larson');

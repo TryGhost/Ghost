@@ -53,6 +53,7 @@
   },
   "devDependencies": {
     "@internal/cfg-eslint-react": "workspace:*",
+    "@internal/cfg-typescript": "workspace:*",
     "@internal/cfg-vite-public-app": "workspace:*",
     "@playwright/test": "catalog:",
     "@testing-library/jest-dom": "catalog:",
@@ -98,6 +99,11 @@
           "cwd": "apps/comments-ui",
           "command": "vite build --watch --mode development"
         }
+      },
+      "lint": {
+        "dependsOn": [
+          "^build"
+        ]
       }
     },
     "tags": [

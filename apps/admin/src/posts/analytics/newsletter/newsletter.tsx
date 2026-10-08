@@ -442,7 +442,7 @@ const Newsletter: React.FC = () => {
                   )}
                 </div>
                 <PendingSendEmpty
-                  description="Sends, opens and clicks will appear once every email has been sent"
+                  description="You'll see sends, opens and clicks here once it finishes"
                   title="Your newsletter is being sent"
                 >
                   <div

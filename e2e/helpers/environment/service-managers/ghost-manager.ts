@@ -40,6 +40,7 @@ export interface GhostInstance {
   port: number;
   baseUrl: string;
   siteUuid: string;
+  ownerEmail: string;
 }
 
 export interface GhostManagerConfig {
@@ -367,6 +368,9 @@ export class GhostManager {
       HostConfig: {
         Binds: binds,
         ExtraHosts: ['host.docker.internal:host-gateway'],
+        // Disable inherited search domains: CI's resolver can otherwise append
+        // its Azure domain to external hosts and trigger false egress failures.
+        DnsSearch: ['.'],
         ...(dnsServerIp ? { Dns: [dnsServerIp] } : {}),
       },
       NetworkingConfig: {

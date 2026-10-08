@@ -128,8 +128,16 @@ module.exports = {
     return apiFramework.pipeline(require('./member-metafields'), localUtils);
   },
 
-  get tiersCheckoutConfig() {
-    return apiFramework.pipeline(require('./tiers-checkout-config'), localUtils);
+  get stripeCheckoutConfig() {
+    return apiFramework.pipeline(require('./stripe-checkout-config'), localUtils);
+  },
+
+  get stripeCheckoutPreview() {
+    return apiFramework.pipeline(require('./stripe-checkout-preview'), localUtils);
+  },
+
+  get stripeCheckoutBranding() {
+    return apiFramework.pipeline(require('./stripe-checkout-branding'), localUtils);
   },
 
   get memberCommenting() {
@@ -334,6 +342,14 @@ module.exports = {
 
   get giftsMembers() {
     return apiFramework.pipeline(require('./gifts-members'), localUtils, 'members');
+  },
+
+  get appInstallations() {
+    return apiFramework.pipeline(require('./app-installations'), localUtils);
+  },
+
+  get appInstallationPreviews() {
+    return apiFramework.pipeline(require('./app-installation-previews'), localUtils);
   },
 
   get giftLinks() {

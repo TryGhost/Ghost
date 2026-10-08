@@ -2,7 +2,6 @@ import loginAsRole from '../../helpers/login-as-role';
 import {blur, click, currentRouteName, currentURL, fillIn, find, waitFor, waitUntil} from '@ember/test-helpers';
 import {enableLabsFlag} from '../../helpers/labs-flag';
 import {expect} from 'chai';
-import {invalidateSession} from 'ember-simple-auth/test-support';
 import {setupApplicationTest} from 'ember-mocha';
 import {setupMirage} from 'ember-cli-mirage/test-support';
 import {visit} from '../../helpers/visit';
@@ -14,13 +13,6 @@ describe('Acceptance: Lexical editor', function () {
     beforeEach(async function () {
         this.server.loadFixtures();
         await loginAsRole('Administrator', this.server);
-    });
-
-    it('redirects to signin when not authenticated', async function () {
-        await invalidateSession();
-
-        await visit('/editor/post/');
-        expect(currentURL(), 'currentURL').to.equal('/signin');
     });
 
     describe('with new post', function () {

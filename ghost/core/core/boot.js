@@ -165,6 +165,18 @@ async function initCore({ ghostServer, config }) {
   memberMetafieldsService.init();
   debug('End: Member Metafields Service');
 
+  // App installations service: knex-backed, wired once the DB is ready.
+  debug('Begin: App Installations Service');
+  const appInstallationsService = require('./server/services/app-installations');
+  appInstallationsService.init();
+  debug('End: App Installations Service');
+
+  // Stripe Checkout config service: knex-backed, wired once the DB is ready.
+  debug('Begin: Stripe Checkout Config Service');
+  const stripeCheckoutConfigService = require('./server/services/stripe-checkout-config');
+  stripeCheckoutConfigService.init();
+  debug('End: Stripe Checkout Config Service');
+
   if (ghostServer) {
     // Jobs Service allows parts of Ghost to run in the background
     debug('Begin: Jobs Service');

@@ -84,6 +84,7 @@ export type { NavigateOptions } from './providers/router-provider';
 export type AdminRouteHandle = {
   allowInForceUpgrade?: boolean;
   hideAdminSidebar?: boolean;
+  settingsSidebar?: boolean;
 };
 export {
   RouterProvider,

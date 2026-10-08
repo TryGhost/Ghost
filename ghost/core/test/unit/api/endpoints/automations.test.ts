@@ -81,7 +81,7 @@ describe('Automations controller', function () {
         slug: null,
         name: 'Selected tier automation',
         description: '',
-        status: 'inactive',
+        status: 'inactive' as const,
         created_at: '2026-10-01T00:00:00.000Z',
         updated_at: '2026-10-01T00:00:00.000Z',
         trigger_tier_scope: 'selected_paid' as const,
@@ -122,7 +122,7 @@ describe('Automations controller', function () {
         ...payload,
         id: '64b6f7b7c8f1a2b3c4d5e6f7',
         slug: null,
-        status: 'inactive',
+        status: 'inactive' as const,
         created_at: '2026-10-01T00:00:00.000Z',
         updated_at: '2026-10-01T00:00:00.000Z',
         trigger_tier_ids: null,
@@ -150,7 +150,7 @@ describe('Automations controller', function () {
       });
     }
 
-    for (const count of [0, 19]) {
+    for (const count of [0, 49]) {
       it(`creates with ${count} automations`, async function () {
         vi.mocked(automationsApi.getNumberOfAutomations).mockResolvedValue(count);
         await automationsController.add.query(frame);
@@ -158,7 +158,7 @@ describe('Automations controller', function () {
       });
     }
 
-    for (const count of [20, 21]) {
+    for (const count of [50, 51]) {
       it(`rejects creation with ${count} automations`, async function () {
         vi.mocked(automationsApi.getNumberOfAutomations).mockResolvedValue(count);
         await assert.rejects(automationsController.add.query(frame), {

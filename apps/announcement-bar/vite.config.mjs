@@ -5,11 +5,13 @@ import { publicAppViteConfig } from '@internal/cfg-vite-public-app';
 export default publicAppViteConfig({
   packageRoot: import.meta.dirname,
   packageName: pkg.name,
-  entry: 'src/index.jsx',
+  entry: 'src/index.tsx',
+  framework: 'preact',
+  svgr: false,
   sourcemap: false,
   overrides: {
     test: {
-      setupFiles: './test/setup-tests.js',
+      include: ['test/unit/**/*.test.{ts,tsx}'],
     },
   },
 });

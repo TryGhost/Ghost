@@ -1108,24 +1108,19 @@ module.exports = {
     created_at: { type: 'dateTime', nullable: false },
     updated_at: { type: 'dateTime', nullable: true },
   },
-  // Where a source sends what it collected. The source is who collects, the port is that
-  // source's own name for the thing, and the destination is the publisher's field, which
-  // they can repoint without the source knowing. The row is the collecting: there is one
-  // and the source writes through it, or there is none and it does not.
+  // Where a source sends what it collected. The port is the source's own name for the
+  // thing, and the destination is the publisher's field, which they can repoint without the
+  // source knowing. The row is the collecting: there is one and the source writes through
+  // it, or there is none and it does not.
   //
-  // A second kind of source becomes a `source_type` beside a widened id. What it must not
-  // become is a second table holding destinations.
+  // Stripe Checkout is the only source, and it collects into the same field whichever tier
+  // was bought, so a port is bound once for the site. A second kind of source becomes a
+  // `source_type` beside the port. What it must not become is a second table holding
+  // destinations.
   members_metafield_bindings: {
     id: { type: 'string', maxlength: 24, nullable: false, primary: true },
-    product_id: {
-      type: 'string',
-      maxlength: 24,
-      nullable: false,
-      references: 'products.id',
-      cascadeDelete: true,
-    },
-    port: { type: 'string', maxlength: 191, nullable: false },
-    // Indexed rather than unique: several sources landing in one field is expected.
+    port: { type: 'string', maxlength: 191, nullable: false, unique: true },
+    // Indexed rather than unique: several ports landing in one field is allowed.
     metafield_key: {
       type: 'string',
       maxlength: 191,
@@ -1135,51 +1130,7 @@ module.exports = {
     },
     created_at: { type: 'dateTime', nullable: false },
     updated_at: { type: 'dateTime', nullable: true },
-    '@@UNIQUE_CONSTRAINTS@@': [
-      { columns: ['product_id', 'port'], indexName: 'members_metafield_bindings_unique' },
-    ],
     '@@INDEXES@@': [['metafield_key']],
-  },
-  // How a tier's checkout question is asked. Where the answer lands is the binding it
-  // hangs off.
-  products_checkout_fields: {
-    id: { type: 'string', maxlength: 24, nullable: false, primary: true },
-    binding_id: {
-      type: 'string',
-      maxlength: 24,
-      nullable: false,
-      unique: true,
-      references: 'members_metafield_bindings.id',
-      cascadeDelete: true,
-    },
-    sort_order: { type: 'integer', nullable: false, unsigned: true, defaultTo: 0 },
-    // Processors cap a label far shorter than a field name may be. Null asks under the
-    // field's own name.
-    label: { type: 'string', maxlength: 191, nullable: true },
-    optional: { type: 'boolean', nullable: false, defaultTo: true },
-    created_at: { type: 'dateTime', nullable: false },
-    updated_at: { type: 'dateTime', nullable: true },
-  },
-  // The options a tier's collection needs, and the one thing it collects without keeping.
-  // Whether it collects anything it *does* keep is the binding above.
-  products_checkout_config: {
-    id: { type: 'string', maxlength: 24, nullable: false, primary: true },
-    product_id: {
-      type: 'string',
-      maxlength: 24,
-      nullable: false,
-      unique: true,
-      references: 'products.id',
-      cascadeDelete: true,
-    },
-    // ISO 3166-1 alpha-2, comma-joined. A processor will not render an address form
-    // without them, and a wrong code fails the session create.
-    shipping_allowed_countries: { type: 'string', maxlength: 2000, nullable: true },
-    // Stripe keeps a tax number against the customer it invoices, so there is no
-    // destination to bind and nothing to record but whether to ask.
-    tax_number_collect: { type: 'boolean', nullable: false, defaultTo: false },
-    created_at: { type: 'dateTime', nullable: false },
-    updated_at: { type: 'dateTime', nullable: true },
   },
   members_metafield_values: {
     id: { type: 'string', maxlength: 24, nullable: false, primary: true },
@@ -1218,11 +1169,11 @@ module.exports = {
     // Shaped like `actions`: a type and an id, no foreign key. A type because not every
     // write comes through a binding — a person edits a member's fields, an import reads a
     // file — and an id so the writer can be resolved back rather than merely named. A
-    // binding id resolves to the tier, the port and the field it routed into, which is
-    // everything worth knowing about how a value got here.
+    // binding id resolves to the port and the field it routed into, which is everything
+    // worth knowing about how a value got here.
     //
     // No foreign key, because provenance has to outlive its cause: that a value arrived
-    // through a tier's shipping port stays true after someone deletes that binding, even
+    // through the shipping port stays true after someone deletes that binding, even
     // though it stops being joinable.
     //
     // The type is the namespace the id resolves in, so every row carries one. The id is
@@ -1600,6 +1551,37 @@ module.exports = {
     description: { type: 'string', maxlength: 191, nullable: true },
     created_at: { type: 'dateTime', nullable: false },
     updated_at: { type: 'dateTime', nullable: true },
+  },
+  // The site-wide Stripe Checkout config. It is a single row found by its slug, so the first
+  // save inserts it and later saves update it. Each part of the config has its own JSON
+  // column, which is null until that part is set.
+  stripe_checkout_config: {
+    id: { type: 'string', maxlength: 24, nullable: false, primary: true },
+    slug: { type: 'string', maxlength: 191, nullable: false, unique: true },
+    design: { type: 'text', maxlength: 65535, nullable: true },
+    shipping: { type: 'text', maxlength: 65535, nullable: true },
+    created_at: { type: 'dateTime', nullable: false },
+    updated_at: { type: 'dateTime', nullable: true },
+  },
+  // The tiers a section of `stripe_checkout_config` is limited to, when it is limited to some
+  // rather than every paid tier. Deleting a tier takes it out of every list, so the config never
+  // stops a tier being deleted and never names one that is gone. A section whose last tier is
+  // deleted reads as switched off, rather than widening to every tier.
+  stripe_checkout_config_tiers: {
+    section: {
+      type: 'string',
+      maxlength: 50,
+      nullable: false,
+      validations: { isIn: [['shipping']] },
+    },
+    product_id: {
+      type: 'string',
+      maxlength: 24,
+      nullable: false,
+      references: 'products.id',
+      cascadeDelete: true,
+    },
+    '@@PRIMARY_KEY@@': ['section', 'product_id'],
   },
   actions: {
     id: { type: 'string', maxlength: 24, nullable: false, primary: true },
@@ -2174,7 +2156,7 @@ module.exports = {
       maxlength: 50,
       nullable: false,
       defaultTo: 'inactive',
-      validations: { isIn: [['active', 'inactive']] },
+      validations: { isIn: [['active', 'inactive', 'archived']] },
     },
     name: { type: 'string', maxlength: 191, nullable: false, unique: true },
     description: { type: 'string', maxlength: 2000, nullable: false, defaultTo: '' },
@@ -2646,5 +2628,58 @@ module.exports = {
     last_synced_id: { type: 'string', maxlength: 24, nullable: false },
     created_at: { type: 'dateTime', nullable: false },
     updated_at: { type: 'dateTime', nullable: true },
+  },
+  // One site's approval of one app. Still in development: see ./in-development.ts.
+  //
+  // A row is never deleted and never revived. Uninstalling ends it, and installing the same
+  // app again adds a new row, so every past install stays on record. Who installed or
+  // uninstalled an app, and when, is in `actions`.
+  app_installations: {
+    id: { type: 'string', maxlength: 24, nullable: false, primary: true },
+    // The ID from the app's manifest. Kept on every row, installed or not.
+    app_id: { type: 'string', maxlength: 191, nullable: false, index: true },
+    // The same ID until the installation is uninstalled, suspended included, then null.
+    // Being unique, it is what lets a site have only one installation per app however two
+    // installs race, while any number of ended ones share the null.
+    current_app_id: { type: 'string', maxlength: 191, nullable: true, unique: true },
+    status: {
+      type: 'string',
+      maxlength: 50,
+      nullable: false,
+      validations: { isIn: [['active', 'suspended', 'uninstalled']] },
+    },
+    // The approved manifest, which is what runs, and a newer one waiting for approval.
+    // Both point into app_installation_manifests. They are plain columns rather than
+    // foreign keys, as those rows point back here, and are set in the same transaction.
+    manifest_id: { type: 'string', maxlength: 24, nullable: false },
+    pending_manifest_id: { type: 'string', maxlength: 24, nullable: true },
+    // Goes up on every change to the installation. Open app sessions are pinned to it, so
+    // any change ends them.
+    revision: { type: 'integer', nullable: false, unsigned: true, defaultTo: 0 },
+    created_at: { type: 'dateTime', nullable: false },
+    updated_at: { type: 'dateTime', nullable: true },
+  },
+  // Every manifest an installation has run or been asked to approve. Still in development:
+  // see ./in-development.ts.
+  //
+  // Append-only: a row is added when a manifest becomes an installation's approved or
+  // pending one, and never changed, so the site can always tell exactly what was approved.
+  app_installation_manifests: {
+    id: { type: 'string', maxlength: 24, nullable: false, primary: true },
+    installation_id: {
+      type: 'string',
+      maxlength: 24,
+      nullable: false,
+      references: 'app_installations.id',
+    },
+    // As wide as the contract's URL limit, which is what refuses a longer one.
+    manifest_url: { type: 'string', maxlength: 2000, nullable: false },
+    // The validated manifest, with its URLs resolved, as JSON.
+    manifest: { type: 'text', maxlength: 65535, nullable: false },
+    // SHA-256 of `manifest`, in hex, so two manifests compare without parsing.
+    digest: { type: 'string', maxlength: 64, nullable: false },
+    // Whether this manifest had changes that needed approval when it was added.
+    requires_approval: { type: 'boolean', nullable: false, defaultTo: false },
+    created_at: { type: 'dateTime', nullable: false },
   },
 };

@@ -46,8 +46,6 @@ const BACKUP_TABLES = [
   'members_metafields',
   'members_metafield_values',
   'members_metafield_bindings',
-  'products_checkout_fields',
-  'products_checkout_config',
   'mentions',
   'comments',
   'comment_likes',
@@ -68,6 +66,8 @@ const BACKUP_TABLES = [
   'gift_deliveries',
   'gifts',
   'gift_links',
+  'app_installations',
+  'app_installation_manifests',
   'post_gift_links',
   'automations',
   'automation_actions',
@@ -79,6 +79,8 @@ const BACKUP_TABLES = [
   'welcome_email_automation_runs',
   'welcome_email_automated_emails',
   'tinybird_syncs',
+  'stripe_checkout_config',
+  'stripe_checkout_config_tiers',
 ];
 
 // NOTE: exposing only tables which are going to be included in a "default" export file

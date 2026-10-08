@@ -885,7 +885,13 @@ export function createSaveEngine<
       return;
     }
 
-    if (error.kind === 'not-found' || error.kind === 'forbidden') {
+    // Core also refuses a status change on its own rules, such as a Contributor's
+    // publish, so a forbidden status change refuses that command alone and the post
+    // stays editable.
+    if (
+      error.kind === 'not-found' ||
+      (error.kind === 'forbidden' && !changesStatus(slot.command, snapshot))
+    ) {
       const dropWaiters: Waiter[] = [];
       clearTimers(dropWaiters);
       if (pending) {

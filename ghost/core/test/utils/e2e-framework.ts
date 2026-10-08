@@ -15,7 +15,6 @@
 import debugFactory from '@tryghost/debug';
 // @ts-expect-error This module lacks type definitions.
 import * as expressTest from '@tryghost/express-test';
-import { AsymmetricMatcher } from 'expect';
 import * as fs from 'fs-extra';
 import * as path from 'node:path';
 import * as os from 'node:os';
@@ -68,6 +67,7 @@ let totalBoots = 0;
  * @returns {Promise<Express.Application>} ghost
  */
 const startGhost = async (options = {}) => {
+  await require('../../core/server/services/jobs-service').shutdown();
   await DomainEvents.allSettled();
 
   /**
@@ -500,9 +500,15 @@ type MatcherSample = {
   toAsymmetricMatcher?(): string;
 };
 
-class Nullable extends AsymmetricMatcher<MatcherSample> {
+// Snapshot matching treats any object with asymmetricMatch() as a matcher,
+// and pretty-format prints it through toAsymmetricMatcher() when it carries
+// this $$typeof, so Nullable needs no base class from jest's `expect`.
+class Nullable {
+  readonly $$typeof = Symbol.for('jest.asymmetricMatcher');
+  readonly sample: MatcherSample;
+
   constructor(sample: MatcherSample) {
-    super(sample);
+    this.sample = sample;
   }
 
   asymmetricMatch(other: unknown) {

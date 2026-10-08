@@ -88,7 +88,6 @@ export const DbMetafieldLeaf = z.object({
 
 export const DbMetafieldBinding = z.object({
   id: z.string(),
-  product_id: z.string(),
   port: z.string(),
   metafield_key: z.string(),
   created_at: DbDate,

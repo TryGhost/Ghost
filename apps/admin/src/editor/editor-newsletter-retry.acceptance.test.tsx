@@ -47,15 +47,7 @@ function publishChrome() {
   });
 }
 
-/** The publish flow's email confirmation reads the post with its email alone. */
-function isConfirmationRead(url: string): boolean {
-  return new URL(url).searchParams.get('include') === 'email';
-}
-
-/**
- * A post whose newsletter failed, answering a retry as Core does: the retry
- * leaves the email pending, and it is sent by the time the flow polls for it.
- */
+/** A post whose newsletter failed, answering a retry as Core does by leaving the email pending. */
 function fakeFailedSend(overrides: Partial<Post>, error: string | null = SEND_ERROR) {
   const failedEmail: NonNullable<Post['email']> = {
     id: EMAIL_ID,
@@ -79,11 +71,23 @@ function fakeFailedSend(overrides: Partial<Post>, error: string | null = SEND_ER
   });
   let email = failedEmail;
 
-  fakeAdminEndpoint('GET', new RegExp(`^/posts/${POST_ID}/\\?`), ({ url }) => {
-    if (email.status === 'pending' && isConfirmationRead(url)) {
-      email = { ...email, status: 'submitted', error: null };
-    }
-    return { posts: [{ ...failed, email }] };
+  fakeAdminEndpoint('GET', new RegExp(`^/posts/${POST_ID}/\\?`), () => ({
+    posts: [{ ...failed, email }],
+  }));
+
+  // The flow shows Retry only when Core says the failed send is retryable.
+  fakeAdminEndpoint('GET', `/emails/${EMAIL_ID}/status/`, {
+    email_statuses: [
+      {
+        id: EMAIL_ID,
+        sending: {
+          status: 'failed',
+          retryable: true,
+          failed_during: 'submitting',
+          progress: { completed: 0, total: 20, estimated_seconds_remaining: null },
+        },
+      },
+    ],
   });
 
   return fakeAdminEndpoint('PUT', `/emails/${EMAIL_ID}/retry/`, () => {
@@ -158,6 +162,58 @@ describe('Editor newsletter retry', () => {
       await expect(publishScreen.root()).toHaveCount(0);
     },
   );
+
+  it('shows the reason Core refused a retry with', async () => {
+    publishChrome();
+    fakeFailedSend({ status: 'published' });
+    // Registered after fakeFailedSend's retry fake, so this one answers.
+    const retryApi = fakeAdminEndpoint(
+      'PUT',
+      `/emails/${EMAIL_ID}/retry/`,
+      {
+        errors: [
+          {
+            type: 'IncorrectUsageError',
+            message: 'Cannot retry email because the delivery outcome is unknown',
+          },
+        ],
+      },
+      { status: 400 },
+    );
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+
+    await editorScreen.viewNewsletterDetails().click();
+    await publishScreen.retryEmailButton().click();
+
+    await expect
+      .element(publishScreen.retryError())
+      .toHaveTextContent('Cannot retry email because the delivery outcome is unknown');
+    await expect.element(publishScreen.retryError()).not.toHaveTextContent('Something went wrong');
+    expect(retryApi.requests).toHaveLength(1);
+    expect(currentRoute()).toBe(`/editor/post/${POST_ID}`);
+  });
+
+  it('says when it cannot tell whether a failed send can be retried', async () => {
+    publishChrome();
+    fakeFailedSend({ status: 'published' });
+    fakeAdminEndpoint(
+      'GET',
+      `/emails/${EMAIL_ID}/status/`,
+      { errors: [{ type: 'InternalServerError', message: 'Status unavailable' }] },
+      { status: 500 },
+    );
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+
+    await editorScreen.viewNewsletterDetails().click();
+
+    await expect
+      .element(publishScreen.emailError())
+      .toHaveTextContent(
+        'Could not check whether this email can be retried. Please try checking again.',
+      );
+    await expect.element(publishScreen.checkRetryAvailability()).toBeVisible();
+    await expect(publishScreen.retryEmailButton()).toHaveCount(0);
+  });
 
   it('holds the way back into the flow until the publish inputs load', async () => {
     publishChrome();

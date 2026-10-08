@@ -20,6 +20,11 @@ const features: Feature[] = [
     flag: 'automations',
   },
   {
+    title: 'Archive automations',
+    description: 'Let members archive and restore automations.',
+    flag: 'automationsArchive',
+  },
+  {
     title: 'Automations per tier',
     description: 'Allow automations to be configured for individual tiers.',
     flag: 'automationsPerTier',
@@ -45,15 +50,15 @@ const features: Feature[] = [
     flag: 'csvContentImporter',
   },
   {
+    title: 'Admin 7 · Settings navigation',
+    description: 'Preview Settings in the Admin navigation shell.',
+    flag: 'admin7settings',
+  },
+  {
     title: 'Email Unique ID',
     description:
       'Enables {uniqueid} variable in emails for unique image URLs to bypass ESP image caching',
     flag: 'emailUniqueid',
-  },
-  {
-    title: 'Improve sending UI',
-    description: 'Enables improvements to email sending and delivery status for large email sends',
-    flag: 'improveSendingUI',
   },
   {
     title: 'Updated theme translation (beta)',
@@ -85,6 +90,12 @@ const features: Feature[] = [
     flag: 'stripeCheckoutCollection',
   },
   {
+    title: 'Stripe checkout design',
+    description:
+      'Let admins style the Stripe checkout page with their own button color, background color, corners and font',
+    flag: 'stripeCheckoutDesign',
+  },
+  {
     title: 'Paywall improvements',
     description: 'Enables paywall usability, discoverability and email customization improvements',
     flag: 'paywallImprovements',
@@ -94,18 +105,6 @@ const features: Feature[] = [
     description:
       'Serves the editor (/editor) from the React app instead of the Ember editor. Gates the migration behind a runtime toggle; the React side is an early placeholder.',
     flag: 'editorReact',
-  },
-  {
-    title: 'React sign-in screens',
-    description:
-      'Serves sign in, 2FA verification, password reset, staff invite signup, setup and sign out from the React app instead of the Ember screens. Takes effect on the next page load.',
-    flag: 'authReact',
-  },
-  {
-    title: 'Self-serve archives',
-    description:
-      'Replaces the individual export buttons with a single "Export data" flow for downloading a full site archive',
-    flag: 'selfServeArchives',
   },
   {
     title: 'Machine payments',

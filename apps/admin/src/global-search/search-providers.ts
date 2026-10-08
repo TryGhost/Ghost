@@ -1,6 +1,6 @@
+import type { SearchIndexItem } from '@/shared/search-index';
 import FlexSearch from 'flexsearch';
 import {
-  type SearchIndexItem,
   type SearchItem,
   type SearchResult,
   type SearchResultGroup,

@@ -42,10 +42,18 @@ export function getEmailSendingLine(
 
   if (total > 0) {
     const percent = Math.min(100, Math.floor((completed / total) * 100));
-    progressText =
-      phase === 'preparing' && preparingProgress === 'percentage'
-        ? `${formatNumber(percent)}% complete · ${formatNumber(total)} total`
-        : `${formatNumber(completed)} of ${formatNumber(total)}`;
+    if (phase === 'preparing' && preparingProgress === 'percentage') {
+      // No batch exists until the audience has been selected, which can take seconds on a
+      // large site; a static "0% complete" over that time reads as stalled rather than working.
+      progressText = [
+        percent > 0 && `${formatNumber(percent)}% complete`,
+        `${formatNumber(total)} total`,
+      ]
+        .filter(Boolean)
+        .join(' · ');
+    } else {
+      progressText = `${formatNumber(completed)} of ${formatNumber(total)}`;
+    }
   }
 
   return {

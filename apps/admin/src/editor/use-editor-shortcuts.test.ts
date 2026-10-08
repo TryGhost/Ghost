@@ -70,6 +70,19 @@ describe('preview and publish shortcuts', () => {
     expect(pressSave('p').defaultPrevented).toBe(false);
     expect(pressSave('p', { metaKey: true, shiftKey: true }).defaultPrevented).toBe(false);
   });
+
+  it('ignores keydown events without a key, as autofill sends', () => {
+    const preview = vi.fn();
+    const onError = vi.fn((event: ErrorEvent) => event.preventDefault());
+    window.addEventListener('error', onError);
+    renderHook(() => usePreviewShortcut(preview));
+
+    document.dispatchEvent(Object.assign(new Event('keydown'), { metaKey: true }));
+    window.removeEventListener('error', onError);
+
+    expect(onError).not.toHaveBeenCalled();
+    expect(preview).not.toHaveBeenCalled();
+  });
 });
 
 describe('useSaveShortcut', () => {

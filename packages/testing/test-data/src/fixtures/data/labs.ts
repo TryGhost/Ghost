@@ -6,8 +6,7 @@
  * labs from settings AND config).
  */
 export const labsDefaults: Record<string, boolean> = {
-  postsListReact: true,
-  membersActivityReact: true,
+  selfServeArchives: true,
   superEditors: false,
   editorExcerpt: false,
   additionalPaymentMethods: false,

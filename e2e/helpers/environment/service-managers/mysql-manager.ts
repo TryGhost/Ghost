@@ -34,6 +34,7 @@ export class MySQLManager {
   async setupTestDatabase(
     databaseName: string,
     siteUuid: string,
+    ownerEmail: string,
     options: {
       stripe?: {
         secretKey: string;
@@ -46,6 +47,7 @@ export class MySQLManager {
       await this.createDatabase(databaseName);
       await this.restoreDatabaseFromSnapshot(databaseName);
       await this.updateSiteUuid(databaseName, siteUuid);
+      await this.updateOwnerEmail(databaseName, ownerEmail);
       if (options.stripe) {
         await this.updateStripeSettings(
           databaseName,
@@ -203,6 +205,26 @@ export class MySQLManager {
     await this.exec(command);
 
     debug('site_uuid updated in database settings:', siteUuid);
+  }
+
+  // Mailpit is shared between test databases, so each owner gets its own address.
+  async updateOwnerEmail(database: string, email: string): Promise<void> {
+    debug('Updating owner email in database:', database, email);
+
+    const command =
+      'mysql -uroot -proot -e "UPDATE \\`' +
+      database +
+      '\\`.users u JOIN \\`' +
+      database +
+      '\\`.roles_users ru ON ru.user_id = u.id JOIN \\`' +
+      database +
+      "\\`.roles r ON r.id = ru.role_id SET u.email='" +
+      email +
+      "' WHERE r.name='Owner';\"";
+
+    await this.exec(command);
+
+    debug('Owner email updated in database:', email);
   }
 
   async updateStripeSettings(

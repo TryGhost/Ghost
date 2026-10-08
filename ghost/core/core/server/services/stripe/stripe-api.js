@@ -1,9 +1,12 @@
-const { VersionMismatchError } = require('@tryghost/errors');
+const { ValidationError, VersionMismatchError } = require('@tryghost/errors');
 const debug = require('@tryghost/debug')('stripe');
 const ghostConfig = require('../../../shared/config');
 const stripe = require('stripe');
 const i18n = require('../i18n');
-const { stripeCheckoutCollectionOptions } = require('./services/checkout/session-options');
+const logging = require('@tryghost/logging');
+const { snakeKeys } = require('../../lib/case-keys');
+const { z } = require('zod');
+const { SHIPPING_FLAG } = require('../stripe-checkout-config/models');
 
 /* Stripe has the following rate limits:
  *  - For most APIs, 100 read requests per second in live mode, 25 read requests per second in test mode
@@ -61,6 +64,19 @@ const MANAGED_PAYMENTS_DISABLED = { enabled: false };
  * @prop {boolean} testEnv  - indicates if the module is run in test environment (note, NOT the test mode)
  */
 
+/** The error Stripe throws when it rejects a session because of one of its parameters. */
+const refusalOf = (param) =>
+  z.object({
+    type: z.literal('StripeInvalidRequestError'),
+    param: z.string().startsWith(param),
+  });
+const DesignRefusal = refusalOf('branding_settings');
+const ShippingRefusal = refusalOf('shipping_address_collection');
+
+/** Leaves out one parameter of a session. */
+const without = (params, key) =>
+  Object.fromEntries(Object.entries(params).filter(([name]) => name !== key));
+
 module.exports = class StripeAPI {
   static API_VERSION = STRIPE_API_VERSION;
 
@@ -69,12 +85,172 @@ module.exports = class StripeAPI {
    * @param {object} deps
    * @param {object} deps.labs
    * @param {(key: string) => boolean} deps.labs.isSet
+   * @param {typeof import('../stripe-checkout-config')} deps.stripeCheckoutConfig
+   *   Its service's config is read for every Checkout session.
    */
   constructor(deps) {
     /** @type {Stripe} */
     this._stripe = null;
     this._configured = false;
     this.labs = deps.labs;
+    this._stripeCheckoutConfig = deps.stripeCheckoutConfig;
+  }
+
+  /**
+   * The saved design, or null while its flag is off.
+   *
+   * @private
+   * @param {import('../stripe-checkout-config').StripeCheckoutConfig | null} [config] The config
+   *   if it has already been read for this checkout.
+   * @returns {Promise<import('../stripe-checkout-config').StripeCheckoutDesign | null>}
+   */
+  async _savedDesign(config) {
+    if (!this.labs.isSet('stripeCheckoutDesign')) {
+      return null;
+    }
+    const read = config === undefined ? await this._readCheckoutConfig() : config;
+    return read?.design ?? null;
+  }
+
+  /**
+   * Asks for a shipping address when the site collects one for this tier, or nothing while
+   * its flag is off.
+   *
+   * @private
+   * @param {import('../stripe-checkout-config').StripeCheckoutConfig | null} config
+   * @param {string} [tierId]
+   * @returns {{shipping_address_collection?: {allowed_countries: string[]}}}
+   */
+  _shippingCollection(config, tierId) {
+    if (!tierId || !this.labs.isSet(SHIPPING_FLAG)) {
+      return {};
+    }
+    const countries = this._stripeCheckoutConfig.shippingCountriesFor(
+      config?.shipping ?? null,
+      tierId,
+    );
+    return countries ? { shipping_address_collection: { allowed_countries: countries } } : {};
+  }
+
+  /**
+   * Asks for a shipping address as a preview of unsaved settings says, or nothing while its
+   * flag is off.
+   *
+   * @private
+   * @param {import('../stripe-checkout-config').PreviewShipping} shipping
+   * @returns {{shipping_address_collection?: {allowed_countries: string[]}}}
+   */
+  _previewedShipping(shipping) {
+    if (!shipping || !this.labs.isSet(SHIPPING_FLAG)) {
+      return {};
+    }
+    return {
+      shipping_address_collection: {
+        allowed_countries: this._stripeCheckoutConfig.countriesToAsk(shipping.allowedCountries),
+      },
+    };
+  }
+
+  /**
+   * Reads the site's Stripe Checkout config.
+   *
+   * If reading it fails, this logs the error and returns null. A checkout without the config
+   * still takes payment, while a failed checkout doesn't.
+   *
+   * @private
+   * @returns {Promise<import('../stripe-checkout-config').StripeCheckoutConfig | null>}
+   */
+  async _readCheckoutConfig() {
+    try {
+      return await this._stripeCheckoutConfig.service.read();
+    } catch (err) {
+      logging.error(
+        { event: { name: 'stripe_checkout.config.read_failed' }, err },
+        'Failed to read the Stripe Checkout config',
+      );
+      return null;
+    }
+  }
+
+  /**
+   * Creates a Checkout session with the saved design as its `branding_settings`, and the
+   * shipping address collection it is given. Every Checkout session Ghost creates goes through
+   * here.
+   *
+   * If Stripe refuses the saved design or the shipping countries, the session is created again
+   * without them, as a checkout that looks plainer or asks for no address still takes payment.
+   * The retry reuses the idempotency key, which is safe because Stripe doesn't store a result
+   * for a request it rejects as invalid. A design given in place of the saved one is a preview
+   * of one not saved yet, so Stripe refusing that is reported instead of hidden.
+   *
+   * @private
+   * @param {object} params
+   * @param {object} [requestOptions]
+   * @param {object} [options]
+   * @param {import('../stripe-checkout-config').StripeCheckoutDesign | null} [options.design]
+   *   A design to use instead of the saved one, such as an unsaved design being previewed.
+   *   Null sends no design; undefined uses the saved one.
+   * @param {import('../stripe-checkout-config').StripeCheckoutConfig | null} [options.config]
+   *   The config if it has already been read for this checkout.
+   * @param {{shipping_address_collection?: {allowed_countries: string[]}}} [options.shipping]
+   */
+  async _createCheckoutSession(
+    params,
+    requestOptions,
+    { design: previewed, config, shipping = {} } = {},
+  ) {
+    const design = previewed !== undefined ? previewed : await this._savedDesign(config);
+    const optional = { ...(design ? { branding_settings: snakeKeys(design) } : {}), ...shipping };
+    return this._createWithFallback(params, requestOptions, optional, previewed !== undefined);
+  }
+
+  /**
+   * @private
+   * @param {object} params
+   * @param {object} [requestOptions]
+   * @param {object} optional Parameters from the config that the session can go without.
+   * @param {boolean} previewing Whether the design is a preview of one not saved yet.
+   */
+  async _createWithFallback(params, requestOptions, optional, previewing) {
+    try {
+      return await this._stripe.checkout.sessions.create(
+        { ...optional, ...params },
+        requestOptions,
+      );
+    } catch (err) {
+      if (optional.branding_settings && DesignRefusal.safeParse(err).success) {
+        if (previewing) {
+          throw new ValidationError({
+            message: 'Stripe refused this checkout design.',
+            context: err instanceof Error ? err.message : undefined,
+            property: 'design',
+          });
+        }
+        logging.error(
+          { event: { name: 'stripe_checkout.design.refused' }, err },
+          'Stripe refused the Stripe Checkout design',
+        );
+        return this._createWithFallback(
+          params,
+          requestOptions,
+          without(optional, 'branding_settings'),
+          previewing,
+        );
+      }
+      if (optional.shipping_address_collection && ShippingRefusal.safeParse(err).success) {
+        logging.error(
+          { event: { name: 'stripe_checkout.shipping.refused' }, err },
+          'Stripe refused the Stripe Checkout shipping countries',
+        );
+        return this._createWithFallback(
+          params,
+          requestOptions,
+          without(optional, 'shipping_address_collection'),
+          previewing,
+        );
+      }
+      throw err;
+    }
   }
 
   /**
@@ -559,8 +735,14 @@ module.exports = class StripeAPI {
    * @param {string} options.customerEmail
    * @param {number} options.trialDays
    * @param {string} [options.coupon]
-   * @param {import('../tier-checkout-config').ResolvedCheckout} [options.checkout] What
-   *   the tier's checkout asks for beyond the payment. Absent, or empty, adds nothing.
+   * @param {import('../stripe-checkout-config').StripeCheckoutDesign | null} [options.design]
+   *   Replaces the saved design, for a preview of an unsaved one. Null sends no design.
+   * @param {number} [options.expiresInSeconds] How long the checkout takes payment for, counted
+   *   from when it's created, instead of Stripe's default of a day.
+   * @param {string} [options.tierId] The tier being bought, which decides whether the checkout
+   *   asks for a shipping address.
+   * @param {import('../stripe-checkout-config').PreviewShipping} [options.shipping] Replaces
+   *   the saved shipping settings, for a preview of ones not saved yet.
    *
    * @returns {Promise<ICheckoutSession>}
    */
@@ -617,6 +799,9 @@ module.exports = class StripeAPI {
       },
       metadata,
       discounts,
+      expires_at: options.expiresInSeconds
+        ? Math.floor(Date.now() / 1000) + options.expiresInSeconds
+        : undefined,
       /*
             line_items: [{
                 price: priceId
@@ -641,33 +826,20 @@ module.exports = class StripeAPI {
       hasCustomer: Boolean(customerId),
     });
 
-    // Applied after automatic tax so the two agree about `tax_id_collection`: both ask
-    // for the same thing, and a site with either reason to collect gets it. Nothing is
-    // added for a tier that has configured nothing, so an unconfigured site's request
-    // is unchanged.
-    Object.assign(stripeSessionOptions, stripeCheckoutCollectionOptions(options.checkout));
+    // Read once for both the design and shipping. Shipping only releases after the design, so
+    // nothing is read while the design flag is off.
+    const config = this.labs.isSet('stripeCheckoutDesign')
+      ? await this._readCheckoutConfig()
+      : null;
 
-    // Stripe refuses to collect a tax id for a customer it may not rename:
-    //
-    //   Tax ID collection requires updating business name on the customer. To enable tax
-    //   ID collection for an existing customer, please set `customer_update[name]`.
-    //
-    // Measured against the live API rather than read — `pnpm --filter @tryghost/e2e
-    // stripe:probe` — because the same probe shows shipping and phone collection need no
-    // such thing. Every signed-in checkout carries a customer, so without this a tier
-    // that collects a tax number cannot be bought by an existing member.
-    //
-    // Merged rather than assigned: automatic tax sets this too, and whichever ran first
-    // must not lose its keys. Still never set without a customer, which is the shape
-    // that took the tax beta down.
-    if (stripeSessionOptions.tax_id_collection && customerId) {
-      stripeSessionOptions.customer_update = {
-        ...stripeSessionOptions.customer_update,
-        name: 'auto',
-      };
-    }
-
-    const session = await this._stripe.checkout.sessions.create(stripeSessionOptions);
+    const session = await this._createCheckoutSession(stripeSessionOptions, undefined, {
+      design: options.design,
+      config,
+      shipping:
+        options.shipping === undefined
+          ? this._shippingCollection(config, options.tierId)
+          : this._previewedShipping(options.shipping),
+    });
 
     return session;
   }
@@ -746,7 +918,7 @@ module.exports = class StripeAPI {
 
     this._applyAutomaticTaxSessionOptions(stripeSessionOptions, { hasCustomer: Boolean(customer) });
 
-    const session = await this._stripe.checkout.sessions.create(stripeSessionOptions);
+    const session = await this._createCheckoutSession(stripeSessionOptions);
     return session;
   }
 
@@ -819,7 +991,7 @@ module.exports = class StripeAPI {
 
     this._applyAutomaticTaxSessionOptions(stripeSessionOptions, { hasCustomer: Boolean(customer) });
 
-    const session = await this._stripe.checkout.sessions.create(stripeSessionOptions, {
+    const session = await this._createCheckoutSession(stripeSessionOptions, {
       idempotencyKey,
     });
 
@@ -838,7 +1010,7 @@ module.exports = class StripeAPI {
    */
   async createCheckoutSetupSession(customer, options) {
     await this._rateLimitBucket.throttle();
-    const session = await this._stripe.checkout.sessions.create({
+    const session = await this._createCheckoutSession({
       mode: 'setup',
       managed_payments: MANAGED_PAYMENTS_DISABLED,
       payment_method_types: this.PAYMENT_METHOD_TYPES,
@@ -857,6 +1029,45 @@ module.exports = class StripeAPI {
     });
 
     return session;
+  }
+
+  /**
+   * The Checkout branding set in the Stripe dashboard: the business name and images Checkout
+   * shows, and its colors, corners and font.
+   *
+   * Stripe's Account API doesn't return Checkout's design, but a session created without
+   * `branding_settings` reports the branding it resolved. So this creates a setup session, which
+   * needs no price and takes no payment, and expires it straight away. Nobody opens it, so
+   * Stripe doesn't count it as a checkout visit.
+   *
+   * @returns {Promise<unknown>} Stripe's `branding_settings`
+   */
+  async getCheckoutBranding() {
+    await this._rateLimitBucket.throttle();
+    const session = await this._createCheckoutSession(
+      {
+        mode: 'setup',
+        managed_payments: MANAGED_PAYMENTS_DISABLED,
+        payment_method_types: ['card'],
+        success_url: this._config.checkoutSetupSessionSuccessUrl,
+        metadata: { ghost_checkout_preview: true },
+      },
+      undefined,
+      { design: null },
+    );
+
+    try {
+      await this._rateLimitBucket.throttle();
+      await this._stripe.checkout.sessions.expire(session.id);
+    } catch (err) {
+      // Not worth failing the read for: nobody has the session's page, and it lapses in a day.
+      logging.warn(
+        { event: { name: 'stripe_checkout.branding.expire_failed' }, err, session_id: session.id },
+        'Failed to expire the session used to read the Stripe Checkout branding',
+      );
+    }
+
+    return session.branding_settings;
   }
 
   /**

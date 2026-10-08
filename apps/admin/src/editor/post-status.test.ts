@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { act, renderHook } from '@testing-library/react';
-import type { SaveEngineState } from './engine/save-engine';
+import type { PendingSave, SaveEngineState, SaveError } from './engine/save-engine';
 import { UNEXPECTED_MESSAGE } from './publish/completion-message';
 import {
   MAX_SCHEDULE_TIMEOUT_MS,
@@ -17,10 +17,16 @@ const IDLE: SaveEngineState = { kind: 'idle' };
 
 function derive(
   record: EditorStatusRecord | undefined,
-  overrides: { state?: SaveEngineState; isDirty?: boolean; isSaving?: boolean } = {},
+  overrides: {
+    state?: SaveEngineState;
+    pendingSave?: PendingSave;
+    isDirty?: boolean;
+    isSaving?: boolean;
+  } = {},
 ) {
   return deriveEditorStatus({
     state: overrides.state ?? IDLE,
+    pendingSave: overrides.pendingSave,
     record,
     isDirty: overrides.isDirty ?? false,
     isSaving: overrides.isSaving ?? false,
@@ -44,11 +50,75 @@ describe('deriveEditorStatus', () => {
   });
 
   it('carries the engine message for a failed or colliding save', () => {
-    const error = { kind: 'validation' as const, message: 'Title is too long.' };
+    const error = { kind: 'validation' as const, message: 'Title is too long.', cause: {} };
 
     expect(
       derive({ status: 'draft' }, { state: { kind: 'error', intent: 'field', error } }),
-    ).toEqual({ kind: 'problem', message: 'Title is too long.' });
+    ).toEqual({ kind: 'problem', message: 'Title is too long.', error, retryable: true });
+  });
+
+  it('reports a failed save on a post that was never saved', () => {
+    const error: SaveError = { kind: 'transport', message: 'Failed to fetch' };
+
+    expect(derive(undefined, { state: { kind: 'error', intent: 'explicit', error } }).kind).toBe(
+      'problem',
+    );
+  });
+
+  it('offers no retry for a save the editor refused before sending it', () => {
+    // The editor's own validator answers without a server reply, so without a cause.
+    const error: SaveError = { kind: 'validation', message: 'At least one author is required.' };
+
+    expect(
+      derive({ status: 'draft' }, { state: { kind: 'error', intent: 'explicit', error } }),
+    ).toMatchObject({ kind: 'problem', message: error.message, retryable: false });
+  });
+
+  it.each(['publish', 'schedule', 'revert'] as const)(
+    'offers no retry for a failed %s, which a retry here would save without',
+    (intent) => {
+      const error: SaveError = { kind: 'transport', message: 'Failed to fetch' };
+
+      expect(
+        derive({ status: 'draft' }, { state: { kind: 'error', intent, error } }),
+      ).toMatchObject({ kind: 'problem', retryable: false });
+    },
+  );
+
+  it('leaves the retry to the collision banner while a collision blocks the next save', () => {
+    const error: SaveError = { kind: 'transport', message: 'Failed to fetch' };
+
+    expect(
+      derive(
+        { status: 'draft' },
+        {
+          state: { kind: 'error', intent: 'explicit', error },
+          pendingSave: { blockedBy: { kind: 'conflict', message: 'Another writer changed this.' } },
+        },
+      ),
+    ).toMatchObject({ kind: 'problem', retryable: false });
+  });
+
+  it('explains an unreachable server rather than repeating the transport error', () => {
+    const error: SaveError = { kind: 'transport', message: 'Failed to fetch' };
+
+    expect(
+      derive({ status: 'draft' }, { state: { kind: 'error', intent: 'autosave', error } }),
+    ).toMatchObject({
+      message: 'Couldn’t reach the server. Check your connection and try again.',
+      retryable: true,
+    });
+  });
+
+  it('asks a writer whose session expired to retry, or to repeat a status change', () => {
+    const error: SaveError = { kind: 'session-invalid', message: 'Unauthorized' };
+
+    expect(
+      derive({ status: 'draft' }, { state: { kind: 'error', intent: 'explicit', error } }),
+    ).toMatchObject({ message: 'Your session expired. Retry to sign in again.' });
+    expect(
+      derive({ status: 'draft' }, { state: { kind: 'error', intent: 'publish', error } }),
+    ).toMatchObject({ message: 'Your session expired. Try again to sign in.' });
   });
 
   it('shows a generic message for an exception thrown in the browser', () => {
@@ -59,9 +129,10 @@ describe('deriveEditorStatus', () => {
       error: { kind: 'unknown', message: cause.message, cause },
     };
 
-    expect(derive({ status: 'draft' }, { state })).toEqual({
+    expect(derive({ status: 'draft' }, { state })).toMatchObject({
       kind: 'problem',
       message: UNEXPECTED_MESSAGE,
+      retryable: true,
     });
   });
 

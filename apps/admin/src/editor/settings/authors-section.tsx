@@ -54,7 +54,7 @@ export function AuthorsSection({ session, currentUser }: AuthorsSectionProps) {
   const change = (next: AuthorOption[]) => session.editSettings({ authors: next });
 
   return (
-    <SettingsSection>
+    <SettingsSection field="authors">
       <Label htmlFor={inputId}>Authors</Label>
       <AuthorsPicker
         describedBy={invalid ? errorId : undefined}

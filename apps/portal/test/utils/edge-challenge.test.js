@@ -2,7 +2,6 @@ import { vi } from 'vitest';
 import {
   EdgeChallengeError,
   fetchWithEdgeChallenge,
-  isEdgeChallengeEnabled,
   isEdgeBlockResponse,
   isEdgeChallengeResponse,
   solveEdgeChallenge,
@@ -11,14 +10,6 @@ import setupGhostApi from '../../src/utils/api';
 import { chooseBestErrorMessage } from '../../src/utils/errors';
 
 const siteUrl = window.location.origin;
-
-function enableFlag() {
-  document.cookie = 'waf_challenge=1; Path=/';
-}
-
-function disableFlag() {
-  document.cookie = 'waf_challenge=; Max-Age=0; Path=/';
-}
 
 // Mirrors the structure of the real interstitial: it loads script.js (not challenge.js) from
 // inline JS, alongside its own assets
@@ -120,42 +111,12 @@ describe('edge challenge detection', () => {
   });
 });
 
-describe('waf_challenge feature flag', () => {
-  afterEach(() => {
-    disableFlag();
-    vi.restoreAllMocks();
-  });
-
-  test('is off unless the cookie is set', () => {
-    expect(isEdgeChallengeEnabled()).toBe(false);
-    document.cookie = 'waf_challenge=0; Path=/';
-    expect(isEdgeChallengeEnabled()).toBe(false);
-    enableFlag();
-    expect(isEdgeChallengeEnabled()).toBe(true);
-  });
-
-  test('when off, responses are returned untouched', async () => {
-    vi.spyOn(window, 'fetch').mockResolvedValue(challengePage());
-
-    const res = await fetchWithEdgeChallenge(`${siteUrl}/members/api/send-magic-link/`, {
-      method: 'POST',
-    });
-
-    expect(res.status).toBe(200);
-    expect(window.fetch).toHaveBeenCalledTimes(1);
-    expect(challengeFrame()).toBeNull();
-  });
-});
-
 describe('fetchWithEdgeChallenge', () => {
-  beforeEach(enableFlag);
-
   let challenges;
 
   afterEach(() => {
     challenges?.stop();
     challenges = null;
-    disableFlag();
     vi.restoreAllMocks();
     removeChallengeFrames();
   });
@@ -481,10 +442,7 @@ describe('challenge timeout', () => {
 });
 
 describe('members API with edge challenges', () => {
-  beforeEach(enableFlag);
-
   afterEach(() => {
-    disableFlag();
     vi.restoreAllMocks();
   });
 

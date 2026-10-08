@@ -295,7 +295,7 @@ describe('Post settings saving', () => {
 
     await addNewsTag();
 
-    await expect.element(editorScreen.saveErrorBanner()).toHaveTextContent(REFUSED);
+    await expect.element(editorScreen.saveError()).toHaveTextContent(REFUSED);
     expect(saveApi.requests).toHaveLength(1);
     await expect.element(editorScreen.settingsTagsField()).toHaveTextContent('News');
     await expect.element(editorScreen.updateButton()).toBeEnabled();
@@ -310,7 +310,7 @@ describe('Post settings saving', () => {
       ...SAVED_CANVAS,
       tags: [{ id: 'tag1' }],
     });
-    await expect(editorScreen.saveErrorBanner()).toHaveCount(0);
+    await expect(editorScreen.saveError()).toHaveCount(0);
     await expect.element(editorScreen.updateButton()).toBeEnabled();
   });
 });

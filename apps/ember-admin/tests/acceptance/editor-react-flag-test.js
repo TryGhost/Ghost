@@ -54,11 +54,45 @@ describe('Acceptance: editor React flag', function () {
 
             expect(find(titleSelector), 'Ember editor title input').to.exist;
         });
+
+        it('keeps an open Ember editor when the flag turns on', async function () {
+            const stateBridge = this.owner.lookup('service:state-bridge');
+            const feature = this.owner.lookup('service:feature');
+
+            await visit('/editor/post/1');
+            sinon.stub(feature, 'editorReact').get(() => true);
+
+            expect(stateBridge.isFeatureEnabled('editorReact'), 'while the editor is open').to.be.false;
+
+            await visitExpectingAbort('/tags');
+
+            expect(stateBridge.isFeatureEnabled('editorReact'), 'after leaving the editor').to.be.true;
+        });
     });
 
     describe('when the flag is on', function () {
         beforeEach(function () {
             enableLabsFlag(this.server, 'editorReact');
+        });
+
+        it('keeps a showing React editor when the flag turns off', async function () {
+            const stateBridge = this.owner.lookup('service:state-bridge');
+            const feature = this.owner.lookup('service:feature');
+            this.server.create('post');
+
+            await visitExpectingAbort('/editor/post/1');
+            stateBridge.setReactRoutePattern('/editor/*');
+            sinon.stub(feature, 'editorReact').get(() => false);
+
+            // Back/forward between editor entries reaches Ember as a URL change
+            await visitExpectingAbort('/editor/post/2');
+
+            expect(find(titleSelector), 'Ember editor while React shows its editor').to.not.exist;
+
+            stateBridge.setReactRoutePattern('/posts');
+            await visit('/editor/post/1');
+
+            expect(find(titleSelector), 'Ember editor after React left its editor').to.exist;
         });
 
         it('does not render the Ember editor', async function () {

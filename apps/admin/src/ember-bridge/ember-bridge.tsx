@@ -26,10 +26,6 @@ export interface StateBridge {
   connectAdminTheme?: () => AdminThemeAdapter & { disconnect: () => void };
   navigateToBillingSubRoute?: (subRoute: string) => void;
   applyBillingSubscriptionUpdate?: (update: BillingSubscriptionUpdate) => Promise<void>;
-  captureBillingAppLoadFailure?: (report: {
-    billingMonitor: Record<string, unknown>;
-    tags: Record<string, string | null>;
-  }) => void;
   setPostListQueryParams?: (resource: 'posts' | 'pages', params: Record<string, string>) => void;
   setReactFullScreen?: (isFullScreen: boolean) => void;
   setReactRoutePattern?: (routePattern: string | null) => void;
@@ -70,9 +66,7 @@ export interface SubscriptionState {
   };
 }
 
-export interface BillingSubscriptionUpdate extends SubscriptionState {
-  checkoutRoute: string;
-}
+export type BillingSubscriptionUpdate = SubscriptionState;
 
 export interface SidebarVisibilityChangeEvent {
   isVisible: boolean;
@@ -324,14 +318,6 @@ export async function applyEmberBillingSubscriptionUpdate(
   update: BillingSubscriptionUpdate,
 ): Promise<void> {
   await window.EmberBridge?.state.applyBillingSubscriptionUpdate?.(update);
-}
-
-/** Reports a billing app load failure through Ember's Sentry client; a no-op without a bridge. */
-export function reportEmberBillingLoadFailure(report: {
-  billingMonitor: Record<string, unknown>;
-  tags: Record<string, string | null>;
-}): void {
-  window.EmberBridge?.state.captureBillingAppLoadFailure?.(report);
 }
 
 /** Keep the Ember editor's breadcrumb in sync with the React list. */

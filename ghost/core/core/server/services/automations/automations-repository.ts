@@ -57,12 +57,14 @@ export type AutomationEdge = {
   target_action_id: string;
 };
 
+export type AutomationStatus = 'inactive' | 'active' | 'archived';
+
 export type AutomationSummary = {
   id: string;
   slug: null | string;
   name: string;
   description: string;
-  status: string;
+  status: AutomationStatus;
   created_at: string;
   updated_at: string;
 };
@@ -92,19 +94,21 @@ export type Automation = AutomationSummary & {
 export type EditAutomationData = {
   name?: string;
   description?: string;
-  status: string;
-  actions: AutomationAction[];
-  edges: AutomationEdge[];
+  status: AutomationStatus;
 } & (
-  | {
-      trigger_tier_scope?: null | 'free' | 'all_paid';
-      trigger_tier_ids?: null;
-    }
-  | {
-      trigger_tier_scope: 'selected_paid';
-      trigger_tier_ids: string[];
-    }
-);
+  | { actions: AutomationAction[]; edges: AutomationEdge[] }
+  | { actions?: never; edges?: never }
+) &
+  (
+    | {
+        trigger_tier_scope?: null | 'free' | 'all_paid';
+        trigger_tier_ids?: null;
+      }
+    | {
+        trigger_tier_scope: 'selected_paid';
+        trigger_tier_ids: string[];
+      }
+  );
 
 export type AutomatedEmailRecipientWithMailgunId = {
   id: string;
@@ -139,7 +143,7 @@ type AutomationStepBase = {
   automation_id: string;
   automation_trigger_tier_scope: null | AutomationTriggerTierScope;
   automation_trigger_tier_ids: string[];
-  automation_status: 'inactive' | 'active';
+  automation_status: AutomationStatus;
   member_id: string | null;
   member_email: string;
   action_id: string;

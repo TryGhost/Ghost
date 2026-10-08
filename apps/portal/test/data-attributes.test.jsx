@@ -1223,15 +1223,10 @@ describe('Portal Data attributes:', () => {
 
     test('lets the form be submitted again after a bot challenge block', async () => {
       const { event, form, errorEl, siteUrl, submitHandler } = getMockData();
-      document.cookie = 'waf_challenge=1; Path=/';
 
       window.fetch.mockResolvedValueOnce(new Response('', { status: 449 }));
 
-      try {
-        await formSubmitHandler({ event, form, errorEl, siteUrl, submitHandler });
-      } finally {
-        document.cookie = 'waf_challenge=; Max-Age=0; Path=/';
-      }
+      await formSubmitHandler({ event, form, errorEl, siteUrl, submitHandler });
 
       expect(errorEl.innerText).toBe('Unable to verify your request, please try again');
       expect(form.classList.add).toHaveBeenCalledWith('error');

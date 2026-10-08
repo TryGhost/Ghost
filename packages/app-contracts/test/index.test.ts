@@ -4,6 +4,11 @@ import * as root from '../src/index.ts';
 
 describe('the root entry point', () => {
   it('exposes only what depends on nothing', () => {
-    expect(Object.keys(root).sort()).toEqual(['APP_ID_MAX_LENGTH', 'isValidAppId']);
+    expect(Object.keys(root).sort()).toEqual([
+      'APP_ID_MAX_LENGTH',
+      'URL_MAX_LENGTH',
+      'isLocalhost',
+      'isValidAppId',
+    ]);
   });
 });

@@ -4,6 +4,7 @@ import ObjectId from 'bson-objectid';
 import sinon from 'sinon';
 
 const testUtils = require('../../../utils');
+const dbUtils = require('../../../utils/db-utils');
 
 const urlUtils = require('../../../../core/shared/url-utils').default;
 const LinkRedirectRepository = require('../../../../core/server/services/link-redirection/link-redirect-repository');
@@ -38,6 +39,8 @@ describe('automation link redirects', function () {
   let otherRevisionId: string;
 
   beforeAll(async function () {
+    // Files share a database within a worker; start from the default fixtures.
+    await dbUtils.reset({ truncate: true });
     await testUtils.setup('default')();
   });
 

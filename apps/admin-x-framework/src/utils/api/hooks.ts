@@ -212,7 +212,11 @@ interface MutationOptions<ResponseData, Payload>
   /** Per-payload transport options, merged over the ones declared on the hook. */
   requestOptions?: (payload: Payload) => Omit<RequestOptions, 'body'>;
   invalidateQueries?:
-    | { dataType: string | string[] }
+    | {
+        dataType: string | string[];
+        /** Leaves out the queries under those data types it answers false for. */
+        predicate?: InvalidateQueryFilters['predicate'];
+      }
     | {
         filters?: InvalidateQueryFilters;
         options?: InvalidateOptions;
@@ -276,7 +280,10 @@ export const createMutation =
             ? invalidateQueries.dataType
             : [invalidateQueries.dataType];
           for (const dataType of dataTypes) {
-            queryClient.invalidateQueries({ queryKey: [dataType] });
+            queryClient.invalidateQueries({
+              queryKey: [dataType],
+              predicate: invalidateQueries.predicate,
+            });
             onInvalidate(dataType);
           }
         } else if (invalidateQueries) {

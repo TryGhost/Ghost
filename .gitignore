@@ -162,6 +162,8 @@ Caddyfile
 # Sodo-Search
 /apps/sodo-search/public/main.css
 /apps/sodo-search/umd
+/apps/sodo-search/.vitest-attachments
+/apps/sodo-search/test/acceptance/__screenshots__
 
 # Signup Form and local environments
 /apps/signup-form/umd
@@ -172,6 +174,8 @@ Caddyfile
 
 # Announcement-Bar
 /apps/announcement-bar/umd
+/apps/announcement-bar/.vitest-attachments
+/apps/announcement-bar/test/acceptance/__screenshots__
 
 # Build files
 /apps/*/build

@@ -32,14 +32,8 @@ const failureDetail = (
 
 const PostAnalyticsEmailSendingStatus = () => {
   const { post } = usePostAnalytics();
-  const {
-    status,
-    isStatusLoading,
-    isNewsletterDataHidden,
-    hasUnknownDeliveryOutcome,
-    isRetrying,
-    retrySending,
-  } = useEmailSendingStatusContext();
+  const { status, isStatusLoading, isNewsletterDataHidden, isRetrying, retrySending } =
+    useEmailSendingStatusContext();
   const sending = status?.sending;
   const estimate = useSendingEta(status);
   const isFailed = sending?.status === 'failed';
@@ -48,9 +42,10 @@ const PostAnalyticsEmailSendingStatus = () => {
   const swapCount = useChangeCount(isFailed, !isStatusLoading);
 
   if (isFailed) {
-    const detail = hasUnknownDeliveryOutcome
-      ? post?.email?.error || 'Something went wrong while sending this email.'
-      : failureDetail(sending, post?.email?.error);
+    const canRetry = sending.retryable === true;
+    const detail = canRetry
+      ? failureDetail(sending, post?.email?.error)
+      : post?.email?.error || 'Something went wrong while sending this email.';
 
     return (
       <Inline
@@ -66,7 +61,7 @@ const PostAnalyticsEmailSendingStatus = () => {
         <span className="font-medium text-state-danger">Emails failed to send</span>
         <span aria-hidden="true">·</span>
         <span>{detail}</span>
-        {!hasUnknownDeliveryOutcome && (
+        {canRetry && (
           <Button
             className="h-auto p-0 text-[length:inherit] leading-[inherit]"
             disabled={isRetrying}

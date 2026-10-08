@@ -18,6 +18,12 @@ vi.mock('@tryghost/admin-x-framework/api/automations', async () => {
   return {
     ...actual,
     useBrowseAutomations: mockUseBrowseAutomations,
+    useSetAutomationStatus: () => ({
+      mutate: vi.fn(),
+      reset: vi.fn(),
+      isPending: false,
+      isError: false,
+    }),
   };
 });
 
@@ -157,7 +163,7 @@ describe('Automations', () => {
     { role: undefined, disabled: true },
   ])('sets "New automation" disabled=$disabled for role=$role', ({ role, disabled }) => {
     mockUseBrowseConfig.mockReturnValue({
-      data: { config: { labs: { automationsPerTier: true } } },
+      data: { config: { labs: { automationsPerTier: true, automationsArchive: true } } },
       isLoading: false,
     });
     mockUseCurrentUser.mockReturnValue({
@@ -169,17 +175,19 @@ describe('Automations', () => {
     const button = screen.getByRole('button', { name: 'New automation' });
     if (disabled) {
       expect(button).toBeDisabled();
+      expect(screen.queryByRole('button', { name: /Actions for/ })).not.toBeInTheDocument();
     } else {
       expect(button).toBeEnabled();
+      expect(screen.getAllByRole('button', { name: /Actions for/ })).toHaveLength(2);
     }
   });
 
   it.each([
     { count: undefined, disabled: true },
     { count: 0, disabled: false },
-    { count: 19, disabled: false },
-    { count: 20, disabled: true },
-    { count: 21, disabled: true },
+    { count: 49, disabled: false },
+    { count: 50, disabled: true },
+    { count: 51, disabled: true },
   ])('sets "New automation" disabled=$disabled with count=$count', ({ count, disabled }) => {
     mockUseBrowseConfig.mockReturnValue({
       data: { config: { labs: { automationsPerTier: true } } },
@@ -216,7 +224,7 @@ describe('Automations', () => {
     });
     mockUseBrowseAutomations.mockReturnValue({
       data: {
-        automations: Array.from({ length: 20 }, (_, index) => ({
+        automations: Array.from({ length: 50 }, (_, index) => ({
           ...automations[index % automations.length],
           id: `automation-id-${index}`,
         })),
@@ -253,5 +261,59 @@ describe('Automations', () => {
 
     expect(screen.getByText('Free member welcome flow')).toBeInTheDocument();
     expect(screen.queryByText('Paid member welcome flow')).not.toBeInTheDocument();
+  });
+
+  it('hides archived automations by default and shows the status filter', () => {
+    mockUseBrowseAutomations.mockReturnValue({
+      data: {
+        automations: [
+          ...automations,
+          { ...automations[0], id: 'archived', name: 'Archived flow', status: 'archived' },
+        ],
+      },
+      isLoading: false,
+    });
+    renderPage();
+    expect(screen.getByRole('combobox', { name: 'Automations to show' })).toHaveTextContent(
+      'Active automations',
+    );
+    expect(screen.queryByRole('link', { name: 'Archived flow' })).not.toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Free member welcome flow' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Paid member welcome flow' })).toBeInTheDocument();
+  });
+
+  it('omits the status filter when the only archived automation is hidden by Stripe', () => {
+    mockUseBrowseSettings.mockReturnValue({ data: { settings: [] }, isLoading: false });
+    mockUseBrowseAutomations.mockReturnValue({
+      data: { automations: [automations[0], { ...automations[1], status: 'archived' }] },
+      isLoading: false,
+    });
+    renderPage();
+    expect(screen.queryByRole('combobox', { name: 'Automations to show' })).not.toBeInTheDocument();
+  });
+
+  it('resets the filter when the page remounts', () => {
+    mockUseBrowseAutomations.mockReturnValue({
+      data: {
+        automations: [
+          ...automations,
+          { ...automations[0], id: 'archived', name: 'Archived flow', status: 'archived' },
+        ],
+      },
+      isLoading: false,
+    });
+    const page = renderPage();
+    fireEvent.keyDown(screen.getByRole('combobox', { name: 'Automations to show' }), {
+      key: 'Enter',
+    });
+    fireEvent.click(screen.getByRole('option', { name: 'Archived automations' }));
+    expect(screen.getByRole('combobox', { name: 'Automations to show' })).toHaveTextContent(
+      'Archived automations',
+    );
+    page.unmount();
+    renderPage();
+    expect(screen.getByRole('combobox', { name: 'Automations to show' })).toHaveTextContent(
+      'Active automations',
+    );
   });
 });

@@ -154,15 +154,15 @@ test.describe('Ghost Admin - Post editor access (React)', () => {
 
       await settings.openSection('access');
       await settings.access.setVisibility(SPECIFIC_TIERS);
-      // The picker opens with every paid tier ticked, the site's own default
-      // tier included, so one tier is an untick of all the others
+      // The picker opens with every paid tier selected, the site's own default
+      // tier included, so one tier is a removal of all the others
       await settings.access.selectTier(ticked.name);
       const others = (await readPaidTiers(page)).filter((tier) => tier.id !== ticked.id);
       for (const tier of others) {
         await settings.access.deselectTier(tier.name);
       }
-      await expect(settings.access.tier(ticked.name)).toBeChecked();
-      await expect(settings.access.tier(other.name)).not.toBeChecked();
+      await expect(settings.access.tier(ticked.name)).toBeVisible();
+      await expect(settings.access.tier(other.name)).toHaveCount(0);
 
       await editor.publishFlow.open();
       await expect(editor.publishFlow.optionsStep).toBeVisible();

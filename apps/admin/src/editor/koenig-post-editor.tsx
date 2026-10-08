@@ -9,9 +9,12 @@ import {
 } from '@/settings/components/koenig-loader';
 import type { PostCardConfig } from './card-config';
 import { editorFileUploader } from './koenig-file-uploader';
-import { reportKoenigError, reportKoenigRenderError } from './report-error';
+import { koenigErrorReporters } from './report-error';
 
 const NOOP = () => {};
+
+const primaryErrors = koenigErrorReporters('primary');
+const secondaryErrors = koenigErrorReporters('secondary');
 
 export interface KoenigPostEditorProps {
   initialLexical: string | null;
@@ -89,7 +92,7 @@ export const KoenigPostEditor = memo(function KoenigPostEditor(props: KoenigPost
 
   const onSecondaryInstanceError = useCallback(
     (error: unknown) => {
-      reportKoenigError(error);
+      secondaryErrors.onError(error);
       onSecondaryError?.();
     },
     [onSecondaryError],
@@ -97,7 +100,7 @@ export const KoenigPostEditor = memo(function KoenigPostEditor(props: KoenigPost
 
   const onSecondaryRenderError = useCallback(
     (error: unknown, info: ErrorInfo) => {
-      reportKoenigRenderError(error, info);
+      secondaryErrors.onRenderError(error, info);
       onSecondaryError?.();
     },
     [onSecondaryError],
@@ -105,7 +108,7 @@ export const KoenigPostEditor = memo(function KoenigPostEditor(props: KoenigPost
 
   return (
     <div className="koenig-react-editor koenig-lexical mx-auto w-full max-w-[740px]">
-      <ErrorBoundary name="the editor" onError={reportKoenigRenderError}>
+      <ErrorBoundary name="the editor" onError={primaryErrors.onRenderError}>
         <Suspense
           fallback={
             <div className="flex justify-center py-10">
@@ -127,7 +130,7 @@ export const KoenigPostEditor = memo(function KoenigPostEditor(props: KoenigPost
             {...props}
             editor={editor}
             isSecondary={false}
-            onError={reportKoenigError}
+            onError={primaryErrors.onError}
           />
         </Suspense>
       </ErrorBoundary>

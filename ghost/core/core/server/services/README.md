@@ -70,6 +70,17 @@ test evidence. It describes audit completeness, not test coverage or migration
 readiness. An audited entry can still have test gaps or known bugs in `blockers`.
 The `notes` describe audit priorities and intended changes, not verified contracts.
 
+`auditedAt` is the full source commit SHA the record was last checked
+against. Add it when completing or refreshing an audit; older records may
+omit it. Advance it only after reviewing relevant changes, not merely
+rebasing.
+
+Before relying on a record, compare its service directory and cited
+source/test paths with that revision, and check for new callers. Changed
+files flag a recheck; the reference does not prove tests ran at that
+revision. Inventory validation checks its format without requiring Git
+history.
+
 The `unverified` facets are open questions:
 
 | Facet         | Question to resolve                                              |

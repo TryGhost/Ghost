@@ -6,6 +6,7 @@ const db = require('../db');
 const DatabaseInfo = require('@tryghost/database-info');
 const schema = require('./schema');
 const { defaultIndexName } = require('./lib/default-index-name');
+const { foreignKeySpecsOf, onDeleteOf } = require('./lib/foreign-keys');
 
 const messages = {
   hasPrimaryKeySQLiteError: 'Must use hasPrimaryKeySQLite on an SQLite3 database',
@@ -14,6 +15,9 @@ const messages = {
 };
 
 /**
+ * Adds a column to a table being built. A `references` on the column is built by
+ * `addForeignKey`, like any other foreign key.
+ *
  * @param {string} tableName
  * @param {import('knex').knex.TableBuilder} tableBuilder
  * @param {string} columnName
@@ -59,26 +63,30 @@ function addTableColumn(
   if (Object.hasOwn(columnSpec, 'unsigned') && columnSpec.unsigned) {
     column.unsigned();
   }
-  if (Object.hasOwn(columnSpec, 'references')) {
-    // check if table exists?
-    column.references(columnSpec.references);
-  }
-  if (Object.hasOwn(columnSpec, 'constraintName')) {
-    column.withKeyName(columnSpec.constraintName);
-  }
-
-  if (Object.hasOwn(columnSpec, 'cascadeDelete') && columnSpec.cascadeDelete === true) {
-    column.onDelete('CASCADE');
-  } else if (Object.hasOwn(columnSpec, 'restrictDelete') && columnSpec.restrictDelete === true) {
-    column.onDelete('RESTRICT');
-  } else if (Object.hasOwn(columnSpec, 'setNullDelete') && columnSpec.setNullDelete === true) {
-    column.onDelete('SET NULL');
-  }
   if (Object.hasOwn(columnSpec, 'defaultTo')) {
     column.defaultTo(columnSpec.defaultTo);
   }
   if (Object.hasOwn(columnSpec, 'index') && columnSpec.index === true) {
     column.index();
+  }
+}
+
+/**
+ * Adds a foreign key to a table being built. The referenced columns must be exactly the
+ * parent's primary key or one of its unique constraints, in the same order: SQLite creates
+ * the key regardless, then fails every write it has to check.
+ *
+ * @param {import('knex').knex.TableBuilder} tableBuilder
+ * @param {import('./lib/foreign-keys').ForeignKeySpec} foreignKey
+ */
+function addForeignKey(tableBuilder, foreignKey) {
+  const constraint = tableBuilder
+    .foreign(foreignKey.columns, foreignKey.constraintName)
+    .references(foreignKey.references.columns)
+    .inTable(foreignKey.references.table);
+  const onDelete = onDeleteOf(foreignKey);
+  if (onDelete) {
+    constraint.onDelete(onDelete);
   }
 }
 
@@ -146,9 +154,18 @@ async function rawWithAlgorithm(transaction, sql, algorithm) {
  * @param {object} [options]
  * @param {'instant'|'inplace'|'copy'|'auto'} [options.algorithm] - MySQL only
  */
-async function addColumn(tableName, column, transaction = db.knex, columnSpec, options = {}) {
+async function addColumn(
+  tableName,
+  column,
+  transaction = db.knex,
+  columnSpec = schema[tableName][column],
+  options = {},
+) {
   const addColumnBuilder = transaction.schema.table(tableName, function (table) {
     addTableColumn(tableName, table, column, columnSpec);
+    foreignKeySpecsOf({ [column]: columnSpec }).forEach((foreignKey) =>
+      addForeignKey(table, foreignKey),
+    );
   });
 
   // Use the default flow for SQLite because .toSQL() is tricky with SQLite when
@@ -460,20 +477,10 @@ async function addForeign({
     }
 
     await transaction.schema.table(fromTable, function (table) {
-      let fkBuilder;
-
-      if (cascadeDelete) {
-        fkBuilder = table
-          .foreign(fromColumn)
-          .references(`${toTable}.${toColumn}`)
-          .onDelete('CASCADE');
-      } else if (setNullDelete) {
-        fkBuilder = table
-          .foreign(fromColumn)
-          .references(`${toTable}.${toColumn}`)
-          .onDelete('SET NULL');
-      } else {
-        fkBuilder = table.foreign(fromColumn).references(`${toTable}.${toColumn}`);
+      const fkBuilder = table.foreign(fromColumn).references(`${toTable}.${toColumn}`);
+      const onDelete = onDeleteOf({ cascadeDelete, setNullDelete });
+      if (onDelete) {
+        fkBuilder.onDelete(onDelete);
       }
 
       if (constraintName) {
@@ -667,6 +674,7 @@ function createTable(table, transaction = db.knex, tableSpec = schema[table]) {
     if (tableSpec['@@PRIMARY_KEY@@']) {
       t.primary(tableSpec['@@PRIMARY_KEY@@']);
     }
+    foreignKeySpecsOf(tableSpec).forEach((foreignKey) => addForeignKey(t, foreignKey));
   });
 }
 

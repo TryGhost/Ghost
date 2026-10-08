@@ -6,7 +6,6 @@ import {
 } from '@tryghost/test-data/selectors/editor';
 import { toast } from 'sonner';
 import type { PendingSave, SaveEngineState, SaveError } from '@/editor/engine/save-engine';
-import { UNEXPECTED_MESSAGE } from '@/editor/publish/completion-message';
 import { reportShownAlert } from '@/editor/report-error';
 import { SessionBanners } from './session-banners';
 import type { ReloadOutcome } from './use-editor-session';
@@ -17,8 +16,6 @@ vi.mock('@tryghost/admin-x-framework/api/config', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@tryghost/admin-x-framework/api/config')>()),
   useBrowseConfig: () => ({ data: undefined }),
 }));
-
-const noop = () => undefined;
 
 interface BannerOverrides {
   pendingSave?: PendingSave;
@@ -37,7 +34,6 @@ function renderBanners(state: SaveEngineState, overrides: BannerOverrides = {}) 
       pendingSave={overrides.pendingSave}
       state={state}
       onReload={overrides.onReload ?? (() => Promise.resolve('reloaded'))}
-      onRetrySave={noop}
     />,
   );
 }
@@ -96,8 +92,8 @@ describe('SessionBanners', () => {
     expect(container).toBeEmptyDOMElement();
   });
 
-  it('explains held validation without presenting a failed network save', () => {
-    renderBanners(
+  it('leaves held validation to the field that breaks its rule', () => {
+    const { container } = renderBanners(
       { kind: 'idle' },
       {
         pendingSave: {
@@ -105,11 +101,8 @@ describe('SessionBanners', () => {
         },
       },
     );
-    expect(screen.getByRole('status')).toHaveTextContent(
-      'Changes are waiting to save. At least one author is required.',
-    );
-    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'Retry' })).not.toBeInTheDocument();
+
+    expect(container).toBeEmptyDOMElement();
   });
 
   it('shows nothing while the sign-in dialog holds the queue', () => {
@@ -122,13 +115,13 @@ describe('SessionBanners', () => {
     renderBanners(CONFLICT);
 
     expect(screen.getByRole('alert')).toHaveTextContent('Someone else is editing this post');
-    expect(screen.getByRole('alert')).toHaveClass('bg-destructive', 'text-destructive-foreground');
+    expect(screen.getByRole('alert')).toHaveClass('bg-state-danger/10');
+    expect(screen.getByRole('alert')).not.toHaveClass('bg-destructive');
     expect(screen.getByRole('alert').firstElementChild).toHaveClass('justify-center', 'flex-wrap');
-    expect(screen.getByText(/Someone else is editing this post/)).toHaveClass(
-      'text-center',
-      'text-inherit',
-    );
-    expect(screen.getByRole('button', { name: 'Reload' })).toBeVisible();
+    expect(
+      screen.getByText(/Someone else is editing this post/).closest('.text-center'),
+    ).not.toBeNull();
+    expect(screen.getByRole('button', { name: 'Reload' })).toHaveClass('bg-destructive');
     expect(screen.getByRole('button', { name: 'Copy content' })).toBeVisible();
   });
 
@@ -276,73 +269,29 @@ describe('SessionBanners', () => {
     expect(screen.queryByTestId(editorNewerVersionNotice)).not.toBeInTheDocument();
   });
 
-  it('explains an unreachable server rather than repeating the transport error', () => {
-    renderBanners(errored({ kind: 'transport', message: 'Failed to fetch' }));
+  it('leaves a failed save to the status line', () => {
+    const { container } = renderBanners(errored({ kind: 'transport', message: 'Failed to fetch' }));
 
-    expect(screen.getByRole('alert')).toHaveTextContent('Couldn’t reach the server');
-    expect(screen.getByRole('alert')).not.toHaveTextContent('Failed to fetch');
+    expect(container).toBeEmptyDOMElement();
   });
 
-  it('shows a generic reason rather than an exception thrown in the browser', () => {
-    const cause = new TypeError("Cannot read properties of undefined (reading 'x')");
-    renderBanners(errored({ kind: 'unknown', message: cause.message, cause }));
+  it('leaves held validation to the status line while it reports the refused save', () => {
+    const { container } = renderBanners(
+      errored({ kind: 'validation', message: 'At least one author is required.' }),
+      {
+        pendingSave: {
+          blockedBy: { kind: 'validation', message: 'At least one author is required.' },
+        },
+      },
+    );
 
-    expect(screen.getByRole('alert')).toHaveTextContent(UNEXPECTED_MESSAGE);
-    expect(screen.getByRole('alert')).not.toHaveTextContent('Cannot read properties');
-    expect(screen.getByRole('button', { name: 'Retry' })).toBeVisible();
+    expect(container).toBeEmptyDOMElement();
   });
-
-  it('repeats a session failure the writer already dismissed', () => {
-    renderBanners(errored({ kind: 'session-invalid', message: 'Unauthorized' }));
-
-    expect(screen.getByRole('alert')).toHaveTextContent('Your session expired');
-  });
-
-  it.each<[SaveError['kind']]>([['validation'], ['host-limit'], ['unknown']])(
-    'shows what the server said about a %s failure',
-    (kind) => {
-      renderBanners(errored({ kind, message: 'Title cannot be longer than 255 characters.' }));
-
-      expect(screen.getByRole('alert')).toHaveTextContent(
-        'Title cannot be longer than 255 characters.',
-      );
-      expect(screen.getByRole('button', { name: 'Retry' })).toBeVisible();
-    },
-  );
 });
 
 describe('SessionBanners reporting', () => {
   beforeEach(() => {
     vi.mocked(reportShownAlert).mockClear();
-  });
-
-  it('reports a failed-save banner once, by the text shown, not per render', () => {
-    const error: SaveError = { kind: 'transport', message: 'Offline' };
-    const state = errored(error);
-    const { rerender } = renderBanners(state);
-    rerender(
-      <SessionBanners
-        contentText={() => ''}
-        hasUnsavedContent={() => false}
-        state={state}
-        onReload={() => Promise.resolve('reloaded')}
-        onRetrySave={noop}
-      />,
-    );
-
-    expect(reportShownAlert).toHaveBeenCalledTimes(1);
-    expect(reportShownAlert).toHaveBeenCalledWith(
-      'Couldn’t reach the server. Your changes are still here.',
-      error,
-    );
-  });
-
-  it('reports a generic banner with the exception behind it', () => {
-    const cause = new TypeError("Cannot read properties of undefined (reading 'x')");
-    const error: SaveError = { kind: 'unknown', message: cause.message, cause };
-    renderBanners(errored(error));
-
-    expect(reportShownAlert).toHaveBeenCalledWith(UNEXPECTED_MESSAGE, error);
   });
 
   it('reports a collision held on a pending save once across re-renders', () => {
@@ -356,7 +305,6 @@ describe('SessionBanners reporting', () => {
         pendingSave={{ blockedBy }}
         state={{ kind: 'idle' }}
         onReload={() => Promise.resolve('reloaded')}
-        onRetrySave={noop}
       />,
     );
 
@@ -418,6 +366,7 @@ describe('SessionBanners reporting', () => {
     ['idle', { kind: 'idle' }, undefined],
     ['saving', { kind: 'saving', intent: 'autosave' }, undefined],
     ['an expired session', { kind: 'reauth-pending', intent: 'explicit' }, undefined],
+    ['a failed save, which the status line reports', errored({ kind: 'transport' }), undefined],
     [
       'a held validation',
       { kind: 'idle' },

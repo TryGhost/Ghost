@@ -20,7 +20,7 @@ beforeEach(() => {
 });
 
 it('asks for a new password, focused', async () => {
-  await renderAdminApp(`/reset/${token}`, signedOut({ authReact: true }));
+  await renderAdminApp(`/reset/${token}`, signedOut());
 
   await expect.element(authScreen.heading('Reset your password.')).toBeVisible();
   await expect.element(authScreen.newPasswordInput()).toHaveFocus();
@@ -32,7 +32,7 @@ it.each([
   ['short', 'short', 'Password must be at least 10 characters long.'],
   ['owner@example.com', 'owner@example.com', 'Sorry, you cannot use the email as your password.'],
 ])('checks %j before saving', async (newPassword, confirmation, message) => {
-  await renderAdminApp(`/reset/${token}`, signedOut({ authReact: true }));
+  await renderAdminApp(`/reset/${token}`, signedOut());
 
   await authScreen.newPasswordInput().fill(newPassword);
   await authScreen.confirmPasswordInput().fill(confirmation);
@@ -46,7 +46,7 @@ it('saves the password and reloads signed in, confirming once loaded', async () 
   const resetApi = fakeAdminEndpoint('PUT', '/authentication/password_reset/', {
     password_reset: [{ message: 'Password updated' }],
   });
-  await renderAdminApp(`/reset/${token}`, signedOut({ authReact: true }));
+  await renderAdminApp(`/reset/${token}`, signedOut());
 
   await authScreen.newPasswordInput().fill('correct horse battery');
   await authScreen.confirmPasswordInput().fill('correct horse battery');
@@ -71,7 +71,7 @@ it.each([
     { errors: [{ type: 'BadRequestError', message: 'Cannot reset password.', context }] },
     { status },
   );
-  await renderAdminApp(`/reset/${token}`, signedOut({ authReact: true }));
+  await renderAdminApp(`/reset/${token}`, signedOut());
 
   await authScreen.newPasswordInput().fill('correct horse battery');
   await authScreen.confirmPasswordInput().fill('correct horse battery');

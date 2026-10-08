@@ -1,10 +1,11 @@
-import { Banner, Button } from '@tryghost/shade/components';
+import { Button } from '@tryghost/shade/components';
 import { Inline, Stack, Text } from '@tryghost/shade/primitives';
-import { LucideIcon } from '@tryghost/shade/utils';
+import { LucideIcon, cn } from '@tryghost/shade/utils';
 import { getRecipientType } from '@tryghost/admin-x-framework/utils/recipient-filter';
 import { useMembersCount } from '@tryghost/admin-x-framework/api/members';
 import { EDITOR_REQUEST_OPTIONS } from '@/editor/request-options';
-import { LimitMessage } from './limit-message';
+import { PublishPhaseIcon } from '@/posts/api';
+import { FailureBanner } from './failure-banner';
 import {
   publishBackToSettings,
   publishConfirm,
@@ -19,7 +20,7 @@ import {
   recipientsConfirmLabel,
 } from '@/editor/publish/publish-copy';
 import type { CompletionFailure } from '@/editor/publish/completion-message';
-import type { ConfirmStatus } from '@/editor/publish/use-publish-flow';
+import type { ConfirmStatus, PublishFlow } from '@/editor/publish/use-publish-flow';
 import type { PublishFlowPost } from '@/editor/publish/flow-post';
 import type { PublishOptionsState } from '@/editor/publish/publish-options';
 
@@ -27,7 +28,7 @@ export interface ConfirmStepProps {
   post: PublishFlowPost;
   state: PublishOptionsState;
   /** Captured on entering this step so saving cannot change the copy. */
-  captured: { willPublish: boolean; willEmail: boolean; willOnlyEmail: boolean };
+  captured: PublishFlow['captured'];
   timezone: string;
   status: ConfirmStatus;
   failure: CompletionFailure | null;
@@ -35,13 +36,9 @@ export interface ConfirmStepProps {
   onBack: () => void;
 }
 
-function FailureMessage({ failure }: { failure: CompletionFailure }) {
-  if (!failure.parts) {
-    return <>{failure.message}</>;
-  }
-
-  return <LimitMessage parts={failure.parts} />;
-}
+// Eases the running state in as the button greys out. Use `fade-in-0`, not
+// `fade-in`: Ember's ghost.css has its own `.fade-in` that leaves content at opacity 0.
+const ENTER = 'animate-in fade-in-0 zoom-in-90 duration-200 ease-out motion-reduce:animate-none';
 
 export function ConfirmStep({
   post,
@@ -120,20 +117,19 @@ export function ConfirmStep({
             )}
           </>
         ) : null}
+        {captured.willPublish && captured.skipsEmail ? (
+          <> It won’t be sent as a newsletter, because no recipients are selected.</>
+        ) : null}
       </Text>
 
-      {failure ? (
-        <Banner data-testid={publishConfirmError} role="alert" variant="destructive">
-          <FailureMessage failure={failure} />
-        </Banner>
-      ) : null}
+      {failure ? <FailureBanner failure={failure} testId={publishConfirmError} /> : null}
 
       <Inline gap="sm" justify="between" wrap>
         <Button
           data-testid={publishBackToSettings}
           disabled={status === 'running'}
           size="lg"
-          variant="outline"
+          variant="secondary"
           onClick={onBack}
         >
           <LucideIcon.ArrowLeft />
@@ -146,7 +142,16 @@ export function ConfirmStep({
           size="lg"
           onClick={onConfirm}
         >
-          {status === 'running' ? buttonText.running : buttonText.idle}
+          {status === 'running' ? (
+            <>
+              {/* The analytics "preparing" spinner, in the button's own text colour.
+                  size-4 matches the size Button gives its icons at this text size. */}
+              <PublishPhaseIcon className={cn('size-4 text-current', ENTER)} phase="preparing" />
+              <span className={ENTER}>{buttonText.running}</span>
+            </>
+          ) : (
+            buttonText.idle
+          )}
         </Button>
       </Inline>
     </Stack>
