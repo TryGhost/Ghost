@@ -214,7 +214,7 @@ export class AppInstallationsService {
    * asked to approve, and staff history, where decisions by people are kept.
    */
   private async historyOf(id: string): Promise<AppInstallation['history']> {
-    const manifestRows = await this.knex(MANIFESTS)
+    const manifestRows = this.knex(MANIFESTS)
       .where({ installation_id: id })
       .orderBy('created_at', 'asc')
       .orderBy('id', 'asc')
@@ -225,7 +225,7 @@ export class AppInstallationsService {
         'requires_approval',
         'created_at',
       );
-    const actionRows = await this.knex('actions as action')
+    const actionRows = this.knex('actions as action')
       // Only staff users act on installations, and a user's name is what the history says.
       .leftJoin('users as actor', 'actor.id', 'action.actor_id')
       .where({ 'action.resource_type': 'app_installation', 'action.resource_id': id })
@@ -239,9 +239,10 @@ export class AppInstallationsService {
         'action.created_at',
         'actor.name as actor_name',
       );
+    const [manifests, actions] = await Promise.all([manifestRows, actionRows]);
     return buildHistory(
-      manifestRows.map((manifestRow) => z.decode(HistoryManifestRow, manifestRow)),
-      actionRows.map((actionRow) => z.decode(HistoryActionRow, actionRow)),
+      manifests.map((manifestRow) => z.decode(HistoryManifestRow, manifestRow)),
+      actions.map((actionRow) => z.decode(HistoryActionRow, actionRow)),
     );
   }
 
