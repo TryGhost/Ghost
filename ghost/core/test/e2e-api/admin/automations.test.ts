@@ -1,39 +1,113 @@
-const assert = require('node:assert/strict');
-const { createHash } = require('node:crypto');
-const sinon = require('sinon');
-const nock = require('nock');
-const TinybirdServiceWrapper = require('../../../core/server/services/tinybird');
-const configUtils = require('../../utils/config-utils');
-const domainEvents = require('@tryghost/domain-events');
-const ObjectId = require('bson-objectid').default;
-const models = require('../../../core/server/models');
-const mailService = require('../../../core/server/lib/mail');
-const labs = require('../../../core/shared/labs');
-const { getSignedAdminToken } = require('../../../core/server/adapters/scheduling/utils');
-const {
-  MEMBER_WELCOME_EMAIL_SLUGS,
-} = require('../../../core/server/services/member-welcome-emails/constants');
-const {
+import { createRequire } from 'node:module';
+import got, { type ExtendOptions, type Got } from 'got';
+import logging from '@tryghost/logging';
+import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
+import sinon from 'sinon';
+import nock from 'nock';
+// @ts-expect-error Module has no type declarations.
+import TinybirdServiceWrapper from '../../../core/server/services/tinybird';
+// @ts-expect-error Module has no type declarations.
+import configUtils from '../../utils/config-utils';
+// @ts-expect-error Module has no type declarations.
+import domainEvents from '@tryghost/domain-events';
+import ObjectId from 'bson-objectid';
+// @ts-expect-error Module has no type declarations.
+import models from '../../../core/server/models';
+// @ts-expect-error Module has no type declarations.
+import mailService from '../../../core/server/lib/mail';
+import { getSignedAdminToken } from '../../../core/server/adapters/scheduling/utils';
+import { MEMBER_WELCOME_EMAIL_SLUGS } from '../../../core/server/services/member-welcome-emails/constants';
+import {
   agentProvider,
   fixtureManager,
   mockManager,
   matchers,
   assertions,
-} = require('../../utils/e2e-framework');
-const {
+} from '../../utils/e2e-framework';
+import {
   cleanupAutomationsFixture,
   EMPTY_EMAIL_LEXICAL,
   NON_EMPTY_EMAIL_LEXICAL,
   setupAutomationsFixture,
   TEST_EMAIL_DESIGN_SETTING_ID,
-} = require('../../utils/automations-fixtures');
+} from '../../utils/automations-fixtures';
+// Native constructor must match event instances emitted by CommonJS server modules.
 const {
   StartAutomationsPollEvent,
-} = require('../../../core/server/services/automations/events/start-automations-poll-event');
+}: typeof import('../../../core/server/services/automations/events/start-automations-poll-event') =
+  createRequire(__filename)(
+    '../../../core/server/services/automations/events/start-automations-poll-event',
+  );
+
+type AutomationAction = {
+  id: string;
+  type: string;
+  data: Record<string, unknown>;
+  stats: { email_clicked_count: number; email_sent_count: number; email_opened_count: number };
+};
+
+type Automation = {
+  id: string;
+  updated_at: string;
+  name: string;
+  slug: string;
+  status: string;
+  description: string | null;
+  trigger_tier_scope: string;
+  trigger_tier_ids: string[];
+  edges: { source_action_id: string; target_action_id: string }[];
+  actions: AutomationAction[];
+  stats: {
+    last_run_created_at: string | null;
+    total_run_count: number;
+    in_progress_run_count: number;
+  };
+};
+
+type ApiResponse = {
+  headers: Record<string, string | undefined>;
+  body: {
+    automations: Automation[];
+    automation_email_previews: { subject: string; html: string; plaintext: string }[];
+    errors: { id: string; property: string; context: string }[];
+  };
+};
+
+type ApiRequest = Promise<ApiResponse> & {
+  body(payload: object): ApiRequest;
+  expect(callback: (response: ApiResponse) => void): ApiRequest;
+  expectStatus(status: number): ApiRequest;
+  expectEmptyBody(): ApiRequest;
+  matchHeaderSnapshot(match?: object): ApiRequest;
+  matchBodySnapshot(match?: object): ApiRequest;
+};
+
+type AdminAgent = {
+  get(url: string): ApiRequest;
+  post(url: string): ApiRequest;
+  put(url: string): ApiRequest;
+  delete(url: string): ApiRequest;
+  useStaffTokenForOwner(): Promise<void>;
+  useStaffTokenForAdmin(): Promise<void>;
+  useStaffTokenForEditor(): Promise<void>;
+  useStaffTokenForAuthor(): Promise<void>;
+  useStaffTokenForContributor(): Promise<void>;
+  useZapierAdminAPIKey(): Promise<void>;
+  resetAuthentication(): void;
+  loginAsOwner(): Promise<void>;
+};
 
 const { anyContentVersion, anyEtag, anyErrorId, anyISODateTime, anyObjectId } = matchers;
 const { cacheInvalidateHeaderNotSet } = assertions;
-const hashRedirectDestination = (url) => createHash('sha256').update(url).digest();
+
+const findAutomation = (automations: Automation[], id: string): Automation => {
+  const automation = automations.find((item) => item.id === id);
+  assert.ok(automation);
+  return automation;
+};
+
+const hashRedirectDestination = (url: string) => createHash('sha256').update(url).digest();
 
 const matchAutomationBase = () => ({
   id: anyObjectId,
@@ -95,13 +169,13 @@ const buildWaitAction = () => ({
   },
 });
 
-const buildLinearEdges = (actions) =>
+const buildLinearEdges = (actions: { id: string }[]) =>
   actions.slice(1).map((action, index) => ({
     source_action_id: actions[index].id,
     target_action_id: action.id,
   }));
 
-const buildSendEmailAction = (dataOverrides = {}) => ({
+const buildSendEmailAction = (dataOverrides: Record<string, unknown> = {}) => ({
   id: ObjectId().toHexString(),
   type: 'send_email',
   data: {
@@ -113,9 +187,9 @@ const buildSendEmailAction = (dataOverrides = {}) => ({
 });
 
 describe('Automations API', function () {
-  let agent;
-  let schedulerKey;
-  let schedulerToken;
+  let agent: AdminAgent;
+  let schedulerKey: { id: string; secret: string };
+  let schedulerToken: string;
 
   beforeAll(async function () {
     agent = await agentProvider.getAdminAPIAgent();
@@ -136,6 +210,7 @@ describe('Automations API', function () {
   });
 
   afterEach(async function () {
+    mockManager.restore();
     sinon.restore();
     await cleanupAutomationsFixture();
   });
@@ -152,12 +227,9 @@ describe('Automations API', function () {
     };
     const tierIds = [ObjectId().toHexString(), ObjectId().toHexString()];
 
-    let labsStub;
-
     beforeEach(async function () {
-      labsStub = sinon.stub(labs, 'isSet').callThrough();
-      labsStub.withArgs('automations').returns(true);
-      labsStub.withArgs('automationsPerTier').returns(true);
+      mockManager.mockLabsEnabled('automations');
+      mockManager.mockLabsEnabled('automationsPerTier');
       await models.Base.knex('products').insert(
         tierIds.map((id) => ({
           id,
@@ -188,7 +260,7 @@ describe('Automations API', function () {
       await models.Base.knex('products').whereIn('id', tierIds).delete();
     });
 
-    for (const role of ['Owner', 'Admin']) {
+    for (const role of ['Owner', 'Admin'] satisfies ('Owner' | 'Admin')[]) {
       it(`${role} can create automations`, async function () {
         await agent[`useStaffTokenFor${role}`]();
         const { body } = await agent
@@ -415,7 +487,7 @@ describe('Automations API', function () {
     it.each(['automations', 'automationsPerTier'])(
       'returns 404 when %s is disabled',
       async function (flag) {
-        labsStub.withArgs(flag).returns(false);
+        mockManager.mockLabsDisabled(flag);
         await agent
           .post('automations')
           .body({ automations: [payload] })
@@ -430,7 +502,11 @@ describe('Automations API', function () {
         .body({ automations: [payload] })
         .expectStatus(403);
     });
-    for (const role of ['Editor', 'Author', 'Contributor']) {
+    for (const role of ['Editor', 'Author', 'Contributor'] satisfies (
+      | 'Editor'
+      | 'Author'
+      | 'Contributor'
+    )[]) {
       it(`denies ${role} permission to add automations`, async function () {
         await agent[`useStaffTokenFor${role}`]();
         await agent
@@ -443,7 +519,7 @@ describe('Automations API', function () {
   });
 
   describe('browse', function () {
-    async function createAutomationRun(automationId, createdAt) {
+    async function createAutomationRun(automationId: string, createdAt: Date) {
       const runId = ObjectId().toHexString();
       await models.Base.knex('automation_runs').insert({
         id: runId,
@@ -456,7 +532,11 @@ describe('Automations API', function () {
       return runId;
     }
 
-    async function createAutomationRunStep(automationId, runId, status) {
+    async function createAutomationRunStep(
+      automationId: string,
+      runId: string,
+      status: 'pending' | 'finished' | 'failed',
+    ) {
       const revisionId = await models.Base.knex('automation_action_revisions')
         .innerJoin(
           'automation_actions',
@@ -465,7 +545,7 @@ describe('Automations API', function () {
         )
         .where('automation_actions.automation_id', automationId)
         .first('automation_action_revisions.id')
-        .then((revision) => revision.id);
+        .then((revision: { id: string }) => revision.id);
       const now = new Date();
       await models.Base.knex('automation_run_steps').insert({
         id: ObjectId().toHexString(),
@@ -483,7 +563,7 @@ describe('Automations API', function () {
       });
     }
 
-    async function deleteActionsForAutomationIds(automationIds) {
+    async function deleteActionsForAutomationIds(automationIds: string[]) {
       const actionIds = await models.Base.knex('automation_actions')
         .whereIn('automation_id', automationIds)
         .pluck('id');
@@ -495,7 +575,7 @@ describe('Automations API', function () {
       await models.Base.knex('automation_actions').whereIn('id', actionIds).del();
     }
 
-    async function createWelcomeEmailsForAutomations(automations) {
+    async function createWelcomeEmailsForAutomations(automations: { id: string; slug: string }[]) {
       await models.Base.knex('welcome_email_automated_emails').insert(
         automations.map((automation) => ({
           id: ObjectId().toHexString(),
@@ -511,7 +591,9 @@ describe('Automations API', function () {
       );
     }
 
-    async function assertWelcomeEmailActionsWereCreated(automations) {
+    async function assertWelcomeEmailActionsWereCreated(
+      automations: { id: string; slug: string }[],
+    ) {
       for (const automation of automations) {
         const { body } = await agent.get(`automations/${automation.id}`).expectStatus(200);
 
@@ -567,6 +649,7 @@ describe('Automations API', function () {
 
       const { body } = await agent.get('automations').expectStatus(200);
       const automation = body.automations.find((candidate) => candidate.id === automationId);
+      assert.ok(automation);
 
       assert.equal(automation.stats.last_run_created_at, latestRunCreatedAt.toISOString());
     });
@@ -589,6 +672,7 @@ describe('Automations API', function () {
 
       const { body } = await agent.get('automations').expectStatus(200);
       const automation = body.automations.find((candidate) => candidate.id === automationId);
+      assert.ok(automation);
 
       assert.equal(automation.stats.total_run_count, 2);
     });
@@ -623,6 +707,7 @@ describe('Automations API', function () {
 
       const { body } = await agent.get('automations').expectStatus(200);
       const automation = body.automations.find((candidate) => candidate.id === automationId);
+      assert.ok(automation);
 
       assert.equal(automation.stats.in_progress_run_count, 1);
     });
@@ -630,7 +715,7 @@ describe('Automations API', function () {
     describe('with Tinybird configured', function () {
       const TINYBIRD_ENDPOINT = 'https://api.tinybird.co';
 
-      let previousTinybirdInstance;
+      let previousTinybirdInstance: typeof TinybirdServiceWrapper.instance;
 
       beforeEach(function () {
         previousTinybirdInstance = TinybirdServiceWrapper.instance;
@@ -652,7 +737,10 @@ describe('Automations API', function () {
 
       it('initializes automation stats through StatsService with web analytics disabled', async function () {
         TinybirdServiceWrapper.reset();
-        require('../../../core/server/services/stats/stats-service').create({
+        const { default: statsService } =
+          // @ts-expect-error Module has no type declarations.
+          await import('../../../core/server/services/stats/stats-service.js');
+        statsService.create({
           knex: models.Base.knex,
           models,
         });
@@ -660,7 +748,7 @@ describe('Automations API', function () {
           automations: await models.Base.knex('automations').select('id').orderBy('name'),
         };
         const [automationId, otherAutomationId] = beforeBody.automations.map(
-          (automation) => automation.id,
+          (automation: { id: string }) => automation.id,
         );
         await createAutomationRun(automationId, new Date('2026-01-01T00:00:00.000Z'));
 
@@ -679,10 +767,10 @@ describe('Automations API', function () {
             ],
           });
 
-        const queries = [];
-        const captureQuery = (query) => queries.push(query.sql);
+        const queries: string[] = [];
+        const captureQuery = (query: { sql: string }) => queries.push(query.sql);
         models.Base.knex.on('query', captureQuery);
-        let body;
+        let body: ApiResponse['body'];
         try {
           ({ body } = await agent.get('automations').expectStatus(200));
         } finally {
@@ -695,6 +783,7 @@ describe('Automations API', function () {
         );
         assert.ok(tinybird.isDone());
         const automation = body.automations.find((candidate) => candidate.id === automationId);
+        assert.ok(automation);
         assert.deepEqual(automation.stats, {
           last_run_created_at: '2026-02-01T01:00:00.000Z',
           total_run_count: 5,
@@ -703,6 +792,7 @@ describe('Automations API', function () {
         const otherAutomation = body.automations.find(
           (candidate) => candidate.id === otherAutomationId,
         );
+        assert.ok(otherAutomation);
         assert.deepEqual(otherAutomation.stats, {
           last_run_created_at: null,
           total_run_count: 0,
@@ -715,10 +805,7 @@ describe('Automations API', function () {
         const [automation] = await models.Base.knex('automations').select('id');
         await createAutomationRun(automation.id, new Date('2026-01-01T00:00:00.000Z'));
         const { body } = await agent.get('automations').expectStatus(200);
-        assert.equal(
-          body.automations.find((item) => item.id === automation.id).stats.total_run_count,
-          1,
-        );
+        assert.equal(findAutomation(body.automations, automation.id).stats.total_run_count, 1);
       });
 
       it('uses database stats when no Tinybird token is available', async function () {
@@ -728,10 +815,7 @@ describe('Automations API', function () {
 
         const { body } = await agent.get('automations').expectStatus(200);
 
-        assert.equal(
-          body.automations.find((item) => item.id === automation.id).stats.total_run_count,
-          1,
-        );
+        assert.equal(findAutomation(body.automations, automation.id).stats.total_run_count, 1);
       });
 
       it.each([undefined, ''])(
@@ -752,17 +836,14 @@ describe('Automations API', function () {
           const { body } = await agent.get('automations').expectStatus(200);
 
           assert.equal(tinybird.isDone(), false);
-          assert.equal(
-            body.automations.find((item) => item.id === automation.id).stats.total_run_count,
-            1,
-          );
+          assert.equal(findAutomation(body.automations, automation.id).stats.total_run_count, 1);
         },
       );
 
       it.each(['client preparation', 'request construction'])(
         'uses MySQL when token generation throws during %s',
         async function (stage) {
-          const error = sinon.stub(require('@tryghost/logging'), 'error');
+          const error = sinon.stub(logging, 'error');
           const getToken = sinon.stub(TinybirdServiceWrapper.instance, 'getToken');
           if (stage === 'request construction') {
             getToken.onFirstCall().returns({ token: 'test-token' });
@@ -775,10 +856,7 @@ describe('Automations API', function () {
 
           const { body } = await agent.get('automations').expectStatus(200);
 
-          assert.equal(
-            body.automations.find((item) => item.id === automation.id).stats.total_run_count,
-            1,
-          );
+          assert.equal(findAutomation(body.automations, automation.id).stats.total_run_count, 1);
           assert.ok(error.calledOnce);
         },
       );
@@ -788,7 +866,7 @@ describe('Automations API', function () {
         { reason: 'unavailable', status: 500, response: 'nope' },
         { reason: 'malformed', status: 200, response: { data: [{ automation_id: 42 }] } },
       ])('uses database stats when Tinybird is $reason', async function ({ status, response }) {
-        sinon.stub(require('@tryghost/logging'), 'error');
+        sinon.stub(logging, 'error');
         const [automation] = await models.Base.knex('automations').select('id');
         const createdAt = new Date('2026-01-01T00:00:00.000Z');
         const runId = await createAutomationRun(automation.id, createdAt);
@@ -803,7 +881,7 @@ describe('Automations API', function () {
 
         assert.ok(tinybird.isDone());
         assert.equal(body.automations.length, 2);
-        assert.deepEqual(body.automations.find((item) => item.id === automation.id).stats, {
+        assert.deepEqual(findAutomation(body.automations, automation.id).stats, {
           last_run_created_at: createdAt.toISOString(),
           total_run_count: 1,
           in_progress_run_count: 1,
@@ -811,13 +889,16 @@ describe('Automations API', function () {
       });
 
       it('falls back after one retryable response without the test-only retry override', async function () {
-        const got = require('got').default;
-        const requestExternal = require('../../../core/server/lib/request-external');
+        // Load after database initialization, which clears the CommonJS module cache.
+        const loadCommonJS = createRequire(__filename);
+        const requestExternal: { extend(options: ExtendOptions): Got } = loadCommonJS(
+          '../../../core/server/lib/request-external',
+        );
         // Use Got's normal retry policy, without request-external's test-only hook.
         const extend = sinon
           .stub(requestExternal, 'extend')
-          .callsFake((options) => got.extend(options));
-        sinon.stub(require('@tryghost/logging'), 'error');
+          .callsFake((options: ExtendOptions) => got.extend(options));
+        sinon.stub(logging, 'error');
         const [automation] = await models.Base.knex('automations').select('id');
         await createAutomationRun(automation.id, new Date('2026-01-01T00:00:00.000Z'));
         const siteUuid = (await models.Settings.findOne({ key: 'site_uuid' })).get('value');
@@ -835,10 +916,7 @@ describe('Automations API', function () {
         assert.ok(extend.calledOnce);
         assert.ok(firstAttempt.isDone());
         assert.equal(retry.isDone(), false);
-        assert.equal(
-          body.automations.find((item) => item.id === automation.id).stats.total_run_count,
-          1,
-        );
+        assert.equal(findAutomation(body.automations, automation.id).stats.total_run_count, 1);
       });
 
       it('keeps zero stats for a successful empty Tinybird response', async function () {
@@ -853,7 +931,7 @@ describe('Automations API', function () {
         const { body } = await agent.get('automations').expectStatus(200);
 
         assert.ok(tinybird.isDone());
-        assert.deepEqual(body.automations.find((item) => item.id === automation.id).stats, {
+        assert.deepEqual(findAutomation(body.automations, automation.id).stats, {
           last_run_created_at: null,
           total_run_count: 0,
           in_progress_run_count: 0,
@@ -865,14 +943,16 @@ describe('Automations API', function () {
       const existingAutomations = await models.Base.knex('automations')
         .select('id')
         .whereIn('slug', Object.values(MEMBER_WELCOME_EMAIL_SLUGS));
-      const existingAutomationIds = existingAutomations.map((automation) => automation.id);
+      const existingAutomationIds = existingAutomations.map(
+        (automation: { id: string }) => automation.id,
+      );
 
       await deleteActionsForAutomationIds(existingAutomationIds);
       await models.Base.knex('automations').whereIn('id', existingAutomationIds).del();
 
       await agent.get('automations/').expectStatus(200).expect(cacheInvalidateHeaderNotSet());
 
-      const automations = await models.Base.knex('automations')
+      const automations: Automation[] = await models.Base.knex('automations')
         .select('id', 'name', 'slug', 'status')
         .whereIn('slug', Object.values(MEMBER_WELCOME_EMAIL_SLUGS))
         .orderBy('slug');
@@ -901,10 +981,10 @@ describe('Automations API', function () {
     });
 
     it('creates copied send_email actions for default welcome email automations without actions', async function () {
-      const automations = await models.Base.knex('automations')
+      const automations: Automation[] = await models.Base.knex('automations')
         .select('id', 'slug')
         .whereIn('slug', Object.values(MEMBER_WELCOME_EMAIL_SLUGS));
-      const automationIds = automations.map((automation) => automation.id);
+      const automationIds = automations.map((automation: { id: string }) => automation.id);
 
       await deleteActionsForAutomationIds(automationIds);
       await createWelcomeEmailsForAutomations(automations);
@@ -960,6 +1040,7 @@ describe('Automations API', function () {
           const emailAction = body.automations[0].actions.find(
             (candidate) => candidate.id === action.id,
           );
+          assert.ok(emailAction);
           assert.deepEqual(emailAction.stats, {
             email_clicked_count: 2,
             email_sent_count: 3,
@@ -1520,6 +1601,7 @@ describe('Automations API', function () {
         .expect(cacheInvalidateHeaderNotSet());
 
       const designSettingId = editBody.automations[0].actions[0].data.email_design_setting_id;
+      assert.ok(typeof designSettingId === 'string');
       assert.notEqual(designSettingId, 'default-automated-email');
       assert.equal(ObjectId.isValid(designSettingId), true);
     });
@@ -2092,8 +2174,7 @@ describe('Automations API', function () {
   });
 
   describe('poll', function () {
-    /** @type {sinon.SinonStub} */
-    let dispatchStub;
+    let dispatchStub: sinon.SinonStub;
 
     beforeEach(function () {
       dispatchStub = sinon.stub(domainEvents, 'dispatch');
