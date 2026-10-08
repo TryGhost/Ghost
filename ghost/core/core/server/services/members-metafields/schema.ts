@@ -7,6 +7,7 @@ import {
   type MetafieldChangeSource,
 } from '@tryghost/metafield-types';
 import { DbDate } from '../../lib/db-types/date';
+import { DbJson } from '../../lib/db-types/json';
 import { MemberAccessSchema } from './access';
 
 // `archived` is soft: the field drops out of the values path but stays in the definition
@@ -134,26 +135,9 @@ export type WriteOrigin =
 /** The fields an entry names. */
 export const MetafieldChangeEventFields = z.array(MetafieldChangeEventFieldSchema);
 
-/**
- * The field list as the table holds it, JSON text, against the list itself. A codec rather
- * than a parse on the way out, so the write stores what the read accepts. Zod validates
- * JSON-compatible values (`z.json()`) but has no built-in for parsing JSON text, so decoding
- * the text is this codec's job.
- */
-export const StoredFieldList = z.codec(z.string(), MetafieldChangeEventFields, {
-  decode: (text, ctx) => {
-    try {
-      return JSON.parse(text);
-    } catch {
-      ctx.issues.push({
-        code: 'custom',
-        message: 'The stored field list is not JSON.',
-        input: text,
-      });
-      return z.NEVER;
-    }
-  },
-  encode: (fields) => JSON.stringify(fields),
+/** The field list as the table holds it, JSON text, against the list itself. */
+export const StoredFieldList = DbJson(MetafieldChangeEventFields, {
+  message: 'The stored field list is not JSON.',
 });
 
 /** An entry as the table holds it. Writer and source are plain strings, as on the values table. */
