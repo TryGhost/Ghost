@@ -1,14 +1,19 @@
 import * as Sentry from '@sentry/react';
-import React, { useCallback, useMemo, useRef, useEffect } from 'react';
+import React, { useCallback, useContext, useMemo, useRef, useEffect } from 'react';
 import {
   type ClientOnErrorFunction,
   createHashRouter,
+  Link as ReactRouterLink,
+  type LinkProps,
+  type RelativeRoutingType,
+  resolvePath,
   RouteObject,
   RouterProvider as ReactRouterProvider,
   NavigateOptions as ReactRouterNavigateOptions,
   useNavigate as useReactRouterNavigate,
   useLocation,
   useParams,
+  useResolvedPath,
   Navigate as ReactRouterNavigate,
 } from 'react-router';
 import { useFramework } from './framework-provider';
@@ -159,9 +164,34 @@ export interface NavigateOptions extends ReactRouterNavigateOptions {
   crossApp?: boolean;
 }
 
+/**
+ * Decides whether an in-router navigation to `pathname` (absolute, without the
+ * router's basename) runs as a view transition. Apps provide one with
+ * ViewTransitionResolverProvider; without one, navigations never transition.
+ */
+export type ViewTransitionResolver = (pathname: string) => boolean;
+
+const ViewTransitionResolverContext = React.createContext<ViewTransitionResolver>(() => false);
+
+export const ViewTransitionResolverProvider = ViewTransitionResolverContext.Provider;
+
+const ABSOLUTE_URL = /^(?:[a-z][a-z\d+.-]*:|\/\/)/i;
+
 export function useNavigate() {
   const navigate = useReactRouterNavigate();
   const { externalNavigate } = useFramework();
+  const resolveViewTransition = useContext(ViewTransitionResolverContext);
+  const routePathname = useResolvedPath('.').pathname;
+  const locationPathname = useLocation().pathname;
+
+  // Read at call time so the returned function keeps its identity across navigations
+  const viewTransitionFor = useRef<(to: string, relative?: RelativeRoutingType) => boolean>(
+    () => false,
+  );
+  viewTransitionFor.current = (to, relative) =>
+    resolveViewTransition(
+      resolvePath(to, relative === 'path' ? locationPathname : routePathname).pathname,
+    );
 
   return useCallback(
     (to: string | number, options?: NavigateOptions) => {
@@ -175,11 +205,38 @@ export function useNavigate() {
         return;
       }
 
+      if (
+        options?.viewTransition === undefined &&
+        viewTransitionFor.current(to, options?.relative)
+      ) {
+        navigate(to, { ...options, viewTransition: true });
+        return;
+      }
+
       navigate(to, options);
     },
     [navigate, externalNavigate],
   );
 }
+
+/**
+ * React Router's Link, which also runs as a view transition when the app's
+ * ViewTransitionResolver asks for one and the caller has not set it.
+ */
+export const Link = React.forwardRef<HTMLAnchorElement, LinkProps>(function Link(
+  { viewTransition, ...props },
+  ref,
+) {
+  const resolveViewTransition = useContext(ViewTransitionResolverContext);
+  const { pathname } = useResolvedPath(props.to, { relative: props.relative });
+  const isAbsoluteUrl = typeof props.to === 'string' && ABSOLUTE_URL.test(props.to);
+  const resolvedViewTransition =
+    viewTransition ?? (!isAbsoluteUrl && !props.reloadDocument && resolveViewTransition(pathname));
+
+  return (
+    <ReactRouterLink ref={ref} {...props} viewTransition={resolvedViewTransition || undefined} />
+  );
+});
 
 export function useRouteHasParams() {
   const params = useParams();

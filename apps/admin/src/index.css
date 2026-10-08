@@ -425,3 +425,98 @@ body.react-admin [data-test-table='members'] tr {
   position: relative;
   z-index: 30;
 }
+
+/* Screen transitions (admin7ScreenTransitions). The router runs a view
+   transition only for a navigation into or out of a full-screen surface: the
+   old screen fades out while the sidebar or mobile nav leaves, then the new
+   screen fades in while it returns. A sidebar on both sides (Settings) keeps
+   its own live swap animation. */
+::view-transition {
+  background-color: var(--background);
+}
+
+::view-transition-old(root) {
+  animation: screen-transition-fade-out 200ms var(--ease-standard) both;
+}
+
+::view-transition-new(root) {
+  animation: screen-transition-fade-in 200ms var(--ease-standard) 200ms both;
+}
+
+::view-transition-group(admin-sidebar),
+::view-transition-group(admin-mobile-nav),
+::view-transition-new(admin-sidebar):not(:only-child),
+::view-transition-new(admin-mobile-nav):not(:only-child) {
+  animation: none;
+}
+
+::view-transition-old(admin-sidebar):not(:only-child),
+::view-transition-old(admin-mobile-nav):not(:only-child) {
+  display: none;
+}
+
+::view-transition-old(admin-sidebar):only-child {
+  animation: screen-transition-sidebar-out 200ms var(--ease-standard) both;
+}
+
+::view-transition-new(admin-sidebar):only-child {
+  animation: screen-transition-sidebar-in 200ms var(--ease-standard) 200ms both;
+}
+
+::view-transition-old(admin-mobile-nav):only-child {
+  animation: screen-transition-mobile-nav-out 200ms var(--ease-standard) both;
+}
+
+::view-transition-new(admin-mobile-nav):only-child {
+  animation: screen-transition-mobile-nav-in 200ms var(--ease-standard) 200ms both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(root),
+  ::view-transition-old(admin-sidebar):only-child,
+  ::view-transition-old(admin-mobile-nav):only-child {
+    animation: screen-transition-fade-out var(--duration-fast) var(--ease-standard) both;
+  }
+
+  ::view-transition-new(root),
+  ::view-transition-new(admin-sidebar):only-child,
+  ::view-transition-new(admin-mobile-nav):only-child {
+    animation: screen-transition-fade-in var(--duration-fast) var(--ease-standard) both;
+  }
+}
+
+@keyframes screen-transition-fade-out {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes screen-transition-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes screen-transition-sidebar-out {
+  to {
+    transform: translateX(-100%);
+  }
+}
+
+@keyframes screen-transition-sidebar-in {
+  from {
+    transform: translateX(-100%);
+  }
+}
+
+@keyframes screen-transition-mobile-nav-out {
+  to {
+    transform: translateY(100%);
+  }
+}
+
+@keyframes screen-transition-mobile-nav-in {
+  from {
+    transform: translateY(100%);
+  }
+}

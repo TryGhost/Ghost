@@ -46,6 +46,7 @@ import {
 } from './card-config';
 import { EditorHeaderActions, type OpenFlow } from './editor-header-actions';
 import { readEditorReturn } from './editor-return';
+import { EditorSkeleton } from './editor-skeleton';
 import { EditorStatus } from './editor-status';
 import { EmailSizeWarning } from './email-size-warning';
 import { PostEditor, type PostEditorHandle } from './post-editor';
@@ -72,6 +73,12 @@ import { usePostSnippets } from './use-post-snippets';
 import type { EditorRecord } from './session/projection';
 
 function EditorLoading() {
+  const screenTransitions = useFeatureFlag('admin7ScreenTransitions', {
+    requestOptions: EDITOR_REQUEST_OPTIONS,
+  });
+  if (screenTransitions) {
+    return <EditorSkeleton />;
+  }
   return (
     <Stack align="center" className="h-full" justify="center">
       <LoadingIndicator size="lg" />

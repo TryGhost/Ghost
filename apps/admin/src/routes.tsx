@@ -96,6 +96,7 @@ const appRoutes: RouteObject[] = [
     path: '/automations/:id',
     handle: {
       hideAdminSidebar: true,
+      screenTransition: true,
       requiresAccess: canManageAutomations,
     } satisfies AdminRouteHandle & AccessRouteHandle,
     lazy: lazyComponent(lazyAutomationEditorScreen),
@@ -172,6 +173,7 @@ const appRoutes: RouteObject[] = [
     children: settingsRouteChildren,
     handle: {
       allowInForceUpgrade: true,
+      screenTransition: true,
       settingsSidebar: true,
       requiresAccess: canAccessSettingsRoute,
     } satisfies AdminRouteHandle & AccessRouteHandle,
@@ -193,7 +195,11 @@ const appRoutes: RouteObject[] = [
     path: '/editor/*',
     Component: EditorGate,
     // EditorGate enforces force upgrade unless Ember owns both the editor and billing
-    handle: { allowInForceUpgrade: true, hideAdminSidebar: true } satisfies AdminRouteHandle,
+    handle: {
+      allowInForceUpgrade: true,
+      hideAdminSidebar: true,
+      screenTransition: true,
+    } satisfies AdminRouteHandle,
   },
   { path: '/site', lazy: lazyComponent(lazyViewSiteScreen) },
   { path: '/restore', lazy: lazyComponent(lazyRestoreScreen) },

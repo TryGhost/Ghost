@@ -7,6 +7,7 @@
 import { preloadKoenig } from '@/settings/components/koenig-loader';
 
 export { editorReturnState } from './editor-return';
+export { EditorSkeleton } from './editor-skeleton';
 
 // Lazy entries, not component re-exports: the shell mounts these behind
 // `lazy()`, so a static re-export would pull the chunk into the shell bundle.

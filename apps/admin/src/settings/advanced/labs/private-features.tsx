@@ -55,6 +55,11 @@ const features: Feature[] = [
     flag: 'admin7settings',
   },
   {
+    title: 'Admin 7 · Screen transitions',
+    description: 'Animate transitions into and out of full-screen surfaces.',
+    flag: 'admin7ScreenTransitions',
+  },
+  {
     title: 'Email Unique ID',
     description:
       'Enables {uniqueid} variable in emails for unique image URLs to bypass ESP image caching',

@@ -52,6 +52,7 @@ import { useBrowseConfig } from '@tryghost/admin-x-framework/api/config';
 import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import { useLocation, useNavigate, useSearchParams } from '@tryghost/admin-x-framework';
 import type { EmailModalMode } from '@/automations/components/types';
+import { AutomationCanvasSkeleton } from './canvas-skeleton';
 import { CANVAS_ZOOM_CONFIG, useCanvasViewport } from './use-canvas-viewport';
 import type { CanvasContentBounds } from './use-canvas-viewport';
 
@@ -554,6 +555,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
   const [deleteConfirmationActionId, setDeleteConfirmationActionId] = useState<string | null>(null);
   const automationRunAnalyticsEnabled = useFeatureFlag('automationRunAnalytics');
   const automationsPerTierEnabled = useFeatureFlag('automationsPerTier');
+  const screenTransitionsEnabled = useFeatureFlag('admin7ScreenTransitions');
   const selectedStepId = selectedStep?.id ?? null;
   const emailModalStepId = searchParams.get(EMAIL_STEP_QUERY_PARAM);
   const isRouterOpenedEmailModal =
@@ -907,6 +909,9 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
   );
 
   if (isLoading) {
+    if (screenTransitionsEnabled) {
+      return <AutomationCanvasSkeleton defaultViewport={initialViewport} />;
+    }
     return (
       <div
         className="flex flex-1 items-center justify-center bg-surface-page"

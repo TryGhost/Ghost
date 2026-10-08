@@ -84,11 +84,16 @@ export type { NavigateOptions } from './providers/router-provider';
 export type AdminRouteHandle = {
   allowInForceUpgrade?: boolean;
   hideAdminSidebar?: boolean;
+  /** Marks a full-screen surface: navigating into or out of it runs a screen transition. */
+  screenTransition?: boolean;
   settingsSidebar?: boolean;
 };
+export type { ViewTransitionResolver } from './providers/router-provider';
 export {
+  Link,
   RouterProvider,
   useNavigate,
+  ViewTransitionResolverProvider,
   useRouteHasParams,
   resetScrollPosition,
   ScrollRestoration,
@@ -96,7 +101,6 @@ export {
 } from './providers/router-provider';
 export { useNavigationStack } from './providers/navigation-stack-provider';
 export {
-  Link,
   NavigationType,
   Outlet,
   useBlocker,
