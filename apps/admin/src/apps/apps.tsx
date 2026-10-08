@@ -86,14 +86,7 @@ export const AppsListing: React.FC = () => {
           <ListPage.Body className="flex flex-col">{body}</ListPage.Body>
         </ListPage>
       </Container>
-      <UninstallDialog
-        installation={uninstalling}
-        onOpenChange={(open) => {
-          if (!open) {
-            setUninstalling(null);
-          }
-        }}
-      />
+      <UninstallDialog installation={uninstalling} onClose={() => setUninstalling(null)} />
     </Box>
   );
 };

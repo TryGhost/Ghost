@@ -3,6 +3,7 @@ import AutomationListActions from './automation-list-actions';
 import React from 'react';
 import type { AutomationBrowseItem } from '@tryghost/admin-x-framework/api/automations';
 import { Link } from '@tryghost/admin-x-framework';
+import { openRowLink, openRowLinkInNewTab } from '@/shared/row-link';
 import {
   Skeleton,
   Table,
@@ -36,18 +37,6 @@ const AUTOMATION_STAT_COLUMNS = [
     skeletonWidthClassName: 'w-10',
   },
 ] as const;
-
-const handleRowClick = (event: React.MouseEvent<HTMLTableRowElement>) => {
-  if (
-    event.defaultPrevented ||
-    !(event.target instanceof Element) ||
-    event.target.closest('a, button, input, select, textarea')
-  ) {
-    return;
-  }
-
-  event.currentTarget.querySelector('a')?.click();
-};
 
 interface AutomationsListProps {
   automations?: AutomationBrowseItem[];
@@ -173,7 +162,8 @@ const AutomationsList: React.FC<AutomationsListProps> = ({
                   : 'grid-cols-[repeat(3,minmax(0,1fr))_auto]',
               )}
               data-testid="automation-list-row"
-              onClick={handleRowClick}
+              onAuxClick={openRowLinkInNewTab}
+              onClick={openRowLink}
             >
               <TableHead
                 className="col-span-3 row-start-1 h-auto min-w-0 p-0 text-left text-base font-normal tracking-normal text-foreground lg:table-cell lg:p-4"

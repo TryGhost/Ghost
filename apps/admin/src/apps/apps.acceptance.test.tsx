@@ -1,8 +1,8 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { page } from 'vitest/browser';
 import type {
   AppInstallation,
-  AppInstallationManifest,
+  AppInstallationHistoryEntry,
 } from '@tryghost/admin-x-framework/api/app-installations';
 import {
   currentRoute,
@@ -20,51 +20,27 @@ const DETAILS_ROUTE = '/apps/details/installation-1';
 /** Reading one installation, whatever it includes. */
 const readPath = (id: string) => new RegExp(`^/apps/installations/${id}/(\\?|$)`);
 
-const manifestRow = (
+const jamie = { id: 'user-1', name: 'Jamie Larson' };
+
+/** One thing that happened to the app, as its history lists it. */
+const entry = (
   id: string,
+  event: AppInstallationHistoryEntry['event'],
   createdAt: string,
-  overrides: Partial<AppInstallationManifest> = {},
-): AppInstallationManifest => ({
+  overrides: Partial<AppInstallationHistoryEntry> = {},
+): AppInstallationHistoryEntry => ({
   id,
-  manifest_url: MANIFEST_URL,
-  manifest: manifest(),
-  requires_approval: false,
+  event,
+  actor: event === 'updated' || event === 'suspended' ? null : jamie,
   created_at: createdAt,
   ...overrides,
 });
 
-/** A staff history entry for the installation, as the actions endpoint returns it. */
-const action = (
-  id: string,
-  event: string,
-  createdAt: string,
-  context: Record<string, string> = {},
-) => ({
-  id,
-  event,
-  created_at: createdAt,
-  context: JSON.stringify(context),
-  resource_id: 'installation-1',
-  resource_type: 'app_installation',
-  actor_id: 'user-1',
-  actor_type: 'user',
-  actor: { id: 'user-1', name: 'Jamie Larson', slug: 'jamie', image: null },
-});
+const installedOn = (createdAt: string) => entry('h1', 'installed', createdAt);
 
-/** One installation as the detail page reads it, with its manifests and staff history. */
-function fakeDetails(
-  read: AppInstallation,
-  actions: ReturnType<typeof action>[] = [action('a1', 'installed', read.created_at)],
-) {
-  const readApi = fakeAdminEndpoint('GET', readPath(read.id), () => ({
-    app_installations: [read],
-  }));
-  const actionsApi = fakeAdminEndpoint('GET', /^\/actions\/(\?|$)/, () => ({
-    actions,
-    meta: { pagination: { page: 1, limit: 'all', pages: 1, total: actions.length } },
-  }));
-  return { readApi, actionsApi };
-}
+/** One installation as the detail page reads it, with its history. */
+const fakeDetails = (read: AppInstallation) =>
+  fakeAdminEndpoint('GET', readPath(read.id), () => ({ app_installations: [read] }));
 
 /** The review of a suspended app's changes, as the install screen fetches it. */
 const fakeReview = () =>
@@ -120,7 +96,7 @@ describe('Managing apps', () => {
 
   it('opens an app’s details from the list', async () => {
     fakeInstallations([installation()]);
-    fakeDetails(installation({ manifests: [manifestRow('m1', '2026-10-01T10:00:00.000Z')] }));
+    fakeDetails(installation({ history: [installedOn('2026-10-01T10:00:00.000Z')] }));
 
     await renderAdminApp('/apps', { labs });
     await appsScreen.row('Podcast').getByText('Publish episodes and embed players.').click();
@@ -129,31 +105,40 @@ describe('Managing apps', () => {
     await expect.element(appsScreen.details()).toHaveTextContent('Podcast');
   });
 
+  it('opens an app’s details in a new tab from a modified click on its row', async () => {
+    fakeInstallations([installation()]);
+    const openSpy = vi.spyOn(window, 'open').mockReturnValue(null);
+
+    await renderAdminApp('/apps', { labs });
+    await appsScreen
+      .row('Podcast')
+      .getByText('Publish episodes and embed players.')
+      .click({ modifiers: ['ControlOrMeta'] });
+
+    expect(openSpy).toHaveBeenCalledWith(
+      expect.stringMatching(/#\/apps\/details\/installation-1$/),
+      '_blank',
+      'noopener',
+    );
+    await expect.poll(currentRoute).toBe('/apps');
+    openSpy.mockRestore();
+  });
+
   it('shows who made the app, where it runs, who installed it, and its history', async () => {
     const moved = manifest({
       surfaces: [{ type: 'admin_page', url: 'https://podcast.example.net/admin' }],
     });
-    const { actionsApi } = fakeDetails(
+    const readApi = fakeDetails(
       installation({
         manifest: moved,
-        manifests: [
-          manifestRow('m3', '2026-10-03T10:00:00.000Z', {
-            manifest: moved,
-            requires_approval: true,
+        history: [
+          entry('h3', 'changes_approved', '2026-10-03T10:00:00.000Z', {
+            moved_to: 'podcast.example.net',
           }),
-          manifestRow('m2', '2026-10-02T10:00:00.000Z', {
-            manifest: manifest({ description: 'Episodes and players.' }),
-          }),
-          manifestRow('m1', '2026-10-01T10:00:00.000Z'),
+          entry('h2', 'updated', '2026-10-02T10:00:00.000Z'),
+          installedOn('2026-10-01T10:00:00.000Z'),
         ],
       }),
-      [
-        action('a2', 'changes_approved', '2026-10-03T10:00:00.000Z', {
-          from_manifest_id: 'm2',
-          to_manifest_id: 'm3',
-        }),
-        action('a1', 'installed', '2026-10-01T10:00:00.000Z'),
-      ],
     );
 
     await renderAdminApp(DETAILS_ROUTE, { labs });
@@ -172,9 +157,19 @@ describe('Managing apps', () => {
     await expect
       .element(appsScreen.historyEntries().nth(2))
       .toHaveTextContent('Installed by Jamie Larson');
-    expect(new URL(actionsApi.requests[0].url).searchParams.get('filter')).toBe(
-      "resource_type:app_installation+resource_id:'installation-1'",
-    );
+    expect(new URL(readApi.requests[0].url).searchParams.get('include')).toBe('history');
+  });
+
+  it('says when an older Ghost has no history to show', async () => {
+    fakeDetails(installation());
+
+    await renderAdminApp(DETAILS_ROUTE, { labs });
+
+    await expect.element(appsScreen.details()).toHaveTextContent('Example Audio');
+    await expect
+      .element(appsScreen.historyUnavailable())
+      .toHaveTextContent('History isn’t available on this version of Ghost.');
+    await expect(appsScreen.historyEntries()).toHaveCount(0);
   });
 
   it('uninstalls an app from the list, after saying integration keys stay', async () => {
@@ -216,7 +211,7 @@ describe('Managing apps', () => {
 
   it('returns to Apps after uninstalling from an app’s details', async () => {
     const installations = fakeInstallations([installation()]);
-    fakeDetails(installation({ manifests: [manifestRow('m1', '2026-10-01T10:00:00.000Z')] }));
+    fakeDetails(installation({ history: [installedOn('2026-10-01T10:00:00.000Z')] }));
     fakeAdminEndpoint('DELETE', '/apps/installations/installation-1/', () => {
       installations.set([]);
       return new Response(null, { status: 204 });
@@ -254,9 +249,9 @@ describe('Managing apps', () => {
   it('marks an app waiting for approval, and leads to the review', async () => {
     const suspended = installation({
       status: 'suspended',
-      manifests: [
-        manifestRow('m2', '2026-10-02T10:00:00.000Z', { requires_approval: true }),
-        manifestRow('m1', '2026-10-01T10:00:00.000Z'),
+      history: [
+        entry('h2', 'suspended', '2026-10-02T10:00:00.000Z'),
+        installedOn('2026-10-01T10:00:00.000Z'),
       ],
     });
     fakeInstallations([suspended]);
@@ -271,11 +266,11 @@ describe('Managing apps', () => {
 
     await expect
       .element(appsScreen.needsApproval())
-      .toHaveTextContent('Podcast has been updated and needs more access.');
+      .toHaveTextContent('Podcast has been updated, and the changes need your approval.');
     await expect
       .element(appsScreen.historyEntries().first())
       .toHaveTextContent('Updated, needs approval');
-    await appsScreen.reviewChangesButton().click();
+    await appsScreen.reviewChangesLink().click();
 
     await expect
       .poll(currentRoute)
@@ -288,7 +283,7 @@ describe('Managing apps', () => {
     const reviewApi = fakeReview();
 
     await renderAdminApp('/apps', { labs });
-    await appsScreen.row('Podcast').getByRole('button', { name: 'Review changes' }).click();
+    await appsScreen.row('Podcast').getByRole('link', { name: 'Review changes' }).click();
 
     await expect
       .poll(currentRoute)
@@ -303,12 +298,11 @@ describe('Managing apps', () => {
     fakeDetails(
       installation({
         status: 'uninstalled',
-        manifests: [manifestRow('m1', '2026-10-01T10:00:00.000Z')],
+        history: [
+          entry('h2', 'uninstalled', '2026-10-02T10:00:00.000Z'),
+          installedOn('2026-10-01T10:00:00.000Z'),
+        ],
       }),
-      [
-        action('a2', 'uninstalled', '2026-10-02T10:00:00.000Z'),
-        action('a1', 'installed', '2026-10-01T10:00:00.000Z'),
-      ],
     );
 
     await renderAdminApp(DETAILS_ROUTE, { labs });
