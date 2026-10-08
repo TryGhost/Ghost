@@ -15,6 +15,11 @@ import rawSchema from '../../../core/server/data/schema/schema';
 import * as commands from '../../../core/server/data/schema/commands';
 import { isInDevelopmentTable } from '../../../core/server/data/schema/in-development';
 import { type ForeignKey, foreignKeysOf } from '../../../core/server/data/schema/lib/foreign-keys';
+import {
+  type PatternCheck,
+  patternChecksOf,
+} from '../../../core/server/data/schema/lib/column-patterns';
+import { readPatternChecks } from '../../utils/pattern-checks';
 // @ts-expect-error This module lacks type definitions.
 import * as dbUtils from '../../utils/db-utils';
 
@@ -51,6 +56,7 @@ type NormalizedTable = {
   indexes: string[][];
   uniques: string[][];
   foreignKeys: ForeignKey[];
+  checks: PatternCheck[];
 };
 
 type NormalizedSchema = Record<string, NormalizedTable>;
@@ -204,6 +210,7 @@ function normalizeSchema(tables: SchemaTables): NormalizedSchema {
       indexes: sortIndexes(indexes),
       uniques: sortIndexes(uniques),
       foreignKeys: sortForeignKeys(foreignKeysOf(tableName, tableSpec)),
+      checks: sortBy(patternChecksOf(tableName, tableSpec), 'constraintName'),
     };
   }
 
@@ -265,6 +272,8 @@ async function readSchemaFromDatabase(knex: Knex): Promise<NormalizedSchema> {
       'r.DELETE_RULE',
     );
 
+  const checks = await readPatternChecks(knex);
+
   const result: NormalizedSchema = {};
 
   for (const row of columnRows) {
@@ -274,6 +283,7 @@ async function readSchemaFromDatabase(knex: Knex): Promise<NormalizedSchema> {
       indexes: [],
       uniques: [],
       foreignKeys: [],
+      checks: checks[row.TABLE_NAME] ?? [],
     };
 
     const type =

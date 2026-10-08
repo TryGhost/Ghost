@@ -7,6 +7,7 @@ const DatabaseInfo = require('@tryghost/database-info');
 const schema = require('./schema');
 const { defaultIndexName } = require('./lib/default-index-name');
 const { foreignKeySpecsOf, onDeleteOf } = require('./lib/foreign-keys');
+const { patternChecksOf } = require('./lib/column-patterns');
 
 const messages = {
   hasPrimaryKeySQLiteError: 'Must use hasPrimaryKeySQLite on an SQLite3 database',
@@ -22,12 +23,14 @@ const messages = {
  * @param {import('knex').knex.TableBuilder} tableBuilder
  * @param {string} columnName
  * @param {object} [columnSpec]
+ * @param {import('knex').Knex} [transaction] - the connection the table is built on
  */
 function addTableColumn(
   tableName,
   tableBuilder,
   columnName,
   columnSpec = schema[tableName][columnName],
+  transaction = db.knex,
 ) {
   let column;
 
@@ -68,6 +71,13 @@ function addTableColumn(
   }
   if (Object.hasOwn(columnSpec, 'index') && columnSpec.index === true) {
     column.index();
+  }
+
+  // Read on every database, so a pattern MySQL would refuse fails everywhere, but held only on
+  // MySQL: SQLite is being removed, and its driver here has no regular expression function.
+  const checks = patternChecksOf(tableName, { [columnName]: columnSpec });
+  if (DatabaseInfo.isMySQL(transaction)) {
+    checks.forEach((check) => column.checkRegex(check.pattern, check.constraintName));
   }
 }
 
@@ -162,7 +172,7 @@ async function addColumn(
   options = {},
 ) {
   const addColumnBuilder = transaction.schema.table(tableName, function (table) {
-    addTableColumn(tableName, table, column, columnSpec);
+    addTableColumn(tableName, table, column, columnSpec, transaction);
     foreignKeySpecsOf({ [column]: columnSpec }).forEach((foreignKey) =>
       addForeignKey(table, foreignKey),
     );
@@ -640,7 +650,7 @@ function createTable(table, transaction = db.knex, tableSpec = schema[table]) {
   return transaction.schema.createTable(table, function (t) {
     Object.keys(tableSpec)
       .filter((column) => !column.startsWith('@@'))
-      .forEach((column) => addTableColumn(table, t, column, tableSpec[column]));
+      .forEach((column) => addTableColumn(table, t, column, tableSpec[column], transaction));
 
     if (tableSpec['@@INDEXES@@']) {
       tableSpec['@@INDEXES@@'].forEach((index) => {
