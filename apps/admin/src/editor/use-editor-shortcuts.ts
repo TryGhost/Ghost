@@ -15,6 +15,8 @@ function useShortcut(
     const onKeyDown = (event: KeyboardEvent) => {
       if (
         !current.current.enabled ||
+        // autofill sends keydown events without a key
+        typeof event.key !== 'string' ||
         event.key.toLowerCase() !== key ||
         !(event.metaKey || event.ctrlKey) ||
         event.altKey ||
