@@ -7,9 +7,16 @@ import {
   type AppInstallation,
   useReadAppInstallation,
 } from '@tryghost/admin-x-framework/api/app-installations';
+import { useBrowseSite } from '@tryghost/admin-x-framework/api/site';
 import { APIError, getErrorMessage } from '@tryghost/admin-x-framework/errors';
 import { AppsGate } from './components/apps-gate';
-import { APP_FRAME_ALLOW, APP_FRAME_SANDBOX, appFrameTimeouts, appPageUrl } from './lib/frame';
+import {
+  APP_FRAME_ALLOW,
+  APP_FRAME_SANDBOX,
+  appFrameTimeouts,
+  appPageUrl,
+  isGhostOrigin,
+} from './lib/frame';
 import { appReviewRoute } from './lib/routes';
 import { servedFrom } from './lib/served-from';
 
@@ -114,6 +121,39 @@ const AppFrame: React.FC<{ installation: AppInstallation }> = ({ installation })
   );
 };
 
+/**
+ * The page of an app that shouldn't be framed: it's on Ghost's own address, so it would
+ * be Ghost, not the app. Nothing of it loads.
+ */
+const NotFramed: React.FC<{ installation: AppInstallation }> = ({ installation }) => (
+  <Centered testId="app-not-framed">
+    <EmptyIndicator
+      actions={
+        <Button variant="outline" asChild>
+          <Link to="/apps">Back to Apps</Link>
+        </Button>
+      }
+      description="Its page is at the same address as Ghost, which Admin doesn’t show. Reinstall the app from its own address."
+      title={`${installation.manifest.name} can’t open here`}
+    >
+      <LucideIcon.ShieldOff />
+    </EmptyIndicator>
+  </Centered>
+);
+
+/**
+ * An active app loads in its frame, once its page is known to be somewhere other than
+ * Ghost: Admin's own address, or the site's, which Admin may be served from too.
+ */
+const ActiveApp: React.FC<{ installation: AppInstallation }> = ({ installation }) => {
+  const { data: site } = useBrowseSite();
+  const ghostUrls = [window.location.href, ...(site ? [site.site.url] : [])];
+  if (isGhostOrigin(appPageUrl(installation.manifest), ghostUrls)) {
+    return <NotFramed installation={installation} />;
+  }
+  return <AppFrame key={installation.id} installation={installation} />;
+};
+
 /** A suspended app doesn't load: the page says why and leads to the review. */
 const NeedsApproval: React.FC<{ installation: AppInstallation }> = ({ installation }) => {
   const navigate = useNavigate();
@@ -163,7 +203,7 @@ export const AppPage: React.FC = () => {
 
   let body: React.ReactNode;
   if (installation?.status === 'active') {
-    body = <AppFrame key={installation.id} installation={installation} />;
+    body = <ActiveApp installation={installation} />;
   } else if (installation?.status === 'suspended') {
     body = <NeedsApproval installation={installation} />;
   } else if (installation || (error instanceof APIError && error.response?.status === 404)) {

@@ -11,6 +11,7 @@ import {
   fakeFrameOrigin,
   fakeTags,
   renderAdminApp,
+  siteResponse,
   staffRole,
 } from '@test-utils/acceptance';
 import { APP_FRAME_SANDBOX, appFrameTimeouts } from './lib/frame';
@@ -159,6 +160,49 @@ describe('Managing apps', () => {
     } finally {
       appFrameTimeouts.ready = previous;
     }
+  });
+
+  it('refuses to frame an app whose page is on Admin’s own address', async () => {
+    // Accepted before Admin moved here, say. Nothing of it loads: no frame, no page fetch.
+    const onAdmin = manifest({
+      surfaces: [{ type: 'admin_page', url: `${window.location.origin}/ghost/app/` }],
+    });
+    fakeAdminEndpoint('GET', readPath('installation-1'), () => ({
+      app_installations: [installation({ manifest: onAdmin })],
+    }));
+
+    await renderAdminApp(APP_ROUTE, { labs });
+
+    await expect.element(appsScreen.notFramed()).toHaveTextContent('Podcast can’t open here');
+    await expect.element(appsScreen.frame()).not.toBeInTheDocument();
+  });
+
+  it('refuses to frame an app whose page is on the site’s address', async () => {
+    // Admin isn't necessarily served from the site's address, so that one is read.
+    const site = siteResponse();
+    site.site.url = 'https://blog.example.com/';
+    const onSite = manifest({
+      surfaces: [{ type: 'admin_page', url: 'https://blog.example.com/app/' }],
+    });
+    fakeAdminEndpoint('GET', readPath('installation-1'), () => ({
+      app_installations: [installation({ manifest: onSite })],
+    }));
+
+    await renderAdminApp(APP_ROUTE, { labs, boot: { browseSite: { response: site } } });
+
+    await expect.element(appsScreen.notFramed()).toBeVisible();
+    await expect.element(appsScreen.frame()).not.toBeInTheDocument();
+  });
+
+  it('sends staff who can’t manage apps away from an app’s page, without reading it', async () => {
+    const me = currentUserResponse();
+    me.users[0].roles = [staffRole({ name: 'Editor' })];
+
+    // No installation is faked: a request to read it would fail the test.
+    await renderAdminApp(APP_ROUTE, { labs, boot: { browseMe: { response: me } } });
+
+    await expect.poll(currentRoute).toBe('/');
+    await expect.element(appsScreen.frame()).not.toBeInTheDocument();
   });
 
   it('doesn’t load a suspended app, and leads to the review instead', async () => {

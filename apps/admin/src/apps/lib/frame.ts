@@ -43,3 +43,21 @@ export function appPageUrl(manifest: AppManifest): string {
     manifest.surfaces.find((surface) => surface.type === 'admin_page') ?? manifest.surfaces[0];
   return page.url;
 }
+
+/**
+ * Whether a page is on an origin Ghost itself is served from. Ghost refuses such a URL
+ * when it accepts a manifest, but the site's or Admin's URL can change afterwards, and a
+ * frame on Admin's own origin would be Admin, sandbox or not. So the check is made again
+ * here, where the frame is made, against the origins Admin knows itself by.
+ */
+export function isGhostOrigin(pageUrl: string, ghostUrls: string[]): boolean {
+  const origin = (value: string): string | null => {
+    try {
+      return new URL(value).origin;
+    } catch {
+      return null;
+    }
+  };
+  const page = origin(pageUrl);
+  return page === null || ghostUrls.some((url) => origin(url) === page);
+}
