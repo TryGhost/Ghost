@@ -1,55 +1,6 @@
 import LeftArrowIcon from '../../images/icons/arrow-left.svg?react';
 import { t } from '../../utils/i18n';
 
-export const BackButtonStyles = `
-    .gh-portal-btn-back,
-    .gh-portal-btn-back:hover {
-        box-shadow: none;
-        position: relative;
-        height: unset;
-        min-width: unset;
-        position: fixed;
-        top: 29px;
-        left: 20px;
-        background: none;
-        padding: 8px;
-        margin: 0;
-        box-shadow: none;
-        color: var(--grey3);
-        border: none;
-        z-index: 10000;
-    }
-    html[dir="rtl"] .gh-portal-btn-back {
-        right: 20px;
-        left: unset;
-    }
-    @media (max-width: 480px) {
-        .gh-portal-btn-back,
-        .gh-portal-btn-back:hover {
-            left: 16px;
-        }
-        html[dir="rtl"] .gh-portal-btn-back {
-            right: 16px;
-            left: unset;
-        }
-    }
-
-    .gh-portal-btn-back:hover {
-        color: var(--grey1);
-        transform: translateX(-4px);
-    }
-
-    .gh-portal-btn-back svg {
-        width: 17px;
-        height: 17px;
-        margin-top: 1px;
-        margin-inline-end: 2px;
-    }
-    html[dir="rtl"] .gh-portal-btn-back svg {
-        transform: scaleX(-1);
-    }
-`;
-
 function ActionButton({ brandColor, label = null, hidden = false, onClick }) {
   if (hidden) {
     return null;
@@ -61,11 +12,11 @@ function ActionButton({ brandColor, label = null, hidden = false, onClick }) {
 
   return (
     <button
-      className="gh-portal-btn gh-portal-btn-back"
+      className="gh-portal-btn-back fixed left-5 top-[29px] z-[10000] m-0 flex cursor-pointer select-none items-center justify-center whitespace-nowrap rounded-md border-none bg-transparent p-2 text-center text-base font-medium leading-none tracking-[0.2px] text-grey-3 no-underline outline-none transition-all duration-[250ms] ease-[ease] hover:-translate-x-1 hover:text-grey-1 max-sm:left-4 rtl:left-auto rtl:right-5 max-sm:rtl:right-4"
       style={brandColor ? { color: brandColor } : undefined}
       onClick={(e) => onClick(e)}
     >
-      <LeftArrowIcon /> {label}
+      <LeftArrowIcon className="me-0.5 mt-px h-[17px] w-[17px] rtl:-scale-x-100" /> {label}
     </button>
   );
 }

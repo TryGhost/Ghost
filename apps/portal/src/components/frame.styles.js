@@ -5,7 +5,6 @@
 
 import { GlobalStyles } from './global.styles';
 import { ActionButtonStyles } from './common/action-button';
-import { BackButtonStyles } from './common/back-button';
 import { SwitchStyles } from './common/switch';
 import AccountHomePageStyles from './pages/AccountHomePage/account-home-page.css?inline';
 import { AccountPlanPageStyles } from './pages/account-plan-page';
@@ -31,6 +30,7 @@ import { RecommendationsPageStyles } from './pages/recommendations-page';
 import { ShareModalStyles } from './pages/share/share-modal.styles';
 import { TransistorPodcastsActionStyles } from './pages/AccountHomePage/components/transistor-podcasts-action';
 import NotificationStyle from './notification.styles';
+import TailwindStyles from '../tailwind.css?inline';
 
 // Global styles
 const FrameStyles = `
@@ -1384,7 +1384,6 @@ export function getFrameStyles({ site }) {
     ProductsSectionStyles({ site }) +
     SwitchStyles +
     ActionButtonStyles +
-    BackButtonStyles +
     AvatarStyles +
     MagicLinkStyles +
     SignupPageStyles +
@@ -1404,6 +1403,7 @@ export function getFrameStyles({ site }) {
     GiftSuccessStyle +
     RecommendationsPageStyles +
     ShareModalStyles +
-    TransistorPodcastsActionStyles;
+    TransistorPodcastsActionStyles +
+    TailwindStyles;
   return FrameStyle;
 }

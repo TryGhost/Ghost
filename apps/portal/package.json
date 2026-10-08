@@ -51,6 +51,7 @@
     "react": "catalog:react17",
     "react-day-picker": "catalog:",
     "react-dom": "catalog:react17",
+    "tailwindcss": "catalog:tailwind3",
     "typescript": "catalog:",
     "vite": "catalog:",
     "vitest": "catalog:"

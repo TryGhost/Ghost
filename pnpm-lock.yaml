@@ -1943,6 +1943,9 @@ importers:
       react-dom:
         specifier: catalog:react17
         version: 17.0.2(react@17.0.2)
+      tailwindcss:
+        specifier: catalog:tailwind3
+        version: 3.4.19(tsx@4.23.12)(yaml@2.9.0)
       typescript:
         specifier: 'catalog:'
         version: '@typescript/typescript6@6.0.2'
