@@ -1,25 +1,63 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { userEvent } from 'vitest/browser';
+import { page, userEvent } from 'vitest/browser';
 
 import {
   allowUnhandledRequests,
   configResponse,
   currentRoute,
   fakeAdminEndpoint,
+  fakeSettingsScreens,
   fakeTags,
   renderAdminApp,
   type RenderAdminAppOptions,
   tag,
+  unsavedChangesGuarded,
 } from '@test-utils/acceptance';
 
 import type { EmberDataChangeEvent } from '@/ember-bridge';
 import { sidebarScreen } from '@/layout/sidebar.screen';
 import { tagDetailScreen } from '@/tags/detail/tag-detail.screen';
+import { settingsScreen } from '@/settings/settings.screen';
 
 import { globalSearchScreen } from './global-search.screen';
 
 const handoff = () =>
   JSON.parse(document.body.dataset.externalNavigate ?? 'null') as { route: string } | null;
+
+describe('Settings search exits', () => {
+  it.each(['tag', 'post'])('confirms before a %s result leaves dirty Settings', async (model) => {
+    delete document.body.dataset.externalNavigate;
+    fakeSettingsScreens();
+    fakeSearchIndex();
+    fakeAdminEndpoint('GET', /^\/tags\/slug\/first-tag\//, {
+      tags: [tag({ name: 'First tag', slug: 'first-tag' })],
+    });
+    await renderAdminApp('/settings', { labs: { admin7settings: true, globalSearchReact: true } });
+    await settingsScreen.editTitle('Unsaved title');
+    await expect.poll(unsavedChangesGuarded).toBe(true);
+    await openWithShortcut();
+    await globalSearchScreen.search(`first ${model}`);
+    await globalSearchScreen.option(new RegExp(`First ${model}`)).click();
+    await expect.element(settingsScreen.confirmationModal()).toBeVisible();
+    await settingsScreen.confirmationAction('Stay').click();
+    await expect(settingsScreen.confirmationModal()).toHaveCount(0);
+    await expect.poll(currentRoute).toBe('/settings');
+    expect(handoff()).toBeNull();
+    await expect
+      .element(page.getByLabelText('Site title', { exact: true }))
+      .toHaveValue('Unsaved title');
+
+    await expect.element(globalSearchScreen.input()).toHaveValue(`first ${model}`);
+    await globalSearchScreen.option(new RegExp(`First ${model}`)).click();
+    await settingsScreen.confirmationAction('Leave').click();
+    if (model === 'post') {
+      await expect.poll(() => handoff()?.route).toBe('/editor/post/p1');
+    } else {
+      await expect.poll(currentRoute).toBe('/tags/first-tag');
+      await expect(settingsScreen.titleAndDescription()).toHaveCount(0);
+    }
+  });
+});
 
 function fakeSearchIndex() {
   return {

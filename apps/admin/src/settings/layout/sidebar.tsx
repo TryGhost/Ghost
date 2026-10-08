@@ -1,6 +1,5 @@
 import GhostLogo from '@/settings/assets/images/orb-pink.png';
 import React, { useEffect, useRef } from 'react';
-import clsx from 'clsx';
 import {
   Badge,
   InputGroup,
@@ -10,10 +9,11 @@ import {
   Kbd,
   Separator,
   SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
 } from '@tryghost/shade/components';
 import { LucideIcon, cn } from '@tryghost/shade/utils';
-import { Search, X } from 'lucide-react';
-import { Inline, Stack, Text } from '@tryghost/shade/primitives';
+import { Box, Inline, Stack, Text } from '@tryghost/shade/primitives';
 import { useFocusContext } from '@tryghost/shade/app';
 
 import {
@@ -39,9 +39,6 @@ import { useScrollSectionContext, useScrollSectionNav } from '@/settings/hooks/u
 import { useSearch } from '@/settings/providers/settings-app-context';
 import ExitSettingsButton from '@/settings/components/exit-settings-button';
 
-const NAV_ITEM_CLASS_NAME =
-  'mt-px flex h-8 w-full cursor-pointer items-center gap-2 rounded-md px-3 py-2 text-left text-control font-medium text-sidebar-foreground transition-all hover:bg-sidebar-accent/70 hover:text-sidebar-accent-foreground focus-visible:bg-sidebar-accent/70 focus-visible:text-sidebar-accent-foreground focus-visible:ring-1 focus-visible:ring-focus-ring focus-visible:outline-hidden [&>svg]:size-4 [&>svg]:shrink-0';
-
 interface NavItemProps {
   icon?: React.ReactNode;
   keywords: string[];
@@ -62,22 +59,19 @@ const NavItem: React.FC<NavItemProps> = ({ icon, keywords, navid, onClick, title
   const isCurrent = navids.includes(currentSection || '');
 
   return (
-    <li ref={ref} data-nav-row {...scrollProps}>
-      <button
+    <SidebarMenuItem ref={ref} data-nav-row {...scrollProps}>
+      <SidebarMenuButton
         aria-current={isCurrent ? 'page' : undefined}
-        className={clsx(
-          NAV_ITEM_CLASS_NAME,
-          isCurrent && 'bg-sidebar-accent text-sidebar-accent-foreground',
-          !checkVisible(keywords) && 'hidden',
-        )}
+        className={cn(!checkVisible(keywords) && 'hidden')}
         id={Array.isArray(navid) ? navid[0] : navid}
+        isActive={isCurrent}
         type="button"
         onClick={onClick}
       >
         {icon}
         {title}
-      </button>
-    </li>
+      </SidebarMenuButton>
+    </SidebarMenuItem>
   );
 };
 
@@ -274,7 +268,7 @@ const SettingsSearchInput: React.FC<SettingsSearchInputProps> = ({
       )}
     >
       <InputGroupAddon align="inline-start">
-        <Search aria-hidden="true" className="size-4" />
+        <LucideIcon.Search aria-hidden="true" className="size-4" />
       </InputGroupAddon>
       <InputGroupInput
         ref={inputRef}
@@ -295,7 +289,7 @@ const SettingsSearchInput: React.FC<SettingsSearchInputProps> = ({
               inputRef.current?.focus();
             }}
           >
-            <X aria-hidden="true" />
+            <LucideIcon.X aria-hidden="true" />
           </InputGroupButton>
         ) : (
           <Kbd className="hidden tablet:inline-flex">/</Kbd>
@@ -378,7 +372,7 @@ const Sidebar: React.FC = () => {
     }
   };
 
-  const navClasses = clsx(
+  const navClasses = cn(
     // pb-5 matches the sidebar's pt-5, so the last item rests as far from the
     // bottom edge as the search row sits from the top.
     admin7Settings
@@ -394,9 +388,9 @@ const Sidebar: React.FC = () => {
     >
       {/* data-nav-row marks the rows that cascade in when the shell swaps to this nav. */}
       {admin7Settings ? (
-        <div className="shrink-0 bg-sidebar px-5 pb-2" data-nav-row>
+        <Box className="shrink-0 bg-sidebar px-5 pb-2" data-nav-row>
           <SettingsHeader inputRef={searchInputRef} />
-        </div>
+        </Box>
       ) : (
         <div className="sticky top-0 flex content-stretch items-end tablet:h-20 tablet:bg-gray-50 xl:h-20 dark:bg-gray-950 dark:tablet:bg-[#101114]">
           <SettingsSearchInput className="mr-8 tablet:mr-0" inputRef={searchInputRef} />
@@ -675,39 +669,42 @@ const Sidebar: React.FC = () => {
         </NavSection>
 
         {!filter && admin7Settings && (
-          <button
-            className={NAV_ITEM_CLASS_NAME}
-            type="button"
-            data-nav-row
-            onClick={() => {
-              updateRoute('about');
-            }}
-          >
-            {/* The orb PNG as a mask keeps its detail but takes the nav's text colour, so it
+          <SidebarMenu>
+            <SidebarMenuItem data-nav-row>
+              <SidebarMenuButton
+                type="button"
+                onClick={() => {
+                  updateRoute('about');
+                }}
+              >
+                {/* The orb PNG as a mask keeps its detail but takes the nav's text colour, so it
                 follows light and dark mode like the other nav icons. */}
-            <span
-              aria-hidden="true"
-              className="size-4 shrink-0 bg-current"
-              style={{
-                maskImage: `url(${GhostLogo})`,
-                maskPosition: 'center',
-                maskRepeat: 'no-repeat',
-                maskSize: 'contain',
-              }}
-            />
-            About Ghost
-          </button>
+                <span
+                  aria-hidden="true"
+                  className="size-4 shrink-0 bg-current"
+                  style={{
+                    maskImage: `url(${GhostLogo})`,
+                    maskPosition: 'center',
+                    maskRepeat: 'no-repeat',
+                    maskSize: 'contain',
+                  }}
+                />
+                About Ghost
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          </SidebarMenu>
         )}
         {!filter && !admin7Settings && (
-          <a
+          <button
             className="mt-1 mb-10 flex h-[38px] w-100 cursor-pointer items-center rounded-lg px-3 py-2 text-left text-[14px] font-medium text-gray-800 transition-all hover:bg-gray-200 focus:bg-gray-100 dark:text-gray-600 dark:hover:bg-gray-950 dark:focus:bg-gray-900"
+            type="button"
             onClick={() => {
               updateRoute('about');
             }}
           >
             <img alt="Ghost Logo" className="mr-[7px] size-[18px]" src={GhostLogo} />
             About Ghost
-          </a>
+          </button>
         )}
       </nav>
     </Stack>

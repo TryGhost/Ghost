@@ -12,14 +12,15 @@ import {
   DialogContent,
   DialogTitle,
 } from '@tryghost/shade/components';
-import { cn } from '@tryghost/shade/utils';
+import { cn, useGlobalDirtyState } from '@tryghost/shade/utils';
+import { DirtyConfirmDialog, useDirtyConfirmation } from '@tryghost/shade/patterns';
 import { useLocation, useNavigate } from '@tryghost/admin-x-framework';
 import { navigateEmberBillingSubRoute } from '@/ember-bridge';
-import { useSettingsReturnToState } from '@/layout/settings-navigation';
 import { useEmberOwnedRouteMatcher } from '@/routes';
 import { getSearchDestination } from './search-destination';
 import type { SearchResult } from './searchables';
 import { useGlobalSearch } from './use-global-search';
+import { useSettingsReturnToState } from '@/layout/settings-navigation';
 
 function escapeRegExp(text: string) {
   return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -82,69 +83,81 @@ function GlobalSearchPanel({ onClose }: { onClose: () => void }) {
   const { results, isLoading } = useGlobalSearch(term);
   const navigate = useNavigate();
   const { pathname } = useLocation();
-  const isEmberOwned = useEmberOwnedRouteMatcher();
   const settingsReturnToState = useSettingsReturnToState();
+  const isEmberOwned = useEmberOwnedRouteMatcher();
+  const { isDirty } = useGlobalDirtyState();
+  const { confirm, dialogProps } = useDirtyConfirmation();
+  const isSettings = /^\/settings(?:\/|$)/.test(pathname);
 
   const openResult = (result: SearchResult) => {
     const destination = getSearchDestination(result);
-    onClose();
-
     if (!destination) {
+      onClose();
       return;
     }
 
-    if (
-      destination.billingSubRoute &&
-      pathname === destination.path &&
-      isEmberOwned(destination.path) &&
-      navigateEmberBillingSubRoute(destination.billingSubRoute)
-    ) {
-      return;
-    }
+    const crossApp = isEmberOwned(destination.path);
+    const opensSettings = /^\/settings(?:[/?#]|$)/.test(destination.path);
+    // Search exits bypass Settings' own controls and its history-only blocker.
+    // Keep the search mounted while confirming so Stay preserves the query.
+    confirm(isSettings && isDirty && !opensSettings, () => {
+      onClose();
+      if (
+        destination.billingSubRoute &&
+        pathname === destination.path &&
+        crossApp &&
+        navigateEmberBillingSubRoute(destination.billingSubRoute)
+      ) {
+        return;
+      }
 
-    navigate(destination.path, {
-      crossApp: isEmberOwned(destination.path),
-      state: /^\/settings(?:[/?#]|$)/.test(destination.path) ? settingsReturnToState : undefined,
+      navigate(destination.path, {
+        crossApp,
+        state: opensSettings ? settingsReturnToState : undefined,
+      });
     });
   };
 
   const hasTerm = term.trim() !== '';
 
   return (
-    <Command
-      className={cn('sm:rounded-lg', !hasTerm && '[&_[cmdk-input-wrapper]]:border-b-0')}
-      shouldFilter={false}
-    >
-      <CommandInput placeholder="Search site" value={term} onValueChange={setTerm} />
-      <CommandList className={cn('max-h-[50vh]', !hasTerm && 'hidden')}>
-        {results.map((group, index) => (
-          <Fragment key={group.groupKey ?? group.groupName}>
-            {index > 0 && <CommandSeparator alwaysRender />}
-            <CommandGroup
-              className="[&_[cmdk-group-heading]]:tracking-wide [&_[cmdk-group-heading]]:uppercase"
-              heading={group.groupName}
-            >
-              {group.options.map((result) => (
-                <CommandItem
-                  key={result.id}
-                  className="justify-between"
-                  value={result.id}
-                  onSelect={() => openResult(result)}
-                >
-                  <span className="truncate">
-                    <HighlightedText term={term} text={result.title} />
-                  </span>
-                  <StatusBadge status={result.status} />
-                </CommandItem>
-              ))}
-            </CommandGroup>
-          </Fragment>
-        ))}
-        {hasTerm && results.length === 0 && (
-          <CommandEmpty>{isLoading ? 'Loading' : 'No results found'}</CommandEmpty>
-        )}
-      </CommandList>
-    </Command>
+    <>
+      <Command
+        className={cn('sm:rounded-lg', !hasTerm && '[&_[cmdk-input-wrapper]]:border-b-0')}
+        shouldFilter={false}
+      >
+        <CommandInput placeholder="Search site" value={term} onValueChange={setTerm} />
+        <CommandList className={cn('max-h-[50vh]', !hasTerm && 'hidden')}>
+          {results.map((group, index) => (
+            <Fragment key={group.groupKey ?? group.groupName}>
+              {index > 0 && <CommandSeparator alwaysRender />}
+              <CommandGroup
+                className="[&_[cmdk-group-heading]]:tracking-wide [&_[cmdk-group-heading]]:uppercase"
+                heading={group.groupName}
+              >
+                {group.options.map((result) => (
+                  <CommandItem
+                    key={result.id}
+                    className="justify-between"
+                    value={result.id}
+                    onSelect={() => openResult(result)}
+                  >
+                    <span className="truncate">
+                      <HighlightedText term={term} text={result.title} />
+                    </span>
+                    <StatusBadge status={result.status} />
+                  </CommandItem>
+                ))}
+              </CommandGroup>
+            </Fragment>
+          ))}
+          {hasTerm && results.length === 0 && (
+            <CommandEmpty>{isLoading ? 'Loading' : 'No results found'}</CommandEmpty>
+          )}
+        </CommandList>
+      </Command>
+      <DirtyConfirmDialog {...dialogProps} />
+    </>
   );
 }
 
