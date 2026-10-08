@@ -111,6 +111,8 @@ import {
   settingsTemplateSelect,
   settingsTemplateSlugMatch,
   settingsTiersError,
+  settingsTierChip,
+  settingsTiersList,
   settingsTiersPicker,
   settingsUrlPreview,
   settingsVisibilitySelect,
@@ -287,8 +289,20 @@ export const editorScreen = {
   settingsVisibilityOption: (label: string) =>
     page.getByRole('listbox').getByRole('option', { name: label, exact: true }),
   settingsTiers: () => page.getByTestId(settingsTiersPicker),
-  settingsTier: (name: string) =>
-    page.getByTestId(settingsTiersPicker).getByRole('checkbox', { name }),
+  settingsTiersInput: () => page.getByTestId(settingsTiersPicker).getByRole('combobox'),
+  /** A tier's row in the open list; `aria-selected` says whether the post grants it. */
+  settingsTierOption: (name: string) =>
+    page.getByTestId(settingsTiersList).getByRole('option', { name, exact: true }),
+  settingsTierGroup: (name: string) =>
+    page.getByTestId(settingsTiersList).getByRole('group', { name, exact: true }),
+  settingsTierChips: () => page.getByTestId(settingsTierChip),
+  settingsTierChip: (name: string) =>
+    page.getByTestId(settingsTiersPicker).getByRole('button', { name: `Remove ${name}` }),
+  /** Opens the tier list and picks or unpicks a tier in it. */
+  toggleSettingsTier: async (name: string) => {
+    await page.getByTestId(settingsTiersPicker).getByRole('combobox').click();
+    await page.getByTestId(settingsTiersList).getByRole('option', { name, exact: true }).click();
+  },
   settingsTiersError: () => page.getByTestId(settingsTiersError),
   settingsTagsField: () => page.getByTestId(settingsTagsField),
   settingsTagsInput: () => page.getByTestId(settingsTagsInput),
