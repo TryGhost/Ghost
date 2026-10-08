@@ -60,7 +60,6 @@ import {
   postHistoryPreviewTitle,
   postHistoryRestoreConfirm,
   postHistoryRevisionList,
-  postSettingsFooter,
   postSettingsSidebar,
   postsBackLink,
   removeFacebookImageButton,
@@ -253,8 +252,6 @@ export const editorScreen = {
 
   settingsToggle: () => page.getByTestId(settingsMenuToggle),
   settingsSidebar: () => page.getByTestId(postSettingsSidebar),
-  /** The strip pinned below the section list that holds Delete. */
-  settingsFooter: () => page.getByTestId(postSettingsFooter),
   /** The settings fields scroll independently of their fixed heading. */
   settingsScrollPane: (): HTMLElement => {
     const sidebar = page.getByTestId(postSettingsSidebar).element();

@@ -21,7 +21,6 @@ import {
   type User,
 } from '@tryghost/admin-x-framework/api/users';
 import {
-  postSettingsFooter,
   postSettingsSidebar,
   settingsExcerptInput,
   settingsFeaturedToggle,
@@ -187,6 +186,14 @@ export function PostSettingsSidebar({
     'code-injection': <MemoCodeInjectionSection postType={postType} session={session} />,
     'meta-data': <MemoMetaDataSection session={session} siteUrl={siteUrl} />,
     'keyboard-shortcuts': <MemoKeyboardShortcutsSection />,
+    // The list's last entry, pushed to the panel's foot while the list is
+    // shorter than the panel. A post with nothing to delete yet gets nothing,
+    // not an empty wrapper.
+    delete: isNewPost(session) ? null : (
+      <Box className="mt-auto">
+        <MemoDeleteSection postType={postType} session={session} />
+      </Box>
+    ),
     'x-card': (
       <MemoSocialCardSection
         cardConfig={cardConfig}
@@ -231,15 +238,6 @@ export function PostSettingsSidebar({
       {open && open.id !== id ? null : sections[id]}
     </Fragment>
   ));
-  // Delete is pinned below the list rather than ending it. Like the heading, it
-  // makes way for an open pane, and a post with nothing to delete yet gets no
-  // footer at all rather than an empty strip.
-  const footer =
-    open || isNewPost(session) ? null : (
-      <Box className="shrink-0 border-t border-border" data-testid={postSettingsFooter}>
-        <MemoDeleteSection postType={postType} session={session} />
-      </Box>
-    );
 
   return (
     <SubviewContext.Provider value={subviews}>
@@ -279,7 +277,6 @@ export function PostSettingsSidebar({
             >
               {content}
             </Stack>
-            {footer}
           </Stack>
         </aside>
       </Box>

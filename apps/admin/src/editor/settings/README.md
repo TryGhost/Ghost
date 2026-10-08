@@ -37,13 +37,11 @@ the same message rather than sent and answered with a server error.
 
 ## Sections
 
-`SETTINGS_SECTION_ORDER` in `sections.ts` is the running order of the panel's
-scrolling list, and the sidebar frame renders one entry per id in that order.
-The frame's own `sections` map is where a section is built and where its role
-gate lives: every role that can open the editor can open the sidebar, and a
-section the writer's role cannot write is the entry the map leaves out. The
-prose below follows that order. [Delete](#delete) is not in the list: it sits
-in the panel's footer, below it.
+`SETTINGS_SECTION_ORDER` in `sections.ts` is the full running order, and the
+sidebar frame renders one entry per id in that order. The frame's own `sections`
+map is where a section is built and where its role gate lives: every role that
+can open the editor can open the sidebar, and a section the writer's role cannot
+write is the entry the map leaves out. The prose below follows that order.
 
 ## Subviews
 
@@ -55,8 +53,7 @@ back-button label for the pane, and the pane's fields as children.
 runs full-bleed. Every pane keeps the same width as the section list.
 
 Only one pane is open at a time. While it is, the panel shows that section
-alone: its heading, the other sections, their rows and the Delete footer are all
-out of the way,
+alone: its heading, the other sections and their rows are all out of the way,
 and the back button or Escape brings them back. The pane's title is the panel's
 heading and its accessible name. Both the main panel and each pane keep their
 header outside the scrolling fields, so scroll bounce cannot move the title.
@@ -452,10 +449,12 @@ an ID, so the button appears only once the post exists, and every role that can
 open the editor is offered it — which posts each of them may actually delete is
 the API's answer, not the panel's.
 
-The button is pinned to the foot of the panel, below the section list and
-outside its scroll, so it sits at the bottom however short the list is and stays
-in view while a long one scrolls. Before the first save there is no footer at
-all, and an open pane hides it along with the panel's heading.
+The button is the last thing in the section list. When the list is shorter
+than the panel it sits at the panel's foot rather than straight after the last
+section; when the list is longer, it follows the last section and is reached by
+scrolling to the end. Before the first save the list ends at the last section,
+with no space held for the button, and an open pane hides it along with the
+other sections.
 
 Confirming names the post and says the deletion is permanent. Cancelling returns
 focus to the Delete button. An expired session asks the writer to sign in, in
