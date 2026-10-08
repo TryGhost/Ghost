@@ -11,6 +11,7 @@ describe('StatsService', function () {
   it.each([
     { webAnalytics: false, configured: true, initialized: true },
     { webAnalytics: false, configured: false, initialized: false },
+    { webAnalytics: true, configured: false, initialized: true },
     { webAnalytics: true, configured: true, initialized: true },
   ])(
     'initializes Tinybird for the enabled analytics source: %j',
