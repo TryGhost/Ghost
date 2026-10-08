@@ -32,13 +32,15 @@ export function init(): void {
     stripeConnected: () => require('../stripe').api.configured,
     readTier: (id) => require('../tiers').api.read(id),
     // The same checkout a signup by someone who isn't a member yet gets, in the given design.
-    createPreviewLink: ({ tier, cadence, design, returnUrl }) =>
+    createPreviewLink: ({ tier, cadence, design, returnUrl, expiresInSeconds }) =>
       require('../members').api.paymentsService.getPaymentLink({
         tier,
         cadence,
         design,
         successUrl: returnUrl,
         cancelUrl: returnUrl,
+        expiresInSeconds,
+        metadata: { ghost_checkout_preview: true },
       }),
     siteUrl: () => urlUtils.urlFor('home', true),
   });

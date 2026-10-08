@@ -2,6 +2,10 @@ import errors from '@tryghost/errors';
 import type { StripeCheckoutDesign } from './models';
 import { CheckoutPreviewInput, parseRequest } from './serializers';
 
+// Stripe refuses a checkout that expires sooner than 30 minutes after it's created. The extra
+// minute keeps a server clock running a little behind Stripe's from going under that.
+const PREVIEW_LIFETIME_SECONDS = 31 * 60;
+
 /** The parts of a tier a preview checks before opening a checkout for it. */
 export interface PreviewableTier {
   type: string;
@@ -11,7 +15,7 @@ export interface PreviewableTier {
 /**
  * What a preview needs from the rest of Ghost. The tier `readTier` returns is the one
  * `createPreviewLink` is given, so the link is built from the whole tier, not just the parts
- * checked here.
+ * checked here. `createPreviewLink` marks the checkout as a preview in Stripe.
  */
 export interface CheckoutPreviewDeps<Tier extends PreviewableTier> {
   stripeConnected: () => boolean;
@@ -21,13 +25,15 @@ export interface CheckoutPreviewDeps<Tier extends PreviewableTier> {
     cadence: 'month' | 'year';
     design: StripeCheckoutDesign | null;
     returnUrl: string;
+    expiresInSeconds: number;
   }) => Promise<string | null>;
   siteUrl: () => string;
 }
 
 /**
  * Opens real Stripe Checkout pages for previewing a design before it is saved. A preview is
- * an ordinary checkout for the tier, so it saves nothing in Ghost.
+ * an ordinary checkout for the tier, so it saves nothing in Ghost, but it can only be paid for
+ * as long as Stripe allows the shortest checkout to last.
  */
 export class CheckoutPreviewService<Tier extends PreviewableTier> {
   private deps: CheckoutPreviewDeps<Tier>;
@@ -57,6 +63,7 @@ export class CheckoutPreviewService<Tier extends PreviewableTier> {
       cadence: request.cadence,
       design: request.design,
       returnUrl: this.deps.siteUrl(),
+      expiresInSeconds: PREVIEW_LIFETIME_SECONDS,
     });
     if (!url) {
       throw new errors.InternalServerError({
