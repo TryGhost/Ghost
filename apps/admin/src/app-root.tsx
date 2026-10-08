@@ -3,13 +3,12 @@ import {
   FrameworkProvider,
   RouterProvider,
   type TopLevelFrameworkProps,
-  useLocation,
 } from '@tryghost/admin-x-framework';
 import { ShadeApp } from '@tryghost/shade/app';
 
 import App from './app.tsx';
 import { installHistoryPopGate } from './hooks/use-history-pop-navigation-guard';
-import { routes, useIsEmberOwnedRoute } from './routes.tsx';
+import { routes } from './routes.tsx';
 import { useThemeContext } from './providers/theme-context';
 import { ThemeProvider } from './providers/theme-provider';
 
@@ -18,15 +17,13 @@ installHistoryPopGate();
 
 function ThemedAdminApp() {
   const { resolvedTheme } = useThemeContext();
-  const { pathname } = useLocation();
-  const isEmberOwnedRoute = useIsEmberOwnedRoute(pathname);
 
   return (
     <ShadeApp
       className="shade-admin"
       darkMode={resolvedTheme === 'dark'}
-      isAdmin7={!isEmberOwnedRoute}
       data-react-admin-mounted
+      isAdmin7
     >
       <App />
     </ShadeApp>

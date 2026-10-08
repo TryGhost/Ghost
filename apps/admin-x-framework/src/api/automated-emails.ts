@@ -54,7 +54,6 @@ export const useAddAutomatedEmail = createMutation<
   body: (automatedEmail) => ({ automated_emails: [automatedEmail] }),
   updateQueries: {
     dataType,
-    emberUpdateType: 'createOrUpdate',
     update: insertToQueryCache('automated_emails'),
   },
 });
@@ -65,7 +64,6 @@ export const useEditAutomatedEmail = createMutation<AutomatedEmailsResponseType,
   body: ({ slug: _slug, ...automatedEmail }) => ({ automated_emails: [automatedEmail] }),
   updateQueries: {
     dataType,
-    emberUpdateType: 'createOrUpdate',
     update: updateQueryCache('automated_emails'),
   },
 });
@@ -85,7 +83,6 @@ export const useEditAutomatedEmailSenders = createMutation<
   body: (payload) => payload,
   updateQueries: {
     dataType,
-    emberUpdateType: 'createOrUpdate',
     update: updateQueryCache('automated_emails'),
   },
 });
@@ -99,7 +96,6 @@ export const useVerifyAutomatedEmailSender = createMutation<
   body: ({ token }) => ({ token }),
   updateQueries: {
     dataType,
-    emberUpdateType: 'createOrUpdate',
     update: updateQueryCache('automated_emails'),
   },
 });

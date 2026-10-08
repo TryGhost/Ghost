@@ -37,13 +37,4 @@ describe('App-wide shortcuts', () => {
 
     expect(currentRoute()).toBe('/site');
   });
-
-  it('leaves the shortcuts to Ember on the screens Ember shows', async () => {
-    await renderAdminApp('/pro');
-    await expect.element(sidebarScreen.shellNav()).toBeVisible();
-
-    expect(globalShortcutsScreen.press('save'), 'save handled').toBe(false);
-    expect(globalShortcutsScreen.press('openSettings'), 'settings handled').toBe(false);
-    expect(currentRoute()).toBe('/pro');
-  });
 });

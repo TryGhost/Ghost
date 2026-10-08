@@ -25,8 +25,6 @@ service before changing it.
 `apps/` contains several types of frontend project:
 
 - `admin/` is the React Admin application.
-- `ember-admin/` is the legacy Ember Admin application. Routes are moving from
-  Ember to React over time.
 - `activitypub/` is a React application included in Admin.
 - `portal/`, `comments-ui/`, `signup-form/`, `sodo-search/`,
   `announcement-bar/`, and `admin-toolbar/` are public apps published to npm

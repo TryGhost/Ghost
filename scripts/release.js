@@ -11,7 +11,6 @@ import { resolveBaseTag } from './lib/resolve-base-tag.js';
 import { readJsonSync, writeJsonSync } from './lib/utils.js';
 
 const GHOST_CORE_PKG = join(ROOT_DIR, 'ghost/core/package.json');
-const GHOST_ADMIN_PKG = join(ROOT_DIR, 'apps/ember-admin/package.json');
 const CASPER_DIR = join(ROOT_DIR, 'ghost/core/content/themes/casper');
 const SOURCE_DIR = join(ROOT_DIR, 'ghost/core/content/themes/source');
 
@@ -466,7 +465,6 @@ async function main() {
   // 4. Bump versions
   logStep(`Bumping version to ${newVersion}`);
   writePkgVersion(GHOST_CORE_PKG, newVersion);
-  writePkgVersion(GHOST_ADMIN_PKG, newVersion);
 
   // 4b. Consume changesets → version the publishable workspace packages
   // (kg-*, packages/*, ...). These changes land in the Ghost release commit
@@ -476,7 +474,7 @@ async function main() {
   applyChangesetVersions();
 
   // 5. Commit and tag
-  // Stage everything: the two Ghost manifests plus whatever `pnpm version -r`
+  // Stage everything: the Ghost manifest plus whatever `pnpm version -r`
   // touched (package.jsons, workspace-range rewrites, removed changesets,
   // pnpm-lock.yaml). Theme submodule bumps are already committed above.
   run('git add -A');
@@ -504,8 +502,7 @@ async function main() {
   const nextRc = `${nextPatch}-rc.0`;
   log(`Next RC: ${nextRc}`);
   writePkgVersion(GHOST_CORE_PKG, nextRc);
-  writePkgVersion(GHOST_ADMIN_PKG, nextRc);
-  run(`git add ${relative(ROOT_DIR, GHOST_CORE_PKG)} ${relative(ROOT_DIR, GHOST_ADMIN_PKG)}`);
+  run(`git add ${relative(ROOT_DIR, GHOST_CORE_PKG)}`);
   run(`git commit -m "Bumped version to ${nextRc}"`);
 
   if (opts.dryRun) {

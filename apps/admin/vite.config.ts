@@ -5,7 +5,6 @@ import svgr from 'vite-plugin-svgr';
 import { sentryVitePlugin } from '@sentry/vite-plugin';
 import tailwindcss from '@tailwindcss/vite';
 
-import { emberAssetsPlugin } from './vite-ember-assets';
 import { ghostBackendProxyPlugin } from './vite-backend-proxy';
 import { sharedDefine, sharedResolve } from './vite.shared';
 
@@ -56,12 +55,11 @@ export default defineConfig(({ command, mode }) => ({
     tailwindcss() as PluginOption,
     svgr(),
     react(),
-    // Unit tests have no Ghost backend or Ember assets. Keep filesystem and
+    // Unit tests have no Ghost backend. Keep filesystem and
     // shipping side effects out of this lane, including Sentry uploads.
     ...(command === 'serve' && mode === 'test'
       ? []
       : [
-          emberAssetsPlugin(),
           ghostBackendProxyPlugin(),
           // Sentry's plugin goes after all others
           sentryDebugIdsPlugin(),

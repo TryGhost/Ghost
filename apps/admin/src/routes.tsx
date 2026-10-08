@@ -1,4 +1,3 @@
-import { useCallback, useEffect } from 'react';
 import {
   type AdminRouteHandle,
   type RouteObject,
@@ -16,13 +15,9 @@ import { FeatureFlagsProvider, routes as activityPubRoutes } from '@tryghost/act
 import { AnalyticsProvider, analyticsRouteChildren } from './analytics/api';
 import MyProfileRedirect from './my-profile-redirect';
 
-// Ember
-import { syncEmberRoutePattern } from './ember-bridge';
 import { BillingRoute, ForceUpgradeGuard } from './billing/api';
 import HomeRedirect from './home-redirect';
-import { EditorGate } from './editor-gate';
-import { lazyRestoreScreen } from './editor/api';
-import { useFlagGatedRouteOwner } from './use-flag-gated-route-owner';
+import { lazyEditorScreen, lazyRestoreScreen } from './editor/api';
 import { type AccessRouteHandle } from './route-access';
 import { RouteAccessGuard } from './route-access-guard';
 import { lazyAutomationEditorScreen, lazyAutomationsScreen } from './automations/api';
@@ -167,21 +162,10 @@ const appRoutes: RouteObject[] = [
   { path: '/posts', lazy: lazyComponent(lazyPostsListRoute) },
   { path: '/pages', lazy: lazyComponent(lazyPagesListRoute) },
   {
-    // Served by React or Ember depending on the `editorReact` Labs flag.
-    //
-    // The editor is a focused writing surface and has always hidden the nav
-    // sidebar. Ember arranges that by setting `ui.isFullScreen` when the
-    // editor route *activates* — but the Ember posts route aborts its
-    // transition to hand off to React, so the editor route never deactivates,
-    // and a second visit is a model change on an already-active route where
-    // `activate()` does not run again. The sidebar came back from the second
-    // post onwards. Deciding it from the route handle makes React the
-    // authority, removes the cross-implementation handshake, and applies to
-    // both sides of the `editorReact` flag.
+    // The editor is a focused writing surface and hides the nav sidebar.
     path: '/editor/*',
-    Component: EditorGate,
-    // EditorGate enforces force upgrade unless Ember owns both the editor and billing
-    handle: { allowInForceUpgrade: true, hideAdminSidebar: true } satisfies AdminRouteHandle,
+    lazy: lazyComponent(lazyEditorScreen),
+    handle: { hideAdminSidebar: true } satisfies AdminRouteHandle,
   },
   { path: '/site', lazy: lazyComponent(lazyViewSiteScreen) },
   { path: '/restore', lazy: lazyComponent(lazyRestoreScreen) },
@@ -194,16 +178,15 @@ const appRoutes: RouteObject[] = [
     } satisfies AdminRouteHandle & AccessRouteHandle,
   },
   {
-    // Served by React or Ember depending on the `billingReact` Labs flag. The
-    // billing app itself stays mounted across routes (see BillingFrame), so
-    // this route only decides access. Reachable in force upgrade: it is the
-    // way out of it.
+    // The billing app itself stays mounted across routes (see BillingFrame),
+    // so this route only decides access. Reachable in force upgrade: it is
+    // the way out of it.
     path: '/pro/*',
     Component: BillingRoute,
     handle: { allowInForceUpgrade: true } satisfies AdminRouteHandle,
   },
   {
-    // 404 catch-all for routes not handled by React or Ember
+    // 404 catch-all
     path: '*',
     Component: NotFound,
   },
@@ -227,37 +210,6 @@ export const routes: RouteObject[] = [
   },
 ];
 
-// Ember's router only learns about a URL change from `hashchange`, which the
-// React router's pushState navigation does not fire, so links into Ember-owned
-// routes must stay native hash anchors. Everything else can be a router link
-// (and so gets router history state, which the unsaved-changes blockers need).
-/** Decides for any path whether Ember owns it, for destinations only known at event time. */
-export function useEmberOwnedRouteMatcher(): (pathname: string) => boolean {
-  const editorOwner = useFlagGatedRouteOwner('editorReact');
-  const billingOwner = useFlagGatedRouteOwner('billingReact');
-
-  return useCallback(
-    (pathname: string) => {
-      const leaf = matchRoutes(routes, pathname)?.at(-1)?.route;
-      if (!leaf) {
-        return true;
-      }
-      if (leaf.Component === EditorGate) {
-        return editorOwner !== 'react';
-      }
-      if (leaf.Component === BillingRoute) {
-        return billingOwner !== 'react';
-      }
-      return false;
-    },
-    [editorOwner, billingOwner],
-  );
-}
-
-export function useIsEmberOwnedRoute(pathname: string): boolean {
-  return useEmberOwnedRouteMatcher()(pathname);
-}
-
 /** The matched route's path pattern, e.g. `/tags/:tagSlug`, never the path's own ids or slugs. */
 function matchedRoutePattern(pathname: string): string {
   let pattern = '';
@@ -270,16 +222,8 @@ function matchedRoutePattern(pathname: string): string {
   return pattern.replace(/\/\/+/g, '/') || '/';
 }
 
-/** The route pattern React is showing, or null while Ember serves the screen. */
-export function useRoutePattern(): string | null {
+/** The route pattern showing. */
+export function useRoutePattern(): string {
   const { pathname } = useLocation();
-  const isEmberOwned = useIsEmberOwnedRoute(pathname);
-  return isEmberOwned ? null : matchedRoutePattern(pathname);
-}
-
-/** Tells Ember which route pattern React is showing, or null while Ember serves the screen. */
-export function useSyncEmberRoutePattern(): void {
-  const routePattern = useRoutePattern();
-
-  useEffect(() => syncEmberRoutePattern(routePattern), [routePattern]);
+  return matchedRoutePattern(pathname);
 }

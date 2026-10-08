@@ -109,7 +109,6 @@ async function renderBilling(
     role = 'Owner',
     hostSettings = {},
     labs = {},
-    billingReact = true,
     appearance,
   }: {
     role?: StaffRoleName;
@@ -117,7 +116,6 @@ async function renderBilling(
     /** Read on every `/config/` request, so a function can change what a refetch returns. */
     hostSettings?: Record<string, unknown> | (() => Record<string, unknown>);
     labs?: Record<string, boolean>;
-    billingReact?: boolean;
   } = {},
 ) {
   const config = configResponse();
@@ -129,7 +127,7 @@ async function renderBilling(
   const hostSettingsNow = typeof hostSettings === 'function' ? hostSettings : () => hostSettings;
 
   await renderAdminApp(path, {
-    labs: { ...labs, billingReact },
+    labs,
     boot: {
       browseConfig: {
         response: () => ({
@@ -670,7 +668,7 @@ describe('Ghost(Pro) billing', () => {
     expect(loads(messages)[0]?.searchParams.has('action')).toBe(false);
   });
 
-  it('holds the Ember editor on billing during a force upgrade', async () => {
+  it('holds the editor on billing during a force upgrade', async () => {
     await fakeFrameOrigin(BILLING_ORIGIN, billingStandIn(READY));
     await renderBilling('/editor/post', {
       role: 'Administrator',
@@ -734,13 +732,5 @@ describe('Ghost(Pro) billing', () => {
     await billingAppSettled(messages);
 
     expect(received(messages, 'query').filter(({ query }) => query === 'routeUpdate')).toEqual([]);
-  });
-
-  it('leaves billing to Ember while the flag is off', async () => {
-    await fakeFrameOrigin(BILLING_ORIGIN, billingStandIn(READY));
-    await renderBilling('/pro', { billingReact: false });
-
-    await expect.element(sidebarScreen.shellNav()).toBeVisible();
-    await expect.element(billingScreen.frame()).not.toBeInTheDocument();
   });
 });

@@ -164,27 +164,7 @@
     // leave the 0.1 line.
     'path-to-regexp',
   ],
-  ignorePaths: [
-    'test',
-    // Freeze the Ember admin app wholesale. `apps/ember-admin` is being replaced by
-    // the React apps in `apps/*`, and its dependency tree is a frozen-as-a-unit
-    // Ember/broccoli stack we deliberately do not upgrade (see
-    // docs/ember-dependency-burden.md). Ignoring the whole directory drops
-    // admin's declared deps from extraction entirely: no update PRs, and they
-    // stop cluttering the Dependency Dashboard's Detected / Abandoned /
-    // Deprecated sections. Because Renovate manages deps per-manifest, anything
-    // admin SHARES with `ghost/core` or `apps/*` is still managed via those
-    // manifests — so in effect only admin-exclusive deps are omitted. This
-    // subsumes the old koenig-editor ignore and the per-package "Disable ember
-    // updates" / "disable css" rules (removed from packageRules below).
-    //
-    // Security note: GitHub Dependabot alerts for admin deps still fire (they
-    // are independent of Renovate) — we lose only Renovate's auto-fix PR. Given
-    // the app is slated for removal, remediate any rare real incident with a
-    // `pnpm overrides` pin. Today's admin-exclusive advisories are all
-    // build-time or verified-not-shipped (see docs/ember-dependency-burden.md).
-    'apps/ember-admin/**',
-  ],
+  ignorePaths: ['test'],
   packageRules: [
     // Auto-generate a changeset when an npm/package.json update (or a pnpm
     // catalog bump — the npm manager handles both) touches a publishable
@@ -271,10 +251,10 @@
       allowedVersions: '<9',
     },
 
-    // Admin's Cmd-K search must match Ember's results, and Ember ships
-    // FlexSearch 0.7; 0.8 changes how titles are tokenized and ranked.
+    // Admin's Cmd-K search is tuned for FlexSearch 0.7; 0.8 changes how
+    // titles are tokenized and ranked.
     {
-      description: 'Cap the catalog flexsearch at 0.7 (matches Ember admin search)',
+      description: 'Cap the catalog flexsearch at 0.7',
       matchDepTypes: ['pnpm.catalog'],
       matchPackageNames: ['flexsearch'],
       allowedVersions: '<0.8',
@@ -612,13 +592,5 @@
       automerge: true,
       automergeType: 'pr',
     },
-
-    // NOTE: the Ember admin app is now frozen wholesale via
-    // `ignorePaths: ghost/admin/**` (above). The former per-package
-    // "Disable ember updates" and "disable css" rules used to live here, but
-    // they only matched ember-*named* and css packages in
-    // ghost/admin/package.json — which let non-ember admin deps (broccoli-*,
-    // liquid-fire, tracked-built-ins, the autoprefixer/postcss tree, etc.)
-    // keep surfacing on the dashboard. The ignorePaths entry supersedes both.
   ],
 }

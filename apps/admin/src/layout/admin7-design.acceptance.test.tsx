@@ -7,7 +7,6 @@ import {
 } from '@test-utils/acceptance';
 
 // React pages use the current design even with older Core responses or stored flag values.
-// Ember-owned routes retain the compatibility appearance.
 it.each<{
   name: string;
   route: string;
@@ -26,19 +25,6 @@ it.each<{
     route: '/members',
     labs: { admin7Pill: true },
     enabled: true,
-  },
-  { name: 'Ember route excluded', route: '/pro/plans', labs: {}, enabled: false },
-  {
-    name: 'Ember editor excluded',
-    route: '/editor/post/new',
-    labs: {},
-    enabled: false,
-  },
-  {
-    name: 'Ember editor excluded with React editor flag disabled',
-    route: '/editor/post/new',
-    labs: { editorReact: false },
-    enabled: false,
   },
   {
     name: 'React editor enabled independently',

@@ -58,7 +58,7 @@ describe('Admin task inputs', () => {
     assert.ok(!target.transitiveTasks.some((task) => task.startsWith('ghost-admin:')));
   });
 
-  it('builds Ember once for normal dev while retaining the React and Portal watchers', async () => {
+  it('runs normal dev with the React and Portal watchers and no Ember tasks', async () => {
     const target = await nxJson<{
       dependsOn: string[];
       transitiveTasks: string[];
@@ -67,7 +67,6 @@ describe('Admin task inputs', () => {
     for (const task of [
       '@tryghost/admin:dev',
       '@tryghost/admin:build:dev',
-      'ghost-admin:build:dev',
       'ghost-monorepo:docker:up',
       'ghost:build:assets',
       '@tryghost/admin-x-framework:dev',
@@ -76,30 +75,7 @@ describe('Admin task inputs', () => {
     ]) {
       assert.ok(tasks.includes(task), task);
     }
-    assert.deepEqual(
-      tasks.filter((task) => task.startsWith('ghost-admin:')),
-      ['ghost-admin:build:dev'],
-    );
-  });
-
-  it('keeps the Ember live-reload workflow available through dev:ember', async () => {
-    const target = await nxJson<{
-      dependsOn: string[];
-      transitiveTasks: string[];
-    }>(['show', 'target', 'ghost-monorepo:docker:dev:ember']);
-    const tasks = [...target.dependsOn, ...target.transitiveTasks];
-    for (const task of [
-      '@tryghost/admin:dev:ember',
-      'ghost-admin:dev',
-      'ghost-monorepo:docker:up',
-      '@tryghost/admin-x-framework:dev',
-      '@tryghost/shade:dev',
-      '@tryghost/portal:dev',
-    ]) {
-      assert.ok(tasks.includes(task), task);
-    }
-    assert.ok(!tasks.includes('ghost-admin:build:dev'));
-    assert.ok(!tasks.includes('ghost-admin:build'));
+    assert.ok(!tasks.some((task) => task.startsWith('ghost-admin:')));
   });
 
   for (const target of ['test:unit', 'test:acceptance', 'test:types']) {
@@ -146,11 +122,10 @@ describe('Admin task inputs', () => {
     }
   });
 
-  it('keeps Ember source in the combined production build inputs', async () => {
+  it('keeps card assets in the production build inputs', async () => {
     const { files } = await inputs('build');
-    assert.ok(files.includes('apps/ember-admin/app/routes/posts.js'));
-    assert.ok(files.includes('apps/ember-admin/app/styles/components/modals.css'));
     assert.ok(files.includes('ghost/core/core/frontend/src/cards/js/video.js'));
+    assert.ok(!files.some((file) => file.startsWith('apps/ember-admin/')));
   });
 
   it('runs the test lanes without Ember builds and caches the acceptance report', async () => {
@@ -188,11 +163,7 @@ describe('Admin task inputs', () => {
         'inputs',
         `@internal/scripts:${target}`,
       ]);
-      for (const file of [
-        'apps/admin/package.json',
-        'apps/ember-admin/package.json',
-        '.github/workflows/ci.yml',
-      ]) {
+      for (const file of ['apps/admin/package.json', '.github/workflows/ci.yml']) {
         assert.ok(files.includes(file), `${target}: ${file}`);
         const affected = await nxJson<string[]>([
           'show',

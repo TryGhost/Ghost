@@ -13,9 +13,7 @@ import {
   DialogTitle,
 } from '@tryghost/shade/components';
 import { cn } from '@tryghost/shade/utils';
-import { useLocation, useNavigate } from '@tryghost/admin-x-framework';
-import { navigateEmberBillingSubRoute } from '@/ember-bridge';
-import { useEmberOwnedRouteMatcher } from '@/routes';
+import { useNavigate } from '@tryghost/admin-x-framework';
 import { getSearchDestination } from './search-destination';
 import type { SearchResult } from './searchables';
 import { useGlobalSearch } from './use-global-search';
@@ -80,27 +78,14 @@ function GlobalSearchPanel({ onClose }: { onClose: () => void }) {
   const [term, setTerm] = useState('');
   const { results, isLoading } = useGlobalSearch(term);
   const navigate = useNavigate();
-  const { pathname } = useLocation();
-  const isEmberOwned = useEmberOwnedRouteMatcher();
 
   const openResult = (result: SearchResult) => {
     const destination = getSearchDestination(result);
     onClose();
 
-    if (!destination) {
-      return;
+    if (destination) {
+      navigate(destination.path);
     }
-
-    if (
-      destination.billingSubRoute &&
-      pathname === destination.path &&
-      isEmberOwned(destination.path) &&
-      navigateEmberBillingSubRoute(destination.billingSubRoute)
-    ) {
-      return;
-    }
-
-    navigate(destination.path, { crossApp: isEmberOwned(destination.path) });
   };
 
   const hasTerm = term.trim() !== '';

@@ -2,7 +2,6 @@ const debug = require('@tryghost/debug')('web:admin:app');
 const path = require('path');
 const express = require('../../../shared/express');
 const config = require('../../../shared/config');
-const urlUtils = require('../../../shared/url-utils').default;
 const shared = require('../shared');
 const errorHandler = require('@tryghost/mw-error-handler');
 const sentry = require('../../../shared/sentry');
@@ -58,13 +57,6 @@ module.exports = function setupAdminApp() {
     },
     serveStatic(path.join(config.getContentPath('public'), 'admin-auth')),
   );
-
-  // Ember CLI's live-reload script
-  if (config.get('env') === 'development') {
-    adminApp.get('/ember-cli-live-reload.js', function emberLiveReload(req, res) {
-      res.redirect(`http://localhost:4200${urlUtils.getSubdir()}/ghost/ember-cli-live-reload.js`);
-    });
-  }
 
   // Force SSL if required
   // must happen AFTER asset loading and BEFORE routing

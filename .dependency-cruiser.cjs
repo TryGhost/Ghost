@@ -205,7 +205,7 @@ module.exports = {
         'The admin shell (top-level files in apps/admin/src plus its non-domain support folders) may import a domain only through its api.ts. Same matching notes as admin-domains-cross-via-api-only. Test files are exempt.',
       severity: 'error',
       from: {
-        path: '^apps/admin/src/(?:(?:layout|hooks|providers|ember-bridge|utils|schemas)/.+|[^/]+\\.(?:ts|tsx))$',
+        path: '^apps/admin/src/(?:(?:layout|hooks|providers|utils|schemas)/.+|[^/]+\\.(?:ts|tsx))$',
         pathNot: ['\\.test\\.(ts|tsx)$'],
       },
       to: {

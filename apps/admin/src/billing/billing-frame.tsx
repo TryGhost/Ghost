@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
+import { captureException } from '@sentry/react';
 import { useLocation, useNavigate } from '@tryghost/admin-x-framework';
 import { type ConfigResponseType, useBrowseConfig } from '@tryghost/admin-x-framework/api/config';
 import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
@@ -11,14 +12,8 @@ import { useFeatureFlag, useFetchApi } from '@tryghost/admin-x-framework/hooks';
 import { EmptyIndicator, LoadingIndicator } from '@tryghost/shade/components';
 import { LucideIcon, cn } from '@tryghost/shade/utils';
 import type { AlertsStore } from '@/alerts';
-import {
-  type SubscriptionState,
-  applyEmberBillingSubscriptionUpdate,
-  reportEmberBillingLoadFailure,
-} from '@/ember-bridge';
 import { useThemeContext } from '@/providers/theme-context';
-import { useFlagGatedRouteOwner } from '@/use-flag-gated-route-owner';
-import { BillingAppConnection } from './billing-app-connection';
+import { type BillingAppLoadFailureReport, BillingAppConnection } from './billing-app-connection';
 import { useBillingScreenOpen } from './billing-screen';
 import {
   type BillingAppMessage,
@@ -39,14 +34,13 @@ import {
   takePayNowReturnRoute,
 } from './billing-protocol';
 import {
-  BILLING_REACT_FLAG,
+  type SubscriptionState,
   setBillingSubscriptionState,
   useForceUpgrade,
 } from './subscription-status';
 
 interface BillingFrameProps {
   alerts: AlertsStore;
-  isEmberOwned: (pathname: string) => boolean;
 }
 
 interface IdentitiesResponse {
@@ -58,28 +52,36 @@ function showAlert(alerts: AlertsStore, key: string, type: string, html: string)
   alerts.show({ type, key, message: { html } });
 }
 
+function reportBillingLoadFailure({ billingMonitor, tags }: BillingAppLoadFailureReport) {
+  captureException('Billing app failed to become ready', {
+    level: 'warning',
+    fingerprint: [
+      'billing-app-load-failure',
+      String(billingMonitor.document_visibility_state),
+      String(billingMonitor.attempts),
+    ],
+    contexts: { ghost: { billing_monitor: billingMonitor } },
+    tags,
+  });
+}
+
 /**
  * The Ghost(Pro) billing app, mounted on every Admin page of a billing-enabled
- * site while React owns billing: hidden, it still reports subscription state
- * (trial banner, force upgrade, billing alerts); on `/pro/*` it is the screen.
+ * site: hidden, it still reports subscription state (trial banner, force
+ * upgrade, billing alerts); on `/pro/*` it is the screen.
  */
 export function BillingFrame(props: BillingFrameProps) {
-  const owner = useFlagGatedRouteOwner(BILLING_REACT_FLAG);
   const { data: config } = useBrowseConfig();
   const billing = config?.config.hostSettings?.billing;
 
-  if (owner !== 'react' || !billing?.enabled || !billing.url) {
+  if (!billing?.enabled || !billing.url) {
     return null;
   }
 
   return <BillingAppFrame key={billing.url} billingUrl={billing.url} {...props} />;
 }
 
-function BillingAppFrame({
-  alerts,
-  billingUrl,
-  isEmberOwned,
-}: BillingFrameProps & { billingUrl: string }) {
+function BillingAppFrame({ alerts, billingUrl }: BillingFrameProps & { billingUrl: string }) {
   const location = useLocation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -110,7 +112,7 @@ function BillingAppFrame({
           isForceUpgrade: forceUpgradeRef.current === true,
           routeName: billingSubRoute(locationRef.current.pathname) ? 'pro.pro-sub' : 'pro.index',
         }),
-        onLoadFailure: reportEmberBillingLoadFailure,
+        onLoadFailure: reportBillingLoadFailure,
       }),
   );
   const { loaded, failed } = useSyncExternalStore(connection.subscribe, connection.getSnapshot);
@@ -141,7 +143,7 @@ function BillingAppFrame({
     connection.post({ query: 'themeUpdate', response: resolvedTheme });
   }, [connection, loaded, resolvedTheme]);
 
-  // Another owner (or none) after this frame leaves must not inherit its reports
+  // A frame mounted after this one leaves must not inherit its reports
   useEffect(() => {
     mountedRef.current = true;
     return () => {
@@ -238,7 +240,7 @@ function BillingAppFrame({
       // page) the overview is the fallback; never history.back(), whose
       // previous entry can lie outside Admin
       const returnRoute = takePayNowReturnRoute() ?? billingAdminPath('/');
-      navigate(returnRoute, { crossApp: isEmberOwned(returnRoute) });
+      navigate(returnRoute);
       return;
     }
 
@@ -252,20 +254,14 @@ function BillingAppFrame({
     message: BillingAppMessage,
     subscription: NonNullable<SubscriptionState['subscription']>,
   ) => {
-    // As Ember's billing iframe does: listeners and alerts wait for the plan's
-    // fresh config, so a changed dunning block lands with the subscription
+    // Listeners and alerts wait for the plan's fresh config, so a changed
+    // dunning block lands with the subscription
     void queryClient.refetchQueries({ queryKey: ['SettingsResponseType'] }).catch(() => {});
     latestReportRef.current += 1;
     const report = latestReportRef.current;
-    await Promise.all([
-      queryClient.refetchQueries({ queryKey: ['ConfigResponseType'] }).catch(() => {}),
-      // Ember's limits failing to reload must not hold back React's state
-      applyEmberBillingSubscriptionUpdate({
-        subscription,
-      }).catch(() => {}),
-    ]);
+    await queryClient.refetchQueries({ queryKey: ['ConfigResponseType'] }).catch(() => {});
 
-    // A newer report or another owner has taken over while this one waited
+    // A newer report has arrived or the frame left while this one waited
     if (!mountedRef.current || report !== latestReportRef.current) {
       return;
     }

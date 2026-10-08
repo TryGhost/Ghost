@@ -4,7 +4,6 @@ import {
   type AdminThemeMode,
   type ResolvedAdminTheme,
 } from '@tryghost/admin-x-framework/utils/admin-theme';
-import { connectEmberAdminTheme } from '@/ember-bridge';
 import { useEditUserPreferences, useUserPreferences } from '@/hooks/user-preferences';
 
 export type ThemeMode = AdminThemeMode;
@@ -28,15 +27,8 @@ export function useTheme() {
   useEffect(() => {
     const nextController = createAdminThemeController(setResolvedTheme);
     setController(nextController);
-    const disconnect = connectEmberAdminTheme((adapter) => {
-      void nextController.setAdapter(adapter).catch((error: unknown) => {
-        // eslint-disable-next-line no-console
-        console.error('[Theme] Failed to load admin theme stylesheet:', error);
-      });
-    });
     return () => {
       nextController.destroy();
-      disconnect();
     };
   }, []);
 

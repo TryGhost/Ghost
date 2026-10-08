@@ -143,7 +143,6 @@ Caddyfile
 /test-results
 
 # Admin
-/apps/ember-admin/dist
 /apps/admin/test-results/
 
 # Admin Toolbar

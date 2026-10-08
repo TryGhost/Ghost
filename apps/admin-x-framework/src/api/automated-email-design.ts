@@ -47,7 +47,6 @@ export const useEditAutomatedEmailDesign = createMutation<
   path: () => '/automated_emails/design/',
   body: (design) => ({ automated_email_design: [design] }),
   updateQueries: {
-    emberUpdateType: 'skip',
     dataType,
     update: (newData) => newData,
   },

@@ -4,7 +4,6 @@ import {
   type Breadcrumb,
   type BrowserOptions,
   type Event,
-  type EventHint,
 } from '@sentry/react';
 import { loadedKoenigVersion } from '@/settings/components/koenig-loader';
 
@@ -49,13 +48,9 @@ export function getSentryConfig({
       /Load failed/,
       /The operation was aborted./,
 
-      // Ember-only; remove with Ember (https://github.com/emberjs/ember.js/issues/12505)
-      /^TransitionAborted$/,
       // Harmless loop warnings, mostly from extensions and embedded content
       /^ResizeObserver loop completed with undelivered notifications/,
       /^ResizeObserver loop limit exceeded/,
-      // Ember-only; remove with Ember (ember-concurrency cancelation rejections)
-      'TaskCancelation',
     ],
     integrations: (defaultIntegrations) => [
       // Tests send identical events back to back
@@ -98,13 +93,7 @@ export function beforeBreadcrumb(breadcrumb: Breadcrumb): Breadcrumb | null {
   return breadcrumb;
 }
 
-interface EmberAjaxPayloadError {
-  type?: string;
-  context?: string;
-  message?: string;
-}
-
-export function beforeSend(event: Event, hint?: EventHint): Event | null {
+export function beforeSend(event: Event): Event | null {
   try {
     event.contexts = event.contexts || {};
     event.tags = event.tags || {};
@@ -132,26 +121,6 @@ export function beforeSend(event: Event, hint?: EventHint): Event | null {
       if (version) {
         event.contexts.koenig = { version };
       }
-    }
-
-    // Ember-only; remove with Ember (ember-ajax errors carry the API error in `payload.errors`)
-    const originalException = hint?.originalException as
-      | { payload?: { errors?: unknown } }
-      | null
-      | undefined;
-    const ajaxErrors = originalException?.payload?.errors;
-    if (Array.isArray(ajaxErrors) && ajaxErrors.length) {
-      if (firstException) {
-        const error = ajaxErrors[0] as EmberAjaxPayloadError;
-        firstException.type = `${error.type}: ${error.context}`;
-        firstException.value = error.message;
-        Object.assign(firstException, { context: error.context });
-      }
-    } else {
-      delete event.contexts.ajax;
-      delete event.tags.ajax_status;
-      delete event.tags.ajax_method;
-      delete event.tags.ajax_url;
     }
 
     return event;

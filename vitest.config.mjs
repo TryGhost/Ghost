@@ -6,9 +6,8 @@ import { defineConfig } from 'vitest/config';
 // keeps its own config (environment, setup, pool); scope to one with a path
 // filter, e.g. `pnpm test:watch apps/admin`.
 //
-// Not included: ghost-admin (Ember Mocha, pending the Ember retirement).
-// signup-form has no Vitest unit tests (its
-// test:unit is a build; test/unit holds only an empty placeholder).
+// Not included: signup-form has no Vitest unit tests (its test:unit is a
+// build; test/unit holds only an empty placeholder).
 export default defineConfig({
   test: {
     projects: ['ghost/core', 'packages/**', '!packages/_template', 'apps/*', '!apps/signup-form'],
