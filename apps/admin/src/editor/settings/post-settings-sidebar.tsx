@@ -277,7 +277,7 @@ export function PostSettingsSidebar({
         <aside
           ref={asideRef}
           aria-label={open?.title ?? panelLabel}
-          className="my-2 mr-2 h-[calc(100%-var(--spacing)*4)] w-[calc(var(--editor-settings-width)-var(--spacing)*2)] overflow-hidden rounded-xl border border-border bg-sidebar"
+          className="my-2 mr-2 h-[calc(100%-var(--spacing)*4)] w-[calc(var(--editor-settings-width)-var(--spacing)*2)] overflow-hidden rounded-xl border border-border bg-sidebar max-[500px]:m-0 max-[500px]:h-full max-[500px]:w-(--editor-settings-width) max-[500px]:rounded-none max-[500px]:border-0"
           data-testid={postSettingsSidebar}
         >
           <Stack
@@ -286,7 +286,12 @@ export function PostSettingsSidebar({
           >
             {open ? null : (
               <Box className="z-10 shrink-0 bg-sidebar">
-                <Inline align="center" className="px-4 py-3" gap="sm" justify="between">
+                <Inline
+                  align="center"
+                  className="px-4 py-3 max-[500px]:px-3"
+                  gap="sm"
+                  justify="between"
+                >
                   <Text as="h2" className="pl-1" size="lg" weight="semibold">
                     {panelLabel}
                   </Text>

@@ -172,7 +172,7 @@ function StatusBody({
       );
     case 'scheduled':
       return (
-        <>
+        <span className="text-state-success">
           Scheduled
           {isHovered && (
             <>
@@ -186,7 +186,7 @@ function StatusBody({
               />
             </>
           )}
-        </>
+        </span>
       );
     default: {
       const published = view.url ? (

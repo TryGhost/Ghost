@@ -549,7 +549,7 @@ export function PostEditor({
         </Stack>
       </div>
       <Inline
-        className="absolute right-[calc(var(--spacing)*(4+2*var(--editor-settings-progress,0)))] bottom-3 z-20 editor-settings-motion-[right]"
+        className="absolute right-[calc(var(--spacing)*(4+2*var(--editor-settings-progress,0)))] bottom-3 z-20 editor-settings-motion-[right] max-[500px]:right-3"
         gap="sm"
       >
         {!isKeyboardOpen && (

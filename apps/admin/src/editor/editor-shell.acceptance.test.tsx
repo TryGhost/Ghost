@@ -459,9 +459,12 @@ describe('Floating editor shell', () => {
       const toggle = editorScreen.settingsToggle().element().getBoundingClientRect();
       expect(help.height).toBe(back.getBoundingClientRect().height);
       expect(window.innerHeight - help.bottom).toBe(12);
-      expect(back.getBoundingClientRect().top).toBe(21);
-      expect(window.innerWidth - help.right).toBe(16);
-      expect(window.innerWidth - toggle.right).toBe(25);
+      expect(back.getBoundingClientRect().top).toBe(12);
+      expect(window.innerWidth - help.right).toBe(12);
+      expect(window.innerWidth - toggle.right).toBe(12);
+      // Below 500px the back link is just its arrow, still named for where it goes.
+      expect(back.textContent?.trim()).toBe('Posts');
+      expect(back.getBoundingClientRect().width).toBe(toggle.width);
 
       const before = positions('post');
       const pane = editorScreen.scrollPane();
@@ -474,9 +477,14 @@ describe('Floating editor shell', () => {
       await expect.element(editorScreen.settingsSidebar()).toBeVisible();
       await expect
         .poll(() => editorScreen.settingsSidebar().element().getBoundingClientRect().right)
-        .toBe(window.innerWidth - 8);
+        .toBe(window.innerWidth);
       expect(editorScreen.root().element().getBoundingClientRect().width).toBe(documentWidth);
-      expect(editorScreen.settingsSidebar().element().getBoundingClientRect().top).toBe(8);
+      // Edge to edge: no inset, corners or border below 500px.
+      const sidebarStyle = getComputedStyle(editorScreen.settingsSidebar().element());
+      expect(editorScreen.settingsSidebar().element().getBoundingClientRect().left).toBe(0);
+      expect(editorScreen.settingsSidebar().element().getBoundingClientRect().top).toBe(0);
+      expect(sidebarStyle.borderTopWidth).toBe('0px');
+      expect(sidebarStyle.borderTopLeftRadius).toBe('0px');
       expect(
         editorScreen.settingsSidebar().element().contains(editorScreen.settingsToggle().element()),
       ).toBe(false);

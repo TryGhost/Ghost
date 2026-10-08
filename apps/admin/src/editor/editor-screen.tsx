@@ -107,11 +107,11 @@ function EditorHeader({
   return (
     <Grid
       align="start"
-      className="grid-cols-[auto_minmax(0,1fr)] pt-[calc(var(--spacing)*5+1px)] pr-[calc(var(--spacing)*(4+2*var(--editor-settings-progress,0)))] pb-3 pl-4 editor-settings-motion-[padding-right] sm:grid-cols-[auto_minmax(0,1fr)_auto] [&_a]:pointer-events-auto [&_button]:pointer-events-auto"
+      className="grid-cols-[auto_minmax(0,1fr)] pt-[calc(var(--spacing)*5+1px)] pr-[calc(var(--spacing)*(4+2*var(--editor-settings-progress,0)))] pb-3 pl-4 editor-settings-motion-[padding-right] max-[500px]:pt-3 max-[500px]:pr-[calc(var(--spacing)*(1+2*var(--editor-settings-progress,0))-1px)] max-[500px]:pl-3 sm:grid-cols-[auto_minmax(0,1fr)_auto] [&_a]:pointer-events-auto [&_button]:pointer-events-auto"
       gap="sm"
     >
       <PageHeader.Action
-        className="bg-background/80 backdrop-blur-sm"
+        className="bg-background/80 backdrop-blur-sm max-[500px]:aspect-square max-[500px]:gap-0 max-[500px]:px-0"
         fallbackSize="sm"
         fallbackVariant="ghost"
         label={backLabel}
@@ -120,12 +120,12 @@ function EditorHeader({
         {analyticsReturn ? (
           <AdminLink to={analyticsReturn}>
             <LucideIcon.ArrowLeft />
-            {backLabel}
+            <span className="max-[500px]:sr-only">{backLabel}</span>
           </AdminLink>
         ) : (
           <AdminLink state={getListReturnNavigationState(listUrl)} to={listUrl}>
             <LucideIcon.ArrowLeft />
-            {backLabel}
+            <span className="max-[500px]:sr-only">{backLabel}</span>
           </AdminLink>
         )}
       </PageHeader.Action>
@@ -469,7 +469,7 @@ function EditorContent({
             </div>
           </Box>
         </Stack>
-        <Box className="absolute top-[calc(var(--spacing)*5+1px)] right-[calc(var(--spacing)*6+1px)] z-40">
+        <Box className="absolute top-[calc(var(--spacing)*5+1px)] right-[calc(var(--spacing)*6+1px)] z-40 max-[500px]:top-3 max-[500px]:right-3">
           {settingsToggle}
         </Box>
         {settingsPresent ? (

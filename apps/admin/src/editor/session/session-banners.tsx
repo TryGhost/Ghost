@@ -109,13 +109,19 @@ function ConflictBanner({
             {!halt && (
               <Button
                 disabled={reloading}
+                size="sm"
                 variant="destructive"
                 onClick={() => (hasUnsavedContent() ? setConfirming(true) : void reload())}
               >
                 Reload
               </Button>
             )}
-            <Button variant="outline" onClick={() => void copyContent()}>
+            <Button
+              className="bg-background"
+              size="sm"
+              variant="outline"
+              onClick={() => void copyContent()}
+            >
               Copy content
             </Button>
           </Inline>

@@ -37,6 +37,13 @@ describe('Banner Component', () => {
     assert.ok(banner.className.includes(expectedClass), `Should have ${expectedClass} class`);
   });
 
+  it('gives the destructive variant a 20% danger border', () => {
+    render(<Banner variant="destructive">Content</Banner>);
+    const banner = screen.getByRole('status');
+
+    assert.ok(banner.className.includes('border-state-danger/20'), 'Should have a 20% border');
+  });
+
   it('applies gradient variant correctly', () => {
     render(<Banner variant="gradient">Content</Banner>);
     const banner = screen.getByRole('status');
