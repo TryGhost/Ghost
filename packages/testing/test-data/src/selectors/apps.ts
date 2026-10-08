@@ -19,6 +19,10 @@ export const appDevelopmentBadge = 'app-development-badge';
 export const accessIndicator = 'access-indicator';
 export const accessItem = 'access-item';
 export const appDetails = 'app-details';
+export const appPage = 'app-page';
+export const appFrame = 'app-frame';
+export const appNotResponding = 'app-not-responding';
+export const appNotInstalled = 'app-not-installed';
 export const appNeedsApproval = 'app-needs-approval';
 export const appHistoryEntry = 'app-history-entry';
 export const appUninstallDialog = 'app-uninstall-dialog';
@@ -33,6 +37,9 @@ export const doneButton = 'Done';
 export const cancelButton = 'Cancel';
 export const uninstallButton = 'Uninstall';
 export const reviewChangesLink = 'Review changes';
+export const reviewChangesButton = 'Review changes';
+export const openButton = 'Open';
+export const detailsMenuItem = 'Details';
 
 // text fragments
 export const emptyStateText = 'No apps yet';

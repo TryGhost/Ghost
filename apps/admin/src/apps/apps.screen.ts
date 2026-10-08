@@ -27,6 +27,10 @@ export const appsScreen = {
   rowActions: (name: string) => page.getByRole('button', { name: `More actions for ${name}` }),
   menuItem: (name: string) => page.getByRole('menuitem', { name }),
   details: () => page.getByTestId(sel.appDetails),
+  appPage: () => page.getByTestId(sel.appPage),
+  frame: () => page.getByTestId(sel.appFrame),
+  notResponding: () => page.getByTestId(sel.appNotResponding),
+  notInstalled: () => page.getByTestId(sel.appNotInstalled),
   needsApproval: () => page.getByTestId(sel.appNeedsApproval),
   historyEntries: () => page.getByTestId(sel.appHistoryEntry),
   uninstallDialog: () => page.getByTestId(sel.appUninstallDialog),
@@ -40,4 +44,6 @@ export const appsScreen = {
   cancelButton: () => button(sel.cancelButton),
   uninstallButton: () => button(sel.uninstallButton),
   reviewChangesLink: () => page.getByRole('link', { name: sel.reviewChangesLink, exact: true }),
+  reviewChangesButton: () => button(sel.reviewChangesButton),
+  openLink: () => page.getByRole('link', { name: sel.openButton, exact: true }),
 };
