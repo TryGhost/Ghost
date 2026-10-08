@@ -32,7 +32,7 @@ export const CurrentInstallationRow = z.object({
     pending_manifest_id: true,
     revision: true,
   }).shape,
-  ...DbAppInstallationManifest.pick({ manifest_url: true, manifest: true, digest: true }).shape,
+  ...DbAppInstallationManifest.pick({ manifest_url: true, manifest: true }).shape,
 });
 
 export type CurrentInstallation = z.output<typeof CurrentInstallationRow>;

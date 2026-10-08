@@ -36,7 +36,7 @@ function reviewed(frame: WriteFrame): { manifestUrl: string; digest: string } {
 /** What approving confirms on top: the revision of the installation the review was shown against. */
 function reviewedChange(frame: WriteFrame) {
   const revision = frame.data.app_installations[0]?.revision;
-  if (typeof revision !== 'number') {
+  if (typeof revision !== 'number' || !Number.isInteger(revision) || revision < 0) {
     throw new errors.ValidationError({
       message: 'Expected the revision of the installation that was reviewed.',
     });

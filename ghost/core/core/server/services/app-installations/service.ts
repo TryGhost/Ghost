@@ -73,11 +73,19 @@ function digestOf(serialisedManifest: string): string {
   return createHash('sha256').update(serialisedManifest).digest('hex');
 }
 
-/** The installation the publisher reviewed is not the one being approved, or has ended. */
-function notTheReviewedInstallation() {
+/** The installation has ended, so there is nothing left to approve for it. */
+function uninstalled() {
   return new errors.ConflictError({
-    message: 'This installation is not the one for the app that was reviewed.',
-    code: 'APP_INSTALLATION_CHANGED',
+    message: 'This app has been uninstalled.',
+    code: 'APP_INSTALLATION_UNINSTALLED',
+  });
+}
+
+/** The reviewed manifest belongs to some other app than the one installed. */
+function forAnotherApp(appId: string) {
+  return new errors.ValidationError({
+    message: `The reviewed manifest is for ${appId}, not the app that is installed.`,
+    code: 'APP_MANIFEST_OTHER_APP',
   });
 }
 
@@ -164,7 +172,11 @@ export class AppInstallationsService {
         context: problem,
       });
     }
-    return new URL(manifestUrl).href;
+    const url = new URL(manifestUrl);
+    // A fragment never reaches the server, so two addresses that differ only there read
+    // the same file: it is no part of the address kept.
+    url.hash = '';
+    return url.href;
   }
 
   /**
@@ -208,23 +220,19 @@ export class AppInstallationsService {
         'installation.revision',
         'approved.manifest_url',
         'approved.manifest',
-        'approved.digest',
       );
     return row ? z.decode(CurrentInstallationRow, row) : undefined;
   }
 
-  private changesFrom(current: CurrentInstallation, loaded: LoadedManifest) {
-    const { changes } = compareManifests(current.manifest, loaded.manifest);
-    const result: AppManifestChange[] = changes.map(({ path, requiresApproval }) => ({
+  private changesFrom(current: CurrentInstallation, loaded: LoadedManifest): AppManifestChange[] {
+    const { changes } = compareManifests(
+      { manifestUrl: current.manifest_url, manifest: current.manifest },
+      { manifestUrl: loaded.manifestUrl, manifest: loaded.manifest },
+    );
+    return changes.map(({ path, requiresApproval }) => ({
       path,
       requires_approval: requiresApproval,
     }));
-    // Where the manifest lives decides what future updates say, so a move needs approval
-    // even when every URL in the manifest stays the same.
-    if (current.manifest_url !== loaded.manifestUrl) {
-      result.unshift({ path: 'manifest_url', requires_approval: true });
-    }
-    return result;
   }
 
   private async previewOf(loaded: LoadedManifest): Promise<AppInstallationPreview> {
@@ -371,7 +379,7 @@ export class AppInstallationsService {
     // An ended installation is never brought back, so there is nothing to fetch for it.
     // The check inside the transaction still covers one ending while the fetch is out.
     if (installation.status === 'uninstalled') {
-      throw notTheReviewedInstallation();
+      throw uninstalled();
     }
     const loaded = await this.fetchReviewed(manifestUrl, digest);
 
@@ -379,9 +387,13 @@ export class AppInstallationsService {
       await trx(INSTALLATIONS).where({ id }).forUpdate().first();
       const current = await this.currentInstallation(loaded.manifest.id, trx);
       // The reviewed manifest must belong to this installation, and it must still be
-      // installed: anything else is not what the publisher was shown.
+      // installed. The app has no current installation, or another one, either because
+      // this one ended while the manifest was being fetched or because the manifest is
+      // for some other app.
       if (!current || current.id !== id) {
-        throw notTheReviewedInstallation();
+        throw installation.app_id === loaded.manifest.id
+          ? uninstalled()
+          : forAnotherApp(loaded.manifest.id);
       }
       if (current.revision !== revision) {
         return { stale: true } as const;
@@ -398,9 +410,21 @@ export class AppInstallationsService {
       const now = toDatabaseDate(new Date());
       // The manifest the publisher just approved. When it is the approved one already,
       // the app had changes waiting and then went back: there is nothing new to keep, only
-      // the pending manifest to let go of.
+      // the pending manifest to let go of. When it is the pending one, that row is the
+      // approved one from now on rather than a copy of it.
       let manifestId = current.manifest_id;
-      if (!sameManifest) {
+      const pending = current.pending_manifest_id
+        ? await trx(MANIFESTS)
+            .where({ id: current.pending_manifest_id })
+            .first('id', 'manifest_url', 'digest')
+        : undefined;
+      if (
+        pending &&
+        pending.manifest_url === loaded.manifestUrl &&
+        pending.digest === loaded.digest
+      ) {
+        manifestId = pending.id;
+      } else if (!sameManifest) {
         manifestId = new ObjectId().toHexString();
         await trx(MANIFESTS).insert({
           id: manifestId,
