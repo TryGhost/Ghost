@@ -415,24 +415,27 @@ export function useEditorSession({
       return 'failed';
     }
 
+    // The writer may leave while the read is out. Whatever it finds no longer
+    // concerns them, and the query belongs to whatever editor opens the post next:
+    // cancelling its opening read would revert it to the copy cached before that read.
+    const left = () => session.getState().kind === 'disposed';
     const { url, queryKey } = editorRead(postType, persistedId);
     let data: EditorReadResponse;
     try {
       data = await fetchApi<EditorReadResponse>(url, EDITOR_REQUEST_OPTIONS);
     } catch (error) {
+      if (left()) {
+        return 'abandoned';
+      }
       return error instanceof APIError && error.response?.status === 404 ? 'gone' : 'failed';
+    }
+    if (left()) {
+      return 'abandoned';
     }
 
     let fresh = recordIn(postType, data);
     if (!fresh) {
       return 'gone';
-    }
-
-    // The writer left while this read was out. The query now belongs to whatever
-    // editor opens the post next, and cancelling its opening read would revert it
-    // to the copy cached before that read.
-    if (session.getState().kind === 'disposed') {
-      return 'abandoned';
     }
 
     // Before adopting: an older refetch must not land after the seed below, and an

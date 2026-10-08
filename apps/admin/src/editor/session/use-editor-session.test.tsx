@@ -398,4 +398,27 @@ describe('useEditorSession reload', () => {
     expect(cancelQueries).not.toHaveBeenCalled();
     expect(setQueryData).not.toHaveBeenCalled();
   });
+
+  type Read = ReturnType<typeof deferred<{ posts: EditorRecord[] }>>;
+  it.each([
+    ['fails', (read: Read) => read.reject(new Error('offline'))],
+    ['finds no post', (read: Read) => read.resolve({ posts: [] })],
+  ])('reports nothing when the reload’s read %s after the writer left', async (_, settle) => {
+    const read = deferred<{ posts: EditorRecord[] }>();
+    stable.fetchApi.mockReturnValueOnce(read.promise);
+    const { result, unmount } = setup();
+
+    let reloading!: Promise<string>;
+    act(() => {
+      reloading = result.current.reload();
+    });
+    unmount();
+    // Disposal follows the unmount by a tick.
+    await new Promise((resolve) => {
+      setTimeout(resolve);
+    });
+    settle(read);
+
+    expect(await reloading).toBe('abandoned');
+  });
 });
