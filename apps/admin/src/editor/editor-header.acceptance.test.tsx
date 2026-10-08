@@ -21,6 +21,7 @@ import {
   post,
   renderAdminApp,
   settingsResponse,
+  settleTransitions,
   staffRole,
   submittedPost,
   withoutAutosave,
@@ -2209,6 +2210,50 @@ describe('Editor header actions on a small screen', () => {
     await expect(publishScreen.root()).toHaveCount(0);
     expect(saveApi.requests).toHaveLength(0);
   });
+
+  it.each([320, 390, 479, 480, 639, 640])(
+    'keeps save toasts clear of editor controls at %ipx after resizing',
+    async (width) => {
+      publishChrome();
+      fakeSavablePost({
+        status: 'published',
+        published_at: '2026-02-01T10:00:00.000Z',
+      });
+      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+      await page.viewport(width, 844);
+
+      await typeIntoBody(' and more');
+      await editorScreen.updateButton().click();
+      const toast = editorScreen.saveToast('Post updated');
+      await expect.element(toast).toBeVisible();
+      await settleTransitions();
+
+      const toastRect = toast.element().getBoundingClientRect();
+      if (width < 480) {
+        expect(toastRect.top).toBeGreaterThan(
+          editorScreen.settingsToggle().element().getBoundingClientRect().bottom,
+        );
+        expect(toastRect.bottom).toBeLessThan(
+          editorScreen.headerActions().element().getBoundingClientRect().top,
+        );
+      } else {
+        expect(toastRect.top).toBeGreaterThan(844 / 2);
+      }
+
+      for (const control of [
+        editorScreen.unpublishButton(),
+        editorScreen.settingsToggle(),
+        editorScreen.backLink('post'),
+      ]) {
+        const element = control.element();
+        const rect = element.getBoundingClientRect();
+        const hit = document.elementFromPoint(rect.x + rect.width / 2, rect.y + rect.height / 2);
+        expect(element.contains(hit)).toBe(true);
+      }
+      await editorScreen.unpublishButton().click();
+      await expect.element(publishScreen.updateFlow()).toBeVisible();
+    },
+  );
 
   it('offers a published post’s Unpublish and an Update that waits for a change', async () => {
     await page.viewport(390, 844);

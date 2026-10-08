@@ -1,7 +1,7 @@
 import { useSyncExternalStore } from 'react';
 
-/** Below Tailwind's `sm` breakpoint, where its `max-sm:` utilities apply. */
-const SMALL_SCREEN = '(width < 40rem)';
+/** Below Shade's `sm` breakpoint, where its `max-sm:` utilities apply. */
+const SMALL_SCREEN = '(width < 480px)';
 
 function subscribe(onChange: () => void) {
   const query = window.matchMedia(SMALL_SCREEN);
