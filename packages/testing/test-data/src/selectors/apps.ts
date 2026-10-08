@@ -21,6 +21,7 @@ export const accessItem = 'access-item';
 export const appDetails = 'app-details';
 export const appNeedsApproval = 'app-needs-approval';
 export const appHistoryEntry = 'app-history-entry';
+export const appHistoryUnavailable = 'app-history-unavailable';
 export const appUninstallDialog = 'app-uninstall-dialog';
 export const appUninstallIntegrationKeyNote = 'app-uninstall-integration-key-note';
 
@@ -32,7 +33,7 @@ export const okButton = 'OK';
 export const doneButton = 'Done';
 export const cancelButton = 'Cancel';
 export const uninstallButton = 'Uninstall';
-export const reviewChangesButton = 'Review changes';
+export const reviewChangesLink = 'Review changes';
 
 // text fragments
 export const emptyStateText = 'No apps yet';

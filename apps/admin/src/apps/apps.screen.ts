@@ -29,6 +29,7 @@ export const appsScreen = {
   details: () => page.getByTestId(sel.appDetails),
   needsApproval: () => page.getByTestId(sel.appNeedsApproval),
   historyEntries: () => page.getByTestId(sel.appHistoryEntry),
+  historyUnavailable: () => page.getByTestId(sel.appHistoryUnavailable),
   uninstallDialog: () => page.getByTestId(sel.appUninstallDialog),
   integrationKeyNote: () => page.getByTestId(sel.appUninstallIntegrationKeyNote),
 
@@ -39,5 +40,5 @@ export const appsScreen = {
   doneButton: () => button(sel.doneButton),
   cancelButton: () => button(sel.cancelButton),
   uninstallButton: () => button(sel.uninstallButton),
-  reviewChangesButton: () => button(sel.reviewChangesButton),
+  reviewChangesLink: () => page.getByRole('link', { name: sel.reviewChangesLink, exact: true }),
 };

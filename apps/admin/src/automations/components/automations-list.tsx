@@ -2,6 +2,7 @@ import AutomationStatusBadge from './automation-status-badge';
 import React from 'react';
 import type { AutomationBrowseItem } from '@tryghost/admin-x-framework/api/automations';
 import { Link } from '@tryghost/admin-x-framework';
+import { openRowLink, openRowLinkInNewTab } from '@/shared/row-link';
 import {
   Skeleton,
   Table,
@@ -35,18 +36,6 @@ const AUTOMATION_STAT_COLUMNS = [
     skeletonWidthClassName: 'w-10',
   },
 ] as const;
-
-const handleRowClick = (event: React.MouseEvent<HTMLTableRowElement>) => {
-  if (
-    event.defaultPrevented ||
-    !(event.target instanceof Element) ||
-    event.target.closest('a, button, input, select, textarea')
-  ) {
-    return;
-  }
-
-  event.currentTarget.querySelector('a')?.click();
-};
 
 interface AutomationsListProps {
   automations?: AutomationBrowseItem[];
@@ -160,7 +149,8 @@ const AutomationsList: React.FC<AutomationsListProps> = ({
               key={automation.id}
               className="grid w-full cursor-pointer grid-cols-[repeat(3,minmax(0,1fr))_auto] items-center gap-x-4 gap-y-3 px-2 py-6 hover:bg-table-row-hover has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-[-2px] has-[:focus-visible]:outline-focus-ring lg:table-row lg:gap-0 lg:p-0"
               data-testid="automation-list-row"
-              onClick={handleRowClick}
+              onAuxClick={openRowLinkInNewTab}
+              onClick={openRowLink}
             >
               <TableHead
                 className="col-span-3 row-start-1 h-auto min-w-0 p-0 text-left text-base font-normal tracking-normal text-foreground lg:table-cell lg:p-4"

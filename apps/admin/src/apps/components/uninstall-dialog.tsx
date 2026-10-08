@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -21,7 +21,8 @@ import { AdminLink } from '@/shared/admin-link';
 interface UninstallDialogProps {
   /** The app to uninstall; the dialog is open while it's set. */
   installation: AppInstallation | null;
-  onOpenChange: (open: boolean) => void;
+  /** When the dialog is dismissed, or once the app has been uninstalled. */
+  onClose: () => void;
   /** After Ghost has ended the installation, such as to leave a page about the app. */
   onUninstalled?: (installation: AppInstallation) => void;
 }
@@ -29,10 +30,15 @@ interface UninstallDialogProps {
 /** Confirms uninstalling an app, which stops it straight away for everyone. */
 export const UninstallDialog: React.FC<UninstallDialogProps> = ({
   installation,
-  onOpenChange,
+  onClose,
   onUninstalled,
 }) => {
   const { mutateAsync: uninstall, isPending } = useUninstallAppInstallation();
+  // The app last shown, so the dialog still names it while it closes.
+  const [shown, setShown] = useState(installation);
+  if (installation && installation !== shown) {
+    setShown(installation);
+  }
 
   const confirm = async () => {
     if (!installation) {
@@ -46,15 +52,22 @@ export const UninstallDialog: React.FC<UninstallDialogProps> = ({
       return;
     }
     toast.success(`${name} uninstalled`);
-    onOpenChange(false);
+    onClose();
     onUninstalled?.(installation);
   };
 
   return (
-    <AlertDialog open={installation !== null} onOpenChange={onOpenChange}>
+    <AlertDialog
+      open={installation !== null}
+      onOpenChange={(open) => {
+        if (!open) {
+          onClose();
+        }
+      }}
+    >
       <AlertDialogContent data-testid="app-uninstall-dialog">
         <AlertDialogHeader>
-          <AlertDialogTitle>Uninstall {installation?.manifest.name}?</AlertDialogTitle>
+          <AlertDialogTitle>Uninstall {shown?.manifest.name}?</AlertDialogTitle>
           <AlertDialogDescription>
             The app stops working immediately for everyone. Reinstalling it later is like installing
             it for the first time.

@@ -15,21 +15,22 @@ export interface AppInstallation {
   manifest: AppManifest;
   created_at: string;
   updated_at: string | null;
-  /** Only when read with `include=manifests`. */
-  manifests?: AppInstallationManifest[];
+  /** Only when read with `include=history`. */
+  history?: AppInstallationHistoryEntry[];
 }
 
 /**
- * A manifest an installation ran or was asked to approve, newest first. With staff history,
- * these are the app's history.
+ * One thing that happened to an installation, newest first. Decisions by people name who
+ * decided; what Ghost did by itself, applying an update or holding changes for approval,
+ * has nobody.
  */
-export interface AppInstallationManifest {
+export interface AppInstallationHistoryEntry {
   id: string;
-  manifest_url: string;
-  manifest: AppManifest;
-  /** Whether it had changes that needed approval when Ghost added it. */
-  requires_approval: boolean;
+  event: 'installed' | 'updated' | 'suspended' | 'changes_approved' | 'uninstalled';
+  actor: { id: string; name: string | null } | null;
   created_at: string;
+  /** For an approval that moved the app: the host it is served from since. */
+  moved_to?: string;
 }
 
 /** One field that differs from what was approved before. */
@@ -83,11 +84,11 @@ export const useBrowseAppInstallations = createQuery<AppInstallationsResponseTyp
   path: '/apps/installations/',
 });
 
-/** One installation, ended or not, with every manifest it has run for its history. */
+/** One installation, ended or not, with what happened to it. */
 export const useReadAppInstallation = createQueryWithId<AppInstallationsResponseType>({
   dataType,
   path: (id) => `/apps/installations/${id}/`,
-  defaultSearchParams: { include: 'manifests' },
+  defaultSearchParams: { include: 'history' },
 });
 
 /** Has Ghost fetch and check an app's manifest. Stores nothing, so nothing is invalidated. */

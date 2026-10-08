@@ -16,9 +16,9 @@ import { DetailPage } from '@tryghost/shade/page-templates';
 import { PageHeader } from '@tryghost/shade/patterns';
 import { formatDisplayDate } from '@tryghost/shade/utils';
 import { Link, useNavigate, useParams } from '@tryghost/admin-x-framework';
-import { useBrowseActions } from '@tryghost/admin-x-framework/api/actions';
 import {
   type AppInstallation,
+  type AppInstallationHistoryEntry,
   useReadAppInstallation,
 } from '@tryghost/admin-x-framework/api/app-installations';
 import { APIError, getErrorMessage } from '@tryghost/admin-x-framework/errors';
@@ -30,7 +30,7 @@ import { DevelopmentBadge } from './components/development-badge';
 import { CapabilitySummary } from './components/surface-icon';
 import { UninstallDialog } from './components/uninstall-dialog';
 import { ACCOUNT_ACCESS } from './lib/access';
-import { type AppHistoryEntry, appHistory, installedBy } from './lib/history';
+import { historyTitle, installedBy } from './lib/history';
 import { appReviewRoute } from './lib/routes';
 import { isDevelopmentApp } from './lib/served-from';
 
@@ -45,44 +45,44 @@ const Fact: React.FC<{ label: string; children: React.ReactNode }> = ({ label, c
   </div>
 );
 
-const History: React.FC<{ entries: AppHistoryEntry[] }> = ({ entries }) => (
-  <ol className="m-0 list-none p-0" data-testid="app-history">
-    {entries.map((entry) => (
-      <li
-        key={entry.id}
-        className="flex items-baseline justify-between gap-4 border-b py-3 last:border-b-0"
-        data-testid="app-history-entry"
-      >
-        <span>
-          {entry.title}
-          {entry.by && (
-            <Text as="span" tone="secondary">
-              {' '}
-              by {entry.by}
-            </Text>
-          )}
-        </span>
-        <Text as="span" className="shrink-0" size="sm" tone="secondary">
-          {formatDisplayDate(entry.at)}
-        </Text>
-      </li>
-    ))}
-  </ol>
-);
+const History: React.FC<{ entries?: AppInstallationHistoryEntry[] }> = ({ entries }) => {
+  // An older Ghost answers without the history it was asked for.
+  if (!entries) {
+    return (
+      <Text data-testid="app-history-unavailable" tone="secondary">
+        History isn’t available on this version of Ghost.
+      </Text>
+    );
+  }
+  return (
+    <ol className="m-0 list-none p-0" data-testid="app-history">
+      {entries.map((entry) => (
+        <li
+          key={entry.id}
+          className="flex items-baseline justify-between gap-4 border-b py-3 last:border-b-0"
+          data-testid="app-history-entry"
+        >
+          <span>
+            {historyTitle(entry)}
+            {entry.actor?.name && (
+              <Text as="span" tone="secondary">
+                {' '}
+                by {entry.actor.name}
+              </Text>
+            )}
+          </span>
+          <Text as="span" className="shrink-0" size="sm" tone="secondary">
+            {formatDisplayDate(entry.created_at)}
+          </Text>
+        </li>
+      ))}
+    </ol>
+  );
+};
 
 const Details: React.FC<{ installation: AppInstallation }> = ({ installation }) => {
-  const navigate = useNavigate();
-  const { manifest, status } = installation;
-  // Staff history keeps who installed, approved and uninstalled the app.
-  const { data } = useBrowseActions({
-    searchParams: {
-      include: 'actor',
-      limit: 'all',
-      filter: `resource_type:app_installation+resource_id:'${installation.id}'`,
-    },
-  });
-  const actions = data?.actions ?? [];
-  const installer = installedBy(actions);
+  const { manifest, status, history } = installation;
+  const installer = history && installedBy(history);
 
   return (
     // Like a member's page: who the app is and what it does down the side, what it gets and
@@ -134,15 +134,11 @@ const Details: React.FC<{ installation: AppInstallation }> = ({ installation }) 
           <Banner data-testid="app-needs-approval" size="md" variant="warning">
             <Inline gap="md" justify="between">
               <Text as="p" size="sm">
-                {manifest.name} has been updated and needs more access. It won’t open until you
-                approve the changes.
+                {manifest.name} has been updated, and the changes need your approval. It won’t open
+                until you approve them.
               </Text>
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => navigate(appReviewRoute(installation.manifest_url))}
-              >
-                Review changes
+              <Button size="sm" variant="outline" asChild>
+                <Link to={appReviewRoute(installation.manifest_url)}>Review changes</Link>
               </Button>
             </Inline>
           </Banner>
@@ -159,7 +155,7 @@ const Details: React.FC<{ installation: AppInstallation }> = ({ installation }) 
           <Text as="h2" size="lg" weight="semibold">
             History
           </Text>
-          <History entries={appHistory(actions, installation.manifests ?? [])} />
+          <History entries={history} />
         </Stack>
       </Stack>
     </div>
@@ -241,11 +237,7 @@ export const AppDetails: React.FC = () => {
       </Container>
       <UninstallDialog
         installation={uninstalling}
-        onOpenChange={(open) => {
-          if (!open) {
-            setUninstalling(null);
-          }
-        }}
+        onClose={() => setUninstalling(null)}
         // Nothing is left to manage here once it has ended.
         onUninstalled={() => navigate('/apps')}
       />
