@@ -1,9 +1,11 @@
 {
     "Authors": "作者",
     "Cancel": "取消",
+    "Clear search": "",
     "No matches found": "未找到匹配项",
     "Posts": "文章",
     "Search posts, tags and authors": "搜索文章、标签和作者",
+    "Search results": "",
     "Show more results": "显示更多结果",
     "Tags": "标签"
 }

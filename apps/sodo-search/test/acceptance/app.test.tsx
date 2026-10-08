@@ -68,20 +68,27 @@ async function openedPopup() {
   });
 }
 
+// Opening schedules its own input focus; tests that move focus wait for it to settle first
+function settleOpeningFocus() {
+  return new Promise((resolve) => {
+    setTimeout(resolve, 300);
+  });
+}
+
 async function openFromTrigger() {
   await userEvent.click(document.querySelector('[data-ghost-search]')!);
   return openedPopup();
 }
 
 function selectedResult(doc: Document) {
-  return doc.querySelector('.bg-neutral-100')?.textContent ?? null;
+  return doc.querySelector('[role=option][aria-selected=true]')?.textContent ?? null;
 }
 
 function sections(doc: Document) {
   return Object.fromEntries(
-    [...doc.querySelectorAll('h1')].map((heading) => [
-      heading.textContent,
-      [...heading.parentElement!.querySelectorAll(':scope > div')].map((item) => item.textContent),
+    [...doc.querySelectorAll('[role=group]')].map((group) => [
+      doc.getElementById(group.getAttribute('aria-labelledby')!)!.textContent,
+      [...group.querySelectorAll('[role=option]')].map((option) => option.textContent),
     ]),
   );
 }
@@ -163,6 +170,20 @@ test('starts each new query from its first result, even when the next key arrive
   await vi.waitFor(() => expect(selectedResult(doc)).toContain('Apricot jam'));
 });
 
+test('starts from the first result when the same query is typed again', async () => {
+  mountApp();
+  const doc = await openFromTrigger();
+
+  await userEvent.keyboard('smoke');
+  await vi.waitFor(() => expect(selectedResult(doc)).toContain('Smoke signal 1'));
+  await userEvent.keyboard('{ArrowDown}{ArrowDown}');
+  await vi.waitFor(() => expect(selectedResult(doc)).toContain('Smoke signal 3'));
+
+  await userEvent.keyboard('{Backspace}{Backspace}{Backspace}{Backspace}{Backspace}smoke');
+  await vi.waitFor(() => expect(doc.querySelector('input')!.value).toBe('smoke'));
+  expect(selectedResult(doc)).toContain('Smoke signal 1');
+});
+
 test('shows a no-results message and clears the query', async () => {
   mountApp();
   const doc = await openFromTrigger();
@@ -186,6 +207,65 @@ test('closes on Escape, restoring page scroll and resetting the query', async ()
 
   doc = await openFromTrigger();
   expect(doc.querySelector('input')!.value).toBe('');
+});
+
+test('returns focus to the trigger that opened it', async () => {
+  mountApp();
+  const trigger = document.querySelector<HTMLElement>('[data-ghost-search]')!;
+  await openFromTrigger();
+
+  await userEvent.keyboard('{Escape}');
+  await vi.waitFor(() => expect(popupDocument()).toBeNull());
+  expect(document.activeElement).toBe(trigger);
+});
+
+test('keeps Tab focus inside the dialog', async () => {
+  mountApp();
+  const doc = await openFromTrigger();
+  await settleOpeningFocus();
+  await userEvent.keyboard('smoke');
+  await vi.waitFor(() => expect(doc.querySelector('button.w-full')).not.toBeNull());
+  const clearButton = doc.querySelector<HTMLElement>('button[aria-label="Clear search"]')!;
+  const showMoreButton = doc.querySelector<HTMLElement>('button.w-full')!;
+
+  showMoreButton.focus();
+  await userEvent.keyboard('{Tab}');
+  expect(doc.activeElement).toBe(clearButton);
+
+  await userEvent.keyboard('{Shift>}{Tab}{/Shift}');
+  expect(doc.activeElement).toBe(showMoreButton);
+});
+
+test('leaves focus where the user moved it when the search index finishes loading', async () => {
+  let releaseIndex!: () => void;
+  const indexGate = new Promise<void>((resolve) => {
+    releaseIndex = resolve;
+  });
+  const fetchMock = vi.mocked(window.fetch);
+  const fakeApi = fetchMock.getMockImplementation()!;
+  fetchMock.mockImplementation(async (input, init) => {
+    await indexGate;
+    return fakeApi(input, init);
+  });
+  mountApp();
+  const doc = await openFromTrigger();
+  await settleOpeningFocus();
+  await userEvent.keyboard('x');
+  const clearButton = await vi.waitFor(() => {
+    const button = doc.querySelector<HTMLElement>('button[aria-label="Clear search"]');
+    if (!button) {
+      throw new Error('Clear button not rendered');
+    }
+    return button;
+  });
+
+  clearButton.focus();
+  releaseIndex();
+  await vi.waitFor(() => expect(doc.querySelector('svg.shrink-0')).toBeNull());
+  await new Promise((resolve) => {
+    setTimeout(resolve, 300);
+  });
+  expect(doc.activeElement).toBe(clearButton);
 });
 
 test('closes on a backdrop click', async () => {

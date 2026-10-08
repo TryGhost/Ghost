@@ -1,9 +1,11 @@
 {
     "Authors": "Авторы",
     "Cancel": "Отмена",
+    "Clear search": "",
     "No matches found": "Совпадений не найдено",
     "Posts": "Записи",
     "Search posts, tags and authors": "Поиск по записям, тегам и авторам",
+    "Search results": "",
     "Show more results": "Показать больше результатов",
     "Tags": "Теги"
 }

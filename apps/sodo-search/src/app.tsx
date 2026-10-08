@@ -2,7 +2,7 @@ import AppContext from './app-context';
 import PopupModal from './components/popup-modal';
 import SearchIndex from './search-index';
 import i18nLib from '@tryghost/i18n/registry/search';
-import { useLayoutEffect, useRef, useState } from 'preact/hooks';
+import { useCallback, useLayoutEffect, useRef, useState } from 'preact/hooks';
 
 type AppProps = {
   adminUrl: string;
@@ -56,6 +56,13 @@ export default function App({ adminUrl, apiKey, stylesUrl, locale }: AppProps) {
   const indexStarted = useRef(false);
   const scrollbarWidth = useRef(0);
   const inputRef = useRef<HTMLInputElement>(null);
+  const returnFocus = useRef<HTMLElement | null>(null);
+
+  // Stable, so the popup's open-time effects (input focus, Escape listener) run once per open
+  const closePopup = useCallback(() => {
+    setShowPopup(false);
+    setSearchValue('');
+  }, []);
 
   // Layout effect so triggers, Cmd+K and #/search work from mount, not after the next frame
   useLayoutEffect(() => {
@@ -71,6 +78,8 @@ export default function App({ adminUrl, apiKey, stylesUrl, locale }: AppProps) {
     const isMac = /Mac|iPhone|iPad/.test(navigator.platform);
     const handleKeyDown = (e: KeyboardEvent) => {
       if (isSearchShortcut(e, isMac) && document.querySelector(TRIGGER_SELECTOR)) {
+        returnFocus.current ??=
+          document.activeElement instanceof HTMLElement ? document.activeElement : null;
         setShowPopup(true);
         e.preventDefault();
         e.stopPropagation();
@@ -78,9 +87,11 @@ export default function App({ adminUrl, apiKey, stylesUrl, locale }: AppProps) {
     };
 
     const handleClick = (e: MouseEvent) => {
-      if (!(e.target instanceof Element) || !e.target.closest(TRIGGER_SELECTOR)) {
+      const trigger = e.target instanceof Element ? e.target.closest(TRIGGER_SELECTOR) : null;
+      if (!trigger) {
         return;
       }
+      returnFocus.current ??= trigger instanceof HTMLElement ? trigger : null;
       e.preventDefault();
       setShowPopup(true);
 
@@ -152,6 +163,8 @@ export default function App({ adminUrl, apiKey, stylesUrl, locale }: AppProps) {
       } catch {
         // Ignore any errors for scroll handling
       }
+      returnFocus.current?.focus();
+      returnFocus.current = null;
     };
   }, [showPopup, searchIndex]);
 
@@ -166,10 +179,7 @@ export default function App({ adminUrl, apiKey, stylesUrl, locale }: AppProps) {
         indexComplete,
         searchValue,
         setSearchValue,
-        closePopup: () => {
-          setShowPopup(false);
-          setSearchValue('');
-        },
+        closePopup,
         inputRef,
         stylesUrl,
         t,
