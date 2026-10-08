@@ -22,6 +22,7 @@
     "test:types": "tsc --noEmit --incremental false && tsc --noEmit --incremental false -p test/tsconfig.json",
     "test:unit": "vitest run",
     "test:acceptance": "vitest run -c vitest.acceptance.config.mjs",
+    "test:acceptance:full": "ALL_BROWSERS=1 pnpm test:acceptance",
     "lint": "pnpm run '/^lint:/'",
     "lint:code": "eslint src test --cache",
     "lint:types": "pnpm test:types",
