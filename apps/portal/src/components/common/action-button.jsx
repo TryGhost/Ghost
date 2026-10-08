@@ -58,8 +58,8 @@ function ActionButton({
       ' border-none text-white hover:!opacity-[0.92] focus:!opacity-[0.92] disabled:hover:!opacity-[0.92] disabled:focus:!opacity-[0.92] max-[1440px]:h-[42px]';
   } else {
     className += isText
-      ? ' border-none text-grey-0'
-      : ' border border-solid border-grey-12 text-grey-0 hover:border-grey-10';
+      ? ' border-none text-black'
+      : ' border border-solid border-gray-200 text-black hover:border-gray-300';
     if (!isDestructive && !classes) {
       // Legacy `button[class="gh-portal-btn"]` rule only matched the bare class
       className += ' max-[1440px]:h-[42px]';
@@ -73,7 +73,7 @@ function ActionButton({
   }
   const loaderClassName = isPrimary
     ? 'gh-portal-loadingicon absolute left-1/2 ms-[-19px] inline-block h-[31px] [&_path]:fill-white [&_rect]:fill-white'
-    : 'gh-portal-loadingicon dark absolute left-1/2 ms-[-19px] inline-block h-[31px] [&_path]:fill-grey-0 [&_rect]:fill-grey-0';
+    : 'gh-portal-loadingicon dark absolute left-1/2 ms-[-19px] inline-block h-[31px] [&_path]:fill-black [&_rect]:fill-black';
   return (
     <button
       className={className}

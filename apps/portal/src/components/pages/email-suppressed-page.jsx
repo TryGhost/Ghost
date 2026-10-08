@@ -59,8 +59,8 @@ export default function EmailSuppressedPage() {
 
       <EmailDeliveryFailedIcon className="gh-email-suppressed-page-icon mx-auto mb-[18px] mt-0 block size-[38px]" />
 
-      <div className="gh-email-suppressed-page-text px-[14px] py-0 text-center text-grey-6">
-        <h3 className="gh-portal-main-title gh-email-suppressed-page-title mb-[14px] text-pretty text-center leading-[1.1em] text-grey-0">
+      <div className="gh-email-suppressed-page-text px-[14px] py-0 text-center text-gray-700">
+        <h3 className="gh-portal-main-title gh-email-suppressed-page-title mb-[14px] text-pretty text-center leading-[1.1em] text-black">
           {t('Emails disabled')}
         </h3>
         <p>

@@ -28,12 +28,12 @@ import { sanitizeHtml } from '../../utils/sanitize-html';
 import { t } from '../../utils/i18n';
 
 const signupMessageButtonClass =
-  'gh-portal-btn gh-portal-btn-link relative -mb-px !ms-1 flex cursor-pointer select-none items-center justify-center whitespace-nowrap rounded-md bg-transparent p-0 text-center text-md font-semibold leading-none tracking-[0.2px] text-grey-0 no-underline [border:none] [outline:none] [transition:all_0.25s_ease] hover:border-grey-10 hover:opacity-[0.85]';
+  'gh-portal-btn gh-portal-btn-link relative -mb-px !ms-1 flex cursor-pointer select-none items-center justify-center whitespace-nowrap rounded-md bg-transparent p-0 text-center text-md font-semibold leading-none tracking-[0.2px] text-black no-underline [border:none] [outline:none] [transition:all_0.25s_ease] hover:border-gray-300 hover:opacity-[0.85]';
 
 const termsCheckboxClass =
-  "checkbox relative top-[-1px] float-left mt-px inline-block size-[18px] shrink-0 rounded border border-solid border-grey-10 bg-white [transition:background_0.15s_ease-in-out,border-color_0.15s_ease-in-out] before:absolute before:left-[3px] before:top-1 before:h-1.5 before:w-2.5 before:opacity-0 before:content-[''] before:[border-color:currentcolor_currentcolor_var(--white)_var(--white)] before:[border-style:none_none_solid_solid] before:[border-width:0_0_2px_2px] before:[transform:rotate(-45deg)] before:[transition:opacity_0.15s_ease-in-out] rtl:float-right rtl:before:left-auto rtl:before:right-[3px] [.gh-portal-error_&]:border-red [.gh-portal-error_&]:[box-shadow:0_0_0_3px_rgb(240,37,37,.15)] [.gh-portal-error_input:checked+&]:[box-shadow:none] [.gh-portal-error_label:hover_input:not(:checked)+&]:border-red [input:checked+&]:border-black [input:checked+&]:bg-black [input:checked+&]:before:opacity-100 [label:hover_input:not(:checked)+&]:border-grey-9";
+  "checkbox relative top-[-1px] float-left mt-px inline-block size-[18px] shrink-0 rounded border border-solid border-gray-300 bg-white [transition:background_0.15s_ease-in-out,border-color_0.15s_ease-in-out] before:absolute before:left-[3px] before:top-1 before:h-1.5 before:w-2.5 before:opacity-0 before:content-[''] before:[border-color:currentcolor_currentcolor_theme(colors.white)_theme(colors.white)] before:[border-style:none_none_solid_solid] before:[border-width:0_0_2px_2px] before:[transform:rotate(-45deg)] before:[transition:opacity_0.15s_ease-in-out] rtl:float-right rtl:before:left-auto rtl:before:right-[3px] [.gh-portal-error_&]:border-red [.gh-portal-error_&]:[box-shadow:0_0_0_3px_rgb(240,37,37,.15)] [.gh-portal-error_input:checked+&]:[box-shadow:none] [.gh-portal-error_label:hover_input:not(:checked)+&]:border-red [input:checked+&]:border-black [input:checked+&]:bg-black [input:checked+&]:before:opacity-100 [label:hover_input:not(:checked)+&]:border-gray-400";
 
-const notificationClass = 'mx-8 mb-6 mt-2 text-center text-grey-2';
+const notificationClass = 'mx-8 mb-6 mt-2 text-center text-gray-900';
 
 class SignupPage extends React.Component {
   static contextType = AppContext;
@@ -257,7 +257,7 @@ class SignupPage extends React.Component {
 
     const termsText = (
       <div
-        className="gh-portal-signup-terms-content [&_a]:font-medium [&_a]:text-brand [&_a]:no-underline [&_p]:mb-0 [&_p]:text-md [&_p]:leading-[1.25em] [&_p]:text-grey-4 [.gh-portal-error_&]:leading-[1.5em]"
+        className="gh-portal-signup-terms-content [&_a]:font-medium [&_a]:text-brand [&_a]:no-underline [&_p]:mb-0 [&_p]:text-md [&_p]:leading-[1.25em] [&_p]:text-gray-900 [.gh-portal-error_&]:leading-[1.5em]"
         dangerouslySetInnerHTML={{ __html: sanitizeHtml(site.portal_signup_terms_html) }}
       ></div>
     );
@@ -363,7 +363,7 @@ class SignupPage extends React.Component {
     ) {
       return (
         <p
-          className="gh-portal-free-trial-notification mx-auto my-6 max-w-[480px] text-center text-grey-4"
+          className="gh-portal-free-trial-notification mx-auto my-6 max-w-[480px] text-center text-gray-900"
           data-testid="free-trial-notification-text"
         >
           {t(
@@ -381,7 +381,7 @@ class SignupPage extends React.Component {
     return (
       <div>
         {this.renderFreeTrialMessage()}
-        <div className="gh-portal-signup-message gh-portal-signup-message-stack z-[9999] mt-1 flex flex-col flex-wrap items-center justify-center gap-[8px] text-base text-grey-4 group-[.full-size]/popup:mb-10 group-[.full-size]/popup:mt-6 [&_*]:z-[9999]">
+        <div className="gh-portal-signup-message gh-portal-signup-message-stack z-[9999] mt-1 flex flex-col flex-wrap items-center justify-center gap-[8px] text-base text-gray-900 group-[.full-size]/popup:mb-10 group-[.full-size]/popup:mt-6 [&_*]:z-[9999]">
           <div className="gh-portal-signup-message-row flex max-w-full flex-wrap items-center justify-center">
             <div>{t('Already a member?')}</div>
             <button
@@ -574,7 +574,7 @@ class SignupPage extends React.Component {
       <header className="gh-portal-signup-header mb-8 flex flex-col items-center px-8 group-[.full-size]/wrapper:mt-8 max-[390px]:pb-4">
         {this.renderSiteIcon()}
         <h1
-          className="gh-portal-main-title mt-3 text-pretty text-center leading-[1.1em] text-grey-0 [.gh-portal-signup-logo+&]:mt-1"
+          className="gh-portal-main-title mt-3 text-pretty text-center leading-[1.1em] text-black [.gh-portal-signup-logo+&]:mt-1"
           data-testid="site-title-text"
         >
           {siteTitle}
@@ -615,7 +615,7 @@ class SignupPage extends React.Component {
     const { sectionClass } = this.getClassNames();
     return (
       <>
-        <div className="gh-portal-back-sitetitle absolute left-8 top-[35px] group-[.preview]/wrapper:hidden group-[:not(.full-size)]/wrapper:hidden rtl:left-auto rtl:right-8 [&_.gh-portal-btn]:h-auto [&_.gh-portal-btn]:p-0 [&_.gh-portal-btn]:text-base [&_.gh-portal-btn]:leading-[1em] [&_.gh-portal-btn]:text-grey-1 [&_.gh-portal-btn]:[border:0]">
+        <div className="gh-portal-back-sitetitle absolute left-8 top-[35px] group-[.preview]/wrapper:hidden group-[:not(.full-size)]/wrapper:hidden rtl:left-auto rtl:right-8 [&_.gh-portal-btn]:h-auto [&_.gh-portal-btn]:p-0 [&_.gh-portal-btn]:text-base [&_.gh-portal-btn]:leading-[1em] [&_.gh-portal-btn]:text-gray-950 [&_.gh-portal-btn]:[border:0]">
           <SiteTitleBackButton
             onBack={() => {
               if (this.state.showNewsletterSelection) {

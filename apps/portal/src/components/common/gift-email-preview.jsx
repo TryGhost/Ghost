@@ -11,7 +11,7 @@ export const REVEAL_CLASSES =
 export const REVEAL_INNER_CLASSES =
   'gh-portal-gift-checkout-reveal-inner min-h-0 overflow-hidden opacity-0 [transform:translateY(4px)] [transition:opacity_200ms_cubic-bezier(0.25,1,0.5,1),transform_200ms_cubic-bezier(0.25,1,0.5,1)] motion-reduce:[transition:none]';
 const DATE_CLASSES =
-  'gh-portal-gift-email-date whitespace-nowrap text-[1.25rem] font-normal leading-[1.2] text-[rgba(255,255,255,0.75)] opacity-0 [grid-area:1/1] [transform:translateY(2px)] [transition:opacity_180ms_cubic-bezier(0.25,1,0.5,1),transform_180ms_cubic-bezier(0.25,1,0.5,1)] motion-reduce:[transition:none] data-[active=true]:opacity-100 data-[active=true]:[transform:none]';
+  'gh-portal-gift-email-date whitespace-nowrap text-[1.25rem] font-normal leading-[1.2] text-white/75 opacity-0 [grid-area:1/1] [transform:translateY(2px)] [transition:opacity_180ms_cubic-bezier(0.25,1,0.5,1),transform_180ms_cubic-bezier(0.25,1,0.5,1)] motion-reduce:[transition:none] data-[active=true]:opacity-100 data-[active=true]:[transform:none]';
 
 // A live preview of the delivery email, shown in place of the gift card while
 // the buyer is on the "Email it to them" tab. It reproduces the real template
@@ -94,8 +94,8 @@ const GiftEmailPreview = ({
               data-open={!!recipientLabel}
             >
               <div className={REVEAL_INNER_CLASSES}>
-                <div className="gh-portal-gift-email-to flex animate-[gh-portal-gift-email-fade_200ms_cubic-bezier(0.25,1,0.5,1)_both] items-center gap-[5px] truncate pt-[2px] text-[1.25rem] font-normal leading-[1.2] text-[rgba(255,255,255,0.75)] motion-reduce:animate-none">
-                  <span className="gh-portal-gift-email-meta-label shrink-0 font-normal text-[rgba(255,255,255,0.55)]">
+                <div className="gh-portal-gift-email-to flex animate-[gh-portal-gift-email-fade_200ms_cubic-bezier(0.25,1,0.5,1)_both] items-center gap-[5px] truncate pt-[2px] text-[1.25rem] font-normal leading-[1.2] text-white/75 motion-reduce:animate-none">
+                  <span className="gh-portal-gift-email-meta-label shrink-0 font-normal text-white/55">
                     {t('To')}:
                   </span>
                   <span className="gh-portal-gift-email-to-value min-w-0 truncate">
@@ -132,25 +132,25 @@ const GiftEmailPreview = ({
             )}
           </div>
 
-          <h1 className="gh-portal-gift-email-subject mb-[14px] text-start text-[2.5rem] font-bold leading-[1.2] tracking-[-0.01em] text-[#15212A]">
+          <h1 className="gh-portal-gift-email-subject mb-[14px] text-start text-[2.5rem] font-bold leading-[1.2] tracking-[-0.01em] text-gray-950">
             {t('A gift, just for you')}
           </h1>
 
           <div aria-hidden={!toName} className={REVEAL_CLASSES} data-open={!!toName}>
             <div className={REVEAL_INNER_CLASSES}>
-              <p className="gh-portal-gift-email-greeting mb-0 pb-[10px] text-[1.55rem] leading-[1.5] text-[#3A464C]">
+              <p className="gh-portal-gift-email-greeting mb-0 pb-[10px] text-[1.55rem] leading-[1.5] text-gray-900">
                 {t('Hi {recipientName},', { recipientName: toName })}
               </p>
             </div>
           </div>
 
-          <p className="gh-portal-gift-email-lede mb-0 text-[1.55rem] leading-[1.5] text-[#3A464C] [&_strong]:[color:inherit] [&_strong]:[font-weight:inherit]">
+          <p className="gh-portal-gift-email-lede mb-0 text-[1.55rem] leading-[1.5] text-gray-900 [&_strong]:[color:inherit] [&_strong]:[font-weight:inherit]">
             <Interpolate mapping={giftDetails} string={lede} />
           </p>
 
           <div aria-hidden={!message} className={REVEAL_CLASSES} data-open={!!message}>
             <div className={REVEAL_INNER_CLASSES}>
-              <blockquote className="gh-portal-gift-email-message relative mx-0 mb-0 mt-[24px] overflow-hidden rounded-[8px] bg-[color:color-mix(in_srgb,var(--brandcolor)_7%,var(--white))] px-[18px] py-[16px]">
+              <blockquote className="gh-portal-gift-email-message relative mx-0 mb-0 mt-[24px] overflow-hidden rounded-[8px] bg-[color:color-mix(in_srgb,var(--brandcolor)_7%,theme(colors.white))] px-[18px] py-[16px]">
                 {/* Drawn rather than typed: the quote glyphs in
                                     the system stack are squared off, and this
                                     wants the round, stylised mark. One mark, no
@@ -161,7 +161,7 @@ const GiftEmailPreview = ({
                   className="gh-portal-gift-email-message-mark pointer-events-none absolute start-[-10px] top-[-22px] h-auto w-[98px] text-brand opacity-[0.04]"
                   focusable="false"
                 />
-                <p className="gh-portal-gift-email-message-text relative mb-0 whitespace-pre-line text-[1.55rem] italic leading-[1.5] text-[#15212A] [word-break:break-word]">
+                <p className="gh-portal-gift-email-message-text relative mb-0 whitespace-pre-line text-[1.55rem] italic leading-[1.5] text-gray-950 [word-break:break-word]">
                   {message}
                 </p>
                 {/* No dash before the name — the note above it
@@ -177,7 +177,7 @@ const GiftEmailPreview = ({
 
           {benefits.length > 0 && (
             <div className="gh-portal-gift-email-benefits mt-[24px]">
-              <p className="gh-portal-gift-email-benefits-label mb-[6px] text-[1.55rem] font-normal leading-[1.45] text-[#3A464C]">
+              <p className="gh-portal-gift-email-benefits-label mb-[6px] text-[1.55rem] font-normal leading-[1.45] text-gray-900">
                 {t("What's included")}
               </p>
               {/* Every perk, as the email sends them. */}
@@ -185,7 +185,7 @@ const GiftEmailPreview = ({
                 {benefits.map((benefit, idx) => (
                   <div
                     key={benefit?.id || `benefit-${idx}`}
-                    className="gh-portal-gift-email-benefit flex items-start gap-[10px] py-[5px] text-[1.55rem] leading-[1.45] text-[#3A464C]"
+                    className="gh-portal-gift-email-benefit flex items-start gap-[10px] py-[5px] text-[1.55rem] leading-[1.45] text-gray-900"
                   >
                     <CheckmarkIcon
                       aria-hidden="true"

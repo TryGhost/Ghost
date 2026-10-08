@@ -98,26 +98,26 @@ const GiftSuccessPage = () => {
             <div className="gh-portal-gift-checkout-inner relative z-[1] my-auto flex w-full max-w-[496px] flex-col">
               <header className="gh-portal-gift-checkout-header mb-3">
                 <span
-                  className="gh-portal-gift-success-badge mb-5 inline-flex size-[52px] items-center justify-center rounded-[999px] bg-[color:color-mix(in_srgb,var(--brandcolor)_12%,var(--white))] text-brand [&_svg]:size-[26px]"
+                  className="gh-portal-gift-success-badge mb-5 inline-flex size-[52px] items-center justify-center rounded-[999px] bg-[color:color-mix(in_srgb,var(--brandcolor)_12%,theme(colors.white))] text-brand [&_svg]:size-[26px]"
                   aria-hidden="true"
                 >
                   <CheckIcon />
                 </span>
-                <h1 className="gh-portal-main-title mb-2 text-pretty text-start text-4xl leading-[1.15] text-grey-0 max-sm:text-[2.6rem]">
+                <h1 className="gh-portal-main-title mb-2 text-pretty text-start text-4xl leading-[1.15] text-black max-sm:text-[2.6rem]">
                   {titleText}
                 </h1>
-                <p className="gh-portal-gift-checkout-subtitle m-0 text-pretty text-base leading-[1.45em] text-grey-3">
+                <p className="gh-portal-gift-checkout-subtitle m-0 text-pretty text-base leading-[1.45em] text-gray-900">
                   {subtitleText}
                 </p>
               </header>
 
               <div className="gh-portal-gift-checkout-section mt-6">
                 {isEmailed && (
-                  <p className="gh-portal-gift-success-share-label mb-2 text-sm font-medium uppercase tracking-[0.3px] text-grey-6">
+                  <p className="gh-portal-gift-success-share-label mb-2 text-sm font-medium uppercase tracking-[0.3px] text-gray-700">
                     {t('Share it yourself')}
                   </p>
                 )}
-                <div className="gh-portal-gift-success-link flex h-14 items-center gap-2 rounded-[999px] bg-[color:color-mix(in_srgb,var(--brandcolor)_8%,var(--white))] py-1 pl-6 pr-2">
+                <div className="gh-portal-gift-success-link flex h-14 items-center gap-2 rounded-[999px] bg-[color:color-mix(in_srgb,var(--brandcolor)_8%,theme(colors.white))] py-1 pl-6 pr-2">
                   <span
                     className="gh-portal-gift-success-link-url flex-1 select-all truncate text-lg font-normal text-brand"
                     data-testid="gift-redeem-link"
@@ -126,7 +126,7 @@ const GiftSuccessPage = () => {
                   </span>
                   <button
                     className={
-                      'gh-portal-gift-success-copy flex h-10 shrink-0 cursor-pointer items-center gap-1.5 rounded-[999px] border-none px-[18px] py-0 text-md font-semibold text-white [transition:opacity_0.15s_ease] [will-change:opacity] hover:opacity-90 focus-visible:[outline:2px_solid_var(--grey0)] [&_svg]:size-[14px]' +
+                      'gh-portal-gift-success-copy flex h-10 shrink-0 cursor-pointer items-center gap-1.5 rounded-[999px] border-none px-[18px] py-0 text-md font-semibold text-white [transition:opacity_0.15s_ease] [will-change:opacity] hover:opacity-90 focus-visible:[outline:2px_solid_theme(colors.black)] [&_svg]:size-[14px]' +
                       (copied ? ' is-copied bg-green' : ' bg-brand')
                     }
                     onClick={handleCopy}
@@ -155,7 +155,7 @@ const GiftSuccessPage = () => {
               </div>
 
               {!isEmailed && (
-                <p className="gh-portal-gift-success-footer mb-0 mt-6 text-md leading-[1.5] text-grey-6">
+                <p className="gh-portal-gift-success-footer mb-0 mt-6 text-md leading-[1.5] text-gray-700">
                   {t("Not ready to share? We've also emailed a copy to your inbox.")}
                 </p>
               )}

@@ -21,10 +21,10 @@ const SupportError = ({ error }) => {
     <div className="gh-portal-content gh-portal-tips-and-donations relative [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
       <CloseButton />
 
-      <div className="gh-tips-and-donations-icon-error mx-auto my-0 w-12 px-0 py-2.5 text-center text-[#f50b23]">
+      <div className="gh-tips-and-donations-icon-error mx-auto my-0 w-12 px-0 py-2.5 text-center text-red-500">
         <WarningIcon />
       </div>
-      <h1 className="gh-portal-main-title text-pretty text-center text-[32px] leading-[1.1em] text-grey-0">
+      <h1 className="gh-portal-main-title text-pretty text-center text-[32px] leading-[1.1em] text-black">
         {errorTitle}
       </h1>
       <p className="gh-portal-text-center text-pretty px-8 pb-3 pt-4 text-center">{errorMessage}</p>
@@ -33,7 +33,7 @@ const SupportError = ({ error }) => {
         retry={true}
         onClick={() => doAction('closePopup')}
         disabled={false}
-        brandColor="#000000"
+        brandColor="#15171a"
         label={buttonLabel}
         isDestructive={true}
         isRunning={false}

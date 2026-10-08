@@ -89,7 +89,7 @@ export default class MagicLinkPage extends React.Component {
       <section className="gh-portal-inbox-notification flex flex-col items-center">
         <header className="gh-portal-header flex flex-col items-center pb-3">
           <EnvelopeIcon className="gh-portal-icon gh-portal-icon-envelope mb-2.5 mt-3 w-11 text-brand" />
-          <h2 className="gh-portal-main-title text-pretty text-center leading-[1.1em] text-grey-0">
+          <h2 className="gh-portal-main-title text-pretty text-center leading-[1.1em] text-black">
             {popupTitle}
           </h2>
         </header>
@@ -102,7 +102,7 @@ export default class MagicLinkPage extends React.Component {
     return (
       <>
         <div
-          style={{ color: '#1d1d1d', fontWeight: 'bold', cursor: 'pointer' }}
+          style={{ color: '#15171a', fontWeight: 'bold', cursor: 'pointer' }}
           onClick={() => this.context.doAction('switchPage', { page: 'signin' })}
         >
           {t('Back to Log in')}
@@ -207,11 +207,11 @@ export default class MagicLinkPage extends React.Component {
       <form onSubmit={(e) => this.handleSubmit(e)}>
         <section className="gh-portal-section gh-portal-otp mb-3 flex flex-col items-center">
           <div
-            className={`gh-portal-otp-container ${this.state.isFocused && 'focused'} ${error && 'error'} w-full rounded-lg border border-solid border-grey-12 [transition:border-color_0.25s_ease] [&.error]:border-red [&.error]:[box-shadow:0_0_0_3px_rgba(255,0,0,0.1)] [&.focused:not(.error)]:border-grey-8`}
+            className={`gh-portal-otp-container ${this.state.isFocused && 'focused'} ${error && 'error'} w-full rounded-lg border border-solid border-gray-200 [transition:border-color_0.25s_ease] [&.error]:border-red [&.error]:[box-shadow:0_0_0_3px_rgba(255,0,0,0.1)] [&.focused:not(.error)]:border-gray-500`}
           >
             <input
               id={`input-${OTC_FIELD_NAME}`}
-              className={`gh-portal-input ${this.state.otc && 'entry'} ${error && 'error'} mx-auto my-0 box-border block h-11 w-[15ch] appearance-none rounded-md bg-transparent py-0 pl-[2ch] pr-[1ch] font-light tracking-[1ch] [-webkit-appearance:none] [border:none] [color:inherit] [font-family:Consolas,Liberation_Mono,Menlo,Courier,monospace] [outline:none] [transition:border-color_0.25s_ease-in-out] placeholder:text-grey-8 max-[1440px]:h-[42px] [.gh-portal-otp_&]:!text-2xl`}
+              className={`gh-portal-input ${this.state.otc && 'entry'} ${error && 'error'} mx-auto my-0 box-border block h-11 w-[15ch] appearance-none rounded-md bg-transparent py-0 pl-[2ch] pr-[1ch] font-light tracking-[1ch] [-webkit-appearance:none] [border:none] [color:inherit] [font-family:Consolas,Liberation_Mono,Menlo,Courier,monospace] [outline:none] [transition:border-color_0.25s_ease-in-out] placeholder:text-gray-500 max-[1440px]:h-[42px] [.gh-portal-otp_&]:!text-2xl`}
               placeholder="––––––"
               name={OTC_FIELD_NAME}
               type="text"
@@ -280,10 +280,10 @@ export default class MagicLinkPage extends React.Component {
               <div className="gh-portal-gift-checkout-bg hidden" aria-hidden="true" />
               <div className="gh-portal-gift-checkout-inner relative z-[1] my-auto flex w-full max-w-[496px] flex-col">
                 <header className="gh-portal-gift-checkout-header mb-3">
-                  <h1 className="gh-portal-main-title mb-2 text-pretty text-start text-4xl leading-[1.15] text-grey-0 max-sm:text-[2.6rem]">
+                  <h1 className="gh-portal-main-title mb-2 text-pretty text-start text-4xl leading-[1.15] text-black max-sm:text-[2.6rem]">
                     {popupTitle}
                   </h1>
-                  <p className="gh-portal-gift-checkout-subtitle m-0 text-pretty text-base leading-[1.45em] text-grey-3">
+                  <p className="gh-portal-gift-checkout-subtitle m-0 text-pretty text-base leading-[1.45em] text-gray-900">
                     {popupDescription}
                   </p>
                 </header>
@@ -293,7 +293,7 @@ export default class MagicLinkPage extends React.Component {
               </div>
             </div>
             <div className="gh-portal-gift-checkout-right top-0 flex h-screen overflow-y-auto py-3 pl-0 pr-3 [align-self:start] [position:sticky] max-[880px]:static max-[880px]:order-[-1] max-[880px]:h-auto max-[880px]:overflow-visible max-[880px]:p-0">
-              <div className="gh-portal-gift-checkout-right-panel flex min-h-0 flex-1 flex-col items-center overflow-y-auto rounded-[32px] px-12 py-16 [background:linear-gradient(180deg,rgba(0,0,0,0.3)_0%,rgba(0,0,0,0)_100%),var(--brandcolor)] max-[880px]:rounded-[0_0_32px_32px] max-[880px]:px-6 max-[880px]:pb-8 max-[880px]:pt-14 [&_.gh-portal-gift-checkout-benefit]:text-[rgba(255,255,255,0.85)] [&_.gh-portal-gift-checkout-benefit_svg_path]:[stroke:rgba(255,255,255,0.85)]">
+              <div className="gh-portal-gift-checkout-right-panel flex min-h-0 flex-1 flex-col items-center overflow-y-auto rounded-[32px] px-12 py-16 [background:linear-gradient(180deg,rgba(0,0,0,0.3)_0%,rgba(0,0,0,0)_100%),var(--brandcolor)] max-[880px]:rounded-[0_0_32px_32px] max-[880px]:px-6 max-[880px]:pb-8 max-[880px]:pt-14 [&_.gh-portal-gift-checkout-benefit]:text-white/85 [&_.gh-portal-gift-checkout-benefit_svg_path]:[stroke:rgba(255,255,255,0.85)]">
                 <div
                   className="gh-portal-gift-checkout-card-stack my-auto flex w-full max-w-[280px] shrink-0 flex-col items-center max-[880px]:max-w-[240px] [&[data-revealing=true]_.gh-portal-gift-checkout-card-frame]:[transform:rotate(3deg)]"
                   data-revealing={this.state.showDetails}

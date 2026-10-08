@@ -50,10 +50,10 @@ function InputField({
   const sectionClasses = hidden ? 'gh-portal-input-section hidden' : 'gh-portal-input-section';
   const labelClasses =
     (hideLabel ? 'gh-portal-input-label hidden' : 'gh-portal-input-label') +
-    ' mb-0.5 text-sm font-semibold tracking-[0px] text-grey-1';
+    ' mb-0.5 text-sm font-semibold tracking-[0px] text-gray-950';
   const inputClasses = errorMessage || invalid ? 'gh-portal-input error' : 'gh-portal-input';
   const fieldClasses =
-    'mb-4 block w-full appearance-none rounded-md border border-solid border-grey-11 bg-transparent px-3 text-base tracking-[0.2px] [outline:none] [-webkit-appearance:none] [color:inherit] [transition:border-color_0.25s_ease-in-out] placeholder:text-grey-8 focus:border-grey-8 [&.error]:border-red group-[:not(.preview)]/popup:disabled:bg-grey-13 group-[:not(.preview)]/popup:disabled:text-grey-9 group-[:not(.preview)]/popup:disabled:placeholder:text-grey-9 group-[:not(.preview)]/popup:[&[readonly]::placeholder]:text-grey-9 group-[:not(.preview)]/popup:[&[readonly]]:bg-grey-13 group-[:not(.preview)]/popup:[&[readonly]]:text-grey-9';
+    'mb-4 block w-full appearance-none rounded-md border border-solid border-gray-300 bg-transparent px-3 text-base tracking-[0.2px] [outline:none] [-webkit-appearance:none] [color:inherit] [transition:border-color_0.25s_ease-in-out] placeholder:text-gray-500 focus:border-gray-500 [&.error]:border-red group-[:not(.preview)]/popup:disabled:bg-gray-50 group-[:not(.preview)]/popup:disabled:text-gray-400 group-[:not(.preview)]/popup:disabled:placeholder:text-gray-400 group-[:not(.preview)]/popup:[&[readonly]::placeholder]:text-gray-400 group-[:not(.preview)]/popup:[&[readonly]]:bg-gray-50 group-[:not(.preview)]/popup:[&[readonly]]:text-gray-400';
   const inputHeightClasses = 'h-11 py-0 max-[1440px]:h-[42px]';
   if (isCookiesDisabled()) {
     disabled = true;
@@ -140,7 +140,7 @@ function InputField({
         // an option's text is all a native list can style across browsers.
         <select
           {...fieldProps}
-          className={`${value ? inputClasses : `${inputClasses} placeholder`} ${fieldClasses} ${inputHeightClasses} cursor-pointer bg-select-chevron bg-no-repeat pe-9 [background-position:right_12px_center] rtl:[background-position:left_12px_center] [&.placeholder]:text-grey-8 [&_option]:[color:CanvasText]`}
+          className={`${value ? inputClasses : `${inputClasses} placeholder`} ${fieldClasses} ${inputHeightClasses} cursor-pointer bg-select-chevron bg-no-repeat pe-9 [background-position:right_12px_center] rtl:[background-position:left_12px_center] [&.placeholder]:text-gray-500 [&_option]:[color:CanvasText]`}
           disabled={disabled || readOnly}
         >
           {value ? (

@@ -32,7 +32,7 @@ export default function EmailReceivingPage() {
         <CloseButton />
       </header>
 
-      <div className="gh-longform px-[6vmin] pb-[6vmin] pt-14 max-sm:px-7 max-sm:py-[10vmin] [&_a]:font-medium [&_a]:text-brand [&_h3]:mb-[0.25em] [&_h3]:mt-0 [&_h3]:text-balance [&_h3]:text-[27px] [&_h4]:mb-[0.4em] [&_h4]:mt-[1.85em] [&_h4]:text-[17.5px] [&_p:last-of-type]:mb-[0.2em] [&_p]:mb-[1.2em] [&_p]:text-grey-3 [&_strong]:text-grey-1">
+      <div className="gh-longform px-[6vmin] pb-[6vmin] pt-14 max-sm:px-7 max-sm:py-[10vmin] [&_a]:font-medium [&_a]:text-brand [&_h3]:mb-[0.25em] [&_h3]:mt-0 [&_h3]:text-balance [&_h3]:text-[27px] [&_h4]:mb-[0.4em] [&_h4]:mt-[1.85em] [&_h4]:text-[17.5px] [&_p:last-of-type]:mb-[0.2em] [&_p]:mb-[1.2em] [&_p]:text-gray-900 [&_strong]:text-gray-950">
         <h3>{t(`Help! I'm not receiving emails`)}</h3>
 
         <p>

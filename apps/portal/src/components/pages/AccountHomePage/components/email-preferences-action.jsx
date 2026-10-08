@@ -60,7 +60,7 @@ function EmailPreferencesAction() {
         }
       }}
     >
-      <div className="gh-portal-list-detail grow [&_.gh-portal-email-notice]:mt-1.5 [&_.gh-portal-email-notice]:text-[1.25rem] [&_.gh-portal-email-notice]:font-medium [&_.gh-portal-email-notice]:tracking-[0.2px] [&_.gh-portal-email-notice]:text-red rtl:[&_.gh-portal-email-notice]:mt-[5px] [&_h3]:text-base [&_h3]:font-semibold [&_p]:mb-0 [&_p]:me-2 [&_p]:ms-0 [&_p]:mt-[5px] [&_p]:text-[1.45rem] [&_p]:leading-[1.3em] [&_p]:tracking-[0.3px] [&_p]:text-grey-6 [&_p]:[word-break:break-word]">
+      <div className="gh-portal-list-detail grow [&_.gh-portal-email-notice]:mt-1.5 [&_.gh-portal-email-notice]:text-[1.25rem] [&_.gh-portal-email-notice]:font-medium [&_.gh-portal-email-notice]:tracking-[0.2px] [&_.gh-portal-email-notice]:text-red rtl:[&_.gh-portal-email-notice]:mt-[5px] [&_h3]:text-base [&_h3]:font-semibold [&_p]:mb-0 [&_p]:me-2 [&_p]:ms-0 [&_p]:mt-[5px] [&_p]:text-[1.45rem] [&_p]:leading-[1.3em] [&_p]:tracking-[0.3px] [&_p]:text-gray-700 [&_p]:[word-break:break-word]">
         <h3>{t('Emails')}</h3>
         {renderEmailNotice()}
       </div>

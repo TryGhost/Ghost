@@ -113,7 +113,7 @@ export default class AccountProfilePage extends React.Component {
           hidden={!this.context.lastPage}
           onClick={(e) => this.onBack(e)}
         />
-        <h3 className="gh-portal-main-title text-pretty text-center leading-[1.1em] text-grey-0 max-[390px]:mt-px max-[390px]:text-[2.1rem]">
+        <h3 className="gh-portal-main-title text-pretty text-center leading-[1.1em] text-black max-[390px]:mt-px max-[390px]:text-[2.1rem]">
           {t('Account settings')}
         </h3>
       </header>

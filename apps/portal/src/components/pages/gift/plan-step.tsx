@@ -12,11 +12,11 @@ type TypedInputFieldProps = GiftInputField & {
 const TypedInputField = InputField as unknown as (props: TypedInputFieldProps) => JSX.Element;
 
 export const GIFT_SWITCH_CLASSES =
-  'gh-portal-gift-duration-switch flex h-11 w-full rounded-[999px] bg-grey-12 p-1';
+  'gh-portal-gift-duration-switch flex h-11 w-full rounded-[999px] bg-gray-200 p-1';
 
 export function getGiftSwitchButtonClasses(isActive: boolean) {
   return (
-    'gh-portal-btn relative flex h-full min-w-0 flex-1 cursor-pointer select-none items-center justify-center whitespace-nowrap rounded-[999px] border-0 border-none px-2 py-0 text-center text-md font-medium leading-[1em] tracking-[0.2px] text-grey-0 no-underline [outline:none] [transition:background-color_150ms_cubic-bezier(0.25,1,0.5,1),box-shadow_150ms_cubic-bezier(0.25,1,0.5,1),color_150ms_cubic-bezier(0.25,1,0.5,1)] focus-visible:rounded-[999px] focus-visible:[outline:none] focus-visible:[box-shadow:0_0_0_2px_var(--brandcolor)] focus-visible:[transition:background-color_150ms_cubic-bezier(0.25,1,0.5,1),box-shadow_150ms_cubic-bezier(0.25,1,0.5,1),color_150ms_cubic-bezier(0.25,1,0.5,1)] motion-reduce:[transition:none] motion-reduce:focus-visible:[transition:none]' +
+    'gh-portal-btn relative flex h-full min-w-0 flex-1 cursor-pointer select-none items-center justify-center whitespace-nowrap rounded-[999px] border-0 border-none px-2 py-0 text-center text-md font-medium leading-[1em] tracking-[0.2px] text-black no-underline [outline:none] [transition:background-color_150ms_cubic-bezier(0.25,1,0.5,1),box-shadow_150ms_cubic-bezier(0.25,1,0.5,1),color_150ms_cubic-bezier(0.25,1,0.5,1)] focus-visible:rounded-[999px] focus-visible:[outline:none] focus-visible:[box-shadow:0_0_0_2px_var(--brandcolor)] focus-visible:[transition:background-color_150ms_cubic-bezier(0.25,1,0.5,1),box-shadow_150ms_cubic-bezier(0.25,1,0.5,1),color_150ms_cubic-bezier(0.25,1,0.5,1)] motion-reduce:[transition:none] motion-reduce:focus-visible:[transition:none]' +
     (isActive
       ? ' active bg-white [box-shadow:0px_1px_3px_rgba(var(--blackrgb),0.08)]'
       : ' bg-transparent')
@@ -100,10 +100,10 @@ function GiftPlanStep({
   return (
     <>
       <header className="gh-portal-gift-checkout-header mb-3">
-        <h1 className="gh-portal-main-title mb-2 text-pretty text-start text-4xl leading-[1.15] text-grey-0 max-sm:text-[2.6rem]">
+        <h1 className="gh-portal-main-title mb-2 text-pretty text-start text-4xl leading-[1.15] text-black max-sm:text-[2.6rem]">
           {t('Gift a membership')}
         </h1>
-        <p className="gh-portal-gift-checkout-subtitle m-0 text-pretty text-base leading-[1.45em] text-grey-3">
+        <p className="gh-portal-gift-checkout-subtitle m-0 text-pretty text-base leading-[1.45em] text-gray-900">
           {t('Share a full membership to {siteTitle} with a friend or colleague', {
             siteTitle,
           })}
@@ -132,7 +132,7 @@ function GiftPlanStep({
       )}
 
       <div className="gh-portal-gift-checkout-section mt-6">
-        <div className="gh-portal-gift-checkout-label mb-2 text-md font-semibold text-grey-4">
+        <div className="gh-portal-gift-checkout-label mb-2 text-md font-semibold text-gray-900">
           {isSingleTier ? t('Membership details') : t('Tier')}
         </div>
         {offeredDurations.length > 1 ? (
@@ -143,7 +143,7 @@ function GiftPlanStep({
           />
         ) : (
           <div
-            className="gh-portal-gift-checkout-single-duration text-lg font-semibold leading-[1.3] text-grey-0"
+            className="gh-portal-gift-checkout-single-duration text-lg font-semibold leading-[1.3] text-black"
             data-test-single-duration
           >
             {t('{duration} membership', { duration: activeDurationLabel })}
@@ -168,8 +168,8 @@ function GiftPlanStep({
                 className={
                   'gh-portal-gift-checkout-tier-item overflow-hidden rounded-[10px] border border-solid [transition:border-color_0.2s_ease,background-color_0.2s_ease]' +
                   (isSelected && !isSingleTier
-                    ? ' selected border-brand bg-[color:color-mix(in_srgb,var(--brandcolor)_6%,var(--white))] [box-shadow:0_0_0_1px_var(--brandcolor)_inset]'
-                    : ' border-grey-11 bg-white' + (isSingleTier ? '' : ' hover:border-grey-9'))
+                    ? ' selected border-brand bg-[color:color-mix(in_srgb,var(--brandcolor)_6%,theme(colors.white))] [box-shadow:0_0_0_1px_var(--brandcolor)_inset]'
+                    : ' border-gray-300 bg-white' + (isSingleTier ? '' : ' hover:border-gray-400'))
                 }
               >
                 <button
@@ -190,21 +190,21 @@ function GiftPlanStep({
                         'gh-portal-gift-checkout-tier-radio relative mt-[3px] size-[18px] shrink-0 rounded-[50%] border-[1.5px] border-solid' +
                         (isSelected
                           ? " border-brand bg-brand after:absolute after:left-1/2 after:top-1/2 after:size-[6px] after:rounded-[50%] after:bg-white after:content-[''] after:-translate-x-1/2 after:-translate-y-1/2"
-                          : ' border-grey-9 bg-white')
+                          : ' border-gray-400 bg-white')
                       }
                     />
                   )}
                   <div className="gh-portal-gift-checkout-tier-content flex min-w-0 flex-1 flex-col gap-1">
                     <div className="gh-portal-gift-checkout-tier-heading flex items-baseline gap-2.5">
-                      <span className="gh-portal-gift-checkout-tier-name flex-1 text-base font-medium text-grey-0">
+                      <span className="gh-portal-gift-checkout-tier-name flex-1 text-base font-medium text-black">
                         {product.name}
                       </span>
-                      <span className="gh-portal-gift-checkout-tier-price text-base font-semibold text-grey-0">
+                      <span className="gh-portal-gift-checkout-tier-price text-base font-semibold text-black">
                         {tierPriceLabel(product, activeDuration)}
                       </span>
                     </div>
                     {product.description && (
-                      <p className="gh-portal-gift-checkout-tier-description -mt-0.5 mb-0 text-md leading-[1.4] text-grey-4">
+                      <p className="gh-portal-gift-checkout-tier-description -mt-0.5 mb-0 text-md leading-[1.4] text-gray-900">
                         {product.description}
                       </p>
                     )}
@@ -223,11 +223,11 @@ function GiftPlanStep({
                           return (
                             <div
                               key={key}
-                              className="gh-portal-gift-checkout-benefit flex items-start gap-2.5 text-[1.45rem] leading-[1.4] text-grey-1"
+                              className="gh-portal-gift-checkout-benefit flex items-start gap-2.5 text-[1.45rem] leading-[1.4] text-gray-950"
                             >
                               <CheckmarkIcon
                                 aria-hidden="true"
-                                className="mt-[3px] size-[14px] shrink-0 text-grey-1"
+                                className="mt-[3px] size-[14px] shrink-0 text-gray-950"
                                 focusable="false"
                               />
                               <span>{benefit.name}</span>

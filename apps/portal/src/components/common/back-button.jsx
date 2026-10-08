@@ -12,7 +12,7 @@ function ActionButton({ brandColor, label = null, hidden = false, onClick }) {
 
   return (
     <button
-      className="gh-portal-btn-back fixed left-5 top-[29px] z-[10000] m-0 flex cursor-pointer select-none items-center justify-center whitespace-nowrap rounded-md border-none bg-transparent p-2 text-center text-base font-medium leading-none tracking-[0.2px] text-grey-3 no-underline transition-all duration-[250ms] ease-[ease] [outline:none] hover:-translate-x-1 hover:text-grey-1 max-sm:left-4 rtl:left-auto rtl:right-5 max-sm:rtl:right-4"
+      className="gh-portal-btn-back fixed left-5 top-[29px] z-[10000] m-0 flex cursor-pointer select-none items-center justify-center whitespace-nowrap rounded-md border-none bg-transparent p-2 text-center text-base font-medium leading-none tracking-[0.2px] text-gray-900 no-underline transition-all duration-[250ms] ease-[ease] [outline:none] hover:-translate-x-1 hover:text-gray-950 max-sm:left-4 rtl:left-auto rtl:right-5 max-sm:rtl:right-4"
       style={brandColor ? { color: brandColor } : undefined}
       onClick={(e) => onClick(e)}
     >

@@ -29,12 +29,12 @@ const GiftDetailsToggle = ({ description, benefits, showDetails, onToggle }) => 
 
       return (
         <div
-          className="gh-portal-gift-checkout-benefit flex items-start gap-2.5 text-[1.45rem] leading-[1.4] text-[rgba(255,255,255,0.85)]"
+          className="gh-portal-gift-checkout-benefit flex items-start gap-2.5 text-[1.45rem] leading-[1.4] text-white/85"
           key={benefitKey}
         >
           <CheckmarkIcon
             aria-hidden="true"
-            className="mt-[3px] size-[14px] shrink-0 text-grey-1 [&_path]:stroke-[rgba(255,255,255,0.85)]"
+            className="mt-[3px] size-[14px] shrink-0 text-gray-950 [&_path]:stroke-white/85"
             focusable="false"
           />
           <span>{benefitName}</span>
@@ -56,7 +56,7 @@ const GiftDetailsToggle = ({ description, benefits, showDetails, onToggle }) => 
       >
         <div className="gh-portal-gift-checkout-details-inner min-h-0 overflow-hidden">
           {description && (
-            <p className="gh-portal-gift-checkout-details-description mb-3 text-[1.45rem] leading-[1.4] text-[rgba(255,255,255,0.85)] last:mb-0">
+            <p className="gh-portal-gift-checkout-details-description mb-3 text-[1.45rem] leading-[1.4] text-white/85 last:mb-0">
               {description}
             </p>
           )}
@@ -70,7 +70,7 @@ const GiftDetailsToggle = ({ description, benefits, showDetails, onToggle }) => 
       <button
         type="button"
         className={
-          'gh-portal-gift-checkout-details-toggle mt-6 inline-flex cursor-pointer items-center gap-1 border-none bg-transparent px-3 py-2 text-md font-medium text-[rgba(255,255,255,0.7)] [transition:color_0.15s_ease] hover:text-[rgba(255,255,255,0.95)] focus-visible:outline-offset-[3px] focus-visible:[outline:2px_solid_rgba(255,255,255,0.9)] [&_svg]:size-3 [&_svg]:[transition:transform_0.2s_ease] [&.is-open_svg]:[transform:rotate(-180deg)]' +
+          'gh-portal-gift-checkout-details-toggle mt-6 inline-flex cursor-pointer items-center gap-1 border-none bg-transparent px-3 py-2 text-md font-medium text-white/70 [transition:color_0.15s_ease] hover:text-white/95 focus-visible:outline-offset-[3px] focus-visible:[outline:2px_solid_rgba(255,255,255,0.9)] [&_svg]:size-3 [&_svg]:[transition:transform_0.2s_ease] [&.is-open_svg]:[transform:rotate(-180deg)]' +
           (showDetails ? ' is-open' : '')
         }
         onClick={onToggle}

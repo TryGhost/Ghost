@@ -26,19 +26,19 @@ import Interpolate from '@doist/react-interpolate';
 import { t } from '../../utils/i18n';
 
 const productCardClass =
-  "relative flex min-h-[200px] min-w-[320px] max-w-[420px] flex-1 flex-col items-start justify-stretch rounded-[7px] border border-solid border-grey-11 bg-white p-8 [transition:border-color_0.25s_ease-in-out] max-[670px]:min-h-[unset] max-sm:min-w-[unset] [&.checked]:before:pointer-events-none [&.checked]:before:absolute [&.checked]:before:inset-[-2px] [&.checked]:before:z-[999] [&.checked]:before:block [&.checked]:before:rounded-[7px] [&.checked]:before:border-0 [&.checked]:before:border-solid [&.checked]:before:border-brand [&.checked]:before:content-[''] [&.only-free]:mb-4 [&.only-free]:min-h-[unset] [&:not(.disabled):hover]:border-grey-9";
+  "relative flex min-h-[200px] min-w-[320px] max-w-[420px] flex-1 flex-col items-start justify-stretch rounded-[7px] border border-solid border-gray-300 bg-white p-8 [transition:border-color_0.25s_ease-in-out] max-[670px]:min-h-[unset] max-sm:min-w-[unset] [&.checked]:before:pointer-events-none [&.checked]:before:absolute [&.checked]:before:inset-[-2px] [&.checked]:before:z-[999] [&.checked]:before:block [&.checked]:before:rounded-[7px] [&.checked]:before:border-0 [&.checked]:before:border-solid [&.checked]:before:border-brand [&.checked]:before:content-[''] [&.only-free]:mb-4 [&.only-free]:min-h-[unset] [&:not(.disabled):hover]:border-gray-400";
 
 const tierButtonClass =
   'gh-portal-btn relative z-[900] flex h-11 w-full min-w-[80px] cursor-pointer select-none items-center justify-center whitespace-nowrap rounded-md bg-brand px-[1.8rem] py-0 text-center text-base font-medium leading-[1em] tracking-[0.2px] text-white no-underline [border:none] [outline:none] [transition:all_0.25s_ease] hover:opacity-90 disabled:cursor-auto disabled:!opacity-50 max-[1440px]:h-[42px]';
 
 const toggleButtonClass =
-  'gh-portal-btn relative flex !h-full w-1/2 min-w-[80px] cursor-pointer select-none items-center justify-center whitespace-nowrap rounded-[999px] bg-transparent px-[1.8rem] py-0 text-center text-base font-medium leading-[1em] tracking-[0.2px] text-grey-0 no-underline [border:0] [outline:none] [transition:all_0.25s_ease]';
+  'gh-portal-btn relative flex !h-full w-1/2 min-w-[80px] cursor-pointer select-none items-center justify-center whitespace-nowrap rounded-[999px] bg-transparent px-[1.8rem] py-0 text-center text-base font-medium leading-[1em] tracking-[0.2px] text-black no-underline [border:0] [outline:none] [transition:all_0.25s_ease]';
 
 const btnProductClass =
   "gh-portal-btn-product bottom-0 -mb-8 flex w-full flex-col items-start bg-transparent pb-8 pt-10 [justify-self:flex-end] [position:sticky] before:absolute before:inset-x-0 before:bottom-0 before:top-[-16px] before:z-[800] before:block before:bg-[linear-gradient(0deg,rgba(var(--whitergb),1)_60%,rgba(var(--whitergb),0)_100%)] before:content-[''] max-sm:static max-sm:before:hidden";
 
 const discountLabelClass =
-  "gh-portal-discount-label relative -me-1 max-h-[24.5px] whitespace-nowrap rounded-[999px] px-[9px] py-1.5 text-center text-[1.25rem] font-semibold leading-[1em] tracking-[0.3px] text-grey-0 before:absolute before:inset-0 before:block before:rounded-[999px] before:bg-brand before:opacity-20 before:content-['']";
+  "gh-portal-discount-label relative -me-1 max-h-[24.5px] whitespace-nowrap rounded-[999px] px-[9px] py-1.5 text-center text-[1.25rem] font-semibold leading-[1em] tracking-[0.3px] text-black before:absolute before:inset-0 before:block before:rounded-[999px] before:bg-brand before:opacity-20 before:content-['']";
 
 const loaderIconClass =
   'gh-portal-loadingicon absolute left-1/2 -ms-[19px] inline-block h-[31px] [&_path]:fill-white [&_rect]:fill-white';
@@ -48,7 +48,7 @@ const currencySignClass = (currencySymbol) =>
   (currencySymbol.length > 1 ? ' long me-[5px]' : '');
 
 const amountClass =
-  'amount text-[3.5rem] font-bold leading-[1em] tracking-[-1.3px] text-grey-0 max-[1440px]:text-[32px] max-[1440px]:tracking-[-0.022em]';
+  'amount text-[3.5rem] font-bold leading-[1em] tracking-[-1.3px] text-black max-[1440px]:text-[32px] max-[1440px]:tracking-[-0.022em]';
 
 const ProductsContext = React.createContext({
   selectedInterval: 'month',
@@ -97,12 +97,12 @@ function ProductCardAlternatePrice({ price }) {
   const { portal_plans: portalPlans } = site;
   if (!portalPlans.includes('monthly') || !portalPlans.includes('yearly')) {
     return (
-      <div className="gh-portal-product-alternative-price hidden text-sm leading-[1.6em] tracking-[0.3px] text-grey-8"></div>
+      <div className="gh-portal-product-alternative-price hidden text-sm leading-[1.6em] tracking-[0.3px] text-gray-500"></div>
     );
   }
 
   return (
-    <div className="gh-portal-product-alternative-price hidden text-sm leading-[1.6em] tracking-[0.3px] text-grey-8">
+    <div className="gh-portal-product-alternative-price hidden text-sm leading-[1.6em] tracking-[0.3px] text-gray-500">
       {getPriceString(price, site.locale)}
     </div>
   );
@@ -149,12 +149,12 @@ function ProductCardPrice({ product }) {
       <>
         <div className="gh-portal-product-card-pricecontainer mt-4 flex w-full flex-col items-start">
           <div className="gh-portal-product-card-price-trial flex w-full flex-row flex-wrap items-end justify-between gap-x-[4px] gap-y-[10px]">
-            <div className="gh-portal-product-price flex justify-center text-grey-0">
+            <div className="gh-portal-product-price flex justify-center text-black">
               <span className={currencySignClass(currencySymbol)}>{currencySymbol}</span>
               <span className={amountClass} data-testid="product-amount">
                 {formatPrice(getStripeAmount(activePrice.amount), site.locale)}
               </span>
-              <span className="billing-period ms-[5px] self-end text-base leading-[1.6em] tracking-[0.3px] text-grey-5">
+              <span className="billing-period ms-[5px] self-end text-base leading-[1.6em] tracking-[0.3px] text-gray-800">
                 /{interval}
               </span>
             </div>
@@ -179,12 +179,12 @@ function ProductCardPrice({ product }) {
   return (
     <div className="gh-portal-product-card-pricecontainer mt-4 flex w-full flex-col items-start">
       <div className="gh-portal-product-card-price-trial flex w-full flex-row flex-wrap items-end justify-between gap-x-[4px] gap-y-[10px]">
-        <div className="gh-portal-product-price flex justify-center text-grey-0">
+        <div className="gh-portal-product-price flex justify-center text-black">
           <span className={currencySignClass(currencySymbol)}>{currencySymbol}</span>
           <span className={amountClass} data-testid="product-amount">
             {formatPrice(getStripeAmount(activePrice.amount), site.locale)}
           </span>
-          <span className="billing-period ms-[5px] self-end text-base leading-[1.6em] tracking-[0.3px] text-grey-5">
+          <span className="billing-period ms-[5px] self-end text-base leading-[1.6em] tracking-[0.3px] text-gray-800">
             /{interval}
           </span>
         </div>
@@ -252,7 +252,7 @@ function FreeProductCard({ products, handleChooseSignup, error }) {
           </h4>
           {!hasOnlyFree ? (
             <div className="gh-portal-product-card-pricecontainer free-trial-disabled mt-4 flex w-full flex-col items-start">
-              <div className="gh-portal-product-price flex justify-center text-grey-0">
+              <div className="gh-portal-product-price flex justify-center text-black">
                 <span className={currencySignClass(currencySymbol)}>{currencySymbol}</span>
                 <span className={amountClass} data-testid="product-amount">
                   0
@@ -494,7 +494,7 @@ function ProductPriceSwitch({ selectedInterval, setSelectedInterval, products })
     <div className="gh-portal-logged-out-form-container mx-auto w-full max-w-[420px]">
       <div
         className={
-          "gh-portal-products-pricetoggle relative mb-10 flex h-11 w-full rounded-[999px] bg-[#F3F3F3] p-1 before:absolute before:bottom-1 before:right-1 before:top-1 before:block before:w-1/2 before:rounded-[999px] before:bg-white before:content-[''] before:[box-shadow:0px_1px_3px_rgba(var(--blackrgb),0.08)] before:[transition:all_0.15s_ease-in-out] rtl:before:left-1 rtl:before:right-auto [&.left]:before:[transform:translateX(calc(-100%_+_8px))] rtl:[&.left]:before:[transform:translateX(calc(100%_-_8px))]" +
+          "gh-portal-products-pricetoggle relative mb-10 flex h-11 w-full rounded-[999px] bg-gray-100 p-1 before:absolute before:bottom-1 before:right-1 before:top-1 before:block before:w-1/2 before:rounded-[999px] before:bg-white before:content-[''] before:[box-shadow:0px_1px_3px_rgba(var(--blackrgb),0.08)] before:[transition:all_0.15s_ease-in-out] rtl:before:left-1 rtl:before:right-auto [&.left]:before:[transform:translateX(calc(-100%_+_8px))] rtl:[&.left]:before:[transform:translateX(calc(100%_-_8px))]" +
           (selectedInterval === 'month' ? ' left' : '')
         }
       >
@@ -764,7 +764,7 @@ function ChangeProductCard({ product, onPlanSelect }) {
         </div>
         {currentPlan ? (
           <div className={btnProductClass}>
-            <span className="gh-portal-current-plan z-[900] flex h-11 w-full items-center justify-center whitespace-nowrap rounded-[5px] bg-grey-14 text-center text-md font-medium leading-[1em] tracking-[0.2px] text-grey-5">
+            <span className="gh-portal-current-plan z-[900] flex h-11 w-full items-center justify-center whitespace-nowrap rounded-[5px] bg-gray-50 text-center text-md font-medium leading-[1em] tracking-[0.2px] text-gray-800">
               <span>{t('Current plan')}</span>
             </span>
           </div>

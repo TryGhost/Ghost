@@ -23,7 +23,7 @@ export default class CloseButton extends React.Component {
         onClick={onClick || this.closePopup}
       >
         <CloseIcon
-          className="gh-portal-closeicon size-5 cursor-pointer p-3 text-grey-6 [transition:all_0.2s_ease-in-out] hover:text-grey-5 group-[.full-size]/popup:size-6 group-[.full-size.giftRedemption]/popup:!text-[rgba(255,255,255,0.65)] group-[.full-size.giftSuccess]/popup:!text-[rgba(255,255,255,0.65)] group-[.full-size.gift]/popup:!text-[rgba(255,255,255,0.65)] group-[.full-size.giftRedemption]/popup:hover:!text-[rgba(255,255,255,0.9)] group-[.full-size.giftSuccess]/popup:hover:!text-[rgba(255,255,255,0.9)] group-[.full-size.gift]/popup:hover:!text-[rgba(255,255,255,0.9)] max-[880px]:group-[.full-size.gift]/popup:!text-brand max-[880px]:group-[.full-size.gift]/popup:hover:!text-brand max-sm:group-[.full-size]/popup:size-4"
+          className="gh-portal-closeicon size-5 cursor-pointer p-3 text-gray-700 [transition:all_0.2s_ease-in-out] hover:text-gray-800 group-[.full-size]/popup:size-6 group-[.full-size.giftRedemption]/popup:!text-white/65 group-[.full-size.giftSuccess]/popup:!text-white/65 group-[.full-size.gift]/popup:!text-white/65 group-[.full-size.giftRedemption]/popup:hover:!text-white/90 group-[.full-size.giftSuccess]/popup:hover:!text-white/90 group-[.full-size.gift]/popup:hover:!text-white/90 max-[880px]:group-[.full-size.gift]/popup:!text-brand max-[880px]:group-[.full-size.gift]/popup:hover:!text-brand max-sm:group-[.full-size]/popup:size-4"
           style={closeIconColor ? { color: closeIconColor } : undefined}
           aria-hidden="true"
         />

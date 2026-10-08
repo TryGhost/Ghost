@@ -11,31 +11,8 @@
 
 @layer base {
   :root {
-    --black: #000;
-    --blackrgb: 0, 0, 0;
-    --grey0: #1d1d1d;
-    --grey1: #333;
-    --grey1rgb: 33, 33, 33;
-    --grey2: #3d3d3d;
-    --grey3: #474747;
-    --grey4: #515151;
-    --grey5: #686868;
-    --grey6: #7f7f7f;
-    --grey7: #979797;
-    --grey8: #aeaeae;
-    --grey9: #c5c5c5;
-    --grey10: #dcdcdc;
-    --grey11: #e1e1e1;
-    --grey12: #eaeaea;
-    --grey13: #f9f9f9;
-    --grey13rgb: 249, 249, 249;
-    --grey14: #fbfbfb;
-    --white: #fff;
+    --blackrgb: 21, 23, 26;
     --whitergb: 255, 255, 255;
-    --red: #f02525;
-    --darkerRed: #c50202;
-    --yellow: #ffdc15;
-    --green: #30cf43;
   }
 
   html {
@@ -53,7 +30,7 @@
     line-height: 1.6em;
     font-weight: 400;
     font-style: normal;
-    color: var(--grey2);
+    color: theme('colors.gray.900');
     box-sizing: border-box;
     overflow: hidden;
   }

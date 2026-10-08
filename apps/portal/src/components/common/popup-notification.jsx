@@ -21,7 +21,7 @@ const CloseButton = ({ hide = false, onClose }) => {
       onClick={onClose}
     >
       <CloseIcon
-        className="gh-portal-notification-closeicon -my-1.5 -mr-1.5 size-3 min-w-3 cursor-pointer p-2.5 text-grey-8 opacity-80 hover:opacity-100"
+        className="gh-portal-notification-closeicon -my-1.5 -mr-1.5 size-3 min-w-3 cursor-pointer p-2.5 text-gray-500 opacity-80 hover:opacity-100"
         aria-hidden="true"
       />
     </button>

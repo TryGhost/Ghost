@@ -12,7 +12,7 @@ const UserHeader = () => {
         gravatar={avatar}
         style={{ userIcon: { color: brandColor, width: '56px', height: '56px', padding: '2px' } }}
       />
-      <h2 className="gh-portal-main-title text-pretty text-center leading-[1.1em] text-grey-0">
+      <h2 className="gh-portal-main-title text-pretty text-center leading-[1.1em] text-black">
         {t('Your account')}
       </h2>
     </header>

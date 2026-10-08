@@ -10,10 +10,10 @@ import InvitationIcon from '../../images/icons/invitation.svg?react';
 import { t } from '../../utils/i18n';
 
 const signupMessageButtonClass =
-  'gh-portal-btn gh-portal-btn-link relative -mb-px !ms-1 flex cursor-pointer select-none items-center justify-center whitespace-nowrap rounded-md bg-transparent p-0 text-center text-md font-semibold leading-none tracking-[0.2px] text-grey-0 no-underline [border:none] [outline:none] [transition:all_0.25s_ease] hover:border-grey-10 hover:opacity-[0.85]';
+  'gh-portal-btn gh-portal-btn-link relative -mb-px !ms-1 flex cursor-pointer select-none items-center justify-center whitespace-nowrap rounded-md bg-transparent p-0 text-center text-md font-semibold leading-none tracking-[0.2px] text-black no-underline [border:none] [outline:none] [transition:all_0.25s_ease] hover:border-gray-300 hover:opacity-[0.85]';
 
 const mainTitleClass =
-  'gh-portal-main-title mt-3 text-center leading-[1.1em] text-grey-0 text-pretty [.gh-portal-signup-logo+&]:mt-1';
+  'gh-portal-main-title mt-3 text-center leading-[1.1em] text-black text-pretty [.gh-portal-signup-logo+&]:mt-1';
 
 export default class SigninPage extends React.Component {
   static contextType = AppContext;
@@ -128,7 +128,7 @@ export default class SigninPage extends React.Component {
   renderSignupMessage() {
     const { brandColor } = this.context;
     return (
-      <div className="gh-portal-signup-message z-[9999] mt-1 flex flex-wrap justify-center text-base text-grey-4 [&_*]:z-[9999]">
+      <div className="gh-portal-signup-message z-[9999] mt-1 flex flex-wrap justify-center text-base text-gray-900 [&_*]:z-[9999]">
         <div>{t("Don't have an account?")}</div>
         <button
           data-test-button="signup-switch"
@@ -151,7 +151,7 @@ export default class SigninPage extends React.Component {
         <section>
           <div className="gh-portal-section mb-10">
             <p
-              className="gh-portal-members-disabled-notification mx-8 mb-6 mt-2 text-center text-grey-2"
+              className="gh-portal-members-disabled-notification mx-8 mb-6 mt-2 text-center text-gray-900"
               data-testid="members-disabled-notification-text"
             >
               {t('Memberships unavailable, contact the owner for access.')}

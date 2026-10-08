@@ -31,7 +31,7 @@ function AccountHeader() {
   return (
     <header className="gh-portal-header flex flex-col items-center pb-6">
       <SiteLogo />
-      <h2 className="gh-portal-publication-title mt-1.5 text-center text-lg font-bold uppercase tracking-[-.1px] text-[#15212a]">
+      <h2 className="gh-portal-publication-title mt-1.5 text-center text-lg font-bold uppercase tracking-[-.1px] text-gray-950">
         {siteTitle}
       </h2>
     </header>
@@ -43,10 +43,10 @@ function UnsubscribeErrorPage({ message }) {
   return (
     <div className="gh-portal-content gh-portal-feedback with-footer relative [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
       <CloseButton />
-      <div className="gh-feedback-icon gh-feedback-icon-error mx-auto my-0 w-24 px-0 py-2.5 text-center text-[#f50b23]">
+      <div className="gh-feedback-icon gh-feedback-icon-error mx-auto my-0 w-24 px-0 py-2.5 text-center text-red-500">
         <WarningIcon />
       </div>
-      <h1 className="gh-portal-main-title text-pretty text-center leading-[1.1em] text-grey-0">
+      <h1 className="gh-portal-main-title text-pretty text-center leading-[1.1em] text-black">
         {t("That didn't go to plan")}
       </h1>
       <div>
@@ -59,7 +59,7 @@ function UnsubscribeErrorPage({ message }) {
         retry={false}
         onClick={() => doAction('closePopup')}
         disabled={false}
-        brandColor="#000000"
+        brandColor="#15171a"
         label={t('Close')}
         isRunning={false}
         tabIndex={3}
@@ -295,7 +295,7 @@ export default function UnsubscribePage() {
       <div className="gh-portal-content gh-portal-unsubscribe with-footer relative [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         <CloseButton />
         <AccountHeader />
-        <h1 className="gh-portal-main-title mb-4 text-pretty text-center text-[2.6rem] leading-[1.1em] text-grey-0">
+        <h1 className="gh-portal-main-title mb-4 text-pretty text-center text-[2.6rem] leading-[1.1em] text-black">
           {t('Successfully unsubscribed')}
         </h1>
         <div>

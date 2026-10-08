@@ -18,7 +18,7 @@ function AccountHeader() {
           doAction('back');
         }}
       />
-      <h3 className="gh-portal-main-title text-pretty text-center leading-[1.1em] text-grey-0 max-[390px]:mt-px max-[390px]:text-[2.1rem]">
+      <h3 className="gh-portal-main-title text-pretty text-center leading-[1.1em] text-black max-[390px]:mt-px max-[390px]:text-[2.1rem]">
         {t('Email preferences')}
       </h3>
     </header>
@@ -64,7 +64,7 @@ function NewsletterPrefSection({ newsletter, subscribedNewsletters, setSubscribe
         }
       }}
     >
-      <div className="gh-portal-list-detail grow py-1 pe-6 ps-0 [&_h3]:text-base [&_h3]:font-semibold [&_p]:mb-0 [&_p]:me-2 [&_p]:ms-0 [&_p]:mt-[5px] [&_p]:text-[1.45rem] [&_p]:leading-[1.3em] [&_p]:tracking-[0.3px] [&_p]:text-grey-6 [&_p]:[word-break:break-word]">
+      <div className="gh-portal-list-detail grow py-1 pe-6 ps-0 [&_h3]:text-base [&_h3]:font-semibold [&_p]:mb-0 [&_p]:me-2 [&_p]:ms-0 [&_p]:mt-[5px] [&_p]:text-[1.45rem] [&_p]:leading-[1.3em] [&_p]:tracking-[0.3px] [&_p]:text-gray-700 [&_p]:[word-break:break-word]">
         <h3>{newsletter.name}</h3>
         <p>{newsletter?.description}</p>
       </div>
@@ -133,7 +133,7 @@ function CommentsSection({
         }
       }}
     >
-      <div className="gh-portal-list-detail grow py-1 pe-6 ps-0 [&_h3]:text-base [&_h3]:font-semibold [&_p]:mb-0 [&_p]:me-2 [&_p]:ms-0 [&_p]:mt-[5px] [&_p]:text-[1.45rem] [&_p]:leading-[1.3em] [&_p]:tracking-[0.3px] [&_p]:text-grey-6 [&_p]:[word-break:break-word]">
+      <div className="gh-portal-list-detail grow py-1 pe-6 ps-0 [&_h3]:text-base [&_h3]:font-semibold [&_p]:mb-0 [&_p]:me-2 [&_p]:ms-0 [&_p]:mt-[5px] [&_p]:text-[1.45rem] [&_p]:leading-[1.3em] [&_p]:tracking-[0.3px] [&_p]:text-gray-700 [&_p]:[word-break:break-word]">
         <h3>{t('Comments')}</h3>
         <p>{t('Get notified when someone replies to your comment')}</p>
       </div>
@@ -201,7 +201,7 @@ function UpdatesAndAnnouncementsSection({
         }
       }}
     >
-      <div className="gh-portal-list-detail grow py-1 pe-6 ps-0 [&_h3]:text-base [&_h3]:font-semibold [&_p]:mb-0 [&_p]:me-2 [&_p]:ms-0 [&_p]:mt-[5px] [&_p]:text-[1.45rem] [&_p]:leading-[1.3em] [&_p]:tracking-[0.3px] [&_p]:text-grey-6 [&_p]:[word-break:break-word]">
+      <div className="gh-portal-list-detail grow py-1 pe-6 ps-0 [&_h3]:text-base [&_h3]:font-semibold [&_p]:mb-0 [&_p]:me-2 [&_p]:ms-0 [&_p]:mt-[5px] [&_p]:text-[1.45rem] [&_p]:leading-[1.3em] [&_p]:tracking-[0.3px] [&_p]:text-gray-700 [&_p]:[word-break:break-word]">
         <h3>{t('Updates & announcements')}</h3>
         <p>{t('Occasional updates from {siteTitle}', { siteTitle: site?.title })}</p>
       </div>
@@ -244,8 +244,8 @@ function NewsletterPrefs({
 function EmailHelpSection() {
   const { doAction } = useContext(AppContext);
   return (
-    <section className="gh-portal-list-help justify-between gap-4 bg-grey-13 text-md">
-      <span className="gh-portal-list-help-label text-grey-5">{t('Not receiving emails?')}</span>
+    <section className="gh-portal-list-help justify-between gap-4 bg-gray-50 text-md">
+      <span className="gh-portal-list-help-label text-gray-800">{t('Not receiving emails?')}</span>
       <button
         className="gh-portal-btn-text gh-email-faq-page-button h-auto shrink-0 cursor-pointer self-stretch border-none bg-transparent p-0 text-md font-medium text-brand [transition:color_linear_100ms]"
         onClick={() =>
@@ -261,7 +261,7 @@ function EmailHelpSection() {
 function ShowPaidMemberMessage({ site, isPaid }) {
   if (isPaid) {
     return (
-      <p className="gh-portal-btn-unsubscribe-note m-0 text-balance text-center text-md leading-[1.4] text-grey-6">
+      <p className="gh-portal-btn-unsubscribe-note m-0 text-balance text-center text-md leading-[1.4] text-gray-700">
         {t('Unsubscribing from emails will not cancel your paid subscription to {title}', {
           title: site?.title,
         })}
@@ -317,7 +317,7 @@ export default function NewsletterManagement({
       </div>
       <CloseButton brandColor={brandColor} />
       <div className="gh-portal-section mb-10 flex flex-col gap-5">
-        <div className="gh-portal-list overflow-hidden rounded-lg border border-solid border-grey-12 bg-white p-0 [&_.gh-portal-list-help]:px-5 [&_.gh-portal-list-help]:py-2 [&_section:first-of-type]:rounded-t-lg [&_section:last-of-type]:rounded-b-lg [&_section:last-of-type]:border-none [&_section]:m-0 [&_section]:flex [&_section]:items-center [&_section]:p-5 [&_section]:[border-bottom:1px_solid_var(--grey12)]">
+        <div className="gh-portal-list overflow-hidden rounded-lg border border-solid border-gray-200 bg-white p-0 [&_.gh-portal-list-help]:px-5 [&_.gh-portal-list-help]:py-2 [&_section:first-of-type]:rounded-t-lg [&_section:last-of-type]:rounded-b-lg [&_section:last-of-type]:border-none [&_section]:m-0 [&_section]:flex [&_section]:items-center [&_section]:p-5 [&_section]:[border-bottom:1px_solid_theme(colors.gray.200)]">
           <NewsletterPrefs
             hasNewslettersEnabled={hasNewslettersEnabled}
             subscribedNewsletters={subscribedNewsletters}

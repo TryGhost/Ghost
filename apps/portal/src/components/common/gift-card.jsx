@@ -41,7 +41,7 @@ const GiftCard = ({
           <div className="gh-portal-gift-checkout-card-details relative z-[3] flex flex-col gap-2 px-7 pb-6">
             {name && (
               <div className="gh-portal-gift-checkout-card-detail">
-                <div className="gh-portal-gift-checkout-card-detail-label mb-[-5px] text-xs text-[rgba(255,255,255,0.8)]">
+                <div className="gh-portal-gift-checkout-card-detail-label mb-[-5px] text-xs text-white/80">
                   {t('Name')}
                 </div>
                 <div className="gh-portal-gift-checkout-card-detail-value text-sm font-medium text-white [overflow-wrap:anywhere]">
@@ -51,7 +51,7 @@ const GiftCard = ({
             )}
             {toName && (
               <div className="gh-portal-gift-checkout-card-detail">
-                <div className="gh-portal-gift-checkout-card-detail-label mb-[-5px] text-xs text-[rgba(255,255,255,0.8)]">
+                <div className="gh-portal-gift-checkout-card-detail-label mb-[-5px] text-xs text-white/80">
                   {t('To')}
                 </div>
                 <div className="gh-portal-gift-checkout-card-detail-value text-sm font-medium text-white [overflow-wrap:anywhere]">
@@ -61,7 +61,7 @@ const GiftCard = ({
             )}
             {fromName && (
               <div className="gh-portal-gift-checkout-card-detail">
-                <div className="gh-portal-gift-checkout-card-detail-label mb-[-5px] text-xs text-[rgba(255,255,255,0.8)]">
+                <div className="gh-portal-gift-checkout-card-detail-label mb-[-5px] text-xs text-white/80">
                   {t('From')}
                 </div>
                 <div className="gh-portal-gift-checkout-card-detail-value text-sm font-medium text-white [overflow-wrap:anywhere]">
@@ -71,7 +71,7 @@ const GiftCard = ({
             )}
             {giftValue && (
               <div className="gh-portal-gift-checkout-card-detail">
-                <div className="gh-portal-gift-checkout-card-detail-label mb-[-5px] text-xs text-[rgba(255,255,255,0.8)]">
+                <div className="gh-portal-gift-checkout-card-detail-label mb-[-5px] text-xs text-white/80">
                   {t('Gift value')}
                 </div>
                 <div
@@ -92,7 +92,7 @@ const GiftCard = ({
               alt=""
             />
           )}
-          <span className="gh-portal-gift-checkout-card-site-name relative z-[3] text-md font-semibold tracking-[-0.01em] text-grey-0">
+          <span className="gh-portal-gift-checkout-card-site-name relative z-[3] text-md font-semibold tracking-[-0.01em] text-black">
             {siteTitle}
           </span>
         </div>

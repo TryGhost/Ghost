@@ -35,13 +35,13 @@ import { translateCadence } from '../../utils/helpers';
 const offerBarClass = String.raw`gh-portal-offer-bar relative mb-6 rounded-md bg-white bg-[url("data:image/svg+xml,%3csvg\000020width='100%25'\000020height='99.9%25'\000020xmlns='http://www.w3.org/2000/svg'%3e%3crect\000020width='100%25'\000020height='100%25'\000020fill='none'\000020stroke='%23C3C3C3'\000020stroke-width='3'\000020stroke-dasharray='3%2c\0000209'\000020stroke-dashoffset='0'\000020stroke-linecap='square'/%3e%3c/svg%3e")] px-7 pb-7 pt-[26px]`;
 
 const offerDiscountLabelClass =
-  "gh-portal-discount-label absolute right-[25px] top-[23px] -me-1 max-h-[24.5px] whitespace-nowrap rounded-[999px] px-[9px] py-1.5 text-center text-[1.25rem] font-semibold leading-[1em] tracking-[0.3px] text-grey-0 before:absolute before:inset-0 before:block before:rounded-[999px] before:bg-brand before:opacity-20 before:content-['']";
+  "gh-portal-discount-label absolute right-[25px] top-[23px] -me-1 max-h-[24.5px] whitespace-nowrap rounded-[999px] px-[9px] py-1.5 text-center text-[1.25rem] font-semibold leading-[1em] tracking-[0.3px] text-black before:absolute before:inset-0 before:block before:rounded-[999px] before:bg-brand before:opacity-20 before:content-['']";
 
 const listSectionClass =
-  'flex items-center p-5 [border-bottom:1px_solid_var(--grey12)] first-of-type:rounded-t-lg last-of-type:rounded-b-lg last-of-type:[border:none]';
+  'flex items-center p-5 [border-bottom:1px_solid_theme(colors.gray.200)] first-of-type:rounded-t-lg last-of-type:rounded-b-lg last-of-type:[border:none]';
 
 const listDetailTextClass =
-  'mb-0 mr-2 mt-[5px] text-[1.45rem] leading-[1.3em] tracking-[0.3px] text-grey-6 [word-break:break-word] rtl:ml-2 rtl:mr-0';
+  'mb-0 mr-2 mt-[5px] text-[1.45rem] leading-[1.3em] tracking-[0.3px] text-gray-700 [word-break:break-word] rtl:ml-2 rtl:mr-0';
 
 const accountPlansMainClass = 'gh-portal-section gh-portal-accountplans-main mb-0 mt-6';
 
@@ -65,7 +65,7 @@ const Header = ({ showConfirmation, confirmationType, pendingOffer }) => {
   }
   return (
     <header className="gh-portal-detail-header relative -mt-0.5 mb-10 flex items-center justify-center px-[60px] max-sm:mt-1">
-      <h3 className="gh-portal-main-title text-pretty text-center leading-[1.1em] text-grey-0 group-[.account-plan.full-size]/popup:mt-11 group-[.account-plan.full-size]/popup:text-4xl">
+      <h3 className="gh-portal-main-title text-pretty text-center leading-[1.1em] text-black group-[.account-plan.full-size]/popup:mt-11 group-[.account-plan.full-size]/popup:text-4xl">
         {title}
       </h3>
     </header>
@@ -143,7 +143,7 @@ const PlanConfirmationSection = ({ plan, type, onConfirm }) => {
   if (type === 'changePlan') {
     return (
       <div className="gh-portal-logged-out-form-container mx-auto w-full max-w-[420px]">
-        <div className="gh-portal-list mb-6 overflow-hidden rounded-lg border border-solid border-grey-12 bg-white p-0">
+        <div className="gh-portal-list mb-6 overflow-hidden rounded-lg border border-solid border-gray-200 bg-white p-0">
           <section className={listSectionClass}>
             <div className="gh-portal-list-detail grow">
               <h3 className="text-base font-semibold">{t('Account')}</h3>
@@ -186,13 +186,13 @@ const PlanConfirmationSection = ({ plan, type, onConfirm }) => {
         </p>
         <section className="gh-portal-input-section mb-5">
           <div className="gh-portal-input-labelcontainer flex w-full justify-between">
-            <label className="gh-portal-input-label mb-0.5 text-sm font-semibold tracking-[0px] text-grey-1">
+            <label className="gh-portal-input-label mb-0.5 text-sm font-semibold tracking-[0px] text-gray-950">
               {t('Cancellation reason')}
             </label>
           </div>
           <textarea
             data-test-input="cancellation-reason"
-            className="gh-portal-input mb-4 box-border block h-[62px] w-full resize-none appearance-none rounded-md border border-solid border-grey-11 bg-transparent px-3 py-1.5 text-base tracking-[0.2px] [-webkit-appearance:none] [color:inherit] [outline:none] [transition:border-color_0.25s_ease-in-out] placeholder:text-grey-8 focus:border-grey-8"
+            className="gh-portal-input mb-4 box-border block h-[62px] w-full resize-none appearance-none rounded-md border border-solid border-gray-300 bg-transparent px-3 py-1.5 text-base tracking-[0.2px] [-webkit-appearance:none] [color:inherit] [outline:none] [transition:border-color_0.25s_ease-in-out] placeholder:text-gray-500 focus:border-gray-500"
             key="cancellation_reason"
             label="Cancellation reason"
             type="text"
@@ -385,21 +385,23 @@ const RetentionOfferSection = ({ subscription, offer, onAcceptOffer, onDeclineOf
         <div className="gh-portal-offer-details">
           {!isFreeMonthsOffer(offer) && (
             <div className="gh-portal-retention-offer-price mt-4 flex items-center gap-[6px]">
-              <div className="gh-portal-product-price flex justify-center text-grey-0">
+              <div className="gh-portal-product-price flex justify-center text-black">
                 <span className="currency-sign self-start text-[2.7rem] font-bold leading-[1.135em] max-[370px]:text-xl">
                   {currency}
                 </span>
-                <span className="amount text-[3.5rem] font-bold leading-[1em] tracking-[-1.3px] text-grey-0 max-[1440px]:text-[32px] max-[1440px]:tracking-[-0.022em]">
+                <span className="amount text-[3.5rem] font-bold leading-[1em] tracking-[-1.3px] text-black max-[1440px]:text-[32px] max-[1440px]:tracking-[-0.022em]">
                   {discountedPrice}
                 </span>
               </div>
-              <div className="gh-portal-offer-oldprice relative mb-0 mt-1 flex whitespace-nowrap text-xl font-light leading-none text-grey-8 after:absolute after:inset-x-0 after:top-1/2 after:block after:h-px after:bg-grey-8 after:content-['']">
+              <div className="gh-portal-offer-oldprice relative mb-0 mt-1 flex whitespace-nowrap text-xl font-light leading-none text-gray-500 after:absolute after:inset-x-0 after:top-1/2 after:block after:h-px after:bg-gray-500 after:content-['']">
                 {currency}
                 {originalPrice}
               </div>
             </div>
           )}
-          <p className="footnote mb-0 mt-1 text-[1.35rem] text-grey-8 first:mt-3">{offerMessage}</p>
+          <p className="footnote mb-0 mt-1 text-[1.35rem] text-gray-500 first:mt-3">
+            {offerMessage}
+          </p>
         </div>
 
         <ActionButton
@@ -458,7 +460,7 @@ const UpgradePlanSection = ({ plans, selectedPlan, onPlanSelect, onPlanCheckout 
       </div>
       {!isPaidMember({ member }) && (
         <SignupGiftPromotion
-          className="gh-portal-signup-message z-[9999] mt-1 flex flex-wrap justify-center text-base text-grey-4 group-[.full-size]/popup:mb-10 group-[.full-size]/popup:mt-6 [&_*]:z-[9999]"
+          className="gh-portal-signup-message z-[9999] mt-1 flex flex-wrap justify-center text-base text-gray-900 group-[.full-size]/popup:mb-10 group-[.full-size]/popup:mt-6 [&_*]:z-[9999]"
           lastPage="accountPlan"
         />
       )}
@@ -481,7 +483,7 @@ const NoPlansAvailableMessage = () => {
     <section>
       <div className="gh-portal-section mb-10">
         <p
-          className="gh-portal-no-plans-available-notification mx-8 mb-6 mt-2 text-center text-grey-2"
+          className="gh-portal-no-plans-available-notification mx-8 mb-6 mt-2 text-center text-gray-900"
           data-testid="no-plans-available-notification-text"
         >
           {t('Sorry, no paid plans are available.')}

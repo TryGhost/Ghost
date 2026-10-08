@@ -19,10 +19,10 @@ import { t } from '../../utils/i18n';
 import { translateCadence } from '../../utils/helpers';
 
 const signupMessageButtonClass =
-  'gh-portal-btn gh-portal-btn-link relative -mb-px !ms-1 flex cursor-pointer select-none items-center justify-center whitespace-nowrap rounded-md bg-transparent p-0 text-center text-md font-semibold leading-none tracking-[0.2px] text-grey-0 no-underline [border:none] [outline:none] [transition:all_0.25s_ease] hover:border-grey-10 hover:opacity-[0.85]';
+  'gh-portal-btn gh-portal-btn-link relative -mb-px !ms-1 flex cursor-pointer select-none items-center justify-center whitespace-nowrap rounded-md bg-transparent p-0 text-center text-md font-semibold leading-none tracking-[0.2px] text-black no-underline [border:none] [outline:none] [transition:all_0.25s_ease] hover:border-gray-300 hover:opacity-[0.85]';
 
 const termsCheckboxClass =
-  "checkbox relative top-[-1px] float-left mt-px inline-block size-[18px] shrink-0 rounded border border-solid border-grey-10 bg-white [transition:background_0.15s_ease-in-out,border-color_0.15s_ease-in-out] before:absolute before:left-[3px] before:top-1 before:h-1.5 before:w-2.5 before:opacity-0 before:content-[''] before:[border-color:currentcolor_currentcolor_var(--white)_var(--white)] before:[border-style:none_none_solid_solid] before:[border-width:0_0_2px_2px] before:[transform:rotate(-45deg)] before:[transition:opacity_0.15s_ease-in-out] rtl:float-right rtl:before:left-auto rtl:before:right-[3px] [.gh-portal-error_&]:border-red [.gh-portal-error_&]:[box-shadow:0_0_0_3px_rgb(240,37,37,.15)] [.gh-portal-error_input:checked+&]:[box-shadow:none] [.gh-portal-error_label:hover_input:not(:checked)+&]:border-red [input:checked+&]:border-black [input:checked+&]:bg-black [input:checked+&]:before:opacity-100 [label:hover_input:not(:checked)+&]:border-grey-9";
+  "checkbox relative top-[-1px] float-left mt-px inline-block size-[18px] shrink-0 rounded border border-solid border-gray-300 bg-white [transition:background_0.15s_ease-in-out,border-color_0.15s_ease-in-out] before:absolute before:left-[3px] before:top-1 before:h-1.5 before:w-2.5 before:opacity-0 before:content-[''] before:[border-color:currentcolor_currentcolor_theme(colors.white)_theme(colors.white)] before:[border-style:none_none_solid_solid] before:[border-width:0_0_2px_2px] before:[transform:rotate(-45deg)] before:[transition:opacity_0.15s_ease-in-out] rtl:float-right rtl:before:left-auto rtl:before:right-[3px] [.gh-portal-error_&]:border-red [.gh-portal-error_&]:[box-shadow:0_0_0_3px_rgb(240,37,37,.15)] [.gh-portal-error_input:checked+&]:[box-shadow:none] [.gh-portal-error_label:hover_input:not(:checked)+&]:border-red [input:checked+&]:border-black [input:checked+&]:bg-black [input:checked+&]:before:opacity-100 [label:hover_input:not(:checked)+&]:border-gray-400";
 
 const offerBarClass = String.raw`gh-portal-offer-bar relative mb-6 rounded-md bg-white bg-[url("data:image/svg+xml,%3csvg\000020width='100%25'\000020height='99.9%25'\000020xmlns='http://www.w3.org/2000/svg'%3e%3crect\000020width='100%25'\000020height='100%25'\000020fill='none'\000020stroke='%23C3C3C3'\000020stroke-width='3'\000020stroke-dasharray='3%2c\0000209'\000020stroke-dashoffset='0'\000020stroke-linecap='square'/%3e%3c/svg%3e")] px-7 pb-7 pt-[26px]`;
 
@@ -30,12 +30,12 @@ const offerTitleClass =
   'mr-[110px] w-full text-xl rtl:ml-[110px] rtl:mr-0 [&.placeholder]:opacity-40';
 
 const offerDiscountLabelClass =
-  "gh-portal-discount-label absolute right-[25px] top-[23px] -me-1 max-h-[24.5px] whitespace-nowrap rounded-[999px] px-[9px] py-1.5 text-center text-[1.25rem] font-semibold leading-[1em] tracking-[0.3px] text-grey-0 before:absolute before:inset-0 before:block before:rounded-[999px] before:bg-brand before:opacity-20 before:content-['']";
+  "gh-portal-discount-label absolute right-[25px] top-[23px] -me-1 max-h-[24.5px] whitespace-nowrap rounded-[999px] px-[9px] py-1.5 text-center text-[1.25rem] font-semibold leading-[1em] tracking-[0.3px] text-black before:absolute before:inset-0 before:block before:rounded-[999px] before:bg-brand before:opacity-20 before:content-['']";
 
 const productNameClass =
   'gh-portal-product-name -mt-1 w-full text-xl font-semibold leading-[1.3em] tracking-[0px] text-brand [word-break:break-word]';
 
-const productPriceClass = 'gh-portal-product-price flex justify-center text-grey-0';
+const productPriceClass = 'gh-portal-product-price flex justify-center text-black';
 
 const currencySignClass = (currencyClass) =>
   'currency-sign ' +
@@ -44,12 +44,12 @@ const currencySignClass = (currencyClass) =>
   (currencyClass === 'long' ? ' me-[5px]' : '');
 
 const amountClass =
-  'amount text-[3.5rem] font-bold leading-[1em] tracking-[-1.3px] text-grey-0 max-[1440px]:text-[32px] max-[1440px]:tracking-[-0.022em]';
+  'amount text-[3.5rem] font-bold leading-[1em] tracking-[-1.3px] text-black max-[1440px]:text-[32px] max-[1440px]:tracking-[-0.022em]';
 
-const footnoteClass = 'footnote mb-0 mt-1 text-[1.35rem] text-grey-8';
+const footnoteClass = 'footnote mb-0 mt-1 text-[1.35rem] text-gray-500';
 
 const productCardClass =
-  'gh-portal-product-card relative flex min-h-0 min-w-[320px] max-w-none flex-1 flex-col items-start justify-stretch border border-grey-11 bg-white px-8 [transition:border-color_0.25s_ease-in-out] hover:border-grey-9 max-sm:min-w-[unset]';
+  'gh-portal-product-card relative flex min-h-0 min-w-[320px] max-w-none flex-1 flex-col items-start justify-stretch border border-gray-300 bg-white px-8 [transition:border-color_0.25s_ease-in-out] hover:border-gray-400 max-sm:min-w-[unset]';
 
 export default class OfferPage extends React.Component {
   static contextType = AppContext;
@@ -139,7 +139,7 @@ export default class OfferPage extends React.Component {
 
     const termsText = (
       <div
-        className="gh-portal-signup-terms-content [&_a]:font-medium [&_a]:text-brand [&_a]:no-underline [&_p]:mb-0 [&_p]:text-md [&_p]:leading-[1.25em] [&_p]:text-grey-4 [.gh-portal-error_&]:leading-[1.5em]"
+        className="gh-portal-signup-terms-content [&_a]:font-medium [&_a]:text-brand [&_a]:no-underline [&_p]:mb-0 [&_p]:text-md [&_p]:leading-[1.25em] [&_p]:text-gray-900 [.gh-portal-error_&]:leading-[1.5em]"
         dangerouslySetInnerHTML={{ __html: sanitizeHtml(site.portal_signup_terms_html) }}
       ></div>
     );
@@ -257,7 +257,7 @@ export default class OfferPage extends React.Component {
     return (
       <header className="gh-portal-signup-header mb-8 flex flex-col items-center px-8 max-[390px]:pb-4">
         {this.renderSiteLogo()}
-        <h2 className="gh-portal-main-title mt-3 text-pretty text-center leading-[1.1em] text-grey-0 [.gh-portal-signup-logo+&]:mt-1">
+        <h2 className="gh-portal-main-title mt-3 text-pretty text-center leading-[1.1em] text-black [.gh-portal-signup-logo+&]:mt-1">
           {siteTitle}
         </h2>
       </header>
@@ -336,7 +336,7 @@ export default class OfferPage extends React.Component {
     }
     const { brandColor, doAction } = this.context;
     return (
-      <div className="gh-portal-signup-message z-[9999] mt-1 flex flex-wrap justify-center text-base text-grey-4 [&_*]:z-[9999]">
+      <div className="gh-portal-signup-message z-[9999] mt-1 flex flex-wrap justify-center text-base text-gray-900 [&_*]:z-[9999]">
         <div>{t('Already a member?')}</div>
         <button
           className={signupMessageButtonClass}
@@ -519,7 +519,7 @@ export default class OfferPage extends React.Component {
       return null;
     }
     return (
-      <div className="gh-portal-offer-oldprice relative mb-1 mt-4 flex whitespace-nowrap text-xl font-light leading-none text-grey-8 after:absolute after:inset-x-0 after:top-1/2 after:block after:h-px after:bg-grey-8 after:content-['']">
+      <div className="gh-portal-offer-oldprice relative mb-1 mt-4 flex whitespace-nowrap text-xl font-light leading-none text-gray-500 after:absolute after:inset-x-0 after:top-1/2 after:block after:h-px after:bg-gray-500 after:content-['']">
         {getCurrencySymbol(price.currency)}{' '}
         {formatPrice(price.amount / 100, this.context.site?.locale)}
       </div>

@@ -138,7 +138,7 @@ function AddressField({ field, value, errors, onChange, onKeyDown }: FieldProps)
   return (
     <section aria-labelledby={labelId} role="group">
       <div
-        className="gh-portal-input-label mb-0.5 text-sm font-semibold tracking-[0px] text-grey-1"
+        className="gh-portal-input-label mb-0.5 text-sm font-semibold tracking-[0px] text-gray-950"
         id={labelId}
       >
         {field.name}
