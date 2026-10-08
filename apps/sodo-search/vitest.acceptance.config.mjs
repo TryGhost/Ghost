@@ -12,7 +12,10 @@ export default async (env) => ({
       enabled: true,
       headless: true,
       provider: playwright(),
-      instances: [{ browser: 'chromium' }, { browser: 'webkit' }],
+      // CI runners lack WebKit's system libraries; ALL_BROWSERS=1 adds it locally
+      instances: process.env.ALL_BROWSERS
+        ? [{ browser: 'chromium' }, { browser: 'webkit' }]
+        : [{ browser: 'chromium' }],
       viewport: { width: 1280, height: 800 },
     },
   },

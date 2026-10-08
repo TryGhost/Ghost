@@ -22,6 +22,7 @@
     "test:types": "tsc --noEmit --incremental false && tsc --noEmit --incremental false -p test/tsconfig.json",
     "test:unit": "vitest run",
     "test:acceptance": "vitest run -c vitest.acceptance.config.mjs",
+    "test:acceptance:full": "ALL_BROWSERS=1 pnpm test:acceptance",
     "lint": "pnpm run '/^lint:/'",
     "lint:code": "eslint src test --cache",
     "lint:types": "pnpm test:types",
@@ -74,6 +75,26 @@
           "cwd": "apps/sodo-search",
           "command": "vite build --watch --mode development"
         }
+      },
+      "lint": {
+        "dependsOn": [
+          {
+            "projects": [
+              "@tryghost/i18n"
+            ],
+            "target": "build"
+          }
+        ]
+      },
+      "test": {
+        "dependsOn": [
+          {
+            "projects": [
+              "@tryghost/i18n"
+            ],
+            "target": "build"
+          }
+        ]
       }
     },
     "tags": [
