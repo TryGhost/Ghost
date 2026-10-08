@@ -4,6 +4,7 @@ const _ = require('lodash');
 
 const schema = require('../../../../../core/server/data/schema/schema');
 const { foreignKeysOf } = require('../../../../../core/server/data/schema/lib/foreign-keys');
+const { patternChecksOf } = require('../../../../../core/server/data/schema/lib/column-patterns');
 
 const VALID_KEYS = {
   bigInteger: ['nullable'],
@@ -24,6 +25,7 @@ const VALID_KEYS = {
     'restrictDelete',
     'setNullDelete',
     'index',
+    'pattern',
   ],
   text: ['fieldtype', 'maxlength', 'nullable', 'validations'],
 };
@@ -105,6 +107,10 @@ describe('schema validations', function () {
         check(constraintName, `${tableName} foreign key`);
       }
 
+      for (const { constraintName } of patternChecksOf(tableName, table)) {
+        check(constraintName, `${tableName} column pattern`);
+      }
+
       _.each(table, function (column, columnName) {
         if (columnName.startsWith('@@')) {
           return;
@@ -162,6 +168,17 @@ describe('schema validations', function () {
         });
       }
     });
+  });
+
+  // MySQL holds a check constraint's name unique across the whole database, not per table.
+  it('names every column pattern check uniquely across the schema', function () {
+    const names = Object.entries(schema).flatMap(([tableName, table]) =>
+      patternChecksOf(tableName, table).map((check) => check.constraintName),
+    );
+    assert.deepEqual(
+      names.filter((name, i) => names.indexOf(name) !== i),
+      [],
+    );
   });
 
   it('has correct isIn validation structure', async function () {
