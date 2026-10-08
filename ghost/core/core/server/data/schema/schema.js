@@ -2143,7 +2143,7 @@ module.exports = {
       maxlength: 50,
       nullable: false,
       defaultTo: 'inactive',
-      validations: { isIn: [['active', 'inactive']] },
+      validations: { isIn: [['active', 'inactive', 'archived']] },
     },
     name: { type: 'string', maxlength: 191, nullable: false, unique: true },
     description: { type: 'string', maxlength: 2000, nullable: false, defaultTo: '' },
