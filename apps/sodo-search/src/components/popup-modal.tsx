@@ -1,6 +1,7 @@
 import Frame from './frame';
 import { CircleAnimatedIcon, ClearIcon, SearchIcon } from './icons';
 import { Fragment } from 'preact';
+import { isCJK } from '../search-index';
 import { useAppContext } from '../app-context';
 import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
 import type { JSX } from 'preact';
@@ -295,11 +296,9 @@ function getMatchIndexes({ text, highlight }: { text: string; highlight: string 
   highlight?.split(' ').forEach((d, idx) => {
     // escape regex syntax in search queries
     const e = String(d).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    if (idx > 0) {
-      highlightRegexText += `|^` + e + `|\\s` + e;
-    } else {
-      highlightRegexText = `^` + e + `|\\s` + e;
-    }
+    // CJK text has no spaces between words, so CJK terms match anywhere
+    const term = [...d].some((char) => isCJK(char.codePointAt(0)!)) ? e : `^${e}|\\s${e}`;
+    highlightRegexText = idx > 0 ? `${highlightRegexText}|${term}` : term;
   });
   const matchRegex = new RegExp(`${highlightRegexText}`, 'ig');
   const matches = text?.matchAll(matchRegex);

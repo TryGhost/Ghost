@@ -43,7 +43,7 @@ const cjkEncoderPresetCodepoint: EncoderOptions = {
   },
 };
 
-function isCJK(codePoint: number) {
+export function isCJK(codePoint: number) {
   return (
     (codePoint >= 0x4e00 && codePoint <= 0x9fff) || // CJK Unified Ideographs
     (codePoint >= 0x3040 && codePoint <= 0x30ff) || // Hiragana & Katakana (contiguous blocks)

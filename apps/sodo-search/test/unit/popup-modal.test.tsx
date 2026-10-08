@@ -155,6 +155,7 @@ describe('Search highlighting', () => {
     ['привет', 'Привет мир', 'Привет'],
     ['c++', 'C++ tips', 'C++'],
     ['new', 'New post', 'New'],
+    ['世界', '你好世界', '世界'],
   ])('highlights %s in "%s"', (query, title, highlighted) => {
     renderSearch([{ id: 'post', title, excerpt: '', url: 'https://example.com/post/' }], query);
 
