@@ -45,35 +45,38 @@ export const Failed: React.FC<FailedProps> = ({ failure, attempted, onClose, onR
   const retryable = failure.kind === 'unreachable' || failure.kind === 'error';
   return (
     <>
-      <DialogHeader>
-        <DialogTitle>{TITLES[attempted]}</DialogTitle>
-        <DialogDescription>{describe(failure)}</DialogDescription>
-      </DialogHeader>
-      {failure.kind === 'problems' && (
-        <ul className="border-t" data-testid="app-install-problems">
-          {failure.problems.map((problem) => (
-            <li key={`${problem.title}:${problem.detail}`} className="border-b py-3">
-              <Text as="div" weight="semibold">
-                {problem.title}
-              </Text>
-              <Text as="div" className="break-all" size="sm" tone="secondary">
-                {problem.detail}
-              </Text>
-            </li>
-          ))}
-        </ul>
-      )}
-      {failure.kind === 'unreachable' && failure.detail && (
-        <Text
-          as="p"
-          className="break-all"
-          data-testid="app-install-unreachable"
-          size="sm"
-          tone="secondary"
-        >
-          {failure.detail}
-        </Text>
-      )}
+      {/* The details belong to the copy above them, closer than the dialog's own gap. */}
+      <div className="grid gap-3">
+        <DialogHeader className="gap-3">
+          <DialogTitle>{TITLES[attempted]}</DialogTitle>
+          <DialogDescription>{describe(failure)}</DialogDescription>
+        </DialogHeader>
+        {failure.kind === 'problems' && (
+          <ul className="border-t" data-testid="app-install-problems">
+            {failure.problems.map((problem) => (
+              <li key={`${problem.title}:${problem.detail}`} className="border-b py-3">
+                <Text as="div" weight="semibold">
+                  {problem.title}
+                </Text>
+                <Text as="div" className="break-all" size="sm" tone="secondary">
+                  {problem.detail}
+                </Text>
+              </li>
+            ))}
+          </ul>
+        )}
+        {failure.kind === 'unreachable' && failure.detail && (
+          <Text
+            as="p"
+            className="break-all"
+            data-testid="app-install-unreachable"
+            size="sm"
+            tone="secondary"
+          >
+            {failure.detail}
+          </Text>
+        )}
+      </div>
       <DialogFooter>
         {retryable ? (
           <>

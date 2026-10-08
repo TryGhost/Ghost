@@ -111,7 +111,7 @@ export const Review: React.FC<ReviewProps> = ({
   if (kind === 'current') {
     return (
       <>
-        <DialogHeader>
+        <DialogHeader className="gap-3">
           <Inline gap="md">
             <AppIcon manifest={manifest} size="lg" />
             <DialogTitle>{manifest.name} is already installed</DialogTitle>
