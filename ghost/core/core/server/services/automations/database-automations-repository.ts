@@ -258,8 +258,11 @@ export function createDatabaseAutomationsRepository({
 }): AutomationsRepository {
   return {
     async browse({ includeStats }: BrowseOptions): Promise<Page<AutomationBrowseResult>> {
-      return await knex.transaction(async (trx) => {
+      await knex.transaction(async (trx) => {
         await ensureDefaultAutomations(trx);
+      });
+
+      return await knex.transaction(async (trx) => {
         const data = includeStats
           ? (await loadAutomationsWithStats(trx)).map((row) => buildAutomationBrowseResult(row))
           : (await loadAutomations(trx)).map((row) => buildAutomationSummary(row));
