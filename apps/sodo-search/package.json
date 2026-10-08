@@ -19,7 +19,7 @@
     "dev": "vite build --watch --mode development",
     "build": "vite build",
     "test": "pnpm run '/^test:(types|unit)$/'",
-    "test:types": "tsc --noEmit --incremental false",
+    "test:types": "tsc --noEmit --incremental false && tsc --noEmit --incremental false -p test/tsconfig.json",
     "test:unit": "vitest run",
     "test:acceptance": "vitest run -c vitest.acceptance.config.mjs",
     "lint": "pnpm run '/^lint:/'",

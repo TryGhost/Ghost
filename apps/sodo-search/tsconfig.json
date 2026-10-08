@@ -23,8 +23,7 @@
     "erasableSyntaxOnly": true,
     "noFallthroughCasesInSwitch": true,
 
-    /* Vitest */
-    "types": ["vitest/globals"]
+    "types": []
   },
-  "include": ["src", "test"]
+  "include": ["src"]
 }
