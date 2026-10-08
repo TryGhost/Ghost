@@ -98,7 +98,7 @@ function StatusBody({
   onOpenPublishFlow,
   onOpenUpdateFlow,
 }: {
-  view: EditorStatusView;
+  view: Exclude<EditorStatusView, { kind: 'new' }>;
   timezone: string;
   isHovered: boolean;
   onOpenPublishFlow?: () => void;
@@ -109,8 +109,6 @@ function StatusBody({
       return <span className="text-destructive">{view.message}</span>;
     case 'saving':
       return <>Saving…</>;
-    case 'new':
-      return <>New</>;
     case 'draft':
       return <>{view.saved ? 'Draft - Saved' : 'Draft'}</>;
     case 'sent':
@@ -210,6 +208,13 @@ export function EditorStatus({
     return () => clearInterval(interval);
   }, [isHovered]);
 
+  const view = deriveEditorStatus({ state, record, isDirty, isSaving });
+  // A post that has never been saved has no status yet. Its first save still
+  // reads "Saving…", and a failed one still reports the problem.
+  if (view.kind === 'new') {
+    return null;
+  }
+
   return (
     <Text
       as="span"
@@ -230,7 +235,7 @@ export function EditorStatus({
         <StatusBody
           isHovered={isHovered}
           timezone={timezone}
-          view={deriveEditorStatus({ state, record, isDirty, isSaving })}
+          view={view}
           onOpenPublishFlow={onOpenPublishFlow}
           onOpenUpdateFlow={onOpenUpdateFlow}
         />

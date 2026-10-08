@@ -32,6 +32,7 @@ export type EditorStatusView =
   /** A save the writer has to act on; the message is the failed save's. */
   | { kind: 'problem'; message: string }
   | { kind: 'saving' }
+  /** Never saved, so there is nothing to report; the status line shows nothing. */
   | { kind: 'new' }
   | { kind: 'draft'; saved: boolean }
   | {

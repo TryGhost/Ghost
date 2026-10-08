@@ -246,9 +246,12 @@ describe('Post editor saving', () => {
     await renderAdminApp('/editor/post', FLAG_ON);
     await expect.element(editorScreen.body()).toBeVisible();
     const mountedBody = bodyElement();
+    // A post that has never been saved has no status to report.
+    await expect(editorScreen.status()).toHaveCount(0);
 
     await appendToBody('First words');
 
+    await expect.element(editorScreen.status()).toHaveTextContent('Saving');
     await expect.poll(() => createApi.requests.length).toBe(1);
     expect(submittedPost(createApi)).toMatchObject({ title: '(Untitled)', slug: 'untitled' });
     expect(submittedPost(createApi).id).toBeUndefined();
@@ -256,6 +259,7 @@ describe('Post editor saving', () => {
     await expect.poll(currentRoute).toBe(`/editor/post/${NEW_POST_ID}`);
     expect(bodyElement()).toBe(mountedBody);
     await expect.element(editorScreen.body()).toHaveTextContent('First words');
+    await expect.element(editorScreen.status()).toHaveTextContent('Draft - Saved');
   });
 
   // Core refuses an Author's or Contributor's create unless the payload names
