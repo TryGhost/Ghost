@@ -353,8 +353,31 @@ describe('App installations Admin API', function () {
 
       assert.equal(body.app_installations[0].app_id, 'com.example.podcast');
       assert.equal(body.app_installations[0].status, 'active');
-      assert.equal((await manifestRows())[0].digest, digest);
+      // What was confirmed covers the address too, so it is not the stored digest.
+      const [stored] = await manifestRows();
+      assert.equal(stored.digest, createHash('sha256').update(stored.manifest).digest('hex'));
+      assert.notEqual(stored.digest, digest);
       assert.equal((await actions())[0].event, 'installed');
+    });
+
+    it('refuses confirming another address with the digest reviewed elsewhere', async function () {
+      // Every URL absolute, so the two addresses serve the very same manifest.
+      const absolute = manifest({
+        icon: { url: 'https://cdn.example.net/icon.svg' },
+        surfaces: [{ type: 'admin_page', url: 'https://app.example.net/ghost' }],
+      });
+      serve(absolute);
+      const { digest } = await preview();
+      const elsewhere = 'https://audio.example.org/ghost-app.json';
+      serve(absolute, elsewhere);
+
+      const { body } = await agent
+        .post('apps/installations/')
+        .body({ app_installations: [{ manifest_url: elsewhere, digest }] })
+        .expectStatus(409);
+
+      assert.equal(body.errors[0].code, 'APP_MANIFEST_CHANGED');
+      assert.equal((await service().browse()).length, 0);
     });
 
     it('asks for a new review when the app changed in between', async function () {
@@ -408,12 +431,13 @@ describe('App installations Admin API', function () {
       serve(pending);
       const reviewed = await preview();
       const pendingId = new ObjectId().toHexString();
+      const serialised = JSON.stringify(reviewed.manifest);
       await models.Base.knex('app_installation_manifests').insert({
         id: pendingId,
         installation_id: id,
         manifest_url: MANIFEST_URL,
-        manifest: JSON.stringify(reviewed.manifest),
-        digest: reviewed.digest,
+        manifest: serialised,
+        digest: createHash('sha256').update(serialised).digest('hex'),
         requires_approval: true,
         created_at: toDatabaseDate(new Date()),
       });

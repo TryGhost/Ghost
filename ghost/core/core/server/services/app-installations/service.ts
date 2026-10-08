@@ -15,6 +15,7 @@ import type { RecordAppInstallationAction, RequestContext } from './actions';
 import {
   AppInstallationRow,
   CurrentInstallationRow,
+  PendingManifestRow,
   type AppInstallation,
   type CurrentInstallation,
 } from './codec';
@@ -37,7 +38,10 @@ export interface AppManifestChange {
 export interface AppInstallationPreview {
   manifest_url: string;
   manifest: AppManifest;
-  /** Confirming sends this back, so only the manifest that was reviewed gets installed. */
+  /**
+   * Confirming sends this back, so only what was reviewed gets installed: the manifest,
+   * and the address it is read from.
+   */
   digest: string;
   /**
    * The installation of the same app, if the site already has one: the manifest it was
@@ -62,15 +66,27 @@ interface LoadedManifest {
   manifestUrl: string;
   manifest: AppManifest;
   serialised: string;
+  /** Of the manifest alone, as stored with it. */
   digest: string;
+  /** What a publisher reviews and confirms: the manifest and where it is read from. */
+  reviewed: string;
 }
 
 /**
- * What a publisher reviews and confirms. The same manifest always serialises the same way,
- * as encoding builds it in the schema's key order.
+ * The manifest's digest, as stored with it. The same manifest always serialises the same
+ * way, as encoding builds it in the schema's key order.
  */
 function digestOf(serialisedManifest: string): string {
   return createHash('sha256').update(serialisedManifest).digest('hex');
+}
+
+/**
+ * What a publisher reviews and confirms: the manifest and the address it is read from.
+ * Two addresses can serve the same manifest, once every URL in it is absolute, so the
+ * digest of the manifest alone would let a review of one address confirm the other.
+ */
+function reviewedDigestOf(manifestUrl: string, serialisedManifest: string): string {
+  return createHash('sha256').update(`${manifestUrl}\n${serialisedManifest}`).digest('hex');
 }
 
 /** The installation has ended, so there is nothing left to approve for it. */
@@ -196,7 +212,13 @@ export class AppInstallationsService {
       });
     }
     const serialised = z.encode(StoredManifest, parsed.manifest);
-    return { manifestUrl, manifest: parsed.manifest, serialised, digest: digestOf(serialised) };
+    return {
+      manifestUrl,
+      manifest: parsed.manifest,
+      serialised,
+      digest: digestOf(serialised),
+      reviewed: reviewedDigestOf(manifestUrl, serialised),
+    };
   }
 
   private async fetchAndLoad(manifestUrl: string): Promise<LoadedManifest> {
@@ -240,7 +262,7 @@ export class AppInstallationsService {
     return {
       manifest_url: loaded.manifestUrl,
       manifest: loaded.manifest,
-      digest: loaded.digest,
+      digest: loaded.reviewed,
       // The approved side comes from the same row the changes were worked out from, so the
       // publisher sees exactly the difference Ghost found.
       installation: current
@@ -262,12 +284,13 @@ export class AppInstallationsService {
   }
 
   /**
-   * Fetches the manifest again and checks it is the one the publisher reviewed. If the app
-   * changed in between, the publisher is asked to review the new version instead.
+   * Fetches the manifest again and checks it is the one the publisher reviewed, from the
+   * address they reviewed it at. If the app changed in between, the publisher is asked to
+   * review the new version instead.
    */
   private async fetchReviewed(manifestUrl: string, digest: string): Promise<LoadedManifest> {
     const loaded = await this.fetchAndLoad(manifestUrl);
-    if (loaded.digest !== digest) {
+    if (loaded.reviewed !== digest) {
       throw new errors.ConflictError({
         message: 'The app changed while it was being reviewed.',
         code: 'APP_MANIFEST_CHANGED',
@@ -413,11 +436,12 @@ export class AppInstallationsService {
       // the pending manifest to let go of. When it is the pending one, that row is the
       // approved one from now on rather than a copy of it.
       let manifestId = current.manifest_id;
-      const pending = current.pending_manifest_id
+      const pendingRow = current.pending_manifest_id
         ? await trx(MANIFESTS)
             .where({ id: current.pending_manifest_id })
-            .first('id', 'manifest_url', 'digest')
+            .first<z.input<typeof PendingManifestRow> | undefined>('id', 'manifest_url', 'digest')
         : undefined;
+      const pending = pendingRow ? z.decode(PendingManifestRow, pendingRow) : undefined;
       if (
         pending &&
         pending.manifest_url === loaded.manifestUrl &&

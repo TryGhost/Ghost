@@ -2694,7 +2694,7 @@ module.exports = {
     manifest_url: { type: 'string', maxlength: 2000, nullable: false },
     // The validated manifest, with its URLs resolved, as JSON.
     manifest: { type: 'text', maxlength: 65535, nullable: false },
-    // SHA-256 of `manifest`, in hex: what a publisher reviews and confirms.
+    // SHA-256 of `manifest`, in hex, so two manifests compare without parsing.
     digest: { type: 'string', maxlength: 64, nullable: false },
     // Whether this manifest had changes that needed approval when it was added.
     requires_approval: { type: 'boolean', nullable: false, defaultTo: false },
