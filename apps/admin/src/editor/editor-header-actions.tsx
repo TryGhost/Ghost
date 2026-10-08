@@ -116,19 +116,43 @@ export function EditorHeaderActions({
 
   useSaveShortcut(() => void feedback.save());
 
-  const openPreview = useCallback(() => setPreviewOpen(true), []);
-
   // Core 301-redirects a published or sent post away from /p/:uuid/ and drops the
   // audience query, so Ember offers a preview only while the post is a draft.
   const isDraft = post.status === 'draft';
 
+  // Preview, Publish, Unpublish, Unschedule and their shortcuts open nothing while
+  // a field breaks its rule. Each is refused the way Cmd-S is: the save the writer
+  // asked for names the rule in the status line, nothing is sent, and the writer
+  // is taken to the field.
+  const refuseInvalid = useCallback((): boolean => {
+    const invalid = revealInvalidField();
+    if (!invalid) {
+      return false;
+    }
+    // The subject is edited in the preview, whose own save is refused beside the field.
+    if (invalid.key === 'email_subject' && isDraft) {
+      setPreviewOpen(true);
+      return true;
+    }
+    void session.saveExplicit();
+    return true;
+  }, [isDraft, revealInvalidField, session]);
+
+  const openPreview = useCallback(() => {
+    if (!refuseInvalid()) {
+      setPreviewOpen(true);
+    }
+  }, [refuseInvalid]);
+
   usePreviewShortcut(
     useCallback(() => {
-      setPreviewOpen(!previewOpen);
       if (previewOpen) {
+        setPreviewOpen(false);
         onOpenFlow('none');
+        return;
       }
-    }, [onOpenFlow, previewOpen]),
+      openPreview();
+    }, [onOpenFlow, openPreview, previewOpen]),
     isDraft && persistedId !== null,
   );
 
@@ -204,6 +228,7 @@ export function EditorHeaderActions({
           openFlow={openFlow}
           post={post}
           preview={preview}
+          refuseInvalid={refuseInvalid}
           revealInvalidField={revealInvalidField}
           session={session}
           tkCount={tkCount}
@@ -225,6 +250,8 @@ interface PublishActionsProps {
   offersEmailRetry: boolean;
   openFlow: OpenFlow;
   preview: HeaderPreviewProps;
+  /** Refuses the action while a field breaks its rule; true when it did. */
+  refuseInvalid: () => boolean;
   revealInvalidField: () => InvalidField | null;
   onOpenFlow: (flow: OpenFlow) => void;
   onPreview: () => void;
@@ -244,6 +271,7 @@ function PublishActions({
   offersEmailRetry,
   openFlow,
   preview,
+  refuseInvalid,
   revealInvalidField,
   onOpenFlow,
   onPreview,
@@ -290,23 +318,6 @@ function PublishActions({
     onOpenFlow('none');
   }, [onOpenFlow]);
   const { onOpenChange: setPreviewOpen } = preview;
-  // Publish, Unpublish, Unschedule and the shortcut open nothing while a field
-  // breaks its rule. Each is refused the way Cmd-S is: the save the writer asked
-  // for names the rule in the status line, nothing is sent, and the writer is
-  // taken to the field.
-  const refuseInvalid = useCallback((): boolean => {
-    const invalid = revealInvalidField();
-    if (!invalid) {
-      return false;
-    }
-    // The subject is edited in the preview, whose own save is refused beside the field.
-    if (invalid.key === 'email_subject' && isDraft) {
-      setPreviewOpen(true);
-      return true;
-    }
-    void session.saveExplicit();
-    return true;
-  }, [isDraft, revealInvalidField, session, setPreviewOpen]);
   const openPublishFlow = useCallback(() => {
     if (refuseInvalid()) {
       return;

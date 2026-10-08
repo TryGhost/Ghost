@@ -34,6 +34,7 @@ import { CONFLICT_MESSAGE, UNEXPECTED_MESSAGE } from '@/editor/publish/completio
 import { publishScreen } from '@/editor/publish/publish.screen';
 import { ACCESS_LOST, POST_DELETED } from '@/editor/session/error-mapping';
 import {
+  AUTHORS_REQUIRED,
   EMAIL_SUBJECT_TOO_LONG,
   EXCERPT_MAX,
   EXCERPT_TOO_LONG,
@@ -656,16 +657,18 @@ describe('Editor header actions', () => {
       .toHaveAttribute('src', `${SITE_URL}/p/${POST_UUID}/?member_status=free`);
   });
 
-  it('names the title limit when it stops the save before previewing, with no toast', async () => {
+  it('refuses the preview on an over-long title, naming the limit with no toast', async () => {
     publishChrome();
     const saveApi = fakeSavablePost();
     await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
 
     await editorScreen.titleInput().fill('a'.repeat(TITLE_MAX + 1));
+    await editorScreen.body().click();
     await editorScreen.previewButton().click();
 
-    await expect.element(previewScreen.saveFailed()).toHaveTextContent(TITLE_TOO_LONG);
-    await expect.element(previewScreen.emailSubject()).not.toHaveAccessibleDescription();
+    await expect.element(editorScreen.titleInput()).toHaveFocus();
+    await expect.element(editorScreen.saveError()).toHaveTextContent(TITLE_TOO_LONG);
+    await expect(previewScreen.modal()).toHaveCount(0);
     await expect(previewScreen.toastWithText(GENERIC_ERROR_TOAST)).toHaveCount(0);
     expect(saveApi.requests).toHaveLength(0);
   });
@@ -1097,32 +1100,12 @@ describe('Editor header actions', () => {
     await expect.element(editorScreen.saveError()).toHaveTextContent(TITLE_TOO_LONG);
     await expect.element(editorScreen.saveError()).toHaveClass('text-destructive');
     await expect(editorScreen.retrySave()).toHaveCount(0);
-    await expect(editorScreen.pendingSaveNotice()).toHaveCount(0);
     await expect(publishScreen.root()).toHaveCount(0);
     expect(saveApi.requests).toHaveLength(0);
 
     await editorScreen.titleInput().fill('A title the server keeps');
     await open();
     await expect.element(publishScreen.options()).toBeVisible();
-  });
-
-  it('closes the preview and focuses an over-long title instead of publishing from it', async () => {
-    publishChrome();
-    const saveApi = fakeSavablePost();
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
-    await expect.element(editorScreen.publishButton()).toBeEnabled();
-
-    await editorScreen.titleInput().fill('a'.repeat(TITLE_MAX + 1));
-    await editorScreen.previewButton().click();
-    await expect.element(previewScreen.saveFailed()).toHaveTextContent(TITLE_TOO_LONG);
-
-    await previewScreen.publishButton().click();
-
-    await expect(previewScreen.modal()).toHaveCount(0);
-    await expect.element(editorScreen.titleInput()).toHaveFocus();
-    await expect.element(editorScreen.saveError()).toHaveTextContent(TITLE_TOO_LONG);
-    await expect(publishScreen.root()).toHaveCount(0);
-    expect(saveApi.requests).toHaveLength(0);
   });
 
   it('keeps the preview open and shows the subject’s rule when publishing from it', async () => {
@@ -1148,6 +1131,56 @@ describe('Editor header actions', () => {
     await expect.element(previewScreen.modal()).toHaveTextContent(EMAIL_SUBJECT_TOO_LONG);
     await expect.element(previewScreen.modal()).toBeVisible();
     await expect(publishScreen.root()).toHaveCount(0);
+    expect(saveApi.requests).toHaveLength(0);
+  });
+
+  it('refuses the preview while nobody is credited, taking the writer to Authors', async () => {
+    publishChrome();
+    const saveApi = fakeSavablePost({
+      authors: [{ id: CURRENT_USER_ID, name: 'Owner User', email: 'owner@test.com' }],
+    });
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave(FLAG_ON));
+    await expect.element(editorScreen.previewButton()).toBeEnabled();
+    await editorScreen.settingsToggle().click();
+    await editorScreen.removeAuthor('Owner User').click();
+    await expect.element(editorScreen.settingsAuthorsError()).toBeVisible();
+    await editorScreen.settingsToggle().click();
+    await expect(editorScreen.settingsSidebar()).toHaveCount(0);
+
+    await editorScreen.previewButton().click();
+
+    await expect.element(editorScreen.saveError()).toHaveTextContent(AUTHORS_REQUIRED);
+    await expect.element(editorScreen.settingsAuthorsInput()).toHaveFocus();
+    await expect(previewScreen.modal()).toHaveCount(0);
+    expect(saveApi.requests).toHaveLength(0);
+
+    // Its shortcut is refused the same way.
+    await editorScreen.body().click();
+    await userEvent.keyboard('{Meta>}p{/Meta}');
+    await expect.element(editorScreen.settingsAuthorsInput()).toHaveFocus();
+    await expect(previewScreen.modal()).toHaveCount(0);
+  });
+
+  it('opens the preview on the email tab for an over-long email subject', async () => {
+    publishChrome({ newsletters: 1 });
+    const saveApi = fakeSavablePost();
+    fakeAdminEndpoint('GET', /^\/email_previews\/posts\//, {
+      email_previews: [
+        { subject: 'Hello from React', html: '<p>Email body</p>', plaintext: 'Email body' },
+      ],
+    });
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave(MAILGUN_ON));
+    await editorScreen.previewButton().click();
+    await previewScreen.emailTab().click();
+    await previewScreen.emailSubject().fill('a'.repeat(301));
+    await previewScreen.webTab().click();
+    await previewScreen.closeButton().click();
+    await expect(previewScreen.modal()).toHaveCount(0);
+
+    await editorScreen.previewButton().click();
+
+    await expect.element(previewScreen.emailSubject()).toHaveAttribute('aria-invalid', 'true');
+    await expect.element(previewScreen.modal()).toHaveTextContent(EMAIL_SUBJECT_TOO_LONG);
     expect(saveApi.requests).toHaveLength(0);
   });
 

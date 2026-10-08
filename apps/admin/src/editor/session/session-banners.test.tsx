@@ -92,8 +92,8 @@ describe('SessionBanners', () => {
     expect(container).toBeEmptyDOMElement();
   });
 
-  it('explains held validation without presenting a failed network save', () => {
-    renderBanners(
+  it('leaves held validation to the field that breaks its rule', () => {
+    const { container } = renderBanners(
       { kind: 'idle' },
       {
         pendingSave: {
@@ -101,11 +101,8 @@ describe('SessionBanners', () => {
         },
       },
     );
-    expect(screen.getByRole('status')).toHaveTextContent(
-      'Changes are waiting to save. At least one author is required.',
-    );
-    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'Retry' })).not.toBeInTheDocument();
+
+    expect(container).toBeEmptyDOMElement();
   });
 
   it('shows nothing while the sign-in dialog holds the queue', () => {

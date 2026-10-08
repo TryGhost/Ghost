@@ -94,7 +94,7 @@ function ConflictBanner({
   return (
     <>
       <Banner
-        className="mx-4 mb-2 shrink-0 bg-destructive text-destructive-foreground"
+        className="mx-4 mt-3 shrink-0 bg-destructive text-destructive-foreground"
         data-testid={editorConflictBanner}
         role="alert"
         size="sm"
@@ -168,7 +168,7 @@ function NewerVersionNotice({ onReload }: Pick<SessionBannersProps, 'onReload'>)
 
   return (
     <Banner
-      className="mx-4 mb-2 shrink-0"
+      className="mx-4 mt-3 shrink-0"
       data-testid={editorNewerVersionNotice}
       role="status"
       size="sm"
@@ -185,9 +185,10 @@ function NewerVersionNotice({ onReload }: Pick<SessionBannersProps, 'onReload'>)
 }
 
 /**
- * The notices under the header for what the status line cannot hold: a
- * collision or a halt with its ways out, held validation, and a newer version.
- * A failed save is the status line's to report, with its retry.
+ * The notices above the header for what the status line cannot hold: a
+ * collision or a halt with its ways out, and a newer version. A failed save is
+ * the status line's to report, with its retry; a field held by its rule is
+ * marked beside the field.
  */
 export function SessionBanners({
   state,
@@ -211,15 +212,6 @@ export function SessionBanners({
         stopped={halt !== null}
         onReload={onReload}
       />
-    );
-  }
-
-  // A failed save already names the rule in the status line.
-  if (pendingSave?.blockedBy?.kind === 'validation' && state.kind !== 'error') {
-    return (
-      <Banner className="mx-4 mb-2 shrink-0" role="status" size="sm" variant="warning">
-        <Text>Changes are waiting to save. {pendingSave.blockedBy.message}</Text>
-      </Banner>
     );
   }
 

@@ -106,7 +106,7 @@ function EditorHeader({
 
   return (
     <Grid
-      align="center"
+      align="start"
       className="grid-cols-[auto_minmax(0,1fr)] pt-[calc(var(--spacing)*5+1px)] pr-[calc(var(--spacing)*(4+2*var(--editor-settings-progress,0)))] pb-3 pl-4 editor-settings-motion-[padding-right] sm:grid-cols-[auto_minmax(0,1fr)_auto] [&_a]:pointer-events-auto [&_button]:pointer-events-auto"
       gap="sm"
     >
@@ -373,119 +373,122 @@ function EditorContent({
   );
 
   return (
-    <Inline
-      ref={shellRef}
-      align="stretch"
-      className="relative h-full min-h-0 [--editor-settings-width:350px] max-[500px]:[--editor-settings-width:100vw]"
-      gap="none"
-      style={
-        {
-          '--editor-header-height': `${headerHeight}px`,
-          '--editor-overlap': '0px',
-          // Never animated: what moves with the panel transitions its own property.
-          '--editor-settings-progress': settingsOpen ? 1 : 0,
-          // Unset until measured: the toggle's slot then starts at auto width, which
-          // nothing eases from, rather than easing out from an unmeasured toggle.
-          '--editor-settings-toggle-width': settingsToggleWidth
-            ? `${settingsToggleWidth}px`
-            : undefined,
-        } as CSSProperties
-      }
-    >
-      <Stack className="min-h-0 min-w-0 flex-1" gap="none">
-        <Box ref={headerRef} className="pointer-events-none relative z-20 shrink-0">
-          <EditorHeader analyticsReturn={analyticsReturn} postType={postType}>
-            {!analyticsReturn || didEmailFail || session.state.kind === 'error' ? (
-              <EditorStatus
-                isDirty={session.isDirty()}
-                pendingSave={session.pendingSave}
-                record={statusRecord}
-                state={session.state}
-                onOpenPublishFlow={offersEmailRetry ? openPublishFlow : undefined}
-                onOpenUpdateFlow={canPublish ? openUpdateFlow : undefined}
-                onRetrySave={session.retrySave}
-              />
-            ) : null}
-            <PageHeader.ActionGroup className="ml-auto gap-x-[calc(var(--spacing)*3*(1-var(--editor-settings-progress)))] editor-settings-motion-[column-gap] max-sm:col-start-2 max-sm:row-start-1 sm:col-start-3">
-              <EditorHeaderActions
-                currentUser={currentUser}
-                offersEmailRetry={offersEmailRetry}
-                openFlow={openFlow}
-                post={publishPost}
-                postType={postType}
-                revealInvalidField={revealInvalidField}
-                session={session}
-                siteUrl={cardConfig.siteUrl}
-                tkCount={tkCount}
-                onOpenFlow={setOpenFlow}
-              />
-              <Box
-                aria-hidden="true"
-                className="w-[calc((var(--editor-settings-toggle-width)+var(--spacing)*2+1px)*(1-var(--editor-settings-progress)))] shrink-0 editor-settings-motion-[width]"
-              />
-            </PageHeader.ActionGroup>
-          </EditorHeader>
-        </Box>
-        <Box className="peer shrink-0">
-          <SessionBanners
-            contentText={session.contentText}
-            hasUnsavedContent={session.hasUnsavedContent}
-            newerVersionAvailable={session.newerVersionAvailable}
-            pendingSave={session.pendingSave}
-            state={session.state}
-            onReload={session.reload}
-          />
-          <ReauthDialog
-            email={currentUser?.email ?? ''}
-            open={session.reauthOpen}
-            onAbandoned={session.reauthAbandoned}
-            onSucceeded={session.reauthSucceeded}
-          />
-        </Box>
-        {/* Session warnings reserve space; otherwise the document reaches behind the header. */}
-        <Box className="relative min-h-0 flex-1 peer-empty:[--editor-overlap:var(--editor-header-height)]">
-          <div className="-mt-(--editor-overlap) h-[calc(100%+var(--editor-overlap))] min-h-0">
-            <PostEditor
-              key={session.contentKey}
-              {...session.bind}
-              autofocusTitle={!record}
-              cardConfig={currentCardConfig}
-              excerptError={settingsFieldErrorFor('custom_excerpt', session.settings)}
-              featureImage={featureImage}
-              handleRef={postEditorRef}
-              postType={postType}
-              settingsMoving={settingsMoving}
-              showExcerpt={showExcerpt}
-              titleAndFeatureImageHidden={
-                postType === 'page' && liveShowTitleAndFeatureImage === false
-              }
-              titleError={titleError(session.bind.title)}
-              wordCountAccessory={<EmailSizeWarning post={publishPost} />}
-              onExcerptBlur={session.commitField}
-              onTkCountChange={setTkCount}
-            />
-          </div>
-        </Box>
-      </Stack>
-      <Box className="absolute top-[calc(var(--spacing)*5+1px)] right-[calc(var(--spacing)*6+1px)] z-40">
-        {settingsToggle}
-      </Box>
-      {settingsPresent ? (
-        <PostSettingsSidebar
-          cardConfig={currentCardConfig}
-          currentUser={currentUser}
-          featureImage={featureImage.featureImage}
-          frameRef={settingsFrameRef}
-          hasInlineExcerpt={showExcerpt}
-          postType={postType}
-          reveal={settingsReveal}
-          session={session}
-          siteUrl={cardConfig.siteUrl}
+    <Stack className="h-full min-h-0" gap="none">
+      {/* Session warnings sit above the header, so the header row and the
+          settings toggle floating on it move down together. */}
+      <Box className="shrink-0">
+        <SessionBanners
+          contentText={session.contentText}
+          hasUnsavedContent={session.hasUnsavedContent}
+          newerVersionAvailable={session.newerVersionAvailable}
+          pendingSave={session.pendingSave}
+          state={session.state}
+          onReload={session.reload}
         />
-      ) : null}
-      {snippetDialog}
-      <DirtyConfirmDialog testId={editorLeaveDialog} {...leaveGuard.dialogProps} />
-    </Inline>
+        <ReauthDialog
+          email={currentUser?.email ?? ''}
+          open={session.reauthOpen}
+          onAbandoned={session.reauthAbandoned}
+          onSucceeded={session.reauthSucceeded}
+        />
+      </Box>
+      <Inline
+        ref={shellRef}
+        align="stretch"
+        className="relative min-h-0 flex-1 [--editor-settings-width:350px] max-[500px]:[--editor-settings-width:100vw]"
+        gap="none"
+        style={
+          {
+            '--editor-overlap': `${headerHeight}px`,
+            // Never animated: what moves with the panel transitions its own property.
+            '--editor-settings-progress': settingsOpen ? 1 : 0,
+            // Unset until measured: the toggle's slot then starts at auto width, which
+            // nothing eases from, rather than easing out from an unmeasured toggle.
+            '--editor-settings-toggle-width': settingsToggleWidth
+              ? `${settingsToggleWidth}px`
+              : undefined,
+          } as CSSProperties
+        }
+      >
+        <Stack className="min-h-0 min-w-0 flex-1" gap="none">
+          <Box ref={headerRef} className="pointer-events-none relative z-20 shrink-0">
+            <EditorHeader analyticsReturn={analyticsReturn} postType={postType}>
+              {!analyticsReturn || didEmailFail || session.state.kind === 'error' ? (
+                <EditorStatus
+                  isDirty={session.isDirty()}
+                  pendingSave={session.pendingSave}
+                  record={statusRecord}
+                  state={session.state}
+                  onOpenPublishFlow={offersEmailRetry ? openPublishFlow : undefined}
+                  onOpenUpdateFlow={canPublish ? openUpdateFlow : undefined}
+                  onRetrySave={session.retrySave}
+                />
+              ) : null}
+              <PageHeader.ActionGroup className="ml-auto gap-x-[calc(var(--spacing)*3*(1-var(--editor-settings-progress)))] editor-settings-motion-[column-gap] max-sm:col-start-2 max-sm:row-start-1 sm:col-start-3">
+                <EditorHeaderActions
+                  currentUser={currentUser}
+                  offersEmailRetry={offersEmailRetry}
+                  openFlow={openFlow}
+                  post={publishPost}
+                  postType={postType}
+                  revealInvalidField={revealInvalidField}
+                  session={session}
+                  siteUrl={cardConfig.siteUrl}
+                  tkCount={tkCount}
+                  onOpenFlow={setOpenFlow}
+                />
+                <Box
+                  aria-hidden="true"
+                  className="w-[calc((var(--editor-settings-toggle-width)+var(--spacing)*2+1px)*(1-var(--editor-settings-progress)))] shrink-0 editor-settings-motion-[width]"
+                />
+              </PageHeader.ActionGroup>
+            </EditorHeader>
+          </Box>
+          {/* The document reaches up behind the floating header. */}
+          <Box className="relative min-h-0 flex-1">
+            <div className="-mt-(--editor-overlap) h-[calc(100%+var(--editor-overlap))] min-h-0">
+              <PostEditor
+                key={session.contentKey}
+                {...session.bind}
+                autofocusTitle={!record}
+                cardConfig={currentCardConfig}
+                excerptError={settingsFieldErrorFor('custom_excerpt', session.settings)}
+                featureImage={featureImage}
+                handleRef={postEditorRef}
+                postType={postType}
+                settingsMoving={settingsMoving}
+                showExcerpt={showExcerpt}
+                titleAndFeatureImageHidden={
+                  postType === 'page' && liveShowTitleAndFeatureImage === false
+                }
+                titleError={titleError(session.bind.title)}
+                wordCountAccessory={<EmailSizeWarning post={publishPost} />}
+                onExcerptBlur={session.commitField}
+                onTkCountChange={setTkCount}
+              />
+            </div>
+          </Box>
+        </Stack>
+        <Box className="absolute top-[calc(var(--spacing)*5+1px)] right-[calc(var(--spacing)*6+1px)] z-40">
+          {settingsToggle}
+        </Box>
+        {settingsPresent ? (
+          <PostSettingsSidebar
+            cardConfig={currentCardConfig}
+            currentUser={currentUser}
+            featureImage={featureImage.featureImage}
+            frameRef={settingsFrameRef}
+            hasInlineExcerpt={showExcerpt}
+            postType={postType}
+            reveal={settingsReveal}
+            session={session}
+            siteUrl={cardConfig.siteUrl}
+          />
+        ) : null}
+        {snippetDialog}
+        <DirtyConfirmDialog testId={editorLeaveDialog} {...leaveGuard.dialogProps} />
+      </Inline>
+    </Stack>
   );
 }
 

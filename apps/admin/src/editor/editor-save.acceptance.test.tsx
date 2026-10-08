@@ -577,7 +577,6 @@ describe('Post editor saving', () => {
 
     await expect.element(editorScreen.titleInput()).toHaveAttribute('aria-invalid', 'true');
     await expect.element(editorScreen.titleInput()).toHaveAccessibleDescription(TITLE_TOO_LONG);
-    await expect.element(editorScreen.pendingSaveNotice()).toHaveTextContent(TITLE_TOO_LONG);
     await expect(editorScreen.saveError()).toHaveCount(0);
 
     await userEvent.keyboard('{Meta>}s{/Meta}');
@@ -618,7 +617,6 @@ describe('Post editor saving', () => {
 
       await expect.element(excerpt()).toHaveAttribute('aria-invalid', 'true');
       await expect.element(excerpt()).toHaveAccessibleDescription(EXCERPT_TOO_LONG);
-      await expect.element(editorScreen.pendingSaveNotice()).toHaveTextContent(EXCERPT_TOO_LONG);
       await expect(editorScreen.saveError()).toHaveCount(0);
 
       await userEvent.keyboard('{Meta>}s{/Meta}');

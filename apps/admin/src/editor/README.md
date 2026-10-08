@@ -63,8 +63,8 @@ then starts at its email-failure step. Whether a post qualifies is decided by
 the flow's own `initialEmailError()`, and the button is offered only to roles
 Core lets retry an email, so an Author sees the failure without it.
 
-While the post breaks a rule a save checks, the header's Publish, its shortcut,
-the preview's Publish, Unpublish and Unschedule open nothing, as in Ember. The
+While the post breaks a rule a save checks, the header's Preview and Publish,
+their shortcuts, the preview's Publish, Unpublish and Unschedule open nothing. The
 rules are the save's own: an over-long title, excerpt, email subject, meta,
 social card or code injection field, an invalid canonical URL, specific-tier
 access with no tier, an empty author list, and a publish date staged for a time
@@ -73,7 +73,7 @@ the status line names the rule in red in place of the status, nothing is sent,
 and the writer is taken to the field. The title and the excerpt under it take
 focus; a field in the settings panel opens the panel, and the field's pane when
 it has one, and takes focus there. The email subject is edited in the preview,
-so the preview opens, its own save refused beside the subject. The preview's
+so the preview opens on its email tab, its own save refused beside the subject. The preview's
 Publish refuses an over-long subject in place: the preview stays open and turns
 to its email tab, where the rule is named beside the subject. A refusal of any
 other field from the preview's Publish closes the preview first. Update is refused by its save
@@ -188,10 +188,15 @@ a retry there would save the post without changing its status, so the publish
 or update flow is where those are retried. While a collision blocks the next
 save, its banner offers the ways out instead.
 
-What the status line cannot hold has a banner beneath the header: a collision,
-a deleted post, lost access and a crashed editor, each with Reload or Copy
-content, a newer version saved elsewhere, and changes held back by a field's
-rule, until a save the writer asks for is refused over it.
+What the status line cannot hold has a banner above the header, which moves
+down with the settings toggle beneath it: a collision, a deleted post, lost
+access and a crashed editor, each with Reload or Copy content, and a newer
+version saved elsewhere. Changes held back by a field's rule have no banner;
+the field names its rule, and the status line does once a save the writer asks
+for is refused over it.
+
+The header row's actions line up with the settings toggle. A status that wraps
+keeps its first line level with the back link's label and grows downward.
 
 ## Link suggestions
 

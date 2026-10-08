@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Text } from '@tryghost/shade/primitives';
 import { Button, buttonVariants } from '@tryghost/shade/components';
 import { useShade } from '@tryghost/shade/app';
-import { formatNumber } from '@tryghost/shade/utils';
+import { cn, formatNumber } from '@tryghost/shade/utils';
 import { membersCountString, useMembersCount } from '@tryghost/admin-x-framework/api/members';
 import {
   editorSaveError,
@@ -270,13 +270,20 @@ export function EditorStatus({
   return (
     <Text
       as="span"
-      className={buttonVariants({
-        variant: null,
-        size: isAdmin7 ? 'default' : 'sm',
-        shape: 'pill',
-        isAdmin7,
-        className: `pointer-events-auto h-auto max-w-full min-w-0 justify-self-start bg-background/80 px-3 py-1 text-(length:--text-control) whitespace-normal text-text-secondary backdrop-blur-sm max-sm:col-span-2 max-sm:row-start-2 ${isAdmin7 ? 'min-h-(--control-height)' : 'min-h-7'}`,
-      })}
+      // Its first line sits where a one-line status centres it, level with the
+      // back link's label, so a wrapped status grows downward from there.
+      className={cn(
+        buttonVariants({
+          variant: null,
+          size: isAdmin7 ? 'default' : 'sm',
+          shape: 'pill',
+          isAdmin7,
+        }),
+        'pointer-events-auto h-auto max-w-full min-w-0 items-start justify-self-start bg-background/80 px-3 text-(length:--text-control) whitespace-normal text-text-secondary backdrop-blur-sm max-sm:col-span-2 max-sm:row-start-2',
+        isAdmin7
+          ? 'min-h-(--control-height) py-[calc((var(--control-height)-1lh)/2)]'
+          : 'min-h-7 py-[calc((--spacing(7)-1lh)/2)]',
+      )}
       data-testid={editorStatus}
       tone="secondary"
       weight="medium"

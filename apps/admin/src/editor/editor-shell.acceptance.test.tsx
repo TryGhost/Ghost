@@ -290,6 +290,34 @@ afterEach(async () => {
   await page.viewport(1280, 800);
 });
 
+/** Where the first line of an element's text sits, from its font's ascent. */
+function firstTextBaseline(element: Element): number {
+  const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT, {
+    acceptNode: (node) =>
+      node.textContent?.trim() ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_SKIP,
+  });
+  const text = walker.nextNode();
+  if (!text?.parentElement) {
+    throw new Error('No text to measure');
+  }
+  const range = document.createRange();
+  range.selectNodeContents(text);
+  const line = range.getClientRects()[0];
+  const context = document.createElement('canvas').getContext('2d');
+  if (!context) {
+    throw new Error('No canvas to measure with');
+  }
+  context.font = getComputedStyle(text.parentElement).font;
+  const metrics = context.measureText(text.textContent ?? '');
+  const contentHeight = metrics.fontBoundingBoxAscent + metrics.fontBoundingBoxDescent;
+  return line.top + (line.height - contentHeight) / 2 + metrics.fontBoundingBoxAscent;
+}
+
+function verticalCentre(element: Element): number {
+  const bounds = element.getBoundingClientRect();
+  return bounds.top + bounds.height / 2;
+}
+
 describe('Floating editor shell', () => {
   it.each(['post', 'page'] as const)(
     'keeps %s controls in the viewport while only the document scrolls',
@@ -887,6 +915,51 @@ describe('Floating editor shell', () => {
     expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(window.innerWidth);
   });
 
+  it('keeps a wrapped status level with the back link and the actions level with the settings toggle', async () => {
+    await page.viewport(645, 800);
+    fakeLongDocument('post');
+    fakeAdminEndpoint(
+      'PUT',
+      /^\/posts\/abc123\/\?/,
+      {
+        errors: [
+          {
+            type: 'ValidationError',
+            message:
+              'Saving failed: this post contains a value that is too long. Shorten the value and try saving again.',
+          },
+        ],
+      },
+      { status: 422 },
+    );
+    await renderAdminApp('/editor/post/abc123', withoutAutosave(FLAG_ON));
+    await expect.element(editorScreen.publishButton()).toBeEnabled();
+    await expect.element(editorScreen.status()).toBeVisible();
+    const back = () => editorScreen.backLink('post').element();
+    const status = () => editorScreen.status().element();
+    const expectAligned = () => {
+      expect(Math.abs(firstTextBaseline(status()) - firstTextBaseline(back()))).toBeLessThan(2);
+      expect(
+        Math.abs(
+          verticalCentre(editorScreen.publishButton().element()) -
+            verticalCentre(editorScreen.settingsToggle().element()),
+        ),
+      ).toBeLessThan(2);
+    };
+    expectAligned();
+
+    await editorScreen.body().click();
+    await userEvent.keyboard('{End} more');
+    await userEvent.keyboard('{Meta>}s{/Meta}');
+    await expect.element(editorScreen.saveError()).toBeVisible();
+
+    // The rule wraps under its first line rather than centring against the row.
+    expect(status().getBoundingClientRect().height).toBeGreaterThan(
+      back().getBoundingClientRect().height + 8,
+    );
+    expectAligned();
+  });
+
   it('bounds the contributor layout and keeps its controls anchored while writing', async () => {
     fakeLongDocument('post');
     const me = currentUserResponse();
@@ -949,11 +1022,11 @@ describe('Floating editor shell', () => {
   );
 
   it.each([1280, 390])(
-    'reserves space for a session warning beneath the header at %spx while keeping the footer anchored',
+    'puts a session warning above the header at %spx while keeping the footer anchored',
     async (width) => {
       await page.viewport(width, 800);
       fakeLongDocument('post');
-      // A collision's banner, unlike a failed save, sits beneath the header.
+      // A collision's banner, unlike a failed save, sits above the header.
       fakeAdminEndpoint(
         'PUT',
         /^\/posts\/abc123\/\?/,
@@ -981,12 +1054,20 @@ describe('Floating editor shell', () => {
       await expect.element(editorScreen.conflictBanner()).toBeVisible();
 
       const banner = editorScreen.conflictBanner().element().getBoundingClientRect();
-      expect(banner.top).toBeGreaterThanOrEqual(headerBefore.bottom);
+      const toggle = editorScreen.settingsToggle().element().getBoundingClientRect();
+      const back = editorScreen.backLink('post').element().getBoundingClientRect();
+      // The header row, with the settings toggle floating on it, moves down below the banner.
+      expect(toggle.top).toBeGreaterThan(banner.bottom);
+      expect(toggle.top).toBeGreaterThan(headerBefore.top);
+      expect(back.top).toBe(toggle.top);
+      // The document starts beneath the banner and reaches behind the header only.
       expect(pane.getBoundingClientRect().top).toBeGreaterThanOrEqual(banner.bottom);
       expect(pane.clientHeight).toBeLessThan(paneHeight);
-      expect(editorScreen.settingsToggle().element().getBoundingClientRect().top).toBe(
-        headerBefore.top,
-      );
+      // Its writing area still starts below the header it reaches behind.
+      const writingArea = pane.firstElementChild as HTMLElement;
+      expect(
+        pane.getBoundingClientRect().top + parseFloat(getComputedStyle(writingArea).paddingTop),
+      ).toBeGreaterThan(back.bottom);
       expect(editorScreen.helpLink().element().getBoundingClientRect().bottom).toBe(
         footerBefore.bottom,
       );

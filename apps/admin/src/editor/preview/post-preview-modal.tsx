@@ -233,6 +233,14 @@ export function PostPreviewModal({
     // Each opening starts from the post's or the publish flow's newsletter, not an earlier pick.
     if (open) {
       setPickedNewsletterSlug(null);
+      // An over-long subject opens the preview in place of a refused action, on
+      // the tab that edits it.
+      if (emailAvailable && subjectEditor && overLength(subjectEditor.value, EMAIL_SUBJECT_MAX)) {
+        setFormat('email');
+        if (segment === 'anonymous') {
+          setSegment('free');
+        }
+      }
     }
   }
 

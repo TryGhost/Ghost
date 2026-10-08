@@ -310,9 +310,6 @@ describe('Post settings code injection', () => {
 
     await expect.element(headEditor()).toHaveAttribute('aria-invalid', 'true');
     await expect.element(headEditor()).toHaveAccessibleDescription(CODE_INJECTION_HEAD_TOO_LONG);
-    await expect
-      .element(editorScreen.pendingSaveNotice())
-      .toHaveTextContent(CODE_INJECTION_HEAD_TOO_LONG);
     await expect(editorScreen.saveError()).toHaveCount(0);
     expect(saveApi.requests).toHaveLength(0);
 

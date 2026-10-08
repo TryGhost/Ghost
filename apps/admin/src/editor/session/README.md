@@ -104,8 +104,8 @@ post that exists, an over-long title, excerpt, code injection or meta/social
 field, an invalid canonical URL, an emptied author list, or a newly staged
 future publish time holds a background save with a validation blocker. Body
 autosave, title and image commits follow the same rule, including an already
-armed timer or queued request. The editor explains why changes are waiting even
-when the settings panel is closed. A saved future publish time is not itself
+armed timer or queued request. The field names its rule where it is edited, and
+the status line does once a save the writer asks for is refused. A saved future publish time is not itself
 invalid.
 
 A post the server has not created yet is not held to the tier rule. Its saves

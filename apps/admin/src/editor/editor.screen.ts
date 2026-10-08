@@ -207,8 +207,6 @@ export const editorScreen = {
     page
       .getByTestId(editorStatus)
       .getByRole('button', { name: editorSentStatusButton, exact: true }),
-  pendingSaveNotice: () =>
-    page.getByRole('status').filter({ hasText: 'Changes are waiting to save.' }),
 
   headerActions: () => page.getByTestId(editorHeaderActions),
   previewButton: () =>
