@@ -136,44 +136,33 @@ const ExportAccount: React.FC = () => {
 
   return (
     <>
-      <div className="space-y-3 text-base text-gray-800 dark:text-gray-600">
-        <p>
-          1. On your new account, add{' '}
-          {isLoadingAccount ? (
-            <Skeleton className="inline-block h-5 w-40 align-text-bottom" />
-          ) : ownHandle ? (
-            <>
-              <strong>{ownHandle}</strong>
-              <Button
-                aria-label="Copy Ghost handle"
-                className="ml-1.5 size-6 p-0 align-middle hover:opacity-80"
-                title="Copy handle"
-                type="button"
-                variant="link"
-                onClick={() => {
-                  void handleCopy();
-                }}
-              >
-                {!copied ? <LucideIcon.Copy size={16} /> : <LucideIcon.Check size={16} />}
-              </Button>
-            </>
-          ) : (
-            <strong>your Ghost handle</strong>
-          )}{' '}
-          as an alias. On Mastodon, open Preferences → Account → Moving from a different account →
-          create an account alias (see the{' '}
-          <a
-            className="underline hover:text-black dark:hover:text-white"
-            href="https://docs.joinmastodon.org/user/moving/#account-aliases"
-            rel="noopener noreferrer"
-            target="_blank"
-          >
-            Mastodon guide
-          </a>
-          ).
-        </p>
-        <p>2. Enter your new account’s handle.</p>
-      </div>
+      <p className="text-base text-gray-800 dark:text-gray-600">
+        Add{' '}
+        {isLoadingAccount ? (
+          <Skeleton className="inline-block h-5 w-40 align-text-bottom" />
+        ) : ownHandle ? (
+          <>
+            <strong>{ownHandle}</strong>
+            <Button
+              aria-label="Copy Ghost handle"
+              className="ml-1.5 size-6 p-0 align-middle hover:opacity-80"
+              title="Copy handle"
+              type="button"
+              variant="link"
+              onClick={() => {
+                void handleCopy();
+              }}
+            >
+              {!copied ? <LucideIcon.Copy size={16} /> : <LucideIcon.Check size={16} />}
+            </Button>
+          </>
+        ) : (
+          <strong>your Ghost handle</strong>
+        )}{' '}
+        as an alias on your new social web profile first. Then enter that profile’s handle here.
+        Compatible servers will receive a request to move your followers. Keep this Ghost account
+        available while they process it.
+      </p>
 
       {showDestinationForm ? (
         <form className="mt-6" onSubmit={handleMoveSubmit}>

@@ -230,8 +230,7 @@ describe('outbound account migration', () => {
     expect(screen.getByRole('status').textContent).toContain(
       'Your followers were asked to follow new@elsewhere.example',
     );
-    expect(screen.queryByText(/On your new account, add/)).toBeNull();
-    expect(screen.queryByText(/Enter your new account/)).toBeNull();
+    expect(screen.queryByText(/as an alias on your new social web profile first/)).toBeNull();
     expect(screen.queryByLabelText('New account handle')).toBeNull();
   });
 
@@ -249,15 +248,12 @@ describe('outbound account migration', () => {
     expect((screen.getByLabelText('New account handle') as HTMLInputElement).value).toBe('');
   });
 
-  it('keeps the Mastodon alias guide when the Ghost handle fails to load', () => {
+  it('falls back when the Ghost handle fails to load', () => {
     mocks.account.data = undefined;
     render(<AccountMigration />);
     goToExport();
     expect(screen.getByText('your Ghost handle')).toBeTruthy();
-    const guide = screen.getByRole('link', { name: 'Mastodon guide' });
-    expect(guide.getAttribute('href')).toBe(
-      'https://docs.joinmastodon.org/user/moving/#account-aliases',
-    );
+    expect(screen.getByText(/as an alias on your new social web profile first/)).toBeTruthy();
   });
 
   it('shows a loading skeleton while migration status is loading', () => {
