@@ -86,10 +86,10 @@ handoff to the destination screen. Pages return to `/pages`; scheduled posts
 and posts without email return to `/posts`. Immediately published posts with
 email, including email-only sends and posts that were emailed previously, open
 `/posts/analytics/:id`. Failed saves and failed sends keep the flow open so the
-writer can retry. With the flag on, a publish that emails opens analytics as
-soon as it saves, and a send that fails after that is reported there rather
-than in the flow; retrying a failed send from the status line still waits for
-the email.
+writer can retry. With the flag on, a publish that emails opens analytics once
+it saves, but no sooner than 1.5 seconds after the writer confirms, and a send
+that fails after that is reported there rather than in the flow; retrying a
+failed send from the status line still waits for the email.
 
 ## Leaving the editor
 
