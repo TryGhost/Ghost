@@ -2,6 +2,9 @@ import type { Email, PostStatus } from '@tryghost/admin-x-framework/api/posts';
 
 export const CONFIRM_EMAIL_POLL_LENGTH = 1000;
 export const CONFIRM_EMAIL_MAX_POLL_LENGTH = 15 * 1000;
+// With `improveSendingUI` on, a publish that emails holds this long instead of
+// polling, so the hand-off to post analytics is not instant.
+export const EMAIL_HANDOFF_LENGTH = 1500;
 
 export interface EmailConfirmationPost {
   status?: PostStatus;
@@ -14,6 +17,7 @@ export type EmailConfirmationOutcome =
   | { kind: 'unpublished' }
   | { kind: 'timeout' }
   | { kind: 'not-needed' }
+  | { kind: 'handed-off' }
   | { kind: 'cancelled' };
 
 export type TimerHandle = unknown;
@@ -28,10 +32,11 @@ export interface EmailConfirmationOptions {
 export interface EmailConfirmation {
   confirm(postId: string, currentPost?: EmailConfirmationPost): Promise<EmailConfirmationOutcome>;
   retryAndConfirm(postId: string, emailId: string): Promise<EmailConfirmationOutcome>;
+  handOff(postId: string): Promise<EmailConfirmationOutcome>;
   cancel(): void;
 }
 
-type RunOperation = 'confirm' | 'retry';
+type RunOperation = 'confirm' | 'retry' | 'handoff';
 
 interface RunState {
   operation: RunOperation;
@@ -219,6 +224,14 @@ export function createEmailConfirmation(options: EmailConfirmationOptions): Emai
         }
 
         return poll(state, { stopWhenUnpublished: false });
+      });
+    },
+
+    handOff(postId) {
+      return run('handoff', postId, async (state) => {
+        await wait(state, EMAIL_HANDOFF_LENGTH);
+
+        return state.cancelled ? { kind: 'cancelled' } : { kind: 'handed-off' };
       });
     },
 

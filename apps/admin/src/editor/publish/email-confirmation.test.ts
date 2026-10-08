@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   CONFIRM_EMAIL_MAX_POLL_LENGTH,
   CONFIRM_EMAIL_POLL_LENGTH,
+  EMAIL_HANDOFF_LENGTH,
   type EmailConfirmationPost,
   createEmailConfirmation,
   isPartialEmailFailure,
@@ -47,6 +48,37 @@ describe('createEmailConfirmation', () => {
   it('pins the poll interval to a second and the poll window to fifteen seconds', () => {
     expect(CONFIRM_EMAIL_POLL_LENGTH).toBe(1000);
     expect(CONFIRM_EMAIL_MAX_POLL_LENGTH).toBe(15000);
+  });
+
+  it('pins the improveSendingUI hand-off to a second and a half', () => {
+    expect(EMAIL_HANDOFF_LENGTH).toBe(1500);
+  });
+
+  it('hands off after the hold without reloading the post', async () => {
+    const { reload, confirmation } = setup([pending]);
+    let settled = false;
+
+    const result = confirmation.handOff('post-1');
+    void result.then(() => {
+      settled = true;
+    });
+    await vi.advanceTimersByTimeAsync(EMAIL_HANDOFF_LENGTH - 1);
+    expect(settled).toBe(false);
+
+    await vi.advanceTimersByTimeAsync(1);
+    await expect(result).resolves.toEqual({ kind: 'handed-off' });
+    expect(reload).not.toHaveBeenCalled();
+  });
+
+  it('settles a hand-off as cancelled and clears its timer when cancelled', async () => {
+    const { confirmation } = setup([pending]);
+
+    const result = confirmation.handOff('post-1');
+    await vi.advanceTimersByTimeAsync(EMAIL_HANDOFF_LENGTH / 2);
+    confirmation.cancel();
+
+    await expect(result).resolves.toEqual({ kind: 'cancelled' });
+    expect(vi.getTimerCount()).toBe(0);
   });
 
   it('polls until the email is submitted', async () => {

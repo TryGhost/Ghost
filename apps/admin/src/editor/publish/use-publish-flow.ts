@@ -42,7 +42,7 @@ export interface PublishFlowOptions {
   now?: () => Date;
   dispatch: PublishDispatcher;
   showCompletion?: boolean;
-  /** The `improveSendingUI` lab: a publish that emails completes without confirming the send. */
+  /** The `improveSendingUI` lab: a publish that emails completes after a short hold, without confirming the send. */
   improveSendingUI?: boolean;
   onBeforePublish?: () => Promise<void>;
   onCompleted?: (info: { postId: string; isScheduled: boolean; hasEmail: boolean }) => void;
@@ -538,6 +538,15 @@ export function usePublishFlow({
       refreshPostReads(outcome);
       applyEmailOutcome(outcome, isScheduled);
       return;
+    }
+
+    if (willEmailImmediately) {
+      const outcome = await confirmation.handOff(post.id);
+
+      // As with the poll, a hold cut short by the flow closing completes nothing.
+      if (outcome.kind === 'cancelled') {
+        return;
+      }
     }
 
     complete(isScheduled, willEmail);

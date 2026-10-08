@@ -1832,18 +1832,29 @@ describe('Editor header actions', () => {
       await publishScreen.confirmButton().click();
     }
 
-    it.each(SENDS)('hands $send to post analytics once it saves', async ({ emailOnly, status }) => {
-      publishChrome({ newsletters: 1 });
-      fakeSavablePost();
-      const confirmationApi = failSendOnConfirmation(status);
-      await renderAdminApp(`/editor/post/${POST_ID}`, SENDING_UI_ON);
+    it.each(SENDS)(
+      'hands $send to post analytics once the hand-off hold ends',
+      async ({ emailOnly, status }) => {
+        publishChrome({ newsletters: 1 });
+        fakeSavablePost();
+        const confirmationApi = failSendOnConfirmation(status);
+        await renderAdminApp(`/editor/post/${POST_ID}`, SENDING_UI_ON);
 
-      await sendThroughFlow(emailOnly);
+        await sendThroughFlow(emailOnly);
 
-      await expect.poll(currentRoute).toBe(`/posts/analytics/${POST_ID}`);
-      await expect(editorScreen.root()).toHaveCount(0);
-      expect(confirmationApi.requests).toHaveLength(0);
-    });
+        // The flow holds in its running state, spinner and all, before leaving.
+        await expect.element(publishScreen.confirmButton()).toBeDisabled();
+        await expect
+          .element(publishScreen.confirmButton())
+          .toHaveTextContent(emailOnly ? 'Sending' : 'Publishing & sending');
+        expect(publishScreen.confirmButton().element().querySelector('svg')).not.toBeNull();
+        expect(currentRoute()).toBe(`/editor/post/${POST_ID}`);
+
+        await expect.poll(currentRoute).toBe(`/posts/analytics/${POST_ID}`);
+        await expect(editorScreen.root()).toHaveCount(0);
+        expect(confirmationApi.requests).toHaveLength(0);
+      },
+    );
 
     it.each(SENDS)(
       'waits on $send without the flag and reports its failure',

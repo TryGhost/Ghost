@@ -22,6 +22,8 @@ vi.mock('@tryghost/admin-x-framework/api/emails', () => ({
 // A confirmation each spec settles itself; tearing the flow down settles it as cancelled.
 const confirmation = vi.hoisted(() => ({
   settle: undefined as ((outcome: EmailConfirmationOutcome) => void) | undefined,
+  /** The confirmation method the flow is waiting on. */
+  waitingOn: undefined as 'confirm' | 'retryAndConfirm' | 'handOff' | undefined,
 }));
 vi.mock('./email-confirmation', async (importOriginal) => ({
   ...(await importOriginal<typeof import('./email-confirmation')>()),
@@ -29,10 +31,17 @@ vi.mock('./email-confirmation', async (importOriginal) => ({
     confirm: () =>
       new Promise<EmailConfirmationOutcome>((resolve) => {
         confirmation.settle = resolve;
+        confirmation.waitingOn = 'confirm';
       }),
     retryAndConfirm: () =>
       new Promise<EmailConfirmationOutcome>((resolve) => {
         confirmation.settle = resolve;
+        confirmation.waitingOn = 'retryAndConfirm';
+      }),
+    handOff: () =>
+      new Promise<EmailConfirmationOutcome>((resolve) => {
+        confirmation.settle = resolve;
+        confirmation.waitingOn = 'handOff';
       }),
     cancel: () => confirmation.settle?.({ kind: 'cancelled' }),
   }),
@@ -79,6 +88,7 @@ afterEach(() => {
   localStorage.clear();
   vi.clearAllMocks();
   confirmation.settle = undefined;
+  confirmation.waitingOn = undefined;
 });
 
 describe('publish option actions', () => {
@@ -312,7 +322,7 @@ describe('sends under improveSendingUI', () => {
     ['a publish that emails', {}, undefined],
     ['an email-only send', {}, 'send' as const],
     ['a draft whose earlier send failed', { email: FAILED_EMAIL }, undefined],
-  ])('completes %s as soon as it saves', async (_case, post, publishType) => {
+  ])('completes %s once the hand-off hold ends', async (_case, post, publishType) => {
     const inputs = options();
     inputs.post = { ...inputs.post, ...post };
     inputs.improveSendingUI = true;
@@ -334,17 +344,51 @@ describe('sends under improveSendingUI', () => {
     act(() => {
       publishing = result.current.confirmPublish();
     });
+    await waitFor(() => expect(confirmation.settle).toBeDefined());
+    // The hold replaces the poll rather than running alongside it.
+    expect(confirmation.waitingOn).toBe('handOff');
+    expect(inputs.onCompleted).not.toHaveBeenCalled();
+    expect(result.current.confirmStatus).toBe('running');
 
-    await waitFor(() =>
-      expect(inputs.onCompleted).toHaveBeenCalledWith({
-        postId: 'post-1',
-        isScheduled: false,
-        hasEmail: true,
-      }),
-    );
-    await act(() => publishing);
-    expect(confirmation.settle).toBeUndefined();
+    await act(async () => {
+      confirmation.settle?.({ kind: 'handed-off' });
+      await publishing;
+    });
+    expect(inputs.onCompleted).toHaveBeenCalledWith({
+      postId: 'post-1',
+      isScheduled: false,
+      hasEmail: true,
+    });
     expect(result.current.step).toBe('complete');
+    expect(result.current.emailNote).toBeNull();
+  });
+
+  it('completes nothing when the flow is closed during the hand-off hold', async () => {
+    const inputs = options();
+    inputs.improveSendingUI = true;
+    inputs.onCompleted = vi.fn();
+    inputs.dispatch = vi.fn().mockResolvedValue({
+      kind: 'saved',
+      executedAs: 'publish',
+      result: { id: 'post-1', status: 'published', updatedAt: NOW.toISOString() },
+    });
+    const { result } = renderHook(() => usePublishFlow(inputs), { wrapper });
+    await waitFor(() => expect(result.current.limitsChecked).toBe(true));
+
+    act(() => result.current.toConfirm());
+    let publishing: Promise<void> = Promise.resolve();
+    act(() => {
+      publishing = result.current.confirmPublish();
+    });
+    await waitFor(() => expect(confirmation.waitingOn).toBe('handOff'));
+
+    await act(async () => {
+      result.current.cancel();
+      await publishing;
+    });
+
+    expect(inputs.onCompleted).not.toHaveBeenCalled();
+    expect(localStorage.getItem('ghost-last-published-post')).toBeNull();
   });
 
   it('still waits on the email when a failed send is retried', async () => {

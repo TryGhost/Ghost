@@ -17,6 +17,9 @@ import {use} from 'ember-could-get-used-to-this';
 const SHOW_SAVE_STATUS_DURATION = 3000;
 export const CONFIRM_EMAIL_POLL_LENGTH = 1000;
 export const CONFIRM_EMAIL_MAX_POLL_LENGTH = 15 * 1000;
+// With improveSendingUI on, a publish that emails holds this long instead of polling
+// so the redirect to post analytics isn't instant
+export const EMAIL_HANDOFF_LENGTH = 1500;
 
 // This component exists for the duration of the editor screen being open.
 // It's used to store the selected publish options, control the publishing flow
@@ -257,7 +260,9 @@ export default class PublishManagement extends Component {
         yield this.args.afterPublish(result);
 
         if (willEmailImmediately && this.publishOptions.post.email) {
-            if (!this.feature.improveSendingUI) {
+            if (this.feature.improveSendingUI) {
+                yield this.handOffEmailTask.perform();
+            } else {
                 yield this.confirmEmailTask.perform();
             }
         }
@@ -306,6 +311,12 @@ export default class PublishManagement extends Component {
             }
         }
 
+        return true;
+    }
+
+    @task
+    *handOffEmailTask() {
+        yield timeout(EMAIL_HANDOFF_LENGTH);
         return true;
     }
 

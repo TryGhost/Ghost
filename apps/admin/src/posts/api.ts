@@ -6,6 +6,7 @@ export { lazyPostAnalyticsRoot, postAnalyticsRouteChildren } from './analytics/r
 export { POST_VIEW_PARAMS } from './list/post-view-params';
 export { getPostListReturnUrl, getStickyPostFilterUrl } from './list/posts-sticky-filters';
 export type { PostResource } from './list/post-resource';
+export { EmailSendingStatusIcon } from './email-sending-status/email-sending-status-icon';
 
 // Lazy route entries keep the posts and pages list chunks out of the shell
 // while still exposing them through the domain boundary.
