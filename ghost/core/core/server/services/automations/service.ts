@@ -1,20 +1,20 @@
-import assert from 'node:assert/strict';
 import type { SchedulerAdapter } from '@tryghost/adapter-base-scheduling';
+import assert from 'node:assert/strict';
 import type { InternalKeys } from '../internal-keys';
 // @ts-expect-error @tryghost/domain-events currently lacks type declarations.
 import type DomainEvents from '@tryghost/domain-events';
-import { oneAtATime } from '../../../shared/one-at-a-time';
-import { poll } from './poll';
-import * as automationsApi from './automations-api';
-import { getSchedulerIdempotencyKey } from '../../adapters/scheduling/get-scheduler-idempotency-key';
-import { buildSignedJob } from '../../adapters/scheduling/build-signed-job';
 import { setImmediate as flushEventLoop } from 'node:timers/promises';
+import { oneAtATime } from '../../../shared/one-at-a-time';
+import { buildSignedJob } from '../../adapters/scheduling/build-signed-job';
+import { getSchedulerIdempotencyKey } from '../../adapters/scheduling/get-scheduler-idempotency-key';
 import { SoonestTimer } from '../../lib/soonest-timer';
+import * as automationsApi from './automations-api';
+import { poll } from './poll';
 import { getSchedulerPollTime } from './scheduler-poll-time';
+import logging from '@tryghost/logging';
 // @ts-expect-error This module currently lacks type definitions.
 import emailAnalyticsJobs from '../email-analytics/jobs';
 import { StartAutomationsPollEvent } from './events/start-automations-poll-event';
-import logging from '@tryghost/logging';
 import { welcomeEmailAutomationPoll } from './welcome-email-automation-poll';
 // @ts-expect-error This module currently lacks type definitions.
 import memberWelcomeEmailService from '../member-welcome-emails/service';
