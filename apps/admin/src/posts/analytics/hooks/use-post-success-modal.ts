@@ -64,12 +64,18 @@ export const usePostSuccessModal = () => {
 
   // Memoized modal props
   const modalProps = useMemo(() => {
-    if (!post) {
+    const emailStatus = post?.email?.status;
+    // Post analytics reports a failed send, so the modal claims no delivery for
+    // it, and an email-only send that failed has nothing to celebrate.
+    const didEmailFail = emailStatus === 'failed';
+
+    if (!post || (post.email_only && didEmailFail)) {
       return null;
     }
 
     const showPostCount = !!postCount;
-    const isEmailStillSending = post.email?.status !== 'submitted';
+    const isEmailStillSending = emailStatus === 'pending' || emailStatus === 'submitting';
+    const emailCount = didEmailFail ? 0 : post.email?.email_count;
 
     // Build description with React elements to match Ember modal format with bold text
     const getDescription = () => {
@@ -77,7 +83,7 @@ export const usePostSuccessModal = () => {
 
       if (post.email_only) {
         parts.push(isEmailStillSending ? 'Your email is being sent to' : 'Your email was sent to');
-      } else if (post.email?.email_count) {
+      } else if (emailCount) {
         parts.push(
           isEmailStillSending
             ? 'Your post was published on your site and is being sent to'
@@ -87,8 +93,8 @@ export const usePostSuccessModal = () => {
         parts.push('Your post was published on your site');
       }
 
-      if (post.email?.email_count) {
-        const subscriberText = formatSubscriberCount(post.email.email_count);
+      if (emailCount) {
+        const subscriberText = formatSubscriberCount(emailCount);
         parts.push(' ');
         parts.push(React.createElement('strong', { key: 'subscriber-count' }, subscriberText));
 
