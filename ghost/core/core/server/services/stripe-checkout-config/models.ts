@@ -1,5 +1,9 @@
 import { z } from 'zod';
-import { STRIPE_CHECKOUT_BORDER_STYLES, STRIPE_CHECKOUT_FONTS } from '@tryghost/checkout';
+import {
+  STRIPE_ALLOWED_COUNTRIES,
+  STRIPE_CHECKOUT_BORDER_STYLES,
+  STRIPE_CHECKOUT_FONTS,
+} from '@tryghost/checkout';
 
 /**
  * A color as a 6-digit hex code. It is lowercased, so the same color is always stored the same
@@ -80,6 +84,32 @@ export function collectsShippingFor(
     (shipping.tierIds === null || shipping.tierIds.includes(tierId))
   );
 }
+
+/**
+ * The countries a checkout for this paid tier offers to ship to, or null when it doesn't ask
+ * for an address. Stripe has no way to say everywhere, and a checkout without countries
+ * collects no address, so everywhere is every country Stripe accepts.
+ */
+export function shippingCountriesFor(
+  shipping: ShippingCollection | null,
+  tierId: string,
+): string[] | null {
+  if (!collectsShippingFor(shipping, tierId)) {
+    return null;
+  }
+  return countriesToAsk(shipping.allowedCountries);
+}
+
+/** Every country Stripe accepts when none are named, as Stripe has no way to say everywhere. */
+export function countriesToAsk(allowedCountries: string[] | null): string[] {
+  return allowedCountries ?? [...STRIPE_ALLOWED_COUNTRIES];
+}
+
+/**
+ * How a preview asks for a shipping address, in place of the saved settings: null asks for
+ * none, and null countries are everywhere Stripe ships.
+ */
+export type PreviewShipping = { allowedCountries: string[] | null } | null;
 
 /**
  * How Stripe Checkout looks without a design from Ghost, as set in the Stripe dashboard. The

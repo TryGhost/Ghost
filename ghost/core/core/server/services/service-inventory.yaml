@@ -4203,8 +4203,8 @@ services:
         summary: >-
           Named exports include init, the mutable service, previewService and
           brandingService bindings, StripeCheckoutConfigService, CheckoutPreviewService,
-          CheckoutBrandingService, the wire serializers, the shipping rule collectsShippingFor
-          and actingContext.
+          CheckoutBrandingService, the wire serializers, the shipping rules
+          collectsShippingFor and shippingCountriesFor, and actingContext.
           The bindings are undefined before init.
         sources:
           - core/server/services/stripe-checkout-config/index.ts
