@@ -49,17 +49,27 @@ const guardFrameNavigations: BrowserCommand<[]> = async ({ page }) => {
   );
 };
 
-const fakeFrameOrigin: BrowserCommand<[origin: string, html: string]> = async (
+const fakeFrameOrigin: BrowserCommand<[origin: string, html: string, delayMs?: number]> = async (
   { page },
   origin,
   html,
+  delayMs = 0,
 ) => {
   const fakedOrigin = new URL(origin).origin;
   const matcher = (url: URL) => url.origin === fakedOrigin;
-  const handler: FrameRouteHandler = (route) =>
-    route.request().resourceType() === 'document' && route.request().frame().parentFrame()
-      ? route.fulfill({ contentType: 'text/html', body: html })
-      : route.fallback();
+  const handler: FrameRouteHandler = async (route) => {
+    const request = route.request();
+    if (request.resourceType() !== 'document' || !request.frame().parentFrame()) {
+      await route.fallback();
+      return;
+    }
+    if (delayMs > 0) {
+      await new Promise<void>((resolve) => {
+        setTimeout(resolve, delayMs);
+      });
+    }
+    await route.fulfill({ contentType: 'text/html', body: html });
+  };
   await page.route(matcher, handler);
   frameFakes.set(page, [...(frameFakes.get(page) ?? []), { matcher, handler }]);
 };

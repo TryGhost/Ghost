@@ -24,6 +24,7 @@ import {
   canManageApps,
   lazyAppDetailsScreen,
   lazyAppInstallScreen,
+  lazyAppPageScreen,
   lazyAppsScreen,
 } from './apps/api';
 import { lazyAutomationEditorScreen, lazyAutomationsScreen } from './automations/api';
@@ -91,10 +92,17 @@ const appRoutes: RouteObject[] = [
     lazy: lazyComponent(lazyAppInstallScreen),
   },
   {
-    // `/apps/:id` is for the app's own pages, so details live under `/apps/details/`.
+    // `/apps/:id` is the app's own page, so details live under `/apps/details/`.
     path: '/apps/details/:installationId',
     handle: { requiresAccess: canManageApps } satisfies AccessRouteHandle,
     lazy: lazyComponent(lazyAppDetailsScreen),
+  },
+  {
+    // An installed app's page, in a sandboxed frame. `*` is left for the app's own
+    // pages, e.g. /apps/<id>/week, which the bridge passes on (BER-3983).
+    path: '/apps/:installationId/*',
+    handle: { requiresAccess: canManageApps } satisfies AccessRouteHandle,
+    lazy: lazyComponent(lazyAppPageScreen),
   },
   {
     // The automation editor hides the admin sidebar for a focused,

@@ -32,7 +32,7 @@ import { CapabilitySummary } from './components/surface-icon';
 import { UninstallDialog } from './components/uninstall-dialog';
 import { ACCOUNT_ACCESS } from './lib/access';
 import { historyTitle, installedBy } from './lib/history';
-import { appReviewRoute } from './lib/routes';
+import { appReviewRoute, appRoute } from './lib/routes';
 import { isDevelopmentApp } from './lib/served-from';
 
 const Fact: React.FC<{ label: string; children: React.ReactNode }> = ({ label, children }) => (
@@ -225,6 +225,11 @@ export const AppDetails: React.FC = () => {
                     <Button variant="outline" onClick={() => setUninstalling(true)}>
                       Uninstall
                     </Button>
+                    {installation.status === 'active' && (
+                      <Button asChild>
+                        <Link to={appRoute(installation.id)}>Open</Link>
+                      </Button>
+                    )}
                   </PageHeader.ActionGroup>
                 </PageHeader.Actions>
               )}
