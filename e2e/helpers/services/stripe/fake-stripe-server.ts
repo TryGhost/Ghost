@@ -524,6 +524,7 @@ export class FakeStripeServer extends FakeServer {
           shipping_address_collection: body.shipping_address_collection,
           tax_id_collection: body.tax_id_collection,
           phone_number_collection: body.phone_number_collection,
+          branding_settings: body.branding_settings,
         },
         response: {
           mode,

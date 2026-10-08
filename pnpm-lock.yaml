@@ -1245,6 +1245,9 @@ importers:
       '@tanstack/react-query':
         specifier: 'catalog:'
         version: 5.101.4(react@18.3.1)
+      '@tryghost/checkout':
+        specifier: workspace:*
+        version: link:../../packages/checkout
       '@tryghost/limit-service':
         specifier: workspace:*
         version: link:../../packages/limit-service
