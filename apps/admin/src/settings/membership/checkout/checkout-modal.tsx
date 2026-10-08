@@ -1,7 +1,7 @@
 import CheckoutPreview from './checkout-preview';
 import ColorPickerField from '@/settings/components/color-picker-field';
 import IconToggleGroup from '@/settings/components/icon-toggle-group';
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Field,
   FieldContent,
@@ -27,13 +27,20 @@ import { STRIPE_FONTS_CSS, STRIPE_FONT_OPTIONS, fontFamilyOf } from './stripe-fo
 import {
   type StripeCheckoutDesign,
   type StripeCheckoutDesignSetting,
+  useCreateStripeCheckoutPreview,
   useEditStripeCheckoutConfig,
   useReadStripeCheckoutConfig,
 } from '@tryghost/admin-x-framework/api/stripe-checkout-config';
-import { getSettingValues } from '@tryghost/admin-x-framework/api/settings';
+import {
+  type Tier,
+  getPaidActiveTiers,
+  useBrowseTiers,
+} from '@tryghost/admin-x-framework/api/tiers';
+import { checkStripeEnabled, getSettingValues } from '@tryghost/admin-x-framework/api/settings';
 import { useBrowseCustomThemeSettings } from '@tryghost/admin-x-framework/api/custom-theme-settings';
 import { useFeatureFlag, useForm, useHandleError } from '@tryghost/admin-x-framework/hooks';
 import { useGlobalData } from '@/settings/providers/global-data-context';
+import { toast } from 'sonner';
 import { useSettingsNavigation } from '@/settings/hooks/use-settings-navigation';
 
 // Stripe's own defaults, from its Customize Checkout page. Customizing starts from these,
@@ -59,6 +66,74 @@ const formStateOf = (setting: StripeCheckoutDesignSetting): DesignFormState =>
         },
       }
     : { customize: false, design: STRIPE_DEFAULT_DESIGN };
+
+const designSettingOf = ({ customize, design }: DesignFormState): StripeCheckoutDesignSetting =>
+  customize ? { customize: true, ...design } : { customize: false };
+
+/**
+ * "Preview in Stripe": one item per active paid tier, each opening a real Stripe Checkout page
+ * for that tier in the design being edited, saved or not. Undefined while there is nothing to
+ * preview: Stripe isn't connected, or there are no paid tiers.
+ */
+function useStripePreviewMenu(design: StripeCheckoutDesignSetting) {
+  const { settings, config } = useGlobalData();
+  const { data: { tiers = [] } = {} } = useBrowseTiers();
+  const handleError = useHandleError();
+  const { mutateAsync: createPreview } = useCreateStripeCheckoutPreview();
+  const [opening, setOpening] = useState(false);
+
+  const paidTiers = [...getPaidActiveTiers(tiers)].sort(
+    (a, b) => (a.monthly_price ?? 0) - (b.monthly_price ?? 0),
+  );
+  if (!checkStripeEnabled(settings, config) || !paidTiers.length) {
+    return undefined;
+  }
+
+  const open = async (tier: Tier) => {
+    // Opened inside the click, so the browser doesn't block it as a popup, and cut off from
+    // Admin before Stripe's page loads in it. A blocked tab can't be opened later, after the
+    // checkout is created, so the preview stops here.
+    const tab = window.open('about:blank', '_blank');
+    if (!tab) {
+      toast.error(
+        'Your browser blocked the preview. Allow pop-ups for Ghost Admin, then try again.',
+      );
+      return;
+    }
+    tab.opener = null;
+    setOpening(true);
+    try {
+      const response = await createPreview({
+        tier_id: tier.id,
+        cadence: tier.monthly_price ? 'month' : 'year',
+        design,
+      });
+      const url = response.checkout_preview[0]?.url;
+      if (!url) {
+        throw new Error('Stripe returned no checkout to preview');
+      }
+      tab.location.href = url;
+    } catch (error) {
+      tab.close();
+      handleError(error);
+    } finally {
+      setOpening(false);
+    }
+  };
+
+  return {
+    label: opening ? 'Opening…' : 'Preview in Stripe',
+    items: paidTiers.map((tier) => ({
+      key: tier.id,
+      label: tier.name,
+      onSelect: () => {
+        if (!opening) {
+          void open(tier);
+        }
+      },
+    })),
+  };
+}
 
 const DesignSettings: React.FC<{
   state: DesignFormState;
@@ -228,13 +303,12 @@ const CheckoutEditor: React.FC<{
   const { formState, saveState, updateForm, handleSave, okProps } = useForm<DesignFormState>({
     initialState: formStateOf(setting),
     savingDelay: 500,
-    onSave: async ({ customize, design }) => {
-      await editConfig({
-        design: customize ? { customize: true, ...design } : { customize: false },
-      });
+    onSave: async (state) => {
+      await editConfig({ design: designSettingOf(state) });
     },
     onSaveError: handleError,
   });
+  const previewMenu = useStripePreviewMenu(designSettingOf(formState));
 
   return (
     <PreviewModalContent
@@ -254,6 +328,7 @@ const CheckoutEditor: React.FC<{
           <DesignSettings state={formState} onChange={(next) => updateForm(() => next)} />
         </Sidebar>
       }
+      siteLinkMenu={previewMenu}
       onClose={onClose}
       onOk={async () => {
         try {

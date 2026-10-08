@@ -1,3 +1,4 @@
+import { FakeStripeCheckoutPage } from '@/helpers/pages';
 import { Locator, Page } from '@playwright/test';
 
 export type CheckoutCorners = 'Squared' | 'Rounded' | 'Pill';
@@ -16,6 +17,7 @@ export class CheckoutSettingsModal {
   readonly fontSelect: Locator;
   readonly preview: Locator;
   readonly previewPayButton: Locator;
+  readonly previewInStripeButton: Locator;
   readonly saveButton: Locator;
   readonly savedButton: Locator;
   readonly closeButton: Locator;
@@ -37,6 +39,7 @@ export class CheckoutSettingsModal {
     this.fontSelect = this.modal.getByRole('combobox', { name: 'Checkout font' });
     this.preview = this.modal.getByRole('figure', { name: 'Checkout preview' });
     this.previewPayButton = this.preview.getByText('Pay', { exact: true });
+    this.previewInStripeButton = this.modal.getByRole('button', { name: 'Preview in Stripe' });
     this.saveButton = this.modal.getByRole('button', { name: 'Save' });
     this.savedButton = this.modal.getByRole('button', { name: 'Saved' });
     this.closeButton = this.modal.getByRole('button', { name: 'Close' });
@@ -80,6 +83,20 @@ export class CheckoutSettingsModal {
   async chooseFont(name: string): Promise<void> {
     await this.fontSelect.click();
     await this.page.getByRole('option', { name, exact: true }).click();
+  }
+
+  previewTierOption(tierName: string): Locator {
+    return this.page.getByRole('menuitem', { name: tierName, exact: true });
+  }
+
+  /** Opens the tier's Stripe Checkout preview, which loads in a new tab, and returns that tab. */
+  async previewInStripe(tierName: string): Promise<Page> {
+    await this.previewInStripeButton.click();
+    const popup = this.page.waitForEvent('popup');
+    await this.previewTierOption(tierName).click();
+    const tab = await popup;
+    await new FakeStripeCheckoutPage(tab).waitUntilLoaded();
+    return tab;
   }
 
   async save(): Promise<void> {
