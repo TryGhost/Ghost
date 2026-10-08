@@ -2239,9 +2239,6 @@ importers:
 
   apps/sodo-search:
     dependencies:
-      '@tryghost/debug':
-        specifier: 'catalog:'
-        version: 2.3.16(supports-color@10.2.2)
       '@tryghost/i18n':
         specifier: workspace:*
         version: link:../../packages/i18n

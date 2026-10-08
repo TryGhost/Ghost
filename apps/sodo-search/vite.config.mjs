@@ -12,7 +12,13 @@ export default publicAppViteConfig({
   cssCodeSplit: false,
   overrides: {
     resolve: {
-      dedupe: ['@tryghost/debug'],
+      alias: [
+        // Ships Document/Encoder/Charset without the worker and persistence code
+        {
+          find: /^flexsearch$/,
+          replacement: `${import.meta.dirname}/node_modules/flexsearch/dist/flexsearch.compact.module.min.js`,
+        },
+      ],
     },
     build: {
       rollupOptions: {

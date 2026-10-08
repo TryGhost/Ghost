@@ -29,7 +29,6 @@
     "prepublishOnly": "pnpm build"
   },
   "dependencies": {
-    "@tryghost/debug": "catalog:",
     "@tryghost/i18n": "workspace:*",
     "flexsearch": "0.8.212",
     "preact": "catalog:"
@@ -62,13 +61,6 @@
       "last 1 chrome version",
       "last 1 firefox version",
       "last 1 safari version"
-    ]
-  },
-  "jest": {
-    "coverageReporters": [
-      "cobertura",
-      "text-summary",
-      "html"
     ]
   },
   "nx": {
