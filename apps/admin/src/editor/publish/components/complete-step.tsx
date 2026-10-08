@@ -17,17 +17,13 @@ import {
   recipientsConfirmLabel,
 } from '@/editor/publish/publish-copy';
 import type { PublishFlowPost } from '@/editor/publish/flow-post';
+import type { PublishFlow } from '@/editor/publish/use-publish-flow';
 import type { PublishOptionsState } from '@/editor/publish/publish-options';
 
 export interface CompleteStepProps {
   post: PublishFlowPost;
   state: PublishOptionsState;
-  captured: {
-    willPublish: boolean;
-    willEmail: boolean;
-    willOnlyEmail: boolean;
-    isScheduled: boolean;
-  };
+  captured: PublishFlow['captured'];
   timezone: string;
   siteTitle?: string;
   /** Published-post total including this one; null for pages, schedules and email-only. */

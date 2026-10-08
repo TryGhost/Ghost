@@ -8,10 +8,9 @@ import { useLimiter } from '@tryghost/admin-x-framework/hooks';
 import { EDITOR_REQUEST_OPTIONS } from '@/editor/request-options';
 import { useEditorSettings } from '@/editor/use-editor-settings';
 import { LimitCheckError } from './publish-options';
-import type { EmailVerificationHold, PublishLimitPorts } from './publish-options';
+import type { EmailVerificationHold, LimitKind, PublishLimitPorts } from './publish-options';
 
-/** The host limits the flow checks: members before publishing, emails before sending. */
-const PUBLISH_LIMITS = ['members', 'emails'] as const;
+const PUBLISH_LIMITS = ['members', 'emails'] as const satisfies readonly LimitKind[];
 
 /** The sending hold as the settings and the host's config describe it. */
 export function readEmailVerificationHold(
@@ -28,7 +27,7 @@ export function readEmailVerificationHold(
  * Only a `HostLimitError` is a limit that was reached. Anything else the limiter
  * rejects with means the limit could not be checked, such as the count read failing.
  */
-export function rethrowLimitRejection(limit: 'emails' | 'members', error: unknown): never {
+export function rethrowLimitRejection(limit: LimitKind, error: unknown): never {
   if (error instanceof HostLimitError) {
     throw error;
   }

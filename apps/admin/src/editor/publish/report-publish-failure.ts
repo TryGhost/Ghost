@@ -1,11 +1,13 @@
-import { APIError } from '@tryghost/admin-x-framework/errors';
-import { reportEditorError, reportEditorNotice } from '@/editor/report-error';
+import { isExpectedFailure, reportEditorError, reportEditorNotice } from '@/editor/report-error';
 import { LimitCheckError } from './publish-options';
 
 /** What the writer was shown, as Sentry's `publish_failure` tag. */
 export type PublishFailureKind =
   | 'limit-check'
   | 'publish-inputs'
+  | 'pre-publish-save'
+  | 'publish-request'
+  | 'revert-request'
   | 'retry-eligibility'
   | 'retry-request'
   | 'email-failed'
@@ -13,20 +15,12 @@ export type PublishFailureKind =
   | 'no-command';
 
 /**
- * A response Core chose to send, or no response at all: a refusal the writer
- * reads and acts on (validation, a host limit, permissions, an expired session)
- * or a lost connection. Neither is a fault in the flow.
+ * Whether a failure is expected rather than a fault in the flow, by the rule saves
+ * are reported by (`isExpectedSaveError()`): validation, a host limit, a writer who
+ * lost access, an expired session and a lost connection are left out.
  */
 export function isExpectedRefusal(error: unknown): boolean {
-  const cause = error instanceof LimitCheckError ? error.cause : error;
-
-  if (!(cause instanceof APIError)) {
-    return false;
-  }
-
-  const status = cause.response?.status;
-  // No response is a lost connection or a timeout.
-  return status === undefined || (status >= 400 && status < 500);
+  return isExpectedFailure(error instanceof LimitCheckError ? error.cause : error);
 }
 
 /**

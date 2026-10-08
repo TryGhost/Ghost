@@ -1,7 +1,9 @@
-import { Banner, Button } from '@tryghost/shade/components';
+import { Button } from '@tryghost/shade/components';
 import { FailureBanner } from './failure-banner';
-import { RETRY_ELIGIBILITY_FAILED } from '@/editor/publish/use-publish-flow';
-import type { CompletionFailure } from '@/editor/publish/completion-message';
+import {
+  RETRY_ELIGIBILITY_FAILED_MESSAGE,
+  type CompletionFailure,
+} from '@/editor/publish/completion-message';
 import { Inline, Stack, Text } from '@tryghost/shade/primitives';
 import { isPartialEmailFailure } from '@/editor/publish/email-confirmation';
 import {
@@ -26,6 +28,8 @@ export interface CompleteWithEmailErrorStepProps {
   onCheckEligibility: () => void;
   onRetry: () => void;
 }
+
+const ELIGIBILITY_FAILURE: CompletionFailure = { message: RETRY_ELIGIBILITY_FAILED_MESSAGE };
 
 export function CompleteWithEmailErrorStep({
   canRetry,
@@ -66,9 +70,7 @@ export function CompleteWithEmailErrorStep({
 
       {eligibilityFailed ? (
         <Stack align="start" gap="md">
-          <Banner className="w-full" role="alert" variant="destructive">
-            {RETRY_ELIGIBILITY_FAILED}
-          </Banner>
+          <FailureBanner className="w-full" failure={ELIGIBILITY_FAILURE} />
           <Button
             disabled={checkingEligibility}
             size="lg"

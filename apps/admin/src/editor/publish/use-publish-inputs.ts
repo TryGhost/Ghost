@@ -8,6 +8,7 @@ import { newslettersSearchParams } from '@/editor/browse-params';
 import { EDITOR_REQUEST_OPTIONS } from '@/editor/request-options';
 import { isSessionInvalid } from '@/editor/session/error-mapping';
 import { useEditorSettings, useSiteTimezone } from '@/editor/use-editor-settings';
+import { SESSION_EXPIRED_RETRY_MESSAGE } from './completion-message';
 import { reportPublishFailure } from './report-publish-failure';
 import type { PublishSiteInput, PublishUserInput } from './publish-options';
 
@@ -151,8 +152,6 @@ function reportInputError(error: unknown): void {
   reportPublishFailure('publish-inputs', 'The publish settings could not be loaded.', { error });
 }
 
-export const PUBLISH_INPUTS_SESSION_EXPIRED = 'Your session expired. Retry to sign in again.';
-
 function publishInputError(error: unknown): Error | null {
   if (!error) {
     return null;
@@ -160,7 +159,7 @@ function publishInputError(error: unknown): Error | null {
 
   // The transport's "You are not authorised…" leaves the writer nowhere to go.
   if (isSessionInvalid(error)) {
-    return new Error(PUBLISH_INPUTS_SESSION_EXPIRED, { cause: error });
+    return new Error(SESSION_EXPIRED_RETRY_MESSAGE, { cause: error });
   }
 
   return error instanceof Error ? error : new Error('The publish settings could not be loaded.');

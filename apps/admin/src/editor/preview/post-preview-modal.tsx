@@ -44,6 +44,7 @@ import { postPreviewModal, postPreviewSaveFailed } from '@tryghost/test-data/sel
 import { useEditorSettings } from '@/editor/use-editor-settings';
 import { FullscreenDialog } from '@/editor/fullscreen-dialog';
 import { describeRejectedAction } from '@/editor/publish/completion-message';
+import { EMAIL_SUBJECT_MAX, overLength } from '@/editor/session/settings-fields';
 import type { PublishFlowPost } from '@/editor/publish/flow-post';
 import { BrowserPreview } from './browser-preview';
 import { EmailPreview } from './email-preview';
@@ -328,6 +329,17 @@ export function PostPreviewModal({
     }
   };
 
+  // The subject is edited here, so a Publish its length would refuse shows the field
+  // and its rule rather than leaving the preview; the caller refuses the publish.
+  const subjectInvalid =
+    emailAvailable && !!subjectEditor && overLength(subjectEditor.value, EMAIL_SUBJECT_MAX);
+  const publish = () => {
+    if (subjectInvalid) {
+      changeFormat('email');
+    }
+    onPublish?.();
+  };
+
   const copyPreviewLink = async () => {
     try {
       await navigator.clipboard.writeText(audienceUrl);
@@ -367,7 +379,7 @@ export function PostPreviewModal({
             Close
           </Button>
           {onPublish ? (
-            <Button className="w-20 shrink-0" disabled={publishDisabled} onClick={onPublish}>
+            <Button className="w-20 shrink-0" disabled={publishDisabled} onClick={publish}>
               Publish
             </Button>
           ) : null}

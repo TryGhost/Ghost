@@ -17,7 +17,7 @@ import type { SaveError } from '@/editor/engine/save-engine';
 import {
   ACCESS_LOST,
   EDITOR_CRASHED,
-  MISSING_NEWSLETTER_MESSAGE,
+  EMAIL_REFUSED_MESSAGE,
   POST_DELETED,
   isSessionInvalid,
   requestFailureMessage,
@@ -192,6 +192,7 @@ describe('toSaveError', () => {
   });
 
   // Core's error handler summarises `message` and moves its own sentence into `context`.
+  // Only a 4xx is a refusal Core words for the person; a 5xx's text is for logs.
   it.each<[string, unknown, string]>([
     [
       'a publish to an archived newsletter',
@@ -217,6 +218,7 @@ describe('toSaveError', () => {
       ),
       'The newsletter parameter doesn’t match any active newsletter.',
     ],
+    // Read by its class: Core gives this case no code, only a sentence naming a model relation.
     [
       'a post without a newsletter to send to',
       new EmailError(
@@ -227,15 +229,24 @@ describe('toSaveError', () => {
           context: 'The post does not have a newsletter relation',
         }),
       ),
-      MISSING_NEWSLETTER_MESSAGE,
+      EMAIL_REFUSED_MESSAGE,
     ],
     [
-      'a failure Core gave no context for',
+      'a server error, whatever Core said about it',
       new JSONError(
         postsResponse(500),
-        errorBody({ type: 'InternalServerError', message: 'The email could not be sent.' }),
+        errorBody({
+          type: 'InternalServerError',
+          message: 'The email could not be sent.',
+          context: 'ER_LOCK_DEADLOCK: Deadlock found when trying to get lock',
+        }),
       ),
-      'The email could not be sent.',
+      'Couldn’t save this post.',
+    ],
+    [
+      'a bad request that carries no reason',
+      new JSONError(postsResponse(400), errorBody({ message: '', context: null })),
+      'Couldn’t save this post.',
     ],
     [
       'a JSON failure that carries no reason',
@@ -247,7 +258,7 @@ describe('toSaveError', () => {
       new APIError(postsResponse(502), '<html>'),
       'Couldn’t save this post.',
     ],
-  ])('shows Core’s reason for %s, never the transport’s summary', (_label, error, message) => {
+  ])('shows %s as the writer reads it, never the transport’s summary', (_label, error, message) => {
     const mapped = toSaveError(error, 'Couldn’t save this post.');
 
     expect(mapped).toMatchObject({ kind: 'unknown', message });
@@ -272,9 +283,10 @@ describe('isSessionInvalid', () => {
     ['an expired session', new SessionExpiredError(response(401), errorBody()), true],
     ['an unauthorized response', new UnauthorizedError(response(401), errorBody()), true],
     ['a bare 401', new APIError(response(401)), true],
+    // The framework's response handler classes Core's 403 "Authorization failed" this way.
     [
       'a 403 Core answers for a session it no longer authorizes',
-      new JSONError(response(403), errorBody({ message: 'Authorization failed' })),
+      new UnauthorizedError(response(403), errorBody({ message: 'Authorization failed' })),
       true,
     ],
     ['a writer who lost access', new ValidationError(response(403), NO_PERMISSION), false],

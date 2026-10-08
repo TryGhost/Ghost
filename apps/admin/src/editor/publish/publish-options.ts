@@ -82,15 +82,18 @@ export interface EmailVerificationHold {
   message?: string | null;
 }
 
+/** The host limits the flow checks: members before publishing, emails before sending. */
+export type LimitKind = 'emails' | 'members';
+
 /**
  * A limit port's rejection when the limit could not be checked at all, as
  * opposed to a limit that was reached. It propagates out of `checkLimits()`
  * like a failed settings refresh, rather than becoming a block.
  */
 export class LimitCheckError extends Error {
-  readonly limit: 'emails' | 'members';
+  readonly limit: LimitKind;
 
-  constructor(limit: 'emails' | 'members', cause: unknown) {
+  constructor(limit: LimitKind, cause: unknown) {
     super(cause instanceof Error && cause.message ? cause.message : `Couldn’t count ${limit}.`, {
       cause,
     });

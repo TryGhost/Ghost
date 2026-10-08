@@ -1452,6 +1452,64 @@ describe('Publish flow', () => {
     });
   });
 
+  it('hands an unconfirmed send to the caller when the writer closes it with Escape', async () => {
+    fakeAdminEndpoint(
+      'GET',
+      new RegExp(`^/posts/${POST_ID}/\\?`),
+      { errors: [{ message: 'Internal error' }] },
+      { status: 500 },
+    );
+    const onClose = vi.fn();
+    const { onCompleted } = await renderPublishFlow({ showCompletion: false, onClose });
+
+    await publishScreen.continueButton().click();
+    await publishScreen.confirmButton().click();
+    await expect.element(publishScreen.completeNote()).toBeVisible();
+
+    await userEvent.keyboard('{Escape}');
+
+    // The post was published, so closing acknowledges it rather than cancelling the flow.
+    await expect.poll(() => onCompleted.mock.calls.length).toBe(1);
+    expect(onCompleted).toHaveBeenCalledWith({
+      postId: POST_ID,
+      isScheduled: false,
+      hasEmail: true,
+    });
+    expect(localStorage.getItem('ghost-last-published-post')).not.toBeNull();
+    expect(onClose).not.toHaveBeenCalled();
+  });
+
+  it('asks for sign-in when reading back a send finds the session gone, then confirms it', async () => {
+    let expired = true;
+    fakeAdminEndpoint('GET', new RegExp(`^/posts/${POST_ID}/\\?`), () => {
+      if (expired) {
+        return Response.json(SESSION_EXPIRED, { status: 401 });
+      }
+      return {
+        posts: [
+          {
+            id: POST_ID,
+            status: 'published',
+            email: { id: EMAIL_ID, email_count: 20, opened_count: 0, status: 'submitted' },
+          },
+        ],
+      };
+    });
+    const requestReauth = vi.fn(() => {
+      expired = false;
+      return Promise.resolve(true);
+    });
+    const { onCompleted } = await renderPublishFlow({ showCompletion: false, requestReauth });
+
+    await publishScreen.continueButton().click();
+    await publishScreen.confirmButton().click();
+
+    await expect.poll(() => onCompleted.mock.calls.length).toBe(1);
+    expect(requestReauth).toHaveBeenCalledTimes(1);
+    // A confirmed send needs no acknowledgement, so no note was shown.
+    await expect(publishScreen.completeNote()).toHaveCount(0);
+  });
+
   it('keeps the email retry pending during navigation without showing completion', async () => {
     fakeEmailPolling({ status: 'failed', error: 'Sending failed' }, { status: 'submitted' });
     const retryApi = fakeAdminEndpoint('PUT', `/emails/${EMAIL_ID}/retry/`, { emails: [] });

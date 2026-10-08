@@ -26,6 +26,7 @@ import {
   type CompletionFailure,
 } from './completion-message';
 import { formatSiteDateTime } from './publish-copy';
+import { reportPublishFailure } from './report-publish-failure';
 import type { PublishDispatcher } from './publish-options';
 import type { PublishFlowPost } from './flow-post';
 import type { PublishSiteInput, PublishUserInput } from './publish-options';
@@ -134,8 +135,11 @@ function KeyedUpdateFlowModal({
     try {
       completion = await dispatch(machine.toRevertDispatch());
     } catch (error) {
+      const shown = describeRejectedAction(error);
+      // The dispatch settles every save it runs; a rejection is a fault in getting there.
+      reportPublishFailure('revert-request', shown.message, { error, postId: post.id });
       if (activeRef.current) {
-        setFailure(describeRejectedAction(error));
+        setFailure(shown);
         setRunning(false);
       }
       runningRef.current = false;

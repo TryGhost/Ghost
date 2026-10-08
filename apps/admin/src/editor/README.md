@@ -73,8 +73,10 @@ the status line names the rule in red in place of the status, nothing is sent,
 and the writer is taken to the field. The title and the excerpt under it take
 focus; a field in the settings panel opens the panel, and the field's pane when
 it has one, and takes focus there. The email subject is edited in the preview,
-so the preview opens, its own save refused beside the subject. A refusal from
-the preview's Publish closes the preview first. Update is refused by its save
+so the preview opens, its own save refused beside the subject. The preview's
+Publish refuses an over-long subject in place: the preview stays open and turns
+to its email tab, where the rule is named beside the subject. A refusal of any
+other field from the preview's Publish closes the preview first. Update is refused by its save
 and takes the writer to the field the same way.
 
 Every opener stays unavailable until the publish inputs have loaded, and so
@@ -83,7 +85,8 @@ the status line. When they fail to load, the header shows the error with a
 Retry beside Publish, Unpublish or Unschedule, and for a post whose status line
 offers "Sent" or the retry. A read that found the session gone asks for the
 password in the editor's sign-in dialog first and reads again once the writer
-is back; cancelling it leaves the error, and Retry asks again. After a retry, or a publish that
+is back; cancelling it leaves the error, a later background read that fails the
+same way does not ask again, and Retry asks again. After a retry, or a publish that
 emails, a published post's status line reads "Published and sending to N
 members" while the email is on its way and "Published and sent to N members"
 once the flow's email confirmation finds it submitted; an email-only send reads

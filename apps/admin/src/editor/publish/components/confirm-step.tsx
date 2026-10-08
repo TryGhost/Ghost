@@ -19,7 +19,7 @@ import {
   recipientsConfirmLabel,
 } from '@/editor/publish/publish-copy';
 import type { CompletionFailure } from '@/editor/publish/completion-message';
-import type { ConfirmStatus } from '@/editor/publish/use-publish-flow';
+import type { ConfirmStatus, PublishFlow } from '@/editor/publish/use-publish-flow';
 import type { PublishFlowPost } from '@/editor/publish/flow-post';
 import type { PublishOptionsState } from '@/editor/publish/publish-options';
 
@@ -27,13 +27,7 @@ export interface ConfirmStepProps {
   post: PublishFlowPost;
   state: PublishOptionsState;
   /** Captured on entering this step so saving cannot change the copy. */
-  captured: {
-    willPublish: boolean;
-    willEmail: boolean;
-    willOnlyEmail: boolean;
-    /** An email type was chosen with nobody to send to, so only the publish happens. */
-    skipsEmail?: boolean;
-  };
+  captured: PublishFlow['captured'];
   timezone: string;
   status: ConfirmStatus;
   failure: CompletionFailure | null;

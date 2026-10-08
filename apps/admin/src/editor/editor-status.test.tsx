@@ -97,7 +97,7 @@ describe('EditorStatus reporting a failed save', () => {
     expect(status).not.toHaveTextContent('Draft');
     expect(problem).toHaveClass('text-destructive');
     expect(screen.getByRole('alert')).toHaveTextContent(
-      'Couldn’t reach the server. Your changes are still here.',
+      'Couldn’t reach the server. Check your connection and try again.',
     );
 
     fireEvent.click(screen.getByRole('button', { name: 'Retry' }));
@@ -174,7 +174,7 @@ describe('EditorStatus reporting a failed save', () => {
 
     expect(reportShownAlert).toHaveBeenCalledTimes(1);
     expect(reportShownAlert).toHaveBeenCalledWith(
-      'Couldn’t reach the server. Your changes are still here.',
+      'Couldn’t reach the server. Check your connection and try again.',
       error,
     );
   });

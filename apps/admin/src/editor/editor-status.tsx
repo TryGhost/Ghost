@@ -10,8 +10,8 @@ import {
   editorStatus,
 } from '@tryghost/test-data/selectors/editor';
 import { formatPostTime } from '@/posts/list/post-time';
-import { LimitMessage } from './publish/components/limit-message';
-import { splitUpgradeMessage } from './publish/publish-options';
+import { FailureMessage } from './publish/components/failure-banner';
+import { hostLimitFailure } from './publish/completion-message';
 import { usePublishInputs } from './publish/use-publish-inputs';
 import { reportShownAlert } from './report-error';
 import { EDITOR_REQUEST_OPTIONS } from './request-options';
@@ -116,11 +116,9 @@ function SaveProblem({
   return (
     <span className="text-destructive" data-testid={editorSaveError}>
       <span role="alert">
-        {error.kind === 'host-limit' ? (
-          <LimitMessage parts={splitUpgradeMessage(message)} />
-        ) : (
-          message
-        )}
+        <FailureMessage
+          failure={error.kind === 'host-limit' ? hostLimitFailure(message) : { message }}
+        />
       </span>
       {view.retryable && onRetrySave ? (
         <>

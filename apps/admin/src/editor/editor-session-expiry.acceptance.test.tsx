@@ -11,6 +11,7 @@ import {
   plainText,
   post,
   renderAdminApp,
+  settingsResponse,
   submittedPost,
   unsavedChangesGuarded,
   withFastAutosave,
@@ -21,6 +22,7 @@ import {
 import { alertsScreen } from '@/alerts/alerts.screen';
 import { reloadAdmin } from '@/auth/reload';
 import { editorScreen } from '@/editor/editor.screen';
+import { publishScreen } from '@/editor/publish/publish.screen';
 
 vi.mock('@/auth/reload', () => ({ reloadAdmin: vi.fn() }));
 
@@ -333,6 +335,53 @@ describe('Post editor session expiry', () => {
 
     await editorScreen.retryPublishInputs().click();
     await expect.element(editorScreen.reauthDialog()).toHaveTextContent('Are you still here?');
+  });
+
+  it('does not ask again when a later read of the publish settings fails after the sign-in was cancelled', async () => {
+    fakeEditorChrome();
+    fakeAdminEndpoint('GET', POST_ROUTE, { posts: [loadedPost()] });
+    const newslettersApi = fakeAdminEndpoint('GET', /^\/newsletters\//, SESSION_GONE, {
+      status: 401,
+    });
+    const { queryClient } = await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+
+    await expect.element(editorScreen.reauthDialog()).toBeVisible();
+    await editorScreen.cancelReauth().click();
+    await expect(editorScreen.reauthDialog()).toHaveCount(0);
+    await expect.element(editorScreen.publishInputsError()).toBeVisible();
+    const reads = newslettersApi.requests.length;
+
+    // A background refetch the writer did not ask for fails the same way.
+    void queryClient.refetchQueries({ type: 'active' });
+    await expect.poll(() => newslettersApi.requests.length).toBeGreaterThan(reads);
+
+    await expect(editorScreen.reauthDialog()).toHaveCount(0);
+    await expect.element(editorScreen.publishInputsError()).toBeVisible();
+  });
+
+  it('asks for the password over the publish flow when its limit check finds no session, then continues', async () => {
+    fakeEditorChrome();
+    fakeNewsletters([]);
+    fakeAdminEndpoint('GET', POST_ROUTE, { posts: [loadedPost()] });
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await expect.element(editorScreen.publishButton()).toBeEnabled();
+
+    // Opening the flow refreshes the settings for its limit checks, which finds the session gone.
+    const settingsApi = fakeAdminEndpoint('GET', /^\/settings\//, SESSION_GONE, { status: 401 });
+    fakeAdminEndpoint('POST', '/session/', () => 'Created', { status: 201 });
+    await editorScreen.publishButton().click();
+
+    await expect.element(publishScreen.options()).toBeVisible();
+    await expect.element(editorScreen.reauthDialog()).toHaveTextContent('Are you still here?');
+    expect(settingsApi.requests.length).toBeGreaterThan(0);
+
+    // Declared after the expired fake, so the check after sign-in is answered.
+    fakeAdminEndpoint('GET', /^\/settings\//, settingsResponse());
+    await signIn(PASSWORD);
+
+    await expect(editorScreen.reauthDialog()).toHaveCount(0);
+    await expect.element(publishScreen.continueButton()).toBeEnabled();
+    await expect(publishScreen.limitsError()).toHaveCount(0);
   });
 
   it('stays on unsaved work when a request from elsewhere in Admin finds no session', async () => {

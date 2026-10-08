@@ -105,7 +105,7 @@ describe('deriveEditorStatus', () => {
     expect(
       derive({ status: 'draft' }, { state: { kind: 'error', intent: 'autosave', error } }),
     ).toMatchObject({
-      message: 'Couldn’t reach the server. Your changes are still here.',
+      message: 'Couldn’t reach the server. Check your connection and try again.',
       retryable: true,
     });
   });
@@ -115,7 +115,7 @@ describe('deriveEditorStatus', () => {
 
     expect(
       derive({ status: 'draft' }, { state: { kind: 'error', intent: 'explicit', error } }),
-    ).toMatchObject({ message: 'Your session expired. Retry to sign in again and save.' });
+    ).toMatchObject({ message: 'Your session expired. Retry to sign in again.' });
     expect(
       derive({ status: 'draft' }, { state: { kind: 'error', intent: 'publish', error } }),
     ).toMatchObject({ message: 'Your session expired. Try again to sign in.' });

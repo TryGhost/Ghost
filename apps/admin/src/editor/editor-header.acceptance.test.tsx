@@ -1125,6 +1125,32 @@ describe('Editor header actions', () => {
     expect(saveApi.requests).toHaveLength(0);
   });
 
+  it('keeps the preview open and shows the subject’s rule when publishing from it', async () => {
+    publishChrome({ newsletters: 1 });
+    const saveApi = fakeSavablePost();
+    fakeAdminEndpoint('GET', /^\/email_previews\/posts\//, {
+      email_previews: [
+        { subject: 'Hello from React', html: '<p>Email body</p>', plaintext: 'Email body' },
+      ],
+    });
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave(MAILGUN_ON));
+    await expect.element(editorScreen.publishButton()).toBeEnabled();
+    await editorScreen.previewButton().click();
+    await previewScreen.emailTab().click();
+    await previewScreen.emailSubject().fill('a'.repeat(301));
+    await previewScreen.webTab().click();
+    await expect(previewScreen.emailSubject()).toHaveCount(0);
+
+    await previewScreen.publishButton().click();
+
+    // The subject is edited here, so the preview stays and turns to it rather than closing.
+    await expect.element(previewScreen.emailSubject()).toHaveAttribute('aria-invalid', 'true');
+    await expect.element(previewScreen.modal()).toHaveTextContent(EMAIL_SUBJECT_TOO_LONG);
+    await expect.element(previewScreen.modal()).toBeVisible();
+    await expect(publishScreen.root()).toHaveCount(0);
+    expect(saveApi.requests).toHaveLength(0);
+  });
+
   it('opens the preview on an over-long email subject instead of the publish flow', async () => {
     publishChrome({ newsletters: 1 });
     const saveApi = fakeSavablePost();

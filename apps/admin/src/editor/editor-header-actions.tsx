@@ -343,7 +343,13 @@ function PublishActions({
     [closeFlow, setPreviewOpen],
   );
   const publishFromPreview = useCallback(() => {
-    if (session.invalidField()) {
+    const invalid = session.invalidField();
+    // The subject is edited in the preview, which names its rule beside it, so the
+    // preview stays open; any other field is behind it and is refused once it closes.
+    if (invalid?.key === 'email_subject') {
+      return;
+    }
+    if (invalid) {
       refuseOnPreviewClose.current = true;
       setPreviewOpen(false);
       return;
@@ -365,26 +371,41 @@ function PublishActions({
   const inputsBlockActions = isDraft || offersUpdateFlow || sentOpensUpdateFlow || offersEmailRetry;
 
   // An input read that found the session gone asks for sign-in in place, as a save
-  // does, and reads again once the writer is back. Abandoning it leaves the error
-  // and its Retry, which asks again.
+  // does, and reads again once the writer is back. It asks once per failure: a
+  // background read that fails the same way after the writer abandoned the sign-in,
+  // or straight after they signed in, leaves the error and its Retry, which asks again.
   const { requestReauth } = session;
   const retryInputs = useRef(inputs.retry);
   retryInputs.current = inputs.retry;
-  const expiredBy = inputsBlockActions && inputs.sessionExpired ? inputs.error?.cause : undefined;
+  const inputsExpired = inputsBlockActions && inputs.sessionExpired;
+  const askedForInputs = useRef(false);
+  // A refetch clears the error while it runs, so only inputs that loaded end the failure.
+  if (inputs.isReady) {
+    askedForInputs.current = false;
+  }
   useEffect(() => {
-    if (!expiredBy) {
+    if (!inputsExpired || askedForInputs.current) {
       return;
     }
-    let current = true;
+    askedForInputs.current = true;
     void requestReauth().then((signedIn) => {
-      if (signedIn && current) {
+      if (signedIn) {
         retryInputs.current();
       }
     });
-    return () => {
-      current = false;
-    };
-  }, [expiredBy, requestReauth]);
+  }, [inputsExpired, requestReauth]);
+  const { sessionExpired: inputsSessionExpired, retry: retryInputsNow } = inputs;
+  const retryPublishInputs = useCallback(() => {
+    if (!inputsSessionExpired) {
+      retryInputsNow();
+      return;
+    }
+    void requestReauth().then((signedIn) => {
+      if (signedIn) {
+        retryInputs.current();
+      }
+    });
+  }, [inputsSessionExpired, requestReauth, retryInputsNow]);
 
   const inputsError =
     inputsBlockActions && inputs.error ? (
@@ -401,7 +422,7 @@ function PublishActions({
           className="bg-background/80 backdrop-blur-sm"
           size={isAdmin7 ? 'default' : 'sm'}
           variant="ghost"
-          onClick={inputs.retry}
+          onClick={retryPublishInputs}
         >
           Retry
         </Button>

@@ -23,6 +23,7 @@ import {
   describeRejectedAction,
   describeSaveError,
 } from '@/editor/publish/completion-message';
+import { UNEXPECTED_ERROR_MESSAGE } from '@/editor/session/error-mapping';
 import type { SaveCompletion, SaveError, SaveErrorKind } from '@/editor/engine/save-engine';
 
 function failed(kind: SaveErrorKind, message = 'boom'): SaveCompletion {
@@ -195,6 +196,18 @@ describe('describeRejectedAction', () => {
     const failure = { message: 'Your plan is full, please upgrade.', parts: [] };
 
     expect(describeRejectedAction(new CompletionFailureError(failure))).toBe(failure);
+  });
+
+  it('shows the generic fallback, not Core’s text, for a server error', () => {
+    const error = new JSONError(
+      response(500),
+      apiBody({ message: 'Internal server error', context: 'ER_LOCK_DEADLOCK' }),
+    );
+
+    expect(describeRejectedAction(error)).toEqual({ message: UNEXPECTED_ERROR_MESSAGE });
+    expect(describeRejectedAction(new JSONError(response(400), apiBody({})))).toEqual({
+      message: UNEXPECTED_ERROR_MESSAGE,
+    });
   });
 
   it('falls back when the response carried no reason, and says when it never arrived', () => {

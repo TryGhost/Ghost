@@ -1,24 +1,34 @@
 import {
   APIError,
   HostLimitError,
-  JSONError,
   ServerUnreachableError,
 } from '@tryghost/admin-x-framework/errors';
-import { isSessionInvalid, requestFailureMessage } from '@/editor/session/error-mapping';
+import {
+  UNEXPECTED_ERROR_MESSAGE,
+  isSessionInvalid,
+  requestFailureMessage,
+} from '@/editor/session/error-mapping';
 import { splitUpgradeMessage } from './publish-options';
 import type { LimitMessagePart } from './publish-options';
 import type { SaveCompletion, SaveError } from '@/editor/engine/save-engine';
 
+/** A request that never reached the server, a save's or any other. */
 export const UNREACHABLE_MESSAGE =
-  'Unable to connect, please check your internet connection and try again.';
+  'Couldn’t reach the server. Check your connection and try again.';
 export const CONFLICT_MESSAGE =
   'Someone else has edited this post since you opened it. Reload the editor to get their changes before publishing.';
 export const REAUTH_MESSAGE = 'Your session was restored. Confirm again to publish.';
 export const SESSION_ABANDONED_MESSAGE =
   'Your session expired. Confirm again to sign in and publish.';
-/** A read or request outside a save that met an expired session, once sign-in was abandoned. */
+/**
+ * A request that met an expired session, once sign-in was abandoned: a read or request
+ * outside a save, or a save that changed the post's status.
+ */
 export const SESSION_EXPIRED_MESSAGE = 'Your session expired. Try again to sign in.';
-export const UNKNOWN_MESSAGE = 'Unknown Error';
+/** The same, beside a Retry that signs in again: a failed save or the publish settings. */
+export const SESSION_EXPIRED_RETRY_MESSAGE = 'Your session expired. Retry to sign in again.';
+export const RETRY_ELIGIBILITY_FAILED_MESSAGE =
+  'Could not check whether this email can be retried. Please try checking again.';
 export const UNEXPECTED_MESSAGE = 'Something went wrong while saving. Please try again.';
 export const DROPPED_MESSAGE = 'This post can no longer be published from here. Reload the editor.';
 export const HALTED_MESSAGE =
@@ -50,18 +60,18 @@ export class CompletionFailureError extends Error {
 }
 
 /** A host limit's copy, split so its upgrade phrase can be linked. */
-function hostLimitFailure(message: string): CompletionFailure {
+export function hostLimitFailure(message: string): CompletionFailure {
   return { message, parts: splitUpgradeMessage(message) };
 }
 
 /**
- * Turns a rejected promise into safe inline copy. A response from Core is read
- * for the reason it gave rather than the transport's summary of the request,
- * and `fallback` stands in when the response carried no reason at all.
+ * Turns a rejected promise into safe inline copy. A refusal from Core is read for
+ * the reason it gave; `fallback` stands in for a failure Core gave no reason for, a
+ * 5xx and the transport's summary of the request included.
  */
 export function describeRejectedAction(
   error: unknown,
-  fallback: string = UNKNOWN_MESSAGE,
+  fallback: string = UNEXPECTED_ERROR_MESSAGE,
 ): CompletionFailure {
   if (error instanceof CompletionFailureError) {
     return error.failure;
@@ -75,14 +85,9 @@ export function describeRejectedAction(
     return { message: SESSION_EXPIRED_MESSAGE };
   }
 
-  if (error instanceof JSONError) {
+  if (error instanceof APIError) {
     const message = requestFailureMessage(error, fallback);
     return error instanceof HostLimitError ? hostLimitFailure(message) : { message };
-  }
-
-  // A response that was not JSON: the transport's message only names the endpoint.
-  if (error instanceof APIError && Object.getPrototypeOf(error) === APIError.prototype) {
-    return { message: fallback };
   }
 
   if (error instanceof Error && error.message) {
@@ -143,7 +148,9 @@ export function writerMessage(error: SaveError): string {
 export function describeSaveError(error: SaveError): CompletionFailure {
   switch (error.kind) {
     case 'validation':
-      return { message: `Validation failed: ${error.message || UNKNOWN_MESSAGE}` };
+      return {
+        message: error.message ? `Validation failed: ${error.message}` : UNEXPECTED_ERROR_MESSAGE,
+      };
     case 'transport':
       return { message: UNREACHABLE_MESSAGE };
     case 'conflict':
@@ -151,8 +158,8 @@ export function describeSaveError(error: SaveError): CompletionFailure {
     case 'session-invalid':
       return { message: SESSION_ABANDONED_MESSAGE };
     case 'host-limit':
-      return hostLimitFailure(error.message || UNKNOWN_MESSAGE);
+      return hostLimitFailure(error.message || UNEXPECTED_ERROR_MESSAGE);
     default:
-      return { message: writerMessage(error) || UNKNOWN_MESSAGE };
+      return { message: writerMessage(error) || UNEXPECTED_ERROR_MESSAGE };
   }
 }

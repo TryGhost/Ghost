@@ -190,9 +190,12 @@ The server refuses a save that still sends `scheduled` for a post it has since
 published with a validation error. That also becomes `conflict`, since only the
 server's newer copy lets the writer save again.
 
-Of the other failures, a session-expired, unauthorized or 401 failure, or the
-403 "Authorization failed" Core answers for a session it no longer accepts,
-becomes `session-invalid`; any other `NoPermissionError`, which is how Core refuses a
+Of the other failures, a session-expired, unauthorized or 401 failure becomes
+`session-invalid`. That includes the 403 "Authorization failed" Core answers for
+a session it no longer accepts: Core gives it no type or code, so the framework's
+response handler reads the message once and throws `UnauthorizedError`, and the
+editor reads the class rather than comparing the text again. Any other
+`NoPermissionError`, which is how Core refuses a
 writer who may no longer edit the post, becomes `forbidden`; a host-limit
 failure becomes `host-limit`; an unreachable server, a maintenance response and
 a timeout become `transport`; a validation failure, a payload the server
@@ -201,16 +204,20 @@ outright has to suppress background saves the way a validation failure does or
 it retries on every edit; a 404 becomes `not-found`; and anything else becomes
 `unknown`.
 
-Any failure the server reports carries the server's reason as its message. The
-server sends that reason as the error's context beside a generic summary ("Error
-sending email!", "Validation error, cannot edit post."), and the summary is used
-only when there is no context. A send Core refuses because the post has no
-newsletter names a model relation in its context, so it reads as "This post’s
-newsletter couldn’t be found. Choose another newsletter and try again." instead.
-A response that gave no reason shows the session's own save failure ("Couldn’t
-save this post."), never the transport's summary of the request, which names the
-endpoint ("Something went wrong while loading posts"). An expired session and an
-unreachable server keep their own wording. The status line shows a host limit's reason with its "please
+A refusal the server reports (a 4xx: validation, a host limit, permissions, a
+bad request such as an archived newsletter) carries the server's reason as its
+message. The server sends that reason as the error's context beside a generic
+summary ("Validation error, cannot edit post."), and the summary is used only
+when there is no context. A 5xx is a fault whose text is for logs, so it shows
+the session's own save failure ("Couldn’t save this post."), as does a response
+that gave no reason; neither shows the transport's summary of the request, which
+names the endpoint ("Something went wrong while loading posts"). That summary is
+recognised by class (the transport's bare `APIError` or `JSONError`), never by
+its text. Core's email service refuses a send with an `EmailError` only when the
+post has no newsletter to send to, with no code and a sentence naming a model
+relation, so the class reads as "The newsletter couldn’t be sent. Check the
+post’s newsletter and try again." An expired session and an unreachable server
+keep their own wording. The status line shows a host limit's reason with its "please
 upgrade" phrase linked to the host's upgrade screen, `/pro` unless the host
 configures another, and keeps the content and the retry beside it.
 
@@ -502,8 +509,7 @@ Failures never reach the writer as thrown errors; the session reports them. Ever
 request that ran and failed is reported once, with the command it ran, the
 error, whether the post already had a server id, the post's persisted status,
 the id, and how long the request took. Queued work a failure dropped is not
-reported on its own. An expired session is reported only when re-authentication
-is abandoned, not when it is retried. A leave the engine answers with a
+reported on its own. A leave the engine answers with a
 confirmation is reported with the reason codes the tracker holds the post dirty
 for; one the editor asks about because the engine missed its deadline is not.
 A draft disposed with a title but a slug still derived from the default title is
@@ -516,8 +522,10 @@ the other two are faults.
 
 Sentry receives these through the editor's own reporter, with the response
 status and URL when the transport answered. Validation failures, host limits, a
-refusal of a writer who may no longer edit the post and an unreachable server
-are not sent: none of them is a fault in the editor. A failed request that took
+refusal of a writer who may no longer edit the post, an expired session (signing
+in again is its recovery, whether or not the writer does) and an unreachable
+server are not sent: none of them is a fault in the editor. `isExpectedSaveError()`
+holds that rule, and the publish flow reports by it too. A failed request that took
 more than two seconds is sent as a second event with its timing. Every error
 the writer is shown — a failed save in the status line, a collision or a
 deleted post in its banner — is

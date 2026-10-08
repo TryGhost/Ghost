@@ -15,14 +15,17 @@ export function FailureMessage({ failure }: { failure: CompletionFailure }) {
 export function FailureBanner({
   failure,
   testId,
+  className,
 }: {
   failure: CompletionFailure;
   testId?: string;
+  className?: string;
 }) {
   const info = failure.tone === 'info';
 
   return (
     <Banner
+      className={className}
       data-testid={testId}
       role={info ? 'status' : 'alert'}
       variant={info ? 'info' : 'destructive'}

@@ -7,7 +7,12 @@ import {
   normalizeRecipientFilter,
 } from '@tryghost/admin-x-framework/utils/recipient-filter';
 import type { PostNewsletter, PostStatus } from '@tryghost/admin-x-framework/api/posts';
-import { writerMessage } from './publish/completion-message';
+import {
+  SESSION_EXPIRED_MESSAGE,
+  SESSION_EXPIRED_RETRY_MESSAGE,
+  UNREACHABLE_MESSAGE,
+  writerMessage,
+} from './publish/completion-message';
 import {
   type PendingSave,
   type SaveEngineState,
@@ -119,10 +124,6 @@ function isPastScheduled(record: EditorStatusRecord, now: Date): boolean {
   return !Number.isNaN(time) && time <= now.getTime();
 }
 
-const SESSION_EXPIRED = 'Your session expired. Retry to sign in again and save.';
-const SESSION_EXPIRED_STATUS_CHANGE = 'Your session expired. Try again to sign in.';
-const UNREACHABLE = 'Couldn’t reach the server. Your changes are still here.';
-
 /**
  * Whether the status line offers a failed save's retry. A failed publish,
  * schedule or unpublish is retried where it was asked for, since a retry here
@@ -144,9 +145,12 @@ function isRetryable(
 export function saveErrorMessage(error: SaveError, intent?: SaveIntent): string {
   switch (error.kind) {
     case 'session-invalid':
-      return intent && isStatusIntent(intent) ? SESSION_EXPIRED_STATUS_CHANGE : SESSION_EXPIRED;
+      // A status change is retried where it was asked for, so the status line offers no Retry.
+      return intent && isStatusIntent(intent)
+        ? SESSION_EXPIRED_MESSAGE
+        : SESSION_EXPIRED_RETRY_MESSAGE;
     case 'transport':
-      return UNREACHABLE;
+      return UNREACHABLE_MESSAGE;
     default:
       return writerMessage(error);
   }

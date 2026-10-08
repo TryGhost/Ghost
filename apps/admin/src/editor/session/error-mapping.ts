@@ -1,11 +1,11 @@
 import {
   APIError,
+  EmailError,
   HostLimitError,
   JSONError,
   MaintenanceError,
   RequestEntityTooLargeError,
   ServerUnreachableError,
-  SessionExpiredError,
   TimeoutError,
   UnauthorizedError,
   ValidationError,
@@ -57,10 +57,17 @@ const COLLISION_TYPE = 'UpdateCollisionError';
 const ALREADY_PUBLISHED = 'Your post is already published, please reload your page.';
 // Core refuses an edit with this once the writer's role no longer covers the post.
 const NO_PERMISSION = 'NoPermissionError';
-// Core's email service has no newsletter to send to; its own sentence names a model relation.
-const MISSING_NEWSLETTER = 'The post does not have a newsletter relation';
-export const MISSING_NEWSLETTER_MESSAGE =
-  'This post’s newsletter couldn’t be found. Choose another newsletter and try again.';
+
+/** The preferred fallback for a failure the editor cannot explain (docs/practices/error-handling.md). */
+export const UNEXPECTED_ERROR_MESSAGE = 'An unexpected error occurred, please try again.';
+
+/**
+ * What a publish Core's email service refused tells the writer. Within a request the
+ * service throws an `EmailError` only when the post has no newsletter to send to, and
+ * gives it no code, so the class stands in for that case rather than its sentence.
+ */
+export const EMAIL_REFUSED_MESSAGE =
+  'The newsletter couldn’t be sent. Check the post’s newsletter and try again.';
 
 function apiErrorBody(error: unknown) {
   return error instanceof JSONError ? error.data?.errors?.[0] : undefined;
@@ -91,33 +98,44 @@ function status(error: unknown): number | undefined {
  * the way back, and repeating the request without that only fails the same way.
  */
 export function isSessionInvalid(error: unknown): boolean {
-  if (error instanceof SessionExpiredError || error instanceof UnauthorizedError) {
-    return true;
+  // Core answers a session it no longer authorizes with a 403 whose only signal is the
+  // message "Authorization failed" (a known Core limitation: no type or code). The
+  // framework's response handler reads it once and throws `UnauthorizedError`, so the
+  // editor reads the class rather than comparing the text again. `SessionExpiredError`
+  // extends it.
+  return error instanceof UnauthorizedError || status(error) === 401;
+}
+
+/**
+ * Whether the error is the transport's bare `APIError` or `JSONError`, whose message only
+ * names the endpoint ("Something went wrong while loading posts"). Every subclass carries
+ * a message of its own (a timeout, maintenance, a payload too large).
+ */
+export function isTransportSummary(error: unknown): boolean {
+  if (!(error instanceof APIError)) {
+    return false;
+  }
+  const prototype = Object.getPrototypeOf(error) as unknown;
+  return prototype === APIError.prototype || prototype === JSONError.prototype;
+}
+
+/**
+ * Core's reason for a refused request, or null when there is none to show. Only a 4xx
+ * is a refusal Core words for the person (validation, a host limit, permissions, a bad
+ * request such as an archived newsletter); a 5xx is a fault whose text is for logs, so
+ * the caller's fallback stands in. Core's error handler rewrites `message` to a generic
+ * summary and moves its own sentence into `context`, so the context is preferred.
+ */
+function apiErrorReason(error: unknown): string | null {
+  if (error instanceof EmailError) {
+    return EMAIL_REFUSED_MESSAGE;
   }
   const code = status(error);
-  return code === 401 || (code === 403 && apiErrorBody(error)?.message === 'Authorization failed');
-}
-
-/**
- * The transport names the endpoint when a response carries no reason it recognises
- * ("Something went wrong while loading posts"), which says nothing about a save.
- */
-function isTransportSummary(error: APIError): boolean {
-  return error.message === new APIError(error.response).message;
-}
-
-/**
- * Core's reason for a failed request, or null when the response gave none. Core's
- * error handler rewrites `message` to a generic summary ("Error sending email!") and
- * moves its own sentence into `context`, so the context is preferred.
- */
-export function apiErrorReason(error: unknown): string | null {
-  const body = apiErrorBody(error);
-  const context = body?.context?.trim();
-  if (context) {
-    return context.startsWith(MISSING_NEWSLETTER) ? MISSING_NEWSLETTER_MESSAGE : context;
+  if (code === undefined || code < 400 || code >= 500) {
+    return null;
   }
-  return body?.message?.trim() || null;
+  const body = apiErrorBody(error);
+  return body?.context?.trim() || body?.message?.trim() || null;
 }
 
 function messageOf(error: unknown, fallback: string): string {
@@ -125,15 +143,15 @@ function messageOf(error: unknown, fallback: string): string {
 }
 
 /**
- * What a failed request tells the writer: Core's reason when it gave one, the error's
- * own message otherwise, and `fallback` rather than the transport's endpoint summary.
+ * What a failed request tells the writer: Core's reason for a refusal, the error's own
+ * message when its class words one, and `fallback` for anything else, a 5xx included.
  */
 export function requestFailureMessage(error: unknown, fallback: string): string {
   const reason = apiErrorReason(error);
   if (reason) {
     return reason;
   }
-  if (error instanceof APIError && isTransportSummary(error)) {
+  if (isTransportSummary(error)) {
     return fallback;
   }
   return messageOf(error, fallback);

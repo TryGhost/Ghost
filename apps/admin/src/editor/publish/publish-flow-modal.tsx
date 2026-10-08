@@ -185,8 +185,14 @@ function PublishFlowDialog({
   // While the publish request is in flight, closing would abandon its outcome
   // unseen: a publish that lands would never navigate and one that fails would
   // never say so. The request settles on its own, so close waits for it.
+  // A publish held for the writer to read its unconfirmed email has landed, so any way
+  // out acknowledges it: cancelling would leave the caller never told it completed.
   const close = () => {
     if (flow.publishInFlight) {
+      return;
+    }
+    if (flow.awaitingAcknowledgement) {
+      flow.acknowledgeCompletion();
       return;
     }
     flow.cancel();

@@ -13,7 +13,9 @@ import { EmailRetryRequestError, createEmailConfirmation } from './email-confirm
 import { LimitCheckError, createPublishOptions } from './publish-options';
 import { reportPublishFailure } from './report-publish-failure';
 import {
+  CompletionFailureError,
   DROPPED_MESSAGE,
+  RETRY_ELIGIBILITY_FAILED_MESSAGE,
   UNEXPECTED_MESSAGE,
   describeCompletionFailure,
   describeRejectedAction,
@@ -47,8 +49,9 @@ export interface PublishFlowOptions {
   dispatch: PublishDispatcher;
   /**
    * Asks the writer to sign in again, resolving true once they have. A limit check,
-   * an eligibility read or an email retry that finds the session gone asks, and is
-   * repeated once the writer is back.
+   * an eligibility read, an email retry or the read-back of an accepted send that
+   * finds the session gone asks, and is repeated once the writer is back. A repeat
+   * that finds it gone again fails rather than asking again.
    */
   requestReauth?: () => Promise<boolean>;
   showCompletion?: boolean;
@@ -119,8 +122,6 @@ export const EMAIL_UNCONFIRMED =
   'We couldn’t confirm the newsletter was sent. Check the post’s email status from the posts list.';
 export const SCHEDULE_PASSED =
   'The scheduled time has passed. Go back and choose a future date and time.';
-export const RETRY_ELIGIBILITY_FAILED =
-  'Could not check whether this email can be retried. Please try checking again.';
 
 /** The error the flow opens on: set only for a published or sent post whose email failed. */
 export function initialEmailError(post: PublishFlowPost): string | null {
@@ -166,12 +167,41 @@ export function usePublishFlow({
   inputs.current = { post, site, user, limits, now };
   const requestReauthRef = useRef(requestReauth);
   requestReauthRef.current = requestReauth;
+  const activeRef = useRef(true);
 
   /** Signs the writer in again when `error` is an expired session; true once they are back. */
   const reauthenticated = useCallback(async (error: unknown): Promise<boolean> => {
     const reauth = requestReauthRef.current;
     return Boolean(reauth && isSessionInvalid(error) && (await reauth()));
   }, []);
+
+  /**
+   * Runs `attempt`; a failure on an expired session asks the writer to sign in and,
+   * once they have, runs `again` (the attempt itself by default) once more. A session
+   * that is gone again straight after a sign-in fails rather than asking again, so
+   * the writer is never asked in a loop; their next action asks.
+   */
+  const withSignIn = useCallback(
+    async <T>(
+      attempt: () => Promise<T>,
+      {
+        causeOf = (error: unknown) => error,
+        again = attempt,
+      }: { causeOf?: (error: unknown) => unknown; again?: (error: unknown) => Promise<T> } = {},
+    ): Promise<T> => {
+      let failure: unknown;
+      try {
+        return await attempt();
+      } catch (error) {
+        if (!activeRef.current || !(await reauthenticated(causeOf(error))) || !activeRef.current) {
+          throw error;
+        }
+        failure = error;
+      }
+      return again(failure);
+    },
+    [reauthenticated],
+  );
 
   const machine = useMemo(() => {
     const current = inputs.current;
@@ -214,7 +244,6 @@ export function usePublishFlow({
 
   // The email is created by the save, so its id is only knowable from a reload.
   const [emailId, setEmailId] = useState(post.email?.id ?? null);
-  const activeRef = useRef(true);
 
   const reloadPost = useCallback(
     async (postId: string) => {
@@ -250,15 +279,18 @@ export function usePublishFlow({
   );
 
   // The poll reads around the query cache, so a settled send refreshes the post reads.
+  const invalidatePostReads = useCallback(() => {
+    void queryClient.invalidateQueries({
+      queryKey: [post.displayName === 'page' ? pagesDataType : postsDataType],
+    });
+  }, [post.displayName, queryClient]);
   const refreshPostReads = useCallback(
     (outcome: EmailConfirmationOutcome) => {
       if (outcome.kind !== 'cancelled') {
-        void queryClient.invalidateQueries({
-          queryKey: [post.displayName === 'page' ? pagesDataType : postsDataType],
-        });
+        invalidatePostReads();
       }
     },
-    [post.displayName, queryClient],
+    [invalidatePostReads],
   );
 
   const [step, setStep] = useState<PublishStep>(() =>
@@ -310,7 +342,7 @@ export function usePublishFlow({
 
   useEffect(() => {
     if (eligibilityError && step === 'email-error') {
-      reportPublishFailure('retry-eligibility', RETRY_ELIGIBILITY_FAILED, {
+      reportPublishFailure('retry-eligibility', RETRY_ELIGIBILITY_FAILED_MESSAGE, {
         error: eligibilityError,
         postId: post.id,
       });
@@ -320,24 +352,33 @@ export function usePublishFlow({
   const refetchEligibility = retryEligibility.refetch;
   const refetchEligibilityRef = useRef(refetchEligibility);
   refetchEligibilityRef.current = refetchEligibility;
+  // Set once a failed eligibility read has asked for sign-in. Background reads that fail
+  // again do not ask again until a read succeeds or the writer checks again themselves.
+  const eligibilitySignInAskedRef = useRef(false);
+  if (retryEligibility.isSuccess && !retryEligibility.isFetching) {
+    eligibilitySignInAskedRef.current = false;
+  }
 
   // An eligibility read that found the session gone asks for sign-in and reads again.
   useEffect(() => {
-    if (!eligibilityError || step !== 'email-error') {
+    if (
+      !eligibilityError ||
+      step !== 'email-error' ||
+      eligibilitySignInAskedRef.current ||
+      !isSessionInvalid(eligibilityError)
+    ) {
       return;
     }
-    let current = true;
+    eligibilitySignInAskedRef.current = true;
     void reauthenticated(eligibilityError).then((signedIn) => {
-      if (signedIn && current && activeRef.current) {
+      if (signedIn && activeRef.current) {
         void refetchEligibilityRef.current();
       }
     });
-    return () => {
-      current = false;
-    };
   }, [eligibilityError, reauthenticated, step]);
 
   const checkRetryEligibility = useCallback(() => {
+    eligibilitySignInAskedRef.current = false;
     if (emailId) {
       void refetchEligibility();
       return;
@@ -345,19 +386,21 @@ export function usePublishFlow({
 
     setFindingEmail(true);
     // A post whose email still has no id stays unchecked; the writer can check again.
-    reloadPost(post.id)
-      .catch(async (error: unknown) => {
-        if ((await reauthenticated(error)) && activeRef.current) {
-          await reloadPost(post.id);
+    withSignIn(() => reloadPost(post.id))
+      .catch((error: unknown) => {
+        if (activeRef.current) {
+          reportPublishFailure('retry-eligibility', RETRY_ELIGIBILITY_FAILED_MESSAGE, {
+            error,
+            postId: post.id,
+          });
         }
       })
-      .catch(() => undefined)
       .finally(() => {
         if (activeRef.current) {
           setFindingEmail(false);
         }
       });
-  }, [emailId, post.id, reauthenticated, refetchEligibility, reloadPost]);
+  }, [emailId, post.id, refetchEligibility, reloadPost, withSignIn]);
 
   const [captured, setCaptured] = useState<PublishFlow['captured']>(() => {
     if (initialEmailError(post)) {
@@ -382,8 +425,9 @@ export function usePublishFlow({
   } | null>(null);
 
   const checkLimits = useCallback(async () => {
-    // Repeated only after the writer signs in again on an expired session.
-    for (;;) {
+    // Repeated once, only after the writer signs in again on an expired session; a
+    // session gone again straight after that sign-in fails rather than asking again.
+    for (let signedInAgain = false; ; signedInAgain = true) {
       const generation = limitCheckGenerationRef.current + 1;
       limitCheckGenerationRef.current = generation;
       const isCurrent = () => activeRef.current && generation === limitCheckGenerationRef.current;
@@ -420,7 +464,7 @@ export function usePublishFlow({
       const { error } = rejection;
       const checkFailure = error instanceof LimitCheckError;
       const cause = checkFailure ? error.cause : error;
-      const signedIn = await reauthenticated(cause);
+      const signedIn = !signedInAgain && (await reauthenticated(cause));
       if (!isCurrent()) {
         return;
       }
@@ -560,10 +604,21 @@ export function usePublishFlow({
     finish(pendingCompletion.isScheduled, pendingCompletion.hasEmail);
   }, [finish, pendingCompletion]);
 
-  const noteUnconfirmed = useCallback(() => {
-    setEmailNote(EMAIL_UNCONFIRMED);
-    reportPublishFailure('email-unconfirmed', EMAIL_UNCONFIRMED, { postId: post.id });
-  }, [post.id]);
+  /**
+   * `cause` is the read-back's failure, when one stopped it: an expected one (an
+   * abandoned sign-in, a lost connection) is not reported.
+   */
+  const noteUnconfirmed = useCallback(
+    (cause?: unknown) => {
+      setEmailNote(EMAIL_UNCONFIRMED);
+      reportPublishFailure(
+        'email-unconfirmed',
+        EMAIL_UNCONFIRMED,
+        cause === undefined ? { postId: post.id } : { error: cause, postId: post.id },
+      );
+    },
+    [post.id],
+  );
 
   const showEmailFailure = useCallback(
     (error: string | null) => {
@@ -646,8 +701,13 @@ export function usePublishFlow({
     } catch (error) {
       if (activeRef.current) {
         publishRunningRef.current = false;
-        setFailure(describeRejectedAction(error, UNEXPECTED_MESSAGE));
+        const shown = describeRejectedAction(error, UNEXPECTED_MESSAGE);
+        setFailure(shown);
         setConfirmStatus('failure');
+        // A save that settled as failed was reported by the session; anything else is a fault.
+        if (!(error instanceof CompletionFailureError)) {
+          reportPublishFailure('pre-publish-save', shown.message, { error, postId: post.id });
+        }
       }
       return;
     }
@@ -672,8 +732,11 @@ export function usePublishFlow({
       if (activeRef.current) {
         publishRunningRef.current = false;
         setPublishInFlight(false);
-        setFailure(describeRejectedAction(error, UNEXPECTED_MESSAGE));
+        const shown = describeRejectedAction(error, UNEXPECTED_MESSAGE);
+        setFailure(shown);
         setConfirmStatus('failure');
+        // The dispatch settles every save it runs; a rejection is a fault in getting there.
+        reportPublishFailure('publish-request', shown.message, { error, postId: post.id });
       }
       return;
     }
@@ -700,15 +763,17 @@ export function usePublishFlow({
 
       try {
         // No `currentPost`: the acknowledged result carries no email, and the
-        // pre-save one would short-circuit the poll to "not needed".
-        outcome = await confirmation.confirm(post.id);
-      } catch {
+        // pre-save one would short-circuit the poll to "not needed". A read-back
+        // that finds the session gone asks for sign-in and reads again.
+        outcome = await withSignIn(() => confirmation.confirm(post.id));
+      } catch (error) {
         if (!activeRef.current) {
           return;
         }
         // The post is published either way; only the email's fate is unknown,
         // so the flow completes rather than stranding a disabled button.
-        noteUnconfirmed();
+        invalidatePostReads();
+        noteUnconfirmed(error);
         complete(isScheduled, true, true);
         return;
       }
@@ -725,33 +790,15 @@ export function usePublishFlow({
     confirmation,
     dispatch,
     improveSendingUI,
+    invalidatePostReads,
     machine,
     noteUnconfirmed,
     onBeforePublish,
     post.id,
     refreshPostReads,
     state,
+    withSignIn,
   ]);
-
-  /** A retry request that found the session gone is sent again once the writer signs in. */
-  const retryUntilSignedIn = useCallback(
-    async (attempt: () => Promise<EmailConfirmationOutcome>) => {
-      for (;;) {
-        try {
-          return await attempt();
-        } catch (error) {
-          if (
-            !(error instanceof EmailRetryRequestError) ||
-            !(await reauthenticated(error.cause)) ||
-            !activeRef.current
-          ) {
-            throw error;
-          }
-        }
-      }
-    },
-    [reauthenticated],
-  );
 
   const retryEmail = useCallback(async () => {
     if (retryRunningRef.current || !canRetryEmail || !emailId) {
@@ -764,7 +811,15 @@ export function usePublishFlow({
 
     let outcome: EmailConfirmationOutcome;
     try {
-      outcome = await retryUntilSignedIn(() => confirmation.retryAndConfirm(post.id, emailId));
+      // A retry request that found the session gone is sent again once the writer
+      // signs in; an accepted retry whose read-back found it gone is only read again.
+      outcome = await withSignIn(() => confirmation.retryAndConfirm(post.id, emailId), {
+        causeOf: (error) => (error instanceof EmailRetryRequestError ? error.cause : error),
+        again: (error) =>
+          error instanceof EmailRetryRequestError
+            ? confirmation.retryAndConfirm(post.id, emailId)
+            : confirmation.confirm(post.id),
+      });
     } catch (error) {
       if (!activeRef.current) {
         return;
@@ -773,7 +828,9 @@ export function usePublishFlow({
       // Core accepted the retry and only reading back how it went failed, so the
       // retry is not reported as failed: the send's fate is unknown, as after a publish.
       if (!(error instanceof EmailRetryRequestError)) {
-        noteUnconfirmed();
+        retryRunningRef.current = false;
+        invalidatePostReads();
+        noteUnconfirmed(error);
         if (showCompletion) {
           setRetryStatus('success');
         }
@@ -819,13 +876,14 @@ export function usePublishFlow({
     canRetryEmail,
     complete,
     confirmation,
-    retryUntilSignedIn,
     emailId,
+    invalidatePostReads,
     noteUnconfirmed,
     post.id,
     refreshPostReads,
     showCompletion,
     showEmailFailure,
+    withSignIn,
   ]);
 
   return {
