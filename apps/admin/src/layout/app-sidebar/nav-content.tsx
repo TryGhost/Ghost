@@ -23,6 +23,7 @@ import { useMemberSidebarViews } from './member-sidebar-views';
 import { usePostNavigation } from './use-post-navigation';
 import { useIsActiveLink } from './use-is-active-link';
 import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
+import { useRecordingMode } from '@/automations/api';
 
 function PostsNavItemContent({ isActive, to }: { isActive: boolean; to: string }) {
   return (
@@ -83,7 +84,14 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
   const hasMemberViews = memberViews.length > 0;
   const memberCount = useMemberCount();
   const automationsEnabled = useFeatureFlag('automations');
+  const recordingMode = useRecordingMode();
   const isMembersRouteActive = useIsActiveLink({ path: 'members', activeOnSubpath: true });
+  // Highlight the proto item for any concept under /automations-proto/*, even
+  // though the link itself points at the default concept (float).
+  const isProtoRouteActive = useIsActiveLink({
+    path: 'automations-proto',
+    activeOnSubpath: true,
+  });
   const isMemberActivityActive = useIsActiveLink({ path: 'members-activity' });
 
   const showTags = currentUser && canManageTags(currentUser);
@@ -178,11 +186,25 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
             </NavMenuItem>
           )}
 
-          {showAutomations && automationsEnabled && (
+          {/* Recording mode (the prototype's ⌘⇧.) shows the prototype as the
+              product for screen recordings: the real item steps aside, and the
+              prototype's item below takes its name and icon. */}
+          {showAutomations && automationsEnabled && !recordingMode && (
             <NavMenuItem>
               <NavMenuItem.Link to="automations" activeOnSubpath>
                 <LucideIcon.Zap />
                 <NavMenuItem.Label>Automations</NavMenuItem.Label>
+              </NavMenuItem.Link>
+            </NavMenuItem>
+          )}
+
+          {showAutomations && automationsEnabled && (
+            <NavMenuItem>
+              <NavMenuItem.Link isActive={isProtoRouteActive} to="automations-proto/phase-1">
+                {recordingMode ? <LucideIcon.Zap /> : <LucideIcon.FlaskConical />}
+                <NavMenuItem.Label>
+                  {recordingMode ? 'Automations' : 'Automations (Proto)'}
+                </NavMenuItem.Label>
               </NavMenuItem.Link>
             </NavMenuItem>
           )}

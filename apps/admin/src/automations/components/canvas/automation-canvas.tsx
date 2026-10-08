@@ -1021,7 +1021,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
             onPaneClick={automationRunAnalyticsEnabled ? undefined : clearDetail}
           >
             <Background {...canvasBackground} variant={BackgroundVariant.Dots} />
-            <AutomationCanvasControls />
+            <AutomationCanvasControls style={{ bottom: 40, left: 40 }} />
           </ReactFlow>
         </Box>
         {isHistoryOpen && (
