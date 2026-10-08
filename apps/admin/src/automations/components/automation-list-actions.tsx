@@ -1,8 +1,10 @@
 import { useRef, useState } from 'react';
 import { toast } from 'sonner';
+import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import {
   useSetAutomationStatus,
   type AutomationBrowseItem,
+  type AutomationStatus,
 } from '@tryghost/admin-x-framework/api/automations';
 import {
   Button,
@@ -14,24 +16,28 @@ import {
 import { LucideIcon } from '@tryghost/shade/utils';
 import AutomationStatusDialog from './automation-status-dialog';
 
-// TODO(NY-1689) This component is dormant. Soon, we'll add support for "Archive" actions, which will let us show this.
 const AutomationListActions = ({ automation }: { automation: AutomationBrowseItem }) => {
   const mutation = useSetAutomationStatus();
+  const archiveEnabled = useFeatureFlag('automationsArchive');
   const triggerRef = useRef<HTMLButtonElement>(null);
   const [pendingStatus, setPendingStatus] = useState<'inactive' | null>(null);
 
-  const confirm = () => {
-    if (!pendingStatus || mutation.isPending) {
+  const changeStatus = (status: AutomationStatus) => {
+    if (mutation.isPending) {
       return;
     }
     mutation.mutate(
-      { id: automation.id, status: pendingStatus },
+      { id: automation.id, status },
       {
         onSuccess: () => setPendingStatus(null),
         onError: () => toast.error('Automation couldn’t be saved'),
       },
     );
   };
+
+  if (automation.status !== 'active' && !archiveEnabled) {
+    return null;
+  }
 
   return (
     <>
@@ -40,17 +46,17 @@ const AutomationListActions = ({ automation }: { automation: AutomationBrowseIte
           <Button
             ref={triggerRef}
             aria-label={`Actions for ${automation.name}`}
-            className="hidden rounded-full"
-            size="icon"
+            className="border border-control-border shadow-none enabled:active:shadow-none enabled:aria-expanded:shadow-none"
+            disabled={mutation.isPending}
             variant="outline"
-            hidden
           >
-            <LucideIcon.MoreHorizontal className="size-4" />
+            <LucideIcon.MoreHorizontal />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           {automation.status === 'active' && (
             <DropdownMenuItem
+              disabled={mutation.isPending}
               onSelect={() => {
                 mutation.reset();
                 setPendingStatus('inactive');
@@ -58,6 +64,21 @@ const AutomationListActions = ({ automation }: { automation: AutomationBrowseIte
             >
               <LucideIcon.Power className="size-4" />
               Turn off
+            </DropdownMenuItem>
+          )}
+          {archiveEnabled && (
+            <DropdownMenuItem
+              disabled={mutation.isPending}
+              onSelect={() =>
+                changeStatus(automation.status === 'archived' ? 'inactive' : 'archived')
+              }
+            >
+              {automation.status === 'archived' ? (
+                <LucideIcon.ArchiveRestore className="size-4" />
+              ) : (
+                <LucideIcon.Archive className="size-4" />
+              )}
+              {automation.status === 'archived' ? 'Unarchive' : 'Archive'}
             </DropdownMenuItem>
           )}
         </DropdownMenuContent>
@@ -71,7 +92,7 @@ const AutomationListActions = ({ automation }: { automation: AutomationBrowseIte
           event.preventDefault();
           triggerRef.current?.focus();
         }}
-        onConfirm={confirm}
+        onConfirm={() => pendingStatus && changeStatus(pendingStatus)}
         onOpenChange={(open) => {
           if (!open) {
             setPendingStatus(null);
