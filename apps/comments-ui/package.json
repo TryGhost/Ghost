@@ -91,6 +91,11 @@
   },
   "nx": {
     "targets": {
+      "lint": {
+        "dependsOn": [
+          "^build"
+        ]
+      },
       "dev": {
         "continuous": true,
         "executor": "nx:run-commands",
