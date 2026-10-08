@@ -67,7 +67,6 @@ const boot = (tracking = true, redesigned = true) =>
     labs: {
       automations: true,
       automationRunAnalytics: redesigned,
-      automationAnalytics: true,
     },
     boot: {
       ...performanceBoot,
@@ -380,18 +379,6 @@ describe('Email performance sidebar', () => {
     await expect(panel().getByText('Off', { exact: true })).toHaveCount(2);
     await expect.element(panel().getByText('Top clicked links')).not.toBeInTheDocument();
     expect(links.requests).toHaveLength(0);
-  });
-
-  it('hides analytics controls when email analytics is disabled', async () => {
-    prepare();
-    await renderAdminApp('/automations/first', {
-      labs: { automations: true, automationRunAnalytics: true, automationAnalytics: false },
-    });
-    await expect.element(card()).toBeVisible();
-    await expect
-      .element(page.getByRole('button', { name: 'View email analytics' }))
-      .not.toBeInTheDocument();
-    await expect.element(panel()).not.toBeInTheDocument();
   });
 
   it('hides the analytics button for emails without stats', async () => {

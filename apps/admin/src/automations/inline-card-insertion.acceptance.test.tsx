@@ -33,9 +33,7 @@ describe('Inline card insertion', () => {
         const save = fakeAdminEndpoint('PUT', '/automations/first/', {
           automations: [detail('first')],
         });
-        await renderAdminApp('/automations/first', {
-          labs: { ...flags.labs, automationAnalytics: true },
-        });
+        await renderAdminApp('/automations/first', flags);
         // Starting with performance open checks that insertion dismisses it.
         await page.getByRole('button', { name: 'View email analytics' }).click();
         await expect

@@ -212,7 +212,6 @@ type BuildGraphParams = {
   automation: AutomationDetail;
   savedTriggerTierIds: readonly string[];
   onChange: (next: AutomationDetail) => void;
-  automationAnalyticsEnabled: boolean;
   automationRunAnalyticsEnabled: boolean;
   nodeSizes: Record<string, { width: number; height: number }>;
   newEmailWithoutWarningsId: string | null;
@@ -235,7 +234,6 @@ const buildGraph = ({
   automation,
   savedTriggerTierIds,
   onChange,
-  automationAnalyticsEnabled,
   automationRunAnalyticsEnabled,
   nodeSizes,
   newEmailWithoutWarningsId,
@@ -322,7 +320,6 @@ const buildGraph = ({
     const editableWait = automationRunAnalyticsEnabled && action.type === 'wait';
     const errorMessage = actionErrors[action.id];
     const showStatsFooter =
-      automationAnalyticsEnabled &&
       action.type === 'send_email' &&
       Boolean(action.stats) &&
       (editableEmail || (!errorMessage && !displayData.warningMessage));
@@ -342,10 +339,7 @@ const buildGraph = ({
                 onInteract: () => onInteract(action.id),
                 onUpdateSubject: (subject: string) => onUpdateSubject(action.id, subject),
                 onEditContent: () => onEditEmailBody(action.id),
-                onToggleAnalytics:
-                  automationAnalyticsEnabled && action.stats
-                    ? () => onSelectStep(action.id)
-                    : undefined,
+                onToggleAnalytics: action.stats ? () => onSelectStep(action.id) : undefined,
               },
             }
           : {}),
@@ -723,7 +717,6 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
   const [selectedMember, setSelectedMember] = useState<{ runId: string; name: string } | null>(
     null,
   );
-  const automationAnalyticsEnabled = useFeatureFlag('automationAnalytics');
   const configQuery = useBrowseConfig();
   const isPerformanceEnabled =
     Boolean(automation?.id) &&
@@ -769,7 +762,6 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
       automation,
       savedTriggerTierIds,
       onChange,
-      automationAnalyticsEnabled,
       automationRunAnalyticsEnabled,
       nodeSizes,
       newEmailWithoutWarningsId,
@@ -799,7 +791,6 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
     savedTriggerTierIds,
     onChange,
     automation,
-    automationAnalyticsEnabled,
     automationRunAnalyticsEnabled,
     nodeSizes,
     newEmailWithoutWarningsId,
@@ -1042,14 +1033,10 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
           !isHistoryOpen && (
             <EmailPerformanceSidebar
               automationId={automation.id}
-              email={
-                automationAnalyticsEnabled
-                  ? automation.actions.find(
-                      (action): action is AutomationSendEmailAction =>
-                        action.id === selectedStepId && action.type === 'send_email',
-                    )
-                  : undefined
-              }
+              email={automation.actions.find(
+                (action): action is AutomationSendEmailAction =>
+                  action.id === selectedStepId && action.type === 'send_email',
+              )}
               onClose={handleCloseEmailPerformance}
             />
           )

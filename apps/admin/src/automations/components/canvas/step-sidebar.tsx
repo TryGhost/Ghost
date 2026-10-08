@@ -12,7 +12,6 @@ import type { MemberTier, StepSidebarDetail } from '@/automations/components/typ
 import { TRIGGER_CANVAS_ID } from './nodes';
 import { WaitDurationField } from './wait-duration-field';
 import { formatWait } from './format-wait';
-import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 
 const SidebarField: React.FC<{ label: string; children: React.ReactNode; htmlFor?: string }> = ({
   children,
@@ -95,7 +94,6 @@ const SendEmailSidebarBody: React.FC<{
   onDelete: () => void;
 }> = ({ automationId, action, onUpdateSubject, onEditEmail, onDelete }) => {
   const subjectInputRef = useRef<HTMLInputElement>(null);
-  const automationAnalyticsEnabled = useFeatureFlag('automationAnalytics');
 
   useEffect(() => {
     subjectInputRef.current?.focus({ preventScroll: true });
@@ -115,7 +113,7 @@ const SendEmailSidebarBody: React.FC<{
         <LucideIcon.Pencil className="size-4" />
         Edit email
       </Button>
-      {automationAnalyticsEnabled && action.stats && (
+      {action.stats && (
         <EmailPerformanceSection
           actionId={action.id}
           automationId={automationId}
