@@ -110,50 +110,52 @@ services:
     kind: directory
     disposition: retain
     status: audited
-    auditedAt: c2999f4e13da6360bceced808bb52c4a04b5ad03
+    auditedAt: 39c7c0c6b6f5592d7184628aaca1b724432763f3
     entryPoints:
       - announcement-bar-service/index.js
     notes: >-
-      Preserve live settings, request-local member visibility and the validator's deep class
-      import when moving composition to boot. This instance owns no background resources.
+      Uses the shared lifecycle with boot-owned composition and a retained service facade.
+      Preserve live settings, request-local visibility and the validator's separate class import.
     contracts:
       exports:
         summary: >-
-          CommonJS exports one AnnouncementBarSettings instance with synchronous
-          getAnnouncementSettings(member). The method requires its receiver for a private
-          callback. It returns undefined or a fresh object with announcement and
-          announcement_background.
-          The deep class exports mutable static VisibilityValues used by settings validation;
-          neither root nor class provides init, reset or shutdown.
-          Controller tests exercise synchronous results through the real root and its private-field method.
+          CommonJS exports init(scope), service and shutdown(scope). Lifecycle methods return
+          promises; getAnnouncementSettings(member) remains synchronous and returns undefined
+          or a fresh announcement/background object. The facade preserves the private-field
+          receiver. Controller and root tests cover these calls and retaining the facade across boots.
+          The separate implementation class still exports VisibilityValues; class tests check
+          their values, not mutation of the static property.
         sources:
           - core/server/services/announcement-bar-service/index.js
           - core/server/services/announcement-bar-service/announcement-bar-settings.js
           - core/server/services/announcement-bar-service/announcement-visibility-values.js
+          - core/server/lib/service-lifecycle/index.ts
         tests:
           - test/unit/server/services/announcement-bar/announcement-bar-settings.test.js
+          - test/unit/server/services/announcement-bar/index.test.ts
           - test/unit/api/endpoints/announcements.test.ts
       construction:
         summary: >-
-          Root import eagerly constructs the only production instance found with a callback
-          that reads the shared settings cache. Construction retains that callback without
-          reading settings. The validator imports the implementation class but constructs
-          no instance; units construct the class with injected settings callbacks.
+          Import defines the lifecycle without constructing the implementation. Boot calls
+          init after core/settings initialization, creating one AnnouncementBarSettings with
+          a callback reading the shared cache. Root tests show initialization does not read
+          settings; helper tests assert deferred, once-per-scope creation. The validator
+          imports the separate class and constructs no instance (source-only).
         sources:
+          - core/boot.js
           - core/server/services/announcement-bar-service/index.js
-          - core/server/services/announcement-bar-service/announcement-bar-settings.js
+          - core/server/lib/service-lifecycle/index.ts
           - core/server/api/endpoints/utils/validators/input/settings.js
         tests:
-          - test/unit/server/services/announcement-bar/announcement-bar-settings.test.js
+          - test/unit/server/services/announcement-bar/index.test.ts
+          - test/unit/server/lib/service-lifecycle.test.ts
       consumers:
         summary: >-
-          The announcements endpoint is the only runtime instance consumer found; it passes
-          frame.options.context.member. Members-app routing loads the member session and sets
-          private cache headers. Settings validation consumes the class constants separately.
-          ghost_head reads settings directly to inject the frontend app, which consumes this
-          HTTP endpoint; it does not import the instance. No CLI/job consumer was found.
-          HTTP tests alternate anonymous, free, paid and comped sessions and assert private,
-          no-store responses. Caller enumeration and ghost_head ownership are source-only.
+          The announcements endpoint retains service and forwards frame.options.context.member.
+          HTTP tests alternate anonymous, free, paid and comped sessions through the real
+          member-session route and assert private/no-store responses. Source inspection finds
+          no other runtime instance consumer: settings validation uses class constants, while
+          ghost_head reads settings directly and injects the frontend HTTP client.
         sources:
           - core/server/api/endpoints/announcements.js
           - core/server/web/members/app.js
@@ -165,38 +167,43 @@ services:
           - test/e2e-api/admin/settings.test.js
       startup:
         summary: >-
-          There is no explicit boot initialization or readiness guard. Imports can construct
-          before settings are ready because reads are deferred to calls. The supported HTTP
-          path follows Ghost boot and member-session loading. HTTP tests boot Ghost and
-          exercise anonymous and authenticated announcements; pre-boot availability is source-only.
+          Boot awaits init before frontend service initialization and readiness. The real-boot
+          test holds init pending, checks the next boot stage has not run, observes HTTP 503
+          and no readiness notification, then releases it and gets an announcement over HTTP.
+          Retaining service before initialization is safe; accessing members or calling a
+          retained method while unavailable throws a named IncorrectUsageError (unit-tested).
         sources:
           - core/boot.js
+          - core/server/lib/service-lifecycle/index.ts
           - core/server/services/announcement-bar-service/index.js
-          - core/server/web/members/app.js
         tests:
-          - test/e2e-api/members/announcement.test.js
+          - test/e2e-server/announcement-lifecycle.isolated.test.ts
+          - test/unit/server/services/announcement-bar/index.test.ts
+          - test/unit/server/lib/service-lifecycle.test.ts
       lifetime:
         summary: >-
-          The cached instance and callback persist for the module lifetime. Each call keeps
-          member-dependent decisions local and creates its own result object; no per-member
-          result or settings value is cached. HTTP tests alternate member contexts and change
-          settings after boot; controller tests retain the same consumer and assert fresh,
-          independent results. Same-process restart behavior is not tested.
+          The facade persists for the module lifetime; each boot owns a new implementation.
+          Helper tests cover same-scope idempotence, pending initialization, rejected overlap
+          and stale shutdown. Root/controller tests cover retained consumers, synchronous live
+          reads and fresh result objects across calls. Real-boot tests cover server cleanup,
+          explicit and fixture-owned no-server restarts, and old apps remaining in maintenance.
         sources:
-          - core/server/services/announcement-bar-service/index.js
+          - core/boot.js
+          - core/server/lib/service-lifecycle/index.ts
           - core/server/services/announcement-bar-service/announcement-bar-settings.js
         tests:
-          - test/e2e-api/members/announcement.test.js
+          - test/unit/server/lib/service-lifecycle.test.ts
+          - test/unit/server/services/announcement-bar/index.test.ts
           - test/unit/api/endpoints/announcements.test.ts
+          - test/e2e-server/announcement-lifecycle.isolated.test.ts
+          - test/e2e-api/members/announcement.test.js
       configuration:
         summary: >-
           Every call reads content, background and visibility from settings. Falsy content or
-          empty visibility suppresses output. Visitors have no member; free members have status
-          free; paid visibility accepts any truthy member whose status is not free, including
-          comped. Matching calls return raw content/background without rendering. Unit cases
-          cover visitors, free, paid and comped, plus representative suppressed combinations.
-          Controller and HTTP tests exercise live content, background and visibility through
-          the real root, including empty-visibility suppression; the controller also checks empty content.
+          empty visibility suppresses output. Visitors have no member; free visibility matches
+          status free; paid visibility accepts any truthy member whose status is not free,
+          including comped. Class tests cover representative visible/suppressed combinations;
+          controller and HTTP tests cover live changes through the real root and unchanged raw output.
         sources:
           - core/server/services/announcement-bar-service/index.js
           - core/server/services/announcement-bar-service/announcement-bar-settings.js
@@ -207,45 +214,42 @@ services:
           - test/e2e-api/members/announcement.test.js
       resources:
         summary: >-
-          The instance owns only a callback reference and borrows the settings cache. It
-          creates no timers, event subscriptions, database/network operations or pending work.
-          HTTP/session resources belong to the surrounding application; no root cleanup is
-          registered or needed by this implementation's current synchronous operations.
+          Source inspection shows the implementation borrows the cache and owns only its callback;
+          it starts no timers, subscriptions, database or network work. Lifecycle shutdown makes
+          the facade unavailable. GhostServer registers cleanup; no-server apps expose stop()
+          which enters maintenance and disposes the managed root. Real-boot tests assert both
+          paths; this is not a cleanup guarantee for unmigrated services or externally owned listeners.
         sources:
-          - core/server/services/announcement-bar-service/index.js
-          - core/server/services/announcement-bar-service/announcement-bar-settings.js
-          - core/server/web/members/app.js
           - core/boot.js
-        tests: []
+          - core/server/services/announcement-bar-service/announcement-bar-settings.js
+          - core/server/lib/service-lifecycle/index.ts
+          - core/server/ghost-server.ts
+        tests:
+          - test/e2e-server/announcement-lifecycle.isolated.test.ts
+          - test/unit/server/services/announcement-bar/index.test.ts
       failures:
         summary: >-
-          Callback failures propagate synchronously. With truthy content, missing visibility
-          or values lacking the expected operations can throw; strings can match because the
-          class uses length/includes without array validation. It does no error recovery. Normal settings writes reject unsupported visibility/background
-          through API validation, with HTTP 422 tests, but those tests do not characterize
-          corrupt cache contents or unbound service calls. The surrounding member-session
-          middleware swallows lookup errors and passes no member, selecting visitor visibility.
-          A controller test asserts synchronous propagation of the original settings error;
-          corrupt-cache and session-lookup failure behavior remain source-only.
+          Controller tests preserve synchronous settings-read errors. Helper tests preserve
+          startup error identity, clean partial/interrupted creation and reject reuse after
+          failed cleanup. A real no-server boot test fails a later boot stage, checks disposal
+          at process.exit, preserves the startup error despite a secondary cleanup error and
+          then boots successfully. Corrupt cache values and member-session lookup failures
+          retain their existing source behavior; those paths are not characterized here.
         sources:
+          - core/boot.js
+          - core/server/lib/service-lifecycle/index.ts
           - core/server/services/announcement-bar-service/announcement-bar-settings.js
-          - core/server/api/endpoints/utils/validators/input/settings.js
           - core/server/services/members/middleware.js
         tests:
-          - test/e2e-api/admin/settings.test.js
           - test/unit/api/endpoints/announcements.test.ts
+          - test/unit/server/lib/service-lifecycle.test.ts
+          - test/e2e-server/announcement-lifecycle.isolated.test.ts
     unverified: []
     blockers:
       - >-
-        Boot-owned composition still needs initialization/teardown and same-process restart tests.
-        Preserve the separate static visibility import used by validation: mutating
-        shared constant fields affects both consumers, but reassigning the static class property
-        changes validator reads without changing the implementation's imported constants;
-        this mutation behavior is source-only.
-      - >-
-        Specify and test pre-init behavior when adding boot ownership. Corrupt-cache values
-        and unbound calls remain untested; the controller tests cover settings-read failure
-        and successful bound calls.
+        Malformed cache values, unbound implementation calls and mutation of the shared
+        visibility constants remain source-only. The implementation and validator class
+        import are unchanged by the lifecycle adoption.
   app-installations:
     kind: directory
     disposition: retain

@@ -132,14 +132,14 @@ boundary needs it.
 
 ## Initialization
 
-Ghost's boot sequence owns service construction. A new service that requires
-initialization must expose an explicit `init()` and be called from
-`ghost/core/core/boot.js` in the appropriate boot phase. Do not make the first
-request responsible for constructing the service.
+Ghost's boot sequence owns service construction. New roots expose `init(scope)`
+through the shared helper. `ghost/core/core/boot.js` supplies the scope and awaits
+initialization in the appropriate phase. Do not make the first request responsible
+for constructing the service.
 
-Keep wrapper initialization idempotent when callers may safely reach it more
-than once. Add shutdown or cleanup handling to the boot lifecycle when the
-service owns resources that must be released.
+Register `shutdown(scope)` with the boot owner, including for composition-only
+roots, so their instances become unavailable when that boot ends. Resource-owning
+implementations register cleanup with `onDispose` before fallible acquisition.
 
 ## Related guidance
 
