@@ -32,60 +32,18 @@ import Interpolate from '@doist/react-interpolate';
 import { t } from '../../utils/i18n';
 import { translateCadence } from '../../utils/helpers';
 
-export const AccountPlanPageStyles = `
-    .account-plan.full-size .gh-portal-main-title {
-        font-size: 3.2rem;
-        margin-top: 44px;
-    }
+const offerBarClass = String.raw`gh-portal-offer-bar relative mb-6 rounded-md bg-white bg-[url("data:image/svg+xml,%3csvg\000020width='100%25'\000020height='99.9%25'\000020xmlns='http://www.w3.org/2000/svg'%3e%3crect\000020width='100%25'\000020height='100%25'\000020fill='none'\000020stroke='%23C3C3C3'\000020stroke-width='3'\000020stroke-dasharray='3%2c\0000209'\000020stroke-dashoffset='0'\000020stroke-linecap='square'/%3e%3c/svg%3e")] px-7 pb-7 pt-[26px]`;
 
-    .gh-portal-accountplans-main {
-        margin-top: 24px;
-        margin-bottom: 0;
-    }
+const offerDiscountLabelClass =
+  "gh-portal-discount-label absolute right-[25px] top-[23px] -me-1 max-h-[24.5px] whitespace-nowrap rounded-[999px] px-[9px] py-1.5 text-center text-[1.25rem] font-semibold leading-[1em] tracking-[0.3px] text-grey-0 before:absolute before:inset-0 before:block before:rounded-[999px] before:bg-brand before:opacity-20 before:content-['']";
 
-    .gh-portal-expire-container {
-        margin: 32px 0 0;
-    }
+const listSectionClass =
+  'flex items-center p-5 [border-bottom:1px_solid_var(--grey12)] first-of-type:rounded-t-lg last-of-type:rounded-b-lg last-of-type:[border:none]';
 
-    .gh-portal-cancellation-form p {
-        margin-bottom: 12px;
-    }
+const listDetailTextClass =
+  'mb-0 mr-2 mt-[5px] text-[1.45rem] leading-[1.3em] tracking-[0.3px] text-grey-6 [word-break:break-word] rtl:ml-2 rtl:mr-0';
 
-    .gh-portal-cancellation-form .gh-portal-input-section {
-        margin-bottom: 20px;
-    }
-
-    .gh-portal-cancellation-form .gh-portal-input {
-        resize: none;
-        width: 100%;
-        height: 62px;
-        padding: 6px 12px;
-    }
-
-    .gh-portal-retention-offer {
-        margin-top: -24px !important;
-    }
-
-    .gh-portal-retention-offer > p {
-        max-width: 400px;
-        margin-inline: auto;
-    }
-
-    .gh-portal-retention-offer-price {
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        margin-top: 16px;
-    }
-
-    .gh-portal-retention-offer-price .gh-portal-offer-oldprice {
-        margin: 4px 0 0;
-    }
-
-    .gh-portal-retention-offer .gh-portal-offer-details > .footnote:first-child {
-        margin-top: 12px;
-    }
-`;
+const accountPlansMainClass = 'gh-portal-section gh-portal-accountplans-main mb-0 mt-6';
 
 function getConfirmationPageTitle({ confirmationType, pendingOffer }) {
   if (confirmationType === 'changePlan') {
@@ -106,8 +64,10 @@ const Header = ({ showConfirmation, confirmationType, pendingOffer }) => {
     title = getConfirmationPageTitle({ confirmationType, pendingOffer });
   }
   return (
-    <header className="gh-portal-detail-header">
-      <h3 className="gh-portal-main-title">{title}</h3>
+    <header className="gh-portal-detail-header relative -mt-0.5 mb-10 flex items-center justify-center px-[60px] max-sm:mt-1">
+      <h3 className="gh-portal-main-title text-pretty text-center leading-[1.1em] text-grey-0 group-[.account-plan.full-size]/popup:mt-11 group-[.account-plan.full-size]/popup:text-4xl">
+        {title}
+      </h3>
     </header>
   );
 };
@@ -135,7 +95,7 @@ const CancelSubscriptionButton = ({ member, onCancelSubscription, action, brandC
   const isDestructive = !subscription.cancelAtPeriodEnd;
 
   return (
-    <div className="gh-portal-expire-container">
+    <div className="gh-portal-expire-container mt-8">
       <ActionButton
         dataTestId={'cancel-subscription'}
         onClick={() => {
@@ -148,7 +108,7 @@ const CancelSubscriptionButton = ({ member, onCancelSubscription, action, brandC
         disabled={disabled}
         isPrimary={isPrimary}
         isDestructive={isDestructive}
-        classes="gh-portal-btn-text mt2 mb4"
+        classes="gh-portal-btn-text mb-4 mt-2"
         brandColor={brandColor}
         label={label}
         style={{
@@ -182,18 +142,18 @@ const PlanConfirmationSection = ({ plan, type, onConfirm }) => {
   const priceLabel = product?.name;
   if (type === 'changePlan') {
     return (
-      <div className="gh-portal-logged-out-form-container">
-        <div className="gh-portal-list mb6">
-          <section>
-            <div className="gh-portal-list-detail">
-              <h3>{t('Account')}</h3>
-              <p>{member.email}</p>
+      <div className="gh-portal-logged-out-form-container mx-auto w-full max-w-[420px]">
+        <div className="gh-portal-list mb-6 overflow-hidden rounded-lg border border-solid border-grey-12 bg-white p-0">
+          <section className={listSectionClass}>
+            <div className="gh-portal-list-detail grow">
+              <h3 className="text-base font-semibold">{t('Account')}</h3>
+              <p className={listDetailTextClass}>{member.email}</p>
             </div>
           </section>
-          <section>
-            <div className="gh-portal-list-detail">
-              <h3>{priceLabel}</h3>
-              <p>{planStartMessage}</p>
+          <section className={listSectionClass}>
+            <div className="gh-portal-list-detail grow">
+              <h3 className="text-base font-semibold">{priceLabel}</h3>
+              <p className={listDetailTextClass}>{planStartMessage}</p>
             </div>
           </section>
         </div>
@@ -213,8 +173,8 @@ const PlanConfirmationSection = ({ plan, type, onConfirm }) => {
     );
   } else {
     return (
-      <div className="gh-portal-logged-out-form-container gh-portal-cancellation-form">
-        <p>
+      <div className="gh-portal-logged-out-form-container gh-portal-cancellation-form mx-auto w-full max-w-[420px]">
+        <p className="mb-3">
           <Interpolate
             string={t(
               `If you cancel your subscription now, you will continue to have access until {periodEnd}.`,
@@ -224,13 +184,15 @@ const PlanConfirmationSection = ({ plan, type, onConfirm }) => {
             }}
           />
         </p>
-        <section className="gh-portal-input-section">
-          <div className="gh-portal-input-labelcontainer">
-            <label className="gh-portal-input-label">{t('Cancellation reason')}</label>
+        <section className="gh-portal-input-section mb-5">
+          <div className="gh-portal-input-labelcontainer flex w-full justify-between">
+            <label className="gh-portal-input-label mb-0.5 text-sm font-semibold tracking-[0px] text-grey-1">
+              {t('Cancellation reason')}
+            </label>
           </div>
           <textarea
             data-test-input="cancellation-reason"
-            className="gh-portal-input"
+            className="gh-portal-input mb-4 box-border block h-[62px] w-full resize-none appearance-none rounded-md border border-solid border-grey-11 bg-transparent px-3 py-1.5 text-base tracking-[0.2px] [-webkit-appearance:none] [color:inherit] [outline:none] [transition:border-color_0.25s_ease-in-out] placeholder:text-grey-8 focus:border-grey-8"
             key="cancellation_reason"
             label="Cancellation reason"
             type="text"
@@ -264,7 +226,7 @@ const ChangePlanSection = ({ plans, selectedPlan, onPlanSelect, onCancelSubscrip
   const { member, action, brandColor } = useContext(AppContext);
   return (
     <section>
-      <div className="gh-portal-section gh-portal-accountplans-main">
+      <div className={accountPlansMainClass}>
         <PlansOrProductSection
           showLabel={false}
           plans={plans}
@@ -407,29 +369,37 @@ const RetentionOfferSection = ({ subscription, offer, onAcceptOffer, onDeclineOf
   );
 
   return (
-    <div className="gh-portal-logged-out-form-container gh-portal-offer gh-portal-retention-offer">
-      <p className="gh-portal-text-center">{displayDescription}</p>
+    <div className="gh-portal-logged-out-form-container gh-portal-offer gh-portal-retention-offer mx-auto !-mt-6 w-full max-w-[420px]">
+      <p className="gh-portal-text-center mx-auto max-w-[400px] text-pretty text-center">
+        {displayDescription}
+      </p>
 
-      <div className="gh-portal-offer-bar">
-        <div className="gh-portal-offer-title">
-          <h4>{productCadenceLabel}</h4>
-          <h5 className="gh-portal-discount-label">{offerLabel}</h5>
+      <div className={offerBarClass}>
+        <div className="gh-portal-offer-title flex items-center justify-between">
+          <h4 className="mr-[110px] w-full text-xl rtl:ml-[110px] rtl:mr-0">
+            {productCadenceLabel}
+          </h4>
+          <h5 className={offerDiscountLabelClass}>{offerLabel}</h5>
         </div>
 
         <div className="gh-portal-offer-details">
           {!isFreeMonthsOffer(offer) && (
-            <div className="gh-portal-retention-offer-price">
-              <div className="gh-portal-product-price">
-                <span className="currency-sign">{currency}</span>
-                <span className="amount">{discountedPrice}</span>
+            <div className="gh-portal-retention-offer-price mt-4 flex items-center gap-[6px]">
+              <div className="gh-portal-product-price flex justify-center text-grey-0">
+                <span className="currency-sign self-start text-[2.7rem] font-bold leading-[1.135em] max-[370px]:text-xl">
+                  {currency}
+                </span>
+                <span className="amount text-[3.5rem] font-bold leading-[1em] tracking-[-1.3px] text-grey-0 max-[1440px]:text-[32px] max-[1440px]:tracking-[-0.022em]">
+                  {discountedPrice}
+                </span>
               </div>
-              <div className="gh-portal-offer-oldprice">
+              <div className="gh-portal-offer-oldprice relative mb-0 mt-1 flex whitespace-nowrap text-xl font-light leading-none text-grey-8 after:absolute after:inset-x-0 after:top-1/2 after:block after:h-px after:bg-grey-8 after:content-['']">
                 {currency}
                 {originalPrice}
               </div>
             </div>
           )}
-          <p className="footnote">{offerMessage}</p>
+          <p className="footnote mb-0 mt-1 text-[1.35rem] text-grey-8 first:mt-3">{offerMessage}</p>
         </div>
 
         <ActionButton
@@ -477,7 +447,7 @@ const UpgradePlanSection = ({ plans, selectedPlan, onPlanSelect, onPlanCheckout 
   }
   return (
     <section>
-      <div className={`gh-portal-section gh-portal-accountplans-main ${singlePlanClass}`}>
+      <div className={`${accountPlansMainClass} ${singlePlanClass}`}>
         <PlansOrProductSection
           showLabel={false}
           plans={plans}
@@ -487,7 +457,10 @@ const UpgradePlanSection = ({ plans, selectedPlan, onPlanSelect, onPlanCheckout 
         />
       </div>
       {!isPaidMember({ member }) && (
-        <SignupGiftPromotion className="gh-portal-signup-message" lastPage="accountPlan" />
+        <SignupGiftPromotion
+          className="gh-portal-signup-message z-[9999] mt-1 flex flex-wrap justify-center text-base text-grey-4 group-[.full-size]/popup:mb-10 group-[.full-size]/popup:mt-6 [&_*]:z-[9999]"
+          lastPage="accountPlan"
+        />
       )}
       {/* <ActionButton
                 onClick={e => onPlanCheckout(e)}
@@ -506,9 +479,9 @@ const UpgradePlanSection = ({ plans, selectedPlan, onPlanSelect, onPlanCheckout 
 const NoPlansAvailableMessage = () => {
   return (
     <section>
-      <div className="gh-portal-section">
+      <div className="gh-portal-section mb-10">
         <p
-          className="gh-portal-no-plans-available-notification"
+          className="gh-portal-no-plans-available-notification mx-8 mb-6 mt-2 text-center text-grey-2"
           data-testid="no-plans-available-notification-text"
         >
           {t('Sorry, no paid plans are available.')}
@@ -859,7 +832,7 @@ export default class AccountPlanPage extends React.Component {
     const { lastPage } = this.context;
     return (
       <>
-        <div className="gh-portal-content">
+        <div className="gh-portal-content relative [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           <BackButton onClick={(e) => this.onBack(e)} hidden={!lastPage && !showConfirmation} />
           <CloseButton />
           <Header

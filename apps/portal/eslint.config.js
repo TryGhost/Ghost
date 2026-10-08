@@ -9,6 +9,7 @@ export default reactAppConfig({
   legacyJsTsSplit: true,
   tsconfigRootDir: import.meta.dirname, // workspace tsconfig.json, not the factory's
   reactRefresh: false, // portal is bundled as UMD for theme distribution
+  legacyTailwindV3ConfigPath: `${import.meta.dirname}/tailwind.config.cjs`,
   i18next: true,
   ignores: ['umd/**/*', 'dist/**/*'],
 });

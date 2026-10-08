@@ -23,8 +23,8 @@ const ContinueSubscriptionButton = () => {
   const expiryDate = getDateString(subscription.current_period_end);
 
   return (
-    <div className="gh-portal-cancelcontinue-container">
-      <div className="gh-portal-cancel-banner">
+    <div className="gh-portal-cancelcontinue-container mx-0 mb-8 mt-6">
+      <div className="gh-portal-cancel-banner relative mb-4 rounded-lg p-4 text-center text-md leading-normal text-grey-1 before:pointer-events-none before:absolute before:inset-0 before:z-0 before:block before:rounded-lg before:bg-brand before:opacity-5 before:content-[''] [&>*]:relative [&>*]:z-[1] [&_p]:mx-auto [&_p]:mb-4 [&_p]:mt-0 [&_p]:max-w-[320px]">
         <p>
           <Interpolate
             string={t('Your subscription has been canceled and will expire on {expiryDate}.')}

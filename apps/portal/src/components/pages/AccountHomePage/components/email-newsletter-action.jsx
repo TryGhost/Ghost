@@ -18,7 +18,7 @@ function EmailNewsletterAction() {
 
   return (
     <section
-      className="gh-portal-list-clickable"
+      className="gh-portal-list-clickable cursor-pointer focus-visible:[box-shadow:inset_0_0_0_2px_var(--brandcolor)] focus-visible:[outline:none]"
       role="button"
       tabIndex={0}
       aria-pressed={subscribed}
@@ -33,13 +33,13 @@ function EmailNewsletterAction() {
         }
       }}
     >
-      <div className="gh-portal-list-detail email-newsletter">
+      <div className="gh-portal-list-detail email-newsletter grow [&_h3]:text-base [&_h3]:font-semibold [&_p]:mb-0 [&_p]:me-2 [&_p]:ms-0 [&_p]:mt-[5px] [&_p]:text-[1.45rem] [&_p]:leading-[1.3em] [&_p]:tracking-[0.3px] [&_p]:text-grey-6 [&_p]:[word-break:break-word]">
         <h3>{t('Email newsletter')}</h3>
         <p>
           {label}{' '}
           {hasMemberGotEmailSuppression({ member }) && subscribed && (
             <button
-              className="gh-portal-btn-text gh-email-faq-page-button"
+              className="gh-portal-btn-text gh-email-faq-page-button mt-[3px] block h-auto cursor-pointer border-none bg-transparent p-0 text-[1.45rem] font-medium text-brand [transition:color_linear_100ms]"
               onClick={(e) => {
                 e.stopPropagation();
                 doAction('switchPage', { page: 'emailReceivingFAQ', lastPage: 'accountHome' });

@@ -14,7 +14,13 @@ function SiteLogo() {
   const siteLogo = site.icon;
 
   if (siteLogo) {
-    return <img className="gh-portal-unsubscribe-logo" src={siteLogo} alt={site.title} />;
+    return (
+      <img
+        className="gh-portal-unsubscribe-logo mb-1.5 mt-3 size-[60px] rounded-sm max-sm:size-12"
+        src={siteLogo}
+        alt={site.title}
+      />
+    );
   }
   return null;
 }
@@ -23,9 +29,11 @@ function AccountHeader() {
   const { site } = useContext(AppContext);
   const siteTitle = site.title || '';
   return (
-    <header className="gh-portal-header">
+    <header className="gh-portal-header flex flex-col items-center pb-6">
       <SiteLogo />
-      <h2 className="gh-portal-publication-title">{siteTitle}</h2>
+      <h2 className="gh-portal-publication-title mt-1.5 text-center text-lg font-bold uppercase tracking-[-.1px] text-[#15212a]">
+        {siteTitle}
+      </h2>
     </header>
   );
 }
@@ -33,14 +41,18 @@ function AccountHeader() {
 function UnsubscribeErrorPage({ message }) {
   const { doAction } = useContext(AppContext);
   return (
-    <div className="gh-portal-content gh-portal-feedback with-footer">
+    <div className="gh-portal-content gh-portal-feedback with-footer relative [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
       <CloseButton />
-      <div className="gh-feedback-icon gh-feedback-icon-error">
+      <div className="gh-feedback-icon gh-feedback-icon-error mx-auto my-0 w-24 px-0 py-2.5 text-center text-[#f50b23]">
         <WarningIcon />
       </div>
-      <h1 className="gh-portal-main-title">{t("That didn't go to plan")}</h1>
+      <h1 className="gh-portal-main-title text-pretty text-center leading-[1.1em] text-grey-0">
+        {t("That didn't go to plan")}
+      </h1>
       <div>
-        <p className="gh-portal-text-center">{message}</p>
+        <p className="gh-portal-text-center text-pretty px-8 pb-3 pt-4 text-center max-sm:px-2">
+          {message}
+        </p>
       </div>
       <ActionButton
         style={{ width: '100%' }}
@@ -280,12 +292,14 @@ export default function UnsubscribePage() {
   // Case: Single active newsletter
   if (siteNewsletters?.length === 1 && !commentsEnabled && !showPrefs) {
     return (
-      <div className="gh-portal-content gh-portal-unsubscribe with-footer">
+      <div className="gh-portal-content gh-portal-unsubscribe with-footer relative [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         <CloseButton />
         <AccountHeader />
-        <h1 className="gh-portal-main-title">{t('Successfully unsubscribed')}</h1>
+        <h1 className="gh-portal-main-title mb-4 text-pretty text-center text-[2.6rem] leading-[1.1em] text-grey-0">
+          {t('Successfully unsubscribed')}
+        </h1>
         <div>
-          <p className="gh-portal-text-center">
+          <p className="gh-portal-text-center mb-4 text-pretty text-center last-of-type:mb-0">
             <Interpolate
               string={t('{memberEmail} will no longer receive this newsletter.')}
               mapping={{
@@ -293,13 +307,13 @@ export default function UnsubscribePage() {
               }}
             />
           </p>
-          <p className="gh-portal-text-center">
+          <p className="gh-portal-text-center mb-4 text-pretty text-center last-of-type:mb-0">
             <Interpolate
               string={t("Didn't mean to do this? Manage your preferences <button>here</button>.")}
               mapping={{
                 button: (
                   <button
-                    className="gh-portal-btn-link gh-portal-btn-branded gh-portal-btn-inline"
+                    className="gh-portal-btn-link gh-portal-btn-branded gh-portal-btn-inline ms-1 inline-block cursor-pointer border-none bg-transparent p-0 text-base font-semibold leading-none text-brand hover:opacity-85"
                     onClick={() => {
                       setShowPrefs(true);
                     }}
@@ -315,10 +329,12 @@ export default function UnsubscribePage() {
 
   const HeaderNotification = () => {
     if (pageData.comments && commentsEnabled) {
-      const hideClassName = hasInteracted ? 'gh-portal-hide' : '';
+      const hideClassName = hasInteracted ? 'gh-portal-hide hidden' : '';
       return (
         <>
-          <p className={`gh-portal-text-center gh-portal-header-message ${hideClassName}`}>
+          <p
+            className={`gh-portal-text-center gh-portal-header-message mx-0 mb-6 mt-[-20px] text-balance text-center ${hideClassName}`}
+          >
             <Interpolate
               string={t(
                 '{memberEmail} will no longer receive emails when someone replies to your comments.',
@@ -332,10 +348,12 @@ export default function UnsubscribePage() {
       );
     }
     if (pageData.updatesAndAnnouncements && canChangeUpdatesAndAnnouncements) {
-      const hideClassName = hasInteracted ? 'gh-portal-hide' : '';
+      const hideClassName = hasInteracted ? 'gh-portal-hide hidden' : '';
       return (
         <>
-          <p className={`gh-portal-text-center gh-portal-header-message ${hideClassName}`}>
+          <p
+            className={`gh-portal-text-center gh-portal-header-message mx-0 mb-6 mt-[-20px] text-balance text-center ${hideClassName}`}
+          >
             <Interpolate
               string={t('{memberEmail} will no longer receive updates & announcements.')}
               mapping={{
@@ -354,10 +372,12 @@ export default function UnsubscribePage() {
       return null;
     }
 
-    const hideClassName = hasInteracted ? 'gh-portal-hide' : '';
+    const hideClassName = hasInteracted ? 'gh-portal-hide hidden' : '';
     return (
       <>
-        <p className={`gh-portal-text-center gh-portal-header-message ${hideClassName}`}>
+        <p
+          className={`gh-portal-text-center gh-portal-header-message mx-0 mb-6 mt-[-20px] text-balance text-center ${hideClassName}`}
+        >
           <Interpolate
             string={t('{memberEmail} will no longer receive {newsletterName} newsletter.')}
             mapping={{

@@ -1931,6 +1931,9 @@ importers:
       eslint:
         specifier: 'catalog:'
         version: 9.39.4(jiti@2.7.0)(supports-color@10.2.2)
+      eslint-plugin-tailwindcss:
+        specifier: catalog:tailwind3
+        version: 3.18.3(tailwindcss@3.4.19(tsx@4.23.12)(yaml@2.9.0))
       jsdom:
         specifier: 'catalog:'
         version: 30.0.1(@noble/hashes@1.8.0)

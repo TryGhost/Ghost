@@ -8,7 +8,7 @@ import ButtonIcon2 from '../images/icons/button-icon-2.svg?react';
 import ButtonIcon3 from '../images/icons/button-icon-3.svg?react';
 import ButtonIcon4 from '../images/icons/button-icon-4.svg?react';
 import ButtonIcon5 from '../images/icons/button-icon-5.svg?react';
-import TriggerButtonStyle from './trigger-button.styles';
+import TailwindStyles from '../tailwind.css?inline';
 import { hasAvailablePrices, isInviteOnly, isSigninAllowed } from '../utils/helpers';
 import { hasMode } from '../utils/check-mode';
 
@@ -144,7 +144,12 @@ class TriggerButtonContent extends React.Component {
   renderText() {
     const { portal_button_signup_text: buttonText } = this.context.site;
     if (this.hasText()) {
-      return <span className="gh-portal-triggerbtn-label"> {buttonText} </span>;
+      return (
+        <span className="gh-portal-triggerbtn-label block max-w-[380px] truncate p-2 text-white">
+          {' '}
+          {buttonText}{' '}
+        </span>
+      );
     }
     return null;
   }
@@ -176,9 +181,12 @@ class TriggerButtonContent extends React.Component {
 
     if (hasText) {
       return (
-        <div className="gh-portal-triggerbtn-wrapper" ref={this.container}>
+        <div
+          className="gh-portal-triggerbtn-wrapper inline-flex h-full select-none items-start justify-end pb-0 pl-[17px] pr-7 pt-2.5 leading-none [transition:transform_0.16s_linear_0s] rtl:pl-7 rtl:pr-[17px] [&_span]:mb-px"
+          ref={this.container}
+        >
           <div
-            className="gh-portal-triggerbtn-container with-label"
+            className="gh-portal-triggerbtn-container with-label relative flex h-[60px] min-w-[60px] cursor-pointer items-center justify-center rounded-[999px] bg-brand pl-4 pr-3 [box-shadow:rgba(0,0,0,0.24)_0px_8px_16px_-2px] [transition:opacity_0.3s_ease] before:absolute before:inset-0 before:rounded-[999px] before:bg-[rgba(var(--whitergb),0)] before:content-[''] before:[transition:background_0.3s_ease] hover:before:bg-[rgba(var(--whitergb),0.08)] rtl:pl-3 rtl:pr-4 [&_.gh-portal-avatar]:!mb-0 [&_.gh-portal-avatar]:size-[60px]"
             onClick={(e) => this.onToggle(e)}
             data-testid="portal-trigger-button"
           >
@@ -189,9 +197,9 @@ class TriggerButtonContent extends React.Component {
       );
     }
     return (
-      <div className="gh-portal-triggerbtn-wrapper">
+      <div className="gh-portal-triggerbtn-wrapper inline-flex h-full select-none items-start justify-end pb-0 pl-[17px] pr-7 pt-2.5 leading-none [transition:transform_0.16s_linear_0s] rtl:pl-7 rtl:pr-[17px] [&_span]:mb-px">
         <div
-          className={'gh-portal-triggerbtn-container ' + triggerBtnClass}
+          className={`gh-portal-triggerbtn-container ${triggerBtnClass} relative flex h-[60px] min-w-[60px] cursor-pointer items-center justify-center rounded-[999px] bg-brand [box-shadow:rgba(0,0,0,0.24)_0px_8px_16px_-2px] [transition:opacity_0.3s_ease] before:absolute before:inset-0 before:rounded-[999px] before:bg-[rgba(var(--whitergb),0)] before:content-[''] before:[transition:background_0.3s_ease] hover:before:bg-[rgba(var(--whitergb),0.08)] [&.halo]:before:-inset-1 [&.halo]:before:border-4 [&.halo]:before:border-solid [&.halo]:before:border-[rgba(var(--whitergb),0.15)] [&_.gh-portal-avatar]:!mb-0 [&_.gh-portal-avatar]:size-[60px]`}
           onClick={(e) => this.onToggle(e)}
           data-testid="portal-trigger-button"
         >
@@ -256,8 +264,8 @@ export default class TriggerButton extends React.Component {
   renderFrameStyles() {
     const { brandColor } = this.context;
     const styles = brandColor
-      ? `:root { --brandcolor: ${brandColor} }` + TriggerButtonStyle
-      : TriggerButtonStyle;
+      ? `:root { --brandcolor: ${brandColor} }` + TailwindStyles
+      : TailwindStyles;
     return <style dangerouslySetInnerHTML={{ __html: styles }} />;
   }
 

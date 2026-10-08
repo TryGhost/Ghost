@@ -14,7 +14,7 @@ export default function EmailSuppressedPage() {
   return (
     <div className="gh-email-suppression-faq">
       {!directAccess && (
-        <header className="gh-portal-detail-header">
+        <header className="gh-portal-detail-header relative mx-0 mb-10 mt-[-2px] flex items-center justify-center px-[60px] max-sm:mt-1">
           <BackButton
             brandColor={brandColor}
             onClick={() => {
@@ -25,7 +25,7 @@ export default function EmailSuppressedPage() {
         </header>
       )}
 
-      <div className="gh-longform">
+      <div className="gh-longform px-[6vmin] pb-[6vmin] pt-14 max-sm:px-7 max-sm:py-[10vmin] [&_a]:font-medium [&_a]:text-brand [&_h3]:mb-[0.25em] [&_h3]:mt-0 [&_h3]:text-balance [&_h3]:text-[27px] [&_h4]:mb-[0.4em] [&_h4]:mt-[1.85em] [&_h4]:text-[17.5px] [&_p:last-of-type]:mb-[0.2em] [&_p]:mb-[1.2em] [&_p]:text-grey-3 [&_strong]:text-grey-1">
         <h3>{t('Why has my email been disabled?')}</h3>
         <p>
           {t(
@@ -66,7 +66,7 @@ export default function EmailSuppressedPage() {
         </p>
         <p>
           <a
-            className="gh-portal-btn gh-portal-btn-branded no-margin-right"
+            className="gh-portal-btn gh-portal-btn-branded no-margin-right relative mt-10 flex h-11 w-full min-w-[80px] cursor-pointer select-none items-center justify-center whitespace-nowrap rounded-md border border-solid border-grey-12 bg-white px-[1.8rem] py-0 text-center text-base font-medium leading-[1em] tracking-[0.2px] text-brand no-underline [outline:none] [transition:all_.25s_ease] hover:border-grey-10"
             href={supportAddress}
             onClick={() => {
               supportAddress && window.open(supportAddress);

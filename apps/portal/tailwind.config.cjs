@@ -1,6 +1,8 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   content: ['./src/**/*.{js,jsx,ts,tsx}'],
+  // Legacy hook class on buttons that never set position; use [position:sticky]
+  blocklist: ['sticky'],
   corePlugins: {
     // Portal's global styles own the iframe reset
     preflight: false,
@@ -99,6 +101,94 @@ module.exports = {
       lg: '0.8rem',
       xl: '1.2rem',
       full: '9999px',
+    },
+    // Tailwind's defaults for these are rem-based and would render at 62.5%
+    lineHeight: {
+      none: '1',
+      tight: '1.25',
+      snug: '1.375',
+      normal: '1.5',
+      relaxed: '1.625',
+      loose: '2',
+    },
+    maxWidth: {
+      none: 'none',
+      full: '100%',
+      min: 'min-content',
+      max: 'max-content',
+      fit: 'fit-content',
+    },
+    extend: {
+      backgroundImage: {
+        'select-chevron':
+          "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23aeaeae' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E\")",
+      },
+      keyframes: {
+        fadein: {
+          '0%': { opacity: '0' },
+          '100%': { opacity: '1.0' },
+        },
+        fadeIn: {
+          '0%': { opacity: '0' },
+          '100%': { opacity: '1' },
+        },
+        fadeOut: {
+          '0%': { opacity: '1' },
+          '100%': { opacity: '0' },
+        },
+        popup: {
+          '0%': { transform: 'translateY(-30px)', opacity: '0' },
+          '1%': { transform: 'translateY(30px)', opacity: '0' },
+          '100%': { transform: 'translateY(0)', opacity: '1.0' },
+        },
+        'popup-full-size': {
+          '0%': { transform: 'translateY(0px)', opacity: '0' },
+          '1%': { transform: 'translateY(30px)', opacity: '0' },
+          '100%': { transform: 'translateY(0)', opacity: '1.0' },
+        },
+        'popup-mobile': {
+          '0%': { opacity: '0' },
+          '100%': { opacity: '1.0' },
+        },
+        'powered-fade-in': {
+          '0%': { transform: 'scale(0.98)', opacity: '0' },
+          '75%': { opacity: '1.0' },
+          '100%': { transform: 'scale(1)' },
+        },
+        'notification-slidein': {
+          '0%': { transform: 'translateX(380px)' },
+          '60%': { transform: 'translateX(-6px)' },
+          '100%': { transform: 'translateX(0)' },
+        },
+        'notification-slideout': {
+          '0%': { transform: 'translateX(0)' },
+          '30%': { transform: 'translateX(-10px)' },
+          '100%': { transform: 'translateX(380px)' },
+        },
+        'notification-slidein-mobile': {
+          '0%': { transform: 'translateY(-150px)' },
+          '50%': { transform: 'translateY(6px)' },
+          '100%': { transform: 'translateY(0)' },
+        },
+        'notification-slideout-mobile': {
+          '0%': { transform: 'translateY(0)' },
+          '35%': { transform: 'translateY(6px)' },
+          '100%': { transform: 'translateY(-150px)' },
+        },
+        'mobile-tray-from-bottom': {
+          '0%': { opacity: '0', transform: 'translateY(300px)' },
+          '20%': { opacity: '1.0' },
+          '100%': { transform: 'translateY(0)' },
+        },
+        'gh-portal-gift-email-fade': {
+          from: { opacity: '0', transform: 'translateY(4px)' },
+          to: { opacity: '1', transform: 'none' },
+        },
+        'gh-portal-share-more-menu-in': {
+          from: { opacity: '0', transform: 'translateY(8px)' },
+          to: { opacity: '1', transform: 'translateY(0)' },
+        },
+      },
     },
   },
 };

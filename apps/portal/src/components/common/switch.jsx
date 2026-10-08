@@ -1,83 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
 
-export const SwitchStyles = `
-    .gh-portal-for-switch label,
-    .gh-portal-for-switch .container {
-        position: relative;
-        display: inline-block;
-        width: 44px !important;
-        height: 26px !important;
-        cursor: pointer;
-    }
-
-    .gh-portal-for-switch label p,
-    .gh-portal-for-switch .container p {
-        overflow: auto;
-        color: var(--grey0);
-        font-weight: normal;
-    }
-
-    .gh-portal-for-switch input {
-        opacity: 0;
-        width: 0;
-        height: 0;
-    }
-
-    .gh-portal-for-switch .input-toggle-component {
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: var(--grey12);
-        transition: .3s;
-        width: 44px !important;
-        height: 26px !important;
-        border-radius: 999px;
-        transition: background 0.15s ease-in-out, border-color 0.15s ease-in-out;
-        cursor: pointer;
-    }
-
-    .gh-portal-for-switch label:hover input:not(:checked) + .input-toggle-component,
-    .gh-portal-for-switch .container:hover input:not(:checked) + .input-toggle-component {
-        border-color: var(--grey9);
-    }
-
-    .gh-portal-for-switch .input-toggle-component:before {
-        position: absolute;
-        content: "";
-        top: 3px !important;
-        left: 3px !important;
-        height: 20px !important;
-        width: 20px !important;
-        background-color: var(--white);
-        transition: .3s;
-        border-radius: 999px;
-    }
-    html[dir="rtl"] .gh-portal-for-switch .input-toggle-component:before {
-        left: unset !important;
-        right: 3px !important;
-    }
-
-    .gh-portal-for-switch input:checked + .input-toggle-component {
-        background: var(--brandcolor);
-        border-color: transparent;
-    }
-
-    .gh-portal-for-switch input:checked + .input-toggle-component:before {
-        transform: translateX(18px);
-        box-shadow: none;
-    }
-    html[dir="rtl"] .gh-portal-for-switch input:checked + .input-toggle-component:before {
-        transform: translateX(-18px);
-    }
-
-    .gh-portal-for-switch .container {
-        width: 38px !important;
-        height: 22px !important;
-    }
-`;
-
 function Switch({
   id,
   label = '',
@@ -119,9 +41,10 @@ function Switch({
 
   return (
     <div className="gh-portal-for-switch" data-test-switch={dataTestId} {...wrapperProps}>
-      <label className="switch" htmlFor={id}>
+      <label className="switch relative inline-block !h-[26px] !w-11 cursor-pointer" htmlFor={id}>
         <input
           ref={inputRef}
+          className="peer/switch size-0 opacity-0"
           type="checkbox"
           checked={isChecked}
           disabled={disabled}
@@ -129,7 +52,10 @@ function Switch({
           onChange={handleChange}
           {...inputProps}
         />
-        <span className="input-toggle-component" data-testid={dataTestId}></span>
+        <span
+          className="input-toggle-component absolute inset-0 !h-[26px] !w-11 cursor-pointer rounded-[999px] bg-grey-12 [transition:background_0.15s_ease-in-out,border-color_0.15s_ease-in-out] before:absolute before:!left-[3px] before:!top-[3px] before:!size-5 before:rounded-[999px] before:bg-white before:content-[''] before:[transition:0.3s] peer-checked/switch:bg-brand peer-checked/switch:before:translate-x-[18px] rtl:before:!left-auto rtl:before:!right-[3px] rtl:peer-checked/switch:before:translate-x-[-18px]"
+          data-testid={dataTestId}
+        ></span>
       </label>
     </div>
   );

@@ -48,11 +48,11 @@ const PaidAccountActions = () => {
 
     if (isGiftMember({ member }) && subscriptionExpiry) {
       return (
-        <p className="gh-portal-account-discountcontainer">
-          <GiftIcon className="gh-portal-account-tagicon" />
+        <p className="gh-portal-account-discountcontainer relative flex flex-wrap items-center">
+          <GiftIcon className="gh-portal-account-tagicon z-[999] me-1 size-4 text-brand" />
           <span>{t('Gift subscription')}</span>
-          <span className="gh-portal-account-expiry-separator">-</span>
-          <span className="gh-portal-account-expiry">
+          <span className="gh-portal-account-expiry-separator mx-1 my-0 max-sm:hidden">-</span>
+          <span className="gh-portal-account-expiry whitespace-nowrap max-sm:basis-full">
             {t('Expires {expiryDate}', { expiryDate: subscriptionExpiry })}
           </span>
         </p>
@@ -70,7 +70,7 @@ const PaidAccountActions = () => {
     const hasFreeTrial = subscriptionHasFreeTrial({ sub: subscription });
 
     if (hasFreeTrial) {
-      oldPriceClassName = 'gh-portal-account-old-price';
+      oldPriceClassName = 'gh-portal-account-old-price !text-grey-9 line-through';
 
       return (
         <>
@@ -83,14 +83,17 @@ const PaidAccountActions = () => {
     const offerLabelStr = getOfferLabel({ nextPayment });
 
     if (offerLabelStr) {
-      oldPriceClassName = 'gh-portal-account-old-price';
+      oldPriceClassName = 'gh-portal-account-old-price !text-grey-9 line-through';
     }
 
     const OfferLabel = () => {
       if (offerLabelStr) {
         return (
-          <p className="gh-portal-account-discountcontainer" data-testid="offer-label">
-            <OfferTagIcon className="gh-portal-account-tagicon" />
+          <p
+            className="gh-portal-account-discountcontainer relative flex flex-wrap items-center"
+            data-testid="offer-label"
+          >
+            <OfferTagIcon className="gh-portal-account-tagicon z-[999] me-1 size-4 text-brand" />
             <span>{offerLabelStr}</span>
           </p>
         );
@@ -132,7 +135,7 @@ const PaidAccountActions = () => {
     if (canContinueGiftSubscription) {
       return (
         <button
-          className="gh-portal-btn gh-portal-btn-list"
+          className="gh-portal-btn gh-portal-btn-list relative -mx-1 my-0 flex h-[38px] cursor-pointer select-none items-center justify-center whitespace-nowrap rounded-md border-none bg-white px-1 py-0 text-center text-base font-medium leading-[1em] tracking-[0.2px] text-brand no-underline [outline:none] [transition:all_.25s_ease] hover:border-grey-10 hover:opacity-75 disabled:cursor-auto disabled:!opacity-50"
           onClick={(e) => {
             e.stopPropagation();
             doAction('continueGiftSubscription');
@@ -145,7 +148,7 @@ const PaidAccountActions = () => {
     }
     return (
       <button
-        className="gh-portal-btn gh-portal-btn-list"
+        className="gh-portal-btn gh-portal-btn-list relative -mx-1 my-0 flex h-[38px] cursor-pointer select-none items-center justify-center whitespace-nowrap rounded-md border-none bg-white px-1 py-0 text-center text-base font-medium leading-[1em] tracking-[0.2px] text-brand no-underline [outline:none] [transition:all_.25s_ease] hover:border-grey-10 hover:opacity-75 disabled:cursor-auto disabled:!opacity-50"
         onClick={(e) => {
           e.stopPropagation();
           openUpdatePlan(e);
@@ -169,14 +172,14 @@ const PaidAccountActions = () => {
     const { action } = useContext(AppContext);
     const label =
       action === 'manageBilling:running' ? (
-        <LoaderIcon className="gh-portal-billing-button-loader" />
+        <LoaderIcon className="gh-portal-billing-button-loader -me-[3px] size-8 opacity-60" />
       ) : (
         t('Update')
       );
 
     return (
       <section
-        className="gh-portal-list-clickable"
+        className="gh-portal-list-clickable cursor-pointer focus-visible:[box-shadow:inset_0_0_0_2px_var(--brandcolor)] focus-visible:[outline:none]"
         role="button"
         tabIndex={0}
         onClick={onManageBilling}
@@ -190,12 +193,12 @@ const PaidAccountActions = () => {
           }
         }}
       >
-        <div className="gh-portal-list-detail">
+        <div className="gh-portal-list-detail grow [&_h3]:text-base [&_h3]:font-semibold [&_p]:mb-0 [&_p]:me-2 [&_p]:ms-0 [&_p]:mt-[5px] [&_p]:text-[1.45rem] [&_p]:leading-[1.3em] [&_p]:tracking-[0.3px] [&_p]:text-grey-6 [&_p]:[word-break:break-word]">
           <h3>{t('Billing info & receipts')}</h3>
           <CardLabel defaultCardLast4={defaultCardLast4} />
         </div>
         <span
-          className="gh-portal-list-action"
+          className="gh-portal-list-action -mx-1 my-0 flex min-h-[38px] select-none items-center justify-center whitespace-nowrap px-1 py-0 text-base font-medium leading-[1em] tracking-[0.2px] text-brand"
           data-test-button="manage-billing"
           aria-hidden="true"
         >
@@ -224,11 +227,13 @@ const PaidAccountActions = () => {
     return (
       <>
         <section>
-          <div className="gh-portal-list-detail">
+          <div className="gh-portal-list-detail grow [&_h3]:text-base [&_h3]:font-semibold [&_p]:mb-0 [&_p]:me-2 [&_p]:ms-0 [&_p]:mt-[5px] [&_p]:text-[1.45rem] [&_p]:leading-[1.3em] [&_p]:tracking-[0.3px] [&_p]:text-grey-6 [&_p]:[word-break:break-word]">
             <h3>
               {planLabel}
               {subscription?.cancel_at_period_end && (
-                <span className="gh-portal-canceled-badge">{t('Canceled')}</span>
+                <span className="gh-portal-canceled-badge relative -top-px ms-1.5 inline-block rounded-[32px] bg-[color:color-mix(in_srgb,var(--grey12)_60%,transparent)] px-2 py-1.5 align-middle text-[1.1rem] font-semibold uppercase leading-[1em] tracking-[0.05px] text-grey-6">
+                  {t('Canceled')}
+                </span>
               )}
             </h3>
             <PlanLabel
@@ -250,7 +255,7 @@ function FreeTrialLabel({ subscription }) {
   if (subscriptionHasFreeTrial({ sub: subscription })) {
     const trialEnd = getDateString(subscription.trial_end_at);
     return (
-      <p className="gh-portal-account-discountcontainer">
+      <p className="gh-portal-account-discountcontainer relative flex flex-wrap items-center">
         <div>
           <span>{t('Free Trial – Ends {trialEnd}', { trialEnd })}</span>
           {/* <span>{getSubFreeTrialDaysLeft({sub: subscription})} days left</span> */}

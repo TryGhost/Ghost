@@ -31,8 +31,8 @@ const AccountWelcome = () => {
     if (isGiftMember({ member })) {
       if (subscriptionExpiry) {
         return (
-          <div className="gh-portal-section" style={{ marginBottom: 24 }}>
-            <p className="gh-portal-text-center gh-portal-free-ctatext">
+          <div className="gh-portal-section mb-10" style={{ marginBottom: 24 }}>
+            <p className="gh-portal-text-center gh-portal-free-ctatext -mt-3 text-pretty text-center">
               {t(`Your gift subscription will expire on {expiryDate}`, {
                 expiryDate: subscriptionExpiry,
               })}
@@ -44,8 +44,8 @@ const AccountWelcome = () => {
     }
     if (isComplimentary && subscriptionExpiry) {
       return (
-        <div className="gh-portal-section">
-          <p className="gh-portal-text-center gh-portal-free-ctatext">
+        <div className="gh-portal-section mb-10">
+          <p className="gh-portal-text-center gh-portal-free-ctatext -mt-3 text-pretty text-center">
             {t(`Your subscription will expire on {expiryDate}`, { expiryDate: subscriptionExpiry })}
           </p>
         </div>
@@ -62,8 +62,8 @@ const AccountWelcome = () => {
     if (subscriptionHasFreeTrial({ sub: subscription })) {
       const trialEnd = getDateString(subscription.trial_end_at);
       return (
-        <div className="gh-portal-section">
-          <p className="gh-portal-text-center gh-portal-free-ctatext">
+        <div className="gh-portal-section mb-10">
+          <p className="gh-portal-text-center gh-portal-free-ctatext -mt-3 text-pretty text-center">
             {t(`Your subscription will start on {subscriptionStart}`, {
               subscriptionStart: trialEnd,
             })}
@@ -73,8 +73,8 @@ const AccountWelcome = () => {
     }
 
     return (
-      <div className="gh-portal-section">
-        <p className="gh-portal-text-center gh-portal-free-ctatext">
+      <div className="gh-portal-section mb-10">
+        <p className="gh-portal-text-center gh-portal-free-ctatext -mt-3 text-pretty text-center">
           {t(`Your subscription will renew on {renewalDate}`, {
             renewalDate: getDateString(currentPeriodEnd),
           })}
@@ -84,8 +84,8 @@ const AccountWelcome = () => {
   }
 
   return (
-    <div className="gh-portal-section">
-      <p className="gh-portal-text-center gh-portal-free-ctatext">
+    <div className="gh-portal-section mb-10">
+      <p className="gh-portal-text-center gh-portal-free-ctatext -mt-3 text-pretty text-center">
         {t(`You currently have a free membership, upgrade to a paid subscription for full access.`)}
       </p>
       <SubscribeButton />

@@ -1,30 +1,5 @@
 import UserIcon from '../../images/icons/user.svg?react';
 
-export const AvatarStyles = `
-    .gh-portal-avatar {
-        position: relative;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        overflow: hidden;
-        margin: 0 0 8px 0;
-        border-radius: 999px;
-    }
-
-    .gh-portal-avatar img {
-        position: absolute;
-        display: block;
-        top: -2px;
-        right: -2px;
-        bottom: -2px;
-        left: -2px;
-        width: calc(100% + 4px);
-        height: calc(100% + 4px);
-        opacity: 1;
-        max-width: unset;
-    }
-`;
-
 const Styles = ({ style = {} }) => {
   return {
     avatarContainer: {
@@ -45,9 +20,19 @@ const Styles = ({ style = {} }) => {
 function MemberGravatar({ gravatar, style }) {
   const Style = Styles({ style });
   return (
-    <figure className="gh-portal-avatar" style={Style.avatarContainer}>
+    <figure
+      className="gh-portal-avatar relative mx-0 mb-2 mt-0 flex items-center justify-center overflow-hidden rounded-[999px]"
+      style={Style.avatarContainer}
+    >
       <UserIcon style={Style.userIcon} />
-      {gravatar ? <img style={Style.gravatar} src={gravatar} alt="" /> : null}
+      {gravatar ? (
+        <img
+          className="absolute -inset-0.5 block h-[calc(100%+4px)] w-[calc(100%+4px)] max-w-none opacity-100"
+          style={Style.gravatar}
+          src={gravatar}
+          alt=""
+        />
+      ) : null}
     </figure>
   );
 }

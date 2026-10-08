@@ -125,9 +125,9 @@ describe('Account Plan Page', () => {
     const continueBtn = queryAllByRole('button', { name: 'Continue' });
 
     fireEvent.click(monthlyCheckboxEl);
-    expect(monthlyCheckboxEl.className).toEqual('gh-portal-btn active');
+    expect(monthlyCheckboxEl).toHaveClass('gh-portal-btn', 'active');
     fireEvent.click(yearlyCheckboxEl);
-    expect(yearlyCheckboxEl.className).toEqual('gh-portal-btn active');
+    expect(yearlyCheckboxEl).toHaveClass('gh-portal-btn', 'active');
     fireEvent.click(continueBtn[0]);
     expect(mockDoActionFn).toHaveBeenCalledWith('checkoutPlan', {
       plan: siteData.products[0].yearlyPrice.id,

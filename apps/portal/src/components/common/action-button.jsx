@@ -1,80 +1,6 @@
 import LoaderIcon from '../../images/icons/loader.svg?react';
 import { isCookiesDisabled } from '../../utils/helpers';
 
-export const ActionButtonStyles = `
-    .gh-portal-btn-main {
-        box-shadow: none;
-        position: relative;
-        border: none;
-    }
-
-    .gh-portal-btn-main:hover,
-    .gh-portal-btn-main:focus {
-        box-shadow: none;
-        border: none;
-    }
-
-    .gh-portal-btn-primary {
-        color: #fff;
-    }
-
-    .gh-portal-btn-primary:hover,
-    .gh-portal-btn-primary:focus {
-        opacity: 0.92 !important;
-    }
-
-    .gh-portal-btn-primary:disabled:hover::before {
-        display: none;
-    }
-
-    .gh-portal-btn-destructive:not(:disabled):hover {
-        color: var(--red);
-        border-color: var(--red);
-    }
-
-    .gh-portal-btn-text {
-        padding: 0;
-        font-weight: 500;
-        height: unset;
-        border: none;
-        box-shadow: none;
-    }
-
-    button:focus-visible,
-    a:focus-visible,
-    .gh-portal-btn:focus-visible,
-    .gh-portal-btn-text:focus-visible {
-        outline: 2px solid var(--brandcolor);
-        outline-offset: 2px;
-        border-radius: 4px;
-        box-shadow: none;
-        transition: none;
-    }
-
-    html[dir="rtl"] .gh-portal-btn-text span.right-arrow {
-        transform: scale(-1, 1);
-        display: inline-flex;
-    }
-
-    .gh-portal-loadingicon {
-        position: absolute;
-        left: 50%;
-        display: inline-block;
-        margin-inline-start: -19px;
-        height: 31px;
-    }
-
-    .gh-portal-loadingicon path,
-    .gh-portal-loadingicon rect {
-        fill: var(--white);
-    }
-
-    .gh-portal-loadingicon.dark path,
-    .gh-portal-loadingicon.dark rect {
-        fill: var(--grey0);
-    }
-`;
-
 const Styles = ({ brandColor, disabled, style = {}, isPrimary }) => {
   const backgroundColor = brandColor || '#3eb0ef';
   let opacity = '1.0';
@@ -111,6 +37,8 @@ function ActionButton({
 }) {
   const Style = Styles({ disabled, retry, brandColor, style, isPrimary });
 
+  const isText = classes.split(' ').includes('gh-portal-btn-text');
+
   let className = 'gh-portal-btn';
   if (isPrimary) {
     className += ' gh-portal-btn-main gh-portal-btn-primary';
@@ -121,10 +49,31 @@ function ActionButton({
   if (classes) {
     className += ' ' + classes;
   }
+
+  className +=
+    ' relative flex min-w-[80px] cursor-pointer select-none items-center justify-center whitespace-nowrap rounded-md bg-white text-center text-base font-medium leading-[1em] tracking-[0.2px] no-underline [outline:none] [transition:all_.25s_ease] disabled:cursor-auto disabled:!opacity-50';
+  className += isText ? ' h-auto p-0' : ' h-11 px-[1.8rem] py-0';
+  if (isPrimary) {
+    className +=
+      ' border-none text-[#fff] hover:!opacity-[0.92] focus:!opacity-[0.92] disabled:hover:!opacity-[0.92] disabled:focus:!opacity-[0.92] max-[1440px]:h-[42px]';
+  } else {
+    className += isText
+      ? ' border-none text-grey-0'
+      : ' border border-solid border-grey-12 text-grey-0 hover:border-grey-10';
+    if (!isDestructive && !classes) {
+      // Legacy `button[class="gh-portal-btn"]` rule only matched the bare class
+      className += ' max-[1440px]:h-[42px]';
+    }
+  }
+  if (isDestructive) {
+    className += ' enabled:hover:border-red enabled:hover:text-red';
+  }
   if (isCookiesDisabled()) {
     disabled = true;
   }
-  const loaderClassName = isPrimary ? 'gh-portal-loadingicon' : 'gh-portal-loadingicon dark';
+  const loaderClassName = isPrimary
+    ? 'gh-portal-loadingicon absolute left-1/2 ms-[-19px] inline-block h-[31px] [&_path]:fill-white [&_rect]:fill-white'
+    : 'gh-portal-loadingicon dark absolute left-1/2 ms-[-19px] inline-block h-[31px] [&_path]:fill-grey-0 [&_rect]:fill-grey-0';
   return (
     <button
       className={className}

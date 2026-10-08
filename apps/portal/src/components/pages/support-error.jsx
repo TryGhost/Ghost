@@ -6,25 +6,6 @@ import WarningIcon from '../../images/icons/warning-outline.svg?react';
 import * as Sentry from '@sentry/react';
 import { t } from '../../utils/i18n';
 
-export const TipsAndDonationsErrorStyle = `
-    .gh-portal-tips-and-donations .gh-tips-and-donations-icon-error {
-        padding: 10px 0;
-        text-align: center;
-        width: 48px;
-        margin: 0 auto;
-        color: #f50b23;
-    }
-
-    .gh-portal-tips-donations .gh-tips-donations-icon.gh-feedback-icon-error {
-        color: #f50b23;
-        width: 96px;
-    }
-
-    .gh-portal-tips-and-donations .gh-portal-text-center {
-        padding: 16px 32px 12px;
-    }
-`;
-
 const SupportError = ({ error }) => {
   const { doAction } = useContext(AppContext);
   const errorTitle = t('Sorry, that didn’t work.');
@@ -37,14 +18,16 @@ const SupportError = ({ error }) => {
   }
 
   return (
-    <div className="gh-portal-content gh-portal-tips-and-donations">
+    <div className="gh-portal-content gh-portal-tips-and-donations relative [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
       <CloseButton />
 
-      <div className="gh-tips-and-donations-icon-error">
+      <div className="gh-tips-and-donations-icon-error mx-auto my-0 w-12 px-0 py-2.5 text-center text-[#f50b23]">
         <WarningIcon />
       </div>
-      <h1 className="gh-portal-main-title">{errorTitle}</h1>
-      <p className="gh-portal-text-center">{errorMessage}</p>
+      <h1 className="gh-portal-main-title text-pretty text-center text-[32px] leading-[1.1em] text-grey-0">
+        {errorTitle}
+      </h1>
+      <p className="gh-portal-text-center text-pretty px-8 pb-3 pt-4 text-center">{errorMessage}</p>
       <ActionButton
         style={{ width: '100%' }}
         retry={true}

@@ -2,7 +2,8 @@ import React from 'react';
 import Interpolate from '@doist/react-interpolate';
 import Frame from './frame';
 import AppContext from '../app-context';
-import NotificationStyle from './notification.styles';
+import TailwindStyles from '../tailwind.css?inline';
+import { notificationClasses, notificationIconClasses } from './notification-classes';
 import CloseIcon from '../images/icons/close.svg?react';
 import CheckmarkIcon from '../images/icons/checkmark-fill.svg?react';
 import WarningIcon from '../images/icons/warning-fill.svg?react';
@@ -200,19 +201,25 @@ class NotificationContent extends React.Component {
     const statusClass = status ? `  ${status}` : ' neutral';
     const slideClass = className ? ` ${className}` : '';
     return (
-      <div className="gh-portal-notification-wrapper">
+      <div className="gh-portal-notification-wrapper relative size-full overflow-hidden">
         <div
-          className={`gh-portal-notification${statusClass}${slideClass}`}
+          className={`gh-portal-notification${statusClass}${slideClass} ${notificationClasses} right-3 max-sm:left-3 max-sm:max-w-[calc(100%-24px)] rtl:left-3 rtl:right-auto max-sm:rtl:left-auto max-sm:rtl:right-3`}
           onAnimationEnd={(e) => this.onAnimationEnd(e)}
         >
           {status === 'error' ? (
-            <WarningIcon className="gh-portal-notification-icon error" alt="" />
+            <WarningIcon
+              className={`gh-portal-notification-icon error ${notificationIconClasses} text-red`}
+              alt=""
+            />
           ) : (
-            <CheckmarkIcon className="gh-portal-notification-icon success" alt="" />
+            <CheckmarkIcon
+              className={`gh-portal-notification-icon success ${notificationIconClasses} text-green`}
+              alt=""
+            />
           )}
           <NotificationText type={type} status={status} message={message} context={this.context} />
           <CloseIcon
-            className="gh-portal-notification-closeicon"
+            className="gh-portal-notification-closeicon -my-1.5 -mr-1.5 size-3 min-w-3 cursor-pointer p-2.5 text-grey-8 opacity-80 hover:opacity-100"
             alt="Close"
             onClick={(e) => this.onNotificationClose(e)}
           />
@@ -305,8 +312,8 @@ export default class Notification extends React.Component {
   renderFrameStyles() {
     const { brandColor } = this.context;
     const styles = brandColor
-      ? `:root { --brandcolor: ${brandColor} }` + NotificationStyle
-      : NotificationStyle;
+      ? `:root { --brandcolor: ${brandColor} }` + TailwindStyles
+      : TailwindStyles;
     return <style dangerouslySetInnerHTML={{ __html: styles }} />;
   }
 

@@ -3,170 +3,13 @@ import { hasMode } from '../../utils/check-mode';
 import { isCookiesDisabled } from '../../utils/helpers';
 import { t } from '../../utils/i18n';
 
-export const InputFieldStyles = `
-    .gh-portal-input-section.hidden {
-        display: none;
-    }
-    .gh-portal-input {
-        -webkit-appearance: none;
-        -moz-appearance: none;
-        appearance: none;
-
-        display: block;
-        box-sizing: border-box;
-        font-size: 1.5rem;
-        color: inherit;
-        background: transparent;
-        outline: none;
-        border: 1px solid var(--grey11);
-        border-radius: 6px;
-        width: 100%;
-        height: 44px;
-        padding: 0 12px;
-        margin-bottom: 16px;
-        letter-spacing: 0.2px;
-        transition: border-color 0.25s ease-in-out;
-    }
-
-    .gh-portal-input-labelcontainer {
-        display: flex;
-        justify-content: space-between;
-        width: 100%;
-    }
-
-    .gh-portal-input-labelcontainer p {
-        color: var(--red);
-        font-size: 1.3rem;
-        letter-spacing: 0.35px;
-        line-height: 1.6em;
-        margin-bottom: 0;
-    }
-
-    .gh-portal-input-label.hidden {
-        display: none;
-    }
-
-    .gh-portal-input:focus {
-        border-color: var(--grey8);
-    }
-
-    .gh-portal-input.error {
-        border-color: var(--red);
-    }
-
-    /* Keyed on its own class rather than the element: the gift message and the
-       cancellation reason are textareas with the base class too, and keep their look. */
-    .gh-portal-input.gh-portal-input-textarea {
-        height: auto;
-        min-height: 88px;
-        padding: 10px 12px;
-        line-height: 1.4em;
-        resize: vertical;
-    }
-
-    /* The chevron is drawn here because the appearance reset above takes the native one
-       with it, and the padding keeps the value clear of it. */
-    select.gh-portal-input {
-        padding-inline-end: 36px;
-        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23aeaeae' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
-        background-repeat: no-repeat;
-        background-position: right 12px center;
-        cursor: pointer;
-    }
-
-    html[dir="rtl"] select.gh-portal-input {
-        background-position: left 12px center;
-    }
-
-    /* With nothing chosen the empty option shows, and reads as placeholder text. The
-       options do not inherit that grey: the browsers that paint the list from computed
-       styles would otherwise show every country as placeholder text. CanvasText follows
-       the list's own light or dark scheme. */
-    select.gh-portal-input.placeholder {
-        color: var(--grey8);
-    }
-
-    select.gh-portal-input option {
-        color: CanvasText;
-    }
-
-    /* Several inputs presented as one field, the way an address is filled in at checkout.
-       Neighbours overlap by a pixel so their borders read as one divider, and the focused
-       or invalid input is lifted so its own border shows whole. */
-    .gh-portal-input-group {
-        margin-bottom: 16px;
-    }
-
-    .gh-portal-input-group .gh-portal-input {
-        position: relative;
-        border-radius: 0;
-        margin-bottom: 0;
-    }
-
-    .gh-portal-input-group .gh-portal-input:focus,
-    .gh-portal-input-group .gh-portal-input.error {
-        z-index: 1;
-    }
-
-    .gh-portal-input-group-row {
-        display: flex;
-    }
-
-    .gh-portal-input-group-row + .gh-portal-input-group-row {
-        margin-top: -1px;
-    }
-
-    .gh-portal-input-group-row .gh-portal-input-section {
-        flex: 1;
-        min-width: 0;
-    }
-
-    .gh-portal-input-group-row .gh-portal-input-section + .gh-portal-input-section {
-        margin-inline-start: -1px;
-    }
-
-    .gh-portal-input-group-row:first-child .gh-portal-input-section:first-child .gh-portal-input {
-        border-start-start-radius: 6px;
-    }
-
-    .gh-portal-input-group-row:first-child .gh-portal-input-section:last-child .gh-portal-input {
-        border-start-end-radius: 6px;
-    }
-
-    .gh-portal-input-group-row:last-child .gh-portal-input-section:first-child .gh-portal-input {
-        border-end-start-radius: 6px;
-    }
-
-    .gh-portal-input-group-row:last-child .gh-portal-input-section:last-child .gh-portal-input {
-        border-end-end-radius: 6px;
-    }
-
-    .gh-portal-input::placeholder {
-        color: var(--grey8);
-    }
-
-    /* The attribute, not :read-only: a select counts as read-only to that pseudo-class
-       and would take the disabled look while being perfectly usable. */
-    .gh-portal-popup-container:not(.preview) .gh-portal-input:disabled,
-    .gh-portal-popup-container:not(.preview) .gh-portal-input[readonly] {
-        /* The colour alone: the shorthand would take a disabled select's chevron with it. */
-        background-color: var(--grey13);
-        color: var(--grey9);
-        box-shadow: none;
-    }
-
-    .gh-portal-popup-container:not(.preview) .gh-portal-input:disabled::placeholder,
-    .gh-portal-popup-container:not(.preview) .gh-portal-input[readonly]::placeholder {
-        color: var(--grey9);
-    }
-`;
-
 function InputError({ message, style }) {
   if (!message) {
     return null;
   }
   return (
     <p
+      className="mb-0 text-sm leading-[1.6em] tracking-[0.35px] text-red"
       style={{
         ...(style || {}),
       }}
@@ -205,8 +48,13 @@ function InputField({
   const fieldNode = useRef(null);
   id = id || `input-${name}`;
   const sectionClasses = hidden ? 'gh-portal-input-section hidden' : 'gh-portal-input-section';
-  const labelClasses = hideLabel ? 'gh-portal-input-label hidden' : 'gh-portal-input-label';
+  const labelClasses =
+    (hideLabel ? 'gh-portal-input-label hidden' : 'gh-portal-input-label') +
+    ' mb-0.5 text-sm font-semibold tracking-[0px] text-grey-1';
   const inputClasses = errorMessage || invalid ? 'gh-portal-input error' : 'gh-portal-input';
+  const fieldClasses =
+    'mb-4 block w-full appearance-none rounded-md border border-solid border-grey-11 bg-transparent px-3 text-base tracking-[0.2px] [outline:none] [-webkit-appearance:none] [color:inherit] [transition:border-color_0.25s_ease-in-out] placeholder:text-grey-8 focus:border-grey-8 [&.error]:border-red group-[:not(.preview)]/popup:disabled:bg-grey-13 group-[:not(.preview)]/popup:disabled:text-grey-9 group-[:not(.preview)]/popup:disabled:placeholder:text-grey-9 group-[:not(.preview)]/popup:[&[readonly]::placeholder]:text-grey-9 group-[:not(.preview)]/popup:[&[readonly]]:bg-grey-13 group-[:not(.preview)]/popup:[&[readonly]]:text-grey-9';
+  const inputHeightClasses = 'h-11 py-0 max-[1440px]:h-[42px]';
   if (isCookiesDisabled()) {
     disabled = true;
   }
@@ -252,7 +100,7 @@ function InputField({
     'data-test-input': id,
     ref: fieldNode,
     id,
-    className: inputClasses,
+    className: `${inputClasses} ${fieldClasses} ${inputHeightClasses}`,
     name,
     value,
     placeholder,
@@ -268,7 +116,7 @@ function InputField({
   };
   return (
     <section className={sectionClasses}>
-      <div className="gh-portal-input-labelcontainer">
+      <div className="gh-portal-input-labelcontainer flex w-full justify-between">
         <label htmlFor={id} className={labelClasses}>
           {' '}
           {label}{' '}
@@ -277,7 +125,10 @@ function InputField({
       </div>
       {type === 'textarea' ? (
         // No onKeyDown: Enter adds a line here, where in an input it submits the form.
-        <textarea {...fieldProps} className={`${inputClasses} gh-portal-input-textarea`} />
+        <textarea
+          {...fieldProps}
+          className={`${inputClasses} gh-portal-input-textarea ${fieldClasses} h-auto min-h-[88px] resize-y py-2.5 leading-[1.4em]`}
+        />
       ) : type === 'select' ? (
         // A select cannot be read-only, so a value the member may not change is disabled
         // instead. The empty option stands for no value: with nothing chosen it carries
@@ -289,7 +140,7 @@ function InputField({
         // an option's text is all a native list can style across browsers.
         <select
           {...fieldProps}
-          className={value ? inputClasses : `${inputClasses} placeholder`}
+          className={`${value ? inputClasses : `${inputClasses} placeholder`} ${fieldClasses} ${inputHeightClasses} cursor-pointer bg-select-chevron bg-no-repeat pe-9 [background-position:right_12px_center] rtl:[background-position:left_12px_center] [&.placeholder]:text-grey-8 [&_option]:[color:CanvasText]`}
           disabled={disabled || readOnly}
         >
           {value ? (

@@ -47,6 +47,7 @@
     "@vitest/coverage-v8": "catalog:",
     "dompurify": "catalog:",
     "eslint": "catalog:",
+    "eslint-plugin-tailwindcss": "catalog:tailwind3",
     "jsdom": "catalog:",
     "react": "catalog:react17",
     "react-day-picker": "catalog:",
