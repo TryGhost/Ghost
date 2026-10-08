@@ -347,14 +347,16 @@ export function usePublishFlow({
   const checkingRetryEligibility = findingEmail || retryEligibility.isFetching;
   const eligibilityError = retryEligibility.error;
 
+  // Reported only once the writer is told: a failed background read keeps the last
+  // good decision on screen, so its error is never shown.
   useEffect(() => {
-    if (eligibilityError && step === 'email-error') {
+    if (eligibilityError && retryEligibilityFailed) {
       reportPublishFailure('retry-eligibility', RETRY_ELIGIBILITY_FAILED_MESSAGE, {
         error: eligibilityError,
         postId: post.id,
       });
     }
-  }, [eligibilityError, post.id, step]);
+  }, [eligibilityError, post.id, retryEligibilityFailed]);
 
   const refetchEligibility = retryEligibility.refetch;
   const refetchEligibilityRef = useRef(refetchEligibility);

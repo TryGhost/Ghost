@@ -352,8 +352,12 @@ describe('Post editor session expiry', () => {
     const reads = newslettersApi.requests.length;
 
     // A background refetch the writer did not ask for fails the same way.
-    void queryClient.refetchQueries({ type: 'active' });
-    await expect.poll(() => newslettersApi.requests.length).toBeGreaterThan(reads);
+    // Settled, then two frames so the failure's effects have run before the dialog is checked.
+    await queryClient.refetchQueries({ type: 'active' });
+    expect(newslettersApi.requests.length).toBeGreaterThan(reads);
+    await new Promise<void>((resolve) => {
+      requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
+    });
 
     await expect(editorScreen.reauthDialog()).toHaveCount(0);
     await expect.element(editorScreen.publishInputsError()).toBeVisible();

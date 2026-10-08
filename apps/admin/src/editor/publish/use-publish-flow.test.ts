@@ -529,6 +529,13 @@ describe('failed newsletter retry', () => {
     eligibility.isError = true;
     rerender();
     expect(result.current.canRetryEmail).toBe(true);
+    expect(result.current.retryEligibilityFailed).toBe(false);
+    // The writer never sees this read's error, so it is not reported as shown to them.
+    expect(reportPublishFailure).not.toHaveBeenCalledWith(
+      'retry-eligibility',
+      expect.anything(),
+      expect.anything(),
+    );
   });
   it.each([null, ''])('keeps a failed retry recoverable with error %j', async (error) => {
     const inputs = options();

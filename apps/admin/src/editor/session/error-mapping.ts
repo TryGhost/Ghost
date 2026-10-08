@@ -63,8 +63,12 @@ export const UNEXPECTED_ERROR_MESSAGE = 'An unexpected error occurred, please tr
 
 /**
  * What a publish Core's email service refused tells the writer. Within a request the
- * service throws an `EmailError` only when the post has no newsletter to send to, and
- * gives it no code, so the class stands in for that case rather than its sentence.
+ * service throws an `EmailError` only when the post has no newsletter to send to
+ * (`checkCanSendEmail` in ghost/core/core/server/services/email-service/email-service.js,
+ * called by the post save's email handler), and gives it no code, so the class stands in
+ * for that case rather than its sentence. Core's other `EmailError`s are thrown by the
+ * background send job, after the request has answered, and reach the editor as the
+ * email's failed status instead.
  */
 export const EMAIL_REFUSED_MESSAGE =
   'The newsletter couldn’t be sent. Check the post’s newsletter and try again.';
@@ -107,16 +111,23 @@ export function isSessionInvalid(error: unknown): boolean {
 }
 
 /**
- * Whether the error is the transport's bare `APIError` or `JSONError`, whose message only
- * names the endpoint ("Something went wrong while loading posts"). Every subclass carries
- * a message of its own (a timeout, maintenance, a payload too large).
+ * Whether the error is the transport's bare `APIError` or `JSONError` carrying the summary
+ * it generates when no message is given, which only names the endpoint ("Something went
+ * wrong while loading posts"). A bare error built with an explicit message keeps it, and
+ * every subclass carries a message of its own (a timeout, maintenance, a payload too large).
+ *
+ * The framework does not mark a generated summary, so the message is compared with the one
+ * `APIError` generates for the same response: our own string, never Core's text.
  */
 export function isTransportSummary(error: unknown): boolean {
   if (!(error instanceof APIError)) {
     return false;
   }
   const prototype = Object.getPrototypeOf(error) as unknown;
-  return prototype === APIError.prototype || prototype === JSONError.prototype;
+  if (prototype !== APIError.prototype && prototype !== JSONError.prototype) {
+    return false;
+  }
+  return error.message === new APIError(error.response).message;
 }
 
 /**
@@ -135,7 +146,12 @@ function apiErrorReason(error: unknown): string | null {
     return null;
   }
   const body = apiErrorBody(error);
-  return body?.context?.trim() || body?.message?.trim() || null;
+  return nonBlank(body?.context) ?? nonBlank(body?.message);
+}
+
+/** The trimmed text, or null for blank text or a field that is not text at all. */
+function nonBlank(value: unknown): string | null {
+  return typeof value === 'string' && value.trim() ? value.trim() : null;
 }
 
 function messageOf(error: unknown, fallback: string): string {

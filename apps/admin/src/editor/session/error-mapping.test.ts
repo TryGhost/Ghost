@@ -272,6 +272,40 @@ describe('toSaveError', () => {
     );
   });
 
+  it('keeps an explicit message on a bare transport error', () => {
+    const explicit = new JSONError(
+      postsResponse(500),
+      errorBody({ message: '', context: null }),
+      'The posts list is out of date.',
+    );
+
+    expect(requestFailureMessage(explicit, 'fallback')).toBe('The posts list is out of date.');
+    expect(requestFailureMessage(new APIError(undefined, undefined, 'Boom'), 'fallback')).toBe(
+      'Boom',
+    );
+    expect(requestFailureMessage(new APIError(), 'fallback')).toBe('fallback');
+  });
+
+  it('reads Core’s message when the context is not text', () => {
+    const error = new JSONError(
+      postsResponse(400),
+      errorBody({
+        type: 'BadRequestError',
+        message: 'Request not understood error, cannot edit post.',
+        context: { field: 'newsletter' } as unknown as string,
+      }),
+    );
+
+    expect(requestFailureMessage(error, 'fallback')).toBe(
+      'Request not understood error, cannot edit post.',
+    );
+    const neither = new JSONError(
+      postsResponse(400),
+      errorBody({ message: 42 as unknown as string, context: ['x'] as unknown as string }),
+    );
+    expect(requestFailureMessage(neither, 'fallback')).toBe('fallback');
+  });
+
   it('carries the cause for reporting', () => {
     const error = new ServerUnreachableError();
     expect(toSaveError(error, 'fallback').cause).toBe(error);
