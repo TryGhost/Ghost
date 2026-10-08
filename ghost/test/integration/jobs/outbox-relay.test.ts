@@ -3,8 +3,12 @@ import type { Knex } from 'knex';
 import type { DispatchEnvelope } from '@tryghost/adapter-base-jobs';
 import { JobsOutbox } from '../../../core/server/services/jobs-service/jobs-outbox';
 import { OutboxRelay } from '../../../core/server/services/jobs-service/outbox-relay';
+import { JobsService } from '../../../core/server/services/jobs-service/jobs-service';
+import { Job } from '../../../core/server/services/jobs-service/job';
+import InMemoryJobsBackend from '../../../core/server/adapters/jobs/InMemoryJobsBackend';
 
 const testUtils = require('../../utils');
+const jobsService = require('../../../core/server/services/jobs-service');
 const DatabaseInfo = require('@tryghost/database-info');
 const ObjectID = require('bson-objectid').default;
 const knex = require('../../../core/server/data/db').knex;
@@ -14,7 +18,7 @@ const isMySQL = DatabaseInfo.isMySQL(knex);
 
 const TIMINGS = { pollIntervalMs: 20, submissionTimeoutMs: 2000, retryDelayMs: 120 };
 
-const silentLogger = { error() {}, info() {} };
+const silentLogger = { error() {}, info() {}, warn() {} };
 const noopSentry = { captureException() {} };
 
 function newId(): string {
@@ -46,6 +50,35 @@ function makeBackend() {
       await behaviour(id, envelope);
     },
   };
+}
+
+class GreetJob extends Job {
+  static type = 'e2e-greet';
+  name: string;
+  constructor(data: { name: string }) {
+    super();
+    this.name = data.name;
+  }
+}
+
+class RecordingBackend extends InMemoryJobsBackend {
+  readonly calls: BackendCall[] = [];
+  readonly #failedOnce = new Set<string>();
+  readonly #failFirst: boolean;
+
+  constructor({ failFirst = false } = {}) {
+    super();
+    this.#failFirst = failFirst;
+  }
+
+  override async enqueue(id: string, envelope: DispatchEnvelope): Promise<void> {
+    this.calls.push({ id, envelope });
+    if (this.#failFirst && !this.#failedOnce.has(id)) {
+      this.#failedOnce.add(id);
+      throw new Error('forced one-time failure');
+    }
+    super.enqueue(id, envelope);
+  }
 }
 
 async function waitFor(
@@ -84,6 +117,8 @@ describe.runIf(isMySQL)('Jobs outbox + relay (MySQL)', function () {
 
   beforeAll(testUtils.teardownDb);
   beforeAll(testUtils.setup());
+  // A Ghost booted by an earlier file in this fork keeps its relay polling this table.
+  beforeAll(() => jobsService.shutdown());
 
   beforeEach(async function () {
     await knex(TABLE).truncate();
@@ -502,10 +537,199 @@ describe.runIf(isMySQL)('Jobs outbox + relay (MySQL)', function () {
       );
     });
   });
+
+  describe('dispatch end-to-end through the outbox', function () {
+    let services: JobsService[] = [];
+
+    function buildActiveService({
+      queue,
+      failFirst = false,
+    }: { queue?: string; failFirst?: boolean } = {}) {
+      const backend = new RecordingBackend({ failFirst });
+      const store = new JobsOutbox({ knex });
+      const relay = new OutboxRelay({
+        outbox: store,
+        backend,
+        logging: silentLogger,
+        sentry: noopSentry,
+        ...TIMINGS,
+      });
+      const service = new JobsService({
+        backend,
+        logging: silentLogger,
+        sentry: noopSentry,
+        outbox: { store, relay },
+      });
+      const delivered: GreetJob[] = [];
+      const handler = async (job: GreetJob) => {
+        delivered.push(job);
+      };
+      if (queue) {
+        service.handle(GreetJob, handler, { queue, concurrency: 1 });
+      } else {
+        service.handle(GreetJob, handler);
+      }
+      services.push(service);
+      return { service, backend, delivered };
+    }
+
+    beforeEach(function () {
+      services = [];
+    });
+
+    afterEach(async function () {
+      await Promise.all(services.map((service) => service.shutdown({ timeoutMs: 1000 })));
+    });
+
+    it('commits a row on a plain dispatch and the relay delivers it', async function () {
+      const { service, delivered } = buildActiveService();
+      await service.start();
+
+      await service.dispatch(new GreetJob({ name: 'Ada' }));
+
+      assert.ok(await waitFor(() => delivered.length === 1), 'the dispatched job was delivered');
+      assert.equal(delivered[0].name, 'Ada');
+      assert.ok(
+        await waitFor(async () => (await countRows()) === 0),
+        'the delivered row is removed',
+      );
+    });
+
+    it('rolls the row back with the caller transaction, so the job is never delivered', async function () {
+      const { service, delivered } = buildActiveService();
+      await service.start();
+
+      await assert.rejects(
+        knex.transaction(async (trx: Knex.Transaction) => {
+          await service.dispatch(new GreetJob({ name: 'Rolled' }), { transacting: trx });
+          throw new Error('roll back');
+        }),
+      );
+
+      await delay(TIMINGS.pollIntervalMs * 4 + 50);
+      assert.equal(delivered.length, 0, 'a rolled-back dispatch delivers nothing');
+      assert.equal(await countRows(), 0, 'and leaves no row');
+    });
+
+    it('delivers once the caller transaction commits', async function () {
+      const { service, delivered } = buildActiveService();
+      await service.start();
+
+      await knex.transaction(async (trx: Knex.Transaction) => {
+        await service.dispatch(new GreetJob({ name: 'Committed' }), { transacting: trx });
+      });
+
+      assert.ok(await waitFor(() => delivered.length === 1), 'a committed dispatch is delivered');
+      assert.equal(delivered[0].name, 'Committed');
+    });
+
+    it('preserves the default lane end-to-end (no routing in the forwarded envelope)', async function () {
+      const { service, backend, delivered } = buildActiveService();
+      await service.start();
+
+      await service.dispatch(new GreetJob({ name: 'Ada' }));
+
+      assert.ok(await waitFor(() => delivered.length === 1));
+      const forwarded = backend.calls.at(-1);
+      assert.ok(forwarded);
+      assert.equal(
+        forwarded.envelope.payload.routing,
+        undefined,
+        'an unrouted job carries no routing',
+      );
+    });
+
+    it('preserves a named lane end-to-end, including across a forced retry', async function () {
+      const { service, backend, delivered } = buildActiveService({
+        queue: 'greetings',
+        failFirst: true,
+      });
+      await service.start();
+
+      await service.dispatch(new GreetJob({ name: 'Ada' }));
+
+      assert.ok(
+        await waitFor(() => delivered.length === 1),
+        'the job is delivered after the forced retry',
+      );
+      assert.ok(backend.calls.length >= 2, 'the first submission failed and was retried');
+      assert.ok(
+        backend.calls.every((call) => call.envelope.payload.routing?.queue === 'greetings'),
+        'every attempt, retry included, preserves the named lane',
+      );
+    });
+  });
 });
 
-describe.runIf(!isMySQL)('Jobs outbox + relay (non-MySQL)', function () {
-  it('skips the outbox suite on SQLite: the relay path is MySQL-only', function () {
-    assert.ok(DatabaseInfo.isSQLite(knex), 'the fallback suite only runs on SQLite');
+describe.runIf(!isMySQL)('Jobs outbox fallback (non-MySQL)', function () {
+  beforeAll(testUtils.teardownDb);
+  beforeAll(testUtils.setup());
+
+  afterEach(async function () {
+    await knex(TABLE).truncate();
+  });
+
+  it('with the flag enabled on SQLite, warns at start and uses the legacy path', async function () {
+    assert.ok(DatabaseInfo.isSQLite(knex), 'this suite only runs on SQLite');
+
+    const warnings: unknown[][] = [];
+    const logging = {
+      error() {},
+      info() {},
+      warn: (...args: unknown[]) => warnings.push(args),
+    };
+    const backend = new InMemoryJobsBackend();
+    const delivered: GreetJob[] = [];
+    const service = new JobsService({
+      backend,
+      logging,
+      sentry: noopSentry,
+      logOutboxUnavailable: true,
+    });
+    service.handle(GreetJob, async (job) => {
+      delivered.push(job);
+    });
+
+    await service.start();
+    assert.ok(
+      warnings.some((args) => /outbox/i.test(String(args[0]))),
+      'a warning is logged at start',
+    );
+
+    await service.dispatch(new GreetJob({ name: 'Ada' }));
+    assert.ok(await waitFor(() => delivered.length === 1), 'the legacy path delivers the job');
+
+    assert.equal(await countRows(), 0, 'the outbox table is left untouched');
+    await service.shutdown({ timeoutMs: 1000 });
+  });
+
+  it('with the outbox inactive, a transacting dispatch runs after commit and not after rollback', async function () {
+    const backend = new InMemoryJobsBackend();
+    const delivered: GreetJob[] = [];
+    const service = new JobsService({ backend, logging: silentLogger, sentry: noopSentry });
+    service.handle(GreetJob, async (job) => {
+      delivered.push(job);
+    });
+    await service.start();
+
+    await knex.transaction(async (trx: Knex.Transaction) => {
+      await service.dispatch(new GreetJob({ name: 'Committed' }), { transacting: trx });
+      await delay(50);
+      assert.equal(delivered.length, 0, 'nothing runs before the transaction commits');
+    });
+    assert.ok(await waitFor(() => delivered.length === 1), 'the job runs once committed');
+    assert.equal(delivered[0].name, 'Committed');
+
+    await assert.rejects(
+      knex.transaction(async (trx: Knex.Transaction) => {
+        await service.dispatch(new GreetJob({ name: 'Rolled' }), { transacting: trx });
+        throw new Error('roll back');
+      }),
+    );
+    await delay(50);
+    assert.equal(delivered.length, 1, 'a rolled-back dispatch never runs');
+
+    assert.equal(await countRows(), 0, 'the outbox table is left untouched');
+    await service.shutdown({ timeoutMs: 1000 });
   });
 });
