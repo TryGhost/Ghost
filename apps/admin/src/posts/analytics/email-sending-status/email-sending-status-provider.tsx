@@ -9,7 +9,7 @@ import {
 } from '@tryghost/admin-x-framework/api/stats';
 import { useRetryEmail } from '@tryghost/admin-x-framework/api/emails';
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
-import { useFeatureFlag, useHandleError } from '@tryghost/admin-x-framework/hooks';
+import { useHandleError } from '@tryghost/admin-x-framework/hooks';
 import { usePostAnalytics } from '@/posts/analytics/providers/post-analytics-context';
 import { useEmailSendingStatusPolling } from '@/posts/email-sending-status/use-email-sending-status';
 import { useQueryClient } from '@tanstack/react-query';
@@ -25,12 +25,11 @@ const NEWSLETTER_DATA_TYPES = new Set([
 const EmailSendingStatusProvider = ({ children }: { children: ReactNode }) => {
   const { post, refetchPost } = usePostAnalytics();
   const queryClient = useQueryClient();
-  const enabled = useFeatureFlag('improveSendingUI');
   const emailId = post?.email?.id;
   const emailStatus = post?.email?.status;
   const hasPublishedEmail =
     Boolean(emailId) && (post?.status === 'published' || post?.status === 'sent');
-  const shouldQuery = enabled && hasPublishedEmail && Boolean(emailStatus);
+  const shouldQuery = hasPublishedEmail && Boolean(emailStatus);
 
   const statusQuery = useEmailSendingStatusPolling({
     emailId,
@@ -84,7 +83,7 @@ const EmailSendingStatusProvider = ({ children }: { children: ReactNode }) => {
     emailId && sendingStatus === 'submitted' && refreshedSubmittedEmailId !== emailId,
   );
   const isNewsletterDataHidden = Boolean(
-    enabled && status && (status.sending.status !== 'submitted' || isRefreshingSubmittedData),
+    status && (status.sending.status !== 'submitted' || isRefreshingSubmittedData),
   );
   const newsletterDataHiddenReason: 'sending' | 'failed' | null = isNewsletterDataHidden
     ? status?.sending.status === 'failed'
@@ -94,7 +93,7 @@ const EmailSendingStatusProvider = ({ children }: { children: ReactNode }) => {
   const hasNewsletterAnalytics = Boolean(
     post &&
     (post.status === 'published' || post.status === 'sent') &&
-    (hasBeenEmailed(post) || (enabled && status && post.email)),
+    (hasBeenEmailed(post) || (status && post.email)),
   );
   // Loading counts as unsent so a send in progress never briefly reads as done.
   const isEmailSent =

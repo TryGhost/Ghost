@@ -35,8 +35,8 @@ export type PublishStep = 'options' | 'confirm' | 'complete' | 'email-error';
 export type ConfirmStatus = 'idle' | 'running' | 'success' | 'failure';
 
 /**
- * With `improveSendingUI` on, the least time a send shows its running state
- * before handing off to post analytics, so the hand-off is not instant.
+ * The least time a send shows its running state before handing off to post
+ * analytics, so the hand-off is not instant.
  */
 export const MIN_EMAIL_HANDOFF_LENGTH = 1500;
 
@@ -49,8 +49,6 @@ export interface PublishFlowOptions {
   now?: () => Date;
   dispatch: PublishDispatcher;
   showCompletion?: boolean;
-  /** The `improveSendingUI` lab: a publish that emails completes without confirming the send, after `MIN_EMAIL_HANDOFF_LENGTH`. */
-  improveSendingUI?: boolean;
   onBeforePublish?: () => Promise<void>;
   onCompleted?: (info: { postId: string; isScheduled: boolean; hasEmail: boolean }) => void;
 }
@@ -120,7 +118,6 @@ export function usePublishFlow({
   now,
   dispatch,
   showCompletion = true,
-  improveSendingUI = false,
   onBeforePublish,
   onCompleted,
 }: PublishFlowOptions): PublishFlow {
@@ -196,7 +193,7 @@ export function usePublishFlow({
           if (reloaded.email?.id && activeRef.current) {
             setEmailId(reloaded.email.id);
           }
-          return { status: reloaded.status, email: reloaded.email ?? null };
+          return { email: reloaded.email ?? null };
         },
         retry: async (id) => {
           await retryEmailRequest({ id, sessionExpiryRedirect: false });
@@ -409,34 +406,6 @@ export function usePublishFlow({
     [onCompleted, post.displayName, post.id, showCompletion],
   );
 
-  const applyEmailOutcome = useCallback(
-    (outcome: EmailConfirmationOutcome, isScheduled: boolean): void => {
-      if (!activeRef.current) {
-        return;
-      }
-
-      if (outcome.kind === 'failed') {
-        setEmailErrorMessage(outcome.error || UNKNOWN_EMAIL_ERROR);
-        setStep('email-error');
-        setConfirmStatus('idle');
-        return;
-      }
-
-      // Cancellation means the flow is being torn down, so nothing is completed
-      // and the caller is never told to navigate.
-      if (outcome.kind === 'cancelled') {
-        setConfirmStatus('idle');
-        return;
-      }
-
-      if (outcome.kind !== 'submitted') {
-        setEmailNote(EMAIL_UNCONFIRMED);
-      }
-      complete(isScheduled, outcome.kind !== 'not-needed');
-    },
-    [complete],
-  );
-
   const confirmPublish = useCallback(async () => {
     if (publishRunningRef.current) {
       return;
@@ -524,49 +493,14 @@ export function usePublishFlow({
       return;
     }
 
-    // Stays 'running' across the email poll: the publish is not finished until
-    // the email is submitted, and the button must not invite a second dispatch.
-    if (willEmailImmediately && !improveSendingUI) {
-      let outcome: EmailConfirmationOutcome;
-
-      try {
-        // No `currentPost`: the acknowledged result carries no email, and the
-        // pre-save one would short-circuit the poll to "not needed".
-        outcome = await confirmation.confirm(post.id);
-      } catch {
-        if (!activeRef.current) {
-          return;
-        }
-        // The post is published either way; only the email's fate is unknown,
-        // so the flow completes rather than stranding a disabled button.
-        setEmailNote(EMAIL_UNCONFIRMED);
-        complete(isScheduled, true);
-        return;
-      }
-
-      refreshPostReads(outcome);
-      applyEmailOutcome(outcome, isScheduled);
-      return;
-    }
-
+    // The send's progress and any failure are reported by post analytics, so the
+    // flow stays 'running' only for the hand-off's minimum length.
     if (willEmailImmediately) {
       await handoffMinimum.elapsed();
     }
 
     complete(isScheduled, willEmail);
-  }, [
-    applyEmailOutcome,
-    complete,
-    confirmation,
-    dispatch,
-    handoffMinimum,
-    improveSendingUI,
-    machine,
-    onBeforePublish,
-    post.id,
-    refreshPostReads,
-    state,
-  ]);
+  }, [complete, dispatch, handoffMinimum, machine, onBeforePublish, state]);
 
   const retryEmail = useCallback(async () => {
     if (retryRunningRef.current || !canRetryEmail || !emailId) {

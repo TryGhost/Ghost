@@ -1,17 +1,15 @@
-import type { Email, PostStatus } from '@tryghost/admin-x-framework/api/posts';
+import type { Email } from '@tryghost/admin-x-framework/api/posts';
 
 export const CONFIRM_EMAIL_POLL_LENGTH = 1000;
 export const CONFIRM_EMAIL_MAX_POLL_LENGTH = 15 * 1000;
 
 export interface EmailConfirmationPost {
-  status?: PostStatus;
   email?: Email | null;
 }
 
 export type EmailConfirmationOutcome =
   | { kind: 'submitted' }
   | { kind: 'failed'; error: string | null; partial: boolean }
-  | { kind: 'unpublished' }
   | { kind: 'timeout' }
   | { kind: 'not-needed' }
   | { kind: 'cancelled' };
@@ -26,15 +24,11 @@ export interface EmailConfirmationOptions {
 }
 
 export interface EmailConfirmation {
-  confirm(postId: string, currentPost?: EmailConfirmationPost): Promise<EmailConfirmationOutcome>;
   retryAndConfirm(postId: string, emailId: string): Promise<EmailConfirmationOutcome>;
   cancel(): void;
 }
 
-type RunOperation = 'confirm' | 'retry';
-
 interface RunState {
-  operation: RunOperation;
   postId: string;
   cancelled: boolean;
   timer: TimerHandle;
@@ -111,10 +105,7 @@ export function createEmailConfirmation(options: EmailConfirmationOptions): Emai
     current = null;
   }
 
-  async function poll(
-    state: RunState,
-    { stopWhenUnpublished }: { stopWhenUnpublished: boolean },
-  ): Promise<EmailConfirmationOutcome> {
+  async function poll(state: RunState): Promise<EmailConfirmationOutcome> {
     let pollTimeout = 0;
 
     while (pollTimeout < CONFIRM_EMAIL_MAX_POLL_LENGTH) {
@@ -130,12 +121,6 @@ export function createEmailConfirmation(options: EmailConfirmationOptions): Emai
 
       if (state.cancelled) {
         return { kind: 'cancelled' };
-      }
-
-      // A post that is no longer published or sent never sends or retries an
-      // email, so there is nothing left to wait for.
-      if (stopWhenUnpublished && post.status !== 'sent' && post.status !== 'published') {
-        return { kind: 'unpublished' };
       }
 
       if (!post.email) {
@@ -155,17 +140,15 @@ export function createEmailConfirmation(options: EmailConfirmationOptions): Emai
   }
 
   function run(
-    operation: RunOperation,
     postId: string,
     work: (state: RunState) => Promise<EmailConfirmationOutcome>,
   ): Promise<EmailConfirmationOutcome> {
     if (current) {
-      if (current.state.operation === operation && current.state.postId === postId) {
+      if (current.state.postId === postId) {
         return current.promise;
       }
 
-      // A run belongs to one operation on one post, so only an identical
-      // repeat coalesces; anything else abandons the run in progress.
+      // A run belongs to one post, so a different post abandons the run in progress.
       stop(current.state);
       current = null;
     }
@@ -175,7 +158,6 @@ export function createEmailConfirmation(options: EmailConfirmationOptions): Emai
       settleCancelled = () => resolve({ kind: 'cancelled' });
     });
     const state: RunState = {
-      operation,
       postId,
       cancelled: false,
       timer: null,
@@ -196,29 +178,15 @@ export function createEmailConfirmation(options: EmailConfirmationOptions): Emai
   }
 
   return {
-    confirm(postId, currentPost) {
-      return run('confirm', postId, (state) => {
-        if (currentPost && !currentPost.email) {
-          return Promise.resolve({ kind: 'not-needed' });
-        }
-
-        if (currentPost?.email?.status === 'submitted') {
-          return Promise.resolve({ kind: 'submitted' });
-        }
-
-        return poll(state, { stopWhenUnpublished: true });
-      });
-    },
-
     retryAndConfirm(postId, emailId) {
-      return run('retry', postId, async (state) => {
+      return run(postId, async (state) => {
         await retry(emailId);
 
         if (state.cancelled) {
           return { kind: 'cancelled' };
         }
 
-        return poll(state, { stopWhenUnpublished: false });
+        return poll(state);
       });
     },
 

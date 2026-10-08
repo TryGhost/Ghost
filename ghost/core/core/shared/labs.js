@@ -54,7 +54,6 @@ const PRIVATE_FEATURES = [
   'importMemberTier',
   'csvContentImporter',
   'emailUniqueid',
-  'improveSendingUI',
   'themeTranslation',
   'pictureImageFormats',
   'getHelperDeduplication',

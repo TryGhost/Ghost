@@ -11,7 +11,6 @@ const emailSchema = z.looseObject({
 });
 
 const confirmationPostSchema = z.looseObject({
-  status: z.enum(['published', 'draft', 'scheduled', 'sent']),
   email: emailSchema.nullable().optional(),
 });
 

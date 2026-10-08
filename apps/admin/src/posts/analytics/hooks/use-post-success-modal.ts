@@ -3,7 +3,6 @@ import { type Post, useBrowsePosts } from '@tryghost/admin-x-framework/api/posts
 import { formatNumber } from '@tryghost/shade/utils';
 import { useEffect, useMemo, useState } from 'react';
 import { useAnalyticsData } from '@/shared/analytics/use-analytics-data';
-import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 
 interface PublishedPostData {
   id: string;
@@ -22,7 +21,6 @@ export const usePostSuccessModal = () => {
   const [publishedPostData, setPublishedPostData] = useState<PublishedPostData | null>(null);
   const [postCount, setPostCount] = useState<number | null>(null);
   const { site } = useAnalyticsData();
-  const improveSendingUI = useFeatureFlag('improveSendingUI');
 
   // Fetch the published post data if we have it
   const { data: postResponse } = useBrowsePosts({
@@ -71,7 +69,7 @@ export const usePostSuccessModal = () => {
     }
 
     const showPostCount = !!postCount;
-    const isEmailStillSending = improveSendingUI && post.email?.status !== 'submitted';
+    const isEmailStillSending = post.email?.status !== 'submitted';
 
     // Build description with React elements to match Ember modal format with bold text
     const getDescription = () => {
@@ -160,7 +158,7 @@ export const usePostSuccessModal = () => {
       author: getAuthorsText(post.authors),
       onClose: handleClose,
     };
-  }, [post, isModalOpen, postCount, site?.title, site?.icon, improveSendingUI]);
+  }, [post, isModalOpen, postCount, site?.title, site?.icon]);
 
   useEffect(() => {
     const checkForPublishedPost = () => {

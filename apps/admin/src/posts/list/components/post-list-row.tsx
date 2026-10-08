@@ -59,7 +59,6 @@ interface PostListRowProps extends Omit<ComponentPropsWithoutRef<'li'>, 'onClick
   metricsSettings: PostMetricsSettings;
   visitorCounts?: Record<string, number>;
   memberCounts?: Record<string, { free: number; paid: number }>;
-  improveSendingUI?: boolean;
 }
 
 interface PostListRowComponentProps extends PostListRowProps {
@@ -145,7 +144,6 @@ const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowComponentProps
       metricsSettings,
       visitorCounts,
       memberCounts,
-      improveSendingUI: _improveSendingUI,
       emailSendingState,
       // Everything else lands on the <li>: the context menu wraps each row with
       // `asChild`, so Radix hands its trigger props and ref straight through.
@@ -367,7 +365,7 @@ const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowComponentProps
 
 const PostListRowWithEmailStatus = forwardRef<HTMLLIElement, PostListRowProps>(
   function PostListRowWithEmailStatus(props, ref) {
-    if (hasInProgressEmail(props.post, props.resource, props.improveSendingUI ?? false)) {
+    if (hasInProgressEmail(props.post, props.resource)) {
       return (
         <PostListRowEmailStatus post={props.post}>
           {(emailSendingState) => (

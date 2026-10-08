@@ -255,10 +255,6 @@ function PublishActions({
     defaultErrorHandler: false,
     requestOptions: EDITOR_REQUEST_OPTIONS,
   });
-  const improveSendingUI = useFeatureFlag('improveSendingUI', {
-    defaultErrorHandler: false,
-    requestOptions: EDITOR_REQUEST_OPTIONS,
-  });
   // A refetch of any input must not unmount an open flow, so readiness latches once.
   const [everReady, setEverReady] = useState(false);
   const [openedFromPreview, setOpenedFromPreview] = useState(false);
@@ -409,7 +405,6 @@ function PublishActions({
         <PublishFlowModal
           animate={!openedFromPreview}
           dispatch={session.dispatchPublish}
-          improveSendingUI={improveSendingUI}
           limits={limits}
           paywallImprovements={paywallImprovements}
           post={post}

@@ -32,10 +32,6 @@ const confirmation = vi.hoisted(() => ({
 vi.mock('./email-confirmation', async (importOriginal) => ({
   ...(await importOriginal<typeof import('./email-confirmation')>()),
   createEmailConfirmation: () => ({
-    confirm: () =>
-      new Promise<EmailConfirmationOutcome>((resolve) => {
-        confirmation.settle = resolve;
-      }),
     retryAndConfirm: () =>
       new Promise<EmailConfirmationOutcome>((resolve) => {
         confirmation.settle = resolve;
@@ -246,66 +242,65 @@ describe('a schedule that passes before it is confirmed', () => {
   });
 });
 
-describe('post reads after an emailed publish', () => {
-  /** Publishes and emails, leaving the flow waiting on its email confirmation. */
-  async function publishAndEmail() {
+describe('post reads after a retried send', () => {
+  /** Retries a failed send, leaving the flow waiting on its email confirmation. */
+  async function retryFailedSend() {
     const client = new QueryClient();
     const invalidateQueries = vi.spyOn(client, 'invalidateQueries');
     const inputs = options();
+    inputs.post = {
+      ...inputs.post,
+      status: 'published',
+      email: {
+        id: 'email-1',
+        status: 'failed',
+        error: 'The email service was unavailable.',
+        email_count: 20,
+        opened_count: 0,
+      },
+    };
     const { result } = renderHook(() => usePublishFlow(inputs), {
       wrapper: ({ children }: { children: ReactNode }) =>
         createElement(QueryClientProvider, { client }, children),
     });
     await waitFor(() => expect(result.current.limitsChecked).toBe(true));
-    expect(result.current.state.willEmailImmediately).toBe(true);
 
-    act(() => result.current.toConfirm());
-    let publishing: Promise<void> = Promise.resolve();
+    let retrying: Promise<void> = Promise.resolve();
     act(() => {
-      publishing = result.current.confirmPublish();
+      retrying = result.current.retryEmail();
     });
     await waitFor(() => expect(confirmation.settle).toBeDefined());
 
-    return { result, invalidateQueries, publishing };
+    return { result, invalidateQueries, retrying };
   }
 
-  it('refreshes them once the send is confirmed', async () => {
-    const { invalidateQueries, publishing } = await publishAndEmail();
+  it.each([
+    ['submitted', { kind: 'submitted' }],
+    ['failed again', { kind: 'failed', error: null, partial: false }],
+  ] as const)('refreshes them once the send has %s', async (_case, outcome) => {
+    const { invalidateQueries, retrying } = await retryFailedSend();
 
     await act(async () => {
-      confirmation.settle?.({ kind: 'submitted' });
-      await publishing;
+      confirmation.settle?.(outcome);
+      await retrying;
     });
 
-    expect(invalidateQueries).toHaveBeenCalledWith({ queryKey: ['PostsResponseType'] });
-  });
-
-  it.each([null, ''])('keeps a failed send recoverable with error %j', async (error) => {
-    const { result, invalidateQueries, publishing } = await publishAndEmail();
-
-    await act(async () => {
-      confirmation.settle?.({ kind: 'failed', error, partial: false });
-      await publishing;
-    });
-
-    expect(result.current.step).toBe('email-error');
-    expect(result.current.emailErrorMessage).toBe('Unknown error');
     expect(invalidateQueries).toHaveBeenCalledWith({ queryKey: ['PostsResponseType'] });
   });
 
   it('leaves them alone when the flow is closed before the send is confirmed', async () => {
-    const { result, invalidateQueries, publishing } = await publishAndEmail();
+    const { result, invalidateQueries, retrying } = await retryFailedSend();
 
     await act(async () => {
       result.current.cancel();
-      await publishing;
+      await retrying;
     });
 
     expect(invalidateQueries).not.toHaveBeenCalled();
   });
 });
 
-describe('sends under improveSendingUI', () => {
+describe('sends', () => {
   const FAILED_EMAIL = {
     id: 'email-1',
     status: 'failed' as const,
@@ -320,7 +315,6 @@ describe('sends under improveSendingUI', () => {
 
   /** Confirms a send on fake timers, so its save and hand-off can be stepped through. */
   async function confirmSend(inputs: PublishFlowOptions, publishType?: 'send') {
-    inputs.improveSendingUI = true;
     inputs.onCompleted = vi.fn();
     const { result, unmount } = renderHook(() => usePublishFlow(inputs), { wrapper });
     await waitFor(() => expect(result.current.limitsChecked).toBe(true));
@@ -383,7 +377,7 @@ describe('sends under improveSendingUI', () => {
       hasEmail: true,
     });
     await act(() => publishing);
-    // The hold replaces the poll rather than running alongside it.
+    // Nothing waits on the send itself; post analytics reports its progress.
     expect(confirmation.settle).toBeUndefined();
     expect(result.current.step).toBe('complete');
     expect(result.current.emailNote).toBeNull();
@@ -418,7 +412,6 @@ describe('sends under improveSendingUI', () => {
   it('still waits on the email when a failed send is retried', async () => {
     const inputs = options();
     inputs.post = { ...inputs.post, status: 'published', email: FAILED_EMAIL };
-    inputs.improveSendingUI = true;
     inputs.onCompleted = vi.fn();
     const { result } = renderHook(() => usePublishFlow(inputs), { wrapper });
     await waitFor(() => expect(result.current.limitsChecked).toBe(true));

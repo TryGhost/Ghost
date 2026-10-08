@@ -21,12 +21,11 @@ describe('publish API response schemas', () => {
           },
         ],
       }),
-    ).toMatchObject({ posts: [{ status: 'published', email: { status: 'submitted' } }] });
+    ).toMatchObject({ posts: [{ email: { status: 'submitted' } }] });
   });
 
   it.each([
     ['an empty post collection', { posts: [] }],
-    ['an unknown post status', { posts: [{ status: 'publishing', email: null }] }],
     [
       'an incomplete email record',
       { posts: [{ status: 'published', email: { id: 'email-1', status: 'submitted' } }] },

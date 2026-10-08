@@ -98,7 +98,7 @@ Core represents the special segments as `all` and `none`. Inputs and explicit se
 - the type is not `publish`, a recipient filter is set, the post is still a draft, and it has no email record; or
 - the post is a draft whose email record failed. A failed send is retried regardless of the selected type or filter.
 
-`willEmailImmediately` is `willEmail` on an unscheduled post — the flow's confirmation copy and any post-save email polling hang off it.
+`willEmailImmediately` is `willEmail` on an unscheduled post — the flow's confirmation copy and the post-save hand-off to analytics hang off it.
 
 ## Scheduling
 
@@ -160,12 +160,12 @@ The flow opens at its email-failure step for a published or sent post whose emai
 
 The flow is a four-way branch, taken in this order:
 
-| Condition                                | Step                         |
-| ---------------------------------------- | ---------------------------- |
-| An email failed, at open or after saving | `CompleteWithEmailErrorStep` |
-| The publish landed                       | `CompleteStep`               |
-| The user asked for the final review      | `ConfirmStep`                |
-| Otherwise                                | `OptionsStep`                |
+| Condition                              | Step                         |
+| -------------------------------------- | ---------------------------- |
+| An email failed, at open or on a retry | `CompleteWithEmailErrorStep` |
+| The publish landed                     | `CompleteStep`               |
+| The user asked for the final review    | `ConfirmStep`                |
+| Otherwise                              | `OptionsStep`                |
 
 `OptionsStep` is an accordion of the three settings — publish type, email recipients, publish time — with at most one section open, plus the read-only row describing a send the post already had, which is hidden while the site has newsletters or members turned off. While `willEmail` holds, the publish type row carries the email size warning when the post's email is estimated at 100kB or more; the estimate is the editor's, described in [the editor README](../README.md#email-size). Its continue button waits for `checkLimits()`, since a block landing late demotes the publish type and the user must not carry a stale choice into the review. `ConfirmStep` captures the publish intent on entry, so the copy on the button and in the sentence cannot change while the save is in flight. `CompleteStep` shows the post as a bookmark card and, for a schedule, offers the revert.
 
@@ -179,7 +179,7 @@ Confirming runs `onBeforePublish` (the editor's pre-save cleanup), dispatches th
 
 | Completion              | Result                                                             |
 | ----------------------- | ------------------------------------------------------------------ |
-| `saved`                 | Confirms the email of an immediate send, unless `improveSendingUI` |
+| `saved`                 | Completes, after the hand-off hold for an immediate send           |
 | `needs-retry`           | Back to confirm, told the session is back; the user confirms again |
 | `failed` (`conflict`)   | The collision message, in place                                    |
 | `failed` (`host-limit`) | The host's message, with the upgrade phrase rendered as a link     |
@@ -190,25 +190,23 @@ A schedule is checked against the clock twice, since the chosen time can pass wh
 
 No completion closes the modal or navigates. Successful completion writes the celebration handoff (`ghost-last-published-post` or `ghost-last-scheduled-post`), and calls `onCompleted` so the caller can navigate; where the user lands is the caller's decision, not this component's. The editor sets `showCompletion={false}` to keep the current step pending until navigation unmounts it, avoiding a flash of the fallback completion screen while the destination loads. Other callers show the completion screen by default.
 
+## Sending
+
+A publish that emails immediately is not done when the save acknowledges: the email is submitted asynchronously, which takes minutes on a large site. The flow does not wait for it. `useMinimumDuration` keeps the confirm button in its running state for at least `MIN_EMAIL_HANDOFF_LENGTH` (1.5 seconds) from the click, so the hand-off to analytics is not instant: once the save is acknowledged the flow holds for whatever remains, and a slower save hands off as soon as it lands. A torn-down flow releases the hold and completes nothing. The caller is told the post has an email, so it can route to post analytics, which reports the send's progress and any failure.
+
 ## Email confirmation
 
-A publish that emails immediately is not done when the save acknowledges: the email is submitted asynchronously. The flow hands the post to `createEmailConfirmation()` and waits, and the confirm button stays in its running state throughout — the publish is not finished, and a button reading "Published & sent" would invite a second dispatch.
+Retrying a failed send from the email-error step hands the retry to `createEmailConfirmation()` and waits for the email to be submitted, and the retry button stays in its running state throughout.
 
-A `failed` outcome moves to the email-error step with the message the API stored. A `cancelled` one completes nothing: cancellation only happens when the flow is being torn down, so treating it as success would write the celebration handoff and tell the caller to navigate after the user had already closed the modal. Every other outcome completes the flow — a timeout, an unpublish, or no email at all are all "nothing left to wait for" — with `not-needed` reporting no email, so the caller does not route to analytics for a send that never happened.
+A `failed` outcome stays on the email-error step with the message the API stored. A `cancelled` one completes nothing: cancellation only happens when the flow is being torn down, so treating it as success would write the celebration handoff and tell the caller to navigate after the user had already closed the modal. Every other outcome completes the flow — a timeout or no email at all are both "nothing left to wait for" — with a note when the send was not confirmed, and with `not-needed` reporting no email, so the caller does not route to analytics for a send that never happened. Closing the flow cancels the poll and marks every pending pre-save, save and retry continuation as abandoned, so none can complete the post journey after the caller closes it.
 
-A reload that throws — a transport failure, or the 401 the redirect opt-out below turns into a rejection — completes the flow with a note instead. The post is published by that point and only the email's fate is unknown, so the alternatives are both wrong: claiming the email failed would invent a fact, and leaving the button running would strand the user on a disabled control for a publish that already succeeded.
-
-The email's id is only knowable from a reload, so the poller's reload records it for the retry. For the same reason the flow polls rather than short-circuiting on a known email: the acknowledged save result carries no email, and the pre-save one would resolve the confirmation to "not needed" immediately. Closing the flow cancels the poll and marks every pending pre-save, save, confirmation and retry continuation as abandoned, so none can complete the post journey after the caller closes it.
-
-The poller reads the post around the query cache, so the cached post reads never see what it found. Once a confirmation settles with any outcome but `cancelled`, after a publish or a retry, the flow invalidates the post reads so whatever is drawn from them catches up with the send. A reload that throws leaves them alone, since a refetch would most likely fail the same way.
-
-With the `improveSendingUI` flag on, a publish that emails immediately does not poll. `useMinimumDuration` keeps its running state for at least `MIN_EMAIL_HANDOFF_LENGTH` (1.5 seconds) from the click, so the hand-off to analytics is not instant: once the save is acknowledged the flow holds for whatever remains, and a slower save hands off as soon as it lands. A torn-down flow releases the hold and completes nothing. Without a poll, that publish never moves to the email-error step and the flow invalidates no post reads after it; the caller is told the post has an email, so it can route to post analytics, which reports the send's progress and any failure. Retrying a failed send from the email-error step still waits on the confirmation with the flag on.
+The poller reads the post around the query cache, so the cached post reads never see what it found. Once a confirmation settles with any outcome but `cancelled`, the flow invalidates the post reads so whatever is drawn from them catches up with the send.
 
 ## Requests
 
-Every request the flow makes passes the editor's shared request options, which opt out of the transport's session-expiry redirect: the two it issues directly (the poller's reload and the published-post count), the settings, config, newsletter, tier, label and recipient-count reads behind its hooks, the member and email counts the limit ports read through the limiter, and the email retry, which carries the same flag on its mutation payload. An expired session is left to surface where the user is — as an uncounted audience, a note on the complete step, or an error on the email-error step.
+Every request the flow makes passes the editor's shared request options, which opt out of the transport's session-expiry redirect: the two it issues directly (the retry poller's reload and the published-post count), the settings, config, newsletter, tier, label and recipient-count reads behind its hooks, the member and email counts the limit ports read through the limiter, and the email retry, which carries the same flag on its mutation payload. An expired session is left to surface where the user is — as an uncounted audience or an error on the email-error step.
 
-The poller is the most important case: it fires once a second immediately after a save, over an editor that may still hold unsaved work, so a single 401 must not navigate away and lose it.
+The retry poller is the most important case: it fires once a second over an editor that may still hold unsaved work, so a single 401 must not navigate away and lose it.
 
 Flow-owned queries also disable the global error handler. `usePublishInputs()` returns its query or validation error plus a retry callback instead of leaving callers with an unexplained permanent loading state.
 
