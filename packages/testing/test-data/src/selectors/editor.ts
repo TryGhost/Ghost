@@ -132,7 +132,6 @@ export const publishConfirmError = 'publish-confirm-error';
 export const publishLimitsError = 'publish-limits-error';
 export const publishBackToSettings = 'publish-back-to-settings';
 export const publishCompleteBookmark = 'publish-complete-bookmark';
-export const publishCompleteNote = 'publish-complete-note';
 export const publishBackToDashboard = 'publish-back-to-dashboard';
 export const publishRevertToDraft = 'publish-revert-to-draft';
 export const publishEmailErrorStep = 'publish-email-error-step';

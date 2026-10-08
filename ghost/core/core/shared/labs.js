@@ -55,7 +55,6 @@ const PRIVATE_FEATURES = [
   'csvContentImporter',
   'admin7settings',
   'emailUniqueid',
-  'improveSendingUI',
   'themeTranslation',
   'pictureImageFormats',
   'getHelperDeduplication',

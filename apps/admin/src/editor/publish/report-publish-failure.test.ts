@@ -34,9 +34,9 @@ describe('reportPublishFailure', () => {
   });
 
   it('reports an outcome without an exception as a message', () => {
-    reportPublishFailure('email-unconfirmed', 'Could not confirm');
+    reportPublishFailure('no-command', 'No longer publishable');
 
-    expect(reportEditorNotice).toHaveBeenCalledWith('Could not confirm', expect.anything());
+    expect(reportEditorNotice).toHaveBeenCalledWith('No longer publishable', expect.anything());
   });
 
   // The same rule `reportSaveFailure` leaves saves out by.

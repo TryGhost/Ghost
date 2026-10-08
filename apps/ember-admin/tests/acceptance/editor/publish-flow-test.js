@@ -794,9 +794,7 @@ describe('Acceptance: Publish flow', function () {
 
         it('handles server error when confirming');
 
-        it('uses the analytics sending flow when improved sending UI is enabled', async function () {
-            enableLabsFlag(this.server, 'improveSendingUI');
-
+        it('hands a send off to post analytics', async function () {
             await loginAsRole('Administrator', this.server);
             const post = this.server.create('post', {status: 'draft'});
             const email = this.server.create('email', {status: 'pending'});
@@ -814,39 +812,41 @@ describe('Acceptance: Publish flow', function () {
 
             await waitUntil(() => currentURL() === `/posts/analytics/${post.id}`);
             expect(find('[data-test-modal="publish-flow"]'), 'publish flow closed after save').not.to.exist;
-            expect(email.status, 'legacy poll did not reload the failed email').to.equal('pending');
+        });
+
+        // The flow opens on its email error when the post's send has already failed
+        async function openFailedSend(server, error = 'Mailgun rejected the batch.') {
+            await loginAsRole('Administrator', server);
+            const email = server.create('email', {status: 'failed', error});
+            const post = server.create('post', {status: 'published', email});
+
+            await visit(`/editor/post/${post.id}`);
+            await click('.gh-retry-trigger');
+            await waitFor('.gh-publish-title .red');
+
+            return {post, email};
+        }
+
+        it('shows the failed send when the flow opens', async function () {
+            await openFailedSend(this.server);
+
+            expect(find('.gh-publish-confirmation'), 'email error')
+                .to.contain.trimmed.text('Mailgun rejected the batch.');
         });
 
         for (const retryable of [true, false, undefined]) {
-            it(`uses API retry eligibility ${retryable} in the legacy failure flow`, async function () {
-                await loginAsRole('Administrator', this.server);
-                const post = this.server.create('post', {status: 'draft'});
-                const email = this.server.create('email', {status: 'pending'});
-                this.server.put('/posts/:id/', function ({posts}, {params}) {
-                    return posts.find(params.id).update({status: 'published', email});
-                });
-                this.server.get('/posts/:id/', function ({posts}, {params}) {
-                    const savedPost = posts.find(params.id);
-                    if (savedPost.status === 'published') {
-                        email.update({status: 'failed', error: 'Mailgun rejected the batch.'});
-                    }
-                    return savedPost;
-                });
+            it(`uses API retry eligibility ${retryable}`, async function () {
                 let statusReads = 0;
-                this.server.get('/emails/:id/status/', () => {
+                this.server.get('/emails/:id/status/', (schema, {params}) => {
                     statusReads += 1;
-                    return {email_statuses: [{id: email.id, sending: {
+                    return {email_statuses: [{id: params.id, sending: {
                         status: 'failed', failed_during: 'submitting',
                         progress: {completed: 0, total: 7, estimated_seconds_remaining: null},
                         ...(retryable === undefined ? {} : {retryable})
                     }}]};
                 });
 
-                await visit(`/editor/post/${post.id}`);
-                await click('[data-test-button="publish-flow"]');
-                await click('[data-test-button="continue"]');
-                await click('[data-test-button="confirm-publish"]');
-                await waitFor('.gh-publish-title .red');
+                await openFailedSend(this.server);
                 await waitUntil(() => statusReads > 0);
                 if (retryable === true) {
                     await waitFor('.gh-publish-cta button');
@@ -858,35 +858,19 @@ describe('Acceptance: Publish flow', function () {
         }
 
         it('lets a failed retry eligibility read be checked again without reopening', async function () {
-            await loginAsRole('Administrator', this.server);
-            const post = this.server.create('post', {status: 'draft'});
-            const email = this.server.create('email', {status: 'pending'});
-            this.server.put('/posts/:id/', function ({posts}, {params}) {
-                return posts.find(params.id).update({status: 'published', email});
-            });
-            this.server.get('/posts/:id/', function ({posts}, {params}) {
-                const savedPost = posts.find(params.id);
-                if (savedPost.status === 'published') {
-                    email.update({status: 'failed', error: 'Mailgun rejected the batch.'});
-                }
-                return savedPost;
-            });
             let statusReads = 0;
-            this.server.get('/emails/:id/status/', () => {
+            this.server.get('/emails/:id/status/', (schema, {params}) => {
                 statusReads += 1;
                 if (statusReads === 1) {
                     return new Response(503, {}, {errors: [{message: 'Temporarily unavailable'}]});
                 }
-                return {email_statuses: [{id: email.id, sending: {
+                return {email_statuses: [{id: params.id, sending: {
                     status: 'failed', failed_during: 'submitting', retryable: true,
                     progress: {completed: 0, total: 7, estimated_seconds_remaining: null}
                 }}]};
             });
 
-            await visit(`/editor/post/${post.id}`);
-            await click('[data-test-button="publish-flow"]');
-            await click('[data-test-button="continue"]');
-            await click('[data-test-button="confirm-publish"]');
+            await openFailedSend(this.server);
             await waitFor('[data-test-retry-eligibility-error]');
             expect(find('.gh-publish-cta button')).not.to.exist;
             await click('[data-test-check-retry-eligibility]');
@@ -895,24 +879,52 @@ describe('Acceptance: Publish flow', function () {
             expect(statusReads).to.equal(2);
         });
 
+        it('offers to send the remaining emails of a partially sent newsletter', async function () {
+            this.server.get('/emails/:id/status/', (schema, {params}) => {
+                return {email_statuses: [{id: params.id, sending: {
+                    status: 'failed', failed_during: 'submitting', retryable: true,
+                    progress: {completed: 3, total: 7, estimated_seconds_remaining: null}
+                }}]};
+            });
+
+            await openFailedSend(this.server, 'An error occurred, and your newsletter was only partially sent.');
+            await waitFor('.gh-publish-cta button');
+
+            expect(find('.gh-publish-cta button')).to.have.trimmed.text('Send remaining emails');
+        });
+
+        it('hands a retried send off to post analytics', async function () {
+            this.server.get('/emails/:id/status/', (schema, {params}) => {
+                return {email_statuses: [{id: params.id, sending: {
+                    status: 'failed', failed_during: 'submitting', retryable: true,
+                    progress: {completed: 0, total: 7, estimated_seconds_remaining: null}
+                }}]};
+            });
+            let retries = 0;
+            this.server.put('/emails/:id/retry/', ({emails}, {params}) => {
+                retries += 1;
+                return emails.find(params.id).update({status: 'pending'});
+            });
+            let emailReads = 0;
+            this.server.get('/emails/:id/', ({emails}, {params}) => {
+                emailReads += 1;
+                return emails.find(params.id);
+            });
+
+            const {post} = await openFailedSend(this.server);
+            await waitFor('.gh-publish-cta button');
+            await click('.gh-publish-cta button');
+
+            await waitUntil(() => currentURL() === `/posts/analytics/${post.id}`);
+            expect(retries, 'retry requests').to.equal(1);
+            expect(emailReads, 'email reloads').to.equal(0);
+        });
+
         for (const retryableAfterRejection of [false, true]) {
             it(`refreshes API retry eligibility to ${retryableAfterRejection} when the retry is rejected`, async function () {
-                await loginAsRole('Administrator', this.server);
-                const post = this.server.create('post', {status: 'draft'});
-                const email = this.server.create('email', {status: 'pending'});
-                this.server.put('/posts/:id/', function ({posts}, {params}) {
-                    return posts.find(params.id).update({status: 'published', email});
-                });
-                this.server.get('/posts/:id/', function ({posts}, {params}) {
-                    const savedPost = posts.find(params.id);
-                    if (savedPost.status === 'published') {
-                        email.update({status: 'failed', error: 'Mailgun rejected the batch.'});
-                    }
-                    return savedPost;
-                });
                 let retryable = true;
-                this.server.get('/emails/:id/status/', () => {
-                    return {email_statuses: [{id: email.id, sending: {
+                this.server.get('/emails/:id/status/', (schema, {params}) => {
+                    return {email_statuses: [{id: params.id, sending: {
                         status: 'failed', failed_during: 'submitting', retryable,
                         progress: {completed: 0, total: 7, estimated_seconds_remaining: null}
                     }}]};
@@ -922,10 +934,7 @@ describe('Acceptance: Publish flow', function () {
                     return new Response(400, {}, {errors: [{type: 'BadRequestError', message: 'Retry was rejected'}]});
                 });
 
-                await visit(`/editor/post/${post.id}`);
-                await click('[data-test-button="publish-flow"]');
-                await click('[data-test-button="continue"]');
-                await click('[data-test-button="confirm-publish"]');
+                await openFailedSend(this.server);
                 await waitFor('.gh-publish-cta button');
                 await click('.gh-publish-cta button');
 
@@ -939,38 +948,6 @@ describe('Acceptance: Publish flow', function () {
                 }
             });
         }
-
-        it('preserves the legacy email failure flow when improved sending UI is disabled', async function () {
-            await loginAsRole('Administrator', this.server);
-            const post = this.server.create('post', {status: 'draft'});
-            const email = this.server.create('email', {status: 'pending'});
-
-            this.server.put('/posts/:id/', function ({posts}, {params}) {
-                return posts.find(params.id).update({
-                    status: 'published',
-                    email
-                });
-            });
-            this.server.get('/posts/:id/', function ({posts}, {params}) {
-                const savedPost = posts.find(params.id);
-                if (savedPost.status === 'published') {
-                    email.update({
-                        status: 'failed',
-                        error: 'Mailgun rejected the batch.'
-                    });
-                }
-                return savedPost;
-            });
-
-            await visit(`/editor/post/${post.id}`);
-            await click('[data-test-button="publish-flow"]');
-            await click('[data-test-button="continue"]');
-            await click('[data-test-button="confirm-publish"]');
-
-            await waitFor('.gh-publish-title .red');
-            expect(find('.gh-publish-confirmation'), 'email error')
-                .to.contain.trimmed.text('Mailgun rejected the batch.');
-        });
 
         it('defaults to publish-only when default recipients is "Usually nobody"', async function () {
             // Set default recipients to "Usually nobody" (filter with null filter)

@@ -68,6 +68,21 @@ function draft(overrides: Partial<PublishFlowPost> = {}): PublishFlowPost {
   };
 }
 
+/** A post whose send failed, which opens the flow on its email error. */
+function failedSend(status: 'published' | 'sent' = 'published'): PublishFlowPost {
+  return draft({
+    status,
+    emailOnly: status === 'sent',
+    email: {
+      id: EMAIL_ID,
+      status: 'failed',
+      error: 'Sending failed',
+      email_count: 20,
+      opened_count: 0,
+    },
+  });
+}
+
 function saved(status: PublishFlowPost['status'] = 'published'): SaveCompletion {
   return {
     kind: 'saved',
@@ -93,26 +108,6 @@ function fakePublishedCount(total: number) {
   return fakeAdminEndpoint('GET', /^\/posts\/\?/, {
     posts: [],
     meta: { pagination: { page: 1, limit: 1, pages: 1, total, next: null, prev: null } },
-  });
-}
-
-/** What the email poller reads back after the save. */
-function fakeEmailPolling(...states: Array<{ status: string; error?: string | null }>) {
-  let index = 0;
-
-  return fakeAdminEndpoint('GET', new RegExp(`^/posts/${POST_ID}/\\?`), () => {
-    const email = states[Math.min(index, states.length - 1)];
-    index += 1;
-
-    return {
-      posts: [
-        {
-          id: POST_ID,
-          status: 'published',
-          email: { id: EMAIL_ID, email_count: 20, opened_count: 0, ...email },
-        },
-      ],
-    };
   });
 }
 
@@ -160,7 +155,6 @@ describe('Publish flow', () => {
     localStorage.clear();
     fakeMemberCounts(20);
     fakePublishedCount(41);
-    fakeEmailPolling({ status: 'submitted' });
     fakeAdminEndpoint('GET', `/emails/${EMAIL_ID}/status/`, {
       email_statuses: [
         {
@@ -229,47 +223,20 @@ describe('Publish flow', () => {
     });
   });
 
-  it('holds the confirm button through the email poll so the publish cannot be dispatched twice', async () => {
-    const email = { status: 'pending' };
-    fakeEmailPolling(email);
-    const { dispatch } = await renderPublishFlow();
+  it('holds the confirm button through the hand-off so the publish cannot be dispatched twice', async () => {
+    const { dispatch, onCompleted } = await renderPublishFlow();
 
     await publishScreen.continueButton().click();
     await publishScreen.confirmButton().click();
 
-    await expect
-      .poll(() => publishScreen.confirmButton().element().textContent, { timeout: 2000 })
-      .toContain('Publishing & sending');
-    await expect
-      .poll(() => publishScreen.confirmButton().element().hasAttribute('disabled'), {
-        timeout: 2000,
-      })
-      .toBe(true);
-    expect(dispatch).toHaveBeenCalledTimes(1);
+    // The save has landed, but the send keeps its running state for the hand-off.
+    await expect.poll(() => dispatch.mock.calls.length).toBe(1);
+    await expect.element(publishScreen.confirmButton()).toHaveTextContent('Publishing & sending');
+    await expect.element(publishScreen.confirmButton()).toBeDisabled();
+    expect(onCompleted).not.toHaveBeenCalled();
 
-    // Keep polling pending until the running button has been observed.
-    email.status = 'submitted';
     await expect.element(publishScreen.complete()).toBeInTheDocument();
     expect(dispatch).toHaveBeenCalledTimes(1);
-  });
-
-  it('completes nothing when the flow is torn down mid-poll', async () => {
-    fakeEmailPolling({ status: 'pending' });
-    const { dispatch, onCompleted, unmount } = await renderPublishFlow();
-
-    await publishScreen.continueButton().click();
-    await publishScreen.confirmButton().click();
-    // The save has landed and the poll is running.
-    await expect.poll(() => dispatch.mock.calls.length).toBe(1);
-
-    await unmount();
-
-    // Long enough for two poll ticks to have landed had the run continued.
-    await new Promise<void>((resolve) => {
-      setTimeout(resolve, 2500);
-    });
-    expect(onCompleted).not.toHaveBeenCalled();
-    expect(localStorage.getItem('ghost-last-published-post')).toBeNull();
   });
 
   it('completes nothing when the flow is torn down during the save', async () => {
@@ -577,7 +544,6 @@ describe('Publish flow', () => {
   });
 
   it('sends without publishing when the email-only type is chosen', async () => {
-    fakeEmailPolling({ status: 'submitted' });
     const { dispatch } = await renderPublishFlow();
 
     await publishScreen.setting('publish-type').click();
@@ -1161,74 +1127,6 @@ describe('Publish flow', () => {
     expect(onCompleted).toHaveBeenCalledTimes(1);
   });
 
-  it('completes with a note when the email cannot be confirmed either way', async () => {
-    // The poller's reload fails, the way a 401 does with the redirect opted out.
-    fakeAdminEndpoint(
-      'GET',
-      new RegExp(`^/posts/${POST_ID}/\\?`),
-      { errors: [{ message: 'Authorization failed' }] },
-      { status: 401 },
-    );
-    const { dispatch, onCompleted } = await renderPublishFlow();
-
-    await publishScreen.continueButton().click();
-    await publishScreen.confirmButton().click();
-
-    await expect
-      .element(publishScreen.completeNote())
-      .toHaveTextContent('couldn’t confirm the newsletter was sent');
-    await expect.element(publishScreen.complete()).toHaveTextContent('Boom. It’s out there.');
-    expect(dispatch).toHaveBeenCalledTimes(1);
-    expect(onCompleted).toHaveBeenCalledTimes(1);
-  });
-
-  it('never claims an email-only send landed when it could not be confirmed', async () => {
-    fakeAdminEndpoint(
-      'GET',
-      new RegExp(`^/posts/${POST_ID}/\\?`),
-      { errors: [{ message: 'Authorization failed' }] },
-      { status: 401 },
-    );
-    await renderPublishFlow();
-
-    await publishScreen.setting('publish-type').click();
-    await page.getByLabelText('Email only').click();
-    await publishScreen.continueButton().click();
-    await publishScreen.confirmButton().click();
-
-    await expect
-      .element(publishScreen.completeNote())
-      .toHaveTextContent('couldn’t confirm the newsletter was sent');
-    // Nothing on the step may assert a send, or celebrate one.
-    await expect.element(publishScreen.complete()).toHaveTextContent('Your post has been created');
-    await expect.element(publishScreen.complete()).not.toHaveTextContent('has been sent');
-    await expect.element(publishScreen.complete()).not.toHaveTextContent('was sent to');
-    await expect.element(publishScreen.complete()).not.toHaveTextContent('Boom');
-  });
-
-  it('never claims an email-only send landed when the reload has no email', async () => {
-    fakeAdminEndpoint('GET', new RegExp(`^/posts/${POST_ID}/\\?`), {
-      posts: [{ id: POST_ID, status: 'published', email: null }],
-    });
-    const { onCompleted } = await renderPublishFlow();
-
-    await publishScreen.setting('publish-type').click();
-    await page.getByLabelText('Email only').click();
-    await publishScreen.continueButton().click();
-    await publishScreen.confirmButton().click();
-
-    await expect
-      .element(publishScreen.completeNote())
-      .toHaveTextContent('couldn’t confirm the newsletter was sent');
-    await expect.element(publishScreen.complete()).toHaveTextContent('Your post has been created');
-    await expect.element(publishScreen.complete()).not.toHaveTextContent('email has been sent');
-    expect(onCompleted).toHaveBeenCalledWith({
-      postId: POST_ID,
-      isScheduled: false,
-      hasEmail: false,
-    });
-  });
-
   it('shows a validation failure in place', async () => {
     const dispatch = completesWith(failed('validation', 'Title cannot be longer than 255'));
     await renderPublishFlow({ dispatch });
@@ -1266,31 +1164,25 @@ describe('Publish flow', () => {
       .toHaveTextContent('can no longer be published from here');
   });
 
-  it.each([false, undefined])(
-    'hides retry for API eligibility %s after publishing',
-    async (retryable) => {
-      fakeEmailPolling({ status: 'failed', error: 'Sending failed' });
-      const statusApi = fakeAdminEndpoint('GET', `/emails/${EMAIL_ID}/status/`, {
-        email_statuses: [
-          {
-            id: EMAIL_ID,
-            sending: {
-              status: 'failed',
-              failed_during: 'submitting',
-              progress: { completed: 0, total: 20, estimated_seconds_remaining: null },
-              ...(retryable === undefined ? {} : { retryable }),
-            },
+  it.each([false, undefined])('hides retry for API eligibility %s', async (retryable) => {
+    const statusApi = fakeAdminEndpoint('GET', `/emails/${EMAIL_ID}/status/`, {
+      email_statuses: [
+        {
+          id: EMAIL_ID,
+          sending: {
+            status: 'failed',
+            failed_during: 'submitting',
+            progress: { completed: 0, total: 20, estimated_seconds_remaining: null },
+            ...(retryable === undefined ? {} : { retryable }),
           },
-        ],
-      });
-      await renderPublishFlow();
-      await publishScreen.continueButton().click();
-      await publishScreen.confirmButton().click();
-      await expect.element(publishScreen.emailError()).toHaveTextContent('Sending failed');
-      await expect.poll(() => statusApi.requests.length).toBe(1);
-      await expect.element(publishScreen.retryEmailButton()).not.toBeInTheDocument();
-    },
-  );
+        },
+      ],
+    });
+    await renderPublishFlow({ post: failedSend() });
+    await expect.element(publishScreen.emailError()).toHaveTextContent('Sending failed');
+    await expect.poll(() => statusApi.requests.length).toBe(1);
+    await expect.element(publishScreen.retryEmailButton()).not.toBeInTheDocument();
+  });
 
   it('says when an existing failed email status cannot be read, and checks it again', async () => {
     let statusAvailable = false;
@@ -1342,23 +1234,52 @@ describe('Publish flow', () => {
     await expect(publishScreen.checkRetryAvailability()).toHaveCount(0);
   });
 
-  it('offers a retry when the email fails after a successful publish', async () => {
-    fakeEmailPolling({ status: 'failed', error: 'Sending failed' }, { status: 'submitted' });
+  it('hands a retried send off without waiting for it to be submitted', async () => {
     const retryApi = fakeAdminEndpoint('PUT', `/emails/${EMAIL_ID}/retry/`, { emails: [] });
-    await renderPublishFlow();
-
-    await publishScreen.continueButton().click();
-    await publishScreen.confirmButton().click();
+    const postReads = fakeAdminEndpoint('GET', new RegExp(`^/posts/${POST_ID}/\\?`), {
+      posts: [],
+    });
+    const { onCompleted } = await renderPublishFlow({ post: failedSend() });
 
     await expect.element(publishScreen.emailError()).toHaveTextContent('Sending failed');
     await publishScreen.retryEmailButton().click();
 
+    // The retry has been accepted, but the button keeps its running state for the hand-off.
+    await expect.poll(() => retryApi.requests.length).toBe(1);
+    await expect.element(publishScreen.retryEmailButton()).toHaveTextContent('Sending');
+    await expect.element(publishScreen.retryEmailButton()).toBeDisabled();
+    expect(onCompleted).not.toHaveBeenCalled();
+
     await expect.element(publishScreen.complete()).toBeInTheDocument();
+    expect(onCompleted).toHaveBeenCalledWith({
+      postId: POST_ID,
+      isScheduled: false,
+      hasEmail: true,
+    });
     expect(retryApi.requests).toHaveLength(1);
+    expect(postReads.requests).toHaveLength(0);
+  });
+
+  it('offers to send the remaining emails of a partially sent newsletter', async () => {
+    await renderPublishFlow({
+      post: draft({
+        status: 'published',
+        email: {
+          id: EMAIL_ID,
+          status: 'failed',
+          error: 'An error occurred, and your newsletter was only partially sent.',
+          email_count: 20,
+          opened_count: 0,
+        },
+      }),
+    });
+
+    await expect
+      .element(publishScreen.retryEmailButton())
+      .toHaveTextContent('Send remaining emails');
   });
 
   it('refreshes retry eligibility when Core rejects the retry', async () => {
-    fakeEmailPolling({ status: 'failed', error: 'Sending failed' });
     let retryable = true;
     fakeAdminEndpoint('GET', `/emails/${EMAIL_ID}/status/`, () => ({
       email_statuses: [
@@ -1379,10 +1300,8 @@ describe('Publish flow', () => {
       { errors: [{ type: 'BadRequestError', message: 'Delivery outcome is unknown' }] },
       { status: 400 },
     );
-    await renderPublishFlow();
+    await renderPublishFlow({ post: failedSend() });
 
-    await publishScreen.continueButton().click();
-    await publishScreen.confirmButton().click();
     await expect.element(publishScreen.retryEmailButton()).toBeInTheDocument();
 
     // Eligibility changed after it was read, so Core rejects the stale retry.
@@ -1398,7 +1317,6 @@ describe('Publish flow', () => {
   });
 
   it('links the upgrade phrase when a host limit refuses the retry', async () => {
-    fakeEmailPolling({ status: 'failed', error: 'Sending failed' });
     fakeAdminEndpoint(
       'PUT',
       `/emails/${EMAIL_ID}/retry/`,
@@ -1412,10 +1330,8 @@ describe('Publish flow', () => {
       },
       { status: 403 },
     );
-    await renderPublishFlow();
+    await renderPublishFlow({ post: failedSend() });
 
-    await publishScreen.continueButton().click();
-    await publishScreen.confirmButton().click();
     await publishScreen.retryEmailButton().click();
 
     await expect
@@ -1426,97 +1342,12 @@ describe('Publish flow', () => {
       .toBeInTheDocument();
   });
 
-  it('holds an unconfirmed send for the writer before handing it to a caller that navigates', async () => {
-    fakeAdminEndpoint(
-      'GET',
-      new RegExp(`^/posts/${POST_ID}/\\?`),
-      { errors: [{ message: 'Authorization failed' }] },
-      { status: 401 },
-    );
-    const { onCompleted } = await renderPublishFlow({ showCompletion: false });
-
-    await publishScreen.continueButton().click();
-    await publishScreen.confirmButton().click();
-
-    await expect
-      .element(publishScreen.completeNote())
-      .toHaveTextContent('couldn’t confirm the newsletter was sent');
-    expect(onCompleted).not.toHaveBeenCalled();
-
-    await publishScreen.completeContinue().click();
-
-    expect(onCompleted).toHaveBeenCalledWith({
-      postId: POST_ID,
-      isScheduled: false,
-      hasEmail: true,
-    });
-  });
-
-  it('hands an unconfirmed send to the caller when the writer closes it with Escape', async () => {
-    fakeAdminEndpoint(
-      'GET',
-      new RegExp(`^/posts/${POST_ID}/\\?`),
-      { errors: [{ message: 'Internal error' }] },
-      { status: 500 },
-    );
-    const onClose = vi.fn();
-    const { onCompleted } = await renderPublishFlow({ showCompletion: false, onClose });
-
-    await publishScreen.continueButton().click();
-    await publishScreen.confirmButton().click();
-    await expect.element(publishScreen.completeNote()).toBeVisible();
-
-    await userEvent.keyboard('{Escape}');
-
-    // The post was published, so closing acknowledges it rather than cancelling the flow.
-    await expect.poll(() => onCompleted.mock.calls.length).toBe(1);
-    expect(onCompleted).toHaveBeenCalledWith({
-      postId: POST_ID,
-      isScheduled: false,
-      hasEmail: true,
-    });
-    expect(localStorage.getItem('ghost-last-published-post')).not.toBeNull();
-    expect(onClose).not.toHaveBeenCalled();
-  });
-
-  it('asks for sign-in when reading back a send finds the session gone, then confirms it', async () => {
-    let expired = true;
-    fakeAdminEndpoint('GET', new RegExp(`^/posts/${POST_ID}/\\?`), () => {
-      if (expired) {
-        return Response.json(SESSION_EXPIRED, { status: 401 });
-      }
-      return {
-        posts: [
-          {
-            id: POST_ID,
-            status: 'published',
-            email: { id: EMAIL_ID, email_count: 20, opened_count: 0, status: 'submitted' },
-          },
-        ],
-      };
-    });
-    const requestReauth = vi.fn(() => {
-      expired = false;
-      return Promise.resolve(true);
-    });
-    const { onCompleted } = await renderPublishFlow({ showCompletion: false, requestReauth });
-
-    await publishScreen.continueButton().click();
-    await publishScreen.confirmButton().click();
-
-    await expect.poll(() => onCompleted.mock.calls.length).toBe(1);
-    expect(requestReauth).toHaveBeenCalledTimes(1);
-    // A confirmed send needs no acknowledgement, so no note was shown.
-    await expect(publishScreen.completeNote()).toHaveCount(0);
-  });
-
   it('keeps the email retry pending during navigation without showing completion', async () => {
-    fakeEmailPolling({ status: 'failed', error: 'Sending failed' }, { status: 'submitted' });
     const retryApi = fakeAdminEndpoint('PUT', `/emails/${EMAIL_ID}/retry/`, { emails: [] });
-    const { onCompleted } = await renderPublishFlow({ showCompletion: false });
-
-    await publishScreen.continueButton().click();
-    await publishScreen.confirmButton().click();
+    const { onCompleted } = await renderPublishFlow({
+      post: failedSend(),
+      showCompletion: false,
+    });
 
     await expect.element(publishScreen.emailError()).toHaveTextContent('Sending failed');
     await publishScreen.retryEmailButton().click();
@@ -1528,16 +1359,12 @@ describe('Publish flow', () => {
     expect(retryApi.requests).toHaveLength(1);
   });
 
-  it('keeps an expired session inside the flow instead of leaving the page', async () => {
+  // The recipient count and the email retry are the flow's own requests,
+  // issued over an editor that may still hold unsaved work: a 401 on either
+  // has to surface here rather than navigate.
+  it('keeps an expired recipient count inside the flow instead of leaving the page', async () => {
     const { pathname } = window.location;
-    // The recipient count and the email retry are the flow's own requests,
-    // issued over an editor that may still hold unsaved work: a 401 on
-    // either has to surface here rather than navigate.
     const countApi = fakeAdminEndpoint('GET', /^\/members\/\?.*filter=/, SESSION_EXPIRED, {
-      status: 401,
-    });
-    fakeEmailPolling({ status: 'failed', error: 'Sending failed' });
-    const retryApi = fakeAdminEndpoint('PUT', `/emails/${EMAIL_ID}/retry/`, SESSION_EXPIRED, {
       status: 401,
     });
     await renderPublishFlow();
@@ -1545,7 +1372,17 @@ describe('Publish flow', () => {
     await expect.element(publishScreen.options()).toBeInTheDocument();
     await expect.poll(() => countApi.requests.length).toBeGreaterThan(0);
     await publishScreen.continueButton().click();
-    await publishScreen.confirmButton().click();
+
+    await expect.element(publishScreen.confirm()).toBeInTheDocument();
+    expect(window.location.pathname).toBe(pathname);
+  });
+
+  it('keeps an expired email retry inside the flow instead of leaving the page', async () => {
+    const { pathname } = window.location;
+    const retryApi = fakeAdminEndpoint('PUT', `/emails/${EMAIL_ID}/retry/`, SESSION_EXPIRED, {
+      status: 401,
+    });
+    await renderPublishFlow({ post: failedSend() });
 
     await expect.element(publishScreen.emailError()).toHaveTextContent('Sending failed');
     await publishScreen.retryEmailButton().click();
@@ -1558,7 +1395,6 @@ describe('Publish flow', () => {
   });
 
   it('asks for sign-in when an email retry finds the session gone, then sends it again', async () => {
-    fakeEmailPolling({ status: 'failed', error: 'Sending failed' }, { status: 'submitted' });
     const expiredRetry = fakeAdminEndpoint('PUT', `/emails/${EMAIL_ID}/retry/`, SESSION_EXPIRED, {
       status: 401,
     });
@@ -1568,10 +1404,8 @@ describe('Publish flow', () => {
       retryAfterSignIn = fakeAdminEndpoint('PUT', `/emails/${EMAIL_ID}/retry/`, { emails: [] });
       return Promise.resolve(true);
     });
-    await renderPublishFlow({ requestReauth });
+    await renderPublishFlow({ post: failedSend(), requestReauth });
 
-    await publishScreen.continueButton().click();
-    await publishScreen.confirmButton().click();
     await expect.element(publishScreen.emailError()).toHaveTextContent('Sending failed');
     await publishScreen.retryEmailButton().click();
 
@@ -1637,6 +1471,15 @@ describe('Publish flow', () => {
   });
 
   it('offers to check again when the failed email has no id', async () => {
+    fakeAdminEndpoint('GET', new RegExp(`^/posts/${POST_ID}/\\?`), {
+      posts: [
+        {
+          id: POST_ID,
+          status: 'published',
+          email: { id: EMAIL_ID, email_count: 0, opened_count: 0, status: 'failed' },
+        },
+      ],
+    });
     await renderPublishFlow({
       post: draft({
         status: 'published',

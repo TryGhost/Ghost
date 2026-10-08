@@ -38,8 +38,6 @@ export interface PublishFlowModalProps {
   tkCount?: number;
   /** The `paywallImprovements` lab; the public-preview gate is off without it. */
   paywallImprovements?: boolean;
-  /** The `improveSendingUI` lab; a publish that emails then completes without confirming the send. */
-  improveSendingUI?: boolean;
   /** The caller supplies the save engine's dispatch. */
   dispatch: PublishDispatcher;
   /** Asks the writer to sign in again; resolves true once they have. */
@@ -70,7 +68,6 @@ function KeyedPublishFlowModal({
   siteTitle,
   tkCount = 0,
   paywallImprovements = false,
-  improveSendingUI,
   dispatch,
   requestReauth,
   onBeforePublish,
@@ -119,7 +116,6 @@ function KeyedPublishFlowModal({
     <PublishFlowDialog
       animate={animate}
       dispatch={dispatch}
-      improveSendingUI={improveSendingUI}
       limits={limits}
       now={now}
       post={post}
@@ -151,7 +147,6 @@ function PublishFlowDialog({
   now,
   timezone,
   siteTitle,
-  improveSendingUI,
   dispatch,
   requestReauth,
   onBeforePublish,
@@ -170,7 +165,6 @@ function PublishFlowDialog({
     dispatch,
     requestReauth,
     showCompletion,
-    improveSendingUI,
     onBeforePublish,
     onCompleted,
   });
@@ -185,14 +179,8 @@ function PublishFlowDialog({
   // While the publish request is in flight, closing would abandon its outcome
   // unseen: a publish that lands would never navigate and one that fails would
   // never say so. The request settles on its own, so close waits for it.
-  // A publish held for the writer to read its unconfirmed email has landed, so any way
-  // out acknowledges it: cancelling would leave the caller never told it completed.
   const close = () => {
     if (flow.publishInFlight) {
-      return;
-    }
-    if (flow.awaitingAcknowledgement) {
-      flow.acknowledgeCompletion();
       return;
     }
     flow.cancel();
@@ -252,13 +240,11 @@ function PublishFlowDialog({
             <CompleteStep
               captured={flow.captured}
               completedAt={flow.completedAt}
-              note={flow.emailNote}
               post={post}
               postCount={flow.postCount}
               siteTitle={siteTitle}
               state={state}
               timezone={timezone}
-              onAcknowledge={flow.awaitingAcknowledgement ? flow.acknowledgeCompletion : undefined}
               onRevertToDraft={onRevertToDraft}
             />
           ) : step === 'confirm' ? (

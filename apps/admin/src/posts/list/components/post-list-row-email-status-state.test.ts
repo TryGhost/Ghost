@@ -24,27 +24,22 @@ describe('hasInProgressEmail', () => {
       hasInProgressEmail(
         post({ email: { id: 'email-1', status, email_count: 0, opened_count: 0 } }),
         'posts',
-        true,
       ),
     ).toBe(true);
   });
 
   it('includes email-only sent posts', () => {
-    expect(hasInProgressEmail(post({ status: 'sent', email_only: true }), 'posts', true)).toBe(
-      true,
-    );
+    expect(hasInProgressEmail(post({ status: 'sent', email_only: true }), 'posts')).toBe(true);
   });
 
   it.each([
-    ['feature disabled', post(), 'posts', false],
-    ['page', post(), 'pages', true],
-    ['draft', post({ status: 'draft' }), 'posts', true],
-    ['scheduled', post({ status: 'scheduled' }), 'posts', true],
+    ['page', post(), 'pages'],
+    ['draft', post({ status: 'draft' }), 'posts'],
+    ['scheduled', post({ status: 'scheduled' }), 'posts'],
     [
       'missing email ID',
       post({ email: { status: 'submitting', email_count: 0, opened_count: 0 } }),
       'posts',
-      true,
     ],
     [
       'submitted email',
@@ -52,15 +47,13 @@ describe('hasInProgressEmail', () => {
         email: { id: 'email-1', status: 'submitted', email_count: 1000, opened_count: 0 },
       }),
       'posts',
-      true,
     ],
     [
       'failed email',
       post({ email: { id: 'email-1', status: 'failed', email_count: 0, opened_count: 0 } }),
       'posts',
-      true,
     ],
-  ] as const)('excludes a %s', (_label, candidate, resource, enabled) => {
-    expect(hasInProgressEmail(candidate, resource, enabled)).toBe(false);
+  ] as const)('excludes a %s', (_label, candidate, resource) => {
+    expect(hasInProgressEmail(candidate, resource)).toBe(false);
   });
 });

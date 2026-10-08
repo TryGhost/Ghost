@@ -10,8 +10,6 @@ export type PublishFailureKind =
   | 'revert-request'
   | 'retry-eligibility'
   | 'retry-request'
-  | 'email-failed'
-  | 'email-unconfirmed'
   | 'no-command';
 
 /**

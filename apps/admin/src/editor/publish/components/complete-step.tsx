@@ -1,4 +1,4 @@
-import { Banner, Button } from '@tryghost/shade/components';
+import { Button } from '@tryghost/shade/components';
 import { Inline, Stack, Text } from '@tryghost/shade/primitives';
 import { formatNumber, LucideIcon } from '@tryghost/shade/utils';
 import { getRecipientType } from '@tryghost/admin-x-framework/utils/recipient-filter';
@@ -6,7 +6,6 @@ import { useMembersCount } from '@tryghost/admin-x-framework/api/members';
 import { EDITOR_REQUEST_OPTIONS } from '@/editor/request-options';
 import {
   publishBackToDashboard,
-  publishCompleteNote,
   publishFlowComplete,
   publishRevertToDraft,
 } from '@tryghost/test-data/selectors/editor';
@@ -30,25 +29,7 @@ export interface CompleteStepProps {
   postCount: number | null;
   /** When the publish landed, standing in for the publish time the server stamped. */
   completedAt: string | null;
-  /** Shown when the publish landed but something after it could not be confirmed. */
-  note?: string | null;
-  /**
-   * Set when the caller is waiting for the writer to read the note before it
-   * moves on; the step offers Continue in place of its other way out.
-   */
-  onAcknowledge?: () => void;
   onRevertToDraft?: () => void;
-}
-
-function Acknowledge({ onAcknowledge }: { onAcknowledge: () => void }) {
-  return (
-    <Inline>
-      <Button className="px-5" size="lg" onClick={onAcknowledge}>
-        Continue
-        <LucideIcon.ArrowRight />
-      </Button>
-    </Inline>
-  );
 }
 
 function RevertToDraft({ onRevertToDraft }: { onRevertToDraft?: () => void }) {
@@ -82,8 +63,6 @@ export function CompleteStep({
   siteTitle,
   postCount,
   completedAt,
-  note,
-  onAcknowledge,
   onRevertToDraft,
 }: CompleteStepProps) {
   const { count } = useMembersCount(state.fullRecipientFilter, {
@@ -96,16 +75,9 @@ export function CompleteStep({
     : (completedAt ?? post.publishedAt ?? state.scheduledAt);
 
   const deliveryVerb = emailOnly ? 'sent' : captured.willEmail ? 'published and sent' : 'published';
-  // With a note the send is the unknown, so nothing here may claim one landed.
-  const unconfirmed = Boolean(note);
 
   return (
     <Stack data-testid={publishFlowComplete} gap="xl">
-      {note ? (
-        <Banner data-testid={publishCompleteNote} role="status" variant="warning">
-          {note}
-        </Banner>
-      ) : null}
       <Text as="h2" className="text-5xl leading-tighter tracking-tight" weight="bold">
         {captured.isScheduled ? (
           <>
@@ -115,15 +87,9 @@ export function CompleteStep({
           </>
         ) : (
           <>
-            {emailOnly && unconfirmed ? null : (
-              <span className="block text-state-success">Boom. It’s out there. </span>
-            )}
+            <span className="block text-state-success">Boom. It’s out there. </span>
             {emailOnly ? (
-              unconfirmed ? (
-                <>Your {post.displayName} has been created.</>
-              ) : (
-                'Your email has been sent.'
-              )
+              'Your email has been sent.'
             ) : post.displayName === 'post' && postCount ? (
               <>
                 That’s {formatNumber(postCount)} {postCount === 1 ? 'post' : 'posts'} published,
@@ -138,34 +104,29 @@ export function CompleteStep({
 
       {emailOnly ? (
         <Stack gap="xl">
-          {unconfirmed ? null : (
-            <Text className="text-pretty" size="lg">
-              Your post {captured.isScheduled ? 'will be' : 'was'} sent to{' '}
-              <strong>
-                {recipientsConfirmLabel({
-                  recipientType: getRecipientType(state.recipientFilter),
-                  count,
-                })}
-              </strong>
-              {state.onlyDefaultNewsletter ? null : (
-                <>
-                  {' '}
-                  of <strong>{state.newsletter?.name}</strong>
-                </>
-              )}{' '}
-              on {formatSiteDateTime(publishedAt, timezone)}.
-            </Text>
-          )}
+          <Text className="text-pretty" size="lg">
+            Your post {captured.isScheduled ? 'will be' : 'was'} sent to{' '}
+            <strong>
+              {recipientsConfirmLabel({
+                recipientType: getRecipientType(state.recipientFilter),
+                count,
+              })}
+            </strong>
+            {state.onlyDefaultNewsletter ? null : (
+              <>
+                {' '}
+                of <strong>{state.newsletter?.name}</strong>
+              </>
+            )}{' '}
+            on {formatSiteDateTime(publishedAt, timezone)}.
+          </Text>
           {captured.isScheduled ? <RevertToDraft onRevertToDraft={onRevertToDraft} /> : null}
-          {onAcknowledge ? <Acknowledge onAcknowledge={onAcknowledge} /> : null}
         </Stack>
       ) : (
         <Stack gap="xl">
           <PostBookmark post={post} siteTitle={siteTitle} />
           {captured.isScheduled ? (
             <RevertToDraft onRevertToDraft={onRevertToDraft} />
-          ) : onAcknowledge ? (
-            <Acknowledge onAcknowledge={onAcknowledge} />
           ) : (
             <Inline>
               <Button className="px-5" size="lg" variant="secondary" asChild>

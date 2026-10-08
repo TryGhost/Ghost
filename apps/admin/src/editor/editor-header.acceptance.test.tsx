@@ -2018,45 +2018,11 @@ describe('Editor header actions', () => {
     });
   });
 
-  describe('improveSendingUI', () => {
-    const SEND_ERROR = 'Mailgun rejected the batch.';
-    const SENDING_UI_ON = { ...MAILGUN_ON, labs: { ...FLAG_ON.labs, improveSendingUI: true } };
+  describe('sending hand-off', () => {
     const SENDS = [
-      {
-        send: 'a publish that emails',
-        emailOnly: false,
-        status: 'published',
-        failure: 'Your post has been published but the email failed to send.',
-      },
-      {
-        send: 'an email-only send',
-        emailOnly: true,
-        status: 'sent',
-        failure: 'Your post has been created but the email failed to send.',
-      },
+      { send: 'a publish that emails', emailOnly: false },
+      { send: 'an email-only send', emailOnly: true },
     ] as const;
-
-    /**
-     * The flow's email confirmation read, finding the send failed. Registered
-     * after the post's own fake, so it answers that read and no other.
-     */
-    function failSendOnConfirmation(status: 'published' | 'sent') {
-      return fakeAdminEndpoint('GET', new RegExp(`^/posts/${POST_ID}/\\?include=email$`), {
-        posts: [
-          {
-            id: POST_ID,
-            status,
-            email: {
-              id: 'email-1',
-              status: 'failed',
-              error: SEND_ERROR,
-              email_count: 20,
-              opened_count: 0,
-            },
-          },
-        ],
-      });
-    }
 
     async function openConfirmStep(emailOnly: boolean) {
       await expect.element(editorScreen.publishButton()).toBeEnabled();
@@ -2075,12 +2041,11 @@ describe('Editor header actions', () => {
 
     it.each(SENDS)(
       'hands $send to post analytics once its minimum running time ends',
-      async ({ emailOnly, status }) => {
+      async ({ emailOnly }) => {
         publishChrome({ newsletters: 1 });
         const held = deferred<void>();
         fakeSavablePost({}, { holdFirstSave: held.promise });
-        const confirmationApi = failSendOnConfirmation(status);
-        await renderAdminApp(`/editor/post/${POST_ID}`, SENDING_UI_ON);
+        await renderAdminApp(`/editor/post/${POST_ID}`, MAILGUN_ON);
         await openConfirmStep(emailOnly);
 
         // Only the hold's clock is faked, from the click. Polled assertions advance
@@ -2118,43 +2083,13 @@ describe('Editor header actions', () => {
 
         await expect.poll(currentRoute).toBe(`/posts/analytics/${POST_ID}`);
         await expect(editorScreen.root()).toHaveCount(0);
-        expect(confirmationApi.requests).toHaveLength(0);
-      },
-    );
-
-    it.each(SENDS)(
-      'waits on $send without the flag and reports its failure',
-      async ({ emailOnly, status, failure }) => {
-        publishChrome({ newsletters: 1 });
-        fakeSavablePost();
-        failSendOnConfirmation(status);
-        fakeAdminEndpoint('GET', '/emails/email-1/status/', {
-          email_statuses: [
-            {
-              id: 'email-1',
-              sending: {
-                status: 'failed',
-                retryable: true,
-                failed_during: 'submitting',
-                progress: { completed: 0, total: 20, estimated_seconds_remaining: null },
-              },
-            },
-          ],
-        });
-        await renderAdminApp(`/editor/post/${POST_ID}`, MAILGUN_ON);
-
-        await sendThroughFlow(emailOnly);
-
-        await expect.element(publishScreen.emailError()).toHaveTextContent(failure);
-        await expect.element(publishScreen.emailError()).toHaveTextContent(SEND_ERROR);
-        await expect.poll(currentRoute).toBe(`/editor/post/${POST_ID}`);
       },
     );
 
     it('shows the send under way when the writer returns to the editor', async () => {
       publishChrome({ newsletters: 1 });
       fakeSavablePost();
-      await renderAdminApp(`/editor/post/${POST_ID}`, SENDING_UI_ON);
+      await renderAdminApp(`/editor/post/${POST_ID}`, MAILGUN_ON);
 
       await sendThroughFlow(false);
       await expect.poll(currentRoute).toBe(`/posts/analytics/${POST_ID}`);

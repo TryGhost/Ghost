@@ -214,7 +214,7 @@ describe('Post analytics overview', () => {
       };
     });
 
-    await renderAdminApp(`/posts/analytics/${POST_ID}?labs=improveSendingUI`, {
+    await renderAdminApp(`/posts/analytics/${POST_ID}`, {
       boot: webAnalyticsBootOverrides(),
     });
 
@@ -273,7 +273,6 @@ describe('Post analytics overview', () => {
     }));
 
     await renderAdminApp(`/posts/analytics/${POST_ID}`, {
-      labs: { improveSendingUI: true },
       boot: webAnalyticsBootOverrides(),
     });
 
@@ -318,7 +317,6 @@ describe('Post analytics overview', () => {
     });
 
     await renderAdminApp(`/posts/analytics/${POST_ID}`, {
-      labs: { improveSendingUI: true },
       boot: webAnalyticsBootOverrides(),
     });
 
@@ -351,7 +349,6 @@ describe('Post analytics overview', () => {
     });
 
     await renderAdminApp(`/posts/analytics/${POST_ID}`, {
-      labs: { improveSendingUI: true },
       boot: webAnalyticsBootOverrides(),
     });
 
@@ -365,7 +362,6 @@ describe('Post analytics overview', () => {
     seedPostAnalyticsWorld({ email_only: true, status: 'sent' });
 
     await renderAdminApp(`/posts/analytics/${POST_ID}`, {
-      labs: { improveSendingUI: true },
       boot: webAnalyticsBootOverrides(),
     });
 
@@ -418,7 +414,6 @@ describe('Post analytics overview', () => {
     });
 
     await renderAdminApp(`/posts/analytics/${POST_ID}`, {
-      labs: { improveSendingUI: true },
       boot: webAnalyticsBootOverrides(),
     });
 
@@ -462,7 +457,6 @@ describe('Post analytics overview', () => {
       ],
     });
     await renderAdminApp(`/posts/analytics/${POST_ID}`, {
-      labs: { improveSendingUI: true },
       boot: webAnalyticsBootOverrides(),
     });
 
@@ -499,7 +493,6 @@ describe('Post analytics overview', () => {
         ],
       });
       await renderAdminApp(`/posts/analytics/${POST_ID}`, {
-        labs: { improveSendingUI: true },
         boot: webAnalyticsBootOverrides(),
       });
 
@@ -563,7 +556,6 @@ describe('Post analytics overview', () => {
     });
 
     await renderAdminApp(`/posts/analytics/${POST_ID}`, {
-      labs: { improveSendingUI: true },
       boot: webAnalyticsBootOverrides(),
     });
 
@@ -601,7 +593,6 @@ describe('Post analytics overview', () => {
     );
 
     const app = await renderAdminApp(`/posts/analytics/${POST_ID}`, {
-      labs: { improveSendingUI: true },
       boot: webAnalyticsBootOverrides(),
     });
 
@@ -624,7 +615,6 @@ describe('Post analytics overview', () => {
     );
 
     await renderAdminApp(`/posts/analytics/${POST_ID}`, {
-      labs: { improveSendingUI: true },
       boot: webAnalyticsBootOverrides(),
     });
 
@@ -669,7 +659,6 @@ describe('Post analytics overview', () => {
     });
 
     await renderAdminApp(`/posts/analytics/${POST_ID}`, {
-      labs: { improveSendingUI: true },
       boot: webAnalyticsBootOverrides(),
     });
 
@@ -701,12 +690,11 @@ describe('Post analytics overview', () => {
   it('keeps the post context when switching to the web tab', async () => {
     const { kpisApi } = seedPostAnalyticsWorld();
     await renderAdminApp(`/posts/analytics/${POST_ID}`, {
-      labs: { improveSendingUI: false },
       boot: webAnalyticsBootOverrides(),
     });
 
     await expect.element(postAnalyticsScreen.postTitle('Attack of the Clones')).toBeVisible();
-    await expect.element(page.getByText(/^Published and sent on/)).toBeVisible();
+    await expect.element(page.getByText(/^Published and sent to 1,000 members on/)).toBeVisible();
     await expect.element(postAnalyticsScreen.uniqueVisitors()).toHaveTextContent('250');
     const overviewKpiRequestCount = kpisApi.requests.length;
 

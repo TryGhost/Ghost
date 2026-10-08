@@ -8,20 +8,31 @@ import {
   type ErrorResponse,
 } from '@tryghost/admin-x-framework/errors';
 import {
-  EMAIL_UNCONFIRMED,
   MIN_EMAIL_HANDOFF_LENGTH,
   SCHEDULE_PASSED,
   usePublishFlow,
   type PublishFlowOptions,
 } from './use-publish-flow';
-import { EmailRetryRequestError, type EmailConfirmationOutcome } from './email-confirmation';
 import { LimitCheckError, type NewsletterInput } from './publish-options';
 import { reportPublishFailure } from './report-publish-failure';
 import { CompletionFailureError } from './completion-message';
-import { postsDataType } from '@tryghost/admin-x-framework/api/posts';
 import type { SaveCompletion } from '@/editor/engine/save-engine';
 
-const transport = vi.hoisted(() => ({ fetchApi: vi.fn(), retryEmail: vi.fn() }));
+// An email retry request each spec answers itself.
+const retryRequest = vi.hoisted(() => ({
+  accept: undefined as (() => void) | undefined,
+  refuse: undefined as ((error: unknown) => void) | undefined,
+}));
+const transport = vi.hoisted(() => ({
+  fetchApi: vi.fn(),
+  retryEmail: vi.fn(
+    () =>
+      new Promise<void>((resolve, reject) => {
+        retryRequest.accept = resolve;
+        retryRequest.refuse = reject;
+      }),
+  ),
+}));
 const eligibility = vi.hoisted(
   (): { isError: boolean; hasData: boolean; error?: unknown; refetch?: unknown } => ({
     isError: false,
@@ -41,28 +52,6 @@ vi.mock('@tryghost/admin-x-framework/api/emails', () => ({
       : undefined,
   }),
   useRetryEmail: () => ({ mutateAsync: transport.retryEmail }),
-}));
-
-// A confirmation each spec settles itself; tearing the flow down settles it as cancelled.
-const confirmation = vi.hoisted(() => ({
-  settle: undefined as ((outcome: EmailConfirmationOutcome) => void) | undefined,
-  fail: undefined as ((error: unknown) => void) | undefined,
-}));
-vi.mock('./email-confirmation', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('./email-confirmation')>()),
-  createEmailConfirmation: () => ({
-    confirm: () =>
-      new Promise<EmailConfirmationOutcome>((resolve, reject) => {
-        confirmation.settle = resolve;
-        confirmation.fail = reject;
-      }),
-    retryAndConfirm: () =>
-      new Promise<EmailConfirmationOutcome>((resolve, reject) => {
-        confirmation.settle = resolve;
-        confirmation.fail = reject;
-      }),
-    cancel: () => confirmation.settle?.({ kind: 'cancelled' }),
-  }),
 }));
 
 vi.mock('./report-publish-failure', () => ({ reportPublishFailure: vi.fn() }));
@@ -108,10 +97,10 @@ afterEach(() => {
   eligibility.hasData = true;
   eligibility.error = undefined;
   eligibility.refetch = undefined;
-  confirmation.fail = undefined;
+  retryRequest.accept = undefined;
+  retryRequest.refuse = undefined;
   localStorage.clear();
   vi.clearAllMocks();
-  confirmation.settle = undefined;
 });
 
 describe('publish option actions', () => {
@@ -314,81 +303,21 @@ describe('a schedule that passes before it is confirmed', () => {
   });
 });
 
-describe('post reads after an emailed publish', () => {
-  /** Publishes and emails, leaving the flow waiting on its email confirmation. */
-  async function publishAndEmail() {
-    const client = new QueryClient();
-    const invalidateQueries = vi.spyOn(client, 'invalidateQueries');
-    const inputs = options();
-    const { result } = renderHook(() => usePublishFlow(inputs), {
-      wrapper: ({ children }: { children: ReactNode }) =>
-        createElement(QueryClientProvider, { client }, children),
-    });
-    await waitFor(() => expect(result.current.limitsChecked).toBe(true));
-    expect(result.current.state.willEmailImmediately).toBe(true);
+const FAILED_EMAIL = {
+  id: 'email-1',
+  status: 'failed' as const,
+  error: 'The email service was unavailable.',
+  email_count: 20,
+  opened_count: 0,
+};
 
-    act(() => result.current.toConfirm());
-    let publishing: Promise<void> = Promise.resolve();
-    act(() => {
-      publishing = result.current.confirmPublish();
-    });
-    await waitFor(() => expect(confirmation.settle).toBeDefined());
-
-    return { result, invalidateQueries, publishing };
-  }
-
-  it('refreshes them once the send is confirmed', async () => {
-    const { invalidateQueries, publishing } = await publishAndEmail();
-
-    await act(async () => {
-      confirmation.settle?.({ kind: 'submitted' });
-      await publishing;
-    });
-
-    expect(invalidateQueries).toHaveBeenCalledWith({ queryKey: ['PostsResponseType'] });
-  });
-
-  it.each([null, ''])('keeps a failed send recoverable with error %j', async (error) => {
-    const { result, invalidateQueries, publishing } = await publishAndEmail();
-
-    await act(async () => {
-      confirmation.settle?.({ kind: 'failed', error, partial: false });
-      await publishing;
-    });
-
-    expect(result.current.step).toBe('email-error');
-    expect(result.current.emailErrorMessage).toBe('Unknown error');
-    expect(invalidateQueries).toHaveBeenCalledWith({ queryKey: ['PostsResponseType'] });
-  });
-
-  it('leaves them alone when the flow is closed before the send is confirmed', async () => {
-    const { result, invalidateQueries, publishing } = await publishAndEmail();
-
-    await act(async () => {
-      result.current.cancel();
-      await publishing;
-    });
-
-    expect(invalidateQueries).not.toHaveBeenCalled();
-  });
-});
-
-describe('sends under improveSendingUI', () => {
-  const FAILED_EMAIL = {
-    id: 'email-1',
-    status: 'failed' as const,
-    error: 'The email service was unavailable.',
-    email_count: 20,
-    opened_count: 0,
-  };
-
+describe('sends', () => {
   afterEach(() => {
     vi.useRealTimers();
   });
 
   /** Confirms a send on fake timers, so its save and hand-off can be stepped through. */
   async function confirmSend(inputs: PublishFlowOptions, publishType?: 'send') {
-    inputs.improveSendingUI = true;
     inputs.onCompleted = vi.fn();
     const { result, unmount } = renderHook(() => usePublishFlow(inputs), { wrapper });
     await waitFor(() => expect(result.current.limitsChecked).toBe(true));
@@ -451,10 +380,7 @@ describe('sends under improveSendingUI', () => {
       hasEmail: true,
     });
     await act(() => publishing);
-    // The hold replaces the poll rather than running alongside it.
-    expect(confirmation.settle).toBeUndefined();
     expect(result.current.step).toBe('complete');
-    expect(result.current.emailNote).toBeNull();
   });
 
   it('hands a send off as soon as a save slower than the minimum lands', async () => {
@@ -483,47 +409,47 @@ describe('sends under improveSendingUI', () => {
     expect(localStorage.getItem('ghost-last-published-post')).toBeNull();
   });
 
-  it('still waits on the email when a failed send is retried', async () => {
+  it('hands a retried send off once it has run for the minimum length', async () => {
     const inputs = options();
     inputs.post = { ...inputs.post, status: 'published', email: FAILED_EMAIL };
-    inputs.improveSendingUI = true;
     inputs.onCompleted = vi.fn();
+    transport.retryEmail.mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          setTimeout(resolve, 400);
+        }),
+    );
     const { result } = renderHook(() => usePublishFlow(inputs), { wrapper });
     await waitFor(() => expect(result.current.limitsChecked).toBe(true));
 
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout', 'Date'] });
     let retrying: Promise<void> = Promise.resolve();
     act(() => {
       retrying = result.current.retryEmail();
     });
-    await waitFor(() => expect(confirmation.settle).toBeDefined());
-    expect(inputs.onCompleted).not.toHaveBeenCalled();
 
-    await act(async () => {
-      confirmation.settle?.({ kind: 'submitted' });
-      await retrying;
+    await advance(MIN_EMAIL_HANDOFF_LENGTH - 1);
+    expect(transport.retryEmail).toHaveBeenCalledWith({
+      id: 'email-1',
+      sessionExpiryRedirect: false,
     });
+    expect(inputs.onCompleted).not.toHaveBeenCalled();
+    expect(result.current.retryStatus).toBe('running');
+
+    await advance(1);
     expect(inputs.onCompleted).toHaveBeenCalledWith({
       postId: 'post-1',
       isScheduled: false,
       hasEmail: true,
     });
+    await act(() => retrying);
   });
 });
 
 describe('failed newsletter retry', () => {
   it('keeps the last successful eligibility after a background read fails', () => {
     const inputs = options();
-    inputs.post = {
-      ...inputs.post,
-      status: 'published',
-      email: {
-        id: 'email-1',
-        status: 'failed',
-        error: 'Sending failed',
-        email_count: 20,
-        opened_count: 0,
-      },
-    };
+    inputs.post = { ...inputs.post, status: 'published', email: FAILED_EMAIL };
     const { result, rerender } = renderHook(() => usePublishFlow(inputs), { wrapper });
     expect(result.current.canRetryEmail).toBe(true);
     eligibility.isError = true;
@@ -537,45 +463,7 @@ describe('failed newsletter retry', () => {
       expect.anything(),
     );
   });
-  it.each([null, ''])('keeps a failed retry recoverable with error %j', async (error) => {
-    const inputs = options();
-    inputs.post = {
-      ...inputs.post,
-      status: 'published',
-      email: {
-        id: 'email-1',
-        status: 'failed',
-        error: 'The email service was unavailable.',
-        email_count: 20,
-        opened_count: 0,
-      },
-    };
-    const { result } = renderHook(() => usePublishFlow(inputs), { wrapper });
-    await waitFor(() => expect(result.current.limitsChecked).toBe(true));
-
-    let retrying: Promise<void> = Promise.resolve();
-    act(() => {
-      retrying = result.current.retryEmail();
-    });
-
-    await act(async () => {
-      confirmation.settle?.({ kind: 'failed', error, partial: false });
-      await retrying;
-    });
-
-    expect(result.current.step).toBe('email-error');
-    expect(result.current.emailErrorMessage).toBe('Unknown error');
-    expect(result.current.retryStatus).toBe('idle');
-  });
 });
-
-const FAILED_EMAIL = {
-  id: 'email-1',
-  status: 'failed' as const,
-  error: 'The email service was unavailable.',
-  email_count: 20,
-  opened_count: 0,
-};
 
 /** A flow opened on a published post whose send failed, retrying it. */
 async function startRetry(overrides: Partial<PublishFlowOptions> = {}) {
@@ -588,12 +476,12 @@ async function startRetry(overrides: Partial<PublishFlowOptions> = {}) {
   act(() => {
     retrying = result.current.retryEmail();
   });
-  await waitFor(() => expect(confirmation.fail).toBeDefined());
+  await waitFor(() => expect(retryRequest.refuse).toBeDefined());
 
   return { inputs, result, retrying };
 }
 
-describe('a retry Core refuses or cannot answer', () => {
+describe('a retry Core refuses', () => {
   it('shows the reason Core gave, not the transport’s summary', async () => {
     const { result, retrying } = await startRetry();
     const refusal = new JSONError(
@@ -605,10 +493,12 @@ describe('a retry Core refuses or cannot answer', () => {
     );
 
     await act(async () => {
-      confirmation.fail?.(new EmailRetryRequestError(refusal));
+      retryRequest.refuse?.(refusal);
       await retrying;
     });
 
+    expect(result.current.step).toBe('email-error');
+    expect(result.current.emailErrorMessage).toBe('The email service was unavailable.');
     expect(result.current.retryStatus).toBe('failure');
     expect(result.current.retryFailure).toEqual({
       message: 'Cannot retry email because the delivery outcome is unknown',
@@ -618,91 +508,6 @@ describe('a retry Core refuses or cannot answer', () => {
       'Cannot retry email because the delivery outcome is unknown',
       { error: refusal, postId: 'post-1' },
     );
-  });
-
-  it('does not call an accepted retry failed when reading it back fails', async () => {
-    const { inputs, result, retrying } = await startRetry();
-    const readBack = new Error('Network request failed');
-
-    await act(async () => {
-      confirmation.fail?.(readBack);
-      await retrying;
-    });
-
-    expect(result.current.retryFailure).toBeNull();
-    expect(result.current.emailNote).toBe(EMAIL_UNCONFIRMED);
-    expect(result.current.step).toBe('complete');
-    expect(inputs.onCompleted).toHaveBeenCalledWith({
-      postId: 'post-1',
-      isScheduled: false,
-      hasEmail: true,
-    });
-    // The note is reported with what stopped the read-back.
-    expect(reportPublishFailure).toHaveBeenCalledWith('email-unconfirmed', EMAIL_UNCONFIRMED, {
-      error: readBack,
-      postId: 'post-1',
-    });
-  });
-
-  it('refreshes the post reads when an accepted retry cannot be read back', async () => {
-    const queryClient = new QueryClient();
-    const invalidate = vi.spyOn(queryClient, 'invalidateQueries');
-    const inputs = { ...options(), onCompleted: vi.fn() };
-    inputs.post = { ...inputs.post, status: 'published', email: FAILED_EMAIL };
-    const { result } = renderHook(() => usePublishFlow(inputs), {
-      wrapper: ({ children }) =>
-        createElement(QueryClientProvider, { client: queryClient }, children),
-    });
-    await waitFor(() => expect(result.current.limitsChecked).toBe(true));
-
-    let retrying: Promise<void> = Promise.resolve();
-    act(() => {
-      retrying = result.current.retryEmail();
-    });
-    await waitFor(() => expect(confirmation.fail).toBeDefined());
-    await act(async () => {
-      confirmation.fail?.(new Error('Network request failed'));
-      await retrying;
-    });
-
-    expect(invalidate).toHaveBeenCalledWith({ queryKey: [postsDataType] });
-  });
-});
-
-describe('an email the flow could not confirm', () => {
-  it('waits for the writer to read the note when the caller hides completion', async () => {
-    const { inputs, result, retrying } = await startRetry({ showCompletion: false });
-
-    await act(async () => {
-      confirmation.settle?.({ kind: 'timeout' });
-      await retrying;
-    });
-
-    expect(result.current.step).toBe('complete');
-    expect(result.current.emailNote).toBe(EMAIL_UNCONFIRMED);
-    expect(result.current.awaitingAcknowledgement).toBe(true);
-    expect(inputs.onCompleted).not.toHaveBeenCalled();
-    expect(reportPublishFailure).toHaveBeenCalledWith('email-unconfirmed', EMAIL_UNCONFIRMED, {
-      postId: 'post-1',
-    });
-
-    act(() => result.current.acknowledgeCompletion());
-
-    expect(result.current.awaitingAcknowledgement).toBe(false);
-    expect(inputs.onCompleted).toHaveBeenCalledTimes(1);
-    expect(localStorage.getItem('ghost-last-published-post')).not.toBeNull();
-  });
-
-  it('hands a confirmed send straight to the caller that hides completion', async () => {
-    const { inputs, result, retrying } = await startRetry({ showCompletion: false });
-
-    await act(async () => {
-      confirmation.settle?.({ kind: 'submitted' });
-      await retrying;
-    });
-
-    expect(result.current.awaitingAcknowledgement).toBe(false);
-    expect(inputs.onCompleted).toHaveBeenCalledTimes(1);
   });
 });
 
@@ -828,17 +633,18 @@ describe('a session that expires outside the publish save', () => {
   it('sends an email retry again once the writer signs in', async () => {
     const requestReauth = vi.fn().mockResolvedValue(true);
     const { inputs, result, retrying } = await startRetry({ requestReauth });
-    const firstAttempt = confirmation.fail;
+    const firstAttempt = retryRequest.refuse;
 
     act(() => {
-      confirmation.fail?.(new EmailRetryRequestError(expiredSession()));
+      retryRequest.refuse?.(expiredSession());
     });
-    await waitFor(() => expect(confirmation.fail).not.toBe(firstAttempt));
+    await waitFor(() => expect(retryRequest.refuse).not.toBe(firstAttempt));
     expect(requestReauth).toHaveBeenCalledTimes(1);
+    expect(transport.retryEmail).toHaveBeenCalledTimes(2);
     expect(result.current.retryStatus).toBe('running');
 
     await act(async () => {
-      confirmation.settle?.({ kind: 'submitted' });
+      retryRequest.accept?.();
       await retrying;
     });
     expect(result.current.retryFailure).toBeNull();
@@ -854,7 +660,7 @@ describe('a session that expires outside the publish save', () => {
     const { result, retrying } = await startRetry({ requestReauth });
 
     await act(async () => {
-      confirmation.fail?.(new EmailRetryRequestError(expiredSession()));
+      retryRequest.refuse?.(expiredSession());
       await retrying;
     });
 
@@ -886,14 +692,14 @@ describe('a session that expires outside the publish save', () => {
   it('fails an email retry that finds the session gone again straight after a sign-in', async () => {
     const requestReauth = vi.fn().mockResolvedValue(true);
     const { result, retrying } = await startRetry({ requestReauth });
-    const firstAttempt = confirmation.fail;
+    const firstAttempt = retryRequest.refuse;
 
     act(() => {
-      confirmation.fail?.(new EmailRetryRequestError(expiredSession()));
+      retryRequest.refuse?.(expiredSession());
     });
-    await waitFor(() => expect(confirmation.fail).not.toBe(firstAttempt));
+    await waitFor(() => expect(retryRequest.refuse).not.toBe(firstAttempt));
     await act(async () => {
-      confirmation.fail?.(new EmailRetryRequestError(expiredSession()));
+      retryRequest.refuse?.(expiredSession());
       await retrying;
     });
 
@@ -901,49 +707,6 @@ describe('a session that expires outside the publish save', () => {
     expect(result.current.retryStatus).toBe('failure');
     expect(result.current.retryFailure).toEqual({
       message: 'Your session expired. Try again to sign in.',
-    });
-  });
-
-  it('asks for sign-in when reading back an accepted retry finds the session gone', async () => {
-    const requestReauth = vi.fn().mockResolvedValue(true);
-    const { inputs, result, retrying } = await startRetry({ requestReauth });
-    const firstAttempt = confirmation.fail;
-
-    // Core accepted the retry; only the read-back met the expired session.
-    act(() => {
-      confirmation.fail?.(expiredSession());
-    });
-    await waitFor(() => expect(confirmation.fail).not.toBe(firstAttempt));
-    expect(requestReauth).toHaveBeenCalledTimes(1);
-
-    await act(async () => {
-      confirmation.settle?.({ kind: 'submitted' });
-      await retrying;
-    });
-    expect(result.current.emailNote).toBeNull();
-    expect(inputs.onCompleted).toHaveBeenCalledWith({
-      postId: 'post-1',
-      isScheduled: false,
-      hasEmail: true,
-    });
-  });
-
-  it('notes an unconfirmed send without reporting it when sign-in for its read-back is abandoned', async () => {
-    const requestReauth = vi.fn().mockResolvedValue(false);
-    const { result, retrying } = await startRetry({ requestReauth });
-    const expired = expiredSession();
-
-    await act(async () => {
-      confirmation.fail?.(expired);
-      await retrying;
-    });
-
-    expect(requestReauth).toHaveBeenCalledTimes(1);
-    expect(result.current.emailNote).toBe(EMAIL_UNCONFIRMED);
-    // reportPublishFailure leaves out an expired session itself; the flow passes it the cause.
-    expect(reportPublishFailure).toHaveBeenCalledWith('email-unconfirmed', EMAIL_UNCONFIRMED, {
-      error: expired,
-      postId: 'post-1',
     });
   });
 

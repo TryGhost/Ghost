@@ -86,23 +86,21 @@ Retry beside Publish, Unpublish or Unschedule, and for a post whose status line
 offers "Sent" or the retry. A read that found the session gone asks for the
 password in the editor's sign-in dialog first and reads again once the writer
 is back; cancelling it leaves the error, a later background read that fails the
-same way does not ask again, and Retry asks again. After a retry, or a publish that
-emails, a published post's status line reads "Published and sending to N
-members" while the email is on its way and "Published and sent to N members"
-once the flow's email confirmation finds it submitted; an email-only send reads
-"Sent to N members" throughout. With the `improveSendingUI` flag on, a publish
-does not wait for that confirmation, so the status line shows the send as the
-save left it.
+same way does not ask again, and Retry asks again. A published post's status
+line reads "Published and sending to N members" while its email is on its way
+and "Published and sent to N members" once it is submitted; an email-only send
+reads "Sent to N members" throughout. Neither a publish that emails nor a retry
+waits for the send, so the status line shows it as the save or retry left it.
 
 After successful completion, the editor follows the publish flow's celebration
 handoff to the destination screen. Pages return to `/pages`; scheduled posts
 and posts without email return to `/posts`. Immediately published posts with
 email, including email-only sends and posts that were emailed previously, open
-`/posts/analytics/:id`. Failed saves and failed sends keep the flow open so the
-writer can retry. With the flag on, a publish that emails opens analytics once
-it saves, but no sooner than 1.5 seconds after the writer confirms, and a send
-that fails after that is reported there rather than in the flow; retrying a
-failed send from the status line still waits for the email.
+`/posts/analytics/:id`. Failed saves and rejected retries keep the flow open
+so the writer can try again. A publish that emails, or a retry of a failed
+send, opens analytics once Core accepts it, but no sooner than 1.5 seconds
+after the writer confirms; the send's progress, and any failure after that, is
+reported there rather than in the flow.
 
 ## Leaving the editor
 

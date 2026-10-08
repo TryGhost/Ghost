@@ -5,7 +5,6 @@ import {
   publishAlreadySent,
   publishBackToSettings,
   publishConfirm,
-  publishCompleteNote,
   publishConfirmError,
   publishContinue,
   publishEmailSizeWarning,
@@ -49,7 +48,6 @@ export const publishScreen = {
   options: () => page.getByTestId(publishFlowOptions),
   confirm: () => page.getByTestId(publishFlowConfirm),
   complete: () => page.getByTestId(publishFlowComplete),
-  completeNote: () => page.getByTestId(publishCompleteNote),
   emailError: () => page.getByTestId(publishEmailErrorStep),
   /** The collapsed row's toggle button. */
   setting: (name: keyof typeof SETTINGS) => page.getByTestId(SETTINGS[name]).getByRole('button'),
@@ -79,9 +77,6 @@ export const publishScreen = {
     page
       .getByTestId(publishEmailErrorStep)
       .getByRole('button', { name: 'Check retry availability', exact: true }),
-  /** Offered when the flow waits for the writer to read why the send is unconfirmed. */
-  completeContinue: () =>
-    page.getByTestId(publishFlowComplete).getByRole('button', { name: 'Continue', exact: true }),
   revertToDraft: () => page.getByTestId(publishRevertToDraft),
   tkReminder: () => page.getByTestId(tkReminderDialog),
   publicPreviewWarning: () => page.getByTestId(publicPreviewWarningDialog),
