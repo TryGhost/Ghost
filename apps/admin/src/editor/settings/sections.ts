@@ -1,4 +1,7 @@
-/** Every settings section, in display order. The sidebar must implement each one. */
+/**
+ * Every section in the panel's scrolling list, in display order. The sidebar
+ * must implement each one. Delete is not listed: it sits in the panel's footer.
+ */
 export const SETTINGS_SECTION_ORDER = [
   'url',
   'publish-date',
@@ -15,7 +18,6 @@ export const SETTINGS_SECTION_ORDER = [
   'x-card',
   'facebook-card',
   'keyboard-shortcuts',
-  'delete',
 ] as const;
 
 export type SettingsSectionId = (typeof SETTINGS_SECTION_ORDER)[number];

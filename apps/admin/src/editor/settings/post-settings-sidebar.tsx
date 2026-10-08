@@ -21,6 +21,7 @@ import {
   type User,
 } from '@tryghost/admin-x-framework/api/users';
 import {
+  postSettingsFooter,
   postSettingsSidebar,
   settingsExcerptInput,
   settingsFeaturedToggle,
@@ -33,7 +34,7 @@ import { PublishDateSection } from './publish-date-section';
 import { AuthorsSection } from './authors-section';
 import { CodeInjectionSection } from './code-injection-section';
 import { DeleteSection } from './delete-section';
-import { type EditorSettingsPort, useEditorSettingsPort } from './editor-settings-port';
+import { type EditorSettingsPort, isNewPost, useEditorSettingsPort } from './editor-settings-port';
 import { KeyboardShortcutsSection } from './keyboard-shortcuts-section';
 import { MetaDataSection } from './meta-data-section';
 import { PostHistorySection } from './post-history-section';
@@ -183,7 +184,6 @@ export function PostSettingsSidebar({
         <MemoShowTitleSection currentUser={currentUser} session={session} />
       ) : null,
     template: <MemoTemplateSection postType={postType} session={session} />,
-    delete: <MemoDeleteSection postType={postType} session={session} />,
     'code-injection': <MemoCodeInjectionSection postType={postType} session={session} />,
     'meta-data': <MemoMetaDataSection session={session} siteUrl={siteUrl} />,
     'keyboard-shortcuts': <MemoKeyboardShortcutsSection />,
@@ -231,6 +231,15 @@ export function PostSettingsSidebar({
       {open && open.id !== id ? null : sections[id]}
     </Fragment>
   ));
+  // Delete is pinned below the list rather than ending it. Like the heading, it
+  // makes way for an open pane, and a post with nothing to delete yet gets no
+  // footer at all rather than an empty strip.
+  const footer =
+    open || isNewPost(session) ? null : (
+      <Box className="shrink-0 border-t border-border" data-testid={postSettingsFooter}>
+        <MemoDeleteSection postType={postType} session={session} />
+      </Box>
+    );
 
   return (
     <SubviewContext.Provider value={subviews}>
@@ -270,6 +279,7 @@ export function PostSettingsSidebar({
             >
               {content}
             </Stack>
+            {footer}
           </Stack>
         </aside>
       </Box>

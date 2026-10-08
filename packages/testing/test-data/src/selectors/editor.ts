@@ -49,6 +49,7 @@ export const snippetConfirmModal = 'snippet-confirm-modal';
 
 // settings sidebar testids
 export const postSettingsSidebar = 'post-settings-sidebar';
+export const postSettingsFooter = 'post-settings-footer';
 export const settingsMenuToggle = 'settings-menu-toggle';
 // Shared by every section that reports a failed browse.
 export const settingsLoadError = 'settings-load-error';
