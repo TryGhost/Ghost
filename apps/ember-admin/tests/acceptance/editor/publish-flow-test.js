@@ -815,9 +815,9 @@ describe('Acceptance: Publish flow', function () {
         });
 
         // The flow opens on its email error when the post's send has already failed
-        async function openFailedSend(server) {
+        async function openFailedSend(server, error = 'Mailgun rejected the batch.') {
             await loginAsRole('Administrator', server);
-            const email = server.create('email', {status: 'failed', error: 'Mailgun rejected the batch.'});
+            const email = server.create('email', {status: 'failed', error});
             const post = server.create('post', {status: 'published', email});
 
             await visit(`/editor/post/${post.id}`);
@@ -877,6 +877,20 @@ describe('Acceptance: Publish flow', function () {
             await waitFor('.gh-publish-cta button');
             expect(find('[data-test-retry-eligibility-error]')).not.to.exist;
             expect(statusReads).to.equal(2);
+        });
+
+        it('offers to send the remaining emails of a partially sent newsletter', async function () {
+            this.server.get('/emails/:id/status/', (schema, {params}) => {
+                return {email_statuses: [{id: params.id, sending: {
+                    status: 'failed', failed_during: 'submitting', retryable: true,
+                    progress: {completed: 3, total: 7, estimated_seconds_remaining: null}
+                }}]};
+            });
+
+            await openFailedSend(this.server, 'An error occurred, and your newsletter was only partially sent.');
+            await waitFor('.gh-publish-cta button');
+
+            expect(find('.gh-publish-cta button')).to.have.trimmed.text('Send remaining emails');
         });
 
         it('hands a retried send off to post analytics', async function () {
