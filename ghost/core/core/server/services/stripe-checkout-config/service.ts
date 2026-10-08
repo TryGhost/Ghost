@@ -8,7 +8,7 @@ import type { RecordCheckoutConfigAction, RequestContext } from './actions';
 import { DesignColumn } from './codec';
 import type { StripeCheckoutConfig, StripeCheckoutDesign } from './models';
 import { CONFIG_SLUG, CONFIG_TABLE } from './schema';
-import { CheckoutConfigInput } from './serializers';
+import { CheckoutConfigInput, parseRequest } from './serializers';
 
 /** Reads and saves the site-wide Stripe Checkout config. */
 export class StripeCheckoutConfigService {
@@ -36,7 +36,7 @@ export class StripeCheckoutConfigService {
    * history.
    */
   async edit(context: RequestContext, input: unknown): Promise<void> {
-    const { design } = parseInput(input);
+    const { design } = parseRequest(CheckoutConfigInput, input, 'checkout_config');
     const now = toDatabaseDate(new Date());
 
     // Only the columns for parts in the request are written, so saving one part never
@@ -76,16 +76,4 @@ export class StripeCheckoutConfigService {
     }
     return decoded.data.design;
   }
-}
-
-function parseInput(input: unknown): CheckoutConfigInput {
-  const parsed = CheckoutConfigInput.safeParse(input);
-  if (parsed.success) {
-    return parsed.data;
-  }
-  const issue = parsed.error.issues[0];
-  throw new errors.ValidationError({
-    message: issue.message,
-    property: issue.path.join('.') || 'checkout_config',
-  });
 }
