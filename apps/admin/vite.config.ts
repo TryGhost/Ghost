@@ -1,3 +1,4 @@
+import fs from 'node:fs';
 import { configDefaults, defineConfig } from 'vitest/config';
 import type { PluginOption } from 'vite';
 import react from '@vitejs/plugin-react';
@@ -49,6 +50,21 @@ function sentryDebugIdsPlugin(): PluginOption {
   });
 }
 
+// Rolldown ignores a dependency's `//# sourceMappingURL`, so without this the
+// chunk map's only source for Koenig frames is its already-minified dist
+function koenigSourcemapPlugin(): PluginOption {
+  return {
+    name: 'koenig-sourcemap',
+    apply: 'build',
+    load(id) {
+      if (!/\/koenig-lexical\/dist\/koenig-lexical\.js$/.test(id)) {
+        return null;
+      }
+      return { code: fs.readFileSync(id, 'utf-8'), map: fs.readFileSync(`${id}.map`, 'utf-8') };
+    },
+  };
+}
+
 // https://vite.dev/config/
 export default defineConfig(({ command, mode }) => ({
   base: getBase(command),
@@ -56,6 +72,7 @@ export default defineConfig(({ command, mode }) => ({
     tailwindcss() as PluginOption,
     svgr(),
     react(),
+    koenigSourcemapPlugin(),
     // Unit tests have no Ghost backend or Ember assets. Keep filesystem and
     // shipping side effects out of this lane, including Sentry uploads.
     ...(command === 'serve' && mode === 'test'
