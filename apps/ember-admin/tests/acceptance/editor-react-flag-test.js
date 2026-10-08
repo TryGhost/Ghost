@@ -54,6 +54,22 @@ describe('Acceptance: editor React flag', function () {
 
             expect(find(titleSelector), 'Ember editor title input').to.exist;
         });
+
+        // React reads editor ownership from the bridge, so a flag that turns on
+        // while this editor is open must not hand the screen over until it closes.
+        it('keeps an open Ember editor when the flag turns on', async function () {
+            const stateBridge = this.owner.lookup('service:state-bridge');
+            const feature = this.owner.lookup('service:feature');
+
+            await visit('/editor/post/1');
+            sinon.stub(feature, 'editorReact').get(() => true);
+
+            expect(stateBridge.isFeatureEnabled('editorReact'), 'while the editor is open').to.be.false;
+
+            await visitExpectingAbort('/tags');
+
+            expect(stateBridge.isFeatureEnabled('editorReact'), 'after leaving the editor').to.be.true;
+        });
     });
 
     describe('when the flag is on', function () {

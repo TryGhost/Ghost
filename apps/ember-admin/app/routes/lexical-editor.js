@@ -65,6 +65,7 @@ export default AuthenticatedRoute.extend({
     feature: service(),
     notifications: service(),
     router: service(),
+    stateBridge: service(),
     ui: service(),
 
     classNames: ['editor'],
@@ -100,6 +101,7 @@ export default AuthenticatedRoute.extend({
     activate() {
         this._super(...arguments);
         this.ui.set('isFullScreen', true);
+        this.stateBridge.setEmberEditorActive(true);
     },
 
     setupController(controller, model, transition) {
@@ -117,6 +119,7 @@ export default AuthenticatedRoute.extend({
     deactivate() {
         this._super(...arguments);
         this.ui.set('isFullScreen', false);
+        this.stateBridge.setEmberEditorActive(false);
     },
 
     actions: {

@@ -54,6 +54,9 @@ export default class StateBridgeService extends Service.extend(Evented) {
     // Pattern of the React route showing, e.g. `/editor/*`; null while an Ember route shows
     reactRoutePattern = null;
 
+    // True while Ember's editor route is active
+    isEmberEditorActive = false;
+
     @action
     setPostListQueryParams(resource, params) {
         this.postListQueryParams = {...this.postListQueryParams, [resource]: params};
@@ -86,7 +89,19 @@ export default class StateBridgeService extends Service.extend(Evented) {
             return undefined;
         }
 
+        // A flag flip must not swap editors under an open Ember editor: its Koenig
+        // would stay mounted beside React's, and two Lexical copies break each other
+        if (name === 'editorReact' && this.isEmberEditorActive) {
+            return false;
+        }
+
         return this.feature[name] === true;
+    }
+
+    @action
+    setEmberEditorActive(isActive) {
+        this.isEmberEditorActive = isActive;
+        this.triggerFeatureFlagsChange();
     }
 
     /**

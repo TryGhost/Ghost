@@ -167,6 +167,23 @@ describe('Unit: Service: state-bridge', function () {
             expect(service.isFeatureEnabled('adminUIRefresh')).to.be.false;
             expect(service.isFeatureEnabled('missingFlag')).to.be.false;
         });
+
+        it('keeps the editor with Ember while the Ember editor is open', function () {
+            settings.settingsModel = {};
+            sinon.stub(feature, 'editorReact').get(() => true);
+            const featureFlagsChange = sinon.spy();
+            service.on('featureFlagsChange', featureFlagsChange);
+
+            service.setEmberEditorActive(true);
+
+            expect(service.isFeatureEnabled('editorReact')).to.be.false;
+            expect(featureFlagsChange.calledOnce).to.be.true;
+
+            service.setEmberEditorActive(false);
+
+            expect(service.isFeatureEnabled('editorReact')).to.be.true;
+            expect(featureFlagsChange.calledTwice).to.be.true;
+        });
     });
 
     describe('#refreshFeatureFlagOverrides', function () {
