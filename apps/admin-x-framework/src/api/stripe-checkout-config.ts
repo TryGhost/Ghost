@@ -43,3 +43,24 @@ export const useEditStripeCheckoutConfig = createMutation<
     update: (newData) => newData,
   },
 });
+
+/** A preview of the design on a real Stripe Checkout page for one paid tier. */
+export type StripeCheckoutPreviewRequest = {
+  tier_id: string;
+  cadence: 'month' | 'year';
+  design: StripeCheckoutDesignSetting;
+};
+
+export interface StripeCheckoutPreviewResponseType {
+  checkout_preview: Array<{ url: string }>;
+}
+
+/** Creates the checkout page to open; the design in it need not be saved. */
+export const useCreateStripeCheckoutPreview = createMutation<
+  StripeCheckoutPreviewResponseType,
+  StripeCheckoutPreviewRequest
+>({
+  method: 'POST',
+  path: () => '/stripe/checkout/preview/',
+  body: (preview) => ({ checkout_preview: [preview] }),
+});

@@ -229,6 +229,73 @@ test.describe('Ghost Admin - Checkout design', () => {
   });
 });
 
+test.describe('Ghost Admin - Checkout design preview in Stripe', () => {
+  test.use({ stripeEnabled: true, labs: { stripeCheckoutDesign: true } });
+
+  test('unsaved design - the preview shows it, and nothing is saved', async ({ page, stripe }) => {
+    const tierName = await paidTier(page, stripe!);
+
+    const checkout = await openCheckoutSettings(page);
+    await checkout.setCustomDesign(true);
+    await checkout.chooseCorners('Pill');
+    await checkout.chooseFont('Lora');
+    const tab = await checkout.previewInStripe(tierName);
+
+    expect(latestCheckoutDesign(stripe!)).toMatchObject({
+      border_style: 'pill',
+      font_family: 'lora',
+    });
+    await tab.close();
+    await checkout.closeAndLeave();
+
+    await startPaidSignupViaPortal(page, { tierName });
+    expect(latestCheckoutDesign(stripe!)).toBeUndefined();
+  });
+
+  test('design switched off before saving - the preview shows the Stripe dashboard design', async ({
+    page,
+    stripe,
+  }) => {
+    const tierName = await paidTier(page, stripe!);
+    await saveDesign(page, DESIGN);
+
+    const checkout = await openCheckoutSettings(page);
+    await checkout.setCustomDesign(false);
+    await checkout.previewInStripe(tierName);
+
+    expect(latestCheckoutDesign(stripe!)).toBeUndefined();
+  });
+
+  test('pop-ups blocked - the publisher is told, and no checkout is created', async ({
+    page,
+    stripe,
+  }) => {
+    const tierName = await paidTier(page, stripe!);
+    // A browser blocking the new tab is only reachable by making window.open refuse it.
+    await page.addInitScript(() => {
+      window.open = () => null;
+    });
+    await page.reload();
+
+    const checkout = await openCheckoutSettings(page);
+    await checkout.previewInStripeButton.click();
+    await checkout.previewTierOption(tierName).click();
+
+    await expect(page.getByText('Your browser blocked the preview')).toBeVisible();
+    expect(stripe!.getCheckoutSessions()).toHaveLength(0);
+  });
+
+  test('preview menu - offers each paid tier, and not the free one', async ({ page, stripe }) => {
+    const tierName = await paidTier(page, stripe!);
+
+    const checkout = await openCheckoutSettings(page);
+    await checkout.previewInStripeButton.click();
+
+    await expect(checkout.previewTierOption(tierName)).toBeVisible();
+    await expect(checkout.previewTierOption('Free')).toHaveCount(0);
+  });
+});
+
 test.describe('Ghost Admin - Checkout design on a small screen', () => {
   test.use({
     stripeEnabled: true,
@@ -278,5 +345,14 @@ test.describe('Ghost Admin - Checkout design without Stripe', () => {
 
     await expect(page.getByRole('button', { name: 'Connect with Stripe' })).toBeVisible();
     await expect(new CheckoutSettingsModal(page).openButton).toHaveCount(0);
+  });
+
+  test('Stripe not connected - the settings offer no preview in Stripe', async ({ page }) => {
+    await page.goto('/ghost/#/settings/tiers/checkout');
+    const checkout = new CheckoutSettingsModal(page);
+    await checkout.modal.waitFor({ state: 'visible' });
+
+    await expect(checkout.customizeDesignSwitch).toBeVisible();
+    await expect(checkout.previewInStripeButton).toHaveCount(0);
   });
 });
