@@ -56,13 +56,17 @@ export const jsUnusedVarsRule = {
   'no-unused-vars': ['error', { caughtErrors: 'none' }],
 };
 
+// Member order uses core `sort-imports`: the plugin's member fixer calls
+// `sourceCode.getComments()`, which ESLint 9 removed.
 export const sortImportsRule = {
   'ghost/sort-imports-es6-autofix/sort-imports-es6': [
     'error',
     {
       memberSyntaxSortOrder: ['none', 'all', 'single', 'multiple'],
+      ignoreMemberSort: true,
     },
   ],
+  'sort-imports': ['error', { ignoreDeclarationSort: true }],
 };
 
 export const shadeLayeredImportsRule = {
