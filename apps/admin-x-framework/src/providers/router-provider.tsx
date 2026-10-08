@@ -1,5 +1,7 @@
+import * as Sentry from '@sentry/react';
 import React, { useCallback, useMemo, useRef, useEffect } from 'react';
 import {
+  type ClientOnErrorFunction,
   createHashRouter,
   RouteObject,
   RouterProvider as ReactRouterProvider,
@@ -110,6 +112,15 @@ export function ScrollRestoration({ containerRef }: ScrollRestorationProps) {
   return null;
 }
 
+// Route error boundaries swallow render crashes, so the SDK never sees them
+const reportRouteError: ClientOnErrorFunction = (error, { errorInfo }) => {
+  if (Sentry.getClient()) {
+    Sentry.captureException(error, {
+      contexts: { react: { componentStack: errorInfo?.componentStack } },
+    });
+  }
+};
+
 export function RouterProvider({ routes, prefix, errorElement, children }: RouterProviderProps) {
   // Memoize the router to avoid re-creating it on every render
   const router = useMemo(() => {
@@ -136,7 +147,7 @@ export function RouterProvider({ routes, prefix, errorElement, children }: Route
     });
   }, [routes, prefix, errorElement, children]);
 
-  return <ReactRouterProvider router={router} />;
+  return <ReactRouterProvider router={router} onError={reportRouteError} />;
 }
 
 /**
