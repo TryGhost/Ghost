@@ -156,15 +156,20 @@ const ColorPickerField = ({
         setOpen(nextOpen);
       }}
     >
+      {/* The trigger sits in a control-height band and the label is padded to center
+          its first line on it, so any hint sits directly beneath the title */}
       <Inline
-        align={hint ? 'start' : 'center'}
+        align="start"
         className={`w-full ${direction === 'ltr' ? 'flex-row-reverse' : ''}`}
         data-testid={testId}
         gap="sm"
         justify="between"
       >
         {title && (
-          <label className="min-w-0 flex-1 cursor-pointer text-left" htmlFor={triggerId}>
+          <label
+            className="min-w-0 flex-1 cursor-pointer pt-[calc((var(--control-height)-1lh)/2)] text-left font-medium"
+            htmlFor={triggerId}
+          >
             {title}
             {hint && (
               <FieldDescription className={error ? 'text-destructive' : undefined}>
@@ -173,7 +178,7 @@ const ColorPickerField = ({
             )}
           </label>
         )}
-        <div className="flex shrink-0 items-center gap-1">
+        <div className="flex h-(--control-height) shrink-0 items-center gap-1">
           {open && swatches.length > 0 && (
             <ColorSwatchRow
               swatches={swatches}

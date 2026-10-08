@@ -77,19 +77,26 @@ const ThemeSetting: React.FC<ThemeSettingProps> = ({ setting, setSetting }) => {
         </Field>
       );
     case 'boolean':
+      // The switch sits in a control-height band and the label is padded to center
+      // its first line on it, so any description sits directly beneath the label
       return (
         <Field orientation="horizontal">
           <FieldContent>
-            <FieldLabel htmlFor={`theme-setting-${setting.key}`}>
+            <FieldLabel
+              className="pt-[calc((var(--control-height)-1lh)/2)]"
+              htmlFor={`theme-setting-${setting.key}`}
+            >
               {humanizeSettingKey(setting.key)}
             </FieldLabel>
             {setting.description && <FieldDescription>{setting.description}</FieldDescription>}
           </FieldContent>
-          <Switch
-            checked={Boolean(setting.value)}
-            id={`theme-setting-${setting.key}`}
-            onCheckedChange={setSetting}
-          />
+          <div className="flex h-(--control-height) items-center">
+            <Switch
+              checked={Boolean(setting.value)}
+              id={`theme-setting-${setting.key}`}
+              onCheckedChange={setSetting}
+            />
+          </div>
         </Field>
       );
     case 'select':
@@ -127,7 +134,7 @@ const ThemeSetting: React.FC<ThemeSettingProps> = ({ setting, setSetting }) => {
       );
     case 'image':
       return (
-        <>
+        <Field>
           <FieldLabel>{humanizeSettingKey(setting.key)}</FieldLabel>
           <ImageUpload className={setting.value ? 'h-25' : 'h-8'}>
             {setting.value ? (
@@ -149,7 +156,7 @@ const ThemeSetting: React.FC<ThemeSettingProps> = ({ setting, setSetting }) => {
             )}
           </ImageUpload>
           {setting.description && <FieldDescription>{setting.description}</FieldDescription>}
-        </>
+        </Field>
       );
   }
 };
