@@ -199,6 +199,14 @@ class BatchSendingService {
   }
 
   /**
+   * Re-arms sending after a stop. Only an in-process restart (test harness)
+   * reuses this instance on a new server.
+   */
+  onStart() {
+    this.#shuttingDown = false;
+  }
+
+  /**
    * Waits for any in-flight sends to finish.
    * Called by the cleanup pipeline when the container is shutting down. Idempotent.
    */

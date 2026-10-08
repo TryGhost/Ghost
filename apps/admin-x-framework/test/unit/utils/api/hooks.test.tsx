@@ -2,6 +2,7 @@ import { InfiniteData, QueryClient, QueryClientProvider } from '@tanstack/react-
 import { act, renderHook, waitFor } from '@testing-library/react';
 import React, { ReactNode } from 'react';
 import { FrameworkProvider } from '../../../../src/providers/framework-provider';
+import { renderHookWithProviders } from '../../../../src/test/test-utils';
 import {
   createInfiniteQuery,
   createMutation,
@@ -637,6 +638,41 @@ describe('API hooks', () => {
           expect(onInvalidate).toHaveBeenCalledTimes(2);
           expect(onInvalidate).toHaveBeenNthCalledWith(1, 'FirstDataType');
           expect(onInvalidate).toHaveBeenNthCalledWith(2, 'SecondDataType');
+        },
+      );
+    });
+
+    it('can leave queries out of a dataType invalidation', async () => {
+      await withMockFetch(
+        {
+          json: { test: 1 },
+        },
+        async () => {
+          queryClient.setQueryData(['NarrowedDataType', 'list'], { test: 1 });
+          queryClient.setQueryData(['NarrowedDataType', 'index'], { test: 2 });
+
+          const onInvalidate = vi.fn();
+          const useTestMutation = createMutation({
+            path: () => '/test/',
+            method: 'PUT',
+            invalidateQueries: {
+              dataType: 'NarrowedDataType',
+              predicate: (query) => query.queryKey[1] !== 'index',
+            },
+          });
+
+          const { result } = renderHookWithProviders(() => useTestMutation(), {
+            queryClient,
+            frameworkProps: { onInvalidate },
+          });
+
+          await result.current.mutateAsync({});
+
+          expect(queryClient.getQueryState(['NarrowedDataType', 'list'])?.isInvalidated).toBe(true);
+          expect(queryClient.getQueryState(['NarrowedDataType', 'index'])?.isInvalidated).toBe(
+            false,
+          );
+          expect(onInvalidate).toHaveBeenCalledExactlyOnceWith('NarrowedDataType');
         },
       );
     });

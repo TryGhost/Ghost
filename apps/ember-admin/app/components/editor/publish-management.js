@@ -1,5 +1,4 @@
 import Component from '@glimmer/component';
-import EmailFailedError from 'ghost-admin/errors/email-failed-error';
 import PreviewModal from './modals/preview';
 import PublicPreviewWarningModal from './modals/public-preview-warning';
 import PublishFlowModal from './modals/publish-flow';
@@ -15,8 +14,19 @@ import {tracked} from '@glimmer/tracking';
 import {use} from 'ember-could-get-used-to-this';
 
 const SHOW_SAVE_STATUS_DURATION = 3000;
-export const CONFIRM_EMAIL_POLL_LENGTH = 1000;
-export const CONFIRM_EMAIL_MAX_POLL_LENGTH = 15 * 1000;
+// The least time a send or a retried send shows its running state before
+// handing off to post analytics, so the hand-off isn't instant
+const MIN_EMAIL_HANDOFF_LENGTH = 1500;
+
+// Waits out what is left of the minimum hand-off time for a send confirmed at
+// `startedAt`; a task delegates to it with `yield*`
+export function* waitForEmailHandOff(startedAt) {
+    const remaining = MIN_EMAIL_HANDOFF_LENGTH - (Date.now() - startedAt);
+
+    if (remaining > 0) {
+        yield timeout(envConfig.environment === 'test' ? 1 : remaining);
+    }
+}
 
 // This component exists for the duration of the editor screen being open.
 // It's used to store the selected publish options, control the publishing flow
@@ -241,6 +251,7 @@ export default class PublishManagement extends Component {
 
     @task
     *publishTask({taskName = 'saveTask'} = {}) {
+        const startedAt = Date.now();
         const willEmailImmediately = this.publishOptions.willEmailImmediately;
 
         // clean up blank editor cards
@@ -256,10 +267,8 @@ export default class PublishManagement extends Component {
         // perform any post-save cleanup for the editor
         yield this.args.afterPublish(result);
 
-        if (willEmailImmediately && this.publishOptions.post.email) {
-            if (!this.feature.improveSendingUI) {
-                yield this.confirmEmailTask.perform();
-            }
+        if (willEmailImmediately) {
+            yield* waitForEmailHandOff(startedAt);
         }
 
         return result;
@@ -279,35 +288,6 @@ export default class PublishManagement extends Component {
     }
 
     @taskGroup saveButtonTaskGroup;
-
-    @task
-    *confirmEmailTask() {
-        const post = this.publishOptions.post;
-
-        let pollTimeout = 0;
-        if (post.email && post.email.status !== 'submitted') {
-            while (pollTimeout < CONFIRM_EMAIL_MAX_POLL_LENGTH) {
-                yield timeout(CONFIRM_EMAIL_POLL_LENGTH);
-                pollTimeout += CONFIRM_EMAIL_POLL_LENGTH;
-
-                yield post.reload();
-
-                if (!post.isSent && !post.isPublished) {
-                    // A post that is not published doesn't try to send or retry an email
-                    break;
-                }
-
-                if (post.email.status === 'submitted') {
-                    break;
-                }
-                if (post.email.status === 'failed') {
-                    throw new EmailFailedError(post.email.error);
-                }
-            }
-        }
-
-        return true;
-    }
 
     @task
     *revertToDraftTask() {

@@ -153,7 +153,9 @@ const AutomationFloat: React.FC = () => {
   // Live status isn't screen state: starting and stopping take effect the moment
   // they're confirmed, so they're written straight to the store rather than
   // waiting on Save with the rest of the edits.
-  const liveStatus: LiveStatus = savedAutomation?.status ?? 'inactive';
+  // The API's status grew 'archived'; the proto keeps archiving in its own flag
+  // (see shared/store) and never stores that value, so anything not active is off.
+  const liveStatus: LiveStatus = savedAutomation?.status === 'active' ? 'active' : 'inactive';
   // Members mid-flow right now — what Turn off, Update and Archive tell you
   // they'll affect (see ./dialogs). The fixture's in-progress figure while live;
   // an automation that's off has nobody in progress.

@@ -556,7 +556,7 @@ describe('automations repository', function () {
     slug: null | string;
     triggerTierScope: null | AutomationTriggerTierScope;
     triggerTierIds?: string[];
-    status?: 'active' | 'inactive';
+    status?: 'active' | 'inactive' | 'archived';
   }) => {
     const automationId = ObjectId().toHexString();
     const actionId = ObjectId().toHexString();
@@ -1126,11 +1126,25 @@ describe('automations repository', function () {
   });
 
   describe('getNumberOfAutomations', function () {
-    it('counts active and inactive automations without creating defaults', async function () {
+    it('counts active, inactive, and archived automations without creating defaults', async function () {
       const rows = await knex('automations').select('id');
       assert.equal(await repo.getNumberOfAutomations(), rows.length);
-      await knex('automations').update({ status: 'inactive' });
-      assert.equal(await repo.getNumberOfAutomations(), rows.length);
+      for (const status of ['inactive', 'archived'] as const) {
+        await knex('automations').update({ status });
+        assert.equal(await repo.getNumberOfAutomations(), rows.length);
+      }
+    });
+
+    it('includes archived automations in browse results', async function () {
+      const initial = await getAutomationBySlug('member-welcome-email-free');
+      await repo.edit(initial.id, { status: 'archived' });
+      for (const includeStats of [false, true]) {
+        const result = await repo.browse({ includeStats });
+        assert.equal(
+          result.data.find((automation) => automation.id === initial.id)?.status,
+          'archived',
+        );
+      }
     });
 
     it('returns zero for an empty automations table', async function () {
@@ -1658,23 +1672,26 @@ describe('automations repository', function () {
       assert.equal(step.action_id, 'main-wait-action');
     });
 
-    it('does not trigger an automation for an inactive automation', async function () {
-      const freeAutomation = await getAutomationBySlug('member-welcome-email-free');
-      await repo.edit(freeAutomation.id, {
-        ...freeAutomation,
-        status: 'inactive',
-      });
+    it.each(['inactive', 'archived'] as const)(
+      'does not trigger an automation for an inactive automation (%s)',
+      async function (status) {
+        const freeAutomation = await getAutomationBySlug('member-welcome-email-free');
+        await repo.edit(freeAutomation.id, {
+          ...freeAutomation,
+          status,
+        });
 
-      await repo.trigger({
-        memberEmail: 'inactive-free@example.com',
-        memberId: 'member_123',
-        memberStatus: 'free',
-        memberTierIds: [],
-      });
+        await repo.trigger({
+          memberEmail: 'inactive-free@example.com',
+          memberId: 'member_123',
+          memberStatus: 'free',
+          memberTierIds: [],
+        });
 
-      assert.deepEqual(await getRunsByMemberEmail('inactive-free@example.com'), []);
-      assert.equal(await getRunCountByAutomationId(freeAutomation.id), 0);
-    });
+        assert.deepEqual(await getRunsByMemberEmail('inactive-free@example.com'), []);
+        assert.equal(await getRunCountByAutomationId(freeAutomation.id), 0);
+      },
+    );
 
     it('does not trigger an automation for an automation with no actions', async function () {
       const freeAutomation = await getAutomationBySlug('member-welcome-email-free');
@@ -1765,21 +1782,24 @@ describe('automations repository', function () {
       assert.equal((await getRunsByMemberEmail('excluded@example.com')).length, 1);
     });
 
-    it('does not trigger inactive per-tier automations', async function () {
-      const automationId = await insertAutomation({
-        slug: null,
-        triggerTierScope: 'selected_paid',
-        triggerTierIds: ['bronze'],
-        status: 'inactive',
-      });
-      await repo.trigger({
-        memberEmail: 'inactive-selected@example.com',
-        memberId: 'member_123',
-        memberStatus: 'paid',
-        memberTierIds: ['bronze'],
-      });
-      assert.equal(await getRunCountByAutomationId(automationId), 0);
-    });
+    it.each(['inactive', 'archived'] as const)(
+      'does not trigger inactive per-tier automations (%s)',
+      async function (status) {
+        const automationId = await insertAutomation({
+          slug: null,
+          triggerTierScope: 'selected_paid',
+          triggerTierIds: ['bronze'],
+          status,
+        });
+        await repo.trigger({
+          memberEmail: 'inactive-selected@example.com',
+          memberId: 'member_123',
+          memberStatus: 'paid',
+          memberTierIds: ['bronze'],
+        });
+        assert.equal(await getRunCountByAutomationId(automationId), 0);
+      },
+    );
 
     it('does not trigger an automation when there is no trigger tier scope', async function () {
       const automationId = await insertAutomation({
@@ -1843,6 +1863,26 @@ describe('automations repository', function () {
   });
 
   describe('edit', function () {
+    it('disables, archives, and unarchives without changing graph storage or metadata', async function () {
+      const initial = await getAutomationBySlug('member-welcome-email-free');
+      const actions = await knex('automation_actions').orderBy('id');
+      const revisions = await knex('automation_action_revisions').orderBy('id');
+      const edges = await knex('automation_action_edges').orderBy([
+        'source_action_id',
+        'target_action_id',
+      ]);
+      for (const status of ['inactive', 'archived', 'inactive'] as const) {
+        const edited = await repo.edit(initial.id, { status });
+        assert.deepEqual(edited, { ...initial, status, updated_at: edited?.updated_at });
+        assert.deepEqual(await knex('automation_actions').orderBy('id'), actions);
+        assert.deepEqual(await knex('automation_action_revisions').orderBy('id'), revisions);
+        assert.deepEqual(
+          await knex('automation_action_edges').orderBy(['source_action_id', 'target_action_id']),
+          edges,
+        );
+      }
+    });
+
     const assertValidationError = async (
       fn: () => Promise<unknown>,
       property: string,
@@ -1976,97 +2016,108 @@ describe('automations repository', function () {
       assert.equal(nameOnly.description, '');
     });
 
-    it('cancels pending unlocked steps when disabling an automation', async function () {
-      const automation = await getAutomationBySlug('member-welcome-email-free');
-      const action = await getActionByIndex(automation.id, 0);
-      const run = await insertRun(automation.id);
-      const step = await insertStep(run.id, action.revision_id);
+    it.each(['inactive', 'archived'] as const)(
+      'cancels pending unlocked steps when disabling an automation (%s)',
+      async function (status) {
+        const automation = await getAutomationBySlug('member-welcome-email-free');
+        const action = await getActionByIndex(automation.id, 0);
+        const run = await insertRun(automation.id);
+        const step = await insertStep(run.id, action.revision_id);
 
-      const beforeEdit = Date.now();
-      await repo.edit(automation.id, {
-        ...automation,
-        status: 'inactive',
-      });
-      const afterEdit = Date.now();
+        const beforeEdit = Date.now();
+        await repo.edit(automation.id, {
+          status,
+        });
+        const afterEdit = Date.now();
 
-      const cancelled = await getStepById(step.id);
-      assert.equal(cancelled.status, 'automation disabled');
-      assert.equal(cancelled.locked_by, null);
-      assert.equal(cancelled.locked_at, null);
-      assert.equal(cancelled.started_at, null);
-      const cancelledFinishedAt = cancelled.finished_at;
-      assert(typeof cancelledFinishedAt === 'string');
-      assert(cancelledFinishedAt >= toDatabaseDate(new Date(beforeEdit - 1000)));
-      assert(cancelledFinishedAt <= toDatabaseDate(new Date(afterEdit)));
-    });
+        const cancelled = await getStepById(step.id);
+        assert.equal(cancelled.status, 'automation disabled');
+        assert.equal(cancelled.locked_by, null);
+        assert.equal(cancelled.locked_at, null);
+        assert.equal(cancelled.started_at, null);
+        const cancelledFinishedAt = cancelled.finished_at;
+        assert(typeof cancelledFinishedAt === 'string');
+        assert(cancelledFinishedAt >= toDatabaseDate(new Date(beforeEdit - 1000)));
+        assert(cancelledFinishedAt <= toDatabaseDate(new Date(afterEdit)));
+      },
+    );
 
-    it('cancels pending steps with expired locks when disabling an automation', async function () {
-      const automation = await getAutomationBySlug('member-welcome-email-free');
-      const action = await getActionByIndex(automation.id, 0);
-      const run = await insertRun(automation.id);
-      const step = await insertStep(run.id, action.revision_id, {
-        locked_by: 'expired-lock',
-        locked_at: new Date(Date.now() - 31 * 60 * 1000).toISOString(),
-        started_at: new Date(Date.now() - 31 * 60 * 1000).toISOString(),
-      });
+    it.each(['inactive', 'archived'] as const)(
+      'cancels pending steps with expired locks when disabling an automation (%s)',
+      async function (status) {
+        const automation = await getAutomationBySlug('member-welcome-email-free');
+        const action = await getActionByIndex(automation.id, 0);
+        const run = await insertRun(automation.id);
+        const step = await insertStep(run.id, action.revision_id, {
+          locked_by: 'expired-lock',
+          locked_at: new Date(Date.now() - 31 * 60 * 1000).toISOString(),
+          started_at: new Date(Date.now() - 31 * 60 * 1000).toISOString(),
+        });
 
-      await repo.edit(automation.id, {
-        ...automation,
-        status: 'inactive',
-      });
+        await repo.edit(automation.id, {
+          ...automation,
+          status,
+        });
 
-      const cancelled = await getStepById(step.id);
-      assert.equal(cancelled.status, 'automation disabled');
-      assert.equal(cancelled.locked_by, null);
-      assert.equal(cancelled.locked_at, null);
-      assert.equal(typeof cancelled.finished_at, 'string');
-    });
+        const cancelled = await getStepById(step.id);
+        assert.equal(cancelled.status, 'automation disabled');
+        assert.equal(cancelled.locked_by, null);
+        assert.equal(cancelled.locked_at, null);
+        assert.equal(typeof cancelled.finished_at, 'string');
+      },
+    );
 
-    it('does not cancel pending steps with fresh locks when disabling an automation', async function () {
-      const automation = await getAutomationBySlug('member-welcome-email-free');
-      const action = await getActionByIndex(automation.id, 0);
-      const run = await insertRun(automation.id);
-      const lockedAt = toDatabaseDate(new Date(Date.now() - 29 * 60 * 1000));
-      const step = await insertStep(run.id, action.revision_id, {
-        locked_by: 'fresh-lock',
-        locked_at: lockedAt,
-        started_at: lockedAt,
-      });
+    it.each(['inactive', 'archived'] as const)(
+      'does not cancel pending steps with fresh locks when disabling an automation (%s)',
+      async function (status) {
+        const automation = await getAutomationBySlug('member-welcome-email-free');
+        const action = await getActionByIndex(automation.id, 0);
+        const run = await insertRun(automation.id);
+        const lockedAt = toDatabaseDate(new Date(Date.now() - 29 * 60 * 1000));
+        const step = await insertStep(run.id, action.revision_id, {
+          locked_by: 'fresh-lock',
+          locked_at: lockedAt,
+          started_at: lockedAt,
+        });
 
-      await repo.edit(automation.id, {
-        ...automation,
-        status: 'inactive',
-      });
+        await repo.edit(automation.id, {
+          ...automation,
+          status,
+        });
 
-      const unchanged = await getStepById(step.id);
-      assert.equal(unchanged.status, 'pending');
-      assert.equal(unchanged.locked_by, 'fresh-lock');
-      assert.equal(unchanged.locked_at, lockedAt);
-      assert.equal(unchanged.finished_at, null);
-    });
+        const unchanged = await getStepById(step.id);
+        assert.equal(unchanged.status, 'pending');
+        assert.equal(unchanged.locked_by, 'fresh-lock');
+        assert.equal(unchanged.locked_at, lockedAt);
+        assert.equal(unchanged.finished_at, null);
+      },
+    );
 
-    it('does not cancel pending steps for other automations when disabling an automation', async function () {
-      const freeAutomation = await getAutomationBySlug('member-welcome-email-free');
-      const paidAutomation = await getAutomationBySlug('member-welcome-email-paid');
-      const freeAction = await getActionByIndex(freeAutomation.id, 0);
-      const paidAction = await getActionByIndex(paidAutomation.id, 0);
-      const freeRun = await insertRun(freeAutomation.id);
-      const paidRun = await insertRun(paidAutomation.id);
-      const freeStep = await insertStep(freeRun.id, freeAction.revision_id);
-      const paidStep = await insertStep(paidRun.id, paidAction.revision_id);
+    it.each(['inactive', 'archived'] as const)(
+      'does not cancel pending steps for other automations when disabling an automation (%s)',
+      async function (status) {
+        const freeAutomation = await getAutomationBySlug('member-welcome-email-free');
+        const paidAutomation = await getAutomationBySlug('member-welcome-email-paid');
+        const freeAction = await getActionByIndex(freeAutomation.id, 0);
+        const paidAction = await getActionByIndex(paidAutomation.id, 0);
+        const freeRun = await insertRun(freeAutomation.id);
+        const paidRun = await insertRun(paidAutomation.id);
+        const freeStep = await insertStep(freeRun.id, freeAction.revision_id);
+        const paidStep = await insertStep(paidRun.id, paidAction.revision_id);
 
-      await repo.edit(freeAutomation.id, {
-        ...freeAutomation,
-        status: 'inactive',
-      });
+        await repo.edit(freeAutomation.id, {
+          ...freeAutomation,
+          status,
+        });
 
-      const cancelledFreeStep = await getStepById(freeStep.id);
-      assert.equal(cancelledFreeStep.status, 'automation disabled');
+        const cancelledFreeStep = await getStepById(freeStep.id);
+        assert.equal(cancelledFreeStep.status, 'automation disabled');
 
-      const unchangedPaidStep = await getStepById(paidStep.id);
-      assert.equal(unchangedPaidStep.status, 'pending');
-      assert.equal(unchangedPaidStep.finished_at, null);
-    });
+        const unchangedPaidStep = await getStepById(paidStep.id);
+        assert.equal(unchangedPaidStep.status, 'pending');
+        assert.equal(unchangedPaidStep.finished_at, null);
+      },
+    );
 
     it('only inserts action revisions when action data changes', async function () {
       const initialAutomation = await getAutomationBySlug('member-welcome-email-free');
@@ -2676,34 +2727,37 @@ describe('automations repository', function () {
       assert.equal(finished.locked_at, null);
     });
 
-    it('does not enqueue the next step when the automation was disabled after the step was locked', async function () {
-      const automation = await getAutomationBySlug('member-welcome-email-free');
-      const action = await getActionByIndex(automation.id, 0);
-      const run = await insertRun(automation.id);
-      const stepRow = await insertStep(run.id, action.revision_id, {
-        ready_at: new Date(Date.now() - 1000).toISOString(),
-      });
-      const step = await getLockedStep(stepRow.id);
+    it.each(['inactive', 'archived'] as const)(
+      'does not enqueue the next step when the automation was disabled after the step was locked (%s)',
+      async function (status) {
+        const automation = await getAutomationBySlug('member-welcome-email-free');
+        const action = await getActionByIndex(automation.id, 0);
+        const run = await insertRun(automation.id);
+        const stepRow = await insertStep(run.id, action.revision_id, {
+          ready_at: new Date(Date.now() - 1000).toISOString(),
+        });
+        const step = await getLockedStep(stepRow.id);
 
-      await knex('automations')
-        .update({
-          status: 'inactive',
-          updated_at: toDatabaseDate(new Date()),
-        })
-        .where('id', automation.id);
+        await knex('automations')
+          .update({
+            status,
+            updated_at: toDatabaseDate(new Date()),
+          })
+          .where('id', automation.id);
 
-      const nextReadyAt = await repo.finishStepAndEnqueueNext(step);
+        const nextReadyAt = await repo.finishStepAndEnqueueNext(step);
 
-      assert.equal(nextReadyAt, null);
+        assert.equal(nextReadyAt, null);
 
-      const finished = await getStepById(stepRow.id);
-      assert.equal(finished.status, 'finished');
-      assert.equal(finished.locked_by, null);
-      assert.equal(finished.locked_at, null);
+        const finished = await getStepById(stepRow.id);
+        assert.equal(finished.status, 'finished');
+        assert.equal(finished.locked_by, null);
+        assert.equal(finished.locked_at, null);
 
-      const allSteps = await getStepsByRunId(run.id);
-      assert.equal(allSteps.length, 1);
-    });
+        const allSteps = await getStepsByRunId(run.id);
+        assert.equal(allSteps.length, 1);
+      },
+    );
 
     it('does not finish or enqueue if the step lock has been taken by another runner', async function () {
       const automation = await getAutomationBySlug('member-welcome-email-free');
@@ -2953,35 +3007,38 @@ describe('automations repository', function () {
       assert.deepEqual(unchanged, beforeRetry);
     });
 
-    it('marks the step disabled instead of retrying when the automation was disabled after the step was locked', async function () {
-      const automation = await getAutomationBySlug('member-welcome-email-free');
-      const action = await getActionByIndex(automation.id, 0);
-      const run = await insertRun(automation.id);
-      const stepRow = await insertStep(run.id, action.revision_id, {
-        ready_at: new Date(Date.now() - 1000).toISOString(),
-      });
-      const step = await getLockedStep(stepRow.id);
-      const lockedStep = await getStepById(step.id);
+    it.each(['inactive', 'archived'] as const)(
+      'marks the step disabled instead of retrying when the automation was disabled after the step was locked (%s)',
+      async function (status) {
+        const automation = await getAutomationBySlug('member-welcome-email-free');
+        const action = await getActionByIndex(automation.id, 0);
+        const run = await insertRun(automation.id);
+        const stepRow = await insertStep(run.id, action.revision_id, {
+          ready_at: new Date(Date.now() - 1000).toISOString(),
+        });
+        const step = await getLockedStep(stepRow.id);
+        const lockedStep = await getStepById(step.id);
 
-      await knex('automations')
-        .update({
-          status: 'inactive',
-          updated_at: toDatabaseDate(new Date()),
-        })
-        .where('id', automation.id);
+        await knex('automations')
+          .update({
+            status,
+            updated_at: toDatabaseDate(new Date()),
+          })
+          .where('id', automation.id);
 
-      const didRetry = await repo.retryStep(step, new Date(Date.now() + 1000));
+        const didRetry = await repo.retryStep(step, new Date(Date.now() + 1000));
 
-      assert.equal(didRetry, false);
+        assert.equal(didRetry, false);
 
-      const disabled = await getStepById(step.id);
-      assert.equal(disabled.status, 'automation disabled');
-      assert.equal(disabled.locked_by, null);
-      assert.equal(disabled.locked_at, null);
-      assert.equal(disabled.started_at, lockedStep.started_at);
-      assert.equal(disabled.ready_at, stepRow.ready_at);
-      assert.equal(typeof disabled.finished_at, 'string');
-    });
+        const disabled = await getStepById(step.id);
+        assert.equal(disabled.status, 'automation disabled');
+        assert.equal(disabled.locked_by, null);
+        assert.equal(disabled.locked_at, null);
+        assert.equal(disabled.started_at, lockedStep.started_at);
+        assert.equal(disabled.ready_at, stepRow.ready_at);
+        assert.equal(typeof disabled.finished_at, 'string');
+      },
+    );
   });
 
   describe('recordEmailSent', function () {

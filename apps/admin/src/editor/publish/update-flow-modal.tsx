@@ -1,4 +1,4 @@
-import { Banner, Button } from '@tryghost/shade/components';
+import { Button } from '@tryghost/shade/components';
 import { Box, Inline, Stack, Text } from '@tryghost/shade/primitives';
 import { formatNumber } from '@tryghost/shade/utils';
 import { PageHeader } from '@tryghost/shade/patterns';
@@ -18,6 +18,7 @@ import {
   updateFlowTitle,
 } from '@tryghost/test-data/selectors/editor';
 import { FullscreenDialog } from '@/editor/fullscreen-dialog';
+import { FailureBanner } from './components/failure-banner';
 import { createPublishOptions } from './publish-options';
 import {
   describeCompletionFailure,
@@ -25,6 +26,7 @@ import {
   type CompletionFailure,
 } from './completion-message';
 import { formatSiteDateTime } from './publish-copy';
+import { reportPublishFailure } from './report-publish-failure';
 import type { PublishDispatcher } from './publish-options';
 import type { PublishFlowPost } from './flow-post';
 import type { PublishSiteInput, PublishUserInput } from './publish-options';
@@ -133,8 +135,11 @@ function KeyedUpdateFlowModal({
     try {
       completion = await dispatch(machine.toRevertDispatch());
     } catch (error) {
+      const shown = describeRejectedAction(error);
+      // The dispatch settles every save it runs; a rejection is a fault in getting there.
+      reportPublishFailure('revert-request', shown.message, { error, postId: post.id });
       if (activeRef.current) {
-        setFailure(describeRejectedAction(error));
+        setFailure(shown);
         setRunning(false);
       }
       runningRef.current = false;
@@ -239,11 +244,7 @@ function KeyedUpdateFlowModal({
             </Text>
           ) : null}
 
-          {failure ? (
-            <Banner role="alert" variant="destructive">
-              {failure.message}
-            </Banner>
-          ) : null}
+          {failure ? <FailureBanner failure={failure} /> : null}
 
           {canRevert ? (
             <Inline justify="start">
@@ -252,7 +253,7 @@ function KeyedUpdateFlowModal({
                 data-testid={publishRevertToDraft}
                 disabled={running}
                 size="lg"
-                variant="outline"
+                variant="secondary"
                 onClick={() => void revert()}
               >
                 {isScheduled

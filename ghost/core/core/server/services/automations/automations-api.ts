@@ -1,39 +1,45 @@
-import {
-  normalizeMemberSearch,
-  searchCursorScope,
-  browseMemberSearch,
-} from './automation-member-search';
-import { decodeRunCursor, encodeRunCursor, type RunCursorScope } from './automation-run-cursor';
+// @ts-expect-error This module lacks type definitions.
+import domainEvents from '@tryghost/domain-events';
 import errors from '@tryghost/errors';
 import logging from '@tryghost/logging';
 import tpl from '@tryghost/tpl';
 import ObjectId from 'bson-objectid';
 import { z } from 'zod';
-import { createDatabaseAutomationsRepository } from './database-automations-repository';
-import { parseFakeWaitHoursMultiplier } from './fake-wait-hours-multiplier';
+import config from '../../../shared/config';
+// @ts-expect-error This module lacks type definitions.
+import labs from '../../../shared/labs';
+// @ts-expect-error This module lacks type definitions.
+import settingsCache from '../../../shared/settings-cache';
+import { knex } from '../../data/db';
+// @ts-expect-error This module lacks type definitions.
+import lexicalLib from '../../lib/lexical';
+// @ts-expect-error This module lacks type definitions.
+import requestExternal from '../../lib/request-external';
+// @ts-expect-error This module lacks type definitions.
+import { create as createTinybirdClient } from '../stats/utils/tinybird';
+// @ts-expect-error This module lacks type definitions.
+import TinybirdServiceWrapper from '../tinybird';
+import { entryDate, getEntryStatsWindow, parseEntryStatsOptions } from './automation-entry-stats';
+import {
+  browseMemberSearch,
+  normalizeMemberSearch,
+  searchCursorScope,
+} from './automation-member-search';
+import { decodeRunCursor, encodeRunCursor, type RunCursorScope } from './automation-run-cursor';
 import type {
   Automation,
   AutomationsRepository,
   EditAutomationData,
 } from './automations-repository';
+import { createDatabaseAutomationsRepository } from './database-automations-repository';
+import { StartAutomationsPollEvent } from './events/start-automations-poll-event';
+import { parseFakeWaitHoursMultiplier } from './fake-wait-hours-multiplier';
 import {
   EMPTY_AUTOMATION_STATS,
-  fetchAutomationStats,
   fetchAutomationPerformanceStats,
   fetchAutomationRuns,
+  fetchAutomationStats,
 } from './tinybird-automation-stats';
-import { entryDate, getEntryStatsWindow, parseEntryStatsOptions } from './automation-entry-stats';
-import { StartAutomationsPollEvent } from './events/start-automations-poll-event';
-
-const { knex } = require('../../data/db');
-const domainEvents = require('@tryghost/domain-events');
-const labs = require('../../../shared/labs');
-const config = require('../../../shared/config');
-const settingsCache = require('../../../shared/settings-cache');
-const requestExternal = require('../../lib/request-external');
-const TinybirdServiceWrapper = require('../tinybird');
-const { create: createTinybirdClient } = require('../stats/utils/tinybird');
-const lexicalLib = require('../../lib/lexical');
 
 const MAX_AUTOMATION_ACTIONS = 50;
 const RUN_PAGE_SIZE = 50;
@@ -50,8 +56,10 @@ const messages = {
   runNotFound: 'Automation run not found.',
   automationActionNotFound: 'Automation action not found.',
   invalidAutomationCreationPayload: 'Invalid automation payload.',
-  invalidAutomationEditPayload: 'Automation edit payload must include status, actions, and edges.',
-  invalidAutomationStatus: 'Automation status must be one of: active, inactive.',
+  invalidAutomationEditPayload: 'Invalid automation edit payload.',
+  invalidAutomationStatus: 'Automation status must be one of: active, inactive, archived.',
+  invalidStatusOnlyEdit:
+    'Status-only automation edits can only set status to inactive or archived.',
   duplicateAutomationActionIdentity: 'Automation action identifiers must be unique.',
   invalidAutomationEdgeEndpoint: 'Automation edges must reference actions in the submitted graph.',
   duplicateAutomationEdge: 'Automation edges must be unique.',
@@ -91,7 +99,7 @@ const edgeSchema = z.object({
 const automationShape = {
   name: z.string().trim().min(1).max(191),
   description: z.string().trim().max(2000),
-  status: z.enum(['active', 'inactive']),
+  status: z.enum(['active', 'inactive', 'archived']),
   actions: z
     .array(z.discriminatedUnion('type', [waitActionSchema, sendEmailActionSchema]))
     .min(1)
@@ -133,6 +141,14 @@ const editAutomationDataSchema = z
       z.object(selectedPaidTriggerShape),
     ]),
   );
+
+const editAutomationStatusOnlySchema = z.strictObject({
+  // We disallow status-only activations because they could allow activations to
+  // happen with an invalid graph (e.g,. an email without a subject). If we
+  // change this, we should validate the graph on status-only activations as
+  // well.
+  status: z.enum(['inactive', 'archived']),
+});
 
 const repository = createDatabaseAutomationsRepository({
   knex,
@@ -382,11 +398,19 @@ export async function edit(automationId: string, data: unknown) {
 }
 
 async function validateEditData(data: unknown): Promise<EditAutomationData> {
-  const result = editAutomationDataSchema.safeParse(data);
+  // We use two separate schemas to preserve field-level errors, which Zod loses
+  // if we use its union types.
+  const hasGraphField =
+    typeof data === 'object' && data !== null && ('actions' in data || 'edges' in data);
+  const schema = hasGraphField ? editAutomationDataSchema : editAutomationStatusOnlySchema;
+  const result = schema.safeParse(data);
 
   if (!result.success) {
     if (result.error.issues.some((issue) => issue.path[0] === 'status')) {
-      throwValidationError(messages.invalidAutomationStatus, 'status');
+      throwValidationError(
+        hasGraphField ? messages.invalidAutomationStatus : messages.invalidStatusOnlyEdit,
+        'status',
+      );
     }
 
     throwValidationError(
@@ -397,8 +421,11 @@ async function validateEditData(data: unknown): Promise<EditAutomationData> {
     );
   }
 
-  await validateAutomationData(result.data);
-  return result.data;
+  const parsedData: EditAutomationData = result.data;
+  if (parsedData.actions !== undefined) {
+    await validateAutomationData(parsedData);
+  }
+  return parsedData;
 }
 
 async function validateAutomationData(data: Pick<Automation, 'status' | 'actions' | 'edges'>) {

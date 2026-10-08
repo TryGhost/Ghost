@@ -16,10 +16,10 @@ validation only: nothing here fetches, stores or renders anything.
 
 Each contract is its own entry point, so a consumer only loads the one it uses.
 
-| Entry point                        | What it holds                            |
-| ---------------------------------- | ---------------------------------------- |
-| `@tryghost/app-contracts`          | Types, and limits that depend on nothing |
-| `@tryghost/app-contracts/manifest` | The app manifest and its validation      |
+| Entry point                        | What it holds                                                      |
+| ---------------------------------- | ------------------------------------------------------------------ |
+| `@tryghost/app-contracts`          | Types, and rules and limits that depend on nothing (`isLocalhost`) |
+| `@tryghost/app-contracts/manifest` | The app manifest and its validation                                |
 
 The root entry point must stay free of `zod`: some consumers ship to browsers
 that never validate anything. A lint rule enforces it.
@@ -103,6 +103,31 @@ of the app's choosing. The author's link is exempt, since Ghost never loads it.
 There is no list of allowed origins in the manifest. The only origin that may
 talk to Ghost from a surface is the origin of that surface's resolved `url`;
 derive it where it is used, with `new URL(surface.url).origin`.
+
+`checkManifestUrl(url, allowLocalhost)` applies the same rules to the address a
+manifest is read from, so it can run before anything is fetched.
+
+### Comparing manifests
+
+`compareManifests(approved, next)` lists every field that differs between two
+versions of a manifest, each a parsed manifest with the address it was read
+from, and whether each change needs the publisher to approve it again. Only
+`description`, `accent_color` and `icon.name` change silently. Everything else
+says who the app is or is a URL Ghost loads or links to, so it needs approval,
+and so does any field added to the manifest later until it is listed as silent.
+A change of address is listed first, as `manifest_url`, and always needs
+approval: it decides what future updates say.
+
+```ts
+compareManifests(
+  { manifestUrl: 'https://podcast.example.com/ghost-app.json', manifest: approved },
+  { manifestUrl: 'https://podcast.example.com/ghost-app.json', manifest: next },
+);
+// {
+//   changes: [{ path: 'surfaces[0].url', requiresApproval: true }],
+//   requiresApproval: true,
+// }
+```
 
 ## Develop
 

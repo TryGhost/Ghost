@@ -11,6 +11,7 @@ import { welcomeEmailAutomationPoll } from '../../../../core/server/services/aut
 import { MEMBER_WELCOME_EMAIL_SLUGS } from '../../../../core/server/services/member-welcome-emails/constants';
 // @ts-expect-error Models currently lack type definitions.
 import { Member, WelcomeEmailAutomationRun } from '../../../../core/server/models';
+const dbUtils = require('../../../utils/db-utils');
 
 const RETRY_DELAY_MS = 10 * 60 * 1000;
 const LOCK_TIMEOUT_MS = 30 * 60 * 1000;
@@ -59,6 +60,8 @@ describe('welcome email automations poll', function () {
   let options: PollOptions;
 
   beforeAll(async function () {
+    // Files share a database within a worker; start from the default fixtures.
+    await dbUtils.reset({ truncate: true });
     await testUtils.setup('default')();
   });
 

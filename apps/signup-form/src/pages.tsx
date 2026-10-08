@@ -1,6 +1,6 @@
-import React from 'react';
 import { FormPage } from './components/pages/form-page';
 import { SuccessPage } from './components/pages/success-page';
+import type React from 'react';
 
 const Pages = {
   FormPage,

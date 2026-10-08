@@ -9,6 +9,7 @@ import { toDatabaseDate } from '../../../../core/server/lib/db-types/date';
 import { createDatabaseAutomationsRepository } from '../../../../core/server/services/automations/database-automations-repository';
 import type { AutomationTriggerTierScope } from '../../../../core/server/services/automations/automations-repository';
 import { MEMBER_WELCOME_EMAIL_SLUGS } from '../../../../core/server/services/member-welcome-emails/constants';
+const dbUtils = require('../../../utils/db-utils');
 
 describe('database automations repository', function () {
   const knex: Knex = testUtils.knex;
@@ -60,6 +61,8 @@ describe('database automations repository', function () {
   }
 
   beforeAll(async function () {
+    // Files share a database within a worker; start from the default fixtures.
+    await dbUtils.reset({ truncate: true });
     await testUtils.setup('default')();
     await insertAutomation({
       id: automationId,

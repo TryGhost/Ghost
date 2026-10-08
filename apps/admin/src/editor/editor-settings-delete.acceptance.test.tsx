@@ -1,6 +1,10 @@
-import { describe, expect, it } from 'vitest';
-import { userEvent } from 'vitest/browser';
+import { afterEach, describe, expect, it } from 'vitest';
+import { page, userEvent } from 'vitest/browser';
 import { buildLexicalParagraph } from '@tryghost/test-data';
+import {
+  settingsCodeInjectionRow,
+  settingsKeyboardShortcutsRow,
+} from '@tryghost/test-data/selectors/editor';
 
 import {
   currentRoute,
@@ -26,6 +30,10 @@ const LOADED_AT = '2026-01-01T00:00:00.000Z';
 const FLAG_ON = { labs: { editorReact: true } };
 
 const POLL = { timeout: 10_000 };
+// The suite's own viewport, restored after the cases that resize it.
+const WIDE_VIEWPORT = { width: 1280, height: 800 };
+// The section's own padding below the button, plus the panel's border.
+const SECTION_INSET = 17;
 const PASSWORD = 'hunter22';
 const EMAIL = String(currentUserResponse().users[0].email);
 
@@ -150,6 +158,28 @@ async function typeIntoBody(text: string) {
   await userEvent.keyboard(`{End}${text}`);
 }
 
+/** Where Delete sits against the panel and the list that scrolls it. */
+function deletePlacement() {
+  const panel = editorScreen.settingsSidebar().element().getBoundingClientRect();
+  const button = editorScreen.settingsDelete().element().getBoundingClientRect();
+  const list = editorScreen.settingsScrollPane();
+  const lastSection = editorScreen
+    .settingsSubviewRow(settingsKeyboardShortcutsRow)
+    .element()
+    .getBoundingClientRect();
+  return {
+    afterLastSection: button.top >= lastSection.bottom,
+    gapBelow: panel.bottom - button.bottom,
+    inList: list.contains(editorScreen.settingsDelete().element()),
+    inView: button.bottom <= list.getBoundingClientRect().bottom,
+    listOverflows: list.scrollHeight > list.clientHeight,
+  };
+}
+
+afterEach(async () => {
+  await page.viewport(WIDE_VIEWPORT.width, WIDE_VIEWPORT.height);
+});
+
 /**
  * The sidebar's Delete section: the one thing in the panel that goes straight
  * to the API, and the only exit from the editor that leaves no post behind.
@@ -182,11 +212,67 @@ describe('Post settings delete', () => {
     await openSidebar();
 
     await expect(editorScreen.settingsDelete()).toHaveCount(0);
+    // The list ends at its last section: no empty wrapper is left for the button.
+    const lastSection = editorScreen.settingsSubviewRow(settingsKeyboardShortcutsRow).element();
+    expect(editorScreen.settingsScrollPane().lastElementChild?.contains(lastSection)).toBe(true);
 
     await typeIntoBody('First words');
 
     // The create gives the post an ID, which is all the button was waiting for.
     await expect.element(editorScreen.settingsDelete(), POLL).toBeVisible();
+  });
+
+  it('ends a short list at the foot of the panel', async () => {
+    fakeDeletablePost();
+    await page.viewport(1280, 2000);
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await openSidebar();
+    await expect.element(editorScreen.settingsDelete()).toBeVisible();
+
+    const placement = deletePlacement();
+    // The case under test: the sections end well above the panel's foot.
+    expect(placement.listOverflows).toBe(false);
+    expect(placement.inList).toBe(true);
+    expect(placement.gapBelow).toBeCloseTo(SECTION_INSET, 0);
+  });
+
+  it('follows the last section of a long list, reached by scrolling', async () => {
+    fakeDeletablePost();
+    await page.viewport(1280, 600);
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await openSidebar();
+    await expect(editorScreen.settingsDelete()).toHaveCount(1);
+
+    const list = editorScreen.settingsScrollPane();
+    const atTop = deletePlacement();
+    expect(atTop.listOverflows).toBe(true);
+    expect(list.scrollTop).toBe(0);
+    expect(atTop.inList).toBe(true);
+    expect(atTop.afterLastSection).toBe(true);
+    // The sections push it below the fold.
+    expect(atTop.inView).toBe(false);
+
+    list.scrollTop = list.scrollHeight;
+    await expect.poll(() => deletePlacement().inView).toBe(true);
+    // Within a pixel: a scrolled list can come to rest on a half-pixel.
+    expect(Math.abs(deletePlacement().gapBelow - SECTION_INSET)).toBeLessThanOrEqual(1);
+  });
+
+  it('makes way for an open pane and returns with the list', async () => {
+    fakeDeletablePost();
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await openSidebar();
+    await expect.element(editorScreen.settingsDelete()).toBeVisible();
+
+    await editorScreen.settingsSubviewRow(settingsCodeInjectionRow).click();
+    await expect.element(editorScreen.settingsSubviewPane()).toBeVisible();
+
+    await expect(editorScreen.settingsDelete()).toHaveCount(0);
+
+    await userEvent.keyboard('{Escape}');
+
+    await expect(editorScreen.settingsSubviewPane()).toHaveCount(0);
+    await expect.element(editorScreen.settingsDelete()).toBeVisible();
   });
 
   it('names the post it is about to delete and warns that it is permanent', async () => {
@@ -366,8 +452,11 @@ describe('Post settings delete', () => {
     await renderAdminApp(`/editor/post/${POST_ID}`, asContributor());
     await openSidebar();
 
-    // The Access section is not theirs to see, but the delete is.
+    // The Access section is not theirs to see, but the delete is, at the end of
+    // a list their role makes shorter.
     await expect(editorScreen.settingsVisibility()).toHaveCount(0);
+    await expect.element(editorScreen.settingsDelete()).toBeVisible();
+    expect(deletePlacement().afterLastSection).toBe(true);
     await editorScreen.settingsDelete().click();
     await editorScreen.confirmSettingsDelete().click();
 

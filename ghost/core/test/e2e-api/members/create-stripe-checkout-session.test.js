@@ -7,6 +7,7 @@ const {
   matchers,
 } = require('../../utils/e2e-framework');
 const nock = require('nock');
+const { stripeMocker } = require('../../utils/e2e-framework-mock-manager');
 const models = require('../../../core/server/models');
 const membersService = require('../../../core/server/services/members');
 const urlServiceUtils = require('../../utils/url-service-utils');
@@ -761,6 +762,205 @@ describe('Create Stripe Checkout Session', function () {
         .matchHeaderSnapshot();
 
       assert.equal(scope.isDone(), true);
+    });
+  });
+
+  describe('The publisher design', function () {
+    const design = {
+      button_color: '#ff5a1f',
+      background_color: '#ffffff',
+      border_style: 'pill',
+      font_family: 'roboto_slab',
+    };
+
+    beforeEach(function () {
+      mockManager.mockStripe();
+      mockManager.mockLabsEnabled('stripeCheckoutDesign');
+    });
+
+    afterEach(async function () {
+      await models.Base.knex('stripe_checkout_config').del();
+    });
+
+    async function setDesign(value) {
+      await adminAgent
+        .put('/stripe/checkout/config/')
+        .body({ checkout_config: [{ design: value }] })
+        .expectStatus(200);
+    }
+
+    // Starts a paid tier checkout and returns the session Ghost sent to Stripe.
+    async function startCheckout() {
+      const {
+        body: { tiers },
+      } = await adminAgent.get('/tiers/');
+      const paidTier = tiers.find((tier) => tier.type === 'paid');
+
+      await membersAgent
+        .post('/api/create-stripe-checkout-session/')
+        .body({ tierId: paidTier.id, cadence: 'month' })
+        .expectStatus(200);
+
+      return stripeMocker.checkoutSessions.at(-1);
+    }
+
+    it('styles the checkout with the publisher design, and only once there is one', async function () {
+      assert.equal((await startCheckout()).branding_settings, undefined);
+
+      await setDesign({ customize: true, ...design });
+      assert.deepEqual((await startCheckout()).branding_settings, design);
+
+      await setDesign({ customize: false });
+      assert.equal((await startCheckout()).branding_settings, undefined);
+    });
+
+    it('styles a card update with the publisher design', async function () {
+      await setDesign({ customize: true, ...design });
+      const member = await models.Member.findOne({ email: 'member1@test.com' }, { require: true });
+      const identity = await membersService.api.getMemberIdentityToken(member.get('transient_id'));
+
+      await membersAgent
+        .post('/api/create-stripe-update-session/')
+        .body({ identity })
+        .expectStatus(200);
+
+      const session = stripeMocker.checkoutSessions.at(-1);
+      assert.equal(session.mode, 'setup');
+      assert.deepEqual(session.branding_settings, design);
+    });
+
+    it('sends no design while its flag is off, even when one is saved', async function () {
+      await setDesign({ customize: true, ...design });
+      mockManager.mockLabsDisabled('stripeCheckoutDesign');
+
+      assert.equal((await startCheckout()).branding_settings, undefined);
+    });
+
+    it('goes ahead unstyled when the saved design can no longer be read', async function () {
+      await setDesign({ customize: true, ...design });
+      await models.Base.knex('stripe_checkout_config').update({
+        design: JSON.stringify({ ...design, font_family: 'a_font_stripe_dropped' }),
+      });
+
+      assert.equal((await startCheckout()).branding_settings, undefined);
+    });
+  });
+
+  describe('Shipping address collection', function () {
+    let paidTierId;
+
+    beforeEach(async function () {
+      mockManager.mockStripe();
+      mockManager.mockLabsEnabled('stripeCheckoutCollection');
+      mockManager.mockLabsEnabled('membersCustomFields');
+      for (const field of [
+        { name: 'Delivery address', type: 'address' },
+        { name: 'Recipient name', type: 'short_text' },
+      ]) {
+        await adminAgent
+          .post('/members/metafields/custom/')
+          .body({ members_metafields: [field] })
+          .expectStatus(201);
+      }
+      const {
+        body: { tiers },
+      } = await adminAgent.get('/tiers/');
+      paidTierId = tiers.find((tier) => tier.type === 'paid').id;
+    });
+
+    afterEach(async function () {
+      await models.Base.knex('stripe_checkout_config_tiers').del();
+      await models.Base.knex('stripe_checkout_config').del();
+      await models.Base.knex('members_metafield_bindings').del();
+      await models.Base.knex('members_metafields').del();
+    });
+
+    async function setShipping(shipping) {
+      await adminAgent
+        .put('/stripe/checkout/config/')
+        .body({ checkout_config: [{ shipping }] })
+        .expectStatus(200);
+    }
+
+    const collect = (over = {}) => ({
+      collect: true,
+      address: { custom_field_key: 'delivery_address' },
+      name: { custom_field_key: 'recipient_name' },
+      ...over,
+    });
+
+    // Starts a checkout for the paid tier and returns the session Ghost sent to Stripe.
+    async function startCheckout() {
+      await membersAgent
+        .post('/api/create-stripe-checkout-session/')
+        .body({ tierId: paidTierId, cadence: 'month' })
+        .expectStatus(200);
+
+      return stripeMocker.checkoutSessions.at(-1);
+    }
+
+    it('asks for an address in the named countries, and only once shipping is on', async function () {
+      assert.equal((await startCheckout()).shipping_address_collection, undefined);
+
+      await setShipping(collect({ allowed_countries: ['GB', 'IE'] }));
+      assert.deepEqual((await startCheckout()).shipping_address_collection, {
+        allowed_countries: ['GB', 'IE'],
+      });
+
+      await setShipping({ collect: false });
+      assert.equal((await startCheckout()).shipping_address_collection, undefined);
+    });
+
+    it('offers every country Stripe ships to when none are named', async function () {
+      await setShipping(collect());
+
+      // The Stripe mock decodes a list this long as an object keyed by position.
+      const countries = Object.values(
+        (await startCheckout()).shipping_address_collection.allowed_countries,
+      );
+      assert.ok(countries.includes('GB'));
+      assert.ok(countries.includes('US'));
+      assert.ok(countries.length > 200);
+    });
+
+    it('asks nothing on a tier shipping is not limited to', async function () {
+      const otherTierId = 'ffffffffffffffffffffffff';
+      const [existing] = await models.Base.knex('products').where('id', paidTierId);
+      await models.Base.knex('products').insert({
+        ...existing,
+        id: otherTierId,
+        name: 'Other tier',
+        slug: 'other-tier',
+      });
+      try {
+        await setShipping(collect({ tier_ids: [otherTierId] }));
+        assert.equal((await startCheckout()).shipping_address_collection, undefined);
+      } finally {
+        await models.Base.knex('stripe_checkout_config_tiers').del();
+        await models.Base.knex('products').where('id', otherTierId).del();
+      }
+    });
+
+    it('keeps asking while only the name field is archived, and stops once the address field is', async function () {
+      await setShipping(collect());
+      const archive = (key) =>
+        adminAgent
+          .put(`/members/metafields/custom/${key}/`)
+          .body({ members_metafields: [{ status: 'archived' }] })
+          .expectStatus(200);
+
+      await archive('recipient_name');
+      assert.ok((await startCheckout()).shipping_address_collection);
+
+      await archive('delivery_address');
+      assert.equal((await startCheckout()).shipping_address_collection, undefined);
+    });
+
+    it('asks nothing while its flag is off, even when shipping is on', async function () {
+      await setShipping(collect());
+      mockManager.mockLabsDisabled('stripeCheckoutCollection');
+
+      assert.equal((await startCheckout()).shipping_address_collection, undefined);
     });
   });
 });

@@ -14,6 +14,7 @@ const descriptionField = () => page.getByRole('textbox', { name: 'Description', 
 describe('Automation settings', () => {
   it.each([
     { status: 'inactive' as const, button: 'Save', savedStatus: 'inactive' },
+    { status: 'archived' as const, button: 'Save', savedStatus: 'archived' },
     { status: 'active' as const, button: 'Publish changes', savedStatus: 'active' },
     { status: 'active' as const, button: 'Turn off', savedStatus: 'inactive' },
   ])('persists metadata through explicit $button', async ({ status, button, savedStatus }) => {

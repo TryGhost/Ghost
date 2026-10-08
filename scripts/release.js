@@ -122,10 +122,22 @@ function detectBumpType(baseTag, bumpType) {
   // Check for new migration files
   const migrationsPath = 'ghost/core/core/server/data/migrations/versions/';
   try {
-    const addedFiles = run(
-      `git diff --diff-filter=A --name-only ${baseTag} HEAD -- ${migrationsPath}`,
-    );
-    if (addedFiles?.includes('core/')) {
+    // No pathspec: a moved migrations directory only reads as renames when the
+    // old paths are in the diff. A rename still counts as new unless it keeps its
+    // path within the versions directory.
+    const versionsRelative = (file) => file.split('/migrations/versions/')[1] ?? null;
+    const changes = run(`git diff --name-status --find-renames ${baseTag} HEAD`);
+    const added = changes
+      .split('\n')
+      .map((line) => line.split('\t'))
+      .some(
+        ([status, from, to]) =>
+          (status === 'A' && from.startsWith(migrationsPath)) ||
+          (status?.startsWith('R') &&
+            to.startsWith(migrationsPath) &&
+            versionsRelative(from) !== versionsRelative(to)),
+      );
+    if (added) {
       log('New migrations detected');
       if (bumpType === 'auto') {
         log('Auto-detecting: bumping to minor');

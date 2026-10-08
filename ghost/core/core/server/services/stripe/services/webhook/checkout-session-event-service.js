@@ -1,7 +1,11 @@
 const _ = require('lodash');
 const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
-const { canWelcomeEmailReplaceSignupPaidEmail } = require('../../../../lib/member-signup-contexts');
+const {
+  SIGNUP_CONTEXTS,
+  canWelcomeEmailReplaceSignupPaidEmail,
+} = require('../../../../lib/member-signup-contexts');
+const { collectedShipping } = require('../checkout/completed-session');
 /** @typedef {import('../../../../lib/member-signup-contexts').SignupContext} SignupContext */
 
 function isStripeMetadataTrue(value) {
@@ -83,6 +87,10 @@ module.exports = class CheckoutSessionEventService {
    * @param {object} deps.staffServiceEmails
    * @param {function} deps.sendSignupEmail
    * @param {function} deps.isPaidWelcomeEmailActive
+   * @param {{isSet(flag: string): boolean}} deps.labs
+   * @param {typeof import('../../../stripe-checkout-config')} deps.stripeCheckoutConfig
+   * @param {Pick<import('../../../members-metafields/bindings-service').MetafieldBindingsService, 'planCollected'>} deps.metafieldBindings
+   * @param {{updateWithMetafields: (data: object, options: {id: string}, plans: import('../../../members-metafields/values-service').MetafieldPlan[]) => Promise<unknown>}} deps.memberBREADService
    */
   constructor(deps) {
     this.api = deps.api;
@@ -334,6 +342,11 @@ module.exports = class CheckoutSessionEventService {
       email: customer.email,
     });
 
+    // A Portal signup's success link is a magic link that creates the member when the buyer
+    // lands back on the site, which can happen before this event arrives. That member was
+    // still created by this checkout, so only one created before it started counts.
+    const memberPreexisted =
+      Boolean(member) && !(session.created && member.get('created_at') >= session.created * 1000);
     const checkoutType = _.get(session, 'metadata.checkoutType');
 
     if (!member) {
@@ -422,6 +435,10 @@ module.exports = class CheckoutSessionEventService {
       }
     }
 
+    // After the subscription work and apart from it: a throw here would fail the webhook, and
+    // Stripe's retry could repeat the payment work.
+    await this.saveShippingDetails(member.id, session, { memberPreexisted });
+
     if (checkoutType !== 'upgrade') {
       const ghostSignupContext = /** @type {SignupContext | undefined} */ (
         session.metadata?.ghostSignupContext
@@ -438,6 +455,77 @@ module.exports = class CheckoutSessionEventService {
         // Direct checkout flows do not have a pre-checkout sign-in path.
         this.deps.sendSignupEmail(customer.email);
       }
+    }
+  }
+
+  /**
+   * Saves the shipping address, and the recipient's name, a checkout collected into the custom
+   * fields the site's config names. Only a checkout that asked for an address is saved from:
+   * Stripe can return one it wasn't asked for, such as one saved with Link, and that isn't the
+   * publisher's to keep. What the checkout asked is read from the checkout itself, because the
+   * config can change while it is open.
+   *
+   * Never throws: a failed webhook makes Stripe retry it, which could repeat the payment work.
+   *
+   * @param {string} memberId
+   * @param {import('stripe').Stripe.Checkout.Session} session
+   * @param {object} options
+   * @param {boolean} options.memberPreexisted Whether the member existed before this checkout
+   */
+  async saveShippingDetails(memberId, session, { memberPreexisted }) {
+    try {
+      const { SHIPPING_FLAG } = this.deps.stripeCheckoutConfig;
+      if (!session.shipping_address_collection || !this.deps.labs.isSet(SHIPPING_FLAG)) {
+        return;
+      }
+
+      // Typing an email address into a checkout doesn't prove owning it. A member this
+      // checkout created holds only what the buyer gave, but one that existed before belongs
+      // to whoever verified that address, so it is only written by a signed-in member.
+      const wasAuthenticated =
+        session.metadata?.ghostSignupContext === SIGNUP_CONTEXTS.ALREADY_AUTHENTICATED;
+      if (memberPreexisted && !wasAuthenticated) {
+        logging.warn(
+          {
+            event: { name: 'stripe_checkout.shipping.save_skipped' },
+            member_id: memberId,
+            session_id: session.id,
+          },
+          'Skipped saving the shipping details an unverified checkout collected for an existing member',
+        );
+        return;
+      }
+
+      const { plans, failure } = await this.deps.metafieldBindings.planCollected(
+        collectedShipping.parse(session),
+      );
+      if (plans.length > 0) {
+        // Through the members service, like any other edit, so the change reaches webhooks.
+        await this.deps.memberBREADService.updateWithMetafields({}, { id: memberId }, plans);
+      } else if (!failure) {
+        // The checkout asked, but shipping was switched off or its fields deleted since.
+        logging.warn(
+          {
+            event: { name: 'stripe_checkout.shipping.no_destination' },
+            member_id: memberId,
+            session_id: session.id,
+          },
+          'Dropped the shipping details a checkout collected, as no custom field takes them now',
+        );
+      }
+      if (failure) {
+        throw failure;
+      }
+    } catch (err) {
+      logging.error(
+        {
+          event: { name: 'stripe_checkout.shipping.save_failed' },
+          err,
+          member_id: memberId,
+          session_id: session.id,
+        },
+        'Failed to save the shipping details a checkout collected',
+      );
     }
   }
 };

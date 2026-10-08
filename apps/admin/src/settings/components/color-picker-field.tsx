@@ -187,7 +187,12 @@ const ColorPickerField = ({
             />
           )}
           <PopoverTrigger asChild>
-            <ColorPickerTrigger id={triggerId} value={normalizedValue} />
+            {/* A titled field is named by its label rather than the picker's generic name. */}
+            <ColorPickerTrigger
+              aria-label={title ? undefined : 'Pick color'}
+              id={triggerId}
+              value={normalizedValue}
+            />
           </PopoverTrigger>
         </div>
       </Inline>

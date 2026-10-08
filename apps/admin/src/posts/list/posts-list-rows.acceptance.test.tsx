@@ -16,7 +16,6 @@ import {
 } from '@test-utils/acceptance';
 import { postsListScreen } from './posts-list.screen';
 
-const SENDING_FLAG_ON = { labs: { improveSendingUI: true } };
 const EMAIL_ID = '64d623b64676110001e897ab';
 
 const emailMetricsSettings = settingsResponse({
@@ -220,7 +219,6 @@ describe('Posts list email sending status', () => {
     });
 
     await renderAdminApp('/posts?type=published', {
-      ...SENDING_FLAG_ON,
       boot: { browseSettings: { response: emailMetricsSettings } },
     });
 
@@ -251,7 +249,7 @@ describe('Posts list email sending status', () => {
       { status: 502 },
     );
 
-    await renderAdminApp('/posts?type=published', SENDING_FLAG_ON);
+    await renderAdminApp('/posts?type=published');
 
     const row = postsListScreen.listItems().first();
     await expect.element(row).toHaveTextContent('Sending emails');
@@ -326,7 +324,6 @@ describe('Posts list email sending status', () => {
     });
 
     await renderAdminApp('/posts?type=published', {
-      ...SENDING_FLAG_ON,
       boot: { browseSettings: { response: emailMetricsSettings } },
     });
 
@@ -384,7 +381,7 @@ describe('Posts list email sending status', () => {
       };
     });
 
-    await renderAdminApp('/posts?type=published', SENDING_FLAG_ON);
+    await renderAdminApp('/posts?type=published');
     const row = postsListScreen.listItems().first();
     await expect.element(row).toHaveTextContent('Sending emails');
 
@@ -414,7 +411,7 @@ describe('Posts list email sending status', () => {
       { status: 404 },
     );
 
-    const app = await renderAdminApp('/posts?type=published', SENDING_FLAG_ON);
+    const app = await renderAdminApp('/posts?type=published');
 
     const row = postsListScreen.listItems().first();
     await expect.element(row).toHaveTextContent('Published and sent');
@@ -464,28 +461,12 @@ describe('Posts list email sending status', () => {
       ],
     });
 
-    await renderAdminApp('/posts?type=published', SENDING_FLAG_ON);
+    await renderAdminApp('/posts?type=published');
 
     await expect.element(postsListScreen.listItems().nth(0)).toHaveTextContent('100 of 1,000');
     await expect.element(postsListScreen.listItems().nth(1)).toHaveTextContent('200 of 2,000');
     await expect.poll(() => firstStatusApi.requests.length).toBeGreaterThan(0);
     await expect.poll(() => secondStatusApi.requests.length).toBeGreaterThan(0);
-  });
-
-  it('does not request status when the sending UI flag is off', async () => {
-    fakePosts([
-      post({
-        title: 'Flagged off post',
-        status: 'published',
-        email: { id: EMAIL_ID, status: 'submitting', email_count: 1000, opened_count: 0 },
-      }),
-    ]);
-
-    await renderAdminApp('/posts?type=published');
-
-    const row = postsListScreen.listItems().first();
-    await expect.element(row).toHaveTextContent('Published and sent');
-    await expect.element(row).not.toHaveTextContent('Sending emails');
   });
 });
 

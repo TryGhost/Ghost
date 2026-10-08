@@ -1,16 +1,10 @@
-import * as Sentry from '@sentry/ember';
 import EmberObject from '@ember/object';
 import Service from '@ember/service';
-import sentryTestKit from 'sentry-testkit/browser';
 import sinon from 'sinon';
 import {describe, it} from 'mocha';
 import {expect} from 'chai';
-import {getSentryTestConfig} from '../../helpers/sentry';
 import {run} from '@ember/runloop';
 import {setupTest} from 'ember-mocha';
-import {waitUntil} from '@ember/test-helpers';
-
-const {sentryTransport, testkit} = sentryTestKit();
 
 const buildMockModel = () => {
     return EmberObject.create({
@@ -115,42 +109,6 @@ describe('Unit: Service: state-bridge', function () {
         });
     });
 
-    describe('#captureBillingAppLoadFailure', function () {
-        const report = {
-            billingMonitor: {attempts: 2, document_visibility_state: 'visible'},
-            tags: {source: 'billing-app-load-monitor', billing_shell: 'react', route: 'pro.index'}
-        };
-
-        before(function () {
-            Sentry.init(getSentryTestConfig(sentryTransport));
-        });
-
-        beforeEach(function () {
-            testkit.reset();
-        });
-
-        it("reports in the billing service's event shape", async function () {
-            config.sentry_dsn = 'https://example.com/sentry';
-
-            service.captureBillingAppLoadFailure(report);
-
-            await waitUntil(() => testkit.reports().length > 0);
-            const [event] = testkit.reports();
-            expect(event.message).to.equal('Billing app failed to become ready');
-            expect(event.level).to.equal('warning');
-            expect(event.originalReport.fingerprint).to.deep.equal(['billing-app-load-failure', 'visible', '2']);
-            expect(event.tags).to.deep.include({source: 'billing-app-load-monitor', billing_shell: 'react', route: 'pro.index'});
-        });
-
-        it('does not report when Sentry is not configured', function () {
-            config.sentry_dsn = null;
-
-            service.captureBillingAppLoadFailure(report);
-
-            expect(testkit.reports()).to.have.length(0);
-        });
-    });
-
     describe('#isFeatureEnabled', function () {
         it('does not claim route ownership before Labs settings load', function () {
             settings.settingsModel = null;
@@ -166,6 +124,44 @@ describe('Unit: Service: state-bridge', function () {
             expect(service.isFeatureEnabled('editorReact')).to.be.true;
             expect(service.isFeatureEnabled('adminUIRefresh')).to.be.false;
             expect(service.isFeatureEnabled('missingFlag')).to.be.false;
+        });
+
+        it('keeps the editor with Ember while the Ember editor is open', function () {
+            settings.settingsModel = {};
+            sinon.stub(feature, 'editorReact').get(() => true);
+            const featureFlagsChange = sinon.spy();
+            service.on('featureFlagsChange', featureFlagsChange);
+
+            service.setEmberEditorActive(true);
+
+            expect(service.isFeatureEnabled('editorReact')).to.be.false;
+            expect(featureFlagsChange.calledOnce).to.be.true;
+
+            service.setEmberEditorActive(false);
+
+            expect(service.isFeatureEnabled('editorReact')).to.be.true;
+            expect(featureFlagsChange.calledTwice).to.be.true;
+        });
+
+        it('keeps the editor with React while the React editor is showing', function () {
+            settings.settingsModel = {};
+            sinon.stub(feature, 'editorReact').get(() => false);
+            const featureFlagsChange = sinon.spy();
+            service.on('featureFlagsChange', featureFlagsChange);
+
+            service.setReactRoutePattern('/editor/*');
+
+            expect(service.isFeatureEnabled('editorReact')).to.be.true;
+            expect(featureFlagsChange.calledOnce).to.be.true;
+
+            service.setReactRoutePattern('/posts');
+
+            expect(service.isFeatureEnabled('editorReact')).to.be.false;
+            expect(featureFlagsChange.calledTwice).to.be.true;
+
+            service.setReactRoutePattern('/tags');
+
+            expect(featureFlagsChange.calledTwice, 'no change outside the editor').to.be.true;
         });
     });
 

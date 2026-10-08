@@ -103,6 +103,8 @@
   "dependencies": {
     "@sentry/react": "catalog:",
     "@tanstack/react-query": "catalog:",
+    "@tryghost/app-contracts": "workspace:*",
+    "@tryghost/checkout": "workspace:*",
     "@tryghost/limit-service": "workspace:*",
     "@tryghost/metafield-csv": "workspace:*",
     "@tryghost/metafield-types": "workspace:*",

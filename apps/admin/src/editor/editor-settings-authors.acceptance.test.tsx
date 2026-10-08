@@ -265,7 +265,7 @@ describe('Post settings authors', () => {
     await userEvent.keyboard('{Meta>}s{/Meta}');
 
     await expect
-      .element(editorScreen.saveErrorBanner())
+      .element(editorScreen.saveError())
       .toHaveTextContent('At least one author is required.');
     expect(saveApi.requests).toHaveLength(0);
 
@@ -278,20 +278,20 @@ describe('Post settings authors', () => {
     await expect(editorScreen.settingsAuthorsError()).toHaveCount(0);
   });
 
-  it('keeps the validation notice visible while unrelated edits await a save', async () => {
+  it('keeps the authors error visible while unrelated edits await a save', async () => {
     const saveApi = fakeSavablePost();
     await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
     await openAuthors();
     await editorScreen.removeAuthor('Owner User').click();
-    await expect.element(editorScreen.pendingSaveNotice()).toBeVisible();
+    await expect.element(editorScreen.settingsAuthorsError()).toBeVisible();
 
     // Keep focus in the title: no blur or successful preparation can clear the hold.
     await editorScreen.titleInput().fill('Still waiting for an author');
-    await expect.element(editorScreen.pendingSaveNotice()).toBeVisible();
+    await expect.element(editorScreen.settingsAuthorsError()).toBeVisible();
     await editorScreen.body().fill('Body awaiting the same author correction');
     // This test disables the debounce, so a second blocked attempt cannot restore
-    // a notice that disappeared on the keystroke.
-    await expect.element(editorScreen.pendingSaveNotice()).toBeVisible();
+    // an error that disappeared on the keystroke.
+    await expect.element(editorScreen.settingsAuthorsError()).toBeVisible();
     expect(saveApi.requests).toHaveLength(0);
 
     await openAuthorList();
@@ -301,25 +301,25 @@ describe('Post settings authors', () => {
       authors: [{ id: NADIA.id }],
     });
     expect(submittedPost(saveApi).lexical).toContain('Body awaiting the same author correction');
-    await expect(editorScreen.pendingSaveNotice()).toHaveCount(0);
+    await expect(editorScreen.settingsAuthorsError()).toHaveCount(0);
   });
 
-  it('does not revive the authors warning after undoing their removal', async () => {
+  it('does not revive the authors error after undoing their removal', async () => {
     const saveApi = fakeSavablePost();
     await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
     await openAuthors();
     await editorScreen.removeAuthor('Owner User').click();
-    await expect.element(editorScreen.pendingSaveNotice()).toBeVisible();
+    await expect.element(editorScreen.settingsAuthorsError()).toBeVisible();
 
     await openAuthorList();
     await editorScreen.settingsAuthorOption('Owner User').click();
-    await expect(editorScreen.pendingSaveNotice()).toHaveCount(0);
+    await expect(editorScreen.settingsAuthorsError()).toHaveCount(0);
     await expect.poll(unsavedChangesGuarded).toBe(false);
     expect(saveApi.requests).toHaveLength(0);
 
-    // Keep the title focused: a later save must not hide a stale warning.
+    // Keep the title focused: a later save must not show a stale error.
     await editorScreen.titleInput().fill('Unrelated title edit');
-    await expect(editorScreen.pendingSaveNotice()).toHaveCount(0);
+    await expect(editorScreen.settingsAuthorsError()).toHaveCount(0);
     expect(saveApi.requests).toHaveLength(0);
   });
 
@@ -344,8 +344,8 @@ describe('Post settings authors', () => {
     await expect.element(editorScreen.settingsAuthorsError()).toBeVisible();
     // Exercise a real body autosave too, with the normal production debounce.
     await editorScreen.body().fill('Body edited while authors are invalid');
-    await expect.element(editorScreen.pendingSaveNotice()).toBeVisible();
-    await expect(editorScreen.saveErrorBanner()).toHaveCount(0);
+    await expect.element(editorScreen.settingsAuthorsError()).toBeVisible();
+    await expect(editorScreen.saveError()).toHaveCount(0);
     expect(saveApi.requests).toHaveLength(0);
 
     // Crediting someone again lets the staged image through with the authors.
@@ -354,7 +354,7 @@ describe('Post settings authors', () => {
 
     await expect.poll(() => saveApi.requests.length, POLL).toBe(1);
     expect(submittedPost(saveApi).lexical).toContain('Body edited while authors are invalid');
-    await expect(editorScreen.pendingSaveNotice()).toHaveCount(0);
+    await expect(editorScreen.settingsAuthorsError()).toHaveCount(0);
     expect(submittedPost(saveApi)).toMatchObject({
       authors: [{ id: NADIA.id }],
       feature_image: UPLOADED_IMAGE,
@@ -375,7 +375,7 @@ describe('Post settings authors', () => {
 
     await expect.element(editorScreen.settingsSlug()).toHaveValue('brand-new-name');
     await expect.element(editorScreen.settingsAuthorsError()).toBeVisible();
-    await expect(editorScreen.saveErrorBanner()).toHaveCount(0);
+    await expect(editorScreen.saveError()).toHaveCount(0);
     expect(saveApi.requests).toHaveLength(0);
 
     // Crediting someone again lets the staged title and slug through with the authors.
@@ -520,7 +520,7 @@ describe('Post settings authors', () => {
     expect(submittedPost(createApi).authors).toEqual([{ id: OWNER_ID }]);
   });
 
-  it('refuses a publish while nobody is credited', async () => {
+  it('refuses to open the publish flow while nobody is credited', async () => {
     const saveApi = fakeSavablePost();
     // The publish machine reads the site's member total, which the boot entry
     // counts in a different shape.
@@ -533,16 +533,19 @@ describe('Post settings authors', () => {
 
     await editorScreen.removeAuthor('Owner User').click();
     await expect.element(editorScreen.settingsAuthorsError()).toBeVisible();
+    await editorScreen.settingsToggle().click();
+    await expect(editorScreen.settingsSidebar()).toHaveCount(0);
 
+    await expect.element(editorScreen.publishButton()).toBeEnabled();
     await editorScreen.publishButton().click();
-    await expect.element(publishScreen.options()).toBeVisible();
-    await publishScreen.continueButton().click();
-    await publishScreen.confirmButton().click();
 
+    // Refused as Ember refuses it: the status line names the rule, and the
+    // panel opens on the field.
     await expect
-      .element(publishScreen.confirmError())
+      .element(editorScreen.saveError())
       .toHaveTextContent('At least one author is required.');
-    await expect(publishScreen.complete()).toHaveCount(0);
+    await expect.element(editorScreen.settingsAuthorsInput()).toHaveFocus();
+    await expect(publishScreen.root()).toHaveCount(0);
     expect(saveApi.requests).toHaveLength(0);
   });
 

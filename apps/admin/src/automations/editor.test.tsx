@@ -1062,11 +1062,13 @@ describe('AutomationEditor', () => {
   });
 
   it.each([
-    { status: 'inactive' as const, label: 'Save', nextStatus: 'inactive' },
-    { status: 'inactive' as const, label: 'Publish', nextStatus: 'active' },
-    { status: 'active' as const, label: 'Publish changes', nextStatus: 'active' },
-    { status: 'active' as const, label: 'Turn off', nextStatus: 'inactive' },
-  ])('saves settings only on explicit $label', async ({ status, label, nextStatus }) => {
+    { status: 'inactive', label: 'Save', nextStatus: 'inactive' },
+    { status: 'archived', label: 'Save', nextStatus: 'archived' },
+    { status: 'archived', label: 'Publish', nextStatus: 'active' },
+    { status: 'inactive', label: 'Publish', nextStatus: 'active' },
+    { status: 'active', label: 'Publish changes', nextStatus: 'active' },
+    { status: 'active', label: 'Turn off', nextStatus: 'inactive' },
+  ] as const)('saves settings only on explicit $label', async ({ status, label, nextStatus }) => {
     mockLabs.current = { automationRunAnalytics: true, automationsPerTier: true };
     mockUseReadAutomation.mockReturnValue({
       data: { automations: [{ ...automationDetail, status }] },
@@ -1102,10 +1104,18 @@ describe('AutomationEditor', () => {
     const [payload, options] = mockEditMutation.mutate.mock.calls[0];
     act(() => options.onSuccess?.({ automations: [{ ...automationDetail, ...payload }] }));
     expect(screen.getByRole('textbox', { name: 'Name' })).toHaveValue('New name');
-    if (nextStatus === 'inactive') {
-      expect(screen.getByRole('button', { name: 'Save' })).toBeDisabled();
-    } else {
-      expect(screen.getByRole('button', { name: 'Published' })).toBeDisabled();
+    switch (nextStatus) {
+      case 'active':
+        expect(screen.getByRole('button', { name: 'Published' })).toBeDisabled();
+        break;
+      case 'inactive':
+      case 'archived':
+        expect(screen.getByRole('button', { name: 'Save' })).toBeDisabled();
+        break;
+      default: {
+        const _exhaustive: never = nextStatus;
+        throw new Error(`Unexpected nextStatus: ${String(_exhaustive)}`);
+      }
     }
   });
 
@@ -2783,7 +2793,7 @@ describe('AutomationEditor', () => {
     expect(edgePairs).toContainEqual([insertedId, 'action-email']);
   });
 
-  it('keeps the in-edge + button visible after leaving the button while still hovering the edge', () => {
+  it('shows the in-edge + button without hovering the edge', () => {
     mockUseReadAutomation.mockReturnValue({
       data: { automations: [automationDetail] },
       isLoading: false,
@@ -2792,25 +2802,10 @@ describe('AutomationEditor', () => {
 
     renderEditor();
 
-    const edge = screen
-      .getByTestId('react-flow-mock-edges')
-      .querySelector('[data-edge-id="e-action-wait-action-email"]');
-    const edgeGroup = edge?.querySelector('g');
     const button = screen.getByTestId('add-step-button-action-wait-action-email');
-    const labelHitZone = button.closest('.pointer-events-auto');
 
-    expect(edgeGroup).toBeInTheDocument();
-    expect(labelHitZone).toBeInTheDocument();
-
-    fireEvent.mouseEnter(edgeGroup!);
-    expect(button).toHaveClass('opacity-100');
-
-    fireEvent.mouseEnter(labelHitZone!);
-    fireEvent.mouseLeave(labelHitZone!, { relatedTarget: edgeGroup });
-    expect(button).toHaveClass('opacity-100');
-
-    fireEvent.mouseLeave(edgeGroup!);
-    expect(button).toHaveClass('opacity-0');
+    expect(button).toBeVisible();
+    expect(button).not.toHaveClass('opacity-0');
   });
 
   it('deletes a wait step and reconnects the chain', () => {

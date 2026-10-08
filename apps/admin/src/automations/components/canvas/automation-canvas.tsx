@@ -417,7 +417,7 @@ const buildGraph = ({
         (automationRunAnalyticsEnabled ? EXIT_NODE_HEIGHT : TAIL_NODE_HEIGHT)),
   };
 
-  // Every connecting line between existing nodes gets a circular + on hover. The trailing edge into the
+  // Every connecting line between existing nodes gets a circular +. The trailing edge into the
   // legacy tail node has none — its rectangular button already covers that slot.
   // The fixed exit marker uses the same insertion control as the other connectors.
   const edges: Edge[] = [];

@@ -183,17 +183,11 @@ export default defineConfig({
         test: {
           ...sharedDbConfig,
           name: 'integration',
-          // isolate:true (overriding the shared default) gives each file
-          // its own fork → its own fresh per-process DB + Ghost. The
-          // integration suite has inter-file state pollution that the old
-          // fixed serial order masked but nondeterministic fork sharding
-          // exposes — e.g. migration.test.js can leave a rolled-back
-          // schema that a co-located file then inherits. Per-file
-          // isolation removes it by construction. The e2e project keeps
-          // isolate:false (it has no such pollution and is fastest that way).
-          isolate: true,
+          // Shares the default isolate:false (one shared boot per fork). The
+          // migration tests roll the schema back and forward, so they run in
+          // `integration-migrations` with per-file isolation instead.
           include: ['test/integration/**/*.test.{js,ts}'],
-          exclude: ['**/node_modules/**'],
+          exclude: ['**/node_modules/**', 'test/integration/migrations/**'],
           // Probes the optional Docker services (Redis, VersityGW) once in
           // the main process and exports GHOST_TEST_{REDIS,S3}_AVAILABLE
           // so the adapter suites skip when their service is down and run
@@ -201,6 +195,20 @@ export default defineConfig({
           // other DB suites.
           globalSetup: ['./test/utils/vitest-globalsetup-services.ts'],
           // Matches the mocha `--timeout=10000` for the integration suite.
+          testTimeout: 10000,
+        },
+      },
+      {
+        ssr: sharedSsrConfig,
+        test: {
+          ...sharedDbConfig,
+          name: 'integration-migrations',
+          // isolate:true gives each file its own fork, DB and Ghost:
+          // migration.test.js can leave a rolled-back schema that a later
+          // file in the same fork would otherwise inherit.
+          isolate: true,
+          include: ['test/integration/migrations/**/*.test.{js,ts}'],
+          exclude: ['**/node_modules/**'],
           testTimeout: 10000,
         },
       },
@@ -221,10 +229,10 @@ export default defineConfig({
           // locally: forks 2 hangs in ~10 runs, threads 0 in 39.
           // Not a perf change — ~4% at maxWorkers=3, well inside noise.
           pool: 'threads' as const,
-          // isolate:true for the same reason as integration: the legacy
-          // suite is the most state-pollution-prone (it was parked on
-          // exactly that under the old serial model), so per-file
-          // isolation removes the inter-file bleed by construction.
+          // isolate:true: the legacy suite is the most
+          // state-pollution-prone (it was parked on exactly that under the
+          // old serial model), so per-file isolation removes the inter-file
+          // bleed by construction.
           isolate: true,
           include: ['test/legacy/**/*.test.{js,ts}'],
           exclude: ['**/node_modules/**'],

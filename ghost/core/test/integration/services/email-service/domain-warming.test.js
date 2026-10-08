@@ -11,14 +11,20 @@ const { waitForEmailStatus, waitForNoActiveSends } = require('../../../utils/bat
 
 describe('Domain Warming Integration Tests', function () {
   let agent;
+  let ghostServer;
   let clock;
 
   beforeAll(async function () {
     const agents = await agentProvider.getAgentsWithFrontend();
     agent = agents.adminAgent;
+    ghostServer = agents.ghostServer;
 
     await fixtureManager.init('newsletters', 'members:newsletters');
     await agent.loginAsOwner();
+  });
+
+  afterAll(async function () {
+    await ghostServer.stop();
   });
 
   // Helper: Create members with newsletter subscription using bulk insert for performance

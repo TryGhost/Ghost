@@ -1,6 +1,7 @@
 const sinon = require('sinon');
 const i18nLib = require('@tryghost/i18n').default;
 const testUtils = require('../../utils');
+const dbUtils = require('../../utils/db-utils');
 const { assertMatchSnapshot } = require('../../utils/assertions');
 const MemberWelcomeEmailRenderer = require('../../../core/server/services/member-welcome-emails/member-welcome-email-renderer');
 
@@ -8,6 +9,8 @@ describe('Member Welcome Email Renderer Snapshots', function () {
   let renderer;
 
   beforeAll(async function () {
+    // Files share a database within a worker; start from the default fixtures.
+    await dbUtils.reset({ truncate: true });
     await testUtils.setup('default')();
   });
 

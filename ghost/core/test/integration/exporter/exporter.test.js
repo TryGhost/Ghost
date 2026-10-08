@@ -111,6 +111,8 @@ describe('Exporter', function () {
       'sessions',
       'settings',
       'snippets',
+      'stripe_checkout_config',
+      'stripe_checkout_config_tiers',
       'stripe_prices',
       'stripe_products',
       'subscriptions',

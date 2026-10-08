@@ -152,6 +152,32 @@ module.exports = function apiRoutes() {
   router.get('/tiers/:id', mw.authAdminApi, http(api.tiers.read));
   router.put('/tiers/:id', mw.authAdminApi, http(api.tiers.edit));
 
+  // ## Stripe Checkout
+  router.get(
+    '/stripe/checkout/config',
+    mw.authAdminApi,
+    labs.enabledMiddleware('stripeCheckoutDesign'),
+    http(api.stripeCheckoutConfig.read),
+  );
+  router.put(
+    '/stripe/checkout/config',
+    mw.authAdminApi,
+    labs.enabledMiddleware('stripeCheckoutDesign'),
+    http(api.stripeCheckoutConfig.edit),
+  );
+  router.post(
+    '/stripe/checkout/preview',
+    mw.authAdminApi,
+    labs.enabledMiddleware('stripeCheckoutDesign'),
+    http(api.stripeCheckoutPreview.add),
+  );
+  router.get(
+    '/stripe/checkout/branding',
+    mw.authAdminApi,
+    labs.enabledMiddleware('stripeCheckoutDesign'),
+    http(api.stripeCheckoutBranding.read),
+  );
+
   // ## Members
   router.get('/members', mw.authAdminApi, http(api.members.browse));
   router.post('/members', mw.authAdminApi, http(api.members.add));
@@ -232,8 +258,11 @@ module.exports = function apiRoutes() {
     next(appInstallations.isAvailable() ? undefined : new errors.NotFoundError());
   });
 
+  appsRouter.post('/installations/preview', http(api.appInstallationPreviews.add));
   appsRouter.get('/installations', http(api.appInstallations.browse));
+  appsRouter.post('/installations', http(api.appInstallations.add));
   appsRouter.get('/installations/:id', http(api.appInstallations.read));
+  appsRouter.put('/installations/:id', http(api.appInstallations.edit));
   appsRouter.delete('/installations/:id', http(api.appInstallations.destroy));
 
   router.get('/members/:id', mw.authAdminApi, http(api.members.read));

@@ -4,7 +4,6 @@ import { useLocation } from '@tryghost/admin-x-framework';
 import { useBrowseConfig } from '@tryghost/admin-x-framework/api/config';
 import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
 import { useBrowseSite } from '@tryghost/admin-x-framework/api/site';
-import { useAuthScreensOwner } from '@/auth/api';
 import { useRoutePattern } from '@/routes';
 import { useFlagGatedRouteOwner } from '@/use-flag-gated-route-owner';
 import {
@@ -22,7 +21,6 @@ export function useSentry(): void {
   const { pathname } = useLocation();
   const routePattern = useRoutePattern();
   const editorOwner = useFlagGatedRouteOwner('editorReact');
-  const authOwner = useAuthScreensOwner();
 
   const dsn = siteData?.site.sentry_dsn;
   const environment = siteData?.site.sentry_env;
@@ -79,8 +77,4 @@ export function useSentry(): void {
   useEffect(() => {
     setTag('editor_owner', editorOwner === 'pending' ? undefined : editorOwner);
   }, [editorOwner]);
-
-  useEffect(() => {
-    setTag('auth_owner', authOwner === 'pending' ? undefined : authOwner);
-  }, [authOwner]);
 }

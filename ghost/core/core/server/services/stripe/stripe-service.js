@@ -1,7 +1,6 @@
 const WebhookManager = require('./webhook-manager');
 const { BillingPortalManager } = require('./billing-portal-manager');
 const StripeAPI = require('./stripe-api');
-const StripeMigrations = require('./stripe-migrations');
 const WebhookController = require('./webhook-controller');
 const DomainEvents = require('@tryghost/domain-events');
 const { StripeLiveEnabledEvent, StripeLiveDisabledEvent } = require('./events');
@@ -10,6 +9,8 @@ const InvoiceEventService = require('./services/webhook/invoice-event-service');
 const CheckoutSessionEventService = require('./services/webhook/checkout-session-event-service');
 const ChargeRefundedEventService = require('./services/webhook/charge-refunded-event-service');
 const memberWelcomeEmailService = require('../member-welcome-emails/service');
+const stripeCheckoutConfig = require('../stripe-checkout-config');
+const metafields = require('../members-metafields');
 
 /**
  * @typedef {object} IStripeServiceConfig
@@ -46,7 +47,6 @@ module.exports = class StripeService {
    * @param {object} deps.models
    * @param {object} deps.models.Product
    * @param {object} deps.models.StripePrice
-   * @param {object} deps.models.StripeCustomerSubscription
    * @param {object} deps.models.StripeProduct
    * @param {object} deps.models.MemberStripeCustomer
    * @param {object} deps.models.Offer
@@ -62,10 +62,12 @@ module.exports = class StripeService {
     settingsCache,
     models,
   }) {
-    const api = new StripeAPI({ labs });
-    const migrations = new StripeMigrations({
-      models,
-      api,
+    const api = new StripeAPI({
+      labs,
+      // The module rather than its service: this runs when the module loads, before boot
+      // creates the service. Checkouts only start once boot has finished, so the service
+      // exists by the time the API reads it.
+      stripeCheckoutConfig,
     });
 
     const webhookManager = new WebhookManager({
@@ -134,6 +136,15 @@ module.exports = class StripeService {
         memberWelcomeEmailService.init();
         return memberWelcomeEmailService.api.isMemberWelcomeEmailActive('paid');
       },
+      labs,
+      stripeCheckoutConfig,
+      // Getters, because these services are built later in boot than this one.
+      get metafieldBindings() {
+        return metafields.bindings;
+      },
+      get memberBREADService() {
+        return membersService.api.memberBREADService;
+      },
     });
 
     const chargeRefundedEventService = new ChargeRefundedEventService({
@@ -153,7 +164,6 @@ module.exports = class StripeService {
     this.models = models;
     this.api = api;
     this.webhookManager = webhookManager;
-    this.migrations = migrations;
     this.webhookController = webhookController;
     this.billingPortalManager = billingPortalManager;
     /** @private */

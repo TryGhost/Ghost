@@ -1,6 +1,6 @@
 {
   "name": "ghost",
-  "version": "6.69.1-rc.0",
+  "version": "6.70.0-rc.0",
   "description": "The professional publishing platform",
   "keywords": [
     "blog",
@@ -61,7 +61,7 @@
     "test:all": "pnpm test:unit && pnpm test:integration && pnpm test:e2e && pnpm test:types && pnpm lint",
     "test:debug": "DEBUG=ghost:test* pnpm test",
     "test:unit": "vitest run",
-    "test:integration": "vitest run -c vitest.config.db.ts --project integration",
+    "test:integration": "vitest run -c vitest.config.db.ts --project integration --project integration-migrations",
     "test:e2e": "vitest run -c vitest.config.db.ts --project e2e --project e2e-api --project e2e-isolated",
     "test:legacy": "vitest run -c vitest.config.db.ts --project legacy",
     "test:ci:e2e": "COVERAGE_LANE=e2e pnpm test:e2e --coverage",
@@ -286,7 +286,6 @@
     "esbuild": "catalog:",
     "eslint": "catalog:",
     "eslint-plugin-ghost": "3.5.0",
-    "expect": "29.7.0",
     "globals": "17.7.0",
     "html-validate": "11.5.5",
     "inquirer": "8.2.7",

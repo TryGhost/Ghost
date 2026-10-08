@@ -168,6 +168,21 @@ describe('Config Loader', function () {
       assert.equal(customConfig.get('site_uuid'), 'a58fe20c-0af0-4fc6-9b1a-20873d5b7d03');
       assert.equal(customConfig.get('commented'), undefined);
     });
+
+    it('ignores a non-object that would replace an object from a lower store', function () {
+      const warn = sinon.stub(console, 'warn');
+      const customConfigPath = path.join(tmpDir, 'config.testing.json');
+      fs.writeFileSync(customConfigPath, JSON.stringify({ admin: 'https://example.com' }));
+      process.env.admin__sessionMaxAgeMs = '1000';
+
+      customConfig = loader.loadNconf({ customConfigPath: tmpDir });
+
+      assert.deepEqual(customConfig.get('admin'), { redirects: true, sessionMaxAgeMs: 1000 });
+      sinon.assert.calledOnceWithExactly(
+        warn,
+        `Ghost config: ignoring \`admin\` in ${customConfigPath}: it is a string, but Ghost expects an object there.`,
+      );
+    });
   });
 
   // Runs after the hierarchy tests above, which set, change and delete keys.

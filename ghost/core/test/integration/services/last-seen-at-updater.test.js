@@ -12,6 +12,10 @@ describe('Last Seen At Updater', function () {
     await agent.loginAsOwner();
   });
 
+  afterEach(function () {
+    mockManager.restore();
+  });
+
   describe('updateLastSeenAtWithoutKnownLastSeen', function () {
     it('works', async function () {
       const membersEvents = require('../../../core/server/services/members-events');

@@ -292,7 +292,7 @@ describe('Editor publish journeys', () => {
     await editorScreen.settingsToggle().click();
     await expect.element(editorScreen.settingsSidebar()).toBeVisible();
     await settleTransitions();
-    await editorScreen.settingsTier('Gold').click();
+    await editorScreen.toggleSettingsTier('Gold');
     await expect.poll(() => saveApi.requests.length).toBe(1);
     await userEvent.keyboard('{Meta>}{Shift>}p{/Shift}{/Meta}');
     await expect.element(publishScreen.continueButton()).toBeVisible();
@@ -314,7 +314,7 @@ describe('Editor publish journeys', () => {
     await expect.element(editorScreen.publishButton()).toBeEnabled();
 
     await chooseAccess('Paid-members only');
-    await expect.element(editorScreen.saveErrorBanner()).toBeVisible();
+    await expect.element(editorScreen.saveError()).toBeVisible();
     await userEvent.keyboard('{Meta>}{Shift>}p{/Shift}{/Meta}');
 
     await expect

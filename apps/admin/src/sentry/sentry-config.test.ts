@@ -8,6 +8,13 @@ vi.mock('@sentry/react', async (importOriginal) => ({
   debugIntegration: vi.fn(() => ({ name: 'Debug' })),
 }));
 
+const koenigVersion = vi.hoisted(() => vi.fn<() => string | undefined>());
+
+vi.mock('@/settings/components/koenig-loader', () => ({ loadedKoenigVersion: koenigVersion }));
+
+const LEXICAL_ERROR =
+  'Minified Lexical error #15; visit https://lexical.dev/docs/error?code=15 for the full message';
+
 const DSN = 'https://public@o0.ingest.sentry.io/1';
 
 function integrationNames(environment: string): string[] {
@@ -88,6 +95,7 @@ describe('getSentryConfig', () => {
 describe('beforeSend', () => {
   afterEach(() => {
     document.body.removeAttribute('data-gr-ext-installed');
+    koenigVersion.mockReset();
   });
 
   it('should return an event', () => {
@@ -128,6 +136,49 @@ describe('beforeSend', () => {
     } as Event;
 
     expect(beforeSend(event, {})?.exception?.values?.[0]?.value).toBe('Could not save <page:ID>');
+  });
+
+  it('tags an uncaught Lexical error with the loaded Koenig version', () => {
+    koenigVersion.mockReturnValue('1.2.3');
+    const event = { exception: { values: [{ value: LEXICAL_ERROR }] } } as Event;
+
+    const result = beforeSend(event);
+
+    expect(result?.tags?.lexical).toBe(true);
+    expect(result?.contexts?.koenig).toEqual({ version: '1.2.3' });
+  });
+
+  it('tags a Lexical error before Koenig has loaded without a version', () => {
+    const event = { exception: { values: [{ value: LEXICAL_ERROR }] } } as Event;
+
+    const result = beforeSend(event);
+
+    expect(result?.tags?.lexical).toBe(true);
+    expect(result?.contexts?.koenig).toBeUndefined();
+  });
+
+  it('keeps the context of a Lexical error the editor reported', () => {
+    koenigVersion.mockReturnValue('1.2.3');
+    const event = {
+      exception: { values: [{ value: LEXICAL_ERROR }] },
+      tags: { lexical: true, koenig_instance: 'secondary' },
+      contexts: { koenig: { version: '1.0.0' } },
+    } as Event;
+
+    const result = beforeSend(event);
+
+    expect(result?.tags).toMatchObject({ lexical: true, koenig_instance: 'secondary' });
+    expect(result?.contexts?.koenig).toEqual({ version: '1.0.0' });
+  });
+
+  it('does not tag other errors as Lexical', () => {
+    koenigVersion.mockReturnValue('1.2.3');
+    const event = { exception: { values: [{ value: 'Lexical node not found' }] } } as Event;
+
+    const result = beforeSend(event);
+
+    expect(result?.tags?.lexical).toBeUndefined();
+    expect(result?.contexts?.koenig).toBeUndefined();
   });
 
   it('returns the original event if there is an error', () => {

@@ -12,7 +12,7 @@ import {
 } from '../utils/api/hooks';
 import type { ReadonlyDeep } from 'type-fest';
 
-export type AutomationStatus = 'active' | 'inactive';
+export type AutomationStatus = 'active' | 'inactive' | 'archived';
 export const MAX_AUTOMATION_ACTIONS = 50;
 
 export type Automation = {
@@ -94,6 +94,8 @@ export type EditAutomationPayload = AutomationTrigger & {
   actions: AutomationAction[];
   edges: AutomationEdge[];
 };
+
+type AutomationStatusPayload = Pick<EditAutomationPayload, 'id' | 'status'>;
 
 export interface AutomationsResponseType {
   meta?: Meta;
@@ -328,7 +330,7 @@ const serializeEditableAutomation = ({
   status,
   actions,
   edges,
-}: Omit<EditAutomationPayload, 'id'>) => ({
+}: Partial<Omit<EditAutomationPayload, 'id'>> & Pick<EditAutomationPayload, 'status'>) => ({
   automations: [
     {
       name,
@@ -336,7 +338,7 @@ const serializeEditableAutomation = ({
       trigger_tier_scope: triggerTierScope,
       trigger_tier_ids: triggerTierIds,
       status,
-      actions: actions.map(serializeEditableAction),
+      actions: actions?.map(serializeEditableAction),
       edges,
     },
   ],
@@ -355,6 +357,16 @@ export const useAddAutomation = createMutation<
 export const useEditAutomation = createMutation<
   AutomationDetailResponseType,
   EditAutomationPayload
+>({
+  method: 'PUT',
+  path: ({ id }) => `/automations/${id}/`,
+  body: serializeEditableAutomation,
+  invalidateQueries: { dataType },
+});
+
+export const useSetAutomationStatus = createMutation<
+  AutomationDetailResponseType,
+  AutomationStatusPayload
 >({
   method: 'PUT',
   path: ({ id }) => `/automations/${id}/`,

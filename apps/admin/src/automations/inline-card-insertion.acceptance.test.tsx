@@ -92,4 +92,14 @@ describe('Inline card insertion', () => {
         .toBeVisible();
     });
   }
+
+  it('dismisses the step picker when pressing the canvas', async () => {
+    setup();
+    await renderAdminApp('/automations/first', flags);
+    await page.getByRole('button', { name: 'Add step', exact: true }).click();
+    const picker = page.getByTestId('step-picker');
+    await expect.element(picker).toBeVisible();
+    await editingCanvas().click({ position: { x: 20, y: 300 } });
+    await expect.element(picker).not.toBeInTheDocument();
+  });
 });
