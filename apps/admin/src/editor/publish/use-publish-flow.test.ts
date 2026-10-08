@@ -2,9 +2,15 @@ import { act, renderHook, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { createElement, type ReactNode } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { SCHEDULE_PASSED, usePublishFlow, type PublishFlowOptions } from './use-publish-flow';
+import {
+  MIN_EMAIL_HANDOFF_LENGTH,
+  SCHEDULE_PASSED,
+  usePublishFlow,
+  type PublishFlowOptions,
+} from './use-publish-flow';
 import type { EmailConfirmationOutcome } from './email-confirmation';
 import type { NewsletterInput } from './publish-options';
+import type { SaveCompletion } from '@/editor/engine/save-engine';
 
 const transport = vi.hoisted(() => ({ fetchApi: vi.fn(), retryEmail: vi.fn() }));
 const eligibility = vi.hoisted(() => ({ isError: false }));
@@ -22,8 +28,6 @@ vi.mock('@tryghost/admin-x-framework/api/emails', () => ({
 // A confirmation each spec settles itself; tearing the flow down settles it as cancelled.
 const confirmation = vi.hoisted(() => ({
   settle: undefined as ((outcome: EmailConfirmationOutcome) => void) | undefined,
-  /** The confirmation method the flow is waiting on. */
-  waitingOn: undefined as 'confirm' | 'retryAndConfirm' | 'handOff' | undefined,
 }));
 vi.mock('./email-confirmation', async (importOriginal) => ({
   ...(await importOriginal<typeof import('./email-confirmation')>()),
@@ -31,17 +35,10 @@ vi.mock('./email-confirmation', async (importOriginal) => ({
     confirm: () =>
       new Promise<EmailConfirmationOutcome>((resolve) => {
         confirmation.settle = resolve;
-        confirmation.waitingOn = 'confirm';
       }),
     retryAndConfirm: () =>
       new Promise<EmailConfirmationOutcome>((resolve) => {
         confirmation.settle = resolve;
-        confirmation.waitingOn = 'retryAndConfirm';
-      }),
-    handOff: () =>
-      new Promise<EmailConfirmationOutcome>((resolve) => {
-        confirmation.settle = resolve;
-        confirmation.waitingOn = 'handOff';
       }),
     cancel: () => confirmation.settle?.({ kind: 'cancelled' }),
   }),
@@ -88,7 +85,6 @@ afterEach(() => {
   localStorage.clear();
   vi.clearAllMocks();
   confirmation.settle = undefined;
-  confirmation.waitingOn = undefined;
 });
 
 describe('publish option actions', () => {
@@ -297,6 +293,13 @@ describe('post reads after an emailed publish', () => {
     expect(invalidateQueries).toHaveBeenCalledWith({ queryKey: ['PostsResponseType'] });
   });
 
+  it('can be closed while the send is confirmed, since the post is already saved', async () => {
+    const { result } = await publishAndEmail();
+
+    expect(result.current.confirmStatus).toBe('running');
+    expect(result.current.canClose).toBe(true);
+  });
+
   it('leaves them alone when the flow is closed before the send is confirmed', async () => {
     const { result, invalidateQueries, publishing } = await publishAndEmail();
 
@@ -318,77 +321,138 @@ describe('sends under improveSendingUI', () => {
     opened_count: 0,
   };
 
-  it.each([
-    ['a publish that emails', {}, undefined],
-    ['an email-only send', {}, 'send' as const],
-    ['a draft whose earlier send failed', { email: FAILED_EMAIL }, undefined],
-  ])('completes %s once the hand-off hold ends', async (_case, post, publishType) => {
-    const inputs = options();
-    inputs.post = { ...inputs.post, ...post };
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  /** Confirms a send on fake timers, so its save and hand-off can be stepped through. */
+  async function confirmSend(inputs: PublishFlowOptions, publishType?: 'send') {
     inputs.improveSendingUI = true;
     inputs.onCompleted = vi.fn();
-    inputs.dispatch = vi.fn().mockResolvedValue({
-      kind: 'saved',
-      executedAs: 'publish',
-      result: { id: 'post-1', status: 'published', updatedAt: NOW.toISOString() },
-    });
     const { result } = renderHook(() => usePublishFlow(inputs), { wrapper });
     await waitFor(() => expect(result.current.limitsChecked).toBe(true));
     if (publishType) {
       act(() => result.current.setPublishType(publishType));
     }
     expect(result.current.state.willEmailImmediately).toBe(true);
-
     act(() => result.current.toConfirm());
+
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout', 'Date'] });
     let publishing: Promise<void> = Promise.resolve();
     act(() => {
       publishing = result.current.confirmPublish();
     });
-    await waitFor(() => expect(confirmation.settle).toBeDefined());
-    // The hold replaces the poll rather than running alongside it.
-    expect(confirmation.waitingOn).toBe('handOff');
+
+    return { result, publishing };
+  }
+
+  /** A save the server acknowledges after `delay`. */
+  function savesAfter(
+    delay: number,
+    completion: SaveCompletion = {
+      kind: 'saved',
+      executedAs: 'publish',
+      result: { id: 'post-1', status: 'published', updatedAt: NOW.toISOString() },
+    },
+  ) {
+    return vi.fn(
+      () =>
+        new Promise<SaveCompletion>((resolve) => {
+          setTimeout(() => resolve(completion), delay);
+        }),
+    );
+  }
+
+  async function advance(delay: number) {
+    await act(() => vi.advanceTimersByTimeAsync(delay));
+  }
+
+  it.each([
+    ['a publish that emails', {}, undefined],
+    ['an email-only send', {}, 'send' as const],
+    ['a draft whose earlier send failed', { email: FAILED_EMAIL }, undefined],
+  ])('hands %s off once it has run for the minimum length', async (_case, post, publishType) => {
+    const inputs = options();
+    inputs.post = { ...inputs.post, ...post };
+    inputs.dispatch = savesAfter(400);
+    const { result, publishing } = await confirmSend(inputs, publishType);
+
+    await advance(MIN_EMAIL_HANDOFF_LENGTH - 1);
+    expect(inputs.dispatch).toHaveBeenCalledTimes(1);
     expect(inputs.onCompleted).not.toHaveBeenCalled();
     expect(result.current.confirmStatus).toBe('running');
 
-    await act(async () => {
-      confirmation.settle?.({ kind: 'handed-off' });
-      await publishing;
-    });
+    // The minimum runs from the click, so the save's own time counts towards it.
+    await advance(1);
     expect(inputs.onCompleted).toHaveBeenCalledWith({
       postId: 'post-1',
       isScheduled: false,
       hasEmail: true,
     });
+    await act(() => publishing);
+    // The hold replaces the poll rather than running alongside it.
+    expect(confirmation.settle).toBeUndefined();
     expect(result.current.step).toBe('complete');
     expect(result.current.emailNote).toBeNull();
   });
 
-  it('completes nothing when the flow is closed during the hand-off hold', async () => {
+  it('hands a send off as soon as a save slower than the minimum lands', async () => {
     const inputs = options();
-    inputs.improveSendingUI = true;
-    inputs.onCompleted = vi.fn();
-    inputs.dispatch = vi.fn().mockResolvedValue({
-      kind: 'saved',
-      executedAs: 'publish',
-      result: { id: 'post-1', status: 'published', updatedAt: NOW.toISOString() },
-    });
-    const { result } = renderHook(() => usePublishFlow(inputs), { wrapper });
-    await waitFor(() => expect(result.current.limitsChecked).toBe(true));
+    inputs.dispatch = savesAfter(MIN_EMAIL_HANDOFF_LENGTH + 500);
+    const { publishing } = await confirmSend(inputs);
 
-    act(() => result.current.toConfirm());
-    let publishing: Promise<void> = Promise.resolve();
-    act(() => {
-      publishing = result.current.confirmPublish();
-    });
-    await waitFor(() => expect(confirmation.waitingOn).toBe('handOff'));
+    await advance(MIN_EMAIL_HANDOFF_LENGTH + 499);
+    expect(inputs.onCompleted).not.toHaveBeenCalled();
+
+    await advance(1);
+    expect(inputs.onCompleted).toHaveBeenCalledTimes(1);
+    await act(() => publishing);
+  });
+
+  it('completes nothing when the flow is torn down during the hold', async () => {
+    const inputs = options();
+    inputs.dispatch = savesAfter(400);
+    const { result, publishing } = await confirmSend(inputs);
+    await advance(800);
 
     await act(async () => {
       result.current.cancel();
       await publishing;
     });
+    await advance(MIN_EMAIL_HANDOFF_LENGTH);
 
     expect(inputs.onCompleted).not.toHaveBeenCalled();
     expect(localStorage.getItem('ghost-last-published-post')).toBeNull();
+  });
+
+  it('cannot be closed while the send saves or holds', async () => {
+    const inputs = options();
+    inputs.dispatch = savesAfter(400);
+    const { result, publishing } = await confirmSend(inputs);
+
+    expect(result.current.canClose).toBe(false);
+    await advance(800);
+    expect(result.current.canClose).toBe(false);
+
+    await advance(MIN_EMAIL_HANDOFF_LENGTH);
+    await act(() => publishing);
+    expect(result.current.canClose).toBe(true);
+  });
+
+  it('can be closed again once the send fails to save', async () => {
+    const inputs = options();
+    inputs.dispatch = savesAfter(400, {
+      kind: 'failed',
+      error: { kind: 'transport', message: 'Network error' },
+      executedAs: 'publish',
+    });
+    const { result, publishing } = await confirmSend(inputs);
+    expect(result.current.canClose).toBe(false);
+
+    await advance(400);
+    await act(() => publishing);
+    expect(result.current.confirmStatus).toBe('failure');
+    expect(result.current.canClose).toBe(true);
   });
 
   it('still waits on the email when a failed send is retried', async () => {

@@ -17,9 +17,14 @@ import {use} from 'ember-could-get-used-to-this';
 const SHOW_SAVE_STATUS_DURATION = 3000;
 export const CONFIRM_EMAIL_POLL_LENGTH = 1000;
 export const CONFIRM_EMAIL_MAX_POLL_LENGTH = 15 * 1000;
-// With improveSendingUI on, a publish that emails holds this long instead of polling
-// so the redirect to post analytics isn't instant
-export const EMAIL_HANDOFF_LENGTH = 1500;
+// With improveSendingUI on, the least time a send shows its running state before
+// handing off to post analytics, so the hand-off isn't instant
+export const MIN_EMAIL_HANDOFF_LENGTH = 1500;
+
+// How much of the minimum hand-off time is left for a send confirmed at `startedAt`
+export function remainingEmailHandOff(startedAt, now = Date.now()) {
+    return Math.max(0, MIN_EMAIL_HANDOFF_LENGTH - (now - startedAt));
+}
 
 // This component exists for the duration of the editor screen being open.
 // It's used to store the selected publish options, control the publishing flow
@@ -78,11 +83,17 @@ export default class PublishManagement extends Component {
         if (isValid && (!this.publishFlowModal || this.publishFlowModal?.isClosing)) {
             this.publishOptions.resetPastScheduledAt();
 
+            const publishManagement = this;
             this.publishFlowModal = this.modals.open(PublishFlowModal, {
                 publishOptions: this.publishOptions,
                 saveTask: this.publishTask,
                 togglePreviewPublish: this.togglePreviewPublish,
-                skipAnimation
+                skipAnimation,
+                get isLocked() {
+                    return publishManagement.isPublishFlowLocked;
+                }
+            }, {
+                beforeClose: () => !this.isPublishFlowLocked
             });
 
             const result = await this.publishFlowModal;
@@ -242,8 +253,15 @@ export default class PublishManagement extends Component {
         }
     }
 
+    // Closing the publish flow mid-save or mid-hand-off would leave a published post
+    // without its hand-off; the legacy email poll can be walked away from
+    get isPublishFlowLocked() {
+        return this.publishTask.isRunning && !this.confirmEmailTask.isRunning;
+    }
+
     @task
     *publishTask({taskName = 'saveTask'} = {}) {
+        const startedAt = Date.now();
         const willEmailImmediately = this.publishOptions.willEmailImmediately;
 
         // clean up blank editor cards
@@ -259,9 +277,9 @@ export default class PublishManagement extends Component {
         // perform any post-save cleanup for the editor
         yield this.args.afterPublish(result);
 
-        if (willEmailImmediately && this.publishOptions.post.email) {
+        if (willEmailImmediately) {
             if (this.feature.improveSendingUI) {
-                yield this.handOffEmailTask.perform();
+                yield this.handOffEmailTask.perform(startedAt);
             } else {
                 yield this.confirmEmailTask.perform();
             }
@@ -315,8 +333,13 @@ export default class PublishManagement extends Component {
     }
 
     @task
-    *handOffEmailTask() {
-        yield timeout(EMAIL_HANDOFF_LENGTH);
+    *handOffEmailTask(startedAt) {
+        const remaining = remainingEmailHandOff(startedAt);
+
+        if (remaining > 0) {
+            yield timeout(envConfig.environment === 'test' ? 1 : remaining);
+        }
+
         return true;
     }
 

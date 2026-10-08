@@ -33,6 +33,12 @@ import type { SaveCompletion } from '@/editor/engine/save-engine';
 export type PublishStep = 'options' | 'confirm' | 'complete' | 'email-error';
 export type ConfirmStatus = 'idle' | 'running' | 'success' | 'failure';
 
+/**
+ * With `improveSendingUI` on, the least time a send shows its running state
+ * before handing off to post analytics, so the hand-off is not instant.
+ */
+export const MIN_EMAIL_HANDOFF_LENGTH = 1500;
+
 export interface PublishFlowOptions {
   post: PublishFlowPost;
   site: PublishSiteInput;
@@ -42,7 +48,7 @@ export interface PublishFlowOptions {
   now?: () => Date;
   dispatch: PublishDispatcher;
   showCompletion?: boolean;
-  /** The `improveSendingUI` lab: a publish that emails completes after a short hold, without confirming the send. */
+  /** The `improveSendingUI` lab: a publish that emails completes without confirming the send, after `MIN_EMAIL_HANDOFF_LENGTH`. */
   improveSendingUI?: boolean;
   onBeforePublish?: () => Promise<void>;
   onCompleted?: (info: { postId: string; isScheduled: boolean; hasEmail: boolean }) => void;
@@ -84,6 +90,8 @@ export interface PublishFlow extends PublishOptionActions {
   retryStatus: ConfirmStatus;
   retryFailure: string | null;
   canRetryEmail: boolean;
+  /** False while a publish saves or holds before handing off; the caller must not close the flow then. */
+  canClose: boolean;
   /** Abandons any asynchronous continuation before the caller closes the modal. */
   cancel: () => void;
 }
@@ -261,9 +269,12 @@ export function usePublishFlow({
       isScheduled: initialState.isScheduled,
     };
   });
+  const [canClose, setCanClose] = useState(true);
   const completedRef = useRef(false);
   const publishRunningRef = useRef(false);
   const retryRunningRef = useRef(false);
+  // Releases a send's hand-off hold early, so a torn-down flow leaves no timer behind.
+  const releaseHandoffRef = useRef<(() => void) | null>(null);
   const limitCheckGenerationRef = useRef(0);
   const limitCheckRef = useRef<{
     machine: PublishOptionsMachine;
@@ -318,8 +329,30 @@ export function usePublishFlow({
   const cancel = useCallback(() => {
     activeRef.current = false;
     confirmationRef.current.cancel();
+    releaseHandoffRef.current?.();
     limitCheckGenerationRef.current += 1;
   }, []);
+
+  const holdUntil = useCallback(
+    (deadline: number) =>
+      new Promise<void>((resolve) => {
+        const remaining = deadline - Date.now();
+
+        if (remaining <= 0) {
+          resolve();
+          return;
+        }
+
+        const release = () => {
+          clearTimeout(timer);
+          releaseHandoffRef.current = null;
+          resolve();
+        };
+        const timer = setTimeout(release, remaining);
+        releaseHandoffRef.current = release;
+      }),
+    [],
+  );
 
   // StrictMode replays this effect's cleanup before its second setup. Restore
   // activity on setup so that development mode does not leave the flow inert.
@@ -385,6 +418,7 @@ export function usePublishFlow({
         return;
       }
       completedRef.current = true;
+      setCanClose(true);
       if (showCompletion) {
         setEmailErrorMessage(null);
         setConfirmStatus('success');
@@ -452,15 +486,24 @@ export function usePublishFlow({
     }
 
     publishRunningRef.current = true;
+    // A send's running state lasts at least this long, however quickly it saves.
+    const handoffAt = Date.now() + MIN_EMAIL_HANDOFF_LENGTH;
     setFailure(null);
     setConfirmStatus('running');
+    // Closing mid-save, or mid-hold, would strand a published post short of its hand-off.
+    setCanClose(false);
+
+    const fail = (reason: CompletionFailure) => {
+      publishRunningRef.current = false;
+      setCanClose(true);
+      setFailure(reason);
+      setConfirmStatus('failure');
+    };
 
     const command = machine.toDispatch();
 
     if (!command) {
-      publishRunningRef.current = false;
-      setFailure({ message: 'This post can no longer be published from here. Reload the editor.' });
-      setConfirmStatus('failure');
+      fail({ message: 'This post can no longer be published from here. Reload the editor.' });
       return;
     }
 
@@ -470,9 +513,7 @@ export function usePublishFlow({
       await onBeforePublish?.();
     } catch (error) {
       if (activeRef.current) {
-        publishRunningRef.current = false;
-        setFailure(describeRejectedAction(error));
-        setConfirmStatus('failure');
+        fail(describeRejectedAction(error));
       }
       return;
     }
@@ -482,9 +523,7 @@ export function usePublishFlow({
     }
 
     if (schedulePassed()) {
-      publishRunningRef.current = false;
-      setFailure({ message: SCHEDULE_PASSED });
-      setConfirmStatus('failure');
+      fail({ message: SCHEDULE_PASSED });
       return;
     }
 
@@ -494,9 +533,7 @@ export function usePublishFlow({
       completion = await dispatch(command);
     } catch (error) {
       if (activeRef.current) {
-        publishRunningRef.current = false;
-        setFailure(describeRejectedAction(error));
-        setConfirmStatus('failure');
+        fail(describeRejectedAction(error));
       }
       return;
     }
@@ -507,9 +544,7 @@ export function usePublishFlow({
     const completionFailure = describeCompletionFailure(completion);
 
     if (completionFailure) {
-      publishRunningRef.current = false;
-      setFailure(completionFailure);
-      setConfirmStatus('failure');
+      fail(completionFailure);
       // A re-auth interruption sends the user back to confirm and try again.
       setStep('confirm');
       return;
@@ -518,6 +553,8 @@ export function usePublishFlow({
     // Stays 'running' across the email poll: the publish is not finished until
     // the email is submitted, and the button must not invite a second dispatch.
     if (willEmailImmediately && !improveSendingUI) {
+      // The post is saved, so walking away from the poll strands nothing.
+      setCanClose(true);
       let outcome: EmailConfirmationOutcome;
 
       try {
@@ -541,12 +578,7 @@ export function usePublishFlow({
     }
 
     if (willEmailImmediately) {
-      const outcome = await confirmation.handOff(post.id);
-
-      // As with the poll, a hold cut short by the flow closing completes nothing.
-      if (outcome.kind === 'cancelled') {
-        return;
-      }
+      await holdUntil(handoffAt);
     }
 
     complete(isScheduled, willEmail);
@@ -555,6 +587,7 @@ export function usePublishFlow({
     complete,
     confirmation,
     dispatch,
+    holdUntil,
     improveSendingUI,
     machine,
     onBeforePublish,
@@ -626,6 +659,7 @@ export function usePublishFlow({
     retryStatus,
     retryFailure,
     canRetryEmail,
+    canClose,
     cancel,
   };
 }

@@ -16,18 +16,14 @@ const RingCircle = ({ className, ...props }: ComponentPropsWithoutRef<'circle'>)
   />
 );
 
-interface EmailSendingStatusIconProps {
+interface PublishPhaseIconProps {
   phase: EmailSendingPhase;
   /** 0 to 1. Only used while submitting. */
   fractionComplete?: number | null;
   className?: string;
 }
 
-export function EmailSendingStatusIcon({
-  phase,
-  fractionComplete,
-  className,
-}: EmailSendingStatusIconProps) {
+export function PublishPhaseIcon({ phase, fractionComplete, className }: PublishPhaseIconProps) {
   if (phase === 'preparing') {
     return (
       <span

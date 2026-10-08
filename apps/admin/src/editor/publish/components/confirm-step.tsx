@@ -4,7 +4,7 @@ import { LucideIcon, cn } from '@tryghost/shade/utils';
 import { getRecipientType } from '@tryghost/admin-x-framework/utils/recipient-filter';
 import { useMembersCount } from '@tryghost/admin-x-framework/api/members';
 import { EDITOR_REQUEST_OPTIONS } from '@/editor/request-options';
-import { EmailSendingStatusIcon } from '@/posts/api';
+import { PublishPhaseIcon } from '@/posts/api';
 import { LimitMessage } from './limit-message';
 import {
   publishBackToSettings,
@@ -155,16 +155,11 @@ export function ConfirmStep({
             <>
               {/* The analytics "preparing" spinner, in the button's own text colour.
                   size-4 matches the size Button gives its icons at this text size. */}
-              <EmailSendingStatusIcon
-                className={cn('size-4 text-current', ENTER)}
-                phase="preparing"
-              />
-              <span key="running" className={ENTER}>
-                {buttonText.running}
-              </span>
+              <PublishPhaseIcon className={cn('size-4 text-current', ENTER)} phase="preparing" />
+              <span className={ENTER}>{buttonText.running}</span>
             </>
           ) : (
-            <span key="idle">{buttonText.idle}</span>
+            buttonText.idle
           )}
         </Button>
       </Inline>

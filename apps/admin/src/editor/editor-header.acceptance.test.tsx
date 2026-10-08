@@ -1833,22 +1833,31 @@ describe('Editor header actions', () => {
     }
 
     it.each(SENDS)(
-      'hands $send to post analytics once the hand-off hold ends',
+      'hands $send to post analytics once its minimum running time ends',
       async ({ emailOnly, status }) => {
         publishChrome({ newsletters: 1 });
-        fakeSavablePost();
+        const held = deferred<void>();
+        fakeSavablePost({}, { holdFirstSave: held.promise });
         const confirmationApi = failSendOnConfirmation(status);
         await renderAdminApp(`/editor/post/${POST_ID}`, SENDING_UI_ON);
 
         await sendThroughFlow(emailOnly);
 
-        // The flow holds in its running state, spinner and all, before leaving.
+        // Mid-save, the flow shows its running state and cannot be left.
         await expect.element(publishScreen.confirmButton()).toBeDisabled();
         await expect
           .element(publishScreen.confirmButton())
           .toHaveTextContent(emailOnly ? 'Sending' : 'Publishing & sending');
         expect(publishScreen.confirmButton().element().querySelector('svg')).not.toBeNull();
+        await expect.element(publishScreen.closeButton()).toBeDisabled();
+        await expect.element(publishScreen.previewButton()).toBeDisabled();
+        held.resolve();
+
+        // Once the save lands the flow still holds, and Escape cannot cut it short.
+        await expect.element(editorScreen.status()).toHaveTextContent('to 20 members');
+        await userEvent.keyboard('{Escape}');
         expect(currentRoute()).toBe(`/editor/post/${POST_ID}`);
+        await expect.element(publishScreen.closeButton()).toBeDisabled();
 
         await expect.poll(currentRoute).toBe(`/posts/analytics/${POST_ID}`);
         await expect(editorScreen.root()).toHaveCount(0);

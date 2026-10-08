@@ -179,7 +179,7 @@ Confirming runs `onBeforePublish` (the editor's pre-save cleanup), dispatches th
 
 | Completion              | Result                                                             |
 | ----------------------- | ------------------------------------------------------------------ |
-| `saved`                 | Confirms the email of an immediate send, or holds with the flag on |
+| `saved`                 | Confirms the email of an immediate send, unless `improveSendingUI` |
 | `needs-retry`           | Back to confirm, told the session is back; the user confirms again |
 | `failed` (`conflict`)   | The collision message, in place                                    |
 | `failed` (`host-limit`) | The host's message, with the upgrade phrase rendered as a link     |
@@ -187,6 +187,8 @@ Confirming runs `onBeforePublish` (the editor's pre-save cleanup), dispatches th
 | `dropped`/`superseded`  | The post is no longer publishable from here                        |
 
 A schedule is checked against the clock twice, since the chosen time can pass while the flow sits open or while `onBeforePublish` waits on a sign-in: at the click, before anything is saved, and again before the command is dispatched. A scheduled time that has fallen below `minScheduledAt` is refused in place and the user goes back to choose another. The second refusal can leave the draft saved by `onBeforePublish`, but never publishes or schedules it. Scheduling stays on: switching it off would turn the confirmed schedule into an immediate publish.
+
+While the save runs, and while a send holds before handing off (below), `canClose` is false: the modal disables Close and Preview and ignores Escape, since closing then would leave a post published without its hand-off. A failed save frees the flow again, and so does the flag-off email poll, which the post no longer depends on.
 
 No completion closes the modal or navigates. Successful completion writes the celebration handoff (`ghost-last-published-post` or `ghost-last-scheduled-post`), and calls `onCompleted` so the caller can navigate; where the user lands is the caller's decision, not this component's. The editor sets `showCompletion={false}` to keep the current step pending until navigation unmounts it, avoiding a flash of the fallback completion screen while the destination loads. Other callers show the completion screen by default.
 
@@ -200,9 +202,9 @@ A reload that throws — a transport failure, or the 401 the redirect opt-out be
 
 The email's id is only knowable from a reload, so the poller's reload records it for the retry. For the same reason the flow polls rather than short-circuiting on a known email: the acknowledged save result carries no email, and the pre-save one would resolve the confirmation to "not needed" immediately. Closing the flow cancels the poll and marks every pending pre-save, save, confirmation and retry continuation as abandoned, so none can complete the post journey after the caller closes it.
 
-The poller reads the post around the query cache, so the cached post reads never see what it found. Once a poll settles with any outcome but `cancelled`, after a publish or a retry, the flow invalidates the post reads so whatever is drawn from them catches up with the send. A reload that throws leaves them alone, since a refetch would most likely fail the same way.
+The poller reads the post around the query cache, so the cached post reads never see what it found. Once a confirmation settles with any outcome but `cancelled`, after a publish or a retry, the flow invalidates the post reads so whatever is drawn from them catches up with the send. A reload that throws leaves them alone, since a refetch would most likely fail the same way.
 
-With the `improveSendingUI` flag on, a publish that emails immediately does not poll. After its save is acknowledged the flow asks the same confirmation for `handOff()`, which holds on the same cancellable timer for `EMAIL_HANDOFF_LENGTH` (1.5 seconds) and then settles `handed-off`, so the hand-off to analytics is not instant; the confirm button stays running throughout, and closing the flow cancels the hold like a poll. Without a poll, that publish never moves to the email-error step and the flow invalidates no post reads after it; the caller is told the post has an email, so it can route to post analytics, which reports the send's progress and any failure. Retrying a failed send from the email-error step still waits on the confirmation with the flag on.
+With the `improveSendingUI` flag on, a publish that emails immediately does not poll. Its running state lasts at least `MIN_EMAIL_HANDOFF_LENGTH` (1.5 seconds) from the click, so the hand-off to analytics is not instant: once the save is acknowledged the flow holds for whatever remains, and a slower save hands off as soon as it lands. A torn-down flow releases the hold and completes nothing. Without a poll, that publish never moves to the email-error step and the flow invalidates no post reads after it; the caller is told the post has an email, so it can route to post analytics, which reports the send's progress and any failure. Retrying a failed send from the email-error step still waits on the confirmation with the flag on.
 
 ## Requests
 
