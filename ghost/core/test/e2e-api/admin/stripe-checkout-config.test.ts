@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { assertActionLogged } from '../../utils/action-log';
 
 const {
   agentProvider,
@@ -144,22 +145,19 @@ describe('Stripe Checkout Config Admin API', function () {
     });
   });
 
-  describe('History', function () {
+  describe('Action log', function () {
     it('records a staff user saving the design', async function () {
       const { body: me } = await agent.get('users/me/').expectStatus(200);
 
       await setCheckout(design());
 
-      const { body } = await agent
-        .get('actions/?filter=resource_type:stripe_checkout_config&include=actor,resource')
-        .expectStatus(200);
-      assert.equal(body.actions.length, 1);
-      const [action] = body.actions;
-      assert.equal(action.event, 'edited');
-      assert.equal(action.actor_type, 'user');
-      assert.equal(action.actor.id, me.users[0].id);
-      assert.equal(action.resource.slug, 'default');
-      assert.deepEqual(JSON.parse(action.context), { primary_name: 'Stripe Checkout' });
+      const saved = await assertActionLogged(agent, {
+        resourceType: 'stripe_checkout_config',
+        event: 'edited',
+        actor: { type: 'user', id: me.users[0].id },
+        details: { primary_name: 'Stripe Checkout', count: 1, action_name: null },
+      });
+      assert.equal(saved.resource?.slug, 'default');
     });
   });
 

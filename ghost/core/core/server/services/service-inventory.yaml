@@ -3,6 +3,60 @@
 # An unverified facet is an open audit question, not an empty/no-op contract.
 version: 1
 services:
+  action-log:
+    kind: directory
+    disposition: retain
+    status: auditing
+    entryPoints:
+      - action-log/index.ts
+    notes: >-
+      Logs the change events of services without Bookshelf models as actions, and lists the
+      kinds the Action model loads resources for. It reacts to other services' events and
+      exposes no instance of its own.
+    contracts:
+      exports:
+        summary: >-
+          Named exports are init, the list of kinds and the kind-to-table map the Action model
+          reads.
+        sources:
+          - core/server/services/action-log/index.ts
+          - core/server/services/action-log/kinds.ts
+          - core/server/models/action.js
+        tests:
+          - test/e2e-api/admin/actions.test.js
+      construction:
+        summary: >-
+          Boot calls synchronous init once the database is ready, before the services whose
+          events it logs. Init subscribes each kind's action log to its domain's change events
+          with the shared knex; repeated init returns once it is listening. Each domain's
+          change events are created at import, so the order of the domains' own init does not
+          matter.
+        sources:
+          - core/server/services/action-log/index.ts
+          - core/server/services/action-log/action-log.ts
+          - core/server/lib/change-events.ts
+          - core/boot.js
+        tests:
+          - test/e2e-api/admin/gift-links.test.ts
+          - test/e2e-api/admin/app-installations.test.ts
+          - test/e2e-api/admin/member-custom-fields.test.ts
+      failures:
+        summary: >-
+          A row that fails validation, or an insert that fails, rejects the reaction. The
+          domain's change events log it and the command still succeeds, keeping the change
+          without its action.
+        sources:
+          - core/server/services/action-log/action-log.ts
+          - core/server/lib/change-events.ts
+        tests:
+          - test/unit/server/lib/change-events.test.ts
+    unverified:
+      - consumers
+      - startup
+      - lifetime
+      - configuration
+      - resources
+    blockers: []
   activitypub:
     kind: directory
     disposition: retain
@@ -259,7 +313,7 @@ services:
       construction:
         summary: >-
           Boot calls synchronous init after database setup. It constructs one
-          AppInstallationsService from knex, the Action model and a manifest-rules getter;
+          AppInstallationsService from knex, its change events and a manifest-rules getter;
           repeated init returns once the binding exists.
         sources:
           - core/server/services/app-installations/index.ts
@@ -1368,17 +1422,17 @@ services:
           - test/integration/services/gift-links.test.ts
       construction:
         summary: >-
-          Import loads the class/action helper without constructing a service. First init reads
-          the shared database knex and models, partially applies the best-effort action recorder
-          and publishes one GiftLinksService retaining knex and the callback. Later init calls
-          preserve it. No separate production deep construction was found. The constructor
-          validates neither dependency nor database readiness; an early init can publish an
-          unusable captured dependency. Integration tests construct the class with real model
-          knex and matching recorder wiring; they do not enforce the root's deferred construction.
+          Import loads the class without constructing a service. First init reads the shared
+          database knex and publishes one GiftLinksService retaining it and the gift links'
+          change events, which the action log subscribes to. Later init calls preserve it. No
+          separate production deep construction was found. The constructor validates neither
+          dependency nor database readiness; an early init can publish an unusable captured
+          dependency. Integration tests construct the class with real model knex and change
+          events nothing reacts to; they do not enforce the root's deferred construction.
         sources:
           - core/server/services/gift-links/index.ts
           - core/server/services/gift-links/service.ts
-          - core/server/services/gift-links/actions.ts
+          - core/server/services/gift-links/events.ts
           - core/server/data/db/index.js
           - core/server/data/db/connection.ts
         tests:
@@ -1485,16 +1539,16 @@ services:
       resources:
         summary: >-
           No owned client, timer, worker, listener or memory cache. The service borrows the
-          shared knex pool and owns per-mint transaction work; action history is a separate
-          awaited model write after the command's database change. Database rows carry token
-          history/live state, with foreign-key cascade deletion and no scheduled pruning here.
+          shared knex pool and owns per-mint transaction work; each command raises its event
+          after its change is saved. Database rows carry token history/live state, with
+          foreign-key cascade deletion and no scheduled pruning here.
           The public response cache belongs to posts-public, and rendering/analytics belong to
           frontend consumers. There is no root drain or cleanup registration; shutdown depends
           on shared HTTP/database ownership. Real DB tests enforce live uniqueness and removal,
           not rollback, history retention/deletion cascades or in-flight shutdown.
         sources:
           - core/server/services/gift-links/service.ts
-          - core/server/services/gift-links/actions.ts
+          - core/server/services/action-log/gift-links.ts
           - core/server/data/db/connection.ts
           - core/server/data/schema/schema.js
           - core/server/models/action.js
@@ -1507,17 +1561,18 @@ services:
       failures:
         summary: >-
           Missing posts throw NotFound; unknown or no-longer-live tokens return null. Query,
-          codec, random generation and transaction errors propagate, without retries; action
-          writes run after persistence and the production recorder logs/swallows failures, skipping
-          writes when actor is absent. That boundary is enforced by action units and a real-DB
-          deep-service test with a failing recorder. Gift access refuses missing key-resolution
-          setup and rejects mismatched tokens; frontend strips invalid gifts with a 301 while
-          other failures reach normal error handling. Product lookup failure logs and grants a
-          paid shim with no tiers. Unit tests pin those helpers, but no forced mint rollback,
-          delete failure, root failure or cache-enabled revoked-token response test was found.
+          codec, random generation and transaction errors propagate, without retries. Commands
+          take a required actor and raise their events after the change is saved, and an
+          action that fails to log is logged as an error without failing the command. Admin
+          API tests read each action back through the Actions API, and a unit test of change
+          events covers a failing reaction. Gift access refuses missing key-resolution setup and rejects mismatched
+          tokens; frontend strips invalid gifts with a 301 while other failures reach normal
+          error handling. Product lookup failure logs and grants a paid shim with no tiers.
+          Unit tests pin those helpers, but no forced mint rollback, delete failure, root
+          failure or cache-enabled revoked-token response test was found.
         sources:
           - core/server/services/gift-links/service.ts
-          - core/server/services/gift-links/actions.ts
+          - core/server/lib/change-events.ts
           - core/server/services/gift-links/codec.ts
           - core/server/services/gift-links/models.ts
           - core/server/api/endpoints/utils/gift-link-access.ts
@@ -1525,12 +1580,12 @@ services:
           - core/frontend/services/routing/controllers/entry/gift-links.ts
           - core/server/services/members/create-paid-member-shim.ts
         tests:
-          - test/unit/server/services/gift-links/actions.test.ts
           - test/integration/services/gift-links.test.ts
           - test/e2e-api/admin/gift-links.test.ts
           - test/unit/api/endpoints/utils/gift-link-access.test.ts
           - test/unit/server/services/members/create-paid-member-shim.test.ts
           - test/e2e-frontend/gift-links.test.ts
+          - test/unit/server/lib/change-events.test.ts
     unverified: []
     blockers:
       - >-
@@ -4202,10 +4257,10 @@ services:
       construction:
         summary: >-
           Boot calls synchronous init in initCore, which builds the service with knex and its
-          history recorder, the preview service with lookups of Stripe, tiers and the members
-          payments service made per preview, and the branding service with lookups of Stripe
-          made per read, as those start later in boot. An existing service makes later calls
-          return.
+          change events, which the action log subscribes to, the preview service with lookups
+          of Stripe, tiers and the members payments service made per preview, and the branding
+          service with lookups of Stripe made per read, as those start later in boot. An
+          existing service makes later calls return.
         sources:
           - core/server/services/stripe-checkout-config/index.ts
           - core/boot.js

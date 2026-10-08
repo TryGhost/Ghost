@@ -1,7 +1,7 @@
 import urlUtils from '../../../shared/url-utils';
 import { CheckoutBrandingService } from './branding-service';
 import { CheckoutPreviewService, type PreviewableTier } from './preview-service';
-import { recordCheckoutConfigAction, type RecordCheckoutConfigAction } from './actions';
+import { checkoutConfigEvents } from './events';
 import { StripeCheckoutConfigService } from './service';
 
 export { StripeCheckoutConfigService } from './service';
@@ -13,8 +13,8 @@ export {
   toCheckoutConfigResponse,
   toCheckoutPreviewResponse,
 } from './serializers';
-export { actingContext } from './actions';
-export type { RequestContext } from './actions';
+export { actingContext } from '../../lib/actor';
+export type { RequestContext } from '../../lib/actor';
 
 // Constructed by init() at boot, not at import: knex is only available once the DB has
 // connected.
@@ -28,11 +28,7 @@ export function init(): void {
   }
 
   const { knex } = require('../../data/db');
-  const models = require('../../models');
-
-  const recordAction: RecordCheckoutConfigAction = (input) =>
-    recordCheckoutConfigAction({ Action: models.Action, ...input });
-  service = new StripeCheckoutConfigService({ knex, recordAction });
+  service = new StripeCheckoutConfigService({ knex, events: checkoutConfigEvents });
 
   // Looked up on each use: Stripe, tiers and members are set up later in boot.
   previewService = new CheckoutPreviewService({

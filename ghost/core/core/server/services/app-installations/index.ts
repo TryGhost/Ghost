@@ -5,12 +5,12 @@ import {
   isInDevelopmentTable,
   shouldCreateInDevelopmentTables,
 } from '../../data/schema/in-development';
-import { recordAppInstallationAction, type RecordAppInstallationAction } from './actions';
+import { appInstallationEvents } from './events';
 import { createManifestFetcher } from './fetch-manifest';
 import { AppInstallationsService } from './service';
 
-export type { RequestContext } from './actions';
-export { actingContext } from './actions';
+export type { RequestContext } from '../../lib/actor';
+export { actingContext } from '../../lib/actor';
 export type { AppInstallation } from './codec';
 export type { AppInstallationPreview } from './service';
 
@@ -37,15 +37,11 @@ export function init(): void {
   }
 
   const { knex } = require('../../data/db');
-  const models = require('../../models');
   const externalRequest = require('../../lib/request-external');
-
-  const recordAction: RecordAppInstallationAction = (input) =>
-    recordAppInstallationAction({ Action: models.Action, ...input });
 
   service = new AppInstallationsService({
     knex,
-    recordAction,
+    events: appInstallationEvents,
     // Read per install, not once at boot: both are config, which tests change.
     getManifestRules: () => ({
       ghostUrls: [urlUtils.urlFor('home', true), urlUtils.urlFor('admin', true)],

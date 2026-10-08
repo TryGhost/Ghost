@@ -46,17 +46,16 @@ export interface ActionsList {
 
 const dataType = 'ActionsResponseType';
 
-export const actionsAreGroupable = (action: Action, nextAction: Action) => {
-  const getEditedActionName = (candidate: Action) =>
-    candidate.event === 'edited' && typeof candidate.context?.action_name === 'string'
-      ? candidate.context.action_name
-      : '';
+/** The name an action gives what happened, such as "reset" or "installed", if it has one. */
+const actionNameOf = (action: Action) =>
+  typeof action.context?.action_name === 'string' ? action.context.action_name : undefined;
 
+export const actionsAreGroupable = (action: Action, nextAction: Action) => {
   return (
     action.resource_id === nextAction.resource_id &&
     action.resource_type === nextAction.resource_type &&
     action.event === nextAction.event &&
-    getEditedActionName(action) === getEditedActionName(nextAction)
+    actionNameOf(action) === actionNameOf(nextAction)
   );
 };
 
@@ -218,13 +217,7 @@ export const getActionTitle = (action: Action) => {
     }
   }
 
-  let actionName = action.event;
-
-  if (action.event === 'edited') {
-    if (action.context?.action_name) {
-      actionName = action.context?.action_name as string;
-    }
-  }
+  let actionName = actionNameOf(action) ?? action.event;
 
   if (actionName === 'reset_authentication') {
     actionName = 'reset authentication';

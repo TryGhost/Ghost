@@ -4,7 +4,9 @@ import logging from '@tryghost/logging';
 import { z } from 'zod';
 import type { Knex } from 'knex';
 import { toDatabaseDate } from '../../lib/db-types/date';
-import type { RecordCheckoutConfigAction, RequestContext } from './actions';
+import type { RequestContext } from '../../lib/actor';
+import type { ChangeEvents } from '../../lib/change-events';
+import type { CheckoutConfigEvent } from './events';
 import { DesignColumn } from './codec';
 import type { StripeCheckoutConfig, StripeCheckoutDesign } from './models';
 import { CONFIG_SLUG, CONFIG_TABLE } from './schema';
@@ -13,11 +15,11 @@ import { CheckoutConfigInput, parseRequest } from './serializers';
 /** Reads and saves the site-wide Stripe Checkout config. */
 export class StripeCheckoutConfigService {
   private knex: Knex;
-  private recordAction: RecordCheckoutConfigAction;
+  private events: ChangeEvents<CheckoutConfigEvent>;
 
-  constructor({ knex, recordAction }: { knex: Knex; recordAction: RecordCheckoutConfigAction }) {
+  constructor({ knex, events }: { knex: Knex; events: ChangeEvents<CheckoutConfigEvent> }) {
     this.knex = knex;
-    this.recordAction = recordAction;
+    this.events = events;
   }
 
   /**
@@ -31,12 +33,10 @@ export class StripeCheckoutConfigService {
     return { design: await this.readDesign() };
   }
 
-  /**
-   * Saves the parts of the config that the request includes, and records the save in the staff
-   * history.
-   */
+  /** Saves the parts of the config that the request includes, then raises `CheckoutConfigSaved`. */
   async edit(context: RequestContext, input: unknown): Promise<void> {
     const { design } = parseRequest(CheckoutConfigInput, input, 'checkout_config');
+    const previous = await this.read();
     const now = toDatabaseDate(new Date());
 
     // Only the columns for parts in the request are written, so saving one part never
@@ -54,14 +54,20 @@ export class StripeCheckoutConfigService {
       .onConflict('slug')
       .merge({ ...columns, updated_at: now });
 
-    // An existing row keeps its id, so read the id back for the history entry.
+    // An existing row keeps its id, so read the id back for the event.
     const saved = await this.knex(CONFIG_TABLE).where('slug', CONFIG_SLUG).first('id');
     if (!saved) {
       throw new errors.InternalServerError({
         message: 'The Stripe Checkout config was not found right after saving it.',
       });
     }
-    await this.recordAction({ context, subject: saved.id });
+    await this.events.raise(context.actor, {
+      type: 'CheckoutConfigSaved',
+      change: 'edited',
+      previous,
+      next: design === undefined ? previous : { ...previous, design },
+      configId: saved.id,
+    });
   }
 
   private async readDesign(): Promise<StripeCheckoutDesign | null> {

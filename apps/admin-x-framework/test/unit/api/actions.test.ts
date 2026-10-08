@@ -37,7 +37,7 @@ describe('actions api helpers', () => {
       expect(actionsAreGroupable(action, nextAction)).toBe(false);
     });
 
-    it('does not group edited actions with different action names', () => {
+    it('does not group actions with different action names', () => {
       const action = baseAction({
         resource_id: null,
         resource_type: 'security_action',
@@ -68,21 +68,39 @@ describe('actions api helpers', () => {
     });
 
     it('formats custom field definition actions across the lifecycle', () => {
-      const title = (event: string) =>
-        getActionTitle(baseAction({ resource_type: 'member_custom_field', event }));
+      const title = (event: string, actionName?: string) =>
+        getActionTitle(
+          baseAction({
+            resource_type: 'member_custom_field',
+            event,
+            context: actionName ? { action_name: actionName } : {},
+          }),
+        );
       expect(title('added')).toBe('Custom field added');
       expect(title('edited')).toBe('Custom field edited');
-      expect(title('archived')).toBe('Custom field archived');
-      expect(title('restored')).toBe('Custom field restored');
+      expect(title('edited', 'archived')).toBe('Custom field archived');
+      expect(title('edited', 'restored')).toBe('Custom field restored');
       expect(title('deleted')).toBe('Custom field deleted');
     });
 
-    it('formats app installs, uninstalls and approvals', () => {
-      const title = (event: string) =>
-        getActionTitle(baseAction({ resource_type: 'app_installation', event }));
-      expect(title('installed')).toBe('App installed');
-      expect(title('uninstalled')).toBe('App uninstalled');
-      expect(title('changes_approved')).toBe('App changes approved');
+    it('formats app installs, approvals and uninstalls by their action name', () => {
+      const title = (event: string, actionName: string) =>
+        getActionTitle(
+          baseAction({
+            resource_type: 'app_installation',
+            event,
+            context: { action_name: actionName },
+          }),
+        );
+      expect(title('added', 'installed')).toBe('App installed');
+      expect(title('edited', 'changes_approved')).toBe('App changes approved');
+      expect(title('deleted', 'uninstalled')).toBe('App uninstalled');
+    });
+
+    it('falls back to the event for an action with no action name', () => {
+      expect(
+        getActionTitle(baseAction({ resource_type: 'app_installation', event: 'installed' })),
+      ).toBe('App installed');
     });
 
     it('formats a save of the Stripe Checkout settings', () => {
