@@ -72,6 +72,11 @@ export function installFailureOf(error: unknown): InstallFailure {
         kind: 'problems',
         problems: [{ title: 'The app’s details are too large', detail }],
       };
+    case 'APP_MANIFEST_OTHER_APP':
+      return {
+        kind: 'problems',
+        problems: [{ title: 'This install link is for a different app', detail }],
+      };
     case 'APP_MANIFEST_INVALID': {
       const problems = problemsOf((apiError as { details?: unknown }).details);
       return {

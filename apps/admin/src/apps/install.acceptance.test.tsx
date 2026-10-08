@@ -55,7 +55,14 @@ const installation = (overrides: Partial<AppInstallation> = {}): AppInstallation
 const existing = (
   changes: NonNullable<AppInstallationPreview['installation']>['changes'],
   status: AppInstallation['status'] = 'active',
-) => ({ id: 'installation-1', status, manifest_url: MANIFEST_URL, manifest: manifest(), changes });
+) => ({
+  id: 'installation-1',
+  status,
+  revision: 0,
+  manifest_url: MANIFEST_URL,
+  manifest: manifest(),
+  changes,
+});
 
 /** An Admin API error, as Ghost serialises it. */
 const apiError = (

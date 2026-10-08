@@ -407,9 +407,14 @@ export const InstallDialog: React.FC<{ manifestUrl: string | null }> = ({ manife
         } else {
           await check(CHANGED_WHILE_REVIEWING);
         }
+      } else if (apiError?.code === 'APP_INSTALLATION_CHANGED' && isPreview(apiError.details)) {
+        // Another Administrator approved something in between: Ghost answers with the
+        // review as it stands now, against the installation as it is now.
+        setState({ status: 'reviewing', preview: apiError.details, notice: INSTALLATION_CHANGED });
       } else if (
         apiError?.code === 'APP_ALREADY_INSTALLED' ||
-        apiError?.code === 'APP_INSTALLATION_CHANGED'
+        apiError?.code === 'APP_INSTALLATION_CHANGED' ||
+        apiError?.code === 'APP_INSTALLATION_UNINSTALLED'
       ) {
         await check(INSTALLATION_CHANGED);
       } else {

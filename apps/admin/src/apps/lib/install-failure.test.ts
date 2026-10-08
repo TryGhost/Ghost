@@ -73,6 +73,7 @@ describe('installFailureOf', () => {
     ['APP_MANIFEST_REDIRECTED', 'The app’s details redirect to another site'],
     ['APP_MANIFEST_NOT_JSON', 'The app’s details aren’t in the expected format'],
     ['APP_MANIFEST_TOO_LARGE', 'The app’s details are too large'],
+    ['APP_MANIFEST_OTHER_APP', 'This install link is for a different app'],
   ])('explains %s as a problem for the developer', (code, title) => {
     expect(installFailureOf(apiError(code, 'what Ghost said'))).toEqual({
       kind: 'problems',
