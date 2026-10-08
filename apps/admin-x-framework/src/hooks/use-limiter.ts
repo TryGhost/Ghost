@@ -5,6 +5,7 @@ import { useBrowseMembers } from '../api/members';
 import { useBrowseNewsletters } from '../api/newsletters';
 import { useBrowseRoles } from '../api/roles';
 import { useBrowseUsers } from '../api/users';
+import { useBrowseAutomations } from '../api/automations';
 import type { EmailsResponseType } from '../api/emails';
 import { apiUrl, useFetchApi, type RequestOptions } from '../utils/api/fetch-api';
 import { HostLimitError } from '../utils/errors';
@@ -62,6 +63,10 @@ export const useLimiter = ({ limits: wanted, requestOptions }: UseLimiterOptions
   });
   const { refetch: fetchNewsletters } = useBrowseNewsletters({
     searchParams: { filter: 'status:active', limit: '1' },
+    enabled: false,
+    requestOptions,
+  });
+  const { refetch: fetchAutomations } = useBrowseAutomations({
     enabled: false,
     requestOptions,
   });
@@ -144,6 +149,17 @@ export const useLimiter = ({ limits: wanted, requestOptions }: UseLimiterOptions
       };
     }
 
+    if (limits.limitAutomations) {
+      // Browse returns every automation, including welcome flows hidden by UI filters.
+      limits.limitAutomations.currentCountQuery = async () => {
+        const { data } = await fetchAutomations({ throwOnError: true });
+        if (!data) {
+          throw new Error('Failed to fetch automation count.');
+        }
+        return data.automations.filter((automation) => automation.status === 'active').length;
+      };
+    }
+
     if (limits.emails) {
       // The package's own emails query counts through knex, which the browser has no access to.
       limits.emails.currentCountQuery = async (_db, periodStart) => {
@@ -186,6 +202,7 @@ export const useLimiter = ({ limits: wanted, requestOptions }: UseLimiterOptions
   }, [
     config,
     fetchApi,
+    fetchAutomations,
     fetchMembers,
     fetchNewsletters,
     helpLink,
