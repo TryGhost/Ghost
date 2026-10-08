@@ -55,3 +55,8 @@ export function shouldRunScreenTransition({
 export function isReturningFromScreen(): boolean {
   return document.documentElement.dataset.screenTransition === 'return';
 }
+
+/** Whether the current navigation is a screen transition entering a full-screen surface. */
+export function isEnteringScreen(): boolean {
+  return document.documentElement.dataset.screenTransition === 'after-exit';
+}

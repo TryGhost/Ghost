@@ -483,7 +483,7 @@ html[data-screen-exit] .screen-exit-content {
 html[data-screen-exit='hide-sidebar'] .screen-exit-sidebar {
   opacity: 0;
   pointer-events: none;
-  transform: translateX(-100px);
+  transform: translateX(-40px);
   transition:
     opacity 200ms var(--ease-standard),
     transform 200ms var(--ease-standard);
@@ -546,6 +546,38 @@ html[data-screen-transition='return']::view-transition-new(admin-mobile-nav):onl
   }
 }
 
+/* Entering the editor, the document rises into place and its floating chrome
+   follows in from the screen edges. */
+.screen-enter-from-top {
+  animation: screen-chrome-from-top 450ms var(--ease-emphasized) 150ms both;
+}
+
+.screen-enter-from-bottom {
+  animation: screen-chrome-from-bottom 450ms var(--ease-emphasized) 150ms both;
+}
+
+.screen-enter-rise {
+  animation: screen-content-rise 450ms var(--ease-emphasized) both;
+}
+
+@keyframes screen-content-rise {
+  from {
+    transform: translateY(40px);
+  }
+}
+
+@keyframes screen-chrome-from-top {
+  from {
+    transform: translateY(-80px);
+  }
+}
+
+@keyframes screen-chrome-from-bottom {
+  from {
+    transform: translateY(80px);
+  }
+}
+
 /* Loading spinners wait before fading in, so a fast load never flashes one. */
 .delayed-fade-in {
   animation: screen-transition-fade-in 200ms var(--ease-standard) 500ms both;
@@ -566,14 +598,14 @@ html[data-screen-transition='return']::view-transition-new(admin-mobile-nav):onl
 @keyframes screen-transition-sidebar-out {
   to {
     opacity: 0;
-    transform: translateX(-100px);
+    transform: translateX(-40px);
   }
 }
 
 @keyframes screen-transition-sidebar-in {
   from {
     opacity: 0;
-    transform: translateX(-100px);
+    transform: translateX(-40px);
   }
 }
 

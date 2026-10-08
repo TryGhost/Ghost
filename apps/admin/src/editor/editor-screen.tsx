@@ -18,7 +18,7 @@ import { Navigate, useLocation, useNavigate, useParams } from '@tryghost/admin-x
 import { Button } from '@tryghost/shade/components';
 import { DirtyConfirmDialog, PageHeader } from '@tryghost/shade/patterns';
 import { Box, Grid, Inline, Stack, Text } from '@tryghost/shade/primitives';
-import { LucideIcon } from '@tryghost/shade/utils';
+import { LucideIcon, cn } from '@tryghost/shade/utils';
 import { APIError, SessionExpiredError } from '@tryghost/admin-x-framework/errors';
 import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
@@ -47,6 +47,8 @@ import {
 import { EditorHeaderActions, type OpenFlow } from './editor-header-actions';
 import { readEditorReturn } from './editor-return';
 import { EditorLoading } from './editor-loading';
+import { EditorChromeEntranceContext, useEditorChromeEntrance } from './chrome-entrance';
+import { isEnteringScreen } from '@/layout/screen-transition';
 import { EditorStatus } from './editor-status';
 import { EmailSizeWarning } from './email-size-warning';
 import { PostEditor, type PostEditorHandle } from './post-editor';
@@ -180,6 +182,7 @@ function EditorContent({
     currentUserId: currentUser?.id,
   });
   const [tkCount, setTkCount] = useState(0);
+  const chromeEntrance = useEditorChromeEntrance();
   const [openFlow, setOpenFlow] = useState<OpenFlow>('none');
   const openPublishFlow = useCallback(() => setOpenFlow('publish'), []);
   const openUpdateFlow = useCallback(() => setOpenFlow('update'), []);
@@ -408,7 +411,13 @@ function EditorContent({
         }
       >
         <Stack className="min-h-0 min-w-0 flex-1" gap="none">
-          <Box ref={headerRef} className="pointer-events-none relative z-20 shrink-0">
+          <Box
+            ref={headerRef}
+            className={cn(
+              'pointer-events-none relative z-20 shrink-0',
+              chromeEntrance && 'screen-enter-from-top',
+            )}
+          >
             <EditorHeader analyticsReturn={analyticsReturn} postType={postType}>
               {!analyticsReturn || didEmailFail || session.state.kind === 'error' ? (
                 <EditorStatus
@@ -468,7 +477,12 @@ function EditorContent({
             </div>
           </Box>
         </Stack>
-        <Box className="absolute top-[calc(var(--spacing)*5+1px)] right-[calc(var(--spacing)*6+1px)] z-40 max-[500px]:top-3 max-[500px]:right-3">
+        <Box
+          className={cn(
+            'absolute top-[calc(var(--spacing)*5+1px)] right-[calc(var(--spacing)*6+1px)] z-40 max-[500px]:top-3 max-[500px]:right-3',
+            chromeEntrance && 'screen-enter-from-top',
+          )}
+        >
           {settingsToggle}
         </Box>
         {settingsPresent ? (
@@ -757,6 +771,16 @@ function EditorLoader({ postType, id }: { postType: PostType; id?: string }) {
   return <EditorSurface postType={postType} record={record} />;
 }
 
+/** Latches, per session, whether the editor opened through a screen transition. */
+function EditorChromeEntrance({ children }: { children: ReactNode }) {
+  const [entering] = useState(isEnteringScreen);
+  return (
+    <EditorChromeEntranceContext.Provider value={entering}>
+      {children}
+    </EditorChromeEntranceContext.Provider>
+  );
+}
+
 export default function EditorScreen() {
   const editorPath = useParams()['*'] ?? '';
   const { key: sessionKey, markCreated } = useEditorScreenSessionKey();
@@ -773,7 +797,9 @@ export default function EditorScreen() {
   return (
     <EditorSessionKeyProvider value={sessionKey}>
       <EditorSessionCreatedProvider value={markCreated}>
-        <EditorLoader key={sessionKey} id={id} postType={typeSegment} />
+        <EditorChromeEntrance key={sessionKey}>
+          <EditorLoader id={id} postType={typeSegment} />
+        </EditorChromeEntrance>
       </EditorSessionCreatedProvider>
     </EditorSessionKeyProvider>
   );
