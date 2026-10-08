@@ -1,8 +1,24 @@
-export function getScript() {
-  return document.currentScript || document.querySelector('script[data-ghost-admin-toolbar]');
+export interface ToolbarConfig {
+  adminUrl: string;
+  siteTitle: string;
+  pageContext: string;
+  resourceType: string;
+  resourceId: string;
+  resourceSlug: string;
+  siteAnalyticsEnabled: boolean;
+  activityPubEnabled: boolean;
+  membersEnabled: boolean;
+  commentsEnabled: boolean;
 }
 
-export function normalizeAdminUrl(adminUrl) {
+export function getScript() {
+  return (
+    document.currentScript ||
+    document.querySelector<HTMLScriptElement>('script[data-ghost-admin-toolbar]')
+  );
+}
+
+export function normalizeAdminUrl(adminUrl: string | undefined) {
   if (!adminUrl) {
     return null;
   }
@@ -10,8 +26,8 @@ export function normalizeAdminUrl(adminUrl) {
   return adminUrl.endsWith('/') ? adminUrl : `${adminUrl}/`;
 }
 
-export function getConfig(script) {
-  const dataset = script?.dataset || {};
+export function getConfig(script: HTMLOrSVGScriptElement | null): ToolbarConfig | null {
+  const dataset: DOMStringMap = script?.dataset || {};
   const adminUrl = normalizeAdminUrl(dataset.ghostAdminToolbar);
 
   if (!adminUrl) {

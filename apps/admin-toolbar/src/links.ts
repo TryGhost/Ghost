@@ -1,9 +1,9 @@
-export function adminHref(adminUrl, path) {
+export function adminHref(adminUrl: string, path: string) {
   const cleanPath = path.replace(/^\/+/, '');
   return `${adminUrl}#/${cleanPath}`;
 }
 
-export function commentsHref(adminUrl, postId) {
+export function commentsHref(adminUrl: string, postId: string) {
   return adminHref(adminUrl, `comments?filter=${encodeURIComponent(`post_id:${postId}`)}`);
 }
 

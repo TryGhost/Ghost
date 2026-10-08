@@ -3,15 +3,16 @@
 import { createElement as h, render } from 'preact';
 
 import { createAdminApi, canShowToolbar, createAuthFrame } from './auth';
-import { getConfig, getScript } from './config';
+import { getConfig, getScript, type ToolbarConfig } from './config';
 import { ROOT_ID } from './constants';
 import { Toolbar } from './components';
 import { getToolbarStyle } from './styles';
+import type { StaffUser } from './user';
 
 const AUTH_FRAME_LOAD_TIMEOUT = 5000;
 
-function waitForFrameLoad(frame) {
-  return new Promise((resolve, reject) => {
+function waitForFrameLoad(frame: HTMLIFrameElement) {
+  return new Promise<void>((resolve, reject) => {
     function cleanup() {
       window.clearTimeout(timeout);
       frame.removeEventListener('load', handleLoad);
@@ -38,7 +39,15 @@ function waitForFrameLoad(frame) {
   });
 }
 
-function renderToolbar({ config, user, frame }) {
+function renderToolbar({
+  config,
+  user,
+  frame,
+}: {
+  config: ToolbarConfig;
+  user: StaffUser;
+  frame: HTMLIFrameElement;
+}) {
   if (document.getElementById(ROOT_ID)) {
     return;
   }

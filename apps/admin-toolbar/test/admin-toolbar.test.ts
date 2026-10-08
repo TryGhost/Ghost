@@ -3,6 +3,27 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { JSDOM } from 'jsdom';
 
+interface DomOptions {
+  pageContext?: string;
+  resourceType?: string;
+  resourceId?: string;
+  resourceSlug?: string;
+  siteAnalyticsEnabled?: boolean;
+  activityPubEnabled?: boolean;
+  membersEnabled?: boolean;
+  commentsEnabled?: boolean;
+}
+
+interface AuthFrameMessage {
+  uid: number;
+  action: string;
+}
+
+interface MockReply {
+  error?: string;
+  result?: unknown;
+}
+
 const BUNDLE_PATH = path.join(import.meta.dirname, '../umd/admin-toolbar.min.js');
 
 const source = fs.readFileSync(BUNDLE_PATH, 'utf8');
@@ -16,7 +37,7 @@ function createDom({
   activityPubEnabled = false,
   membersEnabled = false,
   commentsEnabled = true,
-} = {}) {
+}: DomOptions = {}) {
   const dom = new JSDOM(
     `<!DOCTYPE html><html><body>
         <main>Site content</main>
@@ -40,7 +61,7 @@ function createDom({
   );
 
   dom.window.requestAnimationFrame = (callback) => {
-    callback();
+    callback(0);
     return 1;
   };
   dom.window.cancelAnimationFrame = () => {};
@@ -48,15 +69,21 @@ function createDom({
   return dom;
 }
 
-async function runToolbar(dom, response) {
+async function runToolbar(
+  dom: JSDOM,
+  response: MockReply | ((message: AuthFrameMessage) => MockReply),
+) {
   dom.window.eval(source);
   dom.window.document.dispatchEvent(new dom.window.Event('DOMContentLoaded'));
 
-  const frame = dom.window.document.querySelector('iframe[data-frame="admin-auth"]');
+  const frame = dom.window.document.querySelector<HTMLIFrameElement>(
+    'iframe[data-frame="admin-auth"]',
+  );
   assert.ok(frame, 'auth frame should be created');
+  assert.ok(frame.contentWindow, 'auth frame should have a window');
 
-  frame.contentWindow.postMessage = (payload) => {
-    const message = JSON.parse(payload);
+  frame.contentWindow.postMessage = (payload: string) => {
+    const message: AuthFrameMessage = JSON.parse(payload);
     const result = typeof response === 'function' ? response(message) : response;
     dom.window.dispatchEvent(
       new dom.window.MessageEvent('message', {
@@ -81,14 +108,25 @@ async function runToolbar(dom, response) {
   };
 }
 
-function getShadowLinks(root) {
-  return Array.from(root.shadowRoot.querySelectorAll('a')).map((link) => ({
+function shadowOf(root: HTMLElement | null) {
+  assert.ok(root?.shadowRoot, 'toolbar should render into a shadow root');
+  return root.shadowRoot;
+}
+
+function queryShadow<E extends Element = HTMLElement>(root: HTMLElement | null, selector: string) {
+  const element = shadowOf(root).querySelector<E>(selector);
+  assert.ok(element, `${selector} should be rendered`);
+  return element;
+}
+
+function getShadowLinks(root: HTMLElement | null) {
+  return Array.from(shadowOf(root).querySelectorAll('a')).map((link) => ({
     label: link.getAttribute('aria-label'),
     href: link.href,
   }));
 }
 
-function editorUser(overrides = {}) {
+function editorUser(overrides: Record<string, unknown> = {}) {
   return {
     name: 'Jane Staff',
     roles: [{ name: 'Editor' }],
@@ -97,11 +135,6 @@ function editorUser(overrides = {}) {
 }
 
 describe('admin-toolbar', function () {
-  afterEach(function () {
-    delete global.window;
-    delete global.document;
-  });
-
   it('does not render when no admin user is returned', async function () {
     const dom = createDom();
     const { root, frame } = await runToolbar(dom, {
@@ -117,7 +150,7 @@ describe('admin-toolbar', function () {
     const dom = createDom();
     const originalSetTimeout = dom.window.setTimeout.bind(dom.window);
 
-    dom.window.setTimeout = (callback, delay) => {
+    dom.window.setTimeout = (callback: () => void, delay?: number) => {
       if (delay === 5000) {
         callback();
         return 1;
@@ -153,20 +186,17 @@ describe('admin-toolbar', function () {
 
     assert.ok(root);
     assert.match(
-      root.shadowRoot.querySelector('.gh-admin-toolbar-user').getAttribute('aria-label'),
+      queryShadow(root, '.gh-admin-toolbar-user').getAttribute('aria-label') ?? '',
       /Example Site/,
     );
     assert.match(
-      root.shadowRoot.querySelector('.gh-admin-toolbar-user').getAttribute('aria-label'),
+      queryShadow(root, '.gh-admin-toolbar-user').getAttribute('aria-label') ?? '',
       /Jane Staff/,
     );
-    assert.equal(root.shadowRoot.querySelector('.gh-admin-toolbar-tooltip').textContent, 'Admin');
+    assert.equal(queryShadow(root, '.gh-admin-toolbar-tooltip').textContent, 'Admin');
+    assert.equal(queryShadow(root, '.gh-admin-toolbar-user').hasAttribute('title'), false);
     assert.equal(
-      root.shadowRoot.querySelector('.gh-admin-toolbar-user').hasAttribute('title'),
-      false,
-    );
-    assert.equal(
-      root.shadowRoot.querySelector('.gh-admin-toolbar-avatar-image').src,
+      queryShadow<HTMLImageElement>(root, '.gh-admin-toolbar-avatar-image').src,
       'https://example.com/jane.jpg',
     );
     dom.window.close();
@@ -203,11 +233,8 @@ describe('admin-toolbar', function () {
     const dom = createDom();
     const { root } = await runToolbar(dom, { result: { users: [editorUser()] } });
 
-    assert.equal(root.shadowRoot.querySelector('.gh-admin-toolbar-avatar-image'), null);
-    assert.equal(
-      root.shadowRoot.querySelector('.gh-admin-toolbar-avatar-fallback').textContent,
-      'J',
-    );
+    assert.equal(shadowOf(root).querySelector('.gh-admin-toolbar-avatar-image'), null);
+    assert.equal(queryShadow(root, '.gh-admin-toolbar-avatar-fallback').textContent, 'J');
     dom.window.close();
   });
 
@@ -276,10 +303,12 @@ describe('admin-toolbar', function () {
   it('uses isolated tooltip wrappers for toolbar action links', async function () {
     const dom = createDom({ resourceType: 'post', resourceId: 'post-id' });
     const { root } = await runToolbar(dom, { result: { users: [editorUser()] } });
-    const actionLinks = Array.from(root.shadowRoot.querySelectorAll('.gh-admin-toolbar-link'));
-    const tooltips = Array.from(root.shadowRoot.querySelectorAll('.gh-admin-toolbar-tooltip')).map(
-      (tooltip) => tooltip.textContent,
+    const actionLinks = Array.from(
+      shadowOf(root).querySelectorAll<HTMLElement>('.gh-admin-toolbar-link'),
     );
+    const tooltips = Array.from(
+      shadowOf(root).querySelectorAll<HTMLElement>('.gh-admin-toolbar-tooltip'),
+    ).map((tooltip) => tooltip.textContent);
 
     assert.equal(actionLinks.length, 3);
     for (const link of actionLinks) {
@@ -353,17 +382,19 @@ describe('admin-toolbar', function () {
   it('shows a more menu with minimize and hide actions', async function () {
     const dom = createDom();
     const { root } = await runToolbar(dom, { result: { users: [editorUser()] } });
-    const button = root.shadowRoot.querySelector('.gh-admin-toolbar-button');
+    const button = queryShadow(root, '.gh-admin-toolbar-button');
 
     assert.equal(button.getAttribute('aria-label'), 'More');
-    assert.equal(root.shadowRoot.querySelector('.gh-admin-toolbar-menu'), null);
+    assert.equal(shadowOf(root).querySelector('.gh-admin-toolbar-menu'), null);
 
     button.click();
     await new Promise((resolve) => {
       dom.window.setTimeout(resolve, 0);
     });
 
-    const items = Array.from(root.shadowRoot.querySelectorAll('.gh-admin-toolbar-menu-item'));
+    const items = Array.from(
+      shadowOf(root).querySelectorAll<HTMLElement>('.gh-admin-toolbar-menu-item'),
+    );
 
     assert.equal(items[0].textContent, 'Minimize');
     assert.equal(items[0].tagName, 'BUTTON');
@@ -376,52 +407,48 @@ describe('admin-toolbar', function () {
     const dom = createDom({ resourceType: 'post', resourceId: 'post-id' });
     const { root } = await runToolbar(dom, { result: { users: [editorUser()] } });
 
-    root.shadowRoot.querySelector('.gh-admin-toolbar-button').click();
+    queryShadow(root, '.gh-admin-toolbar-button').click();
     await new Promise((resolve) => {
       dom.window.setTimeout(resolve, 0);
     });
 
-    root.shadowRoot.querySelector('.gh-admin-toolbar-menu-item').click();
+    queryShadow(root, '.gh-admin-toolbar-menu-item').click();
     await new Promise((resolve) => {
       dom.window.setTimeout(resolve, 0);
     });
 
-    const pill = root.shadowRoot.querySelector('.gh-admin-toolbar-minimized-pill');
+    const pill = shadowOf(root).querySelector('.gh-admin-toolbar-minimized-pill');
 
-    assert.notEqual(pill, null);
+    assert.ok(pill);
     assert.equal(pill.getAttribute('aria-label'), 'Show admin toolbar');
     assert.equal(
-      root.shadowRoot
-        .querySelector('.gh-admin-toolbar')
-        .classList.contains('gh-admin-toolbar-minimized-mode'),
+      queryShadow(root, '.gh-admin-toolbar').classList.contains('gh-admin-toolbar-minimized-mode'),
       true,
     );
     assert.equal(
-      root.shadowRoot
-        .querySelector('.gh-admin-toolbar')
-        .classList.contains('gh-admin-toolbar-minimized-expanded'),
+      queryShadow(root, '.gh-admin-toolbar').classList.contains(
+        'gh-admin-toolbar-minimized-expanded',
+      ),
       false,
     );
 
-    root.shadowRoot.querySelector('.gh-admin-toolbar-minimized-pill').click();
+    queryShadow(root, '.gh-admin-toolbar-minimized-pill').click();
     await new Promise((resolve) => {
       dom.window.setTimeout(resolve, 0);
     });
 
     assert.equal(
-      root.shadowRoot
-        .querySelector('.gh-admin-toolbar')
-        .classList.contains('gh-admin-toolbar-minimized-mode'),
+      queryShadow(root, '.gh-admin-toolbar').classList.contains('gh-admin-toolbar-minimized-mode'),
       true,
     );
     assert.equal(
-      root.shadowRoot
-        .querySelector('.gh-admin-toolbar')
-        .classList.contains('gh-admin-toolbar-minimized-expanded'),
+      queryShadow(root, '.gh-admin-toolbar').classList.contains(
+        'gh-admin-toolbar-minimized-expanded',
+      ),
       true,
     );
 
-    root.shadowRoot.querySelector('.gh-admin-toolbar').dispatchEvent(
+    queryShadow(root, '.gh-admin-toolbar').dispatchEvent(
       new dom.window.MouseEvent('mouseleave', {
         bubbles: true,
       }),
@@ -431,18 +458,16 @@ describe('admin-toolbar', function () {
     });
 
     assert.equal(
-      root.shadowRoot
-        .querySelector('.gh-admin-toolbar')
-        .classList.contains('gh-admin-toolbar-minimized-mode'),
+      queryShadow(root, '.gh-admin-toolbar').classList.contains('gh-admin-toolbar-minimized-mode'),
       true,
     );
     assert.equal(
-      root.shadowRoot
-        .querySelector('.gh-admin-toolbar')
-        .classList.contains('gh-admin-toolbar-minimized-expanded'),
+      queryShadow(root, '.gh-admin-toolbar').classList.contains(
+        'gh-admin-toolbar-minimized-expanded',
+      ),
       false,
     );
-    assert.notEqual(root.shadowRoot.querySelector('.gh-admin-toolbar-minimized-pill'), null);
+    assert.notEqual(shadowOf(root).querySelector('.gh-admin-toolbar-minimized-pill'), null);
     dom.window.close();
   });
 
@@ -450,11 +475,11 @@ describe('admin-toolbar', function () {
     const dom = createDom({ resourceType: 'post', resourceId: 'post-id' });
     const { root } = await runToolbar(dom, { result: { users: [editorUser()] } });
 
-    root.shadowRoot.querySelector('.gh-admin-toolbar-button').click();
+    queryShadow(root, '.gh-admin-toolbar-button').click();
     await new Promise((resolve) => {
       dom.window.setTimeout(resolve, 0);
     });
-    root.shadowRoot.querySelector('.gh-admin-toolbar-menu-item').click();
+    queryShadow(root, '.gh-admin-toolbar-menu-item').click();
     await new Promise((resolve) => {
       dom.window.setTimeout(resolve, 0);
     });
@@ -466,17 +491,17 @@ describe('admin-toolbar', function () {
     nextDom.window.localStorage.setItem('ghost-admin-toolbar-display', 'minimized');
     const { root: nextRoot } = await runToolbar(nextDom, { result: { users: [editorUser()] } });
 
-    assert.notEqual(nextRoot.shadowRoot.querySelector('.gh-admin-toolbar-minimized-pill'), null);
+    assert.notEqual(shadowOf(nextRoot).querySelector('.gh-admin-toolbar-minimized-pill'), null);
     assert.equal(
-      nextRoot.shadowRoot
-        .querySelector('.gh-admin-toolbar')
-        .classList.contains('gh-admin-toolbar-minimized-mode'),
+      queryShadow(nextRoot, '.gh-admin-toolbar').classList.contains(
+        'gh-admin-toolbar-minimized-mode',
+      ),
       true,
     );
     assert.equal(
-      nextRoot.shadowRoot
-        .querySelector('.gh-admin-toolbar')
-        .classList.contains('gh-admin-toolbar-minimized-expanded'),
+      queryShadow(nextRoot, '.gh-admin-toolbar').classList.contains(
+        'gh-admin-toolbar-minimized-expanded',
+      ),
       false,
     );
     nextDom.window.close();
@@ -486,25 +511,27 @@ describe('admin-toolbar', function () {
     const dom = createDom({ resourceType: 'post', resourceId: 'post-id' });
     const { root } = await runToolbar(dom, { result: { users: [editorUser()] } });
 
-    root.shadowRoot.querySelector('.gh-admin-toolbar-button').click();
+    queryShadow(root, '.gh-admin-toolbar-button').click();
     await new Promise((resolve) => {
       dom.window.setTimeout(resolve, 0);
     });
-    root.shadowRoot.querySelector('.gh-admin-toolbar-menu-item').click();
+    queryShadow(root, '.gh-admin-toolbar-menu-item').click();
     await new Promise((resolve) => {
       dom.window.setTimeout(resolve, 0);
     });
-    root.shadowRoot.querySelector('.gh-admin-toolbar-minimized-pill').click();
-    await new Promise((resolve) => {
-      dom.window.setTimeout(resolve, 0);
-    });
-
-    root.shadowRoot.querySelector('.gh-admin-toolbar-button').click();
+    queryShadow(root, '.gh-admin-toolbar-minimized-pill').click();
     await new Promise((resolve) => {
       dom.window.setTimeout(resolve, 0);
     });
 
-    const items = Array.from(root.shadowRoot.querySelectorAll('.gh-admin-toolbar-menu-item'));
+    queryShadow(root, '.gh-admin-toolbar-button').click();
+    await new Promise((resolve) => {
+      dom.window.setTimeout(resolve, 0);
+    });
+
+    const items = Array.from(
+      shadowOf(root).querySelectorAll<HTMLElement>('.gh-admin-toolbar-menu-item'),
+    );
 
     assert.equal(items[0].textContent, 'Maximize');
 
@@ -515,7 +542,7 @@ describe('admin-toolbar', function () {
 
     assert.equal(dom.window.localStorage.getItem('ghost-admin-toolbar-display'), 'expanded');
 
-    root.shadowRoot.querySelector('.gh-admin-toolbar').dispatchEvent(
+    queryShadow(root, '.gh-admin-toolbar').dispatchEvent(
       new dom.window.MouseEvent('mouseleave', {
         bubbles: true,
       }),
@@ -524,11 +551,9 @@ describe('admin-toolbar', function () {
       dom.window.setTimeout(resolve, 0);
     });
 
-    assert.notEqual(root.shadowRoot.querySelector('.gh-admin-toolbar-minimized-pill'), null);
+    assert.notEqual(shadowOf(root).querySelector('.gh-admin-toolbar-minimized-pill'), null);
     assert.equal(
-      root.shadowRoot
-        .querySelector('.gh-admin-toolbar')
-        .classList.contains('gh-admin-toolbar-minimized-mode'),
+      queryShadow(root, '.gh-admin-toolbar').classList.contains('gh-admin-toolbar-minimized-mode'),
       false,
     );
     dom.window.close();
@@ -538,24 +563,24 @@ describe('admin-toolbar', function () {
     const dom = createDom({ resourceType: 'post', resourceId: 'post-id' });
     const { root } = await runToolbar(dom, { result: { users: [editorUser()] } });
 
-    root.shadowRoot.querySelector('.gh-admin-toolbar-button').click();
+    queryShadow(root, '.gh-admin-toolbar-button').click();
     await new Promise((resolve) => {
       dom.window.setTimeout(resolve, 0);
     });
-    root.shadowRoot.querySelector('.gh-admin-toolbar-menu-item').click();
+    queryShadow(root, '.gh-admin-toolbar-menu-item').click();
     await new Promise((resolve) => {
       dom.window.setTimeout(resolve, 0);
     });
-    root.shadowRoot.querySelector('.gh-admin-toolbar-minimized-pill').click();
+    queryShadow(root, '.gh-admin-toolbar-minimized-pill').click();
     await new Promise((resolve) => {
       dom.window.setTimeout(resolve, 0);
     });
-    root.shadowRoot.querySelector('.gh-admin-toolbar-button').click();
+    queryShadow(root, '.gh-admin-toolbar-button').click();
     await new Promise((resolve) => {
       dom.window.setTimeout(resolve, 0);
     });
 
-    root.shadowRoot.querySelector('.gh-admin-toolbar').dispatchEvent(
+    queryShadow(root, '.gh-admin-toolbar').dispatchEvent(
       new dom.window.MouseEvent('mouseleave', {
         bubbles: true,
       }),
@@ -564,17 +589,14 @@ describe('admin-toolbar', function () {
       dom.window.setTimeout(resolve, 0);
     });
 
-    assert.notEqual(root.shadowRoot.querySelector('.gh-admin-toolbar-menu'), null);
+    assert.notEqual(shadowOf(root).querySelector('.gh-admin-toolbar-menu'), null);
     assert.equal(
-      root.shadowRoot
-        .querySelector('.gh-admin-toolbar')
-        .classList.contains('gh-admin-toolbar-minimized-expanded'),
+      queryShadow(root, '.gh-admin-toolbar').classList.contains(
+        'gh-admin-toolbar-minimized-expanded',
+      ),
       true,
     );
-    assert.equal(
-      root.shadowRoot.querySelector('.gh-admin-toolbar-menu-item').textContent,
-      'Maximize',
-    );
+    assert.equal(queryShadow(root, '.gh-admin-toolbar-menu-item').textContent, 'Maximize');
     dom.window.close();
   });
 
@@ -582,21 +604,21 @@ describe('admin-toolbar', function () {
     const dom = createDom({ resourceType: 'post', resourceId: 'post-id' });
     const { root } = await runToolbar(dom, { result: { users: [editorUser()] } });
 
-    const initialTooltipCount = root.shadowRoot.querySelectorAll(
+    const initialTooltipCount = shadowOf(root).querySelectorAll<HTMLElement>(
       '.gh-admin-toolbar-tooltip',
     ).length;
 
     assert.ok(initialTooltipCount > 0);
 
-    root.shadowRoot.querySelector('.gh-admin-toolbar-button').click();
+    queryShadow(root, '.gh-admin-toolbar-button').click();
     await new Promise((resolve) => {
       dom.window.setTimeout(resolve, 0);
     });
 
-    assert.notEqual(root.shadowRoot.querySelector('.gh-admin-toolbar-menu'), null);
-    assert.equal(root.classList.contains('gh-admin-toolbar-menu-open'), true);
+    assert.notEqual(shadowOf(root).querySelector('.gh-admin-toolbar-menu'), null);
+    assert.equal(root?.classList.contains('gh-admin-toolbar-menu-open'), true);
     assert.equal(
-      root.shadowRoot.querySelectorAll('.gh-admin-toolbar-tooltip').length,
+      shadowOf(root).querySelectorAll<HTMLElement>('.gh-admin-toolbar-tooltip').length,
       initialTooltipCount,
     );
     dom.window.close();

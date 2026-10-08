@@ -18,9 +18,12 @@
   "scripts": {
     "build": "vite build",
     "dev": "vite build --watch --mode development",
-    "lint": "eslint src test --cache",
-    "test": "pnpm test:unit",
+    "test": "pnpm run '/^test:(types|unit)$/'",
+    "test:types": "tsc --noEmit --incremental false",
     "test:unit": "pnpm run build && vitest run",
+    "lint": "pnpm run '/^lint:/'",
+    "lint:code": "eslint src test --cache",
+    "lint:types": "pnpm test:types",
     "preship": "pnpm lint",
     "ship": "node ../../scripts/release-apps.js",
     "prepublishOnly": "pnpm build"
@@ -29,13 +32,14 @@
     "preact": "catalog:"
   },
   "devDependencies": {
-    "@eslint/js": "catalog:",
-    "@internal/cfg-eslint": "workspace:*",
+    "@internal/cfg-eslint-react": "workspace:*",
     "@internal/cfg-vite-public-app": "workspace:*",
+    "@types/jsdom": "catalog:",
+    "@types/node": "catalog:",
+    "@typescript/native": "catalog:",
     "eslint": "catalog:",
-    "eslint-plugin-ghost": "catalog:",
-    "globals": "catalog:",
     "jsdom": "catalog:",
+    "typescript": "catalog:",
     "vite": "catalog:",
     "vitest": "catalog:"
   },

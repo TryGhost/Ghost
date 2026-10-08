@@ -1,18 +1,24 @@
-import { createElement as h } from 'preact';
+import {
+  createElement as h,
+  type ComponentChildren,
+  type TargetedEvent,
+  type TargetedFocusEvent,
+} from 'preact';
 import { useEffect, useLayoutEffect, useRef, useState } from 'preact/hooks';
 
-import { getToolbarActions } from './actions';
+import { getToolbarActions, type ToolbarAction } from './actions';
+import type { ToolbarConfig } from './config';
 import { DISPLAY_EXPANDED, DISPLAY_MINIMIZED, ROOT_ID } from './constants';
 import { Icon } from './icons';
 import { adminHref, hideToolbarHref } from './links';
 import { getStoredDisplayState, setStoredDisplayState } from './storage';
-import { getUserImage, getUserLabel } from './user';
+import { getUserImage, getUserLabel, type StaffUser } from './user';
 
-function ScreenReaderLabel({ children }) {
+function ScreenReaderLabel({ children }: { children?: ComponentChildren }) {
   return h('span', { className: 'gh-admin-toolbar-sr-only' }, children);
 }
 
-function TooltipWrap({ children, label }) {
+function TooltipWrap({ children, label }: { children?: ComponentChildren; label: string }) {
   return h('span', { className: 'gh-admin-toolbar-tooltip-wrap' }, [
     children,
     h(
@@ -26,7 +32,7 @@ function TooltipWrap({ children, label }) {
   ]);
 }
 
-function ToolbarLink({ href, icon, label }) {
+function ToolbarLink({ href, icon, label }: ToolbarAction) {
   const link = h(
     'a',
     {
@@ -40,7 +46,15 @@ function ToolbarLink({ href, icon, label }) {
   return h(TooltipWrap, { label }, link);
 }
 
-function ToolbarMenu({ isMinimized, isOpen, onMaximize, onMinimize, setIsOpen }) {
+interface ToolbarMenuProps {
+  isMinimized: boolean;
+  isOpen: boolean;
+  onMaximize: () => void;
+  onMinimize: () => void;
+  setIsOpen: (isOpen: boolean) => void;
+}
+
+function ToolbarMenu({ isMinimized, isOpen, onMaximize, onMinimize, setIsOpen }: ToolbarMenuProps) {
   const label = 'More';
   const button = h(
     'button',
@@ -67,7 +81,7 @@ function ToolbarMenu({ isMinimized, isOpen, onMaximize, onMinimize, setIsOpen })
     {
       className: 'gh-admin-toolbar-menu-wrap',
       onFocusOut: (event) => {
-        if (!event.currentTarget.contains(event.relatedTarget)) {
+        if (!event.currentTarget.contains(event.relatedTarget as Node | null)) {
           setIsOpen(false);
         }
       },
@@ -105,7 +119,15 @@ function ToolbarMenu({ isMinimized, isOpen, onMaximize, onMinimize, setIsOpen })
   );
 }
 
-function UserAvatar({ adminUrl, siteTitle, user }) {
+function UserAvatar({
+  adminUrl,
+  siteTitle,
+  user,
+}: {
+  adminUrl: string;
+  siteTitle: string;
+  user: StaffUser;
+}) {
   const userLabel = getUserLabel(user);
   const userImage = getUserImage(user);
 
@@ -128,7 +150,7 @@ function UserAvatar({ adminUrl, siteTitle, user }) {
               alt: '',
               className: 'gh-admin-toolbar-avatar-image',
               loading: 'lazy',
-              onError: (event) => {
+              onError: (event: TargetedEvent<HTMLImageElement>) => {
                 event.currentTarget.remove();
               },
               referrerPolicy: 'no-referrer',
@@ -143,15 +165,15 @@ function UserAvatar({ adminUrl, siteTitle, user }) {
   return h(TooltipWrap, { label: 'Admin' }, link);
 }
 
-export function Toolbar({ config, user }) {
+export function Toolbar({ config, user }: { config: ToolbarConfig; user: StaffUser }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isMinimized, setIsMinimized] = useState(
     () => getStoredDisplayState() === DISPLAY_MINIMIZED,
   );
   const [isMinimizedExpanded, setIsMinimizedExpanded] = useState(false);
-  const [expandedSize, setExpandedSize] = useState(null);
-  const toolbarRef = useRef(null);
-  const contentRef = useRef(null);
+  const [expandedSize, setExpandedSize] = useState<{ height: number; width: number } | null>(null);
+  const toolbarRef = useRef<HTMLElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
   const actions = getToolbarActions(config);
 
   function expandMinimizedToolbar() {
@@ -207,8 +229,8 @@ export function Toolbar({ config, user }) {
     'nav',
     {
       className: `gh-admin-toolbar${isMinimized ? ' gh-admin-toolbar-minimized-mode' : ''}${isMinimizedExpanded ? ' gh-admin-toolbar-minimized-expanded' : ''}`,
-      onFocusOut: (event) => {
-        if (isMinimized && !event.currentTarget.contains(event.relatedTarget)) {
+      onFocusOut: (event: TargetedFocusEvent<HTMLElement>) => {
+        if (isMinimized && !event.currentTarget.contains(event.relatedTarget as Node | null)) {
           collapseMinimizedToolbar();
         }
       },
@@ -237,7 +259,7 @@ export function Toolbar({ config, user }) {
             '--gh-admin-toolbar-expanded-height': `${expandedSize?.height || 44}px`,
             '--gh-admin-toolbar-expanded-width': `${expandedSize?.width || 178}px`,
           }
-        : null,
+        : undefined,
       'aria-label': 'Ghost admin toolbar',
     },
     [
