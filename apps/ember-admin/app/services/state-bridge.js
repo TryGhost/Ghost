@@ -29,6 +29,8 @@ const emberDataTypeMapping = {
     CustomThemeSettingsResponseType: null // invalidated by React theme activation; nothing to sync in Ember
 };
 
+const REACT_EDITOR_ROUTE_PATTERN = '/editor/*';
+
 export default class StateBridgeService extends Service.extend(Evented) {
     @service billing;
     @service configManager;
@@ -54,6 +56,8 @@ export default class StateBridgeService extends Service.extend(Evented) {
     // Pattern of the React route showing, e.g. `/editor/*`; null while an Ember route shows
     reactRoutePattern = null;
 
+    isEmberEditorActive = false;
+
     @action
     setPostListQueryParams(resource, params) {
         this.postListQueryParams = {...this.postListQueryParams, [resource]: params};
@@ -66,8 +70,17 @@ export default class StateBridgeService extends Service.extend(Evented) {
 
     @action
     setReactRoutePattern(routePattern) {
+        const wasShowingEditor = this.isReactEditorShowing;
         this.reactRoutePattern = routePattern;
         this.tagSentryRoute();
+
+        if (this.isReactEditorShowing !== wasShowingEditor) {
+            this.triggerFeatureFlagsChange();
+        }
+    }
+
+    get isReactEditorShowing() {
+        return this.reactRoutePattern === REACT_EDITOR_ROUTE_PATTERN;
     }
 
     // Ember's router misses React's pushState navigations, so a showing React route wins
@@ -86,7 +99,22 @@ export default class StateBridgeService extends Service.extend(Evented) {
             return undefined;
         }
 
+        // An open editor keeps its owner until it closes: swapping under it leaves both
+        // Koenig bundles mounted, and their two Lexical copies break each other
+        if (name === 'editorReact' && this.isEmberEditorActive) {
+            return false;
+        }
+        if (name === 'editorReact' && this.isReactEditorShowing) {
+            return true;
+        }
+
         return this.feature[name] === true;
+    }
+
+    @action
+    setEmberEditorActive(isActive) {
+        this.isEmberEditorActive = isActive;
+        this.triggerFeatureFlagsChange();
     }
 
     /**
