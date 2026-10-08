@@ -27,12 +27,59 @@ export const StripeCheckoutDesign = z.object({
 });
 export type StripeCheckoutDesign = z.infer<typeof StripeCheckoutDesign>;
 
+/**
+ * Collecting a shipping address at checkout, as the publisher set it.
+ *
+ * Stripe returns the recipient's name beside the address rather than as part of it, and an
+ * address custom field has no name part, so the name lands in a field of its own.
+ */
+export const ShippingSettings = z.object({
+  /** Null covers every paid tier, including tiers added later. */
+  tierIds: z.array(z.string()).nullable(),
+  /** ISO 3166-1 alpha-2 codes, or null for everywhere Stripe ships. */
+  allowedCountries: z.array(z.string()).nullable(),
+  addressCustomFieldKey: z.string(),
+  nameCustomFieldKey: z.string(),
+});
+export type ShippingSettings = z.infer<typeof ShippingSettings>;
+
+/** The shipping settings as saved, and whether checkouts can ask for an address right now. */
+export const ShippingCollection = ShippingSettings.extend({
+  /**
+   * False while the address field is archived, so checkouts stop asking until it's restored.
+   * An archived name field doesn't stop them; the name just isn't kept.
+   */
+  collectable: z.boolean(),
+});
+export type ShippingCollection = z.infer<typeof ShippingCollection>;
+
 /** The site-wide Stripe Checkout config. */
 export const StripeCheckoutConfig = z.object({
   /** Null means Stripe uses the design set in the Stripe dashboard. */
   design: StripeCheckoutDesign.nullable(),
+  /** Null means checkout doesn't ask for a shipping address. */
+  shipping: ShippingCollection.nullable(),
 });
 export type StripeCheckoutConfig = z.infer<typeof StripeCheckoutConfig>;
+
+/**
+ * The private flag shipping is behind. The config itself is behind the design flag, which
+ * releases first. Staff only see and save shipping while it's on, and checkouts and the
+ * completed-checkout webhook only act on shipping while it's on.
+ */
+export const SHIPPING_FLAG = 'stripeCheckoutCollection';
+
+/** Whether a checkout for this paid tier asks for a shipping address. */
+export function collectsShippingFor(
+  shipping: ShippingCollection | null,
+  tierId: string,
+): shipping is ShippingCollection {
+  return (
+    shipping !== null &&
+    shipping.collectable &&
+    (shipping.tierIds === null || shipping.tierIds.includes(tierId))
+  );
+}
 
 /**
  * How Stripe Checkout looks without a design from Ghost, as set in the Stripe dashboard. The

@@ -4194,18 +4194,20 @@ services:
         summary: >-
           Named exports include init, the mutable service, previewService and
           brandingService bindings, StripeCheckoutConfigService, CheckoutPreviewService,
-          CheckoutBrandingService, the wire serializers and actingContext. The bindings are
-          undefined before init.
+          CheckoutBrandingService, the wire serializers, the shipping rule collectsShippingFor
+          and actingContext.
+          The bindings are undefined before init.
         sources:
           - core/server/services/stripe-checkout-config/index.ts
         tests: []
       construction:
         summary: >-
-          Boot calls synchronous init in initCore, which builds the service with knex and its
-          history recorder, the preview service with lookups of Stripe, tiers and the members
-          payments service made per preview, and the branding service with lookups of Stripe
-          made per read, as those start later in boot. An existing service makes later calls
-          return.
+          Boot calls synchronous init in initCore after the custom fields services, which
+          builds the service with knex, its history recorder and the custom field bindings it
+          saves shipping into, and throws if those bindings aren't set up yet. It also builds
+          the preview service with lookups of Stripe, tiers and the members payments service
+          made per preview, and the branding service with lookups of Stripe made per read, as
+          those start later in boot. An existing service makes later calls return.
         sources:
           - core/server/services/stripe-checkout-config/index.ts
           - core/boot.js

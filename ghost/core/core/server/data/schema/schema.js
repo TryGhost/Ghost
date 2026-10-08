@@ -1559,8 +1559,29 @@ module.exports = {
     id: { type: 'string', maxlength: 24, nullable: false, primary: true },
     slug: { type: 'string', maxlength: 191, nullable: false, unique: true },
     design: { type: 'text', maxlength: 65535, nullable: true },
+    shipping: { type: 'text', maxlength: 65535, nullable: true },
     created_at: { type: 'dateTime', nullable: false },
     updated_at: { type: 'dateTime', nullable: true },
+  },
+  // The tiers a section of `stripe_checkout_config` is limited to, when it is limited to some
+  // rather than every paid tier. Deleting a tier takes it out of every list, so the config never
+  // stops a tier being deleted and never names one that is gone. A section whose last tier is
+  // deleted reads as switched off, rather than widening to every tier.
+  stripe_checkout_config_tiers: {
+    section: {
+      type: 'string',
+      maxlength: 50,
+      nullable: false,
+      validations: { isIn: [['shipping']] },
+    },
+    product_id: {
+      type: 'string',
+      maxlength: 24,
+      nullable: false,
+      references: 'products.id',
+      cascadeDelete: true,
+    },
+    '@@PRIMARY_KEY@@': ['section', 'product_id'],
   },
   actions: {
     id: { type: 'string', maxlength: 24, nullable: false, primary: true },
