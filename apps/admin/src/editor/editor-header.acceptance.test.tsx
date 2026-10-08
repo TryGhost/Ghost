@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it, onTestFinished } from 'vitest';
+import { afterEach, describe, expect, it, onTestFinished, vi } from 'vitest';
 import { page, userEvent, type Locator } from 'vitest/browser';
 import { buildLexicalParagraph } from '@tryghost/test-data';
 import { publishTypeError } from '@tryghost/test-data/selectors/editor';
@@ -32,6 +32,7 @@ import { deferred } from '@/utils/deferred';
 import { previewScreen } from '@/editor/preview/preview.screen';
 import { CONFLICT_MESSAGE, UNEXPECTED_MESSAGE } from '@/editor/publish/completion-message';
 import { publishScreen } from '@/editor/publish/publish.screen';
+import { MIN_EMAIL_HANDOFF_LENGTH } from '@/editor/publish/use-publish-flow';
 import { POST_DELETED } from '@/editor/session/error-mapping';
 import {
   EXCERPT_MAX,
@@ -1821,7 +1822,7 @@ describe('Editor header actions', () => {
       });
     }
 
-    async function sendThroughFlow(emailOnly: boolean) {
+    async function openConfirmStep(emailOnly: boolean) {
       await expect.element(editorScreen.publishButton()).toBeEnabled();
       await editorScreen.publishButton().click();
       if (emailOnly) {
@@ -1829,6 +1830,10 @@ describe('Editor header actions', () => {
         await page.getByLabelText('Email only').click();
       }
       await publishScreen.continueButton().click();
+    }
+
+    async function sendThroughFlow(emailOnly: boolean) {
+      await openConfirmStep(emailOnly);
       await publishScreen.confirmButton().click();
     }
 
@@ -1840,21 +1845,40 @@ describe('Editor header actions', () => {
         fakeSavablePost({}, { holdFirstSave: held.promise });
         const confirmationApi = failSendOnConfirmation(status);
         await renderAdminApp(`/editor/post/${POST_ID}`, SENDING_UI_ON);
+        await openConfirmStep(emailOnly);
 
-        await sendThroughFlow(emailOnly);
+        // Only the hold's clock is faked, from the click. Polled assertions advance
+        // a faked clock on each retry, so a zero interval leaves it to the test.
+        vi.useFakeTimers({
+          toFake: ['setTimeout', 'clearTimeout', 'Date'],
+          shouldClearNativeTimers: true,
+        });
+        const frozenClock = { interval: 0 };
+        try {
+          await publishScreen.confirmButton().click();
 
-        // Mid-save, the flow shows its running state.
-        await expect.element(publishScreen.confirmButton()).toBeDisabled();
-        await expect
-          .element(publishScreen.confirmButton())
-          .toHaveTextContent(emailOnly ? 'Sending' : 'Publishing & sending');
-        expect(publishScreen.confirmButton().element().querySelector('svg')).not.toBeNull();
-        held.resolve();
+          // Mid-save, the flow shows its running state.
+          await expect.element(publishScreen.confirmButton(), frozenClock).toBeDisabled();
+          await expect
+            .element(publishScreen.confirmButton(), frozenClock)
+            .toHaveTextContent(emailOnly ? 'Sending' : 'Publishing & sending');
+          expect(publishScreen.confirmButton().element().querySelector('svg')).not.toBeNull();
+          held.resolve();
 
-        // Once the save lands the flow still holds in its running state.
-        await expect.element(editorScreen.status()).toHaveTextContent('to 20 members');
-        expect(currentRoute()).toBe(`/editor/post/${POST_ID}`);
-        await expect.element(publishScreen.confirmButton()).toBeDisabled();
+          // Once the save lands the flow still holds in its running state. The hand-off
+          // writes the list's celebration as it navigates, before the route can change.
+          await expect
+            .element(editorScreen.status(), frozenClock)
+            .toHaveTextContent('to 20 members');
+          await vi.advanceTimersByTimeAsync(MIN_EMAIL_HANDOFF_LENGTH - 1);
+          expect(localStorage.getItem('ghost-last-published-post')).toBeNull();
+          expect(currentRoute()).toBe(`/editor/post/${POST_ID}`);
+          await expect.element(publishScreen.confirmButton(), frozenClock).toBeDisabled();
+
+          await vi.advanceTimersByTimeAsync(1);
+        } finally {
+          vi.useRealTimers();
+        }
 
         await expect.poll(currentRoute).toBe(`/posts/analytics/${POST_ID}`);
         await expect(editorScreen.root()).toHaveCount(0);
