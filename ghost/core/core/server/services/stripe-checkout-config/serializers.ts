@@ -3,7 +3,7 @@ import { omit } from 'lodash';
 import { z } from 'zod';
 import { camelKeys, snakeKeys } from '../../lib/case-keys';
 import { SnakeDesign } from './codec';
-import { StripeCheckoutConfig, type StripeCheckoutDesign } from './models';
+import { StripeCheckoutBranding, StripeCheckoutConfig, type StripeCheckoutDesign } from './models';
 
 /**
  * The design in a request.
@@ -92,3 +92,24 @@ export const toCheckoutPreviewResponse = z
     checkout_preview: [{ url }],
   }))
   .pipe(CheckoutPreviewResponse);
+
+const CheckoutBrandingResponse = z.object({
+  checkout_branding: z.tuple([
+    z.object({
+      display_name: z.string(),
+      design: SnakeDesign.nullable(),
+    }),
+  ]),
+});
+
+/** The Stripe dashboard's checkout branding as the Admin API returns it. */
+export const toCheckoutBrandingResponse = StripeCheckoutBranding.transform(
+  (branding): z.input<typeof CheckoutBrandingResponse> => ({
+    checkout_branding: [
+      {
+        display_name: branding.displayName,
+        design: branding.design ? snakeKeys(branding.design) : null,
+      },
+    ],
+  }),
+).pipe(CheckoutBrandingResponse);

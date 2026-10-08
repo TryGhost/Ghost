@@ -1,12 +1,18 @@
 import urlUtils from '../../../shared/url-utils';
+import { CheckoutBrandingService } from './branding-service';
 import { CheckoutPreviewService, type PreviewableTier } from './preview-service';
 import { recordCheckoutConfigAction, type RecordCheckoutConfigAction } from './actions';
 import { StripeCheckoutConfigService } from './service';
 
 export { StripeCheckoutConfigService } from './service';
-export type { StripeCheckoutConfig, StripeCheckoutDesign } from './models';
+export type { StripeCheckoutBranding, StripeCheckoutConfig, StripeCheckoutDesign } from './models';
+export { CheckoutBrandingService } from './branding-service';
 export { CheckoutPreviewService } from './preview-service';
-export { toCheckoutConfigResponse, toCheckoutPreviewResponse } from './serializers';
+export {
+  toCheckoutBrandingResponse,
+  toCheckoutConfigResponse,
+  toCheckoutPreviewResponse,
+} from './serializers';
 export { actingContext } from './actions';
 export type { RequestContext } from './actions';
 
@@ -14,6 +20,7 @@ export type { RequestContext } from './actions';
 // connected.
 export let service: StripeCheckoutConfigService | undefined;
 export let previewService: CheckoutPreviewService<PreviewableTier> | undefined;
+export let brandingService: CheckoutBrandingService | undefined;
 
 export function init(): void {
   if (service) {
@@ -27,7 +34,7 @@ export function init(): void {
     recordCheckoutConfigAction({ Action: models.Action, ...input });
   service = new StripeCheckoutConfigService({ knex, recordAction });
 
-  // Looked up when a preview is made: Stripe, tiers and members are set up later in boot.
+  // Looked up on each use: Stripe, tiers and members are set up later in boot.
   previewService = new CheckoutPreviewService({
     stripeConnected: () => require('../stripe').api.configured,
     readTier: (id) => require('../tiers').api.read(id),
@@ -43,5 +50,10 @@ export function init(): void {
         metadata: { ghost_checkout_preview: true },
       }),
     siteUrl: () => urlUtils.urlFor('home', true),
+  });
+
+  brandingService = new CheckoutBrandingService({
+    stripeConnected: () => require('../stripe').api.configured,
+    readBranding: () => require('../stripe').api.getCheckoutBranding(),
   });
 }
