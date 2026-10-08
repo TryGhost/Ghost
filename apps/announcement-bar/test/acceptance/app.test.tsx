@@ -57,13 +57,12 @@ beforeEach(() => {
     announcement: '<p>Big news! <a href="https://site.test/news/">Read more</a></p>',
     announcement_background: 'dark',
   };
-  const originalFetch = window.fetch.bind(window);
-  vi.spyOn(window, 'fetch').mockImplementation((input, init) => {
-    if (String(input) === API_URL) {
-      const body = { announcement: [announcement] };
-      return Promise.resolve({ ok: true, json: () => Promise.resolve(body) } as Response);
+  vi.spyOn(window, 'fetch').mockImplementation((input) => {
+    if (String(input) !== API_URL) {
+      return Promise.reject(new Error(`Unexpected fetch: ${String(input)}`));
     }
-    return originalFetch(input, init);
+    const body = { announcement: [announcement] };
+    return Promise.resolve({ ok: true, json: () => Promise.resolve(body) } as Response);
   });
 });
 
@@ -78,6 +77,7 @@ describe('Announcement bar', () => {
 
     const el = await shownBar();
 
+    expect(window.fetch).toHaveBeenCalledTimes(1);
     expect(window.fetch).toHaveBeenCalledWith(API_URL, expect.objectContaining({ method: 'GET' }));
     expect(el.className).toBe('gh-announcement-bar dark');
     expect(el.querySelector('.gh-announcement-bar-content')!.innerHTML).toBe(
