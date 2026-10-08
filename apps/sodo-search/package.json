@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/sodo-search",
-  "version": "1.8.31",
+  "version": "1.9.0",
   "description": "Search interface for Ghost sites",
   "license": "MIT",
   "author": "Ghost Foundation",
