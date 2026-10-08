@@ -2,7 +2,7 @@ import { type AppMove, movedBetween as movedBetweenVersions } from '@tryghost/ap
 import type { AppManifest } from '@tryghost/admin-x-framework/api/app-installations';
 
 // Where an app is served from is a rule shared with Ghost, which names it in an app's history.
-export { isDevelopmentApp, servedFrom } from '@tryghost/app-contracts';
+export { appPageUrl, isDevelopmentApp, servedFrom } from '@tryghost/app-contracts';
 
 /** A manifest and where it was read from, as the Admin API returns them. */
 interface ManifestAt {

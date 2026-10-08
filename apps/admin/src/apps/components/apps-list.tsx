@@ -14,7 +14,7 @@ import {
 } from '@tryghost/shade/components';
 import { Inline } from '@tryghost/shade/primitives';
 import { LucideIcon } from '@tryghost/shade/utils';
-import { Link, useNavigate } from '@tryghost/admin-x-framework';
+import { Link } from '@tryghost/admin-x-framework';
 import type { AppInstallation } from '@tryghost/admin-x-framework/api/app-installations';
 import { AppIcon } from './app-icon';
 import { DevelopmentBadge } from './development-badge';
@@ -32,8 +32,6 @@ interface AppsListProps {
  * is in the row's menu.
  */
 const AppsList: React.FC<AppsListProps> = ({ installations, onUninstall }) => {
-  const navigate = useNavigate();
-
   return (
     <Table aria-label="Apps" className="table-auto" data-testid="apps-list">
       <TableBody>
@@ -94,8 +92,8 @@ const AppsList: React.FC<AppsListProps> = ({ installations, onUninstall }) => {
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <DropdownMenuItem onSelect={() => navigate(appDetailsRoute(id))}>
-                        Details
+                      <DropdownMenuItem asChild>
+                        <Link to={appDetailsRoute(id)}>Details</Link>
                       </DropdownMenuItem>
                       <DropdownMenuItem
                         className="text-destructive focus:text-destructive"
