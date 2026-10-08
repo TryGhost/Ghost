@@ -475,7 +475,7 @@ export function PostEditor({
                 autoFocus={autofocusTitle}
                 className={cn(
                   fieldClassName,
-                  'heading-font-features mb-4 pb-1 text-[4.8rem] leading-[1.1] font-bold tracking-[-0.017em] text-foreground placeholder:font-bold placeholder:text-muted-foreground max-[769px]:text-[3.6rem] max-[501px]:text-[2.8rem]',
+                  'heading-font-features mb-4 pb-1 text-[4.8rem] leading-[1.1] font-bold tracking-[-0.017em] text-foreground placeholder:font-bold placeholder:text-editor-placeholder max-[769px]:text-[3.6rem] max-[501px]:text-[2.8rem]',
                   titleAndFeatureImageHidden && 'opacity-50 focus:opacity-100',
                 )}
                 data-testid={editorTitleInput}
@@ -509,7 +509,7 @@ export function PostEditor({
                   aria-label="Excerpt"
                   className={cn(
                     fieldClassName,
-                    'text-[2rem] leading-[1.5] font-[440] tracking-[-0.018em] text-foreground/90 placeholder:font-normal placeholder:text-muted-foreground',
+                    'text-[2rem] leading-[1.5] font-[440] tracking-[-0.018em] text-foreground/90 placeholder:font-normal placeholder:text-editor-placeholder',
                   )}
                   data-testid={editorExcerptInput}
                   placeholder="Add an excerpt"

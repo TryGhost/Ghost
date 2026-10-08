@@ -200,6 +200,22 @@ body {
   --font-jetbrains-mono: JetBrains Mono;
 }
 
+/* The editor's title and excerpt placeholders read as the body's, which Koenig
+   draws in its own palette: text-grey-500 dark:text-grey-800 in koenig-lexical's
+   EditorPlaceholder. Shade's gray ramp starts from the same values but
+   desaturates in dark mode, so these are Koenig's, to stay exactly in step. */
+:root {
+  --editor-placeholder: #aeb7c1;
+}
+
+.dark {
+  --editor-placeholder: #626d79;
+}
+
+@theme inline {
+  --color-editor-placeholder: var(--editor-placeholder);
+}
+
 /* Shared Koenig wrappers must retain their layout without Ember styles. */
 .koenig-react-editor {
   max-width: 740px;

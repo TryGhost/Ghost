@@ -286,6 +286,30 @@ describe('Post editor', () => {
     await expect.element(editorScreen.excerptInput()).toHaveValue('A short summary');
   });
 
+  it.each(['light', 'dark'])(
+    'gives the title and excerpt the body placeholder colour in %s mode',
+    async (theme) => {
+      fakeEditorChrome();
+      const me = currentUserResponse();
+      me.users[0].accessibility = JSON.stringify({ nightShift: theme });
+      await renderAdminApp('/editor/post', { ...EXCERPT_ON, boot: { browseMe: { response: me } } });
+
+      await expect.element(editorScreen.bodyPlaceholder()).toBeVisible();
+      await expect.element(editorScreen.excerptInput()).toBeVisible();
+      await expect
+        .poll(() => document.documentElement.classList.contains('dark'))
+        .toBe(theme === 'dark');
+
+      // Koenig draws the body placeholder in its own palette, which the title
+      // and excerpt placeholders have to match exactly.
+      const placeholderColor = (field: Element) => getComputedStyle(field, '::placeholder').color;
+      const bodyColor = getComputedStyle(editorScreen.bodyPlaceholder().element()).color;
+      expect(bodyColor).toBe(theme === 'dark' ? 'rgb(98, 109, 121)' : 'rgb(174, 183, 193)');
+      expect(placeholderColor(editorScreen.titleInput().element())).toBe(bodyColor);
+      expect(placeholderColor(editorScreen.excerptInput().element())).toBe(bodyColor);
+    },
+  );
+
   it('sets the excerpt across the writing column and fits it to its lines under the Ember host constraints', async () => {
     // The acceptance host omits Ember's global form CSS, which still surrounds
     // the React editor in production.

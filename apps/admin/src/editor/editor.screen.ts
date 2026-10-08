@@ -130,6 +130,9 @@ export const editorScreen = {
   excerptInput: () => page.getByTestId(editorExcerptInput),
   /** The primary Koenig content editable. */
   body: () => page.getByTestId(editorBody).getByRole('textbox'),
+  /** The placeholder Koenig shows in an empty body. */
+  bodyPlaceholder: (postType: 'post' | 'page' = 'post') =>
+    page.getByTestId(editorBody).getByText(`Begin writing your ${postType}...`, { exact: true }),
   /** The body's container: readable while an open dialog hides the page from role queries. */
   bodyBehindDialog: () => page.getByTestId(editorBody),
   /** Koenig's Signup card and its labels setting, by Koenig's own test ids. */
