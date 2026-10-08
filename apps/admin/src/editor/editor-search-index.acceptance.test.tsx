@@ -157,6 +157,6 @@ describe('Post editor search index', () => {
 
     const tags = await readList(queryClient, 'tags');
     expect(list.requests).toHaveLength(1);
-    expect(tags).toMatchObject([NEWS, created]);
+    expect(tags).toMatchObject([created, NEWS]);
   });
 });

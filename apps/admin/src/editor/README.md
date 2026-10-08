@@ -173,9 +173,11 @@ Saving the post being edited never reads the lists again, since each one is
 every post, page or tag on the site. Each save writes the post as the server
 answered it into the loaded lists instead: its entry moves to the front of the
 posts or pages list, and any of its tags the tags list lacks, such as one the
-save created, is added. This happens as each save is answered, including one
-that lands after the writer has left the editor. A list whose read is still in
-flight when a save lands is read again, since that read may predate the save.
+save created, is added to the front of that one. This happens as each save is
+answered, including one that lands after the writer has left the editor. A list
+whose read is still in flight when a save lands, its first included, gets the
+save once that read lands, since the read may predate it; the read itself is
+neither cancelled nor repeated.
 
 ## Snippets
 

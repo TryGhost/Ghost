@@ -1,5 +1,5 @@
 import { QueryClient } from '@tanstack/react-query';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { isSearchIndexQuery } from '@tryghost/admin-x-framework/api/search-index';
 import type { useFetchApi } from '@tryghost/admin-x-framework/hooks';
 import {
@@ -104,8 +104,12 @@ describe('syncSearchIndexes', () => {
   it('moves the saved post to the front of its list as the server answered it', () => {
     const queryClient = withLists({ posts: [other, listed] });
 
-    const saved = { ...listed, title: 'Hello again', uuid: '2b8f', lexical: '{}' };
-    syncSearchIndexes(queryClient, 'posts', saved);
+    syncSearchIndexes(queryClient, 'posts', {
+      ...listed,
+      title: 'Hello again',
+      uuid: '2b8f',
+      lexical: '{}',
+    });
 
     expect(list(queryClient, 'posts')).toEqual([{ ...listed, title: 'Hello again' }, other]);
   });
@@ -120,11 +124,11 @@ describe('syncSearchIndexes', () => {
 
   it('keeps the list as it is when the post is already first and unchanged', () => {
     const queryClient = withLists({ posts: [listed, other] });
-    const before = list(queryClient, 'posts');
+    const setQueryData = vi.spyOn(queryClient, 'setQueryData');
 
-    syncSearchIndexes(queryClient, 'posts', listed);
+    syncSearchIndexes(queryClient, 'posts', { ...listed, uuid: '2b8f' });
 
-    expect(list(queryClient, 'posts')).toBe(before);
+    expect(setQueryData).not.toHaveBeenCalled();
   });
 
   it('adds the tags the tags list lacks, such as one the save created', () => {
@@ -138,7 +142,7 @@ describe('syncSearchIndexes', () => {
 
     syncSearchIndexes(queryClient, 'posts', { ...listed, tags: [news, created] });
 
-    expect(list(queryClient, 'tags')).toEqual([news, created]);
+    expect(list(queryClient, 'tags')).toEqual([created, news]);
   });
 
   it('leaves the tags list alone when it already holds every tag', () => {
@@ -169,24 +173,43 @@ describe('syncSearchIndexes', () => {
     expect(queryClient.getQueryState(searchIndexQueryKey('posts'))?.isInvalidated).toBe(true);
   });
 
-  it('reads a list again when a read of it is in flight, since that read may predate the save', async () => {
-    const queryClient = withLists({ posts: [other] });
+  function holdReads(queryClient: QueryClient) {
     const reads: Array<(value: unknown) => void> = [];
     const fetchApi = (() =>
       new Promise((resolve) => {
         reads.push(resolve);
       })) as unknown as ReturnType<typeof useFetchApi>;
     const options = { ...searchIndexQueryOptions('posts', fetchApi), staleTime: 0 };
-    const reading = queryClient.fetchQuery(options);
+    return { reads, reading: queryClient.fetchQuery(options) };
+  }
 
-    const saved = { ...listed, title: 'Hello again' };
-    syncSearchIndexes(queryClient, 'posts', saved);
+  it('writes saves into what a read in flight brings back, since that read may predate them', async () => {
+    const queryClient = withLists({ posts: [other] });
+    const { reads, reading } = holdReads(queryClient);
 
-    // The read in flight is replaced by one that starts after the save.
-    expect(reads).toHaveLength(2);
-    reads[0]({ posts: [listed] });
-    reads[1]({ posts: [{ ...listed, title: 'Hello again' }, other] });
+    syncSearchIndexes(queryClient, 'posts', { ...listed, title: 'Hello again' });
+    syncSearchIndexes(queryClient, 'posts', { ...listed, title: 'Hello once more' });
+    reads[0]({ posts: [other, listed] });
+
+    // The read is neither cancelled nor repeated.
+    await expect(reading).resolves.toBeDefined();
+    expect(reads).toHaveLength(1);
+    await vi.waitFor(() =>
+      expect(list(queryClient, 'posts')).toEqual([{ ...listed, title: 'Hello once more' }, other]),
+    );
+  });
+
+  it('writes a save into a list whose first read is in flight once that read lands', async () => {
+    const queryClient = new QueryClient();
+    const { reads, reading } = holdReads(queryClient);
+
+    syncSearchIndexes(queryClient, 'posts', { ...listed, title: 'Hello again' });
+    reads[0]({ posts: [other, listed] });
     await reading;
-    expect(list(queryClient, 'posts')).toEqual([{ ...listed, title: 'Hello again' }, other]);
+
+    await vi.waitFor(() =>
+      expect(list(queryClient, 'posts')).toEqual([{ ...listed, title: 'Hello again' }, other]),
+    );
+    expect(reads).toHaveLength(1);
   });
 });

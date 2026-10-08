@@ -69,32 +69,55 @@ export function searchIndexQueryOptions(
   };
 }
 
+const SEARCH_INDEX_FIELDS = Object.keys(searchIndexItemSchema.shape) as Array<
+  keyof SearchIndexItem
+>;
+
+function sameItem(a: SearchIndexItem, b: SearchIndexItem): boolean {
+  return SEARCH_INDEX_FIELDS.every((field) => a[field] === b[field]);
+}
+
 /**
  * Applies `update` to one cached list, leaving alone a list that is not cached
- * or is already marked to be read again. A list with a read in flight may get
- * back the version from before the save, so it is read again instead.
+ * or is already marked to be read again. A read in flight may have been answered
+ * before the save, so the update waits for it to land and applies to what it
+ * brought, rather than cancelling it or being overwritten by it.
  */
 function updateList(
   queryClient: QueryClient,
   key: SearchIndexKey,
   update: (items: SearchIndexItem[]) => SearchIndexItem[],
 ): void {
-  const queryKey = searchIndexQueryKey(key);
-  const state = queryClient.getQueryState<SearchIndexResponse>(queryKey);
-  if (!state) {
+  const cache = queryClient.getQueryCache();
+  const query = cache.find<SearchIndexResponse>({
+    queryKey: searchIndexQueryKey(key),
+    exact: true,
+  });
+  if (!query) {
     return;
   }
-  if (state.fetchStatus !== 'idle') {
-    void queryClient.invalidateQueries({ queryKey, exact: true, refetchType: 'all' });
+  if (query.state.fetchStatus !== 'idle') {
+    const unsubscribe = cache.subscribe((event) => {
+      if (event.query !== query) {
+        return;
+      }
+      if (event.type === 'removed') {
+        unsubscribe();
+      } else if (event.type === 'updated' && query.state.fetchStatus === 'idle') {
+        unsubscribe();
+        // Out of the dispatch that settled the read.
+        queueMicrotask(() => updateList(queryClient, key, update));
+      }
+    });
     return;
   }
-  const items = state.data?.[key];
-  if (!items || state.isInvalidated) {
+  const items = query.state.data?.[key];
+  if (!items || query.state.isInvalidated) {
     return;
   }
   const next = update(items);
   if (next !== items) {
-    queryClient.setQueryData<SearchIndexResponse>(queryKey, { [key]: next });
+    queryClient.setQueryData<SearchIndexResponse>(query.queryKey, { [key]: next });
   }
 }
 
@@ -102,19 +125,19 @@ function updateList(
  * Writes a post or page the server has just saved into the cached search-index
  * lists, so global search and editor links show it without reading every post
  * or tag on the site again. Its entry moves to the front of the posts or pages
- * list, where the list's newest-updated-first order puts a save, and each of its
- * tags the tags list lacks, such as one the save created, is added.
+ * list, and each of its tags the tags list lacks, such as one the save created,
+ * is added to the front of that one, as the lists' newest-updated-first order has it.
  */
-export function syncSearchIndexes(
+export function syncSearchIndexes<Saved extends { id: string; tags?: ReadonlyArray<unknown> }>(
   queryClient: QueryClient,
   key: 'posts' | 'pages',
-  saved: { id: string; tags?: ReadonlyArray<unknown> },
+  saved: Saved,
 ): void {
   const [entry] = parseSearchIndexItems([saved]);
   if (entry) {
     updateList(queryClient, key, (items) => {
       const [first] = items;
-      if (first && JSON.stringify(first) === JSON.stringify(entry)) {
+      if (first && sameItem(first, entry)) {
         return items;
       }
       return [entry, ...items.filter(({ id }) => id !== entry.id)];
@@ -126,7 +149,7 @@ export function syncSearchIndexes(
     updateList(queryClient, 'tags', (items) => {
       const listed = new Set(items.map(({ id }) => id));
       const missing = tags.filter(({ id }) => !listed.has(id));
-      return missing.length > 0 ? [...items, ...missing] : items;
+      return missing.length > 0 ? [...missing, ...items] : items;
     });
   }
 }
