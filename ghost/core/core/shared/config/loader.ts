@@ -90,7 +90,7 @@ function loadNconf(options?: LoadNconfOptions): ConfigInstance {
   // nconf's job ends here: it layered the sources, and the validated, frozen
   // tree createConfig returns is the only representation anything reads from
   // now on. See ./schema.ts.
-  return createConfig(nconf.get() as Record<string, unknown>);
+  return createConfig(localUtils.mergeStores(nconf));
 }
 
 export { loadNconf };

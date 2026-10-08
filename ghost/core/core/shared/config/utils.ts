@@ -94,6 +94,65 @@ function sanitizeDatabaseProperties(nconf: Provider): void {
   }
 }
 
+type Tree = Record<string, unknown>;
+
+function isObject(value: unknown): value is Tree {
+  return value !== null && typeof value === 'object' && !Array.isArray(value);
+}
+
+/**
+ * Merge every nconf store into one plain tree, highest priority winning.
+ *
+ * Unlike `nconf.get()`, a non-object never replaces an object from a
+ * lower-priority store. nconf's per-key reads always worked this way -
+ * `get('admin:redirects')` looks straight past a string `admin` in one store to
+ * the defaults below it - and every config read before the frozen tree was
+ * per-key, so a self-hoster config like `"admin": "https://..."` was a silent
+ * no-op. A whole-tree merge would drop all of `admin`'s defaults instead.
+ */
+function mergeStores(nconf: Provider): Tree {
+  const stores = Object.values(
+    nconf.stores as Record<string, { store?: unknown; file?: string; type: string }>,
+  );
+  const tree: Tree = {};
+
+  // nconf lists stores highest priority first
+  for (const store of stores.reverse()) {
+    if (isObject(store.store)) {
+      mergeInto(tree, store.store, '', store.file ?? `the ${store.type} config`);
+    }
+  }
+
+  return tree;
+}
+
+function mergeInto(target: Tree, source: Tree, parent: string, origin: string): void {
+  for (const [key, value] of Object.entries(source)) {
+    if (key === '__proto__' || key === 'constructor' || key === 'prototype') {
+      continue;
+    }
+
+    const keyPath = parent ? `${parent}.${key}` : key;
+    const existing = target[key];
+
+    if (isObject(value)) {
+      if (!isObject(existing)) {
+        target[key] = {};
+      }
+      mergeInto(target[key] as Tree, value, keyPath, origin);
+    } else if (isObject(existing)) {
+      const type =
+        value === null ? 'null' : Array.isArray(value) ? 'an array' : `a ${typeof value}`;
+      // eslint-disable-next-line no-console
+      console.warn(
+        `Ghost config: ignoring \`${keyPath}\` in ${origin}: it is ${type}, but Ghost expects an object there.`,
+      );
+    } else {
+      target[key] = value;
+    }
+  }
+}
+
 function getNodeEnv(): string {
   return process.env.NODE_ENV || 'development';
 }
@@ -116,6 +175,7 @@ export {
   doesContentPathExist,
   checkUrlProtocol,
   sanitizeDatabaseProperties,
+  mergeStores,
   getNodeEnv,
   jsoncFormat,
 };
