@@ -317,6 +317,8 @@ describe('Post editor saving', () => {
     await expect.poll(() => createApi.requests.length).toBe(1);
 
     try {
+      // The save that creates the post is the first thing the status line reports.
+      await expect.element(editorScreen.status()).toHaveTextContent('Saving…');
       await appendToBody(' and then some');
       expect(submittedBody(createApi)).not.toContain('and then some');
     } finally {
