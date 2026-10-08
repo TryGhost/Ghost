@@ -9,7 +9,9 @@ export const appFrameTimeouts = { ready: 12_000 };
  * installed to differ from Admin's, so with `allow-same-origin` the sandbox keeps it on
  * that origin rather than making it opaque. No popups and no top navigation: an app stays
  * in its frame and can't take the publisher elsewhere. Moving around Admin comes with the
- * bridge (BER-3983).
+ * bridge (BER-3983). No modals either, on purpose: `alert`, `confirm` and `prompt` would
+ * be the browser's dialogs over Ghost's page, indistinguishable from Ghost's own, so an
+ * app brings its own dialogs. In the frame they return at once, `confirm` with false.
  */
 export const APP_FRAME_SANDBOX = 'allow-scripts allow-same-origin allow-forms';
 

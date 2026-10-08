@@ -163,6 +163,41 @@ describe('Managing apps', () => {
     }
   });
 
+  it('keeps a loading frame hidden until its page has loaded', async () => {
+    await fakeAppPage(installation());
+    await fakeFrameOrigin(APP_PAGE_URL, '<h1>Podcast app</h1>', 600);
+
+    await renderAdminApp(APP_ROUTE, { labs });
+
+    // In the document, so it loads, but out of sight and reach while it does.
+    const frame = appsScreen.frame();
+    await expect.element(frame).toBeInTheDocument();
+    await expect.element(frame).toHaveAttribute('aria-hidden', 'true');
+    await expect.element(frame).not.toBeVisible();
+
+    await expect.element(frame).toBeVisible();
+    await expect.element(frame).toHaveAttribute('aria-hidden', 'false');
+  });
+
+  it('leaves a loaded app alone once the time it had to load is up', async () => {
+    const previous = appFrameTimeouts.ready;
+    appFrameTimeouts.ready = 300;
+    try {
+      await fakeAppPage(installation());
+      await renderAdminApp(APP_ROUTE, { labs });
+      await expect.element(appsScreen.frame()).toBeVisible();
+
+      await new Promise<void>((resolve) => {
+        setTimeout(resolve, 500);
+      });
+
+      await expect.element(appsScreen.frame()).toBeVisible();
+      await expect.element(appsScreen.notResponding()).not.toBeInTheDocument();
+    } finally {
+      appFrameTimeouts.ready = previous;
+    }
+  });
+
   it('calls an app unresponsive straight away when its server can’t be reached', async () => {
     fakeAdminEndpoint('GET', readPath('installation-1'), () => ({
       app_installations: [installation()],
