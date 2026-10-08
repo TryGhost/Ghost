@@ -61,13 +61,22 @@ export async function fakeAppPage(
   }: { html?: string; refreshed?: AppInstallation } = {},
 ) {
   let current = read;
+  let next = refreshed;
   const refreshApi = fakeAdminEndpoint('POST', refreshPath(read.id), () => {
-    current = refreshed;
-    return { app_installations: [refreshed] };
+    current = next;
+    return { app_installations: [next] };
   });
   const readApi = fakeAdminEndpoint('GET', readPath(read.id), () => ({
     app_installations: [current],
   }));
   await fakeFrameOrigin(APP_PAGE_URL, html);
-  return { readApi, refreshApi };
+  return {
+    readApi,
+    refreshApi: Object.assign(refreshApi, {
+      /** What the next refresh answers, e.g. once changes have been approved. */
+      set: (answer: AppInstallation) => {
+        next = answer;
+      },
+    }),
+  };
 }

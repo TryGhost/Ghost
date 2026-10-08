@@ -18,7 +18,7 @@ import { Link } from '@tryghost/admin-x-framework';
 import type { AppInstallation } from '@tryghost/admin-x-framework/api/app-installations';
 import { AppIcon } from './app-icon';
 import { DevelopmentBadge } from './development-badge';
-import { appDetailsRoute, appReviewRoute, appRoute } from '@/apps/lib/routes';
+import { appDetailsRoute, appRoute } from '@/apps/lib/routes';
 import { isDevelopmentApp } from '@/apps/lib/served-from';
 import { openRowLink, openRowLinkInNewTab } from '@/apps/lib/row-link';
 
@@ -74,7 +74,7 @@ const AppsList: React.FC<AppsListProps> = ({ installations, onUninstall }) => {
                 <Inline gap="xs" justify="end">
                   {status === 'suspended' ? (
                     <Button variant="outline" asChild>
-                      <Link to={appReviewRoute(installation.manifest_url)}>Review changes</Link>
+                      <Link to={appRoute(installation.id)}>Review changes</Link>
                     </Button>
                   ) : (
                     <Button variant="outline" asChild>

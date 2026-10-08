@@ -255,21 +255,36 @@ describe('Managing apps', () => {
     await expect.element(appsScreen.frame()).not.toBeInTheDocument();
   });
 
-  it('doesn’t load a suspended app, and leads to the review instead', async () => {
+  it('opens the review on top of a suspended app, and loads the app once approved', async () => {
     const suspended = installation({ status: 'suspended' });
     fakeInstallations([suspended]);
-    await fakeAppPage(suspended);
+    const { refreshApi } = await fakeAppPage(suspended);
     fakeReview();
+    const approveApi = fakeAdminEndpoint('PUT', '/apps/installations/installation-1/', () => {
+      refreshApi.set(installation({ manifest: manifest({ name: 'Podcasts' }) }));
+      return { app_installations: [installation({ manifest: manifest({ name: 'Podcasts' }) })] };
+    });
 
     await renderAdminApp(APP_ROUTE, { labs });
 
     await expect.element(appsScreen.needsApproval()).toHaveTextContent('Podcast needs approval');
     await expect.element(appsScreen.frame()).not.toBeInTheDocument();
-    await appsScreen.reviewChangesButton().click();
+    // The review opens straight away, where the app would be, and the URL stays the app's.
+    await expect.element(appsScreen.approveChangesButton()).toBeVisible();
+    expect(currentRoute()).toBe(APP_ROUTE);
 
-    await expect
-      .poll(currentRoute)
-      .toBe(`/apps/install?manifest=${encodeURIComponent(MANIFEST_URL)}`);
+    // Closing it leaves the page explaining why, with a way back to the review.
+    await appsScreen.cancelButton().click();
+    await expect.element(appsScreen.installDialog()).not.toBeInTheDocument();
+    await appsScreen.reviewChangesButton().click();
+    await appsScreen.approveChangesButton().click();
+
+    await expect.element(page.getByText('Changes to Podcasts approved')).toBeVisible();
+    await expect.element(appsScreen.frame()).toBeVisible();
+    expect(currentRoute()).toBe(APP_ROUTE);
+    expect(approveApi.requests).toHaveLength(1);
+    // Approving starts a new session, which re-checks the app once more before serving it.
+    expect(refreshApi.requests).toHaveLength(2);
   });
 
   it('shows the review instead of the app when re-checking its manifest suspends it', async () => {
@@ -278,9 +293,12 @@ describe('Managing apps', () => {
       refreshed: installation({ status: 'suspended' }),
     });
 
+    fakeReview();
+
     await renderAdminApp(APP_ROUTE, { labs });
 
     await expect.element(appsScreen.needsApproval()).toHaveTextContent('Podcast needs approval');
+    await expect.element(appsScreen.approveChangesButton()).toBeVisible();
     await expect.element(appsScreen.frame()).not.toBeInTheDocument();
     expect(refreshApi.requests).toHaveLength(1);
   });
@@ -464,6 +482,7 @@ describe('Managing apps', () => {
       ],
     });
     fakeInstallations([suspended]);
+    await fakeAppPage(suspended);
     fakeDetails(suspended);
     fakeReview();
 
@@ -482,22 +501,21 @@ describe('Managing apps', () => {
       .toHaveTextContent('Updated, needs approval');
     await appsScreen.reviewChangesLink().click();
 
-    await expect
-      .poll(currentRoute)
-      .toBe(`/apps/install?manifest=${encodeURIComponent(MANIFEST_URL)}`);
+    // The review lives on the app's page.
+    await expect.poll(currentRoute).toBe(APP_ROUTE);
     await expect.element(appsScreen.approveChangesButton()).toBeVisible();
   });
 
   it('can review changes from the list too', async () => {
-    fakeInstallations([installation({ status: 'suspended' })]);
+    const suspended = installation({ status: 'suspended' });
+    fakeInstallations([suspended]);
+    await fakeAppPage(suspended);
     const reviewApi = fakeReview();
 
     await renderAdminApp('/apps', { labs });
     await appsScreen.row('Podcast').getByRole('link', { name: 'Review changes' }).click();
 
-    await expect
-      .poll(currentRoute)
-      .toBe(`/apps/install?manifest=${encodeURIComponent(MANIFEST_URL)}`);
+    await expect.poll(currentRoute).toBe(APP_ROUTE);
     await expect.element(appsScreen.approveChangesButton()).toBeVisible();
     expect(reviewApi.requests[0].body).toEqual({
       app_installation_previews: [{ manifest_url: MANIFEST_URL }],

@@ -31,7 +31,7 @@ import { CapabilitySummary } from './components/surface-icon';
 import { UninstallDialog } from './components/uninstall-dialog';
 import { ACCOUNT_ACCESS } from './lib/access';
 import { historyTitle, installedBy } from './lib/history';
-import { appReviewRoute, appRoute } from './lib/routes';
+import { appRoute } from './lib/routes';
 import { isDevelopmentApp } from './lib/served-from';
 
 // Not a definition list: Ember's stylesheet floats every `dl dt` and indents `dl dd`,
@@ -130,7 +130,7 @@ const Details: React.FC<{ installation: AppInstallation }> = ({ installation }) 
                 until you approve them.
               </Text>
               <Button size="sm" variant="outline" asChild>
-                <Link to={appReviewRoute(installation.manifest_url)}>Review changes</Link>
+                <Link to={appRoute(installation.id)}>Review changes</Link>
               </Button>
             </Inline>
           </Banner>

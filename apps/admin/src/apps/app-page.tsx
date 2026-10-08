@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Button, EmptyIndicator, LoadingIndicator } from '@tryghost/shade/components';
 import { Stack, Text } from '@tryghost/shade/primitives';
 import { LucideIcon } from '@tryghost/shade/utils';
-import { Link, useNavigate, useParams } from '@tryghost/admin-x-framework';
+import { Link, useParams } from '@tryghost/admin-x-framework';
 import {
   type AppInstallation,
   useReadAppInstallation,
@@ -12,7 +12,7 @@ import { useBrowseSite } from '@tryghost/admin-x-framework/api/site';
 import { APIError, getErrorMessage } from '@tryghost/admin-x-framework/errors';
 import { AppsGate } from './components/apps-gate';
 import { APP_FRAME_ALLOW, APP_FRAME_SANDBOX, appFrameTimeouts, isGhostOrigin } from './lib/frame';
-import { appReviewRoute } from './lib/routes';
+import { InstallDialog } from './components/install-dialog/install-dialog';
 import { appPageUrl, servedFrom } from './lib/served-from';
 
 type FrameStatus = 'loading' | 'ready' | 'failed';
@@ -201,22 +201,31 @@ const ActiveApp: React.FC<{ installation: AppInstallation }> = ({ installation }
   return <AppFrame key={installation.id} installation={installation} />;
 };
 
-/** A suspended app doesn't load: the page says why and leads to the review. */
-const NeedsApproval: React.FC<{ installation: AppInstallation }> = ({ installation }) => {
-  const navigate = useNavigate();
+/**
+ * A suspended app doesn't load: the review of its changes opens on top of the page straight
+ * away, and the page behind it says why, with a way back to the review once it's closed.
+ */
+const NeedsApproval: React.FC<{ installation: AppInstallation; onApproved: () => void }> = ({
+  installation,
+  onApproved,
+}) => {
+  const [reviewing, setReviewing] = useState(true);
   return (
     <Centered testId="app-needs-approval">
       <EmptyIndicator
-        actions={
-          <Button onClick={() => navigate(appReviewRoute(installation.manifest_url))}>
-            Review changes
-          </Button>
-        }
+        actions={<Button onClick={() => setReviewing(true)}>Review changes</Button>}
         description="It’s been updated and needs your approval before it can open."
         title={`${installation.manifest.name} needs approval`}
       >
         <LucideIcon.ShieldAlert />
       </EmptyIndicator>
+      {reviewing && (
+        <InstallDialog
+          manifestUrl={installation.manifest_url}
+          onClose={() => setReviewing(false)}
+          onDone={onApproved}
+        />
+      )}
     </Centered>
   );
 };
@@ -247,26 +256,29 @@ function useRefreshOnOpen(installationId: string): {
   settled: boolean;
   /** The installation as the refresh left it, when Ghost answered. */
   refreshed?: AppInstallation;
+  /** Starts over, as a new session does: after approving changes, the app loads afresh. */
+  restart: () => void;
 } {
   const { mutateAsync: refresh } = useRefreshAppInstallation();
-  const [result, setResult] = useState<{ id: string; refreshed?: AppInstallation }>();
+  const [session, setSession] = useState(0);
+  const [result, setResult] = useState<{ key: string; refreshed?: AppInstallation }>();
   const started = useRef<string | null>(null);
+  const key = `${installationId}:${session}`;
 
   useEffect(() => {
-    if (!installationId || started.current === installationId) {
+    if (!installationId || started.current === key) {
       return;
     }
-    started.current = installationId;
+    started.current = key;
     refresh(installationId)
-      .then((response) =>
-        setResult({ id: installationId, refreshed: response.app_installations[0] }),
-      )
-      .catch(() => setResult({ id: installationId }));
-  }, [installationId, refresh]);
+      .then((response) => setResult({ key, refreshed: response.app_installations[0] }))
+      .catch(() => setResult({ key }));
+  }, [installationId, key, refresh]);
 
-  return result?.id === installationId
-    ? { settled: true, refreshed: result.refreshed }
-    : { settled: false };
+  const restart = () => setSession((value) => value + 1);
+  return result?.key === key
+    ? { settled: true, refreshed: result.refreshed, restart }
+    : { settled: false, restart };
 }
 
 /**
@@ -276,7 +288,7 @@ function useRefreshOnOpen(installationId: string): {
  */
 export const AppPage: React.FC = () => {
   const { installationId = '' } = useParams();
-  const { settled, refreshed } = useRefreshOnOpen(installationId);
+  const { settled, refreshed, restart } = useRefreshOnOpen(installationId);
   const { data, error, isLoading, refetch } = useReadAppInstallation(installationId, {
     defaultErrorHandler: false,
   });
@@ -293,7 +305,7 @@ export const AppPage: React.FC = () => {
   } else if (installation?.status === 'active') {
     body = <ActiveApp installation={installation} />;
   } else if (installation?.status === 'suspended') {
-    body = <NeedsApproval installation={installation} />;
+    body = <NeedsApproval installation={installation} onApproved={restart} />;
   } else if (installation || (error instanceof APIError && error.response?.status === 404)) {
     body = <NotInstalled />;
   } else if (error) {
