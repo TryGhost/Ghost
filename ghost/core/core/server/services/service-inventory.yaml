@@ -4376,7 +4376,7 @@ services:
     kind: directory
     disposition: retain
     status: audited
-    auditedAt: c2999f4e13da6360bceced808bb52c4a04b5ad03
+    auditedAt: 8b630512052d6d4e58a881438c30453b001b69a2
     entryPoints:
       - tinybird/index.js
     notes: >-
@@ -4392,8 +4392,9 @@ services:
           synchronous getToken, _generateToken and _isJWTExpired, with mutable configuration,
           capability flags and token-cache fields. getToken returns token/optional numeric exp
           or null. Units assert selected token shapes and static-token values; HTTP asserts
-          the serialized token/null shapes and ISO expiration. Exact root exports, unbound
-          static methods and reset behavior are source-only.
+          the serialized token/null shapes and ISO expiration. Root units assert barrel/class
+          identity, initial undefined instance and synchronous init return. Unbound static
+          methods and reset behavior remain source-only.
         sources:
           - core/server/services/tinybird/index.js
           - core/server/services/tinybird/tinybird-service-wrapper.js
@@ -4403,6 +4404,7 @@ services:
         tests:
           - test/unit/server/services/tinybird/tinybird-service.test.js
           - test/e2e-api/admin/tinybird.test.js
+          - test/unit/server/services/tinybird/index.test.ts
       construction:
         summary: >-
           Every configured init constructs a new TinybirdService from current tinybird config
@@ -4412,8 +4414,10 @@ services:
           without signing or contacting Tinybird. StatsService.create conditionally initializes
           the root, then creates a separate query client for web analytics using the published
           instance. Factory units stub init and assert its gate plus client presence; the
-          retained-consumer test uses the real root and asserts replacement identity. Nested
-          construction and absence of provider I/O at init are otherwise source-established.
+          retained-consumer test uses the real root and asserts replacement identity. New root
+          units also assert replacement, retained config identity, selected captured state and
+          no signing during init, using a real signer failure on use. Absence of network I/O
+          remains source-established.
         sources:
           - core/server/services/tinybird/tinybird-service-wrapper.js
           - core/server/services/tinybird/tinybird-service.js
@@ -4422,6 +4426,7 @@ services:
         tests:
           - test/unit/server/services/stats/stats.test.ts
           - test/unit/server/services/tinybird/consumer-configuration.test.ts
+          - test/unit/server/services/tinybird/index.test.ts
       consumers:
         summary: >-
           Three production root consumers were found: the Admin token endpoint initializes
@@ -4433,7 +4438,10 @@ services:
           admin success and unauthenticated/editor denial. Automation HTTP tests exercise
           real token composition and intercepted query responses for browse/performance/member
           search; run tests replace the token service. These establish selected HTTP results, not
-          provider acceptance, every consumer or frontend token-refresh behavior.
+          provider acceptance, every consumer or frontend token-refresh behavior. The isolated
+          consumer test boots without analytics/provider configuration, then uses actual token
+          and automation HTTP routes to assert publication transitions through request
+          authorization headers and returned statistics.
         sources:
           - core/server/api/endpoints/tinybird.js
           - core/server/web/api/endpoints/admin/routes.js
@@ -4451,6 +4459,7 @@ services:
           - test/e2e-api/admin/automation-performance-stats.test.ts
           - test/e2e-api/admin/automation-runs.test.ts
           - test/e2e-api/admin/automation-member-search.test.ts
+          - test/e2e-server/tinybird-consumers.isolated.test.ts
       startup:
         summary: >-
           Boot has no direct Tinybird init; its awaited stats.init calls StatsService.create.
@@ -4460,10 +4469,13 @@ services:
           when a stats.id override exists, and requires only truthy root config, not a usable
           token/endpoint. Automations checks stats config and needs an already-published
           token service; it does not initialize the root when configuration becomes available.
-          Factory units cover three gate combinations with stubbed init. An HTTP case resets
+          Factory units cover all four gate combinations with stubbed init. Root units prove
+          settings UUID is required even with a configured site override. The isolated HTTP
+          case proves config appearing after disabled boot does not make automations publish
+          a provider; the token endpoint must publish it first. A separate HTTP case resets
           Tinybird and calls the real stats factory with web
           analytics disabled, then asserts remote browse stats and no SQL run-stat query;
-          it does not prove complete boot ordering or later gate transitions.
+          it does not prove complete boot ordering.
         sources:
           - core/boot.js
           - core/server/services/stats/service.js
@@ -4473,6 +4485,8 @@ services:
         tests:
           - test/unit/server/services/stats/stats.test.ts
           - test/e2e-api/admin/automations.test.js
+          - test/unit/server/services/tinybird/index.test.ts
+          - test/e2e-server/tinybird-consumers.isolated.test.ts
       lifetime:
         summary: >-
           Source establishes that root re-init/reset changes only the published reference,
@@ -4483,18 +4497,26 @@ services:
           token service while rereading endpoint/site configuration, whereas a new stats client
           captures the new instance. The consumer test asserts that mixed lifetime with fake
           HTTP. Clock-controlled units assert repeated token equality and different tokens
-          after 176/180 minutes; equality alone does not prove signing was skipped. Automation
-          lookup after replacement and outstanding-query/reset behavior remain source-only.
+          after 176/180 minutes; equality alone does not prove signing was skipped. Token HTTP
+          tests advance only Date with unchanged credentials and assert a new three-hour
+          expiry on each request. The isolated HTTP test proves automations keeps the old
+          provider after config changes and uses the replacement after another token request.
+          Across a real stop/reboot, Stats retains the same API object and automations keeps
+          the last published provider despite changed config until another token request.
+          Outstanding-query/reset behavior remains source-only.
         sources:
           - core/server/services/tinybird/tinybird-service-wrapper.js
           - core/server/services/tinybird/tinybird-service.js
           - core/server/services/stats/stats-service.js
+          - core/server/services/stats/service.js
           - core/server/services/stats/utils/tinybird.js
           - core/server/api/endpoints/tinybird.js
           - core/server/services/automations/automations-api.ts
         tests:
           - test/unit/server/services/tinybird/tinybird-service.test.js
           - test/unit/server/services/tinybird/consumer-configuration.test.ts
+          - test/e2e-api/admin/tinybird.test.js
+          - test/e2e-server/tinybird-consumers.isolated.test.ts
       configuration:
         summary: >-
           Site ID (stats.id or settings site_uuid) and JWT/local/static capability flags are
@@ -4506,6 +4528,8 @@ services:
           Immutable config replacement does not update an existing service's captured subtree.
           HTTP tests replace test config through disabled/key-A/key-B/disabled transitions and
           verify signatures/workspaces/ISO expiry; consumer units cover missing-site recovery.
+          Root units mutate the retained config object to distinguish captured site/local
+          flag from live token reads, then prove another init captures the changed values.
           Scope units check each returned scope's type/site and three required resources, not
           the exact allowlist. Test setters and mutable unit config do not prove hot reload.
         sources:
@@ -4518,6 +4542,7 @@ services:
           - test/unit/server/services/tinybird/tinybird-service.test.js
           - test/unit/server/services/tinybird/consumer-configuration.test.ts
           - test/e2e-api/admin/tinybird.test.js
+          - test/unit/server/services/tinybird/index.test.ts
       resources:
         summary: >-
           The token root owns configuration references and an in-memory JWT cache only: it
@@ -4557,7 +4582,10 @@ services:
           and fake HTTP/JSON failures returning null. Browse HTTP tests assert database fallback
           for missing configuration/token, empty local tokens, signing stubs and intercepted
           failed/malformed responses; performance/runs assert selected 500/no-SQL-fallback
-          paths. Real signing-constructor faults, cleanup and provider rejection remain uncovered.
+          paths. Root units prove missing config clears publication and allows recovery while
+          retained providers still work, and invalid signing material throws only on token use.
+          Config-read and warning failures preserve the previous publication and propagate the
+          same error. Other constructor faults, cleanup and provider rejection remain uncovered.
         sources:
           - core/server/services/tinybird/tinybird-service-wrapper.js
           - core/server/services/tinybird/tinybird-service.js
@@ -4572,17 +4600,19 @@ services:
           - test/e2e-api/admin/automations.test.js
           - test/e2e-api/admin/automation-performance-stats.test.ts
           - test/e2e-api/admin/automation-runs.test.ts
+          - test/unit/server/services/tinybird/index.test.ts
     unverified: []
     blockers:
       - >-
-        Pin root/barrel compatibility, init/reset return and receiver behavior, repeated
-        construction and disabled/failed initialization with real boot consumers. Cover
-        analytics gates changing after initial stats boot and settings readiness, including
-        missing settings site_uuid when a configured site override exists.
+        Convert boot ownership with explicit same-process restart and failed-start contracts.
+        Root and caller tests now cover repeated construction, disabled publication, settings
+        UUID gating and lazy signing. Exact boot/settings ordering, reset and unbound static
+        methods remain uncharacterized; the latter are legacy test support with no production
+        callers found.
       - >-
-        Decide how migration preserves retained stats tokens alongside reread endpoint/site
-        values and automation's current-instance lookup. Existing replacement tests use fake
-        HTTP; add the relevant consumer paths before changing publication or reset semantics.
+        Preserve retained Stats credentials alongside live endpoint/site configuration and
+        automation's latest-publication lookup. A stable facade must not silently forward
+        retained Stats providers to newer credentials or refresh automation credentials on use.
       - >-
         Protect exact token precedence, scope allowlist, captured site/workspace, cache signing
         counts, default lifetimes, the exact refresh boundary and custom options on a cached
