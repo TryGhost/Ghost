@@ -7,6 +7,7 @@ const models = require('../../../../../core/server/models');
 const permissions = require('../../../../../core/server/services/permissions');
 const providers = require('../../../../../core/server/services/permissions/providers');
 const rolePermissions = require('../../../../../core/server/services/permissions/role-permissions');
+const { limitService } = require('../../../../../core/server/services/limits');
 const logging = require('@tryghost/logging');
 
 describe('Permissions', function () {
@@ -15,15 +16,15 @@ describe('Permissions', function () {
   let findTagSpy;
   let loggingError;
 
-  // Every check is also decided from the in-memory role permissions and the
-  // outcomes compared. That runs alongside the decision and is not awaited by
-  // canThis; it has no I/O here, so it settles within a tick.
+  // Grant comparison runs alongside the model's rules, without I/O, and is
+  // not awaited by canThis. Wait for diagnostics before restoring stubs.
   const comparisonSettled = () =>
     new Promise((resolve) => {
       setImmediate(resolve);
     });
 
   beforeEach(function () {
+    fakePermissions = loadFakePermissions();
     loggingError = sinon.stub(logging, 'error');
 
     sinon.stub(models.Permission, 'findAll').callsFake(function () {
@@ -43,6 +44,8 @@ describe('Permissions', function () {
     findTagSpy = sinon.stub(models.Tag, 'findOne').callsFake(function () {
       return Promise.resolve({});
     });
+
+    return permissions.init();
   });
 
   afterEach(async function () {
@@ -88,12 +91,6 @@ describe('Permissions', function () {
   }
 
   describe('CanThis', function () {
-    beforeEach(function () {
-      fakePermissions = loadFakePermissions();
-
-      return permissions.init();
-    });
-
     it('canThisResult gets build properly', function () {
       const canThisResult = permissions.canThis();
 
@@ -146,7 +143,7 @@ describe('Permissions', function () {
             },
           );
 
-          sinon.assert.calledTwice(findPostSpy);
+          sinon.assert.calledOnce(findPostSpy);
           assert.deepEqual(findPostSpy.firstCall.args[0], { id: 1, status: 'all' });
         });
 
@@ -161,7 +158,7 @@ describe('Permissions', function () {
             },
           );
 
-          sinon.assert.calledTwice(findPostSpy);
+          sinon.assert.calledOnce(findPostSpy);
           assert.deepEqual(findPostSpy.firstCall.args[0], { id: 1, status: 'all' });
         });
 
@@ -185,7 +182,7 @@ describe('Permissions', function () {
             },
           );
 
-          sinon.assert.calledTwice(findPostSpy);
+          sinon.assert.calledOnce(findPostSpy);
           assert.deepEqual(findPostSpy.firstCall.args[0], { id: 1, status: 'all' });
         });
       });
@@ -603,14 +600,14 @@ describe('Permissions', function () {
 
           sinon.assert.calledOnce(userProviderStub);
           sinon.assert.calledOnce(apiKeyProviderStub);
-          sinon.assert.calledTwice(findPostSpy);
+          sinon.assert.calledOnce(findPostSpy);
         });
       });
     });
   });
 
-  describe('in-memory parity comparison', function () {
-    it('logs when the in-memory role permissions would decide differently', async function () {
+  describe('in-memory grant comparison', function () {
+    it('logs different grants without changing a database denial', async function () {
       sinon.stub(providers, 'user').resolves({
         // The database granted nothing to this Administrator; the map grants edit:tag
         permissions: [],
@@ -626,12 +623,16 @@ describe('Permissions', function () {
       const err = loggingError.firstCall.args[0];
       assert.equal(err.code, 'PERMISSIONS_PARITY_MISMATCH');
       assert.equal(err.errorType, 'InternalServerError');
+      assert.equal(err.message, 'Permission grants differ with in-memory role permissions');
       assert.deepEqual(err.errorDetails, {
         action: 'edit',
         object: 'tag',
         user: { id: 'user-1', roles: ['Administrator'] },
         apiKey: null,
-        outcome: { database: 'denied', inMemory: 'allowed' },
+        grants: {
+          database: { hasUserPermission: false, hasApiKeyPermission: true },
+          inMemory: { hasUserPermission: true, hasApiKeyPermission: true },
+        },
       });
 
       // This test expects the report; the file-level afterEach expects silence
@@ -650,25 +651,30 @@ describe('Permissions', function () {
       sinon.assert.notCalled(loggingError);
     });
 
-    it('runs the model\u2019s permissible check a second time with the in-memory permissions', async function () {
+    it('runs model rules once with the database grants and preserves their result', async function () {
       sinon.stub(providers, 'user').resolves({
-        permissions: testUtils.DataGenerator.Content.permissions,
-        roles: [{ name: 'Administrator' }],
+        permissions: [],
+        roles: [{ name: 'Contributor' }],
       });
-      const permissibleStub = sinon.stub(models.Post, 'permissible').resolves();
+      const result = { excludedAttrs: ['authors', 'tags'] };
+      const permissibleStub = sinon.stub(models.Post, 'permissible').resolves(result);
 
-      await permissions.canThis({ user: {} }).edit.post({ id: 1 });
+      const actual = await permissions.canThis({ user: 'contributor-1' }).edit.post({ id: 1 });
       await comparisonSettled();
 
-      sinon.assert.calledTwice(permissibleStub);
-      assert.deepEqual(
-        permissibleStub.firstCall.args[4].user.permissions,
-        testUtils.DataGenerator.Content.permissions,
-      );
-      assert.deepEqual(
-        permissibleStub.secondCall.args[4].user.permissions,
-        rolePermissions.forRoles(['Administrator']),
-      );
+      sinon.assert.calledOnce(permissibleStub);
+      assert.deepEqual(permissibleStub.firstCall.args[4].user.permissions, []);
+      assert.equal(permissibleStub.firstCall.args[5], undefined);
+      assert.equal(permissibleStub.firstCall.args[6], true);
+      assert.equal(actual, result);
+
+      // The model allowed the request, but the underlying grants still differ.
+      sinon.assert.calledOnce(loggingError);
+      assert.deepEqual(loggingError.firstCall.args[0].errorDetails.grants, {
+        database: { hasUserPermission: false, hasApiKeyPermission: true },
+        inMemory: { hasUserPermission: true, hasApiKeyPermission: true },
+      });
+      loggingError.resetHistory();
     });
 
     it('logs each distinct difference once', async function () {
@@ -690,7 +696,7 @@ describe('Permissions', function () {
       loggingError.resetHistory();
     });
 
-    it('treats the same failure in both as agreement', async function () {
+    it('preserves provider failures without attempting comparison', async function () {
       sinon.stub(providers, 'user').rejects(new errors.NotFoundError({ message: 'gone' }));
 
       await assert.rejects(permissions.canThis({ user: 'user-1' }).edit.tag({ id: 1 }), {
@@ -719,9 +725,121 @@ describe('Permissions', function () {
         object: 'tag',
         user: null,
         apiKey: { id: 'key-1', roles: ['Admin Integration'] },
-        outcome: { database: 'denied', inMemory: 'allowed' },
+        grants: {
+          database: { hasUserPermission: true, hasApiKeyPermission: false },
+          inMemory: { hasUserPermission: true, hasApiKeyPermission: true },
+        },
       });
       loggingError.resetHistory();
+    });
+
+    it('preserves database grants that the in-memory map does not grant', async function () {
+      sinon.stub(providers, 'user').resolves({
+        permissions: [{ action_type: 'edit', object_type: 'tag' }],
+        roles: [{ name: 'Author' }],
+      });
+
+      await permissions.canThis({ user: 'author-1' }).edit.tag();
+      await comparisonSettled();
+
+      sinon.assert.calledOnce(loggingError);
+      assert.deepEqual(loggingError.firstCall.args[0].errorDetails.grants, {
+        database: { hasUserPermission: true, hasApiKeyPermission: true },
+        inMemory: { hasUserPermission: false, hasApiKeyPermission: true },
+      });
+      loggingError.resetHistory();
+    });
+
+    it('treats absent and false grants as the same denial', async function () {
+      sinon.stub(providers, 'user').resolves({ permissions: [], roles: [{ name: 'Author' }] });
+
+      await assert.rejects(permissions.canThis({ user: 'author-1' }).edit.tag(), {
+        errorType: 'NoPermissionError',
+      });
+      await comparisonSettled();
+
+      sinon.assert.notCalled(loggingError);
+    });
+
+    it('does not change the request result when in-memory comparison fails', async function () {
+      const roles = [{ name: 'Administrator' }];
+      sinon.stub(providers, 'user').resolves({
+        permissions: [{ action_type: 'edit', object_type: 'tag' }],
+        roles,
+      });
+      const comparisonError = new errors.InternalServerError({ message: 'map unavailable' });
+      sinon.stub(roles, 'map').throws(comparisonError);
+
+      await permissions.canThis({ user: 'admin-1' }).edit.tag();
+      await comparisonSettled();
+
+      sinon.assert.calledOnce(loggingError);
+      assert.deepEqual(loggingError.firstCall.args[0], {
+        err: comparisonError,
+        message: 'Permissions parity check could not run',
+      });
+      loggingError.resetHistory();
+    });
+
+    it('does not reread a post that disappears after authorization', async function () {
+      const author = testUtils.DataGenerator.Content.users[0];
+      const userProviderStub = sinon.stub(providers, 'user').resolves({
+        permissions: rolePermissions.forRoles(['Author']),
+        roles: [{ name: 'Author' }],
+      });
+      // A second read would observe the deletion and fail the old comparison.
+      findPostSpy.onSecondCall().resolves(null);
+
+      await permissions.canThis({ user: author.id }).destroy.post('post-1');
+      await comparisonSettled();
+
+      sinon.assert.calledOnce(userProviderStub);
+      sinon.assert.calledOnce(findPostSpy);
+      sinon.assert.notCalled(loggingError);
+    });
+
+    it('reads the post and checks publishing limits only once', async function () {
+      const userProviderStub = sinon.stub(providers, 'user').resolves({
+        permissions: rolePermissions.forRoles(['Administrator']),
+        roles: [{ name: 'Administrator' }],
+      });
+      findPostSpy.resolves(models.Post.forge({ id: 'post-1', status: 'draft' }));
+      sinon.stub(limitService, 'isLimited').withArgs('members').returns(true);
+      const limitCheck = sinon.stub(limitService, 'errorIfIsOverLimit').resolves();
+
+      await permissions.canThis({ user: 'admin-1' }).edit.post('post-1', { status: 'published' });
+      await comparisonSettled();
+
+      sinon.assert.calledOnce(userProviderStub);
+      sinon.assert.calledOnce(findPostSpy);
+      sinon.assert.calledOnceWithExactly(limitCheck, 'members');
+    });
+
+    it('does not duplicate user reads or nested role-assignment checks', async function () {
+      fakePermissions.push({ name: 'Assign role', action_type: 'assign', object_type: 'role' });
+      await permissions.init();
+
+      const userProviderStub = sinon.stub(providers, 'user').resolves({
+        permissions: rolePermissions.forRoles(['Administrator']),
+        roles: [{ id: 'admin-role', name: 'Administrator' }],
+      });
+      const user = models.User.forge({ id: 'target-user', status: 'active' });
+      user.related('roles').set([{ id: 'author-role', name: 'Author' }]);
+      const userRead = sinon.stub(models.User, 'findOne').resolves(user);
+      const ownerRead = sinon.stub(models.User, 'getOwnerUser').resolves({ id: 'owner-user' });
+      const role = models.Role.forge({ id: 'editor-role', name: 'Editor' });
+      const roleRead = sinon.stub(models.Role, 'findOne').resolves(role);
+
+      await permissions.canThis({ user: 'admin-1' }).edit.user('target-user', {
+        roles: [{ id: role.id, name: 'Editor' }],
+      });
+      await comparisonSettled();
+
+      // One provider load for edit.user and one for its existing assign.role check.
+      sinon.assert.calledTwice(userProviderStub);
+      sinon.assert.calledOnce(userRead);
+      sinon.assert.calledOnce(ownerRead);
+      sinon.assert.calledOnce(roleRead);
     });
   });
 
@@ -744,7 +862,7 @@ describe('Permissions', function () {
           .canThis({ user: {} }) // user context
           .edit.post({ id: 1 }), // tag id in model syntax
         function (err) {
-          sinon.assert.calledTwice(permissibleStub);
+          sinon.assert.calledOnce(permissibleStub);
           sinon.assert.calledWith(
             permissibleStub,
             1,
@@ -780,7 +898,7 @@ describe('Permissions', function () {
         .canThis({ user: {} }) // user context
         .edit.post({ id: 1 }); // tag id in model syntax
 
-      sinon.assert.calledTwice(permissibleStub);
+      sinon.assert.calledOnce(permissibleStub);
       sinon.assert.calledWith(
         permissibleStub,
         1,
