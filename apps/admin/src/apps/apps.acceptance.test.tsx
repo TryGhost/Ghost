@@ -160,18 +160,6 @@ describe('Managing apps', () => {
     expect(new URL(readApi.requests[0].url).searchParams.get('include')).toBe('history');
   });
 
-  it('says when an older Ghost has no history to show', async () => {
-    fakeDetails(installation());
-
-    await renderAdminApp(DETAILS_ROUTE, { labs });
-
-    await expect.element(appsScreen.details()).toHaveTextContent('Example Audio');
-    await expect
-      .element(appsScreen.historyUnavailable())
-      .toHaveTextContent('History isn’t available on this version of Ghost.');
-    await expect(appsScreen.historyEntries()).toHaveCount(0);
-  });
-
   it('uninstalls an app from the list, after saying integration keys stay', async () => {
     const installations = fakeInstallations([installation()]);
     const uninstallApi = fakeAdminEndpoint('DELETE', '/apps/installations/installation-1/', () => {

@@ -45,15 +45,7 @@ const Fact: React.FC<{ label: string; children: React.ReactNode }> = ({ label, c
   </div>
 );
 
-const History: React.FC<{ entries?: AppInstallationHistoryEntry[] }> = ({ entries }) => {
-  // An older Ghost answers without the history it was asked for.
-  if (!entries) {
-    return (
-      <Text data-testid="app-history-unavailable" tone="secondary">
-        History isn’t available on this version of Ghost.
-      </Text>
-    );
-  }
+const History: React.FC<{ entries: AppInstallationHistoryEntry[] }> = ({ entries }) => {
   return (
     <ol className="m-0 list-none p-0" data-testid="app-history">
       {entries.map((entry) => (
@@ -81,8 +73,8 @@ const History: React.FC<{ entries?: AppInstallationHistoryEntry[] }> = ({ entrie
 };
 
 const Details: React.FC<{ installation: AppInstallation }> = ({ installation }) => {
-  const { manifest, status, history } = installation;
-  const installer = history && installedBy(history);
+  const { manifest, status, history = [] } = installation;
+  const installer = installedBy(history);
 
   return (
     // Like a member's page: who the app is and what it does down the side, what it gets and

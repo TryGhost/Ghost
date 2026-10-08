@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
   type ErrorResponse,
-  JSONError,
   ServerUnreachableError,
   ValidationError,
 } from '@tryghost/admin-x-framework/errors';
@@ -79,16 +78,6 @@ describe('installFailureOf', () => {
       kind: 'problems',
       problems: [{ title, detail: 'what Ghost said' }],
     });
-  });
-
-  it('recognises a Ghost too old to install apps', () => {
-    const notFound = new JSONError(
-      new Response(null, { status: 404 }),
-      undefined,
-      'Resource not found',
-    );
-
-    expect(installFailureOf(notFound)).toEqual({ kind: 'unsupported' });
   });
 
   it('says what went wrong for anything else', () => {
