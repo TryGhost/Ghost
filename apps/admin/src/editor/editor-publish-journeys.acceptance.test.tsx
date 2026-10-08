@@ -292,7 +292,7 @@ describe('Editor publish journeys', () => {
     await editorScreen.settingsToggle().click();
     await expect.element(editorScreen.settingsSidebar()).toBeVisible();
     await settleTransitions();
-    await editorScreen.settingsTier('Gold').click();
+    await editorScreen.toggleSettingsTier('Gold');
     await expect.poll(() => saveApi.requests.length).toBe(1);
     await userEvent.keyboard('{Meta>}{Shift>}p{/Shift}{/Meta}');
     await expect.element(publishScreen.continueButton()).toBeVisible();
