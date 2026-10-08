@@ -4,13 +4,19 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 
 const mocks = vi.hoisted(() => ({
+  account: {
+    data: { handle: '@index@ghost.example' } as { handle: string } | undefined,
+    isLoading: false,
+  },
   migration: {
-    data: { targetApId: null as string | null, sent: false },
+    data: { targetApId: null as string | null, sent: false } as
+      | { targetApId: string | null; sent: boolean }
+      | undefined,
     isError: false,
+    isLoading: false,
     error: null as unknown,
     refetch: vi.fn(),
   },
-  lookup: { mutateAsync: vi.fn(), isPending: false },
   move: { mutateAsync: vi.fn(), isPending: false },
 }));
 
@@ -19,6 +25,7 @@ vi.mock('@src/components/layout', () => ({
 }));
 
 vi.mock('@hooks/use-activity-pub-queries', () => ({
+  useAccountForUser: () => mocks.account,
   useAccountAliasesForUser: () => ({
     data: { aliases: [], destination: { handle: '@index@ghost.example' } },
     isError: false,
@@ -28,21 +35,21 @@ vi.mock('@hooks/use-activity-pub-queries', () => ({
   useAddAccountAliasMutationForUser: () => ({ mutateAsync: vi.fn(), isPending: false }),
   useRemoveAccountAliasMutationForUser: () => ({ mutateAsync: vi.fn() }),
   useAccountMigrationForUser: () => mocks.migration,
-  useLookupAccountMutationForUser: () => mocks.lookup,
   useMoveAccountMutationForUser: () => mocks.move,
 }));
 
 afterEach(cleanup);
 beforeEach(() => {
+  mocks.account = {
+    data: { handle: '@index@ghost.example' },
+    isLoading: false,
+  };
   mocks.migration = {
     data: { targetApId: null, sent: false },
     isError: false,
+    isLoading: false,
     error: null,
     refetch: vi.fn(),
-  };
-  mocks.lookup = {
-    mutateAsync: vi.fn().mockResolvedValue({ handle: '@new@elsewhere.example' }),
-    isPending: false,
   };
   mocks.move = { mutateAsync: vi.fn().mockResolvedValue({ sent: true }), isPending: false };
 });
@@ -75,16 +82,19 @@ async function confirmMove() {
 
 describe('outbound account migration', () => {
   it.each([401, 403, 404, 405, 501])(
-    'hides the outbound flow for an unsupported or forbidden response (%s)',
+    'hides the outbound tab for an unsupported or forbidden response (%s)',
     (statusCode) => {
       mocks.migration.isError = true;
       mocks.migration.error = { message: 'Unavailable', statusCode };
       render(<AccountMigration />);
       expect(screen.getByLabelText('Old account handle')).toBeTruthy();
-      goToExport();
-      expect(screen.queryByRole('button', { name: /I’ve added the alias/ })).toBeNull();
-      expect(screen.queryByLabelText('New account handle')).toBeNull();
+      expect(screen.queryByRole('tab', { name: 'Move followers away' })).toBeNull();
+      expect(screen.queryByRole('tab', { name: 'Bring followers here' })).toBeNull();
       expect(screen.queryByRole('button', { name: 'Move followers' })).toBeNull();
+      expect(
+        screen.getByText(/Move your followers from another social web account/).textContent,
+      ).toContain('to this Ghost account');
+      expect(screen.queryByText(/or from this account to somewhere else/)).toBeNull();
     },
   );
 
@@ -107,18 +117,20 @@ describe('outbound account migration', () => {
     goToExport();
     expect(screen.queryByLabelText('New account handle')).toBeNull();
     expect(screen.getByRole('button', { name: /I’ve added the alias/ })).toBeTruthy();
+    expect(screen.getByText('@index@ghost.example')).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: /I’ve added the alias/ }));
     expect(screen.getByLabelText('New account handle')).toBeTruthy();
     expect(screen.queryByRole('button', { name: /I’ve added the alias/ })).toBeNull();
   });
 
-  it('looks up the destination before asking for confirmation', async () => {
+  it('asks for confirmation without a destination lookup', async () => {
     render(<AccountMigration />);
     goToExportForm();
     enterDestination('  new@elsewhere.example  ');
     const dialog = await openMoveConfirmation();
-    expect(mocks.lookup.mutateAsync).toHaveBeenCalledWith('@new@elsewhere.example');
-    expect(dialog.textContent).toContain('I understand this move cannot simply be undone.');
+    expect(dialog.textContent).toContain(
+      'Your followers will be asked to follow @new@elsewhere.example instead. This can’t be undone.',
+    );
     expect(mocks.move.mutateAsync).not.toHaveBeenCalled();
     fireEvent.click(within(dialog).getByRole('button', { name: 'Move followers' }));
     await waitFor(() =>
@@ -126,23 +138,32 @@ describe('outbound account migration', () => {
     );
   });
 
-  it('shows a not-found error before opening the confirmation dialog', async () => {
-    mocks.lookup.mutateAsync.mockRejectedValue({
-      message: 'Not found',
-      statusCode: 404,
-    });
+  it('does not send the move when confirmation is cancelled', async () => {
     render(<AccountMigration />);
     goToExportForm();
     enterDestination();
+    const dialog = await openMoveConfirmation();
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Cancel' }));
+    await waitFor(() => expect(screen.queryByRole('alertdialog')).toBeNull());
+    expect(mocks.move.mutateAsync).not.toHaveBeenCalled();
+  });
+
+  it('rejects moving to this Ghost account', async () => {
+    render(<AccountMigration />);
+    goToExportForm();
+    enterDestination('index@ghost.example');
     fireEvent.click(screen.getByRole('button', { name: 'Move followers' }));
-    await screen.findByText('Could not find that profile. Check the handle and try again.');
+    await screen.findByText('Enter a different account than this Ghost account.');
     expect(screen.queryByRole('alertdialog')).toBeNull();
     expect(mocks.move.mutateAsync).not.toHaveBeenCalled();
   });
 
   it('keeps the destination locked while submitting', () => {
     mocks.move.isPending = true;
-    mocks.migration.data.targetApId = 'https://elsewhere.example/users/new';
+    mocks.migration.data = {
+      targetApId: 'https://elsewhere.example/users/new',
+      sent: false,
+    };
     render(<AccountMigration />);
     goToExport();
     expect((screen.getByLabelText('New account handle') as HTMLInputElement).disabled).toBe(true);
@@ -152,7 +173,10 @@ describe('outbound account migration', () => {
   });
 
   it('shows the alias requirement when the server rejects an unverified destination', async () => {
-    mocks.move.mutateAsync.mockRejectedValue({ statusCode: 422 });
+    mocks.move.mutateAsync.mockRejectedValue({
+      message: 'Alias required',
+      statusCode: 422,
+    });
     render(<AccountMigration />);
     goToExportForm();
     enterDestination();
@@ -161,30 +185,87 @@ describe('outbound account migration', () => {
     expect(screen.getByLabelText('New account handle').getAttribute('aria-invalid')).toBe('true');
   });
 
-  it('rejects invalid handles before looking up the destination', async () => {
+  it('shows a conflict message when a move is already in progress elsewhere', async () => {
+    mocks.move.mutateAsync.mockRejectedValue({
+      message: 'Conflict',
+      statusCode: 409,
+    });
+    render(<AccountMigration />);
+    goToExportForm();
+    enterDestination();
+    await confirmMove();
+    await screen.findByText('A move is already in progress or was sent to a different account.');
+    expect(screen.getByLabelText('New account handle').getAttribute('aria-invalid')).toBe('true');
+  });
+
+  it('rejects invalid handles before opening confirmation', async () => {
     render(<AccountMigration />);
     goToExportForm();
     enterDestination('not-a-handle');
     fireEvent.click(screen.getByRole('button', { name: 'Move followers' }));
     await screen.findByText('Enter a valid destination handle, like new@mastodon.social.');
     expect(screen.queryByRole('alertdialog')).toBeNull();
-    expect(mocks.lookup.mutateAsync).not.toHaveBeenCalled();
     expect(mocks.move.mutateAsync).not.toHaveBeenCalled();
   });
 
-  it('shows the fixed pending destination and replaces the form after sending', () => {
-    mocks.migration.data.targetApId = 'https://elsewhere.example/users/new';
+  it('prefills a pending Mastodon-style destination and shows only status after sending', () => {
+    mocks.migration.data = {
+      targetApId: 'https://elsewhere.example/users/new',
+      sent: false,
+    };
     const { rerender } = render(<AccountMigration />);
     goToExport();
     expect(screen.getByRole('status').textContent).toContain(
-      'A move to https://elsewhere.example/users/new is pending',
+      'A move to new@elsewhere.example is still in progress',
     );
-    mocks.migration.data.sent = true;
+    expect((screen.getByLabelText('New account handle') as HTMLInputElement).value).toBe(
+      'new@elsewhere.example',
+    );
+    mocks.migration.data = {
+      targetApId: 'https://elsewhere.example/users/new',
+      sent: true,
+    };
     rerender(<AccountMigration />);
     goToExport();
     expect(screen.getByRole('status').textContent).toContain(
-      'Migration sent to https://elsewhere.example/users/new',
+      'Your followers were asked to follow new@elsewhere.example',
     );
+    expect(screen.queryByText(/On your new account, add/)).toBeNull();
+    expect(screen.queryByText(/Enter your new account/)).toBeNull();
     expect(screen.queryByLabelText('New account handle')).toBeNull();
+  });
+
+  it('does not prefill or show a non-Mastodon actor URI as a handle', () => {
+    mocks.migration.data = {
+      targetApId: 'https://ghost.example/.ghost/activitypub/users/index',
+      sent: false,
+    };
+    render(<AccountMigration />);
+    goToExport();
+    expect(screen.getByRole('status').textContent).toContain(
+      'A move is still in progress. Enter the destination handle and try sending it again.',
+    );
+    expect(screen.getByRole('status').textContent).not.toContain('/.ghost/activitypub/users/');
+    expect((screen.getByLabelText('New account handle') as HTMLInputElement).value).toBe('');
+  });
+
+  it('keeps the Mastodon alias guide when the Ghost handle fails to load', () => {
+    mocks.account.data = undefined;
+    render(<AccountMigration />);
+    goToExport();
+    expect(screen.getByText('your Ghost handle')).toBeTruthy();
+    const guide = screen.getByRole('link', { name: 'Mastodon guide' });
+    expect(guide.getAttribute('href')).toBe(
+      'https://docs.joinmastodon.org/user/moving/#account-aliases',
+    );
+  });
+
+  it('shows a loading skeleton while migration status is loading', () => {
+    mocks.migration.isLoading = true;
+    mocks.migration.data = undefined;
+    render(<AccountMigration />);
+    goToExport();
+    expect(screen.queryByLabelText('New account handle')).toBeNull();
+    expect(screen.queryByRole('button', { name: /I’ve added the alias/ })).toBeNull();
   });
 });
