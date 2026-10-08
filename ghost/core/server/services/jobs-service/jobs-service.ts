@@ -1,9 +1,10 @@
 import errors from '@tryghost/errors';
 import cronValidate from 'cron-validate';
+import ObjectID from 'bson-objectid';
 import type {
   JobsBackendBase,
   JobEnvelope,
-  JobRouting,
+  DispatchEnvelope,
   JobsShutdownOptions,
   QueueDeclaration,
   RecurringSchedule,
@@ -109,11 +110,6 @@ export class JobsService {
     this.#queueByType.set(type, queue);
   }
 
-  #routingFor(type: string): JobRouting | undefined {
-    const queue = this.#queueByType.get(type);
-    return queue === undefined ? undefined : { queue };
-  }
-
   /**
    * Resolves when the backend's enqueue call completes, without waiting for the
    * handler to run. Enqueue errors reject this promise. Resolution does not
@@ -121,13 +117,14 @@ export class JobsService {
    */
   async dispatch(job: Job): Promise<void> {
     const envelope = this.#buildEnvelope(job);
-    await this.#backend.enqueue(envelope, this.#routingFor(envelope.type));
+    const id = new ObjectID().toHexString();
+    await this.#backend.enqueue(id, envelope);
   }
 
   async scheduleRecurring(job: Job, schedule: RecurringSchedule): Promise<void> {
     this.#assertValidCron(schedule.cron);
     const envelope = this.#buildEnvelope(job);
-    await this.#backend.scheduleRecurring(envelope, schedule, this.#routingFor(envelope.type));
+    await this.#backend.scheduleRecurring(envelope, schedule);
   }
 
   // later.parse.cron does not strictly validate: it silently coerces a
@@ -166,8 +163,15 @@ export class JobsService {
     this.#queues.clear();
   }
 
-  #buildEnvelope(job: Job): JobEnvelope {
-    return { type: this.#typeOf(job), payload: JSON.stringify(job) };
+  #buildEnvelope(job: Job): DispatchEnvelope {
+    const type = this.#typeOf(job);
+    const jobEnvelope = { type, payload: JSON.stringify(job) };
+    const queue = this.#queueByType.get(type);
+    return {
+      version: 1,
+      payload:
+        queue === undefined ? { job: jobEnvelope } : { job: jobEnvelope, routing: { queue } },
+    };
   }
 
   #typeOf(job: Job): string {
