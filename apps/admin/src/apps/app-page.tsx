@@ -66,21 +66,29 @@ const NotResponding: React.FC<{
  */
 const AppFrame: React.FC<{ installation: AppInstallation }> = ({ installation }) => {
   const [attempt, setAttempt] = useState(0);
-  const [status, setStatus] = useState<FrameStatus>('loading');
   const [loaded, setLoaded] = useState(false);
   const [reached, setReached] = useState(false);
+  const [failed, setFailed] = useState(false);
   const [startedAt, setStartedAt] = useState(() => new Date());
   const url = appPageUrl(installation.manifest);
+  // Ready once the frame has loaded and the app is known to have answered.
+  const ready = loaded && reached;
+  const status: FrameStatus = failed ? 'failed' : ready ? 'ready' : 'loading';
 
+  // While the page is awaited: a clock, and a probe. Both stop the moment it's ready, so
+  // nothing can call the page unresponsive after that.
   useEffect(() => {
-    const giveUp = () => setStatus((current) => (current === 'loading' ? 'failed' : current));
-    const timer = window.setTimeout(giveUp, appFrameTimeouts.ready);
+    if (ready) {
+      return;
+    }
+    const timer = window.setTimeout(() => setFailed(true), appFrameTimeouts.ready);
     // The frame's load event fires for the browser's own error page too, so it can't say
-    // whether the app answered. This plain request can: a server that can't be reached
-    // rejects it, while any answer at all, which the frame then shows, resolves it opaque.
+    // whether the app answered. This request can: a server that can't be reached rejects
+    // it, while any answer at all, even a 405 to HEAD, resolves it opaque.
     const probe = new AbortController();
     // eslint-disable-next-line no-restricted-syntax -- the app's own page, not Ghost's API
     fetch(url, {
+      method: 'HEAD',
       mode: 'no-cors',
       credentials: 'omit',
       cache: 'no-store',
@@ -90,7 +98,7 @@ const AppFrame: React.FC<{ installation: AppInstallation }> = ({ installation })
       () => setReached(true),
       () => {
         if (!probe.signal.aborted) {
-          giveUp();
+          setFailed(true);
         }
       },
     );
@@ -98,17 +106,10 @@ const AppFrame: React.FC<{ installation: AppInstallation }> = ({ installation })
       window.clearTimeout(timer);
       probe.abort();
     };
-  }, [attempt, url]);
-
-  // Ready once the frame has loaded and the app is known to have answered.
-  useEffect(() => {
-    if (loaded && reached) {
-      setStatus((current) => (current === 'loading' ? 'ready' : current));
-    }
-  }, [loaded, reached]);
+  }, [attempt, url, ready]);
 
   const retry = () => {
-    setStatus('loading');
+    setFailed(false);
     setLoaded(false);
     setReached(false);
     setStartedAt(new Date());
@@ -166,18 +167,33 @@ const NotFramed: React.FC<{ installation: AppInstallation }> = ({ installation }
 /**
  * An active app loads in its frame, once its page is known to be somewhere other than
  * Ghost: Admin's own address, or the site's, which Admin may be served from too. Nothing
- * is framed until the site's address is known, so the check can't be skipped by timing.
+ * is framed until the site's address is known, so the check can't be skipped by timing,
+ * or by the site's address failing to load.
  */
 const ActiveApp: React.FC<{ installation: AppInstallation }> = ({ installation }) => {
-  const { data: site, isLoading } = useBrowseSite();
-  if (isLoading) {
+  const { data: site, error, refetch } = useBrowseSite({ defaultErrorHandler: false });
+  if (!site) {
     return (
       <Centered>
-        <LoadingIndicator size="md" />
+        {error ? (
+          <Stack align="center" gap="md">
+            <Text tone="secondary">
+              {getErrorMessage(
+                error,
+                'Couldn’t load the site’s address, which opening an app needs.',
+              )}
+            </Text>
+            <Button variant="outline" onClick={() => void refetch()}>
+              Retry
+            </Button>
+          </Stack>
+        ) : (
+          <LoadingIndicator size="md" />
+        )}
       </Centered>
     );
   }
-  const ghostUrls = [window.location.href, ...(site ? [site.site.url] : [])];
+  const ghostUrls = [window.location.href, site.site.url];
   if (isGhostOrigin(appPageUrl(installation.manifest), ghostUrls)) {
     return <NotFramed installation={installation} />;
   }
