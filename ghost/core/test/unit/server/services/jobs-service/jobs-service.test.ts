@@ -2,8 +2,7 @@ import assert from 'node:assert/strict';
 import { describe, it, beforeEach } from 'vitest';
 import type {
   JobsBackendBase,
-  JobEnvelope,
-  JobRouting,
+  DispatchEnvelope,
   JobsStartOptions,
   JobProcessor,
   RecurringSchedule,
@@ -21,8 +20,8 @@ class FakeBackend implements JobsBackendBase {
   readonly requiredFns = ['start', 'enqueue', 'scheduleRecurring', 'shutdown'] as const;
   processor: JobProcessor | null = null;
   startOptions: JobsStartOptions | null = null;
-  enqueued: { envelope: JobEnvelope; routing?: JobRouting }[] = [];
-  recurring: { envelope: JobEnvelope; schedule: RecurringSchedule; routing?: JobRouting }[] = [];
+  enqueued: { id: string; envelope: DispatchEnvelope }[] = [];
+  recurring: { envelope: DispatchEnvelope; schedule: RecurringSchedule }[] = [];
   shutdownCalls: (JobsShutdownOptions | undefined)[] = [];
 
   start(options: JobsStartOptions): void {
@@ -30,25 +29,24 @@ class FakeBackend implements JobsBackendBase {
     this.startOptions = options;
   }
 
-  enqueue(envelope: JobEnvelope, routing?: JobRouting): void {
-    this.enqueued.push({ envelope, routing });
+  enqueue(id: string, envelope: DispatchEnvelope): void {
+    this.enqueued.push({ id, envelope });
   }
 
-  scheduleRecurring(
-    envelope: JobEnvelope,
-    schedule: RecurringSchedule,
-    routing?: JobRouting,
-  ): void {
-    this.recurring.push({ envelope, schedule, routing });
+  scheduleRecurring(envelope: DispatchEnvelope, schedule: RecurringSchedule): void {
+    this.recurring.push({ envelope, schedule });
   }
 
   shutdown(options?: JobsShutdownOptions): void {
     this.shutdownCalls.push(options);
   }
 
+  // A backend unwraps `payload.job` into the processor's JobEnvelope; the fake
+  // does the same so delivery tests see the rehydrated job, not the envelope.
   async deliver(index = 0): Promise<void> {
     assert.ok(this.processor, 'processor must be wired via start()');
-    await this.processor!(this.enqueued[index]!.envelope);
+    const job = this.enqueued[index]!.envelope.payload.job as { type: string; payload: string };
+    await this.processor!(job);
   }
 }
 
@@ -182,15 +180,19 @@ describe('JobsService', function () {
   });
 
   describe('dispatch', function () {
-    it('enqueues a {type, payload} envelope, not the live instance', async function () {
+    it('enqueues a versioned dispatch envelope with a dispatch id, not the live instance', async function () {
       const service = makeService();
       await service.dispatch(new GreetJob({ name: 'Ada' }));
 
       assert.equal(backend.enqueued.length, 1);
-      const envelope = backend.enqueued[0]!.envelope;
-      assert.equal(envelope.type, 'greet');
-      assert.equal(typeof envelope.payload, 'string');
-      assert.deepEqual(JSON.parse(envelope.payload), { name: 'Ada' });
+      const { id, envelope } = backend.enqueued[0]!;
+      assert.equal(typeof id, 'string');
+      assert.ok(id.length > 0, 'a dispatch id is assigned');
+      assert.equal(envelope.version, 1);
+      const job = envelope.payload.job as { type: string; payload: string };
+      assert.equal(job.type, 'greet');
+      assert.equal(typeof job.payload, 'string');
+      assert.deepEqual(JSON.parse(job.payload), { name: 'Ada' });
     });
 
     it('delivers a rehydrated instance to the handler, never the dispatched object', async function () {
@@ -239,22 +241,23 @@ describe('JobsService', function () {
   });
 
   describe('queue routing', function () {
-    it('routes a dispatched job to its handler-declared queue', async function () {
+    it('resolves a dispatched job to its handler-declared queue in the envelope', async function () {
       const service = makeService();
       service.handle(GreetJob, async () => {}, { queue: 'greetings', concurrency: 2 });
 
       await service.dispatch(new GreetJob({ name: 'Ada' }));
 
-      assert.deepEqual(backend.enqueued[0]!.routing, { queue: 'greetings' });
+      assert.deepEqual(backend.enqueued[0]!.envelope.payload.routing, { queue: 'greetings' });
     });
 
-    it('routing stays out of the envelope: no extra envelope fields from queue config', async function () {
+    it('routing stays out of the job envelope: no extra fields on payload.job', async function () {
       const service = makeService();
       service.handle(GreetJob, async () => {}, { queue: 'greetings', concurrency: 2 });
 
       await service.dispatch(new GreetJob({ name: 'Ada' }));
 
-      assert.deepEqual(Object.keys(backend.enqueued[0]!.envelope).sort(), ['payload', 'type']);
+      const job = backend.enqueued[0]!.envelope.payload.job as Record<string, unknown>;
+      assert.deepEqual(Object.keys(job).sort(), ['payload', 'type']);
     });
 
     it('dispatches with no routing when the type declares no queue', async function () {
@@ -263,7 +266,7 @@ describe('JobsService', function () {
 
       await service.dispatch(new GreetJob({ name: 'Ada' }));
 
-      assert.equal(backend.enqueued[0]!.routing, undefined);
+      assert.equal(backend.enqueued[0]!.envelope.payload.routing, undefined);
     });
 
     it('hands declared queues to the backend on start', async function () {
@@ -285,7 +288,7 @@ describe('JobsService', function () {
 
       await service.scheduleRecurring(new GreetJob({ name: 'cron' }), { cron: '0 0 3 * * *' });
 
-      assert.deepEqual(backend.recurring[0]!.routing, { queue: 'greetings' });
+      assert.deepEqual(backend.recurring[0]!.envelope.payload.routing, { queue: 'greetings' });
     });
   });
 
@@ -367,7 +370,8 @@ describe('JobsService', function () {
       await service.scheduleRecurring(new GreetJob({ name: 'cron' }), { cron: '0 0 3 * * *' });
 
       assert.equal(backend.recurring.length, 1);
-      assert.equal(backend.recurring[0]!.envelope.type, 'greet');
+      const job = backend.recurring[0]!.envelope.payload.job as { type: string };
+      assert.equal(job.type, 'greet');
       assert.equal(backend.recurring[0]!.schedule.cron, '0 0 3 * * *');
     });
 

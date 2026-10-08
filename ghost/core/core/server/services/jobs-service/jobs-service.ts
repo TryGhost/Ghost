@@ -1,9 +1,10 @@
 import errors from '@tryghost/errors';
 import cronValidate from 'cron-validate';
+import ObjectID from 'bson-objectid';
 import type {
   JobsBackendBase,
   JobEnvelope,
-  JobRouting,
+  DispatchEnvelope,
   JobsShutdownOptions,
   QueueDeclaration,
   RecurringSchedule,
@@ -109,11 +110,6 @@ export class JobsService {
     this.#queueByType.set(type, queue);
   }
 
-  #routingFor(type: string): JobRouting | undefined {
-    const queue = this.#queueByType.get(type);
-    return queue === undefined ? undefined : { queue };
-  }
-
   /**
    * Resolves when the backend's enqueue call completes, without waiting for the
    * handler to run. Enqueue errors reject this promise. Resolution does not
@@ -121,13 +117,16 @@ export class JobsService {
    */
   async dispatch(job: Job): Promise<void> {
     const envelope = this.#buildEnvelope(job);
-    await this.#backend.enqueue(envelope, this.#routingFor(envelope.type));
+    // A fresh dispatch ID per submission; a durable backend dedupes an
+    // at-least-once redelivery on it, and the in-memory backend ignores it.
+    const id = new ObjectID().toHexString();
+    await this.#backend.enqueue(id, envelope);
   }
 
   async scheduleRecurring(job: Job, schedule: RecurringSchedule): Promise<void> {
     this.#assertValidCron(schedule.cron);
     const envelope = this.#buildEnvelope(job);
-    await this.#backend.scheduleRecurring(envelope, schedule, this.#routingFor(envelope.type));
+    await this.#backend.scheduleRecurring(envelope, schedule);
   }
 
   // later.parse.cron does not strictly validate: it silently coerces a
@@ -166,8 +165,19 @@ export class JobsService {
     this.#queues.clear();
   }
 
-  #buildEnvelope(job: Job): JobEnvelope {
-    return { type: this.#typeOf(job), payload: JSON.stringify(job) };
+  // Builds the dispatch envelope the backend (and later the outbox) carries:
+  // the serialised job under `payload.job`, with its handler-declared lane
+  // resolved into `payload.routing` so a retry preserves the original lane. An
+  // unroutable type omits routing, selecting the default lane.
+  #buildEnvelope(job: Job): DispatchEnvelope {
+    const type = this.#typeOf(job);
+    const serialised = JSON.stringify(job);
+    const queue = this.#queueByType.get(type);
+    const payload: DispatchEnvelope['payload'] =
+      queue === undefined
+        ? { job: { type, payload: serialised } }
+        : { job: { type, payload: serialised }, routing: { queue } };
+    return { version: 1, payload };
   }
 
   #typeOf(job: Job): string {

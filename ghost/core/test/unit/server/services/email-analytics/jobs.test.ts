@@ -135,7 +135,9 @@ describe.each(pipelines)('$type migration', function ({ JobClass, type, wrapperN
   it('lets the real backend deduplicate concurrent recurring registration without fetching immediately', async function () {
     vi.stubEnv('NODE_ENV', 'production');
     const backend = new InMemoryJobsBackend();
-    const enqueue = sinon.spy(backend, 'enqueue');
+    // A recurring tick pushes the unwrapped job straight onto its lane rather
+    // than going back through enqueue, so the single fire is observed there.
+    const pushToLane = sinon.spy(backend as never, '_pushToLane');
     const jobsService = new JobsService({ backend, logging: { info() {}, error() {} } });
     const newsletters = { startFetch: sinon.stub().resolves() };
     registerJobHandlers({ jobsService, [wrapperName]: newsletters });
@@ -156,7 +158,7 @@ describe.each(pipelines)('$type migration', function ({ JobClass, type, wrapperN
       sinon.assert.notCalled(newsletters.startFetch);
       await clock.tickAsync(300000);
       sinon.assert.calledOnce(newsletters.startFetch);
-      sinon.assert.calledOnce(enqueue);
+      sinon.assert.calledOnce(pushToLane);
     } finally {
       clock.restore();
       await jobsService.shutdown();

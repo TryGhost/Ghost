@@ -1,3 +1,29 @@
+// Any value that survives a JSON round-trip. The dispatch envelope's payload is
+// constrained to this so the outbox can store it and the relay forward it
+// verbatim, whatever a future job payload looks like.
+export type JsonValue =
+  | null
+  | boolean
+  | number
+  | string
+  | JsonValue[]
+  | { [key: string]: JsonValue };
+
+// What the jobs service submits and a durable outbox stores and forwards
+// unchanged. The relay never interprets the payload or translates it per
+// backend. For existing jobs the payload is
+// `{job: {type, payload}, routing?: {queue}}` - `job` is exactly the
+// JobEnvelope delivered to the processor, and routing is optional (omitted =
+// the default lane). A future batch can be represented inside this payload
+// without changing the table, the relay, or this contract.
+export interface DispatchEnvelope {
+  version: 1;
+  payload: { [key: string]: JsonValue };
+}
+
+// Delivery to the registered handler. A backend unwraps `DispatchEnvelope`'s
+// `payload.job` into this before calling the processor, so delivery behaviour
+// is unchanged by the envelope reshape.
 export interface JobEnvelope {
   type: string;
   payload: string;
@@ -6,7 +32,8 @@ export interface JobEnvelope {
 // Routing is metadata about where a job runs, never what runs it: delivery
 // must always be keyed on the envelope's type, so a job is processable
 // whichever queue it arrives on (deploys can move types between queues while
-// older envelopes are still in flight).
+// older envelopes are still in flight). It now travels inside the dispatch
+// envelope's payload rather than as a separate submission argument.
 export interface JobRouting {
   queue?: string;
 }
@@ -49,12 +76,16 @@ export abstract class JobsBackendBase {
 
   abstract start(options: JobsStartOptions): void | Promise<void>;
 
-  abstract enqueue(envelope: JobEnvelope, routing?: JobRouting): void | Promise<void>;
+  // `id` is the stable dispatch ID, identical on every outbox retry, so a
+  // durable backend can dedupe an at-least-once redelivery on it.
+  abstract enqueue(id: string, envelope: DispatchEnvelope): void | Promise<void>;
 
+  // A recurring registration is not a work instance - each occurrence is minted
+  // by the backend - so it carries no dispatch ID. Identity for
+  // first-registration-wins dedupe is `envelope.payload.job.type`.
   abstract scheduleRecurring(
-    envelope: JobEnvelope,
+    envelope: DispatchEnvelope,
     schedule: RecurringSchedule,
-    routing?: JobRouting,
   ): void | Promise<void>;
 
   abstract shutdown(options?: JobsShutdownOptions): void | Promise<void>;
