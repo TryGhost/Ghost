@@ -480,7 +480,8 @@ reported as an error. A throwing subscriber or slug listener is reported as an
 error, and so is a slug edit the generator rejected. A local copy that storage
 refused is reported with a `localRevisions` tag naming why: `quotaExceeded` when
 older copies had to make room, `quotaExceededNoSpace` when nothing could, and
-`saveError` for any other failure.
+`saveError` for any other failure. Making room is a message, not an error; only
+the other two are faults.
 
 Sentry receives these through the editor's own reporter, with the response
 status and URL when the transport answered. Validation failures, host limits, a
