@@ -198,6 +198,16 @@ for is refused over it.
 The header row's actions line up with the settings toggle. A status that wraps
 keeps its first line level with the back link's label and grows downward.
 
+Below Tailwind's `sm` breakpoint the status stays on the header row beside the
+back link, and the header's actions move into a "More actions" menu beside the
+settings toggle. `editor-header-actions.tsx` renders the inline buttons and the
+menu items from one list, hiding whichever does not apply with `display: none`,
+so both keep the same order, disabled states, refusals and flows, and the
+keyboard shortcuts are unchanged. The menu names no shortcuts. An item runs once
+the menu has closed and handed focus back, so a refused action's field keeps
+focus. A failed publish inputs load shows its message above a Retry item there,
+above the actions it disables.
+
 ## Link suggestions
 
 The link toolbar loads content search indexes on first use and shares them with

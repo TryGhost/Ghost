@@ -40,20 +40,22 @@ function fakeLongDocument(
   });
 }
 
-function controls(postType: 'post' | 'page') {
+/** Below the small breakpoint the header's actions are one menu button. */
+function controls(postType: 'post' | 'page', { narrow = false } = {}) {
   return [
     editorScreen.backLink(postType),
     editorScreen.status(),
-    editorScreen.previewButton(),
-    editorScreen.publishButton(),
+    ...(narrow
+      ? [editorScreen.moreActionsButton()]
+      : [editorScreen.previewButton(), editorScreen.publishButton()]),
     editorScreen.settingsToggle(),
     editorScreen.wordCount(),
     editorScreen.helpLink(),
   ];
 }
 
-function positions(postType: 'post' | 'page') {
-  return controls(postType).map((control) => {
+function positions(postType: 'post' | 'page', options?: { narrow?: boolean }) {
+  return controls(postType, options).map((control) => {
     const { x, y, width, height } = control.element().getBoundingClientRect();
     return { x, y, width, height };
   });
@@ -260,23 +262,54 @@ function failPublishInputs() {
   );
 }
 
-/** Every header action lies wholly on screen and clear of the floating settings toggle. */
-function expectHeaderActionsOnScreen(buttons: number) {
-  const toggle = editorScreen.settingsToggle().element();
-  const actions = editorScreen.headerActions().getByRole('button').elements();
-  expect(actions).toHaveLength(buttons);
-  for (const action of [editorScreen.backLink('post').element(), ...actions, toggle]) {
-    const { left, top, right, bottom } = action.getBoundingClientRect();
+/**
+ * Below the small breakpoint the header row holds the back link, the status and,
+ * beside the settings toggle, a menu button in place of the header's actions.
+ */
+function expectSmallScreenHeaderRow() {
+  const back = editorScreen.backLink('post').element().getBoundingClientRect();
+  const status = editorScreen.status().element().getBoundingClientRect();
+  const more = editorScreen.moreActionsButton().element().getBoundingClientRect();
+  const toggle = editorScreen.settingsToggle().element().getBoundingClientRect();
+  // The header's only action button is the menu; the inline copies are not reachable.
+  expect(editorScreen.headerActions().getByRole('button').elements()).toEqual([
+    editorScreen.moreActionsButton().element(),
+  ]);
+  for (const { left, top, right, bottom } of [back, status, more, toggle]) {
     expect(left).toBeGreaterThanOrEqual(0);
     expect(top).toBeGreaterThanOrEqual(0);
     expect(right).toBeLessThanOrEqual(window.innerWidth);
     expect(bottom).toBeLessThanOrEqual(window.innerHeight);
   }
-  const toggleBounds = toggle.getBoundingClientRect();
-  for (const action of actions) {
-    const { right, top } = action.getBoundingClientRect();
-    expect(right <= toggleBounds.left || top >= toggleBounds.bottom).toBe(true);
-  }
+  // The status sits on the header row, between the back link and the menu.
+  expect(status.top).toBe(back.top);
+  expect(status.left).toBeGreaterThan(back.right);
+  expect(status.right).toBeLessThan(more.left);
+  // The menu is the same size as the toggle, directly to its left on the same line.
+  expect(more.width).toBe(toggle.width);
+  expect(more.height).toBe(toggle.height);
+  expect(more.top).toBe(toggle.top);
+  expect(toggle.left - more.right).toBeGreaterThan(0);
+  expect(toggle.left - more.right).toBeLessThanOrEqual(12);
+}
+
+/** The open "More actions" menu's items, each exactly its label. */
+function moreActionsLabels() {
+  return editorScreen
+    .moreActionsMenu()
+    .getByRole('menuitem')
+    .elements()
+    .map((item) => item.textContent?.trim());
+}
+
+/** The colour Shade's success token resolves to in the current theme. */
+function successColour() {
+  const probe = document.createElement('span');
+  probe.className = 'text-state-success';
+  document.body.append(probe);
+  const colour = getComputedStyle(probe).color;
+  probe.remove();
+  return colour;
 }
 
 function expectTranslucentSurface(element: Element) {
@@ -432,12 +465,15 @@ describe('Floating editor shell', () => {
         boot: { browseMe: { response: me } },
       });
       await expect.element(editorScreen.body()).toBeVisible();
-      await expect.element(editorScreen.publishButton()).toBeEnabled();
+      await expect.element(editorScreen.moreActionsButton()).toBeVisible();
       await expect
         .poll(() => document.documentElement.classList.contains('dark'))
         .toBe(theme === 'dark');
+      expectSmallScreenHeaderRow();
+      await expect(editorScreen.previewButton()).toHaveCount(0);
+      await expect(editorScreen.publishButton()).toHaveCount(0);
 
-      for (const { x, y, width, height } of positions('post')) {
+      for (const { x, y, width, height } of positions('post', { narrow: true })) {
         expect(x).toBeGreaterThanOrEqual(0);
         expect(y).toBeGreaterThanOrEqual(0);
         expect(x + width).toBeLessThanOrEqual(window.innerWidth);
@@ -466,11 +502,11 @@ describe('Floating editor shell', () => {
       expect(back.textContent?.trim()).toBe('Posts');
       expect(back.getBoundingClientRect().width).toBe(toggle.width);
 
-      const before = positions('post');
+      const before = positions('post', { narrow: true });
       const pane = editorScreen.scrollPane();
       pane.scrollTo({ top: 700 });
       await expect.poll(() => pane.scrollTop).toBe(700);
-      expect(positions('post')).toEqual(before);
+      expect(positions('post', { narrow: true })).toEqual(before);
 
       const documentWidth = editorScreen.root().element().getBoundingClientRect().width;
       await editorScreen.settingsToggle().click();
@@ -497,13 +533,13 @@ describe('Floating editor shell', () => {
   );
 
   it.each([
-    { status: 'published', inputs: 'loaded' },
-    { status: 'scheduled', inputs: 'loaded' },
-    { status: 'published', inputs: 'failed' },
-    { status: 'scheduled', inputs: 'failed' },
+    { status: 'published', inputs: 'loaded', action: 'Unpublish' },
+    { status: 'scheduled', inputs: 'loaded', action: 'Unschedule' },
+    { status: 'published', inputs: 'failed', action: 'Unpublish' },
+    { status: 'scheduled', inputs: 'failed', action: 'Unschedule' },
   ] as const)(
-    'keeps a $status post’s actions on a narrow screen with publish inputs $inputs',
-    async ({ status, inputs }) => {
+    'keeps a $status post’s actions in a menu on a narrow screen with publish inputs $inputs',
+    async ({ status, inputs, action }) => {
       await page.viewport(390, 844);
       fakeLongDocument('post', status);
       if (inputs === 'failed') {
@@ -511,13 +547,39 @@ describe('Floating editor shell', () => {
       }
       await renderAdminApp('/editor/post/abc123', FLAG_ON);
       await expect.element(editorScreen.body()).toBeVisible();
-      await expect.element(editorScreen.updateButton()).toBeVisible();
+      await expect.element(editorScreen.moreActionsButton()).toBeVisible();
+      expectSmallScreenHeaderRow();
+      await expect(editorScreen.updateButton()).toHaveCount(0);
+      if (status === 'scheduled') {
+        // Scheduled reads in the success colour at every width.
+        const scheduled = editorScreen.status().getByText('Scheduled', { exact: true });
+        expect(getComputedStyle(scheduled.element()).color).toBe(successColour());
+      }
       if (inputs === 'failed') {
-        await expect.element(editorScreen.publishInputsError()).toBeVisible();
+        // The failure's inline copy waits for a wider screen; the menu explains it.
+        await expect.element(editorScreen.publishInputsError()).toBeInTheDocument();
+        await expect.element(editorScreen.publishInputsError()).not.toBeVisible();
       }
 
-      // Unpublish or Unschedule and Update, plus Retry when the load failed.
-      expectHeaderActionsOnScreen(inputs === 'failed' ? 3 : 2);
+      await editorScreen.moreActionsButton().click();
+      const menu = editorScreen.moreActionsMenu();
+      await expect.element(menu).toBeVisible();
+      await expect
+        .poll(moreActionsLabels)
+        .toEqual(inputs === 'failed' ? ['Retry', action, 'Update'] : [action, 'Update']);
+      if (inputs === 'failed') {
+        // The same message the wider header shows beside its actions.
+        const message = editorScreen.publishInputsError().element().textContent ?? '';
+        expect(message).not.toBe('');
+        await expect.element(menu.getByText(message, { exact: true })).toBeVisible();
+        await expect
+          .element(editorScreen.moreActionsItem(action))
+          .toHaveAttribute('aria-disabled', 'true');
+      }
+      const { left, right, bottom } = menu.element().getBoundingClientRect();
+      expect(left).toBeGreaterThanOrEqual(0);
+      expect(right).toBeLessThanOrEqual(window.innerWidth);
+      expect(bottom).toBeLessThanOrEqual(window.innerHeight);
       expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(window.innerWidth);
     },
   );
@@ -917,9 +979,15 @@ describe('Floating editor shell', () => {
     expect(bounds.right).toBeLessThanOrEqual(window.innerWidth);
     expect(status.scrollWidth).toBeLessThanOrEqual(status.clientWidth);
     expect(status.scrollHeight).toBeLessThanOrEqual(status.clientHeight);
-    expect(bounds.top).toBeGreaterThanOrEqual(
-      editorScreen.publishButton().element().getBoundingClientRect().bottom,
+    // It wraps on the header row, between the back link and the menu, in red.
+    const back = editorScreen.backLink('post').element().getBoundingClientRect();
+    expect(bounds.top).toBe(back.top);
+    expect(bounds.left).toBeGreaterThan(back.right);
+    expect(bounds.right).toBeLessThan(
+      editorScreen.moreActionsButton().element().getBoundingClientRect().left,
     );
+    expect(bounds.height).toBeGreaterThan(back.height);
+    await expect.element(editorScreen.saveError()).toHaveClass('text-destructive');
     expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(window.innerWidth);
   });
 

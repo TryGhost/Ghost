@@ -107,7 +107,7 @@ function EditorHeader({
   return (
     <Grid
       align="start"
-      className="grid-cols-[auto_minmax(0,1fr)] pt-[calc(var(--spacing)*5+1px)] pr-[calc(var(--spacing)*(4+2*var(--editor-settings-progress,0)))] pb-3 pl-4 editor-settings-motion-[padding-right] max-[500px]:pt-3 max-[500px]:pr-[calc(var(--spacing)*(1+2*var(--editor-settings-progress,0))-1px)] max-[500px]:pl-3 sm:grid-cols-[auto_minmax(0,1fr)_auto] [&_a]:pointer-events-auto [&_button]:pointer-events-auto"
+      className="grid-cols-[auto_minmax(0,1fr)_auto] pt-[calc(var(--spacing)*5+1px)] pr-[calc(var(--spacing)*(4+2*var(--editor-settings-progress,0)))] pb-3 pl-4 editor-settings-motion-[padding-right] max-[500px]:pt-3 max-[500px]:pr-[calc(var(--spacing)*(1+2*var(--editor-settings-progress,0))-1px)] max-[500px]:pl-3 [&_a]:pointer-events-auto [&_button]:pointer-events-auto"
       gap="sm"
     >
       <PageHeader.Action
@@ -424,7 +424,7 @@ function EditorContent({
                   onRetrySave={session.retrySave}
                 />
               ) : null}
-              <PageHeader.ActionGroup className="ml-auto gap-x-[calc(var(--spacing)*3*(1-var(--editor-settings-progress)))] editor-settings-motion-[column-gap] max-sm:col-start-2 max-sm:row-start-1 sm:col-start-3">
+              <PageHeader.ActionGroup className="col-start-3 ml-auto gap-x-[calc(var(--spacing)*3*(1-var(--editor-settings-progress)))] editor-settings-motion-[column-gap]">
                 <EditorHeaderActions
                   currentUser={currentUser}
                   offersEmailRetry={offersEmailRetry}

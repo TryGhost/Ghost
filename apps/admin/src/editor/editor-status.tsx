@@ -290,7 +290,7 @@ export function EditorStatus({
           shape: 'pill',
           isAdmin7,
         }),
-        'pointer-events-auto h-auto max-w-full min-w-0 items-start justify-self-start bg-background/80 px-3 text-(length:--text-control) whitespace-normal text-text-secondary backdrop-blur-sm max-sm:col-span-2 max-sm:row-start-2',
+        'pointer-events-auto h-auto max-w-full min-w-0 items-start justify-self-start bg-background/80 px-3 text-(length:--text-control) whitespace-normal text-text-secondary backdrop-blur-sm',
         isAdmin7
           ? 'min-h-(--control-height) py-[calc((var(--control-height)-1lh)/2)]'
           : 'min-h-7 py-[calc((--spacing(7)-1lh)/2)]',

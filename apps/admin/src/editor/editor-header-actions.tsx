@@ -1,15 +1,24 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useEmberOwnedRouteMatcher } from '@/routes';
 import { useNavigate } from '@tryghost/admin-x-framework';
-import { Button } from '@tryghost/shade/components';
+import {
+  Button,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuTrigger,
+} from '@tryghost/shade/components';
 import { useShade } from '@tryghost/shade/app';
 import { PageHeader } from '@tryghost/shade/patterns';
 import { Inline, Text } from '@tryghost/shade/primitives';
+import { LucideIcon, cn } from '@tryghost/shade/utils';
 import { getSettingValue } from '@tryghost/admin-x-framework/api/settings';
 import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import { isContributorUser, type User } from '@tryghost/admin-x-framework/api/users';
 import {
   editorHeaderActions,
+  editorMoreActionsButton,
   editorPublishInputsError,
 } from '@tryghost/test-data/selectors/editor';
 import type { PostType } from './card-config';
@@ -73,6 +82,172 @@ async function requireSaved(pending: Promise<SaveCompletion>): Promise<void> {
   }
 }
 
+/**
+ * One header control. From the small breakpoint up it is a button in the header
+ * row; below it, an item in the header's "More actions" menu. Both are rendered
+ * from the same item, so they cannot drift apart.
+ */
+type HeaderItem =
+  | {
+      kind: 'action';
+      id: string;
+      label: string;
+      onSelect: () => void;
+      disabled?: boolean;
+      shortcut?: string;
+      /** The post's main action, Publish or Update. */
+      emphasis?: boolean;
+      /** Unpublish and Unschedule keep their quieter button. */
+      quiet?: boolean;
+      /** A contributor's Save keeps its plain button. */
+      plain?: boolean;
+    }
+  | { kind: 'inputs-error'; id: string; message: string; onRetry: () => void };
+
+const EMPHASIS_BUTTON =
+  'font-semibold text-state-success hover:text-state-success disabled:text-text-secondary/60 disabled:opacity-100';
+
+/**
+ * The header's items: inline buttons from the small breakpoint up, and below it
+ * one "More actions" menu beside the settings toggle. The copy that does not
+ * apply is display: none, so neither the keyboard nor a screen reader reaches it.
+ */
+function HeaderItems({ items }: { items: HeaderItem[] }) {
+  const { isAdmin7 } = useShade();
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  // An item runs once the menu has closed and handed focus back, so a refusal's
+  // field or an opened flow keeps the focus the menu would otherwise take back.
+  const selected = useRef<(() => void) | null>(null);
+  const select = (action: () => void) => () => {
+    selected.current = action;
+  };
+
+  if (!items.length) {
+    return null;
+  }
+
+  return (
+    <>
+      {items.map((item) =>
+        item.kind === 'inputs-error' ? (
+          <InlineInputsError key={item.id} item={item} />
+        ) : item.plain ? (
+          <Button
+            key={item.id}
+            className="max-sm:hidden"
+            disabled={item.disabled}
+            size={isAdmin7 ? 'default' : 'sm'}
+            onClick={item.onSelect}
+          >
+            {item.label}
+          </Button>
+        ) : (
+          <PageHeader.Action
+            key={item.id}
+            className={cn(
+              'bg-background/80 backdrop-blur-sm max-sm:hidden',
+              item.emphasis && EMPHASIS_BUTTON,
+            )}
+            disabled={item.disabled}
+            fallbackSize="sm"
+            fallbackVariant={item.quiet ? 'ghost' : undefined}
+            label={item.label}
+            shortcut={item.shortcut}
+            onClick={item.onSelect}
+          >
+            {item.label}
+          </PageHeader.Action>
+        ),
+      )}
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <PageHeader.Action
+            ref={triggerRef}
+            className="bg-background/80 backdrop-blur-sm sm:hidden"
+            fallbackSize="sm"
+            fallbackVariant="ghost"
+            label={editorMoreActionsButton}
+            // As on the settings toggle beside it: a touch screen has no hover to explain it.
+            tooltip={false}
+            iconOnly
+          >
+            <LucideIcon.Ellipsis />
+          </PageHeader.Action>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent
+          align="end"
+          className="max-w-(--radix-dropdown-menu-content-available-width)"
+          sideOffset={8}
+          onCloseAutoFocus={(event) => {
+            const action = selected.current;
+            if (!action) {
+              return;
+            }
+            selected.current = null;
+            event.preventDefault();
+            triggerRef.current?.focus();
+            action();
+          }}
+        >
+          {items.map((item) =>
+            item.kind === 'inputs-error' ? (
+              <MenuInputsError key={item.id} item={item} onRetry={select(item.onRetry)} />
+            ) : (
+              <DropdownMenuItem
+                key={item.id}
+                className={cn(
+                  item.emphasis && 'font-semibold text-state-success focus:text-state-success',
+                )}
+                disabled={item.disabled}
+                onSelect={select(item.onSelect)}
+              >
+                {/* Only the label: a small screen's keyboard, if any, has no use for the hint. */}
+                {item.label}
+              </DropdownMenuItem>
+            ),
+          )}
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </>
+  );
+}
+
+type InputsErrorItem = Extract<HeaderItem, { kind: 'inputs-error' }>;
+
+function InlineInputsError({ item }: { item: InputsErrorItem }) {
+  const { isAdmin7 } = useShade();
+  return (
+    <>
+      <Text
+        className="bg-background/80 text-destructive backdrop-blur-sm max-sm:hidden"
+        data-testid={editorPublishInputsError}
+        role="alert"
+        size="sm"
+      >
+        {item.message}
+      </Text>
+      <Button
+        className="bg-background/80 backdrop-blur-sm max-sm:hidden"
+        size={isAdmin7 ? 'default' : 'sm'}
+        variant="ghost"
+        onClick={item.onRetry}
+      >
+        Retry
+      </Button>
+    </>
+  );
+}
+
+/** In the menu the failure explains the disabled actions beneath it, and Retry follows it. */
+function MenuInputsError({ item, onRetry }: { item: InputsErrorItem; onRetry: () => void }) {
+  return (
+    <>
+      <DropdownMenuLabel className="font-normal text-destructive">{item.message}</DropdownMenuLabel>
+      <DropdownMenuItem onSelect={onRetry}>Retry</DropdownMenuItem>
+    </>
+  );
+}
+
 export interface EditorHeaderActionsProps {
   session: EditorSessionHandle;
   /** Built by the screen, which derives the status line's retry from it too. */
@@ -107,7 +282,6 @@ export function EditorHeaderActions({
   offersEmailRetry,
   revealInvalidField,
 }: EditorHeaderActionsProps) {
-  const { isAdmin7 } = useShade();
   const { persistedId } = session;
   const record = session.loadedRecord;
   const [previewOpen, setPreviewOpen] = useState(false);
@@ -195,28 +369,33 @@ export function EditorHeaderActions({
     onOpenChange: setPreviewOpen,
   };
 
+  const previewItem: HeaderItem | null = isDraft
+    ? {
+        kind: 'action',
+        id: 'preview',
+        label: 'Preview',
+        shortcut: previewShortcutLabel(),
+        onSelect: openPreview,
+      }
+    : null;
+
   return (
     <Inline data-testid={editorHeaderActions} gap="md" justify="end" wrap>
-      {isDraft ? (
-        <PageHeader.Action
-          className="bg-background/80 backdrop-blur-sm"
-          fallbackSize="sm"
-          label="Preview"
-          shortcut={previewShortcutLabel()}
-          onClick={openPreview}
-        >
-          Preview
-        </PageHeader.Action>
-      ) : null}
       {isContributor ? (
         <>
-          <Button
-            disabled={isSaving}
-            size={isAdmin7 ? 'default' : 'sm'}
-            onClick={() => void contributorSave.run()}
-          >
-            {SAVE_LABELS[contributorSave.phase]}
-          </Button>
+          <HeaderItems
+            items={[
+              ...(previewItem ? [previewItem] : []),
+              {
+                kind: 'action',
+                id: 'save',
+                label: SAVE_LABELS[contributorSave.phase],
+                disabled: isSaving,
+                plain: true,
+                onSelect: () => void contributorSave.run(),
+              },
+            ]}
+          />
           {isDraft ? <PostPreviewModal {...preview} /> : null}
         </>
       ) : (
@@ -228,6 +407,7 @@ export function EditorHeaderActions({
           openFlow={openFlow}
           post={post}
           preview={preview}
+          previewItem={previewItem}
           refuseInvalid={refuseInvalid}
           revealInvalidField={revealInvalidField}
           session={session}
@@ -250,6 +430,8 @@ interface PublishActionsProps {
   offersEmailRetry: boolean;
   openFlow: OpenFlow;
   preview: HeaderPreviewProps;
+  /** The draft's Preview, which comes first. */
+  previewItem: HeaderItem | null;
   /** Refuses the action while a field breaks its rule; true when it did. */
   refuseInvalid: () => boolean;
   revealInvalidField: () => InvalidField | null;
@@ -271,6 +453,7 @@ function PublishActions({
   offersEmailRetry,
   openFlow,
   preview,
+  previewItem,
   refuseInvalid,
   revealInvalidField,
   onOpenFlow,
@@ -278,7 +461,6 @@ function PublishActions({
 }: PublishActionsProps) {
   const navigate = useNavigate();
   const isEmberOwned = useEmberOwnedRouteMatcher();
-  const { isAdmin7 } = useShade();
   const inputs = usePublishInputs();
   const limits = usePublishLimits();
   const { data: settingsData } = useEditorSettings();
@@ -418,86 +600,77 @@ function PublishActions({
     });
   }, [inputsSessionExpired, requestReauth, retryInputsNow]);
 
-  const inputsError =
-    inputsBlockActions && inputs.error ? (
-      <>
-        <Text
-          className="bg-background/80 text-destructive backdrop-blur-sm"
-          data-testid={editorPublishInputsError}
-          role="alert"
-          size="sm"
-        >
-          {inputs.error.message}
-        </Text>
-        <Button
-          className="bg-background/80 backdrop-blur-sm"
-          size={isAdmin7 ? 'default' : 'sm'}
-          variant="ghost"
-          onClick={retryPublishInputs}
-        >
-          Retry
-        </Button>
-      </>
-    ) : null;
+  const inputsError: HeaderItem[] =
+    inputsBlockActions && inputs.error
+      ? [
+          {
+            kind: 'inputs-error',
+            id: 'inputs-error',
+            message: inputs.error.message,
+            onRetry: retryPublishInputs,
+          },
+        ]
+      : [];
+  const unpublishLabel = post.status === 'scheduled' ? 'Unschedule' : 'Unpublish';
+  const items: HeaderItem[] = isDraft
+    ? [
+        ...(previewItem ? [previewItem] : []),
+        ...inputsError,
+        {
+          kind: 'action',
+          id: 'publish',
+          label: 'Publish',
+          disabled: !inputs.isReady,
+          emphasis: true,
+          shortcut: publishShortcutLabel(),
+          onSelect: openPublishFlow,
+        },
+      ]
+    : [
+        ...inputsError,
+        ...(offersUpdateFlow
+          ? [
+              {
+                kind: 'action',
+                id: 'unpublish',
+                label: unpublishLabel,
+                // The update flow is built from the publish inputs; a click before
+                // they load would open it unasked once they do.
+                disabled: !inputs.isReady,
+                quiet: true,
+                onSelect: openUpdateFlow,
+              } satisfies HeaderItem,
+            ]
+          : []),
+        {
+          kind: 'action',
+          id: 'update',
+          label: UPDATE_LABELS[update.phase],
+          disabled: !session.isDirty() || isSaving,
+          emphasis: true,
+          onSelect: () => {
+            // The save refuses an invalid field itself, naming it in the status
+            // line; this only takes the writer to it.
+            revealInvalidField();
+            void update.run();
+          },
+        },
+      ];
 
   return (
     <>
+      <HeaderItems items={items} />
       {isDraft ? (
-        <>
-          {inputsError}
-          <PageHeader.Action
-            className="bg-background/80 font-semibold text-state-success backdrop-blur-sm hover:text-state-success disabled:text-text-secondary/60 disabled:opacity-100"
-            disabled={!inputs.isReady}
-            fallbackSize="sm"
-            label="Publish"
-            shortcut={publishShortcutLabel()}
-            onClick={openPublishFlow}
-          >
-            Publish
-          </PageHeader.Action>
-          <PostPreviewModal
-            {...preview}
-            animate={openFlow !== 'publish'}
-            fallbackNewsletterSlug={flowNewsletterSlug}
-            publishDisabled={!inputs.isReady}
-            onCloseAutoFocus={previewCloseAutoFocus}
-            onOpenChange={changePreviewOpen}
-            onPublish={publishFromPreview}
-          />
-        </>
-      ) : (
-        <>
-          {inputsError}
-          {offersUpdateFlow ? (
-            <PageHeader.Action
-              className="bg-background/80 backdrop-blur-sm"
-              // The update flow is built from the publish inputs; a click before
-              // they load would open it unasked once they do.
-              disabled={!inputs.isReady}
-              fallbackSize="sm"
-              fallbackVariant="ghost"
-              label={post.status === 'scheduled' ? 'Unschedule' : 'Unpublish'}
-              onClick={openUpdateFlow}
-            >
-              {post.status === 'scheduled' ? 'Unschedule' : 'Unpublish'}
-            </PageHeader.Action>
-          ) : null}
-          <PageHeader.Action
-            className="bg-background/80 font-semibold text-state-success backdrop-blur-sm hover:text-state-success disabled:text-text-secondary/60 disabled:opacity-100"
-            disabled={!session.isDirty() || isSaving}
-            fallbackSize="sm"
-            label={UPDATE_LABELS[update.phase]}
-            onClick={() => {
-              // The save refuses an invalid field itself, naming it in the status
-              // line; this only takes the writer to it.
-              revealInvalidField();
-              void update.run();
-            }}
-          >
-            {UPDATE_LABELS[update.phase]}
-          </PageHeader.Action>
-        </>
-      )}
+        <PostPreviewModal
+          {...preview}
+          animate={openFlow !== 'publish'}
+          fallbackNewsletterSlug={flowNewsletterSlug}
+          publishDisabled={!inputs.isReady}
+          onCloseAutoFocus={previewCloseAutoFocus}
+          onOpenChange={changePreviewOpen}
+          onPublish={publishFromPreview}
+        />
+      ) : null}
 
       {openFlow === 'publish' && everReady ? (
         <PublishFlowModal
