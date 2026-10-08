@@ -42,6 +42,8 @@ export interface PublishFlowModalProps {
   improveSendingUI?: boolean;
   /** The caller supplies the save engine's dispatch. */
   dispatch: PublishDispatcher;
+  /** Asks the writer to sign in again; resolves true once they have. */
+  requestReauth?: () => Promise<boolean>;
   onBeforePublish?: () => Promise<void>;
   onClose: () => void;
   /** Hears the flow's selected newsletter while it is open, and `undefined` once it closes. */
@@ -70,6 +72,7 @@ function KeyedPublishFlowModal({
   paywallImprovements = false,
   improveSendingUI,
   dispatch,
+  requestReauth,
   onBeforePublish,
   onClose,
   onNewsletterChange,
@@ -120,6 +123,7 @@ function KeyedPublishFlowModal({
       limits={limits}
       now={now}
       post={post}
+      requestReauth={requestReauth}
       showCompletion={showCompletion}
       site={site}
       siteTitle={siteTitle}
@@ -149,6 +153,7 @@ function PublishFlowDialog({
   siteTitle,
   improveSendingUI,
   dispatch,
+  requestReauth,
   onBeforePublish,
   onClose,
   onNewsletterChange,
@@ -163,6 +168,7 @@ function PublishFlowDialog({
     limits,
     now,
     dispatch,
+    requestReauth,
     showCompletion,
     improveSendingUI,
     onBeforePublish,

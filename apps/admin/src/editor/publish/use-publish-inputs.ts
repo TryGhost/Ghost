@@ -6,6 +6,7 @@ import { useCallback, useEffect, useMemo } from 'react';
 import { z } from 'zod';
 import { newslettersSearchParams } from '@/editor/browse-params';
 import { EDITOR_REQUEST_OPTIONS } from '@/editor/request-options';
+import { isSessionInvalid } from '@/editor/session/error-mapping';
 import { useEditorSettings, useSiteTimezone } from '@/editor/use-editor-settings';
 import { reportPublishFailure } from './report-publish-failure';
 import type { PublishSiteInput, PublishUserInput } from './publish-options';
@@ -133,6 +134,8 @@ export interface PublishInputs {
   isReady: boolean;
   /** A query or validation failure that the caller can render in place. */
   error: Error | null;
+  /** The failure is an expired session: signing in again, then `retry()`, is the way back. */
+  sessionExpired: boolean;
   /** Retries each API input owned by this adapter. */
   retry: () => void;
 }
@@ -148,9 +151,16 @@ function reportInputError(error: unknown): void {
   reportPublishFailure('publish-inputs', 'The publish settings could not be loaded.', { error });
 }
 
+export const PUBLISH_INPUTS_SESSION_EXPIRED = 'Your session expired. Retry to sign in again.';
+
 function publishInputError(error: unknown): Error | null {
   if (!error) {
     return null;
+  }
+
+  // The transport's "You are not authorised…" leaves the writer nowhere to go.
+  if (isSessionInvalid(error)) {
+    return new Error(PUBLISH_INPUTS_SESSION_EXPIRED, { cause: error });
   }
 
   return error instanceof Error ? error : new Error('The publish settings could not be loaded.');
@@ -286,6 +296,7 @@ export function usePublishInputs(): PublishInputs {
     timezone,
     isReady: assembled.isValid && !isLoading && !error,
     error,
+    sessionExpired: Boolean(queryError) && isSessionInvalid(queryError),
     retry,
   };
 }

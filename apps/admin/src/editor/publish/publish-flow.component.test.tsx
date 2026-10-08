@@ -8,6 +8,7 @@ import {
   fakeEmailPreview,
   fakeLabels,
   fakeTiers,
+  type EndpointCapture,
 } from '@test-utils/acceptance';
 import {
   publishRecipientFree,
@@ -1493,9 +1494,33 @@ describe('Publish flow', () => {
 
     await expect
       .element(publishScreen.emailError().getByRole('alert'))
-      .toHaveTextContent('You are not authorised to make this request.');
+      .toHaveTextContent('Your session expired. Try again to sign in.');
     expect(retryApi.requests).toHaveLength(1);
     expect(window.location.pathname).toBe(pathname);
+  });
+
+  it('asks for sign-in when an email retry finds the session gone, then sends it again', async () => {
+    fakeEmailPolling({ status: 'failed', error: 'Sending failed' }, { status: 'submitted' });
+    const expiredRetry = fakeAdminEndpoint('PUT', `/emails/${EMAIL_ID}/retry/`, SESSION_EXPIRED, {
+      status: 401,
+    });
+    let retryAfterSignIn: EndpointCapture | undefined;
+    // Signing in brings the session back, so the repeated retry is answered.
+    const requestReauth = vi.fn(() => {
+      retryAfterSignIn = fakeAdminEndpoint('PUT', `/emails/${EMAIL_ID}/retry/`, { emails: [] });
+      return Promise.resolve(true);
+    });
+    await renderPublishFlow({ requestReauth });
+
+    await publishScreen.continueButton().click();
+    await publishScreen.confirmButton().click();
+    await expect.element(publishScreen.emailError()).toHaveTextContent('Sending failed');
+    await publishScreen.retryEmailButton().click();
+
+    await expect.element(publishScreen.complete()).toBeVisible();
+    expect(requestReauth).toHaveBeenCalledTimes(1);
+    expect(expiredRetry.requests).toHaveLength(1);
+    expect(retryAfterSignIn?.requests).toHaveLength(1);
   });
 
   it('does not re-read the current user when the writer moves between steps', async () => {

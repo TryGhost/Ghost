@@ -150,7 +150,7 @@ The editor supplies the ports through `usePublishLimits()`, which backs them wit
 
 `PublishFlowModal` is the screen that machine drives. It renders the three steps of Ghost's publish flow — options, confirm, complete — plus the email-failure step, over a fullscreen Shade dialog.
 
-It is self-contained: the caller supplies the post projection, the site and user inputs, the site timezone and a `dispatch` function, and gets back a flow that publishes. The caller passes the save engine's `dispatch` unchanged; the modal never touches the engine, the editor session or the router. `usePublishInputs()` assembles the site and user inputs from the API for callers that have no better source.
+It is self-contained: the caller supplies the post projection, the site and user inputs, the site timezone and a `dispatch` function, and gets back a flow that publishes. The caller passes the save engine's `dispatch` unchanged; the modal never touches the engine, the editor session or the router. An optional `requestReauth` asks the writer to sign in again and resolves true once they have; the editor passes the session's own, so the flow's reads and requests share the save's sign-in dialog. `usePublishInputs()` assembles the site and user inputs from the API for callers that have no better source.
 
 The stateful journey is keyed by post id. If a mounted caller replaces the post, the gates, options machine, limits readiness, failures and completion state all start again for the new post.
 
@@ -223,6 +223,8 @@ The email-error step offers the retry only when Core says the failed send is ret
 ## Requests
 
 Every request the flow makes passes the editor's shared request options, which opt out of the transport's session-expiry redirect: the two it issues directly (the poller's reload and the published-post count), the settings, config, newsletter, tier, label and recipient-count reads behind its hooks, the member and email counts the limit ports read through the limiter, and the email retry, which carries the same flag on its mutation payload. An expired session is left to surface where the user is — as an uncounted audience, a note on the complete step, or an error on the email-error step.
+
+Where the writer cannot go on without the request, an expired session (a 401, or the 403 "Authorization failed" Core answers for a session it no longer accepts) asks them to sign in through `requestReauth` instead of repeating a request that can only fail again: a limit check, the retry-eligibility read and the email retry each run again once they are back. Abandoning the sign-in says the session expired, and the step's own "Try again", "Check retry availability" or retry asks once more. The editor does the same for the publish inputs: a read that finds the session gone opens the sign-in dialog and reads again, and Publish opens once the inputs have loaded.
 
 The poller is the most important case: it fires once a second immediately after a save, over an editor that may still hold unsaved work, so a single 401 must not navigate away and lose it.
 

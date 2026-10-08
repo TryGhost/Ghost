@@ -4,6 +4,7 @@ import {
   HostLimitError,
   JSONError,
   ServerUnreachableError,
+  UnauthorizedError,
   ValidationError,
   type ErrorResponse,
 } from '@tryghost/admin-x-framework/errors';
@@ -15,6 +16,7 @@ import {
   HALTED_MESSAGE,
   REAUTH_MESSAGE,
   SESSION_ABANDONED_MESSAGE,
+  SESSION_EXPIRED_MESSAGE,
   UNEXPECTED_MESSAGE,
   UNREACHABLE_MESSAGE,
   describeCompletionFailure,
@@ -147,6 +149,25 @@ describe('describeRejectedAction', () => {
     expect(describeRejectedAction(error)).toEqual({
       message: 'Cannot retry email because the delivery outcome is unknown',
     });
+  });
+
+  it('uses the fallback for a JSON failure that gave no reason', () => {
+    const answered = response(500);
+    Object.defineProperty(answered, 'url', {
+      value: 'http://localhost:2368/ghost/api/admin/emails/email-1/retry/',
+    });
+    // The transport names the endpoint: "Something went wrong while loading emails…".
+    const error = new JSONError(answered, apiBody({}));
+
+    expect(describeRejectedAction(error, 'Could not retry')).toEqual({
+      message: 'Could not retry',
+    });
+  });
+
+  it('says the session expired rather than that the request was unauthorised', () => {
+    const error = new UnauthorizedError(response(401), '');
+
+    expect(describeRejectedAction(error)).toEqual({ message: SESSION_EXPIRED_MESSAGE });
   });
 
   it('prefers the context Core explains a rewritten message with', () => {

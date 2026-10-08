@@ -182,14 +182,17 @@ as one character, and every other field by code point.
 
 A failure the transport reports is mapped onto the same kinds, so the engine's
 state machine reads them the same way. An `UPDATE_COLLISION` code becomes
-`conflict`.
+`conflict`, and so does an `UpdateCollisionError` without one: Core's email
+service refuses a publish whose newsletter or audience changed while it was
+being published that way.
 
 The server refuses a save that still sends `scheduled` for a post it has since
 published with a validation error. That also becomes `conflict`, since only the
 server's newer copy lets the writer save again.
 
-Of the other failures, a session-expired, unauthorized or 401 failure becomes
-`session-invalid`; any other `NoPermissionError`, which is how Core refuses a
+Of the other failures, a session-expired, unauthorized or 401 failure, or the
+403 "Authorization failed" Core answers for a session it no longer accepts,
+becomes `session-invalid`; any other `NoPermissionError`, which is how Core refuses a
 writer who may no longer edit the post, becomes `forbidden`; a host-limit
 failure becomes `host-limit`; an unreachable server, a maintenance response and
 a timeout become `transport`; a validation failure, a payload the server
@@ -198,15 +201,21 @@ outright has to suppress background saves the way a validation failure does or
 it retries on every edit; a 404 becomes `not-found`; and anything else becomes
 `unknown`.
 
-A `validation`, `host-limit` or `forbidden` failure the server reports carries
-the server's reason as its message. The server sends that reason as the error's
-context beside a generic summary, and the summary is used only when there is no
-context. The status line shows a host limit's reason with its "please
+Any failure the server reports carries the server's reason as its message. The
+server sends that reason as the error's context beside a generic summary ("Error
+sending email!", "Validation error, cannot edit post."), and the summary is used
+only when there is no context. A send Core refuses because the post has no
+newsletter names a model relation in its context, so it reads as "This post’s
+newsletter couldn’t be found. Choose another newsletter and try again." instead.
+A response that gave no reason shows the session's own save failure ("Couldn’t
+save this post."), never the transport's summary of the request, which names the
+endpoint ("Something went wrong while loading posts"). An expired session and an
+unreachable server keep their own wording. The status line shows a host limit's reason with its "please
 upgrade" phrase linked to the host's upgrade screen, `/pro` unless the host
 configures another, and keeps the content and the retry beside it.
 
 An `unknown` failure the API answered, or one the session describes itself,
-shows its own message. One thrown in the browser instead, such as a
+shows that message. One thrown in the browser instead, such as a
 `TypeError`, reads as "Something went wrong while saving. Please try again." in
 the status line, the publish flow and the preview alike; the error
 keeps its own message and cause for reporting.
@@ -397,7 +406,11 @@ the unsaved content where they are, and the next save shows the server's refusal
 or the collision. A save refused because the writer may no longer edit the post
 stops saving for good, as one that finds the post deleted does: the banner says
 they can no longer edit it and offers their content to copy, and there is no
-retry, since the server would refuse every later save too.
+retry, since the server would refuse every later save too. A publish, schedule,
+unpublish or unschedule Core refuses that way is different: Core also refuses a
+status change on its own rules, such as a Contributor's publish, so the refusal
+is that command's failure, shown in the publish flow and the status line, and the
+post stays editable.
 
 What a halted queue looks like is the session's caller's decision, not the
 engine's: `reauth-pending` and `conflict` are states, not UI. The writer gets a
@@ -423,6 +436,13 @@ sent unasked. Clicking outside the dialog does nothing; Escape or Cancel abandon
 it, which reports the failed save in the status line with the content kept, and
 its retry brings the dialog back. A status change abandoned this way is retried
 from where it was asked for, not from the status line.
+
+Reads and requests outside the engine's saves ask for the same dialog through
+`requestReauth()`, which resolves true once the writer has signed in and false
+when they abandon it; requests made while it is open share it, and an editor
+that goes while one waits answers false. The publish inputs, the publish flow's
+limit checks, its retry-eligibility read and the email retry use it, and each
+runs again once the writer is back rather than repeating a refused request.
 
 ## The view React subscribes to
 

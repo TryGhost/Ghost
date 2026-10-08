@@ -32,7 +32,7 @@ import { deferred } from '@/utils/deferred';
 import { previewScreen } from '@/editor/preview/preview.screen';
 import { CONFLICT_MESSAGE, UNEXPECTED_MESSAGE } from '@/editor/publish/completion-message';
 import { publishScreen } from '@/editor/publish/publish.screen';
-import { POST_DELETED } from '@/editor/session/error-mapping';
+import { ACCESS_LOST, POST_DELETED } from '@/editor/session/error-mapping';
 import {
   EMAIL_SUBJECT_TOO_LONG,
   EXCERPT_MAX,
@@ -961,6 +961,70 @@ describe('Editor header actions', () => {
 
     await expect.element(publishScreen.confirmError()).toHaveTextContent(UNEXPECTED_MESSAGE);
   });
+  // Core's error handler summarises `message` and moves its own sentence into `context`.
+  it('shows the reason Core gave for refusing to send the email', async () => {
+    publishChrome();
+    fakeSavablePost();
+    const refusedPublish = fakeAdminEndpoint(
+      'PUT',
+      new RegExp(`^/posts/${POST_ID}/\\?`),
+      {
+        errors: [
+          {
+            type: 'BadRequestError',
+            message: 'Request not understood error, cannot edit post.',
+            context: 'Cannot send email to archived newsletters',
+          },
+        ],
+      },
+      { status: 400 },
+    );
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+
+    await expect.element(editorScreen.publishButton()).toBeEnabled();
+    await publishThroughFlow();
+
+    await expect
+      .element(publishScreen.confirmError())
+      .toHaveTextContent('Cannot send email to archived newsletters');
+    await expect.element(publishScreen.confirmError()).not.toHaveTextContent('while loading');
+    expect(refusedPublish.requests).toHaveLength(1);
+  });
+
+  it('keeps the post editable when Core refuses only the publish', async () => {
+    publishChrome();
+    fakeSavablePost();
+    fakeAdminEndpoint(
+      'PUT',
+      new RegExp(`^/posts/${POST_ID}/\\?`),
+      {
+        errors: [
+          {
+            type: 'NoPermissionError',
+            message: 'Permission error, cannot edit post.',
+            context: 'You do not have permission to perform this action',
+          },
+        ],
+      },
+      { status: 403 },
+    );
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+
+    await expect.element(editorScreen.publishButton()).toBeEnabled();
+    await publishThroughFlow();
+
+    await expect
+      .element(publishScreen.confirmError())
+      .toHaveTextContent('You do not have permission to perform this action');
+    await userEvent.keyboard('{Escape}');
+    await expect(publishScreen.root()).toHaveCount(0);
+    await expect
+      .element(editorScreen.saveError())
+      .toHaveTextContent('You do not have permission to perform this action');
+    await expect.element(editorScreen.publishButton()).toBeEnabled();
+    await expect(page.getByText(ACCESS_LOST.message)).toHaveCount(0);
+  });
+
   it('offers no preview once the post has been published', async () => {
     publishChrome();
     fakeSavablePost({ status: 'published', published_at: '2026-02-01T10:00:00.000Z' });

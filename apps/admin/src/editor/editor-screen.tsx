@@ -437,7 +437,7 @@ function EditorContent({
           />
           <ReauthDialog
             email={currentUser?.email ?? ''}
-            open={session.state.kind === 'reauth-pending'}
+            open={session.reauthOpen}
             onAbandoned={session.reauthAbandoned}
             onSucceeded={session.reauthSucceeded}
           />

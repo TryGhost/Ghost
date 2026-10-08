@@ -3,8 +3,8 @@ import {
   HostLimitError,
   JSONError,
   ServerUnreachableError,
-  getErrorMessage,
 } from '@tryghost/admin-x-framework/errors';
+import { isSessionInvalid, requestFailureMessage } from '@/editor/session/error-mapping';
 import { splitUpgradeMessage } from './publish-options';
 import type { LimitMessagePart } from './publish-options';
 import type { SaveCompletion, SaveError } from '@/editor/engine/save-engine';
@@ -16,6 +16,8 @@ export const CONFLICT_MESSAGE =
 export const REAUTH_MESSAGE = 'Your session was restored. Confirm again to publish.';
 export const SESSION_ABANDONED_MESSAGE =
   'Your session expired. Confirm again to sign in and publish.';
+/** A read or request outside a save that met an expired session, once sign-in was abandoned. */
+export const SESSION_EXPIRED_MESSAGE = 'Your session expired. Try again to sign in.';
 export const UNKNOWN_MESSAGE = 'Unknown Error';
 export const UNEXPECTED_MESSAGE = 'Something went wrong while saving. Please try again.';
 export const DROPPED_MESSAGE = 'This post can no longer be published from here. Reload the editor.';
@@ -69,8 +71,12 @@ export function describeRejectedAction(
     return { message: UNREACHABLE_MESSAGE };
   }
 
+  if (isSessionInvalid(error)) {
+    return { message: SESSION_EXPIRED_MESSAGE };
+  }
+
   if (error instanceof JSONError) {
-    const message = getErrorMessage(error, error.message || fallback);
+    const message = requestFailureMessage(error, fallback);
     return error instanceof HostLimitError ? hostLimitFailure(message) : { message };
   }
 

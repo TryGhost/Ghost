@@ -7,6 +7,7 @@ import {
   currentUserResponse,
   fakeAdminEndpoint,
   fakeEditorChrome,
+  fakeNewsletters,
   plainText,
   post,
   renderAdminApp,
@@ -291,6 +292,47 @@ describe('Post editor session expiry', () => {
     await expect.element(editorScreen.saveError()).toHaveTextContent('session expired');
     await expect.element(editorScreen.body()).toHaveTextContent('Hello from React and more');
     expect(saveApi.requests).toHaveLength(1);
+  });
+
+  it('asks for the password when the publish settings find no session, then offers Publish', async () => {
+    fakeEditorChrome();
+    fakeAdminEndpoint('GET', POST_ROUTE, { posts: [loadedPost()] });
+    const newslettersApi = fakeAdminEndpoint('GET', /^\/newsletters\//, SESSION_GONE, {
+      status: 401,
+    });
+    fakeAdminEndpoint('POST', '/session/', () => 'Created', { status: 201 });
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+
+    await expect.element(editorScreen.reauthDialog()).toHaveTextContent('Are you still here?');
+    expect(currentRoute()).toBe(`/editor/post/${POST_ID}`);
+    expect(newslettersApi.requests).toHaveLength(1);
+
+    // Declared after the expired fake, so the read after sign-in is answered.
+    fakeNewsletters([]);
+    await signIn(PASSWORD);
+
+    await expect(editorScreen.reauthDialog()).toHaveCount(0);
+    await expect.element(editorScreen.publishButton()).toBeEnabled();
+    await expect(editorScreen.publishInputsError()).toHaveCount(0);
+  });
+
+  it('says the publish settings need a sign-in when it is cancelled, and asks again on Retry', async () => {
+    fakeEditorChrome();
+    fakeAdminEndpoint('GET', POST_ROUTE, { posts: [loadedPost()] });
+    fakeAdminEndpoint('GET', /^\/newsletters\//, SESSION_GONE, { status: 401 });
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+
+    await expect.element(editorScreen.reauthDialog()).toBeVisible();
+    await editorScreen.cancelReauth().click();
+
+    await expect(editorScreen.reauthDialog()).toHaveCount(0);
+    await expect
+      .element(editorScreen.publishInputsError())
+      .toHaveTextContent('Your session expired. Retry to sign in again.');
+    await expect.element(editorScreen.publishButton()).toBeDisabled();
+
+    await editorScreen.retryPublishInputs().click();
+    await expect.element(editorScreen.reauthDialog()).toHaveTextContent('Are you still here?');
   });
 
   it('stays on unsaved work when a request from elsewhere in Admin finds no session', async () => {

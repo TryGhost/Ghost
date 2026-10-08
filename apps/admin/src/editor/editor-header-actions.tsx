@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useEmberOwnedRouteMatcher } from '@/routes';
 import { useNavigate } from '@tryghost/admin-x-framework';
 import { Button } from '@tryghost/shade/components';
@@ -362,8 +362,32 @@ function PublishActions({
   const sentOpensUpdateFlow = post.status === 'sent' && post.email?.status !== 'failed';
 
   // Publish, Unpublish, Unschedule and the status line's Sent and retry open nothing until these load.
+  const inputsBlockActions = isDraft || offersUpdateFlow || sentOpensUpdateFlow || offersEmailRetry;
+
+  // An input read that found the session gone asks for sign-in in place, as a save
+  // does, and reads again once the writer is back. Abandoning it leaves the error
+  // and its Retry, which asks again.
+  const { requestReauth } = session;
+  const retryInputs = useRef(inputs.retry);
+  retryInputs.current = inputs.retry;
+  const expiredBy = inputsBlockActions && inputs.sessionExpired ? inputs.error?.cause : undefined;
+  useEffect(() => {
+    if (!expiredBy) {
+      return;
+    }
+    let current = true;
+    void requestReauth().then((signedIn) => {
+      if (signedIn && current) {
+        retryInputs.current();
+      }
+    });
+    return () => {
+      current = false;
+    };
+  }, [expiredBy, requestReauth]);
+
   const inputsError =
-    (isDraft || offersUpdateFlow || sentOpensUpdateFlow || offersEmailRetry) && inputs.error ? (
+    inputsBlockActions && inputs.error ? (
       <>
         <Text
           className="bg-background/80 text-destructive backdrop-blur-sm"
@@ -451,6 +475,7 @@ function PublishActions({
           limits={limits}
           paywallImprovements={paywallImprovements}
           post={post}
+          requestReauth={requestReauth}
           showCompletion={false}
           site={inputs.site}
           siteTitle={siteTitle}

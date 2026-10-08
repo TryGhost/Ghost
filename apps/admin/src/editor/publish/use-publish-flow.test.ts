@@ -2,7 +2,11 @@ import { act, renderHook, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { createElement, type ReactNode } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { JSONError, type ErrorResponse } from '@tryghost/admin-x-framework/errors';
+import {
+  JSONError,
+  UnauthorizedError,
+  type ErrorResponse,
+} from '@tryghost/admin-x-framework/errors';
 import {
   EMAIL_UNCONFIRMED,
   SCHEDULE_PASSED,
@@ -14,15 +18,20 @@ import { LimitCheckError, type NewsletterInput } from './publish-options';
 import { reportPublishFailure } from './report-publish-failure';
 
 const transport = vi.hoisted(() => ({ fetchApi: vi.fn(), retryEmail: vi.fn() }));
-const eligibility = vi.hoisted(() => ({ isError: false, hasData: true }));
+const eligibility = vi.hoisted(
+  (): { isError: boolean; hasData: boolean; error?: unknown; refetch?: unknown } => ({
+    isError: false,
+    hasData: true,
+  }),
+);
 vi.mock('@tryghost/admin-x-framework/hooks', () => ({ useFetchApi: () => transport.fetchApi }));
 vi.mock('@tryghost/admin-x-framework/api/emails', () => ({
   useEmailSendingStatus: () => ({
     isFetchedAfterMount: true,
     isError: eligibility.isError,
     isFetching: false,
-    error: eligibility.isError ? new Error('Status read failed') : null,
-    refetch: vi.fn(),
+    error: eligibility.isError ? (eligibility.error ?? new Error('Status read failed')) : null,
+    refetch: eligibility.refetch ?? vi.fn(),
     data: eligibility.hasData
       ? { email_statuses: [{ sending: { status: 'failed', retryable: true } }] }
       : undefined,
@@ -92,6 +101,8 @@ function wrapper({ children }: { children: ReactNode }) {
 afterEach(() => {
   eligibility.isError = false;
   eligibility.hasData = true;
+  eligibility.error = undefined;
+  eligibility.refetch = undefined;
   confirmation.fail = undefined;
   localStorage.clear();
   vi.clearAllMocks();
@@ -610,5 +621,99 @@ describe('a limit that could not be checked', () => {
       error: failure,
       postId: 'post-1',
     });
+  });
+});
+
+/** What a request answers once the writer's session is gone. */
+function expiredSession() {
+  return new UnauthorizedError(new Response(null, { status: 401 }), '');
+}
+
+describe('a session that expires outside the publish save', () => {
+  it('asks for sign-in when a limit check finds it gone, and checks again once signed in', async () => {
+    const inputs = options();
+    const checkPublishingLimit = vi
+      .fn()
+      .mockRejectedValueOnce(new LimitCheckError('members', expiredSession()))
+      .mockResolvedValue(undefined);
+    inputs.limits = { checkPublishingLimit };
+    inputs.requestReauth = vi.fn().mockResolvedValue(true);
+    const { result } = renderHook(() => usePublishFlow(inputs), { wrapper });
+
+    await waitFor(() => expect(result.current.limitsChecked).toBe(true));
+    expect(inputs.requestReauth).toHaveBeenCalledTimes(1);
+    expect(checkPublishingLimit).toHaveBeenCalledTimes(2);
+    expect(result.current.limitsFailure).toBeNull();
+  });
+
+  it('says the session expired when sign-in is abandoned, and asks again on Try again', async () => {
+    const inputs = options();
+    const checkPublishingLimit = vi
+      .fn()
+      .mockRejectedValue(new LimitCheckError('members', expiredSession()));
+    inputs.limits = { checkPublishingLimit };
+    inputs.requestReauth = vi.fn().mockResolvedValue(false);
+    const { result } = renderHook(() => usePublishFlow(inputs), { wrapper });
+
+    await waitFor(() =>
+      expect(result.current.limitsFailure).toBe(
+        'Couldn’t check publishing limits. Your session expired. Try again to sign in.',
+      ),
+    );
+    act(() => result.current.retryLimits());
+    await waitFor(() => expect(inputs.requestReauth).toHaveBeenCalledTimes(2));
+  });
+
+  it('sends an email retry again once the writer signs in', async () => {
+    const requestReauth = vi.fn().mockResolvedValue(true);
+    const { inputs, result, retrying } = await startRetry({ requestReauth });
+    const firstAttempt = confirmation.fail;
+
+    act(() => {
+      confirmation.fail?.(new EmailRetryRequestError(expiredSession()));
+    });
+    await waitFor(() => expect(confirmation.fail).not.toBe(firstAttempt));
+    expect(requestReauth).toHaveBeenCalledTimes(1);
+    expect(result.current.retryStatus).toBe('running');
+
+    await act(async () => {
+      confirmation.settle?.({ kind: 'submitted' });
+      await retrying;
+    });
+    expect(result.current.retryFailure).toBeNull();
+    expect(inputs.onCompleted).toHaveBeenCalledWith({
+      postId: 'post-1',
+      isScheduled: false,
+      hasEmail: true,
+    });
+  });
+
+  it('says the session expired when sign-in for an email retry is abandoned', async () => {
+    const requestReauth = vi.fn().mockResolvedValue(false);
+    const { result, retrying } = await startRetry({ requestReauth });
+
+    await act(async () => {
+      confirmation.fail?.(new EmailRetryRequestError(expiredSession()));
+      await retrying;
+    });
+
+    expect(result.current.retryStatus).toBe('failure');
+    expect(result.current.retryFailure).toEqual({
+      message: 'Your session expired. Try again to sign in.',
+    });
+  });
+
+  it('reads the retry eligibility again once the writer signs in', async () => {
+    eligibility.isError = true;
+    eligibility.hasData = false;
+    eligibility.error = expiredSession();
+    const refetch = vi.fn();
+    eligibility.refetch = refetch;
+    const inputs = { ...options(), requestReauth: vi.fn().mockResolvedValue(true) };
+    inputs.post = { ...inputs.post, status: 'published', email: FAILED_EMAIL };
+    renderHook(() => usePublishFlow(inputs), { wrapper });
+
+    await waitFor(() => expect(refetch).toHaveBeenCalledTimes(1));
+    expect(inputs.requestReauth).toHaveBeenCalledTimes(1);
   });
 });

@@ -20,6 +20,7 @@ import {
   type CompletionFailure,
 } from './completion-message';
 import { EDITOR_REQUEST_OPTIONS } from '@/editor/request-options';
+import { isSessionInvalid } from '@/editor/session/error-mapping';
 import { writePublishCelebration } from './celebration-handoff';
 import type { EmailConfirmationOutcome } from './email-confirmation';
 import type { PublishFlowPost } from './flow-post';
@@ -44,6 +45,12 @@ export interface PublishFlowOptions {
   /** The machine's clock, injected for tests. */
   now?: () => Date;
   dispatch: PublishDispatcher;
+  /**
+   * Asks the writer to sign in again, resolving true once they have. A limit check,
+   * an eligibility read or an email retry that finds the session gone asks, and is
+   * repeated once the writer is back.
+   */
+  requestReauth?: () => Promise<boolean>;
   showCompletion?: boolean;
   /** The `improveSendingUI` lab: a publish that emails completes without confirming the send. */
   improveSendingUI?: boolean;
@@ -142,6 +149,7 @@ export function usePublishFlow({
   limits,
   now,
   dispatch,
+  requestReauth,
   showCompletion = true,
   improveSendingUI = false,
   onBeforePublish,
@@ -156,6 +164,14 @@ export function usePublishFlow({
   // the identity of props a re-rendering caller rebuilds.
   const inputs = useRef({ post, site, user, limits, now });
   inputs.current = { post, site, user, limits, now };
+  const requestReauthRef = useRef(requestReauth);
+  requestReauthRef.current = requestReauth;
+
+  /** Signs the writer in again when `error` is an expired session; true once they are back. */
+  const reauthenticated = useCallback(async (error: unknown): Promise<boolean> => {
+    const reauth = requestReauthRef.current;
+    return Boolean(reauth && isSessionInvalid(error) && (await reauth()));
+  }, []);
 
   const machine = useMemo(() => {
     const current = inputs.current;
@@ -302,6 +318,25 @@ export function usePublishFlow({
   }, [eligibilityError, post.id, step]);
 
   const refetchEligibility = retryEligibility.refetch;
+  const refetchEligibilityRef = useRef(refetchEligibility);
+  refetchEligibilityRef.current = refetchEligibility;
+
+  // An eligibility read that found the session gone asks for sign-in and reads again.
+  useEffect(() => {
+    if (!eligibilityError || step !== 'email-error') {
+      return;
+    }
+    let current = true;
+    void reauthenticated(eligibilityError).then((signedIn) => {
+      if (signedIn && current && activeRef.current) {
+        void refetchEligibilityRef.current();
+      }
+    });
+    return () => {
+      current = false;
+    };
+  }, [eligibilityError, reauthenticated, step]);
+
   const checkRetryEligibility = useCallback(() => {
     if (emailId) {
       void refetchEligibility();
@@ -311,13 +346,18 @@ export function usePublishFlow({
     setFindingEmail(true);
     // A post whose email still has no id stays unchecked; the writer can check again.
     reloadPost(post.id)
+      .catch(async (error: unknown) => {
+        if ((await reauthenticated(error)) && activeRef.current) {
+          await reloadPost(post.id);
+        }
+      })
       .catch(() => undefined)
       .finally(() => {
         if (activeRef.current) {
           setFindingEmail(false);
         }
       });
-  }, [emailId, post.id, refetchEligibility, reloadPost]);
+  }, [emailId, post.id, reauthenticated, refetchEligibility, reloadPost]);
 
   const [captured, setCaptured] = useState<PublishFlow['captured']>(() => {
     if (initialEmailError(post)) {
@@ -342,44 +382,64 @@ export function usePublishFlow({
   } | null>(null);
 
   const checkLimits = useCallback(async () => {
-    const generation = limitCheckGenerationRef.current + 1;
-    limitCheckGenerationRef.current = generation;
-    setCheckedMachine(null);
-    setLimitsFailure(null);
-    const existing = limitCheckRef.current;
-    const check =
-      existing?.machine === machine
-        ? existing
-        : { machine, promise: machine.checkLimits().then(() => undefined) };
-    limitCheckRef.current = check;
+    // Repeated only after the writer signs in again on an expired session.
+    for (;;) {
+      const generation = limitCheckGenerationRef.current + 1;
+      limitCheckGenerationRef.current = generation;
+      const isCurrent = () => activeRef.current && generation === limitCheckGenerationRef.current;
+      setCheckedMachine(null);
+      setLimitsFailure(null);
+      const existing = limitCheckRef.current;
+      const check =
+        existing?.machine === machine
+          ? existing
+          : { machine, promise: machine.checkLimits().then(() => undefined) };
+      limitCheckRef.current = check;
 
-    try {
-      await check.promise;
-    } catch (error) {
-      if (activeRef.current && generation === limitCheckGenerationRef.current) {
-        const checkFailure = error instanceof LimitCheckError;
-        const { message } = describeRejectedAction(checkFailure ? error.cause : error);
-        const shown = `${
-          checkFailure && error.limit === 'emails'
-            ? 'Couldn’t check email limits.'
-            : 'Couldn’t check publishing limits.'
-        } ${message}`;
-        setLimitsFailure(shown);
-        reportPublishFailure('limit-check', shown, { error, postId: inputs.current.post.id });
+      let rejection: { error: unknown } | null = null;
+      try {
+        await check.promise;
+      } catch (error) {
+        rejection = { error };
+      } finally {
+        if (limitCheckRef.current === check) {
+          limitCheckRef.current = null;
+        }
+      }
+
+      if (!isCurrent()) {
+        return;
+      }
+
+      if (!rejection) {
+        setCheckedMachine(machine);
         refresh();
+        return;
       }
-      return;
-    } finally {
-      if (limitCheckRef.current === check) {
-        limitCheckRef.current = null;
-      }
-    }
 
-    if (activeRef.current && generation === limitCheckGenerationRef.current) {
-      setCheckedMachine(machine);
+      const { error } = rejection;
+      const checkFailure = error instanceof LimitCheckError;
+      const cause = checkFailure ? error.cause : error;
+      const signedIn = await reauthenticated(cause);
+      if (!isCurrent()) {
+        return;
+      }
+      if (signedIn) {
+        continue;
+      }
+
+      const { message } = describeRejectedAction(cause);
+      const shown = `${
+        checkFailure && error.limit === 'emails'
+          ? 'Couldn’t check email limits.'
+          : 'Couldn’t check publishing limits.'
+      } ${message}`;
+      setLimitsFailure(shown);
+      reportPublishFailure('limit-check', shown, { error, postId: inputs.current.post.id });
       refresh();
+      return;
     }
-  }, [machine]);
+  }, [machine, reauthenticated]);
 
   // A schedule chosen before the editor sat idle may now be in the past.
   useEffect(() => {
@@ -673,6 +733,26 @@ export function usePublishFlow({
     state,
   ]);
 
+  /** A retry request that found the session gone is sent again once the writer signs in. */
+  const retryUntilSignedIn = useCallback(
+    async (attempt: () => Promise<EmailConfirmationOutcome>) => {
+      for (;;) {
+        try {
+          return await attempt();
+        } catch (error) {
+          if (
+            !(error instanceof EmailRetryRequestError) ||
+            !(await reauthenticated(error.cause)) ||
+            !activeRef.current
+          ) {
+            throw error;
+          }
+        }
+      }
+    },
+    [reauthenticated],
+  );
+
   const retryEmail = useCallback(async () => {
     if (retryRunningRef.current || !canRetryEmail || !emailId) {
       return;
@@ -682,31 +762,9 @@ export function usePublishFlow({
     setRetryFailure(null);
     setRetryStatus('running');
 
+    let outcome: EmailConfirmationOutcome;
     try {
-      const outcome = await confirmation.retryAndConfirm(post.id, emailId);
-      refreshPostReads(outcome);
-
-      if (!activeRef.current) {
-        return;
-      }
-
-      if (outcome.kind === 'failed' || outcome.kind === 'cancelled') {
-        retryRunningRef.current = false;
-        if (outcome.kind === 'failed') {
-          showEmailFailure(outcome.error);
-        }
-        setRetryStatus('idle');
-        return;
-      }
-
-      const unconfirmed = outcome.kind !== 'submitted';
-      if (unconfirmed) {
-        noteUnconfirmed();
-      }
-      if (showCompletion) {
-        setRetryStatus('success');
-      }
-      complete(false, outcome.kind !== 'not-needed', unconfirmed);
+      outcome = await retryUntilSignedIn(() => confirmation.retryAndConfirm(post.id, emailId));
     } catch (error) {
       if (!activeRef.current) {
         return;
@@ -731,11 +789,37 @@ export function usePublishFlow({
         error: error.cause,
         postId: post.id,
       });
+      return;
     }
+
+    refreshPostReads(outcome);
+
+    if (!activeRef.current) {
+      return;
+    }
+
+    if (outcome.kind === 'failed' || outcome.kind === 'cancelled') {
+      retryRunningRef.current = false;
+      if (outcome.kind === 'failed') {
+        showEmailFailure(outcome.error);
+      }
+      setRetryStatus('idle');
+      return;
+    }
+
+    const unconfirmed = outcome.kind !== 'submitted';
+    if (unconfirmed) {
+      noteUnconfirmed();
+    }
+    if (showCompletion) {
+      setRetryStatus('success');
+    }
+    complete(false, outcome.kind !== 'not-needed', unconfirmed);
   }, [
     canRetryEmail,
     complete,
     confirmation,
+    retryUntilSignedIn,
     emailId,
     noteUnconfirmed,
     post.id,

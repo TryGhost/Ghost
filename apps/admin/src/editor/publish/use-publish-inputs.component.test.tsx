@@ -3,7 +3,10 @@ import { renderHook } from 'vitest-browser-react';
 
 import { InAppProviders, fakeAdminEndpoint, newsletter } from '@test-utils/acceptance';
 
-import { usePublishInputs } from '@/editor/publish/use-publish-inputs';
+import {
+  PUBLISH_INPUTS_SESSION_EXPIRED,
+  usePublishInputs,
+} from '@/editor/publish/use-publish-inputs';
 import { useEditorSettings } from '@/editor/use-editor-settings';
 
 const pagination = (pageNumber = 1, pages = 1) => ({
@@ -146,6 +149,7 @@ describe('usePublishInputs', () => {
       .poll(() => hook.result.current.error?.message ?? '')
       .toContain('Something went wrong while loading members');
     expect(hook.result.current.isReady).toBe(false);
+    expect(hook.result.current.sessionExpired).toBe(false);
     expect(failedMembers.requests).toHaveLength(1);
 
     const retriedMembers = fakeMemberCount(500);
@@ -214,6 +218,9 @@ describe('usePublishInputs', () => {
     await expect.poll(() => newslettersApi.requests.length).toBeGreaterThan(0);
     await expect.poll(() => hook.result.current.error !== null).toBe(true);
     expect(hook.result.current.isReady).toBe(false);
+    // The caller asks for sign-in from this, rather than repeating the refused read.
+    expect(hook.result.current.sessionExpired).toBe(true);
+    expect(hook.result.current.error?.message).toBe(PUBLISH_INPUTS_SESSION_EXPIRED);
     expect(window.location.pathname).toBe(pathname);
   });
 });
