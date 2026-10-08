@@ -51,15 +51,8 @@ const createValidAPIToken = (apiKeyId, apiKeySecret) => {
  * @param {string} options.originURL
  */
 class AdminAPITestAgent extends TestAgent {
-  #options;
-
   constructor(app, options) {
     super(app, options);
-    this.#options = options;
-  }
-
-  duplicate() {
-    return new AdminAPITestAgent(this.app, this.#options);
   }
 
   async loginAs(email, password, role) {

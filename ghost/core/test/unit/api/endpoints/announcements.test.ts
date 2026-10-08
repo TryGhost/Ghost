@@ -7,19 +7,12 @@ const settingsCache = require('../../../../core/shared/settings-cache');
 const announcementService = require('../../../../core/server/services/announcement-bar-service');
 
 describe('Announcements controller', function () {
-  let scope: object;
-
   beforeEach(async function () {
-    scope = {};
-    await announcementService.init(scope);
+    await announcementService.init();
   });
 
-  afterEach(async function () {
-    try {
-      await announcementService.shutdown(scope);
-    } finally {
-      sinon.restore();
-    }
+  afterEach(function () {
+    sinon.restore();
   });
 
   it('returns synchronous, independent results from live settings through the retained service', function () {

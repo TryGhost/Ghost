@@ -3,12 +3,9 @@ import sinon from 'sinon';
 import supertest from 'supertest';
 import type { Application } from 'express';
 import type { GhostServer } from '../../core/server/ghost-server';
-import errors from '@tryghost/errors';
-import logging from '@tryghost/logging';
 
 const { GhostServer: GhostServerClass } = require('../../core/server/ghost-server');
 const { startGhost, configUtils } = require('../utils/e2e-framework');
-const { stopGhost } = require('../utils/e2e-utils');
 const announcement = require('../../core/server/services/announcement-bar-service');
 const controller = require('../../core/server/api/endpoints/announcements');
 const settingsCache = require('../../core/shared/settings-cache');
@@ -17,16 +14,14 @@ const stripe = require('../../core/server/services/stripe');
 const notify = require('../../core/server/notify');
 const sentry = require('../../core/shared/sentry');
 const routeSettings = require('../../core/server/services/route-settings');
-const themes = require('../../core/server/services/themes');
 
-type StoppableApp = Application & { stop(): Promise<void> };
-
-describe('Announcement boot lifecycle', function () {
+describe('Announcement initialization over HTTP', function () {
   const sandbox = sinon.createSandbox();
   let listeners: Map<string, ReturnType<typeof process.rawListeners>>;
   let release: ReturnType<typeof Promise.withResolvers<void>> | undefined;
   let boot: Promise<unknown> | undefined;
   let serverStart: sinon.SinonSpy;
+  let stoppedServer: GhostServer | undefined;
 
   beforeEach(function () {
     listeners = new Map(
@@ -42,6 +37,7 @@ describe('Announcement boot lifecycle', function () {
     notify.resetNotifications();
     release = undefined;
     boot = undefined;
+    stoppedServer = undefined;
   });
 
   afterEach(async function () {
@@ -49,32 +45,29 @@ describe('Announcement boot lifecycle', function () {
     release?.resolve();
     try {
       await Promise.allSettled([boot]);
-    } finally {
-      try {
-        await stopGhost();
-        // A boot can fail before the test helper remembers its server.
-        const server = serverStart.firstCall?.thisValue as GhostServer | undefined;
-        if (server) {
+      for (const call of serverStart.getCalls()) {
+        const server = call.thisValue as GhostServer;
+        if (server !== stoppedServer) {
           await server.stop();
         }
-        // No-server stop owns the migrated root, not these legacy resources.
-        await jobs.shutdown();
-        await stripe.shutdown();
-      } finally {
-        sandbox.restore();
-        notify.resetNotifications();
-        for (const [event, originals] of listeners) {
-          process.removeAllListeners(event);
-          for (const listener of originals) {
-            process.on(event, listener as (...args: unknown[]) => void);
-          }
-        }
-        await configUtils.restore();
       }
+      // No-server boots return an Express app; these resources have their own owners.
+      await jobs.shutdown();
+      await stripe.shutdown();
+    } finally {
+      sandbox.restore();
+      notify.resetNotifications();
+      for (const [event, originals] of listeners) {
+        process.removeAllListeners(event);
+        for (const listener of originals) {
+          process.on(event, listener as (...args: unknown[]) => void);
+        }
+      }
+      await configUtils.restore();
     }
   });
 
-  it('awaits announcement initialization before HTTP readiness and disposes it when the server stops', async function () {
+  it('awaits announcement initialization before HTTP readiness', async function () {
     const entered = Promise.withResolvers<void>();
     release = Promise.withResolvers<void>();
     const originalInit = announcement.init;
@@ -82,10 +75,10 @@ describe('Announcement boot lifecycle', function () {
     // This is the next boot stage after announcement initialization. A missing
     // await calls it synchronously before the entered continuation resumes.
     const nextStage = sandbox.spy(routeSettings, 'init');
-    sandbox.stub(announcement, 'init').callsFake(async (...args) => {
+    sandbox.stub(announcement, 'init').callsFake(async () => {
       entered.resolve();
       await release!.promise;
-      await originalInit(...args);
+      await originalInit();
     });
 
     const serverBoot: Promise<GhostServer> = startGhost({ frontend: true, server: true });
@@ -114,84 +107,43 @@ describe('Announcement boot lifecycle', function () {
     assert.deepEqual(body, {
       announcement: [{ announcement: '<p>Ready</p>', announcement_background: 'dark' }],
     });
-
-    await server.stop();
-    assert.throws(() => controller.browse.query({ options: {} }), /announcement-bar-service/);
   });
 
-  it('stops a no-server boot before restarting, keeping the old app unavailable', async function () {
-    const firstBoot: Promise<StoppableApp> = startGhost({ frontend: true, server: false });
+  it('keeps the retained controller reading live settings after a server stop and a no-server reboot', async function () {
+    const service = announcement.service;
+    const firstBoot: Promise<GhostServer> = startGhost({ frontend: true, server: true });
     boot = firstBoot;
     const first = await firstBoot;
-    assert.equal(typeof first, 'function');
-    await supertest(first).get('/members/api/announcement/').expect(200);
+    const read = service.getAnnouncementSettings;
+    settingsCache.set('announcement_content', { value: '<p>First boot</p>' });
+    settingsCache.set('announcement_background', { value: 'dark' });
+    settingsCache.set('announcement_visibility', { value: ['visitors'] });
+    const { body: firstBody } = await supertest(configUtils.getServerUrl())
+      .get('/members/api/announcement/')
+      .expect(200);
+    assert.deepEqual(firstBody, {
+      announcement: [{ announcement: '<p>First boot</p>', announcement_background: 'dark' }],
+    });
 
     await first.stop();
-    assert.throws(() => controller.browse.query({ options: {} }), /announcement-bar-service/);
-    await supertest(first).get('/members/api/announcement/').expect(503);
-
-    const secondBoot: Promise<StoppableApp> = startGhost({ frontend: true, server: false });
+    stoppedServer = first;
+    const secondBoot: Promise<Application> = startGhost({ frontend: true, server: false });
     boot = secondBoot;
     const second = await secondBoot;
-    assert.notStrictEqual(first, second);
-    await first.stop();
+    assert.equal(typeof second, 'function');
+    assert.equal('stop' in second, false);
+    assert.strictEqual(announcement.service, service);
+    assert.strictEqual(require('../../core/server/api/endpoints/announcements'), controller);
     settingsCache.set('announcement_content', { value: '<p>Second boot</p>' });
     settingsCache.set('announcement_background', { value: 'light' });
     settingsCache.set('announcement_visibility', { value: ['visitors'] });
-    await supertest(first).get('/members/api/announcement/').expect(503);
+    const expected = {
+      announcement: '<p>Second boot</p>',
+      announcement_background: 'light',
+    };
     const { body } = await supertest(second).get('/members/api/announcement/').expect(200);
-    assert.deepEqual(body, {
-      announcement: [{ announcement: '<p>Second boot</p>', announcement_background: 'light' }],
-    });
-
-    // The shared test helper owns teardown even when its caller has not
-    // explicitly stopped the previous no-server app.
-    const thirdBoot: Promise<StoppableApp> = startGhost({ frontend: true, server: false });
-    boot = thirdBoot;
-    const third = await thirdBoot;
-    await supertest(second).get('/members/api/announcement/').expect(503);
-    await second.stop();
-    await supertest(third).get('/members/api/announcement/').expect(200);
-    await third.stop();
-    assert.throws(() => controller.browse.query({ options: {} }), /announcement-bar-service/);
-  });
-
-  it('disposes a failed no-server boot before exit and preserves the startup error', async function () {
-    const failure = new errors.IncorrectUsageError({ message: 'Theme startup failed' });
-    const cleanupFailure = new Error('Cleanup also failed');
-    const interceptedExit = new Error('Intercepted exit');
-    const reported = sandbox.stub(logging, 'error');
-    sandbox.stub(console, 'error');
-    const themeInit = sandbox.stub(themes, 'init').callsFake(async () => {
-      assert.equal(typeof announcement.service.getAnnouncementSettings, 'function');
-      throw failure;
-    });
-    const originalShutdown = announcement.shutdown;
-    const shutdown = sandbox.stub(announcement, 'shutdown').callsFake(async (...args) => {
-      await originalShutdown(...args);
-      throw cleanupFailure;
-    });
-    const exit = sandbox.stub(process, 'exit').callsFake((code): never => {
-      assert.equal(code, 2);
-      assert.throws(() => controller.browse.query({ options: {} }), /announcement-bar-service/);
-      throw interceptedExit;
-    });
-
-    const failedBoot = startGhost({ frontend: true, server: false });
-    boot = failedBoot;
-    await assert.rejects(failedBoot, (error) => error === interceptedExit);
-    sinon.assert.calledOnce(exit);
-    sinon.assert.calledOnce(shutdown);
-    assert.strictEqual(reported.firstCall.args[0], cleanupFailure);
-    assert.strictEqual(reported.lastCall.args[0], failure);
-
-    themeInit.restore();
-    shutdown.restore();
-    // A fresh boot must not inherit ownership from the failed one.
-    const recovered: Promise<StoppableApp> = startGhost({ frontend: true, server: false });
-    boot = recovered;
-    const app = await recovered;
-    await supertest(app).get('/members/api/announcement/').expect(200);
-    await app.stop();
+    assert.deepEqual(body, { announcement: [expected] });
+    assert.deepEqual(controller.browse.query({ options: {} }), expected);
+    assert.deepEqual(read(), expected);
   });
 });

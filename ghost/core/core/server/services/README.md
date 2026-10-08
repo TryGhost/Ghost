@@ -53,16 +53,16 @@ client acquires resources, its owner must still arrange any necessary cleanup.
 ## Implementation and migration
 
 The definition above guides new roots and directory cleanup. Existing roots
-still use different construction and export patterns; a uniform managed
-lifecycle interface is not yet the implemented contract throughout this
-directory. Do not assume every root exports `init`, `service`, and `shutdown`.
+still use different construction and export patterns; a uniform
+initialization interface is not yet the implemented contract throughout this
+directory. Do not assume every root already exports `init` and `service`.
 Standardizing that interface must include the implementation, boot wiring, and
 tests, not just a documentation change.
 
 Announcement-bar is the first root using the shared
 [service lifecycle helper](../lib/service-lifecycle/README.md). It exports
-`init(scope)`, `service` and `shutdown(scope)`. Boot owns the scope, awaits
-initialization and arranges cleanup; HTTP callers retain `service`. Use this
+`init()` and `service`, with no shutdown hook because it owns no resources.
+Boot awaits initialization; HTTP callers retain `service`. Use this
 helper for new roots, with contract tests for the actual callers. Existing roots
 still need individual conversion and verification.
 
@@ -132,14 +132,23 @@ boundary needs it.
 
 ## Initialization
 
-Ghost's boot sequence owns service construction. New roots expose `init(scope)`
-through the shared helper. `ghost/core/core/boot.js` supplies the scope and awaits
-initialization in the appropriate phase. Do not make the first request responsible
-for constructing the service.
+Ghost's boot sequence owns service construction. Define each root with `create`
+and add `start(instance)` or `shutdown(instance)` only when its implementation
+needs them. Do not add empty lifecycle hooks to composition-only roots.
 
-Register `shutdown(scope)` with the boot owner, including for composition-only
-roots, so their instances become unavailable when that boot ends. Resource-owning
-implementations register cleanup with `onDispose` before fallible acquisition.
+`ghost/core/core/boot.js` awaits `initializeService(root, ghostServer)` in the
+appropriate phase. The common initializer registers cleanup only when the root
+exposes `shutdown`; callers do not wire individual cleanup tasks. Do not make
+the first request responsible for constructing the service.
+
+Construction without a shutdown hook is idempotent for the module lifetime.
+A resource-owning root can be initialized again after successful shutdown.
+Preserve each root's dependency lifetime when converting it: having no owned
+resources does not prove that captured dependencies stay valid forever.
+
+The common initializer requires a cleanup owner for roots with shutdown. A
+`server: false` boot currently has no such owner; introducing a resource-owning
+root there must include explicit cleanup ownership. Announcement-bar needs none.
 
 ## Related guidance
 

@@ -1,50 +1,41 @@
 import errors from '@tryghost/errors';
 import logging from '@tryghost/logging';
 
-type Disposer = () => void | Promise<void>;
-
-type Lifetime<T> = {
-  scope: object;
-  state: 'starting' | 'ready' | 'stopping' | 'stopped' | 'failed';
-  instance?: T;
-  creating: boolean;
-  acceptingDisposers: boolean;
-  disposers: Disposer[];
-  startup: Promise<void>;
-  cleanup?: Promise<void>;
-  shutdown?: Promise<void>;
-};
+type Shutdown = () => Promise<void>;
 
 export type ServiceLifecycle<T extends object> = {
   service: T;
-  init(scope: object): Promise<void>;
-  shutdown(scope: object): Promise<void>;
+  init(): Promise<void>;
+  shutdown?: Shutdown;
 };
 
-/**
- * Owns one ready capability per boot. Register cleanup before fallible resource
- * acquisition; a failed or interrupted start disposes without publishing it.
- * The facade supports member reads and calls, not object reflection or mutation.
- */
+/** Construct explicitly at boot; add startup and cleanup hooks only when needed. */
 export function defineService<T extends object>({
   name,
   create,
+  start,
+  shutdown,
 }: {
   name: string;
-  create(lifetime: { onDispose(dispose: Disposer): void }): T | Promise<T>;
+  create(): T | Promise<T>;
+  start?(instance: T): void | Promise<void>;
+  shutdown?(instance: T): void | Promise<void>;
 }): ServiceLifecycle<T> {
-  let current: Lifetime<T> | undefined;
+  let instance: T | undefined;
+  let initialization: Promise<void> | undefined;
+  let currentShutdown: Shutdown | undefined;
+  let creating = false;
+  let stopping = false;
   let cleanupFailed = false;
-  const usedScopes = new WeakSet<object>();
   const methods = new Map<PropertyKey, (...args: unknown[]) => unknown>();
   const misuse = (message: string) =>
     new errors.IncorrectUsageError({ message: `${name}: ${message}` });
 
   const resolve = (): T => {
-    if (current?.state !== 'ready' || !current.instance) {
+    if (!instance) {
       throw misuse('service is not ready. Await init() before use.');
     }
-    return current.instance;
+    return instance;
   };
 
   const service = new Proxy({} as T, {
@@ -53,149 +44,116 @@ export function defineService<T extends object>({
       if (property === 'then') {
         return undefined;
       }
-      const instance = resolve();
-      const value = Reflect.get(instance, property, instance);
+      const target = resolve();
+      const value = Reflect.get(target, property, target);
       if (typeof value !== 'function') {
         return value;
       }
       if (!methods.has(property)) {
         methods.set(property, (...args) => {
-          const target = resolve();
-          const method = Reflect.get(target, property, target);
+          const receiver = resolve();
+          const method = Reflect.get(receiver, property, receiver);
           if (typeof method !== 'function') {
             throw misuse(`${String(property)} is no longer a method.`);
           }
-          return Reflect.apply(method, target, args);
+          return Reflect.apply(method, receiver, args);
         });
       }
       return methods.get(property);
     },
   });
 
-  const dispose = (lifetime: Lifetime<T>): Promise<void> => {
-    lifetime.cleanup ??= Promise.resolve().then(async () => {
-      const failures: unknown[] = [];
-      for (const disposer of lifetime.disposers.reverse()) {
-        try {
-          await disposer();
-        } catch (error) {
-          failures.push(error);
-        }
-      }
-      if (failures.length > 0) {
-        cleanupFailed = true;
-        lifetime.state = 'failed';
-        // Preserve every failure while preventing a new boot over leaked resources.
-        // eslint-disable-next-line ghost/ghost-custom/ghost-error-usage -- Native AggregateError retains all disposer failures.
-        throw new AggregateError(failures, `${name}: service cleanup failed`);
-      }
-      lifetime.state = 'stopped';
-    });
-    return lifetime.cleanup;
-  };
-
-  const init = (scope: object): Promise<void> => {
+  const init = (): Promise<void> => {
     if (cleanupFailed) {
       return Promise.reject(misuse('cleanup failed; this service cannot be initialized again.'));
     }
-    if (current?.scope === scope) {
-      if (current.creating) {
-        return Promise.reject(misuse('initialization called recursively while creating service.'));
-      }
-      if (
-        current.state === 'starting' ||
-        current.state === 'ready' ||
-        (current.state === 'stopping' && !current.shutdown)
-      ) {
-        return current.startup;
-      }
-      return Promise.reject(misuse('this boot scope has stopped; use a fresh scope.'));
+    if (stopping) {
+      return Promise.reject(misuse('shutdown is still in progress.'));
     }
-    if (current && current.state !== 'stopped') {
-      return Promise.reject(misuse('another boot scope still owns this service.'));
+    if (creating) {
+      return Promise.reject(misuse('initialization called recursively while creating service.'));
     }
-    if (usedScopes.has(scope)) {
-      return Promise.reject(misuse('this boot scope has stopped; use a fresh scope.'));
+    if (initialization) {
+      return initialization;
     }
 
-    const startup = Promise.withResolvers<void>();
-    const lifetime: Lifetime<T> = {
-      scope,
-      state: 'starting',
-      creating: false,
-      acceptingDisposers: true,
-      disposers: [],
-      startup: startup.promise,
+    const ready = Promise.withResolvers<void>();
+    initialization = ready.promise;
+    let candidate: T | undefined;
+    let cleanup: Promise<void> | undefined;
+    const dispose = (): Promise<void> => {
+      cleanup ??= Promise.resolve()
+        .then(() => candidate && shutdown?.(candidate))
+        .catch((error) => {
+          cleanupFailed = true;
+          throw error;
+        });
+      return cleanup;
     };
-    current = lifetime;
-    usedScopes.add(scope);
 
-    const start = async () => {
-      try {
-        let candidate: T | Promise<T>;
-        lifetime.creating = true;
-        try {
-          candidate = create({
-            onDispose(disposer) {
-              if (!lifetime.acceptingDisposers) {
-                throw misuse('cleanup must be registered during creation.');
-              }
-              lifetime.disposers.push(disposer);
-            },
-          });
-        } finally {
-          lifetime.creating = false;
+    if (shutdown) {
+      let stopped: Promise<void> | undefined;
+      const stop = (): Promise<void> => {
+        if (!stopped) {
+          stopping = true;
+          instance = undefined;
+          stopped = (async () => {
+            try {
+              await ready.promise;
+            } catch {
+              // The init caller receives the startup failure.
+            }
+            await dispose();
+            initialization = undefined;
+            stopping = false;
+          })();
         }
-        const instance = await candidate;
-        lifetime.acceptingDisposers = false;
-        if (lifetime.state !== 'starting') {
+        return stopped;
+      };
+      currentShutdown = stop;
+    }
+
+    const initialize = async () => {
+      try {
+        let created: T | Promise<T>;
+        creating = true;
+        try {
+          created = create();
+        } finally {
+          creating = false;
+        }
+        candidate = await created;
+        await start?.(candidate);
+        if (stopping) {
           throw misuse('initialization was interrupted by shutdown.');
         }
-        lifetime.instance = instance;
-        lifetime.state = 'ready';
+        instance = candidate;
       } catch (error) {
-        lifetime.acceptingDisposers = false;
-        lifetime.state = 'stopping';
         try {
-          await dispose(lifetime);
+          await dispose();
         } catch (cleanupError) {
           try {
             logging.error(cleanupError);
-          } finally {
-            // A logging failure must not replace the original startup failure either.
-            throw error;
+          } catch {
+            // Neither cleanup nor logging may replace the startup failure.
           }
+        }
+        if (!stopping && !cleanupFailed) {
+          initialization = undefined;
         }
         throw error;
       }
     };
-    void start().then(startup.resolve, startup.reject);
-    return lifetime.startup;
+    void initialize().then(ready.resolve, ready.reject);
+    return ready.promise;
   };
 
-  const shutdown = (scope: object): Promise<void> => {
-    const lifetime = current;
-    if (!lifetime || lifetime.scope !== scope) {
-      return Promise.resolve();
-    }
-    if (!lifetime.shutdown) {
-      lifetime.state = 'stopping';
-      lifetime.instance = undefined;
-      lifetime.shutdown = (async () => {
-        try {
-          await lifetime.startup;
-        } catch {
-          // The init caller receives the original error; disposal is shared below.
-        }
-        try {
-          await dispose(lifetime);
-        } finally {
-          lifetime.state = cleanupFailed ? 'failed' : 'stopped';
-        }
-      })();
-    }
-    return lifetime.shutdown;
+  if (!shutdown) {
+    return { service, init };
+  }
+  return {
+    service,
+    init,
+    shutdown: () => currentShutdown?.() ?? Promise.resolve(),
   };
-
-  return { service, init, shutdown };
 }

@@ -11,7 +11,6 @@ const boot = require('../../../../core/boot');
 // Other Test Utilities
 const configUtils = require('../../../utils/config-utils');
 const urlServiceUtils = require('../../../utils/url-service-utils');
-const { stopGhost, rememberGhost } = require('../../../utils/e2e-utils');
 
 module.exports = {
   overrideGhostConfig: (utils) => {
@@ -40,7 +39,6 @@ module.exports = {
    * @returns {Promise<object>} express App
    */
   initGhost: async (options = {}) => {
-    await stopGhost();
     const app = await boot(
       Object.assign(
         {
@@ -50,7 +48,6 @@ module.exports = {
         options,
       ),
     );
-    rememberGhost(app);
 
     await urlServiceUtils.isFinished();
 

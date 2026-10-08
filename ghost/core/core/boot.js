@@ -652,8 +652,6 @@ async function bootGhost({ backend = true, frontend = true, server = true } = {}
   let ghostServer;
   let logging;
   let metrics;
-  const serviceScope = {};
-  let stopManagedServices;
 
   // These require their own try-catch block and error format, because we can't log an error if logging isn't working
   try {
@@ -705,12 +703,6 @@ async function bootGhost({ backend = true, frontend = true, server = true } = {}
     // Step 2 - Start server with minimal app in global maintenance mode
     debug('Begin: load server + minimal app');
     const rootApp = require('./app')();
-    const announcementBar = require('./server/services/announcement-bar-service');
-    stopManagedServices = () => {
-      // Retained test apps must not serve requests through a later boot's services.
-      rootApp.enable('maintenance');
-      return announcementBar.shutdown(serviceScope);
-    };
 
     if (server) {
       const { GhostServer } = require('./server/ghost-server');
@@ -719,7 +711,6 @@ async function bootGhost({ backend = true, frontend = true, server = true } = {}
         env: config.get('env'),
         serverConfig: config.get('server'),
       });
-      ghostServer.registerCleanupTask(stopManagedServices, 'Announcement bar');
       await ghostServer.start(rootApp);
       bootLogger.log('server started');
 
@@ -730,9 +721,6 @@ async function bootGhost({ backend = true, frontend = true, server = true } = {}
         }
       }, 'Prometheus client');
       debug('End: load server + minimal app');
-    } else {
-      // Keep the callable Express app used by tests, with an explicit boot owner.
-      rootApp.stop = stopManagedServices;
     }
 
     // Step 3 - Get the DB ready
@@ -748,7 +736,8 @@ async function bootGhost({ backend = true, frontend = true, server = true } = {}
     await initCore({ ghostServer, config });
 
     debug('Begin: Announcement bar');
-    await announcementBar.init(serviceScope);
+    const { initializeService } = require('./server/lib/service-lifecycle/boot');
+    await initializeService(require('./server/services/announcement-bar-service'), ghostServer);
     debug('End: Announcement bar');
 
     // Instrument the knex instance and connection pool if prometheus is enabled
@@ -806,15 +795,6 @@ async function bootGhost({ backend = true, frontend = true, server = true } = {}
     }
   } catch (error) {
     const errors = require('@tryghost/errors');
-
-    if (!ghostServer && stopManagedServices) {
-      try {
-        await stopManagedServices();
-      } catch (cleanupError) {
-        // Cleanup must not replace the failure which prevented startup.
-        logging.error(cleanupError);
-      }
-    }
 
     // Ensure the error we have is an ignition error
     let serverStartError = error;

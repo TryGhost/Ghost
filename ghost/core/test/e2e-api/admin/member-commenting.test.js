@@ -476,7 +476,8 @@ describe('Member with Commenting Disabled - Comment Restriction', function () {
   let postId;
 
   beforeAll(async function () {
-    ({ adminAgent, membersAgent } = await agentProvider.getAgentsForMembers());
+    adminAgent = await agentProvider.getAdminAPIAgent();
+    membersAgent = await agentProvider.getMembersAPIAgent();
     await fixtureManager.init('posts', 'members');
     await adminAgent.loginAsOwner();
 

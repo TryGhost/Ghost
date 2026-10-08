@@ -19,7 +19,7 @@ describe('Service lifecycle', function () {
     return error instanceof errors.IncorrectUsageError && error.message.includes('example');
   }
 
-  it('retains a facade without constructing and preserves synchronous private-field methods', async function () {
+  it('constructs only at init and keeps a composition-only instance without a shutdown method', async function () {
     class Example {
       #value = 3;
       snapshot = { value: 4 };
@@ -36,283 +36,234 @@ describe('Service lifecycle', function () {
     const create = sandbox.spy(() => new Example());
     const root = defineService({ name: 'example', create });
     const retained = root.service;
-    await root.shutdown({});
+    assert.equal('shutdown' in root, false);
     sinon.assert.notCalled(create);
     assert.throws(() => retained.add, isUnavailable);
     assert.throws(() => retained.value, isUnavailable);
     assert.equal(await Promise.resolve(retained), retained);
 
-    const scope = {};
-    await root.init(scope);
+    await root.init();
     const add = retained.add;
     assert.equal(add, retained.add);
     assert.equal(add(2), 5);
     assert.equal(retained.value, 5);
     assert.equal(retained.snapshot, create.firstCall.returnValue.snapshot);
+    await root.init();
+    sinon.assert.calledOnce(create);
+    assert.equal(add(1), 6);
     assert.equal(await Promise.resolve(retained), retained);
-    await root.shutdown(scope);
-    assert.throws(() => add(1), isUnavailable);
-    assert.throws(() => retained.snapshot, isUnavailable);
   });
 
-  it('joins pending initialization and rejects an overlapping owner without shutting it down', async function () {
-    const ready = Promise.withResolvers<{ value: number }>();
-    const create = sandbox.spy(() => ready.promise);
+  it('joins pending creation without publishing the instance early', async function () {
+    const created = Promise.withResolvers<{ value: number }>();
+    const create = sandbox.spy(() => created.promise);
     const root = defineService({ name: 'example', create });
-    const scope = {};
-    const intruder = {};
-    const start = root.init(scope);
-    assert.equal(root.init(scope), start);
-    await assert.rejects(root.init(intruder), isUnavailable);
-    await root.shutdown(intruder);
+    const initialization = root.init();
+    assert.equal(root.init(), initialization);
     assert.throws(() => root.service.value, isUnavailable);
-    ready.resolve({ value: 1 });
-    await start;
-    assert.equal(root.init(scope), start);
+    created.resolve({ value: 1 });
+    await initialization;
+    assert.equal(root.init(), initialization);
     assert.equal(root.service.value, 1);
     sinon.assert.calledOnce(create);
-    await root.shutdown(scope);
   });
 
-  it('forwards captured methods to a new boot but leaves captured ordinary values unchanged', async function () {
-    let generation = 0;
-    const root = defineService({
-      name: 'example',
-      create: (): {
-        generation: number;
-        snapshot: { generation: number };
-        read(): number;
-      } => {
-        generation += 1;
-        return {
-          generation,
-          snapshot: { generation },
-          read() {
-            return this.generation;
-          },
-        };
-      },
+  it('awaits optional startup before publishing and runs it only once', async function () {
+    const started = Promise.withResolvers<void>();
+    const candidate = { value: 1 };
+    const start = sandbox.stub().returns(started.promise);
+    const root = defineService({ name: 'example', create: () => candidate, start });
+    const initialization = root.init();
+    let ready = false;
+    void initialization.then(() => {
+      ready = true;
     });
-    const first = {};
-    const second = {};
-    await root.init(first);
+    await setImmediate();
+    sinon.assert.calledOnceWithExactly(start, candidate);
+    assert.equal(ready, false);
+    assert.throws(() => root.service.value, isUnavailable);
+    assert.equal(root.init(), initialization);
+    started.resolve();
+    await initialization;
+    assert.equal(root.service.value, 1);
+    await root.init();
+    sinon.assert.calledOnce(start);
+    assert.equal('shutdown' in root, false);
+  });
+
+  it('allows a later explicit attempt after construction fails', async function () {
+    const failure = new Error('construction failed');
+    const create = sandbox.stub();
+    create.onFirstCall().throws(failure);
+    create.onSecondCall().returns({ value: 2 });
+    const root = defineService<{ value: number }>({ name: 'example', create });
+    await assert.rejects(root.init(), (error) => error === failure);
+    assert.throws(() => root.service.value, isUnavailable);
+    await root.init();
+    assert.equal(root.service.value, 2);
+    sinon.assert.calledTwice(create);
+  });
+
+  it('stops resource owners once, then forwards retained methods to a fresh instance', async function () {
+    let generation = 0;
+    const create = sandbox.spy(() => {
+      generation += 1;
+      return {
+        generation,
+        snapshot: { generation },
+        read() {
+          return this.generation;
+        },
+      };
+    });
+    const shutdown = sandbox.spy();
+    const root = defineService({ name: 'example', create, shutdown });
+    assert.ok(root.shutdown);
+    const stopService = root.shutdown;
+    await stopService();
+    sinon.assert.notCalled(create);
+    sinon.assert.notCalled(shutdown);
+    await root.init();
     const read = root.service.read;
     const snapshot = root.service.snapshot;
     assert.equal(read(), 1);
-    await root.shutdown(first);
-    await assert.rejects(root.init(first), isUnavailable);
+    const stopped = stopService();
+    assert.equal(root.shutdown(), stopped);
     assert.throws(read, isUnavailable);
-    await root.init(second);
-    await root.shutdown(first);
+    assert.throws(() => root.service.snapshot, isUnavailable);
+    await stopped;
+    sinon.assert.calledOnceWithExactly(shutdown, create.firstCall.returnValue);
+    await root.shutdown();
+    sinon.assert.calledOnce(shutdown);
+    await root.init();
     assert.equal(root.service.read, read);
     assert.equal(read(), 2);
     assert.equal(snapshot.generation, 1);
     assert.equal(root.service.snapshot.generation, 2);
-    await assert.rejects(root.init(first), isUnavailable);
-    await root.shutdown(second);
-    await assert.rejects(root.init(first), isUnavailable);
+    await stopService();
+    sinon.assert.calledTwice(shutdown);
+    assert.equal(shutdown.secondCall.args[0], create.secondCall.returnValue);
   });
 
-  it('waits for interrupted creation and disposes late acquisitions without publishing', async function () {
-    const acquired = Promise.withResolvers<void>();
-    const cleanup = Promise.withResolvers<void>();
-    const calls: string[] = [];
-    const root = defineService({
-      name: 'example',
-      async create({ onDispose }) {
-        onDispose(() => {
-          calls.push('first');
-        });
-        await acquired.promise;
-        onDispose(async () => {
-          calls.push('second');
-          await cleanup.promise;
-        });
-        return { value: 1 };
-      },
-    });
-    const scope = {};
-    const start = root.init(scope);
-    const failedStart = assert.rejects(start, /example: initialization was interrupted/);
-    const stop = root.shutdown(scope);
-    assert.equal(root.shutdown(scope), stop);
-    let stopped = false;
-    void stop.then(() => {
-      stopped = true;
-    });
-    await assert.rejects(root.init(scope), isUnavailable);
-    await assert.rejects(root.init({}), isUnavailable);
+  it('waits for pending startup and cleanup without publishing or allowing replacement', async function () {
+    const started = Promise.withResolvers<void>();
+    const released = Promise.withResolvers<void>();
+    const candidate = { value: 1 };
+    const start = sandbox.stub().returns(started.promise);
+    const shutdown = sandbox.stub().returns(released.promise);
+    const create = sandbox.spy(() => candidate);
+    const root = defineService({ name: 'example', create, start, shutdown });
+    assert.ok(root.shutdown);
+    const initialization = root.init();
+    const failedStart = assert.rejects(initialization, /example: initialization was interrupted/);
     await setImmediate();
-    assert.equal(stopped, false);
-    assert.deepEqual(calls, []);
-    acquired.resolve();
+    const stopped = root.shutdown();
+    assert.equal(root.shutdown(), stopped);
+    let finished = false;
+    void stopped.then(() => {
+      finished = true;
+    });
+    await assert.rejects(root.init(), /example: shutdown is still in progress/);
     await setImmediate();
-    assert.deepEqual(calls, ['second']);
-    assert.equal(stopped, false);
+    sinon.assert.notCalled(shutdown);
+    assert.equal(finished, false);
+    started.resolve();
+    await setImmediate();
+    sinon.assert.calledOnceWithExactly(shutdown, candidate);
+    assert.equal(finished, false);
     assert.throws(() => root.service.value, isUnavailable);
-    cleanup.resolve();
+    await assert.rejects(root.init(), /example: shutdown is still in progress/);
+    sinon.assert.calledOnce(create);
+    released.resolve();
     await failedStart;
-    await stop;
-    assert.deepEqual(calls, ['second', 'first']);
+    await stopped;
     assert.throws(() => root.service.value, isUnavailable);
-  });
-
-  it('rolls back partial startup in reverse order and preserves the original failure', async function () {
-    const failure = new Error('subscription failed');
-    const calls: string[] = [];
-    let attempts = 0;
-    const root = defineService({
-      name: 'example',
-      create({ onDispose }) {
-        attempts += 1;
-        onDispose(() => {
-          calls.push('first');
-        });
-        onDispose(async () => {
-          calls.push('second');
-        });
-        if (attempts === 1) {
-          throw failure;
-        }
-        return { value: 1 };
-      },
-    });
-    const scope = {};
-    await assert.rejects(root.init(scope), (error) => error === failure);
-    assert.deepEqual(calls, ['second', 'first']);
-    await root.shutdown(scope);
-    assert.deepEqual(calls, ['second', 'first']);
-    const fresh = {};
-    await root.init(fresh);
+    await root.init();
+    sinon.assert.calledTwice(create);
     assert.equal(root.service.value, 1);
-    await root.shutdown(fresh);
-    assert.deepEqual(calls, ['second', 'first', 'second', 'first']);
+    await root.shutdown();
   });
 
-  it('reports every rollback failure without replacing the startup error or permitting reuse', async function () {
-    const failure = new Error('startup failed');
-    const first = new Error('first cleanup failed');
-    const second = new Error('second cleanup failed');
-    const calls: string[] = [];
-    const log = sandbox.stub(logging, 'error');
-    const root = defineService({
-      name: 'example',
-      create({ onDispose }): { value: number } {
-        onDispose(() => {
-          calls.push('first');
-          throw first;
-        });
-        onDispose(async () => {
-          calls.push('second');
-          throw second;
-        });
-        throw failure;
-      },
-    });
-    const scope = {};
-    await assert.rejects(root.init(scope), (error) => error === failure);
-    assert.deepEqual(calls, ['second', 'first']);
-    sinon.assert.calledOnce(log);
-    const cleanupError = log.firstCall.args[0] as AggregateError;
-    assert.ok(cleanupError instanceof AggregateError);
-    assert.deepEqual(cleanupError.errors, [second, first]);
-    await assert.rejects(root.shutdown(scope), (error) => error === cleanupError);
-    await assert.rejects(root.init({}), /example: cleanup failed/);
-    assert.deepEqual(calls, ['second', 'first']);
-  });
-
-  it('shares failed startup while rollback is pending and preserves it if logging fails', async function () {
-    const cleanup = Promise.withResolvers<void>();
-    const failure = new Error('startup failed');
-    const cleanupFailure = new Error('cleanup failed');
-    const log = sandbox.stub(logging, 'error').throws(new Error('logging failed'));
-    const root = defineService({
-      name: 'example',
-      create({ onDispose }): { value: number } {
-        onDispose(async () => {
-          await cleanup.promise;
-          throw cleanupFailure;
-        });
-        throw failure;
-      },
-    });
-    const scope = {};
-    const start = root.init(scope);
-    assert.equal(root.init(scope), start);
-    const failedStart = assert.rejects(start, (error) => error === failure);
+  it('cleans up failed startup before permitting retry and preserves the original error', async function () {
+    const released = Promise.withResolvers<void>();
+    const failure = new Error('subscription failed');
+    const create = sandbox.spy(() => ({ value: 1 }));
+    const start = sandbox.stub();
+    start.onFirstCall().throws(failure);
+    const shutdown = sandbox.stub().returns(released.promise);
+    const root = defineService({ name: 'example', create, start, shutdown });
+    assert.ok(root.shutdown);
+    const initialization = root.init();
+    const failedStart = assert.rejects(initialization, (error) => error === failure);
     await setImmediate();
-    assert.equal(root.init(scope), start);
+    sinon.assert.calledOnceWithExactly(shutdown, create.firstCall.returnValue);
+    assert.equal(root.init(), initialization);
     assert.throws(() => root.service.value, isUnavailable);
-    cleanup.resolve();
+    released.resolve();
     await failedStart;
-    sinon.assert.calledOnce(log);
-    await assert.rejects(root.shutdown(scope), (error) => {
-      assert.ok(error instanceof AggregateError);
-      assert.deepEqual(error.errors, [cleanupFailure]);
-      return true;
-    });
+    await root.shutdown();
+    sinon.assert.calledOnce(shutdown);
+    await root.init();
+    sinon.assert.calledTwice(create);
+    assert.equal(root.service.value, 1);
+    await root.shutdown();
+    sinon.assert.calledTwice(shutdown);
   });
 
-  it('attempts every shutdown disposer once and retains a failed cleanup outcome', async function () {
+  it('retains failed cleanup and rejects reinitialization over unreleased resources', async function () {
     const failure = new Error('cleanup failed');
-    const calls: string[] = [];
-    const root = defineService({
-      name: 'example',
-      create({ onDispose }) {
-        onDispose(() => {
-          calls.push('first');
-        });
-        onDispose(() => {
-          calls.push('second');
-          throw failure;
-        });
-        return { value: 1 };
-      },
-    });
-    const scope = {};
-    await root.init(scope);
-    const stop = root.shutdown(scope);
+    const shutdown = sandbox.stub().rejects(failure);
+    const create = sandbox.spy(() => ({ value: 1 }));
+    const root = defineService({ name: 'example', create, shutdown });
+    assert.ok(root.shutdown);
+    await root.init();
+    const stopped = root.shutdown();
     assert.throws(() => root.service.value, isUnavailable);
-    await assert.rejects(stop, (error) => {
-      assert.ok(error instanceof AggregateError);
-      assert.deepEqual(error.errors, [failure]);
-      return true;
-    });
-    assert.equal(root.shutdown(scope), stop);
-    await assert.rejects(root.init(scope), /example: cleanup failed/);
-    await assert.rejects(root.init({}), /example: cleanup failed/);
-    assert.deepEqual(calls, ['second', 'first']);
+    await assert.rejects(stopped, (error) => error === failure);
+    assert.equal(root.shutdown(), stopped);
+    await assert.rejects(root.init(), /example: cleanup failed/);
+    sinon.assert.calledOnce(create);
+    sinon.assert.calledOnce(shutdown);
   });
+
+  for (const loggingFails of [false, true]) {
+    it(`preserves a startup failure when rollback fails${loggingFails ? ' and logging fails' : ''}`, async function () {
+      const failure = new Error('startup failed');
+      const cleanupFailure = new Error('cleanup failed');
+      const log = sandbox.stub(logging, 'error');
+      if (loggingFails) {
+        log.throws(new Error('logging failed'));
+      }
+      const shutdown = sandbox.stub().rejects(cleanupFailure);
+      const root = defineService({
+        name: 'example',
+        create: () => ({ value: 1 }),
+        start: () => {
+          throw failure;
+        },
+        shutdown,
+      });
+      assert.ok(root.shutdown);
+      await assert.rejects(root.init(), (error) => error === failure);
+      sinon.assert.calledOnceWithExactly(log, cleanupFailure);
+      await assert.rejects(root.shutdown(), (error) => error === cleanupFailure);
+      await assert.rejects(root.init(), /example: cleanup failed/);
+      sinon.assert.calledOnce(shutdown);
+    });
+  }
 
   it('rejects synchronous recursive initialization without constructing twice', async function () {
-    const scope = {};
     let calls = 0;
     const root: ServiceLifecycle<{ value: number }> = defineService({
       name: 'example',
       async create() {
         calls += 1;
-        await root.init(scope);
+        await root.init();
         return { value: 1 };
       },
     });
-    await assert.rejects(root.init(scope), /example: initialization called recursively/);
+    await assert.rejects(root.init(), /example: initialization called recursively/);
     assert.equal(calls, 1);
     assert.throws(() => root.service.value, isUnavailable);
-    await root.shutdown(scope);
-  });
-
-  it('only accepts cleanup registration while creation is pending', async function () {
-    let onDispose: (dispose: () => void) => void;
-    const root = defineService({
-      name: 'example',
-      create(lifetime) {
-        onDispose = lifetime.onDispose;
-        return { value: 1 };
-      },
-    });
-    const scope = {};
-    await root.init(scope);
-    assert.throws(() => onDispose(() => {}), /example: cleanup must be registered/);
-    await root.shutdown(scope);
   });
 });

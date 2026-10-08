@@ -14,12 +14,9 @@ describe('Notifications API', function () {
 
   beforeAll(async function () {
     adminAgent = await agentProvider.getAdminAPIAgent({ staffTokenRole: 'admin' });
-    editorAgent = adminAgent.duplicate();
-    superEditorAgent = adminAgent.duplicate();
-    authorAgent = adminAgent.duplicate();
-    await editorAgent.useStaffTokenFor('editor');
-    await superEditorAgent.useStaffTokenFor('superEditor');
-    await authorAgent.useStaffTokenFor('author');
+    editorAgent = await agentProvider.getAdminAPIAgent({ staffTokenRole: 'editor' });
+    superEditorAgent = await agentProvider.getAdminAPIAgent({ staffTokenRole: 'superEditor' });
+    authorAgent = await agentProvider.getAdminAPIAgent({ staffTokenRole: 'author' });
 
     await fixtureManager.init('users');
   });

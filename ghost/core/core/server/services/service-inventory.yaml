@@ -114,17 +114,16 @@ services:
     entryPoints:
       - announcement-bar-service/index.js
     notes: >-
-      Uses the shared lifecycle with boot-owned composition and a retained service facade.
-      Preserve live settings, request-local visibility and the validator's separate class import.
+      Uses shared construction and access without lifecycle hooks. Preserve live settings,
+      request-local visibility and the validator's separate class import.
     contracts:
       exports:
         summary: >-
-          CommonJS exports init(scope), service and shutdown(scope). Lifecycle methods return
-          promises; getAnnouncementSettings(member) remains synchronous and returns undefined
-          or a fresh announcement/background object. The facade preserves the private-field
-          receiver. Controller and root tests cover these calls and retaining the facade across boots.
-          The separate implementation class still exports VisibilityValues; class tests check
-          their values, not mutation of the static property.
+          CommonJS exports init() and service, with no shutdown hook. init returns a promise;
+          getAnnouncementSettings(member) remains synchronous and returns undefined or a fresh
+          announcement/background object. Controller and root tests cover retained methods and
+          live calls with the private-field receiver. The separate implementation class still
+          exports VisibilityValues; class tests check their values, not static-property mutation.
         sources:
           - core/server/services/announcement-bar-service/index.js
           - core/server/services/announcement-bar-service/announcement-bar-settings.js
@@ -136,11 +135,11 @@ services:
           - test/unit/api/endpoints/announcements.test.ts
       construction:
         summary: >-
-          Import defines the lifecycle without constructing the implementation. Boot calls
-          init after core/settings initialization, creating one AnnouncementBarSettings with
-          a callback reading the shared cache. Root tests show initialization does not read
-          settings; helper tests assert deferred, once-per-scope creation. The validator
-          imports the separate class and constructs no instance (source-only).
+          Source defines the root without constructing its implementation and places boot's
+          init call after core/settings initialization. It constructs AnnouncementBarSettings
+          with a callback into the shared settings cache. Root tests show init does not read
+          settings; helper tests cover deferred construction and repeated init retaining one
+          instance. The validator imports the separate class without constructing it (source-only).
         sources:
           - core/boot.js
           - core/server/services/announcement-bar-service/index.js
@@ -167,41 +166,35 @@ services:
           - test/e2e-api/admin/settings.test.js
       startup:
         summary: >-
-          Boot awaits init before frontend service initialization and readiness. The real-boot
-          test holds init pending, checks the next boot stage has not run, observes HTTP 503
-          and no readiness notification, then releases it and gets an announcement over HTTP.
-          Retaining service before initialization is safe; accessing members or calling a
-          retained method while unavailable throws a named IncorrectUsageError (unit-tested).
+          Boot awaits initialization before readiness. A real-boot test holds init pending,
+          checks the next routing stage has not run, observes HTTP 503 and no readiness
+          notification, then releases it and gets an announcement over HTTP. Helper tests
+          allow retaining service before init but reject member access before it is ready.
         sources:
           - core/boot.js
           - core/server/lib/service-lifecycle/index.ts
-          - core/server/services/announcement-bar-service/index.js
+          - core/server/lib/service-lifecycle/boot.ts
         tests:
           - test/e2e-server/announcement-lifecycle.isolated.test.ts
-          - test/unit/server/services/announcement-bar/index.test.ts
           - test/unit/server/lib/service-lifecycle.test.ts
+          - test/unit/server/lib/service-lifecycle-boot.test.ts
       lifetime:
         summary: >-
-          The facade persists for the module lifetime; each boot owns a new implementation.
-          Helper tests cover same-scope idempotence, pending initialization, rejected overlap
-          and stale shutdown. Root/controller tests cover retained consumers, synchronous live
-          reads and fresh result objects across calls. Real-boot tests cover server cleanup,
-          explicit and fixture-owned no-server restarts, and old apps remaining in maintenance.
-          A fixture unit test checks that imported and required helpers stop the same owner
-          before advancing startup.
+          The facade and implementation persist for the module lifetime; repeated init does
+          not replace them. Helper tests assert once-only construction. Root/controller tests
+          cover retained methods, synchronous live reads and fresh result objects. A real-server
+          stop followed by a no-server reboot keeps the retained controller and method reading
+          changed settings over HTTP and direct calls. The no-server result remains a callable
+          Express app without an added stop method.
         sources:
           - core/boot.js
           - core/server/lib/service-lifecycle/index.ts
           - core/server/services/announcement-bar-service/announcement-bar-settings.js
-          - test/utils/e2e-framework.ts
-          - test/utils/e2e-utils.js
         tests:
-          - test/unit/e2e-boot-ownership.test.ts
           - test/unit/server/lib/service-lifecycle.test.ts
           - test/unit/server/services/announcement-bar/index.test.ts
           - test/unit/api/endpoints/announcements.test.ts
           - test/e2e-server/announcement-lifecycle.isolated.test.ts
-          - test/e2e-api/members/announcement.test.js
       configuration:
         summary: >-
           Every call reads content, background and visibility from settings. Falsy content or
@@ -220,41 +213,36 @@ services:
       resources:
         summary: >-
           Source inspection shows the implementation borrows the cache and owns only its callback;
-          it starts no timers, subscriptions, database or network work. Lifecycle shutdown makes
-          the facade unavailable. GhostServer registers cleanup; no-server apps expose stop()
-          which enters maintenance and disposes the managed root. Real-boot tests assert both
-          paths; this is not a cleanup guarantee for unmigrated services or externally owned listeners.
+          it starts no timers, subscriptions, database or network work. Root tests assert there
+          is no shutdown export. The boot initializer's unit tests assert it registers no cleanup
+          for a root without shutdown. Stopping Ghost does not retire announcement-bar.
         sources:
-          - core/boot.js
+          - core/server/services/announcement-bar-service/index.js
           - core/server/services/announcement-bar-service/announcement-bar-settings.js
-          - core/server/lib/service-lifecycle/index.ts
-          - core/server/ghost-server.ts
+          - core/server/lib/service-lifecycle/boot.ts
         tests:
-          - test/e2e-server/announcement-lifecycle.isolated.test.ts
           - test/unit/server/services/announcement-bar/index.test.ts
+          - test/unit/server/lib/service-lifecycle-boot.test.ts
+          - test/e2e-server/announcement-lifecycle.isolated.test.ts
       failures:
         summary: >-
-          Controller tests preserve synchronous settings-read errors. Helper tests preserve
-          startup error identity, clean partial/interrupted creation and reject reuse after
-          failed cleanup. A real no-server boot test fails a later boot stage, checks disposal
-          at process.exit, preserves the startup error despite a secondary cleanup error and
-          then boots successfully. Corrupt cache values and member-session lookup failures
-          retain their existing source behavior; those paths are not characterized here.
+          Controller tests preserve synchronous settings-read errors. Shared-helper tests cover
+          initialization failure and explicit retry. Announcement-bar acquires no resources to
+          roll back. Corrupt cache values and member-session lookup failures retain their existing
+          source behavior; those paths are not characterized here.
         sources:
-          - core/boot.js
           - core/server/lib/service-lifecycle/index.ts
           - core/server/services/announcement-bar-service/announcement-bar-settings.js
           - core/server/services/members/middleware.js
         tests:
           - test/unit/api/endpoints/announcements.test.ts
           - test/unit/server/lib/service-lifecycle.test.ts
-          - test/e2e-server/announcement-lifecycle.isolated.test.ts
     unverified: []
     blockers:
       - >-
         Malformed cache values, unbound implementation calls and mutation of the shared
         visibility constants remain source-only. The implementation and validator class
-        import are unchanged by the lifecycle adoption.
+        import are unchanged by the initialization adoption.
   app-installations:
     kind: directory
     disposition: retain
