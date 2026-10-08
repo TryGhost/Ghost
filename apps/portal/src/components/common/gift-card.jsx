@@ -1,3 +1,5 @@
+import giftCardNoiseUrl from '../../images/gift-card-noise.webp';
+import giftCardOrbUrl from '../../images/gift-card-orb.webp';
 import { t } from '../../utils/i18n';
 
 const GiftCard = ({
@@ -18,7 +20,11 @@ const GiftCard = ({
     <div className="gh-portal-gift-checkout-card-frame top-0 z-[1] w-full [perspective:1200px] [position:sticky] [transform-style:preserve-3d] [transition:transform_0.3s_ease]">
       <div
         ref={cardRef}
-        className="gh-portal-gift-checkout-card relative isolate flex aspect-[1/1.45] w-full max-w-[280px] flex-col overflow-hidden rounded-[24px] [background:linear-gradient(var(--shine-angle,243.43deg),rgba(255,255,255,0)_3.94%,rgba(255,255,255,0.31)_49.99%,rgba(255,255,255,0)_95.16%),linear-gradient(0deg,rgba(255,255,255,0.07),rgba(255,255,255,0.07)),var(--brandcolor)] [box-shadow:inset_0_1px_0_rgba(255,255,255,0.4),0_24px_48px_rgba(var(--blackrgb),0.08),0_4px_12px_rgba(var(--blackrgb),0.04)] [transform-style:preserve-3d] [will-change:transform] before:pointer-events-none before:absolute before:inset-0 before:z-0 before:bg-[url('./images/gift-card-orb.webp')] before:bg-[length:120%_auto] before:bg-[position:-60%_-180%] before:bg-no-repeat before:opacity-20 before:content-[''] after:pointer-events-none after:absolute after:inset-0 after:z-[2] after:bg-[url('./images/gift-card-noise.webp')] after:bg-[length:192px_192px] after:bg-center after:bg-repeat after:opacity-10 after:content-[''] max-[880px]:max-w-[240px]"
+        style={{
+          '--gift-card-orb': `url(${giftCardOrbUrl})`,
+          '--gift-card-noise': `url(${giftCardNoiseUrl})`,
+        }}
+        className="gh-portal-gift-checkout-card relative isolate flex aspect-[1/1.45] w-full max-w-[280px] flex-col overflow-hidden rounded-[24px] [background:linear-gradient(var(--shine-angle,243.43deg),rgba(255,255,255,0)_3.94%,rgba(255,255,255,0.31)_49.99%,rgba(255,255,255,0)_95.16%),linear-gradient(0deg,rgba(255,255,255,0.07),rgba(255,255,255,0.07)),var(--brandcolor)] [box-shadow:inset_0_1px_0_rgba(255,255,255,0.4),0_24px_48px_rgba(var(--blackrgb),0.08),0_4px_12px_rgba(var(--blackrgb),0.04)] [transform-style:preserve-3d] [will-change:transform] before:pointer-events-none before:absolute before:inset-0 before:z-0 before:bg-[image:var(--gift-card-orb)] before:bg-[length:120%_auto] before:bg-[position:-60%_-180%] before:bg-no-repeat before:opacity-20 before:content-[''] after:pointer-events-none after:absolute after:inset-0 after:z-[2] after:bg-[image:var(--gift-card-noise)] after:bg-[length:192px_192px] after:bg-center after:bg-repeat after:opacity-10 after:content-[''] max-[880px]:max-w-[240px]"
       >
         <div
           className="gh-portal-gift-checkout-card-notch pointer-events-none absolute left-1/2 top-5 z-[3] h-3 w-14 -translate-x-1/2 rounded-xl bg-[color:color-mix(in_srgb,var(--brandcolor)_65%,#000_35%)] [box-shadow:inset_0_1px_2px_rgba(0,0,0,0.4),0_1px_0_rgba(255,255,255,0.18)]"

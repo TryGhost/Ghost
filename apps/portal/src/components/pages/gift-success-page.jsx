@@ -11,6 +11,8 @@ import { getDateString, parseDateValue } from '../../utils/date-time';
 import { t } from '../../utils/i18n';
 import useCardTilt from '../../utils/use-card-tilt';
 import { formatGiftValue } from '../../utils/format-gift-value';
+import { giftCheckoutRightClasses } from '../shared-classes';
+import { tw } from '../../utils/tw';
 
 const CopyIcon = () => (
   <svg
@@ -126,7 +128,7 @@ const GiftSuccessPage = () => {
                   </span>
                   <button
                     className={
-                      'gh-portal-gift-success-copy flex h-10 shrink-0 cursor-pointer items-center gap-1.5 rounded-[999px] border-none px-[18px] py-0 text-md font-semibold text-white [transition:opacity_0.15s_ease] [will-change:opacity] hover:opacity-90 focus-visible:[outline:2px_solid_theme(colors.black)] [&_svg]:size-[14px]' +
+                      tw`gh-portal-gift-success-copy flex h-10 shrink-0 cursor-pointer items-center gap-1.5 rounded-[999px] border-none px-[18px] py-0 text-md font-semibold text-white [transition:opacity_0.15s_ease] [will-change:opacity] hover:opacity-90 focus-visible:[outline:2px_solid_theme(colors.black)] [&_svg]:size-[14px]` +
                       (copied ? ' is-copied bg-green' : ' bg-brand')
                     }
                     onClick={handleCopy}
@@ -162,10 +164,7 @@ const GiftSuccessPage = () => {
             </div>
           </div>
 
-          <div
-            className="gh-portal-gift-checkout-right top-0 flex h-screen overflow-y-auto py-3 pl-0 pr-3 [align-self:start] [position:sticky] max-[880px]:static max-[880px]:-order-1 max-[880px]:h-auto max-[880px]:overflow-visible max-[880px]:p-0"
-            {...cardTiltProps}
-          >
+          <div className={giftCheckoutRightClasses} {...cardTiltProps}>
             <div className="gh-portal-gift-checkout-right-panel flex min-h-0 flex-1 flex-col items-center overflow-y-auto rounded-[32px] px-12 py-16 [background:linear-gradient(180deg,rgba(0,0,0,0.3)_0%,rgba(0,0,0,0)_100%),var(--brandcolor)] max-[880px]:rounded-t-none max-[880px]:px-6 max-[880px]:pb-8 max-[880px]:pt-14">
               <div
                 className="gh-portal-gift-checkout-card-stack my-auto flex w-full max-w-[280px] shrink-0 flex-col items-center max-[880px]:max-w-[240px] [&[data-revealing=true]_.gh-portal-gift-checkout-card-frame]:[transform:rotate(3deg)]"

@@ -1,10 +1,14 @@
 import type { ChangeEvent } from 'react';
 import DatePicker from '../../common/date-picker';
 import InputField from '../../common/input-field';
-import { REVEAL_CLASSES, REVEAL_INNER_CLASSES } from '../../common/gift-email-preview';
 import { t } from '../../../utils/i18n';
-import { GIFT_SWITCH_CLASSES, getGiftSwitchButtonClasses } from './plan-step';
 import type { GiftDeliveryMethod, GiftInputField } from './types';
+import {
+  getGiftSwitchButtonClasses,
+  giftRevealClasses,
+  giftRevealInnerClasses,
+  giftSwitchClasses,
+} from '../../shared-classes';
 
 interface TypedDatePickerProps {
   ariaLabel: string;
@@ -65,7 +69,7 @@ function GiftDeliveryStep({
         <div className="gh-portal-gift-checkout-label mb-2 text-md font-semibold text-gray-900">
           {t('How would you like to share this gift?')}
         </div>
-        <div aria-label={t('Delivery method')} className={GIFT_SWITCH_CLASSES} role="radiogroup">
+        <div aria-label={t('Delivery method')} className={giftSwitchClasses} role="radiogroup">
           <button
             aria-checked={deliveryMethod === 'email'}
             className={getGiftSwitchButtonClasses(deliveryMethod === 'email')}
@@ -91,10 +95,10 @@ function GiftDeliveryStep({
 
       <div
         aria-hidden={deliveryMethod !== 'email'}
-        className={REVEAL_CLASSES}
+        className={giftRevealClasses}
         data-open={deliveryMethod === 'email'}
       >
-        <div className={REVEAL_INNER_CLASSES}>
+        <div className={giftRevealInnerClasses}>
           <div className="gh-portal-gift-checkout-section mt-6">
             <TypedInputField
               {...recipientNameField}
@@ -129,10 +133,10 @@ function GiftDeliveryStep({
             />
             <div
               aria-hidden={giftMessage.length === 0}
-              className={REVEAL_CLASSES}
+              className={giftRevealClasses}
               data-open={giftMessage.length > 0}
             >
-              <div className={REVEAL_INNER_CLASSES}>
+              <div className={giftRevealInnerClasses}>
                 <p className="gh-portal-gift-checkout-message-count mb-0 mt-1.5 text-right text-xs tracking-[0.02em] text-gray-500">
                   {giftMessage.length}/{maxMessageLength}
                 </p>

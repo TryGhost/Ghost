@@ -8,7 +8,8 @@ import ButtonIcon2 from '../images/icons/button-icon-2.svg?react';
 import ButtonIcon3 from '../images/icons/button-icon-3.svg?react';
 import ButtonIcon4 from '../images/icons/button-icon-4.svg?react';
 import ButtonIcon5 from '../images/icons/button-icon-5.svg?react';
-import TailwindStyles from '../tailwind.css?inline';
+import BaseStyles from '../styles/base.css?inline';
+import FrameStyles from '../styles/trigger.css?inline';
 import { hasAvailablePrices, isInviteOnly, isSigninAllowed } from '../utils/helpers';
 import { hasMode } from '../utils/check-mode';
 
@@ -264,8 +265,8 @@ export default class TriggerButton extends React.Component {
   renderFrameStyles() {
     const { brandColor } = this.context;
     const styles = brandColor
-      ? `:root { --brandcolor: ${brandColor} }` + TailwindStyles
-      : TailwindStyles;
+      ? `:root { --brandcolor: ${brandColor} }` + BaseStyles + FrameStyles
+      : BaseStyles + FrameStyles;
     return <style dangerouslySetInnerHTML={{ __html: styles }} />;
   }
 

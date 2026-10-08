@@ -66,7 +66,7 @@ export default function EmailSuppressedPage() {
         </p>
         <p>
           <a
-            className="gh-portal-btn gh-portal-btn-branded no-margin-right relative mt-10 flex h-11 w-full min-w-[80px] cursor-pointer select-none items-center justify-center whitespace-nowrap rounded-md border border-solid border-gray-200 bg-white px-[1.8rem] py-0 text-center text-base font-medium leading-[1em] tracking-[0.2px] text-brand no-underline [outline:none] [transition:all_.25s_ease] hover:border-gray-300"
+            className="gh-portal-btn gh-portal-btn-branded no-margin-right relative mt-[4rem] flex h-11 w-full min-w-[80px] cursor-pointer select-none items-center justify-center whitespace-nowrap rounded-md border border-solid border-gray-200 bg-white px-[1.8rem] py-0 text-center text-base font-medium leading-[1em] tracking-[0.2px] text-brand no-underline [outline:none] [transition:all_0.25s_ease] hover:border-gray-300"
             href={supportAddress}
             onClick={() => {
               supportAddress && window.open(supportAddress);

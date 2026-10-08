@@ -5,13 +5,10 @@ import QuoteIcon from '../../images/icons/quote.svg?react';
 import { getDateString, parseDateValue } from '../../utils/date-time';
 import { getGiftIntroduction } from '../../utils/gift-redemption-notification';
 import { t } from '../../utils/i18n';
+import { giftRevealClasses, giftRevealInnerClasses } from '../shared-classes';
+import { tw } from '../../utils/tw';
 
-export const REVEAL_CLASSES =
-  'gh-portal-gift-checkout-reveal invisible grid grid-rows-[0fr] overflow-hidden [transition:grid-template-rows_250ms_cubic-bezier(0.25,1,0.5,1),visibility_250ms] motion-reduce:[transition:none] data-[open=true]:visible data-[open=true]:grid-rows-[1fr] [&[data-open=true]>.gh-portal-gift-checkout-reveal-inner]:opacity-100 [&[data-open=true]>.gh-portal-gift-checkout-reveal-inner]:[transform:translateY(0)]';
-export const REVEAL_INNER_CLASSES =
-  'gh-portal-gift-checkout-reveal-inner min-h-0 overflow-hidden opacity-0 [transform:translateY(4px)] [transition:opacity_200ms_cubic-bezier(0.25,1,0.5,1),transform_200ms_cubic-bezier(0.25,1,0.5,1)] motion-reduce:[transition:none]';
-const DATE_CLASSES =
-  'gh-portal-gift-email-date whitespace-nowrap text-[1.25rem] font-normal leading-[1.2] text-white/75 opacity-0 [grid-area:1/1] [transform:translateY(2px)] [transition:opacity_180ms_cubic-bezier(0.25,1,0.5,1),transform_180ms_cubic-bezier(0.25,1,0.5,1)] motion-reduce:[transition:none] data-[active=true]:opacity-100 data-[active=true]:[transform:none]';
+const DATE_CLASSES = tw`gh-portal-gift-email-date whitespace-nowrap text-[1.25rem] font-normal leading-[1.2] text-white/75 opacity-0 [grid-area:1/1] [transform:translateY(2px)] [transition:opacity_180ms_cubic-bezier(0.25,1,0.5,1),transform_180ms_cubic-bezier(0.25,1,0.5,1)] data-[active=true]:opacity-100 data-[active=true]:[transform:none] motion-reduce:[transition:none]`;
 
 // A live preview of the delivery email, shown in place of the gift card while
 // the buyer is on the "Email it to them" tab. It reproduces the real template
@@ -90,10 +87,10 @@ const GiftEmailPreview = ({
                             publisher rather than pushing the message down. */}
             <div
               aria-hidden={!recipientLabel}
-              className={REVEAL_CLASSES}
+              className={giftRevealClasses}
               data-open={!!recipientLabel}
             >
-              <div className={REVEAL_INNER_CLASSES}>
+              <div className={giftRevealInnerClasses}>
                 <div className="gh-portal-gift-email-to flex animate-[gh-portal-gift-email-fade_200ms_cubic-bezier(0.25,1,0.5,1)_both] items-center gap-[5px] truncate pt-[2px] text-[1.25rem] font-normal leading-[1.2] text-white/75 motion-reduce:animate-none">
                   <span className="gh-portal-gift-email-meta-label shrink-0 font-normal text-white/55">
                     {t('To')}:
@@ -136,8 +133,8 @@ const GiftEmailPreview = ({
             {t('A gift, just for you')}
           </h1>
 
-          <div aria-hidden={!toName} className={REVEAL_CLASSES} data-open={!!toName}>
-            <div className={REVEAL_INNER_CLASSES}>
+          <div aria-hidden={!toName} className={giftRevealClasses} data-open={!!toName}>
+            <div className={giftRevealInnerClasses}>
               <p className="gh-portal-gift-email-greeting mb-0 pb-[10px] text-[1.55rem] leading-[1.5] text-gray-900">
                 {t('Hi {recipientName},', { recipientName: toName })}
               </p>
@@ -148,8 +145,8 @@ const GiftEmailPreview = ({
             <Interpolate mapping={giftDetails} string={lede} />
           </p>
 
-          <div aria-hidden={!message} className={REVEAL_CLASSES} data-open={!!message}>
-            <div className={REVEAL_INNER_CLASSES}>
+          <div aria-hidden={!message} className={giftRevealClasses} data-open={!!message}>
+            <div className={giftRevealInnerClasses}>
               <blockquote className="gh-portal-gift-email-message relative mx-0 mb-0 mt-[24px] overflow-hidden rounded-[8px] bg-[color:color-mix(in_srgb,var(--brandcolor)_7%,theme(colors.white))] px-[18px] py-[16px]">
                 {/* Drawn rather than typed: the quote glyphs in
                                     the system stack are squared off, and this

@@ -31,17 +31,12 @@ import {
 import Interpolate from '@doist/react-interpolate';
 import { t } from '../../utils/i18n';
 import { translateCadence } from '../../utils/helpers';
+import { offerBarClass, offerDiscountLabelClass } from '../shared-classes';
+import { tw } from '../../utils/tw';
 
-const offerBarClass = String.raw`gh-portal-offer-bar relative mb-6 rounded-md bg-white bg-[url("data:image/svg+xml,%3csvg\000020width='100%25'\000020height='99.9%25'\000020xmlns='http://www.w3.org/2000/svg'%3e%3crect\000020width='100%25'\000020height='100%25'\000020fill='none'\000020stroke='%23C3C3C3'\000020stroke-width='3'\000020stroke-dasharray='3%2c\0000209'\000020stroke-dashoffset='0'\000020stroke-linecap='square'/%3e%3c/svg%3e")] px-7 pb-7 pt-[26px]`;
+const listSectionClass = tw`flex items-center p-5 [border-bottom:1px_solid_theme(colors.gray.200)] first-of-type:rounded-t-lg last-of-type:rounded-b-lg last-of-type:[border:none]`;
 
-const offerDiscountLabelClass =
-  "gh-portal-discount-label absolute right-[25px] top-[23px] -me-1 max-h-[24.5px] whitespace-nowrap rounded-[999px] px-[9px] py-1.5 text-center text-[1.25rem] font-semibold leading-[1em] tracking-[0.3px] text-black before:absolute before:inset-0 before:block before:rounded-[999px] before:bg-brand before:opacity-20 before:content-['']";
-
-const listSectionClass =
-  'flex items-center p-5 [border-bottom:1px_solid_theme(colors.gray.200)] first-of-type:rounded-t-lg last-of-type:rounded-b-lg last-of-type:[border:none]';
-
-const listDetailTextClass =
-  'mb-0 mr-2 mt-[5px] text-[1.45rem] leading-[1.3em] tracking-[0.3px] text-gray-700 [word-break:break-word] rtl:ml-2 rtl:mr-0';
+const listDetailTextClass = tw`mb-0 mr-2 mt-[5px] text-[1.45rem] leading-[1.3em] tracking-[0.3px] text-gray-700 [word-break:break-word] rtl:ml-2 rtl:mr-0`;
 
 const accountPlansMainClass = 'gh-portal-section gh-portal-accountplans-main mb-0 mt-6';
 

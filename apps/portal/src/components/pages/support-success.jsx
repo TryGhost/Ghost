@@ -55,7 +55,7 @@ const SupportSuccess = () => {
         <button
           data-test-button="signin-switch"
           data-testid="signin-switch"
-          className="gh-portal-btn gh-portal-btn-link relative !ms-1 -mb-px flex cursor-pointer select-none items-center justify-center whitespace-nowrap rounded-md border-none bg-transparent p-0 text-center text-md font-semibold leading-none tracking-[0.2px] text-black no-underline [outline:none] [transition:all_.25s_ease] hover:border-gray-300 hover:opacity-85 disabled:cursor-auto disabled:!opacity-50"
+          className="gh-portal-btn gh-portal-btn-link relative !ms-1 -mb-px flex cursor-pointer select-none items-center justify-center whitespace-nowrap rounded-md border-none bg-transparent p-0 text-center text-md font-semibold leading-none tracking-[0.2px] text-black no-underline [outline:none] [transition:all_0.25s_ease] hover:border-gray-300 hover:opacity-85 disabled:cursor-auto disabled:!opacity-50"
           style={{ color: brandColor }}
           onClick={() => doAction('switchPage', { page: 'signin' })}
         >

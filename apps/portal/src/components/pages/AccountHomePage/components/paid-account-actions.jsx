@@ -135,7 +135,7 @@ const PaidAccountActions = () => {
     if (canContinueGiftSubscription) {
       return (
         <button
-          className="gh-portal-btn gh-portal-btn-list relative -mx-1 my-0 flex h-[38px] cursor-pointer select-none items-center justify-center whitespace-nowrap rounded-md border-none bg-white px-1 py-0 text-center text-base font-medium leading-[1em] tracking-[0.2px] text-brand no-underline [outline:none] [transition:all_.25s_ease] hover:border-gray-300 hover:opacity-75 disabled:cursor-auto disabled:!opacity-50"
+          className="gh-portal-btn gh-portal-btn-list relative -mx-1 my-0 flex h-[38px] cursor-pointer select-none items-center justify-center whitespace-nowrap rounded-md border-none bg-white px-1 py-0 text-center text-base font-medium leading-[1em] tracking-[0.2px] text-brand no-underline [outline:none] [transition:all_0.25s_ease] hover:border-gray-300 hover:opacity-75 disabled:cursor-auto disabled:!opacity-50"
           onClick={(e) => {
             e.stopPropagation();
             doAction('continueGiftSubscription');
@@ -148,7 +148,7 @@ const PaidAccountActions = () => {
     }
     return (
       <button
-        className="gh-portal-btn gh-portal-btn-list relative -mx-1 my-0 flex h-[38px] cursor-pointer select-none items-center justify-center whitespace-nowrap rounded-md border-none bg-white px-1 py-0 text-center text-base font-medium leading-[1em] tracking-[0.2px] text-brand no-underline [outline:none] [transition:all_.25s_ease] hover:border-gray-300 hover:opacity-75 disabled:cursor-auto disabled:!opacity-50"
+        className="gh-portal-btn gh-portal-btn-list relative -mx-1 my-0 flex h-[38px] cursor-pointer select-none items-center justify-center whitespace-nowrap rounded-md border-none bg-white px-1 py-0 text-center text-base font-medium leading-[1em] tracking-[0.2px] text-brand no-underline [outline:none] [transition:all_0.25s_ease] hover:border-gray-300 hover:opacity-75 disabled:cursor-auto disabled:!opacity-50"
         onClick={(e) => {
           e.stopPropagation();
           openUpdatePlan(e);

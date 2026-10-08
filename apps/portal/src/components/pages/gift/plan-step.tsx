@@ -4,24 +4,14 @@ import CheckmarkIcon from '../../../images/icons/checkmark.svg?react';
 import { getGiftDurationLabel } from '../../../utils/gift-redemption-notification';
 import { t } from '../../../utils/i18n';
 import type { GiftDuration, GiftInputField, GiftProduct } from './types';
+import { getGiftSwitchButtonClasses, giftSwitchClasses } from '../../shared-classes';
+import { tw } from '../../../utils/tw';
 
 type TypedInputFieldProps = GiftInputField & {
   onChange: (event: ChangeEvent<HTMLInputElement>) => void;
 };
 
 const TypedInputField = InputField as unknown as (props: TypedInputFieldProps) => JSX.Element;
-
-export const GIFT_SWITCH_CLASSES =
-  'gh-portal-gift-duration-switch flex h-11 w-full rounded-[999px] bg-gray-200 p-1';
-
-export function getGiftSwitchButtonClasses(isActive: boolean) {
-  return (
-    'gh-portal-btn relative flex h-full min-w-0 flex-1 cursor-pointer select-none items-center justify-center whitespace-nowrap rounded-[999px] border-0 border-none px-2 py-0 text-center text-md font-medium leading-[1em] tracking-[0.2px] text-black no-underline [outline:none] [transition:background-color_150ms_cubic-bezier(0.25,1,0.5,1),box-shadow_150ms_cubic-bezier(0.25,1,0.5,1),color_150ms_cubic-bezier(0.25,1,0.5,1)] focus-visible:rounded-[999px] focus-visible:[outline:none] focus-visible:[box-shadow:0_0_0_2px_var(--brandcolor)] focus-visible:[transition:background-color_150ms_cubic-bezier(0.25,1,0.5,1),box-shadow_150ms_cubic-bezier(0.25,1,0.5,1),color_150ms_cubic-bezier(0.25,1,0.5,1)] motion-reduce:[transition:none] motion-reduce:focus-visible:[transition:none]' +
-    (isActive
-      ? ' active bg-white [box-shadow:0px_1px_3px_rgba(var(--blackrgb),0.08)]'
-      : ' bg-transparent')
-  );
-}
 
 interface GiftDurationSwitchProps {
   activeDuration: GiftDuration;
@@ -39,7 +29,7 @@ function GiftDurationSwitch({
   }
 
   return (
-    <div aria-label={t('Gift duration')} className={GIFT_SWITCH_CLASSES} role="radiogroup">
+    <div aria-label={t('Gift duration')} className={giftSwitchClasses} role="radiogroup">
       {offeredDurations.map((months) => {
         const isActive = months === activeDuration;
         return (
@@ -155,7 +145,7 @@ function GiftPlanStep({
         <div
           aria-label={isSingleTier ? undefined : t('Choose a tier')}
           className={
-            'gh-portal-gift-checkout-tiers flex flex-col gap-3' + (isSingleTier ? ' single' : '')
+            tw`gh-portal-gift-checkout-tiers flex flex-col gap-3` + (isSingleTier ? ' single' : '')
           }
           role={isSingleTier ? undefined : 'radiogroup'}
         >
@@ -166,16 +156,16 @@ function GiftPlanStep({
               <div
                 key={product.id}
                 className={
-                  'gh-portal-gift-checkout-tier-item overflow-hidden rounded-[10px] border border-solid [transition:border-color_0.2s_ease,background-color_0.2s_ease]' +
+                  tw`gh-portal-gift-checkout-tier-item overflow-hidden rounded-[10px] border border-solid [transition:border-color_0.2s_ease,background-color_0.2s_ease]` +
                   (isSelected && !isSingleTier
-                    ? ' selected border-brand bg-[color:color-mix(in_srgb,var(--brandcolor)_6%,theme(colors.white))] [box-shadow:0_0_0_1px_var(--brandcolor)_inset]'
+                    ? tw` selected border-brand bg-[color:color-mix(in_srgb,var(--brandcolor)_6%,theme(colors.white))] [box-shadow:0_0_0_1px_var(--brandcolor)_inset]`
                     : ' border-gray-300 bg-white' + (isSingleTier ? '' : ' hover:border-gray-400'))
                 }
               >
                 <button
                   aria-checked={isSingleTier ? undefined : isSelected}
                   className={
-                    'gh-portal-gift-checkout-tier flex w-full items-start gap-2.5 border-none bg-transparent px-5 py-4 text-start [color:inherit] [font:inherit] focus-visible:[outline:none] focus-visible:[box-shadow:0_0_0_2px_var(--brandcolor)_inset]' +
+                    tw`gh-portal-gift-checkout-tier flex w-full items-start gap-2.5 border-none bg-transparent px-5 py-4 text-start [color:inherit] [font:inherit] focus-visible:[box-shadow:0_0_0_2px_var(--brandcolor)_inset] focus-visible:[outline:none]` +
                     (isSingleTier ? ' cursor-default' : ' cursor-pointer')
                   }
                   data-test-tier={product.name}
@@ -187,9 +177,9 @@ function GiftPlanStep({
                     <span
                       aria-hidden="true"
                       className={
-                        'gh-portal-gift-checkout-tier-radio relative mt-[3px] size-[18px] shrink-0 rounded-[50%] border-[1.5px] border-solid' +
+                        tw`gh-portal-gift-checkout-tier-radio relative mt-[3px] size-[18px] shrink-0 rounded-[50%] border-[1.5px] border-solid` +
                         (isSelected
-                          ? " border-brand bg-brand after:absolute after:left-1/2 after:top-1/2 after:size-[6px] after:rounded-[50%] after:bg-white after:content-[''] after:-translate-x-1/2 after:-translate-y-1/2"
+                          ? tw` border-brand bg-brand after:absolute after:left-1/2 after:top-1/2 after:size-[6px] after:-translate-x-1/2 after:-translate-y-1/2 after:rounded-[50%] after:bg-white after:content-['']`
                           : ' border-gray-400 bg-white')
                       }
                     />

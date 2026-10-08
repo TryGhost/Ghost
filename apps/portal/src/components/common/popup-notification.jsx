@@ -7,7 +7,11 @@ import { getSupportAddress } from '../../utils/helpers';
 import { clearURLParams } from '../../utils/notifications';
 import Interpolate from '@doist/react-interpolate';
 import { t } from '../../utils/i18n';
-import { notificationClasses, notificationIconClasses } from '../notification-classes';
+import {
+  notificationClasses,
+  notificationCloseIconClasses,
+  notificationIconClasses,
+} from '../notification-classes';
 
 const CloseButton = ({ hide = false, onClose }) => {
   if (hide) {
@@ -20,10 +24,7 @@ const CloseButton = ({ hide = false, onClose }) => {
       aria-label="Close notification"
       onClick={onClose}
     >
-      <CloseIcon
-        className="gh-portal-notification-closeicon -my-1.5 -mr-1.5 size-3 min-w-3 cursor-pointer p-2.5 text-gray-500 opacity-80 hover:opacity-100"
-        aria-hidden="true"
-      />
+      <CloseIcon className={notificationCloseIconClasses} aria-hidden="true" />
     </button>
   );
 };

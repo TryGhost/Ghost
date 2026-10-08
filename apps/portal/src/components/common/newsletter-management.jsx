@@ -316,7 +316,7 @@ export default function NewsletterManagement({
         <FinalNotification />
       </div>
       <CloseButton brandColor={brandColor} />
-      <div className="gh-portal-section mb-10 flex flex-col gap-5">
+      <div className="gh-portal-section mb-10 flex flex-col gap-[2rem]">
         <div className="gh-portal-list overflow-hidden rounded-lg border border-solid border-gray-200 bg-white p-0 [&_.gh-portal-list-help]:px-5 [&_.gh-portal-list-help]:py-2 [&_section:first-of-type]:rounded-t-lg [&_section:last-of-type]:rounded-b-lg [&_section:last-of-type]:border-none [&_section]:m-0 [&_section]:flex [&_section]:items-center [&_section]:p-5 [&_section]:[border-bottom:1px_solid_theme(colors.gray.200)]">
           <NewsletterPrefs
             hasNewslettersEnabled={hasNewslettersEnabled}

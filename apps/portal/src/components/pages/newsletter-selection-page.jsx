@@ -5,17 +5,15 @@ import { getSiteNewsletters, hasOnlyFreePlan } from '../../utils/helpers';
 import ActionButton from '../common/action-button';
 import LockIcon from '../../images/icons/lock.svg?react';
 import { t } from '../../utils/i18n';
+import { tw } from '../../utils/tw';
 
-const listSectionClass =
-  'gh-portal-list-toggle-wrapper flex items-start justify-between p-5 [border-bottom:1px_solid_theme(colors.gray.200)] first-of-type:rounded-t-lg last-of-type:rounded-b-lg last-of-type:[border:none]';
+const listSectionClass = tw`gh-portal-list-toggle-wrapper flex items-start justify-between p-5 [border-bottom:1px_solid_theme(colors.gray.200)] first-of-type:rounded-t-lg last-of-type:rounded-b-lg last-of-type:[border:none]`;
 
-const listDetailClass =
-  'gh-portal-list-detail gh-portal-list-big grow py-1 pl-0 pr-6 rtl:pl-6 rtl:pr-0';
+const listDetailClass = tw`gh-portal-list-detail gh-portal-list-big grow py-1 pl-0 pr-6 rtl:pl-6 rtl:pr-0`;
 
 const listDetailTitleClass = 'text-lg font-semibold';
 
-const listDetailTextClass =
-  'mb-0 mr-2 mt-[5px] text-base leading-[1.3em] tracking-[0.3px] text-gray-700 [word-break:break-word] rtl:ml-2 rtl:mr-0';
+const listDetailTextClass = tw`mb-0 mr-2 mt-[5px] text-base leading-[1.3em] tracking-[0.3px] text-gray-700 [word-break:break-word] rtl:ml-2 rtl:mr-0`;
 
 function NewsletterPrefSection({ newsletter, subscribedNewsletters, setSubscribedNewsletters }) {
   const isChecked = subscribedNewsletters.some((d) => {

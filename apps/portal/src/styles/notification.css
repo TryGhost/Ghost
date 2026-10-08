@@ -1,0 +1,3 @@
+@config '../../tailwind.notification.config.cjs';
+
+@tailwind utilities;

@@ -72,7 +72,7 @@ export default function EmailSuppressedPage() {
 
       <ActionButton
         dataTestId={'resubscribe-email'}
-        classes="gh-portal-confirm-button mt-9 w-full max-sm:mt-7"
+        classes="gh-portal-confirm-button mt-[3.6rem] w-full max-sm:mt-7"
         onClick={handleSubmit}
         disabled={isRunning}
         brandColor={brandColor}

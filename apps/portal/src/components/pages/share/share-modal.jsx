@@ -12,9 +12,9 @@ import ThreadsIcon from '../../../images/icons/share-threads.svg?react';
 import XIcon from '../../../images/icons/share-x.svg?react';
 import { useEffect, useRef, useState } from 'react';
 import { t } from '../../../utils/i18n';
+import { tw } from '../../../utils/tw';
 
-const shareActionClass =
-  'relative flex h-11 min-w-0 cursor-pointer select-none items-center justify-center whitespace-nowrap rounded-lg text-center no-underline [outline:none] [transition:all_.25s_ease] hover:border-gray-300 max-w-[70px] border border-solid border-gray-200 bg-white px-4 py-0 text-gray-900 max-[420px]:w-full max-[420px]:max-w-none max-[420px]:flex-none text-base font-medium leading-[1em] tracking-[0.2px]';
+const shareActionClass = tw`relative flex h-11 min-w-0 max-w-[70px] cursor-pointer select-none items-center justify-center whitespace-nowrap rounded-lg border border-solid border-gray-200 bg-white px-4 py-0 text-center text-base font-medium leading-[1em] tracking-[0.2px] text-gray-900 no-underline [outline:none] [transition:all_0.25s_ease] hover:border-gray-300 max-[420px]:w-full max-[420px]:max-w-none max-[420px]:flex-none`;
 
 const ShareModal = () => {
   const [copied, setCopied] = useState(false);
@@ -157,7 +157,7 @@ const ShareModal = () => {
 
       <div className="gh-portal-share-actions relative mt-5 flex items-center gap-3 max-[420px]:flex-col max-[420px]:items-stretch">
         <button
-          className="gh-portal-btn gh-portal-share-action copy relative flex h-11 w-auto min-w-0 max-w-none flex-[1_0_auto] cursor-pointer select-none items-center justify-center gap-2 whitespace-nowrap rounded-lg border-none bg-[color:var(--brandcolor,#3eb0ef)] px-[14px] py-0 text-center text-base font-medium leading-[1em] tracking-[0.2px] text-white no-underline [outline:none] [transition:all_.25s_ease] hover:border-gray-300 disabled:cursor-auto disabled:!opacity-50 max-[420px]:order-1"
+          className="gh-portal-btn gh-portal-share-action copy relative flex h-11 w-auto min-w-0 max-w-none flex-[1_0_auto] cursor-pointer select-none items-center justify-center gap-2 whitespace-nowrap rounded-lg border-none bg-[color:var(--brandcolor,#3eb0ef)] px-[14px] py-0 text-center text-base font-medium leading-[1em] tracking-[0.2px] text-white no-underline [outline:none] [transition:all_0.25s_ease] hover:border-gray-300 disabled:cursor-auto disabled:!opacity-50 max-[420px]:order-1"
           type="button"
           onClick={onCopy}
           aria-label={copied ? t('Copied') : t('Copy link')}
@@ -236,7 +236,7 @@ const ShareModal = () => {
           ref={moreMenuRef}
         >
           <button
-            className="gh-portal-btn gh-portal-share-action more relative flex h-11 min-w-0 max-w-[70px] cursor-pointer select-none items-center justify-center whitespace-nowrap rounded-lg border border-solid border-gray-200 bg-white px-4 py-0 text-center text-2xl font-bold leading-none tracking-[0px] text-gray-900 no-underline [outline:none] [transition:all_.25s_ease] hover:border-gray-300 disabled:cursor-auto disabled:!opacity-50 max-[420px]:w-full max-[420px]:max-w-none max-[420px]:flex-none"
+            className="gh-portal-btn gh-portal-share-action more relative flex h-11 min-w-0 max-w-[70px] cursor-pointer select-none items-center justify-center whitespace-nowrap rounded-lg border border-solid border-gray-200 bg-white px-4 py-0 text-center text-2xl font-bold leading-none tracking-[0px] text-gray-900 no-underline [outline:none] [transition:all_0.25s_ease] hover:border-gray-300 disabled:cursor-auto disabled:!opacity-50 max-[420px]:w-full max-[420px]:max-w-none max-[420px]:flex-none"
             type="button"
             onClick={onToggleMoreMenu}
             aria-label={t('More options')}

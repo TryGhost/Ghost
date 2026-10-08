@@ -2,8 +2,8 @@ import React from 'react';
 import Interpolate from '@doist/react-interpolate';
 import Frame from './frame';
 import AppContext from '../app-context';
-import TailwindStyles from '../tailwind.css?inline';
-import { notificationClasses, notificationIconClasses } from './notification-classes';
+import BaseStyles from '../styles/base.css?inline';
+import FrameStyles from '../styles/notification.css?inline';
 import CloseIcon from '../images/icons/close.svg?react';
 import CheckmarkIcon from '../images/icons/checkmark-fill.svg?react';
 import WarningIcon from '../images/icons/warning-fill.svg?react';
@@ -11,6 +11,11 @@ import NotificationParser, { clearURLParams } from '../utils/notifications';
 import { getGiftRedemptionSuccessMessage } from '../utils/gift-redemption-notification';
 import { getPortalLink } from '../utils/helpers';
 import { t } from '../utils/i18n';
+import {
+  notificationClasses,
+  notificationCloseIconClasses,
+  notificationIconClasses,
+} from './notification-classes';
 
 const Styles = () => {
   return {
@@ -219,7 +224,7 @@ class NotificationContent extends React.Component {
           )}
           <NotificationText type={type} status={status} message={message} context={this.context} />
           <CloseIcon
-            className="gh-portal-notification-closeicon -my-1.5 -mr-1.5 size-3 min-w-3 cursor-pointer p-2.5 text-gray-500 opacity-80 hover:opacity-100"
+            className={notificationCloseIconClasses}
             alt="Close"
             onClick={(e) => this.onNotificationClose(e)}
           />
@@ -312,8 +317,8 @@ export default class Notification extends React.Component {
   renderFrameStyles() {
     const { brandColor } = this.context;
     const styles = brandColor
-      ? `:root { --brandcolor: ${brandColor} }` + TailwindStyles
-      : TailwindStyles;
+      ? `:root { --brandcolor: ${brandColor} }` + BaseStyles + FrameStyles
+      : BaseStyles + FrameStyles;
     return <style dangerouslySetInnerHTML={{ __html: styles }} />;
   }
 

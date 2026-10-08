@@ -26,14 +26,10 @@ import InvitationIcon from '../../images/icons/invitation.svg?react';
 import { interceptAnchorClicks } from '../../utils/links';
 import { sanitizeHtml } from '../../utils/sanitize-html';
 import { t } from '../../utils/i18n';
+import { signupMessageButtonClass, termsCheckboxClass } from '../shared-classes';
+import { tw } from '../../utils/tw';
 
-const signupMessageButtonClass =
-  'gh-portal-btn gh-portal-btn-link relative -mb-px !ms-1 flex cursor-pointer select-none items-center justify-center whitespace-nowrap rounded-md bg-transparent p-0 text-center text-md font-semibold leading-none tracking-[0.2px] text-black no-underline [border:none] [outline:none] [transition:all_0.25s_ease] hover:border-gray-300 hover:opacity-[0.85]';
-
-const termsCheckboxClass =
-  "checkbox relative top-[-1px] float-left mt-px inline-block size-[18px] shrink-0 rounded border border-solid border-gray-300 bg-white [transition:background_0.15s_ease-in-out,border-color_0.15s_ease-in-out] before:absolute before:left-[3px] before:top-1 before:h-1.5 before:w-2.5 before:opacity-0 before:content-[''] before:[border-color:currentcolor_currentcolor_theme(colors.white)_theme(colors.white)] before:[border-style:none_none_solid_solid] before:[border-width:0_0_2px_2px] before:[transform:rotate(-45deg)] before:[transition:opacity_0.15s_ease-in-out] rtl:float-right rtl:before:left-auto rtl:before:right-[3px] [.gh-portal-error_&]:border-red [.gh-portal-error_&]:[box-shadow:0_0_0_3px_rgb(240,37,37,.15)] [.gh-portal-error_input:checked+&]:[box-shadow:none] [.gh-portal-error_label:hover_input:not(:checked)+&]:border-red [input:checked+&]:border-black [input:checked+&]:bg-black [input:checked+&]:before:opacity-100 [label:hover_input:not(:checked)+&]:border-gray-400";
-
-const notificationClass = 'mx-8 mb-6 mt-2 text-center text-gray-900';
+const notificationClass = tw`mx-8 mb-6 mt-2 text-center text-gray-900`;
 
 class SignupPage extends React.Component {
   static contextType = AppContext;
@@ -280,7 +276,7 @@ class SignupPage extends React.Component {
 
     const errorClassName = this.state.errors?.checkbox ? 'gh-portal-error' : '';
 
-    const className = `gh-portal-signup-terms ${errorClassName} mb-9 [&.gh-portal-error]:text-md [&.gh-portal-error]:leading-[1.6em] [&.gh-portal-error]:text-red`;
+    const className = tw`gh-portal-signup-terms ${errorClassName} mb-9 [&.gh-portal-error]:text-md [&.gh-portal-error]:leading-[1.6em] [&.gh-portal-error]:text-red`;
 
     return (
       <div className={className} onClick={interceptAnchorClicks} ref={this.termsRef}>
@@ -547,7 +543,7 @@ class SignupPage extends React.Component {
     if (siteIcon) {
       return (
         <img
-          className="gh-portal-signup-logo relative mb-2.5 mt-3 block size-[60px] rounded-sm bg-cover bg-[position:50%] max-sm:size-12"
+          className="gh-portal-signup-logo relative mb-2.5 mt-3 block size-[60px] rounded-sm bg-cover bg-center max-sm:size-12"
           src={siteIcon}
           alt={site.title}
         />
@@ -631,7 +627,7 @@ class SignupPage extends React.Component {
         <CloseButton />
         <div
           className={
-            'gh-portal-content signup relative !max-h-[unset] pb-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden [&.single-field]:mb-1 [&.single-field_.gh-portal-input]:mb-3 [&.single-field_.gh-portal-products:not(:has(.gh-portal-product-card))]:-mt-4 [&.single-field_.gh-portal-signup-terms-wrapper]:mt-3 [&_.gh-portal-input-section:last-of-type]:mb-10 [&_.gh-portal-section]:mb-0 ' +
+            tw`gh-portal-content signup relative !max-h-[unset] pb-0 [scrollbar-width:none] [&.single-field]:mb-1 [&.single-field_.gh-portal-input]:mb-3 [&.single-field_.gh-portal-products:not(:has(.gh-portal-product-card))]:-mt-4 [&.single-field_.gh-portal-signup-terms-wrapper]:mt-3 [&::-webkit-scrollbar]:hidden [&_.gh-portal-input-section:last-of-type]:mb-10 [&_.gh-portal-section]:mb-0 ` +
             sectionClass
           }
         >

@@ -3,6 +3,7 @@ import GiftCard from '../../common/gift-card';
 import GiftEmailPreview from '../../common/gift-email-preview';
 import { getGiftDurationLabel } from '../../../utils/gift-redemption-notification';
 import type { GiftCadenceDuration, GiftDuration, GiftProduct } from './types';
+import { giftCheckoutRightClasses } from '../../shared-classes';
 
 interface TypedGiftCardProps {
   cardRef: RefObject<HTMLDivElement>;
@@ -68,10 +69,7 @@ function GiftPreviewPanel({
   siteTitle,
 }: GiftPreviewPanelProps) {
   return (
-    <div
-      className="gh-portal-gift-checkout-right top-0 flex h-screen overflow-y-auto py-3 pl-0 pr-3 [align-self:start] [position:sticky] max-[880px]:static max-[880px]:-order-1 max-[880px]:hidden max-[880px]:h-auto max-[880px]:overflow-visible max-[880px]:p-0"
-      {...cardTiltProps}
-    >
+    <div className={`${giftCheckoutRightClasses} max-[880px]:hidden`} {...cardTiltProps}>
       <div className="gh-portal-gift-checkout-right-panel flex min-h-0 flex-1 flex-col items-center overflow-y-auto rounded-[32px] px-12 py-16 [background:linear-gradient(180deg,rgba(0,0,0,0.3)_0%,rgba(0,0,0,0)_100%),var(--brandcolor)] max-[880px]:rounded-t-none max-[880px]:px-6 max-[880px]:pb-8 max-[880px]:pt-14">
         {/* Both representations stay mounted and share a single grid cell, so switching between
         them cross-dissolves instead of unmounting one and popping the other in. */}

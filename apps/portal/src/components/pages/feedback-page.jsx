@@ -9,6 +9,7 @@ import ActionButton from '../common/action-button';
 import CloseButton from '../common/close-button';
 import LoadingPage from './loading-page';
 import { t } from '../../utils/i18n';
+import { tw } from '../../utils/tw';
 
 function ErrorPage({ error }) {
   const { doAction } = useContext(AppContext);
@@ -60,8 +61,7 @@ const ConfirmDialog = ({ onConfirm, loading, initialScore }) => {
   };
 
   const getButtonClassNames = (value) => {
-    const baseClassName =
-      "gh-feedback-button relative flex cursor-pointer items-center justify-center gap-2 rounded-[22px] border-none bg-transparent px-2 py-3 text-md font-bold leading-[1.2] text-gray-900 before:absolute before:left-0 before:top-0 before:size-full before:rounded-[inherit] before:bg-current before:opacity-10 before:content-[''] rtl:before:left-auto rtl:before:right-0 [&_svg]:size-6 [&_svg]:[color:inherit] [&_svg_path]:stroke-[4px]";
+    const baseClassName = tw`gh-feedback-button relative flex cursor-pointer items-center justify-center gap-2 rounded-[22px] border-none bg-transparent px-2 py-3 text-md font-bold leading-[1.2] text-gray-900 before:absolute before:left-0 before:top-0 before:size-full before:rounded-[inherit] before:bg-current before:opacity-10 before:content-[''] rtl:before:left-auto rtl:before:right-0 [&_svg]:size-6 [&_svg]:[color:inherit] [&_svg_path]:stroke-[4px]`;
     return value === score
       ? `${baseClassName} gh-feedback-button-selected [box-shadow:inset_0_0_0_2px_currentColor]`
       : baseClassName;
@@ -76,11 +76,11 @@ const ConfirmDialog = ({ onConfirm, loading, initialScore }) => {
       className="gh-portal-confirm-dialog max-sm:group-[.feedback]/wrapper:[&_.gh-portal-closeicon-container]:hidden"
       onMouseDown={stopPropagation}
     >
-      <h1 className="gh-portal-confirm-title mx-0 mb-1 mt-0 box-border text-center text-[24px] font-bold leading-[inherit] tracking-[-.018em] max-sm:group-[.feedback]/wrapper:text-[2.5rem]">
+      <h1 className="gh-portal-confirm-title mx-0 mb-[0.4rem] mt-0 box-border text-center text-[24px] font-bold leading-[inherit] tracking-[-.018em] max-sm:group-[.feedback]/wrapper:text-[2.5rem]">
         {t('Give feedback on this post')}
       </h1>
 
-      <div className="gh-feedback-buttons-group mt-9 grid grid-cols-[1fr_1fr] gap-4 max-sm:mt-7">
+      <div className="gh-feedback-buttons-group mt-[3.6rem] grid grid-cols-[1fr_1fr] gap-4 max-sm:mt-7">
         <button
           className={getButtonClassNames(1)}
           style={getInlineStyles(1)}
@@ -101,7 +101,7 @@ const ConfirmDialog = ({ onConfirm, loading, initialScore }) => {
       </div>
 
       <ActionButton
-        classes="gh-portal-confirm-button mt-9 w-full max-sm:mt-7"
+        classes="gh-portal-confirm-button mt-[3.6rem] w-full max-sm:mt-7"
         retry={false}
         onClick={submit}
         disabled={false}

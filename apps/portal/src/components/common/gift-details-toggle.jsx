@@ -1,5 +1,6 @@
 import CheckmarkIcon from '../../images/icons/checkmark.svg?react';
 import { t } from '../../utils/i18n';
+import { tw } from '../../utils/tw';
 
 const ChevronIcon = () => (
   <svg
@@ -70,7 +71,7 @@ const GiftDetailsToggle = ({ description, benefits, showDetails, onToggle }) => 
       <button
         type="button"
         className={
-          'gh-portal-gift-checkout-details-toggle mt-6 inline-flex cursor-pointer items-center gap-1 border-none bg-transparent px-3 py-2 text-md font-medium text-white/70 [transition:color_0.15s_ease] hover:text-white/95 focus-visible:outline-offset-[3px] focus-visible:[outline:2px_solid_rgba(255,255,255,0.9)] [&_svg]:size-3 [&_svg]:[transition:transform_0.2s_ease] [&.is-open_svg]:[transform:rotate(-180deg)]' +
+          tw`gh-portal-gift-checkout-details-toggle mt-6 inline-flex cursor-pointer items-center gap-1 border-none bg-transparent px-3 py-2 text-md font-medium text-white/70 [transition:color_0.15s_ease] hover:text-white/95 focus-visible:outline-offset-[3px] focus-visible:[outline:2px_solid_rgba(255,255,255,0.9)] [&.is-open_svg]:[transform:rotate(-180deg)] [&_svg]:size-3 [&_svg]:[transition:transform_0.2s_ease]` +
           (showDetails ? ' is-open' : '')
         }
         onClick={onToggle}

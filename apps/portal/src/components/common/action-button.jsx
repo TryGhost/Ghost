@@ -1,5 +1,6 @@
 import LoaderIcon from '../../images/icons/loader.svg?react';
 import { isCookiesDisabled } from '../../utils/helpers';
+import { tw } from '../../utils/tw';
 
 const Styles = ({ brandColor, disabled, style = {}, isPrimary }) => {
   const backgroundColor = brandColor || '#3eb0ef';
@@ -50,18 +51,17 @@ function ActionButton({
     className += ' ' + classes;
   }
 
-  className +=
-    ' relative flex min-w-[80px] cursor-pointer select-none items-center justify-center whitespace-nowrap rounded-md bg-white text-center text-base font-medium leading-[1em] tracking-[0.2px] no-underline [outline:none] [transition:all_.25s_ease] disabled:cursor-auto disabled:!opacity-50';
-  className += isText ? ' h-auto p-0' : ' h-11 px-[1.8rem] py-0';
+  className += tw` relative flex min-w-[80px] cursor-pointer select-none items-center justify-center whitespace-nowrap rounded-md bg-white text-center text-base font-medium leading-[1em] tracking-[0.2px] no-underline [outline:none] [transition:all_0.25s_ease] disabled:cursor-auto disabled:!opacity-50`;
+  className += isText ? ' h-auto p-0' : tw` h-11 px-[1.8rem] py-0`;
   if (isPrimary) {
     className +=
       ' border-none text-white hover:!opacity-[0.92] focus:!opacity-[0.92] disabled:hover:!opacity-[0.92] disabled:focus:!opacity-[0.92] max-[1440px]:h-[42px]';
   } else {
     className += isText
       ? ' border-none text-black'
-      : ' border border-solid border-gray-200 text-black hover:border-gray-300';
+      : tw` border border-solid border-gray-200 text-black hover:border-gray-300`;
     if (!isDestructive && !classes) {
-      // Legacy `button[class="gh-portal-btn"]` rule only matched the bare class
+      // Only a plain button (no modifier classes) shrinks at 1440px
       className += ' max-[1440px]:h-[42px]';
     }
   }
@@ -72,8 +72,8 @@ function ActionButton({
     disabled = true;
   }
   const loaderClassName = isPrimary
-    ? 'gh-portal-loadingicon absolute left-1/2 ms-[-19px] inline-block h-[31px] [&_path]:fill-white [&_rect]:fill-white'
-    : 'gh-portal-loadingicon dark absolute left-1/2 ms-[-19px] inline-block h-[31px] [&_path]:fill-black [&_rect]:fill-black';
+    ? tw`gh-portal-loadingicon absolute left-1/2 ms-[-19px] inline-block h-[31px] [&_path]:fill-white [&_rect]:fill-white`
+    : tw`gh-portal-loadingicon dark absolute left-1/2 ms-[-19px] inline-block h-[31px] [&_path]:fill-black [&_rect]:fill-black`;
   return (
     <button
       className={className}

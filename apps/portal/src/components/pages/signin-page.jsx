@@ -8,12 +8,10 @@ import { ValidateInputForm } from '../../utils/form';
 import { hasAvailablePrices, isSigninAllowed, isSignupAllowed } from '../../utils/helpers';
 import InvitationIcon from '../../images/icons/invitation.svg?react';
 import { t } from '../../utils/i18n';
+import { signupMessageButtonClass } from '../shared-classes';
+import { tw } from '../../utils/tw';
 
-const signupMessageButtonClass =
-  'gh-portal-btn gh-portal-btn-link relative -mb-px !ms-1 flex cursor-pointer select-none items-center justify-center whitespace-nowrap rounded-md bg-transparent p-0 text-center text-md font-semibold leading-none tracking-[0.2px] text-black no-underline [border:none] [outline:none] [transition:all_0.25s_ease] hover:border-gray-300 hover:opacity-[0.85]';
-
-const mainTitleClass =
-  'gh-portal-main-title mt-3 text-center leading-[1.1em] text-black text-pretty [.gh-portal-signup-logo+&]:mt-1';
+const mainTitleClass = tw`gh-portal-main-title mt-3 text-pretty text-center leading-[1.1em] text-black [.gh-portal-signup-logo+&]:mt-1`;
 
 export default class SigninPage extends React.Component {
   static contextType = AppContext;
@@ -187,7 +185,7 @@ export default class SigninPage extends React.Component {
       iconStyle.backgroundImage = `url(${siteIcon})`;
       return (
         <img
-          className="gh-portal-signup-logo relative mb-2.5 mt-3 block size-[60px] rounded-sm bg-cover bg-[position:50%] max-sm:size-12"
+          className="gh-portal-signup-logo relative mb-2.5 mt-3 block size-[60px] rounded-sm bg-cover bg-center max-sm:size-12"
           src={siteIcon}
           alt={this.context.site.title}
         />

@@ -12,26 +12,21 @@ import {
   useState,
 } from 'react';
 import { parseDateValue, toDateValue } from '../../utils/date-time';
+import { tw } from '../../utils/tw';
 
 // Map only the classes Portal styles so react-day-picker's stylesheet doesn't
 // have to be shipped.
 const classNames = {
   months: 'gh-portal-datepicker-months relative',
-  month_caption:
-    'gh-portal-datepicker-month-caption mb-0.5 flex h-7 items-center justify-center text-md font-semibold text-black',
-  nav: "gh-portal-datepicker-nav pointer-events-none absolute inset-x-0 top-0 flex justify-between [&_button:focus-visible]:rounded [&_button:hover:not([aria-disabled='true'])]:text-black [&_button[aria-disabled='true']]:cursor-default [&_button[aria-disabled='true']]:opacity-30 [&_button]:pointer-events-auto [&_button]:flex [&_button]:size-7 [&_button]:cursor-pointer [&_button]:items-center [&_button]:justify-center [&_button]:rounded-md [&_button]:border-none [&_button]:bg-transparent [&_button]:p-0 [&_button]:text-gray-900 [&_svg]:size-4 [&_svg]:fill-current rtl:[&_svg]:-scale-x-100",
+  month_caption: tw`gh-portal-datepicker-month-caption mb-0.5 flex h-7 items-center justify-center text-md font-semibold text-black`,
+  nav: tw`gh-portal-datepicker-nav pointer-events-none absolute inset-x-0 top-0 flex justify-between [&_button:focus-visible]:rounded [&_button:hover:not([aria-disabled='true'])]:text-black [&_button[aria-disabled='true']]:cursor-default [&_button[aria-disabled='true']]:opacity-30 [&_button]:pointer-events-auto [&_button]:flex [&_button]:size-7 [&_button]:cursor-pointer [&_button]:items-center [&_button]:justify-center [&_button]:rounded-md [&_button]:border-none [&_button]:bg-transparent [&_button]:p-0 [&_button]:text-gray-900 [&_svg]:size-4 [&_svg]:fill-current rtl:[&_svg]:-scale-x-100`,
   month_grid: 'gh-portal-datepicker-grid border-collapse',
-  weekday:
-    'gh-portal-datepicker-weekday w-[34px] pb-0.5 text-[1.1rem] font-medium uppercase tracking-[0.3px] text-gray-600',
+  weekday: tw`gh-portal-datepicker-weekday w-[34px] pb-0.5 text-[1.1rem] font-medium uppercase tracking-[0.3px] text-gray-600`,
   day: 'gh-portal-datepicker-day h-[30px] p-0',
-  day_button:
-    'gh-portal-datepicker-day-button relative flex h-[30px] w-[34px] cursor-pointer items-center justify-center rounded-md border-none bg-transparent p-0 text-[1.35rem] text-black',
-  today:
-    "gh-portal-datepicker-today [&_.gh-portal-datepicker-day-button]:after:absolute [&_.gh-portal-datepicker-day-button]:after:bottom-[3px] [&_.gh-portal-datepicker-day-button]:after:left-1/2 [&_.gh-portal-datepicker-day-button]:after:size-[3px] [&_.gh-portal-datepicker-day-button]:after:-translate-x-1/2 [&_.gh-portal-datepicker-day-button]:after:rounded-[50%] [&_.gh-portal-datepicker-day-button]:after:bg-brand [&_.gh-portal-datepicker-day-button]:after:content-['']",
-  selected:
-    'gh-portal-datepicker-selected [&_.gh-portal-datepicker-day-button]:bg-brand [&_.gh-portal-datepicker-day-button]:text-white [&.gh-portal-datepicker-selected_.gh-portal-datepicker-day-button]:after:bg-white [&_.gh-portal-datepicker-day-button:hover:not(:disabled)]:bg-brand [&_.gh-portal-datepicker-day-button:hover:not(:disabled)]:opacity-[0.92]',
-  disabled:
-    'gh-portal-datepicker-disabled [&_.gh-portal-datepicker-day-button]:cursor-default [&.gh-portal-datepicker-disabled_.gh-portal-datepicker-day-button]:text-gray-500 [&_.gh-portal-datepicker-day-button:hover]:bg-transparent',
+  day_button: tw`gh-portal-datepicker-day-button relative flex h-[30px] w-[34px] cursor-pointer items-center justify-center rounded-md border-none bg-transparent p-0 text-[1.35rem] text-black`,
+  today: tw`gh-portal-datepicker-today [&_.gh-portal-datepicker-day-button]:after:absolute [&_.gh-portal-datepicker-day-button]:after:bottom-[3px] [&_.gh-portal-datepicker-day-button]:after:left-1/2 [&_.gh-portal-datepicker-day-button]:after:size-[3px] [&_.gh-portal-datepicker-day-button]:after:-translate-x-1/2 [&_.gh-portal-datepicker-day-button]:after:rounded-[50%] [&_.gh-portal-datepicker-day-button]:after:bg-brand [&_.gh-portal-datepicker-day-button]:after:content-['']`,
+  selected: tw`gh-portal-datepicker-selected [&.gh-portal-datepicker-selected_.gh-portal-datepicker-day-button]:after:bg-white [&_.gh-portal-datepicker-day-button:hover:not(:disabled)]:bg-brand [&_.gh-portal-datepicker-day-button:hover:not(:disabled)]:opacity-[0.92] [&_.gh-portal-datepicker-day-button]:bg-brand [&_.gh-portal-datepicker-day-button]:text-white`,
+  disabled: tw`gh-portal-datepicker-disabled [&.gh-portal-datepicker-disabled_.gh-portal-datepicker-day-button]:text-gray-500 [&_.gh-portal-datepicker-day-button:hover]:bg-transparent [&_.gh-portal-datepicker-day-button]:cursor-default`,
   outside:
     'gh-portal-datepicker-outside [&.gh-portal-datepicker-outside_.gh-portal-datepicker-day-button]:text-gray-500',
 };
@@ -217,7 +212,7 @@ const DatePicker = ({
                     editing; only the browser's calendar is replaced. */}
         <input
           className={
-            'gh-portal-input mb-0 box-border block h-11 w-full appearance-none rounded-md border border-solid border-gray-300 bg-transparent px-3 py-0 text-base tracking-[0.2px] [color:inherit] [outline:none] [transition:border-color_0.25s_ease-in-out] placeholder:text-gray-500 focus:border-gray-500 max-[1440px]:h-[42px] [&.error]:border-red [&.has-min-label:not(:focus)::-webkit-datetime-edit]:text-transparent [&.has-min-label:not(:focus)]:text-transparent [&::-webkit-calendar-picker-indicator]:hidden [@media(hover:none)]:!text-[16px]' +
+            tw`gh-portal-input mb-0 box-border block h-11 w-full appearance-none rounded-md border border-solid border-gray-300 bg-transparent px-3 py-0 text-base tracking-[0.2px] [color:inherit] [outline:none] [transition:border-color_0.25s_ease-in-out] placeholder:text-gray-500 focus:border-gray-500 max-[1440px]:h-[42px] [&.error]:border-red [&.has-min-label:not(:focus)::-webkit-datetime-edit]:text-transparent [&.has-min-label:not(:focus)]:text-transparent [&::-webkit-calendar-picker-indicator]:hidden [@media(hover:none)]:!text-[16px]` +
             (hasError ? ' error' : '') +
             (showMinLabel ? ' has-min-label' : '')
           }

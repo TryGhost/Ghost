@@ -111,8 +111,8 @@ export const tailwindRulesV4 = {
   'tailwindcss/no-contradicting-classname': 'error',
 };
 
-// Tailwind v3 ruleset (per-rule config). LEGACY — used only by comments-ui
-// and signup-form until they migrate to v4.
+// Tailwind v3 ruleset (per-rule config). LEGACY — used only by comments-ui,
+// signup-form and portal until they migrate to v4.
 export function tailwindRulesWithConfig(config) {
   return {
     'tailwindcss/classnames-order': ['error', { config }],
