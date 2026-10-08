@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
-import { describe, it, beforeEach } from 'vitest';
+import { describe, it, beforeEach, afterEach } from 'vitest';
+import createKnex, { type Knex } from 'knex';
 import type {
   JobsBackendBase,
   DispatchEnvelope,
@@ -49,7 +50,7 @@ class FakeBackend implements JobsBackendBase {
 }
 
 function makeLogger() {
-  const calls = { error: [] as unknown[][], info: [] as unknown[][] };
+  const calls: Record<'error' | 'info' | 'warn', unknown[][]> = { error: [], info: [], warn: [] };
   const logging: JobsLogger = {
     error: (...args) => {
       calls.error.push(args);
@@ -57,8 +58,40 @@ function makeLogger() {
     info: (...args) => {
       calls.info.push(args);
     },
+    warn: (...args) => {
+      calls.warn.push(args);
+    },
   };
   return { logging, calls };
+}
+
+function makeOutbox() {
+  const inserts: { id: string; envelope: DispatchEnvelope; transacting?: unknown }[] = [];
+  const relayCalls: string[] = [];
+  const store = {
+    async insert(
+      entry: { id: string; envelope: DispatchEnvelope },
+      options?: { transacting?: unknown },
+    ): Promise<void> {
+      inserts.push({ ...entry, transacting: options?.transacting });
+    },
+  };
+  const relay = {
+    start(): void {
+      relayCalls.push('start');
+    },
+    async stop(): Promise<void> {
+      relayCalls.push('stop');
+    },
+  };
+  return { inserts, relayCalls, store, relay };
+}
+
+// Lets an after-commit hand-off registered on the transaction run.
+function settle(): Promise<void> {
+  return new Promise((resolve) => {
+    setTimeout(resolve, 20);
+  });
 }
 
 function makeSentry() {
@@ -87,11 +120,21 @@ describe('JobsService', function () {
     logger = makeLogger();
   });
 
-  function makeService(overrides: { sentry?: JobsErrorReporter } = {}) {
+  function makeService(
+    overrides: {
+      sentry?: JobsErrorReporter;
+      outbox?: ReturnType<typeof makeOutbox>;
+      logOutboxUnavailable?: boolean;
+    } = {},
+  ) {
     return new JobsService({
       backend,
       logging: logger.logging,
       sentry: overrides.sentry,
+      outbox: overrides.outbox
+        ? { store: overrides.outbox.store, relay: overrides.outbox.relay }
+        : undefined,
+      logOutboxUnavailable: overrides.logOutboxUnavailable,
     });
   }
 
@@ -235,6 +278,146 @@ describe('JobsService', function () {
         () => service.dispatch(new GreetJob({ name: 'Ada' })),
         (error: unknown) => error === rejected,
       );
+    });
+  });
+
+  describe('dispatch via outbox', function () {
+    let db: Knex;
+
+    beforeEach(function () {
+      db = createKnex({
+        client: 'better-sqlite3',
+        connection: { filename: ':memory:' },
+        pool: { min: 1, max: 1 },
+        useNullAsDefault: true,
+      });
+    });
+
+    afterEach(async function () {
+      await db.destroy();
+    });
+
+    it('active: inserts a dispatch row with id and envelope and does not touch the backend', async function () {
+      const outbox = makeOutbox();
+      const service = makeService({ outbox });
+
+      await service.dispatch(new GreetJob({ name: 'Ada' }));
+
+      assert.equal(outbox.inserts.length, 1);
+      const { id, envelope } = outbox.inserts[0];
+      assert.equal(typeof id, 'string');
+      assert.ok(id.length > 0);
+      assert.equal(envelope.version, 1);
+      const { job } = envelope.payload;
+      assert.equal(job.type, 'greet');
+      assert.deepEqual(JSON.parse(job.payload), { name: 'Ada' });
+      assert.equal(
+        backend.enqueued.length,
+        0,
+        'the backend is not called directly on the outbox path',
+      );
+    });
+
+    it('active: writes the row in the caller transaction when one is given', async function () {
+      const outbox = makeOutbox();
+      const service = makeService({ outbox });
+
+      await db.transaction(async (trx) => {
+        await service.dispatch(new GreetJob({ name: 'Ada' }), { transacting: trx });
+        assert.equal(outbox.inserts[0].transacting, trx);
+      });
+    });
+
+    it('inactive: dispatches directly to the backend', async function () {
+      const service = makeService();
+
+      await service.dispatch(new GreetJob({ name: 'Ada' }));
+
+      assert.equal(backend.enqueued.length, 1);
+    });
+
+    it('inactive: hands a transacting dispatch to the backend once the transaction commits', async function () {
+      const service = makeService();
+
+      await db.transaction(async (trx) => {
+        await service.dispatch(new GreetJob({ name: 'Ada' }), { transacting: trx });
+        assert.equal(backend.enqueued.length, 0, 'nothing is enqueued before commit');
+      });
+      await settle();
+
+      assert.equal(backend.enqueued.length, 1);
+      assert.equal(backend.enqueued[0].envelope.payload.job.type, 'greet');
+    });
+
+    it('inactive: drops a transacting dispatch when the transaction rolls back', async function () {
+      const service = makeService();
+
+      await assert.rejects(
+        db.transaction(async (trx) => {
+          await service.dispatch(new GreetJob({ name: 'Ada' }), { transacting: trx });
+          throw new Error('roll back');
+        }),
+      );
+      await settle();
+
+      assert.equal(backend.enqueued.length, 0);
+    });
+
+    it('inactive: reports an enqueue failure after commit instead of rejecting the caller', async function () {
+      const sentry = makeSentry();
+      const service = makeService({ sentry: sentry.sentry });
+      backend.enqueue = () => {
+        throw new Error('backend refused');
+      };
+
+      await db.transaction(async (trx) => {
+        await service.dispatch(new GreetJob({ name: 'Ada' }), { transacting: trx });
+      });
+      await settle();
+
+      assert.ok(
+        logger.calls.error.some((args) => /failed to enqueue after commit/.test(String(args[0]))),
+        'the failure is logged',
+      );
+      assert.equal(sentry.captured.length, 1);
+      assert.deepEqual(sentry.captured[0].context, { tags: { job_type: 'greet' } });
+    });
+
+    it('inactive: still rejects an enqueue failure when there is no transaction', async function () {
+      const service = makeService();
+      backend.enqueue = () => {
+        throw new Error('backend refused');
+      };
+
+      await assert.rejects(
+        () => service.dispatch(new GreetJob({ name: 'Ada' })),
+        /backend refused/,
+      );
+      assert.equal(logger.calls.error.length, 0, 'the caller gets the error, nothing is logged');
+    });
+
+    it('active: starts the relay after the backend and stops it before the backend', async function () {
+      const outbox = makeOutbox();
+      const service = makeService({ outbox });
+
+      await service.start();
+      assert.deepEqual(outbox.relayCalls, ['start']);
+
+      await service.shutdown();
+      assert.deepEqual(outbox.relayCalls, ['start', 'stop']);
+      assert.equal(backend.shutdownCalls.length, 1);
+    });
+
+    it('warns at start when the outbox is enabled on an unsupported database', async function () {
+      const service = makeService({ logOutboxUnavailable: true });
+
+      await service.start();
+
+      assert.ok(
+        logger.calls.warn.some((args) => /outbox/i.test(String(args[0]))),
+        'a warning naming the outbox is logged',
+      );
+      assert.ok(backend.startOptions, 'the backend still starts on the legacy path');
     });
   });
 
