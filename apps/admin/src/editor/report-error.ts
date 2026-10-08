@@ -1,6 +1,10 @@
 import * as Sentry from '@sentry/react';
 import type { ErrorInfo } from 'react';
-import { APIError, ServerUnreachableError } from '@tryghost/admin-x-framework/errors';
+import {
+  APIError,
+  ServerUnreachableError,
+  getErrorMessage,
+} from '@tryghost/admin-x-framework/errors';
 import { loadedKoenigVersion } from '@/settings/components/koenig-loader';
 import type { PostType } from '@/editor/card-config';
 import type { SaveError } from '@/editor/engine/save-engine';
@@ -63,6 +67,14 @@ function responseTags(error: SaveError): Record<string, TagValue | undefined> {
   };
 }
 
+/** Sentry titles and groups a failure by this error's name; the transport error is its cause. */
+function saveFailureError(error: SaveError): Error {
+  const kind = error.kind.replace(/(?:^|-)(\w)/g, (_, letter: string) => letter.toUpperCase());
+  const reported = new Error(getErrorMessage(error.cause, error.message), { cause: error.cause });
+  reported.name = `Save${kind}Error`;
+  return reported;
+}
+
 /**
  * Reports a request that settled as failed. Validation, host limits, a writer
  * who lost access to the post and an unreachable server are not faults in the
@@ -110,7 +122,7 @@ export function reportSaveFailure(failure: EditorSaveFailure, postType: PostType
     return;
   }
 
-  reportEditorError(error.cause ?? new Error(error.message), {
+  reportEditorError(saveFailureError(error), {
     tags,
     extra: { post_id: postId, duration_ms: durationMs },
   });
