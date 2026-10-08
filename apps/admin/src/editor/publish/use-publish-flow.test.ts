@@ -158,6 +158,49 @@ describe('a schedule that passes before it is confirmed', () => {
     expect(result.current.state.isScheduled).toBe(true);
   });
 
+  it('refuses a time that passes while the editor saves first', async () => {
+    let clock = NOW;
+    // A save held by a sign-in can outlast the chosen time.
+    const onBeforePublish = vi.fn(() => {
+      clock = new Date(NOW.getTime() + 11 * 60 * 1000);
+      return Promise.resolve();
+    });
+    const inputs = { ...options(), now: () => clock, onBeforePublish };
+    const { result } = renderHook(() => usePublishFlow(inputs), { wrapper });
+    await waitFor(() => expect(result.current.limitsChecked).toBe(true));
+    act(() => result.current.setIsScheduled(true));
+    act(() => result.current.toConfirm());
+
+    await act(() => result.current.confirmPublish());
+
+    expect(onBeforePublish).toHaveBeenCalledTimes(1);
+    expect(inputs.dispatch).not.toHaveBeenCalled();
+    expect(result.current.confirmStatus).toBe('failure');
+    expect(result.current.failure).toEqual({ message: SCHEDULE_PASSED });
+    expect(result.current.state.isScheduled).toBe(true);
+    // No longer running, so the writer can go back for another time.
+    act(() => result.current.toOptions());
+    expect(result.current.step).toBe('options');
+  });
+
+  it('still schedules when the time is ahead once the editor has saved', async () => {
+    let clock = NOW;
+    const onBeforePublish = vi.fn(() => {
+      clock = new Date(NOW.getTime() + 60 * 1000);
+      return Promise.resolve();
+    });
+    const inputs = { ...options(), now: () => clock, onBeforePublish };
+    const { result } = renderHook(() => usePublishFlow(inputs), { wrapper });
+    await waitFor(() => expect(result.current.limitsChecked).toBe(true));
+    act(() => result.current.setIsScheduled(true));
+    act(() => result.current.toConfirm());
+
+    await act(() => result.current.confirmPublish());
+
+    expect(result.current.failure).toBeNull();
+    expect(vi.mocked(inputs.dispatch).mock.calls[0]?.[0]).toMatchObject({ kind: 'schedule' });
+  });
+
   it('schedules once a future time is chosen', async () => {
     const { inputs, result } = await reviewThenWait();
     await act(() => result.current.confirmPublish());

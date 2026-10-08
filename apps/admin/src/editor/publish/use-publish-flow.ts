@@ -413,14 +413,18 @@ export function usePublishFlow({
       return;
     }
 
-    // The chosen time can pass while the flow sits open, so it is checked against
-    // the clock at the click, before anything is saved. Scheduling is not switched
-    // off here: that would turn the confirmed schedule into an immediate publish.
-    const current = machine.getState();
-    if (
-      current.isScheduled &&
-      Date.parse(current.scheduledAt) < Date.parse(current.minScheduledAt)
-    ) {
+    // The chosen time can pass while the flow sits open, or while the pre-save
+    // cleanup waits on a sign-in, so it is checked against the clock at the click
+    // and again before the publish is sent. Scheduling is not switched off here:
+    // that would turn the confirmed schedule into an immediate publish.
+    const schedulePassed = () => {
+      const current = machine.getState();
+      return (
+        current.isScheduled && Date.parse(current.scheduledAt) < Date.parse(current.minScheduledAt)
+      );
+    };
+
+    if (schedulePassed()) {
       setFailure({ message: SCHEDULE_PASSED });
       setConfirmStatus('failure');
       return;
@@ -453,6 +457,13 @@ export function usePublishFlow({
     }
 
     if (!activeRef.current) {
+      return;
+    }
+
+    if (schedulePassed()) {
+      publishRunningRef.current = false;
+      setFailure({ message: SCHEDULE_PASSED });
+      setConfirmStatus('failure');
       return;
     }
 
