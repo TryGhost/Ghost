@@ -1,6 +1,3 @@
-import type { AppManifest } from '@tryghost/admin-x-framework/api/app-installations';
-import { servedFrom } from './served-from';
-
 /** One kind of access an app gets, as a consent screen lists it. */
 export interface AccessItem {
   title: string;
@@ -12,9 +9,10 @@ export interface AccessItem {
  * user's own session until Permissions and auth gives them scopes, and only the Owner and
  * Administrators can install them, so this is everything an Administrator can do, minus
  * what the bridge blocks (D68: staff tokens, integrations and keys, invites, webhooks,
- * exports, and installing or approving apps). Keep it in step with both.
+ * exports, and installing or approving apps). Keep it in step with both. Where the app
+ * sends what it reads is a capability, listed with where it appears.
  */
-const ACCOUNT_ACCESS: AccessItem[] = [
+export const ACCOUNT_ACCESS: AccessItem[] = [
   {
     title: 'Posts and pages',
     description:
@@ -45,17 +43,3 @@ const ACCOUNT_ACCESS: AccessItem[] = [
   },
   { title: 'Staff', description: 'View staff users and change their roles' },
 ];
-
-/**
- * Everything an app gets: what the publisher's account can do, and sending what it reads
- * to the app's own service, where its page runs.
- */
-export function appAccess(manifest: AppManifest): AccessItem[] {
-  return [
-    ...ACCOUNT_ACCESS,
-    {
-      title: 'Connected service',
-      description: `Read and write data to ${servedFrom(manifest)}`,
-    },
-  ];
-}

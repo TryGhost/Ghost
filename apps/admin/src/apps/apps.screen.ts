@@ -15,6 +15,7 @@ export const appsScreen = {
     page.getByTestId(sel.appInstallDialog).getByTestId(sel.appDevelopmentBadge),
   accessIndicator: () => page.getByTestId(sel.accessIndicator),
   accessItems: () => page.getByTestId(sel.accessItem),
+  capabilities: () => page.getByTestId(sel.appCapability),
   notice: () => page.getByTestId(sel.appInstallNotice),
   moveWarning: () => page.getByTestId(sel.appInstallMoveWarning),
   problems: () => page.getByTestId(sel.appInstallProblems),

@@ -10,6 +10,7 @@ export const appsListRow = 'apps-list-row';
 export const appInstallDialog = 'app-install-dialog';
 export const appInstallNotAllowedDialog = 'app-install-not-allowed-dialog';
 export const appInstallNotice = 'app-install-notice';
+export const appCapability = 'app-capability';
 export const appInstallMoveWarning = 'app-install-move-warning';
 export const appInstallProblems = 'app-install-problems';
 export const appInstallUnreachable = 'app-install-unreachable';

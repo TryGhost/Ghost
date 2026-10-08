@@ -132,9 +132,13 @@ describe('Installing an app', () => {
     await expect
       .element(appsScreen.accessItems().first())
       .toHaveTextContent('View, create, edit, publish and delete all posts and pages');
-    // Where the app runs is where what it reads can go.
+    // What the app does: where it appears, and where what it reads can go.
+    await expect(appsScreen.capabilities()).toHaveCount(2);
     await expect
-      .element(appsScreen.accessItems().last())
+      .element(appsScreen.capabilities().first())
+      .toHaveTextContent('A dedicated page in Admin');
+    await expect
+      .element(appsScreen.capabilities().last())
       .toHaveTextContent('Read and write data to podcast.example.com');
     expect(previewApi.requests.map(({ body }) => body)).toEqual([
       { app_installation_previews: [{ manifest_url: MANIFEST_URL }] },
@@ -167,7 +171,7 @@ describe('Installing an app', () => {
     await renderAdminApp('/apps/install?manifest=http://localhost:5173/ghost-app.json', { labs });
 
     await expect
-      .element(appsScreen.accessItems().last())
+      .element(appsScreen.capabilities().last())
       .toHaveTextContent('Read and write data to localhost:5173');
     await expect.element(appsScreen.developmentBadge()).toBeVisible();
   });
@@ -431,7 +435,11 @@ describe('Installing an app', () => {
     const changed = preview({ manifest: manifest({ name: 'Podcasts' }), digest: 'digest-2' });
     fakePreview(previewResponse(preview()));
     let attempts = 0;
-    fakeAdminEndpoint('POST', '/apps/installations/', () => {
+    let finishRetry = () => {};
+    const retried = new Promise<void>((resolve) => {
+      finishRetry = resolve;
+    });
+    fakeAdminEndpoint('POST', '/apps/installations/', async () => {
       attempts += 1;
       if (attempts === 1) {
         return apiError(409, {
@@ -439,6 +447,9 @@ describe('Installing an app', () => {
           code: 'APP_MANIFEST_CHANGED',
           details: changed,
         });
+      }
+      if (attempts === 3) {
+        await retried;
       }
       return apiError(500, { type: 'InternalServerError', code: 'UNEXPECTED_ERROR' });
     });
@@ -451,8 +462,11 @@ describe('Installing an app', () => {
 
     await appsScreen.tryAgainButton().click();
 
-    await expect.element(appsScreen.notice()).toHaveTextContent('has changed since you opened it');
+    // While it installs again, the review is back with its notice.
     await expect.poll(() => attempts).toBe(3);
+    await expect.element(appsScreen.notice()).toHaveTextContent('has changed since you opened it');
+    finishRetry();
+    await expect.element(appsScreen.installDialog()).toHaveTextContent('Couldn’t install this app');
   });
 
   it('retries the install, not the check, when installing fails', async () => {

@@ -15,8 +15,8 @@ import { AppBanner, AppIcon } from '@/apps/components/app-icon';
 import { DevelopmentBadge } from '@/apps/components/development-badge';
 import { ManifestChanges } from '@/apps/components/manifest-changes';
 import { SectionEyebrow } from '@/apps/components/section-eyebrow';
-import { SurfaceSummary } from '@/apps/components/surface-icon';
-import { appAccess } from '@/apps/lib/access';
+import { CapabilitySummary } from '@/apps/components/surface-icon';
+import { ACCOUNT_ACCESS } from '@/apps/lib/access';
 import { describeChanges } from '@/apps/lib/changes';
 import { isDevelopmentApp, movedBetween } from '@/apps/lib/served-from';
 
@@ -148,7 +148,7 @@ export const Review: React.FC<ReviewProps> = ({
             </Text>
           </Banner>
         )}
-        <SurfaceSummary manifest={manifest} />
+        <CapabilitySummary manifest={manifest} />
         <ReviewSeparator />
         {rows.length > 0 && (
           <Stack gap="sm">
@@ -156,7 +156,7 @@ export const Review: React.FC<ReviewProps> = ({
             <ManifestChanges rows={rows} />
           </Stack>
         )}
-        <AccessIndicator intro={ACCOUNT_ACCESS_INTRO} items={appAccess(manifest)} />
+        <AccessIndicator intro={ACCOUNT_ACCESS_INTRO} items={ACCOUNT_ACCESS} />
         <DialogFooter>
           <Button variant="outline" onClick={onClose}>
             Cancel
@@ -173,9 +173,9 @@ export const Review: React.FC<ReviewProps> = ({
     <>
       <ReviewHeader description={manifest.description} preview={preview} title={manifest.name} />
       {noticeBanner}
-      <SurfaceSummary manifest={manifest} />
+      <CapabilitySummary manifest={manifest} />
       <ReviewSeparator />
-      <AccessIndicator intro={ACCOUNT_ACCESS_INTRO} items={appAccess(manifest)} />
+      <AccessIndicator intro={ACCOUNT_ACCESS_INTRO} items={ACCOUNT_ACCESS} />
       <DialogFooter>
         <Button variant="outline" onClick={onClose}>
           Cancel
