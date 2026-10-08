@@ -25,11 +25,6 @@ vi.mock('./use-flag-gated-route-owner', () => ({
   useFlagGatedRouteOwner: () => routeOwnerMock(),
 }));
 
-vi.mock('./auth/api', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('./auth/api')>()),
-  useAuthScreensOwner: () => 'ember',
-}));
-
 function routeHidesAdminSidebar(path: string): boolean {
   const matches = matchRoutes(routes, path) ?? [];
   useMatchesMock.mockReturnValue(

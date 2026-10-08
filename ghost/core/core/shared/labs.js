@@ -67,7 +67,6 @@ const PRIVATE_FEATURES = [
   'paywallImprovements',
   'machinePayments',
   'editorReact',
-  'authReact',
   'navigationUrlSuggestions',
   'billingReact',
   'apps',
