@@ -1,10 +1,8 @@
 import setupGhostApi from '../../src/utils/api';
 
-test('calls settings endpoint on init', () => {
-  jest.spyOn(window, 'fetch');
-  window.fetch.mockResolvedValueOnce({
-    ok: true,
-    json: async () => ({
+test('calls settings endpoint on init', async () => {
+  const fetchSpy = vi.spyOn(window, 'fetch').mockResolvedValueOnce(
+    Response.json({
       announcement: [
         {
           announcement_content: '<p>Test announcement</p>',
@@ -12,17 +10,16 @@ test('calls settings endpoint on init', () => {
         },
       ],
     }),
-  });
+  );
 
   const api = setupGhostApi({
-    apiKey: 'key',
     apiUrl: 'http://localhost/members/api/announcement/',
   });
 
-  api.init();
+  await api.init();
 
-  expect(window.fetch).toHaveBeenCalledTimes(1);
-  expect(window.fetch).toHaveBeenCalledWith(
+  expect(fetchSpy).toHaveBeenCalledTimes(1);
+  expect(fetchSpy).toHaveBeenCalledWith(
     'http://localhost/members/api/announcement/',
     expect.objectContaining({
       method: 'GET',

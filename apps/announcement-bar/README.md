@@ -23,7 +23,8 @@ directory:
 ```bash
 pnpm build    # one-off build
 pnpm dev      # watch and rebuild the UMD bundle
-pnpm test     # run unit tests once
+pnpm test     # type-check and run unit tests once
+pnpm test:acceptance  # run browser tests in Chromium and WebKit
 pnpm lint     # lint source and tests
 ```
 

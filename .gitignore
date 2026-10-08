@@ -172,6 +172,8 @@ Caddyfile
 
 # Announcement-Bar
 /apps/announcement-bar/umd
+/apps/announcement-bar/.vitest-attachments
+/apps/announcement-bar/test/acceptance/__screenshots__
 
 # Build files
 /apps/*/build
