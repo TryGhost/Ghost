@@ -161,19 +161,32 @@ describe('a schedule that passes before it is confirmed', () => {
   it('refuses a time that passes while the editor saves first', async () => {
     let clock = NOW;
     // A save held by a sign-in can outlast the chosen time.
-    const onBeforePublish = vi.fn(() => {
-      clock = new Date(NOW.getTime() + 11 * 60 * 1000);
-      return Promise.resolve();
-    });
+    let finishSave = () => {};
+    const onBeforePublish = vi.fn(
+      () =>
+        new Promise<void>((resolve) => {
+          finishSave = resolve;
+        }),
+    );
     const inputs = { ...options(), now: () => clock, onBeforePublish };
     const { result } = renderHook(() => usePublishFlow(inputs), { wrapper });
     await waitFor(() => expect(result.current.limitsChecked).toBe(true));
     act(() => result.current.setIsScheduled(true));
     act(() => result.current.toConfirm());
 
-    await act(() => result.current.confirmPublish());
-
+    let confirming: Promise<void> = Promise.resolve();
+    act(() => {
+      confirming = result.current.confirmPublish();
+    });
     expect(onBeforePublish).toHaveBeenCalledTimes(1);
+
+    // The time passes only while the save is still pending.
+    clock = new Date(NOW.getTime() + 11 * 60 * 1000);
+    await act(async () => {
+      finishSave();
+      await confirming;
+    });
+
     expect(inputs.dispatch).not.toHaveBeenCalled();
     expect(result.current.confirmStatus).toBe('failure');
     expect(result.current.failure).toEqual({ message: SCHEDULE_PASSED });
