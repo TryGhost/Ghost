@@ -65,7 +65,7 @@ import {
  *   When true: block barrel imports of `@tryghost/shade` (force layered subpath
  *   imports). Only relevant for workspaces that import shade.
  * @property {boolean} [sortImports=false]
- *   When true: apply `ghost/sort-imports-es6-autofix/sort-imports-es6`.
+ *   When true: apply `sortImportsRule` (declaration and member order).
  * @property {boolean} [legacyJsTsSplit=false]
  *   LEGACY escape hatch for portal only. Portal is mid-TS-migration with both
  *   `.js` and `.ts` source files mixed in `src/`. When true, emits two src
