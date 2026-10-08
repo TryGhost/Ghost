@@ -16,7 +16,8 @@ const SEARCH_DEBOUNCE_MS = 200;
 
 /**
  * Loads one `search-index/*` list. It's keyed under the resource's data type, so
- * the invalidation that follows a save (in React or Ember) marks it stale too.
+ * the invalidation that follows most saves (in React or Ember) marks it stale
+ * too; a React post or page edit writes the saved entry into it instead.
  */
 function useSearchIndex(key: SearchIndexKey, enabled: boolean) {
   const fetchApi = useFetchApi();

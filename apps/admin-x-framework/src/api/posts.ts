@@ -146,7 +146,7 @@ export const useAddPost = createMutation<PostResponseType, AddPostPayload>({
 
 // The search-index lists are left out: most edits are autosaves that change
 // nothing they hold, and each refetch reads every post or tag on the site. The
-// caller refreshes them when an edit does change what they list.
+// caller writes the post it saved into them instead.
 export const useEditPost = createMutation<PostResponseType, EditPostPayload>({
   method: 'PUT',
   path: ({ post }) => `/posts/${post.id}/`,
