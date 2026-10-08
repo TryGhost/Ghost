@@ -2,7 +2,7 @@ import loginAsRole from '../../helpers/login-as-role';
 import moment from 'moment-timezone';
 import sinon from 'sinon';
 import {Response} from 'miragejs';
-import {blur, click, currentRouteName, currentURL, fillIn, find, findAll, triggerEvent, triggerKeyEvent, waitFor, waitUntil} from '@ember/test-helpers';
+import {blur, click, currentRouteName, currentURL, fillIn, find, findAll, triggerEvent, waitFor, waitUntil} from '@ember/test-helpers';
 import {clickTrigger, removeMultipleOption, selectChoose} from 'ember-power-select/test-support/helpers';
 import {disableMailgun, enableMailgun} from '../../helpers/mailgun';
 import {disableMembers, enableMembers} from '../../helpers/members';
@@ -806,20 +806,14 @@ describe('Acceptance: Publish flow', function () {
                     status: 'published',
                     email
                 });
-            }, {timing: 300});
+            });
             await visit(`/editor/post/${post.id}`);
             await click('[data-test-button="publish-flow"]');
             await click('[data-test-button="continue"]');
-            click('[data-test-button="confirm-publish"]');
-
-            await waitFor('[data-test-button="publish-flow-publish"][disabled]');
-            expect(find('[data-test-button="publish-flow-preview"]'), 'preview while saving').to.have.attribute('disabled');
-
-            // An Escape that closed the flow would abandon the hand-off and leave the editor open
-            await triggerKeyEvent('[data-test-modal="publish-flow"]', 'keydown', 'Escape');
+            await click('[data-test-button="confirm-publish"]');
 
             await waitUntil(() => currentURL() === `/posts/analytics/${post.id}`);
-            expect(find('[data-test-modal="publish-flow"]'), 'publish flow closed after hand-off').not.to.exist;
+            expect(find('[data-test-modal="publish-flow"]'), 'publish flow closed after save').not.to.exist;
             expect(email.status, 'legacy poll did not reload the failed email').to.equal('pending');
         });
 

@@ -8,7 +8,6 @@
                     type="button"
                     class="gh-btn gh-btn-editor gh-editor-preview-trigger"
                     title="Close"
-                    disabled={{@data.isLocked}}
                     {{on "click" @close}}
                     data-test-button="publish-flow-publish"
                 >
@@ -18,7 +17,6 @@
                     <button
                         type="button"
                         class="gh-btn"
-                        disabled={{@data.isLocked}}
                         {{on "click" @data.togglePreviewPublish}}
                         data-test-button="publish-flow-preview"
                     >

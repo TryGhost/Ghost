@@ -177,9 +177,6 @@ function PublishFlowDialog({
   }, [newsletterSlug, onNewsletterChange]);
 
   const close = () => {
-    if (!flow.canClose) {
-      return;
-    }
     flow.cancel();
     onClose();
   };
@@ -200,14 +197,13 @@ function PublishFlowDialog({
           <PageHeader.ActionGroup>
             {step === 'complete' ? null : (
               <>
-                <Button disabled={!flow.canClose} variant="ghost" onClick={close}>
+                <Button variant="ghost" onClick={close}>
                   Close
                 </Button>
                 {flow.emailErrorMessage || !onPreview ? null : (
                   <Button
                     className="w-20 shrink-0"
                     data-testid={publishFlowPreview}
-                    disabled={!flow.canClose}
                     variant="outline"
                     onClick={onPreview}
                   >

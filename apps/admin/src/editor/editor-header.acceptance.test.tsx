@@ -1843,21 +1843,18 @@ describe('Editor header actions', () => {
 
         await sendThroughFlow(emailOnly);
 
-        // Mid-save, the flow shows its running state and cannot be left.
+        // Mid-save, the flow shows its running state.
         await expect.element(publishScreen.confirmButton()).toBeDisabled();
         await expect
           .element(publishScreen.confirmButton())
           .toHaveTextContent(emailOnly ? 'Sending' : 'Publishing & sending');
         expect(publishScreen.confirmButton().element().querySelector('svg')).not.toBeNull();
-        await expect.element(publishScreen.closeButton()).toBeDisabled();
-        await expect.element(publishScreen.previewButton()).toBeDisabled();
         held.resolve();
 
-        // Once the save lands the flow still holds, and Escape cannot cut it short.
+        // Once the save lands the flow still holds in its running state.
         await expect.element(editorScreen.status()).toHaveTextContent('to 20 members');
-        await userEvent.keyboard('{Escape}');
         expect(currentRoute()).toBe(`/editor/post/${POST_ID}`);
-        await expect.element(publishScreen.closeButton()).toBeDisabled();
+        await expect.element(publishScreen.confirmButton()).toBeDisabled();
 
         await expect.poll(currentRoute).toBe(`/posts/analytics/${POST_ID}`);
         await expect(editorScreen.root()).toHaveCount(0);

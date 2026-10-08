@@ -83,17 +83,11 @@ export default class PublishManagement extends Component {
         if (isValid && (!this.publishFlowModal || this.publishFlowModal?.isClosing)) {
             this.publishOptions.resetPastScheduledAt();
 
-            const publishManagement = this;
             this.publishFlowModal = this.modals.open(PublishFlowModal, {
                 publishOptions: this.publishOptions,
                 saveTask: this.publishTask,
                 togglePreviewPublish: this.togglePreviewPublish,
-                skipAnimation,
-                get isLocked() {
-                    return publishManagement.isPublishFlowLocked;
-                }
-            }, {
-                beforeClose: () => !this.isPublishFlowLocked
+                skipAnimation
             });
 
             const result = await this.publishFlowModal;
@@ -251,12 +245,6 @@ export default class PublishManagement extends Component {
 
             this.notifications.showAPIError(e);
         }
-    }
-
-    // Closing the publish flow mid-save or mid-hand-off would leave a published post
-    // without its hand-off; the legacy email poll can be walked away from
-    get isPublishFlowLocked() {
-        return this.publishTask.isRunning && !this.confirmEmailTask.isRunning;
     }
 
     @task

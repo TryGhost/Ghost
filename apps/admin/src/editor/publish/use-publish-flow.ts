@@ -91,8 +91,6 @@ export interface PublishFlow extends PublishOptionActions {
   retryStatus: ConfirmStatus;
   retryFailure: string | null;
   canRetryEmail: boolean;
-  /** False while a publish saves or holds before handing off; the caller must not close the flow then. */
-  canClose: boolean;
   /** Abandons any asynchronous continuation before the caller closes the modal. */
   cancel: () => void;
 }
@@ -270,7 +268,6 @@ export function usePublishFlow({
       isScheduled: initialState.isScheduled,
     };
   });
-  const [canClose, setCanClose] = useState(true);
   const completedRef = useRef(false);
   const publishRunningRef = useRef(false);
   const retryRunningRef = useRef(false);
@@ -396,7 +393,6 @@ export function usePublishFlow({
         return;
       }
       completedRef.current = true;
-      setCanClose(true);
       if (showCompletion) {
         setEmailErrorMessage(null);
         setConfirmStatus('success');
@@ -467,20 +463,13 @@ export function usePublishFlow({
     handoffMinimum.start();
     setFailure(null);
     setConfirmStatus('running');
-    // Closing mid-save, or mid-hold, would strand a published post short of its hand-off.
-    setCanClose(false);
-
-    const fail = (reason: CompletionFailure) => {
-      publishRunningRef.current = false;
-      setCanClose(true);
-      setFailure(reason);
-      setConfirmStatus('failure');
-    };
 
     const command = machine.toDispatch();
 
     if (!command) {
-      fail({ message: 'This post can no longer be published from here. Reload the editor.' });
+      publishRunningRef.current = false;
+      setFailure({ message: 'This post can no longer be published from here. Reload the editor.' });
+      setConfirmStatus('failure');
       return;
     }
 
@@ -490,7 +479,9 @@ export function usePublishFlow({
       await onBeforePublish?.();
     } catch (error) {
       if (activeRef.current) {
-        fail(describeRejectedAction(error));
+        publishRunningRef.current = false;
+        setFailure(describeRejectedAction(error));
+        setConfirmStatus('failure');
       }
       return;
     }
@@ -500,7 +491,9 @@ export function usePublishFlow({
     }
 
     if (schedulePassed()) {
-      fail({ message: SCHEDULE_PASSED });
+      publishRunningRef.current = false;
+      setFailure({ message: SCHEDULE_PASSED });
+      setConfirmStatus('failure');
       return;
     }
 
@@ -510,7 +503,9 @@ export function usePublishFlow({
       completion = await dispatch(command);
     } catch (error) {
       if (activeRef.current) {
-        fail(describeRejectedAction(error));
+        publishRunningRef.current = false;
+        setFailure(describeRejectedAction(error));
+        setConfirmStatus('failure');
       }
       return;
     }
@@ -521,7 +516,9 @@ export function usePublishFlow({
     const completionFailure = describeCompletionFailure(completion);
 
     if (completionFailure) {
-      fail(completionFailure);
+      publishRunningRef.current = false;
+      setFailure(completionFailure);
+      setConfirmStatus('failure');
       // A re-auth interruption sends the user back to confirm and try again.
       setStep('confirm');
       return;
@@ -530,8 +527,6 @@ export function usePublishFlow({
     // Stays 'running' across the email poll: the publish is not finished until
     // the email is submitted, and the button must not invite a second dispatch.
     if (willEmailImmediately && !improveSendingUI) {
-      // The post is saved, so walking away from the poll strands nothing.
-      setCanClose(true);
       let outcome: EmailConfirmationOutcome;
 
       try {
@@ -636,7 +631,6 @@ export function usePublishFlow({
     retryStatus,
     retryFailure,
     canRetryEmail,
-    canClose,
     cancel,
   };
 }

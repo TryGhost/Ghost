@@ -293,13 +293,6 @@ describe('post reads after an emailed publish', () => {
     expect(invalidateQueries).toHaveBeenCalledWith({ queryKey: ['PostsResponseType'] });
   });
 
-  it('can be closed while the send is confirmed, since the post is already saved', async () => {
-    const { result } = await publishAndEmail();
-
-    expect(result.current.confirmStatus).toBe('running');
-    expect(result.current.canClose).toBe(true);
-  });
-
   it('leaves them alone when the flow is closed before the send is confirmed', async () => {
     const { result, invalidateQueries, publishing } = await publishAndEmail();
 
@@ -420,36 +413,6 @@ describe('sends under improveSendingUI', () => {
 
     expect(inputs.onCompleted).not.toHaveBeenCalled();
     expect(localStorage.getItem('ghost-last-published-post')).toBeNull();
-  });
-
-  it('cannot be closed while the send saves or holds', async () => {
-    const inputs = options();
-    inputs.dispatch = savesAfter(400);
-    const { result, publishing } = await confirmSend(inputs);
-
-    expect(result.current.canClose).toBe(false);
-    await advance(800);
-    expect(result.current.canClose).toBe(false);
-
-    await advance(MIN_EMAIL_HANDOFF_LENGTH);
-    await act(() => publishing);
-    expect(result.current.canClose).toBe(true);
-  });
-
-  it('can be closed again once the send fails to save', async () => {
-    const inputs = options();
-    inputs.dispatch = savesAfter(400, {
-      kind: 'failed',
-      error: { kind: 'transport', message: 'Network error' },
-      executedAs: 'publish',
-    });
-    const { result, publishing } = await confirmSend(inputs);
-    expect(result.current.canClose).toBe(false);
-
-    await advance(400);
-    await act(() => publishing);
-    expect(result.current.confirmStatus).toBe('failure');
-    expect(result.current.canClose).toBe(true);
   });
 
   it('still waits on the email when a failed send is retried', async () => {
