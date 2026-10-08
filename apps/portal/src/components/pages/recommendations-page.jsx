@@ -164,7 +164,7 @@ const RecommendationItem = (recommendation) => {
             >
               <span className="text-grey-6">{t('Verification link sent, check your inbox')}</span>
               <CheckmarkIcon
-                className="gh-portal-recommendation-checkmark-icon size-4 px-0.5 py-0 text-[#30cf43]"
+                className="gh-portal-recommendation-checkmark-icon size-4 px-0.5 py-0 text-green"
                 alt=""
               />
             </div>

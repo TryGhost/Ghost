@@ -55,7 +55,7 @@ function ActionButton({
   className += isText ? ' h-auto p-0' : ' h-11 px-[1.8rem] py-0';
   if (isPrimary) {
     className +=
-      ' border-none text-[#fff] hover:!opacity-[0.92] focus:!opacity-[0.92] disabled:hover:!opacity-[0.92] disabled:focus:!opacity-[0.92] max-[1440px]:h-[42px]';
+      ' border-none text-white hover:!opacity-[0.92] focus:!opacity-[0.92] disabled:hover:!opacity-[0.92] disabled:focus:!opacity-[0.92] max-[1440px]:h-[42px]';
   } else {
     className += isText
       ? ' border-none text-grey-0'
