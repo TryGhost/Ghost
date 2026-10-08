@@ -266,6 +266,7 @@ describe('Post editor refetch', () => {
     await expect.element(editorScreen.titleInput()).toHaveValue('Hello from React');
     await editorScreen.backLink('post').click();
     await expect.poll(currentRoute).toBe('/posts');
+    await expect(editorScreen.titleInput()).toHaveCount(0);
 
     // The copy read on the first visit is still fresh in the cache.
     shared.theySave({ title: 'Their title', lexical: buildLexicalParagraph('Their words') });
@@ -334,6 +335,7 @@ describe('Post editor refetch', () => {
 
     await editorScreen.backLink('post').click();
     await expect.poll(currentRoute).toBe('/posts');
+    await expect(editorScreen.titleInput()).toHaveCount(0);
     const failedReads = fakeAdminEndpoint('GET', READ_ROUTE, () =>
       Response.json(
         { errors: [{ type: 'InternalServerError', message: 'Internal server error' }] },
