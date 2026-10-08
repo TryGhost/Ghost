@@ -4,9 +4,9 @@ import { Suspense, type ComponentType, type LazyExoticComponent } from 'react';
 
 /**
  * Chooses which implementation serves a route while a screen migrates from
- * Ember to React, based on a Labs flag. Read at render time so toggling the
- * flag in Developer Experiments swaps implementations without a rebuild — the
- * routes table is static and evaluated once at module load.
+ * Ember to React, based on a Labs flag. Decided at render time rather than in
+ * the static routes table, and held for the page lifetime by
+ * useFlagGatedRouteOwner: a flag change applies on the next full load.
  *
  * In the integrated admin, Ember's synchronously exposed feature state is the
  * ownership authority for both routers. This prevents brief split-brain states

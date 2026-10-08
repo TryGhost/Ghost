@@ -1,5 +1,6 @@
 import React, { lazy } from 'react';
 import { FlagGatedRoute } from './flag-gated-route';
+import { resetFlagGatedRouteOwners } from './use-flag-gated-route-owner';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 
@@ -41,6 +42,7 @@ describe('FlagGatedRoute', () => {
   beforeEach(() => {
     mockUseBrowseConfig.mockReset();
     delete window.EmberBridge;
+    resetFlagGatedRouteOwners();
   });
 
   it('renders nothing while config is loading', () => {
@@ -112,6 +114,8 @@ describe('FlagGatedRoute', () => {
       expect(screen.getByTestId('react-screen')).toBeInTheDocument();
     });
     unmount();
+    // A fresh page load, so the inverse pair resolves on its own.
+    resetFlagGatedRouteOwners();
 
     mockUseBrowseConfig.mockReturnValue(withLabs({ someFlag: true }));
     window.EmberBridge = {

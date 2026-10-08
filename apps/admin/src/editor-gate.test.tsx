@@ -1,5 +1,6 @@
 import React from 'react';
 import { EditorGate } from './editor-gate';
+import { resetFlagGatedRouteOwners } from './use-flag-gated-route-owner';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 
@@ -48,6 +49,7 @@ describe('EditorGate', () => {
   beforeEach(() => {
     mockUseBrowseConfig.mockReset();
     delete window.EmberBridge;
+    resetFlagGatedRouteOwners();
   });
 
   it('renders the Ember editor while the flag is off', () => {

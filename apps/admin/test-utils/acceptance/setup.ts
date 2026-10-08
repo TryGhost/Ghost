@@ -13,6 +13,7 @@ import {
 } from './worker';
 import { resetDeclaredResources } from './resources';
 import { guardFrameNavigations, resetFakeFrameOrigins } from './frames';
+import { resetFlagGatedRouteOwners } from '@/use-flag-gated-route-owner';
 
 // At import, before the spec module (and the app) loads.
 trackIssuedRequests();
@@ -62,6 +63,8 @@ afterEach(async () => {
     } finally {
       resetFakeApi();
       resetDeclaredResources();
+      // Route owners hold for a page lifetime; each test boots a fresh page.
+      resetFlagGatedRouteOwners();
       sessionStorage.clear();
       // The editor keeps local copies of drafts here, and the restore screen lists them all.
       for (const key of Object.keys(localStorage)) {

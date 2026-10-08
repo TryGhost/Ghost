@@ -1,6 +1,8 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import { userEvent } from 'vitest/browser';
+import type { QueryClient } from '@tanstack/react-query';
 import { buildLexicalParagraph } from '@tryghost/test-data';
+import { type ConfigResponseType, configDataType } from '@tryghost/admin-x-framework/api/config';
 
 import {
   configResponse,
@@ -84,6 +86,58 @@ describe('Editor flag', () => {
 
     await expect.poll(emberShellShown).toBe(true);
     await expect(editorScreen.root()).toHaveCount(0);
+  });
+
+  /**
+   * Route ownership holds for the page lifetime. Ember resolves its flags at
+   * boot, so a config refetch that sees the flag change mid-session must not
+   * move the route, or both implementations end up serving the same URL.
+   */
+  describe('after the flag changes mid-session', () => {
+    function cachedLabs(queryClient: QueryClient): Record<string, boolean> | undefined {
+      const [, data] =
+        queryClient.getQueriesData<ConfigResponseType>({ queryKey: [configDataType] })[0] ?? [];
+      return data?.config.labs;
+    }
+
+    async function flagRefetched(queryClient: QueryClient, editorReact: boolean) {
+      fakeAdminEndpoint('GET', '/config/', configResponse({ labs: { editorReact } }));
+      await queryClient.refetchQueries({ queryKey: [configDataType] });
+      expect(cachedLabs(queryClient)?.editorReact).toBe(editorReact);
+    }
+
+    it('keeps the editor with Ember after the flag turns on', async () => {
+      fakeEditorWorld();
+      fakePostsListScreen();
+      fakePosts([post({ id: 'abc123' })]);
+      const { queryClient } = await renderAdminApp('/editor/post/abc123', FLAG_OFF);
+      await expect.poll(emberShellShown).toBe(true);
+
+      await flagRefetched(queryClient, true);
+      window.location.hash = '#/posts';
+      await expect.element(postsListScreen.page('posts')).toBeVisible();
+      await postsListScreen.listItems().first().click();
+
+      await expect.poll(currentRoute).toBe('/editor/post/abc123');
+      await expect.poll(emberShellShown).toBe(true);
+      await expect(editorScreen.root()).toHaveCount(0);
+    });
+
+    it('keeps the editor with React after the flag turns off', async () => {
+      fakeEditorWorld();
+      fakePostsListScreen();
+      fakePosts([post({ id: 'abc123' })]);
+      const { queryClient } = await renderAdminApp('/editor/post/abc123', FLAG_ON);
+      await expect.element(editorScreen.root()).toBeVisible();
+
+      await flagRefetched(queryClient, false);
+      await editorScreen.backLink('post').click();
+      await expect.element(postsListScreen.page('posts')).toBeVisible();
+      await postsListScreen.listItems().first().click();
+
+      await expect.element(editorScreen.root()).toBeVisible();
+      expect(emberShellShown()).toBe(false);
+    });
   });
 });
 
