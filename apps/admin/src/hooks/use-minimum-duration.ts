@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useRef } from 'react';
 
 export interface MinimumDuration {
-  /** Marks the moment the running state appeared, restarting the minimum. */
+  /** Marks the moment the running state appeared, restarting the minimum for pending waits too. */
   start: () => void;
-  /** Resolves once the minimum has passed since `start()`; at once if it already has, or never started. */
+  /** Resolves once the minimum has passed since the latest `start()`; at once if it already has, or never started. */
   elapsed: () => Promise<void>;
 }
 
@@ -16,39 +16,52 @@ export interface MinimumDuration {
  */
 export function useMinimumDuration(ms: number): MinimumDuration {
   const startedAtRef = useRef<number | null>(null);
-  const pendingRef = useRef(new Set<() => void>());
+  const waitsRef = useRef(new Map<() => void, ReturnType<typeof setTimeout>>());
 
   useEffect(() => {
-    const pending = pendingRef.current;
+    const waits = waitsRef.current;
     return () => {
-      [...pending].forEach((release) => release());
+      for (const [settle, timer] of waits) {
+        clearTimeout(timer);
+        settle();
+      }
+      waits.clear();
     };
   }, []);
 
-  return useMemo(
-    () => ({
+  return useMemo(() => {
+    // Settles a wait once the minimum has passed since the latest start, replacing any earlier timer.
+    const schedule = (settle: () => void) => {
+      const waits = waitsRef.current;
+      const startedAt = startedAtRef.current;
+      const remaining = startedAt === null ? 0 : startedAt + ms - Date.now();
+
+      clearTimeout(waits.get(settle));
+
+      if (remaining <= 0) {
+        waits.delete(settle);
+        settle();
+        return;
+      }
+
+      waits.set(
+        settle,
+        setTimeout(() => {
+          waits.delete(settle);
+          settle();
+        }, remaining),
+      );
+    };
+
+    return {
       start: () => {
         startedAtRef.current = Date.now();
+        [...waitsRef.current.keys()].forEach(schedule);
       },
       elapsed: () =>
         new Promise<void>((resolve) => {
-          const startedAt = startedAtRef.current;
-          const remaining = startedAt === null ? 0 : startedAt + ms - Date.now();
-
-          if (remaining <= 0) {
-            resolve();
-            return;
-          }
-
-          const release = () => {
-            clearTimeout(timer);
-            pendingRef.current.delete(release);
-            resolve();
-          };
-          const timer = setTimeout(release, remaining);
-          pendingRef.current.add(release);
+          schedule(resolve);
         }),
-    }),
-    [ms],
-  );
+    };
+  }, [ms]);
 }

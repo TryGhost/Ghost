@@ -80,6 +80,21 @@ describe('useMinimumDuration', () => {
     expect(elapsed.settled).toBe(true);
   });
 
+  it('holds a pending wait until a restarted minimum has passed', async () => {
+    const { result } = renderHook(() => useMinimumDuration(MINIMUM));
+    result.current.start();
+    const elapsed = track(result.current.elapsed());
+    await advance(1000);
+
+    result.current.start();
+    await advance(MINIMUM - 1);
+    expect(elapsed.settled).toBe(false);
+
+    await advance(1);
+    expect(elapsed.settled).toBe(true);
+    expect(vi.getTimerCount()).toBe(0);
+  });
+
   it('settles pending waits and clears their timers on unmount', async () => {
     const { result, unmount } = renderHook(() => useMinimumDuration(MINIMUM));
     result.current.start();
