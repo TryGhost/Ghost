@@ -75,6 +75,214 @@ describe('Automation host limits', () => {
     });
   }
 
+  async function createWelcome(slug: string, status = 'inactive') {
+    const result = await agent
+      .post('automated_emails')
+      .body({
+        automated_emails: [
+          {
+            name:
+              slug === 'member-welcome-email-free'
+                ? 'Free member welcome flow'
+                : 'Paid member welcome flow',
+            slug,
+            status,
+            subject: 'Welcome',
+            lexical: JSON.stringify({ root: { children: [] } }),
+          },
+        ],
+      })
+      .expectStatus(201);
+    return result.body.automated_emails[0];
+  }
+
+  it('allows active welcome emails at automation cap without consuming slots', async () => {
+    const existing = await agent
+      .post('automations')
+      .body({ automations: [payload()] })
+      .expectStatus(201);
+    await capAtCurrentCount();
+    const free = await createWelcome('member-welcome-email-free', 'active');
+    const paid = await createWelcome('member-welcome-email-paid');
+    await agent
+      .put(`automated_emails/${paid.id}`)
+      .body({ automated_emails: [{ name: paid.name, status: 'active' }] })
+      .expectStatus(200);
+    assert.equal(await countActiveAutomations(), 1);
+    const repository = createDatabaseAutomationsRepository({
+      knex: db.knex,
+      fakeWaitHoursMultiplier: null,
+    });
+    await repository.browse({ includeStats: false });
+    for (const { id } of [free, paid]) {
+      assert.equal((await db.knex('automations').where('id', id).first()).status, 'inactive');
+    }
+    assert.equal(
+      (await db.knex('automations').where('id', existing.body.automations[0].id).first()).status,
+      'active',
+    );
+  });
+
+  it('does not count unmigrated welcome emails against new automation activations', async () => {
+    const free = await createWelcome('member-welcome-email-free', 'active');
+    const paid = await createWelcome('member-welcome-email-paid', 'active');
+    await hostLimits.setHostLimits({ limitAutomations: { max: '1' } });
+    await agent
+      .post('automations')
+      .body({ automations: [payload()] })
+      .expectStatus(201);
+    const repository = createDatabaseAutomationsRepository({
+      knex: db.knex,
+      fakeWaitHoursMultiplier: null,
+    });
+    await repository.browse({ includeStats: false });
+    assert.equal(await countActiveAutomations(), 1);
+    for (const { id } of [free, paid]) {
+      assert.equal((await db.knex('automations').where('id', id).first()).status, 'inactive');
+    }
+  });
+
+  it('rejects legacy status changes once welcome emails are converted', async () => {
+    const free = await createWelcome('member-welcome-email-free', 'active');
+    await hostLimits.setHostLimits({ limitAutomations: { max: '0' } });
+    const repository = createDatabaseAutomationsRepository({
+      knex: db.knex,
+      fakeWaitHoursMultiplier: null,
+    });
+    await repository.browse({ includeStats: false });
+    const blocked = await agent
+      .put(`automated_emails/${free.id}`)
+      .body({ automated_emails: [{ name: free.name, status: 'active' }] })
+      .expectStatus(422);
+    assert.equal(blocked.body.errors[0].property, 'status');
+    assert.match(blocked.body.errors[0].context, /automations API/);
+    await agent
+      .put(`automated_emails/${free.id}`)
+      .body({ automated_emails: [{ name: free.name, status: 'inactive', subject: 'Edited' }] })
+      .expectStatus(200);
+    assert.equal(await countActiveAutomations(), 0);
+  });
+
+  it('serializes legacy status changes with capped conversion', async () => {
+    const free = await createWelcome('member-welcome-email-free', 'active');
+    await hostLimits.setHostLimits({ limitAutomations: { max: '0' } });
+    const repository = createDatabaseAutomationsRepository({
+      knex: db.knex,
+      fakeWaitHoursMultiplier: null,
+    });
+    const [legacy] = await Promise.all([
+      agent
+        .put(`automated_emails/${free.id}`)
+        .body({ automated_emails: [{ name: free.name, status: 'active' }] }),
+      repository.browse({ includeStats: false }),
+    ]);
+    assert.ok([200, 422].includes(legacy.statusCode));
+    assert.equal((await db.knex('automations').where('id', free.id).first()).status, 'inactive');
+    assert.equal(await countActiveAutomations(), 0);
+  });
+
+  it('keeps welcome statuses without acquiring the limit lock on unconfigured plans', async () => {
+    await hostLimits.setHostLimits({});
+    const free = await createWelcome('member-welcome-email-free', 'active');
+    const repository = createDatabaseAutomationsRepository({
+      knex: db.knex,
+      fakeWaitHoursMultiplier: null,
+    });
+    const limitLockQueries: string[] = [];
+    const capture = (query: { sql: string; bindings?: unknown[] }) => {
+      if (query.sql.includes('for update') && query.bindings?.includes('site_uuid')) {
+        limitLockQueries.push(query.sql);
+      }
+    };
+    db.knex.on('query', capture);
+    try {
+      await agent
+        .put(`automated_emails/${free.id}`)
+        .body({ automated_emails: [{ name: free.name, status: 'inactive' }] })
+        .expectStatus(200);
+      await agent
+        .put(`automated_emails/${free.id}`)
+        .body({ automated_emails: [{ name: free.name, status: 'active' }] })
+        .expectStatus(200);
+      await Promise.all([repository.add(payload()), repository.browse({ includeStats: false })]);
+      const automation = await repository.getById(free.id);
+      assert.ok(automation);
+      assert.equal(automation.status, 'active');
+      await repository.edit(free.id, { ...automation, status: 'inactive' });
+    } finally {
+      db.knex.off('query', capture);
+    }
+    assert.deepEqual(limitLockQueries, []);
+  });
+
+  it.each([0, 1, 2])(
+    'migrates welcome emails with %s available active slots deterministically',
+    async (slots) => {
+      const existing = await agent
+        .post('automations')
+        .body({ automations: [payload()] })
+        .expectStatus(201);
+      const free = await createWelcome('member-welcome-email-free', 'active');
+      const paid = await createWelcome('member-welcome-email-paid', 'active');
+      await capAtCurrentCount(slots);
+      const repository = createDatabaseAutomationsRepository({
+        knex: db.knex,
+        fakeWaitHoursMultiplier: null,
+      });
+      await Promise.all([
+        repository.browse({ includeStats: false }),
+        repository.browse({ includeStats: false }),
+      ]);
+      assert.equal(
+        (await db.knex('automations').where('id', existing.body.automations[0].id).first()).status,
+        'active',
+      );
+      const statuses = async () =>
+        Promise.all(
+          [free, paid].map(
+            async ({ id }) => (await db.knex('automations').where('id', id).first()).status,
+          ),
+        );
+      assert.deepEqual(await statuses(), [
+        slots > 0 ? 'active' : 'inactive',
+        slots > 1 ? 'active' : 'inactive',
+      ]);
+      assert.equal(
+        (await db.knex('automation_actions').whereIn('automation_id', [free.id, paid.id])).length,
+        2,
+      );
+      await capAtCurrentCount(2);
+      await repository.browse({ includeStats: false });
+      assert.deepEqual(await statuses(), [
+        slots > 0 ? 'active' : 'inactive',
+        slots > 1 ? 'active' : 'inactive',
+      ]);
+    },
+  );
+
+  it('serializes welcome conversion with modern activation for the final slot', async () => {
+    const free = await createWelcome('member-welcome-email-free', 'active');
+    await createWelcome('member-welcome-email-paid', 'active');
+    await capAtCurrentCount(1);
+    const repository = createDatabaseAutomationsRepository({
+      knex: db.knex,
+      fakeWaitHoursMultiplier: null,
+    });
+    const [activation, conversion] = await Promise.allSettled([
+      repository.add(payload()),
+      repository.browse({ includeStats: false }),
+    ]);
+    assert.equal(conversion.status, 'fulfilled');
+    assert.equal(await countActiveAutomations(), 1);
+    const welcome = await db.knex('automations').where('id', free.id).first();
+    if (activation.status === 'fulfilled') {
+      assert.equal(welcome.status, 'inactive');
+    } else {
+      assert.equal(activation.reason.errorType, 'HostLimitError');
+      assert.equal(welcome.status, 'active');
+    }
+  });
+
   it('rejects active add and activation edit at cap, but allows inactive creation', async () => {
     await capAtCurrentCount();
     const active = payload();
