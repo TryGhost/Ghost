@@ -4,10 +4,22 @@ import sinon from 'sinon';
 // Keep the real controller and service root loaded across settings changes.
 const announcements = require('../../../../core/server/api/endpoints/announcements');
 const settingsCache = require('../../../../core/shared/settings-cache');
+const announcementService = require('../../../../core/server/services/announcement-bar-service');
 
 describe('Announcements controller', function () {
-  afterEach(function () {
-    sinon.restore();
+  let scope: object;
+
+  beforeEach(async function () {
+    scope = {};
+    await announcementService.init(scope);
+  });
+
+  afterEach(async function () {
+    try {
+      await announcementService.shutdown(scope);
+    } finally {
+      sinon.restore();
+    }
   });
 
   it('returns synchronous, independent results from live settings through the retained service', function () {

@@ -107,8 +107,6 @@ const prepareContentFolder = async (options) => {
 
 // Stop Ghost if it's running, reset the DB, and start Ghost
 const _startGhost = async (options) => {
-  // Stop the server -- noops if it's not running
-  await stopGhost();
   await jobsService.shutdown();
 
   urlServiceUtils.resetRouters();
@@ -153,6 +151,7 @@ const _startGhost = async (options) => {
  * @returns {Promise<GhostServer>}
  */
 const startGhost = async (options) => {
+  await stopGhost();
   const startTime = Date.now();
   debug('Start Ghost');
   options = _.merge(
@@ -190,18 +189,31 @@ const startGhost = async (options) => {
 };
 
 const stopGhost = async () => {
-  if (ghostServer && ghostServer.httpServer) {
-    await ghostServer.stop();
-    delete require.cache[require.resolve('../../core/app')];
-    // Drop the stopped boot's router configs; the next startGhost registers
-    // its own. Best done from a "server cleanup" hook, if one ever exists.
-    urlServiceUtils.resetRouters();
+  if (!ghostServer) {
+    return;
   }
+
+  // Real servers which callers stopped themselves have already run cleanup.
+  // No-server boots return a callable Express app with their own stop method.
+  const isRealServer = 'httpServer' in ghostServer;
+  if (!isRealServer || ghostServer.httpServer) {
+    await ghostServer.stop();
+    if (isRealServer) {
+      delete require.cache[require.resolve('../../core/app')];
+      // Drop the stopped boot's router configs; the next startGhost registers
+      // its own. Best done from a "server cleanup" hook, if one ever exists.
+      urlServiceUtils.resetRouters();
+    }
+  }
+  ghostServer = undefined;
 };
 
 module.exports = {
   startGhost,
   stopGhost,
+  rememberGhost: (instance) => {
+    ghostServer = instance;
+  },
   getExistingData: () => {
     return existingData;
   },

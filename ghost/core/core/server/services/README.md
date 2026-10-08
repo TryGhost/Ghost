@@ -59,6 +59,13 @@ directory. Do not assume every root exports `init`, `service`, and `shutdown`.
 Standardizing that interface must include the implementation, boot wiring, and
 tests, not just a documentation change.
 
+Announcement-bar is the first root using the shared
+[service lifecycle helper](../lib/service-lifecycle/README.md). It exports
+`init(scope)`, `service` and `shutdown(scope)`. Boot owns the scope, awaits
+initialization and arranges cleanup; HTTP callers retain `service`. Use this
+helper for new roots, with contract tests for the actual callers. Existing roots
+still need individual conversion and verification.
+
 The temporary [service inventory](service-inventory.yaml) tracks this migration.
 Update it when adding, removing or renaming a root. It includes standalone
 files and supporting modules still awaiting relocation. Boot never reads it.
@@ -113,8 +120,8 @@ itself are the only metadata exclusions. Retire the inventory after migration;
 keep the behavioral tests and replace the legacy check with a check for the
 established service convention.
 
-Follow an existing service in the same area when extending established code,
-without treating its legacy placement or lifecycle shortcuts as requirements.
+When extending an existing root, preserve its current caller contracts until it
+is converted, without treating legacy placement or lifecycle shortcuts as requirements.
 New standalone service logic should be TypeScript unless it must extend an
 existing JavaScript module.
 

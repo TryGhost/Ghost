@@ -44,7 +44,7 @@ import db from './db-utils';
 import settingsService from '../../core/server/services/settings/settings-service';
 import supertest from 'supertest';
 // @ts-expect-error This module lacks type definitions.
-import { stopGhost } from './e2e-utils';
+import { stopGhost, rememberGhost } from './e2e-utils';
 import adapterManager from '../../core/server/services/adapter-manager';
 // @ts-expect-error This module lacks type definitions.
 import DomainEvents from '@tryghost/domain-events';
@@ -67,6 +67,7 @@ let totalBoots = 0;
  * @returns {Promise<Express.Application>} ghost
  */
 const startGhost = async (options = {}) => {
+  await stopGhost();
   await require('../../core/server/services/jobs-service').shutdown();
   await DomainEvents.allSettled();
 
@@ -101,6 +102,7 @@ const startGhost = async (options = {}) => {
 
   const bootNow = Date.now();
   const ghostServer = await boot(bootOptions);
+  rememberGhost(ghostServer);
   const bootTime = Date.now() - bootNow;
   totalStartTime += bootTime;
   totalBoots += 1;
@@ -433,10 +435,6 @@ const getAgentsWithFrontend = async () => {
     server: true,
   };
   try {
-    // Possible that we still have a running Ghost server from a previous old E2E test
-    // Those tests never stopped the server in the tests manually
-    await stopGhost();
-
     // Start a new Ghost server with real HTTP listener
     ghostServer = await startGhost(bootOptions);
     const app = ghostServer.rootApp;
