@@ -18,6 +18,7 @@ export async function lockAutomationLimit(
     case 'legacy':
       break;
     case 'inactive':
+    case 'archived':
       return;
     default: {
       const _exhaustive: never = status;
