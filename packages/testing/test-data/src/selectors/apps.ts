@@ -22,7 +22,6 @@ export const accessItem = 'access-item';
 // accessible names
 export const installButton = 'Install';
 export const approveChangesButton = 'Approve changes';
-export const approveMoveButton = 'Approve move';
 export const tryAgainButton = 'Try again';
 export const okButton = 'OK';
 export const doneButton = 'Done';

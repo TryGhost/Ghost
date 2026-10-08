@@ -2,7 +2,7 @@ import React from 'react';
 import { AppsFlagGate } from './components/apps-flag-gate';
 import { AppsListing } from './apps';
 import { AskAdminDialog } from './components/ask-admin-dialog';
-import { InstallDialog } from './components/install-dialog';
+import { InstallDialog } from './components/install-dialog/install-dialog';
 import { canManageApps } from './permissions';
 import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
 import { useNavigate, useSearchParams } from '@tryghost/admin-x-framework';

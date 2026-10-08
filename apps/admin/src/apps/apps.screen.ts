@@ -24,7 +24,6 @@ export const appsScreen = {
 
   installButton: () => button(sel.installButton),
   approveChangesButton: () => button(sel.approveChangesButton),
-  approveMoveButton: () => button(sel.approveMoveButton),
   tryAgainButton: () => button(sel.tryAgainButton),
   okButton: () => button(sel.okButton),
   doneButton: () => button(sel.doneButton),

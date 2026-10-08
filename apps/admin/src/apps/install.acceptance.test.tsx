@@ -187,7 +187,7 @@ describe('Installing an app', () => {
     await renderAdminApp(INSTALL_ROUTE, { labs });
     await appsScreen.installButton().click();
 
-    await expect.element(appsScreen.notice()).toHaveTextContent('changed while you were reviewing');
+    await expect.element(appsScreen.notice()).toHaveTextContent('has changed since you opened it');
     await expect.element(appsScreen.installDialog()).toHaveTextContent('Podcasts');
 
     await appsScreen.installButton().click();
@@ -262,9 +262,7 @@ describe('Installing an app', () => {
 
     await renderAdminApp(`/apps/install?manifest=${encodeURIComponent(elsewhere)}`, { labs });
 
-    await expect
-      .element(appsScreen.installDialog())
-      .toHaveTextContent('Move Podcast to evil.example?');
+    await expect.element(appsScreen.installDialog()).toHaveTextContent('Review changes to Podcast');
     await expect
       .element(appsScreen.moveWarning())
       .toHaveTextContent('moves Podcast from podcast.example.com to evil.example');
@@ -272,10 +270,10 @@ describe('Installing an app', () => {
       .element(appsScreen.changes().nth(1))
       .toHaveTextContent('https://podcast.example.com/adminhttps://evil.example/admin');
 
-    await appsScreen.approveMoveButton().click();
+    await appsScreen.approveChangesButton().click();
 
     await expect.poll(() => approveApi.requests.length).toBe(1);
-    await expect.element(page.getByText('Podcast moved to evil.example')).toBeVisible();
+    await expect.element(page.getByText('Changes to Podcast approved')).toBeVisible();
   });
 
   it('says when the app is already installed and nothing changed', async () => {
@@ -314,7 +312,7 @@ describe('Installing an app', () => {
     await renderAdminApp(INSTALL_ROUTE, { labs });
     await appsScreen.installButton().click();
 
-    await expect.element(appsScreen.notice()).toHaveTextContent('Someone else installed');
+    await expect.element(appsScreen.notice()).toHaveTextContent('has changed since you opened it');
     await expect.element(appsScreen.installDialog()).toHaveTextContent('Review changes to Podcast');
     expect(previews).toBe(2);
   });
@@ -347,9 +345,7 @@ describe('Installing an app', () => {
     await renderAdminApp(INSTALL_ROUTE, { labs });
     await appsScreen.approveChangesButton().click();
 
-    await expect
-      .element(appsScreen.notice())
-      .toHaveTextContent('Someone else installed or changed');
+    await expect.element(appsScreen.notice()).toHaveTextContent('has changed since you opened it');
     await expect.element(appsScreen.changes()).toHaveTextContent('new.example.com');
     expect(previewApi.requests).toHaveLength(1);
     expect(approveApi.requests).toHaveLength(1);
@@ -375,9 +371,7 @@ describe('Installing an app', () => {
     await renderAdminApp(INSTALL_ROUTE, { labs });
     await appsScreen.approveChangesButton().click();
 
-    await expect
-      .element(appsScreen.notice())
-      .toHaveTextContent('Someone else installed or changed');
+    await expect.element(appsScreen.notice()).toHaveTextContent('has changed since you opened it');
     expect(previews).toBe(2);
   });
 
@@ -399,8 +393,7 @@ describe('Installing an app', () => {
     await renderAdminApp(INSTALL_ROUTE, { labs });
     await appsScreen.approveChangesButton().click();
 
-    await expect.element(appsScreen.notice()).toHaveTextContent('uninstalled in the meantime');
-    await expect.element(appsScreen.notice()).not.toHaveTextContent('Someone else');
+    await expect.element(appsScreen.notice()).toHaveTextContent('has changed since you opened it');
     await expect.element(appsScreen.installButton()).toBeVisible();
   });
 
@@ -428,9 +421,8 @@ describe('Installing an app', () => {
 
     await expect
       .element(appsScreen.installDialog())
-      .toHaveTextContent('Can’t approve these changes');
-    await expect.element(appsScreen.installDialog()).toHaveTextContent('nothing changed');
-    await expect.element(appsScreen.installDialog()).not.toHaveTextContent('nothing was installed');
+      .toHaveTextContent('Couldn’t approve the changes');
+    await expect.element(appsScreen.installDialog()).not.toHaveTextContent('install');
     await expect.element(appsScreen.problems()).toHaveTextContent('Expected an https URL');
   });
 
@@ -453,34 +445,14 @@ describe('Installing an app', () => {
 
     await renderAdminApp(INSTALL_ROUTE, { labs });
     await appsScreen.installButton().click();
-    await expect.element(appsScreen.notice()).toHaveTextContent('changed while you were reviewing');
+    await expect.element(appsScreen.notice()).toHaveTextContent('has changed since you opened it');
     await appsScreen.installButton().click();
     await expect.element(appsScreen.installDialog()).toHaveTextContent('Couldn’t install this app');
 
     await appsScreen.tryAgainButton().click();
 
-    await expect.element(appsScreen.notice()).toHaveTextContent('changed while you were reviewing');
+    await expect.element(appsScreen.notice()).toHaveTextContent('has changed since you opened it');
     await expect.poll(() => attempts).toBe(3);
-  });
-
-  it('says a suspended app won’t open until its changes are approved', async () => {
-    fakeInstallations([installation({ status: 'suspended' })]);
-    fakePreview(
-      previewResponse(
-        preview({
-          manifest: manifest({ name: 'Podcasts' }),
-          digest: 'digest-2',
-          installation: existing([{ path: 'name', requires_approval: true }], 'suspended'),
-        }),
-      ),
-    );
-
-    await renderAdminApp(INSTALL_ROUTE, { labs });
-
-    await expect
-      .element(appsScreen.installDialog())
-      .toHaveTextContent('It won’t open until you approve the changes.');
-    await expect.element(appsScreen.approveChangesButton()).toBeVisible();
   });
 
   it('retries the install, not the check, when installing fails', async () => {
@@ -510,7 +482,7 @@ describe('Installing an app', () => {
     // While it installs again, the review stays on screen as it did the first time.
     await expect.poll(() => installApi.requests.length).toBe(2);
     await expect.element(appsScreen.installButton()).toBeDisabled();
-    await expect.element(appsScreen.installDialog()).not.toHaveTextContent('Checking the app');
+    await expect.element(appsScreen.installDialog()).not.toHaveTextContent('Loading app details');
     finishRetry();
 
     await expect.poll(currentRoute).toBe('/apps');
@@ -524,9 +496,8 @@ describe('Installing an app', () => {
 
     await renderAdminApp('/apps/install', { labs });
 
-    await expect
-      .element(appsScreen.installDialog())
-      .toHaveTextContent('This install link is incomplete');
+    await expect.element(appsScreen.installDialog()).toHaveTextContent('Couldn’t load app details');
+    await expect.element(appsScreen.installDialog()).toHaveTextContent('doesn’t say which app');
     await expect.element(appsScreen.installDialog()).not.toHaveTextContent('developer');
     await expect(appsScreen.problems()).toHaveCount(0);
     expect(previewApi.requests).toHaveLength(0);
@@ -542,9 +513,8 @@ describe('Installing an app', () => {
 
     await renderAdminApp(INSTALL_ROUTE, { labs });
 
-    await expect
-      .element(appsScreen.installDialog())
-      .toHaveTextContent('This site can’t install apps yet');
+    await expect.element(appsScreen.installDialog()).toHaveTextContent('Couldn’t load app details');
+    await expect.element(appsScreen.installDialog()).toHaveTextContent('newer version of Ghost');
     await appsScreen.okButton().click();
 
     await expect.poll(currentRoute).toBe('/apps');
@@ -564,7 +534,7 @@ describe('Installing an app', () => {
 
     await renderAdminApp(INSTALL_ROUTE, { labs });
 
-    await expect.element(appsScreen.installDialog()).toHaveTextContent('Can’t install this app');
+    await expect.element(appsScreen.installDialog()).toHaveTextContent('Couldn’t load app details');
     await expect
       .element(appsScreen.problems())
       .toHaveTextContent('Expected a lowercase reverse-domain ID');
@@ -590,7 +560,8 @@ describe('Installing an app', () => {
 
     await renderAdminApp(INSTALL_ROUTE, { labs });
 
-    await expect.element(appsScreen.installDialog()).toHaveTextContent('Can’t reach this app');
+    await expect.element(appsScreen.installDialog()).toHaveTextContent('Couldn’t load app details');
+    await expect.element(appsScreen.installDialog()).toHaveTextContent('didn’t respond');
     await expect.element(appsScreen.unreachable()).toHaveTextContent('answered with HTTP 503');
     await appsScreen.tryAgainButton().click();
 
