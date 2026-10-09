@@ -4458,7 +4458,7 @@ services:
           - core/server/services/automations/automation-member-search.ts
         tests:
           - test/e2e-api/admin/tinybird.test.js
-          - test/e2e-api/admin/automations.test.js
+          - test/e2e-api/admin/automations.test.ts
           - test/e2e-api/admin/automation-performance-stats.test.ts
           - test/e2e-api/admin/automation-runs.test.ts
           - test/e2e-api/admin/automation-member-search.test.ts
@@ -4483,7 +4483,7 @@ services:
           - core/server/services/automations/automations-api.ts
         tests:
           - test/unit/server/services/stats/stats.test.ts
-          - test/e2e-api/admin/automations.test.js
+          - test/e2e-api/admin/automations.test.ts
       lifetime:
         summary: >-
           Source establishes that root re-init/reset changes only the published reference,
@@ -4554,7 +4554,7 @@ services:
           - core/server/lib/request-external.js
         tests:
           - test/unit/server/services/stats/utils/tinybird.test.js
-          - test/e2e-api/admin/automations.test.js
+          - test/e2e-api/admin/automations.test.ts
           - test/e2e-api/admin/automation-member-search.test.ts
       failures:
         summary: >-
@@ -4580,7 +4580,7 @@ services:
         tests:
           - test/unit/server/services/tinybird/tinybird-service.test.js
           - test/unit/server/services/stats/utils/tinybird.test.js
-          - test/e2e-api/admin/automations.test.js
+          - test/e2e-api/admin/automations.test.ts
           - test/e2e-api/admin/automation-performance-stats.test.ts
           - test/e2e-api/admin/automation-runs.test.ts
     unverified: []
