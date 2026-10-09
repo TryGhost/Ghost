@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { replayIntegration, type Event } from '@sentry/react';
+import { inboundFiltersIntegration, replayIntegration, type Event } from '@sentry/react';
 import { beforeBreadcrumb, beforeSend, getSentryConfig, type Integration } from './sentry-config';
 
 vi.mock('@sentry/react', async (importOriginal) => ({
@@ -16,6 +16,14 @@ const LEXICAL_ERROR =
   'Minified Lexical error #15; visit https://lexical.dev/docs/error?code=15 for the full message';
 
 const DSN = 'https://public@o0.ingest.sentry.io/1';
+
+function isIgnored(type: string, value: string): boolean {
+  const config = getSentryConfig({ dsn: DSN, environment: 'production', version: '6.1' });
+  const event: Event = { exception: { values: [{ type, value }] } };
+  const client = { getOptions: () => config } as never;
+
+  return inboundFiltersIntegration().processEvent?.(event, {}, client) === null;
+}
 
 function integrationNames(environment: string): string[] {
   const config = getSentryConfig({ dsn: DSN, environment, version: '6.1' });
@@ -38,15 +46,35 @@ describe('getSentryConfig', () => {
       /The play\(\) request was interrupted.*/,
       /The request is not allowed by the user agent or the platform in the current context/,
       /Server was unreachable/,
-      /NetworkError when attempting to fetch resource./,
-      /Failed to fetch/,
-      /Load failed/,
-      /The operation was aborted./,
+      /^NetworkError when attempting to fetch resource\.$/,
+      /^Failed to fetch$/,
+      /^Load failed$/,
+      /^(AbortError: )?The operation was aborted\. ?$/,
       /^TransitionAborted$/,
       /^ResizeObserver loop completed with undelivered notifications/,
       /^ResizeObserver loop limit exceeded/,
       'TaskCancelation',
     ]);
+  });
+
+  it.each([
+    ['TypeError', 'Failed to fetch'],
+    ['TypeError', 'Load failed'],
+    ['TypeError', 'NetworkError when attempting to fetch resource.'],
+    ['AbortError', 'The operation was aborted.'],
+    ['AbortError', 'The operation was aborted. '],
+    ['Error', 'AbortError: The operation was aborted.'],
+  ])('ignores the network error %s: %j', (type, value) => {
+    expect(isIgnored(type, value)).toBe(true);
+  });
+
+  it('reports a module that failed to load', () => {
+    expect(
+      isIgnored(
+        'TypeError',
+        'Failed to fetch dynamically imported module: https://example.com/ghost/assets/editor-Bx1.js',
+      ),
+    ).toBe(false);
   });
 
   it('buffers replays for errors and keeps deduping outside tests', () => {
@@ -118,6 +146,12 @@ describe('beforeSend', () => {
     const event = { tags: { shown_to_user: true } } as Event;
 
     expect(beforeSend(event, {})).toBeNull();
+  });
+
+  it('sends failures the publish flow showed the writer', () => {
+    const event = { tags: { shown_to_user: true, source: 'publish-flow' } } as Event;
+
+    expect(beforeSend(event, {})).toEqual(event);
   });
 
   it('removes post and page ids from the error message', () => {
