@@ -1,5 +1,6 @@
 const { agentProvider, fixtureManager } = require('../../utils/e2e-framework');
 const assert = require('node:assert/strict');
+const sinon = require('sinon');
 const configUtils = require('../../utils/config-utils');
 
 describe('Tinybird API', function () {
@@ -44,6 +45,34 @@ describe('Tinybird API', function () {
         assert.equal(disabledAgain.body.tinybird, null);
       } finally {
         configUtils.set('tinybird', previousConfig);
+      }
+    });
+
+    it('renews the three-hour JWT expiry on each request with unchanged signing credentials', async function () {
+      const jwt = require('jsonwebtoken');
+      const tinybird = require('../../../core/server/services/tinybird');
+      const previousConfig = configUtils.config.get('tinybird');
+      const previousInstance = tinybird.instance;
+      const now = Date.now();
+      const clock = sinon.useFakeTimers({ now, toFake: ['Date'] });
+      const adminToken = 'unchanged-test-signing-key';
+      try {
+        configUtils.set('tinybird', { workspaceId: 'unchanged-workspace', adminToken });
+        const tokens = [];
+        for (const elapsed of [0, 60_000]) {
+          clock.setSystemTime(now + elapsed);
+          const { body } = await agent.get('/tinybird/token/').expectStatus(200);
+          const decoded = jwt.verify(body.tinybird.token, adminToken, { algorithms: ['HS256'] });
+          const expectedExpiry = Math.floor((now + elapsed) / 1000) + 180 * 60;
+          assert.equal(decoded.exp, expectedExpiry);
+          assert.equal(body.tinybird.exp, new Date(expectedExpiry * 1000).toISOString());
+          tokens.push(body.tinybird.token);
+        }
+        assert.notEqual(tokens[0], tokens[1]);
+      } finally {
+        clock.restore();
+        configUtils.set('tinybird', previousConfig);
+        tinybird.instance = previousInstance;
       }
     });
 

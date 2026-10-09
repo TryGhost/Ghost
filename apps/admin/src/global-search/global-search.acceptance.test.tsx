@@ -8,6 +8,7 @@ import {
   fakeAdminEndpoint,
   fakeSettingsScreens,
   fakeTags,
+  newsletter,
   renderAdminApp,
   type RenderAdminAppOptions,
   tag,
@@ -20,6 +21,11 @@ import { tagDetailScreen } from '@/tags/detail/tag-detail.screen';
 import { settingsScreen } from '@/settings/settings.screen';
 
 import { globalSearchScreen } from './global-search.screen';
+
+const wait = (ms: number) =>
+  new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
 
 const handoff = () =>
   JSON.parse(document.body.dataset.externalNavigate ?? 'null') as { route: string } | null;
@@ -56,6 +62,28 @@ describe('Settings search exits', () => {
       await expect.poll(currentRoute).toBe('/tags/first-tag');
       await expect(settingsScreen.titleAndDescription()).toHaveCount(0);
     }
+  });
+});
+
+describe('Settings search actions', () => {
+  it('runs an action over dirty Settings without asking, keeping the edit', async () => {
+    fakeSettingsScreens();
+    fakeSearchIndex();
+    await renderAdminApp('/settings', { labs: { admin7settings: true } });
+    await settingsScreen.editTitle('Unsaved title');
+    await expect.poll(unsavedChangesGuarded).toBe(true);
+
+    await openWithShortcut();
+    await globalSearchScreen.search('dark');
+    await globalSearchScreen.option('Switch to dark mode').click();
+
+    await expect.poll(() => document.documentElement.classList.contains('dark')).toBe(true);
+    await expect(settingsScreen.confirmationModal()).toHaveCount(0);
+    await expect.element(globalSearchScreen.dialog()).not.toBeInTheDocument();
+    await expect.poll(currentRoute).toBe('/settings');
+    await expect
+      .element(page.getByLabelText('Site title', { exact: true }))
+      .toHaveValue('Unsaved title');
   });
 });
 
@@ -171,6 +199,24 @@ describe('Cmd-K search', () => {
     await expect.element(globalSearchScreen.shortcutHint()).not.toBeInTheDocument();
   });
 
+  it('selects the first result of each search so Enter opens it', async () => {
+    const firstOption = () => globalSearchScreen.dialog().getByRole('option').first();
+    await renderAdminApp('/tags');
+    await openAndSearch('first');
+    await expect.element(firstOption()).toHaveTextContent('First user');
+    await expect.element(firstOption()).toHaveAttribute('aria-selected', 'true');
+
+    await userEvent.keyboard('{ArrowDown}');
+    await expect.element(firstOption()).toHaveAttribute('aria-selected', 'false');
+
+    await globalSearchScreen.search('first post');
+    await expect.element(firstOption()).toHaveTextContent('First post');
+    await expect.element(firstOption()).toHaveAttribute('aria-selected', 'true');
+
+    await userEvent.keyboard('{Enter}');
+    await expect.poll(() => handoff()?.route).toBe('/editor/post/p1');
+  });
+
   it('opens from the shortcut', async () => {
     await renderAdminApp('/tags');
     await expect.element(globalSearchScreen.openButton()).toBeVisible();
@@ -269,6 +315,130 @@ describe('Cmd-K search', () => {
 
     await sidebarScreen.shellNav().getByRole('button', { name: 'Back to app' }).click();
     await expect.poll(currentRoute).toBe('/tags');
+  });
+
+  it('opens a Settings section and returns to the opening route', async () => {
+    fakeSettingsScreens();
+    await renderAdminApp('/tags', { labs: { admin7settings: true } });
+    await openAndSearch('timezone');
+
+    await globalSearchScreen.option(/Timezone/).click();
+    await expect.poll(currentRoute).toBe('/settings/timezone?open');
+    await expect.element(settingsScreen.timezone()).toBeInViewport();
+
+    await sidebarScreen.shellNav().getByRole('button', { name: 'Back to app' }).click();
+    await expect.poll(currentRoute).toBe('/tags');
+  });
+
+  it('opens a Settings section the way its header button does', async () => {
+    fakeSettingsScreens();
+    await renderAdminApp('/tags', { labs: { admin7settings: true } });
+    await openAndSearch('navigation');
+
+    await globalSearchScreen.option(/^Navigation$/).click();
+    await expect.poll(currentRoute).toBe('/settings/navigation/edit');
+    await expect.element(settingsScreen.navigationModal()).toBeVisible();
+
+    history.back();
+    await expect.poll(currentRoute).toBe('/settings/navigation?open');
+    await expect.element(settingsScreen.navigationModal()).not.toBeInTheDocument();
+  });
+
+  it('keeps an opened Settings section in view while the page above it loads', async () => {
+    fakeSettingsScreens();
+    const newsletters = Array.from({ length: 12 }, (_, position) =>
+      newsletter({
+        id: `n${position}`,
+        name: `Newsletter ${position}`,
+        slug: `newsletter-${position}`,
+      }),
+    );
+    fakeAdminEndpoint('GET', /^\/newsletters\//, async () => {
+      await wait(800);
+      return {
+        newsletters,
+        meta: {
+          pagination: {
+            page: 1,
+            limit: 50,
+            pages: 1,
+            total: newsletters.length,
+            next: null,
+            prev: null,
+          },
+        },
+      };
+    });
+    await renderAdminApp('/tags', { labs: { admin7settings: true } });
+    await openAndSearch('labs');
+
+    await globalSearchScreen.option(/^Labs$/).click();
+    await expect.poll(currentRoute).toBe('/settings/labs?open');
+    await expect.element(page.getByRole('tab', { name: 'Beta features' })).toBeVisible();
+
+    await expect.element(page.getByText('Newsletter 11')).toBeInTheDocument();
+    await wait(300);
+    await expect.element(page.getByTestId('labs')).toBeInViewport();
+  });
+
+  it('opens a Settings section the Settings filter had hidden', async () => {
+    fakeSettingsScreens();
+    await renderAdminApp('/settings', { labs: { admin7settings: true } });
+    await settingsScreen.search().fill('design');
+    await expect.element(page.getByTestId('labs')).not.toBeVisible();
+
+    await openWithShortcut();
+    await globalSearchScreen.search('labs');
+    await globalSearchScreen.option(/^Labs$/).click();
+
+    await expect.element(settingsScreen.search()).toHaveValue('');
+    await expect.element(page.getByRole('tab', { name: 'Beta features' })).toBeVisible();
+    await expect.element(page.getByTestId('labs')).toBeInViewport();
+  });
+
+  it('opens a Settings section with an Edit button for editing', async () => {
+    fakeSettingsScreens();
+    await renderAdminApp('/tags', { labs: { admin7settings: true } });
+    await openAndSearch('site description');
+
+    await globalSearchScreen.option('Title & description').click();
+
+    await expect.poll(currentRoute).toBe('/settings/general?open');
+    await expect
+      .element(settingsScreen.titleAndDescription().getByLabelText('Site title', { exact: true }))
+      .toBeVisible();
+  });
+
+  it.each([
+    ['another section', '/settings'],
+    ['the section on screen', '/settings/timezone'],
+  ])('shows %s while the Settings filter hides it', async (_description, route) => {
+    fakeSettingsScreens();
+    await renderAdminApp(route, { labs: { admin7settings: true } });
+    await settingsScreen.search().fill('design');
+    await expect.element(settingsScreen.timezone()).not.toBeVisible();
+
+    await openWithShortcut();
+    await globalSearchScreen.search('timezone');
+    await globalSearchScreen.option(/Timezone/).click();
+
+    await expect.poll(currentRoute).toBe('/settings/timezone?open');
+    await expect.element(settingsScreen.search()).toHaveValue('');
+    await expect.element(settingsScreen.timezone()).toBeInViewport();
+  });
+
+  it('switches the appearance', async () => {
+    const isDarkMode = () => document.documentElement.classList.contains('dark');
+    await renderAdminApp('/tags');
+    await openAndSearch('dark');
+
+    await globalSearchScreen.option('Switch to dark mode').click();
+    await expect.poll(isDarkMode).toBe(true);
+    await expect.element(globalSearchScreen.dialog()).not.toBeInTheDocument();
+
+    await openAndSearch('light');
+    await globalSearchScreen.option('Switch to light mode').click();
+    await expect.poll(isDarkMode).toBe(false);
   });
 
   it('hands a post to the Ember editor', async () => {

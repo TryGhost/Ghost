@@ -6,6 +6,8 @@ export interface ScrollSectionContextData {
   currentSection: string | null;
   updateNavigatedSection: (id: string) => void;
   scrollToSection: (id: string) => void;
+  /** Scrolls to a section and keeps it there while the page above it finishes loading. */
+  jumpToSection: (id: string) => void;
 }
 
 export const ScrollSectionContext = createContext<ScrollSectionContextData>({
@@ -14,6 +16,7 @@ export const ScrollSectionContext = createContext<ScrollSectionContextData>({
   currentSection: null,
   updateNavigatedSection: () => {},
   scrollToSection: () => {},
+  jumpToSection: () => {},
 });
 
 export const useScrollSectionContext = () => useContext(ScrollSectionContext);
