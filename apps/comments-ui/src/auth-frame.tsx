@@ -1,8 +1,9 @@
+import type { FunctionComponent } from 'preact';
 type Props = {
   adminUrl: string;
   onLoad: () => void;
 };
-const AuthFrame: React.FC<Props> = ({ adminUrl, onLoad }) => {
+const AuthFrame: FunctionComponent<Props> = ({ adminUrl, onLoad }) => {
   const iframeStyle = {
     display: 'none',
   };

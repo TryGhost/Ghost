@@ -1,6 +1,7 @@
-import AvatarIcon from '../../images/icons/avatar.svg?react';
+import { AvatarIcon } from '../icons';
 import { type Member, useAppContext } from '../../app-context';
 import { getInitials, getMemberName } from '../../utils/helpers';
+import type { FunctionComponent } from 'preact';
 
 function getDimensionClasses() {
   return 'w-8 h-8';
@@ -23,7 +24,7 @@ type AvatarProps = {
   member: Member | null;
 };
 
-export const Avatar: React.FC<AvatarProps> = ({ member }) => {
+export const Avatar: FunctionComponent<AvatarProps> = ({ member }) => {
   const { avatarSaturation, t } = useAppContext();
   const dimensionClasses = getDimensionClasses();
   const memberName = getMemberName(member, t);

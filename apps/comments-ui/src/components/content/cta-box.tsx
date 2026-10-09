@@ -1,6 +1,7 @@
-import reactStringReplace from 'react-string-replace';
 import { buildCommentPermalink } from '../../utils/helpers';
+import { interpolate } from '../../utils/interpolate';
 import { useAppContext } from '../../app-context';
+import type { FunctionComponent } from 'preact';
 
 type Props = {
   isFirst: boolean;
@@ -9,7 +10,7 @@ type Props = {
   // comment's id — used to return the reader to it after signing in.
   commentId?: string;
 };
-const CTABox: React.FC<Props> = ({ isFirst, isPaid, commentId }) => {
+const CTABox: FunctionComponent<Props> = ({ isFirst, isPaid, commentId }) => {
   const { accentColor, publication, member, t, commentCount } = useAppContext();
 
   const buttonStyle = {
@@ -39,12 +40,11 @@ const CTABox: React.FC<Props> = ({ isFirst, isPaid, commentId }) => {
     window.location.href = '#/portal/signin';
   };
 
-  const text = reactStringReplace(
+  const text = interpolate(
     isPaid
       ? t('Become a paid member of {publication} to start commenting.')
       : t('Become a member of {publication} to start commenting.'),
-    '{publication}',
-    () => <span className="font-semibold">{publication}</span>,
+    { publication: <span className="font-semibold">{publication}</span> },
   );
 
   return (

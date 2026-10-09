@@ -1,11 +1,12 @@
-import ThumbsUpIcon from '../../../images/icons/thumbs-up.svg?react';
+import { ThumbsUpIcon } from '../../icons';
+import type { FunctionComponent } from 'preact';
 
 type Props = {
   count: number;
   liked: boolean;
 };
 
-const LikeCount: React.FC<Props> = ({ count, liked }) => {
+const LikeCount: FunctionComponent<Props> = ({ count, liked }) => {
   return (
     <div className="flex items-center gap-1.5" data-testid="like-count">
       <ThumbsUpIcon

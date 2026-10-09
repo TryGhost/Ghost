@@ -1,8 +1,7 @@
 import App from './app';
-import React from 'react';
-import ReactDOM from 'react-dom';
 import { ROOT_DIV_ID } from './utils/constants';
 import { parseCommentIdFromHash } from './utils/helpers';
+import { render } from 'preact';
 
 function getScriptTag(): HTMLElement {
   let scriptTag = document.currentScript as HTMLElement | null;
@@ -20,7 +19,7 @@ function getScriptTag(): HTMLElement {
 }
 
 /**
- * Returns a div to mount the React application into, creating it if necessary
+ * Returns a div to mount the application into, creating it if necessary
  */
 function getRootDiv(scriptTag: HTMLElement) {
   if (scriptTag.previousElementSibling && scriptTag.previousElementSibling.id === ROOT_DIV_ID) {
@@ -53,12 +52,9 @@ function init() {
   try {
     handleTokenUrl();
 
-    ReactDOM.render(
-      <React.StrictMode>
-        {<App initialCommentId={initialCommentId} scriptTag={scriptTag} />}
-      </React.StrictMode>,
-      root,
-    );
+    // Preact's render() keeps existing children, so clear anything a theme left in the root
+    root.replaceChildren();
+    render(<App initialCommentId={initialCommentId} scriptTag={scriptTag} />, root);
   } catch (e) {
     // eslint-disable-next-line no-console
     console.error(e);

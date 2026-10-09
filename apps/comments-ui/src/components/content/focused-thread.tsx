@@ -1,22 +1,23 @@
 import CommentComponent from './comment';
-import React, { useCallback } from 'react';
 import ReplyTree from './reply-tree';
 import { buildCommentPermalink, buildCommentsRootPermalink } from '../../utils/helpers';
 import { useAppContext } from '../../app-context';
+import { useCallback } from 'preact/hooks';
 import { useNavActions } from '../../utils/nav-actions';
+import type { FunctionComponent, JSX } from 'preact';
 import type { ThreadWindow } from '../../utils/thread-graph';
 
 type FocusedThreadProps = {
   focusedThread: ThreadWindow;
 };
 
-const FocusedThread: React.FC<FocusedThreadProps> = ({ focusedThread }) => {
+const FocusedThread: FunctionComponent<FocusedThreadProps> = ({ focusedThread }) => {
   const { t } = useAppContext();
   const { navigateBackToParent } = useNavActions();
   const { backComment, focusedComment, topLevelComment } = focusedThread;
   const backPermalink = buildCommentPermalink(backComment.id);
   const handleBackClick = useCallback(
-    (event: React.MouseEvent<HTMLAnchorElement>) => {
+    (event: JSX.TargetedMouseEvent<HTMLAnchorElement>) => {
       event.preventDefault();
       navigateBackToParent(backComment.id, backPermalink);
     },

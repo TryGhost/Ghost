@@ -1,13 +1,14 @@
 import Content from './content/content';
 import Loading from './content/loading';
-import React, { useCallback, useEffect, useState } from 'react';
 import { ROOT_DIV_ID } from '../utils/constants';
 import { useAppContext } from '../app-context';
+import { useCallback, useEffect, useState } from 'preact/hooks';
+import type { FunctionComponent } from 'preact';
 
 type Props = {
   done: boolean;
 };
-const ContentBox: React.FC<Props> = ({ done }) => {
+const ContentBox: FunctionComponent<Props> = ({ done }) => {
   const luminance = (r: number, g: number, b: number) => {
     const a = [r, g, b].map(function (v) {
       v /= 255;

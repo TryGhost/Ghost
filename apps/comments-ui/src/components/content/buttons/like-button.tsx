@@ -1,14 +1,14 @@
-import ThumbsDownIcon from '../../../images/icons/thumbs-down.svg?react';
-import ThumbsUpIcon from '../../../images/icons/thumbs-up.svg?react';
 import { type Comment, useAppContext } from '../../../app-context';
-import { useState } from 'react';
+import { ThumbsDownIcon, ThumbsUpIcon } from '../../icons';
+import { useState } from 'preact/hooks';
+import type { FunctionComponent } from 'preact';
 
 type Props = {
   comment: Comment;
   disabled?: boolean;
   setDisabled?: (disabled: boolean) => void;
 };
-const LikeButton: React.FC<Props> = ({ comment, disabled, setDisabled }) => {
+const LikeButton: FunctionComponent<Props> = ({ comment, disabled, setDisabled }) => {
   const { dispatchAction, isMember, hasRequiredTier, t } = useAppContext();
   const [likeAnimation, setLikeAnimation] = useState('');
   const [localDisabled, setLocalDisabled] = useState(false);
@@ -77,7 +77,7 @@ const LikeButton: React.FC<Props> = ({ comment, disabled, setDisabled }) => {
   );
 };
 
-export const DislikeButton: React.FC<Props> = ({ comment, disabled, setDisabled }) => {
+export const DislikeButton: FunctionComponent<Props> = ({ comment, disabled, setDisabled }) => {
   const { dispatchAction, isMember, hasRequiredTier, t } = useAppContext();
   const [dislikeAnimation, setDislikeAnimation] = useState('');
   const [localDisabled, setLocalDisabled] = useState(false);

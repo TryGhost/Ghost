@@ -1,12 +1,12 @@
-import React from 'react';
 import { AppContext } from '../../../../src/app-context';
 import { CommentComponent } from '../../../../src/components/content/comment';
 import { buildComment } from '../../../utils/fixtures';
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/preact';
+import { h } from 'preact';
 import { vi } from 'vitest';
 
 vi.mock('../../../../src/components/content/forms/reply-form', () => ({
-  default: () => React.createElement('div', { 'data-testid': 'reply-form' }, 'Reply form'),
+  default: () => h('div', { 'data-testid': 'reply-form' }, 'Reply form'),
 }));
 
 const contextualRender = (ui, { appContext, ...renderOptions }) => {

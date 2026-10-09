@@ -1,12 +1,12 @@
-import FlagIcon from '../../../images/icons/flag.svg?react';
-import React from 'react';
 import { type Comment, useAppContext } from '../../../app-context';
+import { FlagIcon } from '../../icons';
+import type { FunctionComponent } from 'preact';
 
 type Props = {
   comment: Comment;
   close: () => void;
 };
-const NotAuthorContextMenu: React.FC<Props> = ({ comment, close }) => {
+const NotAuthorContextMenu: FunctionComponent<Props> = ({ comment, close }) => {
   const { dispatchAction, t } = useAppContext();
 
   const openModal = () => {

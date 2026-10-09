@@ -1,8 +1,9 @@
 import { type Comment, type OpenCommentForm, useAppContext } from '../../../app-context';
 import { Form } from './form';
 import { isMobile } from '../../../utils/helpers';
-import { useCallback, useEffect, useMemo } from 'react';
+import { useCallback, useEffect, useMemo } from 'preact/hooks';
 import { useEditor } from '../../../utils/hooks';
+import type { FunctionComponent } from 'preact';
 
 type Props = {
   openForm: OpenCommentForm;
@@ -10,7 +11,7 @@ type Props = {
   parent?: Comment;
 };
 
-const EditForm: React.FC<Props> = ({ comment, openForm, parent }) => {
+const EditForm: FunctionComponent<Props> = ({ comment, openForm, parent }) => {
   const { dispatchAction, t } = useAppContext();
 
   const editorConfig = useMemo(
@@ -45,7 +46,7 @@ const EditForm: React.FC<Props> = ({ comment, openForm, parent }) => {
   }, [editor]);
 
   const submit = useCallback(
-    async ({ html }) => {
+    async ({ html }: { html: string }) => {
       // Send comment to server
       await dispatchAction('editComment', {
         comment: {

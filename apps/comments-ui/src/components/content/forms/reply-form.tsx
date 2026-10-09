@@ -1,16 +1,17 @@
 import { type Comment, type OpenCommentForm, useAppContext } from '../../../app-context';
 import { Form, FormWrapper } from './form';
 import { isMobile, scrollToElement } from '../../../utils/helpers';
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo } from 'preact/hooks';
 import { useEditor } from '../../../utils/hooks';
 import { useRefCallback } from '../../../utils/hooks';
+import type { FunctionComponent } from 'preact';
 
 type Props = {
   openForm: OpenCommentForm;
   parent: Comment;
 };
 
-const ReplyForm: React.FC<Props> = ({ openForm, parent }) => {
+const ReplyForm: FunctionComponent<Props> = ({ openForm, parent }) => {
   const { postId, dispatchAction, t } = useAppContext();
   const [, setForm] = useRefCallback<HTMLDivElement>(scrollToElement);
 
@@ -25,7 +26,7 @@ const ReplyForm: React.FC<Props> = ({ openForm, parent }) => {
   const { editor } = useEditor(config);
 
   const submit = useCallback(
-    async ({ html }) => {
+    async ({ html }: { html: string }) => {
       // Send comment to server
       await dispatchAction('addReply', {
         parent: parent,

@@ -1,5 +1,6 @@
 import { DESKTOP_MAX_THREAD_DEPTH } from './helpers';
-import { createContext, useContext } from 'react';
+import { createContext } from 'preact';
+import { useContext } from 'preact/hooks';
 
 export type ThreadingContextValue = {
   maxThreadDepth: number;

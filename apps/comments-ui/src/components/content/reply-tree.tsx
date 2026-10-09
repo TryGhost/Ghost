@@ -1,12 +1,12 @@
 import CommentComponent from './comment';
-import React from 'react';
 import { type Comment, useAppContext } from '../../app-context';
 import { buildCommentPermalink } from '../../utils/helpers';
 import { useNavActions } from '../../utils/nav-actions';
 import { useThreadingContext } from '../../utils/threading-context';
+import type { ComponentChildren, FunctionComponent } from 'preact';
 import type { ThreadedReply } from '../../utils/thread-graph';
 
-const ReplyTreeNode: React.FC<{
+const ReplyTreeNode: FunctionComponent<{
   reply: ThreadedReply;
   threadParentComment: Comment;
   depth: number;
@@ -18,7 +18,7 @@ const ReplyTreeNode: React.FC<{
   const atMaxDepth = depth >= maxThreadDepth;
   const isLastSibling = reply.siblingIndex === reply.siblingCount - 1;
   const nextReply = reply.nestedReplies[0];
-  let nestedReplies: React.ReactNode = null;
+  let nestedReplies: ComponentChildren = null;
 
   if (hasNestedReplies && !atMaxDepth) {
     nestedReplies = reply.nestedReplies.map((childReply) => (
@@ -59,7 +59,7 @@ const ReplyTreeNode: React.FC<{
   );
 };
 
-const ReplyTree: React.FC<{
+const ReplyTree: FunctionComponent<{
   replies: ThreadedReply[];
   threadParentComment: Comment;
   startDepth?: number;

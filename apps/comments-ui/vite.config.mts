@@ -1,4 +1,3 @@
-import { resolve } from 'path';
 import pkg from './package.json';
 import { publicAppViteConfig } from '@internal/cfg-vite-public-app';
 import { stripFingerprintingPlugin } from './vite-plugin-strip-fingerprinting';
@@ -7,6 +6,8 @@ export default publicAppViteConfig({
   packageRoot: import.meta.dirname,
   packageName: pkg.name,
   entry: 'src/index.tsx',
+  framework: 'preact',
+  svgr: false,
   sourcemap: false,
   overrides: {
     plugins: [stripFingerprintingPlugin()],
@@ -23,25 +24,16 @@ export default publicAppViteConfig({
       port: 5368,
     },
     resolve: {
-      // comments-ui uses React 17 while the monorepo hoists React 18;
-      // dedupe + alias ensures all deps (including @tiptap/react) use
-      // the same React 17 instance from comments-ui's node_modules
-      dedupe: ['react', 'react-dom', '@tryghost/debug'],
-      alias: {
-        react: resolve(import.meta.dirname, 'node_modules/react'),
-        'react-dom': resolve(import.meta.dirname, 'node_modules/react-dom'),
-      },
+      dedupe: ['@tryghost/debug'],
     },
     test: {
       setupFiles: './src/setup-tests.ts',
       include: ['test/unit/**/*.test.{js,jsx,ts,tsx}'],
       testTimeout: process.env.TIMEOUT ? parseInt(process.env.TIMEOUT) : 10000,
+      // Inlined so it shares the app's Vite-resolved preact instance
       server: {
         deps: {
-          // Inline all deps so Vite's resolve.alias applies to their
-          // React imports (prevents duplicate React 17 instances when
-          // the monorepo hoists React 18)
-          inline: [/@tiptap/, /@headlessui/],
+          inline: ['@testing-library/preact'],
         },
       },
       ...(process.env.CI && {

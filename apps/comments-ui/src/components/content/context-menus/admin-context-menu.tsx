@@ -1,11 +1,14 @@
-import ExternalLinkIcon from '../../../images/icons/external-link.svg?react';
-import EyeIcon from '../../../images/icons/eye.svg?react';
-import EyeOffIcon from '../../../images/icons/eye-off.svg?react';
-import PencilIcon from '../../../images/icons/pencil.svg?react';
-import PinIcon from '../../../images/icons/pin.svg?react';
-import PinOffIcon from '../../../images/icons/pin-off.svg?react';
-import TrashIcon from '../../../images/icons/trash.svg?react';
 import { type Comment, useAppContext } from '../../../app-context';
+import {
+  ExternalLinkIcon,
+  EyeIcon,
+  EyeOffIcon,
+  PencilIcon,
+  PinIcon,
+  PinOffIcon,
+  TrashIcon,
+} from '../../icons';
+import type { FunctionComponent } from 'preact';
 
 type Props = {
   comment: Comment;
@@ -13,7 +16,7 @@ type Props = {
   showAuthorActions?: boolean;
   toggleEdit?: () => void;
 };
-const AdminContextMenu: React.FC<Props> = ({
+const AdminContextMenu: FunctionComponent<Props> = ({
   comment,
   close,
   showAuthorActions = false,

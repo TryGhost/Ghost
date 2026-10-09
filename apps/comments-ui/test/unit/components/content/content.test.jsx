@@ -1,6 +1,6 @@
 import Content from '../../../../src/components/content/content';
 import { AppContext } from '../../../../src/app-context';
-import { act, render, screen } from '@testing-library/react';
+import { act, render, screen } from '@testing-library/preact';
 import { buildComment } from '../../../utils/fixtures';
 import { vi } from 'vitest';
 

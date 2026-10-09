@@ -5,7 +5,7 @@ import { useAppContext } from '../../app-context';
 const CTAPopup = ({ commentId }: { commentId?: string }) => {
   const { dispatchAction, isMember, isPaidOnly } = useAppContext();
 
-  const stopPropagation = (event: React.MouseEvent) => {
+  const stopPropagation = (event: MouseEvent) => {
     event.stopPropagation();
   };
 

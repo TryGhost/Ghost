@@ -1,12 +1,12 @@
-import React from 'react';
 import { formatNumber } from '../../utils/helpers';
 import { useAppContext } from '../../app-context';
+import type { FunctionComponent } from 'preact';
 
 type Props = {
   loadMore: () => void;
   count: number;
 };
-const RepliesPagination: React.FC<Props> = ({ loadMore, count }) => {
+const RepliesPagination: FunctionComponent<Props> = ({ loadMore, count }) => {
   const { t } = useAppContext();
   const longText =
     count === 1

@@ -3,7 +3,6 @@
 import AuthFrame from './auth-frame';
 import ContentBox from './components/content-box';
 import PopupBox from './components/popup-box';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import i18nLib from '@tryghost/i18n/registry/comments';
 import setupGhostApi from './utils/api';
 import { ActionHandler, SyncActionHandler, isSyncAction } from './actions';
@@ -14,8 +13,11 @@ import {
   type EditableAppContext,
 } from './app-context';
 import { CommentsFrame } from './components/frame';
+import { createRef } from 'preact';
 import { setupAdminAPI } from './utils/admin-api';
+import { useCallback, useEffect, useMemo, useState } from 'preact/hooks';
 import { useOptions } from './utils/options';
+import type { FunctionComponent } from 'preact';
 
 type AppProps = {
   scriptTag: HTMLElement;
@@ -38,7 +40,7 @@ function isCommentLoaded(comments: Comment[], targetId: string): boolean {
   return comments.some((c) => c.id === targetId || c.replies?.some((r) => r.id === targetId));
 }
 
-const App: React.FC<AppProps> = ({ scriptTag, initialCommentId }) => {
+const App: FunctionComponent<AppProps> = ({ scriptTag, initialCommentId }) => {
   const options = useOptions(scriptTag);
   const [state, setFullState] = useState<EditableAppContext>({
     initStatus: 'running',
@@ -65,9 +67,9 @@ const App: React.FC<AppProps> = ({ scriptTag, initialCommentId }) => {
     isCommentingDisabled: false,
   });
 
-  const iframeRef = React.createRef<HTMLIFrameElement>();
+  const iframeRef = createRef<HTMLIFrameElement>();
 
-  const api = React.useMemo(() => {
+  const api = useMemo(() => {
     return setupGhostApi({
       siteUrl: options.siteUrl,
       apiUrl: options.apiUrl!,
@@ -95,7 +97,7 @@ const App: React.FC<AppProps> = ({ scriptTag, initialCommentId }) => {
   );
 
   const dispatchAction = useCallback(
-    async (action, data) => {
+    async (action: any, data: any) => {
       if (isSyncAction(action)) {
         // Makes sure we correctly handle the old state
         // because updates to state may be asynchronous
@@ -420,7 +422,7 @@ const App: React.FC<AppProps> = ({ scriptTag, initialCommentId }) => {
 
   return (
     <AppContext.Provider value={context}>
-      <CommentsFrame ref={iframeRef}>
+      <CommentsFrame iframeRef={iframeRef}>
         <ContentBox done={done} />
       </CommentsFrame>
       {done && options.adminUrl && <AuthFrame adminUrl={options.adminUrl} onLoad={initAdminAuth} />}

@@ -1,7 +1,7 @@
-import React from 'react';
 import sinon from 'sinon';
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/preact';
 import { useOutOfViewportClasses } from '../../../src/utils/hooks';
+import { useRef } from 'preact/hooks';
 
 describe('useOutOfViewportClasses', () => {
   const classes = {
@@ -12,7 +12,7 @@ describe('useOutOfViewportClasses', () => {
   };
 
   const TestComponent = () => {
-    const ref = React.useRef<HTMLDivElement>(null);
+    const ref = useRef<HTMLDivElement>(null);
     useOutOfViewportClasses(ref, classes);
 
     // eslint-disable-next-line i18next/no-literal-string

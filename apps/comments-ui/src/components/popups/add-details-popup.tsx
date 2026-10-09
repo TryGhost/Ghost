@@ -1,9 +1,9 @@
 import CloseButton from './close-button';
-import reactStringReplace from 'react-string-replace';
-import { Transition } from '@headlessui/react';
+import { Transition } from '../transition';
+import { interpolate } from '../../utils/interpolate';
 import { isMobile } from '../../utils/helpers';
 import { useAppContext } from '../../app-context';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'preact/hooks';
 
 type Props = {
   callback: (succeeded: boolean) => void;
@@ -74,6 +74,7 @@ const AddDetailsPopup = (props: Props) => {
           leaveFrom="opacity-100 translate-y-0"
           leaveTo="opacity-0 translate-y-2"
           appear
+          show
         >
           <div className="flex flex-row items-center justify-start gap-3 pr-4">
             <div
@@ -126,8 +127,8 @@ const AddDetailsPopup = (props: Props) => {
     return returnable;
   };
 
-  const charsText = reactStringReplace(t('{amount} characters left'), '{amount}', () => {
-    return <b>{expertiseCharsLeft}</b>;
+  const charsText = interpolate(t('{amount} characters left'), {
+    amount: <b>{expertiseCharsLeft}</b>,
   });
 
   return (
@@ -179,7 +180,7 @@ const AddDetailsPopup = (props: Props) => {
               placeholder={t('Jamie Larson')}
               type="text"
               value={name}
-              onChange={(e) => {
+              onInput={(e) => {
                 setName(e.currentTarget.value);
               }}
               onKeyDown={(e) => {
@@ -210,7 +211,7 @@ const AddDetailsPopup = (props: Props) => {
               placeholder={t('Head of Marketing at Acme, Inc')}
               type="text"
               value={expertise}
-              onChange={(e) => {
+              onInput={(e) => {
                 const expertiseText = e.currentTarget.value;
                 setExpertiseCharsLeft(maxExpertiseChars - expertiseText.length);
                 setExpertise(expertiseText);

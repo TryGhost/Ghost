@@ -1,5 +1,5 @@
-import { createContext, useContext } from 'react';
-
+import { createContext } from 'preact';
+import { useContext } from 'preact/hooks';
 export type NavActions = {
   requestFocusedThreadView: (commentId: string) => void;
   requestInstantScroll: (commentId: string) => void;

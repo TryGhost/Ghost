@@ -2,12 +2,8 @@
   "extends": "@internal/cfg-typescript/browser.json",
   "compilerOptions": {
     "jsx": "react-jsx",
-    "types": ["vitest/globals"],
-    "paths": {
-      "react": ["./node_modules/@types/react"],
-      "react/jsx-runtime": ["./node_modules/@types/react/jsx-runtime"],
-      "react-dom": ["./node_modules/@types/react-dom"]
-    }
+    "jsxImportSource": "preact",
+    "types": ["vitest/globals"]
   },
   "include": ["src"],
   "references": [{ "path": "./tsconfig.node.json" }]
