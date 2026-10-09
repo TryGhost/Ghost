@@ -14,7 +14,12 @@ export const PAID_SEGMENT = 'status:-free';
  */
 export const EVERYONE_RECIPIENT_FILTER = `${FREE_SEGMENT},${PAID_SEGMENT}`;
 
-/** Expands the API's legacy segment sentinels into the filters used by Admin. */
+const BARE_TIER_ID = /^[a-f0-9]{24}$/;
+
+/**
+ * Expands the API's legacy segment sentinels into the filters used by Admin,
+ * and qualifies the bare tier ids older settings saved as `tier_id:<id>`.
+ */
 export function normalizeRecipientFilter(filter: string | null | undefined): string | null {
   if (filter === 'all') {
     return EVERYONE_RECIPIENT_FILTER;
@@ -22,7 +27,10 @@ export function normalizeRecipientFilter(filter: string | null | undefined): str
   if (!filter || filter === 'none') {
     return null;
   }
-  return filter;
+  return filter
+    .split(',')
+    .map((segment) => (BARE_TIER_ID.test(segment) ? `tier_id:${segment}` : segment))
+    .join(',');
 }
 
 const BASE_SEGMENTS: string[] = [FREE_SEGMENT, PAID_SEGMENT];

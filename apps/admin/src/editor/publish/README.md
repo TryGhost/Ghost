@@ -87,7 +87,7 @@ Following visibility maps a public or members-only post to everyone (`status:fre
 
 `setRecipientFilter(null)` is a real choice — "no recipients" — and is distinct from never having chosen. `missingRecipients` reports it while an email type is selected and email is on offer: Email only then cannot continue, and Publish and email publishes without an email. The options step says which under the recipients row, and the confirm step says the post won't be sent as a newsletter.
 
-Core represents the special segments as `all` and `none`. Inputs and explicit selections normalize those API sentinels to the editor's expanded everyone filter and `null`.
+Core represents the special segments as `all` and `none`. Inputs and explicit selections normalize those API sentinels to the editor's expanded everyone filter and `null`. A segment that is a bare tier id, which Core rejects, is rewritten to `tier_id:<id>`; the recipient picker shows and toggles it as that tier's `tier:<slug>` option.
 
 `fullRecipientFilter` is what the email service receives: the newsletter's own audience filter (subscribed to that newsletter, email not disabled, plus paid-only for a paid newsletter), AND-ed with the recipient filter when there is one. It is `null` while no newsletter is selected.
 

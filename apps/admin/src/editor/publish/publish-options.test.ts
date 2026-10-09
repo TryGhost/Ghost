@@ -109,6 +109,7 @@ describe('normalizeRecipientFilter', () => {
     ['none', null],
     [null, null],
     ['label:vip', 'label:vip'],
+    ['66b68362d3360500077ad2d2,label:vip', 'tier_id:66b68362d3360500077ad2d2,label:vip'],
   ])('normalizes %j to %j', (filter, expected) => {
     expect(normalizeRecipientFilter(filter)).toBe(expected);
   });
@@ -632,6 +633,15 @@ describe('getDefaultRecipientFilter', () => {
         editorDefaultEmailRecipientsFilter: 'label:vip',
       },
       'label:vip',
+    ],
+    [
+      'explicit filter with a bare tier id',
+      { visibility: 'public' },
+      {
+        editorDefaultEmailRecipients: 'filter' as const,
+        editorDefaultEmailRecipientsFilter: '66b68362d3360500077ad2d2,label:vip',
+      },
+      'tier_id:66b68362d3360500077ad2d2,label:vip',
     ],
     [
       'usually nobody follows visibility',
