@@ -50,6 +50,9 @@ describe('getSentryConfig', () => {
       /^Failed to fetch$/,
       /^Load failed$/,
       /^(AbortError: )?The operation was aborted\. ?$/,
+      /^(AbortError: |InvalidStateError: )?Transition was (skipped|aborted because of)/,
+      /^(Skipping view transition|View transition was skipped) because /,
+      /^Skipped ViewTransition due to /,
       /^TransitionAborted$/,
       /^ResizeObserver loop completed with undelivered notifications/,
       /^ResizeObserver loop limit exceeded/,
@@ -65,6 +68,24 @@ describe('getSentryConfig', () => {
     ['AbortError', 'The operation was aborted. '],
     ['Error', 'AbortError: The operation was aborted.'],
   ])('ignores the network error %s: %j', (type, value) => {
+    expect(isIgnored(type, value)).toBe(true);
+  });
+
+  it.each([
+    ['Error', 'InvalidStateError: Transition was aborted because of invalid state'],
+    [
+      'Error',
+      'InvalidStateError: Transition was aborted because of invalid state. Document hidden',
+    ],
+    ['AbortError', 'Transition was skipped'],
+    [
+      'InvalidStateError',
+      'View transition was skipped because document visibility state is hidden.',
+    ],
+    ['AbortError', 'Skipping view transition because skipTransition() was called.'],
+    ['InvalidStateError', 'Skipped ViewTransition due to document being hidden'],
+    ['AbortError', 'Skipped ViewTransition due to skipTransition() call'],
+  ])('ignores the skipped view transition %s: %j', (type, value) => {
     expect(isIgnored(type, value)).toBe(true);
   });
 
