@@ -55,6 +55,7 @@ import {
 } from 'react';
 import { useLocation } from '@tryghost/admin-x-framework';
 import { isReturningFromScreen } from '@/layout/screen-transition';
+import { useRevealOnMount } from '@/shared/use-reveal-on-mount';
 import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import { usePostAnalyticsCounts } from './hooks/use-post-analytics-counts';
 import { usePostsList } from './hooks/use-posts-list';
@@ -165,6 +166,9 @@ export function PostsListScreen({ resource }: { resource: PostResource }) {
     }
   }, [rowsReady]);
   const isLoading = isListLoading || !rowsReady;
+  // Content that replaces the spinner fades in, so the reveal reads as the transition.
+  const [mountedLoading] = useState(isLoading);
+  const revealRef = useRevealOnMount<HTMLDivElement>(screenTransitions && mountedLoading);
 
   useScrollRestoration({ parentRef: listRef, isLoading, resetOnNavigation: true });
 
@@ -383,7 +387,7 @@ export function PostsListScreen({ resource }: { resource: PostResource }) {
                 <Text tone="secondary">Error loading {copy.title.toLowerCase()}</Text>
               </Stack>
             ) : items.length === 0 ? (
-              <Stack align="center" className="flex-1" justify="center">
+              <Stack ref={revealRef} align="center" className="flex-1" justify="center">
                 <PostsEmptyState
                   hasFilters={hasFilters}
                   resource={resource}
@@ -394,7 +398,7 @@ export function PostsListScreen({ resource }: { resource: PostResource }) {
               // Same testids as the Ember list, deliberately —
               // shared e2e page objects. They can never collide:
               // the Ember route aborts when this screen renders.
-              <Stack gap="md">
+              <Stack ref={revealRef} gap="md">
                 <ul
                   // Held modifier: children take no pointer
                   // events, so clicks land on the row and not

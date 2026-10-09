@@ -562,7 +562,7 @@ html[data-screen-transition='return']::view-transition-new(admin-mobile-nav):onl
 
 @keyframes screen-content-rise {
   from {
-    transform: translateY(40px);
+    transform: translateY(20px);
   }
 }
 
