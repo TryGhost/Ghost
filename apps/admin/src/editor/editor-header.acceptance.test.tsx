@@ -4,6 +4,7 @@ import { buildLexicalParagraph } from '@tryghost/test-data';
 import { publishTypeError } from '@tryghost/test-data/selectors/editor';
 
 import {
+  allowConsoleError,
   browseResponse,
   configResponse,
   currentRoute,
@@ -686,6 +687,8 @@ describe('Editor header actions', () => {
   });
 
   it('shows a generic reason when the save before previewing fails in the browser', async () => {
+    // The editor reports the save failure it shows.
+    allowConsoleError('SaveUnknownError');
     publishChrome();
     fakeSavablePost();
     // An answer without the post throws in the editor, not as an API error.
@@ -951,6 +954,8 @@ describe('Editor header actions', () => {
   });
 
   it('shows a generic reason when publishing fails in the browser', async () => {
+    // The editor reports the save failure it shows.
+    allowConsoleError('SaveUnknownError');
     publishChrome();
     fakeSavablePost();
     // An answer without the post throws in the editor, not as an API error.

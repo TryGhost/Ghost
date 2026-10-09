@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { page } from 'vitest/browser';
-import { fakeAdminEndpoint, renderAdminApp } from '@test-utils/acceptance';
+import { allowConsoleError, fakeAdminEndpoint, renderAdminApp } from '@test-utils/acceptance';
 import type { AutomationDetail } from '@tryghost/admin-x-framework/api/automations';
 import {
   flags,
@@ -65,6 +65,9 @@ describe('Run history preserves editor drafts', () => {
   });
 
   it('contains history render errors and retries without remounting the editor', async () => {
+    // The run history's error boundary reports the malformed run it catches.
+    allowConsoleError('An exited run must end with a stopped step');
+    allowConsoleError('The above error occurred in the <HistoryFlow> component');
     setup();
     respond({ ...history('a'), status: 'exited_early' });
     await renderAdminApp('/automations/first', flags);

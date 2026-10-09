@@ -293,11 +293,15 @@ describe('useFeatureImageBinding through the session', () => {
     Math.floor(Date.now() / 1000) * 1000 + 7 * 24 * 60 * 60 * 1000,
   ).toISOString();
 
-  // A field save awaits the slug port and the transport before it lands.
+  // A field save awaits the slug port and the transport before it lands; act
+  // flushes the view updates it publishes along the way.
   const settle = () =>
-    new Promise((resolve) => {
-      setTimeout(resolve, 0);
-    });
+    act(
+      () =>
+        new Promise((resolve) => {
+          setTimeout(resolve, 0);
+        }),
+    );
 
   function bound(loaded: EditorRecord) {
     const harness = sessionHarness({ record: loaded });
@@ -330,7 +334,7 @@ describe('useFeatureImageBinding through the session', () => {
   it('keeps a new image on a draft staged while an emptied author list is staged', async () => {
     const { result, session, state } = bound(sessionRecord({ authors: [{ id: 'author-1' }] }));
 
-    session.patchFields({ authors: [] });
+    act(() => session.patchFields({ authors: [] }));
     act(() => result.current.onFeatureImageChange(IMAGE));
     await settle();
 
@@ -355,7 +359,7 @@ describe('useFeatureImageBinding through the session', () => {
   it('keeps a new image on a draft staged while a future publish time is staged', async () => {
     const { result, session, state } = bound(sessionRecord());
 
-    session.editPublishedAt(FUTURE);
+    act(() => session.editPublishedAt(FUTURE));
     act(() => result.current.onFeatureImageChange(IMAGE));
     await settle();
 
@@ -378,7 +382,7 @@ describe('useFeatureImageBinding through the session', () => {
     expect(state.updates).toHaveLength(0);
     expect(session.isDirty()).toBe(true);
 
-    await session.dispatchExplicit();
+    await act(() => session.dispatchExplicit());
 
     expect(state.updates).toHaveLength(1);
     expect(state.updates[0].payload).toMatchObject({

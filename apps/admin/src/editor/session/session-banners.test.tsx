@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import {
   editorConflictReloadConfirm,
   editorNewerVersionNotice,
@@ -125,11 +125,15 @@ describe('SessionBanners', () => {
     expect(screen.getByRole('button', { name: 'Copy content' })).toBeVisible();
   });
 
-  it('reloads without asking when nothing local is unsaved', () => {
+  it('reloads without asking when nothing local is unsaved', async () => {
     const onReload = vi.fn((): Promise<ReloadOutcome> => Promise.resolve('reloaded'));
     renderBanners(CONFLICT, { hasUnsavedContent: () => false, onReload });
 
-    fireEvent.click(screen.getByRole('button', { name: 'Reload' }));
+    // Inside act, so the banner settles once the reload resolves.
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: 'Reload' }));
+      await onReload.mock.results[0]?.value;
+    });
 
     expect(onReload).toHaveBeenCalledTimes(1);
     expect(screen.queryByTestId(editorConflictReloadConfirm)).not.toBeInTheDocument();
@@ -154,7 +158,11 @@ describe('SessionBanners', () => {
     renderBanners(CONFLICT, { hasUnsavedContent: () => true, onReload });
 
     fireEvent.click(screen.getByRole('button', { name: 'Reload' }));
-    fireEvent.click(await screen.findByRole('button', { name: 'Discard and reload' }));
+    const discard = await screen.findByRole('button', { name: 'Discard and reload' });
+    await act(async () => {
+      fireEvent.click(discard);
+      await onReload.mock.results[0]?.value;
+    });
 
     expect(onReload).toHaveBeenCalledTimes(1);
   });
@@ -233,7 +241,7 @@ describe('SessionBanners', () => {
     await waitFor(() => expect(error).toHaveBeenCalledWith('Couldn’t copy your content'));
   });
 
-  it('says a newer version was saved elsewhere and reloads onto it', () => {
+  it('says a newer version was saved elsewhere and reloads onto it', async () => {
     const onReload = vi.fn((): Promise<ReloadOutcome> => Promise.resolve('reloaded'));
     renderBanners({ kind: 'idle' }, { newerVersionAvailable: true, onReload });
 
@@ -242,7 +250,10 @@ describe('SessionBanners', () => {
     );
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole('button', { name: 'Reload' }));
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: 'Reload' }));
+      await onReload.mock.results[0]?.value;
+    });
 
     expect(onReload).toHaveBeenCalledTimes(1);
     expect(screen.queryByTestId(editorConflictReloadConfirm)).not.toBeInTheDocument();

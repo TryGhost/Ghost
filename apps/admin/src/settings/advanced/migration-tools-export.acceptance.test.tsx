@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
 
 import {
+  allowConsoleError,
   configResponse,
   fakeAdminEndpoint,
   fakeSettingsScreens,
@@ -97,6 +98,8 @@ describe('Migration tools export', () => {
   });
 
   it('returns to the selection and surfaces the error when the download fails', async () => {
+    // The export reports the failed download it surfaces.
+    allowConsoleError('Download failed: 500');
     fakeSettingsScreens();
     fakeAdminEndpoint(
       'GET',

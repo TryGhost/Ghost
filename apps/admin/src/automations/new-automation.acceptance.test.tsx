@@ -1,7 +1,7 @@
-import { act } from 'react';
 import { describe, expect, it } from 'vitest';
 import { page } from 'vitest/browser';
 import {
+  act,
   automation,
   currentRoute,
   fakeAdminEndpoint,
