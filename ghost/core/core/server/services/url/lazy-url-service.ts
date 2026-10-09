@@ -1,3 +1,4 @@
+import { DefaultMap } from '../../../shared/default-map';
 const debug = require('@tryghost/debug')('services:url:lazy');
 const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
@@ -202,7 +203,7 @@ export class LazyUrlService {
   private routersReady: boolean;
   // How many times each thin-resource cause has been seen — see
   // _degradeThinResource.
-  private reportedThinResources: Map<string, number>;
+  private reportedThinResources: DefaultMap<string, number>;
 
   constructor({
     urlUtils = localUtils,
@@ -222,7 +223,7 @@ export class LazyUrlService {
     this.baseFilters = buildBaseFilters();
     this.excludedFilterFields = buildExcludedFilterFields();
     this.routersReady = false;
-    this.reportedThinResources = new Map();
+    this.reportedThinResources = new DefaultMap(() => 0);
   }
 
   onRouterAddedType(
@@ -512,7 +513,7 @@ export class LazyUrlService {
       thin.missing.join(','),
       producedBy ? `${producedBy.apiType}:${producedBy.docName}:${producedBy.method}` : '',
     ].join('|');
-    const occurrences = (this.reportedThinResources.get(key) ?? 0) + 1;
+    const occurrences = this.reportedThinResources.get(key) + 1;
     this.reportedThinResources.set(key, occurrences);
     if (!isPowerOfTen(occurrences)) {
       return this.notFoundUrl(options);
