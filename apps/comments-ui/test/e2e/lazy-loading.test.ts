@@ -15,6 +15,7 @@ test.describe('Lazy loading', async () => {
     await page.route(sitePath, async (route) => {
       await route.fulfill({
         status: 200,
+        contentType: 'text/html',
         // include a div at the top of the body that's 1.5x viewport height
         // to force the need to scroll to see the comments
         body: `<html><head><meta charset="UTF-8" /></head><body><div style="width: 100%; height: 1500px;"></div></body></html>`,

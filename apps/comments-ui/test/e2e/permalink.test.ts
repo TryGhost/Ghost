@@ -21,7 +21,7 @@ async function setupPermalinkTest(
   });
 
   await page.route(sitePath, async (route) => {
-    await route.fulfill({ status: 200, body: bodyHtml });
+    await route.fulfill({ status: 200, contentType: 'text/html', body: bodyHtml });
   });
 
   const url = `http://localhost:${E2E_PORT}/comments-ui.min.js`;
@@ -732,6 +732,7 @@ test.describe('Comment Permalinks', async () => {
     await page.route(sitePath, async (route) => {
       await route.fulfill({
         status: 200,
+        contentType: 'text/html',
         body: '<html><head><meta charset="UTF-8" /></head><body></body></html>',
       });
     });
@@ -821,6 +822,7 @@ test.describe('Comment Permalinks', async () => {
     await page.route(sitePath, async (route) => {
       await route.fulfill({
         status: 200,
+        contentType: 'text/html',
         body: '<html><head><meta charset="UTF-8" /></head><body></body></html>',
       });
     });
