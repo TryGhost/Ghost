@@ -73,7 +73,10 @@ The `notes` describe audit priorities and intended changes, not verified contrac
 `auditedAt` is the full source commit SHA the record was last checked
 against. Add it when completing or refreshing an audit; older records may
 omit it. Advance it only after reviewing relevant changes, not merely
-rebasing.
+rebasing. Recorded contracts describe that revision. Preserve them and recheck
+relevant changes when work on that service begins. If cited evidence has since
+been deleted, keep a link to the file at the audited revision in the summary;
+`sources` and `tests` list files that still exist, without implying freshness.
 
 Before relying on a record, compare its service directory and cited
 source/test paths with that revision, and check for new callers. Changed
@@ -98,9 +101,9 @@ Recorded summaries link to source and test evidence using paths relative to
 `ghost/core`. Entry points are relative to this services directory and include
 separate composition paths reached through deep imports. They are not a list
 of every importable helper, type or job definition. An empty test list means
-the summary has source evidence only. A nonempty list does not imply that every
-claim is tested: when coverage is partial, the summary must say what the cited
-tests assert and which claims are source-only. Keep established source facts
+the summary has source evidence only, unless it links historical tests. A nonempty
+list does not imply that every claim is tested: when coverage is partial, the
+summary must say what the cited tests assert and which claims are source-only. Keep established source facts
 under `contracts`; reserve `unverified` for questions the audit has not answered.
 
 Record missing coverage and known bugs in `blockers`. Before changing a service,
