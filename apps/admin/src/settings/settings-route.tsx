@@ -1,8 +1,9 @@
-import { lazy, Suspense, useLayoutEffect } from 'react';
+import { useLayoutEffect } from 'react';
+import { useLazyComponent } from '@/shared/use-lazy-component';
 import { SettingsLoading } from './settings-loading';
 import { resetSettingsSpinner } from './settings-loading-state';
 
-const SettingsScreen = lazy(() => import('./settings'));
+const loadSettingsScreen = () => import('./settings');
 
 /**
  * Mounts Settings as soon as it is navigated to, so the shell swaps to the
@@ -10,9 +11,6 @@ const SettingsScreen = lazy(() => import('./settings'));
  */
 export default function SettingsRoute() {
   useLayoutEffect(resetSettingsSpinner, []);
-  return (
-    <Suspense fallback={<SettingsLoading />}>
-      <SettingsScreen />
-    </Suspense>
-  );
+  const SettingsScreen = useLazyComponent(loadSettingsScreen);
+  return SettingsScreen ? <SettingsScreen /> : <SettingsLoading />;
 }
