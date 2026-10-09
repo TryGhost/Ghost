@@ -5,7 +5,7 @@
  *
  * CI boots Ghost with this preloaded:
  *
- *   GHOST_CI_SHUTDOWN_AFTER_BOOT=1 node --import ../../scripts/assert-boot-skips-modules.js index.js
+ *   GHOST_CI_SHUTDOWN_AFTER_BOOT=1 node --import ../scripts/assert-boot-skips-modules.js index.js
  */
 import process from 'node:process';
 import { findLoadedModules } from './lib/boot-modules.js';
