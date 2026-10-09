@@ -591,8 +591,8 @@ catalogs:
       specifier: 3.7.2
       version: 3.7.2
     markdownlint-cli2:
-      specifier: 0.23.2
-      version: 0.23.2
+      specifier: 0.23.3
+      version: 0.23.3
     mingo:
       specifier: 2.5.3
       version: 2.5.3
@@ -834,7 +834,7 @@ importers:
         version: 17.3.0
       markdownlint-cli2:
         specifier: 'catalog:'
-        version: 0.23.2(supports-color@10.2.2)
+        version: 0.23.3(supports-color@10.2.2)
       node:
         specifier: runtime:22.23.3
         version: runtime:22.23.3
@@ -11064,6 +11064,9 @@ packages:
   argparse@2.0.1:
     resolution: {integrity: sha512-8+9WqebbFzpX9OR+Wa6O29asIogeRMzcGtAINdpMHHyAg10f05aSFVBbcEqGf/PXw1EjAZ+q2/bEBg3DvurK3Q==}
 
+  argparse@3.0.2:
+    resolution: {integrity: sha512-mFdDM6WqWKraGLsVb+C9CahPnzTXOefAOLq3jYcca2YZ8bEWpr++Tzj+zSaKW9+X9L5uSxcm1AZ3Y6aZJ09OhQ==}
+
   aria-hidden@1.2.6:
     resolution: {integrity: sha512-ik3ZgC9dY/lYVVM++OISsaYDeg1tb0VtP5uL3ouh1koGOaUMDPpbFIei4JkFimWUFPn90sbMNMXQAIVOlnYKJA==}
     engines: {node: '>=10'}
@@ -15266,12 +15269,8 @@ packages:
     resolution: {integrity: sha512-Y1zNGV+pzQdh7H39l9zgB4PJqjRNqydvdYCDG4HFXM4XuvSaQQlEc91IU1yALL8gUTDomgBAfz3XJdmUS+oo0w==}
     engines: {node: ^12.20.0 || ^14.13.1 || >=16.0.0}
 
-  globby@16.2.2:
-    resolution: {integrity: sha512-NLvV9ubZ6NDsJaOpKPy3cQeJpKi9DcWiyCiFUpJPA0YihRqiE6RWaLUmgNNPr8MgPpLZjnBjSmou7uZBRJv9wA==}
-    engines: {node: '>=20'}
-
-  globby@16.2.3:
-    resolution: {integrity: sha512-VZX7TV7jmd/pn71vdnLKtgwy1IWqc3KjI9x1/UtPkwoKk5fKrNLY30ltDe3cAM5xruIN7YuuaulFt133jRrKZg==}
+  globby@16.2.4:
+    resolution: {integrity: sha512-c8B/VNLmxRcmqqenRA9t+9IyOjf9+V6lTxPaUJLqOCONdQkWZ0ETYgX0qbtJqPsgCNusT9MZ5Jeidw8Eb9tn2g==}
     engines: {node: '>=20'}
 
   globjoin@0.1.4:
@@ -16563,8 +16562,8 @@ packages:
     resolution: {integrity: sha512-SFNOvSJ+Dgf/9An904Yx+CgSlIPCkIpao4qo51lpee25TIRejdH3rhR4EZMGoNx3/TP3O+wzWuiTFl4sqbltzA==}
     hasBin: true
 
-  js-yaml@5.4.3:
-    resolution: {integrity: sha512-yzzNtgczwgoVHNigCyKTXcQJU4Y8t/ikU4UxXW0BvrLfHTGWZhsNcOT2s/a7vn81/4KqVnNmHjaUEPlvWnNwVw==}
+  js-yaml@5.4.1:
+    resolution: {integrity: sha512-28R/k+NAjeuf7+CKlTxWZVExJGwVVLwY06DgEnOMz2gEpfNkDcD7QvyiVPT0xy0XXhU8vHsd4Ot42OOPdJG7dQ==}
     hasBin: true
 
   jsdom@16.7.0:
@@ -16985,6 +16984,9 @@ packages:
   linkify-it@5.0.2:
     resolution: {integrity: sha512-ONTm2jCMAVZjgQa/Fy1kScXsuOoF5NPTsoFBdE1KVIZ2vAh/r9+Bqo+0jINCBYnavTPQZz38QzFTme79ENoN3Q==}
 
+  linkify-it@6.1.0:
+    resolution: {integrity: sha512-wJ/TwpSDTLepCrQoYWYIExIKg5Zchex2Nn5yk2mFnB+6PtdkHtyLx742md9csRjjOnGkKIS/RrbY7l8D6gT9Vw==}
+
   linkifyjs@4.3.3:
     resolution: {integrity: sha512-P8aEP5U/D1/IlTY2OeYsErdwh9bGuLE30NcXtKEjgdHcahveQoQwM2yZNsioQHsWFz0P7KKudisbrzCgR0sDHg==}
 
@@ -17362,6 +17364,10 @@ packages:
     resolution: {integrity: sha512-sHHjZ5fJKlgrG4qns2YwVcdNep35h5fERrfkD2YNsb9UFk0UIHarbiTaHKVMlPuWAoiilyK8Fv/jAm11slsY7Q==}
     hasBin: true
 
+  markdown-it@15.0.1:
+    resolution: {integrity: sha512-9/7gE95FNPkfUWrjJIoHZza2iLmuJlPD0UNMxPi7bxUrbCR525YZY0r+zyfes0dZI5ZZ/uNIXUJca0pJvtw41g==}
+    hasBin: true
+
   markdown-it@8.4.2:
     resolution: {integrity: sha512-GcRz3AWTqSUphY3vsUqQSFMbgR38a4Lh3GWlHRh/7MRwz8mcu9n2IO7HOh+bXHrR9kOPDl5RNCaEsrneb+xhHQ==}
     hasBin: true
@@ -17377,8 +17383,8 @@ packages:
     peerDependencies:
       markdownlint-cli2: '>=0.0.4'
 
-  markdownlint-cli2@0.23.2:
-    resolution: {integrity: sha512-eUhcnkSpzURo/o4htSqc7LPDszgOOTknhU4eY/sPHvMCLxnTCYscv1gw1/js/idmaZPisv9ECVEIORcllqjTUw==}
+  markdownlint-cli2@0.23.3:
+    resolution: {integrity: sha512-xAr5o/TGpC3v6lE6cKIW4b5eOFRrRX5u7Vtjae9ix3RALv8nNOd94XMkD/1OXXBtpMcJ4uQGbpSo3hv5UqS4uQ==}
     engines: {node: '>=22'}
     hasBin: true
 
@@ -17478,8 +17484,8 @@ packages:
   mdurl@1.0.1:
     resolution: {integrity: sha512-/sKlQJCBYVY9Ers9hqzKou4H6V5UWc/M59TH2dvkt+84itfnq7uFOMLpOiOS4ujvHP4etln18fmIxA5R5fll0g==}
 
-  mdurl@2.0.0:
-    resolution: {integrity: sha512-Lf+9+2r+Tdp5wXDXC4PcIBjTDtq4UKjCPMQhKIuzpJNW0b96kVqSwW0bT7FhRSfmAiFYgP+SCRvdrDozfh0U5w==}
+  mdurl@2.1.0:
+    resolution: {integrity: sha512-1+HBaOx0zi/dQWht8rNv9MYf9qqpqL/kxI0hXImU6Y547zM6Sni8BQibt7ifgMcYtQg41ao3Ivd6cnSM86inpg==}
 
   media-typer@0.3.0:
     resolution: {integrity: sha512-dq+qelQ9akHpcOl/gUVRTxVIOkAJ1wR3QAvb4RsVjS8oVoFjDGTc679wJYmUmknUF5HwMLOgb5O+a3KxfWapPQ==}
@@ -21782,6 +21788,9 @@ packages:
 
   uc.micro@2.1.0:
     resolution: {integrity: sha512-ARDJmphmdvUk6Glw7y9DQ2bFkKBHwQHLi2lsaH6PPmz/Ka9sFOBsBluozhDltWmnv9u/cF6Rt87znRTPV+yp/A==}
+
+  uc.micro@3.0.0:
+    resolution: {integrity: sha512-U3PppEkleoTnIfi8BozMx3yju3qc/L6SwqWo2Sw+54PX+PX0q9I+r1Um5HCmqD7n9VDX5/v3vQH/AjA6deDdtw==}
 
   ufo@1.6.4:
     resolution: {integrity: sha512-JFNbkD1Svwe0KvGi8GOeLcP4kAWQ609twvCdcHxq1oSL8svv39ZuSvajcD8B+5D0eL4+s1Is2D/O6KN3qcTeRA==}
@@ -30482,6 +30491,8 @@ snapshots:
 
   argparse@2.0.1: {}
 
+  argparse@3.0.2: {}
+
   aria-hidden@1.2.6(patch_hash=8a2e148001c763e9eb7fd3ad21da0f290fd50e099f6a3d6abe6c2ec9a14b3bb8):
     dependencies:
       tslib: 2.8.1
@@ -37093,21 +37104,13 @@ snapshots:
       merge2: 1.4.1
       slash: 4.0.0
 
-  globby@16.2.2:
+  globby@16.2.4:
     dependencies:
       '@sindresorhus/merge-streams': 4.0.0
       fast-glob: 3.3.3
       ignore: 7.0.6
       is-path-inside: 4.0.0
-      slash: 5.1.0
-      unicorn-magic: 0.4.0
-
-  globby@16.2.3:
-    dependencies:
-      '@sindresorhus/merge-streams': 4.0.0
-      fast-glob: 3.3.3
-      ignore: 7.0.6
-      is-path-inside: 4.0.0
+      micromatch: 4.0.8
       slash: 5.1.0
       unicorn-magic: 0.4.0
 
@@ -38808,7 +38811,7 @@ snapshots:
     dependencies:
       argparse: 2.0.1
 
-  js-yaml@5.4.3:
+  js-yaml@5.4.1:
     dependencies:
       argparse: 2.0.1
 
@@ -39274,6 +39277,10 @@ snapshots:
     dependencies:
       uc.micro: 2.1.0
 
+  linkify-it@6.1.0:
+    dependencies:
+      uc.micro: 3.0.0
+
   linkifyjs@4.3.3: {}
 
   lint-staged@17.3.0:
@@ -39667,9 +39674,18 @@ snapshots:
       argparse: 2.0.1
       entities: 4.5.0
       linkify-it: 5.0.2
-      mdurl: 2.0.0
+      mdurl: 2.1.0
       punycode.js: 2.3.1
       uc.micro: 2.1.0
+
+  markdown-it@15.0.1:
+    dependencies:
+      argparse: 3.0.2
+      entities: 8.0.0
+      linkify-it: 6.1.0
+      mdurl: 2.1.0
+      punycode.js: 2.3.1
+      uc.micro: 3.0.0
 
   markdown-it@8.4.2:
     dependencies:
@@ -39683,19 +39699,19 @@ snapshots:
 
   markdown-table@3.0.4: {}
 
-  markdownlint-cli2-formatter-default@0.0.6(markdownlint-cli2@0.23.2(supports-color@10.2.2)):
+  markdownlint-cli2-formatter-default@0.0.6(markdownlint-cli2@0.23.3(supports-color@10.2.2)):
     dependencies:
-      markdownlint-cli2: 0.23.2(supports-color@10.2.2)
+      markdownlint-cli2: 0.23.3(supports-color@10.2.2)
 
-  markdownlint-cli2@0.23.2(supports-color@10.2.2):
+  markdownlint-cli2@0.23.3(supports-color@10.2.2):
     dependencies:
-      globby: 16.2.2
-      js-yaml: 5.4.3
+      globby: 16.2.4
+      js-yaml: 5.4.1
       jsonc-parser: 3.3.1
       jsonpointer: 5.0.1
-      markdown-it: 14.3.2
+      markdown-it: 15.0.1
       markdownlint: 0.41.1(supports-color@10.2.2)
-      markdownlint-cli2-formatter-default: 0.0.6(markdownlint-cli2@0.23.2(supports-color@10.2.2))
+      markdownlint-cli2-formatter-default: 0.0.6(markdownlint-cli2@0.23.3(supports-color@10.2.2))
       micromatch: 4.0.8
       smol-toml: 1.9.0
     transitivePeerDependencies:
@@ -39917,7 +39933,7 @@ snapshots:
 
   mdurl@1.0.1: {}
 
-  mdurl@2.0.0: {}
+  mdurl@2.1.0: {}
 
   media-typer@0.3.0: {}
 
@@ -44509,7 +44525,7 @@ snapshots:
       fastest-levenshtein: 1.0.16
       file-entry-cache: 11.1.5
       global-modules: 2.0.0
-      globby: 16.2.3
+      globby: 16.2.4
       globjoin: 0.1.4
       html-tags: 5.1.0
       ignore: 7.0.6
@@ -45275,6 +45291,8 @@ snapshots:
   uc.micro@1.0.6: {}
 
   uc.micro@2.1.0: {}
+
+  uc.micro@3.0.0: {}
 
   ufo@1.6.4: {}
 
