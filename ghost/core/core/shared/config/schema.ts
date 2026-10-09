@@ -2,6 +2,87 @@ import type { OmitIndexSignature } from 'type-fest';
 import { z } from 'zod';
 
 /**
+ * Shared by both clients. Loose, because configure-knex spreads it into knex,
+ * so unlisted keys like `acquireConnectionTimeout` still work.
+ */
+const databaseBase = {
+  /** Replaced by configure-knex for better-sqlite3. */
+  pool: z
+    .looseObject({
+      min: z.number().optional(),
+      max: z.number().optional(),
+    })
+    .optional()
+    .meta({ description: "knex's connection pool.", examples: [{ min: 0, max: 5 }] }),
+  debug: z.boolean().optional().meta({ description: 'Log every query knex runs.' }),
+  useNullAsDefault: z.boolean().optional().meta({
+    description: 'Insert NULL for a column a row omits. SQLite only.',
+  }),
+};
+
+/**
+ * Only the common keys are validated. Loose, so any other mysql2 option still
+ * reaches the driver.
+ */
+const mysqlConnection = z
+  .looseObject({
+    host: z
+      .string()
+      .optional()
+      .meta({ examples: ['127.0.0.1'] }),
+    /**
+     * A quoted port is coerced. Safe to skip if the raw tree is used: mysql2
+     * accepts a string too. Digits only, as `z.coerce` would take `true` as 1.
+     */
+    port: z
+      .union([z.number(), z.string().regex(/^\d+$/).transform(Number)])
+      .pipe(z.number().int().min(1).max(65535))
+      .optional()
+      .meta({ examples: [3306] }),
+    /**
+     * Strings, or mysql2 throws. An all-digit value from a plain env var is
+     * parsed as a number - use `database__connection__password_FILE`.
+     */
+    user: z.string().optional(),
+    password: z.string().optional(),
+    database: z.string().optional(),
+    /** Read by knex-migrator to create the database. */
+    charset: z.string().optional(),
+    /** A mysql2 SSL profile name, or TLS options. */
+    ssl: z.union([z.string(), z.looseObject({})]).optional(),
+  })
+  .meta({
+    description:
+      'Passed to the mysql2 driver. See https://sidorares.github.io/node-mysql2/docs/api-and-configurations',
+  });
+
+/**
+ * Closed: knex hands better-sqlite3 only `filename`. Made absolute by
+ * sanitizeDatabaseProperties.
+ */
+const sqliteConnection = z.object({
+  filename: z
+    .string()
+    .optional()
+    .meta({
+      description: 'The SQLite database file.',
+      examples: ['/var/www/ghost/content/data/ghost.db'],
+    }),
+});
+
+const mysqlDatabase = z.looseObject({
+  client: z.literal('mysql2'),
+  connection: mysqlConnection,
+  ...databaseBase,
+});
+
+const sqliteDatabase = z.looseObject({
+  client: z.literal('better-sqlite3'),
+  connection: sqliteConnection,
+  ...databaseBase,
+});
+
+/**
  * The validated shape of Ghost's config.
  *
  * A key is listed here once it has a real schema. `config.get()` then returns
@@ -12,13 +93,9 @@ import { z } from 'zod';
  *
  * Two rules keep this safe to grow against config that is already running:
  *
- * 1. Validate, don't transform - for now. `z.object()` strips unknown keys and
- *    `z.coerce` rewrites values; either would silently change a live site's
- *    config, and the round-trip test in the unit suite fails if one does.
- *    Secrets are deliberately left unparsed by ./secrets.ts - a password of
- *    `01234` must stay a string. Deliberate transforms can come later, but they
- *    need `get()` rerouted by top-level key first, so a raw read of an unlisted
- *    sibling path can't disagree with a transformed one.
+ * 1. Validate, don't transform. A failed parse hands over the raw tree, so a
+ *    transform is only safe if its raw input still works, like
+ *    `database:connection:port`. See SCHEMA.md.
  * 2. Nothing here may be stricter than what the loader already enforced.
  *    Tightening beyond that is its own change, with its own release note.
  */
@@ -104,6 +181,20 @@ export const configSchema = z.looseObject({
     defaultSettings: z
       .string()
       .meta({ description: 'Default settings loaded on a fresh install.' }),
+  }),
+
+  /**
+   * A union on `client`. Describes the tree after sanitizeDatabaseProperties
+   * in ./utils.ts, which renames `mysql`/`sqlite3` to their driver names, drops
+   * the other client's connection keys and makes a sqlite path absolute. It
+   * stays in the loader: the raw tree is used when validation fails.
+   *
+   * Required, as that function has always dereferenced it. Only two clients,
+   * as knex-migrator refuses any other.
+   */
+  database: z.discriminatedUnion('client', [mysqlDatabase, sqliteDatabase]).meta({
+    description:
+      'Database connection. `client` is `mysql` or `sqlite3` in config; Ghost normalises them to their driver names.',
   }),
 });
 

@@ -9,8 +9,8 @@ import config from '../../../shared/config';
 const betterSqlitePatches = require('./better-sqlite3-patches');
 
 /**
- * The slice of `database` config this module reads. Replace with the schema's
- * own type once `database` is schemafied.
+ * The slice of `database` config this module reads. Wider than the schema's
+ * type, as the raw tree is used when validation fails.
  */
 export interface DatabaseConfig {
   client?: string;
