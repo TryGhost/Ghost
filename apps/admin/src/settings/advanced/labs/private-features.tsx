@@ -55,6 +55,11 @@ const features: Feature[] = [
     flag: 'admin7settings',
   },
   {
+    title: 'Admin 7 · Design',
+    description: 'Preview the floating Admin 7 sidebar and its navigation layout.',
+    flag: 'admin7Design',
+  },
+  {
     title: 'Email Unique ID',
     description:
       'Enables {uniqueid} variable in emails for unique image URLs to bypass ESP image caching',

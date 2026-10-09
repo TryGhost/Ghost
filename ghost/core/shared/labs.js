@@ -55,6 +55,7 @@ const PRIVATE_FEATURES = [
   'importMemberTier',
   'csvContentImporter',
   'admin7settings',
+  'admin7Design',
   'emailUniqueid',
   'themeTranslation',
   'pictureImageFormats',
