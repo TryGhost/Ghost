@@ -2940,8 +2940,8 @@ importers:
         specifier: 0.9.1
         version: 0.9.1
       probe-image-size:
-        specifier: 7.3.0
-        version: 7.3.0(supports-color@10.2.2)
+        specifier: 7.4.0
+        version: 7.4.0(supports-color@10.2.2)
       rss:
         specifier: 1.2.2
         version: 1.2.2
@@ -19620,8 +19620,8 @@ packages:
   probability-distributions@0.9.1:
     resolution: {integrity: sha512-guES77A321GzcK6swYmxhBeYQ10UNyiG0Gf4Ks+3239BuS27EFH/rrlfBW/oYlPyiufdey/3OlVqKvlXFB9LTQ==}
 
-  probe-image-size@7.3.0:
-    resolution: {integrity: sha512-7CaDeBwiAbh6ohXsvLbAZhO7wzsZAmaevfxe39qvCwRh8LyaZfDlBGGLU1CCTgrTLtCOdwBBhjOrIHaIIimHfQ==}
+  probe-image-size@7.4.0:
+    resolution: {integrity: sha512-cdEprVtZxV+awMde9X+4jILBFYh4CARxVrQaMl4wY4YcPWbul9jntXrIW95NInBDyJwcVUP3U0T6yukN8rMBaQ==}
 
   proc-log@4.2.0:
     resolution: {integrity: sha512-g8+OnU/L2v+wyiVK+D5fA34J7EH8jZ8DDlvwhRCMxmMj7UCBvxiO1mGeN+36JXIKF4zevU4kRBd8lVgG9vLelA==}
@@ -42510,7 +42510,7 @@ snapshots:
     dependencies:
       crypto: 0.0.3
 
-  probe-image-size@7.3.0(supports-color@10.2.2):
+  probe-image-size@7.4.0(supports-color@10.2.2):
     dependencies:
       lodash.merge: 4.6.2
       needle: 2.9.1(supports-color@10.2.2)
