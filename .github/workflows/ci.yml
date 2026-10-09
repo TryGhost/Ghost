@@ -1651,6 +1651,11 @@ jobs:
         with:
           # Skip the post-job `docker buildx rm` (~40s); the runner is ephemeral.
           cleanup: false
+          # The docker-container driver does not inherit the daemon's mirrors.
+          # Use the same mirror for base-image metadata, including report exports.
+          buildkitd-config-inline: |
+            [registry."docker.io"]
+              mirrors = ["mirror.gcr.io"]
 
       - name: Log in to GitHub Container Registry
         if: steps.strategy.outputs.should-push == 'true'
