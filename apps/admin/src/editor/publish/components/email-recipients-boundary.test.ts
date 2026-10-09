@@ -4,9 +4,12 @@ import { parseRecipientSegments } from './email-recipients-boundary';
 describe('parseRecipientSegments', () => {
   it('keeps valid tiers while labels are unavailable', () => {
     expect(
-      parseRecipientSegments({ tiers: [{ slug: 'gold', name: 'Gold', active: true }] }, undefined),
+      parseRecipientSegments(
+        { tiers: [{ id: 'gold-id', slug: 'gold', name: 'Gold', active: true }] },
+        undefined,
+      ),
     ).toEqual({
-      tiers: [{ slug: 'gold', name: 'Gold', active: true }],
+      tiers: [{ id: 'gold-id', slug: 'gold', name: 'Gold', active: true }],
       labels: [],
     });
   });

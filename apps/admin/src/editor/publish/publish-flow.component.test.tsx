@@ -673,8 +673,8 @@ describe('Publish flow', () => {
       return {
         tiers: [
           pageNumber === 1
-            ? { slug: 'first-tier', name: 'First tier', active: true }
-            : { slug: 'last-tier', name: 'Last tier', active: true },
+            ? { id: 'first-tier-id', slug: 'first-tier', name: 'First tier', active: true }
+            : { id: 'last-tier-id', slug: 'last-tier', name: 'Last tier', active: true },
         ],
         meta: { pagination: pagination(pageNumber) },
       };
@@ -710,8 +710,8 @@ describe('Publish flow', () => {
   it('groups specific recipients into active tiers, archived tiers, and labels', async () => {
     fakeAdminEndpoint('GET', /^\/tiers\/\?/, {
       tiers: [
-        { slug: 'legacy', name: 'Legacy tier', active: false },
-        { slug: 'supporter', name: 'Supporter', active: true },
+        { id: 'legacy-id', slug: 'legacy', name: 'Legacy tier', active: false },
+        { id: 'supporter-id', slug: 'supporter', name: 'Supporter', active: true },
       ],
     });
     fakeAdminEndpoint('GET', /^\/labels\/\?/, {
@@ -761,6 +761,42 @@ describe('Publish flow', () => {
     expect(dispatch).toHaveBeenCalledWith({
       kind: 'publish',
       options: { emailOnly: false, newsletter: 'weekly', emailSegment: 'tier:legacy' },
+    });
+  });
+
+  it('shows a bare tier id from the default recipients as its tier', async () => {
+    fakeAdminEndpoint('GET', /^\/tiers\/\?/, {
+      tiers: [
+        { id: '66b68362d3360500077ad2d2', slug: 'gold', name: 'Gold', active: true },
+        { id: '66b68362d3360500077ad2d3', slug: 'silver', name: 'Silver', active: true },
+      ],
+    });
+    fakeAdminEndpoint('GET', /^\/labels\/\?/, {
+      labels: [{ slug: 'vip', name: 'VIP' }],
+    });
+    const { dispatch } = await renderPublishFlow({
+      site: {
+        ...SITE,
+        editorDefaultEmailRecipients: 'filter',
+        editorDefaultEmailRecipientsFilter: '66b68362d3360500077ad2d2,label:vip',
+      },
+    });
+
+    await publishScreen.setting('email-recipients').click();
+    const picker = page.getByTestId(publishRecipientSegments);
+    await expect.element(picker.getByRole('button', { name: 'Remove Gold' })).toBeVisible();
+    await picker.getByRole('combobox').click();
+    await page.getByRole('option', { name: 'Gold' }).click();
+    await expect(picker.getByRole('button', { name: 'Remove Gold' })).toHaveCount(0);
+    await expect.element(picker.getByRole('button', { name: 'Remove VIP' })).toBeVisible();
+
+    await publishScreen.options().getByRole('heading', { name: 'Ready, set, publish.' }).click();
+    await publishScreen.continueButton().click();
+    await publishScreen.confirmButton().click();
+    await expect.element(publishScreen.complete()).toBeInTheDocument();
+    expect(dispatch).toHaveBeenCalledWith({
+      kind: 'publish',
+      options: { emailOnly: false, newsletter: 'weekly', emailSegment: 'label:vip' },
     });
   });
 

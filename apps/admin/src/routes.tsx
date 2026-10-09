@@ -245,6 +245,26 @@ export const routes: RouteObject[] = [
   },
 ];
 
+// matchRoutes flattens and ranks the whole tree on every call, and every link
+// asks (AdminLink, the screen-transition check), so a screen full of links
+// re-matched the tree many times per render. The tree is static, so a path's
+// matches never change; the cap only bounds paths carrying ids or slugs.
+const MATCH_CACHE_LIMIT = 500;
+const matchCache = new Map<string, ReturnType<typeof matchRoutes<RouteObject>>>();
+
+/** `matchRoutes(routes, pathname)`, memoized per path. Callers must not mutate the result. */
+export function matchAdminRoutes(pathname: string): ReturnType<typeof matchRoutes<RouteObject>> {
+  let matches = matchCache.get(pathname);
+  if (matches === undefined) {
+    if (matchCache.size >= MATCH_CACHE_LIMIT) {
+      matchCache.clear();
+    }
+    matches = matchRoutes(routes, pathname);
+    matchCache.set(pathname, matches);
+  }
+  return matches;
+}
+
 // Ember's router only learns about a URL change from `hashchange`, which the
 // React router's pushState navigation does not fire, so links into Ember-owned
 // routes must stay native hash anchors. Everything else can be a router link
@@ -256,7 +276,7 @@ export function useEmberOwnedRouteMatcher(): (pathname: string) => boolean {
 
   return useCallback(
     (pathname: string) => {
-      const leaf = matchRoutes(routes, pathname)?.at(-1)?.route;
+      const leaf = matchAdminRoutes(pathname)?.at(-1)?.route;
       if (!leaf) {
         return true;
       }
@@ -279,7 +299,7 @@ export function useIsEmberOwnedRoute(pathname: string): boolean {
 /** The matched route's path pattern, e.g. `/tags/:tagSlug`, never the path's own ids or slugs. */
 function matchedRoutePattern(pathname: string): string {
   let pattern = '';
-  for (const { route } of matchRoutes(routes, pathname) ?? []) {
+  for (const { route } of matchAdminRoutes(pathname) ?? []) {
     if (route.path) {
       // An absolute child path already repeats its parents' paths
       pattern = route.path.startsWith('/') ? route.path : `${pattern}/${route.path}`;

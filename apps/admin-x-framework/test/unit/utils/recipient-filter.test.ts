@@ -23,6 +23,21 @@ describe('recipient-filter', () => {
       expect(normalizeRecipientFilter(null)).toBeNull();
       expect(normalizeRecipientFilter(undefined)).toBeNull();
     });
+
+    it('qualifies bare tier ids as tier_id segments', () => {
+      expect(normalizeRecipientFilter('66b68362d3360500077ad2d2')).toBe(
+        'tier_id:66b68362d3360500077ad2d2',
+      );
+      expect(normalizeRecipientFilter('66b68362d3360500077ad2d2,label:vip')).toBe(
+        'tier_id:66b68362d3360500077ad2d2,label:vip',
+      );
+      expect(normalizeRecipientFilter('label:vip, 66b68362d3360500077ad2d2')).toBe(
+        'label:vip,tier_id:66b68362d3360500077ad2d2',
+      );
+      expect(normalizeRecipientFilter('tier_id:66b68362d3360500077ad2d2')).toBe(
+        'tier_id:66b68362d3360500077ad2d2',
+      );
+    });
   });
 
   describe('parseRecipientFilter', () => {

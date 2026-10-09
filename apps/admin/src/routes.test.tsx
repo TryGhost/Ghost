@@ -2,7 +2,7 @@ import { renderHook } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { matchRoutes } from '@tryghost/admin-x-framework';
 import { useAdminSidebarVisibility, useRouteHidesAdminSidebar } from '@/layout/sidebar-visibility';
-import { routes, useSyncEmberRoutePattern } from './routes';
+import { matchAdminRoutes, routes, useSyncEmberRoutePattern } from './routes';
 
 const useMatchesMock = vi.fn<() => Array<{ handle: unknown }>>();
 const pathnameMock = vi.fn<() => string>();
@@ -151,4 +151,17 @@ describe('useSyncEmberRoutePattern', () => {
 
     expect(syncEmberRoutePatternMock).toHaveBeenCalledExactlyOnceWith(null);
   });
+});
+
+describe('matchAdminRoutes', () => {
+  it.each(['/tags/news', '/settings/newsletters', '/members', '/no-such-route'])(
+    'matches %s like matchRoutes, reusing the result',
+    (path) => {
+      const matches = matchAdminRoutes(path);
+      expect(matches?.map((match) => match.route)).toEqual(
+        matchRoutes(routes, path)?.map((match) => match.route),
+      );
+      expect(matchAdminRoutes(path)).toBe(matches);
+    },
+  );
 });

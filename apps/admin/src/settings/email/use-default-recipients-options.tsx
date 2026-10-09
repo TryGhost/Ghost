@@ -55,7 +55,10 @@ const useDefaultRecipientsOptions = (
   const hydratingFilter = useRef<string | null | undefined>();
   const hydrationSequence = useRef(0);
 
-  const tierOption = (tier: Tier): SegmentOption => ({ value: tier.id, label: tier.name });
+  const tierOption = (tier: Tier): SegmentOption => ({
+    value: `tier:${tier.slug}`,
+    label: tier.name,
+  });
   const labelOption = (label: Label): SegmentOption => ({
     value: `label:${label.slug}`,
     label: label.name,
@@ -108,11 +111,14 @@ const useDefaultRecipientsOptions = (
     setHydrationState('loading');
     const filters = defaultEmailRecipientsFilter?.split(',') || [];
     const tierIds: string[] = [],
+      tierSlugs: string[] = [],
       labelSlugs: string[] = [],
       offerIds: string[] = [];
 
     for (const filter of filters) {
-      if (filter.startsWith('label:')) {
+      if (filter.startsWith('tier:')) {
+        tierSlugs.push(filter.replace('tier:', ''));
+      } else if (filter.startsWith('label:')) {
         labelSlugs.push(filter.replace('label:', ''));
       } else if (filter.startsWith('offer_redemptions:')) {
         offerIds.push(filter.replace('offer_redemptions:', ''));
@@ -122,8 +128,11 @@ const useDefaultRecipientsOptions = (
     }
 
     try {
+      const bareTierOptions = new Map(
+        (await tiers.loadInitialValues(tierIds, 'id')).map((tier) => [tier.id, tierOption(tier)]),
+      );
       const options = await Promise.all([
-        tiers.loadInitialValues(tierIds, 'id').then((data) => data.map(tierOption)),
+        tiers.loadInitialValues(tierSlugs, 'slug').then((data) => data.map(tierOption)),
         labels.loadInitialValues(labelSlugs, 'slug').then((data) => data.map(labelOption)),
         offers.loadInitialValues(offerIds, 'id').then((data) => data.map(offerOption)),
       ]).then((results) => [...SIMPLE_SEGMENT_OPTIONS, ...results.flat()]);
@@ -131,7 +140,10 @@ const useDefaultRecipientsOptions = (
       if (mounted.current && request === hydrationSequence.current) {
         setSelectedSegments(
           filters
-            .map((filter) => options.find((option) => option.value === filter))
+            .map(
+              (filter) =>
+                bareTierOptions.get(filter) ?? options.find((option) => option.value === filter),
+            )
             .filter((option) => option !== undefined),
         );
         setHydrationState('ready');
