@@ -208,7 +208,7 @@ The email-error step offers the retry only when Core says the failed send is ret
 
 ## Reporting
 
-`reportPublishFailure()` reports to Sentry the unexpected failures the flow shows: a limit that could not be checked, a publish-input or retry-eligibility read that failed (the post reload behind "Check retry availability" included), a retry request that failed, a dispatch or pre-publish save that rejected, an Unpublish or Unschedule dispatch that rejected, and a publish with no command to dispatch. A pre-publish save that settled as failed is left to the session, which reports failed saves itself. It leaves out what `reportSaveFailure()` leaves out of saves, by the same `isExpectedSaveError()` rule: a validation refusal, a host limit, a writer who lost access, an expired session and a lost connection. A missing post, a collision, any other 4xx and a 5xx are reported.
+`reportPublishFailure()` reports to Sentry the unexpected failures the flow shows: a limit that could not be checked, a publish-input or retry-eligibility read that failed (the post reload behind "Check retry availability" included), a retry request that failed, a dispatch or pre-publish save that rejected, an Unpublish or Unschedule dispatch that rejected, and a publish with no command to dispatch. A pre-publish save that settled as failed is left to the session, which reports failed saves itself. It leaves out what the `isExpectedSaveError()` rule for saves counts as expected: a validation refusal, a host limit, a writer who lost access, an expired session and a lost connection. A missing post, a collision, any other 4xx and a 5xx are reported.
 
 ## Requests
 

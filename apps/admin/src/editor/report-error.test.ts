@@ -397,12 +397,6 @@ describe('reportSaveFailure', () => {
   it.each<[string, SaveError]>([
     ['a validation failure', { kind: 'validation', message: 'Title is too long' }],
     ['a host limit', { kind: 'host-limit', message: 'Upgrade required' }],
-    ['a writer who lost access', { kind: 'forbidden', message: 'Permission error' }],
-    // Signing in again is its recovery, abandoned or not.
-    [
-      'an expired session',
-      { kind: 'session-invalid', message: 'Unauthorized', cause: new Error('Unauthorized') },
-    ],
     [
       'an unreachable server',
       { kind: 'transport', message: 'Unreachable', cause: new ServerUnreachableError() },
@@ -412,6 +406,27 @@ describe('reportSaveFailure', () => {
 
     expect(Sentry.captureException).not.toHaveBeenCalled();
     expect(Sentry.captureMessage).not.toHaveBeenCalled();
+    // eslint-disable-next-line no-console
+    expect(console.error).not.toHaveBeenCalled();
+  });
+
+  it.each<[string, SaveError]>([
+    ['a writer who lost access', { kind: 'forbidden', message: 'Permission error' }],
+    [
+      'an expired session the writer did not sign back in to',
+      { kind: 'session-invalid', message: 'Unauthorized', cause: new Error('Unauthorized') },
+    ],
+  ])('notes %s as a message rather than an error', (_label, error) => {
+    reportSaveFailure(failure({ error }), 'page');
+
+    expect(Sentry.captureException).not.toHaveBeenCalled();
+    expect(Sentry.captureMessage).toHaveBeenCalledExactlyOnceWith(
+      'Lost access while editing page',
+      {
+        tags: { ...TAGS, post_type: 'page', save_error_kind: error.kind },
+        extra: { post_id: 'post-1' },
+      },
+    );
     // eslint-disable-next-line no-console
     expect(console.error).not.toHaveBeenCalled();
   });

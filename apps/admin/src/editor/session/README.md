@@ -534,8 +534,10 @@ Sentry receives these through the editor's own reporter, with the response
 status and URL when the transport answered. Validation failures, host limits, a
 refusal of a writer who may no longer edit the post, an expired session (signing
 in again is its recovery, whether or not the writer does) and an unreachable
-server are not sent: none of them is a fault in the editor. `isExpectedSaveError()`
-holds that rule, and the publish flow reports by it too. A failed request that took
+server are not sent as errors: none of them is a fault in the editor.
+`isExpectedSaveError()` holds that rule, and the publish flow reports by it too.
+A writer who lost access or whose session expired is still sent, as a message
+carrying the save's tags. A failed request that took
 more than two seconds is sent as a second event with its timing. Every error
 the writer is shown — a failed save in the status line, a collision or a
 deleted post in its banner — is
