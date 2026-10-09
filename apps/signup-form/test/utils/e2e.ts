@@ -36,7 +36,12 @@ export async function initialize({
     });
   });
 
-  const url = `http://localhost:${E2E_PORT}/signup-form.min.js`;
+  // WebKit blocks http scripts on https pages, so serve the bundle from the page's origin
+  const url = `${new URL(sitePath).origin}/signup-form.min.js`;
+  await page.route(url, async (route) => {
+    const response = await route.fetch({ url: `http://localhost:${E2E_PORT}/signup-form.min.js` });
+    await route.fulfill({ response });
+  });
   await page.setViewportSize({ width: 1000, height: 1000 });
 
   await page.goto(sitePath);
