@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { setImmediate } from 'node:timers/promises';
 import sinon from 'sinon';
 import { describe, it, beforeEach, afterEach } from 'vitest';
 import { JobsService } from '../../../../../core/server/services/jobs-service/jobs-service';
@@ -268,7 +269,7 @@ describe('register-job-handlers', function () {
     });
 
     try {
-      await Promise.resolve();
+      await setImmediate();
       sinon.assert.calledOnceWithExactly(check);
       sinon.assert.calledOn(check, signingKeys.getInstance());
       assert.equal(completed, false);
