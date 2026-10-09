@@ -90,19 +90,9 @@ const AutomationEditorContent: React.FC<{
   const { automation, isError: isReadError } = useAutomationForEditing(automationId);
 
   const editMutation = useEditAutomation();
-  const automationRunAnalyticsEnabled = useFeatureFlag('automationRunAnalytics');
   const automationsPerTierEnabled = useFeatureFlag('automationsPerTier');
   const [validationFeedback, setValidationFeedback] =
     React.useState<AutomationValidationAction | null>(null);
-  const showValidationFeedback = (action: AutomationValidationAction) => {
-    if (automationRunAnalyticsEnabled) {
-      setValidationFeedback(action);
-      return;
-    }
-    toast.error('Automation needs a few details', {
-      description: 'Fix the highlighted steps and try again.',
-    });
-  };
   const [editState, setEditState] = React.useState<AutomationEditState>({ phase: 'idle' });
   const [selectedRunId, setSelectedRunId] = React.useState<string | null>(null);
   // Invalid text stays in the input, outside the API-ready draft, but must block saving it.
@@ -178,7 +168,6 @@ const AutomationEditorContent: React.FC<{
 
   const validateForAction = (
     automationToValidate: AutomationDetail,
-    errorState: AutomationEditState,
     action: AutomationValidationAction,
   ): boolean => {
     setValidationFeedback(null);
@@ -188,12 +177,12 @@ const AutomationEditorContent: React.FC<{
     }
     const nextActionErrors = {
       ...(action === 'publish' ? getActionErrors(automationToValidate) : {}),
-      ...(automationRunAnalyticsEnabled ? getTriggerErrors(automationToValidate) : {}),
+      ...getTriggerErrors(automationToValidate),
     };
     if (Object.keys(nextActionErrors).length > 0 || invalidWaitIds.size > 0) {
       setActionErrors(nextActionErrors);
-      setEditState(automationRunAnalyticsEnabled ? { phase: 'idle' } : errorState);
-      showValidationFeedback(action);
+      setEditState({ phase: 'idle' });
+      setValidationFeedback(action);
       return false;
     }
 
@@ -239,13 +228,7 @@ const AutomationEditorContent: React.FC<{
       }
     }
 
-    if (
-      !validateForAction(
-        draft,
-        newStatus === 'active' ? errorState : { phase: 'idle' },
-        validationAction,
-      )
-    ) {
+    if (!validateForAction(draft, validationAction)) {
       return;
     }
 
@@ -420,7 +403,7 @@ const AutomationEditorContent: React.FC<{
       throw new Error('Cannot publish an automation that has not loaded.');
     }
 
-    if (!validateForAction(draft, { phase: 'idle' }, 'publish')) {
+    if (!validateForAction(draft, 'publish')) {
       return;
     }
 
@@ -488,16 +471,12 @@ const AutomationEditorContent: React.FC<{
         saveButtonChildren={saveButtonChildren}
         saveButtonVariant={saveButtonVariant}
         validationFeedback={selectedRunId ? null : validationFeedback}
-        validationFeedbackEnabled={automationRunAnalyticsEnabled}
+        validationFeedbackEnabled
         onDismissValidationFeedback={() => setValidationFeedback(null)}
         onPublish={onPublish}
         onSave={() => save()}
         onTurnOff={() => {
-          if (
-            automationRunAnalyticsEnabled &&
-            draft &&
-            !validateForAction(draft, { phase: 'idle' }, 'unpublish')
-          ) {
+          if (draft && !validateForAction(draft, 'unpublish')) {
             return;
           }
           setValidationFeedback(null);
