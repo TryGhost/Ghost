@@ -52,6 +52,12 @@ export function getSentryConfig({
       // DOMException with its name
       /^(AbortError: )?The operation was aborted\. ?$/,
 
+      // React Router leaves a skipped view transition's promises unhandled; the
+      // navigation still lands. Chromium, WebKit and Firefox messages in turn
+      /^(AbortError: |InvalidStateError: )?Transition was (skipped|aborted because of invalid state)(\. [A-Za-z ]+)?$/,
+      /^(Skipping view transition because skipTransition\(\) was called|View transition was skipped because document visibility state is hidden)\.$/,
+      /^Skipped ViewTransition due to (skipTransition\(\) call|document being hidden)$/,
+
       // Ember-only; remove with Ember (https://github.com/emberjs/ember.js/issues/12505)
       /^TransitionAborted$/,
       // Harmless loop warnings, mostly from extensions and embedded content
