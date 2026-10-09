@@ -51,4 +51,19 @@ describe('Proxy: prepareContextResource', function () {
       '<span style="color:red"><a href="https://example.com">Caption</a></span>',
     );
   });
+
+  it('handles a resource that has already been prepared', function () {
+    const resource = {
+      feature_image_caption:
+        '<span data-foo="bar"><a href="https://example.com">Caption</a></span>',
+    };
+
+    proxy.prepareContextResource(resource);
+    proxy.prepareContextResource(resource);
+
+    assert.equal(
+      resource.feature_image_caption.toString(),
+      '<span><a href="https://example.com">Caption</a></span>',
+    );
+  });
 });

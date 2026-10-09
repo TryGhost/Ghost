@@ -32,6 +32,8 @@ import { useDebouncedCallback } from 'use-debounce';
 import { useLocation, useSearchParams } from '@tryghost/admin-x-framework';
 import { useMultipleActiveSubscriptionsCount } from './hooks/use-multiple-active-subscriptions-count';
 import { useShade } from '@tryghost/shade/app';
+import { useIdlePreload } from '@/shared/use-idle-preload';
+import { preloadMapAtlas } from './detail/map-atlas';
 
 const SEARCH_DEBOUNCE_MS = 250;
 const MEMBERS_HELP_CARDS_LIMIT = 6;
@@ -334,6 +336,9 @@ const MembersPage: React.FC<MembersPageProps> = ({
 
 const Members: React.FC = () => {
   const [searchParams] = useSearchParams();
+  // A member's page draws a map behind its header; fetching the atlas now means
+  // it is usually there before the admin opens one.
+  useIdlePreload(preloadMapAtlas, true);
   const { data: settingsData, isLoading: isSettingsLoading } = useBrowseSettings({});
   const { data: configData, isLoading: isConfigLoading } = useBrowseConfig();
   const filterParam = searchParams.get('filter') ?? undefined;

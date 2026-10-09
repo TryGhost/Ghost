@@ -1,6 +1,6 @@
 import { EmberFallback } from './ember-bridge';
 import { useFlagGatedRouteOwner } from './use-flag-gated-route-owner';
-import { Suspense, type ComponentType, type LazyExoticComponent } from 'react';
+import { Suspense, type ComponentType, type LazyExoticComponent, type ReactNode } from 'react';
 
 /**
  * Chooses which implementation serves a route while a screen migrates from
@@ -27,9 +27,12 @@ import { Suspense, type ComponentType, type LazyExoticComponent } from 'react';
 export function FlagGatedRoute({
   flag,
   component: Component,
+  fallback = null,
 }: {
   flag: string;
   component: LazyExoticComponent<ComponentType>;
+  /** Shown while the React screen's code loads. */
+  fallback?: ReactNode;
 }) {
   const owner = useFlagGatedRouteOwner(flag);
 
@@ -40,7 +43,7 @@ export function FlagGatedRoute({
     return <EmberFallback />;
   }
   return (
-    <Suspense fallback={null}>
+    <Suspense fallback={fallback}>
       <Component />
     </Suspense>
   );

@@ -51,7 +51,10 @@ module.exports = {
   prepareContextResource(data) {
     (Array.isArray(data) ? data : [data]).forEach((resource) => {
       // feature_image_caption contains HTML, making it a SafeString spares theme devs from triple-curlies
-      if (resource.feature_image_caption) {
+      if (
+        resource.feature_image_caption &&
+        !(resource.feature_image_caption instanceof SafeString)
+      ) {
         const sanitizedCaption = sanitizeHtml(resource.feature_image_caption, {
           allowedTags: ['a', 'b', 'i', 'span'],
           allowedAttributes: { '*': ['href', 'style'] },
