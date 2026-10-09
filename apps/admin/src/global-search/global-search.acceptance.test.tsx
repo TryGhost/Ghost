@@ -271,6 +271,37 @@ describe('Cmd-K search', () => {
     await expect.poll(currentRoute).toBe('/tags');
   });
 
+  it('opens a Settings section and returns to the opening route', async () => {
+    fakeSettingsScreens();
+    await renderAdminApp('/tags', { labs: { admin7settings: true } });
+    await openAndSearch('timezone');
+
+    await globalSearchScreen.option(/Timezone/).click();
+    await expect.poll(currentRoute).toBe('/settings/timezone');
+    await expect.element(settingsScreen.timezone()).toBeInViewport();
+
+    await sidebarScreen.shellNav().getByRole('button', { name: 'Back to app' }).click();
+    await expect.poll(currentRoute).toBe('/tags');
+  });
+
+  it.each([
+    ['another section', '/settings'],
+    ['the section on screen', '/settings/timezone'],
+  ])('shows %s while the Settings filter hides it', async (_description, route) => {
+    fakeSettingsScreens();
+    await renderAdminApp(route, { labs: { admin7settings: true } });
+    await settingsScreen.search().fill('design');
+    await expect.element(settingsScreen.timezone()).not.toBeVisible();
+
+    await openWithShortcut();
+    await globalSearchScreen.search('timezone');
+    await globalSearchScreen.option(/Timezone/).click();
+
+    await expect.poll(currentRoute).toBe('/settings/timezone');
+    await expect.element(settingsScreen.search()).toHaveValue('');
+    await expect.element(settingsScreen.timezone()).toBeInViewport();
+  });
+
   it('hands a post to the Ember editor', async () => {
     await renderAdminApp('/tags');
     await openAndSearch('first post');

@@ -1,4 +1,6 @@
 import { useMemo } from 'react';
+// not via @/settings/api, which the shell loads eagerly
+import { useSettingsSearchSource } from '@/settings/search-source';
 import { useBillingSearchSource } from './billing-source';
 import { useContentSearchSource } from './content-sources';
 import type { SearchSource, SearchSourceContext } from './search-source';
@@ -8,8 +10,12 @@ export function useSearchSources(context: SearchSourceContext): SearchSource[] {
   const staff = useContentSearchSource('users', context);
   const tags = useContentSearchSource('tags', context);
   const billing = useBillingSearchSource();
+  const settings = useSettingsSearchSource();
   const posts = useContentSearchSource('posts', context);
   const pages = useContentSearchSource('pages', context);
 
-  return useMemo(() => [staff, tags, billing, posts, pages], [staff, tags, billing, posts, pages]);
+  return useMemo(
+    () => [staff, tags, billing, settings, posts, pages],
+    [staff, tags, billing, settings, posts, pages],
+  );
 }

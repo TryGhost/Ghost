@@ -4,10 +4,13 @@ import { useBrowseConfig } from '@tryghost/admin-x-framework/api/config';
 import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
 import { isOwnerUser } from '@tryghost/admin-x-framework/api/users';
 import { useForceUpgrade } from '@/billing/api';
+import { SETTINGS_SEARCH_HEADING } from '@/settings/search-source';
 import { CONTENT_HEADINGS } from './content-sources';
 import type { NavigateItem, SearchSource } from './search-source';
 
 const BILLING_ROUTE_ROOT = '/pro';
+
+const BUILT_IN_HEADINGS = [...CONTENT_HEADINGS, SETTINGS_SEARCH_HEADING];
 
 function parseEach<T>(schema: z.ZodType<T>, items: unknown[]): T[] {
   return items.flatMap((item) => {
@@ -23,7 +26,7 @@ const billingSearchConfigSchema = z.object({
     .string()
     .trim()
     .min(1)
-    .refine((name) => !CONTENT_HEADINGS.includes(name)),
+    .refine((name) => !BUILT_IN_HEADINGS.includes(name)),
   items: z.array(z.unknown()),
 });
 
