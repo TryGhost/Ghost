@@ -411,10 +411,11 @@ function EditorContent({
         }
       >
         <Stack className="min-h-0 min-w-0 flex-1" gap="none">
+          {/* Below a selected Koenig card (z-20), so card settings panels float over the header. */}
           <Box
             ref={headerRef}
             className={cn(
-              'pointer-events-none relative z-20 shrink-0',
+              'pointer-events-none relative z-15 shrink-0',
               chromeEntrance && 'screen-enter-from-top',
             )}
           >
@@ -477,9 +478,11 @@ function EditorContent({
             </div>
           </Box>
         </Stack>
+        {/* Above the settings sidebar's overlay (z-30) only while it is mounted, otherwise level with the header. */}
         <Box
           className={cn(
-            'absolute top-[calc(var(--spacing)*5+1px)] right-[calc(var(--spacing)*6+1px)] z-40 max-[500px]:top-3 max-[500px]:right-3',
+            'absolute top-[calc(var(--spacing)*5+1px)] right-[calc(var(--spacing)*6+1px)] max-[500px]:top-3 max-[500px]:right-3',
+            settingsPresent ? 'z-40' : 'z-15',
             chromeEntrance && 'screen-enter-from-top',
           )}
         >

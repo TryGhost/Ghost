@@ -563,7 +563,7 @@ export function PostEditor({
       <Inline
         align="end"
         className={cn(
-          'absolute right-[calc(var(--spacing)*(4+2*var(--editor-settings-progress,0)))] bottom-3 z-20 editor-settings-motion-[right] max-[500px]:inset-x-3 max-sm:pointer-events-none max-sm:*:pointer-events-auto min-[500px]:max-sm:left-4',
+          'absolute right-[calc(var(--spacing)*(4+2*var(--editor-settings-progress,0)))] bottom-3 z-15 editor-settings-motion-[right] max-[500px]:inset-x-3 max-sm:pointer-events-none max-sm:*:pointer-events-auto min-[500px]:max-sm:left-4',
           chromeEntrance && 'screen-enter-from-bottom',
         )}
         gap="sm"

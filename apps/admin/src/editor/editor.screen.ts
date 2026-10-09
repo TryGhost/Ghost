@@ -142,6 +142,8 @@ export const editorScreen = {
   signupLabelsInput: () => page.getByTestId('labels-dropdown').getByRole('textbox'),
   signupLabelOption: (name: string) =>
     page.getByTestId('labels-dropdown').getByRole('button', { name, exact: true }),
+  /** The settings panel of the card being edited, by Koenig's own test id. */
+  cardSettingsPanel: () => page.getByTestId(editorBody).getByTestId('settings-panel'),
   secondaryInstance: () => page.getByTestId(editorSecondaryInstance),
   /** An item in Koenig's `/` card menu, by its label. */
   cardMenuItem: (label: string) => page.getByRole('menuitem', { name: label }),
