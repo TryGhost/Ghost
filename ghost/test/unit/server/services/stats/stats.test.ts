@@ -11,6 +11,7 @@ describe('StatsService', function () {
   it.each([
     { webAnalytics: false, configured: true, initialized: true },
     { webAnalytics: false, configured: false, initialized: false },
+    { webAnalytics: true, configured: false, initialized: true },
     { webAnalytics: true, configured: true, initialized: true },
   ])(
     'initializes Tinybird for the enabled analytics source: %j',
@@ -31,7 +32,7 @@ describe('StatsService', function () {
         settingsCache: { get: getSetting },
         config: { get: getConfig },
       });
-      assert.equal(init.calledOnce, initialized);
+      sinon.assert.callCount(init, initialized ? 1 : 0);
       assert.equal(Boolean(service.posts.tinybirdClient), webAnalytics);
       assert.equal(Boolean(service.content.tinybirdClient), webAnalytics);
     },
