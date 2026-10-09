@@ -6,6 +6,7 @@ import {
   isCollisionToken,
   isSettingsOnly,
   zeroMilliseconds,
+  type ConfirmOutcome,
   type LeaveDecision,
   type PersistedIdentity,
   type PendingSave,
@@ -116,6 +117,8 @@ export interface EditorSessionTransport {
     options: PostWriteOptions,
   ) => Promise<EditorRecord | undefined>;
   generateSlug: (text: string, postId: string | null) => Promise<string>;
+  /** The post as the server holds it now. */
+  read: (id: string) => Promise<EditorRecord | undefined>;
 }
 
 export interface EditorSessionOptions {
@@ -806,6 +809,32 @@ export function createEditorSession({
     }
   }
 
+  // A write landed when the server holds this session's saved copy with exactly
+  // that write over it; a copy anyone else touched stays theirs to collide with.
+  async function confirm(prepared: PreparedSave): Promise<ConfirmOutcome<EditorSaveResult>> {
+    if (prepared.isCreate) {
+      return { ok: true, result: null };
+    }
+    let post: EditorRecord | undefined;
+    try {
+      post = await transport.read(prepared.payload.id);
+    } catch (error) {
+      return { ok: false, error: toSaveError(error, saveFailureMessage) };
+    }
+    if (
+      !post ||
+      !isLaterToken(post.updated_at ?? null, identity.updatedAt) ||
+      post.status !== prepared.target.status ||
+      !tracker.holdsWrite(prepared.projection, projectionOf(post))
+    ) {
+      return { ok: true, result: null };
+    }
+    return {
+      ok: true,
+      result: { id: post.id, status: post.status, updatedAt: post.updated_at ?? '', post },
+    };
+  }
+
   function reconcile(prepared: PreparedSave, result: EditorSaveResult): void {
     // A settings save carries no title, and the slug only once the writer moved
     // it; the answer settles only what the request carried.
@@ -883,6 +912,7 @@ export function createEditorSession({
     prepare,
     execute,
     reconcile,
+    confirm,
     autosaveDebounceMs,
     onStateChange: (next) => {
       if (next.kind === 'error' || next.kind === 'conflict') {
