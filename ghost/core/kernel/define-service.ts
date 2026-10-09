@@ -5,13 +5,13 @@ export function defineService<Service>(name: string, create: () => Service | Pro
   let instance: Service | undefined;
   let initialization: Promise<void> | undefined;
 
-  async function createAndPublish(): Promise<void> {
+  async function createService(): Promise<void> {
     instance = await create();
   }
 
   return {
     init(): Promise<void> {
-      initialization ??= createAndPublish().catch((error) => {
+      initialization ??= createService().catch((error) => {
         initialization = undefined;
         throw error;
       });
