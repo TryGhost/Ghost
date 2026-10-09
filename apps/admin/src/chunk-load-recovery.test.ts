@@ -65,6 +65,12 @@ describe('reloadAfterChunkLoadError', () => {
     expect(reloadAdmin).toHaveBeenCalledTimes(2);
   });
 
+  it('reloads when the clock has moved back since the last reload', () => {
+    sessionStorage.setItem('ghost-admin-chunk-load-reload', String(Date.now() + 5 * 60 * 1000));
+
+    expect(reloadAfterChunkLoadError(chunkError(), route)).toBe(true);
+  });
+
   it('does not reload while offline', () => {
     vi.spyOn(navigator, 'onLine', 'get').mockReturnValue(false);
 

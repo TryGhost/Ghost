@@ -13,9 +13,8 @@ export function isChunkLoadError(error: unknown): boolean {
 }
 
 /**
- * Reloads the admin at the route after its code failed to load: a browser never
- * fetches a failed module again until the page reloads. Reloads at most once a
- * minute and never offline, so a failure that persists is left on screen.
+ * Reloads at the route after its code failed to load, since a browser never refetches a failed
+ * module; at most once a minute and never offline, so a failure that persists stays on screen.
  */
 export function reloadAfterChunkLoadError(
   error: unknown,
@@ -25,14 +24,16 @@ export function reloadAfterChunkLoadError(
     return false;
   }
   try {
-    if (Date.now() - Number(sessionStorage.getItem(RELOADED_AT_KEY)) < RELOAD_INTERVAL_MS) {
+    const elapsed = Date.now() - Number(sessionStorage.getItem(RELOADED_AT_KEY));
+    // A clock that moved backwards counts as a quiet minute.
+    if (elapsed >= 0 && elapsed < RELOAD_INTERVAL_MS) {
       return false;
     }
     sessionStorage.setItem(RELOADED_AT_KEY, String(Date.now()));
   } catch {
     return false;
   }
-  // After the error's commit, so an unmounted editor has dropped its unload prompt
+  // A task later, so a render error's commit has unmounted the failed screen first
   setTimeout(() => reloadAdmin(`${pathname}${search}`));
   return true;
 }

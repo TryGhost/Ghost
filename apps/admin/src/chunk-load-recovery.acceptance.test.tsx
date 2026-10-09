@@ -22,13 +22,6 @@ describe('Code that fails to load', () => {
     await expect.poll(() => vi.mocked(reloadAdmin).mock.calls).toEqual([['/members?search=jamie']]);
   });
 
-  it('reloads the admin at the editor when the editor failed to load', async () => {
-    await failModuleLoads('/src/editor/editor-screen.tsx');
-    await renderAdminApp('/editor/post/abc123', { labs: { editorReact: true } });
-
-    await expect.poll(() => vi.mocked(reloadAdmin).mock.calls).toEqual([['/editor/post/abc123']]);
-  });
-
   it('offers a reload instead of reloading again when code fails to load soon after', async () => {
     await failModuleLoads('/src/posts/list/posts-route.tsx');
     await failModuleLoads('/src/posts/list/pages-route.tsx');

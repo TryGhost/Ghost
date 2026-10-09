@@ -8,9 +8,8 @@ declare module 'vitest/browser' {
 }
 
 /**
- * Fails every browser request for the module whose path ends with `pathEnd`
- * (e.g. `/src/tags/tags.tsx`) as a dropped connection would, so its dynamic
- * import rejects. The browser keeps a failed import failed for the rest of the spec file.
+ * Fails requests for the module whose path ends with `pathEnd` (e.g. `/src/tags/tags.tsx`) as a
+ * dropped connection would. The browser keeps that import failed for the rest of the spec file.
  */
 export function failModuleLoads(pathEnd: string): Promise<void> {
   return commands.failModuleLoads(pathEnd);
