@@ -78,6 +78,15 @@ Add an acceptance test for the older-backend case. The social accounts settings
 and membership tiers tests contain current examples of hiding controls until
 their supporting settings are present.
 
+### Code that fails to load
+
+Screens, the editor and the search modal load their code when first needed. A
+browser never fetches a module again after loading it failed, so when that code
+fails to load the admin reloads at the same route. It reloads at most once a
+minute and not while the browser is offline; a screen whose code fails within
+that minute offers Reload instead. Only a failure left on screen is reported to
+Sentry.
+
 ### Automation run history
 
 With automation run analytics enabled, selecting a Performance row opens read-only

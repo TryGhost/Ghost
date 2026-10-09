@@ -13,6 +13,7 @@ import {
 } from './worker';
 import { resetDeclaredResources } from './resources';
 import { guardFrameNavigations, resetFakeFrameOrigins } from './frames';
+import { resetFailedModuleLoads } from './module-loads';
 
 // At import, before the spec module (and the app) loads.
 trackIssuedRequests();
@@ -94,7 +95,7 @@ afterEach(async () => {
       }
       window.location.hash = '';
       try {
-        await resetFakeFrameOrigins();
+        await Promise.all([resetFakeFrameOrigins(), resetFailedModuleLoads()]);
       } finally {
         verifyNoUnhandledRequests();
       }
