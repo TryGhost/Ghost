@@ -15,7 +15,7 @@ export default function EmailReceivingPage() {
   const directAccess = (pageData && pageData.direct) || false;
 
   return (
-    <div className="[&_.gh-portal-btn-back]:left-[calc(6vmin-14px)] max-sm:[&_.gh-portal-btn-back]:left-4 rtl:[&_.gh-portal-btn-back]:right-[calc(6vmin-14px)] rtl:[&_.gh-portal-btn-back]:left-auto max-sm:rtl:[&_.gh-portal-btn-back]:left-auto [&_.gh-portal-closeicon-container]:right-[calc(6vmin-20px)] max-sm:[&_.gh-portal-closeicon-container]:right-6 rtl:[&_.gh-portal-closeicon-container]:right-auto max-sm:rtl:[&_.gh-portal-closeicon-container]:right-auto">
+    <div className="[&_.gh-portal-btn-back]:left-[calc(6vmin-14px)] max-sm:[&_.gh-portal-btn-back]:left-4 rtl:[&_.gh-portal-btn-back]:right-[calc(6vmin-14px)] rtl:[&_.gh-portal-btn-back]:left-auto max-sm:rtl:[&_.gh-portal-btn-back]:left-auto ">
       <header className="relative mx-0 mt-[-2px] mb-10 flex items-center justify-center px-[60px] max-sm:mt-1">
         {!directAccess && (
           <BackButton
@@ -29,7 +29,7 @@ export default function EmailReceivingPage() {
             }}
           />
         )}
-        <CloseButton />
+        <CloseButton placement="longform" />
       </header>
 
       <div className="px-[6vmin] pt-14 pb-[6vmin] max-sm:px-7 max-sm:py-[10vmin] [&_a]:font-medium [&_a]:text-brand [&_h3]:mt-0 [&_h3]:mb-[0.25em] [&_h3]:text-[27px] [&_h3]:text-balance [&_h4]:mt-[1.85em] [&_h4]:mb-[0.4em] [&_h4]:text-[17.5px] [&_p]:mb-[1.2em] [&_p]:text-gray-900 [&_p:last-of-type]:mb-[0.2em] [&_strong]:text-gray-950">

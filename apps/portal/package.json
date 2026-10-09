@@ -46,6 +46,7 @@
     "@types/react": "catalog:react17",
     "@typescript/native": "catalog:",
     "@vitest/coverage-v8": "catalog:",
+    "clsx": "catalog:",
     "dompurify": "catalog:",
     "eslint": "catalog:",
     "eslint-plugin-tailwindcss": "catalog:",

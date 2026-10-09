@@ -1928,6 +1928,9 @@ importers:
       '@vitest/coverage-v8':
         specifier: 'catalog:'
         version: 4.1.11(@vitest/browser@4.1.11)(vitest@4.1.11)
+      clsx:
+        specifier: 'catalog:'
+        version: 2.1.1
       dompurify:
         specifier: 'catalog:'
         version: 3.4.16

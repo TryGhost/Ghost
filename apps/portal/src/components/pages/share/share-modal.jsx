@@ -95,8 +95,8 @@ const ShareModal = () => {
   };
 
   return (
-    <div className="relative [scrollbar-width:none] [&_.gh-portal-closeicon-container]:top-5 [&::-webkit-scrollbar]:hidden">
-      <CloseButton />
+    <div className="relative [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      <CloseButton placement="share" />
       <div className="mb-5">
         <h1 className="text-left text-21 leading-[1.1em] font-semibold text-pretty text-black rtl:text-right">
           {t('Share')}

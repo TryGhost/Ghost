@@ -15,8 +15,8 @@ function ErrorPage({ error }) {
   const { doAction } = useContext(AppContext);
 
   return (
-    <div className="with-footer relative [scrollbar-width:none] max-sm:group-[.feedback]/wrapper:[&_.gh-portal-closeicon-container]:hidden [&::-webkit-scrollbar]:hidden">
-      <CloseButton />
+    <div className="with-footer relative [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      <CloseButton hideOnMobile />
       <div className="mx-auto my-0 w-24 px-0 py-2.5 text-center text-red-500">
         <ThumbErrorIcon />
       </div>
@@ -71,10 +71,7 @@ const ConfirmDialog = ({ onConfirm, loading, initialScore }) => {
   };
 
   return (
-    <div
-      className="max-sm:group-[.feedback]/wrapper:[&_.gh-portal-closeicon-container]:hidden"
-      onMouseDown={stopPropagation}
-    >
+    <div onMouseDown={stopPropagation}>
       <h1 className="mx-0 mt-0 mb-[0.4rem] box-border text-center text-[24px] leading-[inherit] font-bold tracking-[-.018em] max-sm:group-[.feedback]/wrapper:text-25">
         {t('Give feedback on this post')}
       </h1>
@@ -109,7 +106,7 @@ const ConfirmDialog = ({ onConfirm, loading, initialScore }) => {
         isRunning={loading}
         tabIndex={3}
       />
-      <CloseButton close={() => close(false)} />
+      <CloseButton hideOnMobile close={() => close(false)} />
     </div>
   );
 };
@@ -133,8 +130,8 @@ const ConfirmFeedback = ({ positive }) => {
   const icon = positive ? <ThumbUpIcon /> : <ThumbDownIcon />;
 
   return (
-    <div className="relative [scrollbar-width:none] max-sm:group-[.feedback]/wrapper:[&_.gh-portal-closeicon-container]:hidden [&::-webkit-scrollbar]:hidden">
-      <CloseButton />
+    <div className="relative [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      <CloseButton hideOnMobile />
 
       <div className="mx-auto my-0 w-12 px-0 py-2.5 text-center text-brand">{icon}</div>
       <h1 className="text-center leading-[1.1em] text-pretty text-black max-sm:group-[.feedback]/wrapper:text-25">

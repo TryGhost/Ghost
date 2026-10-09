@@ -103,7 +103,8 @@ const CancelSubscriptionButton = ({ member, onCancelSubscription, action, brandC
         disabled={disabled}
         isPrimary={isPrimary}
         isDestructive={isDestructive}
-        classes="gh-portal-btn-text mb-4 mt-2"
+        isText
+        classes="mt-2 mb-4"
         brandColor={brandColor}
         label={label}
         style={{
@@ -416,7 +417,7 @@ const RetentionOfferSection = ({ subscription, offer, onAcceptOffer, onDeclineOf
         onClick={onDeclineOffer}
         isPrimary={false}
         isDestructive={true}
-        classes={'gh-portal-btn-text'}
+        isText
         brandColor={brandColor}
         label={t('No thanks, I want to cancel')}
         style={{

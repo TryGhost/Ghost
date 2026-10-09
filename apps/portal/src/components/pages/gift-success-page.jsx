@@ -92,8 +92,8 @@ const GiftSuccessPage = () => {
 
   return (
     <>
-      <div className="giftSuccess relative min-h-screen p-0 [scrollbar-width:none] [&_.gh-portal-closeicon-container]:absolute group-[.full-size]/popup:[&_.gh-portal-closeicon-container]:top-8 group-[.full-size]/popup:[&_.gh-portal-closeicon-container]:right-8 rtl:group-[.full-size]/popup:[&_.gh-portal-closeicon-container]:right-auto [&::-webkit-scrollbar]:hidden">
-        <CloseButton />
+      <div className="giftSuccess relative min-h-screen p-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <CloseButton placement="gift" />
         <div className="grid min-h-screen w-full grid-cols-[1fr_1fr] max-[881px]:min-h-0 max-[881px]:grid-cols-[1fr]">
           <div className="relative flex items-center justify-center bg-white p-12 max-[881px]:px-6 max-[881px]:pt-8 max-[881px]:pb-6">
             <div className="hidden" aria-hidden="true" />

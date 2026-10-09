@@ -42,7 +42,7 @@ import type {
 } from './gift/types';
 import { tw } from '../../utils/tw';
 
-const CONTENT_CLASSES = tw`gift relative min-h-screen p-0 [scrollbar-width:none] [&_.gh-portal-btn-site-title-back]:absolute [&_.gh-portal-btn-site-title-back]:top-8 [&_.gh-portal-btn-site-title-back]:left-8 [&_.gh-portal-btn-site-title-back]:flex [&_.gh-portal-btn-site-title-back]:h-auto [&_.gh-portal-btn-site-title-back]:border-0 [&_.gh-portal-btn-site-title-back]:border-none [&_.gh-portal-btn-site-title-back]:p-0 [&_.gh-portal-btn-site-title-back]:text-gray-950 max-[881px]:[&_.gh-portal-btn-site-title-back]:top-3 max-[881px]:[&_.gh-portal-btn-site-title-back]:left-6 max-[881px]:[&_.gh-portal-btn-site-title-back]:h-10 rtl:[&_.gh-portal-btn-site-title-back]:right-8 rtl:[&_.gh-portal-btn-site-title-back]:left-auto rtl:max-[881px]:[&_.gh-portal-btn-site-title-back]:right-6 [&_.gh-portal-closeicon-container]:absolute group-[.full-size]/popup:[&_.gh-portal-closeicon-container]:top-8 group-[.full-size]/popup:[&_.gh-portal-closeicon-container]:right-8 max-[881px]:[&_.gh-portal-closeicon-container]:flex max-[881px]:[&_.gh-portal-closeicon-container]:h-10 max-[881px]:[&_.gh-portal-closeicon-container]:items-center max-[881px]:group-[.full-size]/popup:[&_.gh-portal-closeicon-container]:top-3 max-[881px]:group-[.full-size]/popup:[&_.gh-portal-closeicon-container]:right-3 rtl:group-[.full-size]/popup:[&_.gh-portal-closeicon-container]:right-auto rtl:max-[881px]:group-[.full-size]/popup:[&_.gh-portal-closeicon-container]:left-3 [&::-webkit-scrollbar]:hidden`;
+const CONTENT_CLASSES = tw`gift relative min-h-screen p-0 [scrollbar-width:none] [&_.gh-portal-btn-site-title-back]:absolute [&_.gh-portal-btn-site-title-back]:top-8 [&_.gh-portal-btn-site-title-back]:left-8 [&_.gh-portal-btn-site-title-back]:flex [&_.gh-portal-btn-site-title-back]:h-auto [&_.gh-portal-btn-site-title-back]:border-0 [&_.gh-portal-btn-site-title-back]:border-none [&_.gh-portal-btn-site-title-back]:p-0 [&_.gh-portal-btn-site-title-back]:text-gray-950 max-[881px]:[&_.gh-portal-btn-site-title-back]:top-3 max-[881px]:[&_.gh-portal-btn-site-title-back]:left-6 max-[881px]:[&_.gh-portal-btn-site-title-back]:h-10 rtl:[&_.gh-portal-btn-site-title-back]:right-8 rtl:[&_.gh-portal-btn-site-title-back]:left-auto rtl:max-[881px]:[&_.gh-portal-btn-site-title-back]:right-6 [&::-webkit-scrollbar]:hidden`;
 const CHECKOUT_CLASSES = tw`grid min-h-screen w-full grid-cols-[1fr_1fr] max-[881px]:min-h-0 max-[881px]:grid-cols-[1fr] [&_.gh-portal-btn-primary]:rounded-[999px] [&_.gh-portal-input]:h-12 [&_.gh-portal-input-label]:mb-0 [&_.gh-portal-input-label]:text-14 [&_.gh-portal-input-label]:font-semibold [&_.gh-portal-input-label]:text-gray-900 [&_.gh-portal-input-labelcontainer]:mb-2 [&_.gh-portal-input-labelcontainer]:items-baseline`;
 const LEFT_CLASSES = tw`relative flex items-center justify-center bg-white p-12 max-[881px]:px-6 max-[881px]:pt-16 max-[881px]:pb-0`;
 const INNER_CLASSES = tw`relative z-[1] my-auto flex w-full max-w-[496px] flex-col`;
@@ -224,7 +224,7 @@ const GiftPage = () => {
   if (!activeDuration || products.length === 0) {
     return (
       <div className={CONTENT_CLASSES}>
-        <CloseButton onClick={handleClose} />
+        <CloseButton placement="giftCheckout" onClick={handleClose} />
         <div className={CHECKOUT_CLASSES}>
           <div className={LEFT_CLASSES}>
             <div aria-hidden="true" className="hidden" />
@@ -529,7 +529,7 @@ const GiftPage = () => {
 
   return (
     <div ref={contentRef} className={CONTENT_CLASSES}>
-      <CloseButton onClick={handleClose} />
+      <CloseButton placement="giftCheckout" onClick={handleClose} />
       <div className={CHECKOUT_CLASSES}>
         <div className={LEFT_CLASSES} data-step={step}>
           <div aria-hidden="true" className="hidden" />

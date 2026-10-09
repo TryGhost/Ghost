@@ -1,4 +1,5 @@
 import LoaderIcon from '../../images/icons/loader.svg?react';
+import clsx from 'clsx';
 import { isCookiesDisabled } from '../../utils/helpers';
 import { tw } from '../../utils/tw';
 
@@ -31,6 +32,7 @@ function ActionButton({
   isRunning,
   isPrimary = true,
   isDestructive = false,
+  isText = false,
   classes = '',
   style = {},
   tabIndex = undefined,
@@ -38,36 +40,22 @@ function ActionButton({
 }) {
   const Style = Styles({ disabled, retry, brandColor, style, isPrimary });
 
-  const isText = classes.split(' ').includes('gh-portal-btn-text');
-
-  let className = 'gh-portal-btn';
-  if (isPrimary) {
-    className += ' gh-portal-btn-main gh-portal-btn-primary';
-  }
-  if (isDestructive) {
-    className += ' gh-portal-btn-destructive';
-  }
-  if (classes) {
-    className += ' ' + classes;
-  }
-
-  className += tw` relative flex min-w-[80px] cursor-pointer items-center justify-center rounded-md bg-white text-center text-15 leading-[1em] font-medium tracking-[0.2px] whitespace-nowrap no-underline outline-none select-none transition-control disabled:cursor-auto disabled:opacity-50!`;
-  className += isText ? ' h-auto p-0' : tw` h-11 px-[1.8rem] py-0`;
-  if (isPrimary) {
-    className +=
-      ' border-none text-white hover:opacity-[0.92]! focus:opacity-[0.92]! disabled:hover:opacity-[0.92]! disabled:focus:opacity-[0.92]! max-[1441px]:h-[42px]';
-  } else {
-    className += isText
-      ? ' border-none text-black'
-      : tw` border border-solid border-gray-200 text-black hover:border-gray-300`;
-    if (!isDestructive && !classes) {
-      // Only a plain button (no modifier classes) shrinks at 1440px
-      className += ' max-[1441px]:h-[42px]';
-    }
-  }
-  if (isDestructive) {
-    className += ' enabled:hover:border-red enabled:hover:text-red';
-  }
+  const className = clsx(
+    'gh-portal-btn',
+    isPrimary && 'gh-portal-btn-primary',
+    classes,
+    'relative flex min-w-[80px] cursor-pointer items-center justify-center rounded-md bg-white text-center text-15 leading-[1em] font-medium tracking-[0.2px] whitespace-nowrap no-underline outline-none select-none transition-control disabled:cursor-auto disabled:opacity-50!',
+    isText ? 'h-auto p-0' : 'h-11 px-[1.8rem] py-0',
+    isPrimary &&
+      'border-none text-white hover:opacity-[0.92]! focus:opacity-[0.92]! disabled:hover:opacity-[0.92]! disabled:focus:opacity-[0.92]! max-[1441px]:h-[42px]',
+    !isPrimary &&
+      (isText
+        ? 'border-none text-black'
+        : 'border border-solid border-gray-200 text-black hover:border-gray-300'),
+    // Only a plain secondary button (no extra classes) shrinks at 1440px
+    !isPrimary && !isDestructive && !isText && !classes && 'max-[1441px]:h-[42px]',
+    isDestructive && 'enabled:hover:border-red enabled:hover:text-red',
+  );
   if (isCookiesDisabled()) {
     disabled = true;
   }
