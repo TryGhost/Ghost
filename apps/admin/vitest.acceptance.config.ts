@@ -4,6 +4,7 @@ import { defineConfig } from 'vitest/config';
 import type { BrowserCommand, BrowserCommandContext } from 'vitest/node';
 import { playwright } from '@vitest/browser-playwright';
 import type { PluginOption } from 'vite';
+import basicSsl from '@vitejs/plugin-basic-ssl';
 import react from '@vitejs/plugin-react';
 import svgr from 'vite-plugin-svgr';
 import tailwindcss from '@tailwindcss/vite';
@@ -71,7 +72,15 @@ const resetFakeFrameOrigins: BrowserCommand<[]> = async ({ page }) => {
 };
 
 export default defineConfig({
-  plugins: [tailwindcss() as PluginOption, svgr(), react()],
+  plugins: [
+    tailwindcss() as PluginOption,
+    svgr(),
+    react(),
+    // HTTPS makes Vite serve HTTP/2. Each spec file loads ~850 modules into a
+    // fresh iframe, and over HTTP/1.1 Chromium's six connections per host
+    // queued each request ~500ms behind the others.
+    basicSsl(),
+  ],
   server: {
     // Vitest owns console reporting; Vite forwarding bypasses silent below.
     forwardConsole: false,
@@ -115,7 +124,9 @@ export default defineConfig({
     browser: {
       enabled: true,
       headless: true,
-      provider: playwright(),
+      // The certificate is self-signed. MSW's service worker won't register
+      // over a certificate error unless Chromium ignores them at launch.
+      provider: playwright({ launchOptions: { args: ['--ignore-certificate-errors'] } }),
       commands: { fakeFrameOrigin, guardFrameNavigations, resetFakeFrameOrigins },
       instances: [{ browser: 'chromium' }],
       // Failure screenshots land in __screenshots__/ (gitignored).

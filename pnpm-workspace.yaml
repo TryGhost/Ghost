@@ -121,6 +121,7 @@ catalog:
   '@typescript-eslint/parser': 8.71.0
   '@uiw/codemirror-extensions-basic-setup': 4.25.12
   '@uiw/react-codemirror': 4.25.12
+  '@vitejs/plugin-basic-ssl': 2.3.0
   '@vitejs/plugin-react': 6.0.3
   '@vitest/browser-playwright': 4.1.11
   '@vitest/coverage-v8': 4.1.11
