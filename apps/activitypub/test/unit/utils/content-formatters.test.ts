@@ -5,6 +5,8 @@ import { describe, expect, it } from 'vitest';
 
 import {
   enforceVideoCardInlinePlayback,
+  formatArticle,
+  openLinksInNewTab,
   sanitizeArticleContent,
   sanitizeHtml,
   stripHtml,
@@ -81,6 +83,58 @@ describe('Content Formatters', function () {
       '<h3>Heading</h3><strong>Paragraph</strong>',
     ])('preserves text after a heading without leaking markup: %s', (html) => {
       expect(stripHtml(html)).toBe('Heading Paragraph');
+    });
+  });
+
+  describe('openLinksInNewTab', function () {
+    it('opens links in a new tab and drops unsafe hrefs', function () {
+      const div = renderHtml(
+        openLinksInNewTab('<a href="https://example.com">a</a><a href="javascript:alert(1)">b</a>'),
+      );
+      const [safe, unsafe] = Array.from(div.querySelectorAll('a'));
+
+      expect(safe.getAttribute('href')).toBe('https://example.com');
+      expect(safe.getAttribute('target')).toBe('_blank');
+      expect(safe.getAttribute('rel')).toBe('noopener noreferrer');
+      expect(unsafe.hasAttribute('href')).toBe(false);
+    });
+
+    it('does not parse content into the live document', function () {
+      const createElement = document.createElement.bind(document);
+      const created: string[] = [];
+      document.createElement = ((tagName: string) => {
+        created.push(tagName);
+        return createElement(tagName);
+      }) as typeof document.createElement;
+
+      try {
+        openLinksInNewTab('<img src="x"><a href="https://example.com">a</a>');
+      } finally {
+        document.createElement = createElement;
+      }
+
+      expect(created).toEqual(['template']);
+    });
+
+    it('keeps a leading script tag in place', function () {
+      expect(
+        openLinksInNewTab(
+          '<script src="https://platform.twitter.com/widgets.js"></script><p>Hi</p>',
+        ),
+      ).toBe('<script src="https://platform.twitter.com/widgets.js"></script><p>Hi</p>');
+    });
+  });
+
+  describe('formatArticle', function () {
+    it('wraps media cards in a link to the post', function () {
+      const div = renderHtml(
+        formatArticle('<div class="kg-audio-card">audio</div>', 'https://example.com/post/'),
+      );
+      const wrapper = div.querySelector('a');
+
+      expect(wrapper?.getAttribute('href')).toBe('https://example.com/post/');
+      expect(wrapper?.getAttribute('target')).toBe('_blank');
+      expect(wrapper?.querySelector('.kg-audio-card')).not.toBeNull();
     });
   });
 
