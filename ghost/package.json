@@ -226,7 +226,7 @@
     "moment-timezone": "catalog:",
     "mppx": "catalog:",
     "multer": "2.4.0",
-    "mysql2": "3.24.4",
+    "mysql2": "3.24.5",
     "nconf": "0.13.0",
     "node-html-markdown": "catalog:",
     "nodemailer": "10.0.10",
