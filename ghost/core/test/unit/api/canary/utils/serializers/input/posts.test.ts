@@ -379,8 +379,7 @@ describe('Unit: endpoints/utils/serializers/input/posts', function () {
         assert.deepEqual(
           parsedSelectRaw,
           columns.filter(
-            (column) =>
-              !['mobiledoc', 'lexical', '@@UNIQUE_CONSTRAINTS@@', '@@INDEXES@@'].includes(column),
+            (column) => !column.startsWith('@@') && !['mobiledoc', 'lexical'].includes(column),
           ),
         );
       });

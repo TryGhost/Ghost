@@ -845,4 +845,122 @@ describe('Create Stripe Checkout Session', function () {
       assert.equal((await startCheckout()).branding_settings, undefined);
     });
   });
+
+  describe('Shipping address collection', function () {
+    let paidTierId;
+
+    beforeEach(async function () {
+      mockManager.mockStripe();
+      mockManager.mockLabsEnabled('stripeCheckoutCollection');
+      mockManager.mockLabsEnabled('membersCustomFields');
+      for (const field of [
+        { name: 'Delivery address', type: 'address' },
+        { name: 'Recipient name', type: 'short_text' },
+      ]) {
+        await adminAgent
+          .post('/members/metafields/custom/')
+          .body({ members_metafields: [field] })
+          .expectStatus(201);
+      }
+      const {
+        body: { tiers },
+      } = await adminAgent.get('/tiers/');
+      paidTierId = tiers.find((tier) => tier.type === 'paid').id;
+    });
+
+    afterEach(async function () {
+      await models.Base.knex('stripe_checkout_config_tiers').del();
+      await models.Base.knex('stripe_checkout_config').del();
+      await models.Base.knex('members_metafield_bindings').del();
+      await models.Base.knex('members_metafields').del();
+    });
+
+    async function setShipping(shipping) {
+      await adminAgent
+        .put('/stripe/checkout/config/')
+        .body({ checkout_config: [{ shipping }] })
+        .expectStatus(200);
+    }
+
+    const collect = (over = {}) => ({
+      collect: true,
+      address: { custom_field_key: 'delivery_address' },
+      name: { custom_field_key: 'recipient_name' },
+      ...over,
+    });
+
+    // Starts a checkout for the paid tier and returns the session Ghost sent to Stripe.
+    async function startCheckout() {
+      await membersAgent
+        .post('/api/create-stripe-checkout-session/')
+        .body({ tierId: paidTierId, cadence: 'month' })
+        .expectStatus(200);
+
+      return stripeMocker.checkoutSessions.at(-1);
+    }
+
+    it('asks for an address in the named countries, and only once shipping is on', async function () {
+      assert.equal((await startCheckout()).shipping_address_collection, undefined);
+
+      await setShipping(collect({ allowed_countries: ['GB', 'IE'] }));
+      assert.deepEqual((await startCheckout()).shipping_address_collection, {
+        allowed_countries: ['GB', 'IE'],
+      });
+
+      await setShipping({ collect: false });
+      assert.equal((await startCheckout()).shipping_address_collection, undefined);
+    });
+
+    it('offers every country Stripe ships to when none are named', async function () {
+      await setShipping(collect());
+
+      // The Stripe mock decodes a list this long as an object keyed by position.
+      const countries = Object.values(
+        (await startCheckout()).shipping_address_collection.allowed_countries,
+      );
+      assert.ok(countries.includes('GB'));
+      assert.ok(countries.includes('US'));
+      assert.ok(countries.length > 200);
+    });
+
+    it('asks nothing on a tier shipping is not limited to', async function () {
+      const otherTierId = 'ffffffffffffffffffffffff';
+      const [existing] = await models.Base.knex('products').where('id', paidTierId);
+      await models.Base.knex('products').insert({
+        ...existing,
+        id: otherTierId,
+        name: 'Other tier',
+        slug: 'other-tier',
+      });
+      try {
+        await setShipping(collect({ tier_ids: [otherTierId] }));
+        assert.equal((await startCheckout()).shipping_address_collection, undefined);
+      } finally {
+        await models.Base.knex('stripe_checkout_config_tiers').del();
+        await models.Base.knex('products').where('id', otherTierId).del();
+      }
+    });
+
+    it('keeps asking while only the name field is archived, and stops once the address field is', async function () {
+      await setShipping(collect());
+      const archive = (key) =>
+        adminAgent
+          .put(`/members/metafields/custom/${key}/`)
+          .body({ members_metafields: [{ status: 'archived' }] })
+          .expectStatus(200);
+
+      await archive('recipient_name');
+      assert.ok((await startCheckout()).shipping_address_collection);
+
+      await archive('delivery_address');
+      assert.equal((await startCheckout()).shipping_address_collection, undefined);
+    });
+
+    it('asks nothing while its flag is off, even when shipping is on', async function () {
+      await setShipping(collect());
+      mockManager.mockLabsDisabled('stripeCheckoutCollection');
+
+      assert.equal((await startCheckout()).shipping_address_collection, undefined);
+    });
+  });
 });

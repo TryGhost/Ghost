@@ -1,12 +1,11 @@
 import Component from '@glimmer/component';
-import EmailFailedError from 'ghost-admin/errors/email-failed-error';
-import {CONFIRM_EMAIL_MAX_POLL_LENGTH, CONFIRM_EMAIL_POLL_LENGTH} from '../../publish-management';
 import {htmlSafe} from '@ember/template';
 import {inject} from 'ghost-admin/decorators/inject';
 import {isServerUnreachableError} from 'ghost-admin/services/ajax';
 import {inject as service} from '@ember/service';
-import {task, timeout} from 'ember-concurrency';
+import {task} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
+import {waitForEmailHandOff} from '../../publish-management';
 
 function isString(str) {
     return toString.call(str) === '[object String]';
@@ -14,7 +13,6 @@ function isString(str) {
 
 export default class PublishFlowCompleteWithEmailError extends Component {
     @tracked canRetry = false;
-    @tracked newEmailErrorMessage;
     @tracked retryErrorMessage;
     @tracked retryEligibilityErrorMessage;
     @inject config;
@@ -41,72 +39,44 @@ export default class PublishFlowCompleteWithEmailError extends Component {
         }
     }
 
-    get emailErrorMessage() {
-        return this.newEmailErrorMessage || this.args.emailErrorMessage;
-    }
-
     get isPartialError() {
         // For now we look at the error message.
         // This is covered in E2E tests so we'll be notified when this changes.
-        return this.emailErrorMessage && this.emailErrorMessage.includes('partially');
+        return this.args.emailErrorMessage?.includes('partially');
     }
 
+    // Like a publish, the retried send is handed to post analytics rather than awaited
     @task({drop: true})
     *retryEmailTask() {
         if (!this.canRetry) {
             return;
         }
         this.retryErrorMessage = null;
+        const startedAt = Date.now();
 
         try {
-            let email = yield this.args.publishOptions.post.email.retry();
-
-            let pollTimeout = 0;
-            if (email && email.status !== 'submitted') {
-                while (pollTimeout < CONFIRM_EMAIL_MAX_POLL_LENGTH) {
-                    yield timeout(CONFIRM_EMAIL_POLL_LENGTH);
-                    pollTimeout += CONFIRM_EMAIL_POLL_LENGTH;
-
-                    email = yield email.reload();
-
-                    if (email.status === 'submitted') {
-                        break;
-                    }
-                    if (email.status === 'failed') {
-                        throw new EmailFailedError(email.error);
-                    }
-                }
-            }
-
-            this.args.setCompleted();
-
-            return email;
+            yield this.args.publishOptions.post.email.retry();
         } catch (e) {
-            // update "failed" state if email fails again
-            if (e && e.name === 'EmailFailedError') {
-                this.newEmailErrorMessage = e.message;
-                yield this.fetchRetryEligibilityTask.perform();
-                return false;
+            let errorMessage = '';
+
+            if (isServerUnreachableError(e)) {
+                errorMessage = 'Unable to connect, please check your internet connection and try again.';
+            } else if (e && isString(e)) {
+                errorMessage = e;
+            } else if (e?.payload?.errors?.[0].message) {
+                errorMessage = e.payload.errors[0].message;
+            } else {
+                errorMessage = 'Unknown Error occurred when attempting to resend';
             }
 
-            if (e) {
-                let errorMessage = '';
-
-                if (isServerUnreachableError(e)) {
-                    errorMessage = 'Unable to connect, please check your internet connection and try again.';
-                } else if (e && isString(e)) {
-                    errorMessage = e;
-                } else if (e?.payload?.errors?.[0].message) {
-                    errorMessage = e.payload.errors[0].message;
-                } else {
-                    errorMessage = 'Unknown Error occurred when attempting to resend';
-                }
-
-                this.retryErrorMessage = htmlSafe(errorMessage);
-                // A rejected retry means the eligibility on screen is stale.
-                yield this.fetchRetryEligibilityTask.perform();
-                return false;
-            }
+            this.retryErrorMessage = htmlSafe(errorMessage);
+            // A rejected retry means the eligibility on screen is stale.
+            yield this.fetchRetryEligibilityTask.perform();
+            return false;
         }
+
+        yield* waitForEmailHandOff(startedAt);
+        this.args.setCompleted();
+        return true;
     }
 }

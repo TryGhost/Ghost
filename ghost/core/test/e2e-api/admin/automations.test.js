@@ -1211,7 +1211,7 @@ describe('Automations API', function () {
         .expectStatus(422);
       assert.match(
         body.errors[0].context,
-        /Status-only automation edits can only set status to inactive/,
+        /Status-only automation edits can only set status to inactive or archived/,
       );
       const { body: afterBody } = await agent.get(`automations/${id}`).expectStatus(200);
       assert.deepEqual(afterBody, beforeBody);

@@ -5,7 +5,6 @@ import {
   publishAlreadySent,
   publishBackToSettings,
   publishConfirm,
-  publishCompleteNote,
   publishConfirmError,
   publishContinue,
   publishEmailSizeWarning,
@@ -21,6 +20,7 @@ import {
   publishRecipientSegments,
   publishRecipientSpecific,
   publishRetryEmail,
+  publishRetryError,
   publishRevertToDraft,
   publishScheduleDate,
   publishScheduleTime,
@@ -48,7 +48,6 @@ export const publishScreen = {
   options: () => page.getByTestId(publishFlowOptions),
   confirm: () => page.getByTestId(publishFlowConfirm),
   complete: () => page.getByTestId(publishFlowComplete),
-  completeNote: () => page.getByTestId(publishCompleteNote),
   emailError: () => page.getByTestId(publishEmailErrorStep),
   /** The collapsed row's toggle button. */
   setting: (name: keyof typeof SETTINGS) => page.getByTestId(SETTINGS[name]).getByRole('button'),
@@ -73,6 +72,11 @@ export const publishScreen = {
   emailSizeWarning: () => page.getByTestId(publishEmailSizeWarning),
   alreadySent: () => page.getByTestId(publishAlreadySent),
   retryEmailButton: () => page.getByTestId(publishRetryEmail),
+  retryError: () => page.getByTestId(publishRetryError),
+  checkRetryAvailability: () =>
+    page
+      .getByTestId(publishEmailErrorStep)
+      .getByRole('button', { name: 'Check retry availability', exact: true }),
   revertToDraft: () => page.getByTestId(publishRevertToDraft),
   tkReminder: () => page.getByTestId(tkReminderDialog),
   publicPreviewWarning: () => page.getByTestId(publicPreviewWarningDialog),

@@ -100,7 +100,6 @@ export default class FeatureService extends Service {
     @feature('csvContentImporter') csvContentImporter;
     @feature('membersCustomFields') membersCustomFields;
     @feature('editorReact') editorReact;
-    @feature('improveSendingUI') improveSendingUI;
     @feature('billingReact') billingReact;
 
     _user = null;

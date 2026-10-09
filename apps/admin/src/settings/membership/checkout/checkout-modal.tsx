@@ -2,6 +2,16 @@ import CheckoutPreview from './checkout-preview';
 import ColorPickerField from '@/settings/components/color-picker-field';
 import IconToggleGroup from '@/settings/components/icon-toggle-group';
 import React, { useEffect, useState } from 'react';
+import ShippingSettings from './shipping-settings';
+import {
+  SHIPPING_ERRORS,
+  type ShippingFormState,
+  shippingAudience,
+  previewShippingOf,
+  shippingFormStateOf,
+  shippingSettingOf,
+  validateShipping,
+} from './shipping-form';
 import {
   Field,
   FieldContent,
@@ -15,6 +25,10 @@ import {
   SelectTrigger,
   SelectValue,
   Switch,
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
 } from '@tryghost/shade/components';
 import { Inline } from '@tryghost/shade/primitives';
 import { LucideIcon } from '@tryghost/shade/utils';
@@ -22,8 +36,10 @@ import { PreviewModalContent } from '@/settings/components/preview-modal';
 import { STRIPE_FONTS_CSS, STRIPE_FONT_OPTIONS, fontFamilyOf } from './stripe-fonts';
 import {
   type StripeCheckoutBranding,
+  type StripeCheckoutConfig,
   type StripeCheckoutDesign,
   type StripeCheckoutDesignSetting,
+  type StripeCheckoutPreviewShipping,
   useCreateStripeCheckoutPreview,
   useEditStripeCheckoutConfig,
   useReadStripeCheckoutBranding,
@@ -36,6 +52,7 @@ import {
 } from '@tryghost/admin-x-framework/api/tiers';
 import { checkStripeEnabled, getSettingValues } from '@tryghost/admin-x-framework/api/settings';
 import { useBrowseCustomThemeSettings } from '@tryghost/admin-x-framework/api/custom-theme-settings';
+import { useBrowseMemberCustomFieldsIncludingArchived } from '@tryghost/admin-x-framework/api/member-custom-fields';
 import { useFeatureFlag, useForm, useHandleError } from '@tryghost/admin-x-framework/hooks';
 import { useGlobalData } from '@/settings/providers/global-data-context';
 import { toast } from 'sonner';
@@ -73,6 +90,8 @@ const formStateOf = (
 const designSettingOf = ({ customize, design }: DesignFormState): StripeCheckoutDesignSetting =>
   customize ? { customize: true, ...design } : { customize: false };
 
+type CheckoutFormState = DesignFormState & { shipping: ShippingFormState };
+
 type SketchBranding = Omit<StripeCheckoutBranding, 'design'> & { design: StripeCheckoutDesign };
 
 /**
@@ -101,10 +120,13 @@ function useStripeBranding(): { branding: SketchBranding; loading: boolean } {
 
 /**
  * "Preview in Stripe": one item per active paid tier, each opening a real Stripe Checkout page
- * for that tier in the design being edited, saved or not. Undefined while there is nothing to
- * preview: Stripe isn't connected, or there are no paid tiers.
+ * for that tier in the design and shipping being edited, saved or not. Undefined while there is
+ * nothing to preview: Stripe isn't connected, or there are no paid tiers.
  */
-function useStripePreviewMenu(design: StripeCheckoutDesignSetting) {
+function useStripePreviewMenu(
+  design: StripeCheckoutDesignSetting,
+  shipping: StripeCheckoutPreviewShipping | undefined,
+) {
   const { settings, config } = useGlobalData();
   const { data: { tiers = [] } = {} } = useBrowseTiers();
   const handleError = useHandleError();
@@ -136,6 +158,7 @@ function useStripePreviewMenu(design: StripeCheckoutDesignSetting) {
         tier_id: tier.id,
         cadence: tier.monthly_price ? 'month' : 'year',
         design,
+        ...(shipping ? { shipping } : {}),
       });
       const url = response.checkout_preview[0]?.url;
       if (!url) {
@@ -312,21 +335,83 @@ const modalProps = {
 } as const;
 
 const CheckoutEditor: React.FC<{
-  setting: StripeCheckoutDesignSetting;
+  config: StripeCheckoutConfig;
   branding: SketchBranding;
   onClose: () => void;
-}> = ({ setting, branding, onClose }) => {
+}> = ({ config, branding, onClose }) => {
   const handleError = useHandleError();
   const { mutateAsync: editConfig } = useEditStripeCheckoutConfig();
-  const { formState, saveState, updateForm, handleSave, okProps } = useForm<DesignFormState>({
-    initialState: formStateOf(setting, branding.design),
-    savingDelay: 500,
-    onSave: async (state) => {
-      await editConfig({ design: designSettingOf(state) });
-    },
-    onSaveError: handleError,
+  // Only offered while its flag is on and Ghost says what is saved for it, which an older
+  // Ghost doesn't.
+  const offersShipping =
+    useFeatureFlag('stripeCheckoutCollection') && config.shipping !== undefined;
+  const { data: { tiers = [] } = {} } = useBrowseTiers();
+  const { data: customFields = [] } = useBrowseMemberCustomFieldsIncludingArchived({
+    enabled: offersShipping,
   });
-  const previewMenu = useStripePreviewMenu(designSettingOf(formState));
+  const [tab, setTab] = useState<'design' | 'fields'>('design');
+  const { formState, saveState, updateForm, handleSave, okProps, errors, clearError } =
+    useForm<CheckoutFormState>({
+      initialState: {
+        ...formStateOf(config.design, branding.design),
+        shipping: shippingFormStateOf(config.shipping),
+      },
+      savingDelay: 500,
+      onValidate: (state) => (offersShipping ? validateShipping(state.shipping) : {}),
+      onSave: async (state) => {
+        await editConfig({
+          design: designSettingOf(state),
+          ...(offersShipping ? { shipping: shippingSettingOf(state.shipping) } : {}),
+        });
+      },
+      onSaveError: handleError,
+    });
+  const previewMenu = useStripePreviewMenu(
+    designSettingOf(formState),
+    offersShipping ? previewShippingOf(formState.shipping) : undefined,
+  );
+  // Cheapest first, like the Preview in Stripe menu.
+  const paidTiers = tiers
+    .filter((tier) => tier.type === 'paid')
+    .sort((a, b) => (a.monthly_price ?? 0) - (b.monthly_price ?? 0));
+
+  const designSettings = (
+    <DesignSettings
+      state={formState}
+      onChange={(next) => updateForm((state) => ({ ...state, ...next }))}
+    />
+  );
+  const sidebar = offersShipping ? (
+    <div className="pt-4">
+      <Tabs
+        value={tab}
+        variant="underline"
+        onValueChange={(next) => setTab(next === 'fields' ? 'fields' : 'design')}
+      >
+        <TabsList>
+          <TabsTrigger value="design">Design</TabsTrigger>
+          <TabsTrigger value="fields">Fields</TabsTrigger>
+        </TabsList>
+        <TabsContent className="mt-8" value="design">
+          {designSettings}
+        </TabsContent>
+        <TabsContent className="mt-8" value="fields">
+          <ShippingSettings
+            errors={errors}
+            fields={customFields}
+            state={formState.shipping}
+            tiers={paidTiers}
+            onChange={(shipping) => {
+              SHIPPING_ERRORS.forEach(clearError);
+              updateForm((state) => ({ ...state, shipping }));
+            }}
+          />
+        </TabsContent>
+      </Tabs>
+    </div>
+  ) : (
+    designSettings
+  );
 
   return (
     <PreviewModalContent
@@ -339,14 +424,23 @@ const CheckoutEditor: React.FC<{
         <CheckoutPreview
           design={formState.customize ? formState.design : branding.design}
           displayName={branding.display_name}
+          shipping={
+            offersShipping && formState.shipping.collect
+              ? { audience: shippingAudience(formState.shipping, paidTiers) }
+              : undefined
+          }
         />
       }
-      sidebar={<DesignSettings state={formState} onChange={(next) => updateForm(() => next)} />}
+      sidebar={sidebar}
       siteLinkMenu={previewMenu}
       onClose={onClose}
       onOk={async () => {
         try {
-          await handleSave({ fakeWhenUnchanged: true });
+          const saved = await handleSave({ fakeWhenUnchanged: true });
+          if (!saved) {
+            // Only the Fields tab can be incomplete, so show it.
+            setTab('fields');
+          }
         } catch {
           // Already shown by onSaveError; handleSave re-throws after it.
         }
@@ -359,10 +453,10 @@ const CheckoutModal: React.FC = () => {
   const { updateRoute } = useSettingsNavigation();
   const { data, isError } = useReadStripeCheckoutConfig();
   const { branding, loading } = useStripeBranding();
-  const setting = data?.checkout_config[0]?.design;
+  const config = data?.checkout_config[0];
   const close = () => updateRoute('tiers');
 
-  if (!setting || loading) {
+  if (!config || loading) {
     return (
       <PreviewModalContent
         {...modalProps}
@@ -385,7 +479,7 @@ const CheckoutModal: React.FC = () => {
     );
   }
 
-  return <CheckoutEditor branding={branding} setting={setting} onClose={close} />;
+  return <CheckoutEditor branding={branding} config={config} onClose={close} />;
 };
 
 // The route stays registered, but with the stripeCheckoutDesign flag off it goes straight

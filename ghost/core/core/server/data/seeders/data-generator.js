@@ -9,6 +9,7 @@ const crypto = require('crypto');
 const { Buffer } = require('node:buffer');
 const DatabaseInfo = require('@tryghost/database-info');
 const errors = require('@tryghost/errors');
+const { foreignKeysOf } = require('../schema/lib/foreign-keys');
 const importers = require('./importers').reduce((acc, val) => {
   acc[val.table] = val;
   return acc;
@@ -55,23 +56,23 @@ class DataGenerator {
     for (const table of this.tableList) {
       table.importer = importers[table.name];
 
-      table.dependencies = Object.entries(this.schemaTables[table.name]).reduce((acc, [, data]) => {
-        if (data.references) {
-          const referencedTable = data.references.split('.')[0];
-          // Some nullable relationships point to tables the generator does not populate.
-          // Generated redirects belong to posts, so automation revisions are not a seed dependency.
-          const isUnsupportedOptionalDependency =
-            referencedTable === 'subscriptions' ||
-            (referencedTable === 'automation_action_revisions' && data.nullable) ||
-            (table.name === 'automation_action_revisions' &&
-              referencedTable === 'email_design_settings' &&
-              data.nullable);
-          if (!acc.includes(referencedTable) && !isUnsupportedOptionalDependency) {
-            acc.push(referencedTable);
-          }
+      const tableSpec = this.schemaTables[table.name];
+      table.dependencies = [...table.importer.dependencies];
+      for (const foreignKey of foreignKeysOf(table.name, tableSpec)) {
+        const referencedTable = foreignKey.references.table;
+        const nullable = foreignKey.columns.every((column) => tableSpec[column].nullable);
+        // Some nullable relationships point to tables the generator does not populate.
+        // Generated redirects belong to posts, so automation revisions are not a seed dependency.
+        const isUnsupportedOptionalDependency =
+          referencedTable === 'subscriptions' ||
+          (referencedTable === 'automation_action_revisions' && nullable) ||
+          (table.name === 'automation_action_revisions' &&
+            referencedTable === 'email_design_settings' &&
+            nullable);
+        if (!table.dependencies.includes(referencedTable) && !isUnsupportedOptionalDependency) {
+          table.dependencies.push(referencedTable);
         }
-        return acc;
-      }, table.importer.dependencies);
+      }
 
       for (const dependency of table.dependencies) {
         if (!this.tableList.find((t) => t.name === dependency)) {

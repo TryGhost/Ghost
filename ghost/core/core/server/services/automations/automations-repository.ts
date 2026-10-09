@@ -57,7 +57,7 @@ export type AutomationEdge = {
   target_action_id: string;
 };
 
-export type AutomationStatus = 'inactive' | 'active';
+export type AutomationStatus = 'inactive' | 'active' | 'archived';
 
 export type AutomationSummary = {
   id: string;

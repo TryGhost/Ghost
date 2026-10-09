@@ -148,28 +148,36 @@ describe('automations API', function () {
       expect(repositoryAdd).not.toHaveBeenCalled();
     });
 
-    it('allows empty email drafts when inactive', async function () {
-      const payload = {
-        ...valid,
-        status: 'inactive',
-        actions: [buildSendEmailAction({ email_subject: '', email_lexical: EMPTY_EMAIL_LEXICAL })],
-        edges: [],
-      };
-      await automationsApi.add(payload);
-      expect(repositoryAdd).toHaveBeenCalledExactlyOnceWith(payload);
-      expect(repositoryEdit).not.toHaveBeenCalled();
-    });
+    it.each(['inactive', 'archived'] as const)(
+      'allows empty email drafts when %s',
+      async function (status) {
+        const payload = {
+          ...valid,
+          status,
+          actions: [
+            buildSendEmailAction({ email_subject: '', email_lexical: EMPTY_EMAIL_LEXICAL }),
+          ],
+          edges: [],
+        };
+        await automationsApi.add(payload);
+        expect(repositoryAdd).toHaveBeenCalledExactlyOnceWith(payload);
+        expect(repositoryEdit).not.toHaveBeenCalled();
+      },
+    );
   });
 
   describe('edit', function () {
     const automationId = ObjectId().toHexString();
 
-    it('allows disabling an automation without submitting its graph', async function () {
-      const saved = { id: automationId, status: 'inactive' };
-      repositoryEdit.mockResolvedValue(saved);
-      assert.strictEqual(await automationsApi.edit(automationId, { status: 'inactive' }), saved);
-      assert.deepEqual(repositoryEdit.mock.calls[0], [automationId, { status: 'inactive' }]);
-    });
+    it.each(['inactive', 'archived'] as const)(
+      'allows status-only edits to %s',
+      async function (status) {
+        const saved = { id: automationId, status };
+        repositoryEdit.mockResolvedValue(saved);
+        assert.strictEqual(await automationsApi.edit(automationId, { status }), saved);
+        assert.deepEqual(repositoryEdit.mock.calls[0], [automationId, { status }]);
+      },
+    );
 
     it.each([
       ['actions', { actions: [buildWaitAction()] }, /edges:/],
@@ -206,13 +214,25 @@ describe('automations API', function () {
       await assert.rejects(automationsApi.edit(automationId, { status: 'active' }), {
         errorType: 'ValidationError',
         property: 'status',
-        message: 'Status-only automation edits can only set status to inactive.',
+        message: 'Status-only automation edits can only set status to inactive or archived.',
       });
       expect(repositoryEdit).not.toHaveBeenCalled();
     });
 
     it('allows activation when the full graph is submitted', async function () {
       const payload = { status: 'active', actions: [buildSendEmailAction()], edges: [] };
+      const saved = { id: automationId, ...payload };
+      repositoryEdit.mockResolvedValue(saved);
+      assert.strictEqual(await automationsApi.edit(automationId, payload), saved);
+      expect(repositoryEdit).toHaveBeenCalledExactlyOnceWith(automationId, payload);
+    });
+
+    it('allows a full-graph archived edit with empty email drafts', async function () {
+      const payload = {
+        status: 'archived',
+        actions: [buildSendEmailAction({ email_subject: '', email_lexical: EMPTY_EMAIL_LEXICAL })],
+        edges: [],
+      };
       const saved = { id: automationId, ...payload };
       repositoryEdit.mockResolvedValue(saved);
       assert.strictEqual(await automationsApi.edit(automationId, payload), saved);
@@ -381,16 +401,19 @@ describe('automations API', function () {
       );
     });
 
-    it('rejects a send email action with invalid JSON', async function () {
-      await assert.rejects(
-        automationsApi.edit(automationId, {
-          status: 'inactive',
-          actions: [buildSendEmailAction({ email_lexical: '{"root":' })],
-          edges: [],
-        }),
-        /well-formed Lexical document/,
-      );
-    });
+    it.each(['inactive', 'archived'] as const)(
+      'rejects invalid email JSON when %s',
+      async function (status) {
+        await assert.rejects(
+          automationsApi.edit(automationId, {
+            status,
+            actions: [buildSendEmailAction({ email_lexical: '{"root":' })],
+            edges: [],
+          }),
+          /well-formed Lexical document/,
+        );
+      },
+    );
 
     it('rejects an active send email action with invalid JSON as malformed Lexical', async function () {
       await assert.rejects(

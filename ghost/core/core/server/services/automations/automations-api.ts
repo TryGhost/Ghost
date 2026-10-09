@@ -57,8 +57,9 @@ const messages = {
   automationActionNotFound: 'Automation action not found.',
   invalidAutomationCreationPayload: 'Invalid automation payload.',
   invalidAutomationEditPayload: 'Invalid automation edit payload.',
-  invalidAutomationStatus: 'Automation status must be one of: active, inactive.',
-  invalidStatusOnlyEdit: 'Status-only automation edits can only set status to inactive.',
+  invalidAutomationStatus: 'Automation status must be one of: active, inactive, archived.',
+  invalidStatusOnlyEdit:
+    'Status-only automation edits can only set status to inactive or archived.',
   duplicateAutomationActionIdentity: 'Automation action identifiers must be unique.',
   invalidAutomationEdgeEndpoint: 'Automation edges must reference actions in the submitted graph.',
   duplicateAutomationEdge: 'Automation edges must be unique.',
@@ -98,7 +99,7 @@ const edgeSchema = z.object({
 const automationShape = {
   name: z.string().trim().min(1).max(191),
   description: z.string().trim().max(2000),
-  status: z.enum(['active', 'inactive']),
+  status: z.enum(['active', 'inactive', 'archived']),
   actions: z
     .array(z.discriminatedUnion('type', [waitActionSchema, sendEmailActionSchema]))
     .min(1)
@@ -146,7 +147,7 @@ const editAutomationStatusOnlySchema = z.strictObject({
   // happen with an invalid graph (e.g,. an email without a subject). If we
   // change this, we should validate the graph on status-only activations as
   // well.
-  status: z.literal('inactive'),
+  status: z.enum(['inactive', 'archived']),
 });
 
 const repository = createDatabaseAutomationsRepository({

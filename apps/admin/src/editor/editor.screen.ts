@@ -35,7 +35,7 @@ import {
   editorUpdateButton,
   editorReauthDialog,
   editorScheduleCountdown,
-  editorSaveErrorBanner,
+  editorSaveError,
   editorSecondaryInstance,
   editorSentStatusButton,
   editorStatus,
@@ -111,6 +111,8 @@ import {
   settingsTemplateSelect,
   settingsTemplateSlugMatch,
   settingsTiersError,
+  settingsTierChip,
+  settingsTiersList,
   settingsTiersPicker,
   settingsUrlPreview,
   settingsVisibilitySelect,
@@ -207,9 +209,8 @@ export const editorScreen = {
     page
       .getByTestId(editorStatus)
       .getByRole('button', { name: editorSentStatusButton, exact: true }),
-  pendingSaveNotice: () =>
-    page.getByRole('status').filter({ hasText: 'Changes are waiting to save.' }),
 
+  /** In the header row, or below the small breakpoint in the bottom bar. */
   headerActions: () => page.getByTestId(editorHeaderActions),
   previewButton: () =>
     page.getByTestId(editorHeaderActions).getByRole('button', { name: editorPreviewButton }),
@@ -236,8 +237,13 @@ export const editorScreen = {
   retryPublishInputs: () =>
     page.getByTestId(editorHeaderActions).getByRole('button', { name: 'Retry' }),
   scheduleCountdown: () => page.getByTestId(editorScheduleCountdown),
-  saveErrorBanner: () => page.getByTestId(editorSaveErrorBanner),
-  retrySave: () => page.getByTestId(editorSaveErrorBanner).getByRole('button', { name: 'Retry' }),
+  /** A failed or refused save, which the status line reports in place of the status. */
+  saveError: () => page.getByTestId(editorStatus).getByTestId(editorSaveError),
+  retrySave: () =>
+    page
+      .getByTestId(editorStatus)
+      .getByTestId(editorSaveError)
+      .getByRole('button', { name: 'Retry' }),
   leaveDialog: () => page.getByTestId(editorLeaveDialog),
   /** The leave dialog as a raw selector, for DOM-level sampling a locator cannot do. */
   leaveDialogSelector: `[data-testid="${editorLeaveDialog}"]`,
@@ -283,8 +289,20 @@ export const editorScreen = {
   settingsVisibilityOption: (label: string) =>
     page.getByRole('listbox').getByRole('option', { name: label, exact: true }),
   settingsTiers: () => page.getByTestId(settingsTiersPicker),
-  settingsTier: (name: string) =>
-    page.getByTestId(settingsTiersPicker).getByRole('checkbox', { name }),
+  settingsTiersInput: () => page.getByTestId(settingsTiersPicker).getByRole('combobox'),
+  /** A tier's row in the open list; `aria-selected` says whether the post grants it. */
+  settingsTierOption: (name: string) =>
+    page.getByTestId(settingsTiersList).getByRole('option', { name, exact: true }),
+  settingsTierGroup: (name: string) =>
+    page.getByTestId(settingsTiersList).getByRole('group', { name, exact: true }),
+  settingsTierChips: () => page.getByTestId(settingsTierChip),
+  settingsTierChip: (name: string) =>
+    page.getByTestId(settingsTiersPicker).getByRole('button', { name: `Remove ${name}` }),
+  /** Opens the tier list and picks or unpicks a tier in it. */
+  toggleSettingsTier: async (name: string) => {
+    await page.getByTestId(settingsTiersPicker).getByRole('combobox').click();
+    await page.getByTestId(settingsTiersList).getByRole('option', { name, exact: true }).click();
+  },
   settingsTiersError: () => page.getByTestId(settingsTiersError),
   settingsTagsField: () => page.getByTestId(settingsTagsField),
   settingsTagsInput: () => page.getByTestId(settingsTagsInput),

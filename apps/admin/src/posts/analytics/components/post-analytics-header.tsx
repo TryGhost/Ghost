@@ -50,7 +50,7 @@ import {
 } from '@tryghost/admin-x-framework/api/settings';
 import { useCanManageGiftLink } from '@/posts/analytics/hooks/use-can-manage-gift-link';
 import { postsDataType, useDeletePost } from '@tryghost/admin-x-framework/api/posts';
-import { useFeatureFlag, useHandleError } from '@tryghost/admin-x-framework/hooks';
+import { useHandleError } from '@tryghost/admin-x-framework/hooks';
 import { useEmailSendingStatusContext } from '@/posts/analytics/email-sending-status/email-sending-status-context';
 import { useShade } from '@tryghost/shade/app';
 import { useQueryClient } from '@tanstack/react-query';
@@ -69,7 +69,6 @@ const PostAnalyticsHeader: React.FC<PostAnalyticsHeaderProps> = ({ currentTab, c
   const queryClient = useQueryClient();
   const { mutateAsync: deletePost } = useDeletePost();
   const handleError = useHandleError();
-  const improveSendingUI = useFeatureFlag('improveSendingUI');
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [isShareOpen, setIsShareOpen] = useState(false);
   const [isGiftLinkOpen, setIsGiftLinkOpen] = useState(false);
@@ -85,7 +84,6 @@ const PostAnalyticsHeader: React.FC<PostAnalyticsHeaderProps> = ({ currentTab, c
     post &&
     getPostPublicationSummary(post, {
       isEmailSent,
-      improveSendingUI,
       timezone: getSiteTimezone(settings),
     });
 

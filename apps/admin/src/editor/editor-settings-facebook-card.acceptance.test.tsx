@@ -303,13 +303,13 @@ describe('Post settings Facebook card', () => {
       .toHaveAttribute('aria-invalid', 'true');
     // Refused where the writer is typing rather than as a save they did not ask for.
     await expect.poll(unsavedChangesGuarded).toBe(true);
-    await expect(editorScreen.saveErrorBanner()).toHaveCount(0);
+    await expect(editorScreen.saveError()).toHaveCount(0);
     expect(saveApi.requests).toHaveLength(0);
 
     await userEvent.keyboard('{Meta>}s{/Meta}');
 
     await expect
-      .element(editorScreen.saveErrorBanner())
+      .element(editorScreen.saveError())
       .toHaveTextContent('Facebook title cannot be longer than 300 characters.');
     expect(saveApi.requests).toHaveLength(0);
   });

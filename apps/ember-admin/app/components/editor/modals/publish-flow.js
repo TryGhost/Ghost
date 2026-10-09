@@ -94,18 +94,10 @@ export default class PublishModalComponent extends Component {
 
     @task
     *saveTask() {
-        try {
-            yield this.args.data.saveTask.perform();
+        yield this.args.data.saveTask.perform();
 
-            this.isConfirming = false;
-            this.isComplete = true;
-        } catch (e) {
-            if (e?.name === 'EmailFailedError') {
-                this.emailErrorMessage = e.message;
-            }
-
-            throw e;
-        }
+        this.isConfirming = false;
+        this.isComplete = true;
     }
 
     // we fetch the new post count in advance when reaching the confirm step

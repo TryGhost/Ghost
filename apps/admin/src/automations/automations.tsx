@@ -19,6 +19,7 @@ const Automations: React.FC = () => {
   const navigate = useNavigate();
   const { automations, automationCount, error, isError, isLoading } = useVisibleAutomations();
   const automationsPerTierEnabled = useFeatureFlag('automationsPerTier');
+  const archiveEnabled = useFeatureFlag('automationsArchive');
   const { data: currentUser } = useCurrentUser();
   const [automationsToShow, setAutomationsToShow] =
     React.useState<AutomationsToShow>('non-archived');
@@ -105,7 +106,7 @@ const Automations: React.FC = () => {
           <ListPage.Body>
             <AutomationsList
               automations={filteredAutomations}
-              canManage={!!currentUser && canManageAutomations(currentUser)}
+              canManage={archiveEnabled && !!currentUser && canManageAutomations(currentUser)}
               isLoading={isLoading}
             />
             <AutomationsHelpCards />

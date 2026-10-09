@@ -94,6 +94,38 @@ describe('Stripe Checkout Preview Admin API', function () {
     assert.equal((await readDesign()).font_family, 'roboto_slab');
   });
 
+  describe('with unsaved shipping', function () {
+    beforeEach(function () {
+      mockManager.mockLabsEnabled('stripeCheckoutCollection');
+    });
+
+    function previewShipping(shipping: Record<string, unknown>) {
+      return preview({ tier_id: paidTierId, design: { customize: false }, shipping });
+    }
+
+    it('asks for an address in the countries being previewed', async function () {
+      await previewShipping({ collect: true, allowed_countries: ['GB', 'IE'] });
+
+      const session = stripeMocker.checkoutSessions.at(-1);
+      assert.deepEqual(session.shipping_address_collection.allowed_countries, ['GB', 'IE']);
+    });
+
+    it('asks for none when it is off or limited to other tiers', async function () {
+      await previewShipping({ collect: false });
+      assert.equal(stripeMocker.checkoutSessions.at(-1).shipping_address_collection, undefined);
+
+      await previewShipping({ collect: true, tier_ids: [freeTierId] });
+      assert.equal(stripeMocker.checkoutSessions.at(-1).shipping_address_collection, undefined);
+    });
+
+    it('asks for none while the shipping flag is off', async function () {
+      mockManager.mockLabsDisabled('stripeCheckoutCollection');
+      await previewShipping({ collect: true });
+
+      assert.equal(stripeMocker.checkoutSessions.at(-1).shipping_address_collection, undefined);
+    });
+  });
+
   it('refuses a free tier, an unknown tier and a malformed tier id', async function () {
     for (const tierId of [freeTierId, '0123456789abcdef01234567', 'not-a-tier']) {
       const { body } = await preview({ tier_id: tierId, design: { customize: false } }, 422);

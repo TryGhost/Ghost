@@ -1,11 +1,20 @@
+import errors from '@tryghost/errors';
 import urlUtils from '../../../shared/url-utils';
+import * as metafields from '../members-metafields';
 import { CheckoutBrandingService } from './branding-service';
 import { CheckoutPreviewService, type PreviewableTier } from './preview-service';
 import { recordCheckoutConfigAction, type RecordCheckoutConfigAction } from './actions';
 import { StripeCheckoutConfigService } from './service';
 
 export { StripeCheckoutConfigService } from './service';
-export type { StripeCheckoutBranding, StripeCheckoutConfig, StripeCheckoutDesign } from './models';
+export type {
+  PreviewShipping,
+  ShippingCollection,
+  StripeCheckoutBranding,
+  StripeCheckoutConfig,
+  StripeCheckoutDesign,
+} from './models';
+export { SHIPPING_FLAG, collectsShippingFor, countriesToAsk, shippingCountriesFor } from './models';
 export { CheckoutBrandingService } from './branding-service';
 export { CheckoutPreviewService } from './preview-service';
 export {
@@ -32,18 +41,25 @@ export function init(): void {
 
   const recordAction: RecordCheckoutConfigAction = (input) =>
     recordCheckoutConfigAction({ Action: models.Action, ...input });
-  service = new StripeCheckoutConfigService({ knex, recordAction });
+  // Boot sets up the custom fields services first, as shipping saves into custom fields.
+  if (!metafields.bindings) {
+    throw new errors.IncorrectUsageError({
+      message: 'The custom fields services must be set up before the Stripe Checkout config.',
+    });
+  }
+  service = new StripeCheckoutConfigService({ knex, recordAction, bindings: metafields.bindings });
 
   // Looked up on each use: Stripe, tiers and members are set up later in boot.
   previewService = new CheckoutPreviewService({
     stripeConnected: () => require('../stripe').api.configured,
     readTier: (id) => require('../tiers').api.read(id),
     // The same checkout a signup by someone who isn't a member yet gets, in the given design.
-    createPreviewLink: ({ tier, cadence, design, returnUrl, expiresInSeconds }) =>
+    createPreviewLink: ({ tier, cadence, design, shipping, returnUrl, expiresInSeconds }) =>
       require('../members').api.paymentsService.getPaymentLink({
         tier,
         cadence,
         design,
+        shipping,
         successUrl: returnUrl,
         cancelUrl: returnUrl,
         expiresInSeconds,

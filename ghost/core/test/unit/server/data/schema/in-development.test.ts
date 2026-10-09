@@ -1,13 +1,12 @@
 import assert from 'node:assert/strict';
 // @ts-expect-error This module lacks type definitions.
 import schema from '../../../../../core/server/data/schema/schema';
+import { foreignKeysOf } from '../../../../../core/server/data/schema/lib/foreign-keys';
 
 // require, not import: config-utils and in-development must resolve to the same
 // CommonJS config instance, so values set here are the ones the module reads
 const configUtils = require('../../../../utils/config-utils');
 const inDevelopment: typeof import('../../../../../core/server/data/schema/in-development') = require('../../../../../core/server/data/schema/in-development');
-
-type ColumnSpec = { references?: string };
 
 describe('In-development schema tables', function () {
   afterEach(async function () {
@@ -24,20 +23,15 @@ describe('In-development schema tables', function () {
   });
 
   it('are never referenced by finalised tables', function () {
-    for (const [tableName, table] of Object.entries<Record<string, ColumnSpec>>(schema)) {
+    for (const [tableName, table] of Object.entries<Record<string, unknown>>(schema)) {
       if (inDevelopment.isInDevelopmentTable(tableName)) {
         continue;
       }
 
-      for (const [columnName, column] of Object.entries(table)) {
-        if (!column.references) {
-          continue;
-        }
-
-        const referencedTable = column.references.split('.')[0];
+      for (const { columns, references } of foreignKeysOf(tableName, table)) {
         assert(
-          !inDevelopment.isInDevelopmentTable(referencedTable),
-          `${tableName}.${columnName} references in-development table ${referencedTable}`,
+          !inDevelopment.isInDevelopmentTable(references.table),
+          `${tableName} (${columns.join(', ')}) references in-development table ${references.table}`,
         );
       }
     }

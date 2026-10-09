@@ -130,12 +130,26 @@ export interface EditorSessionHandle {
   getSaveSnapshot: EditorSession['getSaveSnapshot'];
   /** The body the writer is looking at, which a save has not necessarily seen yet. */
   getLiveLexical: EditorSession['getLiveLexical'];
-  /** Retries the save the error banner reports. */
+  /** Retries the failed save the status line reports. */
   retrySave: () => void;
+  /** The field an explicit save would be refused over, read from the save's own validator. */
+  invalidField: EditorSession['invalidField'];
   /** An explicit save whose completion the caller acts on, such as before a publish or preview. */
   saveExplicit: () => Promise<SaveCompletion>;
   /** Runs the publish flow's commands through the engine, the only writer. */
   dispatchPublish: PublishDispatcher;
+  /**
+   * Whether the sign-in dialog is open: a save found the session gone, or a read or
+   * request outside the engine asked for sign-in with `requestReauth()`.
+   */
+  reauthOpen: boolean;
+  /**
+   * Opens the sign-in dialog for a read or request outside the engine's saves that
+   * found the session gone. Resolves true once the writer has signed in again, so the
+   * caller can repeat it, and false when they abandon the dialog. Requests made while
+   * the dialog is open share it.
+   */
+  requestReauth: () => Promise<boolean>;
   reauthSucceeded: () => void;
   reauthAbandoned: () => void;
   /** Resolves once nothing is in flight; `proceed` means leaving loses nothing. */
@@ -543,6 +557,38 @@ export function useEditorSession({
 
   const retrySave = useCallback(() => void session.retrySave(), [session]);
 
+  // Sign-in asked for outside the engine shares the engine's dialog; whichever way
+  // it ends answers every request waiting on it.
+  const reauthWaiters = useRef<Array<(signedIn: boolean) => void>>([]);
+  const [reauthRequested, setReauthRequested] = useState(false);
+  const settleReauthRequests = useCallback((signedIn: boolean) => {
+    const waiters = reauthWaiters.current;
+    reauthWaiters.current = [];
+    setReauthRequested(false);
+    for (const resolve of waiters) {
+      resolve(signedIn);
+    }
+  }, []);
+  const requestReauth = useCallback(
+    () =>
+      new Promise<boolean>((resolve) => {
+        reauthWaiters.current.push(resolve);
+        setReauthRequested(true);
+      }),
+    [],
+  );
+  const reauthSucceeded = useCallback(() => {
+    session.reauthSucceeded();
+    settleReauthRequests(true);
+  }, [session, settleReauthRequests]);
+  const reauthAbandoned = useCallback(() => {
+    session.reauthAbandoned();
+    settleReauthRequests(false);
+  }, [session, settleReauthRequests]);
+  // A request still waiting when the editor goes is answered rather than left hanging.
+  useEffect(() => () => settleReauthRequests(false), [settleReauthRequests]);
+  const reauthOpen = state.kind === 'reauth-pending' || reauthRequested;
+
   const excerpt = settings.custom_excerpt ?? '';
   const bind = useMemo<EditorSessionBinding>(
     () => ({
@@ -602,10 +648,13 @@ export function useEditorSession({
       getSaveSnapshot: session.getSaveSnapshot,
       getLiveLexical: session.getLiveLexical,
       retrySave,
+      invalidField: session.invalidField,
       saveExplicit: session.dispatchExplicit,
       dispatchPublish,
-      reauthSucceeded: session.reauthSucceeded,
-      reauthAbandoned: session.reauthAbandoned,
+      reauthOpen,
+      requestReauth,
+      reauthSucceeded,
+      reauthAbandoned,
       leaveRequested: session.leaveRequested,
       dispose: session.dispose,
     }),
@@ -636,6 +685,10 @@ export function useEditorSession({
       stageSettings,
       state,
       pendingSave,
+      reauthOpen,
+      reauthAbandoned,
+      reauthSucceeded,
+      requestReauth,
     ],
   );
 }
