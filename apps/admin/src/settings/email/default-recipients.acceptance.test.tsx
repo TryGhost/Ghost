@@ -13,6 +13,7 @@ import {
   renderAdminApp,
   settingsResponse,
   tier,
+  type Tier,
 } from '@test-utils/acceptance';
 import { settingsScreen } from '@/settings/settings.screen';
 
@@ -75,12 +76,15 @@ describe('Default recipient settings', () => {
       { key: 'editor_default_email_recipients', value: 'filter' },
       {
         key: 'editor_default_email_recipients_filter',
-        value: `${supporter.id},label:${firstLabel.slug},offer_redemptions:${firstOffer.id}`,
+        value: `tier:${supporter.slug},label:${firstLabel.slug},offer_redemptions:${firstOffer.id}`,
       },
     ]);
   });
 
-  it('hydrates an existing specific segment', async () => {
+  it.each([
+    { format: 'a tier slug', tierSegment: (tierItem: Tier) => `tier:${tierItem.slug}` },
+    { format: 'a bare tier id', tierSegment: (tierItem: Tier) => tierItem.id },
+  ])('hydrates an existing specific segment saved with $format', async ({ tierSegment }) => {
     const supporter = tier({ id: '645453f4d254799990dd0e22', name: 'Basic Supporter' });
     const firstLabel = label({ name: 'first-label', slug: 'first-label' });
     const firstOffer = offer({ id: '6487ea6464fca78ec2fff5fe', name: 'First offer' });
@@ -91,7 +95,7 @@ describe('Default recipient settings', () => {
     const settings = settingsResponse({
       settings: {
         editor_default_email_recipients: 'filter',
-        editor_default_email_recipients_filter: `${supporter.id},label:${firstLabel.slug},offer_redemptions:${firstOffer.id}`,
+        editor_default_email_recipients_filter: `${tierSegment(supporter)},label:${firstLabel.slug},offer_redemptions:${firstOffer.id}`,
       },
     });
     await renderAdminApp('/settings/newsletters', {
@@ -115,7 +119,7 @@ describe('Default recipient settings', () => {
     const settings = settingsResponse({
       settings: {
         editor_default_email_recipients: 'filter',
-        editor_default_email_recipients_filter: savedTier.id,
+        editor_default_email_recipients_filter: `tier:${savedTier.slug}`,
       },
     });
     await renderAdminApp('/settings/newsletters', {
@@ -169,7 +173,10 @@ describe('Default recipient settings', () => {
     await section.getByRole('button', { name: 'Save' }).click();
 
     await expect(settingsApi).toHaveEditedSettings([
-      { key: 'editor_default_email_recipients_filter', value: `${savedTier.id},${addedTier.id}` },
+      {
+        key: 'editor_default_email_recipients_filter',
+        value: `tier:${savedTier.slug},tier:${addedTier.slug}`,
+      },
     ]);
   });
 });
