@@ -5,12 +5,13 @@ import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
 import { isOwnerUser } from '@tryghost/admin-x-framework/api/users';
 import { useForceUpgrade } from '@/billing/api';
 import { SETTINGS_SEARCH_HEADING } from '@/settings/search-source';
+import { ACTIONS_HEADING } from './actions-source';
 import { CONTENT_HEADINGS } from './content-sources';
 import type { NavigateItem, SearchSource } from './search-source';
 
 const BILLING_ROUTE_ROOT = '/pro';
 
-const BUILT_IN_HEADINGS = [...CONTENT_HEADINGS, SETTINGS_SEARCH_HEADING];
+const BUILT_IN_HEADINGS = [...CONTENT_HEADINGS, SETTINGS_SEARCH_HEADING, ACTIONS_HEADING];
 
 function parseEach<T>(schema: z.ZodType<T>, items: unknown[]): T[] {
   return items.flatMap((item) => {

@@ -59,6 +59,28 @@ describe('Settings search exits', () => {
   });
 });
 
+describe('Settings search actions', () => {
+  it('runs an action over dirty Settings without asking, keeping the edit', async () => {
+    fakeSettingsScreens();
+    fakeSearchIndex();
+    await renderAdminApp('/settings', { labs: { admin7settings: true } });
+    await settingsScreen.editTitle('Unsaved title');
+    await expect.poll(unsavedChangesGuarded).toBe(true);
+
+    await openWithShortcut();
+    await globalSearchScreen.search('dark');
+    await globalSearchScreen.option('Switch to dark mode').click();
+
+    await expect.poll(() => document.documentElement.classList.contains('dark')).toBe(true);
+    await expect(settingsScreen.confirmationModal()).toHaveCount(0);
+    await expect.element(globalSearchScreen.dialog()).not.toBeInTheDocument();
+    await expect.poll(currentRoute).toBe('/settings');
+    await expect
+      .element(page.getByLabelText('Site title', { exact: true }))
+      .toHaveValue('Unsaved title');
+  });
+});
+
 function fakeSearchIndex() {
   return {
     posts: fakeAdminEndpoint('GET', '/search-index/posts/', {
@@ -300,6 +322,20 @@ describe('Cmd-K search', () => {
     await expect.poll(currentRoute).toBe('/settings/timezone');
     await expect.element(settingsScreen.search()).toHaveValue('');
     await expect.element(settingsScreen.timezone()).toBeInViewport();
+  });
+
+  it('switches the appearance', async () => {
+    const isDarkMode = () => document.documentElement.classList.contains('dark');
+    await renderAdminApp('/tags');
+    await openAndSearch('dark');
+
+    await globalSearchScreen.option('Switch to dark mode').click();
+    await expect.poll(isDarkMode).toBe(true);
+    await expect.element(globalSearchScreen.dialog()).not.toBeInTheDocument();
+
+    await openAndSearch('light');
+    await globalSearchScreen.option('Switch to light mode').click();
+    await expect.poll(isDarkMode).toBe(false);
   });
 
   it('hands a post to the Ember editor', async () => {
