@@ -3,12 +3,15 @@ const express = require('../../../shared/express');
 const controller = require('./controller');
 
 // Long-cache static texture assets shared by the gift card aesthetic
-// (gift preview OG image + reader-side gift toast). Filenames are fixed,
-// so the public URLs at /gift/assets/* can be safely cached forever.
+// (gift preview OG image, reader-side gift toast, Portal gift card).
+// Filenames are fixed, so the public URLs at /gift/assets/* can be safely
+// cached forever.
 const ASSET_DIR = __dirname;
 const ASSETS = {
   'gift-card-orb.png': 'image/png',
   'gift-card-noise.png': 'image/png',
+  'gift-card-orb.webp': 'image/webp',
+  'gift-card-noise.webp': 'image/webp',
 };
 
 module.exports = function giftPreviewApp() {
