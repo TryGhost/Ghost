@@ -268,7 +268,8 @@ const MemberActivityFeed: React.FC<MemberActivityFeedProps> = ({
       <Card>
         <CardContent className="pt-3">
           {isLoading ? (
-            <div className="flex flex-col gap-3">
+            // Held back like the loading spinners, so a quick feed never flashes skeletons
+            <div className="delayed-fade-in flex flex-col gap-3">
               <Skeleton className="h-10" />
               <Skeleton className="h-10" />
               <Skeleton className="h-10" />
