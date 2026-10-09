@@ -155,7 +155,16 @@ const controller = {
         frame.data.password_reset[0].email,
         api.settings,
       );
-      return auth.passwordreset.sendResetNotification(token, api.mail);
+
+      // Fire-and-forget, matching the welcome-email pattern above: sending is
+      // usually a slow network call, and a slow/misconfigured mail transport
+      // must not hang this response (or the /session signin request that
+      // calls this same query for a locked-out user).
+      auth.passwordreset.sendResetNotification(token, api.mail).catch((err) => {
+        logging.error(err);
+      });
+
+      return {};
     },
   },
 
