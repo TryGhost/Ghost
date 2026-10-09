@@ -106,7 +106,9 @@ function keepWithinSpacing(panelElem, {x, y, origin = {x: 0, y: 0}, topSpacing, 
 function keepWithinSpacingOnDrag(panelElem, {x, y, origin}) {
     const DISTANCE_FROM_BOUNDARY = 10;
 
-    const topSpacing = DISTANCE_FROM_BOUNDARY;
+    // the publish menu paints above the panel, so only a panel too tall to fit below it may go under it
+    const fitsBelowPublishMenu = (panelElem?.offsetHeight ?? 0) + MIN_TOP_SPACING + DISTANCE_FROM_BOUNDARY <= window.innerHeight;
+    const topSpacing = fitsBelowPublishMenu ? MIN_TOP_SPACING : DISTANCE_FROM_BOUNDARY;
     const bottomSpacing = DISTANCE_FROM_BOUNDARY;
     const rightSpacing = DISTANCE_FROM_BOUNDARY;
     const leftSpacing = DISTANCE_FROM_BOUNDARY;
