@@ -193,13 +193,13 @@ const Sidebar: React.FC<SidebarProps> = ({
                 <FieldError>{errors.name}</FieldError>
               ) : (
                 <FieldDescription>
-                  <div className="flex justify-between">
+                  <span className="flex justify-between">
                     <span>Visible to members on Stripe Checkout page</span>
                     <strong>
                       <span className={nameLengthColor}>{formatNumber(nameLength)}</span> /{' '}
                       {formatNumber(40)}
                     </strong>
-                  </div>
+                  </span>
                 </FieldDescription>
               )}
             </Field>
@@ -417,11 +417,11 @@ const Sidebar: React.FC<SidebarProps> = ({
               ) : (
                 overrides.code.value !== '' && (
                   <FieldDescription>
-                    <div className="flex items-center justify-between">
-                      <div>
+                    <span className="flex items-center justify-between">
+                      <span>
                         {homepageUrl}
                         <span className="font-bold">{overrides.code.value}</span>
-                      </div>
+                      </span>
                       <Button
                         className="h-auto p-0 text-sm text-green hover:text-green"
                         size="sm"
@@ -431,7 +431,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                       >
                         {isCopied ? 'Copied' : 'Copy'}
                       </Button>
-                    </div>
+                    </span>
                   </FieldDescription>
                 )
               )}
