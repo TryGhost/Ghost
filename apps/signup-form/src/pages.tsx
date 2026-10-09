@@ -1,6 +1,6 @@
 import { FormPage } from './components/pages/form-page';
 import { SuccessPage } from './components/pages/success-page';
-import type React from 'react';
+import type { ComponentProps } from 'preact';
 
 const Pages = {
   FormPage,
@@ -12,7 +12,7 @@ export type PageName = keyof typeof Pages;
 type PageTypes = {
   [name in PageName]: {
     name: name;
-    data: React.ComponentProps<(typeof Pages)[name]>;
+    data: ComponentProps<(typeof Pages)[name]>;
   };
 };
 

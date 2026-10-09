@@ -1,18 +1,28 @@
-import LoadingIcon from '../../../assets/icons/spinner.svg?react';
-import React, { type FormEventHandler } from 'react';
+import { LoadingIcon } from '../icons';
 import { useAppContext } from '../../app-context';
+import { useId, useState } from 'preact/hooks';
+import type { JSX } from 'preact';
 
-export const FormView: React.FC<
-  FormProps & {
-    isMinimal: boolean;
-    title?: string;
-    description?: string;
-    icon?: string;
-    backgroundColor?: string;
-    textColor?: string;
-  }
-> = ({ isMinimal, title, description, icon, backgroundColor, textColor, error, ...formProps }) => {
-  const errorMessageId = React.useId();
+type FormViewProps = FormProps & {
+  isMinimal: boolean;
+  title?: string;
+  description?: string;
+  icon?: string;
+  backgroundColor?: string;
+  textColor?: string;
+};
+
+export const FormView = ({
+  isMinimal,
+  title,
+  description,
+  icon,
+  backgroundColor,
+  textColor,
+  error,
+  ...formProps
+}: FormViewProps) => {
+  const errorMessageId = useId();
 
   if (isMinimal) {
     return (
@@ -65,7 +75,7 @@ type FormProps = {
   onSubmit: (values: { email: string }) => void;
 };
 
-const Form: React.FC<FormProps> = ({
+const Form = ({
   isMinimal,
   loading,
   success,
@@ -74,11 +84,16 @@ const Form: React.FC<FormProps> = ({
   buttonColor,
   buttonTextColor,
   onSubmit,
-}) => {
-  const [email, setEmail] = React.useState('');
+}: FormProps) => {
+  const [email, setEmail] = useState('');
   const { t } = useAppContext();
 
-  const submitHandler: FormEventHandler<HTMLFormElement> = (e) => {
+  // `change` also covers fills that update the value without an `input` event
+  const updateEmail = (e: JSX.TargetedEvent<HTMLInputElement>) => {
+    setEmail(e.currentTarget.value);
+  };
+
+  const submitHandler = (e: JSX.TargetedSubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
     onSubmit({ email });
   };
@@ -101,7 +116,8 @@ const Form: React.FC<FormProps> = ({
           placeholder={t('Your email address')}
           type="email"
           value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          onChange={updateEmail}
+          onInput={updateEmail}
         />
         <button
           className="my-auto grid h-7 touch-manipulation grid-cols-[1fr] items-center rounded-[.3rem] px-2 font-medium text-white xs:h-[3rem] xs:px-3"
