@@ -11,7 +11,7 @@ let scheduled = false;
 
 // Runs after settings init so the key rows exist; advances any rotation that's due before
 // anything signs or publishes a key.
-export const { init, getInstance } = defineService('Signing keys', async () => {
+const signingKeys = defineService('Signing keys', async () => {
   const settingsCache = require('../../../shared/settings-cache');
   const models = require('../../models');
   const instance = new SigningKeyService({
@@ -25,11 +25,13 @@ export const { init, getInstance } = defineService('Signing keys', async () => {
   return instance;
 });
 
+export default signingKeys;
+
 export async function scheduleCheckJob(jobsService: JobsService): Promise<void> {
   jobs = jobsService;
 
   // Nothing to advance until a key is rotated
-  if (getInstance().isRotating()) {
+  if (signingKeys.service.isRotating()) {
     await schedule();
   }
 }

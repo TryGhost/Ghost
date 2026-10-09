@@ -88,14 +88,14 @@ describe('IndexNow service root', function () {
   it('subscribes only at init and delivers each event once after repeated init', async function () {
     const subscribe = sandbox.spy(events, 'on');
     root = require(ROOT_PATH).default as typeof indexNowRoot;
-    assert.throws(() => root!.getInstance(), IncorrectUsageError);
+    assert.throws(() => root!.service, IncorrectUsageError);
     sinon.assert.notCalled(subscribe);
 
     await root.init();
-    const service = root.getInstance();
+    const service = root.service;
     assert.ok(service);
     await root.init();
-    assert.equal(root.getInstance(), service);
+    assert.equal(root.service, service);
     for (const name of EVENT_NAMES) {
       assert.equal(
         events.listeners(name).filter((listener) => listener === service.listener).length,
@@ -140,14 +140,14 @@ describe('IndexNow service root', function () {
     root = require(ROOT_PATH).default as typeof indexNowRoot;
 
     await assert.rejects(root.init(), (error) => error === failure);
-    assert.throws(() => root!.getInstance(), IncorrectUsageError);
+    assert.throws(() => root!.service, IncorrectUsageError);
     for (const [name, listeners] of listenersBeforeInit) {
       assert.deepEqual(events.listeners(name), listeners);
     }
 
     subscribe.restore();
     await root.init();
-    const service = root.getInstance();
+    const service = root.service;
     for (const [name, listeners] of listenersBeforeInit) {
       assert.deepEqual(events.listeners(name), [...listeners, service.listener]);
     }
@@ -162,7 +162,7 @@ describe('IndexNow service root', function () {
     privacyDisabled.returns(true);
     root = require(ROOT_PATH).default as typeof indexNowRoot;
     await root.init();
-    const service = root.getInstance();
+    const service = root.service;
     assert.ok(service);
     const request = sandbox.stub(service, 'request').resolves({ statusCode: 200 });
     const ping = sandbox.spy(service, 'ping');
@@ -187,14 +187,14 @@ describe('IndexNow service root', function () {
     getSetting.withArgs('is_private').returns(false);
     await emit();
     sinon.assert.calledTwice(request);
-    assert.equal(root.getInstance(), service);
+    assert.equal(root.service, service);
     assert.equal(ping.callCount, 5);
   });
 
   it('uses the current key and complete encoded URLs through the wired request helper', async function () {
     root = require(ROOT_PATH).default as typeof indexNowRoot;
     await root.init();
-    const service = root.getInstance();
+    const service = root.service;
     assert.ok(service);
     const ping = sandbox.spy(service, 'ping');
     const firstUrl = 'https://example.com/news/a-post/?tag=hello world&x=1';
@@ -240,13 +240,13 @@ describe('IndexNow service root', function () {
       },
       { absolute: true },
     );
-    assert.equal(root.getInstance(), service);
+    assert.equal(root.service, service);
   });
 
   it('starts a request during event delivery and logs a later transport failure', async function () {
     root = require(ROOT_PATH).default as typeof indexNowRoot;
     await root.init();
-    const service = root.getInstance();
+    const service = root.service;
     assert.ok(service);
     const { promise, reject } = Promise.withResolvers<{ statusCode: number }>();
     const request = sandbox.stub(service, 'request').returns(promise);
@@ -268,7 +268,7 @@ describe('IndexNow service root', function () {
   it('lets synchronous model errors escape, but swallows pre-request promise rejections', async function () {
     root = require(ROOT_PATH).default as typeof indexNowRoot;
     await root.init();
-    const service = root.getInstance();
+    const service = root.service;
     assert.ok(service);
     const error = new Error('Cannot read model');
     assert.throws(

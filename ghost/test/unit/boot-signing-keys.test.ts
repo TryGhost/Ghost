@@ -24,7 +24,7 @@ function createCoreHarness() {
     './shared/url-utils': {},
     './server/services/limits': { init: async () => {} },
     './server/services/settings/settings-service': settings,
-    './server/services/signing-keys': signingKeys,
+    './server/services/signing-keys': { default: signingKeys },
     './server/services/i18n': i18n,
     './server/services/gift-links': { init() {} },
     './server/services/members-metafields': { init() {} },

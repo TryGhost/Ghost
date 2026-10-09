@@ -13,12 +13,12 @@ make a helper part of the kernel.
 ## Service initialization
 
 [`defineService(name, create)`](define-service.ts) gives a service root `init()`
-and `getInstance()`. Boot calls `init()` in the appropriate startup phase. The
+and a `.service` getter. Boot calls `init()` in the appropriate startup phase. The
 factory constructs and returns a ready instance, awaiting any required startup
 work first. The factory must not recursively initialize its own root.
 
 Concurrent initialization shares one attempt. Successful initialization retains
 the same instance; failure preserves the error and permits a later explicit
-retry. `getInstance()` throws until initialization completes. The factory owns
+retry. Reading `.service` throws until initialization completes. The factory owns
 cleanup of any partial startup work. Shutdown and background job registration
 remain with their existing owners.

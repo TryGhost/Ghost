@@ -17,7 +17,7 @@ export function defineService<Service>(name: string, create: () => Service | Pro
       });
       return initialization;
     },
-    getInstance(): Service {
+    get service(): Service {
       if (instance === undefined) {
         throw new IncorrectUsageError({
           message: `${name} used before init(). Call init() from boot first.`,

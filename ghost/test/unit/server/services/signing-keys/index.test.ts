@@ -22,13 +22,14 @@ const models = require('../../../../../core/server/models') as {
 const logging = require('@tryghost/logging');
 const { IncorrectUsageError } = require('@tryghost/errors');
 
-type Root = typeof import('../../../../../core/server/services/signing-keys');
+type SigningKeysModule = typeof import('../../../../../core/server/services/signing-keys');
 type Entry = { value: string | null; created_at: Date };
 
 describe('signing-keys root', function () {
   const sandbox = sinon.createSandbox();
   let originalModule: NodeJS.Module | undefined;
-  let root: Root;
+  let root: SigningKeysModule['default'];
+  let scheduleCheckJob: SigningKeysModule['scheduleCheckJob'];
   let check: sinon.SinonStub;
   let entries: Record<string, Entry>;
   let scheduleRecurring: sinon.SinonStub;
@@ -43,7 +44,7 @@ describe('signing-keys root', function () {
     check = sandbox.stub(SigningKeyService.prototype, 'check').resolves();
     scheduleRecurring = sandbox.stub().resolves();
     jobs = { scheduleRecurring } as unknown as JobsService;
-    root = require(ROOT_PATH);
+    ({ default: root, scheduleCheckJob } = require(ROOT_PATH));
     vi.stubEnv('NODE_ENV', 'production');
   });
 
@@ -66,7 +67,7 @@ describe('signing-keys root', function () {
 
   it('does not check keys on import and rejects access before init', function () {
     sinon.assert.notCalled(check);
-    assert.throws(() => root.getInstance(), IncorrectUsageError);
+    assert.throws(() => root.service, IncorrectUsageError);
   });
 
   it('publishes the instance only after the initial key check and reuses it on repeated init', async function () {
@@ -81,7 +82,7 @@ describe('signing-keys root', function () {
       await setImmediate();
       sinon.assert.calledOnce(check);
       assert.equal(finished, false, 'init completed before the initial key check');
-      assert.throws(() => root.getInstance(), IncorrectUsageError);
+      assert.throws(() => root.service, IncorrectUsageError);
     } finally {
       ready.resolve();
       // Do not let a cleanup error replace an assertion failure.
@@ -89,10 +90,10 @@ describe('signing-keys root', function () {
     }
     await startup;
 
-    const service = root.getInstance();
+    const service = root.service;
     assert.equal(service, check.firstCall.thisValue);
     await root.init();
-    assert.equal(root.getInstance(), service);
+    assert.equal(root.service, service);
     sinon.assert.calledOnce(check);
   });
 
@@ -106,13 +107,13 @@ describe('signing-keys root', function () {
       await setImmediate();
       sinon.assert.calledOnce(check);
       assert.equal(first, second);
-      assert.throws(() => root.getInstance(), IncorrectUsageError);
+      assert.throws(() => root.service, IncorrectUsageError);
     } finally {
       ready.resolve();
       await Promise.allSettled([first, second]);
     }
     await Promise.all([first, second]);
-    assert.equal(root.getInstance(), check.firstCall.thisValue);
+    assert.equal(root.service, check.firstCall.thisValue);
   });
 
   it('propagates the initial check error without publication and permits a later retry', async function () {
@@ -120,16 +121,16 @@ describe('signing-keys root', function () {
     check.onFirstCall().rejects(failure);
 
     await assert.rejects(root.init(), (error) => error === failure);
-    assert.throws(() => root.getInstance(), IncorrectUsageError);
+    assert.throws(() => root.service, IncorrectUsageError);
 
     await root.init();
     sinon.assert.calledTwice(check);
-    assert.equal(root.getInstance(), check.secondCall.thisValue);
+    assert.equal(root.service, check.secondCall.thisValue);
   });
 
   it('does not schedule a recurring check when no rotation is pending', async function () {
     await root.init();
-    await root.scheduleCheckJob(jobs);
+    await scheduleCheckJob(jobs);
 
     sinon.assert.notCalled(scheduleRecurring);
   });
@@ -141,7 +142,7 @@ describe('signing-keys root', function () {
     const registered = Promise.withResolvers<void>();
     scheduleRecurring.returns(registered.promise);
     let finished = false;
-    const scheduling = root.scheduleCheckJob(jobs).then(() => {
+    const scheduling = scheduleCheckJob(jobs).then(() => {
       finished = true;
     });
 
@@ -158,7 +159,7 @@ describe('signing-keys root', function () {
     }
     await scheduling;
 
-    await root.scheduleCheckJob(jobs);
+    await scheduleCheckJob(jobs);
     sinon.assert.calledOnce(scheduleRecurring);
   });
 
@@ -168,9 +169,9 @@ describe('signing-keys root', function () {
     const failure = new Error('Jobs backend unavailable');
     scheduleRecurring.onFirstCall().rejects(failure);
 
-    await assert.rejects(root.scheduleCheckJob(jobs), (error) => error === failure);
-    await root.scheduleCheckJob(jobs);
-    await root.scheduleCheckJob(jobs);
+    await assert.rejects(scheduleCheckJob(jobs), (error) => error === failure);
+    await scheduleCheckJob(jobs);
+    await scheduleCheckJob(jobs);
 
     sinon.assert.calledTwice(scheduleRecurring);
   });
@@ -180,7 +181,7 @@ describe('signing-keys root', function () {
       vi.stubEnv('NODE_ENV', environment);
       markRotating();
       await root.init();
-      await root.scheduleCheckJob(jobs);
+      await scheduleCheckJob(jobs);
 
       sinon.assert.notCalled(scheduleRecurring);
     });
@@ -208,12 +209,12 @@ describe('signing-keys root', function () {
   it('defers scheduling a rotation started before jobs arrive until background registration', async function () {
     stubRotationStorage();
     await root.init();
-    const service = root.getInstance();
+    const service = root.service;
 
     assert.equal(await service.rotate('members'), true);
     sinon.assert.notCalled(scheduleRecurring);
 
-    await root.scheduleCheckJob(jobs);
+    await scheduleCheckJob(jobs);
     sinon.assert.calledOnce(scheduleRecurring);
     assert.ok(scheduleRecurring.firstCall.args[0] instanceof CheckSigningKeysJob);
   });
@@ -221,7 +222,7 @@ describe('signing-keys root', function () {
   it('schedules through the supplied jobs service when a later rotation starts and awaits registration', async function () {
     stubRotationStorage();
     await root.init();
-    await root.scheduleCheckJob(jobs);
+    await scheduleCheckJob(jobs);
     sinon.assert.notCalled(scheduleRecurring);
     const registered = Promise.withResolvers<void>();
     const entered = Promise.withResolvers<void>();
@@ -230,13 +231,10 @@ describe('signing-keys root', function () {
       return registered.promise;
     });
     let finished = false;
-    const rotation = root
-      .getInstance()
-      .rotate('members')
-      .then((result) => {
-        finished = true;
-        return result;
-      });
+    const rotation = root.service.rotate('members').then((result) => {
+      finished = true;
+      return result;
+    });
     // Race completion too, so a missing callback fails immediately rather than
     // leaving the test waiting for a scheduling call that will never happen.
     const observed = Promise.race([entered.promise, rotation]);
