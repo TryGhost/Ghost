@@ -1,4 +1,4 @@
-import { StrictMode } from 'react';
+import { StrictMode, useLayoutEffect } from 'react';
 import {
   FrameworkProvider,
   RouterProvider,
@@ -17,10 +17,23 @@ import { ThemeProvider } from './providers/theme-provider';
 // At module scope, so it is in place before `AdminAppRoot` creates the router.
 installHistoryPopGate();
 
+// Lets body-level CSS (index.css) react to the mounted app. A class keeps
+// that cheap: `body:has(#root ...)` makes Chromium restyle the whole document
+// after almost every DOM insertion.
+function useMountedBodyClass() {
+  useLayoutEffect(() => {
+    document.body.classList.add('react-admin-mounted');
+    return () => {
+      document.body.classList.remove('react-admin-mounted');
+    };
+  }, []);
+}
+
 function ThemedAdminApp() {
   const { resolvedTheme } = useThemeContext();
   const { pathname } = useLocation();
   const isEmberOwnedRoute = useIsEmberOwnedRoute(pathname);
+  useMountedBodyClass();
 
   return (
     <ShadeApp
