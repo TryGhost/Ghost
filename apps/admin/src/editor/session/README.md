@@ -364,7 +364,8 @@ The first change writes a copy at once. After that at most one copy a minute is
 written, carrying the newest draft, and a copy identical to the last one written
 is skipped. A copy still waiting for the minute is dropped once a save leaves
 nothing unsaved or the post leaves draft. A copy is written straight away when
-the page is hidden or closed, when the session is disposed holding unsaved work,
+the page is hidden or closed, when the editor unmounts or the session is disposed
+holding unsaved work,
 before a revision from the post's history replaces the body, and when a save
 stops on a conflict, a deleted post, a post the writer may no longer edit, an
 expired session or a crash; a conflict that failing saves keep re-entering is
