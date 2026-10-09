@@ -1,8 +1,9 @@
-import { type ReactNode, useLayoutEffect, useMemo, useRef } from 'react';
+import { type ReactNode, useEffect, useLayoutEffect, useMemo, useRef } from 'react';
 import {
   matchRoutes,
   useLocation,
   useMatches,
+  useViewTransitionState,
   type AdminRouteHandle,
   type ViewTransitionController,
   ViewTransitionControllerProvider,
@@ -12,12 +13,8 @@ import { hasActiveUnsavedChangesGuard } from '@/hooks/active-unsaved-changes-gua
 import { routes, useEmberOwnedRouteMatcher } from '@/routes';
 import { shouldRunScreenTransition } from './screen-transition';
 
-// Matches the exit transitions in index.css
-const EXIT_DURATION_MS = 200;
-// Clears a held exit whose navigation never landed (e.g. a blocker held it)
-const EXIT_SAFETY_MS = 1000;
-// Outlasts the view transition's enter animations
-const ENTER_DURATION_MS = 600;
+// The parts of the page that fade out before entering a surface (index.css)
+const EXIT_TARGETS = '.screen-exit-content, .screen-exit-sidebar, .screen-exit-mobile-nav';
 
 function prefersReducedMotion(): boolean {
   return window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
@@ -31,12 +28,27 @@ function isScreenTransitionHandle(handle: unknown): boolean {
   return Boolean((handle as AdminRouteHandle | undefined)?.screenTransition);
 }
 
+/** Resolves once the exit styles' transitions have run, however long index.css makes them. */
+function exitTransitionsFinished(): Promise<void> {
+  // Reading animations flushes styles, so the transitions the exit styles start are listed
+  const animations = Array.from(document.querySelectorAll(EXIT_TARGETS)).flatMap((element) =>
+    element.getAnimations(),
+  );
+  return Promise.all(animations.map((animation) => animation.finished.catch(() => undefined))).then(
+    () => undefined,
+  );
+}
+
 /**
  * Runs router navigations across a full-screen surface's boundary as a view
  * transition. Entering a surface fades the current screen out on the live page
  * first, so the surface's render happens while nothing is visible instead of
  * freezing the old screen; the view transition then only fades it in. Leaving
  * one navigates at once with a short cross-fade.
+ *
+ * Nothing here waits on a fixed duration: the exit waits on its own
+ * transitions, and the markers on <html> last until the view transition
+ * finishes, or the navigation settles without landing.
  */
 export function ScreenTransitionProvider({ children }: { children: ReactNode }) {
   const enabled = useFeatureFlag('admin7ScreenTransitions');
@@ -44,19 +56,25 @@ export function ScreenTransitionProvider({ children }: { children: ReactNode }) 
   const matches = useMatches();
   const isEmberOwned = useEmberOwnedRouteMatcher();
   const location = useLocation();
+  // True from the router starting a view transition to or from this screen until it finishes
+  const viewTransitionRunning = useViewTransitionState(location.pathname);
+  const viewTransitionRunningRef = useRef(viewTransitionRunning);
+  viewTransitionRunningRef.current = viewTransitionRunning;
 
   // Updated during render so links rendered below already see the new matches.
   const latest = useRef({ enabled, settingsSidebarEnabled, matches, isEmberOwned });
   latest.current = { enabled, settingsSidebarEnabled, matches, isEmberOwned };
   const exitingRef = useRef(false);
-  const timersRef = useRef<{ safety?: number; enter?: number }>({});
+  // Where the current transition's navigation started, to tell one a blocker held from one that landed
+  const fromHashRef = useRef<string | null>(null);
 
   const controller = useMemo<ViewTransitionController>(() => {
     const root = document.documentElement;
 
-    const clearExit = () => {
-      window.clearTimeout(timersRef.current.safety);
+    const clearMarkers = () => {
       delete root.dataset.screenExit;
+      delete root.dataset.screenTransition;
+      fromHashRef.current = null;
     };
 
     return {
@@ -79,8 +97,8 @@ export function ScreenTransitionProvider({ children }: { children: ReactNode }) 
         if (exitingRef.current) {
           return Promise.resolve(false);
         }
-        window.clearTimeout(timersRef.current.enter);
-        delete root.dataset.screenTransition;
+        clearMarkers();
+        fromHashRef.current = window.location.hash;
         if (prefersReducedMotion()) {
           return undefined;
         }
@@ -101,31 +119,43 @@ export function ScreenTransitionProvider({ children }: { children: ReactNode }) 
           ? 'hide-sidebar'
           : 'content';
         exitingRef.current = true;
-
-        return new Promise((resolve) => {
-          window.setTimeout(() => {
-            exitingRef.current = false;
-            root.dataset.screenTransition = 'after-exit';
-            timersRef.current.safety = window.setTimeout(clearExit, EXIT_SAFETY_MS);
-            resolve(true);
-          }, EXIT_DURATION_MS);
+        return exitTransitionsFinished().then(() => {
+          exitingRef.current = false;
+          root.dataset.screenTransition = 'after-exit';
+          return true;
         });
+      },
+      // The next screen may take a while to load, so a faded-out screen only
+      // comes back, and the markers only go, once its navigation has settled
+      // without landing (a blocker held it). One that lands is handled as it
+      // commits and as its view transition finishes.
+      afterTransition() {
+        if (window.location.hash === fromHashRef.current) {
+          clearMarkers();
+        }
       },
     };
   }, []);
 
   // The new screen commits inside the view transition's DOM update, so it is
-  // revealed before the browser snapshots it.
+  // revealed before the browser snapshots it. The transition marker styles the
+  // view transition's animations, so it stays until that finishes; without a
+  // view transition (no browser support, a hidden tab) it goes with the commit.
   useLayoutEffect(() => {
     const root = document.documentElement;
-    window.clearTimeout(timersRef.current.safety);
     delete root.dataset.screenExit;
-    if (root.dataset.screenTransition) {
-      timersRef.current.enter = window.setTimeout(() => {
-        delete root.dataset.screenTransition;
-      }, ENTER_DURATION_MS);
+    if (!viewTransitionRunningRef.current) {
+      delete root.dataset.screenTransition;
+      fromHashRef.current = null;
     }
   }, [location.key]);
+
+  useEffect(() => {
+    if (!viewTransitionRunning) {
+      delete document.documentElement.dataset.screenTransition;
+      fromHashRef.current = null;
+    }
+  }, [viewTransitionRunning]);
 
   return (
     <ViewTransitionControllerProvider value={controller}>

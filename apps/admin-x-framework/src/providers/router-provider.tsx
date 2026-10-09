@@ -176,6 +176,8 @@ export interface ViewTransitionController {
    * dropped when it resolves false. Returning nothing navigates at once.
    */
   beforeTransition?: (pathname: string) => Promise<boolean> | undefined;
+  /** Runs once a transitioning navigation has settled, whether it landed or a blocker held it. */
+  afterTransition?: (pathname: string) => void;
 }
 
 const ViewTransitionControllerContext = React.createContext<ViewTransitionController>({
@@ -190,16 +192,19 @@ const ABSOLUTE_URL = /^(?:[a-z][a-z\d+.-]*:|\/\/)/i;
 function navigateAfterTransitionStart(
   controller: ViewTransitionController,
   pathname: string,
-  navigate: () => void,
+  navigate: () => void | Promise<void>,
 ): void {
+  const navigateAndSettle = () => {
+    void Promise.resolve(navigate()).finally(() => controller.afterTransition?.(pathname));
+  };
   const ready = controller.beforeTransition?.(pathname);
   if (!ready) {
-    navigate();
+    navigateAndSettle();
     return;
   }
   void ready.then((proceed) => {
     if (proceed) {
-      navigate();
+      navigateAndSettle();
     }
   });
 }

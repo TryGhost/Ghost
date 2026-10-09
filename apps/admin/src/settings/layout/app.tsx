@@ -1,4 +1,3 @@
-import MainContent from './main-content';
 import Sidebar from './sidebar';
 import { DirtyNavigationGuard } from './dirty-navigation-guard';
 import SettingsAppProvider from '@/settings/providers/settings-app-provider';
@@ -9,10 +8,15 @@ import { Outlet, useLocation } from '@tryghost/admin-x-framework';
 import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import { Stack } from '@tryghost/shade/primitives';
 import { cn } from '@tryghost/shade/utils';
-import { useEffect } from 'react';
+import { lazy, Suspense, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { useScrollSectionContext } from '@/settings/hooks/use-scroll-section';
 import { useSettingsNavigationSlot } from '@/layout/settings-navigation';
+import { SettingsLoading } from '@/settings/settings-loading';
+
+// The sections are most of Settings' code; loading them separately lets the
+// navigation show first.
+const MainContent = lazy(() => import('./main-content'));
 
 interface AppProps {
   upgradeStatus?: UpgradeStatusType;
@@ -63,7 +67,9 @@ export function App({ upgradeStatus }: AppProps) {
           <DialogPortalProvider>
             <SettingsLocationSync />
             {admin7Settings && <SettingsNavigationPortal />}
-            <MainContent />
+            <Suspense fallback={<SettingsLoading />}>
+              <MainContent />
+            </Suspense>
             <Outlet />
             <DirtyNavigationGuard />
           </DialogPortalProvider>

@@ -38,7 +38,7 @@ import {
   lazyPostsListRoute,
   postAnalyticsRouteChildren,
 } from './posts/api';
-import { canAccessSettingsRoute, lazySettingsScreen, settingsRouteChildren } from './settings/api';
+import { canAccessSettingsRoute, SettingsRoute, settingsRouteChildren } from './settings/api';
 import { lazyTagDetailScreen, lazyTagsScreen } from './tags/api';
 import { lazyViewSiteScreen } from './view-site/api';
 import {
@@ -169,7 +169,7 @@ const appRoutes: RouteObject[] = [
     // The shell swaps its primary navigation for Settings on desktop before
     // the lazy settings chunk has resolved. Mobile keeps its full takeover.
     path: `settings`,
-    lazy: lazyComponent(lazySettingsScreen),
+    Component: SettingsRoute,
     children: settingsRouteChildren,
     handle: {
       allowInForceUpgrade: true,

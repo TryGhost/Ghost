@@ -112,6 +112,7 @@ export {
   matchRoutes,
   useMatch,
   useMatches,
+  useViewTransitionState,
 } from 'react-router';
 export type { BlockerFunction } from 'react-router';
 
