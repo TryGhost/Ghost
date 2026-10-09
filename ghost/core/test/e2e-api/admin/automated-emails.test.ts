@@ -361,11 +361,12 @@ describe('Automated Emails API', function () {
 
       const automation = await models.Base.knex('automations')
         .where('slug', 'member-welcome-email-free')
-        .first('trigger_tier_scope');
+        .first('trigger_tier_scope', 'description');
       assert.equal(automation.trigger_tier_scope, 'free');
+      assert.equal(automation.description, 'Welcome new free members after they sign up.');
     });
 
-    it('Sets all paid tier scope for paid welcome email', async function () {
+    it('Sets default description and all paid tier scope for paid welcome email', async function () {
       const automatedEmail = await createAutomatedEmail({
         name: 'Paid member welcome flow',
         slug: 'member-welcome-email-paid',
@@ -373,8 +374,12 @@ describe('Automated Emails API', function () {
 
       const automation = await models.Base.knex('automations')
         .where('id', automatedEmail.id)
-        .first('trigger_tier_scope');
+        .first('trigger_tier_scope', 'description');
       assert.equal(automation.trigger_tier_scope, 'all_paid');
+      assert.equal(
+        automation.description,
+        'Welcome new paid members after they start their subscription.',
+      );
     });
 
     it('Writes sender settings to email design settings on add', async function () {
