@@ -392,7 +392,7 @@ const Sidebar: React.FC = () => {
           <SettingsHeader inputRef={searchInputRef} />
         </Box>
       ) : (
-        <div className="sticky top-0 flex content-stretch items-end tablet:h-20 tablet:bg-gray-50 xl:h-20 dark:bg-gray-950 dark:tablet:bg-[#101114]">
+        <div className="sticky top-0 z-10 flex content-stretch items-end tablet:h-20 tablet:bg-gray-50 xl:h-20 dark:bg-gray-950 dark:tablet:bg-[#101114]">
           <SettingsSearchInput className="mr-8 tablet:mr-0" inputRef={searchInputRef} />
         </div>
       )}
