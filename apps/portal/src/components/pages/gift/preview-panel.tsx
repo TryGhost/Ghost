@@ -3,6 +3,7 @@ import GiftCard from '../../common/gift-card';
 import GiftEmailPreview from '../../common/gift-email-preview';
 import { getGiftDurationLabel } from '../../../utils/gift-redemption-notification';
 import type { GiftCadenceDuration, GiftDuration, GiftProduct } from './types';
+import { giftCheckoutRightClass, giftPreviewClass } from './classes';
 
 interface TypedGiftCardProps {
   cardRef: RefObject<HTMLDivElement>;
@@ -68,17 +69,17 @@ function GiftPreviewPanel({
   siteTitle,
 }: GiftPreviewPanelProps) {
   return (
-    <div className="gh-portal-gift-checkout-right" {...cardTiltProps}>
-      <div className="gh-portal-gift-checkout-right-panel">
+    <div className={`${giftCheckoutRightClass} max-md:hidden`} {...cardTiltProps}>
+      <div className={giftPreviewClass}>
         {/* Both representations stay mounted and share a single grid cell, so switching between
         them cross-dissolves instead of unmounting one and popping the other in. */}
-        <div className="gh-portal-gift-checkout-stage">
+        <div className="my-auto grid w-full shrink-0">
           <div
             aria-hidden={showEmailPreview}
-            className="gh-portal-gift-checkout-stage-item card"
+            className="card pointer-events-none invisible flex [transform:scale(0.92)_translateY(-10px)] items-center justify-center opacity-0 [filter:blur(2px)] [grid-area:1/1] [transition:opacity_260ms_var(--ease-out-quart),transform_260ms_var(--ease-out-quart),filter_260ms_var(--ease-out-quart),visibility_260ms] data-[active=true]:pointer-events-auto data-[active=true]:visible data-[active=true]:[transform:none] data-[active=true]:opacity-100 data-[active=true]:[filter:none] motion-reduce:[transition:none]"
             data-active={!showEmailPreview}
           >
-            <div className="gh-portal-gift-checkout-card-stack">
+            <div className="my-auto flex w-full max-w-[280px] shrink-0 flex-col items-center max-md:max-w-[240px]">
               <TypedGiftCard
                 cardRef={cardRef}
                 duration={getGiftDurationLabel({
@@ -95,10 +96,10 @@ function GiftPreviewPanel({
           </div>
           <div
             aria-hidden={!showEmailPreview}
-            className="gh-portal-gift-checkout-stage-item email"
+            className="email pointer-events-none invisible flex [transform:scale(0.96)_translateY(12px)] items-center justify-center opacity-0 [filter:blur(2px)] [grid-area:1/1] [transition:opacity_260ms_var(--ease-out-quart),transform_260ms_var(--ease-out-quart),filter_260ms_var(--ease-out-quart),visibility_260ms] data-[active=true]:pointer-events-auto data-[active=true]:visible data-[active=true]:[transform:none] data-[active=true]:opacity-100 data-[active=true]:[filter:none] motion-reduce:[transition:none]"
             data-active={showEmailPreview}
           >
-            <div className="gh-portal-gift-checkout-email-stack">
+            <div className="flex w-full max-w-[min(480px,100%-32px)] shrink-0 flex-col items-center [zoom:0.9] max-md:max-w-[min(400px,100%-32px)]">
               <TypedGiftEmailPreview
                 {...emailDuration}
                 benefits={activeProduct.benefits || []}

@@ -1,8 +1,10 @@
 import React from 'react';
+import clsx from 'clsx';
 import Frame from './frame';
 import { hasMode } from '../utils/check-mode';
 import AppContext from '../app-context';
-import { getFrameStyles } from './frame.styles';
+import FrameStyles from './frame-styles';
+import PopupStyles from '../styles/popup.css?inline';
 import { getActivePage, getPages } from '../pages';
 import PopupNotification from './common/popup-notification';
 import PoweredBy from './common/powered-by';
@@ -13,6 +15,9 @@ import {
   isCookiesDisabled,
   hasFreeProductPrice,
 } from '../utils/helpers';
+import { tw } from '../utils/tw';
+
+const poweredClasses = tw`absolute bottom-6 left-6 z-[9999] max-lg:relative max-lg:bottom-auto max-lg:left-auto max-lg:flex max-lg:w-full max-lg:justify-center max-lg:bg-white max-lg:pt-8 max-sm:pt-3 max-sm:pb-6 rtl:right-6 rtl:left-auto max-sm:[&.outside.feedback]:hidden [&.outside.full-size]:hidden [@media(min-width:480px)_and_(max-width:820px)]:[&.outside]:left-1/2 [@media(min-width:480px)_and_(max-width:820px)]:[&.outside]:[transform:translateX(-50%)] rtl:[@media(min-width:480px)_and_(max-width:820px)]:[&.outside]:left-auto`;
 
 const StylesWrapper = () => {
   return {
@@ -48,7 +53,11 @@ const StylesWrapper = () => {
 function CookieDisabledBanner({ message }) {
   const cookieDisabled = isCookiesDisabled();
   if (cookieDisabled) {
-    return <div className="gh-portal-cookiebanner">{message}</div>;
+    return (
+      <div className="bg-red p-2 text-center text-14 leading-[1.4em] tracking-[0.2px] text-white">
+        {message}
+      </div>
+    );
   }
   return null;
 }
@@ -237,7 +246,7 @@ export class PopupContent extends React.Component {
       className += ' dev';
     }
 
-    const containerClassName = `${className} ${popupWidthStyle} ${pageClass}`;
+    const containerClassName = tw`${className} ${popupWidthStyle} ${pageClass} group/popup relative z-[9999] mx-auto mt-0 mb-10 box-border flex w-[500px] [transform:translateY(0px)] animate-popup flex-col justify-start rounded-[10px] bg-white p-8 text-start text-15 tracking-[0] shadow-popup outline-none [text-rendering:optimizeLegibility] max-sm:w-full! max-sm:animate-popup-mobile max-sm:overflow-visible max-sm:rounded-none max-sm:p-7! max-sm:[box-shadow:none]! max-sm:[&.account-home]:bg-gray-100 max-sm:[&.feedback]:absolute max-sm:[&.feedback]:inset-x-0 max-sm:[&.feedback]:bottom-0 max-sm:[&.feedback]:m-0! max-sm:[&.feedback]:animate-tray max-sm:[&.feedback]:rounded-t-[18px] max-sm:[&.feedback]:rounded-b-none [&.full-size]:m-0 [&.full-size]:min-h-screen [&.full-size]:w-screen [&.full-size]:origin-top [&.full-size]:animate-popup-full-size [&.full-size]:rounded-none [&.full-size]:px-[6vmin] [&.full-size]:pt-[2vmin] [&.full-size]:pb-[4vw] [&.full-size.account-plan]:pt-[4vw] [&.full-size.gift]:p-0 max-md:[&.full-size.gift]:p-0! [&.full-size.giftRedemption]:p-0 max-md:[&.full-size.giftRedemption]:p-0! [&.full-size.giftSuccess]:p-0 max-md:[&.full-size.giftSuccess]:p-0! [&.large-size]:w-full [&.large-size]:max-w-[720px] [&.large-size]:p-0 max-xl:[&.large-size]:max-w-[600px] max-sm:[&.large-size]:p-0! [&.preview]:animate-none! min-[520px]:group-[.full-size]/wrapper:[&.preview]:m-8 min-[520px]:group-[.full-size]/wrapper:[&.preview]:h-[calc(100vh-160px)] min-[520px]:group-[.full-size]/wrapper:[&.preview]:min-h-[unset] min-[520px]:group-[.full-size]/wrapper:[&.preview]:w-[calc(100vw-64px)] min-[520px]:group-[.full-size]/wrapper:[&.preview]:animate-none min-[520px]:group-[.full-size]/wrapper:[&.preview]:justify-start min-[520px]:group-[.full-size]/wrapper:[&.preview]:overflow-auto min-[520px]:group-[.full-size]/wrapper:[&.preview]:rounded-[12px] min-[520px]:group-[.full-size]/wrapper:[&.preview]:px-8 min-[520px]:group-[.full-size]/wrapper:[&.preview]:pt-8 min-[520px]:group-[.full-size]/wrapper:[&.preview]:pb-0 min-[520px]:group-[.full-size]/wrapper:[&.preview]:shadow-popup-preview [&.preview_*]:pointer-events-none! [&.preview.account-plan]:mx-auto [&.preview.account-plan]:mt-[3.2vw] [&.preview.account-plan]:mb-8 [&.preview.account-plan]:max-w-[420px] [&.preview.account-plan]:[zoom:0.9] max-sm:[&.preview.account-plan]:mt-0 min-[520px]:group-[.full-size]/wrapper:[&.preview.account-plan]:mx-auto min-[520px]:group-[.full-size]/wrapper:[&.preview.account-plan]:mt-[3.2vw] min-[520px]:group-[.full-size]/wrapper:[&.preview.account-plan]:mb-8 min-[520px]:group-[.full-size]/wrapper:[&.preview.account-plan]:size-auto min-[520px]:group-[.full-size]/wrapper:[&.preview.account-plan]:max-w-[420px] min-[520px]:group-[.full-size]/wrapper:[&.preview.account-plan]:pb-6 min-[520px]:group-[.full-size]/wrapper:[&.preview.account-plan]:[zoom:0.9] max-sm:[&.preview.full-size]:mb-0 max-sm:[&.preview.full-size]:max-h-[660px] [&.preview.offer]:mx-auto [&.preview.offer]:mt-[3.2vw] [&.preview.offer]:mb-8 [&.preview.offer]:max-w-[420px] [&.preview.offer]:[zoom:0.9] max-sm:[&.preview.offer]:mt-0 max-sm:[&.preview:not(.full-size)]:mb-0 max-sm:[&.preview:not(.full-size)]:max-h-[660px] max-sm:[&.preview:not(.full-size).account-plan]:max-h-[860px] max-sm:[&.preview:not(.full-size).account-plan]:pb-0! max-sm:[&.preview:not(.full-size).offer]:max-h-[860px] max-sm:[&.preview:not(.full-size).offer]:pb-0! [&.share]:w-[560px] max-sm:[&.share]:mb-0 max-sm:[&.share]:flex-[1_0_auto] max-xl:[&:not(.full-size):not(.large-size):not(.preview)]:w-[480px]`;
     const isGiftLayout =
       page === 'gift' ||
       page === 'giftSuccess' ||
@@ -247,7 +256,7 @@ export class PopupContent extends React.Component {
     return (
       <>
         <div
-          className={'gh-portal-popup-wrapper ' + pageClass}
+          className={`gh-portal-popup-wrapper ${pageClass} group/wrapper relative -me-7.5! scrollbar-none h-full max-h-screen overflow-scroll px-0 pe-7.5! pt-[5vmin] pb-0 [-ms-overflow-style:none] max-sm:flex max-sm:flex-col max-sm:items-center max-sm:justify-between max-sm:overflow-y-auto max-sm:bg-white max-sm:p-0 max-sm:[&.account-home]:bg-gray-100 max-sm:[&.feedback]:relative max-sm:[&.feedback]:block max-sm:[&.feedback]:w-full max-sm:[&.feedback]:overflow-hidden max-sm:[&.feedback]:overflow-y-hidden! max-sm:[&.feedback]:bg-transparent max-sm:[&.feedback]:pe-0! [&.full-size]:h-screen [&.full-size]:p-0 [&.preview.account-plan]:pt-0 max-sm:[&.preview.full-size]:h-auto max-sm:[&.preview.full-size]:max-h-[660px] [&.preview.offer]:pt-0 [@media(min-width:480px)_and_(max-height:880px)]:pt-[4vmin]`}
           onClick={(e) => this.handlePopupClose(e)}
         >
           {this.renderPopupNotification()}
@@ -261,9 +270,12 @@ export class PopupContent extends React.Component {
             {this.renderActivePage()}
             {popupSize === 'full' && !isGiftLayout ? (
               <div
-                className={
-                  'gh-portal-powered inside ' + (hasMode(['preview']) ? 'hidden ' : '') + pageClass
-                }
+                className={clsx(
+                  'inside',
+                  hasMode(['preview']) && 'hidden!',
+                  pageClass,
+                  poweredClasses,
+                )}
               >
                 <PoweredBy />
               </div>
@@ -274,9 +286,12 @@ export class PopupContent extends React.Component {
         </div>
         {page !== 'share' && !isGiftLayout && (
           <div
-            className={
-              'gh-portal-powered outside ' + (hasMode(['preview']) ? 'hidden ' : '') + pageClass
-            }
+            className={clsx(
+              'outside',
+              hasMode(['preview']) && 'hidden!',
+              pageClass,
+              poweredClasses,
+            )}
           >
             <PoweredBy />
           </div>
@@ -320,12 +335,9 @@ export default class PopupModal extends React.Component {
   }
 
   renderFrameStyles() {
-    const { site, brandColor } = this.context;
-    const FrameStyle = getFrameStyles({ site });
-    const styles = brandColor ? `:root { --brandcolor: ${brandColor} }` + FrameStyle : FrameStyle;
     return (
       <>
-        <style dangerouslySetInnerHTML={{ __html: styles }} />
+        <FrameStyles css={PopupStyles} brandColor={this.context.brandColor} />
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
       </>
     );
@@ -340,7 +352,7 @@ export default class PopupModal extends React.Component {
       ...Styles.frame.common,
     };
 
-    let className = 'gh-portal-popup-background';
+    let className = tw`absolute inset-0 block [transform:translate3d(0,0,0)] animate-backdrop bg-[linear-gradient(315deg,rgb(0_0_0/0.2)_0%,rgb(0_0_0/0.1)_100%)] backdrop-blur-[2px] max-sm:animate-none [&.preview]:pointer-events-none [&.preview]:animate-none [&.preview]:bg-[linear-gradient(45deg,rgba(255,255,255,1)_0%,rgba(249,249,250,1)_100%)] [&.preview.preview-dark]:bg-[linear-gradient(45deg,var(--color-gray-950)_0%,var(--color-black)_100%)]`;
     if (hasMode(['preview'])) {
       Styles.modalContainer.zIndex = '3999997';
     }

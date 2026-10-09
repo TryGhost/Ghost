@@ -41,7 +41,7 @@ export default class AccountHomePage extends React.Component {
       return null;
     }
     return (
-      <div className="gh-portal-account-wrapper">
+      <div>
         <AccountMain />
         <AccountFooter
           onClose={() => this.context.doAction('closePopup')}

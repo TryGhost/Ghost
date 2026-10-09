@@ -1,79 +1,7 @@
 import LoaderIcon from '../../images/icons/loader.svg?react';
+import clsx from 'clsx';
 import { isCookiesDisabled } from '../../utils/helpers';
-
-export const ActionButtonStyles = `
-    .gh-portal-btn-main {
-        box-shadow: none;
-        position: relative;
-        border: none;
-    }
-
-    .gh-portal-btn-main:hover,
-    .gh-portal-btn-main:focus {
-        box-shadow: none;
-        border: none;
-    }
-
-    .gh-portal-btn-primary {
-        color: #fff;
-    }
-
-    .gh-portal-btn-primary:hover,
-    .gh-portal-btn-primary:focus {
-        opacity: 0.92 !important;
-    }
-
-    .gh-portal-btn-primary:disabled:hover::before {
-        display: none;
-    }
-
-    .gh-portal-btn-destructive:not(:disabled):hover {
-        color: var(--red);
-        border-color: var(--red);
-    }
-
-    .gh-portal-btn-text {
-        padding: 0;
-        font-weight: 500;
-        height: unset;
-        border: none;
-        box-shadow: none;
-    }
-
-    button:focus-visible,
-    a:focus-visible,
-    .gh-portal-btn:focus-visible,
-    .gh-portal-btn-text:focus-visible {
-        outline: 2px solid var(--brandcolor);
-        outline-offset: 2px;
-        border-radius: 4px;
-        box-shadow: none;
-        transition: none;
-    }
-
-    html[dir="rtl"] .gh-portal-btn-text span.right-arrow {
-        transform: scale(-1, 1);
-        display: inline-flex;
-    }
-
-    .gh-portal-loadingicon {
-        position: absolute;
-        left: 50%;
-        display: inline-block;
-        margin-inline-start: -19px;
-        height: 31px;
-    }
-
-    .gh-portal-loadingicon path,
-    .gh-portal-loadingicon rect {
-        fill: var(--white);
-    }
-
-    .gh-portal-loadingicon.dark path,
-    .gh-portal-loadingicon.dark rect {
-        fill: var(--grey0);
-    }
-`;
+import { tw } from '../../utils/tw';
 
 const Styles = ({ brandColor, disabled, style = {}, isPrimary }) => {
   const backgroundColor = brandColor || '#3eb0ef';
@@ -104,6 +32,7 @@ function ActionButton({
   isRunning,
   isPrimary = true,
   isDestructive = false,
+  isText = false,
   classes = '',
   style = {},
   tabIndex = undefined,
@@ -111,20 +40,26 @@ function ActionButton({
 }) {
   const Style = Styles({ disabled, retry, brandColor, style, isPrimary });
 
-  let className = 'gh-portal-btn';
-  if (isPrimary) {
-    className += ' gh-portal-btn-main gh-portal-btn-primary';
-  }
-  if (isDestructive) {
-    className += ' gh-portal-btn-destructive';
-  }
-  if (classes) {
-    className += ' ' + classes;
-  }
+  const className = clsx(
+    'gh-portal-btn',
+    isPrimary && 'gh-portal-btn-primary',
+    classes,
+    'relative flex min-w-20 cursor-pointer items-center justify-center rounded-md bg-white text-center text-15 leading-[1em] font-medium tracking-[0.2px] whitespace-nowrap no-underline outline-none select-none transition-control disabled:cursor-auto disabled:opacity-50!',
+    isText ? 'h-auto p-0' : 'h-11 px-[1.8rem] py-0',
+    isPrimary &&
+      'border-none text-white hover:opacity-[0.92]! focus:opacity-[0.92]! disabled:hover:opacity-[0.92]! disabled:focus:opacity-[0.92]! max-xl:h-10.5',
+    !isPrimary &&
+      (isText
+        ? 'border-none text-gray-950'
+        : 'border border-solid border-gray-150 text-gray-950 hover:border-gray-250'),
+    isDestructive && 'enabled:hover:border-red enabled:hover:text-red',
+  );
   if (isCookiesDisabled()) {
     disabled = true;
   }
-  const loaderClassName = isPrimary ? 'gh-portal-loadingicon' : 'gh-portal-loadingicon dark';
+  const loaderClassName = isPrimary
+    ? tw`gh-portal-loadingicon absolute left-1/2 ms-[-19px] inline-block h-[31px] [&_path]:fill-white [&_rect]:fill-white`
+    : tw`gh-portal-loadingicon dark absolute left-1/2 ms-[-19px] inline-block h-[31px] [&_path]:fill-gray-950 [&_rect]:fill-gray-950`;
   return (
     <button
       className={className}

@@ -5,6 +5,7 @@ import CloseButton from '../common/close-button';
 import { getDefaultNewsletterSender, getSupportAddress } from '../../utils/helpers';
 import Interpolate from '@doist/react-interpolate';
 import { t } from '../../utils/i18n';
+import { popupHeaderClass } from '../shared-classes';
 
 export default function EmailReceivingPage() {
   const { brandColor, doAction, site, lastPage, member, pageData } = useContext(AppContext);
@@ -15,10 +16,11 @@ export default function EmailReceivingPage() {
   const directAccess = (pageData && pageData.direct) || false;
 
   return (
-    <div className="gh-email-receiving-faq">
-      <header className="gh-portal-detail-header">
+    <div className="">
+      <header className={popupHeaderClass}>
         {!directAccess && (
           <BackButton
+            placement="longform"
             brandColor={brandColor}
             onClick={() => {
               if (!lastPage) {
@@ -29,10 +31,10 @@ export default function EmailReceivingPage() {
             }}
           />
         )}
-        <CloseButton />
+        <CloseButton placement="longform" />
       </header>
 
-      <div className="gh-longform">
+      <div className="px-[6vmin] pt-14 pb-[6vmin] max-sm:px-7 max-sm:py-[10vmin] [&_a]:font-medium [&_a]:text-brand [&_h3]:mt-0 [&_h3]:mb-[0.25em] [&_h3]:text-[27px] [&_h3]:text-balance [&_h4]:mt-[1.85em] [&_h4]:mb-[0.4em] [&_h4]:text-[17.5px] [&_p]:mb-[1.2em] [&_p]:text-gray-800 [&_p:last-of-type]:mb-[0.2em] [&_strong]:text-gray-900">
         <h3>{t(`Help! I'm not receiving emails`)}</h3>
 
         <p>
@@ -52,7 +54,7 @@ export default function EmailReceivingPage() {
               memberEmail: <strong>{member.email}</strong>,
               button: (
                 <button
-                  className="gh-portal-btn-text"
+                  className="cursor-pointer border-none bg-transparent p-0 text-14.5 font-medium text-brand underline [transition:color_linear_100ms]"
                   onClick={() =>
                     doAction('switchPage', {
                       lastPage: 'emailReceivingFAQ',

@@ -12,6 +12,9 @@ import ThreadsIcon from '../../../images/icons/share-threads.svg?react';
 import XIcon from '../../../images/icons/share-x.svg?react';
 import { useEffect, useRef, useState } from 'react';
 import { t } from '../../../utils/i18n';
+import { tw } from '../../../utils/tw';
+
+const shareActionClass = tw`relative flex h-11 max-w-17.5 min-w-0 cursor-pointer items-center justify-center rounded-lg border border-solid border-gray-150 bg-white px-4 py-0 text-center text-15 leading-[1em] font-medium tracking-[0.2px] whitespace-nowrap text-gray-850 no-underline outline-none select-none transition-control hover:border-gray-250 max-xs:w-full max-xs:max-w-none max-xs:flex-none`;
 
 const ShareModal = () => {
   const [copied, setCopied] = useState(false);
@@ -92,45 +95,57 @@ const ShareModal = () => {
   };
 
   return (
-    <div className="gh-portal-content gh-portal-share">
-      <CloseButton />
-      <div className="gh-portal-share-header">
-        <h1 className="gh-portal-main-title">{t('Share')}</h1>
+    <div className="relative scrollbar-none">
+      <CloseButton placement="share" />
+      <div className="mb-5">
+        <h1 className="text-left text-21 leading-[1.1em] font-semibold text-pretty text-gray-950 rtl:text-right">
+          {t('Share')}
+        </h1>
       </div>
 
-      <div className="gh-portal-share-preview">
+      <div className="flex flex-col rounded-xl border border-solid border-gray-150">
         {shareImage && (
           <img
-            className="gh-portal-share-preview-image"
+            className="aspect-video w-full rounded-t-xl bg-gray-50 object-cover"
             src={shareImage}
             alt=""
             data-testid="share-preview-image"
           />
         )}
-        <div className="gh-portal-share-preview-content">
-          {shareTitle && <h2 className="gh-portal-share-preview-title">{shareTitle}</h2>}
-          {shareExcerpt && <p className="gh-portal-share-preview-excerpt">{shareExcerpt}</p>}
+        <div className="flex flex-col gap-4 p-4">
+          {shareTitle && (
+            <h2 className="m-0 text-19 leading-[1.35] font-semibold text-pretty text-gray-950">
+              {shareTitle}
+            </h2>
+          )}
+          {shareExcerpt && (
+            <p className="mx-0 -mt-2 mb-0 line-clamp-3 text-15 leading-[1.45] text-pretty text-gray-600">
+              {shareExcerpt}
+            </p>
+          )}
           {(shareFavicon || shareSiteName || shareAuthor) && (
-            <div className="gh-portal-share-preview-footer">
+            <div className="-mt-1.5 flex min-h-4.5 items-center gap-2">
               {shareFavicon && (
                 <img
-                  className="gh-portal-share-preview-favicon"
+                  className="size-4 flex-none rounded object-cover"
                   src={shareFavicon}
                   alt=""
                   data-testid="share-preview-favicon"
                 />
               )}
-              <div className="gh-portal-share-preview-meta">
+              <div className="gh-portal-share-preview-meta flex min-w-0 items-center gap-1 truncate text-13.5 leading-[1.3] text-gray-800">
                 {shareSiteName && (
-                  <span className="gh-portal-share-preview-site">{shareSiteName}</span>
+                  <span className="min-w-0 overflow-hidden font-medium text-ellipsis">
+                    {shareSiteName}
+                  </span>
                 )}
                 {shareSiteName && shareAuthor && (
-                  <span className="gh-portal-share-preview-separator" aria-hidden="true">
+                  <span className="flex-none" aria-hidden="true">
                     |
                   </span>
                 )}
                 {shareAuthor && (
-                  <span className="gh-portal-share-preview-author">{shareAuthor}</span>
+                  <span className="min-w-0 overflow-hidden text-ellipsis">{shareAuthor}</span>
                 )}
               </div>
             </div>
@@ -138,68 +153,88 @@ const ShareModal = () => {
         </div>
       </div>
 
-      <div className="gh-portal-share-actions">
+      <div className="gh-portal-share-actions relative mt-5 flex items-center gap-3 max-xs:flex-col max-xs:items-stretch">
         <button
-          className="gh-portal-btn gh-portal-share-action copy"
+          className="gh-portal-btn gh-portal-share-action copy relative flex h-11 w-auto max-w-none min-w-0 flex-[1_0_auto] cursor-pointer items-center justify-center gap-2 rounded-lg border-none bg-[color:var(--brandcolor,#3eb0ef)] px-3.5 py-0 text-center text-15 leading-[1em] font-medium tracking-[0.2px] whitespace-nowrap text-white no-underline outline-none select-none transition-control hover:border-gray-250 disabled:cursor-auto disabled:opacity-50! max-xs:order-1"
           type="button"
           onClick={onCopy}
           aria-label={copied ? t('Copied') : t('Copy link')}
           title={copied ? t('Copied') : t('Copy link')}
         >
           {copied ? (
-            <span className="gh-portal-share-icon copied" aria-hidden="true">
+            <span
+              className="copied inline-flex size-5 items-center justify-center rounded-full bg-[color:color-mix(in_srgb,var(--brandcolor)_14%,var(--color-white))] leading-[0] text-brand [&_svg]:size-3 [&_svg_path]:stroke-current"
+              aria-hidden="true"
+            >
               <CheckmarkIcon />
             </span>
           ) : (
-            <span className="gh-portal-share-icon" aria-hidden="true">
+            <span
+              className="inline-flex size-5 items-center justify-center rounded-full leading-[0] [&_svg]:size-5"
+              aria-hidden="true"
+            >
               <LinkIcon />
             </span>
           )}
-          <span className="gh-portal-share-label">{copied ? t('Copied') : t('Copy link')}</span>
+          <span className="text-14 leading-none font-medium whitespace-nowrap text-white">
+            {copied ? t('Copied') : t('Copy link')}
+          </span>
         </button>
 
         <a
-          className="gh-portal-btn gh-portal-share-action twitter"
+          className={`gh-portal-btn gh-portal-share-action twitter ${shareActionClass} max-xs:order-2`}
           href={socialLinks.twitter}
           target="_blank"
           rel="noopener noreferrer"
           aria-label={t('X (Twitter)')}
           title={t('X (Twitter)')}
         >
-          <span className="gh-portal-share-icon x" aria-hidden="true">
+          <span
+            className="x inline-flex size-5 items-center justify-center rounded-full leading-[0] [&_svg]:size-4"
+            aria-hidden="true"
+          >
             <XIcon />
           </span>
         </a>
 
         <a
-          className="gh-portal-btn gh-portal-share-action linkedin"
+          className={`gh-portal-btn gh-portal-share-action linkedin ${shareActionClass} max-xs:order-3`}
           href={socialLinks.linkedin}
           target="_blank"
           rel="noopener noreferrer"
           aria-label={t('LinkedIn')}
           title={t('LinkedIn')}
         >
-          <span className="gh-portal-share-icon" aria-hidden="true">
+          <span
+            className="inline-flex size-5 items-center justify-center rounded-full leading-[0] [&_svg]:size-5"
+            aria-hidden="true"
+          >
             <LinkedinIcon />
           </span>
         </a>
 
         <a
-          className="gh-portal-btn gh-portal-share-action email"
+          className={`gh-portal-btn gh-portal-share-action email ${shareActionClass} max-xs:order-4`}
           href={socialLinks.email}
           target="_blank"
           rel="noopener noreferrer"
           aria-label={t('Email')}
           title={t('Email')}
         >
-          <span className="gh-portal-share-icon" aria-hidden="true">
+          <span
+            className="inline-flex size-5 items-center justify-center rounded-full leading-[0] [&_svg]:size-5"
+            aria-hidden="true"
+          >
             <EnvelopeIcon />
           </span>
         </a>
 
-        <div className="gh-portal-share-more" ref={moreMenuRef}>
+        <div
+          className="gh-portal-share-more relative max-xs:order-5 max-xs:w-full"
+          ref={moreMenuRef}
+        >
           <button
-            className="gh-portal-btn gh-portal-share-action more"
+            className="gh-portal-btn gh-portal-share-action more relative flex h-11 max-w-17.5 min-w-0 cursor-pointer items-center justify-center rounded-lg border border-solid border-gray-150 bg-white px-4 py-0 text-center text-20 leading-none font-bold tracking-[0px] whitespace-nowrap text-gray-850 no-underline outline-none select-none transition-control hover:border-gray-250 disabled:cursor-auto disabled:opacity-50! max-xs:w-full max-xs:max-w-none max-xs:flex-none"
             type="button"
             onClick={onToggleMoreMenu}
             aria-label={t('More options')}
@@ -207,47 +242,63 @@ const ShareModal = () => {
             aria-haspopup="menu"
             aria-expanded={isMoreMenuOpen}
           >
-            <span className="gh-portal-share-icon" aria-hidden="true">
+            <span
+              className="inline-flex size-5 items-center justify-center rounded-full leading-[0] [&_svg]:size-5"
+              aria-hidden="true"
+            >
               <EllipsisIcon />
             </span>
           </button>
           {isMoreMenuOpen && (
-            <div className="gh-portal-share-more-menu" role="menu" aria-label={t('More options')}>
+            <div
+              className="absolute right-0 bottom-[calc(100%+8px)] z-[2] flex min-w-[180px] origin-bottom-right [transform:translateY(8px)] animate-share-menu-in flex-col rounded-lg border border-solid border-gray-150 bg-white p-1.5 opacity-0 [box-shadow:0_8px_20px_rgb(0_0_0/0.12)] max-xs:inset-x-0 rtl:right-auto rtl:left-0 rtl:origin-bottom-left max-xs:rtl:right-0"
+              role="menu"
+              aria-label={t('More options')}
+            >
               <a
-                className="gh-portal-share-more-item"
+                className="flex h-9 items-center gap-2 rounded-md border-none px-2.5 py-0 text-14 leading-none font-medium text-gray-900 no-underline hover:bg-gray-50"
                 href={socialLinks.facebook}
                 target="_blank"
                 rel="noopener noreferrer"
                 role="menuitem"
                 onClick={onClickMoreItem}
               >
-                <span className="gh-portal-share-more-item-icon" aria-hidden="true">
+                <span
+                  className="inline-flex size-4 items-center justify-center leading-[0] [&_svg]:size-4"
+                  aria-hidden="true"
+                >
                   <FacebookIcon />
                 </span>
                 <span>{t('Facebook')}</span>
               </a>
               <a
-                className="gh-portal-share-more-item"
+                className="flex h-9 items-center gap-2 rounded-md border-none px-2.5 py-0 text-14 leading-none font-medium text-gray-900 no-underline hover:bg-gray-50"
                 href={socialLinks.threads}
                 target="_blank"
                 rel="noopener noreferrer"
                 role="menuitem"
                 onClick={onClickMoreItem}
               >
-                <span className="gh-portal-share-more-item-icon" aria-hidden="true">
+                <span
+                  className="inline-flex size-4 items-center justify-center leading-[0] [&_svg]:size-4"
+                  aria-hidden="true"
+                >
                   <ThreadsIcon />
                 </span>
                 <span>{t('Threads')}</span>
               </a>
               <a
-                className="gh-portal-share-more-item"
+                className="flex h-9 items-center gap-2 rounded-md border-none px-2.5 py-0 text-14 leading-none font-medium text-gray-900 no-underline hover:bg-gray-50"
                 href={socialLinks.bluesky}
                 target="_blank"
                 rel="noopener noreferrer"
                 role="menuitem"
                 onClick={onClickMoreItem}
               >
-                <span className="gh-portal-share-more-item-icon" aria-hidden="true">
+                <span
+                  className="inline-flex size-4 items-center justify-center leading-[0] [&_svg]:size-4"
+                  aria-hidden="true"
+                >
                   <BlueSkyIcon />
                 </span>
                 <span>{t('Bluesky')}</span>

@@ -1,15 +1,23 @@
+import clsx from 'clsx';
 import React from 'react';
 import Interpolate from '@doist/react-interpolate';
-import Frame from './frame';
-import AppContext from '../app-context';
-import NotificationStyle from './notification.styles';
-import CloseIcon from '../images/icons/close.svg?react';
-import CheckmarkIcon from '../images/icons/checkmark-fill.svg?react';
-import WarningIcon from '../images/icons/warning-fill.svg?react';
-import NotificationParser, { clearURLParams } from '../utils/notifications';
-import { getGiftRedemptionSuccessMessage } from '../utils/gift-redemption-notification';
-import { getPortalLink } from '../utils/helpers';
-import { t } from '../utils/i18n';
+import Frame from '../frame';
+import AppContext from '../../app-context';
+import FrameStyles from '../frame-styles';
+import NotificationStyles from '../../styles/notification.css?inline';
+import CloseIcon from '../../images/icons/close.svg?react';
+import CheckmarkIcon from '../../images/icons/checkmark-fill.svg?react';
+import WarningIcon from '../../images/icons/warning-fill.svg?react';
+import NotificationParser, { clearURLParams } from '../../utils/notifications';
+import { getGiftRedemptionSuccessMessage } from '../../utils/gift-redemption-notification';
+import { getPortalLink } from '../../utils/helpers';
+import { t } from '../../utils/i18n';
+import { tw } from '../../utils/tw';
+import {
+  notificationClass,
+  notificationCloseIconClass,
+  notificationIconClass,
+} from './notification-classes';
 
 const Styles = () => {
   return {
@@ -197,22 +205,26 @@ class NotificationContent extends React.Component {
   render() {
     const { type, status, message } = this.props;
     const { className = '' } = this.state;
-    const statusClass = status ? `  ${status}` : ' neutral';
-    const slideClass = className ? ` ${className}` : '';
     return (
-      <div className="gh-portal-notification-wrapper">
+      <div className="relative size-full overflow-hidden">
         <div
-          className={`gh-portal-notification${statusClass}${slideClass}`}
+          className={clsx(
+            'gh-portal-notification',
+            status,
+            className,
+            notificationClass,
+            tw`right-3 max-sm:left-3 max-sm:max-w-[calc(100%-24px)] rtl:right-auto rtl:left-3 max-sm:rtl:right-3 max-sm:rtl:left-auto`,
+          )}
           onAnimationEnd={(e) => this.onAnimationEnd(e)}
         >
           {status === 'error' ? (
-            <WarningIcon className="gh-portal-notification-icon error" alt="" />
+            <WarningIcon className={`error ${notificationIconClass} text-red`} alt="" />
           ) : (
-            <CheckmarkIcon className="gh-portal-notification-icon success" alt="" />
+            <CheckmarkIcon className={`success ${notificationIconClass} text-green`} alt="" />
           )}
           <NotificationText type={type} status={status} message={message} context={this.context} />
           <CloseIcon
-            className="gh-portal-notification-closeicon"
+            className={notificationCloseIconClass}
             alt="Close"
             onClick={(e) => this.onNotificationClose(e)}
           />
@@ -303,11 +315,7 @@ export default class Notification extends React.Component {
   }
 
   renderFrameStyles() {
-    const { brandColor } = this.context;
-    const styles = brandColor
-      ? `:root { --brandcolor: ${brandColor} }` + NotificationStyle
-      : NotificationStyle;
-    return <style dangerouslySetInnerHTML={{ __html: styles }} />;
+    return <FrameStyles css={NotificationStyles} brandColor={this.context.brandColor} />;
   }
 
   render() {

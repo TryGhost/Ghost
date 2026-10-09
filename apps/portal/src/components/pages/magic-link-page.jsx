@@ -9,74 +9,14 @@ import EnvelopeIcon from '../../images/icons/envelope.svg?react';
 import { isIos } from '../../utils/is-ios';
 import { t } from '../../utils/i18n';
 import { getGiftDurationLabel } from '../../utils/gift-redemption-notification';
-
-export const MagicLinkStyles = `
-    .gh-portal-icon-envelope {
-        width: 44px;
-        margin: 12px 0 10px;
-    }
-
-    .gh-portal-inbox-notification {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-    }
-
-    .gh-portal-inbox-notification p {
-        max-width: 420px;
-        text-align: center;
-        margin-bottom: 20px;
-    }
-
-    .gh-portal-inbox-notification .gh-portal-header {
-        padding-bottom: 12px;
-    }
-
-    .gh-portal-otp {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        margin-bottom: 12px;
-    }
-
-    .gh-portal-otp-container {
-        border: 1px solid var(--grey12);
-        border-radius: 8px;
-        width: 100%;
-        transition: border-color 0.25s ease;
-    }
-
-    .gh-portal-otp-container.focused {
-        border-color: var(--grey8);
-    }
-
-    .gh-portal-otp-container.error {
-        border-color: var(--red);
-        box-shadow: 0 0 0 3px rgba(255, 0, 0, 0.1);
-    }
-
-    .gh-portal-otp .gh-portal-input {
-        margin: 0 auto;
-        font-size: 2rem !important;
-        font-weight: 300;
-        border: none;
-        /*text-align: center;*/
-        padding-left: 2ch;
-        padding-right: 1ch;
-        letter-spacing: 1ch;
-        font-family: Consolas, Liberation Mono, Menlo, Courier, monospace;
-        width: 15ch;
-    }
-
-    .gh-portal-otp-error {
-        margin-top: 8px;
-        color: var(--red);
-        font-size: 1.3rem;
-        letter-spacing: 0.35px;
-        line-height: 1.6em;
-        margin-bottom: 0;
-    }
-`;
+import {
+  giftCardStageClass,
+  giftCheckoutRightClass,
+  giftInnerClass,
+  giftLeftClass,
+  giftSubtitleClass,
+  giftTitleClass,
+} from './gift/classes';
 
 const OTC_FIELD_NAME = 'otc';
 
@@ -154,12 +94,12 @@ export default class MagicLinkPage extends React.Component {
     });
 
     return (
-      <section className="gh-portal-inbox-notification">
-        <header className="gh-portal-header">
-          <EnvelopeIcon className="gh-portal-icon gh-portal-icon-envelope" />
-          <h2 className="gh-portal-main-title">{popupTitle}</h2>
+      <section className="flex flex-col items-center">
+        <header className="flex flex-col items-center pb-3">
+          <EnvelopeIcon className="mt-3 mb-2.5 w-11 text-brand" />
+          <h2 className="text-center leading-[1.1em] text-pretty text-gray-950">{popupTitle}</h2>
         </header>
-        <p>{popupDescription}</p>
+        <p className="mb-5 max-w-[420px] text-center">{popupDescription}</p>
       </section>
     );
   }
@@ -271,13 +211,13 @@ export default class MagicLinkPage extends React.Component {
 
     return (
       <form onSubmit={(e) => this.handleSubmit(e)}>
-        <section className="gh-portal-section gh-portal-otp">
+        <section className="gh-portal-section gh-portal-otp mb-3 flex flex-col items-center">
           <div
-            className={`gh-portal-otp-container ${this.state.isFocused && 'focused'} ${error && 'error'}`}
+            className={`${this.state.isFocused && 'focused'} ${error && 'error'} w-full rounded-lg border border-solid border-gray-150 [transition:border-color_0.25s_ease] [&.error]:border-red [&.error]:[box-shadow:0_0_0_3px_rgba(255,0,0,0.1)] [&.focused:not(.error)]:border-gray-400`}
           >
             <input
               id={`input-${OTC_FIELD_NAME}`}
-              className={`gh-portal-input ${this.state.otc && 'entry'} ${error && 'error'}`}
+              className={`gh-portal-input ${this.state.otc && 'entry'} ${error && 'error'} mx-auto my-0 box-border block h-11 w-[15ch] appearance-none rounded-md bg-transparent py-0 pr-[1ch] pl-[2ch] [font-family:Consolas,Liberation_Mono,Menlo,Courier,monospace] font-light tracking-[1ch] [color:inherit] outline-none [-webkit-appearance:none] [border:none] transition-input placeholder:text-gray-400 max-xl:h-10.5 [.gh-portal-otp_&]:text-20!`}
               placeholder="––––––"
               name={OTC_FIELD_NAME}
               type="text"
@@ -295,10 +235,14 @@ export default class MagicLinkPage extends React.Component {
               onBlur={() => this.setState({ isFocused: false })}
             />
           </div>
-          {error && <div className="gh-portal-otp-error">{error}</div>}
+          {error && (
+            <div className="mt-2 mb-0 text-13 leading-[1.6em] tracking-[0.35px] text-red">
+              {error}
+            </div>
+          )}
         </section>
 
-        <footer className="gh-portal-signin-footer gh-button-row">
+        <footer className="relative flex flex-row-reverse items-center gap-3 pt-3 max-sm:flex-col max-sm:group-[.preview:not(.full-size)]/wrapper:pb-8">
           {inboxLinks && !isIos(navigator) && !this.state.otc ? (
             <InboxLinkButton inboxLinks={inboxLinks} />
           ) : (
@@ -335,27 +279,23 @@ export default class MagicLinkPage extends React.Component {
 
     return (
       <>
-        <CloseButton />
-        <div className="gh-portal-content giftRedemption">
-          <div className="gh-portal-gift-checkout">
-            <div className="gh-portal-gift-checkout-left">
-              <div className="gh-portal-gift-checkout-bg" aria-hidden="true" />
-              <div className="gh-portal-gift-checkout-inner">
-                <header className="gh-portal-gift-checkout-header">
-                  <h1 className="gh-portal-main-title">{popupTitle}</h1>
-                  <p className="gh-portal-gift-checkout-subtitle">{popupDescription}</p>
+        <CloseButton tone="light" />
+        <div className="relative scrollbar-none min-h-screen">
+          <div className="grid min-h-screen w-full grid-cols-[1fr_1fr] max-md:min-h-0 max-md:grid-cols-[1fr] [&_.gh-portal-btn-primary]:rounded-full [&_.gh-portal-input]:h-12">
+            <div className={giftLeftClass}>
+              <div className={giftInnerClass}>
+                <header className="mb-3">
+                  <h1 className={giftTitleClass}>{popupTitle}</h1>
+                  <p className={giftSubtitleClass}>{popupDescription}</p>
                 </header>
-                <div className="gh-portal-gift-redemption-form">
+                <div className="gh-portal-gift-redemption-form mt-6">
                   {showOTCForm ? this.renderOTCForm() : this.renderCloseButton()}
                 </div>
               </div>
             </div>
-            <div className="gh-portal-gift-checkout-right">
-              <div className="gh-portal-gift-checkout-right-panel">
-                <div
-                  className="gh-portal-gift-checkout-card-stack"
-                  data-revealing={this.state.showDetails}
-                >
+            <div className={giftCheckoutRightClass}>
+              <div className="flex min-h-0 flex-1 flex-col items-center overflow-y-auto rounded-[32px] px-12 py-16 [background:linear-gradient(180deg,rgba(0,0,0,0.3)_0%,rgba(0,0,0,0)_100%),var(--brandcolor)] max-md:rounded-[0_0_32px_32px] max-md:px-6 max-md:pt-14 max-md:pb-8 [&_.gh-portal-gift-checkout-benefit]:text-white/85 [&_.gh-portal-gift-checkout-benefit_svg_path]:[stroke:rgba(255,255,255,0.85)]">
+                <div className={giftCardStageClass} data-revealing={this.state.showDetails}>
                   <GiftCard
                     duration={getGiftDurationLabel(gift)}
                     tierName={gift.tier?.name}
@@ -390,7 +330,7 @@ export default class MagicLinkPage extends React.Component {
     }
 
     return (
-      <div className="gh-portal-content">
+      <div className="relative scrollbar-none">
         <CloseButton />
         {this.renderFormHeader()}
         {showOTCForm ? this.renderOTCForm() : this.renderCloseButton()}

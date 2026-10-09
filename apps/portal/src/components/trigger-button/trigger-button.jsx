@@ -1,16 +1,17 @@
 import React from 'react';
-import Frame from './frame';
-import MemberGravatar from './common/member-gravatar';
-import AppContext from '../app-context';
-import UserIcon from '../images/icons/user.svg?react';
-import ButtonIcon1 from '../images/icons/button-icon-1.svg?react';
-import ButtonIcon2 from '../images/icons/button-icon-2.svg?react';
-import ButtonIcon3 from '../images/icons/button-icon-3.svg?react';
-import ButtonIcon4 from '../images/icons/button-icon-4.svg?react';
-import ButtonIcon5 from '../images/icons/button-icon-5.svg?react';
-import TriggerButtonStyle from './trigger-button.styles';
-import { hasAvailablePrices, isInviteOnly, isSigninAllowed } from '../utils/helpers';
-import { hasMode } from '../utils/check-mode';
+import Frame from '../frame';
+import MemberGravatar from '../common/member-gravatar';
+import AppContext from '../../app-context';
+import UserIcon from '../../images/icons/user.svg?react';
+import ButtonIcon1 from '../../images/icons/button-icon-1.svg?react';
+import ButtonIcon2 from '../../images/icons/button-icon-2.svg?react';
+import ButtonIcon3 from '../../images/icons/button-icon-3.svg?react';
+import ButtonIcon4 from '../../images/icons/button-icon-4.svg?react';
+import ButtonIcon5 from '../../images/icons/button-icon-5.svg?react';
+import FrameStyles from '../frame-styles';
+import TriggerStyles from '../../styles/trigger.css?inline';
+import { hasAvailablePrices, isInviteOnly, isSigninAllowed } from '../../utils/helpers';
+import { hasMode } from '../../utils/check-mode';
 
 const ICON_MAPPING = {
   'icon-1': ButtonIcon1,
@@ -112,7 +113,7 @@ class TriggerButtonContent extends React.Component {
     }
 
     if (memberGravatar) {
-      return <MemberGravatar gravatar={memberGravatar} />;
+      return <MemberGravatar gravatar={memberGravatar} className="m-0 size-15" />;
     }
 
     if (this.context.member) {
@@ -144,7 +145,7 @@ class TriggerButtonContent extends React.Component {
   renderText() {
     const { portal_button_signup_text: buttonText } = this.context.site;
     if (this.hasText()) {
-      return <span className="gh-portal-triggerbtn-label"> {buttonText} </span>;
+      return <span className="block max-w-[380px] truncate p-2 text-white"> {buttonText} </span>;
     }
     return null;
   }
@@ -176,9 +177,12 @@ class TriggerButtonContent extends React.Component {
 
     if (hasText) {
       return (
-        <div className="gh-portal-triggerbtn-wrapper" ref={this.container}>
+        <div
+          className="inline-flex h-full items-start justify-end pt-2.5 pr-7 pb-0 pl-[17px] leading-none select-none [transition:transform_0.16s_linear_0s] rtl:pr-[17px] rtl:pl-7 [&_span]:mb-px"
+          ref={this.container}
+        >
           <div
-            className="gh-portal-triggerbtn-container with-label"
+            className="relative flex h-15 min-w-15 cursor-pointer items-center justify-center rounded-full bg-brand pr-3 pl-4 shadow-trigger [transition:opacity_0.3s_ease] before:absolute before:inset-0 before:rounded-full before:bg-white/0 before:content-[''] before:[transition:background_0.3s_ease] hover:before:bg-white/[0.08] rtl:pr-4 rtl:pl-3"
             onClick={(e) => this.onToggle(e)}
             data-testid="portal-trigger-button"
           >
@@ -189,9 +193,9 @@ class TriggerButtonContent extends React.Component {
       );
     }
     return (
-      <div className="gh-portal-triggerbtn-wrapper">
+      <div className="inline-flex h-full items-start justify-end pt-2.5 pr-7 pb-0 pl-[17px] leading-none select-none [transition:transform_0.16s_linear_0s] rtl:pr-[17px] rtl:pl-7 [&_span]:mb-px">
         <div
-          className={'gh-portal-triggerbtn-container ' + triggerBtnClass}
+          className={`${triggerBtnClass} relative flex h-15 min-w-15 cursor-pointer items-center justify-center rounded-full bg-brand shadow-trigger [transition:opacity_0.3s_ease] before:absolute before:inset-0 before:rounded-full before:bg-white/0 before:content-[''] before:[transition:background_0.3s_ease] hover:before:bg-white/[0.08] [&.halo]:before:-inset-1 [&.halo]:before:border-4 [&.halo]:before:border-solid [&.halo]:before:border-white/15`}
           onClick={(e) => this.onToggle(e)}
           data-testid="portal-trigger-button"
         >
@@ -254,11 +258,7 @@ export default class TriggerButton extends React.Component {
   }
 
   renderFrameStyles() {
-    const { brandColor } = this.context;
-    const styles = brandColor
-      ? `:root { --brandcolor: ${brandColor} }` + TriggerButtonStyle
-      : TriggerButtonStyle;
-    return <style dangerouslySetInnerHTML={{ __html: styles }} />;
+    return <FrameStyles css={TriggerStyles} brandColor={this.context.brandColor} />;
   }
 
   render() {

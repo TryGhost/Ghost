@@ -3,6 +3,7 @@ import GiftIcon from '../../images/icons/gift.svg?react';
 import { useContext } from 'react';
 import { type Site, canShowSignupGiftPromotion } from '../../utils/gift-subscriptions';
 import { t } from '../../utils/i18n';
+import { signupMessageButtonClass } from '../shared-classes';
 
 interface SignupGiftPromotionProps {
   className?: string;
@@ -26,15 +27,15 @@ const SignupGiftPromotion = ({ className, lastPage }: SignupGiftPromotionProps) 
     <>
       <div>{t('Buying for someone else?')}</div>
       <button
-        className="gh-portal-btn gh-portal-btn-link gh-portal-signup-message-gift"
+        className={signupMessageButtonClass}
         data-test-button="gift-switch"
         data-testid="gift-switch"
         style={{ color: brandColor }}
         type="button"
         onClick={() => doAction('switchPage', { page: 'gift', lastPage })}
       >
-        <GiftIcon aria-hidden="true" className="gh-portal-signup-message-icon" />
-        <span>{t('Gift a membership')}</span>
+        <GiftIcon aria-hidden="true" className="me-1 size-4 [stroke-width:2]" />
+        <span className="-mb-0.5 inline-block pb-0.5">{t('Gift a membership')}</span>
       </button>
     </>
   );

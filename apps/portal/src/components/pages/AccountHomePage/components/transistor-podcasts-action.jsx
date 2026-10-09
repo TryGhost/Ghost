@@ -1,23 +1,5 @@
 import { t } from '../../../../utils/i18n';
-
-export const TransistorPodcastsActionStyles = `
-    .gh-portal-action-transistor {
-        animation: fadeIn 0.3s ease-in-out;
-    }
-
-    @keyframes fadeIn {
-        from {
-            opacity: 0;
-        }
-        to {
-            opacity: 1;
-        }
-    }
-
-    .gh-portal-action-transistor .gh-portal-list-detail p {
-        word-break: break-word;
-    }
-`;
+import { accountActionTextClass } from '../../../shared-classes';
 
 export const TRANSISTOR_DEFAULTS = {
   heading: 'Podcasts',
@@ -48,15 +30,15 @@ const TransistorPodcastsAction = ({ hasPodcasts, memberUuid, settings = {} }) =>
   const transistorUrl = urlTemplate.replace('{memberUuid}', memberUuid);
 
   return (
-    <section className="gh-portal-action-transistor">
-      <div className="gh-portal-list-detail">
+    <section className="animate-fade-in-quick">
+      <div className={accountActionTextClass}>
         <h3>{heading}</h3>
         <p>{description}</p>
       </div>
       <a
         href={transistorUrl}
         rel="noopener noreferrer"
-        className="gh-portal-btn gh-portal-btn-list"
+        className="gh-portal-btn relative -mx-1 my-0 flex h-9.5 cursor-pointer items-center justify-center rounded-md border-none bg-white px-1 py-0 text-center text-15 leading-[1em] font-medium tracking-[0.2px] whitespace-nowrap text-brand no-underline outline-none select-none transition-control hover:border-gray-250 hover:opacity-75"
         target="_parent"
       >
         {buttonText}

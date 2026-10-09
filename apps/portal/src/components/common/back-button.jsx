@@ -1,56 +1,14 @@
 import LeftArrowIcon from '../../images/icons/arrow-left.svg?react';
+import clsx from 'clsx';
 import { t } from '../../utils/i18n';
+import { tw } from '../../utils/tw';
 
-export const BackButtonStyles = `
-    .gh-portal-btn-back,
-    .gh-portal-btn-back:hover {
-        box-shadow: none;
-        position: relative;
-        height: unset;
-        min-width: unset;
-        position: fixed;
-        top: 29px;
-        left: 20px;
-        background: none;
-        padding: 8px;
-        margin: 0;
-        box-shadow: none;
-        color: var(--grey3);
-        border: none;
-        z-index: 10000;
-    }
-    html[dir="rtl"] .gh-portal-btn-back {
-        right: 20px;
-        left: unset;
-    }
-    @media (max-width: 480px) {
-        .gh-portal-btn-back,
-        .gh-portal-btn-back:hover {
-            left: 16px;
-        }
-        html[dir="rtl"] .gh-portal-btn-back {
-            right: 16px;
-            left: unset;
-        }
-    }
+const PLACEMENTS = {
+  popup: tw`left-5 max-sm:left-4 rtl:right-5 rtl:left-auto max-sm:rtl:right-4`,
+  longform: tw`left-[calc(6vmin-14px)] max-sm:left-4 rtl:right-[calc(6vmin-14px)] rtl:left-auto`,
+};
 
-    .gh-portal-btn-back:hover {
-        color: var(--grey1);
-        transform: translateX(-4px);
-    }
-
-    .gh-portal-btn-back svg {
-        width: 17px;
-        height: 17px;
-        margin-top: 1px;
-        margin-inline-end: 2px;
-    }
-    html[dir="rtl"] .gh-portal-btn-back svg {
-        transform: scaleX(-1);
-    }
-`;
-
-function ActionButton({ brandColor, label = null, hidden = false, onClick }) {
+function ActionButton({ brandColor, label = null, hidden = false, onClick, placement = 'popup' }) {
   if (hidden) {
     return null;
   }
@@ -61,11 +19,14 @@ function ActionButton({ brandColor, label = null, hidden = false, onClick }) {
 
   return (
     <button
-      className="gh-portal-btn gh-portal-btn-back"
+      className={clsx(
+        'fixed top-[29px] z-[10000] m-0 flex cursor-pointer items-center justify-center rounded-md border-none bg-transparent p-2 text-center text-15 leading-none font-medium tracking-[0.2px] whitespace-nowrap text-gray-800 no-underline transition-all duration-[250ms] ease-[ease] outline-none select-none hover:-translate-x-1 hover:text-gray-900',
+        PLACEMENTS[placement],
+      )}
       style={brandColor ? { color: brandColor } : undefined}
       onClick={(e) => onClick(e)}
     >
-      <LeftArrowIcon /> {label}
+      <LeftArrowIcon className="me-0.5 mt-px size-[17px] rtl:-scale-x-100" /> {label}
     </button>
   );
 }

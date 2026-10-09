@@ -4,6 +4,7 @@ import BackButton from '../common/back-button';
 import CloseButton from '../common/close-button';
 import { getSupportAddress } from '../../utils/helpers';
 import { t } from '../../utils/i18n';
+import { popupHeaderClass } from '../shared-classes';
 
 export default function EmailSuppressedPage() {
   const { brandColor, doAction, site, pageData } = useContext(AppContext);
@@ -12,9 +13,9 @@ export default function EmailSuppressedPage() {
   const directAccess = (pageData && pageData.direct) || false;
 
   return (
-    <div className="gh-email-suppression-faq">
+    <div>
       {!directAccess && (
-        <header className="gh-portal-detail-header">
+        <header className={popupHeaderClass}>
           <BackButton
             brandColor={brandColor}
             onClick={() => {
@@ -25,7 +26,7 @@ export default function EmailSuppressedPage() {
         </header>
       )}
 
-      <div className="gh-longform">
+      <div className="px-[6vmin] pt-14 pb-[6vmin] max-sm:px-7 max-sm:py-[10vmin] [&_a]:font-medium [&_a]:text-brand [&_h3]:mt-0 [&_h3]:mb-[0.25em] [&_h3]:text-[27px] [&_h3]:text-balance [&_h4]:mt-[1.85em] [&_h4]:mb-[0.4em] [&_h4]:text-[17.5px] [&_p]:mb-[1.2em] [&_p]:text-gray-800 [&_p:last-of-type]:mb-[0.2em] [&_strong]:text-gray-900">
         <h3>{t('Why has my email been disabled?')}</h3>
         <p>
           {t(
@@ -66,7 +67,7 @@ export default function EmailSuppressedPage() {
         </p>
         <p>
           <a
-            className="gh-portal-btn gh-portal-btn-branded no-margin-right"
+            className="gh-portal-btn relative mt-[4rem] flex h-11 w-full min-w-20 cursor-pointer items-center justify-center rounded-md border border-solid border-gray-150 bg-white px-[1.8rem] py-0 text-center text-15 leading-[1em] font-medium tracking-[0.2px] whitespace-nowrap text-brand no-underline outline-none select-none transition-control hover:border-gray-250"
             href={supportAddress}
             onClick={() => {
               supportAddress && window.open(supportAddress);

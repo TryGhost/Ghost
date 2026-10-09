@@ -40,7 +40,12 @@ import type {
   GiftInputField,
   GiftStep,
 } from './gift/types';
+import { tw } from '../../utils/tw';
+import { giftInnerClass, giftSubtitleClass, giftTitleClass } from './gift/classes';
 
+const CONTENT_CLASSES = tw`relative scrollbar-none min-h-screen p-0`;
+const CHECKOUT_CLASSES = tw`grid min-h-screen w-full grid-cols-[1fr_1fr] max-md:min-h-0 max-md:grid-cols-[1fr] [&_.gh-portal-btn-primary]:rounded-full [&_.gh-portal-input]:h-12 [&_.gh-portal-input-label]:mb-0 [&_.gh-portal-input-label]:text-14 [&_.gh-portal-input-label]:font-semibold [&_.gh-portal-input-label]:text-gray-750 [&_.gh-portal-input-labelcontainer]:mb-2 [&_.gh-portal-input-labelcontainer]:items-baseline`;
+const LEFT_CLASSES = tw`relative flex items-center justify-center bg-white p-12 max-md:px-6 max-md:pt-16 max-md:pb-0`;
 const validateInputForm = ValidateInputForm as unknown as (data: {
   fields: GiftInputField[];
 }) => GiftFormErrors;
@@ -217,21 +222,23 @@ const GiftPage = () => {
   const siteTitle = site.title || '';
   if (!activeDuration || products.length === 0) {
     return (
-      <div className="gh-portal-content gift">
-        <CloseButton onClick={handleClose} />
-        <div className="gh-portal-gift-checkout">
-          <div className="gh-portal-gift-checkout-left">
-            <div aria-hidden="true" className="gh-portal-gift-checkout-bg" />
-            <div className="gh-portal-gift-checkout-inner">
-              <header className="gh-portal-gift-checkout-header">
-                <h1 className="gh-portal-main-title">{t('Gift a membership')}</h1>
-                <p className="gh-portal-gift-checkout-subtitle">
+      <div className={CONTENT_CLASSES}>
+        <CloseButton placement="giftCheckout" tone="lightOnWide" onClick={handleClose} />
+        <div className={CHECKOUT_CLASSES}>
+          <div className={LEFT_CLASSES}>
+            <div className={giftInnerClass}>
+              <header className="mb-3">
+                <h1 className={giftTitleClass}>{t('Gift a membership')}</h1>
+                <p className={giftSubtitleClass}>
                   {t('Gift subscriptions are not available right now.')}
                 </p>
               </header>
             </div>
           </div>
-          <div aria-hidden="true" className="gh-portal-gift-checkout-right" />
+          <div
+            aria-hidden="true"
+            className="sticky top-0 flex h-screen [align-self:start] overflow-y-auto py-3 pr-3 pl-0 max-md:static max-md:-order-1 max-md:hidden max-md:h-auto max-md:overflow-visible max-md:p-0"
+          />
         </div>
       </div>
     );
@@ -517,18 +524,18 @@ const GiftPage = () => {
   };
 
   return (
-    <div ref={contentRef} className="gh-portal-content gift">
-      <CloseButton onClick={handleClose} />
-      <div className="gh-portal-gift-checkout">
-        <div className="gh-portal-gift-checkout-left" data-step={step}>
-          <div aria-hidden="true" className="gh-portal-gift-checkout-bg" />
+    <div ref={contentRef} className={CONTENT_CLASSES}>
+      <CloseButton placement="giftCheckout" tone="lightOnWide" onClick={handleClose} />
+      <div className={CHECKOUT_CLASSES}>
+        <div className={LEFT_CLASSES} data-step={step}>
           {/* One back button in the corner for both jobs, as the other Portal modals do it. */}
           {(step === 'delivery' || lastPage) && (
             <SiteTitleBackButton
+              placement="gift"
               onBack={() => (step === 'delivery' ? handleBackToPlan() : handleExit())}
             />
           )}
-          <div className="gh-portal-gift-checkout-inner">
+          <div className={giftInnerClass}>
             {step === 'plan' ? (
               <GiftPlanStep
                 activeDuration={activeDuration}
@@ -566,7 +573,7 @@ const GiftPage = () => {
                 onChangeRecipientName={handleRecipientNameChange}
               />
             )}
-            <div className="gh-portal-gift-checkout-cta-wrapper">
+            <div className="sticky bottom-0 z-[1] bg-[linear-gradient(0deg,#fff_78%,rgb(255_255_255/0)_100%)] py-6 max-md:bg-[linear-gradient(0deg,#fff_70%,rgb(255_255_255/0)_100%)] [&_.gh-portal-gift-checkout-cta]:h-12 [&_.gh-portal-gift-checkout-cta]:font-semibold">
               <ActionButton
                 brandColor={brandColor}
                 classes="gh-portal-gift-checkout-cta"

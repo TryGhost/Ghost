@@ -3,6 +3,7 @@ import Switch from '../../../common/switch';
 import { getSiteNewsletters, hasMemberGotEmailSuppression } from '../../../../utils/helpers';
 import { useContext } from 'react';
 import { t } from '../../../../utils/i18n';
+import { accountActionClass, accountActionTextClass } from '../../../shared-classes';
 
 function EmailNewsletterAction() {
   const { member, site, doAction } = useContext(AppContext);
@@ -18,7 +19,7 @@ function EmailNewsletterAction() {
 
   return (
     <section
-      className="gh-portal-list-clickable"
+      className={accountActionClass}
       role="button"
       tabIndex={0}
       aria-pressed={subscribed}
@@ -33,13 +34,13 @@ function EmailNewsletterAction() {
         }
       }}
     >
-      <div className="gh-portal-list-detail email-newsletter">
+      <div className={accountActionTextClass}>
         <h3>{t('Email newsletter')}</h3>
         <p>
           {label}{' '}
           {hasMemberGotEmailSuppression({ member }) && subscribed && (
             <button
-              className="gh-portal-btn-text gh-email-faq-page-button"
+              className="mt-[3px] block h-auto cursor-pointer border-none bg-transparent p-0 text-14.5 font-medium text-brand [transition:color_linear_100ms]"
               onClick={(e) => {
                 e.stopPropagation();
                 doAction('switchPage', { page: 'emailReceivingFAQ', lastPage: 'accountHome' });

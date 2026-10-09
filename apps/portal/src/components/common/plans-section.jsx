@@ -16,7 +16,7 @@ export function MultipleProductsPlansSection({
 
   if (changePlan) {
     return (
-      <section className="gh-portal-plans">
+      <section>
         <div>
           <ChangeProductSection
             type="changePlan"
@@ -30,7 +30,7 @@ export function MultipleProductsPlansSection({
   }
 
   return (
-    <section className="gh-portal-plans">
+    <section>
       <div>
         <ProductsSection
           type="upgrade"

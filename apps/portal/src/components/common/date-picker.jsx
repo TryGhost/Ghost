@@ -1,3 +1,4 @@
+import clsx from 'clsx';
 import AppContext from '../../app-context';
 import CalendarIcon from '../../images/icons/calendar.svg?react';
 import { DayPicker } from 'react-day-picker';
@@ -12,246 +13,23 @@ import {
   useState,
 } from 'react';
 import { parseDateValue, toDateValue } from '../../utils/date-time';
-
-export const DatePickerStyles = `
-    .gh-portal-datepicker {
-        position: relative;
-    }
-
-    .gh-portal-datepicker-field {
-        position: relative;
-    }
-
-    .gh-portal-datepicker-field .gh-portal-input {
-        width: 100%;
-        margin-bottom: 0;
-        box-sizing: border-box;
-    }
-
-    /* Focusing the field reveals the real segments so the date stays typable. */
-    .gh-portal-datepicker-field .gh-portal-input.has-min-label:not(:focus),
-    .gh-portal-datepicker-field .gh-portal-input.has-min-label:not(:focus)::-webkit-datetime-edit {
-        color: transparent;
-    }
-
-    .gh-portal-datepicker-min-label {
-        position: absolute;
-        top: 50%;
-        inset-inline-start: 13px;
-        transform: translateY(-50%);
-        font-size: 1.5rem;
-        pointer-events: none;
-    }
-
-    .gh-portal-datepicker-field .gh-portal-input:focus ~ .gh-portal-datepicker-min-label {
-        opacity: 0;
-    }
-
-    /* Hidden unless the browser gives us a handle on its own picker button —
-       see the @supports below. Without that we can't suppress the native
-       calendar, and two of them in one field is worse than the stock one. */
-    .gh-portal-datepicker-toggle {
-        display: none;
-    }
-
-    @supports selector(::-webkit-calendar-picker-indicator) {
-        .gh-portal-datepicker-field .gh-portal-input::-webkit-calendar-picker-indicator {
-            display: none;
-        }
-
-        .gh-portal-datepicker-toggle {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: absolute;
-            top: 50%;
-            inset-inline-end: 12px;
-            width: 18px;
-            height: 18px;
-            padding: 0;
-            transform: translateY(-50%);
-            background: none;
-            border: 0;
-            color: var(--grey7);
-            cursor: pointer;
-        }
-
-        .gh-portal-datepicker-toggle svg {
-            width: 18px;
-            height: 18px;
-        }
-    }
-
-    /* Portalled outside the animated, overflow-hidden gift reveal to avoid
-       clipping and layout shifts; placed from the field's measured rect. */
-    .gh-portal-datepicker-popover {
-        position: absolute;
-        z-index: 100;
-        padding: 10px;
-        background: var(--white);
-        border: 1px solid var(--grey90);
-        border-radius: 8px;
-        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
-    }
-
-    .gh-portal-datepicker-months {
-        position: relative;
-    }
-
-    .gh-portal-datepicker-month-caption {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        height: 28px;
-        margin-bottom: 2px;
-        font-size: 1.4rem;
-        font-weight: 600;
-        color: var(--grey0);
-    }
-
-    .gh-portal-datepicker-nav {
-        position: absolute;
-        top: 0;
-        inset-inline: 0;
-        display: flex;
-        justify-content: space-between;
-        pointer-events: none;
-    }
-
-    .gh-portal-datepicker-nav button {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 28px;
-        height: 28px;
-        padding: 0;
-        background: none;
-        border: 0;
-        border-radius: 6px;
-        color: var(--grey3);
-        cursor: pointer;
-        pointer-events: auto;
-    }
-
-    .gh-portal-datepicker-nav button:hover:not([aria-disabled='true']) {
-        background: var(--grey96);
-        color: var(--grey0);
-    }
-
-    .gh-portal-datepicker-nav button[aria-disabled='true'] {
-        opacity: 0.3;
-        cursor: default;
-    }
-
-    .gh-portal-datepicker-nav svg {
-        width: 16px;
-        height: 16px;
-        fill: currentColor;
-    }
-
-    /* RTL gets the chevrons mirrored, not just repositioned — react-day-picker
-       swaps which button means previous, but the glyph itself still points the
-       way it was drawn. */
-    html[dir="rtl"] .gh-portal-datepicker-nav svg {
-        transform: scale(-1, 1);
-    }
-
-    .gh-portal-datepicker-grid {
-        border-collapse: collapse;
-    }
-
-    .gh-portal-datepicker-weekday {
-        width: 34px;
-        padding-bottom: 2px;
-        font-size: 1.1rem;
-        font-weight: 500;
-        text-transform: uppercase;
-        letter-spacing: 0.3px;
-        color: var(--grey7);
-    }
-
-    /* Sizing the cell keeps every row a row tall whether or not it has
-       anything in it. */
-    .gh-portal-datepicker-day {
-        height: 30px;
-        padding: 0;
-    }
-
-    .gh-portal-datepicker-day-button {
-        position: relative;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 34px;
-        height: 30px;
-        padding: 0;
-        background: none;
-        border: 0;
-        border-radius: 6px;
-        font-size: 1.35rem;
-        color: var(--grey0);
-        cursor: pointer;
-    }
-
-    .gh-portal-datepicker-day-button:hover:not(:disabled) {
-        background: var(--grey96);
-    }
-
-    .gh-portal-datepicker-today .gh-portal-datepicker-day-button::after {
-        content: '';
-        position: absolute;
-        bottom: 3px;
-        left: 50%;
-        width: 3px;
-        height: 3px;
-        transform: translateX(-50%);
-        border-radius: 50%;
-        background: var(--brandcolor);
-    }
-
-    .gh-portal-datepicker-selected .gh-portal-datepicker-day-button::after {
-        background: var(--white);
-    }
-
-    .gh-portal-datepicker-selected .gh-portal-datepicker-day-button {
-        background: var(--brandcolor);
-        color: var(--white);
-    }
-
-    /* Dim the brand fill on hover to preserve the selected day's white text. */
-    .gh-portal-datepicker-selected .gh-portal-datepicker-day-button:hover:not(:disabled) {
-        background: var(--brandcolor);
-        opacity: 0.92;
-    }
-
-    .gh-portal-datepicker-outside .gh-portal-datepicker-day-button {
-        color: var(--grey8);
-    }
-
-    .gh-portal-datepicker-disabled .gh-portal-datepicker-day-button {
-        color: var(--grey8);
-        cursor: default;
-    }
-
-    .gh-portal-datepicker-disabled .gh-portal-datepicker-day-button:hover {
-        background: none;
-    }
-`;
+import { tw } from '../../utils/tw';
 
 // Map only the classes Portal styles so react-day-picker's stylesheet doesn't
 // have to be shipped.
 const classNames = {
-  months: 'gh-portal-datepicker-months',
-  month_caption: 'gh-portal-datepicker-month-caption',
-  nav: 'gh-portal-datepicker-nav',
-  month_grid: 'gh-portal-datepicker-grid',
-  weekday: 'gh-portal-datepicker-weekday',
-  day: 'gh-portal-datepicker-day',
-  day_button: 'gh-portal-datepicker-day-button',
-  today: 'gh-portal-datepicker-today',
-  selected: 'gh-portal-datepicker-selected',
-  disabled: 'gh-portal-datepicker-disabled',
-  outside: 'gh-portal-datepicker-outside',
+  months: 'relative',
+  month_caption: tw`mb-0.5 flex h-7 items-center justify-center text-14 font-semibold text-gray-950`,
+  nav: tw`pointer-events-none absolute inset-x-0 top-0 flex justify-between [&_button]:pointer-events-auto [&_button]:flex [&_button]:size-7 [&_button]:cursor-pointer [&_button]:items-center [&_button]:justify-center [&_button]:rounded-md [&_button]:border-none [&_button]:bg-transparent [&_button]:p-0 [&_button]:text-gray-800 [&_button:focus-visible]:rounded [&_button:hover:not([aria-disabled='true'])]:text-gray-950 [&_button[aria-disabled='true']]:cursor-default [&_button[aria-disabled='true']]:opacity-30 [&_svg]:size-4 [&_svg]:fill-current rtl:[&_svg]:-scale-x-100`,
+  month_grid: 'gh-portal-datepicker-grid border-collapse',
+  weekday: tw`w-8.5 pb-0.5 text-11 font-medium tracking-[0.3px] text-gray-500 uppercase`,
+  day: 'gh-portal-datepicker-day h-7.5 p-0',
+  day_button: tw`gh-portal-datepicker-day-button relative flex h-7.5 w-8.5 cursor-pointer items-center justify-center rounded-md border-none bg-transparent p-0 text-13.5 text-gray-950`,
+  today: tw`[&_.gh-portal-datepicker-day-button]:after:absolute [&_.gh-portal-datepicker-day-button]:after:bottom-[3px] [&_.gh-portal-datepicker-day-button]:after:left-1/2 [&_.gh-portal-datepicker-day-button]:after:size-[3px] [&_.gh-portal-datepicker-day-button]:after:-translate-x-1/2 [&_.gh-portal-datepicker-day-button]:after:rounded-[50%] [&_.gh-portal-datepicker-day-button]:after:bg-brand [&_.gh-portal-datepicker-day-button]:after:content-['']`,
+  selected: tw`gh-portal-datepicker-selected [&_.gh-portal-datepicker-day-button]:bg-brand [&_.gh-portal-datepicker-day-button]:text-white [&_.gh-portal-datepicker-day-button:hover:not(:disabled)]:bg-brand [&_.gh-portal-datepicker-day-button:hover:not(:disabled)]:opacity-[0.92] [&.gh-portal-datepicker-selected_.gh-portal-datepicker-day-button]:after:bg-white`,
+  disabled: tw`gh-portal-datepicker-disabled [&_.gh-portal-datepicker-day-button]:cursor-default [&_.gh-portal-datepicker-day-button:hover]:bg-transparent [&.gh-portal-datepicker-disabled_.gh-portal-datepicker-day-button]:text-gray-400`,
+  outside:
+    'gh-portal-datepicker-outside [&.gh-portal-datepicker-outside_.gh-portal-datepicker-day-button]:text-gray-400',
 };
 
 const POPOVER_GAP = 6;
@@ -429,14 +207,16 @@ const DatePicker = ({
   const showMinLabel = !!minLabel && !!value && value === min;
 
   return (
-    <div ref={containerRef} className="gh-portal-datepicker">
-      <div ref={fieldRef} className="gh-portal-datepicker-field">
+    <div ref={containerRef} className="gh-portal-datepicker relative">
+      <div ref={fieldRef} className="gh-portal-datepicker-field relative">
         {/* Keeps a native date input for locale-aware keyboard
                     editing; only the browser's calendar is replaced. */}
         <input
-          className={
-            'gh-portal-input' + (hasError ? ' error' : '') + (showMinLabel ? ' has-min-label' : '')
-          }
+          className={clsx(
+            tw`gh-portal-input mb-0 box-border block h-11 w-full appearance-none rounded-md border border-solid border-gray-200 bg-transparent px-3 py-0 text-15 tracking-[0.2px] [color:inherit] outline-none transition-input placeholder:text-gray-400 focus:border-gray-400 max-xl:h-10.5 [&.error]:border-red [&.has-min-label:not(:focus)]:text-transparent [&.has-min-label:not(:focus)::-webkit-datetime-edit]:text-transparent [&::-webkit-calendar-picker-indicator]:hidden [@media(hover:none)]:text-[16px]!`,
+            hasError && 'error',
+            showMinLabel && 'has-min-label',
+          )}
           data-test-input={id}
           id={id}
           max={max}
@@ -449,7 +229,10 @@ const DatePicker = ({
           onChange={(event) => onChange(event.target.value)}
         />
         {showMinLabel && (
-          <span aria-hidden="true" className="gh-portal-datepicker-min-label">
+          <span
+            aria-hidden="true"
+            className="pointer-events-none absolute start-[13px] top-1/2 -translate-y-1/2 text-15 [.gh-portal-input:focus~&]:opacity-0"
+          >
             {minLabel}
           </span>
         )}
@@ -458,7 +241,7 @@ const DatePicker = ({
           aria-expanded={isOpen}
           aria-haspopup="dialog"
           aria-label={ariaLabel}
-          className="gh-portal-datepicker-toggle"
+          className="hidden picker-indicator:absolute picker-indicator:end-3 picker-indicator:top-1/2 picker-indicator:flex picker-indicator:size-4.5 picker-indicator:-translate-y-1/2 picker-indicator:cursor-pointer picker-indicator:items-center picker-indicator:justify-center picker-indicator:border-none picker-indicator:bg-transparent picker-indicator:p-0 picker-indicator:text-gray-500 picker-indicator:[&_svg]:size-4.5"
           data-testid="datepicker-toggle"
           type="button"
           onClick={toggle}
@@ -470,7 +253,7 @@ const DatePicker = ({
         createPortal(
           <div
             aria-label={ariaLabel}
-            className="gh-portal-datepicker-popover"
+            className="gh-portal-datepicker-popover absolute z-[100] rounded-lg bg-white p-2.5 [box-shadow:0_8px_24px_rgba(0,0,0,0.12)]"
             data-testid="datepicker-popover"
             role="dialog"
             ref={popoverRef}

@@ -1925,6 +1925,9 @@ importers:
       '@sentry/react':
         specifier: 'catalog:'
         version: 7.120.4(react@17.0.2)
+      '@tailwindcss/postcss':
+        specifier: 'catalog:'
+        version: 4.2.2
       '@testing-library/jest-dom':
         specifier: 'catalog:'
         version: 6.9.1
@@ -1949,6 +1952,9 @@ importers:
       '@vitest/coverage-v8':
         specifier: 'catalog:'
         version: 4.1.11(@vitest/browser@4.1.11)(vitest@4.1.11)
+      clsx:
+        specifier: 'catalog:'
+        version: 2.1.1
       dompurify:
         specifier: 'catalog:'
         version: 3.4.16
@@ -1967,6 +1973,9 @@ importers:
       react-dom:
         specifier: catalog:react17
         version: 17.0.2(react@17.0.2)
+      tailwindcss:
+        specifier: 'catalog:'
+        version: 4.2.2
       typescript:
         specifier: 'catalog:'
         version: '@typescript/typescript6@6.0.2'

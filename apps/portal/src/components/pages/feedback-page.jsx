@@ -9,179 +9,24 @@ import ActionButton from '../common/action-button';
 import CloseButton from '../common/close-button';
 import LoadingPage from './loading-page';
 import { t } from '../../utils/i18n';
-
-export const FeedbackPageStyles = `
-    .gh-portal-feedback {
-
-    }
-
-    .gh-portal-feedback .gh-feedback-icon {
-        padding: 10px 0;
-        text-align: center;
-        color: var(--brandcolor);
-        width: 48px;
-        margin: 0 auto;
-    }
-
-    .gh-portal-feedback .gh-feedback-icon.gh-feedback-icon-error {
-        color: #f50b23;
-        width: 96px;
-    }
-
-    .gh-portal-feedback .gh-portal-text-center {
-        padding: 16px 32px 12px;
-    }
-
-    .gh-portal-confirm-title {
-        line-height: inherit;
-        text-align: center;
-        box-sizing: border-box;
-        margin: 0;
-        margin-bottom: .4rem;
-        font-size: 24px;
-        font-weight: 700;
-        letter-spacing: -.018em;
-    }
-
-    .gh-portal-confirm-button {
-        width: 100%;
-        margin-top: 3.6rem;
-    }
-
-    .gh-feedback-buttons-group {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 16px;
-        margin-top: 3.6rem;
-    }
-
-    .gh-feedback-button {
-        position: relative;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 8px;
-        font-size: 1.4rem;
-        line-height: 1.2;
-        font-weight: 700;
-        border: none;
-        border-radius: 22px;
-        padding: 12px 8px;
-        color: #505050;
-        background: none;
-        cursor: pointer;
-    }
-
-    .gh-feedback-button::before {
-        content: '';
-        position: absolute;
-        width: 100%;
-        height: 100%;
-        left: 0;
-        top: 0;
-        border-radius: inherit;
-        background: currentColor;
-        opacity: 0.10;
-    }
-    html[dir="rtl"] .gh-feedback-button::before {
-        right: 0;
-        left: unset;
-    }
-
-    .gh-feedback-button-selected {
-        box-shadow: inset 0 0 0 2px currentColor;
-    }
-
-    .gh-feedback-button svg {
-        width: 24px;
-        height: 24px;
-        color: inherit;
-    }
-
-    .gh-feedback-button svg path {
-        stroke-width: 4px;
-    }
-
-    @media (max-width: 480px) {
-        .gh-portal-popup-background {
-            animation: none;
-        }
-
-        .gh-portal-popup-wrapper.feedback h1 {
-            font-size: 2.5rem;
-        }
-
-        .gh-portal-popup-wrapper.feedback p {
-            margin-bottom: 1.2rem;
-        }
-
-        .gh-portal-feedback .gh-portal-text-center {
-            padding-inline-start: 8px;
-            padding-inline-end: 8px;
-        }
-
-        .gh-portal-popup-wrapper.feedback {
-            display: block;
-            position: relative;
-            width: 100%;
-            background: none;
-            padding-inline-end: 0 !important;
-            overflow: hidden;
-            overflow-y: hidden !important;
-            animation: none;
-        }
-
-        .gh-portal-popup-container.feedback {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            border-radius: 18px 18px 0 0;
-            margin: 0 !important;
-            animation: none;
-            animation: mobile-tray-from-bottom 0.4s ease;
-        }
-
-        .gh-portal-popup-wrapper.feedback .gh-portal-closeicon-container {
-            display: none;
-        }
-
-        .gh-feedback-buttons-group,
-        .gh-portal-confirm-button {
-            margin-top: 28px;
-        }
-
-        .gh-portal-powered.outside.feedback {
-            display: none;
-        }
-
-        @keyframes mobile-tray-from-bottom {
-            0% {
-                opacity: 0;
-                transform: translateY(300px);
-            }
-            20% {
-                opacity: 1.0;
-            }
-            100% {
-                transform: translateY(0);
-            }
-        }
-    }
-`;
+import { tw } from '../../utils/tw';
 
 function ErrorPage({ error }) {
   const { doAction } = useContext(AppContext);
 
   return (
-    <div className="gh-portal-content gh-portal-feedback with-footer">
-      <CloseButton />
-      <div className="gh-feedback-icon gh-feedback-icon-error">
+    <div className="relative scrollbar-none">
+      <CloseButton hideOnMobile />
+      <div className="mx-auto my-0 w-24 px-0 py-2.5 text-center text-[#f50b23]">
         <ThumbErrorIcon />
       </div>
-      <h1 className="gh-portal-main-title">{t('Sorry, that didn’t work.')}</h1>
+      <h1 className="text-center leading-[1.1em] text-pretty text-gray-950 max-sm:group-[.feedback]/wrapper:text-25">
+        {t('Sorry, that didn’t work.')}
+      </h1>
       <div>
-        <p className="gh-portal-text-center">{error}</p>
+        <p className="px-8 pt-4 pb-3 text-center text-pretty max-sm:px-2 max-sm:group-[.feedback]/wrapper:mb-[1.2rem]">
+          {error}
+        </p>
       </div>
       <ActionButton
         style={{ width: '100%' }}
@@ -192,7 +37,6 @@ function ErrorPage({ error }) {
         label={t('Close')}
         isRunning={false}
         tabIndex={3}
-        classes={'sticky bottom'}
       />
     </div>
   );
@@ -216,8 +60,10 @@ const ConfirmDialog = ({ onConfirm, loading, initialScore }) => {
   };
 
   const getButtonClassNames = (value) => {
-    const baseClassName = 'gh-feedback-button';
-    return value === score ? `${baseClassName} gh-feedback-button-selected` : baseClassName;
+    const baseClassName = tw`relative flex cursor-pointer items-center justify-center gap-2 rounded-[22px] border-none bg-transparent px-2 py-3 text-14 leading-[1.2] font-bold text-[#505050] before:absolute before:top-0 before:left-0 before:size-full before:rounded-[inherit] before:bg-current before:opacity-10 before:content-[''] rtl:before:right-0 rtl:before:left-auto [&_svg]:size-6 [&_svg]:[color:inherit] [&_svg_path]:stroke-[4px]`;
+    return value === score
+      ? `${baseClassName} [box-shadow:inset_0_0_0_2px_currentColor]`
+      : baseClassName;
   };
 
   const getInlineStyles = (value) => {
@@ -225,10 +71,12 @@ const ConfirmDialog = ({ onConfirm, loading, initialScore }) => {
   };
 
   return (
-    <div className="gh-portal-confirm-dialog" onMouseDown={stopPropagation}>
-      <h1 className="gh-portal-confirm-title">{t('Give feedback on this post')}</h1>
+    <div onMouseDown={stopPropagation}>
+      <h1 className="mx-0 mt-0 mb-[0.4rem] box-border text-center text-[24px] leading-[inherit] font-bold tracking-[-.018em] max-sm:group-[.feedback]/wrapper:text-25">
+        {t('Give feedback on this post')}
+      </h1>
 
-      <div className="gh-feedback-buttons-group">
+      <div className="mt-[3.6rem] grid grid-cols-[1fr_1fr] gap-4 max-sm:mt-7">
         <button
           className={getButtonClassNames(1)}
           style={getInlineStyles(1)}
@@ -249,7 +97,7 @@ const ConfirmDialog = ({ onConfirm, loading, initialScore }) => {
       </div>
 
       <ActionButton
-        classes="gh-portal-confirm-button"
+        classes="mt-[3.6rem] w-full max-sm:mt-7"
         retry={false}
         onClick={submit}
         disabled={false}
@@ -258,7 +106,7 @@ const ConfirmDialog = ({ onConfirm, loading, initialScore }) => {
         isRunning={loading}
         tabIndex={3}
       />
-      <CloseButton close={() => close(false)} />
+      <CloseButton hideOnMobile close={() => close(false)} />
     </div>
   );
 };
@@ -282,12 +130,16 @@ const ConfirmFeedback = ({ positive }) => {
   const icon = positive ? <ThumbUpIcon /> : <ThumbDownIcon />;
 
   return (
-    <div className="gh-portal-content gh-portal-feedback">
-      <CloseButton />
+    <div className="relative scrollbar-none">
+      <CloseButton hideOnMobile />
 
-      <div className="gh-feedback-icon">{icon}</div>
-      <h1 className="gh-portal-main-title">{t('Thanks for the feedback!')}</h1>
-      <p className="gh-portal-text-center">{t('Your input helps shape what gets published.')}</p>
+      <div className="mx-auto my-0 w-12 px-0 py-2.5 text-center text-brand">{icon}</div>
+      <h1 className="text-center leading-[1.1em] text-pretty text-gray-950 max-sm:group-[.feedback]/wrapper:text-25">
+        {t('Thanks for the feedback!')}
+      </h1>
+      <p className="px-8 pt-4 pb-3 text-center text-pretty max-sm:px-2 max-sm:group-[.feedback]/wrapper:mb-[1.2rem]">
+        {t('Your input helps shape what gets published.')}
+      </p>
       <ActionButton
         style={{ width: '100%' }}
         retry={false}
@@ -297,7 +149,6 @@ const ConfirmFeedback = ({ positive }) => {
         label={t('Close')}
         isRunning={false}
         tabIndex={3}
-        classes={'sticky bottom'}
       />
     </div>
   );

@@ -1,5 +1,7 @@
+import clsx from 'clsx';
 import CheckmarkIcon from '../../images/icons/checkmark.svg?react';
 import { t } from '../../utils/i18n';
+import { tw } from '../../utils/tw';
 
 const ChevronIcon = () => (
   <svg
@@ -28,8 +30,15 @@ const GiftDetailsToggle = ({ description, benefits, showDetails, onToggle }) => 
       }
 
       return (
-        <div className="gh-portal-gift-checkout-benefit" key={benefitKey}>
-          <CheckmarkIcon aria-hidden="true" focusable="false" />
+        <div
+          className="gh-portal-gift-checkout-benefit flex items-start gap-2.5 text-14.5 leading-[1.4] text-white/85"
+          key={benefitKey}
+        >
+          <CheckmarkIcon
+            aria-hidden="true"
+            className="mt-[3px] size-3.5 shrink-0 text-gray-900 [&_path]:stroke-white/85"
+            focusable="false"
+          />
           <span>{benefitName}</span>
         </div>
       );
@@ -43,22 +52,25 @@ const GiftDetailsToggle = ({ description, benefits, showDetails, onToggle }) => 
   return (
     <>
       <div
-        className="gh-portal-gift-checkout-details"
+        className="grid w-full grid-rows-[0fr] [transition:grid-template-rows_0.3s_ease,margin-top_0.3s_ease] data-[open=true]:mt-8 data-[open=true]:grid-rows-[1fr]"
         data-open={showDetails}
         aria-hidden={!showDetails}
       >
-        <div className="gh-portal-gift-checkout-details-inner">
+        <div className="min-h-0 overflow-hidden">
           {description && (
-            <p className="gh-portal-gift-checkout-details-description">{description}</p>
+            <p className="mb-3 text-14.5 leading-[1.4] text-white/85 last:mb-0">{description}</p>
           )}
           {visibleBenefits.length > 0 && (
-            <div className="gh-portal-gift-checkout-benefits">{visibleBenefits}</div>
+            <div className="flex flex-col gap-2">{visibleBenefits}</div>
           )}
         </div>
       </div>
       <button
         type="button"
-        className={'gh-portal-gift-checkout-details-toggle' + (showDetails ? ' is-open' : '')}
+        className={clsx(
+          tw`mt-6 inline-flex cursor-pointer items-center gap-1 border-none bg-transparent px-3 py-2 text-14 font-medium text-white/70 [transition:color_0.15s_ease] hover:text-white/95 focus-visible:[outline:2px_solid_rgba(255,255,255,0.9)] focus-visible:outline-offset-[3px] [&_svg]:size-3 [&_svg]:[transition:transform_0.2s_ease] [&.is-open_svg]:[transform:rotate(-180deg)]`,
+          showDetails && 'is-open',
+        )}
         onClick={onToggle}
         aria-expanded={showDetails}
       >

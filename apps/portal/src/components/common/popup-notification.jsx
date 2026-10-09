@@ -7,23 +7,11 @@ import { getSupportAddress } from '../../utils/helpers';
 import { clearURLParams } from '../../utils/notifications';
 import Interpolate from '@doist/react-interpolate';
 import { t } from '../../utils/i18n';
-
-export const PopupNotificationStyles = `
-    .gh-portal-popupnotification {
-        right: 42px;
-    }
-
-    html[dir="rtl"] .gh-portal-notification {
-        right: unset;
-        left: 42px;
-    }
-
-    @media (max-width: 480px) {
-        .gh-portal-notification {
-            max-width: calc(100% - 54px);
-        }
-    }
-`;
+import {
+  notificationClass,
+  notificationCloseIconClass,
+  notificationIconClass,
+} from '../notification/notification-classes';
 
 const CloseButton = ({ hide = false, onClose }) => {
   if (hide) {
@@ -32,11 +20,11 @@ const CloseButton = ({ hide = false, onClose }) => {
   return (
     <button
       type="button"
-      className="gh-portal-notification-closebutton"
+      className="border-none bg-transparent p-0"
       aria-label="Close notification"
       onClick={onClose}
     >
-      <CloseIcon className="gh-portal-notification-closeicon" aria-hidden="true" />
+      <CloseIcon className={notificationCloseIconClass} aria-hidden="true" />
     </button>
   );
 };
@@ -141,14 +129,14 @@ export default class PopupNotification extends React.Component {
 
     return (
       <div
-        className={`gh-portal-notification gh-portal-popupnotification ${statusClass}${slideClass}`}
+        className={`gh-portal-notification ${statusClass}${slideClass} ${notificationClass} right-10.5 max-sm:left-3 max-sm:max-w-[calc(100%-54px)] rtl:right-auto rtl:left-10.5`}
         data-testid={status ? `popup-notification-${status}` : 'popup-notification'}
         onAnimationEnd={(e) => this.onAnimationEnd(e)}
       >
         {status === 'error' ? (
-          <WarningIcon className="gh-portal-notification-icon error" alt="" />
+          <WarningIcon className={`error ${notificationIconClass} text-red`} alt="" />
         ) : (
-          <CheckmarkIcon className="gh-portal-notification-icon success" alt="" />
+          <CheckmarkIcon className={`success ${notificationIconClass} text-green`} alt="" />
         )}
         <NotificationText type={type} status={status} message={message} site={site} />
         <CloseButton hide={!closeable} onClose={(e) => this.closeNotification(e)} />

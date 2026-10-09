@@ -1,0 +1,10 @@
+@import './base.css';
+@import 'tailwindcss/utilities.css' layer(utilities) source(none);
+
+@source '../';
+/* Registered so use-card-tilt can transition the gift card's shine angle */
+@property --shine-angle {
+  syntax: '<angle>';
+  inherits: false;
+  initial-value: 243.43deg;
+}

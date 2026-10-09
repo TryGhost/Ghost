@@ -42,10 +42,10 @@ export default function AccountEmailPage() {
 
   const HeaderNotification = () => {
     if (pageData.comments && commentsEnabled) {
-      const hideClassName = hasInteracted ? 'gh-portal-hide' : '';
+      const hideClassName = hasInteracted ? 'hidden' : '';
       return (
         <>
-          <p className={`gh-portal-text-center gh-portal-header-message ${hideClassName}`}>
+          <p className={`mx-0 -mt-5 mb-6 text-center text-balance ${hideClassName}`}>
             <Interpolate
               string={t(
                 '{memberEmail} will no longer receive emails when someone replies to your comments.',
@@ -66,10 +66,10 @@ export default function AccountEmailPage() {
       return null;
     }
 
-    const hideClassName = hasInteracted ? 'gh-portal-hide' : '';
+    const hideClassName = hasInteracted ? 'hidden' : '';
     return (
       <>
-        <p className={`gh-portal-text-center gh-portal-header-message ${hideClassName}`}>
+        <p className={`mx-0 -mt-5 mb-6 text-center text-balance ${hideClassName}`}>
           <Interpolate
             string={t('{memberEmail} will no longer receive {newsletterName} newsletter.')}
             mapping={{

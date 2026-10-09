@@ -2,8 +2,8 @@ import React from 'react';
 import * as Sentry from '@sentry/react';
 import i18n, { t } from './utils/i18n';
 import { chooseBestErrorMessage } from './utils/errors';
-import TriggerButton from './components/trigger-button';
-import Notification from './components/notification';
+import TriggerButton from './components/trigger-button/trigger-button';
+import Notification from './components/notification/notification';
 import PopupModal from './components/popup-modal';
 import setupGhostApi from './utils/api';
 import AppContext from './app-context';
@@ -17,7 +17,6 @@ import { getGiftRedemptionErrorMessage } from './utils/gift-redemption-notificat
 import { GIFT_DURATION_CATALOGUE } from './utils/gift-subscriptions';
 import { clearGiftFormState } from './components/pages/gift/form-state';
 import { fetchMemberCustomFields } from './utils/custom-fields';
-import './app.css';
 import {
   hasRecommendations,
   arePaidMembersEnabled,

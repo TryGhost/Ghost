@@ -8,6 +8,10 @@ import { ValidateInputForm } from '../../utils/form';
 import { hasAvailablePrices, isSigninAllowed, isSignupAllowed } from '../../utils/helpers';
 import InvitationIcon from '../../images/icons/invitation.svg?react';
 import { t } from '../../utils/i18n';
+import { signupMessageButtonClass } from '../shared-classes';
+import { tw } from '../../utils/tw';
+
+const mainTitleClass = tw`mt-3 text-center leading-[1.1em] text-pretty text-gray-950 [.gh-portal-signup-logo+&]:mt-1`;
 
 export default class SigninPage extends React.Component {
   static contextType = AppContext;
@@ -122,15 +126,15 @@ export default class SigninPage extends React.Component {
   renderSignupMessage() {
     const { brandColor } = this.context;
     return (
-      <div className="gh-portal-signup-message">
+      <div className="z-[9999] mt-1 flex flex-wrap justify-center text-15 text-gray-750 [&_*]:z-[9999]">
         <div>{t("Don't have an account?")}</div>
         <button
           data-test-button="signup-switch"
-          className="gh-portal-btn gh-portal-btn-link"
+          className={signupMessageButtonClass}
           style={{ color: brandColor }}
           onClick={() => this.context.doAction('switchPage', { page: 'signup' })}
         >
-          <span>{t('Sign up')}</span>
+          <span className="-mb-0.5 inline-block pb-0.5">{t('Sign up')}</span>
         </button>
       </div>
     );
@@ -143,9 +147,9 @@ export default class SigninPage extends React.Component {
     if (!isSigninAllowed({ site })) {
       return (
         <section>
-          <div className="gh-portal-section">
+          <div className="gh-portal-section mb-10">
             <p
-              className="gh-portal-members-disabled-notification"
+              className="mx-8 mt-2 mb-6 text-center text-gray-850"
               data-testid="members-disabled-notification-text"
             >
               {t('Memberships unavailable, contact the owner for access.')}
@@ -157,14 +161,14 @@ export default class SigninPage extends React.Component {
 
     return (
       <section>
-        <div className="gh-portal-section">
+        <div className="gh-portal-section mb-10">
           <InputForm
             fields={this.getInputFields({ state: this.state })}
             onChange={(e, field) => this.handleInputChange(e, field)}
             onKeyDown={(e, field) => this.onKeyDown(e, field)}
           />
         </div>
-        <footer className="gh-portal-signin-footer">
+        <footer className="relative flex flex-col items-center gap-3 pt-3 max-sm:group-[.preview:not(.full-size)]/wrapper:pb-8">
           {this.renderSubmitButton()}
           {isSignupAvailable && this.renderSignupMessage()}
         </footer>
@@ -179,9 +183,15 @@ export default class SigninPage extends React.Component {
 
     if (siteIcon) {
       iconStyle.backgroundImage = `url(${siteIcon})`;
-      return <img className="gh-portal-signup-logo" src={siteIcon} alt={this.context.site.title} />;
+      return (
+        <img
+          className="gh-portal-signup-logo relative mt-3 mb-2.5 block size-15 rounded-sm bg-cover bg-center max-sm:size-12"
+          src={siteIcon}
+          alt={this.context.site.title}
+        />
+      );
     } else if (!isSigninAllowed({ site })) {
-      return <InvitationIcon className="gh-portal-icon gh-portal-icon-invitation" />;
+      return <InvitationIcon className="mt-3 mb-0.5 size-11 text-brand" />;
     }
     return null;
   }
@@ -191,15 +201,15 @@ export default class SigninPage extends React.Component {
     const siteTitle = site.title;
 
     if (!isSigninAllowed({ site })) {
-      return <h1 className="gh-portal-main-title">{siteTitle}</h1>;
+      return <h1 className={mainTitleClass}>{siteTitle}</h1>;
     } else {
-      return <h1 className="gh-portal-main-title">{t('Sign in')}</h1>;
+      return <h1 className={mainTitleClass}>{t('Sign in')}</h1>;
     }
   }
 
   renderFormHeader() {
     return (
-      <header className="gh-portal-signin-header">
+      <header className="mb-8 flex flex-col items-center px-8 max-2xs:pb-4">
         {this.renderSiteIcon()}
         {this.renderSiteTitle()}
       </header>
@@ -210,8 +220,8 @@ export default class SigninPage extends React.Component {
     return (
       <>
         <CloseButton />
-        <div className="gh-portal-logged-out-form-container">
-          <div className="gh-portal-content signin">
+        <div className="mx-auto w-full max-w-[420px]">
+          <div className="signin relative scrollbar-none max-h-[unset]! pb-1 [&_.gh-portal-input]:mb-3 [&_.gh-portal-section]:mb-0">
             {this.renderFormHeader()}
             {this.renderForm()}
           </div>
