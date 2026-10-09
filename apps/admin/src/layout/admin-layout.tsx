@@ -71,6 +71,27 @@ const pageChromeClassName = [
 const compactPageChromeClassName = [
   '[--compact-page-padding:max(0px,calc(var(--floating-sidebar-footprint)_-_var(--page-gutter)))]',
   'px-(--compact-page-padding)',
+  '[--page-bleed-start:var(--compact-page-padding)]',
+  '[--page-bleed-end:var(--compact-page-padding)]',
+].join(' ');
+
+/*
+ * A page backdrop (e.g. the member map) runs full bleed, to the scrollport's
+ * edges: `--page-bleed-start` and `--page-bleed-end` are how far those lie
+ * beyond the page's content box (`<main>`'s padding, and the pinned sidebar's
+ * gap). While a backdrop is on the page, the scrollport reaches beneath the
+ * pinned sidebar, so the backdrop shows through its glass, and the backdrop
+ * holds still while the page slides as the sidebar pins and unpins.
+ */
+const PAGE_BACKDROP_SELECTOR = '[data-page-backdrop]';
+const pinnedPageChromeClassName = '[--page-bleed-start:var(--floating-sidebar-gap)]';
+// The inset is the scrollport: its padding box is what clips. It stays put
+// while the page inside it slides, so a backdrop never shows an edge.
+const backdropInsetClassName = [
+  'has-[[data-page-backdrop]]:-ml-(--floating-sidebar-gap)',
+  'has-[[data-page-backdrop]]:pl-(--floating-sidebar-gap)',
+  // Beneath the pinned capsule too, it keeps the page's stacking under it
+  'has-[[data-page-backdrop]]:isolate',
 ].join(' ');
 
 // The page column the content slide keeps continuous as the sidebar pins and
@@ -242,9 +263,11 @@ export function AdminLayout({ children }: AdminLayoutProps) {
             className={floatingSidebarClassName}
             contentAnchor={PAGE_COLUMN_SELECTOR}
             contentRef={insetRef}
+            contentStatic={PAGE_BACKDROP_SELECTOR}
             disabled={dunningLocked}
             settingsNavigation={settingsNavigation}
             settingsNavigationRef={setSettingsNavigationSlot}
+            slideRef={mainRef}
           />
         ) : (
           <>
@@ -270,9 +293,10 @@ export function AdminLayout({ children }: AdminLayoutProps) {
             // the capsule floating over it.
             !sidebarPinned && 'isolate',
             dunningLocked ? 'overflow-hidden' : 'overflow-y-auto',
-            // The content slides as the sidebar pins and unpins, which mustn't
-            // show a horizontal scrollbar
+            // The page slides inside it as the sidebar pins and unpins, which
+            // mustn't show a horizontal scrollbar
             floatingSidebar && !dunningLocked && 'overflow-x-hidden',
+            floatingSidebar && backdropInsetClassName,
             sidebarVisible ? 'max-h-[calc(100%-var(--mobile-navbar-height))]' : 'max-h-full',
           )}
         >
@@ -282,7 +306,8 @@ export function AdminLayout({ children }: AdminLayoutProps) {
             className={cn(
               'flex-1 focus:outline-hidden',
               sidebarVisible ? pageChromeClassName : 'min-h-0',
-              !sidebarPinned && compactPageChromeClassName,
+              floatingSidebar &&
+                (sidebarPinned ? pinnedPageChromeClassName : compactPageChromeClassName),
               isSettingsRoute && 'min-h-0',
               'screen-exit-content',
             )}
