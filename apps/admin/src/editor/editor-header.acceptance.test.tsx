@@ -2161,6 +2161,8 @@ describe('Editor header actions on a small screen', () => {
       await editorScreen.updateButton().click();
       const toast = editorScreen.saveToast('Post updated');
       await expect.element(toast).toBeVisible();
+      // Sonner starts the enter transition only once it marks the toast mounted.
+      await expect.element(toast).toHaveAttribute('data-mounted', 'true');
       await settleTransitions();
 
       const toastRect = toast.element().getBoundingClientRect();
