@@ -573,7 +573,7 @@ const GiftPage = () => {
                 onChangeRecipientName={handleRecipientNameChange}
               />
             )}
-            <div className="sticky bottom-0 z-[1] bg-[linear-gradient(0deg,rgba(var(--whitergb),1)_78%,rgba(var(--whitergb),0)_100%)] py-6 max-md:bg-[linear-gradient(0deg,rgba(var(--whitergb),1)_70%,rgba(var(--whitergb),0)_100%)] [&_.gh-portal-gift-checkout-cta]:h-12 [&_.gh-portal-gift-checkout-cta]:font-semibold">
+            <div className="sticky bottom-0 z-[1] bg-[linear-gradient(0deg,#fff_78%,rgb(255_255_255/0)_100%)] py-6 max-md:bg-[linear-gradient(0deg,#fff_70%,rgb(255_255_255/0)_100%)] [&_.gh-portal-gift-checkout-cta]:h-12 [&_.gh-portal-gift-checkout-cta]:font-semibold">
               <ActionButton
                 brandColor={brandColor}
                 classes="gh-portal-gift-checkout-cta"

@@ -352,7 +352,7 @@ export default class PopupModal extends React.Component {
       ...Styles.frame.common,
     };
 
-    let className = tw`absolute inset-0 block [transform:translate3d(0,0,0)] animate-backdrop bg-[linear-gradient(315deg,rgba(var(--blackrgb),0.2)_0%,rgba(var(--blackrgb),0.1)_100%)] backdrop-blur-[2px] max-sm:animate-none [&.preview]:pointer-events-none [&.preview]:animate-none [&.preview]:bg-[linear-gradient(45deg,rgba(255,255,255,1)_0%,rgba(249,249,250,1)_100%)] [&.preview.preview-dark]:bg-[linear-gradient(45deg,var(--color-gray-950)_0%,var(--color-black)_100%)]`;
+    let className = tw`absolute inset-0 block [transform:translate3d(0,0,0)] animate-backdrop bg-[linear-gradient(315deg,rgb(0_0_0/0.2)_0%,rgb(0_0_0/0.1)_100%)] backdrop-blur-[2px] max-sm:animate-none [&.preview]:pointer-events-none [&.preview]:animate-none [&.preview]:bg-[linear-gradient(45deg,rgba(255,255,255,1)_0%,rgba(249,249,250,1)_100%)] [&.preview.preview-dark]:bg-[linear-gradient(45deg,var(--color-gray-950)_0%,var(--color-black)_100%)]`;
     if (hasMode(['preview'])) {
       Styles.modalContainer.zIndex = '3999997';
     }

@@ -539,7 +539,7 @@ export default class OfferPage extends React.Component {
             </div>
           </div>
 
-          <div className="sticky bottom-0 -mb-8 bg-[linear-gradient(0deg,rgba(var(--whitergb),1)_75%,rgba(var(--whitergb),0)_100%)] py-8 [transition:none] [&_.gh-portal-btn]:m-0">
+          <div className="sticky bottom-0 -mb-8 bg-[linear-gradient(0deg,#fff_75%,rgb(255_255_255/0)_100%)] py-8 [transition:none] [&_.gh-portal-btn]:m-0">
             <div className="gh-portal-signup-terms-wrapper mx-auto mt-2 mb-4 w-full max-w-[420px]">
               {this.renderSignupTerms()}
             </div>

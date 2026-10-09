@@ -108,7 +108,7 @@ const GiftEmailPreview = ({
           </div>
         </div>
 
-        <div className="relative z-[1] rounded-[16px] bg-white px-10 pt-9 pb-10 [box-shadow:0_16px_40px_rgba(var(--blackrgb),0.1),0_3px_8px_rgba(var(--blackrgb),0.06)]">
+        <div className="relative z-[1] rounded-[16px] bg-white px-10 pt-9 pb-10 [box-shadow:0_16px_40px_rgb(0_0_0/0.1),0_3px_8px_rgb(0_0_0/0.06)]">
           {/* The template leads with the publication's icon, falling
                         back to its name, above the subject. */}
           <div className="mb-5.5 flex justify-start">

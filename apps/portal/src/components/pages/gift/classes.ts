@@ -12,7 +12,7 @@ export const giftSwitchClass = tw`flex h-11 w-full rounded-full bg-gray-150 p-1`
 export function getGiftSwitchButtonClass(isActive: boolean) {
   return clsx(
     tw`gh-portal-btn relative flex h-full min-w-0 flex-1 cursor-pointer items-center justify-center rounded-full border-0 border-none px-2 py-0 text-center text-14 leading-[1em] font-medium tracking-[0.2px] whitespace-nowrap text-gray-950 no-underline outline-none select-none [transition:background-color_150ms_var(--ease-out-quart),box-shadow_150ms_var(--ease-out-quart),color_150ms_var(--ease-out-quart)] focus-visible:rounded-full focus-visible:[box-shadow:0_0_0_2px_var(--brandcolor)] focus-visible:outline-none focus-visible:[transition:background-color_150ms_var(--ease-out-quart),box-shadow_150ms_var(--ease-out-quart),color_150ms_var(--ease-out-quart)] motion-reduce:[transition:none] motion-reduce:focus-visible:[transition:none]`,
-    isActive ? tw`bg-white [box-shadow:0px_1px_3px_rgba(var(--blackrgb),0.08)]` : 'bg-transparent',
+    isActive ? tw`bg-white [box-shadow:0px_1px_3px_rgb(0_0_0/0.08)]` : 'bg-transparent',
   );
 }
 

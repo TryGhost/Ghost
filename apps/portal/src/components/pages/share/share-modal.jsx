@@ -251,7 +251,7 @@ const ShareModal = () => {
           </button>
           {isMoreMenuOpen && (
             <div
-              className="absolute right-0 bottom-[calc(100%+8px)] z-[2] flex min-w-[180px] origin-bottom-right [transform:translateY(8px)] animate-share-menu-in flex-col rounded-lg border border-solid border-gray-150 bg-white p-1.5 opacity-0 [box-shadow:0_8px_20px_rgba(var(--blackrgb),0.12)] max-xs:inset-x-0 rtl:right-auto rtl:left-0 rtl:origin-bottom-left max-xs:rtl:right-0"
+              className="absolute right-0 bottom-[calc(100%+8px)] z-[2] flex min-w-[180px] origin-bottom-right [transform:translateY(8px)] animate-share-menu-in flex-col rounded-lg border border-solid border-gray-150 bg-white p-1.5 opacity-0 [box-shadow:0_8px_20px_rgb(0_0_0/0.12)] max-xs:inset-x-0 rtl:right-auto rtl:left-0 rtl:origin-bottom-left max-xs:rtl:right-0"
               role="menu"
               aria-label={t('More options')}
             >

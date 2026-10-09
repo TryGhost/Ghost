@@ -40,7 +40,7 @@ const tierButtonClass = tw`gh-portal-btn relative z-[900] flex h-11 w-full min-w
 
 const toggleButtonClass = tw`gh-portal-btn relative flex h-full! w-1/2 min-w-20 cursor-pointer items-center justify-center rounded-full bg-transparent px-[1.8rem] py-0 text-center text-15 leading-[1em] font-medium tracking-[0.2px] whitespace-nowrap text-gray-950 no-underline outline-none select-none [border:0] transition-control`;
 
-const btnProductClass = tw`sticky bottom-0 -mb-8 flex w-full flex-col items-start [justify-self:flex-end] bg-transparent pt-10 pb-8 before:absolute before:inset-x-0 before:-top-4 before:bottom-0 before:z-[800] before:block before:bg-[linear-gradient(0deg,rgba(var(--whitergb),1)_60%,rgba(var(--whitergb),0)_100%)] before:content-[''] max-sm:static max-sm:before:hidden`;
+const btnProductClass = tw`sticky bottom-0 -mb-8 flex w-full flex-col items-start [justify-self:flex-end] bg-transparent pt-10 pb-8 before:absolute before:inset-x-0 before:-top-4 before:bottom-0 before:z-[800] before:block before:bg-[linear-gradient(0deg,#fff_60%,rgb(255_255_255/0)_100%)] before:content-[''] max-sm:static max-sm:before:hidden`;
 
 const discountLabelClass = tw`gh-portal-discount-label relative -me-1 max-h-[24.5px] rounded-full px-[9px] py-1.5 text-center text-12.5 leading-[1em] font-semibold tracking-[0.3px] whitespace-nowrap text-gray-950 before:absolute before:inset-0 before:block before:rounded-full before:bg-brand before:opacity-20 before:content-['']`;
 
@@ -475,7 +475,7 @@ function ProductPriceSwitch({ selectedInterval, setSelectedInterval, products })
     <div className="mx-auto w-full max-w-[420px]">
       <div
         className={clsx(
-          tw`relative mb-10 flex h-11 w-full rounded-full bg-[#f3f3f3] p-1 before:absolute before:inset-y-1 before:right-1 before:block before:w-1/2 before:rounded-full before:bg-white before:[box-shadow:0px_1px_3px_rgba(var(--blackrgb),0.08)] before:content-[''] before:[transition:all_0.15s_ease-in-out] rtl:before:right-auto rtl:before:left-1 [&.left]:before:[transform:translateX(calc(-100%_+_8px))] rtl:[&.left]:before:[transform:translateX(calc(100%_-_8px))]`,
+          tw`relative mb-10 flex h-11 w-full rounded-full bg-[#f3f3f3] p-1 before:absolute before:inset-y-1 before:right-1 before:block before:w-1/2 before:rounded-full before:bg-white before:[box-shadow:0px_1px_3px_rgb(0_0_0/0.08)] before:content-[''] before:[transition:all_0.15s_ease-in-out] rtl:before:right-auto rtl:before:left-1 [&.left]:before:[transform:translateX(calc(-100%_+_8px))] rtl:[&.left]:before:[transform:translateX(calc(100%_-_8px))]`,
           selectedInterval === 'month' && 'left',
         )}
       >
