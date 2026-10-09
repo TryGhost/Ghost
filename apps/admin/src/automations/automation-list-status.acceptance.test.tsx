@@ -278,7 +278,8 @@ describe('Automation list status actions', () => {
       await expect.element(dialog().getByRole('button', { name: 'Turning off...' })).toBeDisabled();
       await userEvent.keyboard('{Escape}');
       await expect.element(dialog()).toBeVisible();
-      expect(edit.requests).toHaveLength(1);
+      // The dialog disables before the write reaches the fake API.
+      await expect.poll(() => edit.requests.length).toBe(1);
     } finally {
       release();
     }
