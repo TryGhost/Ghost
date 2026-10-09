@@ -540,6 +540,7 @@ module.exports = class RouterController {
    * @param {string} [options.email] Email address of the customer
    * @param {object} [options.member] Currently authenticated member OR member associated with the email address
    * @param {number|null} [options.giftTrialDays] Stable continuation decision from gift subscriptions
+   * @param {string} [options.referrer] Page to return to after signing in with the magic link
    * @param {boolean} options.isAuthenticated
    * @param {object} options.metadata Metadata to be passed to Stripe
    * @returns
@@ -606,7 +607,11 @@ module.exports = class RouterController {
       if (restrictCheckout) {
         if (!options.isAuthenticated && options.email) {
           try {
-            await this._sendEmailWithMagicLink({ email: options.email, requestedType: 'signin' });
+            await this._sendEmailWithMagicLink({
+              email: options.email,
+              requestedType: 'signin',
+              referrer: options.referrer,
+            });
           } catch (err) {
             logging.warn(err);
           }
@@ -870,6 +875,7 @@ module.exports = class RouterController {
         cadence,
         offer,
         giftTrialDays,
+        referrer: req.get('referer'),
       });
 
       // Add welcome_page_url to the response if available and member is authenticated
