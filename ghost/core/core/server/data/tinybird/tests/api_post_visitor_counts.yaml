@@ -16,3 +16,34 @@
   description: Test visitor counts for a single post with no data
   parameters: site_uuid=mock_site_uuid&post_uuids=abcd-efgh-ijkl-mnop
   expected_result: ''
+
+- name: post_visitor_counts_primary_site_isolation
+  description: Another populated site shares a post and session ID; its additional visitor and exclusive post must not appear
+  parameters: site_uuid=mock_site_uuid&post_uuids=6b8635fb-292f-4422-9fe4-d76cfab2ba31,b1252222-3333-4444-8555-666666666661
+  expected_result: |
+    {"post_uuid":"6b8635fb-292f-4422-9fe4-d76cfab2ba31","visits":9}
+
+- name: post_visitor_counts_other_site_isolation
+  description: The other site counts its two visitors to the shared post once each despite repeated hits, plus its exclusive post
+  parameters: site_uuid=other_site_uuid&post_uuids=6b8635fb-292f-4422-9fe4-d76cfab2ba31,b1252222-3333-4444-8555-666666666661
+  expected_result: |
+    {"post_uuid":"6b8635fb-292f-4422-9fe4-d76cfab2ba31","visits":2}
+    {"post_uuid":"b1252222-3333-4444-8555-666666666661","visits":1}
+
+- name: post_visitor_counts_missing_site
+  description: A site with no traffic returns no rows even when the requested post exists on populated sites
+  parameters: site_uuid=missing_site_uuid&post_uuids=6b8635fb-292f-4422-9fe4-d76cfab2ba31
+  expected_result: ''
+
+- name: post_visitor_counts_mixed_known_and_unknown_posts
+  description: An unknown post is omitted without dropping the requested known post
+  parameters: site_uuid=mock_site_uuid&post_uuids=abcd-efgh-ijkl-mnop,06b1b0c9-fb53-4a15-a060-3db3fde7b1fc
+  expected_result: |
+    {"post_uuid":"06b1b0c9-fb53-4a15-a060-3db3fde7b1fc","visits":8}
+
+- name: post_visitor_counts_duplicate_requested_posts
+  description: Repeating a requested post does not duplicate rows or visits; results remain ordered by visits rather than request order
+  parameters: site_uuid=mock_site_uuid&post_uuids=06b1b0c9-fb53-4a15-a060-3db3fde7b1fc,6b8635fb-292f-4422-9fe4-d76cfab2ba31,06b1b0c9-fb53-4a15-a060-3db3fde7b1fc
+  expected_result: |
+    {"post_uuid":"6b8635fb-292f-4422-9fe4-d76cfab2ba31","visits":9}
+    {"post_uuid":"06b1b0c9-fb53-4a15-a060-3db3fde7b1fc","visits":8}
