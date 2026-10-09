@@ -4,7 +4,7 @@ import { Locator, Page } from '@playwright/test';
 import { MockedApi } from './mocked-api';
 import { expect } from '@playwright/test';
 
-export const MOCKED_SITE_URL = 'https://localhost:1234';
+export const MOCKED_SITE_URL = 'http://localhost:1234';
 export { MockedApi };
 
 export async function waitEditorFocused(editor: Locator) {
@@ -84,6 +84,7 @@ export async function mockAdminAuthFrame({ admin, page }) {
   await page.route(admin + 'auth-frame/', async (route) => {
     await route.fulfill({
       status: 200,
+      contentType: 'text/html',
       body: `<html><head><meta charset="UTF-8" /></head><body><script>${authFrameMain.toString().replaceAll('MOCKED_SITE_URL', `'${MOCKED_SITE_URL}'`)}; authFrameMain();</script></body></html>`,
     });
   });
@@ -140,6 +141,7 @@ export async function initialize({
   await page.route(sitePath, async (route) => {
     await route.fulfill({
       status: 200,
+      contentType: 'text/html',
       body: `<html><head><meta charset="UTF-8" /></head><body ${bodyStyle ? 'style="' + escapeHtml(bodyStyle) + '"' : ''}></body></html>`,
     });
   });
@@ -201,10 +203,12 @@ export async function initialize({
 
 /**
  * Select text range by RegExp.
+ *
+ * Resolves after the selectionchange event, so the editor has read the new selection before the test continues.
  */
 export async function selectText(locator: Locator, pattern: string | RegExp): Promise<void> {
   await locator.evaluate(
-    (element, { pattern: p }) => {
+    async (element, { pattern: p }) => {
       let textNode = element.childNodes[0];
 
       while (textNode.nodeType !== Node.TEXT_NODE && textNode.childNodes.length) {
@@ -212,12 +216,16 @@ export async function selectText(locator: Locator, pattern: string | RegExp): Pr
       }
       const match = textNode.textContent?.match(new RegExp(p));
       if (match) {
+        const selectionChanged = new Promise((resolve) => {
+          document.addEventListener('selectionchange', resolve, { once: true });
+        });
         const range = document.createRange();
         range.setStart(textNode, match.index!);
         range.setEnd(textNode, match.index! + match[0].length);
         const selection = document.getSelection();
         selection?.removeAllRanges();
         selection?.addRange(range);
+        await selectionChanged;
       }
     },
     { pattern },
