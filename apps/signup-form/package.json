@@ -33,8 +33,7 @@
   },
   "dependencies": {
     "@tryghost/debug": "catalog:",
-    "react": "catalog:",
-    "react-dom": "catalog:"
+    "preact": "catalog:"
   },
   "devDependencies": {
     "@internal/cfg-eslint-react": "workspace:*",
@@ -43,10 +42,8 @@
     "@playwright/test": "catalog:",
     "@storybook/addon-docs": "catalog:",
     "@storybook/addon-links": "catalog:",
-    "@storybook/react-vite": "catalog:",
+    "@storybook/preact-vite": "catalog:",
     "@tryghost/i18n": "workspace:*",
-    "@types/react": "catalog:",
-    "@types/react-dom": "catalog:",
     "@typescript/native": "catalog:",
     "autoprefixer": "10.5.4",
     "eslint": "catalog:",
