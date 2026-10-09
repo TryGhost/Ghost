@@ -193,6 +193,24 @@ describe('Cmd-K search', () => {
     await expect.element(globalSearchScreen.shortcutHint()).not.toBeInTheDocument();
   });
 
+  it('selects the first result of each search so Enter opens it', async () => {
+    const firstOption = () => globalSearchScreen.dialog().getByRole('option').first();
+    await renderAdminApp('/tags');
+    await openAndSearch('first');
+    await expect.element(firstOption()).toHaveTextContent('First user');
+    await expect.element(firstOption()).toHaveAttribute('aria-selected', 'true');
+
+    await userEvent.keyboard('{ArrowDown}');
+    await expect.element(firstOption()).toHaveAttribute('aria-selected', 'false');
+
+    await globalSearchScreen.search('first post');
+    await expect.element(firstOption()).toHaveTextContent('First post');
+    await expect.element(firstOption()).toHaveAttribute('aria-selected', 'true');
+
+    await userEvent.keyboard('{Enter}');
+    await expect.poll(() => handoff()?.route).toBe('/editor/post/p1');
+  });
+
   it('opens from the shortcut', async () => {
     await renderAdminApp('/tags');
     await expect.element(globalSearchScreen.openButton()).toBeVisible();
