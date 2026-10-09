@@ -8,6 +8,7 @@ import {
   fakeAdminEndpoint,
   fakeSettingsScreens,
   fakeTags,
+  newsletter,
   renderAdminApp,
   type RenderAdminAppOptions,
   tag,
@@ -20,6 +21,11 @@ import { tagDetailScreen } from '@/tags/detail/tag-detail.screen';
 import { settingsScreen } from '@/settings/settings.screen';
 
 import { globalSearchScreen } from './global-search.screen';
+
+const wait = (ms: number) =>
+  new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
 
 const handoff = () =>
   JSON.parse(document.body.dataset.externalNavigate ?? 'null') as { route: string } | null;
@@ -336,6 +342,58 @@ describe('Cmd-K search', () => {
     history.back();
     await expect.poll(currentRoute).toBe('/settings/navigation?open');
     await expect.element(settingsScreen.navigationModal()).not.toBeInTheDocument();
+  });
+
+  it('keeps an opened Settings section in view while the page above it loads', async () => {
+    fakeSettingsScreens();
+    const newsletters = Array.from({ length: 12 }, (_, position) =>
+      newsletter({
+        id: `n${position}`,
+        name: `Newsletter ${position}`,
+        slug: `newsletter-${position}`,
+      }),
+    );
+    fakeAdminEndpoint('GET', /^\/newsletters\//, async () => {
+      await wait(800);
+      return {
+        newsletters,
+        meta: {
+          pagination: {
+            page: 1,
+            limit: 50,
+            pages: 1,
+            total: newsletters.length,
+            next: null,
+            prev: null,
+          },
+        },
+      };
+    });
+    await renderAdminApp('/tags', { labs: { admin7settings: true } });
+    await openAndSearch('labs');
+
+    await globalSearchScreen.option(/^Labs$/).click();
+    await expect.poll(currentRoute).toBe('/settings/labs?open');
+    await expect.element(page.getByRole('tab', { name: 'Beta features' })).toBeVisible();
+
+    await expect.element(page.getByText('Newsletter 11')).toBeInTheDocument();
+    await wait(300);
+    await expect.element(page.getByTestId('labs')).toBeInViewport();
+  });
+
+  it('opens a Settings section the Settings filter had hidden', async () => {
+    fakeSettingsScreens();
+    await renderAdminApp('/settings', { labs: { admin7settings: true } });
+    await settingsScreen.search().fill('design');
+    await expect.element(page.getByTestId('labs')).not.toBeVisible();
+
+    await openWithShortcut();
+    await globalSearchScreen.search('labs');
+    await globalSearchScreen.option(/^Labs$/).click();
+
+    await expect.element(settingsScreen.search()).toHaveValue('');
+    await expect.element(page.getByRole('tab', { name: 'Beta features' })).toBeVisible();
+    await expect.element(page.getByTestId('labs')).toBeInViewport();
   });
 
   it('opens a Settings section with an Edit button for editing', async () => {

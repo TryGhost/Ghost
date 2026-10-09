@@ -75,7 +75,7 @@ const TopLevelGroup: React.FC<TopLevelGroupProps> = ({
   }, [componentId, keywords, registerComponent, unregisterComponent]);
 
   const { openSectionRequest, setOpenSectionRequest } = useOpenSectionRequest();
-  const { scrollToSection } = useScrollSectionContext();
+  const { jumpToSection } = useScrollSectionContext();
   const hasEditButton = !customButtons && Boolean(onEditingChange) && !hideEditButton;
   const open = onOpen ?? (hasEditButton ? () => onEditingChange?.(true) : undefined);
 
@@ -85,9 +85,9 @@ const TopLevelGroup: React.FC<TopLevelGroupProps> = ({
     }
 
     setOpenSectionRequest(undefined);
-    scrollToSection(navid);
+    jumpToSection(navid);
     open?.();
-  }, [navid, open, openSectionRequest, scrollToSection, setOpenSectionRequest]);
+  }, [jumpToSection, navid, open, openSectionRequest, setOpenSectionRequest]);
 
   useEffect(() => {
     setHighlight(route === navid);

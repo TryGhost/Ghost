@@ -12,7 +12,7 @@ import { Outlet, useLocation } from '@tryghost/admin-x-framework';
 import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import { Stack } from '@tryghost/shade/primitives';
 import { cn } from '@tryghost/shade/utils';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useScrollSectionContext } from '@/settings/hooks/use-scroll-section';
 import { isOpenSectionRequest } from '@/settings/utils/open-section';
@@ -39,8 +39,9 @@ const handledOpenRequests = new Set<string>();
 function SettingsLocationSync() {
   const { key, pathname, search } = useLocation();
   const { updateNavigatedSection } = useScrollSectionContext();
-  const { setFilter, setNoResult } = useSearch();
+  const { filter, setFilter, setNoResult } = useSearch();
   const { setOpenSectionRequest } = useOpenSectionRequest();
+  const [pendingSection, setPendingSection] = useState<string>();
 
   useEffect(() => {
     updateNavigatedSection(sectionOf(pathname));
@@ -54,8 +55,16 @@ function SettingsLocationSync() {
     handledOpenRequests.add(key);
     setFilter('');
     setNoResult(false);
-    setOpenSectionRequest({ section: sectionOf(pathname) });
-  }, [key, pathname, search, setFilter, setNoResult, setOpenSectionRequest]);
+    setPendingSection(sectionOf(pathname));
+  }, [key, pathname, search, setFilter, setNoResult]);
+
+  // asked only once the cleared filter has rendered, so a section reacting to it can't undo the open
+  useEffect(() => {
+    if (pendingSection && !filter) {
+      setOpenSectionRequest({ section: pendingSection });
+      setPendingSection(undefined);
+    }
+  }, [filter, pendingSection, setOpenSectionRequest]);
 
   return null;
 }
