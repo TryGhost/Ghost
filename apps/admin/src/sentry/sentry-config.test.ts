@@ -49,7 +49,7 @@ describe('getSentryConfig', () => {
       /^NetworkError when attempting to fetch resource\.$/,
       /^Failed to fetch$/,
       /^Load failed$/,
-      /^The operation was aborted\. ?$/,
+      /^(AbortError: )?The operation was aborted\. ?$/,
       /^TransitionAborted$/,
       /^ResizeObserver loop completed with undelivered notifications/,
       /^ResizeObserver loop limit exceeded/,
@@ -63,6 +63,7 @@ describe('getSentryConfig', () => {
     ['TypeError', 'NetworkError when attempting to fetch resource.'],
     ['AbortError', 'The operation was aborted.'],
     ['AbortError', 'The operation was aborted. '],
+    ['Error', 'AbortError: The operation was aborted.'],
   ])('ignores the network error %s: %j', (type, value) => {
     expect(isIgnored(type, value)).toBe(true);
   });

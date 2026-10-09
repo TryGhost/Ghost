@@ -48,8 +48,9 @@ export function getSentryConfig({
       /^NetworkError when attempting to fetch resource\.$/,
       /^Failed to fetch$/,
       /^Load failed$/,
-      // Firefox's message ends with a space
-      /^The operation was aborted\. ?$/,
+      // Firefox's message ends with a space; Sentry prefixes Safari's stackless
+      // DOMException with its name
+      /^(AbortError: )?The operation was aborted\. ?$/,
 
       // Ember-only; remove with Ember (https://github.com/emberjs/ember.js/issues/12505)
       /^TransitionAborted$/,
