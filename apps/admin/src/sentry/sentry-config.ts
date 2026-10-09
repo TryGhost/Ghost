@@ -42,12 +42,14 @@ export function getSentryConfig({
       /The play\(\) request was interrupted.*/,
       /The request is not allowed by the user agent or the platform in the current context/,
 
-      // Network errors that we don't control
+      // Network errors that we don't control, anchored so chunk-load failures
+      // ("Failed to fetch dynamically imported module: …") still report
       /Server was unreachable/,
-      /NetworkError when attempting to fetch resource./,
-      /Failed to fetch/,
-      /Load failed/,
-      /The operation was aborted./,
+      /^NetworkError when attempting to fetch resource\.$/,
+      /^Failed to fetch$/,
+      /^Load failed$/,
+      // Firefox's message ends with a space
+      /^The operation was aborted\. ?$/,
 
       // Ember-only; remove with Ember (https://github.com/emberjs/ember.js/issues/12505)
       /^TransitionAborted$/,
