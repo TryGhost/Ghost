@@ -1,7 +1,6 @@
 import App from './app';
-import React from 'react';
-import ReactDOM from 'react-dom/client';
 import { ROOT_DIV_CLASS } from './utils/constants';
+import { render } from 'preact';
 
 function getScriptTag(): HTMLElement {
   let scriptTag = document.currentScript as HTMLElement | null;
@@ -47,11 +46,10 @@ function init() {
   const scriptTag = getScriptTag();
   const root = getRootDiv(scriptTag);
 
-  ReactDOM.createRoot(root).render(
-    <React.StrictMode>
-      <App scriptTag={scriptTag} />
-    </React.StrictMode>,
-  );
+  // A reused root can hold a tree from an earlier run or leftover markup
+  render(null, root);
+  root.textContent = '';
+  render(<App scriptTag={scriptTag} />, root);
 }
 
 init();

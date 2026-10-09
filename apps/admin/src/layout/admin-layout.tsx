@@ -53,6 +53,9 @@ const pageChromeClassName = [
 ].join(' ');
 
 const SIDEBAR_PANEL_CLASS_NAME = '[&>[data-sidebar=sidebar]]:relative';
+// Lands on the desktop panel only; the mobile sidebar is a sheet that ignores it.
+const SIDEBAR_SCREEN_TRANSITION_CLASS_NAME =
+  'screen-exit-sidebar [view-transition-name:admin-sidebar]';
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -67,6 +70,11 @@ export function AdminLayout({ children }: AdminLayoutProps) {
   const dunningLocked = useDunningLockTakeover();
   const isContributor = currentUser && isContributorUser(currentUser);
   const isSettingsRoute = useIsSettingsSidebarRoute();
+  const sidebarClassName = cn(
+    SIDEBAR_PANEL_CLASS_NAME,
+    SIDEBAR_SCREEN_TRANSITION_CLASS_NAME,
+    dunningLocked && 'opacity-40',
+  );
 
   // The dunning takeover is positioned against the scrollable inset, so the
   // inset must not scroll (and must sit at the top) while the takeover is up —
@@ -133,16 +141,12 @@ export function AdminLayout({ children }: AdminLayoutProps) {
           (isSettingsRoute ? (
             <SettingsSidebar
               ref={sidebarRef}
-              className={cn(SIDEBAR_PANEL_CLASS_NAME, dunningLocked && 'opacity-40')}
+              className={sidebarClassName}
               slotRef={setSettingsNavigationSlot}
               variant="floating"
             />
           ) : (
-            <AppSidebar
-              ref={sidebarRef}
-              className={cn(SIDEBAR_PANEL_CLASS_NAME, dunningLocked && 'opacity-40')}
-              variant="floating"
-            />
+            <AppSidebar ref={sidebarRef} className={sidebarClassName} variant="floating" />
           ))}
         <SidebarSwapTransition settingsRoute={isSettingsRoute} sidebarRef={sidebarRef} />
         <SidebarInset
@@ -160,6 +164,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
               'flex-1 focus:outline-hidden',
               sidebarVisible ? pageChromeClassName : 'min-h-0',
               isSettingsRoute && 'min-h-0',
+              'screen-exit-content',
             )}
           >
             <ActivityPubHostLayoutProvider value={sidebarVisible ? networkPageChrome : undefined}>

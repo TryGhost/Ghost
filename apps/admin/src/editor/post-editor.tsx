@@ -17,6 +17,7 @@ import {
   buttonVariants,
 } from '@tryghost/shade/components';
 import { LucideIcon, cn, formatNumber } from '@tryghost/shade/utils';
+import { useScreenEntrance } from '@/layout/screen-transition';
 import { useFocusContext } from '@tryghost/shade/app';
 import { focusKoenigEditorOnBottomClick } from '@tryghost/admin-x-framework';
 import {
@@ -207,6 +208,7 @@ export function PostEditor({
   const editorApiRef = useRef<KoenigInstance | null>(null);
   const skipFocusEditorRef = useRef(false);
   const [wordCount, setWordCount] = useState(0);
+  const chromeEntrance = useScreenEntrance();
   const [bodyTkCount, setBodyTkCount] = useState(0);
   const [featureImageTkCount, setFeatureImageTkCount] = useState(0);
 
@@ -424,7 +426,10 @@ export function PostEditor({
             cards are sized from the layout instead (above). */}
         <Stack
           ref={writingAreaRef}
-          className="min-h-full px-6 pt-[calc(var(--spacing)*12+var(--editor-overlap,0px))] pb-24 editor-settings-motion-[margin-right] [--kg-breakout-adjustment:var(--editor-breakout-inset,0px)] lg:mr-[calc(var(--spacing)*3*var(--editor-settings-progress,0))] lg:[--kg-breakout-adjustment:calc(var(--editor-breakout-inset,0px)+(var(--editor-settings-width,0px)+var(--spacing)*3)*var(--editor-settings-progress,0))]"
+          className={cn(
+            'min-h-full px-6 pt-[calc(var(--spacing)*12+var(--editor-overlap,0px))] pb-24 editor-settings-motion-[margin-right] [--kg-breakout-adjustment:var(--editor-breakout-inset,0px)] lg:mr-[calc(var(--spacing)*3*var(--editor-settings-progress,0))] lg:[--kg-breakout-adjustment:calc(var(--editor-breakout-inset,0px)+(var(--editor-settings-width,0px)+var(--spacing)*3)*var(--editor-settings-progress,0))]',
+            chromeEntrance && 'screen-enter-rise',
+          )}
           gap="none"
           onDragOver={(event) => event.preventDefault()}
           onDrop={onPaneDrop}
@@ -557,7 +562,10 @@ export function PostEditor({
           Actions that wrap grow upward, leaving the word count in the corner. */}
       <Inline
         align="end"
-        className="absolute right-[calc(var(--spacing)*(4+2*var(--editor-settings-progress,0)))] bottom-3 z-20 editor-settings-motion-[right] max-[500px]:inset-x-3 max-sm:pointer-events-none max-sm:*:pointer-events-auto min-[500px]:max-sm:left-4"
+        className={cn(
+          'absolute right-[calc(var(--spacing)*(4+2*var(--editor-settings-progress,0)))] bottom-3 z-20 editor-settings-motion-[right] max-[500px]:inset-x-3 max-sm:pointer-events-none max-sm:*:pointer-events-auto min-[500px]:max-sm:left-4',
+          chromeEntrance && 'screen-enter-from-bottom',
+        )}
         gap="sm"
       >
         {!isKeyboardOpen && (

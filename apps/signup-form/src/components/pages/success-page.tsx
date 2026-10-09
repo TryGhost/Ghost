@@ -1,4 +1,3 @@
-import React from 'react';
 import { SuccessView } from './success-view';
 import { useAppContext } from '../../app-context';
 
@@ -6,7 +5,7 @@ type SuccessPageProps = {
   email: string;
 };
 
-export const SuccessPage: React.FC<SuccessPageProps> = ({ email }) => {
+export const SuccessPage = ({ email }: SuccessPageProps) => {
   const { options } = useAppContext();
 
   return (

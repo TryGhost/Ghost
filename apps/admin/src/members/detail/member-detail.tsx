@@ -39,7 +39,12 @@ import {
 import { dequal } from 'dequal';
 import { deriveMemberDetailBackPath } from './member-detail-nav';
 import { formatMemberName, memberAvatarProps } from '@/members/member-format';
-import { useMember, useAddMember, useEditMember } from '@tryghost/admin-x-framework/api/members';
+import {
+  useAddMember,
+  useCachedListMember,
+  useEditMember,
+  useMember,
+} from '@tryghost/admin-x-framework/api/members';
 import {
   getSettingValue,
   useBrowseSettings,
@@ -82,7 +87,11 @@ const MemberDetailPage: React.FC<MemberDetailPageProps> = ({
     defaultErrorHandler: false,
   });
   const member = data?.members?.[0];
-  const mapEnabled = !!member;
+  // The list row the admin clicked already has the member's name, avatar and
+  // location, so the header renders straight away while the full record loads.
+  const listMember = useCachedListMember(isCreating ? undefined : memberId);
+  const headerMember = member ?? listMember;
+  const mapEnabled = !!headerMember;
   // 4xx from the members endpoint on a real id means "gone" (deleted mid-flow
   // is the realistic case). 5xx/network is a different story — we don't want
   // to lie about that with a "not found" message.
@@ -235,6 +244,12 @@ const MemberDetailPage: React.FC<MemberDetailPageProps> = ({
       setCommittedIdentity({ name: member.name ?? '', email: member.email ?? '' });
     }
   }, [member?.id, member?.name, member?.email, isCreating]);
+  // The committed identity is only filled in by the effect above, a render after
+  // the member arrives; until then, show the member's own name rather than a fallback.
+  const headerIdentity =
+    committedIdentity.name || committedIdentity.email
+      ? committedIdentity
+      : { name: headerMember?.name ?? '', email: headerMember?.email ?? '' };
   const commitIdentityFromDraft = () => {
     if (draft) {
       setCommittedIdentity({ name: draft.name, email: draft.email });
@@ -349,8 +364,8 @@ const MemberDetailPage: React.FC<MemberDetailPageProps> = ({
   let title = 'Member';
   if (isCreating) {
     title = 'New member';
-  } else if (member) {
-    title = formatMemberName(member);
+  } else if (headerMember) {
+    title = formatMemberName(headerMember);
   } else if (notFound) {
     title = 'Member not found';
   }
@@ -366,7 +381,7 @@ const MemberDetailPage: React.FC<MemberDetailPageProps> = ({
       <Container className="relative flex h-full flex-col" size="page">
         <DetailPage data-testid="member-detail">
           <DetailPage.Header className="has-[[data-member-map-location=unknown]]:py-7">
-            <MemberMapHeader enabled={mapEnabled} geolocation={member?.geolocation}>
+            <MemberMapHeader enabled={mapEnabled} geolocation={headerMember?.geolocation}>
               <PageHeader blurredBackground={false} sticky={false}>
                 <PageHeader.Left>
                   {/*
@@ -389,7 +404,7 @@ const MemberDetailPage: React.FC<MemberDetailPageProps> = ({
                       </BreadcrumbItem>
                       <BreadcrumbSeparator />
                       <BreadcrumbItem>
-                        {!isCreating && isLoading ? (
+                        {!isCreating && isLoading && !headerMember ? (
                           <Skeleton className="h-4 w-40" />
                         ) : (
                           <BreadcrumbPage className="truncate" data-testid="member-detail-title">
@@ -403,11 +418,11 @@ const MemberDetailPage: React.FC<MemberDetailPageProps> = ({
                     <Inline className="mt-3 max-w-full min-w-0" gap="md">
                       <Avatar
                         className="size-10 min-w-10 [&_span]:text-lg"
-                        {...memberAvatarProps(committedIdentity)}
-                        src={member?.avatar_image}
+                        {...memberAvatarProps(headerIdentity)}
+                        src={headerMember?.avatar_image}
                       />
                       <PageHeader.Title className="min-w-0 truncate text-2xl tracking-tight sm:text-3xl">
-                        {formatMemberName(committedIdentity)}
+                        {formatMemberName(headerIdentity)}
                       </PageHeader.Title>
                     </Inline>
                   )}

@@ -31,6 +31,7 @@ import { useNavigate, useParams } from '@tryghost/admin-x-framework';
 import { useUnsavedChangesGuard } from '@/hooks/use-unsaved-changes-guard';
 import type { AutomationEditState } from './types';
 import { isAutomationStatusActive } from './utils/is-automation-status-active';
+import { ScreenEntranceProvider } from '@/layout/screen-entrance-provider';
 
 const SUBJECT_REQUIRED_MESSAGE = 'Add a subject line.';
 const BODY_REQUIRED_MESSAGE = 'Add an email body.';
@@ -590,22 +591,25 @@ const AutomationEditor: React.FC = () => {
       key: isFirstSave ? session.key : session.key + 1,
     });
   }
-  if (automationId === 'new' || automationId === session.createdId) {
-    return (
-      <NewAutomation key={session.key}>
-        {(initialAutomation) => (
-          <AutomationEditorContent
-            automationId={null}
-            creation={{
-              initialAutomation,
-              onCreated: (createdId) => setSession((current) => ({ ...current, createdId })),
-            }}
-          />
-        )}
-      </NewAutomation>
-    );
-  }
-  return <AutomationEditorContent key={automationId} automationId={automationId} />;
+  return (
+    <ScreenEntranceProvider>
+      {automationId === 'new' || automationId === session.createdId ? (
+        <NewAutomation key={session.key}>
+          {(initialAutomation) => (
+            <AutomationEditorContent
+              automationId={null}
+              creation={{
+                initialAutomation,
+                onCreated: (createdId) => setSession((current) => ({ ...current, createdId })),
+              }}
+            />
+          )}
+        </NewAutomation>
+      ) : (
+        <AutomationEditorContent key={automationId} automationId={automationId} />
+      )}
+    </ScreenEntranceProvider>
+  );
 };
 
 export default AutomationEditor;

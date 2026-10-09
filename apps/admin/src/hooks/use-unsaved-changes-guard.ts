@@ -7,6 +7,7 @@ import {
   useLocation,
 } from '@tryghost/admin-x-framework';
 import { useHashLinkNavigationGuard } from '@/hooks/use-hash-link-navigation-guard';
+import { useTrackActiveUnsavedChangesGuard } from '@/hooks/active-unsaved-changes-guards';
 import {
   useHistoryPopNavigationGuard,
   withoutTrailingSlash,
@@ -100,6 +101,7 @@ export function useUnsavedChangesGuard({
   interceptRef.current = interceptNavigation;
 
   useConfirmUnload(confirmUnloadWhen ?? when);
+  useTrackActiveUnsavedChangesGuard(when);
 
   const blocker = useBlocker((args) => {
     // A POP can only be undone from a router-created entry; elsewhere the router

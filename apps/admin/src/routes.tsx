@@ -38,7 +38,7 @@ import {
   lazyPostsListRoute,
   postAnalyticsRouteChildren,
 } from './posts/api';
-import { canAccessSettingsRoute, lazySettingsScreen, settingsRouteChildren } from './settings/api';
+import { canAccessSettingsRoute, SettingsRoute, settingsRouteChildren } from './settings/api';
 import { lazyTagDetailScreen, lazyTagsScreen } from './tags/api';
 import { lazyViewSiteScreen } from './view-site/api';
 import {
@@ -96,6 +96,7 @@ const appRoutes: RouteObject[] = [
     path: '/automations/:id',
     handle: {
       hideAdminSidebar: true,
+      screenTransition: true,
       requiresAccess: canManageAutomations,
     } satisfies AdminRouteHandle & AccessRouteHandle,
     lazy: lazyComponent(lazyAutomationEditorScreen),
@@ -168,10 +169,11 @@ const appRoutes: RouteObject[] = [
     // The shell swaps its primary navigation for Settings on desktop before
     // the lazy settings chunk has resolved. Mobile keeps its full takeover.
     path: `settings`,
-    lazy: lazyComponent(lazySettingsScreen),
+    Component: SettingsRoute,
     children: settingsRouteChildren,
     handle: {
       allowInForceUpgrade: true,
+      screenTransition: true,
       settingsSidebar: true,
       requiresAccess: canAccessSettingsRoute,
     } satisfies AdminRouteHandle & AccessRouteHandle,
@@ -193,7 +195,11 @@ const appRoutes: RouteObject[] = [
     path: '/editor/*',
     Component: EditorGate,
     // EditorGate enforces force upgrade unless Ember owns both the editor and billing
-    handle: { allowInForceUpgrade: true, hideAdminSidebar: true } satisfies AdminRouteHandle,
+    handle: {
+      allowInForceUpgrade: true,
+      hideAdminSidebar: true,
+      screenTransition: true,
+    } satisfies AdminRouteHandle,
   },
   { path: '/site', lazy: lazyComponent(lazyViewSiteScreen) },
   { path: '/restore', lazy: lazyComponent(lazyRestoreScreen) },

@@ -1,13 +1,12 @@
 // Country and US state backdrop for member detail pages.
 // Countries and US states share one Natural Earth projection; no member data leaves this app.
 import React, { useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
+import { useRevealOnMount } from '@/shared/use-reveal-on-mount';
 import { Box } from '@tryghost/shade/primitives';
 import { cn, LucideIcon } from '@tryghost/shade/utils';
 import { parseMemberGeolocation } from './member-detail-format';
 import { MemberMapContext } from './member-map-context';
-import type atlasData from './map-data/world-states.json';
-
-type MapAtlas = typeof atlasData;
+import { getLoadedMapAtlas, loadMapAtlas, type MapAtlas } from './map-atlas';
 type MapLocation = MapAtlas['countries'][number];
 
 function LocationMap({
@@ -124,19 +123,19 @@ export default function MemberLocationMap({
   const geo = parseMemberGeolocation(geolocation);
   const countryCode =
     typeof geo?.country_code === 'string' ? geo.country_code.trim().toLowerCase() : '';
-  const [atlas, setAtlas] = useState<MapAtlas | null>(null);
+  const [atlas, setAtlas] = useState<MapAtlas | null>(getLoadedMapAtlas);
 
   // Keep the header mounted while loading geometry. Swapping a Suspense
   // fallback for the map would reset open menus and dialogs in the header.
   useEffect(() => {
-    if (!countryCode) {
+    if (!countryCode || atlas) {
       return;
     }
     let active = true;
-    void import('./map-data/world-states.json').then(
-      (module) => {
+    loadMapAtlas().then(
+      (loaded) => {
         if (active) {
-          setAtlas(module.default);
+          setAtlas(loaded);
         }
       },
       () => {
@@ -146,33 +145,41 @@ export default function MemberLocationMap({
     return () => {
       active = false;
     };
-  }, [countryCode]);
+  }, [countryCode, atlas]);
   const country = atlas?.countries.find((item) => item.id === countryCode);
+  // The header takes the map's shape as soon as the member has a country, so the
+  // map fades into space already there instead of pushing the page down. It only
+  // falls back once the atlas proves it doesn't know the country.
+  const showsMap = Boolean(countryCode) && (!atlas || Boolean(country));
+  const revealMapRef = useRevealOnMount<HTMLDivElement>(true, 300);
 
   return (
     <Box
       className={cn(
         'relative isolate overflow-hidden rounded-xl',
-        country
+        showsMap
           ? '[&_[data-page-header=main]]:items-end'
           : '[&_[data-page-header=main]]:items-start',
-        country &&
+        showsMap &&
           '-mt-5 -mr-[calc((100cqw-100%)/2-8px)] -ml-[calc((100cqw-100%)/2-var(--member-map-left-inset,8px))] rounded-t-xl rounded-b-none pt-40 pr-[calc((100cqw-100%)/2-8px)] pb-5 pl-[calc((100cqw-100%)/2-var(--member-map-left-inset,8px))]',
-        country && '[&_[data-page-header=primary]]:ms-1',
-        country &&
+        showsMap && '[&_[data-page-header=primary]]:ms-1',
+        showsMap &&
           'max-sm:[&_[data-page-header=actions]]:absolute max-sm:[&_[data-page-header=actions]]:top-4 max-sm:[&_[data-page-header=actions]]:right-4',
-        country &&
+        showsMap &&
           'max-sm:pt-49 max-sm:[&_[aria-label=breadcrumb]]:absolute max-sm:[&_[aria-label=breadcrumb]]:top-4 max-sm:[&_[aria-label=breadcrumb]]:right-40 max-sm:[&_[aria-label=breadcrumb]]:left-4 max-sm:[&_[aria-label=breadcrumb]>ol]:flex-nowrap max-sm:[&_[aria-label=breadcrumb]>ol>li:last-child]:min-w-0',
       )}
-      data-member-map-location={country ? 'known' : 'unknown'}
+      data-member-map-location={showsMap ? 'known' : 'unknown'}
       data-testid="member-location-map-header"
     >
       {atlas && country && (
-        <Box className="pointer-events-none absolute inset-0 -z-10 overflow-hidden [mask-image:linear-gradient(to_bottom,black_70%,transparent)]">
+        <Box
+          ref={revealMapRef}
+          className="pointer-events-none absolute inset-0 -z-10 overflow-hidden [mask-image:linear-gradient(to_bottom,black_70%,transparent)]"
+        >
           <LocationMap atlas={atlas} country={country} region={geo?.region} />
         </Box>
       )}
-      <MemberMapContext.Provider value={!!country}>{children}</MemberMapContext.Provider>
+      <MemberMapContext.Provider value={showsMap}>{children}</MemberMapContext.Provider>
     </Box>
   );
 }

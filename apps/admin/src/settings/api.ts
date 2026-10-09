@@ -6,6 +6,6 @@ export { settingsRouteChildren } from './routes';
 export { canAccessSettingsRoute } from './settings-access';
 export { ThemeValidationIssueList } from './site/theme/theme-validation-details';
 
-// Lazy entry, not a component re-export: the shell mounts it behind `lazy:`,
-// so a static re-export would pull the chunk into the shell bundle.
-export const lazySettingsScreen = () => import('./settings');
+// A small eager route that loads the rest of Settings itself, so navigating to
+// Settings commits at once instead of waiting on its code.
+export { default as SettingsRoute } from './settings-route';
