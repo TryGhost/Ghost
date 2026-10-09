@@ -5,6 +5,7 @@ import {
   createHashRouter,
   Link as ReactRouterLink,
   type LinkProps,
+  type Location,
   type RelativeRoutingType,
   resolvePath,
   RouteObject,
@@ -39,6 +40,8 @@ export interface RouterProviderProps {
 
   // Custom routing props
   errorElement?: React.ReactNode;
+  /** Recovers from a route error, e.g. by reloading, and returns true if it did; recovered errors go unreported. */
+  recoverFromError?: (error: unknown, location: Location) => boolean;
   children?: React.ReactNode;
 }
 
@@ -126,7 +129,13 @@ const reportRouteError: ClientOnErrorFunction = (error, { errorInfo }) => {
   }
 };
 
-export function RouterProvider({ routes, prefix, errorElement, children }: RouterProviderProps) {
+export function RouterProvider({
+  routes,
+  prefix,
+  errorElement,
+  recoverFromError,
+  children,
+}: RouterProviderProps) {
   // Memoize the router to avoid re-creating it on every render
   const router = useMemo(() => {
     // Ensure prefix has a leading slash and no double+ or trailing slashes
@@ -152,7 +161,16 @@ export function RouterProvider({ routes, prefix, errorElement, children }: Route
     });
   }, [routes, prefix, errorElement, children]);
 
-  return <ReactRouterProvider router={router} onError={reportRouteError} />;
+  const onError = useCallback<ClientOnErrorFunction>(
+    (error, info) => {
+      if (!recoverFromError?.(error, info.location)) {
+        reportRouteError(error, info);
+      }
+    },
+    [recoverFromError],
+  );
+
+  return <ReactRouterProvider router={router} onError={onError} />;
 }
 
 /**

@@ -70,6 +70,23 @@ const resetFakeFrameOrigins: BrowserCommand<[]> = async ({ page }) => {
   await Promise.all(fakes.map(({ matcher, handler }) => page.unroute(matcher, handler)));
 };
 
+// Module requests fail as a dropped connection would (test-utils/acceptance/module-loads.ts).
+// Routed on the context: the page's routes never see what MSW's service worker fetches.
+type BrowserContext = BrowserCommandContext['context'];
+const failedModules = new WeakMap<BrowserContext, Array<(url: URL) => boolean>>();
+
+const failModuleLoads: BrowserCommand<[pathEnd: string]> = async ({ context }, pathEnd) => {
+  const matcher = (url: URL) => url.pathname.endsWith(pathEnd);
+  await context.route(matcher, (route) => route.abort('connectionreset'));
+  failedModules.set(context, [...(failedModules.get(context) ?? []), matcher]);
+};
+
+const resetFailedModuleLoads: BrowserCommand<[]> = async ({ context }) => {
+  const matchers = failedModules.get(context) ?? [];
+  failedModules.delete(context);
+  await Promise.all(matchers.map((matcher) => context.unroute(matcher)));
+};
+
 export default defineConfig({
   plugins: [tailwindcss() as PluginOption, svgr(), react()],
   server: {
@@ -116,7 +133,13 @@ export default defineConfig({
       enabled: true,
       headless: true,
       provider: playwright(),
-      commands: { fakeFrameOrigin, guardFrameNavigations, resetFakeFrameOrigins },
+      commands: {
+        failModuleLoads,
+        fakeFrameOrigin,
+        guardFrameNavigations,
+        resetFailedModuleLoads,
+        resetFakeFrameOrigins,
+      },
       instances: [{ browser: 'chromium' }],
       // Failure screenshots land in __screenshots__/ (gitignored).
       screenshotFailures: true,
