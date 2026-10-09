@@ -104,7 +104,7 @@ async function renderSearch(term = '') {
 type SearchHook = Awaited<ReturnType<typeof renderSearch>>;
 
 const groupNames = (hook: SearchHook) =>
-  hook.result.current.search.results.map((group) => group.groupName);
+  hook.result.current.search.results.map((group) => group.heading);
 
 async function settledGroupNames(hook: SearchHook) {
   await expect.poll(() => hook.result.current.search.isLoading).toBe(false);

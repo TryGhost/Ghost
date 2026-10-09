@@ -17,8 +17,8 @@ import { DirtyConfirmDialog, useDirtyConfirmation } from '@tryghost/shade/patter
 import { useLocation, useNavigate } from '@tryghost/admin-x-framework';
 import { navigateEmberBillingSubRoute } from '@/ember-bridge';
 import { useEmberOwnedRouteMatcher } from '@/routes';
-import { getSearchDestination } from './search-destination';
-import type { SearchResult } from './searchables';
+import { getBillingSubRoute } from './billing-source';
+import type { SearchItem } from './search-source';
 import { useGlobalSearch } from './use-global-search';
 import { useSettingsReturnToState } from '@/layout/settings-navigation';
 
@@ -89,29 +89,30 @@ function GlobalSearchPanel({ onClose }: { onClose: () => void }) {
   const { confirm, dialogProps } = useDirtyConfirmation();
   const isSettings = /^\/settings(?:\/|$)/.test(pathname);
 
-  const openResult = (result: SearchResult) => {
-    const destination = getSearchDestination(result);
-    if (!destination) {
+  const openItem = (item: SearchItem) => {
+    if (item.kind === 'action') {
       onClose();
+      void item.run();
       return;
     }
 
-    const crossApp = isEmberOwned(destination.path);
-    const opensSettings = /^\/settings(?:[/?#]|$)/.test(destination.path);
+    const crossApp = isEmberOwned(item.to);
+    const opensSettings = /^\/settings(?:[/?#]|$)/.test(item.to);
+    const billingSubRoute = getBillingSubRoute(item.to);
     // Search exits bypass Settings' own controls and its history-only blocker.
     // Keep the search mounted while confirming so Stay preserves the query.
     confirm(isSettings && isDirty && !opensSettings, () => {
       onClose();
       if (
-        destination.billingSubRoute &&
-        pathname === destination.path &&
+        billingSubRoute &&
+        pathname === item.to &&
         crossApp &&
-        navigateEmberBillingSubRoute(destination.billingSubRoute)
+        navigateEmberBillingSubRoute(billingSubRoute)
       ) {
         return;
       }
 
-      navigate(destination.path, {
+      navigate(item.to, {
         crossApp,
         state: opensSettings ? settingsReturnToState : undefined,
       });
@@ -129,23 +130,23 @@ function GlobalSearchPanel({ onClose }: { onClose: () => void }) {
         <CommandInput placeholder="Search site" value={term} onValueChange={setTerm} />
         <CommandList className={cn('max-h-[50vh]', !hasTerm && 'hidden')}>
           {results.map((group, index) => (
-            <Fragment key={group.groupKey ?? group.groupName}>
+            <Fragment key={group.id}>
               {index > 0 && <CommandSeparator alwaysRender />}
               <CommandGroup
                 className="[&_[cmdk-group-heading]]:tracking-wide [&_[cmdk-group-heading]]:uppercase"
-                heading={group.groupName}
+                heading={group.heading}
               >
-                {group.options.map((result) => (
+                {group.items.map((item) => (
                   <CommandItem
-                    key={result.id}
+                    key={item.id}
                     className="justify-between"
-                    value={result.id}
-                    onSelect={() => openResult(result)}
+                    value={`${group.id}:${item.id}`}
+                    onSelect={() => openItem(item)}
                   >
                     <span className="truncate">
-                      <HighlightedText term={term} text={result.title} />
+                      <HighlightedText term={term} text={item.title} />
                     </span>
-                    <StatusBadge status={result.status} />
+                    <StatusBadge status={item.status} />
                   </CommandItem>
                 ))}
               </CommandGroup>

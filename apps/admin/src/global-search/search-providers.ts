@@ -1,19 +1,5 @@
-import type { SearchIndexItem } from '@/shared/search-index';
 import FlexSearch from 'flexsearch';
-import {
-  type SearchItem,
-  type SearchResult,
-  type SearchResultGroup,
-  type Searchable,
-  type SearchableModel,
-  createSearchResult,
-  sortSearchResultsByStatus,
-} from './searchables';
-
-/** `search-index/*` entries by model. Billing items come from config, not content. */
-export type SearchContent = Partial<
-  Record<Exclude<SearchableModel, 'pro-page'>, SearchIndexItem[]>
->;
+import type { SearchItem, SearchResultGroup, SearchSource } from './search-source';
 
 export interface SearchProvider {
   search(term: string): SearchResultGroup[];
@@ -22,88 +8,48 @@ export interface SearchProvider {
 // every option is rendered, so each group is capped
 const RESULT_LIMIT = 100;
 
-function itemsFor(searchable: Searchable, content: SearchContent): SearchItem[] {
-  if (searchable.model === 'pro-page') {
-    return searchable.staticItems ?? [];
-  }
-
-  return content[searchable.model] ?? [];
-}
-
 function groupResults(
-  searchables: Searchable[],
-  match: (searchable: Searchable) => SearchResult[],
+  sources: readonly SearchSource[],
+  match: (source: SearchSource, index: number) => SearchItem[],
 ): SearchResultGroup[] {
-  const groups: SearchResultGroup[] = [];
-
-  searchables.forEach((searchable) => {
-    const options = sortSearchResultsByStatus(match(searchable), searchable.model).slice(
+  return sources.flatMap((source, index) => {
+    const matches = match(source, index);
+    const items = (source.compare ? [...matches].sort(source.compare) : matches).slice(
       0,
       RESULT_LIMIT,
     );
 
-    if (options.length > 0) {
-      groups.push({ groupName: searchable.name, groupKey: searchable.key, options });
-    }
+    return items.length > 0 ? [{ id: source.id, heading: source.heading, items }] : [];
   });
-
-  return groups;
 }
 
 /** Matches word prefixes in any order, ranked by FlexSearch. */
-export function createFlexSearchProvider(
-  searchables: Searchable[],
-  content: SearchContent,
-): SearchProvider {
-  const indexes = new Map(
-    searchables.map((searchable) => {
-      const index = new FlexSearch.Document<SearchItem, true>({
-        tokenize: 'forward',
-        document: { id: 'id', index: searchable.index, store: true },
-      });
-      itemsFor(searchable, content).forEach((item) => index.add(item));
-      return [searchable.model, index] as const;
-    }),
-  );
+export function createFlexSearchProvider(sources: readonly SearchSource[]): SearchProvider {
+  const indexes = sources.map((source) => {
+    const index = new FlexSearch.Document<SearchItem>({
+      tokenize: 'forward',
+      document: { id: 'id', index: ['title', 'keywords'] },
+    });
+    source.items.forEach((item) => index.add(item));
+    return { index, itemsById: new Map(source.items.map((item) => [item.id, item])) };
+  });
 
   return {
     search(term) {
-      return groupResults(searchables, (searchable) => {
-        const seen = new Set<string>();
-        const results: SearchResult[] = [];
+      return groupResults(sources, (_source, sourceIndex) => {
+        const { index, itemsById } = indexes[sourceIndex];
+        const ids = new Set(
+          index.search(term, RESULT_LIMIT).flatMap((field) => field.result.map(String)),
+        );
 
-        indexes
-          .get(searchable.model)
-          ?.search<true>(term, RESULT_LIMIT, { enrich: true })
-          .forEach((field) => {
-            field.result.forEach(({ doc }) => {
-              if (seen.has(doc.id)) {
-                return;
-              }
-
-              seen.add(doc.id);
-              results.push(createSearchResult(searchable, doc));
-            });
-          });
-
-        return results;
+        return [...ids].flatMap((id) => itemsById.get(id) ?? []);
       });
     },
   };
 }
 
-/** Matches the term as a case-insensitive substring, in content order. */
-export function createBasicSearchProvider(
-  searchables: Searchable[],
-  content: SearchContent,
-): SearchProvider {
-  const resultsByModel = new Map(
-    searchables.map((searchable) => [
-      searchable.model,
-      itemsFor(searchable, content).map((item) => createSearchResult(searchable, item)),
-    ]),
-  );
-
+/** Matches the term as a case-insensitive substring, in source order. */
+export function createBasicSearchProvider(sources: readonly SearchSource[]): SearchProvider {
   return {
     search(term) {
       if (!term.trim()) {
@@ -112,28 +58,23 @@ export function createBasicSearchProvider(
 
       const needle = term.toLowerCase();
 
-      return groupResults(searchables, (searchable) => {
-        const keywordsIndexed = searchable.index.includes('keywords');
-
-        return (resultsByModel.get(searchable.model) ?? []).filter(
-          (result) =>
-            result.title.toLowerCase().includes(needle) ||
-            (keywordsIndexed && Boolean(result.keywords?.toLowerCase().includes(needle))),
-        );
-      });
+      return groupResults(sources, (source) =>
+        source.items.filter(
+          (item) =>
+            item.title.toLowerCase().includes(needle) ||
+            Boolean(item.keywords?.toLowerCase().includes(needle)),
+        ),
+      );
     },
   };
 }
 
 /** FlexSearch's word tokenizer only suits English; substring matching works for any language. */
 export function createSearchProvider(
-  searchables: Searchable[],
+  sources: readonly SearchSource[],
   locale: string | null | undefined,
-  content: SearchContent,
 ): SearchProvider {
   const isEnglish = locale?.toLowerCase().startsWith('en') ?? true;
 
-  return isEnglish
-    ? createFlexSearchProvider(searchables, content)
-    : createBasicSearchProvider(searchables, content);
+  return isEnglish ? createFlexSearchProvider(sources) : createBasicSearchProvider(sources);
 }
