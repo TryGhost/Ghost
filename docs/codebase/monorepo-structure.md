@@ -48,7 +48,7 @@ boundary.
 
 | Path                                                      | Contains                                                        |
 | --------------------------------------------------------- | --------------------------------------------------------------- |
-| [`ghost/core/kernel/`](../../ghost/core/kernel/README.md) | Framework mechanisms for constructing and running Ghost         |
+| [`ghost/core/kernel/`](../../ghost/core/kernel/README.md) | Application-independent framework primitives                    |
 | `ghost/core/server/`                                      | APIs, models, services, data access, and server startup         |
 | `ghost/core/frontend/`                                    | Theme rendering, helpers, middleware, and public assets         |
 | `ghost/core/shared/`                                      | Configuration and code shared across server boundaries          |

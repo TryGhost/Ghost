@@ -1,12 +1,14 @@
-# Ghost kernel
+# Kernel
 
-The kernel contains framework mechanisms for constructing and running Ghost,
-without feature-specific business rules. It sits alongside `server`, `frontend`
-and `shared` because these mechanisms support the application as a whole.
+The kernel contains application-independent framework primitives. It has no
+knowledge of Ghost's features, domain models, business rules or configuration.
 
-Kernel code must not import `server`, `frontend` or application entry points.
-Boot assembles the application and supplies the concrete capabilities. General
-helpers stay in libraries; helpers specific to a service stay with that service.
+Application code depends on the kernel; the kernel does not depend on application
+code. Kernel modules may use one another and general-purpose dependencies, but
+must not import from elsewhere in the Ghost package, including `shared`.
+
+Helpers specific to a feature stay with that feature. Shared use alone does not
+make a helper part of the kernel.
 
 ## Service initialization
 
