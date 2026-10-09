@@ -96,6 +96,25 @@ describe('signing-keys root', function () {
     sinon.assert.calledOnce(check);
   });
 
+  it('shares one pending key check between concurrent initialization calls', async function () {
+    const ready = Promise.withResolvers<void>();
+    check.returns(ready.promise);
+    const first = root.init();
+    const second = root.init();
+
+    try {
+      await setImmediate();
+      sinon.assert.calledOnce(check);
+      assert.equal(first, second);
+      assert.throws(() => root.getInstance(), IncorrectUsageError);
+    } finally {
+      ready.resolve();
+      await Promise.allSettled([first, second]);
+    }
+    await Promise.all([first, second]);
+    assert.equal(root.getInstance(), check.firstCall.thisValue);
+  });
+
   it('propagates the initial check error without publication and permits a later retry', async function () {
     const failure = new Error('Key check failed');
     check.onFirstCall().rejects(failure);

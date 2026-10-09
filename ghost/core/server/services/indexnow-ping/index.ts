@@ -1,35 +1,22 @@
+import { defineService } from '../../lib/define-service';
 import { IndexNowPingService } from './indexnow-ping-service';
 
-class IndexNowPingServiceWrapper {
-  service?: IndexNowPingService;
+export default defineService('IndexNow', () => {
+  const service = new IndexNowPingService({
+    settingsCache: require('../../../shared/settings-cache'),
+    config: require('../../../shared/config'),
+    urlService: require('../url'),
+    urlUtils: require('../../../shared/url-utils').default,
+    request: require('@tryghost/request'),
+    logging: require('@tryghost/logging'),
+    events: require('../../lib/common/events'),
+  });
 
-  init(): void {
-    if (this.service) {
-      // Already done
-      return;
-    }
-
-    // Wire up all the dependencies
-    const settingsCache = require('../../../shared/settings-cache');
-    const config = require('../../../shared/config');
-    const urlService = require('../url');
-    const urlUtils = require('../../../shared/url-utils').default;
-    const request = require('@tryghost/request');
-    const logging = require('@tryghost/logging');
-    const events = require('../../lib/common/events');
-
-    this.service = new IndexNowPingService({
-      settingsCache,
-      config,
-      urlService,
-      urlUtils,
-      request,
-      logging,
-      events,
-    });
-
-    this.service.subscribeEvents();
+  try {
+    service.subscribeEvents();
+  } catch (error) {
+    service.unsubscribeEvents();
+    throw error;
   }
-}
-
-export default new IndexNowPingServiceWrapper();
+  return service;
+});
