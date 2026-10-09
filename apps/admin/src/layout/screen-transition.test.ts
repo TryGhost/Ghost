@@ -25,24 +25,11 @@ describe('shouldRunScreenTransition', () => {
     ['within Settings', settingsRoot, settingsChild, false],
     ['between unmarked screens', posts, tags, false],
   ])('%s', (_name, from, to, expected) => {
-    expect(
-      shouldRunScreenTransition({ from, to, enabled: true, settingsSidebarEnabled: true }),
-    ).toBe(expected);
-  });
-
-  it('never transitions with the flag off', () => {
-    expect(
-      shouldRunScreenTransition({
-        from: posts,
-        to: post,
-        enabled: false,
-        settingsSidebarEnabled: true,
-      }),
-    ).toBe(false);
+    expect(shouldRunScreenTransition({ from, to, settingsSidebarEnabled: true })).toBe(expected);
   });
 
   it('leaves the legacy Settings takeover alone', () => {
-    const input = { enabled: true, settingsSidebarEnabled: false };
+    const input = { settingsSidebarEnabled: false };
     expect(shouldRunScreenTransition({ ...input, from: posts, to: settingsRoot })).toBe(false);
     expect(shouldRunScreenTransition({ ...input, from: settingsChild, to: post })).toBe(false);
     expect(shouldRunScreenTransition({ ...input, from: posts, to: post })).toBe(true);

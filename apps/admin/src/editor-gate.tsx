@@ -2,7 +2,6 @@ import { Navigate } from '@tryghost/admin-x-framework';
 import { FlagGatedRoute } from './flag-gated-route';
 import { lazy } from 'react';
 import { EditorLoading, lazyEditorScreen } from './editor/api';
-import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import { useForceUpgrade } from './billing/api';
 import { useFlagGatedRouteOwner } from './use-flag-gated-route-owner';
 
@@ -18,7 +17,6 @@ export function EditorGate() {
   const editorOwner = useFlagGatedRouteOwner('editorReact');
   const billingOwner = useFlagGatedRouteOwner('billingReact');
   const forceUpgrade = useForceUpgrade();
-  const screenTransitions = useFeatureFlag('admin7ScreenTransitions');
 
   // The route skips the shell's force-upgrade guard because Ember enforces it on
   // its own editor — but only while Ember also owns billing.
@@ -26,16 +24,10 @@ export function EditorGate() {
     if (forceUpgrade) {
       return <Navigate to="/pro" replace />;
     }
-    return screenTransitions && editorOwner === 'react' ? <EditorLoading /> : null;
+    return editorOwner === 'react' ? <EditorLoading /> : null;
   }
 
-  return (
-    <FlagGatedRoute
-      component={EditorReact}
-      fallback={screenTransitions ? <EditorLoading /> : null}
-      flag="editorReact"
-    />
-  );
+  return <FlagGatedRoute component={EditorReact} fallback={<EditorLoading />} flag="editorReact" />;
 }
 
 export default EditorGate;

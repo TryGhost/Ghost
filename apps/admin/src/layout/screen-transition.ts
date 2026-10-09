@@ -20,7 +20,6 @@ interface ScreenTransitionInput {
   from: readonly unknown[];
   /** Route handles of the target's matches, outermost first. */
   to: readonly unknown[];
-  enabled: boolean;
   settingsSidebarEnabled: boolean;
 }
 
@@ -32,13 +31,8 @@ interface ScreenTransitionInput {
 export function shouldRunScreenTransition({
   from,
   to,
-  enabled,
   settingsSidebarEnabled,
 }: ScreenTransitionInput): boolean {
-  if (!enabled) {
-    return false;
-  }
-
   const fromSurface = screenSurface(from);
   const toSurface = screenSurface(to);
   if (fromSurface === toSurface) {

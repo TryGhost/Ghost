@@ -3,7 +3,6 @@ import React from 'react';
 import { SidebarInset, SidebarProvider } from '@tryghost/shade/components';
 import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
 import { isContributorUser } from '@tryghost/admin-x-framework/api/users';
-import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import { useAdminSidebarVisibility, useIsSettingsSidebarRoute } from '@/layout/sidebar-visibility';
 import { cn } from '@tryghost/shade/utils';
 import AppSidebar from './app-sidebar';
@@ -71,10 +70,9 @@ export function AdminLayout({ children }: AdminLayoutProps) {
   const dunningLocked = useDunningLockTakeover();
   const isContributor = currentUser && isContributorUser(currentUser);
   const isSettingsRoute = useIsSettingsSidebarRoute();
-  const screenTransitions = useFeatureFlag('admin7ScreenTransitions');
   const sidebarClassName = cn(
     SIDEBAR_PANEL_CLASS_NAME,
-    screenTransitions && SIDEBAR_SCREEN_TRANSITION_CLASS_NAME,
+    SIDEBAR_SCREEN_TRANSITION_CLASS_NAME,
     dunningLocked && 'opacity-40',
   );
 
@@ -166,7 +164,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
               'flex-1 focus:outline-hidden',
               sidebarVisible ? pageChromeClassName : 'min-h-0',
               isSettingsRoute && 'min-h-0',
-              screenTransitions && 'screen-exit-content',
+              'screen-exit-content',
             )}
           >
             <ActivityPubHostLayoutProvider value={sidebarVisible ? networkPageChrome : undefined}>

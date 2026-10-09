@@ -51,7 +51,6 @@ function exitTransitionsFinished(): Promise<void> {
  * finishes, or the navigation settles without landing.
  */
 export function ScreenTransitionProvider({ children }: { children: ReactNode }) {
-  const enabled = useFeatureFlag('admin7ScreenTransitions');
   const settingsSidebarEnabled = useFeatureFlag('admin7settings');
   const matches = useMatches();
   const isEmberOwned = useEmberOwnedRouteMatcher();
@@ -62,8 +61,8 @@ export function ScreenTransitionProvider({ children }: { children: ReactNode }) 
   viewTransitionRunningRef.current = viewTransitionRunning;
 
   // Updated during render so links rendered below already see the new matches.
-  const latest = useRef({ enabled, settingsSidebarEnabled, matches, isEmberOwned });
-  latest.current = { enabled, settingsSidebarEnabled, matches, isEmberOwned };
+  const latest = useRef({ settingsSidebarEnabled, matches, isEmberOwned });
+  latest.current = { settingsSidebarEnabled, matches, isEmberOwned };
   const exitingRef = useRef(false);
   // Where the current transition's navigation started, to tell one a blocker held from one that landed
   const fromHashRef = useRef<string | null>(null);
@@ -80,15 +79,11 @@ export function ScreenTransitionProvider({ children }: { children: ReactNode }) 
     return {
       shouldTransition(pathname) {
         const current = latest.current;
-        if (!current.enabled) {
-          return false;
-        }
         const target = matchRoutes(routes, pathname) ?? [];
         return (
           shouldRunScreenTransition({
             from: current.matches.map((match) => match.handle),
             to: target.map((match): unknown => match.route.handle),
-            enabled: current.enabled,
             settingsSidebarEnabled: current.settingsSidebarEnabled,
           }) && !current.isEmberOwned(pathname)
         );

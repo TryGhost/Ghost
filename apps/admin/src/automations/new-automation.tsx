@@ -102,10 +102,6 @@ const TriggerPicker: React.FC<{
 };
 
 const NewAutomationLoading: React.FC = () => {
-  const screenTransitions = useFeatureFlag('admin7ScreenTransitions');
-  if (!screenTransitions) {
-    return <LoadingIndicator size="lg" />;
-  }
   return (
     <div className="delayed-fade-in">
       <LoadingIndicator size="lg" />

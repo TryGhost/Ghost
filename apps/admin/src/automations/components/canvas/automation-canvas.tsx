@@ -557,7 +557,6 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
   const [deleteConfirmationActionId, setDeleteConfirmationActionId] = useState<string | null>(null);
   const automationRunAnalyticsEnabled = useFeatureFlag('automationRunAnalytics');
   const automationsPerTierEnabled = useFeatureFlag('automationsPerTier');
-  const screenTransitionsEnabled = useFeatureFlag('admin7ScreenTransitions');
   const selectedStepId = selectedStep?.id ?? null;
   const emailModalStepId = searchParams.get(EMAIL_STEP_QUERY_PARAM);
   const isRouterOpenedEmailModal =
@@ -916,7 +915,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
         className="-mt-14 flex flex-1 items-center justify-center bg-surface-page pt-14"
         data-testid="automation-canvas-loading"
       >
-        <div className={screenTransitionsEnabled ? 'delayed-fade-in' : undefined}>
+        <div className="delayed-fade-in">
           <LoadingIndicator size="lg" />
         </div>
       </div>
@@ -984,51 +983,54 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
           }}
           aria-hidden={isHistoryOpen}
           aria-label="Editing canvas"
-          className={cn('absolute inset-x-0 -top-14 bottom-0', isHistoryOpen && 'invisible')}
+          className={isHistoryOpen ? 'invisible absolute inset-0' : 'absolute inset-0'}
           role="region"
           tabIndex={-1}
         >
-          <ReactFlow
-            className="[--xy-background-color:var(--preview-canvas)] [--xy-edge-stroke:var(--border-default)]"
-            defaultViewport={initialViewport}
-            edges={graph.edges}
-            edgesFocusable={false}
-            edgeTypes={edgeTypes}
-            maxZoom={CANVAS_ZOOM_CONFIG.maxZoom}
-            minZoom={CANVAS_ZOOM_CONFIG.minZoom}
-            nodes={graph.nodes}
-            nodesConnectable={false}
-            nodesDraggable={false}
-            nodesFocusable={false}
-            nodeTypes={nodeTypes}
-            proOptions={{ hideAttribution: true }}
-            translateExtent={viewport.translateExtent}
-            zoomOnDoubleClick={false}
-            zoomOnScroll={false}
-            panOnScroll
-            onInit={viewport.onInit}
-            onMove={viewport.onMove}
-            onNodeClick={(event, node) => {
-              if (event.button !== 0) {
-                return;
-              }
-              if (
-                node.id !== TAIL_CANVAS_ID &&
-                !(automationRunAnalyticsEnabled && node.id === TRIGGER_CANVAS_ID) &&
-                !('email' in node.data && node.data.email) &&
-                !('wait' in node.data && node.data.wait)
-              ) {
-                showWarningsForOtherSteps(node.id);
-                setSelectedStep({ id: node.id });
-              }
-            }}
-            onNodeDoubleClick={handleNodeDoubleClick}
-            onNodesChange={handleNodesChange}
-            onPaneClick={automationRunAnalyticsEnabled ? undefined : clearDetail}
-          >
-            <Background {...canvasBackground} variant={BackgroundVariant.Dots} />
-            <AutomationCanvasControls />
-          </ReactFlow>
+          {/* Only the pane reaches up behind the header; the region keeps the visible bounds */}
+          <Box className="absolute inset-x-0 -top-14 bottom-0">
+            <ReactFlow
+              className="[--xy-background-color:var(--preview-canvas)] [--xy-edge-stroke:var(--border-default)]"
+              defaultViewport={initialViewport}
+              edges={graph.edges}
+              edgesFocusable={false}
+              edgeTypes={edgeTypes}
+              maxZoom={CANVAS_ZOOM_CONFIG.maxZoom}
+              minZoom={CANVAS_ZOOM_CONFIG.minZoom}
+              nodes={graph.nodes}
+              nodesConnectable={false}
+              nodesDraggable={false}
+              nodesFocusable={false}
+              nodeTypes={nodeTypes}
+              proOptions={{ hideAttribution: true }}
+              translateExtent={viewport.translateExtent}
+              zoomOnDoubleClick={false}
+              zoomOnScroll={false}
+              panOnScroll
+              onInit={viewport.onInit}
+              onMove={viewport.onMove}
+              onNodeClick={(event, node) => {
+                if (event.button !== 0) {
+                  return;
+                }
+                if (
+                  node.id !== TAIL_CANVAS_ID &&
+                  !(automationRunAnalyticsEnabled && node.id === TRIGGER_CANVAS_ID) &&
+                  !('email' in node.data && node.data.email) &&
+                  !('wait' in node.data && node.data.wait)
+                ) {
+                  showWarningsForOtherSteps(node.id);
+                  setSelectedStep({ id: node.id });
+                }
+              }}
+              onNodeDoubleClick={handleNodeDoubleClick}
+              onNodesChange={handleNodesChange}
+              onPaneClick={automationRunAnalyticsEnabled ? undefined : clearDetail}
+            >
+              <Background {...canvasBackground} variant={BackgroundVariant.Dots} />
+              <AutomationCanvasControls />
+            </ReactFlow>
+          </Box>
         </Box>
         {isHistoryOpen && (
           <RunHistory

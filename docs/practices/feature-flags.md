@@ -126,16 +126,6 @@ its return control and search inside Settings. The flag-off path preserves the
 legacy Settings layout. Editors retain the app navigation because their Settings
 access is limited; Authors only receive their profile route.
 
-The `admin7ScreenTransitions` milestone runs a view transition when a router
-navigation enters or leaves a route marked `screenTransition` in its handle:
-the post editor, the automation editor, and Settings. Entering one fades the
-current screen and sidebar out first, then fades the surface in; leaving one
-cross-fades straight back, and the posts list then renders its rows after a
-first frame with a spinner. The Settings boundary only animates with
-`admin7settings` on. Ember-owned routes and browser back and forward navigation
-keep the instant swap. With the flag on, the editors' and posts list's loading
-spinners wait 500ms before fading in, so fast loads never flash one.
-
 ## How values are resolved
 
 For normal Labs flags, later sources in this list override earlier ones:

@@ -26,8 +26,7 @@ const Automations: React.FC = () => {
   const navigate = useNavigate();
   const { automations, automationCount, error, isError, isLoading } = useVisibleAutomations();
   const automationsPerTierEnabled = useFeatureFlag('automationsPerTier');
-  const screenTransitions = useFeatureFlag('admin7ScreenTransitions');
-  useIdlePreload(preloadAutomationEditor, screenTransitions);
+  useIdlePreload(preloadAutomationEditor, true);
   const { data: currentUser } = useCurrentUser();
   const [automationsToShow, setAutomationsToShow] =
     React.useState<AutomationsToShow>('non-archived');

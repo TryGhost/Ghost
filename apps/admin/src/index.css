@@ -426,7 +426,7 @@ body.react-admin [data-test-table='members'] tr {
   z-index: 30;
 }
 
-/* Screen transitions (admin7ScreenTransitions). The router runs a view
+/* Screen transitions. The router runs a view
    transition only for a navigation into or out of a full-screen surface: the
    old screen fades out while the sidebar or mobile nav leaves, then the new
    screen fades in while it returns. A sidebar on both sides (Settings) keeps
