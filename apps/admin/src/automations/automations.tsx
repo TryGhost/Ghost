@@ -10,8 +10,15 @@ import { canManageAutomations } from '@tryghost/admin-x-framework/api/users';
 import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
 import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import { useVisibleAutomations } from './hooks/use-visible-automations';
+import { useIdlePreload } from '@/shared/use-idle-preload';
+import { lazyAutomationEditorScreen } from './api';
 
 const MAX_AUTOMATIONS = 50;
+
+function preloadAutomationEditor(): void {
+  // A failure is left for the editor route's own load to surface.
+  lazyAutomationEditorScreen().catch(() => undefined);
+}
 
 type AutomationsToShow = 'non-archived' | 'archived' | 'all';
 
@@ -20,6 +27,7 @@ const Automations: React.FC = () => {
   const { automations, automationCount, error, isError, isLoading } = useVisibleAutomations();
   const automationsPerTierEnabled = useFeatureFlag('automationsPerTier');
   const archiveEnabled = useFeatureFlag('automationsArchive');
+  useIdlePreload(preloadAutomationEditor, true);
   const { data: currentUser } = useCurrentUser();
   const [automationsToShow, setAutomationsToShow] =
     React.useState<AutomationsToShow>('non-archived');

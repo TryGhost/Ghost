@@ -31,6 +31,26 @@ beforeAll(async () => {
   }`;
   document.head.appendChild(style);
 
+  // Journeys end, and the app unmounts, as soon as a navigation lands, often
+  // while its view transition still waits on the new screen. The real API then
+  // times the transition out and reports an unhandled TimeoutError, so run the
+  // update straight away instead: no snapshots, nothing left pending to time out.
+  document.startViewTransition = (
+    update?: ViewTransitionUpdateCallback | StartViewTransitionOptions,
+  ) => {
+    const callback = typeof update === 'function' ? update : update?.update;
+    const updateCallbackDone = Promise.resolve().then(async () => {
+      await callback?.();
+    });
+    return {
+      ready: updateCallbackDone,
+      finished: updateCallbackDone,
+      updateCallbackDone,
+      skipTransition() {},
+      types: new Set<string>(),
+    };
+  };
+
   await startFakeApi({ resolver: defaultBootResolver, routes: defaultBootRoutes() });
   await guardFrameNavigations();
 });
@@ -62,6 +82,9 @@ afterEach(async () => {
     } finally {
       resetFakeApi();
       resetDeclaredResources();
+      // A journey can end mid screen transition; its markers would hide the next app's content.
+      delete document.documentElement.dataset.screenExit;
+      delete document.documentElement.dataset.screenTransition;
       sessionStorage.clear();
       // The editor keeps local copies of drafts here, and the restore screen lists them all.
       for (const key of Object.keys(localStorage)) {

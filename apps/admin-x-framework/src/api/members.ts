@@ -1,5 +1,5 @@
 import { InfiniteData, useIsFetching, useQueryClient } from '@tanstack/react-query';
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import {
   Meta,
   createInfiniteQuery,
@@ -170,6 +170,32 @@ export const getMemberCountQueryKey = () =>
  * without a type error if it ever changes.
  */
 export const useMembersFetching = () => useIsFetching({ queryKey: [dataType] }) > 0;
+
+/**
+ * A member that a loaded members list already holds, to show while the
+ * member's own record loads. List rows are enough for a header, not for
+ * editing. Lives here for the same reason as `useMembersFetching`.
+ */
+export const useCachedListMember = (id: string | undefined): Member | undefined => {
+  const queryClient = useQueryClient();
+  return useMemo(() => {
+    if (!id) {
+      return undefined;
+    }
+    for (const [, data] of queryClient.getQueriesData<unknown>({ queryKey: [dataType] })) {
+      const pages = (data as InfiniteData<MembersResponseType> | undefined)?.pages ?? [
+        data as MembersResponseType | undefined,
+      ];
+      for (const page of pages) {
+        const member = page?.members?.find((item) => item.id === id);
+        if (member) {
+          return member;
+        }
+      }
+    }
+    return undefined;
+  }, [queryClient, id]);
+};
 
 export const useBrowseMembers = createQuery<MembersResponseType>({
   dataType,

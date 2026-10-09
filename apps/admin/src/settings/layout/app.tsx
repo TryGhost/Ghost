@@ -1,4 +1,3 @@
-import MainContent from './main-content';
 import Sidebar from './sidebar';
 import { DirtyNavigationGuard } from './dirty-navigation-guard';
 import SettingsAppProvider from '@/settings/providers/settings-app-provider';
@@ -13,6 +12,13 @@ import { useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { useScrollSectionContext } from '@/settings/hooks/use-scroll-section';
 import { useSettingsNavigationSlot } from '@/layout/settings-navigation';
+import { SettingsLoading } from '@/settings/settings-loading';
+
+import { useLazyComponent } from '@/shared/use-lazy-component';
+
+// The sections are most of Settings' code; loading them separately lets the
+// navigation show first.
+const loadMainContent = () => import('./main-content');
 
 interface AppProps {
   upgradeStatus?: UpgradeStatusType;
@@ -48,6 +54,7 @@ function SettingsNavigationPortal() {
 
 export function App({ upgradeStatus }: AppProps) {
   const admin7Settings = useFeatureFlag('admin7settings');
+  const MainContent = useLazyComponent(loadMainContent);
 
   return (
     <SettingsAppProvider upgradeStatus={upgradeStatus}>
@@ -63,7 +70,7 @@ export function App({ upgradeStatus }: AppProps) {
           <DialogPortalProvider>
             <SettingsLocationSync />
             {admin7Settings && <SettingsNavigationPortal />}
-            <MainContent />
+            {MainContent ? <MainContent /> : <SettingsLoading />}
             <Outlet />
             <DirtyNavigationGuard />
           </DialogPortalProvider>

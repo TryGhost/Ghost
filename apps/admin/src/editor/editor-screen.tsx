@@ -15,10 +15,10 @@ import { getPostListReturnUrl } from '@/posts/api';
 import { reloadAdmin } from '@/auth/api';
 import { NotFound } from '@/shared/not-found';
 import { Navigate, useLocation, useNavigate, useParams } from '@tryghost/admin-x-framework';
-import { Button, LoadingIndicator } from '@tryghost/shade/components';
+import { Button } from '@tryghost/shade/components';
 import { DirtyConfirmDialog, PageHeader } from '@tryghost/shade/patterns';
 import { Box, Grid, Inline, Stack, Text } from '@tryghost/shade/primitives';
-import { LucideIcon } from '@tryghost/shade/utils';
+import { LucideIcon, cn } from '@tryghost/shade/utils';
 import { APIError, SessionExpiredError } from '@tryghost/admin-x-framework/errors';
 import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
@@ -46,6 +46,9 @@ import {
 } from './card-config';
 import { EditorHeaderActions, type OpenFlow } from './editor-header-actions';
 import { readEditorReturn } from './editor-return';
+import { EditorLoading } from './editor-loading';
+import { ScreenEntranceProvider } from '@/layout/screen-entrance-provider';
+import { useScreenEntrance } from '@/layout/screen-transition';
 import { EditorStatus } from './editor-status';
 import { EmailSizeWarning } from './email-size-warning';
 import { PostEditor, type PostEditorHandle } from './post-editor';
@@ -70,14 +73,6 @@ import { editorRead, useEditorSession } from './session/use-editor-session';
 import { usePostCardConfig } from './use-post-card-config';
 import { usePostSnippets } from './use-post-snippets';
 import type { EditorRecord } from './session/projection';
-
-function EditorLoading() {
-  return (
-    <Stack align="center" className="h-full" justify="center">
-      <LoadingIndicator size="lg" />
-    </Stack>
-  );
-}
 
 function EditorLoadError({ message, onRetry }: { message: string; onRetry: () => void }) {
   return (
@@ -187,6 +182,7 @@ function EditorContent({
     currentUserId: currentUser?.id,
   });
   const [tkCount, setTkCount] = useState(0);
+  const chromeEntrance = useScreenEntrance();
   const [openFlow, setOpenFlow] = useState<OpenFlow>('none');
   const openPublishFlow = useCallback(() => setOpenFlow('publish'), []);
   const openUpdateFlow = useCallback(() => setOpenFlow('update'), []);
@@ -415,7 +411,13 @@ function EditorContent({
         }
       >
         <Stack className="min-h-0 min-w-0 flex-1" gap="none">
-          <Box ref={headerRef} className="pointer-events-none relative z-20 shrink-0">
+          <Box
+            ref={headerRef}
+            className={cn(
+              'pointer-events-none relative z-20 shrink-0',
+              chromeEntrance && 'screen-enter-from-top',
+            )}
+          >
             <EditorHeader analyticsReturn={analyticsReturn} postType={postType}>
               {!analyticsReturn || didEmailFail || session.state.kind === 'error' ? (
                 <EditorStatus
@@ -475,7 +477,12 @@ function EditorContent({
             </div>
           </Box>
         </Stack>
-        <Box className="absolute top-[calc(var(--spacing)*5+1px)] right-[calc(var(--spacing)*6+1px)] z-40 max-[500px]:top-3 max-[500px]:right-3">
+        <Box
+          className={cn(
+            'absolute top-[calc(var(--spacing)*5+1px)] right-[calc(var(--spacing)*6+1px)] z-40 max-[500px]:top-3 max-[500px]:right-3',
+            chromeEntrance && 'screen-enter-from-top',
+          )}
+        >
           {settingsToggle}
         </Box>
         {settingsPresent ? (
@@ -780,7 +787,9 @@ export default function EditorScreen() {
   return (
     <EditorSessionKeyProvider value={sessionKey}>
       <EditorSessionCreatedProvider value={markCreated}>
-        <EditorLoader key={sessionKey} id={id} postType={typeSegment} />
+        <ScreenEntranceProvider key={sessionKey}>
+          <EditorLoader id={id} postType={typeSegment} />
+        </ScreenEntranceProvider>
       </EditorSessionCreatedProvider>
     </EditorSessionKeyProvider>
   );
