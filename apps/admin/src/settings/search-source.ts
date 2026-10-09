@@ -6,6 +6,7 @@ import {
   hasAdminAccess,
 } from '@tryghost/admin-x-framework/api/users';
 import type { SearchItem, SearchSource } from '@/global-search/search-source';
+import { openSectionPath } from '@/settings/utils/open-section';
 import { searchKeywords as advancedSearchKeywords } from '@/settings/advanced/search-keywords';
 import { searchKeywords as generalSearchKeywords } from '@/settings/general/search-keywords';
 import { searchKeywords as growthSearchKeywords } from '@/settings/growth/search-keywords';
@@ -123,7 +124,7 @@ const toItem = ({ navid, title, keywords }: SettingsSection): SearchItem => ({
   id: navid,
   title,
   keywords: keywords.join(' '),
-  to: `/settings/${navid}`,
+  to: openSectionPath(navid),
 });
 
 /** Admins see every section the sidebar shows; editors' Settings only holds Staff. */

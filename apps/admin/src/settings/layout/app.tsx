@@ -2,16 +2,21 @@ import MainContent from './main-content';
 import Sidebar from './sidebar';
 import { DirtyNavigationGuard } from './dirty-navigation-guard';
 import SettingsAppProvider from '@/settings/providers/settings-app-provider';
-import { type UpgradeStatusType, useSearch } from '@/settings/providers/settings-app-context';
+import {
+  type UpgradeStatusType,
+  useOpenSectionRequest,
+  useSearch,
+} from '@/settings/providers/settings-app-context';
 import { ConfirmationProvider } from '@/settings/providers/confirmation-provider';
 import { DialogPortalProvider } from '@/settings/providers/dialog-portal';
 import { Outlet, useLocation } from '@tryghost/admin-x-framework';
 import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import { Stack } from '@tryghost/shade/primitives';
 import { cn } from '@tryghost/shade/utils';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { useScrollSectionContext } from '@/settings/hooks/use-scroll-section';
+import { isOpenSectionRequest } from '@/settings/utils/open-section';
 import { useSettingsNavigationSlot } from '@/layout/settings-navigation';
 
 interface AppProps {
@@ -20,40 +25,31 @@ interface AppProps {
 
 const sectionOf = (pathname: string) => pathname.replace(/^\/settings\/?/, '').split('/')[0];
 
-// Keeps the scroll-spy's navigated section in sync with the URL. Like a sidebar
-// click, moving to another section or revisiting the path clears the filter.
+// history entries whose open request has run, so going back to one doesn't reopen it
+const handledOpenRequests = new Set<string>();
+
+// Keeps the scroll-spy's navigated section in sync with the URL. An `?open` link
+// also clears the sidebar filter so its section shows, then asks it to open.
 function SettingsLocationSync() {
   const { key, pathname, search } = useLocation();
-  const { updateNavigatedSection, scrollToSection } = useScrollSectionContext();
+  const { updateNavigatedSection } = useScrollSectionContext();
   const { setFilter, setNoResult } = useSearch();
-  const previous = useRef({ key, pathname, search });
-  // a same-path visit doesn't change the navigated section, so it scrolls once the filter clears
-  const [rescroll, setRescroll] = useState<{ section: string }>();
+  const { setOpenSectionRequest } = useOpenSectionRequest();
 
   useEffect(() => {
     updateNavigatedSection(sectionOf(pathname));
   }, [pathname, updateNavigatedSection]);
 
   useEffect(() => {
-    const last = previous.current;
-    previous.current = { key, pathname, search };
+    if (!isOpenSectionRequest(search) || handledOpenRequests.has(key)) {
+      return;
+    }
 
-    const isRevisit = key !== last.key && pathname === last.pathname && search === last.search;
-    if (isRevisit || sectionOf(pathname) !== sectionOf(last.pathname)) {
-      setFilter('');
-      setNoResult(false);
-    }
-    if (isRevisit) {
-      setRescroll({ section: sectionOf(pathname) });
-    }
-  }, [key, pathname, search, setFilter, setNoResult]);
-
-  useEffect(() => {
-    if (rescroll) {
-      scrollToSection(rescroll.section);
-      setRescroll(undefined);
-    }
-  }, [rescroll, scrollToSection]);
+    handledOpenRequests.add(key);
+    setFilter('');
+    setNoResult(false);
+    setOpenSectionRequest({ section: sectionOf(pathname) });
+  }, [key, pathname, search, setFilter, setNoResult, setOpenSectionRequest]);
 
   return null;
 }

@@ -317,11 +317,38 @@ describe('Cmd-K search', () => {
     await openAndSearch('timezone');
 
     await globalSearchScreen.option(/Timezone/).click();
-    await expect.poll(currentRoute).toBe('/settings/timezone');
+    await expect.poll(currentRoute).toBe('/settings/timezone?open');
     await expect.element(settingsScreen.timezone()).toBeInViewport();
 
     await sidebarScreen.shellNav().getByRole('button', { name: 'Back to app' }).click();
     await expect.poll(currentRoute).toBe('/tags');
+  });
+
+  it('opens a Settings section the way its header button does', async () => {
+    fakeSettingsScreens();
+    await renderAdminApp('/tags', { labs: { admin7settings: true } });
+    await openAndSearch('navigation');
+
+    await globalSearchScreen.option(/^Navigation$/).click();
+    await expect.poll(currentRoute).toBe('/settings/navigation/edit');
+    await expect.element(settingsScreen.navigationModal()).toBeVisible();
+
+    history.back();
+    await expect.poll(currentRoute).toBe('/settings/navigation?open');
+    await expect.element(settingsScreen.navigationModal()).not.toBeInTheDocument();
+  });
+
+  it('opens a Settings section with an Edit button for editing', async () => {
+    fakeSettingsScreens();
+    await renderAdminApp('/tags', { labs: { admin7settings: true } });
+    await openAndSearch('site description');
+
+    await globalSearchScreen.option('Title & description').click();
+
+    await expect.poll(currentRoute).toBe('/settings/general?open');
+    await expect
+      .element(settingsScreen.titleAndDescription().getByLabelText('Site title', { exact: true }))
+      .toBeVisible();
   });
 
   it.each([
@@ -337,7 +364,7 @@ describe('Cmd-K search', () => {
     await globalSearchScreen.search('timezone');
     await globalSearchScreen.option(/Timezone/).click();
 
-    await expect.poll(currentRoute).toBe('/settings/timezone');
+    await expect.poll(currentRoute).toBe('/settings/timezone?open');
     await expect.element(settingsScreen.search()).toHaveValue('');
     await expect.element(settingsScreen.timezone()).toBeInViewport();
   });

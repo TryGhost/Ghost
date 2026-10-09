@@ -85,7 +85,7 @@ describe('settingsSearchItems', () => {
       id: 'timezone',
       title: 'Timezone',
       keywords: 'general time date site timezone time zone',
-      to: '/settings/timezone',
+      to: '/settings/timezone?open',
     });
   });
 });

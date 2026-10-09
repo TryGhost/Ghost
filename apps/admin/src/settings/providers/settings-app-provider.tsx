@@ -2,7 +2,12 @@ import GlobalDataProvider from './global-data-provider';
 import useSearchService from '@/settings/utils/search';
 import { type ReactNode, useState } from 'react';
 import { ScrollSectionProvider } from '@/settings/hooks/scroll-section-provider';
-import { SettingsAppContext, type Sorting, type UpgradeStatusType } from './settings-app-context';
+import {
+  type OpenSectionRequest,
+  SettingsAppContext,
+  type Sorting,
+  type UpgradeStatusType,
+} from './settings-app-context';
 import { officialThemes } from '@/settings/data/official-themes';
 import { zapierTemplates } from '@/settings/data/zapier-templates';
 
@@ -21,6 +26,7 @@ const SettingsAppProvider: React.FC<SettingsAppProviderProps> = ({ children, upg
   ]);
 
   const [offersShowArchived, setOffersShowArchived] = useState(false);
+  const [openSectionRequest, setOpenSectionRequest] = useState<OpenSectionRequest>();
 
   return (
     <SettingsAppContext.Provider
@@ -33,6 +39,8 @@ const SettingsAppProvider: React.FC<SettingsAppProviderProps> = ({ children, upg
         setSortingState,
         offersShowArchived,
         setOffersShowArchived,
+        openSectionRequest,
+        setOpenSectionRequest,
       }}
     >
       <GlobalDataProvider>
