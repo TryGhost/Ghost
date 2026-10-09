@@ -320,6 +320,84 @@ describe('PostsExporter', function () {
       assert.ok(findPageCalls.every((call) => call.skipPagination === true));
     });
 
+    it('Keeps each overlapping export on its own settings, filter, order, paging and limit', async function () {
+      const firstPageEntered = Promise.withResolvers();
+      const releaseFirstPage = Promise.withResolvers();
+      const calls = [];
+      models.Post = {
+        findPage: async (options) => {
+          calls.push({
+            filter: options.filter,
+            order: options.order,
+            page: options.page,
+            limit: options.limit,
+          });
+          if (options.filter === 'tag:first' && options.page === 1) {
+            firstPageEntered.resolve();
+            await releaseFirstPage.promise;
+          }
+          const start = (options.page - 1) * options.limit;
+          return {
+            data: Array.from({ length: Math.min(options.limit, 60 - start) }, (_, index) =>
+              createModel({ ...post, id: `${options.filter}-${start + index + 1}` }),
+            ),
+          };
+        },
+      };
+
+      const first = Array.fromAsync(
+        await exporter.export({ filter: 'tag:first', order: 'published_at desc', limit: 51 }),
+      );
+      // Observe a failure immediately, including if an assertion fails before the gate is released.
+      void first.catch(() => {});
+      try {
+        await Promise.race([
+          firstPageEntered.promise,
+          first.then(() => {
+            throw new Error('The first export finished without reaching its held page');
+          }),
+        ]);
+        settingsCache.set('email_track_opens', false);
+        settingsCache.set('email_track_clicks', false);
+        settingsHelpers.arePaidMembersEnabled = () => false;
+
+        const second = await Array.fromAsync(
+          await exporter.export({ filter: 'tag:second', order: 'id asc', limit: 2 }),
+        );
+        assert.deepEqual(
+          second.map((row) => row.id),
+          ['tag:second-1', 'tag:second-2'],
+        );
+        for (const row of second) {
+          assert.equal(row.signups, 32);
+          for (const column of ['opens', 'clicks', 'paid_conversions']) {
+            assert.equal(Object.hasOwn(row, column), false);
+          }
+        }
+
+        releaseFirstPage.resolve();
+        const rows = await first;
+        assert.deepEqual(
+          rows.map((row) => row.id),
+          Array.from({ length: 51 }, (_, index) => `tag:first-${index + 1}`),
+        );
+        for (const row of rows) {
+          assert.equal(row.opens, 128);
+          assert.equal(row.clicks, 64);
+          assert.equal(row.signups, 32);
+          assert.equal(row.paid_conversions, 16);
+        }
+        assert.deepEqual(calls, [
+          { filter: 'tag:first', order: 'published_at desc, id desc', page: 1, limit: 50 },
+          { filter: 'tag:second', order: 'id asc', page: 1, limit: 2 },
+          { filter: 'tag:first', order: 'published_at desc, id desc', page: 2, limit: 50 },
+        ]);
+      } finally {
+        releaseFirstPage.resolve();
+        await first.catch(() => {});
+      }
+    });
+
     it('Keeps custom ordered stream exports stable across page boundaries', async function () {
       const posts = Array.from({ length: 60 }, (_, index) => ({
         ...post,
