@@ -57,19 +57,19 @@
     "pretest": "pnpm build:assets",
     "test": "pnpm test:unit",
     "test:watch": "vitest --reporter=default",
-    "test:single": "f() { case \"$1\" in test/unit/*) vitest run \"$1\" ;; test/*) vitest run -c vitest.config.db.ts \"$1\" ;; *) vitest run \"$1\" || vitest run -c vitest.config.db.ts \"$1\" ;; esac; }; f",
+    "test:single": "f() { case \"$1\" in test/unit/*) vitest run \"$1\" ;; test/*) NODE_OPTIONS=\"--conditions=source $NODE_OPTIONS\" vitest run -c vitest.config.db.ts \"$1\" ;; *) vitest run \"$1\" || NODE_OPTIONS=\"--conditions=source $NODE_OPTIONS\" vitest run -c vitest.config.db.ts \"$1\" ;; esac; }; f",
     "test:all": "pnpm test:unit && pnpm test:integration && pnpm test:e2e && pnpm test:types && pnpm lint",
     "test:debug": "DEBUG=ghost:test* pnpm test",
     "test:unit": "vitest run",
-    "test:integration": "vitest run -c vitest.config.db.ts --project integration --project integration-migrations",
-    "test:e2e": "vitest run -c vitest.config.db.ts --project e2e --project e2e-api --project e2e-isolated",
-    "test:legacy": "vitest run -c vitest.config.db.ts --project legacy",
+    "test:integration": "NODE_OPTIONS=\"--conditions=source $NODE_OPTIONS\" vitest run -c vitest.config.db.ts --project integration --project integration-migrations",
+    "test:e2e": "NODE_OPTIONS=\"--conditions=source $NODE_OPTIONS\" vitest run -c vitest.config.db.ts --project e2e --project e2e-api --project e2e-isolated",
+    "test:legacy": "NODE_OPTIONS=\"--conditions=source $NODE_OPTIONS\" vitest run -c vitest.config.db.ts --project legacy",
     "test:ci:e2e": "COVERAGE_LANE=e2e pnpm test:e2e --coverage",
     "test:ci:integration": "COVERAGE_LANE=integration pnpm test:integration --coverage",
     "test:ci:unit": "vitest run --coverage --coverage.reportsDirectory=coverage-unit --coverage.reporter=cobertura --coverage.reporter=text-summary",
     "test:int:slow": "pnpm test:integration",
-    "test:e2e:slow": "vitest run -c vitest.config.db.ts --project e2e --project e2e-api --reporter=verbose",
-    "test:leg:slow": "vitest run -c vitest.config.db.ts --project legacy --reporter=verbose",
+    "test:e2e:slow": "NODE_OPTIONS=\"--conditions=source $NODE_OPTIONS\" vitest run -c vitest.config.db.ts --project e2e --project e2e-api --reporter=verbose",
+    "test:leg:slow": "NODE_OPTIONS=\"--conditions=source $NODE_OPTIONS\" vitest run -c vitest.config.db.ts --project legacy --reporter=verbose",
     "test:types": "tsc --noEmit && tsc --noEmit -p test/tsconfig.json",
     "lint:server": "eslint 'core/server/**/*.{js,ts}' 'core/*.{js,ts}' '*.{js,ts}' 'bin/**/*.{js,ts}' 'scripts/**/*.{js,ts}' 'types/**/*.ts' --cache",
     "lint:shared": "eslint 'core/shared/**/*.{js,ts}' --cache",
@@ -354,32 +354,27 @@
       },
       "test:unit": {
         "dependsOn": [
-          "build:assets",
-          "^build"
+          "build:assets"
         ]
       },
       "test:e2e": {
         "dependsOn": [
-          "build:assets",
-          "^build"
+          "build:assets"
         ]
       },
       "test:integration": {
         "dependsOn": [
-          "build:assets",
-          "^build"
+          "build:assets"
         ]
       },
       "test:legacy": {
         "dependsOn": [
-          "build:assets",
-          "^build"
+          "build:assets"
         ]
       },
       "test:ci:e2e": {
         "dependsOn": [
-          "build:assets",
-          "^build"
+          "build:assets"
         ],
         "outputs": [
           "{projectRoot}/coverage-e2e/cobertura-coverage.xml"
@@ -387,8 +382,7 @@
       },
       "test:ci:integration": {
         "dependsOn": [
-          "build:assets",
-          "^build"
+          "build:assets"
         ],
         "outputs": [
           "{projectRoot}/coverage-integration/cobertura-coverage.xml"
@@ -396,8 +390,7 @@
       },
       "test:ci:unit": {
         "dependsOn": [
-          "build:assets",
-          "^build"
+          "build:assets"
         ],
         "outputs": [
           "{projectRoot}/coverage-unit/cobertura-coverage.xml"

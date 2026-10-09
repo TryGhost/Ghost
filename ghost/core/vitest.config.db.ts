@@ -133,6 +133,8 @@ export default defineConfig({
     // its dominant cost. Defined at the root (not per-project) so a single
     // template is shared across every project in the invocation. See
     // test/utils/vitest-global-db-setup.ts and test/utils/db-template.js.
+    // It runs in the main process, which `ssr.resolve.conditions` doesn't
+    // reach, so the test scripts pass --conditions=source via NODE_OPTIONS.
     globalSetup: ['./test/utils/vitest-global-db-setup.ts'],
     // Local runs use the compact `dot` reporter. CI uses `default` plus
     // `github-actions` for inline annotations (mirrors vitest.config.ts).

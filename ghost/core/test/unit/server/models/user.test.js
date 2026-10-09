@@ -19,7 +19,7 @@ describe('Unit: models/user', function () {
     assert.doesNotThrow(() => {
       execFileSync(
         process.execPath,
-        ['--import', 'tsx', '-e', "require('./core/server/models/user')"],
+        ['--conditions=source', '--import', 'tsx', '-e', "require('./core/server/models/user')"],
         {
           cwd: path.join(__dirname, '../../../..'),
           stdio: 'pipe',
