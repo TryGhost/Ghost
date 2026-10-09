@@ -116,6 +116,7 @@ describe('RouterController', function () {
 
       await routerController.createCheckoutSession(
         {
+          get: sinon.stub(),
           body: {
             offerId: 'offer_123',
           },
@@ -163,6 +164,7 @@ describe('RouterController', function () {
       ];
       const newslettersString = JSON.stringify(newsletters);
       const req = {
+        get: sinon.stub(),
         body: {
           tierId: 'tier_123',
           cadence: 'month',
@@ -205,6 +207,7 @@ describe('RouterController', function () {
         emailAddressService,
       });
       const req = {
+        get: sinon.stub(),
         body: {
           tierId: 'tier_123',
           cadence: 'month',
@@ -254,6 +257,7 @@ describe('RouterController', function () {
 
       await routerController.createCheckoutSession(
         {
+          get: sinon.stub(),
           body: {
             tierId: 'tier_123',
             cadence: 'month',
@@ -306,6 +310,7 @@ describe('RouterController', function () {
 
       await routerController.createCheckoutSession(
         {
+          get: sinon.stub(),
           body: {
             tierId: 'tier_123',
             cadence: 'month',
@@ -350,6 +355,7 @@ describe('RouterController', function () {
               email: 'member@example.com',
               isAuthenticated,
               metadata: {},
+              referrer: 'https://example.com/some-post/',
             }),
             { code: 'CANNOT_CHECKOUT_WITH_EXISTING_SUBSCRIPTION' },
           );
@@ -361,10 +367,54 @@ describe('RouterController', function () {
             sinon.assert.calledOnceWithExactly(sendEmailWithMagicLink, {
               email: 'member@example.com',
               requestedType: 'signin',
+              referrer: 'https://example.com/some-post/',
             });
           }
         },
       );
+
+      it('passes the request referer to the sign-in email for a logged-out existing member', async function () {
+        const sendEmailWithMagicLink = sinon.stub().resolves();
+        const routerController = new RouterController({
+          tiersService,
+          paymentsService,
+          offersAPI,
+          stripeAPIService,
+          labsService,
+          settingsCache,
+          settingsHelpers,
+          urlUtils,
+          sendEmailWithMagicLink,
+          memberRepository: {
+            get: sinon.stub().resolves({ get: sinon.stub().withArgs('status').returns('free') }),
+          },
+        });
+
+        await assert.rejects(
+          routerController.createCheckoutSession(
+            {
+              get: sinon.stub().withArgs('referer').returns('https://example.com/some-post/'),
+              body: {
+                tierId: 'tier_123',
+                cadence: 'month',
+                customerEmail: 'member@example.com',
+                metadata: {},
+              },
+            },
+            {
+              writeHead: () => {},
+              end: () => {},
+            },
+          ),
+          { code: 'CANNOT_CHECKOUT_WITH_EXISTING_SUBSCRIPTION' },
+        );
+
+        sinon.assert.calledOnceWithExactly(sendEmailWithMagicLink, {
+          email: 'member@example.com',
+          requestedType: 'signin',
+          referrer: 'https://example.com/some-post/',
+        });
+      });
 
       it.each([
         ['free', true],
@@ -411,6 +461,7 @@ describe('RouterController', function () {
 
       await routerController.createCheckoutSession(
         {
+          get: sinon.stub(),
           body: {
             tierId: 'tier_123',
             cadence: 'month',
@@ -1386,6 +1437,7 @@ describe('RouterController', function () {
 
           await controller.createCheckoutSession(
             {
+              get: sinon.stub(),
               body: {
                 tierId: 'tier_123',
                 cadence: 'month',
@@ -1411,6 +1463,7 @@ describe('RouterController', function () {
 
           await controller.createCheckoutSession(
             {
+              get: sinon.stub(),
               body: {
                 tierId: 'tier_123',
                 cadence: 'month',
@@ -1436,6 +1489,7 @@ describe('RouterController', function () {
 
           await controller.createCheckoutSession(
             {
+              get: sinon.stub(),
               body: {
                 tierId: 'tier_123',
                 cadence: 'month',
@@ -1461,6 +1515,7 @@ describe('RouterController', function () {
 
           await controller.createCheckoutSession(
             {
+              get: sinon.stub(),
               body: {
                 tierId: 'tier_123',
                 cadence: 'month',
@@ -1487,6 +1542,7 @@ describe('RouterController', function () {
 
           await controller.createCheckoutSession(
             {
+              get: sinon.stub(),
               body: {
                 tierId: 'tier_123',
                 cadence: 'month',
@@ -1512,6 +1568,7 @@ describe('RouterController', function () {
 
           await controller.createCheckoutSession(
             {
+              get: sinon.stub(),
               body: {
                 tierId: 'tier_123',
                 cadence: 'month',
@@ -1538,6 +1595,7 @@ describe('RouterController', function () {
 
           await controller.createCheckoutSession(
             {
+              get: sinon.stub(),
               body: {
                 tierId: 'tier_123',
                 cadence: 'month',
@@ -1568,6 +1626,7 @@ describe('RouterController', function () {
 
           await controller.createCheckoutSession(
             {
+              get: sinon.stub(),
               body: {
                 tierId: 'tier_123',
                 cadence: 'month',
@@ -1733,6 +1792,7 @@ describe('RouterController', function () {
       });
 
       const req = {
+        get: sinon.stub(),
         body: {
           tierId: 'tier_123',
           cadence: 'month',
@@ -1791,6 +1851,7 @@ describe('RouterController', function () {
       });
 
       const req = {
+        get: sinon.stub(),
         body: {
           tierId: 'tier_123',
           cadence: 'month',
