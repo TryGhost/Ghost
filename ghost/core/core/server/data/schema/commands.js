@@ -7,6 +7,7 @@ const DatabaseInfo = require('@tryghost/database-info');
 const schema = require('./schema');
 const { defaultIndexName } = require('./lib/default-index-name');
 const { foreignKeySpecsOf, onDeleteOf } = require('./lib/foreign-keys');
+const { patternChecksOf } = require('./lib/column-patterns');
 
 const messages = {
   hasPrimaryKeySQLiteError: 'Must use hasPrimaryKeySQLite on an SQLite3 database',
@@ -91,6 +92,20 @@ function addForeignKey(tableBuilder, foreignKey) {
 }
 
 /**
+ * The condition that holds a column to its pattern on MySQL. SQLite is being removed and its
+ * driver here has no regular expression function, so there a pattern is held only by the
+ * code that writes the column.
+ *
+ * @param {import('./lib/column-patterns').PatternCheck} check
+ * @returns {{sql: string, bindings: string[]}}
+ */
+function patternCondition(check) {
+  // 'c' matches case-sensitively: left to the collation, which is case-insensitive, [a-z]
+  // would admit capitals too.
+  return { sql: 'REGEXP_LIKE(??, ?, ?)', bindings: [check.column, check.pattern, 'c'] };
+}
+
+/**
  * @param {string} tableName
  * @param {string} column
  * @param {import('knex').Knex} [transaction]
@@ -161,6 +176,7 @@ async function addColumn(
   columnSpec = schema[tableName][column],
   options = {},
 ) {
+  const checks = patternChecksOf(tableName, { [column]: columnSpec });
   const addColumnBuilder = transaction.schema.table(tableName, function (table) {
     addTableColumn(tableName, table, column, columnSpec);
     foreignKeySpecsOf({ [column]: columnSpec }).forEach((foreignKey) =>
@@ -175,14 +191,29 @@ async function addColumn(
     return;
   }
 
-  for (const sqlQuery of addColumnBuilder.toSQL()) {
+  for (const [i, sqlQuery] of addColumnBuilder.toSQL().entries()) {
     if (!DatabaseInfo.isMySQL(transaction)) {
       await transaction.raw(sqlQuery.sql);
       continue;
     }
 
     // Guard against an ending semicolon
-    const sql = sqlQuery.sql.replace(/;\s*$/, '');
+    let sql = sqlQuery.sql.replace(/;\s*$/, '');
+    // The column's checks go in the statement that adds it, the first, so rows already in the
+    // table that break a pattern fail the whole statement rather than leave the column
+    // behind without its check. knex leaves out a check's bindings on an existing table, so
+    // each is written out here.
+    if (i === 0) {
+      for (const check of checks) {
+        const condition = patternCondition(check);
+        sql += `, add ${transaction
+          .raw(`constraint ?? check (${condition.sql})`, [
+            check.constraintName,
+            ...condition.bindings,
+          ])
+          .toQuery()}`;
+      }
+    }
     // default to copy if not specified
     await rawWithAlgorithm(transaction, sql, options?.algorithm || 'copy');
   }
@@ -637,6 +668,7 @@ async function addPrimaryKey(tableName, columns, transaction = db.knex) {
  * @param {Object} [tableSpec] - table schema to generate table with
  */
 function createTable(table, transaction = db.knex, tableSpec = schema[table]) {
+  const checks = patternChecksOf(table, tableSpec);
   return transaction.schema.createTable(table, function (t) {
     Object.keys(tableSpec)
       .filter((column) => !column.startsWith('@@'))
@@ -675,6 +707,12 @@ function createTable(table, transaction = db.knex, tableSpec = schema[table]) {
       t.primary(tableSpec['@@PRIMARY_KEY@@']);
     }
     foreignKeySpecsOf(tableSpec).forEach((foreignKey) => addForeignKey(t, foreignKey));
+    if (DatabaseInfo.isMySQL(transaction)) {
+      checks.forEach((check) => {
+        const condition = patternCondition(check);
+        t.check(condition.sql, condition.bindings, check.constraintName);
+      });
+    }
   });
 }
 

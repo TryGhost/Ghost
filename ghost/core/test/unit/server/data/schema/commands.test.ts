@@ -139,6 +139,45 @@ describe('schema commands', function () {
     });
   });
 
+  describe('a column pattern', function () {
+    const slug = { type: 'string', maxlength: 191, nullable: false };
+
+    // The database suites run on MySQL only, so this is what covers SQLite.
+    it('is left out on SQLite, which has no regular expression function', function () {
+      const knex = createKnex({ client: 'better-sqlite3', useNullAsDefault: true });
+      try {
+        const ddl = commands
+          .createTable('posts_meta', knex, { slug: { ...slug, pattern: '^[a-z_]+$' } })
+          .toString();
+        assert.doesNotMatch(ddl, /check/i);
+      } finally {
+        knex.destroy();
+      }
+    });
+
+    it('is refused when it is not a regular expression', function () {
+      const knex = createKnex({ client: 'mysql' });
+
+      assert.throws(
+        () =>
+          commands.createTable('posts_meta', knex, { slug: { ...slug, pattern: '[a-z' } }).toSQL(),
+        /slug[\s\S]*A column pattern is a regular expression/,
+      );
+    });
+
+    it('is refused when it escapes a letter, which MySQL reads more broadly', function () {
+      const knex = createKnex({ client: 'mysql' });
+
+      assert.throws(
+        () =>
+          commands
+            .createTable('posts_meta', knex, { slug: { ...slug, pattern: '^\\w+$' } })
+            .toSQL(),
+        /escapes only punctuation[\s\S]*"slug"/,
+      );
+    });
+  });
+
   // The database suites run on MySQL only, so this is what covers SQLite, which can only
   // declare a foreign key while creating the table.
   describe('a foreign key over several columns, on SQLite', function () {
