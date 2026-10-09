@@ -182,13 +182,14 @@ describe('App installations Admin API', function () {
       );
     });
 
-    it('lets only one of two simultaneous confirmations install the app', async function () {
+    it('lets only one of three simultaneous confirmations install the app', async function () {
       const results = await Promise.allSettled([install(), install(), install()]);
 
       assert.equal(results.filter((result) => result.status === 'fulfilled').length, 1);
       for (const result of results) {
         if (result.status === 'rejected') {
-          assert.equal(result.reason.errorType, 'ConflictError');
+          assert.equal(result.reason.errorType, 'ConflictError', result.reason.message);
+          assert.equal(result.reason.code, 'APP_ALREADY_INSTALLED');
         }
       }
       assert.equal((await service().browse()).length, 1);
