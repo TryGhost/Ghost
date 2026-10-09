@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/react';
 import { reloadAdmin } from '@/auth/api';
 
 // Chromium, Firefox, Safari and Vite's stylesheet preload, in turn
@@ -33,7 +34,13 @@ export function reloadAfterChunkLoadError(
   } catch {
     return false;
   }
-  // A task later, so a render error's commit has unmounted the failed screen first
+  // Grouped apart from the failures left on screen, which the router reports as errors
+  Sentry.captureException(error, {
+    level: 'warning',
+    fingerprint: ['{{ default }}', 'chunk-load-reload'],
+    tags: { chunk_load: 'reloaded' },
+  });
+  // Out of the router's error handling; a lazy route's previous screen can still be mounted then
   setTimeout(() => reloadAdmin(`${pathname}${search}`));
   return true;
 }

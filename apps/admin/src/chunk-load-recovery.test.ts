@@ -1,9 +1,13 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { isChunkLoadError, reloadAfterChunkLoadError } from './chunk-load-recovery';
 
-const { reloadAdmin } = vi.hoisted(() => ({ reloadAdmin: vi.fn() }));
+const { captureException, reloadAdmin } = vi.hoisted(() => ({
+  captureException: vi.fn(),
+  reloadAdmin: vi.fn(),
+}));
 
 vi.mock('@/auth/api', () => ({ reloadAdmin }));
+vi.mock('@sentry/react', () => ({ captureException }));
 
 const chunkError = () =>
   new TypeError(
@@ -33,6 +37,7 @@ describe('reloadAfterChunkLoadError', () => {
     vi.useFakeTimers();
     sessionStorage.clear();
     reloadAdmin.mockReset();
+    captureException.mockReset();
   });
 
   afterEach(() => {
@@ -50,6 +55,23 @@ describe('reloadAfterChunkLoadError', () => {
     expect(reloadAdmin.mock.calls).toEqual([['/posts?type=draft']]);
   });
 
+  it('reports each reload to Sentry as a warning of its own', () => {
+    const error = chunkError();
+
+    reloadAfterChunkLoadError(error, route);
+
+    expect(captureException.mock.calls).toEqual([
+      [
+        error,
+        {
+          level: 'warning',
+          fingerprint: ['{{ default }}', 'chunk-load-reload'],
+          tags: { chunk_load: 'reloaded' },
+        },
+      ],
+    ]);
+  });
+
   it('leaves the failure on screen when it reloaded for one less than a minute ago', () => {
     reloadAfterChunkLoadError(chunkError(), route);
     vi.advanceTimersByTime(59 * 1000);
@@ -57,6 +79,7 @@ describe('reloadAfterChunkLoadError', () => {
     expect(reloadAfterChunkLoadError(chunkError(), route)).toBe(false);
     vi.runAllTimers();
     expect(reloadAdmin).toHaveBeenCalledTimes(1);
+    expect(captureException).toHaveBeenCalledTimes(1);
 
     vi.advanceTimersByTime(1000);
 

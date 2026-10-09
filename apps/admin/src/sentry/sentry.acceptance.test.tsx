@@ -1,9 +1,10 @@
 import * as Sentry from '@sentry/react';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import {
   type EndpointCapture,
   configResponse,
+  failModuleLoads,
   fakeAdminEndpoint,
   fakeEndpoint,
   fakeMembers,
@@ -13,6 +14,10 @@ import {
   settleRequests,
   siteResponse,
 } from '@test-utils/acceptance';
+import { reloadAdmin } from '@/auth/reload';
+import { sidebarScreen } from '@/layout/sidebar.screen';
+
+vi.mock('@/auth/reload', () => ({ reloadAdmin: vi.fn() }));
 
 const SENTRY_DSN = 'https://public@o0.ingest.sentry.io/1';
 const ENVELOPE_URL = 'https://o0.ingest.sentry.io/api/1/envelope/';
@@ -95,6 +100,38 @@ describe('Sentry', () => {
         user: { role: 'Owner' },
         tags: { route: '/tags', shown_to_user: false },
       });
+  });
+
+  it('reports an automatic reload after code failed to load as a warning of its own', async () => {
+    await failModuleLoads('/src/posts/list/pages-route.tsx');
+    fakeTags([]);
+    const ingest = fakeEndpoint('POST', ENVELOPE_URL, {});
+    await renderAdminApp('/tags', { boot: sentryBoot() });
+    await expect
+      .poll(() => envelopeItems(ingest).some(({ type }) => type === 'session'))
+      .toBe(true);
+
+    await sidebarScreen.navLink('Pages').click();
+
+    await expect.poll(() => vi.mocked(reloadAdmin).mock.calls).toEqual([['/pages']]);
+    await expect
+      .poll(() =>
+        envelopeItems(ingest)
+          .filter(({ type }) => type === 'event')
+          .map(({ payload }) => payload as Sentry.Event)
+          .map(({ level, fingerprint, tags }) => ({
+            level,
+            fingerprint,
+            chunkLoad: tags?.chunk_load,
+          })),
+      )
+      .toEqual([
+        {
+          level: 'warning',
+          fingerprint: ['{{ default }}', 'chunk-load-reload'],
+          chunkLoad: 'reloaded',
+        },
+      ]);
   });
 
   it('reports handled errors the user was not shown', async () => {

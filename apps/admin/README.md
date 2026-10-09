@@ -84,8 +84,9 @@ Screens, the editor and the search modal load their code when first needed. A
 browser never fetches a module again after loading it failed, so when that code
 fails to load the admin reloads at the same route. It reloads at most once a
 minute and not while the browser is offline; within that minute a failed screen
-is left on screen, where Admin's own screens offer Reload. Only a failure left on screen is reported to
-Sentry.
+is left on screen, where Admin's own screens offer Reload. Sentry gets each
+automatic reload as a warning, grouped apart from the failures left on screen,
+which are reported as errors.
 
 ### Automation run history
 
