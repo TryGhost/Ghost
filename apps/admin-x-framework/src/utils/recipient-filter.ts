@@ -18,7 +18,7 @@ const BARE_TIER_ID = /^[a-f0-9]{24}$/;
 
 /**
  * Expands the API's legacy segment sentinels into the filters used by Admin,
- * and qualifies the bare tier ids older settings saved as `tier_id:<id>`.
+ * and rewrites bare tier ids to `tier_id:<id>`, which Core accepts.
  */
 export function normalizeRecipientFilter(filter: string | null | undefined): string | null {
   if (filter === 'all') {
@@ -29,7 +29,7 @@ export function normalizeRecipientFilter(filter: string | null | undefined): str
   }
   return filter
     .split(',')
-    .map((segment) => (BARE_TIER_ID.test(segment) ? `tier_id:${segment}` : segment))
+    .map((segment) => (BARE_TIER_ID.test(segment.trim()) ? `tier_id:${segment.trim()}` : segment))
     .join(',');
 }
 
