@@ -1,7 +1,9 @@
 const assert = require('node:assert/strict');
 
 const sinon = require('sinon');
+const logging = require('@tryghost/logging');
 const configUtils = require('../../../../utils/config-utils');
+const NewsletterEmailEventStorage = require('../../../../../core/server/services/email-service/newsletter-email-event-storage');
 
 const {
   NewsletterEmailAnalyticsBatchProcessor,
@@ -644,6 +646,135 @@ describe('NewsletterEmailAnalyticsBatchProcessor', function () {
           }
         });
       });
+    });
+  });
+
+  describe('batched processing failures', function () {
+    let processor;
+    let emailEventProcessor;
+    let storage;
+    let raw;
+    let processingError;
+    let logError;
+    const deliveredEvent = {
+      type: 'delivered',
+      emailId: 'email-id',
+      timestamp: new Date(1),
+    };
+
+    beforeEach(function () {
+      const config = { get: () => true };
+      raw = sinon.stub().resolves([{ affectedRows: 1 }]);
+      storage = new NewsletterEmailEventStorage({ config, db: { knex: { raw } } });
+      processingError = new Error('Event processing failed');
+      logError = sinon.stub(logging, 'error');
+      emailEventProcessor = {
+        batchGetRecipients: sinon.stub().resolves(new Map()),
+        handleDelivered: async ({ emailId }, timestamp) => {
+          const storedCount = await storage.handleDelivered({
+            emailRecipientId: 'recipient-id',
+            timestamp,
+          });
+          return { emailId, memberId: 'member-id', storedCount };
+        },
+        handleOpened: sinon.stub().rejects(processingError),
+        flushBatchedUpdates: (onPartialFailure) => storage.flushBatchedUpdates(onPartialFailure),
+      };
+      processor = new NewsletterEmailAnalyticsBatchProcessor({
+        config,
+        emailEventProcessor,
+      });
+    });
+
+    it('flushes queued updates from a failed batch without counting them in the next batch', async function () {
+      const failedResult = new EventProcessingResult();
+      await assert.rejects(
+        processor.processBatch([deliveredEvent, { type: 'opened' }], failedResult, {}),
+        (err) => err === processingError,
+      );
+
+      sinon.assert.calledOnce(raw);
+      assert.equal(failedResult.storedDelivered, 1);
+
+      const nextResult = new EventProcessingResult();
+      await processor.processBatch([], nextResult, {});
+
+      sinon.assert.calledOnce(raw);
+      assert.equal(nextResult.storedDelivered, 0);
+      sinon.assert.notCalled(logError);
+    });
+
+    it('propagates a flush error when event processing succeeds', async function () {
+      const flushError = new Error('Flush failed');
+      raw.rejects(flushError);
+
+      await assert.rejects(
+        processor.processBatch([deliveredEvent], new EventProcessingResult(), {}),
+        (err) => err === flushError,
+      );
+
+      sinon.assert.calledOnce(raw);
+      sinon.assert.notCalled(logError);
+    });
+
+    it('preserves the processing error and logs a subsequent flush error', async function () {
+      const flushError = new Error('Flush failed');
+      raw.rejects(flushError);
+
+      await assert.rejects(
+        processor.processBatch(
+          [deliveredEvent, { type: 'opened' }],
+          new EventProcessingResult(),
+          {},
+        ),
+        (err) => err === processingError,
+      );
+
+      sinon.assert.calledOnce(raw);
+      sinon.assert.calledOnceWithExactly(
+        logError,
+        'Error flushing email analytics updates after processing failed',
+        flushError,
+      );
+    });
+
+    it('counts persisted rows when a later category flush fails', async function () {
+      const flushError = new Error('Opened flush failed');
+      raw.onFirstCall().resolves([{ affectedRows: 1 }]);
+      raw.onSecondCall().rejects(flushError);
+      emailEventProcessor.handleOpened.onFirstCall().callsFake(async ({ emailId }, timestamp) => {
+        const storedCount = await storage.handleOpened({
+          emailRecipientId: 'recipient-id',
+          timestamp,
+        });
+        return { emailId, memberId: 'member-id', storedCount };
+      });
+
+      const failedResult = new EventProcessingResult();
+      await assert.rejects(
+        processor.processBatch(
+          [deliveredEvent, { type: 'opened', timestamp: new Date(2) }, { type: 'opened' }],
+          failedResult,
+          {},
+        ),
+        (err) => err === processingError,
+      );
+
+      assert.equal(failedResult.storedDelivered, 1);
+      assert.equal(failedResult.storedOpened, 0);
+      sinon.assert.calledOnceWithExactly(
+        logError,
+        'Error flushing email analytics updates after processing failed',
+        flushError,
+      );
+
+      const retryResult = new EventProcessingResult();
+      await processor.processBatch([], retryResult, {});
+
+      assert.equal(retryResult.storedDelivered, 0);
+      assert.equal(retryResult.storedOpened, 1);
+      sinon.assert.callCount(raw, 3);
+      assert.match(raw.thirdCall.args[0], /SET opened_at/);
     });
   });
 

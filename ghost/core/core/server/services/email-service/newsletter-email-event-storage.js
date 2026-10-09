@@ -321,19 +321,29 @@ class NewsletterEmailEventStorage {
   }
 
   /**
-   * Flush all batched updates to the database and return newly stored counts.
+   * Flush batched updates and report counts already stored if a later category fails.
+   * @param {(counts: StoredEventCounts) => void} [onPartialFailure]
    * @returns {Promise<StoredEventCounts>}
    */
-  async flushBatchedUpdates() {
+  async flushBatchedUpdates(onPartialFailure) {
     const counts = {
-      storedDelivered: await this.#flushDeliveredUpdates(),
-      storedOpened: await this.#flushOpenedUpdates(),
-      storedPermanentFailed: await this.#flushFailedUpdates(),
+      storedDelivered: 0,
+      storedOpened: 0,
+      storedPermanentFailed: 0,
     };
 
-    this.#pendingUpdates.delivered.clear();
-    this.#pendingUpdates.opened.clear();
-    this.#pendingUpdates.failed.clear();
+    try {
+      counts.storedDelivered = await this.#flushDeliveredUpdates();
+      this.#pendingUpdates.delivered.clear();
+      counts.storedOpened = await this.#flushOpenedUpdates();
+      this.#pendingUpdates.opened.clear();
+      counts.storedPermanentFailed = await this.#flushFailedUpdates();
+      this.#pendingUpdates.failed.clear();
+    } catch (err) {
+      onPartialFailure?.(counts);
+      throw err;
+    }
+
     return counts;
   }
 

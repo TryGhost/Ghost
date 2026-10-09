@@ -367,10 +367,11 @@ class EmailEventProcessor {
 
   /**
    * Flush any batched updates to the database
+   * @param {(counts: import('./newsletter-email-event-storage').StoredEventCounts) => void} [onPartialFailure]
    * @returns {Promise<import('./newsletter-email-event-storage').StoredEventCounts>}
    */
-  async flushBatchedUpdates() {
-    return await this.#eventStorage.flushBatchedUpdates();
+  async flushBatchedUpdates(onPartialFailure) {
+    return await this.#eventStorage.flushBatchedUpdates(onPartialFailure);
   }
 }
 
