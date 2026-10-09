@@ -91,10 +91,6 @@ export const BASE_GHOST_ENV = [
   // 2FA settings UI / sign-in flow render regardless of the dev default.
   'security__staffDeviceVerification=true',
 
-  // Serve the React post editor, as production will. config.labs outranks the
-  // stored Labs setting, so a spec's `labs` option cannot switch it off.
-  'labs__editorReact=true',
-
   // Skip gscan rule checks on the active theme at boot, as production does.
   'optimization__themes__skipBootChecks=true',
 

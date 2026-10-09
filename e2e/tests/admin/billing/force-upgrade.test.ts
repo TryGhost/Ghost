@@ -31,10 +31,7 @@ const FORCE_UPGRADE_BMA_HTML = `
 `;
 
 // The same guard with either shell running the billing app.
-for (const { shell, billingReact } of [
-  { shell: 'Ember', billingReact: false },
-  { shell: 'React', billingReact: true },
-] as const) {
+for (const { shell, billingReact } of [{ shell: 'React', billingReact: true }] as const) {
   test.describe(`Ghost Admin - Force Upgrade Mode (${shell} billing)`, () => {
     test.use({
       // Setting any labs flag reloads the page first, which races Ember's boot-time redirect

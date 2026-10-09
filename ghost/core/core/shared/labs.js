@@ -27,13 +27,14 @@ const messages = {
 };
 
 // flags in this list always return `true`, allows quick global enable prior to full flag removal
-// Admin no longer reads admin7Pill or selfServeArchives; they stay enabled for
-// older Admin builds during independent deployments.
+// Admin no longer reads selfServeArchives; it stays enabled for older Admin builds
+// during independent deployments.
 const GA_FEATURES = [
   'automationAnalytics',
   'automationRunAnalytics',
-  'admin7Pill',
   'selfServeArchives',
+  'editorReact',
+  'billingReact',
 ];
 
 // These features are considered publicly available and can be enabled/disabled by users
@@ -63,9 +64,7 @@ const PRIVATE_FEATURES = [
   'stripeCheckoutDesign',
   'paywallImprovements',
   'machinePayments',
-  'editorReact',
   'navigationUrlSuggestions',
-  'billingReact',
   'apps',
 ];
 

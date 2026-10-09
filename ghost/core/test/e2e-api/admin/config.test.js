@@ -61,8 +61,9 @@ describe('Config API', function () {
             labsValues.every((value) => typeof value === 'boolean'),
             'expected all labs flags to be booleans',
           );
-          // Older Admin builds still read this GA value during independent deployments.
-          assert.equal(labs.admin7Pill, true);
+          // Admin reads these GA values to serve the React editor and billing screens.
+          assert.equal(labs.editorReact, true);
+          assert.equal(labs.billingReact, true);
         })
         .matchHeaderSnapshot({
           'content-version': anyContentVersion,

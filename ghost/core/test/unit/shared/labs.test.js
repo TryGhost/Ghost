@@ -42,13 +42,15 @@ describe('Labs Service', function () {
     },
   );
 
-  it.each([{}, { admin7Pill: false }])(
-    'enables pill controls for older Admin builds regardless of stored Labs settings: %j',
+  it.each([{}, { editorReact: false, billingReact: false }])(
+    'serves the React editor and billing screens regardless of stored Labs settings: %j',
     function (storedLabs) {
       sinon.stub(settingsCache, 'get').withArgs('labs').returns(storedLabs);
 
-      assert.equal(labs.isSet('admin7Pill'), true);
-      assert.equal(labs.WRITABLE_KEYS_ALLOWLIST.includes('admin7Pill'), false);
+      for (const flag of ['editorReact', 'billingReact']) {
+        assert.equal(labs.isSet(flag), true);
+        assert.equal(labs.WRITABLE_KEYS_ALLOWLIST.includes(flag), false);
+      }
     },
   );
 
