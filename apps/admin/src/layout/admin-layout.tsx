@@ -1,6 +1,6 @@
 import { ActivityPubHostLayoutProvider } from '@tryghost/activitypub/api';
 import React from 'react';
-import { SidebarInset, SidebarProvider } from '@tryghost/shade/components';
+import { FLOATING_SIDEBAR_SPRING, SidebarInset, SidebarProvider } from '@tryghost/shade/components';
 import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
 import { isContributorUser } from '@tryghost/admin-x-framework/api/users';
 import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
@@ -117,15 +117,24 @@ export function AdminLayout({ children }: AdminLayoutProps) {
   // With admin7Design, the desktop sidebar is a floating capsule, pinned
   // ("full" mode, docked beside the content) or not ("compact": a circle that
   // opens over the content). Shade's open state is "pinned", so ⌘B toggles
-  // it. Mobile keeps Shade's sheet, and Settings its own sidebar.
-  const floatingSidebar =
-    admin7Design && !isContributor && sidebarVisible && !isMobile && !isSettingsRoute;
+  // it. Mobile keeps Shade's sheet.
+  //
+  // With admin7settings too, Settings shows its navigation in the same
+  // capsule, pinned whatever the stored mode, which it leaves alone: entering
+  // it from compact pins the capsule as the pin button would, and leaving
+  // returns to the stored mode.
+  const floatingSidebar = admin7Design && !isContributor && sidebarVisible && !isMobile;
+  const settingsNavigation = floatingSidebar && isSettingsRoute;
   const [sidebarMode, setSidebarMode] = useSidebarMode();
   const { isFetched: sidebarModeLoaded } = useNavigationPreferences();
-  const sidebarPinned = !floatingSidebar || sidebarMode === 'full';
+  const sidebarPinned = !floatingSidebar || settingsNavigation || sidebarMode === 'full';
   const onSidebarOpenChange = React.useCallback(
-    (open: boolean) => setSidebarMode(open ? 'full' : 'compact'),
-    [setSidebarMode],
+    (open: boolean) => {
+      if (!settingsNavigation) {
+        setSidebarMode(open ? 'full' : 'compact');
+      }
+    },
+    [settingsNavigation, setSidebarMode],
   );
 
   // The dunning takeover is positioned against the scrollable inset, so the
@@ -165,6 +174,30 @@ export function AdminLayout({ children }: AdminLayoutProps) {
       sidebarRef.current.inert = dunningLocked;
     }
   });
+
+  // Entering and leaving Settings in the floating sidebar is no screen
+  // transition (the capsule animates its swap itself), so the page fades in
+  // under it rather than swap in a frame.
+  const previousSettingsNavigation = React.useRef(settingsNavigation);
+  React.useLayoutEffect(() => {
+    if (previousSettingsNavigation.current === settingsNavigation) {
+      return;
+    }
+    previousSettingsNavigation.current = settingsNavigation;
+    const main = mainRef.current;
+    if (
+      !main ||
+      typeof main.animate !== 'function' ||
+      window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+    ) {
+      return;
+    }
+    const fade = main.animate([{ opacity: 0 }, { opacity: 1 }], {
+      duration: 240,
+      easing: FLOATING_SIDEBAR_SPRING,
+    });
+    return () => fade.cancel();
+  }, [settingsNavigation]);
 
   // Contributors get a floating profile menu instead of the full sidebar
   if (isContributor) {
@@ -210,6 +243,8 @@ export function AdminLayout({ children }: AdminLayoutProps) {
             contentAnchor={PAGE_COLUMN_SELECTOR}
             contentRef={insetRef}
             disabled={dunningLocked}
+            settingsNavigation={settingsNavigation}
+            settingsNavigationRef={setSettingsNavigationSlot}
           />
         ) : (
           <>
@@ -253,7 +288,12 @@ export function AdminLayout({ children }: AdminLayoutProps) {
             )}
           >
             <ActivityPubHostLayoutProvider value={sidebarVisible ? networkPageChrome : undefined}>
-              <SettingsNavigationSlotContext.Provider value={settingsNavigationSlot}>
+              {/* Only on Settings routes with their navigation: the floating
+                sidebar keeps its slot mounted, and an Editor's Settings keeps
+                the main navigation */}
+              <SettingsNavigationSlotContext.Provider
+                value={isSettingsRoute ? settingsNavigationSlot : null}
+              >
                 {children}
               </SettingsNavigationSlotContext.Provider>
             </ActivityPubHostLayoutProvider>

@@ -34,4 +34,13 @@ describe('shouldRunScreenTransition', () => {
     expect(shouldRunScreenTransition({ ...input, from: settingsChild, to: post })).toBe(false);
     expect(shouldRunScreenTransition({ ...input, from: posts, to: post })).toBe(true);
   });
+
+  it('leaves Settings opening inside the sidebar to the sidebar', () => {
+    const input = { settingsSidebarEnabled: true, settingsInSidebar: true };
+    expect(shouldRunScreenTransition({ ...input, from: posts, to: settingsRoot })).toBe(false);
+    expect(shouldRunScreenTransition({ ...input, from: settingsChild, to: posts })).toBe(false);
+    // Full-screen surfaces have no sidebar to animate the swap
+    expect(shouldRunScreenTransition({ ...input, from: post, to: settingsRoot })).toBe(true);
+    expect(shouldRunScreenTransition({ ...input, from: posts, to: post })).toBe(true);
+  });
 });

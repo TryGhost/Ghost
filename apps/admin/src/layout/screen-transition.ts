@@ -21,17 +21,28 @@ interface ScreenTransitionInput {
   /** Route handles of the target's matches, outermost first. */
   to: readonly unknown[];
   settingsSidebarEnabled: boolean;
+  /**
+   * Settings opens inside the sidebar the screens around it share (the
+   * admin7Design sidebar on desktop, with admin7settings), which animates that
+   * swap itself.
+   */
+  settingsInSidebar?: boolean;
 }
 
 /**
  * A navigation transitions only when it crosses the boundary of a surface
  * marked `screenTransition`: entering one, leaving one, or moving between two.
  * Without admin7settings, Settings is the legacy takeover and is not animated.
+ * Where Settings opens inside the sidebar, the sidebar stays and animates the
+ * swap itself, so entering it from a screen with the sidebar, or leaving it for
+ * one, isn't a screen transition either: a view transition would capture the
+ * sidebar mid-morph, and its glass with nothing behind it.
  */
 export function shouldRunScreenTransition({
   from,
   to,
   settingsSidebarEnabled,
+  settingsInSidebar = false,
 }: ScreenTransitionInput): boolean {
   const fromSurface = screenSurface(from);
   const toSurface = screenSurface(to);
@@ -39,7 +50,12 @@ export function shouldRunScreenTransition({
     return false;
   }
 
-  return settingsSidebarEnabled || !(fromSurface?.settingsSidebar || toSurface?.settingsSidebar);
+  const settingsInvolved = Boolean(fromSurface?.settingsSidebar || toSurface?.settingsSidebar);
+  if (settingsInSidebar && settingsInvolved && !(fromSurface && toSurface)) {
+    return false;
+  }
+
+  return settingsSidebarEnabled || !settingsInvolved;
 }
 
 /**
