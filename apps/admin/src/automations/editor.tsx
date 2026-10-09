@@ -1,9 +1,12 @@
+import { HostLimitError } from '@tryghost/admin-x-framework/errors';
+import { useBrowseConfig, upgradeRoute } from '@tryghost/admin-x-framework/api/config';
+import { LimitModalContent } from '@/settings/api';
 import NewAutomation from './new-automation';
 import AutomationStatusDialog from './components/automation-status-dialog';
 import { TRIGGER_CANVAS_ID } from './components/canvas/nodes';
 import AutomationCanvas, { EMAIL_STEP_QUERY_PARAM } from './components/canvas/automation-canvas';
 import AutomationHeader, { type AutomationValidationAction } from './components/automation-header';
-import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
+import { useFeatureFlag, useLimiter } from '@tryghost/admin-x-framework/hooks';
 import { useAutomationForEditing } from './hooks/use-automation-for-editing';
 import React from 'react';
 import {
@@ -31,6 +34,8 @@ import { useNavigate, useParams } from '@tryghost/admin-x-framework';
 import { useUnsavedChangesGuard } from '@/hooks/use-unsaved-changes-guard';
 import type { AutomationEditState } from './types';
 import { isAutomationStatusActive } from './utils/is-automation-status-active';
+
+const AUTOMATION_LIMITS = ['limitAutomations'] as const;
 
 const SUBJECT_REQUIRED_MESSAGE = 'Add a subject line.';
 const BODY_REQUIRED_MESSAGE = 'Add an email body.';
@@ -87,6 +92,9 @@ const AutomationEditorContent: React.FC<{
 }> = ({ automationId, creation }) => {
   const navigate = useNavigate();
   const addMutation = useAddAutomation();
+  const limiter = useLimiter({ limits: AUTOMATION_LIMITS });
+  const { data: configData } = useBrowseConfig();
+  const [limitError, setLimitError] = React.useState<HostLimitError | null>(null);
   const { automation, isError: isReadError } = useAutomationForEditing(automationId);
 
   const editMutation = useEditAutomation();
@@ -200,7 +208,7 @@ const AutomationEditorContent: React.FC<{
     return true;
   };
 
-  const save = (statusToSave?: AutomationStatus) => {
+  const save = async (statusToSave?: AutomationStatus) => {
     if (!draft) {
       throw new Error('Cannot edit an automation that has not loaded.');
     }
@@ -249,7 +257,32 @@ const AutomationEditorContent: React.FC<{
       return;
     }
 
+    const handleSaveError = (error: unknown) => {
+      if (error instanceof HostLimitError) {
+        setEditState({ phase: 'idle' });
+        setLimitError(error);
+        return;
+      }
+      setEditState(errorState);
+      toast.error('Automation couldn’t be saved');
+    };
+
     setEditState(requestState);
+
+    // An existing active automation consumes its slot already. New active automations
+    // and inactive-to-active edits need a fresh count before sending the mutation.
+    if (
+      newStatus === 'active' &&
+      (isNew || savedAutomation?.status !== 'active') &&
+      limiter.isLimited('limitAutomations')
+    ) {
+      try {
+        await limiter.errorIfWouldGoOverLimit('limitAutomations');
+      } catch (error) {
+        handleSaveError(error);
+        return;
+      }
+    }
 
     const mutation = isNew ? addMutation : editMutation;
     mutation.mutate(
@@ -267,10 +300,8 @@ const AutomationEditorContent: React.FC<{
             navigate(`/automations/${savedDraft.id}`, { replace: true });
           }
         },
-        onError: () => {
-          setEditState(errorState);
-          toast.error('Automation couldn’t be saved');
-        },
+        // Another publisher can take the final slot after the frontend check.
+        onError: handleSaveError,
       },
     );
   };
@@ -491,7 +522,7 @@ const AutomationEditorContent: React.FC<{
         validationFeedbackEnabled={automationRunAnalyticsEnabled}
         onDismissValidationFeedback={() => setValidationFeedback(null)}
         onPublish={onPublish}
-        onSave={() => save()}
+        onSave={() => void save()}
         onTurnOff={() => {
           if (
             automationRunAnalyticsEnabled &&
@@ -537,12 +568,23 @@ const AutomationEditorContent: React.FC<{
 
       <DirtyConfirmDialog {...discardDialogProps} />
 
+      {limitError && (
+        <LimitModalContent
+          prompt={
+            limitError.data?.errors[0]?.context ||
+            limitError.data?.errors[0]?.message ||
+            limitError.message
+          }
+          onOk={() => navigate(upgradeRoute(configData?.config), { crossApp: true })}
+          onRemove={() => setLimitError(null)}
+        />
+      )}
       <AutomationStatusDialog
         isError={editState.phase === 'failed'}
         isPending={isEditRequestActive}
         open={isConfirmPublishAlertOpen || isConfirmUnpublishAlertOpen}
         status={isConfirmUnpublishAlertOpen ? 'inactive' : 'active'}
-        onConfirm={() => save(isConfirmUnpublishAlertOpen ? 'inactive' : 'active')}
+        onConfirm={() => void save(isConfirmUnpublishAlertOpen ? 'inactive' : 'active')}
         onOpenChange={
           isConfirmUnpublishAlertOpen ? onConfirmUnpublishOpenChange : onConfirmPublishOpenChange
         }
@@ -562,7 +604,7 @@ const AutomationEditorContent: React.FC<{
             <Button
               disabled={!isRepublishButtonEnabled}
               variant={republishButtonVariant}
-              onClick={() => save()}
+              onClick={() => void save()}
             >
               {republishButtonChildren}
             </Button>

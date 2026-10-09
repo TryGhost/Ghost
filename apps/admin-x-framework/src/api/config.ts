@@ -54,6 +54,10 @@ export type Config = {
         max?: number;
         error?: string;
       };
+      limitAutomations?: {
+        max?: number;
+        error?: string;
+      };
       newsletters?: {
         max?: number;
         error?: string;

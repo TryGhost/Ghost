@@ -43,6 +43,8 @@ import {
   type DatabaseDate,
 } from '../../lib/db-types/date';
 import { getStaleLockCutoff } from './stale-lock-cutoff';
+import { limitService } from '../limits';
+import { lockAutomationLimit } from './automation-limit';
 import type { ExclusifyUnion, ReadonlyDeep } from 'type-fest';
 
 // Keep within api_automation_run_search's complete-match run_ids limit.
@@ -377,6 +379,10 @@ export function createDatabaseAutomationsRepository({
 
     async add(data) {
       return await knex.transaction(async (trx) => {
+        await lockAutomationLimit(trx, data.status);
+        if (data.status === 'active') {
+          await limitService.errorIfWouldGoOverLimit('limitAutomations', { transacting: trx });
+        }
         const tierIds = data.trigger_tier_ids ?? [];
         if (tierIds.length > 0) {
           // Lock the products so they aren't archived or deleted while we're adding.
@@ -437,10 +443,16 @@ export function createDatabaseAutomationsRepository({
 
     async edit(id: string, data: EditAutomationData): Promise<Automation | null> {
       return await knex.transaction(async (trx) => {
+        await lockAutomationLimit(trx, data.status);
+
         const automation = await loadAutomation(trx, id);
 
         if (!automation) {
           return null;
+        }
+
+        if (automation.status !== 'active' && data.status === 'active') {
+          await limitService.errorIfWouldGoOverLimit('limitAutomations', { transacting: trx });
         }
 
         const now = new Date();
@@ -913,9 +925,43 @@ async function lockNotYetOpened(
 }
 
 async function ensureDefaultAutomations(trx: Knex.Transaction): Promise<void> {
+  // Conversion may activate flows; acquire the lock before reading legacy statuses.
+  await lockAutomationLimit(trx, 'legacy');
+
+  // Existing welcome emails already have automation rows, but no action graph.
+  // Keep them inactive while building graphs, then allocate available activation slots.
+  const candidates = limitService.isLimited('limitAutomations')
+    ? await trx('automations')
+        .whereIn(
+          'slug',
+          DEFAULT_WELCOME_EMAIL_AUTOMATIONS.map(({ slug }) => slug),
+        )
+        .where('status', 'active')
+        .whereNotExists(
+          trx('automation_actions')
+            .select('id')
+            .whereRaw('automation_id = automations.id')
+            .whereNull('deleted_at'),
+        )
+        .whereExists(
+          trx('welcome_email_automated_emails')
+            .select('id')
+            .whereRaw('welcome_email_automation_id = automations.id'),
+        )
+        .pluck<string[]>('id')
+    : [];
+  await trx('automations').whereIn('id', candidates).update({ status: 'inactive' });
+
+  // Fixed free-then-paid order makes the subset deterministic.
   for (const defaults of DEFAULT_WELCOME_EMAIL_AUTOMATIONS) {
     const automation = await ensureAutomation(trx, defaults);
     await ensureWelcomeEmailAction(trx, automation.id);
+    if (
+      candidates.includes(automation.id) &&
+      !(await limitService.checkWouldGoOverLimit('limitAutomations', { transacting: trx }))
+    ) {
+      await trx('automations').where('id', automation.id).update({ status: 'active' });
+    }
   }
 }
 

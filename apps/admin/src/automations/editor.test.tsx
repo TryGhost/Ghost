@@ -41,6 +41,13 @@ vi.mock('@tryghost/admin-x-framework/api/settings', async () => {
   };
 });
 
+vi.mock('@tryghost/admin-x-framework/hooks', async () => {
+  const actual = await vi.importActual<typeof import('@tryghost/admin-x-framework/hooks')>(
+    '@tryghost/admin-x-framework/hooks',
+  );
+  return { ...actual, useLimiter: () => ({ isLimited: () => false }) };
+});
+
 vi.mock('sonner', () => ({
   toast: {
     error: mockToastError,

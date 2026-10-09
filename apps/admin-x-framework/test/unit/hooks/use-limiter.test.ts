@@ -1,7 +1,15 @@
 import { renderHook } from '@testing-library/react';
+import { HostLimitError } from '../../../src/utils/errors';
 import { useLimiter } from '../../../src/hooks/use-limiter';
 
-const { fetchApi } = vi.hoisted(() => ({ fetchApi: vi.fn() }));
+const { fetchApi, fetchAutomations } = vi.hoisted(() => ({
+  fetchApi: vi.fn(),
+  fetchAutomations: vi.fn(),
+}));
+
+vi.mock('../../../src/api/automations', () => ({
+  useBrowseAutomations: vi.fn(() => ({ refetch: fetchAutomations })),
+}));
 
 vi.mock('../../../src/api/config', () => ({ useBrowseConfig: vi.fn() }));
 vi.mock('../../../src/api/users', () => ({
@@ -23,6 +31,7 @@ vi.mock('../../../src/utils/api/fetch-api', () => ({
     `${path}?${new URLSearchParams(params).toString()}`,
 }));
 
+import { useBrowseAutomations } from '../../../src/api/automations';
 import { useBrowseConfig } from '../../../src/api/config';
 import { useBrowseInvites } from '../../../src/api/invites';
 import { useBrowseRoles } from '../../../src/api/roles';
@@ -45,6 +54,81 @@ describe('useLimiter', () => {
     vi.useRealTimers();
     vi.restoreAllMocks();
     fetchApi.mockReset();
+    fetchAutomations.mockReset();
+  });
+
+  it.each([0, 2])('blocks activation at the active automation cap of %s', async (max) => {
+    withHostSettings({ limits: { limitAutomations: { max } } });
+    fetchAutomations.mockResolvedValue({
+      data: {
+        automations: [
+          ...Array.from({ length: max }, (_, i) => ({ id: `active-${i}`, status: 'active' })),
+          { id: 'draft', status: 'inactive' },
+        ],
+      },
+    });
+    const { result } = renderHook(() => useLimiter({ limits: ['limitAutomations'] }));
+    await expect(result.current.errorIfWouldGoOverLimit('limitAutomations')).rejects.toBeInstanceOf(
+      HostLimitError,
+    );
+    expect(fetchAutomations).toHaveBeenCalledWith({ throwOnError: true });
+    expect(useBrowseAutomations).toHaveBeenCalledWith({
+      enabled: false,
+      requestOptions: undefined,
+    });
+  });
+
+  it('counts active automations only', async () => {
+    withHostSettings({ limits: { limitAutomations: { max: 2 } } });
+    fetchAutomations.mockResolvedValue({
+      data: { automations: [{ status: 'active' }, { status: 'inactive' }, { status: 'inactive' }] },
+    });
+    const { result } = renderHook(() => useLimiter({ limits: ['limitAutomations'] }));
+    await expect(
+      result.current.errorIfWouldGoOverLimit('limitAutomations'),
+    ).resolves.toBeUndefined();
+  });
+
+  it('propagates automation count read failures', async () => {
+    withHostSettings({ limits: { limitAutomations: { max: 2 } } });
+    fetchAutomations.mockRejectedValue(new Error('Count unavailable'));
+    const { result } = renderHook(() => useLimiter({ limits: ['limitAutomations'] }));
+    await expect(result.current.errorIfWouldGoOverLimit('limitAutomations')).rejects.toThrow(
+      'Count unavailable',
+    );
+  });
+
+  it('rejects an automation count response without data', async () => {
+    withHostSettings({ limits: { limitAutomations: { max: 2 } } });
+    fetchAutomations.mockResolvedValue({ data: undefined });
+    const { result } = renderHook(() => useLimiter({ limits: ['limitAutomations'] }));
+    await expect(result.current.errorIfWouldGoOverLimit('limitAutomations')).rejects.toThrow(
+      'Failed to fetch automation count.',
+    );
+  });
+
+  it('passes request options to the disabled automation query', () => {
+    withHostSettings({ limits: { limitAutomations: { max: 2 } } });
+    renderHook(() =>
+      useLimiter({
+        limits: ['limitAutomations'],
+        requestOptions: { sessionExpiryRedirect: false },
+      }),
+    );
+    expect(useBrowseAutomations).toHaveBeenCalledWith({
+      enabled: false,
+      requestOptions: { sessionExpiryRedirect: false },
+    });
+    expect(fetchAutomations).not.toHaveBeenCalled();
+  });
+
+  it('does not fetch automation counts without the host limit', async () => {
+    withHostSettings({ limits: {} });
+    const { result } = renderHook(() => useLimiter({ limits: ['limitAutomations'] }));
+    await expect(
+      result.current.errorIfWouldGoOverLimit('limitAutomations'),
+    ).resolves.toBeUndefined();
+    expect(fetchAutomations).not.toHaveBeenCalled();
   });
 
   it('loads periodic limits when the host sets a subscription start', () => {
