@@ -2,6 +2,7 @@ import { vi } from 'vitest';
 import { deferred, type Deferred } from '@/utils/deferred';
 import {
   createSaveEngine,
+  type ConfirmOutcome,
   type DispatchIntent,
   type PrepareOutcome,
   type SaveEngine,
@@ -64,6 +65,7 @@ export function setup(
   ports: {
     autosaveDebounceMs?: () => number | undefined;
     onSaveFailed?: (failure: SaveFailure) => void;
+    confirm?: (prepared: SaveRequest, signal: AbortSignal) => Promise<ConfirmOutcome>;
   } = {},
 ) {
   let snapshot = { ...BASE, ...overrides } as SaveSnapshot;

@@ -4182,4 +4182,239 @@ describe('Members API', function () {
       }
     });
   });
+
+  describe('checkout.session.completed with a shipping address', function () {
+    const beforeNow = Math.floor((Date.now() - 2000) / 1000) * 1000;
+    const address = {
+      line1: '1 High Street',
+      line2: null,
+      city: 'London',
+      state: null,
+      postal_code: 'N1 1AA',
+      country: 'GB',
+    };
+
+    beforeAll(async function () {
+      const agents = await agentProvider.getAgentsForMembers();
+      membersAgent = agents.membersAgent;
+      adminAgent = agents.adminAgent;
+
+      await fixtureManager.init('members');
+      await adminAgent.loginAsOwner();
+
+      set(subscription, {
+        id: 'sub_shipping',
+        customer: 'cus_shipping',
+        status: 'active',
+        items: {
+          type: 'list',
+          data: [
+            {
+              id: 'item_shipping',
+              price: {
+                id: 'price_123',
+                product: 'product_123',
+                active: true,
+                nickname: 'Monthly',
+                currency: 'usd',
+                recurring: { interval: 'month' },
+                unit_amount: 500,
+                type: 'recurring',
+              },
+            },
+          ],
+        },
+        start_date: beforeNow / 1000,
+        current_period_end: Math.floor(beforeNow / 1000) + 60 * 60 * 24 * 31,
+        cancel_at_period_end: false,
+      });
+    });
+
+    beforeEach(async function () {
+      mockManager.mockMail();
+      mockManager.mockLabsEnabled('stripeCheckoutCollection');
+      mockManager.mockLabsEnabled('membersCustomFields');
+      for (const field of [
+        { name: 'Delivery address', type: 'address' },
+        { name: 'Recipient name', type: 'short_text' },
+      ]) {
+        await adminAgent
+          .post('/members/metafields/custom/')
+          .body({ members_metafields: [field] })
+          .expectStatus(201);
+      }
+      await adminAgent
+        .put('/stripe/checkout/config/')
+        .body({
+          checkout_config: [
+            {
+              shipping: {
+                collect: true,
+                address: { custom_field_key: 'delivery_address' },
+                name: { custom_field_key: 'recipient_name' },
+              },
+            },
+          ],
+        })
+        .expectStatus(200);
+    });
+
+    afterEach(async function () {
+      mockManager.restore();
+      await models.Base.knex('stripe_checkout_config_tiers').del();
+      await models.Base.knex('stripe_checkout_config').del();
+      await models.Base.knex('members_metafield_bindings').del();
+      await models.Base.knex('members_metafield_values').del();
+      await models.Base.knex('members_metafields').del();
+    });
+
+    async function completeCheckout(
+      email,
+      { asked = true, metadata = {}, created = Math.floor(Date.now() / 1000) } = {},
+    ) {
+      set(customer, {
+        id: 'cus_shipping',
+        name: 'Jamie Doe',
+        email,
+        subscriptions: { type: 'list', data: [subscription] },
+      });
+      const payload = JSON.stringify({
+        type: 'checkout.session.completed',
+        data: {
+          object: {
+            mode: 'subscription',
+            created,
+            customer: customer.id,
+            subscription: subscription.id,
+            metadata,
+            shipping_address_collection: asked ? { allowed_countries: ['GB'] } : null,
+            shipping: { name: 'Jamie Doe', address },
+          },
+        },
+      });
+      await membersAgent
+        .post('/webhooks/stripe/')
+        .body(payload)
+        .header('content-type', 'application/json')
+        .header(
+          'stripe-signature',
+          stripe.webhooks.generateTestHeaderString({ payload, secret: process.env.WEBHOOK_SECRET }),
+        )
+        .expectStatus(200);
+      await DomainEvents.allSettled();
+
+      const {
+        body: { members },
+      } = await adminAgent.get(`/members/?search=${encodeURIComponent(email)}`);
+      const { body } = await adminAgent.get(`/members/${members[0].id}/`);
+      return body.members[0].metafields?.custom ?? {};
+    }
+
+    it('saves the address and the recipient name onto the member the checkout creates', async function () {
+      const before = await adminAgent.get('/members/?search=shipping-new@example.com');
+      assert.equal(before.body.members.length, 0);
+
+      assert.deepEqual(await completeCheckout('shipping-new@example.com'), {
+        delivery_address: {
+          line1: '1 High Street',
+          city: 'London',
+          postal_code: 'N1 1AA',
+          country: 'GB',
+        },
+        recipient_name: 'Jamie Doe',
+      });
+    });
+
+    it('keeps the address but not the name while the name field is archived', async function () {
+      await adminAgent
+        .put('/members/metafields/custom/recipient_name/')
+        .body({ members_metafields: [{ status: 'archived' }] })
+        .expectStatus(200);
+
+      const saved = await completeCheckout('shipping-no-name@example.com');
+
+      assert.equal(saved.delivery_address.line1, '1 High Street');
+      assert.equal(saved.recipient_name, undefined);
+    });
+
+    it('saves nothing from a checkout that did not ask for an address', async function () {
+      // Stripe can return an address it wasn't asked for, such as one saved with Link.
+      assert.deepEqual(
+        await completeCheckout('shipping-unasked@example.com', { asked: false }),
+        {},
+      );
+    });
+
+    it('saves onto a member that signing in after paying created before this arrived', async function () {
+      // Portal's success link is a signup magic link, which can create the member first.
+      const startedAt = Math.floor(Date.now() / 1000) - 60;
+      await adminAgent
+        .post('/members/')
+        .body({ members: [{ email: 'shipping-redirect-first@example.com' }] })
+        .expectStatus(201);
+
+      const saved = await completeCheckout('shipping-redirect-first@example.com', {
+        created: startedAt,
+        metadata: { ghostSignupContext: 'has_precheckout_magic_link' },
+      });
+
+      assert.equal(saved.delivery_address.line1, '1 High Street');
+      assert.equal(saved.recipient_name, 'Jamie Doe');
+    });
+
+    it('leaves an existing member alone when the checkout was not started signed in', async function () {
+      await adminAgent
+        .post('/members/')
+        .body({ members: [{ email: 'shipping-existing@example.com' }] })
+        .expectStatus(201);
+
+      // The checkout started after the member already existed.
+      const startedAt = Math.floor(Date.now() / 1000) + 1;
+      assert.deepEqual(
+        await completeCheckout('shipping-existing@example.com', { created: startedAt }),
+        {},
+      );
+    });
+
+    it('replaces every part of an earlier address for a member who checked out signed in', async function () {
+      const {
+        body: { members },
+      } = await adminAgent
+        .post('/members/')
+        .body({ members: [{ email: 'shipping-signed-in@example.com' }] })
+        .expectStatus(201);
+      await adminAgent
+        .put(`/members/${members[0].id}/`)
+        .body({
+          members: [
+            {
+              metafields: {
+                custom: {
+                  delivery_address: {
+                    line1: '2 Old Road',
+                    line2: 'Flat 5',
+                    city: 'Austin',
+                    state: 'TX',
+                    postal_code: '78701',
+                    country: 'US',
+                  },
+                },
+              },
+            },
+          ],
+        })
+        .expectStatus(200);
+
+      const saved = await completeCheckout('shipping-signed-in@example.com', {
+        metadata: { ghostSignupContext: 'already_authenticated' },
+      });
+
+      assert.deepEqual(saved.delivery_address, {
+        line1: '1 High Street',
+        city: 'London',
+        postal_code: 'N1 1AA',
+        country: 'GB',
+      });
+    });
+  });
 });

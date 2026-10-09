@@ -2,7 +2,7 @@ export { AnnouncementBarSection } from './announcement-bar-section';
 export { DangerZoneSection } from './danger-zone-section';
 export { AccessSection } from './access-section';
 export { CheckoutSettingsModal } from './checkout-settings-modal';
-export type { CheckoutCorners } from './checkout-settings-modal';
+export type { CheckoutCorners, ShippingChoice } from './checkout-settings-modal';
 export { CustomFieldsSection } from './custom-fields-section';
 export { IntegrationsSection } from './integrations-section';
 export { DesignSection } from './design-section';

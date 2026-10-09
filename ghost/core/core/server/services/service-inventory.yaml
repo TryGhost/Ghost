@@ -4196,25 +4196,27 @@ services:
       - stripe-checkout-config/index.ts
     notes: >-
       Site-wide Stripe Checkout config, read live by the Stripe API for every checkout it
-      creates, previews of a design on a real Stripe Checkout page, and the branding set in
-      the Stripe dashboard.
+      creates and by the checkout webhook to save a collected shipping address, previews of a
+      design on a real Stripe Checkout page, and the branding set in the Stripe dashboard.
     contracts:
       exports:
         summary: >-
           Named exports include init, the mutable service, previewService and
           brandingService bindings, StripeCheckoutConfigService, CheckoutPreviewService,
-          CheckoutBrandingService, the wire serializers and actingContext. The bindings are
-          undefined before init.
+          CheckoutBrandingService, the wire serializers, the shipping rules
+          collectsShippingFor and shippingCountriesFor, and actingContext.
+          The bindings are undefined before init.
         sources:
           - core/server/services/stripe-checkout-config/index.ts
         tests: []
       construction:
         summary: >-
-          Boot calls synchronous init in initCore, which builds the service with knex and its
-          history recorder, the preview service with lookups of Stripe, tiers and the members
-          payments service made per preview, and the branding service with lookups of Stripe
-          made per read, as those start later in boot. An existing service makes later calls
-          return.
+          Boot calls synchronous init in initCore after the custom fields services, which
+          builds the service with knex, its history recorder and the custom field bindings it
+          saves shipping into, and throws if those bindings aren't set up yet. It also builds
+          the preview service with lookups of Stripe, tiers and the members payments service
+          made per preview, and the branding service with lookups of Stripe made per read, as
+          those start later in boot. An existing service makes later calls return.
         sources:
           - core/server/services/stripe-checkout-config/index.ts
           - core/boot.js

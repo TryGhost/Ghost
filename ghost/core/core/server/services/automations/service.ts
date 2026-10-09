@@ -1,23 +1,23 @@
-import assert from 'node:assert/strict';
 import type { SchedulerAdapter } from '@tryghost/adapter-base-scheduling';
+import assert from 'node:assert/strict';
 import type { InternalKeys } from '../internal-keys';
 // @ts-expect-error @tryghost/domain-events currently lacks type declarations.
 import type DomainEvents from '@tryghost/domain-events';
-import { oneAtATime } from '../../../shared/one-at-a-time';
-import { poll } from './poll';
-import * as automationsApi from './automations-api';
-import { getSchedulerIdempotencyKey } from '../../adapters/scheduling/get-scheduler-idempotency-key';
-import { buildSignedJob } from '../../adapters/scheduling/build-signed-job';
 import { setImmediate as flushEventLoop } from 'node:timers/promises';
+import { oneAtATime } from '../../../shared/one-at-a-time';
+import { buildSignedJob } from '../../adapters/scheduling/build-signed-job';
+import { getSchedulerIdempotencyKey } from '../../adapters/scheduling/get-scheduler-idempotency-key';
 import { SoonestTimer } from '../../lib/soonest-timer';
+import * as automationsApi from './automations-api';
+import { poll } from './poll';
 import { getSchedulerPollTime } from './scheduler-poll-time';
+import logging from '@tryghost/logging';
 // @ts-expect-error This module currently lacks type definitions.
 import emailAnalyticsJobs from '../email-analytics/jobs';
 import { StartAutomationsPollEvent } from './events/start-automations-poll-event';
-
-const logging = require('@tryghost/logging');
-const { welcomeEmailAutomationPoll } = require('./welcome-email-automation-poll');
-const memberWelcomeEmailService = require('../member-welcome-emails/service');
+import { welcomeEmailAutomationPoll } from './welcome-email-automation-poll';
+// @ts-expect-error This module currently lacks type definitions.
+import memberWelcomeEmailService from '../member-welcome-emails/service';
 
 type AutomationsServiceOptions = {
   apiUrl: string;
@@ -60,10 +60,6 @@ export class AutomationsService {
      * The in-memory timer can be more precise than the scheduler, and
      * avoids reliance on an external service. The scheduler will wake up
      * the server if it's stopped.
-     *
-     * (In an upcoming change (NY-1396), we plan to make the scheduler less
-     * precise to reduce load--that will make the in-memory timer more
-     * useful, but it's still useful now.)
      */
     const enqueuePollAt = async (date: Readonly<Date>): Promise<void> => {
       const isRequestedDateInTheFuture = new Date() < date;

@@ -228,9 +228,17 @@ export function useEditorSession({
   const [loadedRecord, setLoadedRecord] = useState(record);
   const [contentKey, setContentKey] = useState(0);
 
-  const transport = useRef({ addPost, editPost, addPage, editPage, generateSlug, postType });
+  const transport = useRef({
+    addPost,
+    editPost,
+    addPage,
+    editPage,
+    generateSlug,
+    fetchApi,
+    postType,
+  });
   useEffect(() => {
-    transport.current = { addPost, editPost, addPage, editPage, generateSlug, postType };
+    transport.current = { addPost, editPost, addPage, editPage, generateSlug, fetchApi, postType };
   });
 
   // `editorAutosaveDebounceMs` is test-only: the acceptance harness injects it through
@@ -319,6 +327,14 @@ export function useEditorSession({
             sessionExpiryRedirect: false,
           });
           return listed('posts', posts[0]);
+        },
+        read: async (id) => {
+          const current = transport.current;
+          const data = await current.fetchApi<EditorReadResponse>(
+            editorRead(current.postType, id).url,
+            EDITOR_REQUEST_OPTIONS,
+          );
+          return recordIn(current.postType, data);
         },
         generateSlug: (text, postId) =>
           transport.current.generateSlug({

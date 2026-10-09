@@ -245,6 +245,38 @@ describe('reportSaveFailure', () => {
     );
   });
 
+  it('attaches the collision details the API gave with a collision', () => {
+    const collision = {
+      changedFields: ['lexical'],
+      clientUpdatedAt: '2026-10-08T20:30:00.000Z',
+      serverUpdatedAt: '2026-10-08T23:31:10.000Z',
+    };
+    const cause = new JSONError(new Response(null, { status: 409 }), {
+      errors: [
+        {
+          code: 'UPDATE_COLLISION',
+          context: 'Saving failed! Someone else is editing this post.',
+          // Core sends an object here, which the shared error type doesn't describe
+          details: collision as unknown as string,
+          ghostErrorCode: null,
+          help: '',
+          id: 'err-1',
+          message: 'Saving failed!',
+          property: null,
+          type: 'UpdateCollisionError',
+        },
+      ],
+    });
+    reportSaveFailure(
+      failure({ error: { kind: 'conflict', message: 'Something went wrong', cause } }),
+      'post',
+    );
+
+    expect(vi.mocked(Sentry.captureException).mock.calls[0][1]).toMatchObject({
+      extra: { post_id: 'post-1', duration_ms: 120, collision },
+    });
+  });
+
   it.each<[string, SaveError, string]>([
     [
       'a collision',

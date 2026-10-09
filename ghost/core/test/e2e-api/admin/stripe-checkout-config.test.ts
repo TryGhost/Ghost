@@ -52,6 +52,8 @@ describe('Stripe Checkout Config Admin API', function () {
 
   beforeEach(function () {
     mockManager.mockLabsEnabled('stripeCheckoutDesign');
+    // Shipping has its own tests, so these see the design alone.
+    mockManager.mockLabsDisabled('stripeCheckoutCollection');
   });
 
   afterEach(async function () {

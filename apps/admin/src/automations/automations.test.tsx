@@ -163,7 +163,7 @@ describe('Automations', () => {
     { role: undefined, disabled: true },
   ])('sets "New automation" disabled=$disabled for role=$role', ({ role, disabled }) => {
     mockUseBrowseConfig.mockReturnValue({
-      data: { config: { labs: { automationsPerTier: true } } },
+      data: { config: { labs: { automationsPerTier: true, automationsArchive: true } } },
       isLoading: false,
     });
     mockUseCurrentUser.mockReturnValue({
@@ -178,7 +178,7 @@ describe('Automations', () => {
       expect(screen.queryByRole('button', { name: /Actions for/ })).not.toBeInTheDocument();
     } else {
       expect(button).toBeEnabled();
-      expect(screen.queryByRole('button', { name: /Actions for/ })).not.toBeInTheDocument();
+      expect(screen.getAllByRole('button', { name: /Actions for/ })).toHaveLength(2);
     }
   });
 
