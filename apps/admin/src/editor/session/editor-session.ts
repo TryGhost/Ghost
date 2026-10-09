@@ -100,6 +100,7 @@ export type PreparedSave =
   | (PreparedWrite & { isCreate: false; payload: EditorEditPayload });
 
 const MISSING_COLLISION_TOKEN = 'Cannot save without the version this post was loaded at.';
+const SAVED_ELSEWHERE = 'A newer version of this post was saved since it was opened.';
 
 function preparedOrInvalid(
   prepared: PreparedSave,
@@ -760,12 +761,14 @@ export function createEditorSession({
         ),
       );
     }
-    if (!projection.updated_at && requiresUpdatedAt) {
+    if (!projection.updated_at && (requiresUpdatedAt || newerVersion !== null)) {
       // Without the token the server skips its collision check entirely and the
       // save would overwrite whatever landed in the meantime.
       return Promise.resolve({
         ok: false,
-        error: { kind: 'unknown', message: MISSING_COLLISION_TOKEN },
+        error: requiresUpdatedAt
+          ? { kind: 'unknown', message: MISSING_COLLISION_TOKEN }
+          : { kind: 'conflict', message: SAVED_ELSEWHERE },
       });
     }
     return Promise.resolve(

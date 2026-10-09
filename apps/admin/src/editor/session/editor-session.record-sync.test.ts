@@ -352,6 +352,24 @@ describe('createEditorSession', () => {
     expect(session.getView().newerVersionAvailable).toBe(true);
   });
 
+  it('collides instead of saving without a token over a newer version it has read', async () => {
+    const { session, state } = sessionHarness({ record: record({ updated_at: null }) });
+    session.recordRefetched(record({ updated_at: '2026-01-02T00:00:00.000Z' }));
+
+    session.patchLexical(body('Mine'));
+    expect(await session.dispatchExplicit()).toMatchObject({
+      kind: 'failed',
+      error: { kind: 'conflict' },
+    });
+    expect(state.updates).toHaveLength(0);
+
+    expect(session.recordReloaded(record({ updated_at: '2026-01-02T00:00:00.000Z' }))).toBe(true);
+    session.patchLexical(body('Written on top of theirs'));
+    await session.dispatchExplicit();
+
+    expect(state.updates[0].payload.updated_at).toBe('2026-01-02T00:00:00.000Z');
+  });
+
   it('adopts a read of the held instant written another way, keeping the token as held', async () => {
     const { session, state } = sessionHarness({ record: record(), baseline: record().lexical });
 
