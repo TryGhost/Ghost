@@ -536,12 +536,12 @@ refusal of a writer who may no longer edit the post, an expired session (signing
 in again is its recovery, whether or not the writer does) and an unreachable
 server are not sent as errors: none of them is a fault in the editor.
 `isExpectedSaveError()` holds that rule, and the publish flow reports by it too.
-A writer who lost access or whose session expired is still sent, as a message
-carrying the save's tags. A failed request that took
+A forbidden save, and an expired session the writer did not sign back in to,
+are still sent as messages carrying the save's tags. A failed request that took
 more than two seconds is sent as a second event with its timing. Every error
 the writer is shown — a failed save in the status line, a collision or a
-deleted post in its banner — is
-also sent once as a message carrying the text they read. A Koenig instance that
+deleted post in its banner — is also passed to Sentry as a message carrying the
+text they read, tagged `shown_to_user`, which Admin's `beforeSend` drops. A Koenig instance that
 crashes its error boundary is reported as a Lexical failure. Sentry stays
 optional: without a DSN the calls are no-ops, and an error is still logged to
 the console.

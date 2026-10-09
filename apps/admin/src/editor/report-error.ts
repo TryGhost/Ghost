@@ -131,7 +131,7 @@ export function isExpectedFailure(error: unknown): boolean {
 /**
  * Reports a request that settled as failed, unless it was expected
  * (`isExpectedSaveError()`): every other failure is reported once, with what the
- * request was. A writer who lost access or whose session expired is noted as a message.
+ * request was. A forbidden save or an abandoned sign-in is noted as a message.
  */
 export function reportSaveFailure(failure: EditorSaveFailure, postType: PostType): void {
   const { command, error, persisted, durationMs, postId, status } = failure;
@@ -158,10 +158,11 @@ export function reportSaveFailure(failure: EditorSaveFailure, postType: PostType
   }
 
   if (error.kind === 'forbidden' || error.kind === 'session-invalid') {
-    reportEditorNotice(`Lost access while editing ${postType}`, {
-      tags,
-      extra: { post_id: postId },
-    });
+    const message =
+      error.kind === 'forbidden'
+        ? `Save of ${postType} was forbidden`
+        : `Session expired while editing ${postType}`;
+    reportEditorNotice(message, { tags, extra: { post_id: postId } });
     return;
   }
 

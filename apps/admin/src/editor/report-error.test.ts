@@ -410,23 +410,25 @@ describe('reportSaveFailure', () => {
     expect(console.error).not.toHaveBeenCalled();
   });
 
-  it.each<[string, SaveError]>([
-    ['a writer who lost access', { kind: 'forbidden', message: 'Permission error' }],
+  it.each<[string, SaveError, string]>([
+    [
+      'a forbidden save',
+      { kind: 'forbidden', message: 'Permission error' },
+      'Save of page was forbidden',
+    ],
     [
       'an expired session the writer did not sign back in to',
       { kind: 'session-invalid', message: 'Unauthorized', cause: new Error('Unauthorized') },
+      'Session expired while editing page',
     ],
-  ])('notes %s as a message rather than an error', (_label, error) => {
+  ])('notes %s as a message rather than an error', (_label, error, message) => {
     reportSaveFailure(failure({ error }), 'page');
 
     expect(Sentry.captureException).not.toHaveBeenCalled();
-    expect(Sentry.captureMessage).toHaveBeenCalledExactlyOnceWith(
-      'Lost access while editing page',
-      {
-        tags: { ...TAGS, post_type: 'page', save_error_kind: error.kind },
-        extra: { post_id: 'post-1' },
-      },
-    );
+    expect(Sentry.captureMessage).toHaveBeenCalledExactlyOnceWith(message, {
+      tags: { ...TAGS, post_type: 'page', save_error_kind: error.kind },
+      extra: { post_id: 'post-1' },
+    });
     // eslint-disable-next-line no-console
     expect(console.error).not.toHaveBeenCalled();
   });
