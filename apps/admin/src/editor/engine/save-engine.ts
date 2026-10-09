@@ -158,6 +158,11 @@ export type SaveOutcome<R extends SaveResult = SaveResult> =
 /** Local validation holds background work; other failures use the normal error handling. */
 export type PrepareOutcome<P> = { ok: true; prepared: P } | { ok: false; error: SaveError };
 
+/** The acknowledgement of a write the server holds, or null when it does not hold it. */
+export type ConfirmOutcome<R extends SaveResult = SaveResult> =
+  | { ok: true; result: R | null }
+  | { ok: false; error: SaveError };
+
 /** A request that settled as `failed`, once per request. */
 export interface SaveFailure {
   readonly command: SaveCommand;
@@ -231,6 +236,9 @@ export interface SaveEnginePorts<
   execute: (prepared: P, signal: AbortSignal) => Promise<SaveOutcome<R>>;
   /** Awaited before the pending slot drains. Must not throw: adopt the acknowledged id/status/updated_at before any work that can fail. */
   reconcile: (prepared: P, result: R) => Promise<void> | void;
+  /** Reads back a request whose failure leaves open whether it committed; runs before the next request's prepare.
+   * A landed write is reconciled as if its answer had arrived; a typed failure fails that next request. */
+  confirm?: (prepared: P, signal: AbortSignal) => Promise<ConfirmOutcome<R>>;
   /** The autosave debounce in milliseconds, read at each restart; defaults to `AUTOSAVE_DEBOUNCE_MS`. */
   autosaveDebounceMs?: () => number | undefined;
   setTimeout?: (fn: () => void, ms: number) => unknown;
@@ -443,6 +451,8 @@ export function createSaveEngine<
   } | null = null;
   // A failed retry cannot prove a rejected collision token safe.
   let conflict: { updatedAt: string | null; error: SaveError; intent: SaveIntent } | null = null;
+  // An update that reached the server and failed without a refusal; it may still have committed.
+  let unconfirmed: P | null = null;
   // Set while a reload's adoption runs: a clean post would otherwise accept a nested reload.
   let adopting = false;
   let leaveInProgress: Promise<LeaveDecision> | null = null;
@@ -776,6 +786,7 @@ export function createSaveEngine<
 
     let outcome: SaveOutcome<R>;
     let executeStartedAt: number | null = null;
+    let sent: P | null = null;
     try {
       await ports.slug.settled();
       if (disposed) {
@@ -785,6 +796,30 @@ export function createSaveEngine<
       snapshot = ports.getSnapshot();
       if (dropInFlight(slot, snapshot)) {
         return;
+      }
+      if (unconfirmed && ports.confirm) {
+        const confirmation = await ports.confirm(unconfirmed, abort.signal);
+        if (disposed) {
+          return;
+        }
+        if (!confirmation.ok) {
+          inFlight = null;
+          inFlightAbort = null;
+          handleError(slot, snapshot, confirmation.error, null);
+          return;
+        }
+        const landed = unconfirmed;
+        unconfirmed = null;
+        if (confirmation.result) {
+          await ports.reconcile(landed, confirmation.result);
+          if (disposed) {
+            return;
+          }
+          snapshot = ports.getSnapshot();
+          if (dropInFlight(slot, snapshot)) {
+            return;
+          }
+        }
       }
       const proposal = await proposeSlug(snapshot, abort.signal);
       if (disposed) {
@@ -839,6 +874,7 @@ export function createSaveEngine<
           return;
         }
         executeStartedAt = Date.now();
+        sent = preparation.prepared;
         outcome = await ports.execute(preparation.prepared, abort.signal);
         if (disposed) {
           return;
@@ -867,6 +903,13 @@ export function createSaveEngine<
       });
       drain();
       return;
+    }
+    // A create's id is unknown until it answers, so only an update can be read back.
+    if (
+      sent?.snapshot.id &&
+      (outcome.error.kind === 'transport' || outcome.error.kind === 'unknown')
+    ) {
+      unconfirmed = sent;
     }
     handleError(
       slot,
@@ -1119,6 +1162,7 @@ export function createSaveEngine<
     // Consume recovery before adoption can notify its own subscribers and reenter.
     conflict = null;
     hold = null;
+    unconfirmed = null;
     adopting = true;
     adopt?.();
     adopting = false;

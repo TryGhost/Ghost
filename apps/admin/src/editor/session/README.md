@@ -254,6 +254,16 @@ brings the session up to that version. A refused read is offered again
 whenever the engine moves on, so a read of a save that was in flight is adopted
 once that save's acknowledgement has landed and the session holds its token.
 
+An update that failed without the server refusing it, such as a lost response
+or a gateway error, may have committed. The engine has the session read the post
+before the next save. The read stands in for that update's acknowledgement only
+when it carries a later token, the status the update targeted, and exactly the
+saved copy with the update's projection written over it; then the next save
+carries the token the update landed at instead of colliding with it. A read
+carrying anything else, another writer's change included, leaves the token
+alone, so the next save collides as before. A read that fails fails the save
+with the read's error and sends nothing.
+
 Each acknowledged save also writes the record the server answered with into the
 screen's query, whole and in the shape a read has. Opening the post again reads
 it afresh, but when that read fails the editor opens the saved copy and its

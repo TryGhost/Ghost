@@ -131,6 +131,8 @@ export interface ChangeTracker {
   bodyDivergence(): BodyDivergence | null;
   /** Compares one editable field with the latest saved value using the dirty-check rules. */
   isFieldDirty(key: keyof EditablePostProjection): boolean;
+  /** Whether a server copy is the saved copy with `submitted` written over it, and nothing else. */
+  holdsWrite(submitted: EditablePostPatch, post: EditablePostProjection): boolean;
   /** The latest saved value of one editable field, undefined once disposed. */
   savedValue<Key extends keyof EditablePostProjection>(
     key: Key,
@@ -571,6 +573,22 @@ export function createChangeTracker(options: ChangeTrackerOptions = {}): ChangeT
 
     isFieldDirty(key) {
       return !!saved && !!live && key !== 'updated_at' && !sameField(key, saved[key], live[key]);
+    },
+
+    holdsWrite(submitted, post) {
+      const persisted = saved;
+      return (
+        persisted !== null &&
+        PROJECTION_KEYS.every(
+          (key) =>
+            key === 'updated_at' ||
+            sameField(
+              key,
+              post[key],
+              submitted[key] !== undefined ? submitted[key] : persisted[key],
+            ),
+        )
+      );
     },
 
     savedValue(key) {

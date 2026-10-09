@@ -1,5 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { AUTOSAVE_DEBOUNCE_MS, TIMED_SAVE_INTERVAL_MS } from './save-engine';
+import { deferred } from '@/utils/deferred';
+import {
+  AUTOSAVE_DEBOUNCE_MS,
+  TIMED_SAVE_INTERVAL_MS,
+  type ConfirmOutcome,
+  type SaveRequest,
+} from './save-engine';
 import {
   BASELINE,
   conflict,
@@ -401,6 +407,152 @@ describe('createSaveEngine', () => {
       });
       expect(h.snapshot).toMatchObject({ isDirty: true, status: 'scheduled', publishedAt: PAST });
       expect(h.engine.getState()).toEqual({ kind: 'error', intent: 'explicit', error: validation });
+    });
+  });
+
+  describe('a request that may have committed although it failed', () => {
+    const LANDED_AT = '2026-09-02T11:30:00.000Z';
+
+    function landed(prepared: SaveRequest) {
+      return {
+        id: prepared.snapshot.id ?? 'post-1',
+        status: prepared.target.status,
+        updatedAt: LANDED_AT,
+      };
+    }
+
+    function confirming(...answers: Array<'landed' | 'absent' | ConfirmOutcome>) {
+      return vi.fn((prepared: SaveRequest): Promise<ConfirmOutcome> => {
+        const answer = answers.shift() ?? 'absent';
+        if (answer === 'landed') {
+          return Promise.resolve({ ok: true, result: landed(prepared) });
+        }
+        return Promise.resolve(answer === 'absent' ? { ok: true, result: null } : answer);
+      });
+    }
+
+    it.each([transport, unknown])(
+      'reads a $kind failure back before the next request and sends the token it landed at',
+      async (error) => {
+        const confirm = confirming('landed');
+        const h = setup({}, { confirm });
+        void h.engine.dispatch('explicit');
+        await h.fail(error);
+        expect(confirm).not.toHaveBeenCalled();
+
+        h.edit();
+        const next = h.engine.dispatch('explicit');
+        await flush();
+
+        expect(confirm).toHaveBeenCalledWith(h.requests[0], expect.any(AbortSignal));
+        expect(h.reconcile).toHaveBeenCalledWith(h.requests[0], landed(h.requests[0]));
+        expect(h.requests[1].snapshot.updatedAt).toBe(LANDED_AT);
+        await h.succeed();
+        await expect(next).resolves.toMatchObject({ kind: 'saved' });
+
+        h.edit();
+        void h.engine.dispatch('explicit');
+        await h.succeed();
+        expect(confirm).toHaveBeenCalledTimes(1);
+      },
+    );
+
+    it('drops a background save whose content the landed write already carried', async () => {
+      const h = setup({}, { confirm: confirming('landed') });
+      void h.engine.dispatch('field');
+      await h.fail(transport);
+
+      const next = h.engine.dispatch('field');
+      await flush();
+
+      await expect(next).resolves.toEqual({ kind: 'dropped', reason: 'clean' });
+      expect(h.execute).toHaveBeenCalledTimes(1);
+      expect(h.snapshot).toMatchObject({ isDirty: false, updatedAt: LANDED_AT });
+      expect(h.engine.getState()).toEqual({ kind: 'idle' });
+    });
+
+    it('sends the held token when the server does not hold the write', async () => {
+      const confirm = confirming('absent');
+      const h = setup({}, { confirm });
+      void h.engine.dispatch('explicit');
+      await h.fail(transport);
+
+      void h.engine.dispatch('explicit');
+      await h.succeed();
+
+      expect(h.reconcile).toHaveBeenCalledTimes(1);
+      expect(h.requests[1].snapshot.updatedAt).toBe(BASELINE);
+      expect(confirm).toHaveBeenCalledTimes(1);
+    });
+
+    it('reads back inside the single request in flight', async () => {
+      const read = deferred<ConfirmOutcome>();
+      const h = setup({}, { confirm: vi.fn(() => read.promise) });
+      void h.engine.dispatch('explicit');
+      await h.fail(transport);
+
+      void h.engine.dispatch('explicit');
+      await flush();
+      h.edit();
+      void h.engine.dispatch('field');
+
+      expect(h.engine.getState()).toEqual({
+        kind: 'preparing',
+        intent: 'explicit',
+        pending: 'field',
+      });
+      expect(h.execute).toHaveBeenCalledTimes(1);
+
+      read.resolve({ ok: true, result: null });
+      await h.succeed();
+      expect(h.maxConcurrent()).toBe(1);
+    });
+
+    it('fails the next request with the error the read met, and reads back again after it', async () => {
+      const confirm = confirming({ ok: false, error: transport }, 'landed');
+      const h = setup({}, { confirm });
+      void h.engine.dispatch('explicit');
+      await h.fail(transport);
+
+      await expect(h.engine.dispatch('explicit')).resolves.toEqual({
+        kind: 'failed',
+        error: transport,
+        executedAs: 'explicit',
+      });
+      expect(h.execute).toHaveBeenCalledTimes(1);
+
+      void h.engine.dispatch('explicit');
+      await flush();
+      expect(confirm).toHaveBeenCalledTimes(2);
+      expect(h.requests[1].snapshot.updatedAt).toBe(LANDED_AT);
+    });
+
+    it.each([validation, hostLimit, conflict])(
+      'never reads back a request the server refused with $kind',
+      async (error) => {
+        const confirm = confirming('landed');
+        const h = setup({}, { confirm });
+        void h.engine.dispatch('explicit');
+        await h.fail(error);
+
+        void h.engine.dispatch('explicit');
+        await flush();
+
+        expect(confirm).not.toHaveBeenCalled();
+      },
+    );
+
+    it('never reads back a create, whose id it never learned', async () => {
+      const confirm = confirming('landed');
+      const h = setup({ id: null, updatedAt: null }, { confirm });
+      void h.engine.dispatch('explicit');
+      await h.fail(transport);
+
+      void h.engine.dispatch('explicit');
+      await flush();
+
+      expect(confirm).not.toHaveBeenCalled();
+      expect(h.execute).toHaveBeenCalledTimes(2);
     });
   });
 });

@@ -74,6 +74,10 @@ export interface HarnessHooks {
   /** Answers an update with nothing, which the session reports as a failed save. */
   failSave?: (saveCount: number) => boolean;
   failUpdateWith?: Error;
+  /** Commits the update, then answers it with this error, as a lost response would. */
+  failAfterCommitWith?: (saveCount: number) => Error | undefined;
+  /** Replaces the read of the post as the server holds it. */
+  read?: (acknowledged: EditorRecord) => Promise<EditorRecord | undefined>;
   failSlugWith?: Error;
   /** Replaces the generator, so a test can hold a slug request open. */
   generateSlug?: (text: string) => Promise<string>;
@@ -148,8 +152,15 @@ export function sessionHarness(options: HarnessOptions = {}, hooks: HarnessHooks
         updated_at: `2026-01-01T00:00:0${saveCount}.000Z`,
       } as EditorRecord;
       state.acknowledged = hooks.acknowledge?.(next, saveCount) ?? next;
-      return Promise.resolve(state.acknowledged);
+      const lost = hooks.failAfterCommitWith?.(saveCount);
+      return lost ? Promise.reject(lost) : Promise.resolve(state.acknowledged);
     },
+  );
+
+  const read = vi.fn((id: string) =>
+    hooks.read
+      ? hooks.read(state.acknowledged)
+      : Promise.resolve(id === state.acknowledged.id ? state.acknowledged : undefined),
   );
 
   const session = createEditorSession({
@@ -159,6 +170,7 @@ export function sessionHarness(options: HarnessOptions = {}, hooks: HarnessHooks
     transport: {
       create,
       update,
+      read,
       generateSlug: (text) => {
         if (hooks.generateSlug) {
           return hooks.generateSlug(text);
@@ -175,5 +187,5 @@ export function sessionHarness(options: HarnessOptions = {}, hooks: HarnessHooks
     session.setBaseline(baseline ?? null);
   }
 
-  return { session, state, create, update };
+  return { session, state, create, update, read };
 }
