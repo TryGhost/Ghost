@@ -2,7 +2,6 @@ const assert = require('node:assert/strict');
 const { assertExists } = require('../../../../utils/assertions');
 const sinon = require('sinon');
 const ContentStatsService = require('../../../../../core/server/services/stats/content-stats-service');
-const tinybird = require('../../../../../core/server/services/stats/utils/tinybird');
 
 describe('ContentStatsService', function () {
   let service;
@@ -32,9 +31,6 @@ describe('ContentStatsService', function () {
       parseResponse: sinon.stub(),
       fetch: sinon.stub(),
     };
-
-    // Stub tinybird.create to return our mock client
-    sinon.stub(tinybird, 'create').returns(mockTinybirdClient);
 
     // Create service instance with mocked dependencies
     service = new ContentStatsService({
