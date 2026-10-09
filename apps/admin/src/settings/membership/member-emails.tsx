@@ -343,6 +343,7 @@ const MemberEmails: React.FC<{ keywords: string[] }> = ({ keywords }) => {
       navid="memberemails"
       testId="memberemails"
       title="Welcome emails"
+      onOpen={() => setIsCustomizeOpen(true)}
     >
       <MemberEmailsTable
         config={config}

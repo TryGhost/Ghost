@@ -1,16 +1,21 @@
 import Sidebar from './sidebar';
 import { DirtyNavigationGuard } from './dirty-navigation-guard';
 import SettingsAppProvider from '@/settings/providers/settings-app-provider';
-import { type UpgradeStatusType } from '@/settings/providers/settings-app-context';
+import {
+  type UpgradeStatusType,
+  useOpenSectionRequest,
+  useSearch,
+} from '@/settings/providers/settings-app-context';
 import { ConfirmationProvider } from '@/settings/providers/confirmation-provider';
 import { DialogPortalProvider } from '@/settings/providers/dialog-portal';
 import { Outlet, useLocation } from '@tryghost/admin-x-framework';
 import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import { Stack } from '@tryghost/shade/primitives';
 import { cn } from '@tryghost/shade/utils';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useScrollSectionContext } from '@/settings/hooks/use-scroll-section';
+import { isOpenSectionRequest } from '@/settings/utils/open-section';
 import { useSettingsNavigationSlot } from '@/layout/settings-navigation';
 import { SettingsLoading } from '@/settings/settings-loading';
 
@@ -24,16 +29,42 @@ interface AppProps {
   upgradeStatus?: UpgradeStatusType;
 }
 
-// Keeps the scroll-spy's navigated section in sync with the URL, replacing the
-// legacy SettingsRouter.
+const sectionOf = (pathname: string) => pathname.replace(/^\/settings\/?/, '').split('/')[0];
+
+// history entries whose open request has run, so going back to one doesn't reopen it
+const handledOpenRequests = new Set<string>();
+
+// Keeps the scroll-spy's navigated section in sync with the URL. An `?open` link
+// also clears the sidebar filter so its section shows, then asks it to open.
 function SettingsLocationSync() {
-  const { pathname } = useLocation();
+  const { key, pathname, search } = useLocation();
   const { updateNavigatedSection } = useScrollSectionContext();
+  const { filter, setFilter, setNoResult } = useSearch();
+  const { setOpenSectionRequest } = useOpenSectionRequest();
+  const [pendingSection, setPendingSection] = useState<string>();
 
   useEffect(() => {
-    const route = pathname.replace(/^\/settings\/?/, '');
-    updateNavigatedSection(route.split('/')[0]);
+    updateNavigatedSection(sectionOf(pathname));
   }, [pathname, updateNavigatedSection]);
+
+  useEffect(() => {
+    if (!isOpenSectionRequest(search) || handledOpenRequests.has(key)) {
+      return;
+    }
+
+    handledOpenRequests.add(key);
+    setFilter('');
+    setNoResult(false);
+    setPendingSection(sectionOf(pathname));
+  }, [key, pathname, search, setFilter, setNoResult]);
+
+  // asked only once the cleared filter has rendered, so a section reacting to it can't undo the open
+  useEffect(() => {
+    if (pendingSection && !filter) {
+      setOpenSectionRequest({ section: pendingSection });
+      setPendingSection(undefined);
+    }
+  }, [filter, pendingSection, setOpenSectionRequest]);
 
   return null;
 }

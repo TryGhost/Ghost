@@ -16,24 +16,17 @@ import { LucideIcon, cn } from '@tryghost/shade/utils';
 import { Box, Inline, Stack, Text } from '@tryghost/shade/primitives';
 import { useFocusContext } from '@tryghost/shade/app';
 
-import {
-  checkStripeEnabled,
-  getSettingValues,
-  useNewslettersEnabled,
-  usePaidMembersEnabled,
-} from '@tryghost/admin-x-framework/api/settings';
+import { getSettingValues } from '@tryghost/admin-x-framework/api/settings';
 
 import { searchKeywords as advancedSearchKeywords } from '@/settings/advanced/search-keywords';
-import { searchKeywords as emailSearchKeywords } from '@/settings/email/search-keywords';
-import { searchKeywords as emailsSearchKeywords } from '@/settings/email/emails-search-keywords';
 import { searchKeywords as generalSearchKeywords } from '@/settings/general/search-keywords';
 import { searchKeywords as growthSearchKeywords } from '@/settings/growth/search-keywords';
 import { searchKeywords as membershipSearchKeywords } from '@/settings/membership/search-keywords';
 import { searchKeywords as siteSearchKeywords } from '@/settings/site/search-keywords';
 
-import { useCustomFieldsAvailable } from '@/shared/member-custom-fields/use-availability';
 import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import { useGlobalData } from '@/settings/providers/global-data-context';
+import { useSettingsSectionVisibility } from '@/settings/hooks/use-section-visibility';
 import { useSettingsNavigation } from '@/settings/hooks/use-settings-navigation';
 import { useScrollSectionContext, useScrollSectionNav } from '@/settings/hooks/use-scroll-section';
 import { useSearch } from '@/settings/providers/settings-app-context';
@@ -120,41 +113,21 @@ const PrivateBadge: React.FC = () => (
  */
 function useSearchResults() {
   const { filter, checkVisible, setNoResult } = useSearch();
-  const { settings, config } = useGlobalData();
-  const [hasTipsAndDonations] = getSettingValues(settings, ['donations_enabled']) as [boolean];
-  const paidMembersEnabled = usePaidMembersEnabled();
-  const hasStripeEnabled = checkStripeEnabled(settings || [], config || {});
-  const hasAutomations = useFeatureFlag('automations');
-  const hasCustomFields = useCustomFieldsAvailable();
-  const hasNewslettersEnabled = useNewslettersEnabled() === true;
-  const mailgunIsConfigured = Boolean(config.mailgunIsConfigured);
-  const hasMailgun = hasNewslettersEnabled && !mailgunIsConfigured;
+  const visibility = useSettingsSectionVisibility();
   const visibleMembershipSearchKeywords = React.useMemo(
     () =>
       [
         membershipSearchKeywords.access,
         membershipSearchKeywords.tiers,
         membershipSearchKeywords.portal,
-        ...(paidMembersEnabled ? [membershipSearchKeywords.giftSubscriptions] : []),
-        ...(hasAutomations ? [] : [membershipSearchKeywords.memberEmails]),
-        ...(hasTipsAndDonations && hasStripeEnabled ? [membershipSearchKeywords.tips] : []),
-        ...(hasCustomFields ? [membershipSearchKeywords.customFields] : []),
+        ...(visibility.giftSubscriptions ? [membershipSearchKeywords.giftSubscriptions] : []),
+        ...(visibility.welcomeEmails ? [membershipSearchKeywords.memberEmails] : []),
+        ...(visibility.tipsAndDonations ? [membershipSearchKeywords.tips] : []),
+        ...(visibility.customFields ? [membershipSearchKeywords.customFields] : []),
       ].flat(),
-    [hasStripeEnabled, hasTipsAndDonations, paidMembersEnabled, hasAutomations, hasCustomFields],
+    [visibility],
   );
-  const visibleEmailSearchKeywords = React.useMemo(() => {
-    const keywords = hasAutomations ? emailsSearchKeywords : emailSearchKeywords;
-    return [
-      keywords.enableNewsletters,
-      ...(hasNewslettersEnabled ? [keywords.defaultRecipients] : []),
-      ...(hasAutomations
-        ? [emailsSearchKeywords.emails]
-        : hasNewslettersEnabled
-          ? [emailSearchKeywords.newsletters]
-          : []),
-      ...(hasMailgun ? [keywords.mailgun] : []),
-    ].flat();
-  }, [hasAutomations, hasNewslettersEnabled, hasMailgun]);
+  const visibleEmailSearchKeywords = visibility.emailKeywords;
   const visibleGrowthSearchKeywords = React.useMemo(
     () =>
       [
@@ -162,9 +135,9 @@ function useSearchResults() {
         growthSearchKeywords.explore,
         growthSearchKeywords.recommendations,
         growthSearchKeywords.embedSignupForm,
-        ...(hasStripeEnabled ? [growthSearchKeywords.offers] : []),
+        ...(visibility.offers ? [growthSearchKeywords.offers] : []),
       ].flat(),
-    [hasStripeEnabled],
+    [visibility.offers],
   );
 
   useEffect(() => {
@@ -316,16 +289,10 @@ const Sidebar: React.FC = () => {
   const { updateRoute } = useSettingsNavigation();
   const searchInputRef = useRef<HTMLInputElement | null>(null);
   const { isAnyTextFieldFocused } = useFocusContext();
-  const { settings, config } = useGlobalData();
-  const [hasTipsAndDonations, isPrivate] = getSettingValues(settings, [
-    'donations_enabled',
-    'is_private',
-  ]) as [boolean, boolean];
-  const paidMembersEnabled = usePaidMembersEnabled();
-  const hasStripeEnabled = checkStripeEnabled(settings || [], config || {});
-  const hasAutomations = useFeatureFlag('automations');
+  const { settings } = useGlobalData();
+  const [isPrivate] = getSettingValues(settings, ['is_private']) as [boolean];
+  const visibility = useSettingsSectionVisibility();
   const admin7Settings = useFeatureFlag('admin7settings');
-  const hasCustomFields = useCustomFieldsAvailable();
   const {
     visibleMembershipSearchKeywords,
     visibleEmailSearchKeywords,
@@ -524,7 +491,7 @@ const Sidebar: React.FC = () => {
             title="Signup portal"
             onClick={handleSectionClick}
           />
-          {paidMembersEnabled && (
+          {visibility.giftSubscriptions && (
             <NavItem
               icon={<LucideIcon.Gift />}
               keywords={membershipSearchKeywords.giftSubscriptions}
@@ -533,7 +500,7 @@ const Sidebar: React.FC = () => {
               onClick={handleSectionClick}
             />
           )}
-          {!hasAutomations && (
+          {visibility.welcomeEmails && (
             <NavItem
               icon={<LucideIcon.MailPlus />}
               keywords={membershipSearchKeywords.memberEmails}
@@ -542,7 +509,7 @@ const Sidebar: React.FC = () => {
               onClick={handleSectionClick}
             />
           )}
-          {hasTipsAndDonations && hasStripeEnabled && (
+          {visibility.tipsAndDonations && (
             <NavItem
               icon={<LucideIcon.PiggyBank />}
               keywords={membershipSearchKeywords.tips}
@@ -551,7 +518,7 @@ const Sidebar: React.FC = () => {
               onClick={handleSectionClick}
             />
           )}
-          {hasCustomFields && (
+          {visibility.customFields && (
             <NavItem
               icon={<LucideIcon.TextCursorInput />}
               keywords={membershipSearchKeywords.customFields}
@@ -560,7 +527,7 @@ const Sidebar: React.FC = () => {
               onClick={handleSectionClick}
             />
           )}
-          {hasAutomations ? (
+          {visibility.hasAutomations ? (
             <NavItem
               icon={<LucideIcon.Mail />}
               keywords={visibleEmailSearchKeywords}
@@ -609,7 +576,7 @@ const Sidebar: React.FC = () => {
             title="Signup forms"
             onClick={handleSectionClick}
           />
-          {hasStripeEnabled && (
+          {visibility.offers && (
             <NavItem
               icon={<LucideIcon.Tag />}
               keywords={growthSearchKeywords.offers}
