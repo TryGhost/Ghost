@@ -12,8 +12,10 @@ const debug = require('@tryghost/debug')('routing:parent-router');
 const express = require('../../../shared/express');
 const url = require('url');
 const security = require('@tryghost/security');
-const { resolveResourceRead } = require('./api-adapter');
+const { resolveResourceRead, resolveRouteEntry } = require('./api-adapter');
 const urlUtils = require('../../../shared/url-utils').default;
+const { getMarkdownPath } = require('../llms/markdown');
+const controllers = require('./controllers');
 const registry = require('./registry');
 
 /**
@@ -84,7 +86,7 @@ class ParentRouter {
    */
   _respectDominantRouter(req, res, next, slug) {
     const siteRouter = this._getSiteRouter(req);
-    let targetRoute = null;
+    let targetRouter = null;
 
     // CASE: iterate over routers and check whether a router has a redirect for the target slug enabled.
     siteRouter.handle.stack.every((router) => {
@@ -93,26 +95,38 @@ class ParentRouter {
         router.handle.parent.isRedirectEnabled &&
         router.handle.parent.isRedirectEnabled(this.getResourceType(), slug)
       ) {
-        targetRoute = router.handle.parent.getRoute();
+        targetRouter = router.handle.parent;
         return false;
       }
 
       return true;
     });
 
-    if (targetRoute) {
+    if (targetRouter) {
       debug('_respectDominantRouter');
 
-      // CASE: transform /tag/:slug/ -> /tag/[a-zA-Z0-9-_]+/ to able to find url pieces to append
-      // e.g. /tag/bacon/page/2/  -> 'page/2' (to append)
-      // e.g. /bacon/welcome/     -> '' (nothing to append)
-      const matchPath = this.permalinks.getValue().replace(/:\w+/g, '[a-zA-Z0-9-_]+');
-      const toAppend = req.url.replace(new RegExp(matchPath), '');
+      let pathname = url.parse(req.url).pathname.endsWith('.md')
+        ? targetRouter.getMarkdownRoute()
+        : null;
+
+      if (!pathname) {
+        // CASE: transform /tag/:slug/ -> /tag/[a-zA-Z0-9-_]+/ to able to find url pieces to append
+        // e.g. /tag/bacon/page/2/  -> 'page/2' (to append)
+        // e.g. /bacon/welcome/     -> '' (nothing to append)
+        const matchPath = this.permalinks.getValue().replace(/:\w+/g, '[a-zA-Z0-9-_]+');
+        const toAppend = req.url.replace(new RegExp(matchPath), '');
+        pathname = urlUtils.createUrl(
+          urlUtils.urlJoin(targetRouter.getRoute(), toAppend),
+          false,
+          false,
+          true,
+        );
+      }
 
       return urlUtils.redirect301(
         res,
         url.format({
-          pathname: urlUtils.createUrl(urlUtils.urlJoin(targetRoute, toAppend), false, false, true),
+          pathname,
           search: url.parse(req.originalUrl).search,
         }),
       );
@@ -179,6 +193,37 @@ class ParentRouter {
     options = options || {};
 
     return urlUtils.createUrl(this.route.value, options.absolute);
+  }
+
+  /**
+   * @description Get the `.md` route of this router, including subdirectory. Only routes whose
+   * data reads a single post or page have one.
+   * @returns {string|null}
+   */
+  getMarkdownRoute() {
+    if (!this.route || !resolveRouteEntry(this.data)) {
+      return null;
+    }
+
+    return urlUtils.createUrl(getMarkdownPath(this.route.value));
+  }
+
+  /**
+   * @description Serve the post or page this route's data reads as markdown at `<route>.md`.
+   */
+  mountMarkdownRoute() {
+    const markdownRoute = this.getMarkdownRoute();
+
+    if (!markdownRoute) {
+      return;
+    }
+
+    this.mountRoute(getMarkdownPath(this.route.value), (req, res, next) => {
+      res.routerOptions.isMarkdownRequest = true;
+      res.routerOptions.canonicalPath = this.getRoute();
+      res.routerOptions.markdownPath = markdownRoute;
+      return controllers.routeMarkdown(req, res, next);
+    });
   }
 
   /**

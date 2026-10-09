@@ -58,6 +58,8 @@ class StaticRoutesRouter extends ParentRouter {
     // REGISTER: channel route
     this.mountRoute(this.route.value, controllers[this.type]);
 
+    this.mountMarkdownRoute();
+
     // REGISTER: pagination
     this.router().param('page', middleware.pageParam);
     this.mountRoute(
@@ -100,6 +102,8 @@ class StaticRoutesRouter extends ParentRouter {
 
     // REGISTER: static route
     this.mountRoute(this.route.value, controllers.static);
+
+    this.mountMarkdownRoute();
 
     this.routerCreated(this);
   }

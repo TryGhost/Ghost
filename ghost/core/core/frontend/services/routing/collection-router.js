@@ -71,6 +71,8 @@ class CollectionRouter extends ParentRouter {
     // REGISTER: collection route e.g. /, /podcast/
     this.mountRoute(this.route.value, controllers.collection);
 
+    this.mountMarkdownRoute();
+
     // REGISTER: enable pagination by default
     this.router().param('page', middleware.pageParam);
     this.mountRoute(
