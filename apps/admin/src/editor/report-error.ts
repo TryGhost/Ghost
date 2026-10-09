@@ -106,7 +106,7 @@ function saveFailureError(error: SaveError): Error {
 }
 
 /**
- * Whether a failure is not a fault in the editor, and so is not reported: a refusal
+ * Whether a failure is not a fault in the editor, and so is not reported as one: a refusal
  * the writer reads and acts on (validation, a host limit, a writer who lost access
  * to the post, an expired session, whose recovery is signing in again) or a
  * connection that never reached the server. A missing post, a collision, a 5xx, a
@@ -131,7 +131,7 @@ export function isExpectedFailure(error: unknown): boolean {
 /**
  * Reports a request that settled as failed, unless it was expected
  * (`isExpectedSaveError()`): every other failure is reported once, with what the
- * request was.
+ * request was. A forbidden save or an abandoned sign-in is noted as a message.
  */
 export function reportSaveFailure(failure: EditorSaveFailure, postType: PostType): void {
   const { command, error, persisted, durationMs, postId, status } = failure;
@@ -155,6 +155,15 @@ export function reportSaveFailure(failure: EditorSaveFailure, postType: PostType
       }),
       extra: { post_id: postId },
     });
+  }
+
+  if (error.kind === 'forbidden' || error.kind === 'session-invalid') {
+    const message =
+      error.kind === 'forbidden'
+        ? `Save of ${postType} was forbidden`
+        : `Session expired while editing ${postType}`;
+    reportEditorNotice(message, { tags, extra: { post_id: postId } });
+    return;
   }
 
   if (isExpectedSaveError(error)) {
