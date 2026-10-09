@@ -27,7 +27,7 @@ export default publicAppViteConfig({
       rollupOptions: {
         output: {
           // Theme templates reference umd/main.css by name (see
-          // ghost/core defaults.json → sodoSearch.styles), so the
+          // ghost defaults.json → sodoSearch.styles), so the
           // CSS sibling emitted by Vite must keep that filename.
           assetFileNames: (assetInfo) => {
             if (assetInfo.name && assetInfo.name.endsWith('.css')) {

@@ -60,7 +60,7 @@ function stageLegacyGhostCss(css: string): void {
   onTestFinished(() => style.remove());
 }
 
-/** Verbatim from `ghost/core/core/built/admin/assets/ghost.css`. */
+/** Verbatim from `ghost/core/built/admin/assets/ghost.css`. */
 const LEGACY_CODE_CSS = `code, tt {
     padding: 0.2rem 0.3rem;
     border: 1px solid hsl(203, 12.29%, 91.14%);

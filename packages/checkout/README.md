@@ -35,7 +35,7 @@ address. Any internal "all countries" representation has to be expanded to the f
 before the session is built.
 
 Two guards live outside this package, where the things they compare live:
-`ghost/core/test/unit/server/services/stripe/allowed-countries.test.ts` holds the list
+`ghost/test/unit/server/services/stripe/allowed-countries.test.ts` holds the list
 against the Stripe SDK that Ghost pins, and against the separate copy the end-to-end
 harness keeps. That copy is deliberate — a fake that shared this list could never catch
 Ghost offering a country Stripe refuses.
@@ -55,6 +55,6 @@ compiled `build/` output.
 
 This package is ESM-only and compiled with `tsc` (`module: nodenext`). Relative imports
 in `src/` must carry an explicit extension; write the real `.ts` one and `tsc` rewrites
-it to `.js` on emit. `ghost/core` is CommonJS and consumes this through `require(esm)`,
+it to `.js` on emit. `ghost` is CommonJS and consumes this through `require(esm)`,
 which forbids top-level `await` anywhere in the module graph — keep module-level
 initialization synchronous.

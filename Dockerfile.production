@@ -36,7 +36,7 @@ RUN corepack enable
 # build starts from a clean tree and rebuilds outputs in-container.
 #
 # --exclude core/built: for the `full` target CI injects the admin and embed
-# renderer builds under ghost/core/core/built. Excluding the whole built dir (the
+# renderer builds under ghost/core/built. Excluding the whole built dir (the
 # directory itself is absent on a fresh checkout, so excluding only its children
 # would still leave a differing directory entry) keeps this COPY layer's hash
 # identical between the core and full builds. That lets `full` reuse `core`'s
@@ -44,7 +44,7 @@ RUN corepack enable
 # build, and keeps both artifacts out of the deploy output so `core` stays
 # admin-free. The server's own core/built output is regenerated in-container by
 # the build steps below, so nothing is lost by excluding the host copy.
-COPY --exclude=ghost/core/core/built . .
+COPY --exclude=ghost/core/built . .
 
 # Install only ghost and its dependency subgraph (`ghost...`), not the whole
 # monorepo (admin, apps, ...). Dev deps are included — tsc etc. are needed to build
@@ -64,7 +64,7 @@ RUN pnpm --filter-prod "ghost^..." -r run build && \
     pnpm --filter ghost run build:tsc && \
     pnpm --filter ghost run build:assets
 
-# Produce a self-contained deploy dir: ghost/core's `files` set + a fully resolved,
+# Produce a self-contained deploy dir: ghost's `files` set + a fully resolved,
 # production-only node_modules (--prod drops devDeps, keeps optional better-sqlite3).
 # Admin is never built here, so core/built/admin and core/built/embed-renderer are
 # absent — the core image stays admin-free and the full stage injects both from
@@ -77,10 +77,10 @@ RUN --mount=type=cache,target=/root/.local/share/pnpm/store,id=pnpm-store \
     pnpm --filter=ghost --config.inject-workspace-packages=true deploy --prod /home/ghost
 
 # Strip type-time, doc and native-build-input files the runtime never loads — see
-# ghost/core/scripts/prune.mts for the rules and the exclusions they carry. The COPY
+# ghost/scripts/prune.mts for the rules and the exclusions they carry. The COPY
 # layer below is extracted single-threaded, once per CI E2E shard, and that cost
 # scales with file count: this removes roughly half of them.
-RUN node ghost/core/scripts/prune.mts /home/ghost --profile=image --report=/image-report.json
+RUN node ghost/scripts/prune.mts /home/ghost --profile=image --report=/image-report.json
 
 # Fail the build now if the native module didn't install correctly (missing/broken
 # prebuilt binary) rather than at container runtime.
@@ -140,8 +140,8 @@ FROM core AS full
 # COPY --chown sets ownership in the copy layer; a post-hoc `chown -R` would
 # duplicate the ~80MB admin build into a second layer. Admin and the embed
 # renderer are injected into the build context by CI (downloaded from the admin
-# build job) under ghost/core/core/built — the deploy stage excludes that path,
+# build job) under ghost/core/built — the deploy stage excludes that path,
 # so this is the only stage that carries them. Local `full` builds must populate
 # both paths first (e.g. `pnpm nx run @tryghost/admin:build`).
-COPY --chown=nobody:nogroup ghost/core/core/built/admin core/built/admin
-COPY --chown=nobody:nogroup ghost/core/core/built/embed-renderer core/built/embed-renderer
+COPY --chown=nobody:nogroup ghost/core/built/admin core/built/admin
+COPY --chown=nobody:nogroup ghost/core/built/embed-renderer core/built/embed-renderer

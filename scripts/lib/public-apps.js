@@ -28,7 +28,7 @@ import { readJson } from './utils.js';
 export const PUBLIC_APPS = await readJson(join(SCRIPTS_DIR, 'public-apps.json'));
 
 /** The Ghost core config pinning each app's major.minor and CDN URLs. */
-export const DEFAULTS_REPO_PATH = 'ghost/core/core/shared/config/defaults.json';
+export const DEFAULTS_REPO_PATH = 'ghost/core/shared/config/defaults.json';
 export const DEFAULTS_PATH = join(ROOT_DIR, DEFAULTS_REPO_PATH);
 
 export const readDefaults = () => readJson(DEFAULTS_PATH);

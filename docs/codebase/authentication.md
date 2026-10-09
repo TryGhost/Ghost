@@ -31,12 +31,12 @@ authorization middleware:
 
 Start with:
 
-- [`services/auth/authenticate.js`](../../ghost/core/core/server/services/auth/authenticate.js)
+- [`services/auth/authenticate.js`](../../ghost/core/server/services/auth/authenticate.js)
   for the authentication middleware assembled for each API.
-- [`services/auth/authorize.js`](../../ghost/core/core/server/services/auth/authorize.js)
+- [`services/auth/authorize.js`](../../ghost/core/server/services/auth/authorize.js)
   for the identity checks after authentication.
-- [`web/api/endpoints/admin/middleware.js`](../../ghost/core/core/server/web/api/endpoints/admin/middleware.js)
-  and [`web/api/endpoints/content/middleware.js`](../../ghost/core/core/server/web/api/endpoints/content/middleware.js)
+- [`web/api/endpoints/admin/middleware.js`](../../ghost/core/server/web/api/endpoints/admin/middleware.js)
+  and [`web/api/endpoints/content/middleware.js`](../../ghost/core/server/web/api/endpoints/content/middleware.js)
   for the middleware applied to API routes.
 
 ## Staff users
@@ -50,11 +50,11 @@ path, and secure on HTTPS sites.
 
 Creating a session and authenticating later requests are separate steps:
 
-- [`api/endpoints/session.js`](../../ghost/core/core/server/api/endpoints/session.js)
+- [`api/endpoints/session.js`](../../ghost/core/server/api/endpoints/session.js)
   checks the credentials and begins the session.
-- [`services/auth/session/`](../../ghost/core/core/server/services/auth/session/)
+- [`services/auth/session/`](../../ghost/core/server/services/auth/session/)
   creates, verifies, reads, and destroys Admin sessions.
-- [`services/auth/session/express-session.js`](../../ghost/core/core/server/services/auth/session/express-session.js)
+- [`services/auth/session/express-session.js`](../../ghost/core/server/services/auth/session/express-session.js)
   defines the cookie and session store.
 
 Cookie-authenticated requests are protected by origin checks. Do not bypass the
@@ -74,9 +74,9 @@ state cannot be carried to a different user. Verification codes are
 session-bound, short-lived, and invalidated after successful use.
 
 The current flow lives in
-[`services/auth/session/session-service.js`](../../ghost/core/core/server/services/auth/session/session-service.js),
+[`services/auth/session/session-service.js`](../../ghost/core/server/services/auth/session/session-service.js),
 with request middleware in
-[`services/auth/session/middleware.js`](../../ghost/core/core/server/services/auth/session/middleware.js).
+[`services/auth/session/middleware.js`](../../ghost/core/server/services/auth/session/middleware.js).
 
 ### Staff Access Tokens
 
@@ -88,7 +88,7 @@ account-wide operations rejects staff tokens explicitly.
 
 See [Staff Access Token authentication](https://docs.ghost.org/admin-api#staff-access-token-authentication)
 for the client contract and
-[`services/auth/api-key/admin.js`](../../ghost/core/core/server/services/auth/api-key/admin.js)
+[`services/auth/api-key/admin.js`](../../ghost/core/server/services/auth/api-key/admin.js)
 for verification.
 
 ## Integrations
@@ -104,7 +104,7 @@ request. Integration tokens can access only the endpoint and method combinations
 allowlisted in the Admin API middleware.
 
 See [Admin API token authentication](https://docs.ghost.org/admin-api#token-authentication)
-and [`services/auth/api-key/admin.js`](../../ghost/core/core/server/services/auth/api-key/admin.js).
+and [`services/auth/api-key/admin.js`](../../ghost/core/server/services/auth/api-key/admin.js).
 
 ### Content API keys
 
@@ -114,7 +114,7 @@ the request. A Content API key identifies the integration but is not a secret:
 it is expected to be used in browsers and other public clients.
 
 See [Content API key authentication](https://docs.ghost.org/content-api#key)
-and [`services/auth/api-key/content.js`](../../ghost/core/core/server/services/auth/api-key/content.js).
+and [`services/auth/api-key/content.js`](../../ghost/core/server/services/auth/api-key/content.js).
 
 ## Members
 
@@ -132,13 +132,13 @@ grant access to member-only routes.
 
 Start with:
 
-- [`web/members/app.js`](../../ghost/core/core/server/web/members/app.js) for the
+- [`web/members/app.js`](../../ghost/core/server/web/members/app.js) for the
   Members API routes.
-- [`services/members/members-api/`](../../ghost/core/core/server/services/members/members-api/)
+- [`services/members/members-api/`](../../ghost/core/server/services/members/members-api/)
   for sending and verifying sign-in tokens.
-- [`services/members/members-ssr.js`](../../ghost/core/core/server/services/members/members-ssr.js)
+- [`services/members/members-ssr.js`](../../ghost/core/server/services/members/members-ssr.js)
   for member session cookies and identity-token exchange.
-- [`services/auth/members/index.js`](../../ghost/core/core/server/services/auth/members/index.js)
+- [`services/auth/members/index.js`](../../ghost/core/server/services/auth/members/index.js)
   for Content API member-token authentication.
 
 ## Changing authentication

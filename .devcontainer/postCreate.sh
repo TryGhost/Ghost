@@ -13,7 +13,7 @@ git submodule update --init --recursive
 # absence above didn't affect that install) — a second pass here would just
 # re-walk the whole dependency graph for nothing.
 
-# Build workspace packages that ghost/core imports at runtime with build
+# Build workspace packages that ghost imports at runtime with build
 # outputs (not source). @tryghost/parse-email-address is the only one today
 # — its package.json "main" points at build/index.js, so the backend can't
 # import it on a fresh clone until it's compiled.

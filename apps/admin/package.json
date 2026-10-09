@@ -113,7 +113,7 @@
   "nx": {
     "namedInputs": {
       "cardAssets": [
-        "{workspaceRoot}/ghost/core/core/frontend/src/cards/**/*"
+        "{workspaceRoot}/ghost/core/frontend/src/cards/**/*"
       ],
       "reactTests": [
         "default",
@@ -328,8 +328,8 @@
         ],
         "outputs": [
           "{projectRoot}/dist",
-          "{workspaceRoot}/ghost/core/core/built/admin",
-          "{workspaceRoot}/ghost/core/core/built/embed-renderer"
+          "{workspaceRoot}/ghost/core/built/admin",
+          "{workspaceRoot}/ghost/core/built/embed-renderer"
         ],
         "dependsOn": [
           "^build",
@@ -360,8 +360,8 @@
         "cache": false,
         "outputs": [
           "{projectRoot}/dist",
-          "{workspaceRoot}/ghost/core/core/built/admin",
-          "{workspaceRoot}/ghost/core/core/built/embed-renderer"
+          "{workspaceRoot}/ghost/core/built/admin",
+          "{workspaceRoot}/ghost/core/built/embed-renderer"
         ]
       }
     }

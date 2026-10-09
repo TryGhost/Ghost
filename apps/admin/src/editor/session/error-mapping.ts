@@ -64,7 +64,7 @@ export const UNEXPECTED_ERROR_MESSAGE = 'An unexpected error occurred, please tr
 /**
  * What a publish Core's email service refused tells the writer. Within a request the
  * service throws an `EmailError` only when the post has no newsletter to send to
- * (`checkCanSendEmail` in ghost/core/core/server/services/email-service/email-service.js,
+ * (`checkCanSendEmail` in ghost/core/server/services/email-service/email-service.js,
  * called by the post save's email handler), and gives it no code, so the class stands in
  * for that case rather than its sentence. Core's other `EmailError`s are thrown by the
  * background send job, after the request has answered, and reach the editor as the

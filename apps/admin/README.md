@@ -18,8 +18,8 @@ bridge to Ember. Shade provides its application wrapper and design system.
 Embedded React applications are built before Ember Admin. After Vite builds Admin,
 `pnpm assemble:assets` runs the standalone assembler in `scripts/` to merge React,
 Ember, ActivityPub and Koenig outputs into `dist/` and
-`ghost/core/core/built/admin/`. It ships Koenig’s embed renderer separately in
-`ghost/core/core/built/embed-renderer/`. Ember’s asset-delivery hook delegates
+`ghost/core/built/admin/`. It ships Koenig’s embed renderer separately in
+`ghost/core/built/embed-renderer/`. Ember’s asset-delivery hook delegates
 legacy preparation to the same helper for its standalone builds and dev server.
 
 Ember is an Nx implicit dependency of this app so Ember source changes still
@@ -195,7 +195,7 @@ same embedded bundles without Ember output. See
 requirements and cutover usage. This option does not change route ownership or
 Labs flags.
 
-This outputs to `apps/admin/dist/` and updates the assets in `ghost/core/core/built/admin/`.
+This outputs to `apps/admin/dist/` and updates the assets in `ghost/core/built/admin/`.
 
 The build also writes hidden sourcemaps: `.map` files that no bundle references.
 With `IS_SHIPPING` set, as CI does for `main` and release tags, it injects Sentry

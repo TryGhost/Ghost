@@ -189,7 +189,7 @@ export const nodeLibRules = {
 };
 
 // Ban top-level await in shipped Node-library source. It makes the ESM module
-// graph async, which breaks CommonJS consumers (e.g. ghost/core) that load an
+// graph async, which breaks CommonJS consumers (e.g. ghost) that load an
 // ESM package via `require()`: require(esm) can't load an async graph and
 // throws ERR_REQUIRE_ASYNC_MODULE. Awaits inside functions are fine; only
 // module-level ones are the problem. Applied to src blocks only — test files
@@ -200,12 +200,12 @@ export const noTopLevelAwaitRule = {
     {
       selector: 'AwaitExpression:not(:function AwaitExpression)',
       message:
-        'Top-level await is not allowed — it breaks require(esm) consumers like ghost/core. Move it inside an async function.',
+        'Top-level await is not allowed — it breaks require(esm) consumers like ghost. Move it inside an async function.',
     },
     {
       selector: 'ForOfStatement[await=true]:not(:function ForOfStatement)',
       message:
-        'Top-level for-await-of is not allowed — it breaks require(esm) consumers like ghost/core. Move it inside an async function.',
+        'Top-level for-await-of is not allowed — it breaks require(esm) consumers like ghost. Move it inside an async function.',
     },
   ],
 };
