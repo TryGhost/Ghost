@@ -345,15 +345,38 @@ describe('createEditorSession', () => {
     expect(state.updates[0].payload).not.toHaveProperty('tags');
   });
 
-  it('refuses to update a post it has no collision token for', async () => {
+  it('updates a post loaded without a collision token, then sends the one it was answered with', async () => {
     const { session, state } = sessionHarness({ record: record({ updated_at: null }) });
 
-    session.patchLexical(body('Edited'));
+    session.patchLexical(body('One'));
+    expect(await session.dispatchExplicit()).toMatchObject({ kind: 'saved' });
+    session.patchLexical(body('Two'));
+    await session.dispatchExplicit();
+
+    expect(state.updates).toHaveLength(2);
+    expect(state.updates[0].payload).toMatchObject({ id: 'abc123', updated_at: null });
+    expect(state.updates[1].payload.updated_at).toBe('2026-01-01T00:00:01.000Z');
+  });
+
+  it.each([
+    ['it loaded with', LOADED_AT],
+    ['its first save was answered with', null],
+  ])('refuses to update once it loses the collision token %s', async (_label, loadedAt) => {
+    const { session, state } = sessionHarness(
+      { record: record({ updated_at: loadedAt }) },
+      {
+        acknowledge: (next, saveCount) => (saveCount === 1 ? next : { ...next, updated_at: null }),
+      },
+    );
+
+    session.patchLexical(body('One'));
+    await session.dispatchExplicit();
+    session.patchLexical(body('Two'));
+    await session.dispatchExplicit();
+    session.patchLexical(body('Three'));
     const completion = await session.dispatchExplicit();
 
-    // Sending no token makes the server skip its collision check, so the save
-    // fails instead of overwriting whatever landed meanwhile.
-    expect(state.updates).toHaveLength(0);
+    expect(state.updates).toHaveLength(2);
     expect(completion).toMatchObject({ kind: 'failed', error: { kind: 'unknown' } });
   });
 
@@ -429,6 +452,22 @@ describe('a save whose answer was lost', () => {
       updated_at: LANDED_AT,
     });
     expect(session.getSaveSnapshot().isDirty).toBe(false);
+  });
+
+  it('adopts its own landed write on a post loaded without a collision token', async () => {
+    const loaded = record({ updated_at: null });
+    const { session, state } = sessionHarness(
+      { record: loaded, baseline: loaded.lexical },
+      lostOnFirst,
+    );
+
+    session.patchLexical(body('One'));
+    await session.dispatchExplicit();
+    session.patchLexical(body('Two'));
+    expect(await session.dispatchExplicit()).toMatchObject({ kind: 'saved' });
+
+    expect(state.updates[0].payload.updated_at).toBeNull();
+    expect(state.updates[1].payload.updated_at).toBe(LANDED_AT);
   });
 
   it('lands the post clean from the read when nothing was typed since', async () => {

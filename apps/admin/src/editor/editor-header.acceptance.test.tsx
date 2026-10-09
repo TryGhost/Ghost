@@ -451,6 +451,32 @@ describe('Editor header actions', () => {
     expect(saveApi.lastRequest?.url).toContain('save_revision=true');
   });
 
+  it('updates a published post the server holds no collision token for', async () => {
+    publishChrome();
+    const saveApi = fakeSavablePost({
+      status: 'published',
+      published_at: '2026-02-01T10:00:00.000Z',
+      // Core's schema allows a NULL updated_at; the builder types it as a string.
+      updated_at: null as unknown as string,
+    });
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
+
+    await typeIntoBody(' and more');
+    await expect.element(editorScreen.updateButton()).toBeEnabled();
+    await editorScreen.updateButton().click();
+
+    await expect.poll(() => saveApi.requests.length, SAVE_POLL).toBe(1);
+    expect(submittedPost(saveApi)).toMatchObject({ id: POST_ID, updated_at: null });
+
+    await typeIntoBody(' again');
+    await expect.element(editorScreen.updateButton()).toBeEnabled();
+    await editorScreen.updateButton().click();
+
+    await expect.poll(() => saveApi.requests.length, SAVE_POLL).toBe(2);
+    expect(submittedPost(saveApi)).toMatchObject({ updated_at: '2026-01-01T00:00:01.000Z' });
+  });
+
   it('reverts a published post to a draft through the update flow', async () => {
     publishChrome();
     const saveApi = fakeSavablePost({
