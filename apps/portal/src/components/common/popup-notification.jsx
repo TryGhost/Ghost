@@ -129,7 +129,7 @@ export default class PopupNotification extends React.Component {
 
     return (
       <div
-        className={`gh-portal-notification gh-portal-popupnotification ${statusClass}${slideClass} ${notificationClasses} right-[42px] max-sm:left-3 max-sm:max-w-[calc(100%-54px)] rtl:left-[42px] rtl:right-auto`}
+        className={`gh-portal-notification gh-portal-popupnotification ${statusClass}${slideClass} ${notificationClasses} right-[42px] max-sm:left-3 max-sm:max-w-[calc(100%-54px)] rtl:right-auto rtl:left-[42px]`}
         data-testid={status ? `popup-notification-${status}` : 'popup-notification'}
         onAnimationEnd={(e) => this.onAnimationEnd(e)}
       >

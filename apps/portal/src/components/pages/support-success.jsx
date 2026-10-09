@@ -21,20 +21,20 @@ const SupportSuccess = () => {
       <div className="gh-portal-signup-header mb-3 flex flex-col items-center p-0">
         {site.icon ? (
           <img
-            className="gh-portal-signup-logo relative mx-0 mb-2.5 mt-3 block size-[60px] rounded-sm bg-cover bg-center max-sm:size-12"
+            className="gh-portal-signup-logo relative mx-0 mt-3 mb-2.5 block size-[60px] rounded-sm bg-cover bg-center max-sm:size-12"
             src={site.icon}
             alt={site.title}
           />
         ) : (
-          <div className="gh-tips-and-donations-icon-success mx-auto mb-4 mt-6 size-12 text-center text-brand [&_svg]:size-12">
+          <div className="gh-tips-and-donations-icon-success mx-auto mt-6 mb-4 size-12 text-center text-brand [&_svg]:size-12">
             <ConfettiIcon />
           </div>
         )}
-        <h1 className="gh-portal-main-title mt-3 text-pretty text-center text-[32px] leading-[1.1em] text-black [.gh-portal-signup-logo+&]:mt-1">
+        <h1 className="gh-portal-main-title mt-3 text-center text-[32px] leading-[1.1em] text-pretty text-black [.gh-portal-signup-logo+&]:mt-1">
           {successTitle}
         </h1>
       </div>
-      <p className="gh-portal-text-center text-pretty px-8 pb-3 pt-4 text-center">
+      <p className="gh-portal-text-center px-8 pt-4 pb-3 text-center text-pretty">
         {successDescription}
       </p>
 
@@ -47,15 +47,14 @@ const SupportSuccess = () => {
         label={buttonLabel}
         isRunning={false}
         tabIndex={3}
-        classes={'sticky bottom'}
       />
 
-      <div className="gh-portal-signup-message z-[9999] mx-0 mb-0 mt-1 flex flex-wrap justify-center text-base text-gray-900 [&_*]:z-[9999]">
+      <div className="gh-portal-signup-message z-[9999] mx-0 mt-1 mb-0 flex flex-wrap justify-center text-15 text-gray-900 [&_*]:z-[9999]">
         <div>{t('Already a member?')}</div>
         <button
           data-test-button="signin-switch"
           data-testid="signin-switch"
-          className="gh-portal-btn gh-portal-btn-link relative !ms-1 -mb-px flex cursor-pointer select-none items-center justify-center whitespace-nowrap rounded-md border-none bg-transparent p-0 text-center text-md font-semibold leading-none tracking-[0.2px] text-black no-underline [outline:none] [transition:all_0.25s_ease] hover:border-gray-300 hover:opacity-85 disabled:cursor-auto disabled:!opacity-50"
+          className="gh-portal-btn gh-portal-btn-link relative ms-1! -mb-px flex cursor-pointer items-center justify-center rounded-md border-none bg-transparent p-0 text-center text-14 leading-none font-semibold tracking-[0.2px] whitespace-nowrap text-black no-underline outline-none select-none transition-control hover:border-gray-300 hover:opacity-85 disabled:cursor-auto disabled:opacity-50!"
           style={{ color: brandColor }}
           onClick={() => doAction('switchPage', { page: 'signin' })}
         >

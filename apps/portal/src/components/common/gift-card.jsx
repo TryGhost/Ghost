@@ -17,28 +17,28 @@ const GiftCard = ({
   const hasDetails = name || toName || fromName || giftValue;
 
   return (
-    <div className="gh-portal-gift-checkout-card-frame top-0 z-[1] w-full [perspective:1200px] [position:sticky] [transform-style:preserve-3d] [transition:transform_0.3s_ease]">
+    <div className="gh-portal-gift-checkout-card-frame sticky top-0 z-[1] w-full [perspective:1200px] [transform-style:preserve-3d] [transition:transform_0.3s_ease]">
       <div
         ref={cardRef}
         style={{
           '--gift-card-orb': `url(${giftCardOrbUrl})`,
           '--gift-card-noise': `url(${giftCardNoiseUrl})`,
         }}
-        className="gh-portal-gift-checkout-card relative isolate flex aspect-[1/1.45] w-full max-w-[280px] flex-col overflow-hidden rounded-[24px] [background:linear-gradient(var(--shine-angle,243.43deg),rgba(255,255,255,0)_3.94%,rgba(255,255,255,0.31)_49.99%,rgba(255,255,255,0)_95.16%),linear-gradient(0deg,rgba(255,255,255,0.07),rgba(255,255,255,0.07)),var(--brandcolor)] [box-shadow:inset_0_1px_0_rgba(255,255,255,0.4),0_24px_48px_rgba(var(--blackrgb),0.08),0_4px_12px_rgba(var(--blackrgb),0.04)] [transform-style:preserve-3d] [will-change:transform] before:pointer-events-none before:absolute before:inset-0 before:z-0 before:bg-[image:var(--gift-card-orb)] before:bg-[length:120%_auto] before:bg-[position:-60%_-180%] before:bg-no-repeat before:opacity-20 before:content-[''] after:pointer-events-none after:absolute after:inset-0 after:z-[2] after:bg-[image:var(--gift-card-noise)] after:bg-[length:192px_192px] after:bg-center after:bg-repeat after:opacity-10 after:content-[''] max-[880px]:max-w-[240px]"
+        className="gh-portal-gift-checkout-card relative isolate flex aspect-[1/1.45] w-full max-w-[280px] flex-col overflow-hidden rounded-[24px] shadow-gift-card [will-change:transform] [background:linear-gradient(var(--shine-angle,243.43deg),rgba(255,255,255,0)_3.94%,rgba(255,255,255,0.31)_49.99%,rgba(255,255,255,0)_95.16%),linear-gradient(0deg,rgba(255,255,255,0.07),rgba(255,255,255,0.07)),var(--brandcolor)] [transform-style:preserve-3d] before:pointer-events-none before:absolute before:inset-0 before:z-0 before:bg-[image:var(--gift-card-orb)] before:bg-[length:120%_auto] before:bg-[position:-60%_-180%] before:bg-no-repeat before:opacity-20 before:content-[''] after:pointer-events-none after:absolute after:inset-0 after:z-[2] after:bg-[image:var(--gift-card-noise)] after:bg-[length:192px_192px] after:bg-center after:bg-repeat after:opacity-10 after:content-[''] max-[881px]:max-w-[240px]"
       >
         <div
-          className="gh-portal-gift-checkout-card-notch pointer-events-none absolute left-1/2 top-5 z-[3] h-3 w-14 -translate-x-1/2 rounded-xl bg-[color:color-mix(in_srgb,var(--brandcolor)_65%,#000_35%)] [box-shadow:inset_0_1px_2px_rgba(0,0,0,0.4),0_1px_0_rgba(255,255,255,0.18)]"
+          className="gh-portal-gift-checkout-card-notch pointer-events-none absolute top-5 left-1/2 z-[3] h-3 w-14 -translate-x-1/2 rounded-xl bg-[color:color-mix(in_srgb,var(--brandcolor)_65%,#000_35%)] [box-shadow:inset_0_1px_2px_rgba(0,0,0,0.4),0_1px_0_rgba(255,255,255,0.18)]"
           aria-hidden="true"
         />
         {hasMeta && (
           <div className="gh-portal-gift-checkout-card-meta relative z-[3] flex-1 px-7 pt-14">
             <div
-              className="gh-portal-gift-checkout-card-duration text-[2.8rem] font-semibold leading-[1.1] tracking-[-0.01em] text-white max-sm:text-2xl"
+              className="gh-portal-gift-checkout-card-duration text-28 leading-[1.1] font-semibold tracking-[-0.01em] text-white max-sm:text-20"
               data-testid="gift-card-duration"
             >
               {duration}
             </div>
-            <div className="gh-portal-gift-checkout-card-tier mt-1.5 text-base leading-[1.3] text-white [overflow-wrap:anywhere]">
+            <div className="gh-portal-gift-checkout-card-tier mt-1.5 text-15 leading-[1.3] [overflow-wrap:anywhere] text-white">
               {t('{tierName} membership', { tierName })}
             </div>
           </div>
@@ -47,41 +47,41 @@ const GiftCard = ({
           <div className="gh-portal-gift-checkout-card-details relative z-[3] flex flex-col gap-2 px-7 pb-6">
             {name && (
               <div className="gh-portal-gift-checkout-card-detail">
-                <div className="gh-portal-gift-checkout-card-detail-label mb-[-5px] text-xs text-white/80">
+                <div className="gh-portal-gift-checkout-card-detail-label mb-[-5px] text-12 text-white/80">
                   {t('Name')}
                 </div>
-                <div className="gh-portal-gift-checkout-card-detail-value text-sm font-medium text-white [overflow-wrap:anywhere]">
+                <div className="gh-portal-gift-checkout-card-detail-value text-13 font-medium [overflow-wrap:anywhere] text-white">
                   {name}
                 </div>
               </div>
             )}
             {toName && (
               <div className="gh-portal-gift-checkout-card-detail">
-                <div className="gh-portal-gift-checkout-card-detail-label mb-[-5px] text-xs text-white/80">
+                <div className="gh-portal-gift-checkout-card-detail-label mb-[-5px] text-12 text-white/80">
                   {t('To')}
                 </div>
-                <div className="gh-portal-gift-checkout-card-detail-value text-sm font-medium text-white [overflow-wrap:anywhere]">
+                <div className="gh-portal-gift-checkout-card-detail-value text-13 font-medium [overflow-wrap:anywhere] text-white">
                   {toName}
                 </div>
               </div>
             )}
             {fromName && (
               <div className="gh-portal-gift-checkout-card-detail">
-                <div className="gh-portal-gift-checkout-card-detail-label mb-[-5px] text-xs text-white/80">
+                <div className="gh-portal-gift-checkout-card-detail-label mb-[-5px] text-12 text-white/80">
                   {t('From')}
                 </div>
-                <div className="gh-portal-gift-checkout-card-detail-value text-sm font-medium text-white [overflow-wrap:anywhere]">
+                <div className="gh-portal-gift-checkout-card-detail-value text-13 font-medium [overflow-wrap:anywhere] text-white">
                   {fromName}
                 </div>
               </div>
             )}
             {giftValue && (
               <div className="gh-portal-gift-checkout-card-detail">
-                <div className="gh-portal-gift-checkout-card-detail-label mb-[-5px] text-xs text-white/80">
+                <div className="gh-portal-gift-checkout-card-detail-label mb-[-5px] text-12 text-white/80">
                   {t('Gift value')}
                 </div>
                 <div
-                  className="gh-portal-gift-checkout-card-detail-value text-sm font-medium text-white [overflow-wrap:anywhere]"
+                  className="gh-portal-gift-checkout-card-detail-value text-13 font-medium [overflow-wrap:anywhere] text-white"
                   data-testid="gift-card-value"
                 >
                   {giftValue}
@@ -98,7 +98,7 @@ const GiftCard = ({
               alt=""
             />
           )}
-          <span className="gh-portal-gift-checkout-card-site-name relative z-[3] text-md font-semibold tracking-[-0.01em] text-black">
+          <span className="gh-portal-gift-checkout-card-site-name relative z-[3] text-14 font-semibold tracking-[-0.01em] text-black">
             {siteTitle}
           </span>
         </div>

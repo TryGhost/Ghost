@@ -28,8 +28,8 @@ const ContinueGiftSubscriptionBanner = () => {
   const isRunning = action === 'continueGiftSubscription:running';
 
   return (
-    <div className="gh-portal-cancelcontinue-container mx-0 mb-8 mt-6">
-      <div className="gh-portal-cancel-banner relative mb-4 rounded-lg p-4 text-center text-md leading-normal text-gray-950 before:pointer-events-none before:absolute before:inset-0 before:z-0 before:block before:rounded-lg before:bg-brand before:opacity-5 before:content-[''] [&>*]:relative [&>*]:z-[1] [&_p]:mx-auto [&_p]:mb-4 [&_p]:mt-0 [&_p]:max-w-[320px]">
+    <div className="gh-portal-cancelcontinue-container mx-0 mt-6 mb-8">
+      <div className="gh-portal-cancel-banner relative mb-4 rounded-lg p-4 text-center text-14 leading-normal text-gray-950 before:pointer-events-none before:absolute before:inset-0 before:z-0 before:block before:rounded-lg before:bg-brand before:opacity-5 before:content-[''] [&_p]:mx-auto [&_p]:mt-0 [&_p]:mb-4 [&_p]:max-w-[320px] [&>*]:relative [&>*]:z-[1]">
         <p
           style={{ maxWidth: 'none', margin: '0 0 16px', textAlign: 'center', textWrap: 'pretty' }}
         >

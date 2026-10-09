@@ -16,7 +16,7 @@ function SiteLogo() {
   if (siteLogo) {
     return (
       <img
-        className="gh-portal-unsubscribe-logo mb-1.5 mt-3 size-[60px] rounded-sm max-sm:size-12"
+        className="gh-portal-unsubscribe-logo mt-3 mb-1.5 size-[60px] rounded-sm max-sm:size-12"
         src={siteLogo}
         alt={site.title}
       />
@@ -31,7 +31,7 @@ function AccountHeader() {
   return (
     <header className="gh-portal-header flex flex-col items-center pb-6">
       <SiteLogo />
-      <h2 className="gh-portal-publication-title mt-1.5 text-center text-lg font-bold uppercase tracking-[-.1px] text-gray-950">
+      <h2 className="gh-portal-publication-title mt-1.5 text-center text-16 font-bold tracking-[-.1px] text-gray-950 uppercase">
         {siteTitle}
       </h2>
     </header>
@@ -46,11 +46,11 @@ function UnsubscribeErrorPage({ message }) {
       <div className="gh-feedback-icon gh-feedback-icon-error mx-auto my-0 w-24 px-0 py-2.5 text-center text-red-500">
         <WarningIcon />
       </div>
-      <h1 className="gh-portal-main-title text-pretty text-center leading-[1.1em] text-black">
+      <h1 className="gh-portal-main-title text-center leading-[1.1em] text-pretty text-black">
         {t("That didn't go to plan")}
       </h1>
       <div>
-        <p className="gh-portal-text-center text-pretty px-8 pb-3 pt-4 text-center max-sm:px-2">
+        <p className="gh-portal-text-center px-8 pt-4 pb-3 text-center text-pretty max-sm:px-2">
           {message}
         </p>
       </div>
@@ -63,7 +63,6 @@ function UnsubscribeErrorPage({ message }) {
         label={t('Close')}
         isRunning={false}
         tabIndex={3}
-        classes={'sticky bottom'}
       />
     </div>
   );
@@ -295,11 +294,11 @@ export default function UnsubscribePage() {
       <div className="gh-portal-content gh-portal-unsubscribe with-footer relative [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         <CloseButton />
         <AccountHeader />
-        <h1 className="gh-portal-main-title mb-4 text-pretty text-center text-[2.6rem] leading-[1.1em] text-black">
+        <h1 className="gh-portal-main-title mb-4 text-center text-26 leading-[1.1em] text-pretty text-black">
           {t('Successfully unsubscribed')}
         </h1>
         <div>
-          <p className="gh-portal-text-center mb-4 text-pretty text-center last-of-type:mb-0">
+          <p className="gh-portal-text-center mb-4 text-center text-pretty last-of-type:mb-0">
             <Interpolate
               string={t('{memberEmail} will no longer receive this newsletter.')}
               mapping={{
@@ -307,13 +306,13 @@ export default function UnsubscribePage() {
               }}
             />
           </p>
-          <p className="gh-portal-text-center mb-4 text-pretty text-center last-of-type:mb-0">
+          <p className="gh-portal-text-center mb-4 text-center text-pretty last-of-type:mb-0">
             <Interpolate
               string={t("Didn't mean to do this? Manage your preferences <button>here</button>.")}
               mapping={{
                 button: (
                   <button
-                    className="gh-portal-btn-link gh-portal-btn-branded gh-portal-btn-inline ms-1 inline-block cursor-pointer border-none bg-transparent p-0 text-base font-semibold leading-none text-brand hover:opacity-85"
+                    className="gh-portal-btn-link gh-portal-btn-branded gh-portal-btn-inline ms-1 inline-block cursor-pointer border-none bg-transparent p-0 text-15 leading-none font-semibold text-brand hover:opacity-85"
                     onClick={() => {
                       setShowPrefs(true);
                     }}
@@ -333,7 +332,7 @@ export default function UnsubscribePage() {
       return (
         <>
           <p
-            className={`gh-portal-text-center gh-portal-header-message mx-0 mb-6 mt-[-20px] text-balance text-center ${hideClassName}`}
+            className={`gh-portal-text-center gh-portal-header-message mx-0 mt-[-20px] mb-6 text-center text-balance ${hideClassName}`}
           >
             <Interpolate
               string={t(
@@ -352,7 +351,7 @@ export default function UnsubscribePage() {
       return (
         <>
           <p
-            className={`gh-portal-text-center gh-portal-header-message mx-0 mb-6 mt-[-20px] text-balance text-center ${hideClassName}`}
+            className={`gh-portal-text-center gh-portal-header-message mx-0 mt-[-20px] mb-6 text-center text-balance ${hideClassName}`}
           >
             <Interpolate
               string={t('{memberEmail} will no longer receive updates & announcements.')}
@@ -376,7 +375,7 @@ export default function UnsubscribePage() {
     return (
       <>
         <p
-          className={`gh-portal-text-center gh-portal-header-message mx-0 mb-6 mt-[-20px] text-balance text-center ${hideClassName}`}
+          className={`gh-portal-text-center gh-portal-header-message mx-0 mt-[-20px] mb-6 text-center text-balance ${hideClassName}`}
         >
           <Interpolate
             string={t('{memberEmail} will no longer receive {newsletterName} newsletter.')}

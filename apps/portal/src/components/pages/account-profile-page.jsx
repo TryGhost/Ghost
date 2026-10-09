@@ -107,13 +107,13 @@ export default class AccountProfilePage extends React.Component {
 
   renderHeader() {
     return (
-      <header className="gh-portal-detail-header relative mx-0 mb-10 mt-[-2px] flex items-center justify-center px-[60px] max-sm:mt-1">
+      <header className="gh-portal-detail-header relative mx-0 mt-[-2px] mb-10 flex items-center justify-center px-[60px] max-sm:mt-1">
         <BackButton
           brandColor={this.context.brandColor}
           hidden={!this.context.lastPage}
           onClick={(e) => this.onBack(e)}
         />
-        <h3 className="gh-portal-main-title text-pretty text-center leading-[1.1em] text-black max-[390px]:mt-px max-[390px]:text-[2.1rem]">
+        <h3 className="gh-portal-main-title text-center leading-[1.1em] text-pretty text-black max-[391px]:mt-px max-[391px]:text-21">
           {t('Account settings')}
         </h3>
       </header>

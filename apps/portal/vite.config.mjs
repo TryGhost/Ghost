@@ -11,10 +11,6 @@ export default publicAppViteConfig({
     define: {
       REACT_APP_VERSION: JSON.stringify(pkg.version),
     },
-    build: {
-      // Keeps legacy media-query syntax for iOS 15 and UC Browser in browserslist
-      cssTarget: ['chrome78', 'edge79', 'firefox78', 'safari15', 'ios15'],
-    },
     resolve: {
       dedupe: ['@tryghost/debug'],
     },

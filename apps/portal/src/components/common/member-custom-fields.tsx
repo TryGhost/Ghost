@@ -63,7 +63,7 @@ interface AddressRowProps {
  */
 function AddressRow({ parts, input, onChange, onKeyDown }: AddressRowProps) {
   return (
-    <div className="gh-portal-input-group-row flex [&+.gh-portal-input-group-row]:-mt-px [&:first-child_.gh-portal-input-section:first-child_.gh-portal-input]:rounded-ss-md [&:first-child_.gh-portal-input-section:last-child_.gh-portal-input]:rounded-se-md [&:last-child_.gh-portal-input-section:first-child_.gh-portal-input]:rounded-es-md [&:last-child_.gh-portal-input-section:last-child_.gh-portal-input]:rounded-ee-md [&_.gh-portal-input-section+.gh-portal-input-section]:-ms-px [&_.gh-portal-input-section]:min-w-0 [&_.gh-portal-input-section]:flex-1">
+    <div className="gh-portal-input-group-row flex [&_.gh-portal-input-section]:min-w-0 [&_.gh-portal-input-section]:flex-1 [&_.gh-portal-input-section+.gh-portal-input-section]:-ms-px [&+.gh-portal-input-group-row]:-mt-px [&:first-child_.gh-portal-input-section:first-child_.gh-portal-input]:rounded-ss-md [&:first-child_.gh-portal-input-section:last-child_.gh-portal-input]:rounded-se-md [&:last-child_.gh-portal-input-section:first-child_.gh-portal-input]:rounded-es-md [&:last-child_.gh-portal-input-section:last-child_.gh-portal-input]:rounded-ee-md">
       <InputForm
         fields={parts.map(input)}
         onChange={(event: { target: { value: string } }, changed: { part?: string }) =>
@@ -138,20 +138,20 @@ function AddressField({ field, value, errors, onChange, onKeyDown }: FieldProps)
   return (
     <section aria-labelledby={labelId} role="group">
       <div
-        className="gh-portal-input-label mb-0.5 text-sm font-semibold tracking-[0px] text-gray-950"
+        className="gh-portal-input-label mb-0.5 text-13 font-semibold tracking-[0px] text-gray-950"
         id={labelId}
       >
         {field.name}
       </div>
-      <div className="gh-portal-input-group mb-4 [&_.gh-portal-input.error]:z-[1] [&_.gh-portal-input:focus]:z-[1] [&_.gh-portal-input]:relative [&_.gh-portal-input]:mb-0 [&_.gh-portal-input]:rounded-none">
+      <div className="gh-portal-input-group mb-4 [&_.gh-portal-input]:relative [&_.gh-portal-input]:mb-0 [&_.gh-portal-input]:rounded-none [&_.gh-portal-input.error]:z-[1] [&_.gh-portal-input:focus]:z-[1]">
         {rows}
       </div>
       {refused.length > 0 && (
-        <ul className="gh-portal-custom-field-errors mx-0 mb-0 mt-1 list-none p-0" id={errorsId}>
+        <ul className="gh-portal-custom-field-errors mx-0 mt-1 mb-0 list-none p-0" id={errorsId}>
           {refused.map(({ part, message }) => (
             <li
               key={part}
-              className="m-0 text-sm leading-[1.6em] tracking-[0.35px] text-red"
+              className="m-0 text-13 leading-[1.6em] tracking-[0.35px] text-red"
             >{`${labels[part]}: ${message}`}</li>
           ))}
         </ul>

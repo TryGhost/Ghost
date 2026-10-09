@@ -8,7 +8,7 @@ import { t } from '../../utils/i18n';
 import { giftRevealClasses, giftRevealInnerClasses } from '../shared-classes';
 import { tw } from '../../utils/tw';
 
-const DATE_CLASSES = tw`gh-portal-gift-email-date whitespace-nowrap text-[1.25rem] font-normal leading-[1.2] text-white/75 opacity-0 [grid-area:1/1] [transform:translateY(2px)] [transition:opacity_180ms_cubic-bezier(0.25,1,0.5,1),transform_180ms_cubic-bezier(0.25,1,0.5,1)] data-[active=true]:opacity-100 data-[active=true]:[transform:none] motion-reduce:[transition:none]`;
+const DATE_CLASSES = tw`gh-portal-gift-email-date [transform:translateY(2px)] text-12.5 leading-[1.2] font-normal whitespace-nowrap text-white/75 opacity-0 [grid-area:1/1] [transition:opacity_180ms_cubic-bezier(0.25,1,0.5,1),transform_180ms_cubic-bezier(0.25,1,0.5,1)] data-[active=true]:[transform:none] data-[active=true]:opacity-100 motion-reduce:[transition:none]`;
 
 // A live preview of the delivery email, shown in place of the gift card while
 // the buyer is on the "Email it to them" tab. It reproduces the real template
@@ -74,11 +74,11 @@ const GiftEmailPreview = ({
         {/* Mail-client chrome: who the message is addressed to, and when
                     it goes out. Kept outside the email body proper, like the
                     header of an opened message. */}
-        <div className="gh-portal-gift-email-meta flex items-end gap-[12px] px-[10px] pb-[6px] pt-[2px]">
+        <div className="gh-portal-gift-email-meta flex items-end gap-[12px] px-[10px] pt-[2px] pb-[6px]">
           <div className="gh-portal-gift-email-meta-text flex min-h-[43px] min-w-0 flex-1 flex-col justify-end gap-[2px]">
             {/* The email really is sent by the publication, so
                             that's the sender; the buyer is named in the body. */}
-            <div className="gh-portal-gift-email-from flex animate-[gh-portal-gift-email-fade_200ms_cubic-bezier(0.25,1,0.5,1)_both] items-center gap-[5px] truncate text-sm font-semibold leading-[1.2] text-white motion-reduce:animate-none">
+            <div className="gh-portal-gift-email-from flex animate-gift-email-fade items-center gap-[5px] truncate text-13 leading-[1.2] font-semibold text-white motion-reduce:animate-none">
               {siteTitle}
             </div>
             {/* Absent until there's a recipient, rather than sitting
@@ -91,7 +91,7 @@ const GiftEmailPreview = ({
               data-open={!!recipientLabel}
             >
               <div className={giftRevealInnerClasses}>
-                <div className="gh-portal-gift-email-to flex animate-[gh-portal-gift-email-fade_200ms_cubic-bezier(0.25,1,0.5,1)_both] items-center gap-[5px] truncate pt-[2px] text-[1.25rem] font-normal leading-[1.2] text-white/75 motion-reduce:animate-none">
+                <div className="gh-portal-gift-email-to flex animate-gift-email-fade items-center gap-[5px] truncate pt-[2px] text-12.5 leading-[1.2] font-normal text-white/75 motion-reduce:animate-none">
                   <span className="gh-portal-gift-email-meta-label shrink-0 font-normal text-white/55">
                     {t('To')}:
                   </span>
@@ -112,7 +112,7 @@ const GiftEmailPreview = ({
           </div>
         </div>
 
-        <div className="gh-portal-gift-email-body relative z-[1] rounded-[16px] bg-white px-[40px] pb-[40px] pt-[36px] [box-shadow:0_16px_40px_rgba(var(--blackrgb),0.1),0_3px_8px_rgba(var(--blackrgb),0.06)]">
+        <div className="gh-portal-gift-email-body relative z-[1] rounded-[16px] bg-white px-[40px] pt-[36px] pb-[40px] [box-shadow:0_16px_40px_rgba(var(--blackrgb),0.1),0_3px_8px_rgba(var(--blackrgb),0.06)]">
           {/* The template leads with the publication's icon, falling
                         back to its name, above the subject. */}
           <div className="gh-portal-gift-email-lockup mb-[22px] flex justify-start">
@@ -123,31 +123,31 @@ const GiftEmailPreview = ({
                 src={siteIcon}
               />
             ) : (
-              <span className="gh-portal-gift-email-lockup-title text-[1.7rem] font-bold text-brand">
+              <span className="gh-portal-gift-email-lockup-title text-17 font-bold text-brand">
                 {siteTitle}
               </span>
             )}
           </div>
 
-          <h1 className="gh-portal-gift-email-subject mb-[14px] text-start text-[2.5rem] font-bold leading-[1.2] tracking-[-0.01em] text-gray-950">
+          <h1 className="gh-portal-gift-email-subject mb-[14px] text-start text-25 leading-[1.2] font-bold tracking-[-0.01em] text-gray-950">
             {t('A gift, just for you')}
           </h1>
 
           <div aria-hidden={!toName} className={giftRevealClasses} data-open={!!toName}>
             <div className={giftRevealInnerClasses}>
-              <p className="gh-portal-gift-email-greeting mb-0 pb-[10px] text-[1.55rem] leading-[1.5] text-gray-900">
+              <p className="gh-portal-gift-email-greeting mb-0 pb-[10px] text-15.5 leading-[1.5] text-gray-900">
                 {t('Hi {recipientName},', { recipientName: toName })}
               </p>
             </div>
           </div>
 
-          <p className="gh-portal-gift-email-lede mb-0 text-[1.55rem] leading-[1.5] text-gray-900 [&_strong]:[color:inherit] [&_strong]:[font-weight:inherit]">
+          <p className="gh-portal-gift-email-lede mb-0 text-15.5 leading-[1.5] text-gray-900 [&_strong]:[font-weight:inherit] [&_strong]:[color:inherit]">
             <Interpolate mapping={giftDetails} string={lede} />
           </p>
 
           <div aria-hidden={!message} className={giftRevealClasses} data-open={!!message}>
             <div className={giftRevealInnerClasses}>
-              <blockquote className="gh-portal-gift-email-message relative mx-0 mb-0 mt-[24px] overflow-hidden rounded-[8px] bg-[color:color-mix(in_srgb,var(--brandcolor)_7%,theme(colors.white))] px-[18px] py-[16px]">
+              <blockquote className="gh-portal-gift-email-message relative mx-0 mt-[24px] mb-0 overflow-hidden rounded-[8px] bg-[color:color-mix(in_srgb,var(--brandcolor)_7%,var(--color-white))] px-[18px] py-[16px]">
                 {/* Drawn rather than typed: the quote glyphs in
                                     the system stack are squared off, and this
                                     wants the round, stylised mark. One mark, no
@@ -158,13 +158,13 @@ const GiftEmailPreview = ({
                   className="gh-portal-gift-email-message-mark pointer-events-none absolute start-[-10px] top-[-22px] h-auto w-[98px] text-brand opacity-[0.04]"
                   focusable="false"
                 />
-                <p className="gh-portal-gift-email-message-text relative mb-0 whitespace-pre-line text-[1.55rem] italic leading-[1.5] text-gray-950 [word-break:break-word]">
+                <p className="gh-portal-gift-email-message-text relative mb-0 text-15.5 leading-[1.5] [word-break:break-word] whitespace-pre-line text-gray-950 italic">
                   {message}
                 </p>
                 {/* No dash before the name — the note above it
                                     leaves no doubt whose it is. */}
                 {fromName && (
-                  <p className="gh-portal-gift-email-message-from relative mb-0 mt-[10px] text-[1.35rem] leading-[1.4] text-[color:color-mix(in_srgb,var(--brandcolor)_72%,#15212A)]">
+                  <p className="gh-portal-gift-email-message-from relative mt-[10px] mb-0 text-13.5 leading-[1.4] text-[color:color-mix(in_srgb,var(--brandcolor)_72%,#15212A)]">
                     {fromName}
                   </p>
                 )}
@@ -174,7 +174,7 @@ const GiftEmailPreview = ({
 
           {benefits.length > 0 && (
             <div className="gh-portal-gift-email-benefits mt-[24px]">
-              <p className="gh-portal-gift-email-benefits-label mb-[6px] text-[1.55rem] font-normal leading-[1.45] text-gray-900">
+              <p className="gh-portal-gift-email-benefits-label mb-[6px] text-15.5 leading-[1.45] font-normal text-gray-900">
                 {t("What's included")}
               </p>
               {/* Every perk, as the email sends them. */}
@@ -182,7 +182,7 @@ const GiftEmailPreview = ({
                 {benefits.map((benefit, idx) => (
                   <div
                     key={benefit?.id || `benefit-${idx}`}
-                    className="gh-portal-gift-email-benefit flex items-start gap-[10px] py-[5px] text-[1.55rem] leading-[1.45] text-gray-900"
+                    className="gh-portal-gift-email-benefit flex items-start gap-[10px] py-[5px] text-15.5 leading-[1.45] text-gray-900"
                   >
                     <CheckmarkIcon
                       aria-hidden="true"

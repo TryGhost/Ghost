@@ -58,7 +58,7 @@ import {
  *   eslint-plugin-tailwindcss settings-based resolver requires it locally.
  * @property {string} [legacyTailwindV3ConfigPath]
  *   LEGACY escape hatch. Absolute path to a Tailwind v3 JS/CJS config. Used by
- *   comments-ui, signup-form and portal until they migrate to v4. The migration
+ *   comments-ui and signup-form until they migrate to v4. The migration
  *   involves theme token rewrites + class rewrites + CDN regression testing
  *   (multi-day, blocked on no owner) so the rest of the codebase isn't held up.
  * @property {boolean} [shadeRestricted=false]

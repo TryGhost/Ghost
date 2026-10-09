@@ -90,10 +90,10 @@ function GiftPlanStep({
   return (
     <>
       <header className="gh-portal-gift-checkout-header mb-3">
-        <h1 className="gh-portal-main-title mb-2 text-pretty text-start text-4xl leading-[1.15] text-black max-sm:text-[2.6rem]">
+        <h1 className="gh-portal-main-title mb-2 text-start text-32 leading-[1.15] text-pretty text-black max-sm:text-26">
           {t('Gift a membership')}
         </h1>
-        <p className="gh-portal-gift-checkout-subtitle m-0 text-pretty text-base leading-[1.45em] text-gray-900">
+        <p className="gh-portal-gift-checkout-subtitle m-0 text-15 leading-[1.45em] text-pretty text-gray-900">
           {t('Share a full membership to {siteTitle} with a friend or colleague', {
             siteTitle,
           })}
@@ -122,7 +122,7 @@ function GiftPlanStep({
       )}
 
       <div className="gh-portal-gift-checkout-section mt-6">
-        <div className="gh-portal-gift-checkout-label mb-2 text-md font-semibold text-gray-900">
+        <div className="gh-portal-gift-checkout-label mb-2 text-14 font-semibold text-gray-900">
           {isSingleTier ? t('Membership details') : t('Tier')}
         </div>
         {offeredDurations.length > 1 ? (
@@ -133,7 +133,7 @@ function GiftPlanStep({
           />
         ) : (
           <div
-            className="gh-portal-gift-checkout-single-duration text-lg font-semibold leading-[1.3] text-black"
+            className="gh-portal-gift-checkout-single-duration text-16 leading-[1.3] font-semibold text-black"
             data-test-single-duration
           >
             {t('{duration} membership', { duration: activeDurationLabel })}
@@ -158,14 +158,14 @@ function GiftPlanStep({
                 className={
                   tw`gh-portal-gift-checkout-tier-item overflow-hidden rounded-[10px] border border-solid [transition:border-color_0.2s_ease,background-color_0.2s_ease]` +
                   (isSelected && !isSingleTier
-                    ? tw` selected border-brand bg-[color:color-mix(in_srgb,var(--brandcolor)_6%,theme(colors.white))] [box-shadow:0_0_0_1px_var(--brandcolor)_inset]`
+                    ? tw` selected border-brand bg-[color:color-mix(in_srgb,var(--brandcolor)_6%,var(--color-white))] [box-shadow:0_0_0_1px_var(--brandcolor)_inset]`
                     : ' border-gray-300 bg-white' + (isSingleTier ? '' : ' hover:border-gray-400'))
                 }
               >
                 <button
                   aria-checked={isSingleTier ? undefined : isSelected}
                   className={
-                    tw`gh-portal-gift-checkout-tier flex w-full items-start gap-2.5 border-none bg-transparent px-5 py-4 text-start [color:inherit] [font:inherit] focus-visible:[box-shadow:0_0_0_2px_var(--brandcolor)_inset] focus-visible:[outline:none]` +
+                    tw`gh-portal-gift-checkout-tier flex w-full items-start gap-2.5 border-none bg-transparent px-5 py-4 text-start [color:inherit] [font:inherit] focus-visible:[box-shadow:0_0_0_2px_var(--brandcolor)_inset] focus-visible:outline-none` +
                     (isSingleTier ? ' cursor-default' : ' cursor-pointer')
                   }
                   data-test-tier={product.name}
@@ -179,22 +179,22 @@ function GiftPlanStep({
                       className={
                         tw`gh-portal-gift-checkout-tier-radio relative mt-[3px] size-[18px] shrink-0 rounded-[50%] border-[1.5px] border-solid` +
                         (isSelected
-                          ? tw` border-brand bg-brand after:absolute after:left-1/2 after:top-1/2 after:size-[6px] after:-translate-x-1/2 after:-translate-y-1/2 after:rounded-[50%] after:bg-white after:content-['']`
+                          ? tw` border-brand bg-brand after:absolute after:top-1/2 after:left-1/2 after:size-[6px] after:-translate-1/2 after:rounded-[50%] after:bg-white after:content-['']`
                           : ' border-gray-400 bg-white')
                       }
                     />
                   )}
                   <div className="gh-portal-gift-checkout-tier-content flex min-w-0 flex-1 flex-col gap-1">
                     <div className="gh-portal-gift-checkout-tier-heading flex items-baseline gap-2.5">
-                      <span className="gh-portal-gift-checkout-tier-name flex-1 text-base font-medium text-black">
+                      <span className="gh-portal-gift-checkout-tier-name flex-1 text-15 font-medium text-black">
                         {product.name}
                       </span>
-                      <span className="gh-portal-gift-checkout-tier-price text-base font-semibold text-black">
+                      <span className="gh-portal-gift-checkout-tier-price text-15 font-semibold text-black">
                         {tierPriceLabel(product, activeDuration)}
                       </span>
                     </div>
                     {product.description && (
-                      <p className="gh-portal-gift-checkout-tier-description -mt-0.5 mb-0 text-md leading-[1.4] text-gray-900">
+                      <p className="gh-portal-gift-checkout-tier-description -mt-0.5 mb-0 text-14 leading-[1.4] text-gray-900">
                         {product.description}
                       </p>
                     )}
@@ -207,13 +207,13 @@ function GiftPlanStep({
                     data-open={isSelected}
                   >
                     <div className="gh-portal-gift-checkout-tier-benefits-inner min-h-0 overflow-hidden">
-                      <div className="gh-portal-gift-checkout-benefits flex flex-col gap-2 pb-5 pl-[22px] pr-5">
+                      <div className="gh-portal-gift-checkout-benefits flex flex-col gap-2 pr-5 pb-5 pl-[22px]">
                         {benefits.map((benefit, idx) => {
                           const key = benefit.id || `benefit-${idx}`;
                           return (
                             <div
                               key={key}
-                              className="gh-portal-gift-checkout-benefit flex items-start gap-2.5 text-[1.45rem] leading-[1.4] text-gray-950"
+                              className="gh-portal-gift-checkout-benefit flex items-start gap-2.5 text-14.5 leading-[1.4] text-gray-950"
                             >
                               <CheckmarkIcon
                                 aria-hidden="true"

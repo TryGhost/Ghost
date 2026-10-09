@@ -24,10 +24,10 @@ const SupportError = ({ error }) => {
       <div className="gh-tips-and-donations-icon-error mx-auto my-0 w-12 px-0 py-2.5 text-center text-red-500">
         <WarningIcon />
       </div>
-      <h1 className="gh-portal-main-title text-pretty text-center text-[32px] leading-[1.1em] text-black">
+      <h1 className="gh-portal-main-title text-center text-[32px] leading-[1.1em] text-pretty text-black">
         {errorTitle}
       </h1>
-      <p className="gh-portal-text-center text-pretty px-8 pb-3 pt-4 text-center">{errorMessage}</p>
+      <p className="gh-portal-text-center px-8 pt-4 pb-3 text-center text-pretty">{errorMessage}</p>
       <ActionButton
         style={{ width: '100%' }}
         retry={true}
@@ -38,7 +38,6 @@ const SupportError = ({ error }) => {
         isDestructive={true}
         isRunning={false}
         tabIndex={3}
-        classes={'sticky bottom'}
       />
     </div>
   );

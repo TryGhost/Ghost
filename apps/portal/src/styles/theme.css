@@ -1,0 +1,304 @@
+/* Design tokens shared by every Portal frame. Colours are Shade's light palette (apps/shade/tailwind.theme.css). */
+@theme {
+  --color-*: initial;
+  --color-white: oklch(100% 0 0);
+  --color-black: oklch(20.38% 0.0067 258.4);
+  --color-gray-50: oklch(98.54% 0.0013 286.4);
+  --color-gray-100: oklch(96.97% 0.0017 247.8);
+  --color-gray-200: oklch(94.74% 0.0042 236.5);
+  --color-gray-300: oklch(90.78% 0.007 247.9);
+  --color-gray-400: oklch(86.68% 0.0095 242.9);
+  --color-gray-500: oklch(77.55% 0.0174 250.9);
+  --color-gray-600: oklch(70.33% 0.0223 248.1);
+  --color-gray-700: oklch(62.98% 0.0286 248.3);
+  --color-gray-800: oklch(52.97% 0.0232 250.6);
+  --color-gray-900: oklch(36.77% 0.0153 248.2);
+  --color-gray-950: oklch(25.95% 0.0063 258.4);
+  --color-gray: var(--color-gray-500);
+  --color-green-50: oklch(98.14% 0.0199 150.1);
+  --color-green-100: oklch(95.89% 0.0375 148.9);
+  --color-green-200: oklch(91.68% 0.0857 148.3);
+  --color-green-300: oklch(85.66% 0.1484 146.8);
+  --color-green-400: oklch(79.04% 0.1936 145.5);
+  --color-green-500: oklch(74.81% 0.2213 144.4);
+  --color-green-600: oklch(66.9% 0.1961 144.5);
+  --color-green-700: oklch(55.58% 0.1604 144.5);
+  --color-green-800: oklch(47.03% 0.1318 144.9);
+  --color-green-900: oklch(39.31% 0.107 145.1);
+  --color-green-950: oklch(27.07% 0.0683 145.8);
+  --color-green: var(--color-green-500);
+  --color-red-50: oklch(96.69% 0.0162 17.4);
+  --color-red-100: oklch(93.22% 0.0343 17.8);
+  --color-red-200: oklch(86.97% 0.0702 15.3);
+  --color-red-300: oklch(78.48% 0.1262 15.5);
+  --color-red-400: oklch(64.57% 0.2253 21.5);
+  --color-red-500: oklch(61.27% 0.2462 26.4);
+  --color-red-600: oklch(56.5% 0.2269 26.4);
+  --color-red-700: oklch(48.49% 0.1939 26);
+  --color-red-800: oklch(40.18% 0.1591 25.2);
+  --color-red-900: oklch(32.24% 0.1264 24);
+  --color-red-950: oklch(23.02% 0.0888 22);
+  --color-red: var(--color-red-500);
+  --color-yellow-50: oklch(98.27% 0.0207 88.7);
+  --color-yellow-100: oklch(96.22% 0.0384 83.8);
+  --color-yellow-200: oklch(92.42% 0.0867 87);
+  --color-yellow-300: oklch(88.67% 0.1322 87.2);
+  --color-yellow-400: oklch(84.87% 0.1508 81.3);
+  --color-yellow-500: oklch(82.04% 0.1655 77.3);
+  --color-yellow-600: oklch(76.61% 0.1628 73.4);
+  --color-yellow-700: oklch(65.82% 0.1419 70.8);
+  --color-yellow-800: oklch(54.44% 0.1173 70.8);
+  --color-yellow-900: oklch(43.45% 0.0931 72);
+  --color-yellow-950: oklch(29.26% 0.0613 76.4);
+  --color-yellow: var(--color-yellow-500);
+  --color-brand: var(--brandcolor);
+
+  /* Spacing and radii are px like the legacy CSS; font sizes are rem (html is 62.5%, so text-14 = 1.4rem = 14px) */
+  --spacing: 4px;
+
+  --breakpoint-*: initial;
+  --breakpoint-sm: 481px;
+
+  --radius-*: initial;
+  --radius: 4px;
+  --radius-sm: 2px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 12px;
+
+  --text-*: initial;
+  --text-11: 1.1rem;
+  --text-12: 1.2rem;
+  --text-12\.5: 1.25rem;
+  --text-13: 1.3rem;
+  --text-13\.5: 1.35rem;
+  --text-14: 1.4rem;
+  --text-14\.5: 1.45rem;
+  --text-15: 1.5rem;
+  --text-15\.5: 1.55rem;
+  --text-16: 1.6rem;
+  --text-17: 1.7rem;
+  --text-18: 1.8rem;
+  --text-19: 1.9rem;
+  --text-20: 2rem;
+  --text-21: 2.1rem;
+  --text-25: 2.5rem;
+  --text-26: 2.6rem;
+  --text-27: 2.7rem;
+  --text-28: 2.8rem;
+  --text-32: 3.2rem;
+  --text-35: 3.5rem;
+
+  --animate-*: initial;
+  --animate-popup: popup 0.25s ease-in-out;
+  --animate-popup-full-size: popup-full-size 0.25s ease-in-out;
+  --animate-popup-mobile: popup-mobile 0.25s ease-in-out;
+  --animate-backdrop: fadeIn 0.2s;
+  --animate-fade-in: fadeIn 0.5s ease-in-out;
+  --animate-fade-in-quick: fadeIn 0.3s ease-in-out;
+  --animate-notification-in: notification-slidein 0.55s cubic-bezier(0.215, 0.61, 0.355, 1);
+  --animate-notification-out: notification-slideout 0.4s cubic-bezier(0.55, 0.055, 0.675, 0.19);
+  --animate-notification-in-mobile: notification-slidein-mobile 0.55s
+    cubic-bezier(0.215, 0.61, 0.355, 1);
+  --animate-notification-out-mobile: notification-slideout-mobile 0.55s
+    cubic-bezier(0.55, 0.055, 0.675, 0.19);
+  --animate-tray: mobile-tray-from-bottom 0.4s ease;
+  --animate-gift-email-fade: gh-portal-gift-email-fade 200ms cubic-bezier(0.25, 1, 0.5, 1) both;
+  --animate-share-menu-in: gh-portal-share-more-menu-in 0.18s ease-out forwards;
+
+  @keyframes fadeIn {
+    0% {
+      opacity: 0;
+    }
+    100% {
+      opacity: 1;
+    }
+  }
+
+  @keyframes popup {
+    0% {
+      transform: translateY(-30px);
+      opacity: 0;
+    }
+    1% {
+      transform: translateY(30px);
+      opacity: 0;
+    }
+    100% {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+
+  @keyframes popup-full-size {
+    0% {
+      transform: translateY(0px);
+      opacity: 0;
+    }
+    1% {
+      transform: translateY(30px);
+      opacity: 0;
+    }
+    100% {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+
+  @keyframes popup-mobile {
+    0% {
+      opacity: 0;
+    }
+    100% {
+      opacity: 1;
+    }
+  }
+
+  @keyframes notification-slidein {
+    0% {
+      transform: translateX(380px);
+    }
+    60% {
+      transform: translateX(-6px);
+    }
+    100% {
+      transform: translateX(0);
+    }
+  }
+
+  @keyframes notification-slideout {
+    0% {
+      transform: translateX(0);
+    }
+    30% {
+      transform: translateX(-10px);
+    }
+    100% {
+      transform: translateX(380px);
+    }
+  }
+
+  @keyframes notification-slidein-mobile {
+    0% {
+      transform: translateY(-150px);
+    }
+    50% {
+      transform: translateY(6px);
+    }
+    100% {
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes notification-slideout-mobile {
+    0% {
+      transform: translateY(0);
+    }
+    35% {
+      transform: translateY(6px);
+    }
+    100% {
+      transform: translateY(-150px);
+    }
+  }
+
+  @keyframes mobile-tray-from-bottom {
+    0% {
+      opacity: 0;
+      transform: translateY(300px);
+    }
+    20% {
+      opacity: 1;
+    }
+    100% {
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes gh-portal-gift-email-fade {
+    from {
+      opacity: 0;
+      transform: translateY(4px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  @keyframes gh-portal-share-more-menu-in {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+}
+
+/* Named values for the longer one-off declarations, kept exact so they render like the legacy CSS */
+@utility shadow-popup {
+  box-shadow:
+    0 3.8px 2.2px rgba(var(--blackrgb), 0.028),
+    0 9.2px 5.3px rgba(var(--blackrgb), 0.04),
+    0 17.3px 10px rgba(var(--blackrgb), 0.05),
+    0 30.8px 17.9px rgba(var(--blackrgb), 0.06),
+    0 57.7px 33.4px rgba(var(--blackrgb), 0.072),
+    0 138px 80px rgba(var(--blackrgb), 0.1);
+}
+
+@utility shadow-popup-preview {
+  box-shadow:
+    0 0 0 1px rgba(var(--blackrgb), 0.02),
+    0 2.8px 2.2px rgba(var(--blackrgb), 0.02),
+    0 6.7px 5.3px rgba(var(--blackrgb), 0.028),
+    0 12.5px 10px rgba(var(--blackrgb), 0.035),
+    0 22.3px 17.9px rgba(var(--blackrgb), 0.042),
+    0 41.8px 33.4px rgba(var(--blackrgb), 0.05),
+    0 100px 80px rgba(var(--blackrgb), 0.07);
+}
+
+@utility shadow-notification {
+  box-shadow:
+    0px 0px 1px 0px rgba(0, 0, 0, 0.3),
+    0px 51px 40px 0px rgba(0, 0, 0, 0.05),
+    0px 15.375px 12.059px 0px rgba(0, 0, 0, 0.03),
+    0px 6.386px 5.009px 0px rgba(0, 0, 0, 0.03),
+    0px 2.31px 1.812px 0px rgba(0, 0, 0, 0.02);
+}
+
+@utility shadow-trigger {
+  box-shadow: rgba(0, 0, 0, 0.24) 0px 8px 16px -2px;
+}
+
+@utility shadow-gift-card {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.4),
+    0 24px 48px rgba(var(--blackrgb), 0.08),
+    0 4px 12px rgba(var(--blackrgb), 0.04);
+}
+
+@utility shadow-focus-brand {
+  box-shadow: inset 0 0 0 2px var(--brandcolor);
+}
+
+@utility transition-control {
+  transition: all 0.25s ease;
+}
+
+@utility transition-input {
+  transition: border-color 0.25s ease-in-out;
+}
+
+@utility bg-select-chevron {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23aeaeae' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+}
+
+@utility bg-offer-bar {
+  background-image: url("data:image/svg+xml,%3csvg width='100%25' height='99.9%25' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='100%25' height='100%25' fill='none' stroke='%23C3C3C3' stroke-width='3' stroke-dasharray='3%2c 9' stroke-dashoffset='0' stroke-linecap='square'/%3e%3c/svg%3e");
+}
+
+/* Hover styles apply on touch devices too, as they did before Tailwind */
+@custom-variant hover (&:hover);

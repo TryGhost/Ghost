@@ -21,13 +21,13 @@ function MemberGravatar({ gravatar, style }) {
   const Style = Styles({ style });
   return (
     <figure
-      className="gh-portal-avatar relative mx-0 mb-2 mt-0 flex items-center justify-center overflow-hidden rounded-[999px]"
+      className="gh-portal-avatar relative mx-0 mt-0 mb-2 flex items-center justify-center overflow-hidden rounded-[999px]"
       style={Style.avatarContainer}
     >
       <UserIcon style={Style.userIcon} />
       {gravatar ? (
         <img
-          className="absolute -inset-0.5 block h-[calc(100%+4px)] w-[calc(100%+4px)] max-w-none opacity-100"
+          className="absolute -inset-0.5 block size-[calc(100%+4px)] max-w-none opacity-100"
           style={Style.gravatar}
           src={gravatar}
           alt=""

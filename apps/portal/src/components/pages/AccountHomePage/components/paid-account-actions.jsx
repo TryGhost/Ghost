@@ -70,7 +70,7 @@ const PaidAccountActions = () => {
     const hasFreeTrial = subscriptionHasFreeTrial({ sub: subscription });
 
     if (hasFreeTrial) {
-      oldPriceClassName = 'gh-portal-account-old-price !text-gray-400 line-through';
+      oldPriceClassName = 'gh-portal-account-old-price text-gray-400! line-through';
 
       return (
         <>
@@ -83,7 +83,7 @@ const PaidAccountActions = () => {
     const offerLabelStr = getOfferLabel({ nextPayment });
 
     if (offerLabelStr) {
-      oldPriceClassName = 'gh-portal-account-old-price !text-gray-400 line-through';
+      oldPriceClassName = 'gh-portal-account-old-price text-gray-400! line-through';
     }
 
     const OfferLabel = () => {
@@ -135,7 +135,7 @@ const PaidAccountActions = () => {
     if (canContinueGiftSubscription) {
       return (
         <button
-          className="gh-portal-btn gh-portal-btn-list relative -mx-1 my-0 flex h-[38px] cursor-pointer select-none items-center justify-center whitespace-nowrap rounded-md border-none bg-white px-1 py-0 text-center text-base font-medium leading-[1em] tracking-[0.2px] text-brand no-underline [outline:none] [transition:all_0.25s_ease] hover:border-gray-300 hover:opacity-75 disabled:cursor-auto disabled:!opacity-50"
+          className="gh-portal-btn gh-portal-btn-list relative -mx-1 my-0 flex h-[38px] cursor-pointer items-center justify-center rounded-md border-none bg-white px-1 py-0 text-center text-15 leading-[1em] font-medium tracking-[0.2px] whitespace-nowrap text-brand no-underline outline-none select-none transition-control hover:border-gray-300 hover:opacity-75 disabled:cursor-auto disabled:opacity-50!"
           onClick={(e) => {
             e.stopPropagation();
             doAction('continueGiftSubscription');
@@ -148,7 +148,7 @@ const PaidAccountActions = () => {
     }
     return (
       <button
-        className="gh-portal-btn gh-portal-btn-list relative -mx-1 my-0 flex h-[38px] cursor-pointer select-none items-center justify-center whitespace-nowrap rounded-md border-none bg-white px-1 py-0 text-center text-base font-medium leading-[1em] tracking-[0.2px] text-brand no-underline [outline:none] [transition:all_0.25s_ease] hover:border-gray-300 hover:opacity-75 disabled:cursor-auto disabled:!opacity-50"
+        className="gh-portal-btn gh-portal-btn-list relative -mx-1 my-0 flex h-[38px] cursor-pointer items-center justify-center rounded-md border-none bg-white px-1 py-0 text-center text-15 leading-[1em] font-medium tracking-[0.2px] whitespace-nowrap text-brand no-underline outline-none select-none transition-control hover:border-gray-300 hover:opacity-75 disabled:cursor-auto disabled:opacity-50!"
         onClick={(e) => {
           e.stopPropagation();
           openUpdatePlan(e);
@@ -179,7 +179,7 @@ const PaidAccountActions = () => {
 
     return (
       <section
-        className="gh-portal-list-clickable cursor-pointer focus-visible:[box-shadow:inset_0_0_0_2px_var(--brandcolor)] focus-visible:[outline:none]"
+        className="gh-portal-list-clickable cursor-pointer focus-visible:shadow-focus-brand focus-visible:outline-none"
         role="button"
         tabIndex={0}
         onClick={onManageBilling}
@@ -193,12 +193,12 @@ const PaidAccountActions = () => {
           }
         }}
       >
-        <div className="gh-portal-list-detail grow [&_h3]:text-base [&_h3]:font-semibold [&_p]:mb-0 [&_p]:me-2 [&_p]:ms-0 [&_p]:mt-[5px] [&_p]:text-[1.45rem] [&_p]:leading-[1.3em] [&_p]:tracking-[0.3px] [&_p]:text-gray-700 [&_p]:[word-break:break-word]">
+        <div className="gh-portal-list-detail grow [&_h3]:text-15 [&_h3]:font-semibold [&_p]:ms-0 [&_p]:me-2 [&_p]:mt-[5px] [&_p]:mb-0 [&_p]:text-14.5 [&_p]:leading-[1.3em] [&_p]:tracking-[0.3px] [&_p]:[word-break:break-word] [&_p]:text-gray-700">
           <h3>{t('Billing info & receipts')}</h3>
           <CardLabel defaultCardLast4={defaultCardLast4} />
         </div>
         <span
-          className="gh-portal-list-action -mx-1 my-0 flex min-h-[38px] select-none items-center justify-center whitespace-nowrap px-1 py-0 text-base font-medium leading-[1em] tracking-[0.2px] text-brand"
+          className="gh-portal-list-action -mx-1 my-0 flex min-h-[38px] items-center justify-center px-1 py-0 text-15 leading-[1em] font-medium tracking-[0.2px] whitespace-nowrap text-brand select-none"
           data-test-button="manage-billing"
           aria-hidden="true"
         >
@@ -227,11 +227,11 @@ const PaidAccountActions = () => {
     return (
       <>
         <section>
-          <div className="gh-portal-list-detail grow [&_h3]:text-base [&_h3]:font-semibold [&_p]:mb-0 [&_p]:me-2 [&_p]:ms-0 [&_p]:mt-[5px] [&_p]:text-[1.45rem] [&_p]:leading-[1.3em] [&_p]:tracking-[0.3px] [&_p]:text-gray-700 [&_p]:[word-break:break-word]">
+          <div className="gh-portal-list-detail grow [&_h3]:text-15 [&_h3]:font-semibold [&_p]:ms-0 [&_p]:me-2 [&_p]:mt-[5px] [&_p]:mb-0 [&_p]:text-14.5 [&_p]:leading-[1.3em] [&_p]:tracking-[0.3px] [&_p]:[word-break:break-word] [&_p]:text-gray-700">
             <h3>
               {planLabel}
               {subscription?.cancel_at_period_end && (
-                <span className="gh-portal-canceled-badge relative -top-px ms-1.5 inline-block rounded-[32px] bg-[color:color-mix(in_srgb,theme(colors.gray.200)_60%,transparent)] px-2 py-1.5 align-middle text-[1.1rem] font-semibold uppercase leading-[1em] tracking-[0.05px] text-gray-700">
+                <span className="gh-portal-canceled-badge relative -top-px ms-1.5 inline-block rounded-[32px] bg-[color:color-mix(in_srgb,var(--color-gray-200)_60%,transparent)] px-2 py-1.5 align-middle text-11 leading-[1em] font-semibold tracking-[0.05px] text-gray-700 uppercase">
                   {t('Canceled')}
                 </span>
               )}

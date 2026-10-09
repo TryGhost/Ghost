@@ -163,17 +163,17 @@ const GiftRedemptionPage = () => {
 
   return (
     <>
-      <div className="gh-portal-content giftRedemption relative min-h-screen p-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden [&_.gh-portal-closeicon-container]:absolute group-[.full-size]/popup:[&_.gh-portal-closeicon-container]:right-8 group-[.full-size]/popup:[&_.gh-portal-closeicon-container]:top-8 rtl:group-[.full-size]/popup:[&_.gh-portal-closeicon-container]:right-auto">
+      <div className="gh-portal-content giftRedemption relative min-h-screen p-0 [scrollbar-width:none] [&_.gh-portal-closeicon-container]:absolute group-[.full-size]/popup:[&_.gh-portal-closeicon-container]:top-8 group-[.full-size]/popup:[&_.gh-portal-closeicon-container]:right-8 rtl:group-[.full-size]/popup:[&_.gh-portal-closeicon-container]:right-auto [&::-webkit-scrollbar]:hidden">
         <CloseButton />
-        <div className="gh-portal-gift-checkout grid min-h-screen w-full grid-cols-[1fr_1fr] max-[880px]:min-h-0 max-[880px]:grid-cols-[1fr] [&_.gh-portal-btn-primary]:rounded-[999px] [&_.gh-portal-input-label]:mb-0 [&_.gh-portal-input-label]:text-md [&_.gh-portal-input-label]:font-semibold [&_.gh-portal-input-label]:text-gray-900 [&_.gh-portal-input-labelcontainer]:mb-2 [&_.gh-portal-input-labelcontainer]:items-baseline [&_.gh-portal-input]:h-12">
-          <div className="gh-portal-gift-checkout-left relative flex items-center justify-center bg-white p-12 max-[880px]:px-6 max-[880px]:pb-6 max-[880px]:pt-8">
+        <div className="gh-portal-gift-checkout grid min-h-screen w-full grid-cols-[1fr_1fr] max-[881px]:min-h-0 max-[881px]:grid-cols-[1fr] [&_.gh-portal-btn-primary]:rounded-[999px] [&_.gh-portal-input]:h-12 [&_.gh-portal-input-label]:mb-0 [&_.gh-portal-input-label]:text-14 [&_.gh-portal-input-label]:font-semibold [&_.gh-portal-input-label]:text-gray-900 [&_.gh-portal-input-labelcontainer]:mb-2 [&_.gh-portal-input-labelcontainer]:items-baseline">
+          <div className="gh-portal-gift-checkout-left relative flex items-center justify-center bg-white p-12 max-[881px]:px-6 max-[881px]:pt-8 max-[881px]:pb-6">
             <div className="gh-portal-gift-checkout-bg hidden" aria-hidden="true" />
             <div className="gh-portal-gift-checkout-inner relative z-[1] my-auto flex w-full max-w-[496px] flex-col [&_.gh-portal-gift-checkout-cta]:h-12 [&_.gh-portal-gift-checkout-cta]:font-semibold [&_.gh-portal-gift-redemption-form+.gh-portal-gift-checkout-cta]:mt-4 [&_.gh-portal-gift-redemption-message+.gh-portal-gift-checkout-cta]:mt-6">
               <header className="gh-portal-gift-checkout-header mb-3">
-                <h1 className="gh-portal-main-title mb-2 text-pretty text-start text-4xl leading-[1.15] text-black max-sm:text-[2.6rem]">
+                <h1 className="gh-portal-main-title mb-2 text-start text-32 leading-[1.15] text-pretty text-black max-sm:text-26">
                   {t('A gift, just for you')}
                 </h1>
-                <p className="gh-portal-gift-checkout-subtitle m-0 text-pretty text-base leading-[1.45em] text-gray-900 [&_strong]:font-semibold [&_strong]:text-black">
+                <p className="gh-portal-gift-checkout-subtitle m-0 text-15 leading-[1.45em] text-pretty text-gray-900 [&_strong]:font-semibold [&_strong]:text-black">
                   <Interpolate mapping={giftDetails} string={headerText} />
                 </p>
               </header>
@@ -183,11 +183,11 @@ const GiftRedemptionPage = () => {
                   className="gh-portal-gift-redemption-message mt-6 rounded-lg bg-gray-50 px-5 py-4"
                   data-testid="gift-message"
                 >
-                  <p className="gh-portal-gift-redemption-message-text mb-0 whitespace-pre-line text-lg italic leading-[1.5em] text-gray-950 [overflow-wrap:anywhere]">
+                  <p className="gh-portal-gift-redemption-message-text mb-0 text-16 leading-[1.5em] [overflow-wrap:anywhere] whitespace-pre-line text-gray-950 italic">
                     &ldquo;{gift.message}&rdquo;
                   </p>
                   {buyerName && (
-                    <p className="gh-portal-gift-redemption-message-from mb-0 mt-2 text-md text-gray-700">
+                    <p className="gh-portal-gift-redemption-message-from mt-2 mb-0 text-14 text-gray-700">
                       &mdash; {buyerName}
                     </p>
                   )}
@@ -215,7 +215,7 @@ const GiftRedemptionPage = () => {
               />
 
               {expiryLabel && (
-                <p className="gh-portal-gift-checkout-cta-note mb-0 mt-3 text-center text-sm leading-[1.4em] text-gray-700">
+                <p className="gh-portal-gift-checkout-cta-note mt-3 mb-0 text-center text-13 leading-[1.4em] text-gray-700">
                   {t('This gift can only be redeemed once and expires on {expiryDate}.', {
                     expiryDate: expiryLabel,
                   })}
@@ -225,9 +225,9 @@ const GiftRedemptionPage = () => {
           </div>
 
           <div className={giftCheckoutRightClasses} {...cardTiltProps}>
-            <div className="gh-portal-gift-checkout-right-panel flex min-h-0 flex-1 flex-col items-center overflow-y-auto rounded-[32px] px-12 py-16 [background:linear-gradient(180deg,rgba(0,0,0,0.3)_0%,rgba(0,0,0,0)_100%),var(--brandcolor)] max-[880px]:rounded-t-none max-[880px]:px-6 max-[880px]:pb-8 max-[880px]:pt-14">
+            <div className="gh-portal-gift-checkout-right-panel flex min-h-0 flex-1 flex-col items-center overflow-y-auto rounded-[32px] px-12 py-16 [background:linear-gradient(180deg,rgba(0,0,0,0.3)_0%,rgba(0,0,0,0)_100%),var(--brandcolor)] max-[881px]:rounded-t-none max-[881px]:px-6 max-[881px]:pt-14 max-[881px]:pb-8">
               <div
-                className="gh-portal-gift-checkout-card-stack my-auto flex w-full max-w-[280px] shrink-0 flex-col items-center max-[880px]:max-w-[240px] [&[data-revealing=true]_.gh-portal-gift-checkout-card-frame]:[transform:rotate(3deg)]"
+                className="gh-portal-gift-checkout-card-stack my-auto flex w-full max-w-[280px] shrink-0 flex-col items-center max-[881px]:max-w-[240px] [&[data-revealing=true]_.gh-portal-gift-checkout-card-frame]:[transform:rotate(3deg)]"
                 data-revealing={showDetails}
               >
                 <GiftCard

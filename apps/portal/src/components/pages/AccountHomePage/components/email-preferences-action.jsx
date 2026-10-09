@@ -46,7 +46,7 @@ function EmailPreferencesAction() {
 
   return (
     <section
-      className="gh-portal-list-clickable cursor-pointer focus-visible:[box-shadow:inset_0_0_0_2px_var(--brandcolor)] focus-visible:[outline:none]"
+      className="gh-portal-list-clickable cursor-pointer focus-visible:shadow-focus-brand focus-visible:outline-none"
       role="button"
       tabIndex={0}
       onClick={handleClick}
@@ -60,12 +60,12 @@ function EmailPreferencesAction() {
         }
       }}
     >
-      <div className="gh-portal-list-detail grow [&_.gh-portal-email-notice]:mt-1.5 [&_.gh-portal-email-notice]:text-[1.25rem] [&_.gh-portal-email-notice]:font-medium [&_.gh-portal-email-notice]:tracking-[0.2px] [&_.gh-portal-email-notice]:text-red rtl:[&_.gh-portal-email-notice]:mt-[5px] [&_h3]:text-base [&_h3]:font-semibold [&_p]:mb-0 [&_p]:me-2 [&_p]:ms-0 [&_p]:mt-[5px] [&_p]:text-[1.45rem] [&_p]:leading-[1.3em] [&_p]:tracking-[0.3px] [&_p]:text-gray-700 [&_p]:[word-break:break-word]">
+      <div className="gh-portal-list-detail grow [&_.gh-portal-email-notice]:mt-1.5 [&_.gh-portal-email-notice]:text-12.5 [&_.gh-portal-email-notice]:font-medium [&_.gh-portal-email-notice]:tracking-[0.2px] [&_.gh-portal-email-notice]:text-red rtl:[&_.gh-portal-email-notice]:mt-[5px] [&_h3]:text-15 [&_h3]:font-semibold [&_p]:ms-0 [&_p]:me-2 [&_p]:mt-[5px] [&_p]:mb-0 [&_p]:text-14.5 [&_p]:leading-[1.3em] [&_p]:tracking-[0.3px] [&_p]:[word-break:break-word] [&_p]:text-gray-700">
         <h3>{t('Emails')}</h3>
         {renderEmailNotice()}
       </div>
       <span
-        className="gh-portal-list-action -mx-1 my-0 flex min-h-[38px] select-none items-center justify-center whitespace-nowrap px-1 py-0 text-base font-medium leading-[1em] tracking-[0.2px] text-brand"
+        className="gh-portal-list-action -mx-1 my-0 flex min-h-[38px] items-center justify-center px-1 py-0 text-15 leading-[1em] font-medium tracking-[0.2px] whitespace-nowrap text-brand select-none"
         data-test-button="manage-newsletters"
         aria-hidden="true"
       >

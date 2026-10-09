@@ -11,7 +11,7 @@ import { t } from '../../utils/i18n';
 import { signupMessageButtonClass } from '../shared-classes';
 import { tw } from '../../utils/tw';
 
-const mainTitleClass = tw`gh-portal-main-title mt-3 text-pretty text-center leading-[1.1em] text-black [.gh-portal-signup-logo+&]:mt-1`;
+const mainTitleClass = tw`gh-portal-main-title mt-3 text-center leading-[1.1em] text-pretty text-black [.gh-portal-signup-logo+&]:mt-1`;
 
 export default class SigninPage extends React.Component {
   static contextType = AppContext;
@@ -126,7 +126,7 @@ export default class SigninPage extends React.Component {
   renderSignupMessage() {
     const { brandColor } = this.context;
     return (
-      <div className="gh-portal-signup-message z-[9999] mt-1 flex flex-wrap justify-center text-base text-gray-900 [&_*]:z-[9999]">
+      <div className="gh-portal-signup-message z-[9999] mt-1 flex flex-wrap justify-center text-15 text-gray-900 [&_*]:z-[9999]">
         <div>{t("Don't have an account?")}</div>
         <button
           data-test-button="signup-switch"
@@ -149,7 +149,7 @@ export default class SigninPage extends React.Component {
         <section>
           <div className="gh-portal-section mb-10">
             <p
-              className="gh-portal-members-disabled-notification mx-8 mb-6 mt-2 text-center text-gray-900"
+              className="gh-portal-members-disabled-notification mx-8 mt-2 mb-6 text-center text-gray-900"
               data-testid="members-disabled-notification-text"
             >
               {t('Memberships unavailable, contact the owner for access.')}
@@ -185,14 +185,14 @@ export default class SigninPage extends React.Component {
       iconStyle.backgroundImage = `url(${siteIcon})`;
       return (
         <img
-          className="gh-portal-signup-logo relative mb-2.5 mt-3 block size-[60px] rounded-sm bg-cover bg-center max-sm:size-12"
+          className="gh-portal-signup-logo relative mt-3 mb-2.5 block size-[60px] rounded-sm bg-cover bg-center max-sm:size-12"
           src={siteIcon}
           alt={this.context.site.title}
         />
       );
     } else if (!isSigninAllowed({ site })) {
       return (
-        <InvitationIcon className="gh-portal-icon gh-portal-icon-invitation mb-0.5 mt-3 size-11 text-brand" />
+        <InvitationIcon className="gh-portal-icon gh-portal-icon-invitation mt-3 mb-0.5 size-11 text-brand" />
       );
     }
     return null;
@@ -211,7 +211,7 @@ export default class SigninPage extends React.Component {
 
   renderFormHeader() {
     return (
-      <header className="gh-portal-signin-header mb-8 flex flex-col items-center px-8 max-[390px]:pb-4">
+      <header className="gh-portal-signin-header mb-8 flex flex-col items-center px-8 max-[391px]:pb-4">
         {this.renderSiteIcon()}
         {this.renderSiteTitle()}
       </header>
@@ -223,7 +223,7 @@ export default class SigninPage extends React.Component {
       <>
         <CloseButton />
         <div className="gh-portal-logged-out-form-container mx-auto w-full max-w-[420px]">
-          <div className="gh-portal-content signin relative !max-h-[unset] pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden [&_.gh-portal-input]:mb-3 [&_.gh-portal-section]:mb-0">
+          <div className="gh-portal-content signin relative max-h-[unset]! pb-1 [scrollbar-width:none] [&_.gh-portal-input]:mb-3 [&_.gh-portal-section]:mb-0 [&::-webkit-scrollbar]:hidden">
             {this.renderFormHeader()}
             {this.renderForm()}
           </div>

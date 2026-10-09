@@ -10,7 +10,7 @@ function InputError({ message, style }) {
   }
   return (
     <p
-      className="mb-0 text-sm leading-[1.6em] tracking-[0.35px] text-red"
+      className="mb-0 text-13 leading-[1.6em] tracking-[0.35px] text-red"
       style={{
         ...(style || {}),
       }}
@@ -51,10 +51,10 @@ function InputField({
   const sectionClasses = hidden ? 'gh-portal-input-section hidden' : 'gh-portal-input-section';
   const labelClasses =
     (hideLabel ? 'gh-portal-input-label hidden' : 'gh-portal-input-label') +
-    tw` mb-0.5 text-sm font-semibold tracking-[0px] text-gray-950`;
+    tw` mb-0.5 text-13 font-semibold tracking-[0px] text-gray-950`;
   const inputClasses = errorMessage || invalid ? 'gh-portal-input error' : 'gh-portal-input';
-  const fieldClasses = tw`mb-4 block w-full appearance-none rounded-md border border-solid border-gray-300 bg-transparent px-3 text-base tracking-[0.2px] [-webkit-appearance:none] [color:inherit] [outline:none] [transition:border-color_0.25s_ease-in-out] placeholder:text-gray-500 focus:border-gray-500 group-[:not(.preview)]/popup:disabled:bg-gray-50 group-[:not(.preview)]/popup:disabled:text-gray-400 group-[:not(.preview)]/popup:disabled:placeholder:text-gray-400 aria-[invalid=true]:border-red group-[:not(.preview)]/popup:[&[readonly]::placeholder]:text-gray-400 group-[:not(.preview)]/popup:[&[readonly]]:bg-gray-50 group-[:not(.preview)]/popup:[&[readonly]]:text-gray-400`;
-  const inputHeightClasses = 'h-11 py-0 max-[1440px]:h-[42px]';
+  const fieldClasses = tw`mb-4 block w-full appearance-none rounded-md border border-solid border-gray-300 bg-transparent px-3 text-15 tracking-[0.2px] [color:inherit] outline-none [-webkit-appearance:none] transition-input placeholder:text-gray-500 focus:border-gray-500 group-[:not(.preview)]/popup:disabled:bg-gray-50 group-[:not(.preview)]/popup:disabled:text-gray-400 group-[:not(.preview)]/popup:disabled:placeholder:text-gray-400 aria-[invalid=true]:border-red group-[:not(.preview)]/popup:[&[readonly]]:bg-gray-50 group-[:not(.preview)]/popup:[&[readonly]]:text-gray-400 group-[:not(.preview)]/popup:[&[readonly]::placeholder]:text-gray-400`;
+  const inputHeightClasses = 'h-11 py-0 max-[1441px]:h-[42px]';
   if (isCookiesDisabled()) {
     disabled = true;
   }
@@ -140,7 +140,7 @@ function InputField({
         // an option's text is all a native list can style across browsers.
         <select
           {...fieldProps}
-          className={`${value ? inputClasses : `${inputClasses} placeholder`} ${fieldClasses} ${inputHeightClasses} cursor-pointer bg-select-chevron bg-no-repeat pe-9 [background-position:right_12px_center] rtl:[background-position:left_12px_center] [&.placeholder]:text-gray-500 [&_option]:[color:CanvasText]`}
+          className={`${value ? inputClasses : `${inputClasses} placeholder`} ${fieldClasses} ${inputHeightClasses} cursor-pointer bg-select-chevron [background-position:right_12px_center] bg-no-repeat pe-9 rtl:[background-position:left_12px_center] [&_option]:[color:CanvasText] [&.placeholder]:text-gray-500`}
           disabled={disabled || readOnly}
         >
           {value ? (

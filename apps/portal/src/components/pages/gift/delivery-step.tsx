@@ -66,7 +66,7 @@ function GiftDeliveryStep({
       <div className="gh-portal-gift-checkout-section mt-6">
         {/* Same voice and spacing as every other field label on the form — the toggle is just
         this label's input. */}
-        <div className="gh-portal-gift-checkout-label mb-2 text-md font-semibold text-gray-900">
+        <div className="gh-portal-gift-checkout-label mb-2 text-14 font-semibold text-gray-900">
           {t('How would you like to share this gift?')}
         </div>
         <div aria-label={t('Delivery method')} className={giftSwitchClasses} role="radiogroup">
@@ -116,14 +116,14 @@ function GiftDeliveryStep({
             InputField's label markup to sit flush with the fields above. */}
             <div className="gh-portal-input-labelcontainer flex w-full justify-between">
               <label
-                className="gh-portal-input-label mb-0.5 text-sm font-semibold tracking-[0px] text-gray-950"
+                className="gh-portal-input-label mb-0.5 text-13 font-semibold tracking-[0px] text-gray-950"
                 htmlFor="gift-message"
               >
                 {t('Optional message')}
               </label>
             </div>
             <textarea
-              className="gh-portal-input gh-portal-gift-checkout-textarea mb-0 block min-h-24 w-full resize-none appearance-none rounded-md border border-solid border-gray-300 bg-transparent px-3 py-2.5 text-base leading-[1.5em] tracking-[0.2px] [-webkit-appearance:none] [color:inherit] [font-family:inherit] [outline:none] [transition:border-color_0.25s_ease-in-out] placeholder:text-gray-500 focus:border-gray-500"
+              className="gh-portal-input gh-portal-gift-checkout-textarea mb-0 block min-h-24 w-full resize-none appearance-none rounded-md border border-solid border-gray-300 bg-transparent px-3 py-2.5 [font-family:inherit] text-15 leading-[1.5em] tracking-[0.2px] [color:inherit] outline-none [-webkit-appearance:none] transition-input placeholder:text-gray-500 focus:border-gray-500"
               data-test-input="gift-message"
               id="gift-message"
               maxLength={maxMessageLength}
@@ -137,7 +137,7 @@ function GiftDeliveryStep({
               data-open={giftMessage.length > 0}
             >
               <div className={giftRevealInnerClasses}>
-                <p className="gh-portal-gift-checkout-message-count mb-0 mt-1.5 text-right text-xs tracking-[0.02em] text-gray-500">
+                <p className="gh-portal-gift-checkout-message-count mt-1.5 mb-0 text-right text-12 tracking-[0.02em] text-gray-500">
                   {giftMessage.length}/{maxMessageLength}
                 </p>
               </div>
@@ -145,7 +145,7 @@ function GiftDeliveryStep({
             <div className="gh-portal-gift-checkout-delivery-date mt-4 [&_.gh-portal-input]:mb-0 [&_.gh-portal-input]:box-border">
               <div className="gh-portal-input-labelcontainer flex w-full justify-between">
                 <label
-                  className="gh-portal-input-label mb-0.5 text-sm font-semibold tracking-[0px] text-gray-950"
+                  className="gh-portal-input-label mb-0.5 text-13 font-semibold tracking-[0px] text-gray-950"
                   htmlFor="gift-delivery-date"
                 >
                   {t('Delivery date')}
@@ -162,7 +162,7 @@ function GiftDeliveryStep({
                 onChange={onChangeDeliveryDate}
               />
               {deliveryDateError && (
-                <p className="gh-portal-gift-checkout-delivery-error mb-0 mt-2 text-sm leading-[1.6em] tracking-[0.35px] text-red">
+                <p className="gh-portal-gift-checkout-delivery-error mt-2 mb-0 text-13 leading-[1.6em] tracking-[0.35px] text-red">
                   {deliveryDateError}
                 </p>
               )}

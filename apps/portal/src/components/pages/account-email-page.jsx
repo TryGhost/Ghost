@@ -46,7 +46,7 @@ export default function AccountEmailPage() {
       return (
         <>
           <p
-            className={`gh-portal-text-center gh-portal-header-message mx-0 mb-6 mt-[-20px] text-balance text-center ${hideClassName}`}
+            className={`gh-portal-text-center gh-portal-header-message mx-0 mt-[-20px] mb-6 text-center text-balance ${hideClassName}`}
           >
             <Interpolate
               string={t(
@@ -72,7 +72,7 @@ export default function AccountEmailPage() {
     return (
       <>
         <p
-          className={`gh-portal-text-center gh-portal-header-message mx-0 mb-6 mt-[-20px] text-balance text-center ${hideClassName}`}
+          className={`gh-portal-text-center gh-portal-header-message mx-0 mt-[-20px] mb-6 text-center text-balance ${hideClassName}`}
         >
           <Interpolate
             string={t('{memberEmail} will no longer receive {newsletterName} newsletter.')}

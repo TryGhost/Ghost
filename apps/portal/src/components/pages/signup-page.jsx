@@ -29,7 +29,7 @@ import { t } from '../../utils/i18n';
 import { signupMessageButtonClass, termsCheckboxClass } from '../shared-classes';
 import { tw } from '../../utils/tw';
 
-const notificationClass = tw`mx-8 mb-6 mt-2 text-center text-gray-900`;
+const notificationClass = tw`mx-8 mt-2 mb-6 text-center text-gray-900`;
 
 class SignupPage extends React.Component {
   static contextType = AppContext;
@@ -253,7 +253,7 @@ class SignupPage extends React.Component {
 
     const termsText = (
       <div
-        className="gh-portal-signup-terms-content [&_a]:font-medium [&_a]:text-brand [&_a]:no-underline [&_p]:mb-0 [&_p]:text-md [&_p]:leading-[1.25em] [&_p]:text-gray-900 [.gh-portal-error_&]:leading-[1.5em]"
+        className="gh-portal-signup-terms-content [&_a]:font-medium [&_a]:text-brand [&_a]:no-underline [&_p]:mb-0 [&_p]:text-14 [&_p]:leading-[1.25em] [&_p]:text-gray-900 [.gh-portal-error_&]:leading-[1.5em]"
         dangerouslySetInnerHTML={{ __html: sanitizeHtml(site.portal_signup_terms_html) }}
       ></div>
     );
@@ -276,7 +276,7 @@ class SignupPage extends React.Component {
 
     const errorClassName = this.state.errors?.checkbox ? 'gh-portal-error' : '';
 
-    const className = tw`gh-portal-signup-terms ${errorClassName} mb-9 [&.gh-portal-error]:text-md [&.gh-portal-error]:leading-[1.6em] [&.gh-portal-error]:text-red`;
+    const className = tw`gh-portal-signup-terms ${errorClassName} mb-9 [&.gh-portal-error]:text-14 [&.gh-portal-error]:leading-[1.6em] [&.gh-portal-error]:text-red`;
 
     return (
       <div className={className} onClick={interceptAnchorClicks} ref={this.termsRef}>
@@ -377,7 +377,7 @@ class SignupPage extends React.Component {
     return (
       <div>
         {this.renderFreeTrialMessage()}
-        <div className="gh-portal-signup-message gh-portal-signup-message-stack z-[9999] mt-1 flex flex-col flex-wrap items-center justify-center gap-[8px] text-base text-gray-900 group-[.full-size]/popup:mb-10 group-[.full-size]/popup:mt-6 [&_*]:z-[9999]">
+        <div className="gh-portal-signup-message gh-portal-signup-message-stack z-[9999] mt-1 flex flex-col flex-wrap items-center justify-center gap-[8px] text-15 text-gray-900 group-[.full-size]/popup:mt-6 group-[.full-size]/popup:mb-10 [&_*]:z-[9999]">
           <div className="gh-portal-signup-message-row flex max-w-full flex-wrap items-center justify-center">
             <div>{t('Already a member?')}</div>
             <button
@@ -443,7 +443,7 @@ class SignupPage extends React.Component {
     const signupTerms = this.renderSignupTerms();
 
     return (
-      <section className="gh-portal-signup animate-[fadeIn_0.5s_ease-in-out]">
+      <section className="gh-portal-signup animate-fade-in">
         <div className="gh-portal-section mb-10">
           <div className="gh-portal-logged-out-form-container mx-auto w-full max-w-[420px]">
             <InputForm
@@ -457,7 +457,7 @@ class SignupPage extends React.Component {
               <>
                 {this.renderProducts()}
                 {signupTerms && (
-                  <div className="gh-portal-signup-terms-wrapper free-only mx-auto w-full max-w-[420px] [&_.gh-portal-signup-terms]:mb-6 [.gh-portal-products:has(.gh-portal-product-card)+&]:!m-[20px_auto_0]">
+                  <div className="gh-portal-signup-terms-wrapper free-only mx-auto w-full max-w-[420px] [&_.gh-portal-signup-terms]:mb-6 [.gh-portal-products:has(.gh-portal-product-card)+&]:m-[20px_auto_0]!">
                     {signupTerms}
                   </div>
                 )}
@@ -543,7 +543,7 @@ class SignupPage extends React.Component {
     if (siteIcon) {
       return (
         <img
-          className="gh-portal-signup-logo relative mb-2.5 mt-3 block size-[60px] rounded-sm bg-cover bg-center max-sm:size-12"
+          className="gh-portal-signup-logo relative mt-3 mb-2.5 block size-[60px] rounded-sm bg-cover bg-center max-sm:size-12"
           src={siteIcon}
           alt={site.title}
         />
@@ -556,7 +556,7 @@ class SignupPage extends React.Component {
       !isSignupAllowed({ site })
     ) {
       return (
-        <InvitationIcon className="gh-portal-icon gh-portal-icon-invitation mb-0.5 mt-3 size-11 text-brand" />
+        <InvitationIcon className="gh-portal-icon gh-portal-icon-invitation mt-3 mb-0.5 size-11 text-brand" />
       );
     }
 
@@ -567,10 +567,10 @@ class SignupPage extends React.Component {
     const { site } = this.context;
     const siteTitle = site.title || '';
     return (
-      <header className="gh-portal-signup-header mb-8 flex flex-col items-center px-8 group-[.full-size]/wrapper:mt-8 max-[390px]:pb-4">
+      <header className="gh-portal-signup-header mb-8 flex flex-col items-center px-8 group-[.full-size]/wrapper:mt-8 max-[391px]:pb-4">
         {this.renderSiteIcon()}
         <h1
-          className="gh-portal-main-title mt-3 text-pretty text-center leading-[1.1em] text-black [.gh-portal-signup-logo+&]:mt-1"
+          className="gh-portal-main-title mt-3 text-center leading-[1.1em] text-pretty text-black [.gh-portal-signup-logo+&]:mt-1"
           data-testid="site-title-text"
         >
           {siteTitle}
@@ -611,7 +611,7 @@ class SignupPage extends React.Component {
     const { sectionClass } = this.getClassNames();
     return (
       <>
-        <div className="gh-portal-back-sitetitle absolute left-8 top-[35px] group-[.preview]/wrapper:hidden group-[:not(.full-size)]/wrapper:hidden rtl:left-auto rtl:right-8 [&_.gh-portal-btn]:h-auto [&_.gh-portal-btn]:p-0 [&_.gh-portal-btn]:text-base [&_.gh-portal-btn]:leading-[1em] [&_.gh-portal-btn]:text-gray-950 [&_.gh-portal-btn]:[border:0]">
+        <div className="gh-portal-back-sitetitle absolute top-[35px] left-8 group-[.preview]/wrapper:hidden group-[:not(.full-size)]/wrapper:hidden rtl:right-8 rtl:left-auto [&_.gh-portal-btn]:h-auto [&_.gh-portal-btn]:p-0 [&_.gh-portal-btn]:text-15 [&_.gh-portal-btn]:leading-[1em] [&_.gh-portal-btn]:text-gray-950 [&_.gh-portal-btn]:[border:0]">
           <SiteTitleBackButton
             onBack={() => {
               if (this.state.showNewsletterSelection) {
@@ -627,7 +627,7 @@ class SignupPage extends React.Component {
         <CloseButton />
         <div
           className={
-            tw`gh-portal-content signup relative !max-h-[unset] pb-0 [scrollbar-width:none] [&.single-field]:mb-1 [&.single-field_.gh-portal-input]:mb-3 [&.single-field_.gh-portal-products:not(:has(.gh-portal-product-card))]:-mt-4 [&.single-field_.gh-portal-signup-terms-wrapper]:mt-3 [&::-webkit-scrollbar]:hidden [&_.gh-portal-input-section:last-of-type]:mb-10 [&_.gh-portal-section]:mb-0 ` +
+            tw`gh-portal-content signup relative max-h-[unset]! pb-0 [scrollbar-width:none] [&_.gh-portal-input-section:last-of-type]:mb-10 [&_.gh-portal-section]:mb-0 [&.single-field]:mb-1 [&.single-field_.gh-portal-input]:mb-3 [&.single-field_.gh-portal-products:not(:has(.gh-portal-product-card))]:-mt-4 [&.single-field_.gh-portal-signup-terms-wrapper]:mt-3 [&::-webkit-scrollbar]:hidden ` +
             sectionClass
           }
         >

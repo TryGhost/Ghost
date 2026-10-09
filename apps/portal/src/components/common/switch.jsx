@@ -41,7 +41,7 @@ function Switch({
 
   return (
     <div className="gh-portal-for-switch" data-test-switch={dataTestId} {...wrapperProps}>
-      <label className="switch relative inline-block !h-[26px] !w-11 cursor-pointer" htmlFor={id}>
+      <label className="switch relative inline-block h-[26px]! w-11! cursor-pointer" htmlFor={id}>
         <input
           ref={inputRef}
           className="peer/switch size-0 opacity-0"
@@ -53,7 +53,7 @@ function Switch({
           {...inputProps}
         />
         <span
-          className="input-toggle-component absolute inset-0 !h-[26px] !w-11 cursor-pointer rounded-[999px] bg-gray-200 [transition:background_0.15s_ease-in-out,border-color_0.15s_ease-in-out] before:absolute before:!left-[3px] before:!top-[3px] before:!size-5 before:rounded-[999px] before:bg-white before:content-[''] before:[transition:0.3s] peer-checked/switch:bg-brand peer-checked/switch:before:translate-x-[18px] rtl:before:!left-auto rtl:before:!right-[3px] rtl:peer-checked/switch:before:translate-x-[-18px]"
+          className="input-toggle-component absolute inset-0 h-[26px]! w-11! cursor-pointer rounded-[999px] bg-gray-200 [transition:background_0.15s_ease-in-out,border-color_0.15s_ease-in-out] peer-checked/switch:bg-brand before:absolute before:top-[3px]! before:left-[3px]! before:size-5! before:rounded-[999px] before:bg-white before:content-[''] before:[transition:0.3s] peer-checked/switch:before:translate-x-[18px] rtl:before:right-[3px]! rtl:before:left-auto! rtl:peer-checked/switch:before:translate-x-[-18px]"
           data-testid={dataTestId}
         ></span>
       </label>

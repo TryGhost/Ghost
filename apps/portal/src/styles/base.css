@@ -1,4 +1,7 @@
-@tailwind base;
+@layer theme, base, components, utilities;
+
+@import 'tailwindcss/theme.css' layer(theme);
+@import './theme.css';
 
 @layer base {
   :root {
@@ -21,7 +24,7 @@
     line-height: 1.6em;
     font-weight: 400;
     font-style: normal;
-    color: theme('colors.gray.900');
+    color: var(--color-gray-900);
     box-sizing: border-box;
     overflow: hidden;
   }
@@ -105,15 +108,6 @@
     box-sizing: content-box;
   }
 
-  button:focus-visible,
-  a:focus-visible {
-    outline: 2px solid var(--brandcolor);
-    outline-offset: 2px;
-    border-radius: 4px;
-    box-shadow: none;
-    transition: none;
-  }
-
   input,
   textarea {
     font-family:
@@ -125,24 +119,6 @@
   textarea {
     padding: 10px;
     line-height: 1.5em;
-  }
-
-  @media (hover: none) {
-    select,
-    textarea,
-    input[type='text'],
-    input[type='password'],
-    input[type='datetime'],
-    input[type='datetime-local'],
-    input[type='date'],
-    input[type='month'],
-    input[type='time'],
-    input[type='week'],
-    input[type='number'],
-    input[type='email'],
-    input[type='url'] {
-      font-size: 16px !important;
-    }
   }
 
   @media (max-width: 1440px) {
@@ -176,6 +152,36 @@
     h3 {
       font-size: 24px;
       letter-spacing: -0.019em;
+    }
+  }
+}
+
+/* Utilities layer so these out-rank single-class utilities by specificity, as in the legacy CSS */
+@layer utilities {
+  button:focus-visible,
+  a:focus-visible {
+    outline: 2px solid var(--brandcolor);
+    outline-offset: 2px;
+    border-radius: 4px;
+    box-shadow: none;
+    transition: none;
+  }
+
+  @media (hover: none) {
+    select,
+    textarea,
+    input[type='text'],
+    input[type='password'],
+    input[type='datetime'],
+    input[type='datetime-local'],
+    input[type='date'],
+    input[type='month'],
+    input[type='time'],
+    input[type='week'],
+    input[type='number'],
+    input[type='email'],
+    input[type='url'] {
+      font-size: 16px !important;
     }
   }
 }

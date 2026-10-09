@@ -208,7 +208,7 @@ class NotificationContent extends React.Component {
     return (
       <div className="gh-portal-notification-wrapper relative size-full overflow-hidden">
         <div
-          className={`gh-portal-notification${statusClass}${slideClass} ${notificationClasses} right-3 max-sm:left-3 max-sm:max-w-[calc(100%-24px)] rtl:left-3 rtl:right-auto max-sm:rtl:left-auto max-sm:rtl:right-3`}
+          className={`gh-portal-notification${statusClass}${slideClass} ${notificationClasses} right-3 max-sm:left-3 max-sm:max-w-[calc(100%-24px)] rtl:right-auto rtl:left-3 max-sm:rtl:right-3 max-sm:rtl:left-auto`}
           onAnimationEnd={(e) => this.onAnimationEnd(e)}
         >
           {status === 'error' ? (

@@ -146,19 +146,19 @@ const RecommendationItem = (recommendation) => {
   return (
     <section className="gh-portal-recommendation-item min-h-[38px]">
       <div
-        className="gh-portal-list-detail gh-portal-list-big grow py-1 pe-6 ps-0 [transition:opacity_0.2s_ease-in-out] hover:cursor-pointer hover:opacity-80 [&:hover_.gh-portal-recommendation-arrow-icon]:opacity-80"
+        className="gh-portal-list-detail gh-portal-list-big grow py-1 ps-0 pe-6 [transition:opacity_0.2s_ease-in-out] hover:cursor-pointer hover:opacity-80 [&:hover_.gh-portal-recommendation-arrow-icon]:opacity-80"
         onClick={visitHandler}
       >
         <div className="gh-portal-recommendation-item-header flex cursor-pointer items-center gap-2.5">
           <RecommendationIcon title={title} favicon={favicon} featuredImage={featuredImage} />
-          <h3 className="text-lg font-semibold">{title}</h3>
-          <ArrowIcon className="gh-portal-recommendation-arrow-icon -ms-1.5 h-3 opacity-0 [transition:opacity_0.2s_ease-in] [&_path]:[stroke-width:3px] [&_path]:[stroke:#555]" />
+          <h3 className="text-16 font-semibold">{title}</h3>
+          <ArrowIcon className="gh-portal-recommendation-arrow-icon -ms-1.5 h-3 opacity-0 [transition:opacity_0.2s_ease-in] [&_path]:[stroke:#555] [&_path]:[stroke-width:3px]" />
         </div>
         <div className="gh-portal-recommendation-description-container relative">
           {subscribed && (
             <div
               className={
-                'gh-portal-recommendation-subscribed flex animate-[fadeIn_0.5s_ease-in-out] items-center gap-1 ps-[30px] text-[1.35rem] font-normal leading-[1.3em] tracking-[0.1px] ' +
+                'gh-portal-recommendation-subscribed flex animate-fade-in items-center gap-1 ps-[30px] text-13.5 font-normal leading-[1.3em] tracking-[0.1px] ' +
                 (description ? 'with-description absolute' : 'without-description mt-[5px]')
               }
             >
@@ -171,7 +171,7 @@ const RecommendationItem = (recommendation) => {
           )}
           {description && (
             <p
-              className={`${subscribed ? 'gh-portal-recommendation-description-hidden invisible ' : ''}mb-0 me-2 ms-0 mt-1 ps-[30px] text-[1.35rem] font-normal leading-[1.3em] tracking-[0.1px] text-gray-700 [word-break:break-word] rtl:mt-[5px]`}
+              className={`${subscribed ? 'gh-portal-recommendation-description-hidden invisible ' : ''}mb-0 ms-0 me-2 mt-1 ps-[30px] text-13.5 leading-[1.3em] font-normal tracking-[0.1px] [word-break:break-word] text-gray-700 rtl:mt-[5px]`}
             >
               {description}
             </p>
@@ -181,13 +181,13 @@ const RecommendationItem = (recommendation) => {
       <div className="gh-portal-recommendation-item-action min-h-[28px]">
         {!subscribed && loading && (
           <span className="gh-portal-recommendations-loading-container">
-            <LoaderIcon className="gh-portal-loadingicon dark !relative left-1/2 -ms-[19px] inline-block h-6 [&_path]:fill-black [&_rect]:fill-black" />
+            <LoaderIcon className="gh-portal-loadingicon dark relative! left-1/2 -ms-[19px] inline-block h-6 [&_path]:fill-black [&_rect]:fill-black" />
           </span>
         )}
         {!subscribed && !loading && allowOneClickSubscribe && (
           <button
             type="button"
-            className="gh-portal-btn gh-portal-btn-list relative -mx-1 my-0 flex h-7 cursor-pointer select-none items-center justify-center whitespace-nowrap rounded-md border-none bg-white px-1 py-0 text-center text-base font-medium leading-[1em] tracking-[0.2px] text-brand no-underline [outline:none] [transition:all_0.25s_ease] hover:border-gray-300 hover:opacity-75 disabled:cursor-auto disabled:!opacity-50"
+            className="gh-portal-btn gh-portal-btn-list relative -mx-1 my-0 flex h-7 cursor-pointer items-center justify-center rounded-md border-none bg-white px-1 py-0 text-center text-15 leading-[1em] font-medium tracking-[0.2px] whitespace-nowrap text-brand no-underline outline-none select-none transition-control hover:border-gray-300 hover:opacity-75 disabled:cursor-auto disabled:opacity-50!"
             onClick={clickHandler}
           >
             {t('Subscribe')}
@@ -277,18 +277,18 @@ const RecommendationsPage = () => {
       <div className="gh-portal-recommendations-header mb-5 flex flex-col items-center">
         {icon && (
           <img
-            className="gh-portal-signup-logo relative mx-0 mb-2.5 mt-3 block size-[60px] rounded-sm bg-cover bg-center max-sm:size-12"
+            className="gh-portal-signup-logo relative mx-0 mt-3 mb-2.5 block size-[60px] rounded-sm bg-cover bg-center max-sm:size-12"
             alt={title}
             src={icon}
           />
         )}
-        <h1 className="gh-portal-main-title text-balance px-8 py-0 text-center leading-[1.1em] text-black [.gh-portal-signup-logo+&]:mt-1">
+        <h1 className="gh-portal-main-title px-8 py-0 text-center leading-[1.1em] text-balance text-black [.gh-portal-signup-logo+&]:mt-1">
           {heading}
         </h1>
       </div>
       <p className="gh-portal-recommendations-description text-center">{subheading}</p>
       {recommendationsEnabled ? (
-        <div className="gh-portal-list overflow-hidden rounded-lg border border-solid border-gray-200 bg-white p-0 [&_section:first-of-type]:rounded-t-lg [&_section:last-of-type]:rounded-b-lg [&_section:last-of-type]:border-none [&_section]:m-0 [&_section]:flex [&_section]:items-center [&_section]:p-5 [&_section]:[border-bottom:1px_solid_theme(colors.gray.200)]">
+        <div className="gh-portal-list overflow-hidden rounded-lg border border-solid border-gray-200 bg-white p-0 [&_section]:m-0 [&_section]:flex [&_section]:items-center [&_section]:p-5 [&_section]:[border-bottom:1px_solid_var(--color-gray-200)] [&_section:first-of-type]:rounded-t-lg [&_section:last-of-type]:rounded-b-lg [&_section:last-of-type]:border-none">
           {recommendations.slice(0, numToShow).map((recommendation, index) => (
             <RecommendationItem key={index} {...recommendation} />
           ))}
@@ -299,7 +299,7 @@ const RecommendationsPage = () => {
         <footer className="gh-portal-action-footer flex flex-col items-center justify-between gap-3 [.gh-portal-list+&]:mt-10">
           {numToShow < recommendations.length && (
             <button
-              className="gh-portal-btn gh-portal-center relative flex h-11 min-w-[80px] cursor-pointer select-none items-center justify-center whitespace-nowrap rounded-md border border-solid border-gray-200 bg-white px-[1.8rem] py-0 text-center text-base font-medium leading-[1em] tracking-[0.2px] text-black no-underline [outline:none] [transition:all_0.25s_ease] hover:border-gray-300 disabled:cursor-auto disabled:!opacity-50"
+              className="gh-portal-btn gh-portal-center relative flex h-11 min-w-[80px] cursor-pointer items-center justify-center rounded-md border border-solid border-gray-200 bg-white px-[1.8rem] py-0 text-center text-15 leading-[1em] font-medium tracking-[0.2px] whitespace-nowrap text-black no-underline outline-none select-none transition-control hover:border-gray-300 disabled:cursor-auto disabled:opacity-50!"
               style={{ width: '100%' }}
               onClick={showAllRecommendations}
             >
@@ -308,7 +308,7 @@ const RecommendationsPage = () => {
           )}
           {pageData && pageData.signup && (
             <button
-              className="gh-portal-btn gh-portal-center gh-portal-btn-link gh-portal-btn-recommendations-later relative mx-auto mb-6 mt-2 flex cursor-pointer select-none items-center justify-center whitespace-nowrap rounded-md border-none bg-transparent p-0 text-center text-base font-normal leading-none tracking-[0.2px] text-gray-700 no-underline [outline:none] [transition:all_0.25s_ease] hover:border-gray-300 hover:opacity-85 disabled:cursor-auto disabled:!opacity-50"
+              className="gh-portal-btn gh-portal-center gh-portal-btn-link gh-portal-btn-recommendations-later relative mx-auto mt-2 mb-6 flex cursor-pointer items-center justify-center rounded-md border-none bg-transparent p-0 text-center text-15 leading-none font-normal tracking-[0.2px] whitespace-nowrap text-gray-700 no-underline outline-none select-none transition-control hover:border-gray-300 hover:opacity-85 disabled:cursor-auto disabled:opacity-50!"
               style={{ width: '100%' }}
               onClick={showAllRecommendations}
             >
