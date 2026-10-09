@@ -521,7 +521,7 @@ export default class OfferPage extends React.Component {
         <div
           className={`${productCardClass} top rounded-t-[7px] [border-style:solid_solid_none] border-b-current pt-8 pb-0`}
         >
-          <div className="flex min-h-[56px] w-full flex-col items-start max-[881px]:min-h-[unset]">
+          <div className="flex min-h-[56px] w-full flex-col items-start max-md:min-h-[unset]">
             <h4 className={productNameClass}>
               {product.name} - {offer.cadence === 'month' ? t('Monthly') : t('Yearly')}
             </h4>
@@ -576,7 +576,7 @@ export default class OfferPage extends React.Component {
 
     return (
       <>
-        <div className="relative [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <div className="relative scrollbar-none ">
           <CloseButton />
           {this.renderFormHeader()}
 

@@ -212,7 +212,7 @@ const DatePicker = ({
                     editing; only the browser's calendar is replaced. */}
         <input
           className={
-            tw`gh-portal-input mb-0 box-border block h-11 w-full appearance-none rounded-md border border-solid border-gray-300 bg-transparent px-3 py-0 text-15 tracking-[0.2px] [color:inherit] outline-none transition-input placeholder:text-gray-500 focus:border-gray-500 max-[1441px]:h-[42px] [&.error]:border-red [&.has-min-label:not(:focus)]:text-transparent [&.has-min-label:not(:focus)::-webkit-datetime-edit]:text-transparent [&::-webkit-calendar-picker-indicator]:hidden [@media(hover:none)]:text-[16px]!` +
+            tw`gh-portal-input mb-0 box-border block h-11 w-full appearance-none rounded-md border border-solid border-gray-300 bg-transparent px-3 py-0 text-15 tracking-[0.2px] [color:inherit] outline-none transition-input placeholder:text-gray-500 focus:border-gray-500 max-xl:h-[42px] [&.error]:border-red [&.has-min-label:not(:focus)]:text-transparent [&.has-min-label:not(:focus)::-webkit-datetime-edit]:text-transparent [&::-webkit-calendar-picker-indicator]:hidden [@media(hover:none)]:text-[16px]!` +
             (hasError ? ' error' : '') +
             (showMinLabel ? ' has-min-label' : '')
           }

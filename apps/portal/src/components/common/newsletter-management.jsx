@@ -310,7 +310,7 @@ export default function NewsletterManagement({
   };
   const FinalNotification = notification || EmptyNotification;
   return (
-    <div className="with-footer relative [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+    <div className="with-footer relative scrollbar-none ">
       <div className="gh-portal-email-preferences-header">
         <AccountHeader />
         <FinalNotification />

@@ -616,7 +616,7 @@ class SignupPage extends React.Component {
         <CloseButton />
         <div
           className={
-            tw`signup relative max-h-[unset]! pb-0 [scrollbar-width:none] [&_.gh-portal-input-section:last-of-type]:mb-10 [&_.gh-portal-section]:mb-0 [&.single-field]:mb-1 [&.single-field_.gh-portal-input]:mb-3 [&.single-field_.gh-portal-products:not(:has(.gh-portal-product-card))]:-mt-4 [&.single-field_.gh-portal-signup-terms-wrapper]:mt-3 [&::-webkit-scrollbar]:hidden ` +
+            tw`signup relative scrollbar-none max-h-[unset]! pb-0 [&_.gh-portal-input-section:last-of-type]:mb-10 [&_.gh-portal-section]:mb-0 [&.single-field]:mb-1 [&.single-field_.gh-portal-input]:mb-3 [&.single-field_.gh-portal-products:not(:has(.gh-portal-product-card))]:-mt-4 [&.single-field_.gh-portal-signup-terms-wrapper]:mt-3 ` +
             sectionClass
           }
         >

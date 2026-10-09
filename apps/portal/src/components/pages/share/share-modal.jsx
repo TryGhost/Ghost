@@ -95,7 +95,7 @@ const ShareModal = () => {
   };
 
   return (
-    <div className="relative [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+    <div className="relative scrollbar-none ">
       <CloseButton placement="share" />
       <div className="mb-5">
         <h1 className="text-left text-21 leading-[1.1em] font-semibold text-pretty text-black rtl:text-right">
@@ -163,14 +163,14 @@ const ShareModal = () => {
         >
           {copied ? (
             <span
-              className="copied inline-flex size-5 items-center justify-center rounded-[999px] bg-[color:color-mix(in_srgb,var(--brandcolor)_14%,var(--color-white))] leading-[0] text-brand [&_svg]:size-3 [&_svg_path]:stroke-current"
+              className="copied inline-flex size-5 items-center justify-center rounded-full bg-[color:color-mix(in_srgb,var(--brandcolor)_14%,var(--color-white))] leading-[0] text-brand [&_svg]:size-3 [&_svg_path]:stroke-current"
               aria-hidden="true"
             >
               <CheckmarkIcon />
             </span>
           ) : (
             <span
-              className="inline-flex size-5 items-center justify-center rounded-[999px] leading-[0] [&_svg]:size-5"
+              className="inline-flex size-5 items-center justify-center rounded-full leading-[0] [&_svg]:size-5"
               aria-hidden="true"
             >
               <LinkIcon />
@@ -190,7 +190,7 @@ const ShareModal = () => {
           title={t('X (Twitter)')}
         >
           <span
-            className="x inline-flex size-5 items-center justify-center rounded-[999px] leading-[0] [&_svg]:size-4"
+            className="x inline-flex size-5 items-center justify-center rounded-full leading-[0] [&_svg]:size-4"
             aria-hidden="true"
           >
             <XIcon />
@@ -206,7 +206,7 @@ const ShareModal = () => {
           title={t('LinkedIn')}
         >
           <span
-            className="inline-flex size-5 items-center justify-center rounded-[999px] leading-[0] [&_svg]:size-5"
+            className="inline-flex size-5 items-center justify-center rounded-full leading-[0] [&_svg]:size-5"
             aria-hidden="true"
           >
             <LinkedinIcon />
@@ -222,7 +222,7 @@ const ShareModal = () => {
           title={t('Email')}
         >
           <span
-            className="inline-flex size-5 items-center justify-center rounded-[999px] leading-[0] [&_svg]:size-5"
+            className="inline-flex size-5 items-center justify-center rounded-full leading-[0] [&_svg]:size-5"
             aria-hidden="true"
           >
             <EnvelopeIcon />
@@ -243,7 +243,7 @@ const ShareModal = () => {
             aria-expanded={isMoreMenuOpen}
           >
             <span
-              className="inline-flex size-5 items-center justify-center rounded-[999px] leading-[0] [&_svg]:size-5"
+              className="inline-flex size-5 items-center justify-center rounded-full leading-[0] [&_svg]:size-5"
               aria-hidden="true"
             >
               <EllipsisIcon />

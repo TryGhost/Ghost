@@ -21,7 +21,7 @@ function MemberGravatar({ gravatar, style }) {
   const Style = Styles({ style });
   return (
     <figure
-      className="gh-portal-avatar relative mx-0 mt-0 mb-2 flex items-center justify-center overflow-hidden rounded-[999px]"
+      className="gh-portal-avatar relative mx-0 mt-0 mb-2 flex items-center justify-center overflow-hidden rounded-full"
       style={Style.avatarContainer}
     >
       <UserIcon style={Style.userIcon} />

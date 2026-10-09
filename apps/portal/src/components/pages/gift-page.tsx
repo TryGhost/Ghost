@@ -42,9 +42,9 @@ import type {
 } from './gift/types';
 import { tw } from '../../utils/tw';
 
-const CONTENT_CLASSES = tw`gift relative min-h-screen p-0 [scrollbar-width:none] [&_.gh-portal-btn-site-title-back]:absolute [&_.gh-portal-btn-site-title-back]:top-8 [&_.gh-portal-btn-site-title-back]:left-8 [&_.gh-portal-btn-site-title-back]:flex [&_.gh-portal-btn-site-title-back]:h-auto [&_.gh-portal-btn-site-title-back]:border-0 [&_.gh-portal-btn-site-title-back]:border-none [&_.gh-portal-btn-site-title-back]:p-0 [&_.gh-portal-btn-site-title-back]:text-gray-950 max-[881px]:[&_.gh-portal-btn-site-title-back]:top-3 max-[881px]:[&_.gh-portal-btn-site-title-back]:left-6 max-[881px]:[&_.gh-portal-btn-site-title-back]:h-10 rtl:[&_.gh-portal-btn-site-title-back]:right-8 rtl:[&_.gh-portal-btn-site-title-back]:left-auto rtl:max-[881px]:[&_.gh-portal-btn-site-title-back]:right-6 [&::-webkit-scrollbar]:hidden`;
-const CHECKOUT_CLASSES = tw`grid min-h-screen w-full grid-cols-[1fr_1fr] max-[881px]:min-h-0 max-[881px]:grid-cols-[1fr] [&_.gh-portal-btn-primary]:rounded-[999px] [&_.gh-portal-input]:h-12 [&_.gh-portal-input-label]:mb-0 [&_.gh-portal-input-label]:text-14 [&_.gh-portal-input-label]:font-semibold [&_.gh-portal-input-label]:text-gray-900 [&_.gh-portal-input-labelcontainer]:mb-2 [&_.gh-portal-input-labelcontainer]:items-baseline`;
-const LEFT_CLASSES = tw`relative flex items-center justify-center bg-white p-12 max-[881px]:px-6 max-[881px]:pt-16 max-[881px]:pb-0`;
+const CONTENT_CLASSES = tw`gift relative scrollbar-none min-h-screen p-0 [&_.gh-portal-btn-site-title-back]:absolute [&_.gh-portal-btn-site-title-back]:top-8 [&_.gh-portal-btn-site-title-back]:left-8 [&_.gh-portal-btn-site-title-back]:flex [&_.gh-portal-btn-site-title-back]:h-auto [&_.gh-portal-btn-site-title-back]:border-0 [&_.gh-portal-btn-site-title-back]:border-none [&_.gh-portal-btn-site-title-back]:p-0 [&_.gh-portal-btn-site-title-back]:text-gray-950 max-md:[&_.gh-portal-btn-site-title-back]:top-3 max-md:[&_.gh-portal-btn-site-title-back]:left-6 max-md:[&_.gh-portal-btn-site-title-back]:h-10 rtl:[&_.gh-portal-btn-site-title-back]:right-8 rtl:[&_.gh-portal-btn-site-title-back]:left-auto rtl:max-md:[&_.gh-portal-btn-site-title-back]:right-6 `;
+const CHECKOUT_CLASSES = tw`grid min-h-screen w-full grid-cols-[1fr_1fr] max-md:min-h-0 max-md:grid-cols-[1fr] [&_.gh-portal-btn-primary]:rounded-full [&_.gh-portal-input]:h-12 [&_.gh-portal-input-label]:mb-0 [&_.gh-portal-input-label]:text-14 [&_.gh-portal-input-label]:font-semibold [&_.gh-portal-input-label]:text-gray-900 [&_.gh-portal-input-labelcontainer]:mb-2 [&_.gh-portal-input-labelcontainer]:items-baseline`;
+const LEFT_CLASSES = tw`relative flex items-center justify-center bg-white p-12 max-md:px-6 max-md:pt-16 max-md:pb-0`;
 const INNER_CLASSES = tw`relative z-[1] my-auto flex w-full max-w-[496px] flex-col`;
 
 const validateInputForm = ValidateInputForm as unknown as (data: {
@@ -241,7 +241,7 @@ const GiftPage = () => {
           </div>
           <div
             aria-hidden="true"
-            className="sticky top-0 flex h-screen [align-self:start] overflow-y-auto py-3 pr-3 pl-0 max-[881px]:static max-[881px]:-order-1 max-[881px]:hidden max-[881px]:h-auto max-[881px]:overflow-visible max-[881px]:p-0"
+            className="sticky top-0 flex h-screen [align-self:start] overflow-y-auto py-3 pr-3 pl-0 max-md:static max-md:-order-1 max-md:hidden max-md:h-auto max-md:overflow-visible max-md:p-0"
           />
         </div>
       </div>
@@ -577,7 +577,7 @@ const GiftPage = () => {
                 onChangeRecipientName={handleRecipientNameChange}
               />
             )}
-            <div className="gh-portal-gift-checkout-cta-wrapper sticky bottom-0 z-[1] bg-[linear-gradient(0deg,rgba(var(--whitergb),1)_78%,rgba(var(--whitergb),0)_100%)] py-6 max-[881px]:bg-[linear-gradient(0deg,rgba(var(--whitergb),1)_70%,rgba(var(--whitergb),0)_100%)] [&_.gh-portal-gift-checkout-cta]:h-12 [&_.gh-portal-gift-checkout-cta]:font-semibold">
+            <div className="gh-portal-gift-checkout-cta-wrapper sticky bottom-0 z-[1] bg-[linear-gradient(0deg,rgba(var(--whitergb),1)_78%,rgba(var(--whitergb),0)_100%)] py-6 max-md:bg-[linear-gradient(0deg,rgba(var(--whitergb),1)_70%,rgba(var(--whitergb),0)_100%)] [&_.gh-portal-gift-checkout-cta]:h-12 [&_.gh-portal-gift-checkout-cta]:font-semibold">
               <ActionButton
                 brandColor={brandColor}
                 classes="gh-portal-gift-checkout-cta"

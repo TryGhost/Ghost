@@ -8,7 +8,7 @@ import AccountActions from './account-actions';
 
 const AccountMain = () => {
   return (
-    <div className="relative [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+    <div className="relative scrollbar-none ">
       <CloseButton />
       <UserHeader />
       <section className="mb-10">

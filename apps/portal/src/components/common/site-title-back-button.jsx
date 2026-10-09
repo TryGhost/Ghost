@@ -9,7 +9,7 @@ export default class SiteTitleBackButton extends React.Component {
     return (
       <>
         <button
-          className="gh-portal-btn gh-portal-btn-site-title-back group/back relative z-[10000] flex h-11 min-w-[80px] cursor-pointer items-center justify-center rounded-md border border-solid border-gray-200 bg-white px-[1.8rem] py-0 text-center text-15 leading-[1em] font-medium tracking-[0.2px] whitespace-nowrap text-black no-underline outline-none select-none [transition:transform_0.25s_ease-in-out] hover:border-gray-300 disabled:cursor-auto disabled:opacity-50! max-[961px]:hidden"
+          className="gh-portal-btn gh-portal-btn-site-title-back group/back relative z-[10000] flex h-11 min-w-[80px] cursor-pointer items-center justify-center rounded-md border border-solid border-gray-200 bg-white px-[1.8rem] py-0 text-center text-15 leading-[1em] font-medium tracking-[0.2px] whitespace-nowrap text-black no-underline outline-none select-none [transition:transform_0.25s_ease-in-out] hover:border-gray-300 disabled:cursor-auto disabled:opacity-50! max-lg:hidden"
           onClick={() => {
             if (this.props.onBack) {
               this.props.onBack();

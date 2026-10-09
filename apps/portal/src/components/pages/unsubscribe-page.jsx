@@ -41,7 +41,7 @@ function AccountHeader() {
 function UnsubscribeErrorPage({ message }) {
   const { doAction } = useContext(AppContext);
   return (
-    <div className="with-footer relative [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+    <div className="with-footer relative scrollbar-none ">
       <CloseButton />
       <div className="mx-auto my-0 w-24 px-0 py-2.5 text-center text-red-500">
         <WarningIcon />
@@ -289,7 +289,7 @@ export default function UnsubscribePage() {
   // Case: Single active newsletter
   if (siteNewsletters?.length === 1 && !commentsEnabled && !showPrefs) {
     return (
-      <div className="with-footer relative [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      <div className="with-footer relative scrollbar-none ">
         <CloseButton />
         <AccountHeader />
         <h1 className="mb-4 text-center text-26 leading-[1.1em] text-pretty text-black">

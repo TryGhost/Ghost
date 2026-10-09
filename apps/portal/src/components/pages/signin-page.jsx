@@ -221,7 +221,7 @@ export default class SigninPage extends React.Component {
       <>
         <CloseButton />
         <div className="mx-auto w-full max-w-[420px]">
-          <div className="signin relative max-h-[unset]! pb-1 [scrollbar-width:none] [&_.gh-portal-input]:mb-3 [&_.gh-portal-section]:mb-0 [&::-webkit-scrollbar]:hidden">
+          <div className="signin relative scrollbar-none max-h-[unset]! pb-1 [&_.gh-portal-input]:mb-3 [&_.gh-portal-section]:mb-0 ">
             {this.renderFormHeader()}
             {this.renderForm()}
           </div>

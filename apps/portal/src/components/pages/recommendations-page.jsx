@@ -265,7 +265,7 @@ const RecommendationsPage = () => {
   }
 
   return (
-    <div className="with-footer relative [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+    <div className="with-footer relative scrollbar-none ">
       <CloseButton />
       <div className="gh-portal-recommendations-header mb-5 flex flex-col items-center">
         {icon && (

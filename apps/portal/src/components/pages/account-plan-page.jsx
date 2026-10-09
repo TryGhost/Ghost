@@ -383,7 +383,7 @@ const RetentionOfferSection = ({ subscription, offer, onAcceptOffer, onDeclineOf
                 <span className="self-start text-27 leading-[1.135em] font-bold max-[371px]:text-18">
                   {currency}
                 </span>
-                <span className="amount text-35 leading-[1em] font-bold tracking-[-1.3px] text-black max-[1441px]:text-[32px] max-[1441px]:tracking-[-0.022em]">
+                <span className="amount text-35 leading-[1em] font-bold tracking-[-1.3px] text-black max-xl:text-[32px] max-xl:tracking-[-0.022em]">
                   {discountedPrice}
                 </span>
               </div>
@@ -826,7 +826,7 @@ export default class AccountPlanPage extends React.Component {
     const { lastPage } = this.context;
     return (
       <>
-        <div className="relative [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <div className="relative scrollbar-none ">
           <BackButton onClick={(e) => this.onBack(e)} hidden={!lastPage && !showConfirmation} />
           <CloseButton />
           <Header

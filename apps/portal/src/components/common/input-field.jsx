@@ -54,7 +54,7 @@ function InputField({
     tw` mb-0.5 text-13 font-semibold tracking-[0px] text-gray-950`;
   const inputClasses = errorMessage || invalid ? 'gh-portal-input error' : 'gh-portal-input';
   const fieldClasses = tw`mb-4 block w-full appearance-none rounded-md border border-solid border-gray-300 bg-transparent px-3 text-15 tracking-[0.2px] [color:inherit] outline-none [-webkit-appearance:none] transition-input placeholder:text-gray-500 focus:border-gray-500 group-[:not(.preview)]/popup:disabled:bg-gray-50 group-[:not(.preview)]/popup:disabled:text-gray-400 group-[:not(.preview)]/popup:disabled:placeholder:text-gray-400 aria-[invalid=true]:border-red group-[:not(.preview)]/popup:[&[readonly]]:bg-gray-50 group-[:not(.preview)]/popup:[&[readonly]]:text-gray-400 group-[:not(.preview)]/popup:[&[readonly]::placeholder]:text-gray-400`;
-  const inputHeightClasses = 'h-11 py-0 max-[1441px]:h-[42px]';
+  const inputHeightClasses = 'h-11 py-0 max-xl:h-[42px]';
   if (isCookiesDisabled()) {
     disabled = true;
   }

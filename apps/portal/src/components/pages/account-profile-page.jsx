@@ -233,7 +233,7 @@ export default class AccountProfilePage extends React.Component {
     }
     return (
       <>
-        <div className="with-footer relative [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <div className="with-footer relative scrollbar-none ">
           {this.renderHeader()}
           <CloseButton />
           <div className="gh-portal-section mb-10">{this.renderProfileData()}</div>

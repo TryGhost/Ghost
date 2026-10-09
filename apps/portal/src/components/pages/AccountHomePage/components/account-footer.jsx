@@ -8,7 +8,7 @@ const AccountFooter = ({ handleSignout, supportAddress = '' }) => {
         <li>
           <button
             data-test-button="footer-signout"
-            className="gh-portal-btn relative flex h-11 min-w-[80px] cursor-pointer items-center justify-center rounded-md border border-solid border-gray-200 bg-white px-[1.8rem] py-0 text-center text-15 leading-[1em] font-medium tracking-[0.2px] whitespace-nowrap text-black no-underline outline-none select-none transition-control hover:border-gray-300 disabled:cursor-auto disabled:opacity-50! max-[1441px]:h-[42px]"
+            className="gh-portal-btn relative flex h-11 min-w-[80px] cursor-pointer items-center justify-center rounded-md border border-solid border-gray-200 bg-white px-[1.8rem] py-0 text-center text-15 leading-[1em] font-medium tracking-[0.2px] whitespace-nowrap text-black no-underline outline-none select-none transition-control hover:border-gray-300 disabled:cursor-auto disabled:opacity-50! max-xl:h-[42px]"
             name="logout"
             aria-label="logout"
             onClick={(e) => handleSignout(e)}

@@ -126,7 +126,7 @@ export default function NewsletterSelectionPage({ pageData, onBack }) {
 
   const [subscribedNewsletters, setSubscribedNewsletters] = useState(defaultNewsletters);
   return (
-    <div className="with-footer relative mx-auto max-w-[460px] animate-fade-in [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+    <div className="with-footer relative mx-auto scrollbar-none max-w-[460px] animate-fade-in ">
       <p className="text-center text-18 font-semibold text-pretty">
         {t('Choose your newsletters')}
       </p>

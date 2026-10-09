@@ -163,10 +163,10 @@ const GiftRedemptionPage = () => {
 
   return (
     <>
-      <div className="giftRedemption relative min-h-screen p-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      <div className="giftRedemption relative scrollbar-none min-h-screen p-0 ">
         <CloseButton placement="gift" />
-        <div className="grid min-h-screen w-full grid-cols-[1fr_1fr] max-[881px]:min-h-0 max-[881px]:grid-cols-[1fr] [&_.gh-portal-btn-primary]:rounded-[999px] [&_.gh-portal-input]:h-12 [&_.gh-portal-input-label]:mb-0 [&_.gh-portal-input-label]:text-14 [&_.gh-portal-input-label]:font-semibold [&_.gh-portal-input-label]:text-gray-900 [&_.gh-portal-input-labelcontainer]:mb-2 [&_.gh-portal-input-labelcontainer]:items-baseline">
-          <div className="relative flex items-center justify-center bg-white p-12 max-[881px]:px-6 max-[881px]:pt-8 max-[881px]:pb-6">
+        <div className="grid min-h-screen w-full grid-cols-[1fr_1fr] max-md:min-h-0 max-md:grid-cols-[1fr] [&_.gh-portal-btn-primary]:rounded-full [&_.gh-portal-input]:h-12 [&_.gh-portal-input-label]:mb-0 [&_.gh-portal-input-label]:text-14 [&_.gh-portal-input-label]:font-semibold [&_.gh-portal-input-label]:text-gray-900 [&_.gh-portal-input-labelcontainer]:mb-2 [&_.gh-portal-input-labelcontainer]:items-baseline">
+          <div className="relative flex items-center justify-center bg-white p-12 max-md:px-6 max-md:pt-8 max-md:pb-6">
             <div className="hidden" aria-hidden="true" />
             <div className="relative z-[1] my-auto flex w-full max-w-[496px] flex-col [&_.gh-portal-gift-checkout-cta]:h-12 [&_.gh-portal-gift-checkout-cta]:font-semibold [&_.gh-portal-gift-redemption-form+.gh-portal-gift-checkout-cta]:mt-4 [&_.gh-portal-gift-redemption-message+.gh-portal-gift-checkout-cta]:mt-6">
               <header className="mb-3">
@@ -225,9 +225,9 @@ const GiftRedemptionPage = () => {
           </div>
 
           <div className={giftCheckoutRightClasses} {...cardTiltProps}>
-            <div className="flex min-h-0 flex-1 flex-col items-center overflow-y-auto rounded-[32px] px-12 py-16 [background:linear-gradient(180deg,rgba(0,0,0,0.3)_0%,rgba(0,0,0,0)_100%),var(--brandcolor)] max-[881px]:rounded-t-none max-[881px]:px-6 max-[881px]:pt-14 max-[881px]:pb-8">
+            <div className="flex min-h-0 flex-1 flex-col items-center overflow-y-auto rounded-[32px] px-12 py-16 [background:linear-gradient(180deg,rgba(0,0,0,0.3)_0%,rgba(0,0,0,0)_100%),var(--brandcolor)] max-md:rounded-t-none max-md:px-6 max-md:pt-14 max-md:pb-8">
               <div
-                className="my-auto flex w-full max-w-[280px] shrink-0 flex-col items-center max-[881px]:max-w-[240px] [&[data-revealing=true]_.gh-portal-gift-checkout-card-frame]:[transform:rotate(3deg)]"
+                className="my-auto flex w-full max-w-[280px] shrink-0 flex-col items-center max-md:max-w-[240px] [&[data-revealing=true]_.gh-portal-gift-checkout-card-frame]:[transform:rotate(3deg)]"
                 data-revealing={showDetails}
               >
                 <GiftCard

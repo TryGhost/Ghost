@@ -56,8 +56,12 @@
   /* Spacing and radii are px like the legacy CSS; font sizes are rem (html is 62.5%, so text-14 = 1.4rem = 14px) */
   --spacing: 4px;
 
+  /* max-* variants are exclusive, so each breakpoint sits one pixel above the legacy max-width it replaces */
   --breakpoint-*: initial;
   --breakpoint-sm: 481px;
+  --breakpoint-md: 881px;
+  --breakpoint-lg: 961px;
+  --breakpoint-xl: 1441px;
 
   --radius-*: initial;
   --radius: 4px;
@@ -282,6 +286,14 @@
 
 @utility shadow-focus-brand {
   box-shadow: inset 0 0 0 2px var(--brandcolor);
+}
+
+@utility scrollbar-none {
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 @utility transition-control {

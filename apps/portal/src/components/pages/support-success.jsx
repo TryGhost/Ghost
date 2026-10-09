@@ -15,7 +15,7 @@ const SupportSuccess = () => {
   const buttonLabel = t('Sign up');
 
   return (
-    <div className="relative [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+    <div className="relative scrollbar-none ">
       <CloseButton />
 
       <div className="mb-3 flex flex-col items-center p-0">
