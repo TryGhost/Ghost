@@ -46,13 +46,14 @@ boundary.
 
 `ghost/` is the main `ghost` package. The most common paths are:
 
-| Path                   | Contains                                                        |
-| ---------------------- | --------------------------------------------------------------- |
-| `ghost/core/server/`   | APIs, models, services, data access, and server startup         |
-| `ghost/core/frontend/` | Theme rendering, helpers, middleware, and public assets         |
-| `ghost/core/shared/`   | Configuration and code shared across server boundaries          |
-| `ghost/content/`       | Default themes, adapters, settings, images, and runtime content |
-| `ghost/test/`          | Unit, integration, and server E2E tests                         |
+| Path                                                      | Contains                                                        |
+| --------------------------------------------------------- | --------------------------------------------------------------- |
+| [`ghost/core/kernel/`](../../ghost/core/kernel/README.md) | Framework mechanisms for constructing and running Ghost         |
+| `ghost/core/server/`                                      | APIs, models, services, data access, and server startup         |
+| `ghost/core/frontend/`                                    | Theme rendering, helpers, middleware, and public assets         |
+| `ghost/core/shared/`                                      | Configuration and code shared across server boundaries          |
+| `ghost/content/`                                          | Default themes, adapters, settings, images, and runtime content |
+| `ghost/test/`                                             | Unit, integration, and server E2E tests                         |
 
 Built Admin assets are copied into `ghost/core/built/admin/` for the Ghost
 release. Treat `built/`, `build/`, `dist/`, and `umd/` as generated output unless

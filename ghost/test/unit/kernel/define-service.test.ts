@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { IncorrectUsageError } from '@tryghost/errors';
 import sinon from 'sinon';
-import { defineService } from '../../../../core/server/lib/define-service';
+import { defineService } from '../../../core/kernel/define-service';
 
 describe('defineService', function () {
   it('constructs only at init and reuses the ready instance', async function () {

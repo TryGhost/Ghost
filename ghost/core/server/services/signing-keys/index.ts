@@ -1,5 +1,5 @@
 import logging from '@tryghost/logging';
-import { defineService } from '../../lib/define-service';
+import { defineService } from '../../../kernel/define-service';
 import type { JobsService } from '../jobs-service/jobs-service';
 import CheckSigningKeysJob from './check-signing-keys-job';
 import { SigningKeyService } from './signing-key-service';

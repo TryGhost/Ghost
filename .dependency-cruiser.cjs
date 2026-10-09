@@ -24,6 +24,14 @@
  */
 module.exports = {
   forbidden: [
+    // Kernel mechanisms must not depend on application capabilities or wiring.
+    {
+      name: 'kernel-not-application',
+      comment: 'Kernel code must not import server, frontend or application entry points.',
+      severity: 'error',
+      from: { path: '^ghost/core/kernel/' },
+      to: { path: '^ghost/core/((server|frontend)/|(app|boot|bridge)\\.[jt]s$)' },
+    },
     // ============================================================
     // shared/ must not require server/* or frontend/*
     // ============================================================
