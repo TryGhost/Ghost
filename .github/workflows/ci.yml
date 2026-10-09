@@ -633,7 +633,7 @@ jobs:
       # load on first use. The list lives in scripts/lib/boot-modules.js
       - name: Check boot skips lazy-loaded modules
         working-directory: ghost
-        run: GHOST_CI_SHUTDOWN_AFTER_BOOT=1 node --import ../../scripts/assert-boot-skips-modules.js index.js
+        run: GHOST_CI_SHUTDOWN_AFTER_BOOT=1 node --import ../scripts/assert-boot-skips-modules.js index.js
 
       - name: Report result
         uses: ./.github/actions/report-boot-benchmark
