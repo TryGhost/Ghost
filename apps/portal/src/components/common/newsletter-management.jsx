@@ -10,7 +10,7 @@ import { t } from '../../utils/i18n';
 function AccountHeader() {
   const { brandColor, lastPage, doAction } = useContext(AppContext);
   return (
-    <header className="gh-portal-detail-header relative mx-0 mt-[-2px] mb-10 flex items-center justify-center px-[60px] max-sm:mt-1">
+    <header className="relative mx-0 mt-[-2px] mb-10 flex items-center justify-center px-[60px] max-sm:mt-1">
       <BackButton
         brandColor={brandColor}
         hidden={!lastPage}
@@ -18,7 +18,7 @@ function AccountHeader() {
           doAction('back');
         }}
       />
-      <h3 className="gh-portal-main-title text-center leading-[1.1em] text-pretty text-black max-[391px]:mt-px max-[391px]:text-21">
+      <h3 className="text-center leading-[1.1em] text-pretty text-black max-[391px]:mt-px max-[391px]:text-21">
         {t('Email preferences')}
       </h3>
     </header>
@@ -48,7 +48,7 @@ function NewsletterPrefSection({ newsletter, subscribedNewsletters, setSubscribe
 
   return (
     <section
-      className="gh-portal-list-toggle-wrapper gh-portal-list-clickable cursor-pointer items-start! justify-between focus-visible:shadow-focus-brand focus-visible:outline-none"
+      className="cursor-pointer items-start! justify-between focus-visible:shadow-focus-brand focus-visible:outline-none"
       data-testid="newsletter-toggle"
       role="button"
       tabIndex={0}
@@ -64,7 +64,7 @@ function NewsletterPrefSection({ newsletter, subscribedNewsletters, setSubscribe
         }
       }}
     >
-      <div className="gh-portal-list-detail grow py-1 ps-0 pe-6 [&_h3]:text-15 [&_h3]:font-semibold [&_p]:ms-0 [&_p]:me-2 [&_p]:mt-[5px] [&_p]:mb-0 [&_p]:text-14.5 [&_p]:leading-[1.3em] [&_p]:tracking-[0.3px] [&_p]:[word-break:break-word] [&_p]:text-gray-700">
+      <div className="grow py-1 ps-0 pe-6 [&_h3]:text-15 [&_h3]:font-semibold [&_p]:ms-0 [&_p]:me-2 [&_p]:mt-[5px] [&_p]:mb-0 [&_p]:text-14.5 [&_p]:leading-[1.3em] [&_p]:tracking-[0.3px] [&_p]:[word-break:break-word] [&_p]:text-gray-700">
         <h3>{newsletter.name}</h3>
         <p>{newsletter?.description}</p>
       </div>
@@ -117,7 +117,7 @@ function CommentsSection({
 
   return (
     <section
-      className="gh-portal-list-toggle-wrapper gh-portal-list-clickable cursor-pointer items-start! justify-between focus-visible:shadow-focus-brand focus-visible:outline-none"
+      className="cursor-pointer items-start! justify-between focus-visible:shadow-focus-brand focus-visible:outline-none"
       data-testid="comment-toggle"
       role="button"
       tabIndex={0}
@@ -133,7 +133,7 @@ function CommentsSection({
         }
       }}
     >
-      <div className="gh-portal-list-detail grow py-1 ps-0 pe-6 [&_h3]:text-15 [&_h3]:font-semibold [&_p]:ms-0 [&_p]:me-2 [&_p]:mt-[5px] [&_p]:mb-0 [&_p]:text-14.5 [&_p]:leading-[1.3em] [&_p]:tracking-[0.3px] [&_p]:[word-break:break-word] [&_p]:text-gray-700">
+      <div className="grow py-1 ps-0 pe-6 [&_h3]:text-15 [&_h3]:font-semibold [&_p]:ms-0 [&_p]:me-2 [&_p]:mt-[5px] [&_p]:mb-0 [&_p]:text-14.5 [&_p]:leading-[1.3em] [&_p]:tracking-[0.3px] [&_p]:[word-break:break-word] [&_p]:text-gray-700">
         <h3>{t('Comments')}</h3>
         <p>{t('Get notified when someone replies to your comment')}</p>
       </div>
@@ -185,7 +185,7 @@ function UpdatesAndAnnouncementsSection({
 
   return (
     <section
-      className="gh-portal-list-toggle-wrapper gh-portal-list-clickable cursor-pointer items-start! justify-between focus-visible:shadow-focus-brand focus-visible:outline-none"
+      className="cursor-pointer items-start! justify-between focus-visible:shadow-focus-brand focus-visible:outline-none"
       data-testid="updates-and-announcements-toggle"
       role="button"
       tabIndex={0}
@@ -201,7 +201,7 @@ function UpdatesAndAnnouncementsSection({
         }
       }}
     >
-      <div className="gh-portal-list-detail grow py-1 ps-0 pe-6 [&_h3]:text-15 [&_h3]:font-semibold [&_p]:ms-0 [&_p]:me-2 [&_p]:mt-[5px] [&_p]:mb-0 [&_p]:text-14.5 [&_p]:leading-[1.3em] [&_p]:tracking-[0.3px] [&_p]:[word-break:break-word] [&_p]:text-gray-700">
+      <div className="grow py-1 ps-0 pe-6 [&_h3]:text-15 [&_h3]:font-semibold [&_p]:ms-0 [&_p]:me-2 [&_p]:mt-[5px] [&_p]:mb-0 [&_p]:text-14.5 [&_p]:leading-[1.3em] [&_p]:tracking-[0.3px] [&_p]:[word-break:break-word] [&_p]:text-gray-700">
         <h3>{t('Updates & announcements')}</h3>
         <p>{t('Occasional updates from {siteTitle}', { siteTitle: site?.title })}</p>
       </div>
@@ -245,14 +245,14 @@ function EmailHelpSection() {
   const { doAction } = useContext(AppContext);
   return (
     <section className="gh-portal-list-help justify-between gap-4 bg-gray-50 text-14">
-      <span className="gh-portal-list-help-label text-gray-800">{t('Not receiving emails?')}</span>
+      <span className="text-gray-800">{t('Not receiving emails?')}</span>
       <button
-        className="gh-portal-btn-text gh-email-faq-page-button h-auto shrink-0 cursor-pointer self-stretch border-none bg-transparent p-0 text-14 font-medium text-brand [transition:color_linear_100ms]"
+        className="gh-portal-btn-text h-auto shrink-0 cursor-pointer self-stretch border-none bg-transparent p-0 text-14 font-medium text-brand [transition:color_linear_100ms]"
         onClick={() =>
           doAction('switchPage', { page: 'emailReceivingFAQ', pageData: { direct: false } })
         }
       >
-        {t('Get help')} <span className="right-arrow rtl:inline-flex rtl:-scale-x-100">&rarr;</span>
+        {t('Get help')} <span className="rtl:inline-flex rtl:-scale-x-100">&rarr;</span>
       </button>
     </section>
   );
@@ -261,7 +261,7 @@ function EmailHelpSection() {
 function ShowPaidMemberMessage({ site, isPaid }) {
   if (isPaid) {
     return (
-      <p className="gh-portal-btn-unsubscribe-note m-0 text-center text-14 leading-[1.4] text-balance text-gray-700">
+      <p className="m-0 text-center text-14 leading-[1.4] text-balance text-gray-700">
         {t('Unsubscribing from emails will not cancel your paid subscription to {title}', {
           title: site?.title,
         })}
@@ -310,7 +310,7 @@ export default function NewsletterManagement({
   };
   const FinalNotification = notification || EmptyNotification;
   return (
-    <div className="gh-portal-content with-footer relative [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+    <div className="with-footer relative [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
       <div className="gh-portal-email-preferences-header">
         <AccountHeader />
         <FinalNotification />

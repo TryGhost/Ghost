@@ -17,14 +17,14 @@ import { tw } from '../../utils/tw';
 // Map only the classes Portal styles so react-day-picker's stylesheet doesn't
 // have to be shipped.
 const classNames = {
-  months: 'gh-portal-datepicker-months relative',
-  month_caption: tw`gh-portal-datepicker-month-caption mb-0.5 flex h-7 items-center justify-center text-14 font-semibold text-black`,
-  nav: tw`gh-portal-datepicker-nav pointer-events-none absolute inset-x-0 top-0 flex justify-between [&_button]:pointer-events-auto [&_button]:flex [&_button]:size-7 [&_button]:cursor-pointer [&_button]:items-center [&_button]:justify-center [&_button]:rounded-md [&_button]:border-none [&_button]:bg-transparent [&_button]:p-0 [&_button]:text-gray-900 [&_button:focus-visible]:rounded [&_button:hover:not([aria-disabled='true'])]:text-black [&_button[aria-disabled='true']]:cursor-default [&_button[aria-disabled='true']]:opacity-30 [&_svg]:size-4 [&_svg]:fill-current rtl:[&_svg]:-scale-x-100`,
+  months: 'relative',
+  month_caption: tw`mb-0.5 flex h-7 items-center justify-center text-14 font-semibold text-black`,
+  nav: tw`pointer-events-none absolute inset-x-0 top-0 flex justify-between [&_button]:pointer-events-auto [&_button]:flex [&_button]:size-7 [&_button]:cursor-pointer [&_button]:items-center [&_button]:justify-center [&_button]:rounded-md [&_button]:border-none [&_button]:bg-transparent [&_button]:p-0 [&_button]:text-gray-900 [&_button:focus-visible]:rounded [&_button:hover:not([aria-disabled='true'])]:text-black [&_button[aria-disabled='true']]:cursor-default [&_button[aria-disabled='true']]:opacity-30 [&_svg]:size-4 [&_svg]:fill-current rtl:[&_svg]:-scale-x-100`,
   month_grid: 'gh-portal-datepicker-grid border-collapse',
-  weekday: tw`gh-portal-datepicker-weekday w-[34px] pb-0.5 text-11 font-medium tracking-[0.3px] text-gray-600 uppercase`,
+  weekday: tw`w-[34px] pb-0.5 text-11 font-medium tracking-[0.3px] text-gray-600 uppercase`,
   day: 'gh-portal-datepicker-day h-[30px] p-0',
   day_button: tw`gh-portal-datepicker-day-button relative flex h-[30px] w-[34px] cursor-pointer items-center justify-center rounded-md border-none bg-transparent p-0 text-13.5 text-black`,
-  today: tw`gh-portal-datepicker-today [&_.gh-portal-datepicker-day-button]:after:absolute [&_.gh-portal-datepicker-day-button]:after:bottom-[3px] [&_.gh-portal-datepicker-day-button]:after:left-1/2 [&_.gh-portal-datepicker-day-button]:after:size-[3px] [&_.gh-portal-datepicker-day-button]:after:-translate-x-1/2 [&_.gh-portal-datepicker-day-button]:after:rounded-[50%] [&_.gh-portal-datepicker-day-button]:after:bg-brand [&_.gh-portal-datepicker-day-button]:after:content-['']`,
+  today: tw`[&_.gh-portal-datepicker-day-button]:after:absolute [&_.gh-portal-datepicker-day-button]:after:bottom-[3px] [&_.gh-portal-datepicker-day-button]:after:left-1/2 [&_.gh-portal-datepicker-day-button]:after:size-[3px] [&_.gh-portal-datepicker-day-button]:after:-translate-x-1/2 [&_.gh-portal-datepicker-day-button]:after:rounded-[50%] [&_.gh-portal-datepicker-day-button]:after:bg-brand [&_.gh-portal-datepicker-day-button]:after:content-['']`,
   selected: tw`gh-portal-datepicker-selected [&_.gh-portal-datepicker-day-button]:bg-brand [&_.gh-portal-datepicker-day-button]:text-white [&_.gh-portal-datepicker-day-button:hover:not(:disabled)]:bg-brand [&_.gh-portal-datepicker-day-button:hover:not(:disabled)]:opacity-[0.92] [&.gh-portal-datepicker-selected_.gh-portal-datepicker-day-button]:after:bg-white`,
   disabled: tw`gh-portal-datepicker-disabled [&_.gh-portal-datepicker-day-button]:cursor-default [&_.gh-portal-datepicker-day-button:hover]:bg-transparent [&.gh-portal-datepicker-disabled_.gh-portal-datepicker-day-button]:text-gray-500`,
   outside:
@@ -230,7 +230,7 @@ const DatePicker = ({
         {showMinLabel && (
           <span
             aria-hidden="true"
-            className="gh-portal-datepicker-min-label pointer-events-none absolute start-[13px] top-1/2 -translate-y-1/2 text-15 [.gh-portal-input:focus~&]:opacity-0"
+            className="pointer-events-none absolute start-[13px] top-1/2 -translate-y-1/2 text-15 [.gh-portal-input:focus~&]:opacity-0"
           >
             {minLabel}
           </span>
@@ -240,7 +240,7 @@ const DatePicker = ({
           aria-expanded={isOpen}
           aria-haspopup="dialog"
           aria-label={ariaLabel}
-          className="gh-portal-datepicker-toggle hidden supports-[selector(::-webkit-calendar-picker-indicator)]:absolute supports-[selector(::-webkit-calendar-picker-indicator)]:end-3 supports-[selector(::-webkit-calendar-picker-indicator)]:top-1/2 supports-[selector(::-webkit-calendar-picker-indicator)]:flex supports-[selector(::-webkit-calendar-picker-indicator)]:size-[18px] supports-[selector(::-webkit-calendar-picker-indicator)]:-translate-y-1/2 supports-[selector(::-webkit-calendar-picker-indicator)]:cursor-pointer supports-[selector(::-webkit-calendar-picker-indicator)]:items-center supports-[selector(::-webkit-calendar-picker-indicator)]:justify-center supports-[selector(::-webkit-calendar-picker-indicator)]:border-none supports-[selector(::-webkit-calendar-picker-indicator)]:bg-transparent supports-[selector(::-webkit-calendar-picker-indicator)]:p-0 supports-[selector(::-webkit-calendar-picker-indicator)]:text-gray-600 supports-[selector(::-webkit-calendar-picker-indicator)]:[&_svg]:size-[18px]"
+          className="hidden supports-[selector(::-webkit-calendar-picker-indicator)]:absolute supports-[selector(::-webkit-calendar-picker-indicator)]:end-3 supports-[selector(::-webkit-calendar-picker-indicator)]:top-1/2 supports-[selector(::-webkit-calendar-picker-indicator)]:flex supports-[selector(::-webkit-calendar-picker-indicator)]:size-[18px] supports-[selector(::-webkit-calendar-picker-indicator)]:-translate-y-1/2 supports-[selector(::-webkit-calendar-picker-indicator)]:cursor-pointer supports-[selector(::-webkit-calendar-picker-indicator)]:items-center supports-[selector(::-webkit-calendar-picker-indicator)]:justify-center supports-[selector(::-webkit-calendar-picker-indicator)]:border-none supports-[selector(::-webkit-calendar-picker-indicator)]:bg-transparent supports-[selector(::-webkit-calendar-picker-indicator)]:p-0 supports-[selector(::-webkit-calendar-picker-indicator)]:text-gray-600 supports-[selector(::-webkit-calendar-picker-indicator)]:[&_svg]:size-[18px]"
           data-testid="datepicker-toggle"
           type="button"
           onClick={toggle}

@@ -8,10 +8,10 @@ import AccountActions from './account-actions';
 
 const AccountMain = () => {
   return (
-    <div className="gh-portal-content gh-portal-account-main relative [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+    <div className="relative [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
       <CloseButton />
       <UserHeader />
-      <section className="gh-portal-account-data mb-10">
+      <section className="mb-10">
         <AccountWelcome />
         <ContinueGiftSubscriptionBanner />
         <ContinueSubscriptionButton />

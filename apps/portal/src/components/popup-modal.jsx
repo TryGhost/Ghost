@@ -51,7 +51,7 @@ function CookieDisabledBanner({ message }) {
   const cookieDisabled = isCookiesDisabled();
   if (cookieDisabled) {
     return (
-      <div className="gh-portal-cookiebanner bg-red p-2 text-center text-14 leading-[1.4em] tracking-[0.2px] text-white">
+      <div className="bg-red p-2 text-center text-14 leading-[1.4em] tracking-[0.2px] text-white">
         {message}
       </div>
     );
@@ -353,7 +353,7 @@ export default class PopupModal extends React.Component {
       ...Styles.frame.common,
     };
 
-    let className = tw`gh-portal-popup-background absolute inset-0 block [transform:translate3d(0,0,0)] animate-backdrop bg-[linear-gradient(315deg,rgba(var(--blackrgb),0.2)_0%,rgba(var(--blackrgb),0.1)_100%)] backdrop-blur-[2px] max-sm:animate-none [&.preview]:pointer-events-none [&.preview]:animate-none [&.preview]:bg-[linear-gradient(45deg,rgba(255,255,255,1)_0%,rgba(249,249,250,1)_100%)] [&.preview.preview-dark]:bg-[linear-gradient(45deg,var(--color-black)_0%,var(--color-black)_100%)]`;
+    let className = tw`absolute inset-0 block [transform:translate3d(0,0,0)] animate-backdrop bg-[linear-gradient(315deg,rgba(var(--blackrgb),0.2)_0%,rgba(var(--blackrgb),0.1)_100%)] backdrop-blur-[2px] max-sm:animate-none [&.preview]:pointer-events-none [&.preview]:animate-none [&.preview]:bg-[linear-gradient(45deg,rgba(255,255,255,1)_0%,rgba(249,249,250,1)_100%)] [&.preview.preview-dark]:bg-[linear-gradient(45deg,var(--color-black)_0%,var(--color-black)_100%)]`;
     if (hasMode(['preview'])) {
       Styles.modalContainer.zIndex = '3999997';
     }

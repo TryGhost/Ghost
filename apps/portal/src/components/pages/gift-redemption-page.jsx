@@ -163,14 +163,14 @@ const GiftRedemptionPage = () => {
 
   return (
     <>
-      <div className="gh-portal-content giftRedemption relative min-h-screen p-0 [scrollbar-width:none] [&_.gh-portal-closeicon-container]:absolute group-[.full-size]/popup:[&_.gh-portal-closeicon-container]:top-8 group-[.full-size]/popup:[&_.gh-portal-closeicon-container]:right-8 rtl:group-[.full-size]/popup:[&_.gh-portal-closeicon-container]:right-auto [&::-webkit-scrollbar]:hidden">
+      <div className="giftRedemption relative min-h-screen p-0 [scrollbar-width:none] [&_.gh-portal-closeicon-container]:absolute group-[.full-size]/popup:[&_.gh-portal-closeicon-container]:top-8 group-[.full-size]/popup:[&_.gh-portal-closeicon-container]:right-8 rtl:group-[.full-size]/popup:[&_.gh-portal-closeicon-container]:right-auto [&::-webkit-scrollbar]:hidden">
         <CloseButton />
-        <div className="gh-portal-gift-checkout grid min-h-screen w-full grid-cols-[1fr_1fr] max-[881px]:min-h-0 max-[881px]:grid-cols-[1fr] [&_.gh-portal-btn-primary]:rounded-[999px] [&_.gh-portal-input]:h-12 [&_.gh-portal-input-label]:mb-0 [&_.gh-portal-input-label]:text-14 [&_.gh-portal-input-label]:font-semibold [&_.gh-portal-input-label]:text-gray-900 [&_.gh-portal-input-labelcontainer]:mb-2 [&_.gh-portal-input-labelcontainer]:items-baseline">
-          <div className="gh-portal-gift-checkout-left relative flex items-center justify-center bg-white p-12 max-[881px]:px-6 max-[881px]:pt-8 max-[881px]:pb-6">
-            <div className="gh-portal-gift-checkout-bg hidden" aria-hidden="true" />
-            <div className="gh-portal-gift-checkout-inner relative z-[1] my-auto flex w-full max-w-[496px] flex-col [&_.gh-portal-gift-checkout-cta]:h-12 [&_.gh-portal-gift-checkout-cta]:font-semibold [&_.gh-portal-gift-redemption-form+.gh-portal-gift-checkout-cta]:mt-4 [&_.gh-portal-gift-redemption-message+.gh-portal-gift-checkout-cta]:mt-6">
-              <header className="gh-portal-gift-checkout-header mb-3">
-                <h1 className="gh-portal-main-title mb-2 text-start text-32 leading-[1.15] text-pretty text-black max-sm:text-26">
+        <div className="grid min-h-screen w-full grid-cols-[1fr_1fr] max-[881px]:min-h-0 max-[881px]:grid-cols-[1fr] [&_.gh-portal-btn-primary]:rounded-[999px] [&_.gh-portal-input]:h-12 [&_.gh-portal-input-label]:mb-0 [&_.gh-portal-input-label]:text-14 [&_.gh-portal-input-label]:font-semibold [&_.gh-portal-input-label]:text-gray-900 [&_.gh-portal-input-labelcontainer]:mb-2 [&_.gh-portal-input-labelcontainer]:items-baseline">
+          <div className="relative flex items-center justify-center bg-white p-12 max-[881px]:px-6 max-[881px]:pt-8 max-[881px]:pb-6">
+            <div className="hidden" aria-hidden="true" />
+            <div className="relative z-[1] my-auto flex w-full max-w-[496px] flex-col [&_.gh-portal-gift-checkout-cta]:h-12 [&_.gh-portal-gift-checkout-cta]:font-semibold [&_.gh-portal-gift-redemption-form+.gh-portal-gift-checkout-cta]:mt-4 [&_.gh-portal-gift-redemption-message+.gh-portal-gift-checkout-cta]:mt-6">
+              <header className="mb-3">
+                <h1 className="mb-2 text-start text-32 leading-[1.15] text-pretty text-black max-sm:text-26">
                   {t('A gift, just for you')}
                 </h1>
                 <p className="gh-portal-gift-checkout-subtitle m-0 text-15 leading-[1.45em] text-pretty text-gray-900 [&_strong]:font-semibold [&_strong]:text-black">
@@ -225,9 +225,9 @@ const GiftRedemptionPage = () => {
           </div>
 
           <div className={giftCheckoutRightClasses} {...cardTiltProps}>
-            <div className="gh-portal-gift-checkout-right-panel flex min-h-0 flex-1 flex-col items-center overflow-y-auto rounded-[32px] px-12 py-16 [background:linear-gradient(180deg,rgba(0,0,0,0.3)_0%,rgba(0,0,0,0)_100%),var(--brandcolor)] max-[881px]:rounded-t-none max-[881px]:px-6 max-[881px]:pt-14 max-[881px]:pb-8">
+            <div className="flex min-h-0 flex-1 flex-col items-center overflow-y-auto rounded-[32px] px-12 py-16 [background:linear-gradient(180deg,rgba(0,0,0,0.3)_0%,rgba(0,0,0,0)_100%),var(--brandcolor)] max-[881px]:rounded-t-none max-[881px]:px-6 max-[881px]:pt-14 max-[881px]:pb-8">
               <div
-                className="gh-portal-gift-checkout-card-stack my-auto flex w-full max-w-[280px] shrink-0 flex-col items-center max-[881px]:max-w-[240px] [&[data-revealing=true]_.gh-portal-gift-checkout-card-frame]:[transform:rotate(3deg)]"
+                className="my-auto flex w-full max-w-[280px] shrink-0 flex-col items-center max-[881px]:max-w-[240px] [&[data-revealing=true]_.gh-portal-gift-checkout-card-frame]:[transform:rotate(3deg)]"
                 data-revealing={showDetails}
               >
                 <GiftCard

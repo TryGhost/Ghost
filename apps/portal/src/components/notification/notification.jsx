@@ -206,21 +206,15 @@ class NotificationContent extends React.Component {
     const statusClass = status ? `  ${status}` : ' neutral';
     const slideClass = className ? ` ${className}` : '';
     return (
-      <div className="gh-portal-notification-wrapper relative size-full overflow-hidden">
+      <div className="relative size-full overflow-hidden">
         <div
           className={`gh-portal-notification${statusClass}${slideClass} ${notificationClasses} right-3 max-sm:left-3 max-sm:max-w-[calc(100%-24px)] rtl:right-auto rtl:left-3 max-sm:rtl:right-3 max-sm:rtl:left-auto`}
           onAnimationEnd={(e) => this.onAnimationEnd(e)}
         >
           {status === 'error' ? (
-            <WarningIcon
-              className={`gh-portal-notification-icon error ${notificationIconClasses} text-red`}
-              alt=""
-            />
+            <WarningIcon className={`error ${notificationIconClasses} text-red`} alt="" />
           ) : (
-            <CheckmarkIcon
-              className={`gh-portal-notification-icon success ${notificationIconClasses} text-green`}
-              alt=""
-            />
+            <CheckmarkIcon className={`success ${notificationIconClasses} text-green`} alt="" />
           )}
           <NotificationText type={type} status={status} message={message} context={this.context} />
           <CloseIcon

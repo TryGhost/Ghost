@@ -99,7 +99,7 @@ export default class AccountProfilePage extends React.Component {
 
   renderAccountFooter() {
     return (
-      <footer className="gh-portal-action-footer flex flex-col items-center justify-between gap-3">
+      <footer className="flex flex-col items-center justify-between gap-3">
         {this.renderSaveButton()}
       </footer>
     );
@@ -107,13 +107,13 @@ export default class AccountProfilePage extends React.Component {
 
   renderHeader() {
     return (
-      <header className="gh-portal-detail-header relative mx-0 mt-[-2px] mb-10 flex items-center justify-center px-[60px] max-sm:mt-1">
+      <header className="relative mx-0 mt-[-2px] mb-10 flex items-center justify-center px-[60px] max-sm:mt-1">
         <BackButton
           brandColor={this.context.brandColor}
           hidden={!this.context.lastPage}
           onClick={(e) => this.onBack(e)}
         />
-        <h3 className="gh-portal-main-title text-center leading-[1.1em] text-pretty text-black max-[391px]:mt-px max-[391px]:text-21">
+        <h3 className="text-center leading-[1.1em] text-pretty text-black max-[391px]:mt-px max-[391px]:text-21">
           {t('Account settings')}
         </h3>
       </header>
@@ -233,7 +233,7 @@ export default class AccountProfilePage extends React.Component {
     }
     return (
       <>
-        <div className="gh-portal-content with-footer relative [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <div className="with-footer relative [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {this.renderHeader()}
           <CloseButton />
           <div className="gh-portal-section mb-10">{this.renderProfileData()}</div>

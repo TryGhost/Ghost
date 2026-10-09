@@ -28,7 +28,7 @@ import { tw } from '../../utils/tw';
 
 const offerTitleClass = tw`mr-[110px] w-full text-18 rtl:mr-0 rtl:ml-[110px] [&.placeholder]:opacity-40`;
 
-const productNameClass = tw`gh-portal-product-name -mt-1 w-full text-18 leading-[1.3em] font-semibold tracking-[0px] [word-break:break-word] text-brand`;
+const productNameClass = tw`-mt-1 w-full text-18 leading-[1.3em] font-semibold tracking-[0px] [word-break:break-word] text-brand`;
 
 const productPriceClass = tw`gh-portal-product-price flex justify-center text-black`;
 
@@ -38,7 +38,7 @@ const currencySignClass = (currencyClass) =>
   tw` self-start text-27 leading-[1.135em] font-bold max-[371px]:text-18` +
   (currencyClass === 'long' ? ' me-[5px]' : '');
 
-const footnoteClass = tw`footnote mt-1 mb-0 text-13.5 text-gray-500`;
+const footnoteClass = tw`mt-1 mb-0 text-13.5 text-gray-500`;
 
 const productCardClass = tw`gh-portal-product-card relative flex min-h-0 max-w-none min-w-[320px] flex-1 flex-col items-start justify-stretch border border-gray-300 bg-white px-8 transition-input hover:border-gray-400 max-sm:min-w-[unset]`;
 
@@ -246,9 +246,9 @@ export default class OfferPage extends React.Component {
     const { site } = this.context;
     const siteTitle = site.title || '';
     return (
-      <header className="gh-portal-signup-header mb-8 flex flex-col items-center px-8 max-[391px]:pb-4">
+      <header className="mb-8 flex flex-col items-center px-8 max-[391px]:pb-4">
         {this.renderSiteLogo()}
-        <h2 className="gh-portal-main-title mt-3 text-center leading-[1.1em] text-pretty text-black [.gh-portal-signup-logo+&]:mt-1">
+        <h2 className="mt-3 text-center leading-[1.1em] text-pretty text-black [.gh-portal-signup-logo+&]:mt-1">
           {siteTitle}
         </h2>
       </header>
@@ -326,7 +326,7 @@ export default class OfferPage extends React.Component {
     }
     const { brandColor, doAction } = this.context;
     return (
-      <div className="gh-portal-signup-message z-[9999] mt-1 flex flex-wrap justify-center text-15 text-gray-900 [&_*]:z-[9999]">
+      <div className="z-[9999] mt-1 flex flex-wrap justify-center text-15 text-gray-900 [&_*]:z-[9999]">
         <div>{t('Already a member?')}</div>
         <button
           className={signupMessageButtonClass}
@@ -379,22 +379,18 @@ export default class OfferPage extends React.Component {
     const benefitsUI = benefits.map((benefit, idx) => {
       return (
         <div
-          className="gh-portal-product-benefit mb-2.5 flex items-start max-[671px]:last-of-type:mb-0"
+          className="mb-2.5 flex items-start max-[671px]:last-of-type:mb-0"
           key={`${benefit.name}-${idx}`}
         >
           <CheckmarkIcon
-            className="gh-portal-benefit-checkmark mt-[3px] mr-2.5 size-[14px] min-w-[14px] overflow-visible rtl:mr-0 rtl:ml-2.5"
+            className="mt-[3px] mr-2.5 size-[14px] min-w-[14px] overflow-visible rtl:mr-0 rtl:ml-2.5"
             aria-hidden="true"
           />
-          <div className="gh-portal-benefit-title">{benefit.name}</div>
+          <div>{benefit.name}</div>
         </div>
       );
     });
-    return (
-      <div className="gh-portal-product-benefits mt-4 w-full text-15 leading-[1.4em]">
-        {benefitsUI}
-      </div>
-    );
+    return <div className="mt-4 w-full text-15 leading-[1.4em]">{benefitsUI}</div>;
   }
 
   getOriginalPrice({ offer, product }) {
@@ -456,7 +452,7 @@ export default class OfferPage extends React.Component {
             amount: offer.amount,
             originalPrice: originalPrice,
           })}{' '}
-          <span className="gh-portal-cancel whitespace-nowrap">{t('Cancel anytime.')}</span>
+          <span className="whitespace-nowrap">{t('Cancel anytime.')}</span>
         </p>
       );
     }
@@ -469,7 +465,7 @@ export default class OfferPage extends React.Component {
 
   renderProductLabel({ product, offer }) {
     return (
-      <h4 className="gh-portal-plan-name">
+      <h4>
         {product.name} - {offer.cadence === 'month' ? t('Monthly') : t('Yearly')}
       </h4>
     );
@@ -478,7 +474,7 @@ export default class OfferPage extends React.Component {
   renderUpdatedTierPrice({ offer, currencyClass, updatedPrice, price }) {
     if (offer.type === 'trial') {
       return (
-        <div className="gh-portal-product-card-pricecontainer offer-type-trial mt-4 flex w-full flex-col items-start">
+        <div className="mt-4 flex w-full flex-col items-start">
           <div className={productPriceClass} data-testid="offer-updated-price">
             <span className={currencySignClass(currencyClass)}>
               {getCurrencySymbol(price.currency)}
@@ -491,7 +487,7 @@ export default class OfferPage extends React.Component {
       );
     }
     return (
-      <div className="gh-portal-product-card-pricecontainer mt-0 flex w-full flex-col items-start">
+      <div className="mt-0 flex w-full flex-col items-start">
         <div className={productPriceClass} data-testid="offer-updated-price">
           <span className={currencySignClass(currencyClass)}>
             {getCurrencySymbol(price.currency)}
@@ -525,7 +521,7 @@ export default class OfferPage extends React.Component {
         <div
           className={`${productCardClass} top rounded-t-[7px] [border-style:solid_solid_none] border-b-current pt-8 pb-0`}
         >
-          <div className="gh-portal-product-card-header flex min-h-[56px] w-full flex-col items-start max-[881px]:min-h-[unset]">
+          <div className="flex min-h-[56px] w-full flex-col items-start max-[881px]:min-h-[unset]">
             <h4 className={productNameClass}>
               {product.name} - {offer.cadence === 'month' ? t('Monthly') : t('Yearly')}
             </h4>
@@ -539,9 +535,9 @@ export default class OfferPage extends React.Component {
           <div
             className={`${productCardClass} bottom rounded-b-[7px] [border-style:none_solid_solid] border-t-current pt-0 pb-8`}
           >
-            <div className="gh-portal-product-card-detaildata flex-1">
+            <div className="flex-1">
               {product.description ? (
-                <div className="gh-portal-product-description mt-4 w-full text-15.5 leading-[1.4em] font-semibold">
+                <div className="mt-4 w-full text-15.5 leading-[1.4em] font-semibold">
                   {product.description}
                 </div>
               ) : (
@@ -551,7 +547,7 @@ export default class OfferPage extends React.Component {
             </div>
           </div>
 
-          <div className="gh-portal-btn-container m32 sticky bottom-0 -mb-8 bg-[linear-gradient(0deg,rgba(var(--whitergb),1)_75%,rgba(var(--whitergb),0)_100%)] py-8 [transition:none] [&_.gh-portal-btn]:m-0">
+          <div className="m32 sticky bottom-0 -mb-8 bg-[linear-gradient(0deg,rgba(var(--whitergb),1)_75%,rgba(var(--whitergb),0)_100%)] py-8 [transition:none] [&_.gh-portal-btn]:m-0">
             <div className="gh-portal-signup-terms-wrapper mx-auto mt-2 mb-4 w-full max-w-[420px]">
               {this.renderSignupTerms()}
             </div>
@@ -580,12 +576,12 @@ export default class OfferPage extends React.Component {
 
     return (
       <>
-        <div className="gh-portal-content gh-portal-offer relative [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <div className="relative [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           <CloseButton />
           {this.renderFormHeader()}
 
           <div className={offerBarClass}>
-            <div className="gh-portal-offer-title flex items-center justify-between">
+            <div className="flex items-center justify-between">
               {offer.display_title ? (
                 <h4 className={offerTitleClass} data-testid="offer-title">
                   {offer.display_title}

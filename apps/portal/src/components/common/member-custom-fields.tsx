@@ -143,11 +143,11 @@ function AddressField({ field, value, errors, onChange, onKeyDown }: FieldProps)
       >
         {field.name}
       </div>
-      <div className="gh-portal-input-group mb-4 [&_.gh-portal-input]:relative [&_.gh-portal-input]:mb-0 [&_.gh-portal-input]:rounded-none [&_.gh-portal-input.error]:z-[1] [&_.gh-portal-input:focus]:z-[1]">
+      <div className="mb-4 [&_.gh-portal-input]:relative [&_.gh-portal-input]:mb-0 [&_.gh-portal-input]:rounded-none [&_.gh-portal-input.error]:z-[1] [&_.gh-portal-input:focus]:z-[1]">
         {rows}
       </div>
       {refused.length > 0 && (
-        <ul className="gh-portal-custom-field-errors mx-0 mt-1 mb-0 list-none p-0" id={errorsId}>
+        <ul className="mx-0 mt-1 mb-0 list-none p-0" id={errorsId}>
           {refused.map(({ part, message }) => (
             <li
               key={part}

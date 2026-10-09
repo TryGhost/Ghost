@@ -95,39 +95,39 @@ const ShareModal = () => {
   };
 
   return (
-    <div className="gh-portal-content gh-portal-share relative [scrollbar-width:none] [&_.gh-portal-closeicon-container]:top-5 [&::-webkit-scrollbar]:hidden">
+    <div className="relative [scrollbar-width:none] [&_.gh-portal-closeicon-container]:top-5 [&::-webkit-scrollbar]:hidden">
       <CloseButton />
-      <div className="gh-portal-share-header mb-5">
-        <h1 className="gh-portal-main-title text-left text-21 leading-[1.1em] font-semibold text-pretty text-black rtl:text-right">
+      <div className="mb-5">
+        <h1 className="text-left text-21 leading-[1.1em] font-semibold text-pretty text-black rtl:text-right">
           {t('Share')}
         </h1>
       </div>
 
-      <div className="gh-portal-share-preview flex flex-col rounded-xl border border-solid border-gray-200">
+      <div className="flex flex-col rounded-xl border border-solid border-gray-200">
         {shareImage && (
           <img
-            className="gh-portal-share-preview-image aspect-video w-full rounded-t-xl bg-gray-50 object-cover"
+            className="aspect-video w-full rounded-t-xl bg-gray-50 object-cover"
             src={shareImage}
             alt=""
             data-testid="share-preview-image"
           />
         )}
-        <div className="gh-portal-share-preview-content flex flex-col gap-4 p-4">
+        <div className="flex flex-col gap-4 p-4">
           {shareTitle && (
-            <h2 className="gh-portal-share-preview-title m-0 text-19 leading-[1.35] font-semibold text-pretty text-black">
+            <h2 className="m-0 text-19 leading-[1.35] font-semibold text-pretty text-black">
               {shareTitle}
             </h2>
           )}
           {shareExcerpt && (
-            <p className="gh-portal-share-preview-excerpt mx-0 mt-[-8px] mb-0 line-clamp-3 text-15 leading-[1.45] text-pretty text-gray-700">
+            <p className="mx-0 mt-[-8px] mb-0 line-clamp-3 text-15 leading-[1.45] text-pretty text-gray-700">
               {shareExcerpt}
             </p>
           )}
           {(shareFavicon || shareSiteName || shareAuthor) && (
-            <div className="gh-portal-share-preview-footer mt-[-6px] flex min-h-[18px] items-center gap-2">
+            <div className="mt-[-6px] flex min-h-[18px] items-center gap-2">
               {shareFavicon && (
                 <img
-                  className="gh-portal-share-preview-favicon size-4 flex-none rounded object-cover"
+                  className="size-4 flex-none rounded object-cover"
                   src={shareFavicon}
                   alt=""
                   data-testid="share-preview-favicon"
@@ -135,19 +135,17 @@ const ShareModal = () => {
               )}
               <div className="gh-portal-share-preview-meta flex min-w-0 items-center gap-1 truncate text-13.5 leading-[1.3] text-gray-900">
                 {shareSiteName && (
-                  <span className="gh-portal-share-preview-site min-w-0 overflow-hidden font-medium text-ellipsis">
+                  <span className="min-w-0 overflow-hidden font-medium text-ellipsis">
                     {shareSiteName}
                   </span>
                 )}
                 {shareSiteName && shareAuthor && (
-                  <span className="gh-portal-share-preview-separator flex-none" aria-hidden="true">
+                  <span className="flex-none" aria-hidden="true">
                     |
                   </span>
                 )}
                 {shareAuthor && (
-                  <span className="gh-portal-share-preview-author min-w-0 overflow-hidden text-ellipsis">
-                    {shareAuthor}
-                  </span>
+                  <span className="min-w-0 overflow-hidden text-ellipsis">{shareAuthor}</span>
                 )}
               </div>
             </div>
@@ -165,20 +163,20 @@ const ShareModal = () => {
         >
           {copied ? (
             <span
-              className="gh-portal-share-icon copied inline-flex size-5 items-center justify-center rounded-[999px] bg-[color:color-mix(in_srgb,var(--brandcolor)_14%,var(--color-white))] leading-[0] text-brand [&_svg]:size-3 [&_svg_path]:stroke-current"
+              className="copied inline-flex size-5 items-center justify-center rounded-[999px] bg-[color:color-mix(in_srgb,var(--brandcolor)_14%,var(--color-white))] leading-[0] text-brand [&_svg]:size-3 [&_svg_path]:stroke-current"
               aria-hidden="true"
             >
               <CheckmarkIcon />
             </span>
           ) : (
             <span
-              className="gh-portal-share-icon inline-flex size-5 items-center justify-center rounded-[999px] leading-[0] [&_svg]:size-5"
+              className="inline-flex size-5 items-center justify-center rounded-[999px] leading-[0] [&_svg]:size-5"
               aria-hidden="true"
             >
               <LinkIcon />
             </span>
           )}
-          <span className="gh-portal-share-label text-14 leading-none font-medium whitespace-nowrap text-white">
+          <span className="text-14 leading-none font-medium whitespace-nowrap text-white">
             {copied ? t('Copied') : t('Copy link')}
           </span>
         </button>
@@ -192,7 +190,7 @@ const ShareModal = () => {
           title={t('X (Twitter)')}
         >
           <span
-            className="gh-portal-share-icon x inline-flex size-5 items-center justify-center rounded-[999px] leading-[0] [&_svg]:size-4"
+            className="x inline-flex size-5 items-center justify-center rounded-[999px] leading-[0] [&_svg]:size-4"
             aria-hidden="true"
           >
             <XIcon />
@@ -208,7 +206,7 @@ const ShareModal = () => {
           title={t('LinkedIn')}
         >
           <span
-            className="gh-portal-share-icon inline-flex size-5 items-center justify-center rounded-[999px] leading-[0] [&_svg]:size-5"
+            className="inline-flex size-5 items-center justify-center rounded-[999px] leading-[0] [&_svg]:size-5"
             aria-hidden="true"
           >
             <LinkedinIcon />
@@ -224,7 +222,7 @@ const ShareModal = () => {
           title={t('Email')}
         >
           <span
-            className="gh-portal-share-icon inline-flex size-5 items-center justify-center rounded-[999px] leading-[0] [&_svg]:size-5"
+            className="inline-flex size-5 items-center justify-center rounded-[999px] leading-[0] [&_svg]:size-5"
             aria-hidden="true"
           >
             <EnvelopeIcon />
@@ -245,7 +243,7 @@ const ShareModal = () => {
             aria-expanded={isMoreMenuOpen}
           >
             <span
-              className="gh-portal-share-icon inline-flex size-5 items-center justify-center rounded-[999px] leading-[0] [&_svg]:size-5"
+              className="inline-flex size-5 items-center justify-center rounded-[999px] leading-[0] [&_svg]:size-5"
               aria-hidden="true"
             >
               <EllipsisIcon />
@@ -253,12 +251,12 @@ const ShareModal = () => {
           </button>
           {isMoreMenuOpen && (
             <div
-              className="gh-portal-share-more-menu absolute right-0 bottom-[calc(100%+8px)] z-[2] flex min-w-[180px] origin-bottom-right [transform:translateY(8px)] animate-share-menu-in flex-col rounded-lg border border-solid border-gray-200 bg-white p-1.5 opacity-0 [box-shadow:0_8px_20px_rgba(var(--blackrgb),0.12)] max-[421px]:inset-x-0 rtl:right-auto rtl:left-0 rtl:origin-bottom-left max-[421px]:rtl:right-0"
+              className="absolute right-0 bottom-[calc(100%+8px)] z-[2] flex min-w-[180px] origin-bottom-right [transform:translateY(8px)] animate-share-menu-in flex-col rounded-lg border border-solid border-gray-200 bg-white p-1.5 opacity-0 [box-shadow:0_8px_20px_rgba(var(--blackrgb),0.12)] max-[421px]:inset-x-0 rtl:right-auto rtl:left-0 rtl:origin-bottom-left max-[421px]:rtl:right-0"
               role="menu"
               aria-label={t('More options')}
             >
               <a
-                className="gh-portal-share-more-item flex h-9 items-center gap-2 rounded-md border-none px-2.5 py-0 text-14 leading-none font-medium text-gray-950 no-underline hover:bg-gray-50"
+                className="flex h-9 items-center gap-2 rounded-md border-none px-2.5 py-0 text-14 leading-none font-medium text-gray-950 no-underline hover:bg-gray-50"
                 href={socialLinks.facebook}
                 target="_blank"
                 rel="noopener noreferrer"
@@ -266,7 +264,7 @@ const ShareModal = () => {
                 onClick={onClickMoreItem}
               >
                 <span
-                  className="gh-portal-share-more-item-icon inline-flex size-4 items-center justify-center leading-[0] [&_svg]:size-4"
+                  className="inline-flex size-4 items-center justify-center leading-[0] [&_svg]:size-4"
                   aria-hidden="true"
                 >
                   <FacebookIcon />
@@ -274,7 +272,7 @@ const ShareModal = () => {
                 <span>{t('Facebook')}</span>
               </a>
               <a
-                className="gh-portal-share-more-item flex h-9 items-center gap-2 rounded-md border-none px-2.5 py-0 text-14 leading-none font-medium text-gray-950 no-underline hover:bg-gray-50"
+                className="flex h-9 items-center gap-2 rounded-md border-none px-2.5 py-0 text-14 leading-none font-medium text-gray-950 no-underline hover:bg-gray-50"
                 href={socialLinks.threads}
                 target="_blank"
                 rel="noopener noreferrer"
@@ -282,7 +280,7 @@ const ShareModal = () => {
                 onClick={onClickMoreItem}
               >
                 <span
-                  className="gh-portal-share-more-item-icon inline-flex size-4 items-center justify-center leading-[0] [&_svg]:size-4"
+                  className="inline-flex size-4 items-center justify-center leading-[0] [&_svg]:size-4"
                   aria-hidden="true"
                 >
                   <ThreadsIcon />
@@ -290,7 +288,7 @@ const ShareModal = () => {
                 <span>{t('Threads')}</span>
               </a>
               <a
-                className="gh-portal-share-more-item flex h-9 items-center gap-2 rounded-md border-none px-2.5 py-0 text-14 leading-none font-medium text-gray-950 no-underline hover:bg-gray-50"
+                className="flex h-9 items-center gap-2 rounded-md border-none px-2.5 py-0 text-14 leading-none font-medium text-gray-950 no-underline hover:bg-gray-50"
                 href={socialLinks.bluesky}
                 target="_blank"
                 rel="noopener noreferrer"
@@ -298,7 +296,7 @@ const ShareModal = () => {
                 onClick={onClickMoreItem}
               >
                 <span
-                  className="gh-portal-share-more-item-icon inline-flex size-4 items-center justify-center leading-[0] [&_svg]:size-4"
+                  className="inline-flex size-4 items-center justify-center leading-[0] [&_svg]:size-4"
                   aria-hidden="true"
                 >
                   <BlueSkyIcon />

@@ -92,20 +92,20 @@ const GiftSuccessPage = () => {
 
   return (
     <>
-      <div className="gh-portal-content giftSuccess relative min-h-screen p-0 [scrollbar-width:none] [&_.gh-portal-closeicon-container]:absolute group-[.full-size]/popup:[&_.gh-portal-closeicon-container]:top-8 group-[.full-size]/popup:[&_.gh-portal-closeicon-container]:right-8 rtl:group-[.full-size]/popup:[&_.gh-portal-closeicon-container]:right-auto [&::-webkit-scrollbar]:hidden">
+      <div className="giftSuccess relative min-h-screen p-0 [scrollbar-width:none] [&_.gh-portal-closeicon-container]:absolute group-[.full-size]/popup:[&_.gh-portal-closeicon-container]:top-8 group-[.full-size]/popup:[&_.gh-portal-closeicon-container]:right-8 rtl:group-[.full-size]/popup:[&_.gh-portal-closeicon-container]:right-auto [&::-webkit-scrollbar]:hidden">
         <CloseButton />
-        <div className="gh-portal-gift-checkout grid min-h-screen w-full grid-cols-[1fr_1fr] max-[881px]:min-h-0 max-[881px]:grid-cols-[1fr]">
-          <div className="gh-portal-gift-checkout-left relative flex items-center justify-center bg-white p-12 max-[881px]:px-6 max-[881px]:pt-8 max-[881px]:pb-6">
-            <div className="gh-portal-gift-checkout-bg hidden" aria-hidden="true" />
-            <div className="gh-portal-gift-checkout-inner relative z-[1] my-auto flex w-full max-w-[496px] flex-col">
-              <header className="gh-portal-gift-checkout-header mb-3">
+        <div className="grid min-h-screen w-full grid-cols-[1fr_1fr] max-[881px]:min-h-0 max-[881px]:grid-cols-[1fr]">
+          <div className="relative flex items-center justify-center bg-white p-12 max-[881px]:px-6 max-[881px]:pt-8 max-[881px]:pb-6">
+            <div className="hidden" aria-hidden="true" />
+            <div className="relative z-[1] my-auto flex w-full max-w-[496px] flex-col">
+              <header className="mb-3">
                 <span
-                  className="gh-portal-gift-success-badge mb-5 inline-flex size-[52px] items-center justify-center rounded-[999px] bg-[color:color-mix(in_srgb,var(--brandcolor)_12%,var(--color-white))] text-brand [&_svg]:size-[26px]"
+                  className="mb-5 inline-flex size-[52px] items-center justify-center rounded-[999px] bg-[color:color-mix(in_srgb,var(--brandcolor)_12%,var(--color-white))] text-brand [&_svg]:size-[26px]"
                   aria-hidden="true"
                 >
                   <CheckIcon />
                 </span>
-                <h1 className="gh-portal-main-title mb-2 text-start text-32 leading-[1.15] text-pretty text-black max-sm:text-26">
+                <h1 className="mb-2 text-start text-32 leading-[1.15] text-pretty text-black max-sm:text-26">
                   {titleText}
                 </h1>
                 <p className="gh-portal-gift-checkout-subtitle m-0 text-15 leading-[1.45em] text-pretty text-gray-900">
@@ -113,23 +113,23 @@ const GiftSuccessPage = () => {
                 </p>
               </header>
 
-              <div className="gh-portal-gift-checkout-section mt-6">
+              <div className="mt-6">
                 {isEmailed && (
-                  <p className="gh-portal-gift-success-share-label mb-2 text-13 font-medium tracking-[0.3px] text-gray-700 uppercase">
+                  <p className="mb-2 text-13 font-medium tracking-[0.3px] text-gray-700 uppercase">
                     {t('Share it yourself')}
                   </p>
                 )}
-                <div className="gh-portal-gift-success-link flex h-14 items-center gap-2 rounded-[999px] bg-[color:color-mix(in_srgb,var(--brandcolor)_8%,var(--color-white))] py-1 pr-2 pl-6">
+                <div className="flex h-14 items-center gap-2 rounded-[999px] bg-[color:color-mix(in_srgb,var(--brandcolor)_8%,var(--color-white))] py-1 pr-2 pl-6">
                   <span
-                    className="gh-portal-gift-success-link-url flex-1 truncate text-16 font-normal text-brand select-all"
+                    className="flex-1 truncate text-16 font-normal text-brand select-all"
                     data-testid="gift-redeem-link"
                   >
                     {redeemUrl}
                   </span>
                   <button
                     className={
-                      tw`gh-portal-gift-success-copy flex h-10 shrink-0 cursor-pointer items-center gap-1.5 rounded-[999px] border-none px-[18px] py-0 text-14 font-semibold text-white [will-change:opacity] [transition:opacity_0.15s_ease] hover:opacity-90 focus-visible:[outline:2px_solid_var(--color-black)] [&_svg]:size-[14px]` +
-                      (copied ? ' is-copied bg-green' : ' bg-brand')
+                      tw`flex h-10 shrink-0 cursor-pointer items-center gap-1.5 rounded-[999px] border-none px-[18px] py-0 text-14 font-semibold text-white [will-change:opacity] [transition:opacity_0.15s_ease] hover:opacity-90 focus-visible:[outline:2px_solid_var(--color-black)] [&_svg]:size-[14px]` +
+                      (copied ? ' bg-green' : ' bg-brand')
                     }
                     onClick={handleCopy}
                     type="button"
@@ -157,7 +157,7 @@ const GiftSuccessPage = () => {
               </div>
 
               {!isEmailed && (
-                <p className="gh-portal-gift-success-footer mt-6 mb-0 text-14 leading-[1.5] text-gray-700">
+                <p className="mt-6 mb-0 text-14 leading-[1.5] text-gray-700">
                   {t("Not ready to share? We've also emailed a copy to your inbox.")}
                 </p>
               )}
@@ -165,9 +165,9 @@ const GiftSuccessPage = () => {
           </div>
 
           <div className={giftCheckoutRightClasses} {...cardTiltProps}>
-            <div className="gh-portal-gift-checkout-right-panel flex min-h-0 flex-1 flex-col items-center overflow-y-auto rounded-[32px] px-12 py-16 [background:linear-gradient(180deg,rgba(0,0,0,0.3)_0%,rgba(0,0,0,0)_100%),var(--brandcolor)] max-[881px]:rounded-t-none max-[881px]:px-6 max-[881px]:pt-14 max-[881px]:pb-8">
+            <div className="flex min-h-0 flex-1 flex-col items-center overflow-y-auto rounded-[32px] px-12 py-16 [background:linear-gradient(180deg,rgba(0,0,0,0.3)_0%,rgba(0,0,0,0)_100%),var(--brandcolor)] max-[881px]:rounded-t-none max-[881px]:px-6 max-[881px]:pt-14 max-[881px]:pb-8">
               <div
-                className="gh-portal-gift-checkout-card-stack my-auto flex w-full max-w-[280px] shrink-0 flex-col items-center max-[881px]:max-w-[240px] [&[data-revealing=true]_.gh-portal-gift-checkout-card-frame]:[transform:rotate(3deg)]"
+                className="my-auto flex w-full max-w-[280px] shrink-0 flex-col items-center max-[881px]:max-w-[240px] [&[data-revealing=true]_.gh-portal-gift-checkout-card-frame]:[transform:rotate(3deg)]"
                 data-revealing={showDetails}
               >
                 <GiftCard

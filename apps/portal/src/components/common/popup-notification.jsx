@@ -20,7 +20,7 @@ const CloseButton = ({ hide = false, onClose }) => {
   return (
     <button
       type="button"
-      className="gh-portal-notification-closebutton border-none bg-transparent p-0"
+      className="border-none bg-transparent p-0"
       aria-label="Close notification"
       onClick={onClose}
     >
@@ -129,20 +129,14 @@ export default class PopupNotification extends React.Component {
 
     return (
       <div
-        className={`gh-portal-notification gh-portal-popupnotification ${statusClass}${slideClass} ${notificationClasses} right-[42px] max-sm:left-3 max-sm:max-w-[calc(100%-54px)] rtl:right-auto rtl:left-[42px]`}
+        className={`gh-portal-notification ${statusClass}${slideClass} ${notificationClasses} right-[42px] max-sm:left-3 max-sm:max-w-[calc(100%-54px)] rtl:right-auto rtl:left-[42px]`}
         data-testid={status ? `popup-notification-${status}` : 'popup-notification'}
         onAnimationEnd={(e) => this.onAnimationEnd(e)}
       >
         {status === 'error' ? (
-          <WarningIcon
-            className={`gh-portal-notification-icon error ${notificationIconClasses} text-red`}
-            alt=""
-          />
+          <WarningIcon className={`error ${notificationIconClasses} text-red`} alt="" />
         ) : (
-          <CheckmarkIcon
-            className={`gh-portal-notification-icon success ${notificationIconClasses} text-green`}
-            alt=""
-          />
+          <CheckmarkIcon className={`success ${notificationIconClasses} text-green`} alt="" />
         )}
         <NotificationText type={type} status={status} message={message} site={site} />
         <CloseButton hide={!closeable} onClose={(e) => this.closeNotification(e)} />

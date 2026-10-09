@@ -45,8 +45,8 @@ export default function EmailSuppressedPage() {
   };
 
   return (
-    <div className="gh-email-suppressed-page">
-      <header className="gh-portal-detail-header relative mx-0 mt-[-2px] mb-10 flex items-center justify-center px-[60px] max-sm:mt-1">
+    <div>
+      <header className="relative mx-0 mt-[-2px] mb-10 flex items-center justify-center px-[60px] max-sm:mt-1">
         <BackButton
           brandColor={brandColor}
           hidden={!lastPage}
@@ -57,10 +57,10 @@ export default function EmailSuppressedPage() {
         <CloseButton />
       </header>
 
-      <EmailDeliveryFailedIcon className="gh-email-suppressed-page-icon mx-auto mt-0 mb-[18px] block size-[38px]" />
+      <EmailDeliveryFailedIcon className="mx-auto mt-0 mb-[18px] block size-[38px]" />
 
-      <div className="gh-email-suppressed-page-text px-[14px] py-0 text-center text-gray-700">
-        <h3 className="gh-portal-main-title gh-email-suppressed-page-title mb-[14px] text-center leading-[1.1em] text-pretty text-black">
+      <div className="px-[14px] py-0 text-center text-gray-700">
+        <h3 className="mb-[14px] text-center leading-[1.1em] text-pretty text-black">
           {t('Emails disabled')}
         </h3>
         <p>
@@ -72,7 +72,7 @@ export default function EmailSuppressedPage() {
 
       <ActionButton
         dataTestId={'resubscribe-email'}
-        classes="gh-portal-confirm-button mt-[3.6rem] w-full max-sm:mt-7"
+        classes="mt-[3.6rem] w-full max-sm:mt-7"
         onClick={handleSubmit}
         disabled={isRunning}
         brandColor={brandColor}

@@ -33,14 +33,14 @@ const tierButtonClass = tw`gh-portal-btn relative z-[900] flex h-11 w-full min-w
 
 const toggleButtonClass = tw`gh-portal-btn relative flex h-full! w-1/2 min-w-[80px] cursor-pointer items-center justify-center rounded-[999px] bg-transparent px-[1.8rem] py-0 text-center text-15 leading-[1em] font-medium tracking-[0.2px] whitespace-nowrap text-black no-underline outline-none select-none [border:0] transition-control`;
 
-const btnProductClass = tw`gh-portal-btn-product sticky bottom-0 -mb-8 flex w-full flex-col items-start [justify-self:flex-end] bg-transparent pt-10 pb-8 before:absolute before:inset-x-0 before:top-[-16px] before:bottom-0 before:z-[800] before:block before:bg-[linear-gradient(0deg,rgba(var(--whitergb),1)_60%,rgba(var(--whitergb),0)_100%)] before:content-[''] max-sm:static max-sm:before:hidden`;
+const btnProductClass = tw`sticky bottom-0 -mb-8 flex w-full flex-col items-start [justify-self:flex-end] bg-transparent pt-10 pb-8 before:absolute before:inset-x-0 before:top-[-16px] before:bottom-0 before:z-[800] before:block before:bg-[linear-gradient(0deg,rgba(var(--whitergb),1)_60%,rgba(var(--whitergb),0)_100%)] before:content-[''] max-sm:static max-sm:before:hidden`;
 
 const discountLabelClass = tw`gh-portal-discount-label relative -me-1 max-h-[24.5px] rounded-[999px] px-[9px] py-1.5 text-center text-12.5 leading-[1em] font-semibold tracking-[0.3px] whitespace-nowrap text-black before:absolute before:inset-0 before:block before:rounded-[999px] before:bg-brand before:opacity-20 before:content-['']`;
 
 const loaderIconClass = tw`gh-portal-loadingicon absolute left-1/2 -ms-[19px] inline-block h-[31px] [&_path]:fill-white [&_rect]:fill-white`;
 
 const currencySignClass = (currencySymbol) =>
-  tw`currency-sign self-start text-27 leading-[1.135em] font-bold max-[371px]:text-18` +
+  tw`self-start text-27 leading-[1.135em] font-bold max-[371px]:text-18` +
   (currencySymbol.length > 1 ? ' long me-[5px]' : '');
 
 const ProductsContext = React.createContext({
@@ -58,15 +58,12 @@ function ProductBenefits({ product }) {
   return product.benefits.map((benefit, idx) => {
     const key = benefit?.id || `benefit-${idx}`;
     return (
-      <div
-        className="gh-portal-product-benefit mb-2.5 flex items-start max-[671px]:last-of-type:mb-0"
-        key={key}
-      >
+      <div className="mb-2.5 flex items-start max-[671px]:last-of-type:mb-0" key={key}>
         <CheckmarkIcon
-          className="gh-portal-benefit-checkmark mt-[3px] mr-2.5 size-[14px] min-w-[14px] overflow-visible rtl:mr-0 rtl:ml-2.5"
+          className="mt-[3px] mr-2.5 size-[14px] min-w-[14px] overflow-visible rtl:mr-0 rtl:ml-2.5"
           aria-hidden="true"
         />
-        <div className="gh-portal-benefit-title">{benefit.name}</div>
+        <div>{benefit.name}</div>
       </div>
     );
   });
@@ -77,7 +74,7 @@ function ProductBenefitsContainer({ product, hide = false }) {
     return null;
   }
 
-  const className = tw`gh-portal-product-benefits mt-4 w-full text-15 leading-[1.4em]`;
+  const className = tw`mt-4 w-full text-15 leading-[1.4em]`;
   return (
     <div className={className}>
       <ProductBenefits product={product} />
@@ -140,14 +137,14 @@ function ProductCardPrice({ product }) {
   if (hasFreeTrialTier({ site })) {
     return (
       <>
-        <div className="gh-portal-product-card-pricecontainer mt-4 flex w-full flex-col items-start">
-          <div className="gh-portal-product-card-price-trial flex w-full flex-row flex-wrap items-end justify-between gap-x-[4px] gap-y-[10px]">
+        <div className="mt-4 flex w-full flex-col items-start">
+          <div className="flex w-full flex-row flex-wrap items-end justify-between gap-x-[4px] gap-y-[10px]">
             <div className="gh-portal-product-price flex justify-center text-black">
               <span className={currencySignClass(currencySymbol)}>{currencySymbol}</span>
               <span className={amountClass} data-testid="product-amount">
                 {formatPrice(getStripeAmount(activePrice.amount), site.locale)}
               </span>
-              <span className="billing-period ms-[5px] self-end text-15 leading-[1.6em] tracking-[0.3px] text-gray-800">
+              <span className="ms-[5px] self-end text-15 leading-[1.6em] tracking-[0.3px] text-gray-800">
                 /{interval}
               </span>
             </div>
@@ -170,14 +167,14 @@ function ProductCardPrice({ product }) {
   }
 
   return (
-    <div className="gh-portal-product-card-pricecontainer mt-4 flex w-full flex-col items-start">
-      <div className="gh-portal-product-card-price-trial flex w-full flex-row flex-wrap items-end justify-between gap-x-[4px] gap-y-[10px]">
+    <div className="mt-4 flex w-full flex-col items-start">
+      <div className="flex w-full flex-row flex-wrap items-end justify-between gap-x-[4px] gap-y-[10px]">
         <div className="gh-portal-product-price flex justify-center text-black">
           <span className={currencySignClass(currencySymbol)}>{currencySymbol}</span>
           <span className={amountClass} data-testid="product-amount">
             {formatPrice(getStripeAmount(activePrice.amount), site.locale)}
           </span>
-          <span className="billing-period ms-[5px] self-end text-15 leading-[1.6em] tracking-[0.3px] text-gray-800">
+          <span className="ms-[5px] self-end text-15 leading-[1.6em] tracking-[0.3px] text-gray-800">
             /{interval}
           </span>
         </div>
@@ -239,12 +236,12 @@ function FreeProductCard({ products, handleChooseSignup, error }) {
         }}
         data-test-tier="free"
       >
-        <div className="gh-portal-product-card-header min-h-[56px] w-full max-[881px]:min-h-[unset] [.only-free_&]:min-h-[unset]">
-          <h4 className="gh-portal-product-name -mt-1 w-full text-18 leading-[1.3em] font-semibold tracking-[0px] [word-break:break-word] text-brand">
+        <div className="min-h-[56px] w-full max-[881px]:min-h-[unset] [.only-free_&]:min-h-[unset]">
+          <h4 className="-mt-1 w-full text-18 leading-[1.3em] font-semibold tracking-[0px] [word-break:break-word] text-brand">
             {getFreeTierTitle({ site })}
           </h4>
           {!hasOnlyFree ? (
-            <div className="gh-portal-product-card-pricecontainer free-trial-disabled mt-4 flex w-full flex-col items-start">
+            <div className="free-trial-disabled mt-4 flex w-full flex-col items-start">
               <div className="gh-portal-product-price flex justify-center text-black">
                 <span className={currencySignClass(currencySymbol)}>{currencySymbol}</span>
                 <span className={amountClass} data-testid="product-amount">
@@ -257,11 +254,11 @@ function FreeProductCard({ products, handleChooseSignup, error }) {
             ''
           )}
         </div>
-        <div className="gh-portal-product-card-details flex w-full flex-1 flex-col">
-          <div className="gh-portal-product-card-detaildata flex-1">
+        <div className="flex w-full flex-1 flex-col">
+          <div className="flex-1">
             {freeProductDescription ? (
               <div
-                className="gh-portal-product-description mt-4 w-full text-15.5 leading-[1.4em] font-semibold"
+                className="mt-4 w-full text-15.5 leading-[1.4em] font-semibold"
                 data-testid="product-description"
               >
                 {freeProductDescription}
@@ -289,7 +286,7 @@ function FreeProductCard({ products, handleChooseSignup, error }) {
                 )}
               </button>
               {error && (
-                <div className="gh-portal-error-message z-[900] -mb-10 min-h-[40px] pb-[13px] text-14 text-red">
+                <div className="z-[900] -mb-10 min-h-[40px] pb-[13px] text-14 text-red">
                   {error}
                 </div>
               )}
@@ -357,16 +354,16 @@ function ProductCard({ product, products, selectedInterval, handleChooseSignup, 
         }}
         data-test-tier="paid"
       >
-        <div className="gh-portal-product-card-header min-h-[56px] w-full max-[881px]:min-h-[unset] [.only-free_&]:min-h-[unset]">
-          <h4 className="gh-portal-product-name -mt-1 w-full text-18 leading-[1.3em] font-semibold tracking-[0px] [word-break:break-word] text-brand">
+        <div className="min-h-[56px] w-full max-[881px]:min-h-[unset] [.only-free_&]:min-h-[unset]">
+          <h4 className="-mt-1 w-full text-18 leading-[1.3em] font-semibold tracking-[0px] [word-break:break-word] text-brand">
             {product.name}
           </h4>
           <ProductCardPrice product={product} />
         </div>
-        <div className="gh-portal-product-card-details flex w-full flex-1 flex-col">
-          <div className="gh-portal-product-card-detaildata flex-1">
+        <div className="flex w-full flex-1 flex-col">
+          <div className="flex-1">
             <div
-              className="gh-portal-product-description mt-4 w-full text-15.5 leading-[1.4em] font-semibold"
+              className="mt-4 w-full text-15.5 leading-[1.4em] font-semibold"
               data-testid="product-description"
             >
               {productDescription}
@@ -392,9 +389,7 @@ function ProductCard({ product, products, selectedInterval, handleChooseSignup, 
               />
             </button>
             {error && (
-              <div className="gh-portal-error-message z-[900] -mb-10 min-h-[40px] pb-[13px] text-14 text-red">
-                {error}
-              </div>
+              <div className="z-[900] -mb-10 min-h-[40px] pb-[13px] text-14 text-red">{error}</div>
             )}
           </div>
         </div>
@@ -452,7 +447,7 @@ function YearlyDiscount({ discount }) {
   if (hasFreeTrialTier({ site })) {
     return (
       <>
-        <span className="gh-portal-discount-label-trial mt-1 text-13 leading-none font-semibold text-brand">
+        <span className="mt-1 text-13 leading-none font-semibold text-brand">
           {t('{discount}% discount', { discount })}
         </span>
       </>
@@ -484,10 +479,10 @@ function ProductPriceSwitch({ selectedInterval, setSelectedInterval, products })
   }
 
   return (
-    <div className="gh-portal-logged-out-form-container mx-auto w-full max-w-[420px]">
+    <div className="mx-auto w-full max-w-[420px]">
       <div
         className={
-          tw`gh-portal-products-pricetoggle relative mb-10 flex h-11 w-full rounded-[999px] bg-gray-100 p-1 before:absolute before:inset-y-1 before:right-1 before:block before:w-1/2 before:rounded-[999px] before:bg-white before:[box-shadow:0px_1px_3px_rgba(var(--blackrgb),0.08)] before:content-[''] before:[transition:all_0.15s_ease-in-out] rtl:before:right-auto rtl:before:left-1 [&.left]:before:[transform:translateX(calc(-100%_+_8px))] rtl:[&.left]:before:[transform:translateX(calc(100%_-_8px))]` +
+          tw`relative mb-10 flex h-11 w-full rounded-[999px] bg-gray-100 p-1 before:absolute before:inset-y-1 before:right-1 before:block before:w-1/2 before:rounded-[999px] before:bg-white before:[box-shadow:0px_1px_3px_rgba(var(--blackrgb),0.08)] before:content-[''] before:[transition:all_0.15s_ease-in-out] rtl:before:right-auto rtl:before:left-1 [&.left]:before:[transform:translateX(calc(-100%_+_8px))] rtl:[&.left]:before:[transform:translateX(calc(100%_-_8px))]` +
           (selectedInterval === 'month' ? ' left' : '')
         }
       >
@@ -511,7 +506,7 @@ function ProductPriceSwitch({ selectedInterval, setSelectedInterval, products })
         >
           {t('Yearly')}
           {highestYearlyDiscount > 0 && (
-            <span className="gh-portal-maximum-discount ms-1 font-normal opacity-50">
+            <span className="ms-1 font-normal opacity-50">
               {t('(save {highestYearlyDiscount}%)', { highestYearlyDiscount })}
             </span>
           )}
@@ -575,7 +570,7 @@ function ProductsSection({ onPlanSelect, products, type = null, handleChooseSign
 
   let className = tw`gh-portal-products flex flex-col items-center`;
   if (type === 'upgrade') {
-    className += ' gh-portal-upgrade-product -mt-[70px] pt-[60px]';
+    className += ' -mt-[70px] pt-[60px]';
   }
   const gridGapClass = type === 'upgrade' ? 'gap-[20px]' : 'gap-[40px] max-[671px]:gap-[20px]';
 
@@ -603,7 +598,7 @@ function ProductsSection({ onPlanSelect, products, type = null, handleChooseSign
 
         <div
           className={
-            tw`gh-portal-products-grid mx-auto flex w-full flex-wrap items-stretch justify-center max-[881px]:max-w-[420px] max-[881px]:flex-col ` +
+            tw`mx-auto flex w-full flex-wrap items-stretch justify-center max-[881px]:max-w-[420px] max-[881px]:flex-col ` +
             gridGapClass
           }
         >
@@ -649,10 +644,10 @@ export function ChangeProductSection({ onPlanSelect, selectedPlan, products, typ
 
   let className = tw`gh-portal-products flex flex-col items-center`;
   if (type === 'upgrade') {
-    className += ' gh-portal-upgrade-product -mt-[70px] pt-[60px]';
+    className += ' -mt-[70px] pt-[60px]';
   }
   if (type === 'changePlan') {
-    className += ' gh-portal-upgrade-product gh-portal-change-plan -mt-[70px] pt-[60px]';
+    className += ' -mt-[70px] pt-[60px]';
   }
   const gridGapClass =
     type === 'upgrade' || type === 'changePlan'
@@ -677,7 +672,7 @@ export function ChangeProductSection({ onPlanSelect, selectedPlan, products, typ
 
         <div
           className={
-            tw`gh-portal-products-grid mx-auto flex w-full flex-wrap items-stretch justify-center max-[881px]:max-w-[420px] max-[881px]:flex-col ` +
+            tw`mx-auto flex w-full flex-wrap items-stretch justify-center max-[881px]:max-w-[420px] max-[881px]:flex-col ` +
             gridGapClass
           }
         >
@@ -701,7 +696,7 @@ function ProductDescription({ product }) {
   if (product?.description) {
     return (
       <div
-        className="gh-portal-product-description mt-4 w-full text-15.5 leading-[1.4em] font-semibold"
+        className="mt-4 w-full text-15.5 leading-[1.4em] font-semibold"
         data-testid="product-description"
       >
         {product.description}
@@ -736,14 +731,14 @@ function ChangeProductCard({ product, onPlanSelect }) {
       }}
       data-test-tier="paid"
     >
-      <div className="gh-portal-product-card-header min-h-[56px] w-full max-[881px]:min-h-[unset] [.only-free_&]:min-h-[unset]">
-        <h4 className="gh-portal-product-name -mt-1 w-full text-18 leading-[1.3em] font-semibold tracking-[0px] [word-break:break-word] text-brand">
+      <div className="min-h-[56px] w-full max-[881px]:min-h-[unset] [.only-free_&]:min-h-[unset]">
+        <h4 className="-mt-1 w-full text-18 leading-[1.3em] font-semibold tracking-[0px] [word-break:break-word] text-brand">
           {product.name}
         </h4>
         <ProductCardPrice product={product} />
       </div>
-      <div className="gh-portal-product-card-details flex w-full flex-1 flex-col">
-        <div className="gh-portal-product-card-detaildata flex-1">
+      <div className="flex w-full flex-1 flex-col">
+        <div className="flex-1">
           {product.description ? (
             <ProductDescription
               product={product}
@@ -757,7 +752,7 @@ function ChangeProductCard({ product, onPlanSelect }) {
         </div>
         {currentPlan ? (
           <div className={btnProductClass}>
-            <span className="gh-portal-current-plan z-[900] flex h-11 w-full items-center justify-center rounded-[5px] bg-gray-50 text-center text-14 leading-[1em] font-medium tracking-[0.2px] whitespace-nowrap text-gray-800">
+            <span className="z-[900] flex h-11 w-full items-center justify-center rounded-[5px] bg-gray-50 text-center text-14 leading-[1em] font-medium tracking-[0.2px] whitespace-nowrap text-gray-800">
               <span>{t('Current plan')}</span>
             </span>
           </div>

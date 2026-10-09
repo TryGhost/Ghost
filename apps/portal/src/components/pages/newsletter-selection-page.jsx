@@ -7,9 +7,9 @@ import LockIcon from '../../images/icons/lock.svg?react';
 import { t } from '../../utils/i18n';
 import { tw } from '../../utils/tw';
 
-const listSectionClass = tw`gh-portal-list-toggle-wrapper flex items-start justify-between p-5 [border-bottom:1px_solid_var(--color-gray-200)] first-of-type:rounded-t-lg last-of-type:rounded-b-lg last-of-type:[border:none]`;
+const listSectionClass = tw`flex items-start justify-between p-5 [border-bottom:1px_solid_var(--color-gray-200)] first-of-type:rounded-t-lg last-of-type:rounded-b-lg last-of-type:[border:none]`;
 
-const listDetailClass = tw`gh-portal-list-detail gh-portal-list-big grow py-1 pr-6 pl-0 rtl:pr-0 rtl:pl-6`;
+const listDetailClass = tw`grow py-1 pr-6 pl-0 rtl:pr-0 rtl:pl-6`;
 
 const listDetailTitleClass = 'text-16 font-semibold';
 
@@ -26,9 +26,9 @@ function NewsletterPrefSection({ newsletter, subscribedNewsletters, setSubscribe
           <h3 className={listDetailTitleClass}>{newsletter.name}</h3>
           <p className={listDetailTextClass}>{newsletter.description}</p>
         </div>
-        <div className="gh-portal-lock-icon-container flex [flex:44px_0_0] justify-center pt-1.5">
+        <div className="flex [flex:44px_0_0] justify-center pt-1.5">
           <LockIcon
-            className="gh-portal-lock-icon size-[14px] overflow-visible [&_path]:text-gray-900"
+            className="size-[14px] overflow-visible [&_path]:text-gray-900"
             alt=""
             title={t('Unlock access to all newsletters by becoming a paid subscriber.')}
           />
@@ -55,7 +55,7 @@ function NewsletterPrefSection({ newsletter, subscribedNewsletters, setSubscribe
 
   return (
     <section
-      className={`${listSectionClass} gh-portal-list-clickable cursor-pointer focus-visible:shadow-focus-brand focus-visible:outline-none`}
+      className={`${listSectionClass} cursor-pointer focus-visible:shadow-focus-brand focus-visible:outline-none`}
       data-testid="toggle-wrapper"
       role="button"
       tabIndex={0}
@@ -126,8 +126,8 @@ export default function NewsletterSelectionPage({ pageData, onBack }) {
 
   const [subscribedNewsletters, setSubscribedNewsletters] = useState(defaultNewsletters);
   return (
-    <div className="gh-portal-content with-footer gh-portal-newsletter-selection relative mx-auto max-w-[460px] animate-fade-in [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-      <p className="gh-portal-text-center gh-portal-text-large text-center text-18 font-semibold text-pretty">
+    <div className="with-footer relative mx-auto max-w-[460px] animate-fade-in [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      <p className="text-center text-18 font-semibold text-pretty">
         {t('Choose your newsletters')}
       </p>
       <div className="gh-portal-section mb-10">
@@ -138,7 +138,7 @@ export default function NewsletterSelectionPage({ pageData, onBack }) {
           />
         </div>
       </div>
-      <footer className="gh-portal-action-footer flex flex-col items-center justify-between gap-[12px]">
+      <footer className="flex flex-col items-center justify-between gap-[12px]">
         <div style={{ width: '100%' }}>
           <div style={{ marginBottom: '20px' }}>
             <ActionButton
@@ -163,7 +163,7 @@ export default function NewsletterSelectionPage({ pageData, onBack }) {
           {!hasOnlyFreePlan({ site }) ? (
             <div>
               <button
-                className="gh-portal-btn gh-portal-btn-link gh-portal-btn-different-plan relative mx-auto mt-0 mb-6 flex cursor-pointer items-center justify-center rounded-md bg-transparent p-0 text-center text-15 leading-none font-normal tracking-[0.2px] whitespace-nowrap text-gray-700 no-underline outline-none select-none [border:none] transition-control hover:border-gray-300 hover:opacity-[0.85]"
+                className="gh-portal-btn relative mx-auto mt-0 mb-6 flex cursor-pointer items-center justify-center rounded-md bg-transparent p-0 text-center text-15 leading-none font-normal tracking-[0.2px] whitespace-nowrap text-gray-700 no-underline outline-none select-none [border:none] transition-control hover:border-gray-300 hover:opacity-[0.85]"
                 onClick={() => {
                   onBack();
                 }}

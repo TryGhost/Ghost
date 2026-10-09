@@ -15,16 +15,16 @@ function ErrorPage({ error }) {
   const { doAction } = useContext(AppContext);
 
   return (
-    <div className="gh-portal-content gh-portal-feedback with-footer relative [scrollbar-width:none] max-sm:group-[.feedback]/wrapper:[&_.gh-portal-closeicon-container]:hidden [&::-webkit-scrollbar]:hidden">
+    <div className="with-footer relative [scrollbar-width:none] max-sm:group-[.feedback]/wrapper:[&_.gh-portal-closeicon-container]:hidden [&::-webkit-scrollbar]:hidden">
       <CloseButton />
-      <div className="gh-feedback-icon gh-feedback-icon-error mx-auto my-0 w-24 px-0 py-2.5 text-center text-red-500">
+      <div className="mx-auto my-0 w-24 px-0 py-2.5 text-center text-red-500">
         <ThumbErrorIcon />
       </div>
-      <h1 className="gh-portal-main-title text-center leading-[1.1em] text-pretty text-black max-sm:group-[.feedback]/wrapper:text-25">
+      <h1 className="text-center leading-[1.1em] text-pretty text-black max-sm:group-[.feedback]/wrapper:text-25">
         {t('Sorry, that didn’t work.')}
       </h1>
       <div>
-        <p className="gh-portal-text-center px-8 pt-4 pb-3 text-center text-pretty max-sm:px-2 max-sm:group-[.feedback]/wrapper:mb-[1.2rem]">
+        <p className="px-8 pt-4 pb-3 text-center text-pretty max-sm:px-2 max-sm:group-[.feedback]/wrapper:mb-[1.2rem]">
           {error}
         </p>
       </div>
@@ -60,9 +60,9 @@ const ConfirmDialog = ({ onConfirm, loading, initialScore }) => {
   };
 
   const getButtonClassNames = (value) => {
-    const baseClassName = tw`gh-feedback-button relative flex cursor-pointer items-center justify-center gap-2 rounded-[22px] border-none bg-transparent px-2 py-3 text-14 leading-[1.2] font-bold text-gray-900 before:absolute before:top-0 before:left-0 before:size-full before:rounded-[inherit] before:bg-current before:opacity-10 before:content-[''] rtl:before:right-0 rtl:before:left-auto [&_svg]:size-6 [&_svg]:[color:inherit] [&_svg_path]:stroke-[4px]`;
+    const baseClassName = tw`relative flex cursor-pointer items-center justify-center gap-2 rounded-[22px] border-none bg-transparent px-2 py-3 text-14 leading-[1.2] font-bold text-gray-900 before:absolute before:top-0 before:left-0 before:size-full before:rounded-[inherit] before:bg-current before:opacity-10 before:content-[''] rtl:before:right-0 rtl:before:left-auto [&_svg]:size-6 [&_svg]:[color:inherit] [&_svg_path]:stroke-[4px]`;
     return value === score
-      ? `${baseClassName} gh-feedback-button-selected [box-shadow:inset_0_0_0_2px_currentColor]`
+      ? `${baseClassName} [box-shadow:inset_0_0_0_2px_currentColor]`
       : baseClassName;
   };
 
@@ -72,14 +72,14 @@ const ConfirmDialog = ({ onConfirm, loading, initialScore }) => {
 
   return (
     <div
-      className="gh-portal-confirm-dialog max-sm:group-[.feedback]/wrapper:[&_.gh-portal-closeicon-container]:hidden"
+      className="max-sm:group-[.feedback]/wrapper:[&_.gh-portal-closeicon-container]:hidden"
       onMouseDown={stopPropagation}
     >
-      <h1 className="gh-portal-confirm-title mx-0 mt-0 mb-[0.4rem] box-border text-center text-[24px] leading-[inherit] font-bold tracking-[-.018em] max-sm:group-[.feedback]/wrapper:text-25">
+      <h1 className="mx-0 mt-0 mb-[0.4rem] box-border text-center text-[24px] leading-[inherit] font-bold tracking-[-.018em] max-sm:group-[.feedback]/wrapper:text-25">
         {t('Give feedback on this post')}
       </h1>
 
-      <div className="gh-feedback-buttons-group mt-[3.6rem] grid grid-cols-[1fr_1fr] gap-4 max-sm:mt-7">
+      <div className="mt-[3.6rem] grid grid-cols-[1fr_1fr] gap-4 max-sm:mt-7">
         <button
           className={getButtonClassNames(1)}
           style={getInlineStyles(1)}
@@ -100,7 +100,7 @@ const ConfirmDialog = ({ onConfirm, loading, initialScore }) => {
       </div>
 
       <ActionButton
-        classes="gh-portal-confirm-button mt-[3.6rem] w-full max-sm:mt-7"
+        classes="mt-[3.6rem] w-full max-sm:mt-7"
         retry={false}
         onClick={submit}
         disabled={false}
@@ -133,16 +133,14 @@ const ConfirmFeedback = ({ positive }) => {
   const icon = positive ? <ThumbUpIcon /> : <ThumbDownIcon />;
 
   return (
-    <div className="gh-portal-content gh-portal-feedback relative [scrollbar-width:none] max-sm:group-[.feedback]/wrapper:[&_.gh-portal-closeicon-container]:hidden [&::-webkit-scrollbar]:hidden">
+    <div className="relative [scrollbar-width:none] max-sm:group-[.feedback]/wrapper:[&_.gh-portal-closeicon-container]:hidden [&::-webkit-scrollbar]:hidden">
       <CloseButton />
 
-      <div className="gh-feedback-icon mx-auto my-0 w-12 px-0 py-2.5 text-center text-brand">
-        {icon}
-      </div>
-      <h1 className="gh-portal-main-title text-center leading-[1.1em] text-pretty text-black max-sm:group-[.feedback]/wrapper:text-25">
+      <div className="mx-auto my-0 w-12 px-0 py-2.5 text-center text-brand">{icon}</div>
+      <h1 className="text-center leading-[1.1em] text-pretty text-black max-sm:group-[.feedback]/wrapper:text-25">
         {t('Thanks for the feedback!')}
       </h1>
-      <p className="gh-portal-text-center px-8 pt-4 pb-3 text-center text-pretty max-sm:px-2 max-sm:group-[.feedback]/wrapper:mb-[1.2rem]">
+      <p className="px-8 pt-4 pb-3 text-center text-pretty max-sm:px-2 max-sm:group-[.feedback]/wrapper:mb-[1.2rem]">
         {t('Your input helps shape what gets published.')}
       </p>
       <ActionButton

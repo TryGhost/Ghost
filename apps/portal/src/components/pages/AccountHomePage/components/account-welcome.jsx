@@ -32,7 +32,7 @@ const AccountWelcome = () => {
       if (subscriptionExpiry) {
         return (
           <div className="gh-portal-section mb-10" style={{ marginBottom: 24 }}>
-            <p className="gh-portal-text-center gh-portal-free-ctatext -mt-3 text-center text-pretty">
+            <p className="-mt-3 text-center text-pretty">
               {t(`Your gift subscription will expire on {expiryDate}`, {
                 expiryDate: subscriptionExpiry,
               })}
@@ -45,7 +45,7 @@ const AccountWelcome = () => {
     if (isComplimentary && subscriptionExpiry) {
       return (
         <div className="gh-portal-section mb-10">
-          <p className="gh-portal-text-center gh-portal-free-ctatext -mt-3 text-center text-pretty">
+          <p className="-mt-3 text-center text-pretty">
             {t(`Your subscription will expire on {expiryDate}`, { expiryDate: subscriptionExpiry })}
           </p>
         </div>
@@ -63,7 +63,7 @@ const AccountWelcome = () => {
       const trialEnd = getDateString(subscription.trial_end_at);
       return (
         <div className="gh-portal-section mb-10">
-          <p className="gh-portal-text-center gh-portal-free-ctatext -mt-3 text-center text-pretty">
+          <p className="-mt-3 text-center text-pretty">
             {t(`Your subscription will start on {subscriptionStart}`, {
               subscriptionStart: trialEnd,
             })}
@@ -74,7 +74,7 @@ const AccountWelcome = () => {
 
     return (
       <div className="gh-portal-section mb-10">
-        <p className="gh-portal-text-center gh-portal-free-ctatext -mt-3 text-center text-pretty">
+        <p className="-mt-3 text-center text-pretty">
           {t(`Your subscription will renew on {renewalDate}`, {
             renewalDate: getDateString(currentPeriodEnd),
           })}
@@ -85,7 +85,7 @@ const AccountWelcome = () => {
 
   return (
     <div className="gh-portal-section mb-10">
-      <p className="gh-portal-text-center gh-portal-free-ctatext -mt-3 text-center text-pretty">
+      <p className="-mt-3 text-center text-pretty">
         {t(`You currently have a free membership, upgrade to a paid subscription for full access.`)}
       </p>
       <SubscribeButton />

@@ -11,7 +11,7 @@ import { t } from '../../utils/i18n';
 import { signupMessageButtonClass } from '../shared-classes';
 import { tw } from '../../utils/tw';
 
-const mainTitleClass = tw`gh-portal-main-title mt-3 text-center leading-[1.1em] text-pretty text-black [.gh-portal-signup-logo+&]:mt-1`;
+const mainTitleClass = tw`mt-3 text-center leading-[1.1em] text-pretty text-black [.gh-portal-signup-logo+&]:mt-1`;
 
 export default class SigninPage extends React.Component {
   static contextType = AppContext;
@@ -126,7 +126,7 @@ export default class SigninPage extends React.Component {
   renderSignupMessage() {
     const { brandColor } = this.context;
     return (
-      <div className="gh-portal-signup-message z-[9999] mt-1 flex flex-wrap justify-center text-15 text-gray-900 [&_*]:z-[9999]">
+      <div className="z-[9999] mt-1 flex flex-wrap justify-center text-15 text-gray-900 [&_*]:z-[9999]">
         <div>{t("Don't have an account?")}</div>
         <button
           data-test-button="signup-switch"
@@ -149,7 +149,7 @@ export default class SigninPage extends React.Component {
         <section>
           <div className="gh-portal-section mb-10">
             <p
-              className="gh-portal-members-disabled-notification mx-8 mt-2 mb-6 text-center text-gray-900"
+              className="mx-8 mt-2 mb-6 text-center text-gray-900"
               data-testid="members-disabled-notification-text"
             >
               {t('Memberships unavailable, contact the owner for access.')}
@@ -168,7 +168,7 @@ export default class SigninPage extends React.Component {
             onKeyDown={(e, field) => this.onKeyDown(e, field)}
           />
         </div>
-        <footer className="gh-portal-signin-footer relative flex flex-col items-center gap-[12px] pt-3 max-sm:group-[.preview:not(.full-size)]/wrapper:pb-8">
+        <footer className="relative flex flex-col items-center gap-[12px] pt-3 max-sm:group-[.preview:not(.full-size)]/wrapper:pb-8">
           {this.renderSubmitButton()}
           {isSignupAvailable && this.renderSignupMessage()}
         </footer>
@@ -191,9 +191,7 @@ export default class SigninPage extends React.Component {
         />
       );
     } else if (!isSigninAllowed({ site })) {
-      return (
-        <InvitationIcon className="gh-portal-icon gh-portal-icon-invitation mt-3 mb-0.5 size-11 text-brand" />
-      );
+      return <InvitationIcon className="mt-3 mb-0.5 size-11 text-brand" />;
     }
     return null;
   }
@@ -222,8 +220,8 @@ export default class SigninPage extends React.Component {
     return (
       <>
         <CloseButton />
-        <div className="gh-portal-logged-out-form-container mx-auto w-full max-w-[420px]">
-          <div className="gh-portal-content signin relative max-h-[unset]! pb-1 [scrollbar-width:none] [&_.gh-portal-input]:mb-3 [&_.gh-portal-section]:mb-0 [&::-webkit-scrollbar]:hidden">
+        <div className="mx-auto w-full max-w-[420px]">
+          <div className="signin relative max-h-[unset]! pb-1 [scrollbar-width:none] [&_.gh-portal-input]:mb-3 [&_.gh-portal-section]:mb-0 [&::-webkit-scrollbar]:hidden">
             {this.renderFormHeader()}
             {this.renderForm()}
           </div>

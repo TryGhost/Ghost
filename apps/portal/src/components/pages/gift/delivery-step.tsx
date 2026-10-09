@@ -63,10 +63,10 @@ function GiftDeliveryStep({
 }: GiftDeliveryStepProps) {
   return (
     <>
-      <div className="gh-portal-gift-checkout-section mt-6">
+      <div className="mt-6">
         {/* Same voice and spacing as every other field label on the form — the toggle is just
         this label's input. */}
-        <div className="gh-portal-gift-checkout-label mb-2 text-14 font-semibold text-gray-900">
+        <div className="mb-2 text-14 font-semibold text-gray-900">
           {t('How would you like to share this gift?')}
         </div>
         <div aria-label={t('Delivery method')} className={giftSwitchClasses} role="radiogroup">
@@ -99,7 +99,7 @@ function GiftDeliveryStep({
         data-open={deliveryMethod === 'email'}
       >
         <div className={giftRevealInnerClasses}>
-          <div className="gh-portal-gift-checkout-section mt-6">
+          <div className="mt-6">
             <TypedInputField
               {...recipientNameField}
               onChange={(event: ChangeEvent<HTMLInputElement>) =>

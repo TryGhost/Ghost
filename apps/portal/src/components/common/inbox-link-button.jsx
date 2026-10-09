@@ -166,13 +166,9 @@ const icloudIcon = (
   </svg>
 );
 
-const defaultEmailIcon = <EnvelopeIcon className="gh-portal-inbox-link-icon" />;
+const defaultEmailIcon = <EnvelopeIcon />;
 const feedbinIcon = (
-  <svg
-    className="gh-portal-inbox-link-icon"
-    xmlns="http://www.w3.org/2000/svg"
-    viewBox="0 0 183.436 170.826"
-  >
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 183.436 170.826">
     <path
       d="M183.432,89.959c-0.048-3.063-0.497-6.082-1.334-8.975c-0.901-3.114-2.23-6.177-3.96-9.13 c1.092-6.758,0.659-13.689-1.293-20.634c-1.09-3.878-2.657-7.671-4.658-11.274c-1.858-3.346-4.149-6.63-6.808-9.762 c-2.993-3.525-6.414-6.812-10.168-9.771c-3.486-2.747-7.374-5.301-11.558-7.591c-7.209-3.946-14.975-7.019-23.083-9.133 c-7.625-1.988-15.79-3.189-24.268-3.569C94.507,0.041,92.693,0,90.909,0c-5.665,0-11.351,0.411-16.901,1.223 c-4.65,0.68-9.204,1.621-13.534,2.798c-4.53,1.231-8.963,2.759-13.178,4.543c-4.808,2.035-9.322,4.378-13.417,6.965 c-4.412,2.787-8.502,5.96-12.158,9.43c-2.899,2.752-5.481,5.651-7.674,8.618c-2.396,3.241-4.419,6.682-6.011,10.228 C3.237,54.494,2.171,65.255,4.855,75.84c-1.278,2-2.296,3.965-3.088,5.95c-0.592,1.485-1.401,3.773-1.596,6.482 c-0.317,4.391-0.128,7.032,0.042,8.637c0.333,3.151,1.017,5.92,2.092,8.466c0.876,2.076,2.015,3.983,3.401,5.698 c-0.004,5.271,0.282,9.628,0.896,13.697c1.658,10.979,6.794,20.282,15.266,27.651c4.024,3.5,8.628,6.417,14.075,8.919 c5.796,2.662,12.181,4.704,19.522,6.243c8.669,1.818,17.734,2.833,27.715,3.104c3.439,0.093,6.638,0.139,9.78,0.139 c9.007,0,17.141-0.382,24.867-1.166c6.781-0.689,12.409-1.619,17.71-2.928c6.693-1.652,12.44-3.876,17.568-6.798 c8.917-5.081,15.441-12.349,19.391-21.602c2.111-4.945,3.553-10.188,4.41-16.029c0.666-4.539,0.908-9.172,0.735-14.094 c0.853-0.902,1.612-1.88,2.272-2.926c1.256-1.991,2.15-4.232,2.657-6.659C183.186,95.673,183.476,92.758,183.432,89.959z"
       fill="#fff"
@@ -237,7 +233,7 @@ function InboxLinkButton({ inboxLinks: { android, desktop, provider } }) {
       href={isAndroidChrome(navigator) ? android : desktop}
       target="_blank"
       rel="noreferrer noopener"
-      className="gh-portal-btn gh-portal-btn-inbox-link relative flex h-11 w-full cursor-pointer items-center justify-center gap-[8px] rounded-md border border-solid border-gray-200 bg-white px-[1.8rem] py-0 text-center text-15 leading-[1em] font-medium tracking-[0.2px] whitespace-nowrap text-black no-underline outline-none select-none transition-control hover:border-gray-300 [&_svg]:size-5 [&_svg]:shrink-0"
+      className="gh-portal-btn relative flex h-11 w-full cursor-pointer items-center justify-center gap-[8px] rounded-md border border-solid border-gray-200 bg-white px-[1.8rem] py-0 text-center text-15 leading-[1em] font-medium tracking-[0.2px] whitespace-nowrap text-black no-underline outline-none select-none transition-control hover:border-gray-300 [&_svg]:size-5 [&_svg]:shrink-0"
     >
       {getOwn(PROVIDER_ICONS, provider) ?? defaultEmailIcon}
       <span>{getProviderLabel(provider)}</span>

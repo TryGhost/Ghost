@@ -26,17 +26,14 @@ const SignupGiftPromotion = ({ className, lastPage }: SignupGiftPromotionProps) 
     <>
       <div>{t('Buying for someone else?')}</div>
       <button
-        className="gh-portal-btn gh-portal-btn-link gh-portal-signup-message-gift relative ms-1! -mb-px flex cursor-pointer items-center justify-center rounded-md bg-transparent p-0 text-center text-14 leading-none font-semibold tracking-[0.2px] whitespace-nowrap text-black no-underline outline-none select-none [border:none] transition-control hover:border-gray-300 hover:opacity-[0.85]"
+        className="gh-portal-btn relative ms-1! -mb-px flex cursor-pointer items-center justify-center rounded-md bg-transparent p-0 text-center text-14 leading-none font-semibold tracking-[0.2px] whitespace-nowrap text-black no-underline outline-none select-none [border:none] transition-control hover:border-gray-300 hover:opacity-[0.85]"
         data-test-button="gift-switch"
         data-testid="gift-switch"
         style={{ color: brandColor }}
         type="button"
         onClick={() => doAction('switchPage', { page: 'gift', lastPage })}
       >
-        <GiftIcon
-          aria-hidden="true"
-          className="gh-portal-signup-message-icon me-1 size-4 [stroke-width:2]"
-        />
+        <GiftIcon aria-hidden="true" className="me-1 size-4 [stroke-width:2]" />
         <span className="-mb-0.5 inline-block pb-0.5">{t('Gift a membership')}</span>
       </button>
     </>

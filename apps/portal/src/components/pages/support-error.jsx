@@ -18,16 +18,16 @@ const SupportError = ({ error }) => {
   }
 
   return (
-    <div className="gh-portal-content gh-portal-tips-and-donations relative [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+    <div className="relative [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
       <CloseButton />
 
-      <div className="gh-tips-and-donations-icon-error mx-auto my-0 w-12 px-0 py-2.5 text-center text-red-500">
+      <div className="mx-auto my-0 w-12 px-0 py-2.5 text-center text-red-500">
         <WarningIcon />
       </div>
-      <h1 className="gh-portal-main-title text-center text-[32px] leading-[1.1em] text-pretty text-black">
+      <h1 className="text-center text-[32px] leading-[1.1em] text-pretty text-black">
         {errorTitle}
       </h1>
-      <p className="gh-portal-text-center px-8 pt-4 pb-3 text-center text-pretty">{errorMessage}</p>
+      <p className="px-8 pt-4 pb-3 text-center text-pretty">{errorMessage}</p>
       <ActionButton
         style={{ width: '100%' }}
         retry={true}

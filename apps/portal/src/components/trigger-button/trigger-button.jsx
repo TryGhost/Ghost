@@ -145,12 +145,7 @@ class TriggerButtonContent extends React.Component {
   renderText() {
     const { portal_button_signup_text: buttonText } = this.context.site;
     if (this.hasText()) {
-      return (
-        <span className="gh-portal-triggerbtn-label block max-w-[380px] truncate p-2 text-white">
-          {' '}
-          {buttonText}{' '}
-        </span>
-      );
+      return <span className="block max-w-[380px] truncate p-2 text-white"> {buttonText} </span>;
     }
     return null;
   }
@@ -183,11 +178,11 @@ class TriggerButtonContent extends React.Component {
     if (hasText) {
       return (
         <div
-          className="gh-portal-triggerbtn-wrapper inline-flex h-full items-start justify-end pt-2.5 pr-7 pb-0 pl-[17px] leading-none select-none [transition:transform_0.16s_linear_0s] rtl:pr-[17px] rtl:pl-7 [&_span]:mb-px"
+          className="inline-flex h-full items-start justify-end pt-2.5 pr-7 pb-0 pl-[17px] leading-none select-none [transition:transform_0.16s_linear_0s] rtl:pr-[17px] rtl:pl-7 [&_span]:mb-px"
           ref={this.container}
         >
           <div
-            className="gh-portal-triggerbtn-container with-label relative flex h-[60px] min-w-[60px] cursor-pointer items-center justify-center rounded-[999px] bg-brand pr-3 pl-4 shadow-trigger [transition:opacity_0.3s_ease] before:absolute before:inset-0 before:rounded-[999px] before:bg-white/0 before:content-[''] before:[transition:background_0.3s_ease] hover:before:bg-white/[0.08] rtl:pr-4 rtl:pl-3 [&_.gh-portal-avatar]:mb-0! [&_.gh-portal-avatar]:size-[60px]"
+            className="relative flex h-[60px] min-w-[60px] cursor-pointer items-center justify-center rounded-[999px] bg-brand pr-3 pl-4 shadow-trigger [transition:opacity_0.3s_ease] before:absolute before:inset-0 before:rounded-[999px] before:bg-white/0 before:content-[''] before:[transition:background_0.3s_ease] hover:before:bg-white/[0.08] rtl:pr-4 rtl:pl-3 [&_.gh-portal-avatar]:mb-0! [&_.gh-portal-avatar]:size-[60px]"
             onClick={(e) => this.onToggle(e)}
             data-testid="portal-trigger-button"
           >
@@ -198,9 +193,9 @@ class TriggerButtonContent extends React.Component {
       );
     }
     return (
-      <div className="gh-portal-triggerbtn-wrapper inline-flex h-full items-start justify-end pt-2.5 pr-7 pb-0 pl-[17px] leading-none select-none [transition:transform_0.16s_linear_0s] rtl:pr-[17px] rtl:pl-7 [&_span]:mb-px">
+      <div className="inline-flex h-full items-start justify-end pt-2.5 pr-7 pb-0 pl-[17px] leading-none select-none [transition:transform_0.16s_linear_0s] rtl:pr-[17px] rtl:pl-7 [&_span]:mb-px">
         <div
-          className={`gh-portal-triggerbtn-container ${triggerBtnClass} relative flex h-[60px] min-w-[60px] cursor-pointer items-center justify-center rounded-[999px] bg-brand shadow-trigger [transition:opacity_0.3s_ease] before:absolute before:inset-0 before:rounded-[999px] before:bg-white/0 before:content-[''] before:[transition:background_0.3s_ease] hover:before:bg-white/[0.08] [&_.gh-portal-avatar]:mb-0! [&_.gh-portal-avatar]:size-[60px] [&.halo]:before:-inset-1 [&.halo]:before:border-4 [&.halo]:before:border-solid [&.halo]:before:border-white/15`}
+          className={` ${triggerBtnClass} relative flex h-[60px] min-w-[60px] cursor-pointer items-center justify-center rounded-[999px] bg-brand shadow-trigger [transition:opacity_0.3s_ease] before:absolute before:inset-0 before:rounded-[999px] before:bg-white/0 before:content-[''] before:[transition:background_0.3s_ease] hover:before:bg-white/[0.08] [&_.gh-portal-avatar]:mb-0! [&_.gh-portal-avatar]:size-[60px] [&.halo]:before:-inset-1 [&.halo]:before:border-4 [&.halo]:before:border-solid [&.halo]:before:border-white/15`}
           onClick={(e) => this.onToggle(e)}
           data-testid="portal-trigger-button"
         >

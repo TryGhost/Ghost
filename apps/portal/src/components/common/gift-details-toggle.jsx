@@ -51,27 +51,23 @@ const GiftDetailsToggle = ({ description, benefits, showDetails, onToggle }) => 
   return (
     <>
       <div
-        className="gh-portal-gift-checkout-details grid w-full grid-rows-[0fr] [transition:grid-template-rows_0.3s_ease,margin-top_0.3s_ease] data-[open=true]:mt-8 data-[open=true]:grid-rows-[1fr]"
+        className="grid w-full grid-rows-[0fr] [transition:grid-template-rows_0.3s_ease,margin-top_0.3s_ease] data-[open=true]:mt-8 data-[open=true]:grid-rows-[1fr]"
         data-open={showDetails}
         aria-hidden={!showDetails}
       >
-        <div className="gh-portal-gift-checkout-details-inner min-h-0 overflow-hidden">
+        <div className="min-h-0 overflow-hidden">
           {description && (
-            <p className="gh-portal-gift-checkout-details-description mb-3 text-14.5 leading-[1.4] text-white/85 last:mb-0">
-              {description}
-            </p>
+            <p className="mb-3 text-14.5 leading-[1.4] text-white/85 last:mb-0">{description}</p>
           )}
           {visibleBenefits.length > 0 && (
-            <div className="gh-portal-gift-checkout-benefits flex flex-col gap-2">
-              {visibleBenefits}
-            </div>
+            <div className="flex flex-col gap-2">{visibleBenefits}</div>
           )}
         </div>
       </div>
       <button
         type="button"
         className={
-          tw`gh-portal-gift-checkout-details-toggle mt-6 inline-flex cursor-pointer items-center gap-1 border-none bg-transparent px-3 py-2 text-14 font-medium text-white/70 [transition:color_0.15s_ease] hover:text-white/95 focus-visible:[outline:2px_solid_rgba(255,255,255,0.9)] focus-visible:outline-offset-[3px] [&_svg]:size-3 [&_svg]:[transition:transform_0.2s_ease] [&.is-open_svg]:[transform:rotate(-180deg)]` +
+          tw`mt-6 inline-flex cursor-pointer items-center gap-1 border-none bg-transparent px-3 py-2 text-14 font-medium text-white/70 [transition:color_0.15s_ease] hover:text-white/95 focus-visible:[outline:2px_solid_rgba(255,255,255,0.9)] focus-visible:outline-offset-[3px] [&_svg]:size-3 [&_svg]:[transition:transform_0.2s_ease] [&.is-open_svg]:[transform:rotate(-180deg)]` +
           (showDetails ? ' is-open' : '')
         }
         onClick={onToggle}
