@@ -336,9 +336,85 @@ overrides:
   qs: 'catalog:'
 
 packageExtensions:
-  '@doist/react-interpolate@2.2.1':
+  # These import packages they don't declare, which only resolve through pnpm's
+  # private hoisting (node_modules/.pnpm/node_modules).
+  '@doist/react-interpolate@^2.2.1':
     dependencies:
       '@babel/runtime': ^7.26.10
+  '@lexical/yjs@0.13.1':
+    dependencies:
+      '@lexical/selection': 0.13.1
+  'react-slider@^2.0.6':
+    dependencies:
+      '@babel/runtime': ^7.26.10
+  '@hookform/resolvers':
+    peerDependencies:
+      zod: '*'
+    peerDependenciesMeta:
+      zod:
+        optional: true
+  country-flag-icons:
+    peerDependencies:
+      react: '*'
+    peerDependenciesMeta:
+      react:
+        optional: true
+  # `--use cssnano` is imported from postcss-cli's own directory
+  postcss-cli:
+    peerDependencies:
+      cssnano: '*'
+    peerDependenciesMeta:
+      cssnano:
+        optional: true
+  # Their type declarations import react without declaring @types/react.
+  '@dnd-kit/core':
+    peerDependencies:
+      '@types/react': '*'
+    peerDependenciesMeta:
+      '@types/react':
+        optional: true
+  '@dnd-kit/sortable':
+    peerDependencies:
+      '@types/react': '*'
+    peerDependenciesMeta:
+      '@types/react':
+        optional: true
+  '@sentry/react':
+    peerDependencies:
+      '@types/react': '*'
+    peerDependenciesMeta:
+      '@types/react':
+        optional: true
+  '@uiw/react-codemirror':
+    peerDependencies:
+      '@types/react': '*'
+    peerDependenciesMeta:
+      '@types/react':
+        optional: true
+  cmdk:
+    peerDependencies:
+      '@types/react': '*'
+    peerDependenciesMeta:
+      '@types/react':
+        optional: true
+  react-dropzone:
+    peerDependencies:
+      '@types/react': '*'
+    peerDependenciesMeta:
+      '@types/react':
+        optional: true
+  react-router:
+    peerDependencies:
+      '@types/react': '*'
+    peerDependenciesMeta:
+      '@types/react':
+        optional: true
+  recharts:
+    peerDependencies:
+      '@types/react': '*'
+    peerDependenciesMeta:
+      '@types/react':
+        optional: true
 minimumReleaseAgeExclude:
   # Our own packages are published by us, so the release-age delay doesn't apply
   - '@tryghost/*'
