@@ -301,7 +301,7 @@ describe('Post preview modal', () => {
     fakePreviewWorld();
     fakeEmailPreview();
     await fakeFrameOrigin(window.location.origin, '<p>Post preview</p>');
-    await fakeFrameOrigin('https://elsewhere.test', '<p>Another site</p>');
+    await fakeFrameOrigin('http://elsewhere.test', '<p>Another site</p>');
     const onOpenChange = vi.fn();
     await renderPreviewModal({
       onOpenChange,
@@ -320,7 +320,7 @@ describe('Post preview modal', () => {
     const leftSite = new Promise((resolve) => {
       frame.addEventListener('load', resolve, { once: true });
     });
-    frame.contentWindow?.location.assign('https://elsewhere.test/');
+    frame.contentWindow?.location.assign('http://elsewhere.test/');
     await leftSite;
 
     await previewScreen.emailTab().click();

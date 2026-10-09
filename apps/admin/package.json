@@ -94,7 +94,6 @@
     "@types/semver": "catalog:",
     "@types/validator": "catalog:",
     "@typescript/native": "catalog:",
-    "@vitejs/plugin-basic-ssl": "catalog:",
     "@vitejs/plugin-react": "catalog:",
     "@vitest/browser-playwright": "catalog:",
     "d3-geo": "catalog:",
