@@ -83,6 +83,7 @@ describe('PostMediaInliner', function () {
           {
             type: 'product',
             productImageSrc: 'https://assets.test/product.jpg',
+            productImageAlt: 'Product photo',
             productUrl: 'https://example.com/product',
           },
           {
@@ -156,6 +157,7 @@ describe('PostMediaInliner', function () {
     assert.equal(children[4].src, '__GHOST_URL__/content/files/guide.pdf');
     assert.equal(children[5].productImageSrc, '__GHOST_URL__/content/files/product.jpg');
     assert.equal(children[5].productUrl, 'https://example.com/product');
+    assert.equal(children[5].productImageAlt, 'Product photo');
     assert.equal(children[6].backgroundImageSrc, '__GHOST_URL__/content/files/header.jpg');
     assert.equal(children[6].buttonUrl, 'https://example.com/header-button');
     assert.equal(children[7].backgroundImageSrc, '__GHOST_URL__/content/files/signup.jpg');
