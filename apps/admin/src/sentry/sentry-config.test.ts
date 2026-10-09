@@ -147,6 +147,12 @@ describe('beforeSend', () => {
     expect(beforeSend(event, {})).toBeNull();
   });
 
+  it('sends failures the publish flow showed the writer', () => {
+    const event = { tags: { shown_to_user: true, source: 'publish-flow' } } as Event;
+
+    expect(beforeSend(event, {})).toEqual(event);
+  });
+
   it('removes post and page ids from the error message', () => {
     const event = {
       exception: { values: [{ value: 'Something went wrong <post:123>' }] },

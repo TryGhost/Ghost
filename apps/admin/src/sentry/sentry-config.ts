@@ -113,7 +113,8 @@ export function beforeSend(event: Event, hint?: EventHint): Event | null {
     event.tags.shown_to_user = event.tags.shown_to_user || false;
     event.tags.grammarly = !!document.querySelector('[data-gr-ext-installed]');
 
-    if (event.tags.shown_to_user === true) {
+    // The publish flow reports only the failures it did not expect
+    if (event.tags.shown_to_user === true && event.tags.source !== 'publish-flow') {
       return null;
     }
 

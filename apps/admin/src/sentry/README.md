@@ -22,8 +22,9 @@ response. Without a DSN nothing initialises and nothing is sent.
   serves the editor and the auth screens. They are absent until that is decided
   and follow later changes. Ember's events carry them too, as both share one hub.
 - `beforeSend` tags `shown_to_user` (default `false`) and `grammarly`, drops
-  events already shown to the user and events about analytics requests, and
-  replaces post/page ids in messages so they group together.
+  events already shown to the user (except the publish flow's, which reports
+  only unexpected failures) and events about analytics requests, and replaces
+  post/page ids in messages so they group together.
 - Minified Lexical errors are tagged `lexical: true` with the loaded Koenig
   version, including ones the global error handlers catch. The post editor's
   reports also carry `koenig_instance`: `primary` for the visible instance,
