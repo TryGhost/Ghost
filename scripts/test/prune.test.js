@@ -4,7 +4,7 @@ import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
-import { prune } from '../../ghost/core/scripts/prune.mts';
+import { prune } from '../../ghost/scripts/prune.mts';
 
 const packagePath = 'node_modules/.pnpm/example@1.0.0/node_modules/example';
 const lineMap = '//# sourceMappingURL=data:application/json;charset=utf-8;base64,e30=';
@@ -100,7 +100,7 @@ describe('image inline source-map pruning', () => {
     const root = await fixture(t, { [`${packagePath}/inline.js`]: `${code}${lineMap}\n` });
     const reportPath = path.join(root, 'report.json');
     execFileSync(process.execPath, [
-      new URL('../../ghost/core/scripts/prune.mts', import.meta.url).pathname,
+      new URL('../../ghost/scripts/prune.mts', import.meta.url).pathname,
       root,
       '--profile=image',
       `--report=${reportPath}`,

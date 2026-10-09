@@ -401,7 +401,7 @@ describe('Post editor leave guard', () => {
   it('asks before leaving when the save on the way out fails', async () => {
     const saveApi = fakeEditablePost({}, { failSaves: true });
     await openDirtyEditor(withFastAutosave(FLAG_ON));
-    await expect.element(editorScreen.saveErrorBanner()).toBeVisible();
+    await expect.element(editorScreen.saveError()).toBeVisible();
     expect(saveApi.requests.length).toBeGreaterThanOrEqual(1);
 
     await editorScreen.backLink('post').click();

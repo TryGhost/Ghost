@@ -7,8 +7,19 @@ import {
   normalizeRecipientFilter,
 } from '@tryghost/admin-x-framework/utils/recipient-filter';
 import type { PostNewsletter, PostStatus } from '@tryghost/admin-x-framework/api/posts';
-import { writerMessage } from './publish/completion-message';
-import type { SaveEngineState } from './engine/save-engine';
+import {
+  SESSION_EXPIRED_MESSAGE,
+  SESSION_EXPIRED_RETRY_MESSAGE,
+  UNREACHABLE_MESSAGE,
+  writerMessage,
+} from './publish/completion-message';
+import {
+  type PendingSave,
+  type SaveEngineState,
+  type SaveError,
+  type SaveIntent,
+  isStatusIntent,
+} from './engine/save-engine';
 
 /** How long "Saving…" stays on screen once a save starts, so it is noticeable. */
 export const SAVING_MIN_DISPLAY_MS = 3000;
@@ -30,8 +41,15 @@ export interface EditorStatusRecord {
 
 export type EditorStatusView =
   /** A save the writer has to act on; the message is the failed save's. */
-  | { kind: 'problem'; message: string }
+  | {
+      kind: 'problem';
+      message: string;
+      error: SaveError;
+      /** Whether the status line offers the failed save's retry. */
+      retryable: boolean;
+    }
   | { kind: 'saving' }
+  /** Never saved, so there is nothing to report; the status line shows nothing. */
   | { kind: 'new' }
   | { kind: 'draft'; saved: boolean }
   | {
@@ -53,6 +71,8 @@ export type EditorStatusView =
 
 export interface DeriveEditorStatusInput {
   state: SaveEngineState;
+  /** Work the engine is holding back, which a collision can block. */
+  pendingSave?: PendingSave | null;
   record?: EditorStatusRecord;
   isDirty: boolean;
   /** Held true for a minimum window after a save starts. */
@@ -104,16 +124,55 @@ function isPastScheduled(record: EditorStatusRecord, now: Date): boolean {
   return !Number.isNaN(time) && time <= now.getTime();
 }
 
+/**
+ * Whether the status line offers a failed save's retry. A failed publish,
+ * schedule or unpublish is retried where it was asked for, since a retry here
+ * would save the post without changing its status. A refusal by the editor's own
+ * rules never reached the server, and only fixing the field ends it.
+ */
+function isRetryable(
+  intent: SaveIntent,
+  error: SaveError,
+  pendingSave: PendingSave | null | undefined,
+): boolean {
+  if (isStatusIntent(intent) || pendingSave?.blockedBy?.kind === 'conflict') {
+    return false;
+  }
+  return !(error.kind === 'validation' && error.cause === undefined);
+}
+
+/** A failed save as the status line words it. */
+export function saveErrorMessage(error: SaveError, intent?: SaveIntent): string {
+  switch (error.kind) {
+    case 'session-invalid':
+      // A status change is retried where it was asked for, so the status line offers no Retry.
+      return intent && isStatusIntent(intent)
+        ? SESSION_EXPIRED_MESSAGE
+        : SESSION_EXPIRED_RETRY_MESSAGE;
+    case 'transport':
+      return UNREACHABLE_MESSAGE;
+    default:
+      return writerMessage(error);
+  }
+}
+
 export function deriveEditorStatus({
   state,
+  pendingSave,
   record,
   isDirty,
   isSaving,
   now = new Date(),
 }: DeriveEditorStatusInput): EditorStatusView {
-  // A collision has its own banner; a failed save has nowhere else to surface.
+  // A collision has its own banner, which offers its ways out; any other failed
+  // save, including a refused publish, is reported here.
   if (state.kind === 'error') {
-    return { kind: 'problem', message: writerMessage(state.error) };
+    return {
+      kind: 'problem',
+      message: saveErrorMessage(state.error, state.intent),
+      error: state.error,
+      retryable: isRetryable(state.intent, state.error, pendingSave),
+    };
   }
 
   const status = record?.status ?? 'draft';

@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { replayIntegration, type Event } from '@sentry/react';
+import { inboundFiltersIntegration, replayIntegration, type Event } from '@sentry/react';
 import { beforeBreadcrumb, beforeSend, getSentryConfig, type Integration } from './sentry-config';
 
 vi.mock('@sentry/react', async (importOriginal) => ({
@@ -8,7 +8,22 @@ vi.mock('@sentry/react', async (importOriginal) => ({
   debugIntegration: vi.fn(() => ({ name: 'Debug' })),
 }));
 
+const koenigVersion = vi.hoisted(() => vi.fn<() => string | undefined>());
+
+vi.mock('@/settings/components/koenig-loader', () => ({ loadedKoenigVersion: koenigVersion }));
+
+const LEXICAL_ERROR =
+  'Minified Lexical error #15; visit https://lexical.dev/docs/error?code=15 for the full message';
+
 const DSN = 'https://public@o0.ingest.sentry.io/1';
+
+function isIgnored(type: string, value: string): boolean {
+  const config = getSentryConfig({ dsn: DSN, environment: 'production', version: '6.1' });
+  const event: Event = { exception: { values: [{ type, value }] } };
+  const client = { getOptions: () => config } as never;
+
+  return inboundFiltersIntegration().processEvent?.(event, {}, client) === null;
+}
 
 function integrationNames(environment: string): string[] {
   const config = getSentryConfig({ dsn: DSN, environment, version: '6.1' });
@@ -31,15 +46,63 @@ describe('getSentryConfig', () => {
       /The play\(\) request was interrupted.*/,
       /The request is not allowed by the user agent or the platform in the current context/,
       /Server was unreachable/,
-      /NetworkError when attempting to fetch resource./,
-      /Failed to fetch/,
-      /Load failed/,
-      /The operation was aborted./,
+      /^NetworkError when attempting to fetch resource\.$/,
+      /^Failed to fetch$/,
+      /^Load failed$/,
+      /^(AbortError: )?The operation was aborted\. ?$/,
+      /^(AbortError: |InvalidStateError: )?Transition was (skipped|aborted because of invalid state)(\. [A-Za-z ]+)?$/,
+      /^(Skipping view transition because skipTransition\(\) was called|View transition was skipped because document visibility state is hidden)\.$/,
+      /^Skipped ViewTransition due to (skipTransition\(\) call|document being hidden)$/,
       /^TransitionAborted$/,
       /^ResizeObserver loop completed with undelivered notifications/,
       /^ResizeObserver loop limit exceeded/,
       'TaskCancelation',
     ]);
+  });
+
+  it.each([
+    ['TypeError', 'Failed to fetch'],
+    ['TypeError', 'Load failed'],
+    ['TypeError', 'NetworkError when attempting to fetch resource.'],
+    ['AbortError', 'The operation was aborted.'],
+    ['AbortError', 'The operation was aborted. '],
+    ['Error', 'AbortError: The operation was aborted.'],
+  ])('ignores the network error %s: %j', (type, value) => {
+    expect(isIgnored(type, value)).toBe(true);
+  });
+
+  it.each([
+    ['Error', 'InvalidStateError: Transition was aborted because of invalid state'],
+    [
+      'Error',
+      'InvalidStateError: Transition was aborted because of invalid state. Document hidden',
+    ],
+    ['AbortError', 'Transition was skipped'],
+    ['AbortError', 'Transition was skipped. Navigation aborted'],
+    [
+      'InvalidStateError',
+      'View transition was skipped because document visibility state is hidden.',
+    ],
+    ['AbortError', 'Skipping view transition because skipTransition() was called.'],
+    ['InvalidStateError', 'Skipped ViewTransition due to document being hidden'],
+    ['AbortError', 'Skipped ViewTransition due to skipTransition() call'],
+  ])('ignores the skipped view transition %s: %j', (type, value) => {
+    expect(isIgnored(type, value)).toBe(true);
+  });
+
+  it('reports an error that only starts like a skipped view transition', () => {
+    expect(isIgnored('Error', 'Skipped ViewTransition due to document being hidden: x')).toBe(
+      false,
+    );
+  });
+
+  it('reports a module that failed to load', () => {
+    expect(
+      isIgnored(
+        'TypeError',
+        'Failed to fetch dynamically imported module: https://example.com/ghost/assets/editor-Bx1.js',
+      ),
+    ).toBe(false);
   });
 
   it('buffers replays for errors and keeps deduping outside tests', () => {
@@ -88,6 +151,7 @@ describe('getSentryConfig', () => {
 describe('beforeSend', () => {
   afterEach(() => {
     document.body.removeAttribute('data-gr-ext-installed');
+    koenigVersion.mockReset();
   });
 
   it('should return an event', () => {
@@ -112,6 +176,12 @@ describe('beforeSend', () => {
     expect(beforeSend(event, {})).toBeNull();
   });
 
+  it('sends failures the publish flow showed the writer', () => {
+    const event = { tags: { shown_to_user: true, source: 'publish-flow' } } as Event;
+
+    expect(beforeSend(event, {})).toEqual(event);
+  });
+
   it('removes post and page ids from the error message', () => {
     const event = {
       exception: { values: [{ value: 'Something went wrong <post:123>' }] },
@@ -128,6 +198,49 @@ describe('beforeSend', () => {
     } as Event;
 
     expect(beforeSend(event, {})?.exception?.values?.[0]?.value).toBe('Could not save <page:ID>');
+  });
+
+  it('tags an uncaught Lexical error with the loaded Koenig version', () => {
+    koenigVersion.mockReturnValue('1.2.3');
+    const event = { exception: { values: [{ value: LEXICAL_ERROR }] } } as Event;
+
+    const result = beforeSend(event);
+
+    expect(result?.tags?.lexical).toBe(true);
+    expect(result?.contexts?.koenig).toEqual({ version: '1.2.3' });
+  });
+
+  it('tags a Lexical error before Koenig has loaded without a version', () => {
+    const event = { exception: { values: [{ value: LEXICAL_ERROR }] } } as Event;
+
+    const result = beforeSend(event);
+
+    expect(result?.tags?.lexical).toBe(true);
+    expect(result?.contexts?.koenig).toBeUndefined();
+  });
+
+  it('keeps the context of a Lexical error the editor reported', () => {
+    koenigVersion.mockReturnValue('1.2.3');
+    const event = {
+      exception: { values: [{ value: LEXICAL_ERROR }] },
+      tags: { lexical: true, koenig_instance: 'secondary' },
+      contexts: { koenig: { version: '1.0.0' } },
+    } as Event;
+
+    const result = beforeSend(event);
+
+    expect(result?.tags).toMatchObject({ lexical: true, koenig_instance: 'secondary' });
+    expect(result?.contexts?.koenig).toEqual({ version: '1.0.0' });
+  });
+
+  it('does not tag other errors as Lexical', () => {
+    koenigVersion.mockReturnValue('1.2.3');
+    const event = { exception: { values: [{ value: 'Lexical node not found' }] } } as Event;
+
+    const result = beforeSend(event);
+
+    expect(result?.tags?.lexical).toBeUndefined();
+    expect(result?.contexts?.koenig).toBeUndefined();
   });
 
   it('returns the original event if there is an error', () => {

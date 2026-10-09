@@ -21,7 +21,7 @@ imports in `src/` must carry an explicit extension; write the real `.ts` one —
 `import {x} from './x.ts'` — and `tsc` rewrites it to `.js` on emit
 (`rewriteRelativeImportExtensions`).
 
-`ghost/core` is CommonJS but consumes this package via `require()`, which works
+`ghost` is CommonJS but consumes this package via `require()`, which works
 on Ghost's Node version (22.13+/24) through Node's `require(esm)` support. That
 support has one hard constraint: **no top-level `await`** anywhere in this
 package's module graph — it makes the graph async and `require()` of it throws

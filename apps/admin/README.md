@@ -10,13 +10,16 @@ Uses an **Ember Bridge** system for smooth migration:
 - Unported routes fall back to the existing Ember admin
 - Both share the same UI space seamlessly
 
+A Labs flag that moves the editor between Ember and React applies on the next
+editor visit: the bridge keeps an open editor with whichever app is showing it.
+
 The React application uses `admin-x-framework` for API hooks, routing, and the
 bridge to Ember. Shade provides its application wrapper and design system.
 Embedded React applications are built before Ember Admin. After Vite builds Admin,
 `pnpm assemble:assets` runs the standalone assembler in `scripts/` to merge React,
 Ember, ActivityPub and Koenig outputs into `dist/` and
-`ghost/core/core/built/admin/`. It ships Koenig’s embed renderer separately in
-`ghost/core/core/built/embed-renderer/`. Ember’s asset-delivery hook delegates
+`ghost/core/built/admin/`. It ships Koenig’s embed renderer separately in
+`ghost/core/built/embed-renderer/`. Ember’s asset-delivery hook delegates
 legacy preparation to the same helper for its standalone builds and dev server.
 
 Ember is an Nx implicit dependency of this app so Ember source changes still
@@ -111,13 +114,13 @@ pnpm dev
 
 This builds Ember's development assets once before starting Vite. React,
 Admin Framework, Shade and Portal continue watching for changes. Ember still
-boots in the browser for the bridge, flag-off editor/auth screens and `/pro/*`;
+boots in the browser for the bridge, the flag-off editor and `/pro/*`;
 its source edits take effect after restarting the command. Use `pnpm dev:ember`
 when you need Ember's live-reload server and continuous rebuilds.
 
 Development commands do not change Labs settings. To preview the React editor
-and auth screens in one browser tab, open
-`http://localhost:2368/ghost/#/signin?labs=editorReact,authReact`. These
+in one browser tab, open
+`http://localhost:2368/ghost/#/editor/post?labs=editorReact`. These
 [session overrides](../../docs/practices/feature-flags.md#admin-session-overrides)
 survive navigation and reloads in that tab; use `?labs=` to clear them.
 
@@ -192,7 +195,7 @@ same embedded bundles without Ember output. See
 requirements and cutover usage. This option does not change route ownership or
 Labs flags.
 
-This outputs to `apps/admin/dist/` and updates the assets in `ghost/core/core/built/admin/`.
+This outputs to `apps/admin/dist/` and updates the assets in `ghost/core/built/admin/`.
 
 The build also writes hidden sourcemaps: `.map` files that no bundle references.
 With `IS_SHIPPING` set, as CI does for `main` and release tags, it injects Sentry

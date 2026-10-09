@@ -130,7 +130,7 @@ Also verify:
 
 - the package resolves through the consumer's production `require()` or import;
 - relevant consumer tests pass;
-- `pnpm archive` succeeds from `ghost/core`;
+- `pnpm archive` succeeds from `ghost`;
 - the resulting Ghost archive contains the package component.
 
 Generated archives are verification artifacts, not files to commit.

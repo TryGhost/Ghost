@@ -1,0 +1,339 @@
+import assert from 'node:assert/strict';
+import { utils as errorUtils } from '@tryghost/errors';
+import createKnex from 'knex';
+// @ts-expect-error This module lacks type definitions.
+import commands from '../../../../../core/server/data/schema/commands';
+
+describe('schema commands', function () {
+  describe('getTables', function () {
+    it('excludes the SQLite sequence table', async function () {
+      const fakeKnex = {
+        client: { config: { client: 'better-sqlite3' } },
+        raw: async () => [
+          { tbl_name: 'posts' },
+          { tbl_name: 'sqlite_sequence' },
+          { tbl_name: 'users' },
+        ],
+      };
+
+      assert.deepEqual(await commands.getTables(fakeKnex), ['posts', 'users']);
+    });
+  });
+
+  it('_hasForeignSQLite throws when knex is nox configured to use sqlite3', async function () {
+    const knex = createKnex({
+      client: 'mysql',
+    });
+
+    try {
+      await commands._hasForeignSQLite({ transaction: knex });
+      assert.fail('addForeign did not throw');
+    } catch (err) {
+      assert(err instanceof Error);
+      assert.equal(errorUtils.isGhostError(err), true);
+      assert.equal(err.message, 'Must use hasForeignSQLite3 on an SQLite3 database');
+    }
+  });
+
+  it('_hasPrimaryKeySQLite throws when knex is configured to use sqlite', async function () {
+    const knex = createKnex({
+      client: 'mysql',
+    });
+
+    try {
+      await commands._hasPrimaryKeySQLite(null, knex);
+      assert.fail('hasPrimaryKeySQLite did not throw');
+    } catch (err) {
+      assert(err instanceof Error);
+      assert.equal(errorUtils.isGhostError(err), true);
+      assert.equal(err.message, 'Must use hasPrimaryKeySQLite on an SQLite3 database');
+    }
+  });
+
+  describe('addTableColumn', function () {
+    // addTableColumn isn't exported, so we exercise it through createTable
+    // and stringify the builder rather than running it against a database.
+    function ddlFor(
+      client: string,
+      tableSpec: Record<
+        string,
+        { type: string; maxlength?: number; nullable?: boolean } | string[][]
+      >,
+    ) {
+      const knex = createKnex({ client, useNullAsDefault: true });
+
+      try {
+        return commands.createTable('test_table', knex, tableSpec).toString();
+      } finally {
+        knex.destroy();
+      }
+    }
+
+    it('gives a binary column with a maxlength a bounded varbinary type on MySQL', function () {
+      const ddl = ddlFor('mysql2', {
+        to_hash: { type: 'binary', maxlength: 32, nullable: true },
+      });
+
+      assert.match(ddl, /`to_hash` varbinary\(32\)/);
+    });
+
+    // The bounded type is what makes the column indexable in full: MySQL
+    // can only index an unbounded blob with a prefix, and a prefix on a
+    // UNIQUE index would enforce uniqueness over the prefix alone.
+    it('falls back to an unbounded blob when a binary column has no maxlength', function () {
+      const ddl = ddlFor('mysql2', {
+        to_hash: { type: 'binary', nullable: true },
+      });
+
+      assert.match(ddl, /`to_hash` blob/);
+    });
+
+    it('indexes the whole binary column in a unique constraint, without a prefix', function () {
+      const ddl = ddlFor('mysql2', {
+        owner_id: { type: 'string', maxlength: 24, nullable: true },
+        to_hash: { type: 'binary', maxlength: 32, nullable: true },
+        '@@UNIQUE_CONSTRAINTS@@': [['owner_id', 'to_hash']],
+      });
+
+      // The column has to be bounded for this to be legal: MySQL rejects
+      // an unbounded blob in a key without a prefix length (ER_BLOB_KEY_WITHOUT_LENGTH).
+      assert.match(ddl, /`to_hash` varbinary\(32\)/);
+      assert.match(ddl, /add unique `test_table_owner_id_to_hash_unique`\(`owner_id`, `to_hash`\)/);
+    });
+
+    it('uses blob for binary columns on SQLite, which has no bounded binary type', function () {
+      const ddl = ddlFor('better-sqlite3', {
+        to_hash: { type: 'binary', maxlength: 32, nullable: true },
+      });
+
+      assert.match(ddl, /`to_hash` blob/);
+    });
+
+    it('still applies maxlength to string columns, defaulting to 191', function () {
+      const ddl = ddlFor('mysql2', {
+        bounded: { type: 'string', maxlength: 50, nullable: true },
+        unbounded: { type: 'string', nullable: true },
+      });
+
+      assert.match(ddl, /`bounded` varchar\(50\)/);
+      assert.match(ddl, /`unbounded` varchar\(191\)/);
+    });
+  });
+
+  describe('createTable', function () {
+    it('refuses a column reference not written as table.column', function () {
+      const knex = createKnex({ client: 'mysql' });
+
+      for (const references of ['posts', 'ghost.posts.id']) {
+        assert.throws(
+          () =>
+            commands
+              .createTable('posts_meta', knex, {
+                post_id: { type: 'string', maxlength: 24, nullable: false, references },
+              })
+              .toSQL(),
+          /post_id[\s\S]*`table\.column`/,
+          references,
+        );
+      }
+    });
+  });
+
+  // The database suites run on MySQL only, so this is what covers SQLite, which can only
+  // declare a foreign key while creating the table.
+  describe('a foreign key over several columns, on SQLite', function () {
+    let knex: ReturnType<typeof createKnex>;
+
+    beforeEach(async function () {
+      knex = createKnex({
+        client: 'better-sqlite3',
+        connection: { filename: ':memory:' },
+        useNullAsDefault: true,
+      });
+      await knex.raw('PRAGMA foreign_keys = ON');
+
+      await commands.createTable('fields', knex, {
+        namespace: { type: 'string', maxlength: 191, nullable: false },
+        key: { type: 'string', maxlength: 191, nullable: false },
+        '@@UNIQUE_CONSTRAINTS@@': [['namespace', 'key']],
+      });
+      await commands.createTable('field_values', knex, {
+        field_namespace: { type: 'string', maxlength: 191, nullable: false },
+        field_key: { type: 'string', maxlength: 191, nullable: false },
+        value: { type: 'string', maxlength: 191, nullable: false },
+        '@@FOREIGN_KEYS@@': [
+          {
+            columns: ['field_namespace', 'field_key'],
+            references: { table: 'fields', columns: ['namespace', 'key'] },
+            constraintName: 'field_values_field_foreign',
+            cascadeDelete: true,
+          },
+        ],
+      });
+
+      await knex('fields').insert([
+        { namespace: 'custom', key: 'company' },
+        { namespace: 'app', key: 'phone' },
+      ]);
+    });
+
+    afterEach(async function () {
+      await knex.destroy();
+    });
+
+    it('takes a row with it when the row it references is deleted', async function () {
+      await knex('field_values').insert([
+        { field_namespace: 'custom', field_key: 'company', value: 'Ghost' },
+        { field_namespace: 'app', field_key: 'phone', value: '+44' },
+      ]);
+
+      await knex('fields').where({ namespace: 'custom', key: 'company' }).del();
+
+      assert.deepEqual(await knex('field_values').pluck('value'), ['+44']);
+    });
+
+    it('refuses a row that matches a referenced row one column at a time but not as a pair', async function () {
+      await assert.rejects(
+        knex('field_values').insert({
+          field_namespace: 'custom',
+          field_key: 'phone',
+          value: '+44',
+        }),
+        /FOREIGN KEY constraint failed/,
+      );
+    });
+  });
+
+  describe('createViewOrReplace', function () {
+    // Guards the portability fix: views must never be created with MySQL's
+    // default DEFINER security, which binds them to the migrating account
+    // and breaks when a backup is restored under a different MySQL user.
+    it('creates the view with SQL SECURITY INVOKER on MySQL', async function () {
+      const rawStatements: string[] = [];
+      const fakeKnex = {
+        client: { config: { client: 'mysql2' } },
+        raw: (sql: string) => {
+          rawStatements.push(sql);
+          return Promise.resolve();
+        },
+      };
+
+      await commands.createViewOrReplace('my_view', 'SELECT 1 AS one', fakeKnex);
+
+      assert.equal(rawStatements.length, 1);
+      assert.match(rawStatements[0], /CREATE OR REPLACE SQL SECURITY INVOKER VIEW/);
+      assert.match(rawStatements[0], /`my_view`/);
+      assert.doesNotMatch(rawStatements[0], /DEFINER/);
+    });
+
+    it('uses the plain builder (no security clause) on SQLite', async function () {
+      const builderViews: string[] = [];
+      const fakeKnex = {
+        client: { config: { client: 'sqlite3' } },
+        raw: (sql: string) => sql,
+        schema: {
+          createViewOrReplace: (name: string) => {
+            builderViews.push(name);
+            return Promise.resolve();
+          },
+        },
+      };
+
+      await commands.createViewOrReplace('my_view', 'SELECT 1 AS one', fakeKnex);
+
+      assert.deepEqual(builderViews, ['my_view']);
+    });
+  });
+
+  describe('renameColumn', function () {
+    it('uses requested algorithm on MySQL', async function () {
+      const rawStatements: string[] = [];
+      const fakeKnex = {
+        client: { config: { client: 'mysql2' } },
+        raw: (sql: string) => {
+          rawStatements.push(sql);
+          return Promise.resolve();
+        },
+      };
+
+      await commands.renameColumn('email_batches', 'provider_id', 'mailgun_message_id', fakeKnex, {
+        algorithm: 'instant',
+      });
+
+      assert.deepEqual(rawStatements, [
+        'ALTER TABLE `email_batches` RENAME COLUMN `provider_id` TO `mailgun_message_id`, algorithm=instant',
+      ]);
+    });
+
+    it('does not force an algorithm when none is requested', async function () {
+      const rawStatements: string[] = [];
+      const fakeKnex = {
+        client: { config: { client: 'mysql2' } },
+        raw: (sql: string) => {
+          rawStatements.push(sql);
+          return Promise.resolve();
+        },
+      };
+
+      await commands.renameColumn('table', 'old_column', 'new_column', fakeKnex);
+
+      assert.deepEqual(rawStatements, [
+        'ALTER TABLE `table` RENAME COLUMN `old_column` TO `new_column`',
+      ]);
+    });
+
+    it('retries without the algorithm when the server does not support it', async function () {
+      const rawStatements: string[] = [];
+      const fakeKnex = {
+        client: { config: { client: 'mysql2' } },
+        raw: (sql: string) => {
+          rawStatements.push(sql);
+
+          if (sql.includes('algorithm=')) {
+            const error = Object.assign(
+              new Error(
+                'ALGORITHM=INSTANT is not supported for this operation. Try ALGORITHM=COPY/INPLACE.',
+              ),
+              { code: 'ER_ALTER_OPERATION_NOT_SUPPORTED' },
+            );
+            return Promise.reject(error);
+          }
+
+          return Promise.resolve();
+        },
+      };
+
+      await commands.renameColumn('email_batches', 'provider_id', 'mailgun_message_id', fakeKnex, {
+        algorithm: 'instant',
+      });
+
+      assert.deepEqual(rawStatements, [
+        'ALTER TABLE `email_batches` RENAME COLUMN `provider_id` TO `mailgun_message_id`, algorithm=instant',
+        'ALTER TABLE `email_batches` RENAME COLUMN `provider_id` TO `mailgun_message_id`',
+      ]);
+    });
+
+    it('does not retry on unrelated errors', async function () {
+      const rawStatements: string[] = [];
+      const fakeKnex = {
+        client: { config: { client: 'mysql2' } },
+        raw: (sql: string) => {
+          rawStatements.push(sql);
+          const error = Object.assign(new Error("Table 'email_batches' doesn't exist"), {
+            code: 'ER_NO_SUCH_TABLE',
+          });
+          return Promise.reject(error);
+        },
+      };
+
+      await assert.rejects(
+        commands.renameColumn('email_batches', 'provider_id', 'mailgun_message_id', fakeKnex, {
+          algorithm: 'instant',
+        }),
+        /doesn't exist/,
+      );
+
+      assert.equal(rawStatements.length, 1);
+    });
+  });
+});

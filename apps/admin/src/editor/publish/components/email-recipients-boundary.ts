@@ -1,7 +1,14 @@
 import { z } from 'zod';
 
 const tiersBoundarySchema = z.looseObject({
-  tiers: z.array(z.looseObject({ slug: z.string(), name: z.string(), active: z.boolean() })),
+  tiers: z.array(
+    z.looseObject({
+      id: z.string(),
+      slug: z.string(),
+      name: z.string(),
+      active: z.boolean(),
+    }),
+  ),
 });
 const labelsBoundarySchema = z.looseObject({
   labels: z.array(z.looseObject({ slug: z.string(), name: z.string() })),

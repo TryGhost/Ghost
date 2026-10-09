@@ -1,24 +1,7 @@
 import { z } from 'zod';
 
 import { URL_MAX_LENGTH } from './limits.ts';
-
-// `URL` has already normalised the host by the time these run: every spelling of an IPv4
-// address is dotted decimal, and an IPv4-mapped IPv6 address is two hex groups.
-const LOOPBACK_HOSTS = [
-  /^localhost$/,
-  /\.localhost$/,
-  /^127\.\d+\.\d+\.\d+$/,
-  /^0\.0\.0\.0$/,
-  /^\[::1?\]$/,
-  /^\[::ffff:7f[0-9a-f]{2}:[0-9a-f]{1,4}\]$/,
-  /^\[::ffff:0:0\]$/,
-];
-
-/** Whether a host is the machine itself: `localhost`, or a loopback or unspecified address. */
-function isLocalhost(hostname: string): boolean {
-  const host = hostname.replace(/\.$/, '');
-  return LOOPBACK_HOSTS.some((pattern) => pattern.test(host));
-}
+import { isLocalhost } from './localhost.ts';
 
 /**
  * Checks a URL after it has been resolved, never before: a relative value can resolve to

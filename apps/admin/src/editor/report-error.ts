@@ -1,10 +1,16 @@
 import * as Sentry from '@sentry/react';
 import type { ErrorInfo } from 'react';
-import { APIError, ServerUnreachableError } from '@tryghost/admin-x-framework/errors';
+import {
+  APIError,
+  JSONError,
+  ServerUnreachableError,
+  getErrorMessage,
+} from '@tryghost/admin-x-framework/errors';
 import { loadedKoenigVersion } from '@/settings/components/koenig-loader';
 import type { PostType } from '@/editor/card-config';
 import type { SaveError } from '@/editor/engine/save-engine';
 import type { EditorLeaveConfirmation, EditorSaveFailure } from '@/editor/session/editor-session';
+import { toSaveError } from '@/editor/session/error-mapping';
 
 type TagValue = boolean | number | string;
 
@@ -28,24 +34,43 @@ export function reportEditorError(error: unknown, context?: EditorErrorContext):
   Sentry.captureException(error, context);
 }
 
-/** Reports a Lexical failure from any of the editor's Koenig instances. */
-export function reportKoenigError(error: unknown): void {
-  reportEditorError(error, {
-    tags: { lexical: true },
-    contexts: { koenig: { version: loadedKoenigVersion() } },
-  });
+/** Reports a recovery the editor made on its own, as a message rather than a fault. */
+export function reportEditorNotice(message: string, context?: EditorErrorContext): void {
+  Sentry.captureMessage(message, context);
 }
 
-/** Reports a Koenig instance that crashed its error boundary, with where in the tree. */
-export function reportKoenigRenderError(error: unknown, info: ErrorInfo): void {
-  reportEditorError(error, {
-    tags: { lexical: true },
-    contexts: {
-      koenig: { version: loadedKoenigVersion() },
-      react: { componentStack: info.componentStack },
-    },
-  });
+/** The post editor's visible Koenig instance, or the hidden one its change baseline comes from. */
+export type KoenigInstanceRole = 'primary' | 'secondary';
+
+export interface KoenigErrorReporters {
+  onError: (error: unknown) => void;
+  onRenderError: (error: unknown, info: ErrorInfo) => void;
 }
+
+/**
+ * Reports Lexical failures from a Koenig instance, tagged with its role when it has one.
+ * The role is bound here because Lexical passes its editor as onError's second argument.
+ */
+export function koenigErrorReporters(instance?: KoenigInstanceRole): KoenigErrorReporters {
+  const context = (contexts?: EditorErrorContext['contexts']): EditorErrorContext => ({
+    tags: definedTags({ lexical: true, koenig_instance: instance }),
+    contexts: { koenig: { version: loadedKoenigVersion() }, ...contexts },
+  });
+
+  return {
+    onError: (error) => reportEditorError(error, context()),
+    onRenderError: (error, info) =>
+      reportEditorError(error, context({ react: { componentStack: info.componentStack } })),
+  };
+}
+
+const anyKoenigInstance = koenigErrorReporters();
+
+/** Reports a Lexical failure from any of the editor's Koenig instances. */
+export const reportKoenigError = anyKoenigInstance.onError;
+
+/** Reports a Koenig instance that crashed its error boundary, with where in the tree. */
+export const reportKoenigRenderError = anyKoenigInstance.onRenderError;
 
 function definedTags(tags: Record<string, TagValue | undefined>): Record<string, TagValue> {
   return Object.fromEntries(
@@ -63,11 +88,50 @@ function responseTags(error: SaveError): Record<string, TagValue | undefined> {
   };
 }
 
+/** Core's account of a collision: the fields that changed and both `updated_at` values. */
+function collisionExtra(error: SaveError): { collision?: unknown } {
+  const details =
+    error.kind === 'conflict' && error.cause instanceof JSONError
+      ? error.cause.data?.errors[0]?.details
+      : null;
+  return details ? { collision: details } : {};
+}
+
+/** Sentry titles and groups a failure by this error's name; the transport error is its cause. */
+function saveFailureError(error: SaveError): Error {
+  const kind = error.kind.replace(/(?:^|-)(\w)/g, (_, letter: string) => letter.toUpperCase());
+  const reported = new Error(getErrorMessage(error.cause, error.message), { cause: error.cause });
+  reported.name = `Save${kind}Error`;
+  return reported;
+}
+
 /**
- * Reports a request that settled as failed. Validation, host limits, a writer
- * who lost access to the post and an unreachable server are not faults in the
- * editor and are not reported; every other failure is, once, with what the
- * request was.
+ * Whether a failure is not a fault in the editor, and so is not reported as one: a refusal
+ * the writer reads and acts on (validation, a host limit, a writer who lost access
+ * to the post, an expired session, whose recovery is signing in again) or a
+ * connection that never reached the server. A missing post, a collision, a 5xx, a
+ * timeout, maintenance and anything unrecognised are reported. Saves and the publish
+ * flow both read this.
+ */
+export function isExpectedSaveError(error: SaveError): boolean {
+  return (
+    error.kind === 'validation' ||
+    error.kind === 'host-limit' ||
+    error.kind === 'forbidden' ||
+    error.kind === 'session-invalid' ||
+    error.cause instanceof ServerUnreachableError
+  );
+}
+
+/** `isExpectedSaveError()` for a failure outside a save, read the way a save's would be. */
+export function isExpectedFailure(error: unknown): boolean {
+  return isExpectedSaveError(toSaveError(error, ''));
+}
+
+/**
+ * Reports a request that settled as failed, unless it was expected
+ * (`isExpectedSaveError()`): every other failure is reported once, with what the
+ * request was. A forbidden save or an abandoned sign-in is noted as a message.
  */
 export function reportSaveFailure(failure: EditorSaveFailure, postType: PostType): void {
   const { command, error, persisted, durationMs, postId, status } = failure;
@@ -93,12 +157,16 @@ export function reportSaveFailure(failure: EditorSaveFailure, postType: PostType
     });
   }
 
-  if (
-    error.kind === 'validation' ||
-    error.kind === 'host-limit' ||
-    error.kind === 'forbidden' ||
-    error.cause instanceof ServerUnreachableError
-  ) {
+  if (error.kind === 'forbidden' || error.kind === 'session-invalid') {
+    const message =
+      error.kind === 'forbidden'
+        ? `Save of ${postType} was forbidden`
+        : `Session expired while editing ${postType}`;
+    reportEditorNotice(message, { tags, extra: { post_id: postId } });
+    return;
+  }
+
+  if (isExpectedSaveError(error)) {
     return;
   }
 
@@ -110,9 +178,9 @@ export function reportSaveFailure(failure: EditorSaveFailure, postType: PostType
     return;
   }
 
-  reportEditorError(error.cause ?? new Error(error.message), {
+  reportEditorError(saveFailureError(error), {
     tags,
-    extra: { post_id: postId, duration_ms: durationMs },
+    extra: { post_id: postId, duration_ms: durationMs, ...collisionExtra(error) },
   });
 }
 

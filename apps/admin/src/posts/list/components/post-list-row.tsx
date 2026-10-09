@@ -2,6 +2,7 @@ import { Button, Tooltip, TooltipContent, TooltipTrigger } from '@tryghost/shade
 import { Inline, Stack, Text } from '@tryghost/shade/primitives';
 import { cn, LucideIcon } from '@tryghost/shade/utils';
 import FeatureImagePlaceholder from '@/shared/feature-image-placeholder';
+import { AdminLink } from '@/shared/admin-link';
 import { PostsContextMenu } from '@/posts/list/components/posts-context-menu';
 import type { PostContextMenuItem, PostContextMenuKey } from '@/posts/list/post-context-menu-items';
 import {
@@ -59,7 +60,6 @@ interface PostListRowProps extends Omit<ComponentPropsWithoutRef<'li'>, 'onClick
   metricsSettings: PostMetricsSettings;
   visitorCounts?: Record<string, number>;
   memberCounts?: Record<string, { free: number; paid: number }>;
-  improveSendingUI?: boolean;
 }
 
 interface PostListRowComponentProps extends PostListRowProps {
@@ -125,6 +125,20 @@ function FeatureImage({ post }: { post: PostListItem }) {
   );
 }
 
+type RowLinkProps = ComponentPropsWithoutRef<typeof AdminLink> & { offsite: boolean };
+
+/** Offsite URLs open in a new tab; everything else is an in-app route. */
+const RowLink = forwardRef<HTMLAnchorElement, RowLinkProps>(function RowLink(
+  { offsite, to, ...props },
+  ref,
+) {
+  return offsite ? (
+    <a ref={ref} href={to} rel="noopener noreferrer" target="_blank" {...props} />
+  ) : (
+    <AdminLink ref={ref} to={to} {...props} />
+  );
+});
+
 const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowComponentProps>(
   function PostListRowComponent(
     {
@@ -145,7 +159,6 @@ const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowComponentProps
       metricsSettings,
       visitorCounts,
       memberCounts,
-      improveSendingUI: _improveSendingUI,
       emailSendingState,
       // Everything else lands on the <li>: the context menu wraps each row with
       // `asChild`, so Radix hands its trigger props and ref straight through.
@@ -176,7 +189,7 @@ const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowComponentProps
     const isPublished = post.status === 'published';
     const editorType = resource === 'pages' ? 'page' : 'post';
     const linksOffsite = Boolean(isContributor && isPublished);
-    const href = linksOffsite ? post.url : `#/editor/${editorType}/${post.id}`;
+    const editorPath = `/editor/${editorType}/${post.id}`;
 
     const goesToAnalytics = hasPostAnalyticsPage(
       post,
@@ -186,16 +199,16 @@ const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowComponentProps
     );
     const action = goesToAnalytics
       ? {
-          href: `#/posts/analytics/${post.id}`,
+          to: `/posts/analytics/${post.id}`,
           label: 'Post analytics',
-          external: false,
+          offsite: false,
           Icon: LucideIcon.ChartNoAxesColumn,
         }
       : linksOffsite
         ? // "View post" on both resources, as Ember hardcodes it. Only ever
           // reached by a contributor, who has no page access anyway.
-          { href: post.url, label: 'View post', external: true, Icon: LucideIcon.ArrowUpRight }
-        : { href, label: 'Edit', external: false, Icon: LucideIcon.Pen };
+          { to: post.url, label: 'View post', offsite: true, Icon: LucideIcon.ArrowUpRight }
+        : { to: editorPath, label: 'Edit', offsite: false, Icon: LucideIcon.Pen };
 
     const row = (
       <li
@@ -237,12 +250,11 @@ const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowComponentProps
                 each need to fill the row's full height to stay clickable —
                 so the row's own box has to stay flush. */}
         <Inline align="center" className="pr-4" gap="md">
-          <a
+          <RowLink
             className="flex min-w-0 flex-1 items-start gap-4 py-4 pl-4 no-underline focus-visible:ring-1 focus-visible:ring-focus-ring focus-visible:outline-hidden focus-visible:ring-inset"
             data-testid="post-list-item-link"
-            href={href}
-            rel={linksOffsite ? 'noopener noreferrer' : undefined}
-            target={linksOffsite ? '_blank' : undefined}
+            offsite={linksOffsite}
+            to={linksOffsite ? post.url : editorPath}
           >
             <FeatureImage post={post} />
             <Stack className="min-w-0 flex-1" gap="xs">
@@ -299,7 +311,7 @@ const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowComponentProps
                 </Text>
               )}
             </Stack>
-          </a>
+          </RowLink>
           <PostMetricsCells
             className="py-4"
             hideEmailMetrics={emailSendingState.status === 'sending'}
@@ -333,16 +345,15 @@ const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowComponentProps
                 variant={isAdmin7 ? (isHovered ? 'outline' : 'ghost') : 'outline'}
                 asChild
               >
-                <a
+                <RowLink
                   aria-label={action.label}
                   data-testid="post-list-item-action"
-                  href={action.href}
-                  rel={action.external ? 'noopener noreferrer' : undefined}
-                  target={action.external ? '_blank' : undefined}
+                  offsite={action.offsite}
+                  to={action.to}
                   data-ignore-select
                 >
                   <action.Icon />
-                </a>
+                </RowLink>
               </Button>
             </TooltipTrigger>
             <TooltipContent variant="white">{action.label}</TooltipContent>
@@ -367,7 +378,7 @@ const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowComponentProps
 
 const PostListRowWithEmailStatus = forwardRef<HTMLLIElement, PostListRowProps>(
   function PostListRowWithEmailStatus(props, ref) {
-    if (hasInProgressEmail(props.post, props.resource, props.improveSendingUI ?? false)) {
+    if (hasInProgressEmail(props.post, props.resource)) {
       return (
         <PostListRowEmailStatus post={props.post}>
           {(emailSendingState) => (

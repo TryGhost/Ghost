@@ -342,13 +342,32 @@ describe('createEditorSession', () => {
     });
   });
 
-  it('ignores a refetched record while it holds no collision token', () => {
+  it('offers a refetched record as a newer version while it holds no collision token', () => {
     const { session } = sessionHarness({ record: record({ updated_at: null }) });
 
     const accepted = session.recordRefetched(record({ status: 'published' }));
 
     expect(accepted).toBe(false);
     expect(session.getSaveSnapshot()).toMatchObject({ status: 'draft', updatedAt: '' });
+    expect(session.getView().newerVersionAvailable).toBe(true);
+  });
+
+  it('collides instead of saving without a token over a newer version it has read', async () => {
+    const { session, state } = sessionHarness({ record: record({ updated_at: null }) });
+    session.recordRefetched(record({ updated_at: '2026-01-02T00:00:00.000Z' }));
+
+    session.patchLexical(body('Mine'));
+    expect(await session.dispatchExplicit()).toMatchObject({
+      kind: 'failed',
+      error: { kind: 'conflict' },
+    });
+    expect(state.updates).toHaveLength(0);
+
+    expect(session.recordReloaded(record({ updated_at: '2026-01-02T00:00:00.000Z' }))).toBe(true);
+    session.patchLexical(body('Written on top of theirs'));
+    await session.dispatchExplicit();
+
+    expect(state.updates[0].payload.updated_at).toBe('2026-01-02T00:00:00.000Z');
   });
 
   it('adopts a read of the held instant written another way, keeping the token as held', async () => {

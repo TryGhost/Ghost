@@ -1,11 +1,11 @@
-import { ToggleGroup, ToggleGroupItem } from '@tryghost/shade/components';
+import { FieldTitle, ToggleGroup, ToggleGroupItem } from '@tryghost/shade/components';
 import { useEmailDesign } from '@/settings/email-design/email-design-context';
 
 export const ButtonStyleField = () => {
   const { settings, onSettingsChange } = useEmailDesign();
   return (
     <div className="flex items-center justify-between">
-      <span>Button style</span>
+      <FieldTitle>Button style</FieldTitle>
       <ToggleGroup
         type="single"
         value={settings.button_style || 'fill'}

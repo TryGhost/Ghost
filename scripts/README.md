@@ -81,7 +81,7 @@ See that directory's README before changing anything about how it's wired.
 
 Run `pnpm inventory:typescript --output /tmp/ghost-typescript` from the root to
 write `/tmp/ghost-typescript.json`. Ghost-Benchmarks renders this JSON as the
-interactive dashboard. Use `--scope ghost/core` (or another repository-relative
+interactive dashboard. Use `--scope ghost` (or another repository-relative
 directory) to focus the data. Resolution and dependent counts still consider
 the whole repository.
 

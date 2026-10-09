@@ -15,7 +15,7 @@ function normalize(p) {
 }
 
 // Parse the `packages:` list from pnpm-workspace.yaml. We only need the simple
-// glob shapes pnpm allows here (`apps/*`, `ghost/*`, `e2e`); anything fancier
+// glob shapes pnpm allows here (`apps/*`, `ghost`, `e2e`); anything fancier
 // would warrant a real YAML parser.
 function loadWorkspacePatterns() {
   const yaml = fs.readFileSync(path.join(ROOT, 'pnpm-workspace.yaml'), 'utf8');
@@ -135,7 +135,7 @@ module.exports = {
       ),
     ];
   },
-  'ghost/core/core/{server,shared,frontend}/**/*.{js,ts}': (files) => buildBoundaryCommand(files),
+  'ghost/core/{server,shared,frontend}/**/*.{js,ts}': (files) => buildBoundaryCommand(files),
   'apps/{admin,shade,admin-x-framework,activitypub,portal,comments-ui,signup-form,sodo-search,announcement-bar,admin-toolbar}/src/**/*.{js,ts,tsx,jsx}':
     (files) => buildBoundaryCommand(files),
   '*.{mjs,mts,cts,json,jsonc,json5,yml,yaml,css,mdx}': (files) => buildOxfmtCommand(files),

@@ -9,16 +9,16 @@ import {
   useRef,
   useState,
 } from 'react';
-import { flushSync } from 'react-dom';
+import { useQueryClient } from '@tanstack/react-query';
 import { AdminLink } from '@/shared/admin-link';
 import { getPostListReturnUrl } from '@/posts/api';
 import { reloadAdmin } from '@/auth/api';
 import { NotFound } from '@/shared/not-found';
 import { Navigate, useLocation, useNavigate, useParams } from '@tryghost/admin-x-framework';
-import { Button, LoadingIndicator } from '@tryghost/shade/components';
+import { Button } from '@tryghost/shade/components';
 import { DirtyConfirmDialog, PageHeader } from '@tryghost/shade/patterns';
 import { Box, Grid, Inline, Stack, Text } from '@tryghost/shade/primitives';
-import { LucideIcon } from '@tryghost/shade/utils';
+import { LucideIcon, cn } from '@tryghost/shade/utils';
 import { APIError, SessionExpiredError } from '@tryghost/admin-x-framework/errors';
 import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
@@ -46,6 +46,9 @@ import {
 } from './card-config';
 import { EditorHeaderActions, type OpenFlow } from './editor-header-actions';
 import { readEditorReturn } from './editor-return';
+import { EditorLoading } from './editor-loading';
+import { ScreenEntranceProvider } from '@/layout/screen-entrance-provider';
+import { useScreenEntrance } from '@/layout/screen-transition';
 import { EditorStatus } from './editor-status';
 import { EmailSizeWarning } from './email-size-warning';
 import { PostEditor, type PostEditorHandle } from './post-editor';
@@ -54,13 +57,10 @@ import { buildPublishFlowPost } from './publish/flow-post';
 import { PAID_TIERS_SEARCH_PARAMS } from './browse-params';
 import { initialEmailError } from './publish/use-publish-flow';
 import { SessionBanners } from './session/session-banners';
-import {
-  VALIDATED_SETTINGS_FIELD_KEYS,
-  settingsFieldErrorFor,
-  titleError,
-} from './session/settings-fields';
+import { type InvalidField, settingsFieldErrorFor, titleError } from './session/settings-fields';
 import { ReauthDialog } from './session/reauth-dialog';
-import { PostSettingsSidebar } from './settings/post-settings-sidebar';
+import { PostSettingsSidebar, type SettingsFieldReveal } from './settings/post-settings-sidebar';
+import { isSettingsPanelField } from './settings/sections';
 import { useFeatureImageBinding } from './session/feature-image-binding';
 import { EDITOR_REQUEST_OPTIONS } from './request-options';
 import { useEditorLeaveGuard } from './session/use-leave-guard';
@@ -69,18 +69,10 @@ import {
   EditorSessionKeyProvider,
   useEditorScreenSessionKey,
 } from './session/session-key';
-import { useEditorSession } from './session/use-editor-session';
+import { editorRead, useEditorSession } from './session/use-editor-session';
 import { usePostCardConfig } from './use-post-card-config';
 import { usePostSnippets } from './use-post-snippets';
 import type { EditorRecord } from './session/projection';
-
-function EditorLoading() {
-  return (
-    <Stack align="center" className="h-full" justify="center">
-      <LoadingIndicator size="lg" />
-    </Stack>
-  );
-}
 
 function EditorLoadError({ message, onRetry }: { message: string; onRetry: () => void }) {
   return (
@@ -109,12 +101,12 @@ function EditorHeader({
 
   return (
     <Grid
-      align="center"
-      className="grid-cols-[auto_minmax(0,1fr)] pt-[calc(var(--spacing)*5+1px)] pr-[calc(var(--spacing)*(4+2*var(--editor-settings-progress,0)))] pb-3 pl-4 sm:grid-cols-[auto_minmax(0,1fr)_auto] [&_a]:pointer-events-auto [&_button]:pointer-events-auto"
+      align="start"
+      className="grid-cols-[auto_minmax(0,1fr)_auto] pt-[calc(var(--spacing)*5+1px)] pr-[calc(var(--spacing)*(4+2*var(--editor-settings-progress,0)))] pb-3 pl-4 editor-settings-motion-[padding-right] max-[500px]:pt-3 max-[500px]:pr-[calc(var(--spacing)*(1+2*var(--editor-settings-progress,0))-1px)] max-[500px]:pl-3 [&_a]:pointer-events-auto [&_button]:pointer-events-auto"
       gap="sm"
     >
       <PageHeader.Action
-        className="bg-background/80 backdrop-blur-sm"
+        className="bg-background/80 backdrop-blur-sm max-[500px]:aspect-square max-[500px]:gap-0 max-[500px]:px-0"
         fallbackSize="sm"
         fallbackVariant="ghost"
         label={backLabel}
@@ -123,12 +115,12 @@ function EditorHeader({
         {analyticsReturn ? (
           <AdminLink to={analyticsReturn}>
             <LucideIcon.ArrowLeft />
-            {backLabel}
+            <span className="max-[500px]:sr-only">{backLabel}</span>
           </AdminLink>
         ) : (
           <AdminLink state={getListReturnNavigationState(listUrl)} to={listUrl}>
             <LucideIcon.ArrowLeft />
-            {backLabel}
+            <span className="max-[500px]:sr-only">{backLabel}</span>
           </AdminLink>
         )}
       </PageHeader.Action>
@@ -190,6 +182,7 @@ function EditorContent({
     currentUserId: currentUser?.id,
   });
   const [tkCount, setTkCount] = useState(0);
+  const chromeEntrance = useScreenEntrance();
   const [openFlow, setOpenFlow] = useState<OpenFlow>('none');
   const openPublishFlow = useCallback(() => setOpenFlow('publish'), []);
   const openUpdateFlow = useCallback(() => setOpenFlow('update'), []);
@@ -228,7 +221,12 @@ function EditorContent({
   // Closed on every editor entry, as the menu it replaces was.
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [settingsPresent, setSettingsPresent] = useState(false);
+  const [settingsReveal, setSettingsReveal] = useState<SettingsFieldReveal | null>(null);
+  // From a toggle until everything moving with the panel has arrived. Meanwhile
+  // the editor sizes Koenig's breakout cards from the moving layout.
+  const [settingsMoving, setSettingsMoving] = useState(false);
   const shellRef = useRef<HTMLDivElement>(null);
+  const settingsFrameRef = useRef<HTMLDivElement>(null);
   const settingsToggleRef = useRef<HTMLButtonElement>(null);
   const [settingsToggleWidth, setSettingsToggleWidth] = useState(0);
   useLayoutEffect(() => {
@@ -242,8 +240,9 @@ function EditorContent({
     observer.observe(toggle);
     return () => observer.disconnect();
   }, []);
-  // Keep the panel's fields and subview mounted until the closing transition ends.
-  // Reading animations also handles reduced motion (no animation) and reversals.
+  // Keep the panel's fields and subview mounted until its closing transition ends.
+  // Reading the panel's own transitions also handles reduced motion (none) and
+  // reversals (a reopen cancels this wait).
   useLayoutEffect(() => {
     if (settingsOpen || !settingsPresent) {
       return;
@@ -251,7 +250,10 @@ function EditorContent({
     const finishClosing = () => {
       setSettingsPresent(false);
     };
-    const animations = shellRef.current?.getAnimations() ?? [];
+    const animations =
+      settingsFrameRef.current
+        ?.getAnimations()
+        .filter((animation) => animation instanceof CSSTransition) ?? [];
     if (!animations.length) {
       finishClosing();
       return;
@@ -266,6 +268,26 @@ function EditorContent({
       cancelled = true;
     };
   }, [settingsOpen, settingsPresent]);
+  // Reading the shell's transitions also flushes the style that starts them; a
+  // reversal replaces them and cancels this wait.
+  useLayoutEffect(() => {
+    if (!settingsMoving) {
+      return;
+    }
+    const transitions =
+      shellRef.current
+        ?.getAnimations({ subtree: true })
+        .filter((animation) => animation instanceof CSSTransition) ?? [];
+    let cancelled = false;
+    void Promise.allSettled(transitions.map((transition) => transition.finished)).then(() => {
+      if (!cancelled) {
+        setSettingsMoving(false);
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [settingsOpen, settingsMoving]);
   const headerRef = useRef<HTMLDivElement>(null);
   const [headerHeight, setHeaderHeight] = useState(0);
   useLayoutEffect(() => {
@@ -281,32 +303,41 @@ function EditorContent({
   }, []);
   const toggleSettings = useCallback(() => {
     settingsToggleRef.current?.focus();
+    // A manual toggle ends the reveal, so reopening starts on the section list.
+    setSettingsReveal(null);
+    setSettingsMoving(true);
     setSettingsPresent(true);
     setSettingsOpen((open) => !open);
   }, []);
   const postEditorRef = useRef<PostEditorHandle>(null);
-  const settingsExcerptRef = useRef<HTMLTextAreaElement>(null);
-  /** Takes the writer to the first field a save would refuse; true when there is one. */
-  const revealInvalidField = useCallback((): boolean => {
-    const field = titleError(session.bind.title)
-      ? 'title'
-      : VALIDATED_SETTINGS_FIELD_KEYS.find((key) => settingsFieldErrorFor(key, session.settings));
-    if (field === 'title') {
+  // Below the small breakpoint the header's controls sit in the editor's bottom bar.
+  const [bottomBar, setBottomBar] = useState<HTMLDivElement | null>(null);
+  /**
+   * Takes the writer to the first field an explicit save would refuse, as the
+   * save's own validator reads it, and returns that field. The email subject is
+   * edited in the preview, which the caller opens.
+   */
+  const revealInvalidField = useCallback((): InvalidField | null => {
+    const invalid = session.invalidField();
+    if (!invalid) {
+      return null;
+    }
+    const { key } = invalid;
+    if (key === 'title') {
       postEditorRef.current?.focusTitle();
-    } else if (field === 'custom_excerpt' && showExcerpt) {
+    } else if (key === 'custom_excerpt' && showExcerpt) {
       postEditorRef.current?.focusExcerpt();
-    } else if (field && field !== 'email_subject') {
-      // Rendered at once, so the excerpt is there to take focus.
-      flushSync(() => {
+    } else if (isSettingsPanelField(key)) {
+      // The panel shows the field's section, opening its pane, and focuses it.
+      if (!settingsOpen) {
+        setSettingsMoving(true);
         setSettingsPresent(true);
         setSettingsOpen(true);
-      });
-      if (field === 'custom_excerpt') {
-        settingsExcerptRef.current?.focus();
       }
+      setSettingsReveal({ field: key });
     }
-    return field !== undefined;
-  }, [session.bind.title, session.settings, showExcerpt]);
+    return invalid;
+  }, [session, settingsOpen, showExcerpt]);
   const featureImage = useFeatureImageBinding(session, session.loadedRecord, session.contentKey);
   const leaveGuard = useEditorLeaveGuard(session, postType);
   const liveVisibility = session.settings.visibility;
@@ -342,111 +373,135 @@ function EditorContent({
   );
 
   return (
-    <Inline
-      ref={shellRef}
-      align="stretch"
-      className="relative h-full min-h-0 transition-[--editor-settings-progress] duration-450 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none"
-      gap="none"
-      style={
-        {
-          '--editor-header-height': `${headerHeight}px`,
-          '--editor-overlap': '0px',
-          '--editor-settings-progress': settingsOpen ? 1 : 0,
-          '--editor-settings-toggle-width': `${settingsToggleWidth}px`,
-        } as CSSProperties
-      }
-    >
-      <Stack className="min-h-0 min-w-0 flex-1" gap="none">
-        <Box ref={headerRef} className="pointer-events-none relative z-20 shrink-0">
-          <EditorHeader analyticsReturn={analyticsReturn} postType={postType}>
-            {!analyticsReturn || didEmailFail || session.state.kind === 'error' ? (
-              <EditorStatus
-                isDirty={session.isDirty()}
-                record={statusRecord}
-                state={session.state}
-                onOpenPublishFlow={offersEmailRetry ? openPublishFlow : undefined}
-                onOpenUpdateFlow={canPublish ? openUpdateFlow : undefined}
-              />
-            ) : null}
-            <PageHeader.ActionGroup className="ml-auto gap-x-[calc(var(--spacing)*3*(1-var(--editor-settings-progress)))] max-sm:col-start-2 max-sm:row-start-1 sm:col-start-3">
-              <EditorHeaderActions
-                currentUser={currentUser}
-                offersEmailRetry={offersEmailRetry}
-                openFlow={openFlow}
-                post={publishPost}
-                postType={postType}
-                revealInvalidField={revealInvalidField}
-                session={session}
-                siteUrl={cardConfig.siteUrl}
-                tkCount={tkCount}
-                onOpenFlow={setOpenFlow}
-              />
-              <Box
-                aria-hidden="true"
-                className="w-[calc((var(--editor-settings-toggle-width)+var(--spacing)*2+1px)*(1-var(--editor-settings-progress)))] shrink-0"
-              />
-            </PageHeader.ActionGroup>
-          </EditorHeader>
-        </Box>
-        <Box className="peer shrink-0">
-          <SessionBanners
-            contentText={session.contentText}
-            hasUnsavedContent={session.hasUnsavedContent}
-            newerVersionAvailable={session.newerVersionAvailable}
-            pendingSave={session.pendingSave}
-            state={session.state}
-            onReload={session.reload}
-            onRetrySave={session.retrySave}
-          />
-          <ReauthDialog
-            email={currentUser?.email ?? ''}
-            open={session.state.kind === 'reauth-pending'}
-            onAbandoned={session.reauthAbandoned}
-            onSucceeded={session.reauthSucceeded}
-          />
-        </Box>
-        {/* Session warnings reserve space; otherwise the document reaches behind the header. */}
-        <Box className="relative min-h-0 flex-1 peer-empty:[--editor-overlap:var(--editor-header-height)]">
-          <div className="-mt-(--editor-overlap) h-[calc(100%+var(--editor-overlap))] min-h-0">
-            <PostEditor
-              key={session.contentKey}
-              {...session.bind}
-              autofocusTitle={!record}
-              cardConfig={currentCardConfig}
-              excerptError={settingsFieldErrorFor('custom_excerpt', session.settings)}
-              featureImage={featureImage}
-              handleRef={postEditorRef}
-              postType={postType}
-              showExcerpt={showExcerpt}
-              titleAndFeatureImageHidden={
-                postType === 'page' && liveShowTitleAndFeatureImage === false
-              }
-              titleError={titleError(session.bind.title)}
-              wordCountAccessory={<EmailSizeWarning post={publishPost} />}
-              onExcerptBlur={session.commitField}
-              onTkCountChange={setTkCount}
-            />
-          </div>
-        </Box>
-      </Stack>
-      <Box className="absolute top-[calc(var(--spacing)*5+1px)] right-[calc(var(--spacing)*6+1px)] z-40">
-        {settingsToggle}
-      </Box>
-      {settingsPresent ? (
-        <PostSettingsSidebar
-          cardConfig={currentCardConfig}
-          currentUser={currentUser}
-          excerptRef={settingsExcerptRef}
-          featureImage={featureImage.featureImage}
-          hasInlineExcerpt={showExcerpt}
-          postType={postType}
-          session={session}
-          siteUrl={cardConfig.siteUrl}
+    <Stack className="h-full min-h-0" gap="none">
+      {/* Session warnings sit above the header, so the header row and the
+          settings toggle floating on it move down together. */}
+      <Box className="shrink-0">
+        <SessionBanners
+          contentText={session.contentText}
+          hasUnsavedContent={session.hasUnsavedContent}
+          newerVersionAvailable={session.newerVersionAvailable}
+          pendingSave={session.pendingSave}
+          state={session.state}
+          onReload={session.reload}
         />
-      ) : null}
-      {snippetDialog}
-      <DirtyConfirmDialog testId={editorLeaveDialog} {...leaveGuard.dialogProps} />
-    </Inline>
+        <ReauthDialog
+          email={currentUser?.email ?? ''}
+          open={session.reauthOpen}
+          onAbandoned={session.reauthAbandoned}
+          onSucceeded={session.reauthSucceeded}
+        />
+      </Box>
+      <Inline
+        ref={shellRef}
+        align="stretch"
+        className="relative min-h-0 flex-1 [--editor-settings-width:350px] max-[500px]:[--editor-settings-width:100vw]"
+        gap="none"
+        style={
+          {
+            '--editor-overlap': `${headerHeight}px`,
+            // Never animated: what moves with the panel transitions its own property.
+            '--editor-settings-progress': settingsOpen ? 1 : 0,
+            // Unset until measured: the toggle's slot then starts at auto width, which
+            // nothing eases from, rather than easing out from an unmeasured toggle.
+            '--editor-settings-toggle-width': settingsToggleWidth
+              ? `${settingsToggleWidth}px`
+              : undefined,
+          } as CSSProperties
+        }
+      >
+        <Stack className="min-h-0 min-w-0 flex-1" gap="none">
+          <Box
+            ref={headerRef}
+            className={cn(
+              'pointer-events-none relative z-20 shrink-0',
+              chromeEntrance && 'screen-enter-from-top',
+            )}
+          >
+            <EditorHeader analyticsReturn={analyticsReturn} postType={postType}>
+              {!analyticsReturn || didEmailFail || session.state.kind === 'error' ? (
+                <EditorStatus
+                  isDirty={session.isDirty()}
+                  pendingSave={session.pendingSave}
+                  record={statusRecord}
+                  state={session.state}
+                  onOpenPublishFlow={offersEmailRetry ? openPublishFlow : undefined}
+                  onOpenUpdateFlow={canPublish ? openUpdateFlow : undefined}
+                  onRetrySave={session.retrySave}
+                />
+              ) : null}
+              <PageHeader.ActionGroup className="col-start-3 ml-auto gap-x-[calc(var(--spacing)*3*(1-var(--editor-settings-progress)))] editor-settings-motion-[column-gap]">
+                <EditorHeaderActions
+                  bottomBar={bottomBar}
+                  currentUser={currentUser}
+                  offersEmailRetry={offersEmailRetry}
+                  openFlow={openFlow}
+                  post={publishPost}
+                  postType={postType}
+                  revealInvalidField={revealInvalidField}
+                  session={session}
+                  siteUrl={cardConfig.siteUrl}
+                  tkCount={tkCount}
+                  onOpenFlow={setOpenFlow}
+                />
+                <Box
+                  aria-hidden="true"
+                  className="w-[calc((var(--editor-settings-toggle-width)+var(--spacing)*2+1px)*(1-var(--editor-settings-progress)))] shrink-0 editor-settings-motion-[width]"
+                />
+              </PageHeader.ActionGroup>
+            </EditorHeader>
+          </Box>
+          {/* The document reaches up behind the floating header. */}
+          <Box className="relative min-h-0 flex-1">
+            <div className="-mt-(--editor-overlap) h-[calc(100%+var(--editor-overlap))] min-h-0">
+              <PostEditor
+                key={session.contentKey}
+                {...session.bind}
+                actionsSlotRef={setBottomBar}
+                autofocusTitle={!record}
+                cardConfig={currentCardConfig}
+                excerptError={settingsFieldErrorFor('custom_excerpt', session.settings)}
+                featureImage={featureImage}
+                handleRef={postEditorRef}
+                postType={postType}
+                settingsMoving={settingsMoving}
+                showExcerpt={showExcerpt}
+                titleAndFeatureImageHidden={
+                  postType === 'page' && liveShowTitleAndFeatureImage === false
+                }
+                titleError={titleError(session.bind.title)}
+                wordCountAccessory={<EmailSizeWarning post={publishPost} />}
+                onExcerptBlur={session.commitField}
+                onTkCountChange={setTkCount}
+              />
+            </div>
+          </Box>
+        </Stack>
+        <Box
+          className={cn(
+            'absolute top-[calc(var(--spacing)*5+1px)] right-[calc(var(--spacing)*6+1px)] z-40 max-[500px]:top-3 max-[500px]:right-3',
+            chromeEntrance && 'screen-enter-from-top',
+          )}
+        >
+          {settingsToggle}
+        </Box>
+        {settingsPresent ? (
+          <PostSettingsSidebar
+            cardConfig={currentCardConfig}
+            currentUser={currentUser}
+            featureImage={featureImage.featureImage}
+            frameRef={settingsFrameRef}
+            hasInlineExcerpt={showExcerpt}
+            postType={postType}
+            reveal={settingsReveal}
+            session={session}
+            siteUrl={cardConfig.siteUrl}
+          />
+        ) : null}
+        {snippetDialog}
+        <DirtyConfirmDialog testId={editorLeaveDialog} {...leaveGuard.dialogProps} />
+      </Inline>
+    </Stack>
   );
 }
 
@@ -555,20 +610,24 @@ function useLexicalConversion(postType: PostType) {
 function EditorLoader({ postType, id }: { postType: PostType; id?: string }) {
   // A create replaces the URL with the id it acquired; the load must not restart.
   const [openedId] = useState(id);
-  // Access and conversion are judged until the opening read settles. Later
+  // Access and conversion are judged on the read the post opens with. Later
   // reads belong to the session; unmounting the editor would dispose it.
   const [openedWith, setOpenedWith] = useState<EditorRecord>();
   const navigate = useNavigate();
   const { pathname, search } = useLocation();
+  const queryClient = useQueryClient();
   const { data: currentUser } = useCurrentUser({ requestOptions: EDITOR_REQUEST_OPTIONS });
+  // Mounting never refetches a cached copy: the loader sends that read itself, below.
   const postQuery = useEditorPost(openedId ?? '', {
     enabled: postType === 'post' && !!openedId,
     defaultErrorHandler: false,
+    refetchOnMount: false,
     requestOptions: EDITOR_REQUEST_OPTIONS,
   });
   const pageQuery = useEditorPage(openedId ?? '', {
     enabled: postType === 'page' && !!openedId,
     defaultErrorHandler: false,
+    refetchOnMount: false,
     requestOptions: EDITOR_REQUEST_OPTIONS,
   });
   const query = postType === 'page' ? pageQuery : postQuery;
@@ -576,8 +635,55 @@ function EditorLoader({ postType, id }: { postType: PostType; id?: string }) {
     postType === 'page' ? pageQuery.data?.pages[0] : postQuery.data?.posts[0];
   const { state: conversion, convert } = useLexicalConversion(postType);
   const listPath = postType === 'page' ? '/pages' : '/posts';
-  // A failed refetch keeps the last post read; unmounting the editor would dispose its session.
-  const loadError = openedWith || loaded ? null : query.error;
+
+  // Opening reads the post again even when a copy is cached: the session saves
+  // against the version it opens on, so a copy from an earlier visit would collide
+  // with whatever another writer has saved since. A read still in flight from that
+  // visit may have been answered before their save, so it is replaced, not joined,
+  // even when it is that visit's first. With neither, mounting loads the post.
+  const [earlierVisit] = useState<'cached' | 'reading' | null>(() => {
+    if (query.data !== undefined) {
+      return 'cached';
+    }
+    const inFlight =
+      !!openedId &&
+      queryClient.getQueryState(editorRead(postType, openedId).queryKey)?.fetchStatus ===
+        'fetching';
+    return inFlight ? 'reading' : null;
+  });
+  const [openingReadSettled, setOpeningReadSettled] = useState(false);
+  const openingReadStarted = useRef(false);
+  useEffect(() => {
+    if (!earlierVisit || !openedId || openingReadStarted.current) {
+      return;
+    }
+    openingReadStarted.current = true;
+    const read = async () => {
+      // With nothing cached, a refetch would join the read in flight.
+      if (earlierVisit === 'reading') {
+        await queryClient.cancelQueries({
+          queryKey: editorRead(postType, openedId).queryKey,
+          exact: true,
+        });
+      }
+      await query.refetch({ cancelRefetch: true });
+      setOpeningReadSettled(true);
+    };
+    void read();
+  });
+  // Settled once the read this mount sent has succeeded or failed. An earlier
+  // visit's read landing before that one starts does not count, and a later
+  // refetch, such as the one a conversion's save starts, does not hold it back.
+  const opened = earlierVisit ? openingReadSettled : query.isFetchedAfterMount;
+
+  // Only the opening read's own failure counts, never one a cached copy still
+  // carries. A deleted post or an expired session decides the screen even with a
+  // copy cached; any other failure opens that copy, and the next save reports the rest.
+  const readError = opened ? query.error : null;
+  const definitive =
+    readError instanceof SessionExpiredError ||
+    (readError instanceof APIError && readError.response?.status === 404);
+  const loadError = openedWith || (loaded && !definitive) ? null : readError;
   // Reloading is safe only while nothing is unsaved: the signed-out admin
   // remembers this route and returns to it after sign in.
   const sessionExpired = loadError instanceof SessionExpiredError;
@@ -587,7 +693,9 @@ function EditorLoader({ postType, id }: { postType: PostType; id?: string }) {
     }
   }, [sessionExpired, pathname, search]);
 
-  const opening = openedWith ? undefined : loaded;
+  // Nothing is judged on a cached copy before the opening read settles, nor on one
+  // that read has ruled out.
+  const opening = openedWith || !opened || definitive ? undefined : loaded;
   const returnToList = !!currentUser && !!opening && shouldReturnToList(currentUser, opening);
   useEffect(() => {
     if (returnToList) {
@@ -629,7 +737,7 @@ function EditorLoader({ postType, id }: { postType: PostType; id?: string }) {
     );
   }
 
-  if (query.isPending || !currentUser || returnToList) {
+  if (!opened || query.isPending || !currentUser || returnToList) {
     return <EditorLoading />;
   }
 
@@ -657,11 +765,9 @@ function EditorLoader({ postType, id }: { postType: PostType; id?: string }) {
     record = converted.record;
   }
 
-  // Latched while rendering once the read settles: a reopened post's cached
-  // copy may be stale, so the refetch in flight still decides.
-  if (!query.isFetching) {
-    setOpenedWith(record);
-  }
+  // Latched while rendering, now the opening read has settled. A cached copy only
+  // gets this far when that read failed for a reason other than the two above.
+  setOpenedWith(record);
   return <EditorSurface postType={postType} record={record} />;
 }
 
@@ -681,7 +787,9 @@ export default function EditorScreen() {
   return (
     <EditorSessionKeyProvider value={sessionKey}>
       <EditorSessionCreatedProvider value={markCreated}>
-        <EditorLoader key={sessionKey} id={id} postType={typeSegment} />
+        <ScreenEntranceProvider key={sessionKey}>
+          <EditorLoader id={id} postType={typeSegment} />
+        </ScreenEntranceProvider>
       </EditorSessionCreatedProvider>
     </EditorSessionKeyProvider>
   );

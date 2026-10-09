@@ -9,6 +9,7 @@ import { ShadeApp } from '@tryghost/shade/app';
 
 import App from './app.tsx';
 import { installHistoryPopGate } from './hooks/use-history-pop-navigation-guard';
+import { ScreenTransitionProvider } from './layout/screen-transition-provider';
 import { routes, useIsEmberOwnedRoute } from './routes.tsx';
 import { useThemeContext } from './providers/theme-context';
 import { ThemeProvider } from './providers/theme-provider';
@@ -28,7 +29,9 @@ function ThemedAdminApp() {
       isAdmin7={!isEmberOwnedRoute}
       data-react-admin-mounted
     >
-      <App />
+      <ScreenTransitionProvider>
+        <App />
+      </ScreenTransitionProvider>
     </ShadeApp>
   );
 }

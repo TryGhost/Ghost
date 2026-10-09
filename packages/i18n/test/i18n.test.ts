@@ -109,10 +109,10 @@ describe('i18n', function () {
   it('ignores a locale that would escape the locales directory', function () {
     // `locale` builds a path, so a traversal must not be able to read an arbitrary
     // ghost.json from elsewhere in the repo; it falls back to English instead.
-    const resources = i18n.generateResources(['../../../ghost/core/core/shared'], 'ghost');
+    const resources = i18n.generateResources(['../../../ghost/core/shared'], 'ghost');
 
     assert.deepEqual(
-      resources['../../../ghost/core/core/shared'].ghost,
+      resources['../../../ghost/core/shared'].ghost,
       i18n.generateResources(['en'], 'ghost').en.ghost,
     );
   });

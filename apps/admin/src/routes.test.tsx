@@ -2,12 +2,24 @@ import { renderHook } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { matchRoutes } from '@tryghost/admin-x-framework';
 import { useAdminSidebarVisibility, useRouteHidesAdminSidebar } from '@/layout/sidebar-visibility';
-import { routes, useSyncEmberRoutePattern } from './routes';
+import { matchAdminRoutes, routes, useSyncEmberRoutePattern } from './routes';
 
 const useMatchesMock = vi.fn<() => Array<{ handle: unknown }>>();
 const pathnameMock = vi.fn<() => string>();
 const routeOwnerMock = vi.fn<() => 'react' | 'ember' | 'pending'>();
 const syncEmberRoutePatternMock = vi.fn<(routePattern: string | null) => () => void>();
+const useFeatureFlagMock = vi.fn<() => boolean>(() => false);
+const useIsMobileMock = vi.fn<() => boolean>(() => false);
+
+vi.mock('@tryghost/admin-x-framework/hooks', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@tryghost/admin-x-framework/hooks')>()),
+  useFeatureFlag: () => useFeatureFlagMock(),
+}));
+
+vi.mock('@tryghost/shade/utils', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@tryghost/shade/utils')>()),
+  useIsMobile: () => useIsMobileMock(),
+}));
 
 vi.mock('@tryghost/admin-x-framework', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@tryghost/admin-x-framework')>()),
@@ -25,11 +37,6 @@ vi.mock('./use-flag-gated-route-owner', () => ({
   useFlagGatedRouteOwner: () => routeOwnerMock(),
 }));
 
-vi.mock('./auth/api', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('./auth/api')>()),
-  useAuthScreensOwner: () => 'ember',
-}));
-
 function routeHidesAdminSidebar(path: string): boolean {
   const matches = matchRoutes(routes, path) ?? [];
   useMatchesMock.mockReturnValue(
@@ -38,6 +45,11 @@ function routeHidesAdminSidebar(path: string): boolean {
 
   return renderHook(() => useRouteHidesAdminSidebar()).result.current;
 }
+
+beforeEach(() => {
+  useFeatureFlagMock.mockReturnValue(false);
+  useIsMobileMock.mockReturnValue(false);
+});
 
 // Ember's search and settings shortcuts stay off exactly where these routes hide the sidebar
 describe('routes', () => {
@@ -54,6 +66,20 @@ describe('routes', () => {
   it('shows the admin sidebar on /posts', () => {
     expect(routeHidesAdminSidebar('/posts')).toBe(false);
   });
+
+  it.each([
+    [false, false, true],
+    [false, true, true],
+    [true, false, false],
+    [true, true, true],
+  ])(
+    'Settings hides the shell with admin7settings %s and mobile %s: %s',
+    (enabled, mobile, hidden) => {
+      useFeatureFlagMock.mockReturnValue(enabled);
+      useIsMobileMock.mockReturnValue(mobile);
+      expect(routeHidesAdminSidebar('/settings')).toBe(hidden);
+    },
+  );
 });
 
 describe('sidebar route ownership with stale Ember fullscreen state', () => {
@@ -125,4 +151,17 @@ describe('useSyncEmberRoutePattern', () => {
 
     expect(syncEmberRoutePatternMock).toHaveBeenCalledExactlyOnceWith(null);
   });
+});
+
+describe('matchAdminRoutes', () => {
+  it.each(['/tags/news', '/settings/newsletters', '/members', '/no-such-route'])(
+    'matches %s like matchRoutes, reusing the result',
+    (path) => {
+      const matches = matchAdminRoutes(path);
+      expect(matches?.map((match) => match.route)).toEqual(
+        matchRoutes(routes, path)?.map((match) => match.route),
+      );
+      expect(matchAdminRoutes(path)).toBe(matches);
+    },
+  );
 });

@@ -26,6 +26,7 @@ import {
   type StaffRoleName,
 } from '@test-utils/acceptance';
 import { editorScreen } from '@/editor/editor.screen';
+import { publishScreen } from '@/editor/publish/publish.screen';
 import { CODE_INJECTION_HEAD_TOO_LONG, CODE_INJECTION_MAX } from '@/editor/session/settings-fields';
 
 const POST_ID = 'abc123';
@@ -97,6 +98,14 @@ function headEditor() {
 
 function footEditor() {
   return editorScreen.settingsCodeInjection(codeInjectionFootLabel);
+}
+
+/** The site's member total, which the publish inputs read before Publish is offered. */
+function fakeMembersTotal() {
+  fakeAdminEndpoint('GET', /^\/members\/\?.*order=id/, {
+    members: [],
+    meta: { pagination: { page: 1, limit: 1, pages: 1, total: 20, next: null, prev: null } },
+  });
 }
 
 async function openCodeInjection() {
@@ -290,6 +299,7 @@ describe('Post settings code injection', () => {
     const saveApi = fakeSavablePost({
       codeinjection_head: lines + 'a'.repeat(CODE_INJECTION_MAX - lines.length),
     });
+    fakeMembersTotal();
     await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
     await openCodeInjection();
 
@@ -300,17 +310,22 @@ describe('Post settings code injection', () => {
 
     await expect.element(headEditor()).toHaveAttribute('aria-invalid', 'true');
     await expect.element(headEditor()).toHaveAccessibleDescription(CODE_INJECTION_HEAD_TOO_LONG);
-    await expect
-      .element(editorScreen.pendingSaveNotice())
-      .toHaveTextContent(CODE_INJECTION_HEAD_TOO_LONG);
-    await expect(editorScreen.saveErrorBanner()).toHaveCount(0);
+    await expect(editorScreen.saveError()).toHaveCount(0);
     expect(saveApi.requests).toHaveLength(0);
 
     await userEvent.keyboard('{Meta>}s{/Meta}');
 
-    await expect
-      .element(editorScreen.saveErrorBanner())
-      .toHaveTextContent(CODE_INJECTION_HEAD_TOO_LONG);
+    await expect.element(editorScreen.saveError()).toHaveTextContent(CODE_INJECTION_HEAD_TOO_LONG);
+    expect(saveApi.requests).toHaveLength(0);
+
+    // Publish is refused too, and opens the closed panel on the pane, in the header code.
+    await editorScreen.settingsToggle().click();
+    await expect(editorScreen.settingsSidebar()).toHaveCount(0);
+    await expect.element(editorScreen.publishButton()).toBeEnabled();
+    await editorScreen.publishButton().click();
+
+    await expect.element(headEditor()).toHaveFocus();
+    await expect(publishScreen.root()).toHaveCount(0);
     expect(saveApi.requests).toHaveLength(0);
   });
 

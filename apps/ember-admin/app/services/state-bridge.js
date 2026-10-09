@@ -29,6 +29,8 @@ const emberDataTypeMapping = {
     CustomThemeSettingsResponseType: null // invalidated by React theme activation; nothing to sync in Ember
 };
 
+const REACT_EDITOR_ROUTE_PATTERN = '/editor/*';
+
 export default class StateBridgeService extends Service.extend(Evented) {
     @service billing;
     @service configManager;
@@ -54,6 +56,8 @@ export default class StateBridgeService extends Service.extend(Evented) {
     // Pattern of the React route showing, e.g. `/editor/*`; null while an Ember route shows
     reactRoutePattern = null;
 
+    isEmberEditorActive = false;
+
     @action
     setPostListQueryParams(resource, params) {
         this.postListQueryParams = {...this.postListQueryParams, [resource]: params};
@@ -66,8 +70,17 @@ export default class StateBridgeService extends Service.extend(Evented) {
 
     @action
     setReactRoutePattern(routePattern) {
+        const wasShowingEditor = this.isReactEditorShowing;
         this.reactRoutePattern = routePattern;
         this.tagSentryRoute();
+
+        if (this.isReactEditorShowing !== wasShowingEditor) {
+            this.triggerFeatureFlagsChange();
+        }
+    }
+
+    get isReactEditorShowing() {
+        return this.reactRoutePattern === REACT_EDITOR_ROUTE_PATTERN;
     }
 
     // Ember's router misses React's pushState navigations, so a showing React route wins
@@ -86,7 +99,22 @@ export default class StateBridgeService extends Service.extend(Evented) {
             return undefined;
         }
 
+        // An open editor keeps its owner until it closes: swapping under it leaves both
+        // Koenig bundles mounted, and their two Lexical copies break each other
+        if (name === 'editorReact' && this.isEmberEditorActive) {
+            return false;
+        }
+        if (name === 'editorReact' && this.isReactEditorShowing) {
+            return true;
+        }
+
         return this.feature[name] === true;
+    }
+
+    @action
+    setEmberEditorActive(isActive) {
+        this.isEmberEditorActive = isActive;
+        this.triggerFeatureFlagsChange();
     }
 
     /**
@@ -297,26 +325,6 @@ export default class StateBridgeService extends Service.extend(Evented) {
         if (data.subscription?.status === 'active' && this.config.hostSettings?.forceUpgrade) {
             this.config.hostSettings.forceUpgrade = false;
         }
-    }
-
-    // React's billing app has no Sentry client; report through Ember's with
-    // the billing service's event shape so both shells land in one issue
-    @action
-    captureBillingAppLoadFailure({billingMonitor, tags}) {
-        if (!this.config.sentry_dsn) {
-            return;
-        }
-
-        Sentry.captureException('Billing app failed to become ready', {
-            level: 'warning',
-            fingerprint: [
-                'billing-app-load-failure',
-                billingMonitor.document_visibility_state,
-                String(billingMonitor.attempts)
-            ],
-            contexts: {ghost: {billing_monitor: billingMonitor}},
-            tags
-        });
     }
 
     // A billing search result for the billing route already showing is a no-op

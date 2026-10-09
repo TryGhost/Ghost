@@ -1,6 +1,6 @@
 import { Grid, Inline } from '@tryghost/shade/primitives';
 import { cn } from '@tryghost/shade/utils';
-import { EmailSendingStatusIcon } from './email-sending-status-icon';
+import { PublishPhaseIcon } from './publish-phase-icon';
 import { useChangeCount } from './use-change-count';
 import { useEffect, useState } from 'react';
 import type { EmailSendingLine } from './email-sending-status-copy';
@@ -74,10 +74,7 @@ export function EmailSendingStatusLine({
         className={cn('min-h-0 overflow-hidden', (appear || changeCount > 0) && REVEAL)}
       >
         <Inline className="leading-[1.65em]" data-testid={testId} gap="xs">
-          <EmailSendingStatusIcon
-            fractionComplete={shownLine.fractionComplete}
-            phase={shownLine.phase}
-          />
+          <PublishPhaseIcon fractionComplete={shownLine.fractionComplete} phase={shownLine.phase} />
           <span className="email-sending-shimmer font-medium tabular-nums">{shownLine.text}</span>
         </Inline>
       </div>

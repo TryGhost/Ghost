@@ -27,13 +27,15 @@ import { UserMenuAvatar } from './user-menu-avatar';
 import { UserMenuHeader } from './user-menu-header';
 import { Link } from '@tryghost/admin-x-framework';
 import { getAdminToolbarUrl } from '@/utils/admin-toolbar-url';
+import { useSettingsReturnToState } from '@/layout/settings-navigation';
 
 function UserMenuProfile() {
   const currentUser = useCurrentUser();
+  const settingsReturnToState = useSettingsReturnToState();
 
   return (
     <UserMenuItem>
-      <Link to={`/settings/staff/${currentUser.data?.slug}`}>
+      <Link state={settingsReturnToState} to={`/settings/staff/${currentUser.data?.slug}`}>
         <LucideIcon.User />
         <UserMenuItem.Label>Your profile</UserMenuItem.Label>
       </Link>

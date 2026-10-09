@@ -74,6 +74,7 @@ describe('Design settings', () => {
     await renderAdminApp('/settings/design/edit');
 
     const modal = settingsScreen.designModal();
+    await expect.element(modal).toBeVisible();
     // Both previews are fetched up front, before either tab is selected.
     await expect(homepagePreview).toHaveRequestedPreview({ custom: '{}' });
     await expect(postPreview!).toHaveRequestedPreview({ custom: '{}' });

@@ -317,7 +317,7 @@ would return. Those shapes were originally written from the docs rather than fro
 Stripe, so nothing checked them against the real API.
 
 `helpers/services/stripe/fixtures/` holds responses captured from Stripe test mode at
-API version `2020-08-27`, the version `ghost/core` pins. `pnpm test:fixtures` asserts
+API version `2020-08-27`, the version `ghost` pins. `pnpm test:fixtures` asserts
 the builders against them, and needs no Ghost, no Docker and no browser.
 
 Two failures are worth catching. A builder emitting a key Stripe does not return means

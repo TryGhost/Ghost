@@ -1,4 +1,4 @@
-import {
+import type {
   AddComment,
   Comment,
   CommentsOptions,
@@ -6,9 +6,9 @@ import {
   EditableAppContext,
   OpenCommentForm,
 } from './app-context';
-import { AdminApi } from './utils/admin-api';
-import { GhostApi } from './utils/api';
-import { Page } from './pages';
+import type { AdminApi } from './utils/admin-api';
+import type { GhostApi } from './utils/api';
+import type { Page } from './pages';
 
 function findCommentById(comments: Comment[], id: string): Comment | undefined {
   for (const c of comments) {

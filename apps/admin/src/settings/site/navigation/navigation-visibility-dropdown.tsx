@@ -91,9 +91,10 @@ const NavigationVisibilityDropdown: React.FC<NavigationVisibilityDropdownProps> 
             <ChevronDown aria-hidden="true" className="size-4 opacity-80" />
           </button>
         </DropdownMenuTrigger>
+        {/* legacy SettingsModal overlay is z-[1000]; keep the portalled menu above it */}
         <DropdownMenuContent
           align="end"
-          className="z-[300] w-[190px] rounded-lg p-2"
+          className="z-[9999] w-[190px] rounded-lg p-2"
           sideOffset={6}
         >
           <div className="flex flex-col">

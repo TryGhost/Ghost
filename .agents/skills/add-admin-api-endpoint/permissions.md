@@ -76,7 +76,7 @@ edit: {
 
 #### How the Default Permission Handler Works
 
-When you set `permissions: true`, the framework delegates to the default permission handler at `ghost/core/core/server/api/endpoints/utils/permissions.js`. Here's what happens:
+When you set `permissions: true`, the framework delegates to the default permission handler at `ghost/core/server/api/endpoints/utils/permissions.js`. Here's what happens:
 
 1. **Singular Name Derivation**: The handler converts the `docName` to singular form:
    - `posts` → `post`
@@ -119,8 +119,8 @@ For the default handler to work, you must have:
 
 These are typically added via:
 
-- Initial fixtures in `ghost/core/core/server/data/schema/fixtures/fixtures.json`
-- Database migrations using `addPermissionWithRoles()` from `ghost/core/core/server/data/migrations/utils/permissions.js`
+- Initial fixtures in `ghost/core/server/data/schema/fixtures/fixtures.json`
+- Database migrations using `addPermissionWithRoles()` from `ghost/core/server/data/migrations/utils/permissions.js`
 
 ---
 
@@ -627,7 +627,7 @@ When creating a new API endpoint that uses the default permission handler (`perm
 
 ### Migration Utilities
 
-Import the permission utilities from `ghost/core/core/server/data/migrations/utils`:
+Import the permission utilities from `ghost/core/server/data/migrations/utils`:
 
 ```javascript
 const {combineTransactionalMigrations, addPermissionWithRoles} = require('../../utils');
@@ -636,7 +636,7 @@ const {combineTransactionalMigrations, addPermissionWithRoles} = require('../../
 ### Example: Adding CRUD Permissions for a New Resource
 
 ```javascript
-// ghost/core/core/server/data/migrations/versions/X.X/YYYY-MM-DD-HH-MM-SS-add-myresource-permissions.js
+// ghost/core/server/data/migrations/versions/X.X/YYYY-MM-DD-HH-MM-SS-add-myresource-permissions.js
 
 const {combineTransactionalMigrations, addPermissionWithRoles} = require('../../utils');
 

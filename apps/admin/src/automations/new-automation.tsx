@@ -101,6 +101,14 @@ const TriggerPicker: React.FC<{
   );
 };
 
+const NewAutomationLoading: React.FC = () => {
+  return (
+    <div className="delayed-fade-in">
+      <LoadingIndicator size="lg" />
+    </div>
+  );
+};
+
 type NewAutomationProps = {
   children: (automation: AutomationDetail) => React.ReactNode;
 };
@@ -128,7 +136,7 @@ const NewAutomationSession: React.FC<
         trigger_tier_ids: null,
       });
     }
-    return <LoadingIndicator size="lg" />;
+    return <NewAutomationLoading />;
   }
   if (initialAutomation.trigger_tier_scope === null) {
     return (
@@ -157,7 +165,7 @@ const NewAutomation: React.FC<NewAutomationProps> = ({ children }) => {
     throw error instanceof Error ? error : new Error('Failed to load automations');
   }
   if (isLoading || !allAutomations) {
-    return <LoadingIndicator size="lg" />;
+    return <NewAutomationLoading />;
   }
   return (
     <NewAutomationSession

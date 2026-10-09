@@ -74,19 +74,21 @@ describe('writeLocalRevision', () => {
   it('stores the revision as JSON under its post id and timestamp', () => {
     const storage = new MemoryStorage();
     const onError = vi.fn();
+    const onNotice = vi.fn();
 
-    const key = writeLocalRevision(storage, revision(), onError);
+    const key = writeLocalRevision(storage, revision(), onError, onNotice);
 
     expect(key).toBe('post-revision-post-1-1000');
     expect(JSON.parse(storage.getItem('post-revision-post-1-1000') ?? '')).toEqual(revision());
     expect(onError).not.toHaveBeenCalled();
+    expect(onNotice).not.toHaveBeenCalled();
   });
 
   it('keeps the newest five revisions of a post and leaves other posts alone', () => {
     const storage = new MemoryStorage();
-    writeLocalRevision(storage, revision({ id: 'post-2', revisionTimestamp: 1 }), vi.fn());
+    writeLocalRevision(storage, revision({ id: 'post-2', revisionTimestamp: 1 }), vi.fn(), vi.fn());
     for (let timestamp = 1; timestamp <= 6; timestamp += 1) {
-      writeLocalRevision(storage, revision({ revisionTimestamp: timestamp }), vi.fn());
+      writeLocalRevision(storage, revision({ revisionTimestamp: timestamp }), vi.fn(), vi.fn());
     }
 
     expect(storage.keys().sort()).toEqual([
@@ -102,7 +104,12 @@ describe('writeLocalRevision', () => {
   it('never trims revisions of a post that has not been created', () => {
     const storage = new MemoryStorage();
     for (let timestamp = 1; timestamp <= 7; timestamp += 1) {
-      writeLocalRevision(storage, revision({ id: 'draft', revisionTimestamp: timestamp }), vi.fn());
+      writeLocalRevision(
+        storage,
+        revision({ id: 'draft', revisionTimestamp: timestamp }),
+        vi.fn(),
+        vi.fn(),
+      );
     }
 
     expect(storage.length).toBe(7);
@@ -115,11 +122,12 @@ describe('writeLocalRevision', () => {
       `post-revision-${value.id}-${value.revisionTimestamp}`.length + JSON.stringify(value).length;
     const storage = new MemoryStorage(size(entry('post-2', 1)) * 3 + 10);
     const onError = vi.fn();
-    writeLocalRevision(storage, entry('post-2', 1), onError);
-    writeLocalRevision(storage, entry('post-3', 2), onError);
-    writeLocalRevision(storage, entry('post-1', 3), onError);
+    const onNotice = vi.fn();
+    writeLocalRevision(storage, entry('post-2', 1), onError, onNotice);
+    writeLocalRevision(storage, entry('post-3', 2), onError, onNotice);
+    writeLocalRevision(storage, entry('post-1', 3), onError, onNotice);
 
-    const key = writeLocalRevision(storage, entry('post-1', 4), onError);
+    const key = writeLocalRevision(storage, entry('post-1', 4), onError, onNotice);
 
     expect(key).toBe('post-revision-post-1-4');
     expect(storage.keys().sort()).toEqual([
@@ -127,10 +135,11 @@ describe('writeLocalRevision', () => {
       'post-revision-post-1-4',
       'post-revision-post-3-2',
     ]);
-    expect(onError).toHaveBeenCalledTimes(1);
-    expect(onError).toHaveBeenCalledWith(expect.any(Error), {
+    expect(onNotice).toHaveBeenCalledTimes(1);
+    expect(onNotice).toHaveBeenCalledWith('LocalStorage quota exceeded. Removing old revisions.', {
       tags: { localRevisions: 'quotaExceeded' },
     });
+    expect(onError).not.toHaveBeenCalled();
   });
 
   it('evicts by the time in the key, and a key without one first', () => {
@@ -141,10 +150,11 @@ describe('writeLocalRevision', () => {
       storage,
       revision({ id: 'post-2', revisionTimestamp: 1, lexical: 'x'.repeat(200) }),
       vi.fn(),
+      vi.fn(),
     );
     storage.setItem('post-revision-post-9-x', 'not json'.padEnd(size - 25, '!'));
 
-    writeLocalRevision(storage, value, vi.fn());
+    writeLocalRevision(storage, value, vi.fn(), vi.fn());
 
     expect(storage.getItem('post-revision-post-9-x')).toBeNull();
     expect(storage.getItem('post-revision-post-2-1')).not.toBeNull();
@@ -154,10 +164,10 @@ describe('writeLocalRevision', () => {
   it('keeps a revision a skewed clock stamped older than the ones already kept', () => {
     const storage = new MemoryStorage();
     for (let timestamp = 10; timestamp <= 14; timestamp += 1) {
-      writeLocalRevision(storage, revision({ revisionTimestamp: timestamp }), vi.fn());
+      writeLocalRevision(storage, revision({ revisionTimestamp: timestamp }), vi.fn(), vi.fn());
     }
 
-    writeLocalRevision(storage, revision({ revisionTimestamp: 1 }), vi.fn());
+    writeLocalRevision(storage, revision({ revisionTimestamp: 1 }), vi.fn(), vi.fn());
 
     expect(storage.keys().sort()).toEqual([
       'post-revision-post-1-1',
@@ -171,13 +181,15 @@ describe('writeLocalRevision', () => {
   it('reports a revision that cannot fit even in an empty store', () => {
     const storage = new MemoryStorage(10);
     const onError = vi.fn();
+    const onNotice = vi.fn();
 
-    expect(writeLocalRevision(storage, revision(), onError)).toBeUndefined();
+    expect(writeLocalRevision(storage, revision(), onError, onNotice)).toBeUndefined();
 
     expect(storage.length).toBe(0);
     expect(onError).toHaveBeenCalledWith(expect.any(Error), {
       tags: { localRevisions: 'quotaExceededNoSpace' },
     });
+    expect(onNotice).not.toHaveBeenCalled();
   });
 
   it('reports any other storage failure instead of throwing', () => {
@@ -188,7 +200,7 @@ describe('writeLocalRevision', () => {
     });
     const onError = vi.fn();
 
-    expect(writeLocalRevision(storage, revision(), onError)).toBeUndefined();
+    expect(writeLocalRevision(storage, revision(), onError, vi.fn())).toBeUndefined();
 
     expect(onError).toHaveBeenCalledWith(failure, { tags: { localRevisions: 'saveError' } });
   });
@@ -197,9 +209,9 @@ describe('writeLocalRevision', () => {
 describe('readLocalRevisions', () => {
   it('lists every revision newest first, with the key it is stored under', () => {
     const storage = new MemoryStorage();
-    writeLocalRevision(storage, revision({ revisionTimestamp: 1 }), vi.fn());
-    writeLocalRevision(storage, revision({ id: 'post-2', revisionTimestamp: 3 }), vi.fn());
-    writeLocalRevision(storage, revision({ revisionTimestamp: 2 }), vi.fn());
+    writeLocalRevision(storage, revision({ revisionTimestamp: 1 }), vi.fn(), vi.fn());
+    writeLocalRevision(storage, revision({ id: 'post-2', revisionTimestamp: 3 }), vi.fn(), vi.fn());
+    writeLocalRevision(storage, revision({ revisionTimestamp: 2 }), vi.fn(), vi.fn());
 
     expect(readLocalRevisions(storage).map(({ key }) => key)).toEqual([
       'post-revision-post-2-3',
@@ -235,7 +247,7 @@ describe('readLocalRevisions', () => {
     storage.setItem('post-revision-post-1-2', JSON.stringify(['a list']));
     storage.setItem('post-revision-post-1-3', JSON.stringify({ title: 'No timestamp' }));
     storage.setItem('ghost-last-published-post', JSON.stringify(revision()));
-    writeLocalRevision(storage, revision({ revisionTimestamp: 4 }), vi.fn());
+    writeLocalRevision(storage, revision({ revisionTimestamp: 4 }), vi.fn(), vi.fn());
 
     expect(readLocalRevisions(storage).map(({ key }) => key)).toEqual(['post-revision-post-1-4']);
   });
@@ -255,7 +267,12 @@ describe('createLocalRevisionWriter', () => {
   });
 
   function writer(type: 'post' | 'page' = 'post') {
-    return createLocalRevisionWriter({ type, storage: () => storage, onError: vi.fn() });
+    return createLocalRevisionWriter({
+      type,
+      storage: () => storage,
+      onError: vi.fn(),
+      onNotice: vi.fn(),
+    });
   }
 
   function stored(): StoredLocalRevision[] {
@@ -434,6 +451,7 @@ describe('createLocalRevisionWriter', () => {
         throw failure;
       },
       onError,
+      onNotice: vi.fn(),
     });
 
     revisions.record(draft({ title: 'First' }));

@@ -3,9 +3,12 @@ import React from 'react';
 import { SidebarInset, SidebarProvider } from '@tryghost/shade/components';
 import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
 import { isContributorUser } from '@tryghost/admin-x-framework/api/users';
-import { useAdminSidebarVisibility } from '@/layout/sidebar-visibility';
+import { useAdminSidebarVisibility, useIsSettingsSidebarRoute } from '@/layout/sidebar-visibility';
 import { cn } from '@tryghost/shade/utils';
 import AppSidebar from './app-sidebar';
+import SettingsSidebar from './app-sidebar/settings-sidebar';
+import { SettingsNavigationSlotContext } from './settings-navigation';
+import { SidebarSwapTransition } from './sidebar-swap-transition';
 import { MobileNavBar } from './app-sidebar/mobile-nav-bar';
 import { SkipLink } from './skip-link';
 import { ContributorUserMenu } from './app-sidebar/user-menu';
@@ -49,6 +52,11 @@ const pageChromeClassName = [
   '[&_[data-view-site-preview]]:border-[var(--border-subtle)]!',
 ].join(' ');
 
+const SIDEBAR_PANEL_CLASS_NAME = '[&>[data-sidebar=sidebar]]:relative';
+// Lands on the desktop panel only; the mobile sidebar is a sheet that ignores it.
+const SIDEBAR_SCREEN_TRANSITION_CLASS_NAME =
+  'screen-exit-sidebar [view-transition-name:admin-sidebar]';
+
 interface AdminLayoutProps {
   children: React.ReactNode;
 }
@@ -56,8 +64,17 @@ interface AdminLayoutProps {
 export function AdminLayout({ children }: AdminLayoutProps) {
   const { data: currentUser } = useCurrentUser();
   const sidebarVisible = useAdminSidebarVisibility();
+  const [settingsNavigationSlot, setSettingsNavigationSlot] = React.useState<HTMLElement | null>(
+    null,
+  );
   const dunningLocked = useDunningLockTakeover();
   const isContributor = currentUser && isContributorUser(currentUser);
+  const isSettingsRoute = useIsSettingsSidebarRoute();
+  const sidebarClassName = cn(
+    SIDEBAR_PANEL_CLASS_NAME,
+    SIDEBAR_SCREEN_TRANSITION_CLASS_NAME,
+    dunningLocked && 'opacity-40',
+  );
 
   // The dunning takeover is positioned against the scrollable inset, so the
   // inset must not scroll (and must sit at the top) while the takeover is up —
@@ -67,7 +84,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
     if (dunningLocked) {
       insetRef.current?.scrollTo?.(0, 0);
     }
-  }, [dunningLocked]);
+  }, [dunningLocked, sidebarVisible, isSettingsRoute]);
 
   // The covered regions become `inert` while the takeover is up: aria-modal is
   // only a semantic hint, so without this the covered page stays reachable by
@@ -120,13 +137,18 @@ export function AdminLayout({ children }: AdminLayoutProps) {
         open={!!currentUser && sidebarVisible}
         style={sidebarVisible ? ({ '--sidebar-width': '316px' } as React.CSSProperties) : undefined}
       >
-        {sidebarVisible && (
-          <AppSidebar
-            ref={sidebarRef}
-            className={cn(dunningLocked && 'opacity-40')}
-            variant="floating"
-          />
-        )}
+        {sidebarVisible &&
+          (isSettingsRoute ? (
+            <SettingsSidebar
+              ref={sidebarRef}
+              className={sidebarClassName}
+              slotRef={setSettingsNavigationSlot}
+              variant="floating"
+            />
+          ) : (
+            <AppSidebar ref={sidebarRef} className={sidebarClassName} variant="floating" />
+          ))}
+        <SidebarSwapTransition settingsRoute={isSettingsRoute} sidebarRef={sidebarRef} />
         <SidebarInset
           ref={insetRef}
           className={cn(
@@ -141,10 +163,14 @@ export function AdminLayout({ children }: AdminLayoutProps) {
             className={cn(
               'flex-1 focus:outline-hidden',
               sidebarVisible ? pageChromeClassName : 'min-h-0',
+              isSettingsRoute && 'min-h-0',
+              'screen-exit-content',
             )}
           >
             <ActivityPubHostLayoutProvider value={sidebarVisible ? networkPageChrome : undefined}>
-              {children}
+              <SettingsNavigationSlotContext.Provider value={settingsNavigationSlot}>
+                {children}
+              </SettingsNavigationSlotContext.Provider>
             </ActivityPubHostLayoutProvider>
           </main>
           {/* The mobile nav sits outside the takeover's cover (fixed, above the

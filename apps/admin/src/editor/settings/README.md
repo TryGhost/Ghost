@@ -70,6 +70,13 @@ that cannot write it, falls back to the section list rather than an empty panel.
 The panel owns which pane is open, so closing the panel or leaving the editor
 drops it and the panel is next opened on the section list.
 
+The screen can ask the panel to take the writer to a field, as a refused
+publish does. The panel shows the field's section, closing another pane or
+opening the field's own, and focuses the field once it is there, including a
+code editor that is still loading. Each field marks the element it is edited in
+with `data-settings-field`, and `SETTINGS_FIELD_SECTIONS` in `sections.ts` names
+the section each field the save checks lives in.
+
 Returning to the section list and reopening the same social-card pane keeps an
 in-progress image upload pending. Its file picker and Unsplash button stay
 disabled until the upload succeeds or fails.
@@ -94,7 +101,8 @@ editor entry. There is no keyboard shortcut for it.
 Below the `lg` breakpoint the panel overlays the editor from the right rather
 than narrowing it, and below 500px it takes the full width. Above it the panel
 sits in the flow beside the editor at a fixed 350px, including while a subview
-is open.
+is open, and wide and full cards in the document keep fitting the narrowed
+writing area throughout the panel's motion.
 
 ## URL
 
@@ -193,17 +201,18 @@ There is no keyboard reorder: Enter and Space on a chip remove it.
 Access is two coupled fields, `visibility` and `tiers`, and only an Owner,
 Administrator or Editor sees them. A post carries no visibility until its first
 save applies the site default, so the select shows `default_content_visibility`
-until then. When that default is `Specific tier(s)`, the list ticks the tiers
-in `default_content_visibility_tiers` until then too, and ticking or unticking
+until then. When that default is `Specific tier(s)`, the picker selects the tiers
+in `default_content_visibility_tiers` until then too, and picking or removing
 a tier starts from them. Re-choosing the value already shown is not an edit and
 sends nothing. Choosing anything other than `Specific tier(s)` clears the tiers
-it granted. The tier list is every one of the site's paid
-tiers, active ones before archived, and it loads only while `Specific tier(s)`
-is the choice. The browse is followed page by page, and the list shows once the
-last page has arrived. Reads carry tier relations for Public, Members and Paid posts;
+it granted. The tiers are picked in a chip field, as authors are: the selected
+tiers are chips, and its list is every one of the site's paid tiers, under
+`Active tiers` and `Archived tiers` headings, with the selected ones ticked. It
+loads only while `Specific tier(s)` is the choice. The browse is followed page by
+page, and the chips and list show once the last page has arrived. Reads carry tier relations for Public, Members and Paid posts;
 the free tier that comes with Public and Members reads is excluded from the
 selection, and a tier ID without type metadata is preserved. A failed tier
-lookup shows an error and a Retry action in place of the list.
+lookup shows an error and a Retry action in place of the field.
 
 An empty tier selection is staged like any other edit but never sent: the
 section asks for at least one tier. On a post that exists, no settings save runs
@@ -225,7 +234,7 @@ every paid tier, archived ones included, so switching one of those posts to
 the save that follows the switch. Once saved, an unrelated edit sends neither
 access field.
 
-On a post that is not a draft, ticking or unticking a tier is staged without a
+On a post that is not a draft, picking or removing a tier is staged without a
 save of its own, as in Ember: every save of a published post writes a revision,
 so the picks go out once, with the next settings change or Update, and count as
 unsaved work until then. The visibility choice itself saves at once.
@@ -447,6 +456,13 @@ calls the API itself. A post has nothing to delete until its first save gives it
 an ID, so the button appears only once the post exists, and every role that can
 open the editor is offered it — which posts each of them may actually delete is
 the API's answer, not the panel's.
+
+The button is the last thing in the section list. When the list is shorter
+than the panel it sits at the panel's foot rather than straight after the last
+section; when the list is longer, it follows the last section and is reached by
+scrolling to the end. Before the first save the list ends at the last section,
+with no space held for the button, and an open pane hides it along with the
+other sections.
 
 Confirming names the post and says the deletion is permanent. Cancelling returns
 focus to the Delete button. An expired session asks the writer to sign in, in

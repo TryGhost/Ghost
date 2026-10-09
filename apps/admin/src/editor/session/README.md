@@ -97,13 +97,15 @@ command in the runnable queue, so navigating away does not wait indefinitely.
 The live document remains the source of truth: Update enables, the post stays
 dirty, and leaving requires a save or confirmation.
 
-All saves use the same preparation validator. An incomplete tier pairing on a
+All saves use the same preparation validator, and `invalidField()` reads the
+field an explicit save of the live document would be refused over from it, so
+the header refuses a publish by the save's own rules. An incomplete tier pairing on a
 post that exists, an over-long title, excerpt, code injection or meta/social
 field, an invalid canonical URL, an emptied author list, or a newly staged
 future publish time holds a background save with a validation blocker. Body
 autosave, title and image commits follow the same rule, including an already
-armed timer or queued request. The editor explains why changes are waiting even
-when the settings panel is closed. A saved future publish time is not itself
+armed timer or queued request. The field names its rule where it is edited, and
+the status line does once a save the writer asks for is refused. A saved future publish time is not itself
 invalid.
 
 A post the server has not created yet is not held to the tier rule. Its saves
@@ -180,14 +182,20 @@ as one character, and every other field by code point.
 
 A failure the transport reports is mapped onto the same kinds, so the engine's
 state machine reads them the same way. An `UPDATE_COLLISION` code becomes
-`conflict`.
+`conflict`, and so does an `UpdateCollisionError` without one: Core's email
+service refuses a publish whose newsletter or audience changed while it was
+being published that way.
 
 The server refuses a save that still sends `scheduled` for a post it has since
 published with a validation error. That also becomes `conflict`, since only the
 server's newer copy lets the writer save again.
 
 Of the other failures, a session-expired, unauthorized or 401 failure becomes
-`session-invalid`; any other `NoPermissionError`, which is how Core refuses a
+`session-invalid`. That includes the 403 "Authorization failed" Core answers for
+a session it no longer accepts: Core gives it no type or code, so the framework's
+response handler reads the message once and throws `UnauthorizedError`, and the
+editor reads the class rather than comparing the text again. Any other
+`NoPermissionError`, which is how Core refuses a
 writer who may no longer edit the post, becomes `forbidden`; a host-limit
 failure becomes `host-limit`; an unreachable server, a maintenance response and
 a timeout become `transport`; a validation failure, a payload the server
@@ -196,17 +204,27 @@ outright has to suppress background saves the way a validation failure does or
 it retries on every edit; a 404 becomes `not-found`; and anything else becomes
 `unknown`.
 
-A `validation`, `host-limit` or `forbidden` failure the server reports carries
-the server's reason as its message. The server sends that reason as the error's
-context beside a generic summary, and the summary is used only when there is no
-context. The save-error banner shows a host limit's reason with its "please
+A refusal the server reports (a 4xx: validation, a host limit, permissions, a
+bad request such as an archived newsletter) carries the server's reason as its
+message. The server sends that reason as the error's context beside a generic
+summary ("Validation error, cannot edit post."), and the summary is used only
+when there is no context. A 5xx is a fault whose text is for logs, so it shows
+the session's own save failure ("Couldn’t save this post."), as does a response
+that gave no reason; neither shows the transport's summary of the request, which
+names the endpoint ("Something went wrong while loading posts"). That summary is
+recognised by class (the transport's bare `APIError` or `JSONError`), never by
+its text. Core's email service refuses a send with an `EmailError` only when the
+post has no newsletter to send to, with no code and a sentence naming a model
+relation, so the class reads as "The newsletter couldn’t be sent. Check the
+post’s newsletter and try again." An expired session and an unreachable server
+keep their own wording. The status line shows a host limit's reason with its "please
 upgrade" phrase linked to the host's upgrade screen, `/pro` unless the host
-configures another, and keeps the content and the banner's retry.
+configures another, and keeps the content and the retry beside it.
 
 An `unknown` failure the API answered, or one the session describes itself,
-shows its own message. One thrown in the browser instead, such as a
+shows that message. One thrown in the browser instead, such as a
 `TypeError`, reads as "Something went wrong while saving. Please try again." in
-the banner, the status line, the publish flow and the preview alike; the error
+the status line, the publish flow and the preview alike; the error
 keeps its own message and cause for reporting.
 
 ## Adopting the server's answer
@@ -236,11 +254,21 @@ brings the session up to that version. A refused read is offered again
 whenever the engine moves on, so a read of a save that was in flight is adopted
 once that save's acknowledgement has landed and the session holds its token.
 
+An update that failed without the server refusing it, such as a lost response
+or a gateway error, may have committed. The engine has the session read the post
+before the next save. The read stands in for that update's acknowledgement only
+when it carries a later token, the status the update targeted, and exactly the
+saved copy with the update's projection written over it; then the next save
+carries the token the update landed at instead of colliding with it. A read
+carrying anything else, another writer's change included, leaves the token
+alone, so the next save collides as before. A read that fails fails the save
+with the read's error and sends nothing.
+
 Each acknowledged save also writes the record the server answered with into the
-screen's query, whole and in the shape a read has, so opening the post again
-before the read that follows the save has landed starts from the saved copy and
-its token rather than from the copy that predates the save. A later version a
-read put there before the answer arrived is kept.
+screen's query, whole and in the shape a read has. Opening the post again reads
+it afresh, but when that read fails the editor opens the saved copy and its
+token rather than the copy that predates the save. A later version a read put
+there before the answer arrived is kept.
 
 A save writes a title and slug the writer never typed — the request's own
 default title, the slug derived from the title — and the server may normalize
@@ -365,29 +393,41 @@ read is its own request, never a refetch of the query the screen rendered from,
 so nothing is replaced until the session has accepted the copy. A reload that
 fails leaves the halt, the content and the banner exactly as they were. A reload
 that succeeds seeds the screen's query with the accepted document, so a quick
-close and reopen cannot resurrect the version it first read.
+close and reopen whose own read fails cannot resurrect the version it first read.
+A reload whose read comes back after the writer has left the editor changes
+nothing, since the query by then belongs to whichever editor opens the post next.
 
 The screen's query also refetches on its own, after every save that lands and
-on reconnect once it is stale. Only a read that never produced the post
-replaces the screen: with sign in when the session has expired, and otherwise
-with the load error or a missing post. Reopening a post whose stale copy is
-still cached therefore shows that copy even when its refetch fails.
-Once the post is on screen, a refetch that fails leaves the editor, the session
+on reconnect once it is stale. Opening a post always sends a read of its own,
+even while a copy from an earlier visit is cached: the session saves against the
+version it opens on, so a cached copy would collide with whatever another writer
+saved since. A read still in flight from that visit is replaced rather than
+joined, since the server may have answered it before their save, and the post
+opens on the read it sent, even if that older read lands first. A deleted post
+replaces the screen with a missing post and an expired session with sign in,
+whether or not a copy is cached. Any other failure shows the load error when
+nothing is cached, and otherwise opens the cached copy, leaving the next save to
+report what has changed. Once the post is on screen, a refetch that fails leaves the editor, the session
 and the unsaved content where they are, and the next save reports a deleted
 post, an expired session or a collision itself.
 
 The read that opens the post also decides whether the writer may edit it, and
 whether a post stored only as mobiledoc must be converted first. An Author or
 Contributor who is not among its authors, or a Contributor on a post that is no
-longer a draft, is returned to the list. A post reopened from a stale cached copy
-shows that copy while its refetch runs, and the refetch decides. Once that read
-has settled, later reads decide neither: a refetch that takes away the writer's
+longer a draft, is returned to the list. A post reopened while a copy is cached
+waits for that read too; the cached copy is judged only when that read failed
+and the copy opens in its place. Once that read has settled, later reads decide
+neither, including the read that follows a conversion's save: a refetch that takes away the writer's
 access, or that brings a version stored only as mobiledoc, leaves the editor and
 the unsaved content where they are, and the next save shows the server's refusal
 or the collision. A save refused because the writer may no longer edit the post
 stops saving for good, as one that finds the post deleted does: the banner says
 they can no longer edit it and offers their content to copy, and there is no
-retry, since the server would refuse every later save too.
+retry, since the server would refuse every later save too. A publish, schedule,
+unpublish or unschedule Core refuses that way is different: Core also refuses a
+status change on its own rules, such as a Contributor's publish, so the refusal
+is that command's failure, shown in the publish flow and the status line, and the
+post stays editable.
 
 What a halted queue looks like is the session's caller's decision, not the
 engine's: `reauth-pending` and `conflict` are states, not UI. The writer gets a
@@ -410,8 +450,16 @@ code, or a resend that fails, is named inside the dialog and nothing else
 changes. Once the session is back the held save goes out on its own; a
 status change it was carrying, such as a publish, is re-confirmed rather than
 sent unasked. Clicking outside the dialog does nothing; Escape or Cancel abandons
-it, which moves the queue to the save-error banner with the content kept, and the
-banner's retry brings the dialog back.
+it, which reports the failed save in the status line with the content kept, and
+its retry brings the dialog back. A status change abandoned this way is retried
+from where it was asked for, not from the status line.
+
+Reads and requests outside the engine's saves ask for the same dialog through
+`requestReauth()`, which resolves true once the writer has signed in and false
+when they abandon it; requests made while it is open share it, and an editor
+that goes while one waits answers false. The publish inputs, the publish flow's
+limit checks, its retry-eligibility read and the email retry use it, and each
+runs again once the writer is back rather than repeating a refused request.
 
 ## The view React subscribes to
 
@@ -471,8 +519,7 @@ Failures never reach the writer as thrown errors; the session reports them. Ever
 request that ran and failed is reported once, with the command it ran, the
 error, whether the post already had a server id, the post's persisted status,
 the id, and how long the request took. Queued work a failure dropped is not
-reported on its own. An expired session is reported only when re-authentication
-is abandoned, not when it is retried. A leave the engine answers with a
+reported on its own. A leave the engine answers with a
 confirmation is reported with the reason codes the tracker holds the post dirty
 for; one the editor asks about because the engine missed its deadline is not.
 A draft disposed with a title but a slug still derived from the default title is
@@ -480,15 +527,21 @@ reported as an error. A throwing subscriber or slug listener is reported as an
 error, and so is a slug edit the generator rejected. A local copy that storage
 refused is reported with a `localRevisions` tag naming why: `quotaExceeded` when
 older copies had to make room, `quotaExceededNoSpace` when nothing could, and
-`saveError` for any other failure.
+`saveError` for any other failure. Making room is a message, not an error; only
+the other two are faults.
 
 Sentry receives these through the editor's own reporter, with the response
 status and URL when the transport answered. Validation failures, host limits, a
-refusal of a writer who may no longer edit the post and an unreachable server
-are not sent: none of them is a fault in the editor. A failed request that took
+refusal of a writer who may no longer edit the post, an expired session (signing
+in again is its recovery, whether or not the writer does) and an unreachable
+server are not sent as errors: none of them is a fault in the editor.
+`isExpectedSaveError()` holds that rule, and the publish flow reports by it too.
+A forbidden save, and an expired session the writer did not sign back in to,
+are still sent as messages carrying the save's tags. A failed request that took
 more than two seconds is sent as a second event with its timing. Every error
-banner the writer is shown — a failed save, a collision, a deleted post — is
-also sent once as a message carrying the text they read. A Koenig instance that
+the writer is shown — a failed save in the status line, a collision or a
+deleted post in its banner — is also passed to Sentry as a message carrying the
+text they read, tagged `shown_to_user`, which Admin's `beforeSend` drops. A Koenig instance that
 crashes its error boundary is reported as a Lexical failure. Sentry stays
 optional: without a DSN the calls are no-ops, and an error is still logged to
 the console.

@@ -37,6 +37,7 @@
     "@tanstack/react-virtual": "catalog:",
     "@tryghost/activitypub": "workspace:*",
     "@tryghost/admin-x-framework": "workspace:*",
+    "@tryghost/app-contracts": "workspace:*",
     "@tryghost/checkout": "workspace:*",
     "@tryghost/color-utils": "catalog:",
     "@tryghost/custom-fonts": "catalog:",
@@ -112,7 +113,7 @@
   "nx": {
     "namedInputs": {
       "cardAssets": [
-        "{workspaceRoot}/ghost/core/core/frontend/src/cards/**/*"
+        "{workspaceRoot}/ghost/core/frontend/src/cards/**/*"
       ],
       "reactTests": [
         "default",
@@ -188,6 +189,7 @@
             "projects": [
               "@tryghost/activitypub",
               "@tryghost/admin-x-framework",
+              "@tryghost/app-contracts",
               "@tryghost/checkout",
               "@tryghost/i18n",
               "@tryghost/kg-clean-basic-html",
@@ -216,6 +218,7 @@
             "projects": [
               "@tryghost/activitypub",
               "@tryghost/admin-x-framework",
+              "@tryghost/app-contracts",
               "@tryghost/checkout",
               "@tryghost/i18n",
               "@tryghost/kg-clean-basic-html",
@@ -241,6 +244,7 @@
             "projects": [
               "@tryghost/activitypub",
               "@tryghost/admin-x-framework",
+              "@tryghost/app-contracts",
               "@tryghost/checkout",
               "@tryghost/i18n",
               "@tryghost/kg-clean-basic-html",
@@ -289,6 +293,7 @@
             "projects": [
               "@tryghost/activitypub",
               "@tryghost/admin-x-framework",
+              "@tryghost/app-contracts",
               "@tryghost/checkout",
               "@tryghost/i18n",
               "@tryghost/kg-clean-basic-html",
@@ -323,8 +328,8 @@
         ],
         "outputs": [
           "{projectRoot}/dist",
-          "{workspaceRoot}/ghost/core/core/built/admin",
-          "{workspaceRoot}/ghost/core/core/built/embed-renderer"
+          "{workspaceRoot}/ghost/core/built/admin",
+          "{workspaceRoot}/ghost/core/built/embed-renderer"
         ],
         "dependsOn": [
           "^build",
@@ -341,6 +346,7 @@
           {
             "projects": [
               "@tryghost/admin-x-framework",
+              "@tryghost/app-contracts",
               "@tryghost/checkout",
               "@tryghost/kg-converters",
               "@tryghost/metafield-types",
@@ -354,8 +360,8 @@
         "cache": false,
         "outputs": [
           "{projectRoot}/dist",
-          "{workspaceRoot}/ghost/core/core/built/admin",
-          "{workspaceRoot}/ghost/core/core/built/embed-renderer"
+          "{workspaceRoot}/ghost/core/built/admin",
+          "{workspaceRoot}/ghost/core/built/embed-renderer"
         ]
       }
     }

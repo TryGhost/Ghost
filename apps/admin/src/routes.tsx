@@ -25,6 +25,7 @@ import { lazyRestoreScreen } from './editor/api';
 import { useFlagGatedRouteOwner } from './use-flag-gated-route-owner';
 import { type AccessRouteHandle } from './route-access';
 import { RouteAccessGuard } from './route-access-guard';
+import { canManageApps, lazyAppInstallScreen, lazyAppsScreen } from './apps/api';
 import { lazyAutomationEditorScreen, lazyAutomationsScreen } from './automations/api';
 import { lazyCommentsScreen } from './comments/api';
 import { lazyMigrateScreen } from './migrate/api';
@@ -37,7 +38,7 @@ import {
   lazyPostsListRoute,
   postAnalyticsRouteChildren,
 } from './posts/api';
-import { canAccessSettingsRoute, lazySettingsScreen, settingsRouteChildren } from './settings/api';
+import { canAccessSettingsRoute, SettingsRoute, settingsRouteChildren } from './settings/api';
 import { lazyTagDetailScreen, lazyTagsScreen } from './tags/api';
 import { lazyViewSiteScreen } from './view-site/api';
 import {
@@ -48,7 +49,7 @@ import {
 } from '@tryghost/admin-x-framework/api/users';
 
 import { NotFound } from './shared/not-found';
-import { type AuthRouteHandle, authRoutes, useAuthScreensOwner } from './auth/api';
+import { authRoutes } from './auth/api';
 
 const appRoutes: RouteObject[] = [
   {
@@ -79,11 +80,23 @@ const appRoutes: RouteObject[] = [
     lazy: lazyComponent(lazyAutomationsScreen),
   },
   {
+    path: '/apps',
+    handle: { requiresAccess: canManageApps } satisfies AccessRouteHandle,
+    lazy: lazyComponent(lazyAppsScreen),
+  },
+  {
+    // The install link: `#/apps/install?manifest=<url>` opens the install flow.
+    // Open to all staff, so those who can't install are told who can, not redirected.
+    path: '/apps/install',
+    lazy: lazyComponent(lazyAppInstallScreen),
+  },
+  {
     // The automation editor hides the admin sidebar for a focused,
     // full-screen editing surface.
     path: '/automations/:id',
     handle: {
       hideAdminSidebar: true,
+      screenTransition: true,
       requiresAccess: canManageAutomations,
     } satisfies AdminRouteHandle & AccessRouteHandle,
     lazy: lazyComponent(lazyAutomationEditorScreen),
@@ -153,14 +166,15 @@ const appRoutes: RouteObject[] = [
     children: activityPubRoutes,
   },
   {
-    // hideAdminSidebar lives on the handle, not the lazy module, so the shell
-    // hides at first paint instead of waiting on the settings chunk.
+    // The shell swaps its primary navigation for Settings on desktop before
+    // the lazy settings chunk has resolved. Mobile keeps its full takeover.
     path: `settings`,
-    lazy: lazyComponent(lazySettingsScreen),
+    Component: SettingsRoute,
     children: settingsRouteChildren,
     handle: {
       allowInForceUpgrade: true,
-      hideAdminSidebar: true,
+      screenTransition: true,
+      settingsSidebar: true,
       requiresAccess: canAccessSettingsRoute,
     } satisfies AdminRouteHandle & AccessRouteHandle,
   },
@@ -181,7 +195,11 @@ const appRoutes: RouteObject[] = [
     path: '/editor/*',
     Component: EditorGate,
     // EditorGate enforces force upgrade unless Ember owns both the editor and billing
-    handle: { allowInForceUpgrade: true, hideAdminSidebar: true } satisfies AdminRouteHandle,
+    handle: {
+      allowInForceUpgrade: true,
+      hideAdminSidebar: true,
+      screenTransition: true,
+    } satisfies AdminRouteHandle,
   },
   { path: '/site', lazy: lazyComponent(lazyViewSiteScreen) },
   { path: '/restore', lazy: lazyComponent(lazyRestoreScreen) },
@@ -227,6 +245,26 @@ export const routes: RouteObject[] = [
   },
 ];
 
+// matchRoutes flattens and ranks the whole tree on every call, and every link
+// asks (AdminLink, the screen-transition check), so a screen full of links
+// re-matched the tree many times per render. The tree is static, so a path's
+// matches never change; the cap only bounds paths carrying ids or slugs.
+const MATCH_CACHE_LIMIT = 500;
+const matchCache = new Map<string, ReturnType<typeof matchRoutes<RouteObject>>>();
+
+/** `matchRoutes(routes, pathname)`, memoized per path. Callers must not mutate the result. */
+export function matchAdminRoutes(pathname: string): ReturnType<typeof matchRoutes<RouteObject>> {
+  let matches = matchCache.get(pathname);
+  if (matches === undefined) {
+    if (matchCache.size >= MATCH_CACHE_LIMIT) {
+      matchCache.clear();
+    }
+    matches = matchRoutes(routes, pathname);
+    matchCache.set(pathname, matches);
+  }
+  return matches;
+}
+
 // Ember's router only learns about a URL change from `hashchange`, which the
 // React router's pushState navigation does not fire, so links into Ember-owned
 // routes must stay native hash anchors. Everything else can be a router link
@@ -235,11 +273,10 @@ export const routes: RouteObject[] = [
 export function useEmberOwnedRouteMatcher(): (pathname: string) => boolean {
   const editorOwner = useFlagGatedRouteOwner('editorReact');
   const billingOwner = useFlagGatedRouteOwner('billingReact');
-  const authScreensOwner = useAuthScreensOwner();
 
   return useCallback(
     (pathname: string) => {
-      const leaf = matchRoutes(routes, pathname)?.at(-1)?.route;
+      const leaf = matchAdminRoutes(pathname)?.at(-1)?.route;
       if (!leaf) {
         return true;
       }
@@ -249,12 +286,9 @@ export function useEmberOwnedRouteMatcher(): (pathname: string) => boolean {
       if (leaf.Component === BillingRoute) {
         return billingOwner !== 'react';
       }
-      if ((leaf.handle as AuthRouteHandle | undefined)?.authScreen) {
-        return authScreensOwner !== 'react';
-      }
       return false;
     },
-    [editorOwner, billingOwner, authScreensOwner],
+    [editorOwner, billingOwner],
   );
 }
 
@@ -265,7 +299,7 @@ export function useIsEmberOwnedRoute(pathname: string): boolean {
 /** The matched route's path pattern, e.g. `/tags/:tagSlug`, never the path's own ids or slugs. */
 function matchedRoutePattern(pathname: string): string {
   let pattern = '';
-  for (const { route } of matchRoutes(routes, pathname) ?? []) {
+  for (const { route } of matchAdminRoutes(pathname) ?? []) {
     if (route.path) {
       // An absolute child path already repeats its parents' paths
       pattern = route.path.startsWith('/') ? route.path : `${pattern}/${route.path}`;

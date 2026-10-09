@@ -60,7 +60,7 @@ function stageLegacyGhostCss(css: string): void {
   onTestFinished(() => style.remove());
 }
 
-/** Verbatim from `ghost/core/core/built/admin/assets/ghost.css`. */
+/** Verbatim from `ghost/core/built/admin/assets/ghost.css`. */
 const LEGACY_CODE_CSS = `code, tt {
     padding: 0.2rem 0.3rem;
     border: 1px solid hsl(203, 12.29%, 91.14%);
@@ -179,6 +179,9 @@ describe('Theme settings', () => {
       .toHaveTextContent(/casper is now your active theme/i);
     expect(activateApi.requests).toHaveLength(1);
 
+    // The success toast can arrive before the previous picker has closed.
+    await expect(settingsScreen.confirmationModal()).toHaveCount(0);
+    await expect(modal).toHaveCount(0);
     await settingsScreen.theme().getByRole('button', { name: 'Change theme' }).click();
     const reopenedModal = settingsScreen.themeModal();
     await reopenedModal.getByRole('button', { name: /Edition/ }).click();

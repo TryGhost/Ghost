@@ -1,5 +1,5 @@
 packages:
-  - 'ghost/*'
+  - 'ghost'
   - 'apps/*'
   - 'e2e'
   - 'koenig/*'
@@ -15,6 +15,12 @@ autoDedupe: true
 minimumReleaseAge: 4320 # 3 days in minutes; matches Renovate's minimumReleaseAge
 blockExoticSubdeps: true
 
+ignoredOptionalDependencies:
+  # dtrace-provider is pulled in optionally via bunyan, but only works on
+  # macOS Intel (not Apple Silicon) with SIP disabled, so effectively it's
+  # adding more work for no benefit
+  - dtrace-provider
+
 allowBuilds:
   # Permitted builds are version-scoped. Adding or updating a permitted version
   # requires an explicit Platform security review.
@@ -26,7 +32,6 @@ allowBuilds:
   'better-sqlite3@12.11.1': true
   'core-js@2.6.12': true
   cpu-features: false
-  'dtrace-provider@0.8.8': true
   'esbuild@0.25.12 || 0.28.2': true
   'fsevents@1.2.13 || 2.3.2 || 2.3.3': true
   'msw@2.14.6': true
@@ -72,28 +77,30 @@ catalog:
   '@sentry/vite-plugin': 5.3.0
   '@storybook/addon-docs': 10.4.6
   '@storybook/addon-links': 10.4.6
+  '@storybook/preact-vite': 10.4.6
   '@storybook/react-vite': 10.4.6
-  '@tailwindcss/postcss': 4.2.2
-  '@tailwindcss/vite': 4.2.2
+  '@tailwindcss/postcss': 4.3.3
+  '@tailwindcss/vite': 4.3.3
   '@tanstack/react-query': 5.101.4
   '@tanstack/react-virtual': 3.14.13
   '@testing-library/jest-dom': 6.9.1
+  '@testing-library/preact': 3.2.4
   '@testing-library/react': 14.3.1
   '@tryghost/brute-knex': 3.2.2
   '@tryghost/color-utils': 0.2.21
   '@tryghost/custom-fonts': 1.0.12
   '@tryghost/debug': 2.3.16
-  '@tryghost/domain-events': 3.3.17
-  '@tryghost/errors': 3.4.1
+  '@tryghost/domain-events': 3.3.18
+  '@tryghost/errors': 3.4.2
   '@tryghost/helpers': 1.1.107
-  '@tryghost/logging': 5.4.7
+  '@tryghost/logging': 5.4.8
   '@tryghost/mg-clean-html': 0.12.6
   '@tryghost/metrics': 3.6.2
   '@tryghost/mongo-knex': 0.11.2
   '@tryghost/nql': 0.13.4
   '@tryghost/nql-lang': 0.7.0
   '@tryghost/promise': 2.3.16
-  '@tryghost/request': 4.0.9
+  '@tryghost/request': 4.0.10
   '@tryghost/string': 0.3.6
   '@tryghost/timezone-data': 1.0.1
   '@tryghost/tpl': 2.3.16
@@ -162,7 +169,7 @@ catalog:
   microdiff: 1.5.0
   mingo: 2.5.3
   moment: 2.31.0
-  moment-timezone: 0.6.4
+  moment-timezone: 0.6.5
   msw: 2.14.6
   nock: 14.0.17
   node-html-markdown: 2.0.0
@@ -183,7 +190,7 @@ catalog:
   storybook: 10.4.6
   stylelint: 17.14.1
   supertest: 7.2.2
-  tailwindcss: 4.2.2
+  tailwindcss: 4.3.3
   temporal-polyfill: 0.3.2
   tldts: ^7.4.4
   tsx: 4.23.12
@@ -209,7 +216,7 @@ catalog:
   '@dnd-kit/core': 6.3.1
   '@dnd-kit/sortable': 7.0.2
   '@dnd-kit/utilities': 3.2.2
-  shell-quote: 1.10.0
+  shell-quote: 1.11.0
   unidecode: 1.1.0
   mppx: 0.6.20
   '@x402/core': 2.27.0
@@ -236,7 +243,7 @@ catalog:
   cron-validate: 1.4.5
   '@types/stoppable': 1.1.3
   '@types/express-brute': 1.0.6
-  '@tryghost/validator': 3.2.16
+  '@tryghost/validator': 3.2.17
   '@types/probability-distributions': 0.1.3
   d3-geo: 3.1.1
 
@@ -268,11 +275,11 @@ overrides:
   'eslint-plugin-ghost>@typescript-eslint/utils': 8.71.0
   'ember-svg-jar>cheerio': 'catalog:'
   # juice 11 pins cheerio 1.0.0 exactly. Point it at the catalog's 1.2.0 so juice
-  # and ghost/core share one copy instead of keeping two parsers resident - both
+  # and ghost share one copy instead of keeping two parsers resident - both
   # only ever call `load`. See patchedDependencies for the matching slim import.
   'juice>cheerio': 'catalog:'
   # mg-utils depends on the npm release of kg-default-cards, so the published
-  # copy was installed alongside the workspace one that ghost/core links — and
+  # copy was installed alongside the workspace one that ghost links — and
   # it dragged its own published kg-utils, kg-markdown-html-renderer and
   # url-utils in with it. Point that edge at the workspace package instead, so
   # content import renders cards with the same code Ghost itself renders them
@@ -292,18 +299,33 @@ overrides:
   'diff@<3.5.1': ^3.5.1
   'esbuild@>=0.28.0': 'catalog:'
   'growl@<1.10.0': ^1.10.0
+  # gscan pins handlebars exactly; lift every copy past the 4.7.10 security fixes
+  'handlebars@<4.7.10': ^4.7.10
   'json5@<1.0.2': ^1.0.2
   'merge@<2.1.1': ^2.1.1
   'micromatch@<4.0.8': ^4.0.8
   'minimatch@<3.1.4': ^3.1.4
   'minimist@<0.2.4': ^0.2.4
   'nth-check@<2.0.1': ^2.0.1
-  'smol-toml@<1.7.1': ^1.7.1
+  'smol-toml@<1.9.0': ^1.9.0
   supports-color: '10.2.2'
   'tmp@<=0.2.3': ^0.2.4
   'trim@<0.0.3': ^0.0.3
   'underscore@>=1.3.2 <1.12.1': ^1.12.1
   '@xmldom/xmldom@<0.9.12': ^0.9.12
+  # Security patches within the same major for dev, build and test tooling
+  'axios@>=1.0.0 <1.20.0': ^1.20.0
+  'brace-expansion@>=5.0.0 <5.0.12': ^5.0.12
+  'engine.io@>=6.6.0 <6.6.10': ^6.6.10
+  'http-cache-semantics@<4.3.0': ^4.3.0
+  'js-yaml@>=5.0.0 <5.4.1': ^5.4.1
+  'markdown-it@>=14.0.0 <14.3.1': ^14.3.1
+  'pbkdf2@<3.1.7': ^3.1.7
+  'postcss-selector-parser@>=7.0.0 <7.1.6': ^7.1.6
+  'proxy-addr@<2.0.8': ^2.0.8
+  'shell-quote@>=1.8.4 <1.11.0': ^1.11.0
+  'source-map-js@<1.2.2': ^1.2.2
+  'tinypool@<2.1.2': ^2.1.2
   # liquid-wormhole 3.0.1 pins this to a personal-fork git URL; redirect to the
   # upstream-maintained npm release so blockExoticSubdeps doesn't trip on it.
   perf-primitives: ^0.0.6
@@ -378,7 +400,9 @@ patchedDependencies:
   # removes and re-sets aria-hidden on the whole page in one task, which stalls
   # Safari for ~2s per open. The patch defers an undo that runs in the same task
   # as its apply while the target is still mounted, which is that replay, so the
-  # re-apply finds the page still hidden and nothing is removed.
+  # re-apply finds the page still hidden and nothing is removed. It also resolves
+  # style before un-hiding: Safari un-hides slowly (~0.7-2.5s) while the closing
+  # modal's scroll-lock removal is still unresolved.
   aria-hidden@1.2.6: patches/aria-hidden@1.2.6.patch
   # The juice patch makes three changes:
   # - lib/cheerio.js imports cheerio's main entry, which eagerly loads parse5,

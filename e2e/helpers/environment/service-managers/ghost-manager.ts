@@ -368,6 +368,9 @@ export class GhostManager {
       HostConfig: {
         Binds: binds,
         ExtraHosts: ['host.docker.internal:host-gateway'],
+        // Disable inherited search domains: CI's resolver can otherwise append
+        // its Azure domain to external hosts and trigger false egress failures.
+        DnsSearch: ['.'],
         ...(dnsServerIp ? { Dns: [dnsServerIp] } : {}),
       },
       NetworkingConfig: {
@@ -399,7 +402,7 @@ export class GhostManager {
       // Whole-directory mounts covering the backend source graph, rather
       // than enumerating each server-graph workspace package. See the
       // matching rationale in compose.dev.yaml: `pnpm dev` runs in
-      // ghost/core and only its dependency closure is verified against
+      // ghost and only its dependency closure is verified against
       // the image's root node_modules, so the non-server packages these
       // dirs also expose don't trigger a workspace repair, and root
       // node_modules (never mounted) keeps its linux-built native modules.

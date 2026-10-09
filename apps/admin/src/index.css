@@ -34,11 +34,31 @@ body {
   margin: 0;
 }
 
-/* One progress value keeps the settings panel and its vacated header slot in sync. */
-@property --editor-settings-progress {
-  syntax: '<number>';
+/* The editor settings panel's motion. `--editor-settings-progress` on the editor
+   shell is only ever 0 or 1; each element that moves with the panel transitions
+   its own property, named in brackets (`editor-settings-motion-[width]`), on this
+   one timing. Animating the inherited progress value itself would restyle the
+   whole document on every frame of the motion. */
+@utility editor-settings-motion-* {
+  transition-property: --value([*]);
+  transition-duration: 450ms;
+  transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+
+  @media (prefers-reduced-motion: reduce) {
+    transition-property: none;
+  }
+}
+
+/* Koenig's wide and full cards are sized in viewport units less this width
+   beside the writing area. The writing area declares it at the settings panel's
+   resting state; while the panel moves, the editor writes it onto each card
+   every frame instead, so only the cards restyle. Registered as a length so the
+   writing area's formula still computes to the pixels Koenig's card settings
+   panel parses; Ember sets pixels. */
+@property --kg-breakout-adjustment {
+  syntax: '<length>';
   inherits: true;
-  initial-value: 0;
+  initial-value: 0px;
 }
 
 /* Shimmer for an active send's status line. The gradient is 300% wide so
@@ -178,6 +198,22 @@ body {
   --font-space-mono: Space Mono;
   --font-fira-mono: Fira Mono;
   --font-jetbrains-mono: JetBrains Mono;
+}
+
+/* The editor's title and excerpt placeholders read as the body's, which Koenig
+   draws in its own palette: text-grey-500 dark:text-grey-800 in koenig-lexical's
+   EditorPlaceholder. Shade's gray ramp starts from the same values but
+   desaturates in dark mode, so these are Koenig's, to stay exactly in step. */
+:root {
+  --editor-placeholder: #aeb7c1;
+}
+
+.dark {
+  --editor-placeholder: #626d79;
+}
+
+@theme inline {
+  --color-editor-placeholder: var(--editor-placeholder);
 }
 
 /* Shared Koenig wrappers must retain their layout without Ember styles. */
@@ -388,4 +424,213 @@ body.react-admin [data-test-table='members'] thead,
 body.react-admin [data-test-table='members'] tr {
   position: relative;
   z-index: 30;
+}
+
+/* Screen transitions. The router runs a view
+   transition only for a navigation into or out of a full-screen surface: the
+   old screen fades out while the sidebar or mobile nav leaves, then the new
+   screen fades in while it returns. A sidebar on both sides (Settings) keeps
+   its own live swap animation. */
+::view-transition {
+  background-color: var(--background);
+}
+
+::view-transition-old(root) {
+  animation: screen-transition-fade-out 200ms var(--ease-standard) both;
+}
+
+::view-transition-new(root) {
+  animation: screen-transition-fade-in 200ms var(--ease-standard) 200ms both;
+}
+
+::view-transition-group(admin-sidebar),
+::view-transition-group(admin-mobile-nav),
+::view-transition-new(admin-sidebar):not(:only-child),
+::view-transition-new(admin-mobile-nav):not(:only-child) {
+  animation: none;
+}
+
+::view-transition-old(admin-sidebar):not(:only-child),
+::view-transition-old(admin-mobile-nav):not(:only-child) {
+  display: none;
+}
+
+::view-transition-old(admin-sidebar):only-child {
+  animation: screen-transition-sidebar-out 200ms var(--ease-standard) both;
+}
+
+::view-transition-new(admin-sidebar):only-child {
+  animation: screen-transition-sidebar-in 250ms var(--ease-standard) 50ms both;
+}
+
+::view-transition-old(admin-mobile-nav):only-child {
+  animation: screen-transition-mobile-nav-out 200ms var(--ease-standard) both;
+}
+
+::view-transition-new(admin-mobile-nav):only-child {
+  animation: screen-transition-mobile-nav-in 200ms var(--ease-standard) 200ms both;
+}
+
+/* Most transitions fade the old screen out on the live page before navigating
+   (ScreenTransitionProvider), so a slow render of the next screen happens while
+   nothing is visible. The view transition then only reveals the new screen. */
+html[data-screen-exit] .screen-exit-content {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 200ms var(--ease-standard);
+}
+
+html[data-screen-exit='hide-sidebar'] .screen-exit-sidebar {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(-40px);
+  transition:
+    opacity 200ms var(--ease-standard),
+    transform 200ms var(--ease-standard);
+}
+
+html[data-screen-exit='hide-sidebar'] .screen-exit-mobile-nav {
+  transform: translateY(100%);
+  transition: transform 200ms var(--ease-standard);
+}
+
+html[data-screen-transition='after-exit']::view-transition-old(root) {
+  animation: none;
+}
+
+html[data-screen-transition='after-exit']::view-transition-old(admin-sidebar),
+html[data-screen-transition='after-exit']::view-transition-old(admin-mobile-nav) {
+  display: none;
+}
+
+html[data-screen-transition='after-exit']::view-transition-new(root) {
+  animation: screen-transition-fade-in 200ms var(--ease-standard) both;
+  mix-blend-mode: normal;
+}
+
+html[data-screen-transition='after-exit']::view-transition-new(admin-sidebar):only-child {
+  animation: screen-transition-sidebar-in 250ms var(--ease-standard) both;
+}
+
+html[data-screen-transition='after-exit']::view-transition-new(admin-mobile-nav):only-child {
+  animation: screen-transition-mobile-nav-in 200ms var(--ease-standard) both;
+}
+
+html[data-screen-transition='return']::view-transition-old(root) {
+  animation: screen-transition-fade-out 150ms var(--ease-standard) both;
+}
+
+html[data-screen-transition='return']::view-transition-new(root) {
+  animation: screen-transition-fade-in 150ms var(--ease-standard) both;
+}
+
+html[data-screen-transition='return']::view-transition-new(admin-sidebar):only-child {
+  animation: screen-transition-sidebar-in 250ms var(--ease-standard) both;
+}
+
+html[data-screen-transition='return']::view-transition-new(admin-mobile-nav):only-child {
+  animation: screen-transition-mobile-nav-in 200ms var(--ease-standard) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(root),
+  ::view-transition-old(admin-sidebar):only-child,
+  ::view-transition-old(admin-mobile-nav):only-child {
+    animation: screen-transition-fade-out var(--duration-fast) var(--ease-standard) both;
+  }
+
+  ::view-transition-new(root),
+  ::view-transition-new(admin-sidebar):only-child,
+  ::view-transition-new(admin-mobile-nav):only-child {
+    animation: screen-transition-fade-in var(--duration-fast) var(--ease-standard) both;
+  }
+}
+
+/* Entering the editor, the document rises into place and its floating chrome
+   follows in from the screen edges. */
+.screen-enter-from-top {
+  animation: screen-chrome-from-top 450ms var(--ease-emphasized) 150ms both;
+}
+
+.screen-enter-from-bottom {
+  animation: screen-chrome-from-bottom 450ms var(--ease-emphasized) 150ms both;
+}
+
+.screen-enter-rise {
+  animation: screen-content-rise 450ms var(--ease-emphasized) both;
+}
+
+@keyframes screen-content-rise {
+  from {
+    transform: translateY(20px);
+  }
+}
+
+@keyframes screen-chrome-from-top {
+  from {
+    transform: translateY(-80px);
+  }
+}
+
+@keyframes screen-chrome-from-bottom {
+  from {
+    transform: translateY(80px);
+  }
+}
+
+/* Loading spinners wait before fading in, so a fast load never flashes one. */
+.delayed-fade-in {
+  animation: screen-transition-fade-in 200ms var(--ease-standard) 500ms both;
+}
+
+/* Reduced motion keeps the entrance still and the spinner's fade short. The
+   spinner keeps its delay: it stops a fast load flashing one, not motion. */
+@media (prefers-reduced-motion: reduce) {
+  .screen-enter-from-top,
+  .screen-enter-from-bottom,
+  .screen-enter-rise {
+    animation: none;
+  }
+
+  .delayed-fade-in {
+    animation-duration: var(--duration-fast);
+  }
+}
+
+@keyframes screen-transition-fade-out {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes screen-transition-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes screen-transition-sidebar-out {
+  to {
+    opacity: 0;
+    transform: translateX(-40px);
+  }
+}
+
+@keyframes screen-transition-sidebar-in {
+  from {
+    opacity: 0;
+    transform: translateX(-40px);
+  }
+}
+
+@keyframes screen-transition-mobile-nav-out {
+  to {
+    transform: translateY(100%);
+  }
+}
+
+@keyframes screen-transition-mobile-nav-in {
+  from {
+    transform: translateY(100%);
+  }
 }

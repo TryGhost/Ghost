@@ -16,7 +16,7 @@ function setting(group, key, value) {
 }
 
 // These settings represent a default new site setup
-// Real default settings can be found in https://github.com/TryGhost/Ghost/blob/main/ghost/core/core/server/data/schema/default-settings/default-settings.json
+// Real default settings can be found in https://github.com/TryGhost/Ghost/blob/main/ghost/core/server/data/schema/default-settings/default-settings.json
 export default [
     // SITE
     setting('site', 'title', 'Test Blog'),

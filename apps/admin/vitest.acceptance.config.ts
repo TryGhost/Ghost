@@ -57,7 +57,9 @@ const fakeFrameOrigin: BrowserCommand<[origin: string, html: string]> = async (
   const fakedOrigin = new URL(origin).origin;
   const matcher = (url: URL) => url.origin === fakedOrigin;
   const handler: FrameRouteHandler = (route) =>
-    route.fulfill({ contentType: 'text/html', body: html });
+    route.request().resourceType() === 'document' && route.request().frame().parentFrame()
+      ? route.fulfill({ contentType: 'text/html', body: html })
+      : route.fallback();
   await page.route(matcher, handler);
   frameFakes.set(page, [...(frameFakes.get(page) ?? []), { matcher, handler }]);
 };

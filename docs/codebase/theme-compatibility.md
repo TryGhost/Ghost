@@ -66,7 +66,7 @@ theme contract:
 2. Add or update a rule in the appropriate GScan check and version spec.
 3. Give the rule a clear description of what changed and how to fix it.
 4. Test the rule in GScan, then release GScan.
-5. Update the `gscan` dependency in `ghost/core/package.json` and run Ghost's
+5. Update the `gscan` dependency in `ghost/package.json` and run Ghost's
    theme tests. Theme fixtures may also need updating.
 
 Version specs inherit the helpers and rules from the preceding major version.
@@ -76,9 +76,9 @@ uses it rather than rewriting an older version's contract.
 ## Adding a Handlebars helper
 
 Theme-facing helpers live in
-[`ghost/core/core/frontend/helpers/`](../../ghost/core/core/frontend/helpers/),
+[`ghost/core/frontend/helpers/`](../../ghost/core/frontend/helpers/),
 with unit tests in
-[`ghost/core/test/unit/frontend/helpers/`](../../ghost/core/test/unit/frontend/helpers/).
+[`ghost/test/unit/frontend/helpers/`](../../ghost/test/unit/frontend/helpers/).
 
 Adding the implementation is not enough. GScan must know the helper name or it
 will report valid theme usage as an unknown helper. To add one:
@@ -86,11 +86,11 @@ will report valid theme usage as an unknown helper. To add one:
 1. Add the helper and its unit tests in Ghost.
 2. Add its name to `knownHelpers` in the current major-version spec in GScan,
    with GScan tests where needed.
-3. Release GScan and update `ghost/core/package.json` to that version.
+3. Release GScan and update `ghost/package.json` to that version.
 4. Run the Ghost helper registration and GScan compatibility test:
 
    ```bash
-   pnpm --dir ghost/core test:unit \
+   pnpm --dir ghost test:unit \
        test/unit/frontend/services/theme-engine/handlebars/helpers.test.js
    ```
 
@@ -102,6 +102,6 @@ must be explicitly excluded there with a reason.
 
 [Casper](https://github.com/TryGhost/Casper) and
 [Source](https://github.com/TryGhost/Source) are included in this repository as
-Git submodules under `ghost/core/content/themes/`. Changes to Ghost's theme
+Git submodules under `ghost/content/themes/`. Changes to Ghost's theme
 contract must remain compatible with these themes, and the Ghost theme tests
 must pass after a GScan update.

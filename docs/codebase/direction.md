@@ -134,7 +134,7 @@ Bookshelf model or add new business logic to model lifecycle hooks.
 This does not mean every domain class or helper needs a top-level service
 directory. Keep service-private implementation with its owner and shared
 support in libraries. Use the
-[service placement rules](../../ghost/core/core/server/services/README.md#what-belongs-here)
+[service placement rules](../../ghost/core/server/services/README.md#what-belongs-here)
 to distinguish an application-owned service root from its supporting code.
 Directory cleanup and standardizing lifecycle interfaces are separate changes;
 neither implies that all existing roots already share one lifecycle contract.
@@ -147,7 +147,7 @@ Pass stateful dependencies such as database connections, models, caches,
 configuration, and I/O services into new modules. Construct and connect them at
 the application edge. Pure functions, constants, and types can still be
 imported normally; dependency injection does not require a container. Follow
-the [services guide](../../ghost/core/core/server/services/README.md) for the
+the [services guide](../../ghost/core/server/services/README.md) for the
 current construction and initialization pattern.
 
 ### Avoid new process-local state

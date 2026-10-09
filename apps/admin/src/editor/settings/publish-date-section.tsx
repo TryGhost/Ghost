@@ -40,7 +40,7 @@ export function PublishDateSection({ session }: PublishDateSectionProps) {
   const invalid = publishedAtInFuture(status, publishedAt);
 
   return (
-    <SettingsSection>
+    <SettingsSection field="published_at">
       <Label id={labelId}>
         {isScheduled && !isPastScheduled ? 'Scheduled date' : 'Publish date'}
       </Label>

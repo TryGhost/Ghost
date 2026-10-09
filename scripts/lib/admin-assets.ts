@@ -119,7 +119,7 @@ export function assembleAdminAssets(root: string, options: AdminAssetsOptions = 
   const activitypubDist = join(root, 'apps/activitypub/dist');
   const koenigDist = join(root, 'koenig/koenig-lexical/dist');
   const renderer = join(koenigDist, 'embed-renderer');
-  const built = join(root, 'ghost/core/core/built');
+  const built = join(root, 'ghost/core/built');
   const destination = join(built, 'admin');
 
   for (const path of [

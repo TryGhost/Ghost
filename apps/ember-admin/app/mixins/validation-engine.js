@@ -10,11 +10,8 @@ import NavItemValidator from 'ghost-admin/validators/nav-item';
 import NewsletterValidator from 'ghost-admin/validators/newsletter';
 import PostValidator from 'ghost-admin/validators/post';
 import RSVP from 'rsvp';
-import ResetValidator from 'ghost-admin/validators/reset';
 import SettingValidator from 'ghost-admin/validators/setting';
-import SetupValidator from 'ghost-admin/validators/setup';
 import SigninValidator from 'ghost-admin/validators/signin';
-import SignupValidator from 'ghost-admin/validators/signup';
 import SnippetValidator from 'ghost-admin/validators/snippet';
 import TagSettingsValidator from 'ghost-admin/validators/tag-settings';
 import TierBenefitItemValidator from 'ghost-admin/validators/tier-benefit-item';
@@ -57,11 +54,8 @@ export default Mixin.create({
             navItem: NavItemValidator,
             tierBenefitItem: TierBenefitItemValidator,
             post: PostValidator,
-            reset: ResetValidator,
             setting: SettingValidator,
-            setup: SetupValidator,
             signin: SigninValidator,
-            signup: SignupValidator,
             tag: TagSettingsValidator,
             user: UserValidator,
             member: MemberValidator,

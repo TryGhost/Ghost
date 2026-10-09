@@ -58,7 +58,7 @@ const EmailPreviewModalContent = React.forwardRef<HTMLDivElement, EmailPreviewMo
         <div className="justify-self-center">{centeredHeaderContent}</div>
         <div className="flex items-center gap-2 justify-self-end">{headerActions}</div>
       </div>
-      <div className="flex min-h-0 grow flex-col overflow-y-auto [scrollbar-gutter:stable]">
+      <div className="flex min-h-0 grow [scrollbar-gutter:stable] flex-col overflow-y-auto">
         {children}
       </div>
     </div>

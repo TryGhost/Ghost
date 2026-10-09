@@ -577,6 +577,14 @@ describe('Post settings post history', () => {
     await expect
       .element(editorScreen.postHistoryPreviewExcerpt())
       .toHaveTextContent('The first summary');
+    // The preview sets the excerpt as the editor does.
+    const typeOf = (element: Element) => {
+      const { fontSize, fontWeight, lineHeight, letterSpacing, color } = getComputedStyle(element);
+      return { fontSize, fontWeight, lineHeight, letterSpacing, color };
+    };
+    expect(typeOf(editorScreen.postHistoryPreviewExcerpt().element())).toEqual(
+      typeOf(editorScreen.excerptInput().element()),
+    );
 
     await editorScreen.postHistoryRevision(2).restore().click();
     await editorScreen.confirmRestore().click();

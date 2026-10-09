@@ -1,12 +1,10 @@
 import { beforeEach, expect, it, vi } from 'vitest';
-import { siteResponse } from '@tryghost/test-data';
 import {
   allowUnhandledRequests,
   authToken,
   currentRoute,
   fakeAdminEndpoint,
   renderAdminApp,
-  type RenderAdminAppOptions,
 } from '@test-utils/acceptance';
 import { authScreen } from './auth.screen';
 import { reloadAdmin } from './reload';
@@ -16,13 +14,6 @@ import { reloadAdmin } from './reload';
 
 vi.mock('./reload', () => ({ reloadAdmin: vi.fn() }));
 
-const withAuthReact = (authReact: boolean): RenderAdminAppOptions => {
-  const site = siteResponse();
-  return { boot: { browseSite: { response: { site: { ...site.site, authReact } } } } };
-};
-
-const emberFrameHidden = () => document.getElementById('ember-app')?.parentElement?.hidden;
-
 beforeEach(() => {
   vi.mocked(reloadAdmin).mockClear();
   window.sessionStorage.clear();
@@ -31,7 +22,7 @@ beforeEach(() => {
 it('sends a signed-in user away from sign in', async () => {
   // The analytics dashboard it lands on owns its request graph.
   allowUnhandledRequests();
-  await renderAdminApp('/signin', withAuthReact(true));
+  await renderAdminApp('/signin');
 
   await expect.poll(currentRoute).toBe('/analytics');
 });
@@ -50,7 +41,7 @@ it.each([
 ])('warns a signed-in user off %s', async (_screen, route, warning) => {
   // The analytics dashboard it lands on owns its request graph.
   allowUnhandledRequests();
-  await renderAdminApp(route, withAuthReact(true));
+  await renderAdminApp(route);
 
   await expect.element(authScreen.text(warning)).toBeVisible();
   await expect.poll(currentRoute).toBe('/analytics');
@@ -58,22 +49,15 @@ it.each([
 
 it('signs out and reloads onto sign in', async () => {
   const sessionApi = fakeAdminEndpoint('DELETE', '/session/', null, { status: 204 });
-  await renderAdminApp('/signout', withAuthReact(true));
+  await renderAdminApp('/signout');
 
   await expect.poll(() => vi.mocked(reloadAdmin).mock.calls).toEqual([['/signin']]);
   expect(sessionApi.requests).toHaveLength(1);
 });
 
-it('leaves signed-in auth routes to Ember when the flag is off', async () => {
-  await renderAdminApp('/signin', withAuthReact(false));
-
-  await expect.poll(emberFrameHidden).toBe(false);
-  expect(currentRoute()).toBe('/signin');
-});
-
 it('confirms a password reset once the admin has reloaded', async () => {
   window.sessionStorage.setItem('ghost-admin:auth-notice', 'password-updated');
-  await renderAdminApp('/tags', withAuthReact(true));
+  await renderAdminApp('/tags');
   fakeAdminEndpoint('GET', /^\/tags\//, { tags: [], meta: { pagination: { next: null } } });
 
   await expect.element(authScreen.text('Password updated')).toBeVisible();

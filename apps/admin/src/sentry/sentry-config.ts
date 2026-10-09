@@ -6,10 +6,13 @@ import {
   type Event,
   type EventHint,
 } from '@sentry/react';
+import { loadedKoenigVersion } from '@/settings/components/koenig-loader';
 
 export type Integration = Extract<NonNullable<BrowserOptions['integrations']>, unknown[]>[number];
 
 const FILTERED_URL_REGEX = /\/e\.ghost\.org|plausible\.io/;
+
+const LEXICAL_ERROR_REGEX = /Minified Lexical error #\d+/;
 
 export const AUTOMATIONS_MASK_ATTRIBUTE = 'data-sentry-automations-mask';
 
@@ -39,12 +42,21 @@ export function getSentryConfig({
       /The play\(\) request was interrupted.*/,
       /The request is not allowed by the user agent or the platform in the current context/,
 
-      // Network errors that we don't control
+      // Network errors that we don't control, anchored so chunk-load failures
+      // ("Failed to fetch dynamically imported module: …") still report
       /Server was unreachable/,
-      /NetworkError when attempting to fetch resource./,
-      /Failed to fetch/,
-      /Load failed/,
-      /The operation was aborted./,
+      /^NetworkError when attempting to fetch resource\.$/,
+      /^Failed to fetch$/,
+      /^Load failed$/,
+      // Firefox's message ends with a space; Sentry prefixes Safari's stackless
+      // DOMException with its name
+      /^(AbortError: )?The operation was aborted\. ?$/,
+
+      // React Router leaves a skipped view transition's promises unhandled; the
+      // navigation still lands. Chromium, WebKit and Firefox messages in turn
+      /^(AbortError: |InvalidStateError: )?Transition was (skipped|aborted because of invalid state)(\. [A-Za-z ]+)?$/,
+      /^(Skipping view transition because skipTransition\(\) was called|View transition was skipped because document visibility state is hidden)\.$/,
+      /^Skipped ViewTransition due to (skipTransition\(\) call|document being hidden)$/,
 
       // Ember-only; remove with Ember (https://github.com/emberjs/ember.js/issues/12505)
       /^TransitionAborted$/,
@@ -108,7 +120,8 @@ export function beforeSend(event: Event, hint?: EventHint): Event | null {
     event.tags.shown_to_user = event.tags.shown_to_user || false;
     event.tags.grammarly = !!document.querySelector('[data-gr-ext-installed]');
 
-    if (event.tags.shown_to_user === true) {
+    // The publish flow reports only the failures it did not expect
+    if (event.tags.shown_to_user === true && event.tags.source !== 'publish-flow') {
       return null;
     }
 
@@ -120,6 +133,15 @@ export function beforeSend(event: Event, hint?: EventHint): Event | null {
     const firstException = event.exception?.values?.[0];
     if (firstException?.value) {
       firstException.value = firstException.value.replace(/<(post|page):[a-f0-9]+>/, '<$1:ID>');
+    }
+
+    // Lexical often throws from its own DOM listeners, which only the global handlers catch
+    if (event.tags.lexical === undefined && LEXICAL_ERROR_REGEX.test(firstException?.value ?? '')) {
+      event.tags.lexical = true;
+      const version = loadedKoenigVersion();
+      if (version) {
+        event.contexts.koenig = { version };
+      }
     }
 
     // Ember-only; remove with Ember (ember-ajax errors carry the API error in `payload.errors`)

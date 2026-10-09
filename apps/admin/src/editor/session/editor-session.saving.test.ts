@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
-import { SessionExpiredError } from '@tryghost/admin-x-framework/errors';
-import { buildLexicalParagraph } from '@tryghost/test-data';
+import { ServerUnreachableError, SessionExpiredError } from '@tryghost/admin-x-framework/errors';
+import { buildLexicalParagraph, tag } from '@tryghost/test-data';
 import {
   body,
   LOADED_AT,
@@ -345,15 +345,38 @@ describe('createEditorSession', () => {
     expect(state.updates[0].payload).not.toHaveProperty('tags');
   });
 
-  it('refuses to update a post it has no collision token for', async () => {
+  it('updates a post loaded without a collision token, then sends the one it was answered with', async () => {
     const { session, state } = sessionHarness({ record: record({ updated_at: null }) });
 
-    session.patchLexical(body('Edited'));
+    session.patchLexical(body('One'));
+    expect(await session.dispatchExplicit()).toMatchObject({ kind: 'saved' });
+    session.patchLexical(body('Two'));
+    await session.dispatchExplicit();
+
+    expect(state.updates).toHaveLength(2);
+    expect(state.updates[0].payload).toMatchObject({ id: 'abc123', updated_at: null });
+    expect(state.updates[1].payload.updated_at).toBe('2026-01-01T00:00:01.000Z');
+  });
+
+  it.each([
+    ['it loaded with', LOADED_AT],
+    ['its first save was answered with', null],
+  ])('refuses to update once it loses the collision token %s', async (_label, loadedAt) => {
+    const { session, state } = sessionHarness(
+      { record: record({ updated_at: loadedAt }) },
+      {
+        acknowledge: (next, saveCount) => (saveCount === 1 ? next : { ...next, updated_at: null }),
+      },
+    );
+
+    session.patchLexical(body('One'));
+    await session.dispatchExplicit();
+    session.patchLexical(body('Two'));
+    await session.dispatchExplicit();
+    session.patchLexical(body('Three'));
     const completion = await session.dispatchExplicit();
 
-    // Sending no token makes the server skip its collision check, so the save
-    // fails instead of overwriting whatever landed meanwhile.
-    expect(state.updates).toHaveLength(0);
+    expect(state.updates).toHaveLength(2);
     expect(completion).toMatchObject({ kind: 'failed', error: { kind: 'unknown' } });
   });
 
@@ -402,5 +425,136 @@ describe('createEditorSession', () => {
     await session.dispatchExplicit();
 
     expect(state.updates).toHaveLength(0);
+  });
+});
+
+describe('a save whose answer was lost', () => {
+  const LANDED_AT = '2026-01-01T00:00:01.000Z';
+  const lostOnFirst: HarnessHooks = {
+    failAfterCommitWith: (saveCount) =>
+      saveCount === 1 ? new ServerUnreachableError() : undefined,
+  };
+
+  it('adopts its own write once a read finds it landed, so the next save does not collide', async () => {
+    const { session, state, read } = sessionHarness(
+      { record: record(), baseline: record().lexical },
+      lostOnFirst,
+    );
+
+    session.patchLexical(body('One'));
+    expect(await session.dispatchExplicit()).toMatchObject({ kind: 'failed' });
+    session.patchLexical(body('Two'));
+    expect(await session.dispatchExplicit()).toMatchObject({ kind: 'saved' });
+
+    expect(read).toHaveBeenCalledWith('abc123');
+    expect(state.updates[1].payload).toMatchObject({
+      lexical: JSON.stringify(body('Two')),
+      updated_at: LANDED_AT,
+    });
+    expect(session.getSaveSnapshot().isDirty).toBe(false);
+  });
+
+  it('adopts its own landed write on a post loaded without a collision token', async () => {
+    const loaded = record({ updated_at: null });
+    const { session, state } = sessionHarness(
+      { record: loaded, baseline: loaded.lexical },
+      lostOnFirst,
+    );
+
+    session.patchLexical(body('One'));
+    await session.dispatchExplicit();
+    session.patchLexical(body('Two'));
+    expect(await session.dispatchExplicit()).toMatchObject({ kind: 'saved' });
+
+    expect(state.updates[0].payload.updated_at).toBeNull();
+    expect(state.updates[1].payload.updated_at).toBe(LANDED_AT);
+  });
+
+  it('lands the post clean from the read when nothing was typed since', async () => {
+    const { session, state } = sessionHarness(
+      { record: record(), baseline: record().lexical },
+      lostOnFirst,
+    );
+
+    session.patchLexical(body('One'));
+    session.commitField();
+    await vi.waitFor(() => expect(session.getState().kind).toBe('error'));
+    expect(session.isDirty()).toBe(true);
+
+    session.commitField();
+    await vi.waitFor(() => expect(session.getState().kind).toBe('idle'));
+
+    expect(state.updates).toHaveLength(1);
+    expect(session.isDirty()).toBe(false);
+    expect(session.getSaveSnapshot().updatedAt).toBe(LANDED_AT);
+  });
+
+  it.each<[string, Partial<EditorRecord>]>([
+    ['a title', { title: 'Their title' }],
+    ['a status', { status: 'published' }],
+    ['tags it never sent', { tags: [tag({ id: 'tag1', name: 'News', slug: 'news' })] }],
+  ])(
+    'keeps the token it held when the server copy also carries %s from someone else',
+    async (_, theirs) => {
+      const { session, state } = sessionHarness(
+        { record: record(), baseline: record().lexical },
+        {
+          ...lostOnFirst,
+          read: (acknowledged) => Promise.resolve({ ...acknowledged, ...theirs } as EditorRecord),
+        },
+      );
+
+      session.patchLexical(body('One'));
+      await session.dispatchExplicit();
+      session.patchLexical(body('Two'));
+      await session.dispatchExplicit();
+
+      expect(state.updates[1].payload.updated_at).toBe(LOADED_AT);
+    },
+  );
+
+  it('keeps the token it held when the write never landed, and reads back only once', async () => {
+    const { session, state, read } = sessionHarness(
+      { record: record(), baseline: record().lexical },
+      { failSave: (saveCount) => saveCount === 1 },
+    );
+
+    session.patchLexical(body('One'));
+    await session.dispatchExplicit();
+    session.patchLexical(body('Two'));
+    await session.dispatchExplicit();
+    session.patchLexical(body('Three'));
+    await session.dispatchExplicit();
+
+    expect(state.updates[1].payload.updated_at).toBe(LOADED_AT);
+    expect(read).toHaveBeenCalledTimes(1);
+  });
+
+  it('fails the next save with the read’s error and sends nothing until a read answers', async () => {
+    let reads = 0;
+    const { session, state } = sessionHarness(
+      { record: record(), baseline: record().lexical },
+      {
+        ...lostOnFirst,
+        read: (acknowledged) => {
+          reads += 1;
+          return reads === 1
+            ? Promise.reject(new ServerUnreachableError())
+            : Promise.resolve(acknowledged);
+        },
+      },
+    );
+
+    session.patchLexical(body('One'));
+    await session.dispatchExplicit();
+    session.patchLexical(body('Two'));
+    expect(await session.dispatchExplicit()).toMatchObject({
+      kind: 'failed',
+      error: { kind: 'transport' },
+    });
+    expect(state.updates).toHaveLength(1);
+
+    expect(await session.dispatchExplicit()).toMatchObject({ kind: 'saved' });
+    expect(state.updates[1].payload.updated_at).toBe(LANDED_AT);
   });
 });
