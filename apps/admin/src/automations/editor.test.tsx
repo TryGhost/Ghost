@@ -716,6 +716,11 @@ describe('AutomationEditor', () => {
       },
     );
     const root = createRoot(container);
+    // The assertion reads the first commit, before effects run, so this
+    // renders outside act on purpose; tell React so it doesn't warn.
+    const actEnvironment = globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean };
+    const wasActEnvironment = actEnvironment.IS_REACT_ACT_ENVIRONMENT;
+    actEnvironment.IS_REACT_ACT_ENVIRONMENT = false;
 
     flushSync(() => {
       root.render(<RouterProvider router={router} />);
@@ -726,6 +731,7 @@ describe('AutomationEditor', () => {
     } finally {
       root.unmount();
       container.remove();
+      actEnvironment.IS_REACT_ACT_ENVIRONMENT = wasActEnvironment;
     }
   });
 

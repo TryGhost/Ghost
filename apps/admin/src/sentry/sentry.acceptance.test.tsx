@@ -2,6 +2,7 @@ import * as Sentry from '@sentry/react';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import {
+  allowConsoleError,
   type EndpointCapture,
   configResponse,
   fakeAdminEndpoint,
@@ -98,6 +99,8 @@ describe('Sentry', () => {
   });
 
   it('reports handled errors the user was not shown', async () => {
+    // The handled errors this test provokes are logged as well as reported.
+    allowConsoleError('ZodError');
     fakeMembers([member({ name: 'First Member' })]);
     // The newsletters schema rejects this response
     fakeAdminEndpoint('GET', /^\/newsletters\//, { newsletters: [{}] });

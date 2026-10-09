@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { userEvent } from 'vitest/browser';
 
 import {
+  allowConsoleError,
   fakeAdminEndpoint,
   fakeMemberCustomFields,
   fakeMembers,
@@ -376,6 +377,8 @@ describe('Import members custom fields', () => {
   });
 
   it('says the field exists when the response carries nothing to map onto', async () => {
+    // The import reports the empty create response it recovers from.
+    allowConsoleError('Custom field create returned no field');
     fakeCustomFieldsWorld();
     // A 2xx the client cannot use: an older bundle against a newer server, a proxy that
     // reshapes the envelope. The field is created either way, so the form must not claim

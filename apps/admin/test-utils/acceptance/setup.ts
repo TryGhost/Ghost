@@ -1,6 +1,7 @@
 import { afterEach, beforeAll } from 'vitest';
 import { cleanup } from 'vitest-browser-react';
 import { toast } from 'sonner';
+import { APIError } from '@tryghost/admin-x-framework/errors';
 
 import './matchers';
 import { defaultBootResolver, defaultBootRoutes } from './boot';
@@ -13,9 +14,38 @@ import {
 } from './worker';
 import { resetDeclaredResources } from './resources';
 import { guardFrameNavigations, resetFakeFrameOrigins } from './frames';
+import { installConsoleErrorGate } from '@test-utils/console-error-gate';
 
 // At import, before the spec module (and the app) loads.
 trackIssuedRequests();
+
+// The app logs each failed request it handles. The fake API fails a request
+// only where a spec declares the failure (an undeclared one is a 418, which
+// fails the test on its own), so those logs are the app working as intended.
+const isLoggedRequestFailure = (args: unknown[]) =>
+  args.some((arg) => {
+    for (let error = arg; error instanceof Error; error = error.cause) {
+      if (error instanceof APIError) {
+        return true;
+      }
+    }
+    return false;
+  });
+
+// Registered before the cleanup hook below, so it runs after it and also
+// catches errors logged while the app unmounts and requests drain.
+installConsoleErrorGate([
+  isLoggedRequestFailure,
+  // @tanstack/react-virtual rerenders through flushSync from its scroll
+  // observer; when that fires mid-render React skips the flush and warns.
+  // Harmless, and in a dependency.
+  'flushSync was called from inside a lifecycle method',
+  // react-svg-map, behind the analytics locations map, still uses defaultProps.
+  /Support for defaultProps will be removed[\s\S]*react-svg-map/,
+  // Chromium reports a resize observer that re-triggers layout within a frame;
+  // the observers catch up on the next frame.
+  'ResizeObserver loop completed with undelivered notifications',
+]);
 
 beforeAll(async () => {
   // Playwright waits for an element to stop moving before it acts on it, so every

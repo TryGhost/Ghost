@@ -3,6 +3,7 @@ import { userEvent } from 'vitest/browser';
 import { SessionExpiredError } from '@tryghost/admin-x-framework/errors';
 
 import {
+  allowConsoleError,
   currentRoute,
   currentUserResponse,
   fakeAdminEndpoint,
@@ -122,6 +123,8 @@ describe('Signup card labels', () => {
   });
 
   it('stays in the editor when a later labels page finds no session', async () => {
+    // Listening for the rejection below makes Vitest log it instead of failing the test.
+    allowConsoleError('Unhandled rejection: Error: You are not authorised to make this request.');
     const labelsApi = openSignupPost();
     const secondPageApi = fakeAdminEndpoint(
       'GET',

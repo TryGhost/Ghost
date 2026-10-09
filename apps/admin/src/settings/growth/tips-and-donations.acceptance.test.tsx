@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
 
 import {
+  allowConsoleError,
   currentRoute,
   fakeEditSettings,
   fakeSettingsScreens,
@@ -87,6 +88,10 @@ describe('Tips and donations settings', () => {
   });
 
   it('shows the section error boundary for malformed donation settings', async () => {
+    // The section's error boundary reports the error it catches.
+    allowConsoleError('ZodError');
+    allowConsoleError('The above error occurred in the <TipsAndDonations> component');
+    allowConsoleError('In component:');
     fakeSettingsScreens();
     await renderAdminApp(
       '/settings',

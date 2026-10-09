@@ -3,6 +3,7 @@ import { page, userEvent } from 'vitest/browser';
 import { render } from 'vitest-browser-react';
 
 import {
+  allowConsoleError,
   InAppProviders,
   fakeAdminEndpoint,
   fakeEmailPreview,
@@ -998,6 +999,8 @@ describe('Publish flow', () => {
   });
 
   it('recovers when the publish dispatcher rejects unexpectedly', async () => {
+    // The flow reports the rejection it recovers from.
+    allowConsoleError('The save engine stopped');
     const dispatch = vi.fn(() => Promise.reject(new Error('The save engine stopped')));
     await renderPublishFlow({ dispatch });
 
@@ -1076,6 +1079,8 @@ describe('Publish flow', () => {
   });
 
   it('tells an email count that failed apart from a reached email limit', async () => {
+    // The flow reports the failed count it recovers from.
+    allowConsoleError('LimitCheckError: Network request failed');
     let attempt = 0;
     const checkSendingLimit = vi.fn(() => {
       attempt += 1;
@@ -1100,6 +1105,8 @@ describe('Publish flow', () => {
   });
 
   it('blocks on an unreadable limit and retries it safely', async () => {
+    // The flow reports the unreadable limit it recovers from.
+    allowConsoleError('Settings are offline');
     let attempt = 0;
     const refreshSettings = vi.fn(() => {
       attempt += 1;
@@ -1716,6 +1723,8 @@ describe('Update flow', () => {
   });
 
   it('recovers when the revert dispatcher rejects unexpectedly', async () => {
+    // The flow reports the rejection it recovers from.
+    allowConsoleError('The revert stopped');
     const dispatch = vi.fn(() => Promise.reject(new Error('The revert stopped')));
     const onClose = vi.fn();
 

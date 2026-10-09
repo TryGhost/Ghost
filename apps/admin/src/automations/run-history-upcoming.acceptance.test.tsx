@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { page } from 'vitest/browser';
-import { fakeAdminEndpoint, renderAdminApp } from '@test-utils/acceptance';
+import { allowConsoleError, fakeAdminEndpoint, renderAdminApp } from '@test-utils/acceptance';
 import { settleRequests } from '@test-utils/acceptance/worker';
 import type { AutomationDetail } from '@tryghost/admin-x-framework/api/automations';
 import {
@@ -156,6 +156,9 @@ describe('Upcoming steps in active run history', () => {
   });
 
   it('retries an upcoming email mapping error without losing the editor draft', async () => {
+    // The run history's error boundary reports the mapping error it catches.
+    allowConsoleError("Expected property name or '}' in JSON");
+    allowConsoleError('The above error occurred in the <HistoryFlow> component');
     setup();
     fakeAdminEndpoint('GET', '/automations/first/', { automations: [savedPlan()] });
     const historyRequest = respond(activeHistory());

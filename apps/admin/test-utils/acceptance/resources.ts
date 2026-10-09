@@ -304,6 +304,19 @@ export const fakePosts = defineResource<Post>({
 });
 
 /**
+ * Serves each post or page only to the list screen's query for its own status.
+ * The screen runs one query per status bucket and the fake doesn't implement
+ * NQL, so a plain declaration would list every post once per bucket.
+ */
+export function inStatusBuckets(posts: Post[] | (() => Post[])): (query: BrowseQuery) => Post[] {
+  return ({ filter }) => {
+    const declared = typeof posts === 'function' ? posts() : posts;
+    const statuses = filter?.match(/status:(\[[^\]]*\]|[\w-]+)/)?.[1];
+    return statuses ? declared.filter((post) => statuses.includes(post.status)) : declared;
+  };
+}
+
+/**
  * Pages list fake (passthrough). The pages list screen browses this endpoint
  * once per status bucket, exactly as the posts one does — declare the response
  * (a function of the query, if a test needs each bucket to differ) and assert

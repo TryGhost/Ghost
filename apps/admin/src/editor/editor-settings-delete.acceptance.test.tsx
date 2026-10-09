@@ -14,6 +14,7 @@ import {
   fakePages,
   fakePosts,
   fakePostsListScreen,
+  inStatusBuckets,
   post,
   renderAdminApp,
   settleTransitions,
@@ -428,7 +429,7 @@ describe('Post settings delete', () => {
     fakePostsListScreen();
     const row = post({ id: POST_ID, title: 'Hello from React', status: 'draft' });
     // The list the delete returns to, which stops serving the post once it is gone.
-    const listApi = fakePosts(() => (deleteApi.requests.length ? [] : [row]));
+    const listApi = fakePosts(inStatusBuckets(() => (deleteApi.requests.length ? [] : [row])));
 
     await renderAdminApp('/posts', FLAG_ON);
     await expect.element(postsListScreen.listItems().first()).toHaveTextContent('Hello from React');

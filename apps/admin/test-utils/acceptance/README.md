@@ -62,6 +62,12 @@ When your area calls a new external origin, add it to `EXTERNAL_URL_BLOCKLIST` i
 
 **THE RULE:** fakes never implement NQL — declare the response and assert the outgoing filter string instead (see the doc comment in `resources.ts`).
 
+The posts and pages lists run one query per status, so a plain `fakePosts([...])` lists every post once per status. Wrap the posts in `inStatusBuckets([...])` when a spec renders an unscoped list.
+
+## Console errors
+
+A `console.error` during a test fails it in `afterEach`, the same way an unhandled request does: React's warnings, error boundaries and the app's own error logging all land there. The app's logs of request failures a spec declared are expected and pass. When a test provokes an error on purpose, declare it with `allowConsoleError(pattern)` (a substring or RegExp of the logged text) and a one-line comment saying who logs it. Shared exceptions for dependencies live, commented, in `setup.ts`. Specs that wrap a gesture in React's `act` take it from the harness, which marks the page an act environment while it runs.
+
 ## The boot table
 
 The shell requests handled by default (`boot.ts`): `browseSettings`, `browseConfig`, `browseSite`, `browseMe`, `browseMembersCount`, `browseMemberCustomFieldDefinitions`, `browseNotifications`, `browseActiveTheme`, `browseThemes`, `editUserPreferences`. A **boot override** replaces the response of one named entry for one test (the entry's method/path stay fixed):

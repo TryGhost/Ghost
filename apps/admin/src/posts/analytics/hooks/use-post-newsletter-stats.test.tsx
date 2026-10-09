@@ -1,6 +1,6 @@
 import { test as baseTest, describe, expect, vi } from 'vitest';
 import { HttpResponse, http } from 'msw';
-import { act, cleanup, renderHook, waitFor } from '@testing-library/react';
+import { act, cleanup, getConfig, renderHook, waitFor } from '@testing-library/react';
 import { newsletterBasicStat, newsletterClickStat, post, type Post } from '@tryghost/test-data';
 import { focusManager, type QueryClient } from '@tanstack/react-query';
 import type { SetupServer } from 'msw/node';
@@ -332,6 +332,11 @@ describe('link visibility', () => {
   );
 });
 
+// vi.waitFor with React's act environment off, as Testing Library's waitFor
+// does. That waitFor polls on setInterval, which these tests fake.
+const waitForPoll = (assertion: () => void) =>
+  getConfig().asyncWrapper(() => vi.waitFor(assertion));
+
 describe('newsletter polling', () => {
   let requests = 0;
 
@@ -373,19 +378,19 @@ describe('newsletter polling', () => {
       { wrapper },
     );
 
-    await vi.waitFor(() => expect(result.current.newsletter.stats.clicked).toBe(1));
+    await waitForPoll(() => expect(result.current.newsletter.stats.clicked).toBe(1));
     expect(requests).toBe(1);
 
     await act(() => vi.advanceTimersByTimeAsync(5000));
 
-    await vi.waitFor(() => expect(result.current.newsletter.stats.clicked).toBe(2));
+    await waitForPoll(() => expect(result.current.newsletter.stats.clicked).toBe(2));
     expect(result.current.post?.count?.positive_feedback).toBe(2);
     expect(requests).toBe(2);
   });
 
   test('pauses while unfocused and stops when unmounted', async ({ wrapper }) => {
     const { result, unmount } = renderHook(() => usePostNewsletterStats(), { wrapper });
-    await vi.waitFor(() => expect(result.current.stats.opened).toBe(1));
+    await waitForPoll(() => expect(result.current.stats.opened).toBe(1));
 
     act(() => focusManager.setFocused(false));
     await act(() => vi.advanceTimersByTimeAsync(15000));
@@ -403,7 +408,7 @@ describe('newsletter polling', () => {
   }) => {
     vi.spyOn(console, 'error').mockImplementation(() => {});
     const { result } = renderHook(() => usePostNewsletterStats(), { wrapper });
-    await vi.waitFor(() => expect(result.current.stats.opened).toBe(1));
+    await waitForPoll(() => expect(result.current.stats.opened).toBe(1));
 
     server.use(
       http.get(
@@ -416,11 +421,11 @@ describe('newsletter polling', () => {
       ),
     );
     await act(() => vi.advanceTimersByTimeAsync(5000));
-    await vi.waitFor(() => expect(requests).toBe(2));
+    await waitForPoll(() => expect(requests).toBe(2));
     expect(result.current.stats.opened).toBe(1);
 
     await act(() => vi.advanceTimersByTimeAsync(5000));
-    await vi.waitFor(() => expect(result.current.stats.opened).toBe(3));
+    await waitForPoll(() => expect(result.current.stats.opened).toBe(3));
   });
 
   test('pauses link polling while requested', async ({ server, wrapper }) => {
@@ -431,7 +436,7 @@ describe('newsletter polling', () => {
       ({ pauseLinkPolling }) => usePostNewsletterStats({ pauseLinkPolling }),
       { wrapper, initialProps: { pauseLinkPolling: false } },
     );
-    await vi.waitFor(() => expect(fetchLinks).toHaveBeenCalledOnce());
+    await waitForPoll(() => expect(fetchLinks).toHaveBeenCalledOnce());
 
     rerender({ pauseLinkPolling: true });
     await act(() => vi.advanceTimersByTimeAsync(15000));
@@ -439,6 +444,6 @@ describe('newsletter polling', () => {
 
     rerender({ pauseLinkPolling: false });
     await act(() => vi.advanceTimersByTimeAsync(5000));
-    await vi.waitFor(() => expect(fetchLinks).toHaveBeenCalledTimes(2));
+    await waitForPoll(() => expect(fetchLinks).toHaveBeenCalledTimes(2));
   });
 });

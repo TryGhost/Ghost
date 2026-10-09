@@ -36,6 +36,9 @@ export interface UseLimiterOptions {
   requestOptions?: Pick<RequestOptions, 'sessionExpiryRedirect'>;
 }
 
+// One empty list for every render: a fresh one would change the limiter on each render.
+const NO_STAFF: never[] = [];
+
 /** Sums the recipients of the emails sent since the period started. */
 function countEmailRecipients(emails: EmailsResponseType['emails']): number {
   return emails.reduce((total, email) => total + (email.email_count ?? 0), 0);
@@ -45,12 +48,14 @@ export const useLimiter = ({ limits: wanted, requestOptions }: UseLimiterOptions
   const { data: configData } = useBrowseConfig({ refetchOnMount: false });
   const config = configData?.config;
   const wantsStaff = !wanted || wanted.includes('staff');
-  const { data: { users } = { users: [] }, isLoading: usersLoading } = useBrowseUsers({
+  const { data: usersData, isLoading: usersLoading } = useBrowseUsers({
     enabled: wantsStaff,
   });
-  const { data: { invites } = { invites: [] }, isLoading: invitesLoading } = useBrowseInvites({
+  const users = usersData?.users ?? NO_STAFF;
+  const { data: invitesData, isLoading: invitesLoading } = useBrowseInvites({
     enabled: wantsStaff,
   });
+  const invites = invitesData?.invites ?? NO_STAFF;
   const { data: { roles } = {}, isLoading: rolesLoading } = useBrowseRoles({
     enabled: wantsStaff,
   });
