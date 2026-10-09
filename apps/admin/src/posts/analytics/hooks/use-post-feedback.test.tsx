@@ -6,6 +6,7 @@ import type { SetupServer } from 'msw/node';
 import { serverFixture } from '@test-utils/fixtures/msw';
 import { queryClientFixtures, type TestWrapperComponent } from '@test-utils/fixtures/query-client';
 import { usePostFeedback } from '@/posts/analytics/hooks/use-post-feedback';
+import { allowConsoleError } from '@test-utils/console-error-gate';
 
 const FEEDBACK_API_URL = '/ghost/api/admin/feedback/*';
 
@@ -93,6 +94,8 @@ describe('usePostFeedback', () => {
   });
 
   test('handles server errors gracefully', async ({ server, wrapper }) => {
+    // The framework's default query error handler logs the failed read.
+    allowConsoleError('Something went wrong while loading feedback');
     server.use(
       http.get(FEEDBACK_API_URL, () =>
         HttpResponse.json({ error: 'Server error' }, { status: 500 }),

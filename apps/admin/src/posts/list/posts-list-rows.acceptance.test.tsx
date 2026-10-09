@@ -8,6 +8,7 @@ import {
   fakePages,
   fakePosts,
   fakePostsListScreen,
+  inStatusBuckets,
   post,
   renderAdminApp,
   settingsResponse,
@@ -40,14 +41,16 @@ describe('Posts list rows', () => {
   });
 
   it('shows the title, byline, primary tag and status', async () => {
-    fakePosts([
-      post({
-        title: 'A published post',
-        status: 'published',
-        authors: [{ id: 'a1', name: 'Ada Lovelace' }],
-        primary_tag: tag({ name: 'Engineering' }),
-      }),
-    ]);
+    fakePosts(
+      inStatusBuckets([
+        post({
+          title: 'A published post',
+          status: 'published',
+          authors: [{ id: 'a1', name: 'Ada Lovelace' }],
+          primary_tag: tag({ name: 'Engineering' }),
+        }),
+      ]),
+    );
     await renderAdminApp('/posts');
 
     const row = postsListScreen.listItems().first();
@@ -73,13 +76,15 @@ describe('Posts list rows', () => {
 
   // The wording that would not survive a visual check.
   it("says a published post's newsletter failed", async () => {
-    fakePosts([
-      post({
-        title: 'Failed send',
-        status: 'published',
-        email: { status: 'failed', email_count: 10, opened_count: 0 },
-      }),
-    ]);
+    fakePosts(
+      inStatusBuckets([
+        post({
+          title: 'Failed send',
+          status: 'published',
+          email: { status: 'failed', email_count: 10, opened_count: 0 },
+        }),
+      ]),
+    );
     await renderAdminApp('/posts');
 
     await expect
@@ -105,7 +110,7 @@ describe('Posts list rows', () => {
 
   it('links a row to the editor', async () => {
     const target = post({ title: 'Editable', status: 'draft' });
-    fakePosts([target]);
+    fakePosts(inStatusBuckets([target]));
     await renderAdminApp('/posts');
 
     await expect
@@ -160,7 +165,7 @@ describe('Posts list rows', () => {
 
   it('links a page row to the page editor', async () => {
     const target = post({ title: 'A page', status: 'draft' });
-    fakePages([target]);
+    fakePages(inStatusBuckets([target]));
     await renderAdminApp('/pages');
 
     await expect

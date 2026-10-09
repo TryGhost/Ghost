@@ -1,4 +1,5 @@
 /** Acceptance-harness public surface — see README.md for the spec anatomy. */
+export { act } from './act';
 export { authToken, fakeSetupStatus, plainText, signedOut } from './auth';
 export { fakeAnalyticsOverview } from './analytics';
 export {
@@ -45,6 +46,7 @@ export {
   fakeThemeUpload,
   fakeTiers,
   fakeUsers,
+  inStatusBuckets,
 } from './resources';
 export type {
   BrowseQuery,
@@ -83,6 +85,7 @@ export { fakeAdminStats } from './stats';
 export { fakeFrameOrigin } from './frames';
 export { unsavedChangesGuarded } from './unsaved-changes-guard';
 export { dragByPointer, settleTransitions, settleAnimations } from './pointer';
+export { allowConsoleError } from '@test-utils/console-error-gate';
 
 // Test-data re-exports, so a spec needs a single import surface.
 export {

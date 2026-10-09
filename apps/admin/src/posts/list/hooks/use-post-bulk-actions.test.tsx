@@ -1,6 +1,6 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { renderHook } from '@testing-library/react';
+import { act, renderHook } from '@testing-library/react';
 import { usePostBulkActions, type BulkActionSnapshot } from './use-post-bulk-actions';
 import type { PostListItem } from '@/posts/list/hooks/use-posts-list';
 import type { ReactNode } from 'react';
@@ -91,7 +91,7 @@ describe('usePostBulkActions cache patching', () => {
     );
     const result = renderBulkActions();
 
-    await result.current.run('delete', snapshot());
+    await act(() => result.current.run('delete', snapshot()));
 
     const bucket = readBucket(queryClient, PUBLISHED_FILTER);
     expect(bucket?.pages[0].posts.map((post) => post.id)).toEqual(['p2']);
@@ -109,15 +109,17 @@ describe('usePostBulkActions cache patching', () => {
     );
     const result = renderBulkActions();
 
-    await result.current.run(
-      'delete',
-      snapshot({
-        filter: `(${PUBLISHED_FILTER})+id:-[p2]`,
-        posts: [listPost('p1', 'published')],
-        count: 39,
-        isSingle: false,
-        inverted: true,
-      }),
+    await act(() =>
+      result.current.run(
+        'delete',
+        snapshot({
+          filter: `(${PUBLISHED_FILTER})+id:-[p2]`,
+          posts: [listPost('p1', 'published')],
+          count: 39,
+          isSingle: false,
+          inverted: true,
+        }),
+      ),
     );
 
     const bucket = readBucket(queryClient, PUBLISHED_FILTER);
@@ -137,7 +139,7 @@ describe('usePostBulkActions cache patching', () => {
     );
     const result = renderBulkActions();
 
-    await result.current.run('unpublish', snapshot());
+    await act(() => result.current.run('unpublish', snapshot()));
 
     const bucket = readBucket(queryClient, PUBLISHED_FILTER);
     expect(bucket?.pages[0].posts.map((post) => post.id)).toEqual(['p2']);
@@ -152,9 +154,11 @@ describe('usePostBulkActions cache patching', () => {
     seedBucket(queryClient, `${DRAFT_FILTER}+featured:true`, [listPost('p1', 'draft')], 5);
     const result = renderBulkActions();
 
-    await result.current.run(
-      'delete',
-      snapshot({ bucketFilters: [DRAFT_FILTER], posts: [listPost('p1', 'draft')] }),
+    await act(() =>
+      result.current.run(
+        'delete',
+        snapshot({ bucketFilters: [DRAFT_FILTER], posts: [listPost('p1', 'draft')] }),
+      ),
     );
 
     expect(readBucket(queryClient, DRAFT_FILTER)?.pages[0].posts).toEqual([]);

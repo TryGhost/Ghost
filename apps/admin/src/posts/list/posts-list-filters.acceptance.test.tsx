@@ -6,6 +6,7 @@ import {
   fakeAdminEndpoint,
   fakePosts,
   fakePostsListScreen,
+  inStatusBuckets,
   post,
   renderAdminApp,
   staffRole,
@@ -45,7 +46,7 @@ describe('Posts list filters', () => {
   // semantics for `visibility` filters — so declare this one explicitly
   // rather than teaching a fake to run NQL.
   it('resolves a tag slug in the URL to its name', async () => {
-    fakePosts([post({ title: 'Tagged', status: 'published' })]);
+    fakePosts(inStatusBuckets([post({ title: 'Tagged', status: 'published' })]));
     fakeAdminEndpoint('GET', /^\/tags\/\?.*slug/, {
       tags: [tag({ name: 'Engineering', slug: 'engineering' })],
     });
@@ -59,7 +60,7 @@ describe('Posts list filters', () => {
   // is passthrough, so serving Ada from the plain browse too would let this
   // pass with hydration removed entirely.
   it('resolves an author slug in the URL to their name', async () => {
-    fakePosts([post({ title: 'Authored', status: 'published' })]);
+    fakePosts(inStatusBuckets([post({ title: 'Authored', status: 'published' })]));
     fakeAdminEndpoint('GET', /^\/users\/\?.*slug/, {
       users: [staffUser({ name: 'Ada Lovelace', slug: 'ada' })],
     });
@@ -170,7 +171,7 @@ describe('Posts list filters', () => {
     });
 
     it('writes the chosen order to the URL', async () => {
-      fakePosts([post({ title: 'One', status: 'published' })]);
+      fakePosts(inStatusBuckets([post({ title: 'One', status: 'published' })]));
       await renderAdminApp('/posts');
 
       await postsListScreen.sortButton().click();
@@ -181,7 +182,7 @@ describe('Posts list filters', () => {
 
     // "Newest first" is the absence of the param, not a value.
     it('drops the param when returning to the default', async () => {
-      fakePosts([post({ title: 'One', status: 'published' })]);
+      fakePosts(inStatusBuckets([post({ title: 'One', status: 'published' })]));
       await renderAdminApp('/posts?order=published_at+asc');
 
       await postsListScreen.sortButton().click();
