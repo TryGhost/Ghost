@@ -85,6 +85,33 @@ describe('lib/image: image size', function () {
   });
 
   describe('getImageSizeFromUrl', function () {
+    for (const suffix of ['#preview', '?download=true#preview']) {
+      it(`fetches unsupported probe formats when their URL ends with ${suffix}`, async function () {
+        const imageUrl = `https://example.com/image.cur${suffix}`;
+        const fetchExternal = sinon.stub().resolves({ body: GIF1x1 });
+        const imageSize = createImageSize({
+          fetchExternal,
+          probe: sinon.stub().rejects(new Error('Unsupported image format')),
+        });
+
+        const result = await imageSize.getImageSizeFromUrl(imageUrl);
+
+        assertImageObject(result, { url: imageUrl, width: 1, height: 1 });
+        sinon.assert.calledOnce(fetchExternal);
+      });
+    }
+
+    it('does not use a query parameter as the image extension', async function () {
+      const imageUrl = 'https://example.com/image?filename=download.cur';
+      const probeStub = sinon.stub().resolves({ width: 1, height: 1 });
+      const imageSize = createImageSize({ probe: probeStub });
+
+      const result = await imageSize.getImageSizeFromUrl(imageUrl);
+
+      assertImageObject(result, { url: imageUrl, width: 1, height: 1 });
+      sinon.assert.calledOnce(probeStub);
+    });
+
     it('[success] should return image dimensions from probe request for probe-supported extension', async function () {
       const url = 'http://img.stockfresh.com/files/f/feedough/x/11/1540353_20925115.jpg';
       const expectedImageObject = {
