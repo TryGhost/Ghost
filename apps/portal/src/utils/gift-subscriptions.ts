@@ -1,5 +1,5 @@
 // Must match the server-owned catalogue in
-// ghost/core/core/server/services/members/members-api/utils/gift-checkout-offer.js
+// ghost/core/server/services/members/members-api/utils/gift-checkout-offer.js
 // until later customization work makes durations server-provided
 export const GIFT_DURATION_CATALOGUE = [1, 3, 6, 12] as const;
 
@@ -38,6 +38,7 @@ export interface GiftProduct {
 
 // the slice of Portal's site data that gift purchasing reads
 export interface Site {
+  url?: string;
   locale?: string;
   title?: string;
   icon?: string;

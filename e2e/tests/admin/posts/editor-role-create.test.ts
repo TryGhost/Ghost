@@ -132,13 +132,6 @@ async function expectWriterCanCreateAndSave({
 }
 
 test.describe('Ghost Admin - Editor draft ownership', () => {
-  test.use({ labs: { editorReact: true } });
-
-  // Applying the Labs settings uses the Owner fixture before the isolated writer signs in.
-  test.beforeEach(async ({ page }) => {
-    await page.waitForLoadState();
-  });
-
   test('Author creates and saves their own draft, then publishes it', async ({
     browser,
     baseURL,

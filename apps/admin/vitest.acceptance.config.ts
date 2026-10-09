@@ -86,6 +86,9 @@ export default defineConfig({
     // suite. Test files and screen helpers import test-lane modules the
     // browser bundler can't process; vitest serves those itself.
     entries: ['src/**/*.{ts,tsx}', '!src/**/*.test.*', '!src/**/*.screen.ts'],
+    // The harness's MSW (and its graphql dependency) would otherwise load as
+    // ~150 separate modules in every spec file's fresh iframe.
+    include: ['msw', 'msw/browser'],
   },
   resolve: sharedResolve,
   test: {

@@ -174,13 +174,13 @@ jobs:
               - *shared
               - '!.github/CODEOWNERS'
               - 'ghost/**'
-              - '!ghost/core/core/server/data/tinybird/**'
+              - '!ghost/core/server/data/tinybird/**'
               # Unit tests + vitest config are exercised only by job_unit-tests;
               # they never affect the acceptance / legacy / ghost-cli jobs.
-              - '!ghost/core/test/unit/**'
-              - '!ghost/core/vitest.config.ts'
-              - '!ghost/core/test/utils/vitest-setup.ts'
-              # Koenig packages that are runtime deps of ghost/core — changes
+              - '!ghost/test/unit/**'
+              - '!ghost/vitest.config.ts'
+              - '!ghost/test/utils/vitest-setup.ts'
+              # Koenig packages that are runtime deps of ghost — changes
               # here alter server rendering behaviour, so the acceptance /
               # legacy suites must run. Editor-only packages are excluded.
               - 'koenig/**'
@@ -196,8 +196,8 @@ jobs:
             unit-test-globals:
               - 'vitest.config.mjs'
             core-unit-test-globals:
-              - 'ghost/core/vitest.config.ts'
-              - 'ghost/core/test/utils/vitest-*.ts'
+              - 'ghost/vitest.config.ts'
+              - 'ghost/test/utils/vitest-*.ts'
             any-code:
               - '!**/*.md'
               - '!**/*.mdx'
@@ -215,8 +215,8 @@ jobs:
               - '!**/*.mdx'
               - '!.devcontainer/**'
               - '!.vscode/**'
-              - '!ghost/core/test/**'
-              - '!ghost/core/vitest.config.ts'
+              - '!ghost/test/**'
+              - '!ghost/vitest.config.ts'
               - '!koenig/*/test/**'
               - '!apps/admin/src/**/*.test.ts'
               - '!apps/admin/src/**/*.test.tsx'
@@ -626,19 +626,19 @@ jobs:
         run: pnpm --filter ghost run build:assets
 
       - name: Run hyperfine on boot
-        working-directory: ghost/core
+        working-directory: ghost
         run: hyperfine --show-output --warmup 3 'GHOST_CI_SHUTDOWN_AFTER_BOOT=1 node index.js' --export-json boot-perf.json
 
       # Native modules like sharp cost memory in every process, so they should
       # load on first use. The list lives in scripts/lib/boot-modules.js
       - name: Check boot skips lazy-loaded modules
-        working-directory: ghost/core
+        working-directory: ghost
         run: GHOST_CI_SHUTDOWN_AFTER_BOOT=1 node --import ../../scripts/assert-boot-skips-modules.js index.js
 
       - name: Report result
         uses: ./.github/actions/report-boot-benchmark
         with:
-          results-file: ghost/core/boot-perf.json
+          results-file: ghost/boot-perf.json
           series: Benchmark
           metric: Boot time
           title: Boot time (dev tree)
@@ -775,10 +775,10 @@ jobs:
           timezoneLinux: 'America/New_York'
 
       - name: Run unit tests
-        # ghost/core's unit tests run on vitest (see ghost/core/vitest.config.ts);
+        # ghost's unit tests run on vitest (see ghost/vitest.config.ts);
         # other packages run their own test:unit target.
         #
-        # Retried up to 3 attempts: ghost/core's vitest run intermittently
+        # Retried up to 3 attempts: ghost's vitest run intermittently
         # crashes a worker on loaded CI runners — an abnormal process exit,
         # not a reported test failure. nx caches the projects that already
         # passed, so a retry only re-runs the crashed one. Interim stopgap
@@ -789,7 +789,7 @@ jobs:
         # wedge the job until the 6h runner limit. Killing it turns the hang
         # into a retriable failure. A full cold (uncached) run takes ~10min.
         #
-        # On the instrumented leg, ghost/core runs test:ci:unit instead, which
+        # On the instrumented leg, ghost runs test:ci:unit instead, which
         # writes coverage-unit/cobertura-coverage.xml. It's an Nx output, so a
         # cache hit restores the report rather than skipping it. The other
         # projects run test:unit as usual.
@@ -840,13 +840,13 @@ jobs:
             exit 1
           fi
 
-      # Absent when ghost/core wasn't among the affected projects; Codecov
+      # Absent when ghost wasn't among the affected projects; Codecov
       # carries the unit-tests flag forward from the last report instead.
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        if: env.COVERAGE_ENABLED == 'true' && hashFiles('ghost/core/coverage-unit/cobertura-coverage.xml') != ''
+        if: env.COVERAGE_ENABLED == 'true' && hashFiles('ghost/coverage-unit/cobertura-coverage.xml') != ''
         with:
           name: unit-coverage
-          path: ghost/core/coverage-unit/cobertura-coverage.xml
+          path: ghost/coverage-unit/cobertura-coverage.xml
 
       - uses: tryghost/actions/actions/slack-build@475df2e2aff4582e487742ba53bbfd7e46e96bc9 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
@@ -1001,8 +1001,8 @@ jobs:
         with:
           name: e2e-coverage
           path: |
-            ghost/*/coverage-e2e/cobertura-coverage.xml
-            ghost/*/coverage-integration/cobertura-coverage.xml
+            ghost/coverage-e2e/cobertura-coverage.xml
+            ghost/coverage-integration/cobertura-coverage.xml
 
       - uses: tryghost/actions/actions/slack-build@475df2e2aff4582e487742ba53bbfd7e46e96bc9 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
@@ -1099,7 +1099,7 @@ jobs:
           trust-lockfile: 'true'
           # Each matrix leg only Playwright-tests one app, so scope the install to that
           # app's dependency subgraph instead of the whole monorepo (which drags in
-          # ghost/core, ghost-admin and unrelated apps). nx and the app's workspace deps
+          # ghost, ghost-admin and unrelated apps). nx and the app's workspace deps
           # are still installed; the nx project name matches the package name.
           install-args: --filter ${{ matrix.app }}...
           store-cache: 'false'
@@ -1295,7 +1295,7 @@ jobs:
         # --force skips Ghost-CLI's version comparison between the archive and
         # the installed release. Without it this step is coupled to how far the
         # branch has drifted from main: a PR branched before the last release
-        # carries an older ghost/core version than what's on npm, and the CLI
+        # carries an older ghost version than what's on npm, and the CLI
         # refuses with "Version in archive file ... is less than the current
         # active version". Equal versions are just as bad in the other
         # direction — the CLI logs "All up to date!", never installs the
@@ -1373,8 +1373,8 @@ jobs:
         # koenig-lexical, which inject debug IDs into the built bundles. Only
         # shippable builds (main + tags in the canonical repo) get it. The maps
         # are uploaded by job_upload_sourcemaps so Sentry can't block the build.
-        # Builds apps/admin/dist, ghost/core/core/built/admin (asset-delivery),
-        # and ghost/core/core/built/embed-renderer (separate-origin previews).
+        # Builds apps/admin/dist, ghost/core/built/admin (asset-delivery),
+        # and ghost/core/built/embed-renderer (separate-origin previews).
         run: pnpm nx run @tryghost/admin:build
 
       # The built admin and embed renderer are consumed by both job_pack (packed
@@ -1383,12 +1383,12 @@ jobs:
       #
       # --exclude '*.map': sourcemaps are not shipped in the image. Shipping
       # builds (IS_SHIPPING) upload the React Admin and Koenig maps to Sentry
-      # in job_upload_sourcemaps; the Ember admin's maps are not uploaded. ghost/core's
+      # in job_upload_sourcemaps; the Ember admin's maps are not uploaded. ghost's
       # `files` field strips them from the Ghost-CLI archive
       # (!core/built/**/*.map), so excluding them here matches that for the
       # Docker image too.
       - name: Pack admin build
-        run: tar --exclude='*.map' -czf admin-build.tar.gz -C ghost/core/core/built admin embed-renderer
+        run: tar --exclude='*.map' -czf admin-build.tar.gz -C ghost/core/built admin embed-renderer
 
       - name: Upload admin build artifact
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -1474,7 +1474,7 @@ jobs:
           fi
           # Admin's Sentry client reports the server version job_docker bakes
           # into the image.
-          VERSION=$(jq -r .version ghost/core/package.json)
+          VERSION=$(jq -r .version ghost/package.json)
           if [ "$GITHUB_REF_TYPE" != "tag" ]; then
             VERSION="${VERSION}+${GITHUB_SHA:0:7}"
           fi
@@ -1507,7 +1507,7 @@ jobs:
 
       - name: Verify tag matches package.json
         if: startsWith(github.ref, 'refs/tags/v')
-        working-directory: ghost/core
+        working-directory: ghost
         run: |
           PKG_VERSION=$(node -p "require('./package.json').version")
           TAG_VERSION="${GITHUB_REF_NAME#v}"
@@ -1532,10 +1532,10 @@ jobs:
 
       - name: Extract admin build
         # The archive includes core/built/admin and core/built/embed-renderer via
-        # ghost/core's files allowlist.
+        # ghost's files allowlist.
         run: |
-          mkdir -p ghost/core/core/built
-          tar -xzf admin-build.tar.gz -C ghost/core/core/built
+          mkdir -p ghost/core/built
+          tar -xzf admin-build.tar.gz -C ghost/core/built
 
       - name: Build standalone distribution
         # Invoke the pack script directly (not `nx run ghost:archive`, whose
@@ -1550,8 +1550,8 @@ jobs:
         with:
           name: ghost-release-tarball
           path: |
-            ghost/core/ghost-*.tgz
-            !ghost/core/ghost-*-npm.tgz
+            ghost/ghost-*.tgz
+            !ghost/ghost-*-npm.tgz
           retention-days: 7
           if-no-files-found: error
 
@@ -1559,7 +1559,7 @@ jobs:
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: ghost-npm-tarball
-          path: ghost/core/ghost-*-npm.tgz
+          path: ghost/ghost-*-npm.tgz
           retention-days: 7
           if-no-files-found: error
 
@@ -1598,7 +1598,7 @@ jobs:
         # job (the build is in-container), so read the version with jq.
         run: |
           if [ "${{ github.ref_type }}" != "tag" ]; then
-            PKG_VERSION=$(jq -r .version ghost/core/package.json)
+            PKG_VERSION=$(jq -r .version ghost/package.json)
             echo "GHOST_BUILD_VERSION=${PKG_VERSION}+${GITHUB_SHA:0:7}" >> $GITHUB_ENV
           fi
 
@@ -1778,8 +1778,8 @@ jobs:
         # deploy stage excludes core/built entirely, so neither leaks into core and
         # adding them is the only context change between the core and full builds.
         run: |
-          mkdir -p ghost/core/core/built
-          tar -xzf "${RUNNER_TEMP}/admin-artifact/admin-build.tar.gz" -C ghost/core/core/built
+          mkdir -p ghost/core/built
+          tar -xzf "${RUNNER_TEMP}/admin-artifact/admin-build.tar.gz" -C ghost/core/built
 
       - name: Build & push full image
         id: build-full
@@ -1788,7 +1788,7 @@ jobs:
           BUILDKIT_PROGRESS: plain
         with:
           # Same repo-root context as core (admin and embed renderer now present
-          # under ghost/core/core/built, excluded by the deploy stage) so the
+          # under ghost/core/built, excluded by the deploy stage) so the
           # deploy/install/build layers cache-hit from the core build above.
           context: .
           file: Dockerfile.production
@@ -2357,7 +2357,7 @@ jobs:
           trust-lockfile: 'true'
           # The Playwright container runs against the host's bind-mounted node_modules,
           # but only needs @tryghost/e2e's dependency subgraph — not the whole monorepo
-          # (admin, apps, ghost/core). Scope the install to cut shard setup time.
+          # (admin, apps, ghost). Scope the install to cut shard setup time.
           install-args: --filter @tryghost/e2e...
           store-cache: 'false'
 
@@ -2615,21 +2615,17 @@ jobs:
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: e2e-coverage
-
-      - name: Move coverage
-        if: contains(needs.job_acceptance-tests.result, 'success')
-        run: |
-          rsync -av --remove-source-files core/* ghost/core
+          path: ghost
 
       - name: Upload E2E test coverage
         if: contains(needs.job_acceptance-tests.result, 'success')
         uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5 # v7.1.1
         with:
           flags: e2e-tests
-          files: ghost/core/coverage-e2e/cobertura-coverage.xml,ghost/core/coverage-integration/cobertura-coverage.xml
+          files: ghost/coverage-e2e/cobertura-coverage.xml,ghost/coverage-integration/cobertura-coverage.xml
           disable_search: true
 
-      # The unit job only uploads this artifact when ghost/core was among the
+      # The unit job only uploads this artifact when ghost was among the
       # affected projects, so a missing artifact is expected, not an error.
       - name: Restore Unit coverage
         if: contains(needs.job_unit-tests.result, 'success')
@@ -2637,14 +2633,14 @@ jobs:
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: unit-coverage
-          path: ghost/core/coverage-unit
+          path: ghost/coverage-unit
 
       - name: Upload Unit test coverage
-        if: contains(needs.job_unit-tests.result, 'success') && hashFiles('ghost/core/coverage-unit/cobertura-coverage.xml') != ''
+        if: contains(needs.job_unit-tests.result, 'success') && hashFiles('ghost/coverage-unit/cobertura-coverage.xml') != ''
         uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5 # v7.1.1
         with:
           flags: unit-tests
-          files: ghost/core/coverage-unit/cobertura-coverage.xml
+          files: ghost/coverage-unit/cobertura-coverage.xml
           disable_search: true
 
   job_required_tests:

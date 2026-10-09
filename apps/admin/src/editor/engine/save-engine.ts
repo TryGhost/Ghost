@@ -97,7 +97,7 @@ export interface SaveCommand {
   readonly retry?: boolean;
 }
 
-/** A persisted post always carries the server's updated_at; every update sends it for the collision check. */
+/** A persisted post carries the server's updated_at for the collision check, empty while the server holds none. */
 export type PersistedIdentity = { id: string; updatedAt: string } | { id: null; updatedAt: null };
 
 export type SaveSnapshot = PersistedIdentity & {

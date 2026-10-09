@@ -402,7 +402,7 @@ export class GhostManager {
       // Whole-directory mounts covering the backend source graph, rather
       // than enumerating each server-graph workspace package. See the
       // matching rationale in compose.dev.yaml: `pnpm dev` runs in
-      // ghost/core and only its dependency closure is verified against
+      // ghost and only its dependency closure is verified against
       // the image's root node_modules, so the non-server packages these
       // dirs also expose don't trigger a workspace repair, and root
       // node_modules (never mounted) keeps its linux-built native modules.

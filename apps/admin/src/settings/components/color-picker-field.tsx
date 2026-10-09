@@ -201,9 +201,10 @@ const ColorPickerField = ({
           </PopoverTrigger>
         </div>
       </Inline>
+      {/* legacy SettingsModal overlay is z-[1000]; keep the portalled picker above it */}
       <PopoverContent
         align={direction === 'rtl' ? 'end' : 'start'}
-        className="w-auto p-4"
+        className="z-[9999] w-auto p-4"
         onEscapeKeyDown={(event) => event.stopPropagation()}
       >
         <div

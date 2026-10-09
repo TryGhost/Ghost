@@ -26,7 +26,7 @@ backend capability and handle the older-server case separately.
 ## Flag stages
 
 Flags are camelCase keys registered in
-`ghost/core/core/shared/labs.js`:
+`ghost/core/shared/labs.js`:
 
 | List                   | Use                                         | Normal Admin surface                                    |
 | ---------------------- | ------------------------------------------- | ------------------------------------------------------- |
@@ -51,7 +51,7 @@ call site. It is a short cleanup step, not a permanent home for released flags.
 ## Add a flag
 
 1. Add the key to `PRIVATE_FEATURES` or `PUBLIC_BETA_FEATURES` in
-   `ghost/core/core/shared/labs.js`.
+   `ghost/core/shared/labs.js`.
 2. Add the matching toggle to
    `apps/admin/src/settings/advanced/labs/private-features.tsx` or
    `apps/admin/src/settings/advanced/labs/beta-features.tsx`.
@@ -113,12 +113,9 @@ Test the flag boundary and preserve existing behavioral coverage. Styling-only
 changes need visual review, not tests that assert appearance. Keep permanent
 permission and backend capability checks independent of the temporary flag.
 
-The pill-controls milestone is generally available on React Admin routes. Admin
-no longer reads `admin7Pill`; route ownership alone determines Shade's
-`isAdmin7` value. Ember-owned routes retain the legacy appearance, and standalone
-ActivityPub uses Shade's current default. Core temporarily retains `admin7Pill`
-in `GA_FEATURES` so older Admin builds receive an enabled value during independent
-deployments. Remove that GA entry once those older builds are no longer supported.
+The pill-controls milestone is generally available on React Admin routes. Route
+ownership alone determines Shade's `isAdmin7` value. Ember-owned routes retain the
+legacy appearance, and standalone ActivityPub uses Shade's current default.
 
 The `admin7settings` milestone swaps the shell navigation for the Settings
 navigation on desktop. Mobile retains the full-screen Settings takeover, with
@@ -157,9 +154,9 @@ or parse failure keeps the last known good overrides.
 ## Admin session overrides
 
 To preview a flagged Admin feature, add `labs` to the query string inside the
-Admin hash route, for example `/ghost/#/editor/post?labs=editorReact`. Use
-comma-separated names (`?labs=editorReact,billingReact`) or repeated
-parameters (`?labs=editorReact&labs=billingReact`) to enable multiple flags.
+Admin hash route, for example `/ghost/#/members?labs=membersCustomFields`. Use
+comma-separated names (`?labs=membersCustomFields,apps`) or repeated
+parameters (`?labs=membersCustomFields&labs=apps`) to enable multiple flags.
 
 Admin stores the list in `sessionStorage` under `ghost-admin:labs-overrides`.
 It persists across navigation and reloads in the same tab for that browser
@@ -220,12 +217,8 @@ flag defaults off in production. Add explicit flag-off coverage where the old
 path matters. Flags in `GA_FEATURES` default to on in every runtime, including
 tests, until they are removed or overridden by configuration.
 
-The top-level Playwright suite pins `editorReact` on with `labs__editorReact=true`
-in `BASE_GHOST_ENV`. Configuration outranks the stored setting, so
-`test.use({labs: ...})` cannot turn that flag off.
-
 When adding, promoting, or removing a flag, update the affected snapshots from
-`ghost/core/`:
+`ghost/`:
 
 ```bash
 pnpm test:single test/e2e-api/admin/config.test.js -u

@@ -100,6 +100,7 @@ export type PreparedSave =
   | (PreparedWrite & { isCreate: false; payload: EditorEditPayload });
 
 const MISSING_COLLISION_TOKEN = 'Cannot save without the version this post was loaded at.';
+const SAVED_ELSEWHERE = 'A newer version of this post was saved since it was opened.';
 
 function preparedOrInvalid(
   prepared: PreparedSave,
@@ -303,12 +304,11 @@ function isHeldToken(candidate: string | null | undefined, held: string | null):
   );
 }
 
-/** Whether a collision token names a version later than another. */
+/** Whether a collision token names a version later than another; any token is later than none. */
 function isLaterToken(candidate: string | null, than: string | null): boolean {
   return (
     isCollisionToken(candidate) &&
-    isCollisionToken(than) &&
-    Date.parse(candidate) > Date.parse(than)
+    (!than || (isCollisionToken(than) && Date.parse(candidate) > Date.parse(than)))
   );
 }
 
@@ -333,6 +333,9 @@ export function createEditorSession({
   let identity: PersistedIdentity = record
     ? { id: record.id, updatedAt: record.updated_at ?? '' }
     : { id: null, updatedAt: null };
+  // Core allows a post with no updated_at, as imported posts can be, and skips its
+  // collision check for an update without one; the first save stamps it.
+  let requiresUpdatedAt = !record || Boolean(record.updated_at);
   let status: PostStatus = record?.status ?? 'draft';
   let publishedAt: string | null = record?.published_at ?? null;
   // Retain the writer's choice through older saves, even when it matches a refetch.
@@ -758,12 +761,14 @@ export function createEditorSession({
         ),
       );
     }
-    if (!projection.updated_at) {
+    if (!projection.updated_at && (requiresUpdatedAt || newerVersion !== null)) {
       // Without the token the server skips its collision check entirely and the
       // save would overwrite whatever landed in the meantime.
       return Promise.resolve({
         ok: false,
-        error: { kind: 'unknown', message: MISSING_COLLISION_TOKEN },
+        error: requiresUpdatedAt
+          ? { kind: 'unknown', message: MISSING_COLLISION_TOKEN }
+          : { kind: 'conflict', message: SAVED_ELSEWHERE },
       });
     }
     return Promise.resolve(
@@ -771,7 +776,7 @@ export function createEditorSession({
         {
           ...prepared,
           isCreate: false,
-          payload: { ...payload, id, updated_at: projection.updated_at },
+          payload: { ...payload, id, updated_at: projection.updated_at || null },
         },
         invalid,
       ),
@@ -875,6 +880,7 @@ export function createEditorSession({
 
     const created = identity.id === null;
     identity = { id: result.id, updatedAt: result.updatedAt };
+    requiresUpdatedAt = true;
     status = result.status;
     publishedAt = result.post.published_at ?? null;
     if (publishedAtEditedAt <= prepared.builtAtVersion) {

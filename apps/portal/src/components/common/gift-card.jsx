@@ -1,4 +1,22 @@
+import AppContext from '../../app-context';
+import { useContext } from 'react';
 import { t } from '../../utils/i18n';
+
+// Served by Ghost rather than bundled: Portal's UMD build inlines every asset.
+export const getGiftCardTextureUrls = (siteUrl) => {
+  if (!siteUrl) {
+    return [];
+  }
+
+  const base = `${siteUrl.replace(/\/$/, '')}/gift/assets`;
+  return [`${base}/gift-card-orb.webp`, `${base}/gift-card-noise.webp`];
+};
+
+export const preloadGiftCardTextures = (siteUrl) => {
+  getGiftCardTextureUrls(siteUrl).forEach((url) => {
+    new Image().src = url;
+  });
+};
 
 const GiftCard = ({
   cardRef,
@@ -11,12 +29,20 @@ const GiftCard = ({
   siteIcon,
   siteTitle,
 }) => {
+  const { site } = useContext(AppContext);
+  const [orbUrl, noiseUrl] = getGiftCardTextureUrls(site?.url);
   const hasMeta = duration && tierName;
   const hasDetails = name || toName || fromName || giftValue;
 
   return (
     <div className="gh-portal-gift-checkout-card-frame">
-      <div ref={cardRef} className="gh-portal-gift-checkout-card">
+      <div
+        ref={cardRef}
+        className="gh-portal-gift-checkout-card"
+        style={
+          orbUrl && { '--gh-gift-orb': `url("${orbUrl}")`, '--gh-gift-noise': `url("${noiseUrl}")` }
+        }
+      >
         <div className="gh-portal-gift-checkout-card-notch" aria-hidden="true" />
         {hasMeta && (
           <div className="gh-portal-gift-checkout-card-meta">

@@ -18,7 +18,7 @@ const UnsplashSelector: React.FC<UnsplashSelectorModalProps> = ({
   onImageInsert,
 }) => {
   return (
-    <Portal classNames="settings-app">
+    <Portal classNames="settings-app relative z-[9999]">
       <UnsplashSearchModal
         unsplashProviderConfig={unsplashProviderConfig}
         onClose={onClose}

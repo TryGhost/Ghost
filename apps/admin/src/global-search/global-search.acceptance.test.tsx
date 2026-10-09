@@ -38,7 +38,7 @@ describe('Settings search exits', () => {
     fakeAdminEndpoint('GET', /^\/tags\/slug\/first-tag\//, {
       tags: [tag({ name: 'First tag', slug: 'first-tag' })],
     });
-    await renderAdminApp('/settings', { labs: { admin7settings: true, globalSearchReact: true } });
+    await renderAdminApp('/settings', { labs: { admin7settings: true } });
     await settingsScreen.editTitle('Unsaved title');
     await expect.poll(unsavedChangesGuarded).toBe(true);
     await openWithShortcut();

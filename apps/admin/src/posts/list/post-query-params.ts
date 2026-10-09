@@ -178,7 +178,7 @@ export function getBucketOrder(bucket: PostBucket, order?: string | null): strin
  * `include` is omitted on purpose: with neither `include` nor `columns` set,
  * the server's `defaultRelations` attaches exactly what the list renders -
  * tags, authors, authors.roles, email, tiers, newsletter, count.clicks
- * (`ghost/core/.../serializers/input/posts.js:81`). Sending `columns` would
+ * (`ghost/.../serializers/input/posts.js:81`). Sending `columns` would
  * *disable* that, so don't.
  *
  * `formats` is omitted because it makes no difference: `defaultFormat` fills

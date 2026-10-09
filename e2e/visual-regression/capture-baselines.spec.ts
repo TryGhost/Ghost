@@ -40,7 +40,7 @@ const SCREENS: Screen[] = [
   { name: 'members-activity', path: '/ghost/#/members-activity', extraWait: 1000 },
 
   // Editor: the URL override serves the React editor whatever the site's Labs hold
-  { name: 'editor-new-post', path: '/ghost/#/editor/post?labs=editorReact', extraWait: 2000 },
+  { name: 'editor-new-post', path: '/ghost/#/editor/post', extraWait: 2000 },
 
   // Settings (full page — captures top portion)
   { name: 'settings', path: '/ghost/#/settings' },

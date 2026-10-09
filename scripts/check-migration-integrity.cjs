@@ -2,9 +2,9 @@ const fs = require('fs');
 const path = require('path');
 const execFileSync = require('child_process').execFileSync;
 
-const MIGRATIONS_PATH = 'ghost/core/core/server/data/migrations/versions';
+const MIGRATIONS_PATH = 'ghost/core/server/data/migrations/versions';
 const VERSIONS_DIR = '/migrations/versions/';
-const PACKAGE_JSON_PATH = 'ghost/core/package.json';
+const PACKAGE_JSON_PATH = 'ghost/package.json';
 
 /**
  * Run a git command with the given arguments and return its trimmed stdout.
@@ -87,7 +87,7 @@ function addedMigrations(nameStatus) {
 
 /**
  * Resolve the last published stable version from git tags (matching the logic
- * used by ghost/core/bin/create-migration.js). Returns null if no stable tag is
+ * used by ghost/bin/create-migration.js). Returns null if no stable tag is
  * found (e.g. a shallow checkout without tags).
  */
 function getLastPublishedMinor() {
@@ -149,7 +149,7 @@ function checkOrphanedFolders(safeVersion) {
   if (orphaned.length > 0) {
     return (
       `Migration folders exceed package.json version (${safeVersion.raw}, safe: ${safeVersion.safe}): ${orphaned.join(', ')}\n` +
-      'Run `pnpm migrate:create <slug>` from ghost/core (ghost/core/bin/create-migration.js handles the version bump automatically), ' +
+      'Run `pnpm migrate:create <slug>` from ghost (ghost/bin/create-migration.js handles the version bump automatically), ' +
       'or manually bump package.json to the next minor rc.'
     );
   }
@@ -165,7 +165,7 @@ function checkOrphanedFolders(safeVersion) {
  * (e.g. dropping a 6.35/ migration into a PR after v6.35.0 has shipped) will
  * be silently skipped for any user who has already migrated past 6.35.
  *
- * This mirrors ghost/core/bin/create-migration.js, which always targets at
+ * This mirrors ghost/bin/create-migration.js, which always targets at
  * least lastPublishedMinor + 1 when picking the folder for a new migration.
  *
  * Falls back to the package.json safe version as a floor if the last published
@@ -197,7 +197,7 @@ function checkStalePlacements(safeVersion, lastPublishedMinor, baseSha, compareS
 
   for (const file of newFiles) {
     // Extract the version folder from the path
-    // e.g. ghost/core/core/server/data/migrations/versions/6.27/some-migration.js → 6.27
+    // e.g. ghost/core/server/data/migrations/versions/6.27/some-migration.js → 6.27
     const relativePath = file.replace(MIGRATIONS_PATH + '/', '');
     const folderName = relativePath.split('/')[0];
     const folderVersion = parseVersionFolder(folderName);
@@ -227,7 +227,7 @@ function checkStalePlacements(safeVersion, lastPublishedMinor, baseSha, compareS
       `New migration(s) added to already-released version folders:\n${fileList}\n\n` +
       `${versionContext}\n` +
       'Migrations in older folders will not run for users who have already migrated past that version.\n' +
-      'Run `pnpm migrate:create <slug>` from ghost/core to create new migrations in the correct folder.'
+      'Run `pnpm migrate:create <slug>` from ghost to create new migrations in the correct folder.'
     );
   }
 

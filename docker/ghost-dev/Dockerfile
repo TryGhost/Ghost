@@ -39,12 +39,12 @@ COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .pnpmfile.mjs ./
 # whole dir, so adding a patch needs no change here.
 COPY patches patches
 
-# Copy the manifests of the top-level dirs that hold ghost/core's dependency
-# closure — ghost/* (core, i18n, parse-email-address), koenig/* (the kg-*
-# packages), and configs/* (the shared eslint config, a dev dep in the graph).
+# Copy the manifests of the top-level dirs that hold ghost's dependency
+# closure — ghost itself, koenig/* (the kg-* packages), and configs/* (the
+# shared eslint config, a dev dep in the graph).
 # --parents preserves each file's directory structure (plain COPY globs would
 # flatten them); node_modules is excluded by .dockerignore. apps/* and e2e
-# are deliberately omitted: nothing in ghost/core's closure lives there,
+# are deliberately omitted: nothing in ghost's closure lives there,
 # so leaving them out keeps this layer (and the install below) from
 # busting cache when an unrelated frontend package.json changes. `pnpm install
 # --filter "ghost..."` then installs exactly the closure — pnpm's own graph is
@@ -53,7 +53,7 @@ COPY patches patches
 # packages/ — the filtered install will fail loudly with the missing manifest,
 # which is the signal to add that dir here.)
 COPY --parents \
-    ghost/*/package.json \
+    ghost/package.json \
     koenig/*/package.json \
     configs/*/package.json \
     packages/**/package.json \
@@ -70,7 +70,7 @@ COPY .github/hooks .github/hooks
 # Enable corepack so it can read packageManager from package.json and provide pnpm
 RUN corepack enable
 
-# Install ONLY ghost/core's workspace closure (its name is "ghost"; the trailing
+# Install ONLY ghost's workspace closure (its name is "ghost"; the trailing
 # "..." selects it plus every workspace dependency). Deps live in the shared
 # root store; non-selected projects (apps/*, e2e, ...) have their
 # manifests present but are not installed.
@@ -90,9 +90,9 @@ ENV portal__url=/ghost/assets/portal/portal.min.js \
     announcementBar__url=/ghost/assets/announcement-bar/announcement-bar.min.js \
     adminToolbar__url=/ghost/assets/admin-toolbar/admin-toolbar.min.js
 
-# Source code will be mounted from host at /home/ghost/ghost/core
+# Source code will be mounted from host at /home/ghost/ghost
 # This allows the Ghost dev script to pick up file changes for hot-reload
-WORKDIR /home/ghost/ghost/core
+WORKDIR /home/ghost/ghost
 
 ENTRYPOINT ["/home/ghost/entrypoint.sh"]
 CMD ["pnpm", "dev"]

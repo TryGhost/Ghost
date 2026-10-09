@@ -230,9 +230,10 @@ const UrlSuggestionInput: React.FC<UrlSuggestionInputProps> = ({
           onKeyDown={handleKeyDown}
         />
       </PopoverAnchor>
+      {/* legacy SettingsModal overlay is z-[1000]; keep the portalled list above it */}
       <PopoverContent
         align="start"
-        className="max-h-72 w-(--radix-popover-trigger-width) overflow-y-auto p-0"
+        className="z-[9999] max-h-72 w-(--radix-popover-trigger-width) overflow-y-auto p-0"
         // The input anchors the popover rather than triggering it, so Radix
         // treats clicking it as clicking outside and would close the list as
         // it opens

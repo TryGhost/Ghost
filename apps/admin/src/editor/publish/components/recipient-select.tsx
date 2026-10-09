@@ -21,6 +21,8 @@ import {
 export interface SegmentOption {
   /** The NQL segment, e.g. `tier:gold` or `label:vip`. */
   segment: string;
+  /** Other spellings of the same audience, shown and toggled as this option. */
+  aliases?: string[];
   name: string;
   group: string;
 }
@@ -61,7 +63,13 @@ export function RecipientSelect({
   onChange,
 }: RecipientSelectProps) {
   const id = useId();
-  const segments = parseRecipientFilter(filter);
+  const parsed = parseRecipientFilter(filter);
+  const canonicalSegment = (segment: string) =>
+    segmentOptions.find((option) => option.aliases?.includes(segment))?.segment ?? segment;
+  const segments = {
+    ...parsed,
+    specific: [...new Set(parsed.specific.map(canonicalSegment))],
+  };
   // Remembers a selection across an off/on toggle, and keeps the picker open
   // when "Specific people" is checked with nothing selected yet.
   const [forceSpecific, setForceSpecific] = useState(false);

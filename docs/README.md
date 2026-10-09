@@ -40,7 +40,7 @@ Ghost/
 │   ├── portal/         # Member Portal
 │   ├── comments-ui/    # Comments
 │   └── shade/          # Admin design system
-├── ghost/core/        # Ghost server and frontend rendering
+├── ghost/             # Ghost server and frontend rendering
 │   ├── core/server/    # APIs, models, and services
 │   ├── core/frontend/  # Theme rendering and helpers
 │   ├── content/        # Default themes, adapters, and local content

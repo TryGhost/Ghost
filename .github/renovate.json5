@@ -143,7 +143,7 @@
 
     // https://linear.app/ghost/issue/PLA-78
     // https://github.com/TryGhost/Ghost/pull/28180
-    // ghost/core is pinned to knex 2.4.2 and knex-migrator's knex is pinned
+    // ghost is pinned to knex 2.4.2 and knex-migrator's knex is pinned
     // back to the same version via the `knex-migrator>knex` pnpm override
     // (knex-migrator 5.4.x bundles knex 3.x). Migrations are built with
     // core's query builder and executed by knex-migrator's, so the two must
@@ -173,7 +173,7 @@
     // admin's declared deps from extraction entirely: no update PRs, and they
     // stop cluttering the Dependency Dashboard's Detected / Abandoned /
     // Deprecated sections. Because Renovate manages deps per-manifest, anything
-    // admin SHARES with `ghost/core` or `apps/*` is still managed via those
+    // admin SHARES with `ghost` or `apps/*` is still managed via those
     // manifests — so in effect only admin-exclusive deps are omitted. This
     // subsumes the old koenig-editor ignore and the per-package "Disable ember
     // updates" / "disable css" rules (removed from packageRules below).
@@ -236,7 +236,7 @@
 
     // Pin the Node.js runtime — Renovate must not bump it. Node is upgraded
     // manually as one coordinated change: the `engines` range (root +
-    // ghost/core package.json), the `NODE_VERSION` ARG behind the `node`
+    // ghost package.json), the `NODE_VERSION` ARG behind the `node`
     // base image in Dockerfile.production and docker/ghost-dev/Dockerfile,
     // and the `@types/node` cap below all have to move together and be
     // deployed/QA'd as a unit. Left to Renovate this surfaces as recurring

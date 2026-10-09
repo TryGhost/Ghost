@@ -134,7 +134,7 @@ describe('Admin task inputs', () => {
   it('keys browser and unit tests on their runtime and aliased card assets', async () => {
     for (const target of ['test:unit', 'test:acceptance']) {
       const { files, runtime, environment } = await inputs(target);
-      assert.ok(files.includes('ghost/core/core/frontend/src/cards/js/video.js'));
+      assert.ok(files.includes('ghost/core/frontend/src/cards/js/video.js'));
       assert.ok(files.includes('scripts/hash-vite-env.ts'));
       assert.ok(runtime.includes('node scripts/hash-vite-env.ts --directory=apps/admin'));
       assert.ok(runtime.includes('node -v'));
@@ -150,7 +150,7 @@ describe('Admin task inputs', () => {
     const { files } = await inputs('build');
     assert.ok(files.includes('apps/ember-admin/app/routes/posts.js'));
     assert.ok(files.includes('apps/ember-admin/app/styles/components/modals.css'));
-    assert.ok(files.includes('ghost/core/core/frontend/src/cards/js/video.js'));
+    assert.ok(files.includes('ghost/core/frontend/src/cards/js/video.js'));
   });
 
   it('runs the test lanes without Ember builds and caches the acceptance report', async () => {

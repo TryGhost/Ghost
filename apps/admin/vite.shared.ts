@@ -11,7 +11,7 @@ const require = createRequire(import.meta.url);
  * exactly one place.
  */
 
-const GHOST_CARDS_PATH = resolve(__dirname, '../../ghost/core/core/frontend/src/cards');
+const GHOST_CARDS_PATH = resolve(__dirname, '../../ghost/core/frontend/src/cards');
 
 // luxon's exports map hides its subpaths, so the file is located via its manifest.
 const LUXON_ES_BUILD = resolve(
