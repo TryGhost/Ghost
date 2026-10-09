@@ -12,10 +12,21 @@ import ProcessWebmentionJob from '../../../../../core/server/services/mentions/p
 import SendWebmentionsJob from '../../../../../core/server/services/mentions/send-webmentions-job';
 import SendEmailJob from '../../../../../core/server/services/email-service/jobs/send-email-job';
 
-const registerJobHandlers =
-  require('../../../../../core/server/services/jobs-service/register-job-handlers').default;
+const REGISTRATION_PATH =
+  require.resolve('../../../../../core/server/services/jobs-service/register-job-handlers');
+const SIGNING_KEYS_PATH = require.resolve('../../../../../core/server/services/signing-keys');
+const {
+  SigningKeyService,
+} = require('../../../../../core/server/services/signing-keys/signing-key-service');
+const MODULE_PATHS = [REGISTRATION_PATH, SIGNING_KEYS_PATH];
+
+// Load shared dependencies before isolating the root, as the original suite did.
+// Any consumers they import must retain the original signing-keys module.
+require(REGISTRATION_PATH);
 
 describe('register-job-handlers', function () {
+  let originalModules: Map<string, NodeJS.Module | undefined>;
+  let signingKeys: typeof import('../../../../../core/server/services/signing-keys');
   let jobsService: sinon.SinonStubbedInstance<JobsService>;
   let mediaInliner: sinon.SinonStubbedInstance<ExternalMediaInliner>;
   let memberJobs: { cleanTokens: sinon.SinonStub; cleanExpiredComped: sinon.SinonStub };
@@ -42,6 +53,14 @@ describe('register-job-handlers', function () {
   }
 
   beforeEach(function () {
+    // Keep the root uninitialized to prove registration defers access until execution.
+    // Restore complete cache entries so existing consumers retain their original modules.
+    originalModules = new Map(MODULE_PATHS.map((path) => [path, require.cache[path]]));
+    for (const path of MODULE_PATHS) {
+      delete require.cache[path];
+    }
+    signingKeys = require(SIGNING_KEYS_PATH);
+    const registerJobHandlers = require(REGISTRATION_PATH).default;
     jobsService = sinon.createStubInstance(JobsService);
     mediaInliner = sinon.createStubInstance(ExternalMediaInliner);
     memberJobs = {
@@ -75,6 +94,13 @@ describe('register-job-handlers', function () {
 
   afterEach(function () {
     sinon.restore();
+    for (const [path, original] of originalModules) {
+      if (original) {
+        require.cache[path] = original;
+      } else {
+        delete require.cache[path];
+      }
+    }
   });
 
   it('registers site content imports once in the default lane and awaits the injected executor', async function () {
@@ -225,6 +251,45 @@ describe('register-job-handlers', function () {
     const updateCheckHandler = handlerFor('update-check');
 
     await updateCheckHandler(new UpdateCheckJob());
+  });
+
+  it('resolves signing keys when the job runs and awaits its check', async function () {
+    const handler = handlerFor('check-signing-keys');
+    await assert.rejects(handler({}), /Signing keys used before init/);
+
+    const check = sinon.stub(SigningKeyService.prototype, 'check').resolves();
+    await signingKeys.init();
+    check.resetHistory();
+    const ready = Promise.withResolvers<void>();
+    check.returns(ready.promise);
+    let completed = false;
+    const delivery = handler({}).then(() => {
+      completed = true;
+    });
+
+    try {
+      await Promise.resolve();
+      sinon.assert.calledOnceWithExactly(check);
+      sinon.assert.calledOn(check, signingKeys.getInstance());
+      assert.equal(completed, false);
+    } finally {
+      ready.resolve();
+      await Promise.allSettled([delivery]);
+    }
+    await delivery;
+    assert.equal(completed, true);
+  });
+
+  it('propagates the original signing-key check failure from the registered handler', async function () {
+    const check = sinon.stub(SigningKeyService.prototype, 'check').resolves();
+    await signingKeys.init();
+    check.resetHistory();
+    const failure = new Error('Signing-key check failed');
+    check.rejects(failure);
+
+    await assert.rejects(handlerFor('check-signing-keys')({}), (error) => error === failure);
+
+    sinon.assert.calledOnceWithExactly(check);
   });
 
   it('runs process-webmention with the injected mentions controller', async function () {
