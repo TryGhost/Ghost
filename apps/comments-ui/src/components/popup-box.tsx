@@ -1,13 +1,14 @@
 import GenericPopup from './popups/generic-popup';
 import { Pages } from '../pages';
 import { useAppContext } from '../app-context';
-import { useEffect, useState } from 'react';
+import { useEffect, useState } from 'preact/hooks';
+import type { FunctionComponent } from 'preact';
 
 // TODO: figure out what this type should be?
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 type Props = {};
 
-const PopupBox: React.FC<Props> = () => {
+const PopupBox: FunctionComponent<Props> = () => {
   const { popup } = useAppContext();
 
   // To make sure we can properly animate a popup that goes away, we keep a state of the last visible popup

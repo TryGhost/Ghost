@@ -1,14 +1,15 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Form, FormWrapper } from './form';
 import { scrollToElement } from '../../../utils/helpers';
 import { useAppContext } from '../../../app-context';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'preact/hooks';
 import { useEditor } from '../../../utils/hooks';
+import type { FunctionComponent, JSX } from 'preact';
 
 type Props = {
   commentsCount: number;
 };
 
-const MainForm: React.FC<Props> = ({ commentsCount }) => {
+const MainForm: FunctionComponent<Props> = ({ commentsCount }) => {
   const { postId, dispatchAction, t } = useAppContext();
 
   const editorConfig = useMemo(
@@ -22,7 +23,7 @@ const MainForm: React.FC<Props> = ({ commentsCount }) => {
   const { editor, hasContent } = useEditor(editorConfig);
 
   const submit = useCallback(
-    async ({ html }) => {
+    async ({ html }: { html: string }) => {
       // Send comment to server
       await dispatchAction('addComment', {
         post_id: postId,
@@ -107,7 +108,7 @@ const MainForm: React.FC<Props> = ({ commentsCount }) => {
 
   const isOpen = editor?.isFocused || hasContent || hasFocusWithin;
 
-  const handleBlur = useCallback((event: React.FocusEvent<HTMLDivElement>) => {
+  const handleBlur = useCallback((event: JSX.TargetedFocusEvent<HTMLDivElement>) => {
     if (!event.currentTarget.contains(event.relatedTarget as Node | null)) {
       setHasFocusWithin(false);
     }

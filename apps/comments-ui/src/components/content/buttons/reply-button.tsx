@@ -1,5 +1,6 @@
-import ReplyIcon from '../../../images/icons/reply.svg?react';
 import { type Comment, useAppContext } from '../../../app-context';
+import { ReplyIcon } from '../../icons';
+import type { FunctionComponent } from 'preact';
 
 type Props = {
   comment: Comment;
@@ -8,7 +9,12 @@ type Props = {
   openReplyForm: () => void;
 };
 
-const ReplyButton: React.FC<Props> = ({ comment, disabled, isReplying, openReplyForm }) => {
+const ReplyButton: FunctionComponent<Props> = ({
+  comment,
+  disabled,
+  isReplying,
+  openReplyForm,
+}) => {
   const { t, dispatchAction, isMember, hasRequiredTier } = useAppContext();
 
   const canReply = isMember && hasRequiredTier;

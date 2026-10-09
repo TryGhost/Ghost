@@ -1,14 +1,15 @@
 import CommentComponent from './comment';
 import RepliesPagination from './replies-pagination';
 import { type Comment, useAppContext } from '../../app-context';
-import { useRef, useState } from 'react';
+import { useRef, useState } from 'preact/hooks';
+import type { FunctionComponent } from 'preact';
 
 const INITIAL_REPLIES_SHOWN = 3;
 
 export type RepliesProps = {
   comment: Comment;
 };
-const Replies: React.FC<RepliesProps> = ({ comment }) => {
+const Replies: FunctionComponent<RepliesProps> = ({ comment }) => {
   const { commentIdToScrollTo } = useAppContext();
   const initialReplyIds = useRef(new Set(comment.replies.map((reply) => reply.id)));
 

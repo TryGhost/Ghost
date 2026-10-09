@@ -1,8 +1,7 @@
 import CloseButton from './close-button';
-import SpinnerIcon from '../../images/icons/spinner.svg?react';
-import SuccessIcon from '../../images/icons/success.svg?react';
+import { SpinnerIcon, SuccessIcon } from '../icons';
 import { useAppContext } from '../../app-context';
-import { useState } from 'react';
+import { useState } from 'preact/hooks';
 import type { Comment } from '../../app-context';
 
 const ReportPopup = ({ comment }: { comment: Comment }) => {
@@ -33,7 +32,7 @@ const ReportPopup = ({ comment }: { comment: Comment }) => {
     buttonIcon = buttonIcon2;
   }
 
-  const stopPropagation = (event: React.MouseEvent) => {
+  const stopPropagation = (event: MouseEvent) => {
     event.stopPropagation();
   };
 
@@ -41,7 +40,7 @@ const ReportPopup = ({ comment }: { comment: Comment }) => {
     dispatchAction('closePopup', {});
   };
 
-  const submit = (event: React.MouseEvent) => {
+  const submit = (event: MouseEvent) => {
     event.stopPropagation();
 
     setProgress('sending');

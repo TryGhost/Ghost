@@ -1,5 +1,6 @@
 // Ref: https://reactjs.org/docs/context.html
-import React, { useContext } from 'react';
+import { createContext } from 'preact';
+import { useContext } from 'preact/hooks';
 import type { ActionType, Actions, SyncActionType, SyncActions } from './actions';
 import type { AdminApi } from './utils/admin-api';
 import type { Page } from './pages';
@@ -123,7 +124,7 @@ export type AppContextType = EditableAppContext &
 
 // Copy time from AppContextType
 export type DispatchActionType = AppContextType['dispatchAction'];
-export const AppContext = React.createContext<AppContextType>({} as any);
+export const AppContext = createContext<AppContextType>({} as any);
 
 export const AppContextProvider = AppContext.Provider;
 

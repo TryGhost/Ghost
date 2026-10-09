@@ -1,6 +1,6 @@
 import { reactAppConfig } from '@internal/cfg-eslint-react';
 
-export default reactAppConfig({
+const config = reactAppConfig({
   // UMD bundle (no Vite HMR runtime), so the react-refresh rule is meaningless.
   reactRefresh: false,
   // LEGACY: Tailwind v3. Migration to v4 is a multi-day class/theme rewrite +
@@ -26,5 +26,18 @@ export default reactAppConfig({
     // (add dep / wrap in useCallback / suppress with reason). Remove this
     // override after the cleanup PR.
     'react-hooks/exhaustive-deps': 'off',
+    // Preact core sets SVG attributes verbatim, so they must stay kebab-case
+    'react/no-unknown-property': [
+      'error',
+      { ignore: ['fill-rule', 'stroke-linecap', 'stroke-linejoin', 'stroke-width'] },
+    ],
   },
 });
+
+export default [
+  ...config,
+  {
+    // Rendered with Preact; stops eslint-plugin-react from looking for a `react` install
+    settings: { react: { version: '18.3' } },
+  },
+];

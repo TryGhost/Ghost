@@ -1,11 +1,4 @@
-import {
-  type MutableRefObject,
-  type RefObject,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-} from 'react';
+import { type MutableRef, useCallback, useEffect, useMemo, useRef } from 'preact/hooks';
 import { ROOT_DIV_ID } from '../../../utils/constants';
 import {
   parseCommentIdFromHash,
@@ -14,6 +7,7 @@ import {
 } from '../../../utils/helpers';
 import { useAppContext } from '../../../app-context';
 import type { NavActions } from '../../../utils/nav-actions';
+import type { RefObject } from 'preact';
 import type { ThreadWindow } from '../../../utils/thread-graph';
 
 /**
@@ -184,8 +178,8 @@ function useInitialCommentsRootScroll(containerRef: RefObject<HTMLDivElement>) {
 
 function useHashChangeNavigation(
   containerRef: RefObject<HTMLDivElement>,
-  focusedThreadViewCommentId: MutableRefObject<string | null>,
-  instantScrollCommentId: MutableRefObject<string | null>,
+  focusedThreadViewCommentId: MutableRef<string | null>,
+  instantScrollCommentId: MutableRef<string | null>,
   helpers: NavigationHelpers,
 ) {
   const { dispatchAction } = useAppContext();
@@ -341,7 +335,7 @@ function useScrollToMissingCommentNotice(containerRef: RefObject<HTMLDivElement>
 
 function useBackToParentScroll(
   focusedThread: ThreadWindow | null,
-  instantScrollCommentId: MutableRefObject<string | null>,
+  instantScrollCommentId: MutableRef<string | null>,
   helpers: NavigationHelpers,
 ) {
   const { commentIdFromHash } = useAppContext();

@@ -1,8 +1,8 @@
-import React, { useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'preact/hooks';
 import type { CommentsOptions } from '../app-context';
 
 export function useOptions(scriptTag: HTMLElement) {
-  const buildOptions = React.useCallback(() => {
+  const buildOptions = useCallback(() => {
     /**
      * @type {HTMLElement}
      */
@@ -42,9 +42,9 @@ export function useOptions(scriptTag: HTMLElement) {
   }, [scriptTag]);
 
   const initialOptions = useMemo(() => buildOptions(), []);
-  const [options, setOptions] = React.useState<CommentsOptions>(initialOptions);
+  const [options, setOptions] = useState<CommentsOptions>(initialOptions);
 
-  React.useEffect(() => {
+  useEffect(() => {
     const observer = new MutationObserver((mutationList) => {
       if (mutationList.some((mutation) => mutation.type === 'attributes')) {
         setOptions(buildOptions());

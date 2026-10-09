@@ -1,7 +1,7 @@
 import PinnedLabel from '../../../../src/components/content/pinned-label';
 import { AppContext } from '../../../../src/app-context';
 import { buildComment } from '../../../utils/fixtures';
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/preact';
 
 const contextualRender = (ui, { appContext, ...renderOptions } = {}) => {
   const contextWithDefaults = {

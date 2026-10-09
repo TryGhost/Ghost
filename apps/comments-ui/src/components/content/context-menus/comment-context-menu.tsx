@@ -2,15 +2,16 @@ import AdminContextMenu from './admin-context-menu';
 import AuthorContextMenu from './author-context-menu';
 import NotAuthorContextMenu from './not-author-context-menu';
 import { type Comment, useAppContext } from '../../../app-context';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'preact/hooks';
 import { useOutOfViewportClasses } from '../../../utils/hooks';
+import type { FunctionComponent } from 'preact';
 
 type Props = {
   comment: Comment;
   close: () => void;
   toggleEdit: () => void;
 };
-const CommentContextMenu: React.FC<Props> = ({ comment, close, toggleEdit }) => {
+const CommentContextMenu: FunctionComponent<Props> = ({ comment, close, toggleEdit }) => {
   const { member, isAdmin } = useAppContext();
   const isAuthor = member && comment.member?.uuid === member?.uuid;
   const element = useRef<HTMLDivElement>(null);
@@ -61,7 +62,7 @@ const CommentContextMenu: React.FC<Props> = ({ comment, close, toggleEdit }) => 
   }, [close]);
 
   // Prevent closing the context menu when clicking inside of it
-  const stopPropagation = (event: React.SyntheticEvent) => {
+  const stopPropagation = (event: Event) => {
     event.stopPropagation();
   };
 

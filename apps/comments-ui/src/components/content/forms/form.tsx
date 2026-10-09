@@ -1,12 +1,12 @@
-import EditIcon from '../../../images/icons/edit.svg?react';
-import React from 'react';
-import SpinnerIcon from '../../../images/icons/spinner.svg?react';
 import { Avatar } from '../avatar';
 import { type Comment, type OpenCommentForm, useAppContext } from '../../../app-context';
-import { type Editor, EditorContent } from '@tiptap/react';
-import { Transition } from '@headlessui/react';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { EditIcon, SpinnerIcon } from '../../icons';
+import { EditorContent } from './editor-content';
+import { Transition } from '../../transition';
+import { useCallback, useEffect, useRef, useState } from 'preact/hooks';
 import { usePopupOpen } from '../../../utils/hooks';
+import type { ComponentChildren, FunctionComponent } from 'preact';
+import type { Editor } from '@tiptap/core';
 
 export type Progress = 'default' | 'sending' | 'sent' | 'error';
 export type SubmitSize = 'small' | 'medium' | 'large';
@@ -19,12 +19,12 @@ export type FormEditorProps = {
   reduced?: boolean;
   isOpen: boolean;
   editor: Editor | null;
-  submitText: React.ReactNode;
+  submitText: ComponentChildren;
   submitSize: SubmitSize;
   openForm?: OpenCommentForm;
 };
 
-export const FormEditor: React.FC<FormEditorProps> = ({
+export const FormEditor: FunctionComponent<FormEditorProps> = ({
   comment,
   submit,
   progress,
@@ -68,7 +68,7 @@ export const FormEditor: React.FC<FormEditorProps> = ({
   }
 
   const stopIfFocused = useCallback(
-    (event) => {
+    (event: Event) => {
       if (editor?.isFocused) {
         event.stopPropagation();
         return;
@@ -148,7 +148,9 @@ export const FormEditor: React.FC<FormEditorProps> = ({
         className={`min-h-[120px] w-full rounded-lg border border-black/10 bg-white/75 p-2 pb-[68px] font-sans text-md leading-normal transition-all delay-100 duration-150 focus:outline-0 dark:bg-white/10 dark:text-neutral-300 sm:px-3 sm:text-lg ${isOpen ? 'cursor-text' : 'cursor-pointer'}`}
         data-testid="form-editor"
       >
-        <EditorContent editor={editor} onMouseDown={stopIfFocused} onTouchStart={stopIfFocused} />
+        {editor && (
+          <EditorContent editor={editor} onMouseDown={stopIfFocused} onTouchStart={stopIfFocused} />
+        )}
       </div>
       <div className="absolute bottom-1 right-1 flex space-x-4 transition-[opacity] duration-150 sm:bottom-2 sm:right-2">
         {close && (
@@ -185,7 +187,7 @@ type FormHeaderProps = {
   editExpertise: () => void;
 };
 
-const FormHeader: React.FC<FormHeaderProps> = ({
+const FormHeader: FunctionComponent<FormHeaderProps> = ({
   show,
   name,
   expertise,
@@ -252,7 +254,7 @@ type FormProps = {
   comment?: Comment;
   editor: Editor | null;
   submit: (data: { html: string }) => Promise<void>;
-  submitText: React.ReactNode;
+  submitText: ComponentChildren;
   submitSize: SubmitSize;
   close?: () => void;
   isOpen: boolean;
@@ -260,7 +262,7 @@ type FormProps = {
   openForm?: OpenCommentForm;
 };
 
-const Form: React.FC<FormProps> = ({
+const Form: FunctionComponent<FormProps> = ({
   comment,
   submit,
   submitText,
@@ -283,7 +285,7 @@ const Form: React.FC<FormProps> = ({
     isOpen = true;
   }
 
-  const preventIfFocused = (event: React.SyntheticEvent) => {
+  const preventIfFocused = (event: Event) => {
     if (editor?.isFocused) {
       event.preventDefault();
       return;
@@ -329,10 +331,10 @@ type FormWrapperProps = {
   reduced: boolean;
   openForm?: OpenCommentForm;
   layoutVariant?: 'main' | 'reply';
-  children: React.ReactNode;
+  children: ComponentChildren;
 };
 
-const FormWrapper: React.FC<FormWrapperProps> = ({
+const FormWrapper: FunctionComponent<FormWrapperProps> = ({
   editor,
   isOpen,
   reduced,
@@ -356,7 +358,7 @@ const FormWrapper: React.FC<FormWrapperProps> = ({
   }
 
   const openEditDetails = useCallback(
-    (options) => {
+    (options: { expertiseAutofocus?: boolean }) => {
       editor?.commands?.blur();
 
       dispatchAction('openPopup', {

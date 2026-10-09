@@ -1,14 +1,15 @@
 import CommentContextMenu from '../context-menus/comment-context-menu';
-import MoreIcon from '../../../images/icons/more.svg?react';
-import { useState } from 'react';
+import { MoreIcon } from '../../icons';
+import { useState } from 'preact/hooks';
 import type { Comment } from '../../../app-context';
+import type { FunctionComponent } from 'preact';
 
 type Props = {
   comment: Comment;
   toggleEdit: () => void;
 };
 
-const MoreButton: React.FC<Props> = ({ comment, toggleEdit }) => {
+const MoreButton: FunctionComponent<Props> = ({ comment, toggleEdit }) => {
   const [isContextMenuOpen, setIsContextMenuOpen] = useState(false);
 
   const toggleContextMenu = () => {

@@ -1,8 +1,17 @@
 import { type CommentsEditorConfig, getEditorConfig } from './editor';
-import { type Editor, useEditor as useTiptapEditor } from '@tiptap/react';
+import { Editor } from '@tiptap/core';
 import { formatRelativeTime } from './helpers';
 import { useAppContext } from '../app-context';
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useReducer,
+  useRef,
+  useState,
+} from 'preact/hooks';
+import type { RefObject } from 'preact';
 
 /**
  * Execute a callback when a ref is set and unset.
@@ -11,7 +20,7 @@ import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } fr
 export function useRefCallback<T>(setup: (element: T) => void, clear?: (element: T) => void) {
   const ref = useRef<T | null>(null);
   const setRef = useCallback(
-    (node) => {
+    (node: T | null) => {
       if (ref.current && clear) {
         // Make sure to cleanup any events/references added to the last instance
         clear(ref.current);
@@ -49,35 +58,29 @@ export function useRelativeTime(dateString: string) {
 export function useEditor(
   editorConfig: CommentsEditorConfig,
   initialHasContent = false,
-): { editor: Editor | null; hasContent: boolean } {
+): { editor: Editor; hasContent: boolean } {
   const [hasContent, setHasContent] = useState(initialHasContent);
+  const [, rerender] = useReducer((count: number) => count + 1, 0);
 
-  const _editorConfig = useMemo(
-    () => ({
-      ...getEditorConfig(editorConfig),
-    }),
-    [editorConfig],
-  );
+  const editor = useMemo(() => new Editor(getEditorConfig(editorConfig)), [editorConfig]);
 
-  const editor = useTiptapEditor(_editorConfig, [_editorConfig]);
+  useLayoutEffect(() => {
+    // Components read editor state such as isFocused and isEmpty while rendering
+    const checkContent = () => {
+      setHasContent(!editor.isEmpty);
+      rerender(0);
+    };
 
-  useEffect(() => {
-    if (editor) {
-      const checkContent = () => {
-        const editorHasContent = !editor.isEmpty;
-        setHasContent(editorHasContent);
-      };
+    editor.on('update', checkContent);
+    editor.on('transaction', checkContent);
 
-      editor.on('update', checkContent);
-      editor.on('transaction', checkContent);
+    checkContent();
 
-      checkContent();
-
-      return () => {
-        editor.off('update', checkContent);
-        editor.off('transaction', checkContent);
-      };
-    }
+    return () => {
+      editor.off('update', checkContent);
+      editor.off('transaction', checkContent);
+      editor.destroy();
+    };
   }, [editor]);
 
   return {
@@ -104,7 +107,7 @@ type OutOfViewportClasses = {
 };
 // TODO: This does not currently handle the case where the element is outOfViewport for both top&bottom or left&right
 export function useOutOfViewportClasses(
-  ref: React.RefObject<HTMLElement>,
+  ref: RefObject<HTMLElement>,
   classes: OutOfViewportClasses,
 ) {
   // Add/Remove classes directly on the element based on whether it's out of the viewport

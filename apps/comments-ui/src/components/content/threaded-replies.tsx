@@ -1,13 +1,14 @@
-import React, { useMemo } from 'react';
 import ReplyTree from './reply-tree';
 import { buildThreadedReplies } from '../../utils/thread-graph';
+import { useMemo } from 'preact/hooks';
 import type { Comment } from '../../app-context';
+import type { FunctionComponent } from 'preact';
 
 export type ThreadedRepliesProps = {
   comment: Comment;
 };
 
-const ThreadedReplies: React.FC<ThreadedRepliesProps> = ({ comment }) => {
+const ThreadedReplies: FunctionComponent<ThreadedRepliesProps> = ({ comment }) => {
   const threadedReplies = useMemo(() => buildThreadedReplies(comment), [comment]);
 
   return (

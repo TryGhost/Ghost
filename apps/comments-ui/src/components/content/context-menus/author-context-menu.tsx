@@ -1,14 +1,13 @@
-import PencilIcon from '../../../images/icons/pencil.svg?react';
-import React from 'react';
-import TrashIcon from '../../../images/icons/trash.svg?react';
 import { type Comment, useAppContext } from '../../../app-context';
+import { PencilIcon, TrashIcon } from '../../icons';
+import type { FunctionComponent } from 'preact';
 
 type Props = {
   comment: Comment;
   close: () => void;
   toggleEdit: () => void;
 };
-const AuthorContextMenu: React.FC<Props> = ({ comment, close, toggleEdit }) => {
+const AuthorContextMenu: FunctionComponent<Props> = ({ comment, close, toggleEdit }) => {
   const { dispatchAction, t } = useAppContext();
 
   const deleteComment = () => {

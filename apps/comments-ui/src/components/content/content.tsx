@@ -16,7 +16,7 @@ import { ThreadingContext } from '../../utils/threading-context';
 import { getFocusedThread } from '../../utils/thread-graph';
 import { useAppContext, useLabs } from '../../app-context';
 import { useCommentNavigation } from './hooks/use-comment-navigation';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
 
 const MOBILE_MEDIA_QUERY = `(max-width: ${MOBILE_BREAKPOINT - 1}px)`;
 

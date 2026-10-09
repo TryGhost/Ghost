@@ -1,9 +1,8 @@
-import PinIcon from '../../images/icons/pin.svg?react';
-import PinOffIcon from '../../images/icons/pin-off.svg?react';
-import React from 'react';
 import { type Comment, useAppContext } from '../../app-context';
+import { PinIcon, PinOffIcon } from '../icons';
+import type { FunctionComponent, JSX } from 'preact';
 
-const PinnedLabel: React.FC<{ comment: Comment }> = ({ comment }) => {
+const PinnedLabel: FunctionComponent<{ comment: Comment }> = ({ comment }) => {
   const { dispatchAction, isAdmin, t } = useAppContext();
 
   if (!comment.pinned) {
@@ -14,7 +13,7 @@ const PinnedLabel: React.FC<{ comment: Comment }> = ({ comment }) => {
     'inline-flex items-center gap-1 rounded-full border border-amber-300/70 bg-amber-50 px-2 py-0.5 font-sans text-xs font-medium leading-none text-amber-800 dark:border-amber-400/30 dark:bg-amber-400/10 dark:text-amber-100';
 
   if (isAdmin) {
-    const handleUnpinClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    const handleUnpinClick = (event: JSX.TargetedMouseEvent<HTMLButtonElement>) => {
       event.stopPropagation();
       dispatchAction('unpinComment', comment);
     };

@@ -1,8 +1,9 @@
-import ChevronIcon from '../../../images/icons/chevron-down.svg?react';
-import React, { useEffect, useRef, useState } from 'react';
+import { ChevronIcon } from '../../icons';
 import { useAppContext, useOrderChange } from '../../../app-context';
+import { useEffect, useRef, useState } from 'preact/hooks';
+import type { FunctionComponent } from 'preact';
 
-export const SortingForm: React.FC = () => {
+export const SortingForm: FunctionComponent = () => {
   const { order, t } = useAppContext();
   const changeOrder = useOrderChange();
   const [isOpen, setIsOpen] = useState(false);
@@ -51,7 +52,7 @@ export const SortingForm: React.FC = () => {
   }, []);
 
   // Prevent closing the dropdown when clicking inside of it
-  const stopPropagation = (event: React.MouseEvent) => {
+  const stopPropagation = (event: MouseEvent) => {
     event.stopPropagation();
   };
 

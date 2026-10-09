@@ -1,56 +1,119 @@
-import IFrame from './iframe';
-import React, { useCallback, useState } from 'react';
 import styles from '../styles/iframe.css?inline';
+import { Component, render } from 'preact';
+import { useCallback, useEffect, useLayoutEffect, useState } from 'preact/hooks';
+import type { ComponentChildren, JSX, Ref } from 'preact';
 
-type FrameProps = {
-  children: React.ReactNode;
-};
+type LegacyContext = Record<string, unknown>;
 
-type TailwindFrameProps = FrameProps & {
-  style: React.CSSProperties;
+// Preact passes every createContext provider down as legacy context; re-providing it
+// lets useContext inside the frame's separate render root reach the parent's providers.
+class ContextBridge extends Component<{ context: LegacyContext; children: ComponentChildren }> {
+  getChildContext() {
+    return this.props.context;
+  }
+
+  render() {
+    return this.props.children;
+  }
+}
+
+type TailwindFrameProps = {
+  children: ComponentChildren;
+  style: JSX.CSSProperties;
   title: string;
+  iframeRef?: Ref<HTMLIFrameElement>;
   onResize?: (iframeRoot: HTMLElement) => void;
 };
 
 /**
- * Loads all the CSS styles inside an iFrame. Only shows the visible content as soon as the CSS file with the tailwind classes has loaded.
+ * Renders its children into an iframe that carries the Tailwind styles.
  */
-const TailwindFrame = React.forwardRef<
-  HTMLIFrameElement,
-  React.PropsWithChildren<TailwindFrameProps>
->(function TailwindFrame(
-  { children, onResize, style, title },
-  ref: React.ForwardedRef<HTMLIFrameElement>,
+function TailwindFrame(
+  { children, style, title, iframeRef, onResize }: TailwindFrameProps,
+  context: LegacyContext,
 ) {
-  const head = (
-    <>
-      <style dangerouslySetInnerHTML={{ __html: styles }} />
-      <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0" name="viewport" />
-    </>
-  );
+  const [frameDocument, setFrameDocument] = useState<Document | null>(null);
 
-  // For now we're using <NewFrame> because using a functional component with portal caused some weird issues with modals
+  useLayoutEffect(() => {
+    if (frameDocument) {
+      render(
+        <>
+          <style dangerouslySetInnerHTML={{ __html: styles }} />
+          <meta
+            content="width=device-width, initial-scale=1.0, maximum-scale=1.0"
+            name="viewport"
+          />
+        </>,
+        frameDocument.head,
+      );
+    }
+  }, [frameDocument]);
+
+  useLayoutEffect(() => {
+    if (frameDocument) {
+      render(<ContextBridge context={context}>{children}</ContextBridge>, frameDocument.body);
+    }
+  });
+
+  useEffect(() => {
+    return () => {
+      if (frameDocument) {
+        render(null, frameDocument.head);
+        render(null, frameDocument.body);
+      }
+    };
+  }, [frameDocument]);
+
+  useLayoutEffect(() => {
+    const frameWindow = frameDocument?.defaultView;
+    if (!frameDocument || !frameWindow) {
+      return;
+    }
+
+    // Keydown events only reach the focused iframe's window, so pass them on to the main window
+    const forwardKeydown = (event: KeyboardEvent) => {
+      window.dispatchEvent(new KeyboardEvent('keydown', event));
+    };
+    frameWindow.addEventListener('keydown', forwardKeydown);
+
+    const observer = onResize
+      ? new ResizeObserver(() => {
+          window.requestAnimationFrame(() => onResize(frameDocument.body));
+        })
+      : null;
+    observer?.observe(frameDocument.body);
+
+    return () => {
+      frameWindow.removeEventListener('keydown', forwardKeydown);
+      observer?.disconnect();
+    };
+  }, [frameDocument, onResize]);
+
   return (
-    <IFrame ref={ref} head={head} style={style} title={title} onResize={onResize}>
-      {children}
-    </IFrame>
+    <iframe
+      ref={iframeRef}
+      frameBorder="0"
+      srcDoc="<!DOCTYPE html>"
+      style={style}
+      title={title}
+      onLoad={(event) => setFrameDocument(event.currentTarget.contentDocument)}
+    />
   );
-});
+}
 
-type ResizableFrameProps = FrameProps & {
-  style: React.CSSProperties;
+type ResizableFrameProps = {
+  children: ComponentChildren;
+  style: JSX.CSSProperties;
   title: string;
+  iframeRef?: Ref<HTMLIFrameElement>;
 };
 
 /**
  * This iframe has the same height as it contents and mimics a shadow DOM component
  */
-const ResizableFrame = React.forwardRef<
-  HTMLIFrameElement,
-  React.PropsWithChildren<ResizableFrameProps>
->(function ResizableFrame({ children, style, title }, ref: React.ForwardedRef<HTMLIFrameElement>) {
+function ResizableFrame({ children, style, title, iframeRef }: ResizableFrameProps) {
   const [iframeStyle, setIframeStyle] = useState(style);
-  const onResize = useCallback((iframeRoot) => {
+  const onResize = useCallback((iframeRoot: HTMLElement) => {
     setIframeStyle((current) => {
       return {
         ...current,
@@ -60,35 +123,36 @@ const ResizableFrame = React.forwardRef<
   }, []);
 
   return (
-    <TailwindFrame ref={ref} style={iframeStyle} title={title} onResize={onResize}>
+    <TailwindFrame iframeRef={iframeRef} style={iframeStyle} title={title} onResize={onResize}>
       {children}
     </TailwindFrame>
   );
-});
+}
 
-type CommentsFrameProps = Record<never, any>;
+type CommentsFrameProps = {
+  children: ComponentChildren;
+  iframeRef?: Ref<HTMLIFrameElement>;
+};
 
-export const CommentsFrame = React.forwardRef<
-  HTMLIFrameElement,
-  React.PropsWithChildren<CommentsFrameProps>
->(function CommentsFrame({ children }, ref: React.ForwardedRef<HTMLIFrameElement>) {
-  const style: React.CSSProperties = {
+export function CommentsFrame({ children, iframeRef }: CommentsFrameProps) {
+  const style: JSX.CSSProperties = {
     width: '100%',
     height: '400px',
   };
   return (
-    <ResizableFrame ref={ref} style={style} title="comments-frame">
+    <ResizableFrame iframeRef={iframeRef} style={style} title="comments-frame">
       {children}
     </ResizableFrame>
   );
-});
+}
 
-type PopupFrameProps = FrameProps & {
+type PopupFrameProps = {
+  children: ComponentChildren;
   title: string;
 };
 
-export const PopupFrame: React.FC<PopupFrameProps> = ({ children, title }) => {
-  const style: React.CSSProperties = {
+export function PopupFrame({ children, title }: PopupFrameProps) {
+  const style: JSX.CSSProperties = {
     zIndex: '3999999',
     position: 'fixed',
     left: '0',
@@ -103,4 +167,4 @@ export const PopupFrame: React.FC<PopupFrameProps> = ({ children, title }) => {
       {children}
     </TailwindFrame>
   );
-};
+}

@@ -3,21 +3,23 @@ import LikeButton, { DislikeButton } from './buttons/like-button';
 import LikeCount from './buttons/like-count';
 import MoreButton from './buttons/more-button';
 import PinnedLabel from './pinned-label';
-import React, { useCallback } from 'react';
 import Replies, { type RepliesProps } from './replies';
 import ReplyButton from './buttons/reply-button';
 import ReplyForm from './forms/reply-form';
 import ThreadedReplies from './threaded-replies';
 import { Avatar, BlankAvatar } from './avatar';
 import { type Comment, type OpenCommentForm, useAppContext } from '../../app-context';
-import { Transition } from '@headlessui/react';
+import { Transition } from '../transition';
 import {
   buildCommentPermalink,
   formatExplicitTime,
   getCommentInReplyToSnippet,
   getMemberNameFromComment,
 } from '../../utils/helpers';
+import { toChildArray } from 'preact';
+import { useCallback, useState } from 'preact/hooks';
 import { useRelativeTime } from '../../utils/hooks';
+import type { ComponentChildren, FunctionComponent, RenderableProps } from 'preact';
 
 type CommentLayoutVariant = 'root' | 'reply';
 
@@ -28,7 +30,7 @@ type AnimatedCommentProps = {
   isLastSibling?: boolean;
 };
 
-const AnimatedComment: React.FC<React.PropsWithChildren<AnimatedCommentProps>> = ({
+const AnimatedComment: FunctionComponent<AnimatedCommentProps> = ({
   children,
   comment,
   parent,
@@ -62,7 +64,7 @@ const AnimatedComment: React.FC<React.PropsWithChildren<AnimatedCommentProps>> =
   );
 };
 
-export const CommentComponent: React.FC<CommentProps> = ({
+export const CommentComponent: FunctionComponent<CommentProps> = ({
   children,
   comment,
   parent,
@@ -70,7 +72,7 @@ export const CommentComponent: React.FC<CommentProps> = ({
   isLastSibling = false,
 }) => {
   const { dispatchAction, isAdmin } = useAppContext();
-  const hasNestedReplies = React.Children.count(children) > 0;
+  const hasNestedReplies = toChildArray(children).length > 0;
   const { showDeletedMessage, showHiddenMessage, showCommentContent } = useCommentVisibility(
     comment,
     isAdmin,
@@ -117,7 +119,7 @@ export const CommentComponent: React.FC<CommentProps> = ({
   return null;
 };
 
-type CommentProps = React.PropsWithChildren<AnimatedCommentProps>;
+type CommentProps = RenderableProps<AnimatedCommentProps>;
 
 // Threaded replies render their own reply form inline, so only match the current comment
 const getActiveReplyForm = (comment: Comment, openCommentForms: OpenCommentForm[]) => {
@@ -142,7 +144,7 @@ const useCommentVisibility = (comment: Comment, admin: boolean, hasNestedReplies
 type PublishedCommentProps = CommentProps & {
   openEditMode: () => void;
 };
-const PublishedComment: React.FC<PublishedCommentProps> = ({
+const PublishedComment: FunctionComponent<PublishedCommentProps> = ({
   children,
   comment,
   parent,
@@ -152,7 +154,7 @@ const PublishedComment: React.FC<PublishedCommentProps> = ({
 }) => {
   const { dispatchAction, openCommentForms, isAdmin, commentIdToHighlight, commentIdFromHash } =
     useAppContext();
-  const hasNestedReplies = React.Children.count(children) > 0;
+  const hasNestedReplies = toChildArray(children).length > 0;
 
   // Determine if the comment should be displayed with reduced opacity
   const isHidden = isAdmin && comment.status === 'hidden';
@@ -255,7 +257,7 @@ type UnpublishedCommentProps = {
   layoutVariant?: CommentLayoutVariant;
   isLastSibling?: boolean;
 };
-const UnpublishedComment: React.FC<React.PropsWithChildren<UnpublishedCommentProps>> = ({
+const UnpublishedComment: FunctionComponent<UnpublishedCommentProps> = ({
   children,
   comment,
   openEditMode,
@@ -264,7 +266,7 @@ const UnpublishedComment: React.FC<React.PropsWithChildren<UnpublishedCommentPro
   isLastSibling = false,
 }) => {
   const { isAdmin, openCommentForms, t } = useAppContext();
-  const hasNestedReplies = React.Children.count(children) > 0;
+  const hasNestedReplies = toChildArray(children).length > 0;
 
   const avatar =
     isAdmin && comment.status !== 'deleted' ? <Avatar member={comment.member} /> : <BlankAvatar />;
@@ -324,7 +326,7 @@ const UnpublishedComment: React.FC<React.PropsWithChildren<UnpublishedCommentPro
 
 // Helper components
 
-const MemberExpertise: React.FC<{ comment: Comment }> = ({ comment }) => {
+const MemberExpertise: FunctionComponent<{ comment: Comment }> = ({ comment }) => {
   const { member } = useAppContext();
   const memberExpertise =
     member && comment.member && comment.member.uuid === member.uuid
@@ -343,7 +345,7 @@ const MemberExpertise: React.FC<{ comment: Comment }> = ({ comment }) => {
   );
 };
 
-const EditedInfo: React.FC<{ comment: Comment }> = ({ comment }) => {
+const EditedInfo: FunctionComponent<{ comment: Comment }> = ({ comment }) => {
   const { t } = useAppContext();
   if (!comment.edited_at) {
     return null;
@@ -351,10 +353,10 @@ const EditedInfo: React.FC<{ comment: Comment }> = ({ comment }) => {
   return <span>&nbsp;({t('edited')})</span>;
 };
 
-const RepliesContainer: React.FC<
-  React.PropsWithChildren<RepliesProps & { className?: string; parent?: Comment }>
+const RepliesContainer: FunctionComponent<
+  RenderableProps<RepliesProps & { className?: string; parent?: Comment }>
 > = ({ children, comment, className = '', parent }) => {
-  const hasNestedReplies = React.Children.count(children) > 0;
+  const hasNestedReplies = toChildArray(children).length > 0;
   const hasReplies = hasNestedReplies || (comment.replies && comment.replies.length > 0);
 
   if (!hasReplies) {
@@ -379,7 +381,11 @@ type ReplyFormBoxProps = {
   parent: Comment;
   continueLine?: boolean;
 };
-const ReplyFormBox: React.FC<ReplyFormBoxProps> = ({ openForm, parent, continueLine = false }) => {
+const ReplyFormBox: FunctionComponent<ReplyFormBoxProps> = ({
+  openForm,
+  parent,
+  continueLine = false,
+}) => {
   const spacingClass = continueLine ? 'pb-8 sm:pb-10' : 'mb-8 sm:mb-10';
 
   return (
@@ -405,7 +411,7 @@ const ReplyFormBox: React.FC<ReplyFormBoxProps> = ({ openForm, parent, continueL
 // -- Published comment components --
 //
 
-const AuthorName: React.FC<{ comment: Comment }> = ({ comment }) => {
+const AuthorName: FunctionComponent<{ comment: Comment }> = ({ comment }) => {
   const { t } = useAppContext();
   const name = getMemberNameFromComment(comment, t);
   return (
@@ -420,7 +426,7 @@ type CommentHeaderProps = {
   className?: string;
 };
 
-const CommentHeader: React.FC<CommentHeaderProps> = ({ comment, className = '' }) => {
+const CommentHeader: FunctionComponent<CommentHeaderProps> = ({ comment, className = '' }) => {
   const { member } = useAppContext();
   const createdAtRelative = useRelativeTime(comment.created_at);
   const memberExpertise =
@@ -467,7 +473,11 @@ type CommentBodyProps = {
   isHighlighted?: boolean;
 };
 
-const CommentBody: React.FC<CommentBodyProps> = ({ html, className = '', isHighlighted }) => {
+const CommentBody: FunctionComponent<CommentBodyProps> = ({
+  html,
+  className = '',
+  isHighlighted,
+}) => {
   if (!html) {
     return null;
   }
@@ -515,7 +525,7 @@ type CommentMenuProps = {
   openEditMode: () => void;
   className?: string;
 };
-const CommentMenu: React.FC<CommentMenuProps> = ({
+const CommentMenu: FunctionComponent<CommentMenuProps> = ({
   comment,
   openReplyForm,
   highlightReplyButton,
@@ -523,7 +533,7 @@ const CommentMenu: React.FC<CommentMenuProps> = ({
   className = '',
 }) => {
   const { member, t, isMember, isAdmin, isCommentingDisabled } = useAppContext();
-  const [voteDisabled, setVoteDisabled] = React.useState(false);
+  const [voteDisabled, setVoteDisabled] = useState(false);
 
   const isPublished = comment.status === 'published';
   const isOwnComment = member && comment.member?.uuid === member?.uuid;
@@ -573,7 +583,7 @@ const CommentMenu: React.FC<CommentMenuProps> = ({
 // -- Layout --
 //
 
-const RepliesLine: React.FC<{ hasReplies: boolean }> = ({ hasReplies }) => {
+const RepliesLine: FunctionComponent<{ hasReplies: boolean }> = ({ hasReplies }) => {
   if (!hasReplies) {
     return null;
   }
@@ -587,18 +597,18 @@ const RepliesLine: React.FC<{ hasReplies: boolean }> = ({ hasReplies }) => {
 };
 
 type CommentLayoutProps = {
-  children: React.ReactNode;
-  avatar: React.ReactNode;
+  children: ComponentChildren;
+  avatar: ComponentChildren;
   hasReplies: boolean;
   className?: string;
   memberUuid?: string;
   isLastSibling?: boolean;
   layoutVariant?: CommentLayoutVariant;
-  replies?: React.ReactNode;
-  replyForm?: React.ReactNode;
+  replies?: ComponentChildren;
+  replyForm?: ComponentChildren;
 };
 
-const CommentLayout: React.FC<CommentLayoutProps> = ({
+const CommentLayout: FunctionComponent<CommentLayoutProps> = ({
   children,
   avatar,
   hasReplies,

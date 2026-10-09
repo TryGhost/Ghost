@@ -1,11 +1,12 @@
 import { formatNumber } from '../../utils/helpers';
 import { useAppContext } from '../../app-context';
+import type { FunctionComponent } from 'preact';
 
 type CountProps = {
   showCount: boolean;
   count: number;
 };
-const Count: React.FC<CountProps> = ({ showCount, count }) => {
+const Count: FunctionComponent<CountProps> = ({ showCount, count }) => {
   const { t } = useAppContext();
 
   if (!showCount) {
@@ -30,7 +31,7 @@ const Count: React.FC<CountProps> = ({ showCount, count }) => {
   );
 };
 
-const Title: React.FC<{ title: string | null }> = ({ title }) => {
+const Title: FunctionComponent<{ title: string | null }> = ({ title }) => {
   const { t } = useAppContext();
 
   if (title === null) {
@@ -50,7 +51,7 @@ type ContentTitleProps = {
   showCount: boolean;
   count: number;
 };
-const ContentTitle: React.FC<ContentTitleProps> = ({ title, showCount, count }) => {
+const ContentTitle: FunctionComponent<ContentTitleProps> = ({ title, showCount, count }) => {
   // We have to check for null for title because null means default, wheras empty string means empty
   if (!title && !showCount && title !== null) {
     return null;
