@@ -1,4 +1,5 @@
 import { ActivityPubAPI } from './activitypub';
+import { ZodError } from 'zod';
 import { describe, expect, test } from 'vitest';
 
 function NotFound() {
@@ -31,7 +32,7 @@ function Fetch(specs: Record<string, Spec>) {
     if (spec.assert) {
       await spec.assert(resource, init);
     }
-    return spec.response;
+    return spec.response.clone();
   };
 }
 
@@ -2118,8 +2119,8 @@ describe('ActivityPubAPI', function () {
         'index',
         fakeFetch,
       );
-      await expect(api.getAccountMigration()).rejects.toThrow();
-      await expect(api.moveAccount('@new@elsewhere.example')).rejects.toThrow();
+      await expect(api.getAccountMigration()).rejects.toThrow(ZodError);
+      await expect(api.moveAccount('@new@elsewhere.example')).rejects.toThrow(ZodError);
     });
 
     test('It accepts the empty migration status before a move', async () => {
