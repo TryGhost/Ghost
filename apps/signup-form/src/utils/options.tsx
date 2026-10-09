@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'preact/hooks';
+import { useCallback, useLayoutEffect, useState } from 'preact/hooks';
 import type { SignupFormOptions } from '../app-context';
 
 export function useOptions(scriptTag: HTMLElement) {
@@ -25,7 +25,7 @@ export function useOptions(scriptTag: HTMLElement) {
 
   const [options, setOptions] = useState<SignupFormOptions>(buildOptions());
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const observer = new MutationObserver((mutationList) => {
       if (mutationList.some((mutation) => mutation.type === 'attributes')) {
         setOptions(buildOptions());

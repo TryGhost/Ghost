@@ -36,8 +36,8 @@ export async function initialize({
     });
   });
 
-  // WebKit blocks http scripts on https pages, so serve the bundle from the page's origin
-  const url = `${new URL(sitePath).origin}/signup-form.min.js`;
+  // Served over https so WebKit doesn't block it as mixed content on the https test page
+  const url = 'https://signup-form.test/signup-form.min.js';
   await page.route(url, async (route) => {
     const response = await route.fetch({ url: `http://localhost:${E2E_PORT}/signup-form.min.js` });
     await route.fulfill({ response });

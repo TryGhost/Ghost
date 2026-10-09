@@ -2,7 +2,7 @@ import IFrame from './iframe';
 import styles from '../styles/iframe.css?inline';
 import { isMinimal } from '../utils/helpers';
 import { useAppContext } from '../app-context';
-import { useCallback, useEffect, useState } from 'preact/hooks';
+import { useCallback, useLayoutEffect, useState } from 'preact/hooks';
 import type { ComponentChildren, JSX } from 'preact';
 
 type FrameProps = {
@@ -78,7 +78,7 @@ const FullHeightFrame = ({ children, style, title }: ResizableFrameProps) => {
     });
   }, []);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const element = scriptTag.parentElement;
     if (!element) {
       return;

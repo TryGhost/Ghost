@@ -46,8 +46,9 @@ function init() {
   const scriptTag = getScriptTag();
   const root = getRootDiv(scriptTag);
 
-  // Preact's render() doesn't clear existing children, so empty a reused root first
-  root.replaceChildren();
+  // A reused root can hold a tree from an earlier run or leftover markup
+  render(null, root);
+  root.textContent = '';
   render(<App scriptTag={scriptTag} />, root);
 }
 
