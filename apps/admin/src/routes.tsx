@@ -120,6 +120,7 @@ const appRoutes: RouteObject[] = [
   },
   {
     path: '/posts/analytics/:postId',
+    handle: { requiresAccess: hasAdminAccess } satisfies AccessRouteHandle,
     lazy: lazyPostAnalyticsRoot,
     children: postAnalyticsRouteChildren,
   },
@@ -136,6 +137,7 @@ const appRoutes: RouteObject[] = [
         </AnalyticsProvider>
       </OnboardingRedirect>
     ),
+    handle: { requiresAccess: hasAdminAccess } satisfies AccessRouteHandle,
     children: analyticsRouteChildren,
   },
   {
