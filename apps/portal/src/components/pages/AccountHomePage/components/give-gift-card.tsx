@@ -30,10 +30,10 @@ function GiveGiftCard() {
   const showGiftCard = canGiveGift({ site, member });
 
   useEffect(() => {
-    if (showGiftCard && site) {
-      preloadGiftCardTextures(site.url);
+    if (showGiftCard) {
+      preloadGiftCardTextures(site?.url);
     }
-  }, [showGiftCard, site]);
+  }, [showGiftCard, site?.url]);
 
   if (!showGiftCard) {
     return null;

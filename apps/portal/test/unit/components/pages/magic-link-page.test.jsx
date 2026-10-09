@@ -88,7 +88,6 @@ describe('MagicLinkPage', () => {
         lastPage: 'gift',
         site: {
           title: 'The Blueprint',
-          url: 'https://example.com/',
         },
         pageData: giftPageData,
       });

@@ -21,10 +21,10 @@ const SignupGiftPromotion = ({ className, lastPage }: SignupGiftPromotionProps) 
   const showPromotion = canShowSignupGiftPromotion({ site });
 
   useEffect(() => {
-    if (showPromotion && site) {
-      preloadGiftCardTextures(site.url);
+    if (showPromotion) {
+      preloadGiftCardTextures(site?.url);
     }
-  }, [showPromotion, site]);
+  }, [showPromotion, site?.url]);
 
   if (!showPromotion) {
     return null;
