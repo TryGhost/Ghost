@@ -50,9 +50,9 @@ describe('getSentryConfig', () => {
       /^Failed to fetch$/,
       /^Load failed$/,
       /^(AbortError: )?The operation was aborted\. ?$/,
-      /^(AbortError: |InvalidStateError: )?Transition was (skipped|aborted because of)/,
-      /^(Skipping view transition|View transition was skipped) because /,
-      /^Skipped ViewTransition due to /,
+      /^(AbortError: |InvalidStateError: )?Transition was (skipped|aborted because of invalid state)(\. [A-Za-z ]+)?$/,
+      /^(Skipping view transition because skipTransition\(\) was called|View transition was skipped because document visibility state is hidden)\.$/,
+      /^Skipped ViewTransition due to (skipTransition\(\) call|document being hidden)$/,
       /^TransitionAborted$/,
       /^ResizeObserver loop completed with undelivered notifications/,
       /^ResizeObserver loop limit exceeded/,
@@ -78,6 +78,7 @@ describe('getSentryConfig', () => {
       'InvalidStateError: Transition was aborted because of invalid state. Document hidden',
     ],
     ['AbortError', 'Transition was skipped'],
+    ['AbortError', 'Transition was skipped. Navigation aborted'],
     [
       'InvalidStateError',
       'View transition was skipped because document visibility state is hidden.',
@@ -87,6 +88,12 @@ describe('getSentryConfig', () => {
     ['AbortError', 'Skipped ViewTransition due to skipTransition() call'],
   ])('ignores the skipped view transition %s: %j', (type, value) => {
     expect(isIgnored(type, value)).toBe(true);
+  });
+
+  it('reports an error that only starts like a skipped view transition', () => {
+    expect(isIgnored('Error', 'Skipped ViewTransition due to document being hidden: x')).toBe(
+      false,
+    );
   });
 
   it('reports a module that failed to load', () => {
