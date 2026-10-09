@@ -2,5 +2,4 @@
 @import './theme.css';
 @import 'tailwindcss/utilities.css' layer(utilities) source(none);
 
-@source '../components/notification.jsx';
-@source '../components/notification-classes.js';
+@source '../components/notification';

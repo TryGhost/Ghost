@@ -2,5 +2,5 @@
 @import './theme.css';
 @import 'tailwindcss/utilities.css' layer(utilities) source(none);
 
-@source '../components/trigger-button.jsx';
+@source '../components/trigger-button';
 @source '../components/common/member-gravatar.jsx';

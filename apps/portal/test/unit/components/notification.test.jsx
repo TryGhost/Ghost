@@ -1,6 +1,6 @@
 import { act, fireEvent, render, waitFor } from '@testing-library/react';
 import { vi } from 'vitest';
-import Notification from '../../../src/components/notification';
+import Notification from '../../../src/components/notification/notification';
 import AppContext from '../../../src/app-context';
 import NotificationParser, { clearURLParams } from '../../../src/utils/notifications';
 

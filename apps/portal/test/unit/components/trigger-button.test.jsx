@@ -1,5 +1,5 @@
 import { render } from '../../utils/test-utils';
-import TriggerButton from '../../../src/components/trigger-button';
+import TriggerButton from '../../../src/components/trigger-button/trigger-button';
 
 const setup = (customProps = {}) => {
   const utils = render(<TriggerButton {...customProps} />);

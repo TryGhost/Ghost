@@ -11,7 +11,7 @@ import {
   notificationClasses,
   notificationCloseIconClasses,
   notificationIconClasses,
-} from '../notification-classes';
+} from '../notification/notification-classes';
 
 const CloseButton = ({ hide = false, onClose }) => {
   if (hide) {

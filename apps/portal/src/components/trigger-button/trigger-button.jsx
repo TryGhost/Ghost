@@ -1,17 +1,17 @@
 import React from 'react';
-import Frame from './frame';
-import MemberGravatar from './common/member-gravatar';
-import AppContext from '../app-context';
-import UserIcon from '../images/icons/user.svg?react';
-import ButtonIcon1 from '../images/icons/button-icon-1.svg?react';
-import ButtonIcon2 from '../images/icons/button-icon-2.svg?react';
-import ButtonIcon3 from '../images/icons/button-icon-3.svg?react';
-import ButtonIcon4 from '../images/icons/button-icon-4.svg?react';
-import ButtonIcon5 from '../images/icons/button-icon-5.svg?react';
-import BaseStyles from '../styles/base.css?inline';
-import FrameStyles from '../styles/trigger.css?inline';
-import { hasAvailablePrices, isInviteOnly, isSigninAllowed } from '../utils/helpers';
-import { hasMode } from '../utils/check-mode';
+import Frame from '../frame';
+import MemberGravatar from '../common/member-gravatar';
+import AppContext from '../../app-context';
+import UserIcon from '../../images/icons/user.svg?react';
+import ButtonIcon1 from '../../images/icons/button-icon-1.svg?react';
+import ButtonIcon2 from '../../images/icons/button-icon-2.svg?react';
+import ButtonIcon3 from '../../images/icons/button-icon-3.svg?react';
+import ButtonIcon4 from '../../images/icons/button-icon-4.svg?react';
+import ButtonIcon5 from '../../images/icons/button-icon-5.svg?react';
+import BaseStyles from '../../styles/base.css?inline';
+import FrameStyles from '../../styles/trigger.css?inline';
+import { hasAvailablePrices, isInviteOnly, isSigninAllowed } from '../../utils/helpers';
+import { hasMode } from '../../utils/check-mode';
 
 const ICON_MAPPING = {
   'icon-1': ButtonIcon1,

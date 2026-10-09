@@ -1,16 +1,16 @@
 import React from 'react';
 import Interpolate from '@doist/react-interpolate';
-import Frame from './frame';
-import AppContext from '../app-context';
-import BaseStyles from '../styles/base.css?inline';
-import FrameStyles from '../styles/notification.css?inline';
-import CloseIcon from '../images/icons/close.svg?react';
-import CheckmarkIcon from '../images/icons/checkmark-fill.svg?react';
-import WarningIcon from '../images/icons/warning-fill.svg?react';
-import NotificationParser, { clearURLParams } from '../utils/notifications';
-import { getGiftRedemptionSuccessMessage } from '../utils/gift-redemption-notification';
-import { getPortalLink } from '../utils/helpers';
-import { t } from '../utils/i18n';
+import Frame from '../frame';
+import AppContext from '../../app-context';
+import BaseStyles from '../../styles/base.css?inline';
+import FrameStyles from '../../styles/notification.css?inline';
+import CloseIcon from '../../images/icons/close.svg?react';
+import CheckmarkIcon from '../../images/icons/checkmark-fill.svg?react';
+import WarningIcon from '../../images/icons/warning-fill.svg?react';
+import NotificationParser, { clearURLParams } from '../../utils/notifications';
+import { getGiftRedemptionSuccessMessage } from '../../utils/gift-redemption-notification';
+import { getPortalLink } from '../../utils/helpers';
+import { t } from '../../utils/i18n';
 import {
   notificationClasses,
   notificationCloseIconClasses,
