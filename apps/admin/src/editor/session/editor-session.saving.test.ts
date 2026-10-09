@@ -454,6 +454,22 @@ describe('a save whose answer was lost', () => {
     expect(session.getSaveSnapshot().isDirty).toBe(false);
   });
 
+  it('adopts its own landed write on a post loaded without a collision token', async () => {
+    const loaded = record({ updated_at: null });
+    const { session, state } = sessionHarness(
+      { record: loaded, baseline: loaded.lexical },
+      lostOnFirst,
+    );
+
+    session.patchLexical(body('One'));
+    await session.dispatchExplicit();
+    session.patchLexical(body('Two'));
+    expect(await session.dispatchExplicit()).toMatchObject({ kind: 'saved' });
+
+    expect(state.updates[0].payload.updated_at).toBeNull();
+    expect(state.updates[1].payload.updated_at).toBe(LANDED_AT);
+  });
+
   it('lands the post clean from the read when nothing was typed since', async () => {
     const { session, state } = sessionHarness(
       { record: record(), baseline: record().lexical },

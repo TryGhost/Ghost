@@ -342,13 +342,14 @@ describe('createEditorSession', () => {
     });
   });
 
-  it('ignores a refetched record while it holds no collision token', () => {
+  it('offers a refetched record as a newer version while it holds no collision token', () => {
     const { session } = sessionHarness({ record: record({ updated_at: null }) });
 
     const accepted = session.recordRefetched(record({ status: 'published' }));
 
     expect(accepted).toBe(false);
     expect(session.getSaveSnapshot()).toMatchObject({ status: 'draft', updatedAt: '' });
+    expect(session.getView().newerVersionAvailable).toBe(true);
   });
 
   it('adopts a read of the held instant written another way, keeping the token as held', async () => {

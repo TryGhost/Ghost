@@ -303,12 +303,11 @@ function isHeldToken(candidate: string | null | undefined, held: string | null):
   );
 }
 
-/** Whether a collision token names a version later than another. */
+/** Whether a collision token names a version later than another; any token is later than none. */
 function isLaterToken(candidate: string | null, than: string | null): boolean {
   return (
     isCollisionToken(candidate) &&
-    isCollisionToken(than) &&
-    Date.parse(candidate) > Date.parse(than)
+    (!than || (isCollisionToken(than) && Date.parse(candidate) > Date.parse(than)))
   );
 }
 
