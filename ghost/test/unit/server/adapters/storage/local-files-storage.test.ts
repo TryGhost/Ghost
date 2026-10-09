@@ -3,6 +3,7 @@ import os from 'os';
 import path from 'path';
 import express from 'express';
 import fs from 'fs-extra';
+import sinon from 'sinon';
 import request from 'supertest';
 import type LocalFilesStorageClass from '../../../../../core/server/adapters/storage/LocalFilesStorage';
 
@@ -11,6 +12,7 @@ import type LocalFilesStorageClass from '../../../../../core/server/adapters/sto
 const LocalFilesStorage: typeof LocalFilesStorageClass =
   require('../../../../../core/server/adapters/storage/LocalFilesStorage').default;
 const configUtils = require('../../../../utils/config-utils');
+const settingsCache = require('../../../../../core/shared/settings-cache');
 
 describe('Local Files Storage', function () {
   describe('serve', function () {
@@ -31,6 +33,7 @@ describe('Local Files Storage', function () {
     });
 
     afterEach(async function () {
+      sinon.restore();
       await configUtils.restore();
       await fs.remove(contentPath);
     });
@@ -82,6 +85,54 @@ describe('Local Files Storage', function () {
         .expect(200)
         .expect('Content-Type', 'application/pdf')
         .expect('X-Content-Type-Options', 'nosniff');
+    });
+
+    describe('Pintura assets', function () {
+      let jsPath: string;
+      let cssPath: string;
+
+      beforeEach(async function () {
+        jsPath = await writeFile('pintura-umd.js', 'window.pintura = {};');
+        cssPath = await writeFile('pintura.css', '.pintura {}');
+
+        const { staticFileUrl } = new LocalFilesStorage();
+        const get = sinon.stub(settingsCache, 'get');
+        get.withArgs('pintura_js_url').returns(`${staticFileUrl}${jsPath}`);
+        get.withArgs('pintura_css_url').returns(`${staticFileUrl}${cssPath}`);
+      });
+
+      it('serves the configured Pintura script as JavaScript', async function () {
+        await request(app)
+          .get(jsPath)
+          .expect(200)
+          .expect('Content-Type', /^(application|text)\/javascript/)
+          .expect('X-Content-Type-Options', 'nosniff');
+      });
+
+      it('serves the configured Pintura stylesheet as CSS', async function () {
+        await request(app)
+          .get(cssPath)
+          .expect(200)
+          .expect('Content-Type', /^text\/css/)
+          .expect('X-Content-Type-Options', 'nosniff');
+      });
+
+      it('keeps other scripts and stylesheets inert', async function () {
+        const otherJs = await writeFile('other.js', 'alert(1)');
+        const otherCss = await writeFile('other.css', 'body {}');
+
+        await request(app).get(otherJs).expect(200).expect('Content-Type', 'text/plain');
+        await request(app).get(otherCss).expect(200).expect('Content-Type', 'text/plain');
+      });
+
+      it('keeps files inert when Pintura is loaded from another host', async function () {
+        sinon.restore();
+        const get = sinon.stub(settingsCache, 'get');
+        get.withArgs('pintura_js_url').returns(`https://cdn.example.com${jsPath}`);
+        get.withArgs('pintura_css_url').returns(null);
+
+        await request(app).get(jsPath).expect(200).expect('Content-Type', 'text/plain');
+      });
     });
   });
 });
