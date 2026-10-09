@@ -1,6 +1,5 @@
 import { type ReactNode, useEffect, useLayoutEffect, useMemo, useRef } from 'react';
 import {
-  matchRoutes,
   useLocation,
   useMatches,
   useViewTransitionState,
@@ -10,7 +9,7 @@ import {
 } from '@tryghost/admin-x-framework';
 import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import { hasActiveUnsavedChangesGuard } from '@/hooks/active-unsaved-changes-guards';
-import { routes, useEmberOwnedRouteMatcher } from '@/routes';
+import { matchAdminRoutes, useEmberOwnedRouteMatcher } from '@/routes';
 import { shouldRunScreenTransition } from './screen-transition';
 
 // The parts of the page that fade out before entering a surface (index.css)
@@ -79,7 +78,7 @@ export function ScreenTransitionProvider({ children }: { children: ReactNode }) 
     return {
       shouldTransition(pathname) {
         const current = latest.current;
-        const target = matchRoutes(routes, pathname) ?? [];
+        const target = matchAdminRoutes(pathname) ?? [];
         return (
           shouldRunScreenTransition({
             from: current.matches.map((match) => match.handle),
@@ -100,7 +99,7 @@ export function ScreenTransitionProvider({ children }: { children: ReactNode }) 
 
         // Leaving a surface goes straight back: the screen it returns to renders
         // its cheap first frame and fills in after the cross-fade.
-        const target = matchRoutes(routes, pathname) ?? [];
+        const target = matchAdminRoutes(pathname) ?? [];
         if (!target.some((match) => isScreenTransitionHandle(match.route.handle))) {
           root.dataset.screenTransition = 'return';
           return undefined;
