@@ -583,6 +583,20 @@ html[data-screen-transition='return']::view-transition-new(admin-mobile-nav):onl
   animation: screen-transition-fade-in 200ms var(--ease-standard) 500ms both;
 }
 
+/* Reduced motion keeps the entrance still and the spinner's fade short. The
+   spinner keeps its delay: it stops a fast load flashing one, not motion. */
+@media (prefers-reduced-motion: reduce) {
+  .screen-enter-from-top,
+  .screen-enter-from-bottom,
+  .screen-enter-rise {
+    animation: none;
+  }
+
+  .delayed-fade-in {
+    animation-duration: var(--duration-fast);
+  }
+}
+
 @keyframes screen-transition-fade-out {
   to {
     opacity: 0;

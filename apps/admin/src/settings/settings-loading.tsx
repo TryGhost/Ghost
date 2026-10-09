@@ -11,9 +11,11 @@ export function SettingsLoading() {
       align="center"
       className={immediate ? 'h-full' : 'delayed-fade-in h-full'}
       justify="center"
+      role="status"
       onAnimationStart={markSettingsSpinnerShown}
     >
       <LoadingIndicator size="lg" />
+      <span className="sr-only">Loading settings</span>
     </Stack>
   );
 }
