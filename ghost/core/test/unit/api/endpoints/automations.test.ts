@@ -150,7 +150,7 @@ describe('Automations controller', function () {
       });
     }
 
-    for (const count of [0, 19]) {
+    for (const count of [0, 49]) {
       it(`creates with ${count} automations`, async function () {
         vi.mocked(automationsApi.getNumberOfAutomations).mockResolvedValue(count);
         await automationsController.add.query(frame);
@@ -158,7 +158,7 @@ describe('Automations controller', function () {
       });
     }
 
-    for (const count of [20, 21]) {
+    for (const count of [50, 51]) {
       it(`rejects creation with ${count} automations`, async function () {
         vi.mocked(automationsApi.getNumberOfAutomations).mockResolvedValue(count);
         await assert.rejects(automationsController.add.query(frame), {

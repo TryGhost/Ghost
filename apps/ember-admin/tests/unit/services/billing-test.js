@@ -454,7 +454,6 @@ describe('Unit: Service: billing', function () {
             const service = this.owner.lookup('service:billing');
             billingService = service;
             sinon.stub(service.router, 'transitionTo');
-            sinon.stub(service.feature, 'dunningWarnings').get(() => true);
             sinon.useFakeTimers({now: new Date(now), toFake: ['Date']});
             const config = this.owner.lookup('config:main');
             config.hostSettings.billing.dunning = {
@@ -470,16 +469,14 @@ describe('Unit: Service: billing', function () {
         });
     }
 
-    for (const [label, enabled, dunning] of [
-        ['flag disabled', false, {active: true, paymentFailedAt: '2026-09-01', suspendsAt: '2026-09-29'}],
-        ['missing config', true, undefined],
-        ['malformed config', true, {active: true, paymentFailedAt: 'invalid', suspendsAt: '2026-09-29'}]
+    for (const [label, dunning] of [
+        ['missing config', undefined],
+        ['malformed config', {active: true, paymentFailedAt: 'invalid', suspendsAt: '2026-09-29'}]
     ]) {
         it(`does not record a settled failure with ${label}`, function () {
             const service = this.owner.lookup('service:billing');
             billingService = service;
             const transitionTo = sinon.stub(service.router, 'transitionTo');
-            sinon.stub(service.feature, 'dunningWarnings').get(() => enabled);
             this.owner.lookup('config:main').hostSettings.billing.dunning = dunning;
 
             service.navigateToAdminDestination('previousPage');

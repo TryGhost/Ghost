@@ -1,6 +1,6 @@
 {
   "name": "ghost",
-  "version": "6.68.0",
+  "version": "6.69.0",
   "description": "The professional publishing platform",
   "keywords": [
     "blog",
@@ -46,8 +46,8 @@
     "archive": "node scripts/pack.mjs",
     "dev": "nodemon index.js",
     "build:assets": "pnpm run '/^build:assets:/'",
-    "build:assets:js": "node scripts/minify-assets.mjs",
-    "build:assets:cards": "node scripts/build-card-assets.mjs",
+    "build:assets:js": "node scripts/minify-assets.mts",
+    "build:assets:cards": "node scripts/build-card-assets.mts",
     "generate-golden-email": "node bin/generate-golden-email.js",
     "query-parameter-policy:export": "node --import=tsx scripts/export-query-parameter-policy.ts",
     "migrate:create": "node bin/create-migration.js",
@@ -94,6 +94,7 @@
     "@tryghost/adapter-base-sso": "workspace:*",
     "@tryghost/admin-api-schema": "workspace:*",
     "@tryghost/api-framework": "workspace:*",
+    "@tryghost/app-contracts": "workspace:*",
     "@tryghost/bookshelf-plugins": "2.3.17",
     "@tryghost/brute-knex": "catalog:",
     "@tryghost/checkout": "workspace:*",

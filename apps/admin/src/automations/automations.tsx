@@ -10,7 +10,7 @@ import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
 import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import { useVisibleAutomations } from './hooks/use-visible-automations';
 
-const MAX_AUTOMATIONS = 20;
+const MAX_AUTOMATIONS = 50;
 
 const Automations: React.FC = () => {
   const { automations, automationCount, error, isError, isLoading } = useVisibleAutomations();

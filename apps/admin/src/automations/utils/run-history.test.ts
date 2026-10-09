@@ -191,7 +191,7 @@ describe('recorded run history presentation', () => {
 
   it.each([
     ['failed', 'Wait step failed', 'failed'],
-    ['automation disabled', 'Ended by publisher', 'exited'],
+    ['automation disabled', 'Automation turned off', 'exited'],
     ['member changed status', 'Member changed subscription status', 'exited'],
     ['member unsubscribed', 'Unsubscribed', 'exited'],
   ] as const)(
@@ -212,6 +212,7 @@ describe('recorded run history presentation', () => {
       expect(cards[2]).toMatchObject({
         title,
         state,
+        statusLabel: 'Stopped',
         timestamp: { label: 'Step stopped', value: finished },
       });
     },

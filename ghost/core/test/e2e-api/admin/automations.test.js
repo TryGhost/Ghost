@@ -605,7 +605,6 @@ describe('Automations API', function () {
 
       beforeEach(function () {
         previousTinybirdInstance = TinybirdServiceWrapper.instance;
-        mockManager.mockLabsEnabled('automationsTinybirdSync');
         mockManager.mockLabsDisabled('automationRunAnalytics');
         mockManager.mockSetting('web_analytics_enabled', false);
         configUtils.set('tinybird', {
@@ -687,19 +686,6 @@ describe('Automations API', function () {
         const [automation] = await models.Base.knex('automations').select('id');
         await createAutomationRun(automation.id, new Date('2026-01-01T00:00:00.000Z'));
         const { body } = await agent.get('automations').expectStatus(200);
-        assert.equal(
-          body.automations.find((item) => item.id === automation.id).stats.total_run_count,
-          1,
-        );
-      });
-
-      it('uses database stats when the flag is disabled', async function () {
-        mockManager.mockLabsDisabled('automationsTinybirdSync');
-        const [automation] = await models.Base.knex('automations').select('id');
-        await createAutomationRun(automation.id, new Date('2026-01-01T00:00:00.000Z'));
-
-        const { body } = await agent.get('automations').expectStatus(200);
-
         assert.equal(
           body.automations.find((item) => item.id === automation.id).stats.total_run_count,
           1,

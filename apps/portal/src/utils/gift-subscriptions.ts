@@ -38,6 +38,7 @@ export interface GiftProduct {
 
 // the slice of Portal's site data that gift purchasing reads
 export interface Site {
+  locale?: string;
   title?: string;
   icon?: string;
   timezone?: string;

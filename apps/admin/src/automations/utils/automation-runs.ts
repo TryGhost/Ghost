@@ -5,7 +5,7 @@ import { formatMemberName } from '@/members/api';
 const statusLabels = {
   in_progress: 'In progress',
   completed: 'Completed',
-  exited_early: 'Exited early',
+  exited_early: 'Stopped',
 } as const;
 
 export const mapAutomationRun = (run: AutomationRun) => ({
@@ -20,5 +20,5 @@ export const mapAutomationRun = (run: AutomationRun) => ({
   }),
   status: run.status,
   failed: run.failed,
-  statusLabel: run.failed ? 'Exited early — Failed' : statusLabels[run.status],
+  statusLabel: run.failed ? 'Stopped — Failed' : statusLabels[run.status],
 });

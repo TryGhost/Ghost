@@ -13,7 +13,7 @@ export const mapAutomationEntryStats = (
     date,
     value: count,
     formattedValue: formatNumber(count),
-    label: 'Entries',
+    label: 'Runs',
   }));
   return {
     showHours: hourly,

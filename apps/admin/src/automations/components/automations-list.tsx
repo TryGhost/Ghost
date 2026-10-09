@@ -18,13 +18,13 @@ import { cn, formatNumber, formatTimestamp } from '@tryghost/shade/utils';
 const AUTOMATION_STAT_COLUMNS = [
   {
     key: 'lastEntry',
-    label: 'Last entry',
+    label: 'Last started',
     widthClassName: 'lg:w-40',
     skeletonWidthClassName: 'w-20',
   },
   {
     key: 'totalEntries',
-    label: 'Total entries',
+    label: 'Total runs',
     widthClassName: 'lg:w-32',
     skeletonWidthClassName: 'w-10',
   },
@@ -113,7 +113,7 @@ const AutomationsList: React.FC<AutomationsListProps> = ({
         <TableHeader className="hidden lg:table-header-group">
           <TableRow className="hover:bg-transparent">
             <TableHead className="lg:px-4" scope="col">
-              Name
+              Automation
             </TableHead>
             {AUTOMATION_STAT_COLUMNS.map((column) => (
               <TableHead

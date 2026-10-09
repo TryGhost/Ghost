@@ -64,10 +64,6 @@ interface GiftPageContext {
   site: Site | null;
 }
 
-function getTierPriceLabel(product: GiftProduct, months: GiftDuration) {
-  return formatGiftValue(getGiftPrice(product, months));
-}
-
 function getPortalHash(page: string | null) {
   if (page === 'signup') {
     return '#/portal/signup';
@@ -211,6 +207,10 @@ const GiftPage = () => {
 
   if (!site) {
     return <LoadingPage />;
+  }
+
+  function getTierPriceLabel(product: GiftProduct, months: GiftDuration) {
+    return formatGiftValue(getGiftPrice(product, months), site?.locale);
   }
 
   const siteIcon = site.icon;

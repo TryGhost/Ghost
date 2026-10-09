@@ -1,15 +1,15 @@
 import { z } from 'zod';
 
-import { urlField, type UrlRules } from './url.ts';
+import type { UrlField } from './url.ts';
 
 /**
  * What an app asks for: the places in Ghost it wants to appear. Each surface type is one
  * entry in a union, so a new one is added here and nowhere else.
  */
-export function surfacesField(rules: UrlRules) {
+export function surfacesField(url: UrlField) {
   const adminPage = z.strictObject({
     type: z.literal('admin_page'),
-    url: urlField(rules),
+    url: url(),
   });
 
   const surfaceTypes = [adminPage] as const;

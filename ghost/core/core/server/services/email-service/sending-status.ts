@@ -17,7 +17,12 @@ export type SendingProgress = z.infer<typeof SendingProgress>;
 export const SendingStatus = z.discriminatedUnion('status', [
   z.object({ status: SendingPhase, progress: SendingProgress }),
   z.object({ status: z.literal('submitted'), progress: SendingProgress }),
-  z.object({ status: z.literal('failed'), progress: SendingProgress, failedDuring: SendingPhase }),
+  z.object({
+    status: z.literal('failed'),
+    progress: SendingProgress,
+    failedDuring: SendingPhase,
+    retryable: z.boolean(),
+  }),
 ]);
 export type SendingStatus = z.infer<typeof SendingStatus>;
 
@@ -81,6 +86,7 @@ export function buildSendingStatus(email: SendingEmail, batches: SendingBatch[])
       status: 'failed',
       progress: { completed, total, estimatedSecondsRemaining: null },
       failedDuring: phase,
+      retryable: isRetryable(batches.map((batch) => batch.status)),
     };
   }
 
@@ -103,6 +109,11 @@ export function buildSendingStatus(email: SendingEmail, batches: SendingBatch[])
       }),
     },
   };
+}
+
+// A submitting batch may already have been accepted by the provider.
+export function isRetryable(batchStatuses: StoredSendingStatus[]): boolean {
+  return !batchStatuses.includes('submitting');
 }
 
 function sumRecipients(batches: SendingBatch[]): number {

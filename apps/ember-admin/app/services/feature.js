@@ -101,7 +101,6 @@ export default class FeatureService extends Service {
     @feature('membersCustomFields') membersCustomFields;
     @feature('editorReact') editorReact;
     @feature('improveSendingUI') improveSendingUI;
-    @feature('dunningWarnings') dunningWarnings;
     @feature('billingReact') billingReact;
 
     // React's auth screens decide before anyone signs in, so both shells read

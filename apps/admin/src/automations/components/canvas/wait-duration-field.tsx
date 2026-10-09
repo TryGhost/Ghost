@@ -3,24 +3,20 @@ import {
   Field,
   FieldLabel,
   FieldError,
-  Input,
   InputGroup,
   InputGroupInput,
   InputGroupText,
   InputGroupAddon,
   InputGroupButton,
-  Select,
-  SelectTrigger,
-  SelectValue,
-  SelectContent,
-  SelectItem,
 } from '@tryghost/shade/components';
-import { Inline, Stack } from '@tryghost/shade/primitives';
+import { Stack } from '@tryghost/shade/primitives';
 import { LucideIcon, formatNumber } from '@tryghost/shade/utils';
 
 const MAX_WAIT_DAYS = 30;
-export const WAIT_VALIDATION_MESSAGE = 'Enter a whole number between 1 and 30 days.';
+export const WAIT_VALIDATION_MESSAGE = 'Enter a wait between 1 and 30 days.';
 const WHOLE_NUMBER_PATTERN = /^\d+$/;
+const NON_DIGITS_PATTERN = /\D/g;
+const LEADING_ZEROS_PATTERN = /^0+/;
 
 const getValidWaitDays = (value: string): number | null => {
   const days = Number(value);
@@ -40,10 +36,12 @@ export const WaitDurationField: React.FC<{
   onUpdate: (hours: number) => void;
   inline?: boolean;
   onValidityChange?: (valid: boolean) => void;
-}> = ({ waitHours, onUpdate, inline = false, onValidityChange }) => {
+  onErrorVisibilityChange?: (visible: boolean) => void;
+}> = ({ waitHours, onUpdate, inline = false, onValidityChange, onErrorVisibilityChange }) => {
   const fieldId = useId();
   const inputId = inline ? fieldId : 'automation-wait-days';
   const errorId = `${inputId}-error`;
+  const unitId = `${inputId}-unit`;
   if (waitHours % 24 !== 0) {
     throw new Error(
       `WaitDurationField: wait_hours must be a multiple of 24, received ${waitHours}`,
@@ -52,6 +50,12 @@ export const WaitDurationField: React.FC<{
   const initialDays = waitHours / 24;
   const [daysText, setDaysText] = useState<string>(String(initialDays));
   const [hasBlurredDaysInput, setHasBlurredDaysInput] = useState(false);
+  // Shown on blur and cleared once valid; validity itself is still reported on every change.
+  const [isInlineErrorVisible, setIsInlineErrorVisible] = useState(false);
+  const showInlineError = (visible: boolean) => {
+    setIsInlineErrorVisible(visible);
+    onErrorVisibilityChange?.(visible);
+  };
 
   const days = Number(daysText);
   const isValid = getValidWaitDays(daysText) !== null;
@@ -75,7 +79,10 @@ export const WaitDurationField: React.FC<{
   };
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const nextDaysText = event.target.value;
+    // Waits are whole days from 1, so non-digits and leading zeros are dropped as they're typed.
+    const nextDaysText = event.target.value
+      .replace(NON_DIGITS_PATTERN, '')
+      .replace(LEADING_ZEROS_PATTERN, '');
     setDaysText(nextDaysText);
 
     const nextDays = getValidWaitDays(nextDaysText);
@@ -83,6 +90,7 @@ export const WaitDurationField: React.FC<{
     if (nextDays === null) {
       return;
     }
+    showInlineError(false);
     updateWaitDays(nextDays);
   };
 
@@ -96,25 +104,20 @@ export const WaitDurationField: React.FC<{
           Wait for
         </FieldLabel>
         {inline ? (
-          <Inline gap="sm">
-            <Input
-              aria-describedby={!isValid ? errorId : undefined}
-              aria-invalid={!isValid}
-              className="h-9 min-w-0 flex-1"
+          <InputGroup>
+            <InputGroupInput
+              aria-describedby={isInlineErrorVisible ? `${unitId} ${errorId}` : unitId}
+              aria-invalid={isInlineErrorVisible}
               id={inputId}
               inputMode="numeric"
               value={daysText}
+              onBlur={() => showInlineError(!isValid)}
               onChange={handleChange}
             />
-            <Select value="days">
-              <SelectTrigger aria-label="Wait unit" className="h-9 min-w-0 flex-1">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent updatePositionStrategy="always">
-                <SelectItem value="days">Days</SelectItem>
-              </SelectContent>
-            </Select>
-          </Inline>
+            <InputGroupAddon align="inline-end">
+              <InputGroupText id={unitId}>{days === 1 ? 'Day' : 'Days'}</InputGroupText>
+            </InputGroupAddon>
+          </InputGroup>
         ) : (
           <InputGroup
             aria-label="Wait duration in days"
@@ -155,7 +158,7 @@ export const WaitDurationField: React.FC<{
             </InputGroupAddon>
           </InputGroup>
         )}
-        {inline && !isValid && (
+        {inline && isInlineErrorVisible && (
           <span className="sr-only" id={errorId}>
             {WAIT_VALIDATION_MESSAGE}
           </span>

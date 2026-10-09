@@ -7,6 +7,11 @@ const MemberMetafieldResource = ghostBookshelf.Model.extend({
   tableName: 'members_metafields',
 });
 
+// App installations are owned by a raw-knex service too, and need the same.
+const AppInstallationResource = ghostBookshelf.Model.extend({
+  tableName: 'app_installations',
+});
+
 const Action = ghostBookshelf.Model.extend(
   {
     tableName: 'actions',
@@ -27,6 +32,7 @@ const Action = ghostBookshelf.Model.extend(
       }
 
       candidates.push([MemberMetafieldResource, 'member_custom_field']);
+      candidates.push([AppInstallationResource, 'app_installation']);
 
       return candidates;
     },

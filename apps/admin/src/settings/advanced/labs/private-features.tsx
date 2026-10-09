@@ -30,11 +30,6 @@ const features: Feature[] = [
     flag: 'automationRunAnalytics',
   },
   {
-    title: 'Automations Tinybird sync',
-    description: 'Sync automations data to Tinybird.',
-    flag: 'automationsTinybirdSync',
-  },
-  {
     title: 'Stripe Automatic Tax (private beta)',
     description: 'Use Stripe Automatic Tax at Stripe Checkout. Needs to be enabled in Stripe',
     flag: 'stripeAutomaticTax',
@@ -105,12 +100,6 @@ const features: Feature[] = [
     description:
       'Serves sign in, 2FA verification, password reset, staff invite signup, setup and sign out from the React app instead of the Ember screens. Takes effect on the next page load.',
     flag: 'authReact',
-  },
-  {
-    title: 'Self-serve archives',
-    description:
-      'Replaces the individual export buttons with a single "Export data" flow for downloading a full site archive',
-    flag: 'selfServeArchives',
   },
   {
     title: 'Machine payments',

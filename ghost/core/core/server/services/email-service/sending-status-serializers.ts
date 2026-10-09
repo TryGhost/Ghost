@@ -12,6 +12,7 @@ const SendingResource = z.object({
     estimated_seconds_remaining: z.number().nullable(),
   }),
   failed_during: SendingPhaseResource.optional(),
+  retryable: z.boolean().optional(),
 });
 
 const EmailStatusResource = z.object({
@@ -29,7 +30,9 @@ export const toEmailStatusesResponse = EmailSendingStatus.transform(
         sending: {
           status: sending.status,
           progress: snakeKeys(sending.progress),
-          ...(sending.status === 'failed' ? { failed_during: sending.failedDuring } : {}),
+          ...(sending.status === 'failed'
+            ? { failed_during: sending.failedDuring, retryable: sending.retryable }
+            : {}),
         },
       },
     ],

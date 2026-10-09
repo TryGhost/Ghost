@@ -1,3 +1,4 @@
+import { TriggerCard, type TriggerData } from './trigger-card';
 import React, { useRef, useState } from 'react';
 import StepPicker, { type StepPickerType } from './step-picker';
 import { useEmailTrackingSettings } from '@/automations/hooks/use-email-tracking-settings';
@@ -12,7 +13,7 @@ import {
   PopoverTrigger,
 } from '@tryghost/shade/components';
 import { Grid, Stack, Inline, Text } from '@tryghost/shade/primitives';
-import { AutomationCard, AutomationCardHeader } from './automation-card';
+import { AutomationCard } from './automation-card';
 import { Handle, Position } from '@xyflow/react';
 import type { Node, NodeProps } from '@xyflow/react';
 import type { AutomationEmailStats } from '@tryghost/admin-x-framework/api/automations';
@@ -60,7 +61,7 @@ type NodeContextMenuSeparator = {
 export type NodeContextMenuEntry = NodeContextMenuItem | NodeContextMenuSeparator;
 
 type StepNodeData = StepNodeDisplayData & {
-  fixedTrigger?: boolean;
+  trigger?: TriggerData;
   onInteract?: () => void;
   contextMenuItems: NodeContextMenuEntry[];
   isNew: boolean;
@@ -266,19 +267,14 @@ const EmailStepStatsFooter: React.FC<{
 };
 
 const TriggerNode = React.memo<NodeProps<StepFlowNode>>(({ data }) =>
-  data.fixedTrigger ? (
-    <AutomationCard
-      aria-label="Member signs up"
-      className="w-[400px]"
-      onPointerDownCapture={data.onInteract}
+  data.trigger ? (
+    <TriggerCard
+      errorMessage={data.errorMessage}
+      trigger={data.trigger}
+      onInteract={data.onInteract}
     >
-      <AutomationCardHeader
-        icon={<LucideIcon.UserPlus className="size-4" />}
-        iconClassName="p-2.5 text-foreground"
-        title="Member signs up"
-      />
       <HiddenHandle position={Position.Bottom} type="source" />
-    </AutomationCard>
+    </TriggerCard>
   ) : (
     <NodeShell data={data}>
       <StepNodeContent data={data} />
