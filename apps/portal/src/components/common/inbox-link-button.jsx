@@ -233,7 +233,7 @@ function InboxLinkButton({ inboxLinks: { android, desktop, provider } }) {
       href={isAndroidChrome(navigator) ? android : desktop}
       target="_blank"
       rel="noreferrer noopener"
-      className="gh-portal-btn relative flex h-11 w-full cursor-pointer items-center justify-center gap-[8px] rounded-md border border-solid border-gray-200 bg-white px-[1.8rem] py-0 text-center text-15 leading-[1em] font-medium tracking-[0.2px] whitespace-nowrap text-black no-underline outline-none select-none transition-control hover:border-gray-300 [&_svg]:size-5 [&_svg]:shrink-0"
+      className="gh-portal-btn relative flex h-11 w-full cursor-pointer items-center justify-center gap-2 rounded-md border border-solid border-gray-200 bg-white px-[1.8rem] py-0 text-center text-15 leading-[1em] font-medium tracking-[0.2px] whitespace-nowrap text-black no-underline outline-none select-none transition-control hover:border-gray-300 [&_svg]:size-5 [&_svg]:shrink-0"
     >
       {getOwn(PROVIDER_ICONS, provider) ?? defaultEmailIcon}
       <span>{getProviderLabel(provider)}</span>

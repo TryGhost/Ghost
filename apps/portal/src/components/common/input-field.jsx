@@ -3,6 +3,7 @@ import { hasMode } from '../../utils/check-mode';
 import { isCookiesDisabled } from '../../utils/helpers';
 import { t } from '../../utils/i18n';
 import { tw } from '../../utils/tw';
+import { inputLabelContainerClass } from '../shared-classes';
 
 function InputError({ message, style }) {
   if (!message) {
@@ -54,7 +55,7 @@ function InputField({
     tw` mb-0.5 text-13 font-semibold tracking-[0px] text-gray-950`;
   const inputClasses = errorMessage || invalid ? 'gh-portal-input error' : 'gh-portal-input';
   const fieldClasses = tw`mb-4 block w-full appearance-none rounded-md border border-solid border-gray-300 bg-transparent px-3 text-15 tracking-[0.2px] [color:inherit] outline-none [-webkit-appearance:none] transition-input placeholder:text-gray-500 focus:border-gray-500 group-[:not(.preview)]/popup:disabled:bg-gray-50 group-[:not(.preview)]/popup:disabled:text-gray-400 group-[:not(.preview)]/popup:disabled:placeholder:text-gray-400 aria-[invalid=true]:border-red group-[:not(.preview)]/popup:[&[readonly]]:bg-gray-50 group-[:not(.preview)]/popup:[&[readonly]]:text-gray-400 group-[:not(.preview)]/popup:[&[readonly]::placeholder]:text-gray-400`;
-  const inputHeightClasses = 'h-11 py-0 max-xl:h-[42px]';
+  const inputHeightClasses = 'h-11 py-0 max-xl:h-10.5';
   if (isCookiesDisabled()) {
     disabled = true;
   }
@@ -116,7 +117,7 @@ function InputField({
   };
   return (
     <section className={sectionClasses}>
-      <div className="gh-portal-input-labelcontainer flex w-full justify-between">
+      <div className={inputLabelContainerClass}>
         <label htmlFor={id} className={labelClasses}>
           {' '}
           {label}{' '}
@@ -127,7 +128,7 @@ function InputField({
         // No onKeyDown: Enter adds a line here, where in an input it submits the form.
         <textarea
           {...fieldProps}
-          className={`${inputClasses} gh-portal-input-textarea ${fieldClasses} h-auto min-h-[88px] resize-y py-2.5 leading-[1.4em]`}
+          className={`${inputClasses} gh-portal-input-textarea ${fieldClasses} h-auto min-h-22 resize-y py-2.5 leading-[1.4em]`}
         />
       ) : type === 'select' ? (
         // A select cannot be read-only, so a value the member may not change is disabled

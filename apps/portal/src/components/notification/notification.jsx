@@ -1,9 +1,10 @@
+import clsx from 'clsx';
 import React from 'react';
 import Interpolate from '@doist/react-interpolate';
 import Frame from '../frame';
 import AppContext from '../../app-context';
-import BaseStyles from '../../styles/base.css?inline';
-import FrameStyles from '../../styles/notification.css?inline';
+import FrameStyles from '../frame-styles';
+import NotificationStyles from '../../styles/notification.css?inline';
 import CloseIcon from '../../images/icons/close.svg?react';
 import CheckmarkIcon from '../../images/icons/checkmark-fill.svg?react';
 import WarningIcon from '../../images/icons/warning-fill.svg?react';
@@ -11,10 +12,11 @@ import NotificationParser, { clearURLParams } from '../../utils/notifications';
 import { getGiftRedemptionSuccessMessage } from '../../utils/gift-redemption-notification';
 import { getPortalLink } from '../../utils/helpers';
 import { t } from '../../utils/i18n';
+import { tw } from '../../utils/tw';
 import {
-  notificationClasses,
-  notificationCloseIconClasses,
-  notificationIconClasses,
+  notificationClass,
+  notificationCloseIconClass,
+  notificationIconClass,
 } from './notification-classes';
 
 const Styles = () => {
@@ -203,22 +205,26 @@ class NotificationContent extends React.Component {
   render() {
     const { type, status, message } = this.props;
     const { className = '' } = this.state;
-    const statusClass = status ? `  ${status}` : ' neutral';
-    const slideClass = className ? ` ${className}` : '';
     return (
       <div className="relative size-full overflow-hidden">
         <div
-          className={`gh-portal-notification${statusClass}${slideClass} ${notificationClasses} right-3 max-sm:left-3 max-sm:max-w-[calc(100%-24px)] rtl:right-auto rtl:left-3 max-sm:rtl:right-3 max-sm:rtl:left-auto`}
+          className={clsx(
+            'gh-portal-notification',
+            status,
+            className,
+            notificationClass,
+            tw`right-3 max-sm:left-3 max-sm:max-w-[calc(100%-24px)] rtl:right-auto rtl:left-3 max-sm:rtl:right-3 max-sm:rtl:left-auto`,
+          )}
           onAnimationEnd={(e) => this.onAnimationEnd(e)}
         >
           {status === 'error' ? (
-            <WarningIcon className={`error ${notificationIconClasses} text-red`} alt="" />
+            <WarningIcon className={`error ${notificationIconClass} text-red`} alt="" />
           ) : (
-            <CheckmarkIcon className={`success ${notificationIconClasses} text-green`} alt="" />
+            <CheckmarkIcon className={`success ${notificationIconClass} text-green`} alt="" />
           )}
           <NotificationText type={type} status={status} message={message} context={this.context} />
           <CloseIcon
-            className={notificationCloseIconClasses}
+            className={notificationCloseIconClass}
             alt="Close"
             onClick={(e) => this.onNotificationClose(e)}
           />
@@ -309,11 +315,7 @@ export default class Notification extends React.Component {
   }
 
   renderFrameStyles() {
-    const { brandColor } = this.context;
-    const styles = brandColor
-      ? `:root { --brandcolor: ${brandColor} }` + BaseStyles + FrameStyles
-      : BaseStyles + FrameStyles;
-    return <style dangerouslySetInnerHTML={{ __html: styles }} />;
+    return <FrameStyles css={NotificationStyles} brandColor={this.context.brandColor} />;
   }
 
   render() {

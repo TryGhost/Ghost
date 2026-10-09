@@ -17,6 +17,11 @@ import LoaderIcon from '../../../../images/icons/loader.svg?react';
 import OfferTagIcon from '../../../../images/icons/offer-tag.svg?react';
 import { useContext } from 'react';
 import { t } from '../../../../utils/i18n';
+import {
+  accountActionButtonClass,
+  accountActionClass,
+  accountActionTextClass,
+} from '../../../shared-classes';
 
 const PaidAccountActions = () => {
   const { member, site, doAction } = useContext(AppContext);
@@ -132,7 +137,7 @@ const PaidAccountActions = () => {
     if (canContinueGiftSubscription) {
       return (
         <button
-          className="gh-portal-btn relative -mx-1 my-0 flex h-[38px] cursor-pointer items-center justify-center rounded-md border-none bg-white px-1 py-0 text-center text-15 leading-[1em] font-medium tracking-[0.2px] whitespace-nowrap text-brand no-underline outline-none select-none transition-control hover:border-gray-300 hover:opacity-75 disabled:cursor-auto disabled:opacity-50!"
+          className="gh-portal-btn relative -mx-1 my-0 flex h-9.5 cursor-pointer items-center justify-center rounded-md border-none bg-white px-1 py-0 text-center text-15 leading-[1em] font-medium tracking-[0.2px] whitespace-nowrap text-brand no-underline outline-none select-none transition-control hover:border-gray-300 hover:opacity-75 disabled:cursor-auto disabled:opacity-50!"
           onClick={(e) => {
             e.stopPropagation();
             doAction('continueGiftSubscription');
@@ -145,7 +150,7 @@ const PaidAccountActions = () => {
     }
     return (
       <button
-        className="gh-portal-btn relative -mx-1 my-0 flex h-[38px] cursor-pointer items-center justify-center rounded-md border-none bg-white px-1 py-0 text-center text-15 leading-[1em] font-medium tracking-[0.2px] whitespace-nowrap text-brand no-underline outline-none select-none transition-control hover:border-gray-300 hover:opacity-75 disabled:cursor-auto disabled:opacity-50!"
+        className="gh-portal-btn relative -mx-1 my-0 flex h-9.5 cursor-pointer items-center justify-center rounded-md border-none bg-white px-1 py-0 text-center text-15 leading-[1em] font-medium tracking-[0.2px] whitespace-nowrap text-brand no-underline outline-none select-none transition-control hover:border-gray-300 hover:opacity-75 disabled:cursor-auto disabled:opacity-50!"
         onClick={(e) => {
           e.stopPropagation();
           openUpdatePlan(e);
@@ -176,7 +181,7 @@ const PaidAccountActions = () => {
 
     return (
       <section
-        className="cursor-pointer focus-visible:shadow-focus-brand focus-visible:outline-none"
+        className={accountActionClass}
         role="button"
         tabIndex={0}
         onClick={onManageBilling}
@@ -190,12 +195,12 @@ const PaidAccountActions = () => {
           }
         }}
       >
-        <div className="grow [&_h3]:text-15 [&_h3]:font-semibold [&_p]:ms-0 [&_p]:me-2 [&_p]:mt-[5px] [&_p]:mb-0 [&_p]:text-14.5 [&_p]:leading-[1.3em] [&_p]:tracking-[0.3px] [&_p]:[word-break:break-word] [&_p]:text-gray-700">
+        <div className={accountActionTextClass}>
           <h3>{t('Billing info & receipts')}</h3>
           <CardLabel defaultCardLast4={defaultCardLast4} />
         </div>
         <span
-          className="-mx-1 my-0 flex min-h-[38px] items-center justify-center px-1 py-0 text-15 leading-[1em] font-medium tracking-[0.2px] whitespace-nowrap text-brand select-none"
+          className={accountActionButtonClass}
           data-test-button="manage-billing"
           aria-hidden="true"
         >
@@ -224,7 +229,7 @@ const PaidAccountActions = () => {
     return (
       <>
         <section>
-          <div className="grow [&_h3]:text-15 [&_h3]:font-semibold [&_p]:ms-0 [&_p]:me-2 [&_p]:mt-[5px] [&_p]:mb-0 [&_p]:text-14.5 [&_p]:leading-[1.3em] [&_p]:tracking-[0.3px] [&_p]:[word-break:break-word] [&_p]:text-gray-700">
+          <div className={accountActionTextClass}>
             <h3>
               {planLabel}
               {subscription?.cancel_at_period_end && (

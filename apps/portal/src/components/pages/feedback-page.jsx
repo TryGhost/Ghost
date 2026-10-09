@@ -15,7 +15,7 @@ function ErrorPage({ error }) {
   const { doAction } = useContext(AppContext);
 
   return (
-    <div className="with-footer relative scrollbar-none ">
+    <div className="relative scrollbar-none">
       <CloseButton hideOnMobile />
       <div className="mx-auto my-0 w-24 px-0 py-2.5 text-center text-red-500">
         <ThumbErrorIcon />
@@ -130,7 +130,7 @@ const ConfirmFeedback = ({ positive }) => {
   const icon = positive ? <ThumbUpIcon /> : <ThumbDownIcon />;
 
   return (
-    <div className="relative scrollbar-none ">
+    <div className="relative scrollbar-none">
       <CloseButton hideOnMobile />
 
       <div className="mx-auto my-0 w-12 px-0 py-2.5 text-center text-brand">{icon}</div>

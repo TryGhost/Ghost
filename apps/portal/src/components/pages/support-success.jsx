@@ -4,6 +4,7 @@ import ConfettiIcon from '../../images/icons/confetti.svg?react';
 import CloseButton from '../common/close-button';
 import ActionButton from '../common/action-button';
 import { t } from '../../utils/i18n';
+import { signupMessageButtonClass } from '../shared-classes';
 
 const SupportSuccess = () => {
   const { doAction, brandColor, site } = useContext(AppContext);
@@ -15,13 +16,13 @@ const SupportSuccess = () => {
   const buttonLabel = t('Sign up');
 
   return (
-    <div className="relative scrollbar-none ">
+    <div className="relative scrollbar-none">
       <CloseButton />
 
       <div className="mb-3 flex flex-col items-center p-0">
         {site.icon ? (
           <img
-            className="gh-portal-signup-logo relative mx-0 mt-3 mb-2.5 block size-[60px] rounded-sm bg-cover bg-center max-sm:size-12"
+            className="gh-portal-signup-logo relative mx-0 mt-3 mb-2.5 block size-15 rounded-sm bg-cover bg-center max-sm:size-12"
             src={site.icon}
             alt={site.title}
           />
@@ -52,7 +53,7 @@ const SupportSuccess = () => {
         <button
           data-test-button="signin-switch"
           data-testid="signin-switch"
-          className="gh-portal-btn relative ms-1! -mb-px flex cursor-pointer items-center justify-center rounded-md border-none bg-transparent p-0 text-center text-14 leading-none font-semibold tracking-[0.2px] whitespace-nowrap text-black no-underline outline-none select-none transition-control hover:border-gray-300 hover:opacity-85 disabled:cursor-auto disabled:opacity-50!"
+          className={`${signupMessageButtonClass} disabled:cursor-auto disabled:opacity-50!`}
           style={{ color: brandColor }}
           onClick={() => doAction('switchPage', { page: 'signin' })}
         >

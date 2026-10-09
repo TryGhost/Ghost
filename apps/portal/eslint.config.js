@@ -15,7 +15,7 @@ export default [
     ignores: ['umd/**/*', 'dist/**/*'],
   }),
   {
-    // `tw` tags class constants; `classes` is ActionButton's class prop
-    settings: { tailwindcss: { tags: ['tw'], classRegex: '^(class(Name)?|classes)$' } },
+    // `classes` is ActionButton's class prop
+    settings: { tailwindcss: { attributes: ['class', 'className', 'classes'] } },
   },
 ];

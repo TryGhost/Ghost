@@ -44,16 +44,14 @@ function ActionButton({
     'gh-portal-btn',
     isPrimary && 'gh-portal-btn-primary',
     classes,
-    'relative flex min-w-[80px] cursor-pointer items-center justify-center rounded-md bg-white text-center text-15 leading-[1em] font-medium tracking-[0.2px] whitespace-nowrap no-underline outline-none select-none transition-control disabled:cursor-auto disabled:opacity-50!',
+    'relative flex min-w-20 cursor-pointer items-center justify-center rounded-md bg-white text-center text-15 leading-[1em] font-medium tracking-[0.2px] whitespace-nowrap no-underline outline-none select-none transition-control disabled:cursor-auto disabled:opacity-50!',
     isText ? 'h-auto p-0' : 'h-11 px-[1.8rem] py-0',
     isPrimary &&
-      'border-none text-white hover:opacity-[0.92]! focus:opacity-[0.92]! disabled:hover:opacity-[0.92]! disabled:focus:opacity-[0.92]! max-xl:h-[42px]',
+      'border-none text-white hover:opacity-[0.92]! focus:opacity-[0.92]! disabled:hover:opacity-[0.92]! disabled:focus:opacity-[0.92]! max-xl:h-10.5',
     !isPrimary &&
       (isText
         ? 'border-none text-black'
         : 'border border-solid border-gray-200 text-black hover:border-gray-300'),
-    // Only a plain secondary button (no extra classes) shrinks at 1440px
-    !isPrimary && !isDestructive && !isText && !classes && 'max-xl:h-[42px]',
     isDestructive && 'enabled:hover:border-red enabled:hover:text-red',
   );
   if (isCookiesDisabled()) {

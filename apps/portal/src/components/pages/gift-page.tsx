@@ -41,12 +41,11 @@ import type {
   GiftStep,
 } from './gift/types';
 import { tw } from '../../utils/tw';
+import { giftInnerClass, giftSubtitleClass, giftTitleClass } from './gift/classes';
 
-const CONTENT_CLASSES = tw`gift relative scrollbar-none min-h-screen p-0 [&_.gh-portal-btn-site-title-back]:absolute [&_.gh-portal-btn-site-title-back]:top-8 [&_.gh-portal-btn-site-title-back]:left-8 [&_.gh-portal-btn-site-title-back]:flex [&_.gh-portal-btn-site-title-back]:h-auto [&_.gh-portal-btn-site-title-back]:border-0 [&_.gh-portal-btn-site-title-back]:border-none [&_.gh-portal-btn-site-title-back]:p-0 [&_.gh-portal-btn-site-title-back]:text-gray-950 max-md:[&_.gh-portal-btn-site-title-back]:top-3 max-md:[&_.gh-portal-btn-site-title-back]:left-6 max-md:[&_.gh-portal-btn-site-title-back]:h-10 rtl:[&_.gh-portal-btn-site-title-back]:right-8 rtl:[&_.gh-portal-btn-site-title-back]:left-auto rtl:max-md:[&_.gh-portal-btn-site-title-back]:right-6 `;
+const CONTENT_CLASSES = tw`relative scrollbar-none min-h-screen p-0`;
 const CHECKOUT_CLASSES = tw`grid min-h-screen w-full grid-cols-[1fr_1fr] max-md:min-h-0 max-md:grid-cols-[1fr] [&_.gh-portal-btn-primary]:rounded-full [&_.gh-portal-input]:h-12 [&_.gh-portal-input-label]:mb-0 [&_.gh-portal-input-label]:text-14 [&_.gh-portal-input-label]:font-semibold [&_.gh-portal-input-label]:text-gray-900 [&_.gh-portal-input-labelcontainer]:mb-2 [&_.gh-portal-input-labelcontainer]:items-baseline`;
 const LEFT_CLASSES = tw`relative flex items-center justify-center bg-white p-12 max-md:px-6 max-md:pt-16 max-md:pb-0`;
-const INNER_CLASSES = tw`relative z-[1] my-auto flex w-full max-w-[496px] flex-col`;
-
 const validateInputForm = ValidateInputForm as unknown as (data: {
   fields: GiftInputField[];
 }) => GiftFormErrors;
@@ -224,16 +223,13 @@ const GiftPage = () => {
   if (!activeDuration || products.length === 0) {
     return (
       <div className={CONTENT_CLASSES}>
-        <CloseButton placement="giftCheckout" onClick={handleClose} />
+        <CloseButton placement="giftCheckout" tone="lightOnWide" onClick={handleClose} />
         <div className={CHECKOUT_CLASSES}>
           <div className={LEFT_CLASSES}>
-            <div aria-hidden="true" className="hidden" />
-            <div className={INNER_CLASSES}>
+            <div className={giftInnerClass}>
               <header className="mb-3">
-                <h1 className="mb-2 text-start text-32 leading-[1.15] text-pretty text-black max-sm:text-26">
-                  {t('Gift a membership')}
-                </h1>
-                <p className="gh-portal-gift-checkout-subtitle m-0 text-15 leading-[1.45em] text-pretty text-gray-900">
+                <h1 className={giftTitleClass}>{t('Gift a membership')}</h1>
+                <p className={giftSubtitleClass}>
                   {t('Gift subscriptions are not available right now.')}
                 </p>
               </header>
@@ -529,17 +525,17 @@ const GiftPage = () => {
 
   return (
     <div ref={contentRef} className={CONTENT_CLASSES}>
-      <CloseButton placement="giftCheckout" onClick={handleClose} />
+      <CloseButton placement="giftCheckout" tone="lightOnWide" onClick={handleClose} />
       <div className={CHECKOUT_CLASSES}>
         <div className={LEFT_CLASSES} data-step={step}>
-          <div aria-hidden="true" className="hidden" />
           {/* One back button in the corner for both jobs, as the other Portal modals do it. */}
           {(step === 'delivery' || lastPage) && (
             <SiteTitleBackButton
+              placement="gift"
               onBack={() => (step === 'delivery' ? handleBackToPlan() : handleExit())}
             />
           )}
-          <div className={INNER_CLASSES}>
+          <div className={giftInnerClass}>
             {step === 'plan' ? (
               <GiftPlanStep
                 activeDuration={activeDuration}
@@ -577,7 +573,7 @@ const GiftPage = () => {
                 onChangeRecipientName={handleRecipientNameChange}
               />
             )}
-            <div className="gh-portal-gift-checkout-cta-wrapper sticky bottom-0 z-[1] bg-[linear-gradient(0deg,rgba(var(--whitergb),1)_78%,rgba(var(--whitergb),0)_100%)] py-6 max-md:bg-[linear-gradient(0deg,rgba(var(--whitergb),1)_70%,rgba(var(--whitergb),0)_100%)] [&_.gh-portal-gift-checkout-cta]:h-12 [&_.gh-portal-gift-checkout-cta]:font-semibold">
+            <div className="sticky bottom-0 z-[1] bg-[linear-gradient(0deg,rgba(var(--whitergb),1)_78%,rgba(var(--whitergb),0)_100%)] py-6 max-md:bg-[linear-gradient(0deg,rgba(var(--whitergb),1)_70%,rgba(var(--whitergb),0)_100%)] [&_.gh-portal-gift-checkout-cta]:h-12 [&_.gh-portal-gift-checkout-cta]:font-semibold">
               <ActionButton
                 brandColor={brandColor}
                 classes="gh-portal-gift-checkout-cta"

@@ -18,7 +18,7 @@ const SupportError = ({ error }) => {
   }
 
   return (
-    <div className="relative scrollbar-none ">
+    <div className="relative scrollbar-none">
       <CloseButton />
 
       <div className="mx-auto my-0 w-12 px-0 py-2.5 text-center text-red-500">

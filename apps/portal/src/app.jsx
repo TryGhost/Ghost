@@ -17,7 +17,6 @@ import { getGiftRedemptionErrorMessage } from './utils/gift-redemption-notificat
 import { GIFT_DURATION_CATALOGUE } from './utils/gift-subscriptions';
 import { clearGiftFormState } from './components/pages/gift/form-state';
 import { fetchMemberCustomFields } from './utils/custom-fields';
-import './app.css';
 import {
   hasRecommendations,
   arePaidMembersEnabled,

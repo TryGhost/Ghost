@@ -8,6 +8,7 @@ import { countryOptions } from '../../utils/countries';
 import { t } from '../../utils/i18n';
 import { compositeValue, scalarValue } from '../../utils/custom-fields';
 import type { CustomFieldValue, DrawableCustomField } from '../../utils/custom-fields';
+import { inputLabelClass } from '../shared-classes';
 
 /** Every part is named, and the compiler says so: a part added to the type wants one. */
 const addressLabels = (): Record<keyof Address, string> => ({
@@ -137,10 +138,7 @@ function AddressField({ field, value, errors, onChange, onKeyDown }: FieldProps)
 
   return (
     <section aria-labelledby={labelId} role="group">
-      <div
-        className="gh-portal-input-label mb-0.5 text-13 font-semibold tracking-[0px] text-gray-950"
-        id={labelId}
-      >
+      <div className={inputLabelClass} id={labelId}>
         {field.name}
       </div>
       <div className="mb-4 [&_.gh-portal-input]:relative [&_.gh-portal-input]:mb-0 [&_.gh-portal-input]:rounded-none [&_.gh-portal-input.error]:z-[1] [&_.gh-portal-input:focus]:z-[1]">

@@ -14,7 +14,7 @@ import { useEffect, useRef, useState } from 'react';
 import { t } from '../../../utils/i18n';
 import { tw } from '../../../utils/tw';
 
-const shareActionClass = tw`relative flex h-11 max-w-[70px] min-w-0 cursor-pointer items-center justify-center rounded-lg border border-solid border-gray-200 bg-white px-4 py-0 text-center text-15 leading-[1em] font-medium tracking-[0.2px] whitespace-nowrap text-gray-900 no-underline outline-none select-none transition-control hover:border-gray-300 max-[421px]:w-full max-[421px]:max-w-none max-[421px]:flex-none`;
+const shareActionClass = tw`relative flex h-11 max-w-17.5 min-w-0 cursor-pointer items-center justify-center rounded-lg border border-solid border-gray-200 bg-white px-4 py-0 text-center text-15 leading-[1em] font-medium tracking-[0.2px] whitespace-nowrap text-gray-900 no-underline outline-none select-none transition-control hover:border-gray-300 max-xs:w-full max-xs:max-w-none max-xs:flex-none`;
 
 const ShareModal = () => {
   const [copied, setCopied] = useState(false);
@@ -95,7 +95,7 @@ const ShareModal = () => {
   };
 
   return (
-    <div className="relative scrollbar-none ">
+    <div className="relative scrollbar-none">
       <CloseButton placement="share" />
       <div className="mb-5">
         <h1 className="text-left text-21 leading-[1.1em] font-semibold text-pretty text-black rtl:text-right">
@@ -119,12 +119,12 @@ const ShareModal = () => {
             </h2>
           )}
           {shareExcerpt && (
-            <p className="mx-0 mt-[-8px] mb-0 line-clamp-3 text-15 leading-[1.45] text-pretty text-gray-700">
+            <p className="mx-0 -mt-2 mb-0 line-clamp-3 text-15 leading-[1.45] text-pretty text-gray-700">
               {shareExcerpt}
             </p>
           )}
           {(shareFavicon || shareSiteName || shareAuthor) && (
-            <div className="mt-[-6px] flex min-h-[18px] items-center gap-2">
+            <div className="-mt-1.5 flex min-h-4.5 items-center gap-2">
               {shareFavicon && (
                 <img
                   className="size-4 flex-none rounded object-cover"
@@ -153,9 +153,9 @@ const ShareModal = () => {
         </div>
       </div>
 
-      <div className="gh-portal-share-actions relative mt-5 flex items-center gap-3 max-[421px]:flex-col max-[421px]:items-stretch">
+      <div className="gh-portal-share-actions relative mt-5 flex items-center gap-3 max-xs:flex-col max-xs:items-stretch">
         <button
-          className="gh-portal-btn gh-portal-share-action copy relative flex h-11 w-auto max-w-none min-w-0 flex-[1_0_auto] cursor-pointer items-center justify-center gap-2 rounded-lg border-none bg-[color:var(--brandcolor,#3eb0ef)] px-[14px] py-0 text-center text-15 leading-[1em] font-medium tracking-[0.2px] whitespace-nowrap text-white no-underline outline-none select-none transition-control hover:border-gray-300 disabled:cursor-auto disabled:opacity-50! max-[421px]:order-1"
+          className="gh-portal-btn gh-portal-share-action copy relative flex h-11 w-auto max-w-none min-w-0 flex-[1_0_auto] cursor-pointer items-center justify-center gap-2 rounded-lg border-none bg-[color:var(--brandcolor,#3eb0ef)] px-3.5 py-0 text-center text-15 leading-[1em] font-medium tracking-[0.2px] whitespace-nowrap text-white no-underline outline-none select-none transition-control hover:border-gray-300 disabled:cursor-auto disabled:opacity-50! max-xs:order-1"
           type="button"
           onClick={onCopy}
           aria-label={copied ? t('Copied') : t('Copy link')}
@@ -182,7 +182,7 @@ const ShareModal = () => {
         </button>
 
         <a
-          className={`gh-portal-btn gh-portal-share-action twitter ${shareActionClass} max-[421px]:order-2`}
+          className={`gh-portal-btn gh-portal-share-action twitter ${shareActionClass} max-xs:order-2`}
           href={socialLinks.twitter}
           target="_blank"
           rel="noopener noreferrer"
@@ -198,7 +198,7 @@ const ShareModal = () => {
         </a>
 
         <a
-          className={`gh-portal-btn gh-portal-share-action linkedin ${shareActionClass} max-[421px]:order-3`}
+          className={`gh-portal-btn gh-portal-share-action linkedin ${shareActionClass} max-xs:order-3`}
           href={socialLinks.linkedin}
           target="_blank"
           rel="noopener noreferrer"
@@ -214,7 +214,7 @@ const ShareModal = () => {
         </a>
 
         <a
-          className={`gh-portal-btn gh-portal-share-action email ${shareActionClass} max-[421px]:order-4`}
+          className={`gh-portal-btn gh-portal-share-action email ${shareActionClass} max-xs:order-4`}
           href={socialLinks.email}
           target="_blank"
           rel="noopener noreferrer"
@@ -230,11 +230,11 @@ const ShareModal = () => {
         </a>
 
         <div
-          className="gh-portal-share-more relative max-[421px]:order-5 max-[421px]:w-full"
+          className="gh-portal-share-more relative max-xs:order-5 max-xs:w-full"
           ref={moreMenuRef}
         >
           <button
-            className="gh-portal-btn gh-portal-share-action more relative flex h-11 max-w-[70px] min-w-0 cursor-pointer items-center justify-center rounded-lg border border-solid border-gray-200 bg-white px-4 py-0 text-center text-20 leading-none font-bold tracking-[0px] whitespace-nowrap text-gray-900 no-underline outline-none select-none transition-control hover:border-gray-300 disabled:cursor-auto disabled:opacity-50! max-[421px]:w-full max-[421px]:max-w-none max-[421px]:flex-none"
+            className="gh-portal-btn gh-portal-share-action more relative flex h-11 max-w-17.5 min-w-0 cursor-pointer items-center justify-center rounded-lg border border-solid border-gray-200 bg-white px-4 py-0 text-center text-20 leading-none font-bold tracking-[0px] whitespace-nowrap text-gray-900 no-underline outline-none select-none transition-control hover:border-gray-300 disabled:cursor-auto disabled:opacity-50! max-xs:w-full max-xs:max-w-none max-xs:flex-none"
             type="button"
             onClick={onToggleMoreMenu}
             aria-label={t('More options')}
@@ -251,7 +251,7 @@ const ShareModal = () => {
           </button>
           {isMoreMenuOpen && (
             <div
-              className="absolute right-0 bottom-[calc(100%+8px)] z-[2] flex min-w-[180px] origin-bottom-right [transform:translateY(8px)] animate-share-menu-in flex-col rounded-lg border border-solid border-gray-200 bg-white p-1.5 opacity-0 [box-shadow:0_8px_20px_rgba(var(--blackrgb),0.12)] max-[421px]:inset-x-0 rtl:right-auto rtl:left-0 rtl:origin-bottom-left max-[421px]:rtl:right-0"
+              className="absolute right-0 bottom-[calc(100%+8px)] z-[2] flex min-w-[180px] origin-bottom-right [transform:translateY(8px)] animate-share-menu-in flex-col rounded-lg border border-solid border-gray-200 bg-white p-1.5 opacity-0 [box-shadow:0_8px_20px_rgba(var(--blackrgb),0.12)] max-xs:inset-x-0 rtl:right-auto rtl:left-0 rtl:origin-bottom-left max-xs:rtl:right-0"
               role="menu"
               aria-label={t('More options')}
             >

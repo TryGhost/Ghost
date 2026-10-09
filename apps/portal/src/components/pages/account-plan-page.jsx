@@ -31,7 +31,15 @@ import {
 import Interpolate from '@doist/react-interpolate';
 import { t } from '../../utils/i18n';
 import { translateCadence } from '../../utils/helpers';
-import { offerBarClass, offerDiscountLabelClass } from '../shared-classes';
+import {
+  amountClass,
+  currencySignClass,
+  inputLabelClass,
+  inputLabelContainerClass,
+  offerBarClass,
+  offerDiscountLabelClass,
+  productPriceClass,
+} from '../shared-classes';
 import { tw } from '../../utils/tw';
 
 const listSectionClass = tw`flex items-center p-5 [border-bottom:1px_solid_var(--color-gray-200)] first-of-type:rounded-t-lg last-of-type:rounded-b-lg last-of-type:[border:none]`;
@@ -59,7 +67,7 @@ const Header = ({ showConfirmation, confirmationType, pendingOffer }) => {
     title = getConfirmationPageTitle({ confirmationType, pendingOffer });
   }
   return (
-    <header className="relative -mt-0.5 mb-10 flex items-center justify-center px-[60px] max-sm:mt-1">
+    <header className="relative -mt-0.5 mb-10 flex items-center justify-center px-15 max-sm:mt-1">
       <h3 className="text-center leading-[1.1em] text-pretty text-black group-[.account-plan.full-size]/popup:mt-11 group-[.account-plan.full-size]/popup:text-32">
         {title}
       </h3>
@@ -181,14 +189,12 @@ const PlanConfirmationSection = ({ plan, type, onConfirm }) => {
           />
         </p>
         <section className="gh-portal-input-section mb-5">
-          <div className="gh-portal-input-labelcontainer flex w-full justify-between">
-            <label className="gh-portal-input-label mb-0.5 text-13 font-semibold tracking-[0px] text-gray-950">
-              {t('Cancellation reason')}
-            </label>
+          <div className={inputLabelContainerClass}>
+            <label className={inputLabelClass}>{t('Cancellation reason')}</label>
           </div>
           <textarea
             data-test-input="cancellation-reason"
-            className="gh-portal-input mb-4 box-border block h-[62px] w-full resize-none appearance-none rounded-md border border-solid border-gray-300 bg-transparent px-3 py-1.5 text-15 tracking-[0.2px] [color:inherit] outline-none [-webkit-appearance:none] transition-input placeholder:text-gray-500 focus:border-gray-500"
+            className="gh-portal-input mb-4 box-border block h-15.5 w-full resize-none appearance-none rounded-md border border-solid border-gray-300 bg-transparent px-3 py-1.5 text-15 tracking-[0.2px] [color:inherit] outline-none [-webkit-appearance:none] transition-input placeholder:text-gray-500 focus:border-gray-500"
             key="cancellation_reason"
             label="Cancellation reason"
             type="text"
@@ -378,14 +384,10 @@ const RetentionOfferSection = ({ subscription, offer, onAcceptOffer, onDeclineOf
 
         <div>
           {!isFreeMonthsOffer(offer) && (
-            <div className="mt-4 flex items-center gap-[6px]">
-              <div className="gh-portal-product-price flex justify-center text-black">
-                <span className="self-start text-27 leading-[1.135em] font-bold max-[371px]:text-18">
-                  {currency}
-                </span>
-                <span className="amount text-35 leading-[1em] font-bold tracking-[-1.3px] text-black max-xl:text-[32px] max-xl:tracking-[-0.022em]">
-                  {discountedPrice}
-                </span>
+            <div className="mt-4 flex items-center gap-1.5">
+              <div className={productPriceClass}>
+                <span className={currencySignClass()}>{currency}</span>
+                <span className={amountClass}>{discountedPrice}</span>
               </div>
               <div className="gh-portal-offer-oldprice relative mt-1 mb-0 flex text-18 leading-none font-light whitespace-nowrap text-gray-500 after:absolute after:inset-x-0 after:top-1/2 after:block after:h-px after:bg-gray-500 after:content-['']">
                 {currency}
@@ -826,7 +828,7 @@ export default class AccountPlanPage extends React.Component {
     const { lastPage } = this.context;
     return (
       <>
-        <div className="relative scrollbar-none ">
+        <div className="relative scrollbar-none">
           <BackButton onClick={(e) => this.onBack(e)} hidden={!lastPage && !showConfirmation} />
           <CloseButton />
           <Header

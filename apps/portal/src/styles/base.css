@@ -1,4 +1,4 @@
-@layer theme, base, components, utilities;
+@layer properties, theme, base, components, utilities;
 
 @import 'tailwindcss/theme.css' layer(theme);
 @import './theme.css';
@@ -156,7 +156,7 @@
   }
 }
 
-/* Utilities layer so these out-rank single-class utilities by specificity, as in the legacy CSS */
+/* In the utilities layer so these out-rank single-class utilities by specificity */
 @layer utilities {
   button:focus-visible,
   a:focus-visible {

@@ -53,15 +53,19 @@
   --color-yellow: var(--color-yellow-500);
   --color-brand: var(--brandcolor);
 
-  /* Spacing and radii are px like the legacy CSS; font sizes are rem (html is 62.5%, so text-14 = 1.4rem = 14px) */
+  /* Spacing and radii are px; font sizes are rem (html is 62.5%, so text-14 = 1.4rem = 14px) */
   --spacing: 4px;
 
-  /* max-* variants are exclusive, so each breakpoint sits one pixel above the legacy max-width it replaces */
+  /* max-* variants are exclusive: max-md applies up to 880px */
   --breakpoint-*: initial;
+  --breakpoint-2xs: 391px;
+  --breakpoint-xs: 421px;
   --breakpoint-sm: 481px;
   --breakpoint-md: 881px;
   --breakpoint-lg: 961px;
   --breakpoint-xl: 1441px;
+
+  --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
 
   --radius-*: initial;
   --radius: 4px;
@@ -242,7 +246,7 @@
   }
 }
 
-/* Named values for the longer one-off declarations, kept exact so they render like the legacy CSS */
+/* Named values for long declarations used across components */
 @utility shadow-popup {
   box-shadow:
     0 3.8px 2.2px rgba(var(--blackrgb), 0.028),
@@ -312,5 +316,12 @@
   background-image: url("data:image/svg+xml,%3csvg width='100%25' height='99.9%25' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='100%25' height='100%25' fill='none' stroke='%23C3C3C3' stroke-width='3' stroke-dasharray='3%2c 9' stroke-dashoffset='0' stroke-linecap='square'/%3e%3c/svg%3e");
 }
 
-/* Hover styles apply on touch devices too, as they did before Tailwind */
+/* Hover styles also apply on touch devices */
 @custom-variant hover (&:hover);
+
+/* Browsers with a native date-picker indicator (Chromium, WebKit) */
+@custom-variant picker-indicator {
+  @supports selector(::-webkit-calendar-picker-indicator) {
+    @slot;
+  }
+}

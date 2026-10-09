@@ -16,7 +16,7 @@ function SiteLogo() {
   if (siteLogo) {
     return (
       <img
-        className="mt-3 mb-1.5 size-[60px] rounded-sm max-sm:size-12"
+        className="mt-3 mb-1.5 size-15 rounded-sm max-sm:size-12"
         src={siteLogo}
         alt={site.title}
       />
@@ -41,7 +41,7 @@ function AccountHeader() {
 function UnsubscribeErrorPage({ message }) {
   const { doAction } = useContext(AppContext);
   return (
-    <div className="with-footer relative scrollbar-none ">
+    <div className="relative scrollbar-none">
       <CloseButton />
       <div className="mx-auto my-0 w-24 px-0 py-2.5 text-center text-red-500">
         <WarningIcon />
@@ -289,7 +289,7 @@ export default function UnsubscribePage() {
   // Case: Single active newsletter
   if (siteNewsletters?.length === 1 && !commentsEnabled && !showPrefs) {
     return (
-      <div className="with-footer relative scrollbar-none ">
+      <div className="relative scrollbar-none">
         <CloseButton />
         <AccountHeader />
         <h1 className="mb-4 text-center text-26 leading-[1.1em] text-pretty text-black">
@@ -329,7 +329,7 @@ export default function UnsubscribePage() {
       const hideClassName = hasInteracted ? 'hidden' : '';
       return (
         <>
-          <p className={`mx-0 mt-[-20px] mb-6 text-center text-balance ${hideClassName}`}>
+          <p className={`mx-0 -mt-5 mb-6 text-center text-balance ${hideClassName}`}>
             <Interpolate
               string={t(
                 '{memberEmail} will no longer receive emails when someone replies to your comments.',
@@ -346,7 +346,7 @@ export default function UnsubscribePage() {
       const hideClassName = hasInteracted ? 'hidden' : '';
       return (
         <>
-          <p className={`mx-0 mt-[-20px] mb-6 text-center text-balance ${hideClassName}`}>
+          <p className={`mx-0 -mt-5 mb-6 text-center text-balance ${hideClassName}`}>
             <Interpolate
               string={t('{memberEmail} will no longer receive updates & announcements.')}
               mapping={{
@@ -368,7 +368,7 @@ export default function UnsubscribePage() {
     const hideClassName = hasInteracted ? 'hidden' : '';
     return (
       <>
-        <p className={`mx-0 mt-[-20px] mb-6 text-center text-balance ${hideClassName}`}>
+        <p className={`mx-0 -mt-5 mb-6 text-center text-balance ${hideClassName}`}>
           <Interpolate
             string={t('{memberEmail} will no longer receive {newsletterName} newsletter.')}
             mapping={{

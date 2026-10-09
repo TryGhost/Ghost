@@ -19,24 +19,18 @@ import { t } from '../../utils/i18n';
 import { translateCadence } from '../../utils/helpers';
 import {
   amountClass,
+  currencySignClass,
   offerBarClass,
   offerDiscountLabelClass,
+  productDescriptionClass,
+  productNameClass,
+  productPriceClass,
   signupMessageButtonClass,
   termsCheckboxClass,
 } from '../shared-classes';
 import { tw } from '../../utils/tw';
 
 const offerTitleClass = tw`mr-[110px] w-full text-18 rtl:mr-0 rtl:ml-[110px] [&.placeholder]:opacity-40`;
-
-const productNameClass = tw`-mt-1 w-full text-18 leading-[1.3em] font-semibold tracking-[0px] [word-break:break-word] text-brand`;
-
-const productPriceClass = tw`gh-portal-product-price flex justify-center text-black`;
-
-const currencySignClass = (currencyClass) =>
-  'currency-sign ' +
-  currencyClass +
-  tw` self-start text-27 leading-[1.135em] font-bold max-[371px]:text-18` +
-  (currencyClass === 'long' ? ' me-[5px]' : '');
 
 const footnoteClass = tw`mt-1 mb-0 text-13.5 text-gray-500`;
 
@@ -136,7 +130,7 @@ export default class OfferPage extends React.Component {
     );
 
     const signupTerms = site.portal_signup_checkbox_required ? (
-      <label className="relative flex cursor-pointer gap-[10px]">
+      <label className="relative flex cursor-pointer gap-2.5">
         <input
           className="absolute inset-y-0 right-0 hidden"
           type="checkbox"
@@ -233,7 +227,7 @@ export default class OfferPage extends React.Component {
       logoStyle.backgroundImage = `url(${siteLogo})`;
       return (
         <img
-          className="gh-portal-signup-logo relative mt-3 mb-2.5 block size-[60px] rounded-sm bg-cover bg-center max-sm:size-12"
+          className="gh-portal-signup-logo relative mt-3 mb-2.5 block size-15 rounded-sm bg-cover bg-center max-sm:size-12"
           src={siteLogo}
           alt={site.title}
         />
@@ -246,7 +240,7 @@ export default class OfferPage extends React.Component {
     const { site } = this.context;
     const siteTitle = site.title || '';
     return (
-      <header className="mb-8 flex flex-col items-center px-8 max-[391px]:pb-4">
+      <header className="mb-8 flex flex-col items-center px-8 max-2xs:pb-4">
         {this.renderSiteLogo()}
         <h2 className="mt-3 text-center leading-[1.1em] text-pretty text-black [.gh-portal-signup-logo+&]:mt-1">
           {siteTitle}
@@ -383,7 +377,7 @@ export default class OfferPage extends React.Component {
           key={`${benefit.name}-${idx}`}
         >
           <CheckmarkIcon
-            className="mt-[3px] mr-2.5 size-[14px] min-w-[14px] overflow-visible rtl:mr-0 rtl:ml-2.5"
+            className="mt-[3px] mr-2.5 size-3.5 min-w-3.5 overflow-visible rtl:mr-0 rtl:ml-2.5"
             aria-hidden="true"
           />
           <div>{benefit.name}</div>
@@ -471,12 +465,12 @@ export default class OfferPage extends React.Component {
     );
   }
 
-  renderUpdatedTierPrice({ offer, currencyClass, updatedPrice, price }) {
+  renderUpdatedTierPrice({ offer, isLongCurrency, updatedPrice, price }) {
     if (offer.type === 'trial') {
       return (
         <div className="mt-4 flex w-full flex-col items-start">
           <div className={productPriceClass} data-testid="offer-updated-price">
-            <span className={currencySignClass(currencyClass)}>
+            <span className={currencySignClass(isLongCurrency)}>
               {getCurrencySymbol(price.currency)}
             </span>
             <span className={amountClass}>
@@ -489,7 +483,7 @@ export default class OfferPage extends React.Component {
     return (
       <div className="mt-0 flex w-full flex-col items-start">
         <div className={productPriceClass} data-testid="offer-updated-price">
-          <span className={currencySignClass(currencyClass)}>
+          <span className={currencySignClass(isLongCurrency)}>
             {getCurrencySymbol(price.currency)}
           </span>
           <span className={amountClass}>
@@ -512,7 +506,7 @@ export default class OfferPage extends React.Component {
     );
   }
 
-  renderProductCard({ product, offer, currencyClass, updatedPrice, price, benefits }) {
+  renderProductCard({ product, offer, isLongCurrency, updatedPrice, price, benefits }) {
     if (this.state.showNewsletterSelection) {
       return null;
     }
@@ -521,12 +515,12 @@ export default class OfferPage extends React.Component {
         <div
           className={`${productCardClass} top rounded-t-[7px] [border-style:solid_solid_none] border-b-current pt-8 pb-0`}
         >
-          <div className="flex min-h-[56px] w-full flex-col items-start max-md:min-h-[unset]">
+          <div className="flex min-h-14 w-full flex-col items-start max-md:min-h-[unset]">
             <h4 className={productNameClass}>
               {product.name} - {offer.cadence === 'month' ? t('Monthly') : t('Yearly')}
             </h4>
             {this.renderOldTierPrice({ offer, price })}
-            {this.renderUpdatedTierPrice({ offer, currencyClass, updatedPrice, price })}
+            {this.renderUpdatedTierPrice({ offer, isLongCurrency, updatedPrice, price })}
             {this.renderOfferMessage({ offer, product, price })}
           </div>
         </div>
@@ -537,9 +531,7 @@ export default class OfferPage extends React.Component {
           >
             <div className="flex-1">
               {product.description ? (
-                <div className="mt-4 w-full text-15.5 leading-[1.4em] font-semibold">
-                  {product.description}
-                </div>
+                <div className={productDescriptionClass}>{product.description}</div>
               ) : (
                 ''
               )}
@@ -547,7 +539,7 @@ export default class OfferPage extends React.Component {
             </div>
           </div>
 
-          <div className="m32 sticky bottom-0 -mb-8 bg-[linear-gradient(0deg,rgba(var(--whitergb),1)_75%,rgba(var(--whitergb),0)_100%)] py-8 [transition:none] [&_.gh-portal-btn]:m-0">
+          <div className="sticky bottom-0 -mb-8 bg-[linear-gradient(0deg,rgba(var(--whitergb),1)_75%,rgba(var(--whitergb),0)_100%)] py-8 [transition:none] [&_.gh-portal-btn]:m-0">
             <div className="gh-portal-signup-terms-wrapper mx-auto mt-2 mb-4 w-full max-w-[420px]">
               {this.renderSignupTerms()}
             </div>
@@ -572,11 +564,11 @@ export default class OfferPage extends React.Component {
     const updatedPrice = getUpdatedOfferPrice({ offer, price });
     const benefits = product.benefits || [];
 
-    const currencyClass = getCurrencySymbol(price.currency).length > 1 ? 'long' : '';
+    const isLongCurrency = getCurrencySymbol(price.currency).length > 1;
 
     return (
       <>
-        <div className="relative scrollbar-none ">
+        <div className="relative scrollbar-none">
           <CloseButton />
           {this.renderFormHeader()}
 
@@ -601,7 +593,14 @@ export default class OfferPage extends React.Component {
           </div>
 
           {this.renderForm()}
-          {this.renderProductCard({ product, offer, currencyClass, updatedPrice, price, benefits })}
+          {this.renderProductCard({
+            product,
+            offer,
+            isLongCurrency,
+            updatedPrice,
+            price,
+            benefits,
+          })}
         </div>
       </>
     );

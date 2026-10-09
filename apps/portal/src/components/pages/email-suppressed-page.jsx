@@ -6,6 +6,7 @@ import BackButton from '../common/back-button';
 import ActionButton from '../common/action-button';
 import EmailDeliveryFailedIcon from '../../images/icons/email-delivery-failed.svg?react';
 import { t } from '../../utils/i18n';
+import { popupHeaderClass } from '../shared-classes';
 
 export default function EmailSuppressedPage() {
   const { brandColor, lastPage, doAction, action, site } = useContext(AppContext);
@@ -46,7 +47,7 @@ export default function EmailSuppressedPage() {
 
   return (
     <div>
-      <header className="relative mx-0 mt-[-2px] mb-10 flex items-center justify-center px-[60px] max-sm:mt-1">
+      <header className={popupHeaderClass}>
         <BackButton
           brandColor={brandColor}
           hidden={!lastPage}
@@ -57,10 +58,10 @@ export default function EmailSuppressedPage() {
         <CloseButton />
       </header>
 
-      <EmailDeliveryFailedIcon className="mx-auto mt-0 mb-[18px] block size-[38px]" />
+      <EmailDeliveryFailedIcon className="mx-auto mt-0 mb-4.5 block size-9.5" />
 
-      <div className="px-[14px] py-0 text-center text-gray-700">
-        <h3 className="mb-[14px] text-center leading-[1.1em] text-pretty text-black">
+      <div className="px-3.5 py-0 text-center text-gray-700">
+        <h3 className="mb-3.5 text-center leading-[1.1em] text-pretty text-black">
           {t('Emails disabled')}
         </h3>
         <p>

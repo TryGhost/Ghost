@@ -1,9 +1,10 @@
 import React from 'react';
+import clsx from 'clsx';
 import Frame from './frame';
 import { hasMode } from '../utils/check-mode';
 import AppContext from '../app-context';
-import BaseStyles from '../styles/base.css?inline';
-import FrameStyles from '../styles/popup.css?inline';
+import FrameStyles from './frame-styles';
+import PopupStyles from '../styles/popup.css?inline';
 import { getActivePage, getPages } from '../pages';
 import PopupNotification from './common/popup-notification';
 import PoweredBy from './common/powered-by';
@@ -15,6 +16,8 @@ import {
   hasFreeProductPrice,
 } from '../utils/helpers';
 import { tw } from '../utils/tw';
+
+const poweredClasses = tw`absolute bottom-6 left-6 z-[9999] max-lg:relative max-lg:bottom-auto max-lg:left-auto max-lg:flex max-lg:w-full max-lg:justify-center max-lg:bg-white max-lg:pt-8 max-sm:pt-3 max-sm:pb-6 rtl:right-6 rtl:left-auto max-sm:[&.outside.feedback]:hidden [&.outside.full-size]:hidden [@media(min-width:480px)_and_(max-width:820px)]:[&.outside]:left-1/2 [@media(min-width:480px)_and_(max-width:820px)]:[&.outside]:[transform:translateX(-50%)] rtl:[@media(min-width:480px)_and_(max-width:820px)]:[&.outside]:left-auto`;
 
 const StylesWrapper = () => {
   return {
@@ -253,7 +256,7 @@ export class PopupContent extends React.Component {
     return (
       <>
         <div
-          className={`gh-portal-popup-wrapper ${pageClass} group/wrapper relative me-[-30px]! scrollbar-none h-full max-h-screen overflow-scroll px-0 pe-[30px]! pt-[5vmin] pb-0 [-ms-overflow-style:none] max-sm:flex max-sm:flex-col max-sm:items-center max-sm:justify-between max-sm:overflow-y-auto max-sm:bg-white max-sm:p-0 max-sm:[&.account-home]:bg-gray-50 max-sm:[&.feedback]:relative max-sm:[&.feedback]:block max-sm:[&.feedback]:w-full max-sm:[&.feedback]:overflow-hidden max-sm:[&.feedback]:overflow-y-hidden! max-sm:[&.feedback]:bg-transparent max-sm:[&.feedback]:pe-0! [&.full-size]:h-screen [&.full-size]:p-0 [&.preview.account-plan]:pt-0 max-sm:[&.preview.full-size]:h-auto max-sm:[&.preview.full-size]:max-h-[660px] [&.preview.offer]:pt-0 [@media(min-width:480px)_and_(max-height:880px)]:pt-[4vmin]`}
+          className={`gh-portal-popup-wrapper ${pageClass} group/wrapper relative -me-7.5! scrollbar-none h-full max-h-screen overflow-scroll px-0 pe-7.5! pt-[5vmin] pb-0 [-ms-overflow-style:none] max-sm:flex max-sm:flex-col max-sm:items-center max-sm:justify-between max-sm:overflow-y-auto max-sm:bg-white max-sm:p-0 max-sm:[&.account-home]:bg-gray-50 max-sm:[&.feedback]:relative max-sm:[&.feedback]:block max-sm:[&.feedback]:w-full max-sm:[&.feedback]:overflow-hidden max-sm:[&.feedback]:overflow-y-hidden! max-sm:[&.feedback]:bg-transparent max-sm:[&.feedback]:pe-0! [&.full-size]:h-screen [&.full-size]:p-0 [&.preview.account-plan]:pt-0 max-sm:[&.preview.full-size]:h-auto max-sm:[&.preview.full-size]:max-h-[660px] [&.preview.offer]:pt-0 [@media(min-width:480px)_and_(max-height:880px)]:pt-[4vmin]`}
           onClick={(e) => this.handlePopupClose(e)}
         >
           {this.renderPopupNotification()}
@@ -267,12 +270,12 @@ export class PopupContent extends React.Component {
             {this.renderActivePage()}
             {popupSize === 'full' && !isGiftLayout ? (
               <div
-                className={
-                  'gh-portal-powered inside ' +
-                  (hasMode(['preview']) ? 'hidden hidden! ' : '') +
-                  pageClass +
-                  tw` absolute bottom-6 left-6 z-[9999] max-lg:relative max-lg:bottom-auto max-lg:left-auto max-lg:flex max-lg:w-full max-lg:justify-center max-lg:bg-white max-lg:pt-8 max-sm:pt-3 max-sm:pb-6 rtl:right-6 rtl:left-auto max-sm:[&.outside.feedback]:hidden [&.outside.full-size]:hidden [@media(min-width:480px)_and_(max-width:820px)]:[&.outside]:left-1/2 [@media(min-width:480px)_and_(max-width:820px)]:[&.outside]:[transform:translateX(-50%)] rtl:[@media(min-width:480px)_and_(max-width:820px)]:[&.outside]:left-auto`
-                }
+                className={clsx(
+                  'inside',
+                  hasMode(['preview']) && 'hidden!',
+                  pageClass,
+                  poweredClasses,
+                )}
               >
                 <PoweredBy />
               </div>
@@ -283,12 +286,12 @@ export class PopupContent extends React.Component {
         </div>
         {page !== 'share' && !isGiftLayout && (
           <div
-            className={
-              'gh-portal-powered outside ' +
-              (hasMode(['preview']) ? 'hidden hidden! ' : '') +
-              pageClass +
-              tw` absolute bottom-6 left-6 z-[9999] max-lg:relative max-lg:bottom-auto max-lg:left-auto max-lg:flex max-lg:w-full max-lg:justify-center max-lg:bg-white max-lg:pt-8 max-sm:pt-3 max-sm:pb-6 rtl:right-6 rtl:left-auto max-sm:[&.outside.feedback]:hidden [&.outside.full-size]:hidden [@media(min-width:480px)_and_(max-width:820px)]:[&.outside]:left-1/2 [@media(min-width:480px)_and_(max-width:820px)]:[&.outside]:[transform:translateX(-50%)] rtl:[@media(min-width:480px)_and_(max-width:820px)]:[&.outside]:left-auto`
-            }
+            className={clsx(
+              'outside',
+              hasMode(['preview']) && 'hidden!',
+              pageClass,
+              poweredClasses,
+            )}
           >
             <PoweredBy />
           </div>
@@ -332,13 +335,9 @@ export default class PopupModal extends React.Component {
   }
 
   renderFrameStyles() {
-    const { brandColor } = this.context;
-    const styles = brandColor
-      ? `:root { --brandcolor: ${brandColor} }` + BaseStyles + FrameStyles
-      : BaseStyles + FrameStyles;
     return (
       <>
-        <style dangerouslySetInnerHTML={{ __html: styles }} />
+        <FrameStyles css={PopupStyles} brandColor={this.context.brandColor} />
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
       </>
     );

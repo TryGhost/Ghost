@@ -9,6 +9,7 @@ import { ValidateInputForm } from '../../utils/form';
 import { t } from '../../utils/i18n';
 import MemberCustomFields from '../common/member-custom-fields';
 import { changedCustomFields, drawableCustomFields } from '../../utils/custom-fields';
+import { popupHeaderClass } from '../shared-classes';
 
 export default class AccountProfilePage extends React.Component {
   static contextType = AppContext;
@@ -107,13 +108,13 @@ export default class AccountProfilePage extends React.Component {
 
   renderHeader() {
     return (
-      <header className="relative mx-0 mt-[-2px] mb-10 flex items-center justify-center px-[60px] max-sm:mt-1">
+      <header className={popupHeaderClass}>
         <BackButton
           brandColor={this.context.brandColor}
           hidden={!this.context.lastPage}
           onClick={(e) => this.onBack(e)}
         />
-        <h3 className="text-center leading-[1.1em] text-pretty text-black max-[391px]:mt-px max-[391px]:text-21">
+        <h3 className="text-center leading-[1.1em] text-pretty text-black max-2xs:mt-px max-2xs:text-21">
           {t('Account settings')}
         </h3>
       </header>
@@ -233,7 +234,7 @@ export default class AccountProfilePage extends React.Component {
     }
     return (
       <>
-        <div className="with-footer relative scrollbar-none ">
+        <div className="relative scrollbar-none">
           {this.renderHeader()}
           <CloseButton />
           <div className="gh-portal-section mb-10">{this.renderProfileData()}</div>

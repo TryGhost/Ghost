@@ -17,11 +17,11 @@ const Styles = ({ style = {} }) => {
   };
 };
 
-function MemberGravatar({ gravatar, style }) {
+function MemberGravatar({ gravatar, style, className = 'mx-0 mt-0 mb-2' }) {
   const Style = Styles({ style });
   return (
     <figure
-      className="gh-portal-avatar relative mx-0 mt-0 mb-2 flex items-center justify-center overflow-hidden rounded-full"
+      className={`relative flex items-center justify-center overflow-hidden rounded-full ${className}`}
       style={Style.avatarContainer}
     >
       <UserIcon style={Style.userIcon} />

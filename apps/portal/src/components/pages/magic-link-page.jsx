@@ -9,7 +9,14 @@ import EnvelopeIcon from '../../images/icons/envelope.svg?react';
 import { isIos } from '../../utils/is-ios';
 import { t } from '../../utils/i18n';
 import { getGiftDurationLabel } from '../../utils/gift-redemption-notification';
-import { giftCheckoutRightClasses } from '../shared-classes';
+import {
+  giftCardStageClass,
+  giftCheckoutRightClass,
+  giftInnerClass,
+  giftLeftClass,
+  giftSubtitleClass,
+  giftTitleClass,
+} from './gift/classes';
 
 const OTC_FIELD_NAME = 'otc';
 
@@ -206,11 +213,11 @@ export default class MagicLinkPage extends React.Component {
       <form onSubmit={(e) => this.handleSubmit(e)}>
         <section className="gh-portal-section gh-portal-otp mb-3 flex flex-col items-center">
           <div
-            className={` ${this.state.isFocused && 'focused'} ${error && 'error'} w-full rounded-lg border border-solid border-gray-200 [transition:border-color_0.25s_ease] [&.error]:border-red [&.error]:[box-shadow:0_0_0_3px_rgba(255,0,0,0.1)] [&.focused:not(.error)]:border-gray-500`}
+            className={`${this.state.isFocused && 'focused'} ${error && 'error'} w-full rounded-lg border border-solid border-gray-200 [transition:border-color_0.25s_ease] [&.error]:border-red [&.error]:[box-shadow:0_0_0_3px_rgba(255,0,0,0.1)] [&.focused:not(.error)]:border-gray-500`}
           >
             <input
               id={`input-${OTC_FIELD_NAME}`}
-              className={`gh-portal-input ${this.state.otc && 'entry'} ${error && 'error'} mx-auto my-0 box-border block h-11 w-[15ch] appearance-none rounded-md bg-transparent py-0 pr-[1ch] pl-[2ch] [font-family:Consolas,Liberation_Mono,Menlo,Courier,monospace] font-light tracking-[1ch] [color:inherit] outline-none [-webkit-appearance:none] [border:none] transition-input placeholder:text-gray-500 max-xl:h-[42px] [.gh-portal-otp_&]:text-20!`}
+              className={`gh-portal-input ${this.state.otc && 'entry'} ${error && 'error'} mx-auto my-0 box-border block h-11 w-[15ch] appearance-none rounded-md bg-transparent py-0 pr-[1ch] pl-[2ch] [font-family:Consolas,Liberation_Mono,Menlo,Courier,monospace] font-light tracking-[1ch] [color:inherit] outline-none [-webkit-appearance:none] [border:none] transition-input placeholder:text-gray-500 max-xl:h-10.5 [.gh-portal-otp_&]:text-20!`}
               placeholder="––––––"
               name={OTC_FIELD_NAME}
               type="text"
@@ -235,7 +242,7 @@ export default class MagicLinkPage extends React.Component {
           )}
         </section>
 
-        <footer className="relative flex flex-row-reverse items-center gap-[12px] pt-3 max-sm:flex-col max-sm:group-[.preview:not(.full-size)]/wrapper:pb-8">
+        <footer className="relative flex flex-row-reverse items-center gap-3 pt-3 max-sm:flex-col max-sm:group-[.preview:not(.full-size)]/wrapper:pb-8">
           {inboxLinks && !isIos(navigator) && !this.state.otc ? (
             <InboxLinkButton inboxLinks={inboxLinks} />
           ) : (
@@ -272,31 +279,23 @@ export default class MagicLinkPage extends React.Component {
 
     return (
       <>
-        <CloseButton />
-        <div className="giftRedemption relative scrollbar-none min-h-screen ">
+        <CloseButton tone="light" />
+        <div className="relative scrollbar-none min-h-screen">
           <div className="grid min-h-screen w-full grid-cols-[1fr_1fr] max-md:min-h-0 max-md:grid-cols-[1fr] [&_.gh-portal-btn-primary]:rounded-full [&_.gh-portal-input]:h-12">
-            <div className="relative flex items-center justify-center bg-white p-12 max-md:px-6 max-md:pt-8 max-md:pb-6">
-              <div className="hidden" aria-hidden="true" />
-              <div className="relative z-[1] my-auto flex w-full max-w-[496px] flex-col">
+            <div className={giftLeftClass}>
+              <div className={giftInnerClass}>
                 <header className="mb-3">
-                  <h1 className="mb-2 text-start text-32 leading-[1.15] text-pretty text-black max-sm:text-26">
-                    {popupTitle}
-                  </h1>
-                  <p className="gh-portal-gift-checkout-subtitle m-0 text-15 leading-[1.45em] text-pretty text-gray-900">
-                    {popupDescription}
-                  </p>
+                  <h1 className={giftTitleClass}>{popupTitle}</h1>
+                  <p className={giftSubtitleClass}>{popupDescription}</p>
                 </header>
                 <div className="gh-portal-gift-redemption-form mt-6">
                   {showOTCForm ? this.renderOTCForm() : this.renderCloseButton()}
                 </div>
               </div>
             </div>
-            <div className={giftCheckoutRightClasses}>
+            <div className={giftCheckoutRightClass}>
               <div className="flex min-h-0 flex-1 flex-col items-center overflow-y-auto rounded-[32px] px-12 py-16 [background:linear-gradient(180deg,rgba(0,0,0,0.3)_0%,rgba(0,0,0,0)_100%),var(--brandcolor)] max-md:rounded-[0_0_32px_32px] max-md:px-6 max-md:pt-14 max-md:pb-8 [&_.gh-portal-gift-checkout-benefit]:text-white/85 [&_.gh-portal-gift-checkout-benefit_svg_path]:[stroke:rgba(255,255,255,0.85)]">
-                <div
-                  className="my-auto flex w-full max-w-[280px] shrink-0 flex-col items-center max-md:max-w-[240px] [&[data-revealing=true]_.gh-portal-gift-checkout-card-frame]:[transform:rotate(3deg)]"
-                  data-revealing={this.state.showDetails}
-                >
+                <div className={giftCardStageClass} data-revealing={this.state.showDetails}>
                   <GiftCard
                     duration={getGiftDurationLabel(gift)}
                     tierName={gift.tier?.name}
@@ -331,7 +330,7 @@ export default class MagicLinkPage extends React.Component {
     }
 
     return (
-      <div className="relative scrollbar-none ">
+      <div className="relative scrollbar-none">
         <CloseButton />
         {this.renderFormHeader()}
         {showOTCForm ? this.renderOTCForm() : this.renderCloseButton()}

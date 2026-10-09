@@ -6,11 +6,12 @@ import Switch from './switch';
 import { getSiteNewsletters, hasMemberGotEmailSuppression } from '../../utils/helpers';
 import ActionButton from './action-button';
 import { t } from '../../utils/i18n';
+import { popupHeaderClass } from '../shared-classes';
 
 function AccountHeader() {
   const { brandColor, lastPage, doAction } = useContext(AppContext);
   return (
-    <header className="relative mx-0 mt-[-2px] mb-10 flex items-center justify-center px-[60px] max-sm:mt-1">
+    <header className={popupHeaderClass}>
       <BackButton
         brandColor={brandColor}
         hidden={!lastPage}
@@ -18,7 +19,7 @@ function AccountHeader() {
           doAction('back');
         }}
       />
-      <h3 className="text-center leading-[1.1em] text-pretty text-black max-[391px]:mt-px max-[391px]:text-21">
+      <h3 className="text-center leading-[1.1em] text-pretty text-black max-2xs:mt-px max-2xs:text-21">
         {t('Email preferences')}
       </h3>
     </header>
@@ -247,7 +248,7 @@ function EmailHelpSection() {
     <section className="gh-portal-list-help justify-between gap-4 bg-gray-50 text-14">
       <span className="text-gray-800">{t('Not receiving emails?')}</span>
       <button
-        className="gh-portal-btn-text h-auto shrink-0 cursor-pointer self-stretch border-none bg-transparent p-0 text-14 font-medium text-brand [transition:color_linear_100ms]"
+        className="h-auto shrink-0 cursor-pointer self-stretch border-none bg-transparent p-0 text-14 font-medium text-brand [transition:color_linear_100ms]"
         onClick={() =>
           doAction('switchPage', { page: 'emailReceivingFAQ', pageData: { direct: false } })
         }
@@ -310,8 +311,8 @@ export default function NewsletterManagement({
   };
   const FinalNotification = notification || EmptyNotification;
   return (
-    <div className="with-footer relative scrollbar-none ">
-      <div className="gh-portal-email-preferences-header">
+    <div className="relative scrollbar-none">
+      <div>
         <AccountHeader />
         <FinalNotification />
       </div>
@@ -347,7 +348,7 @@ export default function NewsletterManagement({
           {hasMemberGotEmailSuppression({ member }) && !isDisabled && <EmailHelpSection />}
         </div>
       </div>
-      <div className="gh-portal-btn-unsubscribe mt-10 flex flex-col gap-3 [&_.gh-portal-btn]:w-full">
+      <div className="mt-10 flex flex-col gap-3 [&_.gh-portal-btn]:w-full">
         <ActionButton
           isRunning={false}
           onClick={() => {

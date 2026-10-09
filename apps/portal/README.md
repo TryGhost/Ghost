@@ -66,6 +66,18 @@ gateway at `http://localhost:2368/ghost/assets/portal/portal.min.js` and loaded
 into theme pages on the development site. Use `pnpm dev:public` when changing
 Portal alongside the other public apps.
 
+## Styles
+
+Portal is styled with Tailwind CSS v4 utilities. Each iframe (popup, trigger
+button, notification) gets its own compiled stylesheet from `src/styles/`,
+injected into the frame along with the site's accent colour as `--brandcolor`.
+Theme tokens (Shade's colour palette, breakpoints, font sizes, animations) live
+in `src/styles/theme.css`. Tailwind's preflight is not included; `base.css`
+holds the few element defaults Portal relies on.
+
+Write class lists as plain strings, or with the `tw` tagged template when they
+are stored in variables, so the Tailwind ESLint rules can check them.
+
 ## Build
 
 From this directory, create a production minified bundle in

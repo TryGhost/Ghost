@@ -5,6 +5,7 @@ import CloseButton from '../common/close-button';
 import { getDefaultNewsletterSender, getSupportAddress } from '../../utils/helpers';
 import Interpolate from '@doist/react-interpolate';
 import { t } from '../../utils/i18n';
+import { popupHeaderClass } from '../shared-classes';
 
 export default function EmailReceivingPage() {
   const { brandColor, doAction, site, lastPage, member, pageData } = useContext(AppContext);
@@ -15,10 +16,11 @@ export default function EmailReceivingPage() {
   const directAccess = (pageData && pageData.direct) || false;
 
   return (
-    <div className="[&_.gh-portal-btn-back]:left-[calc(6vmin-14px)] max-sm:[&_.gh-portal-btn-back]:left-4 rtl:[&_.gh-portal-btn-back]:right-[calc(6vmin-14px)] rtl:[&_.gh-portal-btn-back]:left-auto max-sm:rtl:[&_.gh-portal-btn-back]:left-auto ">
-      <header className="relative mx-0 mt-[-2px] mb-10 flex items-center justify-center px-[60px] max-sm:mt-1">
+    <div className="">
+      <header className={popupHeaderClass}>
         {!directAccess && (
           <BackButton
+            placement="longform"
             brandColor={brandColor}
             onClick={() => {
               if (!lastPage) {
@@ -52,7 +54,7 @@ export default function EmailReceivingPage() {
               memberEmail: <strong>{member.email}</strong>,
               button: (
                 <button
-                  className="gh-portal-btn-text cursor-pointer border-none bg-transparent p-0 text-14.5 font-medium text-brand underline [transition:color_linear_100ms]"
+                  className="cursor-pointer border-none bg-transparent p-0 text-14.5 font-medium text-brand underline [transition:color_linear_100ms]"
                   onClick={() =>
                     doAction('switchPage', {
                       lastPage: 'emailReceivingFAQ',

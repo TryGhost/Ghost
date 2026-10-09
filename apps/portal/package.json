@@ -49,7 +49,6 @@
     "clsx": "catalog:",
     "dompurify": "catalog:",
     "eslint": "catalog:",
-    "eslint-plugin-tailwindcss": "catalog:",
     "jsdom": "catalog:",
     "react": "catalog:react17",
     "react-day-picker": "catalog:",
@@ -61,11 +60,9 @@
   },
   "browserslist": {
     "production": [
-      "safari >= 16.4",
-      "ios_saf >= 16.4",
-      "chrome >= 111",
-      "edge >= 111",
-      "firefox >= 128"
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
     ],
     "development": [
       "last 1 chrome version",

@@ -1,3 +1,4 @@
+import clsx from 'clsx';
 import CheckmarkIcon from '../../images/icons/checkmark.svg?react';
 import { t } from '../../utils/i18n';
 import { tw } from '../../utils/tw';
@@ -35,7 +36,7 @@ const GiftDetailsToggle = ({ description, benefits, showDetails, onToggle }) => 
         >
           <CheckmarkIcon
             aria-hidden="true"
-            className="mt-[3px] size-[14px] shrink-0 text-gray-950 [&_path]:stroke-white/85"
+            className="mt-[3px] size-3.5 shrink-0 text-gray-950 [&_path]:stroke-white/85"
             focusable="false"
           />
           <span>{benefitName}</span>
@@ -66,10 +67,10 @@ const GiftDetailsToggle = ({ description, benefits, showDetails, onToggle }) => 
       </div>
       <button
         type="button"
-        className={
-          tw`mt-6 inline-flex cursor-pointer items-center gap-1 border-none bg-transparent px-3 py-2 text-14 font-medium text-white/70 [transition:color_0.15s_ease] hover:text-white/95 focus-visible:[outline:2px_solid_rgba(255,255,255,0.9)] focus-visible:outline-offset-[3px] [&_svg]:size-3 [&_svg]:[transition:transform_0.2s_ease] [&.is-open_svg]:[transform:rotate(-180deg)]` +
-          (showDetails ? ' is-open' : '')
-        }
+        className={clsx(
+          tw`mt-6 inline-flex cursor-pointer items-center gap-1 border-none bg-transparent px-3 py-2 text-14 font-medium text-white/70 [transition:color_0.15s_ease] hover:text-white/95 focus-visible:[outline:2px_solid_rgba(255,255,255,0.9)] focus-visible:outline-offset-[3px] [&_svg]:size-3 [&_svg]:[transition:transform_0.2s_ease] [&.is-open_svg]:[transform:rotate(-180deg)]`,
+          showDetails && 'is-open',
+        )}
         onClick={onToggle}
         aria-expanded={showDetails}
       >

@@ -3,6 +3,7 @@ import GiftIcon from '../../images/icons/gift.svg?react';
 import { useContext } from 'react';
 import { type Site, canShowSignupGiftPromotion } from '../../utils/gift-subscriptions';
 import { t } from '../../utils/i18n';
+import { signupMessageButtonClass } from '../shared-classes';
 
 interface SignupGiftPromotionProps {
   className?: string;
@@ -26,7 +27,7 @@ const SignupGiftPromotion = ({ className, lastPage }: SignupGiftPromotionProps) 
     <>
       <div>{t('Buying for someone else?')}</div>
       <button
-        className="gh-portal-btn relative ms-1! -mb-px flex cursor-pointer items-center justify-center rounded-md bg-transparent p-0 text-center text-14 leading-none font-semibold tracking-[0.2px] whitespace-nowrap text-black no-underline outline-none select-none [border:none] transition-control hover:border-gray-300 hover:opacity-[0.85]"
+        className={signupMessageButtonClass}
         data-test-button="gift-switch"
         data-testid="gift-switch"
         style={{ color: brandColor }}

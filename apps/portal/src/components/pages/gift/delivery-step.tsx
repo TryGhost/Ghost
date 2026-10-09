@@ -4,11 +4,12 @@ import InputField from '../../common/input-field';
 import { t } from '../../../utils/i18n';
 import type { GiftDeliveryMethod, GiftInputField } from './types';
 import {
-  getGiftSwitchButtonClasses,
-  giftRevealClasses,
-  giftRevealInnerClasses,
-  giftSwitchClasses,
-} from '../../shared-classes';
+  getGiftSwitchButtonClass,
+  giftRevealClass,
+  giftRevealInnerClass,
+  giftSwitchClass,
+} from './classes';
+import { inputLabelClass, inputLabelContainerClass } from '../../shared-classes';
 
 interface TypedDatePickerProps {
   ariaLabel: string;
@@ -69,10 +70,10 @@ function GiftDeliveryStep({
         <div className="mb-2 text-14 font-semibold text-gray-900">
           {t('How would you like to share this gift?')}
         </div>
-        <div aria-label={t('Delivery method')} className={giftSwitchClasses} role="radiogroup">
+        <div aria-label={t('Delivery method')} className={giftSwitchClass} role="radiogroup">
           <button
             aria-checked={deliveryMethod === 'email'}
-            className={getGiftSwitchButtonClasses(deliveryMethod === 'email')}
+            className={getGiftSwitchButtonClass(deliveryMethod === 'email')}
             data-test-button="delivery-method-email"
             role="radio"
             type="button"
@@ -82,7 +83,7 @@ function GiftDeliveryStep({
           </button>
           <button
             aria-checked={deliveryMethod === 'link'}
-            className={getGiftSwitchButtonClasses(deliveryMethod === 'link')}
+            className={getGiftSwitchButtonClass(deliveryMethod === 'link')}
             data-test-button="delivery-method-link"
             role="radio"
             type="button"
@@ -95,10 +96,10 @@ function GiftDeliveryStep({
 
       <div
         aria-hidden={deliveryMethod !== 'email'}
-        className={giftRevealClasses}
+        className={giftRevealClass}
         data-open={deliveryMethod === 'email'}
       >
-        <div className={giftRevealInnerClasses}>
+        <div className={giftRevealInnerClass}>
           <div className="mt-6">
             <TypedInputField
               {...recipientNameField}
@@ -114,16 +115,13 @@ function GiftDeliveryStep({
             />
             {/* Part of the recipient's details rather than a section of its own, so it takes
             InputField's label markup to sit flush with the fields above. */}
-            <div className="gh-portal-input-labelcontainer flex w-full justify-between">
-              <label
-                className="gh-portal-input-label mb-0.5 text-13 font-semibold tracking-[0px] text-gray-950"
-                htmlFor="gift-message"
-              >
+            <div className={inputLabelContainerClass}>
+              <label className={inputLabelClass} htmlFor="gift-message">
                 {t('Optional message')}
               </label>
             </div>
             <textarea
-              className="gh-portal-input gh-portal-gift-checkout-textarea mb-0 block min-h-24 w-full resize-none appearance-none rounded-md border border-solid border-gray-300 bg-transparent px-3 py-2.5 [font-family:inherit] text-15 leading-[1.5em] tracking-[0.2px] [color:inherit] outline-none [-webkit-appearance:none] transition-input placeholder:text-gray-500 focus:border-gray-500"
+              className="gh-portal-input mb-0 block min-h-24 w-full resize-none appearance-none rounded-md border border-solid border-gray-300 bg-transparent px-3 py-2.5 [font-family:inherit] text-15 leading-[1.5em] tracking-[0.2px] [color:inherit] outline-none [-webkit-appearance:none] transition-input placeholder:text-gray-500 focus:border-gray-500"
               data-test-input="gift-message"
               id="gift-message"
               maxLength={maxMessageLength}
@@ -133,21 +131,18 @@ function GiftDeliveryStep({
             />
             <div
               aria-hidden={giftMessage.length === 0}
-              className={giftRevealClasses}
+              className={giftRevealClass}
               data-open={giftMessage.length > 0}
             >
-              <div className={giftRevealInnerClasses}>
-                <p className="gh-portal-gift-checkout-message-count mt-1.5 mb-0 text-right text-12 tracking-[0.02em] text-gray-500">
+              <div className={giftRevealInnerClass}>
+                <p className="mt-1.5 mb-0 text-right text-12 tracking-[0.02em] text-gray-500">
                   {giftMessage.length}/{maxMessageLength}
                 </p>
               </div>
             </div>
-            <div className="gh-portal-gift-checkout-delivery-date mt-4 [&_.gh-portal-input]:mb-0 [&_.gh-portal-input]:box-border">
-              <div className="gh-portal-input-labelcontainer flex w-full justify-between">
-                <label
-                  className="gh-portal-input-label mb-0.5 text-13 font-semibold tracking-[0px] text-gray-950"
-                  htmlFor="gift-delivery-date"
-                >
+            <div className="mt-4 [&_.gh-portal-input]:mb-0 [&_.gh-portal-input]:box-border">
+              <div className={inputLabelContainerClass}>
+                <label className={inputLabelClass} htmlFor="gift-delivery-date">
                   {t('Delivery date')}
                 </label>
               </div>
@@ -162,7 +157,7 @@ function GiftDeliveryStep({
                 onChange={onChangeDeliveryDate}
               />
               {deliveryDateError && (
-                <p className="gh-portal-gift-checkout-delivery-error mt-2 mb-0 text-13 leading-[1.6em] tracking-[0.35px] text-red">
+                <p className="mt-2 mb-0 text-13 leading-[1.6em] tracking-[0.35px] text-red">
                   {deliveryDateError}
                 </p>
               )}

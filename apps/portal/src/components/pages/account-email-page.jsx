@@ -45,7 +45,7 @@ export default function AccountEmailPage() {
       const hideClassName = hasInteracted ? 'hidden' : '';
       return (
         <>
-          <p className={`mx-0 mt-[-20px] mb-6 text-center text-balance ${hideClassName}`}>
+          <p className={`mx-0 -mt-5 mb-6 text-center text-balance ${hideClassName}`}>
             <Interpolate
               string={t(
                 '{memberEmail} will no longer receive emails when someone replies to your comments.',
@@ -69,7 +69,7 @@ export default function AccountEmailPage() {
     const hideClassName = hasInteracted ? 'hidden' : '';
     return (
       <>
-        <p className={`mx-0 mt-[-20px] mb-6 text-center text-balance ${hideClassName}`}>
+        <p className={`mx-0 -mt-5 mb-6 text-center text-balance ${hideClassName}`}>
           <Interpolate
             string={t('{memberEmail} will no longer receive {newsletterName} newsletter.')}
             mapping={{

@@ -28,7 +28,7 @@ function NewsletterPrefSection({ newsletter, subscribedNewsletters, setSubscribe
         </div>
         <div className="flex [flex:44px_0_0] justify-center pt-1.5">
           <LockIcon
-            className="size-[14px] overflow-visible [&_path]:text-gray-900"
+            className="size-3.5 overflow-visible [&_path]:text-gray-900"
             alt=""
             title={t('Unlock access to all newsletters by becoming a paid subscriber.')}
           />
@@ -126,7 +126,7 @@ export default function NewsletterSelectionPage({ pageData, onBack }) {
 
   const [subscribedNewsletters, setSubscribedNewsletters] = useState(defaultNewsletters);
   return (
-    <div className="with-footer relative mx-auto scrollbar-none max-w-[460px] animate-fade-in ">
+    <div className="relative mx-auto scrollbar-none max-w-[460px] animate-fade-in">
       <p className="text-center text-18 font-semibold text-pretty">
         {t('Choose your newsletters')}
       </p>
@@ -138,7 +138,7 @@ export default function NewsletterSelectionPage({ pageData, onBack }) {
           />
         </div>
       </div>
-      <footer className="flex flex-col items-center justify-between gap-[12px]">
+      <footer className="flex flex-col items-center justify-between gap-3">
         <div style={{ width: '100%' }}>
           <div style={{ marginBottom: '20px' }}>
             <ActionButton

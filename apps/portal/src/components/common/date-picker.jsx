@@ -1,3 +1,4 @@
+import clsx from 'clsx';
 import AppContext from '../../app-context';
 import CalendarIcon from '../../images/icons/calendar.svg?react';
 import { DayPicker } from 'react-day-picker';
@@ -21,9 +22,9 @@ const classNames = {
   month_caption: tw`mb-0.5 flex h-7 items-center justify-center text-14 font-semibold text-black`,
   nav: tw`pointer-events-none absolute inset-x-0 top-0 flex justify-between [&_button]:pointer-events-auto [&_button]:flex [&_button]:size-7 [&_button]:cursor-pointer [&_button]:items-center [&_button]:justify-center [&_button]:rounded-md [&_button]:border-none [&_button]:bg-transparent [&_button]:p-0 [&_button]:text-gray-900 [&_button:focus-visible]:rounded [&_button:hover:not([aria-disabled='true'])]:text-black [&_button[aria-disabled='true']]:cursor-default [&_button[aria-disabled='true']]:opacity-30 [&_svg]:size-4 [&_svg]:fill-current rtl:[&_svg]:-scale-x-100`,
   month_grid: 'gh-portal-datepicker-grid border-collapse',
-  weekday: tw`w-[34px] pb-0.5 text-11 font-medium tracking-[0.3px] text-gray-600 uppercase`,
-  day: 'gh-portal-datepicker-day h-[30px] p-0',
-  day_button: tw`gh-portal-datepicker-day-button relative flex h-[30px] w-[34px] cursor-pointer items-center justify-center rounded-md border-none bg-transparent p-0 text-13.5 text-black`,
+  weekday: tw`w-8.5 pb-0.5 text-11 font-medium tracking-[0.3px] text-gray-600 uppercase`,
+  day: 'gh-portal-datepicker-day h-7.5 p-0',
+  day_button: tw`gh-portal-datepicker-day-button relative flex h-7.5 w-8.5 cursor-pointer items-center justify-center rounded-md border-none bg-transparent p-0 text-13.5 text-black`,
   today: tw`[&_.gh-portal-datepicker-day-button]:after:absolute [&_.gh-portal-datepicker-day-button]:after:bottom-[3px] [&_.gh-portal-datepicker-day-button]:after:left-1/2 [&_.gh-portal-datepicker-day-button]:after:size-[3px] [&_.gh-portal-datepicker-day-button]:after:-translate-x-1/2 [&_.gh-portal-datepicker-day-button]:after:rounded-[50%] [&_.gh-portal-datepicker-day-button]:after:bg-brand [&_.gh-portal-datepicker-day-button]:after:content-['']`,
   selected: tw`gh-portal-datepicker-selected [&_.gh-portal-datepicker-day-button]:bg-brand [&_.gh-portal-datepicker-day-button]:text-white [&_.gh-portal-datepicker-day-button:hover:not(:disabled)]:bg-brand [&_.gh-portal-datepicker-day-button:hover:not(:disabled)]:opacity-[0.92] [&.gh-portal-datepicker-selected_.gh-portal-datepicker-day-button]:after:bg-white`,
   disabled: tw`gh-portal-datepicker-disabled [&_.gh-portal-datepicker-day-button]:cursor-default [&_.gh-portal-datepicker-day-button:hover]:bg-transparent [&.gh-portal-datepicker-disabled_.gh-portal-datepicker-day-button]:text-gray-500`,
@@ -211,11 +212,11 @@ const DatePicker = ({
         {/* Keeps a native date input for locale-aware keyboard
                     editing; only the browser's calendar is replaced. */}
         <input
-          className={
-            tw`gh-portal-input mb-0 box-border block h-11 w-full appearance-none rounded-md border border-solid border-gray-300 bg-transparent px-3 py-0 text-15 tracking-[0.2px] [color:inherit] outline-none transition-input placeholder:text-gray-500 focus:border-gray-500 max-xl:h-[42px] [&.error]:border-red [&.has-min-label:not(:focus)]:text-transparent [&.has-min-label:not(:focus)::-webkit-datetime-edit]:text-transparent [&::-webkit-calendar-picker-indicator]:hidden [@media(hover:none)]:text-[16px]!` +
-            (hasError ? ' error' : '') +
-            (showMinLabel ? ' has-min-label' : '')
-          }
+          className={clsx(
+            tw`gh-portal-input mb-0 box-border block h-11 w-full appearance-none rounded-md border border-solid border-gray-300 bg-transparent px-3 py-0 text-15 tracking-[0.2px] [color:inherit] outline-none transition-input placeholder:text-gray-500 focus:border-gray-500 max-xl:h-10.5 [&.error]:border-red [&.has-min-label:not(:focus)]:text-transparent [&.has-min-label:not(:focus)::-webkit-datetime-edit]:text-transparent [&::-webkit-calendar-picker-indicator]:hidden [@media(hover:none)]:text-[16px]!`,
+            hasError && 'error',
+            showMinLabel && 'has-min-label',
+          )}
           data-test-input={id}
           id={id}
           max={max}
@@ -240,7 +241,7 @@ const DatePicker = ({
           aria-expanded={isOpen}
           aria-haspopup="dialog"
           aria-label={ariaLabel}
-          className="hidden supports-[selector(::-webkit-calendar-picker-indicator)]:absolute supports-[selector(::-webkit-calendar-picker-indicator)]:end-3 supports-[selector(::-webkit-calendar-picker-indicator)]:top-1/2 supports-[selector(::-webkit-calendar-picker-indicator)]:flex supports-[selector(::-webkit-calendar-picker-indicator)]:size-[18px] supports-[selector(::-webkit-calendar-picker-indicator)]:-translate-y-1/2 supports-[selector(::-webkit-calendar-picker-indicator)]:cursor-pointer supports-[selector(::-webkit-calendar-picker-indicator)]:items-center supports-[selector(::-webkit-calendar-picker-indicator)]:justify-center supports-[selector(::-webkit-calendar-picker-indicator)]:border-none supports-[selector(::-webkit-calendar-picker-indicator)]:bg-transparent supports-[selector(::-webkit-calendar-picker-indicator)]:p-0 supports-[selector(::-webkit-calendar-picker-indicator)]:text-gray-600 supports-[selector(::-webkit-calendar-picker-indicator)]:[&_svg]:size-[18px]"
+          className="hidden picker-indicator:absolute picker-indicator:end-3 picker-indicator:top-1/2 picker-indicator:flex picker-indicator:size-4.5 picker-indicator:-translate-y-1/2 picker-indicator:cursor-pointer picker-indicator:items-center picker-indicator:justify-center picker-indicator:border-none picker-indicator:bg-transparent picker-indicator:p-0 picker-indicator:text-gray-600 picker-indicator:[&_svg]:size-4.5"
           data-testid="datepicker-toggle"
           type="button"
           onClick={toggle}

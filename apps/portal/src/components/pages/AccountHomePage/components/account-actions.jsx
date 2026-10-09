@@ -15,6 +15,11 @@ import EmailNewsletterAction from './email-newsletter-action';
 import EmailPreferencesAction from './email-preferences-action';
 import useIntegrations from './use-integrations';
 import { t } from '../../../../utils/i18n';
+import {
+  accountActionButtonClass,
+  accountActionClass,
+  accountActionTextClass,
+} from '../../../shared-classes';
 
 const shouldShowEmailPreferences = (site, member) => {
   return (
@@ -51,7 +56,7 @@ const AccountActions = () => {
     <div>
       <div className="gh-portal-list overflow-hidden rounded-lg border border-solid border-gray-200 bg-white p-0 [&_section]:m-0 [&_section]:flex [&_section]:items-center [&_section]:p-5 [&_section]:[border-bottom:1px_solid_var(--color-gray-200)] [&_section:first-of-type]:rounded-t-lg [&_section:last-of-type]:rounded-b-lg [&_section:last-of-type]:border-none">
         <section
-          className="cursor-pointer focus-visible:shadow-focus-brand focus-visible:outline-none"
+          className={accountActionClass}
           role="button"
           tabIndex={0}
           onClick={openEditProfile}
@@ -65,7 +70,7 @@ const AccountActions = () => {
             }
           }}
         >
-          <div className="grow [&_h3]:text-15 [&_h3]:font-semibold [&_p]:ms-0 [&_p]:me-2 [&_p]:mt-[5px] [&_p]:mb-0 [&_p]:text-14.5 [&_p]:leading-[1.3em] [&_p]:tracking-[0.3px] [&_p]:[word-break:break-word] [&_p]:text-gray-700">
+          <div className={accountActionTextClass}>
             {/* With custom fields, the row is about more than the name, so it is named
                 for what it opens rather than for the member. */}
             <h3>{name && !hasCustomFieldsEnabled({ site }) ? name : t('Account')}</h3>
@@ -73,7 +78,7 @@ const AccountActions = () => {
           </div>
           <span
             data-test-button="edit-profile"
-            className="-mx-1 my-0 flex min-h-[38px] items-center justify-center px-1 py-0 text-15 leading-[1em] font-medium tracking-[0.2px] whitespace-nowrap text-brand select-none"
+            className={accountActionButtonClass}
             aria-hidden="true"
           >
             {t('Edit')}

@@ -168,7 +168,7 @@ export default class SigninPage extends React.Component {
             onKeyDown={(e, field) => this.onKeyDown(e, field)}
           />
         </div>
-        <footer className="relative flex flex-col items-center gap-[12px] pt-3 max-sm:group-[.preview:not(.full-size)]/wrapper:pb-8">
+        <footer className="relative flex flex-col items-center gap-3 pt-3 max-sm:group-[.preview:not(.full-size)]/wrapper:pb-8">
           {this.renderSubmitButton()}
           {isSignupAvailable && this.renderSignupMessage()}
         </footer>
@@ -185,7 +185,7 @@ export default class SigninPage extends React.Component {
       iconStyle.backgroundImage = `url(${siteIcon})`;
       return (
         <img
-          className="gh-portal-signup-logo relative mt-3 mb-2.5 block size-[60px] rounded-sm bg-cover bg-center max-sm:size-12"
+          className="gh-portal-signup-logo relative mt-3 mb-2.5 block size-15 rounded-sm bg-cover bg-center max-sm:size-12"
           src={siteIcon}
           alt={this.context.site.title}
         />
@@ -209,7 +209,7 @@ export default class SigninPage extends React.Component {
 
   renderFormHeader() {
     return (
-      <header className="gh-portal-signin-header mb-8 flex flex-col items-center px-8 max-[391px]:pb-4">
+      <header className="mb-8 flex flex-col items-center px-8 max-2xs:pb-4">
         {this.renderSiteIcon()}
         {this.renderSiteTitle()}
       </header>
@@ -221,7 +221,7 @@ export default class SigninPage extends React.Component {
       <>
         <CloseButton />
         <div className="mx-auto w-full max-w-[420px]">
-          <div className="signin relative scrollbar-none max-h-[unset]! pb-1 [&_.gh-portal-input]:mb-3 [&_.gh-portal-section]:mb-0 ">
+          <div className="signin relative scrollbar-none max-h-[unset]! pb-1 [&_.gh-portal-input]:mb-3 [&_.gh-portal-section]:mb-0">
             {this.renderFormHeader()}
             {this.renderForm()}
           </div>

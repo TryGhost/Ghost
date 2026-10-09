@@ -1,3 +1,4 @@
+import clsx from 'clsx';
 import { useContext, useState } from 'react';
 import AppContext from '../../app-context';
 import CloseButton from '../common/close-button';
@@ -11,7 +12,15 @@ import { getDateString, parseDateValue } from '../../utils/date-time';
 import { t } from '../../utils/i18n';
 import useCardTilt from '../../utils/use-card-tilt';
 import { formatGiftValue } from '../../utils/format-gift-value';
-import { giftCheckoutRightClasses } from '../shared-classes';
+import {
+  giftCardStageClass,
+  giftCheckoutRightClass,
+  giftInnerClass,
+  giftLeftClass,
+  giftPreviewClass,
+  giftSubtitleClass,
+  giftTitleClass,
+} from './gift/classes';
 import { tw } from '../../utils/tw';
 
 const CopyIcon = () => (
@@ -92,25 +101,20 @@ const GiftSuccessPage = () => {
 
   return (
     <>
-      <div className="giftSuccess relative scrollbar-none min-h-screen p-0 ">
-        <CloseButton placement="gift" />
+      <div className="relative scrollbar-none min-h-screen p-0">
+        <CloseButton placement="gift" tone="light" />
         <div className="grid min-h-screen w-full grid-cols-[1fr_1fr] max-md:min-h-0 max-md:grid-cols-[1fr]">
-          <div className="relative flex items-center justify-center bg-white p-12 max-md:px-6 max-md:pt-8 max-md:pb-6">
-            <div className="hidden" aria-hidden="true" />
-            <div className="relative z-[1] my-auto flex w-full max-w-[496px] flex-col">
+          <div className={giftLeftClass}>
+            <div className={giftInnerClass}>
               <header className="mb-3">
                 <span
-                  className="mb-5 inline-flex size-[52px] items-center justify-center rounded-full bg-[color:color-mix(in_srgb,var(--brandcolor)_12%,var(--color-white))] text-brand [&_svg]:size-[26px]"
+                  className="mb-5 inline-flex size-13 items-center justify-center rounded-full bg-[color:color-mix(in_srgb,var(--brandcolor)_12%,var(--color-white))] text-brand [&_svg]:size-6.5"
                   aria-hidden="true"
                 >
                   <CheckIcon />
                 </span>
-                <h1 className="mb-2 text-start text-32 leading-[1.15] text-pretty text-black max-sm:text-26">
-                  {titleText}
-                </h1>
-                <p className="gh-portal-gift-checkout-subtitle m-0 text-15 leading-[1.45em] text-pretty text-gray-900">
-                  {subtitleText}
-                </p>
+                <h1 className={giftTitleClass}>{titleText}</h1>
+                <p className={giftSubtitleClass}>{subtitleText}</p>
               </header>
 
               <div className="mt-6">
@@ -127,10 +131,10 @@ const GiftSuccessPage = () => {
                     {redeemUrl}
                   </span>
                   <button
-                    className={
-                      tw`flex h-10 shrink-0 cursor-pointer items-center gap-1.5 rounded-full border-none px-[18px] py-0 text-14 font-semibold text-white [will-change:opacity] [transition:opacity_0.15s_ease] hover:opacity-90 focus-visible:[outline:2px_solid_var(--color-black)] [&_svg]:size-[14px]` +
-                      (copied ? ' bg-green' : ' bg-brand')
-                    }
+                    className={clsx(
+                      tw`flex h-10 shrink-0 cursor-pointer items-center gap-1.5 rounded-full border-none px-4.5 py-0 text-14 font-semibold text-white [will-change:opacity] [transition:opacity_0.15s_ease] hover:opacity-90 focus-visible:[outline:2px_solid_var(--color-black)] [&_svg]:size-3.5`,
+                      copied ? 'bg-green' : 'bg-brand',
+                    )}
                     onClick={handleCopy}
                     type="button"
                   >
@@ -164,12 +168,9 @@ const GiftSuccessPage = () => {
             </div>
           </div>
 
-          <div className={giftCheckoutRightClasses} {...cardTiltProps}>
-            <div className="flex min-h-0 flex-1 flex-col items-center overflow-y-auto rounded-[32px] px-12 py-16 [background:linear-gradient(180deg,rgba(0,0,0,0.3)_0%,rgba(0,0,0,0)_100%),var(--brandcolor)] max-md:rounded-t-none max-md:px-6 max-md:pt-14 max-md:pb-8">
-              <div
-                className="my-auto flex w-full max-w-[280px] shrink-0 flex-col items-center max-md:max-w-[240px] [&[data-revealing=true]_.gh-portal-gift-checkout-card-frame]:[transform:rotate(3deg)]"
-                data-revealing={showDetails}
-              >
+          <div className={giftCheckoutRightClass} {...cardTiltProps}>
+            <div className={giftPreviewClass}>
+              <div className={giftCardStageClass} data-revealing={showDetails}>
                 <GiftCard
                   cardRef={cardRef}
                   duration={

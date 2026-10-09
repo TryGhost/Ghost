@@ -3,6 +3,7 @@ import Switch from '../../../common/switch';
 import { getSiteNewsletters, hasMemberGotEmailSuppression } from '../../../../utils/helpers';
 import { useContext } from 'react';
 import { t } from '../../../../utils/i18n';
+import { accountActionClass, accountActionTextClass } from '../../../shared-classes';
 
 function EmailNewsletterAction() {
   const { member, site, doAction } = useContext(AppContext);
@@ -18,7 +19,7 @@ function EmailNewsletterAction() {
 
   return (
     <section
-      className="cursor-pointer focus-visible:shadow-focus-brand focus-visible:outline-none"
+      className={accountActionClass}
       role="button"
       tabIndex={0}
       aria-pressed={subscribed}
@@ -33,13 +34,13 @@ function EmailNewsletterAction() {
         }
       }}
     >
-      <div className="grow [&_h3]:text-15 [&_h3]:font-semibold [&_p]:ms-0 [&_p]:me-2 [&_p]:mt-[5px] [&_p]:mb-0 [&_p]:text-14.5 [&_p]:leading-[1.3em] [&_p]:tracking-[0.3px] [&_p]:[word-break:break-word] [&_p]:text-gray-700">
+      <div className={accountActionTextClass}>
         <h3>{t('Email newsletter')}</h3>
         <p>
           {label}{' '}
           {hasMemberGotEmailSuppression({ member }) && subscribed && (
             <button
-              className="gh-portal-btn-text mt-[3px] block h-auto cursor-pointer border-none bg-transparent p-0 text-14.5 font-medium text-brand [transition:color_linear_100ms]"
+              className="mt-[3px] block h-auto cursor-pointer border-none bg-transparent p-0 text-14.5 font-medium text-brand [transition:color_linear_100ms]"
               onClick={(e) => {
                 e.stopPropagation();
                 doAction('switchPage', { page: 'emailReceivingFAQ', lastPage: 'accountHome' });

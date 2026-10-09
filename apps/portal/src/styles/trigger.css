@@ -1,5 +1,4 @@
-@import 'tailwindcss/theme.css' layer(theme);
-@import './theme.css';
+@import './base.css';
 @import 'tailwindcss/utilities.css' layer(utilities) source(none);
 
 @source '../components/trigger-button';

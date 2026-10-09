@@ -7,6 +7,7 @@ import {
 } from '../../../../utils/helpers';
 import EmailDeliveryFailedIcon from '../../../../images/icons/email-delivery-failed.svg?react';
 import { t } from '../../../../utils/i18n';
+import { accountActionButtonClass, accountActionClass } from '../../../shared-classes';
 
 function DisabledEmailNotice() {
   return (
@@ -44,7 +45,7 @@ function EmailPreferencesAction() {
 
   return (
     <section
-      className="cursor-pointer focus-visible:shadow-focus-brand focus-visible:outline-none"
+      className={accountActionClass}
       role="button"
       tabIndex={0}
       onClick={handleClick}
@@ -63,7 +64,7 @@ function EmailPreferencesAction() {
         {renderEmailNotice()}
       </div>
       <span
-        className="-mx-1 my-0 flex min-h-[38px] items-center justify-center px-1 py-0 text-15 leading-[1em] font-medium tracking-[0.2px] whitespace-nowrap text-brand select-none"
+        className={accountActionButtonClass}
         data-test-button="manage-newsletters"
         aria-hidden="true"
       >

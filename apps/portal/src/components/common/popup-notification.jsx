@@ -8,9 +8,9 @@ import { clearURLParams } from '../../utils/notifications';
 import Interpolate from '@doist/react-interpolate';
 import { t } from '../../utils/i18n';
 import {
-  notificationClasses,
-  notificationCloseIconClasses,
-  notificationIconClasses,
+  notificationClass,
+  notificationCloseIconClass,
+  notificationIconClass,
 } from '../notification/notification-classes';
 
 const CloseButton = ({ hide = false, onClose }) => {
@@ -24,7 +24,7 @@ const CloseButton = ({ hide = false, onClose }) => {
       aria-label="Close notification"
       onClick={onClose}
     >
-      <CloseIcon className={notificationCloseIconClasses} aria-hidden="true" />
+      <CloseIcon className={notificationCloseIconClass} aria-hidden="true" />
     </button>
   );
 };
@@ -129,14 +129,14 @@ export default class PopupNotification extends React.Component {
 
     return (
       <div
-        className={`gh-portal-notification ${statusClass}${slideClass} ${notificationClasses} right-[42px] max-sm:left-3 max-sm:max-w-[calc(100%-54px)] rtl:right-auto rtl:left-[42px]`}
+        className={`gh-portal-notification ${statusClass}${slideClass} ${notificationClass} right-10.5 max-sm:left-3 max-sm:max-w-[calc(100%-54px)] rtl:right-auto rtl:left-10.5`}
         data-testid={status ? `popup-notification-${status}` : 'popup-notification'}
         onAnimationEnd={(e) => this.onAnimationEnd(e)}
       >
         {status === 'error' ? (
-          <WarningIcon className={`error ${notificationIconClasses} text-red`} alt="" />
+          <WarningIcon className={`error ${notificationIconClass} text-red`} alt="" />
         ) : (
-          <CheckmarkIcon className={`success ${notificationIconClasses} text-green`} alt="" />
+          <CheckmarkIcon className={`success ${notificationIconClass} text-green`} alt="" />
         )}
         <NotificationText type={type} status={status} message={message} site={site} />
         <CloseButton hide={!closeable} onClose={(e) => this.closeNotification(e)} />

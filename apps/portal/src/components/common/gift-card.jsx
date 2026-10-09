@@ -84,7 +84,7 @@ const GiftCard = ({
         )}
         <div className="relative mt-auto flex items-center justify-center gap-2 px-7 py-4 before:absolute before:inset-0 before:z-[1] before:bg-white before:content-['']">
           {siteIcon && (
-            <img className="relative z-[3] size-[22px] object-cover" src={siteIcon} alt="" />
+            <img className="relative z-[3] size-5.5 object-cover" src={siteIcon} alt="" />
           )}
           <span className="relative z-[3] text-14 font-semibold tracking-[-0.01em] text-black">
             {siteTitle}

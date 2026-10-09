@@ -4,6 +4,7 @@ import BackButton from '../common/back-button';
 import CloseButton from '../common/close-button';
 import { getSupportAddress } from '../../utils/helpers';
 import { t } from '../../utils/i18n';
+import { popupHeaderClass } from '../shared-classes';
 
 export default function EmailSuppressedPage() {
   const { brandColor, doAction, site, pageData } = useContext(AppContext);
@@ -14,7 +15,7 @@ export default function EmailSuppressedPage() {
   return (
     <div>
       {!directAccess && (
-        <header className="relative mx-0 mt-[-2px] mb-10 flex items-center justify-center px-[60px] max-sm:mt-1">
+        <header className={popupHeaderClass}>
           <BackButton
             brandColor={brandColor}
             onClick={() => {
@@ -66,7 +67,7 @@ export default function EmailSuppressedPage() {
         </p>
         <p>
           <a
-            className="gh-portal-btn relative mt-[4rem] flex h-11 w-full min-w-[80px] cursor-pointer items-center justify-center rounded-md border border-solid border-gray-200 bg-white px-[1.8rem] py-0 text-center text-15 leading-[1em] font-medium tracking-[0.2px] whitespace-nowrap text-brand no-underline outline-none select-none transition-control hover:border-gray-300"
+            className="gh-portal-btn relative mt-[4rem] flex h-11 w-full min-w-20 cursor-pointer items-center justify-center rounded-md border border-solid border-gray-200 bg-white px-[1.8rem] py-0 text-center text-15 leading-[1em] font-medium tracking-[0.2px] whitespace-nowrap text-brand no-underline outline-none select-none transition-control hover:border-gray-300"
             href={supportAddress}
             onClick={() => {
               supportAddress && window.open(supportAddress);
