@@ -1284,7 +1284,8 @@ describe('Gift Subscriptions', function () {
 
             // Verify gift subscription redeemed staff notification was sent,
             // and that no other unwanted staff notifications were sent (i.e. no "Free member signup" email)
-            mockManager.assert.sentEmail({
+            // The redemption notification runs after commit, outside DomainEvents.
+            await mockManager.assert.sentEmailEventually({
               subject: /gift subscription redeemed/i,
               to: 'jbloggs@example.com',
             });

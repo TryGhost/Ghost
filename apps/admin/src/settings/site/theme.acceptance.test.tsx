@@ -179,6 +179,9 @@ describe('Theme settings', () => {
       .toHaveTextContent(/casper is now your active theme/i);
     expect(activateApi.requests).toHaveLength(1);
 
+    // The success toast can arrive before the previous picker has closed.
+    await expect(settingsScreen.confirmationModal()).toHaveCount(0);
+    await expect(modal).toHaveCount(0);
     await settingsScreen.theme().getByRole('button', { name: 'Change theme' }).click();
     const reopenedModal = settingsScreen.themeModal();
     await reopenedModal.getByRole('button', { name: /Edition/ }).click();

@@ -456,8 +456,8 @@ describe('Navigation settings', () => {
 
     await newItem().getByLabelText('URL').click();
     await userEvent.keyboard('tips');
-    // Wait for the debounced search to narrow the list before arrowing into it
-    await expect(suggestions().getByRole('option', { name: /Gift subscriptions/ })).toHaveCount(0);
+    // Tips is also in the initial list: wait for the filtered list before selecting.
+    await expect(suggestions().getByRole('option')).toHaveCount(1);
     await expect
       .element(suggestions().getByRole('option', { name: /Tips and donations/ }))
       .toBeInTheDocument();

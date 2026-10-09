@@ -344,35 +344,44 @@ export class AppInstallationsService {
       created_at: now,
       updated_at: now,
     };
-    try {
-      await this.knex.transaction(async (trx) => {
-        await trx(INSTALLATIONS).insert({
-          id,
-          app_id: written.app_id,
-          current_app_id: written.app_id,
-          status: written.status,
-          manifest_id: manifestId,
-          created_at: now,
-          updated_at: now,
+    for (let attempt = 0; ; attempt += 1) {
+      try {
+        await this.knex.transaction(async (trx) => {
+          await trx(INSTALLATIONS).insert({
+            id,
+            app_id: written.app_id,
+            current_app_id: written.app_id,
+            status: written.status,
+            manifest_id: manifestId,
+            created_at: now,
+            updated_at: now,
+          });
+          await trx(MANIFESTS).insert({
+            id: manifestId,
+            installation_id: id,
+            manifest_url: written.manifest_url,
+            manifest: loaded.serialised,
+            digest: loaded.digest,
+            requires_approval: false,
+            created_at: now,
+          });
         });
-        await trx(MANIFESTS).insert({
-          id: manifestId,
-          installation_id: id,
-          manifest_url: written.manifest_url,
-          manifest: loaded.serialised,
-          digest: loaded.digest,
-          requires_approval: false,
-          created_at: now,
-        });
-      });
-    } catch (err) {
-      if (isUniqueViolation(err)) {
-        throw new errors.ConflictError({
-          message: `The app ${manifest.id} is already installed.`,
-          code: 'APP_ALREADY_INSTALLED',
-        });
+        break;
+      } catch (err) {
+        // Duplicate inserts can deadlock when several confirmations compete for
+        // the unique current_app_id. MySQL rolls back the victim's transaction;
+        // retry the whole write so it either commits or sees the winning install.
+        if ((err as { code?: unknown } | null)?.code === 'ER_LOCK_DEADLOCK' && attempt < 2) {
+          continue;
+        }
+        if (isUniqueViolation(err)) {
+          throw new errors.ConflictError({
+            message: `The app ${manifest.id} is already installed.`,
+            code: 'APP_ALREADY_INSTALLED',
+          });
+        }
+        throw err;
       }
-      throw err;
     }
 
     await this.recordAction({

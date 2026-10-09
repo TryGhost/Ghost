@@ -278,6 +278,7 @@ describe('Post preview modal', () => {
 
   it('closes the preview on an Escape pressed inside a same-origin site frame', async () => {
     fakePreviewWorld();
+    await fakeFrameOrigin(window.location.origin, '<p>Post preview</p>');
     const onOpenChange = vi.fn();
     await renderPreviewModal({
       onOpenChange,
@@ -299,6 +300,7 @@ describe('Post preview modal', () => {
   it('leaves the Web preview cleanly after its frame has followed a link to another site', async () => {
     fakePreviewWorld();
     fakeEmailPreview();
+    await fakeFrameOrigin(window.location.origin, '<p>Post preview</p>');
     await fakeFrameOrigin('http://elsewhere.test', '<p>Another site</p>');
     const onOpenChange = vi.fn();
     await renderPreviewModal({
