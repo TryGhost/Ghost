@@ -151,6 +151,16 @@ describe('Default Frontend routing', function () {
     it('still handles /gift/<token> via the gift-preview controller (invalid token redirects to homepage)', async function () {
       await request.get('/gift/this-token-does-not-exist').expect(302).expect('Location', /\/$/);
     });
+
+    it('serves the Portal gift card textures with an immutable cache header', async function () {
+      for (const filename of ['gift-card-orb.webp', 'gift-card-noise.webp']) {
+        await request
+          .get(`/gift/assets/${filename}`)
+          .expect(200)
+          .expect('Content-Type', 'image/webp')
+          .expect('Cache-Control', 'public, max-age=31536000, immutable');
+      }
+    });
   });
 
   describe('Single post', function () {

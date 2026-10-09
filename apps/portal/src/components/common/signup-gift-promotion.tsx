@@ -1,6 +1,7 @@
 import AppContext from '../../app-context';
 import GiftIcon from '../../images/icons/gift.svg?react';
-import { useContext } from 'react';
+import { useContext, useEffect } from 'react';
+import { preloadGiftCardTextures } from './gift-card';
 import { type Site, canShowSignupGiftPromotion } from '../../utils/gift-subscriptions';
 import { t } from '../../utils/i18n';
 
@@ -17,8 +18,15 @@ interface SignupGiftPromotionContext {
 
 const SignupGiftPromotion = ({ className, lastPage }: SignupGiftPromotionProps) => {
   const { brandColor, doAction, site } = useContext(AppContext) as SignupGiftPromotionContext;
+  const showPromotion = canShowSignupGiftPromotion({ site });
 
-  if (!canShowSignupGiftPromotion({ site })) {
+  useEffect(() => {
+    if (showPromotion && site) {
+      preloadGiftCardTextures(site.url);
+    }
+  }, [showPromotion, site]);
+
+  if (!showPromotion) {
     return null;
   }
 
