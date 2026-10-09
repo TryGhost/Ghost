@@ -18,7 +18,7 @@ export default class SiteTitleBackButton extends React.Component {
       <>
         <button
           className={clsx(
-            'group/back z-[10000] flex h-auto min-w-20 cursor-pointer items-center justify-center rounded-md border-0 border-none bg-white p-0 text-center text-15 leading-[1em] font-medium tracking-[0.2px] whitespace-nowrap text-gray-950 no-underline outline-none select-none [transition:transform_0.25s_ease-in-out] disabled:cursor-auto disabled:opacity-50!',
+            'group/back z-[10000] flex h-auto min-w-20 cursor-pointer items-center justify-center rounded-md border-0 border-none bg-white p-0 text-center text-15 leading-[1em] font-medium tracking-[0.2px] whitespace-nowrap text-gray-900 no-underline outline-none select-none [transition:transform_0.25s_ease-in-out] disabled:cursor-auto disabled:opacity-50!',
             PLACEMENTS[placement],
           )}
           onClick={() => {

@@ -36,7 +36,7 @@ const GiftDetailsToggle = ({ description, benefits, showDetails, onToggle }) => 
         >
           <CheckmarkIcon
             aria-hidden="true"
-            className="mt-[3px] size-3.5 shrink-0 text-gray-950 [&_path]:stroke-white/85"
+            className="mt-[3px] size-3.5 shrink-0 text-gray-900 [&_path]:stroke-white/85"
             focusable="false"
           />
           <span>{benefitName}</span>

@@ -42,9 +42,9 @@ import {
 } from '../shared-classes';
 import { tw } from '../../utils/tw';
 
-const listSectionClass = tw`flex items-center p-5 [border-bottom:1px_solid_var(--color-gray-200)] first-of-type:rounded-t-lg last-of-type:rounded-b-lg last-of-type:[border:none]`;
+const listSectionClass = tw`flex items-center p-5 [border-bottom:1px_solid_var(--color-gray-150)] first-of-type:rounded-t-lg last-of-type:rounded-b-lg last-of-type:[border:none]`;
 
-const listDetailTextClass = tw`mt-[5px] mr-2 mb-0 text-14.5 leading-[1.3em] tracking-[0.3px] [word-break:break-word] text-gray-700 rtl:mr-0 rtl:ml-2`;
+const listDetailTextClass = tw`mt-[5px] mr-2 mb-0 text-14.5 leading-[1.3em] tracking-[0.3px] [word-break:break-word] text-gray-600 rtl:mr-0 rtl:ml-2`;
 
 const accountPlansMainClass = 'gh-portal-section mb-0 mt-6';
 
@@ -68,7 +68,7 @@ const Header = ({ showConfirmation, confirmationType, pendingOffer }) => {
   }
   return (
     <header className="relative -mt-0.5 mb-10 flex items-center justify-center px-15 max-sm:mt-1">
-      <h3 className="text-center leading-[1.1em] text-pretty text-black group-[.account-plan.full-size]/popup:mt-11 group-[.account-plan.full-size]/popup:text-32">
+      <h3 className="text-center leading-[1.1em] text-pretty text-gray-950 group-[.account-plan.full-size]/popup:mt-11 group-[.account-plan.full-size]/popup:text-32">
         {title}
       </h3>
     </header>
@@ -147,7 +147,7 @@ const PlanConfirmationSection = ({ plan, type, onConfirm }) => {
   if (type === 'changePlan') {
     return (
       <div className="mx-auto w-full max-w-[420px]">
-        <div className="gh-portal-list mb-6 overflow-hidden rounded-lg border border-solid border-gray-200 bg-white p-0">
+        <div className="gh-portal-list mb-6 overflow-hidden rounded-lg border border-solid border-gray-150 bg-white p-0">
           <section className={listSectionClass}>
             <div className="grow">
               <h3 className="text-15 font-semibold">{t('Account')}</h3>
@@ -194,7 +194,7 @@ const PlanConfirmationSection = ({ plan, type, onConfirm }) => {
           </div>
           <textarea
             data-test-input="cancellation-reason"
-            className="gh-portal-input mb-4 box-border block h-15.5 w-full resize-none appearance-none rounded-md border border-solid border-gray-300 bg-transparent px-3 py-1.5 text-15 tracking-[0.2px] [color:inherit] outline-none [-webkit-appearance:none] transition-input placeholder:text-gray-500 focus:border-gray-500"
+            className="gh-portal-input mb-4 box-border block h-15.5 w-full resize-none appearance-none rounded-md border border-solid border-gray-200 bg-transparent px-3 py-1.5 text-15 tracking-[0.2px] [color:inherit] outline-none [-webkit-appearance:none] transition-input placeholder:text-gray-400 focus:border-gray-400"
             key="cancellation_reason"
             label="Cancellation reason"
             type="text"
@@ -389,13 +389,13 @@ const RetentionOfferSection = ({ subscription, offer, onAcceptOffer, onDeclineOf
                 <span className={currencySignClass()}>{currency}</span>
                 <span className={amountClass}>{discountedPrice}</span>
               </div>
-              <div className="gh-portal-offer-oldprice relative mt-1 mb-0 flex text-18 leading-none font-light whitespace-nowrap text-gray-500 after:absolute after:inset-x-0 after:top-1/2 after:block after:h-px after:bg-gray-500 after:content-['']">
+              <div className="gh-portal-offer-oldprice relative mt-1 mb-0 flex text-18 leading-none font-light whitespace-nowrap text-gray-400 after:absolute after:inset-x-0 after:top-1/2 after:block after:h-px after:bg-gray-400 after:content-['']">
                 {currency}
                 {originalPrice}
               </div>
             </div>
           )}
-          <p className="mt-1 mb-0 text-13.5 text-gray-500 first:mt-3">{offerMessage}</p>
+          <p className="mt-1 mb-0 text-13.5 text-gray-400 first:mt-3">{offerMessage}</p>
         </div>
 
         <ActionButton
@@ -454,7 +454,7 @@ const UpgradePlanSection = ({ plans, selectedPlan, onPlanSelect, onPlanCheckout 
       </div>
       {!isPaidMember({ member }) && (
         <SignupGiftPromotion
-          className="z-[9999] mt-1 flex flex-wrap justify-center text-15 text-gray-900 group-[.full-size]/popup:mt-6 group-[.full-size]/popup:mb-10 [&_*]:z-[9999]"
+          className="z-[9999] mt-1 flex flex-wrap justify-center text-15 text-gray-750 group-[.full-size]/popup:mt-6 group-[.full-size]/popup:mb-10 [&_*]:z-[9999]"
           lastPage="accountPlan"
         />
       )}
@@ -477,7 +477,7 @@ const NoPlansAvailableMessage = () => {
     <section>
       <div className="gh-portal-section mb-10">
         <p
-          className="mx-8 mt-2 mb-6 text-center text-gray-900"
+          className="mx-8 mt-2 mb-6 text-center text-gray-850"
           data-testid="no-plans-available-notification-text"
         >
           {t('Sorry, no paid plans are available.')}

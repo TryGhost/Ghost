@@ -32,9 +32,9 @@ import { tw } from '../../utils/tw';
 
 const offerTitleClass = tw`mr-[110px] w-full text-18 rtl:mr-0 rtl:ml-[110px] [&.placeholder]:opacity-40`;
 
-const footnoteClass = tw`mt-1 mb-0 text-13.5 text-gray-500`;
+const footnoteClass = tw`mt-1 mb-0 text-13.5 text-gray-400`;
 
-const productCardClass = tw`gh-portal-product-card relative flex min-h-0 max-w-none min-w-[320px] flex-1 flex-col items-start justify-stretch border border-gray-300 bg-white px-8 transition-input hover:border-gray-400 max-sm:min-w-[unset]`;
+const productCardClass = tw`gh-portal-product-card relative flex min-h-0 max-w-none min-w-[320px] flex-1 flex-col items-start justify-stretch border border-gray-200 bg-white px-8 transition-input hover:border-gray-300 max-sm:min-w-[unset]`;
 
 export default class OfferPage extends React.Component {
   static contextType = AppContext;
@@ -124,7 +124,7 @@ export default class OfferPage extends React.Component {
 
     const termsText = (
       <div
-        className="gh-portal-signup-terms-content [&_a]:font-medium [&_a]:text-brand [&_a]:no-underline [&_p]:mb-0 [&_p]:text-14 [&_p]:leading-[1.25em] [&_p]:text-gray-900 [.gh-portal-error_&]:leading-[1.5em]"
+        className="gh-portal-signup-terms-content [&_a]:font-medium [&_a]:text-brand [&_a]:no-underline [&_p]:mb-0 [&_p]:text-14 [&_p]:leading-[1.25em] [&_p]:text-gray-750 [.gh-portal-error_&]:leading-[1.5em]"
         dangerouslySetInnerHTML={{ __html: sanitizeHtml(site.portal_signup_terms_html) }}
       ></div>
     );
@@ -242,7 +242,7 @@ export default class OfferPage extends React.Component {
     return (
       <header className="mb-8 flex flex-col items-center px-8 max-2xs:pb-4">
         {this.renderSiteLogo()}
-        <h2 className="mt-3 text-center leading-[1.1em] text-pretty text-black [.gh-portal-signup-logo+&]:mt-1">
+        <h2 className="mt-3 text-center leading-[1.1em] text-pretty text-gray-950 [.gh-portal-signup-logo+&]:mt-1">
           {siteTitle}
         </h2>
       </header>
@@ -320,7 +320,7 @@ export default class OfferPage extends React.Component {
     }
     const { brandColor, doAction } = this.context;
     return (
-      <div className="z-[9999] mt-1 flex flex-wrap justify-center text-15 text-gray-900 [&_*]:z-[9999]">
+      <div className="z-[9999] mt-1 flex flex-wrap justify-center text-15 text-gray-750 [&_*]:z-[9999]">
         <div>{t('Already a member?')}</div>
         <button
           className={signupMessageButtonClass}
@@ -499,7 +499,7 @@ export default class OfferPage extends React.Component {
       return null;
     }
     return (
-      <div className="gh-portal-offer-oldprice relative mt-4 mb-1 flex text-18 leading-none font-light whitespace-nowrap text-gray-500 after:absolute after:inset-x-0 after:top-1/2 after:block after:h-px after:bg-gray-500 after:content-['']">
+      <div className="gh-portal-offer-oldprice relative mt-4 mb-1 flex text-18 leading-none font-light whitespace-nowrap text-gray-400 after:absolute after:inset-x-0 after:top-1/2 after:block after:h-px after:bg-gray-400 after:content-['']">
         {getCurrencySymbol(price.currency)}{' '}
         {formatPrice(price.amount / 100, this.context.site?.locale)}
       </div>

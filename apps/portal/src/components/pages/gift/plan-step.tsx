@@ -126,7 +126,7 @@ function GiftPlanStep({
       )}
 
       <div className="mt-6">
-        <div className="mb-2 text-14 font-semibold text-gray-900">
+        <div className="mb-2 text-14 font-semibold text-gray-750">
           {isSingleTier ? t('Membership details') : t('Tier')}
         </div>
         {offeredDurations.length > 1 ? (
@@ -136,7 +136,10 @@ function GiftPlanStep({
             onSelectDuration={onSelectDuration}
           />
         ) : (
-          <div className="text-16 leading-[1.3] font-semibold text-black" data-test-single-duration>
+          <div
+            className="text-16 leading-[1.3] font-semibold text-gray-950"
+            data-test-single-duration
+          >
             {t('{duration} membership', { duration: activeDurationLabel })}
           </div>
         )}
@@ -158,7 +161,7 @@ function GiftPlanStep({
                   tw`overflow-hidden rounded-[10px] border border-solid [transition:border-color_0.2s_ease,background-color_0.2s_ease]`,
                   isSelected && !isSingleTier
                     ? tw`border-brand bg-[color:color-mix(in_srgb,var(--brandcolor)_6%,var(--color-white))] [box-shadow:0_0_0_1px_var(--brandcolor)_inset]`
-                    : ['border-gray-300 bg-white', !isSingleTier && 'hover:border-gray-400'],
+                    : ['border-gray-200 bg-white', !isSingleTier && 'hover:border-gray-300'],
                 )}
               >
                 <button
@@ -179,19 +182,21 @@ function GiftPlanStep({
                         tw`relative mt-[3px] size-4.5 shrink-0 rounded-[50%] border-[1.5px] border-solid`,
                         isSelected
                           ? tw`border-brand bg-brand after:absolute after:top-1/2 after:left-1/2 after:size-1.5 after:-translate-1/2 after:rounded-[50%] after:bg-white after:content-['']`
-                          : 'border-gray-400 bg-white',
+                          : 'border-gray-300 bg-white',
                       )}
                     />
                   )}
                   <div className="flex min-w-0 flex-1 flex-col gap-1">
                     <div className="flex items-baseline gap-2.5">
-                      <span className="flex-1 text-15 font-medium text-black">{product.name}</span>
-                      <span className="gh-portal-gift-checkout-tier-price text-15 font-semibold text-black">
+                      <span className="flex-1 text-15 font-medium text-gray-950">
+                        {product.name}
+                      </span>
+                      <span className="gh-portal-gift-checkout-tier-price text-15 font-semibold text-gray-950">
                         {tierPriceLabel(product, activeDuration)}
                       </span>
                     </div>
                     {product.description && (
-                      <p className="-mt-0.5 mb-0 text-14 leading-[1.4] text-gray-900">
+                      <p className="-mt-0.5 mb-0 text-14 leading-[1.4] text-gray-750">
                         {product.description}
                       </p>
                     )}
@@ -210,11 +215,11 @@ function GiftPlanStep({
                           return (
                             <div
                               key={key}
-                              className="gh-portal-gift-checkout-benefit flex items-start gap-2.5 text-14.5 leading-[1.4] text-gray-950"
+                              className="gh-portal-gift-checkout-benefit flex items-start gap-2.5 text-14.5 leading-[1.4] text-gray-900"
                             >
                               <CheckmarkIcon
                                 aria-hidden="true"
-                                className="mt-[3px] size-3.5 shrink-0 text-gray-950"
+                                className="mt-[3px] size-3.5 shrink-0 text-gray-900"
                                 focusable="false"
                               />
                               <span>{benefit.name}</span>

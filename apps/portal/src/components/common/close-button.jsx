@@ -6,7 +6,7 @@ import { tw } from '../../utils/tw';
 
 // Light icons sit on the gift layout's brand-coloured panel; on gift checkout it moves to a white header on narrow screens
 const TONES = {
-  default: tw`text-gray-700 hover:text-gray-800`,
+  default: tw`text-gray-600 hover:text-gray-700`,
   light: tw`text-white/65 hover:text-white/90`,
   lightOnWide: tw`text-white/65 hover:text-white/90 max-md:text-brand max-md:hover:text-brand`,
 };

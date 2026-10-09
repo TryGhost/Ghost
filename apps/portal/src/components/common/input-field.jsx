@@ -52,9 +52,9 @@ function InputField({
   const sectionClasses = hidden ? 'gh-portal-input-section hidden' : 'gh-portal-input-section';
   const labelClasses =
     (hideLabel ? 'gh-portal-input-label hidden' : 'gh-portal-input-label') +
-    tw` mb-0.5 text-13 font-semibold tracking-[0px] text-gray-950`;
+    tw` mb-0.5 text-13 font-semibold tracking-[0px] text-gray-900`;
   const inputClasses = errorMessage || invalid ? 'gh-portal-input error' : 'gh-portal-input';
-  const fieldClasses = tw`mb-4 block w-full appearance-none rounded-md border border-solid border-gray-300 bg-transparent px-3 text-15 tracking-[0.2px] [color:inherit] outline-none [-webkit-appearance:none] transition-input placeholder:text-gray-500 focus:border-gray-500 group-[:not(.preview)]/popup:disabled:bg-gray-50 group-[:not(.preview)]/popup:disabled:text-gray-400 group-[:not(.preview)]/popup:disabled:placeholder:text-gray-400 aria-[invalid=true]:border-red group-[:not(.preview)]/popup:[&[readonly]]:bg-gray-50 group-[:not(.preview)]/popup:[&[readonly]]:text-gray-400 group-[:not(.preview)]/popup:[&[readonly]::placeholder]:text-gray-400`;
+  const fieldClasses = tw`mb-4 block w-full appearance-none rounded-md border border-solid border-gray-200 bg-transparent px-3 text-15 tracking-[0.2px] [color:inherit] outline-none [-webkit-appearance:none] transition-input placeholder:text-gray-400 focus:border-gray-400 group-[:not(.preview)]/popup:disabled:bg-gray-100 group-[:not(.preview)]/popup:disabled:text-gray-300 group-[:not(.preview)]/popup:disabled:placeholder:text-gray-300 aria-[invalid=true]:border-red group-[:not(.preview)]/popup:[&[readonly]]:bg-gray-100 group-[:not(.preview)]/popup:[&[readonly]]:text-gray-300 group-[:not(.preview)]/popup:[&[readonly]::placeholder]:text-gray-300`;
   const inputHeightClasses = 'h-11 py-0 max-xl:h-10.5';
   if (isCookiesDisabled()) {
     disabled = true;
@@ -141,7 +141,7 @@ function InputField({
         // an option's text is all a native list can style across browsers.
         <select
           {...fieldProps}
-          className={`${value ? inputClasses : `${inputClasses} placeholder`} ${fieldClasses} ${inputHeightClasses} cursor-pointer bg-select-chevron [background-position:right_12px_center] bg-no-repeat pe-9 rtl:[background-position:left_12px_center] [&_option]:[color:CanvasText] [&.placeholder]:text-gray-500`}
+          className={`${value ? inputClasses : `${inputClasses} placeholder`} ${fieldClasses} ${inputHeightClasses} cursor-pointer bg-select-chevron [background-position:right_12px_center] bg-no-repeat pe-9 rtl:[background-position:left_12px_center] [&_option]:[color:CanvasText] [&.placeholder]:text-gray-400`}
           disabled={disabled || readOnly}
         >
           {value ? (

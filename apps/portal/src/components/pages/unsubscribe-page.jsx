@@ -31,7 +31,7 @@ function AccountHeader() {
   return (
     <header className="flex flex-col items-center pb-6">
       <SiteLogo />
-      <h2 className="mt-1.5 text-center text-16 font-bold tracking-[-.1px] text-gray-950 uppercase">
+      <h2 className="mt-1.5 text-center text-16 font-bold tracking-[-.1px] text-[#15212a] uppercase">
         {siteTitle}
       </h2>
     </header>
@@ -43,10 +43,10 @@ function UnsubscribeErrorPage({ message }) {
   return (
     <div className="relative scrollbar-none">
       <CloseButton />
-      <div className="mx-auto my-0 w-24 px-0 py-2.5 text-center text-red-500">
+      <div className="mx-auto my-0 w-24 px-0 py-2.5 text-center text-[#f50b23]">
         <WarningIcon />
       </div>
-      <h1 className="text-center leading-[1.1em] text-pretty text-black">
+      <h1 className="text-center leading-[1.1em] text-pretty text-gray-950">
         {t("That didn't go to plan")}
       </h1>
       <div>
@@ -57,7 +57,7 @@ function UnsubscribeErrorPage({ message }) {
         retry={false}
         onClick={() => doAction('closePopup')}
         disabled={false}
-        brandColor="#15171a"
+        brandColor="#000000"
         label={t('Close')}
         isRunning={false}
         tabIndex={3}
@@ -292,7 +292,7 @@ export default function UnsubscribePage() {
       <div className="relative scrollbar-none">
         <CloseButton />
         <AccountHeader />
-        <h1 className="mb-4 text-center text-26 leading-[1.1em] text-pretty text-black">
+        <h1 className="mb-4 text-center text-26 leading-[1.1em] text-pretty text-gray-950">
           {t('Successfully unsubscribed')}
         </h1>
         <div>

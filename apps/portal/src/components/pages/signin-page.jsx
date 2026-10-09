@@ -11,7 +11,7 @@ import { t } from '../../utils/i18n';
 import { signupMessageButtonClass } from '../shared-classes';
 import { tw } from '../../utils/tw';
 
-const mainTitleClass = tw`mt-3 text-center leading-[1.1em] text-pretty text-black [.gh-portal-signup-logo+&]:mt-1`;
+const mainTitleClass = tw`mt-3 text-center leading-[1.1em] text-pretty text-gray-950 [.gh-portal-signup-logo+&]:mt-1`;
 
 export default class SigninPage extends React.Component {
   static contextType = AppContext;
@@ -126,7 +126,7 @@ export default class SigninPage extends React.Component {
   renderSignupMessage() {
     const { brandColor } = this.context;
     return (
-      <div className="z-[9999] mt-1 flex flex-wrap justify-center text-15 text-gray-900 [&_*]:z-[9999]">
+      <div className="z-[9999] mt-1 flex flex-wrap justify-center text-15 text-gray-750 [&_*]:z-[9999]">
         <div>{t("Don't have an account?")}</div>
         <button
           data-test-button="signup-switch"
@@ -149,7 +149,7 @@ export default class SigninPage extends React.Component {
         <section>
           <div className="gh-portal-section mb-10">
             <p
-              className="mx-8 mt-2 mb-6 text-center text-gray-900"
+              className="mx-8 mt-2 mb-6 text-center text-gray-850"
               data-testid="members-disabled-notification-text"
             >
               {t('Memberships unavailable, contact the owner for access.')}

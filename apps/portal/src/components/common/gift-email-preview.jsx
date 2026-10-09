@@ -119,19 +119,19 @@ const GiftEmailPreview = ({
             )}
           </div>
 
-          <h1 className="mb-3.5 text-start text-25 leading-[1.2] font-bold tracking-[-0.01em] text-gray-950">
+          <h1 className="mb-3.5 text-start text-25 leading-[1.2] font-bold tracking-[-0.01em] text-[#15212a]">
             {t('A gift, just for you')}
           </h1>
 
           <div aria-hidden={!toName} className={giftRevealClass} data-open={!!toName}>
             <div className={giftRevealInnerClass}>
-              <p className="mb-0 pb-2.5 text-15.5 leading-[1.5] text-gray-900">
+              <p className="mb-0 pb-2.5 text-15.5 leading-[1.5] text-[#3a464c]">
                 {t('Hi {recipientName},', { recipientName: toName })}
               </p>
             </div>
           </div>
 
-          <p className="gh-portal-gift-email-lede mb-0 text-15.5 leading-[1.5] text-gray-900 [&_strong]:[font-weight:inherit] [&_strong]:[color:inherit]">
+          <p className="gh-portal-gift-email-lede mb-0 text-15.5 leading-[1.5] text-[#3a464c] [&_strong]:[font-weight:inherit] [&_strong]:[color:inherit]">
             <Interpolate mapping={giftDetails} string={lede} />
           </p>
 
@@ -148,7 +148,7 @@ const GiftEmailPreview = ({
                   className="pointer-events-none absolute -start-2.5 -top-5.5 h-auto w-[98px] text-brand opacity-[0.04]"
                   focusable="false"
                 />
-                <p className="relative mb-0 text-15.5 leading-[1.5] [word-break:break-word] whitespace-pre-line text-gray-950 italic">
+                <p className="relative mb-0 text-15.5 leading-[1.5] [word-break:break-word] whitespace-pre-line text-[#15212a] italic">
                   {message}
                 </p>
                 {/* No dash before the name — the note above it
@@ -164,7 +164,7 @@ const GiftEmailPreview = ({
 
           {benefits.length > 0 && (
             <div className="mt-6">
-              <p className="mb-1.5 text-15.5 leading-[1.45] font-normal text-gray-900">
+              <p className="mb-1.5 text-15.5 leading-[1.45] font-normal text-[#3a464c]">
                 {t("What's included")}
               </p>
               {/* Every perk, as the email sends them. */}
@@ -172,7 +172,7 @@ const GiftEmailPreview = ({
                 {benefits.map((benefit, idx) => (
                   <div
                     key={benefit?.id || `benefit-${idx}`}
-                    className="flex items-start gap-2.5 py-[5px] text-15.5 leading-[1.45] text-gray-900"
+                    className="flex items-start gap-2.5 py-[5px] text-15.5 leading-[1.45] text-[#3a464c]"
                   >
                     <CheckmarkIcon
                       aria-hidden="true"

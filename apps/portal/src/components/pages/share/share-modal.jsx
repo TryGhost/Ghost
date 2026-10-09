@@ -14,7 +14,7 @@ import { useEffect, useRef, useState } from 'react';
 import { t } from '../../../utils/i18n';
 import { tw } from '../../../utils/tw';
 
-const shareActionClass = tw`relative flex h-11 max-w-17.5 min-w-0 cursor-pointer items-center justify-center rounded-lg border border-solid border-gray-200 bg-white px-4 py-0 text-center text-15 leading-[1em] font-medium tracking-[0.2px] whitespace-nowrap text-gray-900 no-underline outline-none select-none transition-control hover:border-gray-300 max-xs:w-full max-xs:max-w-none max-xs:flex-none`;
+const shareActionClass = tw`relative flex h-11 max-w-17.5 min-w-0 cursor-pointer items-center justify-center rounded-lg border border-solid border-gray-150 bg-white px-4 py-0 text-center text-15 leading-[1em] font-medium tracking-[0.2px] whitespace-nowrap text-gray-850 no-underline outline-none select-none transition-control hover:border-gray-250 max-xs:w-full max-xs:max-w-none max-xs:flex-none`;
 
 const ShareModal = () => {
   const [copied, setCopied] = useState(false);
@@ -98,12 +98,12 @@ const ShareModal = () => {
     <div className="relative scrollbar-none">
       <CloseButton placement="share" />
       <div className="mb-5">
-        <h1 className="text-left text-21 leading-[1.1em] font-semibold text-pretty text-black rtl:text-right">
+        <h1 className="text-left text-21 leading-[1.1em] font-semibold text-pretty text-gray-950 rtl:text-right">
           {t('Share')}
         </h1>
       </div>
 
-      <div className="flex flex-col rounded-xl border border-solid border-gray-200">
+      <div className="flex flex-col rounded-xl border border-solid border-gray-150">
         {shareImage && (
           <img
             className="aspect-video w-full rounded-t-xl bg-gray-50 object-cover"
@@ -114,12 +114,12 @@ const ShareModal = () => {
         )}
         <div className="flex flex-col gap-4 p-4">
           {shareTitle && (
-            <h2 className="m-0 text-19 leading-[1.35] font-semibold text-pretty text-black">
+            <h2 className="m-0 text-19 leading-[1.35] font-semibold text-pretty text-gray-950">
               {shareTitle}
             </h2>
           )}
           {shareExcerpt && (
-            <p className="mx-0 -mt-2 mb-0 line-clamp-3 text-15 leading-[1.45] text-pretty text-gray-700">
+            <p className="mx-0 -mt-2 mb-0 line-clamp-3 text-15 leading-[1.45] text-pretty text-gray-600">
               {shareExcerpt}
             </p>
           )}
@@ -133,7 +133,7 @@ const ShareModal = () => {
                   data-testid="share-preview-favicon"
                 />
               )}
-              <div className="gh-portal-share-preview-meta flex min-w-0 items-center gap-1 truncate text-13.5 leading-[1.3] text-gray-900">
+              <div className="gh-portal-share-preview-meta flex min-w-0 items-center gap-1 truncate text-13.5 leading-[1.3] text-gray-800">
                 {shareSiteName && (
                   <span className="min-w-0 overflow-hidden font-medium text-ellipsis">
                     {shareSiteName}
@@ -155,7 +155,7 @@ const ShareModal = () => {
 
       <div className="gh-portal-share-actions relative mt-5 flex items-center gap-3 max-xs:flex-col max-xs:items-stretch">
         <button
-          className="gh-portal-btn gh-portal-share-action copy relative flex h-11 w-auto max-w-none min-w-0 flex-[1_0_auto] cursor-pointer items-center justify-center gap-2 rounded-lg border-none bg-[color:var(--brandcolor,#3eb0ef)] px-3.5 py-0 text-center text-15 leading-[1em] font-medium tracking-[0.2px] whitespace-nowrap text-white no-underline outline-none select-none transition-control hover:border-gray-300 disabled:cursor-auto disabled:opacity-50! max-xs:order-1"
+          className="gh-portal-btn gh-portal-share-action copy relative flex h-11 w-auto max-w-none min-w-0 flex-[1_0_auto] cursor-pointer items-center justify-center gap-2 rounded-lg border-none bg-[color:var(--brandcolor,#3eb0ef)] px-3.5 py-0 text-center text-15 leading-[1em] font-medium tracking-[0.2px] whitespace-nowrap text-white no-underline outline-none select-none transition-control hover:border-gray-250 disabled:cursor-auto disabled:opacity-50! max-xs:order-1"
           type="button"
           onClick={onCopy}
           aria-label={copied ? t('Copied') : t('Copy link')}
@@ -234,7 +234,7 @@ const ShareModal = () => {
           ref={moreMenuRef}
         >
           <button
-            className="gh-portal-btn gh-portal-share-action more relative flex h-11 max-w-17.5 min-w-0 cursor-pointer items-center justify-center rounded-lg border border-solid border-gray-200 bg-white px-4 py-0 text-center text-20 leading-none font-bold tracking-[0px] whitespace-nowrap text-gray-900 no-underline outline-none select-none transition-control hover:border-gray-300 disabled:cursor-auto disabled:opacity-50! max-xs:w-full max-xs:max-w-none max-xs:flex-none"
+            className="gh-portal-btn gh-portal-share-action more relative flex h-11 max-w-17.5 min-w-0 cursor-pointer items-center justify-center rounded-lg border border-solid border-gray-150 bg-white px-4 py-0 text-center text-20 leading-none font-bold tracking-[0px] whitespace-nowrap text-gray-850 no-underline outline-none select-none transition-control hover:border-gray-250 disabled:cursor-auto disabled:opacity-50! max-xs:w-full max-xs:max-w-none max-xs:flex-none"
             type="button"
             onClick={onToggleMoreMenu}
             aria-label={t('More options')}
@@ -251,12 +251,12 @@ const ShareModal = () => {
           </button>
           {isMoreMenuOpen && (
             <div
-              className="absolute right-0 bottom-[calc(100%+8px)] z-[2] flex min-w-[180px] origin-bottom-right [transform:translateY(8px)] animate-share-menu-in flex-col rounded-lg border border-solid border-gray-200 bg-white p-1.5 opacity-0 [box-shadow:0_8px_20px_rgba(var(--blackrgb),0.12)] max-xs:inset-x-0 rtl:right-auto rtl:left-0 rtl:origin-bottom-left max-xs:rtl:right-0"
+              className="absolute right-0 bottom-[calc(100%+8px)] z-[2] flex min-w-[180px] origin-bottom-right [transform:translateY(8px)] animate-share-menu-in flex-col rounded-lg border border-solid border-gray-150 bg-white p-1.5 opacity-0 [box-shadow:0_8px_20px_rgba(var(--blackrgb),0.12)] max-xs:inset-x-0 rtl:right-auto rtl:left-0 rtl:origin-bottom-left max-xs:rtl:right-0"
               role="menu"
               aria-label={t('More options')}
             >
               <a
-                className="flex h-9 items-center gap-2 rounded-md border-none px-2.5 py-0 text-14 leading-none font-medium text-gray-950 no-underline hover:bg-gray-50"
+                className="flex h-9 items-center gap-2 rounded-md border-none px-2.5 py-0 text-14 leading-none font-medium text-gray-900 no-underline hover:bg-gray-50"
                 href={socialLinks.facebook}
                 target="_blank"
                 rel="noopener noreferrer"
@@ -272,7 +272,7 @@ const ShareModal = () => {
                 <span>{t('Facebook')}</span>
               </a>
               <a
-                className="flex h-9 items-center gap-2 rounded-md border-none px-2.5 py-0 text-14 leading-none font-medium text-gray-950 no-underline hover:bg-gray-50"
+                className="flex h-9 items-center gap-2 rounded-md border-none px-2.5 py-0 text-14 leading-none font-medium text-gray-900 no-underline hover:bg-gray-50"
                 href={socialLinks.threads}
                 target="_blank"
                 rel="noopener noreferrer"
@@ -288,7 +288,7 @@ const ShareModal = () => {
                 <span>{t('Threads')}</span>
               </a>
               <a
-                className="flex h-9 items-center gap-2 rounded-md border-none px-2.5 py-0 text-14 leading-none font-medium text-gray-950 no-underline hover:bg-gray-50"
+                className="flex h-9 items-center gap-2 rounded-md border-none px-2.5 py-0 text-14 leading-none font-medium text-gray-900 no-underline hover:bg-gray-50"
                 href={socialLinks.bluesky}
                 target="_blank"
                 rel="noopener noreferrer"

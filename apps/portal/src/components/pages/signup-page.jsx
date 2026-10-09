@@ -30,7 +30,7 @@ import { t } from '../../utils/i18n';
 import { signupMessageButtonClass, termsCheckboxClass } from '../shared-classes';
 import { tw } from '../../utils/tw';
 
-const notificationClass = tw`mx-8 mt-2 mb-6 text-center text-gray-900`;
+const notificationClass = tw`mx-8 mt-2 mb-6 text-center text-gray-850`;
 
 class SignupPage extends React.Component {
   static contextType = AppContext;
@@ -254,7 +254,7 @@ class SignupPage extends React.Component {
 
     const termsText = (
       <div
-        className="gh-portal-signup-terms-content [&_a]:font-medium [&_a]:text-brand [&_a]:no-underline [&_p]:mb-0 [&_p]:text-14 [&_p]:leading-[1.25em] [&_p]:text-gray-900 [.gh-portal-error_&]:leading-[1.5em]"
+        className="gh-portal-signup-terms-content [&_a]:font-medium [&_a]:text-brand [&_a]:no-underline [&_p]:mb-0 [&_p]:text-14 [&_p]:leading-[1.25em] [&_p]:text-gray-750 [.gh-portal-error_&]:leading-[1.5em]"
         dangerouslySetInnerHTML={{ __html: sanitizeHtml(site.portal_signup_terms_html) }}
       ></div>
     );
@@ -360,7 +360,7 @@ class SignupPage extends React.Component {
     ) {
       return (
         <p
-          className="mx-auto my-6 max-w-[480px] text-center text-gray-900"
+          className="mx-auto my-6 max-w-[480px] text-center text-gray-750"
           data-testid="free-trial-notification-text"
         >
           {t(
@@ -378,7 +378,7 @@ class SignupPage extends React.Component {
     return (
       <div>
         {this.renderFreeTrialMessage()}
-        <div className="z-[9999] mt-1 flex flex-col flex-wrap items-center justify-center gap-2 text-15 text-gray-900 group-[.full-size]/popup:mt-6 group-[.full-size]/popup:mb-10 [&_*]:z-[9999]">
+        <div className="z-[9999] mt-1 flex flex-col flex-wrap items-center justify-center gap-2 text-15 text-gray-750 group-[.full-size]/popup:mt-6 group-[.full-size]/popup:mb-10 [&_*]:z-[9999]">
           <div className="flex max-w-full flex-wrap items-center justify-center">
             <div>{t('Already a member?')}</div>
             <button
@@ -560,7 +560,7 @@ class SignupPage extends React.Component {
       <header className="mb-8 flex flex-col items-center px-8 group-[.full-size]/wrapper:mt-8 max-2xs:pb-4">
         {this.renderSiteIcon()}
         <h1
-          className="mt-3 text-center leading-[1.1em] text-pretty text-black [.gh-portal-signup-logo+&]:mt-1"
+          className="mt-3 text-center leading-[1.1em] text-pretty text-gray-950 [.gh-portal-signup-logo+&]:mt-1"
           data-testid="site-title-text"
         >
           {siteTitle}

@@ -67,7 +67,7 @@ function GiftDeliveryStep({
       <div className="mt-6">
         {/* Same voice and spacing as every other field label on the form — the toggle is just
         this label's input. */}
-        <div className="mb-2 text-14 font-semibold text-gray-900">
+        <div className="mb-2 text-14 font-semibold text-gray-750">
           {t('How would you like to share this gift?')}
         </div>
         <div aria-label={t('Delivery method')} className={giftSwitchClass} role="radiogroup">
@@ -121,7 +121,7 @@ function GiftDeliveryStep({
               </label>
             </div>
             <textarea
-              className="gh-portal-input mb-0 block min-h-24 w-full resize-none appearance-none rounded-md border border-solid border-gray-300 bg-transparent px-3 py-2.5 [font-family:inherit] text-15 leading-[1.5em] tracking-[0.2px] [color:inherit] outline-none [-webkit-appearance:none] transition-input placeholder:text-gray-500 focus:border-gray-500"
+              className="gh-portal-input mb-0 block min-h-24 w-full resize-none appearance-none rounded-md border border-solid border-gray-200 bg-transparent px-3 py-2.5 [font-family:inherit] text-15 leading-[1.5em] tracking-[0.2px] [color:inherit] outline-none [-webkit-appearance:none] transition-input placeholder:text-gray-400 focus:border-gray-400"
               data-test-input="gift-message"
               id="gift-message"
               maxLength={maxMessageLength}
@@ -135,7 +135,7 @@ function GiftDeliveryStep({
               data-open={giftMessage.length > 0}
             >
               <div className={giftRevealInnerClass}>
-                <p className="mt-1.5 mb-0 text-right text-12 tracking-[0.02em] text-gray-500">
+                <p className="mt-1.5 mb-0 text-right text-12 tracking-[0.02em] text-gray-400">
                   {giftMessage.length}/{maxMessageLength}
                 </p>
               </div>

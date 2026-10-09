@@ -7,13 +7,13 @@ import LockIcon from '../../images/icons/lock.svg?react';
 import { t } from '../../utils/i18n';
 import { tw } from '../../utils/tw';
 
-const listSectionClass = tw`flex items-start justify-between p-5 [border-bottom:1px_solid_var(--color-gray-200)] first-of-type:rounded-t-lg last-of-type:rounded-b-lg last-of-type:[border:none]`;
+const listSectionClass = tw`flex items-start justify-between p-5 [border-bottom:1px_solid_var(--color-gray-150)] first-of-type:rounded-t-lg last-of-type:rounded-b-lg last-of-type:[border:none]`;
 
 const listDetailClass = tw`grow py-1 pr-6 pl-0 rtl:pr-0 rtl:pl-6`;
 
 const listDetailTitleClass = 'text-16 font-semibold';
 
-const listDetailTextClass = tw`mt-[5px] mr-2 mb-0 text-15 leading-[1.3em] tracking-[0.3px] [word-break:break-word] text-gray-700 rtl:mr-0 rtl:ml-2`;
+const listDetailTextClass = tw`mt-[5px] mr-2 mb-0 text-15 leading-[1.3em] tracking-[0.3px] [word-break:break-word] text-gray-600 rtl:mr-0 rtl:ml-2`;
 
 function NewsletterPrefSection({ newsletter, subscribedNewsletters, setSubscribedNewsletters }) {
   const isChecked = subscribedNewsletters.some((d) => {
@@ -28,7 +28,7 @@ function NewsletterPrefSection({ newsletter, subscribedNewsletters, setSubscribe
         </div>
         <div className="flex [flex:44px_0_0] justify-center pt-1.5">
           <LockIcon
-            className="size-3.5 overflow-visible [&_path]:text-gray-900"
+            className="size-3.5 overflow-visible [&_path]:text-gray-850"
             alt=""
             title={t('Unlock access to all newsletters by becoming a paid subscriber.')}
           />
@@ -131,7 +131,7 @@ export default function NewsletterSelectionPage({ pageData, onBack }) {
         {t('Choose your newsletters')}
       </p>
       <div className="gh-portal-section mb-10">
-        <div className="gh-portal-list mb-10 overflow-hidden rounded-lg border border-solid border-gray-200 bg-white p-0">
+        <div className="gh-portal-list mb-10 overflow-hidden rounded-lg border border-solid border-gray-150 bg-white p-0">
           <NewsletterPrefs
             subscribedNewsletters={subscribedNewsletters}
             setSubscribedNewsletters={setSubscribedNewsletters}
@@ -163,7 +163,7 @@ export default function NewsletterSelectionPage({ pageData, onBack }) {
           {!hasOnlyFreePlan({ site }) ? (
             <div>
               <button
-                className="gh-portal-btn relative mx-auto mt-0 mb-6 flex cursor-pointer items-center justify-center rounded-md bg-transparent p-0 text-center text-15 leading-none font-normal tracking-[0.2px] whitespace-nowrap text-gray-700 no-underline outline-none select-none [border:none] transition-control hover:border-gray-300 hover:opacity-[0.85]"
+                className="gh-portal-btn relative mx-auto mt-0 mb-6 flex cursor-pointer items-center justify-center rounded-md bg-transparent p-0 text-center text-15 leading-none font-normal tracking-[0.2px] whitespace-nowrap text-gray-600 no-underline outline-none select-none [border:none] transition-control hover:border-gray-250 hover:opacity-[0.85]"
                 onClick={() => {
                   onBack();
                 }}

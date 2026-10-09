@@ -21,10 +21,10 @@ const SupportError = ({ error }) => {
     <div className="relative scrollbar-none">
       <CloseButton />
 
-      <div className="mx-auto my-0 w-12 px-0 py-2.5 text-center text-red-500">
+      <div className="mx-auto my-0 w-12 px-0 py-2.5 text-center text-[#f50b23]">
         <WarningIcon />
       </div>
-      <h1 className="text-center text-[32px] leading-[1.1em] text-pretty text-black">
+      <h1 className="text-center text-[32px] leading-[1.1em] text-pretty text-gray-950">
         {errorTitle}
       </h1>
       <p className="px-8 pt-4 pb-3 text-center text-pretty">{errorMessage}</p>
@@ -33,7 +33,7 @@ const SupportError = ({ error }) => {
         retry={true}
         onClick={() => doAction('closePopup')}
         disabled={false}
-        brandColor="#15171a"
+        brandColor="#000000"
         label={buttonLabel}
         isDestructive={true}
         isRunning={false}

@@ -20,7 +20,7 @@ function ActionButton({ brandColor, label = null, hidden = false, onClick, place
   return (
     <button
       className={clsx(
-        'fixed top-[29px] z-[10000] m-0 flex cursor-pointer items-center justify-center rounded-md border-none bg-transparent p-2 text-center text-15 leading-none font-medium tracking-[0.2px] whitespace-nowrap text-gray-900 no-underline transition-all duration-[250ms] ease-[ease] outline-none select-none hover:-translate-x-1 hover:text-gray-950',
+        'fixed top-[29px] z-[10000] m-0 flex cursor-pointer items-center justify-center rounded-md border-none bg-transparent p-2 text-center text-15 leading-none font-medium tracking-[0.2px] whitespace-nowrap text-gray-800 no-underline transition-all duration-[250ms] ease-[ease] outline-none select-none hover:-translate-x-1 hover:text-gray-900',
         PLACEMENTS[placement],
       )}
       style={brandColor ? { color: brandColor } : undefined}

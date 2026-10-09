@@ -50,8 +50,8 @@ function ActionButton({
       'border-none text-white hover:opacity-[0.92]! focus:opacity-[0.92]! disabled:hover:opacity-[0.92]! disabled:focus:opacity-[0.92]! max-xl:h-10.5',
     !isPrimary &&
       (isText
-        ? 'border-none text-black'
-        : 'border border-solid border-gray-200 text-black hover:border-gray-300'),
+        ? 'border-none text-gray-950'
+        : 'border border-solid border-gray-150 text-gray-950 hover:border-gray-250'),
     isDestructive && 'enabled:hover:border-red enabled:hover:text-red',
   );
   if (isCookiesDisabled()) {
@@ -59,7 +59,7 @@ function ActionButton({
   }
   const loaderClassName = isPrimary
     ? tw`gh-portal-loadingicon absolute left-1/2 ms-[-19px] inline-block h-[31px] [&_path]:fill-white [&_rect]:fill-white`
-    : tw`gh-portal-loadingicon dark absolute left-1/2 ms-[-19px] inline-block h-[31px] [&_path]:fill-black [&_rect]:fill-black`;
+    : tw`gh-portal-loadingicon dark absolute left-1/2 ms-[-19px] inline-block h-[31px] [&_path]:fill-gray-950 [&_rect]:fill-gray-950`;
   return (
     <button
       className={className}

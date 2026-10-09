@@ -75,7 +75,7 @@ const PaidAccountActions = () => {
     const hasFreeTrial = subscriptionHasFreeTrial({ sub: subscription });
 
     if (hasFreeTrial) {
-      oldPriceClassName = 'gh-portal-account-old-price text-gray-400! line-through';
+      oldPriceClassName = 'gh-portal-account-old-price text-gray-300! line-through';
 
       return (
         <>
@@ -88,7 +88,7 @@ const PaidAccountActions = () => {
     const offerLabelStr = getOfferLabel({ nextPayment });
 
     if (offerLabelStr) {
-      oldPriceClassName = 'gh-portal-account-old-price text-gray-400! line-through';
+      oldPriceClassName = 'gh-portal-account-old-price text-gray-300! line-through';
     }
 
     const OfferLabel = () => {
@@ -137,7 +137,7 @@ const PaidAccountActions = () => {
     if (canContinueGiftSubscription) {
       return (
         <button
-          className="gh-portal-btn relative -mx-1 my-0 flex h-9.5 cursor-pointer items-center justify-center rounded-md border-none bg-white px-1 py-0 text-center text-15 leading-[1em] font-medium tracking-[0.2px] whitespace-nowrap text-brand no-underline outline-none select-none transition-control hover:border-gray-300 hover:opacity-75 disabled:cursor-auto disabled:opacity-50!"
+          className="gh-portal-btn relative -mx-1 my-0 flex h-9.5 cursor-pointer items-center justify-center rounded-md border-none bg-white px-1 py-0 text-center text-15 leading-[1em] font-medium tracking-[0.2px] whitespace-nowrap text-brand no-underline outline-none select-none transition-control hover:border-gray-250 hover:opacity-75 disabled:cursor-auto disabled:opacity-50!"
           onClick={(e) => {
             e.stopPropagation();
             doAction('continueGiftSubscription');
@@ -150,7 +150,7 @@ const PaidAccountActions = () => {
     }
     return (
       <button
-        className="gh-portal-btn relative -mx-1 my-0 flex h-9.5 cursor-pointer items-center justify-center rounded-md border-none bg-white px-1 py-0 text-center text-15 leading-[1em] font-medium tracking-[0.2px] whitespace-nowrap text-brand no-underline outline-none select-none transition-control hover:border-gray-300 hover:opacity-75 disabled:cursor-auto disabled:opacity-50!"
+        className="gh-portal-btn relative -mx-1 my-0 flex h-9.5 cursor-pointer items-center justify-center rounded-md border-none bg-white px-1 py-0 text-center text-15 leading-[1em] font-medium tracking-[0.2px] whitespace-nowrap text-brand no-underline outline-none select-none transition-control hover:border-gray-250 hover:opacity-75 disabled:cursor-auto disabled:opacity-50!"
         onClick={(e) => {
           e.stopPropagation();
           openUpdatePlan(e);
@@ -233,7 +233,7 @@ const PaidAccountActions = () => {
             <h3>
               {planLabel}
               {subscription?.cancel_at_period_end && (
-                <span className="relative -top-px ms-1.5 inline-block rounded-[32px] bg-[color:color-mix(in_srgb,var(--color-gray-200)_60%,transparent)] px-2 py-1.5 align-middle text-11 leading-[1em] font-semibold tracking-[0.05px] text-gray-700 uppercase">
+                <span className="relative -top-px ms-1.5 inline-block rounded-[32px] bg-[color:color-mix(in_srgb,var(--color-gray-150)_60%,transparent)] px-2 py-1.5 align-middle text-11 leading-[1em] font-semibold tracking-[0.05px] text-gray-600 uppercase">
                   {t('Canceled')}
                 </span>
               )}

@@ -8,7 +8,7 @@ const AccountFooter = ({ handleSignout, supportAddress = '' }) => {
         <li>
           <button
             data-test-button="footer-signout"
-            className="gh-portal-btn relative flex h-11 min-w-20 cursor-pointer items-center justify-center rounded-md border border-solid border-gray-200 bg-white px-[1.8rem] py-0 text-center text-15 leading-[1em] font-medium tracking-[0.2px] whitespace-nowrap text-black no-underline outline-none select-none transition-control hover:border-gray-300 disabled:cursor-auto disabled:opacity-50! max-xl:h-10.5"
+            className="gh-portal-btn relative flex h-11 min-w-20 cursor-pointer items-center justify-center rounded-md border border-solid border-gray-150 bg-white px-[1.8rem] py-0 text-center text-15 leading-[1em] font-medium tracking-[0.2px] whitespace-nowrap text-gray-950 no-underline outline-none select-none transition-control hover:border-gray-250 disabled:cursor-auto disabled:opacity-50! max-xl:h-10.5"
             name="logout"
             aria-label="logout"
             onClick={(e) => handleSignout(e)}
@@ -22,7 +22,7 @@ const AccountFooter = ({ handleSignout, supportAddress = '' }) => {
           <li>
             <a
               data-test-link="footer-support"
-              className="gh-portal-btn relative flex h-11 min-w-20 cursor-pointer items-center justify-center rounded-md border border-solid border-gray-200 bg-white px-[1.8rem] py-0 text-center text-15 leading-[1em] font-medium tracking-[0.2px] whitespace-nowrap text-brand no-underline outline-none select-none transition-control hover:border-gray-300"
+              className="gh-portal-btn relative flex h-11 min-w-20 cursor-pointer items-center justify-center rounded-md border border-solid border-gray-150 bg-white px-[1.8rem] py-0 text-center text-15 leading-[1em] font-medium tracking-[0.2px] whitespace-nowrap text-brand no-underline outline-none select-none transition-control hover:border-gray-250"
               href={supportAddressMail}
               target="_blank"
               rel="noopener noreferrer"

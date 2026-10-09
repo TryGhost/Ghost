@@ -5,7 +5,7 @@
 
 @layer base {
   :root {
-    --blackrgb: 21, 23, 26;
+    --blackrgb: 0, 0, 0;
     --whitergb: 255, 255, 255;
   }
 
@@ -24,7 +24,7 @@
     line-height: 1.6em;
     font-weight: 400;
     font-style: normal;
-    color: var(--color-gray-900);
+    color: var(--color-gray-850);
     box-sizing: border-box;
     overflow: hidden;
   }

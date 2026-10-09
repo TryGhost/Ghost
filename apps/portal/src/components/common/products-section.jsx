@@ -34,15 +34,15 @@ import {
 } from '../shared-classes';
 import { tw } from '../../utils/tw';
 
-const productCardClass = tw`relative flex min-h-[200px] max-w-[420px] min-w-[320px] flex-1 flex-col items-start justify-stretch rounded-[7px] border border-solid border-gray-300 bg-white p-8 transition-input max-[671px]:min-h-[unset] max-sm:min-w-[unset] [&.checked]:before:pointer-events-none [&.checked]:before:absolute [&.checked]:before:-inset-0.5 [&.checked]:before:z-[999] [&.checked]:before:block [&.checked]:before:rounded-[7px] [&.checked]:before:border-0 [&.checked]:before:border-solid [&.checked]:before:border-brand [&.checked]:before:content-[''] [&.only-free]:mb-4 [&.only-free]:min-h-[unset] [&:not(.disabled):hover]:border-gray-400`;
+const productCardClass = tw`relative flex min-h-[200px] max-w-[420px] min-w-[320px] flex-1 flex-col items-start justify-stretch rounded-[7px] border border-solid border-gray-200 bg-white p-8 transition-input max-[671px]:min-h-[unset] max-sm:min-w-[unset] [&.checked]:before:pointer-events-none [&.checked]:before:absolute [&.checked]:before:-inset-0.5 [&.checked]:before:z-[999] [&.checked]:before:block [&.checked]:before:rounded-[7px] [&.checked]:before:border-0 [&.checked]:before:border-solid [&.checked]:before:border-brand [&.checked]:before:content-[''] [&.only-free]:mb-4 [&.only-free]:min-h-[unset] [&:not(.disabled):hover]:border-gray-300`;
 
 const tierButtonClass = tw`gh-portal-btn relative z-[900] flex h-11 w-full min-w-20 cursor-pointer items-center justify-center rounded-md bg-brand px-[1.8rem] py-0 text-center text-15 leading-[1em] font-medium tracking-[0.2px] whitespace-nowrap text-white no-underline outline-none select-none [border:none] transition-control hover:opacity-90 disabled:cursor-auto disabled:opacity-50! max-xl:h-10.5`;
 
-const toggleButtonClass = tw`gh-portal-btn relative flex h-full! w-1/2 min-w-20 cursor-pointer items-center justify-center rounded-full bg-transparent px-[1.8rem] py-0 text-center text-15 leading-[1em] font-medium tracking-[0.2px] whitespace-nowrap text-black no-underline outline-none select-none [border:0] transition-control`;
+const toggleButtonClass = tw`gh-portal-btn relative flex h-full! w-1/2 min-w-20 cursor-pointer items-center justify-center rounded-full bg-transparent px-[1.8rem] py-0 text-center text-15 leading-[1em] font-medium tracking-[0.2px] whitespace-nowrap text-gray-950 no-underline outline-none select-none [border:0] transition-control`;
 
 const btnProductClass = tw`sticky bottom-0 -mb-8 flex w-full flex-col items-start [justify-self:flex-end] bg-transparent pt-10 pb-8 before:absolute before:inset-x-0 before:-top-4 before:bottom-0 before:z-[800] before:block before:bg-[linear-gradient(0deg,rgba(var(--whitergb),1)_60%,rgba(var(--whitergb),0)_100%)] before:content-[''] max-sm:static max-sm:before:hidden`;
 
-const discountLabelClass = tw`gh-portal-discount-label relative -me-1 max-h-[24.5px] rounded-full px-[9px] py-1.5 text-center text-12.5 leading-[1em] font-semibold tracking-[0.3px] whitespace-nowrap text-black before:absolute before:inset-0 before:block before:rounded-full before:bg-brand before:opacity-20 before:content-['']`;
+const discountLabelClass = tw`gh-portal-discount-label relative -me-1 max-h-[24.5px] rounded-full px-[9px] py-1.5 text-center text-12.5 leading-[1em] font-semibold tracking-[0.3px] whitespace-nowrap text-gray-950 before:absolute before:inset-0 before:block before:rounded-full before:bg-brand before:opacity-20 before:content-['']`;
 
 const loaderIconClass = tw`gh-portal-loadingicon absolute left-1/2 -ms-[19px] inline-block h-[31px] [&_path]:fill-white [&_rect]:fill-white`;
 
@@ -90,12 +90,12 @@ function ProductCardAlternatePrice({ price }) {
   const { portal_plans: portalPlans } = site;
   if (!portalPlans.includes('monthly') || !portalPlans.includes('yearly')) {
     return (
-      <div className="gh-portal-product-alternative-price hidden text-13 leading-[1.6em] tracking-[0.3px] text-gray-500"></div>
+      <div className="gh-portal-product-alternative-price hidden text-13 leading-[1.6em] tracking-[0.3px] text-gray-400"></div>
     );
   }
 
   return (
-    <div className="gh-portal-product-alternative-price hidden text-13 leading-[1.6em] tracking-[0.3px] text-gray-500">
+    <div className="gh-portal-product-alternative-price hidden text-13 leading-[1.6em] tracking-[0.3px] text-gray-400">
       {getPriceString(price, site.locale)}
     </div>
   );
@@ -147,7 +147,7 @@ function ProductCardPrice({ product }) {
               <span className={amountClass} data-testid="product-amount">
                 {formatPrice(getStripeAmount(activePrice.amount), site.locale)}
               </span>
-              <span className="ms-[5px] self-end text-15 leading-[1.6em] tracking-[0.3px] text-gray-800">
+              <span className="ms-[5px] self-end text-15 leading-[1.6em] tracking-[0.3px] text-gray-700">
                 /{interval}
               </span>
             </div>
@@ -177,7 +177,7 @@ function ProductCardPrice({ product }) {
           <span className={amountClass} data-testid="product-amount">
             {formatPrice(getStripeAmount(activePrice.amount), site.locale)}
           </span>
-          <span className="ms-[5px] self-end text-15 leading-[1.6em] tracking-[0.3px] text-gray-800">
+          <span className="ms-[5px] self-end text-15 leading-[1.6em] tracking-[0.3px] text-gray-700">
             /{interval}
           </span>
         </div>
@@ -475,7 +475,7 @@ function ProductPriceSwitch({ selectedInterval, setSelectedInterval, products })
     <div className="mx-auto w-full max-w-[420px]">
       <div
         className={clsx(
-          tw`relative mb-10 flex h-11 w-full rounded-full bg-gray-100 p-1 before:absolute before:inset-y-1 before:right-1 before:block before:w-1/2 before:rounded-full before:bg-white before:[box-shadow:0px_1px_3px_rgba(var(--blackrgb),0.08)] before:content-[''] before:[transition:all_0.15s_ease-in-out] rtl:before:right-auto rtl:before:left-1 [&.left]:before:[transform:translateX(calc(-100%_+_8px))] rtl:[&.left]:before:[transform:translateX(calc(100%_-_8px))]`,
+          tw`relative mb-10 flex h-11 w-full rounded-full bg-[#f3f3f3] p-1 before:absolute before:inset-y-1 before:right-1 before:block before:w-1/2 before:rounded-full before:bg-white before:[box-shadow:0px_1px_3px_rgba(var(--blackrgb),0.08)] before:content-[''] before:[transition:all_0.15s_ease-in-out] rtl:before:right-auto rtl:before:left-1 [&.left]:before:[transform:translateX(calc(-100%_+_8px))] rtl:[&.left]:before:[transform:translateX(calc(100%_-_8px))]`,
           selectedInterval === 'month' && 'left',
         )}
       >
@@ -738,7 +738,7 @@ function ChangeProductCard({ product, onPlanSelect }) {
         </div>
         {currentPlan ? (
           <div className={btnProductClass}>
-            <span className="z-[900] flex h-11 w-full items-center justify-center rounded-[5px] bg-gray-50 text-center text-14 leading-[1em] font-medium tracking-[0.2px] whitespace-nowrap text-gray-800">
+            <span className="z-[900] flex h-11 w-full items-center justify-center rounded-[5px] bg-gray-50 text-center text-14 leading-[1em] font-medium tracking-[0.2px] whitespace-nowrap text-gray-700">
               <span>{t('Current plan')}</span>
             </span>
           </div>

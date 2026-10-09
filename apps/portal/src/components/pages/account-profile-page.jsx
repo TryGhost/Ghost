@@ -114,7 +114,7 @@ export default class AccountProfilePage extends React.Component {
           hidden={!this.context.lastPage}
           onClick={(e) => this.onBack(e)}
         />
-        <h3 className="text-center leading-[1.1em] text-pretty text-black max-2xs:mt-px max-2xs:text-21">
+        <h3 className="text-center leading-[1.1em] text-pretty text-gray-950 max-2xs:mt-px max-2xs:text-21">
           {t('Account settings')}
         </h3>
       </header>

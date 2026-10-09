@@ -44,7 +44,7 @@ import { tw } from '../../utils/tw';
 import { giftInnerClass, giftSubtitleClass, giftTitleClass } from './gift/classes';
 
 const CONTENT_CLASSES = tw`relative scrollbar-none min-h-screen p-0`;
-const CHECKOUT_CLASSES = tw`grid min-h-screen w-full grid-cols-[1fr_1fr] max-md:min-h-0 max-md:grid-cols-[1fr] [&_.gh-portal-btn-primary]:rounded-full [&_.gh-portal-input]:h-12 [&_.gh-portal-input-label]:mb-0 [&_.gh-portal-input-label]:text-14 [&_.gh-portal-input-label]:font-semibold [&_.gh-portal-input-label]:text-gray-900 [&_.gh-portal-input-labelcontainer]:mb-2 [&_.gh-portal-input-labelcontainer]:items-baseline`;
+const CHECKOUT_CLASSES = tw`grid min-h-screen w-full grid-cols-[1fr_1fr] max-md:min-h-0 max-md:grid-cols-[1fr] [&_.gh-portal-btn-primary]:rounded-full [&_.gh-portal-input]:h-12 [&_.gh-portal-input-label]:mb-0 [&_.gh-portal-input-label]:text-14 [&_.gh-portal-input-label]:font-semibold [&_.gh-portal-input-label]:text-gray-750 [&_.gh-portal-input-labelcontainer]:mb-2 [&_.gh-portal-input-labelcontainer]:items-baseline`;
 const LEFT_CLASSES = tw`relative flex items-center justify-center bg-white p-12 max-md:px-6 max-md:pt-16 max-md:pb-0`;
 const validateInputForm = ValidateInputForm as unknown as (data: {
   fields: GiftInputField[];

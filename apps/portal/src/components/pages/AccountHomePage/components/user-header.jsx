@@ -13,7 +13,7 @@ const UserHeader = () => {
         gravatar={avatar}
         style={{ userIcon: { color: brandColor, width: '56px', height: '56px', padding: '2px' } }}
       />
-      <h2 className="text-center leading-[1.1em] text-pretty text-black">{t('Your account')}</h2>
+      <h2 className="text-center leading-[1.1em] text-pretty text-gray-950">{t('Your account')}</h2>
     </header>
   );
 };

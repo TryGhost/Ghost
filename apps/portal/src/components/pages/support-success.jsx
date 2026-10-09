@@ -31,7 +31,7 @@ const SupportSuccess = () => {
             <ConfettiIcon />
           </div>
         )}
-        <h1 className="mt-3 text-center text-[32px] leading-[1.1em] text-pretty text-black [.gh-portal-signup-logo+&]:mt-1">
+        <h1 className="mt-3 text-center text-[32px] leading-[1.1em] text-pretty text-gray-950 [.gh-portal-signup-logo+&]:mt-1">
           {successTitle}
         </h1>
       </div>
@@ -48,7 +48,7 @@ const SupportSuccess = () => {
         tabIndex={3}
       />
 
-      <div className="z-[9999] mx-0 mt-1 mb-0 flex flex-wrap justify-center text-15 text-gray-900 [&_*]:z-[9999]">
+      <div className="z-[9999] mx-0 mt-1 mb-0 flex flex-wrap justify-center text-15 text-gray-750 [&_*]:z-[9999]">
         <div>{t('Already a member?')}</div>
         <button
           data-test-button="signin-switch"

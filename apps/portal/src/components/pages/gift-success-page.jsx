@@ -119,7 +119,7 @@ const GiftSuccessPage = () => {
 
               <div className="mt-6">
                 {isEmailed && (
-                  <p className="mb-2 text-13 font-medium tracking-[0.3px] text-gray-700 uppercase">
+                  <p className="mb-2 text-13 font-medium tracking-[0.3px] text-gray-600 uppercase">
                     {t('Share it yourself')}
                   </p>
                 )}
@@ -132,7 +132,7 @@ const GiftSuccessPage = () => {
                   </span>
                   <button
                     className={clsx(
-                      tw`flex h-10 shrink-0 cursor-pointer items-center gap-1.5 rounded-full border-none px-4.5 py-0 text-14 font-semibold text-white [will-change:opacity] [transition:opacity_0.15s_ease] hover:opacity-90 focus-visible:[outline:2px_solid_var(--color-black)] [&_svg]:size-3.5`,
+                      tw`flex h-10 shrink-0 cursor-pointer items-center gap-1.5 rounded-full border-none px-4.5 py-0 text-14 font-semibold text-white [will-change:opacity] [transition:opacity_0.15s_ease] hover:opacity-90 focus-visible:[outline:2px_solid_var(--color-gray-950)] [&_svg]:size-3.5`,
                       copied ? 'bg-green' : 'bg-brand',
                     )}
                     onClick={handleCopy}
@@ -161,7 +161,7 @@ const GiftSuccessPage = () => {
               </div>
 
               {!isEmailed && (
-                <p className="mt-6 mb-0 text-14 leading-[1.5] text-gray-700">
+                <p className="mt-6 mb-0 text-14 leading-[1.5] text-gray-600">
                   {t("Not ready to share? We've also emailed a copy to your inbox.")}
                 </p>
               )}

@@ -60,8 +60,8 @@ export default function EmailSuppressedPage() {
 
       <EmailDeliveryFailedIcon className="mx-auto mt-0 mb-4.5 block size-9.5" />
 
-      <div className="px-3.5 py-0 text-center text-gray-700">
-        <h3 className="mb-3.5 text-center leading-[1.1em] text-pretty text-black">
+      <div className="px-3.5 py-0 text-center text-gray-600">
+        <h3 className="mb-3.5 text-center leading-[1.1em] text-pretty text-gray-950">
           {t('Emails disabled')}
         </h3>
         <p>

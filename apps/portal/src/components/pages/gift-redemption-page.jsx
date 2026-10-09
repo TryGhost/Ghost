@@ -171,26 +171,26 @@ const GiftRedemptionPage = () => {
     <>
       <div className="relative scrollbar-none min-h-screen p-0">
         <CloseButton placement="gift" tone="light" />
-        <div className="grid min-h-screen w-full grid-cols-[1fr_1fr] max-md:min-h-0 max-md:grid-cols-[1fr] [&_.gh-portal-btn-primary]:rounded-full [&_.gh-portal-input]:h-12 [&_.gh-portal-input-label]:mb-0 [&_.gh-portal-input-label]:text-14 [&_.gh-portal-input-label]:font-semibold [&_.gh-portal-input-label]:text-gray-900 [&_.gh-portal-input-labelcontainer]:mb-2 [&_.gh-portal-input-labelcontainer]:items-baseline">
+        <div className="grid min-h-screen w-full grid-cols-[1fr_1fr] max-md:min-h-0 max-md:grid-cols-[1fr] [&_.gh-portal-btn-primary]:rounded-full [&_.gh-portal-input]:h-12 [&_.gh-portal-input-label]:mb-0 [&_.gh-portal-input-label]:text-14 [&_.gh-portal-input-label]:font-semibold [&_.gh-portal-input-label]:text-gray-750 [&_.gh-portal-input-labelcontainer]:mb-2 [&_.gh-portal-input-labelcontainer]:items-baseline">
           <div className={giftLeftClass}>
             <div className="relative z-[1] my-auto flex w-full max-w-[496px] flex-col [&_.gh-portal-gift-checkout-cta]:h-12 [&_.gh-portal-gift-checkout-cta]:font-semibold [&_.gh-portal-gift-redemption-form+.gh-portal-gift-checkout-cta]:mt-4 [&_.gh-portal-gift-redemption-message+.gh-portal-gift-checkout-cta]:mt-6">
               <header className="mb-3">
                 <h1 className={giftTitleClass}>{t('A gift, just for you')}</h1>
-                <p className="gh-portal-gift-checkout-subtitle m-0 text-15 leading-[1.45em] text-pretty text-gray-900 [&_strong]:font-semibold [&_strong]:text-black">
+                <p className="gh-portal-gift-checkout-subtitle m-0 text-15 leading-[1.45em] text-pretty text-gray-800 [&_strong]:font-semibold [&_strong]:text-gray-950">
                   <Interpolate mapping={giftDetails} string={headerText} />
                 </p>
               </header>
 
               {gift.message && (
                 <div
-                  className="gh-portal-gift-redemption-message mt-6 rounded-lg bg-gray-50 px-5 py-4"
+                  className="gh-portal-gift-redemption-message mt-6 rounded-lg bg-gray-100 px-5 py-4"
                   data-testid="gift-message"
                 >
-                  <p className="mb-0 text-16 leading-[1.5em] [overflow-wrap:anywhere] whitespace-pre-line text-gray-950 italic">
+                  <p className="mb-0 text-16 leading-[1.5em] [overflow-wrap:anywhere] whitespace-pre-line text-gray-900 italic">
                     &ldquo;{gift.message}&rdquo;
                   </p>
                   {buyerName && (
-                    <p className="mt-2 mb-0 text-14 text-gray-700">&mdash; {buyerName}</p>
+                    <p className="mt-2 mb-0 text-14 text-gray-600">&mdash; {buyerName}</p>
                   )}
                 </div>
               )}
@@ -216,7 +216,7 @@ const GiftRedemptionPage = () => {
               />
 
               {expiryLabel && (
-                <p className="mt-3 mb-0 text-center text-13 leading-[1.4em] text-gray-700">
+                <p className="mt-3 mb-0 text-center text-13 leading-[1.4em] text-gray-600">
                   {t('This gift can only be redeemed once and expires on {expiryDate}.', {
                     expiryDate: expiryLabel,
                   })}

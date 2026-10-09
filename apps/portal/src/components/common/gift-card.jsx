@@ -86,7 +86,7 @@ const GiftCard = ({
           {siteIcon && (
             <img className="relative z-[3] size-5.5 object-cover" src={siteIcon} alt="" />
           )}
-          <span className="relative z-[3] text-14 font-semibold tracking-[-0.01em] text-black">
+          <span className="relative z-[3] text-14 font-semibold tracking-[-0.01em] text-gray-950">
             {siteTitle}
           </span>
         </div>

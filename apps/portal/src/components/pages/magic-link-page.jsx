@@ -97,7 +97,7 @@ export default class MagicLinkPage extends React.Component {
       <section className="flex flex-col items-center">
         <header className="flex flex-col items-center pb-3">
           <EnvelopeIcon className="mt-3 mb-2.5 w-11 text-brand" />
-          <h2 className="text-center leading-[1.1em] text-pretty text-black">{popupTitle}</h2>
+          <h2 className="text-center leading-[1.1em] text-pretty text-gray-950">{popupTitle}</h2>
         </header>
         <p className="mb-5 max-w-[420px] text-center">{popupDescription}</p>
       </section>
@@ -108,7 +108,7 @@ export default class MagicLinkPage extends React.Component {
     return (
       <>
         <div
-          style={{ color: '#15171a', fontWeight: 'bold', cursor: 'pointer' }}
+          style={{ color: '#1d1d1d', fontWeight: 'bold', cursor: 'pointer' }}
           onClick={() => this.context.doAction('switchPage', { page: 'signin' })}
         >
           {t('Back to Log in')}
@@ -213,11 +213,11 @@ export default class MagicLinkPage extends React.Component {
       <form onSubmit={(e) => this.handleSubmit(e)}>
         <section className="gh-portal-section gh-portal-otp mb-3 flex flex-col items-center">
           <div
-            className={`${this.state.isFocused && 'focused'} ${error && 'error'} w-full rounded-lg border border-solid border-gray-200 [transition:border-color_0.25s_ease] [&.error]:border-red [&.error]:[box-shadow:0_0_0_3px_rgba(255,0,0,0.1)] [&.focused:not(.error)]:border-gray-500`}
+            className={`${this.state.isFocused && 'focused'} ${error && 'error'} w-full rounded-lg border border-solid border-gray-150 [transition:border-color_0.25s_ease] [&.error]:border-red [&.error]:[box-shadow:0_0_0_3px_rgba(255,0,0,0.1)] [&.focused:not(.error)]:border-gray-400`}
           >
             <input
               id={`input-${OTC_FIELD_NAME}`}
-              className={`gh-portal-input ${this.state.otc && 'entry'} ${error && 'error'} mx-auto my-0 box-border block h-11 w-[15ch] appearance-none rounded-md bg-transparent py-0 pr-[1ch] pl-[2ch] [font-family:Consolas,Liberation_Mono,Menlo,Courier,monospace] font-light tracking-[1ch] [color:inherit] outline-none [-webkit-appearance:none] [border:none] transition-input placeholder:text-gray-500 max-xl:h-10.5 [.gh-portal-otp_&]:text-20!`}
+              className={`gh-portal-input ${this.state.otc && 'entry'} ${error && 'error'} mx-auto my-0 box-border block h-11 w-[15ch] appearance-none rounded-md bg-transparent py-0 pr-[1ch] pl-[2ch] [font-family:Consolas,Liberation_Mono,Menlo,Courier,monospace] font-light tracking-[1ch] [color:inherit] outline-none [-webkit-appearance:none] [border:none] transition-input placeholder:text-gray-400 max-xl:h-10.5 [.gh-portal-otp_&]:text-20!`}
               placeholder="––––––"
               name={OTC_FIELD_NAME}
               type="text"
