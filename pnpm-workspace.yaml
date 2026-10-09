@@ -401,7 +401,9 @@ patchedDependencies:
   # removes and re-sets aria-hidden on the whole page in one task, which stalls
   # Safari for ~2s per open. The patch defers an undo that runs in the same task
   # as its apply while the target is still mounted, which is that replay, so the
-  # re-apply finds the page still hidden and nothing is removed.
+  # re-apply finds the page still hidden and nothing is removed. It also resolves
+  # style before un-hiding: Safari un-hides slowly (~0.7-2.5s) while the closing
+  # modal's scroll-lock removal is still unresolved.
   aria-hidden@1.2.6: patches/aria-hidden@1.2.6.patch
   # The juice patch makes three changes:
   # - lib/cheerio.js imports cheerio's main entry, which eagerly loads parse5,
