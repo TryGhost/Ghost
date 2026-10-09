@@ -88,6 +88,11 @@ const Form = ({
   const [email, setEmail] = useState('');
   const { t } = useAppContext();
 
+  // `change` also covers fills that update the value without an `input` event
+  const updateEmail = (e: JSX.TargetedEvent<HTMLInputElement>) => {
+    setEmail(e.currentTarget.value);
+  };
+
   const submitHandler = (e: JSX.TargetedSubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
     onSubmit({ email });
@@ -111,7 +116,8 @@ const Form = ({
           placeholder={t('Your email address')}
           type="email"
           value={email}
-          onInput={(e) => setEmail(e.currentTarget.value)}
+          onChange={updateEmail}
+          onInput={updateEmail}
         />
         <button
           className="my-auto grid h-7 touch-manipulation grid-cols-[1fr] items-center rounded-[.3rem] px-2 font-medium text-white xs:h-[3rem] xs:px-3"
