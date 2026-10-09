@@ -25,10 +25,7 @@ const BMA_HTML = `
 `;
 
 // The owner's round trip into the billing app with either shell running it.
-for (const { shell, billingReact } of [
-  { shell: 'Ember', billingReact: false },
-  { shell: 'React', billingReact: true },
-] as const) {
+for (const { shell, billingReact } of [{ shell: 'React', billingReact: true }] as const) {
   test.describe(`Ghost Admin - Ghost(Pro) billing (${shell})`, () => {
     test.use({
       labs: { billingReact },

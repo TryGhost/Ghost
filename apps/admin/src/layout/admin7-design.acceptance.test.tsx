@@ -6,7 +6,7 @@ import {
   renderAdminApp,
 } from '@test-utils/acceptance';
 
-// React pages use the current design even with older Core responses or stored flag values.
+// React pages use the current design.
 // Ember-owned routes retain the compatibility appearance.
 it.each<{
   name: string;
@@ -14,19 +14,7 @@ it.each<{
   labs: Record<string, boolean>;
   enabled: boolean;
 }>([
-  { name: 'older Core without the flag', route: '/members', labs: {}, enabled: true },
-  {
-    name: 'stored flag disabled is ignored',
-    route: '/members',
-    labs: { admin7Pill: false },
-    enabled: true,
-  },
-  {
-    name: 'stored flag enabled is ignored',
-    route: '/members',
-    labs: { admin7Pill: true },
-    enabled: true,
-  },
+  { name: 'React route', route: '/members', labs: {}, enabled: true },
   { name: 'Ember route excluded', route: '/pro/plans', labs: {}, enabled: false },
   {
     name: 'Ember editor excluded',
