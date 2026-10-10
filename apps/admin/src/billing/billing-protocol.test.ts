@@ -72,6 +72,13 @@ describe('adminDestinationRoute', () => {
     expect(adminDestinationRoute('newsletters', { automations: true })).toBe('/settings/emails');
   });
 
+  it.each([false, true])(
+    'opens automations directly with the automations flag %s',
+    (automations) => {
+      expect(adminDestinationRoute('automations', { automations })).toBe('/automations');
+    },
+  );
+
   it('ignores anything else', () => {
     for (const destination of [
       'dashboard',
