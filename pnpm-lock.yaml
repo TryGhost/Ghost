@@ -786,7 +786,7 @@ overrides:
   express: 4.22.3
   qs: 6.16.0
 
-packageExtensionsChecksum: sha256-gFsvptlcVXY90ntXWh9ANUP1/LYyeqXjWoDGw6BCfOY=
+packageExtensionsChecksum: sha256-ycchSymDGGlzg4rH0fnAyj8srTVjDx047QJkPZu69w0=
 
 pnpmfileChecksum: sha256-BvMZoVcg2jC8HCh9KmyiWCFJm8gTXYABhZCDUfOd9n4=
 
@@ -861,7 +861,7 @@ importers:
     dependencies:
       '@hookform/resolvers':
         specifier: 5.4.0
-        version: 5.4.0(react-hook-form@7.80.0(react@18.3.1))
+        version: 5.4.0(react-hook-form@7.80.0(react@18.3.1))(zod@4.6.5)
       '@radix-ui/react-form':
         specifier: 'catalog:'
         version: 0.1.11(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -894,7 +894,7 @@ importers:
         version: 7.80.0(react@18.3.1)
       react-router:
         specifier: 'catalog:'
-        version: 7.18.4(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        version: 7.18.4(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       sonner:
         specifier: 'catalog:'
         version: 2.0.7(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -973,10 +973,10 @@ importers:
         version: 6.1.3
       '@dnd-kit/core':
         specifier: 'catalog:'
-        version: 6.3.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        version: 6.3.1(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@dnd-kit/sortable':
         specifier: 'catalog:'
-        version: 7.0.2(@dnd-kit/core@6.3.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)
+        version: 7.0.2(@dnd-kit/core@6.3.1(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(@types/react@18.3.31)(react@18.3.1)
       '@dnd-kit/utilities':
         specifier: 'catalog:'
         version: 3.2.2(react@18.3.1)
@@ -988,7 +988,7 @@ importers:
         version: 1.1.11(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@sentry/react':
         specifier: 'catalog:'
-        version: 7.120.4(react@18.3.1)
+        version: 7.120.4(@types/react@18.3.31)(react@18.3.1)
       '@svg-maps/world':
         specifier: 2.0.0
         version: 2.0.0
@@ -1054,7 +1054,7 @@ importers:
         version: 1.0.1
       '@uiw/react-codemirror':
         specifier: 'catalog:'
-        version: 4.25.12(@babel/runtime@7.29.7)(@codemirror/autocomplete@6.20.3)(@codemirror/language@6.12.4)(@codemirror/lint@6.9.7)(@codemirror/search@6.7.2)(@codemirror/state@6.7.6)(@codemirror/theme-one-dark@6.1.3)(@codemirror/view@6.43.13)(codemirror@6.0.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        version: 4.25.12(@babel/runtime@7.29.7)(@codemirror/autocomplete@6.20.3)(@codemirror/language@6.12.4)(@codemirror/lint@6.9.7)(@codemirror/search@6.7.2)(@codemirror/state@6.7.6)(@codemirror/theme-one-dark@6.1.3)(@codemirror/view@6.43.13)(@types/react@18.3.31)(codemirror@6.0.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@xyflow/react':
         specifier: 12.11.2
         version: 12.11.2(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -1102,7 +1102,7 @@ importers:
         version: 18.3.1(react@18.3.1)
       react-router:
         specifier: 'catalog:'
-        version: 7.18.4(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        version: 7.18.4(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       react-svg-map:
         specifier: 2.2.0
         version: 2.2.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -1254,7 +1254,7 @@ importers:
     dependencies:
       '@sentry/react':
         specifier: 'catalog:'
-        version: 7.120.4(react@18.3.1)
+        version: 7.120.4(@types/react@18.3.31)(react@18.3.1)
       '@tanstack/react-query':
         specifier: 'catalog:'
         version: 5.101.4(react@18.3.1)
@@ -1293,7 +1293,7 @@ importers:
         version: 18.3.1(react@18.3.1)
       react-router:
         specifier: 'catalog:'
-        version: 7.18.4(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        version: 7.18.4(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       sonner:
         specifier: 'catalog:'
         version: 2.0.7(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -1543,7 +1543,7 @@ importers:
         version: link:../../configs/vite-public-app
       '@sentry/react':
         specifier: 'catalog:'
-        version: 7.120.4(react@17.0.2)
+        version: 7.120.4(@types/react@17.0.93)(react@17.0.2)
       '@testing-library/jest-dom':
         specifier: 'catalog:'
         version: 6.9.1
@@ -1603,16 +1603,16 @@ importers:
         version: 6.7.6
       '@dnd-kit/core':
         specifier: 'catalog:'
-        version: 6.3.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        version: 6.3.1(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@dnd-kit/sortable':
         specifier: 'catalog:'
-        version: 7.0.2(@dnd-kit/core@6.3.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)
+        version: 7.0.2(@dnd-kit/core@6.3.1(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(@types/react@18.3.31)(react@18.3.1)
       '@dnd-kit/utilities':
         specifier: 'catalog:'
         version: 3.2.2(react@18.3.1)
       '@hookform/resolvers':
         specifier: 5.4.0
-        version: 5.4.0(react-hook-form@7.80.0(react@18.3.1))
+        version: 5.4.0(react-hook-form@7.80.0(react@18.3.1))(zod@4.6.5)
       '@number-flow/react':
         specifier: 0.6.2
         version: 0.6.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -1684,7 +1684,7 @@ importers:
         version: 18.3.7(@types/react@18.3.31)
       '@uiw/react-codemirror':
         specifier: 'catalog:'
-        version: 4.25.12(@babel/runtime@7.29.7)(@codemirror/autocomplete@6.20.3)(@codemirror/language@6.12.4)(@codemirror/lint@6.9.7)(@codemirror/search@6.7.2)(@codemirror/state@6.7.6)(@codemirror/theme-one-dark@6.1.3)(@codemirror/view@6.43.13)(codemirror@6.0.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        version: 4.25.12(@babel/runtime@7.29.7)(@codemirror/autocomplete@6.20.3)(@codemirror/language@6.12.4)(@codemirror/lint@6.9.7)(@codemirror/search@6.7.2)(@codemirror/state@6.7.6)(@codemirror/theme-one-dark@6.1.3)(@codemirror/view@6.43.13)(@types/react@18.3.31)(codemirror@6.0.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       class-variance-authority:
         specifier: 0.7.1
         version: 0.7.1
@@ -1699,7 +1699,7 @@ importers:
         version: 5.0.3
       country-flag-icons:
         specifier: 'catalog:'
-        version: 1.6.20
+        version: 1.6.20(react@18.3.1)
       lucide-react:
         specifier: 'catalog:'
         version: 1.23.0(react@18.3.1)
@@ -1717,13 +1717,13 @@ importers:
         version: 18.3.1(react@18.3.1)
       react-dropzone:
         specifier: 14.4.1
-        version: 14.4.1(react@18.3.1)
+        version: 14.4.1(@types/react@18.3.31)(react@18.3.1)
       react-hook-form:
         specifier: 7.80.0
         version: 7.80.0(react@18.3.1)
       recharts:
         specifier: 2.15.4
-        version: 2.15.4(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        version: 2.15.4(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       sonner:
         specifier: 'catalog:'
         version: 2.0.7(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -2728,7 +2728,7 @@ importers:
         version: 8.5.26
       postcss-cli:
         specifier: 11.0.1
-        version: 11.0.1(jiti@2.7.0)(postcss@8.5.26)(tsx@4.23.12)
+        version: 11.0.1(cssnano@7.1.9(postcss@8.5.26))(jiti@2.7.0)(postcss@8.5.26)(tsx@4.23.12)
       qs:
         specifier: 6.16.0
         version: 6.16.0
@@ -3496,7 +3496,7 @@ importers:
         version: 4.25.12(@codemirror/autocomplete@6.20.3)(@codemirror/commands@6.11.1)(@codemirror/language@6.12.4)(@codemirror/lint@6.9.7)(@codemirror/search@6.7.2)(@codemirror/state@6.7.6)(@codemirror/view@6.43.13)
       '@uiw/react-codemirror':
         specifier: 'catalog:'
-        version: 4.25.12(@babel/runtime@7.29.7)(@codemirror/autocomplete@6.20.3)(@codemirror/language@6.12.4)(@codemirror/lint@6.9.7)(@codemirror/search@6.7.2)(@codemirror/state@6.7.6)(@codemirror/theme-one-dark@6.1.3)(@codemirror/view@6.43.13)(codemirror@6.0.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        version: 4.25.12(@babel/runtime@7.29.7)(@codemirror/autocomplete@6.20.3)(@codemirror/language@6.12.4)(@codemirror/lint@6.9.7)(@codemirror/search@6.7.2)(@codemirror/state@6.7.6)(@codemirror/theme-one-dark@6.1.3)(@codemirror/view@6.43.13)(@types/react@18.3.31)(codemirror@6.0.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@vitejs/plugin-react':
         specifier: 'catalog:'
         version: 6.0.3(vite@8.1.3(@types/node@26.0.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.12)(yaml@2.9.0))
@@ -3598,7 +3598,7 @@ importers:
         version: 0.15.0
       react-router-dom:
         specifier: 7.18.4
-        version: 7.18.4(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        version: 7.18.4(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       react-slider:
         specifier: 2.0.6
         version: 2.0.6(react@18.3.1)
@@ -4817,14 +4817,22 @@ packages:
   '@dnd-kit/core@6.3.1':
     resolution: {integrity: sha512-xkGBRQQab4RLwgXxoqETICr6S5JlogafbhNsidmrkVv2YRs5MLwpjoF2qpiGjQt8S9AoxtIV603s0GIUpY5eYQ==}
     peerDependencies:
+      '@types/react': '*'
       react: '>=16.8.0'
       react-dom: '>=16.8.0'
+    peerDependenciesMeta:
+      '@types/react':
+        optional: true
 
   '@dnd-kit/sortable@7.0.2':
     resolution: {integrity: sha512-wDkBHHf9iCi1veM834Gbk1429bd4lHX4RpAwT0y2cHLf246GAvU2sVw/oxWNpPKQNQRQaeGXhAVgrOl1IT+iyA==}
     peerDependencies:
       '@dnd-kit/core': ^6.0.7
+      '@types/react': '*'
       react: '>=16.8.0'
+    peerDependenciesMeta:
+      '@types/react':
+        optional: true
 
   '@dnd-kit/utilities@3.2.2':
     resolution: {integrity: sha512-+MKAJEOfaBe5SmV6t34p80MMKhjvUz0vRrvVJbPT0WElzaOJ/1xs+D+KDv+tD/NE5ujfrChEcshd4fLn0wpiqg==}
@@ -5337,6 +5345,10 @@ packages:
     resolution: {integrity: sha512-EIsqr/t/qbinPIhGjMdtvutIN1Kk4uwbROE9/UQ93CAVGR7GkA7Y92+fX80OzXi/OB67jVFYwKGO1WzkxmkFZw==}
     peerDependencies:
       react-hook-form: ^7.55.0
+      zod: '*'
+    peerDependenciesMeta:
+      zod:
+        optional: true
 
   '@html-validate/stylish@6.0.0':
     resolution: {integrity: sha512-d1/lI3qIXhGVJF3+MmKEBn1dRX6U4Z+BDaOdDI3E6SXcO+OQ7hC/3mSo6BIjwQlcuV6NdDOKm6QCrzIQL1EezQ==}
@@ -7733,7 +7745,11 @@ packages:
     resolution: {integrity: sha512-Pj1MSezEncE+5riuwsk8peMncuz5HR72Yr1/RdZhMZvUxoxAR/tkwD3aPcK6ddQJTagd2TGwhdr9SHuDLtONew==}
     engines: {node: '>=8'}
     peerDependencies:
+      '@types/react': '*'
       react: 15.x || 16.x || 17.x || 18.x
+    peerDependenciesMeta:
+      '@types/react':
+        optional: true
 
   '@sentry/replay@7.120.4':
     resolution: {integrity: sha512-FW8sPenNFfnO/K7sncsSTX4rIVak9j7VUiLIagJrcqZIC7d1dInFNjy8CdVJUlyz3Y3TOgIl3L3+ZpjfyMnaZg==}
@@ -9196,9 +9212,13 @@ packages:
       '@codemirror/state': '>=6.0.0'
       '@codemirror/theme-one-dark': '>=6.0.0'
       '@codemirror/view': '>=6.0.0'
+      '@types/react': '*'
       codemirror: '>=6.0.0'
       react: '>=17.0.0'
       react-dom: '>=17.0.0'
+    peerDependenciesMeta:
+      '@types/react':
+        optional: true
 
   '@ungap/structured-clone@1.3.1':
     resolution: {integrity: sha512-mUFwbeTqrVgDQxFveS+df2yfap6iuP20NAKAsBt5jDEoOTDew+zwLAOilHCeQJOVSvmgCX4ogqIrA0mnyr08yQ==}
@@ -10216,8 +10236,12 @@ packages:
   cmdk@1.1.1:
     resolution: {integrity: sha512-Vsv7kFaXm+ptHDMZ7izaRsP70GgrW9NBNGswt9OZaVBLlE0SNpDq8eu/VGXyF9r7M0azK3Wy7OlYXsuyYLFzHg==}
     peerDependencies:
+      '@types/react': '*'
       react: ^18 || ^19 || ^19.0.0-rc
       react-dom: ^18 || ^19 || ^19.0.0-rc
+    peerDependenciesMeta:
+      '@types/react':
+        optional: true
 
   co@4.6.0:
     resolution: {integrity: sha512-QVb0dM5HvG+uaxitm8wONl7jltx8dqhfU33DcqtOZcLSVIKSDDLDi7+0LbAKiyI8hD9u42m2YxXSkMGWThaecQ==}
@@ -10467,6 +10491,11 @@ packages:
 
   country-flag-icons@1.6.20:
     resolution: {integrity: sha512-py8JiEKzjhYw6HPJ0L7SxLgCYim36UPRTZX43/kqGueUCZLSvnrqAiwW8HtQibur7mdkFQUkjOgdK+o/9FBtaw==}
+    peerDependencies:
+      react: '*'
+    peerDependenciesMeta:
+      react:
+        optional: true
 
   cpu-features@0.0.10:
     resolution: {integrity: sha512-9IkYqtX3YHPCzoVg1Py+o9057a3i0fp7S530UWokCSaFVTc7CwXPRiOjRjBQQ18ZCNafx78YfnG+HALxtVmOGA==}
@@ -14840,7 +14869,11 @@ packages:
     engines: {node: '>=18'}
     hasBin: true
     peerDependencies:
+      cssnano: '*'
       postcss: ^8.0.0
+    peerDependenciesMeta:
+      cssnano:
+        optional: true
 
   postcss-colormin@7.0.10:
     resolution: {integrity: sha512-yFr6JezOolHLta/buLE71VKPh2mXursp4saVe98/ol8ZnEWhL+racShqPKlvd/DKWLre/39B6HhcMXf7RZ3hxg==}
@@ -15422,7 +15455,11 @@ packages:
     resolution: {integrity: sha512-QDuV76v3uKbHiH34SpwifZ+gOLi1+RdsCO1kl5vxMT4wW8R82+sthjvBw4th3NHF/XX6FBsqDYZVNN+pnhaw0g==}
     engines: {node: '>= 10.13'}
     peerDependencies:
+      '@types/react': '*'
       react: '>= 16.8 || 18.0.0'
+    peerDependenciesMeta:
+      '@types/react':
+        optional: true
 
   react-error-boundary@3.1.4:
     resolution: {integrity: sha512-uM9uPzZJTF6wRQORmSrvOIgt4lJ9MC1sNgEOj2XGsDTRE4kmpWxg7ENK9EWNKJRMAOY9z0MuF4yIfl6gp4sotA==}
@@ -15482,9 +15519,12 @@ packages:
     resolution: {integrity: sha512-PUPQcMhMGRAslLcvtlPz/kmzBEWPhLdgLFrL7pLNepBL6dX0lWj4WD2cUYVgYCuT3jxvghYFg81cDTj44DhetQ==}
     engines: {node: '>=20.0.0'}
     peerDependencies:
+      '@types/react': '*'
       react: '>=18'
       react-dom: '>=18'
     peerDependenciesMeta:
+      '@types/react':
+        optional: true
       react-dom:
         optional: true
 
@@ -15586,8 +15626,12 @@ packages:
     engines: {node: '>=14'}
     deprecated: 1.x and 2.x branches are no longer active. Bump to Recharts v3 to receive latest features and bugfixes. See https://github.com/recharts/recharts/wiki/3.0-migration-guide
     peerDependencies:
+      '@types/react': '*'
       react: ^16.0.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
       react-dom: ^16.0.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
+    peerDependenciesMeta:
+      '@types/react':
+        optional: true
 
   rechoir@0.6.2:
     resolution: {integrity: sha512-HFM8rkZ+i3zrV+4LQjwQ0W+ez98pApMGM3HUrN04j3CqzPOzl9nmP15Y8YXNm8QHGv/eacOVEjqhmWpkRV0NAw==}
@@ -18197,20 +18241,24 @@ snapshots:
       react: 18.3.1
       tslib: 2.8.1
 
-  '@dnd-kit/core@6.3.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
+  '@dnd-kit/core@6.3.1(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
     dependencies:
       '@dnd-kit/accessibility': 3.1.1(react@18.3.1)
       '@dnd-kit/utilities': 3.2.2(react@18.3.1)
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
       tslib: 2.8.1
+    optionalDependencies:
+      '@types/react': 18.3.31
 
-  '@dnd-kit/sortable@7.0.2(@dnd-kit/core@6.3.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)':
+  '@dnd-kit/sortable@7.0.2(@dnd-kit/core@6.3.1(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(@types/react@18.3.31)(react@18.3.1)':
     dependencies:
-      '@dnd-kit/core': 6.3.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      '@dnd-kit/core': 6.3.1(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@dnd-kit/utilities': 3.2.2(react@18.3.1)
       react: 18.3.1
       tslib: 2.8.1
+    optionalDependencies:
+      '@types/react': 18.3.31
 
   '@dnd-kit/utilities@3.2.2(react@18.3.1)':
     dependencies:
@@ -18219,6 +18267,7 @@ snapshots:
 
   '@doist/react-interpolate@2.2.4(prop-types@15.8.1)(react-dom@17.0.2(react@17.0.2))(react@17.0.2)':
     dependencies:
+      '@babel/runtime': 7.29.7
       prop-types: 15.8.1
       react: 17.0.2
       react-dom: 17.0.2(react@17.0.2)
@@ -18614,10 +18663,12 @@ snapshots:
       react: 17.0.2
       react-dom: 17.0.2(react@17.0.2)
 
-  '@hookform/resolvers@5.4.0(react-hook-form@7.80.0(react@18.3.1))':
+  '@hookform/resolvers@5.4.0(react-hook-form@7.80.0(react@18.3.1))(zod@4.6.5)':
     dependencies:
       '@standard-schema/utils': 0.3.0
       react-hook-form: 7.80.0(react@18.3.1)
+    optionalDependencies:
+      zod: 4.6.5
 
   '@html-validate/stylish@6.0.0': {}
 
@@ -19321,6 +19372,7 @@ snapshots:
   '@lexical/yjs@0.13.1(lexical@0.13.1)(yjs@13.6.31)':
     dependencies:
       '@lexical/offset': 0.13.1(lexical@0.13.1)
+      '@lexical/selection': 0.13.1(lexical@0.13.1)
       lexical: 0.13.1
       yjs: 13.6.31
 
@@ -21029,7 +21081,7 @@ snapshots:
       '@sentry/types': 7.120.4
       '@sentry/utils': 7.120.4
 
-  '@sentry/react@7.120.4(react@17.0.2)':
+  '@sentry/react@7.120.4(@types/react@17.0.93)(react@17.0.2)':
     dependencies:
       '@sentry/browser': 7.120.4
       '@sentry/core': 7.120.4
@@ -21037,8 +21089,10 @@ snapshots:
       '@sentry/utils': 7.120.4
       hoist-non-react-statics: 3.3.2
       react: 17.0.2
+    optionalDependencies:
+      '@types/react': 17.0.93
 
-  '@sentry/react@7.120.4(react@18.3.1)':
+  '@sentry/react@7.120.4(@types/react@18.3.31)(react@18.3.1)':
     dependencies:
       '@sentry/browser': 7.120.4
       '@sentry/core': 7.120.4
@@ -21046,6 +21100,8 @@ snapshots:
       '@sentry/utils': 7.120.4
       hoist-non-react-statics: 3.3.2
       react: 18.3.1
+    optionalDependencies:
+      '@types/react': 18.3.31
 
   '@sentry/replay@7.120.4':
     dependencies:
@@ -23054,7 +23110,7 @@ snapshots:
       '@codemirror/state': 6.7.6
       '@codemirror/view': 6.43.13
 
-  '@uiw/react-codemirror@4.25.12(@babel/runtime@7.29.7)(@codemirror/autocomplete@6.20.3)(@codemirror/language@6.12.4)(@codemirror/lint@6.9.7)(@codemirror/search@6.7.2)(@codemirror/state@6.7.6)(@codemirror/theme-one-dark@6.1.3)(@codemirror/view@6.43.13)(codemirror@6.0.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
+  '@uiw/react-codemirror@4.25.12(@babel/runtime@7.29.7)(@codemirror/autocomplete@6.20.3)(@codemirror/language@6.12.4)(@codemirror/lint@6.9.7)(@codemirror/search@6.7.2)(@codemirror/state@6.7.6)(@codemirror/theme-one-dark@6.1.3)(@codemirror/view@6.43.13)(@types/react@18.3.31)(codemirror@6.0.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
     dependencies:
       '@babel/runtime': 7.29.7
       '@codemirror/commands': 6.11.1
@@ -23065,6 +23121,8 @@ snapshots:
       codemirror: 6.0.2
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
+    optionalDependencies:
+      '@types/react': 18.3.31
     transitivePeerDependencies:
       - '@codemirror/autocomplete'
       - '@codemirror/language'
@@ -24398,8 +24456,9 @@ snapshots:
       '@radix-ui/react-primitive': 2.1.7(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
+    optionalDependencies:
+      '@types/react': 18.3.31
     transitivePeerDependencies:
-      - '@types/react'
       - '@types/react-dom'
 
   co@4.6.0:
@@ -24639,7 +24698,9 @@ snapshots:
 
   countries-and-timezones@3.9.0: {}
 
-  country-flag-icons@1.6.20: {}
+  country-flag-icons@1.6.20(react@18.3.1):
+    optionalDependencies:
+      react: 18.3.1
 
   cpu-features@0.0.10:
     dependencies:
@@ -30426,7 +30487,7 @@ snapshots:
       postcss-selector-parser: 7.1.6
       postcss-value-parser: 4.2.0
 
-  postcss-cli@11.0.1(jiti@2.7.0)(postcss@8.5.26)(tsx@4.23.12):
+  postcss-cli@11.0.1(cssnano@7.1.9(postcss@8.5.26))(jiti@2.7.0)(postcss@8.5.26)(tsx@4.23.12):
     dependencies:
       chokidar: 3.6.0
       dependency-graph: 1.0.0
@@ -30440,6 +30501,8 @@ snapshots:
       slash: 5.1.0
       tinyglobby: 0.2.17
       yargs: 17.7.3
+    optionalDependencies:
+      cssnano: 7.1.9(postcss@8.5.26)
     transitivePeerDependencies:
       - jiti
       - tsx
@@ -31066,12 +31129,14 @@ snapshots:
       react: 18.3.1
       scheduler: 0.23.2
 
-  react-dropzone@14.4.1(react@18.3.1):
+  react-dropzone@14.4.1(@types/react@18.3.31)(react@18.3.1):
     dependencies:
       attr-accept: 2.2.5
       file-selector: 2.1.2
       prop-types: 15.8.1
       react: 18.3.1
+    optionalDependencies:
+      '@types/react': 18.3.31
 
   react-error-boundary@3.1.4(react@18.3.1):
     dependencies:
@@ -31113,22 +31178,26 @@ snapshots:
     optionalDependencies:
       '@types/react': 18.3.31
 
-  react-router-dom@7.18.4(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
+  react-router-dom@7.18.4(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
     dependencies:
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
-      react-router: 7.18.4(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      react-router: 7.18.4(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+    transitivePeerDependencies:
+      - '@types/react'
 
-  react-router@7.18.4(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
+  react-router@7.18.4(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
     dependencies:
       cookie: 1.1.1
       react: 18.3.1
       set-cookie-parser: 2.7.2
     optionalDependencies:
+      '@types/react': 18.3.31
       react-dom: 18.3.1(react@18.3.1)
 
   react-slider@2.0.6(react@18.3.1):
     dependencies:
+      '@babel/runtime': 7.29.7
       prop-types: 15.8.1
       react: 18.3.1
 
@@ -31253,7 +31322,7 @@ snapshots:
     dependencies:
       decimal.js-light: 2.5.1
 
-  recharts@2.15.4(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
+  recharts@2.15.4(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
     dependencies:
       clsx: 2.1.1
       eventemitter3: 4.0.7
@@ -31265,6 +31334,8 @@ snapshots:
       recharts-scale: 0.4.5
       tiny-invariant: 1.3.3
       victory-vendor: 36.9.2
+    optionalDependencies:
+      '@types/react': 18.3.31
 
   rechoir@0.6.2:
     dependencies:
