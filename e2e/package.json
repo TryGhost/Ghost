@@ -16,7 +16,6 @@
     "build:docker": "docker build -f Dockerfile.e2e --build-arg GHOST_IMAGE=${GHOST_E2E_BASE_IMAGE:?Set GHOST_E2E_BASE_IMAGE} -t ${GHOST_E2E_IMAGE:-ghost-e2e:local} ..",
     "pretest": "test -n \"$CI\" || echo 'Tip: run pnpm dev or pnpm --filter @tryghost/e2e infra:up before running tests'",
     "infra:up": "bash ./scripts/infra-up.sh",
-    "infra:down": "bash ./scripts/infra-down.sh",
     "tinybird:sync": "node ./scripts/sync-tinybird-state.mjs",
     "stripe:provision": "node --experimental-strip-types ./scripts/provision-stripe-environment.ts",
     "stripe:fixtures": "tsx ./scripts/capture-stripe-fixtures.ts",

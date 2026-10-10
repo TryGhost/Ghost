@@ -229,7 +229,7 @@
     "mysql2": "3.24.4",
     "nconf": "0.13.0",
     "node-html-markdown": "catalog:",
-    "nodemailer": "10.0.15",
+    "nodemailer": "10.0.16",
     "on-headers": "1.1.0",
     "otplib": "12.0.1",
     "papaparse": "5.5.4",

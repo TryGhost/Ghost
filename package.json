@@ -12,27 +12,31 @@
     "build": "pnpm nx run-many -t build",
     "build:clean": "nx reset && rimraf -g 'ghost/*/build' && rimraf -g 'ghost/*/tsconfig.tsbuildinfo'",
     "clean:hard": "node ./scripts/clean.js",
-    "dev": "pnpm nx run ghost-monorepo:dev:host",
+    "dev": "nx run ghost-monorepo:dev:host",
     "dev:docker": "export pnpm_config_enable_global_virtual_store=false && pnpm install && pnpm nx run ghost-monorepo:docker:dev",
     "dev:sqlite": "export pnpm_config_enable_global_virtual_store=false && pnpm install && DEV_COMPOSE_FILES='-f compose.dev.sqlite.yaml' pnpm nx run ghost-monorepo:docker:dev",
-    "dev:mailgun": "DEV_COMPOSE_FILES='-f compose.dev.mailgun.yaml' pnpm nx run ghost-monorepo:dev:host",
-    "dev:fake-mailgun": "DEV_COMPOSE_FILES='-f compose.dev.fake-mailgun.yaml' pnpm nx run ghost-monorepo:dev:host",
-    "dev:lexical": "GHOST_DEV_KOENIG_WATCH=1 pnpm nx run ghost-monorepo:dev:host:lexical",
-    "dev:public": "pnpm nx run ghost-monorepo:dev:host:public",
-    "dev:full": "DEV_COMPOSE_FILES='-f compose.dev.analytics.yaml -f compose.dev.storage.yaml' ANALYTICS_PROXY_TARGET=127.0.0.1:7182 ./docker/stripe/with-stripe.sh pnpm nx run ghost-monorepo:dev:host:public",
-    "dev:analytics": "DEV_COMPOSE_FILES='-f compose.dev.analytics.yaml' ANALYTICS_PROXY_TARGET=127.0.0.1:7182 pnpm nx run ghost-monorepo:dev:host",
-    "dev:analytics:local": "DEV_COMPOSE_FILES='-f compose.dev.analytics.yaml' ANALYTICS_PROXY_TARGET=${ANALYTICS_PROXY_TARGET:-127.0.0.1:3000} pnpm nx run ghost-monorepo:dev:host",
-    "dev:storage": "DEV_COMPOSE_FILES='-f compose.dev.storage.yaml' pnpm nx run ghost-monorepo:dev:host",
-    "dev:stripe": "./docker/stripe/with-stripe.sh pnpm nx run ghost-monorepo:dev:host",
-    "dev:all": "DEV_COMPOSE_FILES='-f compose.dev.analytics.yaml -f compose.dev.storage.yaml' ANALYTICS_PROXY_TARGET=127.0.0.1:7182 ./docker/stripe/with-stripe.sh pnpm nx run ghost-monorepo:dev:host",
-    "dev:daemon": "NX_DAEMON=true NX_TUI=false NX_DEFAULT_OUTPUT_STYLE=stream pnpm nx run ghost-monorepo:dev:host",
+    "dev:mailgun": "DEV_COMPOSE_FILES='-f compose.dev.mailgun.yaml' nx run ghost-monorepo:dev:host",
+    "dev:fake-mailgun": "DEV_COMPOSE_FILES='-f compose.dev.fake-mailgun.yaml' nx run ghost-monorepo:dev:host",
+    "dev:lexical": "GHOST_DEV_KOENIG_WATCH=1 nx run ghost-monorepo:dev:host:lexical",
+    "dev:public": "nx run ghost-monorepo:dev:host:public",
+    "dev:full": "DEV_COMPOSE_FILES='-f compose.dev.analytics.yaml -f compose.dev.storage.yaml' ANALYTICS_PROXY_TARGET=127.0.0.1:7182 ./docker/stripe/with-stripe.sh nx run ghost-monorepo:dev:host:public",
+    "dev:analytics": "DEV_COMPOSE_FILES='-f compose.dev.analytics.yaml' ANALYTICS_PROXY_TARGET=127.0.0.1:7182 nx run ghost-monorepo:dev:host",
+    "dev:analytics:local": "DEV_COMPOSE_FILES='-f compose.dev.analytics.yaml' ANALYTICS_PROXY_TARGET=${ANALYTICS_PROXY_TARGET:-127.0.0.1:3000} nx run ghost-monorepo:dev:host",
+    "dev:storage": "DEV_COMPOSE_FILES='-f compose.dev.storage.yaml' nx run ghost-monorepo:dev:host",
+    "dev:stripe": "./docker/stripe/with-stripe.sh nx run ghost-monorepo:dev:host",
+    "dev:all": "DEV_COMPOSE_FILES='-f compose.dev.analytics.yaml -f compose.dev.storage.yaml' ANALYTICS_PROXY_TARGET=127.0.0.1:7182 ./docker/stripe/with-stripe.sh nx run ghost-monorepo:dev:host",
+    "dev:daemon": "NX_DAEMON=true NX_TUI=false NX_DEFAULT_OUTPUT_STYLE=stream nx run ghost-monorepo:dev:host",
+    "dev:up": "node scripts/dev-up.ts",
+    "dev:down": "node scripts/dev-down.ts",
+    "dev:status": "node scripts/dev-status.ts",
+    "dev:gc": "node scripts/dev-gc.ts",
     "fix": "pnpm store prune && rimraf -g '**/node_modules' && pnpm install && pnpm nx reset",
     "create-package": "node ./scripts/create-package.js",
-    "knex-migrator": "cd ghost && pnpm exec node ../scripts/with-ghost-dev-env.ts knex-migrator",
+    "knex-migrator": "cd ghost && pnpm exec node ../scripts/with-ghost-dev-env.ts env NODE_OPTIONS='--conditions=source --import=tsx' knex-migrator",
     "bootstrap": "pnpm install && bash scripts/init-submodules.sh && git config --local blame.ignoreRevsFile .git-blame-ignore-revs",
-    "migrate:db": "cd ghost && pnpm exec node ../scripts/with-ghost-dev-env.ts knex-migrator migrate",
-    "rollback:db": "cd ghost && pnpm exec node ../scripts/with-ghost-dev-env.ts knex-migrator rollback",
-    "reset:db": "cd ghost && pnpm exec node ../scripts/with-ghost-dev-env.ts sh -c 'knex-migrator reset && knex-migrator init'",
+    "migrate:db": "cd ghost && pnpm exec node ../scripts/with-ghost-dev-env.ts env NODE_OPTIONS='--conditions=source --import=tsx' knex-migrator migrate",
+    "rollback:db": "cd ghost && pnpm exec node ../scripts/with-ghost-dev-env.ts env NODE_OPTIONS='--conditions=source --import=tsx' knex-migrator rollback",
+    "reset:db": "cd ghost && pnpm exec node ../scripts/with-ghost-dev-env.ts env NODE_OPTIONS='--conditions=source --import=tsx' sh -c 'knex-migrator reset && knex-migrator init'",
     "reset:db:volume": "docker compose -f compose.dev.yaml ${DEV_COMPOSE_FILES} --profile docker-dev down && docker volume rm ghost-dev_mysql-data",
     "reset:data": "cd ghost && pnpm exec node ../scripts/with-ghost-dev-env.ts node --conditions=source --import=tsx index.js generate-data --clear-database --quantities members:1000,posts:100 --seed 123",
     "reset:data:empty": "cd ghost && pnpm exec node ../scripts/with-ghost-dev-env.ts node --conditions=source --import=tsx index.js generate-data --clear-database --quantities members:0,posts:0 --seed 123",
@@ -199,7 +203,7 @@
         "executor": "nx:run-commands",
         "options": {
           "cwd": "ghost",
-          "command": "node ../scripts/with-ghost-dev-env.ts pnpm dev"
+          "command": "node ../scripts/with-ghost-dev-env.ts nodemon index.js"
         },
         "dependsOn": [
           "dev:env",
@@ -217,9 +221,14 @@
             ]
           },
           {
-            "target": "dev",
+            "target": "build",
             "projects": [
-              "@tryghost/portal"
+              "@tryghost/portal",
+              "@tryghost/comments-ui",
+              "@tryghost/signup-form",
+              "@tryghost/sodo-search",
+              "@tryghost/announcement-bar",
+              "@tryghost/admin-toolbar"
             ]
           }
         ]
@@ -229,7 +238,7 @@
         "executor": "nx:run-commands",
         "options": {
           "cwd": "ghost",
-          "command": "node ../scripts/with-ghost-dev-env.ts pnpm dev"
+          "command": "node ../scripts/with-ghost-dev-env.ts nodemon index.js"
         },
         "dependsOn": [
           "dev:env",
@@ -247,9 +256,14 @@
             ]
           },
           {
-            "target": "dev",
+            "target": "build",
             "projects": [
-              "@tryghost/portal"
+              "@tryghost/portal",
+              "@tryghost/comments-ui",
+              "@tryghost/signup-form",
+              "@tryghost/sodo-search",
+              "@tryghost/announcement-bar",
+              "@tryghost/admin-toolbar"
             ]
           },
           {
@@ -265,7 +279,7 @@
         "executor": "nx:run-commands",
         "options": {
           "cwd": "ghost",
-          "command": "node ../scripts/with-ghost-dev-env.ts pnpm dev"
+          "command": "node ../scripts/with-ghost-dev-env.ts nodemon index.js"
         },
         "dependsOn": [
           "dev:env",

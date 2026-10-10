@@ -2178,6 +2178,8 @@ jobs:
       # permission gap degrades rather than breaks.
       GHOST_E2E_TINYBIRD_SLIM: ${{ needs.job_setup.outputs.changed_tinybird_slim == 'true' || (github.repository_owner == 'TryGhost' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)) }}
       GHOST_E2E_TINYBIRD_SLIM_IMAGE: ${{ needs.job_setup.outputs.changed_tinybird_slim == 'true' && 'tinybird-local-slim:e2e' || 'ghcr.io/tryghost/tinybird-local-slim:latest' }}
+      # The runner's MySQL exists only for E2E, so it can live on tmpfs
+      GHOST_E2E_MYSQL_TMPFS: 'true'
     strategy:
       fail-fast: true
       matrix:
@@ -2377,10 +2379,6 @@ jobs:
       - name: Dump E2E docker logs
         if: failure()
         run: bash ./e2e/scripts/dump-e2e-docker-logs.sh
-
-      - name: Stop E2E infra
-        if: always()
-        run: pnpm --filter @tryghost/e2e infra:down
 
       - name: Upload blob report to GitHub Actions Artifacts
         if: failure()

@@ -14,10 +14,10 @@ services:
         fi
         sleep 1
       done
-      export DEV_COMPOSE_FILES="-f compose.dev.orb.yaml"
-      export GHOST_URL="$PUBLIC_URL"
+      export url="$PUBLIC_URL"
+      export GHOST_DEV_PORT="$PORT" GHOST_DEV_BACKEND_PORT="$((PORT + 1))"
       unset PORT
-      exec pnpm dev:docker
+      exec pnpm dev
     port: 2370
     portal:
       title: Ghost development

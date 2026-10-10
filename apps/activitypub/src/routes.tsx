@@ -1,6 +1,8 @@
-import AppError from '@components/layout/error';
-
 import { Navigate, Outlet, RouteObject, lazyComponent } from '@tryghost/admin-x-framework';
+import { Suspense, lazy } from 'react';
+
+// Lazy because the error page imports Layout, whose header imports these routes.
+const AppError = lazy(() => import('./components/layout/error'));
 
 const basePath = import.meta.env.VITE_TEST ? '' : 'activitypub';
 const accountMigrationPath = 'preferences/move';
@@ -16,7 +18,12 @@ export const routes: CustomRouteObject[] = [
     // Root route that defines the app's base path
     path: basePath,
     element: <Outlet />,
-    errorElement: <AppError />, // This will catch all errors in child routes
+    // This will catch all errors in child routes
+    errorElement: (
+      <Suspense fallback={null}>
+        <AppError />
+      </Suspense>
+    ),
     handle: 'activitypub-basepath',
     children: [
       {

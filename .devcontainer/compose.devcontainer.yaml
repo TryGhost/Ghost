@@ -22,61 +22,36 @@ services:
   mailpit:
     restart: unless-stopped
 
-  ghost-dev:
-    profiles: !reset []
-    # Mount the full repo so VS Code can edit apps/, e2e/, and root config files.
-    # The original ./ghost:/home/ghost/ghost mount from compose.dev.yaml is
-    # preserved via merge semantics so nodemon hot-reload still works for anyone
-    # running the backend the original way.
-    #
+  # The container VS Code attaches to. `pnpm dev` runs Ghost and its dev
+  # servers in here, as it would on a laptop.
+  devcontainer:
+    image: node:22.23.3-bookworm
+    command: ['sleep', 'infinity']
+    working_dir: /workspaces/Ghost
+    # Codespaces forwards ports from the host, not from inside this container
+    ports:
+      - '2368:2368'
     # pnpm-store is a separate named volume, NOT under /workspaces/Ghost, so
-    # it survives the bind mount above (which fully shadows anything baked
-    # into the image at that path with the host's — node_modules-less — repo
-    # checkout). Because the source is live-mounted, onCreateCommand still has
-    # to run a real `pnpm install` every time, but with the store already warm
-    # it's linking already-fetched content instead of
-    # re-downloading and recompiling native deps (better-sqlite3, sharp, etc.)
-    # from scratch.
+    # it survives the bind mount of the repo checkout. onCreateCommand still
+    # runs a real `pnpm install` every time, but with the store already warm
+    # it links already-fetched content instead of re-downloading it.
     volumes:
       - ./:/workspaces/Ghost:cached
       - pnpm-store:/pnpm-store
     environment:
       pnpm_config_store_dir: /pnpm-store
       pnpm_config_enable_global_virtual_store: 'false'
-    # Prefer the prebuilt image (docker/ghost-dev/Dockerfile, published by
-    # .github/workflows/devcontainer-build.yml) over a local build. cache_from
-    # makes a local `docker compose build` (e.g. after a Dockerfile edit)
-    # reuse those layers too, rather than starting from zero.
-    image: ghcr.io/tryghost/ghost-devcontainer:latest
-    build:
-      cache_from:
-        - ghcr.io/tryghost/ghost-devcontainer:latest
-    # Override the default `pnpm dev` command. VS Code controls startup and the
-    # user runs backend/frontend dev servers as tasks (see .vscode/tasks.json).
-    command: ['sleep', 'infinity']
-    working_dir: /workspaces/Ghost
-    # The baseline healthcheck in compose.dev.yaml hits Ghost on :2368, but in
-    # the devcontainer Ghost isn't running until the user starts the dev task.
-    # Replace with a trivial check so the gateway's depends_on doesn't time out.
-    healthcheck:
-      test: ['CMD', 'true']
-      interval: 5s
-      timeout: 2s
-      retries: 1
-      start_period: 0s
-
-  ghost-dev-gateway:
-    profiles: !reset []
-    # Point Caddy at the dev servers running inside the ghost-dev container
-    # instead of host.docker.internal (which is the default for the hybrid
-    # host/container dev setup). Public apps (Portal, Comments UI, Signup
-    # Form, Sodo Search, Announcement Bar, Admin Toolbar) have no entry here
-    # — Caddy serves their umd/ build output directly via file_server, so
-    # there's no dev-server host:port to point at.
-    environment:
-      GHOST_BACKEND: ghost-dev:2368
-      ADMIN_DEV_SERVER: ghost-dev:5174
-      LEXICAL_DEV_SERVER: ghost-dev:4173
+      # `pnpm dev` looks for these on 127.0.0.1, where they're published on a laptop
+      database__connection__host: mysql
+      mail__options__host: mailpit
+      adapters__cache__Redis__host: redis
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      mailpit:
+        condition: service_healthy
 
 volumes:
   pnpm-store:

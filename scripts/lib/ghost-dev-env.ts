@@ -22,7 +22,7 @@ const MAIN_DATABASE = 'ghost_dev';
 const FIRST_PORT = 2400;
 const SLOTS = 300;
 
-const checkoutRoot = realpathSync(fileURLToPath(new URL('../..', import.meta.url)));
+export const checkoutRoot = realpathSync(fileURLToPath(new URL('../..', import.meta.url)));
 const checkoutHash = createHash('sha1').update(checkoutRoot).digest('hex');
 
 function git(args: string[]): string {
@@ -125,7 +125,7 @@ async function allocate(): Promise<GhostDevEnv> {
   if (taken.databases.has(`dev_${name}`)) {
     name = `${name.slice(0, 50)}_${checkoutHash.slice(0, 6)}`;
   }
-  // e2e setup drops every database named ghost_%, so worktree databases use another prefix
+  // e2e setup drops every database named ghost_e2e_%, so worktree databases use another prefix
   const database = `dev_${name}`.slice(0, 64);
 
   const start = parseInt(checkoutHash.slice(0, 8), 16) % SLOTS;
@@ -169,4 +169,19 @@ export async function resolveGhostDevEnv(): Promise<GhostDevEnv> {
     `# This checkout's \`pnpm dev\` hostname, ports and database. Delete to reassign.\n${lines.join('\n')}\n`,
   );
   return env;
+}
+
+/** The address of a checkout's front door, from its `.ghost-dev.env` values */
+export function devUrl(env: Record<string, string>): string {
+  return `http://${env.GHOST_DEV_HOSTNAME ?? 'localhost'}:${env.GHOST_DEV_PORT}/`;
+}
+
+/** The databases `allocate` can give a linked worktree */
+export function worktreeDatabases(root: string): string[] {
+  const name = basename(root)
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '_')
+    .replace(/^_+|_+$/g, '');
+  const hash = createHash('sha1').update(root).digest('hex');
+  return [`dev_${name}`.slice(0, 64), `dev_${name.slice(0, 50)}_${hash.slice(0, 6)}`];
 }

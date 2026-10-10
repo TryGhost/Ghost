@@ -55,10 +55,29 @@ describe('Floating sidebar (admin7Design)', () => {
     'replaces the docked sidebar, pinned by default: admin7Design $admin7Design',
     async ({ admin7Design, state }) => {
       fakeTags([]);
-      await renderAdminApp('/tags', { labs: { admin7Design } });
+      let releaseConfig = () => {};
+      const configReleased = new Promise<void>((resolve) => {
+        releaseConfig = resolve;
+      });
+      await renderAdminApp('/tags', {
+        labs: { admin7Design },
+        boot: {
+          browseConfig: {
+            response: async () => {
+              await configReleased;
+              return configResponse();
+            },
+          },
+        },
+      });
 
-      await expect.element(sidebarScreen.navLink('Tags')).toBeVisible();
-      expect(sidebarScreen.floatingState()).toBe(state);
+      // Both variants render Tags before the Labs config selects the floating sidebar.
+      try {
+        await expect.element(sidebarScreen.navLink('Tags')).toBeVisible();
+      } finally {
+        releaseConfig();
+      }
+      await expect.poll(sidebarScreen.floatingState).toBe(state);
     },
   );
 

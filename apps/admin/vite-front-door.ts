@@ -1,9 +1,10 @@
+import { connect, type Socket } from 'node:net';
 import path from 'node:path';
 import { setTimeout as sleep } from 'node:timers/promises';
 import sirv from 'sirv';
 import type { Plugin, ProxyOptions } from 'vite';
 
-// Built to apps/<name>/umd by each app's `vite build --watch`
+// Built to apps/<name>/umd by each app's `build`, or its watcher under `pnpm dev:public`
 const PUBLIC_APPS = [
   'portal',
   'comments-ui',
@@ -57,24 +58,61 @@ export function ghostFrontDoorPlugin(backend: string, devBase: string): Plugin {
           (res) => res.status < 500,
           () => false,
         );
-      const ready = (async () => {
+      const waitForGhost = async () => {
         while (!(await isUp())) {
           await sleep(500);
         }
-      })();
+      };
+      let ready = waitForGhost();
+
+      // A nodemon restart closes every connection to Ghost, so an idle one held open notices
+      // the restart before the next request does. A running Ghost times it out with a 408.
+      const { hostname, port } = new URL(backend);
+      let watcher: Socket | undefined;
+      const watchForRestart = () =>
+        void ready.then(() => {
+          let timedOut = false;
+          watcher = connect(Number(port), hostname).unref();
+          watcher.once('data', () => (timedOut = true));
+          watcher.on('error', () => {});
+          watcher.once('close', () => {
+            if (server.httpServer?.listening) {
+              if (!timedOut) {
+                ready = waitForGhost();
+              }
+              watchForRestart();
+            }
+          });
+        });
+      watchForRestart();
+      server.httpServer?.once('close', () => watcher?.destroy());
 
       const printUrls = server.printUrls.bind(server);
       server.printUrls = () => {
         printUrls();
         logger.info('  Waiting for Ghost…');
-        const hostname = process.env.GHOST_DEV_HOSTNAME ?? 'localhost';
+        const siteHostname = process.env.GHOST_DEV_HOSTNAME ?? 'localhost';
         void ready.then(() =>
-          logger.info(`  ➜  Ghost:   http://${hostname}:${server.config.server.port}/ghost/`),
+          logger.info(`  ➜  Ghost:   http://${siteHostname}:${server.config.server.port}/ghost/`),
         );
       };
 
       server.middlewares.use((_req, _res, next) => {
         void ready.then(() => next());
+      });
+
+      // Codespaces' port forwarding rewrites a same-origin Origin to the localhost Host it
+      // forwards to, but not the Referer, so Ghost's origin check needs the public origin back
+      server.middlewares.use((req, _res, next) => {
+        const forwardedHost = req.headers['x-forwarded-host'];
+        if (
+          typeof forwardedHost === 'string' &&
+          req.headers.origin === `http://${req.headers.host}`
+        ) {
+          const proto = req.headers['x-forwarded-proto'];
+          req.headers.origin = `${typeof proto === 'string' ? proto : 'https'}://${forwardedHost}`;
+        }
+        next();
       });
 
       // Registered here, before Vite's own middleware and proxy
