@@ -26,7 +26,7 @@
   },
   "scripts": {
     "dev": "concurrently \"vite --host --force\" \"pnpm build --watch --emptyOutDir=false\" \"pnpm preview -l silent --host\" \"pnpm --filter @tryghost/kg-default-nodes dev\" \"pnpm --filter @tryghost/kg-default-transforms dev\"",
-    "dev:integrated": "concurrently \"pnpm build --watch --emptyOutDir=false\" \"pnpm preview -l silent --host\" \"pnpm --filter @tryghost/kg-default-nodes dev\" \"pnpm --filter @tryghost/kg-default-transforms dev\"",
+    "dev:integrated": "concurrently \"pnpm build --watch --emptyOutDir=false\" \"pnpm --filter @tryghost/kg-default-nodes dev\" \"pnpm --filter @tryghost/kg-default-transforms dev\"",
     "dev:multiplayer": "concurrently \"vite\" \"pnpm multiplayer\"",
     "dev:test": "node test/test-server.ts",
     "multiplayer": "HOST=localhost PORT=1234 npx y-websocket-server",

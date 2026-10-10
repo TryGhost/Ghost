@@ -62,12 +62,13 @@ describe('Admin task inputs', () => {
     const target = await nxJson<{
       dependsOn: string[];
       transitiveTasks: string[];
-    }>(['show', 'target', 'ghost-monorepo:docker:dev']);
+    }>(['show', 'target', 'ghost-monorepo:dev:host']);
     const tasks = [...target.dependsOn, ...target.transitiveTasks];
     for (const task of [
-      '@tryghost/admin:dev',
+      '@tryghost/admin:dev:host',
       '@tryghost/admin:build:dev',
-      'ghost-monorepo:docker:up',
+      'ghost-monorepo:dev:env',
+      'ghost-monorepo:infra:up',
       'ghost:build:assets',
       '@tryghost/admin-x-framework:dev',
       '@tryghost/shade:dev',
@@ -76,6 +77,22 @@ describe('Admin task inputs', () => {
       assert.ok(tasks.includes(task), task);
     }
     assert.ok(!tasks.some((task) => task.startsWith('ghost-admin:')));
+  });
+
+  it('keeps the containerised dev flow with the React and Portal watchers', async () => {
+    const target = await nxJson<{
+      dependsOn: string[];
+      transitiveTasks: string[];
+    }>(['show', 'target', 'ghost-monorepo:docker:dev']);
+    const tasks = [...target.dependsOn, ...target.transitiveTasks];
+    for (const task of [
+      '@tryghost/admin:dev',
+      'ghost-monorepo:docker:up',
+      'ghost:build:assets',
+      '@tryghost/portal:dev',
+    ]) {
+      assert.ok(tasks.includes(task), task);
+    }
   });
 
   for (const target of ['test:unit', 'test:acceptance', 'test:types']) {

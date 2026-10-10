@@ -65,6 +65,8 @@ typings/
 
 # dotenv environment variables file
 .env
+# Per-checkout ports and database for `pnpm dev`
+.ghost-dev.env
 
 # IDE
 .idea/
