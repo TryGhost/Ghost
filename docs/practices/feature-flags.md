@@ -118,6 +118,14 @@ navigation on desktop. Mobile retains the full-screen Settings takeover, with
 its return control and search inside Settings. Editors retain the app navigation
 because their Settings access is limited; Authors only receive their profile route.
 
+The `admin7Design` milestone replaces the docked desktop sidebar with Shade's
+`FloatingSidebar`: pinned beside the content by default, or unpinned into a
+circle around the site icon, stored as the `navigation.menu.mode` user
+preference. It also lists Ghost(Pro) with Settings, moves Help and Feedback to
+the account menu and runs the member map full bleed. Settings shows its
+navigation inside the same sidebar, pinned without changing the stored mode. Mobile keeps the sidebar sheet, and the flag-off path
+preserves the docked sidebar and the separate Settings sidebar.
+
 ## How values are resolved
 
 For normal Labs flags, later sources in this list override earlier ones:

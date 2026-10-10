@@ -51,6 +51,11 @@ export const NavigationPreferencesSchema = z.looseObject({
   }),
   menu: z.object({
     visible: z.boolean(),
+    // Whether the admin7Design sidebar is pinned ("full") or tucked into its
+    // floating circle ("compact"). Optional (not defaulted), like nightShift:
+    // blobs saved without it parse unchanged and aren't rewritten.
+    // useSidebarMode falls back to "full".
+    mode: z.enum(['full', 'compact']).optional().catch(undefined),
   }),
 });
 

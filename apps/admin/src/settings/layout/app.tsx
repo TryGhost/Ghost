@@ -10,15 +10,21 @@ import { ConfirmationProvider } from '@/settings/providers/confirmation-provider
 import { DialogPortalProvider } from '@/settings/providers/dialog-portal';
 import { Outlet, useLocation } from '@tryghost/admin-x-framework';
 import { Stack } from '@tryghost/shade/primitives';
-import { useEffect, useState } from 'react';
+import { startTransition, useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useScrollSectionContext } from '@/settings/hooks/use-scroll-section';
 import { isOpenSectionRequest } from '@/settings/utils/open-section';
-import { useSettingsNavigationSlot } from '@/layout/settings-navigation';
+import {
+  useSettingsNavigationSlot,
+  useSettingsSidebarMorphing,
+} from '@/layout/settings-navigation';
 import { SettingsLoading } from '@/settings/settings-loading';
 
 import { useLazyComponent } from '@/shared/use-lazy-component';
 import { loadSettingsContent } from '@/settings/load-settings';
+
+// Renders the sections even if the sidebar's morph never reports its end
+const SECTIONS_FALLBACK_DELAY = 1000;
 
 interface AppProps {
   upgradeStatus?: UpgradeStatusType;
@@ -80,6 +86,22 @@ function SettingsNavigationPortal() {
 
 export function App({ upgradeStatus }: AppProps) {
   const MainContent = useLazyComponent(loadSettingsContent);
+  // While the floating sidebar grows to show the navigation, the sections wait
+  // for it to finish (or a fallback), so rendering them doesn't stall the morph
+  const sidebarMorphing = useSettingsSidebarMorphing();
+  const [sectionsReady, setSectionsReady] = useState(!sidebarMorphing);
+  useEffect(() => {
+    if (sectionsReady) {
+      return;
+    }
+    const ready = () => startTransition(() => setSectionsReady(true));
+    if (!sidebarMorphing) {
+      ready();
+      return;
+    }
+    const timer = window.setTimeout(ready, SECTIONS_FALLBACK_DELAY);
+    return () => window.clearTimeout(timer);
+  }, [sectionsReady, sidebarMorphing]);
 
   return (
     <SettingsAppProvider upgradeStatus={upgradeStatus}>
@@ -88,7 +110,7 @@ export function App({ upgradeStatus }: AppProps) {
           <DialogPortalProvider>
             <SettingsLocationSync />
             <SettingsNavigationPortal />
-            {MainContent ? <MainContent /> : <SettingsLoading />}
+            {sectionsReady && (MainContent ? <MainContent /> : <SettingsLoading />)}
             <Outlet />
             <DirtyNavigationGuard />
           </DialogPortalProvider>

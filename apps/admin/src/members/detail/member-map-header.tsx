@@ -19,10 +19,12 @@ class MapErrorBoundary extends React.Component<
 
 export default function MemberMapHeader({
   enabled,
+  fullBleed,
   children,
   geolocation,
 }: React.PropsWithChildren<{
   enabled: boolean;
+  fullBleed?: boolean;
   geolocation?: string | null;
 }>) {
   if (!enabled) {
@@ -30,7 +32,9 @@ export default function MemberMapHeader({
   }
   return (
     <MapErrorBoundary fallback={children}>
-      <MemberLocationMap geolocation={geolocation}>{children}</MemberLocationMap>
+      <MemberLocationMap fullBleed={fullBleed} geolocation={geolocation}>
+        {children}
+      </MemberLocationMap>
     </MapErrorBoundary>
   );
 }
