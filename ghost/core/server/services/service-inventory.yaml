@@ -1,7 +1,9 @@
 # Temporary migration inventory. See README.md before updating.
 # Entry points are relative to this directory; evidence paths are relative to ghost.
 # An unverified facet is an open audit question, not an empty/no-op contract.
-version: 1
+summary:
+  total: 72
+  migrated: 2
 services:
   activitypub:
     kind: directory
@@ -4298,7 +4300,7 @@ services:
     kind: directory
     disposition: retain
     status: audited
-    auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
+    auditedAt: 5dae46983fe5423a900214dfc1906f5d14e637d2
     entryPoints:
       - identity-tokens/index.js
     notes: >-
@@ -4319,7 +4321,7 @@ services:
       construction:
         summary: >-
           The wrapper is the only production construction site found. First init captures the
-          absolute admin URL and signingKeys.getInstance().forPurpose(staff), then publishes
+          absolute admin URL and signingKeys.service.forPurpose(staff), then publishes
           IdentityTokenService synchronously within the async method. A truthy instance makes
           later calls return without reconstructing dependencies.
         sources:
@@ -4415,36 +4417,44 @@ services:
   indexnow-ping:
     kind: directory
     disposition: retain
+    migrated: true
     status: audited
-    auditedAt: c2999f4e13da6360bceced808bb52c4a04b5ad03
+    auditedAt: 5dae46983fe5423a900214dfc1906f5d14e637d2
     entryPoints:
       - indexnow-ping/index.ts
     notes: >-
-      Preserve post-event gating, live settings and request error reporting. Root lifecycle,
-      verification-route compatibility and production retry behavior still need contracts.
+      Preserve post-event gating, live settings and request error reporting. Shared initialization
+      covers publication and retry; restart, request disposal and production retries remain open.
     contracts:
       exports:
         summary: >-
-          The TypeScript default export is one wrapper exposing synchronous init and a public
-          writable service field, initially undefined. CommonJS boot uses .default; init
-          returns no instance. The implementation exports IndexNowPingService for direct
-          construction and exposes its dependencies, bound listener and operation methods.
+          The TypeScript default export is a defineService root exposing init(): Promise<void>
+          and a read-only service getter. CommonJS boot uses .default; init resolves without an
+          instance. Reading service before publication throws IncorrectUsageError. The
+          implementation exports IndexNowPingService for direct construction and exposes its
+          dependencies, bound listener and operation methods. Root tests assert guarded access.
         sources:
           - core/server/services/indexnow-ping/index.ts
           - core/server/services/indexnow-ping/indexnow-ping-service.ts
+          - core/kernel/define-service.ts
           - core/boot.js
-        tests: []
+        tests:
+          - test/unit/server/services/indexnow-ping/index.test.ts
       construction:
         summary: >-
-          Import constructs only the wrapper. First init loads shared settings/config, URL
-          services, request, logging and model events, constructs the implementation, assigns
-          service, then subscribes. Later init calls skip construction and subscription.
-          The wrapper is the only runtime construction path found; class tests inject fakes
-          except for the real request helper.
+          Import creates only the root. First init loads shared settings/config, URL services,
+          request, logging and model events, constructs the implementation and subscribes before
+          publication. Concurrent calls share initialization; successful later calls reuse it.
+          The root is the only runtime construction path found. Root tests use the shared event
+          bus and request helper with stubbed settings/config/URL lookup; helper tests cover
+          concurrent initialization. Class tests inject fakes except for the request helper.
         sources:
           - core/server/services/indexnow-ping/index.ts
           - core/server/services/indexnow-ping/indexnow-ping-service.ts
-        tests: []
+          - core/kernel/define-service.ts
+        tests:
+          - test/unit/server/services/indexnow-ping/index.test.ts
+          - test/unit/kernel/define-service.test.ts
       consumers:
         summary: >-
           Boot is the only runtime root importer. Post model events invoke the listener for
@@ -4452,7 +4462,9 @@ services:
           Import events and events without changed SEO fields return early; others pass post
           JSON plus authors and tags to a detached ping. No runtime deep constructor or direct
           ping caller was found. The frontend key-verification middleware independently reads
-          the same setting; it does not import this service.
+          the same setting. Root tests cover event gating and relation forwarding; an HTTP test
+          publishes through an author/tag-filtered collection. Transaction rollback and HTTP
+          import suppression remain source-only here.
         sources:
           - core/boot.js
           - core/server/models/post.js
@@ -4463,37 +4475,50 @@ services:
           - core/frontend/web/middleware/serve-indexnow-key.js
         tests:
           - test/unit/server/services/indexnow-ping/indexnow-ping-service.test.js
+          - test/unit/server/services/indexnow-ping/index.test.ts
+          - test/e2e-server/indexnow-publishing.isolated.test.ts
       startup:
         summary: >-
-          Boot initializes settings and dynamic routing before calling init in its required
-          service Promise.all, before readiness, including backend-only boot. Subscription
-          completes synchronously without checking key availability or sending a request;
-          disabled/private/development configurations still subscribe. The settings model
-          generates the key as a default, and frontend middleware serves its matching path.
-          Synchronous init failure rejects required startup.
+          Boot initializes settings and dynamic routing before awaiting init in its required
+          service Promise.all, before readiness, including backend-only boot. Subscription runs
+          synchronously during init without checking keys or sending a request; publication and
+          init completion are asynchronous. Disabled/private/development configurations still
+          subscribe. The settings model generates the key as a default, and frontend middleware
+          serves its matching path. Initialization failure rejects required startup. Root tests
+          cover disabled first init; the HTTP test boots with the production key definition and
+          serves the generated key. Backend-only ordering remains source evidence.
         sources:
           - core/boot.js
           - core/server/services/indexnow-ping/index.ts
           - core/server/services/indexnow-ping/indexnow-ping-service.ts
+          - core/kernel/define-service.ts
           - core/server/models/settings.js
+          - core/server/data/schema/default-settings/default-settings.json
           - core/frontend/web/site.js
           - core/frontend/web/middleware/serve-indexnow-key.js
-        tests: []
+        tests:
+          - test/unit/server/services/indexnow-ping/index.test.ts
+          - test/e2e-server/indexnow-publishing.isolated.test.ts
       lifetime:
         summary: >-
-          The wrapper retains one implementation and its bound listener. Direct subscribeEvents
-          removes that same callback before registering it for each event, but cannot remove
-          another instance's callback. Repeated wrapper init does not restore externally
-          removed listeners. Neither wrapper nor implementation exposes reset, unsubscribe or
-          shutdown. EventEmitter delivery is synchronous; ping completion is detached, with no
-          serialization, deduplication of pending work or retained completion handle.
+          The root retains one implementation and its bound listener. Direct subscribeEvents
+          removes that callback before registering it for each event; unsubscribeEvents removes
+          only that instance's callbacks. Successful repeated init does not restore externally
+          removed listeners. Neither root nor implementation exposes reset or shutdown.
+          EventEmitter delivery is synchronous; ping completion is detached, with no
+          serialization, deduplication of pending work or retained completion handle. Root tests
+          assert retained identity, one callback per event and event delivery returning while a
+          ping is pending; the HTTP test completes publication before its request settles.
         sources:
           - core/server/services/indexnow-ping/index.ts
           - core/server/services/indexnow-ping/indexnow-ping-service.ts
+          - core/kernel/define-service.ts
           - core/server/lib/common/events.js
           - core/boot.js
           - core/server/ghost-server.ts
-        tests: []
+        tests:
+          - test/unit/server/services/indexnow-ping/index.test.ts
+          - test/e2e-server/indexnow-publishing.isolated.test.ts
       configuration:
         summary: >-
           Each ping reads live environment, site privacy, privacy.useIndexNow, key and URL
@@ -4501,8 +4526,10 @@ services:
           slugs skip delivery. SEO fields and the IndexNow endpoint are module constants.
           Requests carry url, key and keyLocation with a five-second request timeout. Key
           lookup accepts any truthy value, while the verification middleware requires an exact
-          matching 32-character lowercase hex path. Class tests cover representative gates
-          and the url query, but not live changes, keyLocation or the verification route.
+          matching 32-character lowercase hex path. Root tests cover live flags/key/URL changes
+          and complete query encoding through the request helper. The HTTP test verifies a
+          generated key, response headers and keyLocation on a subdirectory site; malformed
+          keys and verification-route changes remain untested here.
         sources:
           - core/server/services/indexnow-ping/indexnow-ping-service.ts
           - core/server/services/indexnow-ping/constants.ts
@@ -4510,10 +4537,14 @@ services:
           - core/server/models/settings.js
         tests:
           - test/unit/server/services/indexnow-ping/indexnow-ping-service.test.js
+          - test/unit/server/services/indexnow-ping/index.test.ts
+          - test/e2e-server/indexnow-publishing.isolated.test.ts
       resources:
         summary: >-
           The implementation owns two model-event registrations and starts untracked HTTP
-          requests. Boot registers no cleanup; no cancellation or drain is exposed. The shared
+          requests. The factory removes partial subscriptions after startup failure; root tests
+          assert cleanup preserves unrelated callbacks and retry installs one of each listener.
+          Boot registers no cleanup; no request cancellation or drain is exposed. The shared
           request dependency owns DNS lookup/cache state and unref'ed cache-maintenance timers;
           HTTP timeout and retry work belongs to that helper and Got. This root creates no
           database connection, dedicated HTTP agent, scheduler or durable queue. Its borrowed
@@ -4525,43 +4556,45 @@ services:
           - core/boot.js
           - core/server/ghost-server.ts
           - package.json
-        tests: []
+        tests:
+          - test/unit/server/services/indexnow-ping/index.test.ts
       failures:
         summary: >-
-          Subscription failure leaves service assigned, so another init skips retry.
-          Missing/unresolved URLs and absent keys warn and return; 200/202 log success, 429
-          logs rate_limited, 403/422 key_validation_failed and other errors ping_failed.
-          Ordinary URL-resolution/request errors are logged and swallowed. Model access in
-          the synchronous listener can throw; config gates precede ping's try and their
-          rejection is silently swallowed by the listener. Production GETs inherit Got
-          retries despite the no-retry comment; the request helper disables retries under
-          test environments. Class HTTP tests establish final classification, not production
-          attempts, timeout duration or event-to-persistence failure isolation.
+          Subscription failure rejects init without publication after removing partial listeners;
+          root tests assert the original error and a successful retry. Missing/unresolved URLs
+          and absent keys warn and return; 200/202 log success, 429 logs rate_limited, 403/422
+          key_validation_failed and other errors ping_failed. Ordinary URL-resolution/request
+          errors are logged and swallowed. Root tests assert synchronous model errors escape
+          and pre-try config rejections are swallowed by the listener. The HTTP test retains a
+          published post after a deferred transport failure. Production GETs inherit Got retries
+          despite the no-retry comment; the request helper disables retries under test
+          environments. These tests do not pin production attempts, timeout duration or logger
+          failure behavior.
         sources:
           - core/server/services/indexnow-ping/index.ts
           - core/server/services/indexnow-ping/indexnow-ping-service.ts
+          - core/kernel/define-service.ts
           - core/server/models/base/plugins/events.js
           - package.json
           - vitest.config.ts
         tests:
           - test/unit/server/services/indexnow-ping/indexnow-ping-service.test.js
+          - test/unit/server/services/indexnow-ping/index.test.ts
+          - test/e2e-server/indexnow-publishing.isolated.test.ts
     unverified: []
     blockers:
       - >-
-        Add root/boot contracts for exports, initialization identity, disabled first init,
-        partial subscription failure and restart after listener removal. The class subscription
-        test only checks event names and call count on a fake bus, not callback identity or
-        duplicate prevention. Decide listener disposal and pending-request drain ownership.
+        Decide listener disposal, restart after external listener removal and pending-request
+        drain ownership. Partial-startup cleanup and repeated init are covered; normal shutdown
+        has no cleanup hook. Backend-only startup and failed required boot still need coverage.
       - >-
-        Pin the real post-model/event/URL-service boundary, including transactional publication,
-        import suppression and author/tag-filtered routes. Current tests invoke the class with
-        fake models and URL services; no assertion establishes full publishing-path behavior.
-        Characterize synchronous model errors, pre-try config failures and logging failures.
+        Cover transaction rollback and import suppression through the real publishing path,
+        plus logging failures. The HTTP test covers successful filtered publication and a
+        later transport failure; event-gating tests use fake post models.
       - >-
-        Cover live setting changes, complete query encoding/keyLocation, subdirectory sites
-        and the actual key-verification route. The route and ping accept different key shapes;
-        existing getApiKey tests deliberately accept a non-hex key. Test the generated-key
-        contract before changing either side.
+        Cover malformed/missing verification keys and key changes through the HTTP route.
+        The route and ping accept different key shapes; the generated-key success case is
+        covered, but existing getApiKey tests also deliberately accept a non-hex key.
       - >-
         Resolve the no-retry comment against actual transport behavior: production Got GETs
         permit two retries for eligible statuses/errors, while test mode disables retries.
@@ -10664,23 +10697,26 @@ services:
   signing-keys:
     kind: directory
     disposition: retain
+    migrated: true
     status: audited
-    auditedAt: 82ba3d5b1133db2a042774e8bbc6f64fc540ac47
+    auditedAt: 5dae46983fe5423a900214dfc1906f5d14e637d2
     entryPoints:
       - signing-keys/index.ts
     notes: >-
       Publish only after the initial key check; preserve live key reads and purpose separation.
-      Recurrence ownership and restart remain migration blockers despite class-level rotation tests.
+      Shared initialization guards publication; recurrence, restart and drain ownership remain open.
     contracts:
       exports:
         summary: >-
-          Named runtime exports are async init, getInstance and scheduleCheckJob; the provider
-          and purpose exports are types only. getInstance throws IncorrectUsageError before
-          publication. The implementation exports SigningKeyService and rotation constants;
+          The default export is a defineService root with init(): Promise<void> and a read-only
+          service getter; scheduleCheckJob remains a named export. The provider and purpose
+          exports are types only. Reading service before publication throws IncorrectUsageError.
+          The implementation exports SigningKeyService and rotation constants;
           CheckSigningKeysJob is a separate class consumed by handler registration. Root tests
           assert pre-init access fails; the full export list is source evidence.
         sources:
           - core/server/services/signing-keys/index.ts
+          - core/kernel/define-service.ts
           - core/server/services/signing-keys/signing-key-service.ts
           - core/server/services/signing-keys/check-signing-keys-job.ts
           - core/server/services/jobs-service/register-job-handlers.ts
@@ -10691,13 +10727,14 @@ services:
           The root is the only production construction site found. init creates a service
           using the shared settings cache, Settings model, model transaction function,
           logging and a scheduling callback. It awaits check before publishing the service;
-          concurrent calls before publication have no shared promise guard. Importing the
-          module alone creates neither the service nor a recurring job. Root tests verify no
-          key check or published instance on import, publication after a held check completes,
-          and retry after rejection. Dependency assembly and concurrent construction remain
-          source evidence; the real rotation callback is exercised with storage doubles.
+          concurrent calls share one pending initialization. Importing the module alone creates
+          neither the service nor a recurring job. Root tests verify no key check or published
+          instance on import, publication after a held check completes, a shared promise and
+          single check for concurrent init, and retry after rejection. Dependency assembly
+          remains source evidence; the real rotation callback is exercised with storage doubles.
         sources:
           - core/server/services/signing-keys/index.ts
+          - core/kernel/define-service.ts
           - core/server/services/signing-keys/signing-key-service.ts
         tests:
           - test/unit/server/services/signing-keys/index.test.ts
@@ -10706,8 +10743,8 @@ services:
           Boot initializes the root and later supplies the jobs instance. Identity tokens and
           the staff JWKS app retain staff providers; members API construction retains a
           members provider for signing, verification and public keys. The check-signing-keys
-          job handler instead resolves getInstance for each run. Handler tests register before
-          root initialization, then verify deferred access, awaiting the check and propagation
+          job handler instead reads the root service getter for each run. Handler tests register
+          before root initialization, then verify deferred access, awaiting the check and propagation
           of its original rejection. Existing HTTP tests cover
           both JWKS responses and staff-token verification, not live rotation through those
           retained HTTP consumers.
@@ -10750,10 +10787,11 @@ services:
           forPurpose creates new provider objects whose closures retain the same service and
           read its current settings on each call. Integration tests retain a provider while
           promoting and retiring keys, and race separate class instances; they do not exercise
-          concurrent root init or jobs restart. Root tests additionally assert that sequential
-          successful init calls retain the checked instance without checking again.
+          root initialization or jobs restart. Root tests assert concurrent init shares one
+          pending check and successful later init retains the instance without checking again.
         sources:
           - core/server/services/signing-keys/index.ts
+          - core/kernel/define-service.ts
           - core/server/services/signing-keys/signing-key-service.ts
         tests:
           - test/integration/services/signing-keys.test.ts
@@ -10810,6 +10848,7 @@ services:
         sources:
           - core/boot.js
           - core/server/services/signing-keys/index.ts
+          - core/kernel/define-service.ts
           - core/server/services/signing-keys/signing-key-service.ts
           - core/server/services/jobs-service/register-job-handlers.ts
           - core/server/services/jobs-service/jobs-service.ts
@@ -10822,10 +10861,9 @@ services:
     unverified: []
     blockers:
       - >-
-        Concurrent root init has no in-flight guard. Add overlapping-call coverage before
-        changing this behavior; sequential init tests and class transaction-race tests do not
-        prove single root publication or partial-check cleanup. Sharing an in-flight init
-        would be a new guarantee, not established baseline behavior.
+        Characterize retry after a partially completed initial check. Concurrent publication
+        and retry after a rejected check are covered with a stubbed check; they do not prove
+        recovery when earlier rotation steps committed before a later step failed.
       - >-
         Characterize scheduling failure after a rotation commits, concurrent registration and
         recurrence restoration across jobs restart. The module keeps scheduled after shutdown

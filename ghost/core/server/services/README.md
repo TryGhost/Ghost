@@ -63,6 +63,14 @@ The temporary [service inventory](service-inventory.yaml) tracks this migration.
 Update it when adding, removing or renaming a root. It includes standalone
 files and supporting modules still awaiting relocation. Boot never reads it.
 
+The summary counts all inventory entries in `total` and entries marked
+`migrated: true` in `migrated`. Mark a root as migrated once it uses the
+[kernel's `defineService` initializer](../../kernel/README.md#service-initialization).
+IndexNow and signing keys are the first two. This tracks adoption of the
+initializer, independently of audit completeness or remaining lifecycle work.
+Update the summary when entries or migration markers change; the inventory test
+checks both counts.
+
 Each entry records its intended ownership and audit status. `pending` means
 the contract audit has not started; `auditing` means evidence is incomplete;
 `audited` means all facets have been investigated and recorded from source or
@@ -110,7 +118,7 @@ Record missing coverage and known bugs in `blockers`. Before changing a service,
 address the gaps relevant to that change; neither `audited` nor a passing
 inventory check proves that its behavior is protected against regressions.
 
-The unit test checks the inventory's shape, paths and directory coverage. It
+The unit test checks the inventory's shape, counts, paths and directory coverage. It
 does not import services or drive initialization. `README.md` and the inventory
 itself are the only metadata exclusions. Retire the inventory after migration;
 keep the behavioral tests and replace the legacy check with a check for the
