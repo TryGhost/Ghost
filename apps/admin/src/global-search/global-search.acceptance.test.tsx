@@ -26,12 +26,8 @@ const wait = (ms: number) =>
     setTimeout(resolve, ms);
   });
 
-const handoff = () =>
-  JSON.parse(document.body.dataset.externalNavigate ?? 'null') as { route: string } | null;
-
 describe('Settings search exits', () => {
   it.each(['tag', 'post'])('confirms before a %s result leaves dirty Settings', async (model) => {
-    delete document.body.dataset.externalNavigate;
     if (model === 'post') {
       // the editor owns its request graph
       allowUnhandledRequests();
@@ -41,7 +37,7 @@ describe('Settings search exits', () => {
     fakeAdminEndpoint('GET', /^\/tags\/slug\/first-tag\//, {
       tags: [tag({ name: 'First tag', slug: 'first-tag' })],
     });
-    await renderAdminApp('/settings', { labs: { admin7settings: true } });
+    await renderAdminApp('/settings');
     await settingsScreen.editTitle('Unsaved title');
     await expect.poll(unsavedChangesGuarded).toBe(true);
     await openWithShortcut();
@@ -51,7 +47,6 @@ describe('Settings search exits', () => {
     await settingsScreen.confirmationAction('Stay').click();
     await expect(settingsScreen.confirmationModal()).toHaveCount(0);
     await expect.poll(currentRoute).toBe('/settings');
-    expect(handoff()).toBeNull();
     await expect
       .element(page.getByLabelText('Site title', { exact: true }))
       .toHaveValue('Unsaved title');
@@ -61,7 +56,6 @@ describe('Settings search exits', () => {
     await settingsScreen.confirmationAction('Leave').click();
     if (model === 'post') {
       await expect.poll(currentRoute).toBe('/editor/post/p1');
-      expect(handoff()).toBeNull();
     } else {
       await expect.poll(currentRoute).toBe('/tags/first-tag');
       await expect(settingsScreen.titleAndDescription()).toHaveCount(0);
@@ -73,7 +67,7 @@ describe('Settings search actions', () => {
   it('runs an action over dirty Settings without asking, keeping the edit', async () => {
     fakeSettingsScreens();
     fakeSearchIndex();
-    await renderAdminApp('/settings', { labs: { admin7settings: true } });
+    await renderAdminApp('/settings');
     await settingsScreen.editTitle('Unsaved title');
     await expect.poll(unsavedChangesGuarded).toBe(true);
 
@@ -149,7 +143,6 @@ describe('Cmd-K search', () => {
   let index: ReturnType<typeof fakeSearchIndex>;
 
   beforeEach(() => {
-    delete document.body.dataset.externalNavigate;
     fakeTags([]);
     index = fakeSearchIndex();
   });
@@ -263,7 +256,7 @@ describe('Cmd-K search', () => {
 
   it('returns to the opening route after opening a Staff result in Settings', async () => {
     allowUnhandledRequests();
-    await renderAdminApp('/tags', { labs: { admin7settings: true } });
+    await renderAdminApp('/tags');
     await openAndSearch('first user');
 
     await globalSearchScreen.option(/First user/).click();
@@ -275,7 +268,7 @@ describe('Cmd-K search', () => {
 
   it('keeps the original return route when Cmd-K opens another Settings result', async () => {
     allowUnhandledRequests();
-    await renderAdminApp('/tags', { labs: { admin7settings: true } });
+    await renderAdminApp('/tags');
     await openAndSearch('first user');
 
     await globalSearchScreen.option(/First user/).click();
@@ -292,7 +285,7 @@ describe('Cmd-K search', () => {
 
   it('opens a Settings section and returns to the opening route', async () => {
     fakeSettingsScreens();
-    await renderAdminApp('/tags', { labs: { admin7settings: true } });
+    await renderAdminApp('/tags');
     await openAndSearch('timezone');
 
     await globalSearchScreen.option(/Timezone/).click();
@@ -305,7 +298,7 @@ describe('Cmd-K search', () => {
 
   it('opens a Settings section the way its header button does', async () => {
     fakeSettingsScreens();
-    await renderAdminApp('/tags', { labs: { admin7settings: true } });
+    await renderAdminApp('/tags');
     await openAndSearch('navigation');
 
     await globalSearchScreen.option(/^Navigation$/).click();
@@ -342,7 +335,7 @@ describe('Cmd-K search', () => {
         },
       };
     });
-    await renderAdminApp('/tags', { labs: { admin7settings: true } });
+    await renderAdminApp('/tags');
     await openAndSearch('labs');
 
     await globalSearchScreen.option(/^Labs$/).click();
@@ -356,7 +349,7 @@ describe('Cmd-K search', () => {
 
   it('opens a Settings section the Settings filter had hidden', async () => {
     fakeSettingsScreens();
-    await renderAdminApp('/settings', { labs: { admin7settings: true } });
+    await renderAdminApp('/settings');
     await settingsScreen.search().fill('design');
     await expect.element(page.getByTestId('labs')).not.toBeVisible();
 
@@ -371,7 +364,7 @@ describe('Cmd-K search', () => {
 
   it('opens a Settings section with an Edit button for editing', async () => {
     fakeSettingsScreens();
-    await renderAdminApp('/tags', { labs: { admin7settings: true } });
+    await renderAdminApp('/tags');
     await openAndSearch('site description');
 
     await globalSearchScreen.option('Title & description').click();
@@ -387,7 +380,7 @@ describe('Cmd-K search', () => {
     ['the section on screen', '/settings/timezone'],
   ])('shows %s while the Settings filter hides it', async (_description, route) => {
     fakeSettingsScreens();
-    await renderAdminApp(route, { labs: { admin7settings: true } });
+    await renderAdminApp(route);
     await settingsScreen.search().fill('design');
     await expect.element(settingsScreen.timezone()).not.toBeVisible();
 
@@ -417,13 +410,12 @@ describe('Cmd-K search', () => {
   it('opens a post in the editor', async () => {
     // the editor owns its request graph
     allowUnhandledRequests();
-    await renderAdminApp('/tags', { labs: { editorReact: true } });
+    await renderAdminApp('/tags');
     await openAndSearch('first post');
 
     await globalSearchScreen.option(/First post/).click();
 
     await expect.poll(currentRoute).toBe('/editor/post/p1');
-    expect(handoff()).toBeNull();
   });
 
   it('opens a billing result at its billing route', async () => {

@@ -7,7 +7,6 @@ import {
   InputGroupButton,
   InputGroupInput,
   Kbd,
-  Separator,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
@@ -24,7 +23,6 @@ import { searchKeywords as growthSearchKeywords } from '@/settings/growth/search
 import { searchKeywords as membershipSearchKeywords } from '@/settings/membership/search-keywords';
 import { searchKeywords as siteSearchKeywords } from '@/settings/site/search-keywords';
 
-import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import { useGlobalData } from '@/settings/providers/global-data-context';
 import { useSettingsSectionVisibility } from '@/settings/hooks/use-section-visibility';
 import { useSettingsNavigation } from '@/settings/hooks/use-settings-navigation';
@@ -75,8 +73,6 @@ interface NavSectionProps {
 }
 
 const NavSection: React.FC<NavSectionProps> = ({ children, isVisible, title }) => {
-  const admin7Settings = useFeatureFlag('admin7settings');
-
   if (!isVisible) {
     return null;
   }
@@ -86,12 +82,7 @@ const NavSection: React.FC<NavSectionProps> = ({ children, isVisible, title }) =
       <Text as="h2" className="mb-4 ml-2 tracking-normal" size="md" weight="semibold" data-nav-row>
         {title}
       </Text>
-      {children && (
-        <>
-          <SidebarMenu className="-mt-1 mb-7 gap-0">{children}</SidebarMenu>
-          {!admin7Settings && <Separator className="mx-2 mb-7 w-auto bg-border-default" />}
-        </>
-      )}
+      {children && <SidebarMenu className="-mt-1 mb-7 gap-0">{children}</SidebarMenu>}
     </>
   );
 };
@@ -197,7 +188,6 @@ const SettingsSearchInput: React.FC<SettingsSearchInputProps> = ({
   inputRef: externalInputRef,
 }) => {
   const { filter, setFilter } = useSearch();
-  const admin7Settings = useFeatureFlag('admin7settings');
   const ownInputRef = useRef<HTMLInputElement | null>(null);
   const inputRef = externalInputRef ?? ownInputRef;
 
@@ -225,11 +215,7 @@ const SettingsSearchInput: React.FC<SettingsSearchInputProps> = ({
     setFilter(e.target.value);
 
     if (e.target.value) {
-      if (admin7Settings) {
-        document.getElementById('settings-scroller')?.scrollTo({ top: 0, left: 0 });
-      } else {
-        document.querySelector('.settings-app')?.scrollTo({ top: 0, left: 0 });
-      }
+      document.getElementById('settings-scroller')?.scrollTo({ top: 0, left: 0 });
     }
   };
 
@@ -277,7 +263,7 @@ interface SettingsHeaderProps {
   inputRef?: React.MutableRefObject<HTMLInputElement | null>;
 }
 
-/** The back button and search row that leads the admin7settings navigation. */
+/** The back button and search row that leads the Settings navigation. */
 export const SettingsHeader: React.FC<SettingsHeaderProps> = ({ className, inputRef }) => (
   <Inline align="center" className={className} gap="sm">
     <ExitSettingsButton />
@@ -292,7 +278,6 @@ const Sidebar: React.FC = () => {
   const { settings } = useGlobalData();
   const [isPrivate] = getSettingValues(settings, ['is_private']) as [boolean];
   const visibility = useSettingsSectionVisibility();
-  const admin7Settings = useFeatureFlag('admin7settings');
   const {
     visibleMembershipSearchKeywords,
     visibleEmailSearchKeywords,
@@ -348,33 +333,17 @@ const Sidebar: React.FC = () => {
     }
   };
 
-  const navClasses = cn(
-    // pb-5 matches the sidebar's pt-5, so the last item rests as far from the
-    // bottom edge as the search row sits from the top.
-    admin7Settings
-      ? 'min-h-0 flex-1 overflow-y-auto px-5 pt-4 pb-5 [&>:last-child]:mb-0'
-      : 'hidden pt-10 tablet:visible! tablet:block!',
-  );
-
   return (
-    <Stack
-      className={admin7Settings ? 'min-h-0 flex-1' : 'ml-auto w-full pt-0 tablet:max-w-[240px]'}
-      data-testid="sidebar"
-      gap="none"
-    >
+    <Stack className="min-h-0 flex-1" data-testid="sidebar" gap="none">
       {/* data-nav-row marks the rows that cascade in when the shell swaps to this nav. */}
-      {admin7Settings ? (
-        <Box className="shrink-0 bg-sidebar px-5 pb-2" data-nav-row>
-          <SettingsHeader inputRef={searchInputRef} />
-        </Box>
-      ) : (
-        <div className="sticky top-0 z-10 flex content-stretch items-end tablet:h-20 tablet:bg-gray-50 xl:h-20 dark:bg-gray-950 dark:tablet:bg-[#101114]">
-          <SettingsSearchInput className="mr-8 tablet:mr-0" inputRef={searchInputRef} />
-        </div>
-      )}
+      <Box className="shrink-0 bg-sidebar px-5 pb-2" data-nav-row>
+        <SettingsHeader inputRef={searchInputRef} />
+      </Box>
       <nav
-        className={navClasses}
-        id={admin7Settings ? 'settings-sidebar-scroller' : 'settings-sidebar'}
+        // pb-5 matches the sidebar's pt-5, so the last item rests as far from the
+        // bottom edge as the search row sits from the top.
+        className="min-h-0 flex-1 overflow-y-auto px-5 pt-4 pb-5 [&>:last-child]:mb-0"
+        id="settings-sidebar-scroller"
       >
         {noResult && <NoSearchResult className="ml-2" />}
 
@@ -644,7 +613,7 @@ const Sidebar: React.FC = () => {
           />
         </NavSection>
 
-        {!filter && admin7Settings && (
+        {!filter && (
           <SidebarMenu>
             <SidebarMenuItem data-nav-row>
               <SidebarMenuButton
@@ -669,18 +638,6 @@ const Sidebar: React.FC = () => {
               </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>
-        )}
-        {!filter && !admin7Settings && (
-          <button
-            className="mt-1 mb-10 flex h-[38px] w-100 cursor-pointer items-center rounded-lg px-3 py-2 text-left text-[14px] font-medium text-gray-800 transition-all hover:bg-gray-200 focus:bg-gray-100 dark:text-gray-600 dark:hover:bg-gray-950 dark:focus:bg-gray-900"
-            type="button"
-            onClick={() => {
-              updateRoute('about');
-            }}
-          >
-            <img alt="Ghost Logo" className="mr-[7px] size-[18px]" src={GhostLogo} />
-            About Ghost
-          </button>
         )}
       </nav>
     </Stack>

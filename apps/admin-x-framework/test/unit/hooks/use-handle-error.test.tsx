@@ -39,7 +39,6 @@ import { toast } from 'sonner';
 const createWrapper = (): React.FC<{ children: ReactNode }> => {
   const TestWrapper: React.FC<{ children: ReactNode }> = ({ children }) => (
     <FrameworkProvider
-      externalNavigate={() => {}}
       ghostVersion="5.x"
       unsplashConfig={{
         Authorization: '',

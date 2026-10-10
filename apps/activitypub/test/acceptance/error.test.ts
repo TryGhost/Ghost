@@ -6,20 +6,11 @@ test.describe('Error page', () => {
     await mockInitialApiRequests(page);
   });
 
-  test('hands the analytics action back to the Admin host', async ({ page }) => {
+  test('sends the analytics action to the Admin analytics route', async ({ page }) => {
     await page.goto('#/does-not-exist');
 
     await page.getByText('Back to the homepage').click();
 
-    await expect
-      .poll(async () => {
-        return await page.locator('body').evaluate((body) => {
-          return JSON.parse(body.dataset.externalNavigate ?? 'null');
-        });
-      })
-      .toMatchObject({
-        route: '/analytics/',
-        isExternal: true,
-      });
+    await expect(page).toHaveURL(/#\/analytics\/$/);
   });
 });

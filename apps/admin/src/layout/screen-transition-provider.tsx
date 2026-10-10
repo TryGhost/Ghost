@@ -7,7 +7,6 @@ import {
   type ViewTransitionController,
   ViewTransitionControllerProvider,
 } from '@tryghost/admin-x-framework';
-import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import { hasActiveUnsavedChangesGuard } from '@/hooks/active-unsaved-changes-guards';
 import { matchAdminRoutes } from '@/routes';
 import { shouldRunScreenTransition } from './screen-transition';
@@ -50,7 +49,6 @@ function exitTransitionsFinished(): Promise<void> {
  * finishes, or the navigation settles without landing.
  */
 export function ScreenTransitionProvider({ children }: { children: ReactNode }) {
-  const settingsSidebarEnabled = useFeatureFlag('admin7settings');
   const matches = useMatches();
   const location = useLocation();
   // True from the router starting a view transition to or from this screen until it finishes
@@ -59,8 +57,8 @@ export function ScreenTransitionProvider({ children }: { children: ReactNode }) 
   viewTransitionRunningRef.current = viewTransitionRunning;
 
   // Updated during render so links rendered below already see the new matches.
-  const latest = useRef({ settingsSidebarEnabled, matches });
-  latest.current = { settingsSidebarEnabled, matches };
+  const latest = useRef(matches);
+  latest.current = matches;
   const exitingRef = useRef(false);
   // Where the current transition's navigation started, to tell one a blocker held from one that landed
   const fromHashRef = useRef<string | null>(null);
@@ -79,9 +77,8 @@ export function ScreenTransitionProvider({ children }: { children: ReactNode }) 
         const current = latest.current;
         const target = matchAdminRoutes(pathname) ?? [];
         return shouldRunScreenTransition({
-          from: current.matches.map((match) => match.handle),
+          from: current.map((match) => match.handle),
           to: target.map((match): unknown => match.route.handle),
-          settingsSidebarEnabled: current.settingsSidebarEnabled,
         });
       },
       beforeTransition(pathname) {

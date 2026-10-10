@@ -27,7 +27,7 @@ it('keeps the unsaved draft when code the open editor needs fails to load', asyn
   vi.mocked(reloadAdmin).mockImplementation(() => {
     draftsAtReload.push(readLocalRevisions(localStorage)[0]?.lexical ?? '');
   });
-  await renderAdminApp('/editor/post/abc123', withoutAutosave({ labs: { editorReact: true } }));
+  await renderAdminApp('/editor/post/abc123', withoutAutosave());
   const body = editorScreen.body();
   await expect.element(body).toHaveTextContent('Hello from React');
   // The first change is kept at once, later ones at most once a minute.

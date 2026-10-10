@@ -57,6 +57,11 @@ configures Git to ignore formatting-only revisions in blame output. Run it after
 a fresh clone and whenever a branch changes workspace dependencies or
 submodules.
 
+Installs use pnpm's global virtual store: each checkout's `node_modules` links
+into one shared store, so a new worktree installs in a few seconds. Containers
+can't follow those links, so `pnpm dev:docker` first reinstalls without them;
+the next pnpm command switches back.
+
 Ghost calls this command `bootstrap` because [`pnpm setup`](https://pnpm.io/cli/setup)
 is a pnpm CLI command for configuring pnpm's global home and updating shell
 startup files. It does not run Ghost's repository initialization. Using a
@@ -107,6 +112,10 @@ checkout uses `2368` and the `ghost_dev` database. A worktree gets a port pair
 between `2400` and `2998` and a `dev_<worktree>` database, so several worktrees
 can run `pnpm dev` at once against the same MySQL, Redis, and Mailpit. Mailpit
 tags each message with the checkout's name.
+
+A worktree's database starts as a copy of `ghost_dev`, so it skips setup and
+onboarding, and Ghost applies the branch's migrations when it boots. Run
+`pnpm reset:db` in the worktree to replace the copy with a fresh database.
 
 Delete `.ghost-dev.env` to be assigned new ports, or set `GHOST_DEV_PORT`,
 `GHOST_DEV_BACKEND_PORT`, or `GHOST_DEV_DATABASE` to choose them.

@@ -32,7 +32,6 @@ const FORCE_UPGRADE_BMA_HTML = `
 
 test.describe('Ghost Admin - Force Upgrade Mode', () => {
   test.use({
-    labs: { billingReact: true },
     config: {
       hostSettings__forceUpgrade: 'true',
       hostSettings__billing__enabled: 'true',

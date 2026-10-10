@@ -15,11 +15,13 @@ import {
   currentUserResponse,
   currentRoute,
   configResponse,
+  tag,
   tier,
   type StaffUser,
 } from '@test-utils/acceptance';
 import { offersScreen } from '@/settings/offers.screen';
 import { settingsScreen } from '@/settings/settings.screen';
+import { tagDetailScreen } from '@/tags/detail/tag-detail.screen';
 
 // Settings groups and the content wrapper open stacking contexts; a dialog rendered
 // inside them (rather than through the settings dialog portal) paints below the chrome.
@@ -199,25 +201,20 @@ describe('Advanced settings', () => {
     ]);
   });
 
-  it('opens every built-in migrator in its external Admin route', async () => {
+  it.each([
+    ['Substack', '/migrate/substack'],
+    ['beehiiv', '/migrate/beehiiv'],
+    ['WordPress', '/migrate/wordpress'],
+    ['Squarespace', '/migrate/squarespace'],
+    ['Medium', '/migrate/medium'],
+    ['Mailchimp', '/migrate/mailchimp'],
+  ])('opens the %s migrator at its Admin route', async (name, route) => {
     fakeSettingsScreens();
     await renderAdminApp('/settings/migration');
 
-    const section = settingsScreen.section('migrationtools');
-    for (const [name, route] of [
-      ['Substack', '/migrate/substack'],
-      ['beehiiv', '/migrate/beehiiv'],
-      ['WordPress', '/migrate/wordpress'],
-      ['Squarespace', '/migrate/squarespace'],
-      ['Medium', '/migrate/medium'],
-      ['Mailchimp', '/migrate/mailchimp'],
-    ]) {
-      await section.getByRole('button', { name }).click();
-      expect(JSON.parse(document.body.dataset.externalNavigate ?? 'null')).toMatchObject({
-        route,
-        isExternal: true,
-      });
-    }
+    await settingsScreen.section('migrationtools').getByRole('button', { name }).click();
+
+    await expect.poll(currentRoute).toBe(route);
   });
 
   it('imports content from the universal importer and confirms the import is queued', async () => {
@@ -486,11 +483,6 @@ describe('Advanced settings', () => {
       .toHaveTextContent(
         /Security action reset authentication: 4 API keys rotated, 3 users locked/,
       );
-    await modal.getByText('Useful tag').click();
-    expect(JSON.parse(document.body.dataset.externalNavigate ?? 'null')).toMatchObject({
-      isExternal: true,
-      route: 'tags/useful-tag',
-    });
     await expect.poll(() => actionsApi.requests.length).toBeGreaterThan(0);
     const initialQuery = new URL(actionsApi.requests[0].url).searchParams;
     expect(initialQuery.get('include')).toBe('actor,resource');
@@ -561,6 +553,34 @@ describe('Advanced settings', () => {
 
     await expect.poll(currentRoute).toBe(`/settings/offers/edit/${blackFriday.id}`);
     await expect.element(offersScreen.updateModal()).toBeVisible();
+  });
+
+  it('opens a tag from history on its detail page', async () => {
+    fakeSettingsScreens();
+    fakeUsers(currentUserResponse().users as unknown as StaffUser[]);
+    fakeAdminEndpoint('GET', /^\/tags\/slug\/useful-tag\//, {
+      tags: [tag({ name: 'Useful tag', slug: 'useful-tag' })],
+    });
+    fakeActions([
+      {
+        id: 'tag',
+        resource_id: 'tag',
+        resource_type: 'tag',
+        actor_id: '1',
+        actor_type: 'user',
+        event: 'edited',
+        context: '{}',
+        created_at: '2023-08-11T12:37:02.000Z',
+        actor: { id: '1', name: 'Jamie Larson', slug: 'main', image: null },
+        resource: { id: 'tag', slug: 'useful-tag', title: 'Useful tag' },
+      },
+    ]);
+    await renderAdminApp('/settings/history/view');
+
+    await settingsScreen.section('history-modal').getByText('Useful tag').click();
+
+    await expect.poll(currentRoute).toBe('/tags/useful-tag');
+    await expect.element(tagDetailScreen.detail()).toBeVisible();
   });
 
   it('hydrates the staff filter from a history route', async () => {

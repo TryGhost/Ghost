@@ -1,4 +1,5 @@
 import path from 'node:path';
+import { setTimeout as sleep } from 'node:timers/promises';
 import sirv from 'sirv';
 import type { Plugin, ProxyOptions } from 'vite';
 
@@ -48,13 +49,32 @@ export function ghostFrontDoorPlugin(backend: string, devBase: string): Plugin {
     },
 
     configureServer(server) {
+      const { logger } = server.config;
+      // Ghost answers 503 until it has booted, and the proxy 500s before it listens.
+      // Not `/`, which renders the theme.
+      const isUp = () =>
+        fetch(new URL('/ghost/api/admin/site/', backend), { redirect: 'manual' }).then(
+          (res) => res.status < 500,
+          () => false,
+        );
+      const ready = (async () => {
+        while (!(await isUp())) {
+          await sleep(500);
+        }
+      })();
+
       const printUrls = server.printUrls.bind(server);
       server.printUrls = () => {
         printUrls();
-        server.config.logger.info(
-          `  ➜  Ghost:   http://localhost:${server.config.server.port}/ghost/`,
+        logger.info('  Waiting for Ghost…');
+        void ready.then(() =>
+          logger.info(`  ➜  Ghost:   http://localhost:${server.config.server.port}/ghost/`),
         );
       };
+
+      server.middlewares.use((_req, _res, next) => {
+        void ready.then(() => next());
+      });
 
       // Registered here, before Vite's own middleware and proxy
       server.middlewares.use((req, res, next) => {

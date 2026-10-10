@@ -1,4 +1,5 @@
-import { execFileSync, spawnSync } from 'node:child_process';
+import { execFileSync, spawn, spawnSync } from 'node:child_process';
+import { once } from 'node:events';
 import { setTimeout as sleep } from 'node:timers/promises';
 import { fileURLToPath } from 'node:url';
 import { composeConfig, overlayArgs } from './lib/dev-compose.ts';
@@ -26,7 +27,8 @@ const docker = (args: string[]) =>
   execFileSync('docker', args, { cwd: repoRoot, encoding: 'utf8' }).trim();
 
 // The containerised flow's gateway publishes 2368, which the main checkout now uses
-const port = process.env.GHOST_DEV_PORT ?? (await resolveGhostDevEnv()).GHOST_DEV_PORT;
+const assigned = await resolveGhostDevEnv();
+const port = process.env.GHOST_DEV_PORT ?? assigned.GHOST_DEV_PORT;
 const gateway = docker(['ps', '--filter', 'name=^ghost-dev-gateway$', '--format', '{{.Ports}}']);
 if (gateway.includes(`:${port}->`)) {
   console.log(`Stopping the containerised Ghost and gateway, which hold port ${port}`);
@@ -79,3 +81,28 @@ compose([
   '--no-deps',
   ...infra.filter((name) => !setup.has(name)),
 ]);
+
+// A new worktree's database starts as a copy of the main checkout's, which Ghost then migrates
+const database = process.env.GHOST_DEV_DATABASE ?? assigned.GHOST_DEV_DATABASE;
+const password = process.env.MYSQL_ROOT_PASSWORD ?? 'root';
+const inMysql = ['compose', ...files, 'exec', '-T', '-e', `MYSQL_PWD=${password}`, 'mysql'];
+const mysql = (...args: string[]) => docker([...inMysql, 'mysql', '-uroot', ...args]);
+const databases = mysql('-N', '-e', 'SHOW DATABASES').split('\n');
+if (database !== 'ghost_dev' && databases.includes('ghost_dev') && !databases.includes(database)) {
+  mysql('-e', `CREATE DATABASE \`${database}\``);
+  const dump = spawn(
+    'docker',
+    [...inMysql, 'mysqldump', '-uroot', '--single-transaction', 'ghost_dev'],
+    { cwd: repoRoot, stdio: ['ignore', 'pipe', 'inherit'] },
+  );
+  const load = spawn('docker', [...inMysql, 'mysql', '-uroot', database], {
+    cwd: repoRoot,
+    stdio: [dump.stdout, 'inherit', 'inherit'],
+  });
+  const [[dumped], [loaded]] = await Promise.all([once(dump, 'exit'), once(load, 'exit')]);
+  if (dumped !== 0 || loaded !== 0) {
+    mysql('-e', `DROP DATABASE \`${database}\``);
+    process.exit(1);
+  }
+  console.log(`Copied ghost_dev into ${database}`);
+}

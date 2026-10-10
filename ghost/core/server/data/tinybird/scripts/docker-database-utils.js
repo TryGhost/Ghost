@@ -12,12 +12,16 @@ class DockerDatabaseUtils {
   constructor(options = {}) {
     this.knex = null;
     this.initialized = false;
+    const env = process.env;
+    // Ghost's database__connection__* settings come from scripts/with-ghost-dev-env.ts
     this.options = {
-      host: options.host || process.env.MYSQL_HOST || 'localhost',
-      port: options.port || process.env.MYSQL_PORT || 3306,
-      user: options.user || process.env.MYSQL_USER || 'root',
-      password: options.password || process.env.MYSQL_PASSWORD || 'root',
-      database: options.database || process.env.MYSQL_DATABASE || 'ghost_dev',
+      host: options.host || env.MYSQL_HOST || env.database__connection__host || 'localhost',
+      port: options.port || env.MYSQL_PORT || env.database__connection__port || 3306,
+      user: options.user || env.MYSQL_USER || env.database__connection__user || 'root',
+      password:
+        options.password || env.MYSQL_PASSWORD || env.database__connection__password || 'root',
+      database:
+        options.database || env.MYSQL_DATABASE || env.database__connection__database || 'ghost_dev',
     };
   }
 

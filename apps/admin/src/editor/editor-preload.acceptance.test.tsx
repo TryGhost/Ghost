@@ -14,7 +14,7 @@ describe('Editor preload', () => {
     // The dev server serves every module separately, overflowing the default 250 entries.
     performance.setResourceTimingBufferSize(5000);
     fakeTags([]);
-    await renderAdminApp('/tags', { labs: { editorReact: true } });
+    await renderAdminApp('/tags');
 
     await expect.element(tagsScreen.emptyStateHeading()).toBeVisible();
     await expect.poll(() => fetched('/src/editor/editor-screen.tsx')).toBe(true);

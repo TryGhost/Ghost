@@ -599,6 +599,7 @@ describe('Installing an app', () => {
     await expect.element(appsScreen.installDialog()).not.toBeInTheDocument();
     await appsScreen.okButton().click();
 
-    await expect.poll(currentRoute).toBe('/');
+    // Home sends an editor on to the site preview.
+    await expect.poll(currentRoute).toBe('/site');
   });
 });
