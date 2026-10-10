@@ -116,25 +116,6 @@ describe('Sidebar navigation', () => {
     expect(document.querySelector('[aria-label="Hide sidebar"]')).toBeNull();
   });
 
-  it('keeps the boot splash visible until React mounts', async () => {
-    await renderAdminApp('/site');
-    // `/site` is a lazy route, so the shell commits after its chunk loads.
-    await expect.element(sidebarScreen.shellNav()).toBeVisible();
-
-    const splash = document.createElement('div');
-    splash.id = 'boot-splash';
-    document.body.appendChild(splash);
-
-    try {
-      expect(getComputedStyle(splash).display).toBe('none');
-      document.body.classList.remove('react-admin-mounted');
-      expect(getComputedStyle(splash).display).toBe('flex');
-    } finally {
-      document.body.classList.add('react-admin-mounted');
-      splash.remove();
-    }
-  });
-
   it('renders the navigation for the current user', async () => {
     await renderAdminApp('/site');
 

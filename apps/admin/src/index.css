@@ -319,14 +319,6 @@ body.react-admin #root .shade.shade-admin {
 
 /* Keep the host page's loader visible while the React bundle boots, until
    React mounts (app-root.tsx adds the body class). */
-body.react-admin > #boot-splash {
-  position: fixed;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
 body.react-admin.react-admin-mounted > #boot-splash {
   display: none;
 }

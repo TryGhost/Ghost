@@ -11,7 +11,7 @@ export function BootLoader() {
     <Stack
       align="center"
       aria-label="Loading Ghost Admin"
-      className="h-full pb-[8vh]"
+      className="fixed inset-0"
       justify="center"
       role="status"
     >
