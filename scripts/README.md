@@ -55,7 +55,7 @@ Don't add new `.cjs` files.
 **`enforce-package-manager.js`** is the root `preinstall` hook, so it runs
 _before_ `node_modules` exists. It can never import anything — not even from
 `lib/` — and must stay runnable by plain `node` on a literal path. The
-devcontainer image copies it (and only it) out of this directory for the same
+ghost-dev image copies it (and only it) out of this directory for the same
 reason; see `docker/ghost-dev/Dockerfile`.
 
 **`.github/scripts/i18n-review`** is intentionally _not_ a workspace member and

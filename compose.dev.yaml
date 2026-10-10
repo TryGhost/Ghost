@@ -65,7 +65,7 @@ services:
   # Main development Ghost instance
   # Additional instances can be created programmatically via E2E GhostManager
   # `pnpm dev` runs Ghost and the dev servers on the host; these two services back
-  # `pnpm dev:docker` and the modes built on it, e2e dev mode and the devcontainer.
+  # `pnpm dev:docker` and the modes built on it, and e2e dev mode.
   ghost-dev:
     profiles: ['docker-dev']
     build:
