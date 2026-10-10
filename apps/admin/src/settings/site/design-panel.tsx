@@ -11,15 +11,26 @@ import { useUnsavedChangesGuard } from '@/hooks/use-unsaved-changes-guard';
 export interface DesignPanelProps {
   /** The site page to preview the design on, over whatever the panel floats above. */
   pageUrl: string;
+  /**
+   * Reads the page the site underneath is on, where it can be browsed until
+   * the preview takes over; the preview then starts there.
+   */
+  livePageUrl?: () => string | undefined;
   /** The URL search param that keeps the panel open; leaving it closes the panel. */
   openParam: string;
   /** Closes the panel, once any unsaved changes have been confirmed away. */
   onClose: () => void;
-  /** Runs once a save has applied the design. */
-  onSaved?: () => void;
+  /** Runs once a save has applied the design, with the page previewed. */
+  onSaved?: (pageUrl: string) => void;
 }
 
-function DesignPanelContent({ pageUrl, openParam, onClose, onSaved }: DesignPanelProps) {
+function DesignPanelContent({
+  pageUrl: initialPageUrl,
+  livePageUrl,
+  openParam,
+  onClose,
+  onSaved,
+}: DesignPanelProps) {
   const {
     globalSettings,
     themeSettingSections,
@@ -32,14 +43,18 @@ function DesignPanelContent({ pageUrl, openParam, onClose, onSaved }: DesignPane
   } = useDesignForm();
   const { confirm, dialogProps } = useDirtyConfirmation();
 
-  // The preview takes over from the first change until the panel closes: a
-  // save keeps it, as it now shows the saved design
+  // The preview takes over from the first change until the panel closes (a
+  // save keeps it, as it now shows the saved design), on the page the site
+  // underneath had got to; from there, it's browsed in its own right
   const [previewing, setPreviewing] = useState(false);
-  useEffect(() => {
-    if (dirty) {
-      setPreviewing(true);
+  const [pageUrl, setPageUrl] = useState(initialPageUrl);
+  if (dirty && !previewing) {
+    setPreviewing(true);
+    const livePage = livePageUrl?.();
+    if (livePage && livePage !== pageUrl) {
+      setPageUrl(livePage);
     }
-  }, [dirty]);
+  }
 
   // Unsaved changes hold navigations away (e.g. the top bar's Ghost) and in
   // place ones that close the panel (Back, or Customize again), which the
@@ -62,7 +77,7 @@ function DesignPanelContent({ pageUrl, openParam, onClose, onSaved }: DesignPane
 
   const save = async () => {
     if (await handleSave({ fakeWhenUnchanged: true })) {
-      onSaved?.();
+      onSaved?.(pageUrl);
     }
   };
 
@@ -93,7 +108,12 @@ function DesignPanelContent({ pageUrl, openParam, onClose, onSaved }: DesignPane
         )}
         data-testid="design-panel-preview"
       >
-        <ThemePreview scaled={false} settings={previewSettings} url={pageUrl} />
+        <ThemePreview
+          scaled={false}
+          settings={previewSettings}
+          url={pageUrl}
+          onNavigate={setPageUrl}
+        />
       </div>
       <aside
         aria-label="Design"
