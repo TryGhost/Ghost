@@ -231,7 +231,7 @@ describe('oembed-service', function () {
       assert.equal(response.metadata.title, 'Example');
     });
 
-    it('extracts Amazon product metadata via the metascraper-amazon ruleset', async function () {
+    it('extracts Amazon product metadata via the Amazon rules', async function () {
       nock('https://www.amazon.com')
         .get('/dp/B08N5WRWNW')
         .query(true)
@@ -1375,10 +1375,10 @@ describe('oembed-service', function () {
     });
   });
 
-  describe('metascraper inherits externalRequest hooks', function () {
-    it('should apply externalRequest beforeRequest hooks to metascraper favicon fetches', async function () {
-      // metascraper-logo-favicon probes {origin}/favicon.ico via reachable-url.
-      // gotOpts must carry externalRequest's hooks so those probes are validated.
+  describe('favicon probes inherit externalRequest hooks', function () {
+    it('should apply externalRequest beforeRequest hooks to favicon fetches', async function () {
+      // Pages without a declared icon get {origin}/favicon.ico probed, which
+      // must go through externalRequest so the probe is validated.
       nock('http://169.254.169.254')
         .get('/favicon.ico')
         .reply(200, 'secret', { 'content-type': 'image/png' });
@@ -1420,8 +1420,7 @@ describe('oembed-service', function () {
 
       await service.fetchBookmarkData('http://169.254.169.254/page', html, 'mention');
 
-      // The hook must have been called by metascraper's favicon probe,
-      // proving gotOpts inherited the externalRequest hooks
+      // The hook must have been called by the favicon probe
       const faviconCall = beforeRequestHook
         .getCalls()
         .find((call) => call.args[0].url.pathname === '/favicon.ico');
@@ -1457,8 +1456,8 @@ describe('oembed-service', function () {
 
     it('applies the connection-time dnsLookup from externalRequest hooks', async function () {
       // externalRequest validates the resolved IP at connection time via a
-      // dnsLookup installed in beforeRequest. reachable-url's got 11 ignores
-      // it, so favicon probes must go through externalRequest itself.
+      // dnsLookup installed in beforeRequest, so favicon probes must go
+      // through externalRequest itself.
       const dnsLookup = sinon.stub().callsFake((hostname, options, callback) => {
         (typeof options === 'function' ? options : callback)(
           new Error('URL resolves to a non-permitted private IP block'),
@@ -1609,11 +1608,11 @@ describe('oembed-service', function () {
   });
 
   describe('fetchBookmarkData favicon selection', function () {
-    // Icons declared as <link> tags are resolved by metascraper-logo-favicon
-    // directly from the HTML, so these assertions exercise pickFn without
-    // hitting the network favicon probe. The picked icon is normally
-    // post-processed (downloaded for bookmarks, HEAD-checked for mentions),
-    // so we stub both to surface pickFn's raw selection.
+    // Icons declared as <link> tags are resolved directly from the HTML, so
+    // these assertions exercise pickIcon without hitting the network favicon
+    // probe. The picked icon is normally post-processed (downloaded for
+    // bookmarks, HEAD-checked for mentions), so we stub both to surface
+    // pickIcon's raw selection.
     let service;
 
     beforeEach(function () {

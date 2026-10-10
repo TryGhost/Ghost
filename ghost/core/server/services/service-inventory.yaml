@@ -8410,8 +8410,8 @@ services:
         summary: >-
           Module caching retains the same instance/provider array and captured adapter/client.
           There is no root result cache, in-flight deduplication, reset or shutdown. Adapter-cache
-          clearing does not replace this retained imageStore. Each scrape creates a metascraper
-          instance; concurrent calls share providers/dependencies. Bookmark page fetch and optional
+          clearing does not replace this retained imageStore. Each scrape parses the page afresh;
+          concurrent calls share providers/dependencies. Bookmark page fetch and optional
           enrichment run together and allSettled waits for both; enrichment has its own abort
           deadline. Image writes get fresh UUID names rather than reuse existing files. Units
           assert distinct keys for repeated identical bytes and fallback after slow enrichment,
@@ -8426,8 +8426,8 @@ services:
           - test/unit/server/services/oembed/oembed-service.test.js
       configuration:
         summary: >-
-          Provider credentials are copied at import, while image allowlists and scraper env are
-          read per operation. Request-external captures agent sizing but reads env/site URL for
+          Provider credentials are copied at import, while image allowlists are read per
+          operation. Request-external captures agent sizing but reads env/site URL for
           destination checks; development and same-site exemptions apply. Test config replacement
           is not production hot reload. Page calls accept fetch options; custom/ordinary known
           providers, image downloads, favicon probes/HEAD and discovered oembed JSON do not inherit

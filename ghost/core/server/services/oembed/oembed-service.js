@@ -22,24 +22,6 @@ const { USER_AGENT } = require('./user-agent');
 const DEFAULT_BOOKMARK_ICON = 'https://static.ghost.org/v5.0.0/images/link-icon.svg';
 const DEFAULT_REQUEST_TIMEOUT = 5000;
 
-// metascraper-amazon's built-in URL test is a substring regex that misfires on
-// any host ending in a letter followed by `.co/` (e.g. `rangemedia.co`), causing
-// it to hardcode `publisher: 'Amazon'`. Gate the plugin on the registrable
-// domain (PSL-aware via tldts) so subdomain spoofs like `amazon.evil.com` or
-// `amazon.com.evil.org` are rejected too.
-const { getDomain } = require('tldts');
-
-const isAmazonUrl = (url) => {
-  const domain = getDomain(url);
-  if (!domain) {
-    return false;
-  }
-  if (domain === 'a.co') {
-    return true;
-  }
-  return /^(?:amazon|amzn)\./.test(domain);
-};
-
 const messages = {
   noUrlProvided: 'No url provided.',
   insufficientMetadata: 'URL contains insufficient metadata.',
@@ -500,14 +482,8 @@ class OEmbedService {
   /**
    * Checks that a favicon candidate is reachable and looks like an image.
    *
-   * Replaces metascraper-logo-favicon's default resolver, which probes via
-   * reachable-url. reachable-url bundles got 11, which ignores the `dnsLookup`
-   * externalRequest installs to validate the resolved IP at connection time,
-   * leaving those probes open to DNS rebinding. Mirrors the default resolver's
-   * checks otherwise.
-   *
    * @param {string} faviconUrl
-   * @param {Array<string|string[]>} [contentTypes] - allowed content types for the icon's extension
+   * @param {string[]} [contentTypes] - allowed content types for the icon's extension
    * @returns {Promise<{url: string} | undefined>}
    */
   async resolveFaviconUrl(faviconUrl, contentTypes) {
@@ -538,6 +514,24 @@ class OEmbedService {
   }
 
   /**
+   * Finds a favicon for pages that don't declare one by probing the
+   * conventional /favicon.{ico,png} locations.
+   *
+   * @param {string} url
+   * @returns {Promise<string|undefined>}
+   */
+  async findFallbackFavicon(url) {
+    const { getFaviconProbeUrls } = require('./extract-metadata');
+
+    for (const [faviconUrl, contentTypes] of getFaviconProbeUrls(url)) {
+      const result = await this.resolveFaviconUrl(faviconUrl, contentTypes);
+      if (result) {
+        return result.url;
+      }
+    }
+  }
+
+  /**
    * @param {string} url
    * @param {string} html
    * @param {string} type
@@ -547,118 +541,41 @@ class OEmbedService {
    *     version: '1.0',
    *     type: 'bookmark',
    *     url: string,
-   *     metadata: Omit<import('metascraper').Metadata, 'image'|'logo'> & {
-   *         thumbnail?: string,
-   *         icon?: string
+   *     metadata: {
+   *         url: string|null,
+   *         title: string|null,
+   *         description: string|null,
+   *         author: string|null,
+   *         publisher: string|null,
+   *         thumbnail: string|null,
+   *         icon: string|null
    *     }
    * }>}
    */
   async fetchBookmarkData(url, html, type, enrichment = {}) {
-    const requestOptions = this.externalRequest.defaults?.options || {};
-    const gotOpts = {
-      hooks: requestOptions.hooks,
-      retry: requestOptions.retry,
-      timeout: requestOptions.timeout,
-      ...requestOptions,
-      headers: {
-        ...(requestOptions.headers || {}),
-        'User-Agent': USER_AGENT,
-      },
-    };
+    const { extractMetadata, pickIcon } = require('./extract-metadata');
 
-    if (process.env.NODE_ENV?.startsWith('test')) {
-      gotOpts.retry = {
-        limit: 0,
-      };
-    }
-
-    // metascraper-logo-favicon 5.50.x awaits pickFn and passes the resolved
-    // value straight to its logo sanitizer, so pickFn must return a URL
-    // string, not a size entry like the pre-5.43 API. Its bundled default
-    // picker (pickBiggerSize) also network-validates every candidate via
-    // reachable-url before returning it, which drops icons whenever probes
-    // are blocked (tests) or slow. Icon URLs here come from the page's own
-    // markup, so keep the pre-5.43 behavior and pick purely by parsed size.
-    const pickBiggest = (iconSizes) => {
-      const sorted = [...iconSizes].sort(
-        (a, b) => (b.size?.priority ?? 0) - (a.size?.priority ?? 0),
-      );
-      return (sorted.find((item) => item.size?.square) || sorted[0])?.url;
-    };
-    const pickFn = (sizes) => {
-      const appleTouchIcon = sizes.find(
-        (item) => item.rel?.includes('apple') && item.sizes && item.size?.width >= 180,
-      );
-      // Bookmark cards (including the oembed fallback, which resolves to a
-      // bookmark) render the icon inline in the post body, where the site's
-      // standard (often transparent) favicon matches surrounding chrome
-      // better than an Apple Touch icon's solid-background square. The
-      // Recommendations Avatar (type='mention') instead scales the icon up
-      // into a larger tile, where Apple Touch is the better fit.
-      if (type === 'bookmark') {
-        // metascraper-logo-favicon gathers anything matching link[rel*="icon"], which
-        // includes apple-touch-icon, mask-icon (Safari pinned-tab silhouette), and
-        // fluid-icon (Fluid SSB) — none of those are the site's standard brand
-        // favicon, so skip them when picking what to show in a bookmark card.
-        const standardIcons = sizes.filter(
-          (item) => !/apple|mask-icon|fluid-icon/.test(item.rel ?? ''),
-        );
-        const svgIcon = standardIcons.find((item) => item.href?.endsWith('svg'));
-        return svgIcon?.url || pickBiggest(standardIcons) || appleTouchIcon?.url;
-      }
-      const svgIcon = sizes.find((item) => item.href?.endsWith('svg'));
-      return appleTouchIcon?.url || svgIcon?.url || pickBiggest(sizes);
-    };
-
-    const scrapers = [
-      require('metascraper-url')(),
-      require('metascraper-title')(),
-      require('metascraper-description')(),
-      require('metascraper-author')(),
-      require('metascraper-publisher')(),
-      require('metascraper-image')(),
-      require('metascraper-logo-favicon')({
-        gotOpts,
-        pickFn,
-        resolveFaviconUrl: (faviconUrl, contentTypes) =>
-          this.resolveFaviconUrl(faviconUrl, contentTypes),
-      }),
-      require('metascraper-logo')(),
-    ];
-
-    if (isAmazonUrl(url)) {
-      scrapers.unshift(require('metascraper-amazon')());
-    }
-
-    const metascraper = require('metascraper')(scrapers);
-
-    let scraperResponse;
-
+    let page;
     try {
-      scraperResponse = await metascraper({
-        html,
-        url,
-        // In development, allow non-standard TLDs
-        validateUrl: this.config.get('env') !== 'development',
-      });
+      page = extractMetadata(html, url);
     } catch (err) {
-      // Log to avoid being blind to errors happening in metascraper
+      // Log to avoid being blind to errors happening in extraction
       logging.error(err);
       return this.unknownProvider(url);
     }
 
-    const metadata = Object.assign(
-      {},
-      scraperResponse,
-      {
-        thumbnail: scraperResponse.image,
-        icon: scraperResponse.logo,
-      },
-      enrichment,
-    );
-    // We want to use standard naming for image and logo
-    delete metadata.image;
-    delete metadata.logo;
+    const icon = pickIcon(page.icons, type) || (await this.findFallbackFavicon(url)) || page.logo;
+
+    const metadata = {
+      url: page.url,
+      title: page.title,
+      description: page.description,
+      author: page.author,
+      publisher: page.publisher,
+      thumbnail: page.image,
+      icon: icon || null,
+      ...enrichment,
+    };
 
     return this.buildBookmarkData(url, metadata, type);
   }
@@ -870,8 +787,8 @@ class OEmbedService {
         url = urlObject.toString();
       }
 
-      // Trimming solves the difference of url validation between `new URL(url)`
-      // and metascraper.
+      // `new URL(url)` tolerates surrounding whitespace, keep it out of the
+      // stored bookmark URL
       url = url.trim();
 
       for (const provider of this.customProviders) {
