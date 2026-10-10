@@ -6,7 +6,6 @@ import queryClient from '../utils/query-client';
 export type ExternalLink = {
   isExternal: true;
   route: string;
-  models?: string[] | null;
   replace?: boolean;
 };
 
