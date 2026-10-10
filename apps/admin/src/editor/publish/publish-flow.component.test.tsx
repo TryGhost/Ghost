@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
 import { render } from 'vitest-browser-react';
+import { buildLexicalParagraph } from '@tryghost/test-data';
 
 import {
   InAppProviders,
@@ -918,6 +919,49 @@ describe('Publish flow', () => {
     await expect
       .element(publishScreen.publicPreviewWarning())
       .toHaveTextContent('Public preview has no effect');
+  });
+
+  it('reminds about {first_name} outside an Email card before opening the flow', async () => {
+    const onClose = vi.fn();
+    await renderPublishFlow({
+      onClose,
+      post: draft({ lexical: buildLexicalParagraph('Hello {first_name},') }),
+    });
+
+    const reminder = publishScreen.firstNameReminder();
+    await expect.element(reminder).toHaveTextContent('Quick check before publishing');
+    await expect
+      .element(reminder)
+      .toHaveTextContent(
+        '{first_name} was found in your post, but it only works inside an Email content card.',
+      );
+    await page.getByRole('button', { name: 'Back to editor' }).click();
+    expect(onClose).toHaveBeenCalledOnce();
+  });
+
+  it('follows the public-preview warning with the {first_name} reminder', async () => {
+    await renderPublishFlow({
+      paywallImprovements: true,
+      post: draft({
+        visibility: 'public',
+        lexical: JSON.stringify({
+          root: {
+            children: [
+              { type: 'paragraph', children: [{ type: 'text', text: 'Hello {first_name},' }] },
+              { type: 'paywall' },
+              { type: 'paragraph', children: [{ type: 'text', text: 'b' }] },
+            ],
+          },
+        }),
+      }),
+    });
+
+    await expect.element(publishScreen.publicPreviewWarning()).toBeInTheDocument();
+    await page.getByRole('button', { name: 'Continue to publish' }).click();
+    await expect.element(publishScreen.firstNameReminder()).toBeInTheDocument();
+    await page.getByRole('button', { name: 'Continue to publish' }).click();
+
+    await expect.element(publishScreen.options()).toBeInTheDocument();
   });
 
   it('keeps the user on confirm when re-auth interrupts the publish', async () => {

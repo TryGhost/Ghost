@@ -141,6 +141,7 @@ export const publishRetryEmail = 'publish-retry-email';
 export const publishRetryError = 'publish-retry-error';
 export const tkReminderDialog = 'tk-reminder-dialog';
 export const publicPreviewWarningDialog = 'public-preview-warning-dialog';
+export const firstNameReminderDialog = 'first-name-reminder-dialog';
 export const updateFlowModal = 'update-flow-modal';
 export const updateFlowTitle = 'update-flow-title';
 export const updateFlowConfirmation = 'update-flow-confirmation';

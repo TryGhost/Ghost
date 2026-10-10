@@ -382,6 +382,56 @@ describe('Editor publish journeys', () => {
     expect(saveApi.lastRequest?.url).not.toContain('newsletter=');
   });
 
+  it('reminds about {first_name} outside an Email card before opening the flow', async () => {
+    publishChrome([WEEKLY]);
+    fakeTiers([]);
+    fakeLabels([]);
+    fakeSavableDraft({ lexical: buildLexicalParagraph('Hello {first_name},') });
+    await renderAdminApp(`/editor/post/${POST_ID}`, emailSite());
+
+    await expect.element(editorScreen.publishButton()).toBeEnabled();
+    await editorScreen.publishButton().click();
+    await expect.element(publishScreen.firstNameReminder()).toBeVisible();
+    await expect(publishScreen.options()).toHaveCount(0);
+
+    await page.getByRole('button', { name: 'Continue to publish' }).click();
+    await expect.element(publishScreen.options()).toBeVisible();
+  });
+
+  it('does not remind about {first_name} while the post cannot be emailed', async () => {
+    publishChrome([WEEKLY]);
+    fakeTiers([]);
+    fakeLabels([]);
+    fakeSavableDraft({ lexical: buildLexicalParagraph('Hello {first_name},') });
+    await renderAdminApp(`/editor/post/${POST_ID}`, emailSite({ members_signup_access: 'none' }));
+
+    await expect.element(editorScreen.publishButton()).toBeEnabled();
+    await editorScreen.publishButton().click();
+
+    await expect.element(publishScreen.options()).toBeVisible();
+    await expect(publishScreen.firstNameReminder()).toHaveCount(0);
+  });
+
+  it('shows only the TK reminder when the post also has {first_name}', async () => {
+    publishChrome([WEEKLY]);
+    fakeTiers([]);
+    fakeLabels([]);
+    fakeSavableDraft({
+      title: 'TK in title',
+      lexical: buildLexicalParagraph('Hello {first_name},'),
+    });
+    await renderAdminApp(`/editor/post/${POST_ID}`, emailSite());
+
+    await expect.element(editorScreen.publishButton()).toBeEnabled();
+    await editorScreen.publishButton().click();
+    await expect.element(publishScreen.tkReminder()).toBeVisible();
+    await expect(publishScreen.firstNameReminder()).toHaveCount(0);
+
+    await page.getByRole('button', { name: 'Continue to publish' }).click();
+    await expect.element(publishScreen.options()).toBeVisible();
+    await expect(publishScreen.firstNameReminder()).toHaveCount(0);
+  });
+
   it.each(['submitted', 'failed'])(
     'leaves out a %s earlier send while member signup is off',
     async (emailStatus) => {

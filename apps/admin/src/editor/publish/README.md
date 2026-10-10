@@ -173,7 +173,7 @@ The flow is a four-way branch, taken in this order:
 
 ## Gates
 
-Two interstitials can stand in front of the flow. A post with unresolved TK markers gets the TK reminder; a post whose public preview has no effect gets the public-preview warning, but only behind the `paywallImprovements` flag. They never stack: a TK count suppresses the preview warning. `getPublicPreviewWarning()` is the pure predicate behind the second one, and reads the editor's unsaved body when the caller passes it.
+Three interstitials can stand in front of the flow. A post with unresolved TK markers gets the TK reminder; a post whose public preview has no effect gets the public-preview warning, but only behind the `paywallImprovements` flag; and a post that could be sent as an email and uses `{first_name}` outside an Email card, where it is sent as typed, gets the `{first_name}` reminder. A TK count suppresses both of the others. Otherwise the preview warning comes first and the `{first_name}` reminder follows it. `getPublicPreviewWarning()` and `countFirstNameOutsideEmailCards()` are the pure predicates behind the last two, and read the editor's unsaved body when the caller passes it. Whether the post could be emailed is the options machine's email availability before the host limits are checked, decided once when the flow opens.
 
 ## Publishing
 

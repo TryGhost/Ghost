@@ -4,6 +4,7 @@ import { PageHeader } from '@tryghost/shade/patterns';
 import { formatNumber } from '@tryghost/shade/utils';
 import { useEffect, useState } from 'react';
 import {
+  firstNameReminderDialog,
   publicPreviewWarningDialog,
   publishFlowModal,
   publishFlowPreview,
@@ -15,8 +16,10 @@ import { CompleteWithEmailErrorStep } from './components/complete-with-email-err
 import { ConfirmStep } from './components/confirm-step';
 import { GateDialog } from './components/gate-dialog';
 import { OptionsStep } from './components/options-step';
+import { countFirstNameOutsideEmailCards } from './first-name-reminder';
+import { isPage } from './flow-post';
 import { PUBLIC_PREVIEW_WARNING_COPY, getPublicPreviewWarning } from './public-preview-warning';
-import { isEmailDisabledInSettings } from './publish-options';
+import { createPublishOptions, isEmailDisabledInSettings } from './publish-options';
 import { usePublishFlow } from './use-publish-flow';
 import type { PublishDispatcher } from './publish-options';
 import type { PublishFlowPost } from './flow-post';
@@ -51,6 +54,16 @@ export interface PublishFlowModalProps {
   onCompleted?: (info: { postId: string; isScheduled: boolean; hasEmail: boolean }) => void;
 }
 
+/** Whether the flow could send this post as an email, before the host limits are checked. */
+function canSendEmail(post: PublishFlowPost, site: PublishSiteInput, user: PublishUserInput) {
+  const { emailUnavailable, emailDisabled } = createPublishOptions({
+    post: { ...post, isPage: isPage(post) },
+    site,
+    user,
+  }).getState();
+  return !emailUnavailable && !emailDisabled;
+}
+
 export function PublishFlowModal({ post, ...props }: PublishFlowModalProps) {
   return <KeyedPublishFlowModal key={post.id} post={post} {...props} />;
 }
@@ -78,7 +91,15 @@ function KeyedPublishFlowModal({
   onCompleted,
 }: PublishFlowModalProps) {
   const [gatesPassed, setGatesPassed] = useState(false);
+  const [previewWarningPassed, setPreviewWarningPassed] = useState(false);
   const previewWarning = paywallImprovements ? getPublicPreviewWarning(post) : null;
+  // Decided once on opening, so a background read of the site cannot raise it mid-flow.
+  const [firstNameReminder] = useState(
+    () =>
+      tkCount === 0 &&
+      countFirstNameOutsideEmailCards(post.lexical) > 0 &&
+      canSendEmail(post, site, user),
+  );
 
   // Ember checks the TK gate first and only reaches the preview warning when
   // there are no TKs, so the two never stack.
@@ -99,15 +120,31 @@ function KeyedPublishFlowModal({
     );
   }
 
-  if (!gatesPassed && previewWarning) {
+  if (!gatesPassed && !previewWarningPassed && previewWarning) {
     return (
       <GateDialog
         testId={publicPreviewWarningDialog}
         title={PUBLIC_PREVIEW_WARNING_COPY[previewWarning].title}
         onBack={onClose}
-        onContinue={() => setGatesPassed(true)}
+        onContinue={() =>
+          firstNameReminder ? setPreviewWarningPassed(true) : setGatesPassed(true)
+        }
       >
         {PUBLIC_PREVIEW_WARNING_COPY[previewWarning].body}
+      </GateDialog>
+    );
+  }
+
+  if (!gatesPassed && firstNameReminder) {
+    return (
+      <GateDialog
+        testId={firstNameReminderDialog}
+        title="Quick check before publishing"
+        onBack={onClose}
+        onContinue={() => setGatesPassed(true)}
+      >
+        <code>{'{first_name}'}</code> was found in your post, but it only works inside an Email
+        content card.
       </GateDialog>
     );
   }
