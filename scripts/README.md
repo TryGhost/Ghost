@@ -33,24 +33,11 @@ without introducing an Admin build prerequisite.
 
 ## Admin asset assembly
 
-`assemble-admin-assets.ts` combines the built React and Ember Admin, ActivityPub,
-and Koenig assets. Admin’s build invokes it after Vite; its separate
-`assemble:assets` task can rerun assembly from existing build outputs. The helper
-in `lib/admin-assets.ts` also prepares legacy assets for Ember’s standalone
-builds and live-reload server. Production assembly keeps the Koenig embed renderer
-outside Admin’s assets and normalizes Admin output permissions for Nx caches.
-
-Hybrid assembly remains the default. After producing a fresh React build without
-`emberAssetsPlugin`, run `pnpm --filter @tryghost/admin assemble:assets --without-ember`
-to assemble React, ActivityPub and Koenig without requiring any Ember output.
-The helper also accepts `{ includeEmber: false }`. This is an assembly option:
-it does not change the build prerequisites, development server or runtime feature
-flags. The normal Admin build still prepares and ships Ember.
-
-Both modes keep preview and Core Admin assets identical, ship the embed renderer
-separately and honor `EDITOR_URL`. React-only assembly rejects HTML containing
-Ember's environment metadata; rebuild Vite's output before switching modes so
-previously merged legacy assets are not reused.
+`assemble-admin-assets.ts` copies the built Admin into Core and the Koenig embed
+renderer next to it. Admin’s build invokes it after Vite; its separate
+`assemble:assets` task can rerun assembly from existing build outputs. Assembly
+keeps the embed renderer outside Admin’s assets and normalizes Admin output
+permissions for Nx caches.
 
 ## The `.cjs` files
 

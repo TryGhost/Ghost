@@ -93,18 +93,10 @@ body {
 }
 
 /* Admin overlays mount beside #root, so mirror typography into Shade portals
-   and the three legacy overlay hosts.
+   and the alerts host.
    Do not set body fonts or change component weights, sizes, or line heights. */
 .shade-admin,
-:where(body.react-admin.react-admin-mounted)
-  > :is(
-    .shade.shade-admin,
-    #ember-basic-dropdown-wormhole,
-    #ember-modal-wormhole,
-    #ember-liquid-wormhole,
-    #admin-alerts,
-    #ember-notifications-wormhole
-  ) {
+:where(body.react-admin.react-admin-mounted) > :is(.shade.shade-admin, #admin-alerts) {
   --font-sans:
     'Inter Admin', Inter, -apple-system, BlinkMacSystemFont, avenir next, avenir, helvetica neue,
     helvetica, ubuntu, roboto, noto, segoe ui, arial, sans-serif;
@@ -119,36 +111,14 @@ body {
 
 /* Display alternates feel crowded at small sizes, so reserve them for
    semantic headings across both Admin screens and Settings overlays. */
-:where(
-    .shade-admin,
-    body.react-admin.react-admin-mounted
-      > :is(
-        .shade.shade-admin,
-        #ember-basic-dropdown-wormhole,
-        #ember-modal-wormhole,
-        #ember-liquid-wormhole,
-        #admin-alerts,
-        #ember-notifications-wormhole
-      )
-  )
+:where(.shade-admin, body.react-admin.react-admin-mounted > :is(.shade.shade-admin, #admin-alerts))
   :where(h1, h2, h3, h4, h5, h6) {
   font-feature-settings: var(--heading-font-feature-settings);
 }
 
 /* Browser form-control defaults can reset these inherited font properties.
    Keep the rule weaker than any explicit component typography choice. */
-:where(
-    .shade-admin,
-    body.react-admin.react-admin-mounted
-      > :is(
-        .shade.shade-admin,
-        #ember-basic-dropdown-wormhole,
-        #ember-modal-wormhole,
-        #ember-liquid-wormhole,
-        #admin-alerts,
-        #ember-notifications-wormhole
-      )
-  )
+:where(.shade-admin, body.react-admin.react-admin-mounted > :is(.shade.shade-admin, #admin-alerts))
   :where(button, input, optgroup, select, textarea) {
   font-family: inherit;
   font-feature-settings: inherit;
@@ -157,18 +127,7 @@ body {
 
 /* These components are visually headings but do not all use heading elements.
    Keep the display alternates scoped to their title text. */
-:where(
-    .shade-admin,
-    body.react-admin.react-admin-mounted
-      > :is(
-        .shade.shade-admin,
-        #ember-basic-dropdown-wormhole,
-        #ember-modal-wormhole,
-        #ember-liquid-wormhole,
-        #admin-alerts,
-        #ember-notifications-wormhole
-      )
-  )
+:where(.shade-admin, body.react-admin.react-admin-mounted > :is(.shade.shade-admin, #admin-alerts))
   :is(.heading-font-features, .gh-editor-title, .gh-publish-title) {
   font-feature-settings: var(--heading-font-feature-settings);
 }
@@ -358,11 +317,18 @@ body.react-admin #root .shade.shade-admin {
   overflow: hidden;
 }
 
-/* Keep the server-rendered loader visible while the React bundle boots. Once
-   React mounts (app-root.tsx adds the body class), hide a still-detached Ember
-   root until the bridge relocates it into the shell. */
-body.react-admin.react-admin-mounted > #ember-app {
-  visibility: hidden;
+/* Keep the host page's loader visible while the React bundle boots, until
+   React mounts (app-root.tsx adds the body class). */
+body.react-admin > #boot-splash {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+body.react-admin.react-admin-mounted > #boot-splash {
+  display: none;
 }
 
 /* iOS safe area handling for mobile navbar */
@@ -370,27 +336,11 @@ body.react-admin .safe-area-inset-bottom {
   padding-bottom: env(safe-area-inset-bottom);
 }
 
-/* Ensure the Ember app renders in the correct position and takes full width/height */
-body.react-admin #ember-app {
-  width: 100%;
-  height: 100%;
-  /* Contain legacy Ember z-indexes (e.g. the billing overlay at 9999) so they can't
-       paint over React shell chrome like the mobile sidebar drawer (z-50). */
-  isolation: isolate;
-}
-
-/* Temporary overrides until Ember transition is finished */
 body.react-admin .gh-canvas-header {
   padding-top: 20px;
   padding-bottom: 20px;
 }
 
-body.react-admin .gh-canvas-breadcrumb + .gh-canvas-title {
-  padding-top: 0px;
-  margin-top: -4px;
-}
-
-body.react-admin .gh-canvas-title,
 body.react-admin [data-header='header-title'] {
   font-size: 15px;
   font-weight: 600;
@@ -406,10 +356,6 @@ body.react-admin [data-header='header'] {
 body.react-admin [data-navbar='navbar'] {
   padding-top: 20px;
   padding-bottom: 20px;
-}
-
-body.react-admin #ember-app .gh-viewport {
-  padding-bottom: 0px;
 }
 
 body.react-admin .gh-canvas-header {

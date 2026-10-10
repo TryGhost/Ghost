@@ -20,7 +20,6 @@ import { getPeriodText } from '@/shared/analytics/chart-helpers';
 import { getPostDestination } from '@/analytics/utils/url-helpers';
 import { getPostStatusText } from '@tryghost/admin-x-framework/utils/post-utils';
 import { getSiteTimezone } from '@tryghost/admin-x-framework/utils/get-site-timezone';
-import { useIsEmberOwnedRoute } from '@/routes';
 import { useLocation, useNavigate } from '@tryghost/admin-x-framework';
 import { editorReturnState } from '@/editor/api';
 import {
@@ -80,9 +79,6 @@ interface TopPostsProps {
 const TopPosts: React.FC<TopPostsProps> = ({ topPostsData, isLoading }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  // Whether `/editor/*` needs a hash navigation depends on the `editorReact`
-  // flag; ownership is the same for every post, so one probe path suffices.
-  const editorIsEmberOwned = useIsEmberOwnedRoute('/editor');
   const { range } = useAnalytics();
   const { settings } = useAnalyticsData();
   const paidMembersEnabled = usePaidMembersEnabled();
@@ -129,12 +125,9 @@ const TopPosts: React.FC<TopPostsProps> = ({ topPostsData, isLoading }) => {
                         },
                       });
                       const opensEditor = destination.startsWith('/editor/');
-                      navigate(
-                        destination,
-                        opensEditor && editorIsEmberOwned
-                          ? { crossApp: true }
-                          : { state: opensEditor ? editorReturnState(location) : undefined },
-                      );
+                      navigate(destination, {
+                        state: opensEditor ? editorReturnState(location) : undefined,
+                      });
                     }}
                   >
                     {post.feature_image ? (

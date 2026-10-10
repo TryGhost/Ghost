@@ -10,13 +10,6 @@ vi.mock('@/auth/reload', () => ({ reloadAdmin: vi.fn() }));
 const bootLoader = () => page.getByRole('status', { name: 'Loading Ghost Admin' });
 const bootError = () => page.getByRole('alert');
 
-/** EmberRoot shows the Ember app once it has moved it into its wrapper and left the wrapper unhidden. */
-function emberShown(): boolean {
-  const app = document.getElementById('ember-app');
-  const emberRoot = app?.parentElement;
-  return Boolean(emberRoot && emberRoot !== document.body && !emberRoot.hidden);
-}
-
 /** Boots with `GET /users/me/` held until the spec releases it. */
 function holdCurrentUser() {
   let release = () => {};
@@ -43,32 +36,10 @@ describe('Admin boot', () => {
     await renderAdminApp('/tags', { boot: me.boot });
 
     await expect.element(bootLoader()).toBeVisible();
-    expect(emberShown()).toBe(false);
 
     me.release();
 
     await expect.element(sidebarScreen.shellNav()).toBeVisible();
-    await expect(bootLoader()).toHaveCount(0);
-    expect(emberShown()).toBe(false);
-  });
-
-  it('hands over to an Ember screen without a blank frame', async () => {
-    const me = holdCurrentUser();
-    await renderAdminApp('/pro', { boot: me.boot });
-    await expect.element(bootLoader()).toBeVisible();
-
-    // Mutation callbacks run between React's commits, so they see any state a paint could show.
-    let blank = false;
-    const observer = new MutationObserver(() => {
-      blank ||= bootLoader().query() === null && !emberShown();
-    });
-    observer.observe(document.body, { attributes: true, childList: true, subtree: true });
-
-    me.release();
-    await expect.poll(emberShown).toBe(true);
-    observer.disconnect();
-
-    expect(blank).toBe(false);
     await expect(bootLoader()).toHaveCount(0);
   });
 
@@ -92,7 +63,6 @@ describe('Admin boot', () => {
 
     await expect.element(bootError()).toHaveTextContent('The database is unavailable.');
     await expect(bootLoader()).toHaveCount(0);
-    expect(emberShown()).toBe(false);
 
     await bootError().getByRole('button', { name: 'Retry' }).click();
 

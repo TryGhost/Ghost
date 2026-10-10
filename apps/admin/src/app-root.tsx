@@ -3,7 +3,6 @@ import {
   FrameworkProvider,
   RouterProvider,
   type TopLevelFrameworkProps,
-  useLocation,
 } from '@tryghost/admin-x-framework';
 import { ShadeApp } from '@tryghost/shade/app';
 
@@ -12,7 +11,7 @@ import { reloadAfterChunkLoadError } from './chunk-load-recovery';
 import { installHistoryPopGate } from './hooks/use-history-pop-navigation-guard';
 import { ScreenTransitionProvider } from './layout/screen-transition-provider';
 import { RouteError } from './route-error';
-import { routes, useIsEmberOwnedRoute } from './routes.tsx';
+import { routes } from './routes.tsx';
 import { useThemeContext } from './providers/theme-context';
 import { ThemeProvider } from './providers/theme-provider';
 
@@ -35,16 +34,14 @@ const routeErrorElement = <RouteError />;
 
 function ThemedAdminApp() {
   const { resolvedTheme } = useThemeContext();
-  const { pathname } = useLocation();
-  const isEmberOwnedRoute = useIsEmberOwnedRoute(pathname);
   useMountedBodyClass();
 
   return (
     <ShadeApp
       className="shade-admin"
       darkMode={resolvedTheme === 'dark'}
-      isAdmin7={!isEmberOwnedRoute}
       data-react-admin-mounted
+      isAdmin7
     >
       <ScreenTransitionProvider>
         <App />

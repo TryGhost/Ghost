@@ -70,21 +70,8 @@ function createAdminApiProxy(site: { url: string; host: string }): Record<string
 }
 
 /**
- * Creates proxy configuration for Ember CLI live reload script.
- */
-function createEmberLiveReloadProxy(): Record<string, ProxyOptions> {
-  return {
-    '^/ember-cli-live-reload.js': {
-      target: 'http://localhost:4200',
-      changeOrigin: true,
-    },
-  };
-}
-
-/**
- * Vite plugin that injects proxy configurations for:
- * 1. Ghost Admin API - proxies /ghost/api requests to the Ghost backend
- * 2. Ember Live Reload - proxies ember-cli-live-reload.js to Ember dev server
+ * Vite plugin that injects a proxy configuration for the Ghost Admin API
+ * (/ghost/api requests go to the Ghost backend).
  */
 export function ghostBackendProxyPlugin(): Plugin {
   let siteUrl!: { url: string; host: string };
@@ -129,7 +116,6 @@ Ensure the Ghost backend is running. If needed, set the GHOST_URL environment va
       server.config.server.proxy = {
         ...server.config.server.proxy,
         ...createAdminApiProxy(siteUrl),
-        ...createEmberLiveReloadProxy(),
       };
     },
 

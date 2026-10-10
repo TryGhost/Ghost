@@ -130,7 +130,6 @@ describe('emails api', () => {
   it('invalidates post queries so the embedded email refreshes', async () => {
     const queryClient = createTestQueryClient();
     const invalidateSpy = vi.spyOn(queryClient, 'invalidateQueries');
-    const onInvalidate = vi.fn();
 
     await withMockFetch(
       {
@@ -140,7 +139,6 @@ describe('emails api', () => {
       async () => {
         const { result } = renderHookWithProviders(() => useRetryEmail(), {
           queryClient,
-          frameworkProps: { onInvalidate },
         });
 
         await act(async () => {
@@ -148,7 +146,6 @@ describe('emails api', () => {
         });
 
         expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: [postsDataType] });
-        expect(onInvalidate).toHaveBeenCalledWith(postsDataType);
       },
     );
   });

@@ -39,7 +39,7 @@ describe('getSentryConfig', () => {
     expect(config).toMatchObject({ dsn: DSN, environment: 'production', release: 'ghost@6.1' });
   });
 
-  it('ignores browser, network and Ember noise', () => {
+  it('ignores browser and network noise', () => {
     const config = getSentryConfig({ dsn: DSN, environment: 'production', version: '6.1' });
 
     expect(config.ignoreErrors).toEqual([
@@ -53,10 +53,8 @@ describe('getSentryConfig', () => {
       /^(AbortError: |InvalidStateError: )?Transition was (skipped|aborted because of invalid state)(\. [A-Za-z ]+)?$/,
       /^(Skipping view transition because skipTransition\(\) was called|View transition was skipped because document visibility state is hidden)\.$/,
       /^Skipped ViewTransition due to (skipTransition\(\) call|document being hidden)$/,
-      /^TransitionAborted$/,
       /^ResizeObserver loop completed with undelivered notifications/,
       /^ResizeObserver loop limit exceeded/,
-      'TaskCancelation',
     ]);
   });
 
@@ -157,7 +155,7 @@ describe('beforeSend', () => {
   it('should return an event', () => {
     const event = { message: 'test' } as Event;
 
-    expect(beforeSend(event, {})).toEqual(event);
+    expect(beforeSend(event)).toEqual(event);
   });
 
   it('tags events as not shown to the user by default', () => {
@@ -173,13 +171,13 @@ describe('beforeSend', () => {
   it('does not send the event if it was shown to the user', () => {
     const event = { tags: { shown_to_user: true } } as Event;
 
-    expect(beforeSend(event, {})).toBeNull();
+    expect(beforeSend(event)).toBeNull();
   });
 
   it('sends failures the publish flow showed the writer', () => {
     const event = { tags: { shown_to_user: true, source: 'publish-flow' } } as Event;
 
-    expect(beforeSend(event, {})).toEqual(event);
+    expect(beforeSend(event)).toEqual(event);
   });
 
   it('removes post and page ids from the error message', () => {
@@ -187,9 +185,7 @@ describe('beforeSend', () => {
       exception: { values: [{ value: 'Something went wrong <post:123>' }] },
     } as Event;
 
-    expect(beforeSend(event, {})?.exception?.values?.[0]?.value).toBe(
-      'Something went wrong <post:ID>',
-    );
+    expect(beforeSend(event)?.exception?.values?.[0]?.value).toBe('Something went wrong <post:ID>');
   });
 
   it('removes page ids from the error message', () => {
@@ -197,7 +193,7 @@ describe('beforeSend', () => {
       exception: { values: [{ value: 'Could not save <page:abc123>' }] },
     } as Event;
 
-    expect(beforeSend(event, {})?.exception?.values?.[0]?.value).toBe('Could not save <page:ID>');
+    expect(beforeSend(event)?.exception?.values?.[0]?.value).toBe('Could not save <page:ID>');
   });
 
   it('tags an uncaught Lexical error with the loaded Koenig version', () => {
@@ -246,74 +242,18 @@ describe('beforeSend', () => {
   it('returns the original event if there is an error', () => {
     const event = {
       exception: { values: [{ value: 'Failed' }] },
-    } as Event;
-    const hint = {
-      originalException: {
-        get payload(): never {
-          throw new Error('test');
-        },
+      get tags(): never {
+        throw new Error('test');
       },
-    };
-
-    expect(beforeSend(event, hint)).toBe(event);
-  });
-
-  it('returns the event even if the ajax error is missing values', () => {
-    const event = { exception: { values: [] } } as Event;
-    const hint = { originalException: { payload: { errors: [] } } };
-
-    expect(beforeSend(event, hint)).toEqual(event);
-  });
-
-  it('describes ember-ajax errors by their API error', () => {
-    const event = {
-      exception: { values: [{ type: 'AjaxError', value: 'Ajax operation failed' }] },
-      contexts: { ajax: { status: 422 } },
-      tags: { ajax_status: '422' },
     } as unknown as Event;
-    const hint = {
-      originalException: {
-        payload: {
-          errors: [{ type: 'ValidationError', context: 'Title too long', message: 'Invalid' }],
-        },
-      },
-    };
 
-    const result = beforeSend(event, hint);
-
-    expect(result?.exception?.values?.[0]).toEqual({
-      type: 'ValidationError: Title too long',
-      value: 'Invalid',
-      context: 'Title too long',
-    });
-    expect(result?.contexts?.ajax).toEqual({ status: 422 });
-    expect(result?.tags?.ajax_status).toBe('422');
-  });
-
-  it('removes ajax tags and context if it is not an ajax error', () => {
-    const event = {
-      tags: {
-        ajax_status: 'test status',
-        ajax_method: 'test method',
-        ajax_url: 'test url',
-      },
-      contexts: { ajax: { status: 'test context' } },
-    } as Event;
-    const hint = { originalException: { payload: { errors: [] } } };
-
-    const result = beforeSend(event, hint);
-
-    expect(result?.tags?.ajax_status).toBeUndefined();
-    expect(result?.tags?.ajax_method).toBeUndefined();
-    expect(result?.tags?.ajax_url).toBeUndefined();
-    expect(result?.contexts?.ajax).toBeUndefined();
+    expect(beforeSend(event)).toBe(event);
   });
 
   it('skips reporting e.ghost.org requests', () => {
     const event = { request: { url: 'https://e.ghost.org/pg/injest/i/v0/e/' } } as Event;
-    const hint = { originalException: { payload: { errors: [] } } };
 
-    expect(beforeSend(event, hint)).toBeNull();
+    expect(beforeSend(event)).toBeNull();
   });
 
   it('skips reporting plausible requests', () => {

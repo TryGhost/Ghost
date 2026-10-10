@@ -2,6 +2,7 @@ import moment from 'moment-timezone';
 import { beforeEach, describe, expect, it, onTestFinished } from 'vitest';
 import { page } from 'vitest/browser';
 import {
+  allowUnhandledRequests,
   currentRoute,
   currentUserResponse,
   fakeAdminEndpoint,
@@ -171,6 +172,8 @@ describe('Restore posts', () => {
   });
 
   it('restores a copy as a new draft and links to it', async () => {
+    // The editor it links to owns its request graph.
+    allowUnhandledRequests();
     storeCopy('post-1', NEWER, {
       type: 'post',
       status: 'draft',

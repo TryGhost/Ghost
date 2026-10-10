@@ -5,7 +5,6 @@ const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
 const camelCase = require('lodash/camelCase');
-const {prepareLegacyAdminAssets} = require('../../../../scripts/lib/admin-assets.ts');
 
 const adminXApps = ['activitypub'];
 
@@ -54,16 +53,5 @@ module.exports = {
 
     isDevelopingAddon() {
         return true;
-    },
-
-    postBuild: function (results) {
-        prepareLegacyAdminAssets({
-            emberDist: results.directory,
-            destination: path.join(path.dirname(require.resolve('ghost')), 'core/built/admin'),
-            activitypubDist: path.resolve('../../apps/activitypub/dist'),
-            koenigDist: path.dirname(require.resolve('@tryghost/koenig-lexical')),
-            environment: this.env,
-            editorUrl: process.env.EDITOR_URL
-        });
     }
 };
