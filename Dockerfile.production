@@ -37,6 +37,8 @@ FROM node:$NODE_VERSION-bookworm-slim AS deploy
 WORKDIR /build
 
 RUN corepack enable
+# node_modules must live in the image, not link into a pnpm store outside it
+ENV pnpm_config_enable_global_virtual_store=false
 
 # Full workspace source is needed so pnpm can resolve the workspace graph for the
 # `ghost...` filter. .dockerignore prunes node_modules/build/dist/.git/.nx so the

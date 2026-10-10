@@ -57,6 +57,11 @@ configures Git to ignore formatting-only revisions in blame output. Run it after
 a fresh clone and whenever a branch changes workspace dependencies or
 submodules.
 
+Installs use pnpm's global virtual store: each checkout's `node_modules` links
+into one shared store, so a new worktree installs in a few seconds. Containers
+can't follow those links, so `pnpm dev:docker` first reinstalls without them;
+the next pnpm command switches back.
+
 Ghost calls this command `bootstrap` because [`pnpm setup`](https://pnpm.io/cli/setup)
 is a pnpm CLI command for configuring pnpm's global home and updating shell
 startup files. It does not run Ghost's repository initialization. Using a

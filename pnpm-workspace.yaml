@@ -14,6 +14,9 @@ autoDedupe: true
 # Packages resolve only the dependencies they declare. Declare missing ones in
 # packageExtensions below rather than turning hoisting back on.
 hoist: false
+# Links node_modules into one shared store so worktrees install in seconds. Docker
+# images and CI opt out with pnpm_config_enable_global_virtual_store=false.
+enableGlobalVirtualStore: true
 
 minimumReleaseAge: 4320 # 3 days in minutes; matches Renovate's minimumReleaseAge
 blockExoticSubdeps: true
