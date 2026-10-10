@@ -33,14 +33,13 @@ export default defineConfig({
       // (even in headless mode)
       args: ['--use-gl=egl'],
     },
-    permissions: ['local-network-access'],
   },
 
   /* Configure projects for major browsers */
   projects: [
     {
       name: 'chromium',
-      use: { ...devices['Desktop Chrome'] },
+      use: { ...devices['Desktop Chrome'], permissions: ['local-network-access'] },
     },
 
     ...(process.env.ALL_BROWSERS

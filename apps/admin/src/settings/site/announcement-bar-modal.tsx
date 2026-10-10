@@ -21,7 +21,7 @@ import { Laptop, Smartphone } from 'lucide-react';
 import { PreviewModalContent } from '@/settings/components/preview-modal';
 import { debounce } from '@/settings/utils/debounce';
 import { getHomepageUrl } from '@tryghost/admin-x-framework/api/site';
-import { getSettingValues } from '@tryghost/admin-x-framework/api/settings';
+import { getSettingValues, usePaidMembersEnabled } from '@tryghost/admin-x-framework/api/settings';
 import { toast } from 'sonner';
 import { useBrowsePosts } from '@tryghost/admin-x-framework/api/posts';
 import { useGlobalData } from '@/settings/providers/global-data-context';
@@ -150,7 +150,7 @@ const AnnouncementBarModal: React.FC = () => {
   const [announcementVisibility] = getSettingValues<string[]>(localSettings, [
     'announcement_visibility',
   ]);
-  const [paidMembersEnabled] = getSettingValues<boolean>(localSettings, ['paid_members_enabled']);
+  const paidMembersEnabled = usePaidMembersEnabled();
   const visibilitySettings = JSON.parse(announcementVisibility?.toString() || '[]') as string[];
   const { updateRoute } = useSettingsNavigation();
   const [selectedPreviewTab, setSelectedPreviewTab] = useState('homepage');

@@ -6,7 +6,7 @@ import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 const trendBadgeVariants = cva(
-  'group/trend-badge inline-flex h-[22px] cursor-default items-center gap-1 rounded-xs px-1.5 text-xs',
+  'group/trend-badge inline-flex h-[22px] cursor-default items-center gap-1 rounded-trend-badge px-1.5 text-xs',
   {
     variants: {
       direction: {

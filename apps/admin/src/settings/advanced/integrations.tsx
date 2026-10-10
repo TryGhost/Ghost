@@ -1,4 +1,4 @@
-import BrandIcon from '@/settings/components/icons/brand-icon';
+import BrandIcon from '@/shared/brand-icon/brand-icon';
 import IntegrationsSettingsImg from '@/settings/assets/images/integrations-settings.png';
 import React, { useState } from 'react';
 import TopLevelGroup from '@/settings/components/top-level-group';
@@ -27,7 +27,7 @@ import { getSettingValues } from '@tryghost/admin-x-framework/api/settings';
 import { toast } from 'sonner';
 import { useConfirmation } from '@/settings/providers/confirmation-context';
 import { useGlobalData } from '@/settings/providers/global-data-context';
-import { useHandleError } from '@tryghost/admin-x-framework/hooks';
+import { useHandleError, useHostLimits } from '@tryghost/admin-x-framework/hooks';
 import { useSettingsNavigation } from '@/settings/hooks/use-settings-navigation';
 import { DEFAULT_UPGRADE_ROUTE } from '@tryghost/admin-x-framework/api/config';
 import { useUpgradeRoute } from '@/settings/hooks/use-upgrade-route';
@@ -87,13 +87,7 @@ const IntegrationItem: React.FC<IntegrationItemProps> = ({
   };
 
   const buttons = custom ? (
-    <Button
-      className="text-destructive hover:text-destructive"
-      size="sm"
-      type="button"
-      variant="ghost"
-      onClick={handleDelete}
-    >
+    <Button size="sm" type="button" variant="destructive-ghost" onClick={handleDelete}>
       Delete
     </Button>
   ) : disabled ? (
@@ -143,7 +137,6 @@ const IntegrationItem: React.FC<IntegrationItemProps> = ({
 };
 
 const BuiltInIntegrations: React.FC = () => {
-  const { config } = useGlobalData();
   const upgradeRoute = useUpgradeRoute();
   const { updateRoute } = useSettingsNavigation();
 
@@ -151,7 +144,7 @@ const BuiltInIntegrations: React.FC = () => {
     updateRoute(modal);
   };
 
-  const builtInApiIntegrationsDisabled = config.hostSettings?.limits?.customIntegrations?.disabled;
+  const builtInApiIntegrationsDisabled = useHostLimits()?.customIntegrations?.disabled;
 
   const pinturaEditor = usePinturaEditor();
 

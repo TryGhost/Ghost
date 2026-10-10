@@ -1,0 +1,570 @@
+import { useEffect, useMemo, useRef, useState } from 'react';
+import {
+  Button,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  EmptyIndicator,
+  LoadingIndicator,
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectValue,
+  Tabs,
+  TabsList,
+  TabsTrigger,
+  ToggleGroup,
+  ToggleGroupItem,
+} from '@tryghost/shade/components';
+import {
+  getSettingValue,
+  useNewslettersEnabled,
+  usePaidMembersEnabled,
+} from '@tryghost/admin-x-framework/api/settings';
+import { Inline, Stack } from '@tryghost/shade/primitives';
+import { PageHeader } from '@tryghost/shade/patterns';
+import { cn, LucideIcon } from '@tryghost/shade/utils';
+import { toast } from 'sonner';
+import { useBrowseNewsletters } from '@tryghost/admin-x-framework/api/newsletters';
+import { useBrowseTiers } from '@tryghost/admin-x-framework/api/tiers';
+import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
+import {
+  isAdminUser,
+  isContributorUser,
+  isEditorUser,
+  isOwnerUser,
+} from '@tryghost/admin-x-framework/api/users';
+
+import { PAID_TIERS_SEARCH_PARAMS, newslettersSearchParams } from '@/editor/browse-params';
+import { EDITOR_REQUEST_OPTIONS } from '@/editor/request-options';
+import { postPreviewModal, postPreviewSaveFailed } from '@tryghost/test-data/selectors/editor';
+import { useEditorSettings } from '@/editor/use-editor-settings';
+import { FullscreenDialog } from '@/editor/fullscreen-dialog';
+import { describeRejectedAction } from '@/editor/publish/completion-message';
+import { EMAIL_SUBJECT_MAX, overLength } from '@/editor/session/settings-fields';
+import type { PublishFlowPost } from '@/editor/publish/flow-post';
+import { BrowserPreview } from './browser-preview';
+import { EmailPreview } from './email-preview';
+import { EmailSubject, type EmailSubjectEditor } from './email-subject';
+import {
+  browserPreviewUrl,
+  type PreviewAudience,
+  type PreviewDevice,
+  type PreviewSegment,
+} from './preview-url';
+
+type PreviewFormat = 'browser' | 'email';
+
+type PrepareState = 'preparing' | 'ready' | 'failed';
+
+interface SegmentOption {
+  label: string;
+  value: PreviewSegment;
+}
+
+export interface PostPreviewModalProps {
+  subjectEditor?: EmailSubjectEditor;
+  open: boolean;
+  animate?: boolean;
+  postId: string;
+  /** The post's public preview URL (`/p/:uuid/`), empty until the post has a uuid. */
+  previewUrl: string;
+  /** Pages have no email preview. */
+  isPost?: boolean;
+  /** The saved post, whose email is checked against the size inboxes clip at. */
+  post?: PublishFlowPost;
+  /** The post's own newsletter, preselected in the email preview. */
+  newsletterSlug?: string;
+  /** Preselected when the post has no newsletter of its own, such as the publish flow's pick. */
+  fallbackNewsletterSlug?: string;
+  /**
+   * Awaited before the preview renders, so the caller can save the draft first.
+   * A rejection's message is shown to the writer as the reason it could not.
+   */
+  onBeforeOpen?: () => Promise<void>;
+  /** Renders a Publish button; supplied for users who can publish. */
+  onPublish?: () => void;
+  /** Keeps the Publish button disabled while the caller cannot open its publish flow. */
+  publishDisabled?: boolean;
+  onOpenChange: (open: boolean) => void;
+  /** Called as the closed preview hands focus back; preventing it keeps focus where the caller puts it. */
+  onCloseAutoFocus?: (event: Event) => void;
+}
+
+export function PostPreviewModal({
+  subjectEditor,
+  open,
+  animate = true,
+  postId,
+  previewUrl,
+  isPost = true,
+  post,
+  newsletterSlug,
+  fallbackNewsletterSlug,
+  onBeforeOpen,
+  onPublish,
+  publishDisabled = false,
+  onOpenChange,
+  onCloseAutoFocus,
+}: PostPreviewModalProps) {
+  const [format, setFormat] = useState<PreviewFormat>('browser');
+  const [device, setDevice] = useState<PreviewDevice>('desktop');
+  const [segment, setSegment] = useState<PreviewSegment>('free');
+  const [pickedTierSlug, setPickedTierSlug] = useState<string | null>(null);
+  const [pickedNewsletterSlug, setPickedNewsletterSlug] = useState<string | null>(null);
+  const [prepareState, setPrepareState] = useState<PrepareState>(() =>
+    onBeforeOpen && open ? 'preparing' : 'ready',
+  );
+  const [prepareFailure, setPrepareFailure] = useState('');
+  const [wasOpen, setWasOpen] = useState(open);
+
+  const { data: currentUser } = useCurrentUser({ requestOptions: EDITOR_REQUEST_OPTIONS });
+  const { data: settingsData } = useEditorSettings();
+  const paidMembersEnabled = usePaidMembersEnabled({ requestOptions: EDITOR_REQUEST_OPTIONS });
+  const newslettersEnabled = useNewslettersEnabled({ requestOptions: EDITOR_REQUEST_OPTIONS });
+  const membersEnabled =
+    getSettingValue<boolean>(settingsData?.settings ?? [], 'members_enabled') === true;
+  const emailAvailable =
+    isPost &&
+    membersEnabled &&
+    Boolean(newslettersEnabled) &&
+    !!currentUser &&
+    !isContributorUser(currentUser);
+  const testEmailAvailable =
+    !!currentUser &&
+    (isOwnerUser(currentUser) || isAdminUser(currentUser) || isEditorUser(currentUser));
+  // Contributors have no permission to read tiers.
+  const tiersAvailable =
+    paidMembersEnabled === true && !!currentUser && !isContributorUser(currentUser);
+
+  const { data: tiersData } = useBrowseTiers({
+    searchParams: PAID_TIERS_SEARCH_PARAMS,
+    enabled: open && prepareState === 'ready' && tiersAvailable,
+    requestOptions: EDITOR_REQUEST_OPTIONS,
+  });
+  const tiers = useMemo(() => tiersData?.tiers ?? [], [tiersData]);
+
+  const {
+    data: newslettersData,
+    fetchNextPage: fetchNextNewsletterPage,
+    hasNextPage: hasNextNewsletterPage,
+    isError: activeNewslettersError,
+    isFetching: newslettersFetching,
+    isFetchingNextPage: isFetchingNextNewsletterPage,
+    refetch: refetchActiveNewsletters,
+  } = useBrowseNewsletters({
+    searchParams: newslettersSearchParams(currentUser),
+    enabled: open && prepareState === 'ready' && emailAvailable,
+    requestOptions: EDITOR_REQUEST_OPTIONS,
+  });
+
+  // Core caps `limit=all`, so the response can still contain a next page. A
+  // newsletter past the cap would otherwise be taken for an archived one.
+  useEffect(() => {
+    if (hasNextNewsletterPage && !isFetchingNextNewsletterPage && !activeNewslettersError) {
+      void fetchNextNewsletterPage();
+    }
+  }, [
+    activeNewslettersError,
+    fetchNextNewsletterPage,
+    hasNextNewsletterPage,
+    isFetchingNextNewsletterPage,
+  ]);
+  const activeNewslettersFetching =
+    newslettersFetching || hasNextNewsletterPage || isFetchingNextNewsletterPage;
+  // The browse carries every newsletter, which is also the publish flow's list;
+  // narrowing here shares that one cache entry instead of asking for a subset.
+  const activeNewsletters = useMemo(
+    () =>
+      (newslettersData?.newsletters ?? []).filter((newsletter) => newsletter.status === 'active'),
+    [newslettersData],
+  );
+
+  // The post's newsletter is what its email renders as, so it stays selectable
+  // even once it has left the active list.
+  const postNewsletterMissing =
+    Boolean(newslettersData) &&
+    !activeNewslettersError &&
+    !activeNewslettersFetching &&
+    Boolean(newsletterSlug) &&
+    !activeNewsletters.some((newsletter) => newsletter.slug === newsletterSlug);
+  const {
+    data: postNewsletterData,
+    isError: postNewsletterError,
+    isFetching: postNewsletterFetching,
+    refetch: refetchPostNewsletter,
+  } = useBrowseNewsletters({
+    searchParams: { filter: `slug:${newsletterSlug ?? ''}`, limit: '1' },
+    enabled: open && prepareState === 'ready' && emailAvailable && postNewsletterMissing,
+    requestOptions: EDITOR_REQUEST_OPTIONS,
+    staleTime: 0,
+  });
+  const postNewsletter =
+    postNewsletterMissing && postNewsletterData
+      ? postNewsletterData.newsletters.find((newsletter) => newsletter.slug === newsletterSlug)
+      : undefined;
+  const postNewsletterDeleted =
+    postNewsletterMissing && !postNewsletterError && Boolean(postNewsletterData) && !postNewsletter;
+  const newsletterLookupError =
+    activeNewslettersError || (postNewsletterMissing && postNewsletterError);
+  const newsletterLookupPending =
+    (emailAvailable &&
+      (activeNewslettersFetching || (!newslettersData && !activeNewslettersError))) ||
+    (postNewsletterMissing &&
+      (postNewsletterFetching || (!postNewsletterData && !postNewsletterError)));
+  const newsletters = useMemo(
+    () => (postNewsletter ? [postNewsletter, ...activeNewsletters] : activeNewsletters),
+    [activeNewsletters, postNewsletter],
+  );
+
+  const beforeOpen = useRef(onBeforeOpen);
+  const preparePromise = useRef<Promise<void> | null>(null);
+  beforeOpen.current = onBeforeOpen;
+
+  // Opening must not render a preview of the unsaved post, so the state moves
+  // during render rather than in an effect that runs after that first commit.
+  if (open !== wasOpen) {
+    setWasOpen(open);
+    preparePromise.current = null;
+    setPrepareState(open && onBeforeOpen ? 'preparing' : 'ready');
+    // Each opening starts from the post's or the publish flow's newsletter, not an earlier pick.
+    if (open) {
+      setPickedNewsletterSlug(null);
+      // An over-long subject opens the preview in place of a refused action, on
+      // the tab that edits it.
+      if (emailAvailable && subjectEditor && overLength(subjectEditor.value, EMAIL_SUBJECT_MAX)) {
+        setFormat('email');
+        if (segment === 'anonymous') {
+          setSegment('free');
+        }
+      }
+    }
+  }
+
+  useEffect(() => {
+    if (!open || prepareState !== 'preparing') {
+      return;
+    }
+
+    const prepare = beforeOpen.current;
+    if (!prepare) {
+      setPrepareState('ready');
+      return;
+    }
+
+    const promise =
+      preparePromise.current ?? (preparePromise.current = Promise.resolve().then(prepare));
+    let cancelled = false;
+    void promise.then(
+      () => {
+        if (!cancelled) {
+          setPrepareState('ready');
+        }
+      },
+      (error: unknown) => {
+        if (!cancelled) {
+          setPrepareFailure(describeRejectedAction(error).message);
+          setPrepareState('failed');
+        }
+      },
+    );
+
+    return () => {
+      cancelled = true;
+    };
+  }, [open, prepareState]);
+
+  const segmentOptions = useMemo<SegmentOption[]>(() => {
+    const options: SegmentOption[] =
+      format === 'email'
+        ? [{ label: 'Free member', value: 'free' }]
+        : [
+            { label: 'Public visitor', value: 'anonymous' },
+            { label: 'Free member', value: 'free' },
+          ];
+
+    if (paidMembersEnabled) {
+      options.push({ label: 'Paid member', value: 'paid' });
+
+      if (tiers.length > 0) {
+        options.push({ label: 'Specific tier', value: 'tier' });
+      }
+    }
+
+    return options;
+  }, [format, paidMembersEnabled, tiers.length]);
+
+  const defaultTier = tiers.find((tier) => tier.active) ?? tiers[0];
+  const tierSlug = pickedTierSlug ?? defaultTier?.slug;
+  const selectedTier = tiers.find((tier) => tier.slug === tierSlug);
+  const activeTiers = tiers.filter((tier) => tier.active);
+  const archivedTiers = tiers.filter((tier) => !tier.active);
+
+  // The post's own newsletter wins even when it is no longer on the active
+  // list, because that is the newsletter its email would be rendered for.
+  const selectedNewsletterSlug =
+    pickedNewsletterSlug ?? newsletterSlug ?? fallbackNewsletterSlug ?? newsletters[0]?.slug;
+
+  const retryPreparation = () => {
+    preparePromise.current = null;
+    setPrepareState('preparing');
+  };
+
+  const retryNewsletterLookup = () => {
+    if (activeNewslettersError) {
+      void refetchActiveNewsletters();
+    }
+    if (postNewsletterError) {
+      void refetchPostNewsletter();
+    }
+  };
+
+  const audience: PreviewAudience = { segment, tierSlug };
+  const audienceUrl = browserPreviewUrl(previewUrl, audience);
+  const previewActionsAvailable = prepareState === 'ready' && Boolean(audienceUrl);
+  const showSegmentSelect = format === 'browser' || segmentOptions.length > 1;
+  const showTierSelect = segment === 'tier' && tiers.length > 0;
+  const showEmail = format === 'email' && emailAvailable;
+
+  const changeFormat = (next: PreviewFormat) => {
+    setFormat(next);
+
+    if (next === 'email' && segment === 'anonymous') {
+      setSegment('free');
+    }
+  };
+
+  // The subject is edited here, so a Publish its length would refuse shows the field
+  // and its rule rather than leaving the preview; the caller refuses the publish.
+  const subjectInvalid =
+    emailAvailable && !!subjectEditor && overLength(subjectEditor.value, EMAIL_SUBJECT_MAX);
+  const publish = () => {
+    if (subjectInvalid) {
+      changeFormat('email');
+    }
+    onPublish?.();
+  };
+
+  const copyPreviewLink = async () => {
+    try {
+      await navigator.clipboard.writeText(audienceUrl);
+      toast.success('Preview link copied');
+    } catch {
+      toast.error('Could not copy the preview link');
+    }
+  };
+
+  return (
+    <FullscreenDialog
+      animate={animate}
+      aria-describedby={undefined}
+      data-testid={postPreviewModal}
+      headerActions={
+        <PageHeader.ActionGroup>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <PageHeader.Action disabled={!previewActionsAvailable} label="Share" iconOnly>
+                <LucideIcon.Share />
+              </PageHeader.Action>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onSelect={() => void copyPreviewLink()}>
+                <LucideIcon.Link />
+                Copy preview link
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <a href={audienceUrl} rel="noopener noreferrer" target="_blank">
+                  <LucideIcon.ExternalLink />
+                  Open in new tab
+                </a>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+          <Button variant="ghost" onClick={() => onOpenChange(false)}>
+            Close
+          </Button>
+          {onPublish ? (
+            <Button className="w-20 shrink-0" disabled={publishDisabled} onClick={publish}>
+              Publish
+            </Button>
+          ) : null}
+        </PageHeader.ActionGroup>
+      }
+      headerControls={
+        <Inline className="min-w-0" gap="md">
+          {emailAvailable && (
+            <Tabs
+              value={format}
+              variant="segmented"
+              onValueChange={(value) => changeFormat(value as PreviewFormat)}
+            >
+              <TabsList className="rounded-full">
+                <TabsTrigger className="rounded-full" value="browser">
+                  Web
+                </TabsTrigger>
+                <TabsTrigger className="rounded-full" value="email">
+                  Email
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
+          )}
+          <ToggleGroup
+            className="hidden shrink-0 sidebar:flex"
+            shape="pill"
+            type="single"
+            value={device}
+            onValueChange={(value) => {
+              if (value === 'desktop' || value === 'mobile') {
+                setDevice(value);
+              }
+            }}
+          >
+            <ToggleGroupItem aria-label="Desktop" value="desktop">
+              <LucideIcon.Laptop />
+            </ToggleGroupItem>
+            <ToggleGroupItem aria-label="Mobile" value="mobile">
+              <LucideIcon.Smartphone />
+            </ToggleGroupItem>
+          </ToggleGroup>
+          {showSegmentSelect && (
+            <Select value={segment} onValueChange={(value) => setSegment(value as PreviewSegment)}>
+              <PageHeader.SelectTrigger
+                className="hidden shrink-0 md:flex"
+                label="Preview as"
+                shape="pill"
+                variant="ghost"
+                showChevron
+              >
+                <SelectValue />
+              </PageHeader.SelectTrigger>
+              <SelectContent>
+                {segmentOptions.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+          {showTierSelect && (
+            <Select value={tierSlug} onValueChange={setPickedTierSlug}>
+              <PageHeader.SelectTrigger
+                className="hidden max-w-[240px] min-w-0 md:flex [&>span]:min-w-0 [&>span]:truncate"
+                label="Tier"
+                shape="pill"
+                title={selectedTier?.name}
+                variant="ghost"
+                showChevron
+              >
+                <SelectValue />
+              </PageHeader.SelectTrigger>
+              <SelectContent>
+                {activeTiers.length > 0 && (
+                  <SelectGroup>
+                    <SelectLabel>Active tiers</SelectLabel>
+                    {activeTiers.map((tier) => (
+                      <SelectItem key={tier.id} value={tier.slug}>
+                        {tier.name}
+                      </SelectItem>
+                    ))}
+                  </SelectGroup>
+                )}
+                {archivedTiers.length > 0 && (
+                  <SelectGroup>
+                    <SelectLabel>Archived tiers</SelectLabel>
+                    {archivedTiers.map((tier) => (
+                      <SelectItem key={tier.id} value={tier.slug}>
+                        {tier.name}
+                      </SelectItem>
+                    ))}
+                  </SelectGroup>
+                )}
+              </SelectContent>
+            </Select>
+          )}
+        </Inline>
+      }
+      layout="header"
+      open={open}
+      title="Preview"
+      onCloseAutoFocus={onCloseAutoFocus}
+      onOpenChange={onOpenChange}
+    >
+      <Inline
+        align="start"
+        className={cn(
+          'min-h-0 overflow-auto',
+          showEmail || device === 'mobile' ? 'bg-muted' : 'bg-surface-panel',
+          (showEmail || device === 'mobile') && 'p-6',
+        )}
+        gap="none"
+        justify="center"
+      >
+        {prepareState === 'preparing' ? (
+          <Inline
+            align="center"
+            aria-label="Preparing preview"
+            className="grow self-center"
+            gap="none"
+            justify="center"
+            role="status"
+          >
+            <LoadingIndicator size="lg" />
+          </Inline>
+        ) : prepareState === 'failed' ? (
+          <EmptyIndicator
+            actions={
+              <Stack className="w-[320px] max-w-full" gap="md">
+                {emailAvailable && subjectEditor && (
+                  <Stack className="text-left" gap="xs">
+                    <span className="text-sm text-muted-foreground">Email subject</span>
+                    {/* Retrying the preview's own save carries the subject; the body says why it failed. */}
+                    <EmailSubject
+                      editor={{ ...subjectEditor, saveError: null, onCommit: retryPreparation }}
+                    />
+                  </Stack>
+                )}
+                <Button className="self-center" variant="outline" onClick={retryPreparation}>
+                  Retry
+                </Button>
+              </Stack>
+            }
+            className="grow justify-center self-center"
+            data-testid={postPreviewSaveFailed}
+            description={<span role="alert">{prepareFailure}</span>}
+            title="Couldn’t preview this post"
+          >
+            <LucideIcon.TriangleAlert />
+          </EmptyIndicator>
+        ) : showEmail ? (
+          <EmailPreview
+            audience={audience}
+            canSendTestEmail={testEmailAvailable}
+            device={device}
+            newsletterLookupError={newsletterLookupError}
+            newsletterLookupPending={newsletterLookupPending}
+            newsletterMissing={postNewsletterDeleted && selectedNewsletterSlug === newsletterSlug}
+            newsletters={newsletters}
+            newsletterSlug={selectedNewsletterSlug}
+            post={post}
+            postId={postId}
+            subjectEditor={subjectEditor}
+            tierName={selectedTier?.name}
+            onNewsletterChange={setPickedNewsletterSlug}
+            onRetryNewsletterLookup={retryNewsletterLookup}
+          />
+        ) : (
+          <BrowserPreview
+            audience={audience}
+            device={device}
+            previewUrl={previewUrl}
+            onEscape={() => onOpenChange(false)}
+          />
+        )}
+      </Inline>
+    </FullscreenDialog>
+  );
+}

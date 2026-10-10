@@ -32,6 +32,7 @@ const FORCE_UPGRADE_BMA_HTML = `
 
 test.describe('Ghost Admin - Force Upgrade Mode', () => {
   test.use({
+    labs: { billingReact: true },
     config: {
       hostSettings__forceUpgrade: 'true',
       hostSettings__billing__enabled: 'true',
@@ -68,6 +69,18 @@ test.describe('Ghost Admin - Force Upgrade Mode', () => {
     const billingPage = new BillingPage(page);
 
     for (const { directUrl } of NAV_ITEMS) {
+      await sidebarPage.goto(directUrl);
+
+      const billingIframe = await billingPage.waitForBillingIframe();
+      await expect(billingIframe).toBeVisible();
+    }
+  });
+
+  test('editor direct URL is blocked by billing iframe', async ({ page }) => {
+    const sidebarPage = new SidebarPage(page);
+    const billingPage = new BillingPage(page);
+
+    for (const directUrl of ['/ghost/#/editor/post', '/ghost/#/editor/page']) {
       await sidebarPage.goto(directUrl);
 
       const billingIframe = await billingPage.waitForBillingIframe();
@@ -112,7 +125,7 @@ test.describe('Ghost Admin - Force Upgrade Mode', () => {
     });
   });
 
-  test('Ember-handled tag detail route shows billing iframe', async ({ page }) => {
+  test('tag detail route shows billing iframe', async ({ page }) => {
     const sidebarPage = new SidebarPage(page);
     const billingPage = new BillingPage(page);
     await sidebarPage.goto('/ghost/#/tags/default-tag');

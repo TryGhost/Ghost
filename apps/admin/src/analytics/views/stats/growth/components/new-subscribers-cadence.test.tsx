@@ -13,9 +13,9 @@ vi.mock('@tryghost/admin-x-framework/api/tiers', () => ({
   useBrowseTiers: vi.fn(),
 }));
 
-// Mock date helpers from @tryghost/shade/app
-vi.mock('@tryghost/shade/app', async () => {
-  const actual = await vi.importActual('@tryghost/shade/app');
+// Mock date helpers from @/shared/analytics/chart-helpers
+vi.mock('@/shared/analytics/chart-helpers', async () => {
+  const actual = await vi.importActual('@/shared/analytics/chart-helpers');
   return {
     ...actual,
     getRangeDates: vi.fn((range: number) => {

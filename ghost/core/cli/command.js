@@ -1,0 +1,153 @@
+// Register the tsx CommonJS loader so dev-only CLI commands (generate-data,
+// repl, timetravel) can require TypeScript modules directly. These commands run
+// via bare `node index.js <command>`, which — unlike `pnpm dev` (nodemon
+// --import=tsx) or the production build (tsc) — has no TS resolution otherwise.
+//
+// tsx is a devDependency. In a built tree (the production image, or CI after a
+// build) it is absent but also unnecessary, because tsc has already emitted a
+// .js beside every .ts - the same situation MigratorConfig.js handles. Only the
+// direct lookup is allowed to fail: resolving first and requiring outside the
+// guard means a tsx that is installed but broken still throws.
+let tsxLoader;
+try {
+  tsxLoader = require.resolve('tsx/cjs');
+} catch (err) {
+  if (err.code !== 'MODULE_NOT_FOUND') {
+    throw err;
+  }
+}
+if (tsxLoader) {
+  require(tsxLoader);
+}
+
+const cli = require('@tryghost/pretty-cli');
+const logging = cli.ui.log;
+const chalk = require('chalk');
+
+const errors = {
+  ERR_INVALID_COMMAND: 1,
+  ERR_INVALID_ENV: 2,
+};
+
+module.exports = class Command {
+  constructor() {
+    this.checkEnv();
+    this.init();
+    this.setup();
+  }
+
+  /**
+   * @private
+   */
+  init() {
+    this.cli = cli;
+    this.cli.strict();
+    // this is always present but not used
+    this.cli.positional('<command>', { hidden: true });
+  }
+
+  setup() {
+    // init cli options
+  }
+
+  permittedEnvironments() {
+    return ['development', 'local'];
+  }
+
+  /**
+   * @private
+   */
+  checkEnv() {
+    const env = process.env.NODE_ENV ?? 'development';
+    this.warn(`Node environment: ${chalk.bold(env)}`);
+    if (!this.permittedEnvironments().includes(env)) {
+      this.fatal(`Command ${this.constructor.name} is not permitted in ${env}`);
+      process.exit(errors.ERR_INVALID_ENV);
+    }
+  }
+
+  handle() {
+    this.warn(`Command ${this.constructor.name} has not been implemented.`);
+  }
+
+  async ask(message, opts = { type: 'input' }) {
+    const inquirer = require('inquirer');
+    const response = await inquirer.prompt([
+      {
+        message,
+        ...opts,
+        name: 'value',
+      },
+    ]);
+    return response.value;
+  }
+
+  async confirm(message) {
+    return this.ask(message, { type: 'confirm', default: false });
+  }
+
+  async secret(message) {
+    return this.ask(message, { type: 'password' });
+  }
+
+  progressBar(total, opts = {}) {
+    const progress = require('cli-progress');
+    const bar = new progress.Bar({
+      format: `|${chalk[opts.color ?? 'cyan']('{bar}')}| {percentage}% | {value}/{total} {status}`,
+      barCompleteChar: '\u2588',
+      barIncompleteChar: '\u2591',
+      hideCursor: true,
+      clearOnComplete: true,
+      stopOnComplete: true,
+      forceRedraw: true,
+      ...opts,
+    });
+    bar.start(total, 0, { status: '' });
+    return bar;
+  }
+
+  argument(key, opts = {}) {
+    this.cli[opts.type ?? 'positional'](key, opts);
+  }
+
+  help(message) {
+    this.cli.preface(`\n${message}`);
+  }
+
+  /* output aliases */
+  log() {
+    logging(...arguments);
+  }
+  ok() {
+    logging.ok(...arguments);
+  }
+  info() {
+    logging.info(...arguments);
+  }
+  error() {
+    logging.error(...arguments);
+  }
+  fatal() {
+    logging.fatal(...arguments);
+  }
+  warn() {
+    logging.warn(...arguments);
+  }
+  debug() {
+    logging.debug(...arguments);
+  }
+
+  static async run(command) {
+    // attempt to load a cli command by name
+    if (typeof command === 'string') {
+      command = require(`./${command}`);
+    }
+    const cmd = new command();
+    if (cmd instanceof Command !== true) {
+      logging.fatal('Invalid command.');
+      process.exit(errors.ERR_INVALID_COMMAND);
+    }
+    const argv = await cmd.cli.parseAndExit();
+    return await cmd.handle(argv);
+  }
+};

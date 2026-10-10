@@ -158,7 +158,7 @@ describe('Member Data attributes:', () => {
     });
 
     // Mock window.location
-    let locationMock = vi.fn();
+    const locationMock = vi.fn();
     delete window.location;
     window.location = { assign: locationMock };
     window.location.href = new URL('https://portal.localhost').href;
@@ -424,6 +424,27 @@ describe('Member Data attributes:', () => {
           method: 'POST',
         },
       );
+    });
+
+    test('shows an error instead of crashing when no paid tier is available', async () => {
+      const { event, errorEl, siteUrl, member, element } = getMockData();
+      const site = FixturesSite.singleTier.onlyFreePlan;
+      const clickHandler = () => {};
+      element.addEventListener = vi.fn();
+
+      window.fetch.mockImplementation((url) => {
+        if (url.includes('api/session')) {
+          return Promise.resolve({ ok: true, text: async () => 'session-identity' });
+        }
+        return Promise.resolve({ ok: false });
+      });
+
+      await planClickHandler({ event, errorEl, siteUrl, clickHandler, site, member, el: element });
+
+      const [, checkoutOptions] = window.fetch.mock.calls[1];
+      expect(JSON.parse(checkoutOptions.body)).not.toHaveProperty('tierId');
+      expect(errorEl.innerText).toBe('Could not create Stripe checkout session');
+      expect(element.addEventListener).toHaveBeenCalledWith('click', clickHandler);
     });
   });
 
@@ -881,7 +902,7 @@ describe('Portal Data attributes:', () => {
     });
 
     // Mock window.location
-    let locationMock = vi.fn();
+    const locationMock = vi.fn();
     delete window.location;
     window.location = { assign: locationMock };
     window.location.href = new URL('https://portal.localhost').href;
@@ -1010,7 +1031,7 @@ describe('Portal Data attributes:', () => {
                 <button data-portal="offers/${FixtureOffer.id}">Offer</button>
             `;
 
-      let { ghostApi, popupFrame, ...utils } = await setup({
+      const { ghostApi, popupFrame, ...utils } = await setup({
         site: FixturesSite.singleTier.basic,
         member: FixtureMember.paid,
         showPopup: false,
@@ -1187,6 +1208,30 @@ describe('Portal Data attributes:', () => {
       expect(errorEl.innerText).toBe('There was an error sending the email, please try again');
       expect(form.classList.add).toHaveBeenCalledWith('error');
       expect(window.fetch).toHaveBeenCalledTimes(1);
+    });
+
+    test('lets the form be submitted again after a network error', async () => {
+      const { event, form, errorEl, siteUrl, submitHandler } = getMockData();
+
+      window.fetch.mockImplementationOnce(() => Promise.reject(new Error('Network error')));
+
+      await formSubmitHandler({ event, form, errorEl, siteUrl, submitHandler });
+
+      expect(form.addEventListener).toHaveBeenCalledWith('submit', submitHandler);
+      expect(form.classList.remove).toHaveBeenCalledWith('loading');
+    });
+
+    test('lets the form be submitted again after a bot challenge block', async () => {
+      const { event, form, errorEl, siteUrl, submitHandler } = getMockData();
+
+      window.fetch.mockResolvedValueOnce(new Response('', { status: 449 }));
+
+      await formSubmitHandler({ event, form, errorEl, siteUrl, submitHandler });
+
+      expect(errorEl.innerText).toBe('Unable to verify your request, please try again');
+      expect(form.classList.add).toHaveBeenCalledWith('error');
+      expect(form.addEventListener).toHaveBeenCalledWith('submit', submitHandler);
+      expect(form.classList.remove).toHaveBeenCalledWith('loading');
     });
 
     test('handles error gracefully when errorEl is null', async () => {

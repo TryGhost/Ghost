@@ -12,54 +12,82 @@
   "sideEffects": false,
   "exports": {
     ".": {
+      "source": "./src/index.ts",
       "types": "./types/index.d.ts",
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
     },
     "./errors": {
+      "source": "./src/errors.ts",
       "types": "./types/errors.d.ts",
       "import": "./dist/errors.js",
       "require": "./dist/errors.cjs"
     },
     "./helpers": {
+      "source": "./src/helpers.ts",
       "types": "./types/helpers.d.ts",
       "import": "./dist/helpers.js",
       "require": "./dist/helpers.cjs"
     },
     "./hooks": {
+      "source": "./src/hooks.ts",
       "types": "./types/hooks.d.ts",
       "import": "./dist/hooks.js",
       "require": "./dist/hooks.cjs"
     },
     "./api/*": {
+      "source": "./src/api/*.ts",
       "types": "./types/api/*.d.ts",
       "import": "./dist/api/*.js",
       "require": "./dist/api/*.cjs"
     },
+    "./utils/countries": {
+      "source": "./src/utils/countries.ts",
+      "types": "./types/utils/countries.d.ts",
+      "import": "./dist/utils/countries.js",
+      "require": "./dist/utils/countries.cjs"
+    },
     "./utils/post-utils": {
+      "source": "./src/utils/post-utils.ts",
       "types": "./types/utils/post-utils.d.ts",
       "import": "./dist/utils/post-utils.js",
       "require": "./dist/utils/post-utils.cjs"
     },
     "./utils/get-site-timezone": {
+      "source": "./src/utils/get-site-timezone.ts",
       "types": "./types/utils/get-site-timezone.d.ts",
       "import": "./dist/utils/get-site-timezone.js",
       "require": "./dist/utils/get-site-timezone.cjs"
     },
+    "./utils/recipient-filter": {
+      "source": "./src/utils/recipient-filter.ts",
+      "types": "./types/utils/recipient-filter.d.ts",
+      "import": "./dist/utils/recipient-filter.js",
+      "require": "./dist/utils/recipient-filter.cjs"
+    },
     "./vite": {
+      "source": "./src/vite.ts",
       "types": "./types/vite.d.ts",
       "import": "./dist/vite.js",
       "require": "./dist/vite.cjs"
     },
     "./playwright": {
+      "source": "./src/playwright.ts",
       "types": "./types/playwright.d.ts",
       "import": "./dist/playwright.js",
       "require": "./dist/playwright.cjs"
     },
     "./test/*": {
+      "source": "./src/test/*.ts",
       "types": "./types/test/*.d.ts",
       "import": "./dist/test/*.js",
       "require": "./dist/test/*.cjs"
+    },
+    "./utils/admin-theme": {
+      "source": "./src/utils/admin-theme.ts",
+      "types": "./types/utils/admin-theme.d.ts",
+      "import": "./dist/utils/admin-theme.js",
+      "require": "./dist/utils/admin-theme.cjs"
     }
   },
   "scripts": {
@@ -75,15 +103,20 @@
   "dependencies": {
     "@sentry/react": "catalog:",
     "@tanstack/react-query": "catalog:",
-    "@tinybirdco/charts": "0.3.0",
-    "@tryghost/custom-field-types": "workspace:*",
+    "@tryghost/app-contracts": "workspace:*",
+    "@tryghost/checkout": "workspace:*",
+    "@tryghost/limit-service": "workspace:*",
+    "@tryghost/metafield-csv": "workspace:*",
+    "@tryghost/metafield-types": "workspace:*",
     "@tryghost/nql-string": "workspace:*",
     "@tryghost/shade": "workspace:*",
+    "@tryghost/string": "catalog:",
     "bson-objectid": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:",
     "react-router": "catalog:",
-    "sonner": "catalog:"
+    "sonner": "catalog:",
+    "zod": "catalog:"
   },
   "devDependencies": {
     "@internal/cfg-eslint-react": "workspace:*",

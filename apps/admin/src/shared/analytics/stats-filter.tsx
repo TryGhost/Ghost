@@ -1,15 +1,16 @@
+import { Button } from '@tryghost/shade/components';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import countries from 'i18n-iso-countries';
 import enLocale from 'i18n-iso-countries/langs/en.json';
-import { Button } from '@tryghost/shade/components';
-import { type Filter, type FilterFieldConfig, Filters } from '@tryghost/shade/patterns';
+import { type Filter, type FilterFieldConfig, FilterBar, Filters } from '@tryghost/shade/patterns';
+import { useShade } from '@tryghost/shade/app';
 import { LucideIcon, formatNumber } from '@tryghost/shade/utils';
 import { STATS_LABEL_MAPPINGS, UNKNOWN_LOCATION_VALUES } from './constants';
-import { formatQueryDate, getRangeDates } from '@tryghost/shade/app';
+import { formatQueryDate, getRangeDates } from './chart-helpers';
 import { getAudienceFromFilterValues, getAudienceQueryParam } from './audience';
-import { useAppContext } from '@tryghost/admin-x-framework';
 import { useAnalyticsData } from './use-analytics-data';
 import { useTinybirdQuery, useWebAnalyticsEnabled } from '@tryghost/admin-x-framework';
+import { usePaidMembersEnabled } from '@tryghost/admin-x-framework/api/settings';
 import { useTopContent } from '@tryghost/admin-x-framework/api/stats';
 
 countries.registerLocale(enLocale);
@@ -342,7 +343,8 @@ function StatsFilter({
   showPostField = false,
   ...props
 }: StatsFilterProps) {
-  const { appSettings } = useAppContext();
+  const { isAdmin7 } = useShade();
+  const paidMembersEnabled = usePaidMembersEnabled();
 
   // Track which filter field is currently being selected (lazy loading)
   const [activeFilterField, setActiveFilterField] = useState<string | null>(null);
@@ -381,10 +383,8 @@ function StatsFilter({
         icon: <LucideIcon.UserPlus className="text-orange" />,
       },
     ];
-    return appSettings?.paidMembersEnabled
-      ? options
-      : options.filter((opt) => opt.value !== 'paid');
-  }, [appSettings?.paidMembersEnabled]);
+    return paidMembersEnabled ? options : options.filter((opt) => opt.value !== 'paid');
+  }, [paidMembersEnabled]);
 
   // Helper: determine if a filter field should fetch options
   // Enable fetching when the field is active OR has an applied filter value (for label display)
@@ -681,36 +681,81 @@ function StatsFilter({
     }
   }, [onChange]);
 
-  return (
+  if (!isAdmin7) {
+    return (
+      <div
+        className="mt-3 flex w-full justify-between gap-2 lg:mt-0"
+        data-testid="stats-filter-container"
+      >
+        <Filters
+          addButton={<Filters.Trigger fallbackStyle="funnel-plus" />}
+          allowMultiple={false}
+          className="[&>button]:order-last"
+          fields={groupedFields}
+          filters={filters}
+          keyboardShortcut="f"
+          popoverAlign={isMobile ? 'start' : hasFilters ? 'start' : 'end'}
+          showSearchInput={false}
+          onActiveFieldChange={setActiveFilterField}
+          onChange={onChange || (() => {})}
+          {...props}
+        />
+        {hasFilters && (
+          <Button
+            className="hidden font-normal text-muted-foreground lg:flex"
+            data-testid="stats-filter-clear-button"
+            variant="ghost"
+            onClick={handleClearFilters}
+          >
+            <LucideIcon.FunnelX />
+            Clear
+          </Button>
+        )}
+      </div>
+    );
+  }
+
+  const filtersElement = (
+    <Filters
+      addButton={<Filters.Trigger fallbackStyle="funnel-plus" />}
+      allowMultiple={false}
+      className="[&>button]:order-last"
+      clearButton={
+        hasFilters ? (
+          <FilterBar.Actions>
+            <FilterBar.Action
+              className="hidden lg:flex"
+              data-testid="stats-filter-clear-button"
+              variant="ghost"
+              onClick={handleClearFilters}
+            >
+              Clear
+            </FilterBar.Action>
+          </FilterBar.Actions>
+        ) : undefined
+      }
+      fields={groupedFields}
+      filters={filters}
+      keyboardShortcut="f"
+      popoverAlign={isMobile ? 'start' : hasFilters ? 'start' : 'end'}
+      showClearButton={hasFilters}
+      showSearchInput={false}
+      onActiveFieldChange={setActiveFilterField}
+      onChange={onChange || (() => {})}
+      {...props}
+    />
+  );
+
+  return hasFilters ? (
+    <div className="w-full" data-testid="stats-filter-container">
+      <FilterBar>{filtersElement}</FilterBar>
+    </div>
+  ) : (
     <div
       className="mt-3 flex w-full justify-between gap-2 lg:mt-0"
       data-testid="stats-filter-container"
     >
-      <Filters
-        addButtonIcon={<LucideIcon.FunnelPlus />}
-        addButtonText={hasFilters ? 'Add filter' : 'Filter'}
-        allowMultiple={false}
-        className={`[&>button]:order-last ${hasFilters && '[&>button]:border-none'}`}
-        fields={groupedFields}
-        filters={filters}
-        keyboardShortcut="f"
-        popoverAlign={isMobile ? 'start' : hasFilters ? 'start' : 'end'}
-        showSearchInput={false}
-        onActiveFieldChange={setActiveFilterField}
-        onChange={onChange || (() => {})}
-        {...props}
-      />
-      {hasFilters && (
-        <Button
-          className="hidden font-normal text-muted-foreground lg:flex"
-          data-testid="stats-filter-clear-button"
-          variant="ghost"
-          onClick={handleClearFilters}
-        >
-          <LucideIcon.FunnelX />
-          Clear
-        </Button>
-      )}
+      {filtersElement}
     </div>
   );
 }

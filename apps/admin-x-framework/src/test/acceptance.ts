@@ -1,10 +1,5 @@
 import { Page } from '@playwright/test';
 
-import newsletterStatsFixture from './responses/newsletter_stats.json';
-import topPostsFixture from './responses/top_posts.json';
-
-import type { NewsletterStatsResponseType, TopPostsStatsResponseType } from '../api/stats';
-
 interface MockRequestConfig {
   method: string;
   path: string | RegExp;
@@ -19,14 +14,6 @@ interface RequestRecord {
   body?: object | null;
   headers?: { [key: string]: string };
 }
-
-export const responseFixtures = {
-  newsletterStats: newsletterStatsFixture,
-  topPosts: topPostsFixture,
-} satisfies {
-  newsletterStats: NewsletterStatsResponseType;
-  topPosts: TopPostsStatsResponseType;
-};
 
 export async function mockApi<Requests extends Record<string, MockRequestConfig>>({
   page,

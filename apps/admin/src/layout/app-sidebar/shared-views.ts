@@ -1,8 +1,8 @@
 import { useMemo } from 'react';
-import { parseAllSharedViewsJSON } from '@/members/shared-views';
+import { parseAllSharedViewsJSON } from '@/members/api';
 import { getSettingValue, useBrowseSettings } from '@tryghost/admin-x-framework/api/settings';
 
-export type { SharedView } from '@/members/shared-views';
+export type { SharedView } from '@/members/api';
 
 export function getColorHex(color: string): string {
   const colorMap: Record<string, string> = {

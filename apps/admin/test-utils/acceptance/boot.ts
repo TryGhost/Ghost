@@ -4,15 +4,18 @@ import {
   browseResponse,
   configResponse,
   currentUserResponse,
+  defaultThemesResponse,
   settingsResponse,
   siteResponse,
 } from '@tryghost/test-data';
 
 import { registerAdminApiHandler, registerRoute } from './worker';
 
+export { composeConfigBootOverrides, composeLabsBootOverrides } from './boot-composition';
+
 /**
- * The requests the admin shell fires on boot regardless of route, handled by
- * default so specs never mention them. Override per test keyed by entry
+ * The requests the admin shell fires on boot regardless of route, and the lookups a
+ * page fires on every mount, handled by default so specs never mention them. Override per test keyed by entry
  * name: `renderAdminApp("/", {boot: {browseMe: {response: ...}}})`. Canned
  * responses come from @tryghost/test-data; this harness must not import test
  * data from admin-x-framework.
@@ -24,6 +27,14 @@ export interface BootRequestConfig {
   response: unknown;
   responseStatus?: number;
 }
+
+/**
+ * The site-wide member total, asked for in two shapes: `useMemberCount` sends
+ * only `limit`, `useMembersCount` pins order/page around an empty filter. Both
+ * are shell chrome; the members resource fake skips them so they never land in
+ * a spec's `lastRequest`.
+ */
+export const MEMBER_COUNT_PROBE_PATH = /^\/members\/\?(?:limit=1|filter=&order=id&limit=1&page=1)$/;
 
 // A function so every lookup serves freshly-minted responses — mutations
 // can't leak between tests.
@@ -51,13 +62,28 @@ export function defaultBootRequests() {
     },
     browseMembersCount: {
       method: 'GET',
-      path: '/members/?limit=1',
+      path: MEMBER_COUNT_PROBE_PATH,
       response: browseResponse('members', [], { limit: 1 }),
+    },
+    browseMemberCustomFieldDefinitions: {
+      method: 'GET',
+      path: /^\/members\/metafields\/custom\/(\?|$)/,
+      response: browseResponse('members_metafields', []),
+    },
+    browseNotifications: {
+      method: 'GET',
+      path: '/notifications/',
+      response: browseResponse('notifications', []),
     },
     browseActiveTheme: {
       method: 'GET',
       path: '/themes/active/',
       response: activeThemeResponse(),
+    },
+    browseThemes: {
+      method: 'GET',
+      path: '/themes/',
+      response: defaultThemesResponse(),
     },
     editUserPreferences: {
       method: 'PUT',

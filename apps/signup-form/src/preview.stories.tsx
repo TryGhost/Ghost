@@ -1,10 +1,10 @@
 import * as i18nLibModule from '@tryghost/i18n/registry/signup-form';
-import React, { useState } from 'react';
-import pages, { Page, PageName } from './pages';
-import { AppContextProvider, SignupFormOptions } from './app-context';
+import pages, { type Page, type PageName } from './pages';
+import { AppContextProvider, type SignupFormOptions } from './app-context';
 import { ContentBox } from './components/content-box';
+import { useState } from 'preact/hooks';
 import { userEvent, within } from 'storybook/test';
-import type { Meta, StoryObj } from '@storybook/react-vite';
+import type { Meta, StoryObj } from '@storybook/preact-vite';
 
 const i18nLib = 'default' in i18nLibModule ? Reflect.get(i18nLibModule, 'default') : i18nLibModule;
 
@@ -13,7 +13,7 @@ type PreviewProps = SignupFormOptions & {
   simulateApiError: boolean;
 };
 
-const Preview: React.FC<PreviewProps> = ({ simulateApiError, pageBackgroundColor, ...options }) => {
+const Preview = ({ simulateApiError, pageBackgroundColor, ...options }: PreviewProps) => {
   const [page, setPage] = useState<Page>({
     name: 'FormPage',
     data: {},

@@ -42,7 +42,7 @@ export type Config = {
     siteId?: string;
     forceUpgrade?: boolean;
     limits?: {
-      // Partially typed, see https://github.com/TryGhost/SDK/tree/main/packages/limit-service
+      // Partially typed API limits; see packages/limit-service/src/config.ts and src/types.ts for service definitions.
       customIntegrations?: {
         disabled: boolean;
       };
@@ -56,6 +56,11 @@ export type Config = {
       };
       newsletters?: {
         max?: number;
+        error?: string;
+      };
+      emails?: {
+        maxPeriodic?: number;
+        disabled?: boolean;
         error?: string;
       };
       customThemes?: {
@@ -74,6 +79,10 @@ export type Config = {
         disabled: boolean;
         error?: string;
       };
+      limitCustomFields?: {
+        disabled: boolean;
+        error?: string;
+      };
       publicSiteAccess?: {
         disabled: boolean;
         // Copy shown in the pre-launch banner when public site access is disabled.
@@ -82,6 +91,9 @@ export type Config = {
         title?: string; // Banner heading
         upgradeUrl?: string; // Destination for the banner's upgrade button
       };
+    };
+    subscription?: {
+      start?: string; // ISO date that anchors monthly periodic limits
     };
     billing?: {
       enabled?: boolean;
@@ -99,6 +111,15 @@ export type Config = {
         logoDark?: string; // Logo shown in dark mode, falls back to logo
         logoAlt?: string; // Alt text for the logo
       };
+      // Payment-failure (dunning) state for the site's hosting subscription.
+      // Managed hosting providers set this while a payment is outstanding;
+      // Admin escalates from a warning banner to a locked overlay based on
+      // the position within the paymentFailedAt -> suspendsAt window.
+      dunning?: {
+        active?: boolean; // Only true while the payment is outstanding
+        paymentFailedAt?: string; // ISO date the payment first failed (window start)
+        suspendsAt?: string; // ISO date the host will suspend the site (window end)
+      };
       // Search entries for billing paths, defined in host config (hostSettings.billing.search: {})
       search?: {
         groupName?: string;
@@ -114,18 +135,34 @@ export type Config = {
       enabled?: boolean;
       sendingDomain?: string;
     };
+    emailVerification?: {
+      // Shown in place of the default hold copy while the host reviews the account
+      emailSendingDisabledMessage?: string;
+    };
     export?: {
-      // Host archive webhook — when set, "Export data" delivers the
-      // archive by email instead of a synchronous download
-      generate_archive_url?: string;
+      // Host export webhook — when set, "Export data" delivers the
+      // export by email instead of a synchronous download
+      webhookUrl?: string;
     };
   };
   security?: {
     staffDeviceVerification?: boolean;
+    // directory serving the Koenig embed renderer on a separate origin
+    embedPreviewUrl?: string;
   };
   featurebase?: {
     enabled?: boolean;
     organization?: string;
+  };
+  docsbot?: {
+    enabled?: boolean;
+    id?: string;
+  };
+  clientExtensions?: {
+    script?: {
+      container?: string;
+      src?: string;
+    };
   };
   // Config is relatively fluid, so we only type used properties above and still support arbitrary property access when needed
   [key: string]: JSONValue | undefined;

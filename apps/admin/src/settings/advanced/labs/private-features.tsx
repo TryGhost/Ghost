@@ -2,7 +2,8 @@ import FeatureToggle from './feature-toggle';
 import LabItem from './lab-item';
 import React, { useEffect, useState } from 'react';
 import { ActionList } from '@tryghost/shade/components';
-import { HostLimitError, useLimiter } from '@/settings/hooks/use-limiter';
+import { HostLimitError } from '@tryghost/admin-x-framework/errors';
+import { useLimiter } from '@tryghost/admin-x-framework/hooks';
 
 type Feature = {
   title: string;
@@ -17,6 +18,16 @@ const features: Feature[] = [
     description:
       'Toggle the automations beta. Unexpected problems can occur if you turn this off after previously turning it on.',
     flag: 'automations',
+  },
+  {
+    title: 'Archive automations',
+    description: 'Let members archive and restore automations.',
+    flag: 'automationsArchive',
+  },
+  {
+    title: 'Automations per tier',
+    description: 'Allow automations to be configured for individual tiers.',
+    flag: 'automationsPerTier',
   },
   {
     title: 'Automation run analytics',
@@ -39,14 +50,9 @@ const features: Feature[] = [
     flag: 'csvContentImporter',
   },
   {
-    title: 'Admin UI Refresh',
-    description: 'Enable Admin UI refresh (exploration)',
-    flag: 'adminUIRefresh',
-  },
-  {
-    title: 'Tags X',
-    description: 'Enables the new Tags UI',
-    flag: 'tagsX',
+    title: 'Admin 7 · Settings navigation',
+    description: 'Preview Settings in the Admin navigation shell.',
+    flag: 'admin7settings',
   },
   {
     title: 'Email Unique ID',
@@ -72,21 +78,22 @@ const features: Feature[] = [
     flag: 'getHelperDeduplication',
   },
   {
-    title: 'Navigation icons & visibility',
-    description:
-      'Add icons and member-visibility controls to navigation menu items. Requires theme support to render icons.',
-    flag: 'navigationIcons',
-  },
-  {
-    title: 'React tag details',
-    description:
-      'Renders the tag detail screen (/tags/:slug) from the React app instead of the Ember screen. Gates the migration behind a runtime toggle so we can compare both implementations.',
-    flag: 'tagDetailsReact',
-  },
-  {
     title: 'Member custom fields',
-    description: 'Let admins create and manage custom field definitions for members',
+    description:
+      'Let admins create and manage custom field definitions for members, and choose which field each Stripe checkout answer is stored in',
     flag: 'membersCustomFields',
+  },
+  {
+    title: 'Stripe checkout collection',
+    description:
+      'Let admins turn on shipping address, phone number and tax number collection for a tier, asked by Stripe checkout and stored against the member',
+    flag: 'stripeCheckoutCollection',
+  },
+  {
+    title: 'Stripe checkout design',
+    description:
+      'Let admins style the Stripe checkout page with their own button color, background color, corners and font',
+    flag: 'stripeCheckoutDesign',
   },
   {
     title: 'Paywall improvements',
@@ -94,22 +101,22 @@ const features: Feature[] = [
     flag: 'paywallImprovements',
   },
   {
-    title: 'Gift subscription durations and delivery',
-    description:
-      'Enables 3 and 6-month gift subscriptions with immediate or scheduled email delivery',
-    flag: 'giftSubCustomization',
-  },
-  {
-    title: 'Self-serve archives',
-    description:
-      'Replaces the individual export buttons with a single "Export data" flow for downloading a full site archive',
-    flag: 'selfServeArchives',
-  },
-  {
     title: 'Machine payments',
     description:
       'Let AI agents pay for access to paid-members markdown (.md) URLs via Stripe Machine Payments Protocol',
     flag: 'machinePayments',
+  },
+  {
+    title: 'Navigation URL suggestions',
+    description:
+      'Suggest pages, posts, offers and Portal links when editing navigation URLs in settings',
+    flag: 'navigationUrlSuggestions',
+  },
+  {
+    title: 'Apps',
+    description:
+      'Install and manage third-party apps that run on their own servers. Early and incomplete.',
+    flag: 'apps',
   },
 ];
 

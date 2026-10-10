@@ -137,10 +137,9 @@ const WebhooksTable: React.FC<{ integration: Integration }> = ({ integration }) 
               </TableCell>
               <TableCell className="w-0 text-right">
                 <Button
-                  className="text-destructive hover:text-destructive"
                   size="sm"
                   type="button"
-                  variant="ghost"
+                  variant="destructive-ghost"
                   onClick={(e) => {
                     e.stopPropagation();
                     handleDelete(webhook.id);

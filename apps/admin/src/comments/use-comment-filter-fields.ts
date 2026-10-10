@@ -1,15 +1,16 @@
-import React, { useMemo } from 'react';
+import { useMemo } from 'react';
 import {
   DATE_OPERATOR_LABELS,
+  FIELD_ICONS,
   RELATIVE_DATE_OPERATOR_LABELS,
   createOperatorOptions,
   createRelativeDateRenderer,
   fieldHasRelativeOperator,
   getTodayInTimezone,
 } from '@/shared/filters';
+import type { FieldIcon } from '@/shared/filters';
 import type { FilterFieldConfig, ValueSource } from '@tryghost/shade/patterns';
-import { LucideIcon } from '@tryghost/shade/utils';
-import { commentFields } from './comment-fields';
+import { COMMENT_FIELD_CATALOG } from './comment-filter-catalog';
 
 interface UseCommentFilterFieldsOptions {
   postValueSource: ValueSource<string>;
@@ -24,25 +25,6 @@ const COMMENT_OPERATOR_LABELS = {
   ...RELATIVE_DATE_OPERATOR_LABELS,
 };
 
-function getFieldIcon(key: string) {
-  switch (key) {
-    case 'author':
-      return React.createElement(LucideIcon.User, { className: 'size-4' });
-    case 'post':
-      return React.createElement(LucideIcon.FileText, { className: 'size-4' });
-    case 'body':
-      return React.createElement(LucideIcon.MessageSquareText, { className: 'size-4' });
-    case 'status':
-      return React.createElement(LucideIcon.Circle, { className: 'size-4' });
-    case 'reported':
-      return React.createElement(LucideIcon.Flag, { className: 'size-4' });
-    case 'created_at':
-      return React.createElement(LucideIcon.Calendar, { className: 'size-4' });
-    default:
-      return undefined;
-  }
-}
-
 export function useCommentFilterFields({
   postValueSource,
   memberValueSource,
@@ -52,7 +34,7 @@ export function useCommentFilterFields({
     const today = getTodayInTimezone(siteTimezone);
 
     return COMMENT_FIELD_ORDER.map((key) => {
-      const field = commentFields[key];
+      const field = COMMENT_FIELD_CATALOG[key];
       const dateConfig =
         key === 'created_at'
           ? {
@@ -66,7 +48,7 @@ export function useCommentFilterFields({
       return {
         key,
         ...field.ui,
-        icon: getFieldIcon(key),
+        icon: FIELD_ICONS[field.ui.icon as FieldIcon],
         operators: createOperatorOptions(field.operators, { labels: COMMENT_OPERATOR_LABELS }),
         ...('options' in field && field.options ? { options: field.options } : {}),
         ...dateConfig,

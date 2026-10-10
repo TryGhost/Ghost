@@ -24,7 +24,8 @@ import { DetailPage } from '@tryghost/shade/page-templates';
 import { DirtyConfirmDialog, PageHeader } from '@tryghost/shade/patterns';
 import { Link, useHandleError, useNavigate, useParams } from '@tryghost/admin-x-framework';
 import { LucideIcon } from '@tryghost/shade/utils';
-import { NotFound } from '@/not-found';
+import { useShade } from '@tryghost/shade/app';
+import { NotFound } from '@/shared/not-found';
 import {
   buildTagSavePayload,
   generateSlugFromName,
@@ -34,7 +35,7 @@ import {
   validateTagDraft,
 } from './tag-detail-edit';
 import { dequal } from 'dequal';
-import { getTagBySlug, useAddTag, useEditTag } from '@tryghost/admin-x-framework/api/tags';
+import { useTagBySlug, useAddTag, useEditTag } from '@tryghost/admin-x-framework/api/tags';
 import { toast } from 'sonner';
 import { useBrowseSite } from '@tryghost/admin-x-framework/api/site';
 import { useUnsavedChangesGuard } from '@/hooks/use-unsaved-changes-guard';
@@ -51,6 +52,7 @@ type TagImageFieldName = 'featureImage' | 'twitterImage' | 'ogImage';
 type SaveStatus = 'idle' | 'pending' | 'success' | 'error';
 
 const TagDetail: React.FC = () => {
+  const { isAdmin7 } = useShade();
   const { tagSlug = '' } = useParams<{ tagSlug: string }>();
   const navigate = useNavigate();
   const handleError = useHandleError();
@@ -58,7 +60,7 @@ const TagDetail: React.FC = () => {
 
   // `include=count.posts` mirrors the Ember route so the delete modal can
   // report how many posts the tag will be removed from.
-  const { data, isLoading, error, refetch } = getTagBySlug(tagSlug, {
+  const { data, isLoading, error, refetch } = useTagBySlug(tagSlug, {
     enabled: !!tagSlug && !isCreating,
     searchParams: { include: 'count.posts' },
     defaultErrorHandler: false,
@@ -391,7 +393,7 @@ const TagDetail: React.FC = () => {
                       </BreadcrumbLink>
                     </BreadcrumbItem>
                     <BreadcrumbSeparator />
-                    <BreadcrumbItem className="gap-2">
+                    <BreadcrumbItem className={isAdmin7 ? 'items-baseline gap-2' : 'gap-2'}>
                       {!isCreating && isLoading ? (
                         <Skeleton className="h-4 w-40" />
                       ) : (
@@ -401,11 +403,16 @@ const TagDetail: React.FC = () => {
                       )}
                       {tag?.visibility === 'internal' && (
                         <Badge
-                          className="px-1 py-px text-[10px] leading-none tracking-wider"
+                          className={
+                            isAdmin7
+                              ? 'leading-none tracking-wider'
+                              : 'px-1 py-px text-[10px] leading-none tracking-wider'
+                          }
                           data-testid="tag-detail-internal-badge"
+                          size={isAdmin7 ? 'md' : 'default'}
                           variant="secondary"
                         >
-                          INTERNAL
+                          {isAdmin7 ? 'Internal' : 'INTERNAL'}
                         </Badge>
                       )}
                     </BreadcrumbItem>
@@ -422,7 +429,7 @@ const TagDetail: React.FC = () => {
                             aria-label="Tag actions"
                             className="size-(--control-height)"
                             size="icon"
-                            variant="outline"
+                            variant="subtle"
                           >
                             <LucideIcon.Ellipsis size={16} />
                           </Button>

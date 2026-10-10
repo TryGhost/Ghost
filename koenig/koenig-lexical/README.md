@@ -16,12 +16,12 @@ Run `pnpm dev` to start the editor in standalone mode for development on http://
 
 All Koenig packages are part of the Ghost monorepo workspace, so no linking is
 needed — run `pnpm dev:lexical` from the monorepo root. That starts the normal
-Ghost dev environment plus the editor's `dev:integrated` target: a rebuild
-watcher for the editor (and kg-default-nodes / kg-default-transforms) and a
-preview server on port 4173 that the dev gateway proxies to Admin's
-`EDITOR_URL`.
+Ghost dev environment plus the editor's `dev:integrated` target, which rebuilds
+the editor (and kg-default-nodes / kg-default-transforms) on every change. In
+this mode Admin's dev server reads the editor's `dist` directly instead of
+pre-bundling it.
 
-Now, if you navigate to Ghost Admin at http://localhost:2368/ghost and open a post, it will use your local version of the editor. Changes to the editor will be reflected inside Ghost Admin after a few seconds - the time for the editor to get rebuilt.
+Now, if you open a post in Ghost Admin (http://localhost:2368/ghost in the main checkout), it uses your local version of the editor. Changes to the editor reach Admin a few seconds later, once the editor has been rebuilt.
 
 ### Specific card setup
 
@@ -92,8 +92,21 @@ Package tests live in `test/unit/` and `test/e2e/`, with shared test helpers in
 - `pnpm test:slowmo` runs headed acceptance tests with a 100ms delay between
   instructions (some tests may fail or time out due to the added delays)
 
+Acceptance tests start their own Vite demo server on port 5185, separate from
+Admin's development server on 5174. They never reuse an existing server or move
+to another port if it is occupied. Set `KOENIG_TEST_PORT` when running tests from
+multiple worktrees, for example `KOENIG_TEST_PORT=5186 pnpm test:acceptance`.
+The port must be an integer between 1 and 65535.
+
+Use `pnpm dev:test` to run the test demo manually on the same configurable port.
+The acceptance runner requires that port to be free, so stop the manual server
+before running tests. For collaboration development, `pnpm dev:multiplayer`
+starts the demo and WebSocket server together; acceptance tests do not start the
+unused WebSocket server.
+
 The acceptance-test commands use these environment variables:
 
+- `KOENIG_TEST_PORT=5186` changes the demo server port.
 - `PLAYWRIGHT_HEADED=true` shows the browser UI.
 - `PLAYWRIGHT_HTML_REPORT=true` generates an HTML report.
 - `PLAYWRIGHT_SLOWMO=100` adds a delay in milliseconds between browser actions.

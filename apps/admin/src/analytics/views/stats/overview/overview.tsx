@@ -11,10 +11,15 @@ import { type GhAreaChartDataItem } from '@tryghost/shade/patterns';
 import { H3 } from '@tryghost/shade/primitives';
 import { LucideIcon, cn, formatNumber } from '@tryghost/shade/utils';
 import { NavbarActions } from '@tryghost/shade/components';
-import { centsToDollars, formatQueryDate, getRangeDates } from '@tryghost/shade/app';
-import { getEffectiveChartRange, sanitizeChartData } from '@/shared/analytics/chart-helpers';
+import {
+  centsToDollars,
+  formatQueryDate,
+  getEffectiveChartRange,
+  getRangeDates,
+  sanitizeChartData,
+} from '@/shared/analytics/chart-helpers';
 import { getAudienceQueryParam } from '@/shared/analytics/audience';
-import { useAppContext } from '@tryghost/admin-x-framework';
+import { usePaidMembersEnabled } from '@tryghost/admin-x-framework/api/settings';
 import { useAnalytics } from '@/analytics/providers/analytics-context';
 import { useAnalyticsData } from '@/shared/analytics/use-analytics-data';
 import { useGrowthStats } from '@/analytics/hooks/use-growth-stats';
@@ -76,7 +81,7 @@ type GrowthChartDataItem = {
 };
 
 const Overview: React.FC = () => {
-  const { appSettings } = useAppContext();
+  const paidMembersEnabled = usePaidMembersEnabled();
   const { range } = useAnalytics();
   const { statsConfig, isLoading: isConfigLoading } = useAnalyticsData();
   const { startDate, endDate, timezone } = getRangeDates(range);
@@ -191,7 +196,7 @@ const Overview: React.FC = () => {
     /* ---------------------------------------------------------------------- */
   // Create chart data based on selected tab
   const mrrChartData = useMemo(() => {
-    if (!appSettings?.paidMembersEnabled || !growthChartData || growthChartData.length === 0) {
+    if (!paidMembersEnabled || !growthChartData || growthChartData.length === 0) {
       return [];
     }
 
@@ -214,7 +219,7 @@ const Overview: React.FC = () => {
     }));
 
     return processedData;
-  }, [growthChartData, range, currencySymbol, appSettings]);
+  }, [growthChartData, range, currencySymbol, paidMembersEnabled]);
 
   /* Calculate KPI values
     /* ---------------------------------------------------------------------- */

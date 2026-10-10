@@ -6,13 +6,18 @@ import { promisify } from 'node:util';
 import React, { ReactNode } from 'react';
 import { FrameworkProvider } from '../../../../src/providers/framework-provider';
 import { useFetchApi } from '../../../../src/utils/api/fetch-api';
-import { TimeoutError } from '../../../../src/utils/errors';
+import { onUpgradeStatus } from '../../../../src/utils/api/upgrade-status';
+import {
+  MaintenanceError,
+  ServerUnreachableError,
+  TimeoutError,
+  VersionMismatchError,
+} from '../../../../src/utils/errors';
 
 const wrapper: React.FC<{ children: ReactNode }> = ({ children }) => (
   <FrameworkProvider
     externalNavigate={() => {}}
     ghostVersion="5.x"
-    sentryDSN=""
     unsplashConfig={{
       Authorization: '',
       'Accept-Version': '',
@@ -20,9 +25,6 @@ const wrapper: React.FC<{ children: ReactNode }> = ({ children }) => (
       'App-Pragma': '',
       'X-Unsplash-Cache': true,
     }}
-    onDelete={() => {}}
-    onInvalidate={() => {}}
-    onUpdate={() => {}}
   >
     {children}
   </FrameworkProvider>
@@ -56,6 +58,18 @@ describe('useFetchApi', () => {
           return;
         }
 
+        if (url.includes('down')) {
+          res.writeHead(503);
+          res.end('Maintenance');
+          return;
+        }
+
+        if (url.includes('version-mismatch')) {
+          res.writeHead(400, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ errors: [{ type: 'VersionMismatchError' }] }));
+          return;
+        }
+
         if (url.includes('slow')) {
           await sleep(100);
         }
@@ -67,6 +81,18 @@ describe('useFetchApi', () => {
           'Access-Control-Allow-Headers': '*',
           'Access-Control-Allow-Credentials': 'true',
         };
+
+        if (url.includes('no-content')) {
+          res.writeHead(204, corsHeaders);
+          res.end();
+          return;
+        }
+
+        if (url.includes('invalid-status') && req.method !== 'OPTIONS') {
+          res.writeHead(999, corsHeaders);
+          res.end();
+          return;
+        }
 
         if (url.includes('yaml')) {
           res.writeHead(200, { 'Content-Type': 'application/yaml', ...corsHeaders });
@@ -178,6 +204,93 @@ describe('useFetchApi', () => {
         retry: false,
       }),
     ).rejects.toBeInstanceOf(TimeoutError);
+  });
+
+  it('resolves a 204 response when upload progress is enabled', async () => {
+    const { result } = renderHook(() => useFetchApi(), { wrapper });
+
+    await expect(
+      result.current(`${baseUrl}/ghost/api/admin/no-content/`, {
+        method: 'POST',
+        body: 'test',
+        retry: false,
+        onUploadProgress: vi.fn(),
+      }),
+    ).resolves.toBeUndefined();
+  });
+
+  it('rejects when an upload response cannot be converted', async () => {
+    const { result } = renderHook(() => useFetchApi(), { wrapper });
+
+    await expect(
+      result.current(`${baseUrl}/ghost/api/admin/invalid-status/`, {
+        retry: false,
+        onUploadProgress: vi.fn(),
+      }),
+    ).rejects.toBeInstanceOf(ServerUnreachableError);
+  });
+
+  describe('upgrade status', () => {
+    let statuses: string[];
+    let unsubscribe: () => void;
+
+    beforeEach(() => {
+      statuses = [];
+      unsubscribe = onUpgradeStatus((status) => statuses.push(status));
+    });
+
+    afterEach(() => {
+      unsubscribe();
+    });
+
+    it('reports a version mismatch from the Ghost API', async () => {
+      const { result } = renderHook(() => useFetchApi(), { wrapper });
+
+      await expect(
+        result.current(`${baseUrl}/ghost/api/admin/version-mismatch/`),
+      ).rejects.toBeInstanceOf(VersionMismatchError);
+
+      expect(statuses).toEqual(['upgrade-required']);
+    });
+
+    it('reports maintenance once the request gives up', async () => {
+      const { result } = renderHook(() => useFetchApi(), { wrapper });
+
+      await expect(
+        result.current(`${baseUrl}/ghost/api/admin/down/`, { retry: false }),
+      ).rejects.toBeInstanceOf(MaintenanceError);
+
+      expect(statuses).toEqual(['maintenance']);
+    });
+
+    it('does not report maintenance that a retry recovers from', async () => {
+      const { result } = renderHook(() => useFetchApi(), { wrapper });
+
+      await result.current(`${baseUrl}/ghost/api/admin/maintenance/`);
+
+      expect(statuses).toEqual([]);
+    });
+
+    it('ignores requests outside the Ghost API', async () => {
+      const { result } = renderHook(() => useFetchApi(), { wrapper });
+
+      await expect(result.current(`${baseUrl}/version-mismatch/`)).rejects.toBeInstanceOf(
+        VersionMismatchError,
+      );
+
+      expect(statuses).toEqual([]);
+    });
+
+    it('stops reporting once unsubscribed', async () => {
+      unsubscribe();
+      const { result } = renderHook(() => useFetchApi(), { wrapper });
+
+      await expect(
+        result.current(`${baseUrl}/ghost/api/admin/version-mismatch/`),
+      ).rejects.toBeInstanceOf(VersionMismatchError);
+
+      expect(statuses).toEqual([]);
+    });
   });
 
   it('emits upload progress when onUploadProgress is provided', async () => {

@@ -18,7 +18,7 @@ const FocusState = () => {
 };
 
 const Harness = ({ showEditor = true }: { showEditor?: boolean }) => (
-  <ShadeProvider darkMode={false} fetchKoenigLexical={null}>
+  <ShadeProvider darkMode={false}>
     {showEditor && (
       <CodeEditor
         ariaLabel="Code editor"
@@ -48,7 +48,7 @@ describe('CodeEditor', () => {
 
   it('associates the visible title and renders as one layout item', async () => {
     render(
-      <ShadeProvider darkMode={false} fetchKoenigLexical={null}>
+      <ShadeProvider darkMode={false}>
         <div data-testid="editor-layout">
           <CodeEditor extensions={[]} title="HTML editor" value="<p>Hello</p>" />
         </div>

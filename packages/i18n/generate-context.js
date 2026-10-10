@@ -1,5 +1,8 @@
-const fs = require('fs').promises;
-const path = require('path');
+import { createRequire } from 'node:module';
+import fs from 'node:fs/promises';
+import path from 'node:path';
+
+const require = createRequire(import.meta.url);
 
 const BASE_PATH = './locales/en';
 const CONTEXT_FILE = './locales/context.json';

@@ -4,10 +4,15 @@ import { useFeatureFlag } from '../../../src/hooks/use-feature-flag';
 vi.mock('../../../src/api/config', () => ({
   useBrowseConfig: vi.fn(),
 }));
+vi.mock('../../../src/providers/feature-flag-overrides-context', () => ({
+  useFeatureFlagOverrides: vi.fn(),
+}));
 
 import { useBrowseConfig } from '../../../src/api/config';
+import { useFeatureFlagOverrides } from '../../../src/providers/feature-flag-overrides-context';
 
 const mockUseBrowseConfig = useBrowseConfig as any;
+const mockUseFeatureFlagOverrides = vi.mocked(useFeatureFlagOverrides);
 
 const withLabs = (labs: Record<string, unknown>) => ({
   data: { config: { labs } },
@@ -16,6 +21,7 @@ const withLabs = (labs: Record<string, unknown>) => ({
 describe('useFeatureFlag', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockUseFeatureFlagOverrides.mockReturnValue({ enabledFlags: [] });
   });
 
   it('returns true when the flag is explicitly true', () => {
@@ -31,7 +37,23 @@ describe('useFeatureFlag', () => {
 
     renderHook(() => useFeatureFlag('myFlag'));
 
-    expect(mockUseBrowseConfig).toHaveBeenCalledWith({ refetchOnMount: false });
+    expect(mockUseBrowseConfig).toHaveBeenCalledWith({
+      refetchOnMount: false,
+      requestOptions: undefined,
+    });
+  });
+
+  it('forwards request options to the config query', () => {
+    mockUseBrowseConfig.mockReturnValue(withLabs({ myFlag: true }));
+
+    renderHook(() =>
+      useFeatureFlag('myFlag', { requestOptions: { sessionExpiryRedirect: false } }),
+    );
+
+    expect(mockUseBrowseConfig).toHaveBeenCalledWith({
+      refetchOnMount: false,
+      requestOptions: { sessionExpiryRedirect: false },
+    });
   });
 
   it('returns false when the flag is false', () => {
@@ -60,6 +82,24 @@ describe('useFeatureFlag', () => {
 
   it('returns false when the flag value is truthy but not boolean true', () => {
     mockUseBrowseConfig.mockReturnValue(withLabs({ myFlag: 'true' }));
+
+    const { result } = renderHook(() => useFeatureFlag('myFlag'));
+
+    expect(result.current).toBe(false);
+  });
+
+  it('enables a flag when the session override enables it', () => {
+    mockUseBrowseConfig.mockReturnValue(withLabs({ myFlag: false }));
+    mockUseFeatureFlagOverrides.mockReturnValue({ enabledFlags: ['myFlag'] });
+
+    const { result } = renderHook(() => useFeatureFlag('myFlag'));
+
+    expect(result.current).toBe(true);
+  });
+
+  it('returns false when the session override does not enable the flag', () => {
+    mockUseBrowseConfig.mockReturnValue(withLabs({ myFlag: false }));
+    mockUseFeatureFlagOverrides.mockReturnValue({ enabledFlags: ['otherFlag'] });
 
     const { result } = renderHook(() => useFeatureFlag('myFlag'));
 

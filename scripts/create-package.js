@@ -6,6 +6,7 @@ import { join, dirname, relative, resolve, sep } from 'node:path';
 
 import { ROOT_DIR } from './lib/constants.js';
 import { applyPackageTemplateTokens, isValidPackageName } from './lib/package-template.js';
+import { addPrivatePackageToVersioningIgnore } from './lib/versioning-ignore.js';
 
 const TEMPLATE_DIR = join(ROOT_DIR, 'packages', '_template');
 const PACKAGES_DIR = join(ROOT_DIR, 'packages');
@@ -111,6 +112,9 @@ for (const file of await walk(targetDir)) {
 
 // Clean any stray build artifacts the template dir may have accumulated.
 await rm(join(targetDir, 'build'), { recursive: true, force: true });
+
+// Private packages must be excluded from `pnpm version` (see check-versioning-ignore.js).
+await addPrivatePackageToVersioningIgnore(`@tryghost/${name}`);
 
 process.stdout.write(
   `\n\x1b[32m✓ Created @tryghost/${name}\x1b[0m at ${packageDir} (ESM-only)\n\nNext steps:\n  1. pnpm install                     # link the new workspace member\n  2. cd ${packageDir} && pnpm test\n  3. Add real code in ${packageDir}/src/index.ts\n\n`,

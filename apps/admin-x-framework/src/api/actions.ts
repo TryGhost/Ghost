@@ -147,7 +147,6 @@ export const getLinkTarget = (action: Action): InternalLink | ExternalLink | und
         return {
           isExternal: true,
           route: `editor/${resourceType}/${action.resource.id}`,
-          models: [resourceType, action.resource.id],
         };
       case 'integration':
         if (!action.resource || !action.resource.id) {
@@ -159,12 +158,8 @@ export const getLinkTarget = (action: Action): InternalLink | ExternalLink | und
         if (!action.resource || !action.resource.id) {
           return;
         }
-        // replace with Settings route once Offers X GA is released
-        return {
-          isExternal: true,
-          route: `offers/${action.resource.id}`,
-          models: [action.resource.id],
-        };
+
+        return { route: `offers/edit/${action.resource.id}` };
       case 'tag':
         if (!action.resource || !action.resource.slug) {
           return;
@@ -172,8 +167,7 @@ export const getLinkTarget = (action: Action): InternalLink | ExternalLink | und
 
         return {
           isExternal: true,
-          route: 'tag',
-          models: [action.resource.slug],
+          route: `tags/${action.resource.slug}`,
         };
       case 'product':
         return { route: 'tiers' };
@@ -204,6 +198,10 @@ export const getActionTitle = (action: Action) => {
     resourceType = 'security action';
   } else if (resourceType === 'member_custom_field') {
     resourceType = 'custom field';
+  } else if (resourceType === 'app_installation') {
+    resourceType = 'app';
+  } else if (resourceType === 'stripe_checkout_config') {
+    resourceType = 'checkout settings';
   }
 
   // Because a `page` and `post` both use the same model, we store the
@@ -226,6 +224,8 @@ export const getActionTitle = (action: Action) => {
     actionName = 'reset authentication';
   } else if (actionName === 'custom_fields_edited') {
     actionName = 'custom fields edited';
+  } else if (actionName === 'changes_approved') {
+    actionName = 'changes approved';
   }
 
   if (action.context?.count && (action.context?.count as number) > 1) {

@@ -1,6 +1,6 @@
 import { existsSync } from 'node:fs';
 import { join, relative } from 'node:path';
-import { execSync } from 'node:child_process';
+import { execFileSync, execSync } from 'node:child_process';
 import { parseArgs as baseParseArgs } from 'node:util';
 import semver from 'semver';
 import camelcaseKeys from 'camelcase-keys';
@@ -10,10 +10,9 @@ import { ROOT_DIR } from './lib/constants.js';
 import { resolveBaseTag } from './lib/resolve-base-tag.js';
 import { readJsonSync, writeJsonSync } from './lib/utils.js';
 
-const GHOST_CORE_PKG = join(ROOT_DIR, 'ghost/core/package.json');
-const GHOST_ADMIN_PKG = join(ROOT_DIR, 'apps/ember-admin/package.json');
-const CASPER_DIR = join(ROOT_DIR, 'ghost/core/content/themes/casper');
-const SOURCE_DIR = join(ROOT_DIR, 'ghost/core/content/themes/source');
+const GHOST_CORE_PKG = join(ROOT_DIR, 'ghost/package.json');
+const CASPER_DIR = join(ROOT_DIR, 'ghost/content/themes/casper');
+const SOURCE_DIR = join(ROOT_DIR, 'ghost/content/themes/source');
 
 // Generous enough to cover a full CI cycle (~15m) plus a retarget onto a newer
 // commit after the first run gets cancelled by a merge.
@@ -40,6 +39,13 @@ function parseArgs() {
     },
   });
 
+  // `branch` is a workflow_dispatch input and reaches git as an argument. Git
+  // accepts far more than this (`git check-ref-format` passes shell payloads),
+  // so hold it to a plain ref name that can't be read as an option either.
+  if (!/^[A-Za-z0-9][A-Za-z0-9._/-]*$/.test(values.branch)) {
+    throw new Error(`Invalid branch name: ${values.branch}`);
+  }
+
   return camelcaseKeys(values);
 }
 
@@ -48,6 +54,31 @@ function parseArgs() {
 function run(cmd, opts = {}) {
   const result = execSync(cmd, { cwd: ROOT_DIR, encoding: 'utf8', ...opts });
   return result.trim();
+}
+
+// No shell, so refs reach git as literal argv entries rather than syntax.
+function git(...args) {
+  return execFileSync('git', args, { cwd: ROOT_DIR, encoding: 'utf8' }).trim();
+}
+
+// Single-quote a path for the shell.
+function quoteArg(path) {
+  return `'${path.replace(/'/g, `'\\''`)}'`;
+}
+
+// Parse `git status --porcelain=v1 -z`. R/C entries append a source path field
+// (destination first), so skip it.
+function parsePorcelainPaths(porcelain) {
+  const fields = porcelain.split('\0').filter(Boolean);
+  const entries = [];
+  for (let i = 0; i < fields.length; i++) {
+    const status = fields[i].slice(0, 2);
+    entries.push({ path: fields[i].slice(3), deleted: status.includes('D') });
+    if (status[0] === 'R' || status[0] === 'C') {
+      i += 1;
+    }
+  }
+  return entries;
 }
 
 function readPkgVersion(pkgPath) {
@@ -88,12 +119,24 @@ function applyChangesetVersions() {
 
 function detectBumpType(baseTag, bumpType) {
   // Check for new migration files
-  const migrationsPath = 'ghost/core/core/server/data/migrations/versions/';
+  const migrationsPath = 'ghost/core/server/data/migrations/versions/';
   try {
-    const addedFiles = run(
-      `git diff --diff-filter=A --name-only ${baseTag} HEAD -- ${migrationsPath}`,
-    );
-    if (addedFiles?.includes('core/')) {
+    // No pathspec: a moved migrations directory only reads as renames when the
+    // old paths are in the diff. A rename still counts as new unless it keeps its
+    // path within the versions directory.
+    const versionsRelative = (file) => file.split('/migrations/versions/')[1] ?? null;
+    const changes = run(`git diff --name-status --find-renames ${baseTag} HEAD`);
+    const added = changes
+      .split('\n')
+      .map((line) => line.split('\t'))
+      .some(
+        ([status, from, to]) =>
+          (status === 'A' && from.startsWith(migrationsPath)) ||
+          (status?.startsWith('R') &&
+            to.startsWith(migrationsPath) &&
+            versionsRelative(from) !== versionsRelative(to)),
+      );
+    if (added) {
       log('New migrations detected');
       if (bumpType === 'auto') {
         log('Auto-detecting: bumping to minor');
@@ -166,7 +209,7 @@ async function fetchRequiredCheck(commit, token) {
 }
 
 function remoteHead(branch) {
-  const output = run(`git ls-remote origin refs/heads/${branch}`);
+  const output = git('ls-remote', 'origin', `refs/heads/${branch}`);
   return output.split(/\s/)[0] || null;
 }
 
@@ -174,13 +217,13 @@ function remoteHead(branch) {
 // means the branch was rewritten or we have local commits, and silently
 // resetting would drop work.
 function fastForwardTo(branch, sha) {
-  run(`git fetch origin ${branch}`);
+  git('fetch', 'origin', branch);
   try {
-    run(`git merge-base --is-ancestor HEAD ${sha}`);
+    git('merge-base', '--is-ancestor', 'HEAD', sha);
   } catch {
     return false;
   }
-  run(`git reset --hard ${sha}`);
+  git('reset', '--hard', sha);
   return true;
 }
 
@@ -297,17 +340,33 @@ async function runPackagesOnlyRelease(opts) {
   log(`Branch: ${opts.branch}`);
   log(`Dry run: ${opts.dryRun}`);
 
+  // Release runs on a fresh CI checkout. Bail on a dirty tree so unrelated
+  // changes can't ride along in the format + commit below.
+  if (run('git status --porcelain=v1 -z')) {
+    throw new Error('Working tree is not clean; refusing to release');
+  }
+
   logStep('Applying changeset versions to publishable packages');
   applyChangesetVersions();
 
   // version -r writes package.json bumps, rewrites workspace ranges, removes
   // consumed changesets, and may touch the lockfile. Nothing staged means
   // there were no pending changesets to release.
-  const changes = run('git status --porcelain');
+  const changes = run('git status --porcelain=v1 -z');
   if (!changes) {
     log('No pending package changes to release');
     console.log('\n✓ Nothing to publish');
     return;
+  }
+
+  // Format only touched files so oxfmt doesn't reformat the whole repo.
+  const filesToFormat = parsePorcelainPaths(changes)
+    .filter((f) => !f.deleted)
+    .map((f) => f.path);
+
+  logStep('Formatting changed files');
+  if (filesToFormat.length) {
+    run(`pnpm format ${filesToFormat.map(quoteArg).join(' ')}`);
   }
 
   logStep('Committing package versions');
@@ -418,7 +477,6 @@ async function main() {
   // 4. Bump versions
   logStep(`Bumping version to ${newVersion}`);
   writePkgVersion(GHOST_CORE_PKG, newVersion);
-  writePkgVersion(GHOST_ADMIN_PKG, newVersion);
 
   // 4b. Consume changesets → version the publishable workspace packages
   // (kg-*, packages/*, ...). These changes land in the Ghost release commit
@@ -428,7 +486,7 @@ async function main() {
   applyChangesetVersions();
 
   // 5. Commit and tag
-  // Stage everything: the two Ghost manifests plus whatever `pnpm version -r`
+  // Stage everything: the Ghost manifest plus whatever `pnpm version -r`
   // touched (package.jsons, workspace-range rewrites, removed changesets,
   // pnpm-lock.yaml). Theme submodule bumps are already committed above.
   run('git add -A');
@@ -449,15 +507,14 @@ async function main() {
 
   // 7. Advance to next RC
   // Default to the next patch RC. If a migration lands during the cycle,
-  // ghost/core/bin/create-migration.js promotes this to the next minor RC.
+  // ghost/bin/create-migration.js promotes this to the next minor RC.
   // detectBumpType resolves the actual bump (patch vs minor) at the next release.
   logStep('Advancing to next RC');
   const nextPatch = semver.inc(newVersion, 'patch');
   const nextRc = `${nextPatch}-rc.0`;
   log(`Next RC: ${nextRc}`);
   writePkgVersion(GHOST_CORE_PKG, nextRc);
-  writePkgVersion(GHOST_ADMIN_PKG, nextRc);
-  run(`git add ${relative(ROOT_DIR, GHOST_CORE_PKG)} ${relative(ROOT_DIR, GHOST_ADMIN_PKG)}`);
+  run(`git add ${relative(ROOT_DIR, GHOST_CORE_PKG)}`);
   run(`git commit -m "Bumped version to ${nextRc}"`);
 
   if (opts.dryRun) {

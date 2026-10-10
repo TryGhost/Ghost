@@ -1,7 +1,6 @@
 import AutomationEditor from './editor';
 import React from 'react';
-import { AppProvider } from '@tryghost/admin-x-framework';
-import type { AppSettings } from '@tryghost/admin-x-framework';
+import { TRIGGER_CANVAS_ID } from './components/canvas/nodes';
 import { MAX_AUTOMATION_ACTIONS } from '@tryghost/admin-x-framework/api/automations';
 import type {
   AutomationActionLinksResponseType,
@@ -23,22 +22,24 @@ const { mockToastError } = vi.hoisted(() => ({
 const NON_EMPTY_EMAIL_LEXICAL =
   '{"root":{"children":[{"type":"paragraph","children":[{"type":"text","text":"Welcome email body"}]}]}}';
 
-const createAppSettings = (
-  analyticsOverrides: Partial<AppSettings['analytics']> = {},
-): AppSettings => ({
-  paidMembersEnabled: true,
-  newslettersEnabled: true,
-  analytics: {
-    emailTrackClicks: true,
+// `undefined` mirrors the selector hooks' tri-state: settings not loaded yet.
+const mockEmailTracking = vi.hoisted(
+  (): { emailTrackOpens: boolean | undefined; emailTrackClicks: boolean | undefined } => ({
     emailTrackOpens: true,
-    membersTrackSources: true,
-    outboundLinkTagging: true,
-    webAnalytics: true,
-    ...analyticsOverrides,
-  },
-});
+    emailTrackClicks: true,
+  }),
+);
 
-let mockAppSettings: AppSettings | undefined;
+vi.mock('@tryghost/admin-x-framework/api/settings', async () => {
+  const actual = await vi.importActual<typeof import('@tryghost/admin-x-framework/api/settings')>(
+    '@tryghost/admin-x-framework/api/settings',
+  );
+  return {
+    ...actual,
+    useEmailTrackOpens: () => mockEmailTracking.emailTrackOpens,
+    useEmailTrackClicks: () => mockEmailTracking.emailTrackClicks,
+  };
+});
 
 vi.mock('sonner', () => ({
   toast: {
@@ -197,8 +198,20 @@ vi.mock('@tryghost/admin-x-framework/api/automations', async () => {
     useBrowseAutomationActionLinks: (...args: unknown[]) =>
       mockUseBrowseAutomationActionLinks(...args),
     useEditAutomation: () => mockEditMutation,
+    useAddAutomation: () => ({ mutate: vi.fn() }),
+    useReadAutomationPerformanceStats: () => ({ isFetching: true }),
   };
 });
+
+// The virtualized run list requires browser layout; its behavior is covered by acceptance tests.
+vi.mock('./components/canvas/run-list', () => ({ RunList: () => null }));
+
+const mockStats = vi.hoisted(
+  (): { current: { endpoint: string } | undefined; loaded: boolean } => ({
+    current: undefined,
+    loaded: true,
+  }),
+);
 
 const mockLabs = vi.hoisted((): { current: Record<string, boolean> } => ({ current: {} }));
 
@@ -208,7 +221,11 @@ vi.mock('@tryghost/admin-x-framework/api/config', async () => {
   );
   return {
     ...actual,
-    useBrowseConfig: () => ({ data: { config: { labs: mockLabs.current } } }),
+    useBrowseConfig: () => ({
+      data: mockStats.loaded
+        ? { config: { labs: mockLabs.current, stats: mockStats.current } }
+        : undefined,
+    }),
   };
 });
 
@@ -374,7 +391,10 @@ vi.mock('@xyflow/react', async () => {
 const automationDetail: AutomationDetail = {
   id: 'automation-id-1',
   slug: 'member-welcome-email-free',
+  trigger_tier_scope: 'free',
+  trigger_tier_ids: null,
   name: 'Free member welcome flow',
+  description: 'Welcome new free members.',
   status: 'active',
   created_at: '2026-05-05T00:00:00.000Z',
   updated_at: '2026-05-05T00:00:00.000Z',
@@ -412,11 +432,7 @@ const renderEditor = (initialEntries = ['/automations/automation-id-1']) => {
 
   return {
     router,
-    ...render(
-      <AppProvider appSettings={mockAppSettings}>
-        <RouterProvider router={router} />
-      </AppProvider>,
-    ),
+    ...render(<RouterProvider router={router} />),
   };
 };
 
@@ -507,7 +523,10 @@ describe('AutomationEditor', () => {
     mockEditMutation.variables = undefined;
     mockToastError.mockReset();
     mockLabs.current = {};
-    mockAppSettings = createAppSettings();
+    mockStats.current = { endpoint: 'https://api.tinybird.test' };
+    mockStats.loaded = true;
+    mockEmailTracking.emailTrackOpens = true;
+    mockEmailTracking.emailTrackClicks = true;
   });
 
   it('renders the loading state while the automation is fetching', () => {
@@ -536,6 +555,7 @@ describe('AutomationEditor', () => {
     const { router } = renderEditor();
 
     expect(mockUseReadAutomation).toHaveBeenCalledWith('automation-id-1', {
+      enabled: true,
       defaultErrorHandler: false,
       refetchOnMount: 'always',
     });
@@ -766,7 +786,8 @@ describe('AutomationEditor', () => {
     'shows a muted Off for untracked email metrics when opens=$emailTrackOpens and clicks=$emailTrackClicks',
     ({ emailTrackOpens, emailTrackClicks }) => {
       mockLabs.current = { automationAnalytics: true };
-      mockAppSettings = createAppSettings({ emailTrackOpens, emailTrackClicks });
+      mockEmailTracking.emailTrackOpens = emailTrackOpens;
+      mockEmailTracking.emailTrackClicks = emailTrackClicks;
       mockAutomationWithEmailStats();
 
       renderEditor();
@@ -804,9 +825,10 @@ describe('AutomationEditor', () => {
     },
   );
 
-  it('treats unresolved app settings as untracked', () => {
+  it('treats unresolved tracking settings as untracked', () => {
     mockLabs.current = { automationAnalytics: true };
-    mockAppSettings = undefined;
+    mockEmailTracking.emailTrackOpens = undefined;
+    mockEmailTracking.emailTrackClicks = undefined;
     mockAutomationWithEmailStats();
 
     renderEditor();
@@ -1018,7 +1040,7 @@ describe('AutomationEditor', () => {
 
   it('hides clicked links and skips the request when click tracking is off', () => {
     mockLabs.current = { automationAnalytics: true };
-    mockAppSettings = createAppSettings({ emailTrackClicks: false });
+    mockEmailTracking.emailTrackClicks = false;
     mockAutomationWithEmailStats();
 
     renderEditor();
@@ -1037,6 +1059,141 @@ describe('AutomationEditor', () => {
     expect(mockUseBrowseAutomationActionLinks).not.toHaveBeenCalled();
     fireEvent.click(screen.getByRole('button', { name: 'Wait: 1 day' }));
     expect(mockUseBrowseAutomationActionLinks).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    { status: 'inactive', label: 'Save', nextStatus: 'inactive' },
+    { status: 'archived', label: 'Save', nextStatus: 'archived' },
+    { status: 'archived', label: 'Publish', nextStatus: 'active' },
+    { status: 'inactive', label: 'Publish', nextStatus: 'active' },
+    { status: 'active', label: 'Publish changes', nextStatus: 'active' },
+    { status: 'active', label: 'Turn off', nextStatus: 'inactive' },
+  ] as const)('saves settings only on explicit $label', async ({ status, label, nextStatus }) => {
+    mockLabs.current = { automationRunAnalytics: true, automationsPerTier: true };
+    mockUseReadAutomation.mockReturnValue({
+      data: { automations: [{ ...automationDetail, status }] },
+      isLoading: false,
+      isError: false,
+    });
+    mockStats.current = undefined;
+    renderEditor();
+    fireEvent.click(screen.getByRole('button', { name: 'Show automation sidebar' }));
+    fireEvent.change(screen.getByRole('textbox', { name: 'Name' }), {
+      target: { value: 'New name' },
+    });
+    fireEvent.change(screen.getByRole('textbox', { name: 'Description' }), {
+      target: { value: 'New description' },
+    });
+    expect(mockEditMutation.mutate).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole('button', { name: 'Hide automation sidebar' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Show automation sidebar' }));
+    expect(screen.getByRole('textbox', { name: 'Name' })).toHaveValue('New name');
+    fireEvent.click(screen.getByRole('button', { name: label }));
+    if (label !== 'Save') {
+      const dialog = await screen.findByRole('alertdialog');
+      fireEvent.click(within(dialog).getByRole('button', { name: label }));
+    }
+    expect(mockEditMutation.mutate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        name: 'New name',
+        description: 'New description',
+        status: nextStatus,
+      }),
+      expect.any(Object),
+    );
+    const [payload, options] = mockEditMutation.mutate.mock.calls[0];
+    act(() => options.onSuccess?.({ automations: [{ ...automationDetail, ...payload }] }));
+    expect(screen.getByRole('textbox', { name: 'Name' })).toHaveValue('New name');
+    switch (nextStatus) {
+      case 'active':
+        expect(screen.getByRole('button', { name: 'Published' })).toBeDisabled();
+        break;
+      case 'inactive':
+      case 'archived':
+        expect(screen.getByRole('button', { name: 'Save' })).toBeDisabled();
+        break;
+      default: {
+        const _exhaustive: never = nextStatus;
+        throw new Error(`Unexpected nextStatus: ${String(_exhaustive)}`);
+      }
+    }
+  });
+
+  it.each(['', '   '])('blocks saving blank name %j but allows empty description', (name) => {
+    mockLabs.current = { automationRunAnalytics: true, automationsPerTier: true };
+    mockUseReadAutomation.mockReturnValue({
+      data: { automations: [{ ...automationDetail, status: 'inactive' }] },
+      isLoading: false,
+      isError: false,
+    });
+    mockStats.current = undefined;
+    renderEditor();
+    fireEvent.click(screen.getByRole('button', { name: 'Show automation sidebar' }));
+    const input = screen.getByRole('textbox', { name: 'Name' });
+    fireEvent.change(input, { target: { value: name } });
+    fireEvent.change(screen.getByRole('textbox', { name: 'Description' }), {
+      target: { value: '' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+    expect(input).toHaveAttribute('aria-invalid', 'true');
+    expect(mockEditMutation.mutate).not.toHaveBeenCalled();
+    fireEvent.change(input, { target: { value: 'Valid name' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+    expect(mockEditMutation.mutate).toHaveBeenCalledWith(
+      expect.objectContaining({ name: 'Valid name', description: '' }),
+      expect.any(Object),
+    );
+  });
+
+  it('hides the Performance tab when run analytics is disabled', () => {
+    mockLabs.current = { automationRunAnalytics: false, automationsPerTier: true };
+    mockUseReadAutomation.mockReturnValue({
+      data: { automations: [automationDetail] },
+      isLoading: false,
+      isError: false,
+    });
+
+    renderEditor();
+    fireEvent.click(screen.getByRole('button', { name: 'Show automation sidebar' }));
+
+    expect(screen.queryByRole('tab', { name: 'Performance' })).not.toBeInTheDocument();
+  });
+
+  it.each([false, true])(
+    'keeps editing without performance when stats are unavailable (config loaded: %s)',
+    (loaded) => {
+      mockLabs.current = { automationRunAnalytics: true };
+      mockStats.current = undefined;
+      mockStats.loaded = loaded;
+      mockUseReadAutomation.mockReturnValue({
+        data: { automations: [automationDetail] },
+        isLoading: false,
+        isError: false,
+      });
+
+      renderEditor();
+
+      expect(screen.queryByRole('button', { name: /performance/i })).not.toBeInTheDocument();
+      expect(
+        loaded
+          ? screen.getByRole('textbox', { name: 'Wait for' })
+          : screen.getByRole('button', { name: 'Wait: 1 day' }),
+      ).toBeVisible();
+    },
+  );
+
+  it('opens performance for an active automation when run analytics is enabled', () => {
+    mockLabs.current = { automationRunAnalytics: true };
+    mockUseReadAutomation.mockReturnValue({
+      data: { automations: [automationDetail] },
+      isLoading: false,
+      isError: false,
+    });
+
+    renderEditor();
+
+    expect(screen.getByRole('button', { name: 'Hide automation sidebar' })).toBeVisible();
+    expect(screen.getByRole('tab', { name: 'Performance' })).toBeInTheDocument();
   });
 
   it('renders styled canvas zoom controls without the interaction toggle', () => {
@@ -1194,6 +1351,24 @@ describe('AutomationEditor', () => {
     expect(within(sidebar).queryByText('Paid')).not.toBeInTheDocument();
     expect(within(sidebar).queryByRole('button', { name: /Delete/ })).not.toBeInTheDocument();
     expect(within(sidebar).queryByRole('button', { name: /Edit/ })).not.toBeInTheDocument();
+  });
+
+  it('opens the trigger sidebar without member tiers when the automation has no slug', () => {
+    mockUseReadAutomation.mockReturnValue({
+      data: { automations: [{ ...automationDetail, slug: null }] },
+      isLoading: false,
+      isError: false,
+    });
+
+    const { container } = renderEditor();
+
+    const trigger = container.querySelector(`[data-node-id="${TRIGGER_CANVAS_ID}"]`);
+    expect(trigger).not.toBeNull();
+    fireEvent.click(trigger!);
+
+    const sidebar = screen.getByRole('complementary', { name: 'Step details' });
+    expect(within(sidebar).getByRole('heading', { name: 'Member signs up' })).toBeInTheDocument();
+    expect(within(sidebar).queryByText('Members')).not.toBeInTheDocument();
   });
 
   it('opens step properties from the node right-click menu', async () => {
@@ -1532,6 +1707,8 @@ describe('AutomationEditor', () => {
     expect(mockEditMutation.mutate).toHaveBeenCalledWith(
       expect.objectContaining({
         id: 'automation-id-1',
+        name: automationDetail.name,
+        description: automationDetail.description,
         status: 'active',
         actions: expect.arrayContaining([
           expect.objectContaining({
@@ -1707,7 +1884,7 @@ describe('AutomationEditor', () => {
     ).toBeDisabled();
   });
 
-  it('rejects non-decimal wait editor values', () => {
+  it('reduces wait editor values to digits and rejects out-of-range ones', () => {
     mockUseReadAutomation.mockReturnValue({
       data: { automations: [automationDetail] },
       isLoading: false,
@@ -1720,7 +1897,19 @@ describe('AutomationEditor', () => {
     const sidebar = screen.getByRole('complementary', { name: 'Step details' });
     const waitInput = within(sidebar).getByDisplayValue('1');
 
-    for (const value of ['2e1', '+2']) {
+    for (const [typed, kept] of [
+      ['2e1', '21'],
+      ['+2', '2'],
+      ['1.5', '15'],
+      ['abc', ''],
+    ]) {
+      fireEvent.change(waitInput, { target: { value: typed } });
+      expect(waitInput).toHaveValue(kept);
+    }
+    // Back to the saved value, so the checks below start from an unchanged draft.
+    fireEvent.change(waitInput, { target: { value: '1' } });
+
+    for (const value of ['31', '99']) {
       fireEvent.focus(waitInput);
       fireEvent.change(waitInput, { target: { value } });
 
@@ -1823,10 +2012,8 @@ describe('AutomationEditor', () => {
 
     expect(mockEditMutation.mutate).toHaveBeenCalledWith(
       {
-        id: 'automation-id-1',
+        ...automationDetail,
         status: 'active',
-        actions: automationDetail.actions,
-        edges: automationDetail.edges,
       },
       expect.any(Object),
     );
@@ -2033,10 +2220,8 @@ describe('AutomationEditor', () => {
 
     expect(mockEditMutation.mutate).toHaveBeenCalledWith(
       {
-        id: 'automation-id-1',
+        ...automationDetail,
         status: 'inactive',
-        actions: automationDetail.actions,
-        edges: automationDetail.edges,
       },
       expect.any(Object),
     );
@@ -2605,7 +2790,7 @@ describe('AutomationEditor', () => {
     expect(edgePairs).toContainEqual([insertedId, 'action-email']);
   });
 
-  it('keeps the in-edge + button visible after leaving the button while still hovering the edge', () => {
+  it('shows the in-edge + button without hovering the edge', () => {
     mockUseReadAutomation.mockReturnValue({
       data: { automations: [automationDetail] },
       isLoading: false,
@@ -2614,25 +2799,10 @@ describe('AutomationEditor', () => {
 
     renderEditor();
 
-    const edge = screen
-      .getByTestId('react-flow-mock-edges')
-      .querySelector('[data-edge-id="e-action-wait-action-email"]');
-    const edgeGroup = edge?.querySelector('g');
     const button = screen.getByTestId('add-step-button-action-wait-action-email');
-    const labelHitZone = button.closest('.pointer-events-auto');
 
-    expect(edgeGroup).toBeInTheDocument();
-    expect(labelHitZone).toBeInTheDocument();
-
-    fireEvent.mouseEnter(edgeGroup!);
-    expect(button).toHaveClass('opacity-100');
-
-    fireEvent.mouseEnter(labelHitZone!);
-    fireEvent.mouseLeave(labelHitZone!, { relatedTarget: edgeGroup });
-    expect(button).toHaveClass('opacity-100');
-
-    fireEvent.mouseLeave(edgeGroup!);
-    expect(button).toHaveClass('opacity-0');
+    expect(button).toBeVisible();
+    expect(button).not.toHaveClass('opacity-0');
   });
 
   it('deletes a wait step and reconnects the chain', () => {
@@ -3016,7 +3186,7 @@ describe('AutomationEditor', () => {
 
     expect(mockEditMutation.mutate).toHaveBeenCalledWith(
       {
-        id: 'automation-id-1',
+        ...automationDetail,
         status: 'active',
         actions: expect.any(Array) as unknown,
         edges: expect.any(Array) as unknown,

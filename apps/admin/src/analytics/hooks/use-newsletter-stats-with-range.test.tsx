@@ -1,5 +1,5 @@
 import moment from 'moment';
-import { TestWrapper } from '@tryghost/admin-x-framework/test/test-utils';
+import { TestWrapper } from '@test-utils/fixtures/query-client';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { getExpectedDateRange, setupDateMocking } from '@test-utils/analytics/date-testing-utils';
 import { setupStatsAppMocks } from '@test-utils/analytics/test-helpers';
@@ -34,12 +34,16 @@ const mockUseNewsletterClickStats = vi.mocked(useNewsletterClickStats);
 const mockUseBrowseNewsletters = vi.mocked(useBrowseNewsletters);
 
 // Mock external date functions
-vi.mock('@tryghost/shade/app', () => ({
-  formatQueryDate: vi.fn(),
-  getRangeDates: vi.fn(),
-}));
+vi.mock('@/shared/analytics/chart-helpers', async () => {
+  const actual = await vi.importActual('@/shared/analytics/chart-helpers');
+  return {
+    ...actual,
+    formatQueryDate: vi.fn(),
+    getRangeDates: vi.fn(),
+  };
+});
 
-const { formatQueryDate, getRangeDates } = await import('@tryghost/shade/app');
+const { formatQueryDate, getRangeDates } = await import('@/shared/analytics/chart-helpers');
 const mockFormatQueryDate = vi.mocked(formatQueryDate);
 const mockGetRangeDates = vi.mocked(getRangeDates);
 

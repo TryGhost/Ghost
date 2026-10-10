@@ -239,12 +239,27 @@ function NewsletterPrefs({
   });
 }
 
+function EmailHelpSection() {
+  const { doAction } = useContext(AppContext);
+  return (
+    <section className="gh-portal-list-help">
+      <span className="gh-portal-list-help-label">{t('Not receiving emails?')}</span>
+      <button
+        className="gh-portal-btn-text gh-email-faq-page-button"
+        onClick={() =>
+          doAction('switchPage', { page: 'emailReceivingFAQ', pageData: { direct: false } })
+        }
+      >
+        {t('Get help')} <span className="right-arrow">&rarr;</span>
+      </button>
+    </section>
+  );
+}
+
 function ShowPaidMemberMessage({ site, isPaid }) {
   if (isPaid) {
     return (
-      <p
-        style={{ textAlign: 'center', marginTop: '12px', marginBottom: '0', color: 'var(--grey6)' }}
-      >
+      <p className="gh-portal-btn-unsubscribe-note">
         {t('Unsubscribing from emails will not cancel your paid subscription to {title}', {
           title: site?.title,
         })}
@@ -268,7 +283,7 @@ export default function NewsletterManagement({
   canChangeUpdatesAndAnnouncements,
   enableUpdatesAndAnnouncements,
 }) {
-  const { brandColor, doAction, member, site } = useContext(AppContext);
+  const { brandColor, member, site } = useContext(AppContext);
 
   // Snapshot the updates & announcements value when the modal opens. When the member has no
   // explicit preference yet (null), derive it from whether any newsletter is subscribed at open
@@ -294,16 +309,18 @@ export default function NewsletterManagement({
   const FinalNotification = notification || EmptyNotification;
   return (
     <div className="gh-portal-content with-footer">
-      <AccountHeader />
+      <div className="gh-portal-email-preferences-header">
+        <AccountHeader />
+        <FinalNotification />
+      </div>
       <CloseButton brandColor={brandColor} />
-      <FinalNotification />
       <div className="gh-portal-section flex">
         <div className="gh-portal-list">
           <NewsletterPrefs
             hasNewslettersEnabled={hasNewslettersEnabled}
             subscribedNewsletters={subscribedNewsletters}
             setSubscribedNewsletters={(updatedNewsletters) => {
-              let newsletters = updatedNewsletters.map((d) => {
+              const newsletters = updatedNewsletters.map((d) => {
                 return {
                   id: d.id,
                 };
@@ -325,6 +342,7 @@ export default function NewsletterManagement({
             enableUpdatesAndAnnouncements={effectiveEnableUpdatesAndAnnouncements}
             updateUpdatesAndAnnouncements={updateUpdatesAndAnnouncements}
           />
+          {hasMemberGotEmailSuppression({ member }) && !isDisabled && <EmailHelpSection />}
         </div>
       </div>
       <div className="gh-portal-btn-unsubscribe">
@@ -341,34 +359,8 @@ export default function NewsletterManagement({
           style={{ width: '100%' }}
           dataTestId="unsubscribe-from-all-emails"
         />
+        <ShowPaidMemberMessage isPaid={isPaidMember} site={site} />
       </div>
-      <footer
-        className={
-          'gh-portal-action-footer' +
-          (hasMemberGotEmailSuppression({ member }) ? ' gh-feature-suppressions' : '')
-        }
-      >
-        <div style={{ width: '100%' }}>
-          <ShowPaidMemberMessage
-            isPaid={isPaidMember}
-            site={site}
-            subscribedNewsletters={subscribedNewsletters}
-          />
-        </div>
-        {hasMemberGotEmailSuppression({ member }) && !isDisabled && (
-          <div className="gh-portal-footer-secondary">
-            <span className="gh-portal-footer-secondary-light">{t('Not receiving emails?')}</span>
-            <button
-              className="gh-portal-btn-text gh-email-faq-page-button"
-              onClick={() =>
-                doAction('switchPage', { page: 'emailReceivingFAQ', pageData: { direct: false } })
-              }
-            >
-              {t('Get help')} <span className="right-arrow">&rarr;</span>
-            </button>
-          </div>
-        )}
-      </footer>
     </div>
   );
 }

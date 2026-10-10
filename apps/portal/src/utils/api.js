@@ -1,4 +1,5 @@
 import { HumanReadableError } from './errors';
+import { fetchWithEdgeChallenge } from './edge-challenge';
 import { transformApiSiteData, transformApiTiersData, getUrlHistory } from './helpers';
 
 function setupGhostApi({ siteUrl = window.location.origin, apiUrl, apiKey }) {
@@ -27,6 +28,7 @@ function setupGhostApi({ siteUrl = window.location.origin, apiUrl, apiKey }) {
     headers = {},
     credentials = undefined,
     body = undefined,
+    edgeChallenge = false,
   }) {
     const options = {
       method,
@@ -34,7 +36,7 @@ function setupGhostApi({ siteUrl = window.location.origin, apiUrl, apiKey }) {
       credentials,
       body,
     };
-    return fetch(url, options);
+    return edgeChallenge ? fetchWithEdgeChallenge(url, options) : fetch(url, options);
   }
   const api = {};
 
@@ -231,7 +233,7 @@ function setupGhostApi({ siteUrl = window.location.origin, apiUrl, apiKey }) {
 
   api.recommendations = {
     trackClicked({ recommendationId }) {
-      let url = endpointFor({
+      const url = endpointFor({
         type: 'members',
         resource: 'recommendations/' + recommendationId + '/clicked',
       });
@@ -239,7 +241,7 @@ function setupGhostApi({ siteUrl = window.location.origin, apiUrl, apiKey }) {
     },
 
     trackSubscribed({ recommendationId }) {
-      let url = endpointFor({
+      const url = endpointFor({
         type: 'members',
         resource: 'recommendations/' + recommendationId + '/subscribed',
       });
@@ -274,12 +276,56 @@ function setupGhostApi({ siteUrl = window.location.origin, apiUrl, apiKey }) {
       });
     },
 
+    /**
+     * The custom fields the publisher has opened to members, in the publisher's order.
+     *
+     * Portal reaches older Ghost sites indefinitely, so a site without the endpoint — or
+     * a field that does not say what the member may do with it — reads as no fields.
+     */
+    customFields() {
+      const url = endpointFor({ type: 'members', resource: 'member/metafields/custom' });
+      return makeRequest({
+        url,
+        credentials: 'same-origin',
+      }).then(function (res) {
+        if (!res.ok) {
+          return [];
+        }
+        // Read defensively: Portal and the site it talks to are deployed apart, so this
+        // endpoint may be missing, or answered by a version that shapes it differently.
+        // Anything unrecognisable reads as no fields, which is what a site with none
+        // gives, rather than breaking the page these are drawn on.
+        return res
+          .json()
+          .then((data) => {
+            const fields = data?.members_metafields;
+            if (!Array.isArray(fields)) {
+              return [];
+            }
+            // Every part a field is drawn from, not just enough to recognise one: a name
+            // that is not text is rendered as a child and takes the page down with it,
+            // and a type nothing can draw is no more useful than a field that is absent.
+            return fields.filter(
+              (field) =>
+                field &&
+                typeof field.key === 'string' &&
+                field.key.length > 0 &&
+                typeof field.name === 'string' &&
+                typeof field.type === 'string' &&
+                ['read', 'write'].includes(field.access?.member),
+            );
+          })
+          .catch(() => []);
+      });
+    },
+
     update({
       name,
       subscribed,
       newsletters,
       enableCommentNotifications,
       enableUpdatesAndAnnouncements,
+      metafields,
     }) {
       const url = endpointFor({ type: 'members', resource: 'member' });
       const body = {
@@ -287,6 +333,9 @@ function setupGhostApi({ siteUrl = window.location.origin, apiUrl, apiKey }) {
         subscribed,
         newsletters,
       };
+      if (metafields !== undefined) {
+        body.metafields = metafields;
+      }
       if (enableCommentNotifications !== undefined) {
         body.enable_comment_notifications = enableCommentNotifications;
       }
@@ -302,9 +351,11 @@ function setupGhostApi({ siteUrl = window.location.origin, apiUrl, apiKey }) {
         },
         credentials: 'same-origin',
         body: JSON.stringify(body),
-      }).then(function (res) {
+      }).then(async function (res) {
         if (!res.ok) {
-          return null;
+          throw (
+            (await HumanReadableError.fromApiResponse(res)) ?? new Error('Failed to update member')
+          );
         }
         return res.json();
       });
@@ -329,6 +380,7 @@ function setupGhostApi({ siteUrl = window.location.origin, apiUrl, apiKey }) {
       const res = await makeRequest({
         url,
         method: 'GET',
+        edgeChallenge: true,
       });
 
       if (res.ok) {
@@ -398,6 +450,7 @@ function setupGhostApi({ siteUrl = window.location.origin, apiUrl, apiKey }) {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(body),
+        edgeChallenge: true,
       });
 
       if (res.ok) {
@@ -713,6 +766,7 @@ function setupGhostApi({ siteUrl = window.location.origin, apiUrl, apiKey }) {
       recipientName,
       buyerName,
       personalMessage,
+      deliveryDate,
     } = {}) {
       const siteUrlObj = new URL(siteUrl);
       const url = endpointFor({ type: 'members', resource: 'create-stripe-checkout-session' });
@@ -727,7 +781,7 @@ function setupGhostApi({ siteUrl = window.location.origin, apiUrl, apiKey }) {
       const cancelUrlObj = window.location.href.startsWith(siteUrlObj.href)
         ? new URL(window.location.href)
         : new URL(siteUrl);
-      cancelUrlObj.hash = '#/portal/gift';
+      cancelUrlObj.hash = duration === undefined ? '#/portal/gift' : '#/portal/gift/delivery';
 
       const body = {
         identity,
@@ -742,6 +796,7 @@ function setupGhostApi({ siteUrl = window.location.origin, apiUrl, apiKey }) {
         ...(recipientName ? { recipientName } : {}),
         ...(buyerName ? { buyerName } : {}),
         ...(personalMessage ? { personalMessage } : {}),
+        ...(deliveryDate ? { deliveryDate } : {}),
         cancelUrl: cancelUrlObj.href,
       };
 
@@ -940,7 +995,10 @@ function setupGhostApi({ siteUrl = window.location.origin, apiUrl, apiKey }) {
         body.cadence = cadence;
       }
 
-      return makeRequest({
+      // Thrown rather than returned: `fetch` treats a refusal as a response, so a
+      // caller that only awaits this would carry on and tell the member their plan
+      // changed when it did not.
+      const res = await makeRequest({
         url,
         method: 'PUT',
         headers: {
@@ -948,6 +1006,12 @@ function setupGhostApi({ siteUrl = window.location.origin, apiUrl, apiKey }) {
         },
         body: JSON.stringify(body),
       });
+
+      if (!res.ok) {
+        throw new Error('Failed to update subscription');
+      }
+
+      return res;
     },
 
     async offers() {
@@ -1002,7 +1066,7 @@ function setupGhostApi({ siteUrl = window.location.origin, apiUrl, apiKey }) {
   };
 
   api.init = async () => {
-    let [member] = await Promise.all([api.member.sessionData()]);
+    const [member] = await Promise.all([api.member.sessionData()]);
     let site = {};
     let newsletters = [];
     let tiers = [];

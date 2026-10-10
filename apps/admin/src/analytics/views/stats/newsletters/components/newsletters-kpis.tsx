@@ -22,17 +22,18 @@ import {
 import {
   LucideIcon,
   Recharts,
+  calculateYAxisWidth,
   formatDisplayDate,
   formatNumber,
   formatPercentage,
 } from '@tryghost/shade/utils';
-import { calculateYAxisWidth } from '@tryghost/shade/app';
 import {
   getEffectiveChartRange,
   getPeriodText,
   sanitizeChartData,
 } from '@/shared/analytics/chart-helpers';
-import { useAppContext, useNavigate, useSearchParams } from '@tryghost/admin-x-framework';
+import { useNavigate, useSearchParams } from '@tryghost/admin-x-framework';
+import { useEmailTrackClicks, useEmailTrackOpens } from '@tryghost/admin-x-framework/api/settings';
 import { useAnalytics } from '@/analytics/providers/analytics-context';
 
 interface BarTooltipPayload {
@@ -119,9 +120,8 @@ const NewsletterKPIs: React.FC<{
   const { range } = useAnalytics();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { appSettings } = useAppContext();
-  const { emailTrackClicks: emailTrackClicksEnabled, emailTrackOpens: emailTrackOpensEnabled } =
-    appSettings?.analytics || {};
+  const emailTrackClicksEnabled = useEmailTrackClicks();
+  const emailTrackOpensEnabled = useEmailTrackOpens();
 
   const { totalSubscribers, avgOpenRate, avgClickRate } = totals;
 

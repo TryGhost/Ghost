@@ -1,6 +1,6 @@
 import { canAccessSettings } from '@tryghost/admin-x-framework/api/users';
 import { getStaffProfileSlug } from '@/settings/providers/routing/staff-profile-paths';
-import type { AccessRule } from '@/route-access-guard';
+import type { AccessRule } from '@/route-access';
 
 const SETTINGS_PREFIX = /^\/settings\/?/;
 

@@ -1,4 +1,3 @@
-import { defineFields } from './filter-types';
 import { describe, expect, it } from 'vitest';
 import {
   dispatchSimpleNodes,
@@ -7,9 +6,37 @@ import {
   parseFilterToAst,
   serializePredicates,
 } from './filter-query-core';
-import { numberCodec, scalarCodec } from './filter-codecs';
+import { getCompoundChildren } from './filter-ast';
+import { columnAddressing, composeCodec } from './filter-addressing';
+import { numberSemantics, scalarSemantics } from './semantics';
+
+const scalarCodec = (config?: { field?: string }) =>
+  composeCodec(columnAddressing(config), scalarSemantics());
+const numberCodec = (config?: { field?: string }) =>
+  composeCodec(columnAddressing(config), numberSemantics());
+const defineFields = <T extends Record<string, FilterField>>(fields: T): T => fields;
 import type { AstNode } from './filter-ast';
-import type { FilterPredicate } from './filter-types';
+import type { FilterField, FilterPredicate } from './filter-types';
+
+function ast(filter: string): AstNode {
+  const node = parseFilterToAst(filter);
+
+  if (!node) {
+    throw new Error(`could not parse: ${filter}`);
+  }
+
+  return node;
+}
+
+function compound(filter: string): AstNode[] {
+  const children = getCompoundChildren(ast(filter), '$and');
+
+  if (!children) {
+    throw new Error(`not a compound: ${filter}`);
+  }
+
+  return children;
+}
 
 const fields = defineFields({
   status: {
@@ -58,9 +85,7 @@ const fields = defineFields({
 
 describe('filter-query-core', () => {
   it('parses NQL into a traversable AST for surface-level composition', () => {
-    const ast = parseFilterToAst('status:paid+email_count:>5');
-
-    expect((ast as Record<string, unknown>).$and).toEqual([
+    expect(getCompoundChildren(ast('status:paid+email_count:>5'), '$and')).toEqual([
       { status: 'paid' },
       { email_count: { $gt: 5 } },
     ]);
@@ -71,12 +96,8 @@ describe('filter-query-core', () => {
   });
 
   it('dispatches simple nodes into parsed predicates', () => {
-    const ast = parseFilterToAst('status:paid+email_count:>5');
-    const predicates = dispatchSimpleNodes(
-      (ast as Record<string, unknown>).$and as AstNode[],
-      fields,
-      'UTC',
-    );
+    const children = compound('status:paid+email_count:>5');
+    const predicates = dispatchSimpleNodes(children, fields, 'UTC');
 
     expect(predicates).toEqual([
       { field: 'status', operator: 'is', values: ['paid'] },
@@ -85,19 +106,15 @@ describe('filter-query-core', () => {
   });
 
   it('skips unknown simple nodes', () => {
-    const ast = parseFilterToAst('status:paid+unknown:test');
-    const predicates = dispatchSimpleNodes(
-      (ast as Record<string, unknown>).$and as AstNode[],
-      fields,
-      'UTC',
-    );
+    const children = compound('status:paid+unknown:test');
+    const predicates = dispatchSimpleNodes(children, fields, 'UTC');
 
     expect(predicates).toEqual([{ field: 'status', operator: 'is', values: ['paid'] }]);
   });
 
   it('dispatches through declared parse aliases when the AST field name differs', () => {
-    const ast = parseFilterToAst('member_id:abc123');
-    const predicates = dispatchSimpleNodes([ast as AstNode], fields, 'UTC');
+    const node = ast('member_id:abc123');
+    const predicates = dispatchSimpleNodes([node], fields, 'UTC');
 
     expect(predicates).toEqual([{ field: 'author', operator: 'is', values: ['abc123'] }]);
   });
@@ -115,12 +132,8 @@ describe('filter-query-core', () => {
   });
 
   it('round-trips simple predicates canonically', () => {
-    const ast = parseFilterToAst('status:paid+email_count:>5');
-    const parsed = dispatchSimpleNodes(
-      (ast as Record<string, unknown>).$and as AstNode[],
-      fields,
-      'UTC',
-    ).map((predicate, index) => ({
+    const children = compound('status:paid+email_count:>5');
+    const parsed = dispatchSimpleNodes(children, fields, 'UTC').map((predicate, index) => ({
       ...predicate,
       id: String(index + 1),
     }));
@@ -129,12 +142,10 @@ describe('filter-query-core', () => {
   });
 
   it('finds fields by UI type and declared parse aliases in nested AST nodes', () => {
-    const ast = parseFilterToAst(
-      "(status:paid,created_at_utc:<'2024-01-01T00:00:00.000Z')",
-    ) as AstNode;
+    const node = ast("(status:paid,created_at_utc:<'2024-01-01T00:00:00.000Z')");
     const fieldKeys = getFieldKeysByType(fields, 'date');
 
     expect([...fieldKeys]).toEqual(['created_at', 'created_at_utc']);
-    expect(hasFieldKey(ast, fieldKeys)).toBe(true);
+    expect(hasFieldKey(node, fieldKeys)).toBe(true);
   });
 });

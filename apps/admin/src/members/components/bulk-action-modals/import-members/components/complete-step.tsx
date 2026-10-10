@@ -29,7 +29,7 @@ export function CompleteStep({ importResponse, onReset, onClose }: CompleteStepP
           <>
             {importResponse.importedCount > 0 && (
               <>
-                <hr className="border-grey-200" />
+                <hr className="border-gray-200" />
                 <p className="text-sm">
                   <strong>{formatNumber(importResponse.errorCount)}</strong>{' '}
                   {importResponse.errorCount === 1 ? 'member was' : 'members were'} skipped due to

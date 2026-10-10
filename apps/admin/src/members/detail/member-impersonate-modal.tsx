@@ -11,7 +11,7 @@ import {
   Label,
   LoadingIndicator,
 } from '@tryghost/shade/components';
-import { getMemberSigninUrl } from '@tryghost/admin-x-framework/api/members';
+import { useMemberSigninUrl } from '@tryghost/admin-x-framework/api/members';
 import { toast } from 'sonner';
 import { useQueryClient } from '@tanstack/react-query';
 
@@ -44,7 +44,7 @@ const MemberImpersonateModal: React.FC<MemberImpersonateModalProps> = ({
     }
   }, [open, queryClient]);
 
-  const { data, isFetching, isError } = getMemberSigninUrl(memberId, {
+  const { data, isFetching, isError } = useMemberSigninUrl(memberId, {
     enabled: open,
     defaultErrorHandler: false,
   });

@@ -1,4 +1,5 @@
 import React, { type FocusEventHandler, useEffect, useState } from 'react';
+import GiftPromotionField from './gift-promotion-field';
 import TransistorSettings from './transistor-settings';
 import validator from 'validator';
 import { Field, FieldError, FieldGroup, FieldLabel, Input } from '@tryghost/shade/components';
@@ -52,6 +53,12 @@ const AccountPage: React.FC<{
   return (
     <div className="mt-7">
       <FieldGroup className="mb-10 gap-8">
+        <GiftPromotionField
+          localSettings={localSettings}
+          settingKey="portal_account_gift_promotion"
+          updateSetting={updateSetting}
+        />
+
         <Field data-invalid={Boolean(errors.members_support_address) || undefined}>
           <FieldLabel htmlFor="members-support-address">Support email address</FieldLabel>
           <Input

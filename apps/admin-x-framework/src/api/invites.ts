@@ -58,7 +58,6 @@ export const useAddInvite = createMutation<InvitesResponseType, { email: string;
   }),
   updateQueries: {
     dataType,
-    emberUpdateType: 'createOrUpdate',
     // Assume that all invite queries should include this new one
     update: insertToQueryCache('invites'),
   },
@@ -69,7 +68,6 @@ export const useDeleteInvite = createMutation<unknown, string>({
   method: 'DELETE',
   updateQueries: {
     dataType,
-    emberUpdateType: 'delete',
     update: deleteFromQueryCache('invites'),
   },
 });

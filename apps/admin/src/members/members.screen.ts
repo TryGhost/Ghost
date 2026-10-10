@@ -1,8 +1,13 @@
 import { page } from 'vitest/browser';
+import { getScrollParent } from '@tryghost/shade/utils';
 import {
   addFilterButton,
   filterButton,
+  loadMoreButton,
+  membersActions,
   membersListItem,
+  membersListScrollRoot,
+  newMemberLink,
   noResultsText,
   searchLabel,
   showAllButton,
@@ -14,11 +19,13 @@ export const membersScreen = {
   memberRows: () => page.getByTestId(membersListItem),
   memberRow: (name: string) => page.getByTestId(membersListItem).filter({ hasText: name }),
   link: (name: string) => page.getByRole('link', { name, exact: true }),
+  newMemberLink: () => page.getByRole('link', { name: newMemberLink }),
   searchInput: () => page.getByLabelText(searchLabel),
   noResults: () => page.getByText(noResultsText),
   showAllButton: () => page.getByRole('button', { name: showAllButton }),
   emptyState: () => page.getByText('Start building your audience'),
-  actionsButton: () => page.getByTestId('members-actions'),
+  actionsButton: () => page.getByTestId(membersActions),
+  loadMoreButton: () => page.getByRole('button', { name: loadMoreButton }),
   dialog: () => page.getByRole('dialog'),
   menuItem: (name: string | RegExp) => page.getByRole('menuitem', { name }),
 
@@ -47,6 +54,19 @@ export const membersScreen = {
       }
     }
   },
+
+  /** The shell element whose scroll position drives the virtualized rows. */
+  listScrollElement: () =>
+    getScrollParent(document.querySelector(`[data-testid="${membersListScrollRoot}"]`)),
+
+  /** The highest row index the virtualizer has rendered with data (-1 when none). */
+  lastRenderedRowIndex: () =>
+    Math.max(
+      -1,
+      ...Array.from(document.querySelectorAll(`[data-testid="${membersListItem}"]`), (row) =>
+        Number(row.getAttribute('data-index')),
+      ),
+    ),
 
   multiselectOption: (name: string) =>
     page.getByRole('option', { name: new RegExp(`^${name}\\b`) }),

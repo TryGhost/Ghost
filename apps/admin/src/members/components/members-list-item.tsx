@@ -3,6 +3,7 @@ import moment from 'moment-timezone';
 import { Avatar, TableCell, TableRow } from '@tryghost/shade/components';
 import { type Member } from '@tryghost/admin-x-framework/api/members';
 import { buildMemberDetailPath } from '@/members/member-detail-hash';
+import { memberAvatarProps } from '@/members/member-format';
 import { cn, formatPercentage } from '@tryghost/shade/utils';
 import type { MemberActiveColumn } from '@/members/member-query-params';
 import { forwardRef, type CSSProperties } from 'react';
@@ -84,12 +85,7 @@ function MembersListItemName({
 }) {
   return (
     <div className="flex min-w-0 items-center gap-3">
-      <Avatar
-        className="size-8 min-w-8"
-        email={item.email}
-        name={item.name}
-        src={item.avatar_image}
-      />
+      <Avatar className="size-8 min-w-8" {...memberAvatarProps(item)} src={item.avatar_image} />
       <div className="min-w-0">
         <Link
           className="block min-w-0 cursor-pointer"
@@ -264,7 +260,7 @@ const MembersListItem = forwardRef<
     >
       <TableCell
         className={cn(
-          'min-w-0 bg-background px-4 py-3 group-hover:bg-[var(--members-sticky-hover-bg)] max-sm:!w-full max-sm:!min-w-0 lg:sticky lg:left-0 lg:z-20',
+          'min-w-0 bg-background px-4 py-3 group-hover:bg-table-row-hover max-sm:!w-full max-sm:!min-w-0 lg:sticky lg:left-0 lg:z-20',
         )}
       >
         <MembersListItemName backPath={backPath} item={item} onClick={onClick} />
@@ -285,7 +281,7 @@ const MembersListItem = forwardRef<
               style={{
                 ...PINNED_EDGE_FADE_POSITION_STYLE,
                 background:
-                  'linear-gradient(to right, var(--members-sticky-hover-bg) 0px, color-mix(in hsl, var(--members-sticky-hover-bg) 78%, transparent) 6px, color-mix(in hsl, var(--members-sticky-hover-bg) 28%, transparent) 16px, transparent 24px)',
+                  'linear-gradient(to right, var(--table-row-hover) 0px, color-mix(in hsl, var(--table-row-hover) 78%, transparent) 6px, color-mix(in hsl, var(--table-row-hover) 28%, transparent) 16px, transparent 24px)',
               }}
             />
           </>

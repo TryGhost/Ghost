@@ -20,7 +20,7 @@ function ContentApiModal() {
       footer={
         <div className="mx-8 flex w-full items-center justify-between">
           <Button variant="outline" asChild>
-            <a href="https://ghost.org/docs/content-api/" rel="noopener noreferrer" target="_blank">
+            <a href="https://docs.ghost.org/content-api/" rel="noopener noreferrer" target="_blank">
               Open docs <LucideIcon.ExternalLink className="size-3" />
             </a>
           </Button>
@@ -47,7 +47,7 @@ function ContentApiModal() {
         title="Content API"
       />
       <div className="mt-7">
-        <p className="mb-6 text-grey-700">
+        <p className="mb-6 text-gray-700">
           This key provides read-only access to your published content. For full read/write access,
           create a custom integration.
         </p>

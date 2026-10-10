@@ -10,18 +10,21 @@ import {
 import { FakeServer } from '@/helpers/services/fake-server';
 import {
   type RecordedStripeCheckoutSession,
+  type StripeCheckoutBranding,
   type StripeCoupon,
   type StripeCustomer,
   type StripePaymentMethod,
   type StripePrice,
   type StripeProduct,
   type StripeSubscription,
+  buildCheckoutBranding,
   buildCheckoutSession,
   buildCoupon,
   buildCustomer,
   buildPrice,
   buildProduct,
 } from './builders';
+import { STRIPE_ALLOWED_COUNTRIES } from './allowed-countries';
 import {
   renderFakeCheckoutPage,
   renderFakeDonationCheckoutPage,
@@ -31,6 +34,19 @@ import {
 const MAX_CUSTOM_FIELDS = 3;
 const MAX_CUSTOM_FIELD_LABEL_LENGTH = 50;
 
+// What this catches is a request reaching Stripe with a country nothing validated — a
+// configuration saved before the rule existed, say — which would fail the session create
+// and take the sale with it.
+const ALLOWED_COUNTRIES = new Set<string>(STRIPE_ALLOWED_COUNTRIES);
+
+// Stripe names the offending element and then lists every code it will take.
+function allowedCountriesMessage(index: number): string {
+  const codes = [...STRIPE_ALLOWED_COUNTRIES];
+  const last = codes[codes.length - 1];
+  const listed = `${codes.slice(0, -1).join(', ')}, or ${last}`;
+  return `Invalid shipping_address_collection[allowed_countries][${index}]: must be one of ${listed}`;
+}
+
 export class FakeStripeServer extends FakeServer {
   private readonly products: Map<string, StripeProduct> = new Map();
   private readonly prices: Map<string, StripePrice> = new Map();
@@ -39,6 +55,8 @@ export class FakeStripeServer extends FakeServer {
   private readonly subscriptions: Map<string, StripeSubscription> = new Map();
   private readonly paymentMethods: Map<string, StripePaymentMethod> = new Map();
   private readonly checkoutSessions: Map<string, RecordedStripeCheckoutSession> = new Map();
+  // Null stands for a Stripe that reports no branding, which Ghost can't read.
+  private checkoutBranding: StripeCheckoutBranding | null = buildCheckoutBranding();
 
   constructor(port = 0) {
     super({ port, debugNamespace: 'e2e:fake-stripe' });
@@ -70,6 +88,10 @@ export class FakeStripeServer extends FakeServer {
 
   upsertCheckoutSession(session: RecordedStripeCheckoutSession): void {
     this.checkoutSessions.set(session.response.id, session);
+  }
+
+  setCheckoutBranding(branding: StripeCheckoutBranding | null): void {
+    this.checkoutBranding = branding;
   }
 
   getProducts(): StripeProduct[] {
@@ -507,6 +529,10 @@ export class FakeStripeServer extends FakeServer {
           submit_type: body.submit_type,
           subscription_data: body.subscription_data,
           line_items: body.line_items,
+          shipping_address_collection: body.shipping_address_collection,
+          tax_id_collection: body.tax_id_collection,
+          phone_number_collection: body.phone_number_collection,
+          branding_settings: body.branding_settings,
         },
         response: {
           mode,
@@ -521,6 +547,25 @@ export class FakeStripeServer extends FakeServer {
       session.response.url = `http://localhost:${this.port}/checkout/sessions/${session.response.id}`;
       this.upsertCheckoutSession(session);
       this.debug(`Created checkout session: ${session.response.id} (${session.response.mode})`);
+      res.status(200).json({
+        ...session.response,
+        ...(this.checkoutBranding
+          ? { branding_settings: { ...this.checkoutBranding, ...body.branding_settings } }
+          : {}),
+      });
+    });
+
+    this.app.post('/v1/checkout/sessions/:id/expire', (req, res) => {
+      const session = this.checkoutSessions.get(req.params.id);
+      if (!session) {
+        res
+          .status(404)
+          .json({ error: { type: 'invalid_request_error', message: 'No such checkout session' } });
+        return;
+      }
+
+      session.response.status = 'expired';
+      this.debug(`Expired checkout session: ${session.response.id}`);
       res.status(200).json(session.response);
     });
 
@@ -727,6 +772,36 @@ export class FakeStripeServer extends FakeServer {
       if (!body.customer) {
         return '`customer_update` can only be used with `customer`.';
       }
+    }
+
+    // Stripe will not collect a tax id for a customer it may not rename. Measured, like
+    // everything else here: shipping and phone collection carry no such requirement, so
+    // this is specific to tax rather than a rule about collecting from a customer at all.
+    // Read against `true` rather than for truthiness: form decoding delivers the flag as
+    // the string `"false"`, which is truthy, and refusing on that would refuse a checkout
+    // that had switched tax collection off.
+    const rawCountries = (body.shipping_address_collection as { allowed_countries?: unknown })
+      ?.allowed_countries;
+    const countries = Array.isArray(rawCountries)
+      ? rawCountries
+      : rawCountries && typeof rawCountries === 'object'
+        ? Object.values(rawCountries)
+        : [];
+    const refused = countries.findIndex(
+      (code) => typeof code !== 'string' || !ALLOWED_COUNTRIES.has(code),
+    );
+    if (refused !== -1) {
+      return allowedCountriesMessage(refused);
+    }
+
+    const taxIdFlag = (body.tax_id_collection as { enabled?: unknown })?.enabled;
+    const collectsTaxId = taxIdFlag === true || taxIdFlag === 'true';
+    const mayRename = (body.customer_update as { name?: unknown })?.name === 'auto';
+    if (collectsTaxId && body.customer && !mayRename) {
+      return (
+        'Tax ID collection requires updating business name on the customer. To enable tax ID ' +
+        'collection for an existing customer, please set `customer_update[name]` to `auto`.'
+      );
     }
 
     return null;

@@ -134,20 +134,20 @@ const MemberEmailsEditor: React.FC<MemberEmailsEditorProps> = ({
   const { fetchAutocompleteLinks, searchLinks } = useWelcomeEmailLinkSuggestions();
   const fetchEmbed = useKoenigFetchEmbed();
   const klipyConfig = config.klipy?.apiKey ? config.klipy : null;
-  const { fetchKoenigLexical, darkMode } = useFocusContext();
-  const editorResource = useMemo(() => {
-    if (!fetchKoenigLexical) {
-      throw new Error('Koenig Lexical loader is not available');
-    }
-    return loadKoenig(fetchKoenigLexical);
-  }, [fetchKoenigLexical]);
-  const [transistorEnabled] = getSettingValues<boolean>(settings, ['transistor']);
+  const embedPreviewUrl = config.security?.embedPreviewUrl || undefined;
+  const { darkMode } = useFocusContext();
+  const editorResource = useMemo(() => loadKoenig(), []);
+  const [transistorEnabled, unsplashEnabled] = getSettingValues<boolean>(settings, [
+    'transistor',
+    'unsplash',
+  ]);
 
   const cardConfig = useMemo(
     () => ({
-      unsplash: unsplashConfig,
+      unsplash: unsplashEnabled ? unsplashConfig : null,
       pinturaConfig,
       klipy: klipyConfig,
+      embedPreviewUrl,
       fetchEmbed,
       fetchAutocompleteLinks,
       searchLinks,
@@ -157,9 +157,11 @@ const MemberEmailsEditor: React.FC<MemberEmailsEditorProps> = ({
       visibilitySettings: 'none',
     }),
     [
+      unsplashEnabled,
       unsplashConfig,
       pinturaConfig,
       klipyConfig,
+      embedPreviewUrl,
       fetchEmbed,
       fetchAutocompleteLinks,
       searchLinks,

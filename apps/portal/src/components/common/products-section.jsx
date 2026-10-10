@@ -12,7 +12,7 @@ import {
   getFreeProduct,
   getFreeProductBenefits,
   getSupportAddress,
-  formatNumber,
+  formatPrice,
   isCookiesDisabled,
   hasOnlyFreeProduct,
   isMemberActivePrice,
@@ -576,7 +576,7 @@ function ProductBenefitsContainer({ product, hide = false }) {
     return null;
   }
 
-  let className = 'gh-portal-product-benefits';
+  const className = 'gh-portal-product-benefits';
   return (
     <div className={className}>
       <ProductBenefits product={product} />
@@ -591,7 +591,9 @@ function ProductCardAlternatePrice({ price }) {
     return <div className="gh-portal-product-alternative-price"></div>;
   }
 
-  return <div className="gh-portal-product-alternative-price">{getPriceString(price)}</div>;
+  return (
+    <div className="gh-portal-product-alternative-price">{getPriceString(price, site.locale)}</div>
+  );
 }
 
 function ProductCardTrialDays({ trialDays, discount, selectedInterval }) {
@@ -644,7 +646,7 @@ function ProductCardPrice({ product }) {
                 {currencySymbol}
               </span>
               <span className="amount" data-testid="product-amount">
-                {formatNumber(getStripeAmount(activePrice.amount))}
+                {formatPrice(getStripeAmount(activePrice.amount), site.locale)}
               </span>
               <span className="billing-period">/{interval}</span>
             </div>
@@ -661,7 +663,7 @@ function ProductCardPrice({ product }) {
           )}
           <ProductCardAlternatePrice price={alternatePrice} />
         </div>
-        {/* <span className="after-trial-amount">Then {currencySymbol}{formatNumber(getStripeAmount(activePrice.amount))}/{activePrice.interval}</span> */}
+        {/* <span className="after-trial-amount">Then {currencySymbol}{formatPrice(getStripeAmount(activePrice.amount), site.locale)}/{activePrice.interval}</span> */}
       </>
     );
   }
@@ -674,7 +676,7 @@ function ProductCardPrice({ product }) {
             {currencySymbol}
           </span>
           <span className="amount" data-testid="product-amount">
-            {formatNumber(getStripeAmount(activePrice.amount))}
+            {formatPrice(getStripeAmount(activePrice.amount), site.locale)}
           </span>
           <span className="billing-period">/{interval}</span>
         </div>
@@ -1052,7 +1054,7 @@ function ProductsSection({ onPlanSelect, products, type = null, handleChooseSign
     className += ' gh-portal-upgrade-product';
   }
 
-  let finalProduct =
+  const finalProduct =
     products.find((p) => p.id === selectedProduct)?.id ||
     products.find((p) => p.type === 'paid')?.id;
   return (

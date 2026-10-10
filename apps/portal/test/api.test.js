@@ -70,6 +70,35 @@ describe('Portal API gift redemption', () => {
     );
   });
 
+  test('preserves the gift error code from the members api', async () => {
+    const ghostApi = setupGhostApi({ siteUrl: 'https://example.com' });
+
+    vi.spyOn(window, 'fetch').mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          errors: [
+            {
+              message: 'This gift has expired.',
+              code: 'GIFT_EXPIRED',
+            },
+          ],
+        }),
+        {
+          status: 400,
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        },
+      ),
+    );
+
+    await expect(ghostApi.gift.fetchRedemptionData({ token: 'gift-token-123' })).rejects.toEqual(
+      new HumanReadableError('This gift has expired.', {
+        code: 'GIFT_EXPIRED',
+      }),
+    );
+  });
+
   test('preserves the api error message for 404 members api gift responses', async () => {
     const ghostApi = setupGhostApi({ siteUrl: 'https://example.com' });
 
@@ -265,6 +294,7 @@ describe('Portal API gift checkout', () => {
       type: 'gift',
       tierId: 'tier_123',
       duration: 3,
+      cancelUrl: 'https://example.com/#/portal/gift/delivery',
     });
     expect(body).not.toHaveProperty('cadence');
   });
@@ -307,6 +337,35 @@ describe('Portal API gift checkout', () => {
       buyerName: 'Jamie',
       personalMessage: 'Enjoy!',
     });
+  });
+
+  test('sends a scheduled gift delivery date', async () => {
+    const ghostApi = setupGhostApi({ siteUrl: 'https://example.com' });
+    const requestSpy = vi.spyOn(window, 'fetch').mockImplementation((url) => {
+      if (url.includes('/members/api/session/')) {
+        return Promise.resolve(new Response('identity-token', { status: 200 }));
+      }
+
+      return Promise.resolve(
+        new Response(
+          JSON.stringify({
+            url: 'https://checkout.stripe.com/gift-session',
+          }),
+          { status: 200, headers: { 'Content-Type': 'application/json' } },
+        ),
+      );
+    });
+
+    await ghostApi.member.checkoutGift({
+      tierId: 'tier_123',
+      duration: 3,
+      deliveryMethod: 'email',
+      recipientEmail: 'recipient@example.com',
+      deliveryDate: '2026-12-25',
+    });
+
+    const [, request] = requestSpy.mock.calls.at(-1);
+    expect(JSON.parse(request.body)).toMatchObject({ deliveryDate: '2026-12-25' });
   });
 });
 
@@ -462,5 +521,51 @@ describe('Portal API plan checkout', () => {
     const body = lastCheckoutBody();
     expect(body.successUrl).toBe('https://example.com/custom-welcome/');
     expect(body.cancelUrl).toBe('https://example.com/custom-cancel/');
+  });
+});
+
+// `fetch` treats a refusal as a response rather than a failure, so an endpoint whose
+// caller only awaits it reads every refusal as success. This one matters more than most:
+// a member is told their plan changed and sent back to their account.
+describe('Portal API subscription update', () => {
+  const mockSubscriptionFetch = (response) => {
+    vi.spyOn(window, 'fetch').mockImplementation((url) => {
+      if (url.includes('/members/api/session/')) {
+        return Promise.resolve(new Response('identity-token', { status: 200 }));
+      }
+
+      return Promise.resolve(response);
+    });
+  };
+
+  beforeEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  test('rejects when the server refuses the change', async () => {
+    const ghostApi = setupGhostApi({ siteUrl: 'https://example.com' });
+    mockSubscriptionFetch(new Response('Tier is archived.', { status: 403 }));
+
+    await expect(
+      ghostApi.member.updateSubscription({
+        subscriptionId: 'sub_123',
+        tierId: 'tier_123',
+        cadence: 'month',
+      }),
+    ).rejects.toThrow();
+  });
+
+  test('resolves with the response when the change is accepted', async () => {
+    const ghostApi = setupGhostApi({ siteUrl: 'https://example.com' });
+    const accepted = new Response(null, { status: 204 });
+    mockSubscriptionFetch(accepted);
+
+    await expect(
+      ghostApi.member.updateSubscription({
+        subscriptionId: 'sub_123',
+        tierId: 'tier_123',
+        cadence: 'month',
+      }),
+    ).resolves.toBe(accepted);
   });
 });

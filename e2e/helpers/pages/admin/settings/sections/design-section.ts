@@ -1,5 +1,13 @@
 import { BasePage } from '@/helpers/pages';
 import { Locator, Page } from '@playwright/test';
+import {
+  design,
+  designModal,
+  imageDeleteButton,
+  imageUploadContainer,
+  publicationCover,
+  toggleUnsplashButton,
+} from '@tryghost/test-data/selectors/settings';
 
 export class DesignSection extends BasePage {
   readonly section: Locator;
@@ -13,13 +21,13 @@ export class DesignSection extends BasePage {
   constructor(page: Page) {
     super(page, '/ghost/#/settings');
 
-    this.section = page.getByTestId('design');
+    this.section = page.getByTestId(design);
     this.customizeButton = this.section.getByRole('button', { name: 'Customize' });
-    this.designModal = page.getByTestId('design-modal');
-    this.unsplashButton = page.getByTestId('toggle-unsplash-button');
+    this.designModal = page.getByTestId(designModal);
+    this.unsplashButton = page.getByTestId(toggleUnsplashButton);
     this.unsplashHeading = page.getByRole('heading', { name: 'Unsplash', level: 1 });
     this.unsplashPhotos = page.locator('[data-kg-unsplash-gallery-img]');
-    this.coverImage = page.getByTestId('publication-cover');
+    this.coverImage = page.getByTestId(publicationCover);
   }
 
   async openDesignModal(): Promise<void> {
@@ -28,9 +36,9 @@ export class DesignSection extends BasePage {
   }
 
   async deleteCoverImage(): Promise<void> {
-    const imageContainer = this.coverImage.getByTestId('image-upload-container');
+    const imageContainer = this.coverImage.getByTestId(imageUploadContainer);
     await imageContainer.hover();
-    await imageContainer.getByTestId('image-delete-button').click();
+    await imageContainer.getByTestId(imageDeleteButton).click();
   }
 
   async openUnsplashSelector(): Promise<void> {

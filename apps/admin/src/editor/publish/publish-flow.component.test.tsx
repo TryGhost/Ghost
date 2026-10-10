@@ -1,0 +1,2075 @@
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { page, userEvent } from 'vitest/browser';
+import { render } from 'vitest-browser-react';
+import { buildLexicalParagraph } from '@tryghost/test-data';
+
+import {
+  InAppProviders,
+  fakeAdminEndpoint,
+  fakeEmailPreview,
+  fakeLabels,
+  fakeTiers,
+  type EndpointCapture,
+} from '@test-utils/acceptance';
+import {
+  publishRecipientFree,
+  publishRecipientSegments,
+  publishSettingEmailRecipients,
+} from '@tryghost/test-data/selectors/editor';
+
+import { PublishFlowModal } from '@/editor/publish/publish-flow-modal';
+import { UpdateFlowModal } from '@/editor/publish/update-flow-modal';
+import { publishScreen } from '@/editor/publish/publish.screen';
+import { CompletionFailureError } from '@/editor/publish/completion-message';
+import { LimitCheckError } from '@/editor/publish/publish-options';
+import type { PublishFlowPost } from '@/editor/publish/flow-post';
+import type {
+  PublishDispatch,
+  PublishSiteInput,
+  PublishUserInput,
+} from '@/editor/publish/publish-options';
+import type { SaveCompletion, SaveErrorKind } from '@/editor/engine/save-engine';
+
+const POST_ID = 'post-1';
+const EMAIL_ID = 'email-1';
+const EVERYONE = 'status:free,status:-free';
+/** What the API returns once the admin session cookie has expired. */
+const SESSION_EXPIRED = {
+  errors: [{ type: 'UnauthorizedError', message: 'Authorization failed' }],
+};
+const SITE: PublishSiteInput = {
+  membersEnabled: true,
+  mailgunConfigured: true,
+  editorDefaultEmailRecipients: 'visibility',
+  editorDefaultEmailRecipientsFilter: null,
+  memberCount: 20,
+  newsletters: [
+    { slug: 'weekly', name: 'Weekly', status: 'active', visibility: 'members', sortOrder: 0 },
+  ],
+};
+
+const USER: PublishUserInput = { isAdmin: true, isAuthorOrContributor: false };
+
+afterEach(() => {
+  localStorage.removeItem('ghost-last-published-post');
+  localStorage.removeItem('ghost-last-scheduled-post');
+});
+
+function draft(overrides: Partial<PublishFlowPost> = {}): PublishFlowPost {
+  return {
+    id: POST_ID,
+    displayName: 'post',
+    status: 'draft',
+    title: 'Hello from React',
+    excerpt: 'A short summary',
+    url: 'https://example.com/hello-from-react/',
+    visibility: 'public',
+    publishedAt: null,
+    ...overrides,
+  };
+}
+
+/** A post whose send failed, which opens the flow on its email error. */
+function failedSend(status: 'published' | 'sent' = 'published'): PublishFlowPost {
+  return draft({
+    status,
+    emailOnly: status === 'sent',
+    email: {
+      id: EMAIL_ID,
+      status: 'failed',
+      error: 'Sending failed',
+      email_count: 20,
+      opened_count: 0,
+    },
+  });
+}
+
+function saved(status: PublishFlowPost['status'] = 'published'): SaveCompletion {
+  return {
+    kind: 'saved',
+    result: { id: POST_ID, status, updatedAt: '2026-09-02T10:00:00.000Z' },
+    executedAs: status === 'scheduled' ? 'schedule' : 'publish',
+  };
+}
+
+function failed(kind: SaveErrorKind, message: string): SaveCompletion {
+  return { kind: 'failed', error: { kind, message }, executedAs: 'publish' };
+}
+
+/** Member counts for every recipient probe the flow makes. */
+function fakeMemberCounts(total: number) {
+  return fakeAdminEndpoint('GET', /^\/members\/\?.*filter=/, {
+    members: [],
+    meta: { pagination: { page: 1, limit: 1, pages: 1, total, next: null, prev: null } },
+  });
+}
+
+/** The published-post total the complete step counts up from. */
+function fakePublishedCount(total: number) {
+  return fakeAdminEndpoint('GET', /^\/posts\/\?/, {
+    posts: [],
+    meta: { pagination: { page: 1, limit: 1, pages: 1, total, next: null, prev: null } },
+  });
+}
+
+function completesWith(completion: SaveCompletion) {
+  return vi.fn((command: PublishDispatch): Promise<SaveCompletion> => {
+    void command;
+    return Promise.resolve(completion);
+  });
+}
+
+async function renderPublishFlow(
+  props: Partial<React.ComponentProps<typeof PublishFlowModal>> = {},
+) {
+  const dispatch = completesWith(saved());
+  const onCompleted = vi.fn();
+  const renderModal = (nextProps: Partial<React.ComponentProps<typeof PublishFlowModal>> = {}) => (
+    <InAppProviders>
+      <PublishFlowModal
+        dispatch={dispatch}
+        post={draft()}
+        site={SITE}
+        timezone="Etc/UTC"
+        user={USER}
+        onClose={() => {}}
+        onCompleted={onCompleted}
+        {...props}
+        {...nextProps}
+      />
+    </InAppProviders>
+  );
+
+  const rendered = await render(renderModal());
+
+  return {
+    dispatch,
+    onCompleted,
+    rerender: (nextProps: Partial<React.ComponentProps<typeof PublishFlowModal>>) =>
+      rendered.rerender(renderModal(nextProps)),
+    unmount: () => rendered.unmount(),
+  };
+}
+
+describe('Publish flow', () => {
+  beforeEach(() => {
+    localStorage.clear();
+    fakeMemberCounts(20);
+    fakePublishedCount(41);
+    fakeAdminEndpoint('GET', `/emails/${EMAIL_ID}/status/`, {
+      email_statuses: [
+        {
+          id: EMAIL_ID,
+          sending: {
+            status: 'failed',
+            retryable: true,
+            failed_during: 'submitting',
+            progress: { completed: 0, total: 20, estimated_seconds_remaining: null },
+          },
+        },
+      ],
+    });
+    fakeTiers([]);
+    fakeLabels([]);
+  });
+
+  it('publishes and emails a draft, then hands the celebration to the list', async () => {
+    const { dispatch, onCompleted } = await renderPublishFlow();
+
+    await expect.element(publishScreen.options()).toBeInTheDocument();
+    await publishScreen.continueButton().click();
+
+    await expect.element(publishScreen.confirm()).toBeInTheDocument();
+    await expect
+      .element(publishScreen.confirmButton())
+      .toHaveTextContent('Publish & send, right now');
+
+    await publishScreen.confirmButton().click();
+
+    await expect.element(publishScreen.complete()).toBeInTheDocument();
+    expect(dispatch).toHaveBeenCalledWith({
+      kind: 'publish',
+      options: { emailOnly: false, newsletter: 'weekly', emailSegment: EVERYONE },
+    });
+    expect(JSON.parse(localStorage.getItem('ghost-last-published-post') ?? 'null')).toEqual({
+      id: POST_ID,
+      type: 'post',
+    });
+    await expect.element(publishScreen.complete()).toHaveTextContent('Boom. It’s out there.');
+    await expect
+      .element(publishScreen.complete())
+      .toHaveTextContent('That’s 42 posts published, keep going!');
+    expect(onCompleted).toHaveBeenCalledTimes(1);
+    expect(onCompleted).toHaveBeenCalledWith({
+      postId: POST_ID,
+      isScheduled: false,
+      hasEmail: true,
+    });
+  });
+
+  it('keeps confirmation pending during navigation without showing completion', async () => {
+    const { onCompleted } = await renderPublishFlow({ showCompletion: false });
+
+    await publishScreen.continueButton().click();
+    await publishScreen.confirmButton().click();
+
+    await expect.poll(() => onCompleted.mock.calls.length).toBe(1);
+    // The caller has started navigation, but the destination may still be loading.
+    await expect.element(publishScreen.confirm()).toBeVisible();
+    await expect.element(publishScreen.confirmButton()).toBeDisabled();
+    await expect(publishScreen.complete()).toHaveCount(0);
+    expect(JSON.parse(localStorage.getItem('ghost-last-published-post') ?? 'null')).toEqual({
+      id: POST_ID,
+      type: 'post',
+    });
+  });
+
+  it('holds the confirm button through the hand-off so the publish cannot be dispatched twice', async () => {
+    const { dispatch, onCompleted } = await renderPublishFlow();
+
+    await publishScreen.continueButton().click();
+    await publishScreen.confirmButton().click();
+
+    // The save has landed, but the send keeps its running state for the hand-off.
+    await expect.poll(() => dispatch.mock.calls.length).toBe(1);
+    await expect.element(publishScreen.confirmButton()).toHaveTextContent('Publishing & sending');
+    await expect.element(publishScreen.confirmButton()).toBeDisabled();
+    expect(onCompleted).not.toHaveBeenCalled();
+
+    await expect.element(publishScreen.complete()).toBeInTheDocument();
+    expect(dispatch).toHaveBeenCalledTimes(1);
+  });
+
+  it('completes nothing when the flow is torn down during the save', async () => {
+    let finishDispatch: (completion: SaveCompletion) => void = () => {};
+    const dispatch = vi.fn(
+      () =>
+        new Promise<SaveCompletion>((resolve) => {
+          finishDispatch = resolve;
+        }),
+    );
+    const { onCompleted, unmount } = await renderPublishFlow({ dispatch });
+
+    await publishScreen.continueButton().click();
+    await publishScreen.confirmButton().click();
+    await expect.poll(() => dispatch.mock.calls.length).toBe(1);
+
+    await unmount();
+    finishDispatch(saved());
+    await new Promise<void>((resolve) => {
+      setTimeout(resolve, 0);
+    });
+
+    expect(onCompleted).not.toHaveBeenCalled();
+    expect(localStorage.getItem('ghost-last-published-post')).toBeNull();
+  });
+
+  it('cannot return to settings or dispatch twice while the save is running', async () => {
+    let finishDispatch: (completion: SaveCompletion) => void = () => {};
+    const dispatch = vi.fn(
+      () =>
+        new Promise<SaveCompletion>((resolve) => {
+          finishDispatch = resolve;
+        }),
+    );
+    await renderPublishFlow({ dispatch });
+
+    await publishScreen.continueButton().click();
+    await publishScreen.confirmButton().click();
+    await expect.poll(() => dispatch.mock.calls.length).toBe(1);
+    await expect.element(publishScreen.backToSettings()).toBeDisabled();
+
+    publishScreen
+      .backToSettings()
+      .element()
+      .dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    publishScreen
+      .confirmButton()
+      .element()
+      .dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    await expect.element(publishScreen.confirm()).toBeInTheDocument();
+    expect(dispatch).toHaveBeenCalledTimes(1);
+
+    finishDispatch(saved());
+    await expect.element(publishScreen.complete()).toBeInTheDocument();
+    expect(dispatch).toHaveBeenCalledTimes(1);
+  });
+
+  it('publishes without emailing when the publish-only type is chosen', async () => {
+    const { dispatch } = await renderPublishFlow();
+
+    await publishScreen.setting('publish-type').click();
+    await page.getByLabelText('Publish only').click();
+    await publishScreen.continueButton().click();
+
+    await expect
+      .element(publishScreen.confirmButton())
+      .toHaveTextContent('Publish post, right now');
+    await publishScreen.confirmButton().click();
+
+    await expect.element(publishScreen.complete()).toBeInTheDocument();
+    expect(dispatch).toHaveBeenCalledWith({ kind: 'publish', options: {} });
+  });
+
+  it('warns that an email over 100kB may be clipped while the flow will send it', async () => {
+    fakeEmailPreview(150 * 1024);
+    await renderPublishFlow({ post: draft({ updatedAt: '2026-09-02T09:00:00.000Z' }) });
+
+    await expect.element(publishScreen.emailSizeWarning()).toHaveTextContent('This email is 150kB');
+    await expect
+      .element(publishScreen.emailSizeWarning())
+      .toHaveTextContent(
+        'Email newsletters may get clipped in the inbox behind a “View entire message” link when they’re over 100kB.',
+      );
+
+    await publishScreen.setting('publish-type').click();
+    await page.getByLabelText('Publish only').click();
+
+    await expect(publishScreen.emailSizeWarning()).toHaveCount(0);
+  });
+
+  it('does not warn about an email that fits', async () => {
+    const previewApi = fakeEmailPreview(99 * 1024);
+    await renderPublishFlow({ post: draft({ updatedAt: '2026-09-02T09:00:00.000Z' }) });
+
+    await expect.poll(() => previewApi.requests.length).toBe(1);
+    await expect.element(publishScreen.options()).toBeInTheDocument();
+    await expect(publishScreen.emailSizeWarning()).toHaveCount(0);
+  });
+
+  it('schedules a draft and hands over the scheduled celebration key', async () => {
+    const { dispatch } = await renderPublishFlow();
+
+    await publishScreen.setting('publish-at').click();
+    await page.getByLabelText('Schedule for later').click();
+    await publishScreen.continueButton().click();
+    await publishScreen.confirmButton().click();
+
+    await expect.element(publishScreen.complete()).toBeInTheDocument();
+
+    const command = dispatch.mock.calls[0][0];
+    expect(command.kind).toBe('schedule');
+    expect(command).toMatchObject({
+      options: { emailOnly: false, newsletter: 'weekly', emailSegment: EVERYONE },
+    });
+    const publishedAt = command.kind === 'schedule' ? command.options.publishedAt : '';
+    expect(Date.parse(publishedAt)).toBeGreaterThan(Date.now());
+    // The server rejects a sub-second publish time.
+    expect(publishedAt).toMatch(/T\d\d:\d\d:\d\d\.000Z$/);
+    expect(localStorage.getItem('ghost-last-scheduled-post')).not.toBeNull();
+    expect(localStorage.getItem('ghost-last-published-post')).toBeNull();
+  });
+
+  it('rotates disclosure chevrons a single half turn', async () => {
+    await renderPublishFlow();
+
+    const trigger = publishScreen.setting('publish-type');
+    const chevron = () => trigger.element().querySelector(':scope > svg')!;
+    expect(getComputedStyle(chevron()).rotate).toBe('none');
+
+    await trigger.click();
+    await expect.poll(() => getComputedStyle(chevron()).rotate).toBe('180deg');
+    expect(getComputedStyle(chevron()).transform).toBe('none');
+
+    await trigger.click();
+    await expect.poll(() => getComputedStyle(chevron()).rotate).toBe('none');
+    expect(getComputedStyle(chevron()).transform).toBe('none');
+  });
+
+  it('keeps timing radios in place when scheduling fields appear and disappear', async () => {
+    await renderPublishFlow();
+    await publishScreen.setting('publish-at').click();
+
+    const now = page.getByRole('radio', { name: 'Set it live now' });
+    const schedule = page.getByRole('radio', { name: 'Schedule for later' });
+    await expect.element(now).toBeVisible();
+
+    const radioSpacing = () => {
+      const first = now.element().getBoundingClientRect();
+      const second = schedule.element().getBoundingClientRect();
+      return { x: second.x - first.x, y: second.y - first.y };
+    };
+    const before = radioSpacing();
+
+    await schedule.click();
+    await expect.element(publishScreen.scheduleDate()).toBeVisible();
+    expect(radioSpacing()).toEqual(before);
+
+    await now.click();
+    await expect.element(publishScreen.scheduleDate()).not.toBeInTheDocument();
+    expect(radioSpacing()).toEqual(before);
+  });
+
+  it('gives each publish-at radio its own id, reached from exactly one label', async () => {
+    await renderPublishFlow();
+
+    await publishScreen.setting('publish-at').click();
+
+    const labelledId = async (name: string) => {
+      const control = page.getByRole('radio', { name });
+      await expect.element(control).toBeInTheDocument();
+
+      const id = control.element().getAttribute('id') ?? '';
+      const labels = document.querySelectorAll(`label[for="${id}"]`);
+
+      expect(labels).toHaveLength(1);
+      expect(labels[0]).toHaveTextContent(name);
+
+      return id;
+    };
+
+    const now = await labelledId('Set it live now');
+    const schedule = await labelledId('Schedule for later');
+
+    expect(now).not.toBe(schedule);
+  });
+
+  // One pinned instant, two zones a day apart: whatever zone the runner uses, it
+  // agrees with at most one of them, so a browser-day mapping fails at least one.
+  it.each([
+    ['Pacific/Auckland', '2026-09-04', '4'],
+    ['Pacific/Honolulu', '2026-09-03', '3'],
+  ])(
+    'keeps the calendar on the site timezone day the field shows (%s)',
+    async (timezone, date, day) => {
+      await renderPublishFlow({ timezone, now: () => new Date('2026-09-03T20:00:00.000Z') });
+
+      await publishScreen.setting('publish-at').click();
+      await page.getByLabelText('Schedule for later').click();
+
+      await expect.element(publishScreen.scheduleDate()).toHaveValue(date);
+      await publishScreen.scheduleDate().click();
+
+      const selected = page.getByRole('gridcell', { selected: true });
+      await expect.element(selected).toHaveTextContent(day);
+
+      // Committing the day the calendar highlights must not move the date.
+      await selected.click();
+      await expect.element(publishScreen.scheduleDate()).toHaveValue(date);
+    },
+  );
+
+  it('opens the schedule calendar from its button and picks a day from the keyboard', async () => {
+    await renderPublishFlow({ now: () => new Date('2026-09-03T20:00:00.000Z') });
+
+    await publishScreen.setting('publish-at').click();
+    await page.getByRole('radio', { name: 'Schedule for later' }).click();
+    await userEvent.tab();
+    await expect.element(publishScreen.scheduleCalendarButton()).toHaveFocus();
+
+    await userEvent.keyboard('{Enter}');
+    await expect
+      .element(page.getByRole('gridcell', { selected: true }).getByRole('button'))
+      .toHaveFocus();
+    await userEvent.keyboard('{ArrowRight}{Enter}');
+
+    await expect(page.getByRole('grid')).toHaveCount(0);
+    await expect.element(publishScreen.scheduleCalendarButton()).toHaveFocus();
+    await expect.element(publishScreen.scheduleDate()).toHaveValue('2026-09-04');
+  });
+
+  it('schedules a typed date, however far off', async () => {
+    const { dispatch } = await renderPublishFlow({
+      now: () => new Date('2026-09-03T20:00:00.000Z'),
+    });
+
+    await publishScreen.setting('publish-at').click();
+    await page.getByLabelText('Schedule for later').click();
+    await publishScreen.scheduleDate().fill('2031-06-15');
+    await userEvent.tab();
+
+    await expect.element(publishScreen.scheduleDate()).toHaveValue('2031-06-15');
+    await publishScreen.continueButton().click();
+    await publishScreen.confirmButton().click();
+
+    await expect.element(publishScreen.complete()).toBeInTheDocument();
+    // The day changes; the default time of day stays.
+    expect(dispatch.mock.calls[0][0]).toMatchObject({
+      kind: 'schedule',
+      options: { publishedAt: '2031-06-15T20:10:00.000Z' },
+    });
+  });
+
+  it('moves a typed past date up to the earliest time a post can be scheduled', async () => {
+    await renderPublishFlow({ now: () => new Date('2026-09-03T20:00:00.000Z') });
+
+    await publishScreen.setting('publish-at').click();
+    await page.getByLabelText('Schedule for later').click();
+    await publishScreen.scheduleDate().fill('2020-01-01');
+    await userEvent.tab();
+
+    await expect.element(publishScreen.scheduleDate()).toHaveValue('2026-09-03');
+    await expect.element(publishScreen.scheduleTime()).toHaveValue('20:00');
+  });
+
+  it('keeps the scheduled date while a typed one is refused', async () => {
+    const { dispatch } = await renderPublishFlow({
+      now: () => new Date('2026-09-03T20:00:00.000Z'),
+    });
+
+    await publishScreen.setting('publish-at').click();
+    await page.getByLabelText('Schedule for later').click();
+    await expect.element(publishScreen.scheduleDate()).toBeVisible();
+
+    const fields = () =>
+      publishScreen
+        .scheduleDate()
+        .element()
+        .closest('[data-slot="input-group"]')!
+        .getBoundingClientRect();
+    const radio = () =>
+      page.getByRole('radio', { name: 'Schedule for later' }).element().getBoundingClientRect();
+    const level = fields().top - radio().top;
+
+    await publishScreen.scheduleDate().fill('2031-02-30');
+    await userEvent.tab();
+
+    await expect.element(publishScreen.scheduleDate()).toHaveAccessibleDescription('Invalid date');
+    // The message takes a row of its own under the fields, which stay level with their radio.
+    const message = page.getByText('Invalid date', { exact: true }).element();
+    expect(fields().top - radio().top).toBe(level);
+    expect(message.getBoundingClientRect().left).toBe(fields().left);
+
+    await publishScreen.continueButton().click();
+    await publishScreen.confirmButton().click();
+
+    await expect.element(publishScreen.complete()).toBeInTheDocument();
+    expect(dispatch.mock.calls[0][0]).toMatchObject({
+      kind: 'schedule',
+      options: { publishedAt: '2026-09-03T20:10:00.000Z' },
+    });
+  });
+
+  it('sends without publishing when the email-only type is chosen', async () => {
+    const { dispatch } = await renderPublishFlow();
+
+    await publishScreen.setting('publish-type').click();
+    await page.getByLabelText('Email only').click();
+    await publishScreen.continueButton().click();
+
+    await expect
+      .element(publishScreen.confirm())
+      .toHaveTextContent('and will not be published on your site.');
+    await publishScreen.confirmButton().click();
+
+    await expect.element(publishScreen.complete()).toBeInTheDocument();
+    expect(dispatch).toHaveBeenCalledWith({
+      kind: 'publish',
+      options: { emailOnly: true, newsletter: 'weekly', emailSegment: EVERYONE },
+    });
+  });
+
+  it('cannot continue with Email only after clearing every recipient', async () => {
+    await renderPublishFlow();
+
+    await publishScreen.setting('publish-type').click();
+    await page.getByLabelText('Email only').click();
+    await publishScreen.setting('email-recipients').click();
+    await publishScreen.recipientFree().click();
+
+    await expect.element(publishScreen.continueButton()).toBeDisabled();
+    await expect
+      .element(publishScreen.options())
+      .toHaveTextContent('Choose at least one recipient to send this email.');
+    publishScreen
+      .continueButton()
+      .element()
+      .dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    await expect.element(publishScreen.options()).toBeInTheDocument();
+  });
+
+  it('says a publish and email with no recipients will not be emailed', async () => {
+    const { dispatch } = await renderPublishFlow();
+
+    await publishScreen.setting('email-recipients').click();
+    await publishScreen.recipientFree().click();
+
+    await expect
+      .element(publishScreen.options())
+      .toHaveTextContent('No recipients are selected, so this post will be published without');
+    await publishScreen.continueButton().click();
+
+    await expect
+      .element(publishScreen.confirm())
+      .toHaveTextContent('It won’t be sent as a newsletter, because no recipients are selected.');
+    await publishScreen.confirmButton().click();
+
+    await expect.poll(() => dispatch.mock.calls.length).toBe(1);
+    expect(dispatch).toHaveBeenCalledWith({ kind: 'publish', options: {} });
+  });
+
+  it('keeps recipient section height stable while a new newsletter count loads', async () => {
+    let finishCounts = () => {};
+    const countsPending = new Promise<void>((resolve) => {
+      finishCounts = resolve;
+    });
+    fakeAdminEndpoint('GET', /^\/members\/\?.*filter=/, async ({ url }) => {
+      const isMonthly = new URL(url).searchParams.get('filter')?.includes('monthly');
+      if (isMonthly) {
+        await countsPending;
+      }
+      return {
+        members: [],
+        meta: {
+          pagination: {
+            page: 1,
+            limit: 1,
+            pages: 1,
+            total: isMonthly ? 5 : 20,
+            next: null,
+            prev: null,
+          },
+        },
+      };
+    });
+    await renderPublishFlow({
+      site: {
+        ...SITE,
+        newsletters: [
+          ...SITE.newsletters,
+          {
+            slug: 'monthly',
+            name: 'Monthly',
+            status: 'active',
+            visibility: 'members',
+            sortOrder: 1,
+          },
+        ],
+      },
+    });
+    await publishScreen.setting('email-recipients').click();
+    await expect.element(publishScreen.recipientFree()).toHaveAccessibleName('Free (20)');
+    const section = page.getByTestId(publishSettingEmailRecipients);
+    const before = section.element().getBoundingClientRect().height;
+
+    try {
+      await page.getByRole('combobox', { name: 'Newsletter' }).click();
+      await page.getByRole('option', { name: 'Monthly', exact: true }).click();
+      await expect.element(publishScreen.recipientFree()).toHaveAccessibleName('Free');
+      expect(section.element().getBoundingClientRect().height).toBe(before);
+    } finally {
+      finishCounts();
+    }
+
+    await expect.element(publishScreen.recipientFree()).toHaveAccessibleName('Free (5)');
+    expect(section.element().getBoundingClientRect().height).toBe(before);
+  });
+
+  it('loads every page before exposing tier and label recipients', async () => {
+    const pagination = (pageNumber: number) => ({
+      page: pageNumber,
+      limit: 100,
+      pages: 2,
+      total: 2,
+      next: pageNumber === 1 ? 2 : null,
+      prev: pageNumber === 2 ? 1 : null,
+    });
+    const tiersApi = fakeAdminEndpoint('GET', /^\/tiers\/\?/, ({ url }) => {
+      const pageNumber = Number(new URL(url).searchParams.get('page') ?? '1');
+
+      return {
+        tiers: [
+          pageNumber === 1
+            ? { id: 'first-tier-id', slug: 'first-tier', name: 'First tier', active: true }
+            : { id: 'last-tier-id', slug: 'last-tier', name: 'Last tier', active: true },
+        ],
+        meta: { pagination: pagination(pageNumber) },
+      };
+    });
+    const labelsApi = fakeAdminEndpoint('GET', /^\/labels\/\?/, ({ url }) => {
+      const pageNumber = Number(new URL(url).searchParams.get('page') ?? '1');
+
+      return {
+        labels: [
+          pageNumber === 1
+            ? { slug: 'first-label', name: 'First label' }
+            : { slug: 'last-label', name: 'Last label' },
+        ],
+        meta: { pagination: pagination(pageNumber) },
+      };
+    });
+
+    await renderPublishFlow();
+    await publishScreen.setting('email-recipients').click();
+    await expect.poll(() => tiersApi.requests.length).toBe(2);
+    await expect.poll(() => labelsApi.requests.length).toBe(2);
+    await expect.element(page.getByLabelText('Specific people')).toBeInTheDocument();
+    await page.getByLabelText('Specific people').click();
+    await page.getByPlaceholder('Search labels and tiers...').click();
+    await expect.element(page.getByRole('option', { name: 'First tier' })).toBeInTheDocument();
+    await expect.element(page.getByRole('option', { name: 'Last tier' })).toBeInTheDocument();
+    await expect.element(page.getByRole('option', { name: 'First label' })).toBeInTheDocument();
+    await expect.element(page.getByRole('option', { name: 'Last label' })).toBeInTheDocument();
+    expect(new URL(tiersApi.requests[1].url).searchParams.get('page')).toBe('2');
+    expect(new URL(labelsApi.requests[1].url).searchParams.get('page')).toBe('2');
+  });
+
+  it('groups specific recipients into active tiers, archived tiers, and labels', async () => {
+    fakeAdminEndpoint('GET', /^\/tiers\/\?/, {
+      tiers: [
+        { id: 'legacy-id', slug: 'legacy', name: 'Legacy tier', active: false },
+        { id: 'supporter-id', slug: 'supporter', name: 'Supporter', active: true },
+      ],
+    });
+    fakeAdminEndpoint('GET', /^\/labels\/\?/, {
+      labels: [{ slug: 'vip', name: 'VIP' }],
+    });
+    const { dispatch } = await renderPublishFlow({
+      site: {
+        ...SITE,
+        editorDefaultEmailRecipients: 'filter',
+        editorDefaultEmailRecipientsFilter: 'status:free',
+      },
+    });
+
+    await publishScreen.setting('email-recipients').click();
+    await publishScreen.recipientFree().click();
+    await page.getByLabelText('Specific people').click();
+    const search = page.getByRole('combobox');
+    await search.click();
+
+    await expect
+      .element(
+        page
+          .getByRole('group', { name: 'Active tiers' })
+          .getByRole('option', { name: 'Supporter' }),
+      )
+      .toBeVisible();
+    await expect
+      .element(
+        page
+          .getByRole('group', { name: 'Archived tiers' })
+          .getByRole('option', { name: 'Legacy tier' }),
+      )
+      .toBeVisible();
+    await expect
+      .element(page.getByRole('group', { name: 'Labels' }).getByRole('option', { name: 'VIP' }))
+      .toBeVisible();
+
+    await search.fill('Legacy');
+    await expect(page.getByRole('group', { name: 'Active tiers' })).toHaveCount(0);
+    await expect(page.getByRole('group', { name: 'Labels' })).toHaveCount(0);
+    await userEvent.keyboard('{Enter}');
+    await expect.element(page.getByRole('button', { name: 'Remove Legacy tier' })).toBeVisible();
+
+    await publishScreen.continueButton().click();
+    await publishScreen.confirmButton().click();
+    await expect.element(publishScreen.complete()).toBeVisible();
+    expect(dispatch).toHaveBeenCalledWith({
+      kind: 'publish',
+      options: { emailOnly: false, newsletter: 'weekly', emailSegment: 'tier:legacy' },
+    });
+  });
+
+  it('shows a bare tier id from the default recipients as its tier', async () => {
+    fakeAdminEndpoint('GET', /^\/tiers\/\?/, {
+      tiers: [
+        { id: '66b68362d3360500077ad2d2', slug: 'gold', name: 'Gold', active: true },
+        { id: '66b68362d3360500077ad2d3', slug: 'silver', name: 'Silver', active: true },
+      ],
+    });
+    fakeAdminEndpoint('GET', /^\/labels\/\?/, {
+      labels: [{ slug: 'vip', name: 'VIP' }],
+    });
+    const { dispatch } = await renderPublishFlow({
+      site: {
+        ...SITE,
+        editorDefaultEmailRecipients: 'filter',
+        editorDefaultEmailRecipientsFilter: '66b68362d3360500077ad2d2,label:vip',
+      },
+    });
+
+    await publishScreen.setting('email-recipients').click();
+    const picker = page.getByTestId(publishRecipientSegments);
+    await expect.element(picker.getByRole('button', { name: 'Remove Gold' })).toBeVisible();
+    await picker.getByRole('combobox').click();
+    await page.getByRole('option', { name: 'Gold' }).click();
+    await expect(picker.getByRole('button', { name: 'Remove Gold' })).toHaveCount(0);
+    await expect.element(picker.getByRole('button', { name: 'Remove VIP' })).toBeVisible();
+
+    await publishScreen.options().getByRole('heading', { name: 'Ready, set, publish.' }).click();
+    await publishScreen.continueButton().click();
+    await publishScreen.confirmButton().click();
+    await expect.element(publishScreen.complete()).toBeInTheDocument();
+    expect(dispatch).toHaveBeenCalledWith({
+      kind: 'publish',
+      options: { emailOnly: false, newsletter: 'weekly', emailSegment: 'label:vip' },
+    });
+  });
+
+  it('searches existing recipient labels without offering label management', async () => {
+    fakeAdminEndpoint('GET', /^\/labels\/\?/, {
+      labels: [
+        { slug: 'vip', name: 'VIP' },
+        { slug: 'staff', name: 'Staff' },
+      ],
+    });
+    const { dispatch } = await renderPublishFlow({
+      site: {
+        ...SITE,
+        editorDefaultEmailRecipients: 'filter',
+        editorDefaultEmailRecipientsFilter: 'status:free',
+      },
+    });
+
+    await publishScreen.setting('email-recipients').click();
+    await publishScreen.recipientFree().click();
+    await page.getByLabelText('Specific people').click();
+    const search = page.getByRole('combobox');
+    await search.fill('VIP');
+    await expect.element(page.getByRole('option', { name: 'VIP' })).toBeVisible();
+    await expect(page.getByRole('option', { name: 'Staff' })).toHaveCount(0);
+    await expect(page.getByRole('button', { name: /^Edit label/ })).toHaveCount(0);
+    await page.getByRole('option', { name: 'VIP' }).click();
+    await search.fill('New label');
+    await expect.element(page.getByText('No labels found')).toBeVisible();
+    await expect(page.getByRole('option', { name: /Create/ })).toHaveCount(0);
+
+    // Turning the segment audience off and back on retains the selected label.
+    await page.getByLabelText('Specific people').click();
+    await expect(page.getByRole('combobox')).toHaveCount(0);
+    await page.getByLabelText('Specific people').click();
+    await publishScreen.continueButton().click();
+    await publishScreen.confirmButton().click();
+    await expect.element(publishScreen.complete()).toBeInTheDocument();
+    expect(dispatch).toHaveBeenCalledWith({
+      kind: 'publish',
+      options: { emailOnly: false, newsletter: 'weekly', emailSegment: 'label:vip' },
+    });
+  });
+
+  it('selects and removes specific recipients with the keyboard', async () => {
+    fakeAdminEndpoint('GET', /^\/labels\/\?/, {
+      labels: [
+        { slug: 'vip', name: 'VIP' },
+        { slug: 'staff', name: 'Staff' },
+      ],
+    });
+    const { dispatch } = await renderPublishFlow({
+      site: {
+        ...SITE,
+        editorDefaultEmailRecipients: 'filter',
+        editorDefaultEmailRecipientsFilter: 'status:free',
+      },
+    });
+
+    await publishScreen.setting('email-recipients').click();
+    await publishScreen.recipientFree().click();
+    await page.getByLabelText('Specific people').click();
+    const picker = page.getByTestId(publishRecipientSegments);
+    const search = page.getByRole('combobox');
+    await search.click();
+    await expect.element(page.getByRole('option', { name: 'VIP' })).toBeVisible();
+    await userEvent.keyboard('{ArrowDown}{Enter}');
+    await expect.element(picker.getByRole('button', { name: 'Remove Staff' })).toBeVisible();
+    await userEvent.keyboard('{Enter}');
+    await expect(picker.getByRole('button', { name: 'Remove Staff' })).toHaveCount(0);
+    await userEvent.keyboard('{ArrowUp}{Enter}');
+    await expect.element(picker.getByRole('button', { name: 'Remove VIP' })).toBeVisible();
+    await userEvent.keyboard('{Backspace}');
+    await expect(picker.getByRole('button', { name: 'Remove VIP' })).toHaveCount(0);
+    await userEvent.keyboard('{ArrowDown}{Enter}');
+    await expect.element(picker.getByRole('button', { name: 'Remove Staff' })).toBeVisible();
+    const activeId = search.element().getAttribute('aria-activedescendant');
+    expect(activeId).toBeTruthy();
+    expect(document.getElementById(activeId ?? '')).toHaveTextContent('Staff');
+    await userEvent.keyboard('{Escape}');
+    await expect(page.getByRole('listbox')).toHaveCount(0);
+    await expect.element(search).toHaveAttribute('aria-expanded', 'false');
+    await expect.element(publishScreen.options()).toBeVisible();
+    await userEvent.keyboard('{ArrowDown}');
+    await expect.element(page.getByRole('listbox')).toBeVisible();
+    await expect.element(search).toHaveAttribute('aria-expanded', 'true');
+
+    await publishScreen.continueButton().click();
+    await publishScreen.confirmButton().click();
+    await expect.element(publishScreen.complete()).toBeInTheDocument();
+    expect(dispatch).toHaveBeenCalledWith({
+      kind: 'publish',
+      options: { emailOnly: false, newsletter: 'weekly', emailSegment: 'label:staff' },
+    });
+  });
+
+  it('gates the flow behind the TK reminder', async () => {
+    await renderPublishFlow({ tkCount: 2 });
+
+    await expect.element(publishScreen.tkReminder()).toHaveTextContent('2 TK reminders');
+    await page.getByRole('button', { name: 'Continue to publish' }).click();
+
+    await expect.element(publishScreen.options()).toBeInTheDocument();
+  });
+
+  it('warns about an ineffective public preview before opening the flow', async () => {
+    await renderPublishFlow({
+      paywallImprovements: true,
+      post: draft({
+        visibility: 'public',
+        lexical: JSON.stringify({
+          root: {
+            children: [
+              { type: 'paragraph', children: [{ type: 'text', text: 'a' }] },
+              { type: 'paywall' },
+              { type: 'paragraph', children: [{ type: 'text', text: 'b' }] },
+            ],
+          },
+        }),
+      }),
+    });
+
+    await expect
+      .element(publishScreen.publicPreviewWarning())
+      .toHaveTextContent('Public preview has no effect');
+  });
+
+  it('reminds about {first_name} outside an Email card before opening the flow', async () => {
+    const onClose = vi.fn();
+    await renderPublishFlow({
+      onClose,
+      post: draft({ lexical: buildLexicalParagraph('Hello {first_name},') }),
+    });
+
+    const reminder = publishScreen.firstNameReminder();
+    await expect.element(reminder).toHaveTextContent('Quick check before publishing');
+    await expect
+      .element(reminder)
+      .toHaveTextContent(
+        '{first_name} was found in your post, but it only works inside an Email content card.',
+      );
+    await page.getByRole('button', { name: 'Back to editor' }).click();
+    expect(onClose).toHaveBeenCalledOnce();
+  });
+
+  it('follows the public-preview warning with the {first_name} reminder', async () => {
+    await renderPublishFlow({
+      paywallImprovements: true,
+      post: draft({
+        visibility: 'public',
+        lexical: JSON.stringify({
+          root: {
+            children: [
+              { type: 'paragraph', children: [{ type: 'text', text: 'Hello {first_name},' }] },
+              { type: 'paywall' },
+              { type: 'paragraph', children: [{ type: 'text', text: 'b' }] },
+            ],
+          },
+        }),
+      }),
+    });
+
+    await expect.element(publishScreen.publicPreviewWarning()).toBeInTheDocument();
+    await page.getByRole('button', { name: 'Continue to publish' }).click();
+    await expect.element(publishScreen.firstNameReminder()).toBeInTheDocument();
+    await page.getByRole('button', { name: 'Continue to publish' }).click();
+
+    await expect.element(publishScreen.options()).toBeInTheDocument();
+  });
+
+  it('keeps the user on confirm when re-auth interrupts the publish', async () => {
+    const dispatch = completesWith({ kind: 'needs-retry' });
+    await renderPublishFlow({ dispatch });
+
+    await publishScreen.continueButton().click();
+    await publishScreen.confirmButton().click();
+
+    await expect
+      .element(publishScreen.confirmError())
+      .toHaveTextContent('Your session was restored. Confirm again to publish.');
+    // Nothing failed, so it is a note rather than an alert.
+    await expect.element(publishScreen.confirmError()).toHaveAttribute('role', 'status');
+    await expect.element(publishScreen.confirm()).toBeInTheDocument();
+  });
+
+  it('cannot be closed while the publish request is in flight', async () => {
+    let finishDispatch: (completion: SaveCompletion) => void = () => {};
+    const dispatch = vi.fn(
+      () =>
+        new Promise<SaveCompletion>((resolve) => {
+          finishDispatch = resolve;
+        }),
+    );
+    const onClose = vi.fn();
+    const { onCompleted } = await renderPublishFlow({ dispatch, onClose });
+
+    await publishScreen.continueButton().click();
+    await publishScreen.confirmButton().click();
+    await expect.poll(() => dispatch.mock.calls.length).toBe(1);
+
+    await expect.element(publishScreen.closeButton()).toBeDisabled();
+    await userEvent.keyboard('{Escape}');
+    expect(onClose).not.toHaveBeenCalled();
+
+    finishDispatch(saved());
+
+    await expect.poll(() => onCompleted.mock.calls.length).toBe(1);
+  });
+
+  it('shows the reason a pre-publish save was refused, upgrade link included', async () => {
+    const onBeforePublish = () =>
+      Promise.reject(
+        new CompletionFailureError({
+          message: 'Your plan is full, please upgrade to publish more.',
+          parts: [
+            { text: 'Your plan is full, ', kind: 'text' },
+            { text: 'please upgrade', kind: 'upgrade' },
+            { text: ' to publish more.', kind: 'text' },
+          ],
+        }),
+      );
+    await renderPublishFlow({ onBeforePublish });
+
+    await publishScreen.continueButton().click();
+    await publishScreen.confirmButton().click();
+
+    await expect
+      .element(publishScreen.confirmError().getByRole('link', { name: 'please upgrade' }))
+      .toBeInTheDocument();
+  });
+
+  it('explains a collision instead of completing', async () => {
+    const dispatch = completesWith(failed('conflict', 'Saving failed! Someone else is editing'));
+    await renderPublishFlow({ dispatch });
+
+    await publishScreen.continueButton().click();
+    await publishScreen.confirmButton().click();
+
+    await expect
+      .element(publishScreen.confirmError())
+      .toHaveTextContent('Someone else has edited this post');
+  });
+
+  it('recovers when the publish dispatcher rejects unexpectedly', async () => {
+    const dispatch = vi.fn(() => Promise.reject(new Error('The save engine stopped')));
+    await renderPublishFlow({ dispatch });
+
+    await publishScreen.continueButton().click();
+    await publishScreen.confirmButton().click();
+
+    await expect.element(publishScreen.confirmError()).toHaveTextContent('The save engine stopped');
+    await expect
+      .poll(() => publishScreen.confirmButton().element().hasAttribute('disabled'))
+      .toBe(false);
+  });
+
+  it('links the upgrade phrase in a host limit without completing', async () => {
+    const dispatch = completesWith(
+      failed('host-limit', 'Your plan is full, please upgrade to publish more.'),
+    );
+    await renderPublishFlow({ dispatch });
+
+    await publishScreen.continueButton().click();
+    await publishScreen.confirmButton().click();
+
+    await expect.element(publishScreen.confirmError()).toHaveTextContent('Your plan is full');
+    await expect
+      .element(publishScreen.confirmError().getByRole('link', { name: 'please upgrade' }))
+      .toBeInTheDocument();
+    expect(localStorage.getItem('ghost-last-published-post')).toBeNull();
+  });
+
+  it('blocks the options step on a publishing limit and links the upgrade phrase', async () => {
+    await renderPublishFlow({
+      limits: {
+        checkPublishingLimit: () =>
+          Promise.reject(
+            new Error('You have reached your member limit, please upgrade your plan.'),
+          ),
+      },
+    });
+
+    await expect
+      .element(publishScreen.options())
+      .toHaveTextContent('You have reached your member limit');
+    await expect
+      .element(publishScreen.options().getByRole('link', { name: 'please upgrade' }))
+      .toBeInTheDocument();
+    // A blocked publish offers no way forward.
+    await expect.element(publishScreen.continueButton()).not.toBeInTheDocument();
+  });
+
+  it('rechecks limit readiness when the mounted flow moves to another post', async () => {
+    let finishSecondCheck: () => void = () => {};
+    const secondCheck = () =>
+      new Promise<void>((resolve) => {
+        finishSecondCheck = resolve;
+      });
+    const rendered = await renderPublishFlow();
+
+    await expect
+      .poll(() => publishScreen.continueButton().element().hasAttribute('disabled'))
+      .toBe(false);
+    await publishScreen.continueButton().click();
+    await expect.element(publishScreen.confirm()).toBeInTheDocument();
+
+    await rendered.rerender({
+      post: draft({ id: 'post-2' }),
+      limits: { checkPublishingLimit: secondCheck },
+    });
+
+    await expect.element(publishScreen.options()).toBeInTheDocument();
+    await expect
+      .poll(() => publishScreen.continueButton().element().hasAttribute('disabled'))
+      .toBe(true);
+    finishSecondCheck();
+    await expect
+      .poll(() => publishScreen.continueButton().element().hasAttribute('disabled'))
+      .toBe(false);
+  });
+
+  it('tells an email count that failed apart from a reached email limit', async () => {
+    let attempt = 0;
+    const checkSendingLimit = vi.fn(() => {
+      attempt += 1;
+      return attempt === 1
+        ? Promise.reject(new LimitCheckError('emails', new Error('Network request failed')))
+        : Promise.resolve();
+    });
+    await renderPublishFlow({ limits: { checkSendingLimit } });
+
+    await expect
+      .element(publishScreen.limitsError())
+      .toHaveTextContent('Couldn’t check email limits. Network request failed');
+    await expect.element(publishScreen.continueButton()).toBeDisabled();
+    await publishScreen.limitsError().getByRole('button', { name: 'Try again' }).click();
+
+    await expect
+      .poll(() => publishScreen.continueButton().element().hasAttribute('disabled'))
+      .toBe(false);
+    await expect
+      .element(publishScreen.setting('publish-type'))
+      .toHaveTextContent('Publish and email');
+  });
+
+  it('blocks on an unreadable limit and retries it safely', async () => {
+    let attempt = 0;
+    const refreshSettings = vi.fn(() => {
+      attempt += 1;
+      return attempt === 1 ? Promise.reject(new Error('Settings are offline')) : Promise.resolve();
+    });
+    await renderPublishFlow({
+      limits: { refreshSettings },
+    });
+
+    await expect.element(publishScreen.limitsError()).toHaveTextContent('Settings are offline');
+    await expect.element(publishScreen.continueButton()).toBeDisabled();
+    await publishScreen.limitsError().getByRole('button', { name: 'Try again' }).click();
+    await expect
+      .poll(() => publishScreen.continueButton().element().hasAttribute('disabled'))
+      .toBe(false);
+    expect(refreshSettings).toHaveBeenCalledTimes(2);
+  });
+
+  it('completes once when React StrictMode replays effect cleanup', async () => {
+    const dispatch = completesWith(saved());
+    const onCompleted = vi.fn();
+    let releaseSettings: () => void = () => {};
+    const refreshSettings = vi.fn(
+      () =>
+        new Promise<void>((resolve) => {
+          releaseSettings = resolve;
+        }),
+    );
+    const checkSendingLimit = vi.fn(() => Promise.resolve());
+    const checkPublishingLimit = vi.fn(() => Promise.resolve());
+
+    await render(
+      <InAppProviders>
+        <PublishFlowModal
+          dispatch={dispatch}
+          limits={{ refreshSettings, checkSendingLimit, checkPublishingLimit }}
+          post={draft()}
+          site={{ ...SITE, mailgunConfigured: false }}
+          timezone="Etc/UTC"
+          user={USER}
+          onClose={() => {}}
+          onCompleted={onCompleted}
+        />
+      </InAppProviders>,
+    );
+
+    await expect.poll(() => refreshSettings.mock.calls.length).toBe(1);
+    expect(checkPublishingLimit).toHaveBeenCalledTimes(1);
+    await expect.element(publishScreen.continueButton()).toBeDisabled();
+    releaseSettings();
+    await expect
+      .poll(() => publishScreen.continueButton().element().hasAttribute('disabled'))
+      .toBe(false);
+    expect(checkSendingLimit).toHaveBeenCalledTimes(1);
+    expect(checkPublishingLimit).toHaveBeenCalledTimes(1);
+    await publishScreen.continueButton().click();
+    await publishScreen.confirmButton().click();
+
+    await expect.element(publishScreen.complete()).toBeInTheDocument();
+    expect(dispatch).toHaveBeenCalledTimes(1);
+    expect(onCompleted).toHaveBeenCalledTimes(1);
+  });
+
+  it('shows a validation failure in place', async () => {
+    const dispatch = completesWith(failed('validation', 'Title cannot be longer than 255'));
+    await renderPublishFlow({ dispatch });
+
+    await publishScreen.continueButton().click();
+    await publishScreen.confirmButton().click();
+
+    await expect
+      .element(publishScreen.confirmError())
+      .toHaveTextContent('Validation failed: Title cannot be longer than 255');
+    await expect.element(publishScreen.confirm()).toBeInTheDocument();
+  });
+
+  it('says a dropped command is no longer publishable', async () => {
+    const dispatch = completesWith({ kind: 'dropped', reason: 'not-draft' });
+    await renderPublishFlow({ dispatch });
+
+    await publishScreen.continueButton().click();
+    await publishScreen.confirmButton().click();
+
+    await expect
+      .element(publishScreen.confirmError())
+      .toHaveTextContent('can no longer be published from here');
+  });
+
+  it('says a superseded command is no longer publishable', async () => {
+    const dispatch = completesWith({ kind: 'superseded', by: 'publish' });
+    await renderPublishFlow({ dispatch });
+
+    await publishScreen.continueButton().click();
+    await publishScreen.confirmButton().click();
+
+    await expect
+      .element(publishScreen.confirmError())
+      .toHaveTextContent('can no longer be published from here');
+  });
+
+  it.each([false, undefined])('hides retry for API eligibility %s', async (retryable) => {
+    const statusApi = fakeAdminEndpoint('GET', `/emails/${EMAIL_ID}/status/`, {
+      email_statuses: [
+        {
+          id: EMAIL_ID,
+          sending: {
+            status: 'failed',
+            failed_during: 'submitting',
+            progress: { completed: 0, total: 20, estimated_seconds_remaining: null },
+            ...(retryable === undefined ? {} : { retryable }),
+          },
+        },
+      ],
+    });
+    await renderPublishFlow({ post: failedSend() });
+    await expect.element(publishScreen.emailError()).toHaveTextContent('Sending failed');
+    await expect.poll(() => statusApi.requests.length).toBe(1);
+    await expect.element(publishScreen.retryEmailButton()).not.toBeInTheDocument();
+  });
+
+  it('says when an existing failed email status cannot be read, and checks it again', async () => {
+    let statusAvailable = false;
+    const statusApi = fakeAdminEndpoint('GET', `/emails/${EMAIL_ID}/status/`, () =>
+      statusAvailable
+        ? {
+            email_statuses: [
+              {
+                id: EMAIL_ID,
+                sending: {
+                  status: 'failed',
+                  retryable: true,
+                  failed_during: 'submitting',
+                  progress: { completed: 0, total: 20, estimated_seconds_remaining: null },
+                },
+              },
+            ],
+          }
+        : new Response(JSON.stringify({ errors: [{ message: 'Status unavailable' }] }), {
+            status: 500,
+            headers: { 'content-type': 'application/json' },
+          }),
+    );
+    await renderPublishFlow({
+      post: draft({
+        status: 'published',
+        email: {
+          id: EMAIL_ID,
+          status: 'failed',
+          error: 'Sending failed',
+          email_count: 0,
+          opened_count: 0,
+        },
+      }),
+    });
+    await expect.poll(() => statusApi.requests.length).toBe(1);
+    await expect.element(publishScreen.emailError()).toHaveTextContent('Sending failed');
+    await expect.element(publishScreen.retryEmailButton()).not.toBeInTheDocument();
+    await expect
+      .element(publishScreen.emailError())
+      .toHaveTextContent(
+        'Could not check whether this email can be retried. Please try checking again.',
+      );
+
+    statusAvailable = true;
+    await publishScreen.checkRetryAvailability().click();
+
+    await expect.element(publishScreen.retryEmailButton()).toHaveTextContent('Retry sending email');
+    await expect(publishScreen.checkRetryAvailability()).toHaveCount(0);
+  });
+
+  it('hands a retried send off without waiting for it to be submitted', async () => {
+    const retryApi = fakeAdminEndpoint('PUT', `/emails/${EMAIL_ID}/retry/`, { emails: [] });
+    const postReads = fakeAdminEndpoint('GET', new RegExp(`^/posts/${POST_ID}/\\?`), {
+      posts: [],
+    });
+    const { onCompleted } = await renderPublishFlow({ post: failedSend() });
+
+    await expect.element(publishScreen.emailError()).toHaveTextContent('Sending failed');
+    await publishScreen.retryEmailButton().click();
+
+    // The retry has been accepted, but the button keeps its running state for the hand-off.
+    await expect.poll(() => retryApi.requests.length).toBe(1);
+    await expect.element(publishScreen.retryEmailButton()).toHaveTextContent('Sending');
+    await expect.element(publishScreen.retryEmailButton()).toBeDisabled();
+    expect(onCompleted).not.toHaveBeenCalled();
+
+    await expect.element(publishScreen.complete()).toBeInTheDocument();
+    expect(onCompleted).toHaveBeenCalledWith({
+      postId: POST_ID,
+      isScheduled: false,
+      hasEmail: true,
+    });
+    expect(retryApi.requests).toHaveLength(1);
+    expect(postReads.requests).toHaveLength(0);
+  });
+
+  it('offers to send the remaining emails of a partially sent newsletter', async () => {
+    await renderPublishFlow({
+      post: draft({
+        status: 'published',
+        email: {
+          id: EMAIL_ID,
+          status: 'failed',
+          error: 'An error occurred, and your newsletter was only partially sent.',
+          email_count: 20,
+          opened_count: 0,
+        },
+      }),
+    });
+
+    await expect
+      .element(publishScreen.retryEmailButton())
+      .toHaveTextContent('Send remaining emails');
+  });
+
+  it('refreshes retry eligibility when Core rejects the retry', async () => {
+    let retryable = true;
+    fakeAdminEndpoint('GET', `/emails/${EMAIL_ID}/status/`, () => ({
+      email_statuses: [
+        {
+          id: EMAIL_ID,
+          sending: {
+            status: 'failed',
+            retryable,
+            failed_during: 'submitting',
+            progress: { completed: 0, total: 20, estimated_seconds_remaining: null },
+          },
+        },
+      ],
+    }));
+    const retryApi = fakeAdminEndpoint(
+      'PUT',
+      `/emails/${EMAIL_ID}/retry/`,
+      { errors: [{ type: 'BadRequestError', message: 'Delivery outcome is unknown' }] },
+      { status: 400 },
+    );
+    await renderPublishFlow({ post: failedSend() });
+
+    await expect.element(publishScreen.retryEmailButton()).toBeInTheDocument();
+
+    // Eligibility changed after it was read, so Core rejects the stale retry.
+    retryable = false;
+    await publishScreen.retryEmailButton().click();
+
+    await expect.poll(() => retryApi.requests.length).toBe(1);
+    await expect.element(publishScreen.retryEmailButton()).not.toBeInTheDocument();
+    // Core's reason, not the transport's "Something went wrong while loading emails".
+    await expect
+      .element(publishScreen.retryError())
+      .toHaveTextContent('Delivery outcome is unknown');
+  });
+
+  it('links the upgrade phrase when a host limit refuses the retry', async () => {
+    fakeAdminEndpoint(
+      'PUT',
+      `/emails/${EMAIL_ID}/retry/`,
+      {
+        errors: [
+          {
+            type: 'HostLimitError',
+            message: 'Your plan is over its email limit, please upgrade to keep sending.',
+          },
+        ],
+      },
+      { status: 403 },
+    );
+    await renderPublishFlow({ post: failedSend() });
+
+    await publishScreen.retryEmailButton().click();
+
+    await expect
+      .element(publishScreen.retryError())
+      .toHaveTextContent('Your plan is over its email limit');
+    await expect
+      .element(publishScreen.retryError().getByRole('link', { name: 'please upgrade' }))
+      .toBeInTheDocument();
+  });
+
+  it('keeps the email retry pending during navigation without showing completion', async () => {
+    const retryApi = fakeAdminEndpoint('PUT', `/emails/${EMAIL_ID}/retry/`, { emails: [] });
+    const { onCompleted } = await renderPublishFlow({
+      post: failedSend(),
+      showCompletion: false,
+    });
+
+    await expect.element(publishScreen.emailError()).toHaveTextContent('Sending failed');
+    await publishScreen.retryEmailButton().click();
+
+    await expect.poll(() => onCompleted.mock.calls.length).toBe(1);
+    await expect.element(publishScreen.emailError()).toBeVisible();
+    await expect.element(publishScreen.retryEmailButton()).toBeDisabled();
+    await expect(publishScreen.complete()).toHaveCount(0);
+    expect(retryApi.requests).toHaveLength(1);
+  });
+
+  // The recipient count and the email retry are the flow's own requests,
+  // issued over an editor that may still hold unsaved work: a 401 on either
+  // has to surface here rather than navigate.
+  it('keeps an expired recipient count inside the flow instead of leaving the page', async () => {
+    const { pathname } = window.location;
+    const countApi = fakeAdminEndpoint('GET', /^\/members\/\?.*filter=/, SESSION_EXPIRED, {
+      status: 401,
+    });
+    await renderPublishFlow();
+
+    await expect.element(publishScreen.options()).toBeInTheDocument();
+    await expect.poll(() => countApi.requests.length).toBeGreaterThan(0);
+    await publishScreen.continueButton().click();
+
+    await expect.element(publishScreen.confirm()).toBeInTheDocument();
+    expect(window.location.pathname).toBe(pathname);
+  });
+
+  it('keeps an expired email retry inside the flow instead of leaving the page', async () => {
+    const { pathname } = window.location;
+    const retryApi = fakeAdminEndpoint('PUT', `/emails/${EMAIL_ID}/retry/`, SESSION_EXPIRED, {
+      status: 401,
+    });
+    await renderPublishFlow({ post: failedSend() });
+
+    await expect.element(publishScreen.emailError()).toHaveTextContent('Sending failed');
+    await publishScreen.retryEmailButton().click();
+
+    await expect
+      .element(publishScreen.emailError().getByRole('alert'))
+      .toHaveTextContent('Your session expired. Try again to sign in.');
+    expect(retryApi.requests).toHaveLength(1);
+    expect(window.location.pathname).toBe(pathname);
+  });
+
+  it('asks for sign-in when an email retry finds the session gone, then sends it again', async () => {
+    const expiredRetry = fakeAdminEndpoint('PUT', `/emails/${EMAIL_ID}/retry/`, SESSION_EXPIRED, {
+      status: 401,
+    });
+    let retryAfterSignIn: EndpointCapture | undefined;
+    // Signing in brings the session back, so the repeated retry is answered.
+    const requestReauth = vi.fn(() => {
+      retryAfterSignIn = fakeAdminEndpoint('PUT', `/emails/${EMAIL_ID}/retry/`, { emails: [] });
+      return Promise.resolve(true);
+    });
+    await renderPublishFlow({ post: failedSend(), requestReauth });
+
+    await expect.element(publishScreen.emailError()).toHaveTextContent('Sending failed');
+    await publishScreen.retryEmailButton().click();
+
+    await expect.element(publishScreen.complete()).toBeVisible();
+    expect(requestReauth).toHaveBeenCalledTimes(1);
+    expect(expiredRetry.requests).toHaveLength(1);
+    expect(retryAfterSignIn?.requests).toHaveLength(1);
+  });
+
+  it('does not re-read the current user when the writer moves between steps', async () => {
+    // The providers and every step read the current user; the app keeps that
+    // read fresh for minutes, so a 401 after the first read must never be hit.
+    const signedIn = fakeAdminEndpoint('GET', /^\/users\/me\//, {
+      users: [{ id: 'user-1', roles: [{ id: 'role-1', name: 'Administrator' }] }],
+    });
+    await renderPublishFlow();
+
+    await expect.element(publishScreen.options()).toBeInTheDocument();
+    await expect.poll(() => signedIn.requests.length).toBeGreaterThan(0);
+
+    // The session expires while the modal sits open.
+    const expired = fakeAdminEndpoint('GET', /^\/users\/me\//, SESSION_EXPIRED, { status: 401 });
+    await publishScreen.continueButton().click();
+
+    // The confirm step names its audience, so its own count observer has
+    // resolved - off the cached user, without a second read.
+    await expect
+      .element(publishScreen.confirmButton())
+      .toHaveTextContent('Publish & send, right now');
+    expect(signedIn.requests).toHaveLength(1);
+    expect(expired.requests).toHaveLength(0);
+  });
+
+  it('never claims an audience of none when the count expires', async () => {
+    fakeAdminEndpoint('GET', /^\/members\/\?.*filter=/, SESSION_EXPIRED, { status: 401 });
+    const { onCompleted } = await renderPublishFlow();
+
+    await publishScreen.setting('publish-type').click();
+    await page.getByLabelText('Email only').click();
+    await publishScreen.continueButton().click();
+    await publishScreen.confirmButton().click();
+
+    // An unreadable count is not a count of zero.
+    await expect.element(publishScreen.complete()).toHaveTextContent('was sent to all subscribers');
+    await expect.element(publishScreen.complete()).not.toHaveTextContent('0 subscribers');
+    expect(onCompleted).toHaveBeenCalledTimes(1);
+  });
+
+  it('keeps the recipient picker usable when its segment queries expire', async () => {
+    const tiersApi = fakeAdminEndpoint('GET', /^\/tiers\/\?/, SESSION_EXPIRED, { status: 401 });
+    const labelsApi = fakeAdminEndpoint('GET', /^\/labels\/\?/, SESSION_EXPIRED, { status: 401 });
+    await renderPublishFlow();
+
+    await publishScreen.setting('email-recipients').click();
+    await expect.poll(() => tiersApi.requests.length).toBeGreaterThan(0);
+    await expect.poll(() => labelsApi.requests.length).toBeGreaterThan(0);
+
+    // Neither query can name a segment, so the picker drops "Specific people"
+    // and offers the free/paid split alone — quietly, as it does for any
+    // failed segment lookup.
+    await expect.element(page.getByTestId(publishRecipientFree)).toBeInTheDocument();
+    await expect(page.getByText('Specific people')).toHaveCount(0);
+  });
+
+  it('offers to check again when the failed email has no id', async () => {
+    fakeAdminEndpoint('GET', new RegExp(`^/posts/${POST_ID}/\\?`), {
+      posts: [
+        {
+          id: POST_ID,
+          status: 'published',
+          email: { id: EMAIL_ID, email_count: 0, opened_count: 0, status: 'failed' },
+        },
+      ],
+    });
+    await renderPublishFlow({
+      post: draft({
+        status: 'published',
+        email: { email_count: 0, opened_count: 0, status: 'failed', error: 'Sending failed' },
+      }),
+    });
+
+    await expect.element(publishScreen.checkRetryAvailability()).toBeVisible();
+    await expect.element(publishScreen.retryEmailButton()).not.toBeInTheDocument();
+
+    // The reload finds the email's id, which the eligibility read needs.
+    await publishScreen.checkRetryAvailability().click();
+
+    await expect.element(publishScreen.retryEmailButton()).toBeVisible();
+  });
+
+  it('describes an at-open failed email-only post as created, not published', async () => {
+    await renderPublishFlow({
+      post: draft({
+        status: 'sent',
+        email: {
+          id: EMAIL_ID,
+          email_count: 20,
+          opened_count: 0,
+          status: 'failed',
+          error: 'Sending failed',
+        },
+      }),
+    });
+
+    await expect
+      .element(publishScreen.emailError())
+      .toHaveTextContent('Your post has been created but the email failed to send.');
+    await expect.element(publishScreen.emailError()).not.toHaveTextContent('has been published');
+  });
+
+  it('takes a draft with a failed historic email through the normal publish dispatch', async () => {
+    const { dispatch } = await renderPublishFlow({
+      post: draft({
+        email: {
+          id: EMAIL_ID,
+          email_count: 20,
+          opened_count: 0,
+          status: 'failed',
+          error: 'Sending failed',
+        },
+      }),
+    });
+
+    await expect.element(publishScreen.options()).toBeInTheDocument();
+    await publishScreen.continueButton().click();
+    await publishScreen.confirmButton().click();
+
+    await expect.element(publishScreen.complete()).toBeInTheDocument();
+    expect(dispatch).toHaveBeenCalledWith({
+      kind: 'publish',
+      options: { emailOnly: false },
+    });
+  });
+
+  it.each([null, 'all'])(
+    'describes a historic %s segment without using the current default',
+    async (emailSegment) => {
+      await renderPublishFlow({
+        post: draft({
+          email: { id: EMAIL_ID, email_count: 12, opened_count: 0, status: 'submitted' },
+          emailSegment,
+        }),
+        site: {
+          ...SITE,
+          editorDefaultEmailRecipients: 'filter',
+          editorDefaultEmailRecipientsFilter: 'status:free',
+        },
+      });
+
+      await expect
+        .element(publishScreen.alreadySent())
+        .toHaveTextContent('Already sent to 12 subscribers');
+      await expect.element(publishScreen.alreadySent()).not.toHaveTextContent('free');
+      await expect.element(publishScreen.alreadySent()).not.toHaveTextContent('specific');
+      await expect.element(publishScreen.alreadySent()).not.toHaveTextContent('none');
+    },
+  );
+});
+
+describe('Update flow', () => {
+  beforeEach(() => {
+    fakeMemberCounts(20);
+  });
+
+  it('describes a scheduled send in place when its count expires', async () => {
+    const countApi = fakeAdminEndpoint('GET', /^\/members\/\?.*filter=/, SESSION_EXPIRED, {
+      status: 401,
+    });
+    const { pathname } = window.location;
+
+    await render(
+      <InAppProviders>
+        <UpdateFlowModal
+          dispatch={completesWith(saved('draft'))}
+          post={draft({
+            status: 'scheduled',
+            publishedAt: '2026-09-10T09:00:00.000Z',
+            newsletter: 'weekly',
+            newsletterName: 'Weekly',
+            emailSegment: EVERYONE,
+          })}
+          site={SITE}
+          timezone="Etc/UTC"
+          user={USER}
+          onClose={() => {}}
+        />
+      </InAppProviders>,
+    );
+
+    // An unreadable count drops the number rather than reporting none.
+    await expect.poll(() => countApi.requests.length).toBeGreaterThan(0);
+    await expect
+      .element(publishScreen.updateFlowConfirmation())
+      .toHaveTextContent('published and sent to subscribers');
+    await expect.element(publishScreen.updateFlow()).not.toHaveTextContent('0 subscribers');
+    expect(window.location.pathname).toBe(pathname);
+  });
+
+  it.each([
+    ['sent', 'Sent'],
+    ['published', 'Unpublish'],
+    ['scheduled', 'Unschedule'],
+  ] as const)('heads a %s post’s update flow “%s”', async (status, heading) => {
+    await render(
+      <InAppProviders>
+        <UpdateFlowModal
+          dispatch={completesWith(saved('draft'))}
+          post={draft({ status, publishedAt: '2026-09-10T09:00:00.000Z' })}
+          site={SITE}
+          timezone="Etc/UTC"
+          user={USER}
+          onClose={() => {}}
+        />
+      </InAppProviders>,
+    );
+
+    await expect.element(publishScreen.updateFlow()).toHaveAccessibleName(heading);
+    // The on-screen heading is aria-hidden, so a role query would find only the dialog's title.
+    expect(
+      publishScreen.updateFlow().element().querySelector('h2[aria-hidden="true"]'),
+    ).toHaveTextContent(heading);
+  });
+
+  it('reverts a published post to a draft', async () => {
+    const dispatch = completesWith(saved('draft'));
+    const onClose = vi.fn();
+
+    await render(
+      <InAppProviders>
+        <UpdateFlowModal
+          dispatch={dispatch}
+          post={draft({ status: 'published', publishedAt: '2026-09-01T09:00:00.000Z' })}
+          site={SITE}
+          timezone="Etc/UTC"
+          user={USER}
+          onClose={onClose}
+        />
+      </InAppProviders>,
+    );
+
+    await expect.element(publishScreen.updateFlowTitle()).toHaveTextContent('has been published');
+    await publishScreen.revertToDraft().click();
+
+    expect(dispatch).toHaveBeenCalledWith({ kind: 'revert' });
+    await expect.poll(() => onClose.mock.calls.length).toBe(1);
+  });
+
+  it('reverts once when React StrictMode replays effect cleanup', async () => {
+    const dispatch = completesWith(saved('draft'));
+    const onClose = vi.fn();
+    const onReverted = vi.fn();
+
+    await render(
+      <InAppProviders>
+        <UpdateFlowModal
+          dispatch={dispatch}
+          post={draft({ status: 'published', publishedAt: '2026-09-01T09:00:00.000Z' })}
+          site={SITE}
+          timezone="Etc/UTC"
+          user={USER}
+          onClose={onClose}
+          onReverted={onReverted}
+        />
+      </InAppProviders>,
+    );
+
+    await publishScreen.revertToDraft().click();
+
+    await expect.poll(() => onClose.mock.calls.length).toBe(1);
+    expect(dispatch).toHaveBeenCalledTimes(1);
+    expect(onReverted).toHaveBeenCalledTimes(1);
+  });
+
+  it('recovers when the revert dispatcher rejects unexpectedly', async () => {
+    const dispatch = vi.fn(() => Promise.reject(new Error('The revert stopped')));
+    const onClose = vi.fn();
+
+    await render(
+      <InAppProviders>
+        <UpdateFlowModal
+          dispatch={dispatch}
+          post={draft({ status: 'published', publishedAt: '2026-09-01T09:00:00.000Z' })}
+          site={SITE}
+          timezone="Etc/UTC"
+          user={USER}
+          onClose={onClose}
+        />
+      </InAppProviders>,
+    );
+
+    await publishScreen.revertToDraft().click();
+
+    await expect
+      .element(publishScreen.updateFlow().getByRole('alert'))
+      .toHaveTextContent('The revert stopped');
+    await expect
+      .poll(() => publishScreen.revertToDraft().element().hasAttribute('disabled'))
+      .toBe(false);
+    expect(onClose).not.toHaveBeenCalled();
+  });
+
+  it('links the upgrade phrase when a host limit refuses the revert', async () => {
+    const dispatch = completesWith(
+      failed('host-limit', 'Your plan is full, please upgrade to make changes.'),
+    );
+
+    await render(
+      <InAppProviders>
+        <UpdateFlowModal
+          dispatch={dispatch}
+          post={draft({ status: 'published', publishedAt: '2026-09-01T09:00:00.000Z' })}
+          site={SITE}
+          timezone="Etc/UTC"
+          user={USER}
+          onClose={() => {}}
+        />
+      </InAppProviders>,
+    );
+
+    await publishScreen.revertToDraft().click();
+
+    await expect
+      .element(
+        publishScreen.updateFlow().getByRole('alert').getByRole('link', { name: 'please upgrade' }),
+      )
+      .toBeInTheDocument();
+  });
+
+  it('abandons a pending revert when the update flow closes', async () => {
+    let finishDispatch: (completion: SaveCompletion) => void = () => {};
+    const dispatch = vi.fn(
+      () =>
+        new Promise<SaveCompletion>((resolve) => {
+          finishDispatch = resolve;
+        }),
+    );
+    const onClose = vi.fn();
+    const onReverted = vi.fn();
+
+    await render(
+      <InAppProviders>
+        <UpdateFlowModal
+          dispatch={dispatch}
+          post={draft({ status: 'published', publishedAt: '2026-09-01T09:00:00.000Z' })}
+          site={SITE}
+          timezone="Etc/UTC"
+          user={USER}
+          onClose={onClose}
+          onReverted={onReverted}
+        />
+      </InAppProviders>,
+    );
+
+    await publishScreen.revertToDraft().click();
+    await expect.poll(() => dispatch.mock.calls.length).toBe(1);
+    await publishScreen.updateFlow().getByRole('button', { name: 'Close' }).click();
+    expect(onClose).toHaveBeenCalledTimes(1);
+
+    finishDispatch(saved('draft'));
+    await new Promise<void>((resolve) => {
+      setTimeout(resolve, 0);
+    });
+
+    expect(onReverted).not.toHaveBeenCalled();
+    expect(onClose).toHaveBeenCalledTimes(1);
+  });
+
+  it('abandons a pending revert when the mounted update flow changes posts', async () => {
+    let finishDispatch: (completion: SaveCompletion) => void = () => {};
+    const dispatch = vi.fn(
+      () =>
+        new Promise<SaveCompletion>((resolve) => {
+          finishDispatch = resolve;
+        }),
+    );
+    const onClose = vi.fn();
+    const onReverted = vi.fn();
+    const modal = (post: PublishFlowPost) => (
+      <InAppProviders>
+        <UpdateFlowModal
+          dispatch={dispatch}
+          post={post}
+          site={SITE}
+          timezone="Etc/UTC"
+          user={USER}
+          onClose={onClose}
+          onReverted={onReverted}
+        />
+      </InAppProviders>
+    );
+    const rendered = await render(
+      modal(draft({ status: 'published', publishedAt: '2026-09-01T09:00:00.000Z' })),
+    );
+
+    await publishScreen.revertToDraft().click();
+    await expect.poll(() => dispatch.mock.calls.length).toBe(1);
+    await rendered.rerender(
+      modal(
+        draft({
+          id: 'post-2',
+          status: 'scheduled',
+          publishedAt: '2026-09-10T09:00:00.000Z',
+        }),
+      ),
+    );
+    await expect.element(publishScreen.updateFlowTitle()).toHaveTextContent('scheduled');
+
+    finishDispatch(saved('draft'));
+    await new Promise<void>((resolve) => {
+      setTimeout(resolve, 0);
+    });
+
+    expect(onReverted).not.toHaveBeenCalled();
+    expect(onClose).not.toHaveBeenCalled();
+    await expect.element(publishScreen.updateFlow().getByRole('alert')).not.toBeInTheDocument();
+  });
+
+  it('names a since-archived newsletter a scheduled post was already sent to', async () => {
+    await render(
+      <InAppProviders>
+        <UpdateFlowModal
+          dispatch={completesWith(saved('draft'))}
+          post={draft({
+            status: 'scheduled',
+            publishedAt: '2026-09-10T09:00:00.000Z',
+            newsletter: 'retired',
+            newsletterName: 'Retired Weekly',
+            newsletterStatus: 'archived',
+            email: { id: EMAIL_ID, email_count: 12, opened_count: 0 },
+            emailCreatedAt: '2026-09-01T09:00:00.000Z',
+          })}
+          site={SITE}
+          timezone="Etc/UTC"
+          user={USER}
+          onClose={() => {}}
+        />
+      </InAppProviders>,
+    );
+
+    await expect
+      .element(publishScreen.updateFlowPreviousEmail())
+      .toHaveTextContent('previously emailed to 12 subscribers of Retired Weekly');
+    await expect
+      .element(publishScreen.updateFlowPreviousEmail())
+      .toHaveTextContent('on 1 Sep 2026 at 09:00');
+    await expect
+      .element(publishScreen.updateFlowConfirmation())
+      .toHaveTextContent('published on your site');
+  });
+
+  it('describes the audience for a scheduled email that has not been sent yet', async () => {
+    await render(
+      <InAppProviders>
+        <UpdateFlowModal
+          dispatch={completesWith(saved('draft'))}
+          post={draft({
+            status: 'scheduled',
+            publishedAt: '2026-09-10T09:00:00.000Z',
+            newsletter: 'weekly',
+            newsletterName: 'Weekly',
+            emailSegment: EVERYONE,
+          })}
+          site={SITE}
+          timezone="Etc/UTC"
+          user={USER}
+          onClose={() => {}}
+        />
+      </InAppProviders>,
+    );
+
+    await expect
+      .element(publishScreen.updateFlowConfirmation())
+      .toHaveTextContent('published and sent to 20 subscribers');
+  });
+
+  it('does not claim a scheduled email-only post will be published', async () => {
+    await render(
+      <InAppProviders>
+        <UpdateFlowModal
+          dispatch={completesWith(saved('draft'))}
+          post={draft({
+            status: 'scheduled',
+            publishedAt: '2026-09-10T09:00:00.000Z',
+            newsletter: 'weekly',
+            newsletterName: 'Weekly',
+            emailSegment: EVERYONE,
+            emailOnly: true,
+          })}
+          site={SITE}
+          timezone="Etc/UTC"
+          user={USER}
+          onClose={() => {}}
+        />
+      </InAppProviders>,
+    );
+
+    await expect
+      .element(publishScreen.updateFlowConfirmation())
+      .toHaveTextContent('will be sent to 20 subscribers');
+    await expect
+      .element(publishScreen.updateFlowConfirmation())
+      .not.toHaveTextContent('published and sent');
+  });
+
+  it('does not count the current default newsletter for a missing persisted newsletter', async () => {
+    await render(
+      <InAppProviders>
+        <UpdateFlowModal
+          dispatch={completesWith(saved('draft'))}
+          post={draft({
+            status: 'scheduled',
+            publishedAt: '2026-09-10T09:00:00.000Z',
+            newsletter: 'retired',
+            newsletterName: 'Retired Weekly',
+            newsletterStatus: 'archived',
+            emailSegment: 'label:vip',
+          })}
+          site={SITE}
+          timezone="Etc/UTC"
+          user={USER}
+          onClose={() => {}}
+        />
+      </InAppProviders>,
+    );
+
+    await expect
+      .element(publishScreen.updateFlowConfirmation())
+      .toHaveTextContent('published and sent to subscribers of Retired Weekly');
+    await expect
+      .element(publishScreen.updateFlowConfirmation())
+      .not.toHaveTextContent('20 subscribers');
+  });
+
+  it('does not replace a missing persisted segment with the current site default', async () => {
+    await render(
+      <InAppProviders>
+        <UpdateFlowModal
+          dispatch={completesWith(saved('draft'))}
+          post={draft({
+            status: 'scheduled',
+            publishedAt: '2026-09-10T09:00:00.000Z',
+            newsletter: 'weekly',
+            newsletterName: 'Weekly',
+            emailSegment: null,
+          })}
+          site={SITE}
+          timezone="Etc/UTC"
+          user={USER}
+          onClose={() => {}}
+        />
+      </InAppProviders>,
+    );
+
+    await expect
+      .element(publishScreen.updateFlowConfirmation())
+      .toHaveTextContent('published and sent to subscribers');
+    await expect
+      .element(publishScreen.updateFlowConfirmation())
+      .not.toHaveTextContent('20 subscribers');
+  });
+
+  it('does not claim that a failed published email was sent', async () => {
+    await render(
+      <InAppProviders>
+        <UpdateFlowModal
+          dispatch={completesWith(saved('draft'))}
+          post={draft({
+            status: 'published',
+            publishedAt: '2026-09-10T09:00:00.000Z',
+            newsletter: 'weekly',
+            newsletterName: 'Weekly',
+            email: {
+              id: EMAIL_ID,
+              email_count: 12,
+              opened_count: 0,
+              status: 'failed',
+            },
+          })}
+          site={SITE}
+          timezone="Etc/UTC"
+          user={USER}
+          onClose={() => {}}
+        />
+      </InAppProviders>,
+    );
+
+    await expect
+      .element(publishScreen.updateFlowConfirmation())
+      .toHaveTextContent('published on your site');
+  });
+});

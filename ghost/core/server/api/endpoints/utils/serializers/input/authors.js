@@ -1,0 +1,38 @@
+const debug = require('@tryghost/debug')('api:endpoints:utils:serializers:input:authors');
+const url = require('./utils/url');
+const slugFilterOrder = require('./utils/slug-filter-order');
+const utils = require('../../index');
+const { rejectAuthorsRestrictedOrderFields } = require('../../api-filter-utils');
+
+function setDefaultOrder(frame) {
+  if (!frame.options.order && frame.options.filter) {
+    frame.options.autoOrder = slugFilterOrder('users', frame.options.filter);
+  }
+
+  if (!frame.options.order && !frame.options.autoOrder) {
+    frame.options.order = 'name asc';
+  }
+}
+
+module.exports = {
+  browse(apiConfig, frame) {
+    debug('browse');
+
+    url.forceUrlColumns(frame, 'authors');
+
+    if (utils.isContentAPI(frame)) {
+      frame.options.order = rejectAuthorsRestrictedOrderFields(frame.options.order);
+      setDefaultOrder(frame);
+    }
+  },
+
+  read(apiConfig, frame) {
+    debug('read');
+
+    url.forceUrlColumns(frame, 'authors');
+
+    if (utils.isContentAPI(frame)) {
+      setDefaultOrder(frame);
+    }
+  },
+};

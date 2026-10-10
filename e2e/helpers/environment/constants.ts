@@ -18,7 +18,7 @@ export const DEV_PRIMARY_DATABASE = process.env.MYSQL_DATABASE || 'ghost_dev';
 /**
  * Caddyfile paths for different modes.
  * - dev: Proxies to host dev servers for HMR
- * - build: Minimal passthrough (assets served by Ghost from /content/files/)
+ * - build: Minimal passthrough (assets served by Ghost from /ghost/assets/)
  */
 export const CADDYFILE_PATHS = {
   dev: path.resolve(REPO_ROOT, 'docker/dev-gateway/Caddyfile'),
@@ -68,6 +68,7 @@ export const BASE_GHOST_ENV = [
   'NODE_ENV=development',
   'server__host=0.0.0.0',
   'server__port=2368',
+  'queryParameterFiltering__enabled=true',
 
   // Database configuration (database name is set per container)
   'database__client=mysql2',
@@ -90,6 +91,9 @@ export const BASE_GHOST_ENV = [
   // 2FA settings UI / sign-in flow render regardless of the dev default.
   'security__staffDeviceVerification=true',
 
+  // Skip gscan rule checks on the active theme at boot, as production does.
+  'optimization__themes__skipBootChecks=true',
+
   // Disable IndexNow pings (tests run with real network access)
   'privacy__useIndexNow=false',
 
@@ -99,6 +103,15 @@ export const BASE_GHOST_ENV = [
   // Disable browser-side Sentry reporting during tests
   'client_sentry__disabled=true',
 ] as const;
+
+/**
+ * Owner account set up once in the base database before it is snapshotted.
+ * Each test database gets its own owner email (see MySQLManager.setupTestDatabase).
+ */
+export const GHOST_OWNER = {
+  name: 'Test User',
+  password: 'test@123@test',
+} as const;
 
 export const TEST_ENVIRONMENT = {
   projectNamespace: 'ghost-dev-e2e',

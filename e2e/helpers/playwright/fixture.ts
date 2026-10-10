@@ -18,12 +18,10 @@ import {
 import { EmailClient, MailPit } from '@/helpers/services/email/mail-pit';
 import { FakeMailgunServer, MailgunTestService } from '@/helpers/services/mailgun';
 import { FakeStripeServer, StripeTestService, WebhookClient } from '@/helpers/services/stripe';
+import { GHOST_OWNER } from '@/helpers/environment/constants';
 import { GhostInstance, getEnvironmentManager, isAllowedHost } from '@/helpers/environment';
 import { SettingsService } from '@/helpers/services/settings/settings-service';
 import { extractInviteLink } from '@/helpers/services/email/utils';
-import { faker } from '@faker-js/faker';
-import { loginToGetAuthenticatedSession } from '@/helpers/playwright/flows/sign-in';
-import { setupUser } from '@/helpers/utils';
 
 const debug = baseDebug('e2e:ghost-fixture');
 const STRIPE_SECRET_KEY = 'sk_test_e2eTestKey';
@@ -75,7 +73,6 @@ interface WorkerFixtures {
 }
 
 let cachedPerFileInstance: PerFileInstanceCache | null = null;
-let cachedPerFileGhostAccountOwner: User | null = null;
 let cachedPerFileAuthenticatedSession: PerFileAuthenticatedSessionCache | null = null;
 
 // External hosts requested by the browser, accumulated across a worker so the
@@ -90,11 +87,11 @@ export interface User {
 }
 
 export interface GhostConfig {
-  hostSettings__billing__enabled?: string;
-  hostSettings__billing__url?: string;
-  hostSettings__forceUpgrade?: string;
-  hostSettings__limits__customIntegrations__disabled?: string;
-  hostSettings__limits__customIntegrations__error?: string;
+  // Any hostSettings path, spelled the way the environment does: double underscores for
+  // nesting, so `hostSettings__limits__staff__max`. Open rather than enumerated, because a
+  // limit is just configuration and a test wanting a new one should not also need a new
+  // field here.
+  [key: `hostSettings__${string}`]: string | undefined;
 }
 
 export interface GhostInstanceFixture {
@@ -172,10 +169,33 @@ async function setupNewAuthenticatedPage(
   });
   const page = await context.newPage();
 
-  await loginToGetAuthenticatedSession(page, ghostAccountOwner.email, ghostAccountOwner.password);
+  // Sign in through the session API rather than the sign-in form. A UI sign-in
+  // boots the admin twice (the form, then a full reload once signed in); this
+  // boots it once. The sign-in screens have their own tests.
+  const { email, password } = ghostAccountOwner;
+  const response = await context.request.post('/ghost/api/admin/session/', {
+    data: { username: email, password },
+  });
+  if (!response.ok()) {
+    throw new Error(
+      `Signing in as ${email} failed (${response.status()}): ${await response.text()}`,
+    );
+  }
+  await page.goto('/ghost/#/');
+  await waitForAdminHome(page);
   debug('Authentication completed for Ghost instance');
 
   return { page, context, ghostAccountOwner };
+}
+
+// Wait for either Analytics header (normal mode) or billing iframe (force upgrade mode)
+async function waitForAdminHome(page: Page) {
+  const analyticsPage = new AnalyticsOverviewPage(page);
+  const billingIframe = page.getByTitle('Billing');
+  await Promise.race([
+    analyticsPage.header.waitFor({ state: 'visible' }),
+    billingIframe.waitFor({ state: 'visible' }),
+  ]);
 }
 
 async function setupAuthenticatedPageFromStorageState(
@@ -194,13 +214,7 @@ async function setupAuthenticatedPageFromStorageState(
   });
   const page = await context.newPage();
   await page.goto('/ghost/#/');
-
-  const analyticsPage = new AnalyticsOverviewPage(page);
-  const billingIframe = page.getByTitle('Billing');
-  await Promise.race([
-    analyticsPage.header.waitFor({ state: 'visible' }),
-    billingIframe.waitFor({ state: 'visible' }),
-  ]);
+  await waitForAdminHome(page);
 
   return {
     page,
@@ -271,7 +285,6 @@ export const test = base.extend<GhostInstanceFixture & InternalFixtures, WorkerF
       const environmentManager = await getEnvironmentManager();
       await environmentManager.perTestTeardown(cachedPerFileInstance.instance);
       cachedPerFileInstance = null;
-      cachedPerFileGhostAccountOwner = null;
       cachedPerFileAuthenticatedSession = null;
     },
     {
@@ -389,7 +402,6 @@ export const test = base.extend<GhostInstanceFixture & InternalFixtures, WorkerF
       });
       const previousPerFileInstance = cachedPerFileInstance?.instance;
       cachedPerFileInstance = null;
-      cachedPerFileGhostAccountOwner = null;
       cachedPerFileAuthenticatedSession = null;
 
       if (previousPerFileInstance) {
@@ -428,7 +440,6 @@ export const test = base.extend<GhostInstanceFixture & InternalFixtures, WorkerF
         environmentSignature,
         instance: nextPerFileInstance,
       };
-      cachedPerFileGhostAccountOwner = null;
       cachedPerFileAuthenticatedSession = null;
 
       if (previousPerFileInstance) {
@@ -458,7 +469,6 @@ export const test = base.extend<GhostInstanceFixture & InternalFixtures, WorkerF
         environmentSignature,
         instance: nextInstance,
       };
-      cachedPerFileGhostAccountOwner = null;
       cachedPerFileAuthenticatedSession = null;
 
       Object.assign(holder, nextInstance);
@@ -581,33 +591,10 @@ export const test = base.extend<GhostInstanceFixture & InternalFixtures, WorkerF
 
   // Create user credentials only (no authentication)
   ghostAccountOwner: async ({ ghostInstance, _testEnvironmentContext }, use) => {
-    if (!ghostInstance.baseUrl) {
-      throw new Error('baseURL is not defined');
-    }
-
     _testEnvironmentContext.markResetEnvironmentBlocker('ghostAccountOwner');
 
-    if (
-      _testEnvironmentContext.resolvedIsolation === 'per-file' &&
-      cachedPerFileGhostAccountOwner
-    ) {
-      await use(cachedPerFileGhostAccountOwner);
-      return;
-    }
-
-    // Create user in this Ghost instance
-    const ghostAccountOwner: User = {
-      name: 'Test User',
-      email: `test${faker.string.uuid()}@ghost.org`,
-      password: 'test@123@test',
-    };
-    await setupUser(ghostInstance.baseUrl, ghostAccountOwner);
-
-    if (_testEnvironmentContext.resolvedIsolation === 'per-file') {
-      cachedPerFileGhostAccountOwner = ghostAccountOwner;
-    }
-
-    await use(ghostAccountOwner);
+    // The owner is set up in the snapshot each test database is restored from.
+    await use({ ...GHOST_OWNER, email: ghostInstance.ownerEmail });
   },
 
   ghostAccountAuthor: async ({ pageWithAuthenticatedUser, emailClient }, use) => {

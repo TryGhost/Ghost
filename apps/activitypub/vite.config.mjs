@@ -3,7 +3,7 @@ import pkg from './package.json';
 import { resolve } from 'path';
 import fs from 'fs';
 
-const GHOST_CARDS_PATH = resolve(__dirname, '../../ghost/core/core/frontend/src/cards');
+const GHOST_CARDS_PATH = resolve(__dirname, '../../ghost/core/frontend/src/cards');
 
 const validateCardsDirectoryPlugin = (cardsPath) => {
   return {

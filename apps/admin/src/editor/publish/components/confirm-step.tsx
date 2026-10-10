@@ -1,0 +1,158 @@
+import { Button } from '@tryghost/shade/components';
+import { Inline, Stack, Text } from '@tryghost/shade/primitives';
+import { LucideIcon, cn } from '@tryghost/shade/utils';
+import { getRecipientType } from '@tryghost/admin-x-framework/utils/recipient-filter';
+import { useMembersCount } from '@tryghost/admin-x-framework/api/members';
+import { EDITOR_REQUEST_OPTIONS } from '@/editor/request-options';
+import { PublishPhaseIcon } from '@/posts/api';
+import { FailureBanner } from './failure-banner';
+import {
+  publishBackToSettings,
+  publishConfirm,
+  publishConfirmError,
+  publishFlowConfirm,
+} from '@tryghost/test-data/selectors/editor';
+import {
+  confirmButtonText,
+  confirmPublishType,
+  confirmRunningText,
+  formatSiteDateTime,
+  recipientsConfirmLabel,
+} from '@/editor/publish/publish-copy';
+import type { CompletionFailure } from '@/editor/publish/completion-message';
+import type { ConfirmStatus, PublishFlow } from '@/editor/publish/use-publish-flow';
+import type { PublishFlowPost } from '@/editor/publish/flow-post';
+import type { PublishOptionsState } from '@/editor/publish/publish-options';
+
+export interface ConfirmStepProps {
+  post: PublishFlowPost;
+  state: PublishOptionsState;
+  /** Captured on entering this step so saving cannot change the copy. */
+  captured: PublishFlow['captured'];
+  timezone: string;
+  status: ConfirmStatus;
+  failure: CompletionFailure | null;
+  onConfirm: () => void;
+  onBack: () => void;
+}
+
+// Eases the running state in as the button greys out.
+const ENTER = 'animate-in fade-in-0 zoom-in-90 duration-200 ease-out motion-reduce:animate-none';
+
+export function ConfirmStep({
+  post,
+  state,
+  captured,
+  timezone,
+  status,
+  failure,
+  onConfirm,
+  onBack,
+}: ConfirmStepProps) {
+  const { count } = useMembersCount(state.fullRecipientFilter, {
+    requestOptions: EDITOR_REQUEST_OPTIONS,
+  });
+  const publishType = confirmPublishType(captured);
+  const showNewsletterName = !state.onlyDefaultNewsletter && state.newsletter?.name;
+  const recipients = recipientsConfirmLabel({
+    recipientType: getRecipientType(state.recipientFilter),
+    count,
+  });
+
+  const buttonText = {
+    idle: confirmButtonText({
+      publishType,
+      isScheduled: state.isScheduled,
+      scheduledAt: state.scheduledAt,
+      displayName: post.displayName,
+      timezone,
+    }),
+    running: confirmRunningText(publishType, state.isScheduled),
+  };
+
+  return (
+    <Stack data-testid={publishFlowConfirm} gap="xl">
+      <Stack gap="none">
+        <Text
+          as="h2"
+          className="text-5xl leading-tighter tracking-tight text-state-success"
+          weight="bold"
+        >
+          Ready, set, publish.
+        </Text>
+        <Text as="h2" className="text-5xl leading-tighter tracking-tight" weight="bold">
+          Share it with the world.
+        </Text>
+      </Stack>
+
+      <Text className="text-pretty" size="lg">
+        {state.isScheduled ? (
+          <>
+            On <strong>{formatSiteDateTime(state.scheduledAt, timezone)}</strong> your
+          </>
+        ) : (
+          'Your'
+        )}{' '}
+        {post.displayName}
+        {captured.willPublish ? (
+          <> will be published on your site{captured.willEmail ? ', and delivered to' : '.'}</>
+        ) : null}
+        {captured.willEmail ? (
+          <>
+            {captured.willPublish ? ' ' : ' will be delivered to '}
+            <strong>{recipients}</strong>
+            {showNewsletterName ? (
+              <>
+                {' '}
+                of <strong>{state.newsletter?.name}</strong>
+              </>
+            ) : null}
+            {captured.willPublish ? '.' : ','}
+            {captured.willPublish ? null : (
+              <>
+                {' '}
+                and will <strong>not</strong> be published on your site.
+              </>
+            )}
+          </>
+        ) : null}
+        {captured.willPublish && captured.skipsEmail ? (
+          <> It won’t be sent as a newsletter, because no recipients are selected.</>
+        ) : null}
+      </Text>
+
+      {failure ? <FailureBanner failure={failure} testId={publishConfirmError} /> : null}
+
+      <Inline gap="sm" justify="between" wrap>
+        <Button
+          data-testid={publishBackToSettings}
+          disabled={status === 'running'}
+          size="lg"
+          variant="secondary"
+          onClick={onBack}
+        >
+          <LucideIcon.ArrowLeft />
+          Back to settings
+        </Button>
+        <Button
+          className="ml-auto h-auto min-h-11 max-w-full bg-state-success py-2 whitespace-normal text-white hover:bg-state-success/90"
+          data-testid={publishConfirm}
+          disabled={status === 'running'}
+          size="lg"
+          onClick={onConfirm}
+        >
+          {status === 'running' ? (
+            <>
+              {/* The analytics "preparing" spinner, in the button's own text colour.
+                  size-4 matches the size Button gives its icons at this text size. */}
+              <PublishPhaseIcon className={cn('size-4 text-current', ENTER)} phase="preparing" />
+              <span className={ENTER}>{buttonText.running}</span>
+            </>
+          ) : (
+            buttonText.idle
+          )}
+        </Button>
+      </Inline>
+    </Stack>
+  );
+}

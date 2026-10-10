@@ -15,7 +15,7 @@ codebase, allowing any Ghost instance served over HTTPS to start the OAuth flow.
    settings.
 
 This flow is implemented in
-[`services/members/stripe-connect.js`](../../ghost/core/core/server/services/members/stripe-connect.js).
+[`services/members/stripe-connect.js`](../../ghost/core/server/services/members/stripe-connect.js).
 
 ## Stripe subscription checkout
 
@@ -35,4 +35,7 @@ This flow is implemented in
 3. Ghost stores their details in the database.
 
 The checkout and tier price flows are implemented by
-[`payments-service.js`](../../ghost/core/core/server/services/members/members-api/services/payments-service.js).
+[`payments-service.js`](../../ghost/core/server/services/members/members-api/services/payments-service.js).
+
+For manual and automated development workflows, see
+[Testing Stripe locally](../contributing/testing-stripe.md).

@@ -44,8 +44,8 @@ reviews:
         mode: 'error'
         instructions: |
           Fail if the PR adds a new .js/.jsx/.cjs/.mjs source file, unless it is: a DB
-          migration (ghost/core/core/server/data/migrations/), under apps/ember-admin/,
-          a tool/config file, under scripts/ or docker/, or generated/vendored code.
+          migration (ghost/core/server/data/migrations/), a tool/config file,
+          under scripts/ or docker/, or generated/vendored code.
           Modifying pre-existing JS files never fails this check.
   path_instructions:
     - path: '**/*'
@@ -55,9 +55,13 @@ reviews:
         code. Do not report formatting, naming, import ordering, type errors, or
         other findings already owned by configured static tools or failing GitHub
         checks. Do not request speculative abstractions, broad refactors, generic
-        documentation, or tests unrelated to changed behaviour. Treat nearby
-        AGENTS.md files and mapped codebase documentation as authoritative; do not
-        enforce proposals, plans, or historical guidance as current policy.
+        documentation, or tests unrelated to changed behaviour. For a move,
+        rename, TypeScript conversion, or explicitly behaviour-preserving refactor,
+        do not report pre-existing problems unless the diff introduces or worsens
+        them, makes them newly reachable, or prevents the stated transformation
+        from being correct. Treat nearby AGENTS.md files and mapped codebase
+        documentation as authoritative; do not enforce proposals, plans, or
+        historical guidance as current policy.
     - path: '**/*.{ts,tsx,mts,cts}'
       instructions: |
         Review lens: "where does this data become trusted?"
@@ -69,14 +73,14 @@ reviews:
           `@ts-ignore`/`@ts-expect-error`.
         - Validated data stays trusted: don't request Zod on internal calls, and flag
           redundant re-validation.
-        - ghost/core golden path: schema.ts owns Zod schemas + inferred types, with
+        - ghost golden path: schema.ts owns Zod schemas + inferred types, with
           codec/serializer modules at the edges (see core/server/services/gift-links).
         - Looser typing in tests is fine unless it hides a real defect.
     - path: '**/*.{js,jsx,cjs,mjs}'
       instructions: |
         New source files must be TypeScript: flag new JS files as a required change
-        unless exempt (DB migrations, apps/ember-admin/, tool/config files, scripts/,
-        docker/, generated code).
+        unless exempt (DB migrations, tool/config files, scripts/, docker/,
+        generated code).
         Never request conversion of pre-existing JS files. If the PR substantially
         reworks one (rewritten logic or significant new functions — not renames or
         small fixes), you may leave ONE optional, non-blocking note for the whole PR
@@ -84,7 +88,7 @@ reviews:
         exempt areas.
         If the PR adds or changes a runtime boundary (parsing HTTP input, JSON, config,
         external responses), suggest validating it — ideally with TS + Zod.
-    - path: 'ghost/core/core/server/api/**'
+    - path: 'ghost/core/server/api/**'
       instructions: |
         Review API contract semantics: authentication and permissions, validation at
         untrusted boundaries, writable-field allowlists, accidental response-data
@@ -92,7 +96,7 @@ reviews:
         invalidation, and compatibility with existing clients. Require tests only for
         changed behaviour or a credible regression path. Do not repeat endpoint
         complexity, filenames, typing, or other ESLint/schema failures.
-    - path: 'ghost/core/core/server/services/**'
+    - path: 'ghost/core/server/services/**'
       instructions: |
         Review new or changed service boundaries for explicit dependency ownership,
         deterministic/idempotent initialisation, boot ordering, transaction and event
@@ -100,7 +104,7 @@ reviews:
         services default to TypeScript; extending an existing JavaScript service is an
         accepted exception. Do not enforce unapproved repository, ORM, or dependency-
         injection proposals as current architecture.
-    - path: 'ghost/core/core/server/data/{migrations,schema}/**'
+    - path: 'ghost/core/server/data/{migrations,schema}/**'
       instructions: |
         Review migration safety beyond lint: schema and migration parity, existing-data
         shape and volume, deploy/rollback compatibility, transaction and locking risk,
@@ -116,10 +120,11 @@ reviews:
     - path: 'apps/{admin,activitypub,admin-x-framework,shade}/**/*.{ts,tsx}'
       instructions: |
         Review Admin UI for existing Shade reuse, correct component layer, semantic
-        tokens, accessible interaction states, and whole-sentence translations. New UI
-        that depends on backend settings, endpoints, or config must feature-detect old
-        backend support and cover the not-yet-deployed backend case. Do not apply these
-        rules to independent public UMD apps. Do not repeat ESLint/Tailwind findings.
+        tokens, and accessible interaction states. New UI that depends on backend
+        settings, endpoints, or config must feature-detect old backend support and cover
+        the not-yet-deployed backend case. Admin UI copy is not translated, so do not ask
+        for translations. Do not apply these rules to independent public UMD apps. Do not
+        repeat ESLint/Tailwind findings.
     - path: 'apps/{portal,comments-ui,signup-form,sodo-search,announcement-bar}/**/*.{js,jsx,ts,tsx}'
       instructions: |
         These are independent public UMD/CDN surfaces, not embedded Shade apps. Review
@@ -161,8 +166,6 @@ reviews:
       enabled: true
     stylelint:
       enabled: true
-    emberTemplateLint:
-      enabled: true
     actionlint:
       enabled: true
     zizmor:
@@ -187,23 +190,23 @@ knowledge_base:
     enabled: true
     filePatterns:
       - files: 'docs/practices/api-design.md'
-        applyTo: 'ghost/core/core/server/api/**,packages/admin-api-schema/**'
+        applyTo: 'ghost/core/server/api/**,packages/admin-api-schema/**'
       - files: 'docs/practices/database-migrations.md'
-        applyTo: 'ghost/core/core/server/data/migrations/**,ghost/core/core/server/data/schema/**'
+        applyTo: 'ghost/core/server/data/migrations/**,ghost/core/server/data/schema/**'
       - files: 'docs/practices/error-handling.md'
-        applyTo: 'ghost/core/core/server/**,apps/**/*.{js,jsx,ts,tsx}'
+        applyTo: 'ghost/core/server/**,apps/**/*.{js,jsx,ts,tsx}'
       - files: 'docs/practices/internationalization.md'
         applyTo: 'apps/**/*.{js,jsx,ts,tsx},packages/i18n/**'
       - files: 'docs/contributing/testing.md'
         applyTo: '**/{test,tests}/**,**/*{.,-}{test,spec}.{js,jsx,ts,tsx}'
       - files: 'docs/codebase/monorepo-structure.md'
-        applyTo: 'package.json,pnpm-workspace.yaml,nx.json,apps/**,packages/**,ghost/core/**,koenig/**'
+        applyTo: 'package.json,pnpm-workspace.yaml,nx.json,apps/**,packages/**,ghost/**,koenig/**'
       - files: 'docs/codebase/configuration.md'
-        applyTo: 'ghost/core/core/shared/config/**,ghost/core/config*.json*'
+        applyTo: 'ghost/core/shared/config/**,ghost/config*.json*'
       - files: 'docs/codebase/internal-caching.md'
-        applyTo: 'ghost/core/core/server/adapters/cache/**,ghost/core/core/server/adapters/lib/redis/**,ghost/core/core/server/**/*cache*.{js,ts},ghost/core/core/shared/config/**,packages/adapters/cache-base/**'
+        applyTo: 'ghost/core/server/adapters/cache/**,ghost/core/server/adapters/lib/redis/**,ghost/core/server/**/*cache*.{js,ts},ghost/core/shared/config/**,packages/adapters/cache-base/**'
       - files: 'docs/codebase/jobs.md'
-        applyTo: 'ghost/core/core/server/services/**'
+        applyTo: 'ghost/core/server/services/**'
       - files: 'packages/README.md'
         applyTo: 'packages/**'
       - files: 'apps/shade/AGENTS.md'

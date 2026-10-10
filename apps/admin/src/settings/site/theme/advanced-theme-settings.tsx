@@ -51,7 +51,7 @@ function getThemeLabel(theme: Theme): React.ReactNode {
   } else if (theme.package?.name !== theme.name) {
     label = (
       <span className="md:text-base">
-        {label} <span className="text-grey-600">({theme.name})</span>
+        {label} <span className="text-gray-600">({theme.name})</span>
       </span>
     );
   }
@@ -189,13 +189,9 @@ const ThemeActions: React.FC<ThemeActionProps> = ({ theme }) => {
       </DropdownMenu>
       {activationErrors && (
         <InvalidThemeModal
+          action="activated"
           fatalErrors={activationErrors}
-          prompt={
-            <>
-              This theme couldn&apos;t be activated because Ghost found a blocking validation error.
-              Fix the issue below and try again.
-            </>
-          }
+          themeName={theme.package?.name || theme.name}
           title="Theme not activated"
           onClose={() => setActivationErrors(null)}
           onRetry={() => {

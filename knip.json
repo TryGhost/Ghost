@@ -1,11 +1,10 @@
 {
   "$schema": "https://unpkg.com/knip@6/schema.json",
-  "ignoreWorkspaces": ["apps/ember-admin"],
   "ignore": [
-    "ghost/core/test/utils/fixtures/themes/**/assets/built/**",
+    "ghost/test/utils/fixtures/themes/**/assets/built/**",
     ".github/scripts/i18n-review/**"
   ],
-  "ignoreBinaries": ["ember", "tb"],
+  "ignoreBinaries": ["tb"],
   "workspaces": {
     ".": {
       "vitest": {
@@ -18,7 +17,7 @@
         "@secretlint/secretlint-rule-preset-recommend"
       ]
     },
-    "ghost/core": {
+    "ghost": {
       "ignoreDependencies": ["@slack/webhook", "bookshelf-relations", "mysql", "cssnano"]
     },
     "apps/activitypub": {
@@ -45,7 +44,11 @@
         "src/utils/get-site-timezone.ts",
         "src/vite.ts",
         "src/playwright.ts",
-        "src/test/*.{ts,tsx}"
+        "src/test/acceptance.ts",
+        "src/test/hook-testing-utils.ts",
+        "src/test/render.tsx",
+        "src/test/setup.ts",
+        "src/test/test-utils.tsx"
       ]
     },
     "apps/comments-ui": {
@@ -78,9 +81,6 @@
         "@storybook/addon-docs",
         "eslint-plugin-tailwindcss"
       ]
-    },
-    "apps/sodo-search": {
-      "ignoreDependencies": ["@tryghost/debug", "@testing-library/jest-dom"]
     },
     "koenig/koenig-lexical": {
       "ignoreDependencies": ["@storybook/react", "prettier-plugin-organize-attributes"]

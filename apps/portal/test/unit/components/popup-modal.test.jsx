@@ -11,7 +11,6 @@ describe('PopupContent', () => {
       yearlyPrice: getPriceData({ amount: 5000, interval: 'year' }),
     });
     const site = getSiteData({
-      labs: { giftSubCustomization: true },
       products: [product],
       portalProducts: [product.id],
     });
@@ -29,6 +28,7 @@ describe('PopupContent', () => {
       },
     );
 
+    fireEvent.change(getByLabelText('Your name'), { target: { value: 'Jamie' } });
     fireEvent.click(getByRole('button', { name: 'Continue to delivery details' }));
     const message = getByLabelText('Optional message');
     fireEvent.change(message, { target: { value: 'Enjoy!' } });

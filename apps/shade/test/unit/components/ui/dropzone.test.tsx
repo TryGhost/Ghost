@@ -189,7 +189,7 @@ describe('Dropzone Component', () => {
       'Disabled dropzone should apply pointer-events-none directly',
     );
     assert.ok(
-      !classes.includes('hover:border-grey-400'),
+      !classes.includes('hover:border-gray-400'),
       'Disabled dropzone should not include hover border classes',
     );
   });

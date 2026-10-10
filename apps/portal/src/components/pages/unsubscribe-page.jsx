@@ -30,6 +30,33 @@ function AccountHeader() {
   );
 }
 
+function UnsubscribeErrorPage({ message }) {
+  const { doAction } = useContext(AppContext);
+  return (
+    <div className="gh-portal-content gh-portal-feedback with-footer">
+      <CloseButton />
+      <div className="gh-feedback-icon gh-feedback-icon-error">
+        <WarningIcon />
+      </div>
+      <h1 className="gh-portal-main-title">{t("That didn't go to plan")}</h1>
+      <div>
+        <p className="gh-portal-text-center">{message}</p>
+      </div>
+      <ActionButton
+        style={{ width: '100%' }}
+        retry={false}
+        onClick={() => doAction('closePopup')}
+        disabled={false}
+        brandColor="#000000"
+        label={t('Close')}
+        isRunning={false}
+        tabIndex={3}
+        classes={'sticky bottom'}
+      />
+    </div>
+  );
+}
+
 async function updateMemberNewsletters({
   api,
   memberUuid,
@@ -57,6 +84,7 @@ export default function UnsubscribePage() {
   const { site, api, pageData, member: loggedInMember, doAction } = useContext(AppContext);
   // member is the member data fetched from the API based on the uuid and its state is limited to just this modal, not all of Portal
   const [member, setMember] = useState();
+  const loggedInAsDifferentMember = !!loggedInMember && loggedInMember.uuid !== pageData.uuid;
   const [loading, setLoading] = useState(true);
   const siteNewsletters = getSiteNewsletters({ site });
   const defaultNewsletters = siteNewsletters.filter((d) => {
@@ -170,6 +198,10 @@ export default function UnsubscribePage() {
   // This handles the url query param actions that ultimately launch this component/modal
   useEffect(() => {
     (async () => {
+      if (loggedInAsDifferentMember) {
+        // the error render below doesn't stop this effect from running, so bail explicitly
+        return;
+      }
       let memberData;
       try {
         memberData = await api.member.newsletters({ uuid: pageData.uuid, key: pageData.key });
@@ -210,6 +242,7 @@ export default function UnsubscribePage() {
   }, [
     commentsEnabled,
     canChangeUpdatesAndAnnouncements,
+    loggedInAsDifferentMember,
     pageData.uuid,
     pageData.newsletterUuid,
     pageData.comments,
@@ -217,6 +250,16 @@ export default function UnsubscribePage() {
     site.url,
     siteNewsletters?.length,
   ]);
+
+  if (loggedInAsDifferentMember) {
+    return (
+      <UnsubscribeErrorPage
+        message={t(
+          'This unsubscribe link belongs to a different email address than the one you are signed in with.',
+        )}
+      />
+    );
+  }
 
   if (loading) {
     // Loading member data from the API based on the uuid
@@ -226,31 +269,11 @@ export default function UnsubscribePage() {
   // Case: invalid uuid passed
   if (!member) {
     return (
-      <div className="gh-portal-content gh-portal-feedback with-footer">
-        <CloseButton />
-        <div className="gh-feedback-icon gh-feedback-icon-error">
-          <WarningIcon />
-        </div>
-        <h1 className="gh-portal-main-title">{t("That didn't go to plan")}</h1>
-        <div>
-          <p className="gh-portal-text-center">
-            {t(
-              "We couldn't unsubscribe you as the email address was not found. Please contact the site owner.",
-            )}
-          </p>
-        </div>
-        <ActionButton
-          style={{ width: '100%' }}
-          retry={false}
-          onClick={() => doAction('closePopup')}
-          disabled={false}
-          brandColor="#000000"
-          label={t('Close')}
-          isRunning={false}
-          tabIndex={3}
-          classes={'sticky bottom'}
-        />
-      </div>
+      <UnsubscribeErrorPage
+        message={t(
+          "We couldn't unsubscribe you as the email address was not found. Please contact the site owner.",
+        )}
+      />
     );
   }
 

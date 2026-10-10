@@ -1,4 +1,9 @@
-import { type Action, actionsAreGroupable, getActionTitle } from '../../../src/api/actions';
+import {
+  type Action,
+  actionsAreGroupable,
+  getActionTitle,
+  getLinkTarget,
+} from '../../../src/api/actions';
 
 const baseAction = (overrides: Partial<Action> = {}): Action => ({
   id: 'action-1',
@@ -77,6 +82,25 @@ describe('actions api helpers', () => {
       expect(title('deleted')).toBe('Custom field deleted');
     });
 
+    it('formats app installs, uninstalls and approvals', () => {
+      const title = (event: string) =>
+        getActionTitle(baseAction({ resource_type: 'app_installation', event }));
+      expect(title('installed')).toBe('App installed');
+      expect(title('uninstalled')).toBe('App uninstalled');
+      expect(title('changes_approved')).toBe('App changes approved');
+    });
+
+    it('formats a save of the Stripe Checkout settings', () => {
+      expect(
+        getActionTitle(
+          baseAction({
+            resource_type: 'stripe_checkout_config',
+            context: { primary_name: 'Stripe Checkout' },
+          }),
+        ),
+      ).toBe('Checkout settings edited');
+    });
+
     it('formats a member custom field value change', () => {
       expect(
         getActionTitle(
@@ -97,6 +121,30 @@ describe('actions api helpers', () => {
           }),
         ),
       ).toBe('Member edited');
+    });
+  });
+
+  describe('getLinkTarget', () => {
+    it('links a tag to its detail page', () => {
+      expect(
+        getLinkTarget(
+          baseAction({
+            resource_type: 'tag',
+            resource: { id: 'tag-1', slug: 'useful-tag' },
+          }),
+        ),
+      ).toEqual({ isExternal: true, route: 'tags/useful-tag' });
+    });
+
+    it('links an offer to its Settings editor', () => {
+      expect(
+        getLinkTarget(
+          baseAction({
+            resource_type: 'offer',
+            resource: { id: 'offer-1', slug: 'black-friday' },
+          }),
+        ),
+      ).toEqual({ route: 'offers/edit/offer-1' });
     });
   });
 });

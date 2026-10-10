@@ -1,28 +1,23 @@
 import { renderHook } from '@testing-library/react';
-import { AppProvider, AppSettings } from '../../../src/providers/app-provider';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useTinybirdToken } from '../../../src/hooks/use-tinybird-token';
-import { getTinybirdToken } from '../../../src/api/tinybird';
+import { useTinybirdTokenQuery } from '../../../src/api/tinybird';
+import { useWebAnalyticsEnabled } from '../../../src/api/settings';
 import React from 'react';
 
-const buildAppSettings = (webAnalytics: boolean): AppSettings => ({
-  paidMembersEnabled: true,
-  newslettersEnabled: true,
-  analytics: {
-    emailTrackOpens: true,
-    emailTrackClicks: true,
-    membersTrackSources: true,
-    outboundLinkTagging: true,
-    webAnalytics,
-  },
-});
-
-// Mock the getTinybirdToken API
+// Mock the useTinybirdTokenQuery API
 vi.mock('../../../src/api/tinybird', () => ({
-  getTinybirdToken: vi.fn(),
+  useTinybirdTokenQuery: vi.fn(),
 }));
 
-const mockGetTinybirdToken = vi.mocked(getTinybirdToken);
+// The web analytics kill-switch is a settings selector; its own derivation is
+// covered in test/unit/api/settings.test.tsx.
+vi.mock('../../../src/api/settings', () => ({
+  useWebAnalyticsEnabled: vi.fn(),
+}));
+
+const mockUseTinybirdTokenQuery = vi.mocked(useTinybirdTokenQuery);
+const mockUseWebAnalyticsEnabled = vi.mocked(useWebAnalyticsEnabled);
 
 describe('useTinybirdToken', () => {
   let queryClient: QueryClient;
@@ -39,6 +34,7 @@ describe('useTinybirdToken', () => {
       React.createElement(QueryClientProvider, { client: queryClient }, children);
 
     vi.clearAllMocks();
+    mockUseWebAnalyticsEnabled.mockReturnValue(true);
   });
 
   afterEach(() => {
@@ -46,7 +42,7 @@ describe('useTinybirdToken', () => {
   });
 
   it('returns token when API returns valid token', () => {
-    mockGetTinybirdToken.mockReturnValue({
+    mockUseTinybirdTokenQuery.mockReturnValue({
       data: { tinybird: { token: 'valid-token-123' } },
       isLoading: false,
       error: null,
@@ -61,7 +57,7 @@ describe('useTinybirdToken', () => {
   });
 
   it('returns undefined when API returns null token', () => {
-    mockGetTinybirdToken.mockReturnValue({
+    mockUseTinybirdTokenQuery.mockReturnValue({
       data: { tinybird: { token: null } },
       isLoading: false,
       error: null,
@@ -76,7 +72,7 @@ describe('useTinybirdToken', () => {
   it('uses built-in query options without requiring consumer configuration', () => {
     const mockRefetch = vi.fn();
 
-    mockGetTinybirdToken.mockReturnValue({
+    mockUseTinybirdTokenQuery.mockReturnValue({
       data: { tinybird: { token: 'cached-token' } },
       isLoading: false,
       error: null,
@@ -89,16 +85,16 @@ describe('useTinybirdToken', () => {
     // Second render in same QueryClient context
     renderHook(() => useTinybirdToken(), { wrapper });
 
-    // Verify that getTinybirdToken is called with default enabled: true
-    expect(mockGetTinybirdToken).toHaveBeenCalledWith({ enabled: true });
+    // Verify that useTinybirdTokenQuery is called with default enabled: true
+    expect(mockUseTinybirdTokenQuery).toHaveBeenCalledWith({ enabled: true });
 
     // Verify both calls used the default enabled option
-    expect(mockGetTinybirdToken.mock.calls[0]).toEqual([{ enabled: true }]);
-    expect(mockGetTinybirdToken.mock.calls[1]).toEqual([{ enabled: true }]);
+    expect(mockUseTinybirdTokenQuery.mock.calls[0]).toEqual([{ enabled: true }]);
+    expect(mockUseTinybirdTokenQuery.mock.calls[1]).toEqual([{ enabled: true }]);
   });
 
   it('uses built-in query options for optimal token refresh behavior', () => {
-    mockGetTinybirdToken.mockReturnValue({
+    mockUseTinybirdTokenQuery.mockReturnValue({
       data: { tinybird: { token: 'test-token' } },
       isLoading: false,
       error: null,
@@ -108,12 +104,12 @@ describe('useTinybirdToken', () => {
     renderHook(() => useTinybirdToken(), { wrapper });
 
     // Verify default enabled option is passed
-    expect(mockGetTinybirdToken).toHaveBeenCalledWith({ enabled: true });
-    expect(mockGetTinybirdToken.mock.calls[0]).toEqual([{ enabled: true }]);
+    expect(mockUseTinybirdTokenQuery).toHaveBeenCalledWith({ enabled: true });
+    expect(mockUseTinybirdTokenQuery.mock.calls[0]).toEqual([{ enabled: true }]);
   });
 
   it('returns undefined for invalid token types without throwing error', () => {
-    mockGetTinybirdToken.mockReturnValue({
+    mockUseTinybirdTokenQuery.mockReturnValue({
       data: { tinybird: { token: 123 } }, // number instead of string
       isLoading: false,
       error: null,
@@ -129,7 +125,7 @@ describe('useTinybirdToken', () => {
   it('passes through API errors', () => {
     const apiError = new Error('Network error');
 
-    mockGetTinybirdToken.mockReturnValue({
+    mockUseTinybirdTokenQuery.mockReturnValue({
       data: null,
       isLoading: false,
       error: apiError,
@@ -142,10 +138,12 @@ describe('useTinybirdToken', () => {
     expect(result.current.error).toBe(apiError);
   });
 
-  it('exposes refetch function', () => {
-    const mockRefetch = vi.fn();
+  it('exposes a refetch that resolves the fresh token', async () => {
+    const mockRefetch = vi.fn().mockResolvedValue({
+      data: { tinybird: { token: 'fresh-token' } },
+    });
 
-    mockGetTinybirdToken.mockReturnValue({
+    mockUseTinybirdTokenQuery.mockReturnValue({
       data: { tinybird: { token: 'test-token' } },
       isLoading: false,
       error: null,
@@ -154,7 +152,23 @@ describe('useTinybirdToken', () => {
 
     const { result } = renderHook(() => useTinybirdToken(), { wrapper });
 
-    expect(result.current.refetch).toBe(mockRefetch);
+    await expect(result.current.refetch()).resolves.toBe('fresh-token');
+    expect(mockRefetch).toHaveBeenCalledTimes(1);
+  });
+
+  it('resolves undefined from refetch when no fresh token comes back', async () => {
+    const mockRefetch = vi.fn().mockResolvedValue({ data: null });
+
+    mockUseTinybirdTokenQuery.mockReturnValue({
+      data: { tinybird: { token: 'test-token' } },
+      isLoading: false,
+      error: null,
+      refetch: mockRefetch,
+    } as any);
+
+    const { result } = renderHook(() => useTinybirdToken(), { wrapper });
+
+    await expect(result.current.refetch()).resolves.toBeUndefined();
   });
 
   it('refreshes token when stale time expires', () => {
@@ -169,7 +183,7 @@ describe('useTinybirdToken', () => {
       refetch: vi.fn(),
     };
 
-    mockGetTinybirdToken.mockImplementation(() => queryState as any);
+    mockUseTinybirdTokenQuery.mockImplementation(() => queryState as any);
 
     const { result, rerender } = renderHook(() => useTinybirdToken(), { wrapper });
 
@@ -211,7 +225,7 @@ describe('useTinybirdToken', () => {
       refetch: vi.fn(),
     };
 
-    mockGetTinybirdToken.mockImplementation(() => {
+    mockUseTinybirdTokenQuery.mockImplementation(() => {
       fetchCount += 1;
       return {
         ...queryState,
@@ -245,7 +259,7 @@ describe('useTinybirdToken', () => {
   });
 
   it('respects enabled option when true', () => {
-    mockGetTinybirdToken.mockReturnValue({
+    mockUseTinybirdTokenQuery.mockReturnValue({
       data: { tinybird: { token: 'enabled-token' } },
       isLoading: false,
       error: null,
@@ -257,11 +271,11 @@ describe('useTinybirdToken', () => {
     expect(result.current.token).toBe('enabled-token');
     expect(result.current.isLoading).toBe(false);
     expect(result.current.error).toBe(null);
-    expect(mockGetTinybirdToken).toHaveBeenCalledWith({ enabled: true });
+    expect(mockUseTinybirdTokenQuery).toHaveBeenCalledWith({ enabled: true });
   });
 
   it('respects enabled option when false', () => {
-    mockGetTinybirdToken.mockReturnValue({
+    mockUseTinybirdTokenQuery.mockReturnValue({
       data: null,
       isLoading: false,
       error: null,
@@ -273,11 +287,11 @@ describe('useTinybirdToken', () => {
     expect(result.current.token).toBeUndefined();
     expect(result.current.isLoading).toBe(false);
     expect(result.current.error).toBe(null);
-    expect(mockGetTinybirdToken).toHaveBeenCalledWith({ enabled: false });
+    expect(mockUseTinybirdTokenQuery).toHaveBeenCalledWith({ enabled: false });
   });
 
   it('defaults enabled to true when not specified', () => {
-    mockGetTinybirdToken.mockReturnValue({
+    mockUseTinybirdTokenQuery.mockReturnValue({
       data: { tinybird: { token: 'default-token' } },
       isLoading: false,
       error: null,
@@ -287,24 +301,12 @@ describe('useTinybirdToken', () => {
     const { result } = renderHook(() => useTinybirdToken(), { wrapper });
 
     expect(result.current.token).toBe('default-token');
-    expect(mockGetTinybirdToken).toHaveBeenCalledWith({ enabled: true });
+    expect(mockUseTinybirdTokenQuery).toHaveBeenCalledWith({ enabled: true });
   });
 
   describe('web analytics gate', () => {
-    const withAppSettings =
-      (webAnalytics: boolean): React.FC<{ children: React.ReactNode }> =>
-      ({ children }) =>
-        React.createElement(
-          QueryClientProvider,
-          { client: queryClient },
-          React.createElement(AppProvider, {
-            appSettings: buildAppSettings(webAnalytics),
-            children,
-          }),
-        );
-
     beforeEach(() => {
-      mockGetTinybirdToken.mockReturnValue({
+      mockUseTinybirdTokenQuery.mockReturnValue({
         data: { tinybird: { token: 'test-token' } },
         isLoading: false,
         error: null,
@@ -313,24 +315,26 @@ describe('useTinybirdToken', () => {
     });
 
     it('never loads a token when web analytics is disabled, even if enabled is true', () => {
-      renderHook(() => useTinybirdToken({ enabled: true }), { wrapper: withAppSettings(false) });
+      mockUseWebAnalyticsEnabled.mockReturnValue(false);
 
-      expect(mockGetTinybirdToken).toHaveBeenCalledWith({ enabled: false });
+      renderHook(() => useTinybirdToken({ enabled: true }), { wrapper });
+
+      expect(mockUseTinybirdTokenQuery).toHaveBeenCalledWith({ enabled: false });
     });
 
     it('returns an idle result when disabled, even if the query reports loading/error', () => {
       // A disabled React Query still reports isLoading:true and may retain a
       // cached error — the hook must normalize this so providers don't hang.
-      mockGetTinybirdToken.mockReturnValue({
+      mockUseTinybirdTokenQuery.mockReturnValue({
         data: { tinybird: { token: 'stale-token' } },
         isLoading: true,
         error: new Error('stale error'),
         refetch: vi.fn(),
       } as any);
 
-      const { result } = renderHook(() => useTinybirdToken({ enabled: true }), {
-        wrapper: withAppSettings(false),
-      });
+      mockUseWebAnalyticsEnabled.mockReturnValue(false);
+
+      const { result } = renderHook(() => useTinybirdToken({ enabled: true }), { wrapper });
 
       expect(result.current.isLoading).toBe(false);
       expect(result.current.error).toBe(null);
@@ -338,34 +342,19 @@ describe('useTinybirdToken', () => {
     });
 
     it('loads a token when web analytics is enabled', () => {
-      renderHook(() => useTinybirdToken({ enabled: true }), { wrapper: withAppSettings(true) });
+      mockUseWebAnalyticsEnabled.mockReturnValue(true);
 
-      expect(mockGetTinybirdToken).toHaveBeenCalledWith({ enabled: true });
+      renderHook(() => useTinybirdToken({ enabled: true }), { wrapper });
+
+      expect(mockUseTinybirdTokenQuery).toHaveBeenCalledWith({ enabled: true });
     });
 
     it('stays disabled when web analytics is on but the caller passes enabled false', () => {
-      renderHook(() => useTinybirdToken({ enabled: false }), { wrapper: withAppSettings(true) });
+      mockUseWebAnalyticsEnabled.mockReturnValue(true);
 
-      expect(mockGetTinybirdToken).toHaveBeenCalledWith({ enabled: false });
-    });
+      renderHook(() => useTinybirdToken({ enabled: false }), { wrapper });
 
-    it('defaults to enabled when no AppProvider is mounted (preserves standalone behavior)', () => {
-      renderHook(() => useTinybirdToken({ enabled: true }), { wrapper });
-
-      expect(mockGetTinybirdToken).toHaveBeenCalledWith({ enabled: true });
-    });
-
-    it('stays disabled while settings are still loading (provider mounted, appSettings undefined)', () => {
-      const loadingWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) =>
-        React.createElement(
-          QueryClientProvider,
-          { client: queryClient },
-          React.createElement(AppProvider, { appSettings: undefined, children }),
-        );
-
-      renderHook(() => useTinybirdToken({ enabled: true }), { wrapper: loadingWrapper });
-
-      expect(mockGetTinybirdToken).toHaveBeenCalledWith({ enabled: false });
+      expect(mockUseTinybirdTokenQuery).toHaveBeenCalledWith({ enabled: false });
     });
   });
 });

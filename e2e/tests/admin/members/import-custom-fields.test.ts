@@ -18,7 +18,8 @@ import { usePerTestIsolation } from '@/helpers/playwright/isolation';
  * two things only the browser exercises -- the export -> import loop end to end, and the
  * mapping step both auto-detecting an exported column and taking a hand-picked target.
  *
- * Behind membersCustomFields, which gates the whole feature.
+ * The mapping step this drives is served to every site now, so the only flag left is
+ * membersCustomFields, which is what lets the test define the fields in Settings.
  */
 usePerTestIsolation();
 
@@ -54,7 +55,7 @@ test.describe('Ghost Admin - Members import with custom fields', () => {
     await membersPage.openActionsMenu();
     const { content } = await membersPage.exportMembers();
 
-    const customColumn = content.match(/custom_fields\.[a-z0-9_-]+/)?.[0];
+    const customColumn = content.match(/metafields\.custom\.[a-z0-9_-]+/)?.[0];
     expect(customColumn, 'export carries a custom field column').toBeTruthy();
     expect(content).toContain('Gold');
 
@@ -81,6 +82,7 @@ test.describe('Ghost Admin - Members import with custom fields', () => {
     await importModal.closeButton.click();
 
     await membersPage.goto();
+    await page.getByRole('button', { name: 'Search members', exact: true }).click();
     await membersPage.searchInput.fill(freshEmail);
     await expect(membersPage.getMemberByName(freshName)).toBeVisible({ timeout: 30000 });
     await membersPage.openMemberByName(freshName);
@@ -126,6 +128,7 @@ test.describe('Ghost Admin - Members import with custom fields', () => {
     await importModal.closeButton.click();
 
     await membersPage.goto();
+    await page.getByRole('button', { name: 'Search members', exact: true }).click();
     await membersPage.searchInput.fill(email);
     await expect(membersPage.getMemberByName(name)).toBeVisible({ timeout: 30000 });
     await membersPage.openMemberByName(name);

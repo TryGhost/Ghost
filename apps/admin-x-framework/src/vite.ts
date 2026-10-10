@@ -22,7 +22,10 @@ const externalPlugin = ({ externals }: { externals: Record<string, string> }): P
       if (originalId) {
         const module = await import(originalId);
 
+        // Node 24 adds a literal `module.exports` key to a CJS namespace, which
+        // is not a valid identifier to re-export.
         return Object.keys(module)
+          .filter((key) => /^[A-Za-z_$][\w$]*$/.test(key))
           .map((key) =>
             key === 'default'
               ? `export default ${externalName};`

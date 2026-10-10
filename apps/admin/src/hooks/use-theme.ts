@@ -1,111 +1,44 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import {
+  createAdminThemeController,
+  type AdminThemeMode,
+  type ResolvedAdminTheme,
+} from '@tryghost/admin-x-framework/utils/admin-theme';
 import { useEditUserPreferences, useUserPreferences } from '@/hooks/user-preferences';
 
-export type ThemeMode = 'light' | 'dark' | 'system';
-export type ResolvedThemeMode = 'light' | 'dark';
+export type ThemeMode = AdminThemeMode;
+export type ResolvedThemeMode = ResolvedAdminTheme;
 
-function getSystemTheme(): ResolvedThemeMode {
-  if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') {
-    return 'light';
-  }
-
-  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-}
-
-let themeSwitchingFrame: number | undefined;
-
-function applyThemeClass(resolvedTheme: ResolvedThemeMode) {
-  const html = document.documentElement;
-  // `theme-switching` suppresses transitions (rule in shade/styles.css) so the
-  // swap lands in one paint; double-rAF release mirrors Ember's feature.js.
-  html.classList.add('theme-switching');
-  html.classList.toggle('dark', resolvedTheme === 'dark');
-
-  if (themeSwitchingFrame !== undefined) {
-    cancelAnimationFrame(themeSwitchingFrame);
-  }
-
-  themeSwitchingFrame = requestAnimationFrame(() => {
-    themeSwitchingFrame = requestAnimationFrame(() => {
-      html.classList.remove('theme-switching');
-      themeSwitchingFrame = undefined;
-    });
-  });
-}
-
-// In the embedded admin, Ember owns the DOM theme: it manages both the `dark`
-// class and the dark stylesheet, and installs its own prefers-color-scheme
-// listener. The class-toggling and media-query effects below are only a fallback
-// for running this hook standalone (no EmberBridge), so they must not fight Ember.
-function isEmberManaged(): boolean {
-  return typeof window !== 'undefined' && Boolean(window.EmberBridge);
-}
-
-async function preloadAdminThemeStylesheet() {
-  await window.EmberBridge?.state.preloadAdminThemeStylesheet?.();
-}
-
-function applyAdminTheme(mode: ThemeMode, resolvedTheme: ResolvedThemeMode) {
-  if (window.EmberBridge?.state.applyAdminThemePreference) {
-    void window.EmberBridge.state.applyAdminThemePreference(mode);
-  } else {
-    applyThemeClass(resolvedTheme);
-  }
-}
-
+// App code consumes this once via ThemeProvider/useThemeContext.
 export function useTheme() {
   const { data: preferences } = useUserPreferences();
   const { mutateAsync: editPreferences, isPending: isEditingPreferences } =
     useEditUserPreferences();
-  const [systemTheme, setSystemTheme] = useState<ResolvedThemeMode>(getSystemTheme);
+  const [controller, setController] = useState<ReturnType<typeof createAdminThemeController>>();
+  const [resolvedTheme, setResolvedTheme] = useState<ResolvedThemeMode>('light');
   const [pendingTheme, setPendingTheme] = useState<ThemeMode | null>(null);
   const [isPendingTheme, setIsPendingTheme] = useState(false);
   const pendingRef = useRef(false);
 
+  const isThemeReady = preferences !== undefined;
   const persistedTheme: ThemeMode = preferences?.nightShift ?? 'light';
   const theme: ThemeMode = pendingTheme ?? persistedTheme;
-  const resolvedTheme: ResolvedThemeMode = theme === 'system' ? systemTheme : theme;
 
   useEffect(() => {
-    if (
-      isEmberManaged() ||
-      typeof window === 'undefined' ||
-      typeof window.matchMedia !== 'function'
-    ) {
-      return;
-    }
-
-    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-    const handleChange = (event: MediaQueryListEvent) => {
-      setSystemTheme(event.matches ? 'dark' : 'light');
-    };
-
-    setSystemTheme(mediaQuery.matches ? 'dark' : 'light');
-    if (typeof mediaQuery.addEventListener === 'function') {
-      mediaQuery.addEventListener('change', handleChange);
-    } else {
-      mediaQuery.addListener(handleChange);
-    }
-
+    const nextController = createAdminThemeController(setResolvedTheme);
+    setController(nextController);
     return () => {
-      if (typeof mediaQuery.removeEventListener === 'function') {
-        mediaQuery.removeEventListener('change', handleChange);
-      } else {
-        mediaQuery.removeListener(handleChange);
-      }
+      nextController.destroy();
     };
   }, []);
 
   useEffect(() => {
-    if (isEmberManaged()) {
+    if (!isThemeReady) {
       return;
     }
-    applyThemeClass(resolvedTheme);
-  }, [resolvedTheme]);
+    controller?.setTheme(theme);
+  }, [controller, theme, isThemeReady]);
 
-  // Clear the optimistic selection once the persisted preference catches up, so
-  // the menu indicator settles on the new value without flickering back via the
-  // brief window where the refetched preferences query has no data.
   useEffect(() => {
     if (pendingTheme !== null && persistedTheme === pendingTheme) {
       setPendingTheme(null);
@@ -114,27 +47,20 @@ export function useTheme() {
 
   const setTheme = useCallback(
     async (mode: ThemeMode) => {
-      if (pendingRef.current || mode === theme) {
+      if (!controller || pendingRef.current || mode === theme) {
         return;
       }
-
       pendingRef.current = true;
       setIsPendingTheme(true);
-      // Reflect the choice immediately; cleared on rollback (catch) or once the
-      // persisted preference matches (effect above).
-      setPendingTheme(mode);
 
       try {
-        const nextResolvedTheme = mode === 'system' ? systemTheme : mode;
-        await preloadAdminThemeStylesheet().catch((error) => {
-          // eslint-disable-next-line no-console
-          console.error('[Theme] Failed to preload admin theme stylesheet:', error);
-        });
-        applyAdminTheme(mode, nextResolvedTheme);
+        setPendingTheme(mode);
+        controller.setTheme(mode);
         await editPreferences({ nightShift: mode });
       } catch (error) {
         setPendingTheme(null);
-        applyAdminTheme(theme, resolvedTheme);
+        // Restore the previous choice, resolving system appearance at rollback time.
+        controller.setTheme(theme);
         // eslint-disable-next-line no-console
         console.error('[Theme] Failed to update appearance preference:', error);
       } finally {
@@ -142,12 +68,13 @@ export function useTheme() {
         setIsPendingTheme(false);
       }
     },
-    [editPreferences, resolvedTheme, systemTheme, theme],
+    [controller, editPreferences, theme],
   );
 
   return {
     theme,
     resolvedTheme,
+    isThemeReady,
     setTheme,
     isSettingTheme: isEditingPreferences || isPendingTheme,
   } as const;

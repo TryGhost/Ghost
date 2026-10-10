@@ -24,6 +24,11 @@ async function openPortal() {
   return settingsScreen.portalModal();
 }
 
+function getPreviewParam(preview: HTMLIFrameElement, key: string) {
+  const hashQuery = new URL(preview.src).hash.split('?')[1];
+  return new URLSearchParams(hashQuery).get(key);
+}
+
 describe('Portal settings', () => {
   it('saves signup display and free-tier options', async () => {
     fakeSettingsScreens();
@@ -48,6 +53,43 @@ describe('Portal settings', () => {
     await expect(settingsApi).toHaveEditedSettings([
       { key: 'portal_name', value: false },
       { key: 'portal_plans', value: '["monthly","yearly"]' },
+    ]);
+  });
+
+  it('saves the independent signup and account gift promotion settings', async () => {
+    fakeSettingsScreens();
+    fakeTiers([freeTier]);
+    const settingsApi = fakeEditSettings();
+    await renderAdminApp('/settings');
+
+    const modal = await openPortal();
+    const preview = modal.getByTestId('portal-preview');
+    const signupGiftPromotion = modal.getByLabelText('Display option to purchase gift');
+    await expect.element(signupGiftPromotion).toBeChecked();
+    await expect
+      .poll(() => getPreviewParam(preview.element() as HTMLIFrameElement, 'signupGiftPromotion'))
+      .toBe('true');
+    await signupGiftPromotion.click();
+    await expect
+      .poll(() => getPreviewParam(preview.element() as HTMLIFrameElement, 'signupGiftPromotion'))
+      .toBe('false');
+
+    await modal.getByRole('tab', { name: 'Account page' }).last().click();
+    const accountGiftPromotion = modal.getByLabelText('Display option to purchase gift');
+    await expect.element(accountGiftPromotion).toBeChecked();
+    await expect
+      .poll(() => getPreviewParam(preview.element() as HTMLIFrameElement, 'accountGiftPromotion'))
+      .toBe('true');
+    await accountGiftPromotion.click();
+    await expect
+      .poll(() => getPreviewParam(preview.element() as HTMLIFrameElement, 'accountGiftPromotion'))
+      .toBe('false');
+    await modal.getByRole('button', { name: 'Save' }).click();
+
+    await expect.element(modal.getByRole('button', { name: 'Saved' })).toBeVisible();
+    await expect(settingsApi).toHaveEditedSettings([
+      { key: 'portal_signup_gift_promotion', value: false },
+      { key: 'portal_account_gift_promotion', value: false },
     ]);
   });
 

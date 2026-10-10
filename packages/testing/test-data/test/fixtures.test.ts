@@ -10,17 +10,16 @@ function getLabs(response: ReturnType<typeof settingsResponse>): Record<string, 
 }
 
 describe('boot fixtures', () => {
-  it('defaults labs flags to off in settings and config', () => {
-    expect(getLabs(settingsResponse())).toEqual({
+  it('defaults labs flags to off, and GA flags to on, in settings and config', () => {
+    const expected = {
+      selfServeArchives: true,
       superEditors: false,
       editorExcerpt: false,
       additionalPaymentMethods: false,
-    });
-    expect(configResponse().config.labs).toEqual({
-      superEditors: false,
-      editorExcerpt: false,
-      additionalPaymentMethods: false,
-    });
+    };
+
+    expect(getLabs(settingsResponse())).toEqual(expected);
+    expect(configResponse().config.labs).toEqual(expected);
   });
 
   it('merges labs overrides without mutating the canned data', () => {
@@ -46,6 +45,23 @@ describe('boot fixtures', () => {
     first.settings.length = 0;
 
     expect(settingsResponse().settings.length).toBeGreaterThan(0);
+  });
+
+  it('isolates array settings from other responses and caller-owned overrides', () => {
+    const first = settingsResponse();
+    const blockedDomains = getSetting(first, 'all_blocked_email_domains') as string[];
+    blockedDomains.push('spam.xyz');
+
+    expect(getSetting(settingsResponse(), 'all_blocked_email_domains')).toEqual([]);
+
+    const overrides = ['blocked.example'];
+    const overridden = settingsResponse({ settings: { all_blocked_email_domains: overrides } });
+    const overriddenDomains = getSetting(overridden, 'all_blocked_email_domains') as string[];
+    overriddenDomains.push('another.example');
+    expect(overrides).toEqual(['blocked.example']);
+
+    overrides.push('later.example');
+    expect(overriddenDomains).toEqual(['blocked.example', 'another.example']);
   });
 
   it('serves one active casper theme with declarable gscan problems', () => {

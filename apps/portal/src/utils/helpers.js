@@ -218,13 +218,13 @@ export function getCheckoutSessionDataFromPlanAttribute(site, plan) {
   if (plan === 'monthly') {
     return {
       cadence: 'month',
-      tierId: defaultTier.id,
+      tierId: defaultTier?.id,
     };
   }
   if (plan === 'yearly') {
     return {
       cadence: 'year',
-      tierId: defaultTier.id,
+      tierId: defaultTier?.id,
     };
   }
   return {
@@ -306,6 +306,10 @@ export function hasMultipleProducts({ site }) {
 export function getRefDomain() {
   const referrerSource = window.location.hostname.replace(/^www\./, '');
   return referrerSource;
+}
+
+export function hasCustomFieldsEnabled({ site }) {
+  return !!site?.labs?.membersCustomFields;
 }
 
 export function hasCommentsEnabled({ site }) {
@@ -656,7 +660,7 @@ export function getAvailablePrices({ site, products = null }) {
 export function getFreePriceCurrency({ site }) {
   const stripePrices = getAvailablePrices({ site });
 
-  let freePriceCurrencyDetail = {
+  const freePriceCurrencyDetail = {
     currency: 'usd',
     currency_symbol: '$',
   };
@@ -780,10 +784,10 @@ export const getStripeAmount = (amount) => {
   return amount / 100;
 };
 
-export const getPriceString = (price = {}) => {
+export const getPriceString = (price = {}, locale) => {
   const symbol = getCurrencySymbol(price.currency);
   const amount = getStripeAmount(price.amount);
-  return `${symbol}${amount}/${price.interval}`;
+  return `${symbol}${formatPrice(amount, locale)}/${price.interval}`;
 };
 
 export const formatNumber = (amount) => {
@@ -807,7 +811,12 @@ export const formatPrice = (amount, locale) => {
     ? undefined
     : { minimumFractionDigits: 2, maximumFractionDigits: 2 };
 
-  return normalizedAmount.toLocaleString(locale, options);
+  try {
+    return normalizedAmount.toLocaleString(locale || undefined, options);
+  } catch {
+    // Stored publication locales may not be valid Intl language tags.
+    return normalizedAmount.toLocaleString(undefined, options);
+  }
 };
 
 export const createPopupNotification = ({
@@ -979,13 +988,13 @@ export const transformApiTiersData = ({ tiers }) => {
   let priceId = 0;
 
   return tiers.map((tier) => {
-    let monthlyPrice = createMonthlyPrice({ tier, priceId });
+    const monthlyPrice = createMonthlyPrice({ tier, priceId });
     priceId += 1;
 
-    let yearlyPrice = createYearlyPrice({ tier, priceId });
+    const yearlyPrice = createYearlyPrice({ tier, priceId });
     priceId += 1;
 
-    let benefits = createBenefits({ tier });
+    const benefits = createBenefits({ tier });
     return {
       ...tier,
       benefits: benefits,
@@ -1037,7 +1046,7 @@ export function addMonths(date, numberOfMonths = 1) {
   const originalSeconds = originalDate.getUTCSeconds();
   const originalMilliseconds = originalDate.getUTCMilliseconds();
   let targetMonth = originalDate.getUTCMonth() + numberOfMonths;
-  let targetYear = originalDate.getUTCFullYear() + Math.floor(targetMonth / 12);
+  const targetYear = originalDate.getUTCFullYear() + Math.floor(targetMonth / 12);
   targetMonth = targetMonth % 12;
   const daysInTargetMonth = new Date(Date.UTC(targetYear, targetMonth + 1, 0)).getUTCDate();
 

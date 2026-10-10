@@ -1,0 +1,33 @@
+const { SafeString } = require('../services/handlebars');
+const logging = require('@tryghost/logging');
+const { urlUtils } = require('../services/proxy');
+
+// eslint-disable-next-line camelcase
+module.exports = function content_api_url(options) {
+  let result;
+  const absoluteUrlRequested = getAbsoluteOption(options);
+
+  try {
+    const path = urlUtils.urlFor('api', { type: 'content' }, absoluteUrlRequested);
+    result = new SafeString(path);
+  } catch (error) {
+    logging.error(error);
+    result = '';
+  }
+
+  return result;
+};
+
+function getAbsoluteOption(options) {
+  const absoluteOption = options && options.hash && options.hash.absolute;
+  if (
+    absoluteOption === undefined ||
+    absoluteOption === 'true' ||
+    absoluteOption === true ||
+    absoluteOption === null
+  ) {
+    return true;
+  } else {
+    return false;
+  }
+}

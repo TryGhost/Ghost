@@ -9,7 +9,6 @@ import {
   renderAdminApp,
   siteResponse,
 } from '@test-utils/acceptance';
-import * as sel from '@tryghost/test-data/selectors/settings';
 import { settingsScreen } from '@/settings/settings.screen';
 
 const previewHtml = '<html><head><style></style></head><body>preview</body></html>';
@@ -40,20 +39,20 @@ describe('Announcement bar', () => {
     await renderAdminApp('/settings/announcement-bar/edit');
 
     const modal = settingsScreen.announcementBarModal();
-    await expect.element(modal.getByTestId(sel.announcementBarPreviewIframe)).toBeVisible();
+    await expect.element(settingsScreen.announcementBarPreviewIframe()).toBeVisible();
     await expect(homepagePreview).toHaveRequestedPreview({
       announcement_bg: 'dark',
       announcement: '',
     });
 
-    await modal.getByTestId(sel.designToolbar).getByRole('tab', { name: 'Post' }).click();
+    await settingsScreen.designToolbar().getByRole('tab', { name: 'Post' }).click();
     await expect(postPreview).toHaveRequestedPreview({ announcement_bg: 'dark', announcement: '' });
     expect(homepagePreview.requests[0]?.accept).toContain('text/html');
 
     await modal.getByRole('radio', { name: 'Mobile' }).click();
-    await expect.element(modal.getByTestId(sel.previewMobile)).toBeVisible();
+    await expect.element(settingsScreen.previewMobile()).toBeVisible();
     await modal.getByRole('radio', { name: 'Desktop' }).click();
-    await expect(modal.getByTestId(sel.previewMobile)).toHaveCount(0);
+    await expect(settingsScreen.previewMobile()).toHaveCount(0);
   });
 
   it('saves the selected background colour', async () => {

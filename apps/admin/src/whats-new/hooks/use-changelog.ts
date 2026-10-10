@@ -45,6 +45,7 @@ export const useChangelog = () =>
   useQuery({
     queryKey: ['changelog'],
     queryFn: async () => {
+      // eslint-disable-next-line no-restricted-syntax -- external ghost.org changelog feed, not the Admin API
       const response = await fetch('https://ghost.org/changelog.json');
 
       if (!response.ok) {

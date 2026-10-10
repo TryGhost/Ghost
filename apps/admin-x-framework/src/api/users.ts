@@ -71,12 +71,6 @@ export interface PasswordUpdateResponseType {
   ];
 }
 
-export interface DeleteUserResponse {
-  meta: {
-    filename: string;
-  };
-}
-
 // Requests
 
 const dataType = usersDataType;
@@ -85,10 +79,19 @@ export const useBrowseUsers = createInfiniteQuery<UsersResponseType & { isEnd: b
   dataType,
   path: '/users/',
   defaultSearchParams: { limit: '100', include: 'roles' },
-  defaultNextPageParams: (lastPage, otherParams) => ({
-    ...otherParams,
-    page: (lastPage.meta?.pagination.next || 1).toString(),
-  }),
+  defaultNextPageParams: (lastPage, otherParams) => {
+    // Returning a param unconditionally makes TanStack report hasNextPage
+    // forever, so consumers render a "Load more" that refetches page 1.
+    // Every other resource here guards the same way.
+    if (!lastPage.meta?.pagination.next) {
+      return undefined;
+    }
+
+    return {
+      ...otherParams,
+      page: lastPage.meta.pagination.next.toString(),
+    };
+  },
   returnData: (originalData) => {
     const { pages } = originalData as InfiniteData<UsersResponseType>;
     const users = pages.flatMap((page) => page.users);
@@ -115,17 +118,15 @@ export const useEditUser = createMutation<UsersResponseType, User>({
   searchParams: () => ({ include: 'roles' }),
   updateQueries: {
     dataType,
-    emberUpdateType: 'createOrUpdate',
     update: updateQueryCache('users'),
   },
 });
 
-export const useDeleteUser = createMutation<DeleteUserResponse, string>({
+export const useDeleteUser = createMutation<void, string>({
   method: 'DELETE',
   path: (id) => `/users/${id}/`,
   updateQueries: {
     dataType,
-    emberUpdateType: 'delete',
     update: deleteFromQueryCache('users'),
   },
 });
@@ -157,7 +158,6 @@ export const useMakeOwner = createMutation<UsersResponseType, string>({
   }),
   updateQueries: {
     dataType,
-    emberUpdateType: 'createOrUpdate',
     update: updateQueryCache('users'),
   },
 });

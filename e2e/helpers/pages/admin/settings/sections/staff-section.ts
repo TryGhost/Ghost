@@ -1,5 +1,6 @@
 import { BasePage } from '@/helpers/pages';
 import { Locator, Page } from '@playwright/test';
+import { ownerUser, users } from '@tryghost/test-data/selectors/settings';
 
 export class StaffSection extends BasePage {
   readonly requireTwoFaButton: Locator;
@@ -8,8 +9,8 @@ export class StaffSection extends BasePage {
 
   constructor(page: Page) {
     super(page, '/ghost/#/settings/staff');
-    this.ownerUser = this.page.getByTestId('owner-user');
-    this.requireTwoFaButton = page.getByTestId('users').getByRole('switch');
+    this.ownerUser = this.page.getByTestId(ownerUser);
+    this.requireTwoFaButton = page.getByTestId(users).getByRole('switch');
     this.inviteStaffButton = page.getByRole('button', { name: 'Invite people' });
   }
 
@@ -60,7 +61,7 @@ export class StaffSection extends BasePage {
   }
 
   private async waitForSwitch(checked: boolean): Promise<void> {
-    const switchState = this.page.getByTestId('users').getByRole('switch', { checked: checked });
+    const switchState = this.page.getByTestId(users).getByRole('switch', { checked: checked });
     await switchState.waitFor({ state: 'visible' });
   }
 }

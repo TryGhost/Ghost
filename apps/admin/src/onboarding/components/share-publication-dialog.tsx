@@ -1,6 +1,8 @@
 import { Button } from '@tryghost/shade/components';
 import { ShareModal, type ShareModalSocialLink } from '@tryghost/shade/patterns';
 import { LucideIcon } from '@tryghost/shade/utils';
+import { Link } from '@tryghost/admin-x-framework';
+import { useSettingsReturnToState } from '@/layout/settings-navigation';
 
 interface SharePublicationDialogProps {
   description: string;
@@ -19,6 +21,7 @@ export function SharePublicationDialog({
   siteTitle,
   siteUrl,
 }: SharePublicationDialogProps) {
+  const settingsReturnToState = useSettingsReturnToState();
   const encodedUrl = encodeURIComponent(siteUrl);
   const socialLinks: ShareModalSocialLink[] = [
     {
@@ -81,9 +84,13 @@ export function SharePublicationDialog({
             variant="link"
             asChild
           >
-            <a href="#/settings/design/edit?ref=setup" id="ob-share-modal-design-settings">
+            <Link
+              id="ob-share-modal-design-settings"
+              state={settingsReturnToState}
+              to="/settings/design/edit?ref=setup"
+            >
               Design settings
-            </a>
+            </Link>
           </Button>
           .
         </p>

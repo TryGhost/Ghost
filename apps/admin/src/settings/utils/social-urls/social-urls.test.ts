@@ -472,6 +472,10 @@ const FIXTURES: PlatformFixture[] = [
       ['linkedin.com/in/山田太郎', 'https://www.linkedin.com/in/山田太郎'],
       // decomposed accents (e + combining acute) normalise to composed form
       ['linkedin.com/in/josé-garcia', 'https://www.linkedin.com/in/josé-garcia'],
+      // company/school pages allow underscores; personal /in/ does not
+      ['https://www.linkedin.com/company/eyeshot_2/', 'https://www.linkedin.com/company/eyeshot_2'],
+      ['linkedin.com/company/some_company', 'https://www.linkedin.com/company/some_company'],
+      ['linkedin.com/school/some_school', 'https://www.linkedin.com/school/some_school'],
     ],
     invalid: [
       ['https://twitter.com/johnsmith', LINKEDIN_URL_ERROR],
@@ -484,6 +488,7 @@ const FIXTURES: PlatformFixture[] = [
       ['linkedin.com/in/john%20smith', LINKEDIN_USERNAME_ERROR], // percent-encoded space
       ['linkedin.com/in/john%3Fsmith', LINKEDIN_USERNAME_ERROR], // percent-encoded ?
       ['linkedin.com/in/john%2smith', LINKEDIN_USERNAME_ERROR], // malformed percent-encoding
+      ['linkedin.com/in/john_smith', LINKEDIN_USERNAME_ERROR], // underscores not allowed on /in/
       // a leftover '@' after the 'company/' prefix mixes two
       // incompatible URL conventions and is rejected, not silently stripped
       ['linkedin.com/company/@acme', LINKEDIN_USERNAME_ERROR],
@@ -496,6 +501,8 @@ const FIXTURES: PlatformFixture[] = [
       ['in/johnsmith', 'https://www.linkedin.com/in/johnsmith'],
       ['company/ghost-foundation', 'https://www.linkedin.com/company/ghost-foundation'],
       ['company/ghost-foundation/', 'https://www.linkedin.com/company/ghost-foundation'],
+      ['company/eyeshot_2', 'https://www.linkedin.com/company/eyeshot_2'],
+      ['school/some_school', 'https://www.linkedin.com/school/some_school'],
       ['pub/johnsmith/12/34/567', 'https://www.linkedin.com/pub/johnsmith/12/34/567'],
       [
         'company/la-revue-européenne-des-médias-et-du-numérique',
@@ -506,6 +513,7 @@ const FIXTURES: PlatformFixture[] = [
       ['john@smith', LINKEDIN_USERNAME_ERROR],
       ['john#smith', LINKEDIN_USERNAME_ERROR],
       ['john.smith', LINKEDIN_USERNAME_ERROR], // dots are not allowed on linkedin
+      ['john_smith', LINKEDIN_USERNAME_ERROR], // underscores not allowed on personal handles
       ['jo', LINKEDIN_USERNAME_ERROR], // too short
       ['a'.repeat(101), LINKEDIN_USERNAME_ERROR], // too long
       ['company/@acme', LINKEDIN_USERNAME_ERROR],
@@ -524,6 +532,7 @@ const FIXTURES: PlatformFixture[] = [
       ['linkedin.com/pub/johnsmith/12/34/567', 'pub/johnsmith/12/34/567'],
       ['https://www.linkedin.com/company/ghost-foundation', 'company/ghost-foundation'],
       ['https://www.linkedin.com/company/ghost-foundation/', 'company/ghost-foundation'],
+      ['https://www.linkedin.com/company/eyeshot_2/', 'company/eyeshot_2'],
       ['linkedin.com/school/mit', 'school/mit'],
       [
         'https://www.linkedin.com/company/la-revue-europ%C3%A9enne-des-m%C3%A9dias-et-du-num%C3%A9rique/',

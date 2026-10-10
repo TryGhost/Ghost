@@ -1,0 +1,634 @@
+import { dequal } from 'dequal';
+import {
+  lexicalEquals,
+  normalizeLexicalForCompare,
+  type LexicalInput,
+} from '@/editor/engine/lexical-compare';
+import { pick } from '@/editor/engine/pick';
+import { sameTag, type TagLike } from '@/shared/tags/tag-selection';
+
+// Codes identify each dirty cause; callers match on them and the leave report sends them.
+export type ChangeReasonCode =
+  | 'POST_HAS_ERROR'
+  | 'POST_TAGS_DIVERGED'
+  | 'POST_TITLE_DIVERGED'
+  | 'SCRATCH_DIVERGED_FROM_SECONDARY'
+  | 'BASELINE_PENDING'
+  | 'BASELINE_FAILED'
+  | 'LEXICAL_PARSE_FAILED'
+  | 'NEW_POST_HAS_CHANGED_ATTRIBUTES'
+  | 'POST_HAS_DIRTY_ATTRIBUTES';
+
+export interface ChangeReason {
+  code: ChangeReasonCode;
+}
+
+export interface ChangeVerdict {
+  dirty: boolean;
+  reasons: ChangeReason[];
+}
+
+/**
+ * Where the live body's compare form first departs from another body's: the
+ * offset, a short excerpt both share before it, and what each continues with.
+ */
+export interface BodyDifference {
+  at: number;
+  before: string;
+  live: string;
+  other: string;
+}
+
+/** Where a dirty body departs from the saved body and, once reported, the baseline. */
+export interface BodyDivergence {
+  saved: BodyDifference | null;
+  baseline: BodyDifference | null;
+}
+
+/** null until the create request has been acknowledged. */
+export type PostId = string | null;
+
+/** An editor read always carries the relation's id (content-types.ts). */
+export interface PostRelationLike {
+  id: string;
+}
+
+// Client-owned editable fields only; other server metadata lives with the save engine.
+export interface EditablePostProjection {
+  title: string;
+  slug: string;
+  lexical: string | null;
+  tags: ReadonlyArray<TagLike>;
+  custom_excerpt: string | null;
+  email_subject: string | null;
+  feature_image: string | null;
+  feature_image_alt: string | null;
+  feature_image_caption: string | null;
+  featured: boolean;
+  visibility: string | null;
+  tiers: ReadonlyArray<PostRelationLike>;
+  authors: ReadonlyArray<PostRelationLike>;
+  meta_title: string | null;
+  meta_description: string | null;
+  canonical_url: string | null;
+  custom_template: string | null;
+  codeinjection_head: string | null;
+  codeinjection_foot: string | null;
+  og_image: string | null;
+  og_title: string | null;
+  og_description: string | null;
+  twitter_image: string | null;
+  twitter_title: string | null;
+  twitter_description: string | null;
+  /** Pages only; the write contract strips it from post payloads. */
+  show_title_and_feature_image: boolean | null;
+  /** Server collision token: carried and rebased, never a dirty signal. */
+  updated_at: string | null;
+}
+
+export type EditablePostPatch = Partial<EditablePostProjection>;
+
+export type RestoredRevision = Pick<
+  EditablePostProjection,
+  | 'lexical'
+  | 'title'
+  | 'custom_excerpt'
+  | 'feature_image'
+  | 'feature_image_alt'
+  | 'feature_image_caption'
+>;
+
+// The server's own revision projection (post-revisions.ts).
+export interface RevisionProjection {
+  lexical: string | null;
+  title: string;
+  custom_excerpt?: string | null;
+  feature_image?: string | null;
+}
+
+export interface ChangeTrackerOptions {
+  siteUrl?: string;
+}
+
+export interface ChangeTracker {
+  load(postId: PostId, post: EditablePostProjection): void;
+  setSaved(postId: PostId, post: EditablePostProjection): void;
+  saveAcknowledged(
+    postId: PostId,
+    submitted: EditablePostPatch,
+    acknowledged: EditablePostProjection,
+  ): void;
+  setBaseline(postId: PostId, lexical: LexicalInput): void;
+  baselineFailed(postId: PostId): void;
+  setLive(postId: PostId, patch: EditablePostPatch): void;
+  markSaveError(): void;
+  clearSaveError(): void;
+  revisionRestored(postId: PostId, restored: RestoredRevision): void;
+  verdict(): ChangeVerdict;
+  /** The editable fields behind the verdict, the body only while it counts as dirty. */
+  dirtyFields(): ProjectionKey[];
+  /** Null unless the body counts as dirty. */
+  bodyDivergence(): BodyDivergence | null;
+  /** Compares one editable field with the latest saved value using the dirty-check rules. */
+  isFieldDirty(key: keyof EditablePostProjection): boolean;
+  /** Whether a server copy is the saved copy with `submitted` written over it, and nothing else. */
+  holdsWrite(submitted: EditablePostPatch, post: EditablePostProjection): boolean;
+  /** The latest saved value of one editable field, undefined once disposed. */
+  savedValue<Key extends keyof EditablePostProjection>(
+    key: Key,
+  ): EditablePostProjection[Key] | undefined;
+  hasChangedSinceRevision(latestRevision: RevisionProjection | null | undefined): boolean;
+  dispose(): void;
+}
+
+export type ProjectionKey = keyof EditablePostProjection;
+
+const PROJECTION_KEYS: ReadonlyArray<ProjectionKey> = [
+  'title',
+  'slug',
+  'lexical',
+  'tags',
+  'custom_excerpt',
+  'email_subject',
+  'feature_image',
+  'feature_image_alt',
+  'feature_image_caption',
+  'featured',
+  'visibility',
+  'tiers',
+  'authors',
+  'meta_title',
+  'meta_description',
+  'canonical_url',
+  'custom_template',
+  'codeinjection_head',
+  'codeinjection_foot',
+  'og_image',
+  'og_title',
+  'og_description',
+  'twitter_image',
+  'twitter_title',
+  'twitter_description',
+  'show_title_and_feature_image',
+  'updated_at',
+];
+
+/** Relations compare by identity; the rest of a related record is server-owned. */
+const RELATION_KEYS: ReadonlySet<ProjectionKey> = new Set(['tiers', 'authors']);
+
+const RUNG_KEYS: ReadonlySet<ProjectionKey> = new Set(['title', 'lexical', 'tags', 'updated_at']);
+
+// `forms` holds the compare form of every document the hidden instance has
+// reported since it was seeded: it never takes input, so each one is load-time
+// normalization, and the visible instance can trail it through the same steps.
+type Baseline =
+  | { status: 'pending' }
+  | { status: 'ready'; lexical: string | null; forms: ReadonlySet<string> }
+  | { status: 'failed' };
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function clonePlain<T>(value: T): T {
+  if (Array.isArray(value)) {
+    return value.map(clonePlain) as T;
+  }
+  if (isRecord(value)) {
+    return Object.fromEntries(
+      Object.entries(value).map(([key, entry]) => [key, clonePlain(entry)]),
+    ) as T;
+  }
+  return value;
+}
+
+function pickProjection(post: EditablePostProjection): EditablePostProjection {
+  return clonePlain(pick(post, PROJECTION_KEYS));
+}
+
+function pickPatch(patch: EditablePostPatch): EditablePostPatch {
+  const keys = PROJECTION_KEYS.filter((key) => key in patch && patch[key] !== undefined);
+  return clonePlain(pick(patch, keys));
+}
+
+function serializeLexical(lexical: LexicalInput): string | null {
+  if (lexical === null || lexical === undefined) {
+    return null;
+  }
+  return typeof lexical === 'string' ? lexical : JSON.stringify(lexical);
+}
+
+// Order counts: it is the `sort_order` Ghost stores for the relation.
+function sameTags(
+  a: ReadonlyArray<TagLike> | undefined,
+  b: ReadonlyArray<TagLike> | undefined,
+): boolean {
+  const left = a ?? [];
+  const right = b ?? [];
+  return left.length === right.length && left.every((tag, index) => sameTag(tag, right[index]));
+}
+
+// The server trims the title on save, so surrounding whitespace never persists.
+function sameTitle(a: string, b: string): boolean {
+  return a.trim() === b.trim();
+}
+
+function relationIds(related: ReadonlyArray<PostRelationLike> | undefined): string[] {
+  return (related ?? []).map((entry) => entry.id ?? '');
+}
+
+/**
+ * The dirty-check compare for one field, minus `lexical`, whose semantic form
+ * needs the site url the tracker was built with.
+ */
+export function sameFieldValue(key: ProjectionKey, a: unknown, b: unknown): boolean {
+  if (key === 'title') {
+    return sameTitle(a as string, b as string);
+  }
+  if (key === 'tags') {
+    return sameTags(a as ReadonlyArray<TagLike>, b as ReadonlyArray<TagLike>);
+  }
+  if (RELATION_KEYS.has(key)) {
+    return dequal(
+      relationIds(a as ReadonlyArray<PostRelationLike>),
+      relationIds(b as ReadonlyArray<PostRelationLike>),
+    );
+  }
+  return dequal(a, b);
+}
+
+function isOlderToken(candidate: string | null, held: string | null): boolean {
+  if (candidate === null || held === null) {
+    return false;
+  }
+  const candidateTime = Date.parse(candidate);
+  const heldTime = Date.parse(held);
+  return !Number.isNaN(candidateTime) && !Number.isNaN(heldTime) && candidateTime < heldTime;
+}
+
+// Characters kept on each side of the first difference.
+const EXCERPT_LENGTH = 200;
+// The live body is excerpted against saved and baseline, so two windows can cover a body this long.
+const SHORTEST_EXCERPTED_BODY = 4 * EXCERPT_LENGTH;
+
+function firstDifference(live: string, other: string): BodyDifference | null {
+  const shared = Math.min(live.length, other.length);
+  let at = 0;
+  while (at < shared && live[at] === other[at]) {
+    at += 1;
+  }
+  if (at === live.length && at === other.length) {
+    return null;
+  }
+  // Excerpts that would add up to a whole body are dropped; the offset still locates the change.
+  const otherWhole =
+    other.length > 0 && at <= EXCERPT_LENGTH && other.length - at <= EXCERPT_LENGTH;
+  if (otherWhole || live.length <= SHORTEST_EXCERPTED_BODY) {
+    return { at, before: '', live: '', other: '' };
+  }
+  return {
+    at,
+    before: live.slice(Math.max(0, at - EXCERPT_LENGTH), at),
+    live: live.slice(at, at + EXCERPT_LENGTH),
+    other: other.slice(at, at + EXCERPT_LENGTH),
+  };
+}
+
+export function createChangeTracker(options: ChangeTrackerOptions = {}): ChangeTracker {
+  const siteUrl = options.siteUrl ?? '';
+  let postId: PostId = null;
+  let idAdopted = false;
+  const heldIds = new Set<string>();
+  let saved: EditablePostProjection | null = null;
+  let live: EditablePostProjection | null = null;
+  let baseline: Baseline = { status: 'pending' };
+  // The hidden instance holds the loaded document; once an acknowledged body
+  // has replaced the baseline, its later reports would move it back.
+  let baselineAcknowledged = false;
+  let saveError = false;
+  let disposed = false;
+
+  function sameLexical(a: string | null, b: string | null): boolean {
+    return lexicalEquals(a, b, siteUrl);
+  }
+
+  function readyBaseline(lexical: string | null, earlier: ReadonlySet<string>): Baseline {
+    try {
+      const form = normalizeLexicalForCompare(lexical, siteUrl);
+      return { status: 'ready', lexical, forms: new Set([...earlier, form]) };
+    } catch {
+      return { status: 'ready', lexical, forms: earlier };
+    }
+  }
+
+  function sameField(key: ProjectionKey, a: unknown, b: unknown): boolean {
+    if (key === 'lexical') {
+      try {
+        return sameLexical(a as string | null, b as string | null);
+      } catch {
+        return false;
+      }
+    }
+    return sameFieldValue(key, a, b);
+  }
+
+  function isCurrent(id: PostId): boolean {
+    return !disposed && saved !== null && id === postId;
+  }
+
+  // Editor-side events may still say null between a create ack and the caller learning the id.
+  function isCurrentOrAlias(id: PostId): boolean {
+    return isCurrent(id) || (id === null && idAdopted && !disposed && saved !== null);
+  }
+
+  function hasChangedAttribute(from: EditablePostProjection, to: EditablePostProjection): boolean {
+    return PROJECTION_KEYS.some(
+      (key) => !RUNG_KEYS.has(key) && !sameField(key, from[key], to[key]),
+    );
+  }
+
+  function bodyReason(): ChangeReasonCode | null {
+    if (!saved || !live) {
+      return null;
+    }
+    const scratch = live.lexical;
+    try {
+      if (sameLexical(saved.lexical, scratch)) {
+        return null;
+      }
+      if (baseline.status === 'pending') {
+        return 'BASELINE_PENDING';
+      }
+      if (baseline.status === 'failed') {
+        return 'BASELINE_FAILED';
+      }
+      return baseline.forms.has(normalizeLexicalForCompare(scratch, siteUrl))
+        ? null
+        : 'SCRATCH_DIVERGED_FROM_SECONDARY';
+    } catch {
+      return 'LEXICAL_PARSE_FAILED';
+    }
+  }
+
+  // A body that cannot be parsed is compared as written.
+  function bodyDifference(current: string | null, other: string | null): BodyDifference | null {
+    try {
+      return firstDifference(
+        normalizeLexicalForCompare(current, siteUrl),
+        normalizeLexicalForCompare(other, siteUrl),
+      );
+    } catch {
+      return firstDifference(current ?? '', other ?? '');
+    }
+  }
+
+  function collectReasons(): ChangeReason[] {
+    if (!saved || !live) {
+      return [];
+    }
+
+    const reasons: ChangeReason[] = [];
+
+    if (saveError) {
+      reasons.push({ code: 'POST_HAS_ERROR' });
+    }
+
+    if (!sameTags(saved.tags, live.tags)) {
+      reasons.push({ code: 'POST_TAGS_DIVERGED' });
+    }
+
+    if (!sameTitle(saved.title, live.title)) {
+      reasons.push({ code: 'POST_TITLE_DIVERGED' });
+    }
+
+    const body = bodyReason();
+    if (body) {
+      reasons.push({ code: body });
+    }
+
+    if (hasChangedAttribute(saved, live)) {
+      reasons.push({
+        code: postId === null ? 'NEW_POST_HAS_CHANGED_ATTRIBUTES' : 'POST_HAS_DIRTY_ATTRIBUTES',
+      });
+    }
+
+    return reasons;
+  }
+
+  return {
+    load(id, post) {
+      if (disposed) {
+        return;
+      }
+      postId = id;
+      idAdopted = false;
+      if (id !== null) {
+        heldIds.add(id);
+      }
+      saved = pickProjection(post);
+      live = pickProjection(post);
+      baseline = { status: 'pending' };
+      baselineAcknowledged = false;
+      saveError = false;
+    },
+
+    // Query data (load, refetch) never moves the baseline or the live state;
+    // a refetch older than the held collision token is stale and dropped.
+    setSaved(id, post) {
+      if (!isCurrent(id) || !saved || !live) {
+        return;
+      }
+      const next = pickProjection(post);
+      if (isOlderToken(next.updated_at, saved.updated_at)) {
+        return;
+      }
+      saved = next;
+      live = { ...live, updated_at: next.updated_at };
+    },
+
+    // Single-flight save engine with one coalescing pending slot: acknowledgements
+    // arrive in submit order, so no save-attempt id is needed here.
+    // Callers must build a fresh tracker per load(null) or fence stale completions
+    // themselves; a new post only refuses acks for ids this tracker has already held.
+    saveAcknowledged(id, submitted, acknowledged) {
+      if (disposed || !saved || !live || (postId !== null && id !== postId)) {
+        return;
+      }
+      if (postId === null && id !== null && heldIds.has(id)) {
+        return;
+      }
+      const next = pickProjection(acknowledged);
+      const rebasedKeys: ProjectionKey[] = [];
+      for (const key of PROJECTION_KEYS) {
+        const base = submitted[key] !== undefined ? submitted[key] : saved[key];
+        if (key === 'updated_at' || sameField(key, live[key], base)) {
+          rebasedKeys.push(key);
+        }
+      }
+      if (postId === null && id !== null) {
+        idAdopted = true;
+        heldIds.add(id);
+      }
+      postId = id;
+      // A field save can finish while Koenig is still normalizing the loaded
+      // body. Keep that baseline when the persisted body has not changed.
+      if (!sameField('lexical', saved.lexical, next.lexical)) {
+        baseline = readyBaseline(next.lexical, new Set());
+        baselineAcknowledged = true;
+      }
+      saved = next;
+      live = { ...live, ...pick(next, rebasedKeys) };
+      saveError = false;
+    },
+
+    setBaseline(id, lexical) {
+      if (!isCurrentOrAlias(id) || baselineAcknowledged) {
+        return;
+      }
+      baseline = readyBaseline(
+        serializeLexical(lexical),
+        baseline.status === 'ready' ? baseline.forms : new Set(),
+      );
+    },
+
+    baselineFailed(id) {
+      if (!isCurrentOrAlias(id) || baselineAcknowledged) {
+        return;
+      }
+      baseline = { status: 'failed' };
+    },
+
+    setLive(id, patch) {
+      if (!isCurrentOrAlias(id) || !live) {
+        return;
+      }
+      const defined = pickPatch(patch);
+      delete defined.updated_at;
+      live = { ...live, ...defined };
+    },
+
+    markSaveError() {
+      if (disposed) {
+        return;
+      }
+      saveError = true;
+    },
+
+    clearSaveError() {
+      if (disposed) {
+        return;
+      }
+      saveError = false;
+    },
+
+    // Call only after the restore save is acknowledged; a failed restore never reaches here.
+    revisionRestored(id, restored) {
+      if (!isCurrent(id) || !saved || !live) {
+        return;
+      }
+      const adopted = clonePlain({
+        lexical: restored.lexical,
+        title: restored.title,
+        custom_excerpt: restored.custom_excerpt,
+        feature_image: restored.feature_image,
+        feature_image_alt: restored.feature_image_alt,
+        feature_image_caption: restored.feature_image_caption,
+      });
+      saved = { ...saved, ...adopted };
+      live = { ...live, ...adopted };
+      baseline = { status: 'pending' };
+      baselineAcknowledged = false;
+      saveError = false;
+    },
+
+    verdict() {
+      const reasons = collectReasons();
+      return { dirty: reasons.length > 0, reasons };
+    },
+
+    dirtyFields() {
+      if (!saved || !live) {
+        return [];
+      }
+      const persisted = saved;
+      const current = live;
+      const bodyDirty = bodyReason() !== null;
+      return PROJECTION_KEYS.filter((key) =>
+        key === 'lexical'
+          ? bodyDirty
+          : key !== 'updated_at' && !sameField(key, persisted[key], current[key]),
+      );
+    },
+
+    bodyDivergence() {
+      if (!saved || !live || bodyReason() === null) {
+        return null;
+      }
+      return {
+        saved: bodyDifference(live.lexical, saved.lexical),
+        baseline:
+          baseline.status === 'ready' ? bodyDifference(live.lexical, baseline.lexical) : null,
+      };
+    },
+
+    isFieldDirty(key) {
+      return !!saved && !!live && key !== 'updated_at' && !sameField(key, saved[key], live[key]);
+    },
+
+    holdsWrite(submitted, post) {
+      const persisted = saved;
+      return (
+        persisted !== null &&
+        PROJECTION_KEYS.every(
+          (key) =>
+            key === 'updated_at' ||
+            sameField(
+              key,
+              post[key],
+              submitted[key] !== undefined ? submitted[key] : persisted[key],
+            ),
+        )
+      );
+    },
+
+    savedValue(key) {
+      return saved ? clonePlain(saved[key]) : undefined;
+    },
+
+    hasChangedSinceRevision(latestRevision) {
+      if (disposed || !saved) {
+        return false;
+      }
+      if (!latestRevision) {
+        return true;
+      }
+      if (postId === null) {
+        return false;
+      }
+      if (
+        !sameTitle(saved.title, latestRevision.title) ||
+        saved.custom_excerpt !== (latestRevision.custom_excerpt ?? null) ||
+        saved.feature_image !== (latestRevision.feature_image ?? null)
+      ) {
+        return true;
+      }
+      try {
+        return !sameLexical(saved.lexical, latestRevision.lexical);
+      } catch {
+        return true;
+      }
+    },
+
+    dispose() {
+      disposed = true;
+      postId = null;
+      idAdopted = false;
+      heldIds.clear();
+      saved = null;
+      live = null;
+      baseline = { status: 'pending' };
+      baselineAcknowledged = false;
+      saveError = false;
+    },
+  };
+}

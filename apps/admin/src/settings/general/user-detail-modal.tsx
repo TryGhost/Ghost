@@ -6,7 +6,7 @@ import clsx from 'clsx';
 import usePinturaEditor from '@/settings/hooks/use-pintura-editor';
 import useStaffUsers from '@/settings/hooks/use-staff-users';
 import validator from 'validator';
-import { APIError } from '@tryghost/admin-x-framework/errors';
+import { APIError, HostLimitError } from '@tryghost/admin-x-framework/errors';
 import {
   Button,
   DropdownMenu,
@@ -18,9 +18,14 @@ import {
   TabsContent,
   TabsList,
   TabsTrigger,
+  imageOverlayButton,
 } from '@tryghost/shade/components';
-import { type ErrorMessages, useForm, useHandleError } from '@tryghost/admin-x-framework/hooks';
-import { HostLimitError, useLimiter } from '@/settings/hooks/use-limiter';
+import {
+  type ErrorMessages,
+  useForm,
+  useHandleError,
+  useLimiter,
+} from '@tryghost/admin-x-framework/hooks';
 import {
   ImageUpload,
   ImageUploadAction,
@@ -30,6 +35,7 @@ import {
   ImageUploadPreview,
 } from '@tryghost/shade/patterns';
 import { LucideIcon } from '@tryghost/shade/utils';
+import { useShade } from '@tryghost/shade/app';
 import { Pencil, Trash2 } from 'lucide-react';
 import { useLocation, useNavigate, useParams } from '@tryghost/admin-x-framework';
 import { useSettingsNavigation } from '@/settings/hooks/use-settings-navigation';
@@ -114,6 +120,7 @@ const UserDetailModalContent: React.FC<{
   user: User;
   onDeletingUserChange: (isDeleting: boolean) => void;
 }> = ({ user, onDeletingUserChange }) => {
+  const { isAdmin7 } = useShade();
   const { updateRoute } = useSettingsNavigation();
   const navigate = useNavigate();
   const upgradeRoute = useUpgradeRoute();
@@ -371,8 +378,10 @@ const UserDetailModalContent: React.FC<{
       (isEditorUser(currentUser) && isAuthorOrContributor(user)));
   const suspendUserLabel = formState.status === 'inactive' ? 'Un-suspend user' : 'Suspend user';
 
-  const coverButtonClasses =
-    'h-8 bg-surface-inverse px-3 text-surface-inverse-foreground opacity-80 hover:bg-surface-inverse/90 hover:text-surface-inverse-foreground hover:opacity-100';
+  const coverButtonClasses = clsx(
+    'h-8 px-3 opacity-80 hover:opacity-100',
+    imageOverlayButton(isAdmin7),
+  );
 
   const suspendedText = formState.status === 'inactive' ? ' (Suspended)' : '';
 
@@ -527,20 +536,34 @@ const UserDetailModalContent: React.FC<{
                     <div className="z-10">
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <button
-                            className={clsx(
-                              'flex h-8 cursor-pointer items-center justify-center rounded px-3',
-                              formState.cover_image
-                                ? 'bg-[rgba(0,0,0,0.75)] opacity-80 hover:opacity-100'
-                                : 'border border-grey-300 bg-transparent text-black dark:border-grey-800 dark:text-white',
-                            )}
-                            type="button"
-                          >
-                            <span className="sr-only">Actions</span>
-                            <LucideIcon.Ellipsis
-                              className={clsx('size-5', formState.cover_image && 'text-white')}
-                            />
-                          </button>
+                          {isAdmin7 ? (
+                            <Button
+                              aria-label="Actions"
+                              className={
+                                formState.cover_image ? clsx(coverButtonClasses, 'p-0') : undefined
+                              }
+                              size="icon"
+                              type="button"
+                              variant="outline"
+                            >
+                              <LucideIcon.Ellipsis />
+                            </Button>
+                          ) : (
+                            <button
+                              className={clsx(
+                                'flex h-8 cursor-pointer items-center justify-center rounded px-3',
+                                formState.cover_image
+                                  ? 'bg-[rgba(0,0,0,0.75)] opacity-80 hover:opacity-100'
+                                  : 'border border-gray-300 bg-transparent text-black dark:border-gray-800 dark:text-white',
+                              )}
+                              type="button"
+                            >
+                              <span className="sr-only">Actions</span>
+                              <LucideIcon.Ellipsis
+                                className={clsx('size-5', formState.cover_image && 'text-white')}
+                              />
+                            </button>
+                          )}
                         </DropdownMenuTrigger>
                         {/* legacy SettingsModal overlay is z-[1000]; keep the portalled menu above it */}
                         <DropdownMenuContent align="end" className="z-[9999]">

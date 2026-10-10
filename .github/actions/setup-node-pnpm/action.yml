@@ -1,0 +1,100 @@
+name: Set up Node and pnpm
+description: Install pnpm and Node, then install workspace dependencies.
+
+inputs:
+  node-version:
+    description: Node version to install.
+    required: true
+  install:
+    description: Run `pnpm install`. Set to 'false' for jobs that only need the toolchain on PATH.
+    default: 'true'
+  install-args:
+    description: >-
+      Extra arguments appended to `pnpm install --frozen-lockfile`, e.g.
+      `--filter @tryghost/e2e...`, `--force`, `--prod`, `--ignore-scripts`.
+      Word-split, so quote nothing here that a shell would have to strip.
+    default: ''
+  trust-lockfile:
+    description: >-
+      Pass `--trust-lockfile`, which skips re-applying the supply-chain policies in
+      pnpm-workspace.yaml (minimumReleaseAge, trustPolicy, tarball-URL binding, tarball
+      integrity) to every lockfile entry. pnpm runs that pass on every install and
+      `--filter` does not narrow it, so it is pure duplicated work — but only once some
+      earlier job in the same run has verified this exact lockfile. Defaults to off so a
+      new workflow verifies unless it opts out.
+    default: 'false'
+  store-cache:
+    description: >-
+      How this job uses the cached pnpm store: 'restore' (default) restores it,
+      'save' also saves it after installing, 'false' skips it. Only job_setup in
+      ci.yml saves, because it installs the whole workspace: a cache entry can't
+      be overwritten, so a job with a filtered install that saved first would
+      leave every later job with a partial store. Jobs with a filtered install
+      pass 'false': restoring the whole store costs them more than fetching
+      their few packages from the registry.
+    default: 'restore'
+
+runs:
+  using: composite
+  steps:
+    - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+
+    - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+      env:
+        FORCE_COLOR: 0
+      with:
+        node-version: ${{ inputs.node-version }}
+
+    - name: Check store-cache input
+      shell: bash
+      env:
+        STORE_CACHE: ${{ inputs.store-cache }}
+      run: |
+        case "$STORE_CACHE" in
+          restore | save | false) ;;
+          *)
+            echo "::error::store-cache must be 'restore', 'save' or 'false', got '$STORE_CACHE'"
+            exit 1
+            ;;
+        esac
+
+    - name: Locate pnpm store
+      id: pnpm-store
+      if: inputs.store-cache != 'false' && inputs.install == 'true'
+      shell: bash
+      run: echo "path=$(pnpm store path --silent)" >> "$GITHUB_OUTPUT"
+
+    # A different lockfile falls back to the newest store for this platform,
+    # which still holds most packages.
+    - name: Restore pnpm store
+      id: restore-pnpm-store
+      if: inputs.store-cache != 'false' && inputs.install == 'true'
+      uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        path: ${{ steps.pnpm-store.outputs.path }}
+        key: pnpm-store-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('pnpm-lock.yaml') }}
+        restore-keys: pnpm-store-${{ runner.os }}-${{ runner.arch }}-
+
+    - name: Install dependencies
+      if: inputs.install == 'true'
+      shell: bash
+      # Args arrive as env rather than ${{ }} so nothing job-controlled
+      # (a matrix value, a job output) is interpolated into the script.
+      env:
+        INSTALL_ARGS: ${{ inputs.install-args }}
+        TRUST_LOCKFILE: ${{ inputs.trust-lockfile }}
+      run: |
+        args=(--frozen-lockfile)
+        if [ "$TRUST_LOCKFILE" = "true" ]; then
+          args+=(--trust-lockfile)
+        fi
+        # shellcheck disable=SC2206 # deliberate word split: install-args is an argument list
+        args+=($INSTALL_ARGS)
+        pnpm install "${args[@]}"
+
+    - name: Save pnpm store
+      if: inputs.store-cache == 'save' && inputs.install == 'true' && steps.restore-pnpm-store.outputs.cache-hit != 'true'
+      uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        path: ${{ steps.pnpm-store.outputs.path }}
+        key: ${{ steps.restore-pnpm-store.outputs.cache-primary-key }}

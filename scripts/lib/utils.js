@@ -15,10 +15,10 @@ export const readJsonSync = (filePath) => JSON.parse(readFileSync(filePath, 'utf
  * @param {object} json
  */
 export const writeJson = async (filePath, json) =>
-  await writeFile(filePath, JSON.stringify(json, null, 4) + '\n', 'utf8');
+  await writeFile(filePath, JSON.stringify(json, null, 2) + '\n', 'utf8');
 /**
  * @param {string} filePath
  * @param {object} json
  */
 export const writeJsonSync = (filePath, json) =>
-  writeFileSync(filePath, JSON.stringify(json, null, 4) + '\n', 'utf8');
+  writeFileSync(filePath, JSON.stringify(json, null, 2) + '\n', 'utf8');

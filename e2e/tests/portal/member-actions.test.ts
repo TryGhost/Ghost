@@ -25,10 +25,7 @@ async function createNewsletter(request: APIRequestContext, name: string): Promi
 async function createSubscribedMember(request: APIRequestContext, memberFactory: MemberFactory) {
   const newsletterIds = await getNewsletterIds(request);
   const newsletters = newsletterIds.map((id) => ({ id }));
-  const member = await memberFactory.create({
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    newsletters: newsletters as any,
-  });
+  const member = await memberFactory.create({ newsletters });
   return member;
 }
 
@@ -41,7 +38,7 @@ async function impersonateMember(page: Page, memberName: string): Promise<void> 
   await memberDetailsPage.settingsSection.memberActionsButton.click();
   await memberDetailsPage.settingsSection.impersonateButton.click();
 
-  await expect(memberDetailsPage.magicLinkInput).not.toHaveValue('');
+  await expect(memberDetailsPage.magicLinkInput).toHaveValue(/^https?:\/\/.+/);
   const magicLink = await memberDetailsPage.magicLinkInput.inputValue();
   await memberDetailsPage.goto(magicLink);
 

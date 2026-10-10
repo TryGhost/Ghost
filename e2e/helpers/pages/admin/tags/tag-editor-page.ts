@@ -18,18 +18,9 @@ export class TagEditorPage extends TagDetailsPage {
 
     this.pageUrl = '/ghost/#/tags';
 
-    // Ember renders data-test-* attributes; React renders data-testid.
-    // Match either so the same flows drive both implementations.
-    this.deleteModal = page
-      .locator('[data-test-modal="confirm-delete-tag"]')
-      .or(page.getByTestId(deleteTagModal))
-      .filter({ visible: true });
-    this.deleteModalPostsCount = this.deleteModal
-      .locator('[data-test-text="posts-count"]')
-      .or(this.deleteModal.getByTestId(deleteTagPostsCount));
-    this.deleteModalConfirmButton = this.deleteModal
-      .locator('[data-test-button="confirm"]')
-      .or(this.deleteModal.getByTestId(confirmDeleteTag));
+    this.deleteModal = page.getByTestId(deleteTagModal).filter({ visible: true });
+    this.deleteModalPostsCount = this.deleteModal.getByTestId(deleteTagPostsCount);
+    this.deleteModalConfirmButton = this.deleteModal.getByTestId(confirmDeleteTag);
     this.tagActionsButton = page.getByRole('button', { name: 'Tag actions' });
     this.deleteMenuItem = page.getByRole('menuitem', { name: 'Delete tag' });
   }
@@ -46,13 +37,8 @@ export class TagEditorPage extends TagDetailsPage {
   }
 
   async deleteTag() {
-    if (await this.tagActionsButton.isVisible()) {
-      await this.tagActionsButton.click();
-      await this.deleteMenuItem.click();
-      return;
-    }
-
-    await this.deleteButton.click();
+    await this.tagActionsButton.click();
+    await this.deleteMenuItem.click();
   }
 
   async confirmDelete() {

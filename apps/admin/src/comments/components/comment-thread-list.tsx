@@ -11,6 +11,7 @@ import { CommentHeader } from './comment-header';
 import { CommentMenu } from './comment-menu';
 import { CommentMetrics } from './comment-metrics';
 import { buildThreadLink } from './thread-link';
+import { memberAvatarProps } from '@/members/api';
 import { Link, useSearchParams } from '@tryghost/admin-x-framework';
 import { LucideIcon, cn } from '@tryghost/shade/utils';
 
@@ -62,8 +63,7 @@ function CommentRow({
             'mb-3 size-6 md:mb-4 md:size-8',
             comment.status === 'hidden' && 'opacity-50',
           )}
-          email={comment.member?.email}
-          name={comment.member?.name}
+          {...memberAvatarProps(comment.member)}
           src={comment.member?.avatar_image}
         />
         <RepliesLine hasReplies={hasReplies && !isReply} />

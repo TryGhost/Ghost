@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import StepPicker, { type StepPickerType } from './step-picker';
+import { useDismissOnOutsidePress } from './use-dismiss-on-outside-press';
 import { BaseEdge, EdgeLabelRenderer, getSmoothStepPath } from '@xyflow/react';
 import type { EdgeProps } from '@xyflow/react';
 import { LucideIcon, cn } from '@tryghost/shade/utils';
@@ -14,6 +15,7 @@ import {
 } from '@tryghost/shade/components';
 
 export type AddStepEdgeData = {
+  label?: string;
   sourceId: string;
   targetId: string;
   disabled: boolean;
@@ -36,8 +38,7 @@ const AddStepEdge: React.FC<EdgeProps> = ({
   data,
 }) => {
   const [open, setOpen] = useState(false);
-  const [edgeHovered, setEdgeHovered] = useState(false);
-  const [labelHovered, setLabelHovered] = useState(false);
+  const { triggerRef, contentRef, onCloseAutoFocus } = useDismissOnOutsidePress(open, setOpen);
   const edgeData = data as AddStepEdgeData | undefined;
 
   const [path, labelX, labelY] = getSmoothStepPath({
@@ -58,14 +59,13 @@ const AddStepEdge: React.FC<EdgeProps> = ({
     edgeData.onPick(type, { sourceId: edgeData.sourceId, targetId: edgeData.targetId });
   };
 
-  const visible = open || edgeHovered || labelHovered;
   const button = (
     <button
-      aria-label="Insert step here"
+      ref={triggerRef}
+      aria-label={edgeData.label ?? 'Insert step here'}
       className={cn(
-        'flex size-8 items-center justify-center rounded-full border transition-opacity focus-visible:opacity-100 focus-visible:outline-none',
+        'flex size-8 items-center justify-center rounded-full border focus-visible:ring-1 focus-visible:ring-focus-ring focus-visible:outline-none',
         INSERT_BUTTON_CLASSES,
-        visible ? 'opacity-100' : 'opacity-0',
         edgeData.disabled && 'cursor-not-allowed!',
       )}
       data-testid={`add-step-button-${edgeData.sourceId}-${edgeData.targetId}`}
@@ -95,10 +95,13 @@ const AddStepEdge: React.FC<EdgeProps> = ({
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>{button}</PopoverTrigger>
         <PopoverContent
+          ref={contentRef}
           align="center"
           className="border-0 p-0 shadow-lg"
           side="top"
           sideOffset={12}
+          updatePositionStrategy="always"
+          onCloseAutoFocus={onCloseAutoFocus}
         >
           <StepPicker onPick={handlePick} />
         </PopoverContent>
@@ -107,22 +110,19 @@ const AddStepEdge: React.FC<EdgeProps> = ({
   }
 
   return (
-    <g onMouseEnter={() => setEdgeHovered(true)} onMouseLeave={() => setEdgeHovered(false)}>
-      <BaseEdge id={id} interactionWidth={30} path={path} style={{ stroke: DEFAULT_EDGE_STROKE }} />
+    <>
+      <BaseEdge id={id} path={path} style={{ stroke: DEFAULT_EDGE_STROKE }} />
       <EdgeLabelRenderer>
         <div
           className="pointer-events-auto absolute"
           style={{
             transform: `translate(-50%, -50%) translate(${labelX}px, ${labelY}px)`,
           }}
-          onMouseEnter={() => setLabelHovered(true)}
-          onMouseLeave={() => setLabelHovered(false)}
         >
-          {/* Wider hit zone so the + becomes visible when the cursor is near the edge midpoint. */}
-          <div className="flex h-10 w-16 items-center justify-center">{control}</div>
+          {control}
         </div>
       </EdgeLabelRenderer>
-    </g>
+    </>
   );
 };
 

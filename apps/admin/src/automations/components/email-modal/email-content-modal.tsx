@@ -58,7 +58,7 @@ const EmailPreviewModalContent = React.forwardRef<HTMLDivElement, EmailPreviewMo
         <div className="justify-self-center">{centeredHeaderContent}</div>
         <div className="flex items-center gap-2 justify-self-end">{headerActions}</div>
       </div>
-      <div className="flex min-h-0 grow flex-col overflow-y-auto [scrollbar-gutter:stable]">
+      <div className="flex min-h-0 grow [scrollbar-gutter:stable] flex-col overflow-y-auto">
         {children}
       </div>
     </div>
@@ -77,7 +77,7 @@ const EmailPreviewEmailHeader: React.FC<EmailPreviewEmailHeaderProps> = ({
 }) => (
   <div
     className={cn(
-      'relative isolate z-20 mx-auto w-full max-w-[780px] rounded-t-lg border border-b-0 border-gray-200 bg-white px-6 py-4 transition-[max-width,padding] duration-300 ease-out motion-reduce:transition-none dark:border-grey-900 dark:bg-[#2E3338]',
+      'relative isolate z-20 mx-auto w-full max-w-[780px] rounded-t-lg border border-b-0 border-gray-200 bg-white px-6 py-4 transition-[max-width,padding] duration-300 ease-out motion-reduce:transition-none dark:border-gray-900 dark:bg-[#2E3338]',
       className,
     )}
   >
@@ -93,7 +93,7 @@ interface EmailPreviewBodyProps {
 const EmailPreviewBody: React.FC<EmailPreviewBodyProps> = ({ children, className }) => (
   <div
     className={cn(
-      'mx-auto flex w-full max-w-[780px] grow rounded-b-lg transition-[max-width,height,padding] duration-300 ease-out motion-reduce:transition-none dark:border-grey-900 dark:shadow-none',
+      'mx-auto flex w-full max-w-[780px] grow rounded-b-lg transition-[max-width,height,padding] duration-300 ease-out motion-reduce:transition-none dark:border-gray-900 dark:shadow-none',
       className,
     )}
   >
@@ -136,7 +136,7 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({
   const { mutateAsync: previewAutomationEmail } = usePreviewAutomationEmail();
   const { data: automatedEmailsData } = useBrowseAutomatedEmails();
   const [showTestDropdown, setShowTestDropdown] = useState(false);
-  const [mode, setMode] = useState<EmailModalMode>(initialMode);
+  const [mode, setMode] = useState<EmailModalMode>(automationId ? initialMode : 'edit');
   const [previewSubjectOverride, setPreviewSubjectOverride] = useState<string | null>(null);
   const [confirmDiscardOpen, setConfirmDiscardOpen] = useState(false);
   const hasEnteredInitialPreview = useRef(false);
@@ -186,12 +186,12 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({
   });
 
   useEffect(() => {
-    if (initialMode !== 'preview' || hasEnteredInitialPreview.current) {
+    if (!automationId || initialMode !== 'preview' || hasEnteredInitialPreview.current) {
       return;
     }
     hasEnteredInitialPreview.current = true;
     void enterPreview(formState);
-  }, [enterPreview, formState, initialMode]);
+  }, [automationId, enterPreview, formState, initialMode]);
 
   const isDirty = saveState === 'unsaved';
 
@@ -266,6 +266,9 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({
 
   const handleModeChange = useCallback(
     (nextMode: EmailModalMode) => {
+      if (nextMode === 'preview' && !automationId) {
+        return;
+      }
       setMode(nextMode);
 
       if (nextMode === 'preview') {
@@ -277,7 +280,7 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({
         exitPreview();
       }
     },
-    [enterPreview, exitPreview, formState],
+    [automationId, enterPreview, exitPreview, formState],
   );
 
   // The editor normalizes content on mount (e.g., processing {name} templates),
@@ -362,6 +365,8 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({
                   <TabsTrigger
                     className="w-full justify-center"
                     data-testid="email-mode-preview"
+                    disabled={!automationId}
+                    title={!automationId ? 'Save automation to preview or send a test' : undefined}
                     value="preview"
                   >
                     Preview

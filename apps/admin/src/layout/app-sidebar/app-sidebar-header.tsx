@@ -5,21 +5,10 @@ import { getSettingValue, useBrowseSettings } from '@tryghost/admin-x-framework/
 import { useBrowseSite } from '@tryghost/admin-x-framework/api/site';
 import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
 import { isContributorUser } from '@tryghost/admin-x-framework/api/users';
-
-const ctrlOrCmd = navigator.userAgent.indexOf('Mac') !== -1 ? 'command' : 'ctrl';
-const searchShortcut = ctrlOrCmd === 'command' ? '⌘K' : 'Ctrl+K';
-
-// Search is currently handled by the Ember app, firing a keyboard event avoids needing to sync state
-const openSearchModal = (event: React.MouseEvent<HTMLButtonElement>) => {
-  event.preventDefault();
-  const searchShortcutEvent = new KeyboardEvent('keydown', {
-    key: 'k',
-    keyCode: 75, // Ember uses keymaster.js which still uses keyCode
-    metaKey: ctrlOrCmd === 'command',
-    ctrlKey: ctrlOrCmd === 'ctrl',
-  });
-  document.dispatchEvent(searchShortcutEvent);
-};
+import { Link } from '@tryghost/admin-x-framework';
+import { useOpenGlobalSearch } from '@/global-search/global-search-context';
+import { searchShortcutLabel } from '@/global-search/search-shortcut';
+import { useSettingsReturnToState } from '@/layout/settings-navigation';
 
 function AppSidebarHeader({ ...props }: React.ComponentProps<typeof SidebarHeader>) {
   const { data: currentUser } = useCurrentUser();
@@ -29,6 +18,8 @@ function AppSidebarHeader({ ...props }: React.ComponentProps<typeof SidebarHeade
   const siteIcon = site.data?.site.icon ?? 'https://static.ghost.org/v4.0.0/images/ghost-orb-1.png';
   const isPrivate = getSettingValue<boolean>(settings.data?.settings, 'is_private') ?? false;
   const showSearch = currentUser && !isContributorUser(currentUser);
+  const openGlobalSearch = useOpenGlobalSearch();
+  const settingsReturnToState = useSettingsReturnToState();
 
   return (
     <SidebarHeader {...props}>
@@ -39,9 +30,16 @@ function AppSidebarHeader({ ...props }: React.ComponentProps<typeof SidebarHeade
               <img alt="Site icon" className="size-full rounded-md object-cover" src={siteIcon} />
             </div>
             <div className="flex min-w-0 flex-1 items-center justify-between gap-2">
-              <div className="min-w-0 truncate text-lg font-semibold text-foreground">{title}</div>
+              <div className="heading-font-features min-w-0 truncate text-lg font-semibold text-foreground">
+                {title}
+              </div>
               {isPrivate && (
-                <a aria-label="Open access settings" className="shrink-0" href="#/settings/members">
+                <Link
+                  aria-label="Open access settings"
+                  className="shrink-0"
+                  state={settingsReturnToState}
+                  to="/settings/members"
+                >
                   <Badge
                     className="gap-1 border-transparent bg-orange-100 px-1.5 py-0 text-[11px] leading-5 font-semibold text-orange-700 transition-colors hover:bg-orange-200 dark:bg-orange-500/20 dark:text-orange-300 dark:hover:bg-orange-500/30"
                     variant="secondary"
@@ -49,7 +47,7 @@ function AppSidebarHeader({ ...props }: React.ComponentProps<typeof SidebarHeade
                     <LucideIcon.Lock className="size-3" strokeWidth={2.25} />
                     Private
                   </Badge>
-                </a>
+                </Link>
               )}
             </div>
           </div>
@@ -58,7 +56,7 @@ function AppSidebarHeader({ ...props }: React.ComponentProps<typeof SidebarHeade
           <Button
             className="flex h-(--control-height) items-center justify-between rounded-full border-transparent bg-white pr-2 text-base text-muted-foreground shadow-xs hover:bg-background hover:text-gray-700 hover:shadow-sm dark:border-gray-900/50 dark:bg-gray-900/30 dark:hover:border-gray-900/80 dark:hover:text-gray-400 [&_svg]:stroke-2"
             variant="outline"
-            onClick={openSearchModal}
+            onClick={openGlobalSearch ?? undefined}
           >
             <div className="flex items-center gap-2">
               <LucideIcon.Search className="text-muted-foreground" />
@@ -68,7 +66,7 @@ function AppSidebarHeader({ ...props }: React.ComponentProps<typeof SidebarHeade
               className="bg-transparent text-gray-500 shadow-none dark:text-gray-800"
               style={{ textShadow: 'none' }}
             >
-              {searchShortcut}
+              {searchShortcutLabel}
             </Kbd>
           </Button>
         )}

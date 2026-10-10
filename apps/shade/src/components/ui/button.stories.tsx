@@ -1,5 +1,15 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { Button } from './button';
+import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Inline, Stack, Text } from '@/components/primitives';
+import ShadeApp from '@/shade-app';
+import { useShade } from '@/providers/shade-provider';
 import { ArrowUp, Smile } from 'lucide-react';
 
 const meta = {
@@ -10,7 +20,7 @@ const meta = {
     docs: {
       description: {
         component:
-          'Reusable button for interactive actions across the UI. Supports multiple visual variants and sizes to match hierarchy and context.',
+          'Reusable button for interactive actions across the UI. Supports multiple visual variants and sizes to match hierarchy and context. Outline, secondary and ghost buttons show an inset shadow while pressed. Menu and popover triggers retain their pressed appearance while aria-expanded is true, including when composed with a Tooltip. Disabled primary buttons use an opaque neutral surface and muted text in every host mode. Disabled controls do not gain pressed styling.',
       },
     },
   },
@@ -34,6 +44,66 @@ export const Primary: Story = {
   },
 };
 
+export const Pill: Story = {
+  args: {},
+  render: (args) => (
+    <Inline gap="sm">
+      <Button {...args}>Primary pill</Button>
+      <Button {...args} variant="secondary">
+        Secondary pill
+      </Button>
+      <Button {...args} variant="outline">
+        Outline pill
+      </Button>
+    </Inline>
+  ),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Compare the primary spacing with non-primary spacing and the borderless outline treatment on a pill surface.',
+      },
+    },
+  },
+};
+
+export const AppLevelPill: Story = {
+  args: {
+    children: 'Inherited pill button',
+  },
+  render: (args) => (
+    <ShadeApp darkMode={false}>
+      <Button {...args} />
+    </ShadeApp>
+  ),
+  parameters: {
+    docs: {
+      description: {
+        story: 'Use the Shade app setting to apply the pill shape across a surface by default.',
+      },
+    },
+  },
+};
+
+export const LocalRoundedOverride: Story = {
+  args: {
+    shape: 'rounded',
+    children: 'Rounded override',
+  },
+  render: (args) => (
+    <ShadeApp darkMode={false}>
+      <Button {...args} />
+    </ShadeApp>
+  ),
+  parameters: {
+    docs: {
+      description: {
+        story: 'Use a local shape override for a control that must stay rounded on a pill surface.',
+      },
+    },
+  },
+};
+
 // Variants
 export const Destructive: Story = {
   args: {
@@ -44,6 +114,27 @@ export const Destructive: Story = {
     docs: {
       description: {
         story: 'Use for dangerous or irreversible actions (e.g., delete, remove, reset).',
+      },
+    },
+  },
+};
+
+export const DestructiveGhost: Story = {
+  args: {
+    variant: 'destructive-ghost',
+    children: 'Delete item',
+  },
+  render: (args) => (
+    <Inline gap="sm">
+      <Button {...args} />
+      <Button {...args} disabled />
+    </Inline>
+  ),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Use for low-emphasis destructive actions. Admin 7 adds a translucent red background on hover and while pressed. Tab to inspect keyboard focus; disabled buttons remain inactive.',
       },
     },
   },
@@ -167,6 +258,38 @@ export const IconOnly: Story = {
   },
 };
 
+export const SmallIconOnly: Story = {
+  args: {
+    size: 'icon-sm',
+    'aria-label': 'Move up',
+    children: <ArrowUp />,
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Use for compact icon-only actions in dense controls. Always provide an accessible `aria-label`.',
+      },
+    },
+  },
+};
+
+export const PillIconOnly: Story = {
+  args: {
+    size: 'icon',
+    'aria-label': 'Move up',
+    children: <ArrowUp />,
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Use for icon-only actions on a pill surface; the control is constrained to a square so it renders as a true circle.',
+      },
+    },
+  },
+};
+
 export const WithIcon: Story = {
   args: {
     children: (
@@ -186,6 +309,26 @@ export const WithIcon: Story = {
   },
 };
 
+export const PillWithIcon: Story = {
+  args: {
+    variant: 'outline',
+  },
+  render: (args) => (
+    <Button {...args}>
+      <Smile />
+      Add complimentary subscription
+    </Button>
+  ),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Use normal button sizes for pill actions that combine an icon with a visible text label.',
+      },
+    },
+  },
+};
+
 // States
 export const Disabled: Story = {
   args: {
@@ -197,6 +340,118 @@ export const Disabled: Story = {
       description: {
         story:
           'Use to indicate an action is unavailable. Prefer explaining why rather than relying solely on the disabled state.',
+      },
+    },
+  },
+};
+
+export const DisabledPrimaryComparison: Story = {
+  render: function Render() {
+    const { darkMode } = useShade();
+    return (
+      <Stack gap="lg">
+        {[true, false].map((isAdmin7) => (
+          <ShadeApp key={`${darkMode}-${isAdmin7}`} darkMode={darkMode} isAdmin7={isAdmin7}>
+            <Stack className="rounded-lg bg-background p-5" gap="sm">
+              <Text size="sm" tone="secondary">
+                {darkMode ? 'Dark' : 'Light'} · {isAdmin7 ? 'Default controls' : 'Legacy controls'}
+              </Text>
+              <Inline gap="sm" wrap>
+                <Button>Continue</Button>
+                <Button disabled>Continue</Button>
+                <Button aria-label="Move up" size="icon" disabled>
+                  <ArrowUp />
+                </Button>
+              </Inline>
+            </Stack>
+          </ShadeApp>
+        ))}
+      </Stack>
+    );
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Compare enabled and disabled primary actions in both host modes; use the theme toolbar to check light and dark. The disabled neutral background, muted label and full opacity apply without a feature flag. Hover or Tab to compare enabled states; disabled controls stay inactive and outside the tab order.',
+      },
+    },
+  },
+};
+
+export const PillPressedStates: Story = {
+  render: () => (
+    <Inline gap="sm" wrap>
+      {(['outline', 'secondary', 'ghost'] as const).map((variant) => (
+        <Inline key={variant} gap="xs">
+          <Button variant={variant}>{variant}</Button>
+          <Button variant={variant} disabled>
+            {variant} disabled
+          </Button>
+        </Inline>
+      ))}
+    </Inline>
+  ),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Press and hold each pill to compare inset shadows, or Tab through them to check keyboard focus. Disabled controls remain inactive.',
+      },
+    },
+  },
+};
+
+export const PillDropdowns: Story = {
+  render: () => (
+    <TooltipProvider delayDuration={1000}>
+      <Inline gap="xs">
+        {(['outline', 'secondary', 'ghost'] as const).map((variant) => (
+          <Tooltip key={variant}>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <TooltipTrigger asChild>
+                  <Button variant={variant}>{variant} menu</Button>
+                </TooltipTrigger>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem>First option</DropdownMenuItem>
+                <DropdownMenuItem>Second option</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+            <TooltipContent variant="white">Choose an option</TooltipContent>
+          </Tooltip>
+        ))}
+      </Inline>
+    </TooltipProvider>
+  ),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Open a menu and move the pointer away: its trigger stays pressed until selection, Escape or dismissal. Hovering the tooltip alone does not press the trigger.',
+      },
+    },
+  },
+};
+
+export const Admin7Disabled: Story = {
+  render: () => (
+    <ShadeApp darkMode={false} isAdmin7={false}>
+      <Inline gap="sm">
+        <Button>Primary</Button>
+        <Button variant="secondary">Secondary</Button>
+        <Button variant="ghost">Ghost</Button>
+        <Button variant="destructive-ghost">Delete item</Button>
+        <Button variant="subtle">Subtle</Button>
+      </Inline>
+    </ShadeApp>
+  ),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Temporary host-level compatibility restores the previous controls. New screens use ordinary Button defaults; they do not select a pill shape.',
       },
     },
   },

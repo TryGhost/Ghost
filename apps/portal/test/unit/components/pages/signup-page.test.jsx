@@ -1,6 +1,7 @@
 import {
   getFreeProduct,
   getProductData,
+  getPriceData,
   getSiteData,
 } from '../../../../src/utils/fixtures-generator';
 import { render, fireEvent, getByTestId, queryByTestId } from '../../../utils/test-utils';
@@ -45,6 +46,36 @@ const setup = (overrides) => {
 };
 
 describe('SignupPage', () => {
+  test.each([
+    { locale: 'de-CH', trialDays: null, amount: '6.90', alternate: 'CHF69.90/year' },
+    { locale: 'de-DE', trialDays: null, amount: '6,90', alternate: 'CHF69,90/year' },
+    { locale: 'de-CH', trialDays: 7, amount: '6.90', alternate: 'CHF69.90/year' },
+    { locale: 'de-DE', trialDays: 7, amount: '6,90', alternate: 'CHF69,90/year' },
+  ])(
+    'formats plan prices using $locale with trialDays=$trialDays',
+    ({ locale, trialDays, amount, alternate }) => {
+      const product = getProductData({
+        monthlyPrice: getPriceData({ amount: 690, currency: 'CHF', interval: 'month' }),
+        yearlyPrice: getPriceData({ amount: 6990, currency: 'CHF', interval: 'year' }),
+        trialDays,
+      });
+      const site = {
+        ...getSiteData({
+          products: [product],
+          portalPlans: ['monthly', 'yearly'],
+          portalDefaultPlan: 'monthly',
+        }),
+        locale,
+      };
+      const { container } = setup({ site });
+
+      expect(getByTestId(container, 'product-amount')).toHaveTextContent(amount);
+      expect(container.querySelector('.gh-portal-product-alternative-price')).toHaveTextContent(
+        alternate,
+      );
+    },
+  );
+
   test('renders', () => {
     const { nameInput, emailInput, queryAllByRole, signinButton } = setup();
     const chooseButton = queryAllByRole('button', { name: 'Continue' });
@@ -79,6 +110,67 @@ describe('SignupPage', () => {
 
     fireEvent.click(signinButton);
     expect(mockDoActionFn).toHaveBeenCalledWith('switchPage', { page: 'signin' });
+  });
+
+  test('shows the gift promotion and opens gift checkout when it is available', () => {
+    const site = {
+      ...getSiteData(),
+      portal_signup_gift_promotion: true,
+    };
+    const { getByRole, mockDoActionFn } = setup({ site });
+
+    fireEvent.click(getByRole('button', { name: 'Gift a membership' }));
+
+    expect(getByRole('button', { name: 'Gift a membership' })).toBeInTheDocument();
+    expect(mockDoActionFn).toHaveBeenCalledWith('switchPage', {
+      page: 'gift',
+      lastPage: 'signup',
+    });
+  });
+
+  test.each([
+    {
+      label: 'the site is invite-only',
+      membersSignupAccess: 'invite',
+    },
+    {
+      label: 'the free route is unavailable on a paid-only site',
+      membersSignupAccess: 'paid',
+      pageQuery: 'free',
+    },
+  ])('hides the gift promotion when $label', ({ membersSignupAccess, pageQuery }) => {
+    const site = {
+      ...getSiteData({ membersSignupAccess }),
+      portal_signup_gift_promotion: true,
+    };
+    const { queryByRole } = setup({ site, pageQuery });
+
+    expect(queryByRole('button', { name: 'Gift a membership' })).not.toBeInTheDocument();
+  });
+
+  test.each([
+    {
+      label: 'the setting is missing',
+      site: getSiteData(),
+    },
+    {
+      label: 'the setting is disabled',
+      site: {
+        ...getSiteData(),
+        portal_signup_gift_promotion: false,
+      },
+    },
+    {
+      label: 'there is no giftable offering',
+      site: {
+        ...getSiteData({ portalPlans: ['free'] }),
+        portal_signup_gift_promotion: true,
+      },
+    },
+  ])('hides the gift promotion when $label', ({ site }) => {
+    const { queryByRole } = setup({ site });
+
+    expect(queryByRole('button', { name: 'Gift a membership' })).not.toBeInTheDocument();
   });
 
   test('renders free trial message', () => {

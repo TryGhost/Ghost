@@ -21,9 +21,12 @@ import {
   TableRow,
 } from '@tryghost/shade/components';
 import { LucideIcon, formatNumber } from '@tryghost/shade/utils';
-import { centsToDollars } from '@tryghost/shade/app';
-import { getFaviconDomain, getSymbol, useAppContext } from '@tryghost/admin-x-framework';
-import { getPeriodText } from '@/shared/analytics/chart-helpers';
+import { getFaviconDomain, getSymbol } from '@tryghost/admin-x-framework';
+import {
+  useMembersTrackSources,
+  usePaidMembersEnabled,
+} from '@tryghost/admin-x-framework/api/settings';
+import { getPeriodText, centsToDollars } from '@/shared/analytics/chart-helpers';
 import { useAnalyticsData } from '@/shared/analytics/use-analytics-data';
 import { useMrrHistory } from '@tryghost/admin-x-framework/api/stats';
 import { useTopSourcesGrowth } from '@/analytics/hooks/use-top-sources-growth';
@@ -55,7 +58,7 @@ const GrowthSourcesTableBody: React.FC<GrowthSourcesTableProps> = ({
 }) => {
   // Data is already sorted by the backend, so we just need to apply limit if specified
   const displayData = limit ? data.slice(0, limit) : data;
-  const { appSettings } = useAppContext();
+  const paidMembersEnabled = usePaidMembersEnabled();
 
   return (
     <TableBody>
@@ -80,7 +83,7 @@ const GrowthSourcesTableBody: React.FC<GrowthSourcesTableProps> = ({
           <TableCell className="text-right font-mono text-sm">
             +{formatNumber(row.free_members)}
           </TableCell>
-          {appSettings?.paidMembersEnabled && (
+          {paidMembersEnabled && (
             <>
               <TableCell className="text-right font-mono text-sm">
                 +{formatNumber(row.paid_members)}
@@ -114,7 +117,8 @@ const GrowthSources: React.FC<GrowthSourcesProps> = ({
 }) => {
   const { site } = useAnalyticsData();
   const { data: mrrHistoryResponse } = useMrrHistory();
-  const { appSettings } = useAppContext();
+  const paidMembersEnabled = usePaidMembersEnabled();
+  const membersTrackSources = useMembersTrackSources();
 
   // Use external sort state if provided, otherwise use internal state
   const [internalSortBy, setInternalSortBy] = useState<SourcesOrder>('free_members desc');
@@ -186,13 +190,13 @@ const GrowthSources: React.FC<GrowthSourcesProps> = ({
   const description = `Where did your growth come from ${getPeriodText(range)}`;
 
   // Return disabled state immediately if member source tracking is disabled
-  if (!appSettings?.analytics.membersTrackSources) {
+  if (!membersTrackSources) {
     return (
       <TableBody>
         <TableRow className="last:border-none">
           <TableCell
             className="border-none py-12 group-hover:bg-transparent!"
-            colSpan={appSettings?.paidMembersEnabled ? 4 : 2}
+            colSpan={paidMembersEnabled ? 4 : 2}
           >
             <DisabledSourcesIndicator />
           </TableCell>
@@ -227,7 +231,7 @@ const GrowthSources: React.FC<GrowthSourcesProps> = ({
           <TableRow className="last:border-none">
             <TableCell
               className="border-none py-12 group-hover:bg-transparent!"
-              colSpan={appSettings?.paidMembersEnabled ? 4 : 2}
+              colSpan={paidMembersEnabled ? 4 : 2}
             >
               <EmptyIndicator
                 description="Try adjusting your date range to see more data."
@@ -271,7 +275,7 @@ const GrowthSources: React.FC<GrowthSourcesProps> = ({
                               Free members
                             </SortButton>
                           </TableHead>
-                          {appSettings?.paidMembersEnabled && (
+                          {paidMembersEnabled && (
                             <>
                               <TableHead className="w-[110px] text-right">
                                 <SortButton

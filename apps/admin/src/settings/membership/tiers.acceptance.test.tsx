@@ -21,22 +21,20 @@ const supporterTier = tier({
   benefits: ['Simple benefit'],
 });
 
-function stripeSettings(overrides: Parameters<typeof settingsResponse>[0] = {}) {
+function stripeSettings() {
   return settingsResponse({
-    ...overrides,
     settings: {
       stripe_connect_display_name: 'Dummy',
       stripe_connect_livemode: false,
       stripe_connect_account_id: 'acct_123',
       stripe_connect_publishable_key: 'pk_test_123',
       stripe_connect_secret_key: 'sk_test_123',
-      ...overrides.settings,
     },
   });
 }
 
 function withoutSettings(keys: string[]) {
-  const response = stripeSettings({ labs: { machinePayments: true } });
+  const response = stripeSettings();
   response.settings = response.settings.filter(({ key }) => !keys.includes(key));
   return response;
 }
@@ -81,8 +79,11 @@ describe('Tier settings', () => {
     await modal.getByLabelText('Name').fill(created.name);
     await modal.getByLabelText('Monthly price').fill('8');
     await modal.getByLabelText('Yearly price').fill('80');
-    await modal.getByRole('button', { name: 'Save' }).click();
-    await expect.element(modal.getByRole('button', { name: 'Saved' })).toBeVisible();
+    // Observe the short Saved feedback while the browser click is in flight.
+    await Promise.all([
+      expect.element(settingsScreen.modalSavedButton(modal)).toBeVisible(),
+      settingsScreen.modalSaveButton(modal).click(),
+    ]);
     await modal.getByRole('button', { name: 'Close' }).click();
 
     await expect
@@ -131,8 +132,10 @@ describe('Tier settings', () => {
     await expect.element(preview).toHaveTextContent('$100/year');
     await expect.element(preview).toHaveTextContent('17% discount');
 
-    await modal.getByRole('button', { name: 'Save' }).click();
-    await expect.element(modal.getByRole('button', { name: 'Saved' })).toBeVisible();
+    await Promise.all([
+      expect.element(settingsScreen.modalSavedButton(modal)).toBeVisible(),
+      settingsScreen.modalSaveButton(modal).click(),
+    ]);
     await modal.getByRole('button', { name: 'Close' }).click();
     await expect
       .element(settingsScreen.tiers().getByText(updated.name, { exact: true }))
@@ -159,8 +162,10 @@ describe('Tier settings', () => {
     await modal.getByLabelText('New benefit').fill('First benefit');
     await modal.getByRole('button', { name: 'Add' }).click();
     await modal.getByLabelText('New benefit').fill('Second benefit');
-    await modal.getByRole('button', { name: 'Save' }).click();
-    await expect.element(modal.getByRole('button', { name: 'Saved' })).toBeVisible();
+    await Promise.all([
+      expect.element(settingsScreen.modalSavedButton(modal)).toBeVisible(),
+      settingsScreen.modalSaveButton(modal).click(),
+    ]);
 
     expect(editApi.lastRequest?.body).toMatchObject({
       tiers: [
@@ -294,8 +299,10 @@ describe('Tier settings', () => {
     await expect.element(checkbox).not.toBeChecked();
 
     await checkbox.click();
-    await modal.getByRole('button', { name: 'Save' }).click();
-    await expect.element(modal.getByRole('button', { name: 'Saved' })).toBeVisible();
+    await Promise.all([
+      expect.element(settingsScreen.modalSavedButton(modal)).toBeVisible(),
+      settingsScreen.modalSaveButton(modal).click(),
+    ]);
     expect(tierApi.lastRequest?.body).toMatchObject({
       tiers: [{ id: hidden.id, visibility: 'public' }],
     });
@@ -341,7 +348,7 @@ describe('Tier settings', () => {
     fakeTiers([freeTier, supporterTier]);
     await renderAdminApp('/settings', {
       labs: { machinePayments: true },
-      boot: { browseSettings: { response: stripeSettings({ labs: { machinePayments: true } }) } },
+      boot: { browseSettings: { response: stripeSettings() } },
     });
 
     await expect

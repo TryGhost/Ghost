@@ -10,7 +10,7 @@ import {
   Switch,
   Textarea,
 } from '@tryghost/shade/components';
-import { HostLimitError, useLimiter } from '@/settings/hooks/use-limiter';
+import { HostLimitError } from '@tryghost/admin-x-framework/errors';
 import { useConfirmation } from '@/settings/providers/confirmation-context';
 import { useSettingsNavigation } from '@/settings/hooks/use-settings-navigation';
 import { useUpgradeRoute } from '@/settings/hooks/use-upgrade-route';
@@ -18,7 +18,12 @@ import { SettingsModal } from '@tryghost/shade/patterns';
 import { formatNumber } from '@tryghost/shade/utils';
 import { useAddNewsletter } from '@tryghost/admin-x-framework/api/newsletters';
 import { useBrowseMembers } from '@tryghost/admin-x-framework/api/members';
-import { useFeatureFlag, useForm, useHandleError } from '@tryghost/admin-x-framework/hooks';
+import {
+  useFeatureFlag,
+  useForm,
+  useHandleError,
+  useLimiter,
+} from '@tryghost/admin-x-framework/hooks';
 
 const AddNewsletterModal: React.FC = () => {
   const { updateRoute } = useSettingsNavigation();

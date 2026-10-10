@@ -9,7 +9,7 @@ const meta = {
     docs: {
       description: {
         component:
-          'Border-radius scale. Prefer the semantic aliases (`radius-control`, `radius-surface`, `radius-pill`) over numeric steps when the use case fits.',
+          'Border-radius scale. Prefer semantic aliases such as `radius-control`, `radius-menu`, `radius-menu-item`, `radius-surface`, and `radius-pill` over numeric steps when the use case fits.',
       },
     },
   },
@@ -40,12 +40,16 @@ export const Numeric: Story = {
 export const Semantic: Story = {
   render: () => (
     <RadiusGrid
-      description="Use these by intent: a form control, a card surface, a pill badge. They alias the numeric scale so the visual rhythm stays consistent if we ever shift it."
+      description="Use these by intent: controls, menus and menu items, surfaces, pills and badges, and trend badges. They alias the numeric scale so the visual rhythm stays consistent if we ever shift it."
       radii={[
         { name: 'control', cssVar: '--radius-control' },
+        { name: 'control sm', cssVar: '--radius-control-sm' },
+        { name: 'menu', cssVar: '--radius-menu' },
+        { name: 'menu item', cssVar: '--radius-menu-item' },
         { name: 'surface', cssVar: '--radius-surface' },
         { name: 'badge', cssVar: '--radius-badge' },
         { name: 'pill', cssVar: '--radius-pill' },
+        { name: 'trend badge', cssVar: '--radius-trend-badge' },
       ]}
       title="Semantic"
     />

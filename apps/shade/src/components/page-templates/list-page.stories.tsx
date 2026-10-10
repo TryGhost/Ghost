@@ -8,6 +8,7 @@ import { ListPage } from '@/components/page-templates/list-page';
 import { PageHeader } from '@/components/patterns/page-header';
 import { ViewBar } from '@/components/patterns/view-bar';
 import { FilterBar } from '@/components/patterns/filter-bar';
+import { formatNumber } from '@/utils';
 import {
   Filters,
   createFilter,
@@ -32,7 +33,6 @@ import {
   Search,
   Sprout,
   Users,
-  X,
 } from 'lucide-react';
 
 const meta = {
@@ -93,16 +93,24 @@ const memberStatusFields: FilterFieldConfig[] = [
 
 export const WithData: Story = {
   name: 'With data',
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'A populated list on the page canvas, with a header that blends into it in both themes.',
+      },
+    },
+  },
   render: () => {
     const [search, setSearch] = useState('');
     return (
-      <ListPage>
+      <ListPage className="bg-background">
         <ListPage.Header>
           <PageHeader blurredBackground={false} sticky={false}>
             <PageHeader.Left>
               <PageHeader.Title>
                 Members
-                <PageHeader.Count>{SAMPLE_MEMBERS.length}</PageHeader.Count>
+                <PageHeader.Count>{formatNumber(SAMPLE_MEMBERS.length)}</PageHeader.Count>
               </PageHeader.Title>
             </PageHeader.Left>
             <PageHeader.Actions>
@@ -235,7 +243,7 @@ export const WithViewBar: Story = {
           <PageHeader.Left>
             <PageHeader.Title>
               Members
-              <PageHeader.Count>{SAMPLE_MEMBERS.length}</PageHeader.Count>
+              <PageHeader.Count>{formatNumber(SAMPLE_MEMBERS.length)}</PageHeader.Count>
             </PageHeader.Title>
           </PageHeader.Left>
           <PageHeader.Actions>
@@ -323,7 +331,7 @@ export const WithFilterBar: Story = {
             <PageHeader.Left>
               <PageHeader.Title>
                 Members
-                <PageHeader.Count>{SAMPLE_MEMBERS.length}</PageHeader.Count>
+                <PageHeader.Count>{formatNumber(SAMPLE_MEMBERS.length)}</PageHeader.Count>
               </PageHeader.Title>
             </PageHeader.Left>
             <PageHeader.Actions>
@@ -352,14 +360,19 @@ export const WithFilterBar: Story = {
           <FilterBar>
             <Filters
               addButtonText="Add filter"
-              clearButtonIcon={<X className="size-4" />}
-              clearButtonText="Clear"
+              clearButton={
+                <FilterBar.Actions>
+                  <FilterBar.Action variant="ghost" onClick={() => setFilters([])}>
+                    Clear
+                  </FilterBar.Action>
+                  <FilterBar.Action variant="outline">Save view</FilterBar.Action>
+                </FilterBar.Actions>
+              }
               fields={memberStatusFields}
               filters={filters}
               showClearButton={true}
               onChange={setFilters}
             />
-            <Button variant="ghost">Save view</Button>
           </FilterBar>
         </ListPage.Header>
         <ListPage.Body>

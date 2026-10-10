@@ -1,8 +1,9 @@
 import { POST_ANALYTICS_INCLUDE, STATS_RANGES } from '@/shared/analytics/constants';
 import { PostAnalyticsContext } from '@/posts/analytics/providers/post-analytics-context';
-import { type ReactNode, useState } from 'react';
-import { useBrowsePosts } from '@tryghost/admin-x-framework/api/posts';
+import { type ReactNode, useCallback, useState } from 'react';
+import { type PostsResponseType, useBrowsePosts } from '@tryghost/admin-x-framework/api/posts';
 import { useParams } from '@tryghost/admin-x-framework';
+import { getEmailStatsPollingOptions } from '@/posts/analytics/utils/email-stats-polling';
 
 // Slim provider: holds only post-scoped state (the routed post + selected date
 // range). Framework data is sourced from the shell via `useAnalyticsData`.
@@ -18,12 +19,20 @@ const PostAnalyticsProvider = ({ children }: { children: ReactNode }) => {
 
   // Fetch post data with all required includes. The gift-link modal reuses
   // POST_ANALYTICS_INCLUDE for the same query key, so both read one cached post.
-  const { data: { posts: [post] } = { posts: [] }, isLoading: isPostLoading } = useBrowsePosts({
+  const {
+    data: { posts: [post] } = { posts: [] },
+    isLoading: isPostLoading,
+    refetch,
+  } = useBrowsePosts({
+    ...getEmailStatsPollingOptions<PostsResponseType>((data) => data?.posts[0]?.email),
     searchParams: {
       filter: `id:${postId}`,
       include: POST_ANALYTICS_INCLUDE,
     },
   });
+  const refetchPost = useCallback(async () => {
+    await refetch();
+  }, [refetch]);
 
   return (
     <PostAnalyticsContext.Provider
@@ -31,6 +40,7 @@ const PostAnalyticsProvider = ({ children }: { children: ReactNode }) => {
         postId: postId,
         post: post,
         isPostLoading,
+        refetchPost,
         range,
         setRange,
       }}

@@ -10,6 +10,8 @@ import { SwitchStyles } from './common/switch';
 import AccountHomePageStyles from './pages/AccountHomePage/account-home-page.css?inline';
 import { AccountPlanPageStyles } from './pages/account-plan-page';
 import { InputFieldStyles } from './common/input-field';
+import { MemberCustomFieldsStyles } from './common/member-custom-fields';
+import { DatePickerStyles } from './common/date-picker';
 import { SignupPageStyles } from './pages/signup-page';
 import { ProductsSectionStyles } from './common/products-section';
 import { AvatarStyles } from './common/member-gravatar';
@@ -22,11 +24,8 @@ import EmailSuppressionFAQ from './pages/email-suppression-faq.css?inline';
 import EmailReceivingFAQ from './pages/email-receiving-faq.css?inline';
 import { TipsAndDonationsSuccessStyle } from './pages/support-success';
 import { GiftRedemptionStyles } from './pages/gift-redemption-page';
-import { BetaGiftRedemptionStyles } from './pages/beta-gift-redemption-page';
-import { GiftPageStyles } from './pages/gift-page';
-import { BetaGiftPageStyles } from './pages/beta-gift-page';
+import { GiftPageStyles } from './pages/gift-page.styles';
 import { GiftSuccessStyle } from './pages/gift-success-page';
-import { BetaGiftSuccessStyle } from './pages/beta-gift-success-page';
 import { TipsAndDonationsErrorStyle } from './pages/support-error';
 import { RecommendationsPageStyles } from './pages/recommendations-page';
 import { ShareModalStyles } from './pages/share/share-modal.styles';
@@ -647,20 +646,6 @@ html[dir="rtl"] .gh-portal-logout-container {
     gap: 12px;
 }
 
-.gh-portal-footer-secondary {
-    display: flex;
-    font-size: 14.5px;
-    letter-spacing: 0.3px;
-}
-
-.gh-portal-footer-secondary button {
-    font-size: 14.5px;
-}
-
-.gh-portal-footer-secondary-light {
-    color: var(--grey7);
-}
-
 .gh-portal-list-header {
     font-size: 1.25rem;
     font-weight: 500;
@@ -749,12 +734,49 @@ html[dir="rtl"] .gh-portal-logout-container {
     border: none;
 }
 
+.gh-portal-email-preferences-header .gh-portal-header-message {
+    /* Collapses with the header's 40px bottom margin, leaving 20px under the title.
+       When the message is hidden, the header's 40px applies as on other detail pages. */
+    margin: -20px 0 24px;
+    text-wrap: balance;
+}
+
+.gh-portal-list .gh-portal-list-help {
+    justify-content: space-between;
+    gap: 16px;
+    padding: 8px 20px;
+    background: var(--grey13);
+    font-size: 1.4rem;
+}
+
+.gh-portal-list-help-label {
+    color: var(--grey5);
+}
+
+.gh-portal-list-help .gh-email-faq-page-button {
+    flex-shrink: 0;
+    align-self: stretch;
+    font-size: 1.4rem;
+}
+
 .gh-portal-btn-unsubscribe {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
     margin-top: 40px;
 }
 
 .gh-portal-btn-unsubscribe .gh-portal-btn {
     width: 100%;
+}
+
+.gh-portal-btn-unsubscribe-note {
+    margin: 0;
+    text-align: center;
+    font-size: 1.4rem;
+    line-height: 1.4;
+    color: var(--grey6);
+    text-wrap: balance;
 }
 
 .gh-portal-list-detail {
@@ -1357,6 +1379,8 @@ export function getFrameStyles({ site }) {
     AccountHomePageStyles +
     AccountPlanPageStyles +
     InputFieldStyles +
+    MemberCustomFieldsStyles +
+    DatePickerStyles +
     ProductsSectionStyles({ site }) +
     SwitchStyles +
     ActionButtonStyles +
@@ -1374,10 +1398,10 @@ export function getFrameStyles({ site }) {
     EmailSuppressionFAQ +
     EmailReceivingFAQ +
     TipsAndDonationsSuccessStyle +
-    (site?.labs?.giftSubCustomization ? BetaGiftRedemptionStyles : GiftRedemptionStyles) +
-    (site?.labs?.giftSubCustomization ? BetaGiftPageStyles : GiftPageStyles) +
+    GiftRedemptionStyles +
+    GiftPageStyles +
     TipsAndDonationsErrorStyle +
-    (site?.labs?.giftSubCustomization ? BetaGiftSuccessStyle : GiftSuccessStyle) +
+    GiftSuccessStyle +
     RecommendationsPageStyles +
     ShareModalStyles +
     TransistorPodcastsActionStyles;

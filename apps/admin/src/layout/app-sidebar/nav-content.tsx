@@ -17,15 +17,13 @@ import {
 } from '@tryghost/admin-x-framework/api/users';
 import { NavMenuItem } from './nav-menu-item';
 import { useNavigationExpanded } from './hooks/use-navigation-preferences';
-import { NavCustomViews } from './nav-custom-views';
+import { NavSavedViews } from './nav-saved-views';
 import { NavMemberViews } from './nav-member-views';
 import { useMemberSidebarViews } from './member-sidebar-views';
-import { useCustomSidebarViews } from './use-custom-sidebar-views';
+import { usePostNavigation } from './use-post-navigation';
 import { useIsActiveLink } from './use-is-active-link';
-import { useEmberRouting } from '@/ember-bridge';
 import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
-
-const LEGACY_MEMBERS_ACTIVE_ROUTES = ['members-activity'];
+import { AdminLink } from '@/shared/admin-link';
 
 function PostsNavItemContent({ isActive, to }: { isActive: boolean; to: string }) {
   return (
@@ -34,13 +32,13 @@ function PostsNavItemContent({ isActive, to }: { isActive: boolean; to: string }
         <LucideIcon.PenLine className="pointer-events-none opacity-0 transition-all sidebar:opacity-100 sidebar:group-hover/menu-item:opacity-0 sidebar:group-has-[button:focus-visible]/menu-item:opacity-0" />
         <NavMenuItem.Label>Posts</NavMenuItem.Label>
       </NavMenuItem.Link>
-      <a
+      <AdminLink
         aria-label="Create new post"
         className="absolute top-0 right-0 flex size-8 items-center justify-center rounded-full p-0 text-gray-700 ring-sidebar-ring outline-hidden transition-all hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 dark:text-gray-800 dark:hover:text-white"
-        href="#/editor/post"
+        to="/editor/post"
       >
         <LucideIcon.Plus className="mt-px stroke-[1.5px]!" size={20} />
-      </a>
+      </AdminLink>
     </>
   );
 }
@@ -80,36 +78,30 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
   const { data: settingsData } = useBrowseSettings();
   const [savedPostsExpanded, setPostsExpanded] = useNavigationExpanded('posts');
   const [savedMembersExpanded, setMembersExpanded] = useNavigationExpanded('members');
-  const postCustomViews = useCustomSidebarViews('posts');
+  const postNavigation = usePostNavigation('posts');
+  const pageNavigation = usePostNavigation('pages');
   const memberViews = useMemberSidebarViews();
   const hasMemberViews = memberViews.length > 0;
   const memberCount = useMemberCount();
-  const routing = useEmberRouting();
   const automationsEnabled = useFeatureFlag('automations');
   const isMembersRouteActive = useIsActiveLink({ path: 'members', activeOnSubpath: true });
+  const isMemberActivityActive = useIsActiveLink({ path: 'members-activity' });
 
   const showTags = currentUser && canManageTags(currentUser);
   const showMembers = currentUser && canManageMembers(currentUser);
   const showAutomations = currentUser && canManageAutomations(currentUser);
   const commentsEnabled = getSettingValue<string>(settingsData?.settings, 'comments_enabled');
   const showComments = !!showMembers && commentsEnabled !== 'off';
-  const isDraftPostsRouteActive = routing.isRouteActive('posts', { type: 'draft' });
-  const isScheduledPostsRouteActive = routing.isRouteActive('posts', { type: 'scheduled' });
-  const isPublishedPostsRouteActive = routing.isRouteActive('posts', { type: 'published' });
-  const hasActivePostChild =
-    isDraftPostsRouteActive ||
-    isScheduledPostsRouteActive ||
-    isPublishedPostsRouteActive ||
-    postCustomViews.some((view) => view.isActive);
+  const postViews = [...postNavigation.defaultViews, ...postNavigation.customViews];
+  const hasActivePostChild = postViews.some((view) => view.isActive);
   const postsExpanded = savedPostsExpanded;
   const hasActiveMemberView = hasMemberViews && memberViews.some((view) => view.isActive);
   const membersExpanded = savedMembersExpanded;
   const membersNavActive = isMembersRouteActive
     ? !hasActiveMemberView || !membersExpanded
-    : routing.isRouteActive(LEGACY_MEMBERS_ACTIVE_ROUTES);
-  const postsRoute = routing.getRouteUrl('posts');
-  const isPostsRouteActive = routing.isRouteActive('posts');
-  const postsNavActive = isPostsRouteActive || (!postsExpanded && hasActivePostChild);
+    : isMemberActivityActive;
+  const postsRoute = postNavigation.mainUrl;
+  const postsNavActive = postNavigation.isMainActive || (!postsExpanded && hasActivePostChild);
   return (
     <SidebarGroup {...props}>
       <SidebarGroupContent>
@@ -124,33 +116,12 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
             </NavMenuItem.CollapsibleItem>
 
             <NavMenuItem.CollapsibleMenu>
-              <NavMenuItem.SubmenuItem isActive={isDraftPostsRouteActive} to="posts?type=draft">
-                <NavMenuItem.Label>Drafts</NavMenuItem.Label>
-              </NavMenuItem.SubmenuItem>
-
-              <NavMenuItem.SubmenuItem
-                isActive={isScheduledPostsRouteActive}
-                to="posts?type=scheduled"
-              >
-                <NavMenuItem.Label>Scheduled</NavMenuItem.Label>
-              </NavMenuItem.SubmenuItem>
-
-              <NavMenuItem.SubmenuItem
-                isActive={isPublishedPostsRouteActive}
-                to="posts?type=published"
-              >
-                <NavMenuItem.Label>Published</NavMenuItem.Label>
-              </NavMenuItem.SubmenuItem>
-
-              <NavCustomViews />
+              <NavSavedViews views={postViews} />
             </NavMenuItem.CollapsibleMenu>
           </NavMenuItem.Collapsible>
 
           <NavMenuItem>
-            <NavMenuItem.Link
-              isActive={routing.isRouteActive('pages')}
-              to={routing.getRouteUrl('pages')}
-            >
+            <NavMenuItem.Link isActive={pageNavigation.isMainActive} to={pageNavigation.mainUrl}>
               <LucideIcon.File />
               <NavMenuItem.Label>Pages</NavMenuItem.Label>
             </NavMenuItem.Link>

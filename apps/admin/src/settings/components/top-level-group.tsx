@@ -11,8 +11,8 @@ import {
 } from '@tryghost/shade/patterns';
 import { createComponentId } from '@/settings/utils/search';
 import { useSettingsNavigation } from '@/settings/hooks/use-settings-navigation';
-import { useScrollSection } from '@/settings/hooks/use-scroll-section';
-import { useSearch } from '@/settings/providers/settings-app-context';
+import { useScrollSection, useScrollSectionContext } from '@/settings/hooks/use-scroll-section';
+import { useOpenSectionRequest, useSearch } from '@/settings/providers/settings-app-context';
 import { type SaveState } from '@tryghost/admin-x-framework/hooks';
 
 interface TopLevelGroupProps {
@@ -32,6 +32,8 @@ interface TopLevelGroupProps {
   highlightOnModalClose?: boolean;
   enableCMDS?: boolean;
   onEditingChange?: (isEditing: boolean) => void;
+  /** Opens the section for an `?open` link, as its header button does. Defaults to Edit. */
+  onOpen?: () => void;
   /** May be async; the group fires it without awaiting, so the handler owns its own error handling. */
   onSave?: () => void | Promise<unknown>;
   onCancel?: () => void;
@@ -54,6 +56,7 @@ const TopLevelGroup: React.FC<TopLevelGroupProps> = ({
   highlightOnModalClose = true,
   enableCMDS = true,
   onEditingChange,
+  onOpen,
   onSave,
   onCancel,
 }) => {
@@ -70,6 +73,21 @@ const TopLevelGroup: React.FC<TopLevelGroupProps> = ({
       unregisterComponent(componentId);
     };
   }, [componentId, keywords, registerComponent, unregisterComponent]);
+
+  const { openSectionRequest, setOpenSectionRequest } = useOpenSectionRequest();
+  const { jumpToSection } = useScrollSectionContext();
+  const hasEditButton = !customButtons && Boolean(onEditingChange) && !hideEditButton;
+  const open = onOpen ?? (hasEditButton ? () => onEditingChange?.(true) : undefined);
+
+  useEffect(() => {
+    if (!navid || openSectionRequest?.section !== navid) {
+      return;
+    }
+
+    setOpenSectionRequest(undefined);
+    jumpToSection(navid);
+    open?.();
+  }, [jumpToSection, navid, open, openSectionRequest, setOpenSectionRequest]);
 
   useEffect(() => {
     setHighlight(route === navid);

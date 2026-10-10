@@ -1,4 +1,4 @@
-import FeatureImagePlaceholder from '@/analytics/views/stats/components/feature-image-placeholder';
+import FeatureImagePlaceholder from '@/shared/feature-image-placeholder';
 import React from 'react';
 import {
   Card,
@@ -12,7 +12,6 @@ import {
 import {
   LucideIcon,
   abbreviateNumber,
-  cn,
   formatDisplayDate,
   formatNumber,
 } from '@tryghost/shade/utils';
@@ -21,7 +20,15 @@ import { getPeriodText } from '@/shared/analytics/chart-helpers';
 import { getPostDestination } from '@/analytics/utils/url-helpers';
 import { getPostStatusText } from '@tryghost/admin-x-framework/utils/post-utils';
 import { getSiteTimezone } from '@tryghost/admin-x-framework/utils/get-site-timezone';
-import { useAppContext, useNavigate } from '@tryghost/admin-x-framework';
+import { useLocation, useNavigate } from '@tryghost/admin-x-framework';
+import { editorReturnState } from '@/editor/api';
+import {
+  useEmailTrackClicks,
+  useEmailTrackOpens,
+  useMembersTrackSources,
+  usePaidMembersEnabled,
+  useWebAnalyticsEnabled,
+} from '@tryghost/admin-x-framework/api/settings';
 import { useAnalytics } from '@/analytics/providers/analytics-context';
 import { useAnalyticsData } from '@/shared/analytics/use-analytics-data';
 
@@ -32,18 +39,15 @@ interface PostlistTooptipProps {
     label: string;
     metric: React.ReactNode;
   }>;
-  className?: string;
 }
 
-const PostListTooltip: React.FC<PostlistTooptipProps> = ({ className, metrics, title }) => {
+const PostListTooltip: React.FC<PostlistTooptipProps> = ({ metrics, title }) => {
   return (
     <>
-      <div
-        className={cn(
-          'pointer-events-none absolute bottom-[calc(100%+2px)] left-1/2 z-50 min-w-[160px] -translate-x-1/2 rounded-md bg-background p-3 text-sm opacity-0 shadow-md transition-all group-hover/tooltip:bottom-[calc(100%+12px)] group-hover/tooltip:opacity-100',
-          className,
-        )}
-      >
+      {/* Right-aligned, not centred: the metrics stack flush to the row's right edge
+          below md, so a centred tooltip overhangs the page and makes it scroll
+          sideways while staying invisible at opacity-0. */}
+      <div className="pointer-events-none absolute right-0 bottom-[calc(100%+2px)] z-50 min-w-[160px] rounded-md bg-background p-3 text-sm opacity-0 shadow-md transition-all group-hover/tooltip:bottom-[calc(100%+12px)] group-hover/tooltip:opacity-100">
         <div className="mb-1.5 border-b pr-10 pb-1.5 font-medium whitespace-nowrap text-muted-foreground">
           {title}
         </div>
@@ -74,19 +78,18 @@ interface TopPostsProps {
 
 const TopPosts: React.FC<TopPostsProps> = ({ topPostsData, isLoading }) => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { range } = useAnalytics();
   const { settings } = useAnalyticsData();
-  const { appSettings } = useAppContext();
+  const paidMembersEnabled = usePaidMembersEnabled();
 
   const siteTimezone = getSiteTimezone(settings);
 
   // Show open rate if newsletters are enabled and email tracking is enabled
-  const {
-    webAnalytics: showWebAnalytics = false,
-    membersTrackSources = false,
-    emailTrackClicks: showClickTracking = false,
-    emailTrackOpens: showOpenTracking = false,
-  } = appSettings?.analytics || {};
+  const showWebAnalytics = useWebAnalyticsEnabled();
+  const membersTrackSources = useMembersTrackSources() ?? false;
+  const showClickTracking = useEmailTrackClicks() ?? false;
+  const showOpenTracking = useEmailTrackOpens() ?? false;
 
   const metricClass =
     'flex items-center justify-end gap-1 rounded-md px-2 py-1 font-mono text-gray-800 hover:bg-muted-foreground/10 group-hover:text-foreground';
@@ -121,8 +124,10 @@ const TopPosts: React.FC<TopPostsProps> = ({ topPostsData, isLoading }) => {
                           membersTrackSources,
                         },
                       });
-                      // `/editor/*` is still Ember-owned (EMBER_ROUTES) and needs a hash navigation.
-                      navigate(destination, { crossApp: destination.startsWith('/editor/') });
+                      const opensEditor = destination.startsWith('/editor/');
+                      navigate(destination, {
+                        state: opensEditor ? editorReturnState(location) : undefined,
+                      });
                     }}
                   >
                     {post.feature_image ? (
@@ -136,7 +141,12 @@ const TopPosts: React.FC<TopPostsProps> = ({ topPostsData, isLoading }) => {
                       <FeatureImagePlaceholder className="hidden aspect-[16/10] w-[80px] shrink-0 group-hover:bg-muted-foreground/10 sm:visible! sm:flex! lg:w-[100px]" />
                     )}
                     <div className="flex flex-col gap-0.5">
-                      <span className="line-clamp-2 text-md font-semibold">{post.title}</span>
+                      {/* wrap-anywhere, not break-words: a title can be one unbroken
+                          word wider than the column, and only `anywhere` also shrinks
+                          the intrinsic width the layout reserves for it. */}
+                      <span className="line-clamp-2 text-md font-semibold wrap-anywhere">
+                        {post.title}
+                      </span>
                       <span className="text text-muted-foreground">
                         By {post.authors} &ndash;{' '}
                         {formatDisplayDate(post.published_at, siteTimezone)}
@@ -189,7 +199,6 @@ const TopPosts: React.FC<TopPostsProps> = ({ topPostsData, isLoading }) => {
                         }}
                       >
                         <PostListTooltip
-                          className={`${!membersTrackSources ? 'right-0 left-auto translate-x-0' : ''}`}
                           metrics={[
                             // Always show sent
                             {
@@ -292,7 +301,6 @@ const TopPosts: React.FC<TopPostsProps> = ({ topPostsData, isLoading }) => {
                         }}
                       >
                         <PostListTooltip
-                          className="right-0 left-auto translate-x-0"
                           metrics={[
                             {
                               icon: (
@@ -307,7 +315,7 @@ const TopPosts: React.FC<TopPostsProps> = ({ topPostsData, isLoading }) => {
                                 post.free_members > 0 ? `+${formatNumber(post.free_members)}` : '0',
                             },
                             // Only show paid members if paid members are enabled
-                            ...(appSettings?.paidMembersEnabled
+                            ...(paidMembersEnabled
                               ? [
                                   {
                                     icon: (

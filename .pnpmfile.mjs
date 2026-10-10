@@ -1,5 +1,3 @@
-import { glob, readFile } from 'node:fs/promises';
-
 // Global pnpm hooks for the Ghost monorepo.
 //
 // `beforePacking` runs during `pnpm pack` / `pnpm publish` and mutates the
@@ -13,7 +11,7 @@ import { glob, readFile } from 'node:fs/promises';
 //     in a published manifest and only adds noise + phantom workspace refs
 //
 // Applied to the `ghost` package only (the Ghost-CLI release archive built by
-// ghost/core/scripts/pack.mjs):
+// ghost/scripts/pack.mjs):
 //   - rewrite its workspace deps to the bundled `file:components/*.tgz`
 //     tarballs shipped in the archive (name→filename map via GHOST_COMPONENTS)
 //   - strip `scripts` to the runtime set — Ghost-CLI starts Ghost with `node`,
@@ -77,12 +75,15 @@ function readPackage(pkg) {
     delete pkg.peerDependenciesMeta;
   }
 
-  // knex declares sqlite3 as an optional peer dep, and we don't use it/don't
-  // want to install it in production, so we'll remove it from the knex peer
-  // deps
-  if (pkg.name === 'knex') {
-    delete pkg.peerDependencies?.sqlite3;
-    delete pkg.peerDependenciesMeta?.sqlite3;
+  // The 8.x Elasticsearch client hard-depends on apache-arrow for two ES|QL
+  // helpers nothing in Ghost calls - @tryghost/logging and @tryghost/metrics only
+  // index documents. Worth 15 packages / ~15MB installed, and 145 modules /
+  // ~3.3MB RSS per process using the log transport. The matching patch defers the
+  // require, 9.x-style. Delete rather than re-declare as an optional peer:
+  // autoInstallPeers installs those anyway, and it peer-forks @tryghost/logging
+  // and everything above it. Drop both when the client reaches 9.x.
+  if (pkg.name === '@elastic/elasticsearch') {
+    delete pkg.dependencies?.['apache-arrow'];
   }
 
   // these deps pull in typescript as an optional peer dep, which ends up
@@ -110,40 +111,4 @@ function readPackage(pkg) {
   return pkg;
 }
 
-/**
- * Dynamic config update function to automatically exclude "private" packages
- * from pnpm's changelog detection. We can't remove the version fields
- * because that would break workspace resolution, but we can dynamically add them
- * to the versioning.ignore list so that they don't trigger changelog generation.
- */
-async function updateConfig(config) {
-  const { packages, versioning = {} } = config;
-  const ignoredPackages = new Set(versioning.ignore ?? []);
-
-  // step 1: enumerate all workspace packages with glob
-  const exclude = packages.filter((p) => p.startsWith('!')).map((p) => p.slice(1));
-  const patterns = packages.filter((p) => !p.startsWith('!')).map((p) => `${p}/package.json`);
-
-  const files = await Array.fromAsync(glob(patterns, { exclude }));
-
-  // step 2: read each package.json and check for "private", if so add to
-  // the ignore set
-  await Promise.all(
-    files.map(async (file) => {
-      const pkg = JSON.parse(await readFile(file, 'utf-8'));
-      if (pkg.private) {
-        ignoredPackages.add(pkg.name);
-      }
-    }),
-  );
-
-  // step 3: update the config with the new ignore list
-  config.versioning = {
-    ...versioning,
-    ignore: Array.from(ignoredPackages),
-  };
-
-  return config;
-}
-
-export const hooks = { beforePacking, readPackage, updateConfig };
+export const hooks = { beforePacking, readPackage };

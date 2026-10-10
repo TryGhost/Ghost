@@ -1,18 +1,18 @@
 import APIKeys from '@/settings/advanced/integrations/api-keys';
 import { Text } from '@tryghost/shade/primitives';
-import { genStaffToken, getStaffToken } from '@tryghost/admin-x-framework/api/staff-token';
+import { useGenerateStaffToken, useStaffToken } from '@tryghost/admin-x-framework/api/staff-token';
 import { useConfirmation } from '@/settings/providers/confirmation-context';
 import { useEffect, useState } from 'react';
 import { useHandleError } from '@tryghost/admin-x-framework/hooks';
 
 const StaffToken: React.FC = () => {
-  const { refetch: apiKey } = getStaffToken({
+  const { refetch: apiKey } = useStaffToken({
     enabled: false,
   });
   const handleError = useHandleError();
   const { confirm } = useConfirmation();
   const [token, setToken] = useState('');
-  const { mutateAsync: newApiKey } = genStaffToken();
+  const { mutateAsync: newApiKey } = useGenerateStaffToken();
 
   useEffect(() => {
     const getApiKey = async () => {

@@ -1,0 +1,13 @@
+NODE extract_automation_run_steps
+SQL >
+    WITH JSONExtract(payload, 'Tuple(automation_run_id String, status String)') AS payload_json
+    SELECT
+        site_uuid,
+        id,
+        updated_at,
+        getSubcolumn(payload_json, 'automation_run_id') AS automation_run_id,
+        getSubcolumn(payload_json, 'status') AS status
+    FROM automation_run_step_events
+
+TYPE MATERIALIZED
+DATASOURCE _mv_automation_run_steps

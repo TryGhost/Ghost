@@ -5,6 +5,10 @@ import { Banner } from '@tryghost/shade/components';
 export interface ErrorBoundaryProps {
   children: ReactNode;
   name: ReactNode;
+  /** Rendered in place of the default banner once a child has thrown. */
+  fallback?: ReactNode;
+  /** Replaces the default Sentry capture; the console lines stay. */
+  onError?: (error: unknown, info: ErrorInfo) => void;
 }
 
 /**
@@ -23,10 +27,14 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps> {
   }
 
   componentDidCatch(error: unknown, info: ErrorInfo) {
-    Sentry.withScope((scope) => {
-      scope.setTag('adminx_settings_component', info.componentStack);
-      Sentry.captureException(error);
-    });
+    if (this.props.onError) {
+      this.props.onError(error, info);
+    } else {
+      Sentry.withScope((scope) => {
+        scope.setTag('adminx_settings_component', info.componentStack);
+        Sentry.captureException(error);
+      });
+    }
     // eslint-disable-next-line no-console
     console.error(error);
     // eslint-disable-next-line no-console
@@ -35,13 +43,11 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps> {
 
   render() {
     if (this.state.hasError) {
+      if (this.props.fallback !== undefined) {
+        return this.props.fallback;
+      }
       return (
-        <Banner
-          className="border border-state-danger/40 bg-state-danger/10 text-destructive"
-          role="alert"
-          size="sm"
-          variant="destructive"
-        >
+        <Banner className="text-destructive" role="alert" size="sm" variant="destructive">
           An error occurred loading {this.props.name}. Please refresh and try again.
         </Banner>
       );

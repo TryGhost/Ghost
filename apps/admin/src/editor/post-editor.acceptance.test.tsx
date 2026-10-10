@@ -1,0 +1,719 @@
+import { describe, expect, it, onTestFinished } from 'vitest';
+import { page, userEvent } from 'vitest/browser';
+import { buildLexicalParagraph } from '@tryghost/test-data';
+import { tkIndicatorExcerpt } from '@tryghost/test-data/selectors/editor';
+
+import type { Snippet } from '@tryghost/admin-x-framework/api/snippets';
+
+import {
+  browseResponse,
+  currentRoute,
+  currentUserResponse,
+  fakeAdminEndpoint,
+  fakeEditorPost as fakeSavablePost,
+  fakeEmailPreview,
+  fakeNewsletters,
+  fakePages,
+  fakePosts,
+  fakeSnippets,
+  post,
+  renderAdminApp,
+  settingsResponse,
+  siteResponse,
+  staffRole,
+  withoutAutosave,
+  type RenderAdminAppOptions,
+} from '@test-utils/acceptance';
+import { editorScreen } from '@/editor/editor.screen';
+import { EMAIL_SIZE_REFETCH_DEBOUNCE_MS } from '@/editor/use-email-size';
+import { deferred } from '@/utils/deferred';
+
+const POST_ID = 'abc123';
+const FLAG_ON = { labs: { editorReact: true } };
+const EXCERPT_ON = { labs: { editorReact: true, editorExcerpt: true } };
+const CURRENT_USER_ID = '1';
+
+const OVER_EMAIL_LIMIT = 150 * 1024;
+
+const FEATURE_IMAGE = `data:image/svg+xml,${encodeURIComponent(
+  '<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="800"/>',
+)}`;
+
+const MOBILEDOC =
+  '{"version":"0.3.1","atoms":[],"cards":[],"markups":[],"sections":[[1,"p",[[0,[],0,"Legacy"]]]]}';
+
+// Every editor mount browses snippets for the card menu and, through Koenig's
+// link toolbar preload, the five latest published posts.
+function fakeEditorChrome() {
+  fakeSnippets([]);
+  // The header's publish inputs read the newsletter list.
+  fakeNewsletters([]);
+  fakeEmailPreview();
+  return fakePosts([]);
+}
+
+function fakeEditorPost(overrides: Partial<ReturnType<typeof post>> = {}) {
+  fakeEditorChrome();
+  return fakeAdminEndpoint('GET', new RegExp(`^/posts/${POST_ID}/\\?`), {
+    posts: [
+      post({
+        id: POST_ID,
+        title: 'Hello from React',
+        custom_excerpt: 'A short summary',
+        lexical: buildLexicalParagraph('Hello from React'),
+        ...overrides,
+      }),
+    ],
+  });
+}
+
+function snippet(name: string): Snippet {
+  return {
+    id: `snippet-${name}`,
+    name,
+    mobiledoc: '{}',
+    lexical: buildLexicalParagraph(name),
+    created_at: '2026-01-01T00:00:00.000Z',
+    updated_at: null,
+  };
+}
+
+function bootAs(role: 'Author' | 'Contributor'): RenderAdminAppOptions {
+  const me = currentUserResponse();
+  me.users[0].roles = [staffRole({ name: role })];
+  return { ...FLAG_ON, boot: { browseMe: { response: me } } };
+}
+
+/** Whether `marker` sits right of `target`, level with some of it. */
+function sitsRightOf(marker: Element, target: Element): boolean {
+  const markerBox = marker.getBoundingClientRect();
+  const targetBox = target.getBoundingClientRect();
+  return (
+    markerBox.left >= targetBox.right &&
+    markerBox.bottom > targetBox.top &&
+    markerBox.top < targetBox.bottom
+  );
+}
+
+function pasteText(content: string) {
+  const dataTransfer = new DataTransfer();
+  dataTransfer.setData('text/plain', content);
+  document.activeElement?.dispatchEvent(
+    new ClipboardEvent('paste', { clipboardData: dataTransfer, bubbles: true, cancelable: true }),
+  );
+}
+
+/**
+ * Covers post loading, Koenig mounting, and in-memory editing. Write requests
+ * remain unfaked unless a test expects a mobiledoc conversion, so any
+ * unexpected write returns 418 and fails the test. Saving is covered in
+ * editor-save.acceptance.test.tsx.
+ */
+describe('Post editor', () => {
+  it('grows and shrinks the title with its text despite the textarea element styles', async () => {
+    fakeEditorPost({ title: 'Short title' });
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave(FLAG_ON));
+
+    const title = editorScreen.titleInput();
+    await expect.element(title).toHaveValue('Short title');
+    const height = () => title.element().getBoundingClientRect().height;
+    const singleLineHeight = height();
+    const lineHeight = parseFloat(getComputedStyle(title.element()).lineHeight);
+    expect(singleLineHeight).toBeLessThan(lineHeight * 2);
+    expect(title.element().getBoundingClientRect().width).toBeGreaterThan(500);
+
+    await title.fill(
+      'A long post title that wraps across several lines in the writing area '.repeat(3),
+    );
+    await expect.poll(height).toBeGreaterThan(singleLineHeight * 2);
+
+    await title.fill('Short title');
+    await expect.poll(height).toBe(singleLineHeight);
+  });
+
+  it('loads the post into the title and body', async () => {
+    const postsApi = fakeEditorPost();
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+
+    await expect.element(editorScreen.titleInput()).toHaveValue('Hello from React');
+    await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
+    await expect.element(editorScreen.wordCount()).toHaveTextContent('3 words');
+    expect(postsApi.lastRequest?.url).toContain('formats=mobiledoc%2Clexical');
+    expect(postsApi.lastRequest?.url).toContain('include=tags%2Cauthors');
+  });
+
+  it('mounts the hidden secondary Koenig instance without doubling its requests', async () => {
+    const latestPostsApi = fakeEditorChrome();
+    fakeAdminEndpoint('GET', new RegExp(`^/posts/${POST_ID}/\\?`), {
+      posts: [post({ id: POST_ID, lexical: buildLexicalParagraph('Hello') })],
+    });
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+
+    await expect.element(editorScreen.body()).toBeVisible();
+    await expect
+      .element(editorScreen.secondaryInstance())
+      .toHaveAttribute('data-secondary-instance', 'true');
+    await expect.element(editorScreen.secondaryInstance()).not.toBeVisible();
+    await expect.poll(() => latestPostsApi.requests.length).toBe(1);
+    expect(latestPostsApi.lastRequest?.limit).toBe(5);
+  });
+
+  it('updates the word count as the body is edited', async () => {
+    fakeEditorPost();
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+
+    const body = editorScreen.body();
+    await expect.element(editorScreen.wordCount()).toHaveTextContent('3 words');
+    await body.click();
+    await userEvent.keyboard('{End} and more');
+
+    await expect.element(body).toHaveTextContent('Hello from React and more');
+    await expect.element(editorScreen.wordCount()).toHaveTextContent('5 words');
+  });
+
+  it('offers every snippet in the card menu, past the first page of the browse', async () => {
+    fakeEditorPost();
+    // `limit=all` is capped by Core, so the site's snippets can span several pages.
+    const snippetsApi = fakeAdminEndpoint('GET', /^\/snippets\/\?/, ({ url }) => {
+      const pageNumber = Number(new URL(url).searchParams.get('page') ?? '1');
+      return browseResponse('snippets', [snippet('Alpha'), snippet('Zulu')], {
+        page: pageNumber,
+        limit: 1,
+      });
+    });
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+
+    await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
+    await expect.poll(() => snippetsApi.requests.length).toBe(2);
+    const secondPageParams = new URL(snippetsApi.requests[1].url).searchParams;
+    expect(secondPageParams.get('page')).toBe('2');
+    expect(secondPageParams.get('formats')).toBe('mobiledoc,lexical');
+
+    await editorScreen.body().click();
+    await userEvent.keyboard('{End}{Enter}/');
+
+    await expect.element(editorScreen.cardMenuItem('Zulu')).toBeVisible();
+    await expect.element(editorScreen.cardMenuItem('Alpha')).toBeVisible();
+  });
+
+  it('offers no snippets in the card menu until the last page of the browse arrives', async () => {
+    fakeEditorPost();
+    const secondPage = deferred<void>();
+    const snippetsApi = fakeAdminEndpoint('GET', /^\/snippets\/\?/, async ({ url }) => {
+      const pageNumber = Number(new URL(url).searchParams.get('page') ?? '1');
+      if (pageNumber === 2) {
+        await secondPage.promise;
+      }
+      return browseResponse('snippets', [snippet('Alpha'), snippet('Zulu')], {
+        page: pageNumber,
+        limit: 1,
+      });
+    });
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
+    await expect.poll(() => snippetsApi.requests.length).toBe(2);
+
+    await editorScreen.body().click();
+    await userEvent.keyboard('{End}{Enter}/');
+
+    await expect.element(editorScreen.cardMenuItem('Image')).toBeVisible();
+    await expect.element(editorScreen.cardMenuItem('Alpha')).not.toBeInTheDocument();
+
+    secondPage.resolve();
+
+    await expect.element(editorScreen.cardMenuItem('Alpha')).toBeVisible();
+    await expect.element(editorScreen.cardMenuItem('Zulu')).toBeVisible();
+  });
+
+  it('keeps title edits in memory', async () => {
+    fakeEditorPost();
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+
+    const title = editorScreen.titleInput();
+    await expect.element(title).toHaveValue('Hello from React');
+    await title.fill('Changed title TK');
+
+    await expect.element(title).toHaveValue('Changed title TK');
+    await expect.element(editorScreen.titleTkIndicator()).toBeVisible();
+  });
+
+  it('marks a TK in the title to the right of the title, below a feature image', async () => {
+    fakeEditorPost({ title: 'Hello TK', feature_image: FEATURE_IMAGE });
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+
+    const marker = editorScreen.titleTkIndicator();
+    await expect.element(marker).toBeVisible();
+    await expect
+      .poll(() => sitsRightOf(marker.element(), editorScreen.titleInput().element()))
+      .toBe(true);
+  });
+
+  it('moves from the title into the body on Enter and cleans pasted titles', async () => {
+    fakeEditorPost();
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+
+    const title = editorScreen.titleInput();
+    await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
+    await title.click();
+    await userEvent.keyboard('{Enter}');
+
+    await expect.poll(() => editorScreen.bodyHasFocus()).toBe(true);
+    await expect.element(title).toHaveValue('Hello from React');
+
+    await title.fill('');
+    await title.click();
+    pasteText('  Line one\nLine two\r\n\nLine three  ');
+
+    await expect.element(title).toHaveValue('Line one Line two Line three');
+  });
+
+  it('shows the excerpt only behind the editorExcerpt flag', async () => {
+    fakeEditorPost();
+    await renderAdminApp(`/editor/post/${POST_ID}`, {
+      labs: { editorReact: true, editorExcerpt: true },
+    });
+
+    await expect.element(editorScreen.excerptInput()).toHaveValue('A short summary');
+  });
+
+  it.each(['light', 'dark'])(
+    'gives the title and excerpt the body placeholder colour in %s mode',
+    async (theme) => {
+      fakeEditorChrome();
+      const me = currentUserResponse();
+      me.users[0].accessibility = JSON.stringify({ nightShift: theme });
+      await renderAdminApp('/editor/post', { ...EXCERPT_ON, boot: { browseMe: { response: me } } });
+
+      await expect.element(editorScreen.bodyPlaceholder()).toBeVisible();
+      await expect.element(editorScreen.excerptInput()).toBeVisible();
+      await expect
+        .poll(() => document.documentElement.classList.contains('dark'))
+        .toBe(theme === 'dark');
+
+      // Koenig draws the body placeholder in its own palette, which the title
+      // and excerpt placeholders have to match exactly.
+      const placeholderColor = (field: Element) => getComputedStyle(field, '::placeholder').color;
+      const bodyColor = getComputedStyle(editorScreen.bodyPlaceholder().element()).color;
+      expect(bodyColor).toBe(theme === 'dark' ? 'rgb(98, 109, 121)' : 'rgb(174, 183, 193)');
+      expect(placeholderColor(editorScreen.titleInput().element())).toBe(bodyColor);
+      expect(placeholderColor(editorScreen.excerptInput().element())).toBe(bodyColor);
+    },
+  );
+
+  it('sets the excerpt across the writing column and fits it to its lines despite the textarea element styles', async () => {
+    onTestFinished(() => page.viewport(1280, 800));
+
+    fakeEditorPost();
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave(EXCERPT_ON));
+
+    const excerpt = editorScreen.excerptInput();
+    await expect.element(excerpt).toHaveValue('A short summary');
+    const element = excerpt.element();
+    const style = getComputedStyle(element);
+    // Ember's .gh-editor-excerpt: 2rem at Admin's 10px rem, on a 1.5em line
+    expect(style.fontSize).toBe('20px');
+    expect(style.fontWeight).toBe('440');
+    const lineHeight = parseFloat(style.lineHeight);
+    expect(lineHeight).toBe(30);
+
+    const width = () => element.getBoundingClientRect().width;
+    const columnWidth = () => editorScreen.titleInput().element().getBoundingClientRect().width;
+    const height = () => element.getBoundingClientRect().height;
+    const lines = () => height() / lineHeight;
+    expect(width()).toBe(740);
+    expect(width()).toBe(columnWidth());
+    await expect.poll(lines).toBe(1);
+    const divider = element.parentElement!.querySelector('hr')!;
+    expect(
+      divider.getBoundingClientRect().top - element.getBoundingClientRect().bottom,
+    ).toBeLessThan(lineHeight);
+
+    await excerpt.fill(
+      'An excerpt long enough to wrap onto a second line of the writing column, and one that keeps going until it reaches a third',
+    );
+    await expect.poll(lines).toBeGreaterThanOrEqual(2);
+    expect(lines()).toBeLessThanOrEqual(3);
+    expect(Number.isInteger(lines())).toBe(true);
+    const wideLines = lines();
+
+    // A narrower window rewraps the excerpt onto more lines, and back.
+    await page.viewport(480, 800);
+    await expect.poll(lines).toBeGreaterThan(wideLines);
+    expect(Number.isInteger(lines())).toBe(true);
+    expect(width()).toBe(columnWidth());
+    await page.viewport(1280, 800);
+    await expect.poll(lines).toBe(wideLines);
+
+    await excerpt.fill('A short summary');
+    await expect.poll(lines).toBe(1);
+  });
+
+  it('marks a TK in the excerpt to the right of the excerpt', async () => {
+    fakeEditorPost({ custom_excerpt: 'A summary TK' });
+    await renderAdminApp(`/editor/post/${POST_ID}`, EXCERPT_ON);
+
+    const marker = page.getByTestId(tkIndicatorExcerpt);
+    await expect.element(marker).toBeVisible();
+    await expect
+      .poll(() => sitsRightOf(marker.element(), editorScreen.excerptInput().element()))
+      .toBe(true);
+  });
+
+  it('hides the excerpt without the flag', async () => {
+    fakeEditorPost();
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+
+    await expect.element(editorScreen.titleInput()).toBeVisible();
+    await expect(editorScreen.excerptInput()).toHaveCount(0);
+  });
+
+  it.each<['post' | 'page']>([['post'], ['page']])(
+    'converts a mobiledoc %s to lexical before opening it',
+    async (type) => {
+      const resource = `${type}s`;
+      const legacy = post({
+        id: POST_ID,
+        title: `Legacy ${type}`,
+        mobiledoc: MOBILEDOC,
+        lexical: null,
+        updated_at: '2024-05-06T07:08:09.000Z',
+      });
+      fakeEditorChrome();
+      fakeAdminEndpoint('GET', new RegExp(`^/${resource}/${POST_ID}/\\?`), {
+        [resource]: [legacy],
+      });
+      const convertApi = fakeAdminEndpoint('PUT', new RegExp(`^/${resource}/${POST_ID}/\\?`), {
+        [resource]: [
+          post({
+            ...legacy,
+            mobiledoc: null,
+            lexical: buildLexicalParagraph('Converted from mobiledoc'),
+          }),
+        ],
+      });
+      await renderAdminApp(`/editor/${type}/${POST_ID}`, FLAG_ON);
+
+      await expect.element(editorScreen.body()).toHaveTextContent('Converted from mobiledoc');
+      expect(convertApi.requests).toHaveLength(1);
+      expect(convertApi.lastRequest?.url).toContain('convert_to_lexical=true');
+      expect(convertApi.lastRequest?.url).toContain('formats=mobiledoc%2Clexical');
+      const body = convertApi.lastRequest?.body as Record<string, unknown[]>;
+      expect(body[resource]).toEqual([{ id: POST_ID, updated_at: legacy.updated_at }]);
+    },
+  );
+
+  it('opens a converted post without waiting for the read its conversion sets off', async () => {
+    const route = new RegExp(`^/posts/${POST_ID}/\\?`);
+    const legacy = post({
+      id: POST_ID,
+      title: 'Legacy post',
+      mobiledoc: MOBILEDOC,
+      lexical: null,
+      updated_at: '2024-05-06T07:08:09.000Z',
+    });
+    fakeEditorChrome();
+    // Every read after the opening one waits until the test is over.
+    const laterReads = deferred<void>();
+    onTestFinished(() => laterReads.resolve());
+    const readApi = fakeAdminEndpoint('GET', route, async () => {
+      if (readApi.requests.length > 1) {
+        await laterReads.promise;
+      }
+      return { posts: [legacy] };
+    });
+    fakeAdminEndpoint('PUT', route, {
+      posts: [
+        post({
+          ...legacy,
+          mobiledoc: null,
+          lexical: buildLexicalParagraph('Converted from mobiledoc'),
+        }),
+      ],
+    });
+    const { queryClient } = await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+
+    await expect.poll(() => readApi.requests.length).toBe(2);
+    await expect.element(editorScreen.body()).toHaveTextContent('Converted from mobiledoc');
+
+    laterReads.resolve();
+    await expect.poll(() => queryClient.isFetching()).toBe(0);
+  });
+
+  it('shows an error when the conversion response carries no post', async () => {
+    fakeEditorPost({ title: 'Legacy post', mobiledoc: MOBILEDOC, lexical: null });
+    fakeAdminEndpoint('PUT', new RegExp(`^/posts/${POST_ID}/\\?`), { posts: [] });
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+
+    await expect
+      .element(editorScreen.loadError())
+      .toHaveTextContent('Couldn’t convert this post for editing.');
+    await expect(editorScreen.body()).toHaveCount(0);
+  });
+
+  it('shows an error instead of an empty body when the conversion fails', async () => {
+    fakeEditorPost({ title: 'Legacy post', mobiledoc: MOBILEDOC, lexical: null });
+    fakeAdminEndpoint(
+      'PUT',
+      new RegExp(`^/posts/${POST_ID}/\\?`),
+      { errors: [{ message: 'Invalid mobiledoc structure.' }] },
+      { status: 422 },
+    );
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+
+    await expect
+      .element(editorScreen.loadError())
+      .toHaveTextContent('Couldn’t convert this post for editing.');
+    await expect(editorScreen.body()).toHaveCount(0);
+  });
+
+  it('shows the load error when the post cannot be read, and opens it on retry', async () => {
+    fakeEditorChrome();
+    fakeAdminEndpoint(
+      'GET',
+      new RegExp(`^/posts/${POST_ID}/\\?`),
+      { errors: [{ type: 'InternalServerError', message: 'Boom' }] },
+      { status: 500 },
+    );
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+
+    await expect.element(editorScreen.loadError()).toHaveTextContent('Couldn’t load this post.');
+    await expect(editorScreen.body()).toHaveCount(0);
+
+    // A later handler for the same route wins: the retried read finds the post.
+    fakeAdminEndpoint('GET', new RegExp(`^/posts/${POST_ID}/\\?`), {
+      posts: [post({ id: POST_ID, lexical: buildLexicalParagraph('Hello from React') })],
+    });
+    await editorScreen.retryLoad().click();
+
+    await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
+    await expect(editorScreen.loadError()).toHaveCount(0);
+  });
+
+  it('shows the load error when the site cannot be read, and opens the editor on retry', async () => {
+    fakeEditorChrome();
+    await renderAdminApp('/editor/post', {
+      ...FLAG_ON,
+      boot: {
+        browseSite: {
+          response: { errors: [{ type: 'NotFoundError', message: 'Not found.' }] },
+          responseStatus: 404,
+        },
+      },
+    });
+
+    await expect.element(editorScreen.loadError()).toHaveTextContent('Couldn’t load the editor.');
+    await expect(editorScreen.titleInput()).toHaveCount(0);
+
+    // A later handler for the same route wins: the retried read finds the site.
+    fakeAdminEndpoint('GET', '/site/', siteResponse());
+    await editorScreen.retryLoad().click();
+
+    await expect.element(editorScreen.titleInput()).toBeVisible();
+    await expect(editorScreen.loadError()).toHaveCount(0);
+  });
+
+  it('shows a 404 for a post that does not exist', async () => {
+    fakeEditorChrome();
+    fakeAdminEndpoint(
+      'GET',
+      new RegExp(`^/posts/${POST_ID}/\\?`),
+      { errors: [{ message: 'Post not found.' }] },
+      { status: 404 },
+    );
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+
+    await expect.element(editorScreen.notFound()).toBeVisible();
+  });
+
+  it('shows a 404 for an unknown editor type', async () => {
+    await renderAdminApp('/editor/article/abc123', FLAG_ON);
+
+    await expect.element(editorScreen.notFound()).toBeVisible();
+  });
+
+  type Role = 'Author' | 'Contributor';
+  type Status = ReturnType<typeof post>['status'];
+
+  it.each<[string, Role, 'post' | 'page', Status, string, string]>([
+    ['author', 'Author', 'post', 'published', 'other-user', '/posts'],
+    ['contributor', 'Contributor', 'post', 'draft', 'other-user', '/posts'],
+    ['contributor', 'Contributor', 'page', 'published', CURRENT_USER_ID, '/pages'],
+  ])(
+    'returns a %s to the list for a %s %s they cannot edit',
+    async (_role, role, type, status, authorId, listPath) => {
+      fakeEditorChrome();
+      // The list the redirect lands on.
+      fakePages([]);
+      fakeAdminEndpoint('GET', new RegExp(`^/${type}s/${POST_ID}/\\?`), {
+        [`${type}s`]: [
+          post({
+            id: POST_ID,
+            status,
+            authors: [{ id: authorId }],
+            mobiledoc: MOBILEDOC,
+            lexical: null,
+          }),
+        ],
+      });
+      await renderAdminApp(`/editor/${type}/${POST_ID}`, bootAs(role));
+
+      // a mobiledoc record must not be converted for a user who is redirected;
+      // the PUT has no fake, so it would 418 and fail the test
+      await expect.poll(currentRoute).toBe(listPath);
+      await expect(editorScreen.root()).toHaveCount(0);
+    },
+  );
+
+  it.each<[string, Role, Status]>([
+    ['author', 'Author', 'published'],
+    ['contributor', 'Contributor', 'draft'],
+  ])('lets a %s edit their own %s post', async (_role, role, status) => {
+    fakeEditorPost({ status, authors: [{ id: CURRENT_USER_ID }] });
+    await renderAdminApp(`/editor/post/${POST_ID}`, bootAs(role));
+
+    await expect.element(editorScreen.titleInput()).toHaveValue('Hello from React');
+    expect(currentRoute()).toBe(`/editor/post/${POST_ID}`);
+  });
+
+  it('opens an empty editor for a new post', async () => {
+    fakeEditorChrome();
+    await renderAdminApp('/editor/post', FLAG_ON);
+
+    await expect.element(editorScreen.titleInput()).toHaveValue('');
+    await expect.element(editorScreen.titleInput()).toHaveAttribute('placeholder', 'Post title');
+    await expect.element(editorScreen.body()).toBeVisible();
+    await expect.element(editorScreen.wordCount()).toHaveTextContent('0 words');
+  });
+
+  it('labels a new page as a page', async () => {
+    fakeEditorChrome();
+    await renderAdminApp('/editor/page', FLAG_ON);
+
+    await expect.element(editorScreen.titleInput()).toHaveAttribute('placeholder', 'Page title');
+    await expect.element(editorScreen.backLink('page')).toHaveAttribute('href', '#/pages');
+  });
+
+  it('sends the bare editor URL to a new post', async () => {
+    fakeEditorChrome();
+    await renderAdminApp('/editor', FLAG_ON);
+
+    await expect.poll(currentRoute).toBe('/editor/post');
+    await expect.element(editorScreen.titleInput()).toHaveAttribute('placeholder', 'Post title');
+  });
+});
+
+describe('Post editor email size warning', () => {
+  /** Waits past the email size check's debounce, so a check the editor should not make has gone out. */
+  async function editorSettled() {
+    await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
+    await new Promise((resolve) => {
+      setTimeout(resolve, EMAIL_SIZE_REFETCH_DEBOUNCE_MS + 100);
+    });
+  }
+
+  it('flags a post whose email would be clipped, with its size on click', async () => {
+    fakeEditorPost();
+    const previewApi = fakeEmailPreview(OVER_EMAIL_LIMIT);
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+
+    await expect.element(editorScreen.emailSizeWarning()).toBeVisible();
+    expect(new URL(previewApi.lastRequest?.url ?? '').search).toBe('');
+
+    await expect
+      .element(editorScreen.emailSizeWarning())
+      .toHaveAccessibleName('Looks like this is a long post: 150kB');
+    await editorScreen.emailSizeWarning().click();
+    await expect.element(editorScreen.emailSizeDetails()).toBeVisible();
+    await expect
+      .element(editorScreen.emailSizeDetails())
+      .toHaveTextContent('Looks like this is a long post');
+    await expect
+      .element(editorScreen.emailSizeDetails())
+      .toHaveTextContent(
+        'Emails may get clipped in the inbox behind a "View entire message" link when they\'re over 100kB.',
+      );
+    await expect.element(editorScreen.emailSizeDetails()).toHaveTextContent("You've used: 150kB");
+  });
+
+  it('leaves a post whose email fits unflagged', async () => {
+    fakeEditorPost();
+    const previewApi = fakeEmailPreview(99 * 1024);
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+
+    await editorSettled();
+    await expect.poll(() => previewApi.requests.length).toBe(1);
+    await expect(editorScreen.emailSizeWarning()).toHaveCount(0);
+  });
+
+  it.each<[string, Partial<ReturnType<typeof post>>]>([
+    ['a published post', { status: 'published', published_at: '2026-01-01T00:00:00.000Z' }],
+    [
+      'a post that has been emailed',
+      { email: { id: 'email-1', status: 'submitted', email_count: 20, opened_count: 0 } },
+    ],
+    ['an email-only post', { status: 'scheduled', email_only: true }],
+  ])('does not check %s', async (_case, overrides) => {
+    fakeEditorPost(overrides);
+    const previewApi = fakeEmailPreview(OVER_EMAIL_LIMIT);
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+
+    await editorSettled();
+    await expect(editorScreen.emailSizeWarning()).toHaveCount(0);
+    expect(previewApi.requests).toHaveLength(0);
+  });
+
+  it('does not check a page', async () => {
+    fakeEditorChrome();
+    fakeAdminEndpoint('GET', new RegExp(`^/pages/${POST_ID}/\\?`), {
+      pages: [post({ id: POST_ID, lexical: buildLexicalParagraph('Hello from React') })],
+    });
+    const previewApi = fakeEmailPreview(OVER_EMAIL_LIMIT);
+    await renderAdminApp(`/editor/page/${POST_ID}`, FLAG_ON);
+
+    await editorSettled();
+    await expect(editorScreen.emailSizeWarning()).toHaveCount(0);
+    expect(previewApi.requests).toHaveLength(0);
+  });
+
+  it('does not check a post when newsletters are disabled', async () => {
+    fakeEditorPost();
+    const previewApi = fakeEmailPreview(OVER_EMAIL_LIMIT);
+    await renderAdminApp(`/editor/post/${POST_ID}`, {
+      ...FLAG_ON,
+      boot: {
+        browseSettings: {
+          response: settingsResponse({
+            settings: { editor_default_email_recipients: 'disabled' },
+          }),
+        },
+      },
+    });
+
+    await editorSettled();
+    await expect(editorScreen.emailSizeWarning()).toHaveCount(0);
+    expect(previewApi.requests).toHaveLength(0);
+  });
+
+  it('checks the email again once a new version is saved', async () => {
+    fakeEditorChrome();
+    const saveApi = fakeSavablePost({
+      lexical: buildLexicalParagraph('Hello from React'),
+    });
+    const firstCheck = fakeEmailPreview();
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave(FLAG_ON));
+
+    // The preview needs the loaded post; starting its poll during boot uses up
+    // the assertion window before the editor can issue the request under load.
+    await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
+    await expect.poll(() => firstCheck.requests.length).toBe(1);
+    const secondCheck = fakeEmailPreview(OVER_EMAIL_LIMIT);
+    await editorScreen.body().click();
+    await userEvent.keyboard('{End} and more');
+    await userEvent.keyboard('{Meta>}s{/Meta}');
+
+    await expect.poll(() => saveApi.requests.length).toBe(1);
+    await expect.element(editorScreen.emailSizeWarning()).toBeVisible();
+    expect(secondCheck.requests).toHaveLength(1);
+    expect(firstCheck.requests).toHaveLength(1);
+  });
+});

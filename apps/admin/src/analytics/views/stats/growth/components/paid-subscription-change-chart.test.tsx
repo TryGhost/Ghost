@@ -4,12 +4,11 @@ import { render, screen } from '@testing-library/react';
 
 import PaidMembersChangeChart from '@/analytics/views/stats/growth/components/paid-subscription-change-chart';
 
-// Mock dependencies from @tryghost/shade/app
-vi.mock('@tryghost/shade/app', async () => {
-  const actual = await vi.importActual('@tryghost/shade/app');
+// Mock the date-range helper the chart derives its window from
+vi.mock('@/shared/analytics/chart-helpers', async () => {
+  const actual = await vi.importActual('@/shared/analytics/chart-helpers');
   return {
     ...actual,
-    formatDisplayDateWithRange: vi.fn((date: string) => `Formatted: ${date}`),
     getRangeDates: vi.fn(() => ({
       startDate: moment('2024-01-01'),
       endDate: moment('2024-01-31'),
@@ -22,6 +21,7 @@ vi.mock('@tryghost/shade/utils', async () => {
   const actual = await vi.importActual('@tryghost/shade/utils');
   return {
     ...actual,
+    formatDisplayDateWithRange: vi.fn((date: string) => `Formatted: ${date}`),
     formatNumber: vi.fn((value: number) => value.toString()),
   };
 });

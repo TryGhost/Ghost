@@ -1,15 +1,13 @@
 // Framework
 export type { StatsConfig, TopLevelFrameworkProps } from './providers/framework-provider';
-export { FrameworkProvider, useFramework } from './providers/framework-provider';
-
-// App Context
-export type { AppSettings, AppContextType } from './providers/app-provider';
 export {
-  AppContext,
-  AppProvider,
-  useAppContext,
-  useWebAnalyticsEnabled,
-} from './providers/app-provider';
+  FrameworkProvider,
+  defaultUnsplashConfig,
+  useFramework,
+} from './providers/framework-provider';
+
+// Settings selectors
+export { useWebAnalyticsEnabled } from './api/settings';
 
 // Hooks
 export { useActiveVisitors } from './hooks/use-active-visitors';
@@ -26,6 +24,11 @@ export { useKoenigFileUpload, koenigFileUploadTypes } from './hooks/use-koenig-f
 export { useKoenigFetchEmbed } from './hooks/use-koenig-fetch-embed';
 export { useKoenigLinkSuggestions } from './hooks/use-koenig-link-suggestions';
 export { useFeaturebase } from './hooks/use-featurebase';
+export { useDocsBot } from './hooks/use-docsbot';
+
+// API status
+export { onUpgradeStatus } from './utils/api/upgrade-status';
+export type { UpgradeStatus } from './utils/api/upgrade-status';
 
 // Analytics utilities
 export { trackEvent, trackFilterApplications } from './utils/analytics';
@@ -54,6 +57,19 @@ export {
 } from './utils/post-helpers';
 export { focusKoenigEditorOnBottomClick } from './utils/focus-koenig-editor-on-bottom-click';
 
+// Recipient filter utilities
+export {
+  EVERYONE_RECIPIENT_FILTER,
+  FREE_SEGMENT,
+  PAID_SEGMENT,
+  buildRecipientFilter,
+  getFullRecipientFilter,
+  getNewsletterRecipientFilter,
+  getRecipientType,
+  parseRecipientFilter,
+} from './utils/recipient-filter';
+export type { RecipientFilterSegments, RecipientType } from './utils/recipient-filter';
+
 // Source utilities
 export {
   getFaviconDomain,
@@ -68,10 +84,16 @@ export type { NavigateOptions } from './providers/router-provider';
 export type AdminRouteHandle = {
   allowInForceUpgrade?: boolean;
   hideAdminSidebar?: boolean;
+  /** Marks a full-screen surface: navigating into or out of it runs a screen transition. */
+  screenTransition?: boolean;
+  settingsSidebar?: boolean;
 };
+export type { ViewTransitionController } from './providers/router-provider';
 export {
+  Link,
   RouterProvider,
   useNavigate,
+  ViewTransitionControllerProvider,
   useRouteHasParams,
   resetScrollPosition,
   ScrollRestoration,
@@ -79,7 +101,7 @@ export {
 } from './providers/router-provider';
 export { useNavigationStack } from './providers/navigation-stack-provider';
 export {
-  Link,
+  NavigationType,
   Outlet,
   useBlocker,
   useLocation,
@@ -90,7 +112,9 @@ export {
   matchRoutes,
   useMatch,
   useMatches,
+  useViewTransitionState,
 } from 'react-router';
+export type { BlockerFunction } from 'react-router';
 
 // Lazy component loader
 export { lazyComponent } from './utils/lazy-component';

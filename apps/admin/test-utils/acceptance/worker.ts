@@ -36,6 +36,13 @@ const EXTERNAL_URL_BLOCKLIST: Array<{ pattern: string; isMatch: (url: string) =>
   },
   // Tinybird pipes (analytics); declare per test with fakeTinybirdPipe (tinybird.ts)
   { pattern: `${TINYBIRD_ORIGIN}/*`, isMatch: (url) => url.startsWith(`${TINYBIRD_ORIGIN}/`) },
+  // Private-site login on any site origin (src/hooks/use-private-site-login.ts)
+  { pattern: '*/private/', isMatch: (url) => new URL(url).pathname.endsWith('/private/') },
+  // Sentry ingest (src/sentry), reached only when a spec serves a DSN on /site/
+  {
+    pattern: 'https://*.sentry.io/*',
+    isMatch: (url) => new URL(url).hostname.endsWith('.sentry.io'),
+  },
 ];
 
 // Per-test preview URLs are arbitrary site origins, so they cannot live in
@@ -113,15 +120,101 @@ export function verifyNoUnhandledRequests(): void {
   }
 }
 
-// In-flight ledger (requestId → "METHOD path") for requests the worker owns;
-// drained in afterEach so stragglers can't cross test boundaries.
+// In-flight ledger (key → "METHOD path") for requests the worker owns;
+// drained in afterEach so stragglers can't cross test boundaries. MSW only
+// hears of a request once the service worker has relayed it, so the page also
+// records each request from the moment it issues one (trackIssuedRequests) —
+// otherwise a request still inside the service worker slips past the drain
+// and lands in the next test.
 const inFlightRequests = new Map<string, string>();
+
+function describeRequest(method: string, url: string): string {
+  const path = ADMIN_API_PATTERN.test(url) ? toAdminApiPath(url) : url;
+  return `${method.toUpperCase()} ${path}`;
+}
+
+let issuedRequestCount = 0;
+
+/** Records a request the page issues, until the returned callback settles it. */
+function recordIssuedRequest(method: string, url: string): () => void {
+  if (!isTrackedUrl(url)) {
+    return () => {};
+  }
+  issuedRequestCount += 1;
+  const key = `issued:${issuedRequestCount}`;
+  inFlightRequests.set(key, describeRequest(method, url));
+  return () => {
+    inFlightRequests.delete(key);
+  };
+}
+
+function absoluteUrl(url: string | URL): string | undefined {
+  try {
+    return new URL(url, document.baseURI).href;
+  } catch {
+    return undefined;
+  }
+}
+
+let issuedRequestsTracked = false;
+
+/**
+ * Wraps fetch and XHR (the framework's upload path, for progress) so the
+ * ledger sees each request from the call. Install before any spec module
+ * loads, so nothing holds the unwrapped fetch.
+ */
+export function trackIssuedRequests(): void {
+  if (issuedRequestsTracked) {
+    return;
+  }
+  issuedRequestsTracked = true;
+
+  const originalFetch = window.fetch.bind(window);
+  window.fetch = (input: RequestInfo | URL, init?: RequestInit) => {
+    const url = input instanceof Request ? input.url : absoluteUrl(input);
+    const method = init?.method ?? (input instanceof Request ? input.method : 'GET');
+    const settle = url ? recordIssuedRequest(method, url) : () => {};
+    try {
+      return originalFetch(input, init).finally(settle);
+    } catch (error) {
+      settle();
+      throw error;
+    }
+  };
+
+  // Unbound on purpose: each is re-applied to the request instance it wraps.
+  // eslint-disable-next-line @typescript-eslint/unbound-method
+  const { open, send } = XMLHttpRequest.prototype;
+  const opened = new WeakMap<XMLHttpRequest, { method: string; url: string | undefined }>();
+  XMLHttpRequest.prototype.open = function (
+    this: XMLHttpRequest,
+    method: string,
+    url: string | URL,
+    ...rest: unknown[]
+  ) {
+    opened.set(this, { method, url: absoluteUrl(url) });
+    Reflect.apply(open, this, [method, url, ...rest]);
+  };
+  XMLHttpRequest.prototype.send = function (
+    this: XMLHttpRequest,
+    body?: Document | XMLHttpRequestBodyInit | null,
+  ) {
+    const request = opened.get(this);
+    const settle = request?.url ? recordIssuedRequest(request.method, request.url) : () => {};
+    this.addEventListener('loadend', settle, { once: true });
+    try {
+      send.call(this, body);
+    } catch (error) {
+      settle();
+      throw error;
+    }
+  };
+}
 
 function trackInFlightRequests(worker: SetupWorker): void {
   worker.events.on('request:start', ({ request, requestId }) => {
     if (isTrackedUrl(request.url)) {
-      const path = ADMIN_API_PATTERN.test(request.url) ? toAdminApiPath(request.url) : request.url;
-      inFlightRequests.set(requestId, `${request.method} ${path}`);
+      inFlightRequests.set(requestId, describeRequest(request.method, request.url));
     }
   });
   // msw 2.x emits "request:end" for completed requests but only
@@ -150,7 +243,12 @@ function sleep(ms: number): Promise<void> {
   });
 }
 
-/** Resolves once no tracked request has been in flight for `quietMs` continuously. */
+/**
+ * Resolves once no tracked request has been in flight for `quietMs` continuously.
+ * Teardown drains with it. A spec waits on it for every section on screen to have
+ * its data, before a gesture that the page reflowing mid-way would knock off target,
+ * such as a drag.
+ */
 export async function settleRequests({
   quietMs = 50,
   timeoutMs = 2000,
@@ -176,8 +274,9 @@ export async function settleRequests({
 
   throw new Error(
     [
-      `Request(s) still in flight ${timeoutMs}ms after the test finished:`,
-      ...[...inFlightRequests.values()].map((description) => `  - ${description}`),
+      `Request(s) still in flight after ${timeoutMs}ms:`,
+      // The page and MSW can both hold the same request.
+      ...[...new Set(inFlightRequests.values())].map((description) => `  - ${description}`),
     ].join('\n'),
   );
 }
@@ -228,8 +327,9 @@ export interface FakeEndpointOptions {
  * JSON where the request is JSON. Multipart bodies are read as an object too, keyed by field
  * name, with files reduced to their name and type — otherwise a file upload's body is invisible
  * to tests and the only assertable thing about it is that it happened. Repeated fields (labels,
- * `mapping[column]`) collect into arrays. Anything else stays undefined, including a request
- * with no body at all.
+ * `mapping[column]`) collect into arrays. A plain-text body that is not JSON (e.g. Sentry's
+ * NDJSON envelopes) is its text. Anything else stays undefined, including a request with no
+ * body at all.
  */
 async function parseRequestBody(request: Request): Promise<unknown> {
   const contentType = request.headers.get('content-type') ?? '';
@@ -241,7 +341,10 @@ async function parseRequestBody(request: Request): Promise<unknown> {
     try {
       return await request.clone().json();
     } catch {
-      return undefined;
+      if (!contentType.startsWith('text/plain')) {
+        return undefined;
+      }
+      return (await request.clone().text()) || undefined;
     }
   }
 
@@ -294,7 +397,7 @@ export function fakeEndpoint(
 
 export interface CapturedEndpointRequest {
   url: string;
-  /** Parsed JSON request body, or undefined when there is none. */
+  /** Parsed JSON, multipart fields, or plain text; undefined when there is no body. */
   body: unknown;
 }
 
@@ -356,8 +459,9 @@ export type FakeAdminEndpointResponse =
  * Fake one admin API endpoint that has no resource fake. `apiPath` is
  * relative to /ghost/api/admin (string = exact including the query, RegExp =
  * test). `response` may be a synchronous or async function of the captured request —
- * `({body}) => body` echoes. Returns a capture of every matched request.
- * Prefer `defineResource` for browse endpoints.
+ * `({body}) => body` echoes. A `Response`, given or returned, is served as it is, so a
+ * function can answer with a status that depends on the request. Returns a capture of
+ * every matched request. Prefer `defineResource` for browse endpoints.
  */
 export function fakeAdminEndpoint(
   method: string,
@@ -383,6 +487,11 @@ export function fakeAdminEndpoint(
 
     const responseBody: unknown =
       typeof response === 'function' ? await response(captured) : response;
+
+    if (responseBody instanceof Response) {
+      // A body can be read only once, so every request is served its own copy.
+      return responseBody.clone();
+    }
 
     if (responseBody instanceof ArrayBuffer) {
       return new HttpResponse(responseBody, {
@@ -468,11 +577,35 @@ export async function startFakeApi({
 
   trackInFlightRequests(worker);
 
-  await worker.start({
-    serviceWorker: { url: '/mockServiceWorker.js' },
-    onUnhandledRequest: 'bypass',
-    quiet: true,
-  });
+  // MSW stops its service worker on `beforeunload`. Nothing here ever unloads
+  // the page — vitest disposes it — so that listener buys this tier nothing,
+  // and it actively hurts: a spec reads the app's unsaved-changes guard by
+  // dispatching a synthetic `beforeunload` (see unsavedChangesGuarded), which
+  // would take the fake API down with it. Drop it as the worker registers it,
+  // then put back exactly what was there — the browser runner installs its own
+  // addEventListener, and discarding it silently breaks error reporting.
+  const installed = Object.getOwnPropertyDescriptor(window, 'addEventListener');
+  const addListener = window.addEventListener.bind(window);
+  window.addEventListener = function (type: string, ...rest: unknown[]) {
+    if (type === 'beforeunload') {
+      return;
+    }
+    (addListener as (...args: unknown[]) => void)(type, ...rest);
+  } as typeof window.addEventListener;
+
+  try {
+    await worker.start({
+      serviceWorker: { url: '/mockServiceWorker.js' },
+      onUnhandledRequest: 'bypass',
+      quiet: true,
+    });
+  } finally {
+    if (installed) {
+      Object.defineProperty(window, 'addEventListener', installed);
+    } else {
+      Reflect.deleteProperty(window, 'addEventListener');
+    }
+  }
 
   return worker;
 }

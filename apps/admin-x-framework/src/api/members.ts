@@ -1,5 +1,5 @@
 import { InfiniteData, useIsFetching, useQueryClient } from '@tanstack/react-query';
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import {
   Meta,
   createInfiniteQuery,
@@ -7,10 +7,14 @@ import {
   createQuery,
   createQueryWithId,
 } from '../utils/api/hooks';
-import { apiUrl } from '../utils/api/fetch-api';
-import type { FieldValue } from '@tryghost/custom-field-types';
+import { escapeNqlString } from '@tryghost/nql-string';
+import { apiUrl, type RequestOptions } from '../utils/api/fetch-api';
+import type { FieldValue } from '@tryghost/metafield-types';
 import { useCurrentUser } from './current-user';
 import { canManageMembers } from './users';
+import { FREE_SEGMENT, PAID_SEGMENT } from '../utils/recipient-filter';
+
+export { useBrowseMemberActivityFeed, type BrowseMemberActivityOptions } from './member-activity';
 
 export type MemberLabel = {
   id: string;
@@ -128,11 +132,11 @@ export type Member = {
   };
   last_seen_at: string | null;
   last_commented_at: string | null;
-  // Custom field values keyed by field key, present only when requested via
-  // `include=custom_fields` (behind the `membersCustomFields` flag). Values
-  // are type-dependent: string for text-backed fields, an object for
-  // composites like address — hence `unknown`; consumers narrow per field type.
-  custom_fields?: Record<string, unknown>;
+  // The custom-field values a site collects on its members, grouped by the namespace that
+  // declared each field. Optional because a site with no fields defined gets no key at all
+  // in the response, not an empty object. Values differ by field type — a string for text,
+  // an object for an address — so consumers narrow per field.
+  metafields?: Record<string, Record<string, unknown> | undefined>;
   can_comment?: boolean;
   commenting?: {
     disabled: boolean;
@@ -167,6 +171,32 @@ export const getMemberCountQueryKey = () =>
  */
 export const useMembersFetching = () => useIsFetching({ queryKey: [dataType] }) > 0;
 
+/**
+ * A member that a loaded members list already holds, to show while the
+ * member's own record loads. List rows are enough for a header, not for
+ * editing. Lives here for the same reason as `useMembersFetching`.
+ */
+export const useCachedListMember = (id: string | undefined): Member | undefined => {
+  const queryClient = useQueryClient();
+  return useMemo(() => {
+    if (!id) {
+      return undefined;
+    }
+    for (const [, data] of queryClient.getQueriesData<unknown>({ queryKey: [dataType] })) {
+      const pages = (data as InfiniteData<MembersResponseType> | undefined)?.pages ?? [
+        data as MembersResponseType | undefined,
+      ];
+      for (const page of pages) {
+        const member = page?.members?.find((item) => item.id === id);
+        if (member) {
+          return member;
+        }
+      }
+    }
+    return undefined;
+  }, [queryClient, id]);
+};
+
 export const useBrowseMembers = createQuery<MembersResponseType>({
   dataType,
   path: membersPath,
@@ -187,6 +217,203 @@ export function useMemberCount() {
   return data?.meta?.pagination.total;
 }
 
+// -----------------------------------------------------------------------------
+// Filtered member counts (email recipients)
+// -----------------------------------------------------------------------------
+
+// The Ember members-count-cache's TTL; the framework default staleTime (5min)
+// is too stale for publish-flow recipient counts.
+const MEMBERS_COUNT_STALE_TIME = 60 * 1000;
+const noOpMembersCountRefetch = () => Promise.resolve();
+
+const useBrowseMembersCountQuery = createQuery<MembersResponseType>({
+  dataType,
+  path: membersPath,
+});
+
+export interface MembersCountResult {
+  /** `null` while loading and for roles that cannot browse members. */
+  count: number | null;
+  isLoading: boolean;
+  isFetching: boolean;
+  /** Preserved for flows where an unreadable count must block a destructive action. */
+  error: unknown;
+  /** Retries the failed current-user prerequisite and/or count request. */
+  refetch: () => Promise<unknown>;
+}
+
+export interface MembersCountOptions {
+  /** Transport options for both requests this hook makes: the count and the current user. */
+  requestOptions?: Pick<RequestOptions, 'sessionExpiryRedirect'>;
+}
+
+/**
+ * Number of members matching a filter, consolidated from the Ember
+ * `members-count-cache` service + `members-count-fetcher` resource: a browse
+ * request with `limit=1` reading `meta.pagination.total`, cached per-filter
+ * for 60 seconds. As in Ember, roles that cannot manage members get
+ * `count: null` without a request and a nullish filter counts as 0 without a
+ * request. A failed request resolves to `count: null` with no error toast —
+ * an unreadable count is not a count of zero, and callers render descriptive
+ * copy for `null` rather than claiming an audience of none. While the current
+ * user is still loading the result has `count: null` and `isLoading: true`,
+ * so callers can tell it apart from a role that cannot browse members. The
+ * request error and retry are also exposed for callers such as publish limits
+ * that cannot safely treat an unreadable count as zero.
+ */
+export function useMembersCount(
+  filter: string | null | undefined,
+  { requestOptions }: MembersCountOptions = {},
+): MembersCountResult {
+  const currentUserQuery = useCurrentUser({ requestOptions });
+  const { data: currentUser } = currentUserQuery;
+  const canFetch = Boolean(currentUser && canManageMembers(currentUser));
+  const enabled = canFetch && filter !== null && filter !== undefined;
+
+  const result = useBrowseMembersCountQuery({
+    // order/page pin the same cheap, stable request shape the Ember cache used
+    searchParams: { filter: filter ?? '', order: 'id', limit: '1', page: '1' },
+    staleTime: MEMBERS_COUNT_STALE_TIME,
+    enabled,
+    defaultErrorHandler: false,
+    requestOptions,
+  });
+
+  const refetchAfterCurrentUserError = async () => {
+    const refreshedUser = await currentUserQuery.refetch();
+
+    if (
+      refreshedUser.isSuccess &&
+      refreshedUser.data &&
+      canManageMembers(refreshedUser.data) &&
+      filter !== null &&
+      filter !== undefined
+    ) {
+      return result.refetch();
+    }
+
+    return refreshedUser;
+  };
+
+  if (currentUserQuery.isError) {
+    return {
+      count: null,
+      isLoading: false,
+      isFetching: currentUserQuery.isFetching,
+      error: currentUserQuery.error,
+      refetch: refetchAfterCurrentUserError,
+    };
+  }
+
+  if (currentUser === undefined) {
+    return {
+      count: null,
+      isLoading: true,
+      isFetching: false,
+      error: null,
+      refetch: noOpMembersCountRefetch,
+    };
+  }
+
+  if (!enabled) {
+    return {
+      count: canFetch ? 0 : null,
+      isLoading: false,
+      isFetching: false,
+      error: null,
+      refetch: noOpMembersCountRefetch,
+    };
+  }
+
+  if (result.isError) {
+    return {
+      count: null,
+      isLoading: false,
+      isFetching: result.isFetching,
+      error: result.error,
+      refetch: result.refetch,
+    };
+  }
+
+  return {
+    count: result.data?.meta?.pagination.total ?? null,
+    isLoading: result.isLoading,
+    isFetching: result.isFetching,
+    error: result.error,
+    refetch: result.refetch,
+  };
+}
+
+// gh-pluralize combined toLocaleString with ember-inflector; every noun used
+// below pluralizes regularly so a trailing "s" matches its output.
+function pluralizedCount(count: number, noun: string): string {
+  return `${count.toLocaleString()} ${count === 1 ? noun : `${noun}s`}`;
+}
+
+export interface MembersCountStringOptions {
+  /**
+   * The recipient count, usually from `useMembersCount`: a number renders
+   * numeric copy; `null` (role cannot browse members) and `undefined` (not
+   * fetched) render the descriptive fallback copy instead.
+   */
+  count?: number | null;
+  /** With `hasMultipleNewsletters`, switches copy to "subscribers of <name>". */
+  newsletter?: { name: string; recipientFilter: string };
+  hasMultipleNewsletters?: boolean;
+}
+
+/**
+ * Human-readable copy for a recipient count, ported from the Ember
+ * `members-count-cache#countString` (which fetched the count itself; this
+ * pure port takes it from `useMembersCount`, which matches its semantics).
+ */
+export function membersCountString(
+  filter: string = '',
+  { count, newsletter, hasMultipleNewsletters = false }: MembersCountStringOptions = {},
+): string {
+  const nounSingular = newsletter && hasMultipleNewsletters ? 'subscriber' : 'member';
+  const nounPlural = `${nounSingular}s`;
+  const suffix = newsletter && hasMultipleNewsletters ? ` of ${newsletter.name}` : '';
+
+  // Strips the newsletter scope composed by getFullRecipientFilter to get back
+  // the user-selected segment; a plain comma split like the Ember original.
+  const basicFilter = newsletter
+    ? filter.replace(newsletter.recipientFilter, '').replace(/^\+\((.*)\)$/, '$1')
+    : filter;
+  const filterParts = basicFilter.split(',');
+  const isFree = filterParts.length === 1 && filterParts[0] === FREE_SEGMENT;
+  const isPaid = filterParts.length === 1 && filterParts[0] === PAID_SEGMENT;
+  const isAll =
+    !filter || (filterParts.includes(FREE_SEGMENT) && filterParts.includes(PAID_SEGMENT));
+
+  // Ember reserved this copy for plain Editors and fetched a count for every
+  // other role on the spot; a pure function can't fetch, so an absent count —
+  // whatever the role — gets the descriptive copy rather than a bogus "0".
+  if (count === undefined || count === null) {
+    if (isFree) {
+      return `all free ${nounPlural}${suffix}`;
+    }
+    if (isPaid) {
+      return `all paid ${nounPlural}${suffix}`;
+    }
+    if (isAll) {
+      return `all ${nounPlural}${suffix}`;
+    }
+
+    return 'a custom members segment';
+  }
+
+  if (isFree) {
+    return pluralizedCount(count, `free ${nounSingular}`) + suffix;
+  }
+
+  if (isPaid) {
+    return pluralizedCount(count, `paid ${nounSingular}`) + suffix;
+  }
+
+  return pluralizedCount(count, nounSingular) + suffix;
+}
+
 export type NewMember = {
   email: string;
   name?: string | null;
@@ -195,9 +422,8 @@ export type NewMember = {
   labels?: Array<{ name: string; slug?: string }>;
   // Explicit initial subscription set. When omitted, the server falls back
   // to `subscribe_on_signup:true + visibility:members` newsletters
-  // (`member-repository.js:460-464`). The Ember admin sends the same set
-  // explicitly so the outcome doesn't drift if the server-side default
-  // ever changes; the React admin now matches.
+  // (`member-repository.js:460-464`). Sent explicitly so the outcome doesn't
+  // drift if the server-side default ever changes.
   newsletters?: Array<{ id: string }>;
 };
 
@@ -287,10 +513,12 @@ export const useImportMembers = createMutation<ImportMembersResponseType, Import
   retry: false,
   path: () => '/members/upload/',
   body: buildImportMembersFormData,
-  invalidateQueries: { dataType },
+  // An import can create labels as well as members. Refresh labels too, or the new
+  // ones stay hidden on the member's screen.
+  invalidateQueries: { dataType: [dataType, 'LabelsResponseType'] },
 });
 
-export const getMember = createQueryWithId<MembersResponseType>({
+export const useMember = createQueryWithId<MembersResponseType>({
   dataType,
   path: (id) => `/members/${id}/`,
 });
@@ -543,19 +771,16 @@ export interface EditMemberData {
   labels?: Array<{ name: string; slug?: string }>;
   newsletters?: Array<{ id: string }>;
   tiers?: Array<{ id: string; expiry_at?: string | null }>;
-  // Merge semantics: only the keys present are written; `null` clears a
-  // value. The value union is derived from the shared schemas, so a field type
-  // added there is writable here without this line being edited. Requires the
-  // `membersCustomFields` flag server-side.
-  custom_fields?: Record<string, FieldValue | null>;
+  // The server applies this as a merge: only the keys present are written, and `null` clears
+  // a value. Every key is checked against the fields the site has defined; naming one that
+  // does not exist rejects the edit rather than being ignored.
+  metafields?: Record<string, Record<string, FieldValue | null>>;
 }
 
 export const useEditMember = createMutation<MembersResponseType, EditMemberData>({
   method: 'PUT',
   path: ({ id }) => `/members/${id}/`,
-  // `custom_fields` is asked back only when the payload writes it, so the
-  // request stays valid on sites where the flag (and the include) is off.
-  searchParams: (payload) => ({ include: payload.custom_fields ? 'tiers,custom_fields' : 'tiers' }),
+  searchParams: () => ({ include: 'tiers,metafields' }),
   body: ({ id, ...rest }) => ({ members: [{ id, ...rest }] }),
   invalidateQueries: { dataType },
 });
@@ -575,7 +800,7 @@ export interface MemberSigninUrlResponseType {
 // The Admin API wraps the controller payload in the `member_signin_urls` array
 // envelope (see `member-signin-urls.js` + framework serializer). Unwrap here so
 // consumers get the flat `{member_id, url}` object they actually want.
-export const getMemberSigninUrl = createQueryWithId<MemberSigninUrlResponseType>({
+export const useMemberSigninUrl = createQueryWithId<MemberSigninUrlResponseType>({
   dataType: 'MemberSigninUrlResponseType',
   path: (id) => `/members/${id}/signin_urls/`,
   returnData: (originalData) => {
@@ -662,11 +887,11 @@ const MEMBER_ACTIVITY_LIMIT = '20';
 // last event of the previous page (events are ordered created_at desc).
 //
 // KNOWN LIMITATION: the cursor is `created_at`-only, without the id tie-breaker
-// Ember's version added (`+id:<'<lastId>'`). Two events emitted in the same
+// required for reliable pagination. Two events emitted in the same
 // second on a page boundary can be skipped from the paginated list. The current
 // consumer (`MemberActivityFeed` in `apps/admin`) only fetches 5 events and
-// never calls `fetchNextPage`, so this is not exploitable today; add an id
-// secondary cursor before another screen starts paginating.
+// never calls `fetchNextPage`. Paginated consumers must use
+// useBrowseMemberActivityFeed, which drains timestamp boundaries by event type.
 function memberEventsCursor(events: MemberActivityEvent[]): string | undefined {
   const createdAt = events[events.length - 1]?.data?.created_at;
   if (!createdAt) {
@@ -675,8 +900,15 @@ function memberEventsCursor(events: MemberActivityEvent[]): string | undefined {
   return new Date(createdAt).toISOString().slice(0, 19).replace('T', ' ');
 }
 
-function buildMemberEventsFilter(memberId: string): string {
-  return `data.member_id:'${memberId}'`;
+// The same exclusion the full activity page sends, so the preview and the page leave out
+// the same events.
+function buildMemberEventsFilter(memberId: string, excludedEvents: string[]): string {
+  return [
+    excludedEvents.length > 0 && `type:-[${excludedEvents.map(escapeNqlString).join(',')}]`,
+    `data.member_id:'${memberId}'`,
+  ]
+    .filter(Boolean)
+    .join('+');
 }
 
 const useMemberActivityFeedQuery = createInfiniteQuery<MemberActivityFeedInfiniteResponseType>({
@@ -717,12 +949,12 @@ const useMemberActivityFeedQuery = createInfiniteQuery<MemberActivityFeedInfinit
 
 export function useMemberActivityFeed(
   memberId: string,
-  options: { enabled?: boolean; limit?: string } = {},
+  options: { enabled?: boolean; limit?: string; excludedEvents?: string[] } = {},
 ) {
-  const { limit = MEMBER_ACTIVITY_LIMIT, enabled } = options;
+  const { limit = MEMBER_ACTIVITY_LIMIT, enabled, excludedEvents = [] } = options;
   return useMemberActivityFeedQuery({
     searchParams: {
-      filter: buildMemberEventsFilter(memberId),
+      filter: buildMemberEventsFilter(memberId, excludedEvents),
       limit,
     },
     ...(enabled !== undefined ? { enabled } : {}),

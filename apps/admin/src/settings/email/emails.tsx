@@ -27,7 +27,7 @@ import {
   TabsTrigger,
 } from '@tryghost/shade/components';
 import { LucideIcon } from '@tryghost/shade/utils';
-import { getSettingValues } from '@tryghost/admin-x-framework/api/settings';
+import { useNewslettersEnabled } from '@tryghost/admin-x-framework/api/settings';
 import { useConfirmation } from '@/settings/providers/confirmation-context';
 import { useGlobalData } from '@/settings/providers/global-data-context';
 import { useHandleError } from '@tryghost/admin-x-framework/hooks';
@@ -191,7 +191,7 @@ const EmailsGroup: React.FC<{ keywords: string[]; newslettersEnabled: boolean }>
         variant="underline"
         onValueChange={(value) => setSelectedTab(value as 'newsletters' | 'transactional')}
       >
-        <div className="flex items-center justify-between border-b border-grey-200 dark:border-grey-900">
+        <div className="flex items-center justify-between border-b border-gray-200 dark:border-gray-900">
           <TabsList className="border-b-0">
             {newslettersEnabled && <TabsTrigger value="newsletters">Newsletters</TabsTrigger>}
             <TabsTrigger value="transactional">Automation emails</TabsTrigger>
@@ -228,11 +228,8 @@ const EmailsGroup: React.FC<{ keywords: string[]; newslettersEnabled: boolean }>
 };
 
 const Emails: React.FC = () => {
-  const { settings, config } = useGlobalData();
-  const [newslettersEnabled] = getSettingValues(settings, ['editor_default_email_recipients']) as [
-    string,
-  ];
-  const hasNewslettersEnabled = newslettersEnabled !== 'disabled';
+  const { config } = useGlobalData();
+  const hasNewslettersEnabled = useNewslettersEnabled() === true;
   const hasMailgun = hasNewslettersEnabled && !config.mailgunIsConfigured;
   const visibleSearchKeywords = [
     searchKeywords.enableNewsletters,

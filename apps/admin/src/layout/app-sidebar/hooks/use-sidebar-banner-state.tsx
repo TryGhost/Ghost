@@ -1,9 +1,9 @@
 import type { ReactNode } from 'react';
 
-import { useSidebarVisibility } from '@/ember-bridge/ember-bridge';
 import ThemeErrorsBanner from '@/layout/app-sidebar/theme-errors-banner';
 import UpgradeBanner from '@/layout/app-sidebar/upgrade-banner';
-import WhatsNewBanner from '@/whats-new/components/whats-new-banner';
+import { useAdminSidebarVisibility } from '@/layout/sidebar-visibility';
+import { WhatsNewBanner } from '@/whats-new/api';
 
 import { useUpgradeStatus } from './use-upgrade-status';
 import { useWhatsNewStatus } from './use-whats-new-status';
@@ -19,7 +19,7 @@ export function useSidebarBannerState(): SidebarBannerState {
   const { hasErrors } = useActiveThemeErrors();
   const { showUpgradeBanner, trialDaysRemaining } = useUpgradeStatus();
   const { showWhatsNewBanner } = useWhatsNewStatus();
-  const sidebarVisible = useSidebarVisibility();
+  const sidebarVisible = useAdminSidebarVisibility();
 
   if (!sidebarVisible) {
     return {

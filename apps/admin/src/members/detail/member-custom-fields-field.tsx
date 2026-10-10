@@ -3,6 +3,10 @@ import {
   Button,
   Card,
   CardContent,
+  Combobox,
+  ComboboxContent,
+  ComboboxTrigger,
+  ComboboxValue,
   Dialog,
   DialogContent,
   DialogFooter,
@@ -11,9 +15,10 @@ import {
   Input,
   Label,
   LoadingIndicator,
+  MultiSelectCombobox,
   Textarea,
 } from '@tryghost/shade/components';
-import { LucideIcon } from '@tryghost/shade/utils';
+import { LucideIcon, cn } from '@tryghost/shade/utils';
 import { dequal } from 'dequal';
 import {
   ADDRESS_PARTS,
@@ -25,19 +30,17 @@ import {
 import { toast } from 'sonner';
 import {
   formatMemberCustomFieldValue,
-  useBrowseMemberCustomFields,
   userTypeForField,
 } from '@tryghost/admin-x-framework/api/member-custom-fields';
+import { useCustomFieldDefinitions } from '@/shared/member-custom-fields/use-definitions';
+import { countryName, countryOptions } from '@tryghost/admin-x-framework/utils/countries';
 import { useEditMember } from '@tryghost/admin-x-framework/api/members';
 import type { EditableAddressValue, EditableCustomFieldValue } from './member-detail-edit';
 import type { MemberCustomField } from '@tryghost/admin-x-framework/api/member-custom-fields';
 
 interface MemberCustomFieldsFieldProps {
   memberId: string;
-  // The member's saved values (`member.custom_fields` from the read), keyed
-  // by field key. Server truth — edits never live on the page draft; each
-  // field saves individually through its own editor.
-  customFields: Record<string, unknown> | undefined;
+  metafields: Record<string, Record<string, unknown> | undefined> | undefined;
   disabled?: boolean;
 }
 
@@ -52,10 +55,49 @@ const ErrorMessage: React.FC<{ message?: string }> = ({ message }) => {
   ) : null;
 };
 
-// The address composite: one input per sub-field, paired into a two-column
-// sub-grid. Country is a plain two-letter code input for now; the shared
-// AddressValue schema only shape-checks it, and a proper country select is a
-// follow-up.
+// The country part of an address: picked from the countries an address may name, so what
+// staff record is a code the rest of Ghost recognises.
+const CountryInput: React.FC<{
+  id: string;
+  label: string;
+  value?: string;
+  invalid?: boolean;
+  disabled?: boolean;
+  onChange: (code: string) => void;
+}> = ({ id, label, value, invalid, disabled, onChange }) => {
+  const [open, setOpen] = React.useState(false);
+  return (
+    // Modal, as the import field picker is: inside a dialog, only a modal popover's
+    // list can be scrolled.
+    <Combobox open={open} modal onOpenChange={setOpen}>
+      <ComboboxTrigger
+        aria-invalid={invalid || undefined}
+        aria-label={label}
+        disabled={disabled}
+        id={id}
+      >
+        <ComboboxValue placeholder={!value}>
+          {value ? countryName(value) : 'Select...'}
+        </ComboboxValue>
+      </ComboboxTrigger>
+      <ComboboxContent>
+        <MultiSelectCombobox
+          i18n={{ searchPlaceholder: 'Search countries...' }}
+          isMultiSelect={false}
+          options={countryOptions(value)}
+          values={value ? [value] : []}
+          autoCloseOnSelect
+          onChange={(values) => onChange(values[0] ?? '')}
+          onClose={() => setOpen(false)}
+        />
+      </ComboboxContent>
+    </Combobox>
+  );
+};
+
+// The address composite: one input per sub-field in a two-column sub-grid. The
+// street lines take a full row, since they are the long parts, and the short
+// parts pair up, the same way Portal's account settings lay an address out.
 const AddressInput: React.FC<{
   inputId: string;
   value: EditableAddressValue;
@@ -66,19 +108,36 @@ const AddressInput: React.FC<{
 }> = ({ inputId, value, errors, disabled, onChange }) => {
   return (
     <div className="grid gap-x-4 gap-y-3 md:grid-cols-2">
-      {ADDRESS_PARTS.map(({ key: subfield, label }) => {
+      {ADDRESS_PARTS.map(({ key: subfield, label, type }) => {
         const subfieldId = `${inputId}-${subfield}`;
         const error = errors?.[subfield];
         return (
-          <div key={subfield} className="flex flex-col gap-1.5">
+          <div
+            key={subfield}
+            className={cn(
+              'flex flex-col gap-1.5',
+              (subfield === 'line1' || subfield === 'line2') && 'md:col-span-2',
+            )}
+          >
             <Label htmlFor={subfieldId}>{label}</Label>
-            <Input
-              aria-invalid={error ? true : undefined}
-              disabled={disabled}
-              id={subfieldId}
-              value={value[subfield] ?? ''}
-              onChange={(e) => onChange({ ...value, [subfield]: e.target.value })}
-            />
+            {type === 'country_code' ? (
+              <CountryInput
+                disabled={disabled}
+                id={subfieldId}
+                invalid={Boolean(error)}
+                label={label}
+                value={value[subfield]}
+                onChange={(code) => onChange({ ...value, [subfield]: code })}
+              />
+            ) : (
+              <Input
+                aria-invalid={error ? true : undefined}
+                disabled={disabled}
+                id={subfieldId}
+                value={value[subfield] ?? ''}
+                onChange={(e) => onChange({ ...value, [subfield]: e.target.value })}
+              />
+            )}
             <ErrorMessage message={error} />
           </div>
         );
@@ -119,8 +178,7 @@ const CustomFieldInput: React.FC<{
         />
       );
     case 'textarea':
-      // max-w-full: Ember's unlayered global CSS sets `textarea { max-width: 500px }`
-      // (ghost/admin patterns/forms.css) and it bleeds into the React island.
+      // max-w-full: Admin's element styles cap textareas at 500px.
       return (
         <Textarea
           aria-invalid={fieldError ? true : undefined}
@@ -174,7 +232,9 @@ const MemberCustomFieldEditModal: React.FC<{
   // Strip this field's key prefix so the input sees '' / 'subfield' keys.
   const inputErrors = Object.fromEntries(
     Object.entries(errors).map(([key, message]) => [
-      key === field.key ? '' : key.slice(field.key.length + 1),
+      key === `${field.namespace}.${field.key}`
+        ? ''
+        : key.slice(`${field.namespace}.${field.key}`.length + 1),
       message,
     ]),
   );
@@ -185,8 +245,8 @@ const MemberCustomFieldEditModal: React.FC<{
   // refuses casual dismissal — Cancel is the one explicit way to discard,
   // so typed values can never be lost by a stray click.
   const isDirty = !dequal(
-    getEditableCustomFieldValues({ [field.key]: value }),
-    getEditableCustomFieldValues({ [field.key]: initialValue }),
+    getEditableCustomFieldValues({ [field.namespace]: { [field.key]: value } }),
+    getEditableCustomFieldValues({ [field.namespace]: { [field.key]: initialValue } }),
   );
 
   const onSave = () => {
@@ -205,7 +265,7 @@ const MemberCustomFieldEditModal: React.FC<{
       setSaveAttempted(true);
       return;
     }
-    editMutation.mutate(buildCustomFieldSavePayload(memberId, field.key, value), {
+    editMutation.mutate(buildCustomFieldSavePayload(memberId, field, value), {
       onSuccess: () => {
         toast.success(`${field.name} saved`);
         onClose();
@@ -301,12 +361,12 @@ const MemberCustomFieldEditModal: React.FC<{
  */
 const MemberCustomFieldsField: React.FC<MemberCustomFieldsFieldProps> = ({
   memberId,
-  customFields,
+  metafields,
   disabled,
 }) => {
-  const { data, isLoading } = useBrowseMemberCustomFields();
-  const fields = data?.members_custom_fields ?? [];
-  const values = getEditableCustomFieldValues(customFields);
+  const { data, isLoading } = useCustomFieldDefinitions();
+  const fields = data ?? [];
+  const values = getEditableCustomFieldValues(metafields);
   const [editingField, setEditingField] = React.useState<MemberCustomField | null>(null);
 
   if (isLoading || fields.length === 0) {
@@ -330,7 +390,11 @@ const MemberCustomFieldsField: React.FC<MemberCustomFieldsFieldProps> = ({
           <ul>
             {fields.map((field) => {
               // Null rather than an empty line, so an unset value shows its placeholder.
-              const display = formatMemberCustomFieldValue(field.type, values[field.key]) || null;
+              const display =
+                formatMemberCustomFieldValue(
+                  field.type,
+                  values[`${field.namespace}.${field.key}`],
+                ) || null;
               return (
                 // Dividers fade around the hovered row (its own border-b, and the
                 // previous row's via :has), so the hover tint floats free of the
@@ -389,7 +453,7 @@ const MemberCustomFieldsField: React.FC<MemberCustomFieldsFieldProps> = ({
         <MemberCustomFieldEditModal
           key={editingField.key}
           field={editingField}
-          initialValue={values[editingField.key]}
+          initialValue={values[`${editingField.namespace}.${editingField.key}`]}
           memberId={memberId}
           onClose={() => setEditingField(null)}
         />

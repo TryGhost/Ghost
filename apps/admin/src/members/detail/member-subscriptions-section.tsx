@@ -2,6 +2,7 @@ import MemberAddCompModal from './member-add-comp-modal';
 import MemberSubscriptionActions from './member-subscription-actions';
 import MemberSubscriptionCompActions from './member-subscription-comp-actions';
 import React from 'react';
+import { isSafeHref } from './is-safe-href';
 import moment from 'moment-timezone';
 import { Badge, Button, Card, CardContent, EmptyIndicator } from '@tryghost/shade/components';
 import { LucideIcon, cn } from '@tryghost/shade/utils';
@@ -78,7 +79,7 @@ const SubscriptionDetails: React.FC<{ sub: MemberSubscription }> = ({ sub }) => 
       {page && (
         <p>
           Page —{' '}
-          {page.url ? (
+          {isSafeHref(page.url) ? (
             <a
               className="text-foreground hover:underline"
               href={page.url}

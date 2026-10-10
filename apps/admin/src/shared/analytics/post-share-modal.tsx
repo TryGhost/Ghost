@@ -1,4 +1,5 @@
 import React from 'react';
+import { useShade } from '@tryghost/shade/app';
 import { Button } from '@tryghost/shade/components';
 import { H3 } from '@tryghost/shade/primitives';
 import { ShareModal, type ShareModalSocialLink } from '@tryghost/shade/patterns';
@@ -41,6 +42,7 @@ const PostShareModal: React.FC<PostShareModalProps> = ({
   siteTitle = '',
   ...props
 }) => {
+  const { isAdmin7 } = useShade();
   const encodedPostTitle = encodeURIComponent(postTitle);
   const encodedPostURL = encodeURIComponent(postURL);
   const encodedPostURLTitle = encodeURIComponent(`${postTitle} ${postURL}`);
@@ -67,6 +69,11 @@ const PostShareModal: React.FC<PostShareModalProps> = ({
           label: 'Share on LinkedIn',
           service: 'linkedin',
         },
+        {
+          href: `https://bsky.app/intent/compose?text=${encodedPostURLTitle}`,
+          label: 'Share on Bluesky',
+          service: 'bluesky',
+        },
       ];
 
   return (
@@ -88,7 +95,7 @@ const PostShareModal: React.FC<PostShareModalProps> = ({
             </ShareModal.Description>
           )}
         </ShareModal.Header>
-        <ShareModal.Preview className="rounded-md" href={postURL}>
+        <ShareModal.Preview className={isAdmin7 ? undefined : 'rounded-md'} href={postURL}>
           {featureImageURL && (
             <div
               className="aspect-video bg-cover bg-center"
@@ -99,10 +106,12 @@ const PostShareModal: React.FC<PostShareModalProps> = ({
             <H3>{postTitle}</H3>
             {postExcerpt && <p className="line-clamp-2">{postExcerpt}</p>}
             <div className="mt-2 flex items-start gap-2">
-              <div
-                className="mt-0.5 size-4 bg-cover bg-center"
-                style={{ backgroundImage: `url(${faviconURL})` }}
-              ></div>
+              {faviconURL && (
+                <div
+                  className="mt-0.5 size-4 bg-cover bg-center"
+                  style={{ backgroundImage: `url(${faviconURL})` }}
+                ></div>
+              )}
               <div className="flex gap-1">
                 <strong>{siteTitle}</strong>
                 <span>&bull;</span>

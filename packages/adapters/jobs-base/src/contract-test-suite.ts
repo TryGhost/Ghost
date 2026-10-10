@@ -110,6 +110,40 @@ export function runJobsBackendContractTests(
       assert.equal(raced, 'shutdown');
     });
 
+    // Queue routing is metadata: a backend may isolate queues or run one
+    // lane, but a routed envelope must always be delivered, and unknown
+    // routing must never lose work.
+    it('delivers an envelope enqueued with queue routing', async function () {
+      const received: JobEnvelope[] = [];
+      const backend = makeBackend();
+      await backend.start({
+        processor: async (env) => {
+          received.push(env);
+        },
+        queues: { isolated: { concurrency: 1 } },
+      });
+
+      await backend.enqueue(envelope, { queue: 'isolated' });
+      await backend.shutdown({ timeoutMs: 1000 });
+
+      assert.deepEqual(received, [envelope]);
+    });
+
+    it('delivers an envelope routed to a queue no handler declared', async function () {
+      const received: JobEnvelope[] = [];
+      const backend = makeBackend();
+      await backend.start({
+        processor: async (env) => {
+          received.push(env);
+        },
+      });
+
+      await backend.enqueue(envelope, { queue: 'undeclared' });
+      await backend.shutdown({ timeoutMs: 1000 });
+
+      assert.deepEqual(received, [envelope]);
+    });
+
     it('tolerates start after a prior shutdown', async function () {
       const received: JobEnvelope[] = [];
       const backend = makeBackend();

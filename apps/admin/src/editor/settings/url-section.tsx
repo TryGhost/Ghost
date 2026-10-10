@@ -1,0 +1,130 @@
+import { type KeyboardEvent, useCallback, useId, useState } from 'react';
+import {
+  FieldError,
+  InputGroup,
+  InputGroupAddon,
+  InputGroupInput,
+  Label,
+} from '@tryghost/shade/components';
+import { Inline, Text } from '@tryghost/shade/primitives';
+import {
+  settingsSlugError,
+  settingsSlugInput,
+  settingsUrlPreview,
+} from '@tryghost/test-data/selectors/editor';
+import { LucideIcon } from '@tryghost/shade/utils';
+import type { PostType } from '@/editor/card-config';
+import { normalizeManualSlug } from '@/editor/engine/slug-machine';
+import { postPreviewUrl } from '@/editor/preview/preview-url';
+import type { EditorSettingsPort } from './editor-settings-port';
+import { SettingsSection } from './settings-section';
+import { formatUrlPreview } from './url-preview';
+
+const EDIT_FAILED = 'Couldn’t update the URL. Try again.';
+
+/** A saved post's public URL, or a scheduled post's preview; nothing for a draft. */
+function viewLink(
+  record: EditorSettingsPort['loadedRecord'],
+  postType: PostType,
+  siteUrl: string,
+): { href: string; label: string } | null {
+  if ((record?.status === 'published' || record?.status === 'sent') && record.url) {
+    return { href: record.url, label: `View ${postType}` };
+  }
+  if (record?.status === 'scheduled' && record.uuid) {
+    return { href: postPreviewUrl(siteUrl, record.uuid), label: 'Preview' };
+  }
+  return null;
+}
+
+/**
+ * The post's URL: a slug input over a preview of where the post will live. The
+ * slug machine owns the value, so an edit goes to it rather than to a field.
+ */
+export function UrlSection({
+  session,
+  postType,
+  siteUrl,
+}: {
+  session: EditorSettingsPort;
+  postType: PostType;
+  siteUrl: string;
+}) {
+  const inputId = useId();
+  const errorId = useId();
+  const [draft, setDraft] = useState<string | null>(null);
+  const [pending, setPending] = useState(false);
+  const [failed, setFailed] = useState(false);
+
+  const { slug, editSlug, loadedRecord } = session;
+  const value = draft ?? slug;
+  const link = viewLink(loadedRecord, postType, siteUrl);
+
+  const commit = useCallback(() => {
+    setFailed(false);
+    if (normalizeManualSlug(value, slug) === null) {
+      setDraft(null);
+      return;
+    }
+    setPending(true);
+    void editSlug(value)
+      .then((outcome) => setFailed(outcome === 'failed'))
+      .finally(() => {
+        setPending(false);
+        setDraft(null);
+      });
+  }, [editSlug, slug, value]);
+
+  // Enter commits through the blur handler, so a keyed and a clicked-away edit
+  // cannot both submit the same value.
+  const onKeyDown = useCallback((event: KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === 'Enter') {
+      event.currentTarget.blur();
+    }
+  }, []);
+
+  return (
+    <SettingsSection>
+      <Inline gap="sm" justify="between">
+        <Label htmlFor={inputId}>{postType === 'page' ? 'Page' : 'Post'} URL</Label>
+        {link ? (
+          <a
+            className="inline-flex items-center gap-1 text-sm text-text-secondary hover:text-foreground"
+            href={link.href}
+            rel="noopener noreferrer"
+            target="_blank"
+          >
+            {link.label}
+            <LucideIcon.ArrowUpRight className="size-3.5" />
+          </a>
+        ) : null}
+      </Inline>
+      <InputGroup data-disabled={pending}>
+        <InputGroupAddon>
+          <LucideIcon.Link />
+        </InputGroupAddon>
+        <InputGroupInput
+          aria-describedby={failed ? errorId : undefined}
+          aria-invalid={failed}
+          data-testid={settingsSlugInput}
+          disabled={pending}
+          id={inputId}
+          value={value}
+          onBlur={commit}
+          onChange={(event) => setDraft(event.target.value)}
+          onKeyDown={onKeyDown}
+        />
+      </InputGroup>
+      {failed ? (
+        <FieldError data-testid={settingsSlugError} id={errorId}>
+          {EDIT_FAILED}
+        </FieldError>
+      ) : null}
+      <Text data-testid={settingsUrlPreview} size="sm" tone="secondary">
+        {loadedRecord?.status === 'sent'
+          ? formatUrlPreview(siteUrl, loadedRecord?.uuid ?? '', 'email')
+          : formatUrlPreview(siteUrl, value)}
+      </Text>
+    </SettingsSection>
+  );
+}

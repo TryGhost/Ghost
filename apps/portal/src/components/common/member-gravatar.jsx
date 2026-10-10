@@ -43,7 +43,7 @@ const Styles = ({ style = {} }) => {
 };
 
 function MemberGravatar({ gravatar, style }) {
-  let Style = Styles({ style });
+  const Style = Styles({ style });
   return (
     <figure className="gh-portal-avatar" style={Style.avatarContainer}>
       <UserIcon style={Style.userIcon} />

@@ -17,8 +17,9 @@ import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
 import { useDeleteSession } from '@tryghost/admin-x-framework/api/session';
 import { getGhostPaths } from '@tryghost/admin-x-framework/helpers';
 import { toast } from 'sonner';
-import { useTheme, type ThemeMode } from '@/hooks/use-theme';
-import { useWhatsNew } from '@/whats-new/hooks/use-whats-new';
+import { type ThemeMode } from '@/hooks/use-theme';
+import { useThemeContext } from '@/providers/theme-context';
+import { useWhatsNew } from '@/whats-new/api';
 import { useUpgradeStatus } from './hooks/use-upgrade-status';
 import { useBrowseSite } from '@tryghost/admin-x-framework/api/site';
 import { UserMenuItem } from './user-menu-item';
@@ -26,13 +27,15 @@ import { UserMenuAvatar } from './user-menu-avatar';
 import { UserMenuHeader } from './user-menu-header';
 import { Link } from '@tryghost/admin-x-framework';
 import { getAdminToolbarUrl } from '@/utils/admin-toolbar-url';
+import { useSettingsReturnToState } from '@/layout/settings-navigation';
 
 function UserMenuProfile() {
   const currentUser = useCurrentUser();
+  const settingsReturnToState = useSettingsReturnToState();
 
   return (
     <UserMenuItem>
-      <Link to={`/settings/staff/${currentUser.data?.slug}`}>
+      <Link state={settingsReturnToState} to={`/settings/staff/${currentUser.data?.slug}`}>
         <LucideIcon.User />
         <UserMenuItem.Label>Your profile</UserMenuItem.Label>
       </Link>
@@ -51,7 +54,7 @@ const THEME_LABELS = Object.fromEntries(
 ) as Record<ThemeMode, string>;
 
 function UserMenuAppearance() {
-  const { theme, setTheme, isSettingTheme } = useTheme();
+  const { theme, setTheme, isSettingTheme } = useThemeContext();
 
   return (
     <DropdownMenuSub>
@@ -118,7 +121,7 @@ interface UserMenuProps extends React.ComponentProps<typeof DropdownMenu> {
 }
 function UserMenu(props: UserMenuProps) {
   const currentUser = useCurrentUser();
-  const { data: whatsNewData } = useWhatsNew();
+  const { hasNew } = useWhatsNew();
   const { showUpgradeBanner } = useUpgradeStatus();
 
   return (
@@ -131,7 +134,7 @@ function UserMenu(props: UserMenuProps) {
         >
           <div className="relative">
             <UserMenuAvatar />
-            {whatsNewData?.hasNew && (
+            {hasNew && (
               <span className="absolute -top-0.5 -right-0.5">
                 <Indicator
                   data-testid="whats-new-avatar-badge"
@@ -149,7 +152,7 @@ function UserMenu(props: UserMenuProps) {
             </span>
           </div>
           <LucideIcon.ChevronsUpDown
-            className="ml-auto size-4 text-grey-700"
+            className="ml-auto size-4 text-gray-700"
             data-test-nav="arrow-down"
           />
         </SidebarMenuButton>
@@ -172,7 +175,7 @@ function UserMenu(props: UserMenuProps) {
         >
           <LucideIcon.Sparkles />
           <UserMenuItem.Label>What’s new?</UserMenuItem.Label>
-          {whatsNewData?.hasNew && (
+          {hasNew && (
             <div className="flex flex-1 justify-end">
               <Indicator
                 data-testid="whats-new-menu-badge"

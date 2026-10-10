@@ -2,7 +2,7 @@
 
 Welcome to the Ghost codebase documentation! These docs are for anyone wanting
 to work on the Ghost codebase. For self-hosting, themes, or using Ghost APIs,
-see the [official Ghost documentation](https://ghost.org/docs/).
+see the [official Ghost documentation](https://docs.ghost.org/).
 
 ## Quick Start
 
@@ -13,7 +13,7 @@ installed:
 git clone --recurse-submodules git@github.com:TryGhost/Ghost.git
 cd Ghost
 
-pnpm setup
+pnpm bootstrap
 pnpm dev
 ```
 
@@ -36,11 +36,10 @@ setup, development variants, and troubleshooting.
 Ghost/
 ├── apps/              # Admin and public frontend apps
 │   ├── admin/          # React Admin
-│   ├── ember-admin/    # Legacy Ember Admin
 │   ├── portal/         # Member Portal
 │   ├── comments-ui/    # Comments
 │   └── shade/          # Admin design system
-├── ghost/core/        # Ghost server and frontend rendering
+├── ghost/             # Ghost server and frontend rendering
 │   ├── core/server/    # APIs, models, and services
 │   ├── core/frontend/  # Theme rendering and helpers
 │   ├── content/        # Default themes, adapters, and local content
@@ -76,6 +75,8 @@ adding translatable product copy, see the
 
 Codebase guides explain how the main systems fit together:
 
+- [Codebase direction](codebase/direction.md)
+- [Runtime architecture](codebase/runtime-architecture.md)
 - [Authentication](codebase/authentication.md)
 - [Configuration](codebase/configuration.md)
 - [Database structure](codebase/database.md)
@@ -94,8 +95,12 @@ Practice and contributor guides explain how to make and verify changes:
 - [Codebase documentation](contributing/documentation.md)
 - [Email testing](contributing/testing-email.md)
 - [Error handling](practices/error-handling.md)
+- [Feature flags](practices/feature-flags.md)
 - [Internationalization](practices/internationalization.md)
+- [Internal package migrations](contributing/internal-package-migrations.md)
 - [Performance testing](contributing/performance-testing.md)
+- [Stripe testing](contributing/testing-stripe.md)
+- [Test data](contributing/test-data.md)
 - [Testing development URLs and devices](contributing/testing-development-urls.md)
 
 Reference guides provide tables and other information to look up while working
@@ -121,13 +126,13 @@ For more detail, see the [contribution workflow](contributing/workflow.md).
 
 ### Testing
 
-Use `pnpm check` as the default one-stop command for linting and testing. Add
-tests at the closest layer to the behavior you changed. Browser end-to-end tests
-and Ember Admin tests run separately from `pnpm check`.
+Use `pnpm check` as the default one-stop command for formatting checks, linting,
+and testing. Add tests at the closest layer to the behavior you changed. Browser
+end-to-end tests run separately from `pnpm check`.
 
 For more detail, see the [testing guide](contributing/testing.md) including how
-to choose a test suite, run focused tests, and use the separate browser and
-Ember Admin test lanes.
+to choose a test suite, run focused tests, and use the separate browser test
+lane.
 
 ### Shipping
 
@@ -142,10 +147,10 @@ Docker Official Image.
 
 ## Additional Resources
 
-- **[Official Documentation](https://ghost.org/docs/)** - User and developer docs
+- **[Official Documentation](https://docs.ghost.org/)** - User and developer docs
 - **[Ghost Forum](https://forum.ghost.org)** - Community support and discussions
-- **[API Documentation](https://ghost.org/docs/content-api/)** - Content and Admin API reference
-- **[Theme Documentation](https://ghost.org/docs/themes/)** - Theme development
+- **[API Documentation](https://docs.ghost.org/content-api/)** - Content and Admin API reference
+- **[Theme Documentation](https://docs.ghost.org/themes/)** - Theme development
 
 ## Getting Help
 

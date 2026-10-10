@@ -1,0 +1,139 @@
+import { type ErrorInfo, memo, Suspense, useCallback } from 'react';
+import { LoadingIndicator } from '@tryghost/shade/components';
+import { editorBody, editorSecondaryInstance } from '@tryghost/test-data/selectors/editor';
+import ErrorBoundary from '@/settings/components/error-boundary';
+import {
+  type EditorResource,
+  type KoenigInstance,
+  loadKoenig,
+} from '@/settings/components/koenig-loader';
+import type { PostCardConfig } from './card-config';
+import { editorFileUploader } from './koenig-file-uploader';
+import { koenigErrorReporters } from './report-error';
+
+const NOOP = () => {};
+
+const primaryErrors = koenigErrorReporters('primary');
+const secondaryErrors = koenigErrorReporters('secondary');
+
+export interface KoenigPostEditorProps {
+  initialLexical: string | null;
+  placeholder: string;
+  cardConfig: PostCardConfig;
+  darkMode: boolean;
+  cursorDidExitAtTop?: () => void;
+  onChange?: (lexical: unknown) => void;
+  onSecondaryChange?: (lexical: unknown) => void;
+  /** The hidden instance failed, so its serialization cannot be a change baseline. */
+  onSecondaryError?: () => void;
+  registerAPI: (api: KoenigInstance | null) => void;
+  onWordCountChange: (count: number) => void;
+  onTkCountChange: (count: number) => void;
+}
+
+interface KoenigInstanceMountProps extends KoenigPostEditorProps {
+  editor: EditorResource;
+  isSecondary: boolean;
+  onError: (error: unknown) => void;
+}
+
+// The hidden secondary instance loads the same initial state: Koenig normalises
+// documents on load, so its output is the baseline change detection compares against
+function KoenigInstanceMount({
+  editor,
+  isSecondary,
+  onError,
+  initialLexical,
+  placeholder,
+  cardConfig,
+  darkMode,
+  cursorDidExitAtTop,
+  onChange,
+  onSecondaryChange,
+  registerAPI,
+  onWordCountChange,
+  onTkCountChange,
+}: KoenigInstanceMountProps) {
+  const { KoenigComposer, KoenigEditor, WordCountPlugin, TKCountPlugin } = editor.read();
+
+  return (
+    <div
+      data-secondary-instance={isSecondary ? 'true' : 'false'}
+      data-testid={isSecondary ? editorSecondaryInstance : editorBody}
+      hidden={isSecondary}
+    >
+      <KoenigComposer
+        cardConfig={cardConfig}
+        darkMode={darkMode}
+        fileUploader={editorFileUploader}
+        initialEditorState={initialLexical ?? undefined}
+        isTKEnabled={true}
+        onError={onError}
+      >
+        <KoenigEditor
+          cursorDidExitAtTop={isSecondary ? undefined : cursorDidExitAtTop}
+          darkMode={isSecondary ? undefined : darkMode}
+          placeholderText={isSecondary ? undefined : placeholder}
+          registerAPI={isSecondary ? undefined : registerAPI}
+          onChange={isSecondary ? onSecondaryChange : onChange}
+        />
+        <WordCountPlugin onChange={isSecondary ? NOOP : onWordCountChange} />
+        <TKCountPlugin onChange={isSecondary ? NOOP : onTkCountChange} />
+      </KoenigComposer>
+    </div>
+  );
+}
+
+// Memoized: every prop is referentially stable, so a settings edit elsewhere in
+// the editor must not re-render two composer subtrees.
+export const KoenigPostEditor = memo(function KoenigPostEditor(props: KoenigPostEditorProps) {
+  const editor = loadKoenig();
+  const { onSecondaryError } = props;
+
+  const onSecondaryInstanceError = useCallback(
+    (error: unknown) => {
+      secondaryErrors.onError(error);
+      onSecondaryError?.();
+    },
+    [onSecondaryError],
+  );
+
+  const onSecondaryRenderError = useCallback(
+    (error: unknown, info: ErrorInfo) => {
+      secondaryErrors.onRenderError(error, info);
+      onSecondaryError?.();
+    },
+    [onSecondaryError],
+  );
+
+  return (
+    <div className="koenig-react-editor koenig-lexical mx-auto w-full max-w-[740px]">
+      <ErrorBoundary name="the editor" onError={primaryErrors.onRenderError}>
+        <Suspense
+          fallback={
+            <div className="flex justify-center py-10">
+              <LoadingIndicator size="lg" />
+            </div>
+          }
+        >
+          {/* Mounted first so each load-time normalization reaches the baseline before
+              the visible instance reports it. A crash costs only the baseline. */}
+          <ErrorBoundary fallback={null} name="the editor" onError={onSecondaryRenderError}>
+            <KoenigInstanceMount
+              {...props}
+              editor={editor}
+              isSecondary={true}
+              onError={onSecondaryInstanceError}
+            />
+          </ErrorBoundary>
+          <KoenigInstanceMount
+            {...props}
+            editor={editor}
+            isSecondary={false}
+            onError={primaryErrors.onError}
+          />
+        </Suspense>
+      </ErrorBoundary>
+    </div>
+  );
+});

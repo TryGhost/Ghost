@@ -8,6 +8,7 @@ import {
 } from './sections';
 import { Locator, Page } from '@playwright/test';
 import { StaffSection } from './sections/staff-section';
+import { settingsSidebar } from '@tryghost/test-data/selectors/settings';
 
 export class SettingsPage extends BasePage {
   readonly integrationsSection: IntegrationsSection;
@@ -22,7 +23,7 @@ export class SettingsPage extends BasePage {
   constructor(page: Page) {
     super(page, '/ghost/#/settings');
 
-    this.sidebar = page.getByTestId('sidebar');
+    this.sidebar = page.getByTestId(settingsSidebar);
 
     this.portalSection = new PortalSection(page);
     this.integrationsSection = new IntegrationsSection(page);

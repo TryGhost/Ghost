@@ -57,7 +57,6 @@ export default function renderStandaloneApp<Props extends object>(
             document.body.dataset.externalNavigate = JSON.stringify(link);
           },
           ghostVersion: '5.x',
-          sentryDSN: null,
           unsplashConfig: {
             Authorization: '',
             'Accept-Version': '',
@@ -65,9 +64,6 @@ export default function renderStandaloneApp<Props extends object>(
             'App-Pragma': '',
             'X-Unsplash-Cache': false,
           },
-          onDelete: () => {},
-          onInvalidate: () => {},
-          onUpdate: () => {},
         }}
         {...props}
       />

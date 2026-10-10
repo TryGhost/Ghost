@@ -5,16 +5,20 @@ coverage:
     patch: false
     project:
       default: false
-      admin-tests:
-        flags:
-          - admin-tests
-        threshold: 0.2%
       e2e-tests:
         flags:
           - e2e-tests
         threshold: 0.2%
+      unit-tests:
+        flags:
+          - unit-tests
+        threshold: 0.2%
+        # Run-to-run noise exceeds the threshold, so report without failing.
+        informational: true
 flags:
-  admin-tests:
-    carryforward: true
   e2e-tests:
+    carryforward: true
+  # ghost's unit tests only run when it's affected, so most PRs carry
+  # the last report forward.
+  unit-tests:
     carryforward: true

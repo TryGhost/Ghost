@@ -7,7 +7,7 @@ import {
   useSubscriptionStats,
 } from '@tryghost/admin-x-framework/api/stats';
 import { formatNumber, formatPercentage } from '@tryghost/shade/utils';
-import { formatQueryDate, getRangeDates } from '@tryghost/shade/app';
+import { formatQueryDate, getRangeDates } from '@/shared/analytics/chart-helpers';
 import { getSymbol } from '@tryghost/admin-x-framework';
 import { useMemo } from 'react';
 

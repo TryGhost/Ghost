@@ -137,7 +137,7 @@ test.describe('Ghost Admin - Onboarding Checklist', () => {
     await expect(analyticsPage.header).toBeVisible();
   });
 
-  test('pending users reach Analytics normally and are not started by the React route', async ({
+  test('pending users reach Analytics normally and are not started by the onboarding route', async ({
     page,
   }) => {
     const analyticsPage = new AnalyticsOverviewPage(page);

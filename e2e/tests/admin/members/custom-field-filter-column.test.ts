@@ -12,13 +12,12 @@ import { usePerTestIsolation } from '@/helpers/playwright/isolation';
  * them back under the name the publisher gave the field. A unit test can pin the column
  * derivation but cannot prove the values ever arrive.
  *
- * React member detail (the value editor is React-only) plus the membersCustomFields flag
- * that gates the whole feature.
+ * The membersCustomFields flag is what lets the test define a field in Settings.
  */
 usePerTestIsolation();
 
 test.describe('Ghost Admin - Custom field filter columns', () => {
-  test.use({ labs: { membersCustomFields: true, memberDetailsReact: true } });
+  test.use({ labs: { membersCustomFields: true } });
 
   test("a filtered custom field earns a column showing each member's value", async ({ page }) => {
     test.slow();
@@ -68,7 +67,7 @@ test.describe('Ghost Admin - Custom field filter columns', () => {
     const memberName = `Shipped To ${stamp}`;
     // State and postal code pair up, and the unfilled line 2 drops out rather than
     // leaving a gap, which is what makes this one line rather than a join of parts.
-    const expectedLine = '1 Main St, Berlin, BE 10115, DE';
+    const expectedLine = '1 Main St, Berlin, BE 10115, Germany';
     const memberFactory = createMemberFactory(page.request);
 
     const member = await memberFactory.create({
@@ -89,7 +88,7 @@ test.describe('Ghost Admin - Custom field filter columns', () => {
       City: 'Berlin',
       State: 'BE',
       'Postal code': '10115',
-      Country: 'DE',
+      Country: 'Germany',
     });
 
     // The detail screen's rendering, read from the row's accessible name.

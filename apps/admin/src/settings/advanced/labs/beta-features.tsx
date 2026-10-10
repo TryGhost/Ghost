@@ -125,6 +125,16 @@ const BetaFeatures: React.FC = () => {
           title="Additional payment methods"
         />
         <LabItem
+          action={<FeatureToggle flag="navigationIcons" />}
+          detail={
+            <>
+              Add icons and member-visibility controls to navigation menu items. Requires theme
+              support to render icons.
+            </>
+          }
+          title="Navigation icons & visibility"
+        />
+        <LabItem
           action={
             <Stack align="end" gap="xs">
               <Inline gap="sm">

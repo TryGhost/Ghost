@@ -1,12 +1,17 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { PRICES, provision, stripeClient } from './provision-stripe-environment.ts';
+import {
+  PRICES,
+  asSessionCreateParams,
+  provision,
+  stripeClient,
+} from './provision-stripe-environment.ts';
 import { fileURLToPath } from 'node:url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const fixtureDir = path.resolve(__dirname, '../helpers/services/stripe/fixtures');
 
-// Pinned to what ghost/core ships. Response shapes are version-dependent, so a
+// Pinned to what ghost ships. Response shapes are version-dependent, so a
 // fixture captured at any other version would describe an API we do not call.
 const API_VERSION = '2020-08-27';
 function log(message: string): void {
@@ -106,32 +111,25 @@ async function main(): Promise<void> {
     }),
   );
   save(
-    'checkout_session.shipping',
-    await stripe.checkout.sessions.create({
-      ...urls,
-      mode: 'subscription',
-      line_items: [{ price: monthly.id, quantity: 1 }],
-      shipping_address_collection: { allowed_countries: ['GB', 'US'] },
-    }),
-  );
-  save(
     'checkout_session.donation',
-    await stripe.checkout.sessions.create({
-      ...urls,
-      mode: 'payment',
-      submit_type: 'donate',
-      line_items: [
-        { price_data: { currency: 'usd', unit_amount: 1000, product: product.id }, quantity: 1 },
-      ],
-      custom_fields: [
-        {
-          key: 'donation_message',
-          label: { type: 'custom', custom: 'Add a personal note' },
-          type: 'text',
-          optional: true,
-        },
-      ],
-    }),
+    await stripe.checkout.sessions.create(
+      asSessionCreateParams({
+        ...urls,
+        mode: 'payment',
+        submit_type: 'donate',
+        line_items: [
+          { price_data: { currency: 'usd', unit_amount: 1000, product: product.id }, quantity: 1 },
+        ],
+        custom_fields: [
+          {
+            key: 'donation_message',
+            label: { type: 'custom', custom: 'Add a personal note' },
+            type: 'text',
+            optional: true,
+          },
+        ],
+      }),
+    ),
   );
 
   // Without this there is no way to tell how stale the fixtures are, which makes
@@ -147,7 +145,10 @@ async function main(): Promise<void> {
   log('its hosted page, so checkout_session.completed must be captured by hand.');
 }
 
-main().catch((error: Error) => {
-  log(`Capture failed: ${error.message}`);
+main().catch((error: unknown) => {
+  // A rejection need not be an Error, and the stack is what says which of a dozen
+  // sequential Stripe calls failed.
+  const detail = error instanceof Error ? (error.stack ?? error.message) : String(error);
+  process.stderr.write(`Capture failed: ${detail}\n`);
   process.exit(1);
 });

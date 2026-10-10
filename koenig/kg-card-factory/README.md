@@ -25,7 +25,7 @@ it creates, with per-render options taking precedence.
 
 This package is part of the [Ghost monorepo](https://github.com/TryGhost/Ghost)
 and resolves through the pnpm workspace — there is no linking or per-package
-install step. Run `pnpm setup` in the monorepo root, then work in
+install step. Run `pnpm bootstrap` in the monorepo root, then work in
 `koenig/kg-card-factory`.
 
 See the [Koenig README](../README.md) for the shared build, test and release

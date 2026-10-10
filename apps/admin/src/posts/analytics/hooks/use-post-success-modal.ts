@@ -14,9 +14,6 @@ interface ExtendedPost extends Post {
     name: string;
   }[];
   excerpt?: string;
-  newsletter?: {
-    name: string;
-  };
 }
 
 export const usePostSuccessModal = () => {
@@ -67,26 +64,38 @@ export const usePostSuccessModal = () => {
 
   // Memoized modal props
   const modalProps = useMemo(() => {
-    if (!post) {
+    const emailStatus = post?.email?.status;
+    // Post analytics reports a failed send, so the modal claims no delivery for
+    // it, and an email-only send that failed has nothing to celebrate.
+    const didEmailFail = emailStatus === 'failed';
+
+    if (!post || (post.email_only && didEmailFail)) {
       return null;
     }
 
     const showPostCount = !!postCount;
+    // The modal opens straight after a send is handed off, so only a submitted email reads as sent.
+    const isEmailStillSending = !didEmailFail && emailStatus !== 'submitted';
+    const emailCount = didEmailFail ? 0 : post.email?.email_count;
 
     // Build description with React elements to match Ember modal format with bold text
     const getDescription = () => {
       const parts = [];
 
       if (post.email_only) {
-        parts.push('Your email was sent to');
-      } else if (post.email?.email_count) {
-        parts.push('Your post was published on your site and sent to');
+        parts.push(isEmailStillSending ? 'Your email is being sent to' : 'Your email was sent to');
+      } else if (emailCount) {
+        parts.push(
+          isEmailStillSending
+            ? 'Your post was published on your site and is being sent to'
+            : 'Your post was published on your site and sent to',
+        );
       } else {
         parts.push('Your post was published on your site');
       }
 
-      if (post.email?.email_count) {
-        const subscriberText = formatSubscriberCount(post.email.email_count);
+      if (emailCount) {
+        const subscriberText = formatSubscriberCount(emailCount);
         parts.push(' ');
         parts.push(React.createElement('strong', { key: 'subscriber-count' }, subscriberText));
 
@@ -156,7 +165,7 @@ export const usePostSuccessModal = () => {
       author: getAuthorsText(post.authors),
       onClose: handleClose,
     };
-  }, [post, isModalOpen, postCount, site?.title]);
+  }, [post, isModalOpen, postCount, site?.title, site?.icon]);
 
   useEffect(() => {
     const checkForPublishedPost = () => {

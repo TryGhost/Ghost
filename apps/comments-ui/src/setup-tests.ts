@@ -10,7 +10,7 @@ afterEach(() => {
   cleanup();
 });
 
-global.ResizeObserver = vi.fn().mockImplementation(function () {
+globalThis.ResizeObserver = vi.fn().mockImplementation(function () {
   return {
     observe: vi.fn(),
     unobserve: vi.fn(),

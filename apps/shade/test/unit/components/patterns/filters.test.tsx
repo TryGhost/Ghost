@@ -6,6 +6,7 @@ import {
   Filter,
   FilterFieldConfig,
   Filters,
+  FilterSegmentMultiSelect,
   ValueSource,
 } from '../../../../src/components/patterns/filters';
 
@@ -737,6 +738,273 @@ describe('Filters', () => {
       // ...but there is nothing to edit: no input and no operator menu button.
       expect(screen.queryByRole('textbox')).toBeNull();
       expect(screen.queryByRole('button', { name: 'is' })).toBeNull();
+    });
+  });
+
+  describe('FilterSegmentMultiSelect', () => {
+    const originalResizeObserver = global.ResizeObserver;
+    const originalScrollIntoView = HTMLElement.prototype.scrollIntoView;
+
+    beforeAll(() => {
+      global.ResizeObserver = class {
+        observe() {
+          return undefined;
+        }
+
+        unobserve() {
+          return undefined;
+        }
+
+        disconnect() {
+          return undefined;
+        }
+      } as unknown as typeof ResizeObserver;
+      HTMLElement.prototype.scrollIntoView = vi.fn();
+    });
+
+    afterAll(() => {
+      global.ResizeObserver = originalResizeObserver;
+      HTMLElement.prototype.scrollIntoView = originalScrollIntoView;
+    });
+
+    const COUNTRIES = [
+      { value: 'DE', label: 'Germany' },
+      { value: 'GB', label: 'United Kingdom' },
+      { value: 'US', label: 'United States' },
+    ];
+
+    it('opens a searchable list and adds to the selection without closing', async () => {
+      const onChange = vi.fn();
+      render(
+        <FilterSegmentMultiSelect
+          ariaLabel="Country"
+          options={COUNTRIES}
+          searchPlaceholder="Search countries..."
+          values={['DE']}
+          onChange={onChange}
+        />,
+      );
+
+      expect(screen.getByLabelText('Country').textContent).toBe('Germany');
+      fireEvent.click(screen.getByLabelText('Country'));
+      await screen.findByRole('listbox');
+      expect(screen.getAllByRole('option')).toHaveLength(3);
+
+      fireEvent.change(screen.getByPlaceholderText('Search countries...'), {
+        target: { value: 'united' },
+      });
+      expect(screen.queryByRole('option', { name: 'Germany' })).toBeNull();
+      fireEvent.click(screen.getByRole('option', { name: 'United States' }));
+      expect(onChange).toHaveBeenCalledWith(['DE', 'US']);
+      expect(screen.getByRole('listbox')).toBeTruthy();
+    });
+
+    it('sums up more than one pick and falls back to the placeholder for none', () => {
+      const { rerender } = render(
+        <FilterSegmentMultiSelect
+          ariaLabel="Country"
+          options={COUNTRIES}
+          values={['DE', 'US']}
+          onChange={() => {}}
+        />,
+      );
+      expect(screen.getByLabelText('Country').textContent).toBe('2 selected');
+
+      rerender(
+        <FilterSegmentMultiSelect
+          ariaLabel="Country"
+          options={COUNTRIES}
+          placeholder="Select country..."
+          values={[]}
+          onChange={() => {}}
+        />,
+      );
+      expect(screen.getByLabelText('Country').textContent).toBe('Select country...');
+    });
+
+    it('stays static text when read-only', () => {
+      render(
+        <FilterSegmentMultiSelect
+          ariaLabel="Country"
+          options={COUNTRIES}
+          values={['DE']}
+          readOnly
+          onChange={() => {}}
+        />,
+      );
+
+      fireEvent.click(screen.getByLabelText('Country'));
+      expect(screen.queryByRole('listbox')).toBeNull();
+      expect(screen.getByLabelText('Country').textContent).toBe('Germany');
+    });
+  });
+
+  describe('focus on a newly revealed value input', () => {
+    // The add-filter popover renders a cmdk command menu, which needs both of
+    // these and jsdom provides neither.
+    beforeAll(() => {
+      global.ResizeObserver = class {
+        observe() {
+          return undefined;
+        }
+
+        unobserve() {
+          return undefined;
+        }
+
+        disconnect() {
+          return undefined;
+        }
+      } as unknown as typeof ResizeObserver;
+      HTMLElement.prototype.scrollIntoView = vi.fn();
+    });
+
+    function FocusTestFilters({
+      initialFilters = [],
+    }: Readonly<{ initialFilters?: Filter<string>[] }>) {
+      const [filters, setFilters] = useState<Filter<string>[]>(initialFilters);
+      const fields = useMemo(
+        () => [
+          {
+            key: 'name',
+            label: 'Name',
+            type: 'text' as const,
+            operators: [
+              { value: 'is', label: 'is' },
+              { value: 'empty', label: 'is empty' },
+            ],
+            defaultOperator: 'is',
+          },
+          {
+            key: 'count',
+            label: 'Count',
+            type: 'number' as const,
+            operators: [{ value: 'is', label: 'is' }],
+            defaultOperator: 'is',
+          },
+          {
+            key: 'created',
+            label: 'Created',
+            type: 'date' as const,
+            operators: [{ value: 'is', label: 'is' }],
+            defaultOperator: 'is',
+          },
+        ],
+        [],
+      );
+
+      return (
+        <Filters
+          addButtonText="Add filter"
+          allowMultiple={true}
+          fields={fields}
+          filters={filters}
+          showSearchInput={false}
+          onChange={setFilters}
+        />
+      );
+    }
+
+    const addFilterNamed = async (name: string) => {
+      fireEvent.click(screen.getByRole('button', { name: 'Add filter' }));
+      fireEvent.click(await screen.findByRole('option', { name }));
+    };
+
+    it('puts the caret in a newly added text filter so it can be typed into without a click', async () => {
+      render(<FocusTestFilters />);
+
+      await addFilterNamed('Name');
+
+      const input = await screen.findByRole('textbox');
+      await waitFor(() => expect(document.activeElement).toBe(input));
+    });
+
+    it('puts the caret in a newly added number filter', async () => {
+      render(<FocusTestFilters />);
+
+      await addFilterNamed('Count');
+
+      const input = await screen.findByRole('spinbutton');
+      await waitFor(() => expect(document.activeElement).toBe(input));
+    });
+
+    it('leaves a newly added date filter alone, since it is not waiting on typed input', async () => {
+      render(<FocusTestFilters />);
+
+      await addFilterNamed('Created');
+
+      // The date control renders its own input, but it arrives ready to use
+      // rather than empty, so stealing the caret would be noise.
+      await waitFor(() => expect(screen.getByText('Created')).toBeDefined());
+      expect(document.activeElement?.getAttribute('data-slot')).not.toBe('filters-input');
+    });
+  });
+
+  describe('pillLabel', () => {
+    it('labels an applied pill with pillLabel instead of the menu label', () => {
+      render(
+        <Filters
+          fields={[
+            {
+              key: 'featured',
+              label: 'Featured',
+              pillLabel: 'Post',
+              type: 'custom',
+              operators: [{ value: 'is', label: 'is' }],
+              customRenderer: () => <span>Featured value</span>,
+            },
+          ]}
+          filters={[createFilter('featured', 'is', ['true'])]}
+          onChange={vi.fn()}
+        />,
+      );
+
+      expect(screen.getByText('Post')).toBeDefined();
+      expect(screen.queryByText('Featured')).toBeNull();
+    });
+  });
+
+  // Neither segment can be clicked, so neither may show a hover state.
+  describe('static segments', () => {
+    function renderFlag(staticValue?: boolean) {
+      render(
+        <Filters
+          fields={[
+            {
+              key: 'featured',
+              label: 'Featured',
+              pillLabel: 'Post',
+              type: 'custom',
+              operators: [{ value: 'is', label: 'is' }],
+              staticValue,
+              customRenderer: () => <span>Featured value</span>,
+            },
+          ]}
+          filters={[createFilter('featured', 'is', ['true'])]}
+          onChange={vi.fn()}
+        />,
+      );
+    }
+
+    it('takes no pointer events on the field label', () => {
+      renderFlag();
+
+      expect(screen.getByText('Post').className).toContain('pointer-events-none');
+    });
+
+    it('takes no pointer events on a staticValue custom value', () => {
+      renderFlag(true);
+
+      const value = screen.getByText('Featured value').closest('[data-slot="filters-value"]');
+      expect(value?.className).toContain('pointer-events-none');
+      expect(value?.className).not.toContain('cursor-pointer');
+    });
+
+    it('keeps a custom value interactive by default', () => {
+      renderFlag();
+
+      const value = screen.getByText('Featured value').closest('[data-slot="filters-value"]');
+      expect(value?.className).not.toContain('pointer-events-none');
     });
   });
 });

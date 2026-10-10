@@ -1,4 +1,11 @@
 import { FrameLocator, Locator, Page } from '@playwright/test';
+import {
+  postPreviewBrowserFrame,
+  postPreviewEmailFrame,
+} from '@tryghost/test-data/selectors/editor';
+
+const BROWSER_FRAME = `iframe[data-testid="${postPreviewBrowserFrame}"]`;
+const EMAIL_FRAME = `iframe[data-testid="${postPreviewEmailFrame}"]`;
 
 class PreviewFrame {
   protected readonly page: Page;
@@ -7,23 +14,14 @@ class PreviewFrame {
     this.page = page;
   }
 
+  /** The modal listens for Escape once the preview document has loaded. */
   protected async waitForEscapeScriptToBeReady(): Promise<void> {
     await this.page.waitForFunction(
-      () => {
-        const iframe = document.querySelector('iframe[title*="preview"]') as HTMLIFrameElement;
-        if (!iframe?.contentWindow) {
-          return false;
-        }
-
-        try {
-          const iframeWindow = iframe.contentWindow as Window & {
-            ghostPreviewEscapeHandlerReady?: boolean;
-          };
-          return iframeWindow.ghostPreviewEscapeHandlerReady === true;
-        } catch {
-          return false;
-        }
+      (selector) => {
+        const iframe = document.querySelector(selector) as HTMLIFrameElement | null;
+        return iframe?.contentDocument?.readyState === 'complete';
       },
+      BROWSER_FRAME,
       { timeout: 5000 },
     );
   }
@@ -36,8 +34,8 @@ export class EmailPreviewFrame extends PreviewFrame {
 
   constructor(page: Page) {
     super(page);
-    this.frame = this.page.frameLocator('iframe[title="Email preview"]');
 
+    this.frame = this.page.frameLocator(EMAIL_FRAME);
     this.previewBody = this.frame.getByTestId('email-preview-body');
     this.frameBody = this.frame.locator('body');
   }
@@ -50,10 +48,14 @@ export class EmailPreviewFrame extends PreviewFrame {
 
 export class DesktopPreviewFrame extends PreviewFrame {
   readonly desktopPreviewFrame: FrameLocator;
+  /** The iframe element itself, for reading the URL the preview was pointed at. */
+  readonly frameElement: Locator;
 
   constructor(page: Page) {
     super(page);
-    this.desktopPreviewFrame = page.frameLocator('iframe[title="Desktop browser post preview"]');
+
+    this.desktopPreviewFrame = page.frameLocator(BROWSER_FRAME);
+    this.frameElement = page.locator(BROWSER_FRAME);
   }
 
   async focus(): Promise<void> {

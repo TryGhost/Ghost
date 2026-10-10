@@ -15,8 +15,7 @@ import { useCallback, useEffect, useMemo } from 'react';
 import useHandleError from '../../hooks/use-handle-error';
 import { usePermission } from '../../hooks/use-permissions';
 import { UserRoleType } from '../../api/roles';
-import { useFramework } from '../../providers/framework-provider';
-import { RequestOptions, apiUrl, useFetchApi } from './fetch-api';
+import { apiUrl, useFetchApi, type RequestOptions } from './fetch-api';
 
 export interface Meta {
   capabilities?: {
@@ -38,6 +37,7 @@ interface QueryOptions<ResponseData> {
   headers?: Record<string, string>;
   defaultSearchParams?: Record<string, string>;
   permissions?: UserRoleType[];
+  parseResponse?: (data: unknown) => ResponseData;
   returnData?: (originalData: unknown) => ResponseData;
 }
 
@@ -47,24 +47,38 @@ type QueryHookOptions<ResponseData> = Omit<
 > & {
   searchParams?: Record<string, string>;
   defaultErrorHandler?: boolean;
+  /**
+   * Whether this query leaves an expired session for its caller to handle in place.
+   * Applies to fetches this call site initiates, not to shared cache entries it joins.
+   */
+  requestOptions?: Pick<RequestOptions, 'sessionExpiryRedirect'>;
 };
 
 export const createQuery =
   <ResponseData>(options: QueryOptions<ResponseData>) =>
-  ({ searchParams, ...query }: QueryHookOptions<ResponseData> = {}): Omit<
+  ({ searchParams, requestOptions, ...query }: QueryHookOptions<ResponseData> = {}): Omit<
     UseQueryResult<ResponseData>,
     'data'
   > & { data: ResponseData | undefined } => {
     const url = apiUrl(options.path, searchParams || options.defaultSearchParams);
     const fetchApi = useFetchApi();
     const handleError = useHandleError();
-    const hasPermission = usePermission(options.permissions);
+    const hasPermission = usePermission(options.permissions, { requestOptions });
 
     const result = useQuery<ResponseData>({
       ...query,
       enabled: hasPermission && (query.enabled ?? true),
       queryKey: [options.dataType, url],
-      queryFn: () => fetchApi(url, { ...options }),
+      queryFn: async () => {
+        if (options.parseResponse) {
+          const data = await fetchApi<unknown>(url, {
+            headers: options.headers,
+            ...requestOptions,
+          });
+          return options.parseResponse(data);
+        }
+        return fetchApi<ResponseData>(url, { headers: options.headers, ...requestOptions });
+      },
     });
 
     const data = useMemo(
@@ -84,21 +98,25 @@ export const createQuery =
     };
   };
 
-type InfiniteQueryOptions<ResponseData> = Omit<QueryOptions<ResponseData>, 'returnData'> & {
-  returnData: NonNullable<QueryOptions<ResponseData>['returnData']>;
+type InfiniteQueryOptions<ResponseData, PageData = ResponseData> = Omit<
+  QueryOptions<PageData>,
+  'returnData' | 'parseResponse'
+> & {
+  parseResponse?: (data: unknown, params: Record<string, string>) => PageData;
+  returnData: (originalData: unknown) => ResponseData;
   defaultNextPageParams?: (
-    data: ResponseData,
+    data: PageData,
     params: Record<string, string>,
   ) => Record<string, string> | undefined;
 };
 
 type InfiniteQueryPageParam = Record<string, string> | undefined;
 
-type InfiniteQueryHookOptions<ResponseData> = Omit<
+type InfiniteQueryHookOptions<ResponseData, PageData = ResponseData> = Omit<
   UseInfiniteQueryOptions<
-    ResponseData,
+    PageData,
     Error,
-    InfiniteData<ResponseData, InfiniteQueryPageParam>,
+    InfiniteData<PageData, InfiniteQueryPageParam>,
     QueryKey,
     InfiniteQueryPageParam
   >,
@@ -106,25 +124,35 @@ type InfiniteQueryHookOptions<ResponseData> = Omit<
 > & {
   searchParams?: Record<string, string>;
   defaultErrorHandler?: boolean;
+  /**
+   * Whether this query leaves an expired session for its caller to handle in place.
+   * Applies to fetches this call site initiates, not to shared cache entries it joins.
+   */
+  requestOptions?: Pick<RequestOptions, 'sessionExpiryRedirect'>;
   getNextPageParams?: (
-    data: ResponseData,
+    data: PageData,
     params: Record<string, string>,
   ) => Record<string, string> | undefined;
 };
 
 export const createInfiniteQuery =
-  <ResponseData>(options: InfiniteQueryOptions<ResponseData>) =>
-  ({ searchParams, getNextPageParams, ...query }: InfiniteQueryHookOptions<ResponseData> = {}) => {
+  <ResponseData, PageData = ResponseData>(options: InfiniteQueryOptions<ResponseData, PageData>) =>
+  ({
+    searchParams,
+    requestOptions,
+    getNextPageParams,
+    ...query
+  }: InfiniteQueryHookOptions<ResponseData, PageData> = {}) => {
     const fetchApi = useFetchApi();
     const handleError = useHandleError();
-    const hasPermission = usePermission(options.permissions);
+    const hasPermission = usePermission(options.permissions, { requestOptions });
 
     const nextPageParams = getNextPageParams || options.defaultNextPageParams || (() => ({}));
 
     const result = useInfiniteQuery<
-      ResponseData,
+      PageData,
       Error,
-      InfiniteData<ResponseData, InfiniteQueryPageParam>,
+      InfiniteData<PageData, InfiniteQueryPageParam>,
       QueryKey,
       InfiniteQueryPageParam
     >({
@@ -134,10 +162,18 @@ export const createInfiniteQuery =
         options.dataType,
         apiUrl(options.path, searchParams || options.defaultSearchParams),
       ],
-      queryFn: ({ pageParam }) =>
-        fetchApi(apiUrl(options.path, pageParam || searchParams || options.defaultSearchParams), {
-          ...options,
-        }),
+      queryFn: async ({ pageParam }) => {
+        const params = pageParam || searchParams || options.defaultSearchParams || {};
+        const url = apiUrl(options.path, params);
+        if (options.parseResponse) {
+          const data = await fetchApi<unknown>(url, {
+            headers: options.headers,
+            ...requestOptions,
+          });
+          return options.parseResponse(data, params);
+        }
+        return fetchApi<PageData>(url, { headers: options.headers, ...requestOptions });
+      },
       initialPageParam: undefined,
       getNextPageParam: (data) =>
         nextPageParams(data, searchParams || options.defaultSearchParams || {}),
@@ -172,15 +208,20 @@ interface MutationOptions<ResponseData, Payload>
   headers?: Record<string, string>;
   body?: (payload: Payload) => FormData | object;
   searchParams?: (payload: Payload) => { [key: string]: string };
+  /** Per-payload transport options, merged over the ones declared on the hook. */
+  requestOptions?: (payload: Payload) => Omit<RequestOptions, 'body'>;
   invalidateQueries?:
-    | { dataType: string | string[] }
+    | {
+        dataType: string | string[];
+        /** Leaves out the queries under those data types it answers false for. */
+        predicate?: InvalidateQueryFilters['predicate'];
+      }
     | {
         filters?: InvalidateQueryFilters;
         options?: InvalidateOptions;
       };
   updateQueries?: {
     dataType: string;
-    emberUpdateType: 'createOrUpdate' | 'delete' | 'skip';
     update: (newData: ResponseData, currentData: unknown, payload: Payload) => unknown;
   };
 }
@@ -198,7 +239,7 @@ const mutate = <ResponseData, Payload>({
   searchParams?: Record<string, string>;
   options: Omit<MutationOptions<ResponseData, Payload>, 'path'>;
 }) => {
-  const { defaultSearchParams, body, ...requestOptions } = options;
+  const { defaultSearchParams, body, requestOptions, ...staticOptions } = options;
   const url = apiUrl(path, searchParams || defaultSearchParams);
   const generatedBody = payload && body?.(payload);
 
@@ -211,7 +252,8 @@ const mutate = <ResponseData, Payload>({
 
   return fetchApi<ResponseData>(url, {
     body: requestBody,
-    ...requestOptions,
+    ...staticOptions,
+    ...(payload === undefined ? {} : requestOptions?.(payload)),
   });
 };
 
@@ -227,7 +269,6 @@ export const createMutation =
   () => {
     const fetchApi = useFetchApi();
     const queryClient = useQueryClient();
-    const { onUpdate, onInvalidate, onDelete } = useFramework();
 
     const afterMutate = useCallback(
       (newData: ResponseData, payload: Payload) => {
@@ -236,8 +277,10 @@ export const createMutation =
             ? invalidateQueries.dataType
             : [invalidateQueries.dataType];
           for (const dataType of dataTypes) {
-            queryClient.invalidateQueries({ queryKey: [dataType] });
-            onInvalidate(dataType);
+            queryClient.invalidateQueries({
+              queryKey: [dataType],
+              predicate: invalidateQueries.predicate,
+            });
           }
         } else if (invalidateQueries) {
           queryClient.invalidateQueries(invalidateQueries.filters, invalidateQueries.options);
@@ -247,20 +290,9 @@ export const createMutation =
           queryClient.setQueriesData({ queryKey: [updateQueries.dataType] }, (data: unknown) =>
             updateQueries!.update(newData, data, payload),
           );
-          if (updateQueries.emberUpdateType === 'createOrUpdate') {
-            onUpdate(updateQueries.dataType, newData);
-          } else if (updateQueries.emberUpdateType === 'delete') {
-            if (typeof payload !== 'string') {
-              throw new Error(
-                'Expected delete mutation to have a string (ID) payload. Either change the payload or update the createMutation hook',
-              );
-            }
-
-            onDelete(updateQueries.dataType, payload);
-          }
         }
       },
-      [onInvalidate, onUpdate, onDelete, queryClient],
+      [queryClient],
     );
 
     return useMutation<ResponseData, unknown, Payload>({

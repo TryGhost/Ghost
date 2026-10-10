@@ -1,18 +1,12 @@
-import { useEffect } from 'react';
-import {
-  useQuery,
-  useMutation,
-  type UseQueryResult,
-  type UseMutationResult,
-} from '@tanstack/react-query';
+import { useEffect, useMemo } from 'react';
+import { useMutation, type UseMutationResult } from '@tanstack/react-query';
 
 import {
   useUserPreferences,
   useEditUserPreferences,
-  type Preferences,
   type WhatsNewPreferences,
 } from '@/hooks/user-preferences';
-import { useChangelog, type ChangelogEntry } from './use-changelog';
+import { useChangelog } from './use-changelog';
 
 function getDefaultWhatsNewPreferences(): WhatsNewPreferences {
   return {
@@ -24,22 +18,13 @@ interface WhatsNewData {
   hasNew: boolean;
 }
 
-const whatsNewQueryKey = (
-  preferences: Preferences | undefined,
-  latestEntry: ChangelogEntry | undefined,
-) =>
-  [
-    'whatsNew',
-    preferences?.whatsNew?.lastSeenDate?.toISOString(),
-    latestEntry?.publishedAt.toISOString(),
-  ] as const;
-
-export const useWhatsNew = (): UseQueryResult<WhatsNewData> => {
+export const useWhatsNew = (): WhatsNewData => {
   const { data: preferences, isSuccess: isPreferencesLoaded } = useUserPreferences();
   const { data: changelog, isSuccess: isChangelogLoaded } = useChangelog();
   const { mutateAsync: updatePreferences } = useEditUserPreferences();
 
-  const hasWhatsNewPreferences = !!preferences?.whatsNew?.lastSeenDate;
+  const lastSeenDate = preferences?.whatsNew?.lastSeenDate;
+  const hasWhatsNewPreferences = !!lastSeenDate;
 
   // Initialize default whatsNewPreferences if missing or invalid
   useEffect(() => {
@@ -52,25 +37,13 @@ export const useWhatsNew = (): UseQueryResult<WhatsNewData> => {
 
   const latestEntry = changelog?.entries[0];
 
-  return useQuery({
-    queryKey: whatsNewQueryKey(preferences, latestEntry),
-    queryFn: () => {
-      if (!latestEntry) {
-        return { hasNew: false };
-      }
+  return useMemo(() => {
+    if (!isChangelogLoaded || !lastSeenDate || !latestEntry) {
+      return { hasNew: false };
+    }
 
-      // Safe to assert non-null because query is only enabled when hasWhatsNewPreferences is true,
-      // and useEffect ensures whatsNew is initialized with a valid lastSeenDate
-      const lastSeenDate = preferences!.whatsNew!.lastSeenDate!;
-
-      const hasNew = latestEntry.publishedAt > lastSeenDate;
-
-      return { hasNew };
-    },
-    enabled: isChangelogLoaded && hasWhatsNewPreferences,
-    staleTime: Infinity,
-    gcTime: 0,
-  });
+    return { hasNew: latestEntry.publishedAt > lastSeenDate };
+  }, [isChangelogLoaded, lastSeenDate, latestEntry]);
 };
 
 export const useDismissWhatsNew = (): UseMutationResult<void, Error, void, unknown> => {

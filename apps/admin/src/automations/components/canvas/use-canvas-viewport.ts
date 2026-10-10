@@ -68,6 +68,7 @@ export const useCanvasViewport = <NodeType extends Node = Node, EdgeType extends
   > | null>(null);
   const [zoom, setZoom] = useState(initialViewport.zoom);
   const resizeObserverRef = useRef<ResizeObserver | null>(null);
+  const previousCanvasWidth = useRef<number | null>(null);
 
   const measureCanvas = useCallback((element: HTMLDivElement | null) => {
     resizeObserverRef.current?.disconnect();
@@ -139,11 +140,20 @@ export const useCanvasViewport = <NodeType extends Node = Node, EdgeType extends
       canvasSize,
       { y: initialViewport.y, zoom },
     );
-    const nextViewport = constrainViewport(currentViewport, canvasSize, nextExtent);
+    // Preserve the visible center when a docked sidebar changes the canvas width.
+    const widthChange = canvasSize.width - (previousCanvasWidth.current ?? canvasSize.width);
+    previousCanvasWidth.current = canvasSize.width;
+    const nextViewport = constrainViewport(
+      { ...currentViewport, x: currentViewport.x + widthChange / 2 },
+      canvasSize,
+      nextExtent,
+    );
 
     if (nextViewport.x !== currentViewport.x || nextViewport.y !== currentViewport.y) {
       void reactFlowInstance.setViewport(nextViewport, {
-        duration: 250,
+        // Width already animates in CSS. A second animation would trail each resize
+        // frame and make the flow jump ahead, then drift back after the panel stops.
+        duration: widthChange === 0 ? 250 : 0,
         interpolate: 'linear',
       });
     }

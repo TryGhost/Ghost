@@ -1,19 +1,14 @@
 import NewslettersList from './newsletters-list';
-import React, { type ReactNode, useEffect, useState } from 'react';
+import React, { type ReactNode, useEffect } from 'react';
 import useQueryParams from '@/settings/hooks/use-query-params';
 import { APIError } from '@tryghost/admin-x-framework/errors';
 import { Button } from '@tryghost/shade/components';
-import { type InfiniteData, useQueryClient } from '@tryghost/admin-x-framework';
 import {
-  type Newsletter,
-  type NewslettersResponseType,
-  newslettersDataType,
   useBrowseNewsletters,
-  useEditNewsletter,
   useVerifyNewsletterEmail,
 } from '@tryghost/admin-x-framework/api/newsletters';
-import { arrayMove } from '@dnd-kit/sortable';
 import { formatNumber } from '@tryghost/shade/utils';
+import { useNewsletterReorder } from '@/settings/email/use-newsletter-reorder';
 import {
   type ConfirmationHandle,
   useConfirmation,
@@ -67,19 +62,14 @@ const NewslettersTabContent: React.FC<NewslettersTabContentProps> = ({ filter })
     isLoading,
     fetchNextPage,
   } = useBrowseNewsletters();
-  const { mutateAsync: editNewsletter } = useEditNewsletter();
-  const queryClient = useQueryClient();
 
   const verifyEmailToken = useQueryParams().getParam('verifyEmail');
   const { mutateAsync: verifyEmail } = useVerifyNewsletterEmail();
   const handleError = useHandleError();
   const { confirm } = useConfirmation();
 
-  const [newsletters, setNewsletters] = useState<Newsletter[]>(apiNewsletters || []);
-
-  useEffect(() => {
-    setNewsletters(apiNewsletters || []);
-  }, [apiNewsletters]);
+  const { newsletters, sortedActiveNewsletters, archivedNewsletters, onSort } =
+    useNewsletterReorder(apiNewsletters);
 
   useEffect(() => {
     if (!verifyEmailToken || !isNewsletterVerificationRoute()) {
@@ -158,66 +148,6 @@ const NewslettersTabContent: React.FC<NewslettersTabContentProps> = ({ filter })
     };
     void verify();
   }, [verifyEmailToken, handleError, verifyEmail, confirm]);
-
-  const sortedActiveNewsletters =
-    newsletters.filter((n) => n.status === 'active').sort((a, b) => a.sort_order - b.sort_order) ||
-    [];
-  const archivedNewsletters = newsletters.filter((newsletter) => newsletter.status !== 'active');
-
-  const onSort = async (id: string, overId?: string) => {
-    const fromIndex = sortedActiveNewsletters.findIndex((newsletter) => newsletter.id === id);
-    const toIndex =
-      sortedActiveNewsletters.findIndex((newsletter) => newsletter.id === overId) || 0;
-    const newSortOrder = arrayMove(sortedActiveNewsletters, fromIndex, toIndex);
-
-    const updatedActiveNewsletters = newSortOrder
-      .map((newsletter, index) =>
-        newsletter.sort_order === index ? null : { ...newsletter, sort_order: index },
-      )
-      .filter((newsletter): newsletter is Newsletter => !!newsletter);
-
-    const updatedArchivedNewsletters = archivedNewsletters
-      .map((newsletter, index) =>
-        newsletter.sort_order === index + sortedActiveNewsletters.length
-          ? null
-          : { ...newsletter, sort_order: index },
-      )
-      .filter((newsletter): newsletter is Newsletter => !!newsletter);
-
-    const orderUpdatedNewsletters = [
-      ...updatedActiveNewsletters,
-      ...updatedArchivedNewsletters,
-    ].sort((a, b) => a.sort_order - b.sort_order);
-
-    setNewsletters(
-      newsletters.map(
-        (newsletter) => orderUpdatedNewsletters.find((n) => n.id === newsletter.id) || newsletter,
-      ),
-    );
-    queryClient.setQueriesData<InfiniteData<NewslettersResponseType>>(
-      { queryKey: [newslettersDataType] },
-      (currentData) => {
-        if (!currentData) {
-          return;
-        }
-
-        return {
-          ...currentData,
-          pages: currentData.pages.map((page) => ({
-            ...page,
-            newsletters: page.newsletters.map(
-              (newsletter) =>
-                orderUpdatedNewsletters.find((n) => n.id === newsletter.id) || newsletter,
-            ),
-          })),
-        };
-      },
-    );
-
-    for (const newsletter of orderUpdatedNewsletters) {
-      await editNewsletter(newsletter);
-    }
-  };
 
   const showingActive = filter === 'active';
 

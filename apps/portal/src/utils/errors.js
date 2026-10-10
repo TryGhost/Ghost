@@ -1,9 +1,25 @@
 import { t } from './i18n';
 
 export class HumanReadableError extends Error {
-  constructor(message, { code } = {}) {
+  constructor(message, { code, property, details } = {}) {
     super(message);
     this.code = code ?? null;
+    // Which part of the request the server refused, when it says (e.g. a custom field).
+    this.property = property ?? null;
+    // Every refusal, when the site refused more than one thing at once. The first of
+    // them is this error's own message and property, so a reader that wants one still
+    // has one.
+    //
+    // Kept only where a refusal says both what it refused and why, in words: what reads
+    // these goes on to ask them for a translation and a part name, and neither survives
+    // being handed something that is not text. A site answering in a shape this does not
+    // know reads as one refusal rather than taking the page down.
+    this.details = Array.isArray(details)
+      ? details.filter(
+          (detail) =>
+            detail && typeof detail.property === 'string' && typeof detail.message === 'string',
+        )
+      : null;
   }
 
   /**
@@ -12,18 +28,10 @@ export class HumanReadableError extends Error {
    * @returns {HumanReadableError|undefined}
    */
   static async fromApiResponse(res) {
-    // Bad request + Too many requests
-    if (res.status === 400 || res.status === 429) {
+    // Bad request + Unprocessable + Too many requests
+    if (res.status === 400 || res.status === 422 || res.status === 429) {
       try {
-        const json = await res.json();
-        if (
-          json.errors &&
-          Array.isArray(json.errors) &&
-          json.errors.length > 0 &&
-          json.errors[0].message
-        ) {
-          return new HumanReadableError(json.errors[0].message, { code: json.errors[0].code });
-        }
+        return fromErrorsJSON(await res.json());
       } catch (e) {
         // Failed to decode: ignore
         return undefined;
@@ -37,15 +45,7 @@ export class HumanReadableError extends Error {
       }
 
       try {
-        const json = await res.json();
-        if (
-          json.errors &&
-          Array.isArray(json.errors) &&
-          json.errors.length > 0 &&
-          json.errors[0].message
-        ) {
-          return new HumanReadableError(json.errors[0].message, { code: json.errors[0].code });
-        }
+        return fromErrorsJSON(await res.json());
       } catch (e) {
         // Failed to decode: ignore
         return undefined;
@@ -57,6 +57,19 @@ export class HumanReadableError extends Error {
 
     return undefined;
   }
+}
+
+function fromErrorsJSON(json) {
+  const error = Array.isArray(json.errors) ? json.errors[0] : null;
+  if (!error?.message) {
+    return undefined;
+  }
+
+  return new HumanReadableError(error.message, {
+    code: error.code,
+    property: error.property,
+    details: error.details,
+  });
 }
 
 export const specialMessages = [];
@@ -98,6 +111,7 @@ export function chooseBestErrorMessage(error, alreadyTranslatedDefaultMessage) {
       t('Too many sign-up attempts, try again later');
       t('Memberships from this email domain are currently restricted.');
       t('Invalid verification code');
+      t('Unable to verify your request, please try again');
     }
   };
 

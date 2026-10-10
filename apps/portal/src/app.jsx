@@ -15,6 +15,9 @@ import { getActivePage, isAccountPage, isOfferPage } from './pages';
 import ActionHandler from './actions';
 import { getGiftRedemptionErrorMessage } from './utils/gift-redemption-notification';
 import { GIFT_DURATION_CATALOGUE } from './utils/gift-subscriptions';
+import { clearGiftFormState } from './components/pages/gift/form-state';
+import { preloadGiftCardTextures } from './components/common/gift-card';
+import { fetchMemberCustomFields } from './utils/custom-fields';
 import './app.css';
 import {
   hasRecommendations,
@@ -49,6 +52,16 @@ const safeDecodeURIComponent = (value) => {
   }
 };
 
+const parseBooleanQueryParam = (value) => {
+  if (value === 'true') {
+    return true;
+  }
+  if (value === 'false') {
+    return false;
+  }
+  return undefined;
+};
+
 const staleGiftRedemptionRequestResult = {
   staleGiftRedemptionRequest: true,
 };
@@ -79,11 +92,17 @@ export default class App extends React.Component {
     this.state = {
       site: null,
       member: null,
+      // The custom fields open to members, asked for with the member during init.
+      customFields: [],
       offers: [],
       page: 'loading',
       showPopup: false,
       action: 'init:running',
       actionErrorMessage: null,
+      // Inputs the site refused on the last save, keyed as the page names them, so the
+      // box that was refused carries the message rather than a notification floating
+      // above six that all look fine.
+      fieldErrors: {},
       initStatus: 'running',
       lastPage: null,
       notification: null,
@@ -201,7 +220,7 @@ export default class App extends React.Component {
       event.preventDefault();
       const target = event.currentTarget;
       const pagePath = target && target.dataset.portal;
-      const linkData = this.getPageFromLinkPath(pagePath);
+      const linkData = this.getPageFromLinkPath(pagePath, this.state.site);
       if (!linkData) {
         return;
       }
@@ -285,6 +304,7 @@ export default class App extends React.Component {
         site,
         member,
         offers,
+        customFields,
         page,
         showPopup,
         popupNotification,
@@ -303,6 +323,7 @@ export default class App extends React.Component {
         site,
         member,
         offers,
+        customFields,
         page,
         lastPage,
         pageQuery,
@@ -357,16 +378,23 @@ export default class App extends React.Component {
   async fetchData() {
     const { site: apiSiteData, member, offers } = await this.fetchApiData();
     const { site: devSiteData, ...restDevData } = this.fetchDevData();
-    const linkData = await this.fetchLinkData(apiSiteData, member);
+    // Asked for beside the link data rather than after it: the account settings page is
+    // drawn from these, and a member who opens it should not wait for a round trip that
+    // could have been made while the page was still loading.
+    const [linkData, customFields] = await Promise.all([
+      this.fetchLinkData(apiSiteData, member),
+      fetchMemberCustomFields({ api: this.GhostApi, site: apiSiteData, member }),
+    ]);
     const { site: linkSiteData, ...restLinkData } = linkData?.staleGiftRedemptionRequest
       ? {}
       : linkData;
     const { site: previewSiteData, ...restPreviewData } = this.fetchPreviewData();
     const { site: notificationSiteData, ...restNotificationData } = this.fetchNotificationData();
-    let page = '';
+    const page = '';
     return {
       member,
       offers,
+      customFields,
       page,
       site: {
         ...apiSiteData,
@@ -408,7 +436,7 @@ export default class App extends React.Component {
     const qsParams = new URLSearchParams(qs);
     const data = {};
     // Handle the query params key/value pairs
-    for (let pair of qsParams.entries()) {
+    for (const pair of qsParams.entries()) {
       const key = pair[0];
       const value = decodeURIComponent(pair[1]);
       if (key === 'name') {
@@ -475,7 +503,7 @@ export default class App extends React.Component {
     let portalProducts = null;
     let monthlyPrice, yearlyPrice, currency;
     // Handle the query params key/value pairs
-    for (let pair of qsParams.entries()) {
+    for (const pair of qsParams.entries()) {
       const key = pair[0];
 
       // Note: this needs to be cleaned up, there is no reason why we need to double encode/decode
@@ -485,6 +513,16 @@ export default class App extends React.Component {
         data.site.portal_button = JSON.parse(value);
       } else if (key === 'name') {
         data.site.portal_name = JSON.parse(value);
+      } else if (key === 'signupGiftPromotion') {
+        const enabled = parseBooleanQueryParam(value);
+        if (enabled !== undefined) {
+          data.site.portal_signup_gift_promotion = enabled;
+        }
+      } else if (key === 'accountGiftPromotion') {
+        const enabled = parseBooleanQueryParam(value);
+        if (enabled !== undefined) {
+          data.site.portal_account_gift_promotion = enabled;
+        }
       } else if (key === 'isFree' && JSON.parse(value)) {
         allowedPlans.push('free');
       } else if (key === 'isMonthly' && JSON.parse(value)) {
@@ -639,6 +677,15 @@ export default class App extends React.Component {
       const cadence = qParams.get('gift_cadence');
       const duration = Number(qParams.get('gift_duration'));
       const deliveryMethod = qParams.get('gift_delivery');
+      const deliveryDateParam = qParams.get('gift_delivery_date');
+      const deliveryDate = /^\d{4}-\d{2}-\d{2}$/.test(deliveryDateParam || '')
+        ? deliveryDateParam
+        : null;
+      // Exact send instant in epoch ms; a delivery date without it means
+      // the send already happened.
+      const scheduledAtParam = Number(qParams.get('gift_scheduled_at'));
+      const scheduledAt =
+        Number.isFinite(scheduledAtParam) && scheduledAtParam > 0 ? scheduledAtParam : null;
       clearURLParams([
         'stripe',
         'gift_token',
@@ -646,8 +693,11 @@ export default class App extends React.Component {
         'gift_cadence',
         'gift_duration',
         'gift_delivery',
+        'gift_delivery_date',
+        'gift_scheduled_at',
       ]);
       if (token) {
+        clearGiftFormState();
         return {
           showPopup: true,
           page: 'giftSuccess',
@@ -657,6 +707,8 @@ export default class App extends React.Component {
             cadence,
             duration: GIFT_DURATION_CATALOGUE.includes(duration) ? duration : null,
             deliveryMethod: deliveryMethod === 'email' ? 'email' : 'link',
+            deliveryDate,
+            scheduledAt,
           },
         };
       }
@@ -749,6 +801,7 @@ export default class App extends React.Component {
         return {};
       }
 
+      preloadGiftCardTextures(site.url);
       const redemptionRequest = this.startGiftRedemptionRequest(decodedToken);
       const giftLinkData = await this.fetchGiftRedemptionData({
         token: decodedToken,
@@ -788,6 +841,10 @@ export default class App extends React.Component {
         removePortalLinkFromUrl();
 
         return {};
+      }
+
+      if (page === 'gift') {
+        preloadGiftCardTextures(site.url);
       }
 
       const lastPage = ['accountPlan', 'accountProfile'].includes(page) ? 'accountHome' : null;
@@ -922,7 +979,7 @@ export default class App extends React.Component {
       fpScript.async = !0;
       fpScript.src = 'https://cdn.firstpromoter.com/fprom.js';
       fpScript.onload = fpScript.onreadystatechange = function () {
-        let _t = this.readyState;
+        const _t = this.readyState;
         if (!_t || 'complete' === _t || 'loaded' === _t) {
           try {
             window.$FPROM.init(firstPromoterId, siteDomain);
@@ -1013,6 +1070,11 @@ export default class App extends React.Component {
     }
 
     const { site: linkSite, ...restLinkData } = linkData;
+    const isLeavingGiftPage = this.state.page === 'gift' && restLinkData.page !== 'gift';
+    if (isLeavingGiftPage) {
+      clearGiftFormState();
+    }
+    const shouldCloseGiftPopup = isLeavingGiftPage && !restLinkData.page;
 
     const updatedState = {
       site: {
@@ -1027,6 +1089,7 @@ export default class App extends React.Component {
       },
       ...restLinkData,
       ...restPreviewData,
+      ...(shouldCloseGiftPopup ? { showPopup: false, lastPage: null } : {}),
     };
     this.handleSignupQuery({ site: updatedState.site, pageQuery: updatedState.pageQuery });
     this.setState(updatedState);
@@ -1216,6 +1279,16 @@ export default class App extends React.Component {
     } else if (path === 'gift') {
       return {
         page: 'gift',
+        pageData: {
+          giftStep: 'plan',
+        },
+      };
+    } else if (path === 'gift/delivery') {
+      return {
+        page: 'gift',
+        pageData: {
+          giftStep: 'delivery',
+        },
       };
     } else if (path === 'share') {
       return {
@@ -1348,6 +1421,8 @@ export default class App extends React.Component {
       scrollbarWidth,
       otcRef,
       inboxLinks,
+      customFields,
+      fieldErrors,
     } = this.state;
     const contextPage = this.getContextPage({ site, page, member });
     const contextMember = this.getContextMember({
@@ -1369,6 +1444,8 @@ export default class App extends React.Component {
       pageQuery,
       pageData,
       member: contextMember,
+      customFields,
+      fieldErrors,
       lastPage,
       showPopup,
       popupNotification,

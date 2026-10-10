@@ -4,7 +4,6 @@ import { User } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
 import { stringToHslColor } from '@/lib/ds-utils';
-import { formatMemberName, getMemberInitials } from '@/lib/app-utils';
 
 const AvatarImage = React.forwardRef<
   React.ElementRef<typeof AvatarPrimitive.Image>,
@@ -61,18 +60,19 @@ function ValidatedAvatarImage({ src }: { src: string }) {
 
 interface AvatarProps extends React.ComponentPropsWithoutRef<typeof AvatarPrimitive.Root> {
   src?: string | null;
-  name?: string | null;
-  email?: string | null;
+  initials?: string | null;
+  /**
+   * Seeds the fallback background hue. Defaults to the initials, but callers
+   * should pass the richer identity string they derived the initials from
+   * (name/email) so distinct people keep distinct hues.
+   */
+  colorSeed?: string | null;
 }
 
 const Avatar = React.forwardRef<React.ElementRef<typeof AvatarPrimitive.Root>, AvatarProps>(
-  ({ className, children, src, name, email, ...props }, ref) => {
-    const identity = { name: name || undefined, email: email || undefined };
-    const hasIdentity = !!(name || email);
-    const initials = hasIdentity ? getMemberInitials(identity) : null;
-    const bgColor = hasIdentity
-      ? stringToHslColor(formatMemberName(identity), '45', '55')
-      : undefined;
+  ({ className, children, src, initials, colorSeed, ...props }, ref) => {
+    const hasInitials = !!initials;
+    const bgColor = hasInitials ? stringToHslColor(colorSeed || initials, '45', '55') : undefined;
 
     return (
       <AvatarPrimitive.Root
@@ -85,9 +85,9 @@ const Avatar = React.forwardRef<React.ElementRef<typeof AvatarPrimitive.Root>, A
             <AvatarFallback
               className={cn(
                 'text-xs text-muted-foreground md:text-sm [&_svg]:size-3 md:[&_svg]:size-4',
-                hasIdentity && 'font-semibold text-white',
+                hasInitials && 'font-semibold text-white',
               )}
-              style={hasIdentity ? { backgroundColor: bgColor } : undefined}
+              style={hasInitials ? { backgroundColor: bgColor } : undefined}
             >
               {initials ?? <User />}
             </AvatarFallback>

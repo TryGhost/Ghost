@@ -29,7 +29,7 @@ pnpm test
 
 If `GHOST_E2E_MODE` is unset, the e2e shell entrypoints auto-select:
 
-- `dev` when the local admin dev server is reachable on `http://127.0.0.1:5174`
+- `dev` when the Admin dev server from `pnpm dev` or `pnpm dev:docker` is reachable
 - `build` otherwise
 
 To use dev mode, start `pnpm dev` before running tests:
@@ -62,7 +62,7 @@ E2E test scripts automatically sync Tinybird tokens when Tinybird is running.
 
 ### Build Mode (Prebuilt Image)
 
-Use build mode when you don’t want to run dev servers. It uses a prebuilt Ghost image and serves public assets from `/content/files`.
+Use build mode when you don’t want to run dev servers. It uses a prebuilt Ghost image and serves public assets from `/ghost/assets`.
 
 ```bash
 # From repository root
@@ -79,6 +79,18 @@ Build-mode E2E infra uses tmpfs-backed MySQL storage by default so database
 snapshot restore cycles stay fast and isolated from local development data.
 Set `GHOST_E2E_MYSQL_TMPFS=false` to use the normal Docker volume instead, or
 `GHOST_E2E_MYSQL_TMPFS_SIZE=4g` to adjust the tmpfs size.
+
+Set `GHOST_E2E_TINYBIRD_SLIM=true` to swap the Tinybird service for the distilled
+slim image (`ghcr.io/tryghost/tinybird-local-slim`): ~0.7GB pulled and ~2.4GB on
+disk, against ~2.1GB and ~6.9GB for upstream. CI enables it so the analytics jobs
+fit inside the runner disk budget. Override the image/tag with
+`GHOST_E2E_TINYBIRD_SLIM_IMAGE`. Local dev (`compose.dev.analytics.yaml`) always
+uses the upstream image.
+
+The slim image's GHCR package is internal, so a pull can legitimately fail — most
+often on a PR from a public fork, whose token cannot read it. `infra-up.sh` warns
+and falls back to the upstream image rather than failing the run. CI leaves the
+flag off for cross-repo PRs so those runs skip the doomed pull entirely.
 
 For a CI-like local preflight (pulls Playwright + gateway images and starts infra), run:
 
@@ -227,7 +239,7 @@ Global teardown (`tests/global.teardown.ts`) does:
 Modes:
 
 - Dev mode: Ghost mounts source code and proxies assets to host dev servers
-- Build mode: Ghost uses a prebuilt image and serves assets from `/content/files`
+- Build mode: Ghost uses a prebuilt image and serves assets from `/ghost/assets`
 
 ### Best Practices
 
@@ -246,10 +258,16 @@ Tests run automatically in GitHub Actions on every PR and commit to `main`.
 
 1. **Setup**: Ubuntu runner with Node.js and Docker
 2. **Build Assets**: Build server/admin assets and public app UMD bundles
-3. **Build E2E Image**: `pnpm --filter @tryghost/e2e build:docker` (layers public apps into `/content/files`)
+3. **Build E2E Image**: `pnpm --filter @tryghost/e2e build:docker` (layers public apps into Ghost's built admin assets, served from `/ghost/assets`)
 4. **Prepare E2E Runtime**: Pull Playwright/gateway images in parallel, start infra, and sync Tinybird state (`pnpm --filter @tryghost/e2e preflight:build`)
-5. **Test Execution**: Run Playwright E2E tests inside the official Playwright container
-6. **Artifacts**: Upload Playwright traces and reports on failure
+5. **Shard Planning**: Split the `main` project's files across shards by recorded duration (`scripts/e2e-shards.ts`)
+6. **Test Execution**: Run Playwright E2E tests inside the official Playwright container
+7. **Artifacts**: Upload Playwright traces and reports on failure
+
+`main` shards balance on per-file durations that each `main` branch run records
+into the Actions cache. A file without a recorded time is estimated from its test
+count, so new tests need no setup. The `analytics` project still uses
+Playwright's `--shard`.
 
 ## Available Scripts
 
@@ -299,7 +317,7 @@ would return. Those shapes were originally written from the docs rather than fro
 Stripe, so nothing checked them against the real API.
 
 `helpers/services/stripe/fixtures/` holds responses captured from Stripe test mode at
-API version `2020-08-27`, the version `ghost/core` pins. `pnpm test:fixtures` asserts
+API version `2020-08-27`, the version `ghost` pins. `pnpm test:fixtures` asserts
 the builders against them, and needs no Ghost, no Docker and no browser.
 
 Two failures are worth catching. A builder emitting a key Stripe does not return means
@@ -351,6 +369,11 @@ renderings: at Stripe's current default the shipping address moves to
 `collected_information.shipping_details`, which Ghost never sees. Ghost reads only
 `event.type` and `event.data.object`, so the envelope carries nothing worth pinning.
 
+The same difference applies to `stripe listen`, which `pnpm dev:stripe --listen` uses:
+it renders events at the account default too. The default `pnpm dev:stripe` lets Ghost
+register its own pinned endpoint, so it receives the payloads production receives (see
+[Stripe testing](../docs/contributing/testing-stripe.md#receive-production-shaped-webhooks)).
+
 ## Resolving issues
 
 ### Test Failures
@@ -359,3 +382,15 @@ renderings: at Stripe's current default the shipping address moves to
 2. **Traces**: Available in `test-results/` directory
 3. **Debug Mode**: Run with `pnpm test --debug` or `pnpm test --ui` to see browser
 4. **Verbose Logging**: Check CI logs for detailed error information
+
+### Sign-in page never renders on Linux
+
+If tests time out waiting for the admin sign-in form and the trace shows
+requests failing with `net::ERR_NETWORK_CHANGED`, Chrome is reacting to Docker
+giving a new Ghost container's host-side network interface an IPv6 link-local
+address, about 1.5s after the container starts. CI avoids this by disabling IPv6
+on new interfaces before the tests run; do the same locally:
+
+```bash
+sudo sysctl -w net.ipv6.conf.default.disable_ipv6=1
+```

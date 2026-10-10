@@ -3,11 +3,7 @@ import { renderHook } from '@testing-library/react';
 import type { QueryClient } from '@tanstack/react-query';
 import { useChangelog, type RawChangelogResponse, ChangelogResponseSchema } from './use-changelog';
 import { waitForQuerySettled } from '@test-utils/test-helpers';
-import {
-  createChangelogResponse,
-  createRawChangelogEntry,
-  changelogFixtures,
-} from '@test-utils/factories';
+import { changelogEntry } from '@tryghost/test-data';
 import { serverFixture } from '@test-utils/fixtures/msw';
 import { queryClientFixtures, type TestWrapperComponent } from '@test-utils/fixtures/query-client';
 import type { SetupServer } from 'msw/node';
@@ -16,6 +12,63 @@ import { http, HttpResponse } from 'msw';
 // Constants
 const CHANGELOG_API_URL = 'https://ghost.org/changelog.json';
 const DEFAULT_CHANGELOG_RESPONSE = ChangelogResponseSchema.parse({});
+
+// Test fixtures
+const changelogResponse = (
+  overrides: Partial<RawChangelogResponse> = {},
+): RawChangelogResponse => ({
+  posts: [],
+  changelogUrl: 'https://ghost.org/changelog',
+  ...overrides,
+});
+
+// Raw feed entries paired with the parsed shape the hook derives from them
+// (camelCase keys, real Date, boolean `featured`).
+const rawEntries = {
+  featured: changelogEntry({
+    slug: 'new-feature-2025',
+    title: 'New Feature',
+    custom_excerpt: 'Description',
+    url: 'https://ghost.org/changelog/new-feature-2025',
+    published_at: '2025-01-15T10:00:00.000+00:00',
+    featured: 'true',
+    feature_image: 'https://ghost.org/images/new-feature.png',
+    html: '<p>Exciting new feature details</p>',
+  }),
+  regular: changelogEntry({
+    slug: 'bug-fix-update',
+    title: 'Bug Fix',
+    custom_excerpt: 'Fixed issue',
+    url: 'https://ghost.org/changelog/bug-fix-update',
+    published_at: '2025-01-10T10:00:00.000+00:00',
+    featured: 'false',
+    feature_image: 'https://ghost.org/images/bug-fix.png',
+    html: '<p>Bug fix details</p>',
+  }),
+};
+
+const parsedEntries = {
+  featured: {
+    slug: 'new-feature-2025',
+    title: 'New Feature',
+    customExcerpt: 'Description',
+    url: 'https://ghost.org/changelog/new-feature-2025',
+    publishedAt: new Date('2025-01-15T10:00:00.000+00:00'),
+    featured: true,
+    featureImage: 'https://ghost.org/images/new-feature.png',
+    html: '<p>Exciting new feature details</p>',
+  },
+  regular: {
+    slug: 'bug-fix-update',
+    title: 'Bug Fix',
+    customExcerpt: 'Fixed issue',
+    url: 'https://ghost.org/changelog/bug-fix-update',
+    publishedAt: new Date('2025-01-10T10:00:00.000+00:00'),
+    featured: false,
+    featureImage: 'https://ghost.org/images/bug-fix.png',
+    html: '<p>Bug fix details</p>',
+  },
+};
 
 // Types
 type NetworkOptions = {
@@ -62,7 +115,7 @@ async function setupChangelog(
       if (status !== 200) {
         return new HttpResponse(null, { status });
       }
-      return HttpResponse.json(createChangelogResponse(data));
+      return HttpResponse.json(changelogResponse(data));
     }),
   );
 
@@ -89,15 +142,12 @@ describe('useChangelog', () => {
   describe('successful data fetching', () => {
     test('successfully fetches and deserializes changelog entries', async ({ setup }) => {
       const result = await setup({
-        posts: [changelogFixtures.raw.featuredEntry, changelogFixtures.raw.regularEntry],
+        posts: [rawEntries.featured, rawEntries.regular],
         changelogUrl: 'https://custom.ghost.org/changelog',
       });
 
       expect(result.current.data).toEqual({
-        entries: expect.arrayContaining([
-          changelogFixtures.parsed.featuredEntry,
-          changelogFixtures.parsed.regularEntry,
-        ]) as unknown,
+        entries: expect.arrayContaining([parsedEntries.featured, parsedEntries.regular]) as unknown,
         changelogUrl: 'https://custom.ghost.org/changelog',
       });
     });
@@ -235,16 +285,16 @@ describe('useChangelog', () => {
     [
       {
         scenario: 'invalid URL in changelogUrl',
-        input: createChangelogResponse({
+        input: changelogResponse({
           posts: [],
           changelogUrl: 'not-a-url',
         }),
       },
       {
         scenario: 'invalid date format in published_at',
-        input: createChangelogResponse({
+        input: changelogResponse({
           posts: [
-            createRawChangelogEntry({
+            changelogEntry({
               published_at: 'not-a-date',
             }),
           ],

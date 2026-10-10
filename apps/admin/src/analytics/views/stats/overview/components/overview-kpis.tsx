@@ -19,13 +19,16 @@ import {
 } from '@tryghost/shade/patterns';
 import { LucideIcon, formatNumber } from '@tryghost/shade/utils';
 import { STATS_RANGES } from '@/shared/analytics/constants';
-import { centsToDollars } from '@tryghost/shade/app';
-import { getPeriodText } from '@/shared/analytics/chart-helpers';
-import { useAppContext } from '@tryghost/admin-x-framework';
+import { getPeriodText, centsToDollars } from '@/shared/analytics/chart-helpers';
+import {
+  usePaidMembersEnabled,
+  useWebAnalyticsEnabled,
+} from '@tryghost/admin-x-framework/api/settings';
 import { useAnalytics } from '@/analytics/providers/analytics-context';
 import { useAnalyticsData } from '@/shared/analytics/use-analytics-data';
+import { useShade } from '@tryghost/shade/app';
 import { upgradeRoute } from '@tryghost/admin-x-framework/api/config';
-import { useLimiter } from '@/analytics/hooks/use-limiter';
+import { useHostLimits } from '@tryghost/admin-x-framework/hooks';
 import { useNavigate } from '@tryghost/admin-x-framework';
 
 interface OverviewKPICardProps {
@@ -57,6 +60,7 @@ const OverviewKPICard: React.FC<OverviewKPICardProps> = ({
 }) => {
   // const navigate = useNavigate();
   const { range } = useAnalytics();
+  const { isAdmin7 } = useShade();
   const IconComponent = iconName && (LucideIcon[iconName] as LucideIcon.LucideIcon);
 
   // Construct tooltip message based on input parameters
@@ -129,10 +133,10 @@ const OverviewKPICard: React.FC<OverviewKPICardProps> = ({
           <Button
             className="absolute right-6 translate-x-10 opacity-0 transition-all duration-200 group-hover:translate-x-0 group-hover:opacity-100 focus-visible:translate-x-0 focus-visible:opacity-100"
             size="sm"
-            variant="outline"
+            variant="subtle"
             onClick={onClick}
           >
-            View more
+            {isAdmin7 ? 'View more →' : 'View more'}
           </Button>
         )}
       </KpiCardHeader>
@@ -172,10 +176,11 @@ const OverviewKPIs: React.FC<OverviewKPIsProps> = ({
   isLoading,
 }) => {
   const navigate = useNavigate();
-  const { appSettings } = useAppContext();
-  const limiter = useLimiter();
+  const webAnalyticsEnabled = useWebAnalyticsEnabled();
+  const paidMembersEnabled = usePaidMembersEnabled();
+  const hostLimits = useHostLimits();
   const { config } = useAnalyticsData();
-  const isWebAnalyticsLimited = limiter.isLimited('limitAnalytics');
+  const isWebAnalyticsLimited = hostLimits?.limitAnalytics?.disabled === true;
 
   const areaChartClassName = '-mb-3 h-[10vw] max-h-[200px] min-h-[100px] hover:cursor-pointer!';
 
@@ -188,10 +193,10 @@ const OverviewKPIs: React.FC<OverviewKPIsProps> = ({
   }
 
   // Calculate number of cards being displayed
-  const showWebAnalytics = appSettings?.analytics.webAnalytics;
+  const showWebAnalytics = webAnalyticsEnabled;
   const showUpgradeCTA = isWebAnalyticsLimited && !showWebAnalytics;
   const showMembers = true; // Always shown
-  const showMRR = appSettings?.paidMembersEnabled;
+  const showMRR = paidMembersEnabled;
 
   // Determine number of columns to display, 1, 2, or 3
   const cardCount = [showWebAnalytics, showUpgradeCTA, showMembers, showMRR].filter(Boolean).length;

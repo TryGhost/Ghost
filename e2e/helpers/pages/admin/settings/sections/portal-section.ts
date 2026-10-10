@@ -1,5 +1,6 @@
 import { BasePage } from '@/helpers/pages';
 import { Locator, Page } from '@playwright/test';
+import { portal, portalModal } from '@tryghost/test-data/selectors/settings';
 
 type PaidSignupCadence = 'monthly' | 'yearly';
 
@@ -14,9 +15,9 @@ export class PortalSection extends BasePage {
   constructor(page: Page) {
     super(page, '/ghost/#/settings');
 
-    this.section = page.getByTestId('portal');
+    this.section = page.getByTestId(portal);
     this.customizeButton = this.section.getByRole('button', { name: 'Customize' });
-    this.portalModal = page.getByTestId('portal-modal');
+    this.portalModal = page.getByTestId(portalModal);
     this.linksTab = this.portalModal.getByRole('tab', { name: 'Links' });
     this.linksTierSelectControl = this.portalModal.getByRole('combobox', { name: 'Tier' });
     this.freeTierToggleLabel = this.portalModal

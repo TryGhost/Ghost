@@ -5,14 +5,20 @@ import {
   fakeActions,
   fakeAdminEndpoint,
   fakeEditSettings,
+  fakeOffers,
   fakeSettingsScreens,
+  fakeTiers,
   fakeUsers,
+  offer,
   renderAdminApp,
   settingsResponse,
   currentUserResponse,
   currentRoute,
+  configResponse,
+  tier,
   type StaffUser,
 } from '@test-utils/acceptance';
+import { offersScreen } from '@/settings/offers.screen';
 import { settingsScreen } from '@/settings/settings.screen';
 
 // Settings groups and the content wrapper open stacking contexts; a dialog rendered
@@ -37,6 +43,34 @@ function advancedSettings(overrides: Record<string, string | boolean | null>) {
 }
 
 describe('Advanced settings', () => {
+  it('treats an absent private flag as off and allows enabling it', async () => {
+    fakeSettingsScreens();
+    const settingsApi = fakeEditSettings();
+    const response = configResponse();
+    response.config.enableDeveloperExperiments = true;
+    await renderAdminApp('/settings/labs', { labs: {}, boot: { browseConfig: { response } } });
+
+    const section = settingsScreen.section('labs');
+    await section.getByRole('button', { name: 'Open' }).click();
+    await section.getByRole('tab', { name: 'Private features' }).click();
+    const toggle = section.getByRole('switch', { name: 'Navigation URL suggestions' });
+    await expect.element(toggle).not.toBeChecked();
+    await toggle.click();
+    await expect(settingsApi).toHaveEditedSettings([
+      {
+        key: 'labs',
+        value: String(
+          settingsResponse({ labs: { navigationUrlSuggestions: true } }).settings.find(
+            (setting) => {
+              return setting.key === 'labs';
+            },
+          )!.value,
+        ),
+      },
+    ]);
+    await expect.element(toggle).toBeChecked();
+  });
+
   it('saves header and footer code injection', async () => {
     fakeSettingsScreens();
     const settingsApi = fakeEditSettings();
@@ -257,19 +291,6 @@ describe('Advanced settings', () => {
       .toContain('"automations":true');
   });
 
-  it('downloads the content and settings export', async () => {
-    fakeSettingsScreens();
-    await renderAdminApp('/settings/migration');
-
-    const section = settingsScreen.section('migrationtools');
-    await section.getByRole('tab', { name: 'Export' }).click();
-    await section.getByRole('button', { name: 'Content & settings' }).click();
-
-    await expect
-      .poll(() => document.querySelector<HTMLIFrameElement>('iframe#iframeDownload')?.src)
-      .toMatch(/\/api\/admin\/db\/$/);
-  });
-
   it.each([
     {
       kind: 'redirects',
@@ -468,8 +489,7 @@ describe('Advanced settings', () => {
     await modal.getByText('Useful tag').click();
     expect(JSON.parse(document.body.dataset.externalNavigate ?? 'null')).toMatchObject({
       isExternal: true,
-      route: 'tag',
-      models: ['useful-tag'],
+      route: 'tags/useful-tag',
     });
     await expect.poll(() => actionsApi.requests.length).toBeGreaterThan(0);
     const initialQuery = new URL(actionsApi.requests[0].url).searchParams;
@@ -508,6 +528,39 @@ describe('Advanced settings', () => {
 
     await modal.getByRole('button', { name: 'Close' }).click();
     await expect(modal).toHaveCount(0);
+  });
+
+  it('opens an offer from history in the offer editor', async () => {
+    fakeSettingsScreens();
+    fakeUsers(currentUserResponse().users as unknown as StaffUser[]);
+    const supporter = tier({ name: 'Supporter' });
+    const blackFriday = offer({
+      name: 'Black Friday',
+      tier: { id: supporter.id, name: supporter.name },
+    });
+    fakeTiers([supporter]);
+    fakeOffers([blackFriday]);
+    fakeAdminEndpoint('GET', `/offers/${blackFriday.id}/`, { offers: [blackFriday] });
+    fakeActions([
+      {
+        id: 'offer',
+        resource_id: blackFriday.id,
+        resource_type: 'offer',
+        actor_id: '1',
+        actor_type: 'user',
+        event: 'edited',
+        context: '{}',
+        created_at: '2023-08-11T12:37:02.000Z',
+        actor: { id: '1', name: 'Jamie Larson', slug: 'main', image: null },
+        resource: { id: blackFriday.id, slug: blackFriday.code, name: blackFriday.name },
+      },
+    ]);
+    await renderAdminApp('/settings/history/view');
+
+    await settingsScreen.section('history-modal').getByText('Black Friday').click();
+
+    await expect.poll(currentRoute).toBe(`/settings/offers/edit/${blackFriday.id}`);
+    await expect.element(offersScreen.updateModal()).toBeVisible();
   });
 
   it('hydrates the staff filter from a history route', async () => {

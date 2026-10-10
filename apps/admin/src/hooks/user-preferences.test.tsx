@@ -8,7 +8,7 @@ import {
   DEFAULT_ONBOARDING_PREFERENCES,
 } from './user-preferences';
 import { HttpResponse, http } from 'msw';
-import { mockUser } from '@test-utils/factories';
+import { staffUser } from '@tryghost/test-data';
 import { waitForQuerySettled } from '@test-utils/test-helpers';
 import { serverFixture } from '@test-utils/fixtures/msw';
 import { queryClientFixtures, type TestWrapperComponent } from '@test-utils/fixtures/query-client';
@@ -22,6 +22,8 @@ import type { SetupServer } from 'msw/node';
 // Constants
 const USERS_API_URL = '/ghost/api/admin/users/me/';
 const USER_UPDATE_API_URL = '/ghost/api/admin/users/:id/';
+
+const mockUser = staffUser();
 
 // Test fixtures
 const fixtures = {
@@ -212,11 +214,11 @@ describe('useUserPreferences', () => {
       });
     });
 
-    queryTest('errors when invalid JSON', async ({ setup }) => {
+    queryTest('uses defaults when accessibility contains invalid JSON', async ({ setup }) => {
       const result = await setup({ accessibility: '{invalid json' });
 
-      expect(result.current.isError).toBe(true);
-      expect(result.current.error).toBeInstanceOf(Error);
+      expect(result.current.isError).toBe(false);
+      expect(result.current.data).toEqual(fixtures.defaults);
     });
 
     queryTest('gracefully handles invalid schema values', async ({ setup }) => {

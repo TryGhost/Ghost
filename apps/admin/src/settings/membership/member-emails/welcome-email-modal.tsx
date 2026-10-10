@@ -60,7 +60,7 @@ const EmailPreviewModalContent = React.forwardRef<HTMLDivElement, EmailPreviewMo
         <div className="justify-self-center">{centeredHeaderContent}</div>
         <div className="flex items-center gap-2 justify-self-end">{headerActions}</div>
       </div>
-      <div className="flex h-[clamp(0px,calc(100dvh-320px),82vh)] min-h-0 grow flex-col overflow-y-auto [scrollbar-gutter:stable]">
+      <div className="flex h-[clamp(0px,calc(100dvh-320px),82vh)] min-h-0 grow [scrollbar-gutter:stable] flex-col overflow-y-auto">
         {children}
       </div>
     </div>
@@ -79,7 +79,7 @@ const EmailPreviewEmailHeader: React.FC<EmailPreviewEmailHeaderProps> = ({
 }) => (
   <div
     className={cn(
-      'relative isolate z-20 mx-auto w-full max-w-[780px] rounded-t-lg border border-b-0 border-gray-200 bg-white px-6 py-4 transition-[max-width,padding] duration-300 ease-out motion-reduce:transition-none dark:border-grey-900 dark:bg-grey-950',
+      'relative isolate z-20 mx-auto w-full max-w-[780px] rounded-t-lg border border-b-0 border-gray-200 bg-white px-6 py-4 transition-[max-width,padding] duration-300 ease-out motion-reduce:transition-none dark:border-gray-900 dark:bg-gray-950',
       className,
     )}
   >
@@ -95,7 +95,7 @@ interface EmailPreviewBodyProps {
 const EmailPreviewBody: React.FC<EmailPreviewBodyProps> = ({ children, className }) => (
   <div
     className={cn(
-      'mx-auto flex w-full max-w-[780px] grow rounded-b-lg transition-[max-width,height,padding] duration-300 ease-out motion-reduce:transition-none dark:border-grey-900 dark:shadow-none',
+      'mx-auto flex w-full max-w-[780px] grow rounded-b-lg transition-[max-width,height,padding] duration-300 ease-out motion-reduce:transition-none dark:border-gray-900 dark:shadow-none',
       className,
     )}
   >
@@ -353,7 +353,7 @@ const WelcomeEmailModal: React.FC<WelcomeEmailModalProps & { onClose: () => void
           )}
           <EmailPreviewBody
             className={cn(
-              mode === 'preview' && 'bg-white shadow-sm dark:bg-grey-950',
+              mode === 'preview' && 'bg-white shadow-sm dark:bg-gray-950',
               mode === 'edit' && 'px-6',
               mode === 'edit' && 'rounded-lg',
               mode === 'edit' && errors.lexical && 'border border-red-500',

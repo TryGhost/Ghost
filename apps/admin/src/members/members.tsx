@@ -12,7 +12,6 @@ import { Box, Container } from '@tryghost/shade/primitives';
 import { ListPage } from '@tryghost/shade/page-templates';
 import { keepPreviousData } from '@tanstack/react-query';
 import { LucideIcon, cn, formatNumber } from '@tryghost/shade/utils';
-import { CUSTOM_FIELDS_PREFIX } from './member-fields';
 import { buildMemberListSearchParams, getMemberActiveColumns } from './member-query-params';
 import { canBulkDeleteMembers, shouldShowMembersLoading } from './members-view-state';
 import {
@@ -22,17 +21,19 @@ import {
 } from '@tryghost/admin-x-framework/api/settings';
 import { getSiteTimezone } from '@tryghost/admin-x-framework/utils/get-site-timezone';
 import {
-  shouldDelayMembersDateFilterHydration,
+  shouldDelayMembersFilterHydration,
   useMembersFilterState,
 } from './hooks/use-members-filter-state';
+import { useMemberFilterSources } from './hooks/use-member-filter-sources';
 import { useActiveMemberView, useMemberViews } from './hooks/use-member-views';
 import { useBrowseConfig } from '@tryghost/admin-x-framework/api/config';
-import { useBrowseMemberCustomFieldsIncludingArchived } from '@tryghost/admin-x-framework/api/member-custom-fields';
 import { useBrowseMembersInfinite } from '@tryghost/admin-x-framework/api/members';
 import { useDebouncedCallback } from 'use-debounce';
-import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import { useLocation, useSearchParams } from '@tryghost/admin-x-framework';
 import { useMultipleActiveSubscriptionsCount } from './hooks/use-multiple-active-subscriptions-count';
+import { useShade } from '@tryghost/shade/app';
+import { useIdlePreload } from '@/shared/use-idle-preload';
+import { preloadMapAtlas } from './detail/map-atlas';
 
 const SEARCH_DEBOUNCE_MS = 250;
 const MEMBERS_HELP_CARDS_LIMIT = 6;
@@ -50,16 +51,25 @@ const MembersPage: React.FC<MembersPageProps> = ({
   membershipsEnabled,
   timezone,
 }) => {
+  const { isAdmin7 } = useShade();
   const headerRef = useRef<HTMLDivElement | null>(null);
   const setHeaderContentRef = useCallback((node: HTMLDivElement | null) => {
     headerRef.current = node?.closest('[data-list-page="header"]') as HTMLDivElement | null;
   }, []);
+  // Names the custom field columns, and gives the filter catalog the definitions that let a
+  // saved filter on a custom field be read precisely. Archived fields are included so a filter
+  // on one still shows its values, matching the read-only pill the filter bar renders for it.
+  //
+  const [filterSearchParams] = useSearchParams();
+  const { newsletters, customFields } = useMemberFilterSources(
+    filterSearchParams.get('filter') ?? undefined,
+  );
   const { filters, nql, search, setFilters, setSearch, hasFilterOrSearch, clearAll } =
-    useMembersFilterState(timezone);
+    useMembersFilterState(timezone, newsletters, customFields);
   const location = useLocation();
   const savedViews = useMemberViews();
   const activeView = useActiveMemberView(savedViews, nql);
-  const [showMobileSearch, setShowMobileSearch] = useState(false);
+  const [showMobileSearch, setShowMobileSearch] = useState(isAdmin7 && search.length > 0);
   const [mobileSearchOpenedByUser, setMobileSearchOpenedByUser] = useState(false);
   const [searchInput, setSearchInput] = useState(search);
   const commitSearch = useDebouncedCallback((value: string) => {
@@ -72,23 +82,6 @@ const MembersPage: React.FC<MembersPageProps> = ({
     count: multipleActiveSubscriptionsCount,
     hasResolvedCount: hasResolvedMultipleActiveSubscriptionsCount,
   } = useMultipleActiveSubscriptionsCount({ enabled: hasStripeEnabled });
-
-  // Names the custom field columns. Archived fields are included so a filter on one
-  // still shows its values, matching the read-only pill the filter bar renders for it.
-  //
-  // Only a filter on a custom field earns a column, and naming one is all these are for,
-  // so the fetch waits for a filter rather than riding every visit to the members list.
-  const customFieldsEnabled = useFeatureFlag('membersCustomFields');
-  const hasCustomFieldFilter = useMemo(
-    () => filters.some((filter) => filter.field.startsWith(CUSTOM_FIELDS_PREFIX)),
-    [filters],
-  );
-  const { data: customFieldsData } = useBrowseMemberCustomFieldsIncludingArchived({
-    enabled: customFieldsEnabled && hasCustomFieldFilter,
-  });
-  // Left undefined until the fetch lands (and while the flag is off) rather than defaulted
-  // to an empty array, so the identity the memos below depend on stays stable.
-  const customFields = customFieldsData?.members_custom_fields;
 
   const activeColumns = useMemo(() => {
     return getMemberActiveColumns(filters, { customFields });
@@ -132,7 +125,10 @@ const MembersPage: React.FC<MembersPageProps> = ({
   useEffect(() => {
     setSearchInput(search);
     commitSearch.cancel();
-  }, [search, commitSearch]);
+    if (isAdmin7 && search) {
+      setShowMobileSearch(true);
+    }
+  }, [search, commitSearch, isAdmin7]);
 
   const handleSearchChange = (value: string) => {
     setSearchInput(value);
@@ -157,6 +153,61 @@ const MembersPage: React.FC<MembersPageProps> = ({
     clearAll({ replace: false });
   };
 
+  const headerSearch = shouldShowMemberControls && (
+    <>
+      <Box className="hidden lg:flex">
+        <MembersHeaderSearch
+          collapsible={isAdmin7}
+          search={searchInput}
+          onSearchChange={handleSearchChange}
+        />
+      </Box>
+      {isAdmin7 ? (
+        <PageHeader.Action
+          aria-expanded={showMobileSearch}
+          className="lg:hidden"
+          label={showMobileSearch ? 'Hide member search' : 'Show member search'}
+          iconOnly
+          onClick={handleMobileSearchToggle}
+        >
+          <LucideIcon.Search />
+        </PageHeader.Action>
+      ) : (
+        <Button
+          aria-label={showMobileSearch ? 'Hide member search' : 'Show member search'}
+          className={cn('lg:hidden', showMobileSearch && 'bg-secondary hover:bg-secondary')}
+          variant="outline"
+          onClick={handleMobileSearchToggle}
+        >
+          <LucideIcon.Search className="size-4" />
+        </Button>
+      )}
+    </>
+  );
+
+  const headerFilters = shouldShowMemberControls && !hasFilters && (
+    <MembersFilters
+      activeView={activeView}
+      filters={filters}
+      iconOnly={!isAdmin7}
+      multipleActiveSubscriptionsCount={multipleActiveSubscriptionsCount}
+      nql={nql}
+      savedViews={savedViews}
+      onFiltersChange={setFilters}
+    />
+  );
+
+  const mobileSearchRow = shouldShowMemberControls && shouldShowMobileSearchRow && (
+    <Box className="w-full lg:hidden">
+      <MembersHeaderSearch
+        ariaLabel="Search members mobile"
+        autoFocus={mobileSearchOpenedByUser}
+        search={searchInput}
+        onSearchChange={handleSearchChange}
+      />
+    </Box>
+  );
+
   return (
     <Box className="size-full">
       <Container className="relative flex h-full flex-col" size="page">
@@ -176,40 +227,8 @@ const MembersPage: React.FC<MembersPageProps> = ({
                 </PageHeader.Left>
                 <PageHeader.Actions>
                   <PageHeader.ActionGroup className="ml-auto flex-wrap justify-end sm:ml-0 sm:flex-nowrap">
-                    {shouldShowMemberControls && (
-                      <>
-                        <div className="hidden lg:flex">
-                          <MembersHeaderSearch
-                            search={searchInput}
-                            onSearchChange={handleSearchChange}
-                          />
-                        </div>
-                        <Button
-                          aria-label={
-                            showMobileSearch ? 'Hide member search' : 'Show member search'
-                          }
-                          className={cn(
-                            'lg:hidden',
-                            showMobileSearch && 'bg-secondary hover:bg-secondary',
-                          )}
-                          variant="outline"
-                          onClick={handleMobileSearchToggle}
-                        >
-                          <LucideIcon.Search className="size-4" />
-                        </Button>
-                        {!hasFilters && (
-                          <MembersFilters
-                            activeView={activeView}
-                            filters={filters}
-                            iconOnly={true}
-                            multipleActiveSubscriptionsCount={multipleActiveSubscriptionsCount}
-                            nql={nql}
-                            savedViews={savedViews}
-                            onFiltersChange={setFilters}
-                          />
-                        )}
-                      </>
-                    )}
+                    {headerSearch}
+                    {!isAdmin7 && headerFilters}
                     <MembersActions
                       canBulkDelete={canBulkDelete}
                       hasFilterOrSearch={hasFilterOrSearch}
@@ -221,35 +240,30 @@ const MembersPage: React.FC<MembersPageProps> = ({
                       onImportComplete={() => {
                         void refetch();
                       }}
-                    />
+                    >
+                      {isAdmin7 && headerFilters}
+                    </MembersActions>
                   </PageHeader.ActionGroup>
                 </PageHeader.Actions>
               </PageHeader>
 
-              {shouldShowMemberControls && (shouldShowFiltersRow || shouldShowMobileSearchRow) && (
-                <FilterBar className={cn(filtersClassName, !shouldShowFiltersRow && 'lg:hidden')}>
-                  {shouldShowMobileSearchRow && (
-                    <div className="w-full lg:hidden">
-                      <MembersHeaderSearch
-                        ariaLabel="Search members mobile"
-                        autoFocus={mobileSearchOpenedByUser}
-                        search={searchInput}
-                        onSearchChange={handleSearchChange}
+              {isAdmin7 && mobileSearchRow}
+              {shouldShowMemberControls &&
+                (shouldShowFiltersRow || (!isAdmin7 && shouldShowMobileSearchRow)) && (
+                  <FilterBar className={cn(filtersClassName, !shouldShowFiltersRow && 'lg:hidden')}>
+                    {!isAdmin7 && mobileSearchRow}
+                    {shouldShowFiltersRow && (
+                      <MembersFilters
+                        activeView={activeView}
+                        filters={filters}
+                        multipleActiveSubscriptionsCount={multipleActiveSubscriptionsCount}
+                        nql={nql}
+                        savedViews={savedViews}
+                        onFiltersChange={setFilters}
                       />
-                    </div>
-                  )}
-                  {shouldShowFiltersRow && (
-                    <MembersFilters
-                      activeView={activeView}
-                      filters={filters}
-                      multipleActiveSubscriptionsCount={multipleActiveSubscriptionsCount}
-                      nql={nql}
-                      savedViews={savedViews}
-                      onFiltersChange={setFilters}
-                    />
-                  )}
-                </FilterBar>
-              )}
+                    )}
+                  </FilterBar>
+                )}
               {hasStripeEnabled && (
                 <MultipleActiveSubscriptionsBanner
                   count={multipleActiveSubscriptionsCount}
@@ -322,15 +336,23 @@ const MembersPage: React.FC<MembersPageProps> = ({
 
 const Members: React.FC = () => {
   const [searchParams] = useSearchParams();
+  // A member's page draws a map behind its header; fetching the atlas now means
+  // it is usually there before the admin opens one.
+  useIdlePreload(preloadMapAtlas, true);
   const { data: settingsData, isLoading: isSettingsLoading } = useBrowseSettings({});
   const { data: configData, isLoading: isConfigLoading } = useBrowseConfig();
   const filterParam = searchParams.get('filter') ?? undefined;
   const hasResolvedSettings = Boolean(settingsData?.settings);
-  const shouldDelayHydration = shouldDelayMembersDateFilterHydration(
-    filterParam,
+
+  const { newsletters: gateNewsletters, customFields: gateCustomFields } =
+    useMemberFilterSources(filterParam);
+
+  const shouldDelayHydration = shouldDelayMembersFilterHydration(filterParam, {
     hasResolvedSettings,
-    isSettingsLoading,
-  );
+    isLoadingSettings: isSettingsLoading,
+    newsletters: gateNewsletters,
+    customFields: gateCustomFields,
+  });
 
   if (
     isSettingsLoading ||

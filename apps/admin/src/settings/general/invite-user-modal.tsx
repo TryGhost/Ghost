@@ -1,6 +1,14 @@
 import validator from 'validator';
-import { APIError, ValidationError } from '@tryghost/admin-x-framework/errors';
+import { APIError, HostLimitError, ValidationError } from '@tryghost/admin-x-framework/errors';
 import {
+  Button,
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
   Field,
   FieldContent,
   FieldDescription,
@@ -12,15 +20,14 @@ import {
   RadioGroup,
   RadioGroupItem,
 } from '@tryghost/shade/components';
-import { HostLimitError, useLimiter } from '@/settings/hooks/use-limiter';
-import { SettingsModal } from '@tryghost/shade/patterns';
 import { Stack } from '@tryghost/shade/primitives';
+import { LucideIcon } from '@tryghost/shade/utils';
 import { toast } from 'sonner';
 import { useAddInvite, useBrowseInvites } from '@tryghost/admin-x-framework/api/invites';
 import { useBrowseRoles } from '@tryghost/admin-x-framework/api/roles';
 import { useBrowseUsers } from '@tryghost/admin-x-framework/api/users';
-import { useEffect, useState } from 'react';
-import { useFeatureFlag, useHandleError } from '@tryghost/admin-x-framework/hooks';
+import { type FormEvent, useEffect, useState } from 'react';
+import { useFeatureFlag, useHandleError, useLimiter } from '@tryghost/admin-x-framework/hooks';
 import { useSettingsNavigation } from '@/settings/hooks/use-settings-navigation';
 
 type RoleType = 'administrator' | 'editor' | 'author' | 'contributor' | 'super editor';
@@ -94,7 +101,9 @@ function InviteUserModal() {
     okLabel = 'Retry';
   }
 
-  const handleSendInvitation = async () => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
     if (saveState === 'saving') {
       return;
     }
@@ -220,70 +229,101 @@ function InviteUserModal() {
   }
 
   return (
-    <SettingsModal
-      cancelLabel="Close"
-      okLabel={okLabel}
-      okVariant={saveState === 'error' || !!errors.email ? 'destructive' : 'default'}
-      testId="invite-user-modal"
-      title="Invite a new staff user"
-      width={540}
-      onClose={() => {
-        updateRoute('staff');
+    <Dialog
+      open
+      onOpenChange={(open) => {
+        if (!open) {
+          updateRoute('staff');
+        }
       }}
-      onOk={handleSendInvitation}
     >
-      <Stack className="py-4" gap="xl">
-        <p>
-          Send an invitation for a new person to create a staff account on your site, and select a
-          role that matches what you’d like them to be able to do.
-        </p>
-        <Field data-invalid={Boolean(errors.email) || undefined}>
-          <FieldLabel htmlFor="invite-email">Email address</FieldLabel>
-          <Input
-            aria-invalid={Boolean(errors.email) || undefined}
-            autoComplete="off"
-            id="invite-email"
-            placeholder="jamie@example.com"
-            value={email}
-            data-1p-ignore
-            onChange={(event) => setEmail(event.target.value)}
-            onKeyDown={() => setErrors((e) => ({ ...e, email: undefined }))}
-          />
-          {errors.email && <FieldError>{errors.email}</FieldError>}
-        </Field>
-        <FieldSet>
-          <FieldLegend id="invite-role-legend" variant="label">
-            Role
-          </FieldLegend>
-          <RadioGroup
-            aria-describedby={errors.role ? 'invite-role-error' : undefined}
-            aria-invalid={!!errors.role || undefined}
-            aria-labelledby="invite-role-legend"
-            name="role"
-            value={role}
-            onValueChange={(value) => setRole(value as RoleType)}
-          >
-            {allowedRoleOptions.map((option) => {
-              const id = `invite-role-${option.value.replace(/\s+/g, '-')}`;
-              return (
-                <Field
-                  key={option.value}
-                  className="has-[>[data-slot=field-content]]:[&>[role=checkbox],[role=radio]]:mt-0"
-                  orientation="horizontal"
-                >
-                  <RadioGroupItem id={id} value={option.value} />
-                  <FieldContent>
-                    <FieldLabel htmlFor={id}>{option.label}</FieldLabel>
-                    <FieldDescription>{option.hint}</FieldDescription>
-                  </FieldContent>
-                </Field>
-              );
-            })}
-          </RadioGroup>
-          <FieldError id="invite-role-error">{errors.role}</FieldError>
-        </FieldSet>
-      </Stack>
-    </SettingsModal>
+      <DialogContent className="flex max-h-[85vh] flex-col" data-testid="invite-user-modal" asChild>
+        <form onSubmit={(event) => void handleSubmit(event)}>
+          <DialogHeader>
+            <DialogTitle>Invite a new staff user</DialogTitle>
+            <DialogDescription>
+              Send an invitation for a new person to create a staff account on your site, and select
+              a role that matches what you’d like them to be able to do.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogClose asChild>
+            <Button
+              aria-label="Close modal"
+              className="absolute top-6 right-6 -m-2 opacity-50 hover:opacity-100 md:hidden"
+              size="icon"
+              type="button"
+              variant="ghost"
+            >
+              <LucideIcon.X />
+            </Button>
+          </DialogClose>
+          <Stack className="-mx-6 min-h-0 flex-1 overflow-y-auto px-6" gap="xl">
+            <Field data-invalid={Boolean(errors.email) || undefined}>
+              <FieldLabel htmlFor="invite-email">Email address</FieldLabel>
+              <Input
+                aria-invalid={Boolean(errors.email) || undefined}
+                autoComplete="off"
+                id="invite-email"
+                placeholder="jamie@example.com"
+                value={email}
+                autoFocus
+                data-1p-ignore
+                onChange={(event) => setEmail(event.target.value)}
+                onKeyDown={(event) => {
+                  if (event.key !== 'Enter') {
+                    setErrors((e) => ({ ...e, email: undefined }));
+                  }
+                }}
+              />
+              {errors.email && <FieldError>{errors.email}</FieldError>}
+            </Field>
+            <FieldSet>
+              <FieldLegend id="invite-role-legend" variant="label">
+                Role
+              </FieldLegend>
+              <RadioGroup
+                aria-describedby={errors.role ? 'invite-role-error' : undefined}
+                aria-invalid={!!errors.role || undefined}
+                aria-labelledby="invite-role-legend"
+                name="role"
+                value={role}
+                onValueChange={(value) => setRole(value as RoleType)}
+              >
+                {allowedRoleOptions.map((option) => {
+                  const id = `invite-role-${option.value.replace(/\s+/g, '-')}`;
+                  return (
+                    <Field
+                      key={option.value}
+                      className="has-[>[data-slot=field-content]]:[&>[role=checkbox],[role=radio]]:mt-0"
+                      orientation="horizontal"
+                    >
+                      <RadioGroupItem id={id} value={option.value} />
+                      <FieldContent>
+                        <FieldLabel htmlFor={id}>{option.label}</FieldLabel>
+                        <FieldDescription>{option.hint}</FieldDescription>
+                      </FieldContent>
+                    </Field>
+                  );
+                })}
+              </RadioGroup>
+              <FieldError id="invite-role-error">{errors.role}</FieldError>
+            </FieldSet>
+          </Stack>
+          <DialogFooter className="shrink-0">
+            <Button type="button" variant="outline" onClick={() => updateRoute('staff')}>
+              Close
+            </Button>
+            <Button
+              disabled={saveState === 'saving'}
+              type="submit"
+              variant={saveState === 'error' || !!errors.email ? 'destructive' : 'default'}
+            >
+              {okLabel}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
   );
 }
 

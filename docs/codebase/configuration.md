@@ -6,7 +6,7 @@ allows developers to test code paths that are not suitable for a user-facing
 Labs flag.
 
 The loader and shared configuration live in
-[`ghost/core/core/shared/config/`](../../ghost/core/core/shared/config/). Ghost
+[`ghost/core/shared/config/`](../../ghost/core/shared/config/). Ghost
 reads configuration when the process starts, so restart it after changing a
 configuration file or environment variable.
 
@@ -22,10 +22,10 @@ this list:
 2. Command-line arguments
 3. Secret files referenced by environment variables
 4. Environment variables
-5. `config.<NODE_ENV>.json` in `ghost/core/`
+5. `config.<NODE_ENV>.json` in `ghost/`
 6. Docker development defaults when `GHOST_DEV_IS_DOCKER=true`
-7. `config.local.json` in `ghost/core/`
-8. `config.local.jsonc` in `ghost/core/`
+7. `config.local.json` in `ghost/`
+8. `config.local.jsonc` in `ghost/`
 9. Environment defaults in `core/shared/config/env/config.<NODE_ENV>.json`
 10. Global defaults in `core/shared/config/defaults.json`
 
@@ -35,7 +35,7 @@ Internal overrides cannot be replaced by another configuration source.
 
 ## Developing locally
 
-Create `ghost/core/config.local.json` for local overrides:
+Create `ghost/config.local.json` for local overrides:
 
 ```json
 {
@@ -102,13 +102,13 @@ and checks that the content path exists.
 
 Before adding a setting, search the defaults, environment files, and call sites
 for an existing setting with the same purpose. Add new shared defaults to
-[`defaults.json`](../../ghost/core/core/shared/config/defaults.json) so the
+[`defaults.json`](../../ghost/core/shared/config/defaults.json) so the
 available configuration remains discoverable.
 
 Use `camelCase` for new settings. Add focused tests when changing loading,
 precedence, parsing, validation, or environment-specific behavior. The loader
 tests live in
-[`ghost/core/test/unit/shared/config/`](../../ghost/core/test/unit/shared/config/).
+[`ghost/test/unit/shared/config/`](../../ghost/test/unit/shared/config/).
 
 ## Debugging
 

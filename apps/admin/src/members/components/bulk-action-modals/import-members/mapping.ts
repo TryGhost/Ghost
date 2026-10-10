@@ -1,12 +1,14 @@
+import validator from 'validator';
 import {
-  isCustomFieldColumn,
+  isMetafieldColumn,
   type MemberCustomFieldCsvColumn,
 } from '@tryghost/admin-x-framework/api/member-custom-fields';
 
-type FieldMappingOptions = {
+/** What auto-detection is allowed to map a column onto. */
+type DetectionOptions = {
   importMemberTier?: boolean;
   // Custom field CSV columns offered as mapping targets (see memberCustomFieldCsvColumns);
-  // empty when the feature is off.
+  // none where the site has custom fields switched off.
   customFieldColumns?: MemberCustomFieldCsvColumn[];
 };
 
@@ -39,7 +41,7 @@ const SUPPORTED_TYPES = [
 function getSupportedTypes({
   importMemberTier = false,
   customFieldColumns = [],
-}: FieldMappingOptions = {}): string[] {
+}: DetectionOptions = {}): string[] {
   return [
     ...SUPPORTED_TYPES,
     ...(importMemberTier ? [IMPORT_TIER_FIELD_MAPPING.value] : []),
@@ -47,20 +49,17 @@ function getSupportedTypes({
   ];
 }
 
+/**
+ * Everything a column can be imported as, before custom fields. They are offered from their own
+ * section of the picker rather than folded in here, so this stays the list Ghost always has.
+ */
 export function getFieldMappings({
   importMemberTier = false,
-  customFieldColumns = [],
-}: FieldMappingOptions = {}) {
-  return [
-    ...FIELD_MAPPINGS,
-    ...(importMemberTier ? [IMPORT_TIER_FIELD_MAPPING] : []),
-    ...customFieldColumns,
-  ];
+}: { importMemberTier?: boolean } = {}) {
+  return [...FIELD_MAPPINGS, ...(importMemberTier ? [IMPORT_TIER_FIELD_MAPPING] : [])];
 }
 
 const AUTO_DETECTED_TYPES = ['email'];
-
-const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export class MembersFieldMapping {
   private _mapping: Record<string, string | null>;
@@ -187,7 +186,7 @@ export function sampleData(
  */
 export function detectFieldTypes(
   data: Record<string, string>[],
-  options: FieldMappingOptions = {},
+  options: DetectionOptions = {},
 ): Record<string, string> {
   const sampledData = sampleData(data);
   const mapping: Record<string, string> = {};
@@ -197,10 +196,10 @@ export function detectFieldTypes(
   // original data. sampleData only keeps keys with non-empty values, so
   // entirely-empty columns (e.g. an empty "note" column) would be missed if
   // we only checked sampled entries. A custom field column auto-maps to itself here;
-  // isCustomFieldColumn holds it apart from the fuzzy core-field heuristics below.
+  // isMetafieldColumn holds it apart from the fuzzy core-field heuristics below.
   if (data.length > 0) {
     for (const key of columnsOf(data)) {
-      if (!mapping.name && /name/i.test(key) && !isCustomFieldColumn(key)) {
+      if (!mapping.name && /name/i.test(key) && !isMetafieldColumn(key)) {
         mapping.name = key;
         continue;
       }
@@ -220,7 +219,7 @@ export function detectFieldTypes(
 
     const entry = sampledData[i];
     for (const [key, value] of Object.entries(entry)) {
-      if (!mapping.email && value && EMAIL_REGEX.test(value) && !isCustomFieldColumn(key)) {
+      if (!mapping.email && value && validator.isEmail(value) && !isMetafieldColumn(key)) {
         mapping.email = key;
       }
     }
@@ -249,4 +248,22 @@ export function formatImportError(error: string): string {
       /No such customer:[\s\S]*/,
       'Could not find Stripe customer',
     );
+}
+
+/**
+ * The field name to suggest for a column no defined field matches.
+ *
+ * A namespaced column comes from a Ghost export, so it carries a namespace that is noise
+ * to a publisher and a key that was machine-minted from a name in the first place: both
+ * are stripped back towards what someone would have typed. A column from anywhere else is
+ * already the publisher's own wording, so only its separators and first letter are
+ * touched. It is a starting point either way, and the form lets them edit it.
+ */
+export function suggestedFieldName(column: string): string {
+  // A custom field column is `metafields.<namespace>.<key>[.<part>]`. The name being
+  // suggested is the field's, so only the key segment is kept: the part is asked for
+  // separately.
+  const key = isMetafieldColumn(column) ? column.split('.')[2] : column;
+  const words = (key ?? column).replace(/[._-]+/g, ' ').trim();
+  return words.charAt(0).toUpperCase() + words.slice(1);
 }

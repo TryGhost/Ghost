@@ -6,30 +6,26 @@ type RouteMatch = {
 };
 
 const useMatchesMock = vi.fn<() => RouteMatch[]>();
-const useEmberSidebarVisibilityMock = vi.fn<() => boolean>();
+const useFeatureFlagMock = vi.fn<() => boolean>();
+const useIsMobileMock = vi.fn<() => boolean>();
 
 vi.mock('@tryghost/admin-x-framework', () => ({
   useMatches: () => useMatchesMock(),
 }));
 
-vi.mock('@/ember-bridge/ember-bridge', () => ({
-  useSidebarVisibility: () => useEmberSidebarVisibilityMock(),
+vi.mock('@tryghost/admin-x-framework/hooks', () => ({
+  useFeatureFlag: () => useFeatureFlagMock(),
+}));
+
+vi.mock('@tryghost/shade/utils', () => ({
+  useIsMobile: () => useIsMobileMock(),
 }));
 
 describe('useAdminSidebarVisibility', () => {
   beforeEach(() => {
     useMatchesMock.mockReturnValue([]);
-    useEmberSidebarVisibilityMock.mockReturnValue(true);
-  });
-
-  it('uses the Ember sidebar visibility by default', async () => {
-    const { useAdminSidebarVisibility } = await import('./sidebar-visibility');
-
-    useEmberSidebarVisibilityMock.mockReturnValue(false);
-
-    const { result } = renderHook(() => useAdminSidebarVisibility());
-
-    expect(result.current).toBe(false);
+    useFeatureFlagMock.mockReturnValue(false);
+    useIsMobileMock.mockReturnValue(false);
   });
 
   it('hides the sidebar when any matched React route opts out', async () => {
@@ -53,5 +49,22 @@ describe('useAdminSidebarVisibility', () => {
     const { result } = renderHook(() => useAdminSidebarVisibility());
 
     expect(result.current).toBe(true);
+  });
+
+  it('uses the Settings sidebar on desktop only when admin7settings is enabled', async () => {
+    const { useAdminSidebarVisibility } = await import('./sidebar-visibility');
+
+    useMatchesMock.mockReturnValue([{ handle: { settingsSidebar: true } }]);
+
+    const { result, rerender } = renderHook(() => useAdminSidebarVisibility());
+    expect(result.current).toBe(false);
+
+    useFeatureFlagMock.mockReturnValue(true);
+    rerender();
+    expect(result.current).toBe(true);
+
+    useIsMobileMock.mockReturnValue(true);
+    rerender();
+    expect(result.current).toBe(false);
   });
 });

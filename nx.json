@@ -39,27 +39,22 @@
     },
     "test:unit": {
       "cache": true,
-      "dependsOn": ["build"]
+      "dependsOn": ["build"],
+      "inputs": ["default", "^default", { "runtime": "node -v" }]
+    },
+    "test:types": {
+      "cache": true,
+      "dependsOn": ["^build"]
     },
     "test:ci:*": {
       "cache": true,
-      "inputs": [
-        "default",
-        "^default",
-        {
-          "env": "DB"
-        },
-        {
-          "env": "NODE_ENV"
-        }
-      ]
+      "inputs": ["default", "^default"]
     },
     "dev": {
       "dependsOn": ["^dev"],
       "continuous": true
     }
   },
-  "cacheDirectory": ".nxcache",
   "analytics": true,
   "nxCloudId": "6a146249a88a39d9ffa5046c"
 }

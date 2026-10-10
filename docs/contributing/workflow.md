@@ -24,7 +24,7 @@ Update the canonical checkout, then create a descriptive branch:
 git fetch origin
 git switch main
 git pull --ff-only origin main
-pnpm setup
+pnpm bootstrap
 
 git switch -c concise-change-name
 ```
@@ -37,17 +37,18 @@ first; ordinary pull requests target `main`.
 
 Add or update automated tests when behavior changes. Run the most focused checks
 for the code you touched, following the README beside that workspace. Before
-handing off a change, use the repository's one-stop lint and test command:
+handing off a change, use the repository's one-stop formatting, lint, and test
+command:
 
 ```bash
 pnpm check
 ```
 
-`pnpm check` runs `pnpm lint` followed by `pnpm test`. It does not include the
-browser E2E suite or Ember Admin tests, so run those separately when the affected
-area requires them. CI uses the Nx affected graph and path filters to select the
-relevant lint, unit, integration, acceptance, build, and browser-test jobs for a
-pull request.
+`pnpm check` runs `pnpm format:check`, `pnpm lint`, and then `pnpm test`. It does
+not include the browser E2E suite, so run it separately when the affected area
+requires it. CI uses the Nx affected graph and path
+filters to select the relevant lint, unit, integration, acceptance, build, and
+browser-test jobs for a pull request.
 
 ## Formatting
 
@@ -66,8 +67,8 @@ pnpm format path/to/file.ts
 configuration; the root config is the only one.
 
 The one-time repository reformat is listed in `.git-blame-ignore-revs`. GitHub's
-blame view skips it automatically, and `pnpm setup` configures local Git to use
-the file. For an existing checkout, rerun `pnpm setup` or run once:
+blame view skips it automatically, and `pnpm bootstrap` configures local Git to use
+the file. For an existing checkout, rerun `pnpm bootstrap` or run once:
 
 ```bash
 git config --local blame.ignoreRevsFile .git-blame-ignore-revs
@@ -88,7 +89,7 @@ impact. The summary becomes the changelog entry, so describe the result for the
 package's consumers.
 
 A package `README.md` is included when the package is published, so changing it
-requires a release. Repository-only Markdown such as `AGENTS.md`, `CLAUDE.md`,
+requires a release. Repository-only Markdown such as `AGENTS.md`,
 changelogs, and files under a package's `docs/` directory does not.
 
 If a changed publishable package genuinely requires no release—for example, a

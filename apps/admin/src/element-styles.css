@@ -1,0 +1,228 @@
+/* Element defaults Admin screens inherited from Ember's global stylesheet. Imported before Shade and
+   kept at element specificity so Shade's preflight and utilities still override them. */
+
+body:where(.react-admin) {
+  color: var(--color-gray-900);
+  font-size: 1.4rem;
+  text-rendering: optimizeLegibility;
+}
+
+:where(html.dark) body:where(.react-admin) {
+  color: var(--color-gray-300);
+}
+
+:where(body.react-admin) ::selection {
+  background: var(--color-gray-200);
+}
+
+:where(html.dark body.react-admin) ::selection {
+  background: rgb(88 101 116 / 0.99);
+}
+
+/* Text */
+:where(body.react-admin) p {
+  margin: 0 0 1.7em 0;
+}
+
+:where(body.react-admin) :is(ol, ul) :is(ol, ul) {
+  margin: 10px 0 0.4em 0;
+  padding-left: 2em;
+  font-size: 0.9em;
+}
+
+:where(body.react-admin) blockquote {
+  margin: 1.6em 0;
+  padding: 0 1.6em 0 1.6em;
+  border-left: var(--color-gray-300) 0.6em solid;
+}
+
+:where(body.react-admin) blockquote p {
+  margin: 0.8em 0;
+  font-size: 1.2em;
+  font-weight: 300;
+}
+
+/* Headings */
+:where(body.react-admin) :is(h1, h2, h3, h4, h5, h6) {
+  margin: 0 0 0.3em 0;
+  color: var(--color-black);
+  line-height: 1.3em;
+}
+
+:where(html.dark body.react-admin) :is(h1, h2, h3, h4, h5, h6) {
+  color: var(--color-gray-50);
+}
+
+:where(body.react-admin) h1 {
+  text-indent: -1px;
+  font-size: 2.9rem;
+  letter-spacing: -0.021em;
+}
+
+:where(body.react-admin) h2 {
+  font-size: 2.2rem;
+  letter-spacing: -0.019em;
+}
+
+:where(body.react-admin) h3 {
+  font-size: 1.9rem;
+  letter-spacing: -0.017em;
+}
+
+@media (max-width: 500px) {
+  :where(body.react-admin) h1 {
+    font-size: 2.4rem;
+    letter-spacing: -0.019em;
+  }
+
+  :where(body.react-admin) h2 {
+    font-size: 1.9rem;
+    letter-spacing: -0.017em;
+  }
+
+  :where(body.react-admin) h3 {
+    font-size: 1.7rem;
+    letter-spacing: -0.015em;
+  }
+}
+
+:where(body.react-admin) h4 {
+  font-size: 1.7rem;
+  letter-spacing: -0.013em;
+}
+
+:where(body.react-admin) :is(h5, h6) {
+  font-size: 1.5rem;
+  letter-spacing: -0.009em;
+}
+
+/* Links */
+:where(body.react-admin) a {
+  color: var(--color-green-600);
+  text-decoration: none;
+  transition:
+    background 0.3s,
+    color 0.3s;
+}
+
+:where(body.react-admin) a:hover {
+  transition:
+    background 0.1s,
+    color 0.1s;
+}
+
+/* Code */
+:where(body.react-admin) code {
+  padding: 0.2rem 0.3rem;
+  border: 1px solid var(--color-gray-200);
+  background: var(--color-gray-100);
+  border-radius: 2px;
+  color: #d70467;
+  vertical-align: middle;
+  white-space: pre-wrap;
+  font-size: 0.85em;
+  line-height: 1em;
+}
+
+:where(body.react-admin) pre {
+  overflow: auto;
+  margin: 1.6em 0;
+  padding: 10px;
+  width: 100%;
+  border: 1px solid var(--color-gray-200);
+  background: var(--color-gray-100);
+  border-radius: 3px;
+  white-space: pre;
+  font-size: 0.9em;
+}
+
+:where(body.react-admin) pre code {
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: inherit;
+  white-space: pre-wrap;
+  font-size: inherit;
+}
+
+:where(html.dark body.react-admin) code {
+  border-color: var(--color-black);
+  background: var(--color-gray-950);
+}
+
+:where(html.dark body.react-admin) pre {
+  border: none;
+  background: var(--color-gray-950);
+}
+
+/* Media and tables */
+:where(body.react-admin) img {
+  max-width: 100%;
+}
+
+:where(body.react-admin) table {
+  max-width: 100%;
+}
+
+:where(body.react-admin) table :is(th, td) {
+  line-height: 20px;
+}
+
+/* Forms */
+:where(body.react-admin) :is(button, input, optgroup, select, textarea) {
+  margin: 0;
+  color: inherit;
+  font: inherit;
+  line-height: 1.15;
+}
+
+:where(body.react-admin) button {
+  padding: 0;
+  outline: none;
+  border: none;
+  background: transparent;
+  line-height: inherit;
+  text-decoration: none !important;
+  user-select: none;
+  cursor: pointer;
+}
+
+:where(body.react-admin) button[disabled] {
+  cursor: default;
+}
+
+:where(body.react-admin) form label {
+  display: block;
+  color: var(--color-black);
+  font-size: 1.3rem;
+  font-weight: 500;
+  user-select: text;
+}
+
+:where(html.dark body.react-admin) form label {
+  color: var(--color-gray-50);
+}
+
+:where(body.react-admin) input::-webkit-outer-spin-button,
+:where(body.react-admin) input::-webkit-inner-spin-button {
+  appearance: none;
+  margin: 0;
+  display: none;
+}
+
+:where(body.react-admin) input[type='number'] {
+  appearance: textfield;
+}
+
+:where(body.react-admin) ::placeholder {
+  font-weight: 400;
+}
+
+:where(body.react-admin) textarea {
+  width: 100%;
+  min-width: 250px;
+  min-height: 10rem;
+  max-width: 500px;
+  line-height: 1.5em;
+  resize: vertical;
+}

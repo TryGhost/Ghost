@@ -4,7 +4,7 @@ import type { QueryClient } from '@tanstack/react-query';
 import { useTheme } from './use-theme';
 import { useUserPreferences } from './user-preferences';
 import { HttpResponse, http } from 'msw';
-import { mockUser } from '@test-utils/factories';
+import { staffUser } from '@tryghost/test-data';
 import { serverFixture } from '@test-utils/fixtures/msw';
 import { queryClientFixtures, type TestWrapperComponent } from '@test-utils/fixtures/query-client';
 import type {
@@ -16,6 +16,8 @@ import type { SetupServer } from 'msw/node';
 // Constants
 const USERS_API_URL = '/ghost/api/admin/users/me/';
 const USER_UPDATE_API_URL = '/ghost/api/admin/users/:id/';
+
+const mockUser = staffUser();
 
 const themeTest = baseTest.extend<{
   server: SetupServer;
@@ -95,6 +97,19 @@ afterEach(() => {
 
 describe('useTheme (standalone)', () => {
   themeTest(
+    'does not report a ready theme until preferences have loaded',
+    async ({ server, wrapper, animationFrames }) => {
+      mockPreferences(server, 'dark');
+      const { result } = renderHook(() => useTheme(), { wrapper });
+
+      expect(result.current.isThemeReady).toBe(false);
+      await waitFor(() => expect(result.current.isThemeReady).toBe(true));
+      expect(result.current.resolvedTheme).toBe('dark');
+      flushAnimationFrames(animationFrames);
+    },
+  );
+
+  themeTest(
     'applies the persisted theme with transition suppression',
     async ({ server, wrapper, animationFrames }) => {
       mockPreferences(server, 'dark');
@@ -153,6 +168,50 @@ describe('useTheme (standalone)', () => {
 
       expect(html.classList.contains('dark')).toBe(true);
       expect(html.classList.contains('theme-switching')).toBe(false);
+    },
+  );
+});
+
+describe('useTheme save failures', () => {
+  themeTest(
+    'rolls back a failed save to the current system appearance',
+    async ({ server, wrapper, animationFrames }) => {
+      mockPreferences(server, 'system');
+      const mediaQuery = Object.assign(new EventTarget(), { matches: false }) as MediaQueryList;
+      const mediaSpy = vi.spyOn(window, 'matchMedia').mockReturnValue(mediaQuery);
+      const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+      let finish: () => void = () => {};
+      const gate = new Promise<void>((resolve) => {
+        finish = resolve;
+      });
+      server.use(
+        http.put(USER_UPDATE_API_URL, async () => {
+          await gate;
+          return HttpResponse.json({ errors: [{ message: 'Save failed' }] }, { status: 500 });
+        }),
+      );
+      try {
+        const { result } = renderHook(() => useTheme(), { wrapper });
+        await waitFor(() => expect(result.current.theme).toBe('system'));
+        let saving: Promise<void> = Promise.resolve();
+        act(() => {
+          saving = result.current.setTheme('dark');
+        });
+        await waitFor(() => expect(result.current.theme).toBe('dark'));
+        Object.defineProperty(mediaQuery, 'matches', { value: true });
+        finish();
+        await act(async () => {
+          await saving;
+        });
+        expect(result.current.theme).toBe('system');
+        expect(result.current.resolvedTheme).toBe('dark');
+        expect(document.documentElement.classList.contains('dark')).toBe(true);
+      } finally {
+        finish();
+        mediaSpy.mockRestore();
+        errorSpy.mockRestore();
+        flushAnimationFrames(animationFrames);
+      }
     },
   );
 });

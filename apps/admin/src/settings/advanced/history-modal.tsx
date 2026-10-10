@@ -26,12 +26,14 @@ import {
   inputSurface,
 } from '@tryghost/shade/components';
 import { ChevronDown, History, Pen, Plus, Trash2, X } from 'lucide-react';
+import { memberAvatarProps } from '@/members/api';
 import { Inline, Stack } from '@tryghost/shade/primitives';
 import { useParams } from '@tryghost/admin-x-framework';
 import { useSettingsNavigation } from '@/settings/hooks/use-settings-navigation';
 import { SettingsModal } from '@tryghost/shade/patterns';
 import { type User } from '@tryghost/admin-x-framework/api/users';
-import { formatNumber } from '@tryghost/shade/utils';
+import { cn, formatNumber } from '@tryghost/shade/utils';
+import { useShade } from '@tryghost/shade/app';
 import { keepPreviousData } from '@tanstack/react-query';
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { useFilterableApi } from '@tryghost/admin-x-framework/hooks';
@@ -52,11 +54,13 @@ const HistoryIcon: React.FC<{ action: Action }> = ({ action }) => {
 };
 
 const HistoryAvatar: React.FC<{ action: Action }> = ({ action }) => {
+  const actorName = action.actor?.name || action.actor?.slug;
+
   return (
     <div className="relative shrink-0">
       <Avatar
         className="size-10"
-        name={action.actor?.name || action.actor?.slug}
+        {...memberAvatarProps({ name: actorName })}
         src={action.actor?.image}
       />
       <div className="absolute -right-1 -bottom-1 z-30 flex items-center justify-center rounded-full border border-border-default bg-background p-1 shadow-sm">
@@ -93,6 +97,7 @@ const HistoryFilter: React.FC<{
   toggleEventType: (event: string, included: boolean) => void;
   toggleResourceType: (resource: string, included: boolean) => void;
 }> = ({ userId, excludedEvents, excludedResources, toggleEventType, toggleResourceType }) => {
+  const { isAdmin7 } = useShade();
   const { updateRoute } = useSettingsNavigation();
   const usersApi = useFilterableApi<User, 'users', 'name'>({
     path: '/users/',
@@ -254,7 +259,11 @@ const HistoryFilter: React.FC<{
       </Popover>
       <div className="w-[200px]">
         <Inline
-          className={`${inputSurface('within')} relative h-(--control-height) overflow-hidden`}
+          className={cn(
+            inputSurface('within'),
+            'relative h-(--control-height) overflow-hidden',
+            isAdmin7 && 'rounded-full',
+          )}
           gap="none"
         >
           <Popover
@@ -361,7 +370,7 @@ const HistoryActionDescription: React.FC<{ action: Action }> = ({ action }) => {
         {group !== key && (
           <span>
             {' '}
-            <code className="mb-1 bg-white text-grey-800 dark:bg-grey-900 dark:text-white">
+            <code className="mb-1 bg-white text-gray-800 dark:bg-gray-900 dark:text-white">
               ({key})
             </code>
           </span>
@@ -387,7 +396,7 @@ const HistoryActionDescription: React.FC<{ action: Action }> = ({ action }) => {
       return <>{action.resource?.title || action.resource?.name || action.context?.primary_name}</>;
     }
   } else {
-    return <span className="text-grey-500">(unknown)</span>;
+    return <span className="text-gray-500">(unknown)</span>;
   }
 };
 

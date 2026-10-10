@@ -6,7 +6,7 @@ Search interface injected into Ghost sites.
 
 ### Pre-requisites
 
-- Run `pnpm setup` in the Ghost monorepo root
+- Run `pnpm bootstrap` in the Ghost monorepo root
 
 ### Running via Ghost from the monorepo root
 
@@ -22,8 +22,10 @@ To work on this package by itself, run these commands from this directory:
 ```bash
 pnpm build    # one-off build
 pnpm dev      # watch and rebuild the UMD JavaScript and CSS
-pnpm test     # run unit tests once
-pnpm lint     # lint source and tests
+pnpm test                  # type-check and run unit tests once
+pnpm test:acceptance       # browser tests in Chromium
+pnpm test:acceptance:full  # browser tests in Chromium and WebKit
+pnpm lint                  # lint source and tests
 ```
 
 ## Release

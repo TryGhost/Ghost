@@ -1,6 +1,18 @@
 import { AdminPage } from '@/admin-pages';
 import { BasePage } from '@/helpers/pages';
 import { Locator, Page } from '@playwright/test';
+import {
+  cancelDeleteMember,
+  confirmDeleteMember,
+  memberActions,
+  memberCustomFieldEditModal,
+  memberCustomFieldsField,
+  memberDetailEngagement,
+  memberDetailTitle,
+  memberLabelsField,
+  memberSigninUrl,
+  memberSubscriptionToggle,
+} from '@tryghost/test-data/selectors/members';
 
 /**
  * Page object for the member detail screen.
@@ -26,7 +38,7 @@ class SettingsSection extends BasePage {
 
   constructor(page: Page) {
     super(page);
-    this.memberActionsButton = page.getByTestId('member-actions').filter({ visible: true });
+    this.memberActionsButton = page.getByTestId(memberActions).filter({ visible: true });
 
     this.impersonateButton = menuAction(page, 'Impersonate');
     this.signOutOfAllDevices = menuAction(page, 'Sign out of all devices');
@@ -34,8 +46,8 @@ class SettingsSection extends BasePage {
     this.enableCommentingButton = menuAction(page, 'Enable commenting');
 
     this.deleteButton = menuAction(page, 'Delete member');
-    this.confirmDeleteButton = page.getByTestId('confirm-delete-member').filter({ visible: true });
-    this.cancelDeleteButton = page.getByTestId('cancel-delete-member').filter({ visible: true });
+    this.confirmDeleteButton = page.getByTestId(confirmDeleteMember).filter({ visible: true });
+    this.cancelDeleteButton = page.getByTestId(cancelDeleteMember).filter({ visible: true });
   }
 }
 
@@ -68,7 +80,7 @@ export class MemberDetailsPage extends AdminPage {
   readonly screenTitle: Locator;
   readonly logoutConfirmModal: Locator;
 
-  // Custom fields (React screen only, behind the membersCustomFields flag).
+  // Custom fields (the section appears when the site defines a field).
   readonly customFieldsCard: Locator;
   readonly customFieldModal: Locator;
   readonly newsletterSubscriptionCheckboxes: Locator;
@@ -86,10 +98,11 @@ export class MemberDetailsPage extends AdminPage {
     this.nameInput = page.getByRole('textbox', { name: 'Name' });
     this.emailInput = page.getByRole('textbox', { name: 'Email' });
     this.noteInput = page.getByRole('textbox', { name: 'Note' });
-    this.labelsInput = page.getByText('Labels').locator('+ div');
-    this.labels = this.labelsInput.getByRole('listitem');
+    this.labelsInput = page.getByTestId(memberLabelsField);
+    // Each label the member carries is a chip that removes it when pressed.
+    this.labels = this.labelsInput.getByRole('button', { name: /^Remove / });
     this.newsletterSubscriptionToggles = page
-      .getByTestId('member-subscription-toggle')
+      .getByTestId(memberSubscriptionToggle)
       .filter({ visible: true });
 
     this.saveButton = page.getByRole('button', { name: 'Save' });
@@ -98,7 +111,7 @@ export class MemberDetailsPage extends AdminPage {
       .locator('[data-test-link="members-back"]')
       .filter({ visible: true });
     this.copyLinkButton = page.getByRole('button', { name: 'Copy link' });
-    this.magicLinkInput = page.getByTestId('member-signin-url').filter({ visible: true });
+    this.magicLinkInput = page.getByTestId(memberSigninUrl).filter({ visible: true });
     this.confirmLeaveButton = page.getByRole('button', { name: 'Leave' });
     this.settingsSection = new SettingsSection(page);
 
@@ -116,7 +129,7 @@ export class MemberDetailsPage extends AdminPage {
     });
     this.commentingDisabledIndicator = page.getByText('Comments disabled');
 
-    this.screenTitle = page.getByTestId('member-detail-title');
+    this.screenTitle = page.getByTestId(memberDetailTitle);
     this.logoutConfirmModal = page.getByRole('alertdialog', {
       name: 'Sign out member from all devices?',
     });
@@ -125,7 +138,7 @@ export class MemberDetailsPage extends AdminPage {
     this.newsletterSubscriptionCheckboxes = this.newsletterSubscriptionToggles.and(
       page.getByRole('switch'),
     );
-    this.engagementSection = page.getByTestId('member-detail-engagement').filter({ visible: true });
+    this.engagementSection = page.getByTestId(memberDetailEngagement).filter({ visible: true });
 
     this.subscriptionActionsButton = page.getByRole('button', { name: 'Subscription menu' });
     this.cancelSubscriptionButton = menuAction(page, 'Cancel subscription');
@@ -133,8 +146,8 @@ export class MemberDetailsPage extends AdminPage {
     this.removeComplimentaryButton = menuAction(page, 'Remove complimentary subscription');
     this.compTierOptions = page.getByRole('option');
 
-    this.customFieldsCard = page.getByTestId('member-custom-fields-field');
-    this.customFieldModal = page.getByTestId('member-custom-field-edit-modal');
+    this.customFieldsCard = page.getByTestId(memberCustomFieldsField);
+    this.customFieldModal = page.getByTestId(memberCustomFieldEditModal);
   }
 
   // The row's accessible name is "Edit {field}" (plus ": {value}" once set), so
@@ -167,7 +180,15 @@ export class MemberDetailsPage extends AdminPage {
     await this.customFieldEditButton(fieldName).click();
 
     for (const [partLabel, value] of Object.entries(parts)) {
-      await this.customFieldModal.getByLabel(partLabel, { exact: true }).fill(value);
+      const picker = this.customFieldModal.getByRole('combobox', { name: partLabel, exact: true });
+      if (await picker.count()) {
+        // A country is picked by name from a searchable list rather than typed.
+        await picker.click();
+        await this.page.getByPlaceholder('Search countries...').fill(value);
+        await this.page.getByRole('option', { name: value, exact: true }).click();
+      } else {
+        await this.customFieldModal.getByLabel(partLabel, { exact: true }).fill(value);
+      }
     }
 
     await this.customFieldModal.getByRole('button', { name: 'Save', exact: true }).click();
@@ -211,23 +232,29 @@ export class MemberDetailsPage extends AdminPage {
     return await this.labels.allInnerTexts();
   }
 
-  async addLabel(label: string): Promise<void> {
+  getLabel(labelName: string): Locator {
+    return this.labelsInput.getByRole('button', { name: `Remove ${labelName}`, exact: true });
+  }
+
+  async addLabel(labelName: string): Promise<void> {
     await this.labelsInput.click();
-    await this.page.keyboard.type(label);
-    await this.page.keyboard.press('Tab');
+    await this.page.keyboard.type(labelName);
+    await this.page
+      .getByRole('option', { name: labelName, exact: true })
+      .or(this.page.getByRole('option', { name: `Create "${labelName}"`, exact: true }))
+      .click();
+    await this.getLabel(labelName).waitFor();
   }
 
   async removeLabel(labelName: string): Promise<void> {
-    await this.labelsInput.click();
-    await this.labels.filter({ hasText: labelName }).getByLabel('remove element').click();
+    await this.getLabel(labelName).click();
   }
 
   async removeLabels() {
-    await this.labelsInput.click();
     let labelsCount = await this.labels.count();
 
     while (labelsCount > 0) {
-      await this.labels.last().getByLabel('remove element').click();
+      await this.labels.last().click();
       labelsCount = await this.labels.count();
     }
   }

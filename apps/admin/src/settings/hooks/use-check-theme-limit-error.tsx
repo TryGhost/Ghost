@@ -1,6 +1,9 @@
-import { HostLimitError, useLimiter } from './use-limiter';
+import { HostLimitError } from '@tryghost/admin-x-framework/errors';
 import { useCallback } from 'react';
-import { useGlobalData } from '@/settings/providers/global-data-context';
+import { useHostLimits, useLimiter } from '@tryghost/admin-x-framework/hooks';
+
+/** Theme choice is limited by an allowlist alone, so the staff lists never hold the check up. */
+const THEME_LIMITS = ['customThemes'] as const;
 
 interface UseCheckThemeLimitErrorReturn {
   checkThemeLimitError: (themeName?: string) => Promise<string | null>;
@@ -11,10 +14,9 @@ interface UseCheckThemeLimitErrorReturn {
 }
 
 export const useCheckThemeLimitError = (): UseCheckThemeLimitErrorReturn => {
-  const limiter = useLimiter();
-  const { config } = useGlobalData();
+  const limiter = useLimiter({ limits: THEME_LIMITS });
 
-  const allowedThemesList = config.hostSettings?.limits?.customThemes?.allowlist;
+  const allowedThemesList = useHostLimits()?.customThemes?.allowlist;
   // Single theme: always error
   const noThemeChangesAllowed = allowedThemesList?.length === 1 || false;
 

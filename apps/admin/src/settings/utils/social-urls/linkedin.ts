@@ -4,11 +4,17 @@ import type { UsernameRule } from './platform-validator';
 // validation info: https://www.linkedin.com/help/linkedin/answer/a542685/manage-your-public-profile-url?lang=en
 // Letters and numbers in any language (company/school slugs and vanity URLs
 // can contain accented characters — see ONC-1856), hyphens, 3–100 characters.
+// Personal /in/ and /pub/ profiles: alphanumeric (any script) and hyphen only.
+// Company and school pages also allow underscores (e.g. /company/some_company).
 const LINKEDIN_USERNAME_RULE: UsernameRule = {
   unicode: true,
   extra: '-',
   min: 3,
   max: 100,
+};
+const LINKEDIN_COMPANY_USERNAME_RULE: UsernameRule = {
+  ...LINKEDIN_USERNAME_RULE,
+  extra: '-_',
 };
 
 // /in/ profiles are stored as a bare handle; the other path types keep their
@@ -25,8 +31,8 @@ const linkedin = createPlatformValidator({
       storagePrefix: 'pub/',
       rule: { ...LINKEDIN_USERNAME_RULE, nestedSegments: true },
     },
-    { urlPrefix: 'company/', storagePrefix: 'company/', rule: LINKEDIN_USERNAME_RULE },
-    { urlPrefix: 'school/', storagePrefix: 'school/', rule: LINKEDIN_USERNAME_RULE },
+    { urlPrefix: 'company/', storagePrefix: 'company/', rule: LINKEDIN_COMPANY_USERNAME_RULE },
+    { urlPrefix: 'school/', storagePrefix: 'school/', rule: LINKEDIN_COMPANY_USERNAME_RULE },
   ],
   errors: {
     invalidUrl: 'The URL must be in a format like https://www.linkedin.com/in/yourUsername',

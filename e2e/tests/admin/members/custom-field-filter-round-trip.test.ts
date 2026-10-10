@@ -12,13 +12,12 @@ import { usePerTestIsolation } from '@/helpers/playwright/isolation';
  * filter restored (and the same members matched) proves the compound grammar
  * parses back to exactly what produced it.
  *
- * React member detail (the value editor is React-only) plus the membersCustomFields
- * flag that gates the whole feature.
+ * The membersCustomFields flag is what lets the test define a field in Settings.
  */
 usePerTestIsolation();
 
 test.describe('Ghost Admin - Filter members by custom fields', () => {
-  test.use({ labs: { membersCustomFields: true, memberDetailsReact: true } });
+  test.use({ labs: { membersCustomFields: true } });
 
   test('a custom field filter can be built, saved as a segment, and reopened intact', async ({
     page,
@@ -68,7 +67,7 @@ test.describe('Ghost Admin - Filter members by custom fields', () => {
     await expect(sidebar.getNavLink(viewName)).not.toHaveAttribute('aria-current', 'page');
 
     // Reopen it: the filter round-trips (the view goes active again only if the
-    // reopened NQL re-serialises to the exact saved string), the custom-field
+    // reopened NQL re-serializes to the exact saved string), the custom-field
     // filter is present, and the same member is matched.
     await sidebar.getNavLink(viewName).click();
 
@@ -76,6 +75,128 @@ test.describe('Ghost Admin - Filter members by custom fields', () => {
     await expect(membersPage.getFilterItem(fieldName)).toContainText(fieldName);
     await expect(membersPage.getMemberByName(`Ghost Employee ${stamp}`)).toBeVisible();
     await expect(membersPage.getMemberByName(`Acme Employee ${stamp}`)).toHaveCount(0);
+  });
+
+  /**
+   * A composite stores one row per part, and each part filters as a field in its own right,
+   * so the pill carries a part alongside the value. Filtering on one part must not match a
+   * member whose other parts happen to hold that value.
+   */
+  test('an address filter matches on the chosen part only', async ({ page }) => {
+    test.slow();
+
+    const stamp = Date.now();
+    const fieldName = `Shipping ${stamp}`;
+    const memberFactory = createMemberFactory(page.request);
+
+    const inLondon = await memberFactory.create({
+      name: `London Buyer ${stamp}`,
+      email: `london-${stamp}@example.com`,
+    });
+    const inBoston = await memberFactory.create({
+      name: `Boston Buyer ${stamp}`,
+      email: `boston-${stamp}@example.com`,
+    });
+
+    const settingsPage = new SettingsPage(page);
+    const memberDetailsPage = new MemberDetailsPage(page);
+    const membersPage = new MembersListPage(page);
+
+    await settingsPage.goto();
+    await settingsPage.customFieldsSection.createAddressField(fieldName);
+
+    await page.goto(`/ghost/#/members/${inLondon.id}`);
+    await memberDetailsPage.setCompositeCustomFieldValue(fieldName, {
+      'Address line 1': '1 King St',
+      City: 'London',
+      Country: 'United Kingdom',
+    });
+
+    // 'London' sits in this member's Address line 1, so a filter on City must not match it.
+    await page.goto(`/ghost/#/members/${inBoston.id}`);
+    await memberDetailsPage.setCompositeCustomFieldValue(fieldName, {
+      'Address line 1': 'London House',
+      City: 'Boston',
+      Country: 'United States',
+    });
+
+    await page.goto('/ghost/#/members');
+    // A composite defaults to the presence operator, which takes no value, so the
+    // operator is chosen explicitly here.
+    await membersPage.addCustomFieldFilter({
+      field: fieldName,
+      subfield: 'City',
+      operator: 'is',
+      value: 'London',
+    });
+
+    await expect(membersPage.getMemberByName(`London Buyer ${stamp}`)).toBeVisible();
+    await expect(membersPage.getMemberByName(`Boston Buyer ${stamp}`)).toHaveCount(0);
+  });
+
+  test('a country filter matches any of the picked countries and reopens intact', async ({
+    page,
+  }) => {
+    test.slow();
+
+    const stamp = Date.now();
+    const fieldName = `Shipping ${stamp}`;
+    const viewName = `Europe ${stamp}`;
+    const memberFactory = createMemberFactory(page.request);
+
+    const inLondon = await memberFactory.create({
+      name: `London Buyer ${stamp}`,
+      email: `london-${stamp}@example.com`,
+    });
+    const inBerlin = await memberFactory.create({
+      name: `Berlin Buyer ${stamp}`,
+      email: `berlin-${stamp}@example.com`,
+    });
+    const inBoston = await memberFactory.create({
+      name: `Boston Buyer ${stamp}`,
+      email: `boston-${stamp}@example.com`,
+    });
+
+    const settingsPage = new SettingsPage(page);
+    const memberDetailsPage = new MemberDetailsPage(page);
+    const membersPage = new MembersListPage(page);
+    const sidebar = new SidebarPage(page);
+
+    await settingsPage.goto();
+    await settingsPage.customFieldsSection.createAddressField(fieldName);
+
+    for (const [member, country] of [
+      [inLondon, 'United Kingdom'],
+      [inBerlin, 'Germany'],
+      [inBoston, 'United States'],
+    ] as const) {
+      await page.goto(`/ghost/#/members/${member.id}`);
+      await memberDetailsPage.setCompositeCustomFieldValue(fieldName, { Country: country });
+    }
+
+    await page.goto('/ghost/#/members');
+    // A country is picked from a list, so it filters as a set: any of the picks.
+    await membersPage.addCustomFieldFilter({
+      field: fieldName,
+      subfield: 'Country',
+      operator: 'is any of',
+      values: ['United Kingdom', 'Germany'],
+    });
+
+    await expect(membersPage.getMemberByName(`London Buyer ${stamp}`)).toBeVisible();
+    await expect(membersPage.getMemberByName(`Berlin Buyer ${stamp}`)).toBeVisible();
+    await expect(membersPage.getMemberByName(`Boston Buyer ${stamp}`)).toHaveCount(0);
+
+    // The list of codes survives a save and a reload of the segment.
+    await membersPage.saveCurrentView(viewName);
+    await sidebar.getNavLink('Members').click();
+    await sidebar.getNavLink(viewName).click();
+
+    await expect(sidebar.getNavLink(viewName)).toHaveAttribute('aria-current', 'page');
+    await expect(membersPage.getFilterItem(fieldName)).toContainText('2 selected');
+    await expect(membersPage.getMemberByName(`London Buyer ${stamp}`)).toBeVisible();
+    await expect(membersPage.getMemberByName(`Berlin Buyer ${stamp}`)).toBeVisible();
+    await expect(membersPage.getMemberByName(`Boston Buyer ${stamp}`)).toHaveCount(0);
   });
 
   test('an is-set custom field filter matches members that have a value', async ({ page }) => {

@@ -7,6 +7,7 @@ import {
   type Setting,
   getSettingValues,
   useEditSettings,
+  useNewslettersEnabled,
 } from '@tryghost/admin-x-framework/api/settings';
 import { SettingGroupContent } from '@tryghost/shade/patterns';
 import { useGlobalData } from '@/settings/providers/global-data-context';
@@ -20,10 +21,8 @@ const EnableNewsletters: React.FC<{ keywords: string[] }> = ({ keywords }) => {
   const { updateRoute } = useSettingsNavigation();
   const handleError = useHandleError();
 
-  const [newslettersEnabled, membersSignupAccess] = getSettingValues<string>(settings, [
-    'editor_default_email_recipients',
-    'members_signup_access',
-  ]);
+  const newslettersEnabled = useNewslettersEnabled() === true;
+  const [membersSignupAccess] = getSettingValues<string>(settings, ['members_signup_access']);
 
   const isDisabled = membersSignupAccess === 'none';
 
@@ -47,7 +46,7 @@ const EnableNewsletters: React.FC<{ keywords: string[] }> = ({ keywords }) => {
     <>
       <Switch
         aria-label="Newsletters"
-        checked={newslettersEnabled !== 'disabled' && !isDisabled}
+        checked={newslettersEnabled && !isDisabled}
         disabled={isDisabled}
         onCheckedChange={(checked) => void handleToggleChange(checked)}
       />
@@ -64,7 +63,7 @@ const EnableNewsletters: React.FC<{ keywords: string[] }> = ({ keywords }) => {
       title="Newsletter sending"
     >
       <SettingGroupContent>
-        {newslettersEnabled !== 'disabled' && !isDisabled ? (
+        {newslettersEnabled && !isDisabled ? (
           <div className="w-full">
             <Inline align="center" gap="sm">
               <LucideIcon.Check className="size-4 text-state-success" />

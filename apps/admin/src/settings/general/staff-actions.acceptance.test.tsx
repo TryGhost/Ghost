@@ -52,7 +52,7 @@ describe('Staff actions', () => {
     const owner = user('Owner');
     const author = user('Author');
     const { boot } = fakeStaffWorld({ currentUser: owner, users: [owner, author] });
-    const deleteApi = fakeAdminEndpoint('DELETE', `/users/${author.id}/`, {});
+    const deleteApi = fakeAdminEndpoint('DELETE', `/users/${author.id}/`, null, { status: 204 });
     await renderAdminApp(`/settings/staff/${author.slug}`, { boot });
 
     await chooseAction('Delete user');

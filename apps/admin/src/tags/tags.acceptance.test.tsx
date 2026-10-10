@@ -58,7 +58,7 @@ describe('Tags list', () => {
     await expect.element(tagsScreen.newTagLink()).toHaveAttribute('href', '#/tags/new');
     await tagsScreen.newTagLink().click();
 
-    // /tags/new is Ember-owned; the shell records the route and defers.
+    // /tags/new opens the tag detail screen in create mode.
     await expect.poll(currentRoute).toBe('/tags/new');
   });
 
@@ -76,6 +76,6 @@ describe('Tags list', () => {
     await expect.poll(() => tagsApi.lastRequest?.page).toBe(2);
     await expect.element(tagsScreen.link('Tag 120')).toBeVisible();
     // Virtualized: only a window of rows is in the DOM at once.
-    expect(tagsScreen.tagRows().all().length).toBeLessThan(120);
+    await expect.poll(() => tagsScreen.tagRows().elements().length).toBeLessThan(120);
   });
 });

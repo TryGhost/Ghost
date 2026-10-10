@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { Tabs, TabsContent, TabsList, TabsTrigger, TabsTriggerCount } from './tabs';
+import ShadeApp from '@/shade-app';
 
 const meta = {
   title: 'Components / Tabs',
@@ -47,7 +48,8 @@ export const Default: Story = {
   parameters: {
     docs: {
       description: {
-        story: 'Basic tabs for simple content switching.',
+        story:
+          'Button tabs follow the shared control shape: pill with Admin 7 enabled, rounded otherwise.',
       },
     },
   },
@@ -81,6 +83,31 @@ export const StableSelectionWidth: Story = {
     docs: {
       description: {
         story: 'Button tabs keep the same font weight and width when the active tab changes.',
+      },
+    },
+  },
+};
+
+export const AppLevelPillButtonSmall: Story = {
+  render: () => (
+    <ShadeApp darkMode={false}>
+      <Tabs defaultValue="all" variant="button-sm">
+        <TabsList>
+          <TabsTrigger value="all">All content</TabsTrigger>
+          <TabsTrigger value="posts">Posts</TabsTrigger>
+          <TabsTrigger value="pages">Pages</TabsTrigger>
+          <TabsTrigger value="sources" disabled>
+            Sources
+          </TabsTrigger>
+        </TabsList>
+      </Tabs>
+    </ShadeApp>
+  ),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Button-small tabs inherit the app-level pill shape while keeping their existing interaction states.',
       },
     },
   },

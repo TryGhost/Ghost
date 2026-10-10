@@ -33,6 +33,19 @@ How we write GitHub Actions workflows safely. Follow these when adding or editin
 ## Secrets
 
 - Expose a secret only to the job that uses it. Do not make secrets available to jobs that run untrusted code.
+- **Never pass a secret to a local action (`uses: ./...`) on a `pull_request` run.** A `pull_request` run executes the merge commit (`GITHUB_REF` is `refs/pull/N/merge`), so the workflow file and every local action it calls are PR-authored — an input you pass is an input the PR reads. A guard _inside_ the action is too late; the secret is already an input. Gate it at the caller:
+
+  ```yaml
+  # Bad — the PR controls .github/actions/foo/action.yml
+  github-token: ${{ secrets.SOME_PAT }}
+
+  # Good — push runs publish, PR runs get an empty string
+  github-token: ${{ github.event_name != 'pull_request' && secrets.SOME_PAT || '' }}
+  ```
+
+  Fork PRs get no secrets, so this bites on same-repo branches — and there it is damage control rather than a boundary, since anyone who can push a branch can also edit the workflow. What it does buy is that a compromised dependency or third-party action in that job never sees the secret.
+
+- **A secret is exposed to its whole job, not just its step.** Steps share a runner, so PR-authored code running earlier in the job — a repo script, a build, a lifecycle hook — can shadow a binary on `$GITHUB_PATH` or write `$GITHUB_ENV` and capture the secret from a later step. If a job checks out PR code, keep secrets out of it entirely and do the privileged work in a separate job with no checkout.
 - Prefer OIDC (`id-token: write`) over long-lived stored secrets where the provider supports it.
 
 ## Supply chain
@@ -40,7 +53,7 @@ How we write GitHub Actions workflows safely. Follow these when adding or editin
 - **Pin every third-party action to a full commit SHA**, with the version as a trailing comment:
 
   ```yaml
-  uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+  uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
   ```
 
   A tag or branch ref can be re-pointed at malicious code; a SHA cannot.
@@ -54,4 +67,33 @@ How we write GitHub Actions workflows safely. Follow these when adding or editin
 3. Trigger is `pull_request` unless `pull_request_target` is genuinely required and safe.
 4. No `${{ github.event.* }}` inside `run:`.
 5. Third-party actions pinned to SHAs.
-6. Secrets scoped to the jobs that use them.
+6. Secrets scoped to the jobs that use them, and never passed to a local action on a `pull_request` run.
+7. No job both checks out PR code and holds a secret.
+
+## PR preview boundary
+
+The preview dispatch workflow reads GitHub metadata only; it never checks out PR
+code. Ghost-Moya resolves the image digest, confirms it was built from the PR head,
+and builds the preview adapter image and runs
+smoke tests on a separate runner with no deployment secrets or OIDC. Publishing
+imports image data without running it, and deployment pins the registry digest.
+Inherited base-image ONBUILD instructions and adapter validation are PR code too.
+
+## PR preview labels
+
+Either `preview` or `preview:<profile>` enables a preview. A profile label selects
+its seed dataset and takes precedence when both forms are present; `preview` alone
+uses the default. Only one profile label is allowed at a time.
+
+Removing the last preview label or closing the PR tears down the preview. Changing
+the selected profile reseeds its database, discarding any changes made on the site.
+
+Each push to a labelled PR refreshes its preview once CI has published the new
+image: the Pro CD dispatch tells Ghost-Moya whether the PR has a preview. A refresh
+keeps the database. A failed build leaves the last good deployment running, and a
+reopened PR redeploys from its reopen CI run. Fork PRs cannot have previews because
+their images are not published to GHCR.
+
+Ghost-Moya re-reads the PR's state, labels and head before changing anything, so a
+delayed or superseded request deploys the current head or nothing at all. GitHub
+deployments record the commit that was actually deployed.

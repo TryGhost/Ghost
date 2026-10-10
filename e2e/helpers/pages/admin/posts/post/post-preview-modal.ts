@@ -1,5 +1,10 @@
 import { DesktopPreviewFrame, EmailPreviewFrame } from '@/helpers/pages';
 import { Locator, Page } from '@playwright/test';
+import {
+  emailPreviewTab,
+  postPreviewModal,
+  webPreviewTab,
+} from '@tryghost/test-data/selectors/editor';
 
 export class PostPreviewModal {
   private readonly page: Page;
@@ -15,15 +20,16 @@ export class PostPreviewModal {
 
   constructor(page: Page) {
     this.page = page;
-    this.modal = this.page.getByRole('banner').filter({ hasText: 'Preview' });
+
+    this.modal = page.getByTestId(postPreviewModal);
     this.header = this.modal.getByRole('heading', { name: 'Preview' });
     this.closeButton = this.modal.getByRole('button', { name: 'Close' });
 
     this.desktopPreview = new DesktopPreviewFrame(page);
     this.emailPreview = new EmailPreviewFrame(page);
 
-    this.webTabButton = this.modal.getByRole('button', { name: 'Web' });
-    this.emailTabButton = this.modal.getByRole('button', { name: 'Email' });
+    this.webTabButton = this.modal.getByRole('tab', { name: webPreviewTab });
+    this.emailTabButton = this.modal.getByRole('tab', { name: emailPreviewTab });
   }
 
   async switchToEmailTab(): Promise<void> {

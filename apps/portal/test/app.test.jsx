@@ -60,6 +60,32 @@ describe('App', function () {
     return ghostApi;
   }
 
+  // The fields are wanted by one page, but asking for them there means asking again on
+  // every visit to it. Asked for here instead, beside the member, they cost the account
+  // page no wait of its own and are asked for once.
+  test('asks for the custom fields open to members while the rest of the app loads', async () => {
+    const basic = FixtureSite.singleTier.basic;
+    const ghostApi = setupApi({
+      site: { ...basic, labs: { ...basic.labs, membersCustomFields: true } },
+    });
+    ghostApi.member.customFields = vi.fn(() => Promise.resolve([]));
+
+    const utils = appRender(<App siteUrl="http://example.com" api={ghostApi} />);
+    await utils.findByTitle(/portal-popup/i);
+
+    expect(ghostApi.member.customFields).toHaveBeenCalledTimes(1);
+  });
+
+  test('does not ask for custom fields when the site does not have them', async () => {
+    const ghostApi = setupApi();
+    ghostApi.member.customFields = vi.fn(() => Promise.resolve([]));
+
+    const utils = appRender(<App siteUrl="http://example.com" api={ghostApi} />);
+    await utils.findByTitle(/portal-popup/i);
+
+    expect(ghostApi.member.customFields).not.toHaveBeenCalled();
+  });
+
   test('transforms portal links on render', async () => {
     const link = document.createElement('a');
     link.setAttribute('href', 'http://example.com/#/portal/signup');
@@ -187,6 +213,22 @@ describe('App', function () {
 
     expect(result).toEqual({});
     expect(app.fetchGiftRedemptionData).not.toHaveBeenCalled();
+  });
+
+  test('maps customized gift routes to explicit form steps', () => {
+    const app = new App({ siteUrl: 'http://example.com' });
+    const site = {
+      ...FixtureSite.singleTier.basic,
+    };
+
+    expect(app.getPageFromLinkPath('gift', site)).toEqual({
+      page: 'gift',
+      pageData: { giftStep: 'plan' },
+    });
+    expect(app.getPageFromLinkPath('gift/delivery', site)).toEqual({
+      page: 'gift',
+      pageData: { giftStep: 'delivery' },
+    });
   });
 
   test('ignores malformed gift redemption tokens in trigger links', async () => {
@@ -388,7 +430,7 @@ describe('App', function () {
 
   test('parses a valid preview hash', () => {
     window.location.hash =
-      '#/portal/preview?button=true&isFree=true&isMonthly=true&isYearly=false&signupCheckboxRequired=false&previewTheme=dark';
+      '#/portal/preview?button=true&isFree=true&isMonthly=true&isYearly=false&signupCheckboxRequired=false&signupGiftPromotion=true&accountGiftPromotion=false&previewTheme=dark';
 
     const app = new App({ siteUrl: 'http://example.com' });
     const data = app.fetchPreviewData();
@@ -399,6 +441,22 @@ describe('App', function () {
     expect(data.site.portal_plans).toContain('monthly');
     expect(data.site.portal_plans).not.toContain('yearly');
     expect(data.site.portal_signup_checkbox_required).toBe(false);
+    expect(data.site.portal_signup_gift_promotion).toBe(true);
+    expect(data.site.portal_account_gift_promotion).toBe(false);
+    expect(data.site.preview_theme).toBe('dark');
+  });
+
+  test('ignores invalid gift promotion preview values without dropping other overrides', () => {
+    window.location.hash =
+      '#/portal/preview?button=true&signupGiftPromotion=%7BINVALID&accountGiftPromotion=%22yes%22&previewTheme=dark';
+
+    const app = new App({ siteUrl: 'http://example.com' });
+    const data = app.fetchPreviewData();
+
+    expect(data.showPopup).toBe(true);
+    expect(data.site.portal_button).toBe(true);
+    expect(data.site.portal_signup_gift_promotion).toBeUndefined();
+    expect(data.site.portal_account_gift_promotion).toBeUndefined();
     expect(data.site.preview_theme).toBe('dark');
   });
 });

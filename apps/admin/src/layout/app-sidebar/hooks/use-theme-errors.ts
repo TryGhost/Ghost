@@ -1,4 +1,4 @@
-import { useActiveTheme } from '@tryghost/admin-x-framework/api/themes';
+import { missesPageBuilderAttribute, useActiveTheme } from '@tryghost/admin-x-framework/api/themes';
 import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
 import { isContributorUser } from '@tryghost/admin-x-framework/api/users';
 import type { ThemeProblem } from '@tryghost/admin-x-framework/api/themes';
@@ -6,10 +6,7 @@ import type { ThemeProblem } from '@tryghost/admin-x-framework/api/themes';
 // This error is handled inline next to the related setting in the design
 // customization panel rather than shown in the sidebar error banner
 function isFilteredError(error: ThemeProblem<'error'>): boolean {
-  return (
-    error.code === 'GS110-NO-MISSING-PAGE-BUILDER-USAGE' &&
-    !!error.failures?.[0]?.message?.includes('show_title_and_feature_image')
-  );
+  return missesPageBuilderAttribute(error, 'show_title_and_feature_image');
 }
 
 export function useActiveThemeErrors() {
