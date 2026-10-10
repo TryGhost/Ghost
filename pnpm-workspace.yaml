@@ -35,7 +35,7 @@ allowBuilds:
   'esbuild@0.25.12 || 0.28.2': true
   'fsevents@1.2.13 || 2.3.2 || 2.3.3': true
   'msw@2.14.6': true
-  'nx@23.2.0': true
+  'nx@23.3.0': true
   'protobufjs@7.6.6': true
   're2@1.26.1': true
   'sharp@0.35.5': true
@@ -349,6 +349,11 @@ minimumReleaseAgeExclude:
   - 'ghost-storage-base'
   - 'gscan'
   - 'knex-migrator'
+  # nx pins its platform binaries to its own exact version, so the release age
+  # of nx itself still gates them
+  - '@nx/nx-*'
+  # Adopted before its 3-day soak ended
+  - 'nx@23.3.0'
 
 # configuration for pnpm's changeset functionality
 versioning:
