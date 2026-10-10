@@ -21,6 +21,13 @@ export function createAdminThemeController(onChange?: (theme: ResolvedAdminTheme
 
   function apply(theme: ResolvedAdminTheme) {
     const html = document.documentElement;
+    const isChange = html.classList.contains('dark') !== (theme === 'dark');
+    // Without a theme change there are no transitions to hold back, and
+    // toggling a class on <html> restyles every element in the document.
+    if (!isChange && !adapter) {
+      onChange?.(theme);
+      return;
+    }
     html.classList.add('theme-switching');
     html.classList.toggle('dark', theme === 'dark');
     adapter?.apply(theme);

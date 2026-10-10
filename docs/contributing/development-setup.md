@@ -74,13 +74,10 @@ starts. The command starts:
 - a Caddy gateway in Docker on `http://localhost:2368`
 - Admin and Portal development watchers on the host
 
-Admin prepares Ember's development assets once at startup. Ember remains
-available for legacy routes and the shared bridge, while React and its shared
-libraries keep hot-reloading. Restart `pnpm dev` after editing Ember source, or
-use `pnpm dev:ember` for continuous Ember builds and live reload. These commands
-preserve the site's existing feature flags; see
-[Admin development](../../apps/admin/README.md#development) to preview React
-editor and auth screens with session overrides.
+Admin and its shared libraries hot-reload. These commands preserve the site's
+existing feature flags; see
+[Admin development](../../apps/admin/README.md#development) to preview flagged
+features with session overrides.
 
 Wait for Docker Compose to report healthy services, then open:
 
@@ -126,7 +123,6 @@ environment and adds the listed tooling:
 | Command                    | Use it when working on                                                                                          |
 | -------------------------- | --------------------------------------------------------------------------------------------------------------- |
 | `pnpm dev`                 | Ghost Core, Admin, or Portal                                                                                    |
-| `pnpm dev:ember`           | Ember Admin, including its browser test runner and live reload                                                  |
 | `pnpm dev:public`          | Comments UI, Signup Form, Search, Announcement Bar, or Admin Toolbar                                            |
 | `pnpm dev:lexical`         | Koenig's Lexical editor inside Ghost Admin                                                                      |
 | `pnpm dev:analytics`       | Tinybird-backed analytics with the latest published version of the Traffic Analytics service                    |
@@ -193,7 +189,7 @@ reinstalls dependencies, and resets Nx state.
 For narrower build and cache problems, use:
 
 ```bash
-pnpm nx reset       # Clear the Nx cache
+pnpm nx reset       # Clear the Nx cache, which all checkouts and worktrees share
 pnpm build:clean    # Clear the Nx cache and Ghost build output
 pnpm docker:build   # Rebuild the local development images
 ```

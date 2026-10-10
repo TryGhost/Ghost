@@ -64,9 +64,6 @@ export default function renderStandaloneApp<Props extends object>(
             'App-Pragma': '',
             'X-Unsplash-Cache': false,
           },
-          onDelete: () => {},
-          onInvalidate: () => {},
-          onUpdate: () => {},
         }}
         {...props}
       />

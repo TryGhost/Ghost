@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, onTestFinished } from 'vitest';
+import { describe, expect, it, onTestFinished } from 'vitest';
 import { page } from 'vitest/browser';
 import {
   allowUnhandledRequests,
@@ -91,15 +91,7 @@ function selfServeMigration(secret: string): Integration {
 const siteOwner = () =>
   staffUser({ email: 'owner@example.com', roles: [staffRole({ name: 'Owner' })] });
 
-const externalNavigation = (): unknown =>
-  JSON.parse(document.body.dataset.externalNavigate ?? 'null');
-
 describe('Migrate', () => {
-  // The recorded handoff lives on the host page, which outlives a single test.
-  beforeEach(() => {
-    delete document.body.dataset.externalNavigate;
-  });
-
   it('opens the migration app for the chosen platform', async () => {
     await fakeFrameOrigin(MIGRATE_ORIGIN, migrateStandIn());
     const messages = standInMessages();
@@ -180,16 +172,6 @@ describe('Migrate', () => {
       .poll(() => messages.find((message) => message.pong)?.pong)
       .toBe(messages[0]?.loadId);
     expect(messages.filter((message) => message.loaded)).toHaveLength(1);
-  });
-
-  it('hands routes Ember owns to Ember', async () => {
-    await fakeFrameOrigin(
-      MIGRATE_ORIGIN,
-      migrateStandIn(`parent.postMessage({ route: '/pro' }, '*');`),
-    );
-    await renderAdminApp('/migrate');
-
-    await expect.poll(externalNavigation).toMatchObject({ route: '/pro', isExternal: true });
   });
 
   it('ignores messages from other origins', async () => {

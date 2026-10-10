@@ -2,17 +2,21 @@ import { useSyncExternalStore } from 'react';
 import { useBrowseConfig } from '@tryghost/admin-x-framework/api/config';
 import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
 import { isOwnerUser } from '@tryghost/admin-x-framework/api/users';
-import { type SubscriptionState, useEmberSubscriptionStatus } from '@/ember-bridge';
-import { useFlagGatedRouteOwner } from '@/use-flag-gated-route-owner';
 
-export const BILLING_REACT_FLAG = 'billingReact';
+export interface SubscriptionState {
+  subscription?: {
+    isActiveTrial: boolean;
+    trial_end: string | null;
+    status: string;
+  };
+}
 
-let reactSubscriptionState: SubscriptionState | null = null;
+let subscriptionState: SubscriptionState | null = null;
 const listeners = new Set<() => void>();
 
-/** Records the latest subscription state reported by React's billing app. */
+/** Records the latest subscription state reported by the billing app. */
 export function setBillingSubscriptionState(state: SubscriptionState | null): void {
-  reactSubscriptionState = state;
+  subscriptionState = state;
   listeners.forEach((listener) => listener());
 }
 
@@ -24,22 +28,12 @@ function subscribe(listener: () => void): () => void {
 }
 
 function getSnapshot(): SubscriptionState | null {
-  return reactSubscriptionState;
+  return subscriptionState;
 }
 
-/**
- * The subscription state the billing app last reported, from whichever shell
- * runs the billing app. `null` until the billing app has reported.
- */
+/** The subscription state the billing app last reported; `null` until it has reported. */
 export function useSubscriptionStatus(): SubscriptionState | null {
-  const owner = useFlagGatedRouteOwner(BILLING_REACT_FLAG);
-  const emberStatus = useEmberSubscriptionStatus();
-  const reactStatus = useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
-
-  if (owner === 'react') {
-    return reactStatus;
-  }
-  return owner === 'ember' ? emberStatus : null;
+  return useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
 }
 
 /**

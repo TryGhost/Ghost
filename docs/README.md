@@ -36,7 +36,6 @@ setup, development variants, and troubleshooting.
 Ghost/
 ├── apps/              # Admin and public frontend apps
 │   ├── admin/          # React Admin
-│   ├── ember-admin/    # Legacy Ember Admin
 │   ├── portal/         # Member Portal
 │   ├── comments-ui/    # Comments
 │   └── shade/          # Admin design system
@@ -129,11 +128,11 @@ For more detail, see the [contribution workflow](contributing/workflow.md).
 
 Use `pnpm check` as the default one-stop command for formatting checks, linting,
 and testing. Add tests at the closest layer to the behavior you changed. Browser
-end-to-end tests and Ember Admin tests run separately from `pnpm check`.
+end-to-end tests run separately from `pnpm check`.
 
 For more detail, see the [testing guide](contributing/testing.md) including how
-to choose a test suite, run focused tests, and use the separate browser and
-Ember Admin test lanes.
+to choose a test suite, run focused tests, and use the separate browser test
+lane.
 
 ### Shipping
 

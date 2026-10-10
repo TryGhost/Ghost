@@ -70,6 +70,23 @@ const resetFakeFrameOrigins: BrowserCommand<[]> = async ({ page }) => {
   await Promise.all(fakes.map(({ matcher, handler }) => page.unroute(matcher, handler)));
 };
 
+// Module requests fail as a dropped connection would (test-utils/acceptance/module-loads.ts).
+// Routed on the context: the page's routes never see what MSW's service worker fetches.
+type BrowserContext = BrowserCommandContext['context'];
+const failedModules = new WeakMap<BrowserContext, Array<(url: URL) => boolean>>();
+
+const failModuleLoads: BrowserCommand<[pathEnd: string]> = async ({ context }, pathEnd) => {
+  const matcher = (url: URL) => url.pathname.endsWith(pathEnd);
+  await context.route(matcher, (route) => route.abort('connectionreset'));
+  failedModules.set(context, [...(failedModules.get(context) ?? []), matcher]);
+};
+
+const resetFailedModuleLoads: BrowserCommand<[]> = async ({ context }) => {
+  const matchers = failedModules.get(context) ?? [];
+  failedModules.delete(context);
+  await Promise.all(matchers.map((matcher) => context.unroute(matcher)));
+};
+
 export default defineConfig({
   plugins: [tailwindcss() as PluginOption, svgr(), react()],
   server: {
@@ -80,12 +97,23 @@ export default defineConfig({
   // never ends up in the production build's public assets.
   publicDir: './test-utils/acceptance/public',
   define: sharedDefine,
+  // Run on React's production build, the one Admin ships: the development
+  // build and StrictMode's double renders cost the suite more than a tenth of
+  // its time. App and workspace sources keep their NODE_ENV; only pre-bundled
+  // dependencies switch, so JSX must not target the dev runtime either.
+  oxc: { jsx: { development: false } },
   optimizeDeps: {
     // Scan every app module so deps behind lazy routes are pre-bundled up
     // front — mid-run discovery reloads the test page and flakes the
     // suite. Test files and screen helpers import test-lane modules the
     // browser bundler can't process; vitest serves those itself.
     entries: ['src/**/*.{ts,tsx}', '!src/**/*.test.*', '!src/**/*.screen.ts'],
+    // The harness's MSW (and its graphql dependency) would otherwise load as
+    // ~150 separate modules in every spec file's fresh iframe.
+    include: ['msw', 'msw/browser'],
+    rolldownOptions: {
+      transform: { define: { 'process.env.NODE_ENV': JSON.stringify('production') } },
+    },
   },
   resolve: sharedResolve,
   test: {
@@ -100,7 +128,7 @@ export default defineConfig({
     outputFile: { json: './test-results/acceptance.json' },
     include: ['src/**/*.acceptance.test.tsx', 'src/**/*.component.test.tsx'],
     maxWorkers: getWorkerCount(),
-    setupFiles: ['./test-utils/acceptance/setup.ts'],
+    setupFiles: ['./test-utils/acceptance/react-production.ts', './test-utils/acceptance/setup.ts'],
     // Most journeys finish well under a second, but a few that wait out a
     // product-side hold reach ~6s; this leaves those headroom on slower CI.
     testTimeout: 15_000,
@@ -113,7 +141,13 @@ export default defineConfig({
       enabled: true,
       headless: true,
       provider: playwright(),
-      commands: { fakeFrameOrigin, guardFrameNavigations, resetFakeFrameOrigins },
+      commands: {
+        failModuleLoads,
+        fakeFrameOrigin,
+        guardFrameNavigations,
+        resetFailedModuleLoads,
+        resetFakeFrameOrigins,
+      },
       instances: [{ browser: 'chromium' }],
       // Failure screenshots land in __screenshots__/ (gitignored).
       screenshotFailures: true,

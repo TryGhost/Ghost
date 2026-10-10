@@ -6,7 +6,10 @@
 #            (build-only stage, never shipped)
 #   report — per-package sizes of that closure, for CI (build-only, not shipped)
 #   core — server + production deps, no admin (Ghost-Pro base)
-#   full — core + built admin (self-hosting)
+#   full — core + built admin
+#   selfhost — full + the runtime contract of the Docker Official Image's `next`
+#              variant (root entrypoint + gosu, VOLUME, baked config). Published
+#              as the nightly image; see docker/selfhost/README.md
 #
 # Build context: the monorepo repo root. The deploy stage runs `pnpm deploy`
 # against the workspace to produce a self-contained app dir (source + resolved
@@ -23,6 +26,10 @@
 # image pull.
 
 ARG NODE_VERSION=22.23.3
+
+# Set by BuildKit per target platform; declared globally so the selfhost target
+# can pick its gosu stage by architecture.
+ARG TARGETARCH
 
 # ---- deploy: build closure + self-contained app dir (build-only, not shipped) ----
 FROM node:$NODE_VERSION-bookworm-slim AS deploy
@@ -145,3 +152,60 @@ FROM core AS full
 # both paths first (e.g. `pnpm nx run @tryghost/admin:build`).
 COPY --chown=nobody:nogroup ghost/core/built/admin core/built/admin
 COPY --chown=nobody:nogroup ghost/core/built/embed-renderer core/built/embed-renderer
+
+# ---- gosu: privilege drop for the selfhost entrypoint (build-only) ----
+# Static binary, so it is fetched straight into scratch and pinned by checksum
+# (from the release's SHA256SUMS) rather than GPG-verified against a keyserver,
+# which is one more network dependency for a nightly build to flake on. Only
+# the architectures the nightly publishes are listed; another platform fails
+# here with a missing `gosu-<arch>` stage. Bump all three lines together.
+# https://github.com/tianon/gosu/releases
+FROM scratch AS gosu-amd64
+ADD --chmod=755 --checksum=sha256:52c8749d0142edd234e9d6bd5237dff2d81e71f43537e2f4f66f75dd4b243dd0 \
+    https://github.com/tianon/gosu/releases/download/1.19/gosu-amd64 /gosu
+
+FROM scratch AS gosu-arm64
+ADD --chmod=755 --checksum=sha256:3a8ef022d82c0bc4a98bcb144e77da714c25fcfa64dccc57f6aba7ae47ff1a44 \
+    https://github.com/tianon/gosu/releases/download/1.19/gosu-arm64 /gosu
+
+FROM gosu-${TARGETARCH} AS gosu
+
+# ---- Selfhost: full + the Docker Official Image `next` runtime contract ----
+# Matches docker-library/ghost's `next` variant (Dockerfile-next.template) in
+# everything but how the tree is built, so a nightly can stand in for it:
+#   - starts as root; docker-entrypoint.sh chowns the content volume, seeds it
+#     from content.orig, then drops to `ghost` via gosu (`--user` skips that)
+#   - VOLUME at /home/ghost/content
+#   - baked config.production.json (listens on ::, logs to stdout)
+# docker/selfhost/ is the source of truth for the entrypoint and config; the
+# official image copies them rather than the other way round.
+FROM full AS selfhost
+
+USER root
+
+COPY --from=gosu /gosu /usr/local/bin/gosu
+
+ENV GHOST_INSTALL=/home/ghost
+ENV GHOST_CONTENT=/home/ghost/content
+
+# base_content is the pristine copy of content made in core; the entrypoint
+# seeds from content.orig, the name the official image has always used. content
+# itself becomes an empty mount point, world-writable so it stays usable
+# whatever uid ends up owning a bind mount over it.
+RUN set -eux; \
+    gosu --version; \
+    gosu nobody true; \
+    rm -rf content; \
+    mv base_content content.orig; \
+    mkdir content; \
+    chmod 1777 content; \
+    ln -s config.production.json config.development.json
+
+COPY --chown=nobody:nogroup docker/selfhost/config.production.json ./
+COPY --chmod=755 docker/selfhost/docker-entrypoint.sh /usr/local/bin/
+
+VOLUME $GHOST_CONTENT
+
+# Setting ENTRYPOINT clears the CMD inherited from core, so restate it.
+ENTRYPOINT ["docker-entrypoint.sh"]
+CMD ["node", "index.js"]

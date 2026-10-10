@@ -15,10 +15,7 @@ import {
 import { cn, useGlobalDirtyState } from '@tryghost/shade/utils';
 import { DirtyConfirmDialog, useDirtyConfirmation } from '@tryghost/shade/patterns';
 import { useLocation, useNavigate } from '@tryghost/admin-x-framework';
-import { navigateEmberBillingSubRoute } from '@/ember-bridge';
-import { useEmberOwnedRouteMatcher } from '@/routes';
-import { getSearchDestination } from './search-destination';
-import type { SearchResult } from './searchables';
+import type { SearchItem, SearchResultGroup } from './search-source';
 import { useGlobalSearch } from './use-global-search';
 import { useSettingsReturnToState } from '@/layout/settings-navigation';
 
@@ -77,42 +74,38 @@ function StatusBadge({ status }: { status?: string }) {
   return <Badge className={cn('border-transparent', badge.tone)}>{badge.label}</Badge>;
 }
 
+const optionValue = (group: SearchResultGroup, item: SearchItem) => `${group.id}:${item.id}`;
+
 /** The search itself; rendered inside the dialog so its index queries stop once the dialog closes. */
 function GlobalSearchPanel({ onClose }: { onClose: () => void }) {
   const [term, setTerm] = useState('');
   const { results, isLoading } = useGlobalSearch(term);
+  // each new set of results selects its first option, so Enter opens it
+  const firstValue = results[0] ? optionValue(results[0], results[0].items[0]) : '';
+  const [selected, setSelected] = useState({ results, value: firstValue });
+  if (selected.results !== results) {
+    setSelected({ results, value: firstValue });
+  }
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const settingsReturnToState = useSettingsReturnToState();
-  const isEmberOwned = useEmberOwnedRouteMatcher();
   const { isDirty } = useGlobalDirtyState();
   const { confirm, dialogProps } = useDirtyConfirmation();
   const isSettings = /^\/settings(?:\/|$)/.test(pathname);
 
-  const openResult = (result: SearchResult) => {
-    const destination = getSearchDestination(result);
-    if (!destination) {
+  const openItem = (item: SearchItem) => {
+    if (item.kind === 'action') {
       onClose();
+      void item.run();
       return;
     }
 
-    const crossApp = isEmberOwned(destination.path);
-    const opensSettings = /^\/settings(?:[/?#]|$)/.test(destination.path);
+    const opensSettings = /^\/settings(?:[/?#]|$)/.test(item.to);
     // Search exits bypass Settings' own controls and its history-only blocker.
     // Keep the search mounted while confirming so Stay preserves the query.
     confirm(isSettings && isDirty && !opensSettings, () => {
       onClose();
-      if (
-        destination.billingSubRoute &&
-        pathname === destination.path &&
-        crossApp &&
-        navigateEmberBillingSubRoute(destination.billingSubRoute)
-      ) {
-        return;
-      }
-
-      navigate(destination.path, {
-        crossApp,
+      navigate(item.to, {
         state: opensSettings ? settingsReturnToState : undefined,
       });
     });
@@ -125,27 +118,29 @@ function GlobalSearchPanel({ onClose }: { onClose: () => void }) {
       <Command
         className={cn('sm:rounded-lg', !hasTerm && '[&_[cmdk-input-wrapper]]:border-b-0')}
         shouldFilter={false}
+        value={selected.value}
+        onValueChange={(value) => setSelected({ results, value })}
       >
         <CommandInput placeholder="Search site" value={term} onValueChange={setTerm} />
         <CommandList className={cn('max-h-[50vh]', !hasTerm && 'hidden')}>
           {results.map((group, index) => (
-            <Fragment key={group.groupKey ?? group.groupName}>
+            <Fragment key={group.id}>
               {index > 0 && <CommandSeparator alwaysRender />}
               <CommandGroup
                 className="[&_[cmdk-group-heading]]:tracking-wide [&_[cmdk-group-heading]]:uppercase"
-                heading={group.groupName}
+                heading={group.heading}
               >
-                {group.options.map((result) => (
+                {group.items.map((item) => (
                   <CommandItem
-                    key={result.id}
+                    key={item.id}
                     className="justify-between"
-                    value={result.id}
-                    onSelect={() => openResult(result)}
+                    value={optionValue(group, item)}
+                    onSelect={() => openItem(item)}
                   >
                     <span className="truncate">
-                      <HighlightedText term={term} text={result.title} />
+                      <HighlightedText term={term} text={item.title} />
                     </span>
-                    <StatusBadge status={result.status} />
+                    <StatusBadge status={item.status} />
                   </CommandItem>
                 ))}
               </CommandGroup>

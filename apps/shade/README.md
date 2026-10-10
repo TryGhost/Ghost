@@ -76,7 +76,7 @@ Admin’s Vite development, production and test configurations select the `sourc
 export condition to load this package directly from `src/`. Changes reach Vite
 without waiting for the library build. Consumers without that condition keep
 using the compiled exports; TypeScript continues using the generated declarations.
-The library build remains required for those consumers, including Ember.
+The library build remains required for those consumers.
 
 ## Test
 

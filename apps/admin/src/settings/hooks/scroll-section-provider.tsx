@@ -1,4 +1,5 @@
 import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import { ScrollSectionContext } from './use-scroll-section';
 
@@ -17,6 +18,60 @@ const scrollToSection = (
     behavior: doneInitialScroll ? 'smooth' : 'instant',
     top: top - scrollMargin,
   });
+};
+
+const HOLD_SETTLE_MS = 300;
+const HOLD_MAX_MS = 5000;
+const HOLD_RELEASE_EVENTS = ['wheel', 'touchstart', 'pointerdown', 'keydown'] as const;
+
+/**
+ * Pins a section under the scroll margin while sections above it are still
+ * fetching or loading images, until the page settles or the user takes over.
+ */
+const holdSectionInView = (
+  element: HTMLDivElement,
+  scrollMargin: number,
+  isFetching: () => boolean,
+) => {
+  const root = document.getElementById('settings-scroller');
+  if (!root) {
+    return () => {};
+  }
+
+  const pin = () => {
+    root.scrollTo({
+      behavior: 'instant',
+      top: element.getBoundingClientRect().top + root.scrollTop - scrollMargin,
+    });
+  };
+  const isSettled = () =>
+    !isFetching() && Array.from(root.querySelectorAll('img')).every((image) => image.complete);
+
+  let settleTimer: ReturnType<typeof setTimeout> | undefined;
+  const observer = new ResizeObserver(() => {
+    pin();
+    armSettle();
+  });
+  const release = () => {
+    clearTimeout(settleTimer);
+    clearTimeout(maxTimer);
+    observer.disconnect();
+    HOLD_RELEASE_EVENTS.forEach((event) => window.removeEventListener(event, release, true));
+  };
+  const armSettle = () => {
+    clearTimeout(settleTimer);
+    settleTimer = setTimeout(() => (isSettled() ? release() : armSettle()), HOLD_SETTLE_MS);
+  };
+  const maxTimer = setTimeout(release, HOLD_MAX_MS);
+
+  pin();
+  armSettle();
+  Array.from(root.children).forEach((child) => observer.observe(child));
+  HOLD_RELEASE_EVENTS.forEach((event) =>
+    window.addEventListener(event, release, { capture: true, passive: true }),
+  );
+
+  return release;
 };
 
 const scrollSidebarNav = (navElement: HTMLLIElement, doneInitialScroll: boolean) => {
@@ -205,6 +260,25 @@ export const ScrollSectionProvider: React.FC<{
     [scrollMargin],
   );
 
+  const queryClient = useQueryClient();
+  const releaseHold = useRef<() => void>();
+  const jumpTo = useCallback(
+    (id: string) => {
+      releaseHold.current?.();
+      const element = sectionElements.current[id];
+      if (element) {
+        releaseHold.current = holdSectionInView(
+          element,
+          scrollMargin,
+          () => queryClient.isFetching() > 0,
+        );
+      }
+    },
+    [queryClient, scrollMargin],
+  );
+
+  useEffect(() => () => releaseHold.current?.(), []);
+
   // Without the legacy 60vh bottom spacer, the last sections can't scroll into
   // the observer's zone, so at the bottom the spy falls back to what's in view.
   useEffect(() => {
@@ -290,6 +364,7 @@ export const ScrollSectionProvider: React.FC<{
         currentSection,
         updateNavigatedSection: setNavigatedSection,
         scrollToSection: scrollTo,
+        jumpToSection: jumpTo,
       }}
     >
       {children}

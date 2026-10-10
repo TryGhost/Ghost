@@ -22,6 +22,7 @@ const AnnouncementBar: React.FC<{ keywords: string[] }> = ({ keywords }) => {
       navid="announcement-bar"
       testId="announcement-bar"
       title="Announcement bar"
+      onOpen={openModal}
     />
   );
 };

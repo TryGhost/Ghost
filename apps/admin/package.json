@@ -101,7 +101,6 @@
     "eslint-plugin-no-relative-import-paths": "1.6.1",
     "jsdom": "catalog:",
     "msw": "catalog:",
-    "sirv": "3.0.2",
     "tailwindcss": "catalog:",
     "typescript": "catalog:",
     "typescript-eslint": "catalog:",
@@ -167,7 +166,6 @@
       "playwright"
     ],
     "implicitDependencies": [
-      "ghost-admin",
       "@internal/scripts"
     ],
     "targets": {
@@ -273,20 +271,6 @@
           "@tryghost/shade:dev"
         ]
       },
-      "dev:ember": {
-        "continuous": true,
-        "executor": "nx:run-commands",
-        "options": {
-          "cwd": "apps/admin",
-          "command": "vite"
-        },
-        "dependsOn": [
-          "ghost-monorepo:docker:up",
-          "ghost-admin:dev",
-          "@tryghost/admin-x-framework:dev",
-          "@tryghost/shade:dev"
-        ]
-      },
       "build:dev": {
         "dependsOn": [
           {
@@ -305,12 +289,6 @@
               "@tryghost/shade"
             ],
             "target": "build"
-          },
-          {
-            "projects": [
-              "ghost-admin"
-            ],
-            "target": "build:dev"
           }
         ]
       },
@@ -332,13 +310,7 @@
           "{workspaceRoot}/ghost/core/built/embed-renderer"
         ],
         "dependsOn": [
-          "^build",
-          {
-            "projects": [
-              "ghost-admin"
-            ],
-            "target": "build"
-          }
+          "^build"
         ]
       },
       "lint": {

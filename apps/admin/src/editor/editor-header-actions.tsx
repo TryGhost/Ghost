@@ -1,6 +1,5 @@
 import { Fragment, useCallback, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { useEmberOwnedRouteMatcher } from '@/routes';
 import { useNavigate } from '@tryghost/admin-x-framework';
 import { Button } from '@tryghost/shade/components';
 import { useShade } from '@tryghost/shade/app';
@@ -396,7 +395,6 @@ function PublishActions({
   onPreview,
 }: PublishActionsProps) {
   const navigate = useNavigate();
-  const isEmberOwned = useEmberOwnedRouteMatcher();
   const inputs = usePublishInputs();
   const limits = usePublishLimits();
   const { data: settingsData } = useEditorSettings();
@@ -627,7 +625,7 @@ function PublishActions({
                 : !isScheduled && (hasEmail || post.email || post.emailOnly)
                   ? `/posts/analytics/${postId}`
                   : '/posts';
-            navigate(destination, { crossApp: isEmberOwned(destination) });
+            navigate(destination);
           }}
           onNewsletterChange={setFlowNewsletterSlug}
           onPreview={onPreview}

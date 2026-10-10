@@ -124,6 +124,7 @@ const ChangeTheme: React.FC<{ keywords: string[] }> = ({ keywords }) => {
       navid="theme"
       testId="theme"
       title="Theme"
+      onOpen={() => void openPreviewModal()}
     >
       {values}
     </TopLevelGroup>

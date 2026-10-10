@@ -49,7 +49,7 @@ async function openPortalAsMember(page: Page, email: string) {
   await memberDetailsPage.settingsSection.memberActionsButton.click();
   await memberDetailsPage.settingsSection.impersonateButton.click();
 
-  await expect(memberDetailsPage.magicLinkInput).not.toHaveValue('');
+  await expect(memberDetailsPage.magicLinkInput).toHaveValue(/^https?:\/\/.+/);
   const magicLink = await memberDetailsPage.magicLinkInput.inputValue();
   await memberDetailsPage.goto(magicLink);
 

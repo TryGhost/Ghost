@@ -31,8 +31,7 @@ This lightweight image:
 This image is used automatically when running:
 
 ```bash
-pnpm dev              # Builds Ember once; starts Docker backend + React/shared/Portal watchers
-pnpm dev:ember        # Also starts Ember's continuous rebuild and live-reload server
+pnpm dev              # Starts Docker backend + React/shared/Portal watchers
 pnpm dev:public       # Include all optional public UMD app watchers
 pnpm dev:analytics    # Include Tinybird analytics
 pnpm dev:storage      # Include VersityGW S3-compatible object storage

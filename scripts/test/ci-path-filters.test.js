@@ -79,7 +79,6 @@ describe('CI path filters', () => {
       'apps/admin/tsconfig.app.json',
       'apps/admin/package.json',
       'apps/admin/.env.test',
-      'apps/ember-admin/app/routes/posts.js',
       'apps/shade/src/components/ui/button.tsx',
       'pnpm-lock.yaml',
       '.github/workflows/ci.yml',

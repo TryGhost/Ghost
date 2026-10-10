@@ -48,13 +48,15 @@ await expect.poll(() => document.documentElement.classList.contains("dark")).toB
 
 **Host page.** `renderAdminApp` mounts into a stand-in of the production host page (the `react-admin` body class + `#root` from index.html), so the shell's viewport-bounded grid applies and scroll-driven behaviors — virtualized lists, infinite paging — work like production.
 
-**What can't port.** UI fed by the Ember state-bridge (`window.EmberBridge` events) is unreachable by network fakes — there is no Ember app in this tier. Example: the upgrade banner from `subscriptionChange`. Grep the component's hooks for `ember-bridge` before porting; those behaviors stay in `e2e/`.
+**What can't port.** UI fed by a cross-origin frame's `postMessage` reports (the billing app's subscription state) needs a stand-in origin; see `billing.acceptance.test.tsx` for the fake-frame helpers before reaching for `e2e/`.
 
 ## The 418 loop
 
 Don't guess the app's network graph — run the test, the 418 names what's missing. Any request no fake handles is served a 418 (admin API paths _and_ known external origins like ghost.org) and fails the test in `afterEach`, listing the request and the currently faked routes. Declare admin API requests with a resource fake or a `renderAdminApp` boot override, external URLs with `fakeEndpoint(method, url, response)`; `allowUnhandledRequests()` opts a single test out.
 
 **Embedded apps.** MSW cannot see iframe navigations, so an external frame gets a 418 page (no network) unless the spec declares `fakeFrameOrigin(origin, html)`. The stand-in HTML can script an embedding protocol with `window.parent.postMessage`; see `src/migrate/migrate.acceptance.test.tsx`.
+
+**Code that fails to load.** `failModuleLoads(pathEnd)` fails the browser's requests for a module as a dropped connection would, so its dynamic import rejects. The browser keeps that module failed for the rest of the spec file, and every signed-in render preloads some modules (the search modal; the editor with `editorReact` on), so a spec that fails one of those needs a file of its own.
 
 **Cross-app navigation.** When a spec asserts only the shell's behavior and a navigation mounts another app (settings, ActivityPub), don't fake that app's boot graph: `allowUnhandledRequests()` with a one-line constraint comment ("the settings app owns its request graph") is the sanctioned pattern.
 

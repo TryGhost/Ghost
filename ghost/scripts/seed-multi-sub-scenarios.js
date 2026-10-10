@@ -25,7 +25,7 @@
  *      and the VIEW don't exist):
  *
  *          docker exec ghost-dev bash -c 'cd /home/ghost/ghost && \
- *              node ../../node_modules/knex-migrator/bin/knex-migrator-rollback \
+ *              node ../node_modules/knex-migrator/bin/knex-migrator-rollback \
  *              --v 6.36 --force'
  *
  *   2. Run this script. It seeds members + customers + subscriptions only;
@@ -37,7 +37,7 @@
  *      `members_current_subscription` from existing subscription data:
  *
  *          docker exec ghost-dev bash -c 'cd /home/ghost/ghost && \
- *              node ../../node_modules/knex-migrator/bin/knex-migrator migrate'
+ *              node ../node_modules/knex-migrator/bin/knex-migrator migrate'
  *
  *   4. Re-run this script. With the table now present, it reports actual
  *      vs expected resolution for every scenario; mismatches indicate the

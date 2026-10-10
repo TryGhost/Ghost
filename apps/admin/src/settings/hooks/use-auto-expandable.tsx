@@ -9,11 +9,14 @@ export function useAutoExpandable(keywords: string[]) {
   const [isOpen, setIsOpen] = useState(false);
   const wasManuallyControlled = useRef(false);
   const { filter, getVisibleComponents, checkVisible } = useSearch();
+  const previousFilter = useRef(filter);
 
+  // only clearing a search hands control back; mounting with none mustn't undo an open on mount
   useEffect(() => {
-    if (!filter) {
+    if (previousFilter.current && !filter) {
       wasManuallyControlled.current = false;
     }
+    previousFilter.current = filter;
   }, [filter]);
 
   useEffect(() => {

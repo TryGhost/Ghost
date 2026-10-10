@@ -29,6 +29,7 @@ const DesignSetting: React.FC<{ keywords: string[] }> = ({ keywords }) => {
       navid="design"
       testId="design"
       title="Design & branding"
+      onOpen={openPreviewModal}
     >
       <img src={DesignSettingsImg} />
     </TopLevelGroup>
