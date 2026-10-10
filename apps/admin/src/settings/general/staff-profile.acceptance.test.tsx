@@ -453,6 +453,32 @@ const socialCases = [
 ] as const;
 
 describe('Staff profile social links', () => {
+  it('lists the website first and the social platforms alphabetically', async () => {
+    const owner = user('Owner');
+    const administrator = user('Administrator');
+    const { boot } = fakeStaffWorld({ currentUser: owner, users: [owner, administrator] });
+    await renderAdminApp(`/settings/staff/${administrator.slug}/social-links`, { boot });
+
+    const modal = settingsScreen.userDetailModal();
+    await expect.element(modal.getByTestId('website-input')).toBeVisible();
+
+    const labels = Array.from(modal.element().querySelectorAll('label')).map(
+      (label) => label.textContent,
+    );
+    expect(labels).toEqual([
+      'Website',
+      'Bluesky',
+      'Facebook',
+      'Instagram',
+      'LinkedIn',
+      'Mastodon',
+      'Threads',
+      'TikTok',
+      'X',
+      'YouTube',
+    ]);
+  });
+
   it.each(socialCases)(
     'validates and normalizes $label URLs',
     async ({ testId, invalid, error, valid, field, stored }) => {
