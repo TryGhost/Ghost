@@ -657,8 +657,8 @@ catalogs:
       specifier: 3.0.2
       version: 3.0.2
     sonner:
-      specifier: 2.0.7
-      version: 2.0.7
+      specifier: 2.0.8
+      version: 2.0.8
     storybook:
       specifier: 10.4.6
       version: 10.4.6
@@ -893,7 +893,7 @@ importers:
         version: 7.18.4(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       sonner:
         specifier: 'catalog:'
-        version: 2.0.7(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        version: 2.0.8(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       use-debounce:
         specifier: 10.1.1
         version: 10.1.1(@types/react@18.3.31)(react@18.3.1)
@@ -1107,7 +1107,7 @@ importers:
         version: 7.8.5
       sonner:
         specifier: 'catalog:'
-        version: 2.0.7(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        version: 2.0.8(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       temporal-polyfill:
         specifier: 'catalog:'
         version: 0.3.2
@@ -1295,7 +1295,7 @@ importers:
         version: 7.18.4(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       sonner:
         specifier: 'catalog:'
-        version: 2.0.7(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        version: 2.0.8(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       zod:
         specifier: 'catalog:'
         version: 4.6.5
@@ -1725,7 +1725,7 @@ importers:
         version: 2.15.4(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       sonner:
         specifier: 'catalog:'
-        version: 2.0.7(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        version: 2.0.8(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       tailwind-merge:
         specifier: 3.6.0
         version: 3.6.0
@@ -16150,10 +16150,10 @@ packages:
   snake-case@3.0.4:
     resolution: {integrity: sha512-LAOh4z89bGQvl9pFfNF8V146i7o7/CqFPbqzYgP+yYzDIDeS9HaNFtXABamRW+AQzEVODcvE79ljJ+8a9YSdMg==}
 
-  sonner@2.0.7:
-    resolution: {integrity: sha512-W6ZN4p58k8aDKA4XPcx2hpIQXBRAgyiWVkYhT7CvK6D3iAu7xjvVyhQHg2/iaKJZ1XVJ4r7XuwGL+WGEK37i9w==}
+  sonner@2.0.8:
+    resolution: {integrity: sha512-UM/ByIoFra8yzV75n1o0Puu0bw5U/9UNnDacrJNspekBewIfsQ3D6ez1nvlWpt7aTsO6rujQtifBpycwIivqlg==}
     peerDependencies:
-      '@types/react': '*'
+      '@types/react': ^18.0.0 || ^19.0.0
       react: ^18.0.0 || ^19.0.0 || ^19.0.0-rc
       react-dom: ^18.0.0 || ^19.0.0 || ^19.0.0-rc
     peerDependenciesMeta:
@@ -32097,7 +32097,7 @@ snapshots:
       dot-case: 3.0.4
       tslib: 2.8.1
 
-  sonner@2.0.7(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
+  sonner@2.0.8(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
     dependencies:
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
