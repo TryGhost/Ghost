@@ -4317,7 +4317,8 @@ services:
           - core/server/services/identity-tokens/index.js
           - core/server/services/identity-tokens/identity-token-service-wrapper.js
           - core/server/services/identity-tokens/identity-token-service.ts
-        tests: []
+        tests:
+          - test/unit/server/services/identity-tokens/index.test.js
       construction:
         summary: >-
           The wrapper is the only production construction site found. First init captures the
@@ -4327,7 +4328,8 @@ services:
         sources:
           - core/server/services/identity-tokens/identity-token-service-wrapper.js
           - core/server/services/signing-keys/signing-key-service.ts
-        tests: []
+        tests:
+          - test/unit/server/services/identity-tokens/index.test.js
       consumers:
         summary: >-
           Boot calls init. The authenticated identities endpoint reads the current instance
@@ -4344,6 +4346,7 @@ services:
           - core/server/services/activitypub/activity-pub-service.ts
         tests:
           - test/legacy/api/admin/identities.test.js
+          - test/unit/server/services/identity-tokens/index.test.js
       startup:
         summary: >-
           initCore awaits signing-key initialization before initServices awaits identity init
@@ -4355,7 +4358,8 @@ services:
           - core/server/services/identity-tokens/identity-token-service-wrapper.js
           - core/server/api/endpoints/identities.js
           - core/server/services/activitypub/activity-pub-service-wrapper.js
-        tests: []
+        tests:
+          - test/unit/server/services/identity-tokens/index.test.js
       lifetime:
         summary: >-
           Normal repeated initialization retains one process-local instance, issuer and
@@ -4366,19 +4370,23 @@ services:
           - core/server/services/identity-tokens/identity-token-service-wrapper.js
           - core/server/services/identity-tokens/identity-token-service.ts
           - core/server/services/signing-keys/signing-key-service.ts
-        tests: []
+        tests:
+          - test/unit/server/services/identity-tokens/index.test.js
       configuration:
         summary: >-
           The issuer URL is captured at construction; the retained provider supplies a key
           per call. Tokens use email as sub, include role only for string arguments, and use
           RS256, a five-minute expiry and the provider's kid. The unit test verifies a token's
-          subject, role, issuer and kid, but not live rotation or exact expiry.
+          subject, role, issuer and kid. Root tests additionally verify a five-minute expiry,
+          omitted role, retained issuer and use of the provider's changed signing key through
+          a retained instance. This does not exercise a full signing-key rotation workflow.
         sources:
           - core/server/services/identity-tokens/identity-token-service-wrapper.js
           - core/server/services/identity-tokens/identity-token-service.ts
           - core/server/services/signing-keys/signing-key-service.ts
         tests:
           - test/unit/server/services/identity-tokens/identity-token-service.test.ts
+          - test/unit/server/services/identity-tokens/index.test.js
       resources:
         summary: >-
           This service stores only issuer and provider references; it acquires no timer,
@@ -4397,23 +4405,28 @@ services:
           leaving a later call able to try again. Missing/invalid signing keys and JWT signing
           failures reject token issuance without a local retry or fallback. The endpoint only
           catches role lookup failures; ActivityPub catches token/request failures in its own
-          remote-configuration methods.
+          remote-configuration methods. Root tests assert missing-prerequisite and provider
+          selection retries, plus token lookup failure and later success on the same instance.
         sources:
           - core/server/services/identity-tokens/identity-token-service-wrapper.js
           - core/server/services/identity-tokens/identity-token-service.ts
           - core/server/api/endpoints/identities.js
           - core/server/services/activitypub/activity-pub-service.ts
-        tests: []
+        tests:
+          - test/unit/server/services/identity-tokens/index.test.js
     unverified: []
     blockers:
       - >-
-        Add wrapper-level contracts for pre-init use, failed initialization/retry and retained
-        consumers across issuer changes, signing-key rotation and repeated boot without
-        reloading modules. Current constructor/API tests do not prove these lifetimes.
+        Preserve real boot ordering and retained consumers through a complete signing-key
+        rotation or same-process restart. Root tests now cover missing-prerequisite retry,
+        repeated init, captured issuer and a changed key returned by the retained provider;
+        they do not exercise the full rotation workflow or define restart ownership.
       - >-
-        Characterize optional-role and exact-expiry behavior, concurrent token calls and
-        signing failures through real consumers. ActivityPub's unit tests inject a fake token
-        service, so they cannot catch a broken root-to-provider connection.
+        Characterize concurrent token calls and ActivityPub's real token connection. The root
+        suite verifies the real identities controller response, optional role, exact expiry
+        and key lookup failure recovery. Actual JWT signing failure recovery remains untested;
+        ActivityPub's implementation tests use a fake token service.
+
   indexnow-ping:
     kind: directory
     disposition: retain
