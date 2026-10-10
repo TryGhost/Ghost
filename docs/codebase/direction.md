@@ -13,11 +13,8 @@ focused guide exists, follow that guide for implementation details.
 
 ## Main priorities
 
-Our two most important priorities are:
-
-1. **React:** move Ghost Admin onto React and off Ember.
-2. **Type safety:** move the codebase to TypeScript and validate runtime
-   boundaries with Zod.
+Our most important priority is **type safety**: move the codebase to
+TypeScript and validate runtime boundaries with Zod.
 
 ## Status terms
 
@@ -32,7 +29,6 @@ Our two most important priorities are:
 
 | Area                 | Direction                                            | Status           |
 | -------------------- | ---------------------------------------------------- | ---------------- |
-| Admin UI             | Ember to React                                       | Active migration |
 | Application code     | JavaScript to TypeScript                             | Active migration |
 | Node.js modules      | CommonJS to ESM                                      | Active migration |
 | Runtime boundaries   | Validate unknown data with Zod                       | Exploring        |
