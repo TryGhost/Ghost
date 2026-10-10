@@ -125,6 +125,17 @@ describe('actions api helpers', () => {
   });
 
   describe('getLinkTarget', () => {
+    it('links a tag to its detail page', () => {
+      expect(
+        getLinkTarget(
+          baseAction({
+            resource_type: 'tag',
+            resource: { id: 'tag-1', slug: 'useful-tag' },
+          }),
+        ),
+      ).toEqual({ isExternal: true, route: 'tags/useful-tag' });
+    });
+
     it('links an offer to its Settings editor', () => {
       expect(
         getLinkTarget(

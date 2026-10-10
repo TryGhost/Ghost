@@ -5,7 +5,6 @@ import { useScrollSectionContext } from './use-scroll-section';
 type ExternalLink = {
   isExternal: true;
   route: string;
-  models?: string[] | null;
 };
 
 type InternalLink = {
