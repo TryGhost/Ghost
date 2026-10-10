@@ -168,14 +168,20 @@ export function stripHtml(html: string, exclude: string[] = []): string {
   return result;
 }
 
+// Parses HTML into an inert template so that images, media and event handlers
+// in untrusted content are not loaded or run while we rewrite the markup
+function parseHtml(content: string): HTMLTemplateElement {
+  const template = document.createElement('template');
+  template.innerHTML = content;
+  return template;
+}
+
 export const formatArticle = (content: string, postUrl?: string) => {
-  // Create a temporary div to parse the HTML
-  const div = document.createElement('div');
-  div.innerHTML = content;
+  const template = parseHtml(content);
 
   if (postUrl) {
     // Find all audio and video card divs
-    const mediaCards = div.querySelectorAll('.kg-audio-card, .kg-video-card');
+    const mediaCards = template.content.querySelectorAll('.kg-audio-card, .kg-video-card');
 
     // Wrap each media card in an anchor tag
     for (let i = 0; i < mediaCards.length; i++) {
@@ -196,7 +202,7 @@ export const formatArticle = (content: string, postUrl?: string) => {
   }
 
   // Find all anchor tags
-  const links = div.getElementsByTagName('a');
+  const links = template.content.querySelectorAll('a');
 
   // Add target="_blank" and rel attributes to each link
   for (let i = 0; i < links.length; i++) {
@@ -204,16 +210,14 @@ export const formatArticle = (content: string, postUrl?: string) => {
     links[i].setAttribute('rel', 'noopener noreferrer');
   }
 
-  return div.innerHTML;
+  return template.innerHTML;
 };
 
 export const openLinksInNewTab = (content: string) => {
-  // Create a temporary div to parse the HTML
-  const div = document.createElement('div');
-  div.innerHTML = content;
+  const template = parseHtml(content);
 
   // Find all anchor tags
-  const links = div.getElementsByTagName('a');
+  const links = template.content.querySelectorAll('a');
 
   // Add target="_blank" and rel attributes to each link
   for (let i = 0; i < links.length; i++) {
@@ -226,14 +230,13 @@ export const openLinksInNewTab = (content: string) => {
     links[i].setAttribute('rel', 'noopener noreferrer');
   }
 
-  return div.innerHTML;
+  return template.innerHTML;
 };
 
 export const enforceVideoCardInlinePlayback = (content: string) => {
-  const div = document.createElement('div');
-  div.innerHTML = content;
+  const template = parseHtml(content);
 
-  const videos = div.querySelectorAll('.kg-video-card video');
+  const videos = template.content.querySelectorAll('.kg-video-card video');
 
   for (let i = 0; i < videos.length; i++) {
     const video = videos[i] as HTMLVideoElement;
@@ -247,7 +250,7 @@ export const enforceVideoCardInlinePlayback = (content: string) => {
     }
   }
 
-  return div.innerHTML;
+  return template.innerHTML;
 };
 
 export const formatFollowNumber = (n: number) => {
