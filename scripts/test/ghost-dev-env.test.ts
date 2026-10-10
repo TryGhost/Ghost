@@ -10,10 +10,10 @@ describe('worktreeHostname', () => {
     );
   });
 
-  it('keeps the label within 63 characters', () => {
+  it('shortens long names to 63 characters that end in the path hash', () => {
     assert.equal(
       worktreeHostname(`${'a'.repeat(62)}_b`, 'abcdef01'),
-      `${'a'.repeat(62)}.localhost`,
+      `${'a'.repeat(56)}-abcdef.localhost`,
     );
   });
 
