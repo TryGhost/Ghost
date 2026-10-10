@@ -122,9 +122,10 @@ Browsers share cookies between the ports of one hostname, so the hostname keeps
 each checkout's Admin sign-in separate. Browsers resolve `.localhost` hostnames
 to your machine without editing `/etc/hosts`. `pnpm dev` prints the URL.
 
-A worktree's database starts as a copy of `ghost_dev`, so it skips setup and
-onboarding, and Ghost applies the branch's migrations when it boots. Run
-`pnpm reset:db` in the worktree to replace the copy with a fresh database.
+A worktree's database starts as a copy of `ghost_dev` with a new `site_uuid` and
+no sessions, so it skips setup and onboarding, and Ghost applies the branch's
+migrations when it boots. Run `pnpm reset:db` in the worktree to replace the
+copy with a fresh database.
 
 To run a checkout's Ghost in the background, for example from an agent, use:
 
