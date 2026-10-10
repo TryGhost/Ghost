@@ -117,22 +117,21 @@ describe('Sidebar navigation', () => {
     expect(document.querySelector('[aria-label="Hide sidebar"]')).toBeNull();
   });
 
-  it('keeps the boot loader visible until React commits its mount marker', async () => {
+  it('keeps the boot loader visible until React mounts', async () => {
     await renderAdminApp('/site');
     // `/site` is a lazy route, so the shell commits after its chunk loads.
     await expect.element(sidebarScreen.shellNav()).toBeVisible();
 
-    const marker = document.querySelector<HTMLElement>('[data-react-admin-mounted]')!;
     const emberApp = document.getElementById('ember-app')!;
     const bridgeHost = emberApp.parentElement!;
 
     try {
       document.body.appendChild(emberApp);
       expect(getComputedStyle(emberApp).visibility).toBe('hidden');
-      marker.removeAttribute('data-react-admin-mounted');
+      document.body.classList.remove('react-admin-mounted');
       expect(getComputedStyle(emberApp).visibility).toBe('visible');
     } finally {
-      marker.setAttribute('data-react-admin-mounted', '');
+      document.body.classList.add('react-admin-mounted');
       bridgeHost.appendChild(emberApp);
     }
   });

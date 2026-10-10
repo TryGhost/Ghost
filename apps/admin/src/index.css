@@ -96,7 +96,7 @@ body {
    and the three legacy overlay hosts.
    Do not set body fonts or change component weights, sizes, or line heights. */
 .shade-admin,
-:where(body.react-admin:has(> #root .shade-admin))
+:where(body.react-admin.react-admin-mounted)
   > :is(
     .shade.shade-admin,
     #ember-basic-dropdown-wormhole,
@@ -121,7 +121,7 @@ body {
    semantic headings across both Admin screens and Settings overlays. */
 :where(
     .shade-admin,
-    body.react-admin:has(> #root .shade-admin)
+    body.react-admin.react-admin-mounted
       > :is(
         .shade.shade-admin,
         #ember-basic-dropdown-wormhole,
@@ -139,7 +139,7 @@ body {
    Keep the rule weaker than any explicit component typography choice. */
 :where(
     .shade-admin,
-    body.react-admin:has(> #root .shade-admin)
+    body.react-admin.react-admin-mounted
       > :is(
         .shade.shade-admin,
         #ember-basic-dropdown-wormhole,
@@ -159,7 +159,7 @@ body {
    Keep the display alternates scoped to their title text. */
 :where(
     .shade-admin,
-    body.react-admin:has(> #root .shade-admin)
+    body.react-admin.react-admin-mounted
       > :is(
         .shade.shade-admin,
         #ember-basic-dropdown-wormhole,
@@ -359,9 +359,9 @@ body.react-admin #root .shade.shade-admin {
 }
 
 /* Keep the server-rendered loader visible while the React bundle boots. Once
-   React commits its mount marker, hide a still-detached Ember root until the
-   bridge relocates it into the shell. */
-body.react-admin:has(> #root [data-react-admin-mounted]) > #ember-app {
+   React mounts (app-root.tsx adds the body class), hide a still-detached Ember
+   root until the bridge relocates it into the shell. */
+body.react-admin.react-admin-mounted > #ember-app {
   visibility: hidden;
 }
 
