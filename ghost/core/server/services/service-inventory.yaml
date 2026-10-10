@@ -10665,7 +10665,7 @@ services:
     kind: directory
     disposition: retain
     status: audited
-    auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
+    auditedAt: 82ba3d5b1133db2a042774e8bbc6f64fc540ac47
     entryPoints:
       - signing-keys/index.ts
     notes: >-
@@ -10677,30 +10677,38 @@ services:
           Named runtime exports are async init, getInstance and scheduleCheckJob; the provider
           and purpose exports are types only. getInstance throws IncorrectUsageError before
           publication. The implementation exports SigningKeyService and rotation constants;
-          CheckSigningKeysJob is a separate class consumed by handler registration.
+          CheckSigningKeysJob is a separate class consumed by handler registration. Root tests
+          assert pre-init access fails; the full export list is source evidence.
         sources:
           - core/server/services/signing-keys/index.ts
           - core/server/services/signing-keys/signing-key-service.ts
           - core/server/services/signing-keys/check-signing-keys-job.ts
           - core/server/services/jobs-service/register-job-handlers.ts
-        tests: []
+        tests:
+          - test/unit/server/services/signing-keys/index.test.ts
       construction:
         summary: >-
           The root is the only production construction site found. init creates a service
           using the shared settings cache, Settings model, model transaction function,
           logging and a scheduling callback. It awaits check before publishing the service;
           concurrent calls before publication have no shared promise guard. Importing the
-          module alone creates neither the service nor a recurring job.
+          module alone creates neither the service nor a recurring job. Root tests verify no
+          key check or published instance on import, publication after a held check completes,
+          and retry after rejection. Dependency assembly and concurrent construction remain
+          source evidence; the real rotation callback is exercised with storage doubles.
         sources:
           - core/server/services/signing-keys/index.ts
           - core/server/services/signing-keys/signing-key-service.ts
-        tests: []
+        tests:
+          - test/unit/server/services/signing-keys/index.test.ts
       consumers:
         summary: >-
           Boot initializes the root and later supplies the jobs instance. Identity tokens and
           the staff JWKS app retain staff providers; members API construction retains a
           members provider for signing, verification and public keys. The check-signing-keys
-          job handler instead resolves getInstance for each run. Existing HTTP tests cover
+          job handler instead resolves getInstance for each run. Handler tests register before
+          root initialization, then verify deferred access, awaiting the check and propagation
+          of its original rejection. Existing HTTP tests cover
           both JWKS responses and staff-token verification, not live rotation through those
           retained HTTP consumers.
         sources:
@@ -10714,30 +10722,42 @@ services:
           - test/e2e-server/well-known.test.js
           - test/e2e-api/members/well-known.test.js
           - test/legacy/api/admin/identities.test.js
+          - test/unit/server/services/jobs-service/register-job-handlers.test.ts
       startup:
         summary: >-
           initCore awaits init after settings and before token/JWKS consumers. check advances
-          due rotation and initiates replacement of weak keys. After job handlers start,
+          due rotation and initiates replacement of weak keys. After jobs startup,
           background boot calls scheduleCheckJob, which stores the jobs reference and checks
           rotation state. Registration is skipped in test environments, without jobs, or after
-          a prior successful schedule; the guard is set only after registration resolves.
+          a prior successful schedule; the guard is set only after registration resolves. Root
+          tests cover idle/rotating state, test-environment suppression, registration awaiting,
+          sequential deduplication and retry, plus rotation before and after jobs are supplied.
+          Boot units hold settings initialization, settings synchronization and signing-key
+          initialization pending; they also hold background registration and verify continuation
+          after its rejection. Ordering before token/JWKS consumers and after jobs startup
+          remains source evidence.
         sources:
           - core/boot.js
           - core/server/services/signing-keys/index.ts
           - core/server/services/signing-keys/signing-key-service.ts
-        tests: []
+        tests:
+          - test/unit/server/services/signing-keys/index.test.ts
+          - test/unit/boot-signing-keys.test.ts
+          - test/unit/boot-email-analytics.test.ts
       lifetime:
         summary: >-
           service, jobs and scheduled survive repeated init with no reset/disposal hook.
           forPurpose creates new provider objects whose closures retain the same service and
           read its current settings on each call. Integration tests retain a provider while
           promoting and retiring keys, and race separate class instances; they do not exercise
-          concurrent root init or jobs restart.
+          concurrent root init or jobs restart. Root tests additionally assert that sequential
+          successful init calls retain the checked instance without checking again.
         sources:
           - core/server/services/signing-keys/index.ts
           - core/server/services/signing-keys/signing-key-service.ts
         tests:
           - test/integration/services/signing-keys.test.ts
+          - test/unit/server/services/signing-keys/index.test.ts
       configuration:
         summary: >-
           Members and staff use distinct settings keys. Reads use unresolved settings rows
@@ -10745,13 +10765,18 @@ services:
           Keys below 2048 bits trigger rotation; generated replacements use 2048 bits,
           with 48 hours of advance publication and a two-hour old key grace period. JWKS orders active, next, previous; an unknown or missing kid
           falls back to the first published verification key. Recurrence uses randomly chosen
-          seconds/minute in a six-field hourly cron, without a caller-supplied timezone.
+          seconds/minute in a six-field hourly cron, without a caller-supplied timezone. The
+          root test pins the cron for controlled random values. Integration tests assert
+          rotation transitions using the exported duration constants; they do not independently
+          pin the literal delays or default RSA generation. Those details and the absence of
+          a timezone option, along with unknown/missing-kid fallback, remain source evidence.
         sources:
           - core/server/services/signing-keys/signing-key-service.ts
           - core/server/services/signing-keys/index.ts
         tests:
           - test/integration/services/signing-keys.test.ts
           - test/unit/server/services/signing-keys/signing-key-service.test.ts
+          - test/unit/server/services/signing-keys/index.test.ts
       resources:
         summary: >-
           The service borrows settings/models and opens transactions through the model owner;
@@ -10759,6 +10784,8 @@ services:
           promises by PEM digest, evicts failures and exposes no reset/size limit. Recurring
           checks are owned by the supplied jobs backend, not a timer in this root. The root
           has no stop, drain or cancellation hook for checks, rotation or its retained schedule.
+          These ownership facts are source evidence. The cited public-key helper tests cover
+          derived key data and cache identity, not failed-entry eviction or lifecycle cleanup.
         sources:
           - core/server/services/signing-keys/index.ts
           - core/server/services/signing-keys/signing-key-service.ts
@@ -10773,7 +10800,13 @@ services:
           InternalServerError and crypto/database errors propagate. Each rotation step has its
           own transaction: no rollback spans the whole check. Background registration errors
           are logged by boot; a rotation callback error rejects after the new key is committed.
-          Job check failures are passed to JobsService error handling.
+          Job check failures are passed to JobsService error handling. Root tests assert
+          initial-check rejection without publication and successful retry, plus registration
+          rejection and retry. Boot units assert initCore propagates the initial error and
+          background boot logs registration failure and continues; handler tests assert the
+          original check rejection escapes the registered handler. The class unit tests cover
+          malformed settings. Other error paths, including a callback failure after commit,
+          remain source evidence.
         sources:
           - core/boot.js
           - core/server/services/signing-keys/index.ts
@@ -10782,13 +10815,19 @@ services:
           - core/server/services/jobs-service/jobs-service.ts
         tests:
           - test/unit/server/services/signing-keys/signing-key-service.test.ts
+          - test/unit/server/services/signing-keys/index.test.ts
+          - test/unit/boot-signing-keys.test.ts
+          - test/unit/boot-email-analytics.test.ts
+          - test/unit/server/services/jobs-service/register-job-handlers.test.ts
     unverified: []
     blockers:
       - >-
-        Add root-level pre-init, initialization-failure/retry and concurrent-init tests. Class
-        transaction-race tests do not prove single root publication or partial-check cleanup.
+        Concurrent root init has no in-flight guard. Add overlapping-call coverage before
+        changing this behavior; sequential init tests and class transaction-race tests do not
+        prove single root publication or partial-check cleanup. Sharing an in-flight init
+        would be a new guarantee, not established baseline behavior.
       - >-
-        Characterize scheduling failure after key publication, concurrent registration and
+        Characterize scheduling failure after a rotation commits, concurrent registration and
         recurrence restoration across jobs restart. The module keeps scheduled after shutdown
         and has no wrapper reset; do not infer custom backend behavior from the default backend.
       - >-
