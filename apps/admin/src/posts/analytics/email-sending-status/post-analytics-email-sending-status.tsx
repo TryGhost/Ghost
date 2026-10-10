@@ -9,8 +9,6 @@ import { useChangeCount } from '@/posts/email-sending-status/use-change-count';
 import { useSendingEta } from '@/posts/email-sending-status/use-sending-eta';
 import type { EmailSendingState } from '@tryghost/admin-x-framework/api/emails';
 
-// Use `fade-in-0`, not `fade-in`: Ember's ghost.css has its own `.fade-in`
-// that leaves content at opacity 0.
 const CROSSFADE = 'animate-in fade-in-0 duration-300 ease-out motion-reduce:animate-none';
 
 const failureDetail = (

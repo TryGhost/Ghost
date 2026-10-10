@@ -36,10 +36,7 @@ export function useTheme() {
     if (!isThemeReady) {
       return;
     }
-    void controller?.setTheme(theme).catch((error: unknown) => {
-      // eslint-disable-next-line no-console
-      console.error('[Theme] Failed to apply admin theme:', error);
-    });
+    controller?.setTheme(theme);
   }, [controller, theme, isThemeReady]);
 
   useEffect(() => {
@@ -57,14 +54,13 @@ export function useTheme() {
       setIsPendingTheme(true);
 
       try {
-        await controller.preload();
         setPendingTheme(mode);
-        await controller.setTheme(mode);
+        controller.setTheme(mode);
         await editPreferences({ nightShift: mode });
       } catch (error) {
         setPendingTheme(null);
         // Restore the previous choice, resolving system appearance at rollback time.
-        await controller.setTheme(theme).catch(() => {});
+        controller.setTheme(theme);
         // eslint-disable-next-line no-console
         console.error('[Theme] Failed to update appearance preference:', error);
       } finally {

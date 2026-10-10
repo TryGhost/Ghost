@@ -43,8 +43,7 @@ const MESSAGES: Record<PostActionMessageKey, MessageForms> = {
   tagAdded: { single: 'Tag added', multiple: 'Tag added to {count} {type}s' },
   duplicated: { single: '{Type} duplicated', multiple: '{count} {type}s duplicated' },
   // Hardcoded "Post" in Ember, even on a page. Ported as-is — it is a visible
-  // string, and correcting it here alone would make the two implementations
-  // disagree while the flag is still switchable.
+  // string.
   copiedPostUrl: { single: 'Post link copied' },
   copiedPreviewUrl: { single: 'Preview link copied' },
 };

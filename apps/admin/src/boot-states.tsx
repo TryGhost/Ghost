@@ -44,7 +44,6 @@ export function BootError({ error }: { error: Error }) {
       role="alert"
     >
       <Text tone="secondary">{getErrorMessage(error, error.message)}</Text>
-      {/* Reloads rather than refetching so the hidden Ember app boots again as well. */}
       <Button variant="outline" onClick={() => reloadAdmin(`${pathname}${search}`)}>
         Retry
       </Button>

@@ -40,10 +40,8 @@ pages. Form selects and input groups retain standard rounded corners; their
 embedded action buttons inherit the button shape. PageHeader.SelectTrigger supplies
 the pill shape for header dropdowns. Explicit shapes remain available for a specific visual need.
 
-Admin enables the current design on all React-owned routes without a Labs flag.
-It passes `isAdmin7={false}` on Ember-owned routes, including the editor while
-`editorReact` is disabled, to preserve their compatibility appearance. The generic
-`isAdmin7` provider switch remains available for these legacy surfaces:
+Admin enables the current design on every route without a Labs flag. The generic
+`isAdmin7` provider switch remains available:
 
 ```tsx
 <ShadeApp darkMode={darkMode} isAdmin7={isAdmin7}>
@@ -73,7 +71,7 @@ boolean from the shared application wrapper.
 
 The [feature flag guide](https://github.com/TryGhost/Ghost/blob/main/docs/practices/feature-flags.md#admin-7-milestones)
 covers naming, shared presentation, testing and removal. Retain compatibility
-branches while Ember-owned surfaces still need them; ordinary component calls
+branches only while a surface still needs them; ordinary component calls
 already use the intended defaults.
 
 </div>

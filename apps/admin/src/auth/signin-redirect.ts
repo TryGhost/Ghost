@@ -1,7 +1,5 @@
 import { isAuthPath } from '@tryghost/admin-x-framework/helpers';
 
-// Shared with Ember's authenticated route and session service, so either shell
-// can store the route a signed-out visitor asked for and the other can use it.
 const SIGNIN_REDIRECT_KEY = 'ghost-signin-redirect';
 
 const isRedirectTarget = (route: string | null): route is string =>

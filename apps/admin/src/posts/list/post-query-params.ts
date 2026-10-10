@@ -104,8 +104,8 @@ function toFilterString(clauses: Array<[string, string | null | undefined]>): st
 }
 
 /**
- * Clause order is fixed (tag, visibility, status, featured, authors) so filters
- * built here compare equal to the ones Ember builds.
+ * Clause order is fixed (tag, visibility, status, featured, authors) so the
+ * same params always build the same filter.
  */
 function filterClauses(
   params: PostListParams,

@@ -149,10 +149,8 @@ Expanded search must not push the primary off-screen.
 ## Compatibility and rollout
 
 React Admin headers use the pill design by default without a Labs flag.
-The Admin root passes `isAdmin7={false}` to ShadeApp on Ember-owned routes
-to preserve their compatibility appearance. Shade owns visual differences;
-features retain only historical structural differences that cannot be expressed
-through shared controls. Existing consumers may supply `fallbackVariant` and
+Shade owns visual differences; features retain only historical structural
+differences that cannot be expressed through shared controls. Existing consumers may supply `fallbackVariant` and
 `fallbackSize` to preserve their prior controls. New consumers should use defaults.
 
 With `useShade().isAdmin7` false, the header retains its previous spacing, chevrons,

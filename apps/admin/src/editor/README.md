@@ -6,9 +6,9 @@ preview flows it opens, plus the restore screen that turns a local copy of a
 lost draft back into a post. `api.ts` is the domain's public surface — the shell
 mounts both screens lazily through it and everything else here is internal.
 
-While React serves the editor, the shell also fetches the editor screen and
-Koenig through `api.ts` once a signed-in admin is idle, so opening the first
-post doesn't wait on either download.
+Once a signed-in admin is idle, the shell also fetches the editor screen and
+Koenig through `api.ts`, so opening the first post doesn't wait on either
+download.
 
 The editor opens once it has the site's settings, config and site record and
 the current user, which Koenig's cards are configured from. If one of them fails
