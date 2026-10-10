@@ -82,8 +82,71 @@ const REGEX_STRICT_AUTHOR = /^\S+\s+\S+/;
 const REGEX_TITLE_PUBLISHER = /^.*?[-|]\s+(.*)$/;
 const REGEX_LOOKS_LIKE_URL = /^(?:[a-z][a-z\d+.-]*:)?\/\/\S+$|^[^\s/]+\.[a-z]{2,}(?:\/\S*)?$/i;
 const REGEX_SIZE = /(\d+)\s*[x×]\s*(\d+)/i;
-const REGEX_MEDIA_EXTENSION =
-  /\.(?:mp4|m4v|mov|webm|mkv|avi|wmv|flv|ogv|mpe?g|3gp|mp3|m4a|wav|ogg|oga|flac|aac|opus|wma|mpga)$/i;
+// Includes metascraper's audio-extensions/video-extensions lists and mpga.
+const MEDIA_EXTENSIONS = new Set([
+  '3g2',
+  '3gp',
+  'aac',
+  'aaf',
+  'act',
+  'aiff',
+  'amr',
+  'asf',
+  'ast',
+  'au',
+  'avchd',
+  'avi',
+  'bwf',
+  'dct',
+  'drc',
+  'dss',
+  'flac',
+  'flv',
+  'gsm',
+  'm2v',
+  'm3u8',
+  'm4a',
+  'm4p',
+  'm4v',
+  'mkv',
+  'mmf',
+  'mng',
+  'mov',
+  'mp2',
+  'mp3',
+  'mp4',
+  'mpc',
+  'mpe',
+  'mpeg',
+  'mpg',
+  'mpga',
+  'mpv',
+  'mxf',
+  'nsv',
+  'oga',
+  'ogg',
+  'ogv',
+  'opus',
+  'pac',
+  'qt',
+  'ra',
+  'raw',
+  'rm',
+  'rmvb',
+  'roq',
+  's3m',
+  'sln',
+  'svi',
+  'tta',
+  'vob',
+  'vox',
+  'wav',
+  'webm',
+  'wma',
+  'wmv',
+  'wv',
+  'yuv',
+]);
 
 // Favicon locations to probe when the page declares no usable icon, along
 // with the content types each must be served as
@@ -140,10 +203,15 @@ const toUrl = (value: unknown, baseUrl: string) => {
     if (url.protocol !== 'http:' && url.protocol !== 'https:') {
       return;
     }
-    for (const key of [...url.searchParams.keys()]) {
-      if (/^utm_\w+/i.test(key)) {
-        url.searchParams.delete(key);
-      }
+    // Keep the raw query segments: URLSearchParams serialization changes
+    // bare CGI queries into key=value pairs and rewrites URL encoding.
+    const params = url.search.slice(1).split('&');
+    const filtered = params.filter((param) => {
+      const key = new URLSearchParams('?' + param).keys().next().value;
+      return !key || !/^utm_\w+/i.test(key);
+    });
+    if (filtered.length !== params.length) {
+      url.search = filtered.join('&');
     }
     return url.href;
   } catch {
@@ -153,7 +221,7 @@ const toUrl = (value: unknown, baseUrl: string) => {
 
 const toImage = (value: unknown, baseUrl: string) => {
   const url = toUrl(value, baseUrl);
-  if (url && !REGEX_MEDIA_EXTENSION.test(new URL(url).pathname)) {
+  if (url && !MEDIA_EXTENSIONS.has(new URL(url).pathname.split('.').pop()?.toLowerCase() ?? '')) {
     return url;
   }
 };

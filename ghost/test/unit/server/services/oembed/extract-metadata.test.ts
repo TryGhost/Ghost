@@ -191,6 +191,49 @@ describe('extractMetadata', function () {
     assert.equal(metadata.image, 'https://example.com/a.png?w=200');
   });
 
+  it('preserves bare CGI query syntax when removing tracking parameters', function () {
+    const metadata = extractMetadata(
+      page(`
+        <meta property="og:url" content="/post.cgi?article+full&amp;utm_source=x">
+        <meta property="og:image" content="/image.cgi?cover+large+png&amp;utm_source=x">
+        <link rel="icon" href="/icon.cgi?brand+small+png&amp;utm_source=x">
+      `),
+      'https://example.com/post',
+    );
+
+    assert.equal(metadata.url, 'https://example.com/post.cgi?article+full');
+    assert.equal(metadata.image, 'https://example.com/image.cgi?cover+large+png');
+    assert.equal(metadata.icons[0].url, 'https://example.com/icon.cgi?brand+small+png');
+  });
+
+  it('preserves non-tracking query encoding, empty values and fragments', function () {
+    const metadata = extractMetadata(
+      page(
+        `<meta property="og:image" content="/image?utm%5Fsource=x&amp;flag&amp;sig=a%2Bb%20c~&amp;UTM_medium=y&amp;flag=&amp;?utm_literal=keep&amp;keep=%26x%3D1#preview">`,
+      ),
+      'https://example.com/post',
+    );
+
+    assert.equal(
+      metadata.image,
+      'https://example.com/image?flag&sig=a%2Bb%20c~&flag=&?utm_literal=keep&keep=%26x%3D1#preview',
+    );
+  });
+
+  it('falls back to an image when higher-priority metadata names audio or video', function () {
+    for (const ext of ['m3u8', 'aiff', 'amr', '3g2', 'mpga', 'wmv', 'M4V']) {
+      const metadata = extractMetadata(
+        page(`
+          <meta property="og:image" content="/media.${ext}?download=1#preview">
+          <meta name="twitter:image" content="/hero.jpg">
+        `),
+        'https://example.com/post',
+      );
+
+      assert.equal(metadata.image, 'https://example.com/hero.jpg', ext);
+    }
+  });
+
   it('reads square JSON-LD logos', function () {
     const logo = (width: number, height: number) =>
       extractMetadata(
