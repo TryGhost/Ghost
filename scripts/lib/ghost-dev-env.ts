@@ -21,7 +21,7 @@ const MAIN_DATABASE = 'ghost_dev';
 const FIRST_PORT = 2400;
 const SLOTS = 300;
 
-const checkoutRoot = realpathSync(fileURLToPath(new URL('../..', import.meta.url)));
+export const checkoutRoot = realpathSync(fileURLToPath(new URL('../..', import.meta.url)));
 
 function git(args: string[]): string {
   return execFileSync('git', args, { cwd: checkoutRoot, encoding: 'utf8' }).trim();
@@ -142,4 +142,19 @@ export async function resolveGhostDevEnv(): Promise<GhostDevEnv> {
     `# This checkout's \`pnpm dev\` ports and database. Delete to reassign.\n${lines.join('\n')}\n`,
   );
   return env;
+}
+
+/** The address of a checkout's front door, from its `.ghost-dev.env` values */
+export function devUrl(env: Record<string, string>): string {
+  return `http://${env.GHOST_DEV_HOSTNAME ?? 'localhost'}:${env.GHOST_DEV_PORT}/`;
+}
+
+/** The databases `allocate` can give a linked worktree */
+export function worktreeDatabases(root: string): string[] {
+  const name = basename(root)
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '_')
+    .replace(/^_+|_+$/g, '');
+  const hash = createHash('sha1').update(root).digest('hex');
+  return [`dev_${name}`.slice(0, 64), `dev_${name.slice(0, 50)}_${hash.slice(0, 6)}`];
 }

@@ -117,6 +117,23 @@ A worktree's database starts as a copy of `ghost_dev`, so it skips setup and
 onboarding, and Ghost applies the branch's migrations when it boots. Run
 `pnpm reset:db` in the worktree to replace the copy with a fresh database.
 
+To run a checkout's Ghost in the background, for example from an agent, use:
+
+```bash
+pnpm dev:up      # start; returns once Ghost answers and prints its URL
+pnpm dev:status  # every checkout's URL, ports, database and state; --json for scripts
+pnpm dev:down    # stop this checkout's Ghost, however it was started
+```
+
+`pnpm dev:up` writes its output to `.ghost-dev.log`. Pass a variant's script
+name, such as `pnpm dev:up dev:analytics`, to start that instead; `dev:docker`
+can't run this way. `pnpm dev` and `pnpm dev:up` refuse to start while the
+checkout's Ghost is already running, and stop processes that an earlier run
+left behind. `pnpm dev:down` leaves MySQL, Redis, and Mailpit running.
+
+`pnpm dev:gc` lists the `dev_*` databases of worktrees that no longer exist, and
+`pnpm dev:gc --yes` drops them.
+
 Delete `.ghost-dev.env` to be assigned new ports, or set `GHOST_DEV_PORT`,
 `GHOST_DEV_BACKEND_PORT`, or `GHOST_DEV_DATABASE` to choose them.
 
