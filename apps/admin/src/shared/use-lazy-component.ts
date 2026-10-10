@@ -4,6 +4,12 @@ type ComponentModule<P> = { default: ComponentType<P> };
 
 const loadedComponents = new WeakMap<() => Promise<unknown>, ComponentType<never>>();
 
+/** Warms the same cache the hook reads on its first render, without mounting the screen. */
+export async function preloadComponent<P>(load: () => Promise<ComponentModule<P>>): Promise<void> {
+  const module = await load();
+  loadedComponents.set(load, module.default as ComponentType<never>);
+}
+
 /**
  * Loads a component's module without suspending, so a navigation elsewhere is
  * never held back while it loads; returns null until it has. `load` must be a
