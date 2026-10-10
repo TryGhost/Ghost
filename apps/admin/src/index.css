@@ -457,6 +457,15 @@ html[data-screen-exit='hide-sidebar'] .screen-exit-mobile-nav {
   transition: transform 200ms var(--ease-standard);
 }
 
+/* Leaving a full-screen surface inside the admin7Design frame, its top chrome
+   slides away first, on the frame's timing, and the frame then opens back out
+   around the page it returns to. */
+html[data-screen-exit='chrome'] .screen-exit-chrome-top {
+  /* Back where screen-enter-from-top brings it in from */
+  transform: translateY(-80px);
+  transition: transform 520ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
 html[data-screen-transition='after-exit']::view-transition-old(root) {
   animation: none;
 }
@@ -511,9 +520,12 @@ html[data-screen-transition='return']::view-transition-new(admin-mobile-nav):onl
 
 /* Entering the editor, the document rises into place and its floating chrome
    follows in from the screen edges. Fill backwards only: a transform animation
-   that fills forwards makes its element the containing block for fixed descendants. */
+   that fills forwards makes its element the containing block for fixed descendants.
+   The top chrome waits longer inside the admin7Design frame, until the frame's
+   top bar has slid out of its way (--screen-enter-top-delay, set by AdminFrame). */
 .screen-enter-from-top {
-  animation: screen-chrome-from-top 450ms var(--ease-emphasized) 150ms backwards;
+  animation: screen-chrome-from-top 450ms var(--ease-emphasized)
+    var(--screen-enter-top-delay, 150ms) backwards;
 }
 
 .screen-enter-from-bottom {
