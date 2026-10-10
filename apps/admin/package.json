@@ -101,6 +101,7 @@
     "eslint-plugin-no-relative-import-paths": "1.6.1",
     "jsdom": "catalog:",
     "msw": "catalog:",
+    "sirv": "3.0.2",
     "tailwindcss": "catalog:",
     "typescript": "catalog:",
     "typescript-eslint": "catalog:",
@@ -258,6 +259,22 @@
         ]
       },
       "dev": {
+        "continuous": true,
+        "executor": "nx:run-commands",
+        "options": {
+          "cwd": "apps/admin",
+          "command": "vite",
+          "env": {
+            "GHOST_DEV_BACKEND": "http://127.0.0.1:2369"
+          }
+        },
+        "dependsOn": [
+          "build:dev",
+          "@tryghost/admin-x-framework:dev",
+          "@tryghost/shade:dev"
+        ]
+      },
+      "dev:docker": {
         "continuous": true,
         "executor": "nx:run-commands",
         "options": {

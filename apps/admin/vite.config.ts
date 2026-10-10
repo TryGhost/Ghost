@@ -7,9 +7,13 @@ import { sentryVitePlugin } from '@sentry/vite-plugin';
 import tailwindcss from '@tailwindcss/vite';
 
 import { ghostBackendProxyPlugin } from './vite-backend-proxy';
+import { ghostFrontDoorPlugin } from './vite-front-door';
 import { sharedDefine, sharedResolve } from './vite.shared';
 
 export const GHOST_URL = process.env.GHOST_URL ?? 'http://localhost:2368/';
+
+// Ghost running on the host behind this dev server, e.g. http://127.0.0.1:2369
+const GHOST_DEV_BACKEND = process.env.GHOST_DEV_BACKEND;
 
 // Dev-only prefix Vite serves under. Keeps Vite's internals (HMR client,
 // module graph, refresh runtime) off `/ghost/*` so Ghost's Express middleware
@@ -77,7 +81,9 @@ export default defineConfig(({ command, mode }) => ({
     ...(command === 'serve' && mode === 'test'
       ? []
       : [
-          ghostBackendProxyPlugin(),
+          GHOST_DEV_BACKEND
+            ? ghostFrontDoorPlugin(GHOST_DEV_BACKEND, `${getSubdir()}${DEV_BASE}`)
+            : ghostBackendProxyPlugin(),
           // Sentry's plugin goes after all others
           sentryDebugIdsPlugin(),
         ]),
@@ -88,7 +94,8 @@ export default defineConfig(({ command, mode }) => ({
   define: sharedDefine,
   server: {
     host: '0.0.0.0',
-    port: 5174,
+    port: GHOST_DEV_BACKEND ? Number(process.env.GHOST_DEV_PORT ?? 2368) : 5174,
+    strictPort: Boolean(GHOST_DEV_BACKEND),
     allowedHosts: true,
     // Vite 8 already forwards browser console warn/error to the terminal
     // when it detects an AI agent is driving the dev server, and stays

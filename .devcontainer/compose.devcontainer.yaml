@@ -23,6 +23,7 @@ services:
     restart: unless-stopped
 
   ghost-dev:
+    profiles: !reset []
     # Mount the full repo so VS Code can edit apps/, e2e/, and root config files.
     # The original ./ghost:/home/ghost/ghost mount from compose.dev.yaml is
     # preserved via merge semantics so nodemon hot-reload still works for anyone
@@ -65,6 +66,7 @@ services:
       start_period: 0s
 
   ghost-dev-gateway:
+    profiles: !reset []
     # Point Caddy at the dev servers running inside the ghost-dev container
     # instead of host.docker.internal (which is the default for the hybrid
     # host/container dev setup). Public apps (Portal, Comments UI, Signup
