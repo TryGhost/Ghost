@@ -9,6 +9,7 @@ export const ENV_FILE = '.ghost-dev.env';
 
 export interface GhostDevEnv {
   GHOST_DEV_NAME: string;
+  GHOST_DEV_HOSTNAME: string;
   GHOST_DEV_PORT: string;
   GHOST_DEV_BACKEND_PORT: string;
   GHOST_DEV_DATABASE: string;
@@ -45,6 +46,7 @@ function parseEnvFile(file: string): Record<string, string> {
 function toEnv(name: string, port: number, database: string): GhostDevEnv {
   return {
     GHOST_DEV_NAME: name,
+    GHOST_DEV_HOSTNAME: hostnameFor(name),
     GHOST_DEV_PORT: String(port),
     GHOST_DEV_BACKEND_PORT: String(port + 1),
     GHOST_DEV_DATABASE: database,
@@ -96,6 +98,15 @@ function checkoutName(): string {
     .replace(/^_+|_+$/g, '');
 }
 
+// Cookies ignore the port, so a worktree needs its own hostname to keep its own Admin
+// session. Browsers, curl and the macOS resolver send *.localhost to loopback.
+function hostnameFor(name: string): string {
+  if (isMainCheckout()) {
+    return 'localhost';
+  }
+  return `${name.replace(/_/g, '-').slice(0, 63).replace(/-+$/, '')}.localhost`;
+}
+
 async function allocate(): Promise<GhostDevEnv> {
   if (isMainCheckout()) {
     return toEnv('main', MAIN_PORT, MAIN_DATABASE);
@@ -126,20 +137,30 @@ async function allocate(): Promise<GhostDevEnv> {
   throw new Error(`No free port pair between ${FIRST_PORT} and ${FIRST_PORT + SLOTS * 2}`);
 }
 
+function writeEnvFile(file: string, env: GhostDevEnv) {
+  const lines = Object.entries(env).map(([key, value]) => `${key}=${value}`);
+  writeFileSync(
+    file,
+    `# This checkout's \`pnpm dev\` hostname, ports and database. Delete to reassign.\n${lines.join('\n')}\n`,
+  );
+}
+
 /**
- * Ports and database for this checkout's `pnpm dev`, assigned once and kept in
- * `.ghost-dev.env` so URLs and sessions survive restarts.
+ * Hostname, ports and database for this checkout's `pnpm dev`, assigned once and kept
+ * in `.ghost-dev.env` so URLs and sessions survive restarts.
  */
 export async function resolveGhostDevEnv(): Promise<GhostDevEnv> {
   const file = join(checkoutRoot, ENV_FILE);
   if (existsSync(file)) {
-    return { GHOST_DEV_NAME: checkoutName(), ...parseEnvFile(file) } as GhostDevEnv;
+    const env = { GHOST_DEV_NAME: checkoutName(), ...parseEnvFile(file) } as GhostDevEnv;
+    // Files written before checkouts had their own hostname
+    if (!env.GHOST_DEV_HOSTNAME) {
+      env.GHOST_DEV_HOSTNAME = hostnameFor(env.GHOST_DEV_NAME);
+      writeEnvFile(file, env);
+    }
+    return env;
   }
   const env = await allocate();
-  const lines = Object.entries(env).map(([key, value]) => `${key}=${value}`);
-  writeFileSync(
-    file,
-    `# This checkout's \`pnpm dev\` ports and database. Delete to reassign.\n${lines.join('\n')}\n`,
-  );
+  writeEnvFile(file, env);
   return env;
 }

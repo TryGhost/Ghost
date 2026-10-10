@@ -12,13 +12,14 @@ import { parseEnv, resolveGhostDevEnv } from './lib/ghost-dev-env.ts';
 // (GHOST_DEV_PORT) and proxies everything that isn't Admin to Ghost (GHOST_DEV_BACKEND_PORT).
 // Values already in the environment win, e.g. inside the devcontainer.
 const assigned = await resolveGhostDevEnv();
+const hostname = process.env.GHOST_DEV_HOSTNAME ?? assigned.GHOST_DEV_HOSTNAME;
 const frontDoorPort = process.env.GHOST_DEV_PORT ?? assigned.GHOST_DEV_PORT;
 const backendPort = process.env.GHOST_DEV_BACKEND_PORT ?? assigned.GHOST_DEV_BACKEND_PORT;
 const database = process.env.GHOST_DEV_DATABASE ?? assigned.GHOST_DEV_DATABASE;
 
 const defaults: Record<string, string> = {
   NODE_ENV: 'development',
-  url: `http://localhost:${frontDoorPort}/`,
+  url: `http://${hostname}:${frontDoorPort}/`,
   server__host: '127.0.0.1',
   server__port: backendPort,
   database__client: 'mysql2',
@@ -94,7 +95,7 @@ let overlayEnv: Record<string, string> = {};
 if (overlays.length > 0 || (process.env.COMPOSE_PROFILES ?? '').split(',').includes('stripe')) {
   const config = composeConfig(overlays);
   overlayEnv = {
-    ...hostOverlayEnv(composeConfig([]), config, frontDoorPort),
+    ...hostOverlayEnv(composeConfig([]), config, hostname, frontDoorPort),
     ...sharedConfigEnv(config),
   };
 }

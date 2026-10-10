@@ -36,7 +36,7 @@ pnpm reset:data
 # 3. Generate analytics data
 pnpm data:analytics:generate
 
-# 4. View analytics in Ghost admin (a worktree uses the port in .ghost-dev.env)
+# 4. View analytics in Ghost admin (a worktree uses the URL that pnpm dev prints)
 # http://localhost:2368/ghost/#/analytics
 
 # 5. Clear analytics when needed
