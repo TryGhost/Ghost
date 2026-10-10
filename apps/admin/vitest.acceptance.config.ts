@@ -26,52 +26,59 @@ import { sharedDefine, sharedResolve } from './vite.shared';
 const getWorkerCount = () => Math.min(8, Math.max(2, availableParallelism() - 1));
 
 // MSW cannot see iframe navigations; these route them per page (test-utils/acceptance/frames.ts).
+// Through CDP rather than page.route: Playwright turns the HTTP cache off while
+// any route is set, and every spec file's fresh iframe would then fetch and
+// compile each app module again.
 type BrowserPage = BrowserCommandContext['page'];
-type FrameRouteHandler = Parameters<BrowserPage['route']>[1];
-const frameFakes = new WeakMap<
-  BrowserPage,
-  Array<{ matcher: (url: URL) => boolean; handler: FrameRouteHandler }>
->();
-const guardedPages = new WeakSet<BrowserPage>();
+const frameFakes = new WeakMap<BrowserPage, Map<string, string>>();
 
 const isExternal = (url: URL) => url.hostname !== 'localhost' && url.hostname !== '127.0.0.1';
 
 const guardFrameNavigations: BrowserCommand<[]> = async ({ page }) => {
-  if (guardedPages.has(page)) {
+  if (frameFakes.has(page)) {
     return;
   }
-  guardedPages.add(page);
-  // Registered first, so later fakes take precedence.
-  await page.route(isExternal, (route) =>
-    route.request().resourceType() === 'document'
-      ? route.fulfill({ status: 418, contentType: 'text/plain', body: 'Unfaked frame' })
-      : route.fallback(),
-  );
+  const fakes = new Map<string, string>();
+  frameFakes.set(page, fakes);
+  const session = await page.context().newCDPSession(page);
+  const fulfill = (requestId: string, responseCode: number, contentType: string, body: string) =>
+    session.send('Fetch.fulfillRequest', {
+      requestId,
+      responseCode,
+      responseHeaders: [{ name: 'Content-Type', value: contentType }],
+      body: Buffer.from(body).toString('base64'),
+    });
+  session.on('Fetch.requestPaused', ({ requestId, request }) => {
+    const url = new URL(request.url);
+    const fake = fakes.get(url.origin);
+    // The tester page is local, so an external document is always a frame.
+    const reply = !isExternal(url)
+      ? session.send('Fetch.continueRequest', { requestId })
+      : fake !== undefined
+        ? fulfill(requestId, 200, 'text/html', fake)
+        : fulfill(requestId, 418, 'text/plain', 'Unfaked frame');
+    reply.catch(() => {
+      // The frame went away before its navigation was answered.
+    });
+  });
+  await session.send('Fetch.enable', { patterns: [{ resourceType: 'Document' }] });
 };
 
-const fakeFrameOrigin: BrowserCommand<[origin: string, html: string]> = async (
+const fakeFrameOrigin: BrowserCommand<[origin: string, html: string]> = (
   { page },
   origin,
   html,
 ) => {
-  const fakedOrigin = new URL(origin).origin;
-  const matcher = (url: URL) => url.origin === fakedOrigin;
-  const handler: FrameRouteHandler = (route) =>
-    route.request().resourceType() === 'document' && route.request().frame().parentFrame()
-      ? route.fulfill({ contentType: 'text/html', body: html })
-      : route.fallback();
-  await page.route(matcher, handler);
-  frameFakes.set(page, [...(frameFakes.get(page) ?? []), { matcher, handler }]);
+  frameFakes.get(page)?.set(new URL(origin).origin, html);
 };
 
-const resetFakeFrameOrigins: BrowserCommand<[]> = async ({ page }) => {
-  const fakes = frameFakes.get(page) ?? [];
-  frameFakes.delete(page);
-  await Promise.all(fakes.map(({ matcher, handler }) => page.unroute(matcher, handler)));
+const resetFakeFrameOrigins: BrowserCommand<[]> = ({ page }) => {
+  frameFakes.get(page)?.clear();
 };
 
 // Module requests fail as a dropped connection would (test-utils/acceptance/module-loads.ts).
 // Routed on the context: the page's routes never see what MSW's service worker fetches.
+// Any route turns the HTTP cache off, so these stay limited to the specs that need them.
 type BrowserContext = BrowserCommandContext['context'];
 const failedModules = new WeakMap<BrowserContext, Array<(url: URL) => boolean>>();
 
@@ -93,7 +100,7 @@ export default defineConfig({
     // Vitest owns console reporting; Vite forwarding bypasses silent below.
     forwardConsole: false,
   },
-  // Serves the MSW service worker script; scoped to the test config so it
+  // Serves the MSW service worker scripts; scoped to the test config so it
   // never ends up in the production build's public assets.
   publicDir: './test-utils/acceptance/public',
   define: sharedDefine,

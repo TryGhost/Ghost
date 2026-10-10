@@ -595,7 +595,7 @@ export async function startFakeApi({
 
   try {
     await worker.start({
-      serviceWorker: { url: '/mockServiceWorker.js' },
+      serviceWorker: { url: '/acceptance-service-worker.js' },
       onUnhandledRequest: 'bypass',
       quiet: true,
     });
