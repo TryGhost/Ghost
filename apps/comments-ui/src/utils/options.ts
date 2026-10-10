@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { CommentsOptions } from '../app-context';
+import type { CommentsOptions } from '../app-context';
 
 export function useOptions(scriptTag: HTMLElement) {
   const buildOptions = React.useCallback(() => {

@@ -3,16 +3,23 @@ import React from 'react';
 import { SidebarInset, SidebarProvider } from '@tryghost/shade/components';
 import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
 import { isContributorUser } from '@tryghost/admin-x-framework/api/users';
-import { useAdminSidebarVisibility } from '@/layout/sidebar-visibility';
+import { useAdminSidebarVisibility, useIsSettingsSidebarRoute } from '@/layout/sidebar-visibility';
 import { cn } from '@tryghost/shade/utils';
 import AppSidebar from './app-sidebar';
+import SettingsSidebar from './app-sidebar/settings-sidebar';
+import { SettingsNavigationSlotContext } from './settings-navigation';
+import { SidebarSwapTransition } from './sidebar-swap-transition';
 import { MobileNavBar } from './app-sidebar/mobile-nav-bar';
+import { SkipLink } from './skip-link';
 import { ContributorUserMenu } from './app-sidebar/user-menu';
 import { DunningBanner, DunningOverlay, useDunningLockTakeover } from '@/dunning';
+import { GlobalSearchProvider } from '@/global-search/global-search-provider';
 
 const networkPageChrome = {
-  contentClassName: 'max-w-(--content-width)',
+  contentClassName: 'max-w-[1920px]',
   contentGutter: 'var(--page-gutter)',
+  // The floating sidebar already provides the cover's 8px left gap.
+  profileContentClassName: 'sidebar:pl-0',
 };
 
 const pageChromeClassName = [
@@ -27,15 +34,6 @@ const pageChromeClassName = [
   '[&_[data-page-header=main]]:flex-wrap',
   '[&_[data-page-header=left]]:h-auto',
   '[&_[data-page-header=left]]:max-w-full',
-  '[&_.admin-x-container-error]:bg-background',
-  '[&_.gh-canvas]:max-w-(--content-width)',
-  '[&_.gh-canvas]:px-(--page-gutter)',
-  '[&_.gh-main-width]:max-w-(--content-width)',
-  '[&_.gh-main-width]:px-(--page-gutter)',
-  '[&_.gh-canvas-header]:-mx-(--page-gutter)',
-  '[&_.gh-canvas-header]:px-(--page-gutter)',
-  '[&_.gh-canvas-header]:pt-[28px]!',
-  '[&_.gh-canvas-header]:pb-[28px]!',
   '[&_[data-view-site-preview]]:inset-y-2!',
   '[&_[data-view-site-preview]]:right-2!',
   '[&_[data-view-site-preview]]:left-0!',
@@ -46,6 +44,11 @@ const pageChromeClassName = [
   '[&_[data-view-site-preview]]:border-[var(--border-subtle)]!',
 ].join(' ');
 
+const SIDEBAR_PANEL_CLASS_NAME = '[&>[data-sidebar=sidebar]]:relative';
+// Lands on the desktop panel only; the mobile sidebar is a sheet that ignores it.
+const SIDEBAR_SCREEN_TRANSITION_CLASS_NAME =
+  'screen-exit-sidebar [view-transition-name:admin-sidebar]';
+
 interface AdminLayoutProps {
   children: React.ReactNode;
 }
@@ -53,8 +56,17 @@ interface AdminLayoutProps {
 export function AdminLayout({ children }: AdminLayoutProps) {
   const { data: currentUser } = useCurrentUser();
   const sidebarVisible = useAdminSidebarVisibility();
+  const [settingsNavigationSlot, setSettingsNavigationSlot] = React.useState<HTMLElement | null>(
+    null,
+  );
   const dunningLocked = useDunningLockTakeover();
   const isContributor = currentUser && isContributorUser(currentUser);
+  const isSettingsRoute = useIsSettingsSidebarRoute();
+  const sidebarClassName = cn(
+    SIDEBAR_PANEL_CLASS_NAME,
+    SIDEBAR_SCREEN_TRANSITION_CLASS_NAME,
+    dunningLocked && 'opacity-40',
+  );
 
   // The dunning takeover is positioned against the scrollable inset, so the
   // inset must not scroll (and must sit at the top) while the takeover is up —
@@ -64,7 +76,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
     if (dunningLocked) {
       insetRef.current?.scrollTo?.(0, 0);
     }
-  }, [dunningLocked]);
+  }, [dunningLocked, sidebarVisible, isSettingsRoute]);
 
   // The covered regions become `inert` while the takeover is up: aria-modal is
   // only a semantic hint, so without this the covered page stays reachable by
@@ -90,9 +102,10 @@ export function AdminLayout({ children }: AdminLayoutProps) {
   if (isContributor) {
     return (
       <div className="relative h-full bg-background">
-        <main ref={mainRef} className="flex h-full flex-col overflow-y-auto">
+        {!dunningLocked && <SkipLink target={mainRef} />}
+        <main ref={mainRef} className="flex h-full flex-col overflow-y-auto focus:outline-hidden">
           <DunningBanner />
-          <div className="flex-1">{children}</div>
+          <div className="min-h-0 flex-1">{children}</div>
         </main>
         <div
           ref={contributorMenuRef}
@@ -106,41 +119,59 @@ export function AdminLayout({ children }: AdminLayoutProps) {
   }
 
   return (
-    <SidebarProvider
-      className={cn(
-        sidebarVisible &&
-          'overflow-hidden [--content-width:1080px] [--page-gutter:20px] sidebar:[--page-gutter:40px] min-[1380px]:[--content-width:1280px] [&_[data-sidebar=sidebar]]:rounded-xl [&_[data-sidebar=sidebar]]:border-border [&_[data-sidebar=sidebar]]:shadow-none [&>main]:min-w-0',
-      )}
-      open={!!currentUser && sidebarVisible}
-      style={sidebarVisible ? ({ '--sidebar-width': '316px' } as React.CSSProperties) : undefined}
-    >
-      {sidebarVisible && (
-        <AppSidebar
-          ref={sidebarRef}
-          className={cn(dunningLocked && 'opacity-40')}
-          variant="floating"
-        />
-      )}
-      <SidebarInset
-        ref={insetRef}
+    <GlobalSearchProvider>
+      {!dunningLocked && <SkipLink target={mainRef} />}
+      <SidebarProvider
         className={cn(
-          'relative bg-background sidebar:max-h-full',
-          dunningLocked ? 'overflow-hidden' : 'overflow-y-auto',
-          sidebarVisible ? 'max-h-[calc(100%-var(--mobile-navbar-height))]' : 'max-h-full',
+          sidebarVisible &&
+            'overflow-hidden [--content-width:1080px] [--page-gutter:20px] sidebar:[--page-gutter:40px] min-[1380px]:[--content-width:1280px] [&_[data-sidebar=sidebar]]:rounded-xl [&_[data-sidebar=sidebar]]:border-border [&_[data-sidebar=sidebar]]:shadow-none [&>main]:min-w-0',
         )}
+        open={!!currentUser && sidebarVisible}
+        style={sidebarVisible ? ({ '--sidebar-width': '316px' } as React.CSSProperties) : undefined}
       >
-        <DunningBanner />
-        <main ref={mainRef} className={cn('flex-1', sidebarVisible && pageChromeClassName)}>
-          <ActivityPubHostLayoutProvider value={sidebarVisible ? networkPageChrome : undefined}>
-            {children}
-          </ActivityPubHostLayoutProvider>
-        </main>
-        {/* The mobile nav sits outside the takeover's cover (fixed, above the
+        {sidebarVisible &&
+          (isSettingsRoute ? (
+            <SettingsSidebar
+              ref={sidebarRef}
+              className={sidebarClassName}
+              slotRef={setSettingsNavigationSlot}
+              variant="floating"
+            />
+          ) : (
+            <AppSidebar ref={sidebarRef} className={sidebarClassName} variant="floating" />
+          ))}
+        <SidebarSwapTransition settingsRoute={isSettingsRoute} sidebarRef={sidebarRef} />
+        <SidebarInset
+          ref={insetRef}
+          className={cn(
+            'relative bg-background sidebar:max-h-full',
+            dunningLocked ? 'overflow-hidden' : 'overflow-y-auto',
+            sidebarVisible ? 'max-h-[calc(100%-var(--mobile-navbar-height))]' : 'max-h-full',
+          )}
+        >
+          <DunningBanner />
+          <main
+            ref={mainRef}
+            className={cn(
+              'flex-1 focus:outline-hidden',
+              sidebarVisible ? pageChromeClassName : 'min-h-0',
+              isSettingsRoute && 'min-h-0',
+              'screen-exit-content',
+            )}
+          >
+            <ActivityPubHostLayoutProvider value={sidebarVisible ? networkPageChrome : undefined}>
+              <SettingsNavigationSlotContext.Provider value={settingsNavigationSlot}>
+                {children}
+              </SettingsNavigationSlotContext.Provider>
+            </ActivityPubHostLayoutProvider>
+          </main>
+          {/* The mobile nav sits outside the takeover's cover (fixed, above the
             inset) and its sheet opens in a portal, so it unmounts entirely
             rather than relying on inert */}
-        {!dunningLocked && <MobileNavBar />}
-        <DunningOverlay />
-      </SidebarInset>
-    </SidebarProvider>
+          {!dunningLocked && <MobileNavBar />}
+          <DunningOverlay />
+        </SidebarInset>
+      </SidebarProvider>
+    </GlobalSearchProvider>
   );
 }

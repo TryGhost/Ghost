@@ -1,7 +1,8 @@
-import { Button } from '@tryghost/shade/components';
+import { Button, Tooltip, TooltipContent, TooltipTrigger } from '@tryghost/shade/components';
 import { Inline, Stack, Text } from '@tryghost/shade/primitives';
 import { cn, LucideIcon } from '@tryghost/shade/utils';
 import FeatureImagePlaceholder from '@/shared/feature-image-placeholder';
+import { AdminLink } from '@/shared/admin-link';
 import { PostsContextMenu } from '@/posts/list/components/posts-context-menu';
 import type { PostContextMenuItem, PostContextMenuKey } from '@/posts/list/post-context-menu-items';
 import {
@@ -14,6 +15,7 @@ import {
 import { hasPostAnalyticsPage, type PostMetricsSettings } from '@/posts/list/post-metrics';
 import { PostMetricsCells } from '@/posts/list/components/post-metrics-cells';
 import { PostListRowEmailStatus } from '@/posts/list/components/post-list-row-email-status';
+import { EmailSendingStatusLine } from '@/posts/email-sending-status/email-sending-status-line';
 import {
   hasInProgressEmail,
   SETTLED_POST_LIST_ROW_EMAIL_STATUS,
@@ -59,7 +61,6 @@ interface PostListRowProps extends Omit<ComponentPropsWithoutRef<'li'>, 'onClick
   metricsSettings: PostMetricsSettings;
   visitorCounts?: Record<string, number>;
   memberCounts?: Record<string, { free: number; paid: number }>;
-  improveSendingUI?: boolean;
 }
 
 interface PostListRowComponentProps extends PostListRowProps {
@@ -97,8 +98,7 @@ function statusTone(post: PostListItem, isFailed: boolean): string {
 /**
  * The thumbnail, matched to the analytics dashboard's: a 16/10 landscape
  * thumbnail rather than the square this list used to draw, at the same widths
- * and corner radius. Ember's own list is 16/10 too, so this lands on both at
- * once.
+ * and corner radius, as Ember's list drew it.
  *
  * The empty state is analytics' shared placeholder component rather than a
  * restyle of it, so the two lists cannot drift apart.
@@ -118,8 +118,26 @@ function FeatureImage({ post }: { post: PostListItem }) {
 
   // `p-0` because the placeholder's own padding is sized for a larger box;
   // here the icon just centres in the thumbnail.
-  return <FeatureImagePlaceholder className={cn(FEATURE_IMAGE_GEOMETRY, 'p-0')} />;
+  return (
+    <FeatureImagePlaceholder
+      className={cn(FEATURE_IMAGE_GEOMETRY, 'p-0 group-hover:brightness-95')}
+    />
+  );
 }
+
+type RowLinkProps = ComponentPropsWithoutRef<typeof AdminLink> & { offsite: boolean };
+
+/** Offsite URLs open in a new tab; everything else is an in-app route. */
+const RowLink = forwardRef<HTMLAnchorElement, RowLinkProps>(function RowLink(
+  { offsite, to, ...props },
+  ref,
+) {
+  return offsite ? (
+    <a ref={ref} href={to} rel="noopener noreferrer" target="_blank" {...props} />
+  ) : (
+    <AdminLink ref={ref} to={to} {...props} />
+  );
+});
 
 const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowComponentProps>(
   function PostListRowComponent(
@@ -142,7 +160,6 @@ const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowComponentProps
       metricsSettings,
       visitorCounts,
       memberCounts,
-      improveSendingUI: _improveSendingUI,
       emailSendingState,
       // Everything else lands on the <li>: the context menu wraps each row with
       // `asChild`, so Radix hands its trigger props and ref straight through.
@@ -173,7 +190,7 @@ const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowComponentProps
     const isPublished = post.status === 'published';
     const editorType = resource === 'pages' ? 'page' : 'post';
     const linksOffsite = Boolean(isContributor && isPublished);
-    const href = linksOffsite ? post.url : `#/editor/${editorType}/${post.id}`;
+    const editorPath = `/editor/${editorType}/${post.id}`;
 
     const goesToAnalytics = hasPostAnalyticsPage(
       post,
@@ -183,16 +200,16 @@ const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowComponentProps
     );
     const action = goesToAnalytics
       ? {
-          href: `#/posts/analytics/${post.id}`,
-          label: 'Go to Analytics',
-          external: false,
+          to: `/posts/analytics/${post.id}`,
+          label: 'Post analytics',
+          offsite: false,
           Icon: LucideIcon.ChartNoAxesColumn,
         }
       : linksOffsite
         ? // "View post" on both resources, as Ember hardcodes it. Only ever
           // reached by a contributor, who has no page access anyway.
-          { href: post.url, label: 'View post', external: true, Icon: LucideIcon.ArrowUpRight }
-        : { href, label: 'Go to Editor', external: false, Icon: LucideIcon.Pen };
+          { to: post.url, label: 'View post', offsite: true, Icon: LucideIcon.ArrowUpRight }
+        : { to: editorPath, label: 'Edit', offsite: false, Icon: LucideIcon.Pen };
 
     const row = (
       <li
@@ -234,12 +251,11 @@ const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowComponentProps
                 each need to fill the row's full height to stay clickable —
                 so the row's own box has to stay flush. */}
         <Inline align="center" className="pr-4" gap="md">
-          <a
-            className="flex min-w-0 flex-1 items-start gap-4 py-4 pl-4 no-underline"
+          <RowLink
+            className="flex min-w-0 flex-1 items-start gap-4 py-4 pl-4 no-underline focus-visible:ring-1 focus-visible:ring-focus-ring focus-visible:outline-hidden focus-visible:ring-inset"
             data-testid="post-list-item-link"
-            href={href}
-            rel={linksOffsite ? 'noopener noreferrer' : undefined}
-            target={linksOffsite ? '_blank' : undefined}
+            offsite={linksOffsite}
+            to={linksOffsite ? post.url : editorPath}
           >
             <FeatureImage post={post} />
             <Stack className="min-w-0 flex-1" gap="xs">
@@ -251,7 +267,7 @@ const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowComponentProps
                     data-testid="post-featured"
                   />
                 )}
-                <Text as="h3" className="truncate" weight="semibold">
+                <Text as="h3" className="truncate tracking-normal" weight="semibold">
                   {post.title}
                 </Text>
               </Inline>
@@ -270,14 +286,21 @@ const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowComponentProps
               )}
 
               {emailSendingState.status === 'sending' ? (
-                <Text className="text-muted-foreground tabular-nums" size="sm">
-                  {emailSendingState.copy.title}
-                  {emailSendingState.copy.detail && (
-                    <span>{` · ${emailSendingState.copy.detail}`}</span>
-                  )}
-                </Text>
+                <EmailSendingStatusLine
+                  announce={false}
+                  className="text-sm"
+                  line={emailSendingState.line}
+                />
               ) : (
-                <Text className={statusTone(displayedPost, displayedIsFailed)} size="sm">
+                <Text
+                  className={statusTone(displayedPost, displayedIsFailed)}
+                  size="sm"
+                  weight={
+                    displayedIsFailed || post.status === 'draft' || post.status === 'scheduled'
+                      ? 'medium'
+                      : 'regular'
+                  }
+                >
                   {displayedStatusLabel}
                   {navigationPlacement && (
                     <span
@@ -302,7 +325,7 @@ const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowComponentProps
                 </Text>
               )}
             </Stack>
-          </a>
+          </RowLink>
           <PostMetricsCells
             className="py-4"
             hideEmailMetrics={emailSendingState.status === 'sending'}
@@ -315,34 +338,40 @@ const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowComponentProps
           />
           {/* Always visible so the action stays discoverable and remains
                     available on touch devices. */}
-          <Button
-            // The 32px margin on top of the row's gap separates
-            // the action from the analytics figures beside it. It is an
-            // action rather than another figure, so it needs to read as
-            // separate from the run of metrics.
-            // Margin rather than a wider row gap, which would push the
-            // title away from the metrics too.
-            className={cn(
-              'my-4 shrink-0',
-              isAdmin7 ? 'ms-8' : 'ms-2',
-              isAdmin7 ? isHovered && 'bg-background' : 'bg-control-surface px-4',
-            )}
-            size={isAdmin7 ? 'icon' : undefined}
-            variant={isAdmin7 ? (isHovered ? 'outline' : 'ghost') : 'outline'}
-            asChild
-          >
-            <a
-              aria-label={action.label}
-              data-testid="post-list-item-action"
-              href={action.href}
-              rel={action.external ? 'noopener noreferrer' : undefined}
-              target={action.external ? '_blank' : undefined}
-              title={action.label}
-              data-ignore-select
-            >
-              <action.Icon />
-            </a>
-          </Button>
+          <Tooltip delayDuration={1000}>
+            <TooltipTrigger asChild>
+              <Button
+                // The 32px margin on top of the row's gap separates
+                // the action from the analytics figures beside it. It is an
+                // action rather than another figure, so it needs to read as
+                // separate from the run of metrics.
+                // Margin rather than a wider row gap, which would push the
+                // title away from the metrics too.
+                className={cn(
+                  'my-4 shrink-0',
+                  isAdmin7 ? 'ms-8' : 'ms-2',
+                  isAdmin7
+                    ? 'text-muted-foreground hover:bg-background hover:text-foreground'
+                    : 'bg-control-surface px-4',
+                  isAdmin7 && isHovered && 'bg-background',
+                )}
+                size={isAdmin7 ? 'icon' : undefined}
+                variant={isAdmin7 ? (isHovered ? 'outline' : 'ghost') : 'outline'}
+                asChild
+              >
+                <RowLink
+                  aria-label={action.label}
+                  data-testid="post-list-item-action"
+                  offsite={action.offsite}
+                  to={action.to}
+                  data-ignore-select
+                >
+                  <action.Icon />
+                </RowLink>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent variant="white">{action.label}</TooltipContent>
+          </Tooltip>
         </Inline>
       </li>
     );
@@ -363,7 +392,7 @@ const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowComponentProps
 
 const PostListRowWithEmailStatus = forwardRef<HTMLLIElement, PostListRowProps>(
   function PostListRowWithEmailStatus(props, ref) {
-    if (hasInProgressEmail(props.post, props.resource, props.improveSendingUI ?? false)) {
+    if (hasInProgressEmail(props.post, props.resource)) {
       return (
         <PostListRowEmailStatus post={props.post}>
           {(emailSendingState) => (

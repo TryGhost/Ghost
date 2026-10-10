@@ -9,14 +9,23 @@ import {
   type TextLeading,
   type TextSize,
 } from '@tryghost/shade/primitives';
-import { Button, type ButtonProps, Separator } from '@tryghost/shade/components';
+import {
+  Button,
+  type ButtonProps,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  Separator,
+} from '@tryghost/shade/components';
 import {
   DirtyConfirmDialog,
+  PageHeader,
   SettingsModal,
   type SettingsModalSize,
   useDirtyConfirmation,
 } from '@tryghost/shade/patterns';
-import { cn, useGlobalDirtyState } from '@tryghost/shade/utils';
+import { LucideIcon, cn, useGlobalDirtyState } from '@tryghost/shade/utils';
 
 type HeadingLevel = 1 | 2 | 3 | 4 | 5 | 6;
 
@@ -70,6 +79,11 @@ export interface PreviewModalProps {
   rightToolbar?: boolean;
   deviceSelector?: React.ReactNode;
   siteLink?: string;
+  /** Replaces the site link with a button that opens a menu of these choices. */
+  siteLinkMenu?: {
+    label: string;
+    items: Array<{ key: string; label: string; onSelect: () => void }>;
+  };
   previewToolbarURLs?: React.ReactNode;
   previewToolbarBreadcrumbs?: React.ReactNode;
   previewBgColor?: 'grey' | 'white' | 'greygradient';
@@ -107,6 +121,7 @@ export const PreviewModalContent: React.FC<PreviewModalProps> = ({
   rightToolbar = true,
   deviceSelector,
   siteLink,
+  siteLinkMenu,
   previewToolbarURLs,
   previewBgColor = 'grey',
   previewToolbarTabs,
@@ -186,7 +201,31 @@ export const PreviewModalContent: React.FC<PreviewModalProps> = ({
             {rightToolbar && (
               <Inline align="center" className="absolute right-8 h-full" gap="md">
                 {deviceSelector}
-                {siteLink && (
+                {siteLinkMenu && (
+                  <>
+                    {deviceSelector && <Separator className="h-5!" orientation="vertical" />}
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button type="button" variant="outline">
+                          <LucideIcon.ExternalLink />
+                          {siteLinkMenu.label}
+                          <LucideIcon.ChevronDown />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent
+                        align="end"
+                        className="min-w-[var(--radix-dropdown-menu-trigger-width)]"
+                      >
+                        {siteLinkMenu.items.map((item) => (
+                          <DropdownMenuItem key={item.key} onSelect={item.onSelect}>
+                            {item.label}
+                          </DropdownMenuItem>
+                        ))}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </>
+                )}
+                {siteLink && !siteLinkMenu && (
                   <>
                     {deviceSelector && <Separator className="h-5!" orientation="vertical" />}
                     <a
@@ -224,6 +263,7 @@ export const PreviewModalContent: React.FC<PreviewModalProps> = ({
     <SettingsModal
       afterClose={afterClose}
       animate={false}
+      aria-label={title}
       backDropClick={backDropClick}
       dirty={dirty}
       footer={false}
@@ -263,14 +303,14 @@ export const PreviewModalContent: React.FC<PreviewModalProps> = ({
                 </Text>
                 {sidebarButtons || (
                   <Inline gap="md">
-                    <Button
+                    <PageHeader.Action
                       disabled={buttonsDisabled}
+                      label={cancelLabel}
                       type="button"
-                      variant="outline"
                       onClick={handleCancel}
                     >
                       {cancelLabel}
-                    </Button>
+                    </PageHeader.Action>
                     <Button
                       disabled={buttonsDisabled}
                       type="button"

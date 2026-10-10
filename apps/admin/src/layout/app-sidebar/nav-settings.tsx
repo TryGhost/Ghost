@@ -5,10 +5,12 @@ import { LucideIcon } from '@tryghost/shade/utils';
 import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
 import { canAccessSettings } from '@tryghost/admin-x-framework/api/users';
 import { NavMenuItem } from './nav-menu-item';
+import { useSettingsReturnToState } from '@/layout/settings-navigation';
 
 function NavSettings({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
   const { data: currentUser } = useCurrentUser();
   const showSettings = currentUser && canAccessSettings(currentUser);
+  const settingsReturnToState = useSettingsReturnToState();
 
   return (
     <SidebarGroup {...props}>
@@ -16,7 +18,7 @@ function NavSettings({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
         <SidebarMenu>
           {showSettings && (
             <NavMenuItem>
-              <NavMenuItem.Link to="settings">
+              <NavMenuItem.Link state={settingsReturnToState} to="settings">
                 <LucideIcon.Settings />
                 <NavMenuItem.Label>Settings</NavMenuItem.Label>
               </NavMenuItem.Link>

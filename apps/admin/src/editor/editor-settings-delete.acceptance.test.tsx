@@ -1,16 +1,22 @@
-import { describe, expect, it } from 'vitest';
-import { userEvent } from 'vitest/browser';
+import { afterEach, describe, expect, it } from 'vitest';
+import { page, userEvent } from 'vitest/browser';
 import { buildLexicalParagraph } from '@tryghost/test-data';
+import {
+  settingsCodeInjectionRow,
+  settingsKeyboardShortcutsRow,
+} from '@tryghost/test-data/selectors/editor';
 
 import {
   currentRoute,
   currentUserResponse,
   fakeAdminEndpoint,
   fakeEditorChrome,
+  fakePages,
   fakePosts,
   fakePostsListScreen,
   post,
   renderAdminApp,
+  settleTransitions,
   staffRole,
   unsavedChangesGuarded,
 } from '@test-utils/acceptance';
@@ -20,10 +26,15 @@ import { postsListScreen } from '@/posts/list/posts-list.screen';
 const POST_ID = 'abc123';
 const NEW_POST_ID = 'new123';
 const LOADED_AT = '2026-01-01T00:00:00.000Z';
-// The lists are React-owned so the delete's navigation stays in the router.
-const FLAG_ON = { labs: { editorReact: true, postsListReact: true } };
+const FLAG_ON = { labs: { editorReact: true } };
 
 const POLL = { timeout: 10_000 };
+// The suite's own viewport, restored after the cases that resize it.
+const WIDE_VIEWPORT = { width: 1280, height: 800 };
+// The section's own padding below the button, plus the panel's border.
+const SECTION_INSET = 17;
+const PASSWORD = 'hunter22';
+const EMAIL = String(currentUserResponse().users[0].email);
 
 type SavedPost = ReturnType<typeof post>;
 
@@ -118,9 +129,21 @@ function fakeRefusedDelete({
   );
 }
 
+/** Deletes find the session gone; declared after `fakeDeletablePost`, so it answers them. */
+function fakeExpiredDelete() {
+  return fakeAdminEndpoint(
+    'DELETE',
+    `/posts/${POST_ID}/`,
+    { errors: [{ type: 'UnauthorizedError', message: 'Please sign in again.' }] },
+    { status: 401 },
+  );
+}
+
 async function openSidebar() {
   await editorScreen.settingsToggle().click();
   await expect.element(editorScreen.settingsSidebar()).toBeVisible();
+  // Visible from its first frame; a click while it still slides in can be lost.
+  await settleTransitions();
 }
 
 async function openDeleteDialog() {
@@ -133,6 +156,28 @@ async function typeIntoBody(text: string) {
   await editorScreen.body().click();
   await userEvent.keyboard(`{End}${text}`);
 }
+
+/** Where Delete sits against the panel and the list that scrolls it. */
+function deletePlacement() {
+  const panel = editorScreen.settingsSidebar().element().getBoundingClientRect();
+  const button = editorScreen.settingsDelete().element().getBoundingClientRect();
+  const list = editorScreen.settingsScrollPane();
+  const lastSection = editorScreen
+    .settingsSubviewRow(settingsKeyboardShortcutsRow)
+    .element()
+    .getBoundingClientRect();
+  return {
+    afterLastSection: button.top >= lastSection.bottom,
+    gapBelow: panel.bottom - button.bottom,
+    inList: list.contains(editorScreen.settingsDelete().element()),
+    inView: button.bottom <= list.getBoundingClientRect().bottom,
+    listOverflows: list.scrollHeight > list.clientHeight,
+  };
+}
+
+afterEach(async () => {
+  await page.viewport(WIDE_VIEWPORT.width, WIDE_VIEWPORT.height);
+});
 
 /**
  * The sidebar's Delete section: the one thing in the panel that goes straight
@@ -166,11 +211,67 @@ describe('Post settings delete', () => {
     await openSidebar();
 
     await expect(editorScreen.settingsDelete()).toHaveCount(0);
+    // The list ends at its last section: no empty wrapper is left for the button.
+    const lastSection = editorScreen.settingsSubviewRow(settingsKeyboardShortcutsRow).element();
+    expect(editorScreen.settingsScrollPane().lastElementChild?.contains(lastSection)).toBe(true);
 
     await typeIntoBody('First words');
 
     // The create gives the post an ID, which is all the button was waiting for.
     await expect.element(editorScreen.settingsDelete(), POLL).toBeVisible();
+  });
+
+  it('ends a short list at the foot of the panel', async () => {
+    fakeDeletablePost();
+    await page.viewport(1280, 2000);
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await openSidebar();
+    await expect.element(editorScreen.settingsDelete()).toBeVisible();
+
+    const placement = deletePlacement();
+    // The case under test: the sections end well above the panel's foot.
+    expect(placement.listOverflows).toBe(false);
+    expect(placement.inList).toBe(true);
+    expect(placement.gapBelow).toBeCloseTo(SECTION_INSET, 0);
+  });
+
+  it('follows the last section of a long list, reached by scrolling', async () => {
+    fakeDeletablePost();
+    await page.viewport(1280, 600);
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await openSidebar();
+    await expect(editorScreen.settingsDelete()).toHaveCount(1);
+
+    const list = editorScreen.settingsScrollPane();
+    const atTop = deletePlacement();
+    expect(atTop.listOverflows).toBe(true);
+    expect(list.scrollTop).toBe(0);
+    expect(atTop.inList).toBe(true);
+    expect(atTop.afterLastSection).toBe(true);
+    // The sections push it below the fold.
+    expect(atTop.inView).toBe(false);
+
+    list.scrollTop = list.scrollHeight;
+    await expect.poll(() => deletePlacement().inView).toBe(true);
+    // Within a pixel: a scrolled list can come to rest on a half-pixel.
+    expect(Math.abs(deletePlacement().gapBelow - SECTION_INSET)).toBeLessThanOrEqual(1);
+  });
+
+  it('makes way for an open pane and returns with the list', async () => {
+    fakeDeletablePost();
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await openSidebar();
+    await expect.element(editorScreen.settingsDelete()).toBeVisible();
+
+    await editorScreen.settingsSubviewRow(settingsCodeInjectionRow).click();
+    await expect.element(editorScreen.settingsSubviewPane()).toBeVisible();
+
+    await expect(editorScreen.settingsDelete()).toHaveCount(0);
+
+    await userEvent.keyboard('{Escape}');
+
+    await expect(editorScreen.settingsSubviewPane()).toHaveCount(0);
+    await expect.element(editorScreen.settingsDelete()).toBeVisible();
   });
 
   it('names the post it is about to delete and warns that it is permanent', async () => {
@@ -256,23 +357,20 @@ describe('Post settings delete', () => {
 
   it('keeps unsaved work editable when the delete is refused by an expired session', async () => {
     const { saveApi } = fakeDeletablePost();
-    fakeAdminEndpoint(
-      'DELETE',
-      `/posts/${POST_ID}/`,
-      { errors: [{ type: 'UnauthorizedError', message: 'Please sign in again.' }] },
-      { status: 401 },
-    );
+    fakeExpiredDelete();
     await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
     await typeIntoBody(' and more');
     await expect.poll(unsavedChangesGuarded).toBe(true);
     await openDeleteDialog();
     await editorScreen.confirmSettingsDelete().click();
 
+    await expect.element(editorScreen.reauthDialog()).toHaveTextContent('Are you still here?');
+    await editorScreen.cancelReauth().click();
+
+    await expect(editorScreen.reauthDialog()).toHaveCount(0);
     await expect
       .element(editorScreen.settingsDeleteError())
-      .toHaveTextContent(
-        'Your session expired. Sign in again in a new tab, then try deleting again.',
-      );
+      .toHaveTextContent('Your session expired. Delete again to sign in.');
     expect(currentRoute()).toBe(`/editor/post/${POST_ID}`);
     await editorScreen.cancelSettingsDelete().click();
     await expect.element(editorScreen.body()).toHaveTextContent('Hello from React and more');
@@ -282,6 +380,46 @@ describe('Post settings delete', () => {
     await expect
       .poll(() => JSON.stringify(saveApi.lastRequest?.body), POLL)
       .toContain('after refusal');
+  });
+
+  it('deletes once the writer signs in again after the session expired', async () => {
+    fakeDeletablePost();
+    fakeExpiredDelete();
+    const sessionApi = fakeAdminEndpoint('POST', '/session/', () => 'Created', { status: 201 });
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await openDeleteDialog();
+    await editorScreen.confirmSettingsDelete().click();
+    await expect.element(editorScreen.reauthDialog()).toBeVisible();
+
+    // Declared after the expired fake, so it answers the delete held behind the sign-in.
+    const deleteApi = fakeAdminEndpoint('DELETE', `/posts/${POST_ID}/`, null, { status: 204 });
+    await editorScreen.reauthPassword().fill(PASSWORD);
+    await editorScreen.reauthSignIn().click();
+
+    await expect.poll(() => deleteApi.requests.length, POLL).toBe(1);
+    expect(sessionApi.lastRequest?.body).toEqual({ username: EMAIL, password: PASSWORD });
+    await expect.poll(currentRoute, POLL).toBe('/posts');
+  });
+
+  it('asks to sign in again when the delete is retried after the sign-in is abandoned', async () => {
+    fakeDeletablePost();
+    const expiredApi = fakeExpiredDelete();
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await openDeleteDialog();
+    await editorScreen.confirmSettingsDelete().click();
+    await expect.element(editorScreen.reauthDialog()).toBeVisible();
+    await userEvent.keyboard('{Escape}');
+
+    await expect(editorScreen.reauthDialog()).toHaveCount(0);
+    await expect
+      .element(editorScreen.settingsDeleteError())
+      .toHaveTextContent('Your session expired. Delete again to sign in.');
+
+    await editorScreen.confirmSettingsDelete().click();
+
+    await expect.element(editorScreen.reauthDialog()).toHaveTextContent('Are you still here?');
+    expect(expiredApi.requests).toHaveLength(2);
+    expect(currentRoute()).toBe(`/editor/post/${POST_ID}`);
   });
 
   it('leaves for a list that no longer carries the deleted post', async () => {
@@ -313,8 +451,11 @@ describe('Post settings delete', () => {
     await renderAdminApp(`/editor/post/${POST_ID}`, asContributor());
     await openSidebar();
 
-    // The Access section is not theirs to see, but the delete is.
+    // The Access section is not theirs to see, but the delete is, at the end of
+    // a list their role makes shorter.
     await expect(editorScreen.settingsVisibility()).toHaveCount(0);
+    await expect.element(editorScreen.settingsDelete()).toBeVisible();
+    expect(deletePlacement().afterLastSection).toBe(true);
     await editorScreen.settingsDelete().click();
     await editorScreen.confirmSettingsDelete().click();
 
@@ -324,6 +465,8 @@ describe('Post settings delete', () => {
 
   it('deletes a page through the pages API and returns to the pages list', async () => {
     editorChrome();
+    // The list the delete returns to.
+    fakePages([]);
     const current = post({
       id: POST_ID,
       title: 'A page',

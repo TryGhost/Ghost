@@ -23,6 +23,8 @@ interface TagPickerProps {
   selected: ReadonlyArray<TagLike>;
   onAdd: (tag: PickedTag) => void;
   onRemove: (key: string) => void;
+  /** Lets the chips be dragged into a new order, handed back whole. */
+  onReorder?: (next: TagLike[]) => void;
   /** The accessible name of the field and of the list it opens. */
   inputLabel: string;
   /** Ties the input to a visible label the caller renders. */
@@ -37,6 +39,8 @@ interface TagPickerProps {
   onSearchChange?: (search: string) => void;
   maxLength?: number;
   testIds?: { field?: string; input?: string; list?: string; chip?: string };
+  /** Extra classes for every chip, on top of the internal-tag styling. */
+  chipClassName?: string;
 }
 
 /**
@@ -48,6 +52,7 @@ export function TagPicker({
   selected,
   onAdd,
   onRemove,
+  onReorder,
   inputLabel,
   inputId,
   hideSelected = false,
@@ -57,6 +62,7 @@ export function TagPicker({
   onSearchChange,
   maxLength,
   testIds,
+  chipClassName,
 }: TagPickerProps) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
@@ -64,7 +70,7 @@ export function TagPicker({
   const term = normalizeTagName(search);
   const [debouncedTerm] = useDebounce(term, SEARCH_DEBOUNCE_MS);
 
-  const { data, isFetching } = useBrowseTags({
+  const { data, isFetching, hasNextPage, fetchNextPage } = useBrowseTags({
     filter: {},
     enabled: deferSearch ? open : undefined,
     defaultErrorHandler,
@@ -90,7 +96,13 @@ export function TagPicker({
 
   return (
     <ChipPicker<Tag, TagLike>
-      chipVariant={(tag) => (isInternalTag(tag) ? 'default' : 'secondary')}
+      chipClassName={(tag) =>
+        cn(
+          isInternalTag(tag) && 'border-border bg-secondary/30 text-secondary-foreground/70',
+          chipClassName,
+        ) || undefined
+      }
+      chipVariant={(tag) => (isInternalTag(tag) ? 'outline' : 'secondary')}
       createRow={{
         offer: (typed, offered) => searchSettled && canCreateTag(typed, offered, selected),
         render: (typed) => (
@@ -116,7 +128,7 @@ export function TagPicker({
       placeholder="Select or enter tags..."
       renderOption={(tag, { chosen }) => (
         <>
-          <span className={cn('truncate', isInternalTag(tag) && 'font-medium')}>{tag.name}</span>
+          <span className="truncate">{tag.name}</span>
           {/* Names are not unique; the slug is what tells two of them apart. */}
           <span className="ms-auto truncate font-mono text-xs text-muted-foreground">
             {tag.slug}
@@ -132,8 +144,15 @@ export function TagPicker({
         chip: testIds?.chip,
       }}
       onAdd={(tag) => onAdd({ id: tag.id, name: tag.name, slug: tag.slug })}
+      onEndReached={() => {
+        // Paging cancels a read in flight, and before the term is searched it pages the wrong list.
+        if (hasNextPage && searchSettled) {
+          void fetchNextPage();
+        }
+      }}
       onOpenChange={setOpen}
       onRemove={onRemove}
+      onReorder={onReorder}
       onSearchChange={handleSearchChange}
     />
   );

@@ -1,9 +1,11 @@
 import { availableParallelism } from 'node:os';
 
 import { defineConfig } from 'vitest/config';
+import type { BrowserCommand, BrowserCommandContext } from 'vitest/node';
 import { playwright } from '@vitest/browser-playwright';
 import type { PluginOption } from 'vite';
 import react from '@vitejs/plugin-react';
+import svgr from 'vite-plugin-svgr';
 import tailwindcss from '@tailwindcss/vite';
 
 import { sharedDefine, sharedResolve } from './vite.shared';
@@ -23,25 +25,110 @@ import { sharedDefine, sharedResolve } from './vite.shared';
  */
 const getWorkerCount = () => Math.min(8, Math.max(2, availableParallelism() - 1));
 
+// MSW cannot see iframe navigations; these route them per page (test-utils/acceptance/frames.ts).
+type BrowserPage = BrowserCommandContext['page'];
+type FrameRouteHandler = Parameters<BrowserPage['route']>[1];
+const frameFakes = new WeakMap<
+  BrowserPage,
+  Array<{ matcher: (url: URL) => boolean; handler: FrameRouteHandler }>
+>();
+const guardedPages = new WeakSet<BrowserPage>();
+
+const isExternal = (url: URL) => url.hostname !== 'localhost' && url.hostname !== '127.0.0.1';
+
+const guardFrameNavigations: BrowserCommand<[]> = async ({ page }) => {
+  if (guardedPages.has(page)) {
+    return;
+  }
+  guardedPages.add(page);
+  // Registered first, so later fakes take precedence.
+  await page.route(isExternal, (route) =>
+    route.request().resourceType() === 'document'
+      ? route.fulfill({ status: 418, contentType: 'text/plain', body: 'Unfaked frame' })
+      : route.fallback(),
+  );
+};
+
+const fakeFrameOrigin: BrowserCommand<[origin: string, html: string]> = async (
+  { page },
+  origin,
+  html,
+) => {
+  const fakedOrigin = new URL(origin).origin;
+  const matcher = (url: URL) => url.origin === fakedOrigin;
+  const handler: FrameRouteHandler = (route) =>
+    route.request().resourceType() === 'document' && route.request().frame().parentFrame()
+      ? route.fulfill({ contentType: 'text/html', body: html })
+      : route.fallback();
+  await page.route(matcher, handler);
+  frameFakes.set(page, [...(frameFakes.get(page) ?? []), { matcher, handler }]);
+};
+
+const resetFakeFrameOrigins: BrowserCommand<[]> = async ({ page }) => {
+  const fakes = frameFakes.get(page) ?? [];
+  frameFakes.delete(page);
+  await Promise.all(fakes.map(({ matcher, handler }) => page.unroute(matcher, handler)));
+};
+
+// Module requests fail as a dropped connection would (test-utils/acceptance/module-loads.ts).
+// Routed on the context: the page's routes never see what MSW's service worker fetches.
+type BrowserContext = BrowserCommandContext['context'];
+const failedModules = new WeakMap<BrowserContext, Array<(url: URL) => boolean>>();
+
+const failModuleLoads: BrowserCommand<[pathEnd: string]> = async ({ context }, pathEnd) => {
+  const matcher = (url: URL) => url.pathname.endsWith(pathEnd);
+  await context.route(matcher, (route) => route.abort('connectionreset'));
+  failedModules.set(context, [...(failedModules.get(context) ?? []), matcher]);
+};
+
+const resetFailedModuleLoads: BrowserCommand<[]> = async ({ context }) => {
+  const matchers = failedModules.get(context) ?? [];
+  failedModules.delete(context);
+  await Promise.all(matchers.map((matcher) => context.unroute(matcher)));
+};
+
 export default defineConfig({
-  plugins: [tailwindcss() as PluginOption, react()],
+  plugins: [tailwindcss() as PluginOption, svgr(), react()],
+  server: {
+    // Vitest owns console reporting; Vite forwarding bypasses silent below.
+    forwardConsole: false,
+  },
   // Serves the MSW service worker script; scoped to the test config so it
   // never ends up in the production build's public assets.
   publicDir: './test-utils/acceptance/public',
   define: sharedDefine,
+  // Run on React's production build, the one Admin ships: the development
+  // build and StrictMode's double renders cost the suite more than a tenth of
+  // its time. App and workspace sources keep their NODE_ENV; only pre-bundled
+  // dependencies switch, so JSX must not target the dev runtime either.
+  oxc: { jsx: { development: false } },
   optimizeDeps: {
     // Scan every app module so deps behind lazy routes are pre-bundled up
     // front — mid-run discovery reloads the test page and flakes the
     // suite. Test files and screen helpers import test-lane modules the
     // browser bundler can't process; vitest serves those itself.
     entries: ['src/**/*.{ts,tsx}', '!src/**/*.test.*', '!src/**/*.screen.ts'],
+    // The harness's MSW (and its graphql dependency) would otherwise load as
+    // ~150 separate modules in every spec file's fresh iframe.
+    include: ['msw', 'msw/browser'],
+    rolldownOptions: {
+      transform: { define: { 'process.env.NODE_ENV': JSON.stringify('production') } },
+    },
   },
   resolve: sharedResolve,
   test: {
     name: 'acceptance',
+    // Print totals and failures, without per-test output that CI expands into
+    // separate lines. Use --silent=false --reporter=verbose to debug.
+    silent: 'passed-only',
+    reporters: process.env.GITHUB_ACTIONS
+      ? ['minimal', 'github-actions', 'json']
+      : ['minimal', 'json'],
+    // Keep per-test timings and failure details without expanding the CI log.
+    outputFile: { json: './test-results/acceptance.json' },
     include: ['src/**/*.acceptance.test.tsx', 'src/**/*.component.test.tsx'],
     maxWorkers: getWorkerCount(),
-    setupFiles: ['./test-utils/acceptance/setup.ts'],
+    setupFiles: ['./test-utils/acceptance/react-production.ts', './test-utils/acceptance/setup.ts'],
     // Most journeys finish well under a second, but a few that wait out a
     // product-side hold reach ~6s; this leaves those headroom on slower CI.
     testTimeout: 15_000,
@@ -54,6 +141,13 @@ export default defineConfig({
       enabled: true,
       headless: true,
       provider: playwright(),
+      commands: {
+        failModuleLoads,
+        fakeFrameOrigin,
+        guardFrameNavigations,
+        resetFailedModuleLoads,
+        resetFakeFrameOrigins,
+      },
       instances: [{ browser: 'chromium' }],
       // Failure screenshots land in __screenshots__/ (gitignored).
       screenshotFailures: true,

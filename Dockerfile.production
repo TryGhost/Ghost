@@ -6,13 +6,16 @@
 #            (build-only stage, never shipped)
 #   report — per-package sizes of that closure, for CI (build-only, not shipped)
 #   core — server + production deps, no admin (Ghost-Pro base)
-#   full — core + built admin (self-hosting)
+#   full — core + built admin
+#   selfhost — full + the runtime contract of the Docker Official Image's `next`
+#              variant (root entrypoint + gosu, VOLUME, baked config). Published
+#              as the nightly image; see docker/selfhost/README.md
 #
 # Build context: the monorepo repo root. The deploy stage runs `pnpm deploy`
 # against the workspace to produce a self-contained app dir (source + resolved
 # node_modules), so this image no longer depends on the `pnpm pack` output that
-# Ghost-CLI uses (scripts/pack.mjs). The `full` stage's admin build is injected
-# into the context by CI at core/built/admin.
+# Ghost-CLI uses (scripts/pack.mjs). The `full` stage's admin and embed renderer
+# builds are injected into the context by CI under core/built.
 #
 # Ownership model: application code (node_modules, server source, admin) is owned
 # by nobody:nogroup so the runtime user (ghost, uid 1000) can read but not modify
@@ -22,7 +25,11 @@
 # duplicated node_modules (~600MB) and the admin build (~80MB) and inflated every
 # image pull.
 
-ARG NODE_VERSION=22.23.1
+ARG NODE_VERSION=22.23.3
+
+# Set by BuildKit per target platform; declared globally so the selfhost target
+# can pick its gosu stage by architecture.
+ARG TARGETARCH
 
 # ---- deploy: build closure + self-contained app dir (build-only, not shipped) ----
 FROM node:$NODE_VERSION-bookworm-slim AS deploy
@@ -35,16 +42,16 @@ RUN corepack enable
 # `ghost...` filter. .dockerignore prunes node_modules/build/dist/.git/.nx so the
 # build starts from a clean tree and rebuilds outputs in-container.
 #
-# --exclude core/built: for the `full` target CI injects the admin build into the
-# context at ghost/core/core/built/admin. Excluding the whole built dir (not just
-# built/admin — the built dir itself is absent on a fresh checkout, so excluding
-# only its child would still leave a differing directory entry) keeps this COPY
-# layer's hash identical between the core and full builds. That lets `full` reuse
-# `core`'s cached deploy/install/build layers instead of re-running the whole
-# closure build, and keeps admin out of the deploy output so `core` stays
-# admin-free. The server's own core/built output is regenerated in-container by the
-# build steps below, so nothing is lost by excluding the host copy.
-COPY --exclude=ghost/core/core/built . .
+# --exclude core/built: for the `full` target CI injects the admin and embed
+# renderer builds under ghost/core/built. Excluding the whole built dir (the
+# directory itself is absent on a fresh checkout, so excluding only its children
+# would still leave a differing directory entry) keeps this COPY layer's hash
+# identical between the core and full builds. That lets `full` reuse `core`'s
+# cached deploy/install/build layers instead of re-running the whole closure
+# build, and keeps both artifacts out of the deploy output so `core` stays
+# admin-free. The server's own core/built output is regenerated in-container by
+# the build steps below, so nothing is lost by excluding the host copy.
+COPY --exclude=ghost/core/built . .
 
 # Install only ghost and its dependency subgraph (`ghost...`), not the whole
 # monorepo (admin, apps, ...). Dev deps are included — tsc etc. are needed to build
@@ -64,10 +71,11 @@ RUN pnpm --filter-prod "ghost^..." -r run build && \
     pnpm --filter ghost run build:tsc && \
     pnpm --filter ghost run build:assets
 
-# Produce a self-contained deploy dir: ghost/core's `files` set + a fully resolved,
+# Produce a self-contained deploy dir: ghost's `files` set + a fully resolved,
 # production-only node_modules (--prod drops devDeps, keeps optional better-sqlite3).
-# Admin is never built here, so core/built/admin is absent — the core image stays
-# admin-free and the full stage injects admin from the build context.
+# Admin is never built here, so core/built/admin and core/built/embed-renderer are
+# absent — the core image stays admin-free and the full stage injects both from
+# the build context.
 #
 # inject-workspace-packages: hard-copy the workspace deps (kg-*/adapters/i18n) into
 # node_modules instead of linking them back to the workspace. The deploy dir is
@@ -76,10 +84,10 @@ RUN --mount=type=cache,target=/root/.local/share/pnpm/store,id=pnpm-store \
     pnpm --filter=ghost --config.inject-workspace-packages=true deploy --prod /home/ghost
 
 # Strip type-time, doc and native-build-input files the runtime never loads — see
-# ghost/core/scripts/prune.mts for the rules and the exclusions they carry. The COPY
+# ghost/scripts/prune.mts for the rules and the exclusions they carry. The COPY
 # layer below is extracted single-threaded, once per CI E2E shard, and that cost
 # scales with file count: this removes roughly half of them.
-RUN node ghost/core/scripts/prune.mts /home/ghost --profile=image --report=/image-report.json
+RUN node ghost/scripts/prune.mts /home/ghost --profile=image --report=/image-report.json
 
 # Fail the build now if the native module didn't install correctly (missing/broken
 # prebuilt binary) rather than at container runtime.
@@ -133,13 +141,71 @@ EXPOSE 2368
 
 CMD ["node", "index.js"]
 
-# ---- Full: core + admin ----
+# ---- Full: core + admin + embed renderer ----
 FROM core AS full
 
 # COPY --chown sets ownership in the copy layer; a post-hoc `chown -R` would
-# duplicate the ~80MB admin build into a second layer. Admin is injected into the
-# build context by CI (downloaded from the admin build job) at
-# ghost/core/core/built/admin — the deploy stage excludes that path, so this is the
-# only stage that carries admin. Local `full` builds must populate that path first
-# (e.g. `pnpm nx run @tryghost/admin:build`).
-COPY --chown=nobody:nogroup ghost/core/core/built/admin core/built/admin
+# duplicate the ~80MB admin build into a second layer. Admin and the embed
+# renderer are injected into the build context by CI (downloaded from the admin
+# build job) under ghost/core/built — the deploy stage excludes that path,
+# so this is the only stage that carries them. Local `full` builds must populate
+# both paths first (e.g. `pnpm nx run @tryghost/admin:build`).
+COPY --chown=nobody:nogroup ghost/core/built/admin core/built/admin
+COPY --chown=nobody:nogroup ghost/core/built/embed-renderer core/built/embed-renderer
+
+# ---- gosu: privilege drop for the selfhost entrypoint (build-only) ----
+# Static binary, so it is fetched straight into scratch and pinned by checksum
+# (from the release's SHA256SUMS) rather than GPG-verified against a keyserver,
+# which is one more network dependency for a nightly build to flake on. Only
+# the architectures the nightly publishes are listed; another platform fails
+# here with a missing `gosu-<arch>` stage. Bump all three lines together.
+# https://github.com/tianon/gosu/releases
+FROM scratch AS gosu-amd64
+ADD --chmod=755 --checksum=sha256:52c8749d0142edd234e9d6bd5237dff2d81e71f43537e2f4f66f75dd4b243dd0 \
+    https://github.com/tianon/gosu/releases/download/1.19/gosu-amd64 /gosu
+
+FROM scratch AS gosu-arm64
+ADD --chmod=755 --checksum=sha256:3a8ef022d82c0bc4a98bcb144e77da714c25fcfa64dccc57f6aba7ae47ff1a44 \
+    https://github.com/tianon/gosu/releases/download/1.19/gosu-arm64 /gosu
+
+FROM gosu-${TARGETARCH} AS gosu
+
+# ---- Selfhost: full + the Docker Official Image `next` runtime contract ----
+# Matches docker-library/ghost's `next` variant (Dockerfile-next.template) in
+# everything but how the tree is built, so a nightly can stand in for it:
+#   - starts as root; docker-entrypoint.sh chowns the content volume, seeds it
+#     from content.orig, then drops to `ghost` via gosu (`--user` skips that)
+#   - VOLUME at /home/ghost/content
+#   - baked config.production.json (listens on ::, logs to stdout)
+# docker/selfhost/ is the source of truth for the entrypoint and config; the
+# official image copies them rather than the other way round.
+FROM full AS selfhost
+
+USER root
+
+COPY --from=gosu /gosu /usr/local/bin/gosu
+
+ENV GHOST_INSTALL=/home/ghost
+ENV GHOST_CONTENT=/home/ghost/content
+
+# base_content is the pristine copy of content made in core; the entrypoint
+# seeds from content.orig, the name the official image has always used. content
+# itself becomes an empty mount point, world-writable so it stays usable
+# whatever uid ends up owning a bind mount over it.
+RUN set -eux; \
+    gosu --version; \
+    gosu nobody true; \
+    rm -rf content; \
+    mv base_content content.orig; \
+    mkdir content; \
+    chmod 1777 content; \
+    ln -s config.production.json config.development.json
+
+COPY --chown=nobody:nogroup docker/selfhost/config.production.json ./
+COPY --chmod=755 docker/selfhost/docker-entrypoint.sh /usr/local/bin/
+
+VOLUME $GHOST_CONTENT
+
+# Setting ENTRYPOINT clears the CMD inherited from core, so restate it.
+ENTRYPOINT ["docker-entrypoint.sh"]
+CMD ["node", "index.js"]

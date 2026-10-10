@@ -33,6 +33,7 @@ export function TagsSection({ session }: { session: EditorSettingsPort }) {
     <SettingsSection>
       <Label htmlFor={inputId}>Tags</Label>
       <TagPicker
+        chipClassName="text-(length:--text-control)"
         defaultErrorHandler={false}
         inputId={inputId}
         inputLabel="Tags"
@@ -53,6 +54,7 @@ export function TagsSection({ session }: { session: EditorSettingsPort }) {
         onRemove={(key) => {
           commit(removeTag(tags, key));
         }}
+        onReorder={commit}
       />
     </SettingsSection>
   );

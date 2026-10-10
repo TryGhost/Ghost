@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
+import {
+  settingsMetaDataBackButton,
+  settingsMetaDataRow,
+  settingsXCardRow,
+} from '@tryghost/test-data/selectors/editor';
 
 import {
   currentUserResponse,
@@ -10,6 +15,7 @@ import {
   post,
   renderAdminApp,
   staffRole,
+  settleTransitions,
   submittedPost,
   unsavedChangesGuarded,
   withoutAutosave,
@@ -17,12 +23,13 @@ import {
 } from '@test-utils/acceptance';
 import { editorScreen } from '@/editor/editor.screen';
 import { previewScreen } from '@/editor/preview/preview.screen';
+import { publishScreen } from '@/editor/publish/publish.screen';
 
 const POST_ID = 'abc123';
+const LOADED_AT = '2026-01-01T00:00:00.000Z';
 const CURRENT_USER_ID = '1';
 const FLAG_ON = withoutAutosave({ labs: { editorReact: true } });
 const PUBLISHED_AT = '2025-12-01T10:00:00.000Z';
-const BACK_LABEL = 'Close meta data panel';
 const PLACEHOLDER =
   'Search engines will automatically show a custom preview of content related to the search term here if no custom meta description is set.';
 
@@ -56,10 +63,19 @@ function fakeSavablePost(overrides: Partial<SavedPost> = {}) {
   });
 }
 
+/** The site's member total, which the publish inputs read before Publish is offered. */
+function fakeMembersTotal() {
+  fakeAdminEndpoint('GET', /^\/members\/\?.*order=id/, {
+    members: [],
+    meta: { pagination: { page: 1, limit: 1, pages: 1, total: 20, next: null, prev: null } },
+  });
+}
+
 async function openMetaData() {
   await editorScreen.settingsToggle().click();
   await expect.element(editorScreen.settingsSidebar()).toBeVisible();
-  await editorScreen.settingsSubviewRow('Meta data').click();
+  await settleTransitions();
+  await editorScreen.settingsSubviewRow(settingsMetaDataRow).click();
   await expect.element(editorScreen.settingsSubviewPane()).toBeVisible();
 }
 
@@ -73,6 +89,91 @@ function countdownIsOver(): boolean {
  * given instead of the post's own, and the result they produce.
  */
 describe('Post settings meta data', () => {
+  it('saves a canonical URL on the blur that ends the edit and previews it', async () => {
+    const saveApi = fakeSavablePost();
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await openMetaData();
+
+    await editorScreen.settingsCanonicalUrl().fill('https://original.example.com/story/');
+    await userEvent.tab();
+
+    await expect(saveApi).toHaveSavedFields({
+      canonical_url: 'https://original.example.com/story/',
+    });
+    await expect
+      .element(editorScreen.settingsSerpPreview())
+      .toHaveTextContent('original.example.com › story');
+  });
+
+  it('changes the canonical URL a post already carries', async () => {
+    const saveApi = fakeSavablePost({ canonical_url: 'https://original.example.com/story/' });
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await openMetaData();
+
+    await expect
+      .element(editorScreen.settingsCanonicalUrl())
+      .toHaveValue('https://original.example.com/story/');
+    await expect
+      .element(editorScreen.settingsSerpPreview())
+      .toHaveTextContent('original.example.com › story');
+
+    await editorScreen.settingsCanonicalUrl().fill('https://syndicated.example.com/feature/');
+    await userEvent.tab();
+
+    await expect(saveApi).toHaveSavedFields({
+      canonical_url: 'https://syndicated.example.com/feature/',
+    });
+    await expect
+      .element(editorScreen.settingsSerpPreview())
+      .toHaveTextContent('syndicated.example.com › feature');
+  });
+
+  it('clears the canonical URL, and the preview returns to the post’s own address', async () => {
+    const saveApi = fakeSavablePost({ canonical_url: 'https://original.example.com/story/' });
+    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await openMetaData();
+
+    await editorScreen.settingsCanonicalUrl().fill('');
+    await userEvent.tab();
+
+    await expect(saveApi).toHaveSavedFields({ canonical_url: null });
+    const preview = editorScreen.settingsSerpPreview();
+    await expect.element(preview).toHaveTextContent('hello-from-react');
+    await expect.element(preview).not.toHaveTextContent('original.example.com');
+  });
+
+  it.each(['example.com/story/', 'https://example.com/my story/'])(
+    'refuses the canonical URL %s and saves nothing until it is corrected',
+    async (invalidUrl) => {
+      const saveApi = fakeSavablePost();
+      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+      await openMetaData();
+
+      await editorScreen.settingsCanonicalUrl().fill(invalidUrl);
+      await userEvent.tab();
+
+      await expect
+        .element(editorScreen.settingsSubviewPane().getByRole('alert'))
+        .toHaveTextContent('Please enter a valid URL');
+      await expect
+        .element(editorScreen.settingsCanonicalUrl())
+        .toHaveAttribute('aria-invalid', 'true');
+      expect(saveApi.requests).toHaveLength(0);
+
+      await userEvent.keyboard('{Meta>}s{/Meta}');
+
+      await expect.element(editorScreen.saveError()).toHaveTextContent('Please enter a valid URL');
+      expect(saveApi.requests).toHaveLength(0);
+
+      await editorScreen.settingsCanonicalUrl().fill('https://original.example.com/story/');
+      await userEvent.tab();
+
+      await expect(saveApi).toHaveSavedFields({
+        canonical_url: 'https://original.example.com/story/',
+      });
+    },
+  );
+
   it('opens the pane over the section list and comes back from it', async () => {
     fakeSavablePost();
     await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
@@ -82,11 +183,11 @@ describe('Post settings meta data', () => {
     await expect(editorScreen.settingsExcerpt()).toHaveCount(0);
     await expect.element(editorScreen.settingsMetaTitle()).toBeVisible();
 
-    await editorScreen.settingsSubviewBack(BACK_LABEL).click();
+    await editorScreen.settingsSubviewBack(settingsMetaDataBackButton).click();
 
     await expect(editorScreen.settingsSubviewPane()).toHaveCount(0);
     await expect.element(editorScreen.settingsExcerpt()).toBeVisible();
-    await expect.element(editorScreen.settingsSubviewRow('Meta data')).toBeVisible();
+    await expect.element(editorScreen.settingsSubviewRow(settingsMetaDataRow)).toBeVisible();
   });
 
   it('names the panel after the pane it is showing', async () => {
@@ -94,8 +195,12 @@ describe('Post settings meta data', () => {
     await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
     await openMetaData();
 
-    await expect.element(editorScreen.settingsSidebar()).toHaveAttribute('aria-label', 'Meta data');
-    await expect.element(page.getByRole('heading', { level: 2, name: 'Meta data' })).toBeVisible();
+    await expect
+      .element(editorScreen.settingsSidebar())
+      .toHaveAttribute('aria-label', settingsMetaDataRow);
+    await expect
+      .element(page.getByRole('heading', { level: 2, name: settingsMetaDataRow }))
+      .toBeVisible();
   });
 
   it('closes the pane on Escape', async () => {
@@ -106,7 +211,7 @@ describe('Post settings meta data', () => {
     await userEvent.keyboard('{Escape}');
 
     await expect(editorScreen.settingsSubviewPane()).toHaveCount(0);
-    await expect.element(editorScreen.settingsSubviewRow('Meta data')).toBeVisible();
+    await expect.element(editorScreen.settingsSubviewRow(settingsMetaDataRow)).toBeVisible();
   });
 
   it('leaves the pane open for an Escape the preview has already answered', async () => {
@@ -138,7 +243,7 @@ describe('Post settings meta data', () => {
       await userEvent.keyboard('{Escape}');
 
       await expect(editorScreen.settingsSubviewPane()).toHaveCount(0);
-      await expect.element(editorScreen.settingsSubviewRow('Meta data')).toHaveFocus();
+      await expect.element(editorScreen.settingsSubviewRow(settingsMetaDataRow)).toHaveFocus();
       await expect(saveApi).toHaveSavedFields({
         [`meta_${field}`]: 'Saved when the pane closes',
       });
@@ -151,14 +256,21 @@ describe('Post settings meta data', () => {
     await openMetaData();
 
     await expect
-      .poll(() => document.activeElement === editorScreen.settingsSubviewBack(BACK_LABEL).element())
+      .poll(
+        () =>
+          document.activeElement ===
+          editorScreen.settingsSubviewBack(settingsMetaDataBackButton).element(),
+      )
       .toBe(true);
 
-    await editorScreen.settingsSubviewBack(BACK_LABEL).click();
+    await editorScreen.settingsSubviewBack(settingsMetaDataBackButton).click();
 
-    await expect.element(editorScreen.settingsSubviewRow('Meta data')).toBeVisible();
+    await expect.element(editorScreen.settingsSubviewRow(settingsMetaDataRow)).toBeVisible();
     await expect
-      .poll(() => document.activeElement === editorScreen.settingsSubviewRow('Meta data').element())
+      .poll(
+        () =>
+          document.activeElement === editorScreen.settingsSubviewRow(settingsMetaDataRow).element(),
+      )
       .toBe(true);
   });
 
@@ -173,7 +285,7 @@ describe('Post settings meta data', () => {
 
     await expect.element(editorScreen.settingsSidebar()).toBeVisible();
     await expect(editorScreen.settingsSubviewPane()).toHaveCount(0);
-    await expect.element(editorScreen.settingsSubviewRow('Meta data')).toBeVisible();
+    await expect.element(editorScreen.settingsSubviewRow(settingsMetaDataRow)).toBeVisible();
   });
 
   it('persists a draft’s meta title and description on the blur that ends each edit', async () => {
@@ -196,7 +308,7 @@ describe('Post settings meta data', () => {
     });
   });
 
-  it('stages a published post’s meta title until Update', async () => {
+  it('saves a published post’s meta title on its own', async () => {
     const saveApi = fakeSavablePost({ status: 'published', published_at: PUBLISHED_AT });
     await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
     await openMetaData();
@@ -204,16 +316,11 @@ describe('Post settings meta data', () => {
     await editorScreen.settingsMetaTitle().fill('A better title for search');
     await editorScreen.settingsMetaDescription().click();
 
-    await expect.element(editorScreen.updateButton()).toBeEnabled();
-    await expect.poll(unsavedChangesGuarded).toBe(true);
-    expect(saveApi.requests).toHaveLength(0);
-
-    await userEvent.keyboard('{Meta>}s{/Meta}');
-
     await expect.poll(() => saveApi.requests.length, POLL).toBe(1);
     expect(submittedPost(saveApi)).toMatchObject({
+      id: POST_ID,
+      updated_at: LOADED_AT,
       meta_title: 'A better title for search',
-      status: 'published',
     });
   });
 
@@ -240,6 +347,7 @@ describe('Post settings meta data', () => {
 
   it('refuses to save a meta title longer than the field holds', async () => {
     const saveApi = fakeSavablePost();
+    fakeMembersTotal();
     await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
     await openMetaData();
 
@@ -252,16 +360,66 @@ describe('Post settings meta data', () => {
     await expect.element(editorScreen.settingsMetaTitle()).toHaveAttribute('aria-invalid', 'true');
     // Refused where the writer is typing rather than as a save they did not ask for.
     await expect.poll(unsavedChangesGuarded).toBe(true);
-    await expect(editorScreen.saveErrorBanner()).toHaveCount(0);
+    await expect(editorScreen.saveError()).toHaveCount(0);
     expect(saveApi.requests).toHaveLength(0);
 
     await userEvent.keyboard('{Meta>}s{/Meta}');
 
     await expect
-      .element(editorScreen.saveErrorBanner())
+      .element(editorScreen.saveError())
       .toHaveTextContent('Meta title cannot be longer than 300 characters.');
     expect(saveApi.requests).toHaveLength(0);
+
+    // Publish is refused too, and swaps another open pane for the field's own.
+    await editorScreen.settingsSubviewBack(settingsMetaDataBackButton).click();
+    await editorScreen.settingsSubviewRow(settingsXCardRow).click();
+    await expect.element(editorScreen.settingsXTitle()).toBeVisible();
+    await expect.element(editorScreen.publishButton()).toBeEnabled();
+    await editorScreen.publishButton().click();
+
+    await expect.element(editorScreen.settingsMetaTitle()).toHaveFocus();
+    await expect(editorScreen.settingsXTitle()).toHaveCount(0);
+    await expect
+      .element(editorScreen.saveError())
+      .toHaveTextContent('Meta title cannot be longer than 300 characters.');
+    await expect(publishScreen.root()).toHaveCount(0);
+    expect(saveApi.requests).toHaveLength(0);
   });
+
+  it.each([
+    { state: 'still invalid', correctedTitle: null },
+    { state: 'corrected', correctedTitle: 'Valid meta title' },
+  ])(
+    'does not replay a field reveal after reopening settings with a $state title',
+    async ({ correctedTitle }) => {
+      fakeSavablePost();
+      fakeMembersTotal();
+      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+      await openMetaData();
+
+      await editorScreen.settingsMetaTitle().fill('a'.repeat(301));
+      await editorScreen.publishButton().click();
+      await expect.element(editorScreen.settingsMetaTitle()).toHaveFocus();
+
+      if (correctedTitle) {
+        await editorScreen.settingsMetaTitle().fill(correctedTitle);
+      }
+      await editorScreen.settingsToggle().click();
+      await settleTransitions();
+      await expect(editorScreen.settingsSidebar()).toHaveCount(0);
+
+      await editorScreen.settingsToggle().click();
+      await settleTransitions();
+      await expect.element(editorScreen.settingsSubviewRow(settingsMetaDataRow)).toBeVisible();
+      await expect.element(editorScreen.settingsToggle()).toHaveFocus();
+
+      if (!correctedTitle) {
+        await editorScreen.publishButton().click();
+        await expect.element(editorScreen.settingsMetaTitle()).toHaveFocus();
+        await expect(publishScreen.root()).toHaveCount(0);
+      }
+    },
+  );
 
   it('previews the post’s own title and excerpt until the meta fields carry their own', async () => {
     fakeSavablePost({ custom_excerpt: 'The excerpt this post already has' });

@@ -185,6 +185,16 @@ describe('buildPostCardConfig', () => {
     expect(cardConfig.klipy).toEqual(klipy);
   });
 
+  it('passes the embed preview url through from the security config', () => {
+    const embedPreviewUrl = 'https://embeds.example.net/';
+
+    expect(buildPostCardConfig(sources(), ports).embedPreviewUrl).toBeUndefined();
+    expect(
+      buildPostCardConfig(sources({ config: { ...config, security: { embedPreviewUrl } } }), ports)
+        .embedPreviewUrl,
+    ).toBe(embedPreviewUrl);
+  });
+
   it('hides labels from contributors', () => {
     const cardConfig = buildPostCardConfig(sources({ currentUser: contributor }), ports);
 

@@ -3,9 +3,7 @@ import { hasAdminAccess, isEditorUser } from '@tryghost/admin-x-framework/api/us
 /**
  * Whether the current user may share a gift link for this post.
  *
- * Ported from `apps/ember-admin/app/utils/gift-link.js`, which the Ember
- * context menu imports. Both implementations read this rule, so the entry
- * point can't appear on one side of the flag and not the other.
+ * Ported from Ember's `utils/gift-link.js`.
  *
  * Two halves: a user senior enough to hand out access, and a post that
  * actually withholds it. A public post has nothing to gift.

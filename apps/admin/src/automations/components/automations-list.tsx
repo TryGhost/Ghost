@@ -1,4 +1,5 @@
 import AutomationStatusBadge from './automation-status-badge';
+import AutomationListActions from './automation-list-actions';
 import React from 'react';
 import type { AutomationBrowseItem } from '@tryghost/admin-x-framework/api/automations';
 import { Link } from '@tryghost/admin-x-framework';
@@ -13,31 +14,18 @@ import {
 } from '@tryghost/shade/components';
 import { cn, formatNumber, formatTimestamp } from '@tryghost/shade/utils';
 
-const AUTOMATION_DESCRIPTIONS: Record<string, string> = {
-  'member-welcome-email-free': 'Welcome new free members after they sign up.',
-  'member-welcome-email-paid': 'Welcome new paid members after they start their subscription.',
-};
-
-const getAutomationDescription = (automation: AutomationBrowseItem): string | undefined => {
-  if (automation.description !== undefined) {
-    return automation.description;
-  }
-
-  return automation.slug ? AUTOMATION_DESCRIPTIONS[automation.slug] : undefined;
-};
-
 // Widths are scoped to `lg` because below that the stats lay out on the row's
 // grid rather than in table cells, where a fixed width would fight the columns.
 const AUTOMATION_STAT_COLUMNS = [
   {
     key: 'lastEntry',
-    label: 'Last entry',
+    label: 'Last started',
     widthClassName: 'lg:w-40',
     skeletonWidthClassName: 'w-20',
   },
   {
     key: 'totalEntries',
-    label: 'Total entries',
+    label: 'Total runs',
     widthClassName: 'lg:w-32',
     skeletonWidthClassName: 'w-10',
   },
@@ -64,6 +52,7 @@ const handleRowClick = (event: React.MouseEvent<HTMLTableRowElement>) => {
 interface AutomationsListProps {
   automations?: AutomationBrowseItem[];
   isLoading?: boolean;
+  canManage: boolean;
 }
 
 const AutomationsListSkeleton: React.FC = () => {
@@ -109,6 +98,7 @@ const AutomationsListSkeleton: React.FC = () => {
 const AutomationsList: React.FC<AutomationsListProps> = ({
   automations = [],
   isLoading = false,
+  canManage,
 }) => {
   if (isLoading) {
     return <AutomationsListSkeleton />;
@@ -126,7 +116,7 @@ const AutomationsList: React.FC<AutomationsListProps> = ({
         <TableHeader className="hidden lg:table-header-group">
           <TableRow className="hover:bg-transparent">
             <TableHead className="lg:px-4" scope="col">
-              Name
+              Automation
             </TableHead>
             {AUTOMATION_STAT_COLUMNS.map((column) => (
               <TableHead
@@ -140,12 +130,17 @@ const AutomationsList: React.FC<AutomationsListProps> = ({
             <TableHead className="w-28 lg:px-4" scope="col">
               Status
             </TableHead>
+            {canManage && (
+              <TableHead className="w-16" scope="col">
+                <span className="sr-only">Actions</span>
+              </TableHead>
+            )}
           </TableRow>
         </TableHeader>
       )}
       <TableBody className="flex flex-col lg:table-row-group">
         {automations.map((automation) => {
-          const description = getAutomationDescription(automation);
+          const description = automation.description.trim();
           const lastEntry = automation.stats?.last_run_created_at;
           const totalEntries = automation.stats?.total_run_count ?? 0;
           const inProgressEntries = automation.stats?.in_progress_run_count ?? 0;
@@ -171,7 +166,12 @@ const AutomationsList: React.FC<AutomationsListProps> = ({
           return (
             <TableRow
               key={automation.id}
-              className="grid w-full cursor-pointer grid-cols-[repeat(3,minmax(0,1fr))_auto] items-center gap-x-4 gap-y-3 px-2 py-6 hover:bg-table-row-hover has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-[-2px] has-[:focus-visible]:outline-focus-ring lg:table-row lg:gap-0 lg:p-0"
+              className={cn(
+                'grid w-full cursor-pointer items-center gap-x-4 gap-y-3 px-2 py-6 hover:bg-table-row-hover has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-[-2px] has-[:focus-visible]:outline-focus-ring lg:table-row lg:gap-0 lg:p-0',
+                canManage
+                  ? 'grid-cols-[repeat(3,minmax(0,1fr))_auto_auto]'
+                  : 'grid-cols-[repeat(3,minmax(0,1fr))_auto]',
+              )}
               data-testid="automation-list-row"
               onClick={handleRowClick}
             >
@@ -217,6 +217,14 @@ const AutomationsList: React.FC<AutomationsListProps> = ({
               >
                 <AutomationStatusBadge status={automation.status} />
               </TableCell>
+              {canManage && (
+                <TableCell
+                  className="col-start-5 row-start-1 w-auto p-0 text-right lg:table-cell lg:w-16 lg:p-4"
+                  onClick={(event) => event.stopPropagation()}
+                >
+                  <AutomationListActions automation={automation} />
+                </TableCell>
+              )}
             </TableRow>
           );
         })}

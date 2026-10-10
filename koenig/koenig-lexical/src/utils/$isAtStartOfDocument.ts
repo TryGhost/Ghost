@@ -1,8 +1,15 @@
 import {$isListItemNode} from '@lexical/list';
-import {$isTextNode} from 'lexical';
+import {$isRangeSelection, $isTextNode} from 'lexical';
 
 export function $isAtStartOfDocument(selection) {
+    if (!$isRangeSelection(selection)) {
+        return false;
+    }
+
     let [selectedNode] = selection.getNodes();
+    if (!selectedNode) {
+        return false;
+    }
     
     if ($isTextNode(selectedNode)) {
         selectedNode = selectedNode.getParent();

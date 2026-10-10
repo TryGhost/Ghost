@@ -2,12 +2,15 @@ import { act, waitFor } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { createTestQueryClient, renderHookWithProviders } from '../../../src/test/test-utils';
 import {
+  postsDataType,
   useAddPost,
   useEditPost,
   useEditorPost,
   useImportContentCSV,
   usePost,
 } from '../../../src/api/posts';
+import { searchIndexQueryMeta } from '../../../src/api/search-index';
+import { tagsDataType } from '../../../src/api/tags';
 import { withMockFetch } from '../../utils/mock-fetch';
 
 // The Ember editor's exact include list — writes must re-request everything
@@ -303,6 +306,72 @@ describe('posts api', () => {
         email_segment: 'all',
         include: ALL_INCLUDES,
       });
+    });
+  });
+
+  it('invalidates tag queries after a create or an edit, either of which can create a tag', async () => {
+    const queryClient = createTestQueryClient();
+    const invalidateSpy = vi.spyOn(queryClient, 'invalidateQueries');
+
+    await withMockFetch({}, async () => {
+      const { result } = renderHookWithProviders(
+        () => ({ add: useAddPost(), edit: useEditPost() }),
+        {
+          queryClient,
+        },
+      );
+
+      await act(async () => {
+        await result.current.add.mutateAsync({
+          post: { title: '(Untitled)', tags: [{ name: 'New' }] },
+        });
+      });
+      expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: [tagsDataType] });
+
+      invalidateSpy.mockClear();
+      await act(async () => {
+        await result.current.edit.mutateAsync({
+          post: { id: 'post-1', tags: [{ name: 'New' }], updated_at: '2026-01-01T00:00:00.000Z' },
+        });
+      });
+      expect(invalidateSpy).toHaveBeenCalledWith(
+        expect.objectContaining({ queryKey: [tagsDataType] }),
+      );
+    });
+  });
+
+  it('leaves the search-index lists out of what an edit invalidates, but not a create', async () => {
+    const queryClient = createTestQueryClient();
+    const cache = async (queryKey: string[], meta?: Record<string, unknown>) => {
+      await queryClient.fetchQuery({ queryKey, queryFn: () => ({}), gcTime: Infinity, meta });
+    };
+    const invalidated = (queryKey: string[]) => queryClient.getQueryState(queryKey)?.isInvalidated;
+    await cache([postsDataType, 'list']);
+    await cache([postsDataType, 'index'], searchIndexQueryMeta);
+    await cache([tagsDataType, 'list']);
+    await cache([tagsDataType, 'index'], searchIndexQueryMeta);
+
+    await withMockFetch({}, async () => {
+      const { result } = renderHookWithProviders(
+        () => ({ add: useAddPost(), edit: useEditPost() }),
+        { queryClient },
+      );
+
+      await act(async () => {
+        await result.current.edit.mutateAsync({
+          post: { id: 'post-1', updated_at: '2026-01-01T00:00:00.000Z' },
+        });
+      });
+      expect(invalidated([postsDataType, 'list'])).toBe(true);
+      expect(invalidated([tagsDataType, 'list'])).toBe(true);
+      expect(invalidated([postsDataType, 'index'])).toBe(false);
+      expect(invalidated([tagsDataType, 'index'])).toBe(false);
+
+      await act(async () => {
+        await result.current.add.mutateAsync({ post: { title: '(Untitled)' } });
+      });
+      expect(invalidated([postsDataType, 'index'])).toBe(true);
+      expect(invalidated([tagsDataType, 'index'])).toBe(true);
     });
   });
 

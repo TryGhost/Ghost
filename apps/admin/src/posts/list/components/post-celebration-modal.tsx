@@ -10,11 +10,12 @@ interface PostCelebrationModalProps {
   /** Total published posts. Absent until the count request lands. */
   postCount?: number;
   siteTitle: string;
+  siteIcon?: string;
   onClose: () => void;
 }
 
 /**
- * The post-publish celebration, shown when the Ember editor hands one over.
+ * The post-publish celebration, shown when the editor hands one over.
  *
  * Wraps `PostShareModal`, which takes all of its copy as props — so the wording
  * lives in `post-celebration-copy.ts` and this is only assembly.
@@ -25,6 +26,7 @@ export function PostCelebrationModal({
   wasPublished,
   postCount,
   siteTitle,
+  siteIcon,
   onClose,
 }: PostCelebrationModalProps) {
   const copy = getCelebrationCopy({
@@ -38,6 +40,7 @@ export function PostCelebrationModal({
     <PostShareModal
       author={post.authors?.[0]?.name ?? ''}
       emailOnly={post.email_only === true}
+      faviconURL={siteIcon}
       featureImageURL={post.feature_image ?? ''}
       postExcerpt={post.excerpt ?? post.custom_excerpt ?? ''}
       postTitle={post.title}

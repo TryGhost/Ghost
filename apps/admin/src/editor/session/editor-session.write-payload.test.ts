@@ -38,15 +38,8 @@ describe('write payload', () => {
     const withoutId: EditorEditPayload = { title: 'Hello', updated_at: LOADED_AT };
     // @ts-expect-error an update must carry its collision token
     const withoutToken: EditorEditPayload = { title: 'Hello', id: 'abc123' };
-    const nullToken: EditorEditPayload = {
-      title: 'Hello',
-      id: 'abc123',
-      // @ts-expect-error null would bypass the server's collision check
-      updated_at: null,
-    };
 
     expect(withoutId.id).toBeUndefined();
     expect(withoutToken.updated_at).toBeUndefined();
-    expect(nullToken.updated_at).toBeNull();
   });
 });

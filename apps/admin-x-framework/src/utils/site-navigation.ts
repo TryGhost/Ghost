@@ -13,6 +13,30 @@ export interface NavigationPage {
 
 const relativeBase = 'http://__ghost-relative__.invalid';
 
+/** Reads a stored menu setting; null when it is missing or malformed. */
+export function parseSiteNavigation(value: string | null): SiteNavigationItem[] | null {
+  if (value === null) {
+    return null;
+  }
+  try {
+    const parsed: unknown = JSON.parse(value);
+    return Array.isArray(parsed) &&
+      parsed.every(
+        (item: unknown) =>
+          typeof item === 'object' &&
+          item !== null &&
+          'label' in item &&
+          typeof item.label === 'string' &&
+          'url' in item &&
+          typeof item.url === 'string',
+      )
+      ? parsed
+      : null;
+  } catch {
+    return null;
+  }
+}
+
 export function pagePathForSlug(slug: string, pageRoutes: PageRoutes = {}): string | null {
   if (!slug) {
     return null;

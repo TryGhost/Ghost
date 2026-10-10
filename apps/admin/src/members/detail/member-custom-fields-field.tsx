@@ -178,8 +178,7 @@ const CustomFieldInput: React.FC<{
         />
       );
     case 'textarea':
-      // max-w-full: Ember's unlayered global CSS sets `textarea { max-width: 500px }`
-      // (ghost/admin patterns/forms.css) and it bleeds into the React island.
+      // max-w-full: Admin's element styles cap textareas at 500px.
       return (
         <Textarea
           aria-invalid={fieldError ? true : undefined}

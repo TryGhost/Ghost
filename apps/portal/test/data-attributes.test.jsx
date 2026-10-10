@@ -425,6 +425,27 @@ describe('Member Data attributes:', () => {
         },
       );
     });
+
+    test('shows an error instead of crashing when no paid tier is available', async () => {
+      const { event, errorEl, siteUrl, member, element } = getMockData();
+      const site = FixturesSite.singleTier.onlyFreePlan;
+      const clickHandler = () => {};
+      element.addEventListener = vi.fn();
+
+      window.fetch.mockImplementation((url) => {
+        if (url.includes('api/session')) {
+          return Promise.resolve({ ok: true, text: async () => 'session-identity' });
+        }
+        return Promise.resolve({ ok: false });
+      });
+
+      await planClickHandler({ event, errorEl, siteUrl, clickHandler, site, member, el: element });
+
+      const [, checkoutOptions] = window.fetch.mock.calls[1];
+      expect(JSON.parse(checkoutOptions.body)).not.toHaveProperty('tierId');
+      expect(errorEl.innerText).toBe('Could not create Stripe checkout session');
+      expect(element.addEventListener).toHaveBeenCalledWith('click', clickHandler);
+    });
   });
 
   describe('data-members-manage-billing', () => {
@@ -1187,6 +1208,30 @@ describe('Portal Data attributes:', () => {
       expect(errorEl.innerText).toBe('There was an error sending the email, please try again');
       expect(form.classList.add).toHaveBeenCalledWith('error');
       expect(window.fetch).toHaveBeenCalledTimes(1);
+    });
+
+    test('lets the form be submitted again after a network error', async () => {
+      const { event, form, errorEl, siteUrl, submitHandler } = getMockData();
+
+      window.fetch.mockImplementationOnce(() => Promise.reject(new Error('Network error')));
+
+      await formSubmitHandler({ event, form, errorEl, siteUrl, submitHandler });
+
+      expect(form.addEventListener).toHaveBeenCalledWith('submit', submitHandler);
+      expect(form.classList.remove).toHaveBeenCalledWith('loading');
+    });
+
+    test('lets the form be submitted again after a bot challenge block', async () => {
+      const { event, form, errorEl, siteUrl, submitHandler } = getMockData();
+
+      window.fetch.mockResolvedValueOnce(new Response('', { status: 449 }));
+
+      await formSubmitHandler({ event, form, errorEl, siteUrl, submitHandler });
+
+      expect(errorEl.innerText).toBe('Unable to verify your request, please try again');
+      expect(form.classList.add).toHaveBeenCalledWith('error');
+      expect(form.addEventListener).toHaveBeenCalledWith('submit', submitHandler);
+      expect(form.classList.remove).toHaveBeenCalledWith('loading');
     });
 
     test('handles error gracefully when errorEl is null', async () => {

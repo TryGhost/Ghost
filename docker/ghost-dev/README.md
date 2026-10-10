@@ -31,7 +31,7 @@ This lightweight image:
 This image is used automatically when running:
 
 ```bash
-pnpm dev              # Starts Docker backend + Admin/Ember/shared/Portal dev watchers
+pnpm dev              # Starts Docker backend + React/shared/Portal watchers
 pnpm dev:public       # Include all optional public UMD app watchers
 pnpm dev:analytics    # Include Tinybird analytics
 pnpm dev:storage      # Include VersityGW S3-compatible object storage

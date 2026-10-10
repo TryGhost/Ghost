@@ -27,10 +27,10 @@ migrations, understand the size and shape of the existing data first.
 
 ### Creating the migration file
 
-Create a migration file from `ghost/core`:
+Create a migration file from `ghost`:
 
 ```bash
-cd ghost/core
+cd ghost
 pnpm migrate:create <slug>
 ```
 
@@ -75,7 +75,7 @@ During development, run migrations with Ghost's custom
 [`knex-migrator`](https://github.com/TryGhost/knex-migrator):
 
 ```bash
-cd ghost/core
+cd ghost
 pnpm knex-migrator migrate --v <version-directory> --force
 pnpm knex-migrator rollback --v <previous-version> --force
 ```
@@ -83,6 +83,36 @@ pnpm knex-migrator rollback --v <previous-version> --force
 `migrate` calls the migration's `up()` method and `rollback` calls its `down()`
 method. You can use this workflow to iterate while `down()` restores the same
 state that existed before `up()`.
+
+### New tables still in development
+
+A new table's shape often changes several times before its feature is ready.
+Rather than writing a migration for each change, list the table in
+`IN_DEVELOPMENT_TABLES` in
+[`core/server/data/schema/in-development.ts`](../../ghost/core/server/data/schema/in-development.ts)
+and define its schema in `schema.js` without adding a versioned migration. It
+is only created in development and testing databases.
+
+To apply a changed definition to your local database, rebuild the listed
+tables. This drops them and discards their data:
+
+```bash
+cd ghost
+pnpm migrate:rebuild-in-development-tables
+```
+
+Code that reads or writes the table must stay dormant wherever the table is not
+created, for example behind a [feature flag](feature-flags.md).
+The table still needs a classification in the exporter table lists.
+
+When the definition is final, remove the table from `IN_DEVELOPMENT_TABLES`,
+add the versioned migration that creates it, and update the schema integrity
+hash. Create the table with
+`addTable(name, tableSpec, {replaceDevelopmentCopy: true})`: development and
+testing databases already have a copy built from an earlier definition, and the
+option replaces it with the final one. This discards its data and drops the
+tables that reference it; Ghost recreates the ones still in development when it
+next boots. From then on the table follows the normal migration rules.
 
 ### Testing
 
@@ -95,7 +125,7 @@ settings, or default routes. Update only the expected hash for the change you
 made:
 
 ```bash
-cd ghost/core
+cd ghost
 pnpm test:single test/unit/server/data/schema/integrity.test.js
 ```
 
@@ -103,7 +133,7 @@ Run the migration integration test to exercise initialization, rollback,
 forward migration, and idempotency:
 
 ```bash
-cd ghost/core
+cd ghost
 pnpm test:single test/integration/migrations/migration.test.js
 ```
 
@@ -179,7 +209,7 @@ and migration utilities directly instead.
 ### Use migration utilities
 
 Use the helpers in
-[`core/server/data/migrations/utils/`](../../ghost/core/core/server/data/migrations/utils/)
+[`core/server/data/migrations/utils/`](../../ghost/core/server/data/migrations/utils/)
 wherever possible. They contain tested implementations of common operations,
 including idempotency and logging protections.
 

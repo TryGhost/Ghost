@@ -11,22 +11,29 @@ members the sections read — rather than the whole editing handle.
 
 A settings field is staged as the writer changes it and committed on the gesture
 that ends the edit — a blur for a text field, the choice itself for a toggle or
-a picker. Committing is not saving: whether the value is persisted now or held
-until the writer asks for a save is the session's one save policy gate, and
-[the session README](../session/README.md#staging-and-committing) describes it
-and the rules that hold a commit back.
+a picker. The commit saves it, whatever the post's status; only a tier pick
+outside a draft waits for a later save, as [Access](#access) describes. A draft's commit
+saves the whole document, as its other edits do. A published, scheduled or sent
+post's commit saves the changed settings alone and keeps the post's status,
+while the title, the body and the rest of the canvas wait for Update.
+[The session README](../session/README.md#staging-and-committing) describes the
+rules and the pending-work contract behind them. A save that fails keeps the
+writer's value and shows the save error; on a post that is not a draft, its
+retry repeats the settings save and leaves the canvas waiting.
 
 Two of the panel's sections write something that is not a settings field, so
 they have their own routes onto the session: the URL section edits the slug
 through the slug machine, and the Publish date section stages the publish time,
-which is the save engine's command target. Both are then subject to the same
-gate as everything else.
+which is the save engine's command target. Both then commit as every other
+section does.
 
-The meta and social-card text fields are held to the widths their columns give
-them, 300 characters for a title and 500 for a description. Past one of those
-the field says so where the writer is typing and nothing is saved — not the
-field itself, and not a save the writer asks for, which is refused with the same
-message rather than sent and answered with a server error.
+The excerpt, the header and footer code, and the meta and social-card text
+fields are held to the lengths the server accepts: 300 characters for the
+excerpt, 65,535 for each code field, 300 for a meta or card title and 500 for a
+description, counted by code point so a multibyte character counts once. Past
+one of those the field says so where the writer is typing and nothing is saved —
+not the field itself, and not a save the writer asks for, which is refused with
+the same message rather than sent and answered with a server error.
 
 ## Sections
 
@@ -41,17 +48,16 @@ write is the entry the map leaves out. The prose below follows that order.
 Some sections are a row that opens a pane over the rest of the panel rather than
 fields in the list. `SettingsSubview` in `settings-subview.tsx` is both halves:
 give it the section's own id, an icon and a label for the row, a title and a
-back-button label for the pane, and the pane's fields as children. Two props
-adjust the shell around them: `wide` widens the panel for a pane that needs the
-room, and `contentClassName` overrides the pane body's default padding for a pane
-that runs full-bleed. Without either, the shell renders the pane as it renders
-this one.
+back-button label for the pane, and the pane's fields as children.
+`contentClassName` overrides the pane body's default padding for a pane that
+runs full-bleed. Every pane keeps the same width as the section list.
 
 Only one pane is open at a time. While it is, the panel shows that section
 alone: its heading, the other sections and their rows are all out of the way,
 and the back button or Escape brings them back. The pane's title is the panel's
-heading and its accessible name, and the pane's header stays in place while the
-fields under it scroll. Opening a pane moves focus to its back button, and
+heading and its accessible name. Both the main panel and each pane keep their
+header outside the scrolling fields, so scroll bounce cannot move the title.
+Opening a pane moves focus to its back button, and
 closing one returns focus to the row it was opened from. Closing also blurs the
 focused field before removing it, so Escape commits the edit as the back button
 does.
@@ -63,6 +69,13 @@ A pane whose section renders nothing, as a role-gated section does for a role
 that cannot write it, falls back to the section list rather than an empty panel.
 The panel owns which pane is open, so closing the panel or leaving the editor
 drops it and the panel is next opened on the section list.
+
+The screen can ask the panel to take the writer to a field, as a refused
+publish does. The panel shows the field's section, closing another pane or
+opening the field's own, and focuses the field once it is there, including a
+code editor that is still loading. Each field marks the element it is edited in
+with `data-settings-field`, and `SETTINGS_FIELD_SECTIONS` in `sections.ts` names
+the section each field the save checks lives in.
 
 Returning to the section list and reopening the same social-card pane keeps an
 in-progress image upload pending. Its file picker and Unsplash button stay
@@ -87,15 +100,16 @@ editor entry. There is no keyboard shortcut for it.
 
 Below the `lg` breakpoint the panel overlays the editor from the right rather
 than narrowing it, and below 500px it takes the full width. Above it the panel
-sits in the flow beside the editor at a fixed 350px, widening to 500px for a
-pane that asks for the room.
+sits in the flow beside the editor at a fixed 350px, including while a subview
+is open, and wide and full cards in the document keep fitting the narrowed
+writing area throughout the panel's motion.
 
 ## URL
 
 The URL section edits the slug. A manual edit goes to the slug machine, whose
 [ownership and ordering rules](../engine/README.md#slug-machine) decide what
 happens to it, and only a proposal the machine applies reaches the live
-document, where the save policy then decides whether it is persisted or staged.
+document, where it is saved as any other settings field is.
 A superseded proposal is ignored, and a generator that fails or answers blank
 leaves the slug alone: the input reverts to whatever the machine still holds and
 the section says the URL could not be updated, marking the input itself invalid,
@@ -108,28 +122,33 @@ navigation and tab-close guards ask about it; the session owns
 [that wait](../session/README.md#the-slug).
 
 The preview under the input is the site URL without its scheme, then the slug,
-both slash-terminated. The section is the slug and that preview and nothing
-else: it does not link out to a published post, and a sent post previews its
-site URL like any other rather than the separate email URL it also has.
+both slash-terminated. A sent post previews its email URL instead: the site URL,
+then `email/` and the post's uuid. Published and sent posts also show a View
+post link beside the label. It uses the saved record's URL, preserving custom
+routes and avoiding links to an unsaved slug. A scheduled post shows a Preview
+link to its `/p/<uuid>/` preview instead, and a draft shows neither.
 
 ## Publish date
 
 When the post is published, edited in the site's timezone and carried as a UTC
 instant. A post that has no publish time yet shows the current moment, and only
 an edit stages a value, so an untouched draft still leaves the time to the
-server. The date is chosen from a calendar and the time typed as `HH:mm`; an
-unparseable time returns to the value already held. Both fields commit at minute
+server. The fields share the row equally, with calendar and clock icons and the
+timezone inside the time field. The date is typed as `YYYY-MM-DD` or chosen from
+a calendar, and the time entered
+through Shade's native `TimePicker`, whose value is `HH:mm`; an unparseable time returns to the value already held. Both fields commit at minute
 granularity, and the seconds a publish stamped are kept whenever the committed
-minute is the one already saved. Tabbing through an untouched time, retyping it,
-or choosing the displayed calendar day does not commit a value.
+minute is the one already saved. Tabbing through an untouched field, retyping the
+value it shows, or choosing the displayed calendar day does not commit a value.
 
 An edit made during a save stays staged until that save settles, even if the
 writer returns to the saved minute or a refetch already carries the chosen time.
 An older response cannot discard that choice. Once the saved time agrees and no
 older save can overwrite it, the staged edit is released.
 
-The calendar stops at today, and a draft's or published post's time may not be
-the current moment or later. Choosing one leaves the value staged and shown with
+The calendar stops at today, though a later date can still be typed, and a
+draft's or published post's time may not be the current moment or later.
+Entering one leaves the value staged and shown with
 `Please choose a past date and time.` beside the fields. A sent post is exempt
 from the rule and is re-timed like a published one.
 
@@ -168,33 +187,44 @@ the save because that is the rule the server applies. Two tags can share a name
 and differ only by slug, so what makes them the same tag is the id whenever both
 sides have one.
 
-The list offers the first hundred tags matching what is typed, in name order.
-Narrowing the search is how the rest are reached. Enter takes the highlighted
+The list offers the tags matching what is typed, in name order, a hundred at a
+time: scrolling to its end reads the next hundred. Enter takes the highlighted
 row, and so does Tab once something is typed; Tab through an empty field moves
 on. Escape closes the list and leaves the term where it was typed. A chip is
-removed by clicking it, or with Backspace on an empty field.
+removed by clicking it, or with Backspace on an empty field. Dragging a chip
+with the mouse or a finger moves it to a new place in the order, which is an
+edit like any other; a press that moves less than a few pixels is still a click.
+There is no keyboard reorder: Enter and Space on a chip remove it.
 
 ## Access
 
 Access is two coupled fields, `visibility` and `tiers`, and only an Owner,
 Administrator or Editor sees them. A post carries no visibility until its first
 save applies the site default, so the select shows `default_content_visibility`
-until then. Re-choosing the value already shown is not an edit and sends
-nothing. Choosing anything other than `Specific tier(s)` clears the tiers it
-granted. The tier list is every one of the site's paid
-tiers, active ones before archived, and it loads only while `Specific tier(s)`
-is the choice. Reads carry tier relations for Public, Members and Paid posts;
+until then. When that default is `Specific tier(s)`, the picker selects the tiers
+in `default_content_visibility_tiers` until then too, and picking or removing
+a tier starts from them. Re-choosing the value already shown is not an edit and
+sends nothing. Choosing anything other than `Specific tier(s)` clears the tiers
+it granted. The tiers are picked in a chip field, as authors are: the selected
+tiers are chips, and its list is every one of the site's paid tiers, under
+`Active tiers` and `Archived tiers` headings, with the selected ones ticked. It
+loads only while `Specific tier(s)` is the choice. The browse is followed page by
+page, and the chips and list show once the last page has arrived. Reads carry tier relations for Public, Members and Paid posts;
 the free tier that comes with Public and Members reads is excluded from the
 selection, and a tier ID without type metadata is preserved. A failed tier
-lookup shows an error and a Retry action in place of the list.
+lookup shows an error and a Retry action in place of the field.
 
 An empty tier selection is staged like any other edit but never sent: the
-section asks for at least one tier, and while the pairing is incomplete no field
-save runs and a save the writer asks for is refused with the same message.
-Because the pairing is staged rather than held in the panel, it survives closing
-the sidebar, enables Update and is what the leave guard asks about. A create
-with untouched access settings still uses the server default; an explicit tier
-selection must include a tier even on the first save.
+section asks for at least one tier. On a post that exists, no settings save runs
+while the pairing is incomplete and a save the writer asks for is refused with
+the same message. Because the pairing is staged rather than held in the panel,
+it survives closing the sidebar, enables Update and is what the leave guard asks
+about. A post the server has not created yet is not held to the rule: the
+section stages the incomplete pair without a save of its own, content saves go
+ahead with the pair left out, and the pair stays the writer's edit across the
+create, so the section keeps asking for a tier and the first tier picked sends
+visibility and tiers together. A create with untouched access settings uses the
+server default.
 
 When either access field changes to specific tiers, the save submits both
 visibility and the tier list, including tier IDs the writer never touched. A
@@ -204,6 +234,11 @@ every paid tier, archived ones included, so switching one of those posts to
 the save that follows the switch. Once saved, an unrelated edit sends neither
 access field.
 
+On a post that is not a draft, picking or removing a tier is staged without a
+save of its own: every save of a published post writes a revision,
+so the picks go out once, with the next settings change or Update, and count as
+unsaved work until then. The visibility choice itself saves at once.
+
 Koenig cards read the post's access from the editor's card config, which follows
 the live field rather than the saved record: a staged visibility changes what
 the cards describe before any save.
@@ -212,7 +247,10 @@ the cards describe before any save.
 
 The excerpt is the one field with two homes. When the inline excerpt is on it
 renders under the title and the sidebar leaves it out; when it is off the
-sidebar owns it. Either way the same session binding is behind it.
+sidebar owns it. Either way the same field and the same limit are behind it,
+and the message for an excerpt past its limit sits under the field. The home
+decides the save: under the title it is canvas, held for Update on a post that
+is not a draft, and in the sidebar it is saved as the panel's other fields are.
 
 ## Authors
 
@@ -239,11 +277,13 @@ last one and opens the list on the staff it can offer again. A pick that empties
 the row under the highlight moves it to the last row rather than losing it.
 
 Order is meaningful and the field keeps it: a new author joins the end of the
-list, and the post is written with its authors' identities alone, in that order.
+list, a chip dragged to a new place moves the author there, the same way tag
+chips reorder, and the post is written with its authors' identities alone, in
+that order.
 The whole staff record stays in the field and the request is what reduces it.
 A post always needs one. A new post is credited to whoever started it, which is
 what the first save sends; emptying the list instead leaves the field asking for
-an author, and while it is empty no field save runs and a save the writer asks
+an author, and while it is empty no settings save runs and a save the writer asks
 for is refused with the same message, which the publish flow carries too. The
 field itself is marked invalid and points at that message.
 
@@ -265,8 +305,9 @@ disabled and names the template the URL picked.
 
 A page can render without its own title and feature image, and only a page: the
 field has no meaning for a post, so the section is left out there. Every role
-that can open the editor sees it, and the editor's cards read the live value
-rather than the saved one.
+that can open the editor sees it, and the editor's cards and canvas read the
+live value rather than the saved one: while the choice is off, the canvas fades
+the title and feature image and marks them with an eye-off icon.
 
 Honouring the choice is the theme's job. When the active theme's report says its
 page-builder helper is missing and the writer has turned the setting off, the
@@ -286,11 +327,13 @@ The row opens the post's saved versions, and it is absent whenever there is
 nothing to show: a post that has never been saved, one with no lexical content,
 and a published or sent post that only ever went out as an email.
 
-Versions are listed newest first, each with its date in the site's timezone and
-the author who wrote it, shown with their avatar; an author the API no longer
-resolves reads as a deleted staff user. The newest carries a `Latest` label, the version that first took the
-post to published carries `Published`, and one written because the post was
-unpublished carries `Unpublished`. Selecting a version previews it — feature
+Versions are listed newest first by the millisecond the server recorded them,
+so two saved within the same second keep the order they were saved in. Each shows its date
+in the site's timezone and the author who wrote it, shown with their avatar; an
+author the API no longer resolves reads as a deleted staff user. The newest
+carries a `Latest` label, the version that first took the post to published
+carries `Published`, and one written because the post was unpublished carries
+`Unpublished`. Selecting a version previews it — feature
 image, title, the excerpt where the inline excerpt is on, and a read-only
 rendering of its body — and changes nothing about the post. The feature image
 caption is stored HTML, rendered as such and limited to the marks a caption can
@@ -304,7 +347,7 @@ the slug and what a refusal puts back — belongs to
 restored content and closes the history only once that save lands.
 
 While a restore is saving, the confirmation and history cannot be dismissed.
-An expired session asks the writer to sign in in a new tab before trying again.
+An expired session asks the writer to sign in, in place, before trying again.
 Closing history returns focus to its sidebar row. Older versions without body
 content remain available to preview but cannot be restored, so missing data
 cannot erase the current body. Malformed revision lists are treated as
@@ -321,7 +364,8 @@ editors are named for a page rather than a post.
 Closing the pane commits the editor the writer was in, and a field cleared back
 to empty is stored as no value, as the excerpt is. A post saved before that
 convention holds an empty string rather than no value, so clearing such a field
-back to empty counts as a change until the next save.
+back to empty counts as a change until the next save. An editor past its limit
+is marked invalid, with the message between its label and the code.
 
 Escape inside either editor leaves the pane open. An open completion list or a
 selection wider than the cursor takes it first; otherwise it frees the editor's
@@ -331,16 +375,25 @@ still closes the pane.
 
 ## Meta data
 
-Meta data is a pane, and every role that can open the panel can open it. A meta
-field cleared back to empty is stored as no value, as the excerpt is.
+Meta data is a pane containing the title, description and canonical URL, and every
+role that can open the panel can open it. A meta field cleared back to empty is stored as no value, as the excerpt is.
 
-Neither field is required, and the character counts beside them are a
-recommendation rather than a limit: 60 for the title, 145 for the description,
+Neither title nor description is required, and the character counts beside them
+are a recommendation rather than a limit: 60 for the title, 145 for the description,
 counted as symbols so a multibyte character counts once, and coloured once the
 writer is past the recommendation.
 
-The preview under them is the result the post would produce. Each line falls
-back rather than emptying: the title is the meta title, else the title the
+The canonical URL is optional as well. Anything but a blank value has to start
+with `/` or a scheme such as `https:` and hold no whitespace, or the field says
+`Please enter a valid URL`, and past 2,000 characters it says `Canonical URL is
+too long, max 2000 chars`. The rule is no stricter because every save checks the
+value the post holds, including one it was loaded with: a post already carrying
+a URL the rule refused could not be saved at all. An invalid value stays staged,
+nothing is saved while it is there, and a save the writer asks for is refused
+with the same message. Clearing the field stores no value.
+
+The preview under them is the result the post would produce, with a Google logo,
+search bar and blue result title. Each line falls back rather than emptying: the title is the meta title, else the title the
 writer is looking at, else `(Untitled)`; the description is the meta
 description, else the post's excerpt, else a sentence explaining that search
 engines will compose their own. The address is the canonical URL when the post
@@ -361,6 +414,8 @@ The image comes from the file picker, a drop, or Unsplash, and an upload the
 server refuses is reported without changing the field. The Unsplash picker is
 offered only while the site's Unsplash integration is on, and it writes the
 image it is given the same way an upload does.
+A set image can be edited in Pintura when the site has it configured, as the
+feature image can; the edited image is uploaded and written the same way.
 
 Nothing here is required, and both cards fall back the same way rather than
 emptying. The title is the card's own title, else the meta title, else the title
@@ -388,6 +443,12 @@ user agent as the pane renders. Hovering a glyph names the key it stands for;
 a key already shown as its name carries no tooltip. A slash command reads the
 same wherever it is typed.
 
+The reference uses compact rows with a shared hover background, wrapping labels,
+and underlined group headings. Definition-list spacing is reset locally so inherited
+list styles cannot indent or truncate the labels. Shade's `KbdGroup` only
+lays out the individual `Kbd` caps; it does not draw another cap around them.
+The caps use `variant="contrast"` to stand out against the sidebar background.
+
 ## Delete
 
 Deleting is the one thing in the panel that does not go through the session: it
@@ -396,9 +457,17 @@ an ID, so the button appears only once the post exists, and every role that can
 open the editor is offered it — which posts each of them may actually delete is
 the API's answer, not the panel's.
 
+The button is the last thing in the section list. When the list is shorter
+than the panel it sits at the panel's foot rather than straight after the last
+section; when the list is longer, it follows the last section and is reached by
+scrolling to the end. Before the first save the list ends at the last section,
+with no space held for the button, and an open pane hides it along with the
+other sections.
+
 Confirming names the post and says the deletion is permanent. Cancelling returns
-focus to the Delete button. An expired session asks the writer to sign in in a
-new tab before retrying, so their draft stays open. A refusal keeps
+focus to the Delete button. An expired session asks the writer to sign in, in
+place, before retrying, so their draft stays open. Abandoning the sign-in keeps
+the dialog, says the session expired, and the next Delete asks again. A refusal keeps
 the dialog, shows the sentence the API gave for it and leaves the editor as it
 was, so unsaved work is still the writer's to save. A deletion that succeeds
 ends the editing session before leaving for the list: the save in flight is

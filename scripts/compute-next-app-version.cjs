@@ -1,6 +1,7 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const execFileSync = require('node:child_process').execFileSync;
+const { parseArgs } = require('node:util');
 
 const semver = require('semver');
 
@@ -26,10 +27,35 @@ const semver = require('semver');
  * @returns {string} the version to publish next
  */
 function computeNextVersion(currentVersion, publishedVersions) {
+  const current = parseCurrentVersion(currentVersion);
+  const latest = latestVersionInLine(currentVersion, publishedVersions);
+
+  if (!latest) {
+    // Fresh major.minor line — publish exactly what package.json declares.
+    return current.version;
+  }
+
+  return `${current.major}.${current.minor}.${semver.patch(latest) + 1}`;
+}
+
+function parseCurrentVersion(currentVersion) {
   const current = semver.parse(currentVersion);
   if (!current) {
     throw new Error(`Invalid version "${currentVersion}" in package.json`);
   }
+  return current;
+}
+
+/**
+ * The highest stable version published in package.json's major.minor line, or
+ * null when that line has no releases yet.
+ *
+ * @param {string} currentVersion - the version field from the app's package.json
+ * @param {string[]} publishedVersions - all versions published to npm for the app
+ * @returns {string | null}
+ */
+function latestVersionInLine(currentVersion, publishedVersions) {
+  const current = parseCurrentVersion(currentVersion);
 
   const patchesInLine = publishedVersions
     .map((version) => semver.parse(version))
@@ -45,12 +71,10 @@ function computeNextVersion(currentVersion, publishedVersions) {
     .map((version) => version.patch);
 
   if (patchesInLine.length === 0) {
-    // Fresh major.minor line — publish exactly what package.json declares.
-    return current.version;
+    return null;
   }
 
-  const highestPatch = Math.max(...patchesInLine);
-  return `${current.major}.${current.minor}.${highestPatch + 1}`;
+  return `${current.major}.${current.minor}.${Math.max(...patchesInLine)}`;
 }
 
 /**
@@ -86,7 +110,13 @@ function getPublishedVersions(packageName) {
 }
 
 function main() {
-  const packageDir = process.argv[2] || process.cwd();
+  const { values, positionals } = parseArgs({
+    // --latest prints the newest published version in the line instead (empty
+    // when there is none), for comparing a fresh build against what's live.
+    options: { latest: { type: 'boolean', default: false } },
+    allowPositionals: true,
+  });
+  const packageDir = positionals[0] || process.cwd();
   const packageJsonPath = path.resolve(packageDir, 'package.json');
 
   const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
@@ -96,10 +126,12 @@ function main() {
   }
 
   const publishedVersions = getPublishedVersions(packageJson.name);
-  const nextVersion = computeNextVersion(packageJson.version, publishedVersions);
+  const output = values.latest
+    ? latestVersionInLine(packageJson.version, publishedVersions) || ''
+    : computeNextVersion(packageJson.version, publishedVersions);
 
   // Stdout is the contract — the workflow captures this to set the version.
-  process.stdout.write(nextVersion);
+  process.stdout.write(output);
 }
 
 if (require.main === module) {
@@ -111,4 +143,4 @@ if (require.main === module) {
   }
 }
 
-module.exports = { computeNextVersion, getPublishedVersions };
+module.exports = { computeNextVersion, latestVersionInLine, getPublishedVersions };

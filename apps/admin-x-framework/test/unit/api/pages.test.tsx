@@ -1,7 +1,15 @@
 import { act, waitFor } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
-import { renderHookWithProviders } from '../../../src/test/test-utils';
-import { useAddPage, useEditPage, useEditorPage, usePage } from '../../../src/api/pages';
+import { describe, expect, it, vi } from 'vitest';
+import { createTestQueryClient, renderHookWithProviders } from '../../../src/test/test-utils';
+import {
+  pagesDataType,
+  useAddPage,
+  useEditPage,
+  useEditorPage,
+  usePage,
+} from '../../../src/api/pages';
+import { searchIndexQueryMeta } from '../../../src/api/search-index';
+import { tagsDataType } from '../../../src/api/tags';
 import { withMockFetch } from '../../utils/mock-fetch';
 
 // The Ember editor's exact include list — page writes re-request it too
@@ -132,5 +140,61 @@ describe('pages api', () => {
         ],
       });
     });
+  });
+
+  it('invalidates tag queries after a create or an edit, either of which can create a tag', async () => {
+    const queryClient = createTestQueryClient();
+    const invalidateSpy = vi.spyOn(queryClient, 'invalidateQueries');
+
+    await withMockFetch({}, async () => {
+      const { result } = renderHookWithProviders(
+        () => ({ add: useAddPage(), edit: useEditPage() }),
+        {
+          queryClient,
+        },
+      );
+
+      await act(async () => {
+        await result.current.add.mutateAsync({
+          page: { title: '(Untitled)', tags: [{ name: 'New' }] },
+        });
+      });
+      expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: [tagsDataType] });
+
+      invalidateSpy.mockClear();
+      await act(async () => {
+        await result.current.edit.mutateAsync({
+          page: { id: 'page-1', tags: [{ name: 'New' }], updated_at: '2026-01-01T00:00:00.000Z' },
+        });
+      });
+      expect(invalidateSpy).toHaveBeenCalledWith(
+        expect.objectContaining({ queryKey: [tagsDataType] }),
+      );
+    });
+  });
+
+  it('leaves the search-index lists out of what an edit invalidates', async () => {
+    const queryClient = createTestQueryClient();
+    const cache = async (queryKey: string[], meta?: Record<string, unknown>) => {
+      await queryClient.fetchQuery({ queryKey, queryFn: () => ({}), gcTime: Infinity, meta });
+    };
+    const invalidated = (queryKey: string[]) => queryClient.getQueryState(queryKey)?.isInvalidated;
+    await cache([pagesDataType, 'list']);
+    await cache([pagesDataType, 'index'], searchIndexQueryMeta);
+    await cache([tagsDataType, 'index'], searchIndexQueryMeta);
+
+    await withMockFetch({}, async () => {
+      const { result } = renderHookWithProviders(() => useEditPage(), { queryClient });
+
+      await act(async () => {
+        await result.current.mutateAsync({
+          page: { id: 'page-1', updated_at: '2026-01-01T00:00:00.000Z' },
+        });
+      });
+    });
+
+    expect(invalidated([pagesDataType, 'list'])).toBe(true);
+    expect(invalidated([pagesDataType, 'index'])).toBe(false);
+    expect(invalidated([tagsDataType, 'index'])).toBe(false);
   });
 });

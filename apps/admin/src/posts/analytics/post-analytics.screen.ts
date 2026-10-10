@@ -11,13 +11,20 @@ export const postAnalyticsScreen = {
   newsletterTab: () => page.getByRole('button', { name: sel.newsletterTab, exact: true }),
   growthTab: () => page.getByRole('button', { name: sel.growthTab, exact: true }),
 
+  // Header actions
+  moreActionsButton: () => page.getByRole('button', { name: 'More post actions' }),
+  editPostMenuItem: () => page.getByRole('menuitem', { name: 'Edit post' }),
+  deletePostMenuItem: () => page.getByRole('menuitem', { name: 'Delete post' }),
+  confirmDeleteButton: () =>
+    page.getByRole('alertdialog').getByRole('button', { name: 'Delete', exact: true }),
+
   // Overview
   webPerformanceCard: () => page.getByTestId(sel.webPerformance),
   webPerformanceViewMoreButton: () =>
     page.getByTestId(sel.webPerformance).getByRole('button', { name: 'View more' }),
   uniqueVisitors: () => page.getByTestId(sel.uniqueVisitors),
   growthCard: () => page.getByTestId(sel.growth),
-  emailSendingStatusBanner: () => page.getByTestId(sel.emailSendingStatusBanner),
+  emailSendingStatusLine: () => page.getByTestId(sel.emailSendingStatusLine),
   growthViewMoreButton: () =>
     page.getByTestId(sel.growth).getByRole('button', { name: 'View more' }),
 

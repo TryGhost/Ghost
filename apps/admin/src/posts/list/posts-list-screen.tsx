@@ -1,7 +1,7 @@
 import { Box, Container, Stack, Text } from '@tryghost/shade/primitives';
 import { LoadingIndicator } from '@tryghost/shade/components';
 import { ListPage } from '@tryghost/shade/page-templates';
-import { LoadMoreButton } from '@/shared/virtual-list';
+import { LoadMoreButton, useScrollRestoration } from '@/shared/virtual-list';
 import { cn, LucideIcon } from '@tryghost/shade/utils';
 import { FilterBar, PageHeader } from '@tryghost/shade/patterns';
 import { PostListRow } from './components/post-list-row';
@@ -42,16 +42,26 @@ import { type PostResource, getPostResourceCopy } from './post-resource';
 import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
 import { usePostsFilterState } from './hooks/use-posts-filter-state';
 import { rememberStickyPostFilters } from './posts-sticky-filters';
-import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import {
+  lazy,
+  startTransition,
+  Suspense,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { useLocation } from '@tryghost/admin-x-framework';
+import { isReturningFromScreen } from '@/layout/screen-transition';
+import { useRevealOnMount } from '@/shared/use-reveal-on-mount';
 import { usePostAnalyticsCounts } from './hooks/use-post-analytics-counts';
 import { usePostsList } from './hooks/use-posts-list';
-import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import { usePageNavigation } from './hooks/use-page-navigation';
 
 /**
- * The React posts and pages list screens, served behind the `postsListReact`
- * Labs flag. One implementation, two resources — see `post-resource.ts`.
+ * The posts and pages list screens. One implementation, two resources — see
+ * `post-resource.ts`.
  */
 /** The three that ask before acting. Feature and unfeature do not. */
 const CONFIRMABLE_ACTIONS: PostContextMenuKey[] = ['delete', 'unpublish', 'unschedule'];
@@ -61,14 +71,14 @@ const GiftLinkModal = lazy(() => import('@/posts/analytics/modals/gift-link-moda
 
 export function PostsListScreen({ resource }: { resource: PostResource }) {
   const copy = getPostResourceCopy(resource);
+  const listRef = useRef<HTMLDivElement>(null);
   const { params, filters, order, setFilters, setOrder, hasFilters, clearFilters } =
     usePostsFilterState();
   const { data: currentUser } = useCurrentUser();
   const { data: settingsData } = useBrowseSettings();
-  const improveSendingUI = useFeatureFlag('improveSendingUI');
   const navigation = usePageNavigation();
 
-  // Report the current filters so the sidebar's Posts link can return here.
+  // Report the current filters so the sidebar and editor can return here.
   const location = useLocation();
 
   useEffect(() => {
@@ -134,8 +144,37 @@ export function PostsListScreen({ resource }: { resource: PostResource }) {
   const isRestrictedAuthor = Boolean(currentUser && isAuthorOrContributor(currentUser));
   const ownAuthorSlug = currentUser && isRestrictedAuthor ? currentUser.slug : null;
 
-  const { items, isLoading, isError, hasNextPage, isFetchingNextPage, fetchNextPage, totalItems } =
-    usePostsList({ resource, params, context: { ownAuthorSlug } });
+  const {
+    items,
+    isLoading: isListLoading,
+    isError,
+    hasNextPage,
+    isFetchingNextPage,
+    fetchNextPage,
+    totalItems,
+  } = usePostsList({ resource, params, context: { ownAuthorSlug } });
+
+  // Returning from the editor, the first frame is just the header and a spinner so
+  // the screen transition doesn't wait on every row; they render right after.
+  const [rowsReady, setRowsReady] = useState(() => !isReturningFromScreen());
+  useEffect(() => {
+    if (!rowsReady) {
+      startTransition(() => setRowsReady(true));
+    }
+  }, [rowsReady]);
+  const isLoading = isListLoading || !rowsReady;
+  // Content that replaces the spinner fades in, so the reveal reads as the transition.
+  const [mountedLoading] = useState(isLoading);
+  const revealRef = useRevealOnMount<HTMLDivElement>(mountedLoading);
+
+  useScrollRestoration({ parentRef: listRef, isLoading, resetOnNavigation: true });
+
+  // Snapshotted when the menu item is picked: Radix closes the menu at once,
+  // which clears a transient selection before the modal could read it.
+  const [pendingBulkAction, setPendingBulkAction] = useState<{
+    key: PostContextMenuKey;
+    snapshot: BulkActionSnapshot;
+  } | null>(null);
 
   // Selection is a bulk-edit affordance, and authors and contributors have no
   // bulk actions — Ember disables the whole SelectionList for them.
@@ -145,6 +184,7 @@ export function PostsListScreen({ resource }: { resource: PostResource }) {
     // filter rather than every id, so it covers rows never loaded.
     allFilter: buildAllFilter(params, { ownAuthorSlug }),
     enabled: Boolean(currentUser) && !isRestrictedAuthor,
+    suspended: pendingBulkAction !== null,
   });
 
   // The menu describes the selection, not the row under the cursor. Ember's
@@ -198,22 +238,13 @@ export function PostsListScreen({ resource }: { resource: PostResource }) {
     giftLinkPost && canCopyGiftLink({ user: currentUser, post: giftLinkPost })
       ? giftLinkPost.id
       : null;
-  // Opened from the context menu. Ember reaches the same React modal over the
-  // state bridge; here the list owns it directly, so there is one modal and
-  // one set of eligibility rules behind both implementations.
+  // Opened from the context menu.
   const [giftLinkPostId, setGiftLinkPostId] = useState<string | null>(null);
 
-  // The Ember editor writes a localStorage key on publish and navigates here;
-  // this reads it. The editor stays Ember on both sides of the flag.
+  // The editor writes a localStorage key on publish and navigates here; this
+  // reads it.
   const celebration = usePostPublishCelebration();
   const { data: siteData } = useBrowseSite();
-
-  // Snapshotted when the menu item is picked: Radix closes the menu at once,
-  // which clears a transient selection before the modal could read it.
-  const [pendingBulkAction, setPendingBulkAction] = useState<{
-    key: PostContextMenuKey;
-    snapshot: BulkActionSnapshot;
-  } | null>(null);
 
   const bulkActions = usePostBulkActions({
     resource,
@@ -294,7 +325,7 @@ export function PostsListScreen({ resource }: { resource: PostResource }) {
   });
 
   return (
-    <Box className="size-full">
+    <Box ref={listRef} className="size-full">
       <Container className="relative flex h-full flex-col" size="page">
         <ListPage data-testid={`${resource}-page`}>
           <ListPage.Header>
@@ -368,7 +399,7 @@ export function PostsListScreen({ resource }: { resource: PostResource }) {
           </ListPage.Header>
           <ListPage.Body>
             {isLoading ? (
-              <Stack align="center" className="flex-1" justify="center">
+              <Stack align="center" className="delayed-fade-in flex-1" justify="center">
                 <LoadingIndicator size="lg" />
               </Stack>
             ) : isError ? (
@@ -376,7 +407,7 @@ export function PostsListScreen({ resource }: { resource: PostResource }) {
                 <Text tone="secondary">Error loading {copy.title.toLowerCase()}</Text>
               </Stack>
             ) : items.length === 0 ? (
-              <Stack align="center" className="flex-1" justify="center">
+              <Stack ref={revealRef} align="center" className="flex-1" justify="center">
                 <PostsEmptyState
                   hasFilters={hasFilters}
                   resource={resource}
@@ -384,10 +415,8 @@ export function PostsListScreen({ resource }: { resource: PostResource }) {
                 />
               </Stack>
             ) : (
-              // Same testids as the Ember list, deliberately —
-              // shared e2e page objects. They can never collide:
-              // the Ember route aborts when this screen renders.
-              <Stack gap="md">
+              // Testids are shared with the e2e page objects.
+              <Stack ref={revealRef} gap="md">
                 <ul
                   // Held modifier: children take no pointer
                   // events, so clicks land on the row and not
@@ -417,7 +446,6 @@ export function PostsListScreen({ resource }: { resource: PostResource }) {
                       key={item.id}
                       getMenuItems={getMenuItems}
                       hasAdminAccess={isAdmin}
-                      improveSendingUI={improveSendingUI}
                       isContributor={isContributor}
                       isSelected={selection.isSelected(item.id)}
                       memberCounts={memberCounts}
@@ -495,6 +523,7 @@ export function PostsListScreen({ resource }: { resource: PostResource }) {
           <PostCelebrationModal
             post={celebration.post}
             postCount={celebration.postCount}
+            siteIcon={siteData?.site.icon}
             siteTitle={siteData?.site.title ?? ''}
             type={celebration.celebration.type}
             wasPublished={celebration.celebration.wasPublished}

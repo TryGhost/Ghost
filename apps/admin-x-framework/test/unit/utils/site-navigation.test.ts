@@ -2,10 +2,22 @@ import { describe, expect, it } from 'vitest';
 import {
   getPageNavigationPlacement,
   pagePathForSlug,
+  parseSiteNavigation,
   updatePageNavigation,
 } from '../../../src/utils/site-navigation';
 
 describe('shared page navigation', () => {
+  it('reads stored menus and refuses missing or malformed ones', () => {
+    const menu = [{ label: 'About', url: '/about/', icon: 'info', visibility: 'members' }];
+    expect(parseSiteNavigation(JSON.stringify(menu))).toEqual(menu);
+    expect(parseSiteNavigation('[]')).toEqual([]);
+    expect(parseSiteNavigation(null)).toBeNull();
+    expect(parseSiteNavigation('not json')).toBeNull();
+    expect(parseSiteNavigation('{"label":"About","url":"/about/"}')).toBeNull();
+    expect(parseSiteNavigation('[{"label":"About"}]')).toBeNull();
+    expect(parseSiteNavigation('[{"label":1,"url":"/about/"}]')).toBeNull();
+  });
+
   it('uses aliases in bulk moves while preserving unrelated pages', () => {
     const result = updatePageNavigation(
       [

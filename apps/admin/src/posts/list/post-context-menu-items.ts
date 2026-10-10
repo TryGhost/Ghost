@@ -80,7 +80,7 @@ function shouldFeature(posts: PostListItem[]): boolean {
 }
 
 export function getPostContextMenuItems(inputs: PostContextMenuInputs): PostContextMenuItem[] {
-  const { posts, isAdmin, membersEnabled, canCopyGiftLink } = inputs;
+  const { posts, resource, isAdmin, membersEnabled, canCopyGiftLink } = inputs;
 
   if (posts.length === 0) {
     return [];
@@ -99,9 +99,7 @@ export function getPostContextMenuItems(inputs: PostContextMenuInputs): PostCont
   // anything published offers the public link, and never the preview link.
   if (hasStatus(posts, 'published')) {
     if (isSingle(posts)) {
-      // "post" on both resources, as Ember hardcodes it — matching the
-      // "Post link copied" toast, which is hardcoded the same way.
-      add('copy-link', 'Copy link to post');
+      add('copy-link', resource === 'pages' ? 'Copy link to page' : 'Copy link to post');
     }
 
     if (canCopyGiftLink) {

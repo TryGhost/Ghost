@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/signup-form",
-  "version": "0.3.34",
+  "version": "0.4.0",
   "description": "Embeddable signup form for Ghost sites",
   "license": "MIT",
   "author": "Ghost Foundation",
@@ -33,19 +33,17 @@
   },
   "dependencies": {
     "@tryghost/debug": "catalog:",
-    "react": "catalog:",
-    "react-dom": "catalog:"
+    "preact": "catalog:"
   },
   "devDependencies": {
     "@internal/cfg-eslint-react": "workspace:*",
+    "@internal/cfg-typescript": "workspace:*",
     "@internal/cfg-vite-public-app": "workspace:*",
     "@playwright/test": "catalog:",
     "@storybook/addon-docs": "catalog:",
     "@storybook/addon-links": "catalog:",
-    "@storybook/react-vite": "catalog:",
+    "@storybook/preact-vite": "catalog:",
     "@tryghost/i18n": "workspace:*",
-    "@types/react": "catalog:",
-    "@types/react-dom": "catalog:",
     "@typescript/native": "catalog:",
     "autoprefixer": "10.5.4",
     "eslint": "catalog:",

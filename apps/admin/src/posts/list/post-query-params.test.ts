@@ -28,7 +28,16 @@ describe('getStatusesForType', () => {
     expect(getStatusesForType(type)).toEqual(expected);
   });
 
-  // `featured` is not a status - it is every status plus featured:true.
+  it('matches any of several types, in status order', () => {
+    expect(getStatusesForType('sent,draft')).toEqual(['draft', 'sent']);
+  });
+
+  it('ignores unrecognised values alongside known ones', () => {
+    expect(getStatusesForType('draft,nonsense')).toEqual(['draft']);
+  });
+
+  // Legacy `?type=featured` (saved views, bookmarks) is every status plus
+  // featured:true.
   it('treats featured as every status', () => {
     expect(getStatusesForType('featured')).toEqual(['draft', 'scheduled', 'published', 'sent']);
   });
@@ -58,7 +67,7 @@ describe('buildAllFilter', () => {
   });
 
   // Key order is load-bearing only in that it must stay stable; this locks
-  // the order Ember produced so filters compare equal across the two apps.
+  // the order Ember produced.
   it('orders clauses tag, visibility, status, featured, authors', () => {
     expect(
       buildAllFilter({ tag: 'news', visibility: 'paid', type: 'featured', author: 'jo' }),
@@ -112,6 +121,10 @@ describe('getActiveBuckets', () => {
     expect(getActiveBuckets({ type })).toEqual(expected);
   });
 
+  it('runs only the buckets the selected types need', () => {
+    expect(getActiveBuckets({ type: 'draft,sent' })).toEqual(['draft', 'publishedAndSent']);
+  });
+
   it('runs all three for featured, which spans every status', () => {
     expect(getActiveBuckets({ type: 'featured' })).toEqual([
       'scheduled',
@@ -141,6 +154,23 @@ describe('buildBucketFilter', () => {
 
   it('keeps featured:true on every bucket', () => {
     expect(buildBucketFilter('draft', { type: 'featured' })).toBe('status:draft+featured:true');
+  });
+
+  it('narrows the shared bucket to every requested status', () => {
+    expect(buildBucketFilter('publishedAndSent', { type: 'published,sent,draft' })).toBe(
+      'status:[published,sent]',
+    );
+  });
+
+  it('ANDs the featured param with the selected types', () => {
+    expect(buildBucketFilter('publishedAndSent', { type: 'published', featured: 'true' })).toBe(
+      'status:published+featured:true',
+    );
+    expect(buildBucketFilter('draft', { featured: 'false' })).toBe('status:draft+featured:false');
+  });
+
+  it('ignores a featured param that is not a boolean', () => {
+    expect(buildBucketFilter('draft', { featured: 'maybe' })).toBe('status:draft');
   });
 });
 

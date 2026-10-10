@@ -3,6 +3,7 @@ import { createContext, useContext } from 'react';
 interface ActivityPubHostLayout {
   contentClassName?: string;
   contentGutter?: string;
+  profileContentClassName?: string;
 }
 
 // The embedding shell supplies layout dimensions without coupling Network to Admin.

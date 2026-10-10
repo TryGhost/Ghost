@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/koenig-lexical",
-  "version": "1.10.0",
+  "version": "1.11.1",
   "description": "Ghost's Lexical-based rich text post editor",
   "repository": {
     "type": "git",
@@ -26,9 +26,9 @@
   },
   "scripts": {
     "dev": "concurrently \"vite --host --force\" \"pnpm build --watch --emptyOutDir=false\" \"pnpm preview -l silent --host\" \"pnpm --filter @tryghost/kg-default-nodes dev\" \"pnpm --filter @tryghost/kg-default-transforms dev\"",
-    "dev:integrated": "concurrently \"pnpm build --watch --emptyOutDir=false\" \"pnpm preview -l silent --host\" \"pnpm --filter @tryghost/kg-default-nodes dev\" \"pnpm --filter @tryghost/kg-default-transforms dev\"",
+    "dev:integrated": "concurrently \"pnpm build --watch --emptyOutDir=false\" \"pnpm --filter @tryghost/kg-default-nodes dev\" \"pnpm --filter @tryghost/kg-default-transforms dev\"",
     "dev:multiplayer": "concurrently \"vite\" \"pnpm multiplayer\"",
-    "dev:test": "concurrently \"vite --port 5174\" \"pnpm multiplayer\"",
+    "dev:test": "node test/test-server.ts",
     "multiplayer": "HOST=localhost PORT=1234 npx y-websocket-server",
     "build": "vite build",
     "build:demo": "vite build --config vite.config.demo.ts",
@@ -75,7 +75,7 @@
     "@lexical/selection": "0.13.1",
     "@lexical/text": "0.13.1",
     "@lexical/utils": "0.13.1",
-    "@lezer/highlight": "1.2.3",
+    "@lezer/highlight": "1.2.5",
     "@mdx-js/rollup": "3.1.1",
     "@playwright/test": "catalog:",
     "@prettier/sync": "0.6.1",
@@ -133,7 +133,7 @@
     "react-dom": "catalog:",
     "react-error-boundary": "3.1.4",
     "react-highlight": "0.15.0",
-    "react-router-dom": "7.18.1",
+    "react-router-dom": "7.18.4",
     "react-slider": "2.0.6",
     "storybook": "catalog:",
     "stylelint": "catalog:",

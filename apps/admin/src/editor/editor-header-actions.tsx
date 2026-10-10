@@ -1,6 +1,11 @@
-import { useCallback, useState } from 'react';
+import { Fragment, useCallback, useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
+import { useNavigate } from '@tryghost/admin-x-framework';
 import { Button } from '@tryghost/shade/components';
+import { useShade } from '@tryghost/shade/app';
+import { PageHeader } from '@tryghost/shade/patterns';
 import { Inline, Text } from '@tryghost/shade/primitives';
+import { cn } from '@tryghost/shade/utils';
 import { getSettingValue } from '@tryghost/admin-x-framework/api/settings';
 import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import { isContributorUser, type User } from '@tryghost/admin-x-framework/api/users';
@@ -10,21 +15,53 @@ import {
 } from '@tryghost/test-data/selectors/editor';
 import type { PostType } from './card-config';
 import { EDITOR_REQUEST_OPTIONS } from './request-options';
-import { PostPreviewModal } from './preview/post-preview-modal';
+import { PostPreviewModal, type PostPreviewModalProps } from './preview/post-preview-modal';
 import { postPreviewUrl } from './preview/preview-url';
 import { PublishFlowModal } from './publish/publish-flow-modal';
 import { UpdateFlowModal } from './publish/update-flow-modal';
-import { buildPublishFlowPost, type PublishFlowPost } from './publish/flow-post';
-import { describeCompletionFailure } from './publish/completion-message';
+import type { PublishFlowPost } from './publish/flow-post';
+import { CompletionFailureError, describeCompletionFailure } from './publish/completion-message';
 import { usePublishInputs } from './publish/use-publish-inputs';
+import { usePublishLimits } from './publish/use-publish-limits';
+import { usePublishNavigation } from './publish/use-publish-navigation';
 import { useEditorSettings } from './use-editor-settings';
+import { stateSaveError } from './session/error-mapping';
+import type { InvalidField } from './session/settings-fields';
 import type { EditorSessionHandle } from './session/use-editor-session';
 import type { SaveCompletion } from './engine/save-engine';
-import { usePreviewShortcut, usePublishShortcut } from './use-editor-shortcuts';
+import {
+  previewShortcutLabel,
+  publishShortcutLabel,
+  usePreviewShortcut,
+  usePublishShortcut,
+  useSaveShortcut,
+} from './use-editor-shortcuts';
+import { useSaveButtonPhase, useSaveFeedback, type SaveButtonPhase } from './use-save-feedback';
+import { useSmallScreen } from './use-small-screen';
 
-type OpenFlow = 'none' | 'publish' | 'update';
+export type OpenFlow = 'none' | 'publish' | 'update';
 
-/** Turns a save the caller depends on into a rejection the flow renders in place. */
+/** The preview's props short of Publish, which only the publish controls can supply. */
+type HeaderPreviewProps = Omit<PostPreviewModalProps, 'onPublish' | 'publishDisabled'>;
+
+const UPDATE_LABELS: Record<SaveButtonPhase, string> = {
+  idle: 'Update',
+  running: 'Updating...',
+  success: 'Updated',
+  failure: 'Retry',
+};
+
+const SAVE_LABELS: Record<SaveButtonPhase, string> = {
+  idle: 'Save',
+  running: 'Saving',
+  success: 'Saved',
+  failure: 'Retry',
+};
+
+/**
+ * Turns a save the caller depends on into a rejection the flow renders in place.
+ * The failure travels whole, so a host limit's upgrade phrase stays a link.
+ */
 async function requireSaved(pending: Promise<SaveCompletion>): Promise<void> {
   const completion = await pending;
 
@@ -35,17 +72,127 @@ async function requireSaved(pending: Promise<SaveCompletion>): Promise<void> {
   const failure = describeCompletionFailure(completion);
 
   if (failure) {
-    throw new Error(failure.message);
+    throw new CompletionFailureError(failure);
   }
+}
+
+/**
+ * One header control. From the small breakpoint up it is a button in the header
+ * row; below it, a button in the editor's bottom bar. Both come from the same
+ * item, so they cannot drift apart.
+ */
+type HeaderItem =
+  | {
+      kind: 'action';
+      id: string;
+      label: string;
+      onSelect: () => void;
+      disabled?: boolean;
+      /** Advertised in the header's tooltip; the bottom bar names no shortcuts. */
+      shortcut?: string;
+      /** The post's main action, Publish or Update, in the header's success colour. */
+      emphasis?: boolean;
+      /** Unpublish and Unschedule keep their quieter button. */
+      quiet?: boolean;
+      /** A contributor's Save keeps its plain button. */
+      plain?: boolean;
+    }
+  | { kind: 'inputs-error'; id: string; message: string; onRetry: () => void };
+
+const EMPHASIS_BUTTON =
+  'font-semibold text-state-success hover:text-state-success disabled:text-text-secondary/60 disabled:opacity-100';
+
+/**
+ * The header's controls, in the header row, or, below the small breakpoint, in
+ * the bottom bar the editor hands over. Only the controls move: the flows and
+ * previews they open stay mounted where they are, so crossing the breakpoint
+ * keeps an open flow and its choices.
+ */
+function HeaderItems({ items, bottomBar }: { items: HeaderItem[]; bottomBar: HTMLElement | null }) {
+  const { isAdmin7 } = useShade();
+  const atBottom = !!bottomBar;
+  // The bar's rightmost action, Publish, Update or Save, is its primary button.
+  const lastAction = items.map((item) => item.kind).lastIndexOf('action');
+  const controls = items.map((item, index) => {
+    if (item.kind === 'inputs-error') {
+      return (
+        <Fragment key={item.id}>
+          <Text
+            className="bg-background/80 text-destructive backdrop-blur-sm"
+            data-testid={editorPublishInputsError}
+            role="alert"
+            size="sm"
+          >
+            {item.message}
+          </Text>
+          <Button
+            className="bg-background/80 backdrop-blur-sm"
+            size={isAdmin7 ? 'default' : 'sm'}
+            variant="ghost"
+            onClick={item.onRetry}
+          >
+            Retry
+          </Button>
+        </Fragment>
+      );
+    }
+    if (item.plain || (atBottom && index === lastAction)) {
+      return (
+        <Button
+          key={item.id}
+          disabled={item.disabled}
+          size={isAdmin7 ? 'default' : 'sm'}
+          onClick={item.onSelect}
+        >
+          {item.label}
+        </Button>
+      );
+    }
+    return (
+      <PageHeader.Action
+        key={item.id}
+        className={cn('bg-background/80 backdrop-blur-sm', item.emphasis && EMPHASIS_BUTTON)}
+        disabled={item.disabled}
+        fallbackSize="sm"
+        fallbackVariant={item.quiet ? 'ghost' : undefined}
+        label={item.label}
+        shortcut={atBottom ? undefined : item.shortcut}
+        onClick={item.onSelect}
+      >
+        {item.label}
+      </PageHeader.Action>
+    );
+  });
+
+  if (!bottomBar) {
+    return <>{controls}</>;
+  }
+  return createPortal(
+    <Inline className="min-w-0" data-testid={editorHeaderActions} gap="sm" justify="end" wrap>
+      {controls}
+    </Inline>,
+    bottomBar,
+  );
 }
 
 export interface EditorHeaderActionsProps {
   session: EditorSessionHandle;
+  /** Built by the screen, which derives the status line's retry from it too. */
+  post: PublishFlowPost;
   postType: PostType;
   currentUser?: User;
   siteUrl: string;
   /** Unresolved TK markers in the title, excerpt, body and feature image. */
   tkCount: number;
+  /** Held by the screen, because the status line opens the publish flow too. */
+  openFlow: OpenFlow;
+  onOpenFlow: (flow: OpenFlow) => void;
+  /** Whether the status line offers a failed send's retry, which needs the publish inputs. */
+  offersEmailRetry: boolean;
+  /** Takes the writer to the field an explicit save would refuse, and returns it. */
+  revealInvalidField: () => InvalidField | null;
+  /** The editor's bottom bar, which holds the controls below the small breakpoint. */
+  bottomBar: HTMLElement | null;
 }
 
 /**
@@ -54,36 +201,63 @@ export interface EditorHeaderActionsProps {
  */
 export function EditorHeaderActions({
   session,
+  post,
   postType,
   currentUser,
   siteUrl,
   tkCount,
+  openFlow,
+  onOpenFlow,
+  offersEmailRetry,
+  revealInvalidField,
+  bottomBar: bottomBarSlot,
 }: EditorHeaderActionsProps) {
-  const { persistedId, publishTime, title } = session;
+  const bottomBar = useSmallScreen() ? bottomBarSlot : null;
+  const { persistedId } = session;
   const record = session.loadedRecord;
   const [previewOpen, setPreviewOpen] = useState(false);
-  const [openFlow, setOpenFlow] = useState<OpenFlow>('none');
+  const feedback = useSaveFeedback({ session, displayName: postType, siteUrl });
+  const contributorSave = useSaveButtonPhase(feedback.save, session.contentKey);
 
-  const openPreview = useCallback(() => setPreviewOpen(true), []);
-  const closePreview = useCallback(() => setPreviewOpen(false), []);
+  useSaveShortcut(() => void feedback.save());
 
-  const post = buildPublishFlowPost({
-    snapshot: {
-      id: persistedId,
-      status: publishTime.status,
-      publishedAt: publishTime.publishedAt,
-      title,
-    },
-    record,
-    displayName: postType,
-    lexical: session.getLiveLexical(),
-  });
   // Core 301-redirects a published or sent post away from /p/:uuid/ and drops the
   // audience query, so Ember offers a preview only while the post is a draft.
   const isDraft = post.status === 'draft';
 
+  // Preview, Publish, Unpublish, Unschedule and their shortcuts open nothing while
+  // a field breaks its rule. Each is refused the way Cmd-S is: the save the writer
+  // asked for names the rule in the status line, nothing is sent, and the writer
+  // is taken to the field.
+  const refuseInvalid = useCallback((): boolean => {
+    const invalid = revealInvalidField();
+    if (!invalid) {
+      return false;
+    }
+    // The subject is edited in the preview, whose own save is refused beside the field.
+    if (invalid.key === 'email_subject' && isDraft) {
+      setPreviewOpen(true);
+      return true;
+    }
+    void session.saveExplicit();
+    return true;
+  }, [isDraft, revealInvalidField, session]);
+
+  const openPreview = useCallback(() => {
+    if (!refuseInvalid()) {
+      setPreviewOpen(true);
+    }
+  }, [refuseInvalid]);
+
   usePreviewShortcut(
-    useCallback(() => setPreviewOpen((open) => !open), []),
+    useCallback(() => {
+      if (previewOpen) {
+        setPreviewOpen(false);
+        onOpenFlow('none');
+        return;
+      }
+      openPreview();
+    }, [onOpenFlow, openPreview, previewOpen]),
     isDraft && persistedId !== null,
   );
 
@@ -95,7 +269,10 @@ export function EditorHeaderActions({
     await requireSaved(session.saveExplicit());
   }, [session]);
 
-  const isSaving = session.state.kind === 'saving' || session.state.kind === 'pending-coalesced';
+  const isSaving =
+    session.state.kind === 'preparing' ||
+    session.state.kind === 'saving' ||
+    session.state.kind === 'pending-coalesced';
   const isContributor = !!currentUser && isContributorUser(currentUser);
 
   // A post the server has never seen can be neither published nor previewed.
@@ -103,54 +280,96 @@ export function EditorHeaderActions({
     return null;
   }
 
+  const preview: HeaderPreviewProps = {
+    subjectEditor: {
+      value: session.settings.email_subject,
+      fallback: session.title,
+      hasUnsavedChanges: session.isDirty(),
+      isSaving,
+      saveError: stateSaveError(session.state),
+      onChange: (value) => session.stageSettings({ email_subject: value }),
+      onCommit: session.commitSettings,
+    },
+    isPost: postType === 'post',
+    post,
+    newsletterSlug: post.newsletter ?? undefined,
+    open: previewOpen,
+    postId: persistedId,
+    previewUrl: postPreviewUrl(siteUrl, record?.uuid),
+    onBeforeOpen: saveBeforePreview,
+    onOpenChange: setPreviewOpen,
+  };
+
+  const previewItem: HeaderItem | null = isDraft
+    ? {
+        kind: 'action',
+        id: 'preview',
+        label: 'Preview',
+        shortcut: previewShortcutLabel(),
+        onSelect: openPreview,
+      }
+    : null;
+
   return (
-    <Inline data-testid={editorHeaderActions} gap="sm">
-      {isDraft ? (
-        <Button size="sm" variant="outline" onClick={openPreview}>
-          Preview
-        </Button>
-      ) : null}
+    // Below the small breakpoint the controls, and this name for them, are in the bottom bar.
+    <Inline data-testid={bottomBar ? undefined : editorHeaderActions} gap="md" justify="end" wrap>
       {isContributor ? (
-        <Button disabled={isSaving} size="sm" onClick={session.dispatchExplicit}>
-          Save
-        </Button>
+        <>
+          <HeaderItems
+            bottomBar={bottomBar}
+            items={[
+              ...(previewItem ? [previewItem] : []),
+              {
+                kind: 'action',
+                id: 'save',
+                label: SAVE_LABELS[contributorSave.phase],
+                disabled: isSaving,
+                plain: true,
+                onSelect: () => void contributorSave.run(),
+              },
+            ]}
+          />
+          {isDraft ? <PostPreviewModal {...preview} /> : null}
+        </>
       ) : (
         <PublishActions
+          bottomBar={bottomBar}
+          feedback={feedback}
           isDraft={isDraft}
           isSaving={isSaving}
+          offersEmailRetry={offersEmailRetry}
           openFlow={openFlow}
           post={post}
-          previewOpen={previewOpen}
+          preview={preview}
+          previewItem={previewItem}
+          refuseInvalid={refuseInvalid}
+          revealInvalidField={revealInvalidField}
           session={session}
           tkCount={tkCount}
-          onOpenFlow={setOpenFlow}
+          onOpenFlow={onOpenFlow}
           onPreview={openPreview}
         />
       )}
-      {isDraft ? (
-        <PostPreviewModal
-          isPost={postType === 'post'}
-          newsletterSlug={post.newsletter ?? undefined}
-          open={previewOpen}
-          postId={persistedId}
-          previewUrl={postPreviewUrl(siteUrl, record?.uuid)}
-          onBeforeOpen={saveBeforePreview}
-          onOpenChange={setPreviewOpen}
-          onReturnToPublish={openFlow === 'publish' ? closePreview : undefined}
-        />
-      ) : null}
     </Inline>
   );
 }
 
 interface PublishActionsProps {
   session: EditorSessionHandle;
+  bottomBar: HTMLElement | null;
+  feedback: ReturnType<typeof useSaveFeedback>;
   post: PublishFlowPost;
   tkCount: number;
   isDraft: boolean;
   isSaving: boolean;
+  offersEmailRetry: boolean;
   openFlow: OpenFlow;
-  previewOpen: boolean;
+  preview: HeaderPreviewProps;
+  /** The draft's Preview, which comes first. */
+  previewItem: HeaderItem | null;
+  /** Refuses the action while a field breaks its rule; true when it did. */
+  refuseInvalid: () => boolean;
+  revealInvalidField: () => InvalidField | null;
   onOpenFlow: (flow: OpenFlow) => void;
   onPreview: () => void;
 }
@@ -161,16 +380,25 @@ interface PublishActionsProps {
  */
 function PublishActions({
   session,
+  bottomBar,
+  feedback,
   post,
   tkCount,
   isDraft,
   isSaving,
+  offersEmailRetry,
   openFlow,
-  previewOpen,
+  preview,
+  previewItem,
+  refuseInvalid,
+  revealInvalidField,
   onOpenFlow,
   onPreview,
 }: PublishActionsProps) {
+  const navigate = useNavigate();
   const inputs = usePublishInputs();
+  const limits = usePublishLimits();
+  const navigation = usePublishNavigation(session.slug, session.getSaveSnapshot);
   const { data: settingsData } = useEditorSettings();
   const siteTitle = getSettingValue<string>(settingsData?.settings ?? null, 'title') ?? undefined;
   const paywallImprovements = useFeatureFlag('paywallImprovements', {
@@ -179,6 +407,8 @@ function PublishActions({
   });
   // A refetch of any input must not unmount an open flow, so readiness latches once.
   const [everReady, setEverReady] = useState(false);
+  const [openedFromPreview, setOpenedFromPreview] = useState(false);
+  const [flowNewsletterSlug, setFlowNewsletterSlug] = useState<string>();
 
   if (inputs.isReady && !everReady) {
     setEverReady(true);
@@ -191,63 +421,199 @@ function PublishActions({
     }
     await requireSaved(session.saveExplicit());
   }, [session]);
+  const { save, showReverted } = feedback;
+  const update = useSaveButtonPhase(save, session.contentKey);
   const revertToDraft = useCallback(() => {
     onOpenFlow('none');
     void session.dispatchPublish({ kind: 'revert' });
   }, [onOpenFlow, session]);
-  const closeFlow = useCallback(() => onOpenFlow('none'), [onOpenFlow]);
-  const openPublishFlow = useCallback(() => onOpenFlow('publish'), [onOpenFlow]);
+  const closeFlow = useCallback(() => {
+    setOpenedFromPreview(false);
+    onOpenFlow('none');
+  }, [onOpenFlow]);
+  const { onOpenChange: setPreviewOpen } = preview;
+  const openPublishFlow = useCallback(() => {
+    if (refuseInvalid()) {
+      return;
+    }
+    setOpenedFromPreview(false);
+    onOpenFlow('publish');
+  }, [onOpenFlow, refuseInvalid]);
+  const openUpdateFlow = useCallback(() => {
+    if (!refuseInvalid()) {
+      onOpenFlow('update');
+    }
+  }, [onOpenFlow, refuseInvalid]);
+  // The field and the status line are behind the preview, so a refusal from its
+  // Publish waits for it to close and takes the focus it would hand back.
+  const refuseOnPreviewClose = useRef(false);
+  const previewCloseAutoFocus = useCallback(
+    (event: Event) => {
+      if (!refuseOnPreviewClose.current) {
+        return;
+      }
+      refuseOnPreviewClose.current = false;
+      event.preventDefault();
+      refuseInvalid();
+    },
+    [refuseInvalid],
+  );
+  const changePreviewOpen = useCallback(
+    (open: boolean) => {
+      setPreviewOpen(open);
+      if (!open) {
+        closeFlow();
+      }
+    },
+    [closeFlow, setPreviewOpen],
+  );
+  const publishFromPreview = useCallback(() => {
+    const invalid = session.invalidField();
+    // The subject is edited in the preview, which names its rule beside it, so the
+    // preview stays open; any other field is behind it and is refused once it closes.
+    if (invalid?.key === 'email_subject') {
+      return;
+    }
+    if (invalid) {
+      refuseOnPreviewClose.current = true;
+      setPreviewOpen(false);
+      return;
+    }
+    setOpenedFromPreview(true);
+    setPreviewOpen(false);
+    onOpenFlow('publish');
+  }, [onOpenFlow, session, setPreviewOpen]);
 
-  // A flow opened under the preview's portal is hidden from a screen reader,
-  // so the preview's own Publish button is the only way into it from there.
-  usePublishShortcut(openPublishFlow, isDraft && inputs.isReady && !previewOpen);
+  // The chord stays off while the preview is open: the preview's own Publish
+  // button is the only way into the flow from there.
+  usePublishShortcut(openPublishFlow, isDraft && inputs.isReady && !preview.open);
+
+  // Ember routes a sent post to the update flow from its status line, not the header.
+  const offersUpdateFlow = !isDraft && post.status !== 'sent';
+  const sentOpensUpdateFlow = post.status === 'sent' && post.email?.status !== 'failed';
+
+  // Publish, Unpublish, Unschedule and the status line's Sent and retry open nothing until these load.
+  const inputsBlockActions = isDraft || offersUpdateFlow || sentOpensUpdateFlow || offersEmailRetry;
+
+  // An input read that found the session gone asks for sign-in in place, as a save
+  // does, and reads again once the writer is back. It asks once per failure: a
+  // background read that fails the same way after the writer abandoned the sign-in,
+  // or straight after they signed in, leaves the error and its Retry, which asks again.
+  const { requestReauth } = session;
+  const retryInputs = useRef(inputs.retry);
+  retryInputs.current = inputs.retry;
+  const inputsExpired = inputsBlockActions && inputs.sessionExpired;
+  const askedForInputs = useRef(false);
+  // A refetch clears the error while it runs, so only inputs that loaded end the failure.
+  if (inputs.isReady) {
+    askedForInputs.current = false;
+  }
+  useEffect(() => {
+    if (!inputsExpired || askedForInputs.current) {
+      return;
+    }
+    askedForInputs.current = true;
+    void requestReauth().then((signedIn) => {
+      if (signedIn) {
+        retryInputs.current();
+      }
+    });
+  }, [inputsExpired, requestReauth]);
+  const { sessionExpired: inputsSessionExpired, retry: retryInputsNow } = inputs;
+  const retryPublishInputs = useCallback(() => {
+    if (!inputsSessionExpired) {
+      retryInputsNow();
+      return;
+    }
+    void requestReauth().then((signedIn) => {
+      if (signedIn) {
+        retryInputs.current();
+      }
+    });
+  }, [inputsSessionExpired, requestReauth, retryInputsNow]);
+
+  const inputsError: HeaderItem[] =
+    inputsBlockActions && inputs.error
+      ? [
+          {
+            kind: 'inputs-error',
+            id: 'inputs-error',
+            message: inputs.error.message,
+            onRetry: retryPublishInputs,
+          },
+        ]
+      : [];
+  const unpublishLabel = post.status === 'scheduled' ? 'Unschedule' : 'Unpublish';
+  const items: HeaderItem[] = isDraft
+    ? [
+        ...(previewItem ? [previewItem] : []),
+        ...inputsError,
+        {
+          kind: 'action',
+          id: 'publish',
+          label: 'Publish',
+          disabled: !inputs.isReady,
+          emphasis: true,
+          shortcut: publishShortcutLabel(),
+          onSelect: openPublishFlow,
+        },
+      ]
+    : [
+        ...inputsError,
+        ...(offersUpdateFlow
+          ? [
+              {
+                kind: 'action',
+                id: 'unpublish',
+                label: unpublishLabel,
+                // The update flow is built from the publish inputs; a click before
+                // they load would open it unasked once they do.
+                disabled: !inputs.isReady,
+                quiet: true,
+                onSelect: openUpdateFlow,
+              } satisfies HeaderItem,
+            ]
+          : []),
+        {
+          kind: 'action',
+          id: 'update',
+          label: UPDATE_LABELS[update.phase],
+          disabled: !session.isDirty() || isSaving,
+          emphasis: true,
+          onSelect: () => {
+            // The save refuses an invalid field itself, naming it in the status
+            // line; this only takes the writer to it.
+            revealInvalidField();
+            void update.run();
+          },
+        },
+      ];
 
   return (
     <>
+      <HeaderItems bottomBar={bottomBar} items={items} />
       {isDraft ? (
-        <>
-          <Button disabled={!inputs.isReady} size="sm" onClick={openPublishFlow}>
-            Publish
-          </Button>
-          {inputs.error ? (
-            <>
-              <Text
-                className="text-destructive"
-                data-testid={editorPublishInputsError}
-                role="alert"
-                size="sm"
-              >
-                {inputs.error.message}
-              </Text>
-              <Button size="sm" variant="ghost" onClick={inputs.retry}>
-                Retry
-              </Button>
-            </>
-          ) : null}
-        </>
-      ) : (
-        <>
-          <Button
-            disabled={!session.isDirty() || isSaving}
-            size="sm"
-            onClick={session.dispatchExplicit}
-          >
-            Update
-          </Button>
-          {/* Ember routes a sent post to the update flow from its status line, not the header. */}
-          {post.status === 'sent' ? null : (
-            <Button size="sm" variant="outline" onClick={() => onOpenFlow('update')}>
-              {post.status === 'scheduled' ? 'Unschedule' : 'Unpublish'}
-            </Button>
-          )}
-        </>
-      )}
+        <PostPreviewModal
+          {...preview}
+          animate={openFlow !== 'publish'}
+          fallbackNewsletterSlug={flowNewsletterSlug}
+          publishDisabled={!inputs.isReady}
+          onCloseAutoFocus={previewCloseAutoFocus}
+          onOpenChange={changePreviewOpen}
+          onPublish={publishFromPreview}
+        />
+      ) : null}
 
       {openFlow === 'publish' && everReady ? (
         <PublishFlowModal
+          animate={!openedFromPreview}
           dispatch={session.dispatchPublish}
+          limits={limits}
+          navigation={navigation}
           paywallImprovements={paywallImprovements}
           post={post}
+          requestReauth={requestReauth}
+          showCompletion={false}
           site={inputs.site}
           siteTitle={siteTitle}
           timezone={inputs.timezone}
@@ -255,6 +621,16 @@ function PublishActions({
           user={inputs.user}
           onBeforePublish={saveBeforePublish}
           onClose={closeFlow}
+          onCompleted={({ postId, isScheduled, hasEmail }) => {
+            const destination =
+              post.displayName === 'page'
+                ? '/pages'
+                : !isScheduled && (hasEmail || post.email || post.emailOnly)
+                  ? `/posts/analytics/${postId}`
+                  : '/posts';
+            navigate(destination);
+          }}
+          onNewsletterChange={setFlowNewsletterSlug}
           onPreview={onPreview}
           onRevertToDraft={revertToDraft}
         />
@@ -268,6 +644,7 @@ function PublishActions({
           timezone={inputs.timezone}
           user={inputs.user}
           onClose={closeFlow}
+          onReverted={showReverted}
         />
       ) : null}
     </>

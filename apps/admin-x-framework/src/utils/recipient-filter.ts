@@ -2,8 +2,7 @@
 // four copies of the same comma-split logic: `utils/publish-options.js`,
 // `components/gh-members-recipient-select.js`,
 // `components/editor/modals/publish-flow.js` and
-// `services/members-count-cache.js`. Behavior (including quirks) is preserved
-// so Ember and React screens classify and rebuild filters identically.
+// `services/members-count-cache.js`. Behavior (including quirks) is preserved.
 
 export const FREE_SEGMENT = 'status:free';
 export const PAID_SEGMENT = 'status:-free';
@@ -14,7 +13,12 @@ export const PAID_SEGMENT = 'status:-free';
  */
 export const EVERYONE_RECIPIENT_FILTER = `${FREE_SEGMENT},${PAID_SEGMENT}`;
 
-/** Expands the API's legacy segment sentinels into the filters used by Admin. */
+const BARE_TIER_ID = /^[a-f0-9]{24}$/;
+
+/**
+ * Expands the API's legacy segment sentinels into the filters used by Admin,
+ * and rewrites bare tier ids to `tier_id:<id>`, which Core accepts.
+ */
 export function normalizeRecipientFilter(filter: string | null | undefined): string | null {
   if (filter === 'all') {
     return EVERYONE_RECIPIENT_FILTER;
@@ -22,7 +26,10 @@ export function normalizeRecipientFilter(filter: string | null | undefined): str
   if (!filter || filter === 'none') {
     return null;
   }
-  return filter;
+  return filter
+    .split(',')
+    .map((segment) => (BARE_TIER_ID.test(segment.trim()) ? `tier_id:${segment.trim()}` : segment))
+    .join(',');
 }
 
 const BASE_SEGMENTS: string[] = [FREE_SEGMENT, PAID_SEGMENT];

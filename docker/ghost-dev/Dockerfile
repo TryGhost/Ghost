@@ -1,26 +1,18 @@
-# syntax=docker/dockerfile:1@sha256:ecfaec9ed6d810b56388c508f4121597bfbba70d41a6dfeee4d8cad5f295fc32
+# syntax=docker/dockerfile:1@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
 # Minimal Development Dockerfile for Ghost Core
 # Source code is mounted at runtime for hot-reload support
 
-ARG NODE_VERSION=22.23.1
+ARG NODE_VERSION=22.23.3
 
 FROM node:$NODE_VERSION-bookworm-slim
 
 # Install system dependencies needed for building native modules.
-# watchman: ember-cli (ghost/admin's dev server) auto-detects and prefers it
-# over its default Node-based file watcher, which is far less efficient over
-# a large tree like this bind-mounted monorepo -- without it, ember serve's
-# idle watch mode pegs multiple CPU cores continuously (observed: ~240% CPU
-# at idle, not during an active build). Only benefits ghost-dev's own
-# container; the host-hybrid flow runs ember-cli on the developer's own
-# machine, not in this image, so this has no effect there either way.
 RUN apt-get update && \
     apt-get install -y \
     build-essential \
     curl \
     python3 \
-    git \
-    watchman && \
+    git && \
     rm -rf /var/lib/apt/lists/* && \
     apt clean
 
@@ -39,12 +31,12 @@ COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .pnpmfile.mjs ./
 # whole dir, so adding a patch needs no change here.
 COPY patches patches
 
-# Copy the manifests of the top-level dirs that hold ghost/core's dependency
-# closure — ghost/* (core, i18n, parse-email-address), koenig/* (the kg-*
-# packages), and configs/* (the shared eslint config, a dev dep in the graph).
+# Copy the manifests of the top-level dirs that hold ghost's dependency
+# closure — ghost itself, koenig/* (the kg-* packages), and configs/* (the
+# shared eslint config, a dev dep in the graph).
 # --parents preserves each file's directory structure (plain COPY globs would
 # flatten them); node_modules is excluded by .dockerignore. apps/* and e2e
-# are deliberately omitted: nothing in ghost/core's closure lives there,
+# are deliberately omitted: nothing in ghost's closure lives there,
 # so leaving them out keeps this layer (and the install below) from
 # busting cache when an unrelated frontend package.json changes. `pnpm install
 # --filter "ghost..."` then installs exactly the closure — pnpm's own graph is
@@ -53,7 +45,7 @@ COPY patches patches
 # packages/ — the filtered install will fail loudly with the missing manifest,
 # which is the signal to add that dir here.)
 COPY --parents \
-    ghost/*/package.json \
+    ghost/package.json \
     koenig/*/package.json \
     configs/*/package.json \
     packages/**/package.json \
@@ -70,7 +62,7 @@ COPY .github/hooks .github/hooks
 # Enable corepack so it can read packageManager from package.json and provide pnpm
 RUN corepack enable
 
-# Install ONLY ghost/core's workspace closure (its name is "ghost"; the trailing
+# Install ONLY ghost's workspace closure (its name is "ghost"; the trailing
 # "..." selects it plus every workspace dependency). Deps live in the shared
 # root store; non-selected projects (apps/*, e2e, ...) have their
 # manifests present but are not installed.
@@ -78,8 +70,7 @@ RUN --mount=type=cache,target=/root/.local/share/pnpm/store,id=pnpm-store \
     pnpm install --filter "ghost..." --frozen-lockfile --prefer-offline
 
 # Copy entrypoint script that optionally loads Tinybird config
-COPY docker/ghost-dev/entrypoint.sh entrypoint.sh
-RUN chmod +x entrypoint.sh
+COPY --chmod=755 docker/ghost-dev/entrypoint.sh entrypoint.sh
 
 # Public app assets are served via /ghost/assets/* in dev mode.
 # Caddy forwards these paths to host frontend dev servers.
@@ -91,9 +82,9 @@ ENV portal__url=/ghost/assets/portal/portal.min.js \
     announcementBar__url=/ghost/assets/announcement-bar/announcement-bar.min.js \
     adminToolbar__url=/ghost/assets/admin-toolbar/admin-toolbar.min.js
 
-# Source code will be mounted from host at /home/ghost/ghost/core
+# Source code will be mounted from host at /home/ghost/ghost
 # This allows the Ghost dev script to pick up file changes for hot-reload
-WORKDIR /home/ghost/ghost/core
+WORKDIR /home/ghost/ghost
 
 ENTRYPOINT ["/home/ghost/entrypoint.sh"]
 CMD ["pnpm", "dev"]

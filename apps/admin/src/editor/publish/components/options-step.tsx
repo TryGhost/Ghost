@@ -7,6 +7,7 @@ import {
 } from '@tryghost/admin-x-framework/utils/recipient-filter';
 import { useMembersCount } from '@tryghost/admin-x-framework/api/members';
 import { EDITOR_REQUEST_OPTIONS } from '@/editor/request-options';
+import { useEmailSize } from '@/editor/use-email-size';
 import { useState } from 'react';
 import {
   publishAlreadySent,
@@ -15,15 +16,19 @@ import {
   publishFlowOptions,
   publishLimitsError,
   publishSettingEmailRecipients,
+  publishSettingNavigation,
   publishSettingPublishAt,
   publishSettingPublishType,
 } from '@tryghost/test-data/selectors/editor';
 import { EmailRecipientsOptions } from './email-recipients-options';
 import { PublishAtOptions } from './publish-at-options';
 import { LimitMessage } from './limit-message';
+import { NavigationOptions } from './navigation-options';
 import { PublishSetting, PublishSettingNote } from './publish-setting';
 import { PublishTypeOptions } from './publish-type-options';
 import { recipientsRowLabel, relativeTime } from '@/editor/publish/publish-copy';
+import { NAVIGATION_OPTIONS } from '@/editor/publish/publish-options';
+import type { NavigationPlacement } from '@tryghost/admin-x-framework/helpers';
 import type {
   NewsletterInput,
   PublishOptionsState,
@@ -31,13 +36,13 @@ import type {
 } from '@/editor/publish/publish-options';
 import type { PublishFlowPost } from '@/editor/publish/flow-post';
 
-type Section = 'publishType' | 'emailRecipients' | 'publishAt';
+type Section = 'publishType' | 'emailRecipients' | 'navigation' | 'publishAt';
 
 export interface OptionsStepProps {
   post: PublishFlowPost;
   state: PublishOptionsState;
   timezone: string;
-  /** True when the site turned newsletters off; hides the historic send row. */
+  /** True when the site turned newsletters or members off; hides the historic send row. */
   emailDisabledInSettings: boolean;
   /** The limit checks can demote the publish type, so review waits for them. */
   limitsChecked: boolean;
@@ -48,6 +53,7 @@ export interface OptionsStepProps {
   onSetRecipientFilter: (filter: string | null) => void;
   onToggleScheduled: (isScheduled: boolean) => void;
   onSetScheduledAt: (date: Date) => void;
+  onSetNavigationPlacement: (placement: NavigationPlacement) => void;
   onContinue: () => void;
   onRetryLimits: () => void;
 }
@@ -76,6 +82,28 @@ function RecipientsRowTitle({ state }: { state: PublishOptionsState }) {
   );
 }
 
+function EmailSizeNote({ post }: { post: PublishFlowPost }) {
+  const emailSize = useEmailSize(post);
+
+  if (!emailSize?.overLimit) {
+    return null;
+  }
+
+  return (
+    <Banner className="mb-4" data-testid={publishEmailSizeWarning} variant="warning">
+      <Stack gap="xs">
+        <Text weight="semibold">
+          This email is <span className="text-state-warning">{emailSize.sizeKb}kB</span>
+        </Text>
+        <Text size="sm" tone="secondary">
+          Email newsletters may get clipped in the inbox behind a “View entire message” link when
+          they’re over 100kB.
+        </Text>
+      </Stack>
+    </Banner>
+  );
+}
+
 export function OptionsStep({
   post,
   state,
@@ -88,6 +116,7 @@ export function OptionsStep({
   onSetRecipientFilter,
   onToggleScheduled,
   onSetScheduledAt,
+  onSetNavigationPlacement,
   onContinue,
   onRetryLimits,
 }: OptionsStepProps) {
@@ -99,16 +128,23 @@ export function OptionsStep({
   const selectedType = state.publishTypeOptions.find(
     (option) => option.value === state.publishType,
   );
+  const selectedNavigation = NAVIGATION_OPTIONS.find(
+    (option) => option.value === (state.navigationPlacement ?? 'none'),
+  );
   const historicEmail = post.email;
   const historicRecipientType = getRecipientType(normalizeRecipientFilter(post.emailSegment));
 
   return (
     <Stack data-testid={publishFlowOptions} gap="xl">
       <Stack gap="none">
-        <Text as="h2" className="text-state-success" size="3xl" weight="bold">
+        <Text
+          as="h2"
+          className="text-5xl leading-tighter tracking-tight text-state-success"
+          weight="bold"
+        >
           Ready, set, publish.
         </Text>
-        <Text size="3xl" weight="bold">
+        <Text as="h2" className="text-5xl leading-tighter tracking-tight" weight="bold">
           Share it with the world.
         </Text>
       </Stack>
@@ -127,13 +163,7 @@ export function OptionsStep({
       <Stack gap="none">
         <PublishSetting
           disabled={state.emailUnavailable || publishBlocked}
-          footer={
-            state.willEmail ? (
-              // The size estimate lands with the email-size-warning port; the
-              // slot keeps its place in the layout until then.
-              <div data-testid={publishEmailSizeWarning} hidden />
-            ) : null
-          }
+          footer={state.willEmail ? <EmailSizeNote post={post} /> : null}
           icon={<LucideIcon.Send className="size-4" />}
           open={openSection === 'publishType'}
           testId={publishSettingPublishType}
@@ -176,6 +206,14 @@ export function OptionsStep({
           </PublishSetting>
         )}
 
+        {state.missingRecipients && !publishBlocked ? (
+          <PublishSettingNote>
+            {state.publishType === 'send'
+              ? 'Choose at least one recipient to send this email.'
+              : 'No recipients are selected, so this post will be published without being emailed.'}
+          </PublishSettingNote>
+        ) : null}
+
         {historicEmail && !emailDisabledInSettings ? (
           <PublishSetting
             icon={<LucideIcon.Users className="size-4" />}
@@ -196,6 +234,21 @@ export function OptionsStep({
               .join(' ')}
             disabled
           />
+        ) : null}
+
+        {state.showNavigationOption ? (
+          <PublishSetting
+            icon={<LucideIcon.SquareMenu className="size-4" />}
+            open={openSection === 'navigation'}
+            testId={publishSettingNavigation}
+            title={selectedNavigation?.display}
+            onToggle={toggle('navigation')}
+          >
+            <NavigationOptions
+              placement={state.navigationPlacement}
+              onChange={onSetNavigationPlacement}
+            />
+          </PublishSetting>
         ) : null}
 
         <PublishSetting

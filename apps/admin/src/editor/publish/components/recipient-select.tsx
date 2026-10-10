@@ -10,6 +10,7 @@ import { formatNumber } from '@tryghost/shade/utils';
 import { useMembersCount } from '@tryghost/admin-x-framework/api/members';
 import { EDITOR_REQUEST_OPTIONS } from '@/editor/request-options';
 import { useId, useState } from 'react';
+import { LabelPicker } from '@/members/api';
 import {
   publishRecipientFree,
   publishRecipientPaid,
@@ -20,7 +21,10 @@ import {
 export interface SegmentOption {
   /** The NQL segment, e.g. `tier:gold` or `label:vip`. */
   segment: string;
+  /** Other spellings of the same audience, shown and toggled as this option. */
+  aliases?: string[];
   name: string;
+  group: string;
 }
 
 export interface RecipientSelectProps {
@@ -40,7 +44,7 @@ function SegmentCount({ filter }: { filter: string | null }) {
   }
 
   return (
-    <Text as="span" size="sm" tone="secondary">
+    <Text as="span" leading="none" size="sm" tone="secondary">
       ({formatNumber(count)})
     </Text>
   );
@@ -59,7 +63,13 @@ export function RecipientSelect({
   onChange,
 }: RecipientSelectProps) {
   const id = useId();
-  const segments = parseRecipientFilter(filter);
+  const parsed = parseRecipientFilter(filter);
+  const canonicalSegment = (segment: string) =>
+    segmentOptions.find((option) => option.aliases?.includes(segment))?.segment ?? segment;
+  const segments = {
+    ...parsed,
+    specific: [...new Set(parsed.specific.map(canonicalSegment))],
+  };
   // Remembers a selection across an off/on toggle, and keeps the picker open
   // when "Specific people" is checked with nothing selected yet.
   const [forceSpecific, setForceSpecific] = useState(false);
@@ -164,16 +174,29 @@ export function RecipientSelect({
           <Text size="sm" weight="medium">
             Selection
           </Text>
-          {segmentOptions.map((option) => (
-            <Inline key={option.segment} gap="sm">
-              <Checkbox
-                checked={segments.specific.includes(option.segment)}
-                id={`${id}-${option.segment}`}
-                onCheckedChange={() => toggleSegment(option.segment)}
-              />
-              <Label htmlFor={`${id}-${option.segment}`}>{option.name}</Label>
-            </Inline>
-          ))}
+          <LabelPicker
+            labels={segmentOptions.map((option) => ({
+              id: option.segment,
+              slug: option.segment,
+              name: option.name,
+              group: option.group,
+            }))}
+            optionSource={{
+              options: segmentOptions.map((option) => ({
+                value: option.segment,
+                label: option.name,
+              })),
+              isInitialLoad: false,
+              isSearching: false,
+              isLoadingMore: false,
+              hasMore: false,
+              loadMore: () => {},
+              shouldClientFilter: true,
+            }}
+            placeholder="Search labels and tiers..."
+            selectedSlugs={segments.specific}
+            onToggle={toggleSegment}
+          />
         </Stack>
       ) : null}
     </Stack>

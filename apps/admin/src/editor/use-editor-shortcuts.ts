@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { isMacPlatform } from '@/utils/is-mac-platform';
 
 /** Mounted editor shortcuts share modifier matching, repeat suppression and cleanup. */
 function useShortcut(
@@ -14,6 +15,8 @@ function useShortcut(
     const onKeyDown = (event: KeyboardEvent) => {
       if (
         !current.current.enabled ||
+        // autofill sends keydown events without a key
+        typeof event.key !== 'string' ||
         event.key.toLowerCase() !== key ||
         !(event.metaKey || event.ctrlKey) ||
         event.altKey ||
@@ -41,6 +44,16 @@ export function usePreviewShortcut(onToggle: () => void, enabled = true): void {
 /** Cmd/Ctrl+Shift+P opens the publish flow. */
 export function usePublishShortcut(onPublish: () => void, enabled = true): void {
   useShortcut('p', true, onPublish, enabled);
+}
+
+/** The preview chord as the writer's platform names it: ⌘ on a Mac, Ctrl elsewhere. */
+export function previewShortcutLabel(): string {
+  return isMacPlatform() ? '⌘P' : 'Ctrl+P';
+}
+
+/** The publish chord as the writer's platform names it. */
+export function publishShortcutLabel(): string {
+  return isMacPlatform() ? '⌘⇧P' : 'Ctrl+Shift+P';
 }
 
 /** Cmd/Ctrl+S commits the focused text field before saving, replacing the browser save dialog. */

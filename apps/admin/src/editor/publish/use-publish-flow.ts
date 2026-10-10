@@ -1,22 +1,27 @@
 import { apiUrl } from '@tryghost/admin-x-framework/helpers';
 import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react';
+import { toast } from 'sonner';
 import { useFetchApi } from '@tryghost/admin-x-framework/hooks';
-import { useRetryEmail } from '@tryghost/admin-x-framework/api/emails';
+import { useEmailSendingStatus, useRetryEmail } from '@tryghost/admin-x-framework/api/emails';
+import { postEmailResponseSchema, publishedPostCountResponseSchema } from './api-response-schemas';
+import { LimitCheckError, createPublishOptions } from './publish-options';
+import { reportPublishFailure } from './report-publish-failure';
 import {
-  confirmationResponseSchema,
-  publishedPostCountResponseSchema,
-} from './api-response-schemas';
-import { createEmailConfirmation } from './email-confirmation';
-import { createPublishOptions } from './publish-options';
-import {
+  CompletionFailureError,
+  DROPPED_MESSAGE,
+  RETRY_ELIGIBILITY_FAILED_MESSAGE,
+  UNEXPECTED_MESSAGE,
   describeCompletionFailure,
   describeRejectedAction,
   type CompletionFailure,
 } from './completion-message';
 import { EDITOR_REQUEST_OPTIONS } from '@/editor/request-options';
+import { isSessionInvalid } from '@/editor/session/error-mapping';
+import { useMinimumDuration } from '@/hooks/use-minimum-duration';
 import { writePublishCelebration } from './celebration-handoff';
-import type { EmailConfirmationOutcome } from './email-confirmation';
 import type { PublishFlowPost } from './flow-post';
+import type { PublishNavigation } from './use-publish-navigation';
+import type { NavigationPlacement } from '@tryghost/admin-x-framework/helpers';
 import type {
   PublishDispatcher,
   PublishLimitPorts,
@@ -30,21 +35,42 @@ import type { SaveCompletion } from '@/editor/engine/save-engine';
 export type PublishStep = 'options' | 'confirm' | 'complete' | 'email-error';
 export type ConfirmStatus = 'idle' | 'running' | 'success' | 'failure';
 
+/**
+ * The least time a send or a retried send shows its running state before
+ * handing off to post analytics, so the hand-off is not instant.
+ */
+export const MIN_EMAIL_HANDOFF_LENGTH = 1500;
+
 export interface PublishFlowOptions {
   post: PublishFlowPost;
   site: PublishSiteInput;
   user: PublishUserInput;
   limits?: PublishLimitPorts;
+  /** The page's site navigation placement; absent when it cannot be changed. */
+  navigation?: PublishNavigation | null;
   /** The machine's clock, injected for tests. */
   now?: () => Date;
   dispatch: PublishDispatcher;
+  /**
+   * Asks the writer to sign in again, resolving true once they have. A limit check,
+   * an eligibility read or an email retry that finds the session gone asks, and is
+   * repeated once the writer is back. A repeat that finds it gone again fails rather
+   * than asking again.
+   */
+  requestReauth?: () => Promise<boolean>;
+  showCompletion?: boolean;
   onBeforePublish?: () => Promise<void>;
   onCompleted?: (info: { postId: string; isScheduled: boolean; hasEmail: boolean }) => void;
 }
 
 type PublishOptionActions = Pick<
   PublishOptionsMachine,
-  'setPublishType' | 'setNewsletter' | 'setRecipientFilter' | 'setScheduledAt' | 'setIsScheduled'
+  | 'setPublishType'
+  | 'setNewsletter'
+  | 'setRecipientFilter'
+  | 'setScheduledAt'
+  | 'setIsScheduled'
+  | 'setNavigationPlacement'
 >;
 
 export interface PublishFlow extends PublishOptionActions {
@@ -61,14 +87,18 @@ export interface PublishFlow extends PublishOptionActions {
   limitsChecked: boolean;
   /** A failed limit check blocks review until the user retries it successfully. */
   limitsFailure: string | null;
-  /** Set when the publish landed but its email could not be confirmed either way. */
-  emailNote: string | null;
+  /** True while the publish request itself is in flight; closing then would hide its outcome. */
+  publishInFlight: boolean;
   /** Publish intent captured on entering confirm, so saving cannot change the copy. */
   captured: {
     willPublish: boolean;
     willEmail: boolean;
     willOnlyEmail: boolean;
     isScheduled: boolean;
+    /** An email type was chosen with no recipients, so the post publishes without one. */
+    skipsEmail: boolean;
+    /** The navigation the page will be listed in, when the flow offers the choice. */
+    navigationPlacement: NavigationPlacement;
   };
   retryLimits: () => void;
   toConfirm: () => void;
@@ -76,23 +106,42 @@ export interface PublishFlow extends PublishOptionActions {
   confirmPublish: () => Promise<void>;
   retryEmail: () => Promise<void>;
   retryStatus: ConfirmStatus;
-  retryFailure: string | null;
+  retryFailure: CompletionFailure | null;
+  canRetryEmail: boolean;
+  /** Whether the email can be retried could not be read, so the retry is not offered. */
+  retryEligibilityFailed: boolean;
+  checkingRetryEligibility: boolean;
+  checkRetryEligibility: () => void;
   /** Abandons any asynchronous continuation before the caller closes the modal. */
   cancel: () => void;
 }
 
 const UNKNOWN_EMAIL_ERROR = 'Unknown error';
 const UNKNOWN_RETRY_ERROR = 'Unknown Error occurred when attempting to resend';
-export const EMAIL_UNCONFIRMED =
-  'We couldn’t confirm the newsletter was sent. Check the post’s email status from the posts list.';
+export const SCHEDULE_PASSED =
+  'The scheduled time has passed. Go back and choose a future date and time.';
+export const NAVIGATION_SAVE_FAILED =
+  "Page published, but its navigation couldn't be updated. You can change it in Settings → Navigation.";
 
-function initialEmailError(post: PublishFlowPost): string | null {
+/** The error the flow opens on: set only for a published or sent post whose email failed. */
+export function initialEmailError(post: PublishFlowPost): string | null {
   const didEmailFail =
     post.displayName === 'post' &&
     (post.status === 'published' || post.status === 'sent') &&
     post.email?.status === 'failed';
 
-  return didEmailFail ? (post.email?.error ?? UNKNOWN_EMAIL_ERROR) : null;
+  return didEmailFail ? post.email?.error || UNKNOWN_EMAIL_ERROR : null;
+}
+
+function captureIntent(state: PublishOptionsState): PublishFlow['captured'] {
+  return {
+    willPublish: state.willPublish,
+    willEmail: state.willEmail,
+    willOnlyEmail: state.willOnlyEmail,
+    isScheduled: state.isScheduled,
+    skipsEmail: state.missingRecipients && state.willPublish,
+    navigationPlacement: state.showNavigationOption ? state.navigationPlacement : null,
+  };
 }
 
 export function usePublishFlow({
@@ -100,8 +149,11 @@ export function usePublishFlow({
   site,
   user,
   limits,
+  navigation,
   now,
   dispatch,
+  requestReauth,
+  showCompletion = true,
   onBeforePublish,
   onCompleted,
 }: PublishFlowOptions): PublishFlow {
@@ -111,8 +163,37 @@ export function usePublishFlow({
 
   // The machine reads its inputs once, so it is keyed on the post rather than on
   // the identity of props a re-rendering caller rebuilds.
-  const inputs = useRef({ post, site, user, limits, now });
-  inputs.current = { post, site, user, limits, now };
+  const inputs = useRef({ post, site, user, limits, navigation, now });
+  inputs.current = { post, site, user, limits, navigation, now };
+  const requestReauthRef = useRef(requestReauth);
+  requestReauthRef.current = requestReauth;
+  const activeRef = useRef(true);
+
+  /** Signs the writer in again when `error` is an expired session; true once they are back. */
+  const reauthenticated = useCallback(async (error: unknown): Promise<boolean> => {
+    const reauth = requestReauthRef.current;
+    return Boolean(reauth && isSessionInvalid(error) && (await reauth()));
+  }, []);
+
+  /**
+   * Runs `attempt`; a failure on an expired session asks the writer to sign in and,
+   * once they have, runs it once more. A session that is gone again straight after a
+   * sign-in fails rather than asking again, so the writer is never asked in a loop;
+   * their next action asks.
+   */
+  const withSignIn = useCallback(
+    async <T>(attempt: () => Promise<T>): Promise<T> => {
+      try {
+        return await attempt();
+      } catch (error) {
+        if (!activeRef.current || !(await reauthenticated(error)) || !activeRef.current) {
+          throw error;
+        }
+      }
+      return attempt();
+    },
+    [reauthenticated],
+  );
 
   const machine = useMemo(() => {
     const current = inputs.current;
@@ -122,6 +203,7 @@ export function usePublishFlow({
       site: current.site,
       user: current.user,
       limits: current.limits,
+      navigation: current.navigation ? { placement: current.navigation.placement } : null,
       now: current.now,
     });
   }, [post.id]);
@@ -149,37 +231,32 @@ export function usePublishFlow({
         machine.setIsScheduled(value);
         refresh();
       },
+      setNavigationPlacement: (value) => {
+        machine.setNavigationPlacement(value);
+        refresh();
+      },
     }),
     [machine],
   );
 
-  // The email is created by the save, so its id is only knowable from a reload.
-  const emailIdRef = useRef<string | null>(post.email?.id ?? null);
+  // A failed send's email can be missing its id, which only a reload can supply.
+  const [emailId, setEmailId] = useState(post.email?.id ?? null);
 
-  const confirmation = useMemo(
-    () =>
-      createEmailConfirmation({
-        reload: async (postId) => {
-          const data = confirmationResponseSchema.parse(
-            await fetchApi<unknown>(
-              apiUrl(`/posts/${postId}/`, { include: 'email' }),
-              EDITOR_REQUEST_OPTIONS,
-            ),
-          );
-          const reloaded = data.posts.at(0);
+  const reloadEmailId = useCallback(
+    async (postId: string) => {
+      const data = postEmailResponseSchema.parse(
+        await fetchApi<unknown>(
+          apiUrl(`/posts/${postId}/`, { include: 'email' }),
+          EDITOR_REQUEST_OPTIONS,
+        ),
+      );
+      const reloadedId = data.posts.at(0)?.email?.id;
 
-          if (!reloaded) {
-            throw new Error('The published post was missing from its reload response.');
-          }
-
-          emailIdRef.current = reloaded.email?.id ?? emailIdRef.current;
-          return { status: reloaded.status, email: reloaded.email ?? null };
-        },
-        retry: async (emailId) => {
-          await retryEmailRequest({ id: emailId, sessionExpiryRedirect: false });
-        },
-      }),
-    [fetchApi, retryEmailRequest],
+      if (reloadedId && activeRef.current) {
+        setEmailId(reloadedId);
+      }
+    },
+    [fetchApi],
   );
 
   const [step, setStep] = useState<PublishStep>(() =>
@@ -194,31 +271,125 @@ export function usePublishFlow({
   const [completedAt, setCompletedAt] = useState<string | null>(null);
   const [checkedMachine, setCheckedMachine] = useState<PublishOptionsMachine | null>(null);
   const [limitsFailure, setLimitsFailure] = useState<string | null>(null);
-  const [emailNote, setEmailNote] = useState<string | null>(null);
+  const [publishInFlight, setPublishInFlight] = useState(false);
   const [retryStatus, setRetryStatus] = useState<ConfirmStatus>('idle');
-  const [retryFailure, setRetryFailure] = useState<string | null>(null);
-  const [captured, setCaptured] = useState(() => {
+  const [retryFailure, setRetryFailure] = useState<CompletionFailure | null>(null);
+  const [findingEmail, setFindingEmail] = useState(false);
+  const retryEligibility = useEmailSendingStatus(emailId ?? '', {
+    // Paused while a retry runs so the send in progress cannot hide its own button;
+    // re-enabling refetches, so every way a retry ends refreshes eligibility.
+    enabled: step === 'email-error' && Boolean(emailId) && retryStatus !== 'running',
+    staleTime: 0,
+    refetchOnWindowFocus: true,
+    retry: false,
+    defaultErrorHandler: false,
+    requestOptions: EDITOR_REQUEST_OPTIONS,
+  });
+  const sending = retryEligibility.data?.email_statuses[0]?.sending;
+  // A background read error keeps the last successful decision. Core still
+  // validates fresh state before accepting a retry.
+  const canRetryEmail =
+    retryEligibility.isFetchedAfterMount &&
+    sending?.status === 'failed' &&
+    sending.retryable === true;
+  // Ember's "Check retry availability": an unread eligibility is said so, not hidden.
+  // Without an email id there is nothing to read, so the check reloads the post for one.
+  const retryEligibilityFailed =
+    step === 'email-error' &&
+    retryStatus !== 'running' &&
+    (!emailId || (retryEligibility.isError && retryEligibility.data === undefined));
+  const checkingRetryEligibility = findingEmail || retryEligibility.isFetching;
+  const eligibilityError = retryEligibility.error;
+
+  // Reported once each time the writer is told: a failed background read keeps the last
+  // good decision on screen, so its error is never shown, and refetches that fail again
+  // while the failure is already showing are the same failure.
+  const eligibilityFailureReportedRef = useRef(false);
+  useEffect(() => {
+    if (!retryEligibilityFailed) {
+      eligibilityFailureReportedRef.current = false;
+      return;
+    }
+    if (eligibilityError && !eligibilityFailureReportedRef.current) {
+      eligibilityFailureReportedRef.current = true;
+      reportPublishFailure('retry-eligibility', RETRY_ELIGIBILITY_FAILED_MESSAGE, {
+        error: eligibilityError,
+        postId: post.id,
+      });
+    }
+  }, [eligibilityError, post.id, retryEligibilityFailed]);
+
+  const refetchEligibility = retryEligibility.refetch;
+  const refetchEligibilityRef = useRef(refetchEligibility);
+  refetchEligibilityRef.current = refetchEligibility;
+  // Set once a failed eligibility read has asked for sign-in. Background reads that fail
+  // again do not ask again until a read succeeds or the writer checks again themselves.
+  const eligibilitySignInAskedRef = useRef(false);
+  if (retryEligibility.isSuccess && !retryEligibility.isFetching) {
+    eligibilitySignInAskedRef.current = false;
+  }
+
+  // An eligibility read that found the session gone asks for sign-in and reads again.
+  useEffect(() => {
+    if (
+      !eligibilityError ||
+      step !== 'email-error' ||
+      eligibilitySignInAskedRef.current ||
+      !isSessionInvalid(eligibilityError)
+    ) {
+      return;
+    }
+    eligibilitySignInAskedRef.current = true;
+    void reauthenticated(eligibilityError).then((signedIn) => {
+      if (signedIn && activeRef.current) {
+        void refetchEligibilityRef.current();
+      }
+    });
+  }, [eligibilityError, reauthenticated, step]);
+
+  const checkRetryEligibility = useCallback(() => {
+    eligibilitySignInAskedRef.current = false;
+    if (emailId) {
+      void refetchEligibility();
+      return;
+    }
+
+    setFindingEmail(true);
+    // A post whose email still has no id stays unchecked; the writer can check again.
+    withSignIn(() => reloadEmailId(post.id))
+      .catch((error: unknown) => {
+        if (activeRef.current) {
+          reportPublishFailure('retry-eligibility', RETRY_ELIGIBILITY_FAILED_MESSAGE, {
+            error,
+            postId: post.id,
+          });
+        }
+      })
+      .finally(() => {
+        if (activeRef.current) {
+          setFindingEmail(false);
+        }
+      });
+  }, [emailId, post.id, refetchEligibility, reloadEmailId, withSignIn]);
+
+  const [captured, setCaptured] = useState<PublishFlow['captured']>(() => {
     if (initialEmailError(post)) {
       return {
         willPublish: post.status === 'published' && post.emailOnly !== true,
         willEmail: true,
         willOnlyEmail: post.emailOnly === true || post.status === 'sent',
         isScheduled: false,
+        skipsEmail: false,
+        navigationPlacement: null,
       };
     }
 
-    const initialState = machine.getState();
-    return {
-      willPublish: initialState.willPublish,
-      willEmail: initialState.willEmail,
-      willOnlyEmail: initialState.willOnlyEmail,
-      isScheduled: initialState.isScheduled,
-    };
+    return captureIntent(machine.getState());
   });
-  const activeRef = useRef(true);
   const completedRef = useRef(false);
   const publishRunningRef = useRef(false);
   const retryRunningRef = useRef(false);
+  const handoffMinimum = useMinimumDuration(MIN_EMAIL_HANDOFF_LENGTH);
   const limitCheckGenerationRef = useRef(0);
   const limitCheckRef = useRef<{
     machine: PublishOptionsMachine;
@@ -226,37 +397,65 @@ export function usePublishFlow({
   } | null>(null);
 
   const checkLimits = useCallback(async () => {
-    const generation = limitCheckGenerationRef.current + 1;
-    limitCheckGenerationRef.current = generation;
-    setCheckedMachine(null);
-    setLimitsFailure(null);
-    const existing = limitCheckRef.current;
-    const check =
-      existing?.machine === machine
-        ? existing
-        : { machine, promise: machine.checkLimits().then(() => undefined) };
-    limitCheckRef.current = check;
+    // Repeated once, only after the writer signs in again on an expired session; a
+    // session gone again straight after that sign-in fails rather than asking again.
+    for (let signedInAgain = false; ; signedInAgain = true) {
+      const generation = limitCheckGenerationRef.current + 1;
+      limitCheckGenerationRef.current = generation;
+      const isCurrent = () => activeRef.current && generation === limitCheckGenerationRef.current;
+      setCheckedMachine(null);
+      setLimitsFailure(null);
+      const existing = limitCheckRef.current;
+      const check =
+        existing?.machine === machine
+          ? existing
+          : { machine, promise: machine.checkLimits().then(() => undefined) };
+      limitCheckRef.current = check;
 
-    try {
-      await check.promise;
-    } catch (error) {
-      if (activeRef.current && generation === limitCheckGenerationRef.current) {
-        const { message } = describeRejectedAction(error);
-        setLimitsFailure(`Couldn’t check publishing limits. ${message}`);
+      let rejection: { error: unknown } | null = null;
+      try {
+        await check.promise;
+      } catch (error) {
+        rejection = { error };
+      } finally {
+        if (limitCheckRef.current === check) {
+          limitCheckRef.current = null;
+        }
+      }
+
+      if (!isCurrent()) {
+        return;
+      }
+
+      if (!rejection) {
+        setCheckedMachine(machine);
         refresh();
+        return;
       }
-      return;
-    } finally {
-      if (limitCheckRef.current === check) {
-        limitCheckRef.current = null;
-      }
-    }
 
-    if (activeRef.current && generation === limitCheckGenerationRef.current) {
-      setCheckedMachine(machine);
+      const { error } = rejection;
+      const checkFailure = error instanceof LimitCheckError;
+      const cause = checkFailure ? error.cause : error;
+      const signedIn = !signedInAgain && (await reauthenticated(cause));
+      if (!isCurrent()) {
+        return;
+      }
+      if (signedIn) {
+        continue;
+      }
+
+      const { message } = describeRejectedAction(cause);
+      const shown = `${
+        checkFailure && error.limit === 'emails'
+          ? 'Couldn’t check email limits.'
+          : 'Couldn’t check publishing limits.'
+      } ${message}`;
+      setLimitsFailure(shown);
+      reportPublishFailure('limit-check', shown, { error, postId: inputs.current.post.id });
       refresh();
+      return;
     }
-  }, [machine]);
+  }, [machine, reauthenticated]);
 
   // A schedule chosen before the editor sat idle may now be in the past.
   useEffect(() => {
@@ -268,11 +467,8 @@ export function usePublishFlow({
     };
   }, [checkLimits, machine]);
 
-  const confirmationRef = useRef(confirmation);
-  confirmationRef.current = confirmation;
   const cancel = useCallback(() => {
     activeRef.current = false;
-    confirmationRef.current.cancel();
     limitCheckGenerationRef.current += 1;
   }, []);
 
@@ -314,12 +510,7 @@ export function usePublishFlow({
     if (!limitsChecked || !state.canPublish) {
       return;
     }
-    setCaptured({
-      willPublish: state.willPublish,
-      willEmail: state.willEmail,
-      willOnlyEmail: state.willOnlyEmail,
-      isScheduled: state.isScheduled,
-    });
+    setCaptured(captureIntent(state));
     setFailure(null);
     setConfirmStatus('idle');
     setStep('confirm');
@@ -340,46 +531,20 @@ export function usePublishFlow({
         return;
       }
       completedRef.current = true;
-      setEmailErrorMessage(null);
-      setConfirmStatus('success');
-      setStep('complete');
-      // The server stamps the publish time; this is the closest the client has.
-      setCompletedAt(new Date().toISOString());
+      if (showCompletion) {
+        setEmailErrorMessage(null);
+        setConfirmStatus('success');
+        setStep('complete');
+        // The server stamps the publish time; this is the closest the client has.
+        setCompletedAt(new Date().toISOString());
+      }
       try {
         writePublishCelebration({ postId: post.id, displayName: post.displayName, isScheduled });
       } finally {
         onCompleted?.({ postId: post.id, isScheduled, hasEmail });
       }
     },
-    [onCompleted, post.displayName, post.id],
-  );
-
-  const applyEmailOutcome = useCallback(
-    (outcome: EmailConfirmationOutcome, isScheduled: boolean): void => {
-      if (!activeRef.current) {
-        return;
-      }
-
-      if (outcome.kind === 'failed') {
-        setEmailErrorMessage(outcome.error ?? UNKNOWN_EMAIL_ERROR);
-        setStep('email-error');
-        setConfirmStatus('idle');
-        return;
-      }
-
-      // Cancellation means the flow is being torn down, so nothing is completed
-      // and the caller is never told to navigate.
-      if (outcome.kind === 'cancelled') {
-        setConfirmStatus('idle');
-        return;
-      }
-
-      if (outcome.kind !== 'submitted') {
-        setEmailNote(EMAIL_UNCONFIRMED);
-      }
-      complete(isScheduled, outcome.kind !== 'not-needed');
-    },
-    [complete],
+    [onCompleted, post.displayName, post.id, showCompletion],
   );
 
   const confirmPublish = useCallback(async () => {
@@ -387,7 +552,25 @@ export function usePublishFlow({
       return;
     }
 
+    // The chosen time can pass while the flow sits open, or while the pre-save
+    // cleanup waits on a sign-in, so it is checked against the clock at the click
+    // and again before the publish is sent. Scheduling is not switched off here:
+    // that would turn the confirmed schedule into an immediate publish.
+    const schedulePassed = () => {
+      const current = machine.getState();
+      return (
+        current.isScheduled && Date.parse(current.scheduledAt) < Date.parse(current.minScheduledAt)
+      );
+    };
+
+    if (schedulePassed()) {
+      setFailure({ message: SCHEDULE_PASSED });
+      setConfirmStatus('failure');
+      return;
+    }
+
     publishRunningRef.current = true;
+    handoffMinimum.start();
     setFailure(null);
     setConfirmStatus('running');
 
@@ -395,20 +578,29 @@ export function usePublishFlow({
 
     if (!command) {
       publishRunningRef.current = false;
-      setFailure({ message: 'This post can no longer be published from here. Reload the editor.' });
+      setFailure({ message: DROPPED_MESSAGE });
       setConfirmStatus('failure');
+      reportPublishFailure('no-command', DROPPED_MESSAGE, { postId: post.id });
       return;
     }
 
     const { isScheduled, willEmailImmediately, willEmail } = state;
+    const navigationChange = state.navigationPlacementChanged
+      ? { placement: state.navigationPlacement, port: inputs.current.navigation }
+      : null;
 
     try {
       await onBeforePublish?.();
     } catch (error) {
       if (activeRef.current) {
         publishRunningRef.current = false;
-        setFailure(describeRejectedAction(error));
+        const shown = describeRejectedAction(error, UNEXPECTED_MESSAGE);
+        setFailure(shown);
         setConfirmStatus('failure');
+        // A save that settled as failed was reported by the session; anything else is a fault.
+        if (!(error instanceof CompletionFailureError)) {
+          reportPublishFailure('pre-publish-save', shown.message, { error, postId: post.id });
+        }
       }
       return;
     }
@@ -417,15 +609,27 @@ export function usePublishFlow({
       return;
     }
 
+    if (schedulePassed()) {
+      publishRunningRef.current = false;
+      setFailure({ message: SCHEDULE_PASSED });
+      setConfirmStatus('failure');
+      return;
+    }
+
     let completion: SaveCompletion;
 
+    setPublishInFlight(true);
     try {
       completion = await dispatch(command);
     } catch (error) {
       if (activeRef.current) {
         publishRunningRef.current = false;
-        setFailure(describeRejectedAction(error));
+        setPublishInFlight(false);
+        const shown = describeRejectedAction(error, UNEXPECTED_MESSAGE);
+        setFailure(shown);
         setConfirmStatus('failure');
+        // The dispatch settles every save it runs; a rejection is a fault in getting there.
+        reportPublishFailure('publish-request', shown.message, { error, postId: post.id });
       }
       return;
     }
@@ -434,6 +638,19 @@ export function usePublishFlow({
       return;
     }
     const completionFailure = describeCompletionFailure(completion);
+
+    // A failed navigation write doesn't undo or fail the publish that landed.
+    if (!completionFailure && navigationChange?.port) {
+      try {
+        await navigationChange.port.place(navigationChange.placement);
+      } catch {
+        toast.error(NAVIGATION_SAVE_FAILED);
+      }
+      if (!activeRef.current) {
+        return;
+      }
+    }
+    setPublishInFlight(false);
 
     if (completionFailure) {
       publishRunningRef.current = false;
@@ -444,88 +661,59 @@ export function usePublishFlow({
       return;
     }
 
-    // Stays 'running' across the email poll: the publish is not finished until
-    // the email is submitted, and the button must not invite a second dispatch.
+    // The send's progress and any failure are reported by post analytics, so the
+    // flow stays 'running' only for the hand-off's minimum length.
     if (willEmailImmediately) {
-      let outcome: EmailConfirmationOutcome;
-
-      try {
-        // No `currentPost`: the acknowledged result carries no email, and the
-        // pre-save one would short-circuit the poll to "not needed".
-        outcome = await confirmation.confirm(post.id);
-      } catch {
-        if (!activeRef.current) {
-          return;
-        }
-        // The post is published either way; only the email's fate is unknown,
-        // so the flow completes rather than stranding a disabled button.
-        setEmailNote(EMAIL_UNCONFIRMED);
-        complete(isScheduled, true);
-        return;
-      }
-
-      applyEmailOutcome(outcome, isScheduled);
-      return;
+      await handoffMinimum.elapsed();
     }
 
     complete(isScheduled, willEmail);
-  }, [
-    applyEmailOutcome,
-    complete,
-    confirmation,
-    dispatch,
-    machine,
-    onBeforePublish,
-    post.id,
-    state,
-  ]);
+  }, [complete, dispatch, handoffMinimum, machine, onBeforePublish, post.id, state]);
 
   const retryEmail = useCallback(async () => {
-    const emailId = emailIdRef.current;
-
-    if (retryRunningRef.current) {
-      return;
-    }
-
-    if (!emailId) {
-      setRetryFailure(UNKNOWN_RETRY_ERROR);
-      setRetryStatus('failure');
+    if (retryRunningRef.current || !canRetryEmail || !emailId) {
       return;
     }
 
     retryRunningRef.current = true;
+    handoffMinimum.start();
     setRetryFailure(null);
     setRetryStatus('running');
 
     try {
-      const outcome = await confirmation.retryAndConfirm(post.id, emailId);
-
-      if (!activeRef.current) {
-        return;
-      }
-
-      if (outcome.kind === 'failed' || outcome.kind === 'cancelled') {
-        retryRunningRef.current = false;
-        if (outcome.kind === 'failed') {
-          setEmailErrorMessage(outcome.error ?? UNKNOWN_EMAIL_ERROR);
-        }
-        setRetryStatus('idle');
-        return;
-      }
-
-      if (outcome.kind !== 'submitted') {
-        setEmailNote(EMAIL_UNCONFIRMED);
-      }
-      setRetryStatus('success');
-      complete(false, outcome.kind !== 'not-needed');
+      // A retry that found the session gone is sent again once the writer signs in.
+      await withSignIn(() => retryEmailRequest({ id: emailId, sessionExpiryRedirect: false }));
     } catch (error) {
       if (activeRef.current) {
+        const retryError = describeRejectedAction(error, UNKNOWN_RETRY_ERROR);
         retryRunningRef.current = false;
-        setRetryFailure(error instanceof Error ? error.message : UNKNOWN_RETRY_ERROR);
+        setRetryFailure(retryError);
         setRetryStatus('failure');
+        reportPublishFailure('retry-request', retryError.message, { error, postId: post.id });
       }
+      return;
     }
-  }, [complete, confirmation, post.id]);
+
+    // Like a publish, the retried send is handed to post analytics rather than awaited.
+    await handoffMinimum.elapsed();
+
+    if (!activeRef.current) {
+      return;
+    }
+    if (showCompletion) {
+      setRetryStatus('success');
+    }
+    complete(false, true);
+  }, [
+    canRetryEmail,
+    complete,
+    emailId,
+    handoffMinimum,
+    post.id,
+    retryEmailRequest,
+    showCompletion,
+    withSignIn,
+  ]);
 
   return {
     ...optionActions,
@@ -538,7 +726,7 @@ export function usePublishFlow({
     completedAt,
     limitsChecked,
     limitsFailure,
-    emailNote,
+    publishInFlight,
     captured,
     retryLimits: () => void checkLimits(),
     toConfirm,
@@ -547,6 +735,10 @@ export function usePublishFlow({
     retryEmail,
     retryStatus,
     retryFailure,
+    canRetryEmail,
+    retryEligibilityFailed,
+    checkingRetryEligibility,
+    checkRetryEligibility,
     cancel,
   };
 }

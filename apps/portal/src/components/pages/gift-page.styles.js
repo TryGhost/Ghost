@@ -1,6 +1,3 @@
-import giftCardNoiseUrl from '../../images/gift-card-noise.webp';
-import giftCardOrbUrl from '../../images/gift-card-orb.webp';
-
 export const GiftPageStyles = `
 @property --shine-angle {
     syntax: '<angle>';
@@ -1074,7 +1071,7 @@ html[dir="rtl"] .gh-portal-content.gift .gh-portal-btn-site-title-back {
     left: 0;
     right: 0;
     bottom: 0;
-    background-image: url("${giftCardOrbUrl}");
+    background-image: var(--gh-gift-orb);
     background-size: 120% auto;
     background-position: -60% -180%;
     background-repeat: no-repeat;
@@ -1087,7 +1084,7 @@ html[dir="rtl"] .gh-portal-content.gift .gh-portal-btn-site-title-back {
     content: '';
     position: absolute;
     inset: 0;
-    background-image: url("${giftCardNoiseUrl}");
+    background-image: var(--gh-gift-noise);
     background-size: 192px 192px;
     background-position: 50% 50%;
     background-repeat: repeat;

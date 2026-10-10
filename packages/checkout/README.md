@@ -1,6 +1,6 @@
 # @tryghost/checkout
 
-What Ghost's Stripe Checkout can collect, and where it lands.
+What Ghost's Stripe Checkout can collect, where it lands, and how the page can be styled.
 
 Three parties have to agree on this and none of them can import another's source:
 Ghost Core builds the checkout session and validates what a publisher saves, Admin
@@ -15,18 +15,16 @@ collects nothing.
 - `STRIPE_PORTS` / `STRIPE_PORT` / `isStripePort` — the names Stripe returns
   collected values under.
 - `PORT_FIELD` — what each port supplies, and the custom field type that can hold it.
-- `MAX_CHECKOUT_CUSTOM_FIELDS`, `MAX_CHECKOUT_LABEL_LENGTH`,
-  `CHECKOUT_ELIGIBLE_FIELD_TYPES` / `isCheckoutEligible` — the caps Stripe enforces
-  on checkout questions.
+- `STRIPE_CHECKOUT_BORDER_STYLES` / `STRIPE_CHECKOUT_FONTS` — what Checkout's
+  `branding_settings` accepts for the parts of the page a publisher can style.
 
 ## Measured, not read
 
-Every value here was established by `e2e/scripts/probe-stripe-constraints.ts` against
-the live API at Ghost's pinned version, because the published artefacts disagree with
-it: the OpenAPI spec carries no `maxItems` on `custom_fields` and states the
-`customer_update` rule only in prose, and the SDK's `AllowedCountry` union omits `SD`,
-which the API accepts. Re-probe before changing a value; do not read a new one off the
-documentation.
+Every value here except the branding values was established by
+`e2e/scripts/probe-stripe-constraints.ts` against the live API at Ghost's pinned
+version, because the published artefacts disagree with it: the SDK's `AllowedCountry`
+union omits `SD`, which the API accepts. Re-probe before changing a value; do not read
+a new one off the documentation.
 
 Two consequences of the country list are worth knowing before touching it. A code
 Stripe rejects fails the whole session create, so it is checked when a publisher
@@ -37,7 +35,7 @@ address. Any internal "all countries" representation has to be expanded to the f
 before the session is built.
 
 Two guards live outside this package, where the things they compare live:
-`ghost/core/test/unit/server/services/stripe/allowed-countries.test.ts` holds the list
+`ghost/test/unit/server/services/stripe/allowed-countries.test.ts` holds the list
 against the Stripe SDK that Ghost pins, and against the separate copy the end-to-end
 harness keeps. That copy is deliberate — a fake that shared this list could never catch
 Ghost offering a country Stripe refuses.
@@ -57,6 +55,6 @@ compiled `build/` output.
 
 This package is ESM-only and compiled with `tsc` (`module: nodenext`). Relative imports
 in `src/` must carry an explicit extension; write the real `.ts` one and `tsc` rewrites
-it to `.js` on emit. `ghost/core` is CommonJS and consumes this through `require(esm)`,
+it to `.js` on emit. `ghost` is CommonJS and consumes this through `require(esm)`,
 which forbids top-level `await` anywhere in the module graph — keep module-level
 initialization synchronous.

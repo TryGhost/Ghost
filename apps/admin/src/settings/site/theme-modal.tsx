@@ -246,9 +246,9 @@ const ThemeToolbar: React.FC<ThemeToolbarProps> = ({ currentTab, setCurrentTab, 
   const right = (
     <div className="flex items-center gap-14">
       <div className="flex items-center gap-3">
-        <Button type="button" variant="outline" onClick={onClose}>
+        <PageHeader.Action label="Close" type="button" onClick={onClose}>
           Close
-        </Button>
+        </PageHeader.Action>
         <Button disabled={isUploading} type="button" onClick={handleUpload}>
           {isUploading && <LoadingIndicator size="sm" />}Upload theme
         </Button>

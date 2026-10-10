@@ -45,8 +45,8 @@ pnpm check
 ```
 
 `pnpm check` runs `pnpm format:check`, `pnpm lint`, and then `pnpm test`. It does
-not include the browser E2E suite or Ember Admin tests, so run those separately
-when the affected area requires them. CI uses the Nx affected graph and path
+not include the browser E2E suite, so run it separately when the affected area
+requires it. CI uses the Nx affected graph and path
 filters to select the relevant lint, unit, integration, acceptance, build, and
 browser-test jobs for a pull request.
 
@@ -89,7 +89,7 @@ impact. The summary becomes the changelog entry, so describe the result for the
 package's consumers.
 
 A package `README.md` is included when the package is published, so changing it
-requires a release. Repository-only Markdown such as `AGENTS.md`, `CLAUDE.md`,
+requires a release. Repository-only Markdown such as `AGENTS.md`,
 changelogs, and files under a package's `docs/` directory does not.
 
 If a changed publishable package genuinely requires no release—for example, a

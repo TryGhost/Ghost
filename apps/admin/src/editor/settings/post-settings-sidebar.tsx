@@ -1,6 +1,18 @@
-import { Fragment, memo, type ReactNode, useEffect, useId } from 'react';
-import { Label, Separator, Switch, Textarea } from '@tryghost/shade/components';
-import { Inline, Text } from '@tryghost/shade/primitives';
+import {
+  type CSSProperties,
+  Fragment,
+  memo,
+  type ReactNode,
+  type Ref,
+  useEffect,
+  useId,
+  useImperativeHandle,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from 'react';
+import { FieldError, Label, Separator, Switch, Textarea } from '@tryghost/shade/components';
+import { Box, Inline, Stack, Text } from '@tryghost/shade/primitives';
 import { cn } from '@tryghost/shade/utils';
 import {
   canAccessSettings,
@@ -14,17 +26,24 @@ import {
   settingsFeaturedToggle,
 } from '@tryghost/test-data/selectors/editor';
 import type { PostCardConfig, PostType } from '@/editor/card-config';
+import { settingsFieldErrorFor } from '@/editor/session/settings-fields';
 import type { EditorSessionHandle } from '@/editor/session/use-editor-session';
 import { AccessSection } from './access-section';
 import { PublishDateSection } from './publish-date-section';
 import { AuthorsSection } from './authors-section';
 import { CodeInjectionSection } from './code-injection-section';
 import { DeleteSection } from './delete-section';
-import { type EditorSettingsPort, useEditorSettingsPort } from './editor-settings-port';
+import { type EditorSettingsPort, isNewPost, useEditorSettingsPort } from './editor-settings-port';
 import { KeyboardShortcutsSection } from './keyboard-shortcuts-section';
 import { MetaDataSection } from './meta-data-section';
 import { PostHistorySection } from './post-history-section';
-import { SETTINGS_SECTION_ORDER, type SettingsSectionId } from './sections';
+import { focusSettingsField } from './focus-settings-field';
+import {
+  SETTINGS_FIELD_SECTIONS,
+  SETTINGS_SECTION_ORDER,
+  type SettingsPanelField,
+  type SettingsSectionId,
+} from './sections';
 import { SettingsSection } from './settings-section';
 import { SubviewContext, useSubviewController } from './settings-subview-context';
 import { ShowTitleSection } from './show-title-section';
@@ -50,18 +69,24 @@ const MemoUrlSection = memo(UrlSection);
 
 const ExcerptSection = memo(function ExcerptSection({ session }: { session: EditorSettingsPort }) {
   const inputId = useId();
+  const errorId = useId();
+  const error = settingsFieldErrorFor('custom_excerpt', session.settings);
 
   return (
     <SettingsSection>
       <Label htmlFor={inputId}>Excerpt</Label>
       <Textarea
+        aria-describedby={error ? errorId : undefined}
+        aria-invalid={!!error}
+        data-settings-field="custom_excerpt"
         data-testid={settingsExcerptInput}
         id={inputId}
         rows={3}
-        value={session.bind.excerpt}
+        value={session.settings.custom_excerpt ?? ''}
         onBlur={session.commitSettings}
-        onChange={(event) => session.bind.onExcerptChange(event.target.value)}
+        onChange={(event) => session.stageSettings({ custom_excerpt: event.target.value || null })}
       />
+      {error ? <FieldError id={errorId}>{error}</FieldError> : null}
     </SettingsSection>
   );
 });
@@ -90,6 +115,11 @@ const FeaturedSection = memo(function FeaturedSection({
   );
 });
 
+/** A request to take the writer to a settings field; each request is a new object. */
+export interface SettingsFieldReveal {
+  field: SettingsPanelField;
+}
+
 export interface PostSettingsSidebarProps {
   session: EditorSessionHandle;
   postType: PostType;
@@ -102,6 +132,14 @@ export interface PostSettingsSidebarProps {
   currentUser?: User;
   /** The excerpt renders under the title instead, so the sidebar leaves it out. */
   hasInlineExcerpt?: boolean;
+  /**
+   * A field to take the writer to, such as one a refused save named: the panel
+   * shows its section, opening the section's pane if it has one, and focuses it.
+   * A new request, even for the same field, goes again.
+   */
+  reveal?: SettingsFieldReveal | null;
+  /** The panel's frame, whose width transition the screen waits on before unmounting it. */
+  frameRef?: Ref<HTMLDivElement | null>;
 }
 
 /**
@@ -116,7 +154,20 @@ export function PostSettingsSidebar({
   featureImage,
   currentUser,
   hasInlineExcerpt = false,
+  reveal,
+  frameRef,
 }: PostSettingsSidebarProps) {
+  const ownFrameRef = useRef<HTMLDivElement>(null);
+  const asideRef = useRef<HTMLElement>(null);
+  useImperativeHandle(frameRef, () => ownFrameRef.current, []);
+  // The panel mounts in the render that opens it, and a new element has no
+  // earlier style to transition from. It renders closed first, its style is
+  // read, and then it takes the shell's progress, so it opens like a reopen.
+  const [entering, setEntering] = useState(true);
+  useLayoutEffect(() => {
+    ownFrameRef.current?.getBoundingClientRect();
+    setEntering(false);
+  }, []);
   // The sections take the narrow port rather than the handle, so an edit they
   // cannot see does not hand them a new object.
   const session = useEditorSettingsPort(handle);
@@ -126,6 +177,24 @@ export function PostSettingsSidebar({
   // Ember hides the authors field from Authors and Contributors alike.
   const canCreditOthers = !!currentUser && !isAuthorOrContributor(currentUser);
   const subviews = useSubviewController();
+  const [focusing, setFocusing] = useState<SettingsFieldReveal | null>(null);
+
+  // Only a new request reveals: closing the pane afterwards must not reopen it.
+  useEffect(() => {
+    if (reveal) {
+      subviews.reveal(SETTINGS_FIELD_SECTIONS[reveal.field]);
+      setFocusing(reveal);
+    }
+  }, [reveal]);
+
+  // Runs again once the pane opens, after the pane has focused its own back button.
+  useEffect(() => {
+    const root = asideRef.current;
+    if (!focusing || !root) {
+      return;
+    }
+    return focusSettingsField(root, focusing.field, () => setFocusing(null));
+  }, [focusing, subviews.open]);
 
   const sections: Record<SettingsSectionId, ReactNode> = {
     url: <MemoUrlSection postType={postType} session={session} siteUrl={siteUrl} />,
@@ -142,10 +211,17 @@ export function PostSettingsSidebar({
         <MemoShowTitleSection currentUser={currentUser} session={session} />
       ) : null,
     template: <MemoTemplateSection postType={postType} session={session} />,
-    delete: <MemoDeleteSection postType={postType} session={session} />,
     'code-injection': <MemoCodeInjectionSection postType={postType} session={session} />,
     'meta-data': <MemoMetaDataSection session={session} siteUrl={siteUrl} />,
     'keyboard-shortcuts': <MemoKeyboardShortcutsSection />,
+    // The list's last entry, pushed to the panel's foot while the list is
+    // shorter than the panel. A post with nothing to delete yet gets nothing,
+    // not an empty wrapper.
+    delete: isNewPost(session) ? null : (
+      <Box className="mt-auto">
+        <MemoDeleteSection postType={postType} session={session} />
+      </Box>
+    ),
     'x-card': (
       <MemoSocialCardSection
         cardConfig={cardConfig}
@@ -184,29 +260,60 @@ export function PostSettingsSidebar({
     }
   }, [open, subviews]);
   const panelLabel = `${postType === 'page' ? 'Page' : 'Post'} settings`;
+  const content = SETTINGS_SECTION_ORDER.map((id) => (
+    <Fragment key={id}>
+      {!open && id === 'post-history' ? <Separator className="my-3" /> : null}
+      {open && open.id !== id ? null : sections[id]}
+    </Fragment>
+  ));
 
   return (
     <SubviewContext.Provider value={subviews}>
-      <aside
-        aria-label={open?.title ?? panelLabel}
-        className={cn(
-          'absolute inset-y-0 right-0 z-10 w-[350px] overflow-y-auto border-l border-border bg-background shadow-lg max-[500px]:w-screen lg:static lg:shrink-0 lg:shadow-none',
-          open?.wide && 'w-[500px]',
-        )}
-        data-testid={postSettingsSidebar}
+      <Box
+        ref={ownFrameRef}
+        className="absolute inset-y-0 right-0 z-30 w-[calc(var(--editor-settings-progress,1)*var(--editor-settings-width))] overflow-hidden editor-settings-motion-[width] lg:static lg:shrink-0"
+        style={entering ? ({ '--editor-settings-progress': 0 } as CSSProperties) : undefined}
       >
-        {open ? null : (
-          <>
-            <Text as="h2" className="px-5 py-4" size="md" weight="semibold">
-              {panelLabel}
-            </Text>
-            <Separator />
-          </>
-        )}
-        {SETTINGS_SECTION_ORDER.map((id) => (
-          <Fragment key={id}>{open && open.id !== id ? null : sections[id]}</Fragment>
-        ))}
-      </aside>
+        <aside
+          ref={asideRef}
+          aria-label={open?.title ?? panelLabel}
+          className="my-2 mr-2 h-[calc(100%-var(--spacing)*4)] w-[calc(var(--editor-settings-width)-var(--spacing)*2)] overflow-hidden rounded-xl border border-border bg-sidebar max-[500px]:m-0 max-[500px]:h-full max-[500px]:w-(--editor-settings-width) max-[500px]:rounded-none max-[500px]:border-0"
+          data-testid={postSettingsSidebar}
+        >
+          <Stack
+            className="h-full min-h-0 opacity-(--editor-settings-progress,1) editor-settings-motion-[opacity]"
+            gap="none"
+          >
+            {open ? null : (
+              <Box className="z-10 shrink-0 bg-sidebar">
+                <Inline
+                  align="center"
+                  className="px-4 py-3 max-[500px]:px-3"
+                  gap="sm"
+                  justify="between"
+                >
+                  <Text as="h2" className="pl-1" size="lg" weight="semibold">
+                    {panelLabel}
+                  </Text>
+                  <Box
+                    aria-hidden="true"
+                    className="size-(--editor-settings-toggle-width) shrink-0"
+                  />
+                </Inline>
+              </Box>
+            )}
+            <Stack
+              className={cn(
+                'min-h-0 flex-1',
+                open ? 'overflow-hidden' : 'overflow-x-hidden overflow-y-auto [&>*]:shrink-0',
+              )}
+              gap="none"
+            >
+              {content}
+            </Stack>
+          </Stack>
+        </aside>
+      </Box>
     </SubviewContext.Provider>
   );
 }

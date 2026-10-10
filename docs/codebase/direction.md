@@ -13,11 +13,8 @@ focused guide exists, follow that guide for implementation details.
 
 ## Main priorities
 
-Our two most important priorities are:
-
-1. **React:** move Ghost Admin onto React and off Ember.
-2. **Type safety:** move the codebase to TypeScript and validate runtime
-   boundaries with Zod.
+Our most important priority is **type safety**: move the codebase to
+TypeScript and validate runtime boundaries with Zod.
 
 ## Status terms
 
@@ -32,7 +29,6 @@ Our two most important priorities are:
 
 | Area                 | Direction                                            | Status           |
 | -------------------- | ---------------------------------------------------- | ---------------- |
-| Admin UI             | Ember to React                                       | Active migration |
 | Application code     | JavaScript to TypeScript                             | Active migration |
 | Node.js modules      | CommonJS to ESM                                      | Active migration |
 | Runtime boundaries   | Validate unknown data with Zod                       | Exploring        |
@@ -77,12 +73,7 @@ that every migration path is settled:
 ### Build Admin features in React
 
 Build new Admin UI in [`apps/admin/`](../../apps/admin/) with
-`admin-x-framework` for API access and Shade for UI. Do not add a new Ember
-route or use Ember merely because an older version of the feature does.
-
-Migrate an existing Ember feature at a coherent product boundary. React and
-Ember still ship together, so preserve navigation, authentication, shared
-state, and older-server behavior across the bridge. The
+`admin-x-framework` for API access and Shade for UI. The
 [Admin README](../../apps/admin/README.md) describes the current integration.
 
 ### Use TypeScript
@@ -131,6 +122,14 @@ exploring repositories and direct Knex as the replacement for Bookshelf, but
 the complete data-access pattern is not settled yet. Do not create a new
 Bookshelf model or add new business logic to model lifecycle hooks.
 
+This does not mean every domain class or helper needs a top-level service
+directory. Keep service-private implementation with its owner and shared
+support in libraries. Use the
+[service placement rules](../../ghost/core/server/services/README.md#what-belongs-here)
+to distinguish an application-owned service root from its supporting code.
+Directory cleanup and standardizing lifecycle interfaces are separate changes;
+neither implies that all existing roots already share one lifecycle contract.
+
 Existing features still depend heavily on Bookshelf. When working in one, move
 behavior behind an explicit service or repository seam before replacing its
 persistence. Do not bypass existing behavior simply to avoid the model.
@@ -139,7 +138,7 @@ Pass stateful dependencies such as database connections, models, caches,
 configuration, and I/O services into new modules. Construct and connect them at
 the application edge. Pure functions, constants, and types can still be
 imported normally; dependency injection does not require a container. Follow
-the [services guide](../../ghost/core/core/server/services/README.md) for the
+the [services guide](../../ghost/core/server/services/README.md) for the
 current construction and initialization pattern.
 
 ### Avoid new process-local state

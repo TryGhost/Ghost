@@ -70,6 +70,14 @@ Local docs with Storybook:
 - `pnpm build-storybook` — build a static export
 - `pnpm build` — build the package and its type declarations
 
+### Source exports
+
+Admin’s Vite development, production and test configurations select the `source`
+export condition to load this package directly from `src/`. Changes reach Vite
+without waiting for the library build. Consumers without that condition keep
+using the compiled exports; TypeScript continues using the generated declarations.
+The library build remains required for those consumers.
+
 ## Test
 
 - `pnpm test` — type-checks and runs Vitest with coverage

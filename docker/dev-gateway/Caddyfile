@@ -23,17 +23,6 @@
 	log_skip /__admin-dev__*
 	log_skip /ghost/auth-frame/*
 
-	# Ember live reload (runs on separate port 4201)
-	# This handles both the script injection and WebSocket connections
-	handle /ember-cli-live-reload.js {
-		reverse_proxy {env.ADMIN_LIVE_RELOAD_SERVER} {
-			header_up Host {http.reverse_proxy.upstream.hostport}
-			# Enable WebSocket support for live reload
-			header_up Connection {>Connection}
-			header_up Upgrade {>Upgrade}
-		}
-	}
-
 	# Ghost API - must go to Ghost backend, not admin dev server
 	handle /ghost/api/* {
 		reverse_proxy {env.GHOST_BACKEND} {
@@ -125,7 +114,7 @@
 		}
 
 		# Everything else under /ghost/assets/* goes to admin dev server.
-		# Vite serves admin/Ember assets under its dev base (/__admin-dev__/assets/),
+		# Vite serves admin assets under its dev base (/__admin-dev__/assets/),
 		# so we rewrite the request before proxying.
 		handle {
 			rewrite * /__admin-dev__/assets{path}

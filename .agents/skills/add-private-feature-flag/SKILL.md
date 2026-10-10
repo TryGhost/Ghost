@@ -19,15 +19,15 @@ and shared presentation guidance.
 
 ## Steps
 
-1. **Add the flag to `ghost/core/core/shared/labs.js`**
+1. **Add the flag to `ghost/core/shared/labs.js`**
    - Add the flag name (camelCase string) to the `PRIVATE_FEATURES` array.
 
 2. **Add a UI toggle in `apps/admin/src/settings/advanced/labs/private-features.tsx`**
    - Add a new entry to the `features` array with `title`, `description`, and `flag` (must match the string in `labs.js`).
 
 3. **Run tests and update the config API snapshot**
-   - Unit: `cd ghost/core && pnpm test:single test/unit/shared/labs.test.js`
-   - Update snapshots: `cd ghost/core && pnpm test:single test/e2e-api/admin/config.test.js -u && pnpm test:single test/e2e-api/admin/settings.test.js -u`
+   - Unit: `cd ghost && pnpm test:single test/unit/shared/labs.test.js`
+   - Update snapshots: `cd ghost && pnpm test:single test/e2e-api/admin/config.test.js -u && pnpm test:single test/e2e-api/admin/settings.test.js -u`
    - Review both snapshot diffs to confirm only your new flag was added.
 
 ## Notes

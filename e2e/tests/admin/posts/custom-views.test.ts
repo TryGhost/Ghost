@@ -1,196 +1,141 @@
 import { CustomViewModal, PostsPage, SidebarPage } from '@/admin-pages';
-import { PostFactory, TagFactory, createPostFactory, createTagFactory } from '@/data-factory';
+import { TagFactory, createTagFactory } from '@/data-factory';
 import { expect, test } from '@/helpers/playwright/fixture';
 
+// Round trips through saved posts views. Per-field cases (validation, filter
+// edits, default views) live in the Admin acceptance tests.
 test.describe('Ghost Admin - Custom Views', () => {
-  let postFactory: PostFactory;
   let tagFactory: TagFactory;
+  let postsPage: PostsPage;
+  let sidebar: SidebarPage;
+  let modal: CustomViewModal;
 
   test.beforeEach(async ({ page }) => {
-    postFactory = createPostFactory(page.request);
     tagFactory = createTagFactory(page.request);
+    postsPage = new PostsPage(page);
+    sidebar = new SidebarPage(page);
+    modal = new CustomViewModal(page);
   });
 
-  test.describe('creating custom views', () => {
-    test('saving filtered view - creates custom view in sidebar', async ({ page }) => {
-      await tagFactory.create({ name: 'Featured' });
-      const postsPage = new PostsPage(page);
-      const sidebar = new SidebarPage(page);
-      const modal = new CustomViewModal(page);
+  async function saveView({
+    type,
+    tag,
+    name,
+    color,
+  }: {
+    type: string;
+    tag: string;
+    name: string;
+    color: string;
+  }): Promise<void> {
+    await postsPage.selectType(type);
+    await postsPage.selectTag(tag);
 
-      await postsPage.goto();
-      await postsPage.selectType('Draft posts');
-      await postsPage.selectTag('Featured');
+    await postsPage.openSaveViewModal();
+    await modal.waitForModal();
+    await modal.enterName(name);
+    await modal.selectColor(color);
+    await modal.save();
+  }
 
-      await postsPage.openSaveViewModal();
-      await modal.waitForModal();
-      await modal.enterName('Featured Drafts');
-      await modal.selectColor('blue');
-      await modal.save();
+  test('saving a filtered view - lists it in the sidebar and survives a reload', async ({
+    page,
+  }) => {
+    const tag = await tagFactory.create({ name: 'Newsroom' });
 
-      await expect(sidebar.getNavLink('Featured Drafts')).toBeVisible();
-      await expect(sidebar.getNavLink('Featured Drafts')).toHaveAttribute('aria-current', 'page');
+    await postsPage.goto();
+    await saveView({
+      type: 'Draft posts',
+      tag: 'Newsroom',
+      name: 'Newsroom Drafts',
+      color: 'blue',
     });
 
-    test('saving view with duplicate name - shows validation error', async ({ page }) => {
-      await tagFactory.create({ name: 'Articles' });
-      const postsPage = new PostsPage(page);
-      const sidebar = new SidebarPage(page);
-      const modal = new CustomViewModal(page);
+    const viewLink = sidebar.getNavLink('Newsroom Drafts');
+    await expect(viewLink).toBeVisible();
+    await expect(viewLink).toHaveAttribute('aria-current', 'page');
+    await expect(sidebar.getCustomViewColorIndicator('Newsroom Drafts')).toHaveAttribute(
+      'data-color',
+      'blue',
+    );
 
-      await postsPage.goto();
-      await postsPage.selectType('Draft posts');
-      await postsPage.selectTag('Articles');
+    await page.reload();
 
-      await postsPage.openSaveViewModal();
-      await modal.waitForModal();
-      await modal.enterName('My Articles');
-      await modal.save();
-
-      await sidebar.getNavLink('Posts').click();
-      await postsPage.selectType('Published posts');
-      await postsPage.selectTag('Articles');
-
-      await postsPage.openSaveViewModal();
-      await modal.waitForModal();
-      await modal.enterName('My Articles');
-      await modal.saveButton.click();
-
-      await expect(modal.nameError).toBeVisible();
-    });
-
-    test('newly created view - has correct color indicator', async ({ page }) => {
-      const postsPage = new PostsPage(page);
-      const sidebar = new SidebarPage(page);
-      const modal = new CustomViewModal(page);
-
-      await postsPage.goto();
-      await postsPage.selectType('Published posts');
-      await postsPage.selectVisibility('Public');
-
-      await postsPage.openSaveViewModal();
-      await modal.waitForModal();
-      await modal.enterName('Public Published');
-      await modal.selectColor('green');
-      await modal.save();
-
-      await expect(sidebar.getNavLink('Public Published')).toBeVisible();
-      await expect(sidebar.getCustomViewColorIndicator('Public Published')).toHaveAttribute(
-        'data-color',
-        'green',
-      );
-    });
+    await expect(viewLink).toBeVisible();
+    await expect(page).toHaveURL(/type=draft/);
+    await expect(page).toHaveURL(new RegExp(`tag=${tag.slug}`));
+    await expect(viewLink).toHaveAttribute('aria-current', 'page');
   });
 
-  test.describe('navigating custom views', () => {
-    test('clicking custom view in sidebar - applies correct filters', async ({ page }) => {
-      const tag = await tagFactory.create({ name: 'Stories' });
-      await postFactory.create({ status: 'draft', tags: [{ id: tag.id }] });
-      const postsPage = new PostsPage(page);
-      const sidebar = new SidebarPage(page);
-      const modal = new CustomViewModal(page);
+  test('switching between saved views - applies their filters and moves the active state', async ({
+    page,
+  }) => {
+    const techTag = await tagFactory.create({ name: 'Tech' });
+    const businessTag = await tagFactory.create({ name: 'Business' });
 
-      await postsPage.goto();
-      await postsPage.selectType('Draft posts');
-      await postsPage.selectTag('Stories');
-
-      await postsPage.openSaveViewModal();
-      await modal.waitForModal();
-      await modal.enterName('Stories Drafts');
-      await modal.save();
-
-      await sidebar.getNavLink('Posts').click();
-
-      await sidebar.getNavLink('Stories Drafts').click();
-
-      await expect(page).toHaveURL(/type=draft/);
-      await expect(page).toHaveURL(new RegExp(`tag=${tag.slug}`));
+    await postsPage.goto();
+    await saveView({ type: 'Draft posts', tag: 'Tech', name: 'Tech Drafts', color: 'green' });
+    await sidebar.getNavLink('Posts').click();
+    await saveView({
+      type: 'Published posts',
+      tag: 'Business',
+      name: 'Business Live',
+      color: 'purple',
     });
 
-    test('clicking custom view - shows active state in sidebar', async ({ page }) => {
-      await tagFactory.create({ name: 'Updates' });
-      const postsPage = new PostsPage(page);
-      const sidebar = new SidebarPage(page);
-      const modal = new CustomViewModal(page);
+    const techLink = sidebar.getNavLink('Tech Drafts');
+    const businessLink = sidebar.getNavLink('Business Live');
 
-      await postsPage.goto();
-      await postsPage.selectType('Scheduled posts');
-      await postsPage.selectTag('Updates');
+    await techLink.click();
 
-      await postsPage.openSaveViewModal();
-      await modal.waitForModal();
-      await modal.enterName('Scheduled Updates');
-      await modal.save();
+    await expect(page).toHaveURL(/type=draft/);
+    await expect(page).toHaveURL(new RegExp(`tag=${techTag.slug}`));
+    await expect(techLink).toHaveAttribute('aria-current', 'page');
+    await expect(businessLink).not.toHaveAttribute('aria-current', 'page');
 
-      await expect(sidebar.getNavLink('Scheduled Updates')).toHaveAttribute('aria-current', 'page');
-    });
+    await businessLink.click();
 
-    test('navigating from custom view to Posts - clears active state', async ({ page }) => {
-      await tagFactory.create({ name: 'Blog' });
-      const postsPage = new PostsPage(page);
-      const sidebar = new SidebarPage(page);
-      const modal = new CustomViewModal(page);
+    await expect(page).toHaveURL(/type=published/);
+    await expect(page).toHaveURL(new RegExp(`tag=${businessTag.slug}`));
+    await expect(businessLink).toHaveAttribute('aria-current', 'page');
+    await expect(techLink).not.toHaveAttribute('aria-current', 'page');
 
-      await postsPage.goto();
-      await postsPage.selectType('Published posts');
-      await postsPage.selectTag('Blog');
+    await sidebar.getNavLink('Posts').click();
 
-      await postsPage.openSaveViewModal();
-      await modal.waitForModal();
-      await modal.enterName('Published Blog');
-      await modal.save();
+    await expect(page).toHaveURL(/\/ghost\/#\/posts\/?$/);
+    await expect(sidebar.getNavLink('Posts')).toHaveAttribute('aria-current', 'page');
+    await expect(techLink).not.toHaveAttribute('aria-current', 'page');
+    await expect(businessLink).not.toHaveAttribute('aria-current', 'page');
+  });
 
-      await expect(sidebar.getNavLink('Published Blog')).toHaveAttribute('aria-current', 'page');
+  test('editing then deleting the active view - updates the sidebar and returns to Posts', async ({
+    page,
+  }) => {
+    await tagFactory.create({ name: 'Review' });
 
-      await sidebar.getNavLink('Posts').click();
+    await postsPage.goto();
+    await saveView({ type: 'Draft posts', tag: 'Review', name: 'Review Queue', color: 'blue' });
 
-      await expect(sidebar.getNavLink('Published Blog')).not.toHaveAttribute(
-        'aria-current',
-        'page',
-      );
-      await expect(sidebar.getNavLink('Posts')).toHaveAttribute('aria-current', 'page');
-    });
+    await postsPage.openEditViewModal();
+    await modal.waitForModal();
+    await modal.enterName('Editorial Review');
+    await modal.selectColor('red');
+    await modal.save();
 
-    test('navigating between custom views - updates active state correctly', async ({ page }) => {
-      await tagFactory.create({ name: 'Tech' });
-      await tagFactory.create({ name: 'Business' });
-      const postsPage = new PostsPage(page);
-      const sidebar = new SidebarPage(page);
-      const modal = new CustomViewModal(page);
+    const renamedLink = sidebar.getNavLink('Editorial Review');
+    await expect(renamedLink).toHaveAttribute('aria-current', 'page');
+    await expect(sidebar.getCustomViewColorIndicator('Editorial Review')).toHaveAttribute(
+      'data-color',
+      'red',
+    );
+    await expect(sidebar.getNavLink('Review Queue')).toBeHidden();
 
-      await postsPage.goto();
-      await postsPage.selectType('Draft posts');
-      await postsPage.selectTag('Tech');
+    await postsPage.openEditViewModal();
+    await modal.waitForModal();
+    await modal.delete();
 
-      await postsPage.openSaveViewModal();
-      await modal.waitForModal();
-      await modal.enterName('Tech Drafts');
-      await modal.save();
-
-      await sidebar.getNavLink('Posts').click();
-      await postsPage.selectType('Published posts');
-      await postsPage.selectTag('Business');
-
-      await postsPage.openSaveViewModal();
-      await modal.waitForModal();
-      await modal.enterName('Published Business');
-      await modal.save();
-
-      await sidebar.getNavLink('Tech Drafts').click();
-
-      await expect(sidebar.getNavLink('Tech Drafts')).toHaveAttribute('aria-current', 'page');
-      await expect(sidebar.getNavLink('Published Business')).not.toHaveAttribute(
-        'aria-current',
-        'page',
-      );
-
-      await sidebar.getNavLink('Published Business').click();
-
-      await expect(sidebar.getNavLink('Published Business')).toHaveAttribute(
-        'aria-current',
-        'page',
-      );
-      await expect(sidebar.getNavLink('Tech Drafts')).not.toHaveAttribute('aria-current', 'page');
-    });
+    await expect(renamedLink).toBeHidden();
+    await expect(page).toHaveURL(/\/ghost\/#\/posts\/?$/);
+    await expect(sidebar.getNavLink('Posts')).toHaveAttribute('aria-current', 'page');
   });
 });

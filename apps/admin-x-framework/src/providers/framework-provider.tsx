@@ -6,7 +6,6 @@ import queryClient from '../utils/query-client';
 export type ExternalLink = {
   isExternal: true;
   route: string;
-  models?: string[] | null;
   replace?: boolean;
 };
 
@@ -40,10 +39,6 @@ export interface FrameworkProviderProps {
     'App-Pragma': string;
     'X-Unsplash-Cache': boolean;
   };
-  sentryDSN: string | null;
-  onUpdate: (dataType: string, response: unknown) => void;
-  onInvalidate: (dataType: string) => void;
-  onDelete: (dataType: string, id: string) => void;
   // Called after URL overrides are synced to sessionStorage. May return cleanup work.
   onFeatureFlagOverridesChange?: () => void | (() => void);
 
@@ -77,10 +72,6 @@ const FrameworkContext = createContext<FrameworkContextType>({
     'App-Pragma': '',
     'X-Unsplash-Cache': true,
   },
-  sentryDSN: null,
-  onUpdate: () => {},
-  onInvalidate: () => {},
-  onDelete: () => {},
 });
 
 export function FrameworkProvider({

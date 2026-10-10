@@ -15,12 +15,12 @@ echo "Starting Ghost dev stack..."
 
 # Ghost's own `url` config (default http://localhost:2368) is what session
 # CSRF checks compare the browser's Origin header against (see
-# cookieCsrfProtection in ghost/core/core/server/services/auth/session/
+# cookieCsrfProtection in ghost/core/server/services/auth/session/
 # session-service.js). Codespaces serves everything through a forwarded
 # https://<name>-2368.<domain> origin instead, so without this every
 # authenticated admin request fails that origin check and bounces back to
 # login. `url` is a top-level nconf key, so a bare `url` env var overrides
-# it (see ghost/core/core/shared/config/loader.js's nconf.env() call).
+# it (see ghost/core/shared/config/loader.js's nconf.env() call).
 # Local (non-Codespaces) VS Code Dev Containers forward to genuine
 # localhost, so this only applies inside Codespaces itself.
 if [ -n "${CODESPACES:-}" ] && [ -n "${CODESPACE_NAME:-}" ]; then
@@ -28,7 +28,7 @@ if [ -n "${CODESPACES:-}" ] && [ -n "${CODESPACE_NAME:-}" ]; then
     echo "Codespaces detected: setting Ghost url=$url so admin session origin checks match the forwarded tunnel" >> /tmp/ghost-backend.log
 
     # Once url above is HTTPS, Ghost's url-redirects middleware
-    # (getAdminRedirectUrl in ghost/core/core/server/web/shared/middleware/
+    # (getAdminRedirectUrl in ghost/core/server/web/shared/middleware/
     # url-redirects.js) 301s any request it sees as insecure (protocol
     # mismatch) to that HTTPS url. Real browser traffic is fine — Caddy sets
     # X-Forwarded-Proto: https, so Express's req.secure is true. But

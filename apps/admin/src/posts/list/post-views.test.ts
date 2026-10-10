@@ -114,7 +114,7 @@ describe('canSavePostView', () => {
 });
 
 describe('buildPostView', () => {
-  it('stores the params verbatim, so Ember reads the same view', () => {
+  it('stores the params verbatim in the saved-view shape', () => {
     expect(buildPostView('News', { type: 'draft', tag: 'news' }, 'blue')).toEqual({
       name: 'News',
       route: 'posts',

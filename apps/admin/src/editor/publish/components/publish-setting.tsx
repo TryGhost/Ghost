@@ -1,4 +1,4 @@
-import { Inline, Stack, Text } from '@tryghost/shade/primitives';
+import { Box, Inline, Stack, Text } from '@tryghost/shade/primitives';
 import { LucideIcon, cn } from '@tryghost/shade/utils';
 import type { ReactNode } from 'react';
 
@@ -45,14 +45,21 @@ export function PublishSetting({
         onClick={onToggle}
       >
         <span className="shrink-0">{icon}</span>
-        <Text className="grow" weight="medium">
+        <Text className="grow text-inherit" size="lg" weight="medium">
           {title}
         </Text>
         <LucideIcon.ChevronDown
-          className={cn('size-4 shrink-0 transition-transform', open && 'rotate-180')}
+          className={cn(
+            'size-4 shrink-0 transition-transform',
+            interactive && open && 'rotate-180',
+          )}
         />
       </button>
-      {open && children ? <div className="pb-5">{children}</div> : null}
+      {open && children ? (
+        <Box className="pr-1 pb-5 pl-8 motion-safe:animate-in motion-safe:duration-200 motion-safe:fade-in motion-safe:slide-in-from-top-1">
+          {children}
+        </Box>
+      ) : null}
       {footer}
     </Stack>
   );

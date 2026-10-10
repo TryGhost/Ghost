@@ -20,6 +20,7 @@ const automations = [
   {
     id: 'automation-id-2',
     name: 'Paid member welcome flow',
+    description: 'Welcome new paid members after they start their subscription.',
     slug: 'member-welcome-email-paid',
     status: 'inactive' as const,
     stats: {
@@ -31,6 +32,7 @@ const automations = [
   {
     id: 'automation-id-3',
     name: 'Another automation',
+    description: '',
     status: 'inactive' as const,
     stats: {
       last_run_created_at: null,
@@ -52,7 +54,10 @@ const renderWithRoutes = () =>
   render(
     <MemoryRouter initialEntries={['/automations']}>
       <Routes>
-        <Route element={<AutomationsList automations={automations} />} path="/automations" />
+        <Route
+          element={<AutomationsList automations={automations} canManage={false} />}
+          path="/automations"
+        />
         <Route element={<AutomationEditorRoute />} path="/automations/:id" />
       </Routes>
     </MemoryRouter>,
@@ -68,15 +73,12 @@ describe('AutomationsList', () => {
     vi.useRealTimers();
   });
 
-  it('renders fetched automations with API and fallback descriptions and status labels', () => {
-    renderWithRouter(<AutomationsList automations={automations} />);
+  it('renders server descriptions and status labels', () => {
+    renderWithRouter(<AutomationsList automations={automations} canManage={false} />);
 
     expect(screen.getAllByTestId('automation-list-row')).toHaveLength(3);
     expect(screen.getByText('Free member welcome flow')).toBeInTheDocument();
     expect(screen.getByText('Greet new free members.')).toBeInTheDocument();
-    expect(
-      screen.queryByText('Welcome new free members after they sign up.'),
-    ).not.toBeInTheDocument();
     expect(screen.getByText('Paid member welcome flow')).toBeInTheDocument();
     expect(
       screen.getByText('Welcome new paid members after they start their subscription.'),
@@ -84,8 +86,8 @@ describe('AutomationsList', () => {
     expect(screen.getByText('Another automation')).toBeInTheDocument();
     expect(screen.getAllByText('Live')).toHaveLength(1);
     expect(screen.getAllByText('Off')).toHaveLength(2);
-    expect(screen.getByRole('columnheader', { name: 'Last entry' })).toBeInTheDocument();
-    expect(screen.getByRole('columnheader', { name: 'Total entries' })).toBeInTheDocument();
+    expect(screen.getByRole('columnheader', { name: 'Last started' })).toBeInTheDocument();
+    expect(screen.getByRole('columnheader', { name: 'Total runs' })).toBeInTheDocument();
     expect(screen.getByRole('columnheader', { name: 'In progress' })).toBeInTheDocument();
     expect(screen.getByText('1,432')).toBeInTheDocument();
     expect(screen.getByText('118')).toBeInTheDocument();
@@ -93,7 +95,7 @@ describe('AutomationsList', () => {
   });
 
   it('renders Never when an automation has no last entry', () => {
-    renderWithRouter(<AutomationsList automations={[automations[1]]} />);
+    renderWithRouter(<AutomationsList automations={[automations[1]]} canManage={false} />);
 
     expect(screen.getByText('Never')).toBeInTheDocument();
   });
@@ -103,16 +105,16 @@ describe('AutomationsList', () => {
       ({ stats: _stats, ...automation }) => automation,
     );
 
-    renderWithRouter(<AutomationsList automations={automationsWithoutStats} />);
+    renderWithRouter(<AutomationsList automations={automationsWithoutStats} canManage={false} />);
 
-    expect(screen.queryByRole('columnheader', { name: 'Last entry' })).not.toBeInTheDocument();
-    expect(screen.queryByRole('columnheader', { name: 'Total entries' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('columnheader', { name: 'Last started' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('columnheader', { name: 'Total runs' })).not.toBeInTheDocument();
     expect(screen.queryByRole('columnheader', { name: 'In progress' })).not.toBeInTheDocument();
     expect(screen.queryByText('1,432')).not.toBeInTheDocument();
   });
 
   it('links each row to the automation sequence by id', () => {
-    renderWithRouter(<AutomationsList automations={automations} />);
+    renderWithRouter(<AutomationsList automations={automations} canManage={false} />);
 
     expect(screen.getByRole('table', { name: 'Automations' })).toBeInTheDocument();
     expect(screen.getAllByRole('rowheader')).toHaveLength(3);
@@ -154,7 +156,7 @@ describe('AutomationsList', () => {
   });
 
   it('renders a table skeleton while loading', () => {
-    renderWithRouter(<AutomationsList isLoading={true} />);
+    renderWithRouter(<AutomationsList canManage={false} isLoading={true} />);
 
     expect(screen.getByTestId('automations-list-loading')).toBeInTheDocument();
   });

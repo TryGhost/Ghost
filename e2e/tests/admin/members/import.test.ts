@@ -2,8 +2,10 @@ import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { writeFileSync } from 'node:fs';
 
-import { MembersImportModal, MembersListPage } from '@/admin-pages';
+import { MemberDetailsPage, MembersImportModal, MembersListPage } from '@/admin-pages';
+import { createMemberFactory } from '@/data-factory';
 import { expect, test } from '@/helpers/playwright';
+import { memberPath } from '@/helpers/members/member-detail';
 import { usePerTestIsolation } from '@/helpers/playwright/isolation';
 
 usePerTestIsolation();
@@ -51,13 +53,40 @@ test.describe('Ghost Admin - Members Import', () => {
     await expect(membersPage.getMemberByName('Carol Test')).toBeVisible();
   });
 
+  test('shows the labels a member had and the ones an import added', async ({ page }) => {
+    const member = await createMemberFactory(page.request).create({
+      name: 'Relabelled Member',
+      email: `relabel-${Date.now()}@example.com`,
+    });
+    const membersPage = new MembersListPage(page);
+    const memberDetailsPage = new MemberDetailsPage(page);
+    const importModal = new MembersImportModal(page);
+
+    await page.goto(memberPath(member.id));
+    await memberDetailsPage.addLabel('Existing-Label');
+    await memberDetailsPage.save();
+
+    const csvPath = join(tmpdir(), `members-relabel-${Date.now()}.csv`);
+    writeFileSync(csvPath, `email,labels\n${member.email},Imported-Label\n`);
+
+    await page.goto('/ghost/#/members/import');
+    await importModal.fileInput.setInputFiles(csvPath);
+    await importModal.importButton.click();
+    await expect(importModal.importHeading).toBeVisible({ timeout: 15000 });
+    await importModal.closeButton.click();
+    await membersPage.openMemberByName('Relabelled Member');
+
+    await expect(memberDetailsPage.getLabel('Existing-Label')).toBeVisible();
+    await expect(memberDetailsPage.getLabel('Imported-Label')).toBeVisible();
+  });
+
   test('opens import modal on direct URL navigation without errors', async ({ page }) => {
     await page.goto('/ghost/#/members/import');
 
     await expect(page.getByRole('dialog', { name: 'Import members' })).toBeVisible();
 
-    // Regression guard: the bug surfaced as an Ember alert like
-    // "Validation (matches) failed for id undefined.id" via #ember-alerts-wormhole
+    // Regression guard: the bug surfaced as an Admin alert like
+    // "Validation (matches) failed for id undefined.id"
     await expect(page.getByText(/Validation.*failed for id/i)).toHaveCount(0);
   });
 });

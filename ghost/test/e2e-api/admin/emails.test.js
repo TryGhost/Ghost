@@ -1,0 +1,442 @@
+const {
+  agentProvider,
+  fixtureManager,
+  matchers,
+  mockManager,
+} = require('../../utils/e2e-framework');
+const {
+  nullable,
+  anyContentVersion,
+  anyEtag,
+  anyErrorId,
+  anyObjectId,
+  anyUuid,
+  anyISODateTime,
+  anyString,
+} = matchers;
+const assert = require('node:assert/strict');
+const sinon = require('sinon');
+const { waitForEmailStatus } = require('../../utils/batch-email-utils');
+const models = require('../../../core/server/models');
+const db = require('../../../core/server/data/db');
+const settingsHelpers = require('../../../core/server/services/settings-helpers');
+
+const matchEmail = {
+  id: anyObjectId,
+  uuid: anyUuid,
+  created_at: anyISODateTime,
+  updated_at: anyISODateTime,
+  submitted_at: anyISODateTime,
+};
+
+const matchEmailNewsletter = {
+  ...matchEmail,
+  newsletter_id: anyObjectId,
+};
+
+const matchBatch = {
+  id: anyObjectId,
+  mailgun_message_id: anyString,
+  created_at: anyISODateTime,
+  updated_at: anyISODateTime,
+};
+
+const matchFailure = {
+  id: anyObjectId,
+  failed_at: anyISODateTime,
+  event_id: anyString,
+};
+
+describe('Emails API', function () {
+  let agent;
+
+  beforeAll(async function () {
+    agent = await agentProvider.getAdminAPIAgent();
+    await fixtureManager.init('posts', 'newsletters', 'members', 'members:emails:failed', 'users');
+    await agent.loginAsOwner();
+  });
+
+  beforeEach(function () {
+    mockManager.mockEvents();
+    mockManager.mockMailgun();
+    sinon.stub(settingsHelpers, 'getMembersValidationKey').returns('test-validation-key');
+  });
+
+  afterEach(function () {
+    mockManager.restore();
+    sinon.restore();
+  });
+
+  it('Can browse emails', async function () {
+    await agent
+      .get('emails')
+      .expectStatus(200)
+      .matchBodySnapshot({
+        emails: new Array(2).fill(matchEmail),
+      })
+      .matchHeaderSnapshot({
+        'content-version': anyContentVersion,
+        etag: anyEtag,
+      });
+  });
+
+  it('Can read an email', async function () {
+    await agent
+      .get(`emails/${fixtureManager.get('emails', 0).id}/`)
+      .expectStatus(200)
+      .matchBodySnapshot({
+        emails: [matchEmail],
+      })
+      .matchHeaderSnapshot({
+        'content-version': anyContentVersion,
+        etag: anyEtag,
+      });
+  });
+
+  it('Can read the sending status of a submitted email', async function () {
+    const email = fixtureManager.get('emails', 0);
+    // The fixture stores email_count 0 against its recipient rows; batch creation
+    // reconciles the column to those rows before an email can be submitted.
+    try {
+      await db.knex('emails').where('id', email.id).update({ email_count: 6 });
+
+      await agent
+        .get(`emails/${email.id}/status/`)
+        .expectStatus(200)
+        .matchBodySnapshot({
+          email_statuses: [{ id: anyObjectId }],
+        })
+        .matchHeaderSnapshot({
+          'content-version': anyContentVersion,
+          etag: anyEtag,
+        })
+        .expect(({ body }) => {
+          assert.equal(body.email_statuses[0].id, email.id);
+        });
+    } finally {
+      await db.knex('emails').where('id', email.id).update({ email_count: email.email_count });
+    }
+  });
+
+  it('Can read the sending status of an email that is still submitting', async function () {
+    const email = fixtureManager.get('emails', 0);
+    const member = fixtureManager.get('members', 0);
+    let pendingBatch;
+    try {
+      pendingBatch = await models.EmailBatch.add({ email_id: email.id });
+      for (let index = 0; index < 2; index += 1) {
+        await models.EmailRecipient.add({
+          email_id: email.id,
+          batch_id: pendingBatch.id,
+          member_id: member.id,
+          member_uuid: member.uuid,
+          member_email: member.email,
+        });
+      }
+      await db.knex('emails').where('id', email.id).update({ status: 'submitting' });
+
+      await agent
+        .get(`emails/${email.id}/status/`)
+        .expectStatus(200)
+        .matchBodySnapshot({
+          email_statuses: [{ id: anyObjectId }],
+        })
+        .matchHeaderSnapshot({
+          'content-version': anyContentVersion,
+          etag: anyEtag,
+        })
+        .expect(({ body }) => {
+          assert.equal(body.email_statuses[0].id, email.id);
+        });
+    } finally {
+      if (pendingBatch) {
+        await db.knex('email_recipients').where('batch_id', pendingBatch.id).del();
+        await db.knex('email_batches').where('id', pendingBatch.id).del();
+      }
+      await db.knex('emails').where('id', email.id).update({ status: 'submitted' });
+    }
+  });
+
+  it('Can read the sending status of a failed email', async function () {
+    const email = fixtureManager.get('emails', 1);
+    await agent
+      .get(`emails/${email.id}/status/`)
+      .expectStatus(200)
+      .matchBodySnapshot({
+        email_statuses: [{ id: anyObjectId }],
+      })
+      .matchHeaderSnapshot({
+        'content-version': anyContentVersion,
+        etag: anyEtag,
+      })
+      .expect(({ body }) => {
+        assert.equal(body.email_statuses[0].id, email.id);
+        assert.equal(body.email_statuses[0].sending.retryable, true);
+      });
+  });
+
+  it('Cannot read the sending status of a missing email', async function () {
+    await agent
+      .get('emails/123456789012345678901234/status/')
+      .expectStatus(404)
+      .matchBodySnapshot({
+        errors: [{ id: anyErrorId }],
+      })
+      .matchHeaderSnapshot({
+        'content-version': anyContentVersion,
+        etag: anyEtag,
+      });
+  });
+
+  it('reports and rejects unknown-outcome failures from stale retry clients', async function () {
+    const email = fixtureManager.get('emails', 1);
+    // A client may have read eligibility before a batch's outcome became unknown.
+    await agent
+      .get(`emails/${email.id}/status/`)
+      .expectStatus(200)
+      .expect(({ body }) => {
+        assert.equal(body.email_statuses[0].sending.retryable, true);
+      });
+    const batch = await models.EmailBatch.add({ email_id: email.id, status: 'submitting' });
+    try {
+      await agent
+        .get(`emails/${email.id}/status/`)
+        .expectStatus(200)
+        .expect(({ body }) => {
+          assert.equal(body.email_statuses[0].sending.retryable, false);
+        });
+      await agent
+        .put(`emails/${email.id}/retry/`)
+        .expectStatus(400)
+        .expect(({ body }) => {
+          assert.match(body.errors[0].message, /delivery outcome is unknown/, JSON.stringify(body));
+        });
+      const currentEmail = await models.Email.findOne({ id: email.id });
+      assert.equal(currentEmail.get('status'), 'failed');
+      const currentBatch = await models.EmailBatch.findOne({ id: batch.id });
+      assert.equal(currentBatch.get('status'), 'submitting');
+    } finally {
+      await db.knex('email_batches').where('id', batch.id).del();
+    }
+  });
+
+  it('republishes a post without retrying its unknown-outcome email', async function () {
+    const email = fixtureManager.get('emails', 1);
+    const originalPost = await db.knex('posts').where('id', email.post_id).first();
+    const batch = await models.EmailBatch.add({ email_id: email.id, status: 'submitting' });
+    try {
+      await db
+        .knex('posts')
+        .where('id', email.post_id)
+        .update({ status: 'draft', newsletter_id: fixtureManager.get('newsletters', 0).id });
+      await agent
+        .put(`posts/${email.post_id}/`)
+        .body({
+          posts: [{ status: 'published', updated_at: originalPost.updated_at.toISOString() }],
+        })
+        .expectStatus(200);
+      const currentPost = await db.knex('posts').where('id', email.post_id).first();
+      assert.equal(currentPost.status, 'published');
+      const currentEmail = await models.Email.findOne({ id: email.id });
+      assert.equal(currentEmail.get('status'), 'failed');
+      const currentBatch = await models.EmailBatch.findOne({ id: batch.id });
+      assert.equal(currentBatch.get('status'), 'submitting');
+    } finally {
+      await db
+        .knex('posts')
+        .where('id', email.post_id)
+        .update({ status: originalPost.status, newsletter_id: originalPost.newsletter_id });
+      await db.knex('email_batches').where('id', batch.id).del();
+    }
+  });
+
+  it('allows sending-status readers to get retry eligibility without browsing batches', async function () {
+    await agent.loginAsAuthor();
+    try {
+      const email = fixtureManager.get('emails', 1);
+      await agent
+        .get(`emails/${email.id}/status/`)
+        .expectStatus(200)
+        .expect(({ body }) => {
+          assert.equal(body.email_statuses[0].sending.retryable, true);
+        });
+      await agent.get(`emails/${email.id}/batches/`).expectStatus(403);
+    } finally {
+      await agent.loginAsOwner();
+    }
+  });
+
+  it('Can retry a failed email', async function () {
+    await agent
+      .put(`emails/${fixtureManager.get('emails', 1).id}/retry`)
+      .expectStatus(200)
+      .matchBodySnapshot({
+        emails: [matchEmail],
+      })
+      .matchHeaderSnapshot({
+        'content-version': anyContentVersion,
+        etag: anyEtag,
+      });
+
+    await waitForEmailStatus(fixtureManager.get('emails', 1).id);
+    mockManager.assert.emittedEvent('email.edited');
+  });
+
+  it('Can read the analytics status', async function () {
+    // The analytics job is never scheduled under test, so the pipelines are in their initial
+    // state: nothing running and lag unknown until a fetch has succeeded in this process
+    await agent
+      .get(`emails/${fixtureManager.get('emails', 0).id}/analytics/`)
+      .expectStatus(200)
+      .matchBodySnapshot()
+      .matchHeaderSnapshot({
+        'content-version': anyContentVersion,
+        etag: anyEtag,
+      });
+  });
+
+  it('Can browse email batches', async function () {
+    await agent
+      .get(`emails/${fixtureManager.get('emails', 0).id}/batches/`)
+      .expectStatus(200)
+      .matchBodySnapshot({
+        batches: [matchBatch],
+      })
+      .matchHeaderSnapshot({
+        'content-version': anyContentVersion,
+        etag: anyEtag,
+      });
+  });
+
+  it('Can browse email batches with recipient count', async function () {
+    const { body } = await agent
+      .get(`emails/${fixtureManager.get('emails', 0).id}/batches/?include=count.recipients`)
+      .expectStatus(200)
+      .matchBodySnapshot({
+        batches: [matchBatch],
+      })
+      .matchHeaderSnapshot({
+        'content-version': anyContentVersion,
+        etag: anyEtag,
+      });
+    assert.equal(body.batches[0].count.recipients, 6);
+  });
+
+  it('Can browse all email failures', async function () {
+    await agent
+      .get(
+        `emails/${fixtureManager.get('emails', 0).id}/recipient-failures/?order=failed_at%20DESC`,
+      )
+      .expectStatus(200)
+      .matchBodySnapshot({
+        failures: new Array(5).fill(matchFailure),
+      })
+      .matchHeaderSnapshot({
+        'content-version': anyContentVersion,
+        etag: anyEtag,
+      });
+  });
+
+  it('Can browse permanent email failures', async function () {
+    await agent
+      .get(
+        `emails/${fixtureManager.get('emails', 0).id}/recipient-failures/?filter=severity:permanent&order=failed_at%20DESC`,
+      )
+      .expectStatus(200)
+      .matchBodySnapshot({
+        failures: new Array(1).fill(matchFailure),
+      })
+      .matchHeaderSnapshot({
+        'content-version': anyContentVersion,
+        etag: anyEtag,
+      });
+  });
+
+  it('Can browse temporary email failures', async function () {
+    await agent
+      .get(
+        `emails/${fixtureManager.get('emails', 0).id}/recipient-failures/?filter=severity:temporary&order=failed_at%20DESC`,
+      )
+      .expectStatus(200)
+      .matchBodySnapshot({
+        failures: new Array(4).fill(matchFailure),
+      })
+      .matchHeaderSnapshot({
+        'content-version': anyContentVersion,
+        etag: anyEtag,
+      });
+  });
+
+  it('Can browse email failures with includes', async function () {
+    await agent
+      .get(
+        `emails/${fixtureManager.get('emails', 0).id}/recipient-failures/?order=failed_at%20DESC&include=member,email_recipient`,
+      )
+      .expectStatus(200)
+      .matchBodySnapshot({
+        failures: new Array(5).fill({
+          ...matchFailure,
+          member: {
+            id: anyObjectId,
+            uuid: anyUuid,
+          },
+          email_recipient: {
+            id: anyObjectId,
+            member_uuid: anyUuid,
+            opened_at: nullable(anyISODateTime), // Can be null or string
+            delivered_at: nullable(anyISODateTime), // Can be null or string
+            failed_at: nullable(anyISODateTime), // Can be null or string
+            processed_at: anyISODateTime,
+            batch_id: anyObjectId,
+          },
+        }),
+      })
+      .matchHeaderSnapshot({
+        'content-version': anyContentVersion,
+        etag: anyEtag,
+      });
+  });
+
+  // Older Ghost emails still have a html body and plaintext body set.
+  it('Does default replacements on the HTML body of an old email', async function () {
+    const html =
+      '<p style="margin: 0 0 1.5em 0; line-height: 1.6em;">Hey %%{first_name, &quot;there&quot;}%%, Hey %%{first_name}%%,</p><a href="%%{unsubscribe_url}%%">Unsubscribe</a>';
+    const plaintext =
+      'Hey %%{first_name, "there"}%%, Hey %%{first_name}%%\nUnsubscribe [%%{unsubscribe_url}%%]';
+
+    // Create this email model in the database
+    const email = await models.Email.add({
+      post_id: fixtureManager.get('posts', 2).id,
+      newsletter_id: fixtureManager.get('newsletters', 0).id,
+      status: 'submitted',
+      submitted_at: new Date(),
+      track_opens: false,
+      track_clicks: false,
+      feedback_enabled: false,
+      recipient_filter: 'all',
+      subject: 'Test email',
+      from: 'support@example.com',
+      replyTo: null,
+      email_count: 1,
+      source: '{}',
+      source_type: 'lexical',
+      html,
+      plaintext,
+    });
+
+    const { body } = await agent
+      .get(`emails/${email.id}/`)
+      .expectStatus(200)
+      .matchBodySnapshot({
+        emails: [matchEmailNewsletter],
+      })
+      .matchHeaderSnapshot({
+        'content-version': anyContentVersion,
+        etag: anyEtag,
+      });
+
+    // Simple check that there are not %%{ leftover (in case the snapshots gets updated without noticing what this test is checking)
+    assert.equal(body.emails[0].html.includes('%%{'), false);
+    assert.equal(body.emails[0].plaintext.includes('%%{'), false);
+  });
+});

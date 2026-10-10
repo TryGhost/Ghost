@@ -1,9 +1,10 @@
 import { Meta, createMutation, createQuery } from '../utils/api/hooks';
 import { insertToQueryCache, updateQueryCache } from '../utils/api/update-queries';
+import type { AutomationStatus } from './automations';
 
 export type AutomatedEmail = {
   id: string;
-  status: 'active' | 'inactive';
+  status: AutomationStatus;
   name: string;
   slug: string;
   subject: string;
@@ -54,7 +55,6 @@ export const useAddAutomatedEmail = createMutation<
   body: (automatedEmail) => ({ automated_emails: [automatedEmail] }),
   updateQueries: {
     dataType,
-    emberUpdateType: 'createOrUpdate',
     update: insertToQueryCache('automated_emails'),
   },
 });
@@ -62,10 +62,9 @@ export const useAddAutomatedEmail = createMutation<
 export const useEditAutomatedEmail = createMutation<AutomatedEmailsResponseType, AutomatedEmail>({
   method: 'PUT',
   path: (automatedEmail) => `/automated_emails/${automatedEmail.id}/`,
-  body: (automatedEmail) => ({ automated_emails: [automatedEmail] }),
+  body: ({ slug: _slug, ...automatedEmail }) => ({ automated_emails: [automatedEmail] }),
   updateQueries: {
     dataType,
-    emberUpdateType: 'createOrUpdate',
     update: updateQueryCache('automated_emails'),
   },
 });
@@ -85,7 +84,6 @@ export const useEditAutomatedEmailSenders = createMutation<
   body: (payload) => payload,
   updateQueries: {
     dataType,
-    emberUpdateType: 'createOrUpdate',
     update: updateQueryCache('automated_emails'),
   },
 });
@@ -99,7 +97,6 @@ export const useVerifyAutomatedEmailSender = createMutation<
   body: ({ token }) => ({ token }),
   updateQueries: {
     dataType,
-    emberUpdateType: 'createOrUpdate',
     update: updateQueryCache('automated_emails'),
   },
 });

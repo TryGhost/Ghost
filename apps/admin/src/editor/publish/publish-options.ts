@@ -6,6 +6,7 @@ import {
   normalizeRecipientFilter,
 } from '@tryghost/admin-x-framework/utils/recipient-filter';
 import type { PostStatus } from '@tryghost/admin-x-framework/api/posts';
+import type { NavigationPlacement } from '@tryghost/admin-x-framework/helpers';
 import type {
   PublishOptions as PublishCommandOptions,
   ScheduleOptions as ScheduleCommandOptions,
@@ -32,6 +33,20 @@ export interface PublishTypeOption {
   disabled: boolean;
 }
 
+export interface NavigationOption {
+  value: 'none' | 'primary' | 'secondary';
+  /** Shown in the expanded options list. */
+  label: string;
+  /** Shown in the collapsed option title. */
+  display: string;
+}
+
+export const NAVIGATION_OPTIONS: readonly NavigationOption[] = [
+  { value: 'none', label: 'None', display: 'Not in site navigation' },
+  { value: 'primary', label: 'Primary', display: 'Primary navigation' },
+  { value: 'secondary', label: 'Secondary', display: 'Secondary navigation' },
+];
+
 export interface PublishPostInput {
   status: PostStatus;
   /** Pages never email. */
@@ -52,6 +67,8 @@ export interface NewsletterInput {
   status?: string;
   visibility?: string;
   sortOrder?: number;
+  /** Shown in the newsletter picker; only admins' newsletter reads include it. */
+  activeMembers?: number;
 }
 
 export type DefaultEmailRecipients = 'disabled' | 'visibility' | 'filter';
@@ -80,12 +97,38 @@ export interface EmailVerificationHold {
   message?: string | null;
 }
 
+/** The host limits the flow checks: members before publishing, emails before sending. */
+export type LimitKind = 'emails' | 'members';
+
+/**
+ * A limit port's rejection when the limit could not be checked at all, as
+ * opposed to a limit that was reached. It propagates out of `checkLimits()`
+ * like a failed settings refresh, rather than becoming a block.
+ */
+export class LimitCheckError extends Error {
+  readonly limit: LimitKind;
+
+  constructor(limit: LimitKind, cause: unknown) {
+    super(cause instanceof Error && cause.message ? cause.message : `Couldn’t count ${limit}.`, {
+      cause,
+    });
+    this.name = 'LimitCheckError';
+    this.limit = limit;
+  }
+}
+
 export interface PublishLimitPorts {
   /** Awaited before the sending checks so a fresh hold is seen. A rejection propagates. */
   refreshSettings?: () => Promise<void>;
-  /** Resolves when sending is allowed; rejects with the host's message when the email limit would be exceeded. */
+  /**
+   * Resolves when sending is allowed; rejects with the host's message when the email limit would
+   * be exceeded, or with a `LimitCheckError` when the limit could not be checked.
+   */
   checkSendingLimit?: () => Promise<void>;
-  /** Resolves when publishing is allowed; rejects with the host's message when over the member limit. */
+  /**
+   * Resolves when publishing is allowed; rejects with the host's message when over the member
+   * limit, or with a `LimitCheckError` when the limit could not be checked.
+   */
   checkPublishingLimit?: () => Promise<void>;
   /** Read after `refreshSettings`. */
   getEmailVerification?: () => EmailVerificationHold;
@@ -148,8 +191,16 @@ export interface PublishOptionsState {
   readonly emailDisabledReason: EmailDisabledReason | null;
   readonly emailBlock: EmailBlock | null;
   readonly publishBlock: PublishBlock | null;
+  /** An email type is selected and email is on offer, but no recipients are chosen. */
+  readonly missingRecipients: boolean;
   /** Draft-only, and false when email-only has no executable email. */
   readonly canPublish: boolean;
+  /** An admin is publishing a page now, not on a schedule, so its navigation placement is offered. */
+  readonly showNavigationOption: boolean;
+  /** Where the page will be listed; its current placement until one is chosen. */
+  readonly navigationPlacement: NavigationPlacement;
+  /** The placement is on offer and differs from the current one, so publishing writes it. */
+  readonly navigationPlacementChanged: boolean;
   readonly isDirty: boolean;
 }
 
@@ -168,6 +219,7 @@ export interface PublishOptionsMachine {
   resetPastScheduledAt(): void;
   setNewsletter(newsletter: NewsletterInput | null): void;
   setRecipientFilter(filter: string | null): void;
+  setNavigationPlacement(placement: NavigationPlacement): void;
   reset(): void;
   checkLimits(): Promise<PublishLimits>;
   /** Null when no safe status transition is on offer. */
@@ -180,6 +232,8 @@ export interface PublishOptionsInputs {
   site: PublishSiteInput;
   user: PublishUserInput;
   limits?: PublishLimitPorts;
+  /** The page's current navigation placement; absent when the site navigation cannot be changed. */
+  navigation?: { placement: NavigationPlacement } | null;
   now?: () => Date;
 }
 
@@ -236,6 +290,12 @@ export function getDefaultRecipientFilter(
   return filter;
 }
 
+export function isEmailDisabledInSettings(
+  site: Pick<PublishSiteInput, 'membersEnabled' | 'editorDefaultEmailRecipients'>,
+): boolean {
+  return site.editorDefaultEmailRecipients === 'disabled' || !site.membersEnabled;
+}
+
 export function getEmailUnavailableReason(
   post: PublishPostInput,
   site: Pick<PublishSiteInput, 'membersEnabled' | 'editorDefaultEmailRecipients'>,
@@ -246,7 +306,7 @@ export function getEmailUnavailableReason(
   if (post.email) {
     return 'already-emailed';
   }
-  if (site.editorDefaultEmailRecipients === 'disabled' || !site.membersEnabled) {
+  if (isEmailDisabledInSettings(site)) {
     return 'disabled-in-settings';
   }
   return null;
@@ -331,6 +391,7 @@ export function createPublishOptions({
   site,
   user,
   limits = {},
+  navigation = null,
   now = () => new Date(),
 }: PublishOptionsInputs): PublishOptionsMachine {
   const newsletters = selectableNewsletters(site.newsletters);
@@ -373,6 +434,8 @@ export function createPublishOptions({
   let scheduledAtTouched = false;
   // `undefined` means "not chosen": the filter follows the post and the site default.
   let selectedRecipientFilter: string | null | undefined;
+  // `undefined` means "not chosen": the placement follows the page's current one.
+  let selectedNavigationPlacement: NavigationPlacement | undefined;
 
   const recipientFilter = (): string | null => {
     if (selectedRecipientFilter === undefined) {
@@ -418,6 +481,16 @@ export function createPublishOptions({
     );
   };
 
+  // A failed-email retry sends to the segment persisted with that email, whatever is picked.
+  const missingRecipients = (): boolean =>
+    isDraft &&
+    !post.email &&
+    publishType !== 'publish' &&
+    !emailUnavailable &&
+    !emailDisabled() &&
+    newsletter !== null &&
+    !recipientFilter();
+
   const publishTypeOptions = (): PublishTypeOption[] => {
     const disabled = emailDisabled();
 
@@ -428,7 +501,17 @@ export function createPublishOptions({
     ];
   };
 
+  const currentNavigationPlacement = navigation?.placement ?? null;
+  const navigationPlacement = (): NavigationPlacement =>
+    selectedNavigationPlacement === undefined
+      ? currentNavigationPlacement
+      : selectedNavigationPlacement;
+  // The page URL isn't live until a schedule lands, so scheduling hides the option.
+  const showNavigationOption = (): boolean =>
+    Boolean(post.isPage) && user.isAdmin && navigation !== null && !isScheduled;
+
   const isDirty = (): boolean =>
+    navigationPlacement() !== currentNavigationPlacement ||
     publishType !== initial.publishType ||
     isScheduled !== initial.isScheduled ||
     ((isScheduled || scheduledAtTouched) && scheduledAt !== initial.scheduledAt) ||
@@ -463,7 +546,12 @@ export function createPublishOptions({
       emailDisabledReason: emailDisabledReason(),
       emailBlock,
       publishBlock,
+      missingRecipients: missingRecipients(),
       canPublish: isDraft && (publishType !== 'send' || emails),
+      showNavigationOption: showNavigationOption(),
+      navigationPlacement: navigationPlacement(),
+      navigationPlacementChanged:
+        showNavigationOption() && navigationPlacement() !== currentNavigationPlacement,
       isDirty: isDirty(),
     };
   };
@@ -500,6 +588,9 @@ export function createPublishOptions({
         };
       }
     } catch (error) {
+      if (error instanceof LimitCheckError) {
+        throw error;
+      }
       emailBlock = { kind: 'sending-limit', message: errorMessage(error) };
     }
   };
@@ -512,6 +603,9 @@ export function createPublishOptions({
     try {
       await limits.checkPublishingLimit?.();
     } catch (error) {
+      if (error instanceof LimitCheckError) {
+        throw error;
+      }
       const message = errorMessage(error);
       publishBlock = { kind: 'host-limit', message, parts: splitUpgradeMessage(message) };
     }
@@ -549,6 +643,10 @@ export function createPublishOptions({
       selectedRecipientFilter = normalizeRecipientFilter(filter);
     },
 
+    setNavigationPlacement(placement) {
+      selectedNavigationPlacement = placement;
+    },
+
     reset() {
       publishType = initial.publishType;
       publishTypeTouched = false;
@@ -558,13 +656,17 @@ export function createPublishOptions({
       scheduledAtTouched = false;
       newsletter = initialNewsletter;
       selectedRecipientFilter = undefined;
+      selectedNavigationPlacement = undefined;
     },
 
     async checkLimits() {
       emailBlock = null;
       publishBlock = null;
 
-      const [sendingResult] = await Promise.allSettled([runSendingCheck(), runPublishingCheck()]);
+      const [sendingResult, publishingResult] = await Promise.allSettled([
+        runSendingCheck(),
+        runPublishingCheck(),
+      ]);
 
       // A block that lands after the user picked an email type still demotes that pick.
       if (!publishTypeTouched || emailDisabled()) {
@@ -575,10 +677,14 @@ export function createPublishOptions({
         initial = { ...initial, publishType };
       }
 
-      // A settings refresh failure remains observable to callers, but only after
-      // the publishing check has settled so no late block can race the UI ready.
+      // A settings refresh or a limit that could not be checked remains observable
+      // to callers, but only once both checks have settled so no late block can
+      // race the UI ready.
       if (sendingResult.status === 'rejected') {
         throw sendingResult.reason;
+      }
+      if (publishingResult.status === 'rejected') {
+        throw publishingResult.reason;
       }
 
       return { emailBlock, publishBlock };

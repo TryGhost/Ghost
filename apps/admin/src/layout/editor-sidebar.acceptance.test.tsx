@@ -3,8 +3,10 @@ import { page } from 'vitest/browser';
 
 import {
   fakeAdminEndpoint,
+  fakeEmailPreview,
   fakeNewsletters,
   fakePosts,
+  fakePostsListScreen,
   fakeSnippets,
   post,
   renderAdminApp,
@@ -12,25 +14,9 @@ import {
 import { editorScreen } from '@/editor/editor.screen';
 
 /**
- * The editor is a focused writing surface — Ghost hides the nav sidebar for it,
- * and always has.
- *
- * Ember arranges that by setting `ui.isFullScreen` when the editor route
- * *activates*. With `postsListReact` on, the posts route aborts its transition,
- * so the editor route never deactivates — and a second visit is a model change
- * on an already-active route, where `activate()` does not run again. The
- * sidebar came back from the second post onwards.
- *
- * React decides it from the route instead, which does not care how many times
- * you have been there.
- *
- * These tests pin the route's own decision. They cannot prove the *original*
- * bug is gone: there is no Ember in this harness, so `useSidebarVisibility`
- * returns its default and the Ember half of the handshake is never exercised.
- * What they guarantee is that React hides the sidebar on the editor route
- * regardless of what Ember reports — which is the property the fix relies on.
- * The sequence that produced the bug (list -> editor -> list -> editor) was
- * verified by hand against a real Ghost.
+ * The editor is a focused writing surface — Ghost hides the nav sidebar for it.
+ * The route decides it, so repeat visits (list -> editor -> list -> editor)
+ * keep it hidden.
  */
 describe('Editor chrome', () => {
   const sidebar = () => page.getByTestId('admin-sidebar');
@@ -47,13 +33,12 @@ describe('Editor chrome', () => {
     await expect(sidebar()).toHaveCount(0);
   });
 
-  // The decision lives on the route handle, so it must hold on both sides of
-  // the `editorReact` gate — here the React editor serves the route.
-  it('hides it with editorReact on', async () => {
+  it('hides it once the editor has loaded', async () => {
     fakeSnippets([]);
     fakePosts([]);
     // The header's publish inputs read the newsletter list.
     fakeNewsletters([]);
+    fakeEmailPreview();
     fakeAdminEndpoint('GET', /^\/posts\/abc123\/\?/, { posts: [post({ id: 'abc123' })] });
     await renderAdminApp('/editor/post/abc123', { labs: { editorReact: true } });
 
@@ -64,6 +49,8 @@ describe('Editor chrome', () => {
   // ...and still shows it everywhere else, or this would be a worse bug than
   // the one it fixes.
   it('leaves the sidebar alone on the posts list', async () => {
+    fakePostsListScreen();
+    fakePosts([]);
     await renderAdminApp('/posts');
 
     await expect.element(sidebar()).toBeVisible();

@@ -4,10 +4,10 @@
  * Architectural boundary rules for the monorepo, enforced on the resolved
  * module graph (require AND import). Two sections:
  *
- *   ghost/core  — layer separation inside the Ghost server: shared/ must stay
+ *   ghost  — layer separation inside the Ghost server: shared/ must stay
  *                 dependency-free, frontend/ crosses to server/ only via the
  *                 proxy seam, and server/ must not reach into the frontend
- *                 rendering layer. Paths are anchored on `^ghost/core/core/`.
+ *                 rendering layer. Paths are anchored on `^ghost/core/`.
  *
  *   apps/       — design system layer hierarchy and public/admin separation.
  *                 shade/ is a leaf package that nothing above it may pull
@@ -31,8 +31,8 @@ module.exports = {
       name: 'shared-not-server-or-frontend',
       comment: 'Invalid require of core/server or core/frontend from core/shared.',
       severity: 'error',
-      from: { path: '^ghost/core/core/shared/' },
-      to: { path: '^ghost/core/core/(server|frontend)/' },
+      from: { path: '^ghost/core/shared/' },
+      to: { path: '^ghost/core/(server|frontend)/' },
     },
     // ============================================================
     // Frontend must not require server/models directly
@@ -42,8 +42,8 @@ module.exports = {
       comment:
         'Invalid require of core/server/models from core/frontend. Fetch content through the public Content API (api.postsPublic / api.pagesPublic), injected via core/frontend/services/proxy — not the model layer directly. See #28420.',
       severity: 'error',
-      from: { path: '^ghost/core/core/frontend/' },
-      to: { path: '^ghost/core/core/server/models/' },
+      from: { path: '^ghost/core/frontend/' },
+      to: { path: '^ghost/core/server/models/' },
     },
     // ============================================================
     // Frontend must cross to server only via proxy (with allowlist)
@@ -54,22 +54,22 @@ module.exports = {
         'Invalid require of core/server from core/frontend. Cross only via the proxy seam (core/frontend/services/proxy.js).',
       severity: 'error',
       from: {
-        path: '^ghost/core/core/frontend/',
+        path: '^ghost/core/frontend/',
         // Adding files to this list is an anti-pattern
         // Goal: Work down until only proxy.js remains
         pathNot: [
           // The sanctioned seam.
-          '^ghost/core/core/frontend/services/proxy\\.js$',
+          '^ghost/core/frontend/services/proxy\\.js$',
 
           // Composition root wiring (less wrong).
-          '^ghost/core/core/frontend/web/site\\.js$',
-          '^ghost/core/core/frontend/web/middleware/frontend-caching\\.js$',
-          '^ghost/core/core/frontend/web/middleware/handle-image-sizes\\.js$',
-          '^ghost/core/core/frontend/web/routers/link-redirects\\.js$',
-          '^ghost/core/core/frontend/apps/private-blogging/lib/router\\.js$',
+          '^ghost/core/frontend/web/site\\.js$',
+          '^ghost/core/frontend/web/middleware/frontend-caching\\.js$',
+          '^ghost/core/frontend/web/middleware/handle-image-sizes\\.js$',
+          '^ghost/core/frontend/web/routers/link-redirects\\.js$',
+          '^ghost/core/frontend/apps/private-blogging/lib/router\\.js$',
         ],
       },
-      to: { path: '^ghost/core/core/server/' },
+      to: { path: '^ghost/core/server/' },
     },
     // ============================================================
     // Server must not require frontend (with allowlist)
@@ -80,19 +80,31 @@ module.exports = {
         'Invalid require of core/frontend from core/server. The server must not depend on the frontend rendering layer.',
       severity: 'error',
       from: {
-        path: '^ghost/core/core/server/',
+        path: '^ghost/core/server/',
         // Adding files to this list is an anti-pattern
         // Goal: Work down until the list is empty
         pathNot: [
           // Composition root: mounts the frontend Express app onto the server (less wrong).
-          '^ghost/core/core/server/web/parent/frontend\\.js$',
+          '^ghost/core/server/web/parent/frontend\\.js$',
 
           // Leak: route-settings reaches into the frontend routing config for QUERY/TAXONOMIES (fix first — config should be injected, see the in-file TODO).
-          '^ghost/core/core/server/services/route-settings/validate\\.js$',
-          '^ghost/core/core/server/services/route-settings/activation-bridge\\.ts$',
+          '^ghost/core/server/services/route-settings/validate\\.js$',
+          '^ghost/core/server/services/route-settings/activation-bridge\\.ts$',
         ],
       },
-      to: { path: '^ghost/core/core/frontend/' },
+      to: { path: '^ghost/core/frontend/' },
+    },
+
+    // ============================================================
+    // Core loads sharp only through @tryghost/image-transform
+    // ============================================================
+    {
+      name: 'core-sharp-via-image-transform',
+      comment:
+        'Invalid import of sharp from ghost. Use getSharp() from @tryghost/image-transform, which restricts the image decoders before anything is decoded.',
+      severity: 'error',
+      from: { path: '^ghost/core/' },
+      to: { path: '(^|/)node_modules/sharp/', dependencyTypesNot: ['type-only'] },
     },
 
     // ============================================================
@@ -193,7 +205,7 @@ module.exports = {
         'The admin shell (top-level files in apps/admin/src plus its non-domain support folders) may import a domain only through its api.ts. Same matching notes as admin-domains-cross-via-api-only. Test files are exempt.',
       severity: 'error',
       from: {
-        path: '^apps/admin/src/(?:(?:layout|hooks|providers|ember-bridge|utils|schemas)/.+|[^/]+\\.(?:ts|tsx))$',
+        path: '^apps/admin/src/(?:(?:layout|hooks|providers|utils|schemas)/.+|[^/]+\\.(?:ts|tsx))$',
         pathNot: ['\\.test\\.(ts|tsx)$'],
       },
       to: {
@@ -219,6 +231,8 @@ module.exports = {
   ],
   options: {
     doNotFollow: { path: 'node_modules' },
-    exclude: { path: '(^|/)(node_modules|coverage|coverage-next|test|built|dist)/' },
+    // Keeps edges into node_modules so rules can see npm packages, but skips
+    // our own tests and build output
+    exclude: { path: '^(apps|ghost|packages)/.*/(coverage|coverage-next|test|built|dist)/' },
   },
 };

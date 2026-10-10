@@ -16,8 +16,8 @@ This is the default one-stop command for formatting checks, linting, and
 testing. It runs `pnpm format:check`, `pnpm lint`, and then `pnpm test` across
 the monorepo.
 
-`pnpm check` does not run the Playwright browser end-to-end suite or Ember
-Admin's test suite. Run those separately when your change affects those areas.
+`pnpm check` does not run the Playwright browser end-to-end suite. Run it
+separately when your change affects that area.
 
 ## Choose a Test Suite
 
@@ -26,11 +26,11 @@ Put tests as close as possible to the code and behavior under test:
 - **Unit tests** cover a function, component, or package in isolation. Most
   workspaces use Vitest and expose a `test` or `test:unit` target.
 - **Ghost Core integration tests** cover interactions between server modules
-  and live against a test database. They live in `ghost/core/test/integration/`.
+  and live against a test database. They live in `ghost/test/integration/`.
 - **Ghost Core server E2E tests** exercise the server, frontend rendering,
   webhooks, and APIs against a running Ghost instance and test database. They
-  live under `ghost/core/test/e2e-*/`. These are Vitest suites, not browser
-  tests. See the [Ghost Core E2E guide](../../ghost/core/test/README.md) for the
+  live under `ghost/test/e2e-*/`. These are Vitest suites, not browser
+  tests. See the [Ghost Core E2E guide](../../ghost/test/README.md) for the
   request agents, fixtures, mocks, and snapshot helpers.
 - **App acceptance tests** exercise an individual app through its UI. The
   framework and command vary by app, so use that workspace's
@@ -38,8 +38,6 @@ Put tests as close as possible to the code and behavior under test:
 - **Browser E2E tests** use Playwright to cover complete journeys across Ghost
   Admin and the public site. They live in `e2e/`. See
   [Writing Browser E2E Tests](e2e-testing.md) for conventions and examples.
-- **Ember Admin tests** cover the legacy Ember application in
-  `apps/ember-admin/` and run through Ember Exam via Nx.
 
 When a regression crosses several layers, prefer a focused test at the lowest
 layer that proves the fix. Add a broader acceptance or browser E2E test when the
@@ -83,11 +81,11 @@ a prompt to inspect what is missing.
 To inspect Ghost Core unit coverage locally, run:
 
 ```bash
-cd ghost/core
+cd ghost
 pnpm test:unit --coverage
 ```
 
-The HTML report is written to `ghost/core/coverage/index.html`.
+The HTML report is written to `ghost/coverage/index.html`.
 
 For physical-device testing and URL configurations such as HTTPS,
 subdirectories, or a separate Admin origin, see
@@ -118,10 +116,10 @@ which targets it provides:
 pnpm nx show project <project-name>
 ```
 
-For Ghost Core, run its suites from `ghost/core/`:
+For Ghost Core, run its suites from `ghost/`:
 
 ```bash
-cd ghost/core
+cd ghost
 
 pnpm test:unit
 pnpm test:integration
@@ -147,7 +145,7 @@ To watch a single database-backed Ghost Core file, point Vitest at the database
 configuration explicitly:
 
 ```bash
-cd ghost/core
+cd ghost
 pnpm exec vitest -c vitest.config.db.ts test/integration/path/to/test.test.js
 ```
 
@@ -222,41 +220,21 @@ Common causes include:
    a timeout unless the operation is genuinely allowed to take longer.
 
 For browser failures, use `pnpm test:e2e --debug`, the retained Playwright trace,
-or the preserved-environment workflow in the E2E documentation. Ember Admin
-tests can temporarily use `await this.pauseTest()` as described in its README.
-Remove debugging changes before committing.
+or the preserved-environment workflow in the E2E documentation. Remove debugging
+changes before committing.
 
-## Run Ember Admin Tests
+## Run Editor Acceptance Tests
 
-Always run Ember Admin tests through Nx so its dependency graph is built first:
-
-```bash
-# From the repository root
-pnpm nx run ghost-admin:test
-```
-
-For one file, pass the numeric parallel value required by the Ember Admin test
-script before the Ember Exam arguments:
-
-```bash
-pnpm nx run ghost-admin:test -- 1 \
-  --file-path=tests/acceptance/editor/publish-flow-test.js
-```
-
-The React editor has its own acceptance specs in
-`apps/admin/src/editor/*.acceptance.test.tsx`, which run in Vitest Browser Mode
+The editor's acceptance specs live in
+`apps/admin/src/editor/*.acceptance.test.tsx` and run in Vitest Browser Mode
 through `pnpm nx test:acceptance @tryghost/admin`. See
 [the editor's README](../../apps/admin/src/editor/README.md) for the harness
 helpers and conventions they use.
 
-Do not run `ember test` or `ember exam` directly from `apps/ember-admin/`.
-Doing so bypasses Nx's dependency builds and can leave required Admin and
-Koenig outputs missing.
-
 ## Before Opening a Pull Request
 
-Run `pnpm check` to ensure everything works. Also run the relevant browser E2E,
-app acceptance, or Ember Admin suite when your change affects those areas.
+Run `pnpm check` to ensure everything works. Also run the relevant browser E2E
+or app acceptance suite when your change affects those areas.
 
 If a full suite is impractical locally, run the most relevant focused tests and
 state exactly what you ran in the pull request.

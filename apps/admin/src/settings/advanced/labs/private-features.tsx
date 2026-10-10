@@ -20,6 +20,11 @@ const features: Feature[] = [
     flag: 'automations',
   },
   {
+    title: 'Archive automations',
+    description: 'Let members archive and restore automations.',
+    flag: 'automationsArchive',
+  },
+  {
     title: 'Automations per tier',
     description: 'Allow automations to be configured for individual tiers.',
     flag: 'automationsPerTier',
@@ -28,11 +33,6 @@ const features: Feature[] = [
     title: 'Automation run analytics',
     description: 'Track run-level analytics for automations.',
     flag: 'automationRunAnalytics',
-  },
-  {
-    title: 'Automations Tinybird sync',
-    description: 'Sync automations data to Tinybird.',
-    flag: 'automationsTinybirdSync',
   },
   {
     title: 'Stripe Automatic Tax (private beta)',
@@ -50,31 +50,15 @@ const features: Feature[] = [
     flag: 'csvContentImporter',
   },
   {
-    title: 'Admin UI Refresh',
-    description: 'Enable Admin UI refresh (exploration)',
-    flag: 'adminUIRefresh',
-  },
-  {
-    title: 'Admin 7 · Milestone 2 · Pill controls',
-    description:
-      'Preview Admin 7 controls and page headers on React pages. The editor is excluded.',
-    flag: 'admin7Pill',
-  },
-  {
-    title: 'Tags X',
-    description: 'Enables the new Tags UI',
-    flag: 'tagsX',
+    title: 'Admin 7 · Settings navigation',
+    description: 'Preview Settings in the Admin navigation shell.',
+    flag: 'admin7settings',
   },
   {
     title: 'Email Unique ID',
     description:
       'Enables {uniqueid} variable in emails for unique image URLs to bypass ESP image caching',
     flag: 'emailUniqueid',
-  },
-  {
-    title: 'Improve sending UI',
-    description: 'Enables improvements to email sending and delivery status for large email sends',
-    flag: 'improveSendingUI',
   },
   {
     title: 'Updated theme translation (beta)',
@@ -106,38 +90,15 @@ const features: Feature[] = [
     flag: 'stripeCheckoutCollection',
   },
   {
-    title: 'Members import redesign',
+    title: 'Stripe checkout design',
     description:
-      'Serves the redesigned members CSV import dialog, which shows every column in the file and lets each one be mapped to a member field',
-    flag: 'membersImportRedesign',
+      'Let admins style the Stripe checkout page with their own button color, background color, corners and font',
+    flag: 'stripeCheckoutDesign',
   },
   {
     title: 'Paywall improvements',
     description: 'Enables paywall usability, discoverability and email customization improvements',
     flag: 'paywallImprovements',
-  },
-  {
-    title: 'React posts & pages lists',
-    description:
-      'Renders the posts (/posts) and pages (/pages) list screens from the React app instead of the Ember screens. Gates the migration behind a runtime toggle so we can compare both implementations.',
-    flag: 'postsListReact',
-  },
-  {
-    title: 'React editor',
-    description:
-      'Serves the editor (/editor) from the React app instead of the Ember editor. Gates the migration behind a runtime toggle; the React side is an early placeholder.',
-    flag: 'editorReact',
-  },
-  {
-    title: 'React member activity',
-    description: 'Preview the new member activity screen.',
-    flag: 'membersActivityReact',
-  },
-  {
-    title: 'Self-serve archives',
-    description:
-      'Replaces the individual export buttons with a single "Export data" flow for downloading a full site archive',
-    flag: 'selfServeArchives',
   },
   {
     title: 'Machine payments',
@@ -146,10 +107,16 @@ const features: Feature[] = [
     flag: 'machinePayments',
   },
   {
-    title: 'Dunning warnings',
+    title: 'Navigation URL suggestions',
     description:
-      'Show payment-failure warnings in Admin, driven by the hosting provider via hostSettings.billing.dunning',
-    flag: 'dunningWarnings',
+      'Suggest pages, posts, offers and Portal links when editing navigation URLs in settings',
+    flag: 'navigationUrlSuggestions',
+  },
+  {
+    title: 'Apps',
+    description:
+      'Install and manage third-party apps that run on their own servers. Early and incomplete.',
+    flag: 'apps',
   },
 ];
 

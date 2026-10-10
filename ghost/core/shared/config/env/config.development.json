@@ -1,0 +1,39 @@
+{
+  "url": "http://localhost:2368",
+  "createInDevelopmentTables": true,
+  "mail": {
+    "from": "test@example.com",
+    "transport": "SMTP",
+    "options": {
+      "host": "127.0.0.1",
+      "port": 1025,
+      "auth": {
+        "user": "user",
+        "pass": "unsecure"
+      }
+    }
+  },
+  "database": {
+    "client": "better-sqlite3",
+    "connection": {
+      "filename": "content/data/ghost-dev.db"
+    },
+    "debug": false
+  },
+  "paths": {
+    "contentPath": "content/"
+  },
+  "useMinFiles": false,
+  "caching": {
+    "theme": {
+      "maxAge": 0
+    },
+    "admin": {
+      "maxAge": 0
+    }
+  },
+  "security": {
+    "staffDeviceVerification": false,
+    "embedPreviewUrl": ""
+  }
+}

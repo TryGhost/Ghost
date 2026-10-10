@@ -15,7 +15,6 @@ import { useCallback, useEffect, useMemo } from 'react';
 import useHandleError from '../../hooks/use-handle-error';
 import { usePermission } from '../../hooks/use-permissions';
 import { UserRoleType } from '../../api/roles';
-import { useFramework } from '../../providers/framework-provider';
 import { apiUrl, useFetchApi, type RequestOptions } from './fetch-api';
 
 export interface Meta {
@@ -101,8 +100,9 @@ export const createQuery =
 
 type InfiniteQueryOptions<ResponseData, PageData = ResponseData> = Omit<
   QueryOptions<PageData>,
-  'returnData'
+  'returnData' | 'parseResponse'
 > & {
+  parseResponse?: (data: unknown, params: Record<string, string>) => PageData;
   returnData: (originalData: unknown) => ResponseData;
   defaultNextPageParams?: (
     data: PageData,
@@ -163,13 +163,14 @@ export const createInfiniteQuery =
         apiUrl(options.path, searchParams || options.defaultSearchParams),
       ],
       queryFn: async ({ pageParam }) => {
-        const url = apiUrl(options.path, pageParam || searchParams || options.defaultSearchParams);
+        const params = pageParam || searchParams || options.defaultSearchParams || {};
+        const url = apiUrl(options.path, params);
         if (options.parseResponse) {
           const data = await fetchApi<unknown>(url, {
             headers: options.headers,
             ...requestOptions,
           });
-          return options.parseResponse(data);
+          return options.parseResponse(data, params);
         }
         return fetchApi<PageData>(url, { headers: options.headers, ...requestOptions });
       },
@@ -210,14 +211,17 @@ interface MutationOptions<ResponseData, Payload>
   /** Per-payload transport options, merged over the ones declared on the hook. */
   requestOptions?: (payload: Payload) => Omit<RequestOptions, 'body'>;
   invalidateQueries?:
-    | { dataType: string | string[] }
+    | {
+        dataType: string | string[];
+        /** Leaves out the queries under those data types it answers false for. */
+        predicate?: InvalidateQueryFilters['predicate'];
+      }
     | {
         filters?: InvalidateQueryFilters;
         options?: InvalidateOptions;
       };
   updateQueries?: {
     dataType: string;
-    emberUpdateType: 'createOrUpdate' | 'delete' | 'skip';
     update: (newData: ResponseData, currentData: unknown, payload: Payload) => unknown;
   };
 }
@@ -265,7 +269,6 @@ export const createMutation =
   () => {
     const fetchApi = useFetchApi();
     const queryClient = useQueryClient();
-    const { onUpdate, onInvalidate, onDelete } = useFramework();
 
     const afterMutate = useCallback(
       (newData: ResponseData, payload: Payload) => {
@@ -274,8 +277,10 @@ export const createMutation =
             ? invalidateQueries.dataType
             : [invalidateQueries.dataType];
           for (const dataType of dataTypes) {
-            queryClient.invalidateQueries({ queryKey: [dataType] });
-            onInvalidate(dataType);
+            queryClient.invalidateQueries({
+              queryKey: [dataType],
+              predicate: invalidateQueries.predicate,
+            });
           }
         } else if (invalidateQueries) {
           queryClient.invalidateQueries(invalidateQueries.filters, invalidateQueries.options);
@@ -285,20 +290,9 @@ export const createMutation =
           queryClient.setQueriesData({ queryKey: [updateQueries.dataType] }, (data: unknown) =>
             updateQueries!.update(newData, data, payload),
           );
-          if (updateQueries.emberUpdateType === 'createOrUpdate') {
-            onUpdate(updateQueries.dataType, newData);
-          } else if (updateQueries.emberUpdateType === 'delete') {
-            if (typeof payload !== 'string') {
-              throw new Error(
-                'Expected delete mutation to have a string (ID) payload. Either change the payload or update the createMutation hook',
-              );
-            }
-
-            onDelete(updateQueries.dataType, payload);
-          }
         }
       },
-      [onInvalidate, onUpdate, onDelete, queryClient],
+      [queryClient],
     );
 
     return useMutation<ResponseData, unknown, Payload>({

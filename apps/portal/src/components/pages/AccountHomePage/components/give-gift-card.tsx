@@ -1,6 +1,7 @@
 import AppContext from '../../../../app-context';
 import GiftIcon from '../../../../images/icons/gift.svg?react';
-import { type KeyboardEvent, useContext } from 'react';
+import { type KeyboardEvent, useContext, useEffect } from 'react';
+import { preloadGiftCardTextures } from '../../../common/gift-card';
 import { isGiftMember, isPaidMember } from '../../../../utils/helpers';
 import { type Site, canShowAccountGiftPromotion } from '../../../../utils/gift-subscriptions';
 import { t } from '../../../../utils/i18n';
@@ -26,8 +27,15 @@ function canGiveGift({ site, member }: { site: Site | null; member: Member | nul
 
 function GiveGiftCard() {
   const { member, site, doAction } = useContext(AppContext) as GiftCardContext;
+  const showGiftCard = canGiveGift({ site, member });
 
-  if (!canGiveGift({ site, member })) {
+  useEffect(() => {
+    if (showGiftCard) {
+      preloadGiftCardTextures(site?.url);
+    }
+  }, [showGiftCard, site?.url]);
+
+  if (!showGiftCard) {
     return null;
   }
 

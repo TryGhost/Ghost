@@ -2,6 +2,7 @@ import dns from 'dns';
 import path from 'path';
 import {defineConfig, devices} from '@playwright/test';
 import {fileURLToPath} from 'url';
+import {E2E_PORT} from './test/test-server.ts';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -15,13 +16,15 @@ dns.setDefaultResultOrder('verbatim');
 // "request for X is not in cache"). The async loader path handles it fine.
 // Fixed in Node 24.x — drop the flag when the workspace moves off Node 22.
 
-export const E2E_PORT = 5174;
+export {E2E_PORT};
 export default defineConfig({
     outputDir: path.resolve(__dirname, 'test-results'),
     testDir: './test/e2e',
     /* Fail the build on CI if you accidentally left test.only in the source code. */
     forbidOnly: !!process.env.CI,
     retries: process.env.CI ? 2 : 0,
+    // A broken build times out every test, so stop once failures pile up.
+    maxFailures: process.env.CI ? 10 : 0,
     workers: process.env.CI ? '100%' : undefined,
     /* Reporter to use. See https://playwright.dev/docs/test-reporters */
     reporter: process.env.CI ? [['github'], ['html']] :
@@ -64,7 +67,7 @@ export default defineConfig({
     webServer: {
         command: `pnpm dev:test`,
         url: `http://localhost:${E2E_PORT}`,
-        reuseExistingServer: !process.env.CI,
+        reuseExistingServer: false,
         timeout: 10000
     }
 });

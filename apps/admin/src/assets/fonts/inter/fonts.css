@@ -1,0 +1,16 @@
+/* Unmodified Inter v3.19 variable fonts. Inter Admin's v4 files are not a drop-in
+   replacement: their glyphs differ and they add an optical-size axis. */
+
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 100 900;
+  src: url('./Inter-roman.var.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Inter';
+  font-style: italic;
+  font-weight: 100 900;
+  src: url('./Inter-italic.var.woff2') format('woff2');
+}

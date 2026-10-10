@@ -58,6 +58,8 @@ export function AuthorsPicker({
 
   return (
     <ChipPicker<User, AuthorOption>
+      chipClassName={() => 'text-(length:--text-control)'}
+      chipVariant={() => 'secondary'}
       describedBy={describedBy}
       emptyMessage={loading ? 'Loading authors...' : 'No authors found'}
       getKey={(person) => person.id}
@@ -97,6 +99,7 @@ export function AuthorsPicker({
       onAdd={(person) => onChange([...selected, toAuthorOption(person)])}
       onOpenChange={handleOpenChange}
       onRemove={(key) => onChange(selected.filter((author) => author.id !== key))}
+      onReorder={onChange}
     />
   );
 }

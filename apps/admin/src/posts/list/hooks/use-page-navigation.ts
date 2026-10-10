@@ -9,36 +9,13 @@ import { useBrowseSite } from '@tryghost/admin-x-framework/api/site';
 import {
   getPageNavigationPlacement,
   pagePathForSlug,
+  parseSiteNavigation,
   updatePageNavigation,
   type NavigationPlacement,
-  type SiteNavigationItem,
 } from '@tryghost/admin-x-framework/helpers';
 import { useCallback, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import type { PostListItem } from './use-posts-list';
-
-function readNavigation(value: string | null): SiteNavigationItem[] | null {
-  if (value === null) {
-    return null;
-  }
-  try {
-    const parsed: unknown = JSON.parse(value);
-    return Array.isArray(parsed) &&
-      parsed.every(
-        (item: unknown) =>
-          typeof item === 'object' &&
-          item !== null &&
-          'label' in item &&
-          typeof item.label === 'string' &&
-          'url' in item &&
-          typeof item.url === 'string',
-      )
-      ? parsed
-      : null;
-  } catch {
-    return null;
-  }
-}
 
 export function usePageNavigation() {
   const settings = useBrowseSettings();
@@ -48,11 +25,11 @@ export function usePageNavigation() {
   const busy = useRef(false);
   const [isRunning, setIsRunning] = useState(false);
   const primary = useMemo(
-    () => readNavigation(getSettingValue(settings.data?.settings, 'navigation')),
+    () => parseSiteNavigation(getSettingValue(settings.data?.settings, 'navigation')),
     [settings.data],
   );
   const secondary = useMemo(
-    () => readNavigation(getSettingValue(settings.data?.settings, 'secondary_navigation')),
+    () => parseSiteNavigation(getSettingValue(settings.data?.settings, 'secondary_navigation')),
     [settings.data],
   );
   const pageRoutes = config.data?.config.pageRoutes;
@@ -101,10 +78,10 @@ export function usePageNavigation() {
           refreshSettings({ throwOnError: true }),
           refreshConfig({ throwOnError: true }),
         ]);
-        const navigation = readNavigation(
+        const navigation = parseSiteNavigation(
           getSettingValue(freshSettings.data?.settings, 'navigation'),
         );
-        const secondaryNavigation = readNavigation(
+        const secondaryNavigation = parseSiteNavigation(
           getSettingValue(freshSettings.data?.settings, 'secondary_navigation'),
         );
         if (

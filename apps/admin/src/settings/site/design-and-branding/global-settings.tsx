@@ -1,5 +1,8 @@
+import BrandIcon from '@/shared/brand-icon/brand-icon';
+import { useShade } from '@tryghost/shade/app';
 import '@/settings/custom-fonts.css';
 import ColorPickerField from '@/settings/components/color-picker-field';
+import FormSection from '@/settings/components/form-section';
 import React, { useState } from 'react';
 import UnsplashSelector from '@/settings/components/selectors/unsplash-selector';
 import clsx from 'clsx';
@@ -7,12 +10,12 @@ import usePinturaEditor from '@/settings/hooks/use-pintura-editor';
 import { APIError } from '@tryghost/admin-x-framework/errors';
 import { CUSTOM_FONTS } from '@tryghost/custom-fonts';
 import {
+  Button,
   Field,
+  FieldContent,
   FieldDescription,
-  FieldGroup,
   FieldLabel,
-  FieldLegend,
-  FieldSet,
+  FieldTitle,
   Select,
   SelectContent,
   SelectItem,
@@ -99,6 +102,8 @@ const GlobalSettings: React.FC<{
   values: GlobalSettingValues;
   updateSetting: (key: string, value: SettingValue) => void;
 }> = ({ values, updateSetting }) => {
+  const { isAdmin7 } = useShade();
+  const CoverSearchButton = isAdmin7 ? Button : ImageUploadAction;
   const { mutateAsync: uploadImage } = useUploadImage();
   const { settings } = useGlobalData();
   const [unsplashEnabled] = getSettingValues<boolean>(settings, ['unsplash']);
@@ -231,7 +236,7 @@ const GlobalSettings: React.FC<{
 
   return (
     <>
-      <FieldGroup className="mt-6 mb-12 gap-6">
+      <FormSection>
         <ColorPickerField
           debounceMs={200}
           direction="rtl"
@@ -242,14 +247,14 @@ const GlobalSettings: React.FC<{
           onChange={(value) => updateSetting('accent_color', value)}
         />
         <div className="flex items-start justify-between">
-          <div>
-            <div>Publication icon</div>
+          <FieldContent>
+            <FieldTitle>Publication icon</FieldTitle>
             <FieldDescription className="mr-5 max-w-[160px]">
               A square, social icon, at least {formatNumber(60)}×{formatNumber(60)}px
             </FieldDescription>
-          </div>
+          </FieldContent>
           <div className="flex gap-3">
-            <ImageUpload className={values.icon ? 'size-16.5' : 'h-9 w-40'}>
+            <ImageUpload className={values.icon ? 'size-16.5' : 'h-15 w-40'}>
               {values.icon ? (
                 <ImageUploadPreview background="checkerboard">
                   <ImageUploadImage id="logo" src={values.icon} />
@@ -274,13 +279,15 @@ const GlobalSettings: React.FC<{
             </ImageUpload>
           </div>
         </div>
-        <div className={`flex items-start justify-between ${values.icon && 'mt-2'}`}>
-          <div>
-            <div>Publication logo</div>
+        {/* The image rows are more visual than the other fields, so they get 8px of
+            extra room between them */}
+        <div className="mt-2 flex items-start justify-between">
+          <FieldContent>
+            <FieldTitle>Publication logo</FieldTitle>
             <FieldDescription className="mr-5 max-w-[160px]">
               Appears usually in the main header of your theme
             </FieldDescription>
-          </div>
+          </FieldContent>
           <div>
             <ImageUpload className="h-15 w-40">
               {values.logo ? (
@@ -308,12 +315,12 @@ const GlobalSettings: React.FC<{
           </div>
         </div>
         <div className="mt-2 flex items-start justify-between" data-testid="publication-cover">
-          <div>
-            <div>Publication cover</div>
+          <FieldContent>
+            <FieldTitle>Publication cover</FieldTitle>
             <FieldDescription className="mr-5 max-w-[160px]">
               Usually as a large banner image on your index pages
             </FieldDescription>
-          </div>
+          </FieldContent>
           <ImageUpload className="h-23.75 w-40">
             {values.coverImage ? (
               <ImageUploadPreview>
@@ -360,13 +367,15 @@ const GlobalSettings: React.FC<{
                 </ImageUploadDropzone>
                 {unsplashEnabled && (
                   <ImageUploadActions className="top-1 right-1 opacity-100">
-                    <ImageUploadAction
+                    <CoverSearchButton
                       aria-label="Select publication cover from Unsplash"
                       data-testid="toggle-unsplash-button"
+                      size="icon"
+                      variant="ghost"
                       onClick={() => setShowUnsplash(true)}
                     >
-                      <Images />
-                    </ImageUploadAction>
+                      {isAdmin7 ? <BrandIcon name="unsplash" size={16} /> : <Images />}
+                    </CoverSearchButton>
                   </ImageUploadActions>
                 )}
               </>
@@ -387,84 +396,79 @@ const GlobalSettings: React.FC<{
             />
           )}
         </div>
-      </FieldGroup>
-      <FieldSet className="-mt-4 gap-0">
-        <FieldLegend className="mb-4 text-md! leading-supertight font-bold md:text-lg!">
-          Typography
-        </FieldLegend>
-        <FieldGroup className="mb-12 gap-6">
-          <Field>
-            <FieldLabel>Heading font</FieldLabel>
-            <Select
-              value={selectedHeadingFont.value}
-              onValueChange={(value) => {
-                if (value === DEFAULT_FONT) {
-                  setHeadingFont({ name: DEFAULT_FONT, creator: themeNameVersion });
-                  updateSetting('heading_font', '');
-                } else {
-                  setHeadingFont({
-                    name: value,
-                    creator: CUSTOM_FONTS.heading.find((f) => f.name === value)?.creator || '',
-                  });
-                  updateSetting('heading_font', value);
-                }
-              }}
+      </FormSection>
+      <FormSection title="Typography">
+        <Field>
+          <FieldLabel>Heading font</FieldLabel>
+          <Select
+            value={selectedHeadingFont.value}
+            onValueChange={(value) => {
+              if (value === DEFAULT_FONT) {
+                setHeadingFont({ name: DEFAULT_FONT, creator: themeNameVersion });
+                updateSetting('heading_font', '');
+              } else {
+                setHeadingFont({
+                  name: value,
+                  creator: CUSTOM_FONTS.heading.find((f) => f.name === value)?.creator || '',
+                });
+                updateSetting('heading_font', value);
+              }
+            }}
+          >
+            <SelectTrigger
+              aria-label="Heading font"
+              className={`h-16 pl-2 text-left ${selectFont(selectedHeadingFont.label, true)}`}
+              data-testid="heading-font-select"
             >
-              <SelectTrigger
-                aria-label="Heading font"
-                className={`h-16 pl-2 text-left ${selectFont(selectedHeadingFont.label, true)}`}
-                data-testid="heading-font-select"
-              >
-                <SelectValue>
-                  <FontOption option={selectedHeadingFont} selected />
-                </SelectValue>
-              </SelectTrigger>
-              <SelectContent>
-                {customHeadingFonts.map((option) => (
-                  <SelectItem key={option.value} value={option.value}>
-                    <FontOption option={option} />
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </Field>
-          <Field>
-            <FieldLabel>Body font</FieldLabel>
-            <Select
-              value={selectedBodyFont.value}
-              onValueChange={(value) => {
-                if (value === DEFAULT_FONT) {
-                  setBodyFont({ name: DEFAULT_FONT, creator: themeNameVersion });
-                  updateSetting('body_font', '');
-                } else {
-                  setBodyFont({
-                    name: value,
-                    creator: CUSTOM_FONTS.body.find((f) => f.name === value)?.creator || '',
-                  });
-                  updateSetting('body_font', value);
-                }
-              }}
+              <SelectValue>
+                <FontOption option={selectedHeadingFont} selected />
+              </SelectValue>
+            </SelectTrigger>
+            <SelectContent>
+              {customHeadingFonts.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  <FontOption option={option} />
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </Field>
+        <Field>
+          <FieldLabel>Body font</FieldLabel>
+          <Select
+            value={selectedBodyFont.value}
+            onValueChange={(value) => {
+              if (value === DEFAULT_FONT) {
+                setBodyFont({ name: DEFAULT_FONT, creator: themeNameVersion });
+                updateSetting('body_font', '');
+              } else {
+                setBodyFont({
+                  name: value,
+                  creator: CUSTOM_FONTS.body.find((f) => f.name === value)?.creator || '',
+                });
+                updateSetting('body_font', value);
+              }
+            }}
+          >
+            <SelectTrigger
+              aria-label="Body font"
+              className={`h-16 pl-2 text-left ${selectFont(selectedBodyFont.label, false)}`}
+              data-testid="body-font-select"
             >
-              <SelectTrigger
-                aria-label="Body font"
-                className={`h-16 pl-2 text-left ${selectFont(selectedBodyFont.label, false)}`}
-                data-testid="body-font-select"
-              >
-                <SelectValue>
-                  <FontOption option={selectedBodyFont} selected />
-                </SelectValue>
-              </SelectTrigger>
-              <SelectContent className="max-h-52">
-                {customBodyFonts.map((option) => (
-                  <SelectItem key={option.value} value={option.value}>
-                    <FontOption option={option} />
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </Field>
-        </FieldGroup>
-      </FieldSet>
+              <SelectValue>
+                <FontOption option={selectedBodyFont} selected />
+              </SelectValue>
+            </SelectTrigger>
+            <SelectContent className="max-h-52">
+              {customBodyFonts.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  <FontOption option={option} />
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </Field>
+      </FormSection>
     </>
   );
 };

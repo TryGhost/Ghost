@@ -1,6 +1,8 @@
 import { CodeEditor } from '@tryghost/shade/components';
+import { Box } from '@tryghost/shade/primitives';
 import { LucideIcon } from '@tryghost/shade/utils';
 import type { PostType } from '@/editor/card-config';
+import { settingsFieldErrorFor } from '@/editor/session/settings-fields';
 import type { EditorSettingsPort } from './editor-settings-port';
 import { SettingsSubview } from './settings-subview';
 
@@ -48,6 +50,8 @@ export interface CodeInjectionSectionProps {
  */
 export function CodeInjectionSection({ session, postType }: CodeInjectionSectionProps) {
   const name = postType === 'page' ? 'Page' : 'Post';
+  const headError = settingsFieldErrorFor('codeinjection_head', session.settings);
+  const footError = settingsFieldErrorFor('codeinjection_foot', session.settings);
 
   return (
     <SettingsSubview
@@ -56,25 +60,35 @@ export function CodeInjectionSection({ session, postType }: CodeInjectionSection
       id="code-injection"
       label="Code injection"
       title="Code injection"
-      wide
     >
-      <CodeEditor
-        extensions={EDITOR_EXTENSIONS}
-        height={EDITOR_HEIGHT}
-        title={<EditorLabel helper="{{ghost_head}}" text={`${name} header`} />}
-        value={session.settings.codeinjection_head ?? ''}
-        onBlur={session.commitSettings}
-        // A field cleared back to empty is stored as no value, as the excerpt is.
-        onChange={(value) => session.stageSettings({ codeinjection_head: value || null })}
-      />
-      <CodeEditor
-        extensions={EDITOR_EXTENSIONS}
-        height={EDITOR_HEIGHT}
-        title={<EditorLabel helper="{{ghost_foot}}" text={`${name} footer`} />}
-        value={session.settings.codeinjection_foot ?? ''}
-        onBlur={session.commitSettings}
-        onChange={(value) => session.stageSettings({ codeinjection_foot: value || null })}
-      />
+      {/* Each field is marked where a refused save takes the writer. */}
+      <Box data-settings-field="codeinjection_head">
+        <CodeEditor
+          clearBg={false}
+          error={!!headError}
+          extensions={EDITOR_EXTENSIONS}
+          height={EDITOR_HEIGHT}
+          hint={headError}
+          title={<EditorLabel helper="{{ghost_head}}" text={`${name} header`} />}
+          value={session.settings.codeinjection_head ?? ''}
+          onBlur={session.commitSettings}
+          // A field cleared back to empty is stored as no value, as the excerpt is.
+          onChange={(value) => session.stageSettings({ codeinjection_head: value || null })}
+        />
+      </Box>
+      <Box data-settings-field="codeinjection_foot">
+        <CodeEditor
+          clearBg={false}
+          error={!!footError}
+          extensions={EDITOR_EXTENSIONS}
+          height={EDITOR_HEIGHT}
+          hint={footError}
+          title={<EditorLabel helper="{{ghost_foot}}" text={`${name} footer`} />}
+          value={session.settings.codeinjection_foot ?? ''}
+          onBlur={session.commitSettings}
+          onChange={(value) => session.stageSettings({ codeinjection_foot: value || null })}
+        />
+      </Box>
     </SettingsSubview>
   );
 }

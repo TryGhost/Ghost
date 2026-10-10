@@ -1,4 +1,4 @@
-import { LoginPage, PostsPage, SitePage, TagsPage } from '@/admin-pages';
+import { LoginPage, PostEditorPage, PostsPage, SitePage, TagsPage } from '@/admin-pages';
 import { Page } from '@playwright/test';
 import { expect, test } from '@/helpers/playwright';
 import { usePerTestIsolation } from '@/helpers/playwright/isolation';
@@ -11,7 +11,7 @@ test.describe('Ghost Admin - Signin Redirect', () => {
     await loginPage.logout();
   }
 
-  test('deep-linking to a React route while logged out redirects back after signin', async ({
+  test('deep-linking to tags while logged out redirects back after signin', async ({
     page,
     ghostAccountOwner,
   }) => {
@@ -28,21 +28,41 @@ test.describe('Ghost Admin - Signin Redirect', () => {
     await tagsPage.waitForPageToFullyLoad();
   });
 
-  test('deep-linking to an Ember route while logged out redirects back after signin', async ({
+  test('deep-linking to the editor while logged out redirects back after signin', async ({
     page,
     ghostAccountOwner,
   }) => {
     await logout(page);
 
-    const postsPage = new PostsPage(page);
-    await postsPage.goto();
+    const editor = new PostEditorPage(page);
+    await editor.goto();
 
     const loginPage = new LoginPage(page);
     await expect(loginPage.signInButton).toBeVisible();
 
     await loginPage.signIn(ghostAccountOwner.email, ghostAccountOwner.password);
 
-    await postsPage.waitForPageToFullyLoad();
+    await expect(page).toHaveURL(/#\/editor\/post/);
+    await expect(editor.titleInput).toBeVisible();
+  });
+
+  test('a cold load of a deep link returns to it after signin', async ({
+    page,
+    ghostAccountOwner,
+  }) => {
+    await logout(page);
+
+    // Leave the admin first, so opening the link is a cold load.
+    await page.goto('about:blank');
+    await page.goto('/ghost/#/posts?type=draft');
+
+    const loginPage = new LoginPage(page);
+    await expect(loginPage.signInButton).toBeVisible();
+    await loginPage.signIn(ghostAccountOwner.email, ghostAccountOwner.password);
+
+    // No drafts exist, so the screen shows its empty state rather than the list.
+    await expect(new PostsPage(page).pageTitle).toBeVisible();
+    await expect(page).toHaveURL(/#\/posts\/?\?type=draft$/);
   });
 
   test('query params on a deep link survive signin redirect', async ({

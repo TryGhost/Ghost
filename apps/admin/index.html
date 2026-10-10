@@ -16,24 +16,26 @@
 
     <link rel="shortcut icon" href="./src/assets/img/favicon.ico" />
     <link rel="apple-touch-icon" href="./src/assets/img/apple-touch-icon.png" />
+
+    <!-- Center the loader before the app's stylesheet or JavaScript arrives. -->
+    <style>
+      body.react-admin > #boot-splash {
+        position: fixed;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+    </style>
   </head>
   <body class="react-admin">
-    <div id="ember-alerts-wormhole"></div>
+    <div id="admin-alerts"></div>
     <div id="root"></div>
-    <div id="ember-app">
-      <div class="ember-load-indicator">
-        <div class="gh-loading-content">
-          <video width="100" height="100" loop autoplay muted playsinline preload="metadata" style="width: 100px; height: 100px;">
-            <source src="/src/assets/videos/logo-loader.mp4" type="video/mp4" />
-            <div class="gh-loading-spinner"></div>
-          </video>
-        </div>
-      </div>
+    <div id="boot-splash">
+      <video width="100" height="100" loop autoplay muted playsinline preload="metadata" style="width: 100px; height: 100px;">
+        <source src="/src/assets/videos/logo-loader.mp4" type="video/mp4" />
+      </video>
     </div>
-    <div id="ember-basic-dropdown-wormhole"></div>
-    <div id="ember-modal-wormhole"></div>
-    <div id="ember-liquid-wormhole"></div>
-    <div id="ember-notifications-wormhole"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

@@ -2,11 +2,9 @@ import { useEffect, useSyncExternalStore } from 'react';
 import { useBrowseConfig } from '@tryghost/admin-x-framework/api/config';
 import {
   DUNNING_PAY_RETURN_ROUTE_STORAGE_KEY,
-  DUNNING_PAYMENT_SETTLED_STORAGE_KEY,
   parseDunningConfig,
 } from '@tryghost/admin-x-framework/api/dunning';
-import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
-import { useSubscriptionStatus } from '@/ember-bridge';
+import { activeDunning, readDunningPaymentSettledFor, useSubscriptionStatus } from '@/billing/api';
 import { readSharedNow, retainMinuteTicker, subscribeSharedNow } from './minute-ticker';
 
 export type DunningPhase = 'warning' | 'locked';
@@ -53,8 +51,8 @@ function readLockDismissedFor(): string | null {
 
 /**
  * One subscription serves every dunning snapshot: `dismissLock` is the only
- * writer that notifies. The payment-settled snapshot is written by the Ember
- * billing service without a notification on purpose — the return navigation
+ * writer that notifies. The payment-settled snapshot is written by the
+ * billing screen without a notification on purpose — the return navigation
  * triggers the render that picks it up (useSyncExternalStore re-reads its
  * snapshot on every render).
  */
@@ -99,8 +97,8 @@ export function dismissLockQuietly(state: DunningState): void {
 
 /**
  * Records the route a "Pay now" CTA was clicked on. The billing app's
- * post-payment `previousPage` request is resolved from this on the Ember
- * side — an explicit route rather than history.back(), so a deep link (or a
+ * post-payment `previousPage` request is resolved from this by the billing
+ * screen — an explicit route rather than history.back(), so a deep link (or a
  * tab whose history points outside Admin) falls back to the billing overview
  * instead of leaving Ghost.
  */
@@ -113,30 +111,13 @@ export function markPayNowReturnRoute(route: string): void {
 }
 
 /**
- * Written by the Ember billing service when the billing app reports a
- * completed payment (its `previousPage` return request only follows one).
- * Read here so the warnings stand down the moment the user lands back,
- * rather than lingering until the webhook-settled subscription state
- * arrives seconds later. The return navigation triggers the render that
- * picks the value up — no notification needed.
- */
-function readPaymentSettledFor(): string | null {
-  try {
-    return window.sessionStorage.getItem(DUNNING_PAYMENT_SETTLED_STORAGE_KEY);
-  } catch {
-    return null;
-  }
-}
-
-/**
  * Payment-failure (dunning) state for the site's hosting subscription, derived
  * from host-provided config (`hostSettings.billing.dunning`).
  *
  * Returns `null` when there is nothing to show: no dunning block, a malformed
  * one (the /config/ response isn't runtime-validated, so guard against a
  * misconfigured host config), or a live subscription that has become active
- * (the billing app reports payment over the Ember bridge before the server
- * config catches up).
+ * (the billing app reports payment before the server config catches up).
  *
  * The phase is computed client-side from the position within the
  * paymentFailedAt -> suspendsAt window so no config rewrite is needed for the
@@ -145,14 +126,8 @@ function readPaymentSettledFor(): string | null {
 export function useDunningState(): DunningState | null {
   const { data: config } = useBrowseConfig();
   const subscriptionStatus = useSubscriptionStatus();
-  // Labs-gated while in development: hosts can ship and test the config
-  // pipeline without end users seeing any dunning UI.
-  const dunningWarningsEnabled = useFeatureFlag('dunningWarnings');
-
-  const dunning = dunningWarningsEnabled
-    ? parseDunningConfig(config?.config.hostSettings?.billing?.dunning)
-    : null;
-  const dunningInEffect = Boolean(dunning);
+  const dunningConfig = config?.config.hostSettings?.billing?.dunning;
+  const dunningInEffect = Boolean(parseDunningConfig(dunningConfig));
 
   // Re-derive the phase and countdown periodically; transitions land on date
   // boundaries, so a coarse tick keeps them fresh without churn. The tick is
@@ -169,25 +144,19 @@ export function useDunningState(): DunningState | null {
   }, [dunningInEffect]);
 
   const lockDismissedFor = useSyncExternalStore(subscribeDunningStore, readLockDismissedFor);
-  const paymentSettledFor = useSyncExternalStore(subscribeDunningStore, readPaymentSettledFor);
+  const paymentSettledFor = useSyncExternalStore(
+    subscribeDunningStore,
+    readDunningPaymentSettledFor,
+  );
 
+  const dunning = activeDunning(dunningConfig, {
+    subscriptionStatus: subscriptionStatus?.subscription?.status,
+    paymentSettledFor,
+  });
   if (!dunning) {
     return null;
   }
   const { paymentFailedAt, suspendsAt } = dunning;
-
-  // The billing app reported a live, active subscription: payment went
-  // through, only the restart-scoped config is stale.
-  if (subscriptionStatus?.subscription?.status === 'active') {
-    return null;
-  }
-
-  // Only suppress the failure that was settled this session. Comparing its
-  // server-provided identity avoids relying on the browser clock and lets a
-  // different paymentFailedAt re-arm the warnings.
-  if (paymentSettledFor === paymentFailedAt.toISOString()) {
-    return null;
-  }
 
   const windowMs = suspendsAt.getTime() - paymentFailedAt.getTime();
   const elapsedFraction = (now - paymentFailedAt.getTime()) / windowMs;

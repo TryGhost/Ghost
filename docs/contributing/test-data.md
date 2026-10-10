@@ -36,7 +36,8 @@ do not cover the scenario:
 
 ```bash
 docker exec ghost-dev bash -c \
-  'cd /home/ghost/ghost/core && node index.js generate-data \
+  'cd /home/ghost/ghost && node --conditions=source --import=tsx index.js \
+  generate-data \
   --clear-database --quantities members:10000,posts:500 --seed 123'
 ```
 
@@ -61,4 +62,4 @@ from the full default dataset matter. The generator adds required table
 dependencies automatically and rejects unknown table names.
 
 For the implementation and instructions for adding an importer, see the
-[data generator README](../../ghost/core/core/server/data/seeders/README.md).
+[data generator README](../../ghost/core/server/data/seeders/README.md).

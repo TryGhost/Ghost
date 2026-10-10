@@ -6,18 +6,17 @@ import { defineConfig } from 'vitest/config';
 // keeps its own config (environment, setup, pool); scope to one with a path
 // filter, e.g. `pnpm test:watch apps/admin`.
 //
-// Not included: ghost-admin (Ember Mocha, pending the Ember retirement).
-// signup-form has no Vitest unit tests (its
-// test:unit is a build; test/unit holds only an empty placeholder).
+// Not included: signup-form has no Vitest unit tests (its test:unit is a
+// build; test/unit holds only an empty placeholder).
 export default defineConfig({
   test: {
-    projects: ['ghost/core', 'packages/**', '!packages/_template', 'apps/*', '!apps/signup-form'],
-    // ghost/core's snapshot tests use @tryghost/jest-snapshot, which
+    projects: ['ghost', 'packages/**', '!packages/_template', 'apps/*', '!apps/signup-form'],
+    // ghost's snapshot tests use @tryghost/jest-snapshot, which
     // manages its own __snapshots__/*.snap files. Vitest's native
     // snapshot system would otherwise adopt and rewrite them (down to the
     // header). The project-level resolveSnapshotPath in
-    // ghost/core/vitest.config.ts is not honored once projects run under
-    // this root config, so redirect ghost/core's native snapshots to a
+    // ghost/vitest.config.ts is not honored once projects run under
+    // this root config, so redirect ghost's native snapshots to a
     // never-written path here. App projects keep the default location.
     resolveSnapshotPath: (testPath, snapExtension) => {
       const isGhostCore = testPath.includes(`${path.sep}ghost${path.sep}core${path.sep}`);

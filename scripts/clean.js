@@ -1,5 +1,6 @@
 // NOTE: this file can't use any NPM dependencies because it needs to run even if dependencies aren't installed yet or are corrupted
 import { execSync } from 'node:child_process';
+import { existsSync } from 'node:fs';
 
 function deleteBuildArtifacts() {
   console.log('Deleting all build artifacts...');
@@ -30,6 +31,14 @@ function deleteNodeModules() {
 
 function resetNxCache() {
   console.log('Resetting NX cache...');
+  // Nx keeps its local cache in ~/.nx, shared by every checkout, so only nx can clear it
+  if (existsSync('node_modules/.bin/nx')) {
+    try {
+      execSync('node_modules/.bin/nx reset', { stdio: 'inherit' });
+    } catch {
+      // A broken install can't run nx; the remaining cleanup still applies
+    }
+  }
   try {
     execSync('rm -rf .nxcache .nx');
   } catch (error) {

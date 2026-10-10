@@ -19,7 +19,7 @@ export const deleteTagModal = 'delete-tag-modal';
 export const deleteTagPostsCount = 'delete-tag-posts-count';
 export const confirmDeleteTag = 'confirm-delete-tag';
 
-// data-test-link attribute values (legacy Ember-style hooks the e2e pages also use)
+// data-test-link attribute values (also used by the e2e pages)
 export const tagsBackLink = 'tags-back';
 
 // accessible names
@@ -44,4 +44,5 @@ export const codeInjectionTriggerLabel = 'Code injection';
 
 // text fragments
 export const emptyStateText = 'Start organizing your content';
+export const errorStateText = 'Error loading tags';
 export const deleteTagConfirmationText = 'Are you sure you want to delete this tag?';

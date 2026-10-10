@@ -8,7 +8,7 @@ export interface Automation {
   name: string;
   description: string;
   slug: string;
-  status: 'active' | 'inactive';
+  status: 'active' | 'inactive' | 'archived';
   stats?: {
     last_run_created_at: string | null;
     total_run_count: number;

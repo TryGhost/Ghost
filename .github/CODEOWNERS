@@ -14,5 +14,10 @@
 /packages/parse-email-address/ @EvanHahn
 
 # Inbox Links
-ghost/core/core/server/lib/get-inbox-links.ts @EvanHahn
-ghost/core/test/unit/server/lib/get-inbox-links.test.ts @EvanHahn
+ghost/core/server/lib/get-inbox-links.ts @EvanHahn
+ghost/test/unit/server/lib/get-inbox-links.test.ts @EvanHahn
+
+# Automations
+ghost/core/server/api/endpoints/automations.ts @EvanHahn
+ghost/core/server/models/automation.js @EvanHahn
+ghost/core/server/services/automations/ @EvanHahn

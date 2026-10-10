@@ -20,9 +20,9 @@ Start with:
   the catalogs in `pnpm-workspace.yaml`; workspace dependencies use
   `workspace:` versions.
 - Run `pnpm bootstrap` before other commands in a fresh checkout or worktree.
-- Use `pnpm check` as the default full validation command. Browser E2E and Ember
-  Admin tests run separately; follow the testing guide.
-- Read the nearest `AGENTS.md`, `CLAUDE.md`, and README before changing a package
+- Use `pnpm check` as the default full validation command. Browser E2E tests
+  run separately; follow the testing guide.
+- Read the nearest `AGENTS.md` and README before changing a package
   or subsystem. More specific guidance overrides this file.
 - When committing, load and follow `.agents/skills/commit/SKILL.md`.
 
@@ -52,15 +52,17 @@ migration, private feature flag, Shade component, or internal package.
   [shipping guide](docs/contributing/shipping.md). Their release and CSS lanes
   differ from Admin.
 - **Ghost Core:** use the [server map](docs/codebase/monorepo-structure.md#ghost-core)
-  and read the [services guide](ghost/core/core/server/services/README.md) before
-  adding a service. New standalone services use TypeScript; keep CommonJS only
+  and read the [services guide](ghost/core/server/services/README.md) before
+  adding or relocating a service root; apply its placement rules rather than
+  inferring ownership from existing directory names. New standalone services
+  use TypeScript; keep CommonJS only
   at existing `require()` boundaries. Boot owns service initialization; do not
   initialize on the first request.
 - **ESLint:** use the shared factories and dependency rules in the
   [ESLint configuration README](configs/eslint/README.md). A hand-written config
   must declare every plugin it imports locally.
 - **Analytics:** start with `pnpm dev:analytics` and follow the nearby Tinybird
-  READMEs under `ghost/core/core/server/data/tinybird/`.
+  READMEs under `ghost/core/server/data/tinybird/`.
 
 Keep shared facts in human documentation. This file should contain only routing,
 agent execution constraints, and high-value warnings that prevent recurring

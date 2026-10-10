@@ -1,3 +1,4 @@
+import { getListReturnNavigationState } from '@/shared/virtual-list';
 import MemberActionsMenu from './member-actions-menu';
 import MemberActivityFeed from './member-activity-feed';
 import MemberCustomFieldsField from './member-custom-fields-field';
@@ -5,8 +6,10 @@ import MemberDetailForm from './member-detail-form';
 import MemberDetailSidebar from './member-detail-sidebar';
 import MemberNewslettersField from './member-newsletters-field';
 import MemberSubscriptionsSection from './member-subscriptions-section';
+import MemberMapHeader from './member-map-header';
 import React from 'react';
 import {
+  Avatar,
   Breadcrumb,
   BreadcrumbItem,
   BreadcrumbLink,
@@ -20,7 +23,7 @@ import {
   LoadingIndicator,
   Skeleton,
 } from '@tryghost/shade/components';
-import { Box, Container } from '@tryghost/shade/primitives';
+import { Box, Container, Inline } from '@tryghost/shade/primitives';
 import { DetailPage } from '@tryghost/shade/page-templates';
 import { Link, useLocation, useNavigate, useParams } from '@tryghost/admin-x-framework';
 import { DirtyConfirmDialog, PageHeader } from '@tryghost/shade/patterns';
@@ -35,8 +38,13 @@ import {
 } from './member-detail-edit';
 import { dequal } from 'dequal';
 import { deriveMemberDetailBackPath } from './member-detail-nav';
-import { formatMemberName } from '@/members/member-format';
-import { useMember, useAddMember, useEditMember } from '@tryghost/admin-x-framework/api/members';
+import { formatMemberName, memberAvatarProps } from '@/members/member-format';
+import {
+  useAddMember,
+  useCachedListMember,
+  useEditMember,
+  useMember,
+} from '@tryghost/admin-x-framework/api/members';
 import {
   getSettingValue,
   useBrowseSettings,
@@ -79,6 +87,11 @@ const MemberDetailPage: React.FC<MemberDetailPageProps> = ({
     defaultErrorHandler: false,
   });
   const member = data?.members?.[0];
+  // The list row the admin clicked already has the member's name, avatar and
+  // location, so the header renders straight away while the full record loads.
+  const listMember = useCachedListMember(isCreating ? undefined : memberId);
+  const headerMember = member ?? listMember;
+  const mapEnabled = !!headerMember;
   // 4xx from the members endpoint on a real id means "gone" (deleted mid-flow
   // is the realistic case). 5xx/network is a different story — we don't want
   // to lie about that with a "not found" message.
@@ -214,7 +227,7 @@ const MemberDetailPage: React.FC<MemberDetailPageProps> = ({
     ? getEmailErrorMessage(draft.email, emailTouched, member?.email ?? undefined)
     : null;
 
-  // The sidebar's identity block (avatar + heading) reads from a "committed"
+  // The identity block (avatar + heading) reads from a "committed"
   // copy of name/email that only advances on blur, not per keystroke.
   // Live-updating the avatar's gravatar/initials on every character felt
   // noisy while typing. Initialized from the saved member (edit) or empty
@@ -231,6 +244,12 @@ const MemberDetailPage: React.FC<MemberDetailPageProps> = ({
       setCommittedIdentity({ name: member.name ?? '', email: member.email ?? '' });
     }
   }, [member?.id, member?.name, member?.email, isCreating]);
+  // The committed identity is only filled in by the effect above, a render after
+  // the member arrives; until then, show the member's own name rather than a fallback.
+  const headerIdentity =
+    committedIdentity.name || committedIdentity.email
+      ? committedIdentity
+      : { name: headerMember?.name ?? '', email: headerMember?.email ?? '' };
   const commitIdentityFromDraft = () => {
     if (draft) {
       setCommittedIdentity({ name: draft.name, email: draft.email });
@@ -345,75 +364,99 @@ const MemberDetailPage: React.FC<MemberDetailPageProps> = ({
   let title = 'Member';
   if (isCreating) {
     title = 'New member';
-  } else if (member) {
-    title = formatMemberName(member);
+  } else if (headerMember) {
+    title = formatMemberName(headerMember);
   } else if (notFound) {
     title = 'Member not found';
   }
 
   return (
-    <Box className="size-full">
+    <Box
+      className={
+        mapEnabled
+          ? '[container-type:inline-size] size-full sidebar:[--member-map-left-inset:0px]'
+          : 'size-full'
+      }
+    >
       <Container className="relative flex h-full flex-col" size="page">
         <DetailPage data-testid="member-detail">
-          <DetailPage.Header>
-            <PageHeader blurredBackground={false} sticky={false}>
-              <PageHeader.Left>
-                {/*
-                 * Breadcrumb sits directly under Left rather than inside
-                 * PageHeader.Breadcrumb — that slot adds a `pt-1` offset that
-                 * only makes sense when a title stacks below the breadcrumb.
-                 */}
-                <Breadcrumb>
-                  <BreadcrumbList>
-                    <BreadcrumbItem>
-                      <BreadcrumbLink asChild>
-                        <Link data-test-link="members-back" to={backPath}>
-                          Members
-                        </Link>
-                      </BreadcrumbLink>
-                    </BreadcrumbItem>
-                    <BreadcrumbSeparator />
-                    <BreadcrumbItem>
-                      {!isCreating && isLoading ? (
-                        <Skeleton className="h-4 w-40" />
-                      ) : (
-                        <BreadcrumbPage className="truncate" data-testid="member-detail-title">
-                          {title}
-                        </BreadcrumbPage>
-                      )}
-                    </BreadcrumbItem>
-                  </BreadcrumbList>
-                </Breadcrumb>
-              </PageHeader.Left>
-              {(isCreating || member) && (
-                <PageHeader.Actions>
-                  <PageHeader.ActionGroup>
-                    {member &&
-                      !isCreating && (
-                        // key={member.id} unmounts+remounts on member change so
-                        // local modal state (`showDelete`, `cancelStripe`, etc.)
-                        // can't leak across members if the user navigates while a
-                        // modal is open.
-                        <MemberActionsMenu
-                          key={member.id}
-                          allowLeaveWithUnsavedChanges={bypassNextNavigation}
-                          member={member}
-                        />
-                      )}
-                    <PageHeader.ActionGroup.Primary>
-                      <Button
-                        className="min-w-16"
-                        disabled={saveDisabled}
-                        variant={saveVariant}
-                        onClick={onSave}
-                      >
-                        {saveLabel}
-                      </Button>
-                    </PageHeader.ActionGroup.Primary>
-                  </PageHeader.ActionGroup>
-                </PageHeader.Actions>
-              )}
-            </PageHeader>
+          <DetailPage.Header className="has-[[data-member-map-location=unknown]]:py-7">
+            <MemberMapHeader enabled={mapEnabled} geolocation={headerMember?.geolocation}>
+              <PageHeader blurredBackground={false} sticky={false}>
+                <PageHeader.Left>
+                  {/*
+                   * Breadcrumb sits directly under Left rather than inside
+                   * PageHeader.Breadcrumb — that slot adds a `pt-1` offset that
+                   * only makes sense when a title stacks below the breadcrumb.
+                   */}
+                  <Breadcrumb>
+                    <BreadcrumbList>
+                      <BreadcrumbItem>
+                        <BreadcrumbLink asChild>
+                          <Link
+                            data-test-link="members-back"
+                            state={getListReturnNavigationState(backPath)}
+                            to={backPath}
+                          >
+                            Members
+                          </Link>
+                        </BreadcrumbLink>
+                      </BreadcrumbItem>
+                      <BreadcrumbSeparator />
+                      <BreadcrumbItem>
+                        {!isCreating && isLoading && !headerMember ? (
+                          <Skeleton className="h-4 w-40" />
+                        ) : (
+                          <BreadcrumbPage className="truncate" data-testid="member-detail-title">
+                            {title}
+                          </BreadcrumbPage>
+                        )}
+                      </BreadcrumbItem>
+                    </BreadcrumbList>
+                  </Breadcrumb>
+                  {mapEnabled && (
+                    <Inline className="mt-3 max-w-full min-w-0" gap="md">
+                      <Avatar
+                        className="size-10 min-w-10 [&_span]:text-lg"
+                        {...memberAvatarProps(headerIdentity)}
+                        src={headerMember?.avatar_image}
+                      />
+                      <PageHeader.Title className="min-w-0 truncate text-2xl tracking-tight sm:text-3xl">
+                        {formatMemberName(headerIdentity)}
+                      </PageHeader.Title>
+                    </Inline>
+                  )}
+                </PageHeader.Left>
+                {(isCreating || member) && (
+                  <PageHeader.Actions>
+                    <PageHeader.ActionGroup>
+                      {member &&
+                        !isCreating && (
+                          // key={member.id} unmounts+remounts on member change so
+                          // local modal state (`showDelete`, `cancelStripe`, etc.)
+                          // can't leak across members if the user navigates while a
+                          // modal is open.
+                          <MemberActionsMenu
+                            key={member.id}
+                            allowLeaveWithUnsavedChanges={bypassNextNavigation}
+                            member={member}
+                          />
+                        )}
+                      <PageHeader.ActionGroup.Primary>
+                        <Button
+                          className="min-w-16"
+                          disabled={saveDisabled}
+                          variant={saveVariant}
+                          onClick={onSave}
+                        >
+                          {saveLabel}
+                        </Button>
+                      </PageHeader.ActionGroup.Primary>
+                    </PageHeader.ActionGroup>
+                  </PageHeader.Actions>
+                )}
+              </PageHeader>
+            </MemberMapHeader>
           </DetailPage.Header>
 
           <DetailPage.Body>
@@ -442,6 +485,7 @@ const MemberDetailPage: React.FC<MemberDetailPageProps> = ({
                   draftName={committedIdentity.name}
                   engagementEnabled={engagementEnabled}
                   member={member}
+                  showIdentity={!mapEnabled}
                 />
                 <div className="flex min-w-0 flex-1 flex-col gap-8">
                   {/* First card: name, email, labels, note — no external header. */}

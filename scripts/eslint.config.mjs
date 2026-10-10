@@ -12,7 +12,7 @@ const cliRules = {
   // Writing to stdout/stderr is the entire job of these scripts.
   'no-console': 'off',
   // nodeLibConfig bans top-level await because it breaks `require(esm)`
-  // consumers like ghost/core. Nothing requires these files — they are run
+  // consumers like ghost. Nothing requires these files — they are run
   // directly by node — so the hazard doesn't exist here.
   'no-restricted-syntax': 'off',
   // @tryghost/errors is a server-runtime concern; scripts throw native
@@ -21,6 +21,12 @@ const cliRules = {
 };
 
 export default [
+  ...nodeLibConfig({
+    srcGlobs: ['*.ts', 'lib/**/*.ts'],
+    testGlobs: ['test/**/*.test.ts'],
+    extraSrcRules: cliRules,
+    extraTestRules: cliRules,
+  }),
   ...nodeLibConfig({
     typescript: false,
     srcGlobs: ['*.js', 'lib/**/*.js'],

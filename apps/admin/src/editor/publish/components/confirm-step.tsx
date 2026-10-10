@@ -1,9 +1,11 @@
-import { Banner, Button } from '@tryghost/shade/components';
-import { Stack, Text } from '@tryghost/shade/primitives';
+import { Button } from '@tryghost/shade/components';
+import { Inline, Stack, Text } from '@tryghost/shade/primitives';
+import { LucideIcon, cn } from '@tryghost/shade/utils';
 import { getRecipientType } from '@tryghost/admin-x-framework/utils/recipient-filter';
 import { useMembersCount } from '@tryghost/admin-x-framework/api/members';
 import { EDITOR_REQUEST_OPTIONS } from '@/editor/request-options';
-import { LimitMessage } from './limit-message';
+import { PublishPhaseIcon } from '@/posts/api';
+import { FailureBanner } from './failure-banner';
 import {
   publishBackToSettings,
   publishConfirm,
@@ -18,7 +20,7 @@ import {
   recipientsConfirmLabel,
 } from '@/editor/publish/publish-copy';
 import type { CompletionFailure } from '@/editor/publish/completion-message';
-import type { ConfirmStatus } from '@/editor/publish/use-publish-flow';
+import type { ConfirmStatus, PublishFlow } from '@/editor/publish/use-publish-flow';
 import type { PublishFlowPost } from '@/editor/publish/flow-post';
 import type { PublishOptionsState } from '@/editor/publish/publish-options';
 
@@ -26,7 +28,7 @@ export interface ConfirmStepProps {
   post: PublishFlowPost;
   state: PublishOptionsState;
   /** Captured on entering this step so saving cannot change the copy. */
-  captured: { willPublish: boolean; willEmail: boolean; willOnlyEmail: boolean };
+  captured: PublishFlow['captured'];
   timezone: string;
   status: ConfirmStatus;
   failure: CompletionFailure | null;
@@ -34,13 +36,8 @@ export interface ConfirmStepProps {
   onBack: () => void;
 }
 
-function FailureMessage({ failure }: { failure: CompletionFailure }) {
-  if (!failure.parts) {
-    return <>{failure.message}</>;
-  }
-
-  return <LimitMessage parts={failure.parts} />;
-}
+// Eases the running state in as the button greys out.
+const ENTER = 'animate-in fade-in-0 zoom-in-90 duration-200 ease-out motion-reduce:animate-none';
 
 export function ConfirmStep({
   post,
@@ -76,15 +73,19 @@ export function ConfirmStep({
   return (
     <Stack data-testid={publishFlowConfirm} gap="xl">
       <Stack gap="none">
-        <Text as="h2" className="text-state-success" size="3xl" weight="bold">
+        <Text
+          as="h2"
+          className="text-5xl leading-tighter tracking-tight text-state-success"
+          weight="bold"
+        >
           Ready, set, publish.
         </Text>
-        <Text size="3xl" weight="bold">
+        <Text as="h2" className="text-5xl leading-tighter tracking-tight" weight="bold">
           Share it with the world.
         </Text>
       </Stack>
 
-      <Text>
+      <Text className="text-pretty" size="lg">
         {state.isScheduled ? (
           <>
             On <strong>{formatSiteDateTime(state.scheduledAt, timezone)}</strong> your
@@ -94,7 +95,20 @@ export function ConfirmStep({
         )}{' '}
         {post.displayName}
         {captured.willPublish ? (
-          <> will be published on your site{captured.willEmail ? ', and delivered to' : '.'}</>
+          <>
+            {' '}
+            will be published on your site
+            {captured.willEmail ? (
+              ', and delivered to'
+            ) : captured.navigationPlacement ? (
+              <>
+                {' '}
+                and listed in your <strong>{captured.navigationPlacement} navigation</strong>.
+              </>
+            ) : (
+              '.'
+            )}
+          </>
         ) : null}
         {captured.willEmail ? (
           <>
@@ -115,33 +129,43 @@ export function ConfirmStep({
             )}
           </>
         ) : null}
+        {captured.willPublish && captured.skipsEmail ? (
+          <> It won’t be sent as a newsletter, because no recipients are selected.</>
+        ) : null}
       </Text>
 
-      {failure ? (
-        <Banner data-testid={publishConfirmError} role="alert" variant="destructive">
-          <FailureMessage failure={failure} />
-        </Banner>
-      ) : null}
+      {failure ? <FailureBanner failure={failure} testId={publishConfirmError} /> : null}
 
-      <Stack align="start" gap="sm">
+      <Inline gap="sm" justify="between" wrap>
         <Button
+          data-testid={publishBackToSettings}
+          disabled={status === 'running'}
+          size="lg"
+          variant="secondary"
+          onClick={onBack}
+        >
+          <LucideIcon.ArrowLeft />
+          Back to settings
+        </Button>
+        <Button
+          className="ml-auto h-auto min-h-11 max-w-full bg-state-success py-2 whitespace-normal text-white hover:bg-state-success/90"
           data-testid={publishConfirm}
           disabled={status === 'running'}
           size="lg"
           onClick={onConfirm}
         >
-          {status === 'running' ? buttonText.running : buttonText.idle}
+          {status === 'running' ? (
+            <>
+              {/* The analytics "preparing" spinner, in the button's own text colour.
+                  size-4 matches the size Button gives its icons at this text size. */}
+              <PublishPhaseIcon className={cn('size-4 text-current', ENTER)} phase="preparing" />
+              <span className={ENTER}>{buttonText.running}</span>
+            </>
+          ) : (
+            buttonText.idle
+          )}
         </Button>
-        <Button
-          data-testid={publishBackToSettings}
-          disabled={status === 'running'}
-          size="lg"
-          variant="link"
-          onClick={onBack}
-        >
-          Back to settings
-        </Button>
-      </Stack>
+      </Inline>
     </Stack>
   );
 }
