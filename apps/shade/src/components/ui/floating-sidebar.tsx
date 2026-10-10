@@ -137,8 +137,16 @@ const PADDING = 20;
 const PIN_BUTTON_SIZE = 28;
 // Puts the pin glyph PADDING from the panel's right edge.
 const PIN_BUTTON_RIGHT = 14;
+/*
+ * The capsule floats within the viewport, less any chrome framing the page
+ * around it: `--floating-sidebar-offset-top`, `-left` and `-bottom` (0 unless
+ * set on an ancestor) move its corner and shorten its panel by that much.
+ */
+const OFFSET_TOP = 'var(--floating-sidebar-offset-top, 0px)';
+const OFFSET_LEFT = 'var(--floating-sidebar-offset-left, 0px)';
+const OFFSET_BOTTOM = 'var(--floating-sidebar-offset-bottom, 0px)';
 // Pinned, and the most it grows to open.
-const PANEL_HEIGHT = `calc(100vh - ${INSET * 2}px)`;
+const PANEL_HEIGHT = `calc(100vh - ${OFFSET_TOP} - ${OFFSET_BOTTOM} - ${INSET * 2}px)`;
 
 /** Frosted body: a faint tint so the capsule reads as a surface, a light-catching outline and a backdrop blur. */
 const GLASS = 'border border-border-glass bg-surface-glass backdrop-blur-md backdrop-saturate-150';
@@ -615,7 +623,11 @@ const FloatingSidebar = React.forwardRef<HTMLDivElement, FloatingSidebarProps>(
         <div
           ref={wrapperRef}
           className={cn('fixed z-40 flex items-stretch', className)}
-          style={{ top: INSET, left: INSET, ...style }}
+          style={{
+            top: `calc(${OFFSET_TOP} + ${INSET}px)`,
+            left: `calc(${OFFSET_LEFT} + ${INSET}px)`,
+            ...style,
+          }}
           onBlur={(event) => {
             onBlur?.(event);
             const next = event.relatedTarget;

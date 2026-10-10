@@ -297,6 +297,36 @@ body.react-admin {
   overflow: hidden; /* Prevent body scroll */
 }
 
+/* The Admin 7 frame's insets (see AdminFrame), registered so they transition
+   as lengths rather than flip */
+@property --admin-frame-top {
+  syntax: '<length>';
+  inherits: true;
+  initial-value: 0px;
+}
+
+@property --admin-frame-side {
+  syntax: '<length>';
+  inherits: true;
+  initial-value: 0px;
+}
+
+@property --admin-frame-radius {
+  syntax: '<length>';
+  inherits: true;
+  initial-value: 0px;
+}
+
+/* View site's page fades in once the frame has opened out around it */
+@keyframes admin-frame-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
 /* Alerts show at the top and push content down */
 body.react-admin #admin-alerts {
   grid-row: 1;
