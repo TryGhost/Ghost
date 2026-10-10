@@ -190,11 +190,23 @@ COPY --from=gosu /gosu /usr/local/bin/gosu
 ENV GHOST_INSTALL=/home/ghost
 ENV GHOST_CONTENT=/home/ghost/content
 
+# The official image sets GHOST_VERSION for users and scripts to read; Ghost
+# itself doesn't use it. Here it is the exact build (<package version>+<sha> in
+# CI), the same value as GHOST_BUILD_VERSION, which core sets from a build arg.
+# The RUN below fails a build that omits it or whose version doesn't match
+# package.json.
+ENV GHOST_VERSION=${GHOST_BUILD_VERSION}
+
 # base_content is the pristine copy of content made in core; the entrypoint
 # seeds from content.orig, the name the official image has always used. content
 # itself becomes an empty mount point, world-writable so it stays usable
 # whatever uid ends up owning a bind mount over it.
 RUN set -eux; \
+    pkgVersion="$(node -p 'require("./package.json").version')"; \
+    case "$GHOST_VERSION" in \
+        "$pkgVersion" | "$pkgVersion"+?*) ;; \
+        *) echo >&2 "error: GHOST_BUILD_VERSION is '$GHOST_VERSION', expected '$pkgVersion' or '$pkgVersion+<build>'"; exit 1 ;; \
+    esac; \
     gosu --version; \
     gosu nobody true; \
     rm -rf content; \
