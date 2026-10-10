@@ -96,7 +96,9 @@ acceptance tests cover selection, drafts, retries, responsive layouts, and cards
 pnpm dev
 ```
 
-Admin, Admin Framework and Shade hot-reload through Admin's dev server.
+Admin, Admin Framework and Shade hot-reload through Admin's dev server. It
+pre-bundles dependencies in a separate `vite optimize` run first, because
+Rolldown holds a cold pre-bundle's memory until its process exits.
 
 Development commands do not change Labs settings. To preview a flagged feature
 in one browser tab, open `http://localhost:2368/ghost/#/?labs=<flag>`. These

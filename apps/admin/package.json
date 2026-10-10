@@ -277,7 +277,7 @@
         "executor": "nx:run-commands",
         "options": {
           "cwd": "apps/admin",
-          "command": "vite",
+          "command": "vite optimize --logLevel error && vite",
           "envFile": ".ghost-dev.env"
         },
         "dependsOn": [
