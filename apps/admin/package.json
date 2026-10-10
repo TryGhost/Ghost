@@ -264,11 +264,10 @@
         "options": {
           "cwd": "apps/admin",
           "command": "vite",
-          "env": {
-            "GHOST_DEV_BACKEND": "http://127.0.0.1:2369"
-          }
+          "envFile": ".ghost-dev.env"
         },
         "dependsOn": [
+          "ghost-monorepo:dev:env",
           "build:dev",
           "@tryghost/admin-x-framework:dev",
           "@tryghost/shade:dev"

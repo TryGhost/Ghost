@@ -265,6 +265,7 @@
           "command": "node ../../scripts/with-ghost-dev-env.ts pnpm dev"
         },
         "dependsOn": [
+          "dev:env",
           "infra:up",
           {
             "target": "build:assets",
@@ -289,6 +290,7 @@
           "command": "node ../../scripts/with-ghost-dev-env.ts pnpm dev"
         },
         "dependsOn": [
+          "dev:env",
           "infra:up",
           {
             "target": "build:assets",
@@ -319,6 +321,7 @@
           "command": "node ../../scripts/with-ghost-dev-env.ts pnpm dev"
         },
         "dependsOn": [
+          "dev:env",
           "infra:up",
           {
             "target": "build:assets",
@@ -339,6 +342,12 @@
             ]
           }
         ]
+      },
+      "dev:env": {
+        "executor": "nx:run-commands",
+        "options": {
+          "command": "node scripts/ghost-dev-env.ts"
+        }
       }
     }
   }

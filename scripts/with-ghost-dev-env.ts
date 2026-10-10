@@ -1,10 +1,13 @@
 import { spawn } from 'node:child_process';
+import { resolveGhostDevEnv } from './lib/ghost-dev-env.ts';
 
 // Runs a command with the configuration Ghost needs when it runs on the host against
 // the compose services' published ports. The Admin dev server owns the public port
 // (GHOST_DEV_PORT) and proxies everything that isn't Admin to Ghost (GHOST_DEV_BACKEND_PORT).
-const frontDoorPort = process.env.GHOST_DEV_PORT ?? '2368';
-const backendPort = process.env.GHOST_DEV_BACKEND_PORT ?? '2369';
+const assigned = await resolveGhostDevEnv();
+const frontDoorPort = process.env.GHOST_DEV_PORT ?? assigned.GHOST_DEV_PORT;
+const backendPort = process.env.GHOST_DEV_BACKEND_PORT ?? assigned.GHOST_DEV_BACKEND_PORT;
+const database = process.env.GHOST_DEV_DATABASE ?? assigned.GHOST_DEV_DATABASE;
 
 const defaults: Record<string, string> = {
   NODE_ENV: 'development',
@@ -16,7 +19,7 @@ const defaults: Record<string, string> = {
   database__connection__port: '3306',
   database__connection__user: 'root',
   database__connection__password: process.env.MYSQL_ROOT_PASSWORD ?? 'root',
-  database__connection__database: process.env.MYSQL_DATABASE ?? 'ghost_dev',
+  database__connection__database: database,
   mail__transport: 'SMTP',
   mail__options__host: '127.0.0.1',
   mail__options__port: '1025',
