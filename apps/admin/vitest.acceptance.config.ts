@@ -97,6 +97,11 @@ export default defineConfig({
   // never ends up in the production build's public assets.
   publicDir: './test-utils/acceptance/public',
   define: sharedDefine,
+  // Run on React's production build, the one Admin ships: the development
+  // build and StrictMode's double renders cost the suite more than a tenth of
+  // its time. App and workspace sources keep their NODE_ENV; only pre-bundled
+  // dependencies switch, so JSX must not target the dev runtime either.
+  oxc: { jsx: { development: false } },
   optimizeDeps: {
     // Scan every app module so deps behind lazy routes are pre-bundled up
     // front — mid-run discovery reloads the test page and flakes the
@@ -106,6 +111,9 @@ export default defineConfig({
     // The harness's MSW (and its graphql dependency) would otherwise load as
     // ~150 separate modules in every spec file's fresh iframe.
     include: ['msw', 'msw/browser'],
+    rolldownOptions: {
+      transform: { define: { 'process.env.NODE_ENV': JSON.stringify('production') } },
+    },
   },
   resolve: sharedResolve,
   test: {
@@ -120,7 +128,7 @@ export default defineConfig({
     outputFile: { json: './test-results/acceptance.json' },
     include: ['src/**/*.acceptance.test.tsx', 'src/**/*.component.test.tsx'],
     maxWorkers: getWorkerCount(),
-    setupFiles: ['./test-utils/acceptance/setup.ts'],
+    setupFiles: ['./test-utils/acceptance/react-production.ts', './test-utils/acceptance/setup.ts'],
     // Most journeys finish well under a second, but a few that wait out a
     // product-side hold reach ~6s; this leaves those headroom on slower CI.
     testTimeout: 15_000,
