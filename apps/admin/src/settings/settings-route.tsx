@@ -2,8 +2,7 @@ import { useLayoutEffect } from 'react';
 import { useLazyComponent } from '@/shared/use-lazy-component';
 import { SettingsLoading } from './settings-loading';
 import { resetSettingsSpinner } from './settings-loading-state';
-
-const loadSettingsScreen = () => import('./settings');
+import { loadSettingsScreen } from './load-settings';
 
 /**
  * Mounts Settings as soon as it is navigated to, so the shell swaps to the

@@ -81,6 +81,8 @@ their supporting settings are present.
 ### Code that fails to load
 
 Screens, the editor and the search modal load their code when first needed. A
+signed-in shell preloads both Settings chunks when the browser is idle, keeping
+the first Settings visit from waiting on its code when preloading has finished. A
 browser never fetches a module again after loading it failed, so when that code
 fails to load the admin reloads at the same route. It reloads at most once a
 minute and not while the browser is offline; within that minute a failed screen
