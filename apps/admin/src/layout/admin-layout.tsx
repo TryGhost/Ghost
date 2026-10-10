@@ -12,6 +12,7 @@ import {
   useNavigationPreferences,
   useSidebarMode,
 } from './app-sidebar/hooks/use-navigation-preferences';
+import { useSettingsPinSequence } from './app-sidebar/hooks/use-settings-pin-sequence';
 import SettingsSidebar from './app-sidebar/settings-sidebar';
 import { SettingsNavigationSlotContext } from './settings-navigation';
 import { SidebarSwapTransition } from './sidebar-swap-transition';
@@ -142,20 +143,25 @@ export function AdminLayout({ children }: AdminLayoutProps) {
   //
   // With admin7settings too, Settings shows its navigation in the same
   // capsule, pinned whatever the stored mode, which it leaves alone: entering
-  // it from compact pins the capsule as the pin button would, and leaving
-  // returns to the stored mode.
+  // it from compact pins the capsule, and leaving returns to the stored mode.
+  // From compact the two are sequenced: the capsule grows, then the body
+  // swaps; going back, the body swaps, then the capsule shrinks.
   const floatingSidebar = admin7Design && !isContributor && sidebarVisible && !isMobile;
   const settingsNavigation = floatingSidebar && isSettingsRoute;
   const [sidebarMode, setSidebarMode] = useSidebarMode();
   const { isFetched: sidebarModeLoaded } = useNavigationPreferences();
-  const sidebarPinned = !floatingSidebar || settingsNavigation || sidebarMode === 'full';
+  const settingsPin = useSettingsPinSequence(
+    settingsNavigation,
+    floatingSidebar && sidebarMode !== 'full',
+  );
+  const sidebarPinned = !floatingSidebar || settingsPin.pinHeld || sidebarMode === 'full';
   const onSidebarOpenChange = React.useCallback(
     (open: boolean) => {
-      if (!settingsNavigation) {
+      if (!settingsPin.pinHeld) {
         setSidebarMode(open ? 'full' : 'compact');
       }
     },
-    [settingsNavigation, setSidebarMode],
+    [settingsPin.pinHeld, setSidebarMode],
   );
 
   // The dunning takeover is positioned against the scrollable inset, so the
@@ -265,9 +271,15 @@ export function AdminLayout({ children }: AdminLayoutProps) {
             contentRef={insetRef}
             contentStatic={PAGE_BACKDROP_SELECTOR}
             disabled={dunningLocked}
+            morphStyle={settingsPin.morphStyle}
+            pinLocked={settingsPin.pinHeld}
+            quietReturn={settingsPin.quietReturn}
             settingsNavigation={settingsNavigation}
+            settingsNavigationDeferred={settingsPin.bodyDeferred}
             settingsNavigationRef={setSettingsNavigationSlot}
             slideRef={mainRef}
+            onOutgoingLeft={settingsPin.onOutgoingLeft}
+            onPinnedMorphEnd={settingsPin.onPinnedMorphEnd}
           />
         ) : (
           <>

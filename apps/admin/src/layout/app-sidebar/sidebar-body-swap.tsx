@@ -1,5 +1,4 @@
 import React from 'react';
-import { FLOATING_SIDEBAR_DURATION } from '@tryghost/shade/components';
 
 /*
  * The floating sidebar's body, which swaps the main navigation for the
@@ -14,6 +13,12 @@ import { FLOATING_SIDEBAR_DURATION } from '@tryghost/shade/components';
  * The Settings navigation is rendered by Settings itself, portalled into the
  * slot here, and unmounts as Settings is left, so the copy is all there is of
  * it by then.
+ *
+ * The swap can be deferred (e.g. until the capsule has grown to full height):
+ * meanwhile the body holds still, showing the main navigation, or nothing if
+ * the capsule was the closed circle. And coming back, the main navigation can
+ * return quietly: a fade once the Settings rows have left, rather than rows
+ * swiping in (e.g. as the capsule shrinks away).
  */
 
 const EASE_OUT = 'cubic-bezier(0.22, 1, 0.36, 1)';
@@ -30,27 +35,38 @@ const IN_TRAVEL = 24;
 const IN_DELAY = 40;
 const IN_STAGGER = 18;
 const IN_MAX_DELAY = 300;
+// The quiet return's fade, once the outgoing rows have left and whatever
+// follows (e.g. the capsule shrinking) is under way
+const QUIET_DELAY = OUT_DURATION + 100;
+const QUIET_DURATION = 240;
 const REDUCED_DURATION = 150;
 // Settings' navigation can render a little after the swap (its code loads
 // separately); how long the incoming rows are waited for.
 const MAX_ROW_WAIT = 1000;
 // Below this the capsule is the closed circle (or nearly): its body isn't on
-// screen, so nothing leaves, and the rows wait for it to open up.
+// screen, so nothing leaves.
 const OPEN_WIDTH_THRESHOLD = 200;
-// Swapping as the capsule grows from the circle, the rows come in once it's
-// most of the way open rather than inside a tiny capsule.
-const MORPH_DELAY = FLOATING_SIDEBAR_DURATION / 2;
 
-interface SwapSnapshot {
-  /** A copy of the outgoing navigation; null while the capsule was closed. */
-  ghost: HTMLElement | null;
-  scrollOffsets: Array<[number, number]>;
-  /** The capsule was closed, and is growing as the swap plays. */
-  growing: boolean;
-}
+type SwapSnapshot =
+  | {
+      kind: 'swap';
+      /** A copy of the outgoing navigation; null while it wasn't on screen. */
+      ghost: HTMLElement | null;
+      /** The outgoing navigation's opacity (it may have been fading in). */
+      opacity: number;
+      scrollOffsets: Array<[number, number]>;
+    }
+  | { kind: 'defer'; closed: boolean }
+  | { kind: 'cancel' };
 
 function prefersReducedMotion(): boolean {
   return window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
+}
+
+/** The capsule around the body is the closed circle (or nearly): the body isn't on screen. */
+function capsuleClosed(element: Element): boolean {
+  const capsule = element.closest('[data-slot=floating-sidebar]');
+  return (capsule?.getBoundingClientRect().width ?? 0) < OPEN_WIDTH_THRESHOLD;
 }
 
 /** The rows of a navigation that animate, skipping rows nested in another. */
@@ -62,30 +78,47 @@ function topLevelRows(pane: Element): HTMLElement[] {
 }
 
 interface BodySwapTransitionProps {
+  /** The Settings navigation is showing (the swap has played, or is playing). */
   settings: boolean;
+  deferred: boolean;
+  quietReturn: boolean;
+  onOutgoingLeft?: () => void;
   mainRef: React.RefObject<HTMLElement>;
   settingsRef: React.RefObject<HTMLElement>;
 }
 
-/** Plays the swap as `settings` changes. Renders nothing. */
+/** Plays the swap as `settings` changes, and holds still while deferred. Renders nothing. */
 class BodySwapTransition extends React.Component<BodySwapTransitionProps> {
   private animations: Animation[] = [];
   private ghost: HTMLElement | null = null;
   private observer: MutationObserver | null = null;
   private timer: number | undefined;
+  // The main navigation is held hidden while the swap waits
+  private mainHeld = false;
 
   getSnapshotBeforeUpdate(previous: Readonly<BodySwapTransitionProps>): SwapSnapshot | null {
-    if (previous.settings === this.props.settings) {
-      return null;
+    if (previous.settings !== this.props.settings) {
+      return this.snapshotSwap(previous);
     }
+    const main = this.props.mainRef.current;
+    if (!previous.deferred && this.props.deferred && main) {
+      return { kind: 'defer', closed: capsuleClosed(main) };
+    }
+    if (previous.deferred && !this.props.deferred) {
+      return { kind: 'cancel' };
+    }
+    return null;
+  }
+
+  private snapshotSwap(previous: Readonly<BodySwapTransitionProps>): SwapSnapshot | null {
     const outgoing = (previous.settings ? previous.settingsRef : previous.mainRef).current;
     if (!outgoing) {
       return null;
     }
-    const capsule = outgoing.closest('[data-slot=floating-sidebar]');
-    const growing = (capsule?.getBoundingClientRect().width ?? 0) < OPEN_WIDTH_THRESHOLD;
-    if (growing) {
-      return { ghost: null, scrollOffsets: [], growing };
+    const opacity = Number(getComputedStyle(outgoing).opacity);
+    const held = this.mainHeld && outgoing === previous.mainRef.current;
+    if (held || capsuleClosed(outgoing) || !(opacity > 0)) {
+      return { kind: 'swap', ghost: null, opacity: 0, scrollOffsets: [] };
     }
 
     const ghost = outgoing.cloneNode(true) as HTMLElement;
@@ -95,31 +128,59 @@ class BodySwapTransition extends React.Component<BodySwapTransitionProps> {
         scrollOffsets.push([index, element.scrollTop]);
       }
     });
-    return { ghost, scrollOffsets, growing };
+    return { kind: 'swap', ghost, opacity, scrollOffsets };
   }
 
   componentDidUpdate(
-    previous: Readonly<BodySwapTransitionProps>,
+    _previous: Readonly<BodySwapTransitionProps>,
     _state: unknown,
     snapshot: SwapSnapshot | null,
   ) {
-    if (previous.settings === this.props.settings) {
+    if (!snapshot) {
       return;
     }
-    this.stop();
-
-    const incoming = (this.props.settings ? this.props.settingsRef : this.props.mainRef).current;
-    if (!snapshot || !incoming || typeof incoming.animate !== 'function') {
-      return;
-    }
-
     const reduceMotion = prefersReducedMotion();
+    const main = this.props.mainRef.current;
+
+    if (snapshot.kind === 'defer') {
+      // The circle grows with nothing in it, rather than the main navigation
+      // showing only to leave again
+      if (snapshot.closed && main && typeof main.animate === 'function') {
+        this.stop();
+        this.animations.push(
+          main.animate([{ opacity: 0 }, { opacity: 0 }], { duration: 1, fill: 'forwards' }),
+        );
+        this.mainHeld = true;
+      }
+      return;
+    }
+    if (snapshot.kind === 'cancel') {
+      // Called off before the swap played: the main navigation comes back
+      if (this.mainHeld && main) {
+        this.stop();
+        this.fadeIn(main, 0, reduceMotion);
+      }
+      return;
+    }
+
+    this.stop();
+    const incoming = (this.props.settings ? this.props.settingsRef : this.props.mainRef).current;
+    if (!incoming || typeof incoming.animate !== 'function') {
+      this.props.onOutgoingLeft?.();
+      return;
+    }
     // Out to the left going in to Settings, the new rows in from the right
     const direction = this.props.settings ? -1 : 1;
     if (snapshot.ghost) {
-      this.playOut(incoming, snapshot, direction, reduceMotion);
+      this.playOut(incoming, snapshot.ghost, snapshot, direction, reduceMotion);
+    } else {
+      this.props.onOutgoingLeft?.();
     }
-    this.playIn(incoming, direction, reduceMotion, snapshot.growing ? MORPH_DELAY : 0);
+    if (!this.props.settings && this.props.quietReturn) {
+      this.fadeIn(incoming, reduceMotion ? 0 : QUIET_DELAY, reduceMotion);
+    } else {
+      this.playIn(incoming, direction, reduceMotion);
+    }
   }
 
   componentWillUnmount() {
@@ -128,11 +189,11 @@ class BodySwapTransition extends React.Component<BodySwapTransitionProps> {
 
   private playOut(
     incoming: HTMLElement,
-    snapshot: SwapSnapshot,
+    ghost: HTMLElement,
+    snapshot: { opacity: number; scrollOffsets: Array<[number, number]> },
     direction: number,
     reduceMotion: boolean,
   ) {
-    const ghost = snapshot.ghost!;
     ghost.setAttribute(GHOST_ATTRIBUTE, '');
     ghost.setAttribute('aria-hidden', 'true');
     ghost.inert = true;
@@ -154,11 +215,12 @@ class BodySwapTransition extends React.Component<BodySwapTransitionProps> {
       element.removeAttribute('data-testid');
     });
 
+    const opacity = Math.min(1, snapshot.opacity);
     const animation = ghost.animate(
       reduceMotion
-        ? [{ opacity: 1 }, { opacity: 0 }]
+        ? [{ opacity }, { opacity: 0 }]
         : [
-            { opacity: 1, transform: 'none' },
+            { opacity, transform: 'none' },
             // Gone before the incoming rows have much opacity, so the two
             // don't show through each other; it keeps travelling regardless
             { opacity: 0, offset: OUT_FADE_END },
@@ -176,12 +238,28 @@ class BodySwapTransition extends React.Component<BodySwapTransitionProps> {
         if (this.ghost === ghost) {
           ghost.remove();
           this.ghost = null;
+          this.props.onOutgoingLeft?.();
         }
       })
       .catch(() => {});
   }
 
-  private playIn(incoming: HTMLElement, direction: number, reduceMotion: boolean, delay: number) {
+  /** Fades a whole navigation in, its rows holding still. */
+  private fadeIn(pane: HTMLElement, delay: number, reduceMotion: boolean) {
+    if (typeof pane.animate !== 'function') {
+      return;
+    }
+    this.animations.push(
+      pane.animate([{ opacity: 0 }, { opacity: 1 }], {
+        duration: reduceMotion ? REDUCED_DURATION : QUIET_DURATION,
+        delay,
+        easing: 'ease-out',
+        fill: 'backwards',
+      }),
+    );
+  }
+
+  private playIn(incoming: HTMLElement, direction: number, reduceMotion: boolean) {
     // Applied as soon as the rows are in the DOM (here, before the swap's
     // first paint, or in the observer's microtask once Settings renders its
     // navigation), so they never show before their entrance.
@@ -203,7 +281,7 @@ class BodySwapTransition extends React.Component<BodySwapTransitionProps> {
               ? { duration: REDUCED_DURATION, easing: 'ease-out', fill: 'backwards' }
               : {
                   duration: IN_DURATION,
-                  delay: delay + Math.min(IN_DELAY + index * IN_STAGGER, IN_MAX_DELAY),
+                  delay: Math.min(IN_DELAY + index * IN_STAGGER, IN_MAX_DELAY),
                   easing: EASE_OUT,
                   fill: 'backwards',
                 },
@@ -239,6 +317,7 @@ class BodySwapTransition extends React.Component<BodySwapTransitionProps> {
     this.animations = [];
     this.ghost?.remove();
     this.ghost = null;
+    this.mainHeld = false;
   }
 
   render() {
@@ -251,13 +330,31 @@ const HIDDEN_PANE: React.CSSProperties = { opacity: 0, pointerEvents: 'none' };
 interface SidebarBodySwapProps {
   /** Shows the Settings navigation in place of the main navigation. */
   settings: boolean;
+  /**
+   * Holds the swap to Settings: until it's false, the body holds still,
+   * showing the main navigation (or nothing, if the capsule was closed).
+   */
+  deferred?: boolean;
+  /** Coming back from Settings, the main navigation fades in once the Settings rows have left, rather than swiping in. */
+  quietReturn?: boolean;
+  /** Called once the outgoing rows have left (at once if none were showing). */
+  onOutgoingLeft?: () => void;
   /** Receives the element the Settings navigation renders into. */
   settingsSlotRef?: (element: HTMLElement | null) => void;
   /** The main navigation. */
   children: React.ReactNode;
 }
 
-export function SidebarBodySwap({ settings, settingsSlotRef, children }: SidebarBodySwapProps) {
+export function SidebarBodySwap({
+  settings: settingsTarget,
+  deferred = false,
+  quietReturn = false,
+  onOutgoingLeft,
+  settingsSlotRef,
+  children,
+}: SidebarBodySwapProps) {
+  const deferring = settingsTarget && deferred;
+  const settings = settingsTarget && !deferring;
   const mainRef = React.useRef<HTMLDivElement>(null);
   const settingsRef = React.useRef<HTMLDivElement>(null);
 
@@ -293,7 +390,14 @@ export function SidebarBodySwap({ settings, settingsSlotRef, children }: Sidebar
       >
         <div ref={settingsSlotRef} className="flex min-h-0 flex-1 flex-col" />
       </div>
-      <BodySwapTransition mainRef={mainRef} settings={settings} settingsRef={settingsRef} />
+      <BodySwapTransition
+        deferred={deferring}
+        mainRef={mainRef}
+        quietReturn={quietReturn}
+        settings={settings}
+        settingsRef={settingsRef}
+        onOutgoingLeft={onOutgoingLeft}
+      />
     </div>
   );
 }

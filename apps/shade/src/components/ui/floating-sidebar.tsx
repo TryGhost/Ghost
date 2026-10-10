@@ -28,11 +28,17 @@ export const FLOATING_SIDEBAR_BUMP = 'cubic-bezier(0.34, 1.45, 0.5, 1)';
 export const FLOATING_SIDEBAR_SPRING = 'cubic-bezier(0.16, 1, 0.3, 1)';
 /** How long the capsule morphs and the content slides, in milliseconds. */
 export const FLOATING_SIDEBAR_DURATION = 520;
+/** The plain morph (`morphStyle="ease"`): an ease-out without overshoot, for the capsule and the content slide alike. */
+export const FLOATING_SIDEBAR_EASE = 'cubic-bezier(0.33, 1, 0.68, 1)';
+/** How long the plain morph takes, in milliseconds. */
+export const FLOATING_SIDEBAR_EASE_DURATION = 450;
 
-const MORPH_DURATION = `${FLOATING_SIDEBAR_DURATION}ms`;
 const UNFURL_DURATION = '450ms';
 // Forgiving, so a pointer drifting off the panel doesn't close it.
 const CLOSE_DELAY = 250;
+// After the morph's duration, when it's taken as finished though no
+// transitionend came (e.g. a height that didn't change)
+const MORPH_END_GRACE = 100;
 // Distance from the viewport's top and left edges, and the gap between the
 // pinned panel and the content.
 const INSET = 16;
@@ -158,6 +164,19 @@ interface FloatingSidebarProps extends Omit<React.ComponentProps<'div'>, 'childr
    */
   pinLocked?: boolean;
   /**
+   * How the capsule morphs and the content slides: `bump` (the default) grows
+   * a touch past size and settles back; `ease` moves on a plain ease-out,
+   * without overshoot (e.g. for a pin the screen makes, sequenced with other
+   * motion). It applies to the transitions that start while it's set, so keep
+   * it until `onPinnedMorphEnd`.
+   */
+  morphStyle?: 'bump' | 'ease';
+  /**
+   * Called with the new `pinned` state once the capsule has finished morphing
+   * to it (at once without transitions); not if `pinned` changes again first.
+   */
+  onPinnedMorphEnd?: (pinned: boolean) => void;
+  /**
    * The content beside the sidebar, offset by the gap while pinned (e.g. the
    * SidebarInset). Pinning and unpinning move the gap at once and slide the
    * content from its old place with a transform, so it lays out once rather
@@ -233,6 +252,8 @@ const FloatingSidebar = React.forwardRef<HTMLDivElement, FloatingSidebarProps>(
       pinned,
       onPinnedChange,
       pinLocked = false,
+      morphStyle = 'bump',
+      onPinnedMorphEnd,
       contentRef,
       slideRef,
       contentAnchor,
@@ -458,6 +479,44 @@ const FloatingSidebar = React.forwardRef<HTMLDivElement, FloatingSidebarProps>(
       return () => cancelAnimationFrame(frame);
     }, [animate]);
     const morph = ready && !reducedMotion;
+    const plainMorph = morphStyle === 'ease';
+    const morphDuration = plainMorph ? FLOATING_SIDEBAR_EASE_DURATION : FLOATING_SIDEBAR_DURATION;
+    // The capsule's shape, and what moves with it (the content, the icon)
+    const shapeEasing = plainMorph ? FLOATING_SIDEBAR_EASE : FLOATING_SIDEBAR_BUMP;
+    const glideEasing = plainMorph ? FLOATING_SIDEBAR_EASE : FLOATING_SIDEBAR_SPRING;
+
+    // Reports the end of the morph a pin change starts: the capsule's height
+    // transition ending, or its duration passing without one.
+    const onPinnedMorphEndRef = React.useRef(onPinnedMorphEnd);
+    React.useLayoutEffect(() => {
+      onPinnedMorphEndRef.current = onPinnedMorphEnd;
+    });
+    const pendingMorph = React.useRef<{ pinned: boolean; timer: number } | null>(null);
+    const finishMorph = React.useCallback(() => {
+      const pending = pendingMorph.current;
+      if (!pending) {
+        return;
+      }
+      window.clearTimeout(pending.timer);
+      pendingMorph.current = null;
+      onPinnedMorphEndRef.current?.(pending.pinned);
+    }, []);
+    const previousPinned = React.useRef(pinned);
+    React.useLayoutEffect(() => {
+      if (previousPinned.current === pinned) {
+        return;
+      }
+      previousPinned.current = pinned;
+      window.clearTimeout(pendingMorph.current?.timer);
+      pendingMorph.current = null;
+      if (!morph) {
+        onPinnedMorphEndRef.current?.(pinned);
+        return;
+      }
+      const timer = window.setTimeout(finishMorph, morphDuration + MORPH_END_GRACE);
+      pendingMorph.current = { pinned, timer };
+    }, [finishMorph, morph, morphDuration, pinned]);
+    React.useEffect(() => () => window.clearTimeout(pendingMorph.current?.timer), []);
 
     // Floating open, the body scrolls once it has unfurled (a panel taller
     // than the viewport); while unfurling it's clipped.
@@ -506,7 +565,7 @@ const FloatingSidebar = React.forwardRef<HTMLDivElement, FloatingSidebarProps>(
           : before - after;
       // Leaves nothing behind once finished (no fill): a transform left on the
       // content would trap its fixed descendants.
-      const timing = { duration: FLOATING_SIDEBAR_DURATION, easing: FLOATING_SIDEBAR_SPRING };
+      const timing = { duration: morphDuration, easing: glideEasing };
       const animations = [
         content.animate([{ transform: `translateX(${from}px)` }, { transform: 'none' }], timing),
       ];
@@ -527,7 +586,16 @@ const FloatingSidebar = React.forwardRef<HTMLDivElement, FloatingSidebarProps>(
         }
       };
       slide.current = animations;
-    }, [contentRef, contentStatic, findAnchor, gapWidth, morph, slideRef]);
+    }, [
+      contentRef,
+      contentStatic,
+      findAnchor,
+      gapWidth,
+      glideEasing,
+      morph,
+      morphDuration,
+      slideRef,
+    ]);
     React.useEffect(() => {
       const current = slide;
       return () => {
@@ -546,9 +614,9 @@ const FloatingSidebar = React.forwardRef<HTMLDivElement, FloatingSidebarProps>(
         setFilled(pinned);
         return;
       }
-      const timer = window.setTimeout(() => setFilled(false), FLOATING_SIDEBAR_DURATION);
+      const timer = window.setTimeout(() => setFilled(false), morphDuration);
       return () => window.clearTimeout(timer);
-    }, [morph, pinned]);
+    }, [morph, morphDuration, pinned]);
 
     const state = pinned ? 'pinned' : open ? 'open' : 'closed';
 
@@ -610,8 +678,13 @@ const FloatingSidebar = React.forwardRef<HTMLDivElement, FloatingSidebarProps>(
               borderRadius: expanded ? OPEN_RADIUS : closedSize / 2,
               boxShadow: pinned ? SHADOW_PINNED : SHADOW_FLOAT,
               transitionProperty: morph ? 'width, height, border-radius, box-shadow' : 'none',
-              transitionDuration: MORPH_DURATION,
-              transitionTimingFunction: FLOATING_SIDEBAR_BUMP,
+              transitionDuration: `${morphDuration}ms`,
+              transitionTimingFunction: shapeEasing,
+            }}
+            onTransitionEnd={(event) => {
+              if (event.target === event.currentTarget && event.propertyName === 'height') {
+                finishMorph();
+              }
             }}
           >
             <GlassHighlight />
@@ -666,8 +739,8 @@ const FloatingSidebar = React.forwardRef<HTMLDivElement, FloatingSidebarProps>(
                       : `translate(${closedIconOffset}px, ${closedIconOffset}px) scale(1)`,
                     borderRadius: expanded ? '22%' : '50%',
                     transitionProperty: morph ? 'transform, border-radius' : 'none',
-                    transitionDuration: MORPH_DURATION,
-                    transitionTimingFunction: FLOATING_SIDEBAR_SPRING,
+                    transitionDuration: `${morphDuration}ms`,
+                    transitionTimingFunction: glideEasing,
                   }}
                 >
                   {icon}

@@ -79,6 +79,27 @@ describe('FloatingSidebar', () => {
     );
   });
 
+  it('reports the end of the morph a pin change starts', () => {
+    const onPinnedMorphEnd = vi.fn();
+    // Without transitions the morph ends at once
+    const { rerender } = renderFloatingSidebar({ animate: false, onPinnedMorphEnd });
+    assert.equal(onPinnedMorphEnd.mock.calls.length, 0);
+
+    rerender(
+      <FloatingSidebar
+        animate={false}
+        header={<span>My site</span>}
+        icon={<span />}
+        label="My site"
+        pinned
+        onPinnedMorphEnd={onPinnedMorphEnd}
+      >
+        <a href="#/posts">Posts</a>
+      </FloatingSidebar>,
+    );
+    assert.deepEqual(onPinnedMorphEnd.mock.calls, [[true]]);
+  });
+
   it('keeps the body out of reach while closed', () => {
     renderFloatingSidebar();
     const body = () => document.querySelector<HTMLElement>('[data-slot=floating-sidebar-body]')!;
