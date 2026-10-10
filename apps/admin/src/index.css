@@ -458,8 +458,8 @@ html[data-screen-exit='hide-sidebar'] .screen-exit-mobile-nav {
 }
 
 /* Leaving a full-screen surface inside the admin7Design frame, its top chrome
-   slides away first, on the frame's timing, and the frame then opens back out
-   around the page it returns to. */
+   slides away on the frame's timing while the page it returns to loads, and
+   the frame opens back out around that page. */
 html[data-screen-exit='chrome'] .screen-exit-chrome-top {
   /* Back where screen-enter-from-top brings it in from */
   transform: translateY(-80px);

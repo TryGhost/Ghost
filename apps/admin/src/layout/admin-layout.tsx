@@ -241,6 +241,32 @@ export function AdminLayout({ children }: AdminLayoutProps) {
     return () => fade.cancel();
   }, [settingsNavigation]);
 
+  // Crossing into or out of a full-screen screen inside the frame is no view
+  // transition (ScreenTransitionProvider): the frame closes or opens around
+  // the live page, and the new screen fades in under it.
+  const frameClosed = frameMode === 'hidden';
+  const previousFrameClosed = React.useRef(frameClosed);
+  React.useLayoutEffect(() => {
+    if (previousFrameClosed.current === frameClosed) {
+      return;
+    }
+    previousFrameClosed.current = frameClosed;
+    const main = mainRef.current;
+    if (
+      !framed ||
+      !main ||
+      typeof main.animate !== 'function' ||
+      window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+    ) {
+      return;
+    }
+    const fade = main.animate([{ opacity: 0 }, { opacity: 1 }], {
+      duration: 200,
+      easing: 'ease-out',
+    });
+    return () => fade.cancel();
+  }, [frameClosed, framed]);
+
   // Contributors get a floating profile menu instead of the full sidebar
   if (isContributor) {
     return (

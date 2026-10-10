@@ -22,6 +22,13 @@ const ADMIN_FRAME_TRANSITION = {
   easing: 'cubic-bezier(0.16, 1, 0.3, 1)',
 };
 
+/*
+ * When a full-screen screen's top chrome starts in, after the frame starts
+ * closing: the frame's ease is front-loaded, so the top bar is mostly out of
+ * its way by then.
+ */
+const TOP_CHROME_ENTRANCE_DELAY = 200;
+
 const FRAME_VARIABLES = ['--admin-frame-top', '--admin-frame-side', '--admin-frame-radius'];
 
 function frameInsets(mode: AdminFrameMode) {
@@ -69,9 +76,9 @@ export function AdminFrame({ mode, topBar, locked = false, children }: AdminFram
           '--floating-sidebar-offset-top': 'var(--admin-frame-top)',
           '--floating-sidebar-offset-left': 'var(--admin-frame-side)',
           '--floating-sidebar-offset-bottom': 'var(--admin-frame-side)',
-          // A full-screen screen's top chrome enters once the top bar is out of its way
+          // A full-screen screen's top chrome enters as the top bar leaves
           '--screen-enter-top-delay':
-            mode === 'hidden' ? `${ADMIN_FRAME_TRANSITION.duration}ms` : undefined,
+            mode === 'hidden' ? `${TOP_CHROME_ENTRANCE_DELAY}ms` : undefined,
           padding: 'var(--admin-frame-top) var(--admin-frame-side) var(--admin-frame-side)',
           transitionProperty: mode === 'off' ? 'none' : FRAME_VARIABLES.join(', '),
           transitionDuration: `${ADMIN_FRAME_TRANSITION.duration}ms`,

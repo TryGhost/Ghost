@@ -113,18 +113,13 @@ export function ScreenTransitionProvider({ children }: { children: ReactNode }) 
         const target = matchAdminRoutes(pathname) ?? [];
         if (!target.some((match) => isScreenTransitionHandle(match.route.handle))) {
           root.dataset.screenTransition = 'return';
-          // In the frame, the surface's top chrome slides away before the frame
-          // opens back out; not while a guard may hold the exit, so a held exit
-          // never leaves the chrome gone
-          if (!latest.current.framed || hasActiveUnsavedChangesGuard()) {
-            return undefined;
+          // In the frame, the surface's top chrome slides away as the screen it
+          // returns to loads; not while a guard may hold the exit, so a held
+          // exit never leaves the chrome gone
+          if (latest.current.framed && !hasActiveUnsavedChangesGuard()) {
+            root.dataset.screenExit = 'chrome';
           }
-          root.dataset.screenExit = 'chrome';
-          exitingRef.current = true;
-          return exitTransitionsFinished().then(() => {
-            exitingRef.current = false;
-            return true;
-          });
+          return undefined;
         }
         // A guard may hold the exit for a save or a confirm dialog
         if (hasActiveUnsavedChangesGuard()) {
@@ -140,6 +135,12 @@ export function ScreenTransitionProvider({ children }: { children: ReactNode }) 
           root.dataset.screenTransition = 'after-exit';
           return true;
         });
+      },
+      // The frame (AdminLayout) carries the page across a surface's boundary
+      // itself, closing and opening around the live page, which a view
+      // transition would freeze and double
+      viewTransition() {
+        return !latest.current.framed;
       },
       // The next screen may take a while to load, so a faded-out screen only
       // comes back, and the markers only go, once its navigation has settled
