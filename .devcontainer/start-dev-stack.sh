@@ -13,11 +13,8 @@ fi
 
 echo "Starting Ghost dev stack..."
 
-# Ghost rejects Admin API requests whose Origin doesn't match its `url`, and
-# Codespaces serves port 2368 at this forwarded https origin
-if [ -n "${CODESPACES:-}" ] && [ -n "${CODESPACE_NAME:-}" ]; then
-    export url="https://${CODESPACE_NAME}-2368.${GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN:-app.github.dev}/"
-fi
+# Ghost keeps its default http://localhost:2368 url: Codespaces' forwarded URL
+# rewrites Host and same-origin Origin headers to localhost:2368.
 
 # Append to the log (don't truncate) so a previous crash's tail survives a
 # restart and the user can still tail it for context.
