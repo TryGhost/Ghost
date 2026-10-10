@@ -239,6 +239,7 @@ export const Surface: Story = {
         { name: 'panel', cssVar: '--surface-panel' },
         { name: 'elevated', cssVar: '--surface-elevated' },
         { name: 'elevated-2', cssVar: '--surface-elevated-2' },
+        { name: 'glass', cssVar: '--surface-glass' },
         { name: 'filter-bar', cssVar: '--filter-bar-background' },
         { name: 'control-readonly', cssVar: '--control-readonly-surface' },
       ]}
@@ -311,6 +312,7 @@ export const Border: Story = {
         { name: 'default', cssVar: '--border-default' },
         { name: 'control-border', cssVar: '--control-border' },
         { name: 'strong', cssVar: '--border-strong' },
+        { name: 'glass', cssVar: '--border-glass' },
         { name: 'focus-ring', cssVar: '--focus-ring' },
       ]}
       title="Border &amp; focus"
