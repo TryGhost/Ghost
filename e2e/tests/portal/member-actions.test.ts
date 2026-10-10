@@ -38,7 +38,7 @@ async function impersonateMember(page: Page, memberName: string): Promise<void> 
   await memberDetailsPage.settingsSection.memberActionsButton.click();
   await memberDetailsPage.settingsSection.impersonateButton.click();
 
-  await expect(memberDetailsPage.magicLinkInput).not.toHaveValue('');
+  await expect(memberDetailsPage.magicLinkInput).toHaveValue(/^https?:\/\/.+/);
   const magicLink = await memberDetailsPage.magicLinkInput.inputValue();
   await memberDetailsPage.goto(magicLink);
 
