@@ -28,6 +28,9 @@ services:
     image: node:22.23.3-bookworm
     command: ['sleep', 'infinity']
     working_dir: /workspaces/Ghost
+    # Codespaces forwards ports from the host, not from inside this container
+    ports:
+      - '2368:2368'
     # pnpm-store is a separate named volume, NOT under /workspaces/Ghost, so
     # it survives the bind mount of the repo checkout. onCreateCommand still
     # runs a real `pnpm install` every time, but with the store already warm
