@@ -1,5 +1,6 @@
 import IframeBuffering from '@/settings/utils/iframe-buffering';
 import React, { useCallback } from 'react';
+import { cn } from '@tryghost/shade/utils';
 import {
   type CustomThemeSetting,
   hiddenCustomThemeSettingValue,
@@ -22,6 +23,11 @@ interface ThemePreviewProps {
   url: string;
   // Hidden previews stay mounted and laid out, so revealing one needs no reflow.
   isVisible?: boolean;
+  /**
+   * Shrinks the page to fit more of it in (the Design modal's preview pane).
+   * Off, it renders at the size it would on the site, e.g. in place of it.
+   */
+  scaled?: boolean;
 }
 
 function getPreviewData({
@@ -73,7 +79,12 @@ function getPreviewData({
   return params.toString();
 }
 
-const ThemePreview: React.FC<ThemePreviewProps> = ({ settings, url, isVisible = true }) => {
+const ThemePreview: React.FC<ThemePreviewProps> = ({
+  settings,
+  url,
+  isVisible = true,
+  scaled = true,
+}) => {
   const previewData = getPreviewData({ ...settings });
 
   const injectContentIntoIframe = useCallback(
@@ -132,7 +143,12 @@ const ThemePreview: React.FC<ThemePreviewProps> = ({ settings, url, isVisible = 
   return (
     <IframeBuffering
       addDelay={false}
-      className="absolute -top-px -left-px size-[calc(110%_+_3px)] origin-top-left scale-[.90909] bg-white max-[1600px]:size-[calc(130%_+_3px)] max-[1600px]:scale-[.76923]"
+      className={cn(
+        'absolute bg-white',
+        scaled
+          ? '-top-px -left-px size-[calc(110%_+_3px)] origin-top-left scale-[.90909] max-[1600px]:size-[calc(130%_+_3px)] max-[1600px]:scale-[.76923]'
+          : 'inset-0 size-full',
+      )}
       generateContent={injectContentIntoIframe}
       height="100%"
       parentClassName={`absolute inset-0 overflow-hidden ${isVisible ? 'z-10 opacity-100' : 'z-0 opacity-0 pointer-events-none'}`}
