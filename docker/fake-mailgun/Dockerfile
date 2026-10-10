@@ -12,6 +12,8 @@ COPY --parents ghost/*/package.json apps/*/package.json koenig/*/package.json co
 COPY scripts/enforce-package-manager.js scripts/
 COPY .github/hooks .github/hooks
 RUN corepack enable
+# node_modules must live in the image, not link into a pnpm store outside it
+ENV pnpm_config_enable_global_virtual_store=false
 RUN --mount=type=cache,target=/root/.local/share/pnpm/store,id=pnpm-store \
     pnpm install --filter @tryghost/e2e --frozen-lockfile --prefer-offline
 

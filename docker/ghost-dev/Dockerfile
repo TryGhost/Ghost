@@ -61,6 +61,8 @@ COPY .github/hooks .github/hooks
 
 # Enable corepack so it can read packageManager from package.json and provide pnpm
 RUN corepack enable
+# node_modules must live in the image, not link into a pnpm store outside it
+ENV pnpm_config_enable_global_virtual_store=false
 
 # Install ONLY ghost/core's workspace closure (its name is "ghost"; the trailing
 # "..." selects it plus every workspace dependency). Deps live in the shared

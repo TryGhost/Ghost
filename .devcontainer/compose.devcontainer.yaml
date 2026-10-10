@@ -41,6 +41,7 @@ services:
       - pnpm-store:/pnpm-store
     environment:
       pnpm_config_store_dir: /pnpm-store
+      pnpm_config_enable_global_virtual_store: 'false'
     # Prefer the prebuilt image (docker/ghost-dev/Dockerfile, published by
     # .github/workflows/devcontainer-build.yml) over a local build. cache_from
     # makes a local `docker compose build` (e.g. after a Dockerfile edit)

@@ -13,6 +13,9 @@ catalogMode: strict
 autoDedupe: true
 # Packages resolve only what they declare; required by the global virtual store.
 hoist: false
+# Links node_modules into one shared pnpm store. Docker images and CI opt out with
+# pnpm_config_enable_global_virtual_store=false.
+enableGlobalVirtualStore: true
 
 minimumReleaseAge: 4320 # 3 days in minutes; matches Renovate's minimumReleaseAge
 blockExoticSubdeps: true
