@@ -282,9 +282,7 @@
         },
         "dependsOn": [
           "ghost-monorepo:dev:env",
-          "build:dev",
-          "@tryghost/admin-x-framework:dev",
-          "@tryghost/shade:dev"
+          "build:dev"
         ]
       },
       "build:dev": {

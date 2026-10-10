@@ -96,7 +96,8 @@ acceptance tests cover selection, drafts, retries, responsive layouts, and cards
 pnpm dev
 ```
 
-React, Admin Framework, Shade and Portal watch for changes.
+Admin, Admin Framework and Shade hot-reload through Admin's dev server. Portal
+rebuilds on change.
 
 Development commands do not change Labs settings. To preview a flagged feature
 in one browser tab, open `http://localhost:2368/ghost/#/?labs=<flag>`. These
@@ -109,7 +110,7 @@ components. Product copy belongs in the `ghost` namespace; follow the
 [internationalization guide](../../docs/practices/internationalization.md).
 
 `pnpm nx run @tryghost/admin:build:dev` prepares library outputs. The normal
-`pnpm dev` command uses this preparation before starting the React watchers.
+`pnpm dev` command uses this preparation before starting Admin's dev server.
 
 Vite resolves Admin Framework and Shade through their `source` exports in
 development, production and tests. It tracks each package’s source and path aliases

@@ -69,8 +69,6 @@ describe('Admin task inputs', () => {
       'ghost-monorepo:dev:env',
       'ghost-monorepo:infra:up',
       'ghost:build:assets',
-      '@tryghost/admin-x-framework:dev',
-      '@tryghost/shade:dev',
       '@tryghost/portal:dev',
     ]) {
       assert.ok(tasks.includes(task), task);
