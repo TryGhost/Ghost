@@ -547,17 +547,18 @@ html[data-screen-transition='return']::view-transition-new(admin-mobile-nav):onl
 }
 
 /* Entering the editor, the document rises into place and its floating chrome
-   follows in from the screen edges. */
+   follows in from the screen edges. Fill backwards only: a transform animation
+   that fills forwards makes its element the containing block for fixed descendants. */
 .screen-enter-from-top {
-  animation: screen-chrome-from-top 450ms var(--ease-emphasized) 150ms both;
+  animation: screen-chrome-from-top 450ms var(--ease-emphasized) 150ms backwards;
 }
 
 .screen-enter-from-bottom {
-  animation: screen-chrome-from-bottom 450ms var(--ease-emphasized) 150ms both;
+  animation: screen-chrome-from-bottom 450ms var(--ease-emphasized) 150ms backwards;
 }
 
 .screen-enter-rise {
-  animation: screen-content-rise 450ms var(--ease-emphasized) both;
+  animation: screen-content-rise 450ms var(--ease-emphasized) backwards;
 }
 
 @keyframes screen-content-rise {

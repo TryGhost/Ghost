@@ -8,8 +8,10 @@ import {
 import { ShadeApp } from '@tryghost/shade/app';
 
 import App from './app.tsx';
+import { reloadAfterChunkLoadError } from './chunk-load-recovery';
 import { installHistoryPopGate } from './hooks/use-history-pop-navigation-guard';
 import { ScreenTransitionProvider } from './layout/screen-transition-provider';
+import { RouteError } from './route-error';
 import { routes, useIsEmberOwnedRoute } from './routes.tsx';
 import { useThemeContext } from './providers/theme-context';
 import { ThemeProvider } from './providers/theme-provider';
@@ -28,6 +30,8 @@ function useMountedBodyClass() {
     };
   }, []);
 }
+
+const routeErrorElement = <RouteError />;
 
 function ThemedAdminApp() {
   const { resolvedTheme } = useThemeContext();
@@ -60,7 +64,12 @@ export function AdminAppRoot({ framework }: { framework: TopLevelFrameworkProps 
   return (
     <StrictMode>
       <FrameworkProvider {...framework}>
-        <RouterProvider prefix={'/'} routes={routes}>
+        <RouterProvider
+          errorElement={routeErrorElement}
+          prefix={'/'}
+          recoverFromError={reloadAfterChunkLoadError}
+          routes={routes}
+        >
           <ThemeProvider>
             <ThemedAdminApp />
           </ThemeProvider>
