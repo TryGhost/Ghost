@@ -25,8 +25,6 @@ service before changing it.
 `apps/` contains several types of frontend project:
 
 - `admin/` is the React Admin application.
-- `ember-admin/` is the legacy Ember Admin application. Routes are moving from
-  Ember to React over time.
 - `activitypub/` is a React application included in Admin.
 - `portal/`, `comments-ui/`, `signup-form/`, `sodo-search/`,
   `announcement-bar/`, and `admin-toolbar/` are public apps published to npm
@@ -38,9 +36,8 @@ The public apps build browser bundles loaded with script tags and read runtime
 configuration from data attributes. Ghost Core renders these integrations
 through theme helpers such as `{{ghost_head}}` and `{{comments}}`.
 
-Admin combines the React and Ember applications into one interface. See
-[`apps/admin/README.md`](../../apps/admin/README.md) for the current integration
-boundary.
+Admin is a single React application. See
+[`apps/admin/README.md`](../../apps/admin/README.md) for how it is organized.
 
 ## Ghost Core
 

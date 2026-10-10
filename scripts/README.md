@@ -26,8 +26,8 @@ package is _not_ part of the root Vitest watcher (`pnpm test:watch`), which only
 covers Vitest-based projects.
 
 Tests that inspect Admin's Nx configuration and CI path filters read files
-outside this workspace. The `adminTestContracts` input includes the Admin and
-Ember manifests and CI workflow in both `test` and `test:unit`. Changes to these
+outside this workspace. The `adminTestContracts` input includes the Admin
+manifest and CI workflow in both `test` and `test:unit`. Changes to these
 files invalidate the tests' caches and select this workspace as affected,
 without introducing an Admin build prerequisite.
 

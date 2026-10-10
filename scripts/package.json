@@ -36,7 +36,6 @@
     "namedInputs": {
       "adminTestContracts": [
         "{workspaceRoot}/apps/admin/package.json",
-        "{workspaceRoot}/apps/ember-admin/package.json",
         "{workspaceRoot}/.github/workflows/ci.yml"
       ],
       "adminSourceContracts": [
