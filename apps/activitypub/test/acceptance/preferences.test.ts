@@ -760,6 +760,8 @@ test.describe('Preferences', async () => {
     await expect(page.getByTestId('account-migration-aliases')).toContainText(
       'Could not load account aliases.',
     );
-    await expect(page.getByRole('button', { name: 'Retry' })).toBeVisible();
+    await expect(
+      page.getByTestId('account-migration-aliases').getByRole('button', { name: 'Retry' }),
+    ).toBeVisible();
   });
 });
