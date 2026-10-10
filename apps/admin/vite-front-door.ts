@@ -39,10 +39,11 @@ export function ghostFrontDoorPlugin(backend: string, devBase: string): Plugin {
           rewrite: stripPrefix(/^\/\.ghost\/analytics/),
         };
       }
-      // The ActivityPub project's local service
-      const activityPub = process.env.ACTIVITYPUB_PROXY_TARGET ?? '127.0.0.1:8080';
+      // The ActivityPub project's local service, e.g. 127.0.0.1:8080. Without one, a 404
+      // tells Ghost that no ActivityPub service is routed to this site.
+      const activityPub = process.env.ACTIVITYPUB_PROXY_TARGET;
       for (const route of ['^/\\.ghost/activitypub/', '^/\\.well-known/(webfinger|nodeinfo)']) {
-        proxy[route] = { target: `http://${activityPub}` };
+        proxy[route] = activityPub ? { target: `http://${activityPub}` } : { bypass: () => false };
       }
       // Must stay last: Vite uses the first matching entry
       proxy[`^(?!${devBase})`] = { target: backend, xfwd: true, ws: true };
