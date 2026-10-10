@@ -24,6 +24,14 @@
  */
 module.exports = {
   forbidden: [
+    // Kernel primitives must be independent of the application they support.
+    {
+      name: 'kernel-not-application',
+      comment: 'Kernel code must not import application code, including shared.',
+      severity: 'error',
+      from: { path: '^ghost/core/kernel/' },
+      to: { path: '^ghost/', pathNot: '^ghost/core/kernel/' },
+    },
     // ============================================================
     // shared/ must not require server/* or frontend/*
     // ============================================================

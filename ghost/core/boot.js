@@ -144,7 +144,7 @@ async function initCore({ ghostServer, config }) {
 
   // Signing keys come from settings and must be ready before anything signs or serves a JWKS
   debug('Begin: signing keys');
-  const signingKeys = require('./server/services/signing-keys');
+  const signingKeys = require('./server/services/signing-keys').default;
   await signingKeys.init();
   debug('End: signing keys');
 

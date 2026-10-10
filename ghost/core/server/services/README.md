@@ -63,6 +63,14 @@ The temporary [service inventory](service-inventory.yaml) tracks this migration.
 Update it when adding, removing or renaming a root. It includes standalone
 files and supporting modules still awaiting relocation. Boot never reads it.
 
+The summary counts all inventory entries in `total` and entries marked
+`migrated: true` in `migrated`. Mark a root as migrated once it uses the
+[kernel's `defineService` initializer](../../kernel/README.md#service-initialization).
+IndexNow and signing keys are the first two. This tracks adoption of the
+initializer, independently of audit completeness or remaining lifecycle work.
+Update the summary when entries or migration markers change; the inventory test
+checks both counts.
+
 Each entry records its intended ownership and audit status. `pending` means
 the contract audit has not started; `auditing` means evidence is incomplete;
 `audited` means all facets have been investigated and recorded from source or
@@ -110,7 +118,7 @@ Record missing coverage and known bugs in `blockers`. Before changing a service,
 address the gaps relevant to that change; neither `audited` nor a passing
 inventory check proves that its behavior is protected against regressions.
 
-The unit test checks the inventory's shape, paths and directory coverage. It
+The unit test checks the inventory's shape, counts, paths and directory coverage. It
 does not import services or drive initialization. `README.md` and the inventory
 itself are the only metadata exclusions. Retire the inventory after migration;
 keep the behavioral tests and replace the legacy check with a check for the
@@ -133,9 +141,39 @@ initialization must expose an explicit `init()` and be called from
 `ghost/core/boot.js` in the appropriate boot phase. Do not make the first
 request responsible for constructing the service.
 
+For a root using the [kernel's `defineService` helper](../../kernel/README.md#service-initialization),
+the service author supplies a `create` callback that constructs and returns a
+ready instance. Boot awaits the root's `init()`; consumers then read `.service`.
+The kernel guide describes the full contract, including concurrent calls and
+explicit retries after failure.
+
+If startup fails partway through, the `create` callback must release resources
+it already acquired before passing the error back. The helper cannot remove the
+callback's listeners or close its connections. A retry runs the callback again,
+so resources left by the failed attempt could remain active alongside any new
+instance.
+
+For example, the [IndexNow callback](indexnow-ping/index.ts) removes any partially
+registered listeners before rethrowing a subscription error:
+
+```ts
+try {
+  service.subscribeEvents();
+} catch (error) {
+  service.unsubscribeEvents();
+  throw error;
+}
+return service;
+```
+
+Its [startup test](../../../test/unit/server/services/indexnow-ping/index.test.ts)
+checks that failure removes only that attempt's listeners and that a later
+`init()` succeeds without duplicate subscriptions. Cover the equivalent failure
+and retry behavior when a callback acquires resources.
+
 Keep wrapper initialization idempotent when callers may safely reach it more
-than once. Add shutdown or cleanup handling to the boot lifecycle when the
-service owns resources that must be released.
+than once. Arrange normal shutdown separately through the boot lifecycle when
+the service owns resources that must be released.
 
 ## Related guidance
 
