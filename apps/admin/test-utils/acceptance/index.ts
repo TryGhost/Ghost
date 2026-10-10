@@ -16,6 +16,7 @@ export {
   withoutUnsplash,
 } from './editor';
 export type { FakePintura } from './editor';
+export { failModuleLoads } from './module-loads';
 export { currentRoute, renderAdminApp } from './render-admin-app';
 export type { RenderAdminAppOptions } from './render-admin-app';
 export { InAppProviders, renderInApp } from './render-in-app';

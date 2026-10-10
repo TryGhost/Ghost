@@ -35,7 +35,8 @@ export function GlobalSearchProvider({ children }: { children: ReactNode }) {
       return;
     }
 
-    void loadGlobalSearchModal();
+    // A failure is left for opening search to surface.
+    loadGlobalSearchModal().catch(() => undefined);
 
     const onKeyDown = (event: KeyboardEvent) => {
       if (!isSearchShortcut(event)) {
