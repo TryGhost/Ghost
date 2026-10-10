@@ -12,7 +12,7 @@ import { cn } from '@/lib/utils';
  *   grows the circle into a panel floating over the content, the header
  *   fading in beside the icon and the body unfurling beneath it
  * - pinned: the panel is docked at full height and a gap beside it offsets
- *   the content, which slides to its new place (see `contentRef`)
+ *   the content
  *
  * The icon is one element throughout: filling the circle while closed, it
  * shrinks and glides into its place in the header row as the circle opens.
@@ -20,6 +20,12 @@ import { cn } from '@/lib/utils';
  * Use it inside a SidebarProvider in place of `Sidebar`, with the usual menu
  * primitives (SidebarGroup, SidebarMenu…) in the body. It is a desktop
  * component; render the `Sidebar` sheet on mobile.
+ *
+ * It only moves itself and its gap, which changes width at once as it pins and
+ * unpins. Content that should glide to its new place, or keep clear of the
+ * closed circle, does so itself with the metrics and timing exported below
+ * (`FLOATING_SIDEBAR_INSET`, `getFloatingSidebarGapWidth`,
+ * `getFloatingSidebarTiming`…), driven by the same `pinned` it passes in.
  */
 
 /**
@@ -38,22 +44,83 @@ export const FLOATING_SIDEBAR_EASE = 'cubic-bezier(0.33, 1, 0.68, 1)';
 /** How long the plain morph takes, in milliseconds. */
 export const FLOATING_SIDEBAR_EASE_DURATION = 450;
 
+/** How the capsule morphs between states; see `morphStyle`. */
+type FloatingSidebarMorphStyle = 'bump' | 'ease';
+
+interface FloatingSidebarTiming {
+  /** How long the morph takes, in milliseconds. */
+  duration: number;
+  /**
+   * What moves with the capsule: its height, the icon, and content sliding in
+   * step with a pin change. A decelerating ease without overshoot.
+   */
+  easing: string;
+  /** The capsule's own shape (width, radius, shadow): the bump overshoots. */
+  shapeEasing: string;
+}
+
+/**
+ * The timing of a morph in `morphStyle`, for content that animates in step
+ * with the capsule as it pins and unpins.
+ */
+export function getFloatingSidebarTiming(
+  morphStyle: FloatingSidebarMorphStyle = 'bump',
+): FloatingSidebarTiming {
+  return morphStyle === 'ease'
+    ? {
+        duration: FLOATING_SIDEBAR_EASE_DURATION,
+        easing: FLOATING_SIDEBAR_EASE,
+        shapeEasing: FLOATING_SIDEBAR_EASE,
+      }
+    : {
+        duration: FLOATING_SIDEBAR_DURATION,
+        easing: FLOATING_SIDEBAR_SPRING,
+        shapeEasing: FLOATING_SIDEBAR_BUMP,
+      };
+}
+
+/**
+ * The capsule's distance from the viewport's top and left edges, and the gap
+ * between the pinned panel and the content, in pixels.
+ */
+export const FLOATING_SIDEBAR_INSET = 16;
+/** The closed circle's outer diameter, its 1px border included, in pixels. */
+export const FLOATING_SIDEBAR_CLOSED_SIZE = 50;
+/**
+ * The room the closed circle takes from the content's top-left corner (inset +
+ * diameter + inset), for content to keep clear of it while unpinned.
+ */
+export const FLOATING_SIDEBAR_CLOSED_FOOTPRINT =
+  FLOATING_SIDEBAR_INSET + FLOATING_SIDEBAR_CLOSED_SIZE + FLOATING_SIDEBAR_INSET;
+/** The open and pinned panel's default width (`openWidth`), in pixels. */
+export const FLOATING_SIDEBAR_OPEN_WIDTH = 290;
+
+/**
+ * The width of the gap that offsets the content beside the sidebar: the pinned
+ * panel and the inset either side of it, or 0 unless pinned.
+ */
+export function getFloatingSidebarGapWidth(
+  pinned: boolean,
+  openWidth: number = FLOATING_SIDEBAR_OPEN_WIDTH,
+): number {
+  return pinned ? FLOATING_SIDEBAR_INSET + openWidth + FLOATING_SIDEBAR_INSET : 0;
+}
+
 const UNFURL_DURATION = '450ms';
 // Forgiving, so a pointer drifting off the panel doesn't close it.
 const CLOSE_DELAY = 250;
 // After the morph's duration, when it's taken as finished though no
 // transitionend came (e.g. a height that didn't change)
 const MORPH_END_GRACE = 100;
-// Distance from the viewport's top and left edges, and the gap between the
-// pinned panel and the content.
-const INSET = 16;
-const DEFAULT_OPEN_WIDTH = 290;
+const INSET = FLOATING_SIDEBAR_INSET;
+const CLOSED_SIZE = FLOATING_SIDEBAR_CLOSED_SIZE;
 const OPEN_RADIUS = 6;
 // Below this width the open header row tightens to match smaller page titles.
 const NARROW_QUERY = '(max-width: 1379px)';
 /**
- * - circle: the closed circle's visible diameter, inside its 1px border (a
- *   light outline that all but disappears on a light page)
+ * The closed circle is `CLOSED_SIZE` across: its visible diameter inside a 1px
+ * border (a light outline that all but disappears on a light page).
+ *
  * - circleIcon: the icon centred in it, cropped round, a little larger than
  *   the header row's icon
  * - icon: the icon in the open and pinned header row, which is `padding`
@@ -61,8 +128,8 @@ const NARROW_QUERY = '(max-width: 1379px)';
  * - gap: between the header row's icon and the header beside it
  */
 const SIZES = {
-  regular: { circle: 48, circleIcon: 32, icon: 28, gap: 10 },
-  narrow: { circle: 48, circleIcon: 32, icon: 24, gap: 8 },
+  regular: { circleIcon: 32, icon: 28, gap: 10 },
+  narrow: { circleIcon: 32, icon: 24, gap: 8 },
 };
 // Around the header row's icon, and the body's side padding, so the search
 // field and nav rows line up with the icon.
@@ -112,20 +179,13 @@ function useMediaQuery(query: string): boolean {
   return matches;
 }
 
-/** The horizontal offset an animation in flight has moved an element by. */
-function translateX(element: HTMLElement): number {
-  const { transform } = getComputedStyle(element);
-  return transform && transform !== 'none' ? new DOMMatrixReadOnly(transform).m41 : 0;
-}
-
 /**
- * Reads the content's position just before React applies a pin change to the
- * DOM: the "first" of the content slide, which by the time layout effects run
- * is gone. Renders nothing.
+ * Reads the capsule's height just before React applies a pin change to the
+ * DOM, which by the time layout effects run is gone. Renders nothing.
  */
-class BeforePinCommit extends React.Component<{ gapWidth: number; onBeforeCommit: () => void }> {
-  getSnapshotBeforeUpdate(previous: Readonly<{ gapWidth: number }>) {
-    if (previous.gapWidth !== this.props.gapWidth) {
+class BeforePinCommit extends React.Component<{ pinned: boolean; onBeforeCommit: () => void }> {
+  getSnapshotBeforeUpdate(previous: Readonly<{ pinned: boolean }>) {
+    if (previous.pinned !== this.props.pinned) {
       this.props.onBeforeCommit();
     }
     return null;
@@ -162,53 +222,19 @@ interface FloatingSidebarProps extends Omit<React.ComponentProps<'div'>, 'childr
    */
   pinLocked?: boolean;
   /**
-   * How the capsule morphs and the content slides: `bump` (the default) grows
-   * a touch past size and settles back; `ease` moves on a plain ease-out,
-   * without overshoot (e.g. for a pin the screen makes, sequenced with other
-   * motion). It applies to the transitions that start while it's set, so keep
-   * it until `onPinnedMorphEnd`.
+   * How the capsule morphs: `bump` (the default) grows a touch past size and
+   * settles back; `ease` moves on a plain ease-out, without overshoot (e.g.
+   * for a pin the screen makes, sequenced with other motion). It applies to
+   * the transitions that start while it's set, so keep it until
+   * `onPinnedMorphEnd`. Content moving in step takes the same timing from
+   * `getFloatingSidebarTiming`.
    */
-  morphStyle?: 'bump' | 'ease';
+  morphStyle?: FloatingSidebarMorphStyle;
   /**
    * Called with the new `pinned` state once the capsule has finished morphing
    * to it (at once without transitions); not if `pinned` changes again first.
    */
   onPinnedMorphEnd?: (pinned: boolean) => void;
-  /**
-   * The content beside the sidebar, offset by the gap while pinned (e.g. the
-   * SidebarInset). Pinning and unpinning move the gap at once and slide the
-   * content from its old place with a transform, so it lays out once rather
-   * than on every frame (see `contentAnchor`).
-   *
-   * The closed circle's footprint is set on it as CSS variables, so the
-   * content can keep clear of the circle while unpinned:
-   * `--floating-sidebar-inset` (its distance from the viewport's top and left
-   * edges), `--floating-sidebar-size` (its outer diameter, border included) and
-   * `--floating-sidebar-footprint` (inset + diameter + inset). The gap's
-   * current width is set too, as `--floating-sidebar-gap` (0 unless pinned),
-   * so the content can reach back beneath the pinned panel.
-   */
-  contentRef?: React.RefObject<HTMLElement>;
-  /**
-   * The element that slides, when not `contentRef` itself: e.g. the page inside
-   * a scrolling content element, so the scrollport (which clips) holds still
-   * and content reaching beneath the panel never shows an edge.
-   */
-  slideRef?: React.RefObject<HTMLElement>;
-  /**
-   * A selector for the element in the content whose left edge the slide keeps
-   * continuous (e.g. the centred page column): it glides from where it was to
-   * where it lands, however its padding changes. Without a match the content
-   * slides by half the gap's change, which suits content centred beside it.
-   */
-  contentAnchor?: string;
-  /**
-   * A selector for elements in the sliding content that hold still while it
-   * slides (e.g. a full-bleed backdrop spanning the viewport in both states):
-   * they're slid back by as much as the content slides. They mustn't have a
-   * transform of their own.
-   */
-  contentStatic?: string;
   /** Centred in the closed circle, and kept in place as it grows (e.g. the site icon). */
   icon: React.ReactNode;
   /** The circle's accessible name (e.g. the site title). */
@@ -252,16 +278,12 @@ const FloatingSidebar = React.forwardRef<HTMLDivElement, FloatingSidebarProps>(
       pinLocked = false,
       morphStyle = 'bump',
       onPinnedMorphEnd,
-      contentRef,
-      slideRef,
-      contentAnchor,
-      contentStatic,
       icon,
       label,
       header,
       children,
       bodyClassName,
-      openWidth = DEFAULT_OPEN_WIDTH,
+      openWidth = FLOATING_SIDEBAR_OPEN_WIDTH,
       disabled = false,
       animate = true,
       hotZone = true,
@@ -281,11 +303,9 @@ const FloatingSidebar = React.forwardRef<HTMLDivElement, FloatingSidebarProps>(
     const narrow = useMediaQuery(NARROW_QUERY);
     const reducedMotion = useMediaQuery('(prefers-reduced-motion: reduce)');
     const sizes = narrow ? SIZES.narrow : SIZES.regular;
-    // The closed capsule, border included
-    const closedSize = sizes.circle + 2;
     const headerHeight = PADDING + sizes.icon + PADDING;
     // Moves the icon from its place in the header row to the circle's centre
-    const closedIconOffset = (sizes.circle - sizes.circleIcon) / 2 - PADDING;
+    const closedIconOffset = (CLOSED_SIZE - 2 - sizes.circleIcon) / 2 - PADDING;
 
     const wrapperRef = React.useRef<HTMLDivElement>(null);
     const capsuleRef = React.useRef<HTMLDivElement>(null);
@@ -457,33 +477,10 @@ const FloatingSidebar = React.forwardRef<HTMLDivElement, FloatingSidebarProps>(
     }, [expanded, pinLocked]);
 
     // The gap changes width at once, never through a transition: that would
-    // lay the content out again on every frame. The content slides instead,
-    // from where it was (or had got to, mid-slide) to its new place.
-    const gapWidth = pinned ? INSET + openWidth + INSET : 0;
-
-    // The circle's footprint, for the content to keep clear of it, and the
-    // gap, for content reaching beneath the pinned panel. Set before the slide
-    // below measures where the content lands.
-    React.useLayoutEffect(() => {
-      const content = contentRef?.current;
-      if (!content) {
-        return;
-      }
-      const footprint = {
-        '--floating-sidebar-inset': `${INSET}px`,
-        '--floating-sidebar-size': `${closedSize}px`,
-        '--floating-sidebar-footprint': `${INSET + closedSize + INSET}px`,
-        '--floating-sidebar-gap': `${gapWidth}px`,
-      };
-      for (const [name, value] of Object.entries(footprint)) {
-        content.style.setProperty(name, value);
-      }
-      return () => {
-        for (const name of Object.keys(footprint)) {
-          content.style.removeProperty(name);
-        }
-      };
-    }, [contentRef, closedSize, gapWidth]);
+    // lay the content out again on every frame. Content that should glide to
+    // its new place slides itself, in step with the morph (see
+    // `getFloatingSidebarTiming`).
+    const gapWidth = getFloatingSidebarGapWidth(pinned, openWidth);
 
     // Transitions start a frame after mounting (and after `animate`), so the
     // first paint and a stored pinned state never morph.
@@ -497,11 +494,12 @@ const FloatingSidebar = React.forwardRef<HTMLDivElement, FloatingSidebarProps>(
       return () => cancelAnimationFrame(frame);
     }, [animate]);
     const morph = ready && !reducedMotion;
-    const plainMorph = morphStyle === 'ease';
-    const morphDuration = plainMorph ? FLOATING_SIDEBAR_EASE_DURATION : FLOATING_SIDEBAR_DURATION;
-    // The capsule's shape, and what moves with it (the content, the icon)
-    const shapeEasing = plainMorph ? FLOATING_SIDEBAR_EASE : FLOATING_SIDEBAR_BUMP;
-    const glideEasing = plainMorph ? FLOATING_SIDEBAR_EASE : FLOATING_SIDEBAR_SPRING;
+    // The capsule's shape, and what moves with it (its height, the icon)
+    const {
+      duration: morphDuration,
+      easing: glideEasing,
+      shapeEasing,
+    } = getFloatingSidebarTiming(morphStyle);
     // The capsule's transitions: its height glides rather than bumps, as the
     // body it holds unfurls without overshoot (a bump on a panel this tall
     // would overshoot by tens of pixels)
@@ -556,23 +554,13 @@ const FloatingSidebar = React.forwardRef<HTMLDivElement, FloatingSidebarProps>(
       }
     }, [expanded, morph, pinned]);
 
-    const previousGapWidth = React.useRef(gapWidth);
-    // The content's slide, then the counter-slides holding its static parts still
-    const slide = React.useRef<Animation[]>([]);
-    // The anchor's left edge on screen before the pin change, mid-slide included
-    const anchorBefore = React.useRef<number | null>(null);
-    const findAnchor = React.useCallback(
-      () => (contentAnchor ? (contentRef?.current?.querySelector(contentAnchor) ?? null) : null),
-      [contentAnchor, contentRef],
-    );
     // The floating open capsule's height (`auto`) on screen before the pin change
     const heightBefore = React.useRef<number | null>(null);
     const measureBeforePin = React.useCallback(() => {
-      anchorBefore.current = findAnchor()?.getBoundingClientRect().left ?? null;
       const capsule = capsuleRef.current;
       heightBefore.current =
         capsule?.style.height === 'auto' ? capsule.getBoundingClientRect().height : null;
-    }, [findAnchor]);
+    }, []);
 
     // Pinning the floating open panel, its height transitions from `auto`,
     // which interpolate-size resolves anew on every frame: should the body's
@@ -602,71 +590,6 @@ const FloatingSidebar = React.forwardRef<HTMLDivElement, FloatingSidebarProps>(
       capsule.style.transitionTimingFunction = transitionTimingFunction;
       capsule.style.height = height;
     }, [pinned]);
-    React.useLayoutEffect(() => {
-      const shift = gapWidth - previousGapWidth.current;
-      previousGapWidth.current = gapWidth;
-      const before = anchorBefore.current;
-      anchorBefore.current = null;
-      const content = slideRef?.current ?? contentRef?.current;
-      if (!shift || !content) {
-        return;
-      }
-      const inFlight = slide.current;
-      const inFlightOffset = inFlight.length ? translateX(content) : 0;
-      for (const animation of inFlight) {
-        animation.cancel();
-      }
-      slide.current = [];
-      if (!morph || typeof content.animate !== 'function') {
-        return;
-      }
-      // Measured once the slide in flight is cancelled: where it lands
-      const after = before === null ? null : findAnchor()?.getBoundingClientRect().left;
-      const from =
-        before === null || after === undefined || after === null
-          ? inFlightOffset - shift / 2
-          : before - after;
-      // Leaves nothing behind once finished (no fill): a transform left on the
-      // content would trap its fixed descendants.
-      const timing = { duration: morphDuration, easing: glideEasing };
-      const animations = [
-        content.animate([{ transform: `translateX(${from}px)` }, { transform: 'none' }], timing),
-      ];
-      // Started together, with the same timing, the two cancel out on every frame.
-      if (contentStatic) {
-        for (const element of content.querySelectorAll<HTMLElement>(contentStatic)) {
-          animations.push(
-            element.animate(
-              [{ transform: `translateX(${-from}px)` }, { transform: 'none' }],
-              timing,
-            ),
-          );
-        }
-      }
-      animations[0].onfinish = () => {
-        if (slide.current === animations) {
-          slide.current = [];
-        }
-      };
-      slide.current = animations;
-    }, [
-      contentRef,
-      contentStatic,
-      findAnchor,
-      gapWidth,
-      glideEasing,
-      morph,
-      morphDuration,
-      slideRef,
-    ]);
-    React.useEffect(() => {
-      const current = slide;
-      return () => {
-        for (const animation of current.current) {
-          animation.cancel();
-        }
-      };
-    }, []);
 
     // The body fills the pinned capsule, and keeps filling it while it shrinks
     // after unpinning, so the footer rides its bottom edge rather than jumping
@@ -687,7 +610,7 @@ const FloatingSidebar = React.forwardRef<HTMLDivElement, FloatingSidebarProps>(
       <div ref={ref} className="shrink-0 text-foreground" data-state={state} role="navigation">
         {/* Offsets the content while pinned */}
         <div aria-hidden="true" className="h-full" data-sidebar="gap" style={{ width: gapWidth }} />
-        <BeforePinCommit gapWidth={gapWidth} onBeforeCommit={measureBeforePin} />
+        <BeforePinCommit pinned={pinned} onBeforeCommit={measureBeforePin} />
         {/* The capsule plus, while floating open, a hover buffer to its right */}
         <div
           ref={wrapperRef}
@@ -731,14 +654,14 @@ const FloatingSidebar = React.forwardRef<HTMLDivElement, FloatingSidebarProps>(
             data-slot="floating-sidebar"
             data-state={state}
             style={{
-              width: expanded ? openWidth : closedSize,
+              width: expanded ? openWidth : CLOSED_SIZE,
               // Open, `auto` (not undefined) so interpolate-size can transition it
-              height: pinned ? PANEL_HEIGHT : expanded ? 'auto' : closedSize,
+              height: pinned ? PANEL_HEIGHT : expanded ? 'auto' : CLOSED_SIZE,
               maxHeight: PANEL_HEIGHT,
               // The width's bump dips a little below the circle as it closes;
               // it mustn't squeeze it, clipping the icon
-              minWidth: closedSize,
-              borderRadius: expanded ? OPEN_RADIUS : closedSize / 2,
+              minWidth: CLOSED_SIZE,
+              borderRadius: expanded ? OPEN_RADIUS : CLOSED_SIZE / 2,
               boxShadow: pinned ? SHADOW_PINNED : SHADOW_FLOAT,
               transitionProperty: morph
                 ? capsuleTransitions.map(([property]) => property).join(', ')
@@ -918,4 +841,4 @@ const FloatingSidebar = React.forwardRef<HTMLDivElement, FloatingSidebarProps>(
 FloatingSidebar.displayName = 'FloatingSidebar';
 
 export { FloatingSidebar };
-export type { FloatingSidebarProps };
+export type { FloatingSidebarMorphStyle, FloatingSidebarProps, FloatingSidebarTiming };

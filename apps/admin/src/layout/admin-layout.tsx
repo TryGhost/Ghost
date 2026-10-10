@@ -23,6 +23,7 @@ import { MobileNavBar } from './app-sidebar/mobile-nav-bar';
 import { SkipLink } from './skip-link';
 import { ContributorUserMenu } from './app-sidebar/user-menu';
 import { DunningBanner, DunningOverlay, useDunningLockTakeover } from '@/dunning';
+import { FloatingSidebarContentSync } from './floating-sidebar-content-sync';
 import { GlobalSearchProvider } from '@/global-search/global-search-provider';
 
 const networkPageChrome = {
@@ -64,8 +65,9 @@ const pageChromeClassName = [
 
 /*
  * Unpinned, the floating sidebar's closed circle sits over the content's
- * top-left corner; its footprint (inset + diameter + inset) comes from the
- * sidebar as `--floating-sidebar-*` variables on the inset. Padding the
+ * top-left corner; its footprint (inset + diameter + inset) is set as
+ * `--floating-sidebar-*` variables on the inset (see
+ * FloatingSidebarContentSync). Padding the
  * content area by the footprint less the page gutter keeps it clear beside
  * the circle: the page column's left edge sits at its centred place or the
  * footprint, whichever is further right, so centred content with room to
@@ -85,9 +87,9 @@ const compactPageChromeClassName = [
  * beyond the page's content box (`<main>`'s padding, and the pinned sidebar's
  * gap). While a backdrop is on the page, the scrollport reaches beneath the
  * pinned sidebar, so the backdrop shows through its glass, and the backdrop
- * holds still while the page slides as the sidebar pins and unpins.
+ * holds still while the page slides as the sidebar pins and unpins (see
+ * FloatingSidebarContentSync).
  */
-const PAGE_BACKDROP_SELECTOR = '[data-page-backdrop]';
 const pinnedPageChromeClassName = '[--page-bleed-start:var(--floating-sidebar-gap)]';
 // The inset is the scrollport: its padding box is what clips. It stays put
 // while the page inside it slides, so a backdrop never shows an edge.
@@ -97,11 +99,6 @@ const backdropInsetClassName = [
   // Beneath the pinned capsule too, it keeps the page's stacking under it
   'has-[[data-page-backdrop]]:isolate',
 ].join(' ');
-
-// The page column the content slide keeps continuous as the sidebar pins and
-// unpins (the first match: the outermost).
-const PAGE_COLUMN_SELECTOR =
-  '.max-w-page, [data-list-page=list-page], [data-detail-page=detail-page], .gh-canvas, .gh-main-width';
 
 const SIDEBAR_PANEL_CLASS_NAME = '[&>[data-sidebar=sidebar]]:relative';
 // Lands on the desktop panel only; the mobile sidebar is a sheet that ignores it.
@@ -158,6 +155,8 @@ export function AdminLayout({ children }: AdminLayoutProps) {
     floatingSidebar && sidebarMode !== 'full',
   );
   const sidebarPinned = !floatingSidebar || settingsNavigation || sidebarMode === 'full';
+  // Shade's `open`: the floating sidebar's `pinned`
+  const sidebarOpen = !!currentUser && sidebarVisible && sidebarPinned;
   const settingsSidebarMorphing = settingsNavigation && settingsPinMorph.morphStyle === 'ease';
   const onSidebarOpenChange = React.useCallback(
     (open: boolean) => {
@@ -262,7 +261,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
             !floatingSidebar &&
             '[&_[data-sidebar=sidebar]]:rounded-xl [&_[data-sidebar=sidebar]]:border-border [&_[data-sidebar=sidebar]]:shadow-none',
         )}
-        open={!!currentUser && sidebarVisible && sidebarPinned}
+        open={sidebarOpen}
         style={sidebarVisible ? ({ '--sidebar-width': '316px' } as React.CSSProperties) : undefined}
         onOpenChange={floatingSidebar ? onSidebarOpenChange : undefined}
       >
@@ -271,14 +270,10 @@ export function AdminLayout({ children }: AdminLayoutProps) {
             ref={sidebarRef}
             animate={sidebarModeLoaded}
             className={floatingSidebarClassName}
-            contentAnchor={PAGE_COLUMN_SELECTOR}
-            contentRef={insetRef}
-            contentStatic={PAGE_BACKDROP_SELECTOR}
             disabled={dunningLocked}
             morphStyle={settingsPinMorph.morphStyle}
             settingsNavigation={settingsNavigation}
             settingsNavigationRef={setSettingsNavigationSlot}
-            slideRef={mainRef}
             onPinnedMorphEnd={settingsPinMorph.onPinnedMorphEnd}
           />
         ) : (
@@ -343,6 +338,16 @@ export function AdminLayout({ children }: AdminLayoutProps) {
           {!dunningLocked && <MobileNavBar />}
           <DunningOverlay />
         </SidebarInset>
+        {/* After the inset, so its refs are attached when this first sets its variables */}
+        {floatingSidebar && (
+          <FloatingSidebarContentSync
+            animate={sidebarModeLoaded}
+            contentRef={insetRef}
+            morphStyle={settingsPinMorph.morphStyle}
+            pinned={sidebarOpen}
+            slideRef={mainRef}
+          />
+        )}
       </SidebarProvider>
     </GlobalSearchProvider>
   );

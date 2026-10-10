@@ -1,7 +1,16 @@
 import assert from 'assert/strict';
 import { describe, it, vi } from 'vitest';
 import { act, fireEvent, screen } from '@testing-library/react';
-import { FloatingSidebar } from '../../../../src/components/ui/floating-sidebar';
+import {
+  FLOATING_SIDEBAR_CLOSED_FOOTPRINT,
+  FLOATING_SIDEBAR_DURATION,
+  FLOATING_SIDEBAR_EASE,
+  FLOATING_SIDEBAR_EASE_DURATION,
+  FLOATING_SIDEBAR_SPRING,
+  FloatingSidebar,
+  getFloatingSidebarGapWidth,
+  getFloatingSidebarTiming,
+} from '../../../../src/components/ui/floating-sidebar';
 import { render } from '../../utils/test-utils';
 
 function renderFloatingSidebar(props: Partial<React.ComponentProps<typeof FloatingSidebar>> = {}) {
@@ -130,5 +139,39 @@ describe('FloatingSidebar', () => {
     assert.equal(body().inert, true);
     fireEvent.click(trigger());
     assert.equal(body().inert, false);
+  });
+
+  it('offsets the content by its gap only while pinned', () => {
+    const gapWidth = () => document.querySelector<HTMLElement>('[data-sidebar=gap]')?.style.width;
+    const { rerender } = renderFloatingSidebar({ pinned: true });
+    assert.equal(gapWidth(), `${getFloatingSidebarGapWidth(true)}px`);
+
+    rerender(
+      <FloatingSidebar header={<span>My site</span>} icon={<span />} label="My site" pinned={false}>
+        <a href="#/posts">Posts</a>
+      </FloatingSidebar>,
+    );
+    assert.equal(gapWidth(), '0px');
+  });
+});
+
+describe('FloatingSidebar metrics', () => {
+  it('sizes the gap from the open width and the inset either side', () => {
+    assert.equal(getFloatingSidebarGapWidth(true), 322);
+    assert.equal(getFloatingSidebarGapWidth(true, 300), 332);
+    assert.equal(getFloatingSidebarGapWidth(false), 0);
+    assert.equal(FLOATING_SIDEBAR_CLOSED_FOOTPRINT, 82);
+  });
+
+  it('times each morph style', () => {
+    assert.deepEqual(
+      [getFloatingSidebarTiming('bump').duration, getFloatingSidebarTiming('bump').easing],
+      [FLOATING_SIDEBAR_DURATION, FLOATING_SIDEBAR_SPRING],
+    );
+    assert.deepEqual(getFloatingSidebarTiming(), getFloatingSidebarTiming('bump'));
+    assert.deepEqual(
+      [getFloatingSidebarTiming('ease').duration, getFloatingSidebarTiming('ease').easing],
+      [FLOATING_SIDEBAR_EASE_DURATION, FLOATING_SIDEBAR_EASE],
+    );
   });
 });

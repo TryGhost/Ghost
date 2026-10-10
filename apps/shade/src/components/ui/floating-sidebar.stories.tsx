@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { FileText, Home, Settings, Tag } from 'lucide-react';
 
@@ -20,7 +20,7 @@ const meta = {
     docs: {
       description: {
         component:
-          'A glass capsule that morphs between a circle around an icon (closed), a full-height panel floating over the content (open: hover the circle or the left screen edge, focus or click it) and the same panel docked (pinned). Use inside a SidebarProvider on desktop, with the sidebar menu primitives in its body.',
+          'A glass capsule that morphs between a circle around an icon (closed), a full-height panel floating over the content (open: hover the circle or the left screen edge, focus or click it) and the same panel docked (pinned). Use inside a SidebarProvider on desktop, with the sidebar menu primitives in its body. Pinned, its gap offsets the content at once; content that should glide in step, or keep clear of the closed circle, uses the exported metrics and `getFloatingSidebarTiming`.',
       },
     },
   },
@@ -38,12 +38,11 @@ const items = [
 
 function Example({ defaultPinned }: { defaultPinned: boolean }) {
   const [pinned, setPinned] = useState(defaultPinned);
-  const contentRef = useRef<HTMLElement>(null);
 
   return (
     <SidebarProvider className="min-h-[600px]">
+      {/* Pinned, its gap pushes the content aside */}
       <FloatingSidebar
-        contentRef={contentRef}
         header={<span className="truncate text-lg font-medium">My site</span>}
         icon={<span className="block bg-foreground" />}
         label="My site"
@@ -63,9 +62,7 @@ function Example({ defaultPinned }: { defaultPinned: boolean }) {
           </SidebarMenu>
         </SidebarGroup>
       </FloatingSidebar>
-      <main ref={contentRef} className="flex-1 p-10 pt-24 text-muted-foreground">
-        Page content
-      </main>
+      <main className="flex-1 p-10 pt-24 text-muted-foreground">Page content</main>
     </SidebarProvider>
   );
 }
