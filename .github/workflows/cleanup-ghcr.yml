@@ -37,6 +37,14 @@ jobs:
       matrix:
         package: [ghost, ghost-core, ghost-development]
     steps:
+      # Only needed to read the nightly's index (see below)
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Delete old non-release versions
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -78,6 +86,24 @@ jobs:
           done
 
           total=$(echo "$all_versions" | jq 'length')
+
+          # The nightly (docker-nightly.yml) is a multi-arch index. Its
+          # per-platform manifests and attestations are separate, untagged
+          # package versions, so keeping the `nightly` tag alone would leave a
+          # broken index once they age past the cutoff. Keep every manifest
+          # the current nightly references, one level of nesting deep.
+          referenced=""
+          if [ "$PACKAGE" = "ghost" ]; then
+            image="ghcr.io/$(echo "$ORG" | tr '[:upper:]' '[:lower:]')/${PACKAGE}"
+            if raw=$(docker buildx imagetools inspect --raw "${image}:nightly" 2>/dev/null); then
+              for digest in $(echo "$raw" | jq -r '.manifests[]?.digest'); do
+                referenced="${referenced} ${digest}"
+                child=$(docker buildx imagetools inspect --raw "${image}@${digest}" || echo '{}')
+                referenced="${referenced} $(echo "$child" | jq -r '.manifests[]?.digest' | tr '\n' ' ')"
+              done
+            fi
+            echo "Manifests referenced by ${image}:nightly: $(wc -w <<< "$referenced")"
+          fi
           echo "Total versions: ${total}"
 
           # Classify versions
@@ -99,11 +125,20 @@ jobs:
               continue
             fi
 
-            # Keep versions with 'latest' or 'main' or cache-main tags
-            if echo "$tags" | grep -qE '(^|,)(latest|main|cache-main)(,|$)'; then
+            # Keep versions with 'latest', 'main', 'cache-main' or 'nightly' tags
+            if echo "$tags" | grep -qE '(^|,)(latest|main|cache-main|nightly)(,|$)'; then
               keep=$((keep + 1))
               continue
             fi
+
+            # Keep the platform manifests behind the current nightly
+            name=$(_jq '.name')
+            case " ${referenced} " in
+              *" ${name} "*)
+                keep=$((keep + 1))
+                continue
+                ;;
+            esac
 
             # Keep versions newer than cutoff
             if [[ "$updated" > "$cutoff" ]]; then

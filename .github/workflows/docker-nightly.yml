@@ -1,0 +1,350 @@
+name: Nightly Docker Image
+
+# Publishes the `selfhost` target of Dockerfile.production — full + the runtime
+# contract of the Docker Official Image's `next` variant — for linux/amd64 and
+# linux/arm64, from the newest main commit with a green CI run:
+#   ghcr.io/tryghost/ghost:nightly, :nightly-YYYYMMDD
+#   docker.io/ghost/nightly:latest, :YYYYMMDD (when Docker Hub secrets are set)
+# See docker/selfhost/README.md.
+
+on:
+  schedule:
+    - cron: '0 3 * * *' # Daily at 03:00 UTC, ahead of the 04:30 GHCR cleanup
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: 'Commit, branch or tag to build (default: newest main commit with a green CI run)'
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: docker-nightly
+  cancel-in-progress: false
+
+env:
+  FORCE_COLOR: 1
+  # See ci.yml for both of these.
+  DISABLE_V8_COMPILE_CACHE: 1
+  NX_NATIVE_COMMAND_RUNNER: 'false'
+  GHCR_IMAGE: ghcr.io/tryghost/ghost
+  DOCKERHUB_IMAGE: docker.io/ghost/nightly
+
+jobs:
+  resolve:
+    name: Resolve commit
+    if: github.repository == 'TryGhost/Ghost'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      actions: read
+      contents: read
+    outputs:
+      sha: ${{ steps.resolve.outputs.sha }}
+      date: ${{ steps.resolve.outputs.date }}
+    steps:
+      - name: Resolve commit to build
+        id: resolve
+        env:
+          GH_TOKEN: ${{ github.token }}
+          INPUT_REF: ${{ inputs.ref }}
+        run: |
+          set -euo pipefail
+          if [ -n "$INPUT_REF" ]; then
+            SHA=$(gh api "repos/${GITHUB_REPOSITORY}/commits/${INPUT_REF}" --jq .sha)
+          else
+            # ghcr.io/tryghost/ghost:main is pushed before CI's e2e lane runs, so it
+            # can be a broken build. Build from the newest commit CI passed instead.
+            SHA=$(gh api \
+              "repos/${GITHUB_REPOSITORY}/actions/workflows/ci.yml/runs?branch=main&event=push&status=success&per_page=1" \
+              --jq '.workflow_runs[0].head_sha // empty')
+          fi
+          if [ -z "$SHA" ]; then
+            echo "::error::Could not resolve a commit to build"
+            exit 1
+          fi
+          echo "Building ${SHA}"
+          echo "sha=${SHA}" >> "$GITHUB_OUTPUT"
+          echo "date=$(date -u +%Y%m%d)" >> "$GITHUB_OUTPUT"
+
+  build_admin:
+    name: Build Admin
+    needs: [resolve]
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ needs.resolve.outputs.sha }}
+          persist-credentials: false
+
+      - name: Read Node version
+        run: echo "NODE_VERSION=$(cat .nvmrc)" >> "$GITHUB_ENV"
+
+      - uses: ./.github/actions/setup-node-pnpm
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      # Same build and packing as ci.yml's job_build_admin, without the Sentry
+      # debug IDs (IS_SHIPPING): nightly sourcemaps are not uploaded.
+      - name: Build admin
+        run: pnpm nx run @tryghost/admin:build
+
+      - name: Pack admin build
+        run: tar --exclude='*.map' -czf admin-build.tar.gz -C ghost/core/built admin embed-renderer
+
+      - name: Upload admin build artifact
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: admin-build
+          path: admin-build.tar.gz
+          retention-days: 1
+          if-no-files-found: error
+
+  build:
+    name: Build ${{ matrix.arch }}
+    needs: [resolve, build_admin]
+    # Native runners per architecture: the deploy stage's pnpm install and tsc
+    # builds are far too slow under QEMU emulation.
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 45
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      fail-fast: true
+      matrix:
+        include:
+          - arch: amd64
+            platform: linux/amd64
+            runner: ubuntu-latest
+          - arch: arm64
+            platform: linux/arm64
+            runner: ubuntu-24.04-arm
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ needs.resolve.outputs.sha }}
+          persist-credentials: false
+          # The deploy stage packs content/themes/casper|source (submodules).
+          submodules: true
+
+      - name: Determine build version
+        env:
+          SHA: ${{ needs.resolve.outputs.sha }}
+        run: |
+          PKG_VERSION=$(jq -r .version ghost/package.json)
+          echo "GHOST_BUILD_VERSION=${PKG_VERSION}+${SHA:0:7}" >> "$GITHUB_ENV"
+
+      - name: Download admin build
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: admin-build
+          # Outside the build context, as in ci.yml's job_docker.
+          path: ${{ runner.temp }}/admin-artifact
+
+      - name: Extract admin build into context
+        run: |
+          mkdir -p ghost/core/built
+          tar -xzf "${RUNNER_TEMP}/admin-artifact/admin-build.tar.gz" -C ghost/core/built
+
+      - name: Setup Docker Registry Mirrors
+        uses: ./.github/actions/setup-docker-registry-mirrors
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+        with:
+          cleanup: false
+          buildkitd-config-inline: |
+            [registry."docker.io"]
+              mirrors = ["mirror.gcr.io"]
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # Built into the local daemon first so it can be smoke-tested before
+      # anything is pushed; the push below is then a cache hit on every layer.
+      - name: Build image
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        env:
+          BUILDKIT_PROGRESS: plain
+        with:
+          context: .
+          file: Dockerfile.production
+          target: selfhost
+          platforms: ${{ matrix.platform }}
+          build-args: |
+            GHOST_BUILD_VERSION=${{ env.GHOST_BUILD_VERSION }}
+          load: true
+          tags: ghost-selfhost:smoke
+          # main's cache is amd64-only, so arm64 builds from scratch.
+          cache-from: type=registry,ref=${{ env.GHCR_IMAGE }}:cache-main
+
+      - name: Smoke test
+        run: |
+          set -euo pipefail
+          docker network create smoke
+          docker run -d --name mysql --network smoke \
+            --tmpfs /var/lib/mysql \
+            -e MYSQL_DATABASE=ghost \
+            -e MYSQL_ROOT_PASSWORD=root \
+            --health-cmd "mysqladmin ping -h 127.0.0.1 -uroot -proot" \
+            --health-interval=2s \
+            --health-timeout=5s \
+            --health-retries=60 \
+            mysql:8.0@sha256:7dcddc01f13bab2f15cde676d44d01f61fc9f99fe7785e86196dfc07d358ae2b
+          for _ in $(seq 1 60); do
+            [ "$(docker inspect -f '{{.State.Health.Status}}' mysql)" = "healthy" ] && break
+            sleep 2
+          done
+
+          # A named volume, as a self-hoster would use: exercises the
+          # entrypoint's chown, content seeding and privilege drop.
+          docker run -d --name ghost --network smoke -p 2368:2368 \
+            -v ghost-content:/home/ghost/content \
+            -e database__client=mysql \
+            -e database__connection__host=mysql \
+            -e database__connection__user=root \
+            -e database__connection__password=root \
+            -e database__connection__database=ghost \
+            ghost-selfhost:smoke
+
+          ok=
+          for _ in $(seq 1 90); do
+            if curl -fs -o /dev/null http://127.0.0.1:2368/; then ok=1; break; fi
+            sleep 2
+          done
+          if [ -z "$ok" ]; then
+            echo "::error::Ghost did not start"
+            docker logs ghost
+            exit 1
+          fi
+
+          curl -fsS -o /dev/null http://127.0.0.1:2368/ghost/
+          docker exec ghost test -d /home/ghost/content/themes/casper
+          uid=$(docker exec ghost awk '/^Uid:/ { print $2 }' /proc/1/status)
+          if [ "$uid" != "1000" ]; then
+            echo "::error::Ghost is running as uid ${uid}, expected 1000"
+            exit 1
+          fi
+          echo "Smoke test passed"
+
+      - name: Show Ghost logs
+        if: failure()
+        run: docker logs ghost || true
+
+      - name: Push image by digest
+        id: push
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        env:
+          BUILDKIT_PROGRESS: plain
+        with:
+          context: .
+          file: Dockerfile.production
+          target: selfhost
+          platforms: ${{ matrix.platform }}
+          build-args: |
+            GHOST_BUILD_VERSION=${{ env.GHOST_BUILD_VERSION }}
+          labels: |
+            org.opencontainers.image.title=Ghost (nightly)
+            org.opencontainers.image.description=Nightly self-hosting build of Ghost from main. Not for production use.
+            org.opencontainers.image.vendor=TryGhost
+            org.opencontainers.image.source=https://github.com/${{ github.repository }}
+            org.opencontainers.image.revision=${{ needs.resolve.outputs.sha }}
+            org.opencontainers.image.version=${{ env.GHOST_BUILD_VERSION }}
+          outputs: type=image,name=${{ env.GHCR_IMAGE }},push-by-digest=true,name-canonical=true,push=true
+          cache-from: type=registry,ref=${{ env.GHCR_IMAGE }}:cache-main
+
+      - name: Export digest
+        env:
+          DIGEST: ${{ steps.push.outputs.digest }}
+        run: |
+          mkdir -p "${RUNNER_TEMP}/digests"
+          touch "${RUNNER_TEMP}/digests/${DIGEST#sha256:}"
+
+      - name: Upload digest
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: digest-${{ matrix.arch }}
+          path: ${{ runner.temp }}/digests/*
+          retention-days: 1
+          if-no-files-found: error
+
+  publish:
+    name: Publish
+    needs: [resolve, build]
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      packages: write
+    env:
+      HAS_DOCKERHUB: ${{ secrets.DOCKERHUB_USERNAME != '' && secrets.DOCKERHUB_TOKEN != '' }}
+      SHA: ${{ needs.resolve.outputs.sha }}
+      DATE: ${{ needs.resolve.outputs.date }}
+    steps:
+      - name: Download digests
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          pattern: digest-*
+          merge-multiple: true
+          path: ${{ runner.temp }}/digests
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+        with:
+          cleanup: false
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Log in to Docker Hub
+        if: env.HAS_DOCKERHUB == 'true'
+        uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Publish to GHCR
+        working-directory: ${{ runner.temp }}/digests
+        run: |
+          set -euo pipefail
+          sources=()
+          for digest in *; do
+            sources+=("${GHCR_IMAGE}@sha256:${digest}")
+          done
+          docker buildx imagetools create \
+            --annotation "index:org.opencontainers.image.revision=${SHA}" \
+            --annotation "index:org.opencontainers.image.source=https://github.com/${GITHUB_REPOSITORY}" \
+            -t "${GHCR_IMAGE}:nightly" \
+            -t "${GHCR_IMAGE}:nightly-${DATE}" \
+            "${sources[@]}"
+          docker buildx imagetools inspect "${GHCR_IMAGE}:nightly"
+
+      # Copies the GHCR index (and its blobs) across registries; nothing is rebuilt.
+      - name: Publish to Docker Hub
+        if: env.HAS_DOCKERHUB == 'true'
+        run: |
+          set -euo pipefail
+          docker buildx imagetools create \
+            --annotation "index:org.opencontainers.image.revision=${SHA}" \
+            --annotation "index:org.opencontainers.image.source=https://github.com/${GITHUB_REPOSITORY}" \
+            -t "${DOCKERHUB_IMAGE}:latest" \
+            -t "${DOCKERHUB_IMAGE}:${DATE}" \
+            "${GHCR_IMAGE}:nightly-${DATE}"
+
+      - name: Skip Docker Hub
+        if: env.HAS_DOCKERHUB != 'true'
+        run: echo "::warning::DOCKERHUB_USERNAME / DOCKERHUB_TOKEN not set; published to GHCR only"
