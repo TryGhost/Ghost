@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
+import { z } from 'zod';
 import * as apiFramework from '../src/index.ts';
 import * as serializers from '../src/serializers/index.ts';
 
@@ -39,5 +40,33 @@ describe('api-framework module exports', function () {
 
     assert.equal(await controller.echo({ value: 'compiled' }), 'compiled');
     assert.deepEqual(compiledApiFramework.utils.options.trimAndLowerCase(' A, B '), ['a', 'b']);
+  });
+
+  it('executes schema methods through the compiled CommonJS package', async function () {
+    const compiled: typeof apiFramework = require('@tryghost/api-framework');
+    const controller = compiled.pipeline(
+      {
+        read: compiled.defineMethod({
+          schema: { options: z.object({ page: z.coerce.number().default(1) }) },
+          permissions: false,
+          query(frame) {
+            return frame.validated.options.page;
+          },
+        }),
+      },
+      {
+        serializers: {
+          input: {},
+          output: {
+            all: {
+              before(response: unknown, _config: unknown, frame: apiFramework.Frame) {
+                frame.response = response;
+              },
+            },
+          },
+        },
+      },
+    );
+    assert.equal(await controller.read({ page: '2' }), 2);
   });
 });
