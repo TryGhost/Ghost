@@ -82,7 +82,11 @@ type BrowserContext = BrowserCommandContext['context'];
 const failedModules = new WeakMap<BrowserContext, Array<(url: URL) => boolean>>();
 
 const failModuleLoads: BrowserCommand<[pathEnd: string]> = async ({ context }, pathEnd) => {
-  const matcher = (url: URL) => url.pathname.endsWith(pathEnd);
+  // A lazily imported file inside a pre-bundled package (vite-workspace-deps.ts)
+  // is served as its own chunk, named after the file plus a hash.
+  const stem = pathEnd.slice(pathEnd.lastIndexOf('/') + 1).replace(/\.\w+$/, '');
+  const chunk = new RegExp(`/deps/${stem}-[\\w-]+\\.js$`);
+  const matcher = (url: URL) => url.pathname.endsWith(pathEnd) || chunk.test(url.pathname);
   await context.route(matcher, (route) => route.abort('connectionreset'));
   failedModules.set(context, [...(failedModules.get(context) ?? []), matcher]);
 };
