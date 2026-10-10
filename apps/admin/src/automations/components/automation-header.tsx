@@ -135,7 +135,7 @@ const AutomationHeader: React.FC<AutomationHeaderProps> = ({
   return (
     <header
       className={cn(
-        'relative z-10 flex h-14 shrink-0 items-center justify-between border-b border-border-default bg-surface-elevated px-4',
+        'screen-exit-chrome-top relative z-10 flex h-14 shrink-0 items-center justify-between border-b border-border-default bg-surface-elevated px-4',
         entering && 'screen-enter-from-top',
       )}
     >
