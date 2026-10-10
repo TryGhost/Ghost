@@ -10,7 +10,8 @@ cd "$REPO_ROOT"
 MODE="$(resolve_e2e_mode)"
 export GHOST_E2E_MODE="$MODE"
 ANALYTICS_ENABLED="${GHOST_E2E_ANALYTICS:-true}"
-MYSQL_TMPFS_ENABLED="${GHOST_E2E_MYSQL_TMPFS:-true}"
+# Locally this is every checkout's dev MySQL: tmpfs recreates it without their databases.
+MYSQL_TMPFS_ENABLED="${GHOST_E2E_MYSQL_TMPFS:-${CI:-false}}"
 TINYBIRD_SLIM_ENABLED="${GHOST_E2E_TINYBIRD_SLIM:-false}"
 
 if [[ "$MODE" != "build" ]]; then

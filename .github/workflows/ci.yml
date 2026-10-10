@@ -2378,10 +2378,6 @@ jobs:
         if: failure()
         run: bash ./e2e/scripts/dump-e2e-docker-logs.sh
 
-      - name: Stop E2E infra
-        if: always()
-        run: pnpm --filter @tryghost/e2e infra:down
-
       - name: Upload blob report to GitHub Actions Artifacts
         if: failure()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
