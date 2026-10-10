@@ -13,8 +13,11 @@ fi
 
 echo "Starting Ghost dev stack..."
 
-# Ghost keeps its default http://localhost:2368 url: Codespaces' forwarded URL
-# rewrites Host and same-origin Origin headers to localhost:2368.
+# Ghost's links and Admin origin check need the URL the browser uses, which in
+# Codespaces is the forwarded port's https address
+if [ -n "${CODESPACES:-}" ] && [ -n "${CODESPACE_NAME:-}" ]; then
+    export url="https://${CODESPACE_NAME}-2368.${GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN:-app.github.dev}/"
+fi
 
 # Append to the log (don't truncate) so a previous crash's tail survives a
 # restart and the user can still tail it for context.
@@ -22,11 +25,11 @@ echo "Starting Ghost dev stack..."
 nohup pnpm dev >> /tmp/ghost-dev.log 2>&1 &
 disown
 
-cat <<'MSG'
+cat <<MSG
 Ghost dev stack starting in the background.
 
   Log:   tail -f /tmp/ghost-dev.log
-  Admin: http://localhost:2368/ghost/
+  Admin: ${url:-http://localhost:2368/}ghost/
 
 The first start builds Admin's dependencies, so give it a few minutes.
 MSG

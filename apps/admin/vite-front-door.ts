@@ -76,6 +76,20 @@ export function ghostFrontDoorPlugin(backend: string, devBase: string): Plugin {
         void ready.then(() => next());
       });
 
+      // Codespaces' port forwarding rewrites a same-origin Origin to the localhost Host it
+      // forwards to, but not the Referer, so Ghost's origin check needs the public origin back
+      server.middlewares.use((req, _res, next) => {
+        const forwardedHost = req.headers['x-forwarded-host'];
+        if (
+          typeof forwardedHost === 'string' &&
+          req.headers.origin === `http://${req.headers.host}`
+        ) {
+          const proto = req.headers['x-forwarded-proto'];
+          req.headers.origin = `${typeof proto === 'string' ? proto : 'https'}://${forwardedHost}`;
+        }
+        next();
+      });
+
       // Registered here, before Vite's own middleware and proxy
       server.middlewares.use((req, res, next) => {
         const url = req.url ?? '';
