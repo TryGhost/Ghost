@@ -8,7 +8,7 @@ import { cn } from '@/lib/utils';
  * states.
  *
  * - closed: a circle around an icon (e.g. the site icon)
- * - open: hovering the circle, the left-edge hot zone, focusing or clicking it
+ * - open: hovering the circle or the hot zone beneath it, focusing or clicking it
  *   grows the circle into a panel floating over the content, the header
  *   fading in beside the icon and the body unfurling beneath it
  * - pinned: the panel is docked at full height and a gap beside it offsets
@@ -165,9 +165,18 @@ const POPUP_TRIGGER_SELECTOR = '[aria-haspopup][aria-expanded=true]';
 const OVERLAY_SELECTOR =
   '[role=dialog], [role=alertdialog], [role=menu], [role=listbox], [data-radix-popper-content-wrapper]';
 
-/** The left-edge strip that opens the panel: the page gutter beside centred content, within limits. */
-function hotZoneWidth(viewportWidth: number): number {
-  return Math.min(160, Math.max(40, (viewportWidth - 1280) / 2 + 40));
+/**
+ * Whether a point is in the hot zone: the strip beneath the closed circle, as
+ * wide as its footprint, from the screen's left edge down to the bottom. With
+ * the circle, it's what opens the panel; nothing beside the circle does.
+ */
+function inHotZone(wrapper: HTMLElement | null, x: number, y: number): boolean {
+  if (!wrapper) {
+    return false;
+  }
+  // The capsule's corner, wherever its offsets put it
+  const { top, left } = wrapper.getBoundingClientRect();
+  return x < left + CLOSED_SIZE + INSET && y >= top + CLOSED_SIZE + INSET;
 }
 
 function useMediaQuery(query: string): boolean {
@@ -264,7 +273,7 @@ interface FloatingSidebarProps extends Omit<React.ComponentProps<'div'>, 'childr
    * mounting.
    */
   animate?: boolean;
-  /** Opens the panel when the pointer enters the left edge of the screen. */
+  /** Opens the panel when the pointer enters the strip beneath the closed circle. */
   hotZone?: boolean;
   /**
    * Hovering doesn't open the panel until the pointer first comes to rest,
@@ -443,7 +452,7 @@ const FloatingSidebar = React.forwardRef<HTMLDivElement, FloatingSidebarProps>(
           parts.capsule = Boolean(wrapperRef.current?.contains(target));
         }
         if (hotZone) {
-          parts.zone = !overOverlay && event.clientX < hotZoneWidth(window.innerWidth);
+          parts.zone = !overOverlay && inHotZone(wrapperRef.current, event.clientX, event.clientY);
         }
         updateHover(parts);
         if (waitingForRest.current) {
