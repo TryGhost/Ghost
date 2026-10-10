@@ -109,6 +109,8 @@ export function getFloatingSidebarGapWidth(
 const UNFURL_DURATION = '450ms';
 // Forgiving, so a pointer drifting off the panel doesn't close it.
 const CLOSE_DELAY = 400;
+// How long the pointer stays still to count as at rest (see `armHoverOnRest`).
+const REST_DELAY = 100;
 // After the morph's duration, when it's taken as finished though no
 // transitionend came (e.g. a height that didn't change)
 const MORPH_END_GRACE = 100;
@@ -265,6 +267,13 @@ interface FloatingSidebarProps extends Omit<React.ComponentProps<'div'>, 'childr
   /** Opens the panel when the pointer enters the left edge of the screen. */
   hotZone?: boolean;
   /**
+   * Hovering doesn't open the panel until the pointer first comes to rest,
+   * for a sidebar that reappears under a pointer on its way somewhere (e.g.
+   * back from a full-screen screen); resting over it then opens it. Read as
+   * it mounts.
+   */
+  armHoverOnRest?: boolean;
+  /**
    * Changing it (e.g. to the route's path) cancels a pending close: a layout
    * shift inside the panel can fire a mouseleave though the pointer never left.
    */
@@ -295,6 +304,7 @@ const FloatingSidebar = React.forwardRef<HTMLDivElement, FloatingSidebarProps>(
       disabled = false,
       animate = true,
       hotZone = true,
+      armHoverOnRest = false,
       resetKey,
       pinLabel = 'Pin sidebar',
       unpinLabel = 'Unpin sidebar',
@@ -382,11 +392,18 @@ const FloatingSidebar = React.forwardRef<HTMLDivElement, FloatingSidebarProps>(
     // circle is), and that shouldn't open it.
     const hover = React.useRef({ capsule: false, zone: false, any: false });
     const hoverArmed = React.useRef(false);
+    // With `armHoverOnRest`, the pointer passes over it freely until it stops
+    const [waitsForRest] = React.useState(armHoverOnRest);
+    const waitingForRest = React.useRef(waitsForRest);
+    const restTimer = React.useRef<number | undefined>(undefined);
     const updateHover = React.useCallback(
       (parts: Partial<Record<'capsule' | 'zone', boolean>>) => {
         const state = hover.current;
         Object.assign(state, parts);
         const any = state.capsule || state.zone;
+        if (waitingForRest.current) {
+          return;
+        }
         if (!hoverArmed.current) {
           hoverArmed.current = !any;
           return;
@@ -429,6 +446,18 @@ const FloatingSidebar = React.forwardRef<HTMLDivElement, FloatingSidebarProps>(
           parts.zone = !overOverlay && event.clientX < hotZoneWidth(window.innerWidth);
         }
         updateHover(parts);
+        if (waitingForRest.current) {
+          window.clearTimeout(restTimer.current);
+          restTimer.current = window.setTimeout(() => {
+            waitingForRest.current = false;
+            hoverArmed.current = true;
+            const state = hover.current;
+            state.any = state.capsule || state.zone;
+            if (state.any) {
+              show();
+            }
+          }, REST_DELAY);
+        }
       };
       const onPointerLeave = () => updateHover({ capsule: false, zone: false });
       document.addEventListener('pointermove', onPointerMove);
@@ -436,9 +465,10 @@ const FloatingSidebar = React.forwardRef<HTMLDivElement, FloatingSidebarProps>(
       return () => {
         document.removeEventListener('pointermove', onPointerMove);
         document.documentElement.removeEventListener('pointerleave', onPointerLeave);
+        window.clearTimeout(restTimer.current);
         hover.current.zone = false;
       };
-    }, [disabled, hotZone, updateHover]);
+    }, [disabled, hotZone, show, updateHover]);
 
     // Escape closes the floating panel, returning focus to the circle.
     const restoringFocus = React.useRef(false);
