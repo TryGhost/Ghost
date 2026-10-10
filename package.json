@@ -12,36 +12,37 @@
     "build": "pnpm nx run-many -t build",
     "build:clean": "nx reset && rimraf -g 'ghost/*/build' && rimraf -g 'ghost/*/tsconfig.tsbuildinfo'",
     "clean:hard": "node ./scripts/clean.js",
-    "dev": "pnpm nx run ghost-monorepo:docker:dev",
+    "dev": "pnpm nx run ghost-monorepo:dev:host",
+    "dev:docker": "pnpm nx run ghost-monorepo:docker:dev",
     "dev:sqlite": "DEV_COMPOSE_FILES='-f compose.dev.sqlite.yaml' pnpm nx run ghost-monorepo:docker:dev",
     "dev:mailgun": "DEV_COMPOSE_FILES='-f compose.dev.mailgun.yaml' pnpm nx run ghost-monorepo:docker:dev",
     "dev:fake-mailgun": "DEV_COMPOSE_FILES='-f compose.dev.fake-mailgun.yaml' pnpm nx run ghost-monorepo:docker:dev",
-    "dev:lexical": "EDITOR_URL=http://localhost:2368/ghost/assets/koenig-lexical/ pnpm nx run ghost-monorepo:docker:dev:lexical",
-    "dev:public": "pnpm nx run ghost-monorepo:docker:dev:public",
+    "dev:lexical": "GHOST_DEV_KOENIG_WATCH=1 pnpm nx run ghost-monorepo:dev:host:lexical",
+    "dev:public": "pnpm nx run ghost-monorepo:dev:host:public",
     "dev:full": "DEV_COMPOSE_FILES='-f compose.dev.analytics.yaml -f compose.dev.storage.yaml' ./docker/stripe/with-stripe.sh pnpm nx run ghost-monorepo:docker:dev:public",
     "dev:analytics": "DEV_COMPOSE_FILES='-f compose.dev.analytics.yaml' pnpm nx run ghost-monorepo:docker:dev",
     "dev:analytics:local": "ANALYTICS_PROXY_TARGET=traffic-analytics-local:3000 DEV_COMPOSE_FILES='-f compose.dev.analytics.yaml' pnpm nx run ghost-monorepo:docker:dev",
     "dev:storage": "DEV_COMPOSE_FILES='-f compose.dev.storage.yaml' pnpm nx run ghost-monorepo:docker:dev",
     "dev:stripe": "./docker/stripe/with-stripe.sh pnpm nx run ghost-monorepo:docker:dev",
     "dev:all": "DEV_COMPOSE_FILES='-f compose.dev.analytics.yaml -f compose.dev.storage.yaml' ./docker/stripe/with-stripe.sh pnpm nx run ghost-monorepo:docker:dev",
-    "dev:daemon": "NX_DAEMON=true NX_TUI=false NX_DEFAULT_OUTPUT_STYLE=stream pnpm nx run ghost-monorepo:docker:dev",
+    "dev:daemon": "NX_DAEMON=true NX_TUI=false NX_DEFAULT_OUTPUT_STYLE=stream pnpm nx run ghost-monorepo:dev:host",
     "fix": "pnpm store prune && rimraf -g '**/node_modules' && pnpm install && pnpm nx reset",
     "create-package": "node ./scripts/create-package.js",
     "knex-migrator": "pnpm --filter ghost run knex-migrator",
-    "bootstrap": "pnpm install && git submodule update --init --recursive && git config --local blame.ignoreRevsFile .git-blame-ignore-revs",
-    "migrate:db": "docker exec --workdir /home/ghost/ghost ghost-dev pnpm knex-migrator migrate",
-    "rollback:db": "docker exec --workdir /home/ghost/ghost ghost-dev pnpm knex-migrator rollback",
-    "reset:db": "docker exec ghost-dev bash -c 'cd /home/ghost/ghost && pnpm knex-migrator reset && pnpm knex-migrator init'",
-    "reset:db:volume": "docker compose -f compose.dev.yaml ${DEV_COMPOSE_FILES} down && docker volume rm ghost-dev_mysql-data",
-    "reset:data": "docker exec ghost-dev bash -c 'cd /home/ghost/ghost && node --conditions=source --import=tsx index.js generate-data --clear-database --quantities members:1000,posts:100 --seed 123'",
-    "reset:data:empty": "docker exec ghost-dev bash -c 'cd /home/ghost/ghost && node --conditions=source --import=tsx index.js generate-data --clear-database --quantities members:0,posts:0 --seed 123'",
-    "reset:data:xxl": "docker exec ghost-dev bash -c 'cd /home/ghost/ghost && node --conditions=source --import=tsx index.js generate-data --clear-database --quantities members:2000000,posts:0,emails:0,members_stripe_customers:0,members_login_events:0,members_status_events:0 --seed 123'",
-    "seed:multi-sub-scenarios": "docker exec ghost-dev bash -c 'cd /home/ghost/ghost && node --conditions=source --import=tsx scripts/seed-multi-sub-scenarios.js'",
-    "docker:build": "docker compose -f compose.dev.yaml ${DEV_COMPOSE_FILES} build",
-    "docker:build:verbose": "docker compose --progress=plain -f compose.dev.yaml ${DEV_COMPOSE_FILES} build",
-    "docker:clean": "docker compose -f compose.dev.yaml ${DEV_COMPOSE_FILES} --profile all down -v --remove-orphans --rmi local",
-    "docker:down": "docker compose -f compose.dev.yaml ${DEV_COMPOSE_FILES} down",
-    "docker:rebase": "git fetch ${GHOST_UPSTREAM:-origin} main && git rebase ${GHOST_UPSTREAM:-origin}/main && pnpm install && pnpm nx run-many -t build --projects=@tryghost/shade,@tryghost/admin-x-framework && docker compose -f compose.dev.yaml ${DEV_COMPOSE_FILES} up -d --build --force-recreate ghost-dev",
+    "bootstrap": "pnpm install && bash scripts/init-submodules.sh && git config --local blame.ignoreRevsFile .git-blame-ignore-revs",
+    "migrate:db": "cd ghost && pnpm exec node ../scripts/with-ghost-dev-env.ts knex-migrator migrate",
+    "rollback:db": "cd ghost && pnpm exec node ../scripts/with-ghost-dev-env.ts knex-migrator rollback",
+    "reset:db": "cd ghost && pnpm exec node ../scripts/with-ghost-dev-env.ts sh -c 'knex-migrator reset && knex-migrator init'",
+    "reset:db:volume": "docker compose -f compose.dev.yaml ${DEV_COMPOSE_FILES} --profile docker-dev down && docker volume rm ghost-dev_mysql-data",
+    "reset:data": "cd ghost && pnpm exec node ../scripts/with-ghost-dev-env.ts node --conditions=source --import=tsx index.js generate-data --clear-database --quantities members:1000,posts:100 --seed 123",
+    "reset:data:empty": "cd ghost && pnpm exec node ../scripts/with-ghost-dev-env.ts node --conditions=source --import=tsx index.js generate-data --clear-database --quantities members:0,posts:0 --seed 123",
+    "reset:data:xxl": "cd ghost && pnpm exec node ../scripts/with-ghost-dev-env.ts node --conditions=source --import=tsx index.js generate-data --clear-database --quantities members:2000000,posts:0,emails:0,members_stripe_customers:0,members_login_events:0,members_status_events:0 --seed 123",
+    "seed:multi-sub-scenarios": "cd ghost && pnpm exec node ../scripts/with-ghost-dev-env.ts node --conditions=source --import=tsx scripts/seed-multi-sub-scenarios.js",
+    "docker:build": "docker compose -f compose.dev.yaml ${DEV_COMPOSE_FILES} --profile docker-dev build",
+    "docker:build:verbose": "docker compose --progress=plain -f compose.dev.yaml ${DEV_COMPOSE_FILES} --profile docker-dev build",
+    "docker:clean": "docker compose -f compose.dev.yaml ${DEV_COMPOSE_FILES} --profile docker-dev --profile all down -v --remove-orphans --rmi local",
+    "docker:down": "docker compose -f compose.dev.yaml ${DEV_COMPOSE_FILES} --profile docker-dev down",
+    "docker:rebase": "git fetch ${GHOST_UPSTREAM:-origin} main && git rebase ${GHOST_UPSTREAM:-origin}/main && pnpm install && pnpm nx run-many -t build --projects=@tryghost/shade,@tryghost/admin-x-framework && docker compose -f compose.dev.yaml ${DEV_COMPOSE_FILES} --profile docker-dev up -d --build --force-recreate ghost-dev",
     "knip": "knip",
     "knip:fix": "knip --fix --allow-remove-files=false",
     "lint": "pnpm nx run-many -t lint lint:boundaries && pnpm lint:packages && pnpm lint:versioning && pnpm lint:docs",
@@ -56,7 +57,7 @@
     "format": "node scripts/format.js",
     "format:check": "oxfmt --check",
     "check": "pnpm format:check && pnpm lint && pnpm test",
-    "test": "pnpm nx run-many -t test --exclude @tryghost/e2e --exclude ghost-admin",
+    "test": "pnpm nx run-many -t test --exclude @tryghost/e2e",
     "test:types": "pnpm nx run-many -t test:types",
     "test:unit": "pnpm nx run-many -t test:unit",
     "test:watch": "vitest",
@@ -137,7 +138,7 @@
       "docker:up": {
         "executor": "nx:run-commands",
         "options": {
-          "command": "if [ -n \"$CODESPACES$REMOTE_CONTAINERS\" ]; then echo 'Skipping docker compose up --force-recreate: already running inside a devcontainer, whose own compose lifecycle brought these services up.'; else docker compose -f compose.dev.yaml ${DEV_COMPOSE_FILES} up -d --force-recreate --wait --quiet-pull; fi"
+          "command": "if [ -n \"$CODESPACES$REMOTE_CONTAINERS\" ]; then echo 'Skipping docker compose up --force-recreate: already running inside a devcontainer, whose own compose lifecycle brought these services up.'; else docker compose -f compose.dev.yaml ${DEV_COMPOSE_FILES} --profile docker-dev up -d --force-recreate --wait --quiet-pull; fi"
         },
         "dependsOn": [
           "docker:build"
@@ -146,20 +147,20 @@
       "docker:down": {
         "executor": "nx:run-commands",
         "options": {
-          "command": "docker compose -f compose.dev.yaml ${DEV_COMPOSE_FILES} down"
+          "command": "docker compose -f compose.dev.yaml ${DEV_COMPOSE_FILES} --profile docker-dev down"
         }
       },
       "docker:build": {
         "executor": "nx:run-commands",
         "options": {
-          "command": "if [ -n \"$CODESPACES$REMOTE_CONTAINERS\" ]; then echo 'Skipping docker compose build: already running inside a devcontainer, whose own compose lifecycle built/pulled these images.'; else docker compose -f compose.dev.yaml ${DEV_COMPOSE_FILES} build; fi"
+          "command": "if [ -n \"$CODESPACES$REMOTE_CONTAINERS\" ]; then echo 'Skipping docker compose build: already running inside a devcontainer, whose own compose lifecycle built/pulled these images.'; else docker compose -f compose.dev.yaml ${DEV_COMPOSE_FILES} --profile docker-dev build; fi"
         }
       },
       "docker:dev": {
         "continuous": true,
         "executor": "nx:run-commands",
         "options": {
-          "command": "trap 'docker compose -f compose.dev.yaml ${DEV_COMPOSE_FILES} down' EXIT; docker compose -f compose.dev.yaml ${DEV_COMPOSE_FILES} logs -f"
+          "command": "trap 'docker compose -f compose.dev.yaml ${DEV_COMPOSE_FILES} --profile docker-dev down' EXIT; docker compose -f compose.dev.yaml ${DEV_COMPOSE_FILES} --profile docker-dev logs -f"
         },
         "dependsOn": [
           "docker:up",
@@ -178,11 +179,11 @@
           }
         ]
       },
-      "docker:dev:lexical": {
+      "docker:dev:public": {
         "continuous": true,
         "executor": "nx:run-commands",
         "options": {
-          "command": "trap 'docker compose -f compose.dev.yaml ${DEV_COMPOSE_FILES} down' EXIT; docker compose -f compose.dev.yaml ${DEV_COMPOSE_FILES} logs -f"
+          "command": "trap 'docker compose -f compose.dev.yaml ${DEV_COMPOSE_FILES} --profile docker-dev down' EXIT; docker compose -f compose.dev.yaml ${DEV_COMPOSE_FILES} --profile docker-dev logs -f"
         },
         "dependsOn": [
           "docker:up",
@@ -196,6 +197,86 @@
             "target": "dev",
             "projects": [
               "@tryghost/admin",
+              "@tryghost/portal",
+              "@tryghost/comments-ui",
+              "@tryghost/signup-form",
+              "@tryghost/sodo-search",
+              "@tryghost/announcement-bar",
+              "@tryghost/admin-toolbar"
+            ]
+          }
+        ]
+      },
+      "dev:env": {
+        "executor": "nx:run-commands",
+        "options": {
+          "command": "node scripts/ghost-dev-env.ts"
+        }
+      },
+      "infra:up": {
+        "executor": "nx:run-commands",
+        "options": {
+          "command": "node scripts/dev-infra-up.ts"
+        },
+        "dependsOn": [
+          "dev:env"
+        ]
+      },
+      "dev:host": {
+        "continuous": true,
+        "executor": "nx:run-commands",
+        "options": {
+          "cwd": "ghost",
+          "command": "node ../scripts/with-ghost-dev-env.ts pnpm dev"
+        },
+        "dependsOn": [
+          "dev:env",
+          "infra:up",
+          {
+            "target": "build:assets",
+            "projects": [
+              "ghost"
+            ]
+          },
+          {
+            "target": "dev:host",
+            "projects": [
+              "@tryghost/admin"
+            ]
+          },
+          {
+            "target": "dev",
+            "projects": [
+              "@tryghost/portal"
+            ]
+          }
+        ]
+      },
+      "dev:host:lexical": {
+        "continuous": true,
+        "executor": "nx:run-commands",
+        "options": {
+          "cwd": "ghost",
+          "command": "node ../scripts/with-ghost-dev-env.ts pnpm dev"
+        },
+        "dependsOn": [
+          "dev:env",
+          "infra:up",
+          {
+            "target": "build:assets",
+            "projects": [
+              "ghost"
+            ]
+          },
+          {
+            "target": "dev:host",
+            "projects": [
+              "@tryghost/admin"
+            ]
+          },
+          {
+            "target": "dev",
+            "projects": [
               "@tryghost/portal"
             ]
           },
@@ -207,14 +288,16 @@
           }
         ]
       },
-      "docker:dev:public": {
+      "dev:host:public": {
         "continuous": true,
         "executor": "nx:run-commands",
         "options": {
-          "command": "trap 'docker compose -f compose.dev.yaml ${DEV_COMPOSE_FILES} down' EXIT; docker compose -f compose.dev.yaml ${DEV_COMPOSE_FILES} logs -f"
+          "cwd": "ghost",
+          "command": "node ../scripts/with-ghost-dev-env.ts pnpm dev"
         },
         "dependsOn": [
-          "docker:up",
+          "dev:env",
+          "infra:up",
           {
             "target": "build:assets",
             "projects": [
@@ -222,9 +305,14 @@
             ]
           },
           {
+            "target": "dev:host",
+            "projects": [
+              "@tryghost/admin"
+            ]
+          },
+          {
             "target": "dev",
             "projects": [
-              "@tryghost/admin",
               "@tryghost/portal",
               "@tryghost/comments-ui",
               "@tryghost/signup-form",

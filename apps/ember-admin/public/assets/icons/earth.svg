@@ -1,9 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-width="1.5px" height="24" width="24">
-  <title>earth</title>
-  <defs>
-    <style>
-      .a{fill:none;stroke:currentColor;}
-    </style>
-  </defs>
-  <g><circle class="a" cx="12" cy="12" r="11.25" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"></circle><path d="M9.88,23.05c-1.57-2.2-2.63-6.33-2.63-11S8.31,3.15,9.88,1" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"></path><path d="M14.12,23.05c1.57-2.2,2.63-6.33,2.63-11S15.69,3.15,14.12,1" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"></path><line x1="0.75" y1="12" x2="23.25" y2="12" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"></line><line x1="2.05" y1="17.25" x2="21.95" y2="17.25" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"></line><line x1="2.05" y1="6.75" x2="21.95" y2="6.75" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"></line></g>
-</svg>

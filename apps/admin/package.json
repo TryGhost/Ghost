@@ -101,6 +101,7 @@
     "eslint-plugin-no-relative-import-paths": "1.6.1",
     "jsdom": "catalog:",
     "msw": "catalog:",
+    "sirv": "catalog:",
     "tailwindcss": "catalog:",
     "typescript": "catalog:",
     "typescript-eslint": "catalog:",
@@ -180,7 +181,7 @@
       "test:unit": {
         "inputs": [
           "reactTests",
-          "^reactAdminDependency"
+          "^default"
         ],
         "dependsOn": [
           {
@@ -206,7 +207,7 @@
         "cache": true,
         "inputs": [
           "reactTests",
-          "^reactAdminDependency"
+          "^default"
         ],
         "outputs": [
           "{projectRoot}/test-results/acceptance.json"
@@ -234,7 +235,7 @@
       "test:types": {
         "inputs": [
           "default",
-          "^reactAdminDependency"
+          "^default"
         ],
         "outputs": [],
         "dependsOn": [
@@ -266,6 +267,21 @@
         },
         "dependsOn": [
           "ghost-monorepo:docker:up",
+          "build:dev",
+          "@tryghost/admin-x-framework:dev",
+          "@tryghost/shade:dev"
+        ]
+      },
+      "dev:host": {
+        "continuous": true,
+        "executor": "nx:run-commands",
+        "options": {
+          "cwd": "apps/admin",
+          "command": "vite",
+          "envFile": ".ghost-dev.env"
+        },
+        "dependsOn": [
+          "ghost-monorepo:dev:env",
           "build:dev",
           "@tryghost/admin-x-framework:dev",
           "@tryghost/shade:dev"

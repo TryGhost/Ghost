@@ -23,10 +23,7 @@ import {
 import { SettingsLoading } from '@/settings/settings-loading';
 
 import { useLazyComponent } from '@/shared/use-lazy-component';
-
-// The sections are most of Settings' code; loading them separately lets the
-// navigation show first.
-const loadMainContent = () => import('./main-content');
+import { loadSettingsContent } from '@/settings/load-settings';
 
 // Renders the sections even if the sidebar's morph never reports its end
 const SECTIONS_FALLBACK_DELAY = 1000;
@@ -91,7 +88,7 @@ function SettingsNavigationPortal() {
 
 export function App({ upgradeStatus }: AppProps) {
   const admin7Settings = useFeatureFlag('admin7settings');
-  const MainContent = useLazyComponent(loadMainContent);
+  const MainContent = useLazyComponent(loadSettingsContent);
   // While the floating sidebar grows to show the navigation, the sections wait
   // for it to finish (or a fallback), so rendering them doesn't stall the morph
   const sidebarMorphing = useSettingsSidebarMorphing();

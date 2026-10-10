@@ -90,7 +90,7 @@ async function postFromBillingApp(messages: StandInMessage[], message: unknown) 
   frame.contentWindow?.postMessage({ relay: message }, BILLING_ORIGIN);
 }
 
-/** Resolves once Admin has handled every message the stand-in posted before now. */
+/** Waits for message dispatch; asynchronous handlers may still be running. */
 async function billingAppSettled(messages: StandInMessage[]) {
   // A ping to a frame still loading is dropped like any other message
   await expect.poll(() => loads(messages).length).toBeGreaterThan(0);
@@ -138,7 +138,7 @@ async function renderBilling(
   }
   const hostSettingsNow = typeof hostSettings === 'function' ? hostSettings : () => hostSettings;
 
-  await renderAdminApp(path, {
+  return await renderAdminApp(path, {
     labs,
     boot: {
       browseSite: { response: site },
@@ -538,13 +538,15 @@ describe('Ghost(Pro) billing', () => {
     fakeTags([]);
     await fakeFrameOrigin(BILLING_ORIGIN, billingStandIn(READY));
     const messages = standInMessages();
-    await renderBilling('/pro', { hostSettings: { forceUpgrade: true } });
+    const { queryClient } = await renderBilling('/pro', { hostSettings: { forceUpgrade: true } });
     await expect.element(billingScreen.frame()).toBeVisible();
 
     await postFromBillingApp(messages, {
       subscription: { status: 'active', isActiveTrial: false, trial_end: null },
     });
     await billingAppSettled(messages);
+    // Subscription state is applied after the report's config refetch completes.
+    await expect.poll(() => queryClient.isFetching()).toBe(0);
     window.location.hash = '#/tags';
 
     await expect.element(tagsScreen.newTagLink()).toBeVisible();
@@ -555,13 +557,17 @@ describe('Ghost(Pro) billing', () => {
     fakeTags([]);
     await fakeFrameOrigin(BILLING_ORIGIN, billingStandIn(READY));
     const messages = standInMessages();
-    await renderBilling('/pro', { role: 'Administrator', hostSettings: { forceUpgrade: true } });
+    const { queryClient } = await renderBilling('/pro', {
+      role: 'Administrator',
+      hostSettings: { forceUpgrade: true },
+    });
     await expect.element(billingScreen.frame()).toBeVisible();
 
     await postFromBillingApp(messages, {
       subscription: { status: 'active', isActiveTrial: false, trial_end: null },
     });
     await billingAppSettled(messages);
+    await expect.poll(() => queryClient.isFetching()).toBe(0);
 
     expect(currentRoute()).toBe('/pro');
     await expect.element(billingScreen.frame()).toBeVisible();

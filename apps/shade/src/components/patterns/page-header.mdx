@@ -10,6 +10,10 @@ share the same appearance, spacing, tooltip behavior and primary-action treatmen
 Use the same action components in analytics headers whose navigation and metadata
 require a different overall layout.
 
+The blurred background in PageHeader and ListPage.Header uses the page background
+token in both themes, so an unscrolled header blends into the canvas. Its translucent
+gradient and backdrop blur soften content scrolling beneath it.
+
 ## Order and hierarchy
 
 Place actions in reading and keyboard order:
@@ -145,10 +149,8 @@ Expanded search must not push the primary off-screen.
 ## Compatibility and rollout
 
 React Admin headers use the pill design by default without a Labs flag.
-The Admin root passes `isAdmin7={false}` to ShadeApp on Ember-owned routes
-to preserve their compatibility appearance. Shade owns visual differences;
-features retain only historical structural differences that cannot be expressed
-through shared controls. Existing consumers may supply `fallbackVariant` and
+Shade owns visual differences; features retain only historical structural
+differences that cannot be expressed through shared controls. Existing consumers may supply `fallbackVariant` and
 `fallbackSize` to preserve their prior controls. New consumers should use defaults.
 
 With `useShade().isAdmin7` false, the header retains its previous spacing, chevrons,

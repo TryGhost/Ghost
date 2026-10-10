@@ -17,7 +17,7 @@ services:
       export DEV_COMPOSE_FILES="-f compose.dev.orb.yaml"
       export GHOST_URL="$PUBLIC_URL"
       unset PORT
-      exec pnpm dev
+      exec pnpm dev:docker
     port: 2370
     portal:
       title: Ghost development

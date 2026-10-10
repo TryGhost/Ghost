@@ -11,9 +11,8 @@ import {
 import { postsListScreen } from './posts-list.screen';
 
 /**
- * The post-publish celebration. The Ember editor writes a localStorage key and
- * navigates to the list, which reads it on mount — the editor stays Ember on
- * both sides of the flag, so only the reader moved.
+ * The post-publish celebration. The editor writes a localStorage key and
+ * navigates to the list, which reads it on mount.
  */
 describe('Posts list publish celebration', () => {
   beforeEach(() => {

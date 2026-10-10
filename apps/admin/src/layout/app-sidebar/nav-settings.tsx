@@ -7,7 +7,6 @@ import { canAccessSettings } from '@tryghost/admin-x-framework/api/users';
 import { NavMenuItem } from './nav-menu-item';
 import { NavGhostProItem } from './nav-ghost-pro';
 import { useSettingsReturnToState } from '@/layout/settings-navigation';
-import { preloadSettingsScreen } from '@/settings/api';
 
 interface NavSettingsProps extends React.ComponentProps<typeof SidebarGroup> {
   /** Admin 7 lists Ghost(Pro) here and moves Help to the account menu. */
@@ -26,12 +25,7 @@ function NavSettings({ admin7Design = false, ...props }: NavSettingsProps) {
           {admin7Design && <NavGhostProItem />}
           {showSettings && (
             <NavMenuItem>
-              <NavMenuItem.Link
-                state={settingsReturnToState}
-                to="settings"
-                onFocus={preloadSettingsScreen}
-                onMouseEnter={preloadSettingsScreen}
-              >
+              <NavMenuItem.Link state={settingsReturnToState} to="settings">
                 <LucideIcon.Settings />
                 <NavMenuItem.Label>Settings</NavMenuItem.Label>
               </NavMenuItem.Link>

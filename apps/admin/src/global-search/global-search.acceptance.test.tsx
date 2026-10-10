@@ -414,7 +414,7 @@ describe('Cmd-K search', () => {
     await expect.poll(isDarkMode).toBe(false);
   });
 
-  it('opens a post in the React editor when React serves it', async () => {
+  it('opens a post in the editor', async () => {
     // the editor owns its request graph
     allowUnhandledRequests();
     await renderAdminApp('/tags', { labs: { editorReact: true } });

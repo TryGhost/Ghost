@@ -47,12 +47,6 @@
   overflow-y: auto;
 }
 
-@media (max-width: 800px) {
-  body:not(.react-admin) .shade {
-    height: calc(100vh - var(--mobile-navbar-height));
-  }
-}
-
 .dark .shade {
   color: var(--foreground);
 }

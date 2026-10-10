@@ -2,7 +2,7 @@ import { canManageGiftLinks } from '@tryghost/admin-x-framework/api/users';
 import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
 
 // Whether the current user can manage a gift link for this post. Mirrors
-// canCopyGiftLink in the Ember app/utils/gift-link.js.
+// `canCopyGiftLink` in `@/shared/gift-link`.
 export const useCanManageGiftLink = (post?: { status?: string; visibility?: string }) => {
   const { data: currentUser } = useCurrentUser();
 

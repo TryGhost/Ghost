@@ -1,11 +1,8 @@
 /**
  * Request contract for post/page reads and writes against the Admin API.
  *
- * The Ember editor's adapters and serializers are the spec here — these
- * builders must produce the same query params and payload shapes as
- * `apps/ember-admin/app/adapters/post.js`, `adapters/page.js` and
- * `serializers/post.js`/`page.js` so the API sees identical requests from
- * either client.
+ * Query params and payload shapes are ported from Ember's post/page adapters
+ * and serializers.
  */
 
 /**

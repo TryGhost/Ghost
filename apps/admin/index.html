@@ -16,6 +16,17 @@
 
     <link rel="shortcut icon" href="./src/assets/img/favicon.ico" />
     <link rel="apple-touch-icon" href="./src/assets/img/apple-touch-icon.png" />
+
+    <!-- Center the loader before the app's stylesheet or JavaScript arrives. -->
+    <style>
+      body.react-admin > #boot-splash {
+        position: fixed;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+    </style>
   </head>
   <body class="react-admin">
     <div id="admin-alerts"></div>

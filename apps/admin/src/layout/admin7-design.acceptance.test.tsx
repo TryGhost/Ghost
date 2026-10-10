@@ -6,21 +6,20 @@ import {
   renderAdminApp,
 } from '@test-utils/acceptance';
 
-// React pages use the current design.
 it.each<{
   name: string;
   route: string;
   labs: Record<string, boolean>;
   enabled: boolean;
 }>([
-  { name: 'React route', route: '/members', labs: {}, enabled: true },
+  { name: 'members list', route: '/members', labs: {}, enabled: true },
   {
-    name: 'React editor enabled independently',
+    name: 'editor',
     route: '/editor/post/abc123',
     labs: { editorReact: true },
     enabled: true,
   },
-])('selects the design by route ownership: $name', async ({ route, labs, enabled }) => {
+])('uses the current design on every route: $name', async ({ route, labs, enabled }) => {
   fakeMembers([]);
   if (labs.editorReact) {
     fakeEditorChrome();

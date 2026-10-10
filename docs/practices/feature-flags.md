@@ -79,14 +79,11 @@ Use `labs.enabledMiddleware('myFeature')` when an entire API route should return
 `@labs.myFeature`; a helper which must report a disabled-feature error can use
 `labs.enabledHelper(...)`.
 
-In React Admin, use `useFeatureFlag` from
+In Admin, use `useFeatureFlag` from
 `@tryghost/admin-x-framework/hooks`. It returns `true` when the server-computed
 value in the Admin config response is boolean `true` or the flag is enabled by
 an Admin session override. Without an override, it returns `false` while the
 response is missing or loading.
-
-In legacy Ember Admin, use the `feature` service. Existing Ember code reads a
-flag with `this.feature.get('myFeature')`.
 
 Keep the decision at the boundary that owns the behavior. Hiding a button does
 not protect a server endpoint, and rejecting an endpoint does not give Admin a
@@ -113,9 +110,8 @@ Test the flag boundary and preserve existing behavioral coverage. Styling-only
 changes need visual review, not tests that assert appearance. Keep permanent
 permission and backend capability checks independent of the temporary flag.
 
-The pill-controls milestone is generally available on React Admin routes. Route
-ownership alone determines Shade's `isAdmin7` value. Ember-owned routes retain the
-legacy appearance, and standalone ActivityPub uses Shade's current default.
+The pill-controls milestone is generally available in Admin. Standalone
+ActivityPub uses Shade's current default.
 
 The `admin7settings` milestone swaps the shell navigation for the Settings
 navigation on desktop. Mobile retains the full-screen Settings takeover, with
@@ -174,12 +170,10 @@ the whole list rather than adding to it. Visit a route with an empty value,
 such as `/ghost/#/posts?labs=`, to clear the overrides. Simply removing the
 parameter does not clear them.
 
-These overrides only force flags on. React's `useFeatureFlag` and legacy
-Ember's `feature` service honor them even when the server-computed value is
-`false`. There is no force-off syntax; clearing an override restores the normal
-value, which may still be `true`. If session storage is unavailable, the URL
-override still applies to the current React render, but cannot persist or be
-shared with Ember.
+These overrides only force flags on. `useFeatureFlag` honors them even when the
+server-computed value is `false`. There is no force-off syntax; clearing an
+override restores the normal value, which may still be `true`. If session storage is unavailable, the URL
+override still applies to the current render, but cannot persist.
 
 Session overrides are client-only: they do not update the site's stored Labs
 setting or change Ghost Core's flag resolution. They cannot enable a gated
@@ -209,8 +203,7 @@ The different test systems do not use the same Labs defaults:
 | Ghost Core unit tests                                                               | No flags are forced on; stub the value needed by the test                                      |
 | Ghost Core `integration` and `legacy` tests using `testUtils.setup()`               | Every registered private and public beta flag is forced on                                     |
 | Ghost Core `e2e`, `e2e-api`, and `e2e-isolated` tests using `fixtureManager.init()` | Every registered private and public beta flag is forced on                                     |
-| React Admin unit and acceptance tests using the shared test-data fixtures           | `labsDefaults` flags off, `GA_FEATURES` on; pass a `labs` override for the case under test     |
-| Ember Admin tests using Mirage                                                      | Labs defaults to an empty object; use `enableLabsFlag` or `disableLabsFlag`                    |
+| Admin unit and acceptance tests using the shared test-data fixtures                 | `labsDefaults` flags off, `GA_FEATURES` on; pass a `labs` override for the case under test     |
 | Top-level Playwright tests in `e2e/`                                                | Labs uses the new site's values; only flags passed through `test.use({labs: ...})` are changed |
 
 Ghost Core's common fixture initializer adds `labs:enabled` to every fixture

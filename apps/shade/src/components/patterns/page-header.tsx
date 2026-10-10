@@ -544,7 +544,7 @@ const PageHeader: PageHeaderComponent = Object.assign(
           'flex flex-col',
           sticky && 'sticky top-0 z-50',
           blurredBackground &&
-            'bg-gradient-to-b from-background via-background/70 to-background/70 backdrop-blur-md dark:bg-black',
+            'bg-gradient-to-b from-background via-background/70 to-background/70 backdrop-blur-md',
           className,
         )}
         data-page-header="page-header"

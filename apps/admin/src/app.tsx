@@ -14,6 +14,8 @@ import {
 import { DocsBotWidgetHost } from './docsbot-widget-host';
 import { ClientExtensionScript } from './client-extension-script';
 import { usePreloadEditor } from './use-preload-editor';
+import { preloadSettings } from './settings/api';
+import { useIdlePreload } from './shared/use-idle-preload';
 import { useGlobalShortcuts } from './global-shortcuts/global-shortcuts';
 import { useAccentColorProperties } from './hooks/use-accent-color-properties';
 import { useDocumentTitle } from './hooks/use-document-title';
@@ -41,6 +43,7 @@ function App() {
   useUpgradeStatusAlerts(alerts);
   useAuthNotice(Boolean(currentUser));
   usePreloadEditor(Boolean(currentUser));
+  useIdlePreload(preloadSettings, Boolean(currentUser));
   useGlobalShortcuts(Boolean(currentUser));
 
   return (

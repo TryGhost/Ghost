@@ -15,7 +15,7 @@ interface PostCelebrationModalProps {
 }
 
 /**
- * The post-publish celebration, shown when the Ember editor hands one over.
+ * The post-publish celebration, shown when the editor hands one over.
  *
  * Wraps `PostShareModal`, which takes all of its copy as props — so the wording
  * lives in `post-celebration-copy.ts` and this is only assembly.

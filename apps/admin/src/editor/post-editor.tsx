@@ -80,9 +80,8 @@ export interface PostEditorHandle {
 
 const capitalize = (value: string) => value.charAt(0).toUpperCase() + value.slice(1);
 
-// Ember's global stylesheet, still loaded around the React editor, gives every
-// textarea a 100px min-height and a 250–500px width; the fields opt out of both
-// so they span the writing column and grow from a single line.
+// Admin's element styles give textareas a min-height and a 250–500px width; the
+// fields opt out of both so they span the writing column and grow from one line.
 const fieldClassName =
   'block w-full max-w-none min-w-0 min-h-0 resize-none overflow-hidden border-0 bg-transparent p-0 outline-none';
 

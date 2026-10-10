@@ -39,6 +39,7 @@ export function excludedSource(file: string): boolean {
 // Match actual tool conventions, not every application module containing "config".
 const toolConfigName =
   /^(eslint|vitest|vite|playwright|postcss|tailwind|svgo|rollup|webpack|babel|prettier|stylelint|jest|i18next-parser|lint-staged)(?:\.[^.]+)*\.config(?:\.[^.]+)*$/;
+// Retired build conventions still classify files read from Git history by --revision.
 const toolEntrypoints = new Set([
   '.lintstagedrc',
   '.pnpmfile',

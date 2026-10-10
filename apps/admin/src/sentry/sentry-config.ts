@@ -54,7 +54,7 @@ export function getSentryConfig({
       // React Router leaves a skipped view transition's promises unhandled; the
       // navigation still lands. Chromium, WebKit and Firefox messages in turn
       /^(AbortError: |InvalidStateError: )?Transition was (skipped|aborted because of invalid state)(\. [A-Za-z ]+)?$/,
-      /^(Skipping view transition because skipTransition\(\) was called|View transition was skipped because document visibility state is hidden)\.$/,
+      /^(Skipping view transition because (skipTransition\(\) was called|viewport size changed)|View transition was skipped because document visibility state is hidden)\.$/,
       /^Skipped ViewTransition due to (skipTransition\(\) call|document being hidden)$/,
 
       // Harmless loop warnings, mostly from extensions and embedded content
@@ -74,11 +74,10 @@ export function getSentryConfig({
     config.replaysOnErrorSampleRate = 0.5;
     extraIntegrations.push(
       replayIntegration({
-        mask: ['.koenig-lexical', '.gh-dashboard', `[${AUTOMATIONS_MASK_ATTRIBUTE}]`],
+        mask: ['.koenig-lexical', `[${AUTOMATIONS_MASK_ATTRIBUTE}]`],
         unmask: [
           `body:not([${AUTOMATIONS_MASK_ATTRIBUTE}]) [role="menu"]`,
           `body:not([${AUTOMATIONS_MASK_ATTRIBUTE}]) [data-testid="settings-panel"]`,
-          `body:not([${AUTOMATIONS_MASK_ATTRIBUTE}]) .gh-nav`,
         ],
         maskAllText: false,
         maskAllInputs: true,

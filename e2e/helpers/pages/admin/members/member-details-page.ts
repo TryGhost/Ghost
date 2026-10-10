@@ -80,7 +80,7 @@ export class MemberDetailsPage extends AdminPage {
   readonly screenTitle: Locator;
   readonly logoutConfirmModal: Locator;
 
-  // Custom fields (React screen only; the section appears when the site defines a field).
+  // Custom fields (the section appears when the site defines a field).
   readonly customFieldsCard: Locator;
   readonly customFieldModal: Locator;
   readonly newsletterSubscriptionCheckboxes: Locator;

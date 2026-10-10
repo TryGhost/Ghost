@@ -7,9 +7,16 @@ import { sentryVitePlugin } from '@sentry/vite-plugin';
 import tailwindcss from '@tailwindcss/vite';
 
 import { ghostBackendProxyPlugin } from './vite-backend-proxy';
+import { ghostFrontDoorPlugin } from './vite-front-door';
 import { sharedDefine, sharedResolve } from './vite.shared';
 
 export const GHOST_URL = process.env.GHOST_URL ?? 'http://localhost:2368/';
+
+// Ghost's port when it runs on the host behind this dev server
+const GHOST_DEV_BACKEND_PORT = process.env.GHOST_DEV_BACKEND_PORT;
+
+// `pnpm dev:lexical` rebuilds koenig-lexical's dist; serving it unbundled picks up each rebuild
+const KOENIG_WATCH = Boolean(process.env.GHOST_DEV_KOENIG_WATCH);
 
 // Dev-only prefix Vite serves under. Keeps Vite's internals (HMR client,
 // module graph, refresh runtime) off `/ghost/*` so Ghost's Express middleware
@@ -77,7 +84,12 @@ export default defineConfig(({ command, mode }) => ({
     ...(command === 'serve' && mode === 'test'
       ? []
       : [
-          ghostBackendProxyPlugin(),
+          GHOST_DEV_BACKEND_PORT
+            ? ghostFrontDoorPlugin(
+                `http://127.0.0.1:${GHOST_DEV_BACKEND_PORT}`,
+                `${getSubdir()}${DEV_BASE}`,
+              )
+            : ghostBackendProxyPlugin(),
           // Sentry's plugin goes after all others
           sentryDebugIdsPlugin(),
         ]),
@@ -88,16 +100,17 @@ export default defineConfig(({ command, mode }) => ({
   define: sharedDefine,
   server: {
     host: '0.0.0.0',
-    port: 5174,
+    port: GHOST_DEV_BACKEND_PORT ? Number(process.env.GHOST_DEV_PORT ?? 2368) : 5174,
+    strictPort: Boolean(GHOST_DEV_BACKEND_PORT),
     allowedHosts: true,
     // Vite 8 already forwards browser console warn/error to the terminal
     // when it detects an AI agent is driving the dev server, and stays
     // quiet for humans. Uncomment to force it on for everyone (noisier):
     // forwardConsole: { logLevels: ['warn', 'error'] }
   },
-  optimizeDeps: {
-    include: ['@tryghost/koenig-lexical'],
-  },
+  optimizeDeps: KOENIG_WATCH
+    ? { exclude: ['@tryghost/koenig-lexical'] }
+    : { include: ['@tryghost/koenig-lexical'] },
   resolve: sharedResolve,
   test: {
     environment: 'jsdom',

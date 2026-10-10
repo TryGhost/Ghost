@@ -53,6 +53,8 @@ their supporting settings are present.
 ### Code that fails to load
 
 Screens, the editor and the search modal load their code when first needed. A
+signed-in shell preloads both Settings chunks when the browser is idle, keeping
+the first Settings visit from waiting on its code when preloading has finished. A
 browser never fetches a module again after loading it failed, so when that code
 fails to load the admin reloads at the same route. It reloads at most once a
 minute and not while the browser is offline; within that minute a failed screen
@@ -133,9 +135,8 @@ libraries first. These targets do not boot Ghost. Their `dependsOn` lists, and
 the React library prerequisites of `build:dev`, explicitly name the React
 dependencies with a `build` target; update all four when adding one.
 
-Nx caches unit, acceptance and typecheck results. The global
-`reactAdminDependency` input retains every transitive dependency's default
-inputs. Test inputs also include Core's aliased card assets, the lockfile and runtime
+Nx caches unit, acceptance and typecheck results. Their inputs include every
+transitive dependency's default inputs. Test inputs also include Core's aliased card assets, the lockfile and runtime
 settings such as Node version, platform, timezone and CI mode. A digest of
 local `.env` and `.env.*` files covers Vite's mode-specific configuration without
 printing their values. Shard and other
