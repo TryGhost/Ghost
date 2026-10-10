@@ -135,9 +135,8 @@ libraries first. These targets do not boot Ghost. Their `dependsOn` lists, and
 the React library prerequisites of `build:dev`, explicitly name the React
 dependencies with a `build` target; update all four when adding one.
 
-Nx caches unit, acceptance and typecheck results. The global
-`reactAdminDependency` input retains every transitive dependency's default
-inputs. Test inputs also include Core's aliased card assets, the lockfile and runtime
+Nx caches unit, acceptance and typecheck results. Their inputs include every
+transitive dependency's default inputs. Test inputs also include Core's aliased card assets, the lockfile and runtime
 settings such as Node version, platform, timezone and CI mode. A digest of
 local `.env` and `.env.*` files covers Vite's mode-specific configuration without
 printing their values. Shard and other

@@ -25,7 +25,7 @@ const GuardedScreen: React.FC<{ initialOptions: UseUnsavedChangesGuardOptions }>
   return (
     <div>
       <span data-testid="dialog-open">{String(latestGuard.dialogProps.open)}</span>
-      <a href="#/ember-route">Ember link</a>
+      <a href="#/other-route">Hash link</a>
     </div>
   );
 };
@@ -245,7 +245,7 @@ describe('useUnsavedChangesGuard', () => {
   it('intercepts raw hash-anchor clicks and performs them on confirm', () => {
     renderGuarded({ when: true });
 
-    fireEvent.click(screen.getByText('Ember link'));
+    fireEvent.click(screen.getByText('Hash link'));
 
     expect(latestGuard.isBlocked).toBe(true);
     expect(dialogOpen()).toBe('true');
@@ -255,7 +255,7 @@ describe('useUnsavedChangesGuard', () => {
       latestGuard.dialogProps.onOpenChange(false);
     });
 
-    expect(window.location.hash).toBe('#/ember-route');
+    expect(window.location.hash).toBe('#/other-route');
   });
 });
 
@@ -461,16 +461,16 @@ describe('useUnsavedChangesGuard with guardHistoryPops', () => {
 
   it('lets through the hash change of an anchor exit the writer confirmed', async () => {
     renderGuarded({ when: true, guardHistoryPops: true });
-    fireEvent.click(screen.getByText('Ember link'));
+    fireEvent.click(screen.getByText('Hash link'));
     const before = reached.length;
 
     await act(async () => {
       latestGuard.dialogProps.onConfirm();
       latestGuard.dialogProps.onOpenChange(false);
-      await waitFor(() => expect(reached.slice(before)).toContain('#/ember-route'));
+      await waitFor(() => expect(reached.slice(before)).toContain('#/other-route'));
     });
 
-    expect(window.location.hash).toBe('#/ember-route');
+    expect(window.location.hash).toBe('#/other-route');
     expect(dialogOpen()).toBe('false');
   });
 

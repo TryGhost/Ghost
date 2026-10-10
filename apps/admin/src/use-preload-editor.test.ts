@@ -29,7 +29,7 @@ describe('usePreloadEditor', () => {
     vi.useRealTimers();
   });
 
-  it('preloads the React editor once the signed-in shell is idle', () => {
+  it('preloads the editor once the signed-in shell is idle', () => {
     renderHook(() => usePreloadEditor(true));
 
     expect(preloadEditor).not.toHaveBeenCalled();

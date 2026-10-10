@@ -89,7 +89,7 @@ function statusClause(statuses: PostStatus[]): string {
  * structure to be parsed.
  *
  * "Blank" matches Ember's `isBlank`, which counts whitespace-only strings, so
- * `?tag=%20%20` produces no clause in either implementation. These strings are
+ * `?tag=%20%20` produces no clause. These strings are
  * compared against saved views and run server-side by bulk delete, so they have
  * to agree exactly.
  */

@@ -10,7 +10,7 @@ const fetched = (pathEnd: string) =>
     .some((entry) => new URL(entry.name).pathname.endsWith(pathEnd));
 
 describe('Editor preload', () => {
-  it('fetches the React editor and Koenig before a post is opened', async () => {
+  it('fetches the editor and Koenig before a post is opened', async () => {
     // The dev server serves every module separately, overflowing the default 250 entries.
     performance.setResourceTimingBufferSize(5000);
     fakeTags([]);

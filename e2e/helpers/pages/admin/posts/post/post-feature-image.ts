@@ -13,7 +13,7 @@ import {
   unsplashSearchModal,
 } from '@tryghost/test-data/selectors/editor';
 
-/** The React editor's feature image, above the title. */
+/** The editor's feature image, above the title. */
 export class FeatureImage {
   readonly root: Locator;
   readonly fileInput: Locator;

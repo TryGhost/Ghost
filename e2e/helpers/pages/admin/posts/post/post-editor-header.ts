@@ -14,7 +14,7 @@ import {
   postsBackLink,
 } from '@tryghost/test-data/selectors/editor';
 
-/** The React editor's header: the back link, the status line and the actions. */
+/** The editor's header: the back link, the status line and the actions. */
 export class EditorHeader {
   readonly actions: Locator;
   readonly backLink: Locator;

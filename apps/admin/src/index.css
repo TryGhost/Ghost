@@ -128,7 +128,7 @@ body {
 /* These components are visually headings but do not all use heading elements.
    Keep the display alternates scoped to their title text. */
 :where(.shade-admin, body.react-admin.react-admin-mounted > :is(.shade.shade-admin, #admin-alerts))
-  :is(.heading-font-features, .gh-editor-title, .gh-publish-title) {
+  .heading-font-features {
   font-feature-settings: var(--heading-font-feature-settings);
 }
 
@@ -328,11 +328,6 @@ body.react-admin .safe-area-inset-bottom {
   padding-bottom: env(safe-area-inset-bottom);
 }
 
-body.react-admin .gh-canvas-header {
-  padding-top: 20px;
-  padding-bottom: 20px;
-}
-
 body.react-admin [data-header='header-title'] {
   font-size: 15px;
   font-weight: 600;
@@ -348,20 +343,6 @@ body.react-admin [data-header='header'] {
 body.react-admin [data-navbar='navbar'] {
   padding-top: 20px;
   padding-bottom: 20px;
-}
-
-body.react-admin .gh-canvas-header {
-  z-index: 40;
-}
-
-body.react-admin .members-header {
-  position: relative;
-}
-
-body.react-admin [data-test-table='members'] thead,
-body.react-admin [data-test-table='members'] tr {
-  position: relative;
-  z-index: 30;
 }
 
 /* Screen transitions. The router runs a view

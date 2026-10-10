@@ -33,9 +33,7 @@ describe('Editor chrome', () => {
     await expect(sidebar()).toHaveCount(0);
   });
 
-  // The decision lives on the route handle, so it must hold on both sides of
-  // the `editorReact` gate — here the React editor serves the route.
-  it('hides it with editorReact on', async () => {
+  it('hides it once the editor has loaded', async () => {
     fakeSnippets([]);
     fakePosts([]);
     // The header's publish inputs read the newsletter list.

@@ -108,8 +108,8 @@ describe('Member detail leave guard', () => {
     fakeMemberDetailWorld(m);
     await renderAdminApp('/members');
 
-    // Native hash navigations do not carry react-router's history index.
-    // Preserve that legacy target shape before opening the React detail.
+    // Native hash navigations do not carry react-router's history index;
+    // give the starting entry that shape before opening the detail.
     window.history.replaceState({}, '');
     await membersScreen.link('Ada Lovelace').click();
     await expect.poll(currentRoute).toMatch(new RegExp(`^/members/${m.id}`));

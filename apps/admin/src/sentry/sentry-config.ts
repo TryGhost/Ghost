@@ -74,11 +74,10 @@ export function getSentryConfig({
     config.replaysOnErrorSampleRate = 0.5;
     extraIntegrations.push(
       replayIntegration({
-        mask: ['.koenig-lexical', '.gh-dashboard', `[${AUTOMATIONS_MASK_ATTRIBUTE}]`],
+        mask: ['.koenig-lexical', `[${AUTOMATIONS_MASK_ATTRIBUTE}]`],
         unmask: [
           `body:not([${AUTOMATIONS_MASK_ATTRIBUTE}]) [role="menu"]`,
           `body:not([${AUTOMATIONS_MASK_ATTRIBUTE}]) [data-testid="settings-panel"]`,
-          `body:not([${AUTOMATIONS_MASK_ATTRIBUTE}]) .gh-nav`,
         ],
         maskAllText: false,
         maskAllInputs: true,
