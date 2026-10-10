@@ -65,19 +65,6 @@ export function ghostFrontDoorPlugin(backend: string, devBase: string): Plugin {
       };
       let ready = waitForGhost();
 
-      const printUrls = server.printUrls.bind(server);
-      server.printUrls = () => {
-        printUrls();
-        logger.info('  Waiting for Ghost…');
-        void ready.then(() =>
-          logger.info(`  ➜  Ghost:   http://localhost:${server.config.server.port}/ghost/`),
-        );
-      };
-
-      server.middlewares.use((_req, _res, next) => {
-        void ready.then(() => next());
-      });
-
       // A nodemon restart closes every connection to Ghost, so an idle one held open notices
       // the restart before the next request does. A running Ghost times it out with a 408.
       const { hostname, port } = new URL(backend);
@@ -99,6 +86,19 @@ export function ghostFrontDoorPlugin(backend: string, devBase: string): Plugin {
         });
       watchForRestart();
       server.httpServer?.once('close', () => watcher?.destroy());
+
+      const printUrls = server.printUrls.bind(server);
+      server.printUrls = () => {
+        printUrls();
+        logger.info('  Waiting for Ghost…');
+        void ready.then(() =>
+          logger.info(`  ➜  Ghost:   http://localhost:${server.config.server.port}/ghost/`),
+        );
+      };
+
+      server.middlewares.use((_req, _res, next) => {
+        void ready.then(() => next());
+      });
 
       // Registered here, before Vite's own middleware and proxy
       server.middlewares.use((req, res, next) => {
