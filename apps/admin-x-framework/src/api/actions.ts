@@ -147,7 +147,6 @@ export const getLinkTarget = (action: Action): InternalLink | ExternalLink | und
         return {
           isExternal: true,
           route: `editor/${resourceType}/${action.resource.id}`,
-          models: [resourceType, action.resource.id],
         };
       case 'integration':
         if (!action.resource || !action.resource.id) {
@@ -163,7 +162,6 @@ export const getLinkTarget = (action: Action): InternalLink | ExternalLink | und
         return {
           isExternal: true,
           route: `offers/${action.resource.id}`,
-          models: [action.resource.id],
         };
       case 'tag':
         if (!action.resource || !action.resource.slug) {
@@ -172,8 +170,7 @@ export const getLinkTarget = (action: Action): InternalLink | ExternalLink | und
 
         return {
           isExternal: true,
-          route: 'tag',
-          models: [action.resource.slug],
+          route: `tags/${action.resource.slug}`,
         };
       case 'product':
         return { route: 'tiers' };
