@@ -1,5 +1,5 @@
 const path = require('path');
-const fs = require('fs-extra');
+const fs = require('node:fs');
 const supertest = require('supertest');
 const localUtils = require('./utils');
 const config = require('../../../../core/shared/config');
@@ -16,7 +16,7 @@ describe('Images API', function () {
 
   afterAll(function () {
     images.forEach(function (image) {
-      fs.removeSync(config.get('paths').appRoot + image);
+      fs.rmSync(config.get('paths').appRoot + image, { recursive: true, force: true });
     });
   });
 

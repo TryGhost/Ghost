@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
-import fs from 'fs-extra';
+import fs from 'node:fs/promises';
+import { statSync } from 'node:fs';
 import path from 'path';
 import { globSync } from 'glob';
 // @ts-expect-error This module lacks type definitions.
@@ -16,12 +17,12 @@ describe('Import Manager', function () {
         const files = globSync('**/*', { cwd: extractedPath, nodir: true });
         files.forEach((file) => {
           const filePath = path.join(extractedPath, file);
-          const stats = fs.statSync(filePath);
+          const stats = statSync(filePath);
           const fileMode = stats.mode & 0o777;
           assert.equal(fileMode, 0o644, `File ${file} should have 0644 permissions`);
         });
       } finally {
-        await fs.remove(extractedPath);
+        await fs.rm(extractedPath, { recursive: true, force: true });
       }
     });
   });

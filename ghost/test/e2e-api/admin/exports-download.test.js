@@ -1,6 +1,7 @@
 /* global vi */ // vitest runs with globals:true; the shared eslint config only declares mocha's
 const assert = require('node:assert/strict');
-const fs = require('fs-extra');
+const fs = require('node:fs/promises');
+const { existsSync } = require('node:fs');
 const os = require('os');
 const path = require('path');
 const supertest = require('supertest');
@@ -104,7 +105,7 @@ describe('Exports API — download', function () {
 
     // The content JSON has the same shape as the /db/ download, so it
     // stays importable
-    const exportJSON = await fs.readJSON(path.join(outPath, 'export.json'));
+    const exportJSON = JSON.parse(await fs.readFile(path.join(outPath, 'export.json'), 'utf8'));
     assert.ok(Array.isArray(exportJSON.db), 'export.json should contain a db array');
     assert.ok(exportJSON.db[0].data.posts.length > 0, 'export.json should contain posts');
     assert.ok(exportJSON.db[0].meta.version, 'export.json should carry the Ghost version');
@@ -134,7 +135,7 @@ describe('Exports API — download', function () {
     const themeOut = path.join(outPath, 'themes-check');
     await extract(path.join(outPath, 'themes/casper.zip'), themeOut);
     assert.ok(
-      await fs.pathExists(path.join(themeOut, 'package.json')),
+      existsSync(path.join(themeOut, 'package.json')),
       'theme zip should contain the theme files',
     );
   });

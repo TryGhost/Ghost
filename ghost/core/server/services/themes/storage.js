@@ -1,5 +1,5 @@
 const debug = require('@tryghost/debug')('themes');
-const fs = require('fs-extra');
+const fs = require('node:fs/promises');
 const ObjectID = require('bson-objectid').default;
 
 const tpl = require('@tryghost/tpl');
@@ -166,7 +166,7 @@ module.exports = {
       // @TODO: we should probably do this as part of saving the theme
       // CASE: remove extracted dir from gscan happens in background
       if (checkedTheme) {
-        fs.remove(checkedTheme.path).catch((err) => {
+        fs.rm(checkedTheme.path, { recursive: true, force: true }).catch((err) => {
           logging.error(new errors.InternalServerError({ err: err }));
         });
       }

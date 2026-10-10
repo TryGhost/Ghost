@@ -15,7 +15,7 @@
 import debugFactory from '@tryghost/debug';
 // @ts-expect-error This module lacks type definitions.
 import * as expressTest from '@tryghost/express-test';
-import * as fs from 'fs-extra';
+import fs from 'node:fs/promises';
 import * as path from 'node:path';
 import * as os from 'node:os';
 import * as crypto from 'node:crypto';
@@ -138,19 +138,20 @@ const prepareContentFolder = async ({
 }) => {
   const contentFolderForTests = contentFolder;
 
-  await fs.ensureDir(contentFolderForTests);
-  await fs.ensureDir(path.join(contentFolderForTests, 'data'));
-  await fs.ensureDir(path.join(contentFolderForTests, 'themes'));
-  await fs.ensureDir(path.join(contentFolderForTests, 'images'));
-  await fs.ensureDir(path.join(contentFolderForTests, 'logs'));
-  await fs.ensureDir(path.join(contentFolderForTests, 'adapters'));
-  await fs.ensureDir(path.join(contentFolderForTests, 'settings'));
+  await fs.mkdir(contentFolderForTests, { recursive: true });
+  await fs.mkdir(path.join(contentFolderForTests, 'data'), { recursive: true });
+  await fs.mkdir(path.join(contentFolderForTests, 'themes'), { recursive: true });
+  await fs.mkdir(path.join(contentFolderForTests, 'images'), { recursive: true });
+  await fs.mkdir(path.join(contentFolderForTests, 'logs'), { recursive: true });
+  await fs.mkdir(path.join(contentFolderForTests, 'adapters'), { recursive: true });
+  await fs.mkdir(path.join(contentFolderForTests, 'settings'), { recursive: true });
 
   // Copy all themes into the new test content folder. Default active theme is always source.
   // If you want to use a different theme, you have to set the active theme (e.g. stub)
-  await fs.copy(
+  await fs.cp(
     path.join(__dirname, 'fixtures', 'themes'),
     path.join(contentFolderForTests, 'themes'),
+    { recursive: true },
   );
 
   if (redirectsFile) {
@@ -158,9 +159,10 @@ const prepareContentFolder = async ({
   }
 
   if (routesFile) {
-    await fs.copy(
+    await fs.cp(
       path.join(__dirname, 'fixtures', 'settings', 'routes.yaml'),
       path.join(contentFolderForTests, 'settings', 'routes.yaml'),
+      { recursive: true },
     );
   }
 };

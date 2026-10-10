@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import crypto from 'node:crypto';
 import os from 'node:os';
 import path from 'node:path';
-import fs from 'fs-extra';
+import fs from 'node:fs/promises';
 import { afterEach, beforeEach, describe, it } from 'vitest';
 
 import { RouteSettingsStoreBase, type RouteSettings } from '@tryghost/adapter-base-route-settings';
@@ -60,17 +60,18 @@ describe('route-settings FileStore', function () {
   beforeEach(async function () {
     basePath = path.join(os.tmpdir(), `route-settings-filestore-${crypto.randomUUID()}`);
     defaultsPath = path.join(os.tmpdir(), `route-settings-defaults-${crypto.randomUUID()}`);
-    await fs.ensureDir(basePath);
-    await fs.ensureDir(defaultsPath);
-    await fs.copy(
+    await fs.mkdir(basePath, { recursive: true });
+    await fs.mkdir(defaultsPath, { recursive: true });
+    await fs.cp(
       path.join(REAL_DEFAULTS_PATH, 'default-routes.yaml'),
       path.join(defaultsPath, 'default-routes.yaml'),
+      { recursive: true },
     );
   });
 
   afterEach(async function () {
-    await fs.remove(basePath);
-    await fs.remove(defaultsPath);
+    await fs.rm(basePath, { recursive: true, force: true });
+    await fs.rm(defaultsPath, { recursive: true, force: true });
   });
 
   runStoreContract({ createStore: () => createStore() });
@@ -172,7 +173,7 @@ describe('route-settings FileStore', function () {
     });
 
     it('throws InternalServerError when default-routes.yaml is missing on the empty state', async function () {
-      await fs.remove(path.join(defaultsPath, 'default-routes.yaml'));
+      await fs.rm(path.join(defaultsPath, 'default-routes.yaml'), { recursive: true, force: true });
 
       await assert.rejects(createStore().get(), (err: { errorType?: string }) => {
         assert.equal(err.errorType, 'InternalServerError');

@@ -152,7 +152,6 @@ catalog:
   eslint-plugin-tailwindcss: 4.0.4
   express: 4.22.3
   flexsearch: 0.7.43
-  fs-extra: 11.3.6
   glob: 13.0.6
   globals: 17.7.0
   got: 16.0.0

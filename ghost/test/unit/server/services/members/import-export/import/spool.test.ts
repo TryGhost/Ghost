@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import os from 'node:os';
 import path from 'node:path';
-import fs from 'fs-extra';
+import fs from 'node:fs/promises';
 import { afterEach, beforeEach, describe, it } from 'vitest';
 import LocalStorageBase from '../../../../../../../core/server/adapters/storage/LocalStorageBase';
 import { createRowSpool } from '../../../../../../../core/server/services/members/import-export/import/spool';
@@ -32,7 +32,7 @@ describe('members import row spool', function () {
   });
 
   afterEach(async function () {
-    await fs.remove(storagePath);
+    await fs.rm(storagePath, { recursive: true, force: true });
   });
 
   it('writes the rows as one JSON file at the root of the imports store and returns its key', async function () {
