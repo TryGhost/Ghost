@@ -2,8 +2,8 @@
 // The (default) module for storing media, using the local file system
 import path from 'path';
 import type { Response } from 'express';
+import { z } from 'zod';
 import config from '../../../shared/config';
-// @ts-expect-error This module lacks type definitions.
 import settingsCache from '../../../shared/settings-cache';
 import urlUtils from '../../../shared/url-utils';
 import { getStorageContentType } from '../../lib/file-types';
@@ -14,6 +14,13 @@ const messages = {
   notFoundWithRef: 'File not found: {file}',
   cannotRead: 'Could not read File: {file}',
 };
+
+const pinturaUrlSchema = z.string().min(1);
+
+const pinturaAssets = {
+  '.js': { setting: 'pintura_js_url', contentType: 'text/javascript' },
+  '.css': { setting: 'pintura_css_url', contentType: 'text/css' },
+} satisfies Record<string, { setting: string; contentType: string }>;
 
 class LocalFilesStorage extends LocalStorageBase {
   constructor() {
@@ -39,29 +46,41 @@ class LocalFilesStorage extends LocalStorageBase {
   setServeHeaders(res: Response, filePath: string): void {
     super.setServeHeaders(res, filePath);
 
-    if (this.isPinturaAsset(filePath)) {
-      return;
-    }
-
-    res.setHeader('Content-Type', getStorageContentType(filePath));
+    res.setHeader(
+      'Content-Type',
+      this.getPinturaContentType(filePath) ?? getStorageContentType(filePath),
+    );
   }
 
-  private isPinturaAsset(filePath: string): boolean {
-    const resolvedFilePath = path.resolve(filePath);
+  private getPinturaContentType(filePath: string): string | null {
+    const extension = path.extname(filePath).toLowerCase();
+    if (extension !== '.js' && extension !== '.css') {
+      return null;
+    }
 
-    return ['pintura_js_url', 'pintura_css_url'].some((key) => {
-      const url = settingsCache.get(key);
-      if (!url) {
-        return false;
+    const asset = pinturaAssets[extension];
+    const parsed = pinturaUrlSchema.safeParse(settingsCache.get(asset.setting));
+    if (!parsed.success) {
+      return null;
+    }
+
+    try {
+      const storageUrl = new URL(this.staticFileUrl);
+      const assetUrl = new URL(parsed.data, this.siteUrl);
+      const prefix = `${storageUrl.pathname}/`;
+      if (assetUrl.origin !== storageUrl.origin || !assetUrl.pathname.startsWith(prefix)) {
+        return null;
       }
 
-      try {
-        return path.resolve(this.storagePath, this.urlToPath(url)) === resolvedFilePath;
-      } catch {
-        // The setting points somewhere other than this storage, e.g. a CDN
-        return false;
-      }
-    });
+      // URL paths are encoded; serve-static passes a decoded filesystem path.
+      // Strip query strings/fragments and validate containment before comparing.
+      const relativePath = decodeURIComponent(assetUrl.pathname.slice(prefix.length));
+      const assetPath = this._resolveAndValidateStoragePath(relativePath);
+      return assetPath === path.resolve(filePath) ? asset.contentType : null;
+    } catch {
+      // Invalid, external, or out-of-storage settings retain the inert type.
+      return null;
+    }
   }
 }
 
