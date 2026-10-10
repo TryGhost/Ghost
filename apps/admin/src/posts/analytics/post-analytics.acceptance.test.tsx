@@ -2,6 +2,7 @@ import { describe, expect, it, onTestFinished } from 'vitest';
 import { page } from 'vitest/browser';
 import { focusManager } from '@tanstack/react-query';
 
+import { deferred } from '@/utils/deferred';
 import {
   currentRoute,
   fakeAdminStats,
@@ -17,6 +18,7 @@ import {
   renderAdminApp,
   settingsResponse,
   webAnalyticsBootOverrides,
+  type Post,
   type TinybirdPipeCapture,
 } from '@test-utils/acceptance';
 import { editorScreen } from '@/editor/editor.screen';
@@ -51,6 +53,23 @@ function seededPost(overrides: Partial<ReturnType<typeof post>> = {}) {
     newsletter: { id: NEWSLETTER_ID },
     ...overrides,
   });
+}
+
+/**
+ * Waits for every named pipe to be queried, then asserts none was sent without
+ * the routed post's uuid: a site-wide query the post views would discard.
+ */
+async function expectPipesScopedToPost(pipes: Record<string, TinybirdPipeCapture>) {
+  for (const [name, pipe] of Object.entries(pipes)) {
+    await expect
+      .poll(() => pipe.requests.length, { message: `${name} was never queried` })
+      .toBeGreaterThan(0);
+  }
+  const unscopedRequests = Object.values(pipes)
+    .flatMap((pipe) => pipe.requests)
+    .filter(({ params }) => params.get('post_uuid') !== POST_UUID)
+    .map(({ url }) => url);
+  expect(unscopedRequests).toEqual([]);
 }
 
 /**
@@ -93,8 +112,8 @@ function seedPostAnalyticsWorld(
     ],
     meta: {},
   });
-  fakeTinybirdToken();
-  fakeTinybirdPipe('api_active_visitors', [{ active_visitors: 3 }]);
+  const tokenApi = fakeTinybirdToken();
+  const activeVisitorsApi = fakeTinybirdPipe('api_active_visitors', [{ active_visitors: 3 }]);
   const topSourcesApi = fakeTinybirdPipe('api_top_sources', [
     { source: 'google.com', visits: 170 },
   ]);
@@ -102,6 +121,8 @@ function seedPostAnalyticsWorld(
   return {
     postsApi,
     linksApi,
+    tokenApi,
+    activeVisitorsApi,
     topSourcesApi,
     topLocationsApi,
     kpisApi: fakeTinybirdPipe('api_kpis', [
@@ -686,6 +707,24 @@ describe('Post analytics overview', () => {
     await expect.element(postAnalyticsScreen.growthCard()).toHaveTextContent('100');
   });
 
+  it('holds its Tinybird queries until the post has loaded', async () => {
+    const pendingPost = deferred<Post[]>();
+    // A held request would block teardown if an assertion fails first.
+    onTestFinished(() => pendingPost.resolve([]));
+    const { tokenApi, activeVisitorsApi, kpisApi, topSourcesApi } = seedPostAnalyticsWorld(
+      {},
+      () => pendingPost.promise,
+    );
+    await renderAdminApp(`/posts/analytics/${POST_ID}`, { boot: webAnalyticsBootOverrides() });
+
+    // The token resolves while the post is still loading.
+    await expect.poll(() => tokenApi.requests.length).toBeGreaterThan(0);
+    pendingPost.resolve([seededPost()]);
+
+    await expect.element(postAnalyticsScreen.uniqueVisitors()).toHaveTextContent('250');
+    await expectPipesScopedToPost({ activeVisitorsApi, kpisApi, topSourcesApi });
+  });
+
   it('keeps the post context when switching to the web tab', async () => {
     const { kpisApi } = seedPostAnalyticsWorld();
     await renderAdminApp(`/posts/analytics/${POST_ID}`, {
@@ -834,6 +873,25 @@ describe('Post analytics web', () => {
     await expect.element(postAnalyticsScreen.sourceRow('google.com')).toHaveTextContent('170');
     await expect.poll(() => topLocationsApi.lastRequest?.params.get('post_uuid')).toBe(POST_UUID);
     await expect.poll(() => topSourcesApi.lastRequest?.params.get('post_uuid')).toBe(POST_UUID);
+  });
+
+  it('holds its Tinybird queries until the post has loaded', async () => {
+    const pendingPost = deferred<Post[]>();
+    // A held request would block teardown if an assertion fails first.
+    onTestFinished(() => pendingPost.resolve([]));
+    const { tokenApi, activeVisitorsApi, kpisApi, topLocationsApi, topSourcesApi } =
+      seedPostAnalyticsWorld({}, () => pendingPost.promise);
+    // An applied filter makes the filter bar fetch that field's options too.
+    await renderAdminApp(`/posts/analytics/${POST_ID}/web?location=US`, {
+      boot: webAnalyticsBootOverrides(),
+    });
+
+    // The token resolves while the post is still loading.
+    await expect.poll(() => tokenApi.requests.length).toBeGreaterThan(0);
+    pendingPost.resolve([seededPost()]);
+
+    await expect.element(postAnalyticsScreen.sourceRow('google.com')).toHaveTextContent('170');
+    await expectPipesScopedToPost({ activeVisitorsApi, kpisApi, topLocationsApi, topSourcesApi });
   });
 
   it('filters the post analytics pipes when a location row is clicked', async () => {
