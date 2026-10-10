@@ -349,6 +349,8 @@ minimumReleaseAgeExclude:
   - 'ghost-storage-base'
   - 'gscan'
   - 'knex-migrator'
+  # Renovate security update: nx@23.2.1
+  - nx@23.2.1
 
 # configuration for pnpm's changeset functionality
 versioning:
