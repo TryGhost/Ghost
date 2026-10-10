@@ -220,7 +220,7 @@
       "infra:up": {
         "executor": "nx:run-commands",
         "options": {
-          "command": "if [ -n \"$CODESPACES$REMOTE_CONTAINERS\" ]; then echo 'Skipping docker compose up: already running inside a devcontainer, whose own compose lifecycle brought these services up.'; else docker compose -f compose.dev.yaml ${DEV_COMPOSE_FILES} up -d --wait --quiet-pull; fi"
+          "command": "node scripts/dev-infra-up.ts"
         }
       },
       "dev:host": {

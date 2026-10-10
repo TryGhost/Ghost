@@ -81,8 +81,9 @@ function overlayEnv(files: string[]): Record<string, string> {
   const published = (service: string, port: number) =>
     config.services[service]?.ports?.find((p) => p.target === port)?.published;
 
-  const toHost = (value: string) => {
-    if (config.services[value]) {
+  const toHost = (key: string, value: string) => {
+    // Bare hostnames only in host settings: a bucket can share a service's name
+    if (/host$/i.test(key) && value !== 'ghost-dev' && config.services[value]) {
       return '127.0.0.1';
     }
     return value.replace(
@@ -108,7 +109,7 @@ function overlayEnv(files: string[]): Record<string, string> {
   const env: Record<string, string> = {};
   for (const [key, value] of Object.entries(config.services['ghost-dev']?.environment ?? {})) {
     if (value !== null && base[key] !== value) {
-      env[key] = toHost(value);
+      env[key] = toHost(key, value);
     }
   }
 
