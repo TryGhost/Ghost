@@ -39,6 +39,7 @@ export function excludedSource(file: string): boolean {
 // Match actual tool conventions, not every application module containing "config".
 const toolConfigName =
   /^(eslint|vitest|vite|playwright|postcss|tailwind|svgo|rollup|webpack|babel|prettier|stylelint|jest|i18next-parser|lint-staged)(?:\.[^.]+)*\.config(?:\.[^.]+)*$/;
+// Retired build conventions still classify files read from Git history by --revision.
 const toolEntrypoints = new Set([
   '.lintstagedrc',
   '.pnpmfile',
@@ -49,11 +50,18 @@ const toolEntrypoints = new Set([
   '.prettierrc',
   '.babelrc',
   '.stylelintrc',
+  'ember-cli-build',
+  'testem',
   'gulpfile',
   'Gruntfile',
 ]);
 const toolHelpers = new Set([
+  'apps/ember-admin/lib/asset-delivery/index.js',
+  'apps/ember-admin/lib/check-node-version.js',
+  'apps/ember-admin/lib/ember-power-calendar-moment/index.js',
+  'apps/ember-admin/lib/ember-power-calendar-utils/index.js',
   'apps/admin/vite-backend-proxy.ts',
+  'apps/admin/vite-ember-assets.ts',
   'apps/admin/vite.shared.ts',
   'apps/comments-ui/vite-plugin-strip-fingerprinting.ts',
   'koenig/vitest.shared.ts',
@@ -73,7 +81,11 @@ export function category(file: string): Category {
   ) {
     return 'tests';
   }
-  if (/(^|\/)(scripts|\.github|\.storybook)(\/|$)/.test(file) || file.startsWith('configs/')) {
+  if (
+    /(^|\/)(scripts|\.github|\.storybook)(\/|$)/.test(file) ||
+    file.startsWith('configs/') ||
+    file.startsWith('apps/ember-admin/config/')
+  ) {
     return 'tooling';
   }
   if (/(^|\/)e2e(\/|$)/.test(file) || file.startsWith('packages/testing/')) {
