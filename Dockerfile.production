@@ -202,7 +202,7 @@ ENV GHOST_VERSION=${GHOST_BUILD_VERSION}
 RUN set -eux; \
     pkgVersion="$(node -p 'require("./package.json").version')"; \
     case "$GHOST_VERSION" in \
-        "$pkgVersion" | "$pkgVersion"+*) ;; \
+        "$pkgVersion" | "$pkgVersion"+?*) ;; \
         *) echo >&2 "error: GHOST_BUILD_VERSION is '$GHOST_VERSION', expected '$pkgVersion' or '$pkgVersion+<build>'"; exit 1 ;; \
     esac; \
     gosu --version; \
