@@ -113,6 +113,10 @@ between `2400` and `2998` and a `dev_<worktree>` database, so several worktrees
 can run `pnpm dev` at once against the same MySQL, Redis, and Mailpit. Mailpit
 tags each message with the checkout's name.
 
+A worktree's database starts as a copy of `ghost_dev`, so it skips setup and
+onboarding, and Ghost applies the branch's migrations when it boots. Run
+`pnpm reset:db` in the worktree to replace the copy with a fresh database.
+
 Delete `.ghost-dev.env` to be assigned new ports, or set `GHOST_DEV_PORT`,
 `GHOST_DEV_BACKEND_PORT`, or `GHOST_DEV_DATABASE` to choose them.
 
