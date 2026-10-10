@@ -327,6 +327,18 @@ body.react-admin {
   }
 }
 
+/* The top bar clock's colon */
+@keyframes admin-frame-blink {
+  0%,
+  50% {
+    opacity: 1;
+  }
+  51%,
+  100% {
+    opacity: 0;
+  }
+}
+
 /* Alerts show at the top and push content down */
 body.react-admin #admin-alerts {
   grid-row: 1;

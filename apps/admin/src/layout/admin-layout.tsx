@@ -25,6 +25,7 @@ import { SkipLink } from './skip-link';
 import { ContributorUserMenu } from './app-sidebar/user-menu';
 import { DunningBanner, DunningOverlay, useDunningLockTakeover } from '@/dunning';
 import { AdminFrame, type AdminFrameMode } from './admin-frame';
+import { AdminFrameTopBar } from './admin-frame-top-bar';
 import { FloatingSidebarContentSync } from './floating-sidebar-content-sync';
 import { GlobalSearchProvider } from '@/global-search/global-search-provider';
 
@@ -367,7 +368,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
     <GlobalSearchProvider>
       {!dunningLocked && <SkipLink target={mainRef} />}
       {adminFrame ? (
-        <AdminFrame locked={dunningLocked} mode={frameMode} topBar={null}>
+        <AdminFrame locked={dunningLocked} mode={frameMode} topBar={<AdminFrameTopBar />}>
           {sidebarLayout}
         </AdminFrame>
       ) : (
