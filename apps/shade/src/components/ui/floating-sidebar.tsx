@@ -108,7 +108,7 @@ export function getFloatingSidebarGapWidth(
 
 const UNFURL_DURATION = '450ms';
 // Forgiving, so a pointer drifting off the panel doesn't close it.
-const CLOSE_DELAY = 250;
+const CLOSE_DELAY = 400;
 // After the morph's duration, when it's taken as finished though no
 // transitionend came (e.g. a height that didn't change)
 const MORPH_END_GRACE = 100;
