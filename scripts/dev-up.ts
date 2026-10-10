@@ -5,12 +5,14 @@ import { setTimeout as sleep } from 'node:timers/promises';
 import { parseArgs } from 'node:util';
 import {
   checkoutSettings,
+  devPorts,
   isListening,
   isReady,
+  listeners,
   LOG_FILE,
   PID_FILE,
-  portInUse,
-  prepareStart,
+  processInfo,
+  upGroup,
 } from './lib/dev-stack.ts';
 import { checkoutRoot, devUrl, resolveGhostDevEnv } from './lib/ghost-dev-env.ts';
 
@@ -32,14 +34,24 @@ if (!command || !onHost(script)) {
   process.exit(1);
 }
 
-await prepareStart();
 await resolveGhostDevEnv();
 const env = checkoutSettings();
-for (const port of [env.GHOST_DEV_PORT, env.GHOST_DEV_BACKEND_PORT].map(Number)) {
-  if (await isListening(port)) {
-    console.error(`${portInUse(port)}.`);
-    process.exit(1);
-  }
+const group = upGroup();
+const busy = (
+  await Promise.all(devPorts(env).map(async (port) => ((await isListening(port)) ? port : 0)))
+).find(Boolean);
+if (group || busy) {
+  const pid = busy ? listeners([busy]).get(busy) : undefined;
+  const holder = pid ? processInfo(pid) : undefined;
+  console.error(
+    group
+      ? `Ghost dev is already running in this checkout (pid ${group}).`
+      : `Port ${busy} is in use${holder ? ` by pid ${holder.pid} (${holder.command.slice(0, 80)})` : ''}.`,
+  );
+  console.error(
+    "`pnpm dev:status` shows what's running; `pnpm dev:down` stops this checkout's Ghost.",
+  );
+  process.exit(1);
 }
 
 const logFile = join(checkoutRoot, LOG_FILE);

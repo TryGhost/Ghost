@@ -126,13 +126,13 @@ pnpm dev:status  # this checkout and any other running one; --all lists every ch
 pnpm dev:down    # stop this checkout's Ghost, however it was started
 ```
 
-`pnpm dev:status` shows each checkout's URL, ports, database, state, pid, uptime
-and memory, and `--json` prints them for scripts. `pnpm dev:up` writes its
-output to `.ghost-dev.log`. Pass a variant's script name, such as
+`pnpm dev:up` writes its output to `.ghost-dev.log` and refuses to start while
+the checkout's ports are in use. Pass a variant's script name, such as
 `pnpm dev:up dev:analytics`, to start that instead; `dev:docker` can't run this
-way. `pnpm dev` and `pnpm dev:up` refuse to start while the checkout's Ghost is
-already running, and stop processes that an earlier run left behind.
-`pnpm dev:down` leaves MySQL, Redis, and Mailpit running.
+way. `pnpm dev:status` finds each checkout's Ghost through the ports in its
+`.ghost-dev.env`, and `--json` prints the list for scripts. `pnpm dev:down`
+stops whatever holds this checkout's ports, including what a killed run left
+behind, and leaves MySQL, Redis, and Mailpit running.
 
 `pnpm dev:gc` lists the `dev_*` databases of worktrees that no longer exist, and
 `pnpm dev:gc --yes` drops them.
