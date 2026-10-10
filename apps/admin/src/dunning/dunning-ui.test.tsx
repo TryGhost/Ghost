@@ -336,7 +336,7 @@ describe('dunning UI', () => {
       expect(screen.queryByTestId('dunning-banner')).not.toBeInTheDocument();
 
       // The click records where to return after the payment (consumed by the
-      // Ember billing service's previousPage handling)
+      // billing screen's previousPage handling)
       expect(window.sessionStorage.getItem('ghost-dunning-pay-return-route')).toBe('/analytics');
 
       // On the billing route both stand down as usual.

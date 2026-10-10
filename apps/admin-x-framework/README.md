@@ -26,10 +26,8 @@ The library build remains required for those consumers.
 ### Admin theme controller
 
 `utils/admin-theme` provides the framework-independent appearance controller used
-by React Admin. It owns the root dark class, system
-appearance listener and transition suppression. An optional adapter can prepare
-legacy styles and receive the resolved theme. Destroy a controller before handing
-ownership to another shell; pending stylesheet work cannot apply after destruction.
+by Admin. It owns the root dark class, system appearance listener and transition
+suppression.
 
 ## Test
 

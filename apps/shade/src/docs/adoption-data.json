@@ -1570,12 +1570,6 @@
     }
   ],
   "adminXDsComponentsAggregate": [],
-  "ember": {
-    "hbsFiles": 193,
-    "spiritUtilityFiles": 69,
-    "patternFiles": 8,
-    "componentCssFiles": 23
-  },
   "publicApps": {
     "count": 5,
     "names": ["portal", "comments-ui", "signup-form", "sodo-search", "announcement-bar"]

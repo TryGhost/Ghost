@@ -10,9 +10,8 @@ import { useEffect, useRef, useState } from 'react';
  * The post-publish celebration, ported from `checkPublishFlowModal` in
  * `apps/ember-admin/app/components/posts-list/list.js`.
  *
- * The Ember editor writes a localStorage key and navigates here; the list reads
- * it on mount. The editor stays Ember on both sides of the flag, so only the
- * reader moved.
+ * The editor writes a localStorage key and navigates here; the list reads it
+ * on mount.
  */
 export function usePostPublishCelebration() {
   /**

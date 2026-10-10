@@ -230,13 +230,11 @@ export function PostsListScreen({ resource }: { resource: PostResource }) {
     giftLinkPost && canCopyGiftLink({ user: currentUser, post: giftLinkPost })
       ? giftLinkPost.id
       : null;
-  // Opened from the context menu. Ember reaches the same React modal over the
-  // state bridge; here the list owns it directly, so there is one modal and
-  // one set of eligibility rules behind both implementations.
+  // Opened from the context menu.
   const [giftLinkPostId, setGiftLinkPostId] = useState<string | null>(null);
 
-  // The Ember editor writes a localStorage key on publish and navigates here;
-  // this reads it. The editor stays Ember on both sides of the flag.
+  // The editor writes a localStorage key on publish and navigates here; this
+  // reads it.
   const celebration = usePostPublishCelebration();
   const { data: siteData } = useBrowseSite();
 
@@ -386,9 +384,7 @@ export function PostsListScreen({ resource }: { resource: PostResource }) {
                 />
               </Stack>
             ) : (
-              // Same testids as the Ember list, deliberately —
-              // shared e2e page objects. They can never collide:
-              // the Ember route aborts when this screen renders.
+              // Testids are shared with the e2e page objects.
               <Stack ref={revealRef} gap="md">
                 <ul
                   // Held modifier: children take no pointer

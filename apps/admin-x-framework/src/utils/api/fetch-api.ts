@@ -100,7 +100,7 @@ const isSessionExpiry = (endpoint: string | URL) => {
 };
 
 // Replace to the admin root at most once across concurrent failures, unless
-// Ember is already booting or displaying an unauthenticated route, or a screen holds it
+// Admin is already on an unauthenticated route or a screen holds it
 const redirectOnSessionExpiry = () => {
   const { adminRoot } = getGhostPaths();
 

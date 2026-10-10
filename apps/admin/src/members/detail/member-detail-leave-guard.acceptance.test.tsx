@@ -27,11 +27,11 @@ function fakeMemberDetailWorld(m: Member) {
  * leaving the screen:
  *
  * - react-router navigations (the breadcrumb Link) — guarded by `useBlocker`.
- * - native `<a href="#/…">` anchors (the admin sidebar, links into
- *   Ember-owned routes) — those create a history entry react-router didn't
- *   make and reach it as an untracked POP it cannot block, so they're guarded
- *   separately by `useHashLinkNavigationGuard` (the React port of Ember's
- *   `trailing-hash.js` click interception).
+ * - native `<a href="#/…">` anchors (such as the admin sidebar's) — those
+ *   create a history entry react-router didn't make and reach it as an
+ *   untracked POP it cannot block, so they're guarded separately by
+ *   `useHashLinkNavigationGuard` (the React port of Ember's `trailing-hash.js`
+ *   click interception).
  */
 describe('Member detail leave guard', () => {
   it('guards leaving via the breadcrumb (react-router link) with unsaved edits', async () => {

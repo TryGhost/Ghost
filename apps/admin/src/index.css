@@ -54,7 +54,7 @@ body {
    resting state; while the panel moves, the editor writes it onto each card
    every frame instead, so only the cards restyle. Registered as a length so the
    writing area's formula still computes to the pixels Koenig's card settings
-   panel parses; Ember sets pixels. */
+   panel parses. */
 @property --kg-breakout-adjustment {
   syntax: '<length>';
   inherits: true;
