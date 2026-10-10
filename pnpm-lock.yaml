@@ -676,7 +676,7 @@ catalogs:
       version: 0.3.2
     tldts:
       specifier: ^7.4.4
-      version: 7.4.4
+      version: 7.4.16
     tsx:
       specifier: 4.23.12
       version: 4.23.12
@@ -2588,7 +2588,7 @@ importers:
         version: 0.2.9
       tldts:
         specifier: 'catalog:'
-        version: 7.4.4
+        version: 7.4.16
       type-fest:
         specifier: 'catalog:'
         version: 5.7.0
@@ -16678,11 +16678,11 @@ packages:
     resolution: {integrity: sha512-QXqwfEl9ddlGBaRFXIvNKK6OhipSiLXuRuLJX5DErz0o0Q0rYxulWLdFryTkV5PkdZct5iMInwYEGe/eR++1AA==}
     hasBin: true
 
-  tldts-core@7.4.4:
-    resolution: {integrity: sha512-vwVLJVvvpslm7vqAH7+XNj/neA/Ynq7DT2EEcMuwc5YzN5XaMyRAqxwU+uX3azZ1FQtB2gvrvnLnAEkvYlVdfg==}
+  tldts-core@7.4.16:
+    resolution: {integrity: sha512-MDolfaSJtlSK5Y0A1xl3277ekubZwobpBjugknDizI9O5Rm60a1m8k4ICK+MRsCDzPygT81mp3BBf5RKDlFRfA==}
 
-  tldts@7.4.4:
-    resolution: {integrity: sha512-kFXFK7O4WPextIUAOk8qtnw9dxR9UIXP9CjuH1cTBVBZMDeQcUPgr/IazGiw1B0Yiw5L75gHLWeW4iD793r90g==}
+  tldts@7.4.16:
+    resolution: {integrity: sha512-QwBER5KMR86IIjpIiO7H/Z3IMJPsZ1A6RKPAqzTTgOyUQUSt9FdnKcqhTaJmkY6HVrgouZHZR0ncK5QxvmnQeg==}
     hasBin: true
 
   tmp@0.2.7:
@@ -19610,7 +19610,7 @@ snapshots:
       normalize-url: 9.0.1
       re2: 1.26.1
       smartquotes: 2.3.2
-      tldts: 7.4.4
+      tldts: 7.4.16
       url-regex-safe: 4.0.0(re2@1.26.1)
       video-extensions: 2.0.0
     transitivePeerDependencies:
@@ -22708,7 +22708,6 @@ snapshots:
   '@types/node@26.0.0':
     dependencies:
       undici-types: 8.3.0
-    optional: true
 
   '@types/normalize-package-data@2.4.4': {}
 
@@ -22785,7 +22784,7 @@ snapshots:
 
   '@types/set-cookie-parser@2.4.10':
     dependencies:
-      '@types/node': 22.20.1
+      '@types/node': 26.0.0
 
   '@types/sinon@22.0.0':
     dependencies:
@@ -32805,11 +32804,11 @@ snapshots:
 
   tlds@1.261.0: {}
 
-  tldts-core@7.4.4: {}
+  tldts-core@7.4.16: {}
 
-  tldts@7.4.4:
+  tldts@7.4.16:
     dependencies:
-      tldts-core: 7.4.4
+      tldts-core: 7.4.16
 
   tmp@0.2.7: {}
 
@@ -32844,7 +32843,7 @@ snapshots:
 
   tough-cookie@6.0.2:
     dependencies:
-      tldts: 7.4.4
+      tldts: 7.4.16
 
   tr46@0.0.3: {}
 
@@ -33086,8 +33085,7 @@ snapshots:
 
   undici-types@8.10.0: {}
 
-  undici-types@8.3.0:
-    optional: true
+  undici-types@8.3.0: {}
 
   undici@6.28.1: {}
 
