@@ -135,5 +135,16 @@ describe('actions api helpers', () => {
         ),
       ).toEqual({ isExternal: true, route: 'tags/useful-tag' });
     });
+
+    it('links an offer to its Settings editor', () => {
+      expect(
+        getLinkTarget(
+          baseAction({
+            resource_type: 'offer',
+            resource: { id: 'offer-1', slug: 'black-friday' },
+          }),
+        ),
+      ).toEqual({ route: 'offers/edit/offer-1' });
+    });
   });
 });

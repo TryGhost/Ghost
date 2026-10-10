@@ -158,11 +158,8 @@ export const getLinkTarget = (action: Action): InternalLink | ExternalLink | und
         if (!action.resource || !action.resource.id) {
           return;
         }
-        // replace with Settings route once Offers X GA is released
-        return {
-          isExternal: true,
-          route: `offers/${action.resource.id}`,
-        };
+
+        return { route: `offers/edit/${action.resource.id}` };
       case 'tag':
         if (!action.resource || !action.resource.slug) {
           return;

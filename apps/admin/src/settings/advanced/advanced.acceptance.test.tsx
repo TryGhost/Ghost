@@ -5,15 +5,20 @@ import {
   fakeActions,
   fakeAdminEndpoint,
   fakeEditSettings,
+  fakeOffers,
   fakeSettingsScreens,
+  fakeTiers,
   fakeUsers,
+  offer,
   renderAdminApp,
   settingsResponse,
   currentUserResponse,
   currentRoute,
   configResponse,
+  tier,
   type StaffUser,
 } from '@test-utils/acceptance';
+import { offersScreen } from '@/settings/offers.screen';
 import { settingsScreen } from '@/settings/settings.screen';
 
 // Settings groups and the content wrapper open stacking contexts; a dialog rendered
@@ -523,6 +528,39 @@ describe('Advanced settings', () => {
 
     await modal.getByRole('button', { name: 'Close' }).click();
     await expect(modal).toHaveCount(0);
+  });
+
+  it('opens an offer from history in the offer editor', async () => {
+    fakeSettingsScreens();
+    fakeUsers(currentUserResponse().users as unknown as StaffUser[]);
+    const supporter = tier({ name: 'Supporter' });
+    const blackFriday = offer({
+      name: 'Black Friday',
+      tier: { id: supporter.id, name: supporter.name },
+    });
+    fakeTiers([supporter]);
+    fakeOffers([blackFriday]);
+    fakeAdminEndpoint('GET', `/offers/${blackFriday.id}/`, { offers: [blackFriday] });
+    fakeActions([
+      {
+        id: 'offer',
+        resource_id: blackFriday.id,
+        resource_type: 'offer',
+        actor_id: '1',
+        actor_type: 'user',
+        event: 'edited',
+        context: '{}',
+        created_at: '2023-08-11T12:37:02.000Z',
+        actor: { id: '1', name: 'Jamie Larson', slug: 'main', image: null },
+        resource: { id: blackFriday.id, slug: blackFriday.code, name: blackFriday.name },
+      },
+    ]);
+    await renderAdminApp('/settings/history/view');
+
+    await settingsScreen.section('history-modal').getByText('Black Friday').click();
+
+    await expect.poll(currentRoute).toBe(`/settings/offers/edit/${blackFriday.id}`);
+    await expect.element(offersScreen.updateModal()).toBeVisible();
   });
 
   it('hydrates the staff filter from a history route', async () => {
