@@ -1,19 +1,8 @@
 export type AdminThemeMode = 'light' | 'dark' | 'system';
 export type ResolvedAdminTheme = 'light' | 'dark';
 
-/** Optional compatibility effects for a shell with a separate dark stylesheet. */
-export interface AdminThemeAdapter {
-  preload: () => Promise<void>;
-  apply: (theme: ResolvedAdminTheme) => void;
-}
-
 export function createAdminThemeController(onChange?: (theme: ResolvedAdminTheme) => void) {
   let mode: AdminThemeMode = 'light';
-  let hasTheme = false;
-  let adapter: AdminThemeAdapter | undefined;
-  let preloadPromise: Promise<void> | undefined;
-  let prepared = true;
-  let revision = 0;
   let disposed = false;
   let removeSystemListener: (() => void) | undefined;
   let releaseFrame: number | undefined;
@@ -24,13 +13,12 @@ export function createAdminThemeController(onChange?: (theme: ResolvedAdminTheme
     const isChange = html.classList.contains('dark') !== (theme === 'dark');
     // Without a theme change there are no transitions to hold back, and
     // toggling a class on <html> restyles every element in the document.
-    if (!isChange && !adapter) {
+    if (!isChange) {
       onChange?.(theme);
       return;
     }
     html.classList.add('theme-switching');
     html.classList.toggle('dark', theme === 'dark');
-    adapter?.apply(theme);
     onChange?.(theme);
 
     if (releaseFrame !== undefined) {
@@ -49,25 +37,11 @@ export function createAdminThemeController(onChange?: (theme: ResolvedAdminTheme
     return mode === 'system' ? (systemIsDark ? 'dark' : 'light') : mode;
   }
 
-  function preload(): Promise<void> {
-    if (!adapter) {
-      return Promise.resolve();
-    }
-    preloadPromise ??= adapter.preload().catch((error: unknown) => {
-      preloadPromise = undefined;
-      throw error;
-    });
-    return preloadPromise;
-  }
-
-  async function setTheme(nextMode: AdminThemeMode): Promise<void> {
+  function setTheme(nextMode: AdminThemeMode) {
     if (disposed) {
       return;
     }
-    hasTheme = true;
     mode = nextMode;
-    revision += 1;
-    const currentRevision = revision;
     removeSystemListener?.();
     removeSystemListener = undefined;
 
@@ -76,9 +50,7 @@ export function createAdminThemeController(onChange?: (theme: ResolvedAdminTheme
       systemIsDark = query.matches;
       const handleChange = (event: MediaQueryListEvent) => {
         systemIsDark = event.matches;
-        if (prepared && !disposed && currentRevision === revision) {
-          apply(resolveTheme());
-        }
+        apply(resolveTheme());
       };
       if (typeof query.addEventListener === 'function') {
         query.addEventListener('change', handleChange);
@@ -89,31 +61,13 @@ export function createAdminThemeController(onChange?: (theme: ResolvedAdminTheme
       }
     }
 
-    if (prepared) {
-      apply(resolveTheme());
-      return;
-    }
-
-    await preload();
-    if (!disposed && currentRevision === revision) {
-      prepared = true;
-      // A system change or newer preference may arrive while styles load.
-      apply(resolveTheme());
-    }
+    apply(resolveTheme());
   }
 
   return {
-    preload,
     setTheme,
-    setAdapter(nextAdapter: AdminThemeAdapter): Promise<void> {
-      adapter = nextAdapter;
-      preloadPromise = undefined;
-      prepared = false;
-      return hasTheme ? setTheme(mode) : Promise.resolve();
-    },
     destroy() {
       disposed = true;
-      revision += 1;
       removeSystemListener?.();
       if (releaseFrame !== undefined) {
         cancelAnimationFrame(releaseFrame);

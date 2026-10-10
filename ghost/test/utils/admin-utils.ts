@@ -7,13 +7,7 @@ const ensureFile = (filePath: string): void => {
   writeFileSync(filePath, '', { flag: 'a' });
 };
 
-const adminFiles = [
-  'built/admin/index.html',
-  'built/admin/assets/ghost.js',
-  'built/admin/assets/ghost.css',
-  'built/admin/assets/vendor.js',
-  'built/admin/assets/vendor.css',
-];
+const adminFiles = ['built/admin/index.html', 'built/admin/assets/admin.js'];
 
 export const stubAdminFiles = (): void => {
   adminFiles.forEach((file) => {

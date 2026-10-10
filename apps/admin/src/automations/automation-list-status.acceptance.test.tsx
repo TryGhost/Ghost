@@ -274,6 +274,8 @@ describe('Automation list status actions', () => {
     await openConfirmation('Turn off');
     await dialog().getByRole('button', { name: 'Turn off', exact: true }).click();
     try {
+      // The mutation becomes pending before MSW captures the request.
+      await expect.poll(() => edit.requests.length).toBe(1);
       await expect.element(dialog().getByRole('button', { name: 'Cancel' })).toBeDisabled();
       await expect.element(dialog().getByRole('button', { name: 'Turning off...' })).toBeDisabled();
       await userEvent.keyboard('{Escape}');
@@ -284,5 +286,6 @@ describe('Automation list status actions', () => {
     }
     await expect(dialog()).toHaveCount(0);
     await expect.element(page.getByTestId('automation-list-row')).toHaveTextContent('Off');
+    expect(edit.requests).toHaveLength(1);
   });
 });

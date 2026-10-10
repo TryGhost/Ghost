@@ -25,8 +25,8 @@ const OTHER_POST_ID = 'other1';
 const NEW_POST_ID = 'new789';
 const LOADED_AT = '2026-01-01T00:00:00.000Z';
 const CREATED_AT = '2026-01-01T00:00:05.000Z';
-// The posts list is React-owned here so the back link is a router link and the
-// blocker sees the navigation; the hash-anchor path pins it to Ember below.
+// The back link is a router link, so the blocker sees the navigation; raw hash
+// anchors below go through the hash-link guard instead.
 // Each test names its own autosave regime, since the debounce decides whether a write
 // came from the exit or from an autosave; naming none leaves the editor's real 3s.
 const FLAG_ON: RenderAdminAppOptions = { labs: { editorReact: true } };

@@ -138,8 +138,7 @@ describe('Posts list context menu', () => {
    * Ember's "Copy preview link" copies `post.url` — the public permalink,
    * which for a draft points at a page that does not exist yet. It is the
    * same string its "Copy link to post" action copies, so the two menu items
-   * are indistinguishable. Fixed here rather than ported; flagged for Ember
-   * separately.
+   * are indistinguishable. Fixed here rather than ported.
    */
   it('copies the preview link, not the public permalink', async () => {
     const draft = post({ title: 'A draft', status: 'draft', url: 'https://example.com/a-draft/' });
@@ -207,10 +206,8 @@ describe('Posts list context menu', () => {
   });
 
   /**
-   * A gift link shares a gated post with someone who isn't a member. Ember's
-   * menu hands off to this same React modal over the state bridge; the React
-   * list opens it directly, so there is one modal and one set of eligibility
-   * rules (`@/shared/gift-link`) behind both.
+   * A gift link shares a gated post with someone who isn't a member. The list
+   * opens the modal directly; eligibility rules live in `@/shared/gift-link`.
    */
   describe('share as a gift', () => {
     const gated = post({ title: 'Members only', status: 'published', visibility: 'paid' });

@@ -18,8 +18,8 @@ import { type ThemeProblem } from '@tryghost/admin-x-framework/api/themes';
 import { LucideIcon, cn, formatNumber } from '@tryghost/shade/utils';
 
 /**
- * A grey inline-code chip that also answers every property of Ghost's legacy
- * unlayered `code, tt` rule. Tokens are spelled out in full because Tailwind
+ * A grey inline-code chip that also answers every property of the `code` rule
+ * in `element-styles.css`. Tokens are spelled out in full because Tailwind
  * only generates utilities it finds literally in the source.
  */
 const CODE_CHIP =

@@ -219,27 +219,6 @@ describe('Email performance sidebar', () => {
     },
   );
 
-  it('closes on Escape even when the Ember shell prevents the default action', async () => {
-    // The host's shortcuts mixin prevents default before dispatching closeMenus.
-    const handleShellShortcut = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        event.preventDefault();
-      }
-    };
-    document.addEventListener('keydown', handleShellShortcut);
-    try {
-      prepare([email('First')]);
-      fakeAdminEndpoint('GET', linksPath(), { automation_action_links: [] });
-      await boot();
-      await show();
-      await expect.element(panel()).toBeVisible();
-      await userEvent.keyboard('{Escape}');
-      await expect.element(panel()).not.toBeInTheDocument();
-    } finally {
-      document.removeEventListener('keydown', handleShellShortcut);
-    }
-  });
-
   it('reserves space for the panel without covering the selected card at 1024px', async () => {
     await page.viewport(1024, 900);
     try {

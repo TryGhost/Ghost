@@ -26,7 +26,6 @@ import { postsListScreen } from '@/posts/list/posts-list.screen';
 const POST_ID = 'abc123';
 const NEW_POST_ID = 'new123';
 const LOADED_AT = '2026-01-01T00:00:00.000Z';
-// The lists are React-owned so the delete's navigation stays in the router.
 const FLAG_ON = { labs: { editorReact: true } };
 
 const POLL = { timeout: 10_000 };

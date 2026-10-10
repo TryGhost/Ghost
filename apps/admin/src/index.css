@@ -54,7 +54,7 @@ body {
    resting state; while the panel moves, the editor writes it onto each card
    every frame instead, so only the cards restyle. Registered as a length so the
    writing area's formula still computes to the pixels Koenig's card settings
-   panel parses; Ember sets pixels. */
+   panel parses. */
 @property --kg-breakout-adjustment {
   syntax: '<length>';
   inherits: true;
@@ -128,7 +128,7 @@ body {
 /* These components are visually headings but do not all use heading elements.
    Keep the display alternates scoped to their title text. */
 :where(.shade-admin, body.react-admin.react-admin-mounted > :is(.shade.shade-admin, #admin-alerts))
-  :is(.heading-font-features, .gh-editor-title, .gh-publish-title) {
+  .heading-font-features {
   font-feature-settings: var(--heading-font-feature-settings);
 }
 
@@ -319,14 +319,6 @@ body.react-admin #root .shade.shade-admin {
 
 /* Keep the host page's loader visible while the React bundle boots, until
    React mounts (app-root.tsx adds the body class). */
-body.react-admin > #boot-splash {
-  position: fixed;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
 body.react-admin.react-admin-mounted > #boot-splash {
   display: none;
 }
@@ -334,11 +326,6 @@ body.react-admin.react-admin-mounted > #boot-splash {
 /* iOS safe area handling for mobile navbar */
 body.react-admin .safe-area-inset-bottom {
   padding-bottom: env(safe-area-inset-bottom);
-}
-
-body.react-admin .gh-canvas-header {
-  padding-top: 20px;
-  padding-bottom: 20px;
 }
 
 body.react-admin [data-header='header-title'] {
@@ -356,20 +343,6 @@ body.react-admin [data-header='header'] {
 body.react-admin [data-navbar='navbar'] {
   padding-top: 20px;
   padding-bottom: 20px;
-}
-
-body.react-admin .gh-canvas-header {
-  z-index: 40;
-}
-
-body.react-admin .members-header {
-  position: relative;
-}
-
-body.react-admin [data-test-table='members'] thead,
-body.react-admin [data-test-table='members'] tr {
-  position: relative;
-  z-index: 30;
 }
 
 /* Screen transitions. The router runs a view

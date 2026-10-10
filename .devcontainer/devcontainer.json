@@ -49,7 +49,7 @@
   // Admin Toolbar are NOT listed here — since the Caddy file_server switch
   // (#28970) they build to disk (`vite build --watch`) instead of running
   // a dev server, so there's no port to forward for them.
-  "forwardPorts": [2368, 3306, 6379, 1025, 8025, 5174, 4200, 4173],
+  "forwardPorts": [2368, 3306, 6379, 1025, 8025, 5174, 4173],
   "portsAttributes": {
     "2368": { "label": "Ghost (via gateway)", "onAutoForward": "notify" },
     "3306": { "label": "MySQL" },

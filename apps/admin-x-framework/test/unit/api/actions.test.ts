@@ -1,4 +1,9 @@
-import { type Action, actionsAreGroupable, getActionTitle } from '../../../src/api/actions';
+import {
+  type Action,
+  actionsAreGroupable,
+  getActionTitle,
+  getLinkTarget,
+} from '../../../src/api/actions';
 
 const baseAction = (overrides: Partial<Action> = {}): Action => ({
   id: 'action-1',
@@ -116,6 +121,30 @@ describe('actions api helpers', () => {
           }),
         ),
       ).toBe('Member edited');
+    });
+  });
+
+  describe('getLinkTarget', () => {
+    it('links a tag to its detail page', () => {
+      expect(
+        getLinkTarget(
+          baseAction({
+            resource_type: 'tag',
+            resource: { id: 'tag-1', slug: 'useful-tag' },
+          }),
+        ),
+      ).toEqual({ isExternal: true, route: 'tags/useful-tag' });
+    });
+
+    it('links an offer to its Settings editor', () => {
+      expect(
+        getLinkTarget(
+          baseAction({
+            resource_type: 'offer',
+            resource: { id: 'offer-1', slug: 'black-friday' },
+          }),
+        ),
+      ).toEqual({ route: 'offers/edit/offer-1' });
     });
   });
 });

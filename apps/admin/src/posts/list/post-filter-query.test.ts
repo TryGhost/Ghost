@@ -95,9 +95,9 @@ describe('parsePostFilters', () => {
     expect(parsePostFilters({ tag: '   ' })).toEqual([]);
   });
 
-  // A saved view can point at a tag that was later renamed, or at a value a
-  // newer Ember build understands. Dropping it would silently rewrite the
-  // user's URL and corrupt their view.
+  // A saved view can point at a tag that was later renamed, or at a value this
+  // build doesn't recognise. Dropping it would silently rewrite the user's URL
+  // and corrupt their view.
   it('keeps values it does not recognise', () => {
     expect(withoutIds(parsePostFilters({ type: 'nonsense', tag: 'deleted-tag' }))).toEqual([
       { field: 'type', operator: 'is_any_of', values: ['nonsense'] },

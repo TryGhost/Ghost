@@ -19,7 +19,7 @@ import { deferred } from '@/utils/deferred';
 
 const POST_ID = 'abc123';
 const FLAG_ON = withFastAutosave({ labs: { editorReact: true } });
-// Ember-owned, so leaving to it unmounts the editor without mounting another React screen.
+// A non-editor route, so leaving to it unmounts the editor.
 const LEAVE_EDITOR_HASH = '#/restore';
 const LOADED_AT = '2026-01-01T00:00:00.000Z';
 const THEIR_SAVE_AT = '2026-01-01T09:00:00.000Z';

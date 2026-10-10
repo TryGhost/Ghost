@@ -13,11 +13,11 @@ exist for external consumers only (see [Shipping](#shipping)).
 
 ### Editor UI
 
-| Package                                        | What it is                                                                                     | Consumed by                                                                                     |
-| ---------------------------------------------- | ---------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
-| [koenig-lexical](./koenig-lexical)             | The Lexical-based rich text editor (React). Ships as a UMD bundle with styles and SVGs inlined | `ghost/admin` (bundled into admin assets at build time), `apps/admin`, `apps/admin-x-framework` |
-| [kg-simplemde](./kg-simplemde)                 | Customised fork of SimpleMDE, used by koenig-lexical's markdown card                           | `koenig-lexical`                                                                                |
-| [kg-unsplash-selector](./kg-unsplash-selector) | React Unsplash image picker                                                                    | `koenig-lexical`, `apps/admin`                                                                  |
+| Package                                        | What it is                                                                                     | Consumed by                                                                      |
+| ---------------------------------------------- | ---------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| [koenig-lexical](./koenig-lexical)             | The Lexical-based rich text editor (React). Ships as a UMD bundle with styles and SVGs inlined | `apps/admin` (bundled into admin assets at build time), `apps/admin-x-framework` |
+| [kg-simplemde](./kg-simplemde)                 | Customised fork of SimpleMDE, used by koenig-lexical's markdown card                           | `koenig-lexical`                                                                 |
+| [kg-unsplash-selector](./kg-unsplash-selector) | React Unsplash image picker                                                                    | `koenig-lexical`, `apps/admin`                                                   |
 
 ### Lexical node definitions & rendering
 
@@ -31,13 +31,13 @@ through it.
 | [kg-default-transforms](./kg-default-transforms)       | Lexical node transforms (denesting, blockquote children, etc.) shared between editor and server                                                                 | `koenig-lexical`, `kg-lexical-html-renderer`, `kg-html-to-lexical` |
 | [kg-lexical-html-renderer](./kg-lexical-html-renderer) | Renders a serialized Lexical state to front-end/email HTML server-side (not editor DOM — output differs per target, e.g. `<table>` markup for email)            | `ghost`                                                            |
 | [kg-html-to-lexical](./kg-html-to-lexical)             | Converts HTML strings into Lexical editor state (imports, API `?source=html`)                                                                                   | `ghost`                                                            |
-| [kg-converters](./kg-converters)                       | Converts between serialized Mobiledoc and Lexical formats                                                                                                       | `ghost`, `ghost/admin`                                             |
+| [kg-converters](./kg-converters)                       | Converts between serialized Mobiledoc and Lexical formats                                                                                                       | `ghost`, `apps/admin`                                              |
 
 ### Shared helpers
 
 | Package                                                  | What it is                                                         | Consumed by                                                                 |
 | -------------------------------------------------------- | ------------------------------------------------------------------ | --------------------------------------------------------------------------- |
-| [kg-clean-basic-html](./kg-clean-basic-html)             | Sanitises/normalises snippets of "basic HTML" (card captions etc.) | `ghost`, `ghost/admin`, `kg-default-nodes`                                  |
+| [kg-clean-basic-html](./kg-clean-basic-html)             | Sanitises/normalises snippets of "basic HTML" (card captions etc.) | `ghost`, `apps/admin`, `kg-default-nodes`                                   |
 | [kg-markdown-html-renderer](./kg-markdown-html-renderer) | Markdown → HTML rendering for the markdown card                    | `ghost`, `kg-default-nodes`, `kg-default-cards`                             |
 | [kg-utils](./kg-utils)                                   | Small shared utilities (slugify)                                   | `kg-default-cards`, `kg-lexical-html-renderer`, `kg-markdown-html-renderer` |
 
@@ -105,9 +105,8 @@ edit/run/test loop against ghost.
 Ghost itself never installs these packages from npm:
 
 - **Dev and CI** resolve them from the workspace (`workspace:~`).
-- **Ghost Admin** bundles the editor at build time:
-  `ghost/admin/lib/asset-delivery` copies `koenig-lexical`'s UMD build into
-  the admin assets, served at `/ghost/assets/koenig-lexical/`.
+- **Ghost Admin** bundles the editor at build time: Admin's Vite build
+  includes `koenig-lexical` in the admin assets.
 - **The release archive** embeds the kg-* packages as component tarballs —
   `ghost/scripts/pack.js` discovers them transitively from ghost's
   dependencies and packs each one, so a deployed Ghost installs exactly the

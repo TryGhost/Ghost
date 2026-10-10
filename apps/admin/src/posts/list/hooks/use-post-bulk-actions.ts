@@ -143,14 +143,6 @@ export function usePostBulkActions({ resource, onDeleted, onEdited }: UsePostBul
   const [isRunning, setIsRunning] = useState(false);
   const queryClient = useQueryClient();
 
-  /*
-   * Invalidation goes through TanStack's `invalidateQueries` directly, never
-   * the framework's `onInvalidate`: `PostsResponseType` has no entry in the
-   * bridge's `emberDataTypeMapping`, so that call throws outright — and the
-   * mapping it would need resolves to `store.unloadAll('post')`, which would
-   * drop the record out from under an editor the user may have open.
-   */
-
   // Called unconditionally and picked by resource — hooks can't be branched.
   const bulkEditPosts = useBulkEditPosts();
   const bulkEditPages = useBulkEditPages();

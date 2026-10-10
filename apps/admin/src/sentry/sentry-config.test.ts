@@ -51,7 +51,7 @@ describe('getSentryConfig', () => {
       /^Load failed$/,
       /^(AbortError: )?The operation was aborted\. ?$/,
       /^(AbortError: |InvalidStateError: )?Transition was (skipped|aborted because of invalid state)(\. [A-Za-z ]+)?$/,
-      /^(Skipping view transition because skipTransition\(\) was called|View transition was skipped because document visibility state is hidden)\.$/,
+      /^(Skipping view transition because (skipTransition\(\) was called|viewport size changed)|View transition was skipped because document visibility state is hidden)\.$/,
       /^Skipped ViewTransition due to (skipTransition\(\) call|document being hidden)$/,
       /^ResizeObserver loop completed with undelivered notifications/,
       /^ResizeObserver loop limit exceeded/,
@@ -82,6 +82,7 @@ describe('getSentryConfig', () => {
       'View transition was skipped because document visibility state is hidden.',
     ],
     ['AbortError', 'Skipping view transition because skipTransition() was called.'],
+    ['InvalidStateError', 'Skipping view transition because viewport size changed.'],
     ['InvalidStateError', 'Skipped ViewTransition due to document being hidden'],
     ['AbortError', 'Skipped ViewTransition due to skipTransition() call'],
   ])('ignores the skipped view transition %s: %j', (type, value) => {
@@ -117,11 +118,10 @@ describe('getSentryConfig', () => {
     getSentryConfig({ dsn: DSN, environment: 'production', version: '6.1' });
 
     expect(replayIntegration).toHaveBeenCalledExactlyOnceWith({
-      mask: ['.koenig-lexical', '.gh-dashboard', '[data-sentry-automations-mask]'],
+      mask: ['.koenig-lexical', '[data-sentry-automations-mask]'],
       unmask: [
         'body:not([data-sentry-automations-mask]) [role="menu"]',
         'body:not([data-sentry-automations-mask]) [data-testid="settings-panel"]',
-        'body:not([data-sentry-automations-mask]) .gh-nav',
       ],
       maskAllText: false,
       maskAllInputs: true,

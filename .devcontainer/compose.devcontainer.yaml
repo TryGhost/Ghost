@@ -73,7 +73,6 @@ services:
     environment:
       GHOST_BACKEND: ghost-dev:2368
       ADMIN_DEV_SERVER: ghost-dev:5174
-      ADMIN_LIVE_RELOAD_SERVER: ghost-dev:4200
       LEXICAL_DEV_SERVER: ghost-dev:4173
 
 volumes:

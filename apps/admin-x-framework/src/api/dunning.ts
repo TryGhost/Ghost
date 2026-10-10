@@ -1,9 +1,8 @@
 import { z } from 'zod';
 
 /**
- * sessionStorage keys the React admin's dunning UI and the Ember billing
- * service handshake through — one side writes, the other consumes. Defined
- * here so the cross-app contract lives in one place.
+ * sessionStorage keys the dunning UI and the billing screen exchange across a
+ * payment — one side writes, the other consumes.
  */
 
 /** Route a "Pay now" CTA was clicked on; the post-payment return lands there. */

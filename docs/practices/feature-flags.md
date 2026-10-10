@@ -79,7 +79,7 @@ Use `labs.enabledMiddleware('myFeature')` when an entire API route should return
 `@labs.myFeature`; a helper which must report a disabled-feature error can use
 `labs.enabledHelper(...)`.
 
-In React Admin, use `useFeatureFlag` from
+In Admin, use `useFeatureFlag` from
 `@tryghost/admin-x-framework/hooks`. It returns `true` when the server-computed
 value in the Admin config response is boolean `true` or the flag is enabled by
 an Admin session override. Without an override, it returns `false` while the
@@ -194,7 +194,7 @@ The different test systems do not use the same Labs defaults:
 | Ghost Core unit tests                                                               | No flags are forced on; stub the value needed by the test                                      |
 | Ghost Core `integration` and `legacy` tests using `testUtils.setup()`               | Every registered private and public beta flag is forced on                                     |
 | Ghost Core `e2e`, `e2e-api`, and `e2e-isolated` tests using `fixtureManager.init()` | Every registered private and public beta flag is forced on                                     |
-| React Admin unit and acceptance tests using the shared test-data fixtures           | `labsDefaults` flags off, `GA_FEATURES` on; pass a `labs` override for the case under test     |
+| Admin unit and acceptance tests using the shared test-data fixtures                 | `labsDefaults` flags off, `GA_FEATURES` on; pass a `labs` override for the case under test     |
 | Top-level Playwright tests in `e2e/`                                                | Labs uses the new site's values; only flags passed through `test.use({labs: ...})` are changed |
 
 Ghost Core's common fixture initializer adds `labs:enabled` to every fixture

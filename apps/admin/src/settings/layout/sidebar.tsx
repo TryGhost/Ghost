@@ -326,6 +326,15 @@ const Sidebar: React.FC = () => {
 
   // Auto-focus on searchfield on page load
   useEffect(() => {
+    // Lazy content can mount the sidebar after a deep-linked modal has opened.
+    // Keep focus in the modal instead of moving it to the background search.
+    if (
+      document.getElementById('modal-backdrop') ||
+      document.querySelector(':is([role="dialog"], [role="alertdialog"])[data-state="open"]')
+    ) {
+      return;
+    }
+
     if (searchInputRef.current) {
       searchInputRef.current.focus();
     }

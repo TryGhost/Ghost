@@ -20,10 +20,7 @@ import { useSettingsNavigationSlot } from '@/layout/settings-navigation';
 import { SettingsLoading } from '@/settings/settings-loading';
 
 import { useLazyComponent } from '@/shared/use-lazy-component';
-
-// The sections are most of Settings' code; loading them separately lets the
-// navigation show first.
-const loadMainContent = () => import('./main-content');
+import { loadSettingsContent } from '@/settings/load-settings';
 
 interface AppProps {
   upgradeStatus?: UpgradeStatusType;
@@ -85,7 +82,7 @@ function SettingsNavigationPortal() {
 
 export function App({ upgradeStatus }: AppProps) {
   const admin7Settings = useFeatureFlag('admin7settings');
-  const MainContent = useLazyComponent(loadMainContent);
+  const MainContent = useLazyComponent(loadSettingsContent);
 
   return (
     <SettingsAppProvider upgradeStatus={upgradeStatus}>

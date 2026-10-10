@@ -79,7 +79,7 @@ import {
   xImageUnsplashButton,
 } from '@tryghost/test-data/selectors/editor';
 
-/** The React sidebar's sections, in the order it renders them. */
+/** The sidebar's sections, in the order it renders them. */
 export type PostSettingsSectionId =
   | 'url'
   | 'publish-date'
@@ -854,7 +854,7 @@ class DeleteSection extends InlineSection {
   }
 }
 
-/** The React editor's post settings sidebar. */
+/** The editor's post settings sidebar. */
 export class PostSettingsSidebar {
   readonly root: Locator;
   /** A section's failed-browse notice, wherever the sidebar shows one. */

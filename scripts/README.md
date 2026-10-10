@@ -106,7 +106,7 @@ configuration is not tooling merely because its name contains `config`. Runner
 configs such as `e2e/playwright.config.mjs` are tooling; actual tests remain tests.
 
 Test support includes
-`test-utils`, `__fixtures__`, Mirage modules and `packages/testing/`; backend
+`test-utils`, `__fixtures__` and `packages/testing/`; backend
 schema fixtures remain backend code. JSON
 schema version 2 replaces the old `production` category with these two values.
 

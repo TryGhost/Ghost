@@ -103,8 +103,7 @@ const ViewAllLink: React.FC<{ memberId: string }> = ({ memberId }) => {
   return link;
 };
 
-// Copy pinned to Ember's `activity-feed-empty.hbs:5` so any future refactor of
-// the message stays in lockstep with what Ember users see.
+// Copy ported verbatim from Ember's `activity-feed-empty.hbs`.
 const NEW_MEMBER_ACTIVITY_COPY = 'All events related to this member will be shown here.';
 
 const capitalize = (s?: string) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : '');

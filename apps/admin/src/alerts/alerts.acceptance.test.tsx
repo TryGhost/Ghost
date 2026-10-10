@@ -116,7 +116,7 @@ describe('Server notifications', () => {
 });
 
 describe('Upgrade status alerts', () => {
-  it('shows the upgrade alert once per page load when React requests reach an upgraded Ghost', async () => {
+  it('shows the upgrade alert once per page load when requests reach an upgraded Ghost', async () => {
     const tagsApi = fakeTagsVersionMismatchOnCue();
     await renderAdminApp('/tags', {
       boot: { browseNotifications: { response: versionMismatchBody, responseStatus: 400 } },
