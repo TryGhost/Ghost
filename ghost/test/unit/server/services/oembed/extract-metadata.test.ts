@@ -120,8 +120,19 @@ describe('extractMetadata', function () {
 
     assert.equal(byline('By  Jane Doe'), 'Jane Doe');
     assert.equal(byline('@janedoe'), 'janedoe');
+    assert.equal(byline('  @jane.bsky.social  '), 'jane.bsky.social');
     assert.equal(byline('https://example.com/jane'), null);
+    assert.equal(byline('example.com/jane'), null);
     assert.equal(byline('x'.repeat(129)), null);
+  });
+
+  it('preserves domain-based screenname handles', function () {
+    const metadata = extractMetadata(
+      page('', '<a class="screenname">@jane.bsky.social</a>'),
+      'https://example.com/post',
+    );
+
+    assert.equal(metadata.author, 'jane.bsky.social');
   });
 
   it('skips byline elements holding dates', function () {

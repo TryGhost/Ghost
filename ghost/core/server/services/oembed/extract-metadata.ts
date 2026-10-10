@@ -184,7 +184,7 @@ const toAuthor = (value: unknown) => {
   if (typeof value !== 'string' || !value || value.length > AUTHOR_MAX_LENGTH) {
     return;
   }
-  if (REGEX_LOOKS_LIKE_URL.test(value.trim())) {
+  if (!value.trim().startsWith('@') && REGEX_LOOKS_LIKE_URL.test(value.trim())) {
     return;
   }
   return condense(value.replace(REGEX_BY, ''));
