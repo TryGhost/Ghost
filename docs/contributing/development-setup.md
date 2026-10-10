@@ -77,7 +77,8 @@ pnpm dev
 The command starts:
 
 - MySQL, Redis, and Mailpit in Docker
-- Ghost Core on the host, restarting when server files change
+- Ghost Core on the host, restarting when its files or the workspace packages
+  it loads change
 - Admin's dev server on `http://localhost:2368`, which serves Admin and the
   public apps and passes everything else to Ghost
 - Portal's build watcher
