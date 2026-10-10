@@ -52,7 +52,8 @@ services:
   mailpit:
     image: axllent/mailpit@sha256:ed9b00c609e77e99c79b93f1178255ebc271868920f2c69a8d166bd5634ed10d
     container_name: ghost-dev-mailpit
-    command: ['--quiet']
+    # Tags each message with the SMTP username, which `pnpm dev` sets to the checkout's name
+    command: ['--quiet', '--smtp-auth-accept-any', '--smtp-auth-allow-insecure', '--tags-username']
     ports:
       - '1025:1025' # SMTP server
       - '8025:8025' # Web interface
@@ -188,6 +189,9 @@ services:
     environment:
       - GHOST_URL=${GHOST_URL:-http://ghost-dev:2368}
       - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY:-}
+    # `pnpm dev:stripe --listen` forwards to the dev server on the host
+    extra_hosts:
+      - 'host.docker.internal:host-gateway'
     healthcheck:
       test: ['CMD', 'test', '-f', '/mnt/shared-config/.env.stripe']
       interval: 1s

@@ -19,8 +19,10 @@
 set -euo pipefail
 
 FUNNEL_PORT=443
-GATEWAY_PORT=2368
 WEBHOOK_PATH=/members/webhooks/stripe
+# This checkout's dev server port, assigned by scripts/ghost-dev-env.ts
+node scripts/ghost-dev-env.ts >/dev/null
+GATEWAY_PORT=$(sed -n 's/^GHOST_DEV_PORT=//p' .ghost-dev.env)
 
 fail() {
     echo ""
@@ -76,12 +78,10 @@ if [ "$listen" = true ]; then
     echo "--listen to receive webhooks exactly as production does."
 
     export COMPOSE_PROFILES="${COMPOSE_PROFILES:+$COMPOSE_PROFILES,}stripe"
+    export GHOST_URL="${GHOST_URL:-http://host.docker.internal:${GATEWAY_PORT}}"
     exec "$@"
 fi
 
-FUNNEL_PORT=443
-GATEWAY_PORT=2368
-WEBHOOK_PATH=/members/webhooks/stripe
 
 # The macOS app bundle does not put its CLI on PATH.
 TAILSCALE=$(command -v tailscale || true)

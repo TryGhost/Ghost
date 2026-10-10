@@ -16,10 +16,10 @@ Run `pnpm dev` to start the editor in standalone mode for development on http://
 
 All Koenig packages are part of the Ghost monorepo workspace, so no linking is
 needed — run `pnpm dev:lexical` from the monorepo root. That starts the normal
-Ghost dev environment plus the editor's `dev:integrated` target: a rebuild
-watcher for the editor (and kg-default-nodes / kg-default-transforms) and a
-preview server on port 4173 that the dev gateway proxies to Admin's
-`EDITOR_URL`.
+Ghost dev environment plus the editor's `dev:integrated` target, which rebuilds
+the editor (and kg-default-nodes / kg-default-transforms) on every change. In
+this mode Admin's dev server reads the editor's `dist` directly instead of
+pre-bundling it, so each rebuild reloads Admin.
 
 Now, if you navigate to Ghost Admin at http://localhost:2368/ghost and open a post, it will use your local version of the editor. Changes to the editor will be reflected inside Ghost Admin after a few seconds - the time for the editor to get rebuilt.
 

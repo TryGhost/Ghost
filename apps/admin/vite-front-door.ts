@@ -31,12 +31,6 @@ export function ghostFrontDoorPlugin(backend: string, devBase: string): Plugin {
 
     config() {
       const proxy: Record<string, ProxyOptions> = {};
-      if (process.env.LEXICAL_DEV_SERVER) {
-        proxy['^/ghost/assets/koenig-lexical/'] = {
-          target: `http://${process.env.LEXICAL_DEV_SERVER}`,
-          rewrite: stripPrefix(/^\/ghost\/assets\/koenig-lexical/),
-        };
-      }
       if (process.env.ANALYTICS_PROXY_TARGET) {
         proxy['^/\\.ghost/analytics/'] = {
           target: `http://${process.env.ANALYTICS_PROXY_TARGET}`,

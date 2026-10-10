@@ -15,17 +15,17 @@
     "dev": "pnpm nx run ghost-monorepo:dev:host",
     "dev:docker": "pnpm nx run ghost-monorepo:docker:dev",
     "dev:sqlite": "DEV_COMPOSE_FILES='-f compose.dev.sqlite.yaml' pnpm nx run ghost-monorepo:docker:dev",
-    "dev:mailgun": "DEV_COMPOSE_FILES='-f compose.dev.mailgun.yaml' pnpm nx run ghost-monorepo:docker:dev",
-    "dev:fake-mailgun": "DEV_COMPOSE_FILES='-f compose.dev.fake-mailgun.yaml' pnpm nx run ghost-monorepo:docker:dev",
-    "dev:lexical": "EDITOR_URL=http://localhost:2368/ghost/assets/koenig-lexical/ LEXICAL_DEV_SERVER=localhost:4173 pnpm nx run ghost-monorepo:dev:host:lexical",
+    "dev:mailgun": "DEV_COMPOSE_FILES='-f compose.dev.mailgun.yaml' pnpm nx run ghost-monorepo:dev:host",
+    "dev:fake-mailgun": "DEV_COMPOSE_FILES='-f compose.dev.fake-mailgun.yaml' pnpm nx run ghost-monorepo:dev:host",
+    "dev:lexical": "GHOST_DEV_KOENIG_WATCH=1 pnpm nx run ghost-monorepo:dev:host:lexical",
     "dev:public": "pnpm nx run ghost-monorepo:dev:host:public",
-    "dev:full": "DEV_COMPOSE_FILES='-f compose.dev.analytics.yaml -f compose.dev.storage.yaml' ./docker/stripe/with-stripe.sh pnpm nx run ghost-monorepo:docker:dev:public",
-    "dev:analytics": "DEV_COMPOSE_FILES='-f compose.dev.analytics.yaml' pnpm nx run ghost-monorepo:docker:dev",
-    "dev:analytics:local": "ANALYTICS_PROXY_TARGET=traffic-analytics-local:3000 DEV_COMPOSE_FILES='-f compose.dev.analytics.yaml' pnpm nx run ghost-monorepo:docker:dev",
-    "dev:storage": "DEV_COMPOSE_FILES='-f compose.dev.storage.yaml' pnpm nx run ghost-monorepo:docker:dev",
-    "dev:stripe": "./docker/stripe/with-stripe.sh pnpm nx run ghost-monorepo:docker:dev",
-    "dev:all": "DEV_COMPOSE_FILES='-f compose.dev.analytics.yaml -f compose.dev.storage.yaml' ./docker/stripe/with-stripe.sh pnpm nx run ghost-monorepo:docker:dev",
-    "dev:daemon": "NX_DAEMON=true NX_TUI=false NX_DEFAULT_OUTPUT_STYLE=stream pnpm nx run ghost-monorepo:docker:dev",
+    "dev:full": "DEV_COMPOSE_FILES='-f compose.dev.analytics.yaml -f compose.dev.storage.yaml' ANALYTICS_PROXY_TARGET=127.0.0.1:7182 ./docker/stripe/with-stripe.sh pnpm nx run ghost-monorepo:dev:host:public",
+    "dev:analytics": "DEV_COMPOSE_FILES='-f compose.dev.analytics.yaml' ANALYTICS_PROXY_TARGET=127.0.0.1:7182 pnpm nx run ghost-monorepo:dev:host",
+    "dev:analytics:local": "ANALYTICS_PROXY_TARGET=${ANALYTICS_PROXY_TARGET:-127.0.0.1:3000} DEV_COMPOSE_FILES='-f compose.dev.analytics.yaml' pnpm nx run ghost-monorepo:dev:host",
+    "dev:storage": "DEV_COMPOSE_FILES='-f compose.dev.storage.yaml' pnpm nx run ghost-monorepo:dev:host",
+    "dev:stripe": "./docker/stripe/with-stripe.sh pnpm nx run ghost-monorepo:dev:host",
+    "dev:all": "DEV_COMPOSE_FILES='-f compose.dev.analytics.yaml -f compose.dev.storage.yaml' ANALYTICS_PROXY_TARGET=127.0.0.1:7182 ./docker/stripe/with-stripe.sh pnpm nx run ghost-monorepo:dev:host",
+    "dev:daemon": "NX_DAEMON=true NX_TUI=false NX_DEFAULT_OUTPUT_STYLE=stream pnpm nx run ghost-monorepo:dev:host",
     "fix": "pnpm store prune && rimraf -g '**/node_modules' && pnpm install && pnpm nx reset",
     "create-package": "node ./scripts/create-package.js",
     "knex-migrator": "pnpm --filter ghost run knex-migrator",
@@ -174,40 +174,6 @@
             "target": "dev",
             "projects": [
               "@tryghost/portal"
-            ]
-          },
-          {
-            "target": "dev:docker",
-            "projects": [
-              "@tryghost/admin"
-            ]
-          }
-        ]
-      },
-      "docker:dev:lexical": {
-        "continuous": true,
-        "executor": "nx:run-commands",
-        "options": {
-          "command": "trap 'docker compose -f compose.dev.yaml ${DEV_COMPOSE_FILES} --profile docker-dev down' EXIT; docker compose -f compose.dev.yaml ${DEV_COMPOSE_FILES} --profile docker-dev logs -f"
-        },
-        "dependsOn": [
-          "docker:up",
-          {
-            "target": "build:assets",
-            "projects": [
-              "ghost"
-            ]
-          },
-          {
-            "target": "dev",
-            "projects": [
-              "@tryghost/portal"
-            ]
-          },
-          {
-            "target": "dev:integrated",
-            "projects": [
-              "@tryghost/koenig-lexical"
             ]
           },
           {

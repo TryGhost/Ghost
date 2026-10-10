@@ -15,6 +15,9 @@ export const GHOST_URL = process.env.GHOST_URL ?? 'http://localhost:2368/';
 // Ghost running on the host behind this dev server, e.g. http://127.0.0.1:2369
 const GHOST_DEV_BACKEND = process.env.GHOST_DEV_BACKEND;
 
+// `pnpm dev:lexical` rebuilds koenig-lexical's dist; serving it unbundled picks up each rebuild
+const KOENIG_WATCH = Boolean(process.env.GHOST_DEV_KOENIG_WATCH);
+
 // Dev-only prefix Vite serves under. Keeps Vite's internals (HMR client,
 // module graph, refresh runtime) off `/ghost/*` so Ghost's Express middleware
 // owns user-facing admin URLs in both dev and prod.
@@ -102,9 +105,9 @@ export default defineConfig(({ command, mode }) => ({
     // quiet for humans. Uncomment to force it on for everyone (noisier):
     // forwardConsole: { logLevels: ['warn', 'error'] }
   },
-  optimizeDeps: {
-    include: ['@tryghost/koenig-lexical'],
-  },
+  optimizeDeps: KOENIG_WATCH
+    ? { exclude: ['@tryghost/koenig-lexical'] }
+    : { include: ['@tryghost/koenig-lexical'] },
   resolve: sharedResolve,
   test: {
     environment: 'jsdom',

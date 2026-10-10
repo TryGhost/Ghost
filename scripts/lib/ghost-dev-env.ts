@@ -8,6 +8,7 @@ import { fileURLToPath } from 'node:url';
 export const ENV_FILE = '.ghost-dev.env';
 
 export interface GhostDevEnv {
+  GHOST_DEV_NAME: string;
   GHOST_DEV_PORT: string;
   GHOST_DEV_BACKEND_PORT: string;
   GHOST_DEV_BACKEND: string;
@@ -38,8 +39,9 @@ function parseEnvFile(file: string): Record<string, string> {
   return env;
 }
 
-function toEnv(port: number, database: string): GhostDevEnv {
+function toEnv(name: string, port: number, database: string): GhostDevEnv {
   return {
+    GHOST_DEV_NAME: name,
     GHOST_DEV_PORT: String(port),
     GHOST_DEV_BACKEND_PORT: String(port + 1),
     GHOST_DEV_BACKEND: `http://127.0.0.1:${port + 1}`,
@@ -73,19 +75,29 @@ function assignedPorts(): Set<number> {
   return ports;
 }
 
-async function allocate(): Promise<GhostDevEnv> {
+function isMainCheckout(): boolean {
   const gitDir = git(['rev-parse', '--path-format=absolute', '--git-dir']);
-  const commonDir = git(['rev-parse', '--path-format=absolute', '--git-common-dir']);
-  if (gitDir === commonDir) {
-    return toEnv(MAIN_PORT, MAIN_DATABASE);
-  }
+  return gitDir === git(['rev-parse', '--path-format=absolute', '--git-common-dir']);
+}
 
-  // e2e setup drops every database named ghost_%, so worktree databases use another prefix
-  const slug = basename(checkoutRoot)
+function checkoutName(): string {
+  if (isMainCheckout()) {
+    return 'main';
+  }
+  return basename(checkoutRoot)
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '_')
     .replace(/^_+|_+$/g, '');
-  const database = `dev_${slug}`.slice(0, 64);
+}
+
+async function allocate(): Promise<GhostDevEnv> {
+  const name = checkoutName();
+  if (name === 'main') {
+    return toEnv(name, MAIN_PORT, MAIN_DATABASE);
+  }
+
+  // e2e setup drops every database named ghost_%, so worktree databases use another prefix
+  const database = `dev_${name}`.slice(0, 64);
 
   const taken = assignedPorts();
   const start =
@@ -98,7 +110,7 @@ async function allocate(): Promise<GhostDevEnv> {
       (await isFree(port)) &&
       (await isFree(port + 1))
     ) {
-      return toEnv(port, database);
+      return toEnv(name, port, database);
     }
   }
   throw new Error(`No free port pair between ${FIRST_PORT} and ${FIRST_PORT + SLOTS * 2}`);
@@ -111,7 +123,7 @@ async function allocate(): Promise<GhostDevEnv> {
 export async function resolveGhostDevEnv(): Promise<GhostDevEnv> {
   const file = join(checkoutRoot, ENV_FILE);
   if (existsSync(file)) {
-    return parseEnvFile(file) as unknown as GhostDevEnv;
+    return { GHOST_DEV_NAME: checkoutName(), ...parseEnvFile(file) } as GhostDevEnv;
   }
   const env = await allocate();
   const lines = Object.entries(env).map(([key, value]) => `${key}=${value}`);
