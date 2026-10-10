@@ -9,6 +9,7 @@ import svgr from 'vite-plugin-svgr';
 import tailwindcss from '@tailwindcss/vite';
 
 import { sharedDefine, sharedResolve } from './vite.shared';
+import { shadeSourcePlugin, workspaceDepEntries, workspaceDepsHash } from './vite-workspace-deps';
 
 /**
  * Browser mode: real Chromium via Vitest Browser Mode against a fake Ghost
@@ -24,6 +25,11 @@ import { sharedDefine, sharedResolve } from './vite.shared';
  * the top end; the floor keeps 2-core runners on their current two workers.
  */
 const getWorkerCount = () => Math.min(8, Math.max(2, availableParallelism() - 1));
+
+// Watch mode serves Shade and admin-x-framework as source so edits to them
+// re-run tests; one-off runs pre-bundle them (vite-workspace-deps.ts).
+const isSingleRun =
+  Boolean(process.env.CI) || process.argv.some((arg) => arg === 'run' || arg === '--run');
 
 // MSW cannot see iframe navigations; these route them per page (test-utils/acceptance/frames.ts).
 type BrowserPage = BrowserCommandContext['page'];
@@ -110,9 +116,18 @@ export default defineConfig({
     entries: ['src/**/*.{ts,tsx}', '!src/**/*.test.*', '!src/**/*.screen.ts'],
     // The harness's MSW (and its graphql dependency) would otherwise load as
     // ~150 separate modules in every spec file's fresh iframe.
-    include: ['msw', 'msw/browser'],
+    include: ['msw', 'msw/browser', ...(isSingleRun ? workspaceDepEntries() : [])],
     rolldownOptions: {
-      transform: { define: { 'process.env.NODE_ENV': JSON.stringify('production') } },
+      // Lets the pre-bundler read the workspace packages' TypeScript entries.
+      moduleTypes: { '.ts': 'ts', '.tsx': 'tsx' },
+      plugins: isSingleRun ? [shadeSourcePlugin()] : [],
+      transform: {
+        define: {
+          'process.env.NODE_ENV': JSON.stringify('production'),
+          // Unused by the code; changes Vite's pre-bundle cache key when the sources change.
+          __ACCEPTANCE_WORKSPACE_DEPS__: JSON.stringify(isSingleRun ? workspaceDepsHash() : ''),
+        },
+      },
     },
   },
   resolve: sharedResolve,
