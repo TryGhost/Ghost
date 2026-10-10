@@ -1,5 +1,5 @@
 import type { PerformanceDateRange } from '@/automations/utils/performance-date-range';
-import React, { forwardRef, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import React, { forwardRef, useEffect, useState } from 'react';
 import type {
   AutomationRun,
   AutomationRunStatusFilter,
@@ -15,12 +15,13 @@ import {
   TableHeader,
   TableRow,
 } from '@tryghost/shade/components';
-import { Inline, Stack, Text } from '@tryghost/shade/primitives';
+import { Box, Grid, Inline, Stack, Text } from '@tryghost/shade/primitives';
 import { LucideIcon, cn } from '@tryghost/shade/utils';
 import { useAutomationRuns } from '@/automations/hooks/use-automation-runs';
 import { useInfiniteVirtualScroll } from '@/shared/virtual-list';
 import { mapAutomationRun } from '@/automations/utils/automation-runs';
 import type { RunSortDirection } from '@/automations/types';
+import { useStickyRunSummary } from './use-sticky-run-summary';
 import { CompletedGlyph, ExitedGlyph, InProgressGlyph } from './run-status-icons';
 
 const ROW_HEIGHT = 72;
@@ -143,8 +144,12 @@ export const RunList: React.FC<{
   isSelectionDisabled: boolean;
   direction: RunSortDirection;
   onDirectionChange: (direction: RunSortDirection) => void;
+  summary: React.ReactNode;
+  stickySummary: React.ReactNode;
 }> = ({
   automationId,
+  summary,
+  stickySummary,
   queryScope,
   status,
   dateRange,
@@ -189,7 +194,19 @@ export const RunList: React.FC<{
   const loadingVisible = isLoading && showLoading;
 
   const SortIcon = direction === 'asc' ? LucideIcon.ArrowUp : LucideIcon.ArrowDown;
-  const scrollRef = useRef<HTMLDivElement>(null);
+  const {
+    scrollRef,
+    summaryRef,
+    headerRef,
+    stickyBarRef,
+    compactSummaryRef,
+    listRef,
+    summaryHidden,
+    showStickySummary,
+    scrollMargin,
+    onScroll,
+  } = useStickyRunSummary({ queryScope, dateRange, hasStickySummary: !!stickySummary });
+
   const items = runs ?? [];
   const isScanning = scanning && !isError && !isNextPageError && !updating;
   // One extra row loads the next page without reserving space for unloaded history.
@@ -203,26 +220,56 @@ export const RunList: React.FC<{
     fetchNextPage: loadMore,
     estimateSize: () => ROW_HEIGHT,
     overscan: 10,
+    scrollMargin,
     getScrollElement: (element) => element,
   });
-  useLayoutEffect(() => {
-    scrollRef.current?.scrollTo({ top: 0 });
-  }, [queryScope, dateRange]);
+
   return (
-    <Stack
-      aria-busy={isLoading || isLoadingMore || isScanning}
-      aria-label="Automation runs"
-      className="min-h-[216px] flex-1"
-      gap="sm"
-      role="region"
+    <div
+      ref={scrollRef}
+      className="min-h-0 flex-1 overflow-y-auto"
+      data-testid="automation-runs-scroll"
+      style={{ overflowAnchor: 'none' }}
+      onScroll={onScroll}
     >
-      <div
-        ref={scrollRef}
-        className="min-h-0 flex-1 overflow-y-auto"
-        data-testid="automation-runs-scroll"
+      <Box
+        ref={summaryRef}
+        aria-hidden={summaryHidden || undefined}
+        className={summary ? 'pb-4' : undefined}
+      >
+        {summary}
+      </Box>
+      <Box
+        ref={stickyBarRef}
+        className={cn(
+          'sticky top-0 z-20 bg-surface-elevated',
+          showStickySummary && 'border-b border-border-default pb-4',
+        )}
+      >
+        <Grid
+          ref={compactSummaryRef}
+          aria-hidden={!showStickySummary || undefined}
+          className={cn(
+            'transition-[grid-template-rows,opacity] duration-200 ease-out motion-reduce:transition-none',
+            showStickySummary ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0',
+          )}
+          gap="none"
+        >
+          <Box className="min-h-0 overflow-hidden">{stickySummary}</Box>
+        </Grid>
+      </Box>
+      <Box
+        ref={listRef}
+        aria-busy={isLoading || isLoadingMore || isScanning}
+        aria-label="Automation runs"
+        role="region"
       >
         <Table aria-label="Automation runs" className="table-fixed">
-          <TableHeader className="sticky top-0 z-10 bg-surface-elevated">
+          <TableHeader
+            ref={headerRef}
+            className="sticky z-10 bg-surface-elevated"
+            style={{ top: 'var(--sticky-status-height, 0px)' }}
+          >
             <TableRow>
               <TableHead className="px-4" scope="col">
                 <Inline gap="xs">
@@ -318,7 +365,7 @@ export const RunList: React.FC<{
             </Button>
           </Stack>
         )}
-      </div>
-    </Stack>
+      </Box>
+    </div>
   );
 };
