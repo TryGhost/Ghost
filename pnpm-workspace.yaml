@@ -11,6 +11,9 @@ packages:
 strictDepBuilds: true
 catalogMode: strict
 autoDedupe: true
+# Packages resolve only the dependencies they declare. Declare missing ones in
+# packageExtensions below rather than turning hoisting back on.
+hoist: false
 
 minimumReleaseAge: 4320 # 3 days in minutes; matches Renovate's minimumReleaseAge
 blockExoticSubdeps: true
@@ -318,17 +321,31 @@ overrides:
   qs: 'catalog:'
 
 packageExtensions:
-  # These import packages they don't declare, which only resolve through pnpm's
-  # private hoisting (node_modules/.pnpm/node_modules).
+  # These import packages they don't declare.
   '@doist/react-interpolate@^2.2.1':
     dependencies:
       '@babel/runtime': ^7.26.10
   '@lexical/yjs@0.13.1':
     dependencies:
       '@lexical/selection': 0.13.1
+  '@lexical/react@0.13.1':
+    dependencies:
+      '@lexical/html': 0.13.1
+    peerDependencies:
+      '@types/react': '*'
+      yjs: '*'
+    peerDependenciesMeta:
+      '@types/react':
+        optional: true
+      yjs:
+        optional: true
   'react-slider@^2.0.6':
     dependencies:
       '@babel/runtime': ^7.26.10
+  'react-highlight@0.15.0':
+    peerDependencies:
+      react: '*'
+      react-dom: '*'
   '@hookform/resolvers':
     peerDependencies:
       zod: '*'
@@ -337,8 +354,11 @@ packageExtensions:
         optional: true
   country-flag-icons:
     peerDependencies:
+      '@types/react': '*'
       react: '*'
     peerDependenciesMeta:
+      '@types/react':
+        optional: true
       react:
         optional: true
   # `--use cssnano` is imported from postcss-cli's own directory
@@ -348,55 +368,39 @@ packageExtensions:
     peerDependenciesMeta:
       cssnano:
         optional: true
+  # @prettier/sync has make-synchronized import `prettier` from its own directory
+  make-synchronized:
+    peerDependencies:
+      prettier: '*'
+    peerDependenciesMeta:
+      prettier:
+        optional: true
   # Their type declarations import react without declaring @types/react.
-  '@dnd-kit/core':
+  '@dnd-kit/core': &types-react
     peerDependencies:
       '@types/react': '*'
     peerDependenciesMeta:
       '@types/react':
         optional: true
-  '@dnd-kit/sortable':
-    peerDependencies:
-      '@types/react': '*'
-    peerDependenciesMeta:
-      '@types/react':
-        optional: true
-  '@sentry/react':
-    peerDependencies:
-      '@types/react': '*'
-    peerDependenciesMeta:
-      '@types/react':
-        optional: true
-  '@uiw/react-codemirror':
-    peerDependencies:
-      '@types/react': '*'
-    peerDependenciesMeta:
-      '@types/react':
-        optional: true
-  cmdk:
-    peerDependencies:
-      '@types/react': '*'
-    peerDependenciesMeta:
-      '@types/react':
-        optional: true
-  react-dropzone:
-    peerDependencies:
-      '@types/react': '*'
-    peerDependenciesMeta:
-      '@types/react':
-        optional: true
-  react-router:
-    peerDependencies:
-      '@types/react': '*'
-    peerDependenciesMeta:
-      '@types/react':
-        optional: true
-  recharts:
-    peerDependencies:
-      '@types/react': '*'
-    peerDependenciesMeta:
-      '@types/react':
-        optional: true
+  '@dnd-kit/sortable': *types-react
+  '@dnd-kit/utilities': *types-react
+  '@number-flow/react': *types-react
+  '@sentry/react': *types-react
+  '@tanstack/react-query': *types-react
+  '@uiw/react-codemirror': *types-react
+  cmdk: *types-react
+  lucide-react: *types-react
+  react-colorful: *types-react
+  react-day-picker: *types-react
+  react-dropzone: *types-react
+  react-error-boundary: *types-react
+  react-hook-form: *types-react
+  react-router: *types-react
+  recharts: *types-react
+  sonner: *types-react
+  use-debounce: *types-react
+  vite-plugin-svgr: *types-react
+
 minimumReleaseAgeExclude:
   # Our own packages are published by us, so the release-age delay doesn't apply
   - '@tryghost/*'

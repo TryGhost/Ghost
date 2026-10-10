@@ -779,7 +779,7 @@ overrides:
   express: 4.22.3
   qs: 6.16.0
 
-packageExtensionsChecksum: sha256-ycchSymDGGlzg4rH0fnAyj8srTVjDx047QJkPZu69w0=
+packageExtensionsChecksum: sha256-XZqcD6GlbwaetbmTo1ZS+ybSq1By9f+mosS79rxWQ5w=
 
 pnpmfileChecksum: sha256-qev/zWGQadDoB7sHatQQkkjF+hSnLGwfErh/U1ptQjA=
 
@@ -854,13 +854,13 @@ importers:
     dependencies:
       '@hookform/resolvers':
         specifier: 5.4.0
-        version: 5.4.0(react-hook-form@7.80.0(react@18.3.1))(zod@4.6.5)
+        version: 5.4.0(react-hook-form@7.80.0(@types/react@18.3.31)(react@18.3.1))(zod@4.6.5)
       '@radix-ui/react-form':
         specifier: 'catalog:'
         version: 0.1.11(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@tanstack/react-query':
         specifier: 'catalog:'
-        version: 5.101.4(react@18.3.1)
+        version: 5.101.4(@types/react@18.3.31)(react@18.3.1)
       '@tryghost/admin-x-framework':
         specifier: workspace:*
         version: link:../admin-x-framework
@@ -884,16 +884,16 @@ importers:
         version: 18.3.1(react@18.3.1)
       react-hook-form:
         specifier: 7.80.0
-        version: 7.80.0(react@18.3.1)
+        version: 7.80.0(@types/react@18.3.31)(react@18.3.1)
       react-router:
         specifier: 'catalog:'
         version: 7.18.4(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       sonner:
         specifier: 'catalog:'
-        version: 2.0.7(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        version: 2.0.7(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       use-debounce:
         specifier: 10.1.1
-        version: 10.1.1(react@18.3.1)
+        version: 10.1.1(@types/react@18.3.31)(react@18.3.1)
       zod:
         specifier: 'catalog:'
         version: 4.6.5
@@ -972,7 +972,7 @@ importers:
         version: 7.0.2(@dnd-kit/core@6.3.1(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(@types/react@18.3.31)(react@18.3.1)
       '@dnd-kit/utilities':
         specifier: 'catalog:'
-        version: 3.2.2(react@18.3.1)
+        version: 3.2.2(@types/react@18.3.31)(react@18.3.1)
       '@radix-ui/react-focus-guards':
         specifier: 'catalog:'
         version: 1.1.4(@types/react@18.3.31)(react@18.3.1)
@@ -987,7 +987,7 @@ importers:
         version: 2.0.0
       '@tanstack/react-query':
         specifier: 'catalog:'
-        version: 5.101.4(react@18.3.1)
+        version: 5.101.4(@types/react@18.3.31)(react@18.3.1)
       '@tanstack/react-virtual':
         specifier: 'catalog:'
         version: 3.14.13(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -1071,7 +1071,7 @@ importers:
         version: 3.10.1
       lucide-react:
         specifier: 'catalog:'
-        version: 1.23.0(react@18.3.1)
+        version: 1.23.0(@types/react@18.3.31)(react@18.3.1)
       luxon:
         specifier: 'catalog:'
         version: 3.7.2
@@ -1104,13 +1104,13 @@ importers:
         version: 7.8.5
       sonner:
         specifier: 'catalog:'
-        version: 2.0.7(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        version: 2.0.7(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       temporal-polyfill:
         specifier: 'catalog:'
         version: 0.3.2
       use-debounce:
         specifier: 10.1.1
-        version: 10.1.1(react@18.3.1)
+        version: 10.1.1(@types/react@18.3.31)(react@18.3.1)
       validator:
         specifier: 'catalog:'
         version: 13.15.35
@@ -1198,7 +1198,7 @@ importers:
         version: 8.1.3(@types/node@22.20.1)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.12)(yaml@2.9.0)
       vite-plugin-svgr:
         specifier: 'catalog:'
-        version: 4.5.0(@typescript/typescript6@6.0.2)(rollup@4.62.2)(supports-color@10.2.2)(vite@8.1.3(@types/node@22.20.1)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.12)(yaml@2.9.0))
+        version: 4.5.0(@types/react@18.3.31)(@typescript/typescript6@6.0.2)(rollup@4.62.2)(supports-color@10.2.2)(vite@8.1.3(@types/node@22.20.1)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.12)(yaml@2.9.0))
       vitest:
         specifier: 'catalog:'
         version: 4.1.11(@opentelemetry/api@1.9.1)(@types/node@22.20.1)(@vitest/browser-playwright@4.1.11)(@vitest/coverage-v8@4.1.11)(@vitest/ui@4.1.11)(jsdom@30.0.1(@noble/hashes@1.8.0))(msw@2.14.6(@types/node@22.20.1)(@typescript/typescript6@6.0.2))(vite@8.1.3(@types/node@22.20.1)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.12)(yaml@2.9.0))
@@ -1250,7 +1250,7 @@ importers:
         version: 7.120.4(@types/react@18.3.31)(react@18.3.1)
       '@tanstack/react-query':
         specifier: 'catalog:'
-        version: 5.101.4(react@18.3.1)
+        version: 5.101.4(@types/react@18.3.31)(react@18.3.1)
       '@tryghost/app-contracts':
         specifier: workspace:*
         version: link:../../packages/app-contracts
@@ -1289,7 +1289,7 @@ importers:
         version: 7.18.4(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       sonner:
         specifier: 'catalog:'
-        version: 2.0.7(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        version: 2.0.7(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       zod:
         specifier: 'catalog:'
         version: 4.6.5
@@ -1350,7 +1350,7 @@ importers:
         version: 3.5.2(vite@8.1.3(@types/node@26.0.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.12)(yaml@2.9.0))
       vite-plugin-svgr:
         specifier: 'catalog:'
-        version: 4.5.0(@typescript/typescript6@6.0.2)(rollup@4.62.2)(supports-color@10.2.2)(vite@8.1.3(@types/node@26.0.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.12)(yaml@2.9.0))
+        version: 4.5.0(@types/react@18.3.31)(@typescript/typescript6@6.0.2)(rollup@4.62.2)(supports-color@10.2.2)(vite@8.1.3(@types/node@26.0.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.12)(yaml@2.9.0))
       vitest:
         specifier: 'catalog:'
         version: 4.1.11(@opentelemetry/api@1.9.1)(@types/node@26.0.0)(@vitest/browser-playwright@4.1.11)(@vitest/coverage-v8@4.1.11)(@vitest/ui@4.1.11)(jsdom@30.0.1(@noble/hashes@1.8.0))(msw@2.14.6(@types/node@26.0.0)(@typescript/typescript6@6.0.2))(vite@8.1.3(@types/node@26.0.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.12)(yaml@2.9.0))
@@ -1575,7 +1575,7 @@ importers:
         version: 17.0.2
       react-day-picker:
         specifier: 'catalog:'
-        version: 9.14.0(react@17.0.2)
+        version: 9.14.0(@types/react@17.0.93)(react@17.0.2)
       react-dom:
         specifier: catalog:react17
         version: 17.0.2(react@17.0.2)
@@ -1602,13 +1602,13 @@ importers:
         version: 7.0.2(@dnd-kit/core@6.3.1(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(@types/react@18.3.31)(react@18.3.1)
       '@dnd-kit/utilities':
         specifier: 'catalog:'
-        version: 3.2.2(react@18.3.1)
+        version: 3.2.2(@types/react@18.3.31)(react@18.3.1)
       '@hookform/resolvers':
         specifier: 5.4.0
-        version: 5.4.0(react-hook-form@7.80.0(react@18.3.1))(zod@4.6.5)
+        version: 5.4.0(react-hook-form@7.80.0(@types/react@18.3.31)(react@18.3.1))(zod@4.6.5)
       '@number-flow/react':
         specifier: 0.6.2
-        version: 0.6.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        version: 0.6.2(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@radix-ui/react-accordion':
         specifier: 1.2.15
         version: 1.2.15(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -1692,10 +1692,10 @@ importers:
         version: 5.0.3
       country-flag-icons:
         specifier: 'catalog:'
-        version: 1.6.20(react@18.3.1)
+        version: 1.6.20(@types/react@18.3.31)(react@18.3.1)
       lucide-react:
         specifier: 'catalog:'
-        version: 1.23.0(react@18.3.1)
+        version: 1.23.0(@types/react@18.3.31)(react@18.3.1)
       moment-timezone:
         specifier: 0.6.5
         version: 0.6.5
@@ -1704,7 +1704,7 @@ importers:
         version: 18.3.1
       react-day-picker:
         specifier: 9.14.0
-        version: 9.14.0(react@18.3.1)
+        version: 9.14.0(@types/react@18.3.31)(react@18.3.1)
       react-dom:
         specifier: 'catalog:'
         version: 18.3.1(react@18.3.1)
@@ -1713,13 +1713,13 @@ importers:
         version: 14.4.1(@types/react@18.3.31)(react@18.3.1)
       react-hook-form:
         specifier: 7.80.0
-        version: 7.80.0(react@18.3.1)
+        version: 7.80.0(@types/react@18.3.31)(react@18.3.1)
       recharts:
         specifier: 2.15.4
         version: 2.15.4(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       sonner:
         specifier: 'catalog:'
-        version: 2.0.7(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        version: 2.0.7(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       tailwind-merge:
         specifier: 3.6.0
         version: 3.6.0
@@ -1795,7 +1795,7 @@ importers:
         version: 8.1.3(@types/node@22.20.1)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.12)(yaml@2.9.0)
       vite-plugin-svgr:
         specifier: 'catalog:'
-        version: 4.5.0(@typescript/typescript6@6.0.2)(rollup@4.62.2)(supports-color@10.2.2)(vite@8.1.3(@types/node@22.20.1)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.12)(yaml@2.9.0))
+        version: 4.5.0(@types/react@18.3.31)(@typescript/typescript6@6.0.2)(rollup@4.62.2)(supports-color@10.2.2)(vite@8.1.3(@types/node@22.20.1)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.12)(yaml@2.9.0))
       vitest:
         specifier: 'catalog:'
         version: 4.1.11(@opentelemetry/api@1.9.1)(@types/node@22.20.1)(@vitest/browser-playwright@4.1.11)(@vitest/coverage-v8@4.1.11)(@vitest/ui@4.1.11)(jsdom@30.0.1(@noble/hashes@1.8.0))(msw@2.14.6(@types/node@22.20.1)(@typescript/typescript6@6.0.2))(vite@8.1.3(@types/node@22.20.1)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.12)(yaml@2.9.0))
@@ -1991,7 +1991,7 @@ importers:
         version: 8.1.3(@types/node@26.0.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.12)(yaml@2.9.0)
       vite-plugin-svgr:
         specifier: 'catalog:'
-        version: 4.5.0(@typescript/typescript6@6.0.2)(rollup@4.62.2)(supports-color@10.2.2)(vite@8.1.3(@types/node@26.0.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.12)(yaml@2.9.0))
+        version: 4.5.0(@types/react@18.3.31)(@typescript/typescript6@6.0.2)(rollup@4.62.2)(supports-color@10.2.2)(vite@8.1.3(@types/node@26.0.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.12)(yaml@2.9.0))
       vitest:
         specifier: 'catalog:'
         version: 4.1.11(@opentelemetry/api@1.9.1)(@types/node@26.0.0)(@vitest/browser-playwright@4.1.11)(@vitest/coverage-v8@4.1.11)(@vitest/ui@4.1.11)(jsdom@30.0.1(@noble/hashes@1.8.0))(msw@2.14.6(@types/node@26.0.0)(@typescript/typescript6@6.0.2))(vite@8.1.3(@types/node@26.0.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.12)(yaml@2.9.0))
@@ -3308,7 +3308,7 @@ importers:
         version: 5.0.3(@typescript/typescript6@6.0.2)(esbuild@0.28.2)(rolldown@1.1.4)(rollup@4.62.2)(supports-color@10.2.2)(vite@8.1.3(@types/node@26.0.0)(esbuild@0.28.2)(jiti@1.21.7)(terser@5.48.0)(tsx@4.23.12)(yaml@2.9.0))(webpack@5.105.4(@swc/core@1.15.43(@swc/helpers@0.5.23))(clean-css@4.2.4)(cssnano@7.1.9(postcss@8.5.26))(csso@5.0.5)(esbuild@0.28.2)(lightningcss@1.32.0)(postcss@8.5.26)(uglify-js@3.19.3))
       vite-plugin-svgr:
         specifier: 5.2.0
-        version: 5.2.0(@typescript/typescript6@6.0.2)(rollup@4.62.2)(supports-color@10.2.2)(vite@8.1.3(@types/node@26.0.0)(esbuild@0.28.2)(jiti@1.21.7)(terser@5.48.0)(tsx@4.23.12)(yaml@2.9.0))
+        version: 5.2.0(@types/react@18.3.31)(@typescript/typescript6@6.0.2)(rollup@4.62.2)(supports-color@10.2.2)(vite@8.1.3(@types/node@26.0.0)(esbuild@0.28.2)(jiti@1.21.7)(terser@5.48.0)(tsx@4.23.12)(yaml@2.9.0))
       vitest:
         specifier: 'catalog:'
         version: 4.1.11(@opentelemetry/api@1.9.1)(@types/node@26.0.0)(@vitest/browser-playwright@4.1.11)(@vitest/coverage-v8@4.1.11)(@vitest/ui@4.1.11)(jsdom@30.0.1(@noble/hashes@1.8.0))(msw@2.14.6(@types/node@26.0.0)(@typescript/typescript6@6.0.2))(vite@8.1.3(@types/node@26.0.0)(esbuild@0.28.2)(jiti@1.21.7)(terser@5.48.0)(tsx@4.23.12)(yaml@2.9.0))
@@ -3402,7 +3402,7 @@ importers:
         version: 0.13.1(@lexical/clipboard@0.13.1(lexical@0.13.1))(@lexical/selection@0.13.1(lexical@0.13.1))(lexical@0.13.1)
       '@lexical/react':
         specifier: 0.13.1
-        version: 0.13.1(lexical@0.13.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(yjs@13.6.31)
+        version: 0.13.1(@types/react@18.3.31)(lexical@0.13.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(yjs@13.6.31)
       '@lexical/rich-text':
         specifier: 0.13.1
         version: 0.13.1(@lexical/clipboard@0.13.1(lexical@0.13.1))(@lexical/selection@0.13.1(lexical@0.13.1))(@lexical/utils@0.13.1(lexical@0.13.1))(lexical@0.13.1)
@@ -3579,16 +3579,16 @@ importers:
         version: 18.3.1
       react-colorful:
         specifier: 5.7.0
-        version: 5.7.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        version: 5.7.0(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       react-dom:
         specifier: 'catalog:'
         version: 18.3.1(react@18.3.1)
       react-error-boundary:
         specifier: 3.1.4
-        version: 3.1.4(react@18.3.1)
+        version: 3.1.4(@types/react@18.3.31)(react@18.3.1)
       react-highlight:
         specifier: 0.15.0
-        version: 0.15.0
+        version: 0.15.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       react-router-dom:
         specifier: 7.18.4
         version: 7.18.4(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -3615,7 +3615,7 @@ importers:
         version: 8.1.3(@types/node@26.0.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.12)(yaml@2.9.0)
       vite-plugin-svgr:
         specifier: 5.2.0
-        version: 5.2.0(@typescript/typescript6@6.0.2)(rollup@4.62.2)(supports-color@10.2.2)(vite@8.1.3(@types/node@26.0.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.12)(yaml@2.9.0))
+        version: 5.2.0(@types/react@18.3.31)(@typescript/typescript6@6.0.2)(rollup@4.62.2)(supports-color@10.2.2)(vite@8.1.3(@types/node@26.0.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.12)(yaml@2.9.0))
       vitest:
         specifier: 'catalog:'
         version: 4.1.11(@opentelemetry/api@1.9.1)(@types/node@26.0.0)(@vitest/browser-playwright@4.1.11)(@vitest/coverage-v8@4.1.11)(@vitest/ui@4.1.11)(jsdom@30.0.1(@noble/hashes@1.8.0))(msw@2.14.6(@types/node@26.0.0)(@typescript/typescript6@6.0.2))(vite@8.1.3(@types/node@26.0.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.12)(yaml@2.9.0))
@@ -4830,7 +4830,11 @@ packages:
   '@dnd-kit/utilities@3.2.2':
     resolution: {integrity: sha512-+MKAJEOfaBe5SmV6t34p80MMKhjvUz0vRrvVJbPT0WElzaOJ/1xs+D+KDv+tD/NE5ujfrChEcshd4fLn0wpiqg==}
     peerDependencies:
+      '@types/react': '*'
       react: '>=16.8.0'
+    peerDependenciesMeta:
+      '@types/react':
+        optional: true
 
   '@doist/react-interpolate@2.2.4':
     resolution: {integrity: sha512-b7JVndb3TeKypKSDYKswPHFMbaRIr1bwNhEKHJD6bKEDoPWJOiZbmVbAm41ZqimGXDAWtFvbcVuMq7Uzh8Wcrg==}
@@ -5861,9 +5865,16 @@ packages:
   '@lexical/react@0.13.1':
     resolution: {integrity: sha512-Sy6EL230KAb0RZsZf1dZrRrc3+rvCDQWltcd8C/cqBUYlxsLYCW9s4f3RB2werngD/PtLYbBB48SYXNkIALITA==}
     peerDependencies:
+      '@types/react': '*'
       lexical: 0.13.1
       react: '>=17.x'
       react-dom: '>=17.x'
+      yjs: '*'
+    peerDependenciesMeta:
+      '@types/react':
+        optional: true
+      yjs:
+        optional: true
 
   '@lexical/rich-text@0.13.1':
     resolution: {integrity: sha512-HliB9Ync06mv9DBg/5j0lIsTJp+exLHlaLJe+n8Zq1QNTzZzu2LsIT/Crquk50In7K/cjtlaQ/d5RB0LkjMHYg==}
@@ -6026,8 +6037,12 @@ packages:
   '@number-flow/react@0.6.2':
     resolution: {integrity: sha512-WjZuV4aA+vhRCgCF+adGLgFVVAJ8vdvq6EchRT2FiBIgElTXtDOA3YgkcMr9UHpvpS9v4H70AB5wZv0D9jc3QA==}
     peerDependencies:
+      '@types/react': '*'
       react: ^18 || ^19
       react-dom: ^18 || ^19
+    peerDependenciesMeta:
+      '@types/react':
+        optional: true
 
   '@nx/nx-darwin-arm64@23.3.0':
     resolution: {integrity: sha512-g06RId2Tn99ICwDFisZfDZ2vpM2bXvoCZeNtTWgwLm5mpJ4A7+akI7iXCe50CbzgE4waVRQCOAYpD1zPsKoUVQ==}
@@ -8256,7 +8271,11 @@ packages:
   '@tanstack/react-query@5.101.4':
     resolution: {integrity: sha512-yRg2pfOCxIs4ZJW3XYYHU/WgtD04FHSnfHlpRT7h7pR77hwkdRG4wxbKe4aq6P0RvXUTBSQpQeadS1SUYUe+KA==}
     peerDependencies:
+      '@types/react': '*'
       react: ^18 || ^19
+    peerDependenciesMeta:
+      '@types/react':
+        optional: true
 
   '@tanstack/react-virtual@3.14.13':
     resolution: {integrity: sha512-JbDTAwtzZ99aOeCrAfW5EsE5KSq5RWh6Af2dtFwyLIIk48Ja7vm6n4axu/43T3vfjFnEGJalxJ1wyYjSQD6bSg==}
@@ -10488,8 +10507,11 @@ packages:
   country-flag-icons@1.6.20:
     resolution: {integrity: sha512-py8JiEKzjhYw6HPJ0L7SxLgCYim36UPRTZX43/kqGueUCZLSvnrqAiwW8HtQibur7mdkFQUkjOgdK+o/9FBtaw==}
     peerDependencies:
+      '@types/react': '*'
       react: '*'
     peerDependenciesMeta:
+      '@types/react':
+        optional: true
       react:
         optional: true
 
@@ -13552,7 +13574,11 @@ packages:
   lucide-react@1.23.0:
     resolution: {integrity: sha512-38BpJcD0JhFosxHApP/BYsBetLpQFRoTRzEzstM/XCc3jsAG7wqaY1lgVwxiUe3xqYE+lNxo2PkCmYwXWrwwIw==}
     peerDependencies:
+      '@types/react': '*'
       react: ^16.5.1 || ^17.0.0 || ^18.0.0 || ^19.0.0
+    peerDependenciesMeta:
+      '@types/react':
+        optional: true
 
   luxon@3.7.2:
     resolution: {integrity: sha512-vtEhXh/gNjI9Yg1u4jX/0YVPMvxzHuGgCm6tC5kZyb08yjGWGnqAjGJvcXbqQR2P3MyMEFnRbpcdFS6PBcLqew==}
@@ -13585,6 +13611,11 @@ packages:
 
   make-synchronized@0.8.0:
     resolution: {integrity: sha512-DZu4lwc0ffoFz581BSQa/BJl+1ZqIkoRQ+VejMlH0VrP4E86StAODnZujZ4sepumQj8rcP7wUnUBGM8Gu+zKUA==}
+    peerDependencies:
+      prettier: '*'
+    peerDependenciesMeta:
+      prettier:
+        optional: true
 
   makeerror@1.0.12:
     resolution: {integrity: sha512-JmqCvUhmt43madlpFzG4BQzG2Z3m6tvQDNKdClZnO3VbIudJYmxsT0FNJMeiB2+JTSlTQTSbU8QdesVmwJcmLg==}
@@ -15410,14 +15441,22 @@ packages:
   react-colorful@5.7.0:
     resolution: {integrity: sha512-fuesYIemttah97XmsIHmz4OORDHiSFzyc9HMAIrCHJou2jaRQmL8cFJ76K4zQhhj8jzwOBlOi4BaGTjjOZCfTg==}
     peerDependencies:
+      '@types/react': '*'
       react: '>=16.8.0'
       react-dom: '>=16.8.0'
+    peerDependenciesMeta:
+      '@types/react':
+        optional: true
 
   react-day-picker@9.14.0:
     resolution: {integrity: sha512-tBaoDWjPwe0M5pGrum4H0SR6Lyk+BO9oHnp9JbKpGKW2mlraNPgP9BMfsg5pWpwrssARmeqk7YBl2oXutZTaHA==}
     engines: {node: '>=18'}
     peerDependencies:
+      '@types/react': '*'
       react: '>=16.8.0'
+    peerDependenciesMeta:
+      '@types/react':
+        optional: true
 
   react-docgen-typescript@2.4.0:
     resolution: {integrity: sha512-ZtAp5XTO5HRzQctjPU0ybY0RRCQO19X/8fxn3w7y2VVTUbGHDKULPTL4ky3vB05euSgG5NpALhEhDPvQ56wvXg==}
@@ -15452,16 +15491,27 @@ packages:
     resolution: {integrity: sha512-uM9uPzZJTF6wRQORmSrvOIgt4lJ9MC1sNgEOj2XGsDTRE4kmpWxg7ENK9EWNKJRMAOY9z0MuF4yIfl6gp4sotA==}
     engines: {node: '>=10', npm: '>=6'}
     peerDependencies:
+      '@types/react': '*'
       react: '>=16.13.1'
+    peerDependenciesMeta:
+      '@types/react':
+        optional: true
 
   react-highlight@0.15.0:
     resolution: {integrity: sha512-5uV/b/N4Z421GSVVe05fz+OfTsJtFzx/fJBdafZyw4LS70XjIZwgEx3Lrkfc01W/RzZ2Dtfb0DApoaJFAIKBtA==}
+    peerDependencies:
+      react: '*'
+      react-dom: '*'
 
   react-hook-form@7.80.0:
     resolution: {integrity: sha512-4P+fk6oXsxY+6xSj7Euhc2sumQD8zQqCuVHoJwoyp9EchP+IUW9OESB7uHFJOKsIBQ4MQqYE84INJFqUCYNoOg==}
     engines: {node: '>=18.0.0'}
     peerDependencies:
+      '@types/react': '*'
       react: ^16.8.0 || ^17 || ^18 || ^19
+    peerDependenciesMeta:
+      '@types/react':
+        optional: true
 
   react-is@16.13.1:
     resolution: {integrity: sha512-24e6ynE2H+OKt4kqsOvNd8kBpV65zoxbA4BVsEOB3ARVWQki/DHzaUoC5KuON/BiccDaCCTZBuOcfZs70kR8bQ==}
@@ -16079,8 +16129,12 @@ packages:
   sonner@2.0.7:
     resolution: {integrity: sha512-W6ZN4p58k8aDKA4XPcx2hpIQXBRAgyiWVkYhT7CvK6D3iAu7xjvVyhQHg2/iaKJZ1XVJ4r7XuwGL+WGEK37i9w==}
     peerDependencies:
+      '@types/react': '*'
       react: ^18.0.0 || ^19.0.0 || ^19.0.0-rc
       react-dom: ^18.0.0 || ^19.0.0 || ^19.0.0-rc
+    peerDependenciesMeta:
+      '@types/react':
+        optional: true
 
   sort-keys@5.1.0:
     resolution: {integrity: sha512-aSbHV0DaBcr7u0PVHXzM6NbZNAtrr9sF6+Qfs9UUVG7Ll3jQ6hHi8F/xqIIcn2rvIVbr0v/2zyjSdwSV47AgLQ==}
@@ -17045,7 +17099,11 @@ packages:
     resolution: {integrity: sha512-kvds8BHR2k28cFsxW8k3nc/tRga2rs1RHYCqmmGqb90MEeE++oALwzh2COiuBLO1/QXiOuShXoSN2ZpWnMmvuQ==}
     engines: {node: '>= 16.0.0'}
     peerDependencies:
+      '@types/react': '*'
       react: '*'
+    peerDependenciesMeta:
+      '@types/react':
+        optional: true
 
   use-sidecar@1.1.3:
     resolution: {integrity: sha512-Fedw0aZvkhynoPYlA5WXrMCAMm+nSWdZt6lzJQ7Ok8S6Q+VsHmHpRWndVRJ8Be0ZbkfPc5LRYH+5XrzXcEeLRQ==}
@@ -17184,12 +17242,20 @@ packages:
   vite-plugin-svgr@4.5.0:
     resolution: {integrity: sha512-W+uoSpmVkSmNOGPSsDCWVW/DDAyv+9fap9AZXBvWiQqrboJ08j2vh0tFxTD/LjwqwAd3yYSVJgm54S/1GhbdnA==}
     peerDependencies:
+      '@types/react': '*'
       vite: '>=2.6.0'
+    peerDependenciesMeta:
+      '@types/react':
+        optional: true
 
   vite-plugin-svgr@5.2.0:
     resolution: {integrity: sha512-qj2eAKF8C6PZWemVTvQA0xgQIcP1hHU6Buh7fl6BhvayWwnuxE+z417miKxeDvRWbDrupQ1oK99hfxElopJ3sQ==}
     peerDependencies:
+      '@types/react': '*'
       vite: '>=3.0.0'
+    peerDependenciesMeta:
+      '@types/react':
+        optional: true
 
   vite@8.1.3:
     resolution: {integrity: sha512-Ds+gBRbj0lwRO2Y5hwnUBdxSwlAve9LeRyU4sNnAr0ewW0gWF0n5bgXgUzbgZ49MV9BVUAQUFYVcDUcilUExMA==}
@@ -18233,7 +18299,7 @@ snapshots:
   '@dnd-kit/core@6.3.1(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
     dependencies:
       '@dnd-kit/accessibility': 3.1.1(react@18.3.1)
-      '@dnd-kit/utilities': 3.2.2(react@18.3.1)
+      '@dnd-kit/utilities': 3.2.2(@types/react@18.3.31)(react@18.3.1)
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
       tslib: 2.8.1
@@ -18243,16 +18309,18 @@ snapshots:
   '@dnd-kit/sortable@7.0.2(@dnd-kit/core@6.3.1(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(@types/react@18.3.31)(react@18.3.1)':
     dependencies:
       '@dnd-kit/core': 6.3.1(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      '@dnd-kit/utilities': 3.2.2(react@18.3.1)
+      '@dnd-kit/utilities': 3.2.2(@types/react@18.3.31)(react@18.3.1)
       react: 18.3.1
       tslib: 2.8.1
     optionalDependencies:
       '@types/react': 18.3.31
 
-  '@dnd-kit/utilities@3.2.2(react@18.3.1)':
+  '@dnd-kit/utilities@3.2.2(@types/react@18.3.31)(react@18.3.1)':
     dependencies:
       react: 18.3.1
       tslib: 2.8.1
+    optionalDependencies:
+      '@types/react': 18.3.31
 
   '@doist/react-interpolate@2.2.4(prop-types@15.8.1)(react-dom@17.0.2(react@17.0.2))(react@17.0.2)':
     dependencies:
@@ -18652,10 +18720,10 @@ snapshots:
       react: 17.0.2
       react-dom: 17.0.2(react@17.0.2)
 
-  '@hookform/resolvers@5.4.0(react-hook-form@7.80.0(react@18.3.1))(zod@4.6.5)':
+  '@hookform/resolvers@5.4.0(react-hook-form@7.80.0(@types/react@18.3.31)(react@18.3.1))(zod@4.6.5)':
     dependencies:
       '@standard-schema/utils': 0.3.0
-      react-hook-form: 7.80.0(react@18.3.1)
+      react-hook-form: 7.80.0(@types/react@18.3.31)(react@18.3.1)
     optionalDependencies:
       zod: 4.6.5
 
@@ -19305,13 +19373,14 @@ snapshots:
       '@lexical/utils': 0.13.1(lexical@0.13.1)
       lexical: 0.13.1
 
-  '@lexical/react@0.13.1(lexical@0.13.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(yjs@13.6.31)':
+  '@lexical/react@0.13.1(@types/react@18.3.31)(lexical@0.13.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(yjs@13.6.31)':
     dependencies:
       '@lexical/clipboard': 0.13.1(lexical@0.13.1)
       '@lexical/code': 0.13.1(lexical@0.13.1)
       '@lexical/dragon': 0.13.1(lexical@0.13.1)
       '@lexical/hashtag': 0.13.1(lexical@0.13.1)
       '@lexical/history': 0.13.1(lexical@0.13.1)
+      '@lexical/html': 0.13.1(lexical@0.13.1)
       '@lexical/link': 0.13.1(lexical@0.13.1)
       '@lexical/list': 0.13.1(lexical@0.13.1)
       '@lexical/mark': 0.13.1(lexical@0.13.1)
@@ -19327,9 +19396,10 @@ snapshots:
       lexical: 0.13.1
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
-      react-error-boundary: 3.1.4(react@18.3.1)
-    transitivePeerDependencies:
-      - yjs
+      react-error-boundary: 3.1.4(@types/react@18.3.31)(react@18.3.1)
+    optionalDependencies:
+      '@types/react': 18.3.31
+      yjs: 13.6.31
 
   '@lexical/rich-text@0.13.1(@lexical/clipboard@0.13.1(lexical@0.13.1))(@lexical/selection@0.13.1(lexical@0.13.1))(@lexical/utils@0.13.1(lexical@0.13.1))(lexical@0.13.1)':
     dependencies:
@@ -19612,12 +19682,14 @@ snapshots:
     dependencies:
       which: 4.0.0
 
-  '@number-flow/react@0.6.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
+  '@number-flow/react@0.6.2(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
     dependencies:
       esm-env: 1.2.2
       number-flow: 0.6.2
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
+    optionalDependencies:
+      '@types/react': 18.3.31
 
   '@nx/nx-darwin-arm64@23.3.0':
     optional: true
@@ -20110,7 +20182,7 @@ snapshots:
 
   '@prettier/sync@0.6.1(prettier@3.9.6)':
     dependencies:
-      make-synchronized: 0.8.0
+      make-synchronized: 0.8.0(prettier@3.9.6)
       prettier: 3.9.6
 
   '@protobufjs/aspromise@1.1.2': {}
@@ -21717,10 +21789,12 @@ snapshots:
 
   '@tanstack/query-core@5.101.4': {}
 
-  '@tanstack/react-query@5.101.4(react@18.3.1)':
+  '@tanstack/react-query@5.101.4(@types/react@18.3.31)(react@18.3.1)':
     dependencies:
       '@tanstack/query-core': 5.101.4
       react: 18.3.1
+    optionalDependencies:
+      '@types/react': 18.3.31
 
   '@tanstack/react-virtual@3.14.13(react-dom@17.0.2(react@17.0.2))(react@17.0.2)':
     dependencies:
@@ -24679,8 +24753,9 @@ snapshots:
 
   countries-and-timezones@3.9.0: {}
 
-  country-flag-icons@1.6.20(react@18.3.1):
+  country-flag-icons@1.6.20(@types/react@18.3.31)(react@18.3.1):
     optionalDependencies:
+      '@types/react': 18.3.31
       react: 18.3.1
 
   cpu-features@0.0.10:
@@ -28705,9 +28780,11 @@ snapshots:
 
   lru.min@1.1.4: {}
 
-  lucide-react@1.23.0(react@18.3.1):
+  lucide-react@1.23.0(@types/react@18.3.31)(react@18.3.1):
     dependencies:
       react: 18.3.1
+    optionalDependencies:
+      '@types/react': 18.3.31
 
   luxon@3.7.2: {}
 
@@ -28749,7 +28826,9 @@ snapshots:
     dependencies:
       kind-of: 6.0.3
 
-  make-synchronized@0.8.0: {}
+  make-synchronized@0.8.0(prettier@3.9.6):
+    optionalDependencies:
+      prettier: 3.9.6
 
   makeerror@1.0.12:
     dependencies:
@@ -31023,26 +31102,32 @@ snapshots:
     dependencies:
       got: 11.8.6
 
-  react-colorful@5.7.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
+  react-colorful@5.7.0(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
     dependencies:
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
+    optionalDependencies:
+      '@types/react': 18.3.31
 
-  react-day-picker@9.14.0(react@17.0.2):
+  react-day-picker@9.14.0(@types/react@17.0.93)(react@17.0.2):
     dependencies:
       '@date-fns/tz': 1.5.0
       '@tabby_ai/hijri-converter': 1.0.5
       date-fns: 4.4.0
       date-fns-jalali: 4.1.0-0
       react: 17.0.2
+    optionalDependencies:
+      '@types/react': 17.0.93
 
-  react-day-picker@9.14.0(react@18.3.1):
+  react-day-picker@9.14.0(@types/react@18.3.31)(react@18.3.1):
     dependencies:
       '@date-fns/tz': 1.5.0
       '@tabby_ai/hijri-converter': 1.0.5
       date-fns: 4.4.0
       date-fns-jalali: 4.1.0-0
       react: 18.3.1
+    optionalDependencies:
+      '@types/react': 18.3.31
 
   react-docgen-typescript@2.4.0(@typescript/typescript6@6.0.2):
     dependencies:
@@ -31085,18 +31170,24 @@ snapshots:
     optionalDependencies:
       '@types/react': 18.3.31
 
-  react-error-boundary@3.1.4(react@18.3.1):
+  react-error-boundary@3.1.4(@types/react@18.3.31)(react@18.3.1):
     dependencies:
       '@babel/runtime': 7.29.7
       react: 18.3.1
+    optionalDependencies:
+      '@types/react': 18.3.31
 
-  react-highlight@0.15.0:
+  react-highlight@0.15.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
     dependencies:
       highlight.js: 10.7.3
+      react: 18.3.1
+      react-dom: 18.3.1(react@18.3.1)
 
-  react-hook-form@7.80.0(react@18.3.1):
+  react-hook-form@7.80.0(@types/react@18.3.31)(react@18.3.1):
     dependencies:
       react: 18.3.1
+    optionalDependencies:
+      '@types/react': 18.3.31
 
   react-is@16.13.1: {}
 
@@ -31951,10 +32042,12 @@ snapshots:
       dot-case: 3.0.4
       tslib: 2.8.1
 
-  sonner@2.0.7(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
+  sonner@2.0.7(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
     dependencies:
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
+    optionalDependencies:
+      '@types/react': 18.3.31
 
   sort-keys@5.1.0:
     dependencies:
@@ -33094,9 +33187,11 @@ snapshots:
     optionalDependencies:
       '@types/react': 18.3.31
 
-  use-debounce@10.1.1(react@18.3.1):
+  use-debounce@10.1.1(@types/react@18.3.31)(react@18.3.1):
     dependencies:
       react: 18.3.1
+    optionalDependencies:
+      '@types/react': 18.3.31
 
   use-sidecar@1.1.3(@types/react@18.3.31)(react@18.3.1):
     dependencies:
@@ -33300,45 +33395,53 @@ snapshots:
       - typescript
       - webpack
 
-  vite-plugin-svgr@4.5.0(@typescript/typescript6@6.0.2)(rollup@4.62.2)(supports-color@10.2.2)(vite@8.1.3(@types/node@22.20.1)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.12)(yaml@2.9.0)):
+  vite-plugin-svgr@4.5.0(@types/react@18.3.31)(@typescript/typescript6@6.0.2)(rollup@4.62.2)(supports-color@10.2.2)(vite@8.1.3(@types/node@22.20.1)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.12)(yaml@2.9.0)):
     dependencies:
       '@rollup/pluginutils': 5.4.0(rollup@4.62.2)
       '@svgr/core': 8.1.0(@typescript/typescript6@6.0.2)(supports-color@10.2.2)
       '@svgr/plugin-jsx': 8.1.0(@svgr/core@8.1.0(@typescript/typescript6@6.0.2)(supports-color@10.2.2))(supports-color@10.2.2)
       vite: 8.1.3(@types/node@22.20.1)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.12)(yaml@2.9.0)
+    optionalDependencies:
+      '@types/react': 18.3.31
     transitivePeerDependencies:
       - rollup
       - supports-color
       - typescript
 
-  vite-plugin-svgr@4.5.0(@typescript/typescript6@6.0.2)(rollup@4.62.2)(supports-color@10.2.2)(vite@8.1.3(@types/node@26.0.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.12)(yaml@2.9.0)):
+  vite-plugin-svgr@4.5.0(@types/react@18.3.31)(@typescript/typescript6@6.0.2)(rollup@4.62.2)(supports-color@10.2.2)(vite@8.1.3(@types/node@26.0.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.12)(yaml@2.9.0)):
     dependencies:
       '@rollup/pluginutils': 5.4.0(rollup@4.62.2)
       '@svgr/core': 8.1.0(@typescript/typescript6@6.0.2)(supports-color@10.2.2)
       '@svgr/plugin-jsx': 8.1.0(@svgr/core@8.1.0(@typescript/typescript6@6.0.2)(supports-color@10.2.2))(supports-color@10.2.2)
       vite: 8.1.3(@types/node@26.0.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.12)(yaml@2.9.0)
+    optionalDependencies:
+      '@types/react': 18.3.31
     transitivePeerDependencies:
       - rollup
       - supports-color
       - typescript
 
-  vite-plugin-svgr@5.2.0(@typescript/typescript6@6.0.2)(rollup@4.62.2)(supports-color@10.2.2)(vite@8.1.3(@types/node@26.0.0)(esbuild@0.28.2)(jiti@1.21.7)(terser@5.48.0)(tsx@4.23.12)(yaml@2.9.0)):
+  vite-plugin-svgr@5.2.0(@types/react@18.3.31)(@typescript/typescript6@6.0.2)(rollup@4.62.2)(supports-color@10.2.2)(vite@8.1.3(@types/node@26.0.0)(esbuild@0.28.2)(jiti@1.21.7)(terser@5.48.0)(tsx@4.23.12)(yaml@2.9.0)):
     dependencies:
       '@rollup/pluginutils': 5.4.0(rollup@4.62.2)
       '@svgr/core': 8.1.0(@typescript/typescript6@6.0.2)(supports-color@10.2.2)
       '@svgr/plugin-jsx': 8.1.0(@svgr/core@8.1.0(@typescript/typescript6@6.0.2)(supports-color@10.2.2))(supports-color@10.2.2)
       vite: 8.1.3(@types/node@26.0.0)(esbuild@0.28.2)(jiti@1.21.7)(terser@5.48.0)(tsx@4.23.12)(yaml@2.9.0)
+    optionalDependencies:
+      '@types/react': 18.3.31
     transitivePeerDependencies:
       - rollup
       - supports-color
       - typescript
 
-  vite-plugin-svgr@5.2.0(@typescript/typescript6@6.0.2)(rollup@4.62.2)(supports-color@10.2.2)(vite@8.1.3(@types/node@26.0.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.12)(yaml@2.9.0)):
+  vite-plugin-svgr@5.2.0(@types/react@18.3.31)(@typescript/typescript6@6.0.2)(rollup@4.62.2)(supports-color@10.2.2)(vite@8.1.3(@types/node@26.0.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.12)(yaml@2.9.0)):
     dependencies:
       '@rollup/pluginutils': 5.4.0(rollup@4.62.2)
       '@svgr/core': 8.1.0(@typescript/typescript6@6.0.2)(supports-color@10.2.2)
       '@svgr/plugin-jsx': 8.1.0(@svgr/core@8.1.0(@typescript/typescript6@6.0.2)(supports-color@10.2.2))(supports-color@10.2.2)
       vite: 8.1.3(@types/node@26.0.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.12)(yaml@2.9.0)
+    optionalDependencies:
+      '@types/react': 18.3.31
     transitivePeerDependencies:
       - rollup
       - supports-color

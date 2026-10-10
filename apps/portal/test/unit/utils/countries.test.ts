@@ -30,9 +30,9 @@ describe('countryOptions', () => {
   test('names a stored code the list does not hold where the browser can, as Admin does', () => {
     // The Canary Islands: a code the browser can name, but not a country of its own,
     // so the address form does not offer it.
-    expect(countryOptions('IC').at(-1)).toEqual({ value: 'IC', label: 'Canary Islands' });
+    expect(countryOptions('IC').slice(-1)[0]).toEqual({ value: 'IC', label: 'Canary Islands' });
     // A malformed imported value has no name; the code is shown so it can be seen and replaced.
-    expect(countryOptions('DEU').at(-1)).toEqual({ value: 'DEU', label: 'DEU' });
+    expect(countryOptions('DEU').slice(-1)[0]).toEqual({ value: 'DEU', label: 'DEU' });
     // A stored code the list holds is not offered twice.
     expect(countryOptions('DE')).toHaveLength(COUNTRY_CODES.length);
   });
