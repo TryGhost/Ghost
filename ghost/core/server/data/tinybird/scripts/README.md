@@ -20,7 +20,7 @@ pnpm data:analytics:generate
 # Generate custom number of events
 pnpm data:analytics:generate 5000
 
-# Clear all analytics data
+# Clear this site's analytics data
 pnpm data:analytics:clear
 ```
 
@@ -68,8 +68,8 @@ Reads tokens from Docker volume automatically. Override via:
 - `TINYBIRD_HOST` (default: http://localhost:7181)
 
 Every checkout shares one Tinybird Local instance. Generated events carry the
-checkout's `site_uuid`, but `pnpm data:analytics:clear` truncates the
-datasources for all checkouts.
+checkout's `site_uuid`, and `pnpm data:analytics:clear` deletes only that
+site's rows.
 
 ## Troubleshooting
 

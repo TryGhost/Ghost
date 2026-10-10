@@ -18,12 +18,14 @@
 
 const DockerDatabaseUtils = require('./docker-database-utils');
 const { execSync } = require('child_process');
+const { setTimeout: sleep } = require('timers/promises');
 
 // Configuration
 const TINYBIRD_HOST = process.env.TINYBIRD_HOST || 'http://localhost:7181';
 const TINYBIRD_DATASOURCE = 'analytics_events';
 const TINYBIRD_MV_DATASOURCE = '_mv_hits';
 const TINYBIRD_MV_DAILY_PAGES = '_mv_daily_pages';
+const TINYBIRD_MV_SESSION_DATA = '_mv_session_data_v2';
 const DEFAULT_EVENT_COUNT = 10000;
 const BATCH_SIZE = 10000; // Events per API request (Tinybird handles large batches well)
 const PARALLEL_BATCHES = 5; // Number of concurrent batch uploads
@@ -723,62 +725,53 @@ class DockerAnalyticsManager {
   }
 
   /**
-   * Clear analytics events from Tinybird
-   * Truncates the landing datasource and all materialized views
+   * Delete this site's events from Tinybird
+   * Deletes don't propagate to materialized views, so each one is cleared too
    */
   async clearAnalytics() {
-    console.log(`\nClearing analytics events...`);
+    console.log(`\nClearing analytics events for site ${this.siteUuid}...`);
 
-    // Truncate the main datasource
-    console.log(`Truncating ${TINYBIRD_DATASOURCE}...`);
-    await this.truncateDatasource(TINYBIRD_DATASOURCE);
-
-    // Truncate the materialized view datasources
-    console.log(`Truncating ${TINYBIRD_MV_DATASOURCE}...`);
-    await this.truncateDatasource(TINYBIRD_MV_DATASOURCE);
-
-    // Truncate the daily pages MV (may not exist in older setups)
-    console.log(`Truncating ${TINYBIRD_MV_DAILY_PAGES}...`);
-    try {
-      await this.truncateDatasource(TINYBIRD_MV_DAILY_PAGES);
-    } catch (error) {
-      console.log(`  ${TINYBIRD_MV_DAILY_PAGES} not found (may not be deployed yet)`);
+    for (const datasourceName of [
+      TINYBIRD_DATASOURCE,
+      TINYBIRD_MV_DATASOURCE,
+      TINYBIRD_MV_DAILY_PAGES,
+      TINYBIRD_MV_SESSION_DATA,
+    ]) {
+      await this.deleteSiteRows(datasourceName);
     }
 
-    console.log('All analytics data cleared successfully');
+    console.log('Analytics data cleared successfully');
     return { status: 'ok' };
   }
 
   /**
-   * Truncate a datasource by name
+   * Delete this site's rows from a datasource and wait for the job to finish
    */
-  async truncateDatasource(datasourceName) {
-    const url = `${TINYBIRD_HOST}/v0/datasources/${datasourceName}/truncate`;
-
-    const response = await fetch(url, {
+  async deleteSiteRows(datasourceName) {
+    const headers = { Authorization: `Bearer ${this.tinybirdToken}` };
+    const response = await fetch(`${TINYBIRD_HOST}/v0/datasources/${datasourceName}/delete`, {
       method: 'POST',
-      headers: {
-        Authorization: `Bearer ${this.tinybirdToken}`,
-      },
+      headers,
+      body: new URLSearchParams({ delete_condition: `site_uuid = '${this.siteUuid}'` }),
     });
 
     if (!response.ok) {
       const errorText = await response.text();
-      throw new Error(`Failed to truncate ${datasourceName}: ${response.status} - ${errorText}`);
+      throw new Error(`Failed to clear ${datasourceName}: ${response.status} - ${errorText}`);
     }
 
-    console.log(`  ${datasourceName} truncated`);
-
-    // Handle empty or non-JSON responses
-    const text = await response.text();
-    if (text && text.trim()) {
-      try {
-        return JSON.parse(text);
-      } catch (e) {
-        return { status: 'ok', message: text };
-      }
+    // The response's job_url uses Tinybird Local's internal port
+    let job = await response.json();
+    while (job.status === 'waiting' || job.status === 'working') {
+      await sleep(500);
+      job = await (await fetch(`${TINYBIRD_HOST}/v0/jobs/${job.id}`, { headers })).json();
     }
-    return { status: 'ok' };
+
+    if (job.status !== 'done') {
+      throw new Error(`Failed to clear ${datasourceName}: job ${job.status} - ${job.error ?? ''}`);
+    }
+
+    console.log(`  ${datasourceName} cleared`);
   }
 
   /**
@@ -796,7 +789,7 @@ function printHelp() {
   console.log(`
 Usage:
   node docker-analytics-manager.js generate [count]  - Generate analytics events
-  node docker-analytics-manager.js clear             - Clear all analytics events
+  node docker-analytics-manager.js clear             - Clear this site's analytics events
 
 Options:
   count  - Number of events to generate (default: ${DEFAULT_EVENT_COUNT})
@@ -808,7 +801,7 @@ Prerequisites:
 Examples:
   pnpm data:analytics:generate          # Generate 10,000 events
   pnpm data:analytics:generate 10000    # Generate 10,000 events
-  pnpm data:analytics:clear             # Clear all events
+  pnpm data:analytics:clear             # Clear this site's events
 `);
 }
 
