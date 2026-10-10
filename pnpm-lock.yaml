@@ -470,6 +470,9 @@ catalogs:
     cheerio:
       specifier: 1.2.0
       version: 1.2.0
+    chrono-node:
+      specifier: 2.10.1
+      version: 2.10.1
     clsx:
       specifier: 2.1.1
       version: 2.1.1
@@ -560,6 +563,9 @@ catalogs:
     jsonc-parser:
       specifier: 3.3.1
       version: 3.3.1
+    jsonrepair:
+      specifier: 3.15.0
+      version: 3.15.0
     juice:
       specifier: 11.1.1
       version: 11.1.1
@@ -2325,6 +2331,9 @@ importers:
       cheerio:
         specifier: 'catalog:'
         version: 1.2.0
+      chrono-node:
+        specifier: 'catalog:'
+        version: 2.10.1
       clsx:
         specifier: 'catalog:'
         version: 2.1.1
@@ -2454,6 +2463,9 @@ importers:
       jsonc-parser:
         specifier: 'catalog:'
         version: 3.3.1
+      jsonrepair:
+        specifier: 'catalog:'
+        version: 3.15.0
       jsonwebtoken:
         specifier: 8.5.1
         version: 8.5.1
@@ -10099,6 +10111,10 @@ packages:
     resolution: {integrity: sha512-rNjApaLzuwaOTjCiT8lSDdGN1APCiqkChLMJxJPWLunPAt5fy8xgU9/jNOchV84wfIxrA0lRQB7oCT8jrn/wrQ==}
     engines: {node: '>=6.0'}
 
+  chrono-node@2.10.1:
+    resolution: {integrity: sha512-tPOsBzYVAK5zth+CiHCgp5NGeqRc4mMD8FPthQ5IxkgjPWWxIFdM5odnmfw//IRAzl6C++Xy8olQW7wn5qBR1g==}
+    engines: {node: ^12.20.0 || ^14.13.1 || >=16.0.0}
+
   chunk-data@0.1.0:
     resolution: {integrity: sha512-zFyPtyC0SZ6Zu79b9sOYtXZcgrsXe0RpePrzRyj52hYVFG1+Rk6rBqjjOEk+GNQwc3PIX+86teQMok970pod1g==}
     engines: {node: '>=20'}
@@ -12956,6 +12972,10 @@ packages:
   jsonpointer@5.0.1:
     resolution: {integrity: sha512-p/nXbhSEcu3pZRdkW1OfJhpsVtW1gd4Wa1fnQc9YLiTfAjn0312eMKimbdIQzuZl9aa9xUGaRlP9T/CJE/ditQ==}
     engines: {node: '>=0.10.0'}
+
+  jsonrepair@3.15.0:
+    resolution: {integrity: sha512-wy8OTjwsJwQRnQJkKnMJJ9vcytRdBPAgIF/Hy6+s1dAj42BHMKiyL8JzEieIl3JY7idt8eyHwBWTO8mh/+mtwA==}
+    hasBin: true
 
   jsonwebtoken@8.5.1:
     resolution: {integrity: sha512-XjwVfRS6jTMsqYs0EsuJ4LGxXV14zQybNd4L2r0UvbVnSF9Af8x7p5MzbJ90Ioz/9TI41/hTCvznF/loiSzn8w==}
@@ -24054,6 +24074,8 @@ snapshots:
   chrome-trace-event@1.0.4:
     optional: true
 
+  chrono-node@2.10.1: {}
+
   chunk-data@0.1.0: {}
 
   ci-info@3.9.0: {}
@@ -27874,6 +27896,8 @@ snapshots:
       graceful-fs: 4.2.11
 
   jsonpointer@5.0.1: {}
+
+  jsonrepair@3.15.0: {}
 
   jsonwebtoken@8.5.1:
     dependencies:

@@ -28,7 +28,9 @@
  */
 
 import { load, type CheerioAPI } from 'cheerio/slim';
+import { parseDate } from 'chrono-node';
 import { decodeHTML } from 'entities';
+import { jsonrepair } from 'jsonrepair';
 import { getDomain } from 'tldts';
 
 /**
@@ -156,7 +158,9 @@ const toImage = (value: unknown, baseUrl: string) => {
   }
 };
 
-const isLikelyDate = (value: string) => !Number.isNaN(Date.parse(value));
+// Byline containers can hold relative timestamps as well as calendar dates.
+const isLikelyDate = (value: string) =>
+  !Number.isNaN(Date.parse(value)) || parseDate(value) !== null;
 
 export const isAmazonUrl = (url: string) => {
   const domain = getDomain(url);
@@ -175,11 +179,18 @@ const parseJsonLd = ($: CheerioAPI): JsonLdItem[] => {
   return $('script[type="application/ld+json"]')
     .toArray()
     .flatMap((el) => {
+      const source = $(el).text();
       let json;
       try {
-        json = JSON.parse($(el).text());
+        json = JSON.parse(source);
       } catch {
-        return [];
+        // Preserve metascraper's tolerance for comments, trailing commas and
+        // other repairable mistakes in a page's structured metadata.
+        try {
+          json = JSON.parse(jsonrepair(source));
+        } catch {
+          return [];
+        }
       }
       if (!json || typeof json !== 'object') {
         return [];

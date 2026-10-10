@@ -74,6 +74,45 @@ describe('extractMetadata', function () {
     assert.equal(metadata.title, 'Title');
   });
 
+  it('repairs JSON-LD without losing metadata or changing URL strings', function () {
+    const json = JSON.stringify({
+      headline: 'Article title',
+      author: { name: 'Jane Doe' },
+      description: 'Article description',
+      image: { url: 'https://example.com/images/hero.jpg' },
+    });
+    const sources = [
+      json.slice(0, -1) + ',}',
+      '/* structured metadata */ ' + json,
+      '// structured metadata\n' + json,
+      json.replace('"headline"', "'headline'"),
+    ];
+
+    for (const source of sources) {
+      const metadata = extractMetadata(
+        page(`<script type="application/ld+json">${source}</script>`),
+        'https://example.com/post',
+      );
+
+      assert.equal(metadata.title, 'Article title', source);
+      assert.equal(metadata.author, 'Jane Doe', source);
+      assert.equal(metadata.description, 'Article description', source);
+      assert.equal(metadata.image, 'https://example.com/images/hero.jpg', source);
+    }
+  });
+
+  it('continues to later JSON-LD blocks after an unrepairable block', function () {
+    const metadata = extractMetadata(
+      page(`
+        <script type="application/ld+json">{:</script>
+        <script type="application/ld+json">{"headline": "Article title"}</script>
+      `),
+      'https://example.com/post',
+    );
+
+    assert.equal(metadata.title, 'Article title');
+  });
+
   it('cleans up author names', function () {
     const byline = (author: string) =>
       extractMetadata(page(`<meta name="author" content="${author}">`), 'https://example.com')
@@ -92,6 +131,22 @@ describe('extractMetadata', function () {
     );
 
     assert.equal(metadata.author, 'Jane Doe');
+  });
+
+  it('skips relative timestamps before selecting a byline author', function () {
+    for (const timestamp of [
+      'Published 3 hours ago',
+      'Updated yesterday',
+      'Last Tuesday',
+      '2 days ago',
+    ]) {
+      const metadata = extractMetadata(
+        page('', `<div class="byline">${timestamp}</div><div class="byline">Jane Doe</div>`),
+        'https://example.com/post',
+      );
+
+      assert.equal(metadata.author, 'Jane Doe', timestamp);
+    }
   });
 
   it('derives the publisher from a separated title', function () {

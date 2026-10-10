@@ -136,6 +136,7 @@ catalog:
   bson-objectid: 2.0.4
   chai: 4.5.0
   cheerio: 1.2.0
+  chrono-node: 2.10.1
   clsx: 2.1.1
   concurrently: 10.0.5
   country-flag-icons: 1.6.20
@@ -163,6 +164,7 @@ catalog:
   js-yaml: 4.3.2
   jsdom: 30.0.1
   jsonc-parser: 3.3.1
+  jsonrepair: 3.15.0
   juice: 11.1.1
   knex: 2.4.2
   knex-migrator: 6.2.1
