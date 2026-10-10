@@ -5,6 +5,7 @@ import {
   devProcesses,
   parseElapsed,
   parseProcesses,
+  parseProcFiles,
   type Proc,
   unusedDatabases,
 } from '../lib/dev-stack.ts';
@@ -78,6 +79,24 @@ describe('parseProcesses', () => {
         command: 'sh -c nodemon index.js',
       },
     ]);
+  });
+});
+
+describe('parseProcFiles', () => {
+  it('reads a process from /proc, including a command name with spaces', () => {
+    const stat =
+      '4242 (node (vite)) S 1 4242 4242 0 -1 4194560 2000 0 0 0 150 30 0 0 20 0 11 0 50000 1000000 30000 18446744073709551615';
+    const status = 'Name:\tnode\nVmPeak:\t  1200 kB\nVmRSS:\t   98304 kB\n';
+    const cmdline = 'node\0/store/vite/bin/vite.js\0build\0--watch\0';
+    assert.deepEqual(parseProcFiles(4242, { stat, cmdline, status }, 800), {
+      pid: 4242,
+      ppid: 1,
+      pgid: 4242,
+      rss: 98304,
+      elapsed: 300,
+      state: 'S',
+      command: 'node /store/vite/bin/vite.js build --watch',
+    });
   });
 });
 

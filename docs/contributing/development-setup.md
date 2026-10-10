@@ -122,15 +122,17 @@ To run a checkout's Ghost in the background, for example from an agent, use:
 
 ```bash
 pnpm dev:up      # start; returns once Ghost answers and prints its URL
-pnpm dev:status  # every checkout's URL, ports, database and state; --json for scripts
+pnpm dev:status  # this checkout and any other running one; --all lists every checkout
 pnpm dev:down    # stop this checkout's Ghost, however it was started
 ```
 
-`pnpm dev:up` writes its output to `.ghost-dev.log`. Pass a variant's script
-name, such as `pnpm dev:up dev:analytics`, to start that instead; `dev:docker`
-can't run this way. `pnpm dev` and `pnpm dev:up` refuse to start while the
-checkout's Ghost is already running, and stop processes that an earlier run
-left behind. `pnpm dev:down` leaves MySQL, Redis, and Mailpit running.
+`pnpm dev:status` shows each checkout's URL, ports, database, state, pid, uptime
+and memory, and `--json` prints them for scripts. `pnpm dev:up` writes its
+output to `.ghost-dev.log`. Pass a variant's script name, such as
+`pnpm dev:up dev:analytics`, to start that instead; `dev:docker` can't run this
+way. `pnpm dev` and `pnpm dev:up` refuse to start while the checkout's Ghost is
+already running, and stop processes that an earlier run left behind.
+`pnpm dev:down` leaves MySQL, Redis, and Mailpit running.
 
 `pnpm dev:gc` lists the `dev_*` databases of worktrees that no longer exist, and
 `pnpm dev:gc --yes` drops them.

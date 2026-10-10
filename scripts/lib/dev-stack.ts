@@ -1,5 +1,5 @@
 import { execFileSync, spawnSync } from 'node:child_process';
-import { existsSync, readFileSync, readlinkSync, realpathSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync, readlinkSync, realpathSync } from 'node:fs';
 import http from 'node:http';
 import net from 'node:net';
 import { join, relative, sep } from 'node:path';
@@ -63,7 +63,44 @@ export function parseProcesses(text: string): Proc[] {
   });
 }
 
+/** A process from its /proc/<pid> `stat`, `cmdline` and `status` files */
+export function parseProcFiles(
+  pid: number,
+  files: { stat: string; cmdline: string; status: string },
+  uptime: number,
+): Proc {
+  // The command name in parentheses can contain spaces, so fields count from its end
+  const fields = files.stat.slice(files.stat.lastIndexOf(')') + 2).split(' ');
+  return {
+    pid,
+    ppid: Number(fields[1]),
+    pgid: Number(fields[2]),
+    rss: Number(/^VmRSS:\s+(\d+)/m.exec(files.status)?.[1] ?? 0),
+    // In clock ticks since boot, which Linux reports at 100 per second
+    elapsed: Math.max(0, Math.round(uptime - Number(fields[19]) / 100)),
+    state: fields[0] ?? '',
+    command: files.cmdline.split('\0').filter(Boolean).join(' '),
+  };
+}
+
 export function listProcesses(): Proc[] {
+  // Slim Linux images ship without `ps`
+  if (process.platform === 'linux') {
+    const uptime = Number(readFileSync('/proc/uptime', 'utf8').split(' ')[0]);
+    return readdirSync('/proc')
+      .filter((name) => /^\d+$/.test(name))
+      .flatMap((name) => {
+        const read = (file: string) => readFileSync(`/proc/${name}/${file}`, 'utf8');
+        try {
+          const files = { stat: read('stat'), cmdline: read('cmdline'), status: read('status') };
+          return [parseProcFiles(Number(name), files, uptime)];
+        } catch {
+          // Exited while listing
+          return [];
+        }
+      })
+      .filter((proc) => proc.command !== '');
+  }
   const ps = ['-ww', '-A', '-o', 'pid=,ppid=,pgid=,rss=,etime=,stat=,command='];
   return parseProcesses(execFileSync('ps', ps, { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 }));
 }
