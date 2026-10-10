@@ -1,5 +1,4 @@
 import { useCallback } from 'react';
-import { useEmberOwnedRouteMatcher } from '@/routes';
 import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import { useLocation, useNavigate } from '@tryghost/admin-x-framework';
 import { getSettingsReturnTo } from '@/layout/settings-navigation';
@@ -12,11 +11,9 @@ export function useExitSettings() {
   const navigate = useNavigate();
   const location = useLocation();
   const admin7Settings = useFeatureFlag('admin7settings');
-  const isEmberOwnedRoute = useEmberOwnedRouteMatcher();
   const returnTo = (admin7Settings && getSettingsReturnTo(location.state)) || '/';
 
   return useCallback(() => {
-    // Ember only follows hash changes, so its routes need a cross-app navigation.
-    navigate(returnTo, { crossApp: isEmberOwnedRoute(returnTo.split(/[?#]/)[0]) });
-  }, [isEmberOwnedRoute, navigate, returnTo]);
+    navigate(returnTo);
+  }, [navigate, returnTo]);
 }

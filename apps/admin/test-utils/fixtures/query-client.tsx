@@ -29,9 +29,6 @@ function createTestQueryClient(): QueryClient {
 const defaultFrameworkProps: TopLevelFrameworkProps = {
   externalNavigate: () => {},
   ghostVersion: '5.x',
-  onDelete: () => {},
-  onInvalidate: () => {},
-  onUpdate: () => {},
   unsplashConfig: {
     Authorization: '',
     'Accept-Version': '',

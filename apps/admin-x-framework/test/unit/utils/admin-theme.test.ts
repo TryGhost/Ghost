@@ -70,6 +70,15 @@ describe('Admin theme controller', () => {
     expect(document.documentElement.classList.contains('theme-switching')).toBe(false);
   });
 
+  it('leaves transitions alone when the theme is already applied', async () => {
+    const onChange = vi.fn();
+    const instance = controller(onChange);
+    await instance.setTheme('light');
+    expect(onChange).toHaveBeenLastCalledWith('light');
+    expect(document.documentElement.classList.contains('theme-switching')).toBe(false);
+    expect(frames.size).toBe(0);
+  });
+
   it('follows system appearance and stops listening for an explicit choice', async () => {
     const { query, change } = systemPreference(true);
     const removeListener = vi.spyOn(query, 'removeEventListener');

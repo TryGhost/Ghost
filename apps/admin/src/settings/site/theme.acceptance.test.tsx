@@ -154,6 +154,17 @@ async function editorTextbox() {
   });
 }
 
+/**
+ * Cmd/Ctrl+S where a keypress lands: on the focused element, so window
+ * listeners see it in capture and bubble order. Dispatched on window itself,
+ * every listener would run in registration order instead.
+ */
+function pressSaveShortcut(): void {
+  (document.activeElement ?? document.body).dispatchEvent(
+    new KeyboardEvent('keydown', { key: 's', ctrlKey: true, bubbles: true, cancelable: true }),
+  );
+}
+
 describe('Theme settings', () => {
   it('activates an installed official theme and updates another', async () => {
     const installed = fakeThemeWorld();
@@ -680,13 +691,9 @@ describe('Theme settings', () => {
     await expect
       .element(settingsScreen.themeCodeEditorModal())
       .toHaveTextContent(/1 file modified/);
-    window.dispatchEvent(
-      new KeyboardEvent('keydown', { key: 's', ctrlKey: true, bubbles: true, cancelable: true }),
-    );
+    pressSaveShortcut();
     await expect.element(settingsScreen.themeEditorConfirmModal()).toBeVisible();
-    window.dispatchEvent(
-      new KeyboardEvent('keydown', { key: 's', ctrlKey: true, bubbles: true, cancelable: true }),
-    );
+    pressSaveShortcut();
     await expect(settingsScreen.themeEditorConfirmModal()).toHaveCount(1);
     await settingsScreen
       .themeEditorConfirmModal()

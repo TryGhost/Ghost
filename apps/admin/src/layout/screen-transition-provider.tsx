@@ -10,7 +10,7 @@ import {
 import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import { useIsMobile } from '@tryghost/shade/utils';
 import { hasActiveUnsavedChangesGuard } from '@/hooks/active-unsaved-changes-guards';
-import { matchAdminRoutes, useEmberOwnedRouteMatcher } from '@/routes';
+import { matchAdminRoutes } from '@/routes';
 import { shouldRunScreenTransition } from './screen-transition';
 
 // The parts of the page that fade out before entering a surface (index.css)
@@ -57,7 +57,6 @@ export function ScreenTransitionProvider({ children }: { children: ReactNode }) 
   // The admin7Design desktop sidebar opens Settings inside it, animating that itself
   const settingsInSidebar = settingsSidebarEnabled && admin7Design && !isMobile;
   const matches = useMatches();
-  const isEmberOwned = useEmberOwnedRouteMatcher();
   const location = useLocation();
   // True from the router starting a view transition to or from this screen until it finishes
   const viewTransitionRunning = useViewTransitionState(location.pathname);
@@ -65,8 +64,8 @@ export function ScreenTransitionProvider({ children }: { children: ReactNode }) 
   viewTransitionRunningRef.current = viewTransitionRunning;
 
   // Updated during render so links rendered below already see the new matches.
-  const latest = useRef({ settingsSidebarEnabled, settingsInSidebar, matches, isEmberOwned });
-  latest.current = { settingsSidebarEnabled, settingsInSidebar, matches, isEmberOwned };
+  const latest = useRef({ settingsSidebarEnabled, settingsInSidebar, matches });
+  latest.current = { settingsSidebarEnabled, settingsInSidebar, matches };
   const exitingRef = useRef(false);
   // Where the current transition's navigation started, to tell one a blocker held from one that landed
   const fromHashRef = useRef<string | null>(null);
@@ -84,14 +83,12 @@ export function ScreenTransitionProvider({ children }: { children: ReactNode }) 
       shouldTransition(pathname) {
         const current = latest.current;
         const target = matchAdminRoutes(pathname) ?? [];
-        return (
-          shouldRunScreenTransition({
-            from: current.matches.map((match) => match.handle),
-            to: target.map((match): unknown => match.route.handle),
-            settingsSidebarEnabled: current.settingsSidebarEnabled,
-            settingsInSidebar: current.settingsInSidebar,
-          }) && !current.isEmberOwned(pathname)
-        );
+        return shouldRunScreenTransition({
+          from: current.matches.map((match) => match.handle),
+          to: target.map((match): unknown => match.route.handle),
+          settingsSidebarEnabled: current.settingsSidebarEnabled,
+          settingsInSidebar: current.settingsInSidebar,
+        });
       },
       beforeTransition(pathname) {
         if (exitingRef.current) {

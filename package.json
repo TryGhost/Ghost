@@ -13,7 +13,6 @@
     "build:clean": "nx reset && rimraf -g 'ghost/*/build' && rimraf -g 'ghost/*/tsconfig.tsbuildinfo'",
     "clean:hard": "node ./scripts/clean.js",
     "dev": "pnpm nx run ghost-monorepo:docker:dev",
-    "dev:ember": "pnpm nx run ghost-monorepo:docker:dev:ember",
     "dev:sqlite": "DEV_COMPOSE_FILES='-f compose.dev.sqlite.yaml' pnpm nx run ghost-monorepo:docker:dev",
     "dev:mailgun": "DEV_COMPOSE_FILES='-f compose.dev.mailgun.yaml' pnpm nx run ghost-monorepo:docker:dev",
     "dev:fake-mailgun": "DEV_COMPOSE_FILES='-f compose.dev.fake-mailgun.yaml' pnpm nx run ghost-monorepo:docker:dev",
@@ -88,7 +87,7 @@
     "knip": "catalog:",
     "lint-staged": "catalog:",
     "markdownlint-cli2": "catalog:",
-    "nx": "23.2.0",
+    "nx": "23.3.0",
     "oxfmt": "catalog:",
     "remark-cli": "catalog:",
     "remark-validate-links": "catalog:",
@@ -174,34 +173,6 @@
             "target": "dev",
             "projects": [
               "@tryghost/admin",
-              "@tryghost/portal"
-            ]
-          }
-        ]
-      },
-      "docker:dev:ember": {
-        "continuous": true,
-        "executor": "nx:run-commands",
-        "options": {
-          "command": "trap 'docker compose -f compose.dev.yaml ${DEV_COMPOSE_FILES} down' EXIT; docker compose -f compose.dev.yaml ${DEV_COMPOSE_FILES} logs -f"
-        },
-        "dependsOn": [
-          "docker:up",
-          {
-            "target": "build:assets",
-            "projects": [
-              "ghost"
-            ]
-          },
-          {
-            "target": "dev:ember",
-            "projects": [
-              "@tryghost/admin"
-            ]
-          },
-          {
-            "target": "dev",
-            "projects": [
               "@tryghost/portal"
             ]
           }

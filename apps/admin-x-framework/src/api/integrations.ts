@@ -41,7 +41,6 @@ export const useCreateIntegration = createMutation<IntegrationsResponseType, Par
   searchParams: () => ({ include: 'api_keys,webhooks' }),
   updateQueries: {
     dataType,
-    emberUpdateType: 'createOrUpdate',
     update: (newData, currentData) =>
       currentData && {
         ...(currentData as IntegrationsResponseType),
@@ -59,7 +58,6 @@ export const useEditIntegration = createMutation<IntegrationsResponseType, Integ
   searchParams: () => ({ include: 'api_keys,webhooks' }),
   updateQueries: {
     dataType,
-    emberUpdateType: 'createOrUpdate',
     update: (newData, currentData) =>
       currentData && {
         ...(currentData as IntegrationsResponseType),
@@ -76,7 +74,6 @@ export const useDeleteIntegration = createMutation<unknown, string>({
   path: (id) => `/integrations/${id}/`,
   updateQueries: {
     dataType,
-    emberUpdateType: 'delete',
     update: (_, currentData, id) => ({
       ...(currentData as IntegrationsResponseType),
       integrations: (currentData as IntegrationsResponseType).integrations.filter(
