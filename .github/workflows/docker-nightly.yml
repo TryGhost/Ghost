@@ -13,7 +13,7 @@ on:
   workflow_dispatch:
     inputs:
       ref:
-        description: 'Commit, branch or tag to build (default: newest main commit with a green CI run)'
+        description: 'Commit on main to build (default: newest main commit with a green CI run)'
         required: false
         type: string
 
@@ -63,6 +63,14 @@ jobs:
           fi
           if [ -z "$SHA" ]; then
             echo "::error::Could not resolve a commit to build"
+            exit 1
+          fi
+          # The jobs below run code from this commit with the default branch's
+          # cache scope. Only build commits already on main, so an unmerged ref
+          # passed to workflow_dispatch can't poison main's Actions cache.
+          STATUS=$(gh api "repos/${GITHUB_REPOSITORY}/compare/main...${SHA}" --jq .status)
+          if [ "$STATUS" != "identical" ] && [ "$STATUS" != "behind" ]; then
+            echo "::error::${SHA} is not on main (compare status: ${STATUS})"
             exit 1
           fi
           echo "Building ${SHA}"
