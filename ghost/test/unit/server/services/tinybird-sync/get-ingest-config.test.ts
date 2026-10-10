@@ -9,10 +9,11 @@ const createDependencies = (values: Record<string, unknown>) => ({
 
 describe('getIngestConfig', () => {
   it.each(['localhost', '127.0.0.1', '[::1]'])(
-    'routes development loopback tracker URLs through the gateway: %s',
+    'routes loopback tracker URLs through the gateway in the development container: %s',
     (hostname) => {
       const dependencies = createDependencies({
         env: 'development',
+        'apps:localhostAlias': 'host.docker.internal',
         'tinybird:tracker:endpoint': `http://${hostname}:2368/blog/.ghost/analytics/api/v1/page_hit`,
         'tinybird:sync_auth_key': 'sync-secret',
       });
@@ -23,6 +24,19 @@ describe('getIngestConfig', () => {
       );
     },
   );
+
+  it('keeps loopback tracker URLs when Ghost runs on the host in development', () => {
+    const dependencies = createDependencies({
+      env: 'development',
+      'tinybird:tracker:endpoint': 'http://localhost:2660/.ghost/analytics/api/v1/page_hit',
+      'tinybird:sync_auth_key': 'sync-secret',
+    });
+
+    assert.equal(
+      getIngestConfig(dependencies)?.endpoint.href,
+      'http://localhost:2660/.ghost/analytics/api/v1/tinybird-sync',
+    );
+  });
 
   it.each([
     ['production', 'http://localhost:2368'],

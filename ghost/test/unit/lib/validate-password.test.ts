@@ -3,7 +3,6 @@ import { range } from 'lodash';
 import assert from 'node:assert/strict';
 import sinon from 'sinon';
 import { validatePassword } from '../../../core/server/lib/validate-password';
-// @ts-expect-error This module lacks type definitions.
 import settingsCache from '../../../core/shared/settings-cache';
 import urlUtils from '../../../core/shared/url-utils';
 

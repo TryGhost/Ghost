@@ -43,7 +43,7 @@ pnpm data:analytics:generate
 pnpm data:analytics:clear
 ```
 
-**Note:** `pnpm reset:data` runs inside the `ghost-dev` container, so the Docker environment must be running.
+**Note:** `pnpm reset:data` needs MySQL running, which `pnpm dev:analytics` starts.
 
 ## Configuration
 
