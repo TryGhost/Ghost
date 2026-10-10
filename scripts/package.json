@@ -21,7 +21,7 @@
     "camelcase-keys": "10.0.3",
     "execa": "catalog:",
     "js-yaml": "catalog:",
-    "picomatch": "4.0.5",
+    "picomatch": "4.0.7",
     "semver": "catalog:",
     "typescript": "catalog:"
   },
