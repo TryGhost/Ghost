@@ -28,7 +28,7 @@
     "dev:daemon": "NX_DAEMON=true NX_TUI=false NX_DEFAULT_OUTPUT_STYLE=stream pnpm nx run ghost-monorepo:dev:host",
     "fix": "pnpm store prune && rimraf -g '**/node_modules' && pnpm install && pnpm nx reset",
     "create-package": "node ./scripts/create-package.js",
-    "knex-migrator": "pnpm --filter ghost run knex-migrator",
+    "knex-migrator": "cd ghost && pnpm exec node ../scripts/with-ghost-dev-env.ts knex-migrator",
     "bootstrap": "pnpm install && bash scripts/init-submodules.sh && git config --local blame.ignoreRevsFile .git-blame-ignore-revs",
     "migrate:db": "cd ghost && pnpm exec node ../scripts/with-ghost-dev-env.ts knex-migrator migrate",
     "rollback:db": "cd ghost && pnpm exec node ../scripts/with-ghost-dev-env.ts knex-migrator rollback",
