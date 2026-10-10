@@ -414,7 +414,7 @@ function EditorContent({
           <Box
             ref={headerRef}
             className={cn(
-              'pointer-events-none relative z-20 shrink-0',
+              'screen-exit-chrome-top pointer-events-none relative z-20 shrink-0',
               chromeEntrance && 'screen-enter-from-top',
             )}
           >
@@ -479,7 +479,7 @@ function EditorContent({
         </Stack>
         <Box
           className={cn(
-            'absolute top-[calc(var(--spacing)*5+1px)] right-[calc(var(--spacing)*6+1px)] z-40 max-[500px]:top-3 max-[500px]:right-3',
+            'screen-exit-chrome-top absolute top-[calc(var(--spacing)*5+1px)] right-[calc(var(--spacing)*6+1px)] z-40 max-[500px]:top-3 max-[500px]:right-3',
             chromeEntrance && 'screen-enter-from-top',
           )}
         >

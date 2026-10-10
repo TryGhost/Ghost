@@ -69,6 +69,9 @@ export function AdminFrame({ mode, topBar, locked = false, children }: AdminFram
           '--floating-sidebar-offset-top': 'var(--admin-frame-top)',
           '--floating-sidebar-offset-left': 'var(--admin-frame-side)',
           '--floating-sidebar-offset-bottom': 'var(--admin-frame-side)',
+          // A full-screen screen's top chrome enters once the top bar is out of its way
+          '--screen-enter-top-delay':
+            mode === 'hidden' ? `${ADMIN_FRAME_TRANSITION.duration}ms` : undefined,
           padding: 'var(--admin-frame-top) var(--admin-frame-side) var(--admin-frame-side)',
           transitionProperty: mode === 'off' ? 'none' : FRAME_VARIABLES.join(', '),
           transitionDuration: `${ADMIN_FRAME_TRANSITION.duration}ms`,
