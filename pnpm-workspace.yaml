@@ -420,6 +420,8 @@ minimumReleaseAgeExclude:
   - '@nx/nx-*'
   # Adopted before its 3-day soak ended
   - 'nx@23.3.0'
+  # Renovate security update: @tiptap/core@3.30.4
+  - "@tiptap/core@3.30.4"
 
 # configuration for pnpm's changeset functionality
 versioning:
