@@ -11,6 +11,9 @@ packages:
 strictDepBuilds: true
 catalogMode: strict
 autoDedupe: true
+# Packages resolve only the dependencies they declare. Declare missing ones in
+# packageExtensions below rather than turning hoisting back on.
+hoist: false
 
 minimumReleaseAge: 4320 # 3 days in minutes; matches Renovate's minimumReleaseAge
 blockExoticSubdeps: true
@@ -327,8 +330,7 @@ overrides:
   qs: 'catalog:'
 
 packageExtensions:
-  # These import packages they don't declare, which only resolve through pnpm's
-  # private hoisting (node_modules/.pnpm/node_modules).
+  # These import packages they don't declare.
   '@doist/react-interpolate@^2.2.1':
     dependencies:
       '@babel/runtime': ^7.26.10
