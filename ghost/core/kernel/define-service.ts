@@ -1,6 +1,14 @@
 import { IncorrectUsageError } from '@tryghost/errors';
 
-/** Creates one ready instance during boot. The factory owns cleanup if startup fails. */
+/**
+ * Provides init() and a .service getter for one application-owned instance.
+ *
+ * @param name - Service name used when reporting access before initialization.
+ * @param create - Returns a fully initialized instance, synchronously or asynchronously.
+ * If startup fails, this callback must release any resources it acquired before
+ * throwing or rejecting. defineService allows retries but cannot perform that cleanup.
+ * @see [Service initialization](./README.md#service-initialization)
+ */
 export function defineService<Service>(name: string, create: () => Service | Promise<Service>) {
   let instance: Service | undefined;
   let initialization: Promise<void> | undefined;

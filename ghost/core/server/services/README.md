@@ -141,9 +141,39 @@ initialization must expose an explicit `init()` and be called from
 `ghost/core/boot.js` in the appropriate boot phase. Do not make the first
 request responsible for constructing the service.
 
+For a root using the [kernel's `defineService` helper](../../kernel/README.md#service-initialization),
+the service author supplies a `create` callback that constructs and returns a
+ready instance. Boot awaits the root's `init()`; consumers then read `.service`.
+The kernel guide describes the full contract, including concurrent calls and
+explicit retries after failure.
+
+If startup fails partway through, the `create` callback must release resources
+it already acquired before passing the error back. The helper cannot remove the
+callback's listeners or close its connections. A retry runs the callback again,
+so resources left by the failed attempt could remain active alongside any new
+instance.
+
+For example, the [IndexNow callback](indexnow-ping/index.ts) removes any partially
+registered listeners before rethrowing a subscription error:
+
+```ts
+try {
+  service.subscribeEvents();
+} catch (error) {
+  service.unsubscribeEvents();
+  throw error;
+}
+return service;
+```
+
+Its [startup test](../../../test/unit/server/services/indexnow-ping/index.test.ts)
+checks that failure removes only that attempt's listeners and that a later
+`init()` succeeds without duplicate subscriptions. Cover the equivalent failure
+and retry behavior when a callback acquires resources.
+
 Keep wrapper initialization idempotent when callers may safely reach it more
-than once. Add shutdown or cleanup handling to the boot lifecycle when the
-service owns resources that must be released.
+than once. Arrange normal shutdown separately through the boot lifecycle when
+the service owns resources that must be released.
 
 ## Related guidance
 
