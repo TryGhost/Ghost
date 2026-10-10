@@ -248,7 +248,7 @@ module.exports = class RouterController {
 
     let customer;
     if (!req.body.subscription_id) {
-      customer = await this._stripeAPIService.getCustomerForMemberCheckoutSession(member);
+      customer = await this._getCustomerForActiveSubscription(member, subscriptions);
     } else {
       const subscription = subscriptions.models.find((sub) => {
         return sub.get('subscription_id') === req.body.subscription_id;
@@ -283,6 +283,35 @@ module.exports = class RouterController {
     res.end(JSON.stringify(sessionInfo));
   }
 
+  /**
+   * Members can end up with more than one Stripe customer. Without an explicit
+   * subscription, prefer the customer behind the member's active subscription so
+   * billing actions land on the right account, falling back to the first usable one.
+   *
+   * @param {any} member
+   * @param {any} subscriptions
+   */
+  async _getCustomerForActiveSubscription(member, subscriptions) {
+    const activeSubscription = subscriptions.models.find((sub) => {
+      return ['active', 'trialing', 'unpaid', 'past_due'].includes(sub.get('status'));
+    });
+
+    if (activeSubscription) {
+      try {
+        const customer = await this._stripeAPIService.getCustomer(
+          activeSubscription.get('customer_id'),
+        );
+        if (!customer.deleted) {
+          return customer;
+        }
+      } catch (err) {
+        logging.warn(`Could not fetch Stripe customer for active subscription: ${err.message}`);
+      }
+    }
+
+    return await this._stripeAPIService.getCustomerForMemberCheckoutSession(member);
+  }
+
   async createBillingPortalSession(req, res) {
     const identity = req.body.identity;
 
@@ -312,7 +341,7 @@ module.exports = class RouterController {
 
     let customer;
     if (!req.body.subscription_id) {
-      customer = await this._stripeAPIService.getCustomerForMemberCheckoutSession(member);
+      customer = await this._getCustomerForActiveSubscription(member, subscriptions);
     } else {
       const subscription = subscriptions.models.find((sub) => {
         return sub.get('subscription_id') === req.body.subscription_id;

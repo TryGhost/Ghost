@@ -1984,6 +1984,107 @@ describe('RouterController', function () {
     });
   });
 
+  describe('customer selection for members with multiple Stripe customers', function () {
+    let stripeService;
+    let mockRes;
+
+    function subscription(attrs) {
+      return { get: (key) => attrs[key] };
+    }
+
+    function createController(subscriptions) {
+      const memberStub = {
+        related: sinon.stub().returns({
+          fetch: sinon.stub().resolves({ models: subscriptions }),
+        }),
+      };
+      stripeService = {
+        createBillingPortalSession: sinon.stub().resolves({ url: 'https://billing.stripe.com/' }),
+        createCheckoutSetupSession: sinon.stub().resolves({ id: 'cs_test_setup' }),
+        getCustomerForMemberCheckoutSession: sinon.stub().resolves({ id: 'cus_first' }),
+        getCustomer: sinon.stub().callsFake(async (id) => ({ id })),
+        getPublicKey: sinon.stub().returns('pk_test'),
+      };
+      return new RouterController({
+        stripeAPIService: stripeService,
+        tokenService: { decodeToken: sinon.stub().resolves({ sub: 'member@example.com' }) },
+        memberRepository: { get: sinon.stub().resolves(memberStub) },
+        settingsCache: { get: sinon.stub().returns(null) },
+        urlUtils,
+      });
+    }
+
+    const req = { body: { identity: 'valid-token' } };
+    const multipleCustomers = [
+      subscription({ subscription_id: 'sub_old', customer_id: 'cus_first', status: 'canceled' }),
+      subscription({ subscription_id: 'sub_new', customer_id: 'cus_active', status: 'active' }),
+    ];
+
+    beforeEach(function () {
+      mockRes = { writeHead: sinon.stub(), end: sinon.stub() };
+    });
+
+    it('opens the billing portal for the customer behind the active subscription', async function () {
+      const controller = createController(multipleCustomers);
+
+      await controller.createBillingPortalSession(req, mockRes);
+
+      sinon.assert.calledWith(
+        stripeService.createBillingPortalSession,
+        sinon.match({ id: 'cus_active' }),
+      );
+      sinon.assert.notCalled(stripeService.getCustomerForMemberCheckoutSession);
+    });
+
+    it('creates the card update session for the customer behind the active subscription', async function () {
+      const controller = createController(multipleCustomers);
+
+      await controller.createCheckoutSetupSession(req, mockRes);
+
+      sinon.assert.calledWith(
+        stripeService.createCheckoutSetupSession,
+        sinon.match({ id: 'cus_active' }),
+      );
+      sinon.assert.notCalled(stripeService.getCustomerForMemberCheckoutSession);
+    });
+
+    it('falls back to the first customer when there is no active subscription', async function () {
+      const controller = createController([multipleCustomers[0]]);
+
+      await controller.createBillingPortalSession(req, mockRes);
+
+      sinon.assert.calledWith(
+        stripeService.createBillingPortalSession,
+        sinon.match({ id: 'cus_first' }),
+      );
+      sinon.assert.notCalled(stripeService.getCustomer);
+    });
+
+    it('falls back to the first customer when the active subscription customer is deleted', async function () {
+      const controller = createController(multipleCustomers);
+      stripeService.getCustomer.resolves({ id: 'cus_active', deleted: true });
+
+      await controller.createBillingPortalSession(req, mockRes);
+
+      sinon.assert.calledWith(
+        stripeService.createBillingPortalSession,
+        sinon.match({ id: 'cus_first' }),
+      );
+    });
+
+    it('falls back to the first customer when the active subscription customer cannot be fetched', async function () {
+      const controller = createController(multipleCustomers);
+      stripeService.getCustomer.rejects(new Error('No such customer'));
+
+      await controller.createBillingPortalSession(req, mockRes);
+
+      sinon.assert.calledWith(
+        stripeService.createBillingPortalSession,
+        sinon.match({ id: 'cus_first' }),
+      );
+    });
+  });
+
   describe('sendMagicLink', function () {
     describe('newsletters', function () {
       let req, res, sendEmailWithMagicLinkStub;
