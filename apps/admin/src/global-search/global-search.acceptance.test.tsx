@@ -41,7 +41,7 @@ describe('Settings search exits', () => {
     fakeAdminEndpoint('GET', /^\/tags\/slug\/first-tag\//, {
       tags: [tag({ name: 'First tag', slug: 'first-tag' })],
     });
-    await renderAdminApp('/settings', { labs: { admin7settings: true } });
+    await renderAdminApp('/settings');
     await settingsScreen.editTitle('Unsaved title');
     await expect.poll(unsavedChangesGuarded).toBe(true);
     await openWithShortcut();
@@ -73,7 +73,7 @@ describe('Settings search actions', () => {
   it('runs an action over dirty Settings without asking, keeping the edit', async () => {
     fakeSettingsScreens();
     fakeSearchIndex();
-    await renderAdminApp('/settings', { labs: { admin7settings: true } });
+    await renderAdminApp('/settings');
     await settingsScreen.editTitle('Unsaved title');
     await expect.poll(unsavedChangesGuarded).toBe(true);
 
@@ -263,7 +263,7 @@ describe('Cmd-K search', () => {
 
   it('returns to the opening route after opening a Staff result in Settings', async () => {
     allowUnhandledRequests();
-    await renderAdminApp('/tags', { labs: { admin7settings: true } });
+    await renderAdminApp('/tags');
     await openAndSearch('first user');
 
     await globalSearchScreen.option(/First user/).click();
@@ -275,7 +275,7 @@ describe('Cmd-K search', () => {
 
   it('keeps the original return route when Cmd-K opens another Settings result', async () => {
     allowUnhandledRequests();
-    await renderAdminApp('/tags', { labs: { admin7settings: true } });
+    await renderAdminApp('/tags');
     await openAndSearch('first user');
 
     await globalSearchScreen.option(/First user/).click();
@@ -292,7 +292,7 @@ describe('Cmd-K search', () => {
 
   it('opens a Settings section and returns to the opening route', async () => {
     fakeSettingsScreens();
-    await renderAdminApp('/tags', { labs: { admin7settings: true } });
+    await renderAdminApp('/tags');
     await openAndSearch('timezone');
 
     await globalSearchScreen.option(/Timezone/).click();
@@ -305,7 +305,7 @@ describe('Cmd-K search', () => {
 
   it('opens a Settings section the way its header button does', async () => {
     fakeSettingsScreens();
-    await renderAdminApp('/tags', { labs: { admin7settings: true } });
+    await renderAdminApp('/tags');
     await openAndSearch('navigation');
 
     await globalSearchScreen.option(/^Navigation$/).click();
@@ -342,7 +342,7 @@ describe('Cmd-K search', () => {
         },
       };
     });
-    await renderAdminApp('/tags', { labs: { admin7settings: true } });
+    await renderAdminApp('/tags');
     await openAndSearch('labs');
 
     await globalSearchScreen.option(/^Labs$/).click();
@@ -356,7 +356,7 @@ describe('Cmd-K search', () => {
 
   it('opens a Settings section the Settings filter had hidden', async () => {
     fakeSettingsScreens();
-    await renderAdminApp('/settings', { labs: { admin7settings: true } });
+    await renderAdminApp('/settings');
     await settingsScreen.search().fill('design');
     await expect.element(page.getByTestId('labs')).not.toBeVisible();
 
@@ -371,7 +371,7 @@ describe('Cmd-K search', () => {
 
   it('opens a Settings section with an Edit button for editing', async () => {
     fakeSettingsScreens();
-    await renderAdminApp('/tags', { labs: { admin7settings: true } });
+    await renderAdminApp('/tags');
     await openAndSearch('site description');
 
     await globalSearchScreen.option('Title & description').click();
@@ -387,7 +387,7 @@ describe('Cmd-K search', () => {
     ['the section on screen', '/settings/timezone'],
   ])('shows %s while the Settings filter hides it', async (_description, route) => {
     fakeSettingsScreens();
-    await renderAdminApp(route, { labs: { admin7settings: true } });
+    await renderAdminApp(route);
     await settingsScreen.search().fill('design');
     await expect.element(settingsScreen.timezone()).not.toBeVisible();
 
