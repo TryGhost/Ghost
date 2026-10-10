@@ -40,6 +40,7 @@ export function composeConfig(overlays: string[]): ComposeConfig {
 export function hostOverlayEnv(
   base: ComposeConfig,
   config: ComposeConfig,
+  frontDoorHostname: string,
   frontDoorPort: string,
 ): Record<string, string> {
   const { services } = config;
@@ -52,7 +53,10 @@ export function hostOverlayEnv(
       /^(\w+:\/\/)([^/:]+)(?::(\d+))?/,
       (match, scheme: string, host: string, port: string | undefined) => {
         if (host === 'localhost' || host === '127.0.0.1') {
-          return port === '2368' ? `${scheme}${host}:${frontDoorPort}` : match;
+          if (port !== '2368') {
+            return match;
+          }
+          return `${scheme}${host === 'localhost' ? frontDoorHostname : host}:${frontDoorPort}`;
         }
         if (!services[host]) {
           return match;

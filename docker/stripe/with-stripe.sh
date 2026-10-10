@@ -6,7 +6,7 @@
 # Stripe API version, so the messages always have the same shape. By default this
 # script reproduces that: it makes Ghost's webhook URL reachable from the internet
 # through Tailscale, nothing else on the machine, and Ghost registers that URL with
-# Stripe at boot and removes it on shutdown. The site and Admin stay on localhost.
+# Stripe at boot and removes it on shutdown. The site and Admin stay local.
 #
 # With --listen, webhooks are instead forwarded by Stripe's command line tool. That
 # needs no Tailscale, but the tool delivers events at the Stripe account's default
@@ -20,8 +20,9 @@ set -euo pipefail
 
 FUNNEL_PORT=443
 WEBHOOK_PATH=/members/webhooks/stripe
-# This checkout's Admin dev server port, assigned by scripts/ghost-dev-env.ts
+# This checkout's Admin dev server hostname and port, assigned by scripts/ghost-dev-env.ts
 node scripts/ghost-dev-env.ts >/dev/null
+GATEWAY_HOSTNAME=${GHOST_DEV_HOSTNAME:-$(sed -n 's/^GHOST_DEV_HOSTNAME=//p' .ghost-dev.env)}
 GATEWAY_PORT=${GHOST_DEV_PORT:-$(sed -n 's/^GHOST_DEV_PORT=//p' .ghost-dev.env)}
 
 fail() {
@@ -171,7 +172,7 @@ export COMPOSE_PROFILES="$profiles"
 export DEV_COMPOSE_FILES="${DEV_COMPOSE_FILES:-} -f compose.dev.stripe-tunnel.yaml"
 
 echo "Ghost registers its webhook endpoint at boot once Stripe is connected in Ghost Admin (Settings > Tiers)."
-echo "Open the site and Admin on http://localhost:${GATEWAY_PORT} as usual."
+echo "Open the site and Admin on http://${GATEWAY_HOSTNAME}:${GATEWAY_PORT} as usual."
 echo "Watch Ghost's logs: it warns if Stripe is not connected."
 
 # The wrapped command stops Ghost before it returns, and Ghost removes its Stripe
