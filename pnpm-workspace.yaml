@@ -11,6 +11,8 @@ packages:
 strictDepBuilds: true
 catalogMode: strict
 autoDedupe: true
+# Packages resolve only what they declare; required by the global virtual store.
+hoist: false
 
 minimumReleaseAge: 4320 # 3 days in minutes; matches Renovate's minimumReleaseAge
 blockExoticSubdeps: true
