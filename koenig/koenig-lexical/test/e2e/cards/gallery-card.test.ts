@@ -470,6 +470,80 @@ test.describe('Gallery card', async () => {
         `, {ignoreCardContents: false});
     });
 
+    test.describe('dragging images between galleries', function () {
+        const galleryImages = numbers => numbers.map(n => ({
+            row: 0,
+            fileName: `retreat-${n}.jpg`,
+            src: `/content/images/2023/04/retreat-${n}.jpg`,
+            width: 3840,
+            height: 2160
+        }));
+
+        const fileNames = gallery => gallery.images.map(image => image.fileName);
+
+        // selects the first gallery and drags one of its images onto the right half of `target`
+        async function dragFromFirstGallery(imageIndex, target) {
+            const firstGallery = page.locator('[data-kg-card="gallery"]').nth(0);
+            await firstGallery.click();
+            await expect(firstGallery).toHaveAttribute('data-kg-card-selected', 'true');
+
+            const imageBBox = await firstGallery.locator('[data-image]').nth(imageIndex).boundingBox();
+            const targetBBox = await target.boundingBox();
+            const dropBBox = {...targetBBox, x: targetBBox.x + targetBBox.width / 2, width: targetBBox.width / 2};
+
+            await dragMouse(page, imageBBox, dropBBox, 'middle', 'middle', true, 100, 100);
+        }
+
+        async function initializeGalleries(...galleries) {
+            const contentParam = encodeURIComponent(JSON.stringify({
+                root: {
+                    children: galleries.map(numbers => ({type: 'gallery', version: 1, images: galleryImages(numbers)})),
+                    direction: null,
+                    format: '',
+                    indent: 0,
+                    type: 'root',
+                    version: 1
+                }
+            }));
+
+            await initialize({page, uri: `/#/?content=${contentParam}`});
+        }
+
+        test('reordering does not remove the image from another gallery with the same image', async function () {
+            await initializeGalleries([1, 2], [1, 2]);
+
+            const firstGallery = page.locator('[data-kg-card="gallery"]').nth(0);
+            await dragFromFirstGallery(0, firstGallery.locator('[data-image]').nth(1));
+
+            await page.waitForFunction(() => {
+                const state = window.lexicalEditor.getEditorState().toJSON();
+                return state.root.children[0].images[0].fileName === 'retreat-2.jpg';
+            }, {timeout: 5000});
+
+            const editorState = await getEditorState(page);
+
+            expect(fileNames(editorState.root.children[0])).toEqual(['retreat-2.jpg', 'retreat-1.jpg']);
+            expect(fileNames(editorState.root.children[1])).toEqual(['retreat-1.jpg', 'retreat-2.jpg']);
+        });
+
+        test('moving an image to another gallery removes it from the original', async function () {
+            await initializeGalleries([1, 2], [3]);
+
+            const secondGallery = page.locator('[data-kg-card="gallery"]').nth(1);
+            await dragFromFirstGallery(0, secondGallery.locator('[data-image]').nth(0));
+
+            await page.waitForFunction(() => {
+                const state = window.lexicalEditor.getEditorState().toJSON();
+                return state.root.children[1].images.length === 2;
+            }, {timeout: 5000});
+
+            const editorState = await getEditorState(page);
+
+            expect(fileNames(editorState.root.children[0])).toEqual(['retreat-2.jpg']);
+            expect(fileNames(editorState.root.children[1])).toEqual(['retreat-3.jpg', 'retreat-1.jpg']);
+        });
+    });
+
     test('exports all 9 images', async function () {
         // necessary to check the saved data because the gallery card state is not
         // directly synchronized with the editor state at time of testing
