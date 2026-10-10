@@ -108,7 +108,7 @@ async function allocate(): Promise<GhostDevEnv> {
   if (taken.databases.has(`dev_${name}`)) {
     name = `${name.slice(0, 50)}_${hash.slice(0, 6)}`;
   }
-  // e2e setup drops every database named ghost_%, so worktree databases use another prefix
+  // e2e setup drops every database named ghost_e2e_%, so worktree databases use another prefix
   const database = `dev_${name}`.slice(0, 64);
 
   const start = parseInt(hash.slice(0, 8), 16) % SLOTS;
