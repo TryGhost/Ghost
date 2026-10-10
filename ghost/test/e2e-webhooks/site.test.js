@@ -214,6 +214,13 @@ describe('site.* events', function () {
   });
 
   it('invalidates the cache when a published post is deleted', async function () {
+    const webhookURL = 'https://test-webhook-receiver.com/published-post-site-changed';
+    await webhookMockReceiver.mock(webhookURL);
+    await fixtureManager.insertWebhook({
+      event: 'site.changed',
+      url: webhookURL,
+    });
+
     const res = await adminAPIAgent
       .post('posts/')
       .body({
@@ -229,10 +236,17 @@ describe('site.* events', function () {
 
     const id = res.body.posts[0].id;
 
+    // Both publishing and deleting emit asynchronously after the HTTP response.
+    // Consume each delivery before the next test registers its own webhook.
+    await webhookMockReceiver.receivedRequest();
+    await webhookMockReceiver.mock(webhookURL);
+
     await adminAPIAgent
       .delete('posts/' + id)
       .expectStatus(204)
       .expectHeader('X-Cache-Invalidate', '/*');
+
+    await webhookMockReceiver.receivedRequest();
   });
 
   it('site.changed event is NOT triggered when a draft page is deleted', async function () {
@@ -315,6 +329,13 @@ describe('site.* events', function () {
   });
 
   it('invalidates the cache when a published page is deleted', async function () {
+    const webhookURL = 'https://test-webhook-receiver.com/published-page-site-changed';
+    await webhookMockReceiver.mock(webhookURL);
+    await fixtureManager.insertWebhook({
+      event: 'site.changed',
+      url: webhookURL,
+    });
+
     const res = await adminAPIAgent
       .post('pages/')
       .body({
@@ -330,9 +351,15 @@ describe('site.* events', function () {
 
     const id = res.body.pages[0].id;
 
+    // Consume publication and deletion deliveries before restoring the mocks.
+    await webhookMockReceiver.receivedRequest();
+    await webhookMockReceiver.mock(webhookURL);
+
     await adminAPIAgent
       .delete('pages/' + id)
       .expectStatus(204)
       .expectHeader('X-Cache-Invalidate', '/*');
+
+    await webhookMockReceiver.receivedRequest();
   });
 });
