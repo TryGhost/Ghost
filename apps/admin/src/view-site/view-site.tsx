@@ -117,11 +117,12 @@ const ViewSite = () => {
       {customizing && customizedPage && (
         <Suspense fallback={null}>
           <DesignPanel
+            livePageUrl={() => framePage(frameRef.current)}
             openParam="customize"
             pageUrl={customizedPage}
             onClose={() => navigate(VIEW_SITE_PATH, { replace: true })}
             // Under the preview, the site catches up with the saved design
-            onSaved={() => frame.reloadAt(customizedPage)}
+            onSaved={frame.reloadAt}
           />
         </Suspense>
       )}

@@ -12,6 +12,8 @@ type IframeBufferingProps = {
   width?: string;
   testId?: string;
   addDelay?: boolean;
+  /** Changing it (e.g. to the page shown) starts the next content at the top, rather than where it was scrolled. */
+  scrollResetKey?: unknown;
 };
 
 const IframeBuffering: React.FC<IframeBufferingProps> = ({
@@ -23,10 +25,21 @@ const IframeBuffering: React.FC<IframeBufferingProps> = ({
   parentClassName,
   testId,
   addDelay = false,
+  scrollResetKey,
 }) => {
   const [visibleIframeIndex, setVisibleIframeIndex] = useState(0);
   const iframes = [useRef<HTMLIFrameElement>(null), useRef<HTMLIFrameElement>(null)];
   const [scrollPosition, setScrollPosition] = useState(0);
+  // Set when the reset key changes; the next swap then starts at the top
+  const scrollResetPending = useRef(false);
+  const firstScrollResetKey = useRef(true);
+  useEffect(() => {
+    if (firstScrollResetKey.current) {
+      firstScrollResetKey.current = false;
+      return;
+    }
+    scrollResetPending.current = true;
+  }, [scrollResetKey]);
 
   useEffect(() => {
     const invisibleIframeIndex = visibleIframeIndex === 0 ? 1 : 0;
@@ -38,6 +51,10 @@ const IframeBuffering: React.FC<IframeBufferingProps> = ({
 
       // Attach a load listener to the iframe
       const onLoad = () => {
+        if (scrollResetPending.current) {
+          scrollResetPending.current = false;
+          setScrollPosition(0);
+        }
         // Once content is loaded, introduce a delay before swapping visibility
         if (addDelay) {
           setTimeout(() => {
