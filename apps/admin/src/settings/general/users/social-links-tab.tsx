@@ -5,6 +5,12 @@ import { type UserDetailProps } from '@/settings/general/user-detail-modal';
 import { useState } from 'react';
 import type { SocialPlatformKey } from '@/settings/utils/social-urls/index';
 
+// Website stays first as the primary link; the social platforms follow in
+// alphabetical order so the list stays scannable as platforms are added
+const SOCIAL_PLATFORMS_ALPHABETICAL = [...SOCIAL_PLATFORM_CONFIGS].sort((a, b) =>
+  a.staffTitle.localeCompare(b.staffTitle),
+);
+
 export const DetailsInputs: React.FC<UserDetailProps> = ({
   errors,
   clearError,
@@ -39,7 +45,7 @@ export const DetailsInputs: React.FC<UserDetailProps> = ({
         />
         {errors?.website && <FieldError>{errors.website}</FieldError>}
       </Field>
-      {SOCIAL_PLATFORM_CONFIGS.map((config) => (
+      {SOCIAL_PLATFORMS_ALPHABETICAL.map((config) => (
         <Field key={config.key} data-invalid={Boolean(errors?.[config.key]) || undefined}>
           <FieldLabel htmlFor={`staff-${config.key}`}>{config.staffTitle}</FieldLabel>
           <Input
