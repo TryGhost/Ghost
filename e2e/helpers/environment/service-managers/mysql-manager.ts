@@ -1,7 +1,6 @@
 import Docker from 'dockerode';
 import baseDebug from '@tryghost/debug';
 import logging from '@tryghost/logging';
-import { DEV_PRIMARY_DATABASE } from '@/helpers/environment/constants';
 import { PassThrough } from 'stream';
 import type { Container } from 'dockerode';
 
@@ -104,13 +103,13 @@ export class MySQLManager {
 
   /**
    * Used for cleanup of leftover databases from interrupted tests.
-   * This removes all databases matching the pattern 'ghost_%' except base databases.
+   * This removes all e2e test databases ('ghost_e2e_%') except the base database.
    */
   async dropAllTestDatabases(): Promise<void> {
     try {
       debug('Finding all test databases to clean up...');
 
-      const query = `SELECT schema_name FROM information_schema.schemata WHERE schema_name LIKE 'ghost_%' AND schema_name NOT IN ('ghost_testing', 'ghost_e2e_base', '${DEV_PRIMARY_DATABASE}')`;
+      const query = `SELECT schema_name FROM information_schema.schemata WHERE schema_name LIKE 'ghost_e2e_%' AND schema_name <> 'ghost_e2e_base'`;
       const output = await this.exec(`mysql -uroot -proot -N -e "${query}"`);
 
       const databaseNames = this.parseDatabaseNames(output);

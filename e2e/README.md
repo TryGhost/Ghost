@@ -75,10 +75,11 @@ GHOST_E2E_MODE=build pnpm --filter @tryghost/e2e infra:up
 GHOST_E2E_MODE=build GHOST_E2E_IMAGE=ghost-e2e:local pnpm --filter @tryghost/e2e test
 ```
 
-Build-mode E2E infra uses tmpfs-backed MySQL storage by default so database
-snapshot restore cycles stay fast and isolated from local development data.
-Set `GHOST_E2E_MYSQL_TMPFS=false` to use the normal Docker volume instead, or
-`GHOST_E2E_MYSQL_TMPFS_SIZE=4g` to adjust the tmpfs size.
+E2E runs against the same MySQL, Redis and Mailpit containers as `pnpm dev`, in
+its own `ghost_e2e_*` databases. In CI, build mode puts MySQL on tmpfs so
+snapshot restores stay fast (`GHOST_E2E_MYSQL_TMPFS_SIZE=4g` adjusts the size).
+Only set `GHOST_E2E_MYSQL_TMPFS=true` locally when no checkout is using that
+MySQL: it recreates the container without their databases.
 
 Set `GHOST_E2E_TINYBIRD_SLIM=true` to swap the Tinybird service for the distilled
 slim image (`ghcr.io/tryghost/tinybird-local-slim`): ~0.7GB pulled and ~2.4GB on
@@ -277,9 +278,8 @@ Within the e2e directory:
 # Run all tests
 pnpm test
 
-# Start/stop test infra (MySQL/Redis/Mailpit/Tinybird)
+# Start test infra (MySQL/Redis/Mailpit/Tinybird), shared with pnpm dev
 pnpm infra:up
-pnpm infra:down
 
 # CI-like preflight for build mode (pulls images + starts infra)
 pnpm preflight:build
