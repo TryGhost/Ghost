@@ -81,10 +81,10 @@ The command starts:
   it loads change
 - Admin's dev server on `http://localhost:2368`, which serves Admin and the
   public apps and passes everything else to Ghost
-- Portal's build watcher
 
-Admin and its shared libraries hot-reload. These commands preserve the site's
-existing feature flags; see
+Admin and its shared libraries hot-reload. Portal and the other public apps are
+built when the command starts; `pnpm dev:public` rebuilds them as you edit.
+These commands preserve the site's existing feature flags; see
 [Admin development](../../apps/admin/README.md#development) to preview flagged
 features with session overrides.
 
@@ -159,9 +159,9 @@ Redis, and Mailpit, keep running after `Ctrl+C` until `pnpm docker:down`:
 
 | Command                    | Use it when working on                                                                                          |
 | -------------------------- | --------------------------------------------------------------------------------------------------------------- |
-| `pnpm dev`                 | Ghost Core, Admin, or Portal                                                                                    |
+| `pnpm dev`                 | Ghost Core or Admin                                                                                             |
 | `pnpm dev:docker`          | The same, with Ghost in Docker behind the Caddy gateway                                                         |
-| `pnpm dev:public`          | Comments UI, Signup Form, Search, Announcement Bar, or Admin Toolbar                                            |
+| `pnpm dev:public`          | Portal, Comments UI, Signup Form, Search, Announcement Bar, or Admin Toolbar                                    |
 | `pnpm dev:lexical`         | Koenig's Lexical editor inside Ghost Admin                                                                      |
 | `pnpm dev:analytics`       | Tinybird-backed analytics with the latest published version of the Traffic Analytics service                    |
 | `pnpm dev:analytics:local` | Tinybird-backed analytics with your locally running instance of the Traffic Analytics service                   |

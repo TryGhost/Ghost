@@ -57,7 +57,7 @@ describe('Admin task inputs', () => {
     assert.ok(target.transitiveTasks.includes('@tryghost/shade:build'));
   });
 
-  it('runs normal dev with the Admin and Portal watchers', async () => {
+  it('runs normal dev with the Admin watcher and built public apps', async () => {
     const target = await nxJson<{
       dependsOn: string[];
       transitiveTasks: string[];
@@ -69,10 +69,11 @@ describe('Admin task inputs', () => {
       'ghost-monorepo:dev:env',
       'ghost-monorepo:infra:up',
       'ghost:build:assets',
-      '@tryghost/portal:dev',
+      '@tryghost/portal:build',
     ]) {
       assert.ok(tasks.includes(task), task);
     }
+    assert.ok(!tasks.includes('@tryghost/portal:dev'));
   });
 
   it('keeps the containerised dev flow with the React and Portal watchers', async () => {

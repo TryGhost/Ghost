@@ -96,8 +96,7 @@ acceptance tests cover selection, drafts, retries, responsive layouts, and cards
 pnpm dev
 ```
 
-Admin, Admin Framework and Shade hot-reload through Admin's dev server. Portal
-rebuilds on change.
+Admin, Admin Framework and Shade hot-reload through Admin's dev server.
 
 Development commands do not change Labs settings. To preview a flagged feature
 in one browser tab, open `http://localhost:2368/ghost/#/?labs=<flag>`. These

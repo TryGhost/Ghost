@@ -4,7 +4,7 @@ import { setTimeout as sleep } from 'node:timers/promises';
 import sirv from 'sirv';
 import type { Plugin, ProxyOptions } from 'vite';
 
-// Built to apps/<name>/umd by each app's `vite build --watch`
+// Built to apps/<name>/umd by each app's `build`, or its watcher under `pnpm dev:public`
 const PUBLIC_APPS = [
   'portal',
   'comments-ui',

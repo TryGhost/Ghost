@@ -217,9 +217,14 @@
             ]
           },
           {
-            "target": "dev",
+            "target": "build",
             "projects": [
-              "@tryghost/portal"
+              "@tryghost/portal",
+              "@tryghost/comments-ui",
+              "@tryghost/signup-form",
+              "@tryghost/sodo-search",
+              "@tryghost/announcement-bar",
+              "@tryghost/admin-toolbar"
             ]
           }
         ]
@@ -247,9 +252,14 @@
             ]
           },
           {
-            "target": "dev",
+            "target": "build",
             "projects": [
-              "@tryghost/portal"
+              "@tryghost/portal",
+              "@tryghost/comments-ui",
+              "@tryghost/signup-form",
+              "@tryghost/sodo-search",
+              "@tryghost/announcement-bar",
+              "@tryghost/admin-toolbar"
             ]
           },
           {
