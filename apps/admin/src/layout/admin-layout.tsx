@@ -14,7 +14,10 @@ import {
 } from './app-sidebar/hooks/use-navigation-preferences';
 import { useSettingsPinMorph } from './app-sidebar/hooks/use-settings-pin-morph';
 import SettingsSidebar from './app-sidebar/settings-sidebar';
-import { SettingsNavigationSlotContext } from './settings-navigation';
+import {
+  SettingsNavigationSlotContext,
+  SettingsSidebarMorphingContext,
+} from './settings-navigation';
 import { SidebarSwapTransition } from './sidebar-swap-transition';
 import { MobileNavBar } from './app-sidebar/mobile-nav-bar';
 import { SkipLink } from './skip-link';
@@ -155,6 +158,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
     floatingSidebar && sidebarMode !== 'full',
   );
   const sidebarPinned = !floatingSidebar || settingsNavigation || sidebarMode === 'full';
+  const settingsSidebarMorphing = settingsNavigation && settingsPinMorph.morphStyle === 'ease';
   const onSidebarOpenChange = React.useCallback(
     (open: boolean) => {
       if (!settingsNavigation) {
@@ -327,7 +331,9 @@ export function AdminLayout({ children }: AdminLayoutProps) {
               <SettingsNavigationSlotContext.Provider
                 value={isSettingsRoute ? settingsNavigationSlot : null}
               >
-                {children}
+                <SettingsSidebarMorphingContext.Provider value={settingsSidebarMorphing}>
+                  {children}
+                </SettingsSidebarMorphingContext.Provider>
               </SettingsNavigationSlotContext.Provider>
             </ActivityPubHostLayoutProvider>
           </main>
