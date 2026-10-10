@@ -193,7 +193,7 @@ reinstalls dependencies, and resets Nx state.
 For narrower build and cache problems, use:
 
 ```bash
-pnpm nx reset       # Clear the Nx cache
+pnpm nx reset       # Clear the Nx cache, which all checkouts and worktrees share
 pnpm build:clean    # Clear the Nx cache and Ghost build output
 pnpm docker:build   # Rebuild the local development images
 ```
