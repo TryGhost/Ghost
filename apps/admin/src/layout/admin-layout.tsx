@@ -12,7 +12,7 @@ import {
   useNavigationPreferences,
   useSidebarMode,
 } from './app-sidebar/hooks/use-navigation-preferences';
-import { useSettingsPinSequence } from './app-sidebar/hooks/use-settings-pin-sequence';
+import { useSettingsPinMorph } from './app-sidebar/hooks/use-settings-pin-morph';
 import SettingsSidebar from './app-sidebar/settings-sidebar';
 import { SettingsNavigationSlotContext } from './settings-navigation';
 import { SidebarSwapTransition } from './sidebar-swap-transition';
@@ -144,24 +144,24 @@ export function AdminLayout({ children }: AdminLayoutProps) {
   // With admin7settings too, Settings shows its navigation in the same
   // capsule, pinned whatever the stored mode, which it leaves alone: entering
   // it from compact pins the capsule, and leaving returns to the stored mode.
-  // From compact the two are sequenced: the capsule grows, then the body
-  // swaps; going back, the body swaps, then the capsule shrinks.
+  // From compact the capsule grows to full height on a plain ease as the body
+  // swaps to the Settings navigation, and shrinks back as it swaps back.
   const floatingSidebar = admin7Design && !isContributor && sidebarVisible && !isMobile;
   const settingsNavigation = floatingSidebar && isSettingsRoute;
   const [sidebarMode, setSidebarMode] = useSidebarMode();
   const { isFetched: sidebarModeLoaded } = useNavigationPreferences();
-  const settingsPin = useSettingsPinSequence(
+  const settingsPinMorph = useSettingsPinMorph(
     settingsNavigation,
     floatingSidebar && sidebarMode !== 'full',
   );
-  const sidebarPinned = !floatingSidebar || settingsPin.pinHeld || sidebarMode === 'full';
+  const sidebarPinned = !floatingSidebar || settingsNavigation || sidebarMode === 'full';
   const onSidebarOpenChange = React.useCallback(
     (open: boolean) => {
-      if (!settingsPin.pinHeld) {
+      if (!settingsNavigation) {
         setSidebarMode(open ? 'full' : 'compact');
       }
     },
-    [settingsPin.pinHeld, setSidebarMode],
+    [settingsNavigation, setSidebarMode],
   );
 
   // The dunning takeover is positioned against the scrollable inset, so the
@@ -271,15 +271,11 @@ export function AdminLayout({ children }: AdminLayoutProps) {
             contentRef={insetRef}
             contentStatic={PAGE_BACKDROP_SELECTOR}
             disabled={dunningLocked}
-            morphStyle={settingsPin.morphStyle}
-            pinLocked={settingsPin.pinHeld}
-            quietReturn={settingsPin.quietReturn}
+            morphStyle={settingsPinMorph.morphStyle}
             settingsNavigation={settingsNavigation}
-            settingsNavigationDeferred={settingsPin.bodyDeferred}
             settingsNavigationRef={setSettingsNavigationSlot}
             slideRef={mainRef}
-            onOutgoingLeft={settingsPin.onOutgoingLeft}
-            onPinnedMorphEnd={settingsPin.onPinnedMorphEnd}
+            onPinnedMorphEnd={settingsPinMorph.onPinnedMorphEnd}
           />
         ) : (
           <>

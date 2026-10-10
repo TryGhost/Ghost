@@ -12,19 +12,13 @@ import { SidebarSiteIcon, SidebarSiteIdentity } from './sidebar-site-identity';
 
 interface FloatingAppSidebarProps extends Omit<
   React.ComponentProps<typeof FloatingSidebar>,
-  'children' | 'header' | 'icon' | 'label' | 'onPinnedChange' | 'pinned' | 'resetKey'
+  'children' | 'header' | 'icon' | 'label' | 'onPinnedChange' | 'pinLocked' | 'pinned' | 'resetKey'
 > {
   /**
    * Shows the Settings navigation in the body in place of the main navigation
-   * (the sidebar is pinned for it, without its pin button: see `pinLocked`).
+   * (the sidebar is pinned for it, without its pin button).
    */
   settingsNavigation?: boolean;
-  /** Holds the body's swap to the Settings navigation (e.g. while the capsule grows). */
-  settingsNavigationDeferred?: boolean;
-  /** Back from Settings, the main navigation fades in once the Settings rows have left. */
-  quietReturn?: boolean;
-  /** Called once the body's outgoing rows have left. */
-  onOutgoingLeft?: () => void;
   /** Receives the element the Settings navigation renders into. */
   settingsNavigationRef?: (element: HTMLElement | null) => void;
 }
@@ -37,15 +31,7 @@ interface FloatingAppSidebarProps extends Omit<
  */
 const FloatingAppSidebar = React.forwardRef<HTMLDivElement, FloatingAppSidebarProps>(
   function FloatingAppSidebar(
-    {
-      settingsNavigation = false,
-      settingsNavigationDeferred = false,
-      settingsNavigationRef,
-      quietReturn = false,
-      onOutgoingLeft,
-      pinLocked = settingsNavigation,
-      ...props
-    },
+    { settingsNavigation = false, settingsNavigationRef, ...props },
     ref,
   ) {
     const { open, setOpen } = useSidebar();
@@ -60,25 +46,13 @@ const FloatingAppSidebar = React.forwardRef<HTMLDivElement, FloatingAppSidebarPr
     // with the main navigation, as Settings never showed it.
     const body = React.useMemo(
       () => (
-        <SidebarBodySwap
-          deferred={settingsNavigationDeferred}
-          quietReturn={quietReturn}
-          settings={settingsNavigation}
-          settingsSlotRef={settingsNavigationRef}
-          onOutgoingLeft={onOutgoingLeft}
-        >
+        <SidebarBodySwap settings={settingsNavigation} settingsSlotRef={settingsNavigationRef}>
           <AppSidebarHeader className="p-0" showSiteIdentity={false} />
           <AppSidebarContent floating />
           <AppSidebarFooter className="gap-0 p-0 [&_[data-sidebar=group]]:px-0 [&_[data-sidebar=group]]:pb-0" />
         </SidebarBodySwap>
       ),
-      [
-        onOutgoingLeft,
-        quietReturn,
-        settingsNavigation,
-        settingsNavigationDeferred,
-        settingsNavigationRef,
-      ],
+      [settingsNavigation, settingsNavigationRef],
     );
 
     return (
@@ -88,7 +62,7 @@ const FloatingAppSidebar = React.forwardRef<HTMLDivElement, FloatingAppSidebarPr
         header={header}
         icon={icon}
         label={title || 'Site navigation'}
-        pinLocked={pinLocked}
+        pinLocked={settingsNavigation}
         pinned={open}
         resetKey={pathname}
         onPinnedChange={setOpen}

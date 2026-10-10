@@ -1,6 +1,6 @@
 import assert from 'assert/strict';
 import { describe, it, vi } from 'vitest';
-import { fireEvent, screen } from '@testing-library/react';
+import { act, fireEvent, screen } from '@testing-library/react';
 import { FloatingSidebar } from '../../../../src/components/ui/floating-sidebar';
 import { render } from '../../utils/test-utils';
 
@@ -50,6 +50,29 @@ describe('FloatingSidebar', () => {
     fireEvent.mouseLeave(wrapper);
     fireEvent.mouseEnter(wrapper);
     assert.equal(capsuleState(), 'open');
+  });
+
+  it('stays open while the pointer moves over it, though its mouseleave misfired', () => {
+    vi.useFakeTimers();
+    try {
+      renderFloatingSidebar({ hotZone: false });
+      const wrapper = screen.getByTestId('floating-sidebar');
+      fireEvent.mouseLeave(wrapper);
+      fireEvent.mouseEnter(wrapper);
+      assert.equal(capsuleState(), 'open');
+
+      // e.g. as it morphed under the pointer
+      fireEvent.mouseLeave(wrapper);
+      fireEvent.pointerMove(screen.getByRole('link', { name: 'Posts' }));
+      act(() => vi.advanceTimersByTime(1000));
+      assert.equal(capsuleState(), 'open');
+
+      fireEvent.pointerMove(document.body);
+      act(() => vi.advanceTimersByTime(1000));
+      assert.equal(capsuleState(), 'closed');
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it('unpins with the pin button', () => {

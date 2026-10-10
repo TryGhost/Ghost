@@ -22,9 +22,14 @@ import { cn } from '@/lib/utils';
  * component; render the `Sidebar` sheet on mobile.
  */
 
-/** Capsule morph: a gentle overshoot so it grows a touch past size and settles back. */
-export const FLOATING_SIDEBAR_BUMP = 'cubic-bezier(0.34, 1.45, 0.5, 1)';
-/** Body unfurl and content slide: a decelerating ease without overshoot. */
+/**
+ * Capsule morph: a gentle overshoot so it grows a touch past size and settles
+ * back (about 2.8% past its target, ~7px as the circle opens to the panel's
+ * width). Its width, radius and shadow take it; its height eases in without
+ * overshoot, as the body unfurls.
+ */
+export const FLOATING_SIDEBAR_BUMP = 'cubic-bezier(0.34, 1.29, 0.5, 1)';
+/** Body unfurl, capsule height and content slide: a decelerating ease without overshoot. */
 export const FLOATING_SIDEBAR_SPRING = 'cubic-bezier(0.16, 1, 0.3, 1)';
 /** How long the capsule morphs and the content slides, in milliseconds. */
 export const FLOATING_SIDEBAR_DURATION = 520;
@@ -290,6 +295,7 @@ const FloatingSidebar = React.forwardRef<HTMLDivElement, FloatingSidebarProps>(
     const closedIconOffset = (sizes.circle - sizes.circleIcon) / 2 - PADDING;
 
     const wrapperRef = React.useRef<HTMLDivElement>(null);
+    const capsuleRef = React.useRef<HTMLDivElement>(null);
     const triggerRef = React.useRef<HTMLButtonElement>(null);
     const headerRef = React.useRef<HTMLDivElement>(null);
     const bodyRef = React.useRef<HTMLDivElement>(null);
@@ -322,6 +328,13 @@ const FloatingSidebar = React.forwardRef<HTMLDivElement, FloatingSidebarProps>(
           return;
         }
         closeTimer.current = undefined;
+        // Still over the capsule, though its mouseleave said otherwise (e.g.
+        // it morphed under the pointer): it closes once the pointer leaves it.
+        if (wrapper?.matches(':hover')) {
+          hover.current.capsule = true;
+          hover.current.any = true;
+          return;
+        }
         // Keyboard users close it by tabbing out or with Escape.
         const active = document.activeElement;
         if (active && wrapper?.contains(active) && active.matches(':focus-visible')) {
@@ -349,9 +362,9 @@ const FloatingSidebar = React.forwardRef<HTMLDivElement, FloatingSidebarProps>(
     const hover = React.useRef({ capsule: false, zone: false, any: false });
     const hoverArmed = React.useRef(false);
     const updateHover = React.useCallback(
-      (part: 'capsule' | 'zone', value: boolean) => {
+      (parts: Partial<Record<'capsule' | 'zone', boolean>>) => {
         const state = hover.current;
-        state[part] = value;
+        Object.assign(state, parts);
         const any = state.capsule || state.zone;
         if (!hoverArmed.current) {
           hoverArmed.current = !any;
@@ -371,20 +384,32 @@ const FloatingSidebar = React.forwardRef<HTMLDivElement, FloatingSidebarProps>(
     );
 
     // The hot zone tracks the pointer rather than covering the page, so the
-    // content beneath it still scrolls and responds to the pointer.
+    // content beneath it still scrolls and responds to the pointer. The
+    // pointer's moves also keep the capsule's hover true to where it is: its
+    // mouseenter and mouseleave can be missed or misfire as it morphs under a
+    // pointer (e.g. landing open from pinned), and the panel mustn't close
+    // while the pointer is over it.
     React.useEffect(() => {
-      if (!hotZone || disabled) {
+      if (disabled) {
         return;
       }
       const onPointerMove = (event: PointerEvent) => {
         if (event.pointerType === 'touch') {
           return;
         }
-        const overOverlay =
-          event.target instanceof Element && Boolean(event.target.closest(OVERLAY_SELECTOR));
-        updateHover('zone', !overOverlay && event.clientX < hotZoneWidth(window.innerWidth));
+        const target = event.target instanceof Element ? event.target : null;
+        // Popups opened from the panel (in portals) keep the capsule's hover as it was
+        const overOverlay = Boolean(target?.closest(OVERLAY_SELECTOR));
+        const parts: Partial<Record<'capsule' | 'zone', boolean>> = {};
+        if (!overOverlay && target) {
+          parts.capsule = Boolean(wrapperRef.current?.contains(target));
+        }
+        if (hotZone) {
+          parts.zone = !overOverlay && event.clientX < hotZoneWidth(window.innerWidth);
+        }
+        updateHover(parts);
       };
-      const onPointerLeave = () => updateHover('zone', false);
+      const onPointerLeave = () => updateHover({ capsule: false, zone: false });
       document.addEventListener('pointermove', onPointerMove);
       document.documentElement.addEventListener('pointerleave', onPointerLeave);
       return () => {
@@ -484,6 +509,17 @@ const FloatingSidebar = React.forwardRef<HTMLDivElement, FloatingSidebarProps>(
     // The capsule's shape, and what moves with it (the content, the icon)
     const shapeEasing = plainMorph ? FLOATING_SIDEBAR_EASE : FLOATING_SIDEBAR_BUMP;
     const glideEasing = plainMorph ? FLOATING_SIDEBAR_EASE : FLOATING_SIDEBAR_SPRING;
+    // The capsule's transitions: its height glides rather than bumps, as the
+    // body it holds unfurls without overshoot (a bump on a panel this tall
+    // would overshoot by tens of pixels)
+    const capsuleTransitions: Array<[property: string, easing: string]> = morph
+      ? [
+          ['width', shapeEasing],
+          ['height', glideEasing],
+          ['border-radius', shapeEasing],
+          ['box-shadow', shapeEasing],
+        ]
+      : [];
 
     // Reports the end of the morph a pin change starts: the capsule's height
     // transition ending, or its duration passing without one.
@@ -536,9 +572,43 @@ const FloatingSidebar = React.forwardRef<HTMLDivElement, FloatingSidebarProps>(
       () => (contentAnchor ? (contentRef?.current?.querySelector(contentAnchor) ?? null) : null),
       [contentAnchor, contentRef],
     );
+    // The floating open capsule's height (`auto`) on screen before the pin change
+    const heightBefore = React.useRef<number | null>(null);
     const measureBeforePin = React.useCallback(() => {
       anchorBefore.current = findAnchor()?.getBoundingClientRect().left ?? null;
+      const capsule = capsuleRef.current;
+      heightBefore.current =
+        capsule?.style.height === 'auto' ? capsule.getBoundingClientRect().height : null;
     }, [findAnchor]);
+
+    // Pinning the floating open panel, its height transitions from `auto`,
+    // which interpolate-size resolves anew on every frame: should the body's
+    // content grow meanwhile (e.g. another navigation rendered into it), the
+    // start would leap past the pinned height and the capsule jump to it. It
+    // starts from the height it had on screen instead.
+    const capsuleTransitionsRef = React.useRef(capsuleTransitions);
+    React.useLayoutEffect(() => {
+      capsuleTransitionsRef.current = capsuleTransitions;
+    });
+    React.useLayoutEffect(() => {
+      const from = heightBefore.current;
+      heightBefore.current = null;
+      const capsule = capsuleRef.current;
+      const transitions = capsuleTransitionsRef.current;
+      if (from === null || !capsule || !transitions.length) {
+        return;
+      }
+      const { height, transitionProperty, transitionTimingFunction } = capsule.style;
+      const others = transitions.filter(([property]) => property !== 'height');
+      capsule.style.transitionProperty = others.map(([property]) => property).join(', ');
+      capsule.style.transitionTimingFunction = others.map(([, easing]) => easing).join(', ');
+      capsule.style.height = `${from}px`;
+      // Lands the start height without a transition, the others starting theirs
+      void getComputedStyle(capsule).height;
+      capsule.style.transitionProperty = transitionProperty;
+      capsule.style.transitionTimingFunction = transitionTimingFunction;
+      capsule.style.height = height;
+    }, [pinned]);
     React.useLayoutEffect(() => {
       const shift = gapWidth - previousGapWidth.current;
       previousGapWidth.current = gapWidth;
@@ -650,15 +720,16 @@ const FloatingSidebar = React.forwardRef<HTMLDivElement, FloatingSidebarProps>(
           }}
           onMouseEnter={(event) => {
             onMouseEnter?.(event);
-            updateHover('capsule', true);
+            updateHover({ capsule: true });
           }}
           onMouseLeave={(event) => {
             onMouseLeave?.(event);
-            updateHover('capsule', false);
+            updateHover({ capsule: false });
           }}
           {...props}
         >
           <div
+            ref={capsuleRef}
             className={cn(
               'relative flex shrink-0 flex-col overflow-hidden [interpolate-size:allow-keywords]',
               GLASS,
@@ -671,15 +742,16 @@ const FloatingSidebar = React.forwardRef<HTMLDivElement, FloatingSidebarProps>(
               // Open, `auto` (not undefined) so interpolate-size can transition it
               height: pinned ? PANEL_HEIGHT : expanded ? 'auto' : closedSize,
               maxHeight: PANEL_HEIGHT,
-              // The bump's undershoot mustn't squeeze the circle as it closes,
-              // clipping the icon
+              // The width's bump dips a little below the circle as it closes;
+              // it mustn't squeeze it, clipping the icon
               minWidth: closedSize,
-              minHeight: closedSize,
               borderRadius: expanded ? OPEN_RADIUS : closedSize / 2,
               boxShadow: pinned ? SHADOW_PINNED : SHADOW_FLOAT,
-              transitionProperty: morph ? 'width, height, border-radius, box-shadow' : 'none',
+              transitionProperty: morph
+                ? capsuleTransitions.map(([property]) => property).join(', ')
+                : 'none',
               transitionDuration: `${morphDuration}ms`,
-              transitionTimingFunction: shapeEasing,
+              transitionTimingFunction: capsuleTransitions.map(([, easing]) => easing).join(', '),
             }}
             onTransitionEnd={(event) => {
               if (event.target === event.currentTarget && event.propertyName === 'height') {
