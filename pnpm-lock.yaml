@@ -786,7 +786,7 @@ overrides:
   express: 4.22.3
   qs: 6.16.0
 
-packageExtensionsChecksum: sha256-+RREjU6YN8uHcUN0naPzFhXx/iy43qNI2+d1DnwDRZo=
+packageExtensionsChecksum: sha256-XZqcD6GlbwaetbmTo1ZS+ybSq1By9f+mosS79rxWQ5w=
 
 pnpmfileChecksum: sha256-qev/zWGQadDoB7sHatQQkkjF+hSnLGwfErh/U1ptQjA=
 
@@ -3595,7 +3595,7 @@ importers:
         version: 3.1.4(@types/react@18.3.31)(react@18.3.1)
       react-highlight:
         specifier: 0.15.0
-        version: 0.15.0
+        version: 0.15.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       react-router-dom:
         specifier: 7.18.4
         version: 7.18.4(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -15506,6 +15506,9 @@ packages:
 
   react-highlight@0.15.0:
     resolution: {integrity: sha512-5uV/b/N4Z421GSVVe05fz+OfTsJtFzx/fJBdafZyw4LS70XjIZwgEx3Lrkfc01W/RzZ2Dtfb0DApoaJFAIKBtA==}
+    peerDependencies:
+      react: '*'
+      react-dom: '*'
 
   react-hook-form@7.80.0:
     resolution: {integrity: sha512-4P+fk6oXsxY+6xSj7Euhc2sumQD8zQqCuVHoJwoyp9EchP+IUW9OESB7uHFJOKsIBQ4MQqYE84INJFqUCYNoOg==}
@@ -19384,6 +19387,7 @@ snapshots:
       '@lexical/dragon': 0.13.1(lexical@0.13.1)
       '@lexical/hashtag': 0.13.1(lexical@0.13.1)
       '@lexical/history': 0.13.1(lexical@0.13.1)
+      '@lexical/html': 0.13.1(lexical@0.13.1)
       '@lexical/link': 0.13.1(lexical@0.13.1)
       '@lexical/list': 0.13.1(lexical@0.13.1)
       '@lexical/mark': 0.13.1(lexical@0.13.1)
@@ -31180,9 +31184,11 @@ snapshots:
     optionalDependencies:
       '@types/react': 18.3.31
 
-  react-highlight@0.15.0:
+  react-highlight@0.15.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
     dependencies:
       highlight.js: 10.7.3
+      react: 18.3.1
+      react-dom: 18.3.1(react@18.3.1)
 
   react-hook-form@7.80.0(@types/react@18.3.31)(react@18.3.1):
     dependencies:

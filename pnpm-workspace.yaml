@@ -338,6 +338,8 @@ packageExtensions:
     dependencies:
       '@lexical/selection': 0.13.1
   '@lexical/react@0.13.1':
+    dependencies:
+      '@lexical/html': 0.13.1
     peerDependencies:
       '@types/react': '*'
       yjs: '*'
@@ -349,6 +351,10 @@ packageExtensions:
   'react-slider@^2.0.6':
     dependencies:
       '@babel/runtime': ^7.26.10
+  'react-highlight@0.15.0':
+    peerDependencies:
+      react: '*'
+      react-dom: '*'
   '@hookform/resolvers':
     peerDependencies:
       zod: '*'
