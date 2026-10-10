@@ -26,12 +26,8 @@ const wait = (ms: number) =>
     setTimeout(resolve, ms);
   });
 
-const handoff = () =>
-  JSON.parse(document.body.dataset.externalNavigate ?? 'null') as { route: string } | null;
-
 describe('Settings search exits', () => {
   it.each(['tag', 'post'])('confirms before a %s result leaves dirty Settings', async (model) => {
-    delete document.body.dataset.externalNavigate;
     if (model === 'post') {
       // the editor owns its request graph
       allowUnhandledRequests();
@@ -51,7 +47,6 @@ describe('Settings search exits', () => {
     await settingsScreen.confirmationAction('Stay').click();
     await expect(settingsScreen.confirmationModal()).toHaveCount(0);
     await expect.poll(currentRoute).toBe('/settings');
-    expect(handoff()).toBeNull();
     await expect
       .element(page.getByLabelText('Site title', { exact: true }))
       .toHaveValue('Unsaved title');
@@ -61,7 +56,6 @@ describe('Settings search exits', () => {
     await settingsScreen.confirmationAction('Leave').click();
     if (model === 'post') {
       await expect.poll(currentRoute).toBe('/editor/post/p1');
-      expect(handoff()).toBeNull();
     } else {
       await expect.poll(currentRoute).toBe('/tags/first-tag');
       await expect(settingsScreen.titleAndDescription()).toHaveCount(0);
@@ -149,7 +143,6 @@ describe('Cmd-K search', () => {
   let index: ReturnType<typeof fakeSearchIndex>;
 
   beforeEach(() => {
-    delete document.body.dataset.externalNavigate;
     fakeTags([]);
     index = fakeSearchIndex();
   });
@@ -423,7 +416,6 @@ describe('Cmd-K search', () => {
     await globalSearchScreen.option(/First post/).click();
 
     await expect.poll(currentRoute).toBe('/editor/post/p1');
-    expect(handoff()).toBeNull();
   });
 
   it('opens a billing result at its billing route', async () => {

@@ -7,6 +7,8 @@ import {
   currentUserResponse,
   fakeTags,
   fakeAdminEndpoint,
+  fakePosts,
+  fakePostsListScreen,
   renderAdminApp,
   staffRole,
   type RenderAdminAppOptions,
@@ -20,22 +22,22 @@ function asRole(name: StaffRoleName): RenderAdminAppOptions {
   return { boot: { browseMe: { response: me } } };
 }
 
-// Denied routes redirect to the home route through the router; only the home
-// dispatch itself may then hand off cross-app (asserted in home.acceptance).
-const homeHandoff = (): unknown => JSON.parse(document.body.dataset.externalNavigate ?? 'null');
+// Denied routes redirect home, which sends the role on to its landing route.
+const landingRoute = (role: StaffRoleName) => (role === 'Contributor' ? '/posts' : '/site');
 
 const OWNER_SLUG = currentUserResponse().users[0].slug as string;
 
 describe('Route access', () => {
-  // The recorded handoff lives on the host page, which outlives a single test.
+  // Contributors land on the posts list once a denied route sends them home.
   beforeEach(() => {
-    delete document.body.dataset.externalNavigate;
+    fakePostsListScreen();
+    fakePosts([]);
   });
 
   it('redirects a contributor away from settings', async () => {
     await renderAdminApp('/settings/design', asRole('Contributor'));
 
-    await expect.poll(currentRoute).toBe('/');
+    await expect.poll(currentRoute).toBe(landingRoute('Contributor'));
   });
 
   it('keeps a contributor on their own profile settings', async () => {
@@ -44,25 +46,24 @@ describe('Route access', () => {
     await renderAdminApp(`/settings/staff/${OWNER_SLUG}`, asRole('Contributor'));
 
     await expect.poll(currentRoute).toBe(`/settings/staff/${OWNER_SLUG}`);
-    expect(homeHandoff()).toBe(null);
   });
 
   it("redirects an author away from another staff member's profile settings", async () => {
     await renderAdminApp('/settings/staff/someone-else', asRole('Author'));
 
-    await expect.poll(currentRoute).toBe('/');
+    await expect.poll(currentRoute).toBe(landingRoute('Author'));
   });
 
   it('redirects a contributor away from tags', async () => {
     await renderAdminApp('/tags', asRole('Contributor'));
 
-    await expect.poll(currentRoute).toBe('/');
+    await expect.poll(currentRoute).toBe(landingRoute('Contributor'));
   });
 
   it('redirects an editor away from members', async () => {
     await renderAdminApp('/members', asRole('Editor'));
 
-    await expect.poll(currentRoute).toBe('/');
+    await expect.poll(currentRoute).toBe(landingRoute('Editor'));
   });
 
   it.each(['Editor', 'Author', 'Contributor'] as const)(
@@ -71,7 +72,7 @@ describe('Route access', () => {
       const events = fakeAdminEndpoint('GET', /^\/members\/events\//, { events: [] });
       await renderAdminApp('/members-activity?member=abcdef123456abcdef123456', asRole(role));
 
-      await expect.poll(currentRoute).toBe('/');
+      await expect.poll(currentRoute).toBe(landingRoute(role));
       expect(events.requests).toHaveLength(0);
     },
   );
@@ -81,7 +82,7 @@ describe('Route access', () => {
     async (role) => {
       await renderAdminApp('/migrate/substack', asRole(role));
 
-      await expect.poll(currentRoute).toBe('/');
+      await expect.poll(currentRoute).toBe(landingRoute(role));
       await expect.element(migrateScreen.frame()).not.toBeInTheDocument();
     },
   );
@@ -112,6 +113,5 @@ describe('Route access', () => {
     await renderAdminApp('/tags');
 
     await expect.poll(currentRoute).toBe('/tags');
-    expect(homeHandoff()).toBe(null);
   });
 });

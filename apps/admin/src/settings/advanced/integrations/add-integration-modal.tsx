@@ -20,6 +20,7 @@ import { useUpgradeRoute } from '@/settings/hooks/use-upgrade-route';
 import { useCreateIntegration } from '@tryghost/admin-x-framework/api/integrations';
 import { useHandleError, useLimiter } from '@tryghost/admin-x-framework/hooks';
 import { LucideIcon } from '@tryghost/shade/utils';
+import { navigateTo } from '@/utils/navigation';
 
 function AddIntegrationModal() {
   const { updateRoute } = useSettingsNavigation();
@@ -37,7 +38,9 @@ function AddIntegrationModal() {
         if (error instanceof HostLimitError) {
           showLimit({
             prompt: error.message || `Your current plan doesn't support more custom integrations.`,
-            onOk: () => updateRoute({ route: upgradeRoute, isExternal: true }),
+            onOk: () => {
+              navigateTo(upgradeRoute);
+            },
           });
           updateRoute('integrations');
         }

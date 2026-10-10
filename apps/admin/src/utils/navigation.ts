@@ -46,7 +46,7 @@ export function navigateTo(
       return true;
     }
   } else {
-    // Internal cross-app navigation - use hash routing
+    // Admin route - use hash routing
     navigateInternal(route);
     return true;
   }

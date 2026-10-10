@@ -133,7 +133,7 @@ describe('actions api helpers', () => {
             resource: { id: 'tag-1', slug: 'useful-tag' },
           }),
         ),
-      ).toEqual({ isExternal: true, route: 'tags/useful-tag' });
+      ).toEqual({ route: '/tags/useful-tag' });
     });
 
     it('links an offer to its Settings editor', () => {
@@ -144,7 +144,7 @@ describe('actions api helpers', () => {
             resource: { id: 'offer-1', slug: 'black-friday' },
           }),
         ),
-      ).toEqual({ route: 'offers/edit/offer-1' });
+      ).toEqual({ route: '/settings/offers/edit/offer-1' });
     });
   });
 });

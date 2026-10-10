@@ -34,6 +34,7 @@ import {
 import { useHandleError } from '@tryghost/admin-x-framework/hooks';
 import { useSettingsNavigation } from '@/settings/hooks/use-settings-navigation';
 import { useUpgradeRoute } from '@/settings/hooks/use-upgrade-route';
+import { navigateTo } from '@/utils/navigation';
 
 interface ThemeToolbarProps {
   selectedTheme: OfficialTheme | null;
@@ -238,7 +239,9 @@ const ThemeToolbar: React.FC<ThemeToolbarProps> = ({ currentTab, setCurrentTab, 
             <a href="https://ghost.org/marketplace/">Ghost theme marketplace</a>.
           </>
         ),
-        onOk: () => updateRoute({ route: upgradeRoute, isExternal: true }),
+        onOk: () => {
+          navigateTo(upgradeRoute);
+        },
       });
     }
   };
@@ -454,7 +457,9 @@ const ChangeThemeModal: React.FC<ChangeThemeModalProps> = ({ source, themeRef })
       if (limitError) {
         showLimit({
           prompt: limitError,
-          onOk: () => updateRoute({ route: upgradeRoute, isExternal: true }),
+          onOk: () => {
+            navigateTo(upgradeRoute);
+          },
         });
         return;
       }
