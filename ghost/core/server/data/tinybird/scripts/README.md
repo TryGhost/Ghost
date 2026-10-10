@@ -1,6 +1,6 @@
 # Ghost Analytics Scripts
 
-Scripts for managing analytics data in the Docker development environment.
+Scripts for managing analytics data in the local development environment.
 
 ## Docker Analytics Manager
 
@@ -8,7 +8,7 @@ Generates and clears analytics events directly in the local Tinybird instance.
 
 **Prerequisites:**
 
-- Docker environment running: `pnpm dev:analytics`
+- Analytics running: `pnpm dev:analytics`
 - Ghost database populated: `pnpm reset:data`
 
 **Usage:**
@@ -27,7 +27,7 @@ pnpm data:analytics:clear
 ## Typical Workflow
 
 ```bash
-# 1. Start the Docker environment with analytics
+# 1. Start Ghost with analytics
 pnpm dev:analytics
 
 # 2. (Optional) Reset Ghost data if needed
@@ -36,8 +36,8 @@ pnpm reset:data
 # 3. Generate analytics data
 pnpm data:analytics:generate
 
-# 4. View analytics in Ghost admin
-# http://localhost:2368/ghost/#/stats
+# 4. View analytics in Ghost admin (a worktree uses the port in .ghost-dev.env)
+# http://localhost:2368/ghost/#/analytics
 
 # 5. Clear analytics when needed
 pnpm data:analytics:clear
@@ -49,13 +49,15 @@ pnpm data:analytics:clear
 
 ### Database Connection
 
-Connects to MySQL at `localhost:3306`. Override via environment variables:
+The `pnpm` scripts run through `scripts/with-ghost-dev-env.ts`, so they use the
+same database as the checkout's `pnpm dev`: `ghost_dev` in the main checkout and
+`dev_<worktree>` in a linked worktree. Override via environment variables:
 
-- `MYSQL_HOST` (default: localhost)
-- `MYSQL_PORT` (default: 3306)
-- `MYSQL_USER` (default: root)
-- `MYSQL_PASSWORD` (default: root)
-- `MYSQL_DATABASE` (default: ghost_dev)
+- `MYSQL_HOST`
+- `MYSQL_PORT`
+- `MYSQL_USER`
+- `MYSQL_PASSWORD`
+- `MYSQL_DATABASE`
 
 ### Tinybird Connection
 
@@ -64,6 +66,10 @@ Reads tokens from Docker volume automatically. Override via:
 - `TINYBIRD_ADMIN_TOKEN`
 - `TINYBIRD_TRACKER_TOKEN`
 - `TINYBIRD_HOST` (default: http://localhost:7181)
+
+Every checkout shares one Tinybird Local instance. Generated events carry the
+checkout's `site_uuid`, but `pnpm data:analytics:clear` truncates the
+datasources for all checkouts.
 
 ## Troubleshooting
 

@@ -12,7 +12,7 @@
  *   pnpm data:analytics:clear             - Clear all analytics events for the site
  *
  * Prerequisites:
- *   - Docker environment running: pnpm dev:analytics
+ *   - Analytics running: pnpm dev:analytics
  *   - Ghost database populated with posts/members: pnpm reset:data
  */
 
@@ -802,7 +802,7 @@ Options:
   count  - Number of events to generate (default: ${DEFAULT_EVENT_COUNT})
 
 Prerequisites:
-  - Docker environment running: pnpm dev:analytics
+  - Analytics running: pnpm dev:analytics
   - Ghost database populated: pnpm reset:data
 
 Examples:

@@ -73,8 +73,8 @@
     "query-parameter-policy:export": "pnpm --filter ghost query-parameter-policy:export",
     "tb": "docker compose -f compose.dev.yaml -f compose.dev.analytics.yaml run --rm --no-deps --entrypoint tb tb-cli --local",
     "tb:test": "pnpm tb test run",
-    "data:analytics:generate": "node ghost/core/server/data/tinybird/scripts/docker-analytics-manager.js generate",
-    "data:analytics:clear": "node ghost/core/server/data/tinybird/scripts/docker-analytics-manager.js clear",
+    "data:analytics:generate": "node scripts/with-ghost-dev-env.ts node ghost/core/server/data/tinybird/scripts/docker-analytics-manager.js generate",
+    "data:analytics:clear": "node scripts/with-ghost-dev-env.ts node ghost/core/server/data/tinybird/scripts/docker-analytics-manager.js clear",
     "release": "node scripts/release.js",
     "inventory:typescript": "node scripts/typescript-inventory.ts"
   },
