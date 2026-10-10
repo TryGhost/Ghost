@@ -33,20 +33,14 @@ export interface DatabaseConfig {
  * `connection.decimalNumbers` into every later reader of `database`.
  */
 export function configure(dbConfig: DatabaseConfig): Knex.Config {
-  let client = dbConfig.client;
+  // Client aliases (mysql, sqlite3) are already resolved by config's
+  // sanitizeDatabaseProperties.
+  const client = dbConfig.client;
   const derived: DatabaseConfig = {
     ...dbConfig,
     connection: { ...dbConfig.connection },
   };
   const connection = derived.connection as Record<string, unknown>;
-
-  // Alias sqlite3 to better-sqlite3 for backwards compatibility
-  // This allows self-hosters and developers to continue using 'sqlite3' in their config
-  if (client === 'sqlite3') {
-    logging.info('Detected sqlite3 config, using better-sqlite3 as drop-in replacement');
-    client = 'better-sqlite3';
-    derived.client = 'better-sqlite3';
-  }
 
   if (client === 'better-sqlite3') {
     // Backwards compatibility with old knex behaviour

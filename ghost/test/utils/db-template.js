@@ -79,7 +79,7 @@ const ensureForkDatabaseExists = async () => {
  * before any fork). Derives the template location from the run's BASE
  * (un-suffixed) DB identifier, points Ghost's config there, then runs a full
  * knex-migrator reset + init. A fresh KnexMigrator is constructed AFTER the config
- * override so it reads the template location via MigratorConfig.js.
+ * override so it reads the template location via MigratorConfig.
  *
  * @param {{mysqlBase: string}} run the run's base DB identifier
  */
@@ -87,7 +87,7 @@ const buildTemplate = async (run) => {
   debug('Building shared DB template');
   config.set('database:connection:database', deriveMySQLTemplateDatabase(run.mysqlBase, run.runId));
 
-  // Construct after the override so MigratorConfig.js captures the template
+  // Construct after the override so MigratorConfig captures the template
   // location. reset({force}) drops the template DB (DROP DATABASE, tolerating
   // "does not exist"); init recreates, migrates, and seeds — exactly db-utils'
   // forceReinit.
