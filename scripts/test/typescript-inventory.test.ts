@@ -243,6 +243,69 @@ test('counts maintained fixture modules and classifies test support without hidi
   assert.equal(excludedSource('ghost/test/utils/fixtures/sloppy-config-writer.test.ts'), false);
 });
 
+test('classifies retired Ember tooling in revisions after its deletion', (t) => {
+  const root = mkdtempSync(path.join(os.tmpdir(), 'ghost-ts-inventory-history-'));
+  t.after(() => rmSync(root, { recursive: true, force: true }));
+  const git = (...args: string[]) => execFileSync('git', args, { cwd: root });
+  const put = (file: string) => {
+    mkdirSync(path.dirname(path.join(root, file)), { recursive: true });
+    writeFileSync(
+      path.join(root, file),
+      "throw new Error('Historical sources must not execute');\n",
+    );
+  };
+  const commit = (message: string) =>
+    git(
+      '-c',
+      'user.name=Test',
+      '-c',
+      'user.email=test@example.com',
+      '-c',
+      'core.hooksPath=/dev/null',
+      'commit',
+      '-m',
+      message,
+    );
+  const tooling = [
+    'apps/ember-admin/ember-cli-build.js',
+    'apps/ember-admin/testem.js',
+    'apps/ember-admin/config/coverage.js',
+    'apps/ember-admin/config/deprecation-workflow.js',
+    'apps/ember-admin/config/environment.js',
+    'apps/ember-admin/config/targets.js',
+    'apps/ember-admin/lib/asset-delivery/index.js',
+    'apps/ember-admin/lib/check-node-version.js',
+    'apps/ember-admin/lib/ember-power-calendar-moment/index.js',
+    'apps/ember-admin/lib/ember-power-calendar-utils/index.js',
+    'apps/admin/vite-ember-assets.ts',
+  ];
+  git('init');
+  for (const file of [
+    ...tooling,
+    'apps/ember-admin/app/services/config-manager.js',
+    'apps/ember-admin/lib/ember-power-calendar-utils/addon/index.js',
+    'apps/ember-admin/mirage/config/settings.js',
+    'apps/admin/src/config.ts',
+  ]) {
+    put(file);
+  }
+  git('add', '.');
+  commit('Added historical fixtures');
+  const beforeDeletion = inventoryAtRevision(root, 'HEAD');
+  git('rm', '-r', 'apps/ember-admin', 'apps/admin/vite-ember-assets.ts');
+  commit('Removed Ember fixtures');
+
+  const historical = inventoryAtRevision(root, 'HEAD^');
+  assert.deepEqual(historical.groups, beforeDeletion.groups);
+  assert.equal(historical.measurementVersion, 2);
+  assert.equal(historical.groups.category.tooling!.javascript, tooling.length - 1);
+  assert.equal(historical.groups.category.tooling!.typescript, 1);
+  assert.equal(historical.groups.category.frontend!.javascript, 2);
+  assert.equal(historical.groups.category.frontend!.typescript, 1);
+  assert.equal(historical.groups.category.tests!.javascript, 1);
+  assert.equal(inventoryAtRevision(root, 'HEAD').groups.category.tooling, undefined);
+});
+
 test('separates developer tooling from runtime configuration', () => {
   for (const file of [
     '.lintstagedrc.cjs',
