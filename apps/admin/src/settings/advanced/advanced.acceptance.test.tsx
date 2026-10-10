@@ -484,8 +484,7 @@ describe('Advanced settings', () => {
     await modal.getByText('Useful tag').click();
     expect(JSON.parse(document.body.dataset.externalNavigate ?? 'null')).toMatchObject({
       isExternal: true,
-      route: 'tag',
-      models: ['useful-tag'],
+      route: 'tags/useful-tag',
     });
     await expect.poll(() => actionsApi.requests.length).toBeGreaterThan(0);
     const initialQuery = new URL(actionsApi.requests[0].url).searchParams;
