@@ -36,9 +36,8 @@ The public apps build browser bundles loaded with script tags and read runtime
 configuration from data attributes. Ghost Core renders these integrations
 through theme helpers such as `{{ghost_head}}` and `{{comments}}`.
 
-Admin combines the React and Ember applications into one interface. See
-[`apps/admin/README.md`](../../apps/admin/README.md) for the current integration
-boundary.
+Admin is a single React application. See
+[`apps/admin/README.md`](../../apps/admin/README.md) for how it is organized.
 
 ## Ghost Core
 

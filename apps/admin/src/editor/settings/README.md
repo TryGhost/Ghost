@@ -235,7 +235,7 @@ the save that follows the switch. Once saved, an unrelated edit sends neither
 access field.
 
 On a post that is not a draft, picking or removing a tier is staged without a
-save of its own, as in Ember: every save of a published post writes a revision,
+save of its own: every save of a published post writes a revision,
 so the picks go out once, with the next settings change or Update, and count as
 unsaved work until then. The visibility choice itself saves at once.
 
@@ -444,8 +444,8 @@ a key already shown as its name carries no tooltip. A slash command reads the
 same wherever it is typed.
 
 The reference uses compact rows with a shared hover background, wrapping labels,
-and underlined group headings. Definition-list spacing is reset locally so Ember's
-global list styles cannot indent or truncate the labels. Shade's `KbdGroup` only
+and underlined group headings. Definition-list spacing is reset locally so inherited
+list styles cannot indent or truncate the labels. Shade's `KbdGroup` only
 lays out the individual `Kbd` caps; it does not draw another cap around them.
 The caps use `variant="contrast"` to stand out against the sidebar background.
 

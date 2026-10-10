@@ -77,12 +77,7 @@ that every migration path is settled:
 ### Build Admin features in React
 
 Build new Admin UI in [`apps/admin/`](../../apps/admin/) with
-`admin-x-framework` for API access and Shade for UI. Do not add a new Ember
-route or use Ember merely because an older version of the feature does.
-
-Migrate an existing Ember feature at a coherent product boundary. React and
-Ember still ship together, so preserve navigation, authentication, shared
-state, and older-server behavior across the bridge. The
+`admin-x-framework` for API access and Shade for UI. The
 [Admin README](../../apps/admin/README.md) describes the current integration.
 
 ### Use TypeScript

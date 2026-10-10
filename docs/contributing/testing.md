@@ -16,8 +16,8 @@ This is the default one-stop command for formatting checks, linting, and
 testing. It runs `pnpm format:check`, `pnpm lint`, and then `pnpm test` across
 the monorepo.
 
-`pnpm check` does not run the Playwright browser end-to-end suite or Ember
-Admin's test suite. Run those separately when your change affects those areas.
+`pnpm check` does not run the Playwright browser end-to-end suite. Run it
+separately when your change affects that area.
 
 ## Choose a Test Suite
 
@@ -220,9 +220,8 @@ Common causes include:
    a timeout unless the operation is genuinely allowed to take longer.
 
 For browser failures, use `pnpm test:e2e --debug`, the retained Playwright trace,
-or the preserved-environment workflow in the E2E documentation. Ember Admin
-tests can temporarily use `await this.pauseTest()` as described in its README.
-Remove debugging changes before committing.
+or the preserved-environment workflow in the E2E documentation. Remove debugging
+changes before committing.
 
 ## Run Editor Acceptance Tests
 
@@ -234,8 +233,8 @@ helpers and conventions they use.
 
 ## Before Opening a Pull Request
 
-Run `pnpm check` to ensure everything works. Also run the relevant browser E2E,
-app acceptance, or Ember Admin suite when your change affects those areas.
+Run `pnpm check` to ensure everything works. Also run the relevant browser E2E
+or app acceptance suite when your change affects those areas.
 
 If a full suite is impractical locally, run the most relevant focused tests and
 state exactly what you ran in the pull request.
