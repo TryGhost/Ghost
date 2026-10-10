@@ -42,6 +42,9 @@ pnpm dev
 pnpm test
 ```
 
+On Linux, start it with `GHOST_DEV_LISTEN=0.0.0.0 pnpm dev`: the test containers
+reach it through the Docker bridge, and it only listens on loopback by default.
+
 If infra is already running, `pnpm infra:up` is safe to run again.
 For dev-mode test runs, `infra:up` also ensures required local Ghost/gateway dev images exist.
 If you want to force a mode, set `GHOST_E2E_MODE=dev` or `GHOST_E2E_MODE=build` explicitly.

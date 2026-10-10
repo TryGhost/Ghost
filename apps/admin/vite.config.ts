@@ -1,4 +1,5 @@
 import fs from 'node:fs';
+import { createServer, type AddressInfo } from 'node:net';
 import { configDefaults, defineConfig } from 'vitest/config';
 import type { PluginOption } from 'vite';
 import react from '@vitejs/plugin-react';
@@ -71,6 +72,32 @@ function koenigSourcemapPlugin(): PluginOption {
   };
 }
 
+// Vite listens on one address, and `*.localhost` names can resolve to ::1 first
+function ipv6LoopbackPlugin(): PluginOption {
+  return {
+    name: 'ipv6-loopback',
+    apply: 'serve',
+    configureServer({ config, httpServer }) {
+      if (!httpServer || config.server.host !== '127.0.0.1') {
+        return;
+      }
+      httpServer.once('listening', () => {
+        const { port } = httpServer.address() as AddressInfo;
+        const ipv6 = createServer((socket) => httpServer.emit('connection', socket));
+        ipv6
+          .on('error', (error: NodeJS.ErrnoException) => {
+            // Without IPv6, clients fall back to 127.0.0.1
+            if (error.code !== 'EADDRNOTAVAIL' && error.code !== 'EAFNOSUPPORT') {
+              throw error;
+            }
+          })
+          .listen(port, '::1');
+        httpServer.once('close', () => ipv6.close());
+      });
+    },
+  };
+}
+
 // https://vite.dev/config/
 export default defineConfig(({ command, mode }) => ({
   base: getBase(command),
@@ -90,6 +117,7 @@ export default defineConfig(({ command, mode }) => ({
                 `${getSubdir()}${DEV_BASE}`,
               )
             : ghostBackendProxyPlugin(),
+          ipv6LoopbackPlugin(),
           // Sentry's plugin goes after all others
           sentryDebugIdsPlugin(),
         ]),
@@ -99,7 +127,9 @@ export default defineConfig(({ command, mode }) => ({
   },
   define: sharedDefine,
   server: {
-    host: '0.0.0.0',
+    // Containers on Linux reach the host through the Docker bridge, and a devcontainer's
+    // published port reaches its network interface: those set GHOST_DEV_LISTEN=0.0.0.0
+    host: process.env.GHOST_DEV_LISTEN ?? '127.0.0.1',
     port: GHOST_DEV_BACKEND_PORT ? Number(process.env.GHOST_DEV_PORT ?? 2368) : 5174,
     strictPort: Boolean(GHOST_DEV_BACKEND_PORT),
     allowedHosts: true,

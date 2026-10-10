@@ -41,6 +41,8 @@ services:
     environment:
       pnpm_config_store_dir: /pnpm-store
       pnpm_config_enable_global_virtual_store: 'false'
+      # The published port reaches the container's network interface, not its loopback
+      GHOST_DEV_LISTEN: 0.0.0.0
       # `pnpm dev` looks for these on 127.0.0.1, where they're published on a laptop
       database__connection__host: mysql
       mail__options__host: mailpit

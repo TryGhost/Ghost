@@ -88,6 +88,11 @@ These commands preserve the site's existing feature flags; see
 [Admin development](../../apps/admin/README.md#development) to preview flagged
 features with session overrides.
 
+Admin's dev server only accepts connections from this machine. Set
+`GHOST_DEV_LISTEN=0.0.0.0` to accept them from the network too, for example for
+e2e dev mode on Linux, where containers reach the host through the Docker
+bridge.
+
 Wait for the `Site:`, `Admin:` and `Email:` lines in the output, then open:
 
 - Site: [http://localhost:2368](http://localhost:2368)

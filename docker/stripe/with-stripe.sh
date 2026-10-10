@@ -80,6 +80,10 @@ if [ "$listen" = true ]; then
 
     export COMPOSE_PROFILES="${COMPOSE_PROFILES:+$COMPOSE_PROFILES,}stripe"
     export GHOST_URL="${GHOST_URL:-http://host.docker.internal:${GATEWAY_PORT}}"
+    # On Linux that name is the Docker bridge, which a loopback-only Admin dev server doesn't accept
+    if [ "$(uname -s)" = Linux ]; then
+        export GHOST_DEV_LISTEN="${GHOST_DEV_LISTEN:-0.0.0.0}"
+    fi
     exec "$@"
 fi
 

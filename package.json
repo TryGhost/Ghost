@@ -13,7 +13,7 @@
     "build:clean": "nx reset && rimraf -g 'ghost/*/build' && rimraf -g 'ghost/*/tsconfig.tsbuildinfo'",
     "clean:hard": "node ./scripts/clean.js",
     "dev": "nx run ghost-monorepo:dev:host",
-    "dev:docker": "export pnpm_config_enable_global_virtual_store=false && pnpm install && pnpm nx run ghost-monorepo:docker:dev",
+    "dev:docker": "export pnpm_config_enable_global_virtual_store=false GHOST_DEV_LISTEN=0.0.0.0 && pnpm install && pnpm nx run ghost-monorepo:docker:dev",
     "dev:mailgun": "DEV_COMPOSE_FILES='-f compose.dev.mailgun.yaml' nx run ghost-monorepo:dev:host",
     "dev:fake-mailgun": "DEV_COMPOSE_FILES='-f compose.dev.fake-mailgun.yaml' nx run ghost-monorepo:dev:host",
     "dev:lexical": "GHOST_DEV_KOENIG_WATCH=1 nx run ghost-monorepo:dev:host:lexical",
