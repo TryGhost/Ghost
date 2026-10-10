@@ -1,6 +1,6 @@
 import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { existsSync, readFileSync, realpathSync, writeFileSync } from 'node:fs';
+import { appendFileSync, existsSync, readFileSync, realpathSync, writeFileSync } from 'node:fs';
 import net from 'node:net';
 import { basename, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -23,6 +23,7 @@ const FIRST_PORT = 2400;
 const SLOTS = 300;
 
 const checkoutRoot = realpathSync(fileURLToPath(new URL('../..', import.meta.url)));
+const checkoutHash = createHash('sha1').update(checkoutRoot).digest('hex');
 
 function git(args: string[]): string {
   return execFileSync('git', args, { cwd: checkoutRoot, encoding: 'utf8' }).trim();
@@ -99,12 +100,18 @@ function checkoutName(): string {
 }
 
 // Cookies ignore the port, so a worktree needs its own hostname to keep its own Admin
-// session. Browsers, curl and the macOS resolver send *.localhost to loopback.
+// session. Browsers and the macOS resolver send *.localhost to loopback.
+export function worktreeHostname(name: string, hash: string): string {
+  // A DNS label: at most 63 letters, digits and inner hyphens
+  const label = name
+    .replace(/_/g, '-')
+    .slice(0, 63)
+    .replace(/^-+|-+$/g, '');
+  return `${label || `wt-${hash.slice(0, 6)}`}.localhost`;
+}
+
 function hostnameFor(name: string): string {
-  if (isMainCheckout()) {
-    return 'localhost';
-  }
-  return `${name.replace(/_/g, '-').slice(0, 63).replace(/-+$/, '')}.localhost`;
+  return isMainCheckout() ? 'localhost' : worktreeHostname(name, checkoutHash);
 }
 
 async function allocate(): Promise<GhostDevEnv> {
@@ -113,16 +120,15 @@ async function allocate(): Promise<GhostDevEnv> {
   }
 
   const taken = assignedElsewhere();
-  const hash = createHash('sha1').update(checkoutRoot).digest('hex');
   let name = checkoutName();
   // Some tools give every worktree the same folder name, e.g. ~/.codex/worktrees/<id>/Ghost
   if (taken.databases.has(`dev_${name}`)) {
-    name = `${name.slice(0, 50)}_${hash.slice(0, 6)}`;
+    name = `${name.slice(0, 50)}_${checkoutHash.slice(0, 6)}`;
   }
   // e2e setup drops every database named ghost_%, so worktree databases use another prefix
   const database = `dev_${name}`.slice(0, 64);
 
-  const start = parseInt(hash.slice(0, 8), 16) % SLOTS;
+  const start = parseInt(checkoutHash.slice(0, 8), 16) % SLOTS;
   for (let i = 0; i < SLOTS; i++) {
     const port = FIRST_PORT + ((start + i) % SLOTS) * 2;
     if (
@@ -137,14 +143,6 @@ async function allocate(): Promise<GhostDevEnv> {
   throw new Error(`No free port pair between ${FIRST_PORT} and ${FIRST_PORT + SLOTS * 2}`);
 }
 
-function writeEnvFile(file: string, env: GhostDevEnv) {
-  const lines = Object.entries(env).map(([key, value]) => `${key}=${value}`);
-  writeFileSync(
-    file,
-    `# This checkout's \`pnpm dev\` hostname, ports and database. Delete to reassign.\n${lines.join('\n')}\n`,
-  );
-}
-
 /**
  * Hostname, ports and database for this checkout's `pnpm dev`, assigned once and kept
  * in `.ghost-dev.env` so URLs and sessions survive restarts.
@@ -152,15 +150,23 @@ function writeEnvFile(file: string, env: GhostDevEnv) {
 export async function resolveGhostDevEnv(): Promise<GhostDevEnv> {
   const file = join(checkoutRoot, ENV_FILE);
   if (existsSync(file)) {
-    const env = { GHOST_DEV_NAME: checkoutName(), ...parseEnvFile(file) } as GhostDevEnv;
+    const text = readFileSync(file, 'utf8');
+    const env = { GHOST_DEV_NAME: checkoutName(), ...parseEnv(text) } as GhostDevEnv;
     // Files written before checkouts had their own hostname
     if (!env.GHOST_DEV_HOSTNAME) {
       env.GHOST_DEV_HOSTNAME = hostnameFor(env.GHOST_DEV_NAME);
-      writeEnvFile(file, env);
+      appendFileSync(
+        file,
+        `${text.endsWith('\n') ? '' : '\n'}GHOST_DEV_HOSTNAME=${env.GHOST_DEV_HOSTNAME}\n`,
+      );
     }
     return env;
   }
   const env = await allocate();
-  writeEnvFile(file, env);
+  const lines = Object.entries(env).map(([key, value]) => `${key}=${value}`);
+  writeFileSync(
+    file,
+    `# This checkout's \`pnpm dev\` hostname, ports and database. Delete to reassign.\n${lines.join('\n')}\n`,
+  );
   return env;
 }
