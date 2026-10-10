@@ -143,9 +143,9 @@ Sign in to the VersityGW WebUI with access key `s3-user` and secret key
 ## Development variants
 
 Run one root command at a time. Each variant includes the standard development
-environment and adds the listed tooling. `pnpm dev`, `pnpm dev:public`, and
-`pnpm dev:lexical` run Ghost on the host. The others still run Ghost in Docker
-behind the Caddy gateway on `http://localhost:2368`, as `pnpm dev:docker` does:
+environment and adds the listed tooling. All of them except `pnpm dev:docker` run
+Ghost on the host. The services a variant adds run in Docker and, like MySQL,
+Redis, and Mailpit, keep running after `Ctrl+C` until `pnpm docker:down`:
 
 | Command                    | Use it when working on                                                                                          |
 | -------------------------- | --------------------------------------------------------------------------------------------------------------- |

@@ -1,5 +1,11 @@
-import { spawn } from 'node:child_process';
-import { resolveGhostDevEnv } from './lib/ghost-dev-env.ts';
+import { execFileSync, spawn } from 'node:child_process';
+import {
+  composeConfig,
+  hostOverlayEnv,
+  overlayArgs,
+  type ComposeConfig,
+} from './lib/dev-compose.ts';
+import { parseEnv, resolveGhostDevEnv } from './lib/ghost-dev-env.ts';
 
 // Runs a command with the configuration Ghost needs when it runs on the host against
 // the compose services' published ports. The Admin dev server owns the public port
@@ -40,13 +46,69 @@ const defaults: Record<string, string> = {
   adminToolbar__url: '/ghost/assets/admin-toolbar/admin-toolbar.min.js',
 };
 
+// Secrets that tb-cli and Stripe's command line tool write to the shared-config volume
+function sharedConfigEnv(config: ComposeConfig): Record<string, string> {
+  const files = [
+    ...(config.services['tb-cli'] ? ['/c/.env.tinybird'] : []),
+    ...(config.services.stripe ? ['/c/.env.stripe'] : []),
+  ];
+  const volume = config.volumes?.['shared-config']?.name;
+  const image = config.services.redis?.image;
+  if (files.length === 0 || !volume || !image) {
+    return {};
+  }
+  const shared = parseEnv(
+    execFileSync(
+      'docker',
+      [
+        'run',
+        '--rm',
+        '-v',
+        `${volume}:/c:ro`,
+        '--entrypoint',
+        'sh',
+        image,
+        '-c',
+        'cat "$@" 2>/dev/null; true',
+        'sh',
+        ...files,
+      ],
+      { encoding: 'utf8' },
+    ),
+  );
+  const env: Record<string, string> = {};
+  if (shared.TINYBIRD_WORKSPACE_ID && shared.TINYBIRD_ADMIN_TOKEN) {
+    env.tinybird__workspaceId = shared.TINYBIRD_WORKSPACE_ID;
+    env.tinybird__adminToken = shared.TINYBIRD_ADMIN_TOKEN;
+  }
+  if (shared.STRIPE_WEBHOOK_SECRET) {
+    env.WEBHOOK_SECRET = shared.STRIPE_WEBHOOK_SECRET;
+  }
+  return env;
+}
+
+// The DEV_COMPOSE_FILES overlays and the stripe profile configure Ghost through the
+// ghost-dev service's environment
+const overlays = overlayArgs();
+let overlayEnv: Record<string, string> = {};
+if (overlays.length > 0 || (process.env.COMPOSE_PROFILES ?? '').split(',').includes('stripe')) {
+  const config = composeConfig(overlays);
+  overlayEnv = {
+    ...hostOverlayEnv(composeConfig([]), config, frontDoorPort),
+    ...sharedConfigEnv(config),
+  };
+}
+
 const [command, ...args] = process.argv.slice(2);
 if (!command) {
   console.error('Usage: node scripts/with-ghost-dev-env.ts <command> [...args]');
   process.exit(1);
 }
 
-const child = spawn(command, args, { stdio: 'inherit', env: { ...defaults, ...process.env } });
+const child = spawn(command, args, {
+  stdio: 'inherit',
+  env: { ...defaults, ...overlayEnv, ...process.env },
+});
 for (const signal of ['SIGINT', 'SIGTERM'] as const) {
   process.on(signal, () => child.kill(signal));
 }
