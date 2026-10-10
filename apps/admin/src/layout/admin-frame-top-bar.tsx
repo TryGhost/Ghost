@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate } from '@tryghost/admin-x-framework';
 import { cn, formatNumber, LucideIcon } from '@tryghost/shade/utils';
 import { useOpenGlobalSearch } from '@/global-search/global-search-context';
 import { searchShortcutLabel } from '@/global-search/search-shortcut';
-import { useFrameStats } from './use-frame-stats';
+import { type FrameMrr, type FrameStat, useFrameStats } from './use-frame-stats';
 
 // Small caps, as in the Admin 7 vision
 const LABEL = 'text-[10px] leading-none font-medium tracking-[0.04em] uppercase';
@@ -117,6 +117,24 @@ function Clock() {
   );
 }
 
+/** A number, or a dash while it loads */
+function statText<T>(stat: FrameStat<T>, format: (value: T) => string): string {
+  return stat === undefined || stat === null ? '–' : format(stat);
+}
+
+function formatMrr({ amount, currency }: FrameMrr): string {
+  try {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: currency.toUpperCase(),
+      maximumFractionDigits: 0,
+    }).format(amount / 100);
+  } catch {
+    // Not a currency Intl knows
+    return `${formatNumber(Math.round(amount / 100))} ${currency.toUpperCase()}`;
+  }
+}
+
 function Stat({ label, to, children }: { label: string; to: string; children: React.ReactNode }) {
   return (
     <Link className={cn('group flex h-full items-center gap-1', LABEL)} to={to}>
@@ -137,14 +155,8 @@ export function AdminFrameTopBar() {
   const isViewSite = pathname === '/site';
   usePlaceShortcuts();
 
-  const mrr = new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: stats.currency,
-    maximumFractionDigits: 0,
-  }).format(stats.mrr / 100);
-
   return (
-    <div className="grid h-full grid-cols-3 items-center">
+    <div className="grid h-full grid-cols-3 items-center" data-testid="admin-frame-top-bar">
       <nav aria-label="Places" className="flex h-full items-center gap-6 pl-6">
         <PlaceTab active={!isViewSite} className="font-semibold" shortcut="Option + 1" to="/">
           Ghost
@@ -158,18 +170,24 @@ export function AdminFrameTopBar() {
       </div>
       <div className="flex h-full items-center justify-end gap-5 pr-6">
         <Clock />
-        <Link className={cn('group flex h-full items-center gap-2', LABEL)} to="/analytics">
-          <span aria-hidden="true" className="block size-2 bg-green" />
-          <span className={cn('transition-colors group-hover:text-white', MUTED)}>
-            {formatNumber(stats.online)} Online
-          </span>
-        </Link>
-        <Stat label="Members" to="/analytics/growth">
-          {formatNumber(stats.members)}
-        </Stat>
-        <Stat label="MRR" to="/analytics/growth?tab=mrr">
-          {mrr}
-        </Stat>
+        {stats.online !== null && (
+          <Link className={cn('group flex h-full items-center gap-2', LABEL)} to="/analytics">
+            <span aria-hidden="true" className="block size-2 bg-green" />
+            <span className={cn('transition-colors group-hover:text-white', MUTED)}>
+              {statText(stats.online, formatNumber)} Online
+            </span>
+          </Link>
+        )}
+        {stats.members !== null && (
+          <Stat label="Members" to="/analytics/growth">
+            {statText(stats.members, formatNumber)}
+          </Stat>
+        )}
+        {stats.mrr !== null && (
+          <Stat label="MRR" to="/analytics/growth?tab=mrr">
+            {statText(stats.mrr, formatMrr)}
+          </Stat>
+        )}
       </div>
     </div>
   );

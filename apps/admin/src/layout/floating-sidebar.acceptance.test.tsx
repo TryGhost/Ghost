@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 import { userEvent } from 'vitest/browser';
 
 import {
@@ -7,6 +7,7 @@ import {
   currentRoute,
   currentUserResponse,
   fakeAdminEndpoint,
+  fakeAdminStats,
   fakeTags,
   renderAdminApp,
   type RenderAdminAppOptions,
@@ -48,6 +49,12 @@ function fakePreferencesApi() {
 const SAVE_TIMEOUT = { timeout: 3000 };
 
 describe('Floating sidebar (admin7Design)', () => {
+  // The frame's top bar shows the site's numbers alongside it
+  beforeEach(() => {
+    fakeAdminStats.memberCount();
+    fakeAdminStats.mrr();
+  });
+
   it.each([
     { admin7Design: false, state: undefined },
     { admin7Design: true, state: 'pinned' },
