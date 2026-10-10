@@ -9,8 +9,8 @@ pnpm dev
 ```
 
 Transactional emails sent by the development site are captured at
-[http://localhost:8025](http://localhost:8025) rather than delivered. The Docker
-development configuration connects Ghost to Mailpit automatically.
+[http://localhost:8025](http://localhost:8025) rather than delivered. The
+development environment connects Ghost to Mailpit automatically.
 
 Use Mailpit for ordinary local work. It is quick, keeps test messages on your
 machine, and does not require provider credentials. It does not exercise the
@@ -30,10 +30,10 @@ Mailgun API, which personalizes each recipient's message and forwards it to
 [Mailpit](http://localhost:8025). Transactional email continues to use Mailpit
 over SMTP. No Mailgun credentials or local configuration files are needed.
 
-The fake server is only exposed on the internal Docker network. Compose waits
-for Mailpit and fake Mailgun to be healthy before starting Ghost. Press `Ctrl+C`
-to stop the development environment; database and content volumes are preserved.
-Run one development variant at a time.
+The fake server listens on `127.0.0.1:4010`, and Ghost starts once Mailpit and
+fake Mailgun are healthy. Press `Ctrl+C` to stop Ghost; fake Mailgun keeps
+running with the other Docker services until `pnpm docker:down`. Run one
+development variant at a time.
 
 ## Test with Mailgun
 

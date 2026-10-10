@@ -19,7 +19,6 @@ import { deferred } from '@/utils/deferred';
 
 const POST_ID = 'abc123';
 const LOADED_AT = '2026-01-01T00:00:00.000Z';
-const FLAG_ON = withoutAutosave({ labs: { editorReact: true } });
 const PUBLISHED_AT = '2025-12-01T10:00:00.000Z';
 const SCHEDULED_AT = '2099-12-01T10:00:00.000Z';
 const POST_UUID = 'post-uuid';
@@ -63,7 +62,7 @@ describe('Post settings URL', () => {
       published_at: PUBLISHED_AT,
       url: 'https://example.com/journal/saved-post/',
     });
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
     await openSidebar();
     const link = page.getByRole('link', { name: 'View post' });
     await expect.element(link).toHaveAttribute('href', 'https://example.com/journal/saved-post/');
@@ -74,7 +73,7 @@ describe('Post settings URL', () => {
 
   it('does not offer a public link for a draft', async () => {
     fakeSavablePost({ status: 'draft' });
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
     await openSidebar();
     await expect(page.getByRole('link', { name: 'View post' })).toHaveCount(0);
   });
@@ -86,7 +85,7 @@ describe('Post settings URL', () => {
       uuid: POST_UUID,
       url: 'https://example.com/sent-post/',
     });
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
     await openSidebar();
     await expect
       .element(page.getByRole('link', { name: 'View post' }))
@@ -98,7 +97,7 @@ describe('Post settings URL', () => {
 
   it('links a scheduled post to its preview', async () => {
     fakeSavablePost({ status: 'scheduled', published_at: SCHEDULED_AT, uuid: POST_UUID });
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
     await openSidebar();
     await expect
       .element(page.getByRole('link', { name: 'Preview' }))
@@ -122,7 +121,7 @@ describe('Post settings URL', () => {
       uuid: POST_UUID,
     });
     fakeAdminEndpoint('GET', new RegExp(`^/pages/${PAGE_ID}/\\?`), { pages: [savedPage] });
-    await renderAdminApp(`/editor/page/${PAGE_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/page/${PAGE_ID}`, withoutAutosave());
     await openSidebar();
     await expect.element(page.getByLabelText('Page URL')).toBeVisible();
     await expect
@@ -139,7 +138,7 @@ describe('Post settings URL', () => {
       published_at: PUBLISHED_AT,
       lexical: null,
     });
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
     await openSidebar();
 
     await editorScreen.settingsSlug().fill('new-slug');
@@ -162,9 +161,7 @@ describe('Post settings URL', () => {
       published_at: PUBLISHED_AT,
       lexical: null,
     });
-    await renderAdminApp(`/editor/post/${POST_ID}`, {
-      labs: { editorReact: true },
-    });
+    await renderAdminApp(`/editor/post/${POST_ID}`, {});
     await openSidebar();
 
     await editorScreen.settingsSlug().fill('new-slug');
@@ -190,7 +187,7 @@ describe('Post settings URL', () => {
   it('persists a draft’s edited slug and previews the deduped value', async () => {
     const slugApi = fakeSlugs({ 'new-slug': 'new-slug-2' });
     const saveApi = fakeSavablePost();
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
     await openSidebar();
 
     await expect.element(page.getByLabelText('Post URL')).toBeVisible();
@@ -215,7 +212,7 @@ describe('Post settings URL', () => {
   it('saves a published post’s slug on its own', async () => {
     fakeSlugs();
     const saveApi = fakeSavablePost({ status: 'published', published_at: PUBLISHED_AT });
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
     await openSidebar();
 
     await editorScreen.settingsSlug().fill('published-slug');
@@ -233,7 +230,7 @@ describe('Post settings URL', () => {
   it('leaves a manually edited slug alone when the title changes', async () => {
     const slugApi = fakeSlugs();
     const saveApi = fakeSavablePost();
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
     await openSidebar();
 
     await editorScreen.settingsSlug().fill('chosen-by-hand');
@@ -257,7 +254,7 @@ describe('Post settings URL', () => {
   it('reverts the slug and says so when the generator fails', async () => {
     fakeAdminEndpoint('GET', /^\/slugs\/post\//, { errors: [] }, { status: 500 });
     const saveApi = fakeSavablePost();
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
     await openSidebar();
 
     await editorScreen.settingsSlug().fill('new-slug');
@@ -289,7 +286,7 @@ describe('Post settings URL', () => {
       return { slugs: [{ slug: 'new-slug' }] };
     });
     fakeSavablePost();
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
     await openSidebar();
 
     await editorScreen.settingsSlug().fill('new-slug');
@@ -306,7 +303,7 @@ describe('Post settings URL', () => {
   it('asks for nothing when the field is left as the post already reads', async () => {
     const slugApi = fakeSlugs();
     const saveApi = fakeSavablePost();
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
     await openSidebar();
 
     await editorScreen.settingsSlug().fill('hello-from-react');

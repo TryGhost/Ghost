@@ -22,7 +22,6 @@ import { publishScreen } from '@/editor/publish/publish.screen';
 
 const POST_ID = 'abc123';
 const LOADED_AT = '2026-01-01T00:00:00.000Z';
-const FLAG_ON = withoutAutosave({ labs: { editorReact: true } });
 // 2025-12-01 10:00 UTC is 2025-12-01 21:00 in Sydney: a date the offset moves.
 const PUBLISHED_AT = '2025-12-01T10:00:00.000Z';
 // What a real publish stamps: seconds the minute-granular fields cannot show.
@@ -51,8 +50,7 @@ let settingsRequestUrl: string | null = null;
 
 function withTimezone(timezone: string) {
   settingsRequestUrl = null;
-  return {
-    ...FLAG_ON,
+  return withoutAutosave({
     boot: {
       browseSettings: {
         response: (request: Request) => {
@@ -61,13 +59,13 @@ function withTimezone(timezone: string) {
         },
       },
     },
-  };
+  });
 }
 
 function asContributor() {
   const me = currentUserResponse();
   me.users[0].roles = [staffRole({ name: 'Contributor' })];
-  return { ...FLAG_ON, boot: { browseMe: { response: me } } };
+  return withoutAutosave({ boot: { browseMe: { response: me } } });
 }
 
 function editorChrome() {

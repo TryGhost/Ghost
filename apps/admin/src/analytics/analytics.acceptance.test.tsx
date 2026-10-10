@@ -233,7 +233,6 @@ describe('Analytics overview', () => {
     fakeAdminEndpoint('GET', new RegExp(`^/posts/${LATEST_POST_ID}/\\?`), { posts: [latest] });
     // Without web analytics or member source tracking, the latest post opens the editor.
     await renderAdminApp('/analytics', {
-      labs: { editorReact: true },
       boot: {
         browseSettings: {
           response: settingsResponse({ settings: { members_track_sources: false } }),

@@ -13,18 +13,18 @@
     "build:clean": "nx reset && rimraf -g 'ghost/*/build' && rimraf -g 'ghost/*/tsconfig.tsbuildinfo'",
     "clean:hard": "node ./scripts/clean.js",
     "dev": "pnpm nx run ghost-monorepo:dev:host",
-    "dev:docker": "pnpm nx run ghost-monorepo:docker:dev",
-    "dev:sqlite": "DEV_COMPOSE_FILES='-f compose.dev.sqlite.yaml' pnpm nx run ghost-monorepo:docker:dev",
-    "dev:mailgun": "DEV_COMPOSE_FILES='-f compose.dev.mailgun.yaml' pnpm nx run ghost-monorepo:docker:dev",
-    "dev:fake-mailgun": "DEV_COMPOSE_FILES='-f compose.dev.fake-mailgun.yaml' pnpm nx run ghost-monorepo:docker:dev",
+    "dev:docker": "export pnpm_config_enable_global_virtual_store=false && pnpm install && pnpm nx run ghost-monorepo:docker:dev",
+    "dev:sqlite": "export pnpm_config_enable_global_virtual_store=false && pnpm install && DEV_COMPOSE_FILES='-f compose.dev.sqlite.yaml' pnpm nx run ghost-monorepo:docker:dev",
+    "dev:mailgun": "DEV_COMPOSE_FILES='-f compose.dev.mailgun.yaml' pnpm nx run ghost-monorepo:dev:host",
+    "dev:fake-mailgun": "DEV_COMPOSE_FILES='-f compose.dev.fake-mailgun.yaml' pnpm nx run ghost-monorepo:dev:host",
     "dev:lexical": "GHOST_DEV_KOENIG_WATCH=1 pnpm nx run ghost-monorepo:dev:host:lexical",
     "dev:public": "pnpm nx run ghost-monorepo:dev:host:public",
-    "dev:full": "DEV_COMPOSE_FILES='-f compose.dev.analytics.yaml -f compose.dev.storage.yaml' ./docker/stripe/with-stripe.sh pnpm nx run ghost-monorepo:docker:dev:public",
-    "dev:analytics": "DEV_COMPOSE_FILES='-f compose.dev.analytics.yaml' pnpm nx run ghost-monorepo:docker:dev",
-    "dev:analytics:local": "ANALYTICS_PROXY_TARGET=traffic-analytics-local:3000 DEV_COMPOSE_FILES='-f compose.dev.analytics.yaml' pnpm nx run ghost-monorepo:docker:dev",
-    "dev:storage": "DEV_COMPOSE_FILES='-f compose.dev.storage.yaml' pnpm nx run ghost-monorepo:docker:dev",
-    "dev:stripe": "./docker/stripe/with-stripe.sh pnpm nx run ghost-monorepo:docker:dev",
-    "dev:all": "DEV_COMPOSE_FILES='-f compose.dev.analytics.yaml -f compose.dev.storage.yaml' ./docker/stripe/with-stripe.sh pnpm nx run ghost-monorepo:docker:dev",
+    "dev:full": "DEV_COMPOSE_FILES='-f compose.dev.analytics.yaml -f compose.dev.storage.yaml' ANALYTICS_PROXY_TARGET=127.0.0.1:7182 ./docker/stripe/with-stripe.sh pnpm nx run ghost-monorepo:dev:host:public",
+    "dev:analytics": "DEV_COMPOSE_FILES='-f compose.dev.analytics.yaml' ANALYTICS_PROXY_TARGET=127.0.0.1:7182 pnpm nx run ghost-monorepo:dev:host",
+    "dev:analytics:local": "DEV_COMPOSE_FILES='-f compose.dev.analytics.yaml' ANALYTICS_PROXY_TARGET=${ANALYTICS_PROXY_TARGET:-127.0.0.1:3000} pnpm nx run ghost-monorepo:dev:host",
+    "dev:storage": "DEV_COMPOSE_FILES='-f compose.dev.storage.yaml' pnpm nx run ghost-monorepo:dev:host",
+    "dev:stripe": "./docker/stripe/with-stripe.sh pnpm nx run ghost-monorepo:dev:host",
+    "dev:all": "DEV_COMPOSE_FILES='-f compose.dev.analytics.yaml -f compose.dev.storage.yaml' ANALYTICS_PROXY_TARGET=127.0.0.1:7182 ./docker/stripe/with-stripe.sh pnpm nx run ghost-monorepo:dev:host",
     "dev:daemon": "NX_DAEMON=true NX_TUI=false NX_DEFAULT_OUTPUT_STYLE=stream pnpm nx run ghost-monorepo:dev:host",
     "fix": "pnpm store prune && rimraf -g '**/node_modules' && pnpm install && pnpm nx reset",
     "create-package": "node ./scripts/create-package.js",
@@ -41,8 +41,8 @@
     "docker:build": "docker compose -f compose.dev.yaml ${DEV_COMPOSE_FILES} --profile docker-dev build",
     "docker:build:verbose": "docker compose --progress=plain -f compose.dev.yaml ${DEV_COMPOSE_FILES} --profile docker-dev build",
     "docker:clean": "docker compose -f compose.dev.yaml ${DEV_COMPOSE_FILES} --profile docker-dev --profile all down -v --remove-orphans --rmi local",
-    "docker:down": "docker compose -f compose.dev.yaml ${DEV_COMPOSE_FILES} --profile docker-dev down",
-    "docker:rebase": "git fetch ${GHOST_UPSTREAM:-origin} main && git rebase ${GHOST_UPSTREAM:-origin}/main && pnpm install && pnpm nx run-many -t build --projects=@tryghost/shade,@tryghost/admin-x-framework && docker compose -f compose.dev.yaml ${DEV_COMPOSE_FILES} --profile docker-dev up -d --build --force-recreate ghost-dev",
+    "docker:down": "docker compose -f compose.dev.yaml ${DEV_COMPOSE_FILES} --profile docker-dev down --remove-orphans",
+    "docker:rebase": "export pnpm_config_enable_global_virtual_store=false && git fetch ${GHOST_UPSTREAM:-origin} main && git rebase ${GHOST_UPSTREAM:-origin}/main && pnpm install && pnpm nx run-many -t build --projects=@tryghost/shade,@tryghost/admin-x-framework && docker compose -f compose.dev.yaml ${DEV_COMPOSE_FILES} --profile docker-dev up -d --build --force-recreate ghost-dev",
     "knip": "knip",
     "knip:fix": "knip --fix --allow-remove-files=false",
     "lint": "pnpm nx run-many -t lint lint:boundaries && pnpm lint:packages && pnpm lint:versioning && pnpm lint:docs",
@@ -73,8 +73,8 @@
     "query-parameter-policy:export": "pnpm --filter ghost query-parameter-policy:export",
     "tb": "docker compose -f compose.dev.yaml -f compose.dev.analytics.yaml run --rm --no-deps --entrypoint tb tb-cli --local",
     "tb:test": "pnpm tb test run",
-    "data:analytics:generate": "node ghost/core/server/data/tinybird/scripts/docker-analytics-manager.js generate",
-    "data:analytics:clear": "node ghost/core/server/data/tinybird/scripts/docker-analytics-manager.js clear",
+    "data:analytics:generate": "node scripts/with-ghost-dev-env.ts node ghost/core/server/data/tinybird/scripts/docker-analytics-manager.js generate",
+    "data:analytics:clear": "node scripts/with-ghost-dev-env.ts node ghost/core/server/data/tinybird/scripts/docker-analytics-manager.js clear",
     "release": "node scripts/release.js",
     "inventory:typescript": "node scripts/typescript-inventory.ts"
   },
@@ -175,34 +175,6 @@
             "projects": [
               "@tryghost/admin",
               "@tryghost/portal"
-            ]
-          }
-        ]
-      },
-      "docker:dev:public": {
-        "continuous": true,
-        "executor": "nx:run-commands",
-        "options": {
-          "command": "trap 'docker compose -f compose.dev.yaml ${DEV_COMPOSE_FILES} --profile docker-dev down' EXIT; docker compose -f compose.dev.yaml ${DEV_COMPOSE_FILES} --profile docker-dev logs -f"
-        },
-        "dependsOn": [
-          "docker:up",
-          {
-            "target": "build:assets",
-            "projects": [
-              "ghost"
-            ]
-          },
-          {
-            "target": "dev",
-            "projects": [
-              "@tryghost/admin",
-              "@tryghost/portal",
-              "@tryghost/comments-ui",
-              "@tryghost/signup-form",
-              "@tryghost/sodo-search",
-              "@tryghost/announcement-bar",
-              "@tryghost/admin-toolbar"
             ]
           }
         ]

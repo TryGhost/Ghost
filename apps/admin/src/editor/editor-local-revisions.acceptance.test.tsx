@@ -16,7 +16,6 @@ import { LOCAL_REVISION_PREFIX, readLocalRevisions } from '@/editor/local-revisi
 
 const POST_ID = 'abc123';
 // No debounced save reaches the server, so what the writer typed stays unsaved.
-const FLAG_ON = withoutAutosave({ labs: { editorReact: true } });
 
 function clearLocalRevisions(): void {
   for (const key of Object.keys(localStorage)) {
@@ -68,7 +67,7 @@ describe('Post editor local revisions', () => {
 
   it('keeps a copy of a draft as soon as the writer changes it', async () => {
     fakeSavablePost();
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
     await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
 
     await appendToBody(' and a local copy');
@@ -88,7 +87,7 @@ describe('Post editor local revisions', () => {
 
   it('writes the latest draft when the page goes away inside the minute', async () => {
     fakeSavablePost();
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
     await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
     await appendToBody(' first');
     await expect.poll(() => localCopies().length).toBe(1);
@@ -102,7 +101,7 @@ describe('Post editor local revisions', () => {
 
   it('writes the latest draft when the tab is hidden inside the minute', async () => {
     fakeSavablePost();
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
     await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
     await appendToBody(' first');
     await expect.poll(() => localCopies().length).toBe(1);
@@ -131,7 +130,7 @@ describe('Post editor local revisions', () => {
     'keeps no copy of a draft that was only opened, with %s',
     async (_name, lexical, shown, typedAt) => {
       fakeSavablePost({ lexical });
-      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+      await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
       await expect.element(editorScreen.body().getByText(shown)).toBeVisible();
       await expect.element(editorScreen.secondaryInstance().getByText(shown)).toBeInTheDocument();
       await expect.poll(unsavedChangesGuarded).toBe(false);
@@ -147,7 +146,7 @@ describe('Post editor local revisions', () => {
 
   it('keeps no copy of a published post', async () => {
     fakeSavablePost({ status: 'published', published_at: '2026-01-01T00:00:00.000Z' });
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
     await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
 
     await appendToBody(' and an unsaved update');

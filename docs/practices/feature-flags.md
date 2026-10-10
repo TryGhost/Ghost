@@ -113,19 +113,17 @@ permission and backend capability checks independent of the temporary flag.
 The pill-controls milestone is generally available in Admin. Standalone
 ActivityPub uses Shade's current default.
 
-The `admin7settings` milestone swaps the shell navigation for the Settings
+Settings navigation is generally available in Admin. It replaces the shell
 navigation on desktop. Mobile retains the full-screen Settings takeover, with
-its return control and search inside Settings. The flag-off path preserves the
-legacy Settings layout. Editors retain the app navigation because their Settings
-access is limited; Authors only receive their profile route.
+its return control and search inside Settings. Editors retain the app navigation
+because their Settings access is limited; Authors only receive their profile route.
 
 The `admin7Design` milestone replaces the docked desktop sidebar with Shade's
 `FloatingSidebar`: pinned beside the content by default, or unpinned into a
 circle around the site icon, stored as the `navigation.menu.mode` user
 preference. It also lists Ghost(Pro) with Settings, moves Help and Feedback to
-the account menu and runs the member map full bleed. With `admin7settings`
-also on, Settings shows its navigation inside the same sidebar, pinned without
-changing the stored mode. Mobile keeps the sidebar sheet, and the flag-off path
+the account menu and runs the member map full bleed. Settings shows its
+navigation inside the same sidebar, pinned without changing the stored mode. Mobile keeps the sidebar sheet, and the flag-off path
 preserves the docked sidebar and the separate Settings sidebar.
 
 ## How values are resolved

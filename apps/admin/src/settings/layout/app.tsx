@@ -9,9 +9,7 @@ import {
 import { ConfirmationProvider } from '@/settings/providers/confirmation-provider';
 import { DialogPortalProvider } from '@/settings/providers/dialog-portal';
 import { Outlet, useLocation } from '@tryghost/admin-x-framework';
-import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import { Stack } from '@tryghost/shade/primitives';
-import { cn } from '@tryghost/shade/utils';
 import { startTransition, useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useScrollSectionContext } from '@/settings/hooks/use-scroll-section';
@@ -87,7 +85,6 @@ function SettingsNavigationPortal() {
 }
 
 export function App({ upgradeStatus }: AppProps) {
-  const admin7Settings = useFeatureFlag('admin7settings');
   const MainContent = useLazyComponent(loadSettingsContent);
   // While the floating sidebar grows to show the navigation, the sections wait
   // for it to finish (or a fallback), so rendering them doesn't stall the morph
@@ -108,18 +105,11 @@ export function App({ upgradeStatus }: AppProps) {
 
   return (
     <SettingsAppProvider upgradeStatus={upgradeStatus}>
-      <div
-        className={cn(
-          'settings-app',
-          admin7Settings && 'h-full min-h-0',
-          !admin7Settings &&
-            '[--color-focus-ring:var(--color-green-500)] [--focus-ring:var(--color-green-500)]',
-        )}
-      >
+      <div className="settings-app h-full min-h-0">
         <ConfirmationProvider>
           <DialogPortalProvider>
             <SettingsLocationSync />
-            {admin7Settings && <SettingsNavigationPortal />}
+            <SettingsNavigationPortal />
             {sectionsReady && (MainContent ? <MainContent /> : <SettingsLoading />)}
             <Outlet />
             <DirtyNavigationGuard />

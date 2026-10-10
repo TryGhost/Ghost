@@ -46,6 +46,7 @@ docker run --rm --network host --ipc host \
   -v "${WORKSPACE_PATH}:${WORKSPACE_PATH}" \
   -w "${WORKSPACE_PATH}/e2e" \
   -e CI=true \
+  -e pnpm_config_enable_global_virtual_store=false \
   -e TEST_WORKERS_COUNT="${TEST_WORKERS_COUNT:-1}" \
   -e COMPOSE_PROJECT_NAME="${COMPOSE_PROJECT_NAME:-ghost-dev}" \
   -e GHOST_E2E_MODE="${GHOST_E2E_MODE:-build}" \

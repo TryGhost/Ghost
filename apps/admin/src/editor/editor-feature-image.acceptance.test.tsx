@@ -19,7 +19,6 @@ import { editorScreen } from '@/editor/editor.screen';
 import { deferred } from '@/utils/deferred';
 
 const POST_ID = 'abc123';
-const FLAG_ON = { labs: { editorReact: true } };
 const LOADED_AT = '2026-01-01T00:00:00.000Z';
 const UPLOADED = 'https://example.com/content/images/2026/09/hills.png';
 const EXISTING = 'https://example.com/content/images/2026/09/coast.png';
@@ -66,7 +65,7 @@ describe('Post editor feature image', () => {
     async ({ width, height }) => {
       const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}"><rect width="100%" height="100%" fill="purple"/></svg>`;
       fakeSavablePost({ feature_image: `data:image/svg+xml,${encodeURIComponent(svg)}` });
-      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+      await renderAdminApp(`/editor/post/${POST_ID}`);
 
       await expect.element(editorScreen.featureImage()).toBeVisible();
       const image = editorScreen.featureImage().element().querySelector('img')!;
@@ -84,7 +83,7 @@ describe('Post editor feature image', () => {
     const uploadApi = fakeAdminEndpoint('POST', '/images/upload/', {
       images: [{ url: UPLOADED, ref: null }],
     });
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`);
 
     await expect.element(editorScreen.featureImage()).toBeVisible();
     await userEvent.upload(
@@ -109,7 +108,7 @@ describe('Post editor feature image', () => {
     const uploadApi = fakeAdminEndpoint('POST', '/images/upload/', {
       images: [{ url: UPLOADED, ref: null }],
     });
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`);
 
     await expect.element(editorScreen.featureImage()).toBeVisible();
     await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
@@ -141,7 +140,7 @@ describe('Post editor feature image', () => {
 
   it('saves alt text for the image', async () => {
     const saveApi = fakeSavablePost({ feature_image: UPLOADED });
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`);
 
     await editorScreen.featureImageAltToggle().click();
     await editorScreen.featureImageAltInput().fill('Rolling hills');
@@ -157,7 +156,7 @@ describe('Post editor feature image', () => {
     const saveApi = fakeSavablePost({ feature_image: UPLOADED });
     // Loading the body arms an autosave that can include caption edits. This
     // scenario proves the blur-triggered save, so keep that debounce out of it.
-    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave(FLAG_ON));
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
 
     await expect.element(editorScreen.featureImageCaption()).toBeVisible();
     await editorScreen.featureImageCaption().click();
@@ -181,7 +180,7 @@ describe('Post editor feature image', () => {
       feature_image: UPLOADED,
       feature_image_caption: 'Photo by <a href="https://example.com/j">Jane</a>',
     });
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`);
 
     // The caption editor has loaded and re-serialized what it was given.
     await expect.element(editorScreen.featureImageCaption()).toHaveTextContent('Photo by Jane');
@@ -197,7 +196,7 @@ describe('Post editor feature image', () => {
       status: 'published',
       published_at: '2026-01-01T00:00:00.000Z',
     });
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`);
 
     await editorScreen.featureImageAltToggle().click();
     await editorScreen.featureImageAltInput().fill('Rolling hills');
@@ -225,7 +224,7 @@ describe('Post editor feature image', () => {
     const uploadApi = fakeAdminEndpoint('POST', '/images/upload/', {
       images: [{ url: UPLOADED, ref: null }],
     });
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`);
 
     await expect.element(editorScreen.updateButton()).toBeDisabled();
     await userEvent.upload(
@@ -251,7 +250,7 @@ describe('Post editor feature image', () => {
   it('saves an image picked from Unsplash with the credit it carries', async () => {
     const saveApi = fakeSavablePost();
     fakeUnsplashPhotos();
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`);
 
     await expect.element(editorScreen.featureImageUnsplashButton()).toBeVisible();
     await editorScreen.featureImageUnsplashButton().click();
@@ -280,7 +279,7 @@ describe('Post editor feature image', () => {
       feature_image_alt: 'Rolling hills',
       feature_image_caption: 'Photo by me',
     });
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`);
 
     await editorScreen.removeFeatureImage().click();
 
@@ -301,7 +300,7 @@ describe('Post editor feature image', () => {
       { errors: [{ type: 'UnauthorizedError', message: 'Authorization failed' }] },
       { status: 401 },
     );
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`);
 
     await expect.element(editorScreen.featureImage()).toBeVisible();
     await editorScreen.titleInput().fill('Brand New Name');
@@ -320,7 +319,7 @@ describe('Post editor feature image', () => {
 
   it('offers no edit while the site has no image editor', async () => {
     fakeSavablePost({ feature_image: EXISTING });
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`);
 
     await expect.element(editorScreen.removeFeatureImage()).toBeVisible();
     await expect(editorScreen.editFeatureImage()).toHaveCount(0);
@@ -333,7 +332,7 @@ describe('Post editor feature image', () => {
     const uploadApi = fakeAdminEndpoint('POST', '/images/upload/', {
       images: [{ url: EDITED, ref: null }],
     });
-    await renderAdminApp(`/editor/post/${POST_ID}`, { ...FLAG_ON, ...withPintura() });
+    await renderAdminApp(`/editor/post/${POST_ID}`, withPintura());
 
     await editorScreen.editFeatureImage().click();
     expect(pintura.opened).toHaveLength(1);
@@ -353,7 +352,7 @@ describe('Post editor feature image', () => {
     const events = trackedEvents();
     const saveApi = fakeSavablePost({ feature_image: EXISTING });
     const uploadApi = fakeAdminEndpoint('POST', '/images/upload/', { errors: [] }, { status: 500 });
-    await renderAdminApp(`/editor/post/${POST_ID}`, { ...FLAG_ON, ...withPintura() });
+    await renderAdminApp(`/editor/post/${POST_ID}`, withPintura());
 
     await editorScreen.editFeatureImage().click();
     pintura.save(new File(['edited'], 'coast.png', { type: 'image/png' }));
@@ -372,7 +371,7 @@ describe('Post editor feature image', () => {
     const uploaded = deferred<{ images: { url: string; ref: null }[] }>();
     const saveApi = fakeSavablePost({ feature_image: EXISTING });
     const uploadApi = fakeAdminEndpoint('POST', '/images/upload/', () => uploaded.promise);
-    await renderAdminApp(`/editor/post/${POST_ID}`, { ...FLAG_ON, ...withPintura() });
+    await renderAdminApp(`/editor/post/${POST_ID}`, withPintura());
 
     await editorScreen.editFeatureImage().click();
     pintura.save(new File(['edited'], 'coast.png', { type: 'image/png' }));

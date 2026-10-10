@@ -19,17 +19,14 @@ const SITE_TITLE = 'Test Site';
 type SidebarMode = 'full' | 'compact';
 
 /** admin7Design on, with the user's stored sidebar mode (none: the default). */
-function floatingSidebar({
-  mode,
-  labs = {},
-}: { mode?: SidebarMode; labs?: Record<string, boolean> } = {}): RenderAdminAppOptions {
+function floatingSidebar({ mode }: { mode?: SidebarMode } = {}): RenderAdminAppOptions {
   const me = currentUserResponse();
   if (mode) {
     me.users[0].accessibility = JSON.stringify({
       navigation: { expanded: { posts: true, members: true }, menu: { visible: true, mode } },
     });
   }
-  return { labs: { admin7Design: true, ...labs }, boot: { browseMe: { response: me } } };
+  return { labs: { admin7Design: true }, boot: { browseMe: { response: me } } };
 }
 
 /** Echoes preference writes, so they persist, and reads back the sidebar modes they saved. */
@@ -150,10 +147,7 @@ describe('Floating sidebar (admin7Design)', () => {
     allowUnhandledRequests();
     fakeTags([]);
     const preferences = fakePreferencesApi();
-    await renderAdminApp(
-      '/tags',
-      floatingSidebar({ mode: 'compact', labs: { admin7settings: true } }),
-    );
+    await renderAdminApp('/tags', floatingSidebar({ mode: 'compact' }));
 
     await sidebarScreen.floatingTrigger(SITE_TITLE).click();
     await sidebarScreen.navLink('Settings').click();

@@ -44,10 +44,11 @@ run:
 pnpm dev:stripe --listen
 ```
 
-This uses `stripe listen` in Docker and requires `STRIPE_SECRET_KEY` in the
-environment or a local `.env` file. The key must be a test-mode key for the same
-Stripe account connected to Ghost. The command does not require a local Stripe
-CLI installation or `stripe login`. Never commit `.env` or Stripe credentials.
+This runs `stripe listen` in Docker, forwarding events to Ghost on the host, and
+requires `STRIPE_SECRET_KEY` in the environment or a local `.env` file. The key
+must be a test-mode key for the same Stripe account connected to Ghost. The
+command does not require a local Stripe CLI installation or `stripe login`.
+Never commit `.env` or Stripe credentials.
 
 Stripe CLI renders events at the account's default API version rather than the
 version Ghost pins. The command warns about this difference, and Ghost logs an

@@ -12,7 +12,6 @@ import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 
 const Settings: React.FC = () => {
   const hasAutomations = useFeatureFlag('automations');
-  const admin7Settings = useFeatureFlag('admin7settings');
 
   const sections = (
     <>
@@ -24,14 +23,6 @@ const Settings: React.FC = () => {
       <AdvancedSettings />
     </>
   );
-
-  if (!admin7Settings) {
-    return (
-      <div className="mb-[60vh] px-8 pt-16 tablet:max-w-[760px] tablet:px-14 tablet:pt-0">
-        {sections}
-      </div>
-    );
-  }
 
   // Sections sit 64px apart, matching the page's top and bottom padding.
   return (

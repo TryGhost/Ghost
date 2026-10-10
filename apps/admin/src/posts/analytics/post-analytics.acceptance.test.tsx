@@ -767,7 +767,6 @@ describe('Post analytics edit', () => {
     fakeNewsletters([]);
     fakeAdminEndpoint('GET', new RegExp(`^/posts/${POST_ID}/\\?`), { posts: [seededPost()] });
     await renderAdminApp(`/posts/analytics/${POST_ID}/web`, {
-      labs: { editorReact: true },
       boot: webAnalyticsBootOverrides(),
     });
 

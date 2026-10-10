@@ -133,7 +133,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
   // opens over the content). Shade's open state is "pinned", so ⌘B toggles
   // it. Mobile keeps Shade's sheet.
   //
-  // With admin7settings too, Settings shows its navigation in the same
+  // Settings shows its navigation in the same
   // capsule, pinned whatever the stored mode, which it leaves alone: entering
   // it from compact pins the capsule, and leaving returns to the stored mode.
   // From compact the capsule grows to full height on a plain ease as the body

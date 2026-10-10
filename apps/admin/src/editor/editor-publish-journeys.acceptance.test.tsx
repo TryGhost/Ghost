@@ -52,7 +52,6 @@ const PASSWORD = 'hunter22';
 /** A site whose bulk email provider is configured, so the flow offers a send. */
 function emailSite(settings: Record<string, unknown> = {}) {
   return {
-    labs: { editorReact: true },
     boot: {
       browseSettings: {
         response: settingsResponse({

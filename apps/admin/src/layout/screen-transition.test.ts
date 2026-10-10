@@ -20,19 +20,14 @@ describe('shouldRunScreenTransition', () => {
     ['entering the editor', posts, post, true],
     ['leaving the editor', post, posts, true],
     ['entering Settings', posts, settingsChild, true],
+    ['leaving Settings', settingsChild, posts, true],
+    ['moving from Settings to the editor', settingsChild, post, true],
     ['moving between marked surfaces', post, automation, true],
     ['within the editor', post, post, false],
     ['within Settings', settingsRoot, settingsChild, false],
     ['between unmarked screens', posts, tags, false],
   ])('%s', (_name, from, to, expected) => {
-    expect(shouldRunScreenTransition({ from, to, settingsSidebarEnabled: true })).toBe(expected);
-  });
-
-  it('leaves the legacy Settings takeover alone', () => {
-    const input = { settingsSidebarEnabled: false };
-    expect(shouldRunScreenTransition({ ...input, from: posts, to: settingsRoot })).toBe(false);
-    expect(shouldRunScreenTransition({ ...input, from: settingsChild, to: post })).toBe(false);
-    expect(shouldRunScreenTransition({ ...input, from: posts, to: post })).toBe(true);
+    expect(shouldRunScreenTransition({ from, to })).toBe(expected);
   });
 
   it('leaves Settings opening inside the sidebar to the sidebar', () => {
