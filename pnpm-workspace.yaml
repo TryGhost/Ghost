@@ -187,6 +187,7 @@ catalog:
   sharp: 0.35.5
   should: 13.2.3
   sinon: 22.1.0
+  sirv: 3.0.2
   sonner: 2.0.7
   storybook: 10.4.6
   stylelint: 17.14.1

@@ -437,6 +437,9 @@ export class GhostManager {
       `GHOST_BACKEND=${ghostBackend}:${TEST_ENVIRONMENT.ghost.port}`,
       'ANALYTICS_PROXY_TARGET=ghost-dev-analytics:3000',
     ];
+    if (mode === 'dev' && process.env.GHOST_E2E_ADMIN_DEV_SERVER) {
+      env.push(`ADMIN_DEV_SERVER=${process.env.GHOST_E2E_ADMIN_DEV_SERVER}`);
+    }
 
     // Build mode can use stock Caddy (no custom plugin/image build required)
     const image = mode === 'build' ? BUILD_GATEWAY_IMAGE : TEST_ENVIRONMENT.gateway.image;
