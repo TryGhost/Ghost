@@ -35,8 +35,9 @@ smoke-tests it against MySQL, and publishes:
 | `ghcr.io/tryghost/ghost`  | `nightly`, `nightly-YYYYMMDD` |
 | `docker.io/ghost/nightly` | `latest`, `YYYYMMDD`          |
 
-Docker Hub publishing needs the `DOCKERHUB_USERNAME` and `DOCKERHUB_TOKEN` repository secrets (a
-token with write access to `ghost/nightly`); without them the workflow publishes to GHCR only.
+Docker Hub publishing needs the `DOCKERHUB_USERNAME` and `DOCKERHUB_TOKEN` secrets in the
+`dockerhub` environment, which only `main` can deploy to (a token with push access to
+`ghost/nightly`); without them the workflow publishes to GHCR only.
 Dated GHCR tags are removed after 14 days by `cleanup-ghcr.yml`.
 
 Nightlies are untested builds of `main`, which can include migrations that a later release changes.

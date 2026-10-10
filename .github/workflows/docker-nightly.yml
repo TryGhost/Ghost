@@ -291,6 +291,9 @@ jobs:
     needs: [resolve, build]
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    # Holds the Docker Hub credentials, restricted to deployments from main
+    # so no other branch's workflows can read them. Only this job needs them.
+    environment: dockerhub
     permissions:
       contents: read
       packages: write
