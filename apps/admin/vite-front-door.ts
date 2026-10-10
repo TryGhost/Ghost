@@ -54,6 +54,14 @@ export function ghostFrontDoorPlugin(backend: string, devBase: string): Plugin {
     },
 
     configureServer(server) {
+      const printUrls = server.printUrls.bind(server);
+      server.printUrls = () => {
+        printUrls();
+        server.config.logger.info(
+          `  ➜  Ghost:   http://localhost:${server.config.server.port}/ghost/`,
+        );
+      };
+
       // Registered here, before Vite's own middleware and proxy
       server.middlewares.use((req, res, next) => {
         const url = req.url ?? '';
