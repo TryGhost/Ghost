@@ -110,35 +110,25 @@ function pasteText(content: string) {
  * editor-save.acceptance.test.tsx.
  */
 describe('Post editor', () => {
-  it('grows and shrinks the title with its text under the Ember host constraints', async () => {
-    // The acceptance host omits Ember's global form CSS, which still surrounds
-    // the React editor in production.
-    const hostStyles = document.createElement('style');
-    hostStyles.textContent = 'textarea { min-height: 10rem; max-width: 500px; }';
-    document.head.appendChild(hostStyles);
+  it('grows and shrinks the title with its text despite the textarea element styles', async () => {
+    fakeEditorPost({ title: 'Short title' });
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave(FLAG_ON));
 
-    try {
-      fakeEditorPost({ title: 'Short title' });
-      await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave(FLAG_ON));
+    const title = editorScreen.titleInput();
+    await expect.element(title).toHaveValue('Short title');
+    const height = () => title.element().getBoundingClientRect().height;
+    const singleLineHeight = height();
+    const lineHeight = parseFloat(getComputedStyle(title.element()).lineHeight);
+    expect(singleLineHeight).toBeLessThan(lineHeight * 2);
+    expect(title.element().getBoundingClientRect().width).toBeGreaterThan(500);
 
-      const title = editorScreen.titleInput();
-      await expect.element(title).toHaveValue('Short title');
-      const height = () => title.element().getBoundingClientRect().height;
-      const singleLineHeight = height();
-      const lineHeight = parseFloat(getComputedStyle(title.element()).lineHeight);
-      expect(singleLineHeight).toBeLessThan(lineHeight * 2);
-      expect(title.element().getBoundingClientRect().width).toBeGreaterThan(500);
+    await title.fill(
+      'A long post title that wraps across several lines in the writing area '.repeat(3),
+    );
+    await expect.poll(height).toBeGreaterThan(singleLineHeight * 2);
 
-      await title.fill(
-        'A long post title that wraps across several lines in the writing area '.repeat(3),
-      );
-      await expect.poll(height).toBeGreaterThan(singleLineHeight * 2);
-
-      await title.fill('Short title');
-      await expect.poll(height).toBe(singleLineHeight);
-    } finally {
-      hostStyles.remove();
-    }
+    await title.fill('Short title');
+    await expect.poll(height).toBe(singleLineHeight);
   });
 
   it('loads the post into the title and body', async () => {
@@ -310,14 +300,7 @@ describe('Post editor', () => {
     },
   );
 
-  it('sets the excerpt across the writing column and fits it to its lines under the Ember host constraints', async () => {
-    // The acceptance host omits Ember's global form CSS, which still surrounds
-    // the React editor in production.
-    const hostStyles = document.createElement('style');
-    hostStyles.textContent =
-      'textarea { min-height: 10rem; min-width: 250px; max-width: 500px; line-height: 1.5em; }';
-    document.head.appendChild(hostStyles);
-    onTestFinished(() => hostStyles.remove());
+  it('sets the excerpt across the writing column and fits it to its lines despite the textarea element styles', async () => {
     onTestFinished(() => page.viewport(1280, 800));
 
     fakeEditorPost();

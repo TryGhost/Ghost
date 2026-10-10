@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it, onTestFinished, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
 import { render } from 'vitest-browser-react';
 
@@ -359,11 +359,7 @@ describe('Publish flow', () => {
     expect(localStorage.getItem('ghost-last-published-post')).toBeNull();
   });
 
-  it('rotates disclosure chevrons only 180 degrees alongside legacy Admin CSS', async () => {
-    const legacyStyle = document.createElement('style');
-    legacyStyle.textContent = '.rotate-180 { transform: rotate(180deg); }';
-    document.head.appendChild(legacyStyle);
-    onTestFinished(() => legacyStyle.remove());
+  it('rotates disclosure chevrons a single half turn', async () => {
     await renderPublishFlow();
 
     const trigger = publishScreen.setting('publish-type');

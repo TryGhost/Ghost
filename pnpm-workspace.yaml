@@ -130,7 +130,6 @@ catalog:
   body-parser: 1.20.8
   bson-objectid: 2.0.4
   chai: 4.5.0
-  chalk: 4.1.2
   cheerio: 1.2.0
   clsx: 2.1.1
   concurrently: 10.0.5
@@ -166,7 +165,6 @@ catalog:
   lru-cache: 11.5.3
   luxon: 3.7.2
   lucide-react: 1.23.0
-  microdiff: 1.5.0
   mingo: 2.5.3
   moment: 2.31.0
   moment-timezone: 0.6.5
@@ -282,8 +280,6 @@ overrides:
   # tarball override that pack.mjs writes under the same key replaces it.
   '@tryghost/kg-default-cards': 'workspace:*'
   '@babel/runtime@<7.26.10': ^7.26.10
-  '@tootallnate/once@<3.0.1': ^3.0.1
-  'ansi-html@<0.0.8': ^0.0.9
   'braces@<3.0.3': ^3.0.3
   'clean-css@<4.1.11': ^4.1.11
   # consolidate 0.15 pulls in a bunch of legacy dependencies that ultimately
@@ -293,11 +289,9 @@ overrides:
   'debug@<2.6.9': ^2.6.9
   'diff@<3.5.1': ^3.5.1
   'esbuild@>=0.28.0': 'catalog:'
-  'growl@<1.10.0': ^1.10.0
   # gscan pins handlebars exactly; lift every copy past the 4.7.10 security fixes
   'handlebars@<4.7.10': ^4.7.10
   'json5@<1.0.2': ^1.0.2
-  'merge@<2.1.1': ^2.1.1
   'micromatch@<4.0.8': ^4.0.8
   'minimatch@<3.1.4': ^3.1.4
   'minimist@<0.2.4': ^0.2.4
@@ -307,15 +301,12 @@ overrides:
   'tmp@<=0.2.3': ^0.2.4
   'trim@<0.0.3': ^0.0.3
   'underscore@>=1.3.2 <1.12.1': ^1.12.1
-  '@xmldom/xmldom@<0.9.12': ^0.9.12
   # Security patches within the same major for dev, build and test tooling
   'axios@>=1.0.0 <1.20.0': ^1.20.0
   'brace-expansion@>=5.0.0 <5.0.12': ^5.0.12
-  'engine.io@>=6.6.0 <6.6.10': ^6.6.10
   'http-cache-semantics@<4.3.0': ^4.3.0
   'js-yaml@>=5.0.0 <5.4.1': ^5.4.1
   'markdown-it@>=14.0.0 <14.3.1': ^14.3.1
-  'pbkdf2@<3.1.7': ^3.1.7
   'postcss-selector-parser@>=7.0.0 <7.1.6': ^7.1.6
   'proxy-addr@<2.0.8': ^2.0.8
   'shell-quote@>=1.8.4 <1.11.0': ^1.11.0

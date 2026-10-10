@@ -27,7 +27,7 @@ describe('Editor route', () => {
     fakeAdminEndpoint('GET', /^\/pages\/abc123\/\?/, { pages: [post({ id: 'abc123' })] });
   }
 
-  it('renders the React editor when the flag is on', async () => {
+  it('renders the editor for a post', async () => {
     fakeEditorWorld();
     await renderAdminApp('/editor/post/abc123', FLAG_ON);
 
@@ -59,7 +59,7 @@ describe('Editor force upgrade', () => {
     return { labs, boot: { browseConfig: { response: config } } };
   }
 
-  it('sends the React editor to billing', async () => {
+  it('sends the editor to billing', async () => {
     fakeEditorChrome();
     const postRead = fakeAdminEndpoint('GET', /^\/posts\/abc123\/\?/, {
       posts: [post({ id: 'abc123' })],

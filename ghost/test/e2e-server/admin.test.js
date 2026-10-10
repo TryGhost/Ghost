@@ -40,7 +40,7 @@ describe('Admin Routing', function () {
 
     it('should retrieve built assets', async function () {
       await request
-        .get('/ghost/assets/vendor.js')
+        .get('/ghost/assets/admin.js')
         .expect('Cache-Control', testUtils.cacheRules.yearImmutable)
         .expect(200)
         .expect(assertCorrectHeaders);

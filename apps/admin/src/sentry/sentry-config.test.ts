@@ -118,11 +118,10 @@ describe('getSentryConfig', () => {
     getSentryConfig({ dsn: DSN, environment: 'production', version: '6.1' });
 
     expect(replayIntegration).toHaveBeenCalledExactlyOnceWith({
-      mask: ['.koenig-lexical', '.gh-dashboard', '[data-sentry-automations-mask]'],
+      mask: ['.koenig-lexical', '[data-sentry-automations-mask]'],
       unmask: [
         'body:not([data-sentry-automations-mask]) [role="menu"]',
         'body:not([data-sentry-automations-mask]) [data-testid="settings-panel"]',
-        'body:not([data-sentry-automations-mask]) .gh-nav',
       ],
       maskAllText: false,
       maskAllInputs: true,

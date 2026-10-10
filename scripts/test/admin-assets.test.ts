@@ -76,7 +76,6 @@ describe('Admin asset assembly', () => {
     const core = join(root, 'ghost/core/built/admin');
     assert.equal(existsSync(join(core, 'assets/koenig-lexical')), false);
     assert.equal(existsSync(join(core, 'assets/activitypub')), false);
-    assert.equal(existsSync(join(core, 'assets/ghost.js')), false);
   });
 
   it('is repeatable and removes stale Core and renderer outputs', () => {

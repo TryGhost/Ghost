@@ -180,7 +180,7 @@
       "test:unit": {
         "inputs": [
           "reactTests",
-          "^reactAdminDependency"
+          "^default"
         ],
         "dependsOn": [
           {
@@ -206,7 +206,7 @@
         "cache": true,
         "inputs": [
           "reactTests",
-          "^reactAdminDependency"
+          "^default"
         ],
         "outputs": [
           "{projectRoot}/test-results/acceptance.json"
@@ -234,7 +234,7 @@
       "test:types": {
         "inputs": [
           "default",
-          "^reactAdminDependency"
+          "^default"
         ],
         "outputs": [],
         "dependsOn": [

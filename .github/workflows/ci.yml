@@ -1331,7 +1331,7 @@ jobs:
         # koenig-lexical, which inject debug IDs into the built bundles. Only
         # shippable builds (main + tags in the canonical repo) get it. The maps
         # are uploaded by job_upload_sourcemaps so Sentry can't block the build.
-        # Builds apps/admin/dist, ghost/core/built/admin (asset-delivery),
+        # Builds apps/admin/dist, ghost/core/built/admin (assemble:assets),
         # and ghost/core/built/embed-renderer (separate-origin previews).
         run: pnpm nx run @tryghost/admin:build
 

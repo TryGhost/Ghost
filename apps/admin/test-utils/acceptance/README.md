@@ -56,7 +56,7 @@ Don't guess the app's network graph — run the test, the 418 names what's missi
 
 **Embedded apps.** MSW cannot see iframe navigations, so an external frame gets a 418 page (no network) unless the spec declares `fakeFrameOrigin(origin, html)`. The stand-in HTML can script an embedding protocol with `window.parent.postMessage`; see `src/migrate/migrate.acceptance.test.tsx`.
 
-**Code that fails to load.** `failModuleLoads(pathEnd)` fails the browser's requests for a module as a dropped connection would, so its dynamic import rejects. The browser keeps that module failed for the rest of the spec file, and every signed-in render preloads some modules (the search modal; the editor with `editorReact` on), so a spec that fails one of those needs a file of its own.
+**Code that fails to load.** `failModuleLoads(pathEnd)` fails the browser's requests for a module as a dropped connection would, so its dynamic import rejects. The browser keeps that module failed for the rest of the spec file, and every signed-in render preloads some modules (the search modal, the editor), so a spec that fails one of those needs a file of its own.
 
 **Cross-app navigation.** When a spec asserts only the shell's behavior and a navigation mounts another app (settings, ActivityPub), don't fake that app's boot graph: `allowUnhandledRequests()` with a one-line constraint comment ("the settings app owns its request graph") is the sanctioned pattern.
 
