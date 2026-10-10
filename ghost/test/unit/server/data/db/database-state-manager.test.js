@@ -1,7 +1,6 @@
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const errors = require('@tryghost/errors');
-const logging = require('@tryghost/logging');
 const DatabaseStateManager = require('../../../../../core/server/data/db/database-state-manager');
 const configUtils = require('../../../../utils/config-utils');
 
@@ -31,10 +30,9 @@ describe('DatabaseStateManager', function () {
 
     it('treats unknown applied migrations as ready in development', async function () {
       configUtils.set('env', 'development');
-      const warnStub = sinon.stub(logging, 'warn');
 
       assert.equal(await manager.getState(), 0);
-      sinon.assert.calledOnce(warnStub);
+      assert.match(manager.warning, /pnpm reset:db/);
     });
 
     it('throws on unknown applied migrations outside development', async function () {
