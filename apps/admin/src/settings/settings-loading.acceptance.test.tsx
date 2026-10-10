@@ -1,15 +1,21 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { page } from 'vitest/browser';
+import { page, userEvent } from 'vitest/browser';
 import { fakeSettingsScreens, renderAdminApp } from '@test-utils/acceptance';
 import { sidebarScreen } from '@/layout/sidebar.screen';
+import { settingsScreen } from '@/settings/settings.screen';
 
-const { loading } = vi.hoisted(() => ({ loading: { screen: true } }));
+const { loading } = vi.hoisted(() => ({
+  loading: {
+    screen: true,
+    content: undefined as Promise<typeof import('./layout/main-content')> | undefined,
+  },
+}));
 
 // Hold each code-loading stage independently so the real shell's fallback
 // remains on screen long enough to measure, regardless of network speed.
 vi.mock('./load-settings', () => ({
   loadSettingsScreen: () => (loading.screen ? new Promise(() => {}) : import('./settings')),
-  loadSettingsContent: () => new Promise(() => {}),
+  loadSettingsContent: () => loading.content ?? new Promise(() => {}),
   preloadSettings: () => {},
 }));
 
@@ -49,5 +55,29 @@ describe('Settings loading', () => {
     await renderAdminApp('/settings', { labs: { admin7settings: true } });
     await expect.element(page.getByPlaceholder('Search settings')).toBeVisible();
     await expectCenteredSpinner();
+  });
+
+  it('keeps modal focus when the settings sidebar finishes loading', async () => {
+    loading.screen = false;
+    const content = await import('./layout/main-content');
+    let finishLoading!: (module: typeof content) => void;
+    loading.content = new Promise((resolve) => {
+      finishLoading = resolve;
+    });
+    fakeSettingsScreens();
+    await renderAdminApp('/settings/navigation/edit', { labs: { admin7settings: false } });
+
+    const primaryTab = settingsScreen.navigationModal().getByRole('tab', { name: 'Primary' });
+    await primaryTab.click();
+    await expect.element(primaryTab).toHaveFocus();
+    await expect(page.getByPlaceholder('Search settings')).toHaveCount(0);
+
+    finishLoading(content);
+    await expect.element(page.getByPlaceholder('Search settings')).toBeVisible();
+    await expect.element(primaryTab).toHaveFocus();
+    await userEvent.keyboard('{ArrowRight}');
+    await expect
+      .element(settingsScreen.navigationModal().getByRole('tab', { name: 'Secondary' }))
+      .toHaveAttribute('aria-selected', 'true');
   });
 });
