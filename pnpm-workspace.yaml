@@ -268,7 +268,7 @@ overrides:
   jackspeak: 4.2.3
   moment: 'catalog:'
   moment-timezone: 'catalog:'
-  nwsapi: 2.2.24
+  nwsapi: 2.2.28
   broccoli-persistent-filter: ^2.3.1
   ember-basic-dropdown: 6.0.2
   ember-in-viewport: 4.1.0
