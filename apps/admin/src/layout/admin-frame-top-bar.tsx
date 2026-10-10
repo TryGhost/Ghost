@@ -117,9 +117,9 @@ function Clock() {
   );
 }
 
-function Stat({ label, children }: { label: string; children: React.ReactNode }) {
+function Stat({ label, to, children }: { label: string; to: string; children: React.ReactNode }) {
   return (
-    <Link className={cn('group flex h-full items-center gap-1', LABEL)} to="/analytics">
+    <Link className={cn('group flex h-full items-center gap-1', LABEL)} to={to}>
       <span className={cn('transition-colors group-hover:text-white', MUTED)}>{label}</span>
       <span className="text-white">{children}</span>
     </Link>
@@ -164,8 +164,12 @@ export function AdminFrameTopBar() {
             {formatNumber(stats.online)} Online
           </span>
         </Link>
-        <Stat label="Members">{formatNumber(stats.members)}</Stat>
-        <Stat label="MRR">{mrr}</Stat>
+        <Stat label="Members" to="/analytics/growth">
+          {formatNumber(stats.members)}
+        </Stat>
+        <Stat label="MRR" to="/analytics/growth?tab=mrr">
+          {mrr}
+        </Stat>
       </div>
     </div>
   );
