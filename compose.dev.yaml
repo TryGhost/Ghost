@@ -52,7 +52,8 @@ services:
   mailpit:
     image: axllent/mailpit@sha256:ed9b00c609e77e99c79b93f1178255ebc271868920f2c69a8d166bd5634ed10d
     container_name: ghost-dev-mailpit
-    command: ['--quiet']
+    # Tags each message with the SMTP username, which `pnpm dev` sets to the checkout's name
+    command: ['--quiet', '--smtp-auth-accept-any', '--smtp-auth-allow-insecure', '--tags-username']
     ports:
       - '1025:1025' # SMTP server
       - '8025:8025' # Web interface
@@ -63,7 +64,10 @@ services:
 
   # Main development Ghost instance
   # Additional instances can be created programmatically via E2E GhostManager
+  # `pnpm dev` runs Ghost and the dev servers on the host; these two services back
+  # `pnpm dev:docker` and the modes built on it, e2e dev mode and the devcontainer.
   ghost-dev:
+    profiles: ['docker-dev']
     build:
       context: ./
       dockerfile: docker/ghost-dev/Dockerfile
@@ -150,6 +154,7 @@ services:
   # Caddy reverse proxy for the main dev instance
   # Routes Ghost backend + proxies asset requests to host dev servers
   ghost-dev-gateway:
+    profiles: ['docker-dev']
     build:
       context: ./docker/dev-gateway
       dockerfile: Dockerfile

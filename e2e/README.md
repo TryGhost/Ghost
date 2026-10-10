@@ -29,7 +29,7 @@ pnpm test
 
 If `GHOST_E2E_MODE` is unset, the e2e shell entrypoints auto-select:
 
-- `dev` when the local admin dev server is reachable on `http://127.0.0.1:5174`
+- `dev` when the Admin dev server from `pnpm dev` or `pnpm dev:docker` is reachable
 - `build` otherwise
 
 To use dev mode, start `pnpm dev` before running tests:
