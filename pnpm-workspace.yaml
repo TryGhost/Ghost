@@ -359,6 +359,13 @@ packageExtensions:
     peerDependenciesMeta:
       cssnano:
         optional: true
+  # @prettier/sync has make-synchronized import `prettier` from its own directory
+  make-synchronized:
+    peerDependencies:
+      prettier: '*'
+    peerDependenciesMeta:
+      prettier:
+        optional: true
   # Their type declarations import react without declaring @types/react.
   '@dnd-kit/core':
     peerDependencies:

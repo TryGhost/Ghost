@@ -786,7 +786,7 @@ overrides:
   express: 4.22.3
   qs: 6.16.0
 
-packageExtensionsChecksum: sha256-ycchSymDGGlzg4rH0fnAyj8srTVjDx047QJkPZu69w0=
+packageExtensionsChecksum: sha256-DC5bjsVRJCF3J2cM5sSlAfpCPpqPc0kruNC+xrjiUIc=
 
 pnpmfileChecksum: sha256-qev/zWGQadDoB7sHatQQkkjF+hSnLGwfErh/U1ptQjA=
 
@@ -13592,6 +13592,11 @@ packages:
 
   make-synchronized@0.8.0:
     resolution: {integrity: sha512-DZu4lwc0ffoFz581BSQa/BJl+1ZqIkoRQ+VejMlH0VrP4E86StAODnZujZ4sepumQj8rcP7wUnUBGM8Gu+zKUA==}
+    peerDependencies:
+      prettier: '*'
+    peerDependenciesMeta:
+      prettier:
+        optional: true
 
   makeerror@1.0.12:
     resolution: {integrity: sha512-JmqCvUhmt43madlpFzG4BQzG2Z3m6tvQDNKdClZnO3VbIudJYmxsT0FNJMeiB2+JTSlTQTSbU8QdesVmwJcmLg==}
@@ -20117,7 +20122,7 @@ snapshots:
 
   '@prettier/sync@0.6.1(prettier@3.9.6)':
     dependencies:
-      make-synchronized: 0.8.0
+      make-synchronized: 0.8.0(prettier@3.9.6)
       prettier: 3.9.6
 
   '@protobufjs/aspromise@1.1.2': {}
@@ -28756,7 +28761,9 @@ snapshots:
     dependencies:
       kind-of: 6.0.3
 
-  make-synchronized@0.8.0: {}
+  make-synchronized@0.8.0(prettier@3.9.6):
+    optionalDependencies:
+      prettier: 3.9.6
 
   makeerror@1.0.12:
     dependencies:
