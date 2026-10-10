@@ -20,26 +20,20 @@ interface ScreenTransitionInput {
   from: readonly unknown[];
   /** Route handles of the target's matches, outermost first. */
   to: readonly unknown[];
-  settingsSidebarEnabled: boolean;
 }
 
 /**
  * A navigation transitions only when it crosses the boundary of a surface
  * marked `screenTransition`: entering one, leaving one, or moving between two.
- * Without admin7settings, Settings is the legacy takeover and is not animated.
  */
-export function shouldRunScreenTransition({
-  from,
-  to,
-  settingsSidebarEnabled,
-}: ScreenTransitionInput): boolean {
+export function shouldRunScreenTransition({ from, to }: ScreenTransitionInput): boolean {
   const fromSurface = screenSurface(from);
   const toSurface = screenSurface(to);
   if (fromSurface === toSurface) {
     return false;
   }
 
-  return settingsSidebarEnabled || !(fromSurface?.settingsSidebar || toSurface?.settingsSidebar);
+  return true;
 }
 
 /**

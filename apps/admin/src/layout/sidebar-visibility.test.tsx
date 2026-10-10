@@ -6,15 +6,10 @@ type RouteMatch = {
 };
 
 const useMatchesMock = vi.fn<() => RouteMatch[]>();
-const useFeatureFlagMock = vi.fn<() => boolean>();
 const useIsMobileMock = vi.fn<() => boolean>();
 
 vi.mock('@tryghost/admin-x-framework', () => ({
   useMatches: () => useMatchesMock(),
-}));
-
-vi.mock('@tryghost/admin-x-framework/hooks', () => ({
-  useFeatureFlag: () => useFeatureFlagMock(),
 }));
 
 vi.mock('@tryghost/shade/utils', () => ({
@@ -24,7 +19,6 @@ vi.mock('@tryghost/shade/utils', () => ({
 describe('useAdminSidebarVisibility', () => {
   beforeEach(() => {
     useMatchesMock.mockReturnValue([]);
-    useFeatureFlagMock.mockReturnValue(false);
     useIsMobileMock.mockReturnValue(false);
   });
 
@@ -51,16 +45,12 @@ describe('useAdminSidebarVisibility', () => {
     expect(result.current).toBe(true);
   });
 
-  it('uses the Settings sidebar on desktop only when admin7settings is enabled', async () => {
+  it('keeps the sidebar visible in Settings on desktop and hides it on mobile', async () => {
     const { useAdminSidebarVisibility } = await import('./sidebar-visibility');
 
     useMatchesMock.mockReturnValue([{ handle: { settingsSidebar: true } }]);
 
     const { result, rerender } = renderHook(() => useAdminSidebarVisibility());
-    expect(result.current).toBe(false);
-
-    useFeatureFlagMock.mockReturnValue(true);
-    rerender();
     expect(result.current).toBe(true);
 
     useIsMobileMock.mockReturnValue(true);

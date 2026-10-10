@@ -286,34 +286,10 @@ describe('Sidebar navigation', () => {
     await expect.element(sidebarScreen.navLink('Posts')).toHaveAttribute('aria-current', 'page');
   });
 
-  it('navigates to settings from the sidebar footer and hides the shell nav', async () => {
-    // The settings app owns its request graph; this spec asserts only the shell navigation.
-    allowUnhandledRequests();
-    await renderAdminApp('/site');
-
-    await expect.element(sidebarScreen.shellNav()).toBeVisible();
-    await sidebarScreen.navLink('Settings').click();
-
-    await expect.poll(currentRoute).toMatch(/^\/settings/);
-    await expect.element(sidebarScreen.shellNav()).not.toBeInTheDocument();
-  });
-
-  it('hides the shell nav when a settings route is loaded directly', async () => {
-    // The settings app owns its request graph; this spec asserts only the shell navigation.
-    allowUnhandledRequests();
-    await renderAdminApp('/settings/staff');
-
-    await expect.poll(currentRoute).toMatch(/^\/settings\/staff/);
-    // The shell mounts only once the current user resolves — wait for it, or a
-    // sidebar that appears on that later paint slips past the assertion.
-    await expect.element(sidebarScreen.shellMain()).toBeInTheDocument();
-    await expect.element(sidebarScreen.shellNav()).not.toBeInTheDocument();
-  });
-
   it('swaps the shell navigation for Settings navigation on desktop', async () => {
     // The settings app owns its request graph; this spec asserts only the shell navigation.
     allowUnhandledRequests();
-    await renderAdminApp('/site', { labs: { admin7settings: true } });
+    await renderAdminApp('/site');
 
     await expect.element(sidebarScreen.shellNav()).toBeVisible();
     await sidebarScreen.navLink('Settings').click();
@@ -328,7 +304,7 @@ describe('Sidebar navigation', () => {
   it('shows Settings navigation when a settings route is loaded directly', async () => {
     // The settings app owns its request graph; this spec asserts only the shell navigation.
     allowUnhandledRequests();
-    await renderAdminApp('/settings/staff', { labs: { admin7settings: true } });
+    await renderAdminApp('/settings/staff');
 
     await expect.poll(currentRoute).toMatch(/^\/settings\/staff/);
     await expect.element(sidebarScreen.shellNav()).toBeVisible();
@@ -343,7 +319,6 @@ describe('Sidebar navigation', () => {
     const me = currentUserResponse();
     me.users[0].roles = [staffRole({ name: 'Editor' })];
     await renderAdminApp('/settings/staff', {
-      labs: { admin7settings: true },
       boot: { browseMe: { response: me } },
     });
 
