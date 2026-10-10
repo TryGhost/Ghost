@@ -609,8 +609,8 @@ catalogs:
       specifier: 0.63.0
       version: 0.63.0
     parse-email-address:
-      specifier: 0.0.4
-      version: 0.0.4
+      specifier: 0.0.5
+      version: 0.0.5
     postcss:
       specifier: 8.5.26
       version: 8.5.26
@@ -4280,7 +4280,7 @@ importers:
     dependencies:
       parse-email-address:
         specifier: 'catalog:'
-        version: 0.0.4
+        version: 0.0.5
     devDependencies:
       '@internal/cfg-eslint':
         specifier: workspace:*
@@ -4406,6 +4406,14 @@ packages:
   '@asamuzakjp/dom-selector@8.3.2':
     resolution: {integrity: sha512-93Z1N+BQNXysodoicpOIyNh2drHfz/CTf9nnT0FEx72GJcIiwgydD7tGAr78j41LsYn3hlRn+LdGPuBLn1Bl8Q==}
     engines: {node: ^22.13.0 || >=24.0.0}
+
+  '@augment-vir/assert@32.5.0':
+    resolution: {integrity: sha512-lIiqlZVNvOguXMhh6tSTsDK9x8Ir1vSdrMunw55PThNACckmEIw+Wp3ClUR0BkaT/9zv6ncaCHRYNi8OFyrhPg==}
+    engines: {node: '>=22'}
+
+  '@augment-vir/core@32.5.0':
+    resolution: {integrity: sha512-dIwb2rOpCwZDxW6P7YJc9ZCOAKfGeqw5+kgoJQWVId/usAg2YSuCVZ+b5tgDd2RcGwDBXSfJwn/8yhwGpbhoMA==}
+    engines: {node: '>=22'}
 
   '@aws-sdk/checksums@3.1000.12':
     resolution: {integrity: sha512-RgNDWfhNRIlNEzePIRrYTNi/6q+wwRMMapojn8YVzw4ZcJRa/gxVMtUbeZARR1gmopuv6oIhMbY7J66qIQ0ynw==}
@@ -4805,6 +4813,10 @@ packages:
 
   '@date-fns/tz@1.5.0':
     resolution: {integrity: sha512-lwYN/vDPeNRULcepoE/LO2Pgx+7/RV+S9ARfbc9lr2DtGkOD7pAiruHvbR1RX3Qyf6ja47EWJDMsNK5vK08DJg==}
+
+  '@date-vir/duration@9.3.0':
+    resolution: {integrity: sha512-KviJkVR2Pg+vLIGQq5Ax4m2JpmiWqZfQ/aBp7bCpD7mq+26XF6R11f3QpeLDOZrJQ6hrtGRcvY/BJd5tm7A0aw==}
+    engines: {node: '>=22'}
 
   '@distributed-systems/callsite@1.1.1':
     resolution: {integrity: sha512-YSA3kWjClnLmFKNpdQCZlMQoWI4N6KpR/T4MaREEQczaehcagsVorT3YDV17KR6zuJXDs7f+kkSt1o/D6SufAQ==}
@@ -8805,6 +8817,9 @@ packages:
   '@types/luxon@3.7.4':
     resolution: {integrity: sha512-V536ZAd6ZJztrrBlLcDFaaZrXNAL2E5uGmssWf/dpSiLkmkLScXUYhUBnWPmtW+cIqnNHzf6//TCMpIc9SCRRQ==}
 
+  '@types/luxon@3.7.6':
+    resolution: {integrity: sha512-6KSjliQAXK8ZLgFQO4B7iE4Rpf/B3rItzCFuXezBY/XIAGxOdLd7vRNK9/StRPwiS/yJsVbB7HKpW46B8tcEuQ==}
+
   '@types/markdown-it@14.1.2':
     resolution: {integrity: sha512-promo4eFwuiW+TfGxhi+0x3czqTYJkG8qB17ZUJiVF10Xm7NLVRSLUsfRTU/6h1e24VvRnXCx+hG7li58lkzog==}
 
@@ -9915,6 +9930,9 @@ packages:
   broccoli-plugin@4.0.7:
     resolution: {integrity: sha512-a4zUsWtA1uns1K7p9rExYVYG99rdKeGRymW0qOCNkvDPHQxVi3yVyJHhQbM3EZwdt2E0mnhr5e0c/bPpJ7p3Wg==}
     engines: {node: 10.* || >= 12.*}
+
+  browser-or-node@3.0.0:
+    resolution: {integrity: sha512-iczIdVJzGEYhP5DqQxYM9Hh7Ztpqqi+CXZpSmX8ALFs9ecXkQIeqRyM6TfxEfMVpwhl3dSuDvxdzzo9sUOIVBQ==}
 
   browserslist@4.28.8:
     resolution: {integrity: sha512-V2NpofLblG64mfOtSgDhOJESZEGogzDMBv/q+W6oc4LXWP/q75eOXoOaaOu1EOadB9U4Bwx/e0yzbvwKH8zalA==}
@@ -11517,8 +11535,8 @@ packages:
     resolution: {integrity: sha512-A5EmesHW6rfnZ9ysHQjPdJRni0SRar0tjtG5MNtm9n5TUvsYU8oozprtRD4AqHxcZWWlVuAmQo2nWKfN9oyjTw==}
     engines: {node: '>=0.10.0'}
 
-  expect-type@1.3.0:
-    resolution: {integrity: sha512-knvyeauYhqjOYvQ66MznSMs83wmHrCycNEN6Ao+2AeYEfxUIkuiVxdEa1qlGEPK+We3n0THiDciYSsCcgW/DoA==}
+  expect-type@1.4.0:
+    resolution: {integrity: sha512-KfYbmpRm0VbLjEvVa9yGwCi9GI34xvi7A/HXYWQO65CSD2u3MczUJSuwXKFIxlGsgBQizV9q5J9NHj4VG0n+pA==}
     engines: {node: '>=12.0.0'}
 
   expect@29.7.0:
@@ -14642,8 +14660,8 @@ packages:
     resolution: {integrity: sha512-GQ2EWRpQV8/o+Aw8YqtfZZPfNRWZYkbidE9k5rpl/hC3vtHHBfGm2Ifi6qWV+coDGkrUKZAxE3Lot5kcsRlh+g==}
     engines: {node: '>=6'}
 
-  parse-email-address@0.0.4:
-    resolution: {integrity: sha512-bfgHub0chtuU8VhH8OHm8wpS9k5ecR18XdK1ZuvyYCMqejwZr0y40CC9COvlFnm2qsdVyRfCZ+zukkv7KOAfyw==}
+  parse-email-address@0.0.5:
+    resolution: {integrity: sha512-+5VrmQUZHqnfhxE1gIJEJrN159KFx6H4oW0AC16z0YpjXYDyV+mcYHM3k9F4gmsPm8Phwxs6kc+5rIeDKB85fg==}
     engines: {node: '>=22'}
 
   parse-entities@1.2.2:
@@ -16760,6 +16778,10 @@ packages:
     resolution: {integrity: sha512-TeTSQ6H5YHvpqVwBRcnLDCBnDOHWYu7IvGbHT6N8AOymcr9PJGjc1GTtiWZTYg0NCgYwvnYWEkVChQAr9bjfwA==}
     engines: {node: '>=16'}
 
+  type-fest@5.10.0:
+    resolution: {integrity: sha512-NoSdpq/WEiAg5sjmBkmV/hfxv6HJH4NqPNrqjtSO5CwRmpsDfaf4begxW34KdJykH/l1yHtwBWQkCRdoXO8mPA==}
+    engines: {node: '>=20'}
+
   type-fest@5.7.0:
     resolution: {integrity: sha512-1URUxUqfHFM1c+zfSPsa3gnkO7Aq21qyH75SIduNYz4SzY964rn1X2vCMQaHSHhktiw+0kPa2iyb6PUpXqB6Vg==}
     engines: {node: '>=20'}
@@ -17647,6 +17669,20 @@ snapshots:
       is-potential-custom-element-name: 1.0.1
       lru-cache: 11.5.3
 
+  '@augment-vir/assert@32.5.0':
+    dependencies:
+      '@augment-vir/core': 32.5.0
+      '@date-vir/duration': 9.3.0
+      deep-eql: 5.0.2
+      expect-type: 1.4.0
+
+  '@augment-vir/core@32.5.0':
+    dependencies:
+      '@date-vir/duration': 9.3.0
+      browser-or-node: 3.0.0
+      diff: 9.0.0
+      json5: 2.2.3
+
   '@aws-sdk/checksums@3.1000.12':
     dependencies:
       '@aws-sdk/core': 3.977.9
@@ -18226,6 +18262,13 @@ snapshots:
       postcss-selector-parser: 7.1.6
 
   '@date-fns/tz@1.5.0': {}
+
+  '@date-vir/duration@9.3.0':
+    dependencies:
+      '@augment-vir/assert': 32.5.0
+      '@types/luxon': 3.7.6
+      luxon: 3.7.2
+      type-fest: 5.10.0
 
   '@distributed-systems/callsite@1.1.1':
     dependencies:
@@ -22545,6 +22588,8 @@ snapshots:
 
   '@types/luxon@3.7.4': {}
 
+  '@types/luxon@3.7.6': {}
+
   '@types/markdown-it@14.1.2':
     dependencies:
       '@types/linkify-it': 5.0.0
@@ -24097,6 +24142,8 @@ snapshots:
       symlink-or-copy: 1.3.1
     transitivePeerDependencies:
       - supports-color
+
+  browser-or-node@3.0.0: {}
 
   browserslist@4.28.8:
     dependencies:
@@ -26158,7 +26205,7 @@ snapshots:
     dependencies:
       homedir-polyfill: 1.0.3
 
-  expect-type@1.3.0: {}
+  expect-type@1.4.0: {}
 
   expect@29.7.0:
     dependencies:
@@ -30243,7 +30290,9 @@ snapshots:
     dependencies:
       callsites: 3.1.0
 
-  parse-email-address@0.0.4: {}
+  parse-email-address@0.0.5:
+    dependencies:
+      '@augment-vir/assert': 32.5.0
 
   parse-entities@1.2.2:
     dependencies:
@@ -32752,6 +32801,10 @@ snapshots:
 
   type-fest@4.41.0: {}
 
+  type-fest@5.10.0:
+    dependencies:
+      tagged-tag: 1.0.0
+
   type-fest@5.7.0:
     dependencies:
       tagged-tag: 1.0.0
@@ -33418,7 +33471,7 @@ snapshots:
       '@vitest/spy': 4.1.11
       '@vitest/utils': 4.1.11
       es-module-lexer: 2.1.0
-      expect-type: 1.3.0
+      expect-type: 1.4.0
       magic-string: 0.30.21
       obug: 2.1.3
       pathe: 2.0.3
@@ -33450,7 +33503,7 @@ snapshots:
       '@vitest/spy': 4.1.11
       '@vitest/utils': 4.1.11
       es-module-lexer: 2.1.0
-      expect-type: 1.3.0
+      expect-type: 1.4.0
       magic-string: 0.30.21
       obug: 2.1.3
       pathe: 2.0.3
@@ -33482,7 +33535,7 @@ snapshots:
       '@vitest/spy': 4.1.11
       '@vitest/utils': 4.1.11
       es-module-lexer: 2.1.0
-      expect-type: 1.3.0
+      expect-type: 1.4.0
       magic-string: 0.30.21
       obug: 2.1.3
       pathe: 2.0.3
