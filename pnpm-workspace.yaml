@@ -180,7 +180,7 @@ catalog:
   oxfmt: 0.63.0
   postcss: 8.5.26
   preact: ^10.29.2
-  prettier: 3.9.6
+  prettier: 3.9.9
   qs: 6.16.0
   react: 18.3.1
   react-day-picker: 9.14.0
