@@ -24,18 +24,14 @@ This lightweight image:
 - Only installs dependencies
 - No frontend builds or bundling
 - Source code mounted at runtime
-- Used for: Local development with `pnpm dev`
+- Used for: Local development with `pnpm dev:docker`
 
 ## Usage
 
 This image is used automatically when running:
 
 ```bash
-pnpm dev              # Starts Docker backend + React/shared/Portal watchers
-pnpm dev:public       # Include all optional public UMD app watchers
-pnpm dev:analytics    # Include Tinybird analytics
-pnpm dev:storage      # Include VersityGW S3-compatible object storage
-pnpm dev:stripe       # Include Stripe webhook forwarding
-pnpm dev:full         # Include analytics, storage, Stripe, and public app watchers
-pnpm dev:all          # Backwards-compatible alias for all optional services
+pnpm dev:docker       # Starts Docker backend + React/shared/Portal watchers
 ```
+
+`pnpm dev` and its variants run Ghost on the host instead.

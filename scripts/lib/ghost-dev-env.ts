@@ -27,15 +27,19 @@ function git(args: string[]): string {
   return execFileSync('git', args, { cwd: checkoutRoot, encoding: 'utf8' }).trim();
 }
 
-function parseEnvFile(file: string): Record<string, string> {
+export function parseEnv(text: string): Record<string, string> {
   const env: Record<string, string> = {};
-  for (const line of readFileSync(file, 'utf8').split('\n')) {
+  for (const line of text.split('\n')) {
     const [, key, value] = /^([A-Z0-9_]+)=(.*)$/.exec(line.trim()) ?? [];
     if (key) {
       env[key] = value ?? '';
     }
   }
   return env;
+}
+
+function parseEnvFile(file: string): Record<string, string> {
+  return parseEnv(readFileSync(file, 'utf8'));
 }
 
 function toEnv(name: string, port: number, database: string): GhostDevEnv {

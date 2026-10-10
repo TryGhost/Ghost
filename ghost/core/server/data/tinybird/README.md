@@ -4,9 +4,10 @@ This is the web analytics implementation using [Tinybird Forward](https://www.ti
 
 ### Local development with Docker
 
-The supported local development workflow uses `pnpm dev:analytics` with Docker
-and Docker Compose. Install both before starting; the Tinybird CLI runs in a
-container and Ghost is configured automatically.
+The supported local development workflow uses `pnpm dev:analytics`, which runs
+Tinybird Local, the Tinybird CLI and the Analytics service with Docker Compose.
+Install Docker and Docker Compose before starting; Ghost is configured
+automatically.
 
 All of these commands should be run from the root of the Ghost repository:
 
@@ -20,14 +21,15 @@ configuration before Ghost and Analytics start. After that initial build, the
 `tb-watch` service runs `tb --local dev` to watch the mounted files and
 automatically rebuild the local Tinybird workspace when they change.
 
-Watch output and build errors appear in the development logs. Fix an invalid
-datafile and save it to trigger another build. Press `Ctrl+C` to stop the
-development environment, including the watcher.
+Follow the watcher's output and build errors with the `logs` command below. Fix
+an invalid datafile and save it to trigger another build. `Ctrl+C` stops Ghost;
+the Tinybird services keep running until `pnpm docker:down`.
 
 Watching is also enabled for the other development commands that include
 analytics, such as `pnpm dev:analytics:local` and `pnpm dev:full`.
 
-Ghost will be accessible at `http://localhost:2368`, and analytics should work out of the box.
+Ghost will be accessible at `http://localhost:2368` (a worktree uses its own
+port), and analytics should work out of the box.
 
 #### Using the Tinybird CLI from Docker
 

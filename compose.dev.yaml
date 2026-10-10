@@ -189,6 +189,9 @@ services:
     environment:
       - GHOST_URL=${GHOST_URL:-http://ghost-dev:2368}
       - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY:-}
+    # `pnpm dev:stripe --listen` forwards to the Admin dev server on the host
+    extra_hosts:
+      - 'host.docker.internal:host-gateway'
     healthcheck:
       test: ['CMD', 'test', '-f', '/mnt/shared-config/.env.stripe']
       interval: 1s
