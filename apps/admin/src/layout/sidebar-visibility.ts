@@ -22,12 +22,16 @@ function showsSettingsSidebar(handle: unknown): handle is AdminRouteHandle {
   );
 }
 
+/** Whether the current user gets the Settings navigation (Editors only see Staff). */
+export function useHasSettingsNavigation(): boolean {
+  const { data: currentUser } = useCurrentUser();
+  return !!currentUser && canAccessSettings(currentUser) && !isEditorUser(currentUser);
+}
+
 export function useIsSettingsSidebarRoute(): boolean {
   const matches = useMatches();
   const admin7Settings = useFeatureFlag('admin7settings');
-  const { data: currentUser } = useCurrentUser();
-  const hasSettingsNavigation =
-    !!currentUser && canAccessSettings(currentUser) && !isEditorUser(currentUser);
+  const hasSettingsNavigation = useHasSettingsNavigation();
 
   return (
     admin7Settings &&

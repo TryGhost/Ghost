@@ -12,6 +12,7 @@ import { useIsMobile } from '@tryghost/shade/utils';
 import { hasActiveUnsavedChangesGuard } from '@/hooks/active-unsaved-changes-guards';
 import { matchAdminRoutes } from '@/routes';
 import { shouldRunScreenTransition } from './screen-transition';
+import { useHasSettingsNavigation } from './sidebar-visibility';
 
 // The parts of the page that fade out before entering a surface (index.css)
 const EXIT_TARGETS = '.screen-exit-content, .screen-exit-sidebar, .screen-exit-mobile-nav';
@@ -54,8 +55,11 @@ export function ScreenTransitionProvider({ children }: { children: ReactNode }) 
   const settingsSidebarEnabled = useFeatureFlag('admin7settings');
   const admin7Design = useFeatureFlag('admin7Design');
   const isMobile = useIsMobile();
-  // The admin7Design desktop sidebar opens Settings inside it, animating that itself
-  const settingsInSidebar = settingsSidebarEnabled && admin7Design && !isMobile;
+  const hasSettingsNavigation = useHasSettingsNavigation();
+  // The admin7Design desktop sidebar opens Settings inside it, animating that
+  // itself, for users who get the Settings navigation
+  const settingsInSidebar =
+    settingsSidebarEnabled && admin7Design && !isMobile && hasSettingsNavigation;
   const matches = useMatches();
   const location = useLocation();
   // True from the router starting a view transition to or from this screen until it finishes
