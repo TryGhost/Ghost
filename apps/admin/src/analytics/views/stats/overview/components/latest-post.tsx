@@ -328,7 +328,7 @@ const LatestPost: React.FC<LatestPostProps> = ({ latestPostStats, isLoading }) =
                 <Button
                   variant="secondary"
                   onClick={() => {
-                    navigate('/editor/post', { crossApp: true });
+                    navigate('/editor/post');
                   }}
                 >
                   New post

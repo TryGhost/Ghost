@@ -3,11 +3,11 @@ import React, { useState } from 'react';
 import UniversalImportModal from './universal-import-modal';
 import { Button } from '@tryghost/shade/components';
 import { LucideIcon } from '@tryghost/shade/utils';
-import { useSettingsNavigation } from '@/settings/hooks/use-settings-navigation';
+import { useNavigate } from '@tryghost/admin-x-framework';
 import { DialogPortal } from '@/settings/providers/dialog-portal';
 
 const MigrationToolsImport: React.FC = () => {
-  const { updateRoute } = useSettingsNavigation();
+  const navigate = useNavigate();
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
 
   const handleImportContent = () => {
@@ -18,32 +18,32 @@ const MigrationToolsImport: React.FC = () => {
     {
       icon: <BrandIcon className="w-auto" name="substack" size={18} />,
       title: 'Substack',
-      onClick: () => updateRoute({ isExternal: true, route: '/migrate/substack' }),
+      onClick: () => navigate('/migrate/substack'),
     },
     {
       icon: <BrandIcon className="w-auto" name="beehiiv" size={18} />,
       title: 'beehiiv',
-      onClick: () => updateRoute({ isExternal: true, route: '/migrate/beehiiv' }),
+      onClick: () => navigate('/migrate/beehiiv'),
     },
     {
       icon: <BrandIcon className="w-auto" name="wordpress" size={18} />,
       title: 'WordPress',
-      onClick: () => updateRoute({ isExternal: true, route: '/migrate/wordpress' }),
+      onClick: () => navigate('/migrate/wordpress'),
     },
     {
       icon: <BrandIcon className="w-auto" name="squarespace" size={18} />,
       title: 'Squarespace',
-      onClick: () => updateRoute({ isExternal: true, route: '/migrate/squarespace' }),
+      onClick: () => navigate('/migrate/squarespace'),
     },
     {
       icon: <BrandIcon className="w-auto dark:invert" name="medium" size={18} />,
       title: 'Medium',
-      onClick: () => updateRoute({ isExternal: true, route: '/migrate/medium' }),
+      onClick: () => navigate('/migrate/medium'),
     },
     {
       icon: <BrandIcon className="w-auto" name="mailchimp" size={20} />,
       title: 'Mailchimp',
-      onClick: () => updateRoute({ isExternal: true, route: '/migrate/mailchimp' }),
+      onClick: () => navigate('/migrate/mailchimp'),
     },
     {
       icon: <LucideIcon.Import className="size-4" />,

@@ -46,9 +46,7 @@ export function currentRoute(): string {
 
 /**
  * Boots the real admin app (the same provider stack as src/main.tsx) at the
- * given hash route, e.g. "/tags" or "/members?filter=label:VIP". Cross-app
- * navigations are recorded on `document.body.dataset.externalNavigate`
- * instead of navigating. Resolves
+ * given hash route, e.g. "/tags" or "/members?filter=label:VIP". Resolves
  * with the render and the `queryClient` it booted.
  */
 export async function renderAdminApp(
@@ -93,11 +91,7 @@ export async function renderAdminApp(
     '',
   );
 
-  const framework = createFrameworkProps({
-    externalNavigate: (link) => {
-      document.body.dataset.externalNavigate = JSON.stringify(link);
-    },
-  });
+  const framework = createFrameworkProps();
 
   const rendered = await render(<AdminAppRoot framework={framework} />, { container: rootElement });
   return Object.assign(rendered, { queryClient: framework.queryClient });

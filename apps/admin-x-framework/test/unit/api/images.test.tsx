@@ -29,7 +29,6 @@ import { getImageUrl, useUploadImage } from '../../../src/api/images';
 
 const wrapper: React.FC<{ children: ReactNode }> = ({ children }) => (
   <FrameworkProvider
-    externalNavigate={() => {}}
     ghostVersion="5.x"
     unsplashConfig={{
       Authorization: '',

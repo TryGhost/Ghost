@@ -3,18 +3,6 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactNode, createContext, useContext, useMemo } from 'react';
 import queryClient from '../utils/query-client';
 
-export type ExternalLink = {
-  isExternal: true;
-  route: string;
-  replace?: boolean;
-};
-
-export type InternalLink = {
-  isExternal?: false;
-  route: string;
-  replace?: boolean;
-};
-
 // Stats-specific configuration
 export interface StatsConfig {
   endpoint?: string;
@@ -31,7 +19,6 @@ export interface StatsConfig {
 
 export interface FrameworkProviderProps {
   ghostVersion: string;
-  externalNavigate: (link: ExternalLink) => void;
   unsplashConfig: {
     Authorization: string;
     'Accept-Version': string;
@@ -64,7 +51,6 @@ export const defaultUnsplashConfig: FrameworkProviderProps['unsplashConfig'] = {
 
 const FrameworkContext = createContext<FrameworkContextType>({
   ghostVersion: '',
-  externalNavigate: () => {},
   unsplashConfig: {
     Authorization: '',
     'Accept-Version': '',
