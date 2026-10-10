@@ -109,9 +109,10 @@ describe('Floating sidebar (admin7Design)', () => {
     const trigger = sidebarScreen.floatingTrigger(SITE_TITLE);
     await expect.element(trigger).toHaveAttribute('aria-expanded', 'false');
 
-    // The skip link comes first in the tab order, then the circle
-    await userEvent.tab();
-    await userEvent.tab();
+    // The skip link and the frame's top bar come first in the tab order, then the circle
+    for (let tabs = 0; tabs < 20 && document.activeElement !== trigger.element(); tabs++) {
+      await userEvent.tab();
+    }
     await expect.element(trigger).toHaveFocus();
     await expect.element(trigger).toHaveAttribute('aria-expanded', 'true');
     await expect.element(sidebarScreen.navLink('Tags')).toBeVisible();
