@@ -23,6 +23,7 @@ import type { PublishFlowPost } from './publish/flow-post';
 import { CompletionFailureError, describeCompletionFailure } from './publish/completion-message';
 import { usePublishInputs } from './publish/use-publish-inputs';
 import { usePublishLimits } from './publish/use-publish-limits';
+import { usePublishNavigation } from './publish/use-publish-navigation';
 import { useEditorSettings } from './use-editor-settings';
 import { stateSaveError } from './session/error-mapping';
 import type { InvalidField } from './session/settings-fields';
@@ -397,6 +398,7 @@ function PublishActions({
   const navigate = useNavigate();
   const inputs = usePublishInputs();
   const limits = usePublishLimits();
+  const navigation = usePublishNavigation(session.slug, session.getSaveSnapshot);
   const { data: settingsData } = useEditorSettings();
   const siteTitle = getSettingValue<string>(settingsData?.settings ?? null, 'title') ?? undefined;
   const paywallImprovements = useFeatureFlag('paywallImprovements', {
@@ -607,6 +609,7 @@ function PublishActions({
           animate={!openedFromPreview}
           dispatch={session.dispatchPublish}
           limits={limits}
+          navigation={navigation}
           paywallImprovements={paywallImprovements}
           post={post}
           requestReauth={requestReauth}

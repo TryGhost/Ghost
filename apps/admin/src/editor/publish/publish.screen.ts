@@ -25,6 +25,7 @@ import {
   publishScheduleDate,
   publishScheduleTime,
   publishSettingEmailRecipients,
+  publishSettingNavigation,
   publishSettingPublishAt,
   publishSettingPublishType,
   tkReminderDialog,
@@ -37,6 +38,7 @@ import {
 const SETTINGS = {
   'publish-type': publishSettingPublishType,
   'email-recipients': publishSettingEmailRecipients,
+  navigation: publishSettingNavigation,
   'publish-at': publishSettingPublishAt,
 } as const;
 
@@ -51,6 +53,10 @@ export const publishScreen = {
   emailError: () => page.getByTestId(publishEmailErrorStep),
   /** The collapsed row's toggle button. */
   setting: (name: keyof typeof SETTINGS) => page.getByTestId(SETTINGS[name]).getByRole('button'),
+  navigationSetting: () => page.getByTestId(publishSettingNavigation),
+  /** A placement in the expanded navigation row. */
+  navigationPlacement: (label: 'None' | 'Primary' | 'Secondary') =>
+    page.getByTestId(publishSettingNavigation).getByRole('radio', { name: label, exact: true }),
   scheduleDate: () => page.getByTestId(publishScheduleDate),
   scheduleCalendarButton: () =>
     page

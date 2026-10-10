@@ -80,6 +80,29 @@ class DynamicRoutingService {
     return settings.yamlSource;
   }
 
+  // Use the active routers and their redirect rules, in registration order,
+  // so Admin identifies pages the same way as the site's slug redirects.
+  get pageRoutes() {
+    const routes = new Map();
+    const routers = Object.values(this.routerManager?.registry?.routers || {});
+
+    for (const router of routers) {
+      if (!router.route?.value || !router.data) {
+        continue;
+      }
+
+      const entries = typeof router.data === 'string' ? [router.data] : Object.values(router.data);
+      for (const entry of entries) {
+        const slug = typeof entry === 'string' ? entry.split('.')[1] : entry.slug;
+        if (slug && !routes.has(slug) && router.isRedirectEnabled('pages', slug)) {
+          routes.set(slug, router.route.value);
+        }
+      }
+    }
+
+    return Object.fromEntries(routes);
+  }
+
   async upload(yamlContent) {
     const parseYaml = require('./yaml-parser');
     const { parseRouteSettings } = require('./route-settings-parser');

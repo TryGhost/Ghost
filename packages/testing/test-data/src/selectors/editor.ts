@@ -118,6 +118,7 @@ export const publishFlowPreview = 'publish-flow-preview';
 export const publishSettingPublishType = 'publish-setting-publish-type';
 export const publishSettingEmailRecipients = 'publish-setting-email-recipients';
 export const publishSettingPublishAt = 'publish-setting-publish-at';
+export const publishSettingNavigation = 'publish-setting-navigation';
 export const publishAlreadySent = 'publish-already-sent';
 export const publishTypeError = 'publish-type-error';
 export const publishEmailSizeWarning = 'publish-email-size-warning';

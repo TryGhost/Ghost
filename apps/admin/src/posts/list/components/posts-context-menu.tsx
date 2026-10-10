@@ -29,6 +29,9 @@ const POST_MENU_ICONS: Record<PostContextMenuKey, typeof LucideIcon.Link> = {
   'change-access': LucideIcon.Lock,
   duplicate: LucideIcon.Copy,
   delete: LucideIcon.Trash2,
+  'navigation-primary': LucideIcon.PanelTop,
+  'navigation-secondary': LucideIcon.PanelBottom,
+  'navigation-remove': LucideIcon.CircleMinus,
 };
 
 interface PostsContextMenuProps {
@@ -99,7 +102,7 @@ export function PostsContextMenu({
               )}
               <ContextMenuItem
                 data-testid={`post-menu-${item.key}`}
-                disabled={!IMPLEMENTED_POST_ACTIONS.has(item.key)}
+                disabled={item.disabled || !IMPLEMENTED_POST_ACTIONS.has(item.key)}
                 variant={item.destructive ? 'destructive' : undefined}
                 onSelect={() => {
                   void onAction(item.key);

@@ -1,5 +1,6 @@
 import { apiUrl } from '@tryghost/admin-x-framework/helpers';
 import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react';
+import { toast } from 'sonner';
 import { useFetchApi } from '@tryghost/admin-x-framework/hooks';
 import { useEmailSendingStatus, useRetryEmail } from '@tryghost/admin-x-framework/api/emails';
 import { postEmailResponseSchema, publishedPostCountResponseSchema } from './api-response-schemas';
@@ -19,6 +20,8 @@ import { isSessionInvalid } from '@/editor/session/error-mapping';
 import { useMinimumDuration } from '@/hooks/use-minimum-duration';
 import { writePublishCelebration } from './celebration-handoff';
 import type { PublishFlowPost } from './flow-post';
+import type { PublishNavigation } from './use-publish-navigation';
+import type { NavigationPlacement } from '@tryghost/admin-x-framework/helpers';
 import type {
   PublishDispatcher,
   PublishLimitPorts,
@@ -43,6 +46,8 @@ export interface PublishFlowOptions {
   site: PublishSiteInput;
   user: PublishUserInput;
   limits?: PublishLimitPorts;
+  /** The page's site navigation placement; absent when it cannot be changed. */
+  navigation?: PublishNavigation | null;
   /** The machine's clock, injected for tests. */
   now?: () => Date;
   dispatch: PublishDispatcher;
@@ -60,7 +65,12 @@ export interface PublishFlowOptions {
 
 type PublishOptionActions = Pick<
   PublishOptionsMachine,
-  'setPublishType' | 'setNewsletter' | 'setRecipientFilter' | 'setScheduledAt' | 'setIsScheduled'
+  | 'setPublishType'
+  | 'setNewsletter'
+  | 'setRecipientFilter'
+  | 'setScheduledAt'
+  | 'setIsScheduled'
+  | 'setNavigationPlacement'
 >;
 
 export interface PublishFlow extends PublishOptionActions {
@@ -87,6 +97,8 @@ export interface PublishFlow extends PublishOptionActions {
     isScheduled: boolean;
     /** An email type was chosen with no recipients, so the post publishes without one. */
     skipsEmail: boolean;
+    /** The navigation the page will be listed in, when the flow offers the choice. */
+    navigationPlacement: NavigationPlacement;
   };
   retryLimits: () => void;
   toConfirm: () => void;
@@ -108,6 +120,8 @@ const UNKNOWN_EMAIL_ERROR = 'Unknown error';
 const UNKNOWN_RETRY_ERROR = 'Unknown Error occurred when attempting to resend';
 export const SCHEDULE_PASSED =
   'The scheduled time has passed. Go back and choose a future date and time.';
+export const NAVIGATION_SAVE_FAILED =
+  "Page published, but its navigation couldn't be updated. You can change it in Settings → Navigation.";
 
 /** The error the flow opens on: set only for a published or sent post whose email failed. */
 export function initialEmailError(post: PublishFlowPost): string | null {
@@ -126,6 +140,7 @@ function captureIntent(state: PublishOptionsState): PublishFlow['captured'] {
     willOnlyEmail: state.willOnlyEmail,
     isScheduled: state.isScheduled,
     skipsEmail: state.missingRecipients && state.willPublish,
+    navigationPlacement: state.showNavigationOption ? state.navigationPlacement : null,
   };
 }
 
@@ -134,6 +149,7 @@ export function usePublishFlow({
   site,
   user,
   limits,
+  navigation,
   now,
   dispatch,
   requestReauth,
@@ -147,8 +163,8 @@ export function usePublishFlow({
 
   // The machine reads its inputs once, so it is keyed on the post rather than on
   // the identity of props a re-rendering caller rebuilds.
-  const inputs = useRef({ post, site, user, limits, now });
-  inputs.current = { post, site, user, limits, now };
+  const inputs = useRef({ post, site, user, limits, navigation, now });
+  inputs.current = { post, site, user, limits, navigation, now };
   const requestReauthRef = useRef(requestReauth);
   requestReauthRef.current = requestReauth;
   const activeRef = useRef(true);
@@ -187,6 +203,7 @@ export function usePublishFlow({
       site: current.site,
       user: current.user,
       limits: current.limits,
+      navigation: current.navigation ? { placement: current.navigation.placement } : null,
       now: current.now,
     });
   }, [post.id]);
@@ -212,6 +229,10 @@ export function usePublishFlow({
       },
       setIsScheduled: (value) => {
         machine.setIsScheduled(value);
+        refresh();
+      },
+      setNavigationPlacement: (value) => {
+        machine.setNavigationPlacement(value);
         refresh();
       },
     }),
@@ -359,6 +380,7 @@ export function usePublishFlow({
         willOnlyEmail: post.emailOnly === true || post.status === 'sent',
         isScheduled: false,
         skipsEmail: false,
+        navigationPlacement: null,
       };
     }
 
@@ -563,6 +585,9 @@ export function usePublishFlow({
     }
 
     const { isScheduled, willEmailImmediately, willEmail } = state;
+    const navigationChange = state.navigationPlacementChanged
+      ? { placement: state.navigationPlacement, port: inputs.current.navigation }
+      : null;
 
     try {
       await onBeforePublish?.();
@@ -612,8 +637,20 @@ export function usePublishFlow({
     if (!activeRef.current) {
       return;
     }
-    setPublishInFlight(false);
     const completionFailure = describeCompletionFailure(completion);
+
+    // A failed navigation write doesn't undo or fail the publish that landed.
+    if (!completionFailure && navigationChange?.port) {
+      try {
+        await navigationChange.port.place(navigationChange.placement);
+      } catch {
+        toast.error(NAVIGATION_SAVE_FAILED);
+      }
+      if (!activeRef.current) {
+        return;
+      }
+    }
+    setPublishInFlight(false);
 
     if (completionFailure) {
       publishRunningRef.current = false;

@@ -6,13 +6,14 @@ It is pure TypeScript. It imports no React and performs no network calls; every 
 
 ## Inputs
 
-| Input    | Contents                                                                                                                                     |
-| -------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
-| `post`   | `status`, `isPage`, `visibility`, `tiers`, the persisted `newsletter` slug and `emailSegment`, and the post's `email` record when one exists |
-| `site`   | `membersEnabled`, `mailgunConfigured`, `editorDefaultEmailRecipients` and its filter, `memberCount`, and the full `newsletters` list         |
-| `user`   | `isAdmin` and `isAuthorOrContributor`, which decide whether each limit is evaluated                                                          |
-| `limits` | Optional ports for the sending and publishing limit checks                                                                                   |
-| `now`    | Optional clock, injected for tests                                                                                                           |
+| Input        | Contents                                                                                                                                     |
+| ------------ | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| `post`       | `status`, `isPage`, `visibility`, `tiers`, the persisted `newsletter` slug and `emailSegment`, and the post's `email` record when one exists |
+| `site`       | `membersEnabled`, `mailgunConfigured`, `editorDefaultEmailRecipients` and its filter, `memberCount`, and the full `newsletters` list         |
+| `user`       | `isAdmin` and `isAuthorOrContributor`, which decide whether each limit is evaluated                                                          |
+| `limits`     | Optional ports for the sending and publishing limit checks                                                                                   |
+| `navigation` | Optional: the page's current site navigation placement, present only when the menus can be changed                                           |
+| `now`        | Optional clock, injected for tests                                                                                                           |
 
 Inputs are read once, at creation: the machine is built after the data it needs has loaded, and replaced rather than updated when the post changes.
 
@@ -140,9 +141,13 @@ Both blocks feed the state directly. An email block disables the email publish t
 
 The editor supplies the ports through `usePublishLimits()`, which backs them with the framework's limiter and the editor's settings and config reads. Only a `HostLimitError` from the limiter is a reached limit; any other rejection becomes a `LimitCheckError`. The limiter counts a failed member read as zero members, which passes, so the members port also reads the member-count query's state after the check and fails closed when that read failed during it. The limiter loads only the two limits the flow checks (`members` and `emails` under the host's `hostSettings.limits`), so opening the editor never reads the staff lists the other limits count. `refreshSettings` refetches the site settings and rejects when that read fails; `checkSendingLimit` asks the limiter whether one more send would exceed the monthly `emails` limit, counting the recipients of every email created since the period started; `checkPublishingLimit` asks whether the site is already over its `members` limit; and `getEmailVerification` reads `email_verification_required` from the refreshed settings, with the host's `hostSettings.emailVerification.emailSendingDisabledMessage` as its copy. A site without a limit configured, or one whose limiter has not loaded, passes every check. The ports read the latest hook values each time they run, so the machine can capture them once at creation.
 
+## Navigation placement
+
+An admin publishing a page can list it in the site's primary or secondary navigation, or in neither. `showNavigationOption` holds for a page, an admin user and a `navigation` input, and not while scheduling, since the page's URL is not live until the schedule lands. `navigationPlacement` is the page's current placement until `setNavigationPlacement()` chooses one; `navigationPlacementChanged` reports a choice that differs from it while the option is on offer, which is what makes publishing write the menus. `NAVIGATION_OPTIONS` lists the three choices with their labels and collapsed titles.
+
 ## Dirty state and reset
 
-`isDirty` compares the publish type, scheduling, newsletter and recipient filter against the values the machine started with; selecting the value that was already there is not a change. The scheduled time counts only while scheduling is on or the user has actually chosen a time, so turning scheduling on and back off leaves the state clean.
+`isDirty` compares the navigation placement, publish type, scheduling, newsletter and recipient filter against the values the machine started with; selecting the value that was already there is not a change. The scheduled time counts only while scheduling is on or the user has actually chosen a time, so turning scheduling on and back off leaves the state clean.
 
 `reset()` restores every option and re-arms the automatic type fallback that `setPublishType()` disables. It takes a fresh scheduled time from the current clock, since the floor the machine was created with may itself have passed.
 
@@ -169,7 +174,7 @@ The flow is a four-way branch, taken in this order:
 | The user asked for the final review | `ConfirmStep`                |
 | Otherwise                           | `OptionsStep`                |
 
-`OptionsStep` is an accordion of the three settings — publish type, email recipients, publish time — with at most one section open, plus the read-only row describing a send the post already had, which is hidden while the site has newsletters or members turned off. While `willEmail` holds, the publish type row carries the email size warning when the post's email is estimated at 100kB or more; the estimate is the editor's, described in [the editor README](../README.md#email-size). Its continue button waits for `checkLimits()`, since a block landing late demotes the publish type and the user must not carry a stale choice into the review. `ConfirmStep` captures the publish intent on entry, so the copy on the button and in the sentence cannot change while the save is in flight. `CompleteStep` shows the post as a bookmark card and, for a schedule, offers the revert.
+`OptionsStep` is an accordion of the settings — publish type, email recipients, navigation placement while `showNavigationOption` holds, publish time — with at most one section open, plus the read-only row describing a send the post already had, which is hidden while the site has newsletters or members turned off. While `willEmail` holds, the publish type row carries the email size warning when the post's email is estimated at 100kB or more; the estimate is the editor's, described in [the editor README](../README.md#email-size). Its continue button waits for `checkLimits()`, since a block landing late demotes the publish type and the user must not carry a stale choice into the review. `ConfirmStep` captures the publish intent on entry, so the copy on the button and in the sentence cannot change while the save is in flight. `CompleteStep` shows the post as a bookmark card and, for a schedule, offers the revert.
 
 ## Gates
 
@@ -198,6 +203,12 @@ A schedule is checked against the clock twice, since the chosen time can pass wh
 
 No completion closes the modal or navigates. Successful completion writes the celebration handoff (`ghost-last-published-post` or `ghost-last-scheduled-post`), and calls `onCompleted` so the caller can navigate; where the user lands is the caller's decision, not this component's. The editor sets `showCompletion={false}` to keep the current step pending until navigation unmounts it, avoiding a flash of the fallback completion screen while the destination loads. Other callers show the completion screen by default.
 
+## Navigation
+
+The editor supplies the `navigation` input through `usePublishNavigation()`, which reads the page's placement from the settings, page routes and site URL the editor already holds. It is absent while either menu is missing, malformed or read-only, or before the page has a slug. A page assigned to a custom route is matched by that route, and on a backend without page routes by its slug URL.
+
+The confirm step says the page will be "listed in your primary navigation" (or secondary) whenever the option is on offer and a menu is chosen, whether or not that changes anything. After a publish lands with a changed placement, the flow refetches the settings, moves or adds the page's link in the latest menus without disturbing the other links, and saves both menus before it completes. An existing link keeps its label, icon and visibility when it moves; a new link uses the page title and a URL relative to the site. A failed write leaves the page published and says so in a toast, pointing to Settings → Navigation. The flow is rebuilt each time it opens, so a choice that was never published is discarded.
+
 ## Sending
 
 A publish that emails immediately is not done when the save acknowledges: the email is submitted asynchronously, which takes minutes on a large site. The flow does not wait for it. `useMinimumDuration` keeps the confirm button in its running state for at least `MIN_EMAIL_HANDOFF_LENGTH` (1.5 seconds) from the click, so the hand-off to analytics is not instant: once the save is acknowledged the flow holds for whatever remains, and a slower save hands off as soon as it lands. A torn-down flow releases the hold and completes nothing. The caller is told the post has an email, so it can route to post analytics, which reports the send's progress and any failure. Closing the flow marks every pending pre-save, save and retry continuation as abandoned, so none can complete the post journey after the caller closes it.
@@ -213,6 +224,8 @@ The email-error step offers the retry only when Core says the failed send is ret
 ## Requests
 
 Every request the flow makes passes the editor's shared request options, which opt out of the transport's session-expiry redirect: the two it issues directly (the post reload behind "Check retry availability" and the published-post count), the settings, config, newsletter, tier, label and recipient-count reads behind its hooks, the member and email counts the limit ports read through the limiter, and the email retry, which carries the same flag on its mutation payload. An expired session is left to surface where the user is — as an uncounted audience or an error on the email-error step.
+
+The navigation write goes through the framework's settings mutation, which keeps the redirect; the page has been saved by then.
 
 Where the writer cannot go on without the request, an expired session (a 401, or the 403 "Authorization failed" Core answers for a session it no longer accepts) asks them to sign in through `requestReauth` instead of repeating a request that can only fail again: a limit check, the retry-eligibility read and the email retry each run again once they are back. Each runs again once per sign-in: a session gone again straight after the writer signed in fails rather than asking again, so the writer is never asked in a loop. Abandoning the sign-in, or that second failure, says the session expired, and the step's own "Try again", "Check retry availability" or retry asks once more. An eligibility read asks once per failure: background reads that fail the same way do not ask again until a read succeeds or the writer checks again. The editor does the same for the publish inputs: a read that finds the session gone opens the sign-in dialog once and reads again, a later background read that fails the same way leaves the error and its Retry, and Retry asks again; Publish opens once the inputs have loaded. The sign-in dialog sits over the publish flow, so a limit check that finds the session gone with the flow open resumes once the writer signs in there.
 

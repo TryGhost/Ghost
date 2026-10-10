@@ -95,7 +95,20 @@ export function ConfirmStep({
         )}{' '}
         {post.displayName}
         {captured.willPublish ? (
-          <> will be published on your site{captured.willEmail ? ', and delivered to' : '.'}</>
+          <>
+            {' '}
+            will be published on your site
+            {captured.willEmail ? (
+              ', and delivered to'
+            ) : captured.navigationPlacement ? (
+              <>
+                {' '}
+                and listed in your <strong>{captured.navigationPlacement} navigation</strong>.
+              </>
+            ) : (
+              '.'
+            )}
+          </>
         ) : null}
         {captured.willEmail ? (
           <>

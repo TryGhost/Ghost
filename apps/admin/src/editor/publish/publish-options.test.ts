@@ -5,6 +5,7 @@ import {
   EMAIL_VERIFICATION_HOLD_MESSAGE,
   LimitCheckError,
   MIN_SCHEDULE_LEAD_MS,
+  NAVIGATION_OPTIONS,
   createPublishOptions,
   getDefaultRecipientFilter,
   getEmailDisabledReason,
@@ -1197,6 +1198,88 @@ describe('checkLimits', () => {
 
     expect(machine.getState().emailBlock).toBeNull();
     expect(machine.getState().publishType).toBe('publish+send');
+  });
+});
+
+describe('navigation placement', () => {
+  const page = (placement: 'primary' | 'secondary' | null = null) =>
+    create({ post: createPost({ isPage: true }), navigation: { placement } });
+
+  it('offers the three placements with their collapsed titles', () => {
+    expect(NAVIGATION_OPTIONS.map(({ value, label, display }) => [value, label, display])).toEqual([
+      ['none', 'None', 'Not in site navigation'],
+      ['primary', 'Primary', 'Primary navigation'],
+      ['secondary', 'Secondary', 'Secondary navigation'],
+    ]);
+  });
+
+  it('follows the current placement until one is chosen', () => {
+    const machine = page('primary');
+
+    expect(machine.getState()).toMatchObject({
+      showNavigationOption: true,
+      navigationPlacement: 'primary',
+      navigationPlacementChanged: false,
+      isDirty: false,
+    });
+
+    machine.setNavigationPlacement('secondary');
+    expect(machine.getState()).toMatchObject({
+      navigationPlacement: 'secondary',
+      navigationPlacementChanged: true,
+      isDirty: true,
+    });
+
+    machine.setNavigationPlacement(null);
+    expect(machine.getState().navigationPlacement).toBeNull();
+    expect(machine.getState().navigationPlacementChanged).toBe(true);
+
+    machine.setNavigationPlacement('primary');
+    expect(machine.getState().navigationPlacementChanged).toBe(false);
+    expect(machine.getState().isDirty).toBe(false);
+  });
+
+  it.each<[string, Partial<PublishOptionsInputs>]>([
+    ['posts', { post: createPost({ isPage: false }), navigation: { placement: null } }],
+    [
+      'non-admins',
+      {
+        post: createPost({ isPage: true }),
+        user: createUser({ isAdmin: false }),
+        navigation: { placement: null },
+      },
+    ],
+    ['pages whose navigation cannot be changed', { post: createPost({ isPage: true }) }],
+  ])('is not offered for %s', (_name, overrides) => {
+    const machine = create(overrides);
+
+    machine.setNavigationPlacement('primary');
+
+    expect(machine.getState().showNavigationOption).toBe(false);
+    expect(machine.getState().navigationPlacementChanged).toBe(false);
+  });
+
+  it('is not offered, and changes nothing, while scheduled', () => {
+    const machine = page();
+
+    machine.setNavigationPlacement('primary');
+    machine.setIsScheduled(true);
+
+    expect(machine.getState().showNavigationOption).toBe(false);
+    expect(machine.getState().navigationPlacementChanged).toBe(false);
+
+    machine.setIsScheduled(false);
+    expect(machine.getState().navigationPlacementChanged).toBe(true);
+  });
+
+  it('restores the current placement on reset', () => {
+    const machine = page('secondary');
+
+    machine.setNavigationPlacement(null);
+    machine.reset();
+
+    expect(machine.getState().navigationPlacement).toBe('secondary');
+    expect(machine.getState().navigationPlacementChanged).toBe(false);
   });
 });
 
