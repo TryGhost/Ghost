@@ -14,8 +14,8 @@ pnpm reset:data
 This clears generated data from the checkout's development database, preserves
 the owner account, and creates 1,000 members and 100 posts using a fixed seed.
 The main checkout uses the `ghost_dev` database and a worktree uses its own
-`dev_<worktree>` database, as described in
-[development setup](development-setup.md#worktrees).
+`dev_<worktree>` database, which starts as a copy of `ghost_dev`, as described
+in [development setup](development-setup.md#worktrees).
 
 Other prepared datasets are available:
 
