@@ -74,16 +74,13 @@ const PIN_BUTTON_RIGHT = 14;
 const PANEL_HEIGHT = `calc(100vh - ${INSET * 2}px)`;
 
 /** Frosted body: a faint tint so the capsule reads as a surface, a light-catching outline and a backdrop blur. */
-const GLASS =
-  'border border-white/70 bg-[rgba(248,248,248,0.5)] backdrop-blur-md backdrop-saturate-150 dark:border-white/10 dark:bg-[rgba(32,32,34,0.55)]';
+const GLASS = 'border border-border-glass bg-surface-glass backdrop-blur-md backdrop-saturate-150';
 
-/** Floating: inset highlights, a hairline outline and a layered drop shadow. Six layers, matching the pinned shadow 1:1 so the two interpolate. */
-const SHADOW_FLOAT =
-  'inset 0 1px 0 rgba(255,255,255,0.55), inset 0 -1px 0 rgba(255,255,255,0.12), 0 0 0 0.5px rgba(0,0,0,0.06), 0 40px 60px -15px rgba(0,0,0,0.18), 0 12px 24px -8px rgba(0,0,0,0.1), 0 3px 8px rgba(0,0,0,0.04)';
+/** Floating: inset highlights, a hairline outline and a layered drop shadow. */
+const SHADOW_FLOAT = 'var(--shadow-glass-floating)';
 
 /** Pinned: only a 1px outline; the other layers fade out so the panel reads as anchored. */
-const SHADOW_PINNED =
-  'inset 0 1px 0 rgba(255,255,255,0), inset 0 -1px 0 rgba(255,255,255,0), 0 0 0 1px rgba(0,0,0,0.06), 0 8px 24px -10px rgba(0,0,0,0), 0 4px 12px -4px rgba(0,0,0,0), 0 2px 6px rgba(0,0,0,0)';
+const SHADOW_PINNED = 'var(--shadow-glass-docked)';
 
 // Popups opened from the panel render in portals: the panel stays open under
 // them, and the hot zone ignores the pointer over them.
@@ -147,12 +144,8 @@ function GlassHighlight() {
   return (
     <div
       aria-hidden="true"
-      className="pointer-events-none absolute inset-0 dark:opacity-30"
-      style={{
-        borderRadius: 'inherit',
-        background:
-          'linear-gradient(180deg, rgba(255,255,255,0.22) 0%, rgba(255,255,255,0) 18%, rgba(255,255,255,0) 85%, rgba(255,255,255,0.06) 100%)',
-      }}
+      className="pointer-events-none absolute inset-0"
+      style={{ borderRadius: 'inherit', background: 'var(--surface-glass-highlight)' }}
     />
   );
 }
@@ -842,7 +835,7 @@ const FloatingSidebar = React.forwardRef<HTMLDivElement, FloatingSidebarProps>(
                 aria-hidden={pinLocked || undefined}
                 aria-label={pinned ? unpinLabel : pinLabel}
                 className={cn(
-                  'absolute z-10 flex size-7 cursor-pointer items-center justify-center rounded-full text-muted-foreground transition-[opacity,color,background-color] duration-200 hover:bg-black/5 hover:text-foreground focus-visible:pointer-events-auto focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:outline-hidden dark:hover:bg-white/10',
+                  'absolute z-10 flex size-7 cursor-pointer items-center justify-center rounded-full text-muted-foreground transition-[opacity,color,background-color] duration-200 hover:bg-interactive-hover hover:text-foreground focus-visible:pointer-events-auto focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:outline-hidden',
                   // Follows the hover state, not pinning, so it hides when the
                   // pointer leaves a pinned panel too
                   open && !pinLocked
