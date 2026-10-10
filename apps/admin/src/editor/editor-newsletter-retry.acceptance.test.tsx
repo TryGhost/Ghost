@@ -23,7 +23,6 @@ import { deferred } from '@/utils/deferred';
 
 const POST_ID = 'abc123';
 const EMAIL_ID = 'email-1';
-const FLAG_ON = { labs: { editorReact: true } };
 const SEND_ERROR = 'The email service was unavailable.';
 const CURRENT_USER_ID = String(currentUserResponse().users[0].id);
 
@@ -100,7 +99,7 @@ function fakeFailedSend(overrides: Partial<Post>, error: string | null = SEND_ER
 function asRole(name: StaffRoleName) {
   const me = currentUserResponse();
   me.users[0].roles = [staffRole({ name })];
-  return { ...FLAG_ON, boot: { browseMe: { response: me } } };
+  return { boot: { browseMe: { response: me } } };
 }
 
 afterEach(() => {
@@ -118,7 +117,7 @@ describe('Editor newsletter retry', () => {
     async (error) => {
       publishChrome();
       const retryApi = fakeFailedSend({ status: 'published' }, error);
-      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+      await renderAdminApp(`/editor/post/${POST_ID}`);
 
       await expect
         .element(editorScreen.status())
@@ -144,7 +143,7 @@ describe('Editor newsletter retry', () => {
     async (error) => {
       publishChrome();
       const retryApi = fakeFailedSend({ status: 'sent', email_only: true }, error);
-      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+      await renderAdminApp(`/editor/post/${POST_ID}`);
 
       await expect.element(editorScreen.status()).toHaveTextContent('Failed to send newsletter.');
       await expect.element(editorScreen.retryNewsletter()).toBeEnabled();
@@ -180,7 +179,7 @@ describe('Editor newsletter retry', () => {
       },
       { status: 400 },
     );
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`);
 
     await editorScreen.viewNewsletterDetails().click();
     await publishScreen.retryEmailButton().click();
@@ -202,7 +201,7 @@ describe('Editor newsletter retry', () => {
       { errors: [{ type: 'InternalServerError', message: 'Status unavailable' }] },
       { status: 500 },
     );
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`);
 
     await editorScreen.viewNewsletterDetails().click();
 
@@ -224,7 +223,7 @@ describe('Editor newsletter retry', () => {
       return browseResponse('newsletters', weeklyNewsletters(), { limit: 'all' });
     });
     fakeFailedSend({ status: 'published' });
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`);
 
     try {
       await expect
@@ -243,7 +242,7 @@ describe('Editor newsletter retry', () => {
   it('offers no retry on a past-scheduled post carrying an earlier failed send', async () => {
     publishChrome();
     fakeFailedSend({ status: 'scheduled' });
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`);
 
     // The flow would open this post at its options, not at the failed send.
     await expect

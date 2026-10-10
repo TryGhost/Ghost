@@ -417,7 +417,7 @@ describe('Cmd-K search', () => {
   it('opens a post in the editor', async () => {
     // the editor owns its request graph
     allowUnhandledRequests();
-    await renderAdminApp('/tags', { labs: { editorReact: true } });
+    await renderAdminApp('/tags');
     await openAndSearch('first post');
 
     await globalSearchScreen.option(/First post/).click();

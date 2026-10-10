@@ -26,7 +26,6 @@ import { postsListScreen } from '@/posts/list/posts-list.screen';
 import { deferred } from '@/utils/deferred';
 
 const POST_ID = 'abc123';
-const FLAG_ON = withoutAutosave({ labs: { editorReact: true } });
 const LOADED_AT = '2026-01-01T00:00:00.000Z';
 const MY_SAVE_AT = '2026-01-01T00:00:01.000Z';
 const THEIR_SAVE_AT = '2026-01-01T00:00:02.000Z';
@@ -61,7 +60,7 @@ type Role = 'Author' | 'Contributor';
 function bootAs(role: Role): RenderAdminAppOptions {
   const me = currentUserResponse();
   me.users[0].roles = [staffRole({ name: role })];
-  return { ...FLAG_ON, boot: { browseMe: { response: me } } };
+  return withoutAutosave({ boot: { browseMe: { response: me } } });
 }
 
 /** Core's rule for these roles: only posts they author, and for a Contributor only drafts. */
@@ -190,7 +189,7 @@ const saveShortcut = () => userEvent.keyboard('{Meta>}s{/Meta}');
 describe('Post editor refetch', () => {
   it('saves a draft against its own version after a refetch brings another writer’s', async () => {
     const shared = fakeSharedPost();
-    const { queryClient } = await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    const { queryClient } = await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
 
     const releaseReads = await saveThenTheySave(shared, saveShortcut);
     releaseReads();
@@ -214,7 +213,7 @@ describe('Post editor refetch', () => {
       status: 'published',
       published_at: '2025-12-01T00:00:00.000Z',
     });
-    const { queryClient } = await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    const { queryClient } = await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
 
     const releaseReads = await saveThenTheySave(shared, () => editorScreen.updateButton().click());
     await editorScreen.titleInput().fill('My staged title');
@@ -235,7 +234,7 @@ describe('Post editor refetch', () => {
 
   it('leaves a clean writer clean and unsaved when a refetch brings another writer’s version', async () => {
     const shared = fakeSharedPost();
-    const { queryClient } = await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    const { queryClient } = await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
 
     const releaseReads = await saveThenTheySave(shared, saveShortcut);
     // The guard clears when the save is acknowledged; the status holds "Saving…" for 3s.
@@ -251,7 +250,7 @@ describe('Post editor refetch', () => {
 
   it('saves again without a conflict once the refetch of its own save has landed', async () => {
     const shared = fakeSharedPost();
-    const { queryClient } = await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    const { queryClient } = await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
     await expect.element(editorScreen.titleInput()).toHaveValue('Hello from React');
 
     await editorScreen.titleInput().fill('My title');
@@ -277,7 +276,7 @@ describe('Post editor refetch', () => {
       const shared = fakeSharedPost({}, { type });
       // The list the back link leads to; fakeEditorChrome serves the posts list only.
       fakePages([]);
-      await renderAdminApp(`/editor/${type}/${POST_ID}`, FLAG_ON);
+      await renderAdminApp(`/editor/${type}/${POST_ID}`, withoutAutosave());
       await expect.element(editorScreen.titleInput()).toHaveValue('Hello from React');
       await editorScreen.backLink(type).click();
       await expect.poll(currentRoute).toBe(`/${type}s`);
@@ -305,7 +304,7 @@ describe('Post editor refetch', () => {
 
   it('sends a read of its own when reopened before the read after its save lands', async () => {
     const shared = fakeSharedPost();
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
     await expect.element(editorScreen.titleInput()).toHaveValue('Hello from React');
     const releaseReads = shared.holdReads();
 
@@ -354,7 +353,7 @@ describe('Post editor refetch', () => {
       return answer;
     });
     onTestFinished(() => held.forEach((gate) => gate.resolve()));
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
     await expect.poll(() => readApi.requests.length).toBe(1);
 
     // The writer leaves while the post is still loading, and nothing is cached yet.
@@ -382,7 +381,7 @@ describe('Post editor refetch', () => {
 
   it('opens the copy its own save left when the read that reopens the post fails', async () => {
     const shared = fakeSharedPost();
-    const { queryClient } = await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    const { queryClient } = await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
     await expect.element(editorScreen.titleInput()).toHaveValue('Hello from React');
 
     await editorScreen.titleInput().fill('My title');
@@ -417,7 +416,7 @@ describe('Post editor refetch', () => {
 
   it('shows a missing post rather than the cached copy when the post was deleted since', async () => {
     fakeSharedPost();
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
     await expect.element(editorScreen.titleInput()).toHaveValue('Hello from React');
     await editorScreen.backLink('post').click();
     await expect.poll(currentRoute).toBe('/posts');
@@ -496,7 +495,7 @@ describe('Post editor refetch', () => {
 
   it('keeps the editor open when a refetch brings a version stored only as mobiledoc', async () => {
     const shared = fakeSharedPost();
-    const { queryClient } = await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    const { queryClient } = await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
     const releaseReads = await saveThenTheySave(shared, saveShortcut, {
       lexical: null,
       mobiledoc: MOBILEDOC,
@@ -530,7 +529,7 @@ async function theySaveAndTheReadLands(shared: SharedPost, queryClient: QueryCli
 describe('Post editor newer version notice', () => {
   it('tells a clean writer, and Reload brings in the newer version', async () => {
     const shared = fakeSharedPost();
-    const { queryClient } = await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    const { queryClient } = await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
     await expect.element(editorScreen.titleInput()).toHaveValue('Hello from React');
 
     const theirs = await theySaveAndTheReadLands(shared, queryClient);
@@ -557,7 +556,7 @@ describe('Post editor newer version notice', () => {
 
   it('leaves a writer with unsaved work to the collision, without the notice', async () => {
     const shared = fakeSharedPost();
-    const { queryClient } = await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    const { queryClient } = await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
     await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
     await appendToBody(' and mine');
 
@@ -587,7 +586,7 @@ async function theirAltAndCaptionLanded(
     feature_image_caption: 'My caption',
     ...overrides,
   });
-  const { queryClient } = await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+  const { queryClient } = await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
   await expect.element(editorScreen.titleInput()).toHaveValue('Hello from React');
   const releaseReads = shared.holdReads();
 
