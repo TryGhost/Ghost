@@ -1,5 +1,6 @@
 import { ActivityPubHostLayoutProvider } from '@tryghost/activitypub/api';
 import React from 'react';
+import { useLocation } from '@tryghost/admin-x-framework';
 import { FLOATING_SIDEBAR_SPRING, SidebarInset, SidebarProvider } from '@tryghost/shade/components';
 import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
 import { isContributorUser } from '@tryghost/admin-x-framework/api/users';
@@ -23,6 +24,7 @@ import { MobileNavBar } from './app-sidebar/mobile-nav-bar';
 import { SkipLink } from './skip-link';
 import { ContributorUserMenu } from './app-sidebar/user-menu';
 import { DunningBanner, DunningOverlay, useDunningLockTakeover } from '@/dunning';
+import { AdminFrame, type AdminFrameMode } from './admin-frame';
 import { FloatingSidebarContentSync } from './floating-sidebar-content-sync';
 import { GlobalSearchProvider } from '@/global-search/global-search-provider';
 
@@ -108,7 +110,7 @@ interface AdminLayoutProps {
 
 export function AdminLayout({ children }: AdminLayoutProps) {
   const { data: currentUser } = useCurrentUser();
-  const sidebarVisible = useAdminSidebarVisibility();
+  const routeShowsSidebar = useAdminSidebarVisibility();
   const [settingsNavigationSlot, setSettingsNavigationSlot] = React.useState<HTMLElement | null>(
     null,
   );
@@ -117,6 +119,23 @@ export function AdminLayout({ children }: AdminLayoutProps) {
   const isSettingsRoute = useIsSettingsSidebarRoute();
   const isMobile = useIsMobile();
   const admin7Design = useFeatureFlag('admin7Design');
+  const isViewSiteRoute = useLocation().pathname === '/site';
+
+  // With admin7Design, the desktop page sits inside a frame: a top bar and
+  // thin bezels around a rounded card. View site becomes a place of its own,
+  // switched to from the top bar, so it shows without the sidebar, and
+  // full-screen screens (the editor) close the frame altogether.
+  const adminFrame = admin7Design && !isContributor;
+  const framed = adminFrame && !isMobile;
+  const sidebarVisible = routeShowsSidebar && !(framed && isViewSiteRoute);
+  let frameMode: AdminFrameMode = 'full';
+  if (!framed) {
+    frameMode = 'off';
+  } else if (!routeShowsSidebar) {
+    frameMode = 'hidden';
+  } else if (isViewSiteRoute) {
+    frameMode = 'site';
+  }
   const sidebarClassName = cn(
     SIDEBAR_PANEL_CLASS_NAME,
     SIDEBAR_SCREEN_TRANSITION_CLASS_NAME,
@@ -241,106 +260,119 @@ export function AdminLayout({ children }: AdminLayoutProps) {
     );
   }
 
+  const sidebarLayout = (
+    <SidebarProvider
+      className={cn(
+        sidebarVisible &&
+          'overflow-hidden [--content-width:1080px] [--page-gutter:20px] sidebar:[--page-gutter:40px] min-[1380px]:[--content-width:1280px] [&>main]:min-w-0',
+        // The floating capsule has its own surface
+        sidebarVisible &&
+          !floatingSidebar &&
+          '[&_[data-sidebar=sidebar]]:rounded-xl [&_[data-sidebar=sidebar]]:border-border [&_[data-sidebar=sidebar]]:shadow-none',
+      )}
+      open={sidebarOpen}
+      style={sidebarVisible ? ({ '--sidebar-width': '316px' } as React.CSSProperties) : undefined}
+      onOpenChange={floatingSidebar ? onSidebarOpenChange : undefined}
+    >
+      {floatingSidebar ? (
+        <FloatingAppSidebar
+          ref={sidebarRef}
+          animate={sidebarModeLoaded}
+          className={floatingSidebarClassName}
+          disabled={dunningLocked}
+          morphStyle={settingsPinMorph.morphStyle}
+          settingsNavigation={settingsNavigation}
+          settingsNavigationRef={setSettingsNavigationSlot}
+          onPinnedMorphEnd={settingsPinMorph.onPinnedMorphEnd}
+        />
+      ) : (
+        <>
+          {sidebarVisible &&
+            (isSettingsRoute ? (
+              <SettingsSidebar
+                ref={sidebarRef}
+                className={sidebarClassName}
+                slotRef={setSettingsNavigationSlot}
+                variant="floating"
+              />
+            ) : (
+              <AppSidebar ref={sidebarRef} className={sidebarClassName} variant="floating" />
+            ))}
+          <SidebarSwapTransition settingsRoute={isSettingsRoute} sidebarRef={sidebarRef} />
+        </>
+      )}
+      <SidebarInset
+        ref={insetRef}
+        className={cn(
+          'relative bg-background sidebar:max-h-full',
+          // Keeps the content's own stacking (sticky headers are z-50) under
+          // the capsule floating over it.
+          !sidebarPinned && 'isolate',
+          dunningLocked ? 'overflow-hidden' : 'overflow-y-auto',
+          // The page slides inside it as the sidebar pins and unpins, which
+          // mustn't show a horizontal scrollbar
+          floatingSidebar && !dunningLocked && 'overflow-x-hidden',
+          floatingSidebar && backdropInsetClassName,
+          sidebarVisible ? 'max-h-[calc(100%-var(--mobile-navbar-height))]' : 'max-h-full',
+        )}
+      >
+        <DunningBanner />
+        <main
+          ref={mainRef}
+          className={cn(
+            'flex-1 focus:outline-hidden',
+            sidebarVisible ? pageChromeClassName : 'min-h-0',
+            floatingSidebar &&
+              (sidebarPinned ? pinnedPageChromeClassName : compactPageChromeClassName),
+            isSettingsRoute && 'min-h-0',
+            // Once the bezels have retracted around it
+            frameMode === 'site' &&
+              '[&_[data-view-site-preview]]:animate-[admin-frame-fade-in_500ms_ease-out_520ms_both]',
+            'screen-exit-content',
+          )}
+        >
+          <ActivityPubHostLayoutProvider value={sidebarVisible ? networkPageChrome : undefined}>
+            {/* Only on Settings routes with their navigation: the floating
+                sidebar keeps its slot mounted, and an Editor's Settings keeps
+                the main navigation */}
+            <SettingsNavigationSlotContext.Provider
+              value={isSettingsRoute ? settingsNavigationSlot : null}
+            >
+              <SettingsSidebarMorphingContext.Provider value={settingsSidebarMorphing}>
+                {children}
+              </SettingsSidebarMorphingContext.Provider>
+            </SettingsNavigationSlotContext.Provider>
+          </ActivityPubHostLayoutProvider>
+        </main>
+        {/* The mobile nav sits outside the takeover's cover (fixed, above the
+            inset) and its sheet opens in a portal, so it unmounts entirely
+            rather than relying on inert */}
+        {!dunningLocked && <MobileNavBar />}
+        <DunningOverlay />
+      </SidebarInset>
+      {/* After the inset, so its refs are attached when this first sets its variables */}
+      {floatingSidebar && (
+        <FloatingSidebarContentSync
+          animate={sidebarModeLoaded}
+          contentRef={insetRef}
+          morphStyle={settingsPinMorph.morphStyle}
+          pinned={sidebarOpen}
+          slideRef={mainRef}
+        />
+      )}
+    </SidebarProvider>
+  );
+
   return (
     <GlobalSearchProvider>
       {!dunningLocked && <SkipLink target={mainRef} />}
-      <SidebarProvider
-        className={cn(
-          sidebarVisible &&
-            'overflow-hidden [--content-width:1080px] [--page-gutter:20px] sidebar:[--page-gutter:40px] min-[1380px]:[--content-width:1280px] [&>main]:min-w-0',
-          // The floating capsule has its own surface
-          sidebarVisible &&
-            !floatingSidebar &&
-            '[&_[data-sidebar=sidebar]]:rounded-xl [&_[data-sidebar=sidebar]]:border-border [&_[data-sidebar=sidebar]]:shadow-none',
-        )}
-        open={sidebarOpen}
-        style={sidebarVisible ? ({ '--sidebar-width': '316px' } as React.CSSProperties) : undefined}
-        onOpenChange={floatingSidebar ? onSidebarOpenChange : undefined}
-      >
-        {floatingSidebar ? (
-          <FloatingAppSidebar
-            ref={sidebarRef}
-            animate={sidebarModeLoaded}
-            className={floatingSidebarClassName}
-            disabled={dunningLocked}
-            morphStyle={settingsPinMorph.morphStyle}
-            settingsNavigation={settingsNavigation}
-            settingsNavigationRef={setSettingsNavigationSlot}
-            onPinnedMorphEnd={settingsPinMorph.onPinnedMorphEnd}
-          />
-        ) : (
-          <>
-            {sidebarVisible &&
-              (isSettingsRoute ? (
-                <SettingsSidebar
-                  ref={sidebarRef}
-                  className={sidebarClassName}
-                  slotRef={setSettingsNavigationSlot}
-                  variant="floating"
-                />
-              ) : (
-                <AppSidebar ref={sidebarRef} className={sidebarClassName} variant="floating" />
-              ))}
-            <SidebarSwapTransition settingsRoute={isSettingsRoute} sidebarRef={sidebarRef} />
-          </>
-        )}
-        <SidebarInset
-          ref={insetRef}
-          className={cn(
-            'relative bg-background sidebar:max-h-full',
-            // Keeps the content's own stacking (sticky headers are z-50) under
-            // the capsule floating over it.
-            !sidebarPinned && 'isolate',
-            dunningLocked ? 'overflow-hidden' : 'overflow-y-auto',
-            // The page slides inside it as the sidebar pins and unpins, which
-            // mustn't show a horizontal scrollbar
-            floatingSidebar && !dunningLocked && 'overflow-x-hidden',
-            floatingSidebar && backdropInsetClassName,
-            sidebarVisible ? 'max-h-[calc(100%-var(--mobile-navbar-height))]' : 'max-h-full',
-          )}
-        >
-          <DunningBanner />
-          <main
-            ref={mainRef}
-            className={cn(
-              'flex-1 focus:outline-hidden',
-              sidebarVisible ? pageChromeClassName : 'min-h-0',
-              floatingSidebar &&
-                (sidebarPinned ? pinnedPageChromeClassName : compactPageChromeClassName),
-              isSettingsRoute && 'min-h-0',
-              'screen-exit-content',
-            )}
-          >
-            <ActivityPubHostLayoutProvider value={sidebarVisible ? networkPageChrome : undefined}>
-              {/* Only on Settings routes with their navigation: the floating
-                sidebar keeps its slot mounted, and an Editor's Settings keeps
-                the main navigation */}
-              <SettingsNavigationSlotContext.Provider
-                value={isSettingsRoute ? settingsNavigationSlot : null}
-              >
-                <SettingsSidebarMorphingContext.Provider value={settingsSidebarMorphing}>
-                  {children}
-                </SettingsSidebarMorphingContext.Provider>
-              </SettingsNavigationSlotContext.Provider>
-            </ActivityPubHostLayoutProvider>
-          </main>
-          {/* The mobile nav sits outside the takeover's cover (fixed, above the
-            inset) and its sheet opens in a portal, so it unmounts entirely
-            rather than relying on inert */}
-          {!dunningLocked && <MobileNavBar />}
-          <DunningOverlay />
-        </SidebarInset>
-        {/* After the inset, so its refs are attached when this first sets its variables */}
-        {floatingSidebar && (
-          <FloatingSidebarContentSync
-            animate={sidebarModeLoaded}
-            contentRef={insetRef}
-            morphStyle={settingsPinMorph.morphStyle}
-            pinned={sidebarOpen}
-            slideRef={mainRef}
-          />
-        )}
-      </SidebarProvider>
+      {adminFrame ? (
+        <AdminFrame locked={dunningLocked} mode={frameMode} topBar={null}>
+          {sidebarLayout}
+        </AdminFrame>
+      ) : (
+        sidebarLayout
+      )}
     </GlobalSearchProvider>
   );
 }
