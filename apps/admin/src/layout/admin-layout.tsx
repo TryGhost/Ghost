@@ -246,6 +246,10 @@ export function AdminLayout({ children }: AdminLayoutProps) {
   // the live page, and the new screen fades in under it.
   const frameClosed = frameMode === 'hidden';
   const previousFrameClosed = React.useRef(frameClosed);
+  // The sidebar reappears as the frame opens back out, under a pointer that
+  // may be on its way across it to the page (e.g. from the editor's back
+  // button), so passing over it doesn't open it until the pointer settles
+  const sidebarReturning = previousFrameClosed.current && !frameClosed;
   React.useLayoutEffect(() => {
     if (previousFrameClosed.current === frameClosed) {
       return;
@@ -305,6 +309,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
         <FloatingAppSidebar
           ref={sidebarRef}
           animate={sidebarModeLoaded}
+          armHoverOnRest={sidebarReturning}
           className={floatingSidebarClassName}
           disabled={dunningLocked}
           morphStyle={settingsPinMorph.morphStyle}
