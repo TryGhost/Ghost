@@ -8,7 +8,6 @@ import {
   parseLsofListeners,
   parseProc,
   parseProcNetTcp,
-  parsePsTable,
   parseWorktrees,
   treeTargets,
   unusedDatabases,
@@ -59,19 +58,6 @@ describe('parseProcNetTcp', () => {
         ['41003', 2544],
       ]),
     );
-  });
-});
-
-describe('parsePsTable', () => {
-  it('reads each process and the Nx run from its environment', () => {
-    const output = [
-      '    1     0     1 /sbin/launchd',
-      '38393     1 38393 node vite.js build --watch NX_INVOCATION_ROOT_PID=38374 NX_WORKSPACE_ROOT=/src/my wt PWD=/src/my wt/apps/portal',
-    ].join('\n');
-    assert.deepEqual(parsePsTable(output), [
-      { pid: 1, ppid: 0, pgid: 1, nxRoot: undefined, nxWorkspace: undefined },
-      { pid: 38393, ppid: 1, pgid: 38393, nxRoot: 38374, nxWorkspace: '/src/my wt' },
-    ]);
   });
 });
 

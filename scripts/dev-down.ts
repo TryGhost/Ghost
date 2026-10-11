@@ -13,7 +13,6 @@ import {
   listeners,
   PID_FILE,
   processInfo,
-  processTable,
   treeTargets,
   upGroup,
   worktreeList,
@@ -56,8 +55,8 @@ if (values.orphans) {
 }
 const NX = /\bnx(\.js)? run\b/;
 const roots = values.all ? checkouts().filter((root) => checkoutEnv(root)) : [checkoutRoot];
-const table = processTable();
-const running = new Set(table.map((proc) => proc.pid));
+const table = processEntries();
+const orphans = devProcesses(table, roots).filter((proc) => proc.orphaned);
 // Each description, and the pids whose process trees it stops
 const targets = new Map<string, number[]>();
 const ours: number[] = [];
@@ -93,9 +92,7 @@ for (const root of roots) {
     ours.push(port);
   }
   // Nx starts each task in its own process group, which outlives an nx that's killed
-  const strays = table
-    .filter((proc) => proc.nxWorkspace === root && proc.nxRoot && !running.has(proc.nxRoot))
-    .map((proc) => proc.pid);
+  const strays = orphans.filter((proc) => proc.root === root).map((proc) => proc.pid);
   if (strays.length > 0) {
     targets.set(`Nx tasks whose nx has exited${where}`, strays);
   }

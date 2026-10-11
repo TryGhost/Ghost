@@ -240,64 +240,14 @@ export function inCheckout(pid: number, root = checkoutRoot): boolean {
   return cwd === root || cwd?.startsWith(root + sep) === true;
 }
 
-export interface TreeProc extends Pick<Proc, 'pid' | 'ppid' | 'pgid'> {
-  /** The pid of the Nx run this is a task of, from NX_INVOCATION_ROOT_PID */
-  nxRoot?: number;
-  /** The checkout that Nx run is in, from NX_WORKSPACE_ROOT */
-  nxWorkspace?: string;
-}
-
-// `ps -E` appends the environment to the command without quoting either
-const envValue = (environment: string, name: string) =>
-  new RegExp(`(?:^|[\\s\\0])${name}=(.*?)(?=\\0| [A-Za-z_]\\w*=|$)`).exec(environment)?.[1];
-
-const nxTask = (environment: string) => ({
-  nxRoot: Number(envValue(environment, 'NX_INVOCATION_ROOT_PID')) || undefined,
-  nxWorkspace: envValue(environment, 'NX_WORKSPACE_ROOT'),
-});
-
-/** Each process in `ps -Eww -Ao pid=,ppid=,pgid=,command=` output, environment appended */
-export function parsePsTable(output: string): TreeProc[] {
-  return output.split('\n').flatMap((line) => {
-    const [, pid, ppid, pgid, rest = ''] = /^\s*(\d+)\s+(\d+)\s+(\d+)\s(.*)$/.exec(line) ?? [];
-    return pid
-      ? [{ pid: Number(pid), ppid: Number(ppid), pgid: Number(pgid), ...nxTask(rest) }]
-      : [];
-  });
-}
-
-/** Every process, or on Linux every one whose environment this user can read */
-export function processTable(): TreeProc[] {
-  if (process.platform !== 'linux') {
-    const ps = execFileSync('ps', ['-Eww', '-Ao', 'pid=,ppid=,pgid=,command='], {
-      encoding: 'utf8',
-      maxBuffer: Infinity,
-    });
-    return parsePsTable(ps);
-  }
-  return readdirSync('/proc')
-    .filter((name) => /^\d+$/.test(name))
-    .flatMap((pid) => {
-      try {
-        const read = (file: string) => readFileSync(`/proc/${pid}/${file}`, 'utf8');
-        const { ppid, pgid } = parseProc(Number(pid), {
-          stat: read('stat'),
-          cmdline: '',
-          status: '',
-        });
-        return [{ pid: Number(pid), ppid, pgid, ...nxTask(read('environ')) }];
-      } catch {
-        // Exited, or another user's
-        return [];
-      }
-    });
-}
-
 /**
  * What to signal to stop `pids` and every process descended from them or in a process group one
  * of them leads: each process group led from within, as a negative pid, and other processes alone
  */
-export function treeTargets(table: TreeProc[], pids: number[]): number[] {
+export function treeTargets(
+  table: Pick<Proc, 'pid' | 'ppid' | 'pgid'>[],
+  pids: number[],
+): number[] {
   const tree = new Set(pids);
   for (let size = 0; size !== tree.size;) {
     size = tree.size;
