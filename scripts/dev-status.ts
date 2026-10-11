@@ -17,21 +17,28 @@ import {
 import { type DevProcess, devProcesses, processEntries } from './lib/dev-processes.ts';
 import { browse, type DevStatus } from './lib/dev-status-view.ts';
 import { checkoutRoot, devUrl } from './lib/ghost-dev-env.ts';
+import { BASE_BRANCHES, pullRequests } from './lib/pull-requests.ts';
 
 // This checkout's dev stack and every other running one, or with --all every checkout that has
 // run `pnpm dev`, found from each `.ghost-dev.env` and whether its ports answer, plus every
 // checkout, deleted or not, with processes whose nx has exited. In a terminal
 // the list stays open, with keys to open, start and stop each checkout's Ghost. --watch redraws
-// the table every two seconds.
+// the table every two seconds. --json --prs adds each branch's pull request, or leaves `pr` out
+// when `gh` fails.
 const { values } = parseArgs({
   options: {
     all: { type: 'boolean', default: false },
     json: { type: 'boolean', default: false },
+    prs: { type: 'boolean', default: false },
     watch: { type: 'boolean', short: 'w', default: false },
   },
 });
 if (values.json && values.watch) {
   console.error("--json and --watch can't be combined.");
+  process.exit(1);
+}
+if (values.prs && !values.json) {
+  console.error('--prs only works with --json.');
   process.exit(1);
 }
 
@@ -147,7 +154,24 @@ function table(rows: DevStatus[]): string {
 }
 
 if (values.json) {
-  console.log(JSON.stringify(await snapshot(), null, 2));
+  const rows = await snapshot();
+  if (values.prs) {
+    const branches = rows.flatMap(({ branch }) =>
+      branch && !BASE_BRANCHES.has(branch) ? [branch] : [],
+    );
+    try {
+      const prs = await pullRequests([...new Set(branches)], checkoutRoot);
+      for (const row of rows) {
+        Object.assign(row, { pr: (row.branch && prs.get(row.branch)) || null });
+      }
+    } catch (error) {
+      const { stderr, message } = error as { stderr?: string; message: string };
+      console.error(
+        `Couldn't look up pull requests: ${(stderr?.trim() || message).split('\n')[0]}`,
+      );
+    }
+  }
+  console.log(JSON.stringify(rows, null, 2));
 } else if (values.watch) {
   for (;;) {
     const output = table(await snapshot());

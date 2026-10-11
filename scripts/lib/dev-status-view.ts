@@ -6,7 +6,7 @@ import { emitKeypressEvents, type Key } from 'node:readline';
 import { stopOrphans } from './dev-processes.ts';
 import type { GitOperation } from './dev-stack.ts';
 import { checkoutRoot } from './ghost-dev-env.ts';
-import { type PullRequest, pullRequests } from './pull-requests.ts';
+import { BASE_BRANCHES, type PullRequest, pullRequests } from './pull-requests.ts';
 
 export interface DevStatus {
   name: string;
@@ -60,8 +60,6 @@ const KEYS =
   '↑↓ move  a admin  f site  p PR  c checks  l log  s start  r restart  k stop  x stop merged/orphaned  q quit';
 const OPENER = process.platform === 'darwin' ? 'open' : 'xdg-open';
 const GAP = '  ';
-// Branches whose name says nothing about which pull request a checkout is for
-const BASE_BRANCHES = new Set(['main', 'master']);
 
 const sgr =
   (code: string): Style =>
