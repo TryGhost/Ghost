@@ -1,12 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import {
-  devProcesses,
-  parseEnviron,
-  parsePs,
-  type ProcessEntry,
-  signalTargets,
-} from '../lib/dev-processes.ts';
+import { devProcesses, parseEnviron, parsePs, type ProcessEntry } from '../lib/dev-processes.ts';
 
 describe('parsePs', () => {
   it('reads each process and the environment `ps -E` appends to its command', () => {
@@ -103,24 +97,5 @@ describe('devProcesses', () => {
       summary(devProcesses(entries, ['/work/a'], exists)).map(({ root }) => root),
       ['/work/deleted', '/work/deleted-too'],
     );
-  });
-});
-
-describe('signalTargets', () => {
-  it("signals a process group when it holds only the targets, else each target's pid", () => {
-    const all = [
-      { pid: 20, pgid: 20 },
-      { pid: 21, pgid: 20 },
-      { pid: 30, pgid: 30 },
-      { pid: 31, pgid: 30 },
-      { pid: 40, pgid: 1 },
-    ];
-    const targets = [
-      { pid: 20, pgid: 20 },
-      { pid: 21, pgid: 20 },
-      { pid: 31, pgid: 30 },
-      { pid: 40, pgid: 1 },
-    ];
-    assert.deepEqual(signalTargets(targets, all), [-20, 31, 40]);
   });
 });
