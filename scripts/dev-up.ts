@@ -69,8 +69,9 @@ const child = spawn('sh', ['-c', watchedDevCommand, 'sh', ...args], {
   cwd: checkoutRoot,
   detached: true,
   stdio: ['ignore', log, log],
-  // Otherwise Nx leaves out what tasks that finished printed, failures included for agents
-  env: { NX_DEFAULT_OUTPUT_STYLE: 'stream', ...process.env },
+  // Even over an inherited style: static ones hold back a dev server's output until it
+  // stops, and the defaults leave out what finished tasks printed, failures included
+  env: { ...process.env, NX_DEFAULT_OUTPUT_STYLE: 'stream' },
 });
 closeSync(log);
 writeFileSync(pidFile, `${child.pid}\n`);

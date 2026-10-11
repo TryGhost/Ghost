@@ -1,4 +1,7 @@
 {
+  "env": {
+    "NX_DEFAULT_OUTPUT_STYLE": "static-failures-only"
+  },
   "hooks": {
     "SessionStart": [
       {
