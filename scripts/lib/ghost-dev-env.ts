@@ -102,12 +102,11 @@ function checkoutName(): string {
 // Cookies ignore the port, so a worktree needs its own hostname to keep its own Admin
 // session. Browsers and the macOS resolver send *.localhost to loopback.
 export function worktreeHostname(name: string, hash: string): string {
-  // A DNS label: at most 63 letters, digits and inner hyphens
-  const label = name
-    .replace(/_/g, '-')
-    .slice(0, 63)
-    .replace(/^-+|-+$/g, '');
-  return `${label || `wt-${hash.slice(0, 6)}`}.localhost`;
+  const label = name.replace(/_/g, '-').replace(/^-+|-+$/g, '');
+  // A DNS label holds at most 63 characters; the hash keeps shortened names distinct
+  const short =
+    label.length > 63 ? `${label.slice(0, 56).replace(/-+$/, '')}-${hash.slice(0, 6)}` : label;
+  return `${short || `wt-${hash.slice(0, 6)}`}.localhost`;
 }
 
 function hostnameFor(name: string): string {
