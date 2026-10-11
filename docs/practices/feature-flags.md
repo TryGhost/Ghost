@@ -130,6 +130,12 @@ around the editor and automation editor, and its sides retract on View site. Set
 navigation inside the same sidebar, pinned without changing the stored mode. Mobile keeps the sidebar sheet, and the flag-off path
 preserves the docked sidebar and the separate Settings sidebar.
 
+The `admin7CustomizeFromViewSite` experiment adds Customize to the frame's top
+bar on View site, opening the Design settings in a panel over a live, browsable
+preview of the site, with its state in the URL (`/site?customize`). It needs
+`admin7Design` for the frame and is only for staff who can edit the design, on
+desktop. It has its own flag because it may ship apart from Admin 7.
+
 ## How values are resolved
 
 For normal Labs flags, later sources in this list override earlier ones:

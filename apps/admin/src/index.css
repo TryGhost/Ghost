@@ -327,6 +327,14 @@ body.react-admin {
   }
 }
 
+/* View site's Customize panel slides in from the right */
+@keyframes view-site-panel-in {
+  from {
+    opacity: 0;
+    transform: translateX(24px);
+  }
+}
+
 /* The top bar clock's colon */
 @keyframes admin-frame-blink {
   0%,
