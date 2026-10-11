@@ -88,7 +88,7 @@ These commands preserve the site's existing feature flags; see
 [Admin development](../../apps/admin/README.md#development) to preview flagged
 features with session overrides.
 
-Wait for the `Ghost:` URL in the output, then open:
+Wait for the `Site:`, `Admin:` and `Email:` lines in the output, then open:
 
 - Site: [http://localhost:2368](http://localhost:2368)
 - Admin: [http://localhost:2368/ghost/](http://localhost:2368/ghost/)
@@ -99,6 +99,9 @@ account there; the development environment does not define shared login
 credentials.
 
 As a quick health check, confirm that the site and Admin load.
+
+To use the [ActivityPub](https://github.com/TryGhost/ActivityPub) project's
+local service, set `ACTIVITYPUB_PROXY_TARGET`, for example to `127.0.0.1:8080`.
 
 Press `Ctrl+C` in the development process to stop Ghost and the watchers. MySQL,
 Redis, and Mailpit keep running for other checkouts; `pnpm docker:down` stops

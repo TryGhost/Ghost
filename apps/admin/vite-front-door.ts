@@ -39,10 +39,11 @@ export function ghostFrontDoorPlugin(backend: string, devBase: string): Plugin {
           rewrite: stripPrefix(/^\/\.ghost\/analytics/),
         };
       }
-      // The ActivityPub project's local service
-      const activityPub = process.env.ACTIVITYPUB_PROXY_TARGET ?? '127.0.0.1:8080';
+      // The ActivityPub project's local service, e.g. 127.0.0.1:8080. Without one, a 404
+      // tells Ghost that no ActivityPub service is routed to this site.
+      const activityPub = process.env.ACTIVITYPUB_PROXY_TARGET;
       for (const route of ['^/\\.ghost/activitypub/', '^/\\.well-known/(webfinger|nodeinfo)']) {
-        proxy[route] = { target: `http://${activityPub}` };
+        proxy[route] = activityPub ? { target: `http://${activityPub}` } : { bypass: () => false };
       }
       // Must stay last: Vite uses the first matching entry
       proxy[`^(?!${devBase})`] = { target: backend, xfwd: true, ws: true };
@@ -87,14 +88,16 @@ export function ghostFrontDoorPlugin(backend: string, devBase: string): Plugin {
       watchForRestart();
       server.httpServer?.once('close', () => watcher?.destroy());
 
-      const printUrls = server.printUrls.bind(server);
+      // Vite's own URLs point at the internal dev base, not at Ghost
       server.printUrls = () => {
-        printUrls();
         logger.info('  Waiting for Ghost…');
-        const siteHostname = process.env.GHOST_DEV_HOSTNAME ?? 'localhost';
-        void ready.then(() =>
-          logger.info(`  ➜  Ghost:   http://${siteHostname}:${server.config.server.port}/ghost/`),
-        );
+        const site = `http://${process.env.GHOST_DEV_HOSTNAME ?? 'localhost'}:${server.config.server.port}/`;
+        void ready.then(() => {
+          logger.info(`  ➜  Site:   ${site}`);
+          logger.info(`  ➜  Admin:  ${site}ghost/`);
+          // Mailpit's web interface, published by compose.dev.yaml and shared by every checkout
+          logger.info('  ➜  Email:  http://localhost:8025/');
+        });
       };
 
       server.middlewares.use((_req, _res, next) => {

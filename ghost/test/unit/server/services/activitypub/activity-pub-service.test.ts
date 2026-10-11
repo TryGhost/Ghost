@@ -107,6 +107,7 @@ describe('ActivityPubService', function () {
   afterEach(function () {
     // Restore any spies (isolate:false shares the module registry per worker).
     vi.restoreAllMocks();
+    nock.cleanAll();
   });
 
   it('Can initialise the webhooks', async function () {
@@ -366,6 +367,71 @@ describe('ActivityPubService', function () {
       ),
       'Expected an error to be logged when the webhook secret could not be retrieved',
     );
+
+    await knexInstance.destroy();
+  });
+
+  it('Logs once without erroring when no ActivityPub service is routed to the site', async function () {
+    const knexInstance = await getKnexInstance();
+    await addOwnerUser(knexInstance);
+    await addActivityPubIntegration(knexInstance);
+
+    const siteUrl = new URL('http://fake-site-url');
+    const scope = nock(siteUrl).get('/.ghost/activitypub/v1/site/').reply(404);
+
+    const identityTokenService = {
+      getTokenForUser(email: string, role: string) {
+        return `token:${email}:${role}`;
+      },
+    };
+    const service = new ActivityPubService(
+      knexInstance,
+      siteUrl,
+      logging,
+      identityTokenService as unknown as IdentityTokenService,
+    );
+
+    await service.initialiseWebhooks();
+
+    assert(scope.isDone(), 'Expected the ActivityPub site endpoint to be called');
+
+    const webhooks = await knexInstance.select('*').from('webhooks');
+
+    assert.equal(webhooks.length, 0, 'There should be no webhooks');
+    assert.equal(logging.error.mock.calls.length, 0, 'Expected no errors to be logged');
+    assert.deepEqual(logging.info.mock.calls, [
+      ['No ActivityPub service found - skipping webhook setup'],
+    ]);
+
+    await knexInstance.destroy();
+  });
+
+  it('Logs an error when the ActivityPub service returns no webhook secret', async function () {
+    const knexInstance = await getKnexInstance();
+    await addOwnerUser(knexInstance);
+    await addActivityPubIntegration(knexInstance);
+
+    const siteUrl = new URL('http://fake-site-url');
+    nock(siteUrl).get('/.ghost/activitypub/v1/site/').reply(403, { error: 'Forbidden' });
+
+    const identityTokenService = {
+      getTokenForUser(email: string, role: string) {
+        return `token:${email}:${role}`;
+      },
+    };
+    const service = new ActivityPubService(
+      knexInstance,
+      siteUrl,
+      logging,
+      identityTokenService as unknown as IdentityTokenService,
+    );
+
+    await service.initialiseWebhooks();
+
+    const webhooks = await knexInstance.select('*').from('webhooks');
+
+    assert.equal(webhooks.length, 0, 'There should be no webhooks');
+    assert.deepEqual(logging.error.mock.calls, [['No webhook secret found - cannot initialise']]);
 
     await knexInstance.destroy();
   });
