@@ -12,9 +12,6 @@
   },
   "parallel": 4,
   "useDaemonProcess": false,
-  "tui": {
-    "enabled": false
-  },
   "targetDefaults": {
     "build": {
       "dependsOn": ["^build"],
