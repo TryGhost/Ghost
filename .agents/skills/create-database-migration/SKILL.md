@@ -22,7 +22,7 @@ development" in the guide.
 4. Update the schema definition file in `ghost/core/server/data/schema/schema.js`, and make sure it aligns with the latest changes from the migration.
 5. Test the migration manually from the repository root: `pnpm knex-migrator migrate --v {version directory} --force`
 6. Roll the migration back to test `down()`: `pnpm knex-migrator rollback --v {previous version} --force`, then migrate forward again.
-7. Run the migration integration test, which covers initialization, rollback, forward migration, and idempotency: `cd ghost && pnpm test:single test/integration/migrations/migration.test.js`. Migrations must pass the database-backed suites against both MySQL and SQLite.
+7. Run the migration integration test, which covers initialization, rollback, forward migration, and idempotency: `cd ghost && pnpm test:single test/integration/migrations/migration.test.js`. It needs MySQL running, which `pnpm dev` starts.
 8. If adding or dropping a table, update `ghost/core/server/data/exporter/table-lists.js` as appropriate. The consistency assertion in `ghost/test/unit/server/data/exporter/index.test.js` checks that every schema table is classified in the exporter lists.
 9. Run the focused exporter unit test when the table lists change: `cd ghost && pnpm test:single test/unit/server/data/exporter/index.test.js`.
 10. Run the schema integrity test, and update the hash: `cd ghost && pnpm test:single test/unit/server/data/schema/integrity.test.js`
