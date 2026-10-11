@@ -1,4 +1,5 @@
 import { execFileSync, spawn, spawnSync } from 'node:child_process';
+import { randomUUID } from 'node:crypto';
 import { once } from 'node:events';
 import { setTimeout as sleep } from 'node:timers/promises';
 import { fileURLToPath } from 'node:url';
@@ -100,9 +101,27 @@ if (database !== 'ghost_dev' && databases.includes('ghost_dev') && !databases.in
     stdio: [dump.stdout, 'inherit', 'inherit'],
   });
   const [[dumped], [loaded]] = await Promise.all([once(dump, 'exit'), once(load, 'exit')]);
-  if (dumped !== 0 || loaded !== 0) {
+  // A failed copy is dropped, or the next run would skip it as already made
+  const abort = () => {
     mysql('-e', `DROP DATABASE \`${database}\``);
     process.exit(1);
+  };
+  if (dumped !== 0 || loaded !== 0) {
+    abort();
+  }
+  // Analytics are keyed by site_uuid, and main's sessions can't validate on this origin.
+  // ghost_dev has no tables until the main checkout's Ghost first boots.
+  try {
+    if (mysql('-N', '-e', `SHOW TABLES FROM \`${database}\` LIKE 'settings'`)) {
+      mysql(
+        '-D',
+        database,
+        '-e',
+        `UPDATE settings SET value = '${randomUUID()}' WHERE \`key\` = 'site_uuid'; DELETE FROM sessions`,
+      );
+    }
+  } catch {
+    abort();
   }
   console.log(`Copied ghost_dev into ${database}`);
 }

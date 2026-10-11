@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# Initialises the theme submodules. A linked worktree clones them from the main
+# Initialises the theme submodules. Given submodule paths, it leaves the other
+# submodules' checkouts as they are. A linked worktree clones them from the main
 # checkout's copies, which skips the network; anything missing falls back to GitHub.
 set -euo pipefail
 
@@ -21,4 +22,4 @@ if [ "$(git rev-parse --path-format=absolute --git-dir)" != "$common_dir" ]; the
     done
 fi
 
-git submodule update --init --recursive
+git submodule update --init --recursive -- "$@"

@@ -88,6 +88,11 @@ These commands preserve the site's existing feature flags; see
 [Admin development](../../apps/admin/README.md#development) to preview flagged
 features with session overrides.
 
+Admin's dev server only accepts connections from this machine. Set
+`GHOST_DEV_LISTEN=0.0.0.0` to accept them from the network too, for example for
+e2e dev mode on Linux, where containers reach the host through the Docker
+bridge.
+
 Wait for the `Site:`, `Admin:` and `Email:` lines in the output, then open:
 
 - Site: [http://localhost:2368](http://localhost:2368)
@@ -122,9 +127,10 @@ Browsers share cookies between the ports of one hostname, so the hostname keeps
 each checkout's Admin sign-in separate. Browsers resolve `.localhost` hostnames
 to your machine without editing `/etc/hosts`. `pnpm dev` prints the URL.
 
-A worktree's database starts as a copy of `ghost_dev`, so it skips setup and
-onboarding, and Ghost applies the branch's migrations when it boots. Run
-`pnpm reset:db` in the worktree to replace the copy with a fresh database.
+A worktree's database starts as a copy of `ghost_dev` with a new `site_uuid` and
+no sessions, so it skips setup and onboarding, and Ghost applies the branch's
+migrations when it boots. Run `pnpm reset:db` in the worktree to replace the
+copy with a fresh database.
 
 To run a checkout's Ghost in the background, for example from an agent, use:
 
