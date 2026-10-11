@@ -1,6 +1,8 @@
 import DesignSidebar from './design-and-branding/design-sidebar';
 import GlobalDataProvider from '@/settings/providers/global-data-provider';
-import { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
+import { ADMIN_FRAME_TRANSITION, useAdminFramePanelSlot } from '@/layout/admin-frame-panel-slot';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import ThemePreview from './design-and-branding/theme-preview';
 import { Button } from '@tryghost/shade/components';
 import { DirtyConfirmDialog, PageHeader, useDirtyConfirmation } from '@tryghost/shade/patterns';
@@ -22,6 +24,76 @@ export interface DesignPanelProps {
   onClose: () => void;
   /** Runs once a save has applied the design, with the page previewed. */
   onSaved?: (pageUrl: string) => void;
+  /**
+   * The panel has been closed and is on its way out: it tucks back under the
+   * page, then calls onClosed, for the panel to be unmounted.
+   */
+  closing?: boolean;
+  onClosed?: () => void;
+}
+
+// Docked in the frame, the panel comes out from under the page and goes back
+// under it, in step with the page pulling away and closing back over it
+const TUCKED: Keyframe = { transform: 'translateX(-25%) scale(0.96)', opacity: 0 };
+const OUT: Keyframe = { transform: 'none', opacity: 1 };
+// Coming out, it waits for the page to start pulling away, and grows a touch
+const ENTERING: Keyframe = { transform: 'translateX(-8%) scale(0.96)', opacity: 0 };
+const ENTRY_DELAY = 160;
+
+function prefersReducedMotion(): boolean {
+  return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+}
+
+function useTuckAnimation(
+  asideRef: React.RefObject<HTMLElement>,
+  docked: boolean,
+  closing: boolean,
+  onClosed: (() => void) | undefined,
+) {
+  const onClosedRef = useRef(onClosed);
+  onClosedRef.current = onClosed;
+  const openingRef = useRef<Animation>();
+
+  useLayoutEffect(() => {
+    const aside = asideRef.current;
+    if (!aside || !docked || prefersReducedMotion()) {
+      return;
+    }
+    const opening = aside.animate([ENTERING, OUT], {
+      ...ADMIN_FRAME_TRANSITION,
+      delay: ENTRY_DELAY,
+      // Tucked away while it waits
+      fill: 'backwards',
+    });
+    openingRef.current = opening;
+    return () => opening.cancel();
+  }, [asideRef, docked]);
+
+  useLayoutEffect(() => {
+    if (!closing) {
+      return;
+    }
+    const aside = asideRef.current;
+    if (!aside || !docked || prefersReducedMotion()) {
+      onClosedRef.current?.();
+      return;
+    }
+    // From wherever it had got to, should it still be on its way out
+    const opening = openingRef.current;
+    if (opening?.playState === 'running') {
+      opening.commitStyles();
+      opening.cancel();
+    }
+    const closingAnimation = aside.animate([TUCKED], {
+      ...ADMIN_FRAME_TRANSITION,
+      fill: 'forwards',
+    });
+    closingAnimation.finished.then(
+      () => onClosedRef.current?.(),
+      () => {},
+    );
+    return () => closingAnimation.cancel();
+  }, [asideRef, docked, closing]);
 }
 
 function DesignPanelContent({
@@ -30,6 +102,8 @@ function DesignPanelContent({
   openParam,
   onClose,
   onSaved,
+  closing = false,
+  onClosed,
 }: DesignPanelProps) {
   const {
     globalSettings,
@@ -62,7 +136,8 @@ function DesignPanelContent({
   const dirtyRef = useRef(dirty);
   dirtyRef.current = dirty;
   const guard = useUnsavedChangesGuard({
-    when: dirty,
+    // Once closed, its changes are gone, whatever the form still holds
+    when: dirty && !closing,
     interceptNavigation: ({ currentLocation, nextLocation }) =>
       dirtyRef.current &&
       currentLocation.pathname === nextLocation.pathname &&
@@ -85,7 +160,7 @@ function DesignPanelContent({
 
   // ⌘S / Ctrl+S saves, as in the Design modal
   const saveRef = useRef(save);
-  saveRef.current = save;
+  saveRef.current = closing ? async () => {} : save;
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
       if ((event.metaKey || event.ctrlKey) && event.key === 's') {
@@ -99,6 +174,72 @@ function DesignPanelContent({
 
   const { interceptedNavigation } = guard;
 
+  // Sits in the frame's right edge where there is one, uncovered as the page
+  // card pulls away from it; otherwise it floats over the page
+  const panelSlot = useAdminFramePanelSlot();
+  const asideRef = useRef<HTMLElement>(null);
+  useTuckAnimation(asideRef, Boolean(panelSlot), closing, onClosed);
+
+  // Out of reach on its way out. Applied through a ref because React 18 has
+  // no first-class inert prop.
+  useLayoutEffect(() => {
+    if (asideRef.current) {
+      asideRef.current.inert = closing;
+    }
+  }, [closing]);
+
+  const panel = (
+    <aside
+      ref={asideRef}
+      aria-label="Design"
+      className={cn(
+        'settings-app pointer-events-auto flex flex-col overflow-hidden',
+        panelSlot
+          ? // Down the frame's right: dark, on the frame's own black
+            'dark dark-island size-full bg-black text-foreground [--surface-elevated-2:var(--color-black)]!'
+          : 'absolute inset-y-3 right-3 z-10 w-[400px] rounded-xl border border-border-default bg-surface-elevated-2 shadow-lg motion-safe:animate-[view-site-panel-in_320ms_cubic-bezier(0.16,1,0.3,1)]',
+      )}
+    >
+      <div
+        className={cn(
+          'flex shrink-0 items-center justify-between gap-3',
+          // Docked, it sits right up under the frame's top bar
+          panelSlot ? 'px-6 pb-4' : 'px-7 py-6',
+        )}
+      >
+        <h2 className={cn('text-xl font-bold', panelSlot && 'text-white!')}>Design</h2>
+        <div className="flex items-center gap-2">
+          <PageHeader.Action
+            label="Close"
+            size={panelSlot ? 'sm' : undefined}
+            type="button"
+            onClick={close}
+          >
+            Close
+          </PageHeader.Action>
+          <Button
+            disabled={okProps.disabled}
+            size={panelSlot ? 'sm' : undefined}
+            type="button"
+            variant={okProps.variant}
+            onClick={() => void save()}
+          >
+            {okProps.label || 'Save'}
+          </Button>
+        </div>
+      </div>
+      <div className="min-h-0 flex-1 overflow-y-auto">
+        <DesignSidebar
+          className={panelSlot ? 'px-6' : undefined}
+          globalSettings={globalSettings}
+          themeSettingSections={themeSettingSections}
+          updateGlobalSetting={updateGlobalSetting}
+          updateThemeSetting={updateThemeSetting}
+        />
+      </div>
+    </aside>
+  );
+
   return (
     <>
       {/* Mounted from the start, so it has loaded by the first change */}
@@ -106,7 +247,7 @@ function DesignPanelContent({
         aria-hidden={!previewing}
         className={cn(
           'absolute inset-0 transition-opacity duration-200',
-          previewing ? 'pointer-events-auto opacity-100' : 'opacity-0',
+          previewing && !closing ? 'pointer-events-auto opacity-100' : 'opacity-0',
         )}
         data-testid="design-panel-preview"
       >
@@ -117,35 +258,7 @@ function DesignPanelContent({
           onNavigate={setPageUrl}
         />
       </div>
-      <aside
-        aria-label="Design"
-        className="settings-app pointer-events-auto absolute inset-y-3 right-3 z-10 flex w-[400px] flex-col overflow-hidden rounded-xl border border-border-default bg-surface-elevated-2 shadow-lg motion-safe:animate-[view-site-panel-in_320ms_cubic-bezier(0.16,1,0.3,1)]"
-      >
-        <div className="flex shrink-0 items-center justify-between gap-3 px-7 py-6">
-          <h2 className="text-xl font-bold">Design</h2>
-          <div className="flex items-center gap-2">
-            <PageHeader.Action label="Close" type="button" onClick={close}>
-              Close
-            </PageHeader.Action>
-            <Button
-              disabled={okProps.disabled}
-              type="button"
-              variant={okProps.variant}
-              onClick={() => void save()}
-            >
-              {okProps.label || 'Save'}
-            </Button>
-          </div>
-        </div>
-        <div className="min-h-0 flex-1 overflow-y-auto">
-          <DesignSidebar
-            globalSettings={globalSettings}
-            themeSettingSections={themeSettingSections}
-            updateGlobalSetting={updateGlobalSetting}
-            updateThemeSetting={updateThemeSetting}
-          />
-        </div>
-      </aside>
+      {panelSlot ? createPortal(panel, panelSlot) : panel}
       <DirtyConfirmDialog {...dialogProps} />
       <DirtyConfirmDialog {...guard.dialogProps} />
       <DirtyConfirmDialog

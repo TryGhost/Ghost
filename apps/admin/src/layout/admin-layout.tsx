@@ -27,6 +27,7 @@ import { ContributorUserMenu } from './app-sidebar/user-menu';
 import { DunningBanner, DunningOverlay, useDunningLockTakeover } from '@/dunning';
 import { AdminFrame, type AdminFrameMode } from './admin-frame';
 import { AdminFrameTopBar } from './admin-frame-top-bar';
+import { useCanCustomizeSite, useIsCustomizingSite } from '@/view-site/api';
 import { FloatingSidebarContentSync } from './floating-sidebar-content-sync';
 import { GlobalSearchProvider } from '@/global-search/global-search-provider';
 
@@ -122,6 +123,8 @@ export function AdminLayout({ children }: AdminLayoutProps) {
   const isMobile = useIsMobile();
   const admin7Design = useFeatureFlag('admin7Design');
   const isViewSiteRoute = useLocation().pathname === '/site';
+  const canCustomizeSite = useCanCustomizeSite();
+  const customizingSite = useIsCustomizingSite() && canCustomizeSite;
 
   // With admin7Design, the desktop page sits inside a frame: a top bar and
   // thin bezels around a rounded card. View site becomes a place of its own,
@@ -136,7 +139,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
   } else if (!routeShowsSidebar) {
     frameMode = 'hidden';
   } else if (isViewSiteRoute) {
-    frameMode = 'site';
+    frameMode = customizingSite ? 'customize' : 'site';
   }
   const sidebarClassName = cn(
     SIDEBAR_PANEL_CLASS_NAME,
@@ -363,7 +366,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
               (sidebarPinned ? pinnedPageChromeClassName : compactPageChromeClassName),
             isSettingsRoute && 'min-h-0',
             // Once the bezels have retracted around it
-            frameMode === 'site' &&
+            (frameMode === 'site' || frameMode === 'customize') &&
               '[&_[data-view-site-preview]]:animate-[admin-frame-fade-in_500ms_ease-out_520ms_both]',
             'screen-exit-content',
           )}

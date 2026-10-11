@@ -93,13 +93,15 @@ const ViewSite = () => {
   const frameRef = useRef<HTMLIFrameElement>(null);
   const siteUrl = data?.site.url;
 
-  // Customize previews the page the site is on as it opens
-  const [customizedPage, setCustomizedPage] = useState<string>();
+  // Customize previews the page the site is on as it opens. Once closed, the
+  // panel stays until it has tucked away, and each opening is a new panel.
+  const [customized, setCustomized] = useState<{ pageUrl: string; key: number }>();
   useLayoutEffect(() => {
     if (customizing && siteUrl) {
-      setCustomizedPage(framePage(frameRef.current) ?? homepageUrl(siteUrl));
-    } else {
-      setCustomizedPage(undefined);
+      setCustomized((current) => ({
+        pageUrl: framePage(frameRef.current) ?? homepageUrl(siteUrl),
+        key: (current?.key ?? 0) + 1,
+      }));
     }
   }, [customizing, siteUrl]);
 
@@ -114,13 +116,16 @@ const ViewSite = () => {
         ref={frameRef}
         pageUrl={frame.pageUrl ?? homepageUrl(siteUrl)}
       />
-      {customizing && customizedPage && (
+      {customized && (
         <Suspense fallback={null}>
           <DesignPanel
+            key={customized.key}
+            closing={!customizing}
             livePageUrl={() => framePage(frameRef.current)}
             openParam="customize"
-            pageUrl={customizedPage}
+            pageUrl={customized.pageUrl}
             onClose={() => navigate(VIEW_SITE_PATH, { replace: true })}
+            onClosed={() => setCustomized(undefined)}
             // Under the preview, the site catches up with the saved design
             onSaved={frame.reloadAt}
           />

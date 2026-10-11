@@ -311,6 +311,12 @@ body.react-admin {
   initial-value: 0px;
 }
 
+@property --admin-frame-right {
+  syntax: '<length>';
+  inherits: true;
+  initial-value: 0px;
+}
+
 @property --admin-frame-radius {
   syntax: '<length>';
   inherits: true;
@@ -333,6 +339,108 @@ body.react-admin {
     opacity: 0;
     transform: translateX(24px);
   }
+}
+
+/* A dark island in the light admin (with .dark, as on View site's Customize
+   panel). Tailwind's semantic colours resolve against the root's tokens, so a
+   nested .dark alone leaves them light: they're re-pointed here, where .dark's
+   tokens apply. Mirrors the aliases in Shade's tailwind.theme.css. */
+.dark-island {
+  --color-gray: var(--color-gray-500);
+  --color-green: var(--color-green-500);
+  --color-blue: var(--color-blue-500);
+  --color-purple: var(--color-purple-500);
+  --color-pink: var(--color-pink-500);
+  --color-red: var(--color-red-500);
+  --color-orange: var(--color-orange-500);
+  --color-yellow: var(--color-yellow-500);
+  --color-lime: var(--color-lime-500);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-surface-page: var(--surface-page);
+  --color-surface-panel: var(--surface-panel);
+  --color-surface-elevated: var(--surface-elevated);
+  --color-surface-elevated-2: var(--surface-elevated-2);
+  --color-modal-backdrop: var(--modal-backdrop);
+  --color-form-sheet-backdrop: var(--form-sheet-backdrop);
+  --color-preview-canvas: var(--preview-canvas);
+  --color-preview-gradient-start: var(--preview-gradient-start);
+  --color-preview-gradient-end: var(--preview-gradient-end);
+  --color-surface-inverse: var(--surface-inverse);
+  --color-surface-inverse-foreground: var(--surface-inverse-foreground);
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-tertiary: var(--text-tertiary);
+  --color-border-default: var(--border-default);
+  --color-border-strong: var(--border-strong);
+  --color-surface-glass: var(--surface-glass);
+  --color-border-glass: var(--border-glass);
+  --color-focus-ring: var(--focus-ring);
+  --color-search-result-title: var(--search-result-title);
+  --color-search-result-description: var(--search-result-description);
+  --color-state-info: var(--state-info);
+  --color-state-info-foreground: var(--state-info-foreground);
+  --color-state-success: var(--state-success);
+  --color-state-success-foreground: var(--state-success-foreground);
+  --color-state-warning: var(--state-warning);
+  --color-state-warning-foreground: var(--state-warning-foreground);
+  --color-state-danger: var(--state-danger);
+  --color-state-danger-foreground: var(--state-danger-foreground);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-chart-gray: var(--chart-gray);
+  --color-chart-darkgray: var(--chart-darkgray);
+  --color-chart-rose: var(--chart-rose);
+  --color-chart-orange: var(--chart-orange);
+  --color-chart-amber: var(--chart-amber);
+  --color-chart-yellow: var(--chart-yellow);
+  --color-chart-green: var(--chart-green);
+  --color-chart-teal: var(--chart-teal);
+  --color-chart-blue: var(--chart-blue);
+  --color-chart-purple: var(--chart-purple);
+  --color-sidebar: var(--sidebar-background);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-tab-hover: var(--tab-hover);
+  --color-tab-active: var(--tab-active);
+  --color-button-hover: var(--button-hover);
+  --color-interactive-hover: var(--interactive-hover);
+  --color-filter-bar-background: var(--filter-bar-background);
+  --color-filter-bar-item-hover: var(--filter-bar-item-hover);
+  --color-table-row-hover: var(--table-row-hover);
+  --color-table-row-selected: var(--table-row-selected);
+  --color-control-surface: var(--control-surface);
+  --color-control-readonly-surface: var(--control-readonly-surface);
+  --color-control-disabled-surface: var(--control-disabled-surface);
+  --color-control-border: var(--control-border);
+  --shadow-control-pressed: var(--control-pressed-shadow);
+  --shadow-control-outline: var(--control-outline-shadow);
+  --shadow-control-outline-pressed: var(--control-outline-pressed-shadow);
 }
 
 /* The top bar clock's colon */

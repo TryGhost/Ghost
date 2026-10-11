@@ -1,26 +1,28 @@
 import React from 'react';
 import { cn } from '@tryghost/shade/utils';
+import {
+  ADMIN_FRAME_TOP_BAR_HEIGHT,
+  ADMIN_FRAME_TRANSITION,
+  AdminFramePanelSlotContext,
+} from './admin-frame-panel-slot';
 
 /**
  * How much of the frame shows:
  * - full: the top bar, a bezel down the sides and along the bottom, and the
  *   page in a rounded card inside them
  * - site: only the top bar, over a square, edge-to-edge page (View site)
+ * - customize: as full, with View site's Customize panel down the right,
+ *   under the top bar, uncovered as the page card pulls away from it
  * - hidden: none of it, for full-screen screens (the editor); the top bar
  *   slides up out of view
  * - off: none of it, without animating (below the desktop breakpoint)
  */
-export type AdminFrameMode = 'full' | 'site' | 'hidden' | 'off';
+export type AdminFrameMode = 'full' | 'site' | 'customize' | 'hidden' | 'off';
 
-const ADMIN_FRAME_TOP_BAR_HEIGHT = 44;
 const BEZEL = 10;
 const CARD_RADIUS = 10;
-
-/** The frame's timing, for motion choreographed with it. */
-const ADMIN_FRAME_TRANSITION = {
-  duration: 520,
-  easing: 'cubic-bezier(0.16, 1, 0.3, 1)',
-};
+/** The width of the panel on the frame's right in customize mode. */
+const ADMIN_FRAME_PANEL_WIDTH = 340;
 
 /*
  * When a full-screen screen's top chrome starts in, after the frame starts
@@ -29,13 +31,21 @@ const ADMIN_FRAME_TRANSITION = {
  */
 const TOP_CHROME_ENTRANCE_DELAY = 200;
 
-const FRAME_VARIABLES = ['--admin-frame-top', '--admin-frame-side', '--admin-frame-radius'];
+const FRAME_VARIABLES = [
+  '--admin-frame-top',
+  '--admin-frame-side',
+  '--admin-frame-right',
+  '--admin-frame-radius',
+];
 
 function frameInsets(mode: AdminFrameMode) {
+  const bezels = mode === 'full' || mode === 'customize';
+  const side = bezels ? BEZEL : 0;
   return {
-    top: mode === 'full' || mode === 'site' ? ADMIN_FRAME_TOP_BAR_HEIGHT : 0,
-    side: mode === 'full' ? BEZEL : 0,
-    radius: mode === 'full' ? CARD_RADIUS : 0,
+    top: bezels || mode === 'site' ? ADMIN_FRAME_TOP_BAR_HEIGHT : 0,
+    side,
+    right: mode === 'customize' ? ADMIN_FRAME_PANEL_WIDTH + BEZEL : side,
+    radius: bezels ? CARD_RADIUS : 0,
   };
 }
 
@@ -54,8 +64,9 @@ interface AdminFrameProps {
  * them, and move in step.
  */
 export function AdminFrame({ mode, topBar, locked = false, children }: AdminFrameProps) {
-  const { top, side, radius } = frameInsets(mode);
+  const { top, side, right, radius } = frameInsets(mode);
   const topBarRef = React.useRef<HTMLDivElement>(null);
+  const [panelSlot, setPanelSlot] = React.useState<HTMLElement | null>(null);
 
   // Applied through a ref because React 18 has no first-class inert prop.
   // Closed around a full-screen surface, the top bar is out of sight, so out
@@ -75,6 +86,7 @@ export function AdminFrame({ mode, topBar, locked = false, children }: AdminFram
         {
           '--admin-frame-top': `${top}px`,
           '--admin-frame-side': `${side}px`,
+          '--admin-frame-right': `${right}px`,
           '--admin-frame-radius': `${radius}px`,
           '--floating-sidebar-offset-top': 'var(--admin-frame-top)',
           '--floating-sidebar-offset-left': 'var(--admin-frame-side)',
@@ -82,13 +94,23 @@ export function AdminFrame({ mode, topBar, locked = false, children }: AdminFram
           // A full-screen screen's top chrome enters as the top bar leaves
           '--screen-enter-top-delay':
             mode === 'hidden' ? `${TOP_CHROME_ENTRANCE_DELAY}ms` : undefined,
-          padding: 'var(--admin-frame-top) var(--admin-frame-side) var(--admin-frame-side)',
+          padding:
+            'var(--admin-frame-top) var(--admin-frame-right) var(--admin-frame-side) var(--admin-frame-side)',
           transitionProperty: mode === 'off' ? 'none' : FRAME_VARIABLES.join(', '),
           transitionDuration: `${ADMIN_FRAME_TRANSITION.duration}ms`,
           transitionTimingFunction: ADMIN_FRAME_TRANSITION.easing,
         } as React.CSSProperties
       }
     >
+      {mode !== 'off' && (
+        // Under the top bar, and first, so the card covers it until it pulls away
+        <div
+          ref={setPanelSlot}
+          className="absolute right-0 bottom-0 isolate flex"
+          data-admin-frame-panel-slot=""
+          style={{ top: 'var(--admin-frame-top)', width: ADMIN_FRAME_PANEL_WIDTH }}
+        />
+      )}
       {mode !== 'off' && (
         <div
           ref={topBarRef}
@@ -106,11 +128,13 @@ export function AdminFrame({ mode, topBar, locked = false, children }: AdminFram
         className={cn(
           'relative min-h-0 flex-1 overflow-hidden bg-background',
           // On a dark page the card's edge would melt into the frame
-          mode === 'full' && 'dark:ring-1 dark:ring-border-glass',
+          (mode === 'full' || mode === 'customize') && 'dark:ring-1 dark:ring-border-glass',
         )}
         style={{ borderRadius: 'var(--admin-frame-radius)' }}
       >
-        {children}
+        <AdminFramePanelSlotContext.Provider value={panelSlot}>
+          {children}
+        </AdminFramePanelSlotContext.Provider>
       </div>
     </div>
   );

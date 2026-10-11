@@ -182,19 +182,18 @@ function SiteNumbers() {
   );
 }
 
-/** Opens View site's Customize panel, or closes it again. */
+/** Opens View site's Customize panel; gone while it's open, as the panel closes itself. */
 function CustomizeToggle() {
   const customizing = useIsCustomizingSite();
 
+  if (customizing) {
+    return null;
+  }
+
   return (
     <Link
-      aria-pressed={customizing}
-      className={cn(
-        'flex h-full items-center transition-colors hover:text-white',
-        LABEL,
-        customizing ? 'text-white' : MUTED,
-      )}
-      to={customizing ? VIEW_SITE_PATH : CUSTOMIZE_SITE_PATH}
+      className={cn('flex h-full items-center transition-colors hover:text-white', LABEL, MUTED)}
+      to={CUSTOMIZE_SITE_PATH}
     >
       Customize
     </Link>
