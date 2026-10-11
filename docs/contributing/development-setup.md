@@ -150,7 +150,10 @@ list stays open and refreshes, with each branch's pull request and checks from
 Admin or site, `p` or `c` to open its pull request or checks, `l` to read its
 log, `s`, `r`, or `k` to start, restart, or stop it, and `q` to quit. `x` stops
 every running checkout whose pull request has merged. The list also flags a
-checkout that's partway through a rebase or merge, with its conflicts. `pnpm dev:down`
+checkout that's partway through a rebase or merge, with its conflicts. A
+checkout whose nx exited but left tasks such as `vite build --watch` running
+shows as `orphaned`, even once its worktree is deleted; `k` and `x` stop those
+processes too, and `--json` lists each checkout's nx `processes`. `pnpm dev:down`
 stops whatever holds this checkout's ports, including what a killed run left
 behind, and leaves MySQL, Redis, and Mailpit running. Ghost started by
 `pnpm dev:up` also stops itself within a few seconds of its worktree being

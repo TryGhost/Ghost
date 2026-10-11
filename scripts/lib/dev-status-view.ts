@@ -3,6 +3,7 @@ import { existsSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
 import { emitKeypressEvents, type Key } from 'node:readline';
+import { stopOrphans } from './dev-processes.ts';
 import type { GitOperation } from './dev-stack.ts';
 import { checkoutRoot } from './ghost-dev-env.ts';
 import { type PullRequest, pullRequests } from './pull-requests.ts';
@@ -14,18 +15,28 @@ export interface DevStatus {
   operation: GitOperation | null;
   current: boolean;
   state: string;
-  url: string;
+  url: string | null;
   ports: number[];
   database: string | null;
   pid: number | null;
   memory: number | null;
   startedAt: string | null;
   log: string | null;
+  /** The processes nx started in the checkout */
+  processes: {
+    pid: number;
+    pgid: number;
+    command: string;
+    memory: number;
+    startedAt: string;
+    /** Whether the nx process that started it has exited */
+    orphaned: boolean;
+  }[];
 }
 
 interface Job {
   state: 'starting' | 'stopping';
-  child: ChildProcess;
+  child?: ChildProcess;
 }
 
 type Style = (text: string) => string;
@@ -46,7 +57,7 @@ interface Column {
 }
 
 const KEYS =
-  '↑↓ move  a admin  f site  p PR  c checks  l log  s start  r restart  k stop  x stop all merged  q quit';
+  '↑↓ move  a admin  f site  p PR  c checks  l log  s start  r restart  k stop  x stop merged/orphaned  q quit';
 const OPENER = process.platform === 'darwin' ? 'open' : 'xdg-open';
 const GAP = '  ';
 // Branches whose name says nothing about which pull request a checkout is for
@@ -70,6 +81,7 @@ const STATES: Record<string, Style> = {
   starting: yellow,
   stopping: yellow,
   stopped: dim,
+  orphaned: red,
 };
 const CHECKS: Record<string, [string, string, Style]> = {
   SUCCESS: ['✓', 'checks passed', green],
@@ -141,7 +153,11 @@ function tableColumns(prs: Map<string, PullRequest>): Column[] {
     { title: 'STATE', cell: (row) => ({ text: row.state, style: STATES[row.state] }) },
     { title: 'PR', cell: (row) => prCell(row.branch ? prs.get(row.branch) : undefined) },
     { title: 'GIT', cell: (row) => operationCell(row.operation) },
-    { title: 'URL', min: 16, cell: (row) => ({ text: new URL(row.url).host, link: row.url }) },
+    {
+      title: 'URL',
+      min: 16,
+      cell: (row) => (row.url ? { text: new URL(row.url).host, link: row.url } : { text: '' }),
+    },
     {
       title: 'UPTIME',
       drop: 2,
@@ -240,9 +256,13 @@ export function browse(
 
   const prFor = (row: DevStatus) => (row.branch ? prs.get(row.branch) : undefined);
   const stateOf = (row: DevStatus) => jobs.get(row.root)?.state ?? row.state;
-  const mergedRunning = () =>
+  const orphans = (row: DevStatus) => row.processes.filter((proc) => proc.orphaned);
+  // What x stops
+  const leftovers = () =>
     rows.filter(
-      (row) => prFor(row)?.state === 'MERGED' && row.state !== 'stopped' && !jobs.has(row.root),
+      (row) =>
+        (row.state === 'orphaned' || (prFor(row)?.state === 'MERGED' && row.state !== 'stopped')) &&
+        !jobs.has(row.root),
     );
 
   const details = (row: DevStatus): string[] => {
@@ -262,17 +282,22 @@ export function browse(
     } else {
       about = looked.has(row.branch) ? 'no pull request' : 'looking up its pull request…';
     }
+    const count = orphans(row).length;
     const hint =
-      pr?.state === 'MERGED' && stateOf(row) !== 'stopped'
-        ? magenta('  merged, so k stops its Ghost')
-        : '';
+      count > 0
+        ? red(
+            `  ${count} process${count === 1 ? '' : 'es'} outlived nx${stateOf(row) === 'orphaned' ? ', so k stops them' : ''}`,
+          )
+        : pr?.state === 'MERGED' && stateOf(row) !== 'stopped'
+          ? magenta('  merged, so k stops its Ghost')
+          : '';
     const operation = row.operation ? yellow(`  ${describeOperation(row.operation)}`) : '';
     return [
-      `${bold(row.branch ?? 'detached HEAD')}${operation}  ${about}${hint}`,
+      `${bold(row.branch ?? (existsSync(row.root) ? 'detached HEAD' : 'deleted checkout'))}${operation}  ${about}${hint}`,
       dim(
         [
           row.root.replace(homedir(), '~'),
-          `ports ${row.ports.join('/')}`,
+          row.ports.length > 0 && `ports ${row.ports.join('/')}`,
           row.database && `database ${row.database}`,
         ]
           .filter(Boolean)
@@ -328,8 +353,8 @@ export function browse(
     );
     const current = shown[index];
     const keys =
-      mergedRunning().length > 0
-        ? KEYS.replace('x stop all merged', magenta('x stop all merged'))
+      leftovers().length > 0
+        ? KEYS.replace('x stop merged/orphaned', magenta('x stop merged/orphaned'))
         : KEYS;
     const footer =
       confirming.length > 0
@@ -434,27 +459,50 @@ export function browse(
     child.stderr?.on('data', (chunk: Buffer) => {
       errors += chunk;
     });
-    const finish = (failure?: string) => {
-      if (jobs.get(row.root)?.child === child) {
-        jobs.delete(row.root);
-        message = failure ? `${row.name}: ${failure}` : success;
-        if (!failure) {
-          next?.();
-        }
-        void refresh();
-      }
-    };
-    child.once('error', (error) => finish(error.message));
+    const job = { state, child };
+    jobs.set(row.root, job);
+    child.once('error', (error) => finish(row, job, success, error.message));
     child.once('close', (code, signal) =>
-      finish(code === 0 ? undefined : errors.trim().split('\n')[0] || `exited (${signal ?? code})`),
+      finish(
+        row,
+        job,
+        success,
+        code === 0 ? undefined : errors.trim().split('\n')[0] || `exited (${signal ?? code})`,
+        next,
+      ),
     );
-    jobs.set(row.root, { state, child });
+  };
+
+  const finish = (
+    row: DevStatus,
+    job: Job,
+    success: string,
+    failure?: string,
+    next?: () => void,
+  ) => {
+    if (jobs.get(row.root) === job) {
+      jobs.delete(row.root);
+      message = failure ? `${row.name}: ${failure}` : success;
+      if (!failure) {
+        next?.();
+      }
+      void refresh();
+    }
   };
 
   const start = (row: DevStatus) =>
     run(row, 'starting', 'pnpm', ['dev:up'], `Ghost dev is up: ${row.url}`);
 
   const stop = (row: DevStatus, next?: () => void) => {
+    if (row.state === 'orphaned') {
+      const job: Job = { state: 'stopping' };
+      jobs.set(row.root, job);
+      stopOrphans(row.root, orphans(row)).then(
+        (count) => finish(row, job, `Stopped ${count} orphaned processes in ${row.name}`),
+        (error: Error) => finish(row, job, '', error.message.split('\n')[0]),
+      );
+      return;
+    }
     const script = join(row.root, 'scripts/dev-down.ts');
     if (!existsSync(script)) {
       message = `${row.name} has no scripts/dev-down.ts`;
@@ -477,13 +525,24 @@ export function browse(
     }
   };
 
+  const served = (row: DevStatus) =>
+    row.state === 'running' || row.state === 'starting' ? row.url : null;
+  const notServing = (row: DevStatus) =>
+    (message =
+      row.state === 'orphaned'
+        ? `${row.name} has orphaned processes, which k stops`
+        : `${row.name} isn't running`);
+
   // The keys that act on the selected row
   const actions: Record<string, (row: DevStatus) => void> = {
-    a: (row) => (row.state === 'stopped' ? (message = `${row.name} isn't running`) : open(row.url)),
-    f: (row) =>
-      row.state === 'stopped'
-        ? (message = `${row.name} isn't running`)
-        : open(new URL('/', row.url).href),
+    a: (row) => {
+      const url = served(row);
+      return url ? open(url) : notServing(row);
+    },
+    f: (row) => {
+      const url = served(row);
+      return url ? open(new URL('/', url).href) : notServing(row);
+    },
     p: (row) => {
       const pr = prFor(row);
       return pr ? open(pr.url) : (message = `No pull request for ${row.branch ?? row.name}`);
@@ -515,8 +574,8 @@ export function browse(
       stdin.off('keypress', onKey);
       // Starts and stops carry on without reporting back
       for (const { child } of jobs.values()) {
-        child.stderr?.destroy();
-        child.unref();
+        child?.stderr?.destroy();
+        child?.unref();
       }
       leave();
       stdout.off('resize', render);
@@ -554,9 +613,9 @@ export function browse(
         const next = Math.min(Math.max(index + (name === 'up' ? -1 : 1), 0), rows.length - 1);
         selected = rows[next]?.root;
       } else if (name === 'x') {
-        confirming = mergedRunning();
+        confirming = leftovers();
         if (confirming.length === 0) {
-          message = 'No running checkout has a merged pull request';
+          message = 'No running checkout has a merged pull request, and none has orphans';
         }
       } else if (row && action) {
         const busy = jobs.get(row.root)?.state;
