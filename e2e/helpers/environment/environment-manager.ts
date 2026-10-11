@@ -1,6 +1,6 @@
 import baseDebug from '@tryghost/debug';
 import logging from '@tryghost/logging';
-import { GHOST_OWNER } from './constants';
+import { E2E_BASE_DATABASE, E2E_DATABASE_PREFIX, GHOST_OWNER } from './constants';
 import { GhostInstance, MySQLManager } from './service-managers';
 import { GhostManager } from './service-managers/ghost-manager';
 import { randomUUID } from 'crypto';
@@ -76,10 +76,10 @@ export class EnvironmentManager {
     await this.cleanupResources();
 
     // Create base database
-    await this.mysql.recreateBaseDatabase('ghost_e2e_base');
+    await this.mysql.recreateBaseDatabase(E2E_BASE_DATABASE);
 
     // Create containers and wait for Ghost to be healthy (runs migrations)
-    await this.ghost.setup('ghost_e2e_base');
+    await this.ghost.setup(E2E_BASE_DATABASE);
     await this.ghost.waitForReady();
     this.initialized = true;
 
@@ -92,7 +92,7 @@ export class EnvironmentManager {
     });
 
     // Snapshot the migrated database for test isolation
-    await this.mysql.createSnapshot('ghost_e2e_base');
+    await this.mysql.createSnapshot(E2E_BASE_DATABASE);
 
     logging.info(`${this.mode} environment global setup complete`);
   }
@@ -131,7 +131,7 @@ export class EnvironmentManager {
     }
 
     const siteUuid = randomUUID();
-    const instanceId = `ghost_e2e_${siteUuid.replace(/-/g, '_')}`;
+    const instanceId = `${E2E_DATABASE_PREFIX}${siteUuid.replace(/-/g, '_')}`;
     const ownerEmail = `test${siteUuid}@ghost.org`;
 
     // Setup database
