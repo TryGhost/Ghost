@@ -2,6 +2,7 @@ import { ActivityPubHostLayoutProvider } from '@tryghost/activitypub/api';
 import React from 'react';
 import { useLocation } from '@tryghost/admin-x-framework';
 import { FLOATING_SIDEBAR_SPRING, SidebarInset, SidebarProvider } from '@tryghost/shade/components';
+import { PageChromeProvider } from '@tryghost/shade/page-templates';
 import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
 import { isContributorUser } from '@tryghost/admin-x-framework/api/users';
 import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
@@ -241,6 +242,10 @@ export function AdminLayout({ children }: AdminLayoutProps) {
     return () => fade.cancel();
   }, [settingsNavigation]);
 
+  // Inside the full frame, list pages show their title large above their
+  // sticky header (Shade's ListPage)
+  const pageChrome = React.useMemo(() => ({ largeTitles: frameMode === 'full' }), [frameMode]);
+
   // Crossing into or out of a full-screen screen inside the frame is no view
   // transition (ScreenTransitionProvider): the frame closes or opens around
   // the live page, and the new screen fades in under it.
@@ -371,7 +376,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
               value={isSettingsRoute ? settingsNavigationSlot : null}
             >
               <SettingsSidebarMorphingContext.Provider value={settingsSidebarMorphing}>
-                {children}
+                <PageChromeProvider value={pageChrome}>{children}</PageChromeProvider>
               </SettingsSidebarMorphingContext.Provider>
             </SettingsNavigationSlotContext.Provider>
           </ActivityPubHostLayoutProvider>
