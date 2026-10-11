@@ -31,7 +31,7 @@ const portBlockSize = 128;
 const portBlockCount = 54;
 const firstPortBlock = 3000;
 
-const reservePortBlock = async (runId: string) => {
+const reservePortBlock = async (runId: string, runLock: string) => {
   const config = require('../../core/shared/config');
   const connectionConfig = { ...config.get('database:connection') };
   delete connectionConfig.database;
@@ -58,6 +58,7 @@ const reservePortBlock = async (runId: string) => {
   };
 
   try {
+    await admin.raw('SELECT GET_LOCK(?, 0)', [runLock]).connection(connection);
     for (let offset = 0; offset < portBlockCount; offset += 1) {
       const block = (firstCandidate + offset) % portBlockCount;
       const lockName = `ghost-test-port-block-${block}`;
@@ -102,7 +103,9 @@ export default async function setup() {
   // Load Ghost's runtime overrides (nconf wiring) and the template builder.
   require('../../core/server/overrides');
   const { buildTemplate, dropRunDatabases } = require('./db-template');
-  const portBlock = await reservePortBlock(runId);
+  // `pnpm dev:gc` drops a run's databases only once this lock on their prefix is free. MySQL frees
+  // it when the connection closes: after teardown has dropped them, or when the run is killed
+  const portBlock = await reservePortBlock(runId, `${run.mysqlBase}_${runId}`);
 
   process.env.GHOST_TEST_DB_BASE = run.mysqlBase;
   process.env.GHOST_TEST_DB_RUN_ID = run.runId;

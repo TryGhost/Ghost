@@ -4,8 +4,9 @@ import { parseArgs } from 'node:util';
 import { checkoutEnv, checkouts, unusedDatabases, unusedE2eNames } from './lib/dev-stack.ts';
 import { checkoutRoot } from './lib/ghost-dev-env.ts';
 
-// Lists what worktrees that no longer exist left in the shared services: dev_* databases and
-// interrupted e2e runs' containers, databases and snapshots; --yes removes them
+// Lists what's left behind in the shared services: dev_* databases and interrupted e2e runs'
+// containers, databases and snapshots of worktrees that no longer exist, and killed DB test runs'
+// databases; --yes removes them
 const { values } = parseArgs({ options: { yes: { type: 'boolean', default: false } } });
 
 const password = process.env.MYSQL_ROOT_PASSWORD ?? 'root';
@@ -44,8 +45,18 @@ let sizes: Map<string, number>;
 try {
   sizes = new Map(
     rows(
+      // A DB test run holds a lock named after its databases' prefix until it has dropped them.
+      // Runs from checkouts that predate the lock count as live while connected to one of them
       mysql(
-        "SELECT s.schema_name, COALESCE(SUM(t.data_length + t.index_length), 0) FROM information_schema.schemata s LEFT JOIN information_schema.tables t ON t.table_schema = s.schema_name WHERE s.schema_name LIKE 'dev\\_%' OR s.schema_name LIKE 'ghost\\_e2e\\_%' GROUP BY s.schema_name",
+        `SELECT s.schema_name, COALESCE(SUM(t.data_length + t.index_length), 0)
+        FROM information_schema.schemata s
+        LEFT JOIN information_schema.tables t ON t.table_schema = s.schema_name
+        WHERE s.schema_name LIKE 'dev\\_%' OR s.schema_name LIKE 'ghost\\_e2e\\_%'
+        OR (s.schema_name REGEXP '^ghost_testing_[0-9a-f]{8}_'
+          AND IS_USED_LOCK(SUBSTRING_INDEX(s.schema_name, '_', 3)) IS NULL
+          AND SUBSTRING_INDEX(s.schema_name, '_', 3) NOT IN (
+            SELECT SUBSTRING_INDEX(db, '_', 3) FROM performance_schema.processlist WHERE db IS NOT NULL))
+        GROUP BY s.schema_name`,
       ),
     ).map(([name = '', size]): [string, number] => [name, Number(size)]),
   );
@@ -63,6 +74,7 @@ const databases = [
     existing.map((root) => ({ root, env: checkoutEnv(root) })),
   ),
   ...unusedE2eNames([...sizes.keys()], existing),
+  ...[...sizes.keys()].filter((name) => name.startsWith('ghost_testing_')),
 ];
 const allContainers = rows(
   run('docker', ['ps', '-a', '--format', '{{.Label "com.docker.compose.project"}}\t{{.Names}}']),
@@ -82,13 +94,13 @@ const snapshots = unusedE2eNames(
 ).map((file) => `/tmp/${file}`);
 
 if (databases.length + containers.length + snapshots.length === 0) {
-  console.log('Everything in the shared services belongs to an existing worktree.');
+  console.log('Nothing is left behind in the shared services.');
   process.exit(0);
 }
 console.log(
   values.yes
-    ? 'Removing what worktrees that no longer exist left behind:'
-    : 'Left behind by worktrees that no longer exist:',
+    ? "Removing what's left behind in the shared services:"
+    : 'Left behind in the shared services:',
 );
 for (const name of databases) {
   console.log(`  ${name}  ${Math.round((sizes.get(name) ?? 0) / 1024 ** 2)} MB`);
