@@ -119,14 +119,18 @@ database lives in a Docker volume, and uploaded content in `ghost/content`.
 Every checkout gets its own URL and database, assigned on its first `pnpm dev`
 and kept in `.ghost-dev.env` so URLs and sessions survive restarts. The main
 checkout uses `http://localhost:2368` and the `ghost_dev` database. A worktree
-gets a `<worktree>.localhost` hostname, a port pair between `2400` and `2998`,
-and a `dev_<worktree>` database, so several worktrees can run `pnpm dev` at once
-against the same MySQL, Redis, and Mailpit. Mailpit tags each message with the
-checkout's name.
+gets a `<worktree>.ghost.localhost` hostname, a port pair between `2400` and
+`2998`, and a `dev_<worktree>` database, so several worktrees can run `pnpm dev`
+at once against the same MySQL, Redis, and Mailpit. Mailpit tags each message
+with the checkout's name.
 
 Browsers share cookies between the ports of one hostname, so the hostname keeps
 each checkout's Admin sign-in separate. Browsers resolve `.localhost` hostnames
 to your machine without editing `/etc/hosts`. `pnpm dev` prints the URL.
+
+Password managers match sign-ins by domain, and every worktree shares
+`ghost.localhost`. Give your local Ghost login the websites `localhost` and
+`ghost.localhost` to fill it in the main checkout and every worktree.
 
 A worktree's database starts as a copy of `ghost_dev` with a new `site_uuid` and
 no sessions, so it skips setup and onboarding, and Ghost applies the branch's
