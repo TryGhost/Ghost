@@ -24,10 +24,13 @@ export function overlayArgs(): string[] {
 /** The dev compose configuration with the overlays applied, Ghost's own container included */
 export function composeConfig(overlays: string[]): ComposeConfig {
   const args = ['compose', '-f', 'compose.dev.yaml', ...overlays];
+  // A --profile flag replaces COMPOSE_PROFILES instead of adding to it
+  const profiles = [process.env.COMPOSE_PROFILES, 'docker-dev'].filter(Boolean).join(',');
   return JSON.parse(
-    execFileSync('docker', [...args, '--profile', 'docker-dev', 'config', '--format', 'json'], {
+    execFileSync('docker', [...args, 'config', '--format', 'json'], {
       cwd: repoRoot,
       encoding: 'utf8',
+      env: { ...process.env, COMPOSE_PROFILES: profiles },
     }),
   ) as ComposeConfig;
 }
