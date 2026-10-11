@@ -7,21 +7,25 @@ import { useEffect, useState } from 'react';
  * width, so a tall screen gets the generous version and a short one stays
  * close to the compact header it replaces.
  *
- * - space: 28px at 600px tall, 96px from 1000px
- * - title: 24px at 600px tall, 44px from 1000px; and 28px at 800px wide, 44px
+ * - space: 28px at 600px tall, 100px from 900px (the Admin 7 vision's)
+ * - title: 24px at 600px tall, 44px from 900px; and 28px at 800px wide, 44px
  *   from 1380px, whichever is smaller
  */
 export const LARGE_PAGE_TITLE_VARIABLES = {
   // 0 at rest, 1 once the header has stuck (useLargeTitleCondense)
   '--large-title-condense': '0',
-  '--large-title-space': 'clamp(28px, calc(17vh - 74px), 96px)',
+  '--large-title-space': 'clamp(28px, calc(24vh - 116px), 100px)',
   '--large-title-size':
-    'min(clamp(24px, calc(5vh - 6px), 44px), clamp(28px, calc(2.76vw + 6px), 44px))',
+    'min(clamp(24px, calc(6.667vh - 16px), 44px), clamp(28px, calc(2.76vw + 6px), 44px))',
 } as React.CSSProperties;
 
-// The header's own top padding while under a large title, which keeps its
-// row of actions clear of the frame's top bar once it has stuck
-export const LARGE_TITLE_HEADER_PADDING = 24;
+/*
+ * The header's own top padding while under a large title. Its first row sits
+ * 32px above a separator at rest and settles 16px down as the header sticks
+ * (index.css), to 24px clear of the frame's top bar with 16px below it; the
+ * header's height never changes.
+ */
+export const LARGE_TITLE_HEADER_PADDING = 8;
 
 /**
  * How far the page scrolls while the large title hands over to the header:
