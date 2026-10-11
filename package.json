@@ -41,6 +41,7 @@
     "docker:clean": "docker compose -f compose.dev.yaml ${DEV_COMPOSE_FILES} --profile docker-dev --profile all down -v --remove-orphans --rmi local",
     "docker:down": "docker compose -f compose.dev.yaml ${DEV_COMPOSE_FILES} --profile docker-dev down --remove-orphans",
     "docker:rebase": "export pnpm_config_enable_global_virtual_store=false && git fetch ${GHOST_UPSTREAM:-origin} main && git rebase ${GHOST_UPSTREAM:-origin}/main && pnpm install && pnpm nx run-many -t build --projects=@tryghost/shade,@tryghost/admin-x-framework && docker compose -f compose.dev.yaml ${DEV_COMPOSE_FILES} --profile docker-dev up -d --build --force-recreate ghost-dev",
+    "knip": "knip",
     "knip:fix": "knip --fix --allow-remove-files=false",
     "lint": "pnpm nx run-many -t lint lint:boundaries && pnpm lint:packages && pnpm lint:versioning && pnpm lint:docs",
     "lint:agent-guidance": "node scripts/check-agent-guidance.js",
