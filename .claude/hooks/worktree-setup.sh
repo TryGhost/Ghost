@@ -1,9 +1,12 @@
 #!/usr/bin/env bash
 #
-# SessionStart hook — runs `pnpm bootstrap` when this checkout is missing its
-# dependencies or theme submodules, as a freshly created worktree is.
+# SessionStart hook — runs `pnpm bootstrap` when the session's checkout is missing
+# its dependencies or theme submodules, as a freshly created worktree is.
 
-cd "$CLAUDE_PROJECT_DIR" 2>/dev/null || exit 0
+# Desktop worktree sessions run hooks in the main checkout; stdin `cwd` is the worktree
+cwd=$(jq -r '.cwd // empty' 2>/dev/null)
+root=$(git -C "${cwd:-$CLAUDE_PROJECT_DIR}" rev-parse --show-toplevel 2>/dev/null) || exit 0
+cd "$root" || exit 0
 grep -q '"name": "ghost-monorepo"' package.json 2>/dev/null || exit 0
 [ -d node_modules ] &&
     [ -f ghost/content/themes/casper/package.json ] &&
