@@ -285,7 +285,7 @@
     "cssnano": "7.1.9",
     "esbuild": "catalog:",
     "eslint": "catalog:",
-    "eslint-plugin-ghost": "3.5.0",
+    "eslint-plugin-ghost": "catalog:",
     "globals": "17.7.0",
     "html-validate": "11.5.5",
     "inquirer": "8.2.7",
