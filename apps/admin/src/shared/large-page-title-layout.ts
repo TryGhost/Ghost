@@ -12,13 +12,19 @@ import { useEffect, useState } from 'react';
  *   from 1380px, whichever is smaller
  */
 export const LARGE_PAGE_TITLE_VARIABLES = {
+  // 0 at rest, 1 once the header has stuck (useLargeTitleCondense)
+  '--large-title-condense': '0',
   '--large-title-space': 'clamp(28px, calc(17vh - 74px), 96px)',
   '--large-title-size':
     'min(clamp(24px, calc(5vh - 6px), 44px), clamp(28px, calc(2.76vw + 6px), 44px))',
 } as React.CSSProperties;
 
-// The header's own top padding while under a large title
-export const LARGE_TITLE_HEADER_PADDING = 12;
+// The header's own top padding while under a large title, which keeps its
+// row of actions clear of the frame's top bar once it has stuck
+export const LARGE_TITLE_HEADER_PADDING = 24;
+
+// How far the page scrolls while the large title hands over to the header
+const CONDENSE_DISTANCE = 56;
 
 /**
  * How far the sticky header is pulled up over the large title, so the row of
@@ -36,28 +42,44 @@ function scrollParent(element: HTMLElement): HTMLElement | null {
 }
 
 /**
- * Whether the page has scrolled past a marker (e.g. where the sticky header
- * sits at rest, so it has stuck). Attach `markerRef` to the marker.
+ * Hands the large title over to the sticky header as the page scrolls: over
+ * the last CONDENSE_DISTANCE before the header sticks, `--large-title-condense`
+ * on the list page goes from 0 to 1, for the title, the header's small title
+ * and its background to fade by. Follows the scroll position, so stopping
+ * halfway stays halfway; set directly on the element, so scrolling doesn't
+ * re-render. Attach `markerRef` to where the header sits at rest.
  */
-export function useScrolledPast() {
+export function useLargeTitleCondense() {
   const [marker, markerRef] = useState<HTMLElement | null>(null);
-  const [scrolledPast, setScrolledPast] = useState(false);
 
   useEffect(() => {
-    if (!marker) {
+    const root = marker && scrollParent(marker);
+    const host = marker?.closest<HTMLElement>('[data-list-page="list-page"]');
+    if (!marker || !root || !host) {
       return;
     }
-    const root = scrollParent(marker);
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        const rootTop = entry.rootBounds?.top ?? 0;
-        setScrolledPast(!entry.isIntersecting && entry.boundingClientRect.top < rootTop);
-      },
-      { root },
-    );
-    observer.observe(marker);
-    return () => observer.disconnect();
+    let frame = 0;
+    const update = () => {
+      frame = 0;
+      const distance = marker.getBoundingClientRect().top - root.getBoundingClientRect().top;
+      const progress = Math.min(1, Math.max(0, 1 - distance / CONDENSE_DISTANCE));
+      host.style.setProperty('--large-title-condense', progress.toFixed(3));
+    };
+    const schedule = () => {
+      if (!frame) {
+        frame = requestAnimationFrame(update);
+      }
+    };
+    update();
+    root.addEventListener('scroll', schedule, { passive: true });
+    const resizeObserver = new ResizeObserver(schedule);
+    resizeObserver.observe(root);
+    return () => {
+      root.removeEventListener('scroll', schedule);
+      resizeObserver.disconnect();
+      cancelAnimationFrame(frame);
+    };
   }, [marker]);
 
-  return { scrolledPast, markerRef };
+  return { markerRef };
 }

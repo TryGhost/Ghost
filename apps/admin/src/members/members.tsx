@@ -39,7 +39,7 @@ import { LargePageTitle } from '@/shared/large-page-title';
 import {
   LARGE_PAGE_TITLE_VARIABLES,
   LARGE_TITLE_HEADER_OVERLAP,
-  useScrolledPast,
+  useLargeTitleCondense,
 } from '@/shared/large-page-title-layout';
 import { preloadMapAtlas } from './detail/map-atlas';
 
@@ -65,7 +65,7 @@ const MembersPage: React.FC<MembersPageProps> = ({
   const admin7Design = useFeatureFlag('admin7Design');
   const isMobile = useIsMobile();
   const largeTitle = admin7Design && !isMobile;
-  const { scrolledPast: headerStuck, markerRef: headerRestMarkerRef } = useScrolledPast();
+  const { markerRef: headerRestMarkerRef } = useLargeTitleCondense();
   const headerRef = useRef<HTMLDivElement | null>(null);
   const setHeaderContentRef = useCallback((node: HTMLDivElement | null) => {
     headerRef.current = node?.closest('[data-list-page="header"]') as HTMLDivElement | null;
@@ -232,7 +232,6 @@ const MembersPage: React.FC<MembersPageProps> = ({
           {largeTitle && (
             <LargePageTitle
               aside={!shouldShowLoading && totalMembers > 0 && formatNumber(totalMembers)}
-              condensed={headerStuck}
               markerRef={headerRestMarkerRef}
             >
               Members
@@ -241,9 +240,10 @@ const MembersPage: React.FC<MembersPageProps> = ({
           <ListPage.Header
             className={cn(
               'py-4 sidebar:py-5',
-              // Pulled up beside the large title, and see-through over it until it sticks
-              largeTitle && 'pt-3! sidebar:pt-3!',
-              largeTitle && !headerStuck && 'bg-none! backdrop-blur-none!',
+              // Pulled up beside the large title, see-through over it, and solid
+              // once it has handed over (a layer fading in with the handover)
+              largeTitle &&
+                'bg-none! pt-6! backdrop-blur-none! before:pointer-events-none before:absolute before:inset-0 before:-z-10 before:bg-background before:opacity-(--large-title-condense) sidebar:pt-6!',
             )}
             style={
               largeTitle ? { marginTop: `calc(-1 * ${LARGE_TITLE_HEADER_OVERLAP})` } : undefined
@@ -254,8 +254,9 @@ const MembersPage: React.FC<MembersPageProps> = ({
                 <PageHeader.Left>
                   <PageHeader.Title
                     className={cn(
-                      largeTitle && 'transition-opacity duration-200 motion-reduce:transition-none',
-                      largeTitle && !headerStuck && 'opacity-0',
+                      // Comes in over the second part of the handover
+                      largeTitle &&
+                        'opacity-[clamp(0,calc(var(--large-title-condense)*1.6-0.6),1)]',
                     )}
                   >
                     Members{' '}
