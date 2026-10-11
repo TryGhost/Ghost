@@ -167,9 +167,6 @@
     "tags": [
       "playwright"
     ],
-    "implicitDependencies": [
-      "@internal/scripts"
-    ],
     "targets": {
       "test": {
         "executor": "nx:noop",
@@ -287,6 +284,8 @@
           },
           "default",
           "cardAssets",
+          "{workspaceRoot}/scripts/assemble-admin-assets.ts",
+          "{workspaceRoot}/scripts/lib/admin-assets.ts",
           "^default"
         ],
         "outputs": [
