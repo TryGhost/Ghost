@@ -172,8 +172,9 @@ it closes normally, or after a conversation has been idle and closed in every
 client for 30 minutes. Finishing a turn or switching chats leaves Ghost running.
 See the [Codex hook lifecycle](https://learn.chatgpt.com/docs/hooks#sessionend).
 
-`pnpm dev:gc` lists the `dev_*` databases of worktrees that no longer exist, and
-`pnpm dev:gc --yes` drops them.
+`pnpm dev:gc` lists what worktrees that no longer exist left in the shared
+services: their `dev_*` databases and the containers, databases and snapshots of
+interrupted E2E runs. `pnpm dev:gc --yes` removes them.
 
 `pnpm dev:status --watch` redraws the list every two seconds.
 `pnpm dev:down --all` stops every checkout's Ghost and then the Docker services;
