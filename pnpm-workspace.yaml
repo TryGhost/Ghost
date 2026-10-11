@@ -136,7 +136,7 @@ catalog:
   chai: 4.5.0
   cheerio: 1.2.0
   clsx: 2.1.1
-  concurrently: 10.0.5
+  concurrently: 10.0.6
   country-flag-icons: 1.6.20
   dependency-cruiser: ^18.1.1
   dequal: 2.0.3
