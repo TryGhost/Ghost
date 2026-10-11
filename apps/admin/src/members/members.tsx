@@ -244,7 +244,7 @@ const MembersPage: React.FC<MembersPageProps> = ({
               // Pulled up beside the large title, see-through over it, and solid
               // once it has handed over (a layer fading in with the handover)
               largeTitle &&
-                'bg-none! pt-2! backdrop-blur-none! before:pointer-events-none before:absolute before:inset-0 before:-z-10 before:bg-background sidebar:pt-2!',
+                'bg-none! pt-2! pb-0! backdrop-blur-none! before:pointer-events-none before:absolute before:inset-0 before:-z-10 before:bg-background sidebar:pt-2! sidebar:pb-0!',
             )}
             data-large-title-header={largeTitle ? '' : undefined}
             style={
