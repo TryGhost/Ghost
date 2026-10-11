@@ -9,6 +9,7 @@ import {
   listeners,
   LOG_FILE,
   processInfo,
+  processStart,
   upGroup,
   worktreeList,
 } from './lib/dev-stack.ts';
@@ -50,11 +51,13 @@ async function status(
     database: env.GHOST_DEV_DATABASE ?? null,
     pid: group ?? null,
     memory: null,
+    startedAt: null,
     log: existsSync(join(root, LOG_FILE)) ? join(root, LOG_FILE) : null,
   };
 }
 
-async function snapshot(): Promise<DevStatus[]> {
+/** `keep` lists checkouts to include even when they're stopped */
+async function snapshot(keep = new Set<string>()): Promise<DevStatus[]> {
   const rows = (
     await Promise.all(
       worktreeList().flatMap(({ root, branch }) => {
@@ -62,7 +65,7 @@ async function snapshot(): Promise<DevStatus[]> {
         return env ? [status(root, branch, env)] : [];
       }),
     )
-  ).filter((row) => values.all || row.current || row.state !== 'stopped');
+  ).filter((row) => values.all || row.current || row.state !== 'stopped' || keep.has(row.root));
 
   // The processes listening on a running stack's ports give its pid and memory
   const running = rows.filter((row) => row.state === 'running');
@@ -74,6 +77,10 @@ async function snapshot(): Promise<DevStatus[]> {
     });
     row.pid = procs[0]?.pid ?? null;
     row.memory = procs.reduce((total, proc) => total + proc.rss * 1024, 0);
+  }
+  for (const row of rows) {
+    const started = row.pid && processStart(row.pid);
+    row.startedAt = started ? new Date(started).toISOString() : null;
   }
   return rows;
 }

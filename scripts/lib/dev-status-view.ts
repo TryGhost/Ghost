@@ -17,14 +17,13 @@ export interface DevStatus {
   database: string | null;
   pid: number | null;
   memory: number | null;
+  startedAt: string | null;
   log: string | null;
 }
 
 interface Job {
-  name: string;
   state: 'starting' | 'stopping';
   child: ChildProcess;
-  done: Promise<void>;
 }
 
 type Style = (text: string) => string;
@@ -91,12 +90,23 @@ function prCell(pr: PullRequest | undefined): Cell {
     };
   }
   const [symbol, , style] = CHECKS[pr.checks ?? ''] ?? [];
-  const text = [`#${pr.number}`, symbol, pr.draft ? 'draft' : ''].filter(Boolean).join(' ');
-  return { text, style, link: pr.url };
+  const notes = [pr.draft && 'draft', pr.conflicts && 'conflicts'];
+  const text = [`#${pr.number}`, symbol, ...notes].filter(Boolean).join(' ');
+  return { text, style: pr.conflicts ? red : style, link: pr.url };
 }
 
-const megabytes = (bytes: number | null) =>
-  bytes === null ? '' : `${Math.round(bytes / 1024 ** 2)} MB`;
+const MINUTE = 60_000;
+const HOUR = 60 * MINUTE;
+
+/** `ms` as minutes, hours and minutes, or days and hours */
+export function uptime(ms: number): string {
+  const minutes = Math.floor(ms / MINUTE);
+  const hours = Math.floor(minutes / 60);
+  if (hours === 0) {
+    return `${minutes}m`;
+  }
+  return hours < 24 ? `${hours}h${minutes % 60}m` : `${Math.floor(hours / 24)}d${hours % 24}h`;
+}
 
 function tableColumns(prs: Map<string, PullRequest>): Column[] {
   return [
@@ -109,7 +119,18 @@ function tableColumns(prs: Map<string, PullRequest>): Column[] {
     { title: 'STATE', cell: (row) => ({ text: row.state, style: STATES[row.state] }) },
     { title: 'PR', cell: (row) => prCell(row.branch ? prs.get(row.branch) : undefined) },
     { title: 'URL', min: 16, cell: (row) => ({ text: new URL(row.url).host, link: row.url }) },
-    { title: 'MEMORY', drop: 2, cell: (row) => ({ text: megabytes(row.memory) }) },
+    {
+      title: 'UPTIME',
+      drop: 2,
+      cell: (row) => {
+        const age = row.startedAt ? Date.now() - Date.parse(row.startedAt) : null;
+        // Up longer than a working day
+        return {
+          text: age === null ? '' : uptime(age),
+          style: age && age > 12 * HOUR ? yellow : undefined,
+        };
+      },
+    },
     { title: 'PID', drop: 1, cell: (row) => ({ text: String(row.pid ?? '') }) },
   ];
 }
@@ -137,7 +158,7 @@ export function fitColumns(
   for (const [index, { min }] of [...columns.entries()].reverse()) {
     const width = widths[index];
     if (min !== undefined && width !== null && width !== undefined && total() > room) {
-      widths[index] = Math.max(min, width - (total() - room));
+      widths[index] = Math.max(Math.min(min, width), width - (total() - room));
     }
   }
   return widths;
@@ -159,7 +180,7 @@ export function truncate(text: string, width: number): string {
  */
 export function browse(
   initial: DevStatus[],
-  load: () => Promise<DevStatus[]>,
+  load: (keep: Set<string>) => Promise<DevStatus[]>,
 ): Promise<DevStatus[]> {
   const { stdin, stdout } = process;
   let rows = initial;
@@ -167,6 +188,7 @@ export function browse(
   let message = '';
   let confirming: DevStatus[] = [];
   let loading = false;
+  let reload = false;
   let active = false;
   // The first row on screen, when they don't all fit
   let top = 0;
@@ -175,6 +197,7 @@ export function browse(
   let prError = '';
   let prLoading = false;
   const looked = new Set<string>();
+  const prAbort = new AbortController();
 
   const enter = () => {
     active = true;
@@ -196,15 +219,19 @@ export function browse(
   const stateOf = (row: DevStatus) => jobs.get(row.root)?.state ?? row.state;
   const mergedRunning = () =>
     rows.filter(
-      (row) => prFor(row)?.state === 'MERGED' && stateOf(row) !== 'stopped' && !jobs.has(row.root),
+      (row) => prFor(row)?.state === 'MERGED' && row.state !== 'stopped' && !jobs.has(row.root),
     );
 
   const details = (row: DevStatus): string[] => {
     const pr = prFor(row);
     let about = '';
     if (pr) {
-      const status = pr.state === 'OPEN' ? CHECKS[pr.checks ?? '']?.[1] : pr.state.toLowerCase();
-      about = [`#${pr.number} ${pr.title}`, status && `(${status})`].filter(Boolean).join(' ');
+      const status =
+        pr.state === 'OPEN'
+          ? [CHECKS[pr.checks ?? '']?.[1], pr.conflicts && `conflicts with ${pr.base}`]
+          : [pr.state.toLowerCase()];
+      const summary = status.filter(Boolean).join(', ');
+      about = `#${pr.number} ${pr.title}${summary ? ` (${summary})` : ''}`;
     } else if (!row.branch || BASE_BRANCHES.has(row.branch)) {
       about = '';
     } else if (prError) {
@@ -306,11 +333,13 @@ export function browse(
     }
     prLoading = true;
     try {
-      prs = await pullRequests(branches, checkoutRoot);
+      prs = await pullRequests(branches, checkoutRoot, prAbort.signal);
       prError = '';
     } catch (error) {
-      const { stderr, message: text } = error as { stderr?: string; message: string };
-      prError = (stderr?.trim() || text).split('\n')[0] ?? '';
+      const { code, stderr } = error as { code?: string | number; stderr?: string };
+      prError =
+        stderr?.trim().split('\n')[0] ||
+        (code === 'ENOENT' ? "gh isn't installed" : `gh failed (${code})`);
     } finally {
       prLoading = false;
       for (const branch of branches) {
@@ -320,15 +349,23 @@ export function browse(
     render();
   };
 
-  const refresh = async () => {
+  const refresh = async (): Promise<void> => {
     if (loading) {
+      reload = true;
       return;
     }
     loading = true;
     try {
-      rows = await load();
+      // Rows being started or stopped stay listed while they're stopped
+      rows = await load(new Set(jobs.keys()));
+    } catch (error) {
+      message = `Couldn't reload: ${(error as Error).message.split('\n')[0]}`;
     } finally {
       loading = false;
+    }
+    if (reload) {
+      reload = false;
+      return refresh();
     }
     if (!rows.some((row) => row.root === selected)) {
       selected = (rows.find((row) => row.current) ?? rows[0])?.root;
@@ -359,37 +396,35 @@ export function browse(
     success: string,
     next?: () => void,
   ) => {
-    // Its own process group, so a Ctrl-C in the log viewer doesn't reach it
+    // Its own process group, so a Ctrl-C in the log viewer doesn't reach it, and the checkout's
+    // own `.ghost-dev.env` rather than this one's GHOST_DEV_* overrides
     const child = spawn(command, args, {
       cwd: row.root,
       detached: true,
-      stdio: ['ignore', 'pipe', 'pipe'],
+      stdio: ['ignore', 'ignore', 'pipe'],
+      env: Object.fromEntries(
+        Object.entries(process.env).filter(([key]) => !key.startsWith('GHOST_DEV_')),
+      ),
     });
     let errors = '';
-    child.stdout?.resume();
     child.stderr?.on('data', (chunk: Buffer) => {
       errors += chunk;
     });
-    const done = new Promise<void>((resolve) => {
-      const finish = (failure?: string) => {
-        if (jobs.get(row.root)?.child === child) {
-          jobs.delete(row.root);
-          message = failure ? `${row.name}: ${failure}` : success;
-          if (!failure) {
-            next?.();
-          }
-          resolve();
-          void refresh();
+    const finish = (failure?: string) => {
+      if (jobs.get(row.root)?.child === child) {
+        jobs.delete(row.root);
+        message = failure ? `${row.name}: ${failure}` : success;
+        if (!failure) {
+          next?.();
         }
-      };
-      child.once('error', (error) => finish(error.message));
-      child.once('close', (code, signal) =>
-        finish(
-          code === 0 ? undefined : errors.trim().split('\n')[0] || `exited (${signal ?? code})`,
-        ),
-      );
-    });
-    jobs.set(row.root, { name: row.name, state, child, done });
+        void refresh();
+      }
+    };
+    child.once('error', (error) => finish(error.message));
+    child.once('close', (code, signal) =>
+      finish(code === 0 ? undefined : errors.trim().split('\n')[0] || `exited (${signal ?? code})`),
+    );
+    jobs.set(row.root, { state, child });
   };
 
   const start = (row: DevStatus) =>
@@ -450,19 +485,12 @@ export function browse(
       setInterval(() => void refreshPrs(), 60_000),
     ];
 
-    const quit = async () => {
+    const quit = () => {
       timers.forEach(clearInterval);
+      prAbort.abort();
       stdin.off('keypress', onKey);
-      const stopping = [...jobs.values()].filter((job) => job.state === 'stopping');
-      if (stopping.length > 0) {
-        message = `Waiting for Ghost dev to stop in ${stopping.map((job) => job.name).join(', ')}`;
-        render();
-        await Promise.all(stopping.map((job) => job.done));
-        rows = await load();
-      }
-      // Starts carry on without reporting back
+      // Starts and stops carry on without reporting back
       for (const { child } of jobs.values()) {
-        child.stdout?.destroy();
         child.stderr?.destroy();
         child.unref();
       }
@@ -470,7 +498,15 @@ export function browse(
       stdout.off('resize', render);
       process.off('SIGINT', ignore);
       process.off('exit', leave);
+      for (const signal of ['SIGTERM', 'SIGHUP'] as const) {
+        process.off(signal, terminate);
+      }
       resolve(rows);
+    };
+    // pnpm sends SIGTERM after a second Ctrl-C reaches it, e.g. from the log viewer
+    const terminate = () => {
+      leave();
+      process.exit(1);
     };
 
     function onKey(_input: string | undefined, key: Key) {
@@ -487,7 +523,7 @@ export function browse(
       const row = rows.find((candidate) => candidate.root === selected);
       const action = name && actions[name];
       if (name === 'q' || name === 'escape' || name === 'ctrl-c') {
-        void quit();
+        quit();
         return;
       } else if (name === 'up' || name === 'down') {
         const index = rows.findIndex((candidate) => candidate.root === selected);
@@ -515,6 +551,9 @@ export function browse(
     // The log viewer gets Ctrl-C, which also signals this process
     process.on('SIGINT', ignore);
     process.on('exit', leave);
+    for (const signal of ['SIGTERM', 'SIGHUP'] as const) {
+      process.on(signal, terminate);
+    }
     enter();
     render();
     void refreshPrs();

@@ -153,6 +153,27 @@ export function processInfo(pid: number): Proc | undefined {
   }
 }
 
+/** When the process started, in milliseconds since the epoch */
+export function processStart(pid: number): number | undefined {
+  try {
+    if (process.platform === 'linux') {
+      // Field 22 of `stat` counts clock ticks from boot, and USER_HZ is 100 on Linux
+      const stat = readFileSync(`/proc/${pid}/stat`, 'utf8');
+      const ticks = Number(stat.slice(stat.lastIndexOf(')') + 2).split(' ')[19]);
+      const boot = Number(/^btime (\d+)$/m.exec(readFileSync('/proc/stat', 'utf8'))?.[1]);
+      return (boot + ticks / 100) * 1000 || undefined;
+    }
+    const start = execFileSync('ps', ['-o', 'lstart=', '-p', String(pid)], {
+      encoding: 'utf8',
+      env: { ...process.env, LC_ALL: 'C' },
+    });
+    return Date.parse(start.trim()) || undefined;
+  } catch {
+    // Exited
+    return undefined;
+  }
+}
+
 /** Whether the process runs in `root`, which tells this checkout's processes from others' */
 export function inCheckout(pid: number, root = checkoutRoot): boolean {
   let cwd: string | undefined;
