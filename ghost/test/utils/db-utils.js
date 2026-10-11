@@ -19,8 +19,7 @@ const schemaTables = Object.keys(schema);
 const urlServiceUtils = require('./url-service-utils');
 const dbTemplate = require('./db-template');
 
-let mysqlSnapshotDatabase = null;
-const mysqlSnapshotTablePrefix = '__ghost_snapshot_';
+let templateRestoredDatabase = null;
 
 /**
  * Reset
@@ -34,11 +33,10 @@ module.exports.reset = async ({ truncate } = { truncate: false }) => {
   if (truncate) {
     // Perform a fast reset by tearing down all the tables and inserting the fixtures
     try {
-      await resetMySQLFromSnapshot();
+      await resetMySQLFromTemplate();
     } catch (err) {
       // If it fails, try a normal restore
       await forceReinit();
-      await createMySQLSnapshot();
     }
   } else {
     // Do a full database reset + initialisation
@@ -55,10 +53,9 @@ module.exports.teardown = async () => {
   try {
     await truncateAll();
   } catch (err) {
-    await knexMigrator.reset({ force: true });
+    await forceReinit();
+    await truncateAll();
   }
-
-  await dropMySQLSnapshots();
 };
 
 /**
@@ -73,95 +70,53 @@ module.exports.truncate = async (tableName) => {
 };
 
 /**
- * Internal helper to do a safe-but-slow knex-based forced reinit of the DB.
+ * Internal helper to drop the DB and recreate it from the run's template.
  */
 const forceReinit = async () => {
+  templateRestoredDatabase = null;
   await knexMigrator.reset({ force: true });
-  await knexMigrator.init();
-  await dropMySQLSnapshots();
+  await dbTemplate.restoreFromTemplate();
+  templateRestoredDatabase = getMySQLDatabaseName();
 };
 
 const getResetTables = () => {
   return schemaTables.concat(['migrations']);
 };
 
-const getMySQLSnapshotTableName = (table) => {
-  return `${mysqlSnapshotTablePrefix}${table}`;
-};
-
 const getMySQLDatabaseName = () => {
   return config.get('database:connection:database');
 };
 
-const isMySQLSnapshotCurrent = () => {
-  return mysqlSnapshotDatabase === getMySQLDatabaseName();
-};
-
-const resetMySQLFromSnapshot = async () => {
-  if (!isMySQLSnapshotCurrent()) {
-    // First provision in this fork: load the schema + fixtures from the run's
-    // shared template, then build snapshot tables for later in-fork resets.
-    await dbTemplate.restoreFromTemplate();
-    await createMySQLSnapshot();
+const resetMySQLFromTemplate = async () => {
+  if (templateRestoredDatabase !== getMySQLDatabaseName()) {
+    await forceReinit();
     return;
   }
 
-  await restoreMySQLSnapshot();
+  await restoreTemplateRows();
 };
 
-const createMySQLSnapshot = async () => {
-  const tables = getResetTables();
-
-  for (const table of tables) {
-    const snapshotTable = getMySQLSnapshotTableName(table);
-
-    await db.knex.schema.dropTableIfExists(snapshotTable);
-    await db.knex.raw('CREATE TABLE ?? LIKE ??', [snapshotTable, table]);
-    await db.knex.raw('INSERT INTO ?? SELECT * FROM ??', [snapshotTable, table]);
-  }
-
-  mysqlSnapshotDatabase = getMySQLDatabaseName();
-};
-
-const restoreMySQLSnapshot = async () => {
-  debug('Database snapshot restore');
+const restoreTemplateRows = async () => {
+  debug('Database template rows restore');
 
   const tables = getResetTables();
+  const templateDb = dbTemplate.getForkTemplateDatabase();
 
   await db.knex.transaction(async (trx) => {
     try {
       await db.knex.raw('SET FOREIGN_KEY_CHECKS=0;').transacting(trx);
 
       for (const table of tables) {
-        const snapshotTable = getMySQLSnapshotTableName(table);
-
         await db.knex.raw('DELETE FROM ??', [table]).transacting(trx);
         await db.knex
-          .raw('INSERT INTO ?? SELECT * FROM ??', [table, snapshotTable])
+          .raw('INSERT INTO ?? SELECT * FROM ??.??', [table, templateDb, table])
           .transacting(trx);
       }
     } finally {
       await db.knex.raw('SET FOREIGN_KEY_CHECKS=1;').transacting(trx);
-      debug('Database snapshot restore end');
+      debug('Database template rows restore end');
     }
   });
-};
-
-const dropMySQLSnapshots = async () => {
-  mysqlSnapshotDatabase = null;
-
-  try {
-    for (const table of getResetTables()) {
-      await db.knex.schema.dropTableIfExists(getMySQLSnapshotTableName(table));
-    }
-  } catch (err) {
-    // CASE: table does not exist || DB does not exist
-    if (err.errno === 1146 || err.errno === 1049) {
-      return Promise.resolve();
-    }
-
-    throw err;
-  }
 };
 
 /**
