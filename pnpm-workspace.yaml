@@ -207,7 +207,7 @@ catalog:
   # `typescript: <7.x>` entry once typescript-eslint supports the TS7.1 API.
   typescript: 'npm:@typescript/typescript6@6.0.2'
   '@typescript/native': 'npm:typescript@7.0.2'
-  typescript-eslint: 8.71.0
+  typescript-eslint: 8.71.1
   validator: 13.15.35
   vite: 8.1.3
   vite-plugin-svgr: 5.2.0
