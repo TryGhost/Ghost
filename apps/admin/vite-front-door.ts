@@ -136,9 +136,7 @@ export function ghostFrontDoorPlugin(backend: string, devBase: string): Plugin {
               res.end();
             });
           }
-          if (name !== 'koenig-lexical') {
-            req.url = `${devBase}/assets/${name}${rest}`;
-          }
+          req.url = `${devBase}/assets/${name}${rest}`;
         }
         next();
       });
