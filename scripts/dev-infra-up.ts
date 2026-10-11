@@ -85,6 +85,21 @@ compose([
   ...infra.filter((name) => !setup.has(name)),
 ]);
 
+// Compose labels each container with the hash `config --hash` prints for its service
+const hashes = new Set(
+  docker(['compose', ...files, 'config', '--hash', infra.join(',')]).split('\n'),
+);
+const format = '{{.Service}} {{.Label "com.docker.compose.config-hash"}}';
+const stale = docker(['compose', ...files, 'ps', '--format', format, ...infra])
+  .split('\n')
+  .filter((line) => line && !hashes.has(line))
+  .map((line) => line.split(' ')[0]);
+if (stale.length > 0) {
+  console.log(
+    `${stale.join(', ')} ${stale.length > 1 ? 'run' : 'runs'} a different compose config than this checkout's; \`pnpm dev:down --all\` stops every checkout's stack so the next start applies it.`,
+  );
+}
+
 // A new worktree's database starts as a copy of the main checkout's, which Ghost then migrates
 const database = process.env.GHOST_DEV_DATABASE ?? assigned.GHOST_DEV_DATABASE;
 const password = process.env.MYSQL_ROOT_PASSWORD ?? 'root';
