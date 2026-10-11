@@ -1,10 +1,15 @@
 import assert from 'node:assert/strict';
+import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { describe, it } from 'node:test';
 import {
+  gitOperation,
   parseLsofListeners,
   parseProc,
   parseProcNetTcp,
   parsePsTable,
+  parseWorktrees,
   treeTargets,
   unusedDatabases,
 } from '../lib/dev-stack.ts';
@@ -126,5 +131,38 @@ describe('worktreeDatabases', () => {
     const [plain, hashed] = worktreeDatabases('/Users/dev/.codex/worktrees/1c3f/Ghost');
     assert.equal(plain, 'dev_ghost');
     assert.match(hashed ?? '', /^dev_ghost_[0-9a-f]{6}$/);
+  });
+});
+
+describe('parseWorktrees', () => {
+  it('reads each checkout and its branch, which a detached checkout lacks', () => {
+    const output = [
+      'worktree /src/ghost\nHEAD 77c87d9e\nbranch refs/heads/main',
+      'worktree /src/wt/feature\nHEAD d145cc89\nbranch refs/heads/slars/feature',
+      'worktree /src/wt/detached\nHEAD 0a1b2c3d\ndetached',
+      '',
+    ].join('\n\n');
+    assert.deepEqual(parseWorktrees(output), [
+      { root: '/src/ghost', branch: 'main' },
+      { root: '/src/wt/feature', branch: 'slars/feature' },
+      { root: '/src/wt/detached', branch: null },
+    ]);
+  });
+});
+
+describe('gitOperation', () => {
+  it("finds an unfinished operation in a linked worktree's git directory", () => {
+    const root = mkdtempSync(join(tmpdir(), 'git-operation-'));
+    const gitDir = join(root, 'repo-git', 'worktrees', 'feature');
+    mkdirSync(join(gitDir, 'rebase-merge'), { recursive: true });
+    writeFileSync(join(root, '.git'), 'gitdir: repo-git/worktrees/feature\n');
+    assert.deepEqual(gitOperation(root), { kind: 'rebase', conflicts: 0 });
+  });
+
+  it('finds nothing in a checkout without one', () => {
+    const root = mkdtempSync(join(tmpdir(), 'git-operation-'));
+    mkdirSync(join(root, '.git'));
+    assert.equal(gitOperation(root), undefined);
+    assert.equal(gitOperation(join(root, 'deleted')), undefined);
   });
 });

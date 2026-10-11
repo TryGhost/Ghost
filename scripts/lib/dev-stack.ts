@@ -1,8 +1,15 @@
 import { execFileSync, spawnSync } from 'node:child_process';
-import { existsSync, readdirSync, readFileSync, readlinkSync, realpathSync } from 'node:fs';
+import {
+  existsSync,
+  readdirSync,
+  readFileSync,
+  readlinkSync,
+  realpathSync,
+  statSync,
+} from 'node:fs';
 import http from 'node:http';
 import net from 'node:net';
-import { join, sep } from 'node:path';
+import { join, resolve as resolvePath, sep } from 'node:path';
 import { checkoutRoot, ENV_FILE, parseEnv, worktreeDatabases } from './ghost-dev-env.ts';
 
 export const PID_FILE = '.ghost-dev.pid';
@@ -17,17 +24,77 @@ export interface Proc {
   command: string;
 }
 
-/** Every checkout of the repository, the main one first */
-export function checkouts(): string[] {
+/** Each checkout's path and branch in `git worktree list --porcelain` output */
+export function parseWorktrees(output: string): { root: string; branch: string | null }[] {
+  return output
+    .split('\n\n')
+    .map((block) => block.split('\n'))
+    .filter((lines) => lines[0]?.startsWith('worktree '))
+    .map((lines) => ({
+      root: lines[0]?.slice('worktree '.length) ?? '',
+      branch:
+        lines.find((line) => line.startsWith('branch '))?.slice('branch refs/heads/'.length) ??
+        null,
+    }));
+}
+
+/** Every checkout of the repository and its branch, the main one first */
+export function worktreeList(): { root: string; branch: string | null }[] {
   const list = execFileSync('git', ['worktree', 'list', '--porcelain'], {
     cwd: checkoutRoot,
     encoding: 'utf8',
   });
-  return list
-    .split('\n')
-    .filter((line) => line.startsWith('worktree '))
-    .map((line) => line.slice('worktree '.length))
-    .map((path) => (existsSync(path) ? realpathSync(path) : path));
+  return parseWorktrees(list).map(({ root, branch }) => ({
+    root: existsSync(root) ? realpathSync(root) : root,
+    branch,
+  }));
+}
+
+export interface GitOperation {
+  kind: 'rebase' | 'merge' | 'cherry-pick' | 'revert';
+  /** Files with unresolved conflicts */
+  conflicts: number;
+}
+
+// The files git keeps in a checkout's git directory while each operation is unfinished
+const OPERATIONS: [string, GitOperation['kind']][] = [
+  ['rebase-merge', 'rebase'],
+  ['rebase-apply', 'rebase'],
+  ['MERGE_HEAD', 'merge'],
+  ['CHERRY_PICK_HEAD', 'cherry-pick'],
+  ['REVERT_HEAD', 'revert'],
+];
+
+/** The rebase, merge, cherry-pick or revert a checkout is partway through, if any */
+export function gitOperation(root: string): GitOperation | undefined {
+  let gitDir = join(root, '.git');
+  try {
+    // A linked worktree's `.git` is a file that points at its git directory
+    if (statSync(gitDir).isFile()) {
+      gitDir = resolvePath(
+        root,
+        readFileSync(gitDir, 'utf8')
+          .replace(/^gitdir:\s*/, '')
+          .trim(),
+      );
+    }
+  } catch {
+    return undefined;
+  }
+  const kind = OPERATIONS.find(([file]) => existsSync(join(gitDir, file)))?.[1];
+  if (!kind) {
+    return undefined;
+  }
+  const unmerged = spawnSync('git', ['diff', '--name-only', '--diff-filter=U'], {
+    cwd: root,
+    encoding: 'utf8',
+  }).stdout;
+  return { kind, conflicts: unmerged?.split('\n').filter(Boolean).length ?? 0 };
+}
+
+/** Every checkout of the repository, the main one first */
+export function checkouts(): string[] {
+  return worktreeList().map(({ root }) => root);
 }
 
 /** A checkout's `.ghost-dev.env`, if it has run `pnpm dev` */
@@ -129,6 +196,27 @@ export function processInfo(pid: number): Proc | undefined {
     const [, ppid, pgid, rss, command = ''] =
       /^\s*(\d+)\s+(\d+)\s+(\d+)\s+(.*)$/.exec(ps.trim()) ?? [];
     return { pid, ppid: Number(ppid), pgid: Number(pgid), rss: Number(rss), command };
+  } catch {
+    // Exited
+    return undefined;
+  }
+}
+
+/** When the process started, in milliseconds since the epoch */
+export function processStart(pid: number): number | undefined {
+  try {
+    if (process.platform === 'linux') {
+      // Field 22 of `stat` counts clock ticks from boot, and USER_HZ is 100 on Linux
+      const stat = readFileSync(`/proc/${pid}/stat`, 'utf8');
+      const ticks = Number(stat.slice(stat.lastIndexOf(')') + 2).split(' ')[19]);
+      const boot = Number(/^btime (\d+)$/m.exec(readFileSync('/proc/stat', 'utf8'))?.[1]);
+      return (boot + ticks / 100) * 1000 || undefined;
+    }
+    const start = execFileSync('ps', ['-o', 'lstart=', '-p', String(pid)], {
+      encoding: 'utf8',
+      env: { ...process.env, LC_ALL: 'C' },
+    });
+    return Date.parse(start.trim()) || undefined;
   } catch {
     // Exited
     return undefined;
