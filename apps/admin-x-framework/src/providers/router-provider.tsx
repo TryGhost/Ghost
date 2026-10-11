@@ -189,6 +189,12 @@ export interface ViewTransitionController {
   beforeTransition?: (pathname: string) => Promise<boolean> | undefined;
   /** Runs once a transitioning navigation has settled, whether it landed or a blocker held it. */
   afterTransition?: (pathname: string) => void;
+  /**
+   * Whether a transitioning navigation runs as a browser view transition (the
+   * default), or only through `beforeTransition` and `afterTransition`, e.g.
+   * where the app animates the live page itself.
+   */
+  viewTransition?: (pathname: string) => boolean;
 }
 
 const ViewTransitionControllerContext = React.createContext<ViewTransitionController>({
@@ -241,7 +247,10 @@ export function useNavigate() {
       const pathname = pathnameFor.current(to, options?.relative);
       if (options?.viewTransition === undefined && controller.shouldTransition(pathname)) {
         navigateAfterTransitionStart(controller, pathname, () =>
-          navigate(to, { ...options, viewTransition: true }),
+          navigate(to, {
+            ...options,
+            viewTransition: controller.viewTransition?.(pathname) ?? true,
+          }),
         );
         return;
       }
@@ -275,6 +284,9 @@ export const Link = React.forwardRef<HTMLAnchorElement, LinkProps>(function Link
   const transitions =
     viewTransition ??
     (!isAbsoluteUrl && !props.reloadDocument && controller.shouldTransition(pathname));
+  // Unless the caller set it, the controller may run the transition without a view transition
+  const browserTransition =
+    transitions && (viewTransition ?? controller.viewTransition?.(pathname) ?? true);
 
   const handleClick = (event: React.MouseEvent<HTMLAnchorElement>) => {
     onClick?.(event);
@@ -291,7 +303,13 @@ export const Link = React.forwardRef<HTMLAnchorElement, LinkProps>(function Link
     event.preventDefault();
     const { to, replace, state, preventScrollReset, relative } = props;
     navigateAfterTransitionStart(controller, pathname, () =>
-      navigate(to, { replace, state, preventScrollReset, relative, viewTransition: true }),
+      navigate(to, {
+        replace,
+        state,
+        preventScrollReset,
+        relative,
+        viewTransition: browserTransition,
+      }),
     );
   };
 
@@ -299,7 +317,7 @@ export const Link = React.forwardRef<HTMLAnchorElement, LinkProps>(function Link
     <ReactRouterLink
       ref={ref}
       {...props}
-      viewTransition={transitions || undefined}
+      viewTransition={browserTransition || undefined}
       onClick={handleClick}
     />
   );
