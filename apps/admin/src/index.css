@@ -329,8 +329,9 @@ body.react-admin {
 
 /* A list screen's large title handing over to its sticky header as the page
    scrolls (LargePageTitle): the title eases out over the first half of the
-   handover, the header's small title and solid background ease in over the
-   second. Tied to scrolling by the browser where it can, so in step with it;
+   handover, the header's solid background eases in over the second, and once
+   the header has stuck (data-condensed), its small title fades in in its own
+   time, however fast the page is scrolling. Tied to scrolling by the browser where it can, so in step with it;
    elsewhere by --large-title-condense (useLargeTitleCondense). */
 @keyframes large-title-out {
   from {
@@ -365,6 +366,23 @@ body.react-admin {
   }
 }
 
+/* Out quickly as the large title comes back; in slowly once it has gone */
+.large-title-header-title {
+  opacity: 0;
+  transition: opacity 150ms ease-out;
+}
+
+[data-large-title-header][data-condensed] .large-title-header-title {
+  opacity: 1;
+  transition-duration: 450ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .large-title-header-title {
+    transition: none;
+  }
+}
+
 @supports (animation-timeline: view()) {
   [data-large-title-host] {
     timeline-scope: --large-title-handover;
@@ -375,7 +393,6 @@ body.react-admin {
   }
 
   [data-large-title],
-  .large-title-header-title,
   [data-large-title-header]::before,
   [data-large-title-header] [data-page-header='main'] {
     animation-duration: auto;
@@ -389,7 +406,6 @@ body.react-admin {
     animation-name: large-title-out;
   }
 
-  .large-title-header-title,
   [data-large-title-header]::before {
     animation-name: large-title-in;
   }
@@ -406,7 +422,6 @@ body.react-admin {
     opacity: clamp(0, calc(1 - var(--large-title-condense, 0) * 2), 1);
   }
 
-  .large-title-header-title,
   [data-large-title-header]::before {
     opacity: clamp(0, calc(var(--large-title-condense, 0) * 2 - 1), 1);
   }

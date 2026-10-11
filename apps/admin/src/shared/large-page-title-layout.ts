@@ -91,3 +91,30 @@ export function useLargeTitleCondense() {
 
   return { markerRef };
 }
+
+/**
+ * Whether the page has scrolled past a marker (e.g. where the sticky header
+ * sits at rest, so it has stuck). Re-renders only as that flips. Attach
+ * `markerRef` to the marker.
+ */
+export function useScrolledPast() {
+  const [marker, markerRef] = useState<HTMLElement | null>(null);
+  const [scrolledPast, setScrolledPast] = useState(false);
+
+  useEffect(() => {
+    if (!marker) {
+      return;
+    }
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        const rootTop = entry.rootBounds?.top ?? 0;
+        setScrolledPast(!entry.isIntersecting && entry.boundingClientRect.top < rootTop);
+      },
+      { root: scrollParent(marker) },
+    );
+    observer.observe(marker);
+    return () => observer.disconnect();
+  }, [marker]);
+
+  return { scrolledPast, markerRef };
+}

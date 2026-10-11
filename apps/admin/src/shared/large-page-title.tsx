@@ -4,6 +4,8 @@ import { LARGE_TITLE_HANDOVER, LARGE_TITLE_HEADER_OVERLAP } from './large-page-t
 interface LargePageTitleProps {
   /** The handover's marker, across where the header sticks (see useLargeTitleCondense). */
   markerRef: (element: HTMLElement | null) => void;
+  /** Where the header sticks, the large title gone by then (see useScrolledPast). */
+  stickMarkerRef?: (element: HTMLElement | null) => void;
   /** Beside the title, e.g. a count. */
   aside?: React.ReactNode;
   children: React.ReactNode;
@@ -16,7 +18,12 @@ interface LargePageTitleProps {
  * over (useLargeTitleCondense). It keeps its size throughout. Needs
  * LARGE_PAGE_TITLE_VARIABLES on an ancestor.
  */
-export function LargePageTitle({ markerRef, aside, children }: LargePageTitleProps) {
+export function LargePageTitle({
+  markerRef,
+  stickMarkerRef,
+  aside,
+  children,
+}: LargePageTitleProps) {
   return (
     <div className="relative" style={{ paddingTop: 'var(--large-title-space)' }}>
       <h1
@@ -42,6 +49,12 @@ export function LargePageTitle({ markerRef, aside, children }: LargePageTitlePro
           bottom: `calc(${LARGE_TITLE_HEADER_OVERLAP} - ${LARGE_TITLE_HANDOVER / 2}px)`,
           height: LARGE_TITLE_HANDOVER,
         }}
+      />
+      <div
+        ref={stickMarkerRef}
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-x-0 h-px"
+        style={{ bottom: LARGE_TITLE_HEADER_OVERLAP }}
       />
     </div>
   );
