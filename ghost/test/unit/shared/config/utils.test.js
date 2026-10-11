@@ -116,5 +116,14 @@ describe('Config Utils', function () {
 
       assert.equal(nconf.get('database:client'), 'better-sqlite3');
     });
+
+    it('throws a clear error when no database is configured', function () {
+      fakeConfig = {};
+
+      assert.throws(
+        () => configUtils.sanitizeDatabaseProperties(nconf),
+        /No database is configured/,
+      );
+    });
   });
 });

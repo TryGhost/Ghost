@@ -559,6 +559,10 @@ jobs:
     needs: [job_setup]
     if: (needs.job_setup.outputs.changed_core == 'true' && needs.job_setup.outputs.is_development == 'true') || needs.job_setup.outputs.has_perf_tests_label == 'true'
     name: Performance tests
+    # Boot runs against SQLite, as the series always has; this job has no MySQL
+    env:
+      database__client: better-sqlite3
+      database__connection__filename: content/data/ghost-dev.db
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -570,8 +574,7 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           trust-lockfile: 'true'
           # better-sqlite3 is an optionalDependency that pnpm may skip when
-          # restoring from a cached store, and boot needs it for the
-          # development database.
+          # restoring from a cached store, and boot needs it.
           install-args: --force
 
       - name: Install hyperfine

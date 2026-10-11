@@ -78,6 +78,14 @@ function sanitizeDatabaseProperties(nconf: Provider): void {
   const database = nconf.get('database');
   const client = nconf.get('database:client');
 
+  if (!database?.connection) {
+    // new Error is allowed here, as we do not want config to depend on @tryghost/error
+    // eslint-disable-next-line ghost/ghost-custom/no-native-error
+    throw new Error(
+      'No database is configured. Set `database` in the config, or in development start Ghost with `pnpm dev`.',
+    );
+  }
+
   if (client === 'mysql2') {
     delete database.connection.filename;
   } else {
