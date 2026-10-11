@@ -8,6 +8,17 @@
             "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/nvm-path.sh\""
           }
         ]
+      },
+      {
+        "matcher": "startup|resume|fork",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/worktree-setup.sh\"",
+            "timeout": 600,
+            "statusMessage": "Bootstrapping Ghost checkout if needed…"
+          }
+        ]
       }
     ]
   }

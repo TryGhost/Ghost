@@ -1,4 +1,5 @@
 import { execFile, execFileSync, spawnSync } from 'node:child_process';
+import { createHash } from 'node:crypto';
 import {
   existsSync,
   readdirSync,
@@ -158,6 +159,25 @@ export function unusedDatabases(
     ),
   );
   return databases.filter((name) => /^dev_\w+$/.test(name) && !used.has(name));
+}
+
+// A linked worktree's e2e run keys its containers' compose project, its databases and its
+// snapshot in the MySQL container's /tmp with sha1(root).slice(0, 8)
+const E2E_KEYED_NAMES = [
+  /^ghost-dev-e2e-([0-9a-f]{8})$/,
+  /^ghost_e2e_([0-9a-f]{8})_(?:base|[0-9a-f]{8}(?:_[0-9a-f]{4}){3}_[0-9a-f]{12})$/,
+  /^ghost_e2e_([0-9a-f]{8})_base\.sql$/,
+];
+
+/** The e2e compose projects, databases and snapshots that none of these existing linked worktrees keyed */
+export function unusedE2eNames(names: string[], worktreeRoots: string[]): string[] {
+  const used = new Set(
+    worktreeRoots.map((root) => createHash('sha1').update(root).digest('hex').slice(0, 8)),
+  );
+  return names.filter((name) => {
+    const key = E2E_KEYED_NAMES.map((pattern) => pattern.exec(name)?.[1]).find(Boolean);
+    return key !== undefined && !used.has(key);
+  });
 }
 
 export function isListening(port: number): Promise<boolean> {
