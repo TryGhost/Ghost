@@ -240,6 +240,72 @@ export function inCheckout(pid: number, root = checkoutRoot): boolean {
   return cwd === root || cwd?.startsWith(root + sep) === true;
 }
 
+export interface TreeProc extends Pick<Proc, 'pid' | 'ppid' | 'pgid'> {
+  /** The pid of the Nx run this is a task of, from the task's NX_INVOCATION_ROOT_PID */
+  nxRoot?: number;
+}
+
+const nxRoot = (environment: string) =>
+  Number(/(?:^|[\s\0])NX_INVOCATION_ROOT_PID=(\d+)(?=[\s\0]|$)/.exec(environment)?.[1]) ||
+  undefined;
+
+/** Each process in `ps -Eww -Ao pid=,ppid=,pgid=,command=` output, environment appended */
+export function parsePsTable(output: string): TreeProc[] {
+  return output.split('\n').flatMap((line) => {
+    const [, pid, ppid, pgid, rest = ''] = /^\s*(\d+)\s+(\d+)\s+(\d+)\s(.*)$/.exec(line) ?? [];
+    return pid
+      ? [{ pid: Number(pid), ppid: Number(ppid), pgid: Number(pgid), nxRoot: nxRoot(rest) }]
+      : [];
+  });
+}
+
+/** Every process; the environment is only readable for this user's */
+export function processTable(): TreeProc[] {
+  if (process.platform !== 'linux') {
+    const ps = execFileSync('ps', ['-Eww', '-Ao', 'pid=,ppid=,pgid=,command='], {
+      encoding: 'utf8',
+      maxBuffer: Infinity,
+    });
+    return parsePsTable(ps);
+  }
+  return readdirSync('/proc')
+    .filter((name) => /^\d+$/.test(name))
+    .flatMap((pid) => {
+      try {
+        const read = (file: string) => readFileSync(`/proc/${pid}/${file}`, 'utf8');
+        const { ppid, pgid } = parseProc(Number(pid), {
+          stat: read('stat'),
+          cmdline: '',
+          status: '',
+        });
+        return [{ pid: Number(pid), ppid, pgid, nxRoot: nxRoot(read('environ')) }];
+      } catch {
+        // Exited, or another user's
+        return [];
+      }
+    });
+}
+
+/**
+ * What to signal to stop `pids` and every process descended from them or in a process group one
+ * of them leads: each process group led from within, as a negative pid, and other processes alone
+ */
+export function treeTargets(table: TreeProc[], pids: number[]): number[] {
+  const tree = new Set(pids);
+  for (let size = 0; size !== tree.size;) {
+    size = tree.size;
+    for (const proc of table) {
+      if (tree.has(proc.ppid) || tree.has(proc.pgid)) {
+        tree.add(proc.pid);
+      }
+    }
+  }
+  const members = table.filter((proc) => tree.has(proc.pid));
+  // Signalling process group 1, pid -1, would reach every process
+  const led = (pgid: number) => pgid > 1 && tree.has(pgid);
+  return [...new Set(members.map((proc) => (led(proc.pgid) ? -proc.pgid : proc.pid)))];
+}
+
 /** The pid listening on each port in `lsof -Fpn` output */
 export function parseLsofListeners(output: string): Map<number, number> {
   const found = new Map<number, number>();
