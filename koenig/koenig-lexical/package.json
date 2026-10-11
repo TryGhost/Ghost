@@ -49,7 +49,7 @@
     "lint:css": "stylelint \"src/**/*.css\"",
     "lint:js": "eslint --cache demo src test",
     "typecheck": "tsc --noEmit -p tsconfig.typecheck.json",
-    "storybook": "catalog:",
+    "storybook": "storybook dev -p 6006 -h 127.0.0.1",
     "build-storybook": "storybook build"
   },
   "devDependencies": {
