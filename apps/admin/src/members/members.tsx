@@ -160,6 +160,8 @@ const MembersPage: React.FC<MembersPageProps> = ({
     setShowMobileSearch(true);
   };
 
+  // Under a large title, the filter bar sits in place of the header's separator
+  const filterBarShown = shouldShowMemberControls && shouldShowFiltersRow;
   const filtersClassName = 'flex-col gap-4 lg:flex-row lg:items-center sidebar:gap-6 lg:gap-6';
   const handleShowAllMembers = () => {
     commitSearch.cancel();
@@ -258,7 +260,11 @@ const MembersPage: React.FC<MembersPageProps> = ({
             <div ref={setHeaderContentRef} className="flex flex-col gap-4 sidebar:gap-6">
               <PageHeader
                 blurredBackground={false}
-                className={cn(largeTitle && 'border-b border-border-default pb-8')}
+                className={cn(
+                  largeTitle && 'pb-8',
+                  // A filter bar takes the separator's place
+                  largeTitle && !filterBarShown && 'border-b border-border-default',
+                )}
                 sticky={false}
               >
                 <PageHeader.Left>
@@ -301,7 +307,14 @@ const MembersPage: React.FC<MembersPageProps> = ({
               {isAdmin7 && mobileSearchRow}
               {shouldShowMemberControls &&
                 (shouldShowFiltersRow || (!isAdmin7 && shouldShowMobileSearchRow)) && (
-                  <FilterBar className={cn(filtersClassName, !shouldShowFiltersRow && 'lg:hidden')}>
+                  <FilterBar
+                    className={cn(
+                      filtersClassName,
+                      !shouldShowFiltersRow && 'lg:hidden',
+                      // Where the separator would be, without the gap between header rows
+                      largeTitle && shouldShowFiltersRow && '-mt-4 sidebar:-mt-6',
+                    )}
+                  >
                     {!isAdmin7 && mobileSearchRow}
                     {shouldShowFiltersRow && (
                       <MembersFilters
