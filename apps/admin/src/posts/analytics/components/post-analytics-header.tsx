@@ -266,7 +266,7 @@ const PostAnalyticsHeader: React.FC<PostAnalyticsHeaderProps> = ({ currentTab, c
             )}
             data-header="header"
           >
-            <div className="flex w-full flex-col gap-6">
+            <div className={cn('flex w-full flex-col', largeTitles ? 'gap-1' : 'gap-6')}>
               <div className="flex w-full flex-col flex-wrap justify-between md:flex-row md:items-center">
                 <Breadcrumb>
                   <BreadcrumbList>

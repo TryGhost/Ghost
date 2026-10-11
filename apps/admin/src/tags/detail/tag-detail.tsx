@@ -1,7 +1,7 @@
 import React from 'react';
 import TagDeleteModal from './tag-delete-modal';
 import TagDetailForm from './tag-detail-form';
-import { Box, Container } from '@tryghost/shade/primitives';
+import { Box, Container, H1 } from '@tryghost/shade/primitives';
 import {
   Badge,
   Breadcrumb,
@@ -20,10 +20,10 @@ import {
   LoadingIndicator,
   Skeleton,
 } from '@tryghost/shade/components';
-import { DetailPage } from '@tryghost/shade/page-templates';
+import { DetailPage, usePageChrome } from '@tryghost/shade/page-templates';
 import { DirtyConfirmDialog, PageHeader } from '@tryghost/shade/patterns';
 import { Link, useHandleError, useNavigate, useParams } from '@tryghost/admin-x-framework';
-import { LucideIcon } from '@tryghost/shade/utils';
+import { LucideIcon, cn } from '@tryghost/shade/utils';
 import { useShade } from '@tryghost/shade/app';
 import { NotFound } from '@/shared/not-found';
 import {
@@ -53,6 +53,10 @@ type SaveStatus = 'idle' | 'pending' | 'success' | 'error';
 
 const TagDetail: React.FC = () => {
   const { isAdmin7 } = useShade();
+  // Where list pages show their titles large (admin7Design), the tag's name
+  // shows large under the breadcrumb, and the header sticks as the page
+  // scrolls, like post analytics'.
+  const { largeTitles } = usePageChrome();
   const { tagSlug = '' } = useParams<{ tagSlug: string }>();
   const navigate = useNavigate();
   const handleError = useHandleError();
@@ -376,11 +380,31 @@ const TagDetail: React.FC = () => {
     return <NotFound />;
   }
 
+  const internalBadge = tag?.visibility === 'internal' && (
+    <Badge
+      className={
+        isAdmin7
+          ? 'leading-none tracking-wider'
+          : 'px-1 py-px text-[10px] leading-none tracking-wider'
+      }
+      data-testid="tag-detail-internal-badge"
+      size={isAdmin7 ? 'md' : 'default'}
+      variant="secondary"
+    >
+      {isAdmin7 ? 'Internal' : 'INTERNAL'}
+    </Badge>
+  );
+
   return (
     <Box className="size-full">
       <Container className="relative flex h-full flex-col" size="page">
-        <DetailPage data-testid="tag-detail">
-          <DetailPage.Header>
+        <DetailPage className={cn(largeTitles && 'h-auto')} data-testid="tag-detail">
+          <DetailPage.Header
+            className={cn(
+              largeTitles &&
+                'sticky top-[calc(24px-var(--large-title-space))] z-60 -mx-4 gap-1 bg-background px-4 pt-(--large-title-space)! pb-8 lg:-mx-6 lg:px-6',
+            )}
+          >
             <PageHeader blurredBackground={false} sticky={false}>
               <PageHeader.Left>
                 <Breadcrumb>
@@ -393,29 +417,22 @@ const TagDetail: React.FC = () => {
                       </BreadcrumbLink>
                     </BreadcrumbItem>
                     <BreadcrumbSeparator />
-                    <BreadcrumbItem className={isAdmin7 ? 'items-baseline gap-2' : 'gap-2'}>
-                      {!isCreating && isLoading ? (
-                        <Skeleton className="h-4 w-40" />
-                      ) : (
-                        <BreadcrumbPage className="truncate" data-testid="tag-detail-title">
-                          {title}
-                        </BreadcrumbPage>
-                      )}
-                      {tag?.visibility === 'internal' && (
-                        <Badge
-                          className={
-                            isAdmin7
-                              ? 'leading-none tracking-wider'
-                              : 'px-1 py-px text-[10px] leading-none tracking-wider'
-                          }
-                          data-testid="tag-detail-internal-badge"
-                          size={isAdmin7 ? 'md' : 'default'}
-                          variant="secondary"
-                        >
-                          {isAdmin7 ? 'Internal' : 'INTERNAL'}
-                        </Badge>
-                      )}
-                    </BreadcrumbItem>
+                    {largeTitles ? (
+                      <BreadcrumbItem>
+                        <BreadcrumbPage>{isCreating ? 'New tag' : 'Edit tag'}</BreadcrumbPage>
+                      </BreadcrumbItem>
+                    ) : (
+                      <BreadcrumbItem className={isAdmin7 ? 'items-baseline gap-2' : 'gap-2'}>
+                        {!isCreating && isLoading ? (
+                          <Skeleton className="h-4 w-40" />
+                        ) : (
+                          <BreadcrumbPage className="truncate" data-testid="tag-detail-title">
+                            {title}
+                          </BreadcrumbPage>
+                        )}
+                        {internalBadge}
+                      </BreadcrumbItem>
+                    )}
                   </BreadcrumbList>
                 </Breadcrumb>
               </PageHeader.Left>
@@ -469,9 +486,24 @@ const TagDetail: React.FC = () => {
                 </PageHeader.Actions>
               )}
             </PageHeader>
+            {largeTitles && (
+              <div className="flex min-w-0 items-baseline gap-3">
+                {!isCreating && isLoading ? (
+                  <Skeleton className="h-(--large-title-size) w-64" />
+                ) : (
+                  <H1
+                    className="min-w-0 truncate text-[length:var(--large-title-size)]! leading-[1.15]! font-medium! tracking-[-0.03em]!"
+                    data-testid="tag-detail-title"
+                  >
+                    {isCreating ? draft?.name || 'New tag' : title}
+                  </H1>
+                )}
+                {internalBadge}
+              </div>
+            )}
           </DetailPage.Header>
 
-          <DetailPage.Body>
+          <DetailPage.Body className={cn(largeTitles && 'min-h-auto overflow-visible')}>
             {loadError && (
               <div
                 className="flex flex-1 flex-col items-center justify-center gap-3"
