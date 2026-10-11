@@ -17,8 +17,7 @@ module.exports = function logRequest(req, res, next) {
       res.statusCode = 499;
     }
 
-    const responseTime = Date.now() - startTime;
-    res.responseTime = responseTime + 'ms';
+    res.responseTime = Date.now() - startTime + 'ms';
     req.userId = req.user ? (req.user.id ? req.user.id : req.user) : null;
 
     if (req.err && req.err.statusCode !== 404) {
@@ -33,8 +32,6 @@ module.exports = function logRequest(req, res, next) {
       } else {
         logging.error({ req: req, res: res, err: req.err });
       }
-    } else if (res.statusCode < 400 && responseTime < config.get('logging:slowRequestMs')) {
-      logging.debug({ req: req, res: res });
     } else {
       logging.info({ req: req, res: res });
     }

@@ -99,7 +99,6 @@
   "logging": {
     "level": "info",
     "logClientErrorsAsError": true,
-    "slowRequestMs": 0,
     "useLocalTime": false,
     "rotation": {
       "enabled": false,

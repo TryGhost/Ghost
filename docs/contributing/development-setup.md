@@ -100,10 +100,8 @@ credentials.
 
 As a quick health check, confirm that the site and Admin load.
 
-Ghost logs failed requests and requests that take a second or longer; set
-`logging__level=debug` to log every request. To use the
-[ActivityPub](https://github.com/TryGhost/ActivityPub) project's local service,
-set `ACTIVITYPUB_PROXY_TARGET`, for example to `127.0.0.1:8080`.
+To use the [ActivityPub](https://github.com/TryGhost/ActivityPub) project's
+local service, set `ACTIVITYPUB_PROXY_TARGET`, for example to `127.0.0.1:8080`.
 
 Press `Ctrl+C` in the development process to stop Ghost and the watchers. MySQL,
 Redis, and Mailpit keep running for other checkouts; `pnpm docker:down` stops

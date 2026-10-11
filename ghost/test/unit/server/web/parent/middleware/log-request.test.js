@@ -12,7 +12,6 @@ describe('Log request middleware', function () {
     sinon.stub(logging, 'error');
     sinon.stub(logging, 'warn');
     sinon.stub(logging, 'info');
-    sinon.stub(logging, 'debug');
   });
 
   afterEach(async function () {
@@ -28,17 +27,15 @@ describe('Log request middleware', function () {
     return req;
   }
 
-  function run(req, event = 'finish', { statusCode = 200, responseTime = 0 } = {}) {
+  function run(req, event = 'finish') {
     // res behaves like the real Express response: an EventEmitter that the
     // middleware subscribes to, then fires logResponse on 'finish' or 'close'.
     const res = new EventEmitter();
-    res.statusCode = statusCode;
+    res.statusCode = 200;
     res.writableFinished = false;
     const next = sinon.stub();
-    const clock = sinon.useFakeTimers();
 
     logRequest(req, res, next);
-    clock.tick(responseTime);
     if (event === 'finish') {
       res.writableFinished = true;
     }
@@ -81,33 +78,6 @@ describe('Log request middleware', function () {
     sinon.assert.calledOnce(logging.info);
     sinon.assert.notCalled(logging.error);
     sinon.assert.notCalled(logging.warn);
-  });
-
-  it('logs a successful request faster than logging:slowRequestMs via logging.debug', function () {
-    configUtils.set('logging:slowRequestMs', 1000);
-
-    run(createReq(), 'finish', { responseTime: 999 });
-
-    sinon.assert.calledOnce(logging.debug);
-    sinon.assert.notCalled(logging.info);
-  });
-
-  it('logs a successful request taking logging:slowRequestMs or longer via logging.info', function () {
-    configUtils.set('logging:slowRequestMs', 1000);
-
-    run(createReq(), 'finish', { responseTime: 1000 });
-
-    sinon.assert.calledOnce(logging.info);
-    sinon.assert.notCalled(logging.debug);
-  });
-
-  it('logs a fast 404 via logging.info when logging:slowRequestMs is set', function () {
-    configUtils.set('logging:slowRequestMs', 1000);
-
-    run(createReq({ statusCode: 404 }), 'finish', { statusCode: 404 });
-
-    sinon.assert.calledOnce(logging.info);
-    sinon.assert.notCalled(logging.debug);
   });
 
   it('keeps the response status when the response finished', function () {

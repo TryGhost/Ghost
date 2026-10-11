@@ -23,9 +23,6 @@
   "paths": {
     "contentPath": "content/"
   },
-  "logging": {
-    "slowRequestMs": 1000
-  },
   "useMinFiles": false,
   "caching": {
     "theme": {
