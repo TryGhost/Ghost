@@ -226,6 +226,10 @@ const MembersPage: React.FC<MembersPageProps> = ({
     <Box className="size-full">
       <Container className="relative flex h-full flex-col" size="page">
         <ListPage
+          // Under the large title, a roomier row of column labels
+          className={cn(
+            largeTitle && '[&_[data-testid=members-list-scroll-root]>div:first-child_th]:h-11',
+          )}
           data-large-title-host={largeTitle ? '' : undefined}
           data-testid="members-page"
           style={largeTitle ? LARGE_PAGE_TITLE_VARIABLES : undefined}
