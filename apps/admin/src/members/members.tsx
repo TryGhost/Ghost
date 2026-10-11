@@ -226,6 +226,7 @@ const MembersPage: React.FC<MembersPageProps> = ({
     <Box className="size-full">
       <Container className="relative flex h-full flex-col" size="page">
         <ListPage
+          data-large-title-host={largeTitle ? '' : undefined}
           data-testid="members-page"
           style={largeTitle ? LARGE_PAGE_TITLE_VARIABLES : undefined}
         >
@@ -243,8 +244,9 @@ const MembersPage: React.FC<MembersPageProps> = ({
               // Pulled up beside the large title, see-through over it, and solid
               // once it has handed over (a layer fading in with the handover)
               largeTitle &&
-                'bg-none! pt-6! backdrop-blur-none! before:pointer-events-none before:absolute before:inset-0 before:-z-10 before:bg-background before:opacity-(--large-title-condense) sidebar:pt-6!',
+                'bg-none! pt-6! backdrop-blur-none! before:pointer-events-none before:absolute before:inset-0 before:-z-10 before:bg-background sidebar:pt-6!',
             )}
+            data-large-title-header={largeTitle ? '' : undefined}
             style={
               largeTitle ? { marginTop: `calc(-1 * ${LARGE_TITLE_HEADER_OVERLAP})` } : undefined
             }
@@ -255,8 +257,7 @@ const MembersPage: React.FC<MembersPageProps> = ({
                   <PageHeader.Title
                     className={cn(
                       // Comes in over the second part of the handover
-                      largeTitle &&
-                        'opacity-[clamp(0,calc(var(--large-title-condense)*1.6-0.6),1)]',
+                      largeTitle && 'large-title-header-title',
                     )}
                   >
                     Members{' '}

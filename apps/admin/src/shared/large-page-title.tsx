@@ -1,8 +1,8 @@
 import React from 'react';
-import { LARGE_TITLE_HEADER_OVERLAP } from './large-page-title-layout';
+import { LARGE_TITLE_HANDOVER, LARGE_TITLE_HEADER_OVERLAP } from './large-page-title-layout';
 
 interface LargePageTitleProps {
-  /** Marks where the sticky header sits at rest (see useLargeTitleCondense). */
+  /** The handover's marker, across where the header sticks (see useLargeTitleCondense). */
   markerRef: (element: HTMLElement | null) => void;
   /** Beside the title, e.g. a count. */
   aside?: React.ReactNode;
@@ -21,11 +21,8 @@ export function LargePageTitle({ markerRef, aside, children }: LargePageTitlePro
     <div className="relative" style={{ paddingTop: 'var(--large-title-space)' }}>
       <h1
         className="flex items-baseline gap-3 leading-[1.15] font-medium tracking-[-0.03em] whitespace-nowrap"
-        style={{
-          fontSize: 'var(--large-title-size)',
-          // Gone over the first part of the handover, before the small title is in
-          opacity: 'clamp(0, calc(1 - var(--large-title-condense) * 1.6), 1)',
-        }}
+        data-large-title=""
+        style={{ fontSize: 'var(--large-title-size)' }}
       >
         {children}
         {aside && (
@@ -34,11 +31,17 @@ export function LargePageTitle({ markerRef, aside, children }: LargePageTitlePro
           </span>
         )}
       </h1>
+      {/* Spans the handover: its top at half of it before where the header
+        sits at rest (so sticks), its bottom half of it after */}
       <div
         ref={markerRef}
         aria-hidden="true"
-        className="pointer-events-none absolute inset-x-0 h-px"
-        style={{ bottom: LARGE_TITLE_HEADER_OVERLAP }}
+        className="pointer-events-none absolute inset-x-0"
+        data-large-title-marker=""
+        style={{
+          bottom: `calc(${LARGE_TITLE_HEADER_OVERLAP} - ${LARGE_TITLE_HANDOVER / 2}px)`,
+          height: LARGE_TITLE_HANDOVER,
+        }}
       />
     </div>
   );

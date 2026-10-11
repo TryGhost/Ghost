@@ -23,8 +23,11 @@ export const LARGE_PAGE_TITLE_VARIABLES = {
 // row of actions clear of the frame's top bar once it has stuck
 export const LARGE_TITLE_HEADER_PADDING = 24;
 
-// How far the page scrolls while the large title hands over to the header
-const CONDENSE_DISTANCE = 56;
+/**
+ * How far the page scrolls while the large title hands over to the header:
+ * from half of it before the header sticks to half of it after.
+ */
+export const LARGE_TITLE_HANDOVER = 80;
 
 /**
  * How far the sticky header is pulled up over the large title, so the row of
@@ -42,27 +45,28 @@ function scrollParent(element: HTMLElement): HTMLElement | null {
 }
 
 /**
- * Hands the large title over to the sticky header as the page scrolls: over
- * the last CONDENSE_DISTANCE before the header sticks, `--large-title-condense`
- * on the list page goes from 0 to 1, for the title, the header's small title
- * and its background to fade by. Follows the scroll position, so stopping
- * halfway stays halfway; set directly on the element, so scrolling doesn't
- * re-render. Attach `markerRef` to where the header sits at rest.
+ * Hands the large title over to the sticky header as the page scrolls, by the
+ * scroll position across LARGE_TITLE_HANDOVER (index.css). Where the browser
+ * ties animations to scrolling itself (scroll-driven animations), it does so
+ * in step with the scroll and this does nothing; elsewhere it sets
+ * `--large-title-condense` on the list page, from 0 to 1, each frame the page
+ * scrolls, set directly on the element so scrolling doesn't re-render. Attach
+ * `markerRef` to the handover's marker (LargePageTitle).
  */
 export function useLargeTitleCondense() {
   const [marker, markerRef] = useState<HTMLElement | null>(null);
 
   useEffect(() => {
     const root = marker && scrollParent(marker);
-    const host = marker?.closest<HTMLElement>('[data-list-page="list-page"]');
-    if (!marker || !root || !host) {
+    const host = marker?.closest<HTMLElement>('[data-large-title-host]');
+    if (!marker || !root || !host || CSS.supports('animation-timeline: view()')) {
       return;
     }
     let frame = 0;
     const update = () => {
       frame = 0;
-      const distance = marker.getBoundingClientRect().top - root.getBoundingClientRect().top;
-      const progress = Math.min(1, Math.max(0, 1 - distance / CONDENSE_DISTANCE));
+      const past = root.getBoundingClientRect().top - marker.getBoundingClientRect().top;
+      const progress = Math.min(1, Math.max(0, past / LARGE_TITLE_HANDOVER));
       host.style.setProperty('--large-title-condense', progress.toFixed(3));
     };
     const schedule = () => {

@@ -327,6 +327,73 @@ body.react-admin {
   }
 }
 
+/* A list screen's large title handing over to its sticky header as the page
+   scrolls (LargePageTitle): the title eases out over the first half of the
+   handover, the header's small title and solid background ease in over the
+   second. Tied to scrolling by the browser where it can, so in step with it;
+   elsewhere by --large-title-condense (useLargeTitleCondense). */
+@keyframes large-title-out {
+  from {
+    opacity: 1;
+    animation-timing-function: ease-in;
+  }
+  50%,
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes large-title-in {
+  from,
+  50% {
+    opacity: 0;
+    animation-timing-function: ease-out;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@supports (animation-timeline: view()) {
+  [data-large-title-host] {
+    timeline-scope: --large-title-handover;
+  }
+
+  [data-large-title-marker] {
+    view-timeline: --large-title-handover block;
+  }
+
+  [data-large-title],
+  .large-title-header-title,
+  [data-large-title-header]::before {
+    animation-duration: auto;
+    animation-fill-mode: both;
+    animation-timing-function: linear;
+    animation-timeline: --large-title-handover;
+    animation-range: exit;
+  }
+
+  [data-large-title] {
+    animation-name: large-title-out;
+  }
+
+  .large-title-header-title,
+  [data-large-title-header]::before {
+    animation-name: large-title-in;
+  }
+}
+
+@supports not (animation-timeline: view()) {
+  [data-large-title] {
+    opacity: clamp(0, calc(1 - var(--large-title-condense, 0) * 2), 1);
+  }
+
+  .large-title-header-title,
+  [data-large-title-header]::before {
+    opacity: clamp(0, calc(var(--large-title-condense, 0) * 2 - 1), 1);
+  }
+}
+
 /* View site's Customize panel slides in from the right */
 @keyframes view-site-panel-in {
   from {
