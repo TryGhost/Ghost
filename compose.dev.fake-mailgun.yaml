@@ -4,6 +4,8 @@ services:
       context: ./
       dockerfile: docker/fake-mailgun/Dockerfile
     init: true
+    ports:
+      - '127.0.0.1:4010:4010'
     depends_on:
       mailpit:
         condition: service_healthy

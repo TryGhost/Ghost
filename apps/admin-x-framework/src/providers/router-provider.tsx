@@ -173,14 +173,7 @@ export function RouterProvider({
   return <ReactRouterProvider router={router} onError={onError} />;
 }
 
-/**
- * Override the default navigate function to add the crossApp option. This is
- * used to determine if the navigate should be handled by the custom router, ie.
- * if we need to navigate outside of the current app in Ghost.
- */
-export interface NavigateOptions extends ReactRouterNavigateOptions {
-  crossApp?: boolean;
-}
+export type NavigateOptions = ReactRouterNavigateOptions;
 
 /**
  * Decides whether an in-router navigation to `pathname` (absolute, without the
@@ -229,7 +222,6 @@ function navigateAfterTransitionStart(
 
 export function useNavigate() {
   const navigate = useReactRouterNavigate();
-  const { externalNavigate } = useFramework();
   const controller = useContext(ViewTransitionControllerContext);
   const routePathname = useResolvedPath('.').pathname;
   const locationPathname = useLocation().pathname;
@@ -246,11 +238,6 @@ export function useNavigate() {
         return;
       }
 
-      if (options?.crossApp) {
-        externalNavigate({ route: to, isExternal: true, replace: options.replace });
-        return;
-      }
-
       const pathname = pathnameFor.current(to, options?.relative);
       if (options?.viewTransition === undefined && controller.shouldTransition(pathname)) {
         navigateAfterTransitionStart(controller, pathname, () =>
@@ -261,7 +248,7 @@ export function useNavigate() {
 
       navigate(to, options);
     },
-    [controller, navigate, externalNavigate],
+    [controller, navigate],
   );
 }
 
@@ -327,31 +314,8 @@ interface CustomNavigateProps {
   to: string;
   replace?: boolean;
   state?: unknown;
-  crossApp?: boolean;
 }
 
-export function Navigate({ to, replace, state, crossApp }: CustomNavigateProps) {
-  const { externalNavigate } = useFramework();
-  const lastExternalNavigation = useRef<{ replace?: boolean; to: string } | null>(null);
-
-  useEffect(() => {
-    if (!crossApp) {
-      lastExternalNavigation.current = null;
-      return;
-    }
-
-    const previousNavigation = lastExternalNavigation.current;
-    if (previousNavigation?.to === to && previousNavigation.replace === replace) {
-      return;
-    }
-
-    lastExternalNavigation.current = { replace, to };
-    externalNavigate({ route: to, isExternal: true, replace });
-  }, [crossApp, externalNavigate, replace, to]);
-
-  if (crossApp) {
-    return null;
-  }
-
+export function Navigate({ to, replace, state }: CustomNavigateProps) {
   return <ReactRouterNavigate replace={replace} state={state} to={to} />;
 }

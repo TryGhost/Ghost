@@ -47,9 +47,11 @@ export function getIngestConfig({
   )}api/v1/tinybird-sync`;
 
   // The browser tracker uses localhost, but inside the development container
-  // that reaches Ghost itself. Analytics requests must go through the gateway.
+  // (which sets apps.localhostAlias) that reaches Ghost itself, so analytics
+  // requests go through the gateway. Ghost on the host can use localhost.
   if (
     config.get('env') === 'development' &&
+    config.get('apps:localhostAlias') &&
     ['localhost', '127.0.0.1', '[::1]'].includes(endpoint.hostname)
   ) {
     endpoint.protocol = 'http:';

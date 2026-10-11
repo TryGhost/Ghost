@@ -20,8 +20,8 @@ For Node.js support in older Ghost releases, see the
 
 In the main checkout, `pnpm dev` binds ports `2368` and `2369`, and the Docker
 services bind `1025`, `3306`, `6379`, `8025`, and `8026`. Stop local services
-using those ports before starting Ghost. Worktrees get their own ports (see
-[Worktrees](#worktrees)).
+using those ports before starting Ghost. Worktrees get their own URLs and ports
+(see [Worktrees](#worktrees)).
 
 The repository pins its pnpm version in `package.json`. Activate that version
 before first use rather than installing a separate global version of pnpm:
@@ -57,6 +57,11 @@ configures Git to ignore formatting-only revisions in blame output. Run it after
 a fresh clone and whenever a branch changes workspace dependencies or
 submodules.
 
+Installs use pnpm's global virtual store: each checkout's `node_modules` links
+into one shared store, so a new worktree installs in a few seconds. Containers
+can't follow those links, so `pnpm dev:docker` first reinstalls without them;
+the next pnpm command switches back.
+
 Ghost calls this command `bootstrap` because [`pnpm setup`](https://pnpm.io/cli/setup)
 is a pnpm CLI command for configuring pnpm's global home and updating shell
 startup files. It does not run Ghost's repository initialization. Using a
@@ -72,17 +77,23 @@ pnpm dev
 The command starts:
 
 - MySQL, Redis, and Mailpit in Docker
-- Ghost Core on the host, restarting when server files change
+- Ghost Core on the host, restarting when its files or the workspace packages
+  it loads change
 - Admin's dev server on `http://localhost:2368`, which serves Admin and the
   public apps and passes everything else to Ghost
-- Portal's build watcher
 
-Admin and its shared libraries hot-reload. These commands preserve the site's
-existing feature flags; see
+Admin and its shared libraries hot-reload. Portal and the other public apps are
+built when the command starts; `pnpm dev:public` rebuilds them as you edit.
+These commands preserve the site's existing feature flags; see
 [Admin development](../../apps/admin/README.md#development) to preview flagged
 features with session overrides.
 
-Wait for the `Ghost:` URL in the output, then open:
+Admin's dev server only accepts connections from this machine. Set
+`GHOST_DEV_LISTEN=0.0.0.0` to accept them from the network too, for example for
+e2e dev mode on Linux, where containers reach the host through the Docker
+bridge.
+
+Wait for the `Site:`, `Admin:` and `Email:` lines in the output, then open:
 
 - Site: [http://localhost:2368](http://localhost:2368)
 - Admin: [http://localhost:2368/ghost/](http://localhost:2368/ghost/)
@@ -94,22 +105,59 @@ credentials.
 
 As a quick health check, confirm that the site and Admin load.
 
+To use the [ActivityPub](https://github.com/TryGhost/ActivityPub) project's
+local service, set `ACTIVITYPUB_PROXY_TARGET`, for example to `127.0.0.1:8080`.
+
 Press `Ctrl+C` in the development process to stop Ghost and the watchers. MySQL,
-Redis, and Mailpit keep running for other checkouts; `pnpm docker:down` stops
-them. The database lives in a Docker volume, and uploaded content in
-`ghost/content`.
+Redis, and Mailpit keep running for other checkouts; `pnpm dev:down --all` stops
+them along with every checkout's Ghost. The database lives in a Docker volume,
+and uploaded content in `ghost/content`.
 
 ### Worktrees
 
-Every checkout gets its own ports and database, assigned on its first `pnpm dev`
+Every checkout gets its own URL and database, assigned on its first `pnpm dev`
 and kept in `.ghost-dev.env` so URLs and sessions survive restarts. The main
-checkout uses `2368` and the `ghost_dev` database. A worktree gets a port pair
-between `2400` and `2998` and a `dev_<worktree>` database, so several worktrees
-can run `pnpm dev` at once against the same MySQL, Redis, and Mailpit. Mailpit
-tags each message with the checkout's name.
+checkout uses `http://localhost:2368` and the `ghost_dev` database. A worktree
+gets a `<worktree>.localhost` hostname, a port pair between `2400` and `2998`,
+and a `dev_<worktree>` database, so several worktrees can run `pnpm dev` at once
+against the same MySQL, Redis, and Mailpit. Mailpit tags each message with the
+checkout's name.
 
-Delete `.ghost-dev.env` to be assigned new ports, or set `GHOST_DEV_PORT`,
-`GHOST_DEV_BACKEND_PORT`, or `GHOST_DEV_DATABASE` to choose them.
+Browsers share cookies between the ports of one hostname, so the hostname keeps
+each checkout's Admin sign-in separate. Browsers resolve `.localhost` hostnames
+to your machine without editing `/etc/hosts`. `pnpm dev` prints the URL.
+
+A worktree's database starts as a copy of `ghost_dev` with a new `site_uuid` and
+no sessions, so it skips setup and onboarding, and Ghost applies the branch's
+migrations when it boots. Run `pnpm reset:db` in the worktree to replace the
+copy with a fresh database.
+
+To run a checkout's Ghost in the background, for example from an agent, use:
+
+```bash
+pnpm dev:up      # start; returns once Ghost answers and prints its URL
+pnpm dev:status  # this checkout and any other running one; --all lists every checkout
+pnpm dev:down    # stop this checkout's Ghost, however it was started; --all stops everything
+```
+
+`pnpm dev:up` writes its output to `.ghost-dev.log` and refuses to start while
+the checkout's ports are in use. Pass a variant's script name, such as
+`pnpm dev:up dev:analytics`, to start that instead; `dev:docker` can't run this
+way. `pnpm dev:status` finds each checkout's Ghost through the ports in its
+`.ghost-dev.env`, and `--json` prints the list for scripts. `pnpm dev:down`
+stops whatever holds this checkout's ports, including what a killed run left
+behind, and leaves MySQL, Redis, and Mailpit running.
+
+`pnpm dev:gc` lists the `dev_*` databases of worktrees that no longer exist, and
+`pnpm dev:gc --yes` drops them.
+
+`pnpm dev:status --watch` redraws the list every two seconds.
+`pnpm dev:down --all` stops every checkout's Ghost and then the Docker services;
+the databases stay in their volume.
+
+Delete `.ghost-dev.env` to be assigned new values, or set `GHOST_DEV_HOSTNAME`,
+`GHOST_DEV_PORT`, `GHOST_DEV_BACKEND_PORT`, or `GHOST_DEV_DATABASE` to choose
+them.
 
 ### Content from the containerised setup
 
@@ -143,15 +191,15 @@ Sign in to the VersityGW WebUI with access key `s3-user` and secret key
 ## Development variants
 
 Run one root command at a time. Each variant includes the standard development
-environment and adds the listed tooling. `pnpm dev`, `pnpm dev:public`, and
-`pnpm dev:lexical` run Ghost on the host. The others still run Ghost in Docker
-behind the Caddy gateway on `http://localhost:2368`, as `pnpm dev:docker` does:
+environment and adds the listed tooling. All of them except `pnpm dev:docker` run
+Ghost on the host. The services a variant adds run in Docker and, like MySQL,
+Redis, and Mailpit, keep running after `Ctrl+C` until `pnpm dev:down --all`:
 
 | Command                    | Use it when working on                                                                                          |
 | -------------------------- | --------------------------------------------------------------------------------------------------------------- |
-| `pnpm dev`                 | Ghost Core, Admin, or Portal                                                                                    |
+| `pnpm dev`                 | Ghost Core or Admin                                                                                             |
 | `pnpm dev:docker`          | The same, with Ghost in Docker behind the Caddy gateway                                                         |
-| `pnpm dev:public`          | Comments UI, Signup Form, Search, Announcement Bar, or Admin Toolbar                                            |
+| `pnpm dev:public`          | Portal, Comments UI, Signup Form, Search, Announcement Bar, or Admin Toolbar                                    |
 | `pnpm dev:lexical`         | Koenig's Lexical editor inside Ghost Admin                                                                      |
 | `pnpm dev:analytics`       | Tinybird-backed analytics with the latest published version of the Traffic Analytics service                    |
 | `pnpm dev:analytics:local` | Tinybird-backed analytics with your locally running instance of the Traffic Analytics service                   |
@@ -210,21 +258,20 @@ If dependencies or Nx state become inconsistent after switching branches, run:
 pnpm fix
 ```
 
-This prunes the pnpm store, removes workspace `node_modules` directories,
-reinstalls dependencies, and resets Nx state.
+This prunes the pnpm store, resets Nx state, removes this checkout's
+`node_modules` directories and Ghost build output, and reinstalls dependencies.
 
 For narrower build and cache problems, use:
 
 ```bash
 pnpm nx reset       # Clear the Nx cache, which all checkouts and worktrees share
-pnpm build:clean    # Clear the Nx cache and Ghost build output
 pnpm docker:build   # Rebuild the local development images
 ```
 
-To stop the Docker services:
+To stop every checkout's Ghost and the Docker services:
 
 ```bash
-pnpm docker:down
+pnpm dev:down --all
 ```
 
 As a last resort, `pnpm docker:clean` removes the development containers,

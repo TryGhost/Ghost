@@ -26,7 +26,6 @@ import { postsListScreen } from '@/posts/list/posts-list.screen';
 const POST_ID = 'abc123';
 const NEW_POST_ID = 'new123';
 const LOADED_AT = '2026-01-01T00:00:00.000Z';
-const FLAG_ON = { labs: { editorReact: true } };
 
 const POLL = { timeout: 10_000 };
 // The suite's own viewport, restored after the cases that resize it.
@@ -41,7 +40,7 @@ type SavedPost = ReturnType<typeof post>;
 function asContributor() {
   const me = currentUserResponse();
   me.users[0].roles = [staffRole({ name: 'Contributor' })];
-  return { ...FLAG_ON, boot: { browseMe: { response: me } } };
+  return { boot: { browseMe: { response: me } } };
 }
 
 function editorChrome() {
@@ -207,7 +206,7 @@ describe('Post settings delete', () => {
       posts: [created],
     }));
 
-    await renderAdminApp('/editor/post', FLAG_ON);
+    await renderAdminApp('/editor/post');
     await openSidebar();
 
     await expect(editorScreen.settingsDelete()).toHaveCount(0);
@@ -224,7 +223,7 @@ describe('Post settings delete', () => {
   it('ends a short list at the foot of the panel', async () => {
     fakeDeletablePost();
     await page.viewport(1280, 2000);
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`);
     await openSidebar();
     await expect.element(editorScreen.settingsDelete()).toBeVisible();
 
@@ -238,7 +237,7 @@ describe('Post settings delete', () => {
   it('follows the last section of a long list, reached by scrolling', async () => {
     fakeDeletablePost();
     await page.viewport(1280, 600);
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`);
     await openSidebar();
     await expect(editorScreen.settingsDelete()).toHaveCount(1);
 
@@ -259,7 +258,7 @@ describe('Post settings delete', () => {
 
   it('makes way for an open pane and returns with the list', async () => {
     fakeDeletablePost();
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`);
     await openSidebar();
     await expect.element(editorScreen.settingsDelete()).toBeVisible();
 
@@ -276,7 +275,7 @@ describe('Post settings delete', () => {
 
   it('names the post it is about to delete and warns that it is permanent', async () => {
     fakeDeletablePost();
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`);
     await openSidebar();
 
     await expect.element(editorScreen.settingsDelete()).toHaveTextContent('Delete post');
@@ -303,7 +302,7 @@ describe('Post settings delete', () => {
 
   it('keeps the post when the writer cancels', async () => {
     const { deleteApi } = fakeDeletablePost();
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`);
     await openDeleteDialog();
 
     await editorScreen.cancelSettingsDelete().click();
@@ -317,7 +316,7 @@ describe('Post settings delete', () => {
 
   it('deletes a dirty draft and leaves for the list without saving it on the way out', async () => {
     const { calls, deleteApi } = fakeDeletablePost();
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`);
     await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
     await openSidebar();
     // Unsaved work is what the leave guard would otherwise save on the way out.
@@ -338,7 +337,7 @@ describe('Post settings delete', () => {
       message: 'Cannot delete post.',
       context: 'You do not have permission to delete this post.',
     });
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`);
     await openDeleteDialog();
 
     await editorScreen.confirmSettingsDelete().click();
@@ -358,7 +357,7 @@ describe('Post settings delete', () => {
   it('keeps unsaved work editable when the delete is refused by an expired session', async () => {
     const { saveApi } = fakeDeletablePost();
     fakeExpiredDelete();
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`);
     await typeIntoBody(' and more');
     await expect.poll(unsavedChangesGuarded).toBe(true);
     await openDeleteDialog();
@@ -386,7 +385,7 @@ describe('Post settings delete', () => {
     fakeDeletablePost();
     fakeExpiredDelete();
     const sessionApi = fakeAdminEndpoint('POST', '/session/', () => 'Created', { status: 201 });
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`);
     await openDeleteDialog();
     await editorScreen.confirmSettingsDelete().click();
     await expect.element(editorScreen.reauthDialog()).toBeVisible();
@@ -404,7 +403,7 @@ describe('Post settings delete', () => {
   it('asks to sign in again when the delete is retried after the sign-in is abandoned', async () => {
     fakeDeletablePost();
     const expiredApi = fakeExpiredDelete();
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`);
     await openDeleteDialog();
     await editorScreen.confirmSettingsDelete().click();
     await expect.element(editorScreen.reauthDialog()).toBeVisible();
@@ -429,7 +428,7 @@ describe('Post settings delete', () => {
     // The list the delete returns to, which stops serving the post once it is gone.
     const listApi = fakePosts(() => (deleteApi.requests.length ? [] : [row]));
 
-    await renderAdminApp('/posts', FLAG_ON);
+    await renderAdminApp('/posts');
     await expect.element(postsListScreen.listItems().first()).toHaveTextContent('Hello from React');
     const browsesBefore = listApi.requests.length;
 
@@ -481,7 +480,7 @@ describe('Post settings delete', () => {
     fakeAdminEndpoint('PUT', new RegExp(`^/pages/${POST_ID}/\\?`), () => ({ pages: [current] }));
     const deleteApi = fakeAdminEndpoint('DELETE', `/pages/${POST_ID}/`, null, { status: 204 });
 
-    await renderAdminApp(`/editor/page/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/page/${POST_ID}`);
     await openSidebar();
 
     await expect.element(editorScreen.settingsDelete()).toHaveTextContent('Delete page');

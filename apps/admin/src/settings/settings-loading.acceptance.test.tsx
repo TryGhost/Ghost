@@ -35,29 +35,26 @@ async function expectCenteredSpinner() {
 }
 
 describe('Settings loading', () => {
-  it.each([true, false])(
-    'centers the first screen load (admin7settings: %s)',
-    async (admin7settings) => {
-      await renderAdminApp('/settings', { labs: { admin7settings } });
-      await expectCenteredSpinner();
-    },
-  );
+  it('centers the first screen load', async () => {
+    await renderAdminApp('/settings');
+    await expectCenteredSpinner();
+  });
 
   it('centers the first screen load on mobile', async () => {
     await page.viewport(390, 844);
-    await renderAdminApp('/settings', { labs: { admin7settings: true } });
+    await renderAdminApp('/settings');
     await expectCenteredSpinner();
   });
 
   it('centers the content load after the settings navigation arrives', async () => {
     loading.screen = false;
     fakeSettingsScreens();
-    await renderAdminApp('/settings', { labs: { admin7settings: true } });
+    await renderAdminApp('/settings');
     await expect.element(page.getByPlaceholder('Search settings')).toBeVisible();
     await expectCenteredSpinner();
   });
 
-  it('keeps modal focus when the settings sidebar finishes loading', async () => {
+  it('keeps modal focus when the settings content finishes loading', async () => {
     loading.screen = false;
     const content = await import('./layout/main-content');
     let finishLoading!: (module: typeof content) => void;
@@ -65,14 +62,15 @@ describe('Settings loading', () => {
       finishLoading = resolve;
     });
     fakeSettingsScreens();
-    await renderAdminApp('/settings/navigation/edit', { labs: { admin7settings: false } });
+    await renderAdminApp('/settings/navigation/edit');
 
     const primaryTab = settingsScreen.navigationModal().getByRole('tab', { name: 'Primary' });
     await primaryTab.click();
     await expect.element(primaryTab).toHaveFocus();
-    await expect(page.getByPlaceholder('Search settings')).toHaveCount(0);
+    await expect.element(page.getByPlaceholder('Search settings')).toBeVisible();
 
     finishLoading(content);
+    await expect(page.getByRole('status').filter({ hasText: 'Loading settings' })).toHaveCount(0);
     await expect.element(page.getByPlaceholder('Search settings')).toBeVisible();
     await expect.element(primaryTab).toHaveFocus();
     await userEvent.keyboard('{ArrowRight}');

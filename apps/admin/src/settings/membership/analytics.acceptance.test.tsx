@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import {
   configResponse,
+  currentRoute,
   fakeAdminEndpoint,
   fakeEditSettings,
   fakeSettingsScreens,
@@ -37,6 +38,7 @@ function analyticsConfig({ limited = false }: { limited?: boolean } = {}) {
           errorCode: 'HOST_LIMIT_REACHED',
         },
       },
+      billing: { enabled: true },
     };
   }
   return response;
@@ -168,7 +170,7 @@ describe('Analytics settings', () => {
       .toBeVisible();
     await expect(section.getByText(/requires configuration/)).toHaveCount(0);
     await section.getByText('Upgrade now →', { exact: true }).click();
-    expect(JSON.parse(document.body.dataset.externalNavigate!)).toMatchObject({ route: '/pro' });
+    await expect.poll(currentRoute).toBe('/pro');
   });
 
   it('disables the post analytics export while downloading from the expected endpoint', async () => {

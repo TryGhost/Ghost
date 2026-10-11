@@ -40,7 +40,7 @@ describe('Editor chrome', () => {
     fakeNewsletters([]);
     fakeEmailPreview();
     fakeAdminEndpoint('GET', /^\/posts\/abc123\/\?/, { posts: [post({ id: 'abc123' })] });
-    await renderAdminApp('/editor/post/abc123', { labs: { editorReact: true } });
+    await renderAdminApp('/editor/post/abc123');
 
     await expect.element(editorScreen.root()).toBeVisible();
     await expect(sidebar()).toHaveCount(0);

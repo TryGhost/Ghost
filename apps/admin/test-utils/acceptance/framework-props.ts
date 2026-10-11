@@ -28,7 +28,6 @@ export function createFrameworkProps(
 
   return {
     ghostVersion: '',
-    externalNavigate: () => {},
     // Production shape, but without the real API key so tests never hit Unsplash
     unsplashConfig: { ...defaultUnsplashConfig, Authorization: '' },
     ...overrides,

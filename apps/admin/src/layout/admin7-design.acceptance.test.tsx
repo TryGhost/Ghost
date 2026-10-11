@@ -9,23 +9,17 @@ import {
 it.each<{
   name: string;
   route: string;
-  labs: Record<string, boolean>;
   enabled: boolean;
 }>([
-  { name: 'members list', route: '/members', labs: {}, enabled: true },
-  {
-    name: 'editor',
-    route: '/editor/post/abc123',
-    labs: { editorReact: true },
-    enabled: true,
-  },
-])('uses the current design on every route: $name', async ({ route, labs, enabled }) => {
+  { name: 'members list', route: '/members', enabled: true },
+  { name: 'editor', route: '/editor/post/abc123', enabled: true },
+])('uses the current design on every route: $name', async ({ route, enabled }) => {
   fakeMembers([]);
-  if (labs.editorReact) {
+  if (route.startsWith('/editor/')) {
     fakeEditorChrome();
     fakeEditorPost();
   }
-  await renderAdminApp(route, { labs });
+  await renderAdminApp(route);
 
   await expect
     .poll(() => document.querySelector('[data-react-admin-mounted]')?.getAttribute('data-admin7'))

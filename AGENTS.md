@@ -20,6 +20,10 @@ Start with:
   the catalogs in `pnpm-workspace.yaml`; workspace dependencies use
   `workspace:` versions.
 - Run `pnpm bootstrap` before other commands in a fresh checkout or worktree.
+- Run Ghost in the background with `pnpm dev:up`, `pnpm dev:status` and
+  `pnpm dev:down`, and give the user the URL they print as a markdown link.
+  Don't background `pnpm dev`: killing its pid leaves Ghost and the dev
+  servers running.
 - Use `pnpm check` as the default full validation command. Browser E2E tests
   run separately; follow the testing guide.
 - Read the nearest `AGENTS.md` and README before changing a package

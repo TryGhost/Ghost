@@ -22,7 +22,6 @@ import { editorScreen } from '@/editor/editor.screen';
 const PAGE_ID = 'pg123';
 const NEW_PAGE_ID = 'pg789';
 const POST_ID = 'abc123';
-const FLAG_ON = withoutAutosave({ labs: { editorReact: true } });
 const LOADED_AT = '2026-01-01T00:00:00.000Z';
 const PUBLISHED_AT = '2025-12-01T10:00:00.000Z';
 const PAGE_ROUTE = new RegExp(`^/pages/${PAGE_ID}/\\?`);
@@ -69,16 +68,15 @@ const OTHER_CODE_PROBLEM = {
 };
 
 function withTheme(report: { errors?: unknown[]; warnings?: unknown[] }) {
-  return {
-    ...FLAG_ON,
+  return withoutAutosave({
     boot: { browseActiveTheme: { response: activeThemeResponse(report) } },
-  };
+  });
 }
 
 function asContributor() {
   const me = currentUserResponse();
   me.users[0].roles = [staffRole({ name: 'Contributor' })];
-  return { ...FLAG_ON, boot: { browseMe: { response: me } } };
+  return withoutAutosave({ boot: { browseMe: { response: me } } });
 }
 
 function fakeActiveTheme(report: { errors?: unknown[]; warnings?: unknown[] }): EndpointCapture {
@@ -165,7 +163,7 @@ async function openSettings() {
 describe('Post settings show title and feature image', () => {
   it('persists a draft page’s choice on its own', async () => {
     const saveApi = fakeSavablePage();
-    await renderAdminApp(`/editor/page/${PAGE_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/page/${PAGE_ID}`, withoutAutosave());
     await openSettings();
 
     await expect.element(editorScreen.settingsShowTitle()).toHaveAttribute('data-state', 'checked');
@@ -180,7 +178,7 @@ describe('Post settings show title and feature image', () => {
 
   it('turns the choice back on', async () => {
     const saveApi = fakeSavablePage({ show_title_and_feature_image: false });
-    await renderAdminApp(`/editor/page/${PAGE_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/page/${PAGE_ID}`, withoutAutosave());
     await openSettings();
 
     await expect
@@ -194,7 +192,7 @@ describe('Post settings show title and feature image', () => {
 
   it('saves a published page’s choice on its own', async () => {
     const saveApi = fakeSavablePage({ status: 'published', published_at: PUBLISHED_AT });
-    await renderAdminApp(`/editor/page/${PAGE_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/page/${PAGE_ID}`, withoutAutosave());
     await openSettings();
 
     await editorScreen.settingsShowTitle().click();
@@ -213,7 +211,7 @@ describe('Post settings show title and feature image', () => {
     fakeAdminEndpoint('GET', POST_ROUTE, () => ({
       posts: [post({ id: POST_ID, status: 'draft', published_at: null, tags: [], tiers: [] })],
     }));
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
     await openSettings();
 
     // A section the sidebar does render, so the panel is settled before the check.
@@ -275,7 +273,7 @@ describe('Post settings show title and feature image', () => {
     // The autosave that follows the create can land before the test ends.
     fakeAdminEndpoint('PUT', NEW_PAGE_ROUTE, () => ({ pages: [created] }));
 
-    await renderAdminApp('/editor/page', FLAG_ON);
+    await renderAdminApp('/editor/page', withoutAutosave());
     await openSettings();
 
     await expect.element(editorScreen.settingsShowTitle()).toHaveAttribute('data-state', 'checked');
@@ -357,10 +355,12 @@ describe('Post settings show title and feature image', () => {
 
   it('stays quiet when the backend reports no theme at all', async () => {
     fakeSavablePage({ show_title_and_feature_image: false });
-    await renderAdminApp(`/editor/page/${PAGE_ID}`, {
-      ...FLAG_ON,
-      boot: { browseActiveTheme: { response: { themes: [] } } },
-    });
+    await renderAdminApp(
+      `/editor/page/${PAGE_ID}`,
+      withoutAutosave({
+        boot: { browseActiveTheme: { response: { themes: [] } } },
+      }),
+    );
     await openSettings();
 
     await expect
@@ -380,7 +380,7 @@ describe('Page canvas with its title and feature image hidden', () => {
       feature_image: FEATURE_IMAGE,
       show_title_and_feature_image: false,
     });
-    await renderAdminApp(`/editor/page/${PAGE_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/page/${PAGE_ID}`, withoutAutosave());
 
     const mark = editorScreen.featureImageHiddenIndicator();
     await expect.element(mark).toHaveAccessibleName(FEATURE_IMAGE_HIDDEN);
@@ -403,7 +403,7 @@ describe('Page canvas with its title and feature image hidden', () => {
 
   it('marks the title when there is no feature image, and shows it while it is edited', async () => {
     fakeSavablePage({ show_title_and_feature_image: false });
-    await renderAdminApp(`/editor/page/${PAGE_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/page/${PAGE_ID}`, withoutAutosave());
 
     const mark = editorScreen.titleHiddenIndicator();
     const title = editorScreen.titleInput();
@@ -432,7 +432,7 @@ describe('Page canvas with its title and feature image hidden', () => {
         }),
       ],
     }));
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
 
     await expect.element(editorScreen.removeFeatureImage()).toBeInTheDocument();
     await expect(editorScreen.featureImageHiddenIndicator()).toHaveCount(0);

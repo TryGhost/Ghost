@@ -24,8 +24,10 @@ import {
   Skeleton,
 } from '@tryghost/shade/components';
 import { Box, Container, Inline } from '@tryghost/shade/primitives';
+import { cn } from '@tryghost/shade/utils';
 import { DetailPage } from '@tryghost/shade/page-templates';
 import { Link, useLocation, useNavigate, useParams } from '@tryghost/admin-x-framework';
+import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import { DirtyConfirmDialog, PageHeader } from '@tryghost/shade/patterns';
 import {
   buildMemberFieldEditPayload,
@@ -92,6 +94,9 @@ const MemberDetailPage: React.FC<MemberDetailPageProps> = ({
   const listMember = useCachedListMember(isCreating ? undefined : memberId);
   const headerMember = member ?? listMember;
   const mapEnabled = !!headerMember;
+  // Admin 7 runs the map full bleed, from the top of the page and under the
+  // floating sidebar
+  const fullBleedMap = useFeatureFlag('admin7Design');
   // 4xx from the members endpoint on a real id means "gone" (deleted mid-flow
   // is the realistic case). 5xx/network is a different story — we don't want
   // to lie about that with a "not found" message.
@@ -380,8 +385,17 @@ const MemberDetailPage: React.FC<MemberDetailPageProps> = ({
     >
       <Container className="relative flex h-full flex-col" size="page">
         <DetailPage data-testid="member-detail">
-          <DetailPage.Header className="has-[[data-member-map-location=unknown]]:py-7">
-            <MemberMapHeader enabled={mapEnabled} geolocation={headerMember?.geolocation}>
+          <DetailPage.Header
+            className={cn(
+              'has-[[data-member-map-location=unknown]]:py-7',
+              fullBleedMap && 'has-[[data-member-map-location=known]]:pt-0!',
+            )}
+          >
+            <MemberMapHeader
+              enabled={mapEnabled}
+              fullBleed={fullBleedMap}
+              geolocation={headerMember?.geolocation}
+            >
               <PageHeader blurredBackground={false} sticky={false}>
                 <PageHeader.Left>
                   {/*

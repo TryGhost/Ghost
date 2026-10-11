@@ -6,13 +6,7 @@ import { matchAdminRoutes, routes, useRoutePattern } from './routes';
 
 const useMatchesMock = vi.fn<() => Array<{ handle: unknown }>>();
 const pathnameMock = vi.fn<() => string>();
-const useFeatureFlagMock = vi.fn<() => boolean>(() => false);
 const useIsMobileMock = vi.fn<() => boolean>(() => false);
-
-vi.mock('@tryghost/admin-x-framework/hooks', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('@tryghost/admin-x-framework/hooks')>()),
-  useFeatureFlag: () => useFeatureFlagMock(),
-}));
 
 vi.mock('@tryghost/shade/utils', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@tryghost/shade/utils')>()),
@@ -35,39 +29,30 @@ function routeHidesAdminSidebar(path: string): boolean {
 }
 
 beforeEach(() => {
-  useFeatureFlagMock.mockReturnValue(false);
   useIsMobileMock.mockReturnValue(false);
 });
 
 // The search and settings shortcuts stay off exactly where these routes hide the sidebar
 describe('routes', () => {
-  it.each([
-    '/editor/post/abc123',
-    '/settings',
-    '/settings/newsletters',
-    '/automations/abc123',
-    '/migrate/substack',
-  ])('hides the admin sidebar on %s', (path) => {
-    expect(routeHidesAdminSidebar(path)).toBe(true);
-  });
+  it.each(['/editor/post/abc123', '/automations/abc123', '/migrate/substack'])(
+    'hides the admin sidebar on %s',
+    (path) => {
+      expect(routeHidesAdminSidebar(path)).toBe(true);
+    },
+  );
 
   it('shows the admin sidebar on /posts', () => {
     expect(routeHidesAdminSidebar('/posts')).toBe(false);
   });
 
   it.each([
-    [false, false, true],
-    [false, true, true],
-    [true, false, false],
-    [true, true, true],
-  ])(
-    'Settings hides the shell with admin7settings %s and mobile %s: %s',
-    (enabled, mobile, hidden) => {
-      useFeatureFlagMock.mockReturnValue(enabled);
-      useIsMobileMock.mockReturnValue(mobile);
-      expect(routeHidesAdminSidebar('/settings')).toBe(hidden);
-    },
-  );
+    [false, false],
+    [true, true],
+  ])('Settings hides the shell with mobile %s: %s', (mobile, hidden) => {
+    useIsMobileMock.mockReturnValue(mobile);
+    expect(routeHidesAdminSidebar('/settings')).toBe(hidden);
+    expect(routeHidesAdminSidebar('/settings/newsletters')).toBe(hidden);
+  });
 });
 
 describe('sidebar visibility by route', () => {
@@ -77,7 +62,8 @@ describe('sidebar visibility by route', () => {
     ['/pro', true],
     ['/pro/plans', true],
     ['/editor/post/abc123', false],
-    ['/settings', false],
+    ['/settings', true],
+    ['/settings/newsletters', true],
   ] as const)('shows sidebar %s: %s', (pathname, visible) => {
     pathnameMock.mockReturnValue(pathname);
     useMatchesMock.mockReturnValue(

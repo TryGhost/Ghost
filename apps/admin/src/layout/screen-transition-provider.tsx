@@ -8,9 +8,11 @@ import {
   ViewTransitionControllerProvider,
 } from '@tryghost/admin-x-framework';
 import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
+import { useIsMobile } from '@tryghost/shade/utils';
 import { hasActiveUnsavedChangesGuard } from '@/hooks/active-unsaved-changes-guards';
 import { matchAdminRoutes } from '@/routes';
 import { shouldRunScreenTransition } from './screen-transition';
+import { useHasSettingsNavigation } from './sidebar-visibility';
 
 // The parts of the page that fade out before entering a surface (index.css)
 const EXIT_TARGETS = '.screen-exit-content, .screen-exit-sidebar, .screen-exit-mobile-nav';
@@ -50,7 +52,12 @@ function exitTransitionsFinished(): Promise<void> {
  * finishes, or the navigation settles without landing.
  */
 export function ScreenTransitionProvider({ children }: { children: ReactNode }) {
-  const settingsSidebarEnabled = useFeatureFlag('admin7settings');
+  const admin7Design = useFeatureFlag('admin7Design');
+  const isMobile = useIsMobile();
+  const hasSettingsNavigation = useHasSettingsNavigation();
+  // The admin7Design desktop sidebar opens Settings inside it, animating that
+  // itself, for users who get the Settings navigation
+  const settingsInSidebar = admin7Design && !isMobile && hasSettingsNavigation;
   const matches = useMatches();
   const location = useLocation();
   // True from the router starting a view transition to or from this screen until it finishes
@@ -59,8 +66,8 @@ export function ScreenTransitionProvider({ children }: { children: ReactNode }) 
   viewTransitionRunningRef.current = viewTransitionRunning;
 
   // Updated during render so links rendered below already see the new matches.
-  const latest = useRef({ settingsSidebarEnabled, matches });
-  latest.current = { settingsSidebarEnabled, matches };
+  const latest = useRef({ settingsInSidebar, matches });
+  latest.current = { settingsInSidebar, matches };
   const exitingRef = useRef(false);
   // Where the current transition's navigation started, to tell one a blocker held from one that landed
   const fromHashRef = useRef<string | null>(null);
@@ -81,7 +88,7 @@ export function ScreenTransitionProvider({ children }: { children: ReactNode }) 
         return shouldRunScreenTransition({
           from: current.matches.map((match) => match.handle),
           to: target.map((match): unknown => match.route.handle),
-          settingsSidebarEnabled: current.settingsSidebarEnabled,
+          settingsInSidebar: current.settingsInSidebar,
         });
       },
       beforeTransition(pathname) {

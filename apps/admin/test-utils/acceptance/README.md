@@ -76,11 +76,11 @@ await renderAdminApp("/tags", {labs: {someFlag: true}});
 // The editor's autosave debounce, injected as a test-only `/config/` key, so a
 // save that lands proves it was sent without waiting (`withoutAutosave()`), or
 // autosave fires at once (`withFastAutosave()`):
-await renderAdminApp("/editor/post/abc123", withoutAutosave({labs: {editorReact: true}}));
+await renderAdminApp("/editor/post/abc123", withoutAutosave());
 
 // Router state the screen would have been navigated to with, e.g. the editor
 // opened from an analytics screen:
-await renderAdminApp("/editor/post/abc123", {labs: {editorReact: true}, locationState: {editorReturn: "/analytics"}});
+await renderAdminApp("/editor/post/abc123", {locationState: {editorReturn: "/analytics"}});
 
 // Persisted user state, e.g. what's-new preferences:
 const me = currentUserResponse();

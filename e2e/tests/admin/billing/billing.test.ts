@@ -27,7 +27,6 @@ const BMA_HTML = `
 // The owner's round trip into the billing app.
 test.describe('Ghost Admin - Ghost(Pro) billing', () => {
   test.use({
-    labs: { billingReact: true },
     config: {
       hostSettings__billing__enabled: 'true',
       hostSettings__billing__url: MOCK_BILLING_URL,

@@ -13,7 +13,6 @@ export const DEV_COMPOSE_PROJECT = process.env.COMPOSE_PROJECT_NAME || 'ghost-de
 // compose.dev.yaml pins the network name explicitly, so this does not follow COMPOSE_PROJECT_NAME.
 export const DEV_NETWORK_NAME = 'ghost_dev';
 export const DEV_SHARED_CONFIG_VOLUME = `${DEV_COMPOSE_PROJECT}_shared-config`;
-export const DEV_PRIMARY_DATABASE = process.env.MYSQL_DATABASE || 'ghost_dev';
 
 /**
  * Caddyfile paths for different modes.

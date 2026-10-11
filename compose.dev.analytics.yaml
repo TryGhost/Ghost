@@ -12,6 +12,9 @@ services:
     entrypoint: ['/app/entrypoint.sh']
     expose:
       - '3000'
+    # The Admin dev server proxies /.ghost/analytics/ here
+    ports:
+      - '127.0.0.1:7182:3000'
     healthcheck:
       test:
         [

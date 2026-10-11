@@ -13,7 +13,6 @@ import {
 } from '@test-utils/acceptance';
 import { editorScreen } from '@/editor/editor.screen';
 
-const FLAG_ON = withoutAutosave({ labs: { editorReact: true } });
 const LONG_DOCUMENT = buildLexicalParagraph(
   'A long document keeps its editor controls in reach. '.repeat(500),
 );
@@ -351,7 +350,7 @@ describe('Floating editor shell', () => {
     'keeps %s controls in the viewport while only the document scrolls',
     async (postType) => {
       fakeLongDocument(postType);
-      await renderAdminApp(`/editor/${postType}/abc123`, FLAG_ON);
+      await renderAdminApp(`/editor/${postType}/abc123`, withoutAutosave());
       await expect.element(editorScreen.body()).toBeVisible();
       await expect.element(editorScreen.publishButton()).toBeEnabled();
       await expect
@@ -384,7 +383,7 @@ describe('Floating editor shell', () => {
 
   it('moves header actions and footer beside floating settings and scrolls each pane independently', async () => {
     fakeLongDocument('post');
-    await renderAdminApp('/editor/post/abc123', FLAG_ON);
+    await renderAdminApp('/editor/post/abc123', withoutAutosave());
     await expect.element(editorScreen.body()).toBeVisible();
     const footerBefore = editorScreen.helpLink().element().getBoundingClientRect();
     const toggle = editorScreen.settingsToggle().element();
@@ -455,10 +454,12 @@ describe('Floating editor shell', () => {
       fakeLongDocument('post');
       const me = currentUserResponse();
       me.users[0].accessibility = JSON.stringify({ nightShift: theme });
-      await renderAdminApp('/editor/post/abc123', {
-        ...FLAG_ON,
-        boot: { browseMe: { response: me } },
-      });
+      await renderAdminApp(
+        '/editor/post/abc123',
+        withoutAutosave({
+          boot: { browseMe: { response: me } },
+        }),
+      );
       await expect.element(editorScreen.body()).toBeVisible();
       await expect.element(editorScreen.publishButton()).toBeEnabled();
       await expect
@@ -544,7 +545,7 @@ describe('Floating editor shell', () => {
       if (inputs === 'failed') {
         failPublishInputs();
       }
-      await renderAdminApp('/editor/post/abc123', FLAG_ON);
+      await renderAdminApp('/editor/post/abc123', withoutAutosave());
       await expect.element(editorScreen.body()).toBeVisible();
       await expect.element(editorScreen.updateButton()).toBeVisible();
       if (inputs === 'failed') {
@@ -581,7 +582,7 @@ describe('Floating editor shell', () => {
   it('hides the bottom bar’s actions with the word count while the on-screen keyboard is open', async () => {
     await page.viewport(390, 844);
     fakeLongDocument('post');
-    await renderAdminApp('/editor/post/abc123', FLAG_ON);
+    await renderAdminApp('/editor/post/abc123', withoutAutosave());
     await expect.element(editorScreen.publishButton()).toBeEnabled();
     // A keyboard shrinks the visual viewport while the layout viewport stays put.
     const viewport = window.visualViewport!;
@@ -603,7 +604,7 @@ describe('Floating editor shell', () => {
 
   it('eases the sidebar and fades its contents without making header actions jump', async () => {
     fakeLongDocument('post');
-    await renderAdminApp('/editor/post/abc123', FLAG_ON);
+    await renderAdminApp('/editor/post/abc123', withoutAutosave());
     await expect.element(editorScreen.body()).toBeVisible();
     const publishBefore = editorScreen.publishButton().element().getBoundingClientRect().right;
     const footerBefore = editorScreen.helpLink().element().getBoundingClientRect().right;
@@ -677,7 +678,7 @@ describe('Floating editor shell', () => {
 
   it('reverses a closing sidebar without discarding its contents or jumping its controls', async () => {
     fakeLongDocument('post');
-    await renderAdminApp('/editor/post/abc123', FLAG_ON);
+    await renderAdminApp('/editor/post/abc123', withoutAutosave());
     await expect.element(editorScreen.body()).toBeVisible();
     const animationStyle = slowSettingsTransition();
     try {
@@ -717,7 +718,7 @@ describe('Floating editor shell', () => {
 
   it('preserves document focus when writing resumes during sidebar closing', async () => {
     fakeLongDocument('post');
-    await renderAdminApp('/editor/post/abc123', FLAG_ON);
+    await renderAdminApp('/editor/post/abc123', withoutAutosave());
     await expect.element(editorScreen.body()).toBeVisible();
     const animationStyle = slowSettingsTransition();
     try {
@@ -742,9 +743,7 @@ describe('Floating editor shell', () => {
 
   it('keeps one stationary sidebar toggle across subviews and omits its tooltip', async () => {
     fakeLongDocument('post');
-    await renderAdminApp('/editor/post/abc123', {
-      ...FLAG_ON,
-    });
+    await renderAdminApp('/editor/post/abc123', withoutAutosave());
     await expect.element(editorScreen.body()).toBeVisible();
     const toggle = editorScreen.settingsToggle().element();
     const toggleBefore = toggle.getBoundingClientRect();
@@ -792,7 +791,7 @@ describe('Floating editor shell', () => {
         cardWidth: 'full',
       });
       fakeLongDocument('post', 'draft', JSON.stringify(lexical));
-      await renderAdminApp('/editor/post/abc123', FLAG_ON);
+      await renderAdminApp('/editor/post/abc123', withoutAutosave());
       const image = editorScreen.body().getByRole('img', { name: 'Full-width landscape' });
       await expect.element(image).toBeVisible();
       const pane = editorScreen.scrollPane();
@@ -841,7 +840,7 @@ describe('Floating editor shell', () => {
     lexical.root.children.unshift(full.node);
     lexical.root.children.push(wide.node);
     fakeLongDocument('post', 'draft', JSON.stringify(lexical));
-    await renderAdminApp('/editor/post/abc123', FLAG_ON);
+    await renderAdminApp('/editor/post/abc123', withoutAutosave());
     const fullImage = editorScreen.body().getByRole('img', { name: 'Full-width landscape' });
     const wideImage = editorScreen.body().getByRole('img', { name: 'Wide landscape' });
     await expect.element(fullImage).toBeVisible();
@@ -985,7 +984,7 @@ describe('Floating editor shell', () => {
       },
       { status: 422 },
     );
-    await renderAdminApp('/editor/post/abc123', FLAG_ON);
+    await renderAdminApp('/editor/post/abc123', withoutAutosave());
     await expect.element(editorScreen.body()).toBeVisible();
     await editorScreen.body().click();
     await userEvent.keyboard('{End} more');
@@ -1025,7 +1024,7 @@ describe('Floating editor shell', () => {
       },
       { status: 422 },
     );
-    await renderAdminApp('/editor/post/abc123', withoutAutosave(FLAG_ON));
+    await renderAdminApp('/editor/post/abc123', withoutAutosave());
     await expect.element(editorScreen.publishButton()).toBeEnabled();
     await expect.element(editorScreen.status()).toBeVisible();
     const back = () => editorScreen.backLink('post').element();
@@ -1057,10 +1056,12 @@ describe('Floating editor shell', () => {
     fakeLongDocument('post');
     const me = currentUserResponse();
     me.users[0].roles = [staffRole({ name: 'Contributor' })];
-    await renderAdminApp('/editor/post/abc123', {
-      ...FLAG_ON,
-      boot: { browseMe: { response: me } },
-    });
+    await renderAdminApp(
+      '/editor/post/abc123',
+      withoutAutosave({
+        boot: { browseMe: { response: me } },
+      }),
+    );
     await expect.element(editorScreen.body()).toBeVisible();
     const visibleControls = [
       editorScreen.backLink('post'),
@@ -1096,10 +1097,12 @@ describe('Floating editor shell', () => {
       });
       const me = currentUserResponse();
       me.users[0].accessibility = JSON.stringify({ nightShift: theme });
-      await renderAdminApp('/editor/post/abc123', {
-        ...FLAG_ON,
-        boot: { browseMe: { response: me } },
-      });
+      await renderAdminApp(
+        '/editor/post/abc123',
+        withoutAutosave({
+          boot: { browseMe: { response: me } },
+        }),
+      );
       await expect.element(editorScreen.body()).toBeVisible();
       const action =
         status === 'published' ? editorScreen.unpublishButton() : editorScreen.unscheduleButton();
@@ -1134,7 +1137,7 @@ describe('Floating editor shell', () => {
         },
         { status: 409 },
       );
-      await renderAdminApp('/editor/post/abc123', FLAG_ON);
+      await renderAdminApp('/editor/post/abc123', withoutAutosave());
       await expect.element(editorScreen.body()).toBeVisible();
       const headerBefore = editorScreen.settingsToggle().element().getBoundingClientRect();
       const footerBefore = editorScreen.wordCount().element().getBoundingClientRect();

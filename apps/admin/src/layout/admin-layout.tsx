@@ -1,18 +1,29 @@
 import { ActivityPubHostLayoutProvider } from '@tryghost/activitypub/api';
 import React from 'react';
-import { SidebarInset, SidebarProvider } from '@tryghost/shade/components';
+import { FLOATING_SIDEBAR_SPRING, SidebarInset, SidebarProvider } from '@tryghost/shade/components';
 import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
 import { isContributorUser } from '@tryghost/admin-x-framework/api/users';
+import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import { useAdminSidebarVisibility, useIsSettingsSidebarRoute } from '@/layout/sidebar-visibility';
-import { cn } from '@tryghost/shade/utils';
+import { cn, useIsMobile } from '@tryghost/shade/utils';
 import AppSidebar from './app-sidebar';
+import FloatingAppSidebar from './app-sidebar/floating-app-sidebar';
+import {
+  useNavigationPreferences,
+  useSidebarMode,
+} from './app-sidebar/hooks/use-navigation-preferences';
+import { useSettingsPinMorph } from './app-sidebar/hooks/use-settings-pin-morph';
 import SettingsSidebar from './app-sidebar/settings-sidebar';
-import { SettingsNavigationSlotContext } from './settings-navigation';
+import {
+  SettingsNavigationSlotContext,
+  SettingsSidebarMorphingContext,
+} from './settings-navigation';
 import { SidebarSwapTransition } from './sidebar-swap-transition';
 import { MobileNavBar } from './app-sidebar/mobile-nav-bar';
 import { SkipLink } from './skip-link';
 import { ContributorUserMenu } from './app-sidebar/user-menu';
 import { DunningBanner, DunningOverlay, useDunningLockTakeover } from '@/dunning';
+import { FloatingSidebarContentSync } from './floating-sidebar-content-sync';
 import { GlobalSearchProvider } from '@/global-search/global-search-provider';
 
 const networkPageChrome = {
@@ -44,10 +55,52 @@ const pageChromeClassName = [
   '[&_[data-view-site-preview]]:border-[var(--border-subtle)]!',
 ].join(' ');
 
+/*
+ * Unpinned, the floating sidebar's closed circle sits over the content's
+ * top-left corner; its footprint (inset + diameter + inset) is set as
+ * `--floating-sidebar-*` variables on the inset (see
+ * FloatingSidebarContentSync). Padding the
+ * content area by the footprint less the page gutter keeps it clear beside
+ * the circle: the page column's left edge sits at its centred place or the
+ * footprint, whichever is further right, so centred content with room to
+ * spare is unaffected and narrower viewports get symmetric padding that keeps
+ * it centred. Below the desktop breakpoint the mobile layout takes over.
+ */
+const compactPageChromeClassName = [
+  '[--compact-page-padding:max(0px,calc(var(--floating-sidebar-footprint)_-_var(--page-gutter)))]',
+  'px-(--compact-page-padding)',
+  '[--page-bleed-start:var(--compact-page-padding)]',
+  '[--page-bleed-end:var(--compact-page-padding)]',
+].join(' ');
+
+/*
+ * A page backdrop (e.g. the member map) runs full bleed, to the scrollport's
+ * edges: `--page-bleed-start` and `--page-bleed-end` are how far those lie
+ * beyond the page's content box (`<main>`'s padding, and the pinned sidebar's
+ * gap). While a backdrop is on the page, the scrollport reaches beneath the
+ * pinned sidebar, so the backdrop shows through its glass, and the backdrop
+ * holds still while the page slides as the sidebar pins and unpins (see
+ * FloatingSidebarContentSync).
+ */
+const pinnedPageChromeClassName = '[--page-bleed-start:var(--floating-sidebar-gap)]';
+// The inset is the scrollport: its padding box is what clips. It stays put
+// while the page inside it slides, so a backdrop never shows an edge.
+const backdropInsetClassName = [
+  'has-[[data-page-backdrop]]:-ml-(--floating-sidebar-gap)',
+  'has-[[data-page-backdrop]]:pl-(--floating-sidebar-gap)',
+  // Beneath the pinned capsule too, it keeps the page's stacking under it
+  'has-[[data-page-backdrop]]:isolate',
+].join(' ');
+
 const SIDEBAR_PANEL_CLASS_NAME = '[&>[data-sidebar=sidebar]]:relative';
 // Lands on the desktop panel only; the mobile sidebar is a sheet that ignores it.
 const SIDEBAR_SCREEN_TRANSITION_CLASS_NAME =
   'screen-exit-sidebar [view-transition-name:admin-sidebar]';
+// The floating sidebar names its capsule rather than the wrapper around it: a
+// view transition name makes an element a backdrop root, so on the wrapper the
+// capsule's backdrop blur would see nothing behind it.
+const FLOATING_SIDEBAR_SCREEN_TRANSITION_CLASS_NAME =
+  'screen-exit-sidebar [&>[data-slot=floating-sidebar]]:[view-transition-name:admin-sidebar]';
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -62,10 +115,48 @@ export function AdminLayout({ children }: AdminLayoutProps) {
   const dunningLocked = useDunningLockTakeover();
   const isContributor = currentUser && isContributorUser(currentUser);
   const isSettingsRoute = useIsSettingsSidebarRoute();
+  const isMobile = useIsMobile();
+  const admin7Design = useFeatureFlag('admin7Design');
   const sidebarClassName = cn(
     SIDEBAR_PANEL_CLASS_NAME,
     SIDEBAR_SCREEN_TRANSITION_CLASS_NAME,
     dunningLocked && 'opacity-40',
+  );
+  const floatingSidebarClassName = cn(
+    FLOATING_SIDEBAR_SCREEN_TRANSITION_CLASS_NAME,
+    // On the capsule for the same reason (opacity makes a backdrop root too)
+    dunningLocked && '[&>[data-slot=floating-sidebar]]:opacity-40',
+  );
+
+  // With admin7Design, the desktop sidebar is a floating capsule, pinned
+  // ("full" mode, docked beside the content) or not ("compact": a circle that
+  // opens over the content). Shade's open state is "pinned", so ⌘B toggles
+  // it. Mobile keeps Shade's sheet.
+  //
+  // Settings shows its navigation in the same
+  // capsule, pinned whatever the stored mode, which it leaves alone: entering
+  // it from compact pins the capsule, and leaving returns to the stored mode.
+  // From compact the capsule grows to full height on a plain ease as the body
+  // swaps to the Settings navigation, and shrinks back as it swaps back.
+  const floatingSidebar = admin7Design && !isContributor && sidebarVisible && !isMobile;
+  const settingsNavigation = floatingSidebar && isSettingsRoute;
+  const [sidebarMode, setSidebarMode] = useSidebarMode();
+  const { isFetched: sidebarModeLoaded } = useNavigationPreferences();
+  const settingsPinMorph = useSettingsPinMorph(
+    settingsNavigation,
+    floatingSidebar && sidebarMode !== 'full',
+  );
+  const sidebarPinned = !floatingSidebar || settingsNavigation || sidebarMode === 'full';
+  // Shade's `open`: the floating sidebar's `pinned`
+  const sidebarOpen = !!currentUser && sidebarVisible && sidebarPinned;
+  const settingsSidebarMorphing = settingsNavigation && settingsPinMorph.morphStyle === 'ease';
+  const onSidebarOpenChange = React.useCallback(
+    (open: boolean) => {
+      if (!settingsNavigation) {
+        setSidebarMode(open ? 'full' : 'compact');
+      }
+    },
+    [settingsNavigation, setSidebarMode],
   );
 
   // The dunning takeover is positioned against the scrollable inset, so the
@@ -91,12 +182,44 @@ export function AdminLayout({ children }: AdminLayoutProps) {
   const mainRef = React.useRef<HTMLElement>(null);
   const contributorMenuRef = React.useRef<HTMLDivElement>(null);
   React.useLayoutEffect(() => {
-    for (const region of [sidebarRef.current, mainRef.current, contributorMenuRef.current]) {
+    for (const region of [mainRef.current, contributorMenuRef.current]) {
       if (region) {
         region.inert = dunningLocked;
       }
     }
   }, [dunningLocked]);
+
+  // The sidebar is a covered region too. No deps: it remounts as the sidebar
+  // comes and goes (full-screen routes, Settings, crossing the mobile breakpoint).
+  React.useLayoutEffect(() => {
+    if (sidebarRef.current) {
+      sidebarRef.current.inert = dunningLocked;
+    }
+  });
+
+  // Entering and leaving Settings in the floating sidebar is no screen
+  // transition (the capsule animates its swap itself), so the page fades in
+  // under it rather than swap in a frame.
+  const previousSettingsNavigation = React.useRef(settingsNavigation);
+  React.useLayoutEffect(() => {
+    if (previousSettingsNavigation.current === settingsNavigation) {
+      return;
+    }
+    previousSettingsNavigation.current = settingsNavigation;
+    const main = mainRef.current;
+    if (
+      !main ||
+      typeof main.animate !== 'function' ||
+      window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+    ) {
+      return;
+    }
+    const fade = main.animate([{ opacity: 0 }, { opacity: 1 }], {
+      duration: 240,
+      easing: FLOATING_SIDEBAR_SPRING,
+    });
+    return () => fade.cancel();
+  }, [settingsNavigation]);
 
   // Contributors get a floating profile menu instead of the full sidebar
   if (isContributor) {
@@ -124,28 +247,55 @@ export function AdminLayout({ children }: AdminLayoutProps) {
       <SidebarProvider
         className={cn(
           sidebarVisible &&
-            'overflow-hidden [--content-width:1080px] [--page-gutter:20px] sidebar:[--page-gutter:40px] min-[1380px]:[--content-width:1280px] [&_[data-sidebar=sidebar]]:rounded-xl [&_[data-sidebar=sidebar]]:border-border [&_[data-sidebar=sidebar]]:shadow-none [&>main]:min-w-0',
+            'overflow-hidden [--content-width:1080px] [--page-gutter:20px] sidebar:[--page-gutter:40px] min-[1380px]:[--content-width:1280px] [&>main]:min-w-0',
+          // The floating capsule has its own surface
+          sidebarVisible &&
+            !floatingSidebar &&
+            '[&_[data-sidebar=sidebar]]:rounded-xl [&_[data-sidebar=sidebar]]:border-border [&_[data-sidebar=sidebar]]:shadow-none',
         )}
-        open={!!currentUser && sidebarVisible}
+        open={sidebarOpen}
         style={sidebarVisible ? ({ '--sidebar-width': '316px' } as React.CSSProperties) : undefined}
+        onOpenChange={floatingSidebar ? onSidebarOpenChange : undefined}
       >
-        {sidebarVisible &&
-          (isSettingsRoute ? (
-            <SettingsSidebar
-              ref={sidebarRef}
-              className={sidebarClassName}
-              slotRef={setSettingsNavigationSlot}
-              variant="floating"
-            />
-          ) : (
-            <AppSidebar ref={sidebarRef} className={sidebarClassName} variant="floating" />
-          ))}
-        <SidebarSwapTransition settingsRoute={isSettingsRoute} sidebarRef={sidebarRef} />
+        {floatingSidebar ? (
+          <FloatingAppSidebar
+            ref={sidebarRef}
+            animate={sidebarModeLoaded}
+            className={floatingSidebarClassName}
+            disabled={dunningLocked}
+            morphStyle={settingsPinMorph.morphStyle}
+            settingsNavigation={settingsNavigation}
+            settingsNavigationRef={setSettingsNavigationSlot}
+            onPinnedMorphEnd={settingsPinMorph.onPinnedMorphEnd}
+          />
+        ) : (
+          <>
+            {sidebarVisible &&
+              (isSettingsRoute ? (
+                <SettingsSidebar
+                  ref={sidebarRef}
+                  className={sidebarClassName}
+                  slotRef={setSettingsNavigationSlot}
+                  variant="floating"
+                />
+              ) : (
+                <AppSidebar ref={sidebarRef} className={sidebarClassName} variant="floating" />
+              ))}
+            <SidebarSwapTransition settingsRoute={isSettingsRoute} sidebarRef={sidebarRef} />
+          </>
+        )}
         <SidebarInset
           ref={insetRef}
           className={cn(
             'relative bg-background sidebar:max-h-full',
+            // Keeps the content's own stacking (sticky headers are z-50) under
+            // the capsule floating over it.
+            !sidebarPinned && 'isolate',
             dunningLocked ? 'overflow-hidden' : 'overflow-y-auto',
+            // The page slides inside it as the sidebar pins and unpins, which
+            // mustn't show a horizontal scrollbar
+            floatingSidebar && !dunningLocked && 'overflow-x-hidden',
+            floatingSidebar && backdropInsetClassName,
             sidebarVisible ? 'max-h-[calc(100%-var(--mobile-navbar-height))]' : 'max-h-full',
           )}
         >
@@ -155,13 +305,22 @@ export function AdminLayout({ children }: AdminLayoutProps) {
             className={cn(
               'flex-1 focus:outline-hidden',
               sidebarVisible ? pageChromeClassName : 'min-h-0',
+              floatingSidebar &&
+                (sidebarPinned ? pinnedPageChromeClassName : compactPageChromeClassName),
               isSettingsRoute && 'min-h-0',
               'screen-exit-content',
             )}
           >
             <ActivityPubHostLayoutProvider value={sidebarVisible ? networkPageChrome : undefined}>
-              <SettingsNavigationSlotContext.Provider value={settingsNavigationSlot}>
-                {children}
+              {/* Only on Settings routes with their navigation: the floating
+                sidebar keeps its slot mounted, and an Editor's Settings keeps
+                the main navigation */}
+              <SettingsNavigationSlotContext.Provider
+                value={isSettingsRoute ? settingsNavigationSlot : null}
+              >
+                <SettingsSidebarMorphingContext.Provider value={settingsSidebarMorphing}>
+                  {children}
+                </SettingsSidebarMorphingContext.Provider>
               </SettingsNavigationSlotContext.Provider>
             </ActivityPubHostLayoutProvider>
           </main>
@@ -171,6 +330,16 @@ export function AdminLayout({ children }: AdminLayoutProps) {
           {!dunningLocked && <MobileNavBar />}
           <DunningOverlay />
         </SidebarInset>
+        {/* After the inset, so its refs are attached when this first sets its variables */}
+        {floatingSidebar && (
+          <FloatingSidebarContentSync
+            animate={sidebarModeLoaded}
+            contentRef={insetRef}
+            morphStyle={settingsPinMorph.morphStyle}
+            pinned={sidebarOpen}
+            slideRef={mainRef}
+          />
+        )}
       </SidebarProvider>
     </GlobalSearchProvider>
   );

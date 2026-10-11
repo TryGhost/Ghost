@@ -18,7 +18,6 @@ import { editorScreen } from '@/editor/editor.screen';
 import { deferred } from '@/utils/deferred';
 
 const POST_ID = 'abc123';
-const FLAG_ON = withFastAutosave({ labs: { editorReact: true } });
 // A non-editor route, so leaving to it unmounts the editor.
 const LEAVE_EDITOR_HASH = '#/restore';
 const LOADED_AT = '2026-01-01T00:00:00.000Z';
@@ -202,7 +201,7 @@ describe('Post editor update collision', () => {
 
   it('asks before a reload discards unsaved work, and cancelling keeps it', async () => {
     const { readApi, saveApi } = fakeCollidingPost();
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`, withFastAutosave());
     await collide(saveApi);
     const readsBefore = readApi.requests.length;
 
@@ -219,10 +218,7 @@ describe('Post editor update collision', () => {
 
   it('protects conflicted work on leave and clears the guard after reloading', async () => {
     const { saveApi } = fakeCollidingPost();
-    await renderAdminApp(
-      `/editor/post/${POST_ID}`,
-      withFastAutosave({ labs: { editorReact: true } }),
-    );
+    await renderAdminApp(`/editor/post/${POST_ID}`, withFastAutosave());
     await collide(saveApi);
     await expect.poll(unsavedChangesGuarded).toBe(true);
 
@@ -245,7 +241,7 @@ describe('Post editor update collision', () => {
 
   it('reloads without asking when only the refused save makes the post dirty', async () => {
     const { readApi, saveApi } = fakeCollidingPost();
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`, withFastAutosave());
 
     await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
     await editorScreen.titleInput().fill('Renamed by me');
@@ -267,7 +263,7 @@ describe('Post editor update collision', () => {
 
   it('replaces the post with the server copy and saves against its version next', async () => {
     const { readApi, saveApi } = fakeCollidingPost();
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`, withFastAutosave());
     await collide(saveApi);
     const readsBefore = readApi.requests.length;
     expect(featureImageSrc()).toBe(MY_IMAGE);
@@ -295,7 +291,7 @@ describe('Post editor update collision', () => {
 
   it('keeps the accepted server copy in the editor query cache', async () => {
     const { saveApi } = fakeCollidingPost();
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`, withFastAutosave());
     await collide(saveApi);
 
     await editorScreen.reloadAfterConflict().click();
@@ -314,7 +310,7 @@ describe('Post editor update collision', () => {
 
   it('keeps an older in-flight read from replacing the accepted cache', async () => {
     const { saveApi } = fakeCollidingPost();
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`, withFastAutosave());
     await collide(saveApi);
 
     await editorScreen.reloadAfterConflict().click();
@@ -380,7 +376,7 @@ describe('Post editor update collision', () => {
 
   it('accepts a newer detail read that finishes before an older reload', async () => {
     const { saveApi } = fakeCollidingPost();
-    const { queryClient } = await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    const { queryClient } = await renderAdminApp(`/editor/post/${POST_ID}`, withFastAutosave());
     await collide(saveApi);
 
     await editorScreen.reloadAfterConflict().click();
@@ -449,7 +445,7 @@ describe('Post editor update collision', () => {
 
   it('keeps the editor standing when the reload cannot read the post, and retries later', async () => {
     const { saveApi } = fakeCollidingPost();
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`, withFastAutosave());
     await collide(saveApi);
 
     const failedRead = readFails(500);
@@ -479,7 +475,7 @@ describe('Post editor update collision', () => {
     ['belongs to another post', () => theirs({ id: 'someone-else' })],
   ])('keeps local content when the reload response %s', async (_label, invalidRecordOf) => {
     const { saveApi } = fakeCollidingPost();
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`, withFastAutosave());
     await collide(saveApi);
 
     const invalidRead = readAnswers(200, { posts: [invalidRecordOf()] });
@@ -495,7 +491,7 @@ describe('Post editor update collision', () => {
 
   it('keeps local content when a save starts before the reload answers', async () => {
     const { saveApi } = fakeCollidingPost();
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`, withFastAutosave());
     await collide(saveApi);
 
     const pendingRead = deferred<{ posts: ReturnType<typeof theirs>[] }>();
@@ -532,7 +528,7 @@ describe('Post editor update collision', () => {
 
   it('follows the status the other writer left the post in', async () => {
     const { saveApi } = fakeCollidingPost();
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`, withFastAutosave());
     await collide(saveApi);
 
     await expect.element(editorScreen.status()).toHaveTextContent('Draft');
@@ -557,7 +553,7 @@ describe('Post editor update collision', () => {
       readAnswers(200, { posts: [{ ...mine(), visibility: initialVisibility }] });
       await renderAdminApp(
         `/editor/post/${POST_ID}`,
-        withFastAutosave({ labs: { editorReact: true, paywallImprovements: true } }),
+        withFastAutosave({ labs: { paywallImprovements: true } }),
       );
       await collide(saveApi);
 
@@ -579,7 +575,7 @@ describe('Post editor update collision', () => {
 
   it('keeps the reloaded status when a later read answers with the copy it replaced', async () => {
     const { saveApi } = fakeCollidingPost();
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`, withFastAutosave());
     await collide(saveApi);
 
     readAnswers(200, {
@@ -619,7 +615,7 @@ describe('Post editor update collision', () => {
     async (_label, missingReadOf) => {
       const copied = recordClipboard();
       const { saveApi } = fakeCollidingPost();
-      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+      await renderAdminApp(`/editor/post/${POST_ID}`, withFastAutosave());
       await collide(saveApi);
 
       const missingRead = missingReadOf();
@@ -653,7 +649,7 @@ describe('Post editor update collision', () => {
   it('copies the unsaved title and body so the writer keeps their words', async () => {
     const copied = recordClipboard();
     const { saveApi } = fakeCollidingPost();
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`, withFastAutosave());
     await collide(saveApi);
 
     await editorScreen.copyConflictedContent().click();
@@ -665,7 +661,7 @@ describe('Post editor update collision', () => {
   it('offers a reload when Update finds the post already published by its schedule', async () => {
     const copied = recordClipboard();
     const saveApi = fakePostPublishedBySchedule();
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`, withFastAutosave());
     await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
     await expect.element(editorScreen.status()).toHaveTextContent('Scheduled');
 

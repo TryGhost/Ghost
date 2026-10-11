@@ -154,7 +154,7 @@ const PostAnalyticsHeader: React.FC<PostAnalyticsHeaderProps> = ({ currentTab, c
       void queryClient.invalidateQueries({ queryKey: [postsDataType], refetchType: 'none' });
       setShowDeleteDialog(false);
       // Navigate back to posts list
-      navigate('/posts/', { crossApp: true });
+      navigate('/posts/');
     } catch (e) {
       handleError(e);
     }

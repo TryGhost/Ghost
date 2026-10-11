@@ -61,5 +61,6 @@ docker run -d --name ghost -p 2368:2368 \
 
 ```bash
 pnpm nx run @tryghost/admin:build
-docker buildx build -f Dockerfile.production --target selfhost --load -t ghost:selfhost .
+docker buildx build -f Dockerfile.production --target selfhost --load -t ghost:selfhost \
+  --build-arg GHOST_BUILD_VERSION="$(jq -r .version ghost/package.json)+$(git rev-parse --short HEAD)" .
 ```

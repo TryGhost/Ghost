@@ -18,8 +18,6 @@ import { editorScreen } from '@/editor/editor.screen';
 import { postsListScreen } from '@/posts/list/posts-list.screen';
 import { clearStickyPostFilters } from '@/posts/list/posts-sticky-filters';
 
-const FLAG_ON = { labs: { editorReact: true } };
-
 describe('Editor route', () => {
   function fakeEditorWorld() {
     fakeEditorChrome();
@@ -29,7 +27,7 @@ describe('Editor route', () => {
 
   it('renders the editor for a post', async () => {
     fakeEditorWorld();
-    await renderAdminApp('/editor/post/abc123', FLAG_ON);
+    await renderAdminApp('/editor/post/abc123');
 
     await expect.element(editorScreen.root()).toBeVisible();
     await expect.element(editorScreen.backLink('post')).toHaveAttribute('href', '#/posts');
@@ -37,14 +35,14 @@ describe('Editor route', () => {
 
   it('serves a new-post URL too', async () => {
     fakeEditorWorld();
-    await renderAdminApp('/editor/post', FLAG_ON);
+    await renderAdminApp('/editor/post');
 
     await expect.element(editorScreen.root()).toBeVisible();
   });
 
   it('returns page editors to the pages list', async () => {
     fakeEditorWorld();
-    await renderAdminApp('/editor/page/abc123', FLAG_ON);
+    await renderAdminApp('/editor/page/abc123');
 
     await expect.element(editorScreen.root()).toBeVisible();
     await expect.element(editorScreen.backLink('page')).toHaveAttribute('href', '#/pages');
@@ -53,10 +51,10 @@ describe('Editor route', () => {
 
 /** A force upgrade sends the editor to billing, as it does every other screen. */
 describe('Editor force upgrade', () => {
-  function duringForceUpgrade({ labs }: { labs: Record<string, boolean> }) {
+  function duringForceUpgrade() {
     const config = configResponse();
     config.config.hostSettings = { forceUpgrade: true };
-    return { labs, boot: { browseConfig: { response: config } } };
+    return { boot: { browseConfig: { response: config } } };
   }
 
   it('sends the editor to billing', async () => {
@@ -64,7 +62,7 @@ describe('Editor force upgrade', () => {
     const postRead = fakeAdminEndpoint('GET', /^\/posts\/abc123\/\?/, {
       posts: [post({ id: 'abc123' })],
     });
-    await renderAdminApp('/editor/post/abc123', duringForceUpgrade(FLAG_ON));
+    await renderAdminApp('/editor/post/abc123', duringForceUpgrade());
 
     await expect.poll(currentRoute).toBe('/pro');
     expect(postRead.requests).toHaveLength(0);
@@ -103,7 +101,7 @@ describe('Editor analytics breadcrumb', () => {
     },
   ])('leads back to $from', async ({ editorReturn }) => {
     fakePublishedPost();
-    await renderAdminApp('/editor/post/abc123', { ...FLAG_ON, locationState: { editorReturn } });
+    await renderAdminApp('/editor/post/abc123', { locationState: { editorReturn } });
 
     await expect
       .element(editorScreen.analyticsBackLink())
@@ -114,7 +112,6 @@ describe('Editor analytics breadcrumb', () => {
   it('does not lead back to analytics for a new post', async () => {
     fakeEditorChrome();
     await renderAdminApp('/editor/post', {
-      ...FLAG_ON,
       locationState: { editorReturn: '/posts/analytics/abc123' },
     });
 
@@ -133,7 +130,7 @@ describe('Editor analytics breadcrumb', () => {
     '/posts/analytics/abc123/..',
   ])('ignores the return path %s', async (editorReturn) => {
     fakePublishedPost();
-    await renderAdminApp('/editor/post/abc123', { ...FLAG_ON, locationState: { editorReturn } });
+    await renderAdminApp('/editor/post/abc123', { locationState: { editorReturn } });
 
     await expect.element(editorScreen.backLink('post')).toHaveAttribute('href', '#/posts');
     await expect(editorScreen.analyticsBackLink()).toHaveCount(0);
@@ -142,7 +139,6 @@ describe('Editor analytics breadcrumb', () => {
   it('hides the status line unless the newsletter failed', async () => {
     fakePublishedPost();
     await renderAdminApp('/editor/post/abc123', {
-      ...FLAG_ON,
       locationState: { editorReturn: '/posts/analytics/abc123' },
     });
 
@@ -155,7 +151,6 @@ describe('Editor analytics breadcrumb', () => {
       email: { id: 'email-1', status: 'failed', email_count: 20, opened_count: 0 },
     });
     await renderAdminApp('/editor/post/abc123', {
-      ...FLAG_ON,
       locationState: { editorReturn: '/posts/analytics/abc123' },
     });
 
@@ -174,7 +169,6 @@ describe('Editor analytics breadcrumb', () => {
       { status: 500 },
     );
     await renderAdminApp('/editor/post/abc123', {
-      ...FLAG_ON,
       locationState: { editorReturn: '/posts/analytics/abc123' },
     });
 
@@ -210,7 +204,7 @@ describe('Editor list breadcrumb', () => {
         tags: [tag({ name: 'Engineering', slug: 'engineering' })],
       });
       const listUrl = `/${resource}?type=draft&tag=engineering&order=title+asc`;
-      await renderAdminApp(listUrl, { labs: { editorReact: true } });
+      await renderAdminApp(listUrl);
 
       await expect.element(postsListScreen.filterBar()).toHaveTextContent('Engineering');
       await postsListScreen.listItems().first().click();

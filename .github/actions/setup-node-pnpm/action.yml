@@ -45,6 +45,12 @@ runs:
       with:
         node-version: ${{ inputs.node-version }}
 
+    # The repo enables pnpm's global virtual store for local checkouts; CI keeps
+    # node_modules self-contained.
+    - name: Disable pnpm global virtual store
+      shell: bash
+      run: echo "pnpm_config_enable_global_virtual_store=false" >> "$GITHUB_ENV"
+
     - name: Check store-cache input
       shell: bash
       env:

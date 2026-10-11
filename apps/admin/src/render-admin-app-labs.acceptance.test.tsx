@@ -14,7 +14,7 @@ describe('renderAdminApp labs + boot', () => {
   it('applies labs flags alongside browseConfig and browseSettings overrides', async () => {
     fakeEditorChrome();
     await renderAdminApp('/editor/post', {
-      labs: { editorReact: true, editorExcerpt: true },
+      labs: { editorExcerpt: true },
       boot: {
         browseConfig: { response: configResponse() },
         browseSettings: { response: settingsResponse() },

@@ -31,6 +31,7 @@ import { useConfirmation } from '@/settings/providers/confirmation-context';
 import { useHandleError } from '@tryghost/admin-x-framework/hooks';
 import { useSettingsNavigation } from '@/settings/hooks/use-settings-navigation';
 import { useUpgradeRoute } from '@/settings/hooks/use-upgrade-route';
+import { navigateTo } from '@/utils/navigation';
 
 interface ThemeActionProps {
   theme: Theme;
@@ -142,7 +143,9 @@ const ThemeActions: React.FC<ThemeActionProps> = ({ theme }) => {
     if (limitError) {
       showLimit({
         prompt: limitError,
-        onOk: () => updateRoute({ route: upgradeRoute, isExternal: true }),
+        onOk: () => {
+          navigateTo(upgradeRoute);
+        },
       });
       return;
     }

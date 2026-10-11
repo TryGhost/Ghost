@@ -51,6 +51,7 @@ import { useFeatureFlag, useHandleError, useLimiter } from '@tryghost/admin-x-fr
 import { useSettingsNavigation } from '@/settings/hooks/use-settings-navigation';
 import { useUpgradeRoute } from '@/settings/hooks/use-upgrade-route';
 import { withErrorBoundary } from '@/settings/components/with-error-boundary';
+import { navigateTo } from '@/utils/navigation';
 
 const StripeConnectedButton: React.FC<{ className?: string; onClick: () => void }> = ({
   className,
@@ -183,7 +184,9 @@ const Tiers: React.FC<{ keywords: string[] }> = ({ keywords }) => {
         if (error instanceof HostLimitError) {
           showLimit({
             prompt: error.message || `Your current plan doesn't support Stripe Connect.`,
-            onOk: () => updateRoute({ route: upgradeRoute, isExternal: true }),
+            onOk: () => {
+              navigateTo(upgradeRoute);
+            },
           });
           return;
         }

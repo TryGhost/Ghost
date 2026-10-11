@@ -52,8 +52,8 @@ these version and placement checks with
 1. Open the generated migration file in
    `core/server/data/migrations/versions/`.
 2. Add the database changes, using similar existing migrations as examples.
-3. Run the migration with `pnpm knex-migrator migrate` while following the
-   iteration guidance below.
+3. Run the migration with `pnpm knex-migrator migrate` from the repository
+   root while following the iteration guidance below.
 4. For schema changes, update `core/server/data/schema/schema.js` to match.
 5. Update the schema integrity tests and any other affected tests.
 
@@ -75,10 +75,13 @@ During development, run migrations with Ghost's custom
 [`knex-migrator`](https://github.com/TryGhost/knex-migrator):
 
 ```bash
-cd ghost
 pnpm knex-migrator migrate --v <version-directory> --force
 pnpm knex-migrator rollback --v <previous-version> --force
 ```
+
+Run these from the repository root. They run against the checkout's dev
+database (`ghost_dev`, or `dev_<worktree>` in a worktree), the same one
+`pnpm dev` uses.
 
 `migrate` calls the migration's `up()` method and `rollback` calls its `down()`
 method. You can use this workflow to iterate while `down()` restores the same

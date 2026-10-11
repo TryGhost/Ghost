@@ -1,26 +1,14 @@
 import { useCallback, useMemo } from 'react';
-import { useFramework, useLocation, useNavigate } from '@tryghost/admin-x-framework';
+import { useLocation, useNavigate } from '@tryghost/admin-x-framework';
 import { useScrollSectionContext } from './use-scroll-section';
 
-type ExternalLink = {
-  isExternal: true;
-  route: string;
-};
-
-type InternalLink = {
-  isExternal?: false;
-  route: string;
-  replace?: boolean;
-};
-
-export type SettingsLink = string | InternalLink | ExternalLink;
+export type SettingsLink = string | { route: string; replace?: boolean };
 
 export function useSettingsNavigation() {
   const navigate = useNavigate();
   const location = useLocation();
   // Carried across in-settings navigation so "Back to app" keeps its target.
   const routeState: unknown = location.state;
-  const { externalNavigate } = useFramework();
   const { scrollToSection } = useScrollSectionContext();
 
   // The settings-relative path without query, matching the legacy
@@ -29,11 +17,6 @@ export function useSettingsNavigation() {
 
   const updateRoute = useCallback(
     (to: SettingsLink) => {
-      if (typeof to === 'object' && to.isExternal) {
-        externalNavigate(to);
-        return;
-      }
-
       const link = typeof to === 'string' ? { route: to } : to;
       // Legacy links are settings-relative even with a leading slash; the
       // router resolves absolute paths only, so normalize every shape.
@@ -59,7 +42,7 @@ export function useSettingsNavigation() {
 
       navigate(target + targetSearch, { replace: link.replace, state: routeState });
     },
-    [externalNavigate, navigate, location.pathname, location.search, routeState, scrollToSection],
+    [navigate, location.pathname, location.search, routeState, scrollToSection],
   );
 
   return { route, updateRoute };

@@ -3,6 +3,7 @@ const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
 const metrics = require('@tryghost/metrics');
 
+const config = require('../../../shared/config');
 const sentry = require('../../../shared/sentry');
 
 const states = {
@@ -41,6 +42,7 @@ class DatabaseStateManager {
     this.knexMigrator = new KnexMigrator({
       knexMigratorFilePath,
     });
+    this.warning = null;
   }
 
   async getState() {
@@ -64,6 +66,13 @@ class DatabaseStateManager {
       // CASE: database needs migrations
       if (error.code === 'DB_NEEDS_MIGRATION') {
         state = states.NEEDS_MIGRATION;
+        return state;
+      }
+
+      // CASE: database ran migrations this code doesn't have, e.g. after switching branches in development
+      if (error.code === 'MIGRATION_STATE_ERROR' && config.get('env') === 'development') {
+        this.warning =
+          'Database has migrations this code does not know about. Run `pnpm reset:db` for a fresh database.';
         return state;
       }
 

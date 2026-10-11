@@ -349,7 +349,9 @@ body.react-admin [data-navbar='navbar'] {
    transition only for a navigation into or out of a full-screen surface: the
    old screen fades out while the sidebar or mobile nav leaves, then the new
    screen fades in while it returns. A sidebar on both sides (Settings) keeps
-   its own live swap animation. */
+   its own live swap animation; the admin7Design desktop sidebar opens Settings
+   inside itself, so that runs no view transition at all (see
+   shouldRunScreenTransition). */
 ::view-transition {
   background-color: var(--background);
 }

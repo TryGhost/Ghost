@@ -36,6 +36,7 @@ import { useGlobalData } from '@/settings/providers/global-data-context';
 import { useHandleError, useLimiter } from '@tryghost/admin-x-framework/hooks';
 import { useSettingsNavigation } from '@/settings/hooks/use-settings-navigation';
 import { useUpgradeRoute } from '@/settings/hooks/use-upgrade-route';
+import { navigateTo } from '@/utils/navigation';
 
 const RETRY_PRODUCT_SAVE_POLL_LENGTH = 1000;
 const RETRY_PRODUCT_SAVE_MAX_POLL = 15 * RETRY_PRODUCT_SAVE_POLL_LENGTH;
@@ -398,7 +399,9 @@ const StripeConnectModal: React.FC = () => {
             updateRoute('tiers');
             showLimit({
               prompt: error.message || `Your current plan doesn't support Stripe Connect.`,
-              onOk: () => updateRoute({ route: upgradeRoute, isExternal: true }),
+              onOk: () => {
+                navigateTo(upgradeRoute);
+              },
             });
           }
         }

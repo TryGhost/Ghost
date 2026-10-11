@@ -52,10 +52,6 @@ export default function renderStandaloneApp<Props extends object>(
       <App
         designSystem={{ darkMode: false, fetchKoenigLexical }}
         framework={{
-          externalNavigate: (link) => {
-            // Standalone tests can assert this captured navigation on document.body.
-            document.body.dataset.externalNavigate = JSON.stringify(link);
-          },
           ghostVersion: '5.x',
           unsplashConfig: {
             Authorization: '',

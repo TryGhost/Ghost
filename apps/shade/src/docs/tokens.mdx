@@ -49,6 +49,8 @@ Surfaces are ordered by how high they sit. Pick by what's behind the element, no
 
 In light mode all three flatten to near-white, so borders and shadows carry the visual elevation. In dark mode they're three distinct colours so layered surfaces stay legible without relying on borders alone.
 
+**Glass** is a separate, translucent surface for chrome that floats over the page (the `FloatingSidebar`): `--surface-glass` over a backdrop blur, outlined with `--border-glass`, with `--surface-glass-highlight` as its top-edge sheen and `--shadow-glass-floating` / `--shadow-glass-docked` as its two shadows (their layers match, so one transitions into the other). Use the set together rather than mixing glass with the solid surfaces.
+
 ## Interactive surfaces
 
 Hover, active, and selected states are their own tokens — don't reach for raw greys or apply `/30` opacity modifiers ad-hoc.
