@@ -79,8 +79,10 @@ GHOST_E2E_MODE=build GHOST_E2E_IMAGE=ghost-e2e:local pnpm --filter @tryghost/e2e
 ```
 
 E2E shares the MySQL, Redis and Mailpit containers with `pnpm dev` and only
-touches `ghost_e2e_*` databases. Setup and teardown drop all of those and every
-E2E container, so run one E2E suite at a time.
+touches `ghost_e2e_*` databases. Setup and teardown remove the checkout's own
+E2E containers and databases. A linked worktree adds a key from its path to
+their names and lets Docker pick its gateway ports, so worktrees and the main
+checkout can run E2E at the same time. Run one suite at a time per checkout.
 
 CI sets `GHOST_E2E_MYSQL_TMPFS=true` to put build-mode MySQL on tmpfs, which
 keeps snapshot restores fast (`GHOST_E2E_MYSQL_TMPFS_SIZE=4g` adjusts the size).
