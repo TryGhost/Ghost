@@ -155,7 +155,9 @@ checkout that's partway through a rebase or merge, with its conflicts. A
 checkout whose nx exited but left tasks such as `vite build --watch` running
 shows as `orphaned`, even once its worktree is deleted; `k` and `x` stop those
 processes too, and `--json` lists each checkout's nx `processes`. Add `--prs` to
-`--json` for each branch's pull request. `pnpm dev:down`
+`--json` for each branch's pull request, and `--git` for each checkout's
+`ahead`, its commits that aren't on `origin/main`, and `dirty`, its uncommitted
+changes. `pnpm dev:down`
 stops whatever holds this checkout's ports, including what a killed run left
 behind, and leaves MySQL, Redis, and Mailpit running. Ghost started by
 `pnpm dev:up` also stops itself within a few seconds of its worktree being
