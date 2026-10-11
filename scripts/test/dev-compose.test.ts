@@ -23,7 +23,9 @@ function withOverlay(environment: Record<string, string | null>): ComposeConfig 
 describe('hostOverlayEnv', () => {
   it('returns only what the overlays add to the ghost-dev environment', () => {
     const config = withOverlay({ mail__transport: 'mailgun', bulkEmail__mailgun__domain: null });
-    assert.deepEqual(hostOverlayEnv(base, config, '2660'), { mail__transport: 'mailgun' });
+    assert.deepEqual(hostOverlayEnv(base, config, 'localhost', '2660'), {
+      mail__transport: 'mailgun',
+    });
   });
 
   it('points service URLs at the ports they publish on the host', () => {
@@ -33,7 +35,7 @@ describe('hostOverlayEnv', () => {
       tinybird__stats__endpoint: 'http://tinybird-local:7181',
       mail__options__url: 'https://api.mailgun.net',
     });
-    assert.deepEqual(hostOverlayEnv(base, config, '2660'), {
+    assert.deepEqual(hostOverlayEnv(base, config, 'localhost', '2660'), {
       analytics__url: 'http://127.0.0.1:7182',
       storage__S3Storage__endpoint: 'http://127.0.0.1:9000',
       tinybird__stats__endpoint: 'http://127.0.0.1:7181',
@@ -46,7 +48,7 @@ describe('hostOverlayEnv', () => {
       TB_LOCAL_HOST: 'tinybird-local',
       storage__S3Storage__bucket: 'ghost-dev',
     });
-    assert.deepEqual(hostOverlayEnv(base, config, '2660'), {
+    assert.deepEqual(hostOverlayEnv(base, config, 'localhost', '2660'), {
       TB_LOCAL_HOST: '127.0.0.1',
       storage__S3Storage__bucket: 'ghost-dev',
     });
@@ -58,8 +60,9 @@ describe('hostOverlayEnv', () => {
       tinybird__stats__endpointBrowser: 'http://localhost:7181',
       urls__media: 'http://127.0.0.1:9000/ghost-dev/media',
     });
-    assert.deepEqual(hostOverlayEnv(base, config, '2660'), {
-      tinybird__tracker__endpoint: 'http://localhost:2660/.ghost/analytics/api/v1/page_hit',
+    assert.deepEqual(hostOverlayEnv(base, config, 'my-worktree.localhost', '2660'), {
+      tinybird__tracker__endpoint:
+        'http://my-worktree.localhost:2660/.ghost/analytics/api/v1/page_hit',
       tinybird__stats__endpointBrowser: 'http://localhost:7181',
       urls__media: 'http://127.0.0.1:9000/ghost-dev/media',
     });
@@ -68,7 +71,7 @@ describe('hostOverlayEnv', () => {
   it('fails for a service port that is not published', () => {
     const config = withOverlay({ bulkEmail__mailgun__baseUrl: 'http://fake-mailgun:4010/v3' });
     assert.throws(
-      () => hostOverlayEnv(base, config, '2660'),
+      () => hostOverlayEnv(base, config, 'localhost', '2660'),
       /fake-mailgun:4010 has to be published/,
     );
   });

@@ -186,18 +186,8 @@
         "dependsOn": [
           {
             "projects": [
-              "@tryghost/activitypub",
-              "@tryghost/admin-x-framework",
-              "@tryghost/app-contracts",
-              "@tryghost/checkout",
-              "@tryghost/i18n",
-              "@tryghost/kg-clean-basic-html",
-              "@tryghost/kg-converters",
               "@tryghost/kg-unsplash-selector",
-              "@tryghost/koenig-lexical",
-              "@tryghost/metafield-types",
-              "@tryghost/nql-string",
-              "@tryghost/shade"
+              "@tryghost/koenig-lexical"
             ],
             "target": "build"
           }
@@ -215,18 +205,8 @@
         "dependsOn": [
           {
             "projects": [
-              "@tryghost/activitypub",
-              "@tryghost/admin-x-framework",
-              "@tryghost/app-contracts",
-              "@tryghost/checkout",
-              "@tryghost/i18n",
-              "@tryghost/kg-clean-basic-html",
-              "@tryghost/kg-converters",
               "@tryghost/kg-unsplash-selector",
-              "@tryghost/koenig-lexical",
-              "@tryghost/metafield-types",
-              "@tryghost/nql-string",
-              "@tryghost/shade"
+              "@tryghost/koenig-lexical"
             ],
             "target": "build"
           }
@@ -277,32 +257,20 @@
         "executor": "nx:run-commands",
         "options": {
           "cwd": "apps/admin",
-          "command": "vite",
+          "command": "vite optimize --logLevel error && vite",
           "envFile": ".ghost-dev.env"
         },
         "dependsOn": [
           "ghost-monorepo:dev:env",
-          "build:dev",
-          "@tryghost/admin-x-framework:dev",
-          "@tryghost/shade:dev"
+          "build:dev"
         ]
       },
       "build:dev": {
         "dependsOn": [
           {
             "projects": [
-              "@tryghost/activitypub",
-              "@tryghost/admin-x-framework",
-              "@tryghost/app-contracts",
-              "@tryghost/checkout",
-              "@tryghost/i18n",
-              "@tryghost/kg-clean-basic-html",
-              "@tryghost/kg-converters",
               "@tryghost/kg-unsplash-selector",
-              "@tryghost/koenig-lexical",
-              "@tryghost/metafield-types",
-              "@tryghost/nql-string",
-              "@tryghost/shade"
+              "@tryghost/koenig-lexical"
             ],
             "target": "build"
           }

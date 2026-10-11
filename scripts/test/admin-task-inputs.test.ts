@@ -57,7 +57,7 @@ describe('Admin task inputs', () => {
     assert.ok(target.transitiveTasks.includes('@tryghost/shade:build'));
   });
 
-  it('runs normal dev with the Admin and Portal watchers', async () => {
+  it('runs normal dev with the Admin watcher and built public apps', async () => {
     const target = await nxJson<{
       dependsOn: string[];
       transitiveTasks: string[];
@@ -69,12 +69,11 @@ describe('Admin task inputs', () => {
       'ghost-monorepo:dev:env',
       'ghost-monorepo:infra:up',
       'ghost:build:assets',
-      '@tryghost/admin-x-framework:dev',
-      '@tryghost/shade:dev',
-      '@tryghost/portal:dev',
+      '@tryghost/portal:build',
     ]) {
       assert.ok(tasks.includes(task), task);
     }
+    assert.ok(!tasks.includes('@tryghost/portal:dev'));
   });
 
   it('keeps the containerised dev flow with the React and Portal watchers', async () => {
@@ -151,13 +150,14 @@ describe('Admin task inputs', () => {
     for (const name of ['test:unit', 'test:acceptance', 'test:types']) {
       const target = await nxJson<Target>(['show', 'target', `@tryghost/admin:${name}`]);
       assert.equal(target.cache, true);
-      assert.ok(target.dependsOn.includes('@tryghost/shade:build'));
+      assert.ok(target.dependsOn.includes('@tryghost/koenig-lexical:build'));
       if (name === 'test:acceptance') {
         assert.deepEqual(target.outputs, ['{projectRoot}/test-results/acceptance.json']);
       }
       if (name === 'test:types') {
         assert.equal(target.command, 'tsc -b');
         assert.deepEqual(target.outputs, []);
+        assert.ok(target.dependsOn.includes('@tryghost/shade:build'));
       }
     }
   });

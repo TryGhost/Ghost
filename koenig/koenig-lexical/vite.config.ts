@@ -51,10 +51,6 @@ export default (function viteConfig({mode}) {
             // Allow access from Ghost's Docker dev environment (host.docker.internal)
             allowedHosts: true
         },
-        preview: {
-            // Allow access from Ghost's Docker dev environment (host.docker.internal)
-            allowedHosts: true
-        },
         define: {
             'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV),
             'process.env.VITEST_SEGFAULT_RETRY': 3,

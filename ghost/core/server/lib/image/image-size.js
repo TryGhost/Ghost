@@ -64,9 +64,12 @@ class ImageSize {
   // use probe-image-size to download enough of an image to get it's dimensions
   // returns promise which resolves dimensions
   _probeImageSizeFromUrl(imageUrl) {
-    // Fast-fail invalid URLs; the underlying got instance also enforces
-    // URL validation + SSRF protection in its beforeRequest hooks.
-    if (_.isEmpty(imageUrl) || !this.validator.isURL(imageUrl)) {
+    // Fast-fail invalid URLs; the underlying got instance also enforces URL validation +
+    // SSRF protection in its beforeRequest hooks, except in development (localhost URLs)
+    if (
+      _.isEmpty(imageUrl) ||
+      (this.config.get('env') !== 'development' && !this.validator.isURL(imageUrl))
+    ) {
       return Promise.reject(
         new errors.InternalServerError({
           message: 'URL empty or invalid.',

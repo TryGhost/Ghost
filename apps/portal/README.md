@@ -54,17 +54,15 @@ for ways to customize Portal for your site.
 
 ## Develop
 
-Portal runs automatically with Ghost's standard development command from the
-monorepo root:
+Run Portal's build watcher with the other public apps from the monorepo root:
 
 ```bash
-pnpm dev
+pnpm dev:public
 ```
 
-This starts Ghost, Admin, and Portal. Portal is served through the development
-gateway at `http://localhost:2368/ghost/assets/portal/portal.min.js` and loaded
-into theme pages on the development site. Use `pnpm dev:public` when changing
-Portal alongside the other public apps.
+Portal rebuilds as you edit and is served at
+`http://localhost:2368/ghost/assets/portal/portal.min.js`, which theme pages on
+the development site load. `pnpm dev` serves the build from when it started.
 
 ## Build
 
