@@ -1,8 +1,9 @@
 import * as React from 'react';
 import * as SelectPrimitive from '@radix-ui/react-select';
-import { cva, type VariantProps } from 'class-variance-authority';
+import { type VariantProps } from 'class-variance-authority';
 import { Check, ChevronDown, ChevronUp } from 'lucide-react';
 
+import { selectTriggerVariants } from '@/components/ui/select-variants';
 import { useShade } from '@/providers/shade-provider';
 import { cn } from '@/lib/utils';
 import { ShadeScope } from '@/shade-scope';
@@ -13,48 +14,6 @@ const Select = SelectPrimitive.Root;
 const SelectGroup = SelectPrimitive.Group;
 
 const SelectValue = SelectPrimitive.Value;
-
-const selectTriggerVariants = cva(
-  'flex h-(--control-height) w-full items-center justify-between px-3 py-2 text-control whitespace-nowrap hover:bg-button-hover data-[placeholder]:text-muted-foreground [&>span]:line-clamp-1',
-  {
-    variants: {
-      variant: {
-        default: '',
-        ghost: 'border-transparent bg-transparent shadow-none',
-        secondary:
-          'border-transparent bg-tab-active text-secondary-foreground shadow-none hover:bg-secondary',
-      },
-      isAdmin7: { true: '', false: '' },
-      shape: {
-        rounded: 'rounded-control',
-        pill: 'rounded-full',
-      },
-    },
-    compoundVariants: [
-      {
-        isAdmin7: true,
-        variant: ['secondary', 'ghost'],
-        className:
-          'enabled:active:shadow-control-pressed enabled:aria-expanded:shadow-control-pressed',
-      },
-      {
-        isAdmin7: true,
-        variant: 'ghost',
-        className: 'enabled:active:bg-button-hover enabled:aria-expanded:bg-button-hover',
-      },
-      {
-        isAdmin7: true,
-        variant: 'secondary',
-        className: 'enabled:active:bg-secondary enabled:aria-expanded:bg-secondary',
-      },
-    ],
-    defaultVariants: {
-      variant: 'default',
-      shape: 'rounded',
-      isAdmin7: true,
-    },
-  },
-);
 
 export interface SelectTriggerProps
   extends
@@ -220,5 +179,4 @@ export {
   SelectSeparator,
   SelectScrollUpButton,
   SelectScrollDownButton,
-  selectTriggerVariants,
 };

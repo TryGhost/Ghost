@@ -30,24 +30,6 @@ export interface TabsProps extends React.ComponentPropsWithoutRef<typeof TabsPri
   variant?: TabsVariant;
 }
 
-const tabsVariants = cva('', {
-  variants: {
-    variant: {
-      segmented: '',
-      'segmented-sm': '',
-      button: '',
-      'button-sm': '',
-      underline: '',
-      navbar: '',
-      pill: '',
-      kpis: '',
-    },
-  },
-  defaultVariants: {
-    variant: 'segmented',
-  },
-});
-
 const Tabs = React.forwardRef<React.ElementRef<typeof TabsPrimitive.Root>, TabsProps>(
   ({ variant = 'segmented', ...props }, ref) => {
     const { controlShape } = useShade();
@@ -255,12 +237,4 @@ const TabsDropdownTrigger = React.forwardRef<HTMLButtonElement, TabsDropdownTrig
 );
 TabsDropdownTrigger.displayName = 'TabsDropdownTrigger';
 
-export {
-  Tabs,
-  TabsList,
-  TabsTrigger,
-  TabsTriggerCount,
-  TabsContent,
-  TabsDropdownTrigger,
-  tabsVariants,
-};
+export { Tabs, TabsList, TabsTrigger, TabsTriggerCount, TabsContent, TabsDropdownTrigger };

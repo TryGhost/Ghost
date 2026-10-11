@@ -1,6 +1,7 @@
 import * as React from 'react';
-import { cva, type VariantProps } from 'class-variance-authority';
+import { type VariantProps } from 'class-variance-authority';
 
+import { imageUploadPreviewVariants } from '@/components/patterns/image-upload-variants';
 import { Button, type ButtonProps } from '@/components/ui/button';
 import { Dropzone, type DropzoneProps } from '@/components/ui/dropzone';
 import { cn } from '@/lib/utils';
@@ -31,22 +32,6 @@ const ImageUploadDropzone = React.forwardRef<HTMLDivElement, DropzoneProps>(
   ),
 );
 ImageUploadDropzone.displayName = 'ImageUploadDropzone';
-
-const imageUploadPreviewVariants = cva(
-  'group relative flex size-full items-center justify-center overflow-hidden rounded-md bg-muted',
-  {
-    variants: {
-      background: {
-        default: '',
-        checkerboard:
-          '[background-image:repeating-conic-gradient(var(--border-default)_0%_25%,var(--surface-elevated)_0%_50%)] [background-size:16px_16px]',
-      },
-    },
-    defaultVariants: {
-      background: 'default',
-    },
-  },
-);
 
 export interface ImageUploadPreviewProps
   extends React.HTMLAttributes<HTMLDivElement>, VariantProps<typeof imageUploadPreviewVariants> {}
@@ -118,5 +103,4 @@ export {
   ImageUploadDropzone,
   ImageUploadImage,
   ImageUploadPreview,
-  imageUploadPreviewVariants,
 };

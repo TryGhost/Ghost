@@ -2,7 +2,8 @@ import * as React from 'react';
 import * as AlertDialogPrimitive from '@radix-ui/react-alert-dialog';
 
 import { cn } from '@/lib/utils';
-import { buttonVariants, type ButtonProps } from '@/components/ui/button';
+import type { ButtonProps } from '@/components/ui/button';
+import { buttonVariants } from '@/components/ui/button-variants';
 import { useShade } from '@/providers/shade-provider';
 import { ShadeScope } from '@/shade-scope';
 
