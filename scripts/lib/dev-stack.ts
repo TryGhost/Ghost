@@ -1,8 +1,15 @@
 import { execFileSync, spawnSync } from 'node:child_process';
-import { existsSync, readdirSync, readFileSync, readlinkSync, realpathSync } from 'node:fs';
+import {
+  existsSync,
+  readdirSync,
+  readFileSync,
+  readlinkSync,
+  realpathSync,
+  statSync,
+} from 'node:fs';
 import http from 'node:http';
 import net from 'node:net';
-import { join, sep } from 'node:path';
+import { join, resolve as resolvePath, sep } from 'node:path';
 import { checkoutRoot, ENV_FILE, parseEnv, worktreeDatabases } from './ghost-dev-env.ts';
 
 export const PID_FILE = '.ghost-dev.pid';
@@ -41,6 +48,48 @@ export function worktreeList(): { root: string; branch: string | null }[] {
     root: existsSync(root) ? realpathSync(root) : root,
     branch,
   }));
+}
+
+export interface GitOperation {
+  kind: 'rebase' | 'merge' | 'cherry-pick' | 'revert';
+  /** Files with unresolved conflicts */
+  conflicts: number;
+}
+
+// The files git keeps in a checkout's git directory while each operation is unfinished
+const OPERATIONS: [string, GitOperation['kind']][] = [
+  ['rebase-merge', 'rebase'],
+  ['rebase-apply', 'rebase'],
+  ['MERGE_HEAD', 'merge'],
+  ['CHERRY_PICK_HEAD', 'cherry-pick'],
+  ['REVERT_HEAD', 'revert'],
+];
+
+/** The rebase, merge, cherry-pick or revert a checkout is partway through, if any */
+export function gitOperation(root: string): GitOperation | undefined {
+  let gitDir = join(root, '.git');
+  try {
+    // A linked worktree's `.git` is a file that points at its git directory
+    if (statSync(gitDir).isFile()) {
+      gitDir = resolvePath(
+        root,
+        readFileSync(gitDir, 'utf8')
+          .replace(/^gitdir:\s*/, '')
+          .trim(),
+      );
+    }
+  } catch {
+    return undefined;
+  }
+  const kind = OPERATIONS.find(([file]) => existsSync(join(gitDir, file)))?.[1];
+  if (!kind) {
+    return undefined;
+  }
+  const unmerged = spawnSync('git', ['diff', '--name-only', '--diff-filter=U'], {
+    cwd: root,
+    encoding: 'utf8',
+  }).stdout;
+  return { kind, conflicts: unmerged?.split('\n').filter(Boolean).length ?? 0 };
 }
 
 /** Every checkout of the repository, the main one first */

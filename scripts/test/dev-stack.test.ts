@@ -1,6 +1,10 @@
 import assert from 'node:assert/strict';
+import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { describe, it } from 'node:test';
 import {
+  gitOperation,
   parseLsofListeners,
   parseProc,
   parseProcNetTcp,
@@ -96,5 +100,22 @@ describe('parseWorktrees', () => {
       { root: '/src/wt/feature', branch: 'slars/feature' },
       { root: '/src/wt/detached', branch: null },
     ]);
+  });
+});
+
+describe('gitOperation', () => {
+  it("finds an unfinished operation in a linked worktree's git directory", () => {
+    const root = mkdtempSync(join(tmpdir(), 'git-operation-'));
+    const gitDir = join(root, 'repo-git', 'worktrees', 'feature');
+    mkdirSync(join(gitDir, 'rebase-merge'), { recursive: true });
+    writeFileSync(join(root, '.git'), 'gitdir: repo-git/worktrees/feature\n');
+    assert.deepEqual(gitOperation(root), { kind: 'rebase', conflicts: 0 });
+  });
+
+  it('finds nothing in a checkout without one', () => {
+    const root = mkdtempSync(join(tmpdir(), 'git-operation-'));
+    mkdirSync(join(root, '.git'));
+    assert.equal(gitOperation(root), undefined);
+    assert.equal(gitOperation(join(root, 'deleted')), undefined);
   });
 });

@@ -3,6 +3,7 @@ import { existsSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
 import { emitKeypressEvents, type Key } from 'node:readline';
+import type { GitOperation } from './dev-stack.ts';
 import { checkoutRoot } from './ghost-dev-env.ts';
 import { type PullRequest, pullRequests } from './pull-requests.ts';
 
@@ -10,6 +11,7 @@ export interface DevStatus {
   name: string;
   root: string;
   branch: string | null;
+  operation: GitOperation | null;
   current: boolean;
   state: string;
   url: string;
@@ -95,6 +97,26 @@ function prCell(pr: PullRequest | undefined): Cell {
   return { text, style: pr.conflicts ? red : style, link: pr.url };
 }
 
+const ONGOING: Record<GitOperation['kind'], string> = {
+  rebase: 'rebasing',
+  merge: 'merging',
+  'cherry-pick': 'cherry-picking',
+  revert: 'reverting',
+};
+
+/** e.g. "rebasing, 3 conflicts" */
+function describeOperation({ kind, conflicts }: GitOperation): string {
+  const count = conflicts === 1 ? '1 conflict' : `${conflicts} conflicts`;
+  return conflicts > 0 ? `${ONGOING[kind]}, ${count}` : ONGOING[kind];
+}
+
+function operationCell(operation: GitOperation | null): Cell {
+  if (!operation) {
+    return { text: '' };
+  }
+  return { text: describeOperation(operation), style: operation.conflicts > 0 ? red : yellow };
+}
+
 const MINUTE = 60_000;
 const HOUR = 60 * MINUTE;
 
@@ -118,6 +140,7 @@ function tableColumns(prs: Map<string, PullRequest>): Column[] {
     },
     { title: 'STATE', cell: (row) => ({ text: row.state, style: STATES[row.state] }) },
     { title: 'PR', cell: (row) => prCell(row.branch ? prs.get(row.branch) : undefined) },
+    { title: 'GIT', cell: (row) => operationCell(row.operation) },
     { title: 'URL', min: 16, cell: (row) => ({ text: new URL(row.url).host, link: row.url }) },
     {
       title: 'UPTIME',
@@ -243,8 +266,9 @@ export function browse(
       pr?.state === 'MERGED' && stateOf(row) !== 'stopped'
         ? magenta('  merged, so k stops its Ghost')
         : '';
+    const operation = row.operation ? yellow(`  ${describeOperation(row.operation)}`) : '';
     return [
-      `${bold(row.branch ?? 'detached HEAD')}  ${about}${hint}`,
+      `${bold(row.branch ?? 'detached HEAD')}${operation}  ${about}${hint}`,
       dim(
         [
           row.root.replace(homedir(), '~'),

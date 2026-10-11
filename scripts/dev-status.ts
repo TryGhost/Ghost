@@ -5,6 +5,7 @@ import { parseArgs } from 'node:util';
 import {
   checkoutEnv,
   devPorts,
+  gitOperation,
   isListening,
   listeners,
   LOG_FILE,
@@ -44,6 +45,7 @@ async function status(
     name: env.GHOST_DEV_NAME ?? basename(root),
     root,
     branch,
+    operation: gitOperation(root) ?? null,
     current: root === checkoutRoot,
     state: listening ? 'running' : group ? 'starting' : 'stopped',
     url: `${devUrl(env)}ghost/`,
