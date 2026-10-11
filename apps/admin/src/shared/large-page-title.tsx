@@ -1,11 +1,8 @@
 import React from 'react';
-import { cn } from '@tryghost/shade/utils';
 import { LARGE_TITLE_HEADER_OVERLAP } from './large-page-title-layout';
 
 interface LargePageTitleProps {
-  /** Set once the sticky header below has stuck: the title gives way to its small one. */
-  condensed: boolean;
-  /** Marks where the sticky header sits at rest (see useScrolledPast). */
+  /** Marks where the sticky header sits at rest (see useLargeTitleCondense). */
   markerRef: (element: HTMLElement | null) => void;
   /** Beside the title, e.g. a count. */
   aside?: React.ReactNode;
@@ -14,19 +11,21 @@ interface LargePageTitleProps {
 
 /**
  * A list screen's large title, in the flow above its sticky header, which is
- * pulled up beside it (LARGE_TITLE_HEADER_OVERLAP). Scrolling, it passes under
- * the header and fades as the header's own small title takes over. Needs
+ * pulled up beside it (LARGE_TITLE_HEADER_OVERLAP). Scrolling, it fades as it
+ * nears the header's sticking point, and the header's own small title takes
+ * over (useLargeTitleCondense). It keeps its size throughout. Needs
  * LARGE_PAGE_TITLE_VARIABLES on an ancestor.
  */
-export function LargePageTitle({ condensed, markerRef, aside, children }: LargePageTitleProps) {
+export function LargePageTitle({ markerRef, aside, children }: LargePageTitleProps) {
   return (
     <div className="relative" style={{ paddingTop: 'var(--large-title-space)' }}>
       <h1
-        className={cn(
-          'flex items-baseline gap-3 leading-[1.15] font-medium tracking-[-0.03em] whitespace-nowrap transition-opacity duration-200 motion-reduce:transition-none',
-          condensed && 'opacity-0',
-        )}
-        style={{ fontSize: 'var(--large-title-size)' }}
+        className="flex items-baseline gap-3 leading-[1.15] font-medium tracking-[-0.03em] whitespace-nowrap"
+        style={{
+          fontSize: 'var(--large-title-size)',
+          // Gone over the first part of the handover, before the small title is in
+          opacity: 'clamp(0, calc(1 - var(--large-title-condense) * 1.6), 1)',
+        }}
       >
         {children}
         {aside && (
