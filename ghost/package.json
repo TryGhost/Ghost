@@ -104,7 +104,6 @@
     "@tryghost/database-info": "2.3.16",
     "@tryghost/debug": "catalog:",
     "@tryghost/domain-events": "catalog:",
-    "@tryghost/email-mock-receiver": "2.3.16",
     "@tryghost/errors": "catalog:",
     "@tryghost/helpers": "catalog:",
     "@tryghost/html-to-plaintext": "1.0.12",
@@ -254,6 +253,7 @@
   "devDependencies": {
     "@eslint/js": "catalog:",
     "@internal/cfg-eslint": "workspace:*",
+    "@tryghost/email-mock-receiver": "2.3.16",
     "@tryghost/express-test": "2.3.17",
     "@tryghost/webhook-mock-receiver": "2.3.16",
     "@types/bookshelf": "1.2.9",
