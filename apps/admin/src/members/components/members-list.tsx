@@ -12,6 +12,7 @@ import {
   PinnedMemberHeader,
 } from './member-table-chrome';
 import { Table, TableBody, TableCell, TableRow } from '@tryghost/shade/components';
+import { usePageChrome } from '@tryghost/shade/page-templates';
 import { buildMemberDetailPath } from '@/members/member-detail-hash';
 import { forwardRef, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from '@tryghost/admin-x-framework';
@@ -67,6 +68,7 @@ function MembersList({
   pageHeaderRef,
   onRowClick,
 }: MembersListProps) {
+  const { largeTitles } = usePageChrome();
   const parentRef = useRef<HTMLDivElement>(null);
   const stickyHeaderRef = useRef<HTMLTableSectionElement>(null);
   const scrollingMemberHeaderRef = useRef<HTMLTableCellElement>(null);
@@ -125,8 +127,8 @@ function MembersList({
 
     const initialPaddingBottom = pageHeader.style.paddingBottom;
     const initialMarginBottom = pageHeader.style.marginBottom;
-    const basePaddingBottom = parseFloat(getComputedStyle(pageHeader).paddingBottom) || 0;
-    const baseMarginBottom = parseFloat(getComputedStyle(pageHeader).marginBottom) || 0;
+    let basePaddingBottom = parseFloat(getComputedStyle(pageHeader).paddingBottom) || 0;
+    let baseMarginBottom = parseFloat(getComputedStyle(pageHeader).marginBottom) || 0;
 
     const resetHeaderSpacing = () => {
       if (initialPaddingBottom) {
@@ -150,6 +152,13 @@ function MembersList({
         return;
       }
 
+      // Under a large title, read the header's own spacing afresh each time:
+      // it changes after mount as the header switches to its large-title layout.
+      if (largeTitles) {
+        resetHeaderSpacing();
+        basePaddingBottom = parseFloat(getComputedStyle(pageHeader).paddingBottom) || 0;
+        baseMarginBottom = parseFloat(getComputedStyle(pageHeader).marginBottom) || 0;
+      }
       const stickyHeaderHeight = stickyHeader.getBoundingClientRect().height;
       const memberHeaderWidth = scrollingMemberHeader.getBoundingClientRect().width;
       pageHeader.style.setProperty(
@@ -177,14 +186,21 @@ function MembersList({
     resizeObserver.observe(pageHeader);
     resizeObserver.observe(stickyHeader);
     resizeObserver.observe(scrollingMemberHeader);
+    // The header can switch to its large-title layout without changing size,
+    // which the resize observer alone would miss.
+    const mutationObserver = largeTitles ? new MutationObserver(updateStickyPosition) : undefined;
+    mutationObserver?.observe(pageHeader, {
+      attributeFilter: ['class', 'data-large-title-header'],
+    });
     window.addEventListener('resize', updateStickyPosition);
 
     return () => {
       resetHeaderSpacing();
       resizeObserver.disconnect();
+      mutationObserver?.disconnect();
       window.removeEventListener('resize', updateStickyPosition);
     };
-  }, [activeColumns.length, pageHeaderRef, showEmailOpenRate]);
+  }, [activeColumns.length, largeTitles, pageHeaderRef, showEmailOpenRate]);
 
   const { visibleItems, spaceBefore, spaceAfter } = useInfiniteVirtualScroll({
     items,
@@ -207,7 +223,13 @@ function MembersList({
   };
 
   return (
-    <div ref={parentRef} className="w-full min-w-0" data-testid="members-list-scroll-root">
+    <div
+      ref={parentRef}
+      className="w-full min-w-0"
+      // Pins its own column labels beneath the page header, rather than Shade's
+      data-table-labels={largeTitles ? 'pinned' : undefined}
+      data-testid="members-list-scroll-root"
+    >
       <div
         className="sticky z-[50] hidden overflow-visible bg-transparent lg:block"
         style={{ top: stickyTop }}
