@@ -42,8 +42,11 @@ function AppSidebarContent({ floating = false }: AppSidebarContentProps) {
     <SidebarContent
       className={cn(
         'justify-between',
-        // Menu rows line up with the capsule's site icon (its body has the side padding)
-        floating ? 'px-0 pt-3 pb-1 [&_[data-sidebar=group]]:px-0' : 'px-3 pt-4 pb-1',
+        // Menu rows line up with the capsule's site icon (its body has the side
+        // padding), the first close under its header row
+        floating
+          ? 'px-0 pt-0 pb-1 [&_[data-sidebar=group]]:px-0 [&>div:first-child>[data-sidebar=group]:first-child]:pt-0'
+          : 'px-3 pt-4 pb-1',
         admin7Design && ADMIN7_NAV_ICON_CLASS_NAME,
       )}
     >

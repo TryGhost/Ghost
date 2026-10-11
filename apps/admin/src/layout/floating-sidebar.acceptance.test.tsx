@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 import { userEvent } from 'vitest/browser';
 
 import {
@@ -7,6 +7,7 @@ import {
   currentRoute,
   currentUserResponse,
   fakeAdminEndpoint,
+  fakeAdminStats,
   fakeTags,
   renderAdminApp,
   type RenderAdminAppOptions,
@@ -48,6 +49,12 @@ function fakePreferencesApi() {
 const SAVE_TIMEOUT = { timeout: 3000 };
 
 describe('Floating sidebar (admin7Design)', () => {
+  // The frame's top bar shows the site's numbers alongside it
+  beforeEach(() => {
+    fakeAdminStats.memberCount();
+    fakeAdminStats.mrr();
+  });
+
   it.each([
     { admin7Design: false, state: undefined },
     { admin7Design: true, state: 'pinned' },
@@ -128,9 +135,10 @@ describe('Floating sidebar (admin7Design)', () => {
     const trigger = sidebarScreen.floatingTrigger(SITE_TITLE);
     await expect.element(trigger).toHaveAttribute('aria-expanded', 'false');
 
-    // The skip link comes first in the tab order, then the circle
-    await userEvent.tab();
-    await userEvent.tab();
+    // The skip link and the frame's top bar come first in the tab order, then the circle
+    for (let tabs = 0; tabs < 20 && document.activeElement !== trigger.element(); tabs++) {
+      await userEvent.tab();
+    }
     await expect.element(trigger).toHaveFocus();
     await expect.element(trigger).toHaveAttribute('aria-expanded', 'true');
     await expect.element(sidebarScreen.navLink('Tags')).toBeVisible();

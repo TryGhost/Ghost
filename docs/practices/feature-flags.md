@@ -122,7 +122,11 @@ The `admin7Design` milestone replaces the docked desktop sidebar with Shade's
 `FloatingSidebar`: pinned beside the content by default, or unpinned into a
 circle around the site icon, stored as the `navigation.menu.mode` user
 preference. It also lists Ghost(Pro) with Settings, moves Help and Feedback to
-the account menu and runs the member map full bleed. Settings shows its
+the account menu and runs the member map full bleed. On desktop, except for
+Contributors, the admin sits in a frame whose top bar holds the Ghost and View
+site places, search and the site's numbers (Online, Members and MRR, for staff
+with admin access), so View site and search leave the sidebar. The frame closes
+around the editor and automation editor, and its sides retract on View site. Settings shows its
 navigation inside the same sidebar, pinned without changing the stored mode. Mobile keeps the sidebar sheet, and the flag-off path
 preserves the docked sidebar and the separate Settings sidebar.
 
