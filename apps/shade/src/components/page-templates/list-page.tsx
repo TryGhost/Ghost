@@ -85,7 +85,7 @@ function ListPageHeader({ className, children, style, ...rest }: ListPageProps) 
 
   return (
     <Stack
-      ref={active ? headerRef : undefined}
+      ref={headerRef}
       className={cn(
         '-mx-4 px-4 lg:-mx-5 lg:px-5',
         'sticky top-0 z-50',
@@ -194,7 +194,7 @@ const ListPage: ListPageComponent = Object.assign(
           <Stack
             ref={setHost}
             className={cn('h-full min-h-0 grow px-4 lg:px-6', className)}
-            data-large-title-host={active ? '' : undefined}
+            data-large-title-host={largeTitles ? '' : undefined}
             data-list-page="list-page"
             gap="none"
             style={style}

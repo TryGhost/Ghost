@@ -68,7 +68,8 @@ describe('ListPage large titles', () => {
     );
 
     assert.equal(screen.queryByRole('heading', { level: 1 }), null);
-    assert.equal(screen.getByTestId('list-page').hasAttribute('data-large-title-host'), false);
+    // Its table labels still stick beneath the header
+    assert.equal(screen.getByTestId('list-page').hasAttribute('data-large-title-host'), true);
     assert.equal(
       screen.getByTestId('list-page-header').hasAttribute('data-large-title-header'),
       false,

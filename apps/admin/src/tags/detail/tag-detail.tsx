@@ -402,7 +402,7 @@ const TagDetail: React.FC = () => {
           <DetailPage.Header
             className={cn(
               largeTitles &&
-                'sticky top-[calc(24px-var(--large-title-space))] z-60 -mx-4 gap-1 bg-background px-4 pt-(--large-title-space)! pb-8 lg:-mx-6 lg:px-6',
+                'sticky top-[calc(24px-var(--large-title-space))] z-60 -mx-(--page-gutter) gap-1 bg-background px-(--page-gutter) pt-(--large-title-space)! pb-8',
             )}
           >
             <PageHeader blurredBackground={false} sticky={false}>

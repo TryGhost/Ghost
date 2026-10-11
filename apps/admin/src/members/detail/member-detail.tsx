@@ -25,7 +25,7 @@ import {
 } from '@tryghost/shade/components';
 import { Box, Container, Inline } from '@tryghost/shade/primitives';
 import { cn } from '@tryghost/shade/utils';
-import { DetailPage } from '@tryghost/shade/page-templates';
+import { DetailPage, usePageChrome } from '@tryghost/shade/page-templates';
 import { Link, useLocation, useNavigate, useParams } from '@tryghost/admin-x-framework';
 import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import { DirtyConfirmDialog, PageHeader } from '@tryghost/shade/patterns';
@@ -97,6 +97,9 @@ const MemberDetailPage: React.FC<MemberDetailPageProps> = ({
   // Admin 7 runs the map full bleed, from the top of the page and under the
   // floating sidebar
   const fullBleedMap = useFeatureFlag('admin7Design');
+  // Without a map, the header opens with the list pages' space above their
+  // large titles, where they show them
+  const { largeTitles } = usePageChrome();
   // 4xx from the members endpoint on a real id means "gone" (deleted mid-flow
   // is the realistic case). 5xx/network is a different story — we don't want
   // to lie about that with a "not found" message.
@@ -389,6 +392,7 @@ const MemberDetailPage: React.FC<MemberDetailPageProps> = ({
             className={cn(
               'has-[[data-member-map-location=unknown]]:py-7',
               fullBleedMap && 'has-[[data-member-map-location=known]]:pt-0!',
+              largeTitles && 'has-[[data-member-map-location=unknown]]:pt-(--large-title-space)!',
             )}
           >
             <MemberMapHeader
