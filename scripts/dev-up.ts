@@ -58,12 +58,16 @@ const logFile = join(checkoutRoot, LOG_FILE);
 const pidFile = join(checkoutRoot, PID_FILE);
 const log = openSync(logFile, 'w');
 // Its own process group, so it outlives this command and `pnpm dev:down` can signal all of it.
-// A loop in the group stops the group once the checkout's .git is deleted, and exits with it.
+// A loop in it stops it once the checkout's .git or its Claude Code session (CLAUDE_PID) is gone.
 const watched = `(while sleep 5; do
   kill -0 $$ 2>/dev/null || exit
-  [ -e "$1/.git" ] || { echo "$1 was deleted, so Ghost dev is stopping"; kill -s TERM 0; }
+  if [ ! -e "$1/.git" ]; then echo "Stopping Ghost dev: $1 was deleted"
+  elif [ -n "$3" ] && ! kill -0 "$3" 2>/dev/null; then echo "Stopping Ghost dev: Claude Code (pid $3) exited"
+  else continue; fi
+  kill -s TERM 0
 done) & exec sh -c "$2"`;
-const child = spawn('sh', ['-c', watched, 'sh', checkoutRoot, command], {
+const args = [checkoutRoot, command, process.env.CLAUDE_PID ?? ''];
+const child = spawn('sh', ['-c', watched, 'sh', ...args], {
   cwd: checkoutRoot,
   detached: true,
   stdio: ['ignore', log, log],

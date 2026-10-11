@@ -148,7 +148,7 @@ way. `pnpm dev:status` finds each checkout's Ghost through the ports in its
 stops whatever holds this checkout's ports, including what a killed run left
 behind, and leaves MySQL, Redis, and Mailpit running. Ghost started by
 `pnpm dev:up` also stops itself within a few seconds of its worktree being
-deleted.
+deleted or, when Claude Code started it, of that Claude Code session ending.
 
 `pnpm dev:gc` lists the `dev_*` databases of worktrees that no longer exist, and
 `pnpm dev:gc --yes` drops them.
