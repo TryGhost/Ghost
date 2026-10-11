@@ -249,7 +249,8 @@ html.theme-switching *::after {
   th {
   position: sticky;
   top: var(--list-page-header-height, 0px);
-  z-index: 10;
+  /* Above cells raised for their links (z-10), below the header (z-50). */
+  z-index: 20;
   height: 44px;
   background-color: var(--background);
   box-shadow: inset 0 -1px 0 var(--border-default);
