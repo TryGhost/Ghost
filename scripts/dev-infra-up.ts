@@ -91,8 +91,11 @@ const password = process.env.MYSQL_ROOT_PASSWORD ?? 'root';
 const inMysql = ['compose', ...files, 'exec', '-T', '-e', `MYSQL_PWD=${password}`, 'mysql'];
 const mysql = (...args: string[]) => docker([...inMysql, 'mysql', '-uroot', ...args]);
 const databases = mysql('-N', '-e', 'SHOW DATABASES').split('\n');
-if (database !== 'ghost_dev' && databases.includes('ghost_dev') && !databases.includes(database)) {
-  mysql('-e', `CREATE DATABASE \`${database}\``);
+// A run stopped before its dump starts leaves the database without tables
+const empty =
+  !databases.includes(database) || !mysql('-N', '-e', `SHOW TABLES FROM \`${database}\``);
+if (database !== 'ghost_dev' && databases.includes('ghost_dev') && empty) {
+  mysql('-e', `CREATE DATABASE IF NOT EXISTS \`${database}\``);
   const dump = spawn(
     'docker',
     [...inMysql, 'mysqldump', '-uroot', '--single-transaction', 'ghost_dev'],
