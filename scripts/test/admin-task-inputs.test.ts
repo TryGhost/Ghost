@@ -150,13 +150,14 @@ describe('Admin task inputs', () => {
     for (const name of ['test:unit', 'test:acceptance', 'test:types']) {
       const target = await nxJson<Target>(['show', 'target', `@tryghost/admin:${name}`]);
       assert.equal(target.cache, true);
-      assert.ok(target.dependsOn.includes('@tryghost/shade:build'));
+      assert.ok(target.dependsOn.includes('@tryghost/koenig-lexical:build'));
       if (name === 'test:acceptance') {
         assert.deepEqual(target.outputs, ['{projectRoot}/test-results/acceptance.json']);
       }
       if (name === 'test:types') {
         assert.equal(target.command, 'tsc -b');
         assert.deepEqual(target.outputs, []);
+        assert.ok(target.dependsOn.includes('@tryghost/shade:build'));
       }
     }
   });
