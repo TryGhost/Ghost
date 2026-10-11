@@ -18,7 +18,9 @@ if [ "$(git rev-parse --path-format=absolute --git-dir)" != "$common_dir" ]; the
         git -c "submodule.$name.url=$local_repo" -c protocol.file.allow=always \
             submodule update -q -- "$subpath" || true
         # Point the clone's origin back at GitHub
-        git submodule sync -q -- "$subpath"
+        if [ -e "$subpath/.git" ]; then
+            git -C "$subpath" remote set-url origin "$(git config "submodule.$name.url")"
+        fi
     done
 fi
 
