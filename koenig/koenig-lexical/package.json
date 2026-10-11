@@ -144,7 +144,7 @@
     "vite-plugin-svgr": "5.2.0",
     "vitest": "catalog:",
     "y-websocket": "3.0.0",
-    "yjs": "13.6.31"
+    "yjs": "13.6.33"
   },
   "nx": {
     "tags": [
