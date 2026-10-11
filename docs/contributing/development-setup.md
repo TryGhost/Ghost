@@ -109,9 +109,9 @@ To use the [ActivityPub](https://github.com/TryGhost/ActivityPub) project's
 local service, set `ACTIVITYPUB_PROXY_TARGET`, for example to `127.0.0.1:8080`.
 
 Press `Ctrl+C` in the development process to stop Ghost and the watchers. MySQL,
-Redis, and Mailpit keep running for other checkouts; `pnpm docker:down` stops
-them. The database lives in a Docker volume, and uploaded content in
-`ghost/content`.
+Redis, and Mailpit keep running for other checkouts; `pnpm dev:down --all` stops
+them along with every checkout's Ghost. The database lives in a Docker volume,
+and uploaded content in `ghost/content`.
 
 ### Worktrees
 
@@ -137,7 +137,7 @@ To run a checkout's Ghost in the background, for example from an agent, use:
 ```bash
 pnpm dev:up      # start; returns once Ghost answers and prints its URL
 pnpm dev:status  # this checkout and any other running one; --all lists every checkout
-pnpm dev:down    # stop this checkout's Ghost, however it was started
+pnpm dev:down    # stop this checkout's Ghost, however it was started; --all stops everything
 ```
 
 `pnpm dev:up` writes its output to `.ghost-dev.log` and refuses to start while
@@ -150,6 +150,10 @@ behind, and leaves MySQL, Redis, and Mailpit running.
 
 `pnpm dev:gc` lists the `dev_*` databases of worktrees that no longer exist, and
 `pnpm dev:gc --yes` drops them.
+
+`pnpm dev:status --watch` redraws the list every two seconds.
+`pnpm dev:down --all` stops every checkout's Ghost and then the Docker services;
+the databases stay in their volume.
 
 Delete `.ghost-dev.env` to be assigned new values, or set `GHOST_DEV_HOSTNAME`,
 `GHOST_DEV_PORT`, `GHOST_DEV_BACKEND_PORT`, or `GHOST_DEV_DATABASE` to choose
@@ -189,7 +193,7 @@ Sign in to the VersityGW WebUI with access key `s3-user` and secret key
 Run one root command at a time. Each variant includes the standard development
 environment and adds the listed tooling. All of them except `pnpm dev:docker` run
 Ghost on the host. The services a variant adds run in Docker and, like MySQL,
-Redis, and Mailpit, keep running after `Ctrl+C` until `pnpm docker:down`:
+Redis, and Mailpit, keep running after `Ctrl+C` until `pnpm dev:down --all`:
 
 | Command                    | Use it when working on                                                                                          |
 | -------------------------- | --------------------------------------------------------------------------------------------------------------- |
@@ -265,10 +269,10 @@ pnpm build:clean    # Clear the Nx cache and Ghost build output
 pnpm docker:build   # Rebuild the local development images
 ```
 
-To stop the Docker services:
+To stop every checkout's Ghost and the Docker services:
 
 ```bash
-pnpm docker:down
+pnpm dev:down --all
 ```
 
 As a last resort, `pnpm docker:clean` removes the development containers,

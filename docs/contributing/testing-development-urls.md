@@ -102,10 +102,10 @@ startup probe assumes the default root URL. Use the automated tests below for
 focused development, then use this manual environment for final browser
 verification.
 
-Press `Ctrl+C` to stop Caddy. Stop the Docker services with the same override:
+Press `Ctrl+C` to stop Caddy. Stop the Docker services, the override's included:
 
 ```bash
-DEV_COMPOSE_FILES="-f docker/dev-url-testing/compose.yaml" pnpm docker:down
+pnpm dev:down --all
 ```
 
 Delete `ghost/config.local.json` before returning to `pnpm dev`; otherwise
