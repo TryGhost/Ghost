@@ -125,8 +125,6 @@ function MembersList({
 
     const initialPaddingBottom = pageHeader.style.paddingBottom;
     const initialMarginBottom = pageHeader.style.marginBottom;
-    const basePaddingBottom = parseFloat(getComputedStyle(pageHeader).paddingBottom) || 0;
-    const baseMarginBottom = parseFloat(getComputedStyle(pageHeader).marginBottom) || 0;
 
     const resetHeaderSpacing = () => {
       if (initialPaddingBottom) {
@@ -150,6 +148,11 @@ function MembersList({
         return;
       }
 
+      // Read the header's own spacing afresh each time: it can change after
+      // mount, e.g. as the page header switches to its large-title layout.
+      resetHeaderSpacing();
+      const basePaddingBottom = parseFloat(getComputedStyle(pageHeader).paddingBottom) || 0;
+      const baseMarginBottom = parseFloat(getComputedStyle(pageHeader).marginBottom) || 0;
       const stickyHeaderHeight = stickyHeader.getBoundingClientRect().height;
       const memberHeaderWidth = scrollingMemberHeader.getBoundingClientRect().width;
       pageHeader.style.setProperty(
@@ -177,11 +180,18 @@ function MembersList({
     resizeObserver.observe(pageHeader);
     resizeObserver.observe(stickyHeader);
     resizeObserver.observe(scrollingMemberHeader);
+    // The header can switch layout (e.g. to its large-title one) without
+    // changing size, which the resize observer alone would miss.
+    const mutationObserver = new MutationObserver(updateStickyPosition);
+    mutationObserver.observe(pageHeader, {
+      attributeFilter: ['class', 'data-large-title-header'],
+    });
     window.addEventListener('resize', updateStickyPosition);
 
     return () => {
       resetHeaderSpacing();
       resizeObserver.disconnect();
+      mutationObserver.disconnect();
       window.removeEventListener('resize', updateStickyPosition);
     };
   }, [activeColumns.length, pageHeaderRef, showEmailOpenRate]);
