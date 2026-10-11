@@ -147,7 +147,7 @@ catalog:
   dotenv: 17.4.2
   entities: 4.5.0
   esbuild: 0.28.2
-  eslint: 9.39.4
+  eslint: 9.39.5
   eslint-plugin-ghost: 3.5.0
   eslint-plugin-react: 7.37.5
   eslint-plugin-react-hooks: 5.2.0
