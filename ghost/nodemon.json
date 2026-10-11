@@ -30,7 +30,13 @@
     "../packages/nql-string/src",
     "../packages/parse-email-address/src"
   ],
-  "ignore": ["content/**", "core/built/**", "test/**"],
-  "ext": "js,mjs,cjs,json,ts,tsx",
-  "exec": "node --conditions=source --import=tsx"
+  "ignore": [
+    "content/**",
+    "core/built/**",
+    "test/**",
+    "core/frontend/public/**/*.min.*",
+    "core/frontend/public/cards.manifest.json"
+  ],
+  "ext": "js,mjs,cjs,json,ts,tsx,css",
+  "exec": "node scripts/build-stale-assets.mts; exec node --conditions=source --import=tsx"
 }
