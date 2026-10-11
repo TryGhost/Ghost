@@ -1,4 +1,3 @@
-import type React from 'react';
 import { createContext, useContext, useEffect, useState } from 'react';
 
 export interface PageChrome {
@@ -18,21 +17,6 @@ export const PageChromeProvider = PageChromeContext.Provider;
 export function usePageChrome(): PageChrome {
   return useContext(PageChromeContext);
 }
-
-/*
- * The large title's space above it and its size grow with the window, its
- * height as much as its width, so a tall screen gets the generous version and
- * a short one stays close to the compact header it replaces.
- *
- * - space: 28px at 600px tall, 100px from 900px
- * - title: 24px at 600px tall, 44px from 900px; and 28px at 800px wide, 44px
- *   from 1380px, whichever is smaller
- */
-export const LARGE_PAGE_TITLE_VARIABLES = {
-  '--large-title-space': 'clamp(28px, calc(24vh - 116px), 100px)',
-  '--large-title-size':
-    'min(clamp(24px, calc(6.667vh - 16px), 44px), clamp(28px, calc(2.76vw + 6px), 44px))',
-} as React.CSSProperties;
 
 /*
  * The header's own top padding under a large title. Its first row sits 32px

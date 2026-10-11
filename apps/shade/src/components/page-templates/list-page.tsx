@@ -3,7 +3,6 @@ import { Stack } from '@/components/primitives/stack';
 import { PageHeaderLargeTitleContext } from '@/components/patterns/page-header-large-title';
 import { cn } from '@/lib/utils';
 import {
-  LARGE_PAGE_TITLE_VARIABLES,
   LARGE_TITLE_HANDOVER,
   LARGE_TITLE_HEADER_OVERLAP,
   useLargeTitleCondense,
@@ -198,7 +197,7 @@ const ListPage: ListPageComponent = Object.assign(
             data-large-title-host={active ? '' : undefined}
             data-list-page="list-page"
             gap="none"
-            style={active ? { ...LARGE_PAGE_TITLE_VARIABLES, ...style } : style}
+            style={style}
             {...rest}
           >
             {largeTitles && (

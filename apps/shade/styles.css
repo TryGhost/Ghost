@@ -88,6 +88,21 @@ html.theme-switching *::after {
   background: var(--background);
 }
 
+/* A page's large title (e.g. a list page's, ListPage with large titles on):
+   the space above it and its size grow with the window, its height as much as
+   its width, so a tall screen gets the generous version and a short one stays
+   close to the compact header it replaces.
+   - space: 28px at 600px tall, 100px from 900px
+   - size: 24px at 600px tall, 44px from 900px; and 28px at 800px wide, 44px
+     from 1380px, whichever is smaller */
+:root {
+  --large-title-space: clamp(28px, calc(24vh - 116px), 100px);
+  --large-title-size: min(
+    clamp(24px, calc(6.667vh - 16px), 44px),
+    clamp(28px, calc(2.76vw + 6px), 44px)
+  );
+}
+
 /* A list page's large title handing over to its sticky header as the page
    scrolls (ListPage, with large titles on): the title eases out over the first half of the
    handover, the header's solid background eases in over the second, and once

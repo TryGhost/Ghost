@@ -435,7 +435,15 @@ const MemberDetailPage: React.FC<MemberDetailPageProps> = ({
                         {...memberAvatarProps(headerIdentity)}
                         src={headerMember?.avatar_image}
                       />
-                      <PageHeader.Title className="min-w-0 truncate text-2xl tracking-tight sm:text-3xl">
+                      <PageHeader.Title
+                        className={cn(
+                          'min-w-0 truncate',
+                          // admin7Design: the size and type of the list pages' large titles
+                          fullBleedMap
+                            ? 'text-[length:var(--large-title-size)]! leading-[1.15]! font-medium tracking-[-0.03em]'
+                            : 'text-2xl tracking-tight sm:text-3xl',
+                        )}
+                      >
                         {formatMemberName(headerIdentity)}
                       </PageHeader.Title>
                     </Inline>
