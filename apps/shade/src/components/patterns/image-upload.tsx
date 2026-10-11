@@ -6,7 +6,7 @@ import { Button, type ButtonProps } from '@/components/ui/button';
 import { Dropzone, type DropzoneProps } from '@/components/ui/dropzone';
 import { cn } from '@/lib/utils';
 import { imageOverlayButton } from '@/components/ui/image-overlay-button';
-import { useShade } from '@/providers/shade-provider';
+import { useShade } from '@/providers/shade-context';
 
 const ImageUpload = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
   ({ className, ...props }, ref) => (

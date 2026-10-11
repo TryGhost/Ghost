@@ -4,7 +4,7 @@ import { DropdownMenuTrigger } from './dropdown-menu';
 
 import { cn } from '@/lib/utils';
 import { cva } from 'class-variance-authority';
-import { type ControlShape, useShade } from '@/providers/shade-provider';
+import { type ControlShape, useShade } from '@/providers/shade-context';
 
 type TabsVariant =
   | 'segmented'

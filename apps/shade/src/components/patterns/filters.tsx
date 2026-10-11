@@ -38,7 +38,7 @@ import { MultiSelectCombobox } from '@/components/ui/multi-select-combobox';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Switch } from '@/components/ui/switch';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import { useShade } from '@/providers/shade-provider';
+import { useShade } from '@/providers/shade-context';
 import { cva, type VariantProps } from 'class-variance-authority';
 import {
   AlertCircle,

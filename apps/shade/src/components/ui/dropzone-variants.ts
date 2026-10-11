@@ -2,7 +2,7 @@ import { cva } from 'class-variance-authority';
 import { buttonVariants } from '@/components/ui/button-variants';
 import { inputSurface } from '@/components/ui/input-surface';
 import { cn } from '@/lib/utils';
-import type { ControlShape } from '@/providers/shade-provider';
+import type { ControlShape } from '@/providers/shade-context';
 
 const dropzoneBaseVariants = cva(
   'flex cursor-pointer flex-col items-center justify-center outline-hidden',

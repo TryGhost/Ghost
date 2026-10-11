@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { Inline, Stack, Text } from '@/components/primitives';
 import { FilterBar } from '@/components/patterns/filter-bar';
 import { PageHeader } from '@/components/patterns/page-header';
-import { useShade } from '@/providers/shade-provider';
+import { useShade } from '@/providers/shade-context';
 import ShadeApp from '@/shade-app';
 import {
   Filters,

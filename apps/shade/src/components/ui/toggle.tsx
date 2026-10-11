@@ -6,7 +6,7 @@ import { type VariantProps } from 'class-variance-authority';
 
 import { toggleVariants } from '@/components/ui/toggle-variants';
 import { cn } from '@/lib/utils';
-import { useShade } from '@/providers/shade-provider';
+import { useShade } from '@/providers/shade-context';
 
 const Toggle = React.forwardRef<
   React.ElementRef<typeof TogglePrimitive.Root>,

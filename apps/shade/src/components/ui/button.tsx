@@ -5,7 +5,7 @@ import { ChevronDown } from 'lucide-react';
 
 import { buttonVariants } from '@/components/ui/button-variants';
 import { cn } from '@/lib/utils';
-import { useShade } from '@/providers/shade-provider';
+import { useShade } from '@/providers/shade-context';
 
 export interface ButtonProps
   extends

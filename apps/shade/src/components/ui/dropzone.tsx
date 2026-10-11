@@ -2,7 +2,7 @@ import * as React from 'react';
 import { Accept, DropEvent, FileRejection, useDropzone } from 'react-dropzone';
 import { type VariantProps } from 'class-variance-authority';
 import { dropzoneVariants } from '@/components/ui/dropzone-variants';
-import { useShade } from '@/providers/shade-provider';
+import { useShade } from '@/providers/shade-context';
 import { cn } from '@/lib/utils';
 
 type DropzoneRenderProps = {

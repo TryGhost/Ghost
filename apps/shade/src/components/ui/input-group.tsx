@@ -4,7 +4,7 @@ import { cva, type VariantProps } from 'class-variance-authority';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { inputGroupVariants } from '@/components/ui/input-group-variants';
-import { useShade } from '@/providers/shade-provider';
+import { useShade } from '@/providers/shade-context';
 
 export interface InputGroupProps
   extends React.ComponentProps<'div'>, VariantProps<typeof inputGroupVariants> {}

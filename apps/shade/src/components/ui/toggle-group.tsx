@@ -4,7 +4,7 @@ import { type VariantProps } from 'class-variance-authority';
 
 import { cn } from '@/lib/utils';
 import { toggleVariants } from '@/components/ui/toggle-variants';
-import { useShade } from '@/providers/shade-provider';
+import { useShade } from '@/providers/shade-context';
 
 const ToggleGroupContext = React.createContext<VariantProps<typeof toggleVariants>>({
   size: 'default',
