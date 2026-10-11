@@ -236,8 +236,10 @@ html.theme-switching *::after {
   margin-top: 0;
 }
 
-/* Under a large title, a list page's table labels are 44px tall and stick
-   beneath the header (--list-page-header-height, set by ListPage), on a solid
+/* With large titles on, a list page's table labels are 44px tall and stick
+   beneath the header (--list-page-header-height, set by ListPage, plus
+   --list-page-header-top for a header that sticks above the top, set by the
+   page), on a solid
    background with their own bottom line; a clipping wrapper clips without
    becoming what they'd stick to. A table that pins its labels itself opts out
    with data-table-labels="pinned" on an ancestor. */
@@ -251,7 +253,7 @@ html.theme-switching *::after {
   > thead
   th {
   position: sticky;
-  top: var(--list-page-header-height, 0px);
+  top: calc(var(--list-page-header-height, 0px) + var(--list-page-header-top, 0px));
   /* Above cells raised for their links (z-10), below the header (z-50). */
   z-index: 20;
   height: 44px;
@@ -269,10 +271,14 @@ html.theme-switching *::after {
 
 /* A list's own top border would double the separator above it (a filter bar
    in the separator's place keeps it) */
-[data-large-title-host]:not(:has([data-large-title-header] [data-slot='filter-bar']))
+[data-large-title-host]:has([data-large-title-header]):not(
+    :has([data-large-title-header] [data-slot='filter-bar'])
+  )
   [data-list-page='body']
   > :first-child:is(.border-t),
-[data-large-title-host]:not(:has([data-large-title-header] [data-slot='filter-bar']))
+[data-large-title-host]:has([data-large-title-header]):not(
+    :has([data-large-title-header] [data-slot='filter-bar'])
+  )
   [data-list-page='body']
   > :first-child
   > :first-child:is(.border-t) {
