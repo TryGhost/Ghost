@@ -1,10 +1,12 @@
 import assert from 'node:assert/strict';
+import { execFileSync } from 'node:child_process';
 import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, it } from 'node:test';
 import {
   gitOperation,
+  gitState,
   parseLsofListeners,
   parseProc,
   parseProcNetTcp,
@@ -149,5 +151,34 @@ describe('gitOperation', () => {
     mkdirSync(join(root, '.git'));
     assert.equal(gitOperation(root), undefined);
     assert.equal(gitOperation(join(root, 'deleted')), undefined);
+  });
+});
+
+describe('gitState', () => {
+  const repo = () => {
+    const root = mkdtempSync(join(tmpdir(), 'git-state-'));
+    const git = (...args: string[]) =>
+      execFileSync('git', ['-c', 'user.name=Test', '-c', 'user.email=test@example.com', ...args], {
+        cwd: root,
+      });
+    git('init', '-q');
+    git('commit', '-q', '--allow-empty', '--no-gpg-sign', '-m', 'base');
+    git('update-ref', 'refs/remotes/origin/main', 'HEAD');
+    return { root, git };
+  };
+
+  it("counts a checkout's commits beyond origin/main and its uncommitted changes", async () => {
+    const { root, git } = repo();
+    assert.deepEqual(await gitState(root), { ahead: 0, dirty: 0 });
+    git('commit', '-q', '--allow-empty', '--no-gpg-sign', '-m', 'work');
+    writeFileSync(join(root, 'new.txt'), '');
+    assert.deepEqual(await gitState(root), { ahead: 1, dirty: 1 });
+  });
+
+  it("finds nothing for a deleted checkout, even if a folder's left inside another", async () => {
+    const { root } = repo();
+    mkdirSync(join(root, 'leftover'));
+    assert.equal(await gitState(join(root, 'leftover')), undefined);
+    assert.equal(await gitState(join(root, 'deleted')), undefined);
   });
 });

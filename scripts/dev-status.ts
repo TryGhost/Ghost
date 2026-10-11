@@ -6,6 +6,7 @@ import {
   checkoutEnv,
   devPorts,
   gitOperation,
+  gitState,
   isListening,
   listeners,
   LOG_FILE,
@@ -24,10 +25,12 @@ import { BASE_BRANCHES, pullRequests } from './lib/pull-requests.ts';
 // checkout, deleted or not, with processes whose nx has exited. In a terminal
 // the list stays open, with keys to open, start and stop each checkout's Ghost. --watch redraws
 // the table every two seconds. --json --prs adds each branch's pull request, or leaves `pr` out
-// when `gh` fails.
+// when `gh` fails. --json --git, which runs git in every checkout, adds each one's `ahead` and
+// `dirty`, or nulls when git fails.
 const { values } = parseArgs({
   options: {
     all: { type: 'boolean', default: false },
+    git: { type: 'boolean', default: false },
     json: { type: 'boolean', default: false },
     prs: { type: 'boolean', default: false },
     watch: { type: 'boolean', short: 'w', default: false },
@@ -37,8 +40,8 @@ if (values.json && values.watch) {
   console.error("--json and --watch can't be combined.");
   process.exit(1);
 }
-if (values.prs && !values.json) {
-  console.error('--prs only works with --json.');
+if ((values.prs || values.git) && !values.json) {
+  console.error('--prs and --git only work with --json.');
   process.exit(1);
 }
 
@@ -155,6 +158,14 @@ function table(rows: DevStatus[]): string {
 
 if (values.json) {
   const rows = await snapshot();
+  if (values.git) {
+    await Promise.all(
+      rows.map(async (row) => {
+        const state = await gitState(row.root);
+        Object.assign(row, { ahead: state?.ahead ?? null, dirty: state?.dirty ?? null });
+      }),
+    );
+  }
   if (values.prs) {
     const branches = rows.flatMap(({ branch }) =>
       branch && !BASE_BRANCHES.has(branch) ? [branch] : [],

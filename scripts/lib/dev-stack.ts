@@ -1,4 +1,4 @@
-import { execFileSync, spawnSync } from 'node:child_process';
+import { execFile, execFileSync, spawnSync } from 'node:child_process';
 import {
   existsSync,
   readdirSync,
@@ -10,6 +10,7 @@ import {
 import http from 'node:http';
 import net from 'node:net';
 import { join, resolve as resolvePath, sep } from 'node:path';
+import { promisify } from 'node:util';
 import { checkoutRoot, ENV_FILE, parseEnv, worktreeDatabases } from './ghost-dev-env.ts';
 
 export const PID_FILE = '.ghost-dev.pid';
@@ -90,6 +91,34 @@ export function gitOperation(root: string): GitOperation | undefined {
     encoding: 'utf8',
   }).stdout;
   return { kind, conflicts: unmerged?.split('\n').filter(Boolean).length ?? 0 };
+}
+
+export interface GitState {
+  /** Commits on HEAD that aren't on origin/main */
+  ahead: number;
+  /** Changes `git status` lists, untracked files included */
+  dirty: number;
+}
+
+const run = promisify(execFile);
+
+/** A checkout's own commits and uncommitted changes, unless it's deleted or git fails */
+export async function gitState(root: string): Promise<GitState | undefined> {
+  // Git would report the enclosing repository for a deleted worktree's leftover folder
+  if (!existsSync(join(root, '.git'))) {
+    return undefined;
+  }
+  try {
+    const [log, status] = await Promise.all([
+      // Not local main, which lags whenever the main checkout isn't pulled
+      run('git', ['rev-list', '--count', 'origin/main..HEAD'], { cwd: root }),
+      // So polling never holds the index lock that a commit in the checkout needs
+      run('git', ['--no-optional-locks', 'status', '--porcelain'], { cwd: root }),
+    ]);
+    return { ahead: Number(log.stdout), dirty: status.stdout.split('\n').filter(Boolean).length };
+  } catch {
+    return undefined;
+  }
 }
 
 /** Every checkout of the repository, the main one first */
