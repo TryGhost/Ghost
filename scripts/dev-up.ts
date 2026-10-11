@@ -57,8 +57,13 @@ if (group || busy) {
 const logFile = join(checkoutRoot, LOG_FILE);
 const pidFile = join(checkoutRoot, PID_FILE);
 const log = openSync(logFile, 'w');
-// Its own process group, so it outlives this command and `pnpm dev:down` can signal all of it
-const child = spawn('sh', ['-c', command], {
+// Its own process group, so it outlives this command and `pnpm dev:down` can signal all of it.
+// A loop in the group stops the group once the checkout's .git is deleted, and exits with it.
+const watched = `(while sleep 5; do
+  kill -0 $$ 2>/dev/null || exit
+  [ -e "$1/.git" ] || { echo "$1 was deleted, so Ghost dev is stopping"; kill -s TERM 0; }
+done) & exec sh -c "$2"`;
+const child = spawn('sh', ['-c', watched, 'sh', checkoutRoot, command], {
   cwd: checkoutRoot,
   detached: true,
   stdio: ['ignore', log, log],

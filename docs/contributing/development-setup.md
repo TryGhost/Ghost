@@ -146,7 +146,9 @@ the checkout's ports are in use. Pass a variant's script name, such as
 way. `pnpm dev:status` finds each checkout's Ghost through the ports in its
 `.ghost-dev.env`, and `--json` prints the list for scripts. `pnpm dev:down`
 stops whatever holds this checkout's ports, including what a killed run left
-behind, and leaves MySQL, Redis, and Mailpit running.
+behind, and leaves MySQL, Redis, and Mailpit running. Ghost started by
+`pnpm dev:up` also stops itself within a few seconds of its worktree being
+deleted.
 
 `pnpm dev:gc` lists the `dev_*` databases of worktrees that no longer exist, and
 `pnpm dev:gc --yes` drops them.
