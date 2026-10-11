@@ -29,7 +29,7 @@ Watching is also enabled for the other development commands that include
 analytics, such as `pnpm dev:analytics:local` and `pnpm dev:full`.
 
 Ghost will be accessible at `http://localhost:2368` (a worktree uses its own
-port), and analytics should work out of the box.
+URL), and analytics should work out of the box.
 
 #### Using the Tinybird CLI from Docker
 

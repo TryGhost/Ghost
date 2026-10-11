@@ -92,8 +92,9 @@ export function ghostFrontDoorPlugin(backend: string, devBase: string): Plugin {
       server.printUrls = () => {
         printUrls();
         logger.info('  Waiting for Ghost…');
+        const siteHostname = process.env.GHOST_DEV_HOSTNAME ?? 'localhost';
         void ready.then(() =>
-          logger.info(`  ➜  Ghost:   http://localhost:${server.config.server.port}/ghost/`),
+          logger.info(`  ➜  Ghost:   http://${siteHostname}:${server.config.server.port}/ghost/`),
         );
       };
 

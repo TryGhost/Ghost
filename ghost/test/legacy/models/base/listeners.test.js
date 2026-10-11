@@ -69,14 +69,13 @@ describe('Models: listeners', function () {
           }),
         );
 
-        const result = await Promise.all(
-          scope.posts.map(function (post) {
-            return models.Post.add(post, testUtils.context.owner);
-          }),
-        );
+        // Fixture inserts need no concurrency and can deadlock on MySQL.
+        posts = [];
+        for (const post of scope.posts) {
+          posts.push(await models.Post.add(post, testUtils.context.owner));
+        }
 
-        assert.equal(result.length, 3);
-        posts = result;
+        assert.equal(posts.length, 3);
       });
 
       it('timezone changes from London to Los Angeles', async function () {
@@ -105,7 +104,7 @@ describe('Models: listeners', function () {
         scope.newTimezone = 'America/Los_Angeles';
         scope.oldTimezone = 'Europe/London';
 
-        eventsToRemember['settings.timezone.edited']({
+        await eventsToRemember['settings.timezone.edited']({
           attributes: { value: scope.newTimezone },
           _previousAttributes: { value: scope.oldTimezone },
         });
@@ -175,7 +174,7 @@ describe('Models: listeners', function () {
         scope.oldTimezone = 'Asia/Baghdad';
         scope.newTimezone = 'Etc/UTC';
 
-        eventsToRemember['settings.timezone.edited']({
+        await eventsToRemember['settings.timezone.edited']({
           attributes: { value: scope.newTimezone },
           _previousAttributes: { value: scope.oldTimezone },
         });
@@ -246,7 +245,7 @@ describe('Models: listeners', function () {
         scope.oldTimezone = 'Europe/Amsterdam';
         scope.newTimezone = 'Asia/Seoul';
 
-        eventsToRemember['settings.timezone.edited']({
+        await eventsToRemember['settings.timezone.edited']({
           attributes: { value: scope.newTimezone },
           _previousAttributes: { value: scope.oldTimezone },
         });
@@ -293,7 +292,7 @@ describe('Models: listeners', function () {
 
     describe('db has no scheduled posts', function () {
       it('no scheduled posts', async function () {
-        eventsToRemember['settings.timezone.edited']({
+        await eventsToRemember['settings.timezone.edited']({
           attributes: { value: scope.newTimezone },
           _previousAttributes: { value: scope.oldTimezone },
         });
