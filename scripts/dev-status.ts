@@ -14,11 +14,13 @@ import {
   upGroup,
   worktreeList,
 } from './lib/dev-stack.ts';
+import { type DevProcess, devProcesses, processEntries } from './lib/dev-processes.ts';
 import { browse, type DevStatus } from './lib/dev-status-view.ts';
 import { checkoutRoot, devUrl } from './lib/ghost-dev-env.ts';
 
 // This checkout's dev stack and every other running one, or with --all every checkout that has
-// run `pnpm dev`, found from each `.ghost-dev.env` and whether its ports answer. In a terminal
+// run `pnpm dev`, found from each `.ghost-dev.env` and whether its ports answer, plus every
+// checkout, deleted or not, with processes whose nx has exited. In a terminal
 // the list stays open, with keys to open, start and stop each checkout's Ghost. --watch redraws
 // the table every two seconds.
 const { values } = parseArgs({
@@ -36,35 +38,59 @@ if (values.json && values.watch) {
 async function status(
   root: string,
   branch: string | null,
-  env: Record<string, string>,
+  env: Record<string, string> | undefined,
+  procs: DevProcess[],
 ): Promise<DevStatus> {
-  const ports = devPorts(env);
+  const ports = env ? devPorts(env) : [];
   const listening = (await Promise.all(ports.map(isListening))).some(Boolean);
   const group = upGroup(root);
+  const mine = procs.filter((proc) => proc.root === root).sort((a, b) => a.started - b.started);
+  const orphaned = mine.some((proc) => proc.orphaned);
   return {
-    name: env.GHOST_DEV_NAME ?? basename(root),
+    name: env?.GHOST_DEV_NAME ?? basename(root),
     root,
     branch,
     operation: gitOperation(root) ?? null,
     current: root === checkoutRoot,
-    state: listening ? 'running' : group ? 'starting' : 'stopped',
-    url: `${devUrl(env)}ghost/`,
+    state: listening ? 'running' : group ? 'starting' : orphaned ? 'orphaned' : 'stopped',
+    url: env ? `${devUrl(env)}ghost/` : null,
     ports,
-    database: env.GHOST_DEV_DATABASE ?? null,
+    database: env?.GHOST_DEV_DATABASE ?? null,
     pid: group ?? null,
     memory: null,
     startedAt: null,
     log: existsSync(join(root, LOG_FILE)) ? join(root, LOG_FILE) : null,
+    processes: mine.map((proc) => ({
+      pid: proc.pid,
+      pgid: proc.pgid,
+      command: proc.command,
+      memory: proc.rss * 1024,
+      startedAt: new Date(proc.started).toISOString(),
+      orphaned: proc.orphaned,
+    })),
   };
 }
 
 /** `keep` lists checkouts to include even when they're stopped */
 async function snapshot(keep = new Set<string>()): Promise<DevStatus[]> {
+  const worktrees = worktreeList();
+  const devProcs = devProcesses(
+    processEntries(),
+    worktrees.map(({ root }) => root),
+  );
+  // A checkout without `.ghost-dev.env`, or one deleted since, is only listed for its orphans
+  const orphaned = new Set(devProcs.filter((proc) => proc.orphaned).map((proc) => proc.root));
+  const checkouts = [
+    ...worktrees,
+    ...[...orphaned]
+      .filter((root) => !worktrees.some((worktree) => worktree.root === root))
+      .map((root) => ({ root, branch: null })),
+  ];
   const rows = (
     await Promise.all(
-      worktreeList().flatMap(({ root, branch }) => {
+      checkouts.flatMap(({ root, branch }) => {
         const env = checkoutEnv(root);
-        return env ? [status(root, branch, env)] : [];
+        return env || orphaned.has(root) ? [status(root, branch, env, devProcs)] : [];
       }),
     )
   ).filter((row) => values.all || row.current || row.state !== 'stopped' || keep.has(row.root));
@@ -79,6 +105,11 @@ async function snapshot(keep = new Set<string>()): Promise<DevStatus[]> {
     });
     row.pid = procs[0]?.pid ?? null;
     row.memory = procs.reduce((total, proc) => total + proc.rss * 1024, 0);
+  }
+  for (const row of rows.filter((candidate) => candidate.state === 'orphaned')) {
+    const orphans = row.processes.filter((proc) => proc.orphaned);
+    row.pid = orphans[0]?.pid ?? null;
+    row.memory = orphans.reduce((total, proc) => total + proc.memory, 0);
   }
   for (const row of rows) {
     const started = row.pid && processStart(row.pid);
@@ -96,7 +127,7 @@ function table(rows: DevStatus[]): string {
     row.current ? '*' : '',
     row.name,
     row.state,
-    row.url,
+    row.url ?? '',
     row.ports.join('/'),
     row.database ?? '',
     String(row.pid ?? ''),
