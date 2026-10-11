@@ -116,7 +116,7 @@ const StatsHeader: React.FC<StatsHeaderProps> = ({ children }) => {
           </PageHeader.Left>
           {siteMeta && <PageHeader.Actions>{siteMeta}</PageHeader.Actions>}
         </PageHeader>
-        <Navbar className="flex-col items-start gap-y-0 border-none pb-4 lg:flex-row lg:items-center">
+        <Navbar className="flex-col items-start gap-y-0 border-none pt-0! lg:flex-row lg:items-center">
           {tabs}
           {children}
         </Navbar>
