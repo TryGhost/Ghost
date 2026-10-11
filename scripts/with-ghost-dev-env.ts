@@ -113,6 +113,19 @@ const child = spawn(command, args, {
 for (const signal of ['SIGINT', 'SIGTERM'] as const) {
   process.on(signal, () => child.kill(signal));
 }
+// Nx starts tasks in their own sessions and can exit without stopping them, e.g. when its
+// terminal closes
+const nx = Number(process.env.NX_INVOCATION_ROOT_PID);
+if (nx) {
+  const watch = setInterval(() => {
+    try {
+      process.kill(nx, 0);
+    } catch {
+      clearInterval(watch);
+      child.kill('SIGTERM');
+    }
+  }, 1000).unref();
+}
 child.on('exit', (code, signal) => {
   if (signal) {
     process.kill(process.pid, signal);
