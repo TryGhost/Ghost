@@ -22,10 +22,13 @@ function isEditable(target: EventTarget | null): boolean {
   );
 }
 
-function usePlaceShortcuts() {
+function usePlaceShortcuts(enabled: boolean) {
   const navigate = useNavigate();
 
   React.useEffect(() => {
+    if (!enabled) {
+      return;
+    }
     const onKeyDown = (event: KeyboardEvent) => {
       if (!event.altKey || event.metaKey || event.ctrlKey || event.shiftKey) {
         return;
@@ -39,7 +42,7 @@ function usePlaceShortcuts() {
     };
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, [navigate]);
+  }, [enabled, navigate]);
 }
 
 interface PlaceTabProps {
@@ -149,11 +152,12 @@ function Stat({ label, to, children }: { label: string; to: string; children: Re
  * time and the site's numbers on the right. A three-column grid, so search
  * stays centred whatever is either side of it.
  */
-export function AdminFrameTopBar() {
+export function AdminFrameTopBar({ hidden = false }: { hidden?: boolean }) {
   const { pathname } = useLocation();
   const stats = useFrameStats();
   const isViewSite = pathname === '/site';
-  usePlaceShortcuts();
+  // Closed around a full-screen surface, nothing shows where they'd lead
+  usePlaceShortcuts(!hidden);
 
   return (
     <div className="grid h-full grid-cols-3 items-center" data-testid="admin-frame-top-bar">

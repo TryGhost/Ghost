@@ -399,7 +399,11 @@ export function AdminLayout({ children }: AdminLayoutProps) {
     <GlobalSearchProvider>
       {!dunningLocked && <SkipLink target={mainRef} />}
       {adminFrame ? (
-        <AdminFrame locked={dunningLocked} mode={frameMode} topBar={<AdminFrameTopBar />}>
+        <AdminFrame
+          locked={dunningLocked}
+          mode={frameMode}
+          topBar={<AdminFrameTopBar hidden={frameMode === 'hidden'} />}
+        >
           {sidebarLayout}
         </AdminFrame>
       ) : (
