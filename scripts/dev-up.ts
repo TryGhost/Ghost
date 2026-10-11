@@ -3,6 +3,7 @@ import { closeSync, openSync, readFileSync, rmSync, writeFileSync } from 'node:f
 import { join } from 'node:path';
 import { setTimeout as sleep } from 'node:timers/promises';
 import { parseArgs } from 'node:util';
+import { createCodexMarker, watchedDevCommand } from './lib/dev-lifecycle.ts';
 import {
   checkoutSettings,
   devPorts,
@@ -58,16 +59,10 @@ const logFile = join(checkoutRoot, LOG_FILE);
 const pidFile = join(checkoutRoot, PID_FILE);
 const log = openSync(logFile, 'w');
 // Its own process group, so it outlives this command and `pnpm dev:down` can signal all of it.
-// A loop in it stops it once the checkout's .git or its Claude Code session (CLAUDE_PID) is gone.
-const watched = `(while sleep 5; do
-  kill -0 $$ 2>/dev/null || exit
-  if [ ! -e "$1/.git" ]; then echo "Stopping Ghost dev: $1 was deleted"
-  elif [ -n "$3" ] && ! kill -0 "$3" 2>/dev/null; then echo "Stopping Ghost dev: Claude Code (pid $3) exited"
-  else continue; fi
-  trap '' TERM; kill -s TERM 0; sleep 10; kill -s KILL 0
-done) & exec sh -c "$2"`;
-const args = [checkoutRoot, command, process.env.CLAUDE_PID ?? ''];
-const child = spawn('sh', ['-c', watched, 'sh', ...args], {
+// Its watcher stops it when the checkout, owning agent session, or group leader goes away.
+const marker = createCodexMarker(checkoutRoot, process.env.CODEX_THREAD_ID);
+const args = [checkoutRoot, command, process.env.CLAUDE_PID ?? '', marker];
+const child = spawn('sh', ['-c', watchedDevCommand, 'sh', ...args], {
   cwd: checkoutRoot,
   detached: true,
   stdio: ['ignore', log, log],
