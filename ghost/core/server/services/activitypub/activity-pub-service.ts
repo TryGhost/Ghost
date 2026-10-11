@@ -104,7 +104,17 @@ export class ActivityPubService {
         },
       });
 
+      if (!res.ok) {
+        this.logging.warn(`ActivityPub is unavailable (${res.status}) - skipping webhook setup`);
+        return null;
+      }
+
       const body = await res.json();
+
+      if (!body.webhook_secret) {
+        this.logging.error('No webhook secret found - cannot initialise');
+        return null;
+      }
 
       return body.webhook_secret;
     } catch (err: unknown) {
@@ -154,7 +164,6 @@ export class ActivityPubService {
     const secret = await this.getWebhookSecret();
 
     if (!secret) {
-      this.logging.error('No webhook secret found - cannot initialise');
       return;
     }
 
