@@ -40,9 +40,8 @@ export function endCodexSession(root: string, input: unknown): void {
   }
 }
 
-// Runs inside the detached process group. Keep watching even if the leader exits, so its
-// surviving children receive the same TERM/KILL shutdown as `dev:down`. Nx tasks lead their own
-// process groups, so each poll records what to signal in the tree, as `treeTargets` does.
+// Runs inside the detached process group and records the tree each poll, as `treeTargets` does,
+// so Nx tasks, which lead their own groups, still get dev:down's TERM/KILL after the leader exits.
 export const watchedDevCommand = `tree() {
   if [ -d /proc/self ]; then cat /proc/[0-9]*/stat; else ps -Ao pid=,ppid=,pgid=; fi 2>/dev/null |
     awk -v g=$$ '/\\)/ { pid = $1; sub(/.*\\) /, ""); $0 = pid " " $2 " " $3 }

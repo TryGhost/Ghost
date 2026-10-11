@@ -66,14 +66,11 @@ describe('parsePsTable', () => {
   it('reads each process and the Nx run from its environment', () => {
     const output = [
       '    1     0     1 /sbin/launchd',
-      '38393     1 38393 node /w/vite.js build --watch NX_INVOCATION_ROOT_PID=38374 PWD=/w/apps/portal',
-      '60928 26078 60928 grep NX_INVOCATION_ROOT_PID=38374x',
-      'continued environment value',
+      '38393     1 38393 node vite.js build --watch NX_INVOCATION_ROOT_PID=38374 NX_WORKSPACE_ROOT=/src/my wt PWD=/src/my wt/apps/portal',
     ].join('\n');
     assert.deepEqual(parsePsTable(output), [
-      { pid: 1, ppid: 0, pgid: 1, nxRoot: undefined },
-      { pid: 38393, ppid: 1, pgid: 38393, nxRoot: 38374 },
-      { pid: 60928, ppid: 26078, pgid: 60928, nxRoot: undefined },
+      { pid: 1, ppid: 0, pgid: 1, nxRoot: undefined, nxWorkspace: undefined },
+      { pid: 38393, ppid: 1, pgid: 38393, nxRoot: 38374, nxWorkspace: '/src/my wt' },
     ]);
   });
 });
@@ -96,8 +93,10 @@ describe('treeTargets', () => {
     assert.deepEqual(treeTargets(table, [100]), [-100, -110, -120]);
   });
 
-  it('finds the process group of a leader that has exited', () => {
-    assert.deepEqual(treeTargets(table.slice(1), [100]), [-100, -110, -120]);
+  it('finds the rest of the process group of a leader that has exited', () => {
+    // Its children are reparented, so only its group still ties the watcher to it
+    const orphans = table.slice(1).map((proc) => (proc.ppid === 100 ? { ...proc, ppid: 1 } : proc));
+    assert.deepEqual(treeTargets(orphans, [100]), [-100]);
   });
 
   it('signals processes alone in a process group led from outside the tree', () => {

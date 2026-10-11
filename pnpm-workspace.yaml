@@ -87,9 +87,10 @@ catalog:
   '@tailwindcss/vite': 4.3.3
   '@tanstack/react-query': 5.101.4
   '@tanstack/react-virtual': 3.14.13
+  '@testing-library/dom': 10.4.1
   '@testing-library/jest-dom': 6.9.1
   '@testing-library/preact': 3.2.4
-  '@testing-library/react': 14.3.1
+  '@testing-library/react': 16.3.2
   '@tryghost/brute-knex': 3.2.2
   '@tryghost/color-utils': 0.2.21
   '@tryghost/custom-fonts': 1.0.12
@@ -209,7 +210,7 @@ catalog:
   typescript-eslint: 8.71.0
   validator: 13.15.35
   vite: 8.1.3
-  vite-plugin-svgr: 4.5.0
+  vite-plugin-svgr: 5.2.0
   vitest: 4.1.11
   vitest-browser-react: 2.2.0
   zod: 4.6.5
@@ -269,6 +270,8 @@ overrides:
   moment: 'catalog:'
   moment-timezone: 'catalog:'
   'eslint-plugin-ghost>@typescript-eslint/eslint-plugin': 8.71.0
+  # @types/bookshelf asks for knex 0.21, which only its types read
+  '@types/bookshelf>knex': 'catalog:'
   # juice 11 pins cheerio 1.0.0 exactly. Point it at the catalog's 1.2.0 so juice
   # and ghost share one copy instead of keeping two parsers resident - both
   # only ever call `load`. See patchedDependencies for the matching slim import.
@@ -293,7 +296,6 @@ overrides:
   'esbuild@>=0.28.0': 'catalog:'
   # gscan pins handlebars exactly; lift every copy past the 4.7.10 security fixes
   'handlebars@<4.7.10': ^4.7.10
-  'micromatch@<4.0.8': ^4.0.8
   'minimatch@<3.1.4': ^3.1.4
   'smol-toml@<1.9.0': ^1.9.0
   supports-color: '10.2.2'

@@ -21,9 +21,8 @@ import {
 import { devProcesses, processEntries, stopOrphans } from './lib/dev-processes.ts';
 import { checkoutRoot } from './lib/ghost-dev-env.ts';
 
-// Stops what holds this checkout's ports, the nx process running the stack or a task that
-// outlived nx, with all they started, and Nx tasks whose nx has exited. MySQL, Redis and
-// Mailpit keep running for other checkouts.
+// Stops this checkout's stack: whatever holds its ports, everything that started, and Nx tasks
+// whose nx has exited. MySQL, Redis and Mailpit keep running for other checkouts.
 // --all stops every checkout's stack, then the shared Docker services. --orphans stops only the
 // tasks whose nx has exited, in every checkout or the checkouts named.
 const { values, positionals } = parseArgs({
@@ -59,7 +58,7 @@ const NX = /\bnx(\.js)? run\b/;
 const roots = values.all ? checkouts().filter((root) => checkoutEnv(root)) : [checkoutRoot];
 const table = processTable();
 const running = new Set(table.map((proc) => proc.pid));
-// What's stopping, and the pids whose process trees it is
+// Each description, and the pids whose process trees it stops
 const targets = new Map<string, number[]>();
 const ours: number[] = [];
 for (const root of roots) {
@@ -79,7 +78,11 @@ for (const root of roots) {
         targets.set(`nx (pid ${proc.pid})${where}`, [proc.pid]);
       }
     } else if (inCheckout(pid, root)) {
-      targets.set(`pid ${pid} on port ${port}, whose nx has exited${where}`, [pid]);
+      // From its group leader, which can restart it, as nodemon does Ghost
+      const leader = processInfo(pid)?.pgid ?? pid;
+      targets.set(`pid ${pid} on port ${port}, whose nx has exited${where}`, [
+        inCheckout(leader, root) ? leader : pid,
+      ]);
     } else {
       console.error(
         `Port ${port}${where} is held by pid ${pid}, which isn't ${values.all ? 'that' : 'this'} checkout's, so it stays.`,
@@ -91,10 +94,10 @@ for (const root of roots) {
   }
   // Nx starts each task in its own process group, which outlives an nx that's killed
   const strays = table
-    .filter((proc) => proc.nxRoot && !running.has(proc.nxRoot) && inCheckout(proc.pid, root))
+    .filter((proc) => proc.nxWorkspace === root && proc.nxRoot && !running.has(proc.nxRoot))
     .map((proc) => proc.pid);
   if (strays.length > 0) {
-    targets.set(`Nx tasks whose nx has exited (pid ${strays.join(', ')})${where}`, strays);
+    targets.set(`Nx tasks whose nx has exited${where}`, strays);
   }
 }
 
