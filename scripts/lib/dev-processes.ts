@@ -2,7 +2,7 @@ import { execFileSync } from 'node:child_process';
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { userInfo } from 'node:os';
 import { setTimeout as sleep } from 'node:timers/promises';
-import { parseProc, type Proc, worktreeList } from './dev-stack.ts';
+import { parseProc, type Proc, treeTargets, worktreeList } from './dev-stack.ts';
 
 export interface ProcessEntry extends Proc {
   /** Milliseconds since the epoch */
@@ -142,20 +142,6 @@ export function devProcesses(
 }
 
 /**
- * What to signal to stop `targets`: each one's process group as a negative pid when nothing else
- * is in it, else the process itself
- */
-export function signalTargets(
-  targets: Pick<Proc, 'pid' | 'pgid'>[],
-  all: Pick<Proc, 'pid' | 'pgid'>[],
-): number[] {
-  const pids = new Set(targets.map(({ pid }) => pid));
-  const whole = (pgid: number) =>
-    pgid > 1 && all.every((proc) => proc.pgid !== pgid || pids.has(proc.pid));
-  return [...new Set(targets.map(({ pid, pgid }) => (whole(pgid) ? -pgid : pid)))];
-}
-
-/**
  * Stops the orphaned processes in `root` that are still the ones in `expected`, with SIGTERM and
  * then SIGKILL after 10s like `dev:down`. Resolves to how many it stopped.
  */
@@ -176,7 +162,10 @@ export async function stopOrphans(
           pid === proc.pid && startedAt === new Date(proc.started).toISOString(),
       ),
   );
-  const targets = signalTargets(orphans, entries);
+  const targets = treeTargets(
+    entries,
+    orphans.map(({ pid }) => pid),
+  );
   const send = (pid: number, signal: NodeJS.Signals | 0) => {
     try {
       process.kill(pid, signal);
