@@ -146,7 +146,18 @@ the checkout's ports are in use. Pass a variant's script name, such as
 way. `pnpm dev:status` finds each checkout's Ghost through the ports in its
 `.ghost-dev.env`, and `--json` prints the list for scripts. `pnpm dev:down`
 stops whatever holds this checkout's ports, including what a killed run left
-behind, and leaves MySQL, Redis, and Mailpit running.
+behind, and leaves MySQL, Redis, and Mailpit running. Ghost started by
+`pnpm dev:up` also stops itself within a few seconds of its worktree being
+deleted, its process group leader exiting, or its owning Claude Code or Codex
+session ending. Claude Code uses `CLAUDE_PID`; Codex uses a session marker and
+the repository's `SessionEnd` hook. Review and trust that hook in Codex before
+relying on session cleanup (in the CLI, use `/hooks`). Without hook trust,
+worktree deletion and leader-exit cleanup still work.
+
+Codex runs `SessionEnd` when an open conversation is archived or deleted, when
+it closes normally, or after a conversation has been idle and closed in every
+client for 30 minutes. Finishing a turn or switching chats leaves Ghost running.
+See the [Codex hook lifecycle](https://learn.chatgpt.com/docs/hooks#sessionend).
 
 `pnpm dev:gc` lists the `dev_*` databases of worktrees that no longer exist, and
 `pnpm dev:gc --yes` drops them.

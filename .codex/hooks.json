@@ -1,0 +1,15 @@
+{
+  "hooks": {
+    "SessionEnd": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$(git rev-parse --show-toplevel)/scripts/dev-session-end.ts\"",
+            "timeout": 3
+          }
+        ]
+      }
+    ]
+  }
+}

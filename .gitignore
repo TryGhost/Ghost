@@ -67,6 +67,7 @@ typings/
 .env
 # Per-checkout ports and database for `pnpm dev`
 .ghost-dev.env
+.ghost-dev.sessions/
 
 # IDE
 .idea/

@@ -3,6 +3,7 @@ import { closeSync, openSync, readFileSync, rmSync, writeFileSync } from 'node:f
 import { join } from 'node:path';
 import { setTimeout as sleep } from 'node:timers/promises';
 import { parseArgs } from 'node:util';
+import { createCodexMarker, watchedDevCommand } from './lib/dev-lifecycle.ts';
 import {
   checkoutSettings,
   devPorts,
@@ -57,8 +58,14 @@ if (group || busy) {
 const logFile = join(checkoutRoot, LOG_FILE);
 const pidFile = join(checkoutRoot, PID_FILE);
 const log = openSync(logFile, 'w');
-// Its own process group, so it outlives this command and `pnpm dev:down` can signal all of it
-const child = spawn('sh', ['-c', command], {
+// Its own process group, so it outlives this command and `pnpm dev:down` can signal all of it.
+// Its watcher stops it when the checkout, owning agent session, or group leader goes away.
+// SessionEnd's session_id is the root session's, which subagent threads share; older Codex
+// versions only set CODEX_THREAD_ID
+const codexSession = process.env.CODEX_SESSION_ID ?? process.env.CODEX_THREAD_ID;
+const marker = createCodexMarker(checkoutRoot, codexSession);
+const args = [checkoutRoot, command, process.env.CLAUDE_PID ?? '', marker];
+const child = spawn('sh', ['-c', watchedDevCommand, 'sh', ...args], {
   cwd: checkoutRoot,
   detached: true,
   stdio: ['ignore', log, log],
