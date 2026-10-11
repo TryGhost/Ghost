@@ -24,7 +24,7 @@ const ListPageLargeTitleState = createContext<{
 // over, then solid (a layer the handover fades in), with its padding set by
 // LARGE_TITLE_HEADER_OVERLAP; overriding Admin's page chrome, hence important
 const LARGE_TITLE_HEADER_CLASS_NAME =
-  'bg-none! pt-2! pb-0! backdrop-blur-none! before:pointer-events-none before:absolute before:inset-0 before:-z-10 before:bg-background';
+  'bg-none! pt-4! pb-0! backdrop-blur-none! before:pointer-events-none before:absolute before:inset-0 before:-z-10 before:bg-background';
 
 /**
  * Where a list page's title shows large (PageHeader.Title renders into it),
