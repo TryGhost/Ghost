@@ -278,6 +278,8 @@ overrides:
   # and ghost share one copy instead of keeping two parsers resident - both
   # only ever call `load`. See patchedDependencies for the matching slim import.
   'juice>cheerio': 'catalog:'
+  # mppx pins ox exactly; use viem's copy so Ghost ships one ox
+  'mppx>ox': 0.14.33
   # mg-utils depends on the npm release of kg-default-cards, so the published
   # copy was installed alongside the workspace one that ghost links — and
   # it dragged its own published kg-utils, kg-markdown-html-renderer and
