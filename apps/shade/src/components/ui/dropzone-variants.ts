@@ -27,7 +27,7 @@ const dropzoneBaseVariants = cva(
   },
 );
 
-// Keep the exported recipe useful outside the component, with current defaults.
+// Keep the exported variants function useful outside the component, with current defaults.
 function dropzoneVariants(
   props: Parameters<typeof dropzoneBaseVariants>[0] = {},
   isAdmin7 = true,

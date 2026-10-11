@@ -4,10 +4,6 @@ import { type VariantProps } from 'class-variance-authority';
 import { indicatorVariants } from '@/components/ui/indicator-variants';
 import { cn } from '@/lib/utils';
 
-/**
- * A lightweight status dot component for showing visual status indicators
- * with semantic colors and animation states.
- */
 export interface IndicatorProps
   extends React.HTMLAttributes<HTMLSpanElement>, VariantProps<typeof indicatorVariants> {
   label?: string;

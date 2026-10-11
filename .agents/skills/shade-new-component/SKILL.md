@@ -15,7 +15,7 @@ Before marking a Shade component or pattern done, this checklist must pass.
 - Exported identifier: **PascalCase** (`DropdownMenu`).
 - Hooks, functions, variables: camelCase.
 - Sibling **`<name>.stories.tsx`** is required (same folder).
-- A component file exports only components, so Fast Refresh can hot-update it (ESLint enforces this). An exported `cva()` config goes in a sibling **`<name>-variants.ts`**; exported hooks, contexts and helpers go in their own sibling module (`sidebar-context.ts`). These siblings belong to the component; they aren't Recipes.
+- A component file exports only components and types, so Fast Refresh can hot-update it (ESLint enforces this). An exported `cva()` config goes in a sibling **`<name>-variants.ts`**; exported hooks, contexts and helpers go in their own sibling module (`sidebar-context.ts`). These siblings belong to the component; they aren't Recipes.
 - Inside Shade itself, import via the `@/` alias (`@/lib/utils`, `@/components/ui/input-surface`).
 
 ## Storybook title prefix
@@ -116,7 +116,7 @@ See `shade-tokens-not-hex` and `shade-no-dark-variants`.
 - [ ] `className` forwarded and merged with `cn()` (always)
 - [ ] `forwardRef` if the component renders DOM consumers might ref
 - [ ] `cva()` if the component has variants; `defaultVariants` set
-- [ ] The component file exports only components; exported variants, hooks and contexts live in sibling modules
+- [ ] The component file exports only components and types; exported variants, hooks and contexts live in sibling modules
 - [ ] All four required states work and are visible in the story
 - [ ] Semantic tokens only — no hex, no raw greys, no `dark:` colour variants
 - [ ] No product-specific props on a generic Component

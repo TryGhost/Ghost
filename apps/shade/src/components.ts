@@ -18,9 +18,7 @@ export * from './components/ui/chart';
 export * from './components/ui/checkbox';
 export * from './components/ui/code-editor';
 export * from './components/ui/command';
-// The scorer cmdk filters with by default, passed on because a list whose items are identified
-// by something other than their label has to say what to search instead, and the answer should
-// be "the same way as everywhere else, over this string" rather than a second kind of matching.
+// cmdk's default scorer, for lists that filter on keywords instead of labels
 export { defaultFilter as commandDefaultFilter } from 'cmdk';
 export * from './components/ui/combobox';
 export * from './components/ui/context-menu';

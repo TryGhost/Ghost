@@ -1,5 +1,9 @@
 import { cva } from 'class-variance-authority';
 
+/**
+ * A lightweight status dot component for showing visual status indicators
+ * with semantic colors and animation states.
+ */
 const indicatorVariants = cva('rounded-full', {
   variants: {
     variant: {
