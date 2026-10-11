@@ -148,9 +148,9 @@ local `.env` and `.env.*` files covers Vite's mode-specific configuration withou
 printing their values. Shard and other
 CLI arguments get separate cache keys. Use `--skip-nx-cache` to force a fresh run.
 
-`pnpm test` and `pnpm check` at the root select Admin's aggregate `test` target.
-It schedules the same `test:unit` and `test:types` tasks and their prerequisites.
-Only those tasks are cached, so an outer cache cannot skip their input checks.
+`pnpm test` and `pnpm check` at the root run Admin's `test:unit` and `test:types`
+tasks and their prerequisites. Admin's aggregate `test` target schedules the same
+tasks and is not cached itself, so an outer cache cannot skip their input checks.
 
 CI changes confined to Admin's `*.test.ts(x)`, `*.screen.ts`, `test-utils/` or
 `vitest.acceptance.config.ts` skip the build, packaging and browser E2E lane.

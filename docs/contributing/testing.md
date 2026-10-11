@@ -13,11 +13,11 @@ pnpm check
 ```
 
 This is the default one-stop command for formatting checks, linting, and
-testing. It runs `pnpm format:check`, `pnpm lint`, and then `pnpm test` across
-the monorepo.
+testing. It runs `pnpm format:check`, `pnpm lint`, and then `pnpm test`, which
+runs every workspace's `test:unit` and `test:types` targets.
 
-`pnpm check` does not run the Playwright browser end-to-end suite. Run it
-separately when your change affects that area.
+`pnpm check` does not run app acceptance suites or the Playwright browser
+end-to-end suite. Run them separately when your change affects that area.
 
 ## Choose a Test Suite
 

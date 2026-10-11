@@ -45,8 +45,8 @@ pnpm check
 ```
 
 `pnpm check` runs `pnpm format:check`, `pnpm lint`, and then `pnpm test`. It does
-not include the browser E2E suite, so run it separately when the affected area
-requires it. CI uses the Nx affected graph and path
+not include app acceptance suites or the browser E2E suite, so run them separately
+when the affected area requires it. CI uses the Nx affected graph and path
 filters to select the relevant lint, unit, integration, acceptance, build, and
 browser-test jobs for a pull request.
 

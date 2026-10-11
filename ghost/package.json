@@ -342,11 +342,6 @@
           "build:assets"
         ]
       },
-      "lint": {
-        "dependsOn": [
-          "^build"
-        ]
-      },
       "test:all": {
         "dependsOn": [
           "build:assets"
