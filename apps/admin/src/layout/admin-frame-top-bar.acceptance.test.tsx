@@ -1,11 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { userEvent } from 'vitest/browser';
+import { page, userEvent } from 'vitest/browser';
 
 import {
   currentRoute,
   currentUserResponse,
   fakeAdminStats,
   fakeAnalyticsOverview,
+  fakeAutomations,
   fakeFrameOrigin,
   fakeTags,
   fakeTinybirdPipe,
@@ -141,5 +142,26 @@ describe('Admin 7 frame top bar', () => {
     // Home, which sends an admin on to Analytics
     await expect.poll(currentRoute).toBe('/analytics');
     await expect.element(adminFrameScreen.place('Ghost')).toHaveAttribute('aria-current', 'page');
+  });
+
+  it('keeps its places out of reach while the frame is closed around a full-screen surface', async () => {
+    fakeAutomations([]);
+    fakeAdminStats.memberCount();
+    fakeAdminStats.mrr();
+    await renderAdminApp('/automations/new', {
+      ...framed(),
+      labs: {
+        admin7Design: true,
+        automations: true,
+        automationsPerTier: true,
+        automationRunAnalytics: true,
+      },
+    });
+    await expect.element(page.getByRole('button', { name: 'Add step', exact: true })).toBeVisible();
+
+    await userEvent.keyboard('{Alt>}2{/Alt}');
+
+    expect(currentRoute()).toBe('/automations/new');
+    expect(adminFrameScreen.topBar().element().closest('[inert]')).not.toBeNull();
   });
 });

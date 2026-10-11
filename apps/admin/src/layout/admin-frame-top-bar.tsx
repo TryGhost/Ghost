@@ -28,10 +28,13 @@ function isEditable(target: EventTarget | null): boolean {
   );
 }
 
-function usePlaceShortcuts() {
+function usePlaceShortcuts(enabled: boolean) {
   const navigate = useNavigate();
 
   React.useEffect(() => {
+    if (!enabled) {
+      return;
+    }
     const onKeyDown = (event: KeyboardEvent) => {
       if (!event.altKey || event.metaKey || event.ctrlKey || event.shiftKey) {
         return;
@@ -45,7 +48,7 @@ function usePlaceShortcuts() {
     };
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, [navigate]);
+  }, [enabled, navigate]);
 }
 
 interface PlaceTabProps {
@@ -204,11 +207,12 @@ function CustomizeToggle() {
  * stays centred whatever is either side of it. On View site, the right side
  * customizes the site's design instead.
  */
-export function AdminFrameTopBar() {
+export function AdminFrameTopBar({ hidden = false }: { hidden?: boolean }) {
   const { pathname } = useLocation();
   const isViewSite = pathname === VIEW_SITE_PATH;
   const canCustomize = useCanCustomizeSite();
-  usePlaceShortcuts();
+  // Closed around a full-screen surface, nothing shows where they'd lead
+  usePlaceShortcuts(!hidden);
 
   return (
     <div className="grid h-full grid-cols-3 items-center" data-testid="admin-frame-top-bar">
