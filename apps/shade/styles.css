@@ -94,13 +94,16 @@ html.theme-switching *::after {
    close to the compact header it replaces.
    - space: 28px at 600px tall, 100px from 900px
    - size: 24px at 600px tall, 44px from 900px; and 28px at 800px wide, 44px
-     from 1380px, whichever is smaller */
+     from 1380px, whichever is smaller
+   - size, a step down: 8/11 of it (32px at most, not under 20px), for titles
+     that can run long, like a post's */
 :root {
   --large-title-space: clamp(28px, calc(24vh - 116px), 100px);
   --large-title-size: min(
     clamp(24px, calc(6.667vh - 16px), 44px),
     clamp(28px, calc(2.76vw + 6px), 44px)
   );
+  --large-title-size-sm: max(20px, calc(var(--large-title-size) * 8 / 11));
 }
 
 /* A list page's large title handing over to its sticky header as the page
