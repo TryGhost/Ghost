@@ -64,7 +64,7 @@ const watched = `(while sleep 5; do
   if [ ! -e "$1/.git" ]; then echo "Stopping Ghost dev: $1 was deleted"
   elif [ -n "$3" ] && ! kill -0 "$3" 2>/dev/null; then echo "Stopping Ghost dev: Claude Code (pid $3) exited"
   else continue; fi
-  kill -s TERM 0
+  trap '' TERM; kill -s TERM 0; sleep 10; kill -s KILL 0
 done) & exec sh -c "$2"`;
 const args = [checkoutRoot, command, process.env.CLAUDE_PID ?? ''];
 const child = spawn('sh', ['-c', watched, 'sh', ...args], {
