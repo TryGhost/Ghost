@@ -289,18 +289,8 @@
         "dependsOn": [
           {
             "projects": [
-              "@tryghost/activitypub",
-              "@tryghost/admin-x-framework",
-              "@tryghost/app-contracts",
-              "@tryghost/checkout",
-              "@tryghost/i18n",
-              "@tryghost/kg-clean-basic-html",
-              "@tryghost/kg-converters",
               "@tryghost/kg-unsplash-selector",
-              "@tryghost/koenig-lexical",
-              "@tryghost/metafield-types",
-              "@tryghost/nql-string",
-              "@tryghost/shade"
+              "@tryghost/koenig-lexical"
             ],
             "target": "build"
           }

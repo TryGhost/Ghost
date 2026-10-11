@@ -110,14 +110,16 @@ access and Shade for UI rather than adding new `admin-x-design-system`
 components. Product copy belongs in the `ghost` namespace; follow the
 [internationalization guide](../../docs/practices/internationalization.md).
 
-`pnpm nx run @tryghost/admin:build:dev` prepares library outputs. The normal
-`pnpm dev` command uses this preparation before starting Admin's dev server.
+`pnpm dev` runs `pnpm nx run @tryghost/admin:build:dev` before starting Admin's
+dev server. It builds Koenig Lexical and the Unsplash selector, the only
+workspace packages the dev server loads from built output.
 
 Vite resolves Admin Framework and Shade through their `source` exports in
 development, production and tests. It tracks each package’s source and path aliases
 directly, and transforms Shade’s SVG icons with SVGR. The shared CSS lane stays
 in this app. Compiled library builds and watchers remain available for other
-consumers, and typechecks still use the library declarations.
+consumers. Typechecks and editors still use the library declarations, which
+`pnpm nx run @tryghost/admin:test:types` builds.
 
 The post editor is the largest area with documentation of its own — start at
 [src/editor/README.md](src/editor/README.md) before changing anything under
@@ -133,9 +135,10 @@ The post editor is the largest area with documentation of its own — start at
 From the monorepo root, use `pnpm nx run @tryghost/admin:test:unit` or
 `pnpm nx run @tryghost/admin:test:acceptance`, or
 `pnpm nx run @tryghost/admin:test:types` to build the required React
-libraries first. These targets do not boot Ghost. Their `dependsOn` lists, and
-the React library prerequisites of `build:dev`, explicitly name the React
-dependencies with a `build` target; update all four when adding one.
+libraries first. These targets do not boot Ghost. Their `dependsOn` lists
+explicitly name the React dependencies with a `build` target; update all three
+when adding one. Add it to `build:dev` only if the dev server loads its built
+output rather than its `source` export.
 
 Nx caches unit, acceptance and typecheck results. Their inputs include every
 transitive dependency's default inputs. Test inputs also include Core's aliased card assets, the lockfile and runtime
