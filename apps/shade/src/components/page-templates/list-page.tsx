@@ -1,4 +1,4 @@
-import React, { createContext, useCallback, useContext, useMemo, useState } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { Stack } from '@/components/primitives/stack';
 import { PageHeaderLargeTitleContext } from '@/components/patterns/page-header-large-title';
 import { cn } from '@/lib/utils';
@@ -14,7 +14,11 @@ import {
 type ListPageProps = React.ComponentPropsWithoutRef<'div'>;
 
 /** The list page's large title, for its header: on, and whether the header has stuck. */
-const ListPageLargeTitleState = createContext({ active: false, condensed: false });
+const ListPageLargeTitleState = createContext<{
+  active: boolean;
+  condensed: boolean;
+  headerRef?: (element: HTMLElement | null) => void;
+}>({ active: false, condensed: false });
 
 // Under a large title, the header is see-through until the title has handed
 // over, then solid (a layer the handover fades in), with its padding set by
@@ -78,10 +82,11 @@ function ListPageLargeTitleSlot({
  * it here — stickiness and blur are handled by `ListPage.Header` instead.
  */
 function ListPageHeader({ className, children, style, ...rest }: ListPageProps) {
-  const { active, condensed } = useContext(ListPageLargeTitleState);
+  const { active, condensed, headerRef } = useContext(ListPageLargeTitleState);
 
   return (
     <Stack
+      ref={active ? headerRef : undefined}
       className={cn(
         '-mx-4 px-4 lg:-mx-5 lg:px-5',
         'sticky top-0 z-50',
@@ -160,12 +165,35 @@ const ListPage: ListPageComponent = Object.assign(
       () => (largeTitles ? { slot, registerTitle } : null),
       [largeTitles, slot, registerTitle],
     );
-    const state = useMemo(() => ({ active, condensed: scrolledPast }), [active, scrolledPast]);
+    // The header's height (it doesn't change under a large title), for the
+    // body's table labels to stick beneath it (styles.css)
+    const [host, setHost] = useState<HTMLElement | null>(null);
+    const [header, setHeader] = useState<HTMLElement | null>(null);
+    useEffect(() => {
+      if (!host || !header || typeof ResizeObserver === 'undefined') {
+        return;
+      }
+      const update = () =>
+        host.style.setProperty('--list-page-header-height', `${header.offsetHeight}px`);
+      update();
+      const observer = new ResizeObserver(update);
+      observer.observe(header);
+      return () => {
+        observer.disconnect();
+        host.style.removeProperty('--list-page-header-height');
+      };
+    }, [host, header]);
+
+    const state = useMemo(
+      () => ({ active, condensed: scrolledPast, headerRef: setHeader }),
+      [active, scrolledPast],
+    );
 
     return (
       <PageHeaderLargeTitleContext.Provider value={largeTitle}>
         <ListPageLargeTitleState.Provider value={state}>
           <Stack
+            ref={setHost}
             className={cn('h-full min-h-0 grow px-4 lg:px-6', className)}
             data-large-title-host={active ? '' : undefined}
             data-list-page="list-page"

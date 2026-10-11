@@ -207,7 +207,13 @@ function MembersList({
   };
 
   return (
-    <div ref={parentRef} className="w-full min-w-0" data-testid="members-list-scroll-root">
+    <div
+      ref={parentRef}
+      className="w-full min-w-0"
+      // Pins its own column labels beneath the page header, rather than Shade's
+      data-table-labels="pinned"
+      data-testid="members-list-scroll-root"
+    >
       <div
         className="sticky z-[50] hidden overflow-visible bg-transparent lg:block"
         style={{ top: stickyTop }}
