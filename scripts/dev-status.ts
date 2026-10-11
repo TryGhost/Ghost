@@ -4,18 +4,20 @@ import { setTimeout as sleep } from 'node:timers/promises';
 import { parseArgs } from 'node:util';
 import {
   checkoutEnv,
-  checkouts,
   devPorts,
   isListening,
   listeners,
   LOG_FILE,
   processInfo,
   upGroup,
+  worktreeList,
 } from './lib/dev-stack.ts';
+import { browse, type DevStatus } from './lib/dev-status-view.ts';
 import { checkoutRoot, devUrl } from './lib/ghost-dev-env.ts';
 
 // This checkout's dev stack and every other running one, or with --all every checkout that has
-// run `pnpm dev`, found from each `.ghost-dev.env` and whether its ports answer. --watch redraws
+// run `pnpm dev`, found from each `.ghost-dev.env` and whether its ports answer. In a terminal
+// the list stays open, with keys to open, start and stop each checkout's Ghost. --watch redraws
 // the table every two seconds.
 const { values } = parseArgs({
   options: {
@@ -29,30 +31,35 @@ if (values.json && values.watch) {
   process.exit(1);
 }
 
-async function status(root: string, env: Record<string, string>) {
+async function status(
+  root: string,
+  branch: string | null,
+  env: Record<string, string>,
+): Promise<DevStatus> {
   const ports = devPorts(env);
   const listening = (await Promise.all(ports.map(isListening))).some(Boolean);
   const group = upGroup(root);
   return {
     name: env.GHOST_DEV_NAME ?? basename(root),
     root,
+    branch,
     current: root === checkoutRoot,
     state: listening ? 'running' : group ? 'starting' : 'stopped',
     url: `${devUrl(env)}ghost/`,
     ports,
     database: env.GHOST_DEV_DATABASE ?? null,
     pid: group ?? null,
-    memory: null as number | null,
+    memory: null,
     log: existsSync(join(root, LOG_FILE)) ? join(root, LOG_FILE) : null,
   };
 }
 
-async function snapshot() {
+async function snapshot(): Promise<DevStatus[]> {
   const rows = (
     await Promise.all(
-      checkouts().flatMap((root) => {
+      worktreeList().flatMap(({ root, branch }) => {
         const env = checkoutEnv(root);
-        return env ? [status(root, env)] : [];
+        return env ? [status(root, branch, env)] : [];
       }),
     )
   ).filter((row) => values.all || row.current || row.state !== 'stopped');
@@ -71,7 +78,7 @@ async function snapshot() {
   return rows;
 }
 
-function table(rows: Awaited<ReturnType<typeof snapshot>>): string {
+function table(rows: DevStatus[]): string {
   if (rows.length === 0) {
     return 'No checkout is running Ghost dev.';
   }
@@ -101,13 +108,15 @@ function table(rows: Awaited<ReturnType<typeof snapshot>>): string {
 
 if (values.json) {
   console.log(JSON.stringify(await snapshot(), null, 2));
-} else if (!values.watch) {
-  console.log(table(await snapshot()));
-} else {
+} else if (values.watch) {
   for (;;) {
     const output = table(await snapshot());
     console.clear();
     console.log(`${output}\n\n${new Date().toLocaleTimeString()}, Ctrl+C to stop`);
     await sleep(2000);
   }
+} else {
+  const rows = await snapshot();
+  const interactive = process.stdin.isTTY && process.stdout.isTTY && rows.length > 0;
+  console.log(table(interactive ? await browse(rows, snapshot) : rows));
 }

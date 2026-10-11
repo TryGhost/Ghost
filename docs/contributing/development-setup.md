@@ -144,7 +144,12 @@ pnpm dev:down    # stop this checkout's Ghost, however it was started; --all sto
 the checkout's ports are in use. Pass a variant's script name, such as
 `pnpm dev:up dev:analytics`, to start that instead; `dev:docker` can't run this
 way. `pnpm dev:status` finds each checkout's Ghost through the ports in its
-`.ghost-dev.env`, and `--json` prints the list for scripts. `pnpm dev:down`
+`.ghost-dev.env`, and `--json` prints the list for scripts. In a terminal the
+list stays open and refreshes, with each branch's pull request and checks from
+`gh`: pick a checkout with the arrow keys, then press `a` or `f` to open its
+Admin or site, `p` or `c` to open its pull request or checks, `l` to read its
+log, `s`, `r`, or `k` to start, restart, or stop it, and `q` to quit. `x` stops
+every running checkout whose pull request has merged. `pnpm dev:down`
 stops whatever holds this checkout's ports, including what a killed run left
 behind, and leaves MySQL, Redis, and Mailpit running. Ghost started by
 `pnpm dev:up` also stops itself within a few seconds of its worktree being

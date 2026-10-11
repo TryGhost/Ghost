@@ -4,6 +4,7 @@ import {
   parseLsofListeners,
   parseProc,
   parseProcNetTcp,
+  parseWorktrees,
   unusedDatabases,
 } from '../lib/dev-stack.ts';
 import { worktreeDatabases } from '../lib/ghost-dev-env.ts';
@@ -79,5 +80,21 @@ describe('worktreeDatabases', () => {
     const [plain, hashed] = worktreeDatabases('/Users/dev/.codex/worktrees/1c3f/Ghost');
     assert.equal(plain, 'dev_ghost');
     assert.match(hashed ?? '', /^dev_ghost_[0-9a-f]{6}$/);
+  });
+});
+
+describe('parseWorktrees', () => {
+  it('reads each checkout and its branch, which a detached checkout lacks', () => {
+    const output = [
+      'worktree /src/ghost\nHEAD 77c87d9e\nbranch refs/heads/main',
+      'worktree /src/wt/feature\nHEAD d145cc89\nbranch refs/heads/slars/feature',
+      'worktree /src/wt/detached\nHEAD 0a1b2c3d\ndetached',
+      '',
+    ].join('\n\n');
+    assert.deepEqual(parseWorktrees(output), [
+      { root: '/src/ghost', branch: 'main' },
+      { root: '/src/wt/feature', branch: 'slars/feature' },
+      { root: '/src/wt/detached', branch: null },
+    ]);
   });
 });

@@ -17,17 +17,35 @@ export interface Proc {
   command: string;
 }
 
-/** Every checkout of the repository, the main one first */
-export function checkouts(): string[] {
+/** Each checkout's path and branch in `git worktree list --porcelain` output */
+export function parseWorktrees(output: string): { root: string; branch: string | null }[] {
+  return output
+    .split('\n\n')
+    .map((block) => block.split('\n'))
+    .filter((lines) => lines[0]?.startsWith('worktree '))
+    .map((lines) => ({
+      root: lines[0]?.slice('worktree '.length) ?? '',
+      branch:
+        lines.find((line) => line.startsWith('branch '))?.slice('branch refs/heads/'.length) ??
+        null,
+    }));
+}
+
+/** Every checkout of the repository and its branch, the main one first */
+export function worktreeList(): { root: string; branch: string | null }[] {
   const list = execFileSync('git', ['worktree', 'list', '--porcelain'], {
     cwd: checkoutRoot,
     encoding: 'utf8',
   });
-  return list
-    .split('\n')
-    .filter((line) => line.startsWith('worktree '))
-    .map((line) => line.slice('worktree '.length))
-    .map((path) => (existsSync(path) ? realpathSync(path) : path));
+  return parseWorktrees(list).map(({ root, branch }) => ({
+    root: existsSync(root) ? realpathSync(root) : root,
+    branch,
+  }));
+}
+
+/** Every checkout of the repository, the main one first */
+export function checkouts(): string[] {
+  return worktreeList().map(({ root }) => root);
 }
 
 /** A checkout's `.ghost-dev.env`, if it has run `pnpm dev` */
