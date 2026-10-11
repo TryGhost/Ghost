@@ -36,7 +36,7 @@ const quote = (value: string) => `'${value.replaceAll("'", "'\\''")}'`;
 
 async function stack(
   t: TestContext,
-  options: { claudePid?: number; codex?: boolean; resistTerm?: boolean } = {},
+  options: { claudePid?: number; codex?: boolean; resistTerm?: boolean; task?: boolean } = {},
 ) {
   const root = checkout(t);
   const marker = createCodexMarker(root, options.codex ? 'owner' : undefined);
@@ -47,9 +47,14 @@ async function stack(
     ${options.resistTerm ? "process.on('SIGTERM', () => {});" : ''}
     const server = net.createServer(socket => socket.end());
     server.listen(0, '127.0.0.1', () => fs.writeFileSync(${JSON.stringify(infoFile)},
-      JSON.stringify({port: server.address().port})));
+      JSON.stringify({port: server.address().port, pid: process.pid})));
   `;
-  const command = `${quote(process.execPath)} -e ${quote(server)} & wait`;
+  // As an Nx task, the listener leads its own process group under a leader that stays up
+  const task = `require('node:child_process').spawn(process.execPath, ['-e', ${JSON.stringify(server)}],
+    {detached: true, stdio: 'inherit'}); setInterval(() => {}, 1000);`;
+  const command = options.task
+    ? `exec ${quote(process.execPath)} -e ${quote(task)}`
+    : `${quote(process.execPath)} -e ${quote(server)} & wait`;
   const logFile = join(root, 'watcher.log');
   // The shell stays the leader and the listener is its child, as with Nx's dev tasks.
   const child = spawn(
@@ -76,7 +81,14 @@ async function stack(
     }
   });
   await waitFor(() => existsSync(infoFile));
-  const { port } = JSON.parse(readFileSync(infoFile, 'utf8')) as { port: number };
+  const { port, pid } = JSON.parse(readFileSync(infoFile, 'utf8')) as { port: number; pid: number };
+  t.after(() => {
+    try {
+      process.kill(pid, 'SIGKILL');
+    } catch {
+      // Already stopped.
+    }
+  });
   await waitFor(() => isListening(port));
   return {
     root,
@@ -193,6 +205,25 @@ describe('dev process watcher', { concurrency: true, skip: process.platform === 
     const dev = await stack(t);
     const exit = once(dev.child, 'exit');
     dev.child.kill();
+    await exit;
+    assert.equal(await isListening(dev.port), true);
+    await dev.stopped('process group leader exited');
+  });
+
+  it('stops tasks in their own process groups and removes the pid file', async (t) => {
+    const dev = await stack(t, { codex: true, task: true });
+    writeFileSync(join(dev.root, '.ghost-dev.pid'), `${dev.child.pid}\n`);
+    endCodexSession(dev.root, { session_id: 'owner' });
+    await dev.stopped('Codex session ended');
+    assert.equal(existsSync(join(dev.root, '.ghost-dev.pid')), false);
+  });
+
+  it('stops tasks in their own process groups after the leader exits', async (t) => {
+    const dev = await stack(t, { task: true });
+    // The watcher records the tree on its next poll
+    await sleep(5500);
+    const exit = once(dev.child, 'exit');
+    dev.child.kill('SIGKILL');
     await exit;
     assert.equal(await isListening(dev.port), true);
     await dev.stopped('process group leader exited');

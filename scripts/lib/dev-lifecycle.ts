@@ -41,13 +41,23 @@ export function endCodexSession(root: string, input: unknown): void {
 }
 
 // Runs inside the detached process group. Keep watching even if the leader exits, so its
-// surviving children receive the same TERM/KILL shutdown as `dev:down`.
-export const watchedDevCommand = `(while sleep 5; do
+// surviving children receive the same TERM/KILL shutdown as `dev:down`. Nx tasks lead their own
+// process groups, so each poll records what to signal in the tree, as `treeTargets` does.
+export const watchedDevCommand = `tree() {
+  if [ -d /proc/self ]; then cat /proc/[0-9]*/stat; else ps -Ao pid=,ppid=,pgid=; fi 2>/dev/null |
+    awk -v g=$$ '/\\)/ { pid = $1; sub(/.*\\) /, ""); $0 = pid " " $2 " " $3 }
+      { ppid[$1] = $2; pgid[$1] = $3 }
+      END { t[g]; do { n = 0; for (p in ppid) if (!(p in t) && (ppid[p] in t || pgid[p] in t)) { t[p]; n++ } } while (n)
+        for (p in t) if (p in ppid) { x = (pgid[p] in t) ? -pgid[p] : p; if (x != -g && !(x in s)) { s[x]; print x } } }'
+}
+(while sleep 5; do
   if [ ! -e "$1/.git" ]; then echo "Stopping Ghost dev: $1 was deleted"
   elif [ -n "$3" ] && ! kill -0 "$3" 2>/dev/null; then echo "Stopping Ghost dev: Claude Code (pid $3) exited"
   elif [ -n "$4" ] && [ ! -e "$4" ]; then echo "Stopping Ghost dev: Codex session ended"
   elif ! kill -0 $$ 2>/dev/null; then echo "Stopping Ghost dev: process group leader exited"
-  else continue; fi
+  else stack=$(tree); continue; fi
   [ -z "$4" ] || rm -f "$4"
-  trap '' TERM; kill -s TERM 0; sleep 10; kill -s KILL 0
+  rm -f "$1/.ghost-dev.pid"
+  trap '' TERM; stack="$stack $(tree)"
+  kill -s TERM -- $stack 0 2>/dev/null; sleep 10; kill -s KILL -- $stack 0 2>/dev/null
 done) & exec sh -c "$2"`;

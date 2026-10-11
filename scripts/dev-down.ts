@@ -13,25 +13,30 @@ import {
   listeners,
   PID_FILE,
   processInfo,
+  processTable,
+  treeTargets,
   upGroup,
 } from './lib/dev-stack.ts';
 import { checkoutRoot } from './lib/ghost-dev-env.ts';
 
-// Stops what holds this checkout's ports: the nx process running the stack, which stops its
-// tasks, or a task that outlived nx. MySQL, Redis and Mailpit keep running for other checkouts.
+// Stops what holds this checkout's ports, the nx process running the stack or a task that
+// outlived nx, with all they started, and Nx tasks whose nx has exited. MySQL, Redis and
+// Mailpit keep running for other checkouts.
 // --all stops every checkout's stack, then the shared Docker services.
 const { values } = parseArgs({ options: { all: { type: 'boolean', default: false } } });
 const NX = /\bnx(\.js)? run\b/;
 const roots = values.all ? checkouts().filter((root) => checkoutEnv(root)) : [checkoutRoot];
-// Negative pids are process groups
-const targets = new Map<number, string>();
+const table = processTable();
+const running = new Set(table.map((proc) => proc.pid));
+// What's stopping, and the pids whose process trees it is
+const targets = new Map<string, number[]>();
 const ours: number[] = [];
 for (const root of roots) {
   const env = root === checkoutRoot ? checkoutSettings() : (checkoutEnv(root) ?? {});
   const where = values.all ? ` in ${env.GHOST_DEV_NAME ?? basename(root)}` : '';
   const group = upGroup(root);
   if (group) {
-    targets.set(-group, `Ghost dev (process group ${group})${where}`);
+    targets.set(`Ghost dev (process group ${group})${where}`, [group]);
   }
   for (const [port, pid] of listeners(devPorts(env))) {
     let proc = processInfo(pid);
@@ -40,13 +45,10 @@ for (const root of roots) {
     }
     if (proc && NX.test(proc.command) && inCheckout(proc.pid, root)) {
       if (proc.pid !== group) {
-        targets.set(proc.pid, `nx (pid ${proc.pid})${where}`);
+        targets.set(`nx (pid ${proc.pid})${where}`, [proc.pid]);
       }
     } else if (inCheckout(pid, root)) {
-      targets.set(
-        -(processInfo(pid)?.pgid ?? pid),
-        `pid ${pid} on port ${port}, whose nx has exited${where}`,
-      );
+      targets.set(`pid ${pid} on port ${port}, whose nx has exited${where}`, [pid]);
     } else {
       console.error(
         `Port ${port}${where} is held by pid ${pid}, which isn't ${values.all ? 'that' : 'this'} checkout's, so it stays.`,
@@ -55,6 +57,13 @@ for (const root of roots) {
       continue;
     }
     ours.push(port);
+  }
+  // Nx starts each task in its own process group, which outlives an nx that's killed
+  const strays = table
+    .filter((proc) => proc.nxRoot && !running.has(proc.nxRoot) && inCheckout(proc.pid, root))
+    .map((proc) => proc.pid);
+  if (strays.length > 0) {
+    targets.set(`Nx tasks whose nx has exited (pid ${strays.join(', ')})${where}`, strays);
   }
 }
 
@@ -67,22 +76,23 @@ const send = (pid: number, signal: NodeJS.Signals | 0) => {
   }
 };
 const busy = async () => (await Promise.all(ours.map(isListening))).some(Boolean);
-for (const [pid, what] of targets) {
+// Negative pids are process groups
+const signalled = treeTargets(table, [...targets.values()].flat());
+for (const what of targets.keys()) {
   console.log(`Stopping ${what}`);
+}
+for (const pid of signalled) {
   send(pid, 'SIGTERM');
 }
 // nx can stay up after its tasks have exited
 const deadline = Date.now() + 10_000;
-while (
-  Date.now() < deadline &&
-  ([...targets.keys()].some((pid) => send(pid, 0)) || (await busy()))
-) {
+while (Date.now() < deadline && (signalled.some((pid) => send(pid, 0)) || (await busy()))) {
   await sleep(250);
 }
-for (const [pid, what] of targets) {
-  if (send(pid, 'SIGKILL')) {
-    console.log(`Killed ${what}, which outlived SIGTERM`);
-  }
+const killed = signalled.filter((pid) => send(pid, 'SIGKILL'));
+if (killed.length > 0) {
+  const names = killed.map((pid) => (pid < 0 ? `process group ${-pid}` : `pid ${pid}`));
+  console.log(`Killed ${names.join(', ')}, which outlived SIGTERM`);
 }
 for (let attempt = 0; attempt < 8 && (await busy()); attempt++) {
   await sleep(250);
