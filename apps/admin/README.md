@@ -135,10 +135,11 @@ The post editor is the largest area with documentation of its own — start at
 From the monorepo root, use `pnpm nx run @tryghost/admin:test:unit` or
 `pnpm nx run @tryghost/admin:test:acceptance`, or
 `pnpm nx run @tryghost/admin:test:types` to build the required React
-libraries first. These targets do not boot Ghost. Their `dependsOn` lists
-explicitly name the React dependencies with a `build` target; update all three
-when adding one. Add it to `build:dev` only if the dev server loads its built
-output rather than its `source` export.
+libraries first. These targets do not boot Ghost. The `dependsOn` list of
+`test:types` explicitly names the React dependencies with a `build` target;
+update it when adding one. Add it to `build:dev`, `test:unit` and
+`test:acceptance` only if Vite loads its built output rather than its `source`
+export.
 
 Nx caches unit, acceptance and typecheck results. Their inputs include every
 transitive dependency's default inputs. Test inputs also include Core's aliased card assets, the lockfile and runtime
