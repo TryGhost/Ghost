@@ -87,3 +87,133 @@ html.theme-switching *::after {
 .cm-tooltip-parent .cm-tooltip-autocomplete.cm-tooltip ul li:not([aria-selected]) {
   background: var(--background);
 }
+
+/* A list page's large title handing over to its sticky header as the page
+   scrolls (ListPage, with large titles on): the title eases out over the first half of the
+   handover, the header's solid background eases in over the second, and once
+   the header has stuck (data-condensed), its small title fades in in its own
+   time, however fast the page is scrolling. Tied to scrolling by the browser where it can, so in step with it;
+   elsewhere by --large-title-condense (useLargeTitleCondense). */
+@keyframes large-title-out {
+  from {
+    opacity: 1;
+    animation-timing-function: ease-in;
+  }
+  50%,
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes large-title-row-settle {
+  from {
+    translate: 0 0;
+    animation-timing-function: ease-out;
+  }
+  50%,
+  to {
+    translate: 0 16px;
+  }
+}
+
+@keyframes large-title-in {
+  from,
+  50% {
+    opacity: 0;
+    animation-timing-function: ease-out;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Out quickly as the large title comes back; in slowly once it has gone */
+.large-title-header-title {
+  opacity: 0;
+  transition: opacity 150ms ease-out;
+}
+
+[data-large-title-header][data-condensed] .large-title-header-title {
+  opacity: 1;
+  transition-duration: 450ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .large-title-header-title {
+    transition: none;
+  }
+}
+
+@supports (animation-timeline: view()) {
+  [data-large-title-host] {
+    timeline-scope: --large-title-handover;
+  }
+
+  [data-large-title-marker] {
+    view-timeline: --large-title-handover block;
+  }
+
+  [data-large-title],
+  [data-large-title-header]::before,
+  [data-large-title-header] [data-page-header='main'] {
+    animation-duration: auto;
+    animation-fill-mode: both;
+    animation-timing-function: linear;
+    animation-timeline: --large-title-handover;
+    animation-range: exit;
+  }
+
+  [data-large-title] {
+    animation-name: large-title-out;
+  }
+
+  [data-large-title-header]::before {
+    animation-name: large-title-in;
+  }
+
+  /* The header's first row settles into place as it sticks, padding moving
+     from below it to above it */
+  [data-large-title-header] [data-page-header='main'] {
+    animation-name: large-title-row-settle;
+  }
+}
+
+@supports not (animation-timeline: view()) {
+  [data-large-title] {
+    opacity: clamp(0, calc(1 - var(--large-title-condense, 0) * 2), 1);
+  }
+
+  [data-large-title-header]::before {
+    opacity: clamp(0, calc(var(--large-title-condense, 0) * 2 - 1), 1);
+  }
+
+  [data-large-title-header] [data-page-header='main'] {
+    translate: 0 calc(min(var(--large-title-condense, 0) * 2, 1) * 16px);
+  }
+}
+
+/* Under a large title, the header's first row (its PageHeader) sits 32px
+   above a separator; a FilterBar following it takes the separator's place,
+   and anything else follows 24px below. The header's own row gaps give way to
+   these, wherever the page groups its rows. */
+[data-large-title-header],
+[data-large-title-header] :has(> [data-page-header='page-header']) {
+  row-gap: 0;
+}
+
+[data-large-title-header] [data-page-header='page-header'] {
+  padding-bottom: 32px;
+  border-bottom: 1px solid var(--border-default);
+}
+
+[data-large-title-header] [data-page-header='page-header']:has(~ [data-slot='filter-bar']) {
+  border-bottom-width: 0;
+}
+
+[data-large-title-header] [data-page-header='page-header'] ~ * {
+  margin-top: 24px;
+}
+
+[data-large-title-header] [data-page-header='page-header'] ~ [data-slot='filter-bar'] {
+  margin-top: 0;
+}

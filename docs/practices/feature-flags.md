@@ -122,7 +122,12 @@ The `admin7Design` milestone replaces the docked desktop sidebar with Shade's
 `FloatingSidebar`: pinned beside the content by default, or unpinned into a
 circle around the site icon, stored as the `navigation.menu.mode` user
 preference. It also lists Ghost(Pro) with Settings, moves Help and Feedback to
-the account menu and runs the member map full bleed. Settings shows its
+the account menu and runs the member map full bleed. Inside its desktop frame,
+list pages show their title large above a sticky header that takes it over as
+the page scrolls: Admin's layout turns this on through Shade's
+`PageChromeProvider` rather than `isAdmin7`, which stays on for the generally
+available pill controls. Settings, the editor, the automation editor, mobile and
+pages without a `PageHeader.Title` keep the usual header. Settings shows its
 navigation inside the same sidebar, pinned without changing the stored mode. Mobile keeps the sidebar sheet, and the flag-off path
 preserves the docked sidebar and the separate Settings sidebar.
 

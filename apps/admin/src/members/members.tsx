@@ -9,7 +9,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Button, EmptyIndicator, LoadingIndicator } from '@tryghost/shade/components';
 import { FilterBar, PageHeader } from '@tryghost/shade/patterns';
 import { Box, Container } from '@tryghost/shade/primitives';
-import { ListPage } from '@tryghost/shade/page-templates';
+import { ListPage, usePageChrome } from '@tryghost/shade/page-templates';
 import { keepPreviousData } from '@tanstack/react-query';
 import { LucideIcon, cn, formatNumber } from '@tryghost/shade/utils';
 import { buildMemberListSearchParams, getMemberActiveColumns } from './member-query-params';
@@ -33,15 +33,6 @@ import { useLocation, useSearchParams } from '@tryghost/admin-x-framework';
 import { useMultipleActiveSubscriptionsCount } from './hooks/use-multiple-active-subscriptions-count';
 import { useShade } from '@tryghost/shade/app';
 import { useIdlePreload } from '@/shared/use-idle-preload';
-import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
-import { useIsMobile } from '@tryghost/shade/utils';
-import { LargePageTitle } from '@/shared/large-page-title';
-import {
-  LARGE_PAGE_TITLE_VARIABLES,
-  LARGE_TITLE_HEADER_OVERLAP,
-  useLargeTitleCondense,
-  useScrolledPast,
-} from '@/shared/large-page-title-layout';
 import { preloadMapAtlas } from './detail/map-atlas';
 
 const SEARCH_DEBOUNCE_MS = 250;
@@ -61,13 +52,8 @@ const MembersPage: React.FC<MembersPageProps> = ({
   timezone,
 }) => {
   const { isAdmin7 } = useShade();
-  // admin7Design spike: a large title above the sticky header, condensing into
-  // it once the header sticks (desktop, where the frame is)
-  const admin7Design = useFeatureFlag('admin7Design');
-  const isMobile = useIsMobile();
-  const largeTitle = admin7Design && !isMobile;
-  const { markerRef: headerRestMarkerRef } = useLargeTitleCondense();
-  const { scrolledPast: headerStuck, markerRef: headerStickMarkerRef } = useScrolledPast();
+  // Under a large title (admin7Design), a roomier row of column labels
+  const { largeTitles } = usePageChrome();
   const headerRef = useRef<HTMLDivElement | null>(null);
   const setHeaderContentRef = useCallback((node: HTMLDivElement | null) => {
     headerRef.current = node?.closest('[data-list-page="header"]') as HTMLDivElement | null;
@@ -162,8 +148,6 @@ const MembersPage: React.FC<MembersPageProps> = ({
     setShowMobileSearch(true);
   };
 
-  // Under a large title, the filter bar sits in place of the header's separator
-  const filterBarShown = shouldShowMemberControls && shouldShowFiltersRow;
   const filtersClassName = 'flex-col gap-4 lg:flex-row lg:items-center sidebar:gap-6 lg:gap-6';
   const handleShowAllMembers = () => {
     commitSearch.cancel();
@@ -230,54 +214,16 @@ const MembersPage: React.FC<MembersPageProps> = ({
     <Box className="size-full">
       <Container className="relative flex h-full flex-col" size="page">
         <ListPage
-          // Under the large title, a roomier row of column labels
           className={cn(
-            largeTitle && '[&_[data-testid=members-list-scroll-root]>div:first-child_th]:h-11',
+            largeTitles && '[&_[data-testid=members-list-scroll-root]>div:first-child_th]:h-11',
           )}
-          data-large-title-host={largeTitle ? '' : undefined}
           data-testid="members-page"
-          style={largeTitle ? LARGE_PAGE_TITLE_VARIABLES : undefined}
         >
-          {largeTitle && (
-            <LargePageTitle
-              aside={!shouldShowLoading && totalMembers > 0 && formatNumber(totalMembers)}
-              markerRef={headerRestMarkerRef}
-              stickMarkerRef={headerStickMarkerRef}
-            >
-              Members
-            </LargePageTitle>
-          )}
-          <ListPage.Header
-            className={cn(
-              'py-4 sidebar:py-5',
-              // Pulled up beside the large title, see-through over it, and solid
-              // once it has handed over (a layer fading in with the handover)
-              largeTitle &&
-                'bg-none! pt-2! pb-0! backdrop-blur-none! before:pointer-events-none before:absolute before:inset-0 before:-z-10 before:bg-background sidebar:pt-2! sidebar:pb-0!',
-            )}
-            data-condensed={largeTitle && headerStuck ? '' : undefined}
-            data-large-title-header={largeTitle ? '' : undefined}
-            style={
-              largeTitle ? { marginTop: `calc(-1 * ${LARGE_TITLE_HEADER_OVERLAP})` } : undefined
-            }
-          >
+          <ListPage.Header className="py-4 sidebar:py-5">
             <div ref={setHeaderContentRef} className="flex flex-col gap-4 sidebar:gap-6">
-              <PageHeader
-                blurredBackground={false}
-                className={cn(
-                  largeTitle && 'pb-8',
-                  // A filter bar takes the separator's place
-                  largeTitle && !filterBarShown && 'border-b border-border-default',
-                )}
-                sticky={false}
-              >
+              <PageHeader blurredBackground={false} sticky={false}>
                 <PageHeader.Left>
-                  <PageHeader.Title
-                    className={cn(
-                      // Comes in over the second part of the handover
-                      largeTitle && 'large-title-header-title',
-                    )}
-                  >
+                  <PageHeader.Title>
                     Members{' '}
                     {!shouldShowLoading && totalMembers > 0 && (
                       <PageHeader.Count className="hidden sm:inline">
@@ -311,14 +257,7 @@ const MembersPage: React.FC<MembersPageProps> = ({
               {isAdmin7 && mobileSearchRow}
               {shouldShowMemberControls &&
                 (shouldShowFiltersRow || (!isAdmin7 && shouldShowMobileSearchRow)) && (
-                  <FilterBar
-                    className={cn(
-                      filtersClassName,
-                      !shouldShowFiltersRow && 'lg:hidden',
-                      // Where the separator would be, without the gap between header rows
-                      largeTitle && shouldShowFiltersRow && '-mt-4 sidebar:-mt-6',
-                    )}
-                  >
+                  <FilterBar className={cn(filtersClassName, !shouldShowFiltersRow && 'lg:hidden')}>
                     {!isAdmin7 && mobileSearchRow}
                     {shouldShowFiltersRow && (
                       <MembersFilters

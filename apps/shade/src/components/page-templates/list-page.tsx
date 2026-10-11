@@ -1,8 +1,70 @@
-import React from 'react';
+import React, { createContext, useCallback, useContext, useMemo, useState } from 'react';
 import { Stack } from '@/components/primitives/stack';
+import { PageHeaderLargeTitleContext } from '@/components/patterns/page-header-large-title';
 import { cn } from '@/lib/utils';
+import {
+  LARGE_PAGE_TITLE_VARIABLES,
+  LARGE_TITLE_HANDOVER,
+  LARGE_TITLE_HEADER_OVERLAP,
+  useLargeTitleCondense,
+  usePageChrome,
+  useScrolledPast,
+} from './large-page-title';
 
 type ListPageProps = React.ComponentPropsWithoutRef<'div'>;
+
+/** The list page's large title, for its header: on, and whether the header has stuck. */
+const ListPageLargeTitleState = createContext({ active: false, condensed: false });
+
+// Under a large title, the header is see-through until the title has handed
+// over, then solid (a layer the handover fades in), with its padding set by
+// LARGE_TITLE_HEADER_OVERLAP; overriding Admin's page chrome, hence important
+const LARGE_TITLE_HEADER_CLASS_NAME =
+  'bg-none! pt-2! pb-0! backdrop-blur-none! before:pointer-events-none before:absolute before:inset-0 before:-z-10 before:bg-background';
+
+/**
+ * Where a list page's title shows large (PageHeader.Title renders into it),
+ * with the space above it and the markers its handover to the header is
+ * measured by: one spanning the handover, one where the header sticks.
+ */
+function ListPageLargeTitleSlot({
+  hidden,
+  slotRef,
+  handoverMarkerRef,
+  stickMarkerRef,
+}: {
+  hidden: boolean;
+  slotRef: (element: HTMLElement | null) => void;
+  handoverMarkerRef: (element: HTMLElement | null) => void;
+  stickMarkerRef: (element: HTMLElement | null) => void;
+}) {
+  return (
+    <div
+      className="relative"
+      data-list-page="large-title"
+      hidden={hidden}
+      style={{ paddingTop: 'var(--large-title-space)' }}
+    >
+      <div ref={slotRef} />
+      <div
+        ref={hidden ? undefined : handoverMarkerRef}
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-x-0"
+        data-large-title-marker=""
+        style={{
+          bottom: `calc(${LARGE_TITLE_HEADER_OVERLAP} - ${LARGE_TITLE_HANDOVER / 2}px)`,
+          height: LARGE_TITLE_HANDOVER,
+        }}
+      />
+      <div
+        ref={hidden ? undefined : stickMarkerRef}
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-x-0 h-px"
+        style={{ bottom: LARGE_TITLE_HEADER_OVERLAP }}
+      />
+    </div>
+  );
+}
 
 /**
  * Sticky, full-bleed header stack. Place `PageHeader`, `ViewBar`, and/or
@@ -15,7 +77,9 @@ type ListPageProps = React.ComponentPropsWithoutRef<'div'>;
  * Pass `sticky={false} blurredBackground={false}` to `PageHeader` when using
  * it here — stickiness and blur are handled by `ListPage.Header` instead.
  */
-function ListPageHeader({ className, children, ...rest }: ListPageProps) {
+function ListPageHeader({ className, children, style, ...rest }: ListPageProps) {
+  const { active, condensed } = useContext(ListPageLargeTitleState);
+
   return (
     <Stack
       className={cn(
@@ -24,9 +88,14 @@ function ListPageHeader({ className, children, ...rest }: ListPageProps) {
         'bg-gradient-to-b from-background via-background/70 to-background/70 backdrop-blur-md',
         'py-5',
         className,
+        active && LARGE_TITLE_HEADER_CLASS_NAME,
       )}
+      data-condensed={active && condensed ? '' : undefined}
+      data-large-title-header={active ? '' : undefined}
       data-list-page="header"
       gap="lg"
+      // Pulled up beside the large title
+      style={active ? { marginTop: `calc(-1 * ${LARGE_TITLE_HEADER_OVERLAP})`, ...style } : style}
       {...rest}
     >
       {children}
@@ -65,18 +134,57 @@ type ListPageComponent = React.FC<ListPageProps> & {
  *    `FilterBar` auto-collapses when it has no active filters.
  *  - `<ListPage.Body>` — grows to fill remaining space. Use `flex-1 flex items-center justify-center`
  *    on the immediate child to vertically center empty/loading states.
+ *
+ * With large titles on (PageChromeProvider), the header's PageHeader.Title
+ * also shows large above the header, with generous space above it. The
+ * header is pulled up beside it, see-through, and as the page scrolls the
+ * large title fades out, the header turns solid and sticks, and its own small
+ * title fades in. A separator sits under the header's first row, unless a
+ * FilterBar follows it, which takes its place. A page without a
+ * PageHeader.Title keeps the usual header.
  */
 const ListPage: ListPageComponent = Object.assign(
-  function ListPage({ className, children, ...rest }: ListPageProps) {
+  function ListPage({ className, children, style, ...rest }: ListPageProps) {
+    const { largeTitles } = usePageChrome();
+    const [slot, setSlot] = useState<HTMLElement | null>(null);
+    const [titles, setTitles] = useState(0);
+    const registerTitle = useCallback(() => {
+      setTitles((count) => count + 1);
+      return () => setTitles((count) => count - 1);
+    }, []);
+    const active = largeTitles && titles > 0;
+    const { markerRef: handoverMarkerRef } = useLargeTitleCondense();
+    const { scrolledPast, markerRef: stickMarkerRef } = useScrolledPast();
+
+    const largeTitle = useMemo(
+      () => (largeTitles ? { slot, registerTitle } : null),
+      [largeTitles, slot, registerTitle],
+    );
+    const state = useMemo(() => ({ active, condensed: scrolledPast }), [active, scrolledPast]);
+
     return (
-      <Stack
-        className={cn('h-full min-h-0 grow px-4 lg:px-6', className)}
-        data-list-page="list-page"
-        gap="none"
-        {...rest}
-      >
-        {children}
-      </Stack>
+      <PageHeaderLargeTitleContext.Provider value={largeTitle}>
+        <ListPageLargeTitleState.Provider value={state}>
+          <Stack
+            className={cn('h-full min-h-0 grow px-4 lg:px-6', className)}
+            data-large-title-host={active ? '' : undefined}
+            data-list-page="list-page"
+            gap="none"
+            style={active ? { ...LARGE_PAGE_TITLE_VARIABLES, ...style } : style}
+            {...rest}
+          >
+            {largeTitles && (
+              <ListPageLargeTitleSlot
+                handoverMarkerRef={handoverMarkerRef}
+                hidden={!active}
+                slotRef={setSlot}
+                stickMarkerRef={stickMarkerRef}
+              />
+            )}
+            {children}
+          </Stack>
+        </ListPageLargeTitleState.Provider>
+      </PageHeaderLargeTitleContext.Provider>
     );
   },
   {
