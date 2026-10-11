@@ -15,6 +15,7 @@ Before marking a Shade component or pattern done, this checklist must pass.
 - Exported identifier: **PascalCase** (`DropdownMenu`).
 - Hooks, functions, variables: camelCase.
 - Sibling **`<name>.stories.tsx`** is required (same folder).
+- A component file exports only components, so Fast Refresh can hot-update it (ESLint enforces this). An exported `cva()` config goes in a sibling **`<name>-variants.ts`**; exported hooks, contexts and helpers go in their own sibling module (`sidebar-context.ts`). These siblings belong to the component; they aren't Recipes.
 - Inside Shade itself, import via the `@/` alias (`@/lib/utils`, `@/components/ui/input-surface`).
 
 ## Storybook title prefix
@@ -36,10 +37,9 @@ Required on every story file:
 
 ## Component shape
 
-```tsx
-import * as React from 'react';
-import {cva, type VariantProps} from 'class-variance-authority';
-import {cn} from '@/lib/utils';
+```ts
+// thing-variants.ts
+import {cva} from 'class-variance-authority';
 
 const thingVariants = cva('base-classes-here', {
     variants: {
@@ -48,6 +48,16 @@ const thingVariants = cva('base-classes-here', {
     },
     defaultVariants: {variant: 'default', size: 'default'}
 });
+
+export {thingVariants};
+```
+
+```tsx
+// thing.tsx
+import * as React from 'react';
+import {type VariantProps} from 'class-variance-authority';
+import {thingVariants} from '@/components/ui/thing-variants';
+import {cn} from '@/lib/utils';
 
 export interface ThingProps
     extends React.HTMLAttributes<HTMLDivElement>,
@@ -64,7 +74,7 @@ const Thing = React.forwardRef<HTMLDivElement, ThingProps>(
 );
 Thing.displayName = 'Thing';
 
-export {Thing, thingVariants};
+export {Thing};
 ```
 
 Hard requirements:
@@ -106,6 +116,7 @@ See `shade-tokens-not-hex` and `shade-no-dark-variants`.
 - [ ] `className` forwarded and merged with `cn()` (always)
 - [ ] `forwardRef` if the component renders DOM consumers might ref
 - [ ] `cva()` if the component has variants; `defaultVariants` set
+- [ ] The component file exports only components; exported variants, hooks and contexts live in sibling modules
 - [ ] All four required states work and are visible in the story
 - [ ] Semantic tokens only — no hex, no raw greys, no `dark:` colour variants
 - [ ] No product-specific props on a generic Component
