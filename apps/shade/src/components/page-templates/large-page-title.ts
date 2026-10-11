@@ -36,8 +36,8 @@ export const LARGE_PAGE_TITLE_VARIABLES = {
 
 /*
  * The header's own top padding under a large title. Its first row sits 32px
- * above a separator at rest and settles 16px down as the header sticks
- * (styles.css), to 24px clear of whatever is above with 16px below it; the
+ * above a separator at rest and settles 12px down as the header sticks
+ * (styles.css), to 20px both above and below it; the
  * header's height never changes.
  */
 const LARGE_TITLE_HEADER_PADDING = 8;
