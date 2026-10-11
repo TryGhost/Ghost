@@ -153,7 +153,8 @@ every running checkout whose pull request has merged. The list also flags a
 checkout that's partway through a rebase or merge, with its conflicts. A
 checkout whose nx exited but left tasks such as `vite build --watch` running
 shows as `orphaned`, even once its worktree is deleted; `k` and `x` stop those
-processes too, and `--json` lists each checkout's nx `processes`. `pnpm dev:down`
+processes too, and `--json` lists each checkout's nx `processes`. Add `--prs` to
+`--json` for each branch's pull request. `pnpm dev:down`
 stops whatever holds this checkout's ports, including what a killed run left
 behind, and leaves MySQL, Redis, and Mailpit running. Ghost started by
 `pnpm dev:up` also stops itself within a few seconds of its worktree being
@@ -173,7 +174,8 @@ See the [Codex hook lifecycle](https://learn.chatgpt.com/docs/hooks#sessionend).
 
 `pnpm dev:status --watch` redraws the list every two seconds.
 `pnpm dev:down --all` stops every checkout's Ghost and then the Docker services;
-the databases stay in their volume.
+the databases stay in their volume. `pnpm dev:down --orphans` stops only the
+orphaned processes, in every checkout or in the checkout paths you pass.
 
 Delete `.ghost-dev.env` to be assigned new values, or set `GHOST_DEV_HOSTNAME`,
 `GHOST_DEV_PORT`, `GHOST_DEV_BACKEND_PORT`, or `GHOST_DEV_DATABASE` to choose

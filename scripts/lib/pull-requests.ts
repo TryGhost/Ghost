@@ -30,6 +30,8 @@ interface Node {
 }
 
 const run = promisify(execFile);
+// Branches whose name says nothing about which pull request a checkout is for
+export const BASE_BRANCHES = new Set(['main', 'master']);
 const FIELDS =
   'number title state isDraft url headRefOid baseRefName mergeable isCrossRepository commits(last: 1) { nodes { commit { statusCheckRollup { state } } } }';
 

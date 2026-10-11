@@ -16,14 +16,45 @@ import {
   processTable,
   treeTargets,
   upGroup,
+  worktreeList,
 } from './lib/dev-stack.ts';
+import { devProcesses, processEntries, stopOrphans } from './lib/dev-processes.ts';
 import { checkoutRoot } from './lib/ghost-dev-env.ts';
 
 // Stops what holds this checkout's ports, the nx process running the stack or a task that
 // outlived nx, with all they started, and Nx tasks whose nx has exited. MySQL, Redis and
 // Mailpit keep running for other checkouts.
-// --all stops every checkout's stack, then the shared Docker services.
-const { values } = parseArgs({ options: { all: { type: 'boolean', default: false } } });
+// --all stops every checkout's stack, then the shared Docker services. --orphans stops only the
+// tasks whose nx has exited, in every checkout or the checkouts named.
+const { values, positionals } = parseArgs({
+  allowPositionals: true,
+  options: {
+    all: { type: 'boolean', default: false },
+    orphans: { type: 'boolean', default: false },
+  },
+});
+if (positionals.length > 0 && !values.orphans) {
+  console.error('Only --orphans takes checkout paths.');
+  process.exit(1);
+}
+if (values.orphans) {
+  const orphans = devProcesses(
+    processEntries(),
+    worktreeList().map(({ root }) => root),
+  ).filter(
+    (proc) => proc.orphaned && (positionals.length === 0 || positionals.includes(proc.root)),
+  );
+  const stopped = await Promise.all(
+    [...new Set(orphans.map((proc) => proc.root))].map(async (root) => {
+      const expected = orphans
+        .filter((proc) => proc.root === root)
+        .map((proc) => ({ pid: proc.pid, startedAt: new Date(proc.started).toISOString() }));
+      return `Stopped ${await stopOrphans(root, expected)} orphaned processes in ${root}`;
+    }),
+  );
+  console.log(stopped.length > 0 ? stopped.join('\n') : 'No orphaned Ghost dev processes.');
+  process.exit(0);
+}
 const NX = /\bnx(\.js)? run\b/;
 const roots = values.all ? checkouts().filter((root) => checkoutEnv(root)) : [checkoutRoot];
 const table = processTable();
