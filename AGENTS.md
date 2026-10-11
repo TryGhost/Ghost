@@ -23,7 +23,10 @@ Start with:
 - Run Ghost in the background with `pnpm dev:up`, `pnpm dev:status` and
   `pnpm dev:down`, and give the user the URL they print as a markdown link.
   Don't background `pnpm dev`: killing its pid leaves Ghost and the dev
-  servers running.
+  servers running. Before you finish, stop a stack you started only to check
+  your own work with `pnpm dev:down`; leave running one the user asked for.
+  Subagents always stop theirs, which otherwise run until the parent session
+  exits.
 - Use `pnpm check` as the default full validation command. Browser E2E tests
   run separately; follow the testing guide.
 - Read the nearest `AGENTS.md` and README before changing a package
