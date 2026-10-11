@@ -19,6 +19,7 @@ describe('followPreviewLinks', () => {
       <a id="same" href="/posts/hello/#comments">Same site</a>
       <a id="other" href="https://elsewhere.test/">Elsewhere</a>
       <a id="spot" href="#intro">Intro</a>
+      <a id="malformed" href="#%E0">Malformed</a>
       <a id="portal" href="#/portal/signup">Sign up</a>
       <a id="new-tab" href="/posts/hello/" target="_blank">New tab</a>
       <section id="intro"></section>
@@ -70,6 +71,19 @@ describe('followPreviewLinks', () => {
     expect(clickPrevented).toBe(true);
     expect(scrollIntoView).toHaveBeenCalled();
     expect(onNavigate).not.toHaveBeenCalled();
+  });
+
+  it('takes a malformed spot on the page as written, rather than throwing', () => {
+    const scrollIntoView = vi.fn();
+    const spot = doc.createElement('section');
+    spot.id = '%E0';
+    spot.scrollIntoView = scrollIntoView;
+    doc.body.append(spot);
+
+    click('malformed');
+
+    expect(clickPrevented).toBe(true);
+    expect(scrollIntoView).toHaveBeenCalled();
   });
 
   it('keeps Portal inert', () => {

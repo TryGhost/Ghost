@@ -5,6 +5,15 @@ function withoutHash(url: URL): string {
   return url.href.replace(/#.*$/, '');
 }
 
+/** A link's fragment as an element id; a malformed escape (e.g. `#%E0`) is taken as written. */
+function decodeFragment(fragment: string): string {
+  try {
+    return decodeURIComponent(fragment);
+  } catch {
+    return fragment;
+  }
+}
+
 /**
  * Lets a written preview of a site page be browsed: clicking one of the
  * site's own links asks for that page instead (`onNavigate`), so it can be
@@ -61,7 +70,7 @@ export function followPreviewLinks(
         return;
       }
       if (withoutHash(url) === withoutHash(page)) {
-        const id = decodeURIComponent(url.hash.slice(1));
+        const id = decodeFragment(url.hash.slice(1));
         doc.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
         return;
       }

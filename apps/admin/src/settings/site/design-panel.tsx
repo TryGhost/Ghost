@@ -76,7 +76,9 @@ function DesignPanelContent({
     });
 
   const save = async () => {
-    if (await handleSave({ fakeWhenUnchanged: true })) {
+    // Saving without changes reports success, but leaves the site as it was
+    const changed = dirtyRef.current;
+    if ((await handleSave({ fakeWhenUnchanged: true })) && changed) {
       onSaved?.(pageUrl);
     }
   };
