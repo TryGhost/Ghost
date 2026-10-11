@@ -254,14 +254,13 @@ If dependencies or Nx state become inconsistent after switching branches, run:
 pnpm fix
 ```
 
-This prunes the pnpm store, removes workspace `node_modules` directories,
-reinstalls dependencies, and resets Nx state.
+This prunes the pnpm store, resets Nx state, removes this checkout's
+`node_modules` directories and Ghost build output, and reinstalls dependencies.
 
 For narrower build and cache problems, use:
 
 ```bash
 pnpm nx reset       # Clear the Nx cache, which all checkouts and worktrees share
-pnpm build:clean    # Clear the Nx cache and Ghost build output
 pnpm docker:build   # Rebuild the local development images
 ```
 
