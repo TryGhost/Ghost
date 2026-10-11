@@ -3,6 +3,12 @@ import { Link, useLocation, useNavigate } from '@tryghost/admin-x-framework';
 import { cn, formatNumber, LucideIcon } from '@tryghost/shade/utils';
 import { useOpenGlobalSearch } from '@/global-search/global-search-context';
 import { searchShortcutLabel } from '@/global-search/search-shortcut';
+import {
+  CUSTOMIZE_SITE_PATH,
+  VIEW_SITE_PATH,
+  useCanCustomizeSite,
+  useIsCustomizingSite,
+} from '@/view-site/api';
 import { type FrameMrr, type FrameStat, useFrameStats } from './use-frame-stats';
 
 // Small caps, as in the Admin 7 vision
@@ -147,15 +153,64 @@ function Stat({ label, to, children }: { label: string; to: string; children: Re
   );
 }
 
+/** The time, and the site's numbers linking to Analytics */
+function SiteNumbers() {
+  const stats = useFrameStats();
+
+  return (
+    <>
+      <Clock />
+      {stats.online !== null && (
+        <Link className={cn('group flex h-full items-center gap-2', LABEL)} to="/analytics">
+          <span aria-hidden="true" className="block size-2 bg-green" />
+          <span className={cn('transition-colors group-hover:text-white', MUTED)}>
+            {statText(stats.online, formatNumber)} Online
+          </span>
+        </Link>
+      )}
+      {stats.members !== null && (
+        <Stat label="Members" to="/analytics/growth">
+          {statText(stats.members, formatNumber)}
+        </Stat>
+      )}
+      {stats.mrr !== null && (
+        <Stat label="MRR" to="/analytics/growth?tab=mrr">
+          {statText(stats.mrr, formatMrr)}
+        </Stat>
+      )}
+    </>
+  );
+}
+
+/** Opens View site's Customize panel, or closes it again. */
+function CustomizeToggle() {
+  const customizing = useIsCustomizingSite();
+
+  return (
+    <Link
+      aria-pressed={customizing}
+      className={cn(
+        'flex h-full items-center transition-colors hover:text-white',
+        LABEL,
+        customizing ? 'text-white' : MUTED,
+      )}
+      to={customizing ? VIEW_SITE_PATH : CUSTOMIZE_SITE_PATH}
+    >
+      Customize
+    </Link>
+  );
+}
+
 /**
  * The frame's top bar: places on the left, search in the middle, and the
  * time and the site's numbers on the right. A three-column grid, so search
- * stays centred whatever is either side of it.
+ * stays centred whatever is either side of it. On View site, the right side
+ * customizes the site's design instead.
  */
 export function AdminFrameTopBar({ hidden = false }: { hidden?: boolean }) {
   const { pathname } = useLocation();
-  const stats = useFrameStats();
-  const isViewSite = pathname === '/site';
+  const isViewSite = pathname === VIEW_SITE_PATH;
+  const canCustomize = useCanCustomizeSite();
   // Closed around a full-screen surface, nothing shows where they'd lead
   usePlaceShortcuts(!hidden);
 
@@ -165,7 +220,7 @@ export function AdminFrameTopBar({ hidden = false }: { hidden?: boolean }) {
         <PlaceTab active={!isViewSite} className="font-semibold" shortcut="Option + 1" to="/">
           Ghost
         </PlaceTab>
-        <PlaceTab active={isViewSite} shortcut="Option + 2" to="/site">
+        <PlaceTab active={isViewSite} shortcut="Option + 2" to={VIEW_SITE_PATH}>
           View site
         </PlaceTab>
       </nav>
@@ -173,25 +228,7 @@ export function AdminFrameTopBar({ hidden = false }: { hidden?: boolean }) {
         <SearchPill />
       </div>
       <div className="flex h-full items-center justify-end gap-5 pr-6">
-        <Clock />
-        {stats.online !== null && (
-          <Link className={cn('group flex h-full items-center gap-2', LABEL)} to="/analytics">
-            <span aria-hidden="true" className="block size-2 bg-green" />
-            <span className={cn('transition-colors group-hover:text-white', MUTED)}>
-              {statText(stats.online, formatNumber)} Online
-            </span>
-          </Link>
-        )}
-        {stats.members !== null && (
-          <Stat label="Members" to="/analytics/growth">
-            {statText(stats.members, formatNumber)}
-          </Stat>
-        )}
-        {stats.mrr !== null && (
-          <Stat label="MRR" to="/analytics/growth?tab=mrr">
-            {statText(stats.mrr, formatMrr)}
-          </Stat>
-        )}
+        {isViewSite && canCustomize ? <CustomizeToggle /> : <SiteNumbers />}
       </div>
     </div>
   );
