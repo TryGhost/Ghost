@@ -684,10 +684,10 @@ export function Search() {
   );
 }
 
-function FrameHead({ stylesUrl }: { stylesUrl?: string }) {
+function FrameHead({ stylesUrl, onStylesLoad }: { stylesUrl?: string; onStylesLoad: () => void }) {
   return (
     <>
-      {stylesUrl && <link href={stylesUrl} rel="stylesheet" />}
+      {stylesUrl && <link href={stylesUrl} rel="stylesheet" onLoad={onStylesLoad} />}
       <style dangerouslySetInnerHTML={{ __html: FRAME_STYLES }} />
       <meta content="width=device-width, initial-scale=1, maximum-scale=1" name="viewport" />
     </>
@@ -696,12 +696,15 @@ function FrameHead({ stylesUrl }: { stylesUrl?: string }) {
 
 export default function PopupModal() {
   const { closePopup, dir, stylesUrl, t } = useAppContext();
+  // .ghost-display hides the dialog until its stylesheet loads, and a hidden input can't
+  // take the opening focus
+  const [stylesLoaded, setStylesLoaded] = useState(!stylesUrl);
 
   return (
     <div className="gh-root-frame" style={MODAL_CONTAINER_STYLE}>
       <Frame
         dir={dir}
-        head={<FrameHead stylesUrl={stylesUrl} />}
+        head={<FrameHead stylesUrl={stylesUrl} onStylesLoad={() => setStylesLoaded(true)} />}
         style={FRAME_STYLE}
         title={t('Search posts, tags and authors')}
       >
@@ -714,7 +717,7 @@ export default function PopupModal() {
             }
           }}
         />
-        <Search />
+        {stylesLoaded && <Search />}
       </Frame>
     </div>
   );

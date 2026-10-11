@@ -23,13 +23,13 @@ automatically rebuild the local Tinybird workspace when they change.
 
 Follow the watcher's output and build errors with the `logs` command below. Fix
 an invalid datafile and save it to trigger another build. `Ctrl+C` stops Ghost;
-the Tinybird services keep running until `pnpm docker:down`.
+the Tinybird services keep running until `pnpm dev:down --all`.
 
 Watching is also enabled for the other development commands that include
 analytics, such as `pnpm dev:analytics:local` and `pnpm dev:full`.
 
 Ghost will be accessible at `http://localhost:2368` (a worktree uses its own
-port), and analytics should work out of the box.
+URL), and analytics should work out of the box.
 
 #### Using the Tinybird CLI from Docker
 

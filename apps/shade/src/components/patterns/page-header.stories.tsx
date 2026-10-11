@@ -13,7 +13,7 @@ import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/in
 import { Select, SelectContent, SelectItem, SelectValue } from '@/components/ui/select';
 import { Stack } from '@/components/primitives';
 import ShadeApp from '@/shade-app';
-import { useShade } from '@/providers/shade-provider';
+import { useShade } from '@/providers/shade-context';
 import { formatNumber } from '@/utils';
 import { FilterBar } from '@/components/patterns/filter-bar';
 

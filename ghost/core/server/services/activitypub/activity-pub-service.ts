@@ -104,6 +104,12 @@ export class ActivityPubService {
         },
       });
 
+      // The ActivityPub service never answers 404 here, so no service is routed to this site
+      if (res.status === 404) {
+        this.logging.info('No ActivityPub service found - skipping webhook setup');
+        return null;
+      }
+
       if (!res.ok) {
         this.logging.warn(`ActivityPub is unavailable (${res.status}) - skipping webhook setup`);
         return null;

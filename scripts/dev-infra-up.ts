@@ -1,4 +1,5 @@
 import { execFileSync, spawn, spawnSync } from 'node:child_process';
+import { randomUUID } from 'node:crypto';
 import { once } from 'node:events';
 import { setTimeout as sleep } from 'node:timers/promises';
 import { fileURLToPath } from 'node:url';
@@ -51,9 +52,10 @@ const infra = Object.entries(services)
 // A stopped container can still point at a network compose has since recreated
 compose(['rm', '-f', ...infra]);
 
+// Other checkouts use the running services, so they keep the config they started with
 const setupServices = infra.filter((name) => setup.has(name));
 if (setupServices.length > 0) {
-  compose(['up', '-d', '--build', '--quiet-pull', ...setupServices]);
+  compose(['up', '-d', '--build', '--no-recreate', '--quiet-pull', ...setupServices]);
   // `docker compose wait` misses containers that have already exited
   for (const service of setupServices) {
     const container = docker(['compose', ...files, 'ps', '-a', '-q', service]);
@@ -76,6 +78,7 @@ compose([
   'up',
   '-d',
   '--build',
+  '--no-recreate',
   '--wait',
   '--quiet-pull',
   '--no-deps',
@@ -88,8 +91,11 @@ const password = process.env.MYSQL_ROOT_PASSWORD ?? 'root';
 const inMysql = ['compose', ...files, 'exec', '-T', '-e', `MYSQL_PWD=${password}`, 'mysql'];
 const mysql = (...args: string[]) => docker([...inMysql, 'mysql', '-uroot', ...args]);
 const databases = mysql('-N', '-e', 'SHOW DATABASES').split('\n');
-if (database !== 'ghost_dev' && databases.includes('ghost_dev') && !databases.includes(database)) {
-  mysql('-e', `CREATE DATABASE \`${database}\``);
+// A run stopped before its dump starts leaves the database without tables
+const empty =
+  !databases.includes(database) || !mysql('-N', '-e', `SHOW TABLES FROM \`${database}\``);
+if (database !== 'ghost_dev' && databases.includes('ghost_dev') && empty) {
+  mysql('-e', `CREATE DATABASE IF NOT EXISTS \`${database}\``);
   const dump = spawn(
     'docker',
     [...inMysql, 'mysqldump', '-uroot', '--single-transaction', 'ghost_dev'],
@@ -100,9 +106,27 @@ if (database !== 'ghost_dev' && databases.includes('ghost_dev') && !databases.in
     stdio: [dump.stdout, 'inherit', 'inherit'],
   });
   const [[dumped], [loaded]] = await Promise.all([once(dump, 'exit'), once(load, 'exit')]);
-  if (dumped !== 0 || loaded !== 0) {
+  // A failed copy is dropped, or the next run would skip it as already made
+  const abort = () => {
     mysql('-e', `DROP DATABASE \`${database}\``);
     process.exit(1);
+  };
+  if (dumped !== 0 || loaded !== 0) {
+    abort();
+  }
+  // Analytics are keyed by site_uuid, and main's sessions can't validate on this origin.
+  // ghost_dev has no tables until the main checkout's Ghost first boots.
+  try {
+    if (mysql('-N', '-e', `SHOW TABLES FROM \`${database}\` LIKE 'settings'`)) {
+      mysql(
+        '-D',
+        database,
+        '-e',
+        `UPDATE settings SET value = '${randomUUID()}' WHERE \`key\` = 'site_uuid'; DELETE FROM sessions`,
+      );
+    }
+  } catch {
+    abort();
   }
   console.log(`Copied ghost_dev into ${database}`);
 }

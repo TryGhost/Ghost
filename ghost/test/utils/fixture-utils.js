@@ -413,8 +413,8 @@ const fixtures = {
     return models.User.add(user, context.internal);
   },
 
-  createExtraUsers: function createExtraUsers() {
-    // grab 3 more users
+  createExtraUsers: async function createExtraUsers() {
+    // grab 4 more users
     let extraUsers = _.cloneDeep(DataGenerator.Content.users.slice(2, 6));
     extraUsers = _.map(extraUsers, function (user) {
       return DataGenerator.forKnex.createUser(
@@ -437,12 +437,13 @@ const fixtures = {
     // replacement for admin2, editor2 etc
     DataGenerator.Content.extraUsers = extraUsers;
 
-    return Promise.all(
-      extraUsers.map((user) => {
-        user.roles = roles[user.id];
-        return models.User.add(user, context.internal);
-      }),
-    );
+    // Concurrent user fixture inserts can deadlock on MySQL, so create them in order.
+    const users = [];
+    for (const user of extraUsers) {
+      user.roles = roles[user.id];
+      users.push(await models.User.add(user, context.internal));
+    }
+    return users;
   },
 
   insertOneUser: function insertOneUser(options) {

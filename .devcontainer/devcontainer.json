@@ -1,17 +1,16 @@
 {
   "name": "Ghost",
   "dockerComposeFile": ["../compose.dev.yaml", "compose.devcontainer.yaml"],
-  "service": "ghost-dev",
+  "service": "devcontainer",
   "workspaceFolder": "/workspaces/Ghost",
   "shutdownAction": "stopCompose",
   "remoteUser": "root",
 
-  // Installs docker CLI and mounts the host docker socket into ghost-dev so
-  // developers can run `docker ps / logs / inspect / exec` against peer
-  // compose services (mysql, redis, mailpit, gateway) from inside the dev
-  // container. Without this, diagnosing any compose-peer failure requires
-  // SSHing to the Codespaces host, which our image doesn't support out of
-  // the box.
+  // Installs docker CLI and mounts the host docker socket into the dev
+  // container so developers can run `docker ps / logs / inspect / exec`
+  // against peer compose services (mysql, redis, mailpit) from inside it.
+  // Without this, diagnosing any compose-peer failure requires SSHing to the
+  // Codespaces host, which our image doesn't support out of the box.
   //
   // Security note: mounting the host's docker socket combined with
   // `remoteUser: "root"` effectively gives the dev container root-equivalent
@@ -45,19 +44,16 @@
   // The script guards against double-starting if the stack is already up.
   "postAttachCommand": "bash .devcontainer/start-dev-stack.sh",
 
-  // Portal, Comments UI, Signup Form, Sodo Search, Announcement Bar, and
-  // Admin Toolbar are NOT listed here — since the Caddy file_server switch
-  // (#28970) they build to disk (`vite build --watch`) instead of running
-  // a dev server, so there's no port to forward for them.
-  "forwardPorts": [2368, 3306, 6379, 1025, 8025, 5174, 4173],
+  // The Admin dev server on 2368 serves Admin and the public apps and proxies
+  // everything else to Ghost on 2369, so the browser only needs 2368.
+  "forwardPorts": [2368, 3306, 6379, 1025, 8025],
   "portsAttributes": {
-    "2368": { "label": "Ghost (via gateway)", "onAutoForward": "notify" },
+    "2368": { "label": "Ghost", "onAutoForward": "notify" },
+    "2369": { "label": "Ghost backend", "onAutoForward": "ignore" },
     "3306": { "label": "MySQL" },
     "6379": { "label": "Redis" },
     "1025": { "label": "Mailpit SMTP" },
-    "8025": { "label": "Mailpit Web" },
-    "5174": { "label": "Admin (Vite)" },
-    "4173": { "label": "Koenig Lexical (optional)" }
+    "8025": { "label": "Mailpit Web" }
   },
 
   "customizations": {

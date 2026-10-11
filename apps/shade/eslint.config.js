@@ -6,4 +6,12 @@ export default reactAppConfig({
   ignores: ['dist/**/*', 'storybook-static/**/*'],
   srcGlobs: ['src/**/*.{js,ts,cjs,tsx}', 'scripts/**/*.{js,ts,cjs,tsx}'],
   storybook: 'plugin',
+  extraSrcRules: {
+    // The factory turns this off; Admin hot-updates Shade source, so keep it on here.
+    // `assign` lets Object.assign compound components (ListPage.Header…) through.
+    'react-refresh/only-export-components': [
+      'error',
+      { allowConstantExport: true, extraHOCs: ['assign'] },
+    ],
+  },
 });

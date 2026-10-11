@@ -1,6 +1,6 @@
 import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { existsSync, readFileSync, realpathSync, writeFileSync } from 'node:fs';
+import { appendFileSync, existsSync, readFileSync, realpathSync, writeFileSync } from 'node:fs';
 import net from 'node:net';
 import { basename, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -9,6 +9,7 @@ export const ENV_FILE = '.ghost-dev.env';
 
 export interface GhostDevEnv {
   GHOST_DEV_NAME: string;
+  GHOST_DEV_HOSTNAME: string;
   GHOST_DEV_PORT: string;
   GHOST_DEV_BACKEND_PORT: string;
   GHOST_DEV_DATABASE: string;
@@ -21,7 +22,8 @@ const MAIN_DATABASE = 'ghost_dev';
 const FIRST_PORT = 2400;
 const SLOTS = 300;
 
-const checkoutRoot = realpathSync(fileURLToPath(new URL('../..', import.meta.url)));
+export const checkoutRoot = realpathSync(fileURLToPath(new URL('../..', import.meta.url)));
+const checkoutHash = createHash('sha1').update(checkoutRoot).digest('hex');
 
 function git(args: string[]): string {
   return execFileSync('git', args, { cwd: checkoutRoot, encoding: 'utf8' }).trim();
@@ -45,6 +47,7 @@ function parseEnvFile(file: string): Record<string, string> {
 function toEnv(name: string, port: number, database: string): GhostDevEnv {
   return {
     GHOST_DEV_NAME: name,
+    GHOST_DEV_HOSTNAME: hostnameFor(name),
     GHOST_DEV_PORT: String(port),
     GHOST_DEV_BACKEND_PORT: String(port + 1),
     GHOST_DEV_DATABASE: database,
@@ -96,22 +99,35 @@ function checkoutName(): string {
     .replace(/^_+|_+$/g, '');
 }
 
+// Cookies ignore the port, so a worktree needs its own hostname to keep its own Admin
+// session. Browsers and the macOS resolver send *.localhost to loopback.
+export function worktreeHostname(name: string, hash: string): string {
+  const label = name.replace(/_/g, '-').replace(/^-+|-+$/g, '');
+  // A DNS label holds at most 63 characters; the hash keeps shortened names distinct
+  const short =
+    label.length > 63 ? `${label.slice(0, 56).replace(/-+$/, '')}-${hash.slice(0, 6)}` : label;
+  return `${short || `wt-${hash.slice(0, 6)}`}.localhost`;
+}
+
+function hostnameFor(name: string): string {
+  return isMainCheckout() ? 'localhost' : worktreeHostname(name, checkoutHash);
+}
+
 async function allocate(): Promise<GhostDevEnv> {
   if (isMainCheckout()) {
     return toEnv('main', MAIN_PORT, MAIN_DATABASE);
   }
 
   const taken = assignedElsewhere();
-  const hash = createHash('sha1').update(checkoutRoot).digest('hex');
   let name = checkoutName();
   // Some tools give every worktree the same folder name, e.g. ~/.codex/worktrees/<id>/Ghost
   if (taken.databases.has(`dev_${name}`)) {
-    name = `${name.slice(0, 50)}_${hash.slice(0, 6)}`;
+    name = `${name.slice(0, 50)}_${checkoutHash.slice(0, 6)}`;
   }
-  // e2e setup drops every database named ghost_%, so worktree databases use another prefix
+  // e2e setup drops every database named ghost_e2e_%, so worktree databases use another prefix
   const database = `dev_${name}`.slice(0, 64);
 
-  const start = parseInt(hash.slice(0, 8), 16) % SLOTS;
+  const start = parseInt(checkoutHash.slice(0, 8), 16) % SLOTS;
   for (let i = 0; i < SLOTS; i++) {
     const port = FIRST_PORT + ((start + i) % SLOTS) * 2;
     if (
@@ -127,19 +143,44 @@ async function allocate(): Promise<GhostDevEnv> {
 }
 
 /**
- * Ports and database for this checkout's `pnpm dev`, assigned once and kept in
- * `.ghost-dev.env` so URLs and sessions survive restarts.
+ * Hostname, ports and database for this checkout's `pnpm dev`, assigned once and kept
+ * in `.ghost-dev.env` so URLs and sessions survive restarts.
  */
 export async function resolveGhostDevEnv(): Promise<GhostDevEnv> {
   const file = join(checkoutRoot, ENV_FILE);
   if (existsSync(file)) {
-    return { GHOST_DEV_NAME: checkoutName(), ...parseEnvFile(file) } as GhostDevEnv;
+    const text = readFileSync(file, 'utf8');
+    const env = { GHOST_DEV_NAME: checkoutName(), ...parseEnv(text) } as GhostDevEnv;
+    // Files written before checkouts had their own hostname
+    if (!env.GHOST_DEV_HOSTNAME) {
+      env.GHOST_DEV_HOSTNAME = hostnameFor(env.GHOST_DEV_NAME);
+      appendFileSync(
+        file,
+        `${text.endsWith('\n') ? '' : '\n'}GHOST_DEV_HOSTNAME=${env.GHOST_DEV_HOSTNAME}\n`,
+      );
+    }
+    return env;
   }
   const env = await allocate();
   const lines = Object.entries(env).map(([key, value]) => `${key}=${value}`);
   writeFileSync(
     file,
-    `# This checkout's \`pnpm dev\` ports and database. Delete to reassign.\n${lines.join('\n')}\n`,
+    `# This checkout's \`pnpm dev\` hostname, ports and database. Delete to reassign.\n${lines.join('\n')}\n`,
   );
   return env;
+}
+
+/** The address of a checkout's front door, from its `.ghost-dev.env` values */
+export function devUrl(env: Record<string, string>): string {
+  return `http://${env.GHOST_DEV_HOSTNAME ?? 'localhost'}:${env.GHOST_DEV_PORT}/`;
+}
+
+/** The databases `allocate` can give a linked worktree */
+export function worktreeDatabases(root: string): string[] {
+  const name = basename(root)
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '_')
+    .replace(/^_+|_+$/g, '');
+  const hash = createHash('sha1').update(root).digest('hex');
+  return [`dev_${name}`.slice(0, 64), `dev_${name.slice(0, 50)}_${hash.slice(0, 6)}`];
 }

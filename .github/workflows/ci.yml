@@ -483,7 +483,7 @@ jobs:
       - name: Check formatting
         run: pnpm format:check
 
-      - uses: tryghost/actions/actions/slack-build@475df2e2aff4582e487742ba53bbfd7e46e96bc9 # main
+      - uses: tryghost/actions/actions/slack-build@192cf1080e49c31125240e4b2265c46c9d6ea42c # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -498,7 +498,7 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: ${{ env.NODE_VERSION }}
 
@@ -800,13 +800,13 @@ jobs:
 
       # Absent when ghost wasn't among the affected projects; Codecov
       # carries the unit-tests flag forward from the last report instead.
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         if: env.COVERAGE_ENABLED == 'true' && hashFiles('ghost/coverage-unit/cobertura-coverage.xml') != ''
         with:
           name: unit-coverage
           path: ghost/coverage-unit/cobertura-coverage.xml
 
-      - uses: tryghost/actions/actions/slack-build@475df2e2aff4582e487742ba53bbfd7e46e96bc9 # main
+      - uses: tryghost/actions/actions/slack-build@192cf1080e49c31125240e4b2265c46c9d6ea42c # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -833,7 +833,7 @@ jobs:
           FORCE_COLOR: 0
           NX_SKIP_LOG_GROUPING: true
 
-      - uses: tryghost/actions/actions/slack-build@475df2e2aff4582e487742ba53bbfd7e46e96bc9 # main
+      - uses: tryghost/actions/actions/slack-build@192cf1080e49c31125240e4b2265c46c9d6ea42c # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -954,7 +954,7 @@ jobs:
             exit 1
           fi
 
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         if: env.COVERAGE_ENABLED == 'true'
         with:
           name: e2e-coverage
@@ -962,7 +962,7 @@ jobs:
             ghost/coverage-e2e/cobertura-coverage.xml
             ghost/coverage-integration/cobertura-coverage.xml
 
-      - uses: tryghost/actions/actions/slack-build@475df2e2aff4582e487742ba53bbfd7e46e96bc9 # main
+      - uses: tryghost/actions/actions/slack-build@192cf1080e49c31125240e4b2265c46c9d6ea42c # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -1029,7 +1029,7 @@ jobs:
             exit 1
           fi
 
-      - uses: tryghost/actions/actions/slack-build@475df2e2aff4582e487742ba53bbfd7e46e96bc9 # main
+      - uses: tryghost/actions/actions/slack-build@192cf1080e49c31125240e4b2265c46c9d6ea42c # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -1144,7 +1144,7 @@ jobs:
 
       - name: Upload test results
         if: always() && steps.app_name.outputs.has_report == 'true'
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: ${{ steps.app_name.outputs.name }}-playwright-report-${{ matrix.shardIndex }}
           path: ${{ steps.app_name.outputs.root }}/playwright-report
@@ -1155,7 +1155,7 @@ jobs:
       # playwright-report; upload them so failures are debuggable from CI.
       - name: Upload failure screenshots
         if: failure()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: ${{ steps.app_name.outputs.name }}-failure-screenshots-${{ matrix.shardIndex }}
           path: ${{ steps.app_name.outputs.root }}/**/__screenshots__/**
@@ -1173,14 +1173,14 @@ jobs:
 
       - name: Upload Admin acceptance results
         if: always() && matrix.app == '@tryghost/admin'
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: admin-acceptance-results-${{ matrix.shardIndex }}
           path: apps/admin/test-results/acceptance.json
           if-no-files-found: ignore
           retention-days: 30
 
-      - uses: tryghost/actions/actions/slack-build@475df2e2aff4582e487742ba53bbfd7e46e96bc9 # main
+      - uses: tryghost/actions/actions/slack-build@192cf1080e49c31125240e4b2265c46c9d6ea42c # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -1210,7 +1210,7 @@ jobs:
           - scenario: latest-release
             node: ${{ needs.job_setup.outputs.node_version }}
     steps:
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         env:
           FORCE_COLOR: 0
         with:
@@ -1223,7 +1223,7 @@ jobs:
       # Ghost-CLI still requires the package/ prefix; switch this to
       # ghost-release-tarball once it accepts a prefix-free archive too.
       - name: Download npm tarball
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: ghost-npm-tarball
 
@@ -1234,7 +1234,7 @@ jobs:
 
       - name: Save Ghost CLI Debug Logs
         if: failure()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: ghost-cli-debug-logs-${{ matrix.scenario }}-${{ matrix.node }}
           path: /home/runner/.ghost/logs/
@@ -1272,7 +1272,7 @@ jobs:
         run: |
           [ -f ~/.ghost/logs/*.log ] && cat ~/.ghost/logs/*.log
 
-      - uses: tryghost/actions/actions/slack-build@475df2e2aff4582e487742ba53bbfd7e46e96bc9 # main
+      - uses: tryghost/actions/actions/slack-build@192cf1080e49c31125240e4b2265c46c9d6ea42c # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -1297,7 +1297,7 @@ jobs:
       - name: Check Stripe fixtures
         run: pnpm nx run @tryghost/e2e:test:fixtures
 
-      - uses: tryghost/actions/actions/slack-build@475df2e2aff4582e487742ba53bbfd7e46e96bc9 # main
+      - uses: tryghost/actions/actions/slack-build@192cf1080e49c31125240e4b2265c46c9d6ea42c # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -1349,7 +1349,7 @@ jobs:
         run: tar --exclude='*.map' -czf admin-build.tar.gz -C ghost/core/built admin embed-renderer
 
       - name: Upload admin build artifact
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: admin-build
           path: admin-build.tar.gz
@@ -1358,7 +1358,7 @@ jobs:
 
       - name: Upload admin artifact for CD
         id: upload-admin
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: admin-build-cd
           path: apps/admin/dist
@@ -1369,14 +1369,14 @@ jobs:
       # admin-build-cd.
       - name: Upload Koenig build for Sentry
         if: env.IS_SHIPPING == 'true'
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: koenig-build-sentry
           path: koenig/koenig-lexical/dist
           retention-days: 1
           if-no-files-found: error
 
-      - uses: tryghost/actions/actions/slack-build@475df2e2aff4582e487742ba53bbfd7e46e96bc9 # main
+      - uses: tryghost/actions/actions/slack-build@192cf1080e49c31125240e4b2265c46c9d6ea42c # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -1410,12 +1410,12 @@ jobs:
           install-args: --filter @internal/scripts
           store-cache: 'false'
 
-      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: admin-build-cd
           path: apps/admin/dist
 
-      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: koenig-build-sentry
           path: koenig/koenig-lexical/dist
@@ -1484,7 +1484,7 @@ jobs:
           pnpm --filter ghost run build:assets
 
       - name: Download admin build
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: admin-build
 
@@ -1504,7 +1504,7 @@ jobs:
       # the release asset; the -npm one carries the package/ prefix npm and
       # today's Ghost-CLI need, and goes away with the npm publish in 7.0.
       - name: Upload release tarball
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: ghost-release-tarball
           path: |
@@ -1514,14 +1514,14 @@ jobs:
           if-no-files-found: error
 
       - name: Upload npm tarball
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: ghost-npm-tarball
           path: ghost/ghost-*-npm.tgz
           retention-days: 7
           if-no-files-found: error
 
-      - uses: tryghost/actions/actions/slack-build@475df2e2aff4582e487742ba53bbfd7e46e96bc9 # main
+      - uses: tryghost/actions/actions/slack-build@192cf1080e49c31125240e4b2265c46c9d6ea42c # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -1705,7 +1705,7 @@ jobs:
 
       - name: Upload core image artifact
         if: steps.strategy.outputs.use-artifact == 'true'
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: docker-image-core
           path: ${{ runner.temp }}/docker-image-core.tar.gz
@@ -1723,7 +1723,7 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Download admin build
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: admin-build
           # Outside the build context: a stray admin-build.tar.gz in the repo root
@@ -1777,7 +1777,7 @@ jobs:
 
       - name: Upload image artifact
         if: steps.strategy.outputs.use-artifact == 'true'
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: docker-image-production
           path: docker-image-production.tar.gz
@@ -1864,13 +1864,13 @@ jobs:
 
       # Extract into a clean staging dir and build from there: the tarball holds
       # exactly the apps/*/umd paths the Dockerfile COPYs, while the workspace at
-      # this point is dirty (node_modules, dist/ outputs from build:production)
+      # this point is dirty (node_modules, dist/ outputs from the earlier builds)
       # and the root-anchored .dockerignore patterns don't cover the nested
       # copies — using `.` as context would ship hundreds of MB into the builder
-      # and let stray build:production files under apps/*/umd leak into the image.
+      # and let stray build output under apps/*/umd leak into the image.
       - name: Download public app artifacts (e2e)
         continue-on-error: ${{ startsWith(github.ref, 'refs/tags/v') }}
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: e2e-public-apps
           path: ${{ runner.temp }}/e2e-context
@@ -1954,7 +1954,7 @@ jobs:
       - name: Upload E2E image artifact
         if: steps.strategy.outputs.use-artifact == 'true'
         continue-on-error: ${{ startsWith(github.ref, 'refs/tags/v') }}
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: docker-image-e2e
           path: docker-image-e2e.tar.gz
@@ -2062,7 +2062,7 @@ jobs:
       - name: Upload dependency size report
         if: steps.strategy.outputs.should-push == 'true'
         continue-on-error: ${{ startsWith(github.ref, 'refs/tags/v') }}
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: image-report
           path: ${{ runner.temp }}/image-report/image-report.json
@@ -2073,7 +2073,7 @@ jobs:
       - name: Set up Node.js
         if: steps.strategy.outputs.should-push == 'true'
         continue-on-error: ${{ startsWith(github.ref, 'refs/tags/v') }}
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: ${{ env.NODE_VERSION }}
 
@@ -2149,7 +2149,7 @@ jobs:
           ls -lh e2e-public-apps.tar.gz
 
       - name: Upload public app artifacts
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: e2e-public-apps
           path: e2e-public-apps.tar.gz
@@ -2178,6 +2178,8 @@ jobs:
       # permission gap degrades rather than breaks.
       GHOST_E2E_TINYBIRD_SLIM: ${{ needs.job_setup.outputs.changed_tinybird_slim == 'true' || (github.repository_owner == 'TryGhost' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)) }}
       GHOST_E2E_TINYBIRD_SLIM_IMAGE: ${{ needs.job_setup.outputs.changed_tinybird_slim == 'true' && 'tinybird-local-slim:e2e' || 'ghcr.io/tryghost/tinybird-local-slim:latest' }}
+      # The runner's MySQL exists only for E2E, so it can live on tmpfs
+      GHOST_E2E_MYSQL_TMPFS: 'true'
     strategy:
       fail-fast: true
       matrix:
@@ -2378,13 +2380,9 @@ jobs:
         if: failure()
         run: bash ./e2e/scripts/dump-e2e-docker-logs.sh
 
-      - name: Stop E2E infra
-        if: always()
-        run: pnpm --filter @tryghost/e2e infra:down
-
       - name: Upload blob report to GitHub Actions Artifacts
         if: failure()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: blob-report-${{ matrix.projectName }}-${{ matrix.shardIndex }}
           path: e2e/blob-report
@@ -2392,7 +2390,7 @@ jobs:
 
       - name: Upload test results artifacts
         if: failure()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: test-results-${{ matrix.projectName }}-${{ matrix.shardIndex }}
           path: e2e/test-results
@@ -2400,14 +2398,14 @@ jobs:
 
       - name: Upload JSON report for shard timings
         if: success() && matrix.projects == 'main' && github.event_name == 'push' && github.ref == 'refs/heads/main'
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: e2e-json-report-main-${{ matrix.shardIndex }}
           path: e2e/json-report/report.json
           retention-days: 1
           if-no-files-found: ignore
 
-      - uses: tryghost/actions/actions/slack-build@475df2e2aff4582e487742ba53bbfd7e46e96bc9 # main
+      - uses: tryghost/actions/actions/slack-build@192cf1080e49c31125240e4b2265c46c9d6ea42c # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -2435,7 +2433,7 @@ jobs:
           trust-lockfile: 'true'
 
       - name: Download blob reports from GitHub Actions Artifacts
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         continue-on-error: true
         with:
           path: e2e/all-blob-reports
@@ -2453,7 +2451,7 @@ jobs:
 
       - name: Download test results from GitHub Actions Artifacts
         if: steps.check.outputs.has_reports == 'true'
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           path: e2e/all-test-results
           pattern: test-results-*
@@ -2466,7 +2464,7 @@ jobs:
 
       - name: Upload HTML report
         if: steps.check.outputs.has_reports == 'true'
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: playwright-report
           path: e2e/playwright-report
@@ -2474,7 +2472,7 @@ jobs:
 
       - name: Upload merged test results
         if: steps.check.outputs.has_reports == 'true'
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: test-results
           path: e2e/all-test-results
@@ -2511,11 +2509,11 @@ jobs:
           sparse-checkout: scripts/e2e-shards.ts
           sparse-checkout-cone-mode: false
 
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: ${{ env.NODE_VERSION }}
 
-      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           pattern: e2e-json-report-main-*
           path: e2e-reports
@@ -2551,7 +2549,7 @@ jobs:
 
       - name: Restore E2E coverage
         if: contains(needs.job_acceptance-tests.result, 'success')
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: e2e-coverage
           path: ghost
@@ -2569,7 +2567,7 @@ jobs:
       - name: Restore Unit coverage
         if: contains(needs.job_unit-tests.result, 'success')
         continue-on-error: true
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: unit-coverage
           path: ghost/coverage-unit
@@ -2833,12 +2831,12 @@ jobs:
       id-token: write
     steps:
       - name: Download npm tarball
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: ghost-npm-tarball
 
       - name: Set up Node.js
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: ${{ env.NODE_VERSION }}
           package-manager-cache: false
@@ -2926,7 +2924,7 @@ jobs:
       # npm client. Same build tree as the npm package, just without the
       # package/ wrapper dir.
       - name: Download release tarball
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: ghost-release-tarball
           path: release-assets

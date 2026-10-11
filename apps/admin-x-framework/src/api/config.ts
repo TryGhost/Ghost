@@ -11,10 +11,6 @@ interface JSONArray extends Array<string | number | boolean | Date | JSONObject 
 export type Config = {
   version: string;
   environment: string;
-  editor: {
-    url: string;
-    version: string;
-  };
   signupForm: {
     url: string;
     version: string;

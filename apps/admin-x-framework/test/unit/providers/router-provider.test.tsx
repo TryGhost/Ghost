@@ -13,16 +13,17 @@ vi.mock('@sentry/react', async (importOriginal) => ({
 describe('feature flag overrides', () => {
   beforeEach(() => {
     sessionStorage.clear();
-    window.location.hash = '';
+    // URL fixtures must not queue navigation events for a router mounted later.
+    window.history.replaceState(null, '', '/');
   });
 
   afterEach(() => {
     sessionStorage.clear();
-    window.location.hash = '';
+    window.history.replaceState(null, '', '/');
   });
 
   it('notifies the host after storing URL overrides', async () => {
-    window.location.hash = '#/?labs=testFlag';
+    window.history.replaceState(null, '', '/#/?labs=testFlag');
     const onFeatureFlagOverridesChange = vi.fn(() => {
       expect(sessionStorage.getItem('ghost-admin:labs-overrides')).toBe('["testFlag"]');
     });
@@ -67,7 +68,8 @@ describe('route errors', () => {
   }
 
   beforeEach(() => {
-    window.location.hash = '';
+    // Setting location.hash would queue a navigation and render the crash twice.
+    window.history.replaceState(null, '', '/');
     vi.mocked(Sentry.captureException).mockClear();
     vi.spyOn(console, 'error').mockImplementation(() => {});
     window.addEventListener('error', silenceCrash);

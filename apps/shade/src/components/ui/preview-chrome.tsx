@@ -1,18 +1,7 @@
 import * as React from 'react';
 import { cn } from '@/lib/utils';
 import { cva, type VariantProps } from 'class-variance-authority';
-
-const previewChromeVariants = cva('size-full', {
-  variants: {
-    device: {
-      desktop: 'px-8',
-      mobile: 'h-[775px] w-[380px] rounded-3xl bg-surface-elevated p-2 shadow-xl',
-    },
-  },
-  defaultVariants: {
-    device: 'desktop',
-  },
-});
+import { previewChromeVariants } from '@/components/ui/preview-chrome-variants';
 
 const previewViewportVariants = cva('size-full overflow-hidden', {
   variants: {
@@ -39,4 +28,4 @@ const PreviewChrome = React.forwardRef<HTMLDivElement, PreviewChromeProps>(
 
 PreviewChrome.displayName = 'PreviewChrome';
 
-export { PreviewChrome, previewChromeVariants };
+export { PreviewChrome };

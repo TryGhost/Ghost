@@ -371,6 +371,41 @@ describe('ActivityPubService', function () {
     await knexInstance.destroy();
   });
 
+  it('Logs once without erroring when no ActivityPub service is routed to the site', async function () {
+    const knexInstance = await getKnexInstance();
+    await addOwnerUser(knexInstance);
+    await addActivityPubIntegration(knexInstance);
+
+    const siteUrl = new URL('http://fake-site-url');
+    const scope = nock(siteUrl).get('/.ghost/activitypub/v1/site/').reply(404);
+
+    const identityTokenService = {
+      getTokenForUser(email: string, role: string) {
+        return `token:${email}:${role}`;
+      },
+    };
+    const service = new ActivityPubService(
+      knexInstance,
+      siteUrl,
+      logging,
+      identityTokenService as unknown as IdentityTokenService,
+    );
+
+    await service.initialiseWebhooks();
+
+    assert(scope.isDone(), 'Expected the ActivityPub site endpoint to be called');
+
+    const webhooks = await knexInstance.select('*').from('webhooks');
+
+    assert.equal(webhooks.length, 0, 'There should be no webhooks');
+    assert.equal(logging.error.mock.calls.length, 0, 'Expected no errors to be logged');
+    assert.deepEqual(logging.info.mock.calls, [
+      ['No ActivityPub service found - skipping webhook setup'],
+    ]);
+
+    await knexInstance.destroy();
+  });
+
   it('Skips webhook setup with a warning when ActivityPub is unavailable', async function () {
     const knexInstance = await getKnexInstance();
     await addOwnerUser(knexInstance);
@@ -406,7 +441,7 @@ describe('ActivityPubService', function () {
     await knexInstance.destroy();
   });
 
-  it('Logs an error when ActivityPub returns no webhook secret', async function () {
+  it('Logs an error when the ActivityPub service returns no webhook secret', async function () {
     const knexInstance = await getKnexInstance();
     await addOwnerUser(knexInstance);
     await addActivityPubIntegration(knexInstance);

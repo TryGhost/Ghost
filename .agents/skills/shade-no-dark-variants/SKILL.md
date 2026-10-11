@@ -3,6 +3,7 @@ name: Shade no dark variants
 description: Don't write dark: Tailwind variants for colour in Shade or admin apps — semantic tokens flip in dark mode automatically. Trigger when editing TSX in Shade-consuming apps.
 autoTrigger:
   - fileEdit: "apps/{shade,admin,admin-x-framework,activitypub}/**/*.tsx"
+  - fileEdit: "apps/shade/src/components/**/*-variants.ts"
 ---
 
 # Shade — don't use `dark:` for colour
