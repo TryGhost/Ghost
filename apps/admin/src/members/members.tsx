@@ -244,7 +244,7 @@ const MembersPage: React.FC<MembersPageProps> = ({
               // Pulled up beside the large title, see-through over it, and solid
               // once it has handed over (a layer fading in with the handover)
               largeTitle &&
-                'bg-none! pt-6! backdrop-blur-none! before:pointer-events-none before:absolute before:inset-0 before:-z-10 before:bg-background sidebar:pt-6!',
+                'bg-none! pt-2! backdrop-blur-none! before:pointer-events-none before:absolute before:inset-0 before:-z-10 before:bg-background sidebar:pt-2!',
             )}
             data-large-title-header={largeTitle ? '' : undefined}
             style={
@@ -252,7 +252,11 @@ const MembersPage: React.FC<MembersPageProps> = ({
             }
           >
             <div ref={setHeaderContentRef} className="flex flex-col gap-4 sidebar:gap-6">
-              <PageHeader blurredBackground={false} sticky={false}>
+              <PageHeader
+                blurredBackground={false}
+                className={cn(largeTitle && 'border-b border-border-default pb-8')}
+                sticky={false}
+              >
                 <PageHeader.Left>
                   <PageHeader.Title
                     className={cn(

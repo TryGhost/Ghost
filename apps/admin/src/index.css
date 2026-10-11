@@ -343,6 +343,17 @@ body.react-admin {
   }
 }
 
+@keyframes large-title-row-settle {
+  from {
+    translate: 0 0;
+    animation-timing-function: ease-out;
+  }
+  50%,
+  to {
+    translate: 0 16px;
+  }
+}
+
 @keyframes large-title-in {
   from,
   50% {
@@ -365,7 +376,8 @@ body.react-admin {
 
   [data-large-title],
   .large-title-header-title,
-  [data-large-title-header]::before {
+  [data-large-title-header]::before,
+  [data-large-title-header] [data-page-header='main'] {
     animation-duration: auto;
     animation-fill-mode: both;
     animation-timing-function: linear;
@@ -381,6 +393,12 @@ body.react-admin {
   [data-large-title-header]::before {
     animation-name: large-title-in;
   }
+
+  /* The header's first row settles into place as it sticks, padding moving
+     from below it to above it */
+  [data-large-title-header] [data-page-header='main'] {
+    animation-name: large-title-row-settle;
+  }
 }
 
 @supports not (animation-timeline: view()) {
@@ -391,6 +409,10 @@ body.react-admin {
   .large-title-header-title,
   [data-large-title-header]::before {
     opacity: clamp(0, calc(var(--large-title-condense, 0) * 2 - 1), 1);
+  }
+
+  [data-large-title-header] [data-page-header='main'] {
+    translate: 0 calc(min(var(--large-title-condense, 0) * 2, 1) * 16px);
   }
 }
 
