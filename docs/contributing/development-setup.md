@@ -88,7 +88,7 @@ These commands preserve the site's existing feature flags; see
 [Admin development](../../apps/admin/README.md#development) to preview flagged
 features with session overrides.
 
-Wait for the `Ghost:` URL in the output, then open:
+Wait for the `Site:`, `Admin:` and `Email:` lines in the output, then open:
 
 - Site: [http://localhost:2368](http://localhost:2368)
 - Admin: [http://localhost:2368/ghost/](http://localhost:2368/ghost/)

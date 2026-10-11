@@ -91,10 +91,13 @@ export function ghostFrontDoorPlugin(backend: string, devBase: string): Plugin {
       // Vite's own URLs point at the internal dev base, not at Ghost
       server.printUrls = () => {
         logger.info('  Waiting for Ghost…');
-        const siteHostname = process.env.GHOST_DEV_HOSTNAME ?? 'localhost';
-        void ready.then(() =>
-          logger.info(`  ➜  Ghost:   http://${siteHostname}:${server.config.server.port}/ghost/`),
-        );
+        const site = `http://${process.env.GHOST_DEV_HOSTNAME ?? 'localhost'}:${server.config.server.port}/`;
+        void ready.then(() => {
+          logger.info(`  ➜  Site:   ${site}`);
+          logger.info(`  ➜  Admin:  ${site}ghost/`);
+          // Mailpit's web interface, published by compose.dev.yaml and shared by every checkout
+          logger.info('  ➜  Email:  http://localhost:8025/');
+        });
       };
 
       server.middlewares.use((_req, _res, next) => {
