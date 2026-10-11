@@ -68,6 +68,7 @@
     "bson-objectid": "catalog:",
     "eslint": "catalog:",
     "eslint-plugin-tailwindcss": "catalog:tailwind3",
+    "jiti": "catalog:",
     "jsdom": "catalog:",
     "moment": "catalog:",
     "postcss": "catalog:",

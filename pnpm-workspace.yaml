@@ -156,6 +156,7 @@ catalog:
   globals: 17.7.0
   got: 16.0.0
   ipaddr.js: 2.5.0
+  jiti: 2.7.0
   jose: 6.2.12
   js-yaml: 4.3.2
   jsdom: 30.0.1
