@@ -52,9 +52,10 @@ const infra = Object.entries(services)
 // A stopped container can still point at a network compose has since recreated
 compose(['rm', '-f', ...infra]);
 
+// Other checkouts use the running services, so they keep the config they started with
 const setupServices = infra.filter((name) => setup.has(name));
 if (setupServices.length > 0) {
-  compose(['up', '-d', '--build', '--quiet-pull', ...setupServices]);
+  compose(['up', '-d', '--build', '--no-recreate', '--quiet-pull', ...setupServices]);
   // `docker compose wait` misses containers that have already exited
   for (const service of setupServices) {
     const container = docker(['compose', ...files, 'ps', '-a', '-q', service]);
@@ -77,6 +78,7 @@ compose([
   'up',
   '-d',
   '--build',
+  '--no-recreate',
   '--wait',
   '--quiet-pull',
   '--no-deps',

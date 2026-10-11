@@ -110,8 +110,9 @@ local service, set `ACTIVITYPUB_PROXY_TARGET`, for example to `127.0.0.1:8080`.
 
 Press `Ctrl+C` in the development process to stop Ghost and the watchers. MySQL,
 Redis, and Mailpit keep running for other checkouts; `pnpm dev:down --all` stops
-them along with every checkout's Ghost. The database lives in a Docker volume,
-and uploaded content in `ghost/content`.
+them along with every checkout's Ghost. A checkout reuses them while they run, so
+a change to them in `compose.dev.yaml` applies after `pnpm dev:down --all`. The
+database lives in a Docker volume, and uploaded content in `ghost/content`.
 
 ### Worktrees
 
