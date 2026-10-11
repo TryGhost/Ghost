@@ -40,6 +40,7 @@ import {
   LARGE_PAGE_TITLE_VARIABLES,
   LARGE_TITLE_HEADER_OVERLAP,
   useLargeTitleCondense,
+  useScrolledPast,
 } from '@/shared/large-page-title-layout';
 import { preloadMapAtlas } from './detail/map-atlas';
 
@@ -66,6 +67,7 @@ const MembersPage: React.FC<MembersPageProps> = ({
   const isMobile = useIsMobile();
   const largeTitle = admin7Design && !isMobile;
   const { markerRef: headerRestMarkerRef } = useLargeTitleCondense();
+  const { scrolledPast: headerStuck, markerRef: headerStickMarkerRef } = useScrolledPast();
   const headerRef = useRef<HTMLDivElement | null>(null);
   const setHeaderContentRef = useCallback((node: HTMLDivElement | null) => {
     headerRef.current = node?.closest('[data-list-page="header"]') as HTMLDivElement | null;
@@ -240,6 +242,7 @@ const MembersPage: React.FC<MembersPageProps> = ({
             <LargePageTitle
               aside={!shouldShowLoading && totalMembers > 0 && formatNumber(totalMembers)}
               markerRef={headerRestMarkerRef}
+              stickMarkerRef={headerStickMarkerRef}
             >
               Members
             </LargePageTitle>
@@ -252,6 +255,7 @@ const MembersPage: React.FC<MembersPageProps> = ({
               largeTitle &&
                 'bg-none! pt-2! pb-0! backdrop-blur-none! before:pointer-events-none before:absolute before:inset-0 before:-z-10 before:bg-background sidebar:pt-2! sidebar:pb-0!',
             )}
+            data-condensed={largeTitle && headerStuck ? '' : undefined}
             data-large-title-header={largeTitle ? '' : undefined}
             style={
               largeTitle ? { marginTop: `calc(-1 * ${LARGE_TITLE_HEADER_OVERLAP})` } : undefined
