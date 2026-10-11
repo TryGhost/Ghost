@@ -33,6 +33,14 @@ import { useLocation, useSearchParams } from '@tryghost/admin-x-framework';
 import { useMultipleActiveSubscriptionsCount } from './hooks/use-multiple-active-subscriptions-count';
 import { useShade } from '@tryghost/shade/app';
 import { useIdlePreload } from '@/shared/use-idle-preload';
+import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
+import { useIsMobile } from '@tryghost/shade/utils';
+import { LargePageTitle } from '@/shared/large-page-title';
+import {
+  LARGE_PAGE_TITLE_VARIABLES,
+  LARGE_TITLE_HEADER_OVERLAP,
+  useScrolledPast,
+} from '@/shared/large-page-title-layout';
 import { preloadMapAtlas } from './detail/map-atlas';
 
 const SEARCH_DEBOUNCE_MS = 250;
@@ -52,6 +60,12 @@ const MembersPage: React.FC<MembersPageProps> = ({
   timezone,
 }) => {
   const { isAdmin7 } = useShade();
+  // admin7Design spike: a large title above the sticky header, condensing into
+  // it once the header sticks (desktop, where the frame is)
+  const admin7Design = useFeatureFlag('admin7Design');
+  const isMobile = useIsMobile();
+  const largeTitle = admin7Design && !isMobile;
+  const { scrolledPast: headerStuck, markerRef: headerRestMarkerRef } = useScrolledPast();
   const headerRef = useRef<HTMLDivElement | null>(null);
   const setHeaderContentRef = useCallback((node: HTMLDivElement | null) => {
     headerRef.current = node?.closest('[data-list-page="header"]') as HTMLDivElement | null;
@@ -211,12 +225,39 @@ const MembersPage: React.FC<MembersPageProps> = ({
   return (
     <Box className="size-full">
       <Container className="relative flex h-full flex-col" size="page">
-        <ListPage data-testid="members-page">
-          <ListPage.Header className="py-4 sidebar:py-5">
+        <ListPage
+          data-testid="members-page"
+          style={largeTitle ? LARGE_PAGE_TITLE_VARIABLES : undefined}
+        >
+          {largeTitle && (
+            <LargePageTitle
+              aside={!shouldShowLoading && totalMembers > 0 && formatNumber(totalMembers)}
+              condensed={headerStuck}
+              markerRef={headerRestMarkerRef}
+            >
+              Members
+            </LargePageTitle>
+          )}
+          <ListPage.Header
+            className={cn(
+              'py-4 sidebar:py-5',
+              // Pulled up beside the large title, and see-through over it until it sticks
+              largeTitle && 'pt-3! sidebar:pt-3!',
+              largeTitle && !headerStuck && 'bg-none! backdrop-blur-none!',
+            )}
+            style={
+              largeTitle ? { marginTop: `calc(-1 * ${LARGE_TITLE_HEADER_OVERLAP})` } : undefined
+            }
+          >
             <div ref={setHeaderContentRef} className="flex flex-col gap-4 sidebar:gap-6">
               <PageHeader blurredBackground={false} sticky={false}>
                 <PageHeader.Left>
-                  <PageHeader.Title>
+                  <PageHeader.Title
+                    className={cn(
+                      largeTitle && 'transition-opacity duration-200 motion-reduce:transition-none',
+                      largeTitle && !headerStuck && 'opacity-0',
+                    )}
+                  >
                     Members{' '}
                     {!shouldShowLoading && totalMembers > 0 && (
                       <PageHeader.Count className="hidden sm:inline">
