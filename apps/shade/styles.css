@@ -112,7 +112,7 @@ html.theme-switching *::after {
   }
   50%,
   to {
-    translate: 0 16px;
+    translate: 0 12px;
   }
 }
 
@@ -188,7 +188,7 @@ html.theme-switching *::after {
   }
 
   [data-large-title-header] [data-page-header='main'] {
-    translate: 0 calc(min(var(--large-title-condense, 0) * 2, 1) * 16px);
+    translate: 0 calc(min(var(--large-title-condense, 0) * 2, 1) * 12px);
   }
 }
 
