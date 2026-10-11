@@ -60,7 +60,7 @@ accessor the feature owns, rather than `config.get` scattered across it.
 
 Two approaches were considered and rejected for the long tail. Self-registration
 (`registerConfigSection()` at import time) cannot work: config is the first thing
-loaded — `loggingrc.js` and `MigratorConfig.js` require it before any feature
+loaded — `loggingrc.js` and `MigratorConfig.ts` require it before any feature
 module exists — so which sections got validated would depend on import order.
 Generating this file from per-feature schemas does work, but it buys load-time
 failure for feature config, which is the wrong behaviour for most of it.
@@ -217,13 +217,14 @@ a derived object instead. Three places got this wrong, each writing through into
 config for every later reader:
 [`configure-knex.ts`](../../server/data/db/configure-knex.ts) assembling knex's
 options, `AdapterCacheRedis` folding `ttl` into `clusterConfig`, and
-[`MigratorConfig.js`](../../../MigratorConfig.js) handing the `database` subtree
-to knex-migrator, which mutates what it is given.
+[`MigratorConfig.ts`](../../../MigratorConfig.ts) handing the `database` subtree
+to knex-migrator, which mutates what it is given. It now hands over `configure()`'s
+derived knex options, the same ones Ghost connects with.
 
 The last one is the case to watch for: when a dependency assembles its own options
-from what you pass it, give it a copy. `_.cloneDeep` rather than
-`structuredClone` — handing a tree to code you do not control should not be able
-to throw on a value it cannot clone.
+from what you pass it, give it a derived object or a copy. `_.cloneDeep` rather
+than `structuredClone` — handing a tree to code you do not control should not be
+able to throw on a value it cannot clone.
 
 Copy only the levels you write to, rather than deep-cloning defensively. A deep
 clone launders away the readonly type, so the compiler stops holding you to it.
