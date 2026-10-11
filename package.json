@@ -27,7 +27,7 @@
     "fix": "pnpm store prune && node scripts/clean.js && pnpm install",
     "create-package": "node ./scripts/create-package.js",
     "knex-migrator": "cd ghost && pnpm exec node ../scripts/with-ghost-dev-env.ts env NODE_OPTIONS='--conditions=source --import=tsx' knex-migrator",
-    "bootstrap": "pnpm install && bash scripts/init-submodules.sh && git config --local blame.ignoreRevsFile .git-blame-ignore-revs",
+    "bootstrap": "pnpm install && bash scripts/init-submodules.sh && (test \"$(git config --local blame.ignoreRevsFile)\" = .git-blame-ignore-revs || git config --local blame.ignoreRevsFile .git-blame-ignore-revs)",
     "migrate:db": "cd ghost && pnpm exec node ../scripts/with-ghost-dev-env.ts env NODE_OPTIONS='--conditions=source --import=tsx' knex-migrator migrate",
     "rollback:db": "cd ghost && pnpm exec node ../scripts/with-ghost-dev-env.ts env NODE_OPTIONS='--conditions=source --import=tsx' knex-migrator rollback",
     "reset:db": "cd ghost && pnpm exec node ../scripts/with-ghost-dev-env.ts env NODE_OPTIONS='--conditions=source --import=tsx' sh -c 'knex-migrator reset && knex-migrator init'",
