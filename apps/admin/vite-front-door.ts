@@ -88,9 +88,8 @@ export function ghostFrontDoorPlugin(backend: string, devBase: string): Plugin {
       watchForRestart();
       server.httpServer?.once('close', () => watcher?.destroy());
 
-      const printUrls = server.printUrls.bind(server);
+      // Vite's own URLs point at the internal dev base, not at Ghost
       server.printUrls = () => {
-        printUrls();
         logger.info('  Waiting for Ghost…');
         const siteHostname = process.env.GHOST_DEV_HOSTNAME ?? 'localhost';
         void ready.then(() =>
