@@ -1,6 +1,6 @@
 import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { appendFileSync, existsSync, readFileSync, realpathSync, writeFileSync } from 'node:fs';
+import { existsSync, readFileSync, realpathSync, writeFileSync } from 'node:fs';
 import net from 'node:net';
 import { basename, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -100,13 +100,15 @@ function checkoutName(): string {
 }
 
 // Cookies ignore the port, so a worktree needs its own hostname to keep its own Admin
-// session. Browsers and the macOS resolver send *.localhost to loopback.
+// session. Browsers and the macOS resolver send *.localhost to loopback. Password
+// managers match by registrable domain, so one login saved for ghost.localhost fills
+// every worktree.
 export function worktreeHostname(name: string, hash: string): string {
   const label = name.replace(/_/g, '-').replace(/^-+|-+$/g, '');
   // A DNS label holds at most 63 characters; the hash keeps shortened names distinct
   const short =
     label.length > 63 ? `${label.slice(0, 56).replace(/-+$/, '')}-${hash.slice(0, 6)}` : label;
-  return `${short || `wt-${hash.slice(0, 6)}`}.localhost`;
+  return `${short || `wt-${hash.slice(0, 6)}`}.ghost.localhost`;
 }
 
 function hostnameFor(name: string): string {
@@ -151,12 +153,16 @@ export async function resolveGhostDevEnv(): Promise<GhostDevEnv> {
   if (existsSync(file)) {
     const text = readFileSync(file, 'utf8');
     const env = { GHOST_DEV_NAME: checkoutName(), ...parseEnv(text) } as GhostDevEnv;
-    // Files written before checkouts had their own hostname
-    if (!env.GHOST_DEV_HOSTNAME) {
-      env.GHOST_DEV_HOSTNAME = hostnameFor(env.GHOST_DEV_NAME);
-      appendFileSync(
+    const hostname = hostnameFor(env.GHOST_DEV_NAME);
+    // Files written before checkouts had their own hostname, or before worktrees moved
+    // under ghost.localhost
+    const stale = hostname.replace(/\.ghost\.localhost$/, '.localhost');
+    if (!env.GHOST_DEV_HOSTNAME || (env.GHOST_DEV_HOSTNAME === stale && stale !== hostname)) {
+      env.GHOST_DEV_HOSTNAME = hostname;
+      const rest = text.replace(/^GHOST_DEV_HOSTNAME=.*\n?/m, '');
+      writeFileSync(
         file,
-        `${text.endsWith('\n') ? '' : '\n'}GHOST_DEV_HOSTNAME=${env.GHOST_DEV_HOSTNAME}\n`,
+        `${rest}${rest.endsWith('\n') ? '' : '\n'}GHOST_DEV_HOSTNAME=${hostname}\n`,
       );
     }
     return env;

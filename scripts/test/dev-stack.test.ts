@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
+import { createHash } from 'node:crypto';
 import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -13,6 +14,7 @@ import {
   parseWorktrees,
   treeTargets,
   unusedDatabases,
+  unusedE2eNames,
 } from '../lib/dev-stack.ts';
 import { worktreeDatabases } from '../lib/ghost-dev-env.ts';
 
@@ -110,6 +112,28 @@ describe('unusedDatabases', () => {
       { root: '/src/wt/hashed' },
     ];
     assert.deepEqual(unusedDatabases(databases, worktrees), ['dev_removed']);
+  });
+});
+
+describe('unusedE2eNames', () => {
+  it('lists e2e names keyed by a worktree that no longer exists, never unkeyed ones', () => {
+    const key = (root: string) => createHash('sha1').update(root).digest('hex').slice(0, 8);
+    const keyed = (k: string) => [
+      `ghost-dev-e2e-${k}`,
+      `ghost_e2e_${k}_base`,
+      `ghost_e2e_${k}_0f8fad5b_d9cb_469f_a165_70867728950e`,
+      `ghost_e2e_${k}_base.sql`,
+    ];
+    const names = [
+      'ghost-dev-e2e',
+      'ghost_e2e_base',
+      'ghost_e2e_0f8fad5b_d9cb_469f_a165_70867728950e',
+      'ghost_e2e_base.sql',
+      'ghost-dev',
+      ...keyed(key('/src/wt/live')),
+      ...keyed(key('/src/wt/removed')),
+    ];
+    assert.deepEqual(unusedE2eNames(names, ['/src/wt/live']), keyed(key('/src/wt/removed')));
   });
 });
 

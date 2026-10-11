@@ -57,12 +57,15 @@ export function AdminFrame({ mode, topBar, locked = false, children }: AdminFram
   const { top, side, radius } = frameInsets(mode);
   const topBarRef = React.useRef<HTMLDivElement>(null);
 
-  // Applied through a ref because React 18 has no first-class inert prop
+  // Applied through a ref because React 18 has no first-class inert prop.
+  // Closed around a full-screen surface, the top bar is out of sight, so out
+  // of reach too.
+  const topBarInert = locked || mode === 'hidden';
   React.useLayoutEffect(() => {
     if (topBarRef.current) {
-      topBarRef.current.inert = locked;
+      topBarRef.current.inert = topBarInert;
     }
-  }, [locked]);
+  }, [topBarInert]);
 
   return (
     <div

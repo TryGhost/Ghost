@@ -121,7 +121,8 @@ export function ghostFrontDoorPlugin(backend: string, devBase: string): Plugin {
       // Registered here, before Vite's own middleware and proxy
       server.middlewares.use((req, res, next) => {
         const url = req.url ?? '';
-        if (url === '/ghost' || url === '/ghost/') {
+        // Bare `/ghost` goes to Ghost, which redirects it to `/ghost/`
+        if (url === '/ghost/') {
           req.url = `${devBase}/`;
           return next();
         }

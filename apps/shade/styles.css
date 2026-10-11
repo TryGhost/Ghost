@@ -210,6 +210,19 @@ html.theme-switching *::after {
   }
 }
 
+/* With reduced motion, the header's first row doesn't move with the scroll:
+   it takes its settled place as the header sticks */
+@media (prefers-reduced-motion: reduce) {
+  [data-large-title-header] [data-page-header='main'] {
+    animation: none;
+    translate: none;
+  }
+
+  [data-large-title-header][data-condensed] [data-page-header='main'] {
+    translate: 0 8px;
+  }
+}
+
 /* Under a large title, the header's first row (its PageHeader) sits 32px
    above a separator; a FilterBar following it takes the separator's place,
    and anything else follows 24px below. The header's own row gaps give way to
