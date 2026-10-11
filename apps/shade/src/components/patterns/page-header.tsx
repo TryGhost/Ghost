@@ -1,5 +1,5 @@
 import { HeaderTooltipProvider } from '@/providers/header-tooltip-provider';
-import { useShade } from '@/providers/shade-provider';
+import { useShade } from '@/providers/shade-context';
 import {
   DropdownMenu,
   DropdownMenuContent,

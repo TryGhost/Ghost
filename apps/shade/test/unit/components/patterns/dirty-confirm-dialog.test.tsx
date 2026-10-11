@@ -2,10 +2,8 @@ import assert from 'assert/strict';
 import { describe, it, vi } from 'vitest';
 import { fireEvent, screen } from '@testing-library/react';
 
-import {
-  DirtyConfirmDialog,
-  useDirtyConfirmation,
-} from '../../../../src/components/patterns/dirty-confirm-dialog';
+import { DirtyConfirmDialog } from '../../../../src/components/patterns/dirty-confirm-dialog';
+import { useDirtyConfirmation } from '../../../../src/components/patterns/use-dirty-confirmation';
 import { render } from '../../utils/test-utils';
 
 const TestHarness = ({ dirty, onLeave }: { dirty: boolean; onLeave: () => void }) => {
