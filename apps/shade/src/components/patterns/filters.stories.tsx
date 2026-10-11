@@ -13,8 +13,8 @@ import {
   type CustomRendererProps,
   type Filter,
   type FilterFieldConfig,
-  createFilter,
 } from './filters';
+import { createFilter } from '@/components/patterns/filters-helpers';
 import {
   User,
   Mail,

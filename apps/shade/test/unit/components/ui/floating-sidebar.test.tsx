@@ -1,16 +1,16 @@
 import assert from 'assert/strict';
 import { describe, it, vi } from 'vitest';
 import { act, fireEvent, screen } from '@testing-library/react';
+import { FloatingSidebar } from '../../../../src/components/ui/floating-sidebar';
 import {
   FLOATING_SIDEBAR_CLOSED_FOOTPRINT,
   FLOATING_SIDEBAR_DURATION,
   FLOATING_SIDEBAR_EASE,
   FLOATING_SIDEBAR_EASE_DURATION,
   FLOATING_SIDEBAR_SPRING,
-  FloatingSidebar,
   getFloatingSidebarGapWidth,
   getFloatingSidebarTiming,
-} from '../../../../src/components/ui/floating-sidebar';
+} from '../../../../src/components/ui/floating-sidebar-metrics';
 import { render } from '../../utils/test-utils';
 
 function renderFloatingSidebar(props: Partial<React.ComponentProps<typeof FloatingSidebar>> = {}) {

@@ -6,7 +6,14 @@ export * from './components/patterns/gh-chart';
 export * from './components/patterns/kpi-card';
 export * from './components/patterns/kpi-tabs';
 export * from './components/patterns/filters';
+export {
+  DEFAULT_I18N,
+  DEFAULT_OPERATORS,
+  createFilter,
+  createFilterGroup,
+} from './components/patterns/filters-helpers';
 export * from './components/patterns/dirty-confirm-dialog';
+export { useDirtyConfirmation } from './components/patterns/use-dirty-confirmation';
 export * from './components/patterns/image-upload';
 export * from './components/patterns/image-upload-variants';
 export * from './components/patterns/setting-group';

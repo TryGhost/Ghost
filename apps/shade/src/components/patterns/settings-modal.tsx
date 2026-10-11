@@ -8,10 +8,8 @@ import { StickyFooter } from '@/components/ui/sticky-footer';
 import { Box } from '@/components/primitives/box';
 import { Inline } from '@/components/primitives/inline';
 import { Text } from '@/components/primitives/text';
-import {
-  DirtyConfirmDialog,
-  useDirtyConfirmation,
-} from '@/components/patterns/dirty-confirm-dialog';
+import { DirtyConfirmDialog } from '@/components/patterns/dirty-confirm-dialog';
+import { useDirtyConfirmation } from '@/components/patterns/use-dirty-confirmation';
 import useGlobalDirtyState from '@/hooks/use-global-dirty-state';
 import { cn } from '@/lib/utils';
 

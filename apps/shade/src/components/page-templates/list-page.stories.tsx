@@ -9,12 +9,8 @@ import { PageHeader } from '@/components/patterns/page-header';
 import { ViewBar } from '@/components/patterns/view-bar';
 import { FilterBar } from '@/components/patterns/filter-bar';
 import { formatNumber } from '@/utils';
-import {
-  Filters,
-  createFilter,
-  type Filter,
-  type FilterFieldConfig,
-} from '@/components/patterns/filters';
+import { Filters, type Filter, type FilterFieldConfig } from '@/components/patterns/filters';
+import { createFilter } from '@/components/patterns/filters-helpers';
 import {
   Table,
   TableBody,

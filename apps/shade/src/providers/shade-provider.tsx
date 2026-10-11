@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { Toaster } from '../components/ui/sonner';
 import { createPortal } from 'react-dom';
-import { GlobalDirtyStateProvider } from '../hooks/use-global-dirty-state';
+import { GlobalDirtyStateProvider } from '@/providers/global-dirty-state-provider';
 import Icon from '../components/ui/icon';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { ShadeScope } from '@/shade-scope';
