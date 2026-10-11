@@ -241,25 +241,32 @@ export function inCheckout(pid: number, root = checkoutRoot): boolean {
 }
 
 export interface TreeProc extends Pick<Proc, 'pid' | 'ppid' | 'pgid'> {
-  /** The pid of the Nx run this is a task of, from the task's NX_INVOCATION_ROOT_PID */
+  /** The pid of the Nx run this is a task of, from NX_INVOCATION_ROOT_PID */
   nxRoot?: number;
+  /** The checkout that Nx run is in, from NX_WORKSPACE_ROOT */
+  nxWorkspace?: string;
 }
 
-const nxRoot = (environment: string) =>
-  Number(/(?:^|[\s\0])NX_INVOCATION_ROOT_PID=(\d+)(?=[\s\0]|$)/.exec(environment)?.[1]) ||
-  undefined;
+// `ps -E` appends the environment to the command without quoting either
+const envValue = (environment: string, name: string) =>
+  new RegExp(`(?:^|[\\s\\0])${name}=(.*?)(?=\\0| [A-Za-z_]\\w*=|$)`).exec(environment)?.[1];
+
+const nxTask = (environment: string) => ({
+  nxRoot: Number(envValue(environment, 'NX_INVOCATION_ROOT_PID')) || undefined,
+  nxWorkspace: envValue(environment, 'NX_WORKSPACE_ROOT'),
+});
 
 /** Each process in `ps -Eww -Ao pid=,ppid=,pgid=,command=` output, environment appended */
 export function parsePsTable(output: string): TreeProc[] {
   return output.split('\n').flatMap((line) => {
     const [, pid, ppid, pgid, rest = ''] = /^\s*(\d+)\s+(\d+)\s+(\d+)\s(.*)$/.exec(line) ?? [];
     return pid
-      ? [{ pid: Number(pid), ppid: Number(ppid), pgid: Number(pgid), nxRoot: nxRoot(rest) }]
+      ? [{ pid: Number(pid), ppid: Number(ppid), pgid: Number(pgid), ...nxTask(rest) }]
       : [];
   });
 }
 
-/** Every process; the environment is only readable for this user's */
+/** Every process, or on Linux every one whose environment this user can read */
 export function processTable(): TreeProc[] {
   if (process.platform !== 'linux') {
     const ps = execFileSync('ps', ['-Eww', '-Ao', 'pid=,ppid=,pgid=,command='], {
@@ -278,7 +285,7 @@ export function processTable(): TreeProc[] {
           cmdline: '',
           status: '',
         });
-        return [{ pid: Number(pid), ppid, pgid, nxRoot: nxRoot(read('environ')) }];
+        return [{ pid: Number(pid), ppid, pgid, ...nxTask(read('environ')) }];
       } catch {
         // Exited, or another user's
         return [];
@@ -301,9 +308,7 @@ export function treeTargets(table: TreeProc[], pids: number[]): number[] {
     }
   }
   const members = table.filter((proc) => tree.has(proc.pid));
-  // Signalling process group 1, pid -1, would reach every process
-  const led = (pgid: number) => pgid > 1 && tree.has(pgid);
-  return [...new Set(members.map((proc) => (led(proc.pgid) ? -proc.pgid : proc.pid)))];
+  return [...new Set(members.map((proc) => (tree.has(proc.pgid) ? -proc.pgid : proc.pid)))];
 }
 
 /** The pid listening on each port in `lsof -Fpn` output */

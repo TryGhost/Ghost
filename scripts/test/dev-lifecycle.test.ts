@@ -56,7 +56,7 @@ async function stack(
     ? `exec ${quote(process.execPath)} -e ${quote(task)}`
     : `${quote(process.execPath)} -e ${quote(server)} & wait`;
   const logFile = join(root, 'watcher.log');
-  // The shell stays the leader and the listener is its child, as with Nx's dev tasks.
+  // The shell stays the leader with the listener as its child, unless it's an Nx-style `task`
   const child = spawn(
     'sh',
     ['-c', watchedDevCommand, 'sh', root, command, String(options.claudePid ?? ''), marker],
