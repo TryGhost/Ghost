@@ -86,8 +86,8 @@ const Settings: React.FC<SettingsProps> = ({ account, className = '' }) => {
           <SettingTitle>Account migration</SettingTitle>
           <SettingDescription>
             {outboundMigration === 'available'
-              ? 'Move followers to this account, or from this account to somewhere else'
-              : 'Move another social web account to this one'}
+              ? 'Move followers in or out of this account'
+              : 'Move followers into this account'}
           </SettingDescription>
         </SettingHeader>
         <SettingAction className="flex items-center gap-2">

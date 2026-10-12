@@ -58,7 +58,7 @@ beforeEach(() => {
 });
 
 function goToExport() {
-  const exportTab = screen.getByRole('tab', { name: 'Move followers away' });
+  const exportTab = screen.getByRole('tab', { name: 'Export' });
   // Radix tabs activate on mouseDown, not click alone.
   fireEvent.mouseDown(exportTab);
   fireEvent.click(exportTab);
@@ -91,8 +91,8 @@ describe('outbound account migration', () => {
       mocks.migration.error = { message: 'Unavailable', statusCode };
       render(<AccountMigration />);
       expect(screen.getByLabelText('Old account handle')).toBeTruthy();
-      expect(screen.queryByRole('tab', { name: 'Move followers away' })).toBeNull();
-      expect(screen.queryByRole('tab', { name: 'Bring followers here' })).toBeNull();
+      expect(screen.queryByRole('tab', { name: 'Export' })).toBeNull();
+      expect(screen.queryByRole('tab', { name: 'Import' })).toBeNull();
       expect(screen.queryByRole('button', { name: 'Move followers' })).toBeNull();
       expect(
         screen.getByText(/Move your followers from another social web account/).textContent,
@@ -121,7 +121,7 @@ describe('outbound account migration', () => {
     mocks.migration = { ...mocks.migration, data: undefined, isLoading: true };
     const { rerender } = render(<AccountMigration />);
     expect(screen.queryByText(/or from this account to somewhere else/)).toBeNull();
-    expect(screen.getByRole('tab', { name: 'Move followers away' })).toBeTruthy();
+    expect(screen.getByRole('tab', { name: 'Export' })).toBeTruthy();
 
     mocks.migration = {
       ...mocks.migration,
@@ -149,7 +149,7 @@ describe('outbound account migration', () => {
     enterDestination('  new@elsewhere.example  ');
     const dialog = await openMoveConfirmation();
     expect(dialog.textContent).toContain(
-      'Your followers will be asked to follow @new@elsewhere.example instead. This can’t be undone.',
+      'Your followers will be directed to @new@elsewhere.example instead.',
     );
     expect(mocks.move.mutateAsync).not.toHaveBeenCalled();
     fireEvent.click(within(dialog).getByRole('button', { name: 'Move followers' }));
@@ -265,7 +265,7 @@ describe('outbound account migration', () => {
     const { rerender } = render(<AccountMigration />);
     goToExport();
     expect(screen.getByRole('status').textContent).toContain(
-      'A move to @new@misskey.io is still in progress',
+      'A move to @new@misskey.io is in progress',
     );
     expect((screen.getByLabelText('New account handle') as HTMLInputElement).value).toBe(
       '@new@misskey.io',
@@ -278,7 +278,7 @@ describe('outbound account migration', () => {
     rerender(<AccountMigration />);
     goToExport();
     expect(screen.getByRole('status').textContent).toContain(
-      'Your followers were asked to follow @new@misskey.io',
+      'Your followers were directed to follow @new@misskey.io',
     );
     expect(screen.queryByText(/as an alias on your new social web profile first/)).toBeNull();
     expect(screen.queryByLabelText('New account handle')).toBeNull();
@@ -293,7 +293,7 @@ describe('outbound account migration', () => {
     render(<AccountMigration />);
     goToExport();
     expect(screen.getByRole('status').textContent).toContain(
-      'A move is still in progress. Enter the destination handle and try sending it again.',
+      'A move is in progress. Enter the destination handle and try sending it again.',
     );
     const input = screen.getByLabelText('New account handle') as HTMLInputElement;
     expect(input.value).toBe('');

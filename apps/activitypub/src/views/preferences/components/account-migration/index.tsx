@@ -27,8 +27,8 @@ const AccountMigration: React.FC = () => {
           {showExportTab ? (
             <Tabs defaultValue="import" variant="underline">
               <TabsList>
-                <TabsTrigger value="import">Bring followers here</TabsTrigger>
-                <TabsTrigger value="export">Move followers away</TabsTrigger>
+                <TabsTrigger value="import">Import</TabsTrigger>
+                <TabsTrigger value="export">Export</TabsTrigger>
               </TabsList>
 
               <TabsContent className="mt-6" value="import">

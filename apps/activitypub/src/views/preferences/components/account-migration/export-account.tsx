@@ -110,8 +110,8 @@ const ExportAccount: React.FC = () => {
   if (migration.sent) {
     return (
       <p className="text-base" role="status">
-        Your followers were asked to follow {destinationHandle ?? 'your new account'}. It may take a
-        while for every account to update.
+        Your followers were directed to follow {destinationHandle ?? 'your new account'}. It will
+        take a while for each account to update.
       </p>
     );
   }
@@ -126,7 +126,7 @@ const ExportAccount: React.FC = () => {
           <>
             <strong>{ownHandle}</strong>
             <Button
-              aria-label="Copy Ghost handle"
+              aria-label="Copy handle"
               className="ml-1.5 size-6 p-0 align-middle hover:opacity-80"
               title="Copy handle"
               type="button"
@@ -151,8 +151,8 @@ const ExportAccount: React.FC = () => {
           {migration.targetApId && (
             <p className="mb-4 text-sm" role="status">
               {destinationHandle
-                ? `A move to ${destinationHandle} is still in progress. You can try sending it again.`
-                : 'A move is still in progress. Enter the destination handle and try sending it again.'}
+                ? `A move to ${destinationHandle} is in progress.`
+                : 'A move is in progress. Enter the destination handle and try sending it again.'}
             </p>
           )}
           <Field data-invalid={moveError ? true : undefined}>
@@ -191,7 +191,7 @@ const ExportAccount: React.FC = () => {
                 {moveAccountMutation.isPending && (
                   <span className="absolute inset-0 flex items-center justify-center">
                     <LoadingIndicator color="light" size="sm" />
-                    <span className="sr-only">Sending move...</span>
+                    <span className="sr-only">Moving...</span>
                   </span>
                 )}
               </Button>
@@ -213,8 +213,7 @@ const ExportAccount: React.FC = () => {
           <AlertDialogHeader>
             <AlertDialogTitle>Move followers?</AlertDialogTitle>
             <AlertDialogDescription>
-              Your followers will be asked to follow {normalizedDestination} instead. This can’t be
-              undone.
+              Your followers will be directed to {normalizedDestination} instead.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
