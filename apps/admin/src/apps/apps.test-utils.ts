@@ -40,7 +40,6 @@ export function fakeInstallations(initial: AppInstallation[] = []) {
   };
 }
 
-/** Reading one installation, whatever it includes. */
 export const readPath = (id: string) => new RegExp(`^/apps/installations/${id}/(\\?|$)`);
 
 /** The app's page as Admin opens it: the installation it reads, and the page it frames. */
