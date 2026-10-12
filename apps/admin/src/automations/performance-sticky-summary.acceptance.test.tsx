@@ -121,3 +121,29 @@ it('keeps a row focused with Shift+Tab below the sticky controls', async () => {
     )
     .toBeGreaterThanOrEqual(0);
 });
+
+it.each([0, 1])(
+  'does not create scroll space for %i runs when the summary and list fit',
+  async (count) => {
+    await page.viewport(1280, 1200);
+    try {
+      prepareStatuses();
+      fakeAdminEndpoint('GET', /\/automations\/first\/runs\/\?/, {
+        automation_runs: Array.from({ length: count }, (_, index) => run({ id: `run-${index}` })),
+        meta: { pagination: { limit: 50, next_cursor: null } },
+      });
+      await renderAdminApp('/automations/first', flags);
+      await openAutomationSidebar();
+      await expect
+        .element(page.getByRole('region', { name: 'Automation runs', exact: true }))
+        .toHaveAttribute('aria-busy', 'false');
+      await settleTransitions();
+      const scroller = runsScroller();
+      expect(scroller.scrollHeight).toBe(scroller.clientHeight);
+      scroller.scrollTop = 100;
+      expect(scroller.scrollTop).toBe(0);
+    } finally {
+      await page.viewport(1280, 800);
+    }
+  },
+);

@@ -200,7 +200,6 @@ export const RunList: React.FC<{
     headerRef,
     stickyBarRef,
     compactSummaryRef,
-    listRef,
     summaryHidden,
     showStickySummary,
     scrollMargin,
@@ -259,7 +258,6 @@ export const RunList: React.FC<{
         </Grid>
       </Box>
       <Box
-        ref={listRef}
         aria-busy={isLoading || isLoadingMore || isScanning}
         aria-label="Automation runs"
         role="region"

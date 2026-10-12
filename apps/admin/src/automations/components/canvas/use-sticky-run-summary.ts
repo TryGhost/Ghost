@@ -20,7 +20,6 @@ export function useStickyRunSummary({
   const headerRef = useRef<HTMLTableSectionElement>(null);
   const stickyBarRef = useRef<HTMLDivElement>(null);
   const compactSummaryRef = useRef<HTMLDivElement>(null);
-  const listRef = useRef<HTMLDivElement>(null);
   const [summaryHidden, setSummaryHidden] = useState(false);
   const [scrollMargin, setScrollMargin] = useState(0);
   const showStickySummary = summaryHidden && hasStickySummary;
@@ -39,8 +38,7 @@ export function useStickyRunSummary({
     const summaryElement = summaryRef.current;
     const header = headerRef.current;
     const bar = stickyBarRef.current;
-    const list = listRef.current;
-    if (!scroller || !summaryElement || !header || !bar || !list) {
+    if (!scroller || !summaryElement || !header || !bar) {
       return;
     }
     const measure = () => {
@@ -51,9 +49,6 @@ export function useStickyRunSummary({
       // Keep browser focus scrolling clear of the sticky controls.
       scroller.style.scrollPaddingTop = `${barHeight + header.offsetHeight}px`;
       setScrollMargin(summaryElement.offsetHeight + barHeight + header.offsetHeight);
-      // Keep a viewport of space below the summary, even with only a few runs.
-      // Otherwise shrinking the bar could clamp scrolling across the sticky boundary.
-      list.style.minHeight = `${Math.max(0, scroller.clientHeight - barHeight)}px`;
     };
     measure();
     const observer = new ResizeObserver(measure);
@@ -82,7 +77,6 @@ export function useStickyRunSummary({
     headerRef,
     stickyBarRef,
     compactSummaryRef,
-    listRef,
     summaryHidden,
     showStickySummary,
     scrollMargin,
