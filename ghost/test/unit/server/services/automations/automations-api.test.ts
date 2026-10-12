@@ -4,7 +4,6 @@ import sinon from 'sinon';
 import { vi } from 'vitest';
 // @ts-expect-error @tryghost/domain-events currently lacks type declarations.
 import domainEvents from '@tryghost/domain-events';
-import { createDatabaseAutomationsRepository } from '../../../../../core/server/services/automations/database-automations-repository';
 
 import * as automationsApi from '../../../../../core/server/services/automations/automations-api';
 import { StartAutomationsPollEvent } from '../../../../../core/server/services/automations/events/start-automations-poll-event';
@@ -31,8 +30,21 @@ vi.mock(
         ...actual.createDatabaseAutomationsRepository(options),
         add: repositoryAdd,
         edit: repositoryEdit,
-        getNumberOfAutomations: vi.fn().mockResolvedValue(20),
       })),
+    };
+  },
+);
+
+vi.mock(
+  '../../../../../core/server/services/automations/database-automations-repository-2',
+  async () => {
+    const { createTestAutomationsRepository2 } = await import('./test-automations-repository-2');
+    return {
+      createDatabaseAutomationsRepository2: vi.fn(() =>
+        createTestAutomationsRepository2({
+          getNumberOfAutomations: () => 20,
+        }),
+      ),
     };
   },
 );
@@ -69,8 +81,6 @@ describe('automations API', function () {
   describe('getNumberOfAutomations', function () {
     it('returns the repository count', async function () {
       assert.equal(await automationsApi.getNumberOfAutomations(), 20);
-      const repository = vi.mocked(createDatabaseAutomationsRepository).mock.results[0].value;
-      expect(repository.getNumberOfAutomations).toHaveBeenCalledOnce();
     });
   });
 

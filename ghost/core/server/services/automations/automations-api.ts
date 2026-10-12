@@ -39,6 +39,8 @@ import {
   fetchAutomationRuns,
   fetchAutomationStats,
 } from './tinybird-automation-stats';
+import { createDatabaseAutomationsRepository2 } from './database-automations-repository-2';
+import { createAutomationsApi2 } from './automations-api-2';
 
 const MAX_AUTOMATION_ACTIONS = 50;
 const RUN_PAGE_SIZE = 50;
@@ -156,6 +158,13 @@ const repository = createDatabaseAutomationsRepository({
   ),
 });
 
+// NOTE: We are transitioning to this new API. This will be removed soon. See NY-1704.
+const automationsApi2 = createAutomationsApi2({
+  repository: createDatabaseAutomationsRepository2({
+    knex,
+  }),
+});
+
 function getTinybirdClient() {
   if (!config.get('tinybird:stats')) {
     return null;
@@ -201,9 +210,7 @@ export async function browse() {
   };
 }
 
-export async function getNumberOfAutomations(): Promise<number> {
-  return await repository.getNumberOfAutomations();
-}
+export const getNumberOfAutomations = automationsApi2.getNumberOfAutomations.bind(automationsApi2);
 
 export async function read(automationId: string) {
   const automation = await repository.getById(automationId);
