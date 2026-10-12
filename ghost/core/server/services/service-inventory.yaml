@@ -1264,7 +1264,7 @@ services:
           hours use real milliseconds. Init captures API URL and site UUID/API-URL fallback for
           scheduler jitter, but retrieves the current scheduler key for each future enqueue.
           Polls read current member status/preferences, action revision and settings; click
-          tracking needs automationAnalytics plus email_track_clicks, while opens use
+          tracking uses email_track_clicks, while opens use
           email_track_opens and recipient open tracking additionally requires a Mailgun ID.
           API stats checks current Tinybird config, wrapper instance/token and
           site ID; shared request agents and frozen URL helpers retain earlier configuration.
