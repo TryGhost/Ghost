@@ -775,14 +775,9 @@ describe('AutomationEditor', () => {
     ]);
   });
 
-  it('renders send-email node stats only when the automationAnalytics labs flag is enabled', () => {
+  it('renders send-email node stats when stats are available', () => {
     mockAutomationWithEmailStats();
 
-    const { unmount } = renderEditor();
-    expect(screen.queryByText('Sent')).not.toBeInTheDocument();
-    unmount();
-
-    mockLabs.current = { automationAnalytics: true };
     renderEditor();
 
     const emailStep = screen.getByRole('article', { name: 'Send email: Welcome to The Blueprint' });
@@ -799,7 +794,6 @@ describe('AutomationEditor', () => {
   ])(
     'shows a muted Off for untracked email metrics when opens=$emailTrackOpens and clicks=$emailTrackClicks',
     ({ emailTrackOpens, emailTrackClicks }) => {
-      mockLabs.current = { automationAnalytics: true };
       mockEmailTracking.emailTrackOpens = emailTrackOpens;
       mockEmailTracking.emailTrackClicks = emailTrackClicks;
       mockAutomationWithEmailStats();
@@ -828,7 +822,6 @@ describe('AutomationEditor', () => {
   );
 
   it('treats unresolved tracking settings as untracked', () => {
-    mockLabs.current = { automationAnalytics: true };
     mockEmailTracking.emailTrackOpens = undefined;
     mockEmailTracking.emailTrackClicks = undefined;
     mockAutomationWithEmailStats();
@@ -845,7 +838,6 @@ describe('AutomationEditor', () => {
   });
 
   it('does not render send-email node stats when the action has no stats', () => {
-    mockLabs.current = { automationAnalytics: true };
     mockUseReadAutomation.mockReturnValue({
       data: { automations: [automationDetail] },
       isLoading: false,
@@ -859,7 +851,6 @@ describe('AutomationEditor', () => {
   });
 
   it('renders clicked performance in the send-email sidebar', () => {
-    mockLabs.current = { automationAnalytics: true };
     mockAutomationWithEmailStats();
 
     renderEditor();
@@ -875,7 +866,6 @@ describe('AutomationEditor', () => {
   });
 
   it('renders zero sends and unavailable email rates when there are no sends', () => {
-    mockLabs.current = { automationAnalytics: true };
     mockAutomationWithEmailStats({
       email_clicked_count: 0,
       email_sent_count: 0,
@@ -899,7 +889,6 @@ describe('AutomationEditor', () => {
   });
 
   it('renders a tracked zero click rate and count', () => {
-    mockLabs.current = { automationAnalytics: true };
     mockAutomationWithEmailStats({
       email_clicked_count: 0,
       email_sent_count: 10,
@@ -921,7 +910,6 @@ describe('AutomationEditor', () => {
   });
 
   it('renders up to ten top clicked links with counts, clamped percentages, and full destinations', () => {
-    mockLabs.current = { automationAnalytics: true };
     mockAutomationWithEmailStats({
       email_clicked_count: 5,
       email_sent_count: 10,
@@ -969,7 +957,6 @@ describe('AutomationEditor', () => {
   });
 
   it('renders top clicked link loading, error, and empty states', () => {
-    mockLabs.current = { automationAnalytics: true };
     mockAutomationWithEmailStats({
       email_clicked_count: 2,
       email_sent_count: 10,
@@ -1009,7 +996,6 @@ describe('AutomationEditor', () => {
   });
 
   it('disables the links request and shows a no-sends state when no emails were sent', () => {
-    mockLabs.current = { automationAnalytics: true };
     mockAutomationWithEmailStats({
       email_clicked_count: 0,
       email_sent_count: 0,
@@ -1030,7 +1016,6 @@ describe('AutomationEditor', () => {
   });
 
   it('hides clicked links and skips the request when click tracking is off', () => {
-    mockLabs.current = { automationAnalytics: true };
     mockEmailTracking.emailTrackClicks = false;
     mockAutomationWithEmailStats();
 
@@ -1043,7 +1028,6 @@ describe('AutomationEditor', () => {
   });
 
   it('does not request clicked links for a closed or non-email sidebar', () => {
-    mockLabs.current = { automationAnalytics: true };
     mockAutomationWithEmailStats();
 
     renderEditor();
