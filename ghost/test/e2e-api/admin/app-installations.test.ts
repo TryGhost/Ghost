@@ -485,6 +485,7 @@ describe('App installations Admin API', function () {
         app_id: 'com.example.podcast',
         from_manifest_id: first.id,
         to_manifest_id: second.id,
+        inserted_manifest_id: second.id,
       });
     });
 
@@ -581,6 +582,13 @@ describe('App installations Admin API', function () {
       assert.equal((await manifestRows()).length, 2);
       const [, action] = await actions();
       assert.equal(JSON.parse(action.context).to_manifest_id, pendingId);
+      assert.equal(JSON.parse(action.context).inserted_manifest_id, undefined);
+
+      const { body } = await agent
+        .get(`apps/installations/${installed.id}/?include=history`)
+        .expectStatus(200);
+      const events = body.app_installations[0].history.map((entry: any) => entry.event);
+      assert.ok(events.includes('suspended'), `expected a suspended entry in ${events}`);
     });
 
     it('lets go of a pending manifest the app went back on, keeping no copy', async function () {
@@ -604,6 +612,7 @@ describe('App installations Admin API', function () {
       assert.equal(action.event, 'changes_approved');
       assert.equal(JSON.parse(action.context).from_manifest_id, row.manifest_id);
       assert.equal(JSON.parse(action.context).to_manifest_id, row.manifest_id);
+      assert.equal(JSON.parse(action.context).inserted_manifest_id, undefined);
     });
 
     it('does not lift a suspension that is not waiting for changes', async function () {

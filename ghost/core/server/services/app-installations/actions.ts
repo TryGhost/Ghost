@@ -35,6 +35,12 @@ export interface AppInstallationActionDetails {
   /** For an approval: the manifest that was approved before, and the one approved now. */
   from_manifest_id?: string;
   to_manifest_id?: string;
+  /**
+   * For an approval that wrote a new manifest row: that row's id. Approving the manifest
+   * that was waiting for approval, or going back to the approved one, writes no row, so
+   * the history knows not to hide those rows' own entries.
+   */
+  inserted_manifest_id?: string;
 }
 
 // `subject` is the installation's id. The app's name and ID ride along in the action's

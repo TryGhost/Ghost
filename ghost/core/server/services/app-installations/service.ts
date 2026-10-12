@@ -20,7 +20,7 @@ import {
   type CurrentInstallation,
 } from './codec';
 import type { FetchManifest } from './fetch-manifest';
-import { buildHistory, type HistoryAction } from './history';
+import { buildHistory, manifestIdsApprovalsName, type HistoryAction } from './history';
 import { DbAppInstallationManifest, StoredManifest, type AppInstallationStatus } from './schema';
 
 const INSTALLATIONS = 'app_installations';
@@ -29,10 +29,11 @@ const MANIFESTS = 'app_installation_manifests';
 const HistoryManifestRow = DbAppInstallationManifest.pick({
   id: true,
   manifest_url: true,
-  manifest: true,
   requires_approval: true,
   created_at: true,
 });
+
+const HistoryManifestBody = DbAppInstallationManifest.pick({ id: true, manifest: true });
 
 const HistoryActionRow = z
   .object({
@@ -215,7 +216,6 @@ export class AppInstallationsService {
       .select<z.input<typeof HistoryManifestRow>[]>(
         'id',
         'manifest_url',
-        'manifest',
         'requires_approval',
         'created_at',
       );
@@ -233,11 +233,36 @@ export class AppInstallationsService {
         'action.created_at',
         'actor.name as actor_name',
       );
-    const [manifests, actions] = await Promise.all([manifestRows, actionRows]);
+    const [manifestData, actionData] = await Promise.all([manifestRows, actionRows]);
+    const manifests = manifestData.map((row) => z.decode(HistoryManifestRow, row));
+    const actions = actionData.map((row) => z.decode(HistoryActionRow, row));
     return buildHistory(
-      manifests.map((manifestRow) => z.decode(HistoryManifestRow, manifestRow)),
-      actions.map((actionRow) => z.decode(HistoryActionRow, actionRow)),
+      manifests,
+      actions,
+      await this.manifestBodies(manifestIdsApprovalsName(actions)),
     );
+  }
+
+  /**
+   * The contents of the manifests approvals name, which the history only needs to tell
+   * whether an approval moved the app. A row that no longer decodes, say after the
+   * manifest schema got stricter, is left out rather than failing the whole read.
+   */
+  private async manifestBodies(ids: string[]): Promise<Map<string, AppManifest>> {
+    if (ids.length === 0) {
+      return new Map();
+    }
+    const rows = await this.knex(MANIFESTS)
+      .whereIn('id', ids)
+      .select<z.input<typeof HistoryManifestBody>[]>('id', 'manifest');
+    const bodies = new Map<string, AppManifest>();
+    for (const row of rows) {
+      const decoded = HistoryManifestBody.safeDecode(row);
+      if (decoded.success) {
+        bodies.set(decoded.data.id, decoded.data.manifest);
+      }
+    }
+    return bodies;
   }
 
   /**
@@ -516,6 +541,7 @@ export class AppInstallationsService {
       // the pending manifest to let go of. When it is the pending one, that row is the
       // approved one from now on rather than a copy of it.
       let manifestId = current.manifest_id;
+      let insertedManifestId: string | undefined;
       const pendingRow = current.pending_manifest_id
         ? await trx(MANIFESTS)
             .where({ id: current.pending_manifest_id })
@@ -530,6 +556,7 @@ export class AppInstallationsService {
         manifestId = pending.id;
       } else if (!sameManifest) {
         manifestId = new ObjectId().toHexString();
+        insertedManifestId = manifestId;
         await trx(MANIFESTS).insert({
           id: manifestId,
           installation_id: id,
@@ -555,7 +582,12 @@ export class AppInstallationsService {
           revision: trx.raw('?? + 1', ['revision']),
           updated_at: now,
         });
-      return { stale: false, from: current.manifest_id, to: manifestId } as const;
+      return {
+        stale: false,
+        from: current.manifest_id,
+        to: manifestId,
+        inserted: insertedManifestId,
+      } as const;
     });
 
     if (approved?.stale) {
@@ -575,6 +607,7 @@ export class AppInstallationsService {
           app_id: loaded.manifest.id,
           from_manifest_id: approved.from,
           to_manifest_id: approved.to,
+          ...(approved.inserted ? { inserted_manifest_id: approved.inserted } : {}),
         },
       });
     }

@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import type { AppManifest } from '@tryghost/app-contracts/manifest';
 import {
   buildHistory,
+  manifestIdsApprovalsName,
   type HistoryAction,
   type HistoryManifest,
 } from '../../../../../core/server/services/app-installations/history';
@@ -15,10 +16,12 @@ const manifestRow = (
 ): HistoryManifest => ({
   id,
   manifest_url: `https://${host}/ghost-app.json`,
-  manifest: { surfaces: [{ type: 'admin_page', url: `https://${host}/admin` }] } as AppManifest,
   requires_approval: requiresApproval,
   created_at: new Date(createdAt),
 });
+
+const servedFrom = (host: string) =>
+  ({ surfaces: [{ type: 'admin_page', url: `https://${host}/admin` }] }) as AppManifest;
 
 const action = (
   id: string,
@@ -41,6 +44,7 @@ describe('buildHistory', function () {
     const history = buildHistory(
       [manifestRow('m1', '2026-10-01T10:00:00.000Z')],
       [action('a1', 'installed', '2026-10-01T10:00:00.000Z')],
+      new Map(),
     );
 
     assert.deepEqual(summary(history), [['installed', 'Jamie Larson', null]]);
@@ -48,7 +52,7 @@ describe('buildHistory', function () {
   });
 
   it('still tells the install when staff history has no record of it', function () {
-    const history = buildHistory([manifestRow('m1', '2026-10-01T10:00:00.000Z')], []);
+    const history = buildHistory([manifestRow('m1', '2026-10-01T10:00:00.000Z')], [], new Map());
 
     assert.deepEqual(summary(history), [['installed', null, null]]);
     assert.equal(history[0].id, 'm1');
@@ -67,9 +71,11 @@ describe('buildHistory', function () {
         action('a2', 'changes_approved', '2026-10-04T10:00:00.000Z', {
           from_manifest_id: 'm2',
           to_manifest_id: 'm4',
+          inserted_manifest_id: 'm4',
         }),
         action('a3', 'uninstalled', '2026-10-05T10:00:00.000Z'),
       ],
+      new Map(),
     );
 
     assert.deepEqual(summary(history), [
@@ -79,6 +85,49 @@ describe('buildHistory', function () {
       ['updated', null, null],
       ['installed', 'Jamie Larson', null],
     ]);
+  });
+
+  it('keeps the changes Ghost held when the approval approves exactly those', function () {
+    const history = buildHistory(
+      [
+        manifestRow('m1', '2026-10-01T10:00:00.000Z'),
+        manifestRow('m2', '2026-10-02T10:00:00.000Z', { requiresApproval: true }),
+      ],
+      [
+        action('a2', 'changes_approved', '2026-10-03T10:00:00.000Z', {
+          from_manifest_id: 'm1',
+          to_manifest_id: 'm2',
+        }),
+      ],
+      new Map(),
+    );
+
+    assert.deepEqual(
+      history.map(({ event }) => event),
+      ['changes_approved', 'suspended', 'installed'],
+    );
+  });
+
+  it('keeps an earlier update when an approval goes back to the approved manifest', function () {
+    const history = buildHistory(
+      [
+        manifestRow('m1', '2026-10-01T10:00:00.000Z'),
+        manifestRow('m2', '2026-10-02T10:00:00.000Z'),
+        manifestRow('m3', '2026-10-03T10:00:00.000Z', { requiresApproval: true }),
+      ],
+      [
+        action('a3', 'changes_approved', '2026-10-04T10:00:00.000Z', {
+          from_manifest_id: 'm2',
+          to_manifest_id: 'm2',
+        }),
+      ],
+      new Map(),
+    );
+
+    assert.deepEqual(
+      history.map(({ event }) => event),
+      ['changes_approved', 'suspended', 'updated', 'installed'],
+    );
   });
 
   it('says where an approval moved the app to', function () {
@@ -91,8 +140,13 @@ describe('buildHistory', function () {
         action('a2', 'changes_approved', '2026-10-02T10:00:00.000Z', {
           from_manifest_id: 'm1',
           to_manifest_id: 'm2',
+          inserted_manifest_id: 'm2',
         }),
       ],
+      new Map([
+        ['m1', servedFrom('podcast.example.com')],
+        ['m2', servedFrom('podcast.example.net')],
+      ]),
     );
 
     assert.deepEqual(summary(history)[0], [
@@ -102,16 +156,45 @@ describe('buildHistory', function () {
     ]);
   });
 
-  it('keeps the order of things that happened in the same second', function () {
+  it('leaves out where an approval moved the app when a manifest could not be read', function () {
+    const history = buildHistory(
+      [
+        manifestRow('m1', '2026-10-01T10:00:00.000Z'),
+        manifestRow('m2', '2026-10-02T10:00:00.000Z', { host: 'podcast.example.net' }),
+      ],
+      [
+        action('a2', 'changes_approved', '2026-10-02T10:00:00.000Z', {
+          from_manifest_id: 'm1',
+          to_manifest_id: 'm2',
+          inserted_manifest_id: 'm2',
+        }),
+      ],
+      new Map([['m2', servedFrom('podcast.example.net')]]),
+    );
+
+    assert.deepEqual(summary(history)[0], ['changes_approved', 'Jamie Larson', null]);
+  });
+
+  it('orders what happened in the same second by when its id was created', function () {
     const second = '2026-10-01T10:00:00.000Z';
     const history = buildHistory(
-      [manifestRow('m1', second)],
-      [action('a1', 'installed', second), action('a2', 'uninstalled', second)],
+      [
+        manifestRow('6a0000000000000000000001', second),
+        manifestRow('6a0000000000000000000004', second),
+      ],
+      [
+        action('6a0000000000000000000002', 'installed', second),
+        action('6a0000000000000000000003', 'changes_approved', second, {
+          from_manifest_id: '6a0000000000000000000001',
+          to_manifest_id: '6a0000000000000000000001',
+        }),
+      ],
+      new Map(),
     );
 
     assert.deepEqual(
       history.map(({ event }) => event),
-      ['uninstalled', 'installed'],
+      ['updated', 'changes_approved', 'installed'],
     );
   });
 
@@ -119,8 +202,28 @@ describe('buildHistory', function () {
     const history = buildHistory(
       [manifestRow('m1', '2026-10-01T10:00:00.000Z')],
       [action('a2', 'changes_approved', '2026-10-02T10:00:00.000Z', null)],
+      new Map(),
     );
 
     assert.deepEqual(summary(history)[0], ['changes_approved', 'Jamie Larson', null]);
+  });
+});
+
+describe('manifestIdsApprovalsName', function () {
+  it('lists each manifest an approval names once', function () {
+    const ids = manifestIdsApprovalsName([
+      action('a1', 'installed', '2026-10-01T10:00:00.000Z'),
+      action('a2', 'changes_approved', '2026-10-02T10:00:00.000Z', {
+        from_manifest_id: 'm1',
+        to_manifest_id: 'm2',
+      }),
+      action('a3', 'changes_approved', '2026-10-03T10:00:00.000Z', {
+        from_manifest_id: 'm2',
+        to_manifest_id: 'm2',
+      }),
+      action('a4', 'changes_approved', '2026-10-04T10:00:00.000Z', null),
+    ]);
+
+    assert.deepEqual(ids, ['m1', 'm2']);
   });
 });
