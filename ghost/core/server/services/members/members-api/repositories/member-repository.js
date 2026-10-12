@@ -107,6 +107,25 @@ function attributionColumns(table, attribution) {
 }
 
 /**
+ * Stripe allows a price nickname of up to 255 characters, but the subscription
+ * row stores it in a shorter column. A nickname longer than the column would
+ * fail validation and 500 the Stripe webhook that links the subscription,
+ * leaving the member unpaid, so it is cut to the column's length instead.
+ *
+ * @param {string | null | undefined} nickname
+ * @returns {string | null | undefined}
+ */
+function fitPlanNickname(nickname) {
+  if (typeof nickname !== 'string') {
+    return nickname;
+  }
+  const { maxlength } = schema.tables.members_stripe_customers_subscriptions.plan_nickname;
+  // By character rather than UTF-16 unit, as the column counts them, so an emoji
+  // is never split in half.
+  return Array.from(nickname).slice(0, maxlength).join('');
+}
+
+/**
  * @param {MemberModel} member
  * @param {'free' | 'paid'} memberStatus
  * @param {object} bookshelfOptions
@@ -1540,8 +1559,9 @@ module.exports = class MemberRepository {
       // turned out to be much bigger problem.
       // Ideally, would need nickname field to be nullable on the DB level
       // condition can be simplified once this is done
-      plan_nickname:
+      plan_nickname: fitPlanNickname(
         subscriptionPriceData.nickname || _.get(subscriptionPriceData, 'recurring.interval'),
+      ),
       plan_interval: _.get(subscriptionPriceData, 'recurring.interval', ''),
       plan_amount: subscriptionPriceData.unit_amount,
       plan_currency: subscriptionPriceData.currency,

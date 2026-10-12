@@ -1545,6 +1545,94 @@ describe('Members API', function () {
         .expectStatus(200);
     });
 
+    it('Links the subscription when the Stripe price nickname is longer than 50 characters', async function () {
+      // Stripe allows a 255 character nickname ("Price description" in the
+      // Dashboard) but plan_nickname stores 50. Without truncation the webhook
+      // 500s on validation and the member never becomes paid.
+      const longNickname = 'x'.repeat(75);
+
+      set(subscription, {
+        id: 'sub_long_nickname',
+        customer: 'cus_long_nickname',
+        status: 'active',
+        items: {
+          type: 'list',
+          data: [
+            {
+              id: 'item_long_nickname',
+              price: {
+                id: 'price_long_nickname',
+                product: 'product_123',
+                active: true,
+                nickname: longNickname,
+                currency: 'usd',
+                recurring: {
+                  interval: 'year',
+                },
+                unit_amount: 5000,
+                type: 'recurring',
+              },
+            },
+          ],
+        },
+        start_date: beforeNow / 1000,
+        current_period_end: Math.floor(beforeNow / 1000) + 60 * 60 * 24 * 365,
+        cancel_at_period_end: false,
+      });
+
+      set(customer, {
+        id: 'cus_long_nickname',
+        name: 'Long Nickname Member',
+        email: 'checkout-long-nickname-test@email.com',
+        subscriptions: {
+          type: 'list',
+          data: [subscription],
+        },
+      });
+
+      const webhookPayload = JSON.stringify({
+        type: 'checkout.session.completed',
+        data: {
+          object: {
+            mode: 'subscription',
+            customer: customer.id,
+            subscription: subscription.id,
+            metadata: {},
+          },
+        },
+      });
+
+      const webhookSignature = stripe.webhooks.generateTestHeaderString({
+        payload: webhookPayload,
+        secret: process.env.WEBHOOK_SECRET,
+      });
+
+      await membersAgent
+        .post('/webhooks/stripe/')
+        .body(webhookPayload)
+        .header('content-type', 'application/json')
+        .header('stripe-signature', webhookSignature)
+        .expectStatus(200);
+
+      const { body } = await adminAgent.get(
+        '/members/?search=checkout-long-nickname-test@email.com',
+      );
+      assert.equal(body.members.length, 1, 'The member was not created');
+      const member = body.members[0];
+
+      assert.equal(member.status, 'paid', 'The member should be "paid"');
+      assert.equal(member.subscriptions.length, 1, 'The member should have a single subscription');
+
+      await assertSubscription(member.subscriptions[0].id, {
+        subscription_id: subscription.id,
+        status: 'active',
+        plan_nickname: longNickname.slice(0, 50),
+        plan_interval: 'year',
+        plan_amount: 5000,
+        mrr: Math.floor(5000 / 12),
+      });
+    });
+
     it('Cancels Stripe-backed complimentary subscription when comped member completes a paid checkout', async function () {
       const compCustomerId = createStripeID('cust');
       const compSubscriptionId = createStripeID('sub');

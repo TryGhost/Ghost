@@ -832,6 +832,41 @@ describe('MemberRepository', function () {
       sinon.assert.notCalled(mockOfferRedemption.add);
     });
 
+    it('truncates a Stripe price nickname longer than the plan_nickname column', async function () {
+      // Stripe allows 255 characters here but the column stores 50
+      const longNickname = 'x'.repeat(75);
+      subscriptionData.items.data[0].price.nickname = longNickname;
+
+      const repo = buildRepo({
+        stripeAPIService,
+        StripeCustomerSubscription,
+        MemberPaidSubscriptionEvent,
+        MemberProductEvent,
+        productRepository,
+        Member,
+        OfferRedemption: mockOfferRedemption,
+      });
+
+      sinon.stub(repo, 'getSubscriptionByStripeID').resolves(null);
+
+      await repo.linkSubscription(
+        {
+          subscription: subscriptionData,
+        },
+        {
+          transacting: {
+            executionPromise: Promise.resolve(),
+          },
+          context: {},
+        },
+      );
+
+      sinon.assert.calledOnce(StripeCustomerSubscription.add);
+      const { plan_nickname: planNickname } = StripeCustomerSubscription.add.firstCall.args[0];
+      assert.equal(planNickname, longNickname.slice(0, 50));
+      assert.equal(planNickname.length, 50);
+    });
+
     it('records the offer redemption for a new member starting a subscription', async function () {
       // When a new member starts a paid subscription, the subscription is created with the offer ID
       const repo = buildRepo({
