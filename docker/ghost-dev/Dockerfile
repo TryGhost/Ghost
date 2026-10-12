@@ -32,7 +32,7 @@ COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .pnpmfile.mjs ./
 COPY patches patches
 
 # Copy the manifests of the top-level dirs that hold ghost's dependency
-# closure — ghost itself, koenig/* (the kg-* packages), and configs/* (the
+# closure — ghost itself, koenig/* (the kg-* packages), and tools/configs/* (the
 # shared eslint config, a dev dep in the graph).
 # --parents preserves each file's directory structure (plain COPY globs would
 # flatten them); node_modules is excluded by .dockerignore. apps/* and e2e
@@ -47,7 +47,7 @@ COPY patches patches
 COPY --parents \
     ghost/package.json \
     koenig/*/package.json \
-    configs/*/package.json \
+    tools/configs/*/package.json \
     packages/**/package.json \
     ./
 

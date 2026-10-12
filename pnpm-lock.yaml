@@ -898,7 +898,7 @@ importers:
     devDependencies:
       '@internal/cfg-eslint-react':
         specifier: workspace:*
-        version: link:../../configs/eslint-react
+        version: link:../../tools/configs/eslint-react
       '@playwright/test':
         specifier: 'catalog:'
         version: 1.61.1
@@ -1121,10 +1121,10 @@ importers:
     devDependencies:
       '@internal/cfg-eslint':
         specifier: workspace:*
-        version: link:../../configs/eslint
+        version: link:../../tools/configs/eslint
       '@internal/cfg-eslint-react':
         specifier: workspace:*
-        version: link:../../configs/eslint-react
+        version: link:../../tools/configs/eslint-react
       '@sentry/vite-plugin':
         specifier: 'catalog:'
         version: 5.3.0(rollup@4.62.2)(supports-color@10.2.2)
@@ -1221,10 +1221,10 @@ importers:
     devDependencies:
       '@internal/cfg-eslint-react':
         specifier: workspace:*
-        version: link:../../configs/eslint-react
+        version: link:../../tools/configs/eslint-react
       '@internal/cfg-vite-public-app':
         specifier: workspace:*
-        version: link:../../configs/vite-public-app
+        version: link:../../tools/configs/vite-public-app
       '@types/jsdom':
         specifier: 'catalog:'
         version: 30.0.0
@@ -1303,7 +1303,7 @@ importers:
     devDependencies:
       '@internal/cfg-eslint-react':
         specifier: workspace:*
-        version: link:../../configs/eslint-react
+        version: link:../../tools/configs/eslint-react
       '@playwright/test':
         specifier: 'catalog:'
         version: 1.61.1
@@ -1373,10 +1373,10 @@ importers:
     devDependencies:
       '@internal/cfg-eslint-react':
         specifier: workspace:*
-        version: link:../../configs/eslint-react
+        version: link:../../tools/configs/eslint-react
       '@internal/cfg-vite-public-app':
         specifier: workspace:*
-        version: link:../../configs/vite-public-app
+        version: link:../../tools/configs/vite-public-app
       '@typescript/native':
         specifier: 'catalog:'
         version: typescript@7.0.2
@@ -1455,13 +1455,13 @@ importers:
     devDependencies:
       '@internal/cfg-eslint-react':
         specifier: workspace:*
-        version: link:../../configs/eslint-react
+        version: link:../../tools/configs/eslint-react
       '@internal/cfg-typescript':
         specifier: workspace:*
-        version: link:../../configs/typescript
+        version: link:../../tools/configs/typescript
       '@internal/cfg-vite-public-app':
         specifier: workspace:*
-        version: link:../../configs/vite-public-app
+        version: link:../../tools/configs/vite-public-app
       '@playwright/test':
         specifier: 'catalog:'
         version: 1.61.1
@@ -1543,10 +1543,10 @@ importers:
         version: 2.2.4(prop-types@15.8.1)(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
       '@internal/cfg-eslint-react':
         specifier: workspace:*
-        version: link:../../configs/eslint-react
+        version: link:../../tools/configs/eslint-react
       '@internal/cfg-vite-public-app':
         specifier: workspace:*
-        version: link:../../configs/vite-public-app
+        version: link:../../tools/configs/vite-public-app
       '@sentry/react':
         specifier: 'catalog:'
         version: 7.120.4(@types/react@17.0.93)(react@17.0.2)
@@ -1742,7 +1742,7 @@ importers:
     devDependencies:
       '@internal/cfg-eslint-react':
         specifier: workspace:*
-        version: link:../../configs/eslint-react
+        version: link:../../tools/configs/eslint-react
       '@storybook/addon-docs':
         specifier: 'catalog:'
         version: 10.4.6(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(esbuild@0.28.2)(rollup@4.62.2)(storybook@10.4.6(@testing-library/dom@10.4.1)(@types/react@18.3.31)(prettier@3.9.9)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(vite@8.1.3(@types/node@22.20.1)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.15)(yaml@2.9.0))
@@ -1827,13 +1827,13 @@ importers:
     devDependencies:
       '@internal/cfg-eslint-react':
         specifier: workspace:*
-        version: link:../../configs/eslint-react
+        version: link:../../tools/configs/eslint-react
       '@internal/cfg-typescript':
         specifier: workspace:*
-        version: link:../../configs/typescript
+        version: link:../../tools/configs/typescript
       '@internal/cfg-vite-public-app':
         specifier: workspace:*
-        version: link:../../configs/vite-public-app
+        version: link:../../tools/configs/vite-public-app
       '@playwright/test':
         specifier: 'catalog:'
         version: 1.61.1
@@ -1894,10 +1894,10 @@ importers:
     devDependencies:
       '@internal/cfg-eslint-react':
         specifier: workspace:*
-        version: link:../../configs/eslint-react
+        version: link:../../tools/configs/eslint-react
       '@internal/cfg-vite-public-app':
         specifier: workspace:*
-        version: link:../../configs/vite-public-app
+        version: link:../../tools/configs/vite-public-app
       '@testing-library/jest-dom':
         specifier: 'catalog:'
         version: 6.9.1
@@ -1940,80 +1940,6 @@ importers:
       vite:
         specifier: 'catalog:'
         version: 8.1.3(@types/node@22.20.1)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.15)(yaml@2.9.0)
-      vitest:
-        specifier: 'catalog:'
-        version: 4.1.11(@opentelemetry/api@1.9.1)(@types/node@22.20.1)(@vitest/browser-playwright@4.1.11)(@vitest/coverage-v8@4.1.11)(@vitest/ui@4.1.11)(jsdom@30.0.1(@noble/hashes@1.8.0))(msw@2.14.6(@types/node@22.20.1)(@typescript/typescript6@6.0.2))(vite@8.1.3(@types/node@22.20.1)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.15)(yaml@2.9.0))
-
-  configs/eslint:
-    dependencies:
-      '@eslint/js':
-        specifier: 'catalog:'
-        version: 9.39.5
-      eslint-plugin-ghost:
-        specifier: 'catalog:'
-        version: 4.0.0(@typescript-eslint/eslint-plugin@8.71.1(@typescript-eslint/parser@8.71.1(@typescript/typescript6@6.0.2)(eslint@9.39.5(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2))(@typescript/typescript6@6.0.2)(eslint@9.39.5(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2))(@typescript-eslint/parser@8.71.1(@typescript/typescript6@6.0.2)(eslint@9.39.5(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2))(@typescript/typescript6@6.0.2)(eslint@9.39.5(jiti@2.7.0)(supports-color@10.2.2))(ts-declaration-location@1.0.7(@typescript/typescript6@6.0.2))
-      globals:
-        specifier: 'catalog:'
-        version: 17.7.0
-      typescript-eslint:
-        specifier: 'catalog:'
-        version: 8.71.1(@typescript/typescript6@6.0.2)(eslint@9.39.5(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)
-
-  configs/eslint-react:
-    dependencies:
-      '@eslint/js':
-        specifier: 'catalog:'
-        version: 9.39.5
-      '@internal/cfg-eslint':
-        specifier: workspace:*
-        version: link:../eslint
-      eslint-plugin-ghost:
-        specifier: 'catalog:'
-        version: 4.0.0(@typescript-eslint/eslint-plugin@8.71.1(@typescript-eslint/parser@8.71.1(@typescript/typescript6@6.0.2)(eslint@9.39.5(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2))(@typescript/typescript6@6.0.2)(eslint@9.39.5(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2))(@typescript-eslint/parser@8.71.1(@typescript/typescript6@6.0.2)(eslint@9.39.5(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2))(@typescript/typescript6@6.0.2)(eslint@9.39.5(jiti@2.7.0)(supports-color@10.2.2))(ts-declaration-location@1.0.7(@typescript/typescript6@6.0.2))
-      eslint-plugin-i18next:
-        specifier: 6.1.5
-        version: 6.1.5
-      eslint-plugin-react:
-        specifier: 'catalog:'
-        version: 7.37.5(eslint@9.39.5(jiti@2.7.0)(supports-color@10.2.2))
-      eslint-plugin-react-hooks:
-        specifier: 'catalog:'
-        version: 5.2.0(eslint@9.39.5(jiti@2.7.0)(supports-color@10.2.2))
-      eslint-plugin-react-refresh:
-        specifier: 'catalog:'
-        version: 0.5.7(eslint@9.39.5(jiti@2.7.0)(supports-color@10.2.2))
-      eslint-plugin-storybook:
-        specifier: 10.4.6
-        version: 10.4.6(@typescript/typescript6@6.0.2)(eslint@9.39.5(jiti@2.7.0)(supports-color@10.2.2))(storybook@10.4.6(@testing-library/dom@10.4.1)(@types/react@18.3.31)(prettier@3.9.9)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(supports-color@10.2.2)
-      eslint-plugin-tailwindcss:
-        specifier: 'catalog:'
-        version: 4.0.4(@typescript/typescript6@6.0.2)(eslint@9.39.5(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(tailwindcss@4.3.3)
-      globals:
-        specifier: 'catalog:'
-        version: 17.7.0
-      typescript-eslint:
-        specifier: 'catalog:'
-        version: 8.71.1(@typescript/typescript6@6.0.2)(eslint@9.39.5(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)
-
-  configs/typescript: {}
-
-  configs/vite-public-app:
-    dependencies:
-      '@vitejs/plugin-react':
-        specifier: 'catalog:'
-        version: 6.0.3(vite@8.1.3(@types/node@22.20.1)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.15)(yaml@2.9.0))
-      vite:
-        specifier: 'catalog:'
-        version: 8.1.3(@types/node@22.20.1)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.15)(yaml@2.9.0)
-      vite-plugin-svgr:
-        specifier: 'catalog:'
-        version: 5.2.0(@types/react@18.3.31)(@typescript/typescript6@6.0.2)(rollup@4.62.2)(supports-color@10.2.2)(vite@8.1.3(@types/node@22.20.1)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.15)(yaml@2.9.0))
-      vitest:
-        specifier: 'catalog:'
-        version: 4.1.11(@opentelemetry/api@1.9.1)(@types/node@22.20.1)(@vitest/browser-playwright@4.1.11)(@vitest/coverage-v8@4.1.11)(@vitest/ui@4.1.11)(jsdom@30.0.1(@noble/hashes@1.8.0))(msw@2.14.6(@types/node@22.20.1)(@typescript/typescript6@6.0.2))(vite@8.1.3(@types/node@22.20.1)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.15)(yaml@2.9.0))
-
-  configs/vitest:
-    dependencies:
       vitest:
         specifier: 'catalog:'
         version: 4.1.11(@opentelemetry/api@1.9.1)(@types/node@22.20.1)(@vitest/browser-playwright@4.1.11)(@vitest/coverage-v8@4.1.11)(@vitest/ui@4.1.11)(jsdom@30.0.1(@noble/hashes@1.8.0))(msw@2.14.6(@types/node@22.20.1)(@typescript/typescript6@6.0.2))(vite@8.1.3(@types/node@22.20.1)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.15)(yaml@2.9.0))
@@ -2614,7 +2540,7 @@ importers:
         version: 9.39.5
       '@internal/cfg-eslint':
         specifier: workspace:*
-        version: link:../configs/eslint
+        version: link:../tools/configs/eslint
       '@tryghost/email-mock-receiver':
         specifier: 2.3.16
         version: 2.3.16
@@ -3649,13 +3575,13 @@ importers:
     devDependencies:
       '@internal/cfg-eslint':
         specifier: workspace:*
-        version: link:../../../configs/eslint
+        version: link:../../../tools/configs/eslint
       '@internal/cfg-typescript':
         specifier: workspace:*
-        version: link:../../../configs/typescript
+        version: link:../../../tools/configs/typescript
       '@internal/cfg-vitest':
         specifier: workspace:*
-        version: link:../../../configs/vitest
+        version: link:../../../tools/configs/vitest
       '@types/node':
         specifier: 'catalog:'
         version: 22.20.1
@@ -3679,13 +3605,13 @@ importers:
     devDependencies:
       '@internal/cfg-eslint':
         specifier: workspace:*
-        version: link:../../../configs/eslint
+        version: link:../../../tools/configs/eslint
       '@internal/cfg-typescript':
         specifier: workspace:*
-        version: link:../../../configs/typescript
+        version: link:../../../tools/configs/typescript
       '@internal/cfg-vitest':
         specifier: workspace:*
-        version: link:../../../configs/vitest
+        version: link:../../../tools/configs/vitest
       '@types/node':
         specifier: 'catalog:'
         version: 22.20.1
@@ -3709,13 +3635,13 @@ importers:
     devDependencies:
       '@internal/cfg-eslint':
         specifier: workspace:*
-        version: link:../../../configs/eslint
+        version: link:../../../tools/configs/eslint
       '@internal/cfg-typescript':
         specifier: workspace:*
-        version: link:../../../configs/typescript
+        version: link:../../../tools/configs/typescript
       '@internal/cfg-vitest':
         specifier: workspace:*
-        version: link:../../../configs/vitest
+        version: link:../../../tools/configs/vitest
       '@types/node':
         specifier: 'catalog:'
         version: 22.20.1
@@ -3739,13 +3665,13 @@ importers:
     devDependencies:
       '@internal/cfg-eslint':
         specifier: workspace:*
-        version: link:../../../configs/eslint
+        version: link:../../../tools/configs/eslint
       '@internal/cfg-typescript':
         specifier: workspace:*
-        version: link:../../../configs/typescript
+        version: link:../../../tools/configs/typescript
       '@internal/cfg-vitest':
         specifier: workspace:*
-        version: link:../../../configs/vitest
+        version: link:../../../tools/configs/vitest
       '@types/node':
         specifier: 'catalog:'
         version: 22.20.1
@@ -3773,13 +3699,13 @@ importers:
     devDependencies:
       '@internal/cfg-eslint':
         specifier: 'workspace:'
-        version: link:../../../configs/eslint
+        version: link:../../../tools/configs/eslint
       '@internal/cfg-typescript':
         specifier: 'workspace:'
-        version: link:../../../configs/typescript
+        version: link:../../../tools/configs/typescript
       '@internal/cfg-vitest':
         specifier: 'workspace:'
-        version: link:../../../configs/vitest
+        version: link:../../../tools/configs/vitest
       '@types/node':
         specifier: 'catalog:'
         version: 22.20.1
@@ -3813,13 +3739,13 @@ importers:
     devDependencies:
       '@internal/cfg-eslint':
         specifier: workspace:*
-        version: link:../../../configs/eslint
+        version: link:../../../tools/configs/eslint
       '@internal/cfg-typescript':
         specifier: workspace:*
-        version: link:../../../configs/typescript
+        version: link:../../../tools/configs/typescript
       '@internal/cfg-vitest':
         specifier: workspace:*
-        version: link:../../../configs/vitest
+        version: link:../../../tools/configs/vitest
       '@types/express':
         specifier: 'catalog:'
         version: 4.17.25
@@ -3850,13 +3776,13 @@ importers:
     devDependencies:
       '@internal/cfg-eslint':
         specifier: workspace:*
-        version: link:../../../configs/eslint
+        version: link:../../../tools/configs/eslint
       '@internal/cfg-typescript':
         specifier: workspace:*
-        version: link:../../../configs/typescript
+        version: link:../../../tools/configs/typescript
       '@internal/cfg-vitest':
         specifier: workspace:*
-        version: link:../../../configs/vitest
+        version: link:../../../tools/configs/vitest
       '@types/express':
         specifier: 'catalog:'
         version: 4.17.25
@@ -3893,13 +3819,13 @@ importers:
     devDependencies:
       '@internal/cfg-eslint':
         specifier: workspace:*
-        version: link:../../configs/eslint
+        version: link:../../tools/configs/eslint
       '@internal/cfg-typescript':
         specifier: workspace:*
-        version: link:../../configs/typescript
+        version: link:../../tools/configs/typescript
       '@internal/cfg-vitest':
         specifier: workspace:*
-        version: link:../../configs/vitest
+        version: link:../../tools/configs/vitest
       '@types/node':
         specifier: 'catalog:'
         version: 22.20.1
@@ -3945,13 +3871,13 @@ importers:
     devDependencies:
       '@internal/cfg-eslint':
         specifier: workspace:*
-        version: link:../../configs/eslint
+        version: link:../../tools/configs/eslint
       '@internal/cfg-typescript':
         specifier: workspace:*
-        version: link:../../configs/typescript
+        version: link:../../tools/configs/typescript
       '@internal/cfg-vitest':
         specifier: workspace:*
-        version: link:../../configs/vitest
+        version: link:../../tools/configs/vitest
       '@types/lodash':
         specifier: 'catalog:'
         version: 4.17.25
@@ -3988,13 +3914,13 @@ importers:
     devDependencies:
       '@internal/cfg-eslint':
         specifier: workspace:*
-        version: link:../../configs/eslint
+        version: link:../../tools/configs/eslint
       '@internal/cfg-typescript':
         specifier: workspace:*
-        version: link:../../configs/typescript
+        version: link:../../tools/configs/typescript
       '@internal/cfg-vitest':
         specifier: workspace:*
-        version: link:../../configs/vitest
+        version: link:../../tools/configs/vitest
       '@types/node':
         specifier: 'catalog:'
         version: 22.20.1
@@ -4022,13 +3948,13 @@ importers:
     devDependencies:
       '@internal/cfg-eslint':
         specifier: workspace:*
-        version: link:../../configs/eslint
+        version: link:../../tools/configs/eslint
       '@internal/cfg-typescript':
         specifier: workspace:*
-        version: link:../../configs/typescript
+        version: link:../../tools/configs/typescript
       '@internal/cfg-vitest':
         specifier: workspace:*
-        version: link:../../configs/vitest
+        version: link:../../tools/configs/vitest
       '@types/node':
         specifier: 'catalog:'
         version: 22.20.1
@@ -4062,13 +3988,13 @@ importers:
     devDependencies:
       '@internal/cfg-eslint':
         specifier: workspace:*
-        version: link:../../configs/eslint
+        version: link:../../tools/configs/eslint
       '@internal/cfg-typescript':
         specifier: workspace:*
-        version: link:../../configs/typescript
+        version: link:../../tools/configs/typescript
       '@internal/cfg-vitest':
         specifier: workspace:*
-        version: link:../../configs/vitest
+        version: link:../../tools/configs/vitest
       '@types/node':
         specifier: 'catalog:'
         version: 22.20.1
@@ -4102,13 +4028,13 @@ importers:
     devDependencies:
       '@internal/cfg-eslint':
         specifier: workspace:*
-        version: link:../../configs/eslint
+        version: link:../../tools/configs/eslint
       '@internal/cfg-typescript':
         specifier: workspace:*
-        version: link:../../configs/typescript
+        version: link:../../tools/configs/typescript
       '@internal/cfg-vitest':
         specifier: workspace:*
-        version: link:../../configs/vitest
+        version: link:../../tools/configs/vitest
       '@types/node':
         specifier: 'catalog:'
         version: 22.20.1
@@ -4152,13 +4078,13 @@ importers:
     devDependencies:
       '@internal/cfg-eslint':
         specifier: workspace:*
-        version: link:../../configs/eslint
+        version: link:../../tools/configs/eslint
       '@internal/cfg-typescript':
         specifier: workspace:*
-        version: link:../../configs/typescript
+        version: link:../../tools/configs/typescript
       '@internal/cfg-vitest':
         specifier: workspace:*
-        version: link:../../configs/vitest
+        version: link:../../tools/configs/vitest
       '@types/lodash':
         specifier: 'catalog:'
         version: 4.17.25
@@ -4195,13 +4121,13 @@ importers:
     devDependencies:
       '@internal/cfg-eslint':
         specifier: workspace:*
-        version: link:../../configs/eslint
+        version: link:../../tools/configs/eslint
       '@internal/cfg-typescript':
         specifier: workspace:*
-        version: link:../../configs/typescript
+        version: link:../../tools/configs/typescript
       '@internal/cfg-vitest':
         specifier: workspace:*
-        version: link:../../configs/vitest
+        version: link:../../tools/configs/vitest
       '@types/node':
         specifier: 'catalog:'
         version: 22.20.1
@@ -4229,13 +4155,13 @@ importers:
     devDependencies:
       '@internal/cfg-eslint':
         specifier: workspace:*
-        version: link:../../configs/eslint
+        version: link:../../tools/configs/eslint
       '@internal/cfg-typescript':
         specifier: workspace:*
-        version: link:../../configs/typescript
+        version: link:../../tools/configs/typescript
       '@internal/cfg-vitest':
         specifier: workspace:*
-        version: link:../../configs/vitest
+        version: link:../../tools/configs/vitest
       '@types/node':
         specifier: 'catalog:'
         version: 22.20.1
@@ -4259,13 +4185,13 @@ importers:
     devDependencies:
       '@internal/cfg-eslint':
         specifier: workspace:*
-        version: link:../../configs/eslint
+        version: link:../../tools/configs/eslint
       '@internal/cfg-typescript':
         specifier: workspace:*
-        version: link:../../configs/typescript
+        version: link:../../tools/configs/typescript
       '@internal/cfg-vitest':
         specifier: workspace:*
-        version: link:../../configs/vitest
+        version: link:../../tools/configs/vitest
       '@tryghost/nql':
         specifier: 0.13.4
         version: 0.13.4(supports-color@10.2.2)
@@ -4296,13 +4222,13 @@ importers:
     devDependencies:
       '@internal/cfg-eslint':
         specifier: workspace:*
-        version: link:../../configs/eslint
+        version: link:../../tools/configs/eslint
       '@internal/cfg-typescript':
         specifier: workspace:*
-        version: link:../../configs/typescript
+        version: link:../../tools/configs/typescript
       '@internal/cfg-vitest':
         specifier: workspace:*
-        version: link:../../configs/vitest
+        version: link:../../tools/configs/vitest
       '@types/node':
         specifier: 'catalog:'
         version: 22.20.1
@@ -4330,7 +4256,7 @@ importers:
     devDependencies:
       '@internal/cfg-eslint':
         specifier: workspace:*
-        version: link:../../../configs/eslint
+        version: link:../../../tools/configs/eslint
       '@typescript/native':
         specifier: 'catalog:'
         version: typescript@7.0.2
@@ -4385,10 +4311,10 @@ importers:
     devDependencies:
       '@internal/cfg-eslint':
         specifier: workspace:*
-        version: link:../configs/eslint
+        version: link:../tools/configs/eslint
       '@internal/cfg-typescript':
         specifier: workspace:*
-        version: link:../configs/typescript
+        version: link:../tools/configs/typescript
       '@playwright/test':
         specifier: 'catalog:'
         version: 1.61.1
@@ -4398,6 +4324,80 @@ importers:
       eslint:
         specifier: 'catalog:'
         version: 9.39.5(jiti@2.7.0)(supports-color@10.2.2)
+
+  tools/configs/eslint:
+    dependencies:
+      '@eslint/js':
+        specifier: 'catalog:'
+        version: 9.39.5
+      eslint-plugin-ghost:
+        specifier: 'catalog:'
+        version: 4.0.0(@typescript-eslint/eslint-plugin@8.71.1(@typescript-eslint/parser@8.71.1(@typescript/typescript6@6.0.2)(eslint@9.39.5(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2))(@typescript/typescript6@6.0.2)(eslint@9.39.5(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2))(@typescript-eslint/parser@8.71.1(@typescript/typescript6@6.0.2)(eslint@9.39.5(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2))(@typescript/typescript6@6.0.2)(eslint@9.39.5(jiti@2.7.0)(supports-color@10.2.2))(ts-declaration-location@1.0.7(@typescript/typescript6@6.0.2))
+      globals:
+        specifier: 'catalog:'
+        version: 17.7.0
+      typescript-eslint:
+        specifier: 'catalog:'
+        version: 8.71.1(@typescript/typescript6@6.0.2)(eslint@9.39.5(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)
+
+  tools/configs/eslint-react:
+    dependencies:
+      '@eslint/js':
+        specifier: 'catalog:'
+        version: 9.39.5
+      '@internal/cfg-eslint':
+        specifier: workspace:*
+        version: link:../eslint
+      eslint-plugin-ghost:
+        specifier: 'catalog:'
+        version: 4.0.0(@typescript-eslint/eslint-plugin@8.71.1(@typescript-eslint/parser@8.71.1(@typescript/typescript6@6.0.2)(eslint@9.39.5(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2))(@typescript/typescript6@6.0.2)(eslint@9.39.5(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2))(@typescript-eslint/parser@8.71.1(@typescript/typescript6@6.0.2)(eslint@9.39.5(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2))(@typescript/typescript6@6.0.2)(eslint@9.39.5(jiti@2.7.0)(supports-color@10.2.2))(ts-declaration-location@1.0.7(@typescript/typescript6@6.0.2))
+      eslint-plugin-i18next:
+        specifier: 6.1.5
+        version: 6.1.5
+      eslint-plugin-react:
+        specifier: 'catalog:'
+        version: 7.37.5(eslint@9.39.5(jiti@2.7.0)(supports-color@10.2.2))
+      eslint-plugin-react-hooks:
+        specifier: 'catalog:'
+        version: 5.2.0(eslint@9.39.5(jiti@2.7.0)(supports-color@10.2.2))
+      eslint-plugin-react-refresh:
+        specifier: 'catalog:'
+        version: 0.5.7(eslint@9.39.5(jiti@2.7.0)(supports-color@10.2.2))
+      eslint-plugin-storybook:
+        specifier: 10.4.6
+        version: 10.4.6(@typescript/typescript6@6.0.2)(eslint@9.39.5(jiti@2.7.0)(supports-color@10.2.2))(storybook@10.4.6(@testing-library/dom@10.4.1)(@types/react@18.3.31)(prettier@3.9.9)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(supports-color@10.2.2)
+      eslint-plugin-tailwindcss:
+        specifier: 'catalog:'
+        version: 4.0.4(@typescript/typescript6@6.0.2)(eslint@9.39.5(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(tailwindcss@4.3.3)
+      globals:
+        specifier: 'catalog:'
+        version: 17.7.0
+      typescript-eslint:
+        specifier: 'catalog:'
+        version: 8.71.1(@typescript/typescript6@6.0.2)(eslint@9.39.5(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)
+
+  tools/configs/typescript: {}
+
+  tools/configs/vite-public-app:
+    dependencies:
+      '@vitejs/plugin-react':
+        specifier: 'catalog:'
+        version: 6.0.3(vite@8.1.3(@types/node@22.20.1)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.15)(yaml@2.9.0))
+      vite:
+        specifier: 'catalog:'
+        version: 8.1.3(@types/node@22.20.1)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.15)(yaml@2.9.0)
+      vite-plugin-svgr:
+        specifier: 'catalog:'
+        version: 5.2.0(@types/react@18.3.31)(@typescript/typescript6@6.0.2)(rollup@4.62.2)(supports-color@10.2.2)(vite@8.1.3(@types/node@22.20.1)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.15)(yaml@2.9.0))
+      vitest:
+        specifier: 'catalog:'
+        version: 4.1.11(@opentelemetry/api@1.9.1)(@types/node@22.20.1)(@vitest/browser-playwright@4.1.11)(@vitest/coverage-v8@4.1.11)(@vitest/ui@4.1.11)(jsdom@30.0.1(@noble/hashes@1.8.0))(msw@2.14.6(@types/node@22.20.1)(@typescript/typescript6@6.0.2))(vite@8.1.3(@types/node@22.20.1)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.15)(yaml@2.9.0))
+
+  tools/configs/vitest:
+    dependencies:
+      vitest:
+        specifier: 'catalog:'
+        version: 4.1.11(@opentelemetry/api@1.9.1)(@types/node@22.20.1)(@vitest/browser-playwright@4.1.11)(@vitest/coverage-v8@4.1.11)(@vitest/ui@4.1.11)(jsdom@30.0.1(@noble/hashes@1.8.0))(msw@2.14.6(@types/node@22.20.1)(@typescript/typescript6@6.0.2))(vite@8.1.3(@types/node@22.20.1)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.15)(yaml@2.9.0))
 
 packages:
 

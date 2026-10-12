@@ -83,7 +83,9 @@ export function category(file: string): Category {
   }
   if (
     /(^|\/)(scripts|\.github|\.storybook)(\/|$)/.test(file) ||
+    // Historical revisions still keep shared configs at the repository root.
     file.startsWith('configs/') ||
+    file.startsWith('tools/configs/') ||
     file.startsWith('apps/ember-admin/config/')
   ) {
     return 'tooling';

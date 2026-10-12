@@ -66,7 +66,7 @@ migration, private feature flag, Shade component, or internal package.
   at existing `require()` boundaries. Boot owns service initialization; do not
   initialize on the first request.
 - **ESLint:** use the shared factories and dependency rules in the
-  [ESLint configuration README](configs/eslint/README.md). A hand-written config
+  [ESLint configuration README](tools/configs/eslint/README.md). A hand-written config
   must declare every plugin it imports locally.
 - **Analytics:** start with `pnpm dev:analytics` and follow the nearby Tinybird
   READMEs under `ghost/core/server/data/tinybird/`.

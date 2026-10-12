@@ -101,7 +101,7 @@ library packages, including libraries shared with the frontend). Core's
 belongs to backend. Tests and tooling take precedence over this split.
 
 Tooling uses recognised tool config filenames (including dotfiles), explicit build
-helpers, the root `configs/` packages, scripts and CI configuration. Runtime
+helpers, the shared `tools/configs/` packages, scripts and CI configuration. Runtime
 configuration is not tooling merely because its name contains `config`. Runner
 configs such as `e2e/playwright.config.mjs` are tooling; actual tests remain tests.
 
