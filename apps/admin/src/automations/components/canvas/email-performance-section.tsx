@@ -15,11 +15,6 @@ import {
   HoverCardContent,
   HoverCardTrigger,
   LoadingIndicator,
-  Separator,
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
 } from '@tryghost/shade/components';
 import type { ChartConfig } from '@tryghost/shade/components';
 import { Box, Grid, Inline, Stack, Text } from '@tryghost/shade/primitives';
@@ -28,7 +23,7 @@ import type {
   AutomationEmailStats,
 } from '@tryghost/admin-x-framework/api/automations';
 import { useBrowseAutomationActionLinks } from '@tryghost/admin-x-framework/api/automations';
-import { LucideIcon, Recharts, cn, formatNumber, formatPercentage } from '@tryghost/shade/utils';
+import { Recharts, cn, formatNumber, formatPercentage } from '@tryghost/shade/utils';
 import { formatRate } from './format-stats';
 import { OffValue, TRACKING_OFF_MESSAGE } from './off-value';
 
@@ -39,12 +34,11 @@ const EMAIL_PERFORMANCE_CHART_CONFIG = {
 const EmailPerformanceRing: React.FC<{
   datatype: string;
   value: number;
-  color: 'purple' | 'blue' | 'teal';
+  color: 'blue' | 'teal';
   innerRadius: number;
   outerRadius: number;
   tracked: boolean;
-  showLabel: boolean;
-}> = ({ datatype, value, color, innerRadius, outerRadius, tracked, showLabel }) => {
+}> = ({ datatype, value, color, innerRadius, outerRadius, tracked }) => {
   const gradientId = React.useId();
   const colorVar = `var(--chart-${color})`;
   return (
@@ -77,16 +71,7 @@ const EmailPerformanceRing: React.FC<{
           fill={`url(#${gradientId})`}
           minPointSize={-2}
           background
-        >
-          {showLabel && (
-            <Recharts.LabelList
-              className="fill-foreground opacity-60"
-              dataKey="datatype"
-              fontSize={11}
-              position="insideStart"
-            />
-          )}
-        </Recharts.RadialBar>
+        />
       </Recharts.RadialBarChart>
     </ChartContainer>
   );
@@ -96,9 +81,8 @@ const EmailPerformanceRing: React.FC<{
 // 3px gap. Recharts' <RadialBar> doesn't accept innerRadius/outerRadius (those live on the parent
 // <RadialBarChart>), so we draw each ring with its own absolutely-positioned chart.
 const EMAIL_CHART_RINGS = {
-  sent: { innerRadius: 88, outerRadius: 110 },
-  opened: { innerRadius: 63, outerRadius: 85 },
-  clicked: { innerRadius: 38, outerRadius: 60 },
+  opened: { innerRadius: 88, outerRadius: 110 },
+  clicked: { innerRadius: 63, outerRadius: 85 },
 };
 
 const EmailPerformanceChart: React.FC<{
@@ -106,55 +90,37 @@ const EmailPerformanceChart: React.FC<{
   openRate: number;
   clicksTracked: boolean;
   opensTracked: boolean;
-  sentCount?: number;
+  sentCount: number;
 }> = ({ clickRate, openRate, clicksTracked, opensTracked, sentCount }) => {
-  const openedRing = sentCount === undefined ? EMAIL_CHART_RINGS.opened : EMAIL_CHART_RINGS.sent;
-  const clickedRing =
-    sentCount === undefined ? EMAIL_CHART_RINGS.clicked : EMAIL_CHART_RINGS.opened;
   return (
     <Box className="relative mx-auto aspect-square size-[240px]">
-      {sentCount === undefined && (
-        <EmailPerformanceRing
-          color="purple"
-          datatype="Sent"
-          innerRadius={EMAIL_CHART_RINGS.sent.innerRadius}
-          outerRadius={EMAIL_CHART_RINGS.sent.outerRadius}
-          value={1}
-          showLabel
-          tracked
-        />
-      )}
       <EmailPerformanceRing
         color="blue"
         datatype="Opened"
-        {...openedRing}
-        showLabel={sentCount === undefined}
+        {...EMAIL_CHART_RINGS.opened}
         tracked={opensTracked}
         value={openRate}
       />
       <EmailPerformanceRing
         color="teal"
         datatype="Clicked"
-        {...clickedRing}
-        showLabel={sentCount === undefined}
+        {...EMAIL_CHART_RINGS.clicked}
         tracked={clicksTracked}
         value={clickRate}
       />
-      {sentCount !== undefined && (
-        <Stack
-          align="center"
-          className="pointer-events-none absolute inset-0"
-          gap="xs"
-          justify="center"
-        >
-          <Text size="sm" tone="secondary">
-            Sent
-          </Text>
-          <Text className="tracking-tight tabular-nums" size="2xl" weight="semibold">
-            {formatNumber(sentCount)}
-          </Text>
-        </Stack>
-      )}
+      <Stack
+        align="center"
+        className="pointer-events-none absolute inset-0"
+        gap="xs"
+        justify="center"
+      >
+        <Text size="sm" tone="secondary">
+          Sent
+        </Text>
+        <Text className="tracking-tight tabular-nums" size="2xl" weight="semibold">
+          {formatNumber(sentCount)}
+        </Text>
+      </Stack>
     </Box>
   );
 };
@@ -168,10 +134,9 @@ const Kpi: React.FC<{
   tracked: boolean;
   value: string;
   hoverValue?: string;
-  redesigned: boolean;
-}> = ({ label, color, tracked, value, hoverValue, redesigned }) => {
+}> = ({ label, color, tracked, value, hoverValue }) => {
   const tile = (
-    <Box className={KPI_CLASS_NAME} tabIndex={!tracked || redesigned ? 0 : undefined}>
+    <Box className={KPI_CLASS_NAME} tabIndex={0}>
       <span className="flex items-center gap-1.5 text-sm text-text-secondary">
         <span
           aria-hidden="true"
@@ -213,9 +178,8 @@ const TopClickedLinksContent: React.FC<{
   isLoading: boolean;
   links: AutomationActionLink[];
   sentCount: number;
-  redesigned?: boolean;
   onRetry: () => void;
-}> = ({ clickedCount, isError, isLoading, links, sentCount, redesigned, onRetry }) => {
+}> = ({ clickedCount, isError, isLoading, links, sentCount, onRetry }) => {
   if (sentCount === 0) {
     return (
       <Text className="py-6 text-center" size="sm" tone="secondary">
@@ -238,11 +202,9 @@ const TopClickedLinksContent: React.FC<{
         <Text className="text-center text-destructive" role="alert" size="sm">
           Couldn&apos;t load clicked links.
         </Text>
-        {redesigned && (
-          <Button size="sm" variant="outline" onClick={onRetry}>
-            Retry
-          </Button>
-        )}
+        <Button size="sm" variant="outline" onClick={onRetry}>
+          Retry
+        </Button>
       </Stack>
     );
   }
@@ -256,68 +218,42 @@ const TopClickedLinksContent: React.FC<{
   }
 
   return (
-    <TooltipProvider delayDuration={150}>
-      <DataList className="group/datalist">
-        <DataListBody>
-          {links.map((link) => {
-            const percentage =
-              clickedCount > 0 ? Math.min(link.clicked_count / clickedCount, 1) : 0;
-            const url = displayUrl(link.url);
-            const linkContent = redesigned ? (
-              <a
-                aria-label={url}
-                className="block min-w-0 hover:underline"
-                href={link.url}
-                rel="noreferrer"
-                target="_blank"
-              >
-                <Inline as="span" className="min-w-0" gap="none">
-                  <span className="truncate">
-                    {url.slice(0, Math.max(0, url.length - MIDDLE_TRUNCATE_TAIL))}
-                  </span>
-                  <span className="shrink-0 whitespace-nowrap">
-                    {url.slice(-MIDDLE_TRUNCATE_TAIL)}
-                  </span>
-                </Inline>
-              </a>
-            ) : (
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <a
-                    className="block min-w-0 hover:underline"
-                    href={link.url}
-                    rel="noreferrer"
-                    target="_blank"
-                  >
-                    <Inline as="span" className="min-w-0" gap="sm">
-                      <LucideIcon.Link
-                        className="shrink-0 text-muted-foreground"
-                        size={16}
-                        strokeWidth={1.5}
-                      />
-                      <Text as="span" className="font-medium" truncate>
-                        {url}
-                      </Text>
-                    </Inline>
-                  </a>
-                </TooltipTrigger>
-                <TooltipContent className="max-w-[28rem] break-all">{link.url}</TooltipContent>
-              </Tooltip>
-            );
-            return (
-              <DataListRow key={link.url}>
-                <DataListBar style={{ width: `${Math.round(percentage * 100)}%` }} />
-                <DataListItemContent>{linkContent}</DataListItemContent>
-                <DataListItemValue>
-                  <DataListItemValueAbs>{formatNumber(link.clicked_count)}</DataListItemValueAbs>
-                  <DataListItemValuePerc>{formatPercentage(percentage)}</DataListItemValuePerc>
-                </DataListItemValue>
-              </DataListRow>
-            );
-          })}
-        </DataListBody>
-      </DataList>
-    </TooltipProvider>
+    <DataList className="group/datalist">
+      <DataListBody>
+        {links.map((link) => {
+          const percentage = clickedCount > 0 ? Math.min(link.clicked_count / clickedCount, 1) : 0;
+          const url = displayUrl(link.url);
+          const linkContent = (
+            <a
+              aria-label={url}
+              className="block min-w-0 hover:underline"
+              href={link.url}
+              rel="noreferrer"
+              target="_blank"
+            >
+              <Inline as="span" className="min-w-0" gap="none">
+                <span className="truncate">
+                  {url.slice(0, Math.max(0, url.length - MIDDLE_TRUNCATE_TAIL))}
+                </span>
+                <span className="shrink-0 whitespace-nowrap">
+                  {url.slice(-MIDDLE_TRUNCATE_TAIL)}
+                </span>
+              </Inline>
+            </a>
+          );
+          return (
+            <DataListRow key={link.url}>
+              <DataListBar style={{ width: `${Math.round(percentage * 100)}%` }} />
+              <DataListItemContent>{linkContent}</DataListItemContent>
+              <DataListItemValue>
+                <DataListItemValueAbs>{formatNumber(link.clicked_count)}</DataListItemValueAbs>
+                <DataListItemValuePerc>{formatPercentage(percentage)}</DataListItemValuePerc>
+              </DataListItemValue>
+            </DataListRow>
+          );
+        })}
+      </DataListBody>
+    </DataList>
   );
 };
 
@@ -326,8 +262,7 @@ const TopClickedLinks: React.FC<{
   automationId: string;
   clickedCount: number;
   sentCount: number;
-  redesigned?: boolean;
-}> = ({ actionId, automationId, clickedCount, sentCount, redesigned }) => {
+}> = ({ actionId, automationId, clickedCount, sentCount }) => {
   const { data, isError, isLoading, refetch } = useBrowseAutomationActionLinks(
     automationId,
     actionId,
@@ -340,30 +275,26 @@ const TopClickedLinks: React.FC<{
   const links = data?.automation_action_links.slice(0, 10) ?? [];
 
   return (
-    <>
-      {!redesigned && <Separator />}
-      <Stack gap="md">
-        <Inline justify="between">
-          <Text size="sm" tone="secondary" weight="medium">
-            Top clicked links
-          </Text>
-          <Text size="sm" tone="tertiary" weight="medium">
-            Members
-          </Text>
-        </Inline>
-        <TopClickedLinksContent
-          clickedCount={clickedCount}
-          isError={isError}
-          isLoading={isLoading}
-          links={links}
-          redesigned={redesigned}
-          sentCount={sentCount}
-          onRetry={() => {
-            void refetch();
-          }}
-        />
-      </Stack>
-    </>
+    <Stack gap="md">
+      <Inline justify="between">
+        <Text size="sm" tone="secondary" weight="medium">
+          Top clicked links
+        </Text>
+        <Text size="sm" tone="tertiary" weight="medium">
+          Members
+        </Text>
+      </Inline>
+      <TopClickedLinksContent
+        clickedCount={clickedCount}
+        isError={isError}
+        isLoading={isLoading}
+        links={links}
+        sentCount={sentCount}
+        onRetry={() => {
+          void refetch();
+        }}
+      />
+    </Stack>
   );
 };
 
@@ -371,97 +302,41 @@ export const EmailPerformanceSection: React.FC<{
   actionId: string;
   automationId: string;
   stats: AutomationEmailStats;
-  redesigned?: boolean;
-}> = ({ actionId, automationId, stats, redesigned = false }) => {
+}> = ({ actionId, automationId, stats }) => {
   const { emailTrackOpens, emailTrackClicks } = useEmailTrackingSettings();
 
-  if (redesigned) {
-    return (
-      <Stack gap="xl">
-        <Stack gap="md">
-          <Text size="sm" tone="secondary" weight="medium">
-            Performance
-          </Text>
-          <Stack className="rounded-lg border border-border-default px-4 py-3" gap="sm">
-            <EmailPerformanceChart
-              clickRate={(stats.clicked_rate ?? 0) / 100}
-              clicksTracked={emailTrackClicks}
-              openRate={(stats.opened_rate ?? 0) / 100}
-              opensTracked={emailTrackOpens}
-              sentCount={stats.email_sent_count}
-            />
-            <Grid columns={2} gap="md">
-              <Kpi
-                color="var(--chart-blue)"
-                hoverValue={formatNumber(stats.email_opened_count)}
-                label="Opened"
-                tracked={emailTrackOpens}
-                value={stats.opened_rate === null ? '—' : formatRate(stats.opened_rate)}
-                redesigned
-              />
-              <Kpi
-                color="var(--chart-teal)"
-                hoverValue={formatNumber(stats.email_clicked_count)}
-                label="Clicked"
-                tracked={emailTrackClicks}
-                value={stats.clicked_rate === null ? '—' : formatRate(stats.clicked_rate)}
-                redesigned
-              />
-            </Grid>
-          </Stack>
-        </Stack>
-        {emailTrackClicks && (
-          <TopClickedLinks
-            actionId={actionId}
-            automationId={automationId}
-            clickedCount={stats.email_clicked_count}
-            sentCount={stats.email_sent_count}
-            redesigned
-          />
-        )}
-      </Stack>
-    );
-  }
-
   return (
-    <div className="flex flex-col gap-5">
-      <Separator />
-      <div className="flex flex-col gap-5">
-        <h3 className="text-sm font-medium tracking-normal text-text-secondary">
-          Email performance
-        </h3>
-        <div className="grid grid-cols-3 gap-4">
-          <Kpi
-            color="var(--chart-purple)"
-            label="Sent"
-            redesigned={false}
-            value={formatNumber(stats.email_sent_count)}
-            tracked
+    <Stack gap="xl">
+      <Stack gap="md">
+        <Text size="sm" tone="secondary" weight="medium">
+          Performance
+        </Text>
+        <Stack className="rounded-lg border border-border-default px-4 py-3" gap="sm">
+          <EmailPerformanceChart
+            clickRate={(stats.clicked_rate ?? 0) / 100}
+            clicksTracked={emailTrackClicks}
+            openRate={(stats.opened_rate ?? 0) / 100}
+            opensTracked={emailTrackOpens}
+            sentCount={stats.email_sent_count}
           />
-          <Kpi
-            color="var(--chart-blue)"
-            hoverValue={stats.email_sent_count > 0 ? formatNumber(stats.email_opened_count) : '--'}
-            label="Opened"
-            redesigned={false}
-            tracked={emailTrackOpens}
-            value={formatRate(stats.opened_rate)}
-          />
-          <Kpi
-            color="var(--chart-teal)"
-            hoverValue={stats.email_sent_count > 0 ? formatNumber(stats.email_clicked_count) : '--'}
-            label="Clicked"
-            redesigned={false}
-            tracked={emailTrackClicks}
-            value={formatRate(stats.clicked_rate)}
-          />
-        </div>
-        <EmailPerformanceChart
-          clickRate={(stats.clicked_rate ?? 0) / 100}
-          clicksTracked={emailTrackClicks}
-          openRate={(stats.opened_rate ?? 0) / 100}
-          opensTracked={emailTrackOpens}
-        />
-      </div>
+          <Grid columns={2} gap="md">
+            <Kpi
+              color="var(--chart-blue)"
+              hoverValue={formatNumber(stats.email_opened_count)}
+              label="Opened"
+              tracked={emailTrackOpens}
+              value={stats.opened_rate === null ? '—' : formatRate(stats.opened_rate)}
+            />
+            <Kpi
+              color="var(--chart-teal)"
+              hoverValue={formatNumber(stats.email_clicked_count)}
+              label="Clicked"
+              tracked={emailTrackClicks}
+              value={stats.clicked_rate === null ? '—' : formatRate(stats.clicked_rate)}
+            />
+          </Grid>
+        </Stack>
+      </Stack>
       {emailTrackClicks && (
         <TopClickedLinks
           actionId={actionId}
@@ -470,6 +345,6 @@ export const EmailPerformanceSection: React.FC<{
           sentCount={stats.email_sent_count}
         />
       )}
-    </div>
+    </Stack>
   );
 };

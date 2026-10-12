@@ -30,12 +30,7 @@ import type {
 import { AutomationCanvasControls } from './controls';
 import { TAIL_CANVAS_ID, TRIGGER_CANVAS_ID } from './nodes';
 import { nodeTypes, toApiAnchor } from './node-helpers';
-import type {
-  AutomationFlowNode,
-  CanvasAnchor,
-  NodeContextMenuEntry,
-  StepNodeDisplayData,
-} from './nodes';
+import type { AutomationFlowNode, CanvasAnchor, NodeContextMenuEntry } from './nodes';
 import { Background, BackgroundVariant, ReactFlow } from '@xyflow/react';
 import type { Edge, NodeChange } from '@xyflow/react';
 import { cn, LucideIcon } from '@tryghost/shade/utils';
@@ -45,7 +40,6 @@ import { canvasBackground } from './canvas-background';
 import { AutomationSidebar } from './automation-sidebar';
 import { type StepPickerType } from './step-picker';
 import { EmailPerformanceSidebar } from './email-performance-sidebar';
-import { formatWait } from './format-wait';
 import { isEmptyEmailLexical } from '@/automations/utils';
 import { useBrowseConfig } from '@tryghost/admin-x-framework/api/config';
 import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
@@ -62,8 +56,6 @@ const NODE_COLUMN_CENTER_X = NODE_X + NODE_WIDTH / 2;
 const NODE_VISUAL_GAP_Y = 112;
 // Initial height estimates; React Flow measurements replace these once mounted,
 // keeping the visible gap uniform as content and validation messages change.
-const REGULAR_NODE_HEIGHT = 68;
-const EMAIL_NODE_WITH_STATS_HEIGHT = 133;
 const EDITABLE_NODE_WIDTH = 400;
 const EDITABLE_EMAIL_NODE_HEIGHT = 350;
 const EDITABLE_WAIT_NODE_HEIGHT = 144;
@@ -82,56 +74,22 @@ const edgeTypes = {
   'add-step-edge': AddStepEdge,
 };
 
-const buildActionData = (action: AutomationAction): StepNodeDisplayData => {
-  switch (action.type) {
-    case 'wait':
-      return { icon: LucideIcon.Clock, label: 'Wait', value: formatWait(action.data.wait_hours) };
-    case 'send_email':
-      return {
-        icon: LucideIcon.Mail,
-        isPlaceholderValue: !action.data.email_subject,
-        label: 'Send email',
-        stats: action.stats,
-        value: action.data.email_subject || 'Untitled',
-        warningMessage: isEmptyEmailLexical(action.data.email_lexical)
-          ? 'Empty email body'
-          : undefined,
-      };
-    default: {
-      const _exhaustive: never = action;
-      throw new Error(`Unknown automation action type: ${String(_exhaustive)}`);
-    }
-  }
-};
-
 const buildNodeContextMenuItems = ({
   canDelete = false,
-  canEditSettings = true,
   canEditEmailBody = false,
   onDelete,
   onEditEmailBody,
   onPreviewEmail,
-  onSelectStep,
   stepId,
 }: {
   canDelete?: boolean;
-  canEditSettings?: boolean;
   canEditEmailBody?: boolean;
   onDelete?: (deleteStepId: string) => void;
   onEditEmailBody?: (editEmailBodyStepId: string, mode?: EmailModalMode) => void;
   onPreviewEmail?: (previewEmailStepId: string) => void;
-  onSelectStep: (nextStepId: string) => void;
   stepId: string;
 }): NodeContextMenuEntry[] => {
-  const items: NodeContextMenuEntry[] = canEditSettings
-    ? [
-        {
-          icon: LucideIcon.Settings2,
-          label: 'Edit settings',
-          onSelect: () => onSelectStep(stepId),
-        },
-      ]
-    : [];
+  const items: NodeContextMenuEntry[] = [];
 
   if (canEditEmailBody && onEditEmailBody) {
     items.push({
@@ -263,6 +221,8 @@ const buildGraph = ({
     selectable: false,
     connectable: false,
     focusable: false,
+    // Cards contain interactive controls even though the nodes cannot be selected or dragged.
+    style: { pointerEvents: 'all' as const },
     measured: nodeSizes[id],
   });
   const disabledReason = disabled ? DISABLED_REASON : undefined;
@@ -295,16 +255,6 @@ const buildGraph = ({
         },
         errorMessage: actionErrors[TRIGGER_CANVAS_ID],
         onInteract: () => onInteract(TRIGGER_CANVAS_ID),
-        contextMenuItems: buildNodeContextMenuItems({
-          onSelectStep,
-          stepId: TRIGGER_CANVAS_ID,
-        }),
-        icon: LucideIcon.Zap,
-        isNew: false,
-        label: 'Trigger',
-        value: 'Free member signed up',
-        selected: selectedStepId === TRIGGER_CANVAS_ID,
-        onSelect: () => onSelectStep(TRIGGER_CANVAS_ID),
       },
       ...nodeProps(TRIGGER_CANVAS_ID),
     },
@@ -313,22 +263,17 @@ const buildGraph = ({
     (layoutSizes[TRIGGER_CANVAS_ID]?.height ?? FIXED_TRIGGER_NODE_HEIGHT) + NODE_VISUAL_GAP_Y;
 
   ordered.forEach((action) => {
-    const displayData = buildActionData(action);
     const editableEmail = action.type === 'send_email';
     const editableWait = action.type === 'wait';
     const errorMessage = actionErrors[action.id];
     const showStatsFooter =
-      automationAnalyticsEnabled &&
-      action.type === 'send_email' &&
-      Boolean(action.stats) &&
-      (editableEmail || (!errorMessage && !displayData.warningMessage));
+      automationAnalyticsEnabled && action.type === 'send_email' && Boolean(action.stats);
 
     nodes.push({
       id: action.id,
       type: 'step',
       position: { x: nodeX, y: cursorY },
       data: {
-        ...displayData,
         ...(editableEmail
           ? {
               email: {
@@ -356,30 +301,22 @@ const buildGraph = ({
             }
           : {}),
         contextMenuItems: buildNodeContextMenuItems({
-          canEditSettings: !editableWait && !editableEmail,
           canDelete: true,
           canEditEmailBody: action.type === 'send_email',
           onDelete,
           onEditEmailBody,
           onPreviewEmail: automation.id ? onPreviewEmail : undefined,
-          onSelectStep,
           stepId: action.id,
         }),
         errorMessage,
         isNew: newStepId === action.id,
         selected: selectedStepId === action.id,
         showStatsFooter,
-        onSelect: () => onSelectStep(action.id),
+        stats: action.type === 'send_email' ? action.stats : undefined,
       },
       ...nodeProps(action.id),
     });
-    let estimatedHeight = showStatsFooter ? EMAIL_NODE_WITH_STATS_HEIGHT : REGULAR_NODE_HEIGHT;
-    if (editableEmail) {
-      estimatedHeight = EDITABLE_EMAIL_NODE_HEIGHT;
-    }
-    if (editableWait) {
-      estimatedHeight = EDITABLE_WAIT_NODE_HEIGHT;
-    }
+    const estimatedHeight = editableEmail ? EDITABLE_EMAIL_NODE_HEIGHT : EDITABLE_WAIT_NODE_HEIGHT;
     cursorY += (layoutSizes[action.id]?.height ?? estimatedHeight) + NODE_VISUAL_GAP_Y;
   });
 
@@ -390,13 +327,7 @@ const buildGraph = ({
       x: nodeX,
       y: cursorY,
     },
-    data: {
-      disabled,
-      disabledReason,
-      onPick,
-      anchor: tailAnchor,
-      fixedExit: true,
-    },
+    data: {},
     ...nodeProps(TAIL_CANVAS_ID),
   });
   // Content bounds in flow coordinates, derived from node positions so the pan bound keeps
@@ -884,23 +815,6 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
     }
   }, [automation, emailModalStepId, removeEmailStepParam]);
 
-  const handleNodeDoubleClick = useCallback(
-    (event: React.MouseEvent, node: AutomationFlowNode) => {
-      event.stopPropagation();
-      if (!automation || node.id === TAIL_CANVAS_ID || node.id === TRIGGER_CANVAS_ID) {
-        return;
-      }
-      if (('email' in node.data && node.data.email) || ('wait' in node.data && node.data.wait)) {
-        return;
-      }
-      const action = automation.actions.find((item) => item.id === node.id);
-      if (action?.type === 'send_email') {
-        handleEditEmail(action.id);
-      }
-    },
-    [automation, handleEditEmail],
-  );
-
   if (isLoading) {
     return (
       <div
@@ -1003,21 +917,6 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
               panOnScroll
               onInit={viewport.onInit}
               onMove={viewport.onMove}
-              onNodeClick={(event, node) => {
-                if (event.button !== 0) {
-                  return;
-                }
-                if (
-                  node.id !== TAIL_CANVAS_ID &&
-                  node.id !== TRIGGER_CANVAS_ID &&
-                  !('email' in node.data && node.data.email) &&
-                  !('wait' in node.data && node.data.wait)
-                ) {
-                  showWarningsForOtherSteps(node.id);
-                  setSelectedStep({ id: node.id });
-                }
-              }}
-              onNodeDoubleClick={handleNodeDoubleClick}
               onNodesChange={handleNodesChange}
             >
               <Background {...canvasBackground} variant={BackgroundVariant.Dots} />
