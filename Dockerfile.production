@@ -91,15 +91,15 @@ RUN --mount=type=cache,target=/root/.local/share/pnpm/store,id=pnpm-store \
 # scales with file count: this removes roughly half of them.
 RUN node ghost/scripts/prune.mts /home/ghost --profile=image --report=/image-report.json
 
-# Minify the dependency JavaScript (whitespace and comments only; names and
-# legal comments kept, ASCII output) so its source costs less heap: V8 keeps
-# every loaded file's source for the life of the process, at two bytes per
-# character if the file holds any character above U+00FF. Ghost's own code is
-# left alone so its stack frames keep their line numbers. Each minified file
-# gets a positions-only source map next to it, so `node --enable-source-maps`
-# can map dependency frames back to their original lines; see
-# ghost/scripts/compact-source.mts. Runs after prune so the report above still
-# describes the unminified tree. GHOST_COMPACT_SOURCE=false turns it off.
+# Minify the server's JavaScript, dependencies and Ghost's own code
+# (whitespace and comments only; names and legal comments kept, ASCII output),
+# so its source costs less heap: V8 keeps every loaded file's source for the
+# life of the process, at two bytes per character if the file holds any
+# character above U+00FF. Code Ghost serves to browsers is left alone. Each
+# minified file gets a positions-only source map next to it, so
+# `node --enable-source-maps` maps stack frames back to their original lines;
+# see ghost/scripts/compact-source.mts. Runs after prune so the report above
+# still describes the unminified tree. GHOST_COMPACT_SOURCE=false turns it off.
 ARG GHOST_COMPACT_SOURCE=true
 RUN if [ "$GHOST_COMPACT_SOURCE" = "true" ]; then \
       node ghost/scripts/compact-source.mts /home/ghost; \

@@ -1,13 +1,13 @@
 #!/usr/bin/env node
 
 /**
- * compact-source.mts - Minify the dependency JavaScript in a built Ghost tree so
- * its source costs less heap.
+ * compact-source.mts - Minify the JavaScript in a built Ghost tree so its source
+ * costs less heap.
  *
  * V8 keeps every loaded script's source on the heap for the life of the
  * process (lazy compilation and Function.prototype.toString read it), and
  * stores it at two bytes per character when the file holds any character
- * above U+00FF. Every .js/.cjs/.mjs file under node_modules goes through
+ * above U+00FF. Every .js/.cjs/.mjs file under node_modules and core goes through
  * esbuild's whitespace and comment removal with ASCII output: identifiers are
  * not renamed and legal comments are kept. A file is replaced only when the
  * result is smaller on the heap; one esbuild cannot parse is left as it was.
@@ -15,12 +15,11 @@
  * Each minified file gets a source map next to it (`<file>.map`, linked by a
  * sourceMappingURL comment) holding positions only, not a copy of the original
  * source, which would more than double the size of node_modules. They cost
- * nothing at runtime; `node --enable-source-maps` maps dependency stack frames
- * back to their original lines.
+ * nothing at runtime; `node --enable-source-maps` maps stack frames back to
+ * their original lines.
  *
- * Ghost's own code (core/) is not touched, so its stack frames keep their line
- * numbers; the local-source/latin1-only lint rule keeps it at one byte per
- * character instead.
+ * Code Ghost serves to browsers (core/built, core/frontend/public and
+ * core/frontend/src) is left alone.
  *
  * Dockerfile.production's deploy stage runs it against /home/ghost after
  * prune.mts. Unlike prune.mts it needs esbuild (a ghost devDependency), so it
@@ -78,17 +77,25 @@ export function compactFile(source: string, fileName: string): Outcome {
   return { status: 'changed', code, map: result.map, before, after };
 }
 
+// The trees minified, relative to the target, and the code under them that
+// Ghost serves to browsers rather than loads.
+const DIRS = ['node_modules', 'core'];
+const BROWSER_CODE = ['core/built', 'core/frontend/public', 'core/frontend/src'];
+
 /**
  * Walk `dir` and yield every script, as a path relative to `root`. Symlinks are
  * never followed: pnpm's virtual store is full of them, and each target is
  * reached once via .pnpm anyway.
  */
 async function* scripts(root: string, rel: string): AsyncGenerator<string> {
+  if (BROWSER_CODE.some((dir) => rel === dir || rel.startsWith(`${dir}/`))) {
+    return;
+  }
   let entries;
   try {
     entries = await fs.readdir(path.join(root, rel), { withFileTypes: true });
   } catch (error) {
-    // A tree without node_modules has nothing to minify; anything else is a
+    // A missing directory has nothing to minify; anything else is a
     // broken tree, and the build should stop rather than ship it half-done.
     if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
       return;
@@ -144,27 +151,29 @@ export async function compactSource(
     unparseable: [],
   };
 
-  for await (const rel of scripts(target, 'node_modules')) {
-    result.files += 1;
-    const absolute = path.join(target, rel);
-    const outcome = compactFile(await fs.readFile(absolute, 'utf8'), path.basename(rel));
-    if (outcome.status === 'unchanged') {
-      if (outcome.reason === 'unparseable') {
-        result.unparseable.push(rel);
+  for (const dir of DIRS) {
+    for await (const rel of scripts(target, dir)) {
+      result.files += 1;
+      const absolute = path.join(target, rel);
+      const outcome = compactFile(await fs.readFile(absolute, 'utf8'), path.basename(rel));
+      if (outcome.status === 'unchanged') {
+        if (outcome.reason === 'unparseable') {
+          result.unparseable.push(rel);
+        }
+        continue;
       }
-      continue;
-    }
 
-    result.changed += 1;
-    result.before += outcome.before;
-    result.after += outcome.after;
-    result.mapBytes += Buffer.byteLength(outcome.map);
-    if (dryRun) {
-      continue;
+      result.changed += 1;
+      result.before += outcome.before;
+      result.after += outcome.after;
+      result.mapBytes += Buffer.byteLength(outcome.map);
+      if (dryRun) {
+        continue;
+      }
+      const { mode } = await fs.stat(absolute);
+      await replaceFile(absolute, outcome.code, mode);
+      await replaceFile(`${absolute}.map`, outcome.map);
     }
-    const { mode } = await fs.stat(absolute);
-    await replaceFile(absolute, outcome.code, mode);
-    await replaceFile(`${absolute}.map`, outcome.map);
   }
   return result;
 }
@@ -198,7 +207,7 @@ if (import.meta.main) {
     process.exit(1);
   }
 
-  console.log(`Minifying dependency source in ${target}`);
+  console.log(`Minifying source in ${target}`);
   const result = await compactSource(path.resolve(target), { dryRun: values['dry-run'] });
   reportCompact(result, { dryRun: values['dry-run'] });
 }

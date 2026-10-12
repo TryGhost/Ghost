@@ -60,22 +60,41 @@ describe('compactFile', () => {
 });
 
 describe('compactSource', () => {
-  it('minifies node_modules only, writing a map next to each file', async (t) => {
+  it('minifies node_modules and core, writing a map next to each file', async (t) => {
     const pkg = 'node_modules/.pnpm/pkg@1.0.0/node_modules/pkg';
     const root = await fixture(t, {
       [`${pkg}/index.js`]: MODULE,
       [`${pkg}/data.json`]: '{"a": 1}',
       'core/server/a.js': MODULE,
+      'content/themes/casper/assets/app.js': MODULE,
     });
 
     const result = await compactSource(root);
 
-    assert.equal(result.files, 1);
-    assert.equal(result.changed, 1);
+    assert.equal(result.files, 2);
+    assert.equal(result.changed, 2);
     assert.ok(result.mapBytes > 0);
     assert.doesNotMatch(await read(root, `${pkg}/index.js`), /a comment/);
     assert.deepEqual(JSON.parse(await read(root, `${pkg}/index.js.map`)).sources, ['index.js']);
-    assert.equal(await read(root, 'core/server/a.js'), MODULE);
+    assert.doesNotMatch(await read(root, 'core/server/a.js'), /a comment/);
+    assert.deepEqual(JSON.parse(await read(root, 'core/server/a.js.map')).sources, ['a.js']);
+    assert.equal(await read(root, 'content/themes/casper/assets/app.js'), MODULE);
+  });
+
+  it('leaves the code Ghost serves to browsers alone', async (t) => {
+    const browserCode = [
+      'core/built/admin/app.js',
+      'core/frontend/public/ghost.js',
+      'core/frontend/src/cards/js/card.js',
+    ];
+    const root = await fixture(t, Object.fromEntries(browserCode.map((rel) => [rel, MODULE])));
+
+    const result = await compactSource(root);
+
+    assert.equal(result.files, 0);
+    for (const rel of browserCode) {
+      assert.equal(await read(root, rel), MODULE, rel);
+    }
   });
 
   it('maps stack frames back to the original lines under --enable-source-maps', async (t) => {
@@ -132,13 +151,13 @@ describe('compactSource', () => {
     ]);
   });
 
-  it('does nothing for a tree without node_modules', async (t) => {
-    const root = await fixture(t, { 'core/server/a.js': MODULE });
+  it('does nothing for a tree without node_modules or core', async (t) => {
+    const root = await fixture(t, { 'content/a.js': MODULE });
 
     const result = await compactSource(root);
 
     assert.equal(result.files, 0);
-    assert.equal(await read(root, 'core/server/a.js'), MODULE);
+    assert.equal(await read(root, 'content/a.js'), MODULE);
   });
 
   it('reports files esbuild cannot parse and leaves them alone', async (t) => {
