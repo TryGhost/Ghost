@@ -224,19 +224,18 @@ export const AutomationSidebar: React.FC<{
     setHasOpened(true);
   }
 
-  let exitConditionDescription: string;
+  let stopConditionDescription: string;
   switch (triggerTierScope) {
     case 'free':
     case null:
-      exitConditionDescription = 'Members exit early if they unsubscribe.';
+      stopConditionDescription = 'Members stop early if they unsubscribe.';
       break;
     case 'all_paid':
-      exitConditionDescription =
-        'Members exit early if they unsubscribe or cancel their subscription.';
+      stopConditionDescription = 'Members stop early if they unsubscribe or leave any paid tier.';
       break;
     case 'selected_paid':
-      exitConditionDescription =
-        'Members exit early if they unsubscribe, cancel their subscription, or leave the selected tier(s).';
+      stopConditionDescription =
+        'Members stop early if they unsubscribe or leave the selected tier(s).';
       break;
     default: {
       const _exhaustive: never = triggerTierScope;
@@ -395,8 +394,8 @@ export const AutomationSidebar: React.FC<{
                     />
                   </Field>
                   <Field>
-                    <FieldLabel>Exit conditions</FieldLabel>
-                    <FieldDescription>{exitConditionDescription}</FieldDescription>
+                    <FieldLabel>Stop conditions</FieldLabel>
+                    <FieldDescription>{stopConditionDescription}</FieldDescription>
                   </Field>
                 </Stack>
               </TabsContent>

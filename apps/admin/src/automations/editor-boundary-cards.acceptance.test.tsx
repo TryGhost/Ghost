@@ -11,7 +11,7 @@ describe('Editor trigger and exit marker', () => {
   it('keeps both boundary cards non-interactive with no settings or context menu', async () => {
     setup();
     await renderAdminApp('/automations/first', flags);
-    for (const name of ['Member signs up', 'Exit automation']) {
+    for (const name of ['Free member signed up', 'Exit automation']) {
       const card = editingCanvas().getByRole('article', { name, exact: true });
       await card.click();
       await card.click({ button: 'right' });
@@ -81,7 +81,7 @@ describe('Editor trigger and exit marker', () => {
   it('retains the trigger settings and rectangular add button with the flag off', async () => {
     setup();
     await renderAdminApp('/automations/first', { labs: { automations: true } });
-    await page.getByRole('button', { name: 'Trigger: Member signs up' }).click();
+    await page.getByRole('button', { name: 'Trigger: Free member signed up' }).click();
     await expect.element(page.getByRole('complementary', { name: 'Step details' })).toBeVisible();
     await expect.element(page.getByText('Free', { exact: true })).toBeVisible();
     await expect.element(page.getByTestId('add-step-tail-button')).toBeVisible();

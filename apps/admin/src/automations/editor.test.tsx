@@ -747,7 +747,7 @@ describe('AutomationEditor', () => {
 
     expect(screen.getByText('Free member welcome flow')).toBeInTheDocument();
     expect(screen.getByText('Trigger')).toBeInTheDocument();
-    expect(screen.getByText('Member signs up')).toBeInTheDocument();
+    expect(screen.getByText('Free member signed up')).toBeInTheDocument();
     expect(screen.getByText('Wait')).toBeInTheDocument();
     expect(screen.getByText('1 day')).toBeInTheDocument();
     expect(screen.getByText('Send email')).toBeInTheDocument();
@@ -1347,12 +1347,14 @@ describe('AutomationEditor', () => {
 
     renderEditor();
 
-    const trigger = screen.getByRole('button', { name: 'Trigger: Member signs up' });
+    const trigger = screen.getByRole('button', { name: 'Trigger: Free member signed up' });
     fireEvent.click(trigger);
 
     expect(trigger).toHaveAttribute('aria-pressed', 'true');
     const sidebar = screen.getByRole('complementary', { name: 'Step details' });
-    expect(within(sidebar).getByRole('heading', { name: 'Member signs up' })).toBeInTheDocument();
+    expect(
+      within(sidebar).getByRole('heading', { name: 'Free member signed up' }),
+    ).toBeInTheDocument();
     expect(within(sidebar).getByText('Members')).toBeInTheDocument();
     expect(within(sidebar).getByText('Free')).toBeInTheDocument();
     expect(within(sidebar).queryByText('Paid')).not.toBeInTheDocument();
@@ -1374,7 +1376,9 @@ describe('AutomationEditor', () => {
     fireEvent.click(trigger!);
 
     const sidebar = screen.getByRole('complementary', { name: 'Step details' });
-    expect(within(sidebar).getByRole('heading', { name: 'Member signs up' })).toBeInTheDocument();
+    expect(
+      within(sidebar).getByRole('heading', { name: 'Free member signed up' }),
+    ).toBeInTheDocument();
     expect(within(sidebar).queryByText('Members')).not.toBeInTheDocument();
   });
 
@@ -1433,7 +1437,7 @@ describe('AutomationEditor', () => {
 
     renderEditor();
 
-    fireEvent.contextMenu(screen.getByRole('button', { name: 'Trigger: Member signs up' }));
+    fireEvent.contextMenu(screen.getByRole('button', { name: 'Trigger: Free member signed up' }));
     expect(await screen.findByRole('menuitem', { name: 'Edit settings' })).toBeInTheDocument();
     expect(screen.queryByRole('menuitem', { name: 'Delete' })).not.toBeInTheDocument();
     fireEvent.keyDown(document, { key: 'Escape' });
@@ -1646,7 +1650,7 @@ describe('AutomationEditor', () => {
 
     renderEditor();
 
-    fireEvent.click(screen.getByRole('button', { name: 'Trigger: Member signs up' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Trigger: Free member signed up' }));
 
     const sidebar = screen.getByRole('complementary', { name: 'Step details' });
     expect(within(sidebar).getByText('Paid')).toBeInTheDocument();
@@ -1943,7 +1947,7 @@ describe('AutomationEditor', () => {
 
     renderEditor();
 
-    const trigger = screen.getByRole('button', { name: 'Trigger: Member signs up' });
+    const trigger = screen.getByRole('button', { name: 'Trigger: Free member signed up' });
     fireEvent.click(trigger);
     expect(screen.getByRole('complementary', { name: 'Step details' })).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Close step sidebar' })).not.toBeInTheDocument();

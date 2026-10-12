@@ -219,7 +219,7 @@ const getStepSidebarDetail = ({
     return {
       icon: LucideIcon.Zap,
       label: 'Trigger',
-      title: 'Member signs up',
+      title: 'Free member signed up',
       memberTiers: (automation.slug && automationSlugMemberTiers[automation.slug]) || [],
       type: 'trigger',
     };

@@ -91,7 +91,7 @@ const PaidTierPicker: React.FC<{ trigger: TriggerData; errorMessage?: string }> 
   return (
     <Stack gap="sm">
       <Text as="p" id={`${id}-label`} size="md">
-        Triggered when someone signs up or upgrades to:
+        Triggered when a new or free member starts:
       </Text>
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
@@ -191,7 +191,7 @@ export const TriggerCard: React.FC<
       throw new Error(`Unknown automation trigger scope: ${String(_exhaustive)}`);
     }
   }
-  const title = paid ? 'Paid subscription starts' : 'Member signs up';
+  const title = paid ? 'Paid subscription started' : 'Free member signed up';
   return (
     <AutomationCard
       aria-label={title}

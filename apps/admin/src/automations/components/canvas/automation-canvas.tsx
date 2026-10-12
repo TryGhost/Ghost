@@ -307,7 +307,7 @@ const buildGraph = ({
         icon: LucideIcon.Zap,
         isNew: false,
         label: 'Trigger',
-        value: 'Member signs up',
+        value: 'Free member signed up',
         selected: selectedStepId === TRIGGER_CANVAS_ID,
         onSelect: () => onSelectStep(TRIGGER_CANVAS_ID),
       },
