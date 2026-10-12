@@ -17,6 +17,7 @@ import {
   FieldLegend,
   FieldSet,
   Input,
+  Link,
   RadioGroup,
   RadioGroupItem,
 } from '@tryghost/shade/components';
@@ -160,11 +161,7 @@ function InviteUserModal() {
       const title = 'Failed to send invitation';
       let message = (
         <span>
-          If the problem persists,{' '}
-          <a href="https://ghost.org/contact">
-            <u>contact support</u>.
-          </a>
-          .
+          If the problem persists, <Link href="https://ghost.org/contact">contact support</Link>.
         </span>
       );
       if (e instanceof APIError) {

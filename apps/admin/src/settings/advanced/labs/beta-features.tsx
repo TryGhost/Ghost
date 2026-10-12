@@ -2,7 +2,7 @@ import FeatureToggle from './feature-toggle';
 import LabItem from './lab-item';
 import React, { useState } from 'react';
 import YamlFileEditorModal from './yaml-file-editor-modal';
-import { ActionList, Button, Dropzone } from '@tryghost/shade/components';
+import { ActionList, Button, Dropzone, Link } from '@tryghost/shade/components';
 import { Inline, Stack } from '@tryghost/shade/primitives';
 import { downloadRedirects, useUploadRedirects } from '@tryghost/admin-x-framework/api/redirects';
 import { downloadRoutes, useUploadRoutes } from '@tryghost/admin-x-framework/api/routes';
@@ -79,14 +79,9 @@ const BetaFeatures: React.FC = () => {
               <>
                 Build automated email flows for your members, and get early access to new automation
                 features as they ship.{' '}
-                <a
-                  className="text-green"
-                  href="https://ghost.org/help/automations-beta"
-                  rel="noopener noreferrer"
-                  target="_blank"
-                >
-                  Learn more &rarr;
-                </a>
+                <Link href="https://ghost.org/help/automations-beta" external>
+                  Learn more
+                </Link>
               </>
             }
             title="Automations (beta)"
@@ -112,14 +107,9 @@ const BetaFeatures: React.FC = () => {
           detail={
             <>
               Enable support for CashApp, iDEAL, Bancontact, and others.{' '}
-              <a
-                className="text-green"
-                href="https://ghost.org/help/payment-methods"
-                rel="noopener noreferrer"
-                target="_blank"
-              >
-                Learn more &rarr;
-              </a>
+              <Link href="https://ghost.org/help/payment-methods" external>
+                Learn more
+              </Link>
             </>
           }
           title="Additional payment methods"
@@ -149,13 +139,7 @@ const BetaFeatures: React.FC = () => {
                   Edit
                 </Button>
               </Inline>
-              <Button
-                className="h-auto p-0 text-green hover:text-green"
-                size="sm"
-                type="button"
-                variant="link"
-                onClick={() => downloadRedirects()}
-              >
+              <Button size="sm" type="button" variant="ghost" onClick={() => downloadRedirects()}>
                 Download current redirects
               </Button>
             </Stack>
@@ -163,14 +147,9 @@ const BetaFeatures: React.FC = () => {
           detail={
             <>
               Configure redirects for old or moved content, <br /> more info in the{' '}
-              <a
-                className="text-green"
-                href="https://ghost.org/tutorials/implementing-redirects/"
-                rel="noopener noreferrer"
-                target="_blank"
-              >
+              <Link href="https://ghost.org/tutorials/implementing-redirects/" external>
                 docs
-              </a>
+              </Link>
             </>
           }
           testId="redirects"
@@ -191,13 +170,7 @@ const BetaFeatures: React.FC = () => {
                   Edit
                 </Button>
               </Inline>
-              <Button
-                className="h-auto p-0 text-green hover:text-green"
-                size="sm"
-                type="button"
-                variant="link"
-                onClick={() => downloadRoutes()}
-              >
+              <Button size="sm" type="button" variant="ghost" onClick={() => downloadRoutes()}>
                 Download current routes
               </Button>
             </Stack>
@@ -214,14 +187,9 @@ const BetaFeatures: React.FC = () => {
             hint={
               <>
                 Configure redirects for old or moved content. See the{' '}
-                <a
-                  className="text-green"
-                  href="https://ghost.org/tutorials/implementing-redirects/"
-                  rel="noopener noreferrer"
-                  target="_blank"
-                >
+                <Link href="https://ghost.org/tutorials/implementing-redirects/" external>
                   docs
-                </a>{' '}
+                </Link>{' '}
                 for the file format.
               </>
             }
@@ -241,14 +209,9 @@ const BetaFeatures: React.FC = () => {
             hint={
               <>
                 Configure dynamic routing by editing the routes.yaml file. See the{' '}
-                <a
-                  className="text-green"
-                  href="https://docs.ghost.org/themes/routing/"
-                  rel="noopener noreferrer"
-                  target="_blank"
-                >
+                <Link href="https://docs.ghost.org/themes/routing/" external>
                   docs
-                </a>{' '}
+                </Link>{' '}
                 for the file format.
               </>
             }

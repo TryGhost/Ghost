@@ -8,6 +8,7 @@ import {
   CopyFieldCopyButton,
   CopyFieldLabel,
   CopyFieldValue,
+  Link,
 } from '@tryghost/shade/components';
 import { SettingGroupContent } from '@tryghost/shade/patterns';
 import { useGlobalData } from '@/settings/providers/global-data-context';
@@ -27,14 +28,9 @@ const GiftSubscriptions: React.FC<{ keywords: string[] }> = ({ keywords }) => {
         <>
           Allow your readers to share your work by purchasing a gift subscription for a friend or
           colleague.{' '}
-          <a
-            className="text-green"
-            href="https://ghost.org/help/gift-subscriptions/"
-            rel="noopener noreferrer"
-            target="_blank"
-          >
+          <Link href="https://ghost.org/help/gift-subscriptions/" external>
             Learn more
-          </a>
+          </Link>
         </>
       }
       keywords={keywords}

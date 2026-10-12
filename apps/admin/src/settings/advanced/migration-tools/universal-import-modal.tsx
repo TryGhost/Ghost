@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-import { Button, Dropzone } from '@tryghost/shade/components';
-import { ExternalLink } from 'lucide-react';
+import { Button, Dropzone, Link } from '@tryghost/shade/components';
 import { Inline, Stack } from '@tryghost/shade/primitives';
 import { SettingsModal } from '@tryghost/shade/patterns';
 import { toast } from 'sonner';
@@ -149,15 +148,9 @@ const UniversalImportModal: React.FC<{ onClose: () => void }> = ({ onClose }) =>
     </Inline>
   ) : (
     <Inline align="center" className="w-full p-8" justify="between">
-      <a
-        className="inline-flex items-center gap-1 text-green transition-colors hover:text-green-400"
-        href="https://docs.ghost.org/migration/ghost"
-        rel="noopener noreferrer"
-        target="_blank"
-      >
+      <Link href="https://docs.ghost.org/migration/ghost" external>
         Learn more
-        <ExternalLink aria-hidden="true" className="size-3" />
-      </a>
+      </Link>
       <Button disabled={uploading || reading} type="button" variant="outline" onClick={onClose}>
         Cancel
       </Button>
