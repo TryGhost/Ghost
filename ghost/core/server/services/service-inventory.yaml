@@ -6145,8 +6145,8 @@ services:
           Click-cache and missing-member reporting flags are config accessor reads per save,
           both false by default; disabling cache use does not clear old entries. URL utilities
           and redirect/API collaborators stay captured. Newsletter sending snapshots the click
-          setting onto its email; automation polling derives recipient tracking from settings
-          and its analytics flag. The root's methods and redirect subscriber do not enforce a
+          setting onto its email; automation polling derives recipient tracking from
+          email_track_clicks. The root's methods and redirect subscriber do not enforce a
           global tracking switch. Automation recipient analytics additionally requires its saved
           track_clicks value. Tests pin caller gating, fixed config modes, preserved URL/ref/hash
           and NQL escaping; test config replacement establishes no production hot reload.
