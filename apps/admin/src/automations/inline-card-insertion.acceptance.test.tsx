@@ -73,7 +73,7 @@ describe('Inline card insertion', () => {
       });
     }
 
-    it(`retains the settings sidebar when adding ${type} with the flag off`, async () => {
+    it(`edits a new ${type} inline with run analytics absent`, async () => {
       setup();
       await renderAdminApp('/automations/first', { labs: { automations: true } });
       await page.getByRole('button', { name: 'Add step', exact: true }).click();
@@ -81,13 +81,12 @@ describe('Inline card insertion', () => {
         .getByTestId('step-picker')
         .getByRole('button', { name: new RegExp(`^${type}`) })
         .click();
-      const sidebar = page.getByRole('complementary', { name: 'Step details' });
-      await expect.element(sidebar).toBeVisible();
+      const card = editingCanvas()
+        .getByRole('article', { name: type === 'Email' ? /^Send email/ : /^Wait:/ })
+        .last();
       await expect
         .element(
-          type === 'Email'
-            ? sidebar.getByPlaceholder('Subject line')
-            : sidebar.getByRole('textbox', { name: 'Wait for' }),
+          card.getByRole('textbox', { name: type === 'Email' ? 'Subject line' : 'Wait for' }),
         )
         .toBeVisible();
     });

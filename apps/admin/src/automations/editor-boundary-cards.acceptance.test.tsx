@@ -78,15 +78,13 @@ describe('Editor trigger and exit marker', () => {
     await expect.element(page.getByTestId('step-limit-tail-node')).not.toBeInTheDocument();
   });
 
-  it('retains the trigger settings and rectangular add button with the flag off', async () => {
+  it('keeps the trigger and exit cards with run analytics absent', async () => {
     setup();
     await renderAdminApp('/automations/first', { labs: { automations: true } });
-    await page.getByRole('button', { name: 'Trigger: Free member signed up' }).click();
-    await expect.element(page.getByRole('complementary', { name: 'Step details' })).toBeVisible();
-    await expect.element(page.getByText('Free', { exact: true })).toBeVisible();
-    await expect.element(page.getByTestId('add-step-tail-button')).toBeVisible();
     await expect
-      .element(page.getByRole('article', { name: 'Exit automation' }))
-      .not.toBeInTheDocument();
+      .element(page.getByRole('article', { name: 'Free member signed up' }))
+      .toBeVisible();
+    await expect.element(page.getByRole('article', { name: 'Exit automation' })).toBeVisible();
+    await expect.element(page.getByRole('button', { name: 'Add step', exact: true })).toBeVisible();
   });
 });
