@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { useEditUserPreferences, useUserPreferences } from '@/hooks/user-preferences';
-import { DEFAULT_EDITOR_FONT, type EditorFont, resolveEditorFont } from './editor-font';
+import { type EditorFont, editorFontToSave, resolveEditorFont } from './editor-font';
 import { EDITOR_REQUEST_OPTIONS } from './request-options';
 
 export interface EditorFontControl {
@@ -34,12 +34,14 @@ export function useEditorFont(enabled: boolean): EditorFontControl {
   useEffect(() => {
     latest.current = { chosen, saved, editPreferences };
   }, [chosen, saved, editPreferences]);
-  // The choice a save is already on its way with, so a second request never repeats it.
+  // The font of the latest save still on its way. Saves run one after another,
+  // so once it lands the preference holds this font.
   const sending = useRef<EditorFont | null>(null);
 
   const save = useCallback(() => {
-    const { chosen: next, saved: stored, editPreferences: edit } = latest.current;
-    if (!next || next === (stored ?? DEFAULT_EDITOR_FONT) || next === sending.current) {
+    const { chosen: choice, saved: stored, editPreferences: edit } = latest.current;
+    const next = editorFontToSave({ chosen: choice, saved: stored, pending: sending.current });
+    if (!next) {
       return;
     }
     sending.current = next;

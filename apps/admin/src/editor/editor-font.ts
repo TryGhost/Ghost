@@ -27,3 +27,25 @@ export function resolveEditorFont(enabled: boolean, chosen: EditorFont | undefin
 export function isEditorFont(value: unknown): value is EditorFont {
   return (EDITOR_BODY_FONTS as readonly unknown[]).includes(value);
 }
+
+/**
+ * The font a save should send, or null when nothing needs sending. A choice is
+ * measured against the save still on its way, when there is one, since that is
+ * what the preference will hold once it lands: choosing serif while a save of
+ * mono is pending must still send serif.
+ */
+export function editorFontToSave({
+  chosen,
+  saved,
+  pending,
+}: {
+  chosen: EditorFont | null;
+  saved: EditorFont | undefined;
+  pending: EditorFont | null;
+}): EditorFont | null {
+  if (!chosen) {
+    return null;
+  }
+  const willHold = pending ?? saved ?? DEFAULT_EDITOR_FONT;
+  return chosen === willHold ? null : chosen;
+}
