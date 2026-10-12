@@ -1,8 +1,17 @@
 import { useEffect } from 'react';
 import { useDocsBot } from '@tryghost/admin-x-framework';
+import { DocsBotSupportTicketModal } from './docsbot-support-ticket-modal';
 
 export function DocsBotWidgetHost() {
-  const { isAvailable, mountWidget, unmountWidget } = useDocsBot();
+  const {
+    isAvailable,
+    mountWidget,
+    unmountWidget,
+    supportRequest,
+    clearSupportRequest,
+    addBotMessage,
+    openWidget,
+  } = useDocsBot();
 
   useEffect(() => {
     if (!isAvailable) {
@@ -12,5 +21,21 @@ export function DocsBotWidgetHost() {
     return unmountWidget;
   }, [isAvailable, mountWidget, unmountWidget]);
 
-  return null;
+  if (!supportRequest) {
+    return null;
+  }
+
+  return (
+    <DocsBotSupportTicketModal
+      addBotMessage={addBotMessage}
+      openWidget={openWidget}
+      supportRequest={supportRequest}
+      open
+      onOpenChange={(open) => {
+        if (!open) {
+          clearSupportRequest();
+        }
+      }}
+    />
+  );
 }
