@@ -1264,7 +1264,7 @@ services:
           hours use real milliseconds. Init captures API URL and site UUID/API-URL fallback for
           scheduler jitter, but retrieves the current scheduler key for each future enqueue.
           Polls read current member status/preferences, action revision and settings; click
-          tracking needs automationAnalytics plus email_track_clicks, while opens use
+          tracking uses email_track_clicks, while opens use
           email_track_opens and recipient open tracking additionally requires a Mailgun ID.
           API stats checks current Tinybird config, wrapper instance/token and
           site ID; shared request agents and frozen URL helpers retain earlier configuration.
@@ -6145,8 +6145,8 @@ services:
           Click-cache and missing-member reporting flags are config accessor reads per save,
           both false by default; disabling cache use does not clear old entries. URL utilities
           and redirect/API collaborators stay captured. Newsletter sending snapshots the click
-          setting onto its email; automation polling derives recipient tracking from settings
-          and its analytics flag. The root's methods and redirect subscriber do not enforce a
+          setting onto its email; automation polling derives recipient tracking from
+          email_track_clicks. The root's methods and redirect subscriber do not enforce a
           global tracking switch. Automation recipient analytics additionally requires its saved
           track_clicks value. Tests pin caller gating, fixed config modes, preserved URL/ref/hash
           and NQL escaping; test config replacement establishes no production hot reload.
