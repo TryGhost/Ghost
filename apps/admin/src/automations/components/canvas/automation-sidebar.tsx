@@ -292,7 +292,7 @@ export const AutomationSidebar: React.FC<{
               }
             }}
           >
-            <Inline className="h-9 shrink-0 pl-10" gap="sm">
+            <Inline className="h-(--control-height) shrink-0 pl-10" gap="sm">
               <TabsList
                 aria-label="Automation sidebar"
                 className={searchOpen && activeTab === 'performance' ? 'sr-only' : 'min-w-0 flex-1'}
