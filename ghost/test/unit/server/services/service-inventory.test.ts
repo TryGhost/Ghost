@@ -31,6 +31,7 @@ const entry = z
     kind: z.enum(['directory', 'file']),
     disposition: z.enum(['retain', 'relocate', 'review']),
     status: z.enum(['pending', 'auditing', 'audited']),
+    migrated: z.literal(true).optional(),
     auditedAt: z
       .string()
       .regex(/^[0-9a-f]{40}$/)
@@ -44,7 +45,12 @@ const entry = z
   .strict();
 const inventorySchema = z
   .object({
-    version: z.literal(1),
+    summary: z
+      .object({
+        total: z.number().int().nonnegative(),
+        migrated: z.number().int().nonnegative(),
+      })
+      .strict(),
     services: z.record(description, entry),
   })
   .strict();
@@ -65,6 +71,12 @@ describe('service migration inventory', function () {
   const inventory = inventorySchema.parse(
     yaml.load(readFileSync(path.join(servicesRoot, 'service-inventory.yaml'), 'utf8')),
   );
+
+  it('keeps the summary counts in sync with the inventory', function () {
+    const services = Object.values(inventory.services);
+    assert.equal(inventory.summary.total, services.length);
+    assert.equal(inventory.summary.migrated, services.filter((service) => service.migrated).length);
+  });
 
   it('accounts for every service directory and standalone file', function () {
     for (const name of metadata) {
