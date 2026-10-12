@@ -36,7 +36,7 @@ const messages = {
 
 /**
  * Pipes export rows through their CSV transform. `pipeline` (rather than
- * `.pipe`) so a source error destroys the transform too — the zip stream
+ * `.pipe`) so a source error destroys the transform too - the zip stream
  * then errors instead of hanging.
  *
  * @param {string} label - Which export the stream belongs to, for the error log
@@ -85,7 +85,7 @@ function createSiteExporter() {
     // Same shape the `/db/` download produces, so the file stays importable
     exportContent: async () => ({ db: [await exporter.doExport()] }),
     // `limit: 'all'` keeps both CSV exporters on their unfiltered
-    // streaming path — without it the members exporter materialises every
+    // streaming path - without it the members exporter materialises every
     // id into a WHERE IN and the posts exporter caps at its default page
     exportMembersCSV: async () =>
       toCSVStream(

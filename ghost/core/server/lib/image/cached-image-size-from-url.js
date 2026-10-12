@@ -58,7 +58,7 @@ class CachedImageSizeFromUrl {
       return { ...cachedImageSize };
     }
 
-    // 404s are cached permanently — don't retry
+    // 404s are cached permanently - don't retry
     if (cachedImageSize && cachedImageSize.notFound) {
       debug('Read image from cache (not found):', url);
       return null;

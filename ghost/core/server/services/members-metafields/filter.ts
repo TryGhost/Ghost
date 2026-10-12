@@ -11,8 +11,8 @@
 // The values table holds one row per stored value: `metafield_key`, `path`
 // (empty for a plain field, the part's name for one part of a composite) and
 // `value_text`. A filter addresses those columns directly, so each one becomes a
-// single $elemMatch over them — positive asserts a matching row exists, $not
-// asserts none does — with no lookup against the field definitions.
+// single $elemMatch over them - positive asserts a matching row exists, $not
+// asserts none does - with no lookup against the field definitions.
 import errors from '@tryghost/errors';
 import {
   CUSTOM_NAMESPACE,
@@ -52,7 +52,7 @@ function isMetafieldClause(node: unknown): node is QueryNode {
 //
 // Exactly one, not at least one: two whole-field filters ANDed together arrive as a flat
 // `key:'a'+key:'b'`, since a bare key clause needs no group of its own. That is two
-// filters — a member with a value for both — not one leaf that is somehow both fields, so
+// filters - a member with a value for both - not one leaf that is somehow both fields, so
 // it has to fall through and be transformed a clause at a time.
 function isMetafieldCompound(clauses: unknown): clauses is QueryNode[] {
   if (!Array.isArray(clauses) || clauses.length < 2 || !clauses.every(isMetafieldClause)) {
@@ -194,7 +194,7 @@ export function createMetafieldsFilterTransformer() {
  * The Member filter relation that exposes metafield values. A member has many leaf
  * rows (one per field, or per part of a composite field), and a predicate asks whether
  * one of them matches, so this joins the values table on member_id and mongo-knex emits
- * it as a correlated `members.id IN (…)` subquery — composing with every other member
+ * it as a correlated `members.id IN (...)` subquery - composing with every other member
  * filter.
  */
 export const METAFIELDS_RELATION = {

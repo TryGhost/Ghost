@@ -4,7 +4,7 @@ import { z } from 'zod';
  * Resolving Ghost's config into the values this service runs on.
  *
  * Config arrives untyped: defaults.json supplies the shipped value, and any
- * higher layer — an operator's config file, an environment variable, argv — can
+ * higher layer - an operator's config file, an environment variable, argv - can
  * replace it with anything at all. Turning that into something usable is a
  * config concern, so it happens here, at the boundary. The service is handed an
  * answer and never learns where it came from.
@@ -29,7 +29,7 @@ const shippedCeiling: number = Ceiling.parse(
 // A higher layer can override the shipped value with anything. Something
 // unreadable falls back to the shipped ceiling rather than throwing, because an
 // operator can correct this live and a bad value must not take the feature down
-// with it — and rather than meaning "no ceiling", because a typo must not
+// with it - and rather than meaning "no ceiling", because a typo must not
 // silently remove the safeguard.
 const MaxDefinitions = Ceiling.catch(shippedCeiling);
 

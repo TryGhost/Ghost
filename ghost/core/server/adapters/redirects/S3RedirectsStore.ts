@@ -203,7 +203,7 @@ export default class S3RedirectsStore extends RedirectsStoreBase {
 
   private _requestError(err: unknown): Error {
     // The only Ghost errors reaching here are this store's own, which are
-    // already safe to render — re-wrapping them would hide the reason.
+    // already safe to render - re-wrapping them would hide the reason.
     if (err instanceof errors.InternalServerError) {
       return err;
     }

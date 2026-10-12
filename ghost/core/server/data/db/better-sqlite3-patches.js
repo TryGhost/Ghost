@@ -6,7 +6,7 @@
  * that the rest of Ghost relies on. This module re-creates the old behaviour by
  * monkey-patching the Knex better-sqlite3 dialect.
  *
- * The individual helpers are exported so they can be unit-tested in isolation —
+ * The individual helpers are exported so they can be unit-tested in isolation -
  * they sit in the critical path for the development server.
  */
 
@@ -151,7 +151,7 @@ function expandArrayBindings(obj) {
  *
  * better-sqlite3 binds every JS `number` as a SQLite REAL (float). When an
  * integer is written to a TEXT-affinity column this stores "500.0" instead of
- * "500" — node-sqlite3 bound integers as INTEGER, giving "500". Bind safe
+ * "500" - node-sqlite3 bound integers as INTEGER, giving "500". Bind safe
  * integers as BigInt to restore INTEGER affinity and keep better-sqlite3 a
  * faithful drop-in for sqlite3. (Date/boolean handling matches the dialect's
  * original _formatBindings.)
@@ -190,7 +190,7 @@ function formatBindings(bindings) {
  *   - integer bindings keep INTEGER affinity (see {@link formatBindings})
  *
  * Safe to call when the dialect isn't installed (e.g. production builds without
- * better-sqlite3) — it returns `false` instead of throwing.
+ * better-sqlite3) - it returns `false` instead of throwing.
  *
  * @returns {boolean} whether the patches were applied
  */

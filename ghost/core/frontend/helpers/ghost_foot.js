@@ -39,7 +39,7 @@ module.exports = function ghost_foot(options) {
     const data = createFrame(options.data);
     const siteUrl = urlUtils.getSiteUrl().replace(/\/$/, '');
 
-    // Brand the toast's media panel with the publication icon — it's square,
+    // Brand the toast's media panel with the publication icon - it's square,
     // so it fills the 64px cover-fit cell cleanly (the logo isn't, and would
     // crop badly). When no icon is set the partial paints the gift-card
     // pattern from these long-cached texture assets instead.

@@ -27,7 +27,7 @@ module.exports = createTransactionalMigration(
       );
     } else {
       logging.warn(
-        `Tried setting email_track_clicks to ${reuseValueOfSetting.value} — ${affectedRows} changes`,
+        `Tried setting email_track_clicks to ${reuseValueOfSetting.value} \u2014 ${affectedRows} changes`,
       );
     }
   },

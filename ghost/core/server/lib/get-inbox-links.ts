@@ -185,7 +185,7 @@ const getErrorCode = (err: unknown): undefined | string =>
  * Grab the MX records for a domain.
  *
  * If there are any errors at all, return the empty array. We don't want to
- * break inbox links if a DNS lookup fails—worst case, the user won't get a
+ * break inbox links if a DNS lookup fails-worst case, the user won't get a
  * "open in your email app" link.
  */
 const getMxRecords = async (

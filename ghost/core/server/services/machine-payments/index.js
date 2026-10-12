@@ -71,7 +71,7 @@ class MachinePaymentsServiceWrapper {
     });
 
     // Mint deposit addresses off the request path (Stripe guidance).
-    // Only when machine payments is enabled — otherwise every Stripe-connected
+    // Only when machine payments is enabled - otherwise every Stripe-connected
     // boot (incl. E2E) would call Stripe. Failures leave SPT-only challenges.
     if (this.service.isEnabled()) {
       const tempoNetwork = config.get('machinePayments:mpp:stripeNetwork') || 'tempo';

@@ -9,24 +9,24 @@
 //   0. `incomplete` and `incomplete_expired` subscriptions are excluded
 //      entirely. These represent subs whose first payment never completed
 //      (3DS abandoned, card declined, checkout abandoned mid-flow). Ghost
-//      doesn't treat the customer as subscribed in these states — the
+//      doesn't treat the customer as subscribed in these states - the
 //      admin API strips them from `member.subscriptions` for the same
 //      reason (see `member-bread-service.js`). Excluding them here means a
 //      member with only an `incomplete` sub has no resolved current sub
 //      (the lookup table has no row for them), matching what the API
 //      surfaces.
-//   1. Active statuses beat inactive ones — Ghost's convention is the same
+//   1. Active statuses beat inactive ones - Ghost's convention is the same
 //      set used across member-repository, router-controller, etc:
 //      `active`, `trialing`, `past_due`, `unpaid` count as active.
-//   2. Most recent `created_at` wins — i.e. the subscription that was most
+//   2. Most recent `created_at` wins - i.e. the subscription that was most
 //      recently recorded in Ghost. Tiers (products) in Ghost are discrete
-//      rather than hierarchical, so we don't compare price/MRR — whichever
+//      rather than hierarchical, so we don't compare price/MRR - whichever
 //      subscription the member most recently signed up for or was moved to
 //      is the one that represents their current state, regardless of whether
 //      that's an "upgrade" or "downgrade".
 //
 //      We use `created_at` rather than `start_date` because `start_date` can
-//      be in the future for scheduled subscriptions — a sub created earlier
+//      be in the future for scheduled subscriptions - a sub created earlier
 //      but scheduled to start later would otherwise out-rank a more recently
 //      created sub that's already in effect. `created_at` is monotonic, can
 //      never be in the future, and reflects "when this action happened" from
@@ -38,7 +38,7 @@
 // The admin display reads the resolved subscription straight from the
 // `current_subscription` field the backend derives from this view (via the
 // members_current_subscription lookup), so the ordering here is the single
-// source of truth for both filtering and display — see the
+// source of truth for both filtering and display - see the
 // `current_subscription` reads in apps/admin/src/members/member-query-params.ts.
 module.exports = {
   members_resolved_subscription: `

@@ -1,6 +1,6 @@
 // Feature flags behaviour in tests:
 // E2E tests run with every flag on, so flagged code paths are exercised by
-// default — PRIVATE_FEATURES included, whether or not a test asks for them.
+// default - PRIVATE_FEATURES included, whether or not a test asks for them.
 // GA_FEATURES are always true everywhere, not only in tests. The rest are turned
 // on by fixture setup: enableAllLabsFeatures in test/utils/fixture-utils.js
 // enables every key in WRITABLE_KEYS_ALLOWLIST (PUBLIC_BETA_FEATURES plus

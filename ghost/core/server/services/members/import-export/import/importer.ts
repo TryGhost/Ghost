@@ -654,7 +654,7 @@ class MembersCSVImporter {
 }
 
 // A row error is read next to a spreadsheet, and a value rejection states only what the
-// value should be — the same sentence Admin shows under a single input, where the field is
+// value should be - the same sentence Admin shows under a single input, where the field is
 // already on screen. `property` is the dotted path a default export writes as its column
 // header, so prefixing with it names the column a publisher has to go and fix.
 //

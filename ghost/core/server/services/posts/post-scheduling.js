@@ -9,7 +9,7 @@ const messages = {
   jobPublishInThePast: 'Use the force flag to publish a post in the past.',
 };
 
-// Returned when there is nothing to publish — the job fired ahead of its
+// Returned when there is nothing to publish - the job fired ahead of its
 // scheduled time (e.g. the post was rescheduled later but the scheduler still
 // holds the original, earlier job), or the resource was deleted. Lets the
 // caller respond 2xx so the scheduler treats the job as done rather than
@@ -55,7 +55,7 @@ const publishNow = async (resourceType, id, force, options) => {
     const result = await api[resourceType].read({ id }, options);
     preScheduledResource = result[resourceType][0];
   } catch (err) {
-    // Resource was deleted between scheduling and firing — nothing to
+    // Resource was deleted between scheduling and firing - nothing to
     // publish. (The permissions stage tolerates the same NotFound so the
     // request reaches here.)
     if (errors.utils.isGhostError(err) && err.errorType === 'NotFoundError') {

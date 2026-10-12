@@ -27,7 +27,7 @@ module.exports = function handler(siteApp) {
   };
 
   // Express 4 does not forward async handler rejections, so each body is
-  // fully wrapped — a failed index build or render becomes an error
+  // fully wrapped - a failed index build or render becomes an error
   // response instead of a hung socket.
   siteApp.get('/sitemap.xml', async function sitemapXML(req, res, next) {
     try {

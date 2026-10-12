@@ -3,7 +3,7 @@ import internalKeys from '../internal-keys';
 import adapterManager from '../adapter-manager';
 import { withErrorCapture } from '../../adapters/scheduling/error-capture';
 
-// CJS modules without TS declarations — typed loosely at the boundary.
+// CJS modules without TS declarations - typed loosely at the boundary.
 const urlUtils = require('../../../shared/url-utils').default;
 
 export default new PostScheduling({

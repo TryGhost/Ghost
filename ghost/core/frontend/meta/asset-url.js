@@ -111,7 +111,7 @@ function getAssetUrl(assetPath, hasMinFile) {
   }
 
   // Determine asset type. Anything that isn't a public asset is served out of the
-  // active theme's assets/ directory — but a caller may already have spelled that
+  // active theme's assets/ directory - but a caller may already have spelled that
   // prefix themselves, in which case we must not add it a second time.
   const isPublicAsset = !!assetPath.match(/^public\//);
   const isThemeAsset = !isPublicAsset;
@@ -143,7 +143,7 @@ function getAssetUrl(assetPath, hasMinFile) {
   let hash;
 
   // Card assets are assembled in memory, so their content hash is always
-  // available and always matches the bytes we serve — there's no file to miss
+  // available and always matches the bytes we serve - there's no file to miss
   // and therefore no reason to gate this on contentBasedHash
   const cardType = cardAssets.getCardType(hashPath);
   if (cardType !== null) {

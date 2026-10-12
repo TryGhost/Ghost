@@ -4,7 +4,7 @@ const config = require('../../../shared/config');
 const logging = require('@tryghost/logging');
 
 // The string returned when a setting is set as write-only
-const obfuscatedSetting = '••••••••';
+const obfuscatedSetting = '\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022';
 
 /**
  * @description // The function used to decide whether a setting is write-only

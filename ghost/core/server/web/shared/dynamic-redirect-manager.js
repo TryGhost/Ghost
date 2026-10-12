@@ -67,7 +67,7 @@ class DynamicRedirectManager {
       toURL.pathname = currentURL.pathname.replace(fromRegex, toURL.pathname);
 
       // Captures are percent-encoded path segments (Express rejects any it can't decode),
-      // so decode then re-encode for the query — reserved chars stay literal, no double-encoding
+      // so decode then re-encode for the query - reserved chars stay literal, no double-encoding
       const captures = currentURL.pathname.match(fromRegex) || [];
       const substitutedQuery = (toURL.query || '').replace(/\$(\d+)/g, (match, n) =>
         captures[n] !== undefined ? encodeURIComponent(decodeURIComponent(captures[n])) : match,

@@ -4,7 +4,7 @@ import urlUtils from '../../../shared/url-utils';
 // Ghost renders exactly two sitemap documents, both with a shape the
 // sitemaps.org schema fixes: a <urlset> per resource type, and the
 // <sitemapindex> that lists them. They are emitted here directly rather than
-// through a generic xml library — for a shape this fixed a library spends
+// through a generic xml library - for a shape this fixed a library spends
 // several times as long walking an object tree as writing the tags costs, and
 // keeping both documents in one module keeps escaping in one auditable place.
 

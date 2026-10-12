@@ -37,8 +37,8 @@ class AudienceFeedbackService {
 
   /**
    * Feedback link for a post that no longer exists. Goes straight to the
-   * home page — the same destination buildLink picks when the URL service
-   * has no URL for the post — without asking the URL service: an id-only
+   * home page - the same destination buildLink picks when the URL service
+   * has no URL for the post - without asking the URL service: an id-only
    * resource can't be routed (the URL service reports it as thin).
    *
    * @param {string} uuid
@@ -65,7 +65,7 @@ class AudienceFeedbackService {
   /**
    * Build the feedback link embedded in a newsletter. It targets the members
    * feedback redirect endpoint keyed by post id (never the slug), so it
-   * survives slug/permalink changes — the endpoint resolves the post's current
+   * survives slug/permalink changes - the endpoint resolves the post's current
    * URL at click time. uuid/key are Mailgun placeholders substituted per member.
    *
    * @param {{id: string}} post

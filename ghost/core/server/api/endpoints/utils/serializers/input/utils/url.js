@@ -82,7 +82,7 @@ const forSetting = (attrs) => {
 // A `?fields=url` query strips the columns the lazy URL service needs to
 // build a URL (e.g. status/visibility/slug), so the service would reject the
 // resource as thin. Force them back into the fetch and record them on the
-// frame — the output mapper strips them from the response after the URL is
+// frame - the output mapper strips them from the response after the URL is
 // built. No-op when the routing config needs no extra columns.
 const forceUrlColumns = (frame, routerType, extraColumns = []) => {
   if (!Array.isArray(frame.options.columns) || !frame.options.columns.includes('url')) {
@@ -96,7 +96,7 @@ const forceUrlColumns = (frame, routerType, extraColumns = []) => {
   // A read already carries the fields it was looked up by: `findOne` forges
   // the model with them before the fetch, so they survive a narrowed
   // `?fields=` list and the caller is served them today. Stripping those back
-  // out would take a field away — `posts/slug/:slug/?fields=url` still
+  // out would take a field away - `posts/slug/:slug/?fields=url` still
   // answers with its slug. They are still selected, because the lookup
   // matches case-insensitively: the forged value can differ in case from the
   // stored one, and the URL is built from whichever the model carries.
@@ -110,7 +110,7 @@ const forceUrlColumns = (frame, routerType, extraColumns = []) => {
 
 // `url` is serialized for every post/page unless `?fields` narrows it away,
 // so the relations the lazy URL service reads (e.g. tags for a tag-filtered
-// collection) must be loaded whenever the URL will be built — not only for
+// collection) must be loaded whenever the URL will be built - not only for
 // the `?fields=url` case. Forced relations are recorded on the frame for the
 // output mapper to strip. No-op when the routing config reads no relations.
 const forceUrlRelations = (frame, routerType) => {
@@ -133,7 +133,7 @@ const forceUrlRelations = (frame, routerType) => {
     }
   }
   // The URL is looked up by `model.id`, and Bookshelf matches eager-loaded
-  // rows back to their parent by the same key — so a `?fields=` list that
+  // rows back to their parent by the same key - so a `?fields=` list that
   // omits it serializes /404/ and leaves the relations above unattached,
   // silently and without a key on the model at all. A read looked up by id
   // is covered by the carried-fields rule above.

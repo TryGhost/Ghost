@@ -7,6 +7,7 @@ import {
   correctnessRules,
   jsUnusedVarsRule,
   localFilenamesPlugin,
+  localSourcePlugin,
   mochaRulesOff,
   nodeLibRules,
   strictLinterOptions,
@@ -232,6 +233,20 @@ export default tseslint.config(
   // ============================================================
   // Core filenames: kebab-case (with adapters carve-out)
   // ============================================================
+  // ============================================================
+  // Server source stays Latin-1: one character above U+00FF makes V8 hold the
+  // whole file at two bytes per character for the life of the process.
+  // ============================================================
+  {
+    files: ['core/**/*.{js,ts}', '*.js'],
+    ignores: ['core/frontend/src/**'],
+    plugins: {
+      'local-source': localSourcePlugin,
+    },
+    rules: {
+      'local-source/latin1-only': 'error',
+    },
+  },
   {
     files: ['core/**/*.{js,ts}'],
     ignores: ['core/server/adapters/**'],

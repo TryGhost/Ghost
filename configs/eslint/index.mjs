@@ -290,6 +290,121 @@ export const localFilenamesPlugin = {
   rules: { 'match-regex': filenamesMatchRegex },
 };
 
+// V8 keeps every loaded script's source for the life of the process, and stores
+// it at two bytes per character when the file holds any character above U+00FF:
+// one em dash in a comment doubles the memory the whole file costs. Comments get
+// an ASCII stand-in, strings, regular expressions and untagged templates a \u
+// escape (the same value); anything else (identifiers, tagged templates, which
+// can read the raw text) is reported without a fix.
+// Keyed by code point rather than written out: several of these are
+// indistinguishable dashes, and formatters rewrite \u escapes into characters.
+const ASCII_STAND_INS = new Map(
+  [
+    [0x2010, '-'], // hyphen
+    [0x2011, '-'], // non-breaking hyphen
+    [0x2012, '-'], // figure dash
+    [0x2013, '-'], // en dash
+    [0x2014, '-'], // em dash
+    [0x2015, '-'], // horizontal bar
+    [0x2212, '-'], // minus sign
+    [0x2018, "'"], // left single quote
+    [0x2019, "'"], // right single quote
+    [0x201c, '"'], // left double quote
+    [0x201d, '"'], // right double quote
+    [0x2026, '...'], // ellipsis
+    [0x2022, '*'], // bullet
+    [0x2190, '<-'], // left arrow
+    [0x2192, '->'], // right arrow
+    [0x2194, '<->'], // left-right arrow
+    [0x21d2, '=>'], // rightwards double arrow
+    [0x2264, '<='], // less-than or equal
+    [0x2265, '>='], // greater-than or equal
+    [0x2260, '!='], // not equal
+    [0x2248, '~'], // almost equal
+    [0x2713, 'ok'], // check mark
+    [0x2714, 'ok'], // heavy check mark
+    [0x2717, 'x'], // ballot x
+    [0x2718, 'x'], // heavy ballot x
+  ].map(([codePoint, standIn]) => [String.fromCodePoint(codePoint), standIn]),
+);
+
+// Any character above U+00FF, astral ones as a single match.
+const ABOVE_LATIN1 = new RegExp('[\\u0100-\\u{10FFFF}]', 'gu');
+
+const unicodeEscape = (char) =>
+  Array.from(
+    { length: char.length },
+    (_, i) => `\\u${char.charCodeAt(i).toString(16).toUpperCase().padStart(4, '0')}`,
+  ).join('');
+
+const latin1Only = {
+  meta: {
+    type: 'suggestion',
+    fixable: 'code',
+    schema: [],
+    messages: {
+      nonLatin1:
+        "'{{char}}' ({{code}}) makes V8 hold this whole file at two bytes per character. Use {{replacement}} instead.",
+      nonLatin1NoFix:
+        "'{{char}}' ({{code}}) makes V8 hold this whole file at two bytes per character. Use a Latin-1 character or a \\u escape instead.",
+    },
+  },
+  create(context) {
+    const { sourceCode } = context;
+    return {
+      Program() {
+        const { text } = sourceCode;
+        const comments = sourceCode.getAllComments();
+        for (const match of text.matchAll(ABOVE_LATIN1)) {
+          const char = match[0];
+          const start = match.index;
+          const range = [start, start + char.length];
+          const loc = {
+            start: sourceCode.getLocFromIndex(range[0]),
+            end: sourceCode.getLocFromIndex(range[1]),
+          };
+          const data = {
+            char,
+            code: `U+${char.codePointAt(0).toString(16).toUpperCase().padStart(4, '0')}`,
+          };
+
+          let replacement = null;
+          if (text[start - 1] !== '\\') {
+            if (comments.some((c) => c.range[0] <= start && start < c.range[1])) {
+              replacement = ASCII_STAND_INS.get(char) ?? unicodeEscape(char);
+            } else {
+              const node = sourceCode.getNodeByRangeIndex(start);
+              const isStringOrRegex =
+                node?.type === 'Literal' && (typeof node.value === 'string' || node.regex);
+              const isUntaggedTemplate =
+                node?.type === 'TemplateElement' &&
+                node.parent?.parent?.type !== 'TaggedTemplateExpression';
+              if (isStringOrRegex || isUntaggedTemplate) {
+                replacement = unicodeEscape(char);
+              }
+            }
+          }
+
+          if (replacement === null) {
+            context.report({ loc, messageId: 'nonLatin1NoFix', data });
+          } else {
+            context.report({
+              loc,
+              messageId: 'nonLatin1',
+              data: { ...data, replacement: `'${replacement}'` },
+              fix: (fixer) => fixer.replaceTextRange(range, replacement),
+            });
+          }
+        }
+      },
+    };
+  },
+};
+
+export const localSourcePlugin = {
+  rules: { 'latin1-only': latin1Only },
+};
+
 // ============================================================================
 // === Factory: nodeLibConfig (synchronous)
 // ============================================================================

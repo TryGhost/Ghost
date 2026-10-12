@@ -143,7 +143,7 @@ class VerificationTrigger {
     // Explicitly update the cache regardless of whether the DB value changed.
     // Settings.edit relies on Bookshelf's hasChanged() to fire onUpdated, which
     // skips the model event (and therefore the cache update) when the DB already
-    // holds the same value — e.g. after a previous verification cycle.
+    // holds the same value - e.g. after a previous verification cycle.
     this._setVerificationRequired(true);
   }
 

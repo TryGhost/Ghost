@@ -63,14 +63,14 @@ interface RouterConfig {
   compiledFilter: CompiledFilter | null;
 }
 
-// Per-resource-type gate on which rows get a URL at all — the forward-lookup
+// Per-resource-type gate on which rows get a URL at all - the forward-lookup
 // counterpart of the fetch filters in routable-resources.js. `fields` lists
 // the record columns each filter reads; a resource that reaches URL generation
 // must carry them (see _missingBaseFields).
 //
 // Authors are intentionally absent: users.visibility is schema-pinned to
 // 'public' (isIn: [['public']]), so the visibility:public author filter never
-// excludes anyone — every author is routable, and serialized authors drop
+// excludes anyone - every author is routable, and serialized authors drop
 // visibility anyway (#10438).
 const BASE_FILTERS: Record<string, { filter: string; fields: string[] }> = {
   posts: { filter: 'status:published+type:post', fields: ['status', 'type'] },
@@ -108,11 +108,11 @@ function buildBaseFilters(): Map<string, BaseFilter> {
 // Columns a router filter must not see (the `exclude` lists in
 // services/url/config.js), keyed by resourceType. Ghost previously answered
 // URLs from a precomputed cache that dropped these columns, so a filter
-// referencing one matched it as absent — NQL reads absent as null. This
+// referencing one matched it as absent - NQL reads absent as null. This
 // service loads full records and would see the real value, so it strips them
 // before evaluating router filters (and neither requires nor force-loads
 // them), keeping routes.yaml files that rely on that behaviour working. The
-// base filter above is unaffected — it runs against the full record.
+// base filter above is unaffected - it runs against the full record.
 function buildExcludedFilterFields(): Map<string, Set<string>> {
   const excluded = new Map<string, Set<string>>();
   for (const entry of urlConfig) {
@@ -126,7 +126,7 @@ function buildExcludedFilterFields(): Map<string, Set<string>> {
 
 const EMPTY_FIELD_SET: ReadonlySet<string> = new Set();
 
-// 1, 10, 100, ... — exact for integers, unlike a log10 comparison.
+// 1, 10, 100, ... - exact for integers, unlike a log10 comparison.
 function isPowerOfTen(n: number): boolean {
   let power = 1;
   while (power < n) {
@@ -152,11 +152,11 @@ const FILTER_NON_SCALAR_FIELDS = new Set([
 
 // Scalar (own-column) fields a router filter reads, e.g. 'featured' from
 // 'featured:true'. Dotted clauses (e.g. tags.visibility) are relation
-// sub-fields and skipped — getRequiredRelations loads those relations.
+// sub-fields and skipped - getRequiredRelations loads those relations.
 //
 // Only field names at an NQL expression boundary (start of the filter, or after
-// a `+`/`,`/`(` combinator) are matched, so colon-bearing values — URLs,
-// timestamps like 2020-01-01T00:00:00 — aren't mistaken for fields.
+// a `+`/`,`/`(` combinator) are matched, so colon-bearing values - URLs,
+// timestamps like 2020-01-01T00:00:00 - aren't mistaken for fields.
 function filterScalarFields(filter: string | null): string[] {
   if (!filter) {
     return [];
@@ -200,7 +200,7 @@ export class LazyUrlService {
   // True once routers have been registered. Cleared by reset() so the
   // route-reload window re-gates the maintenance middleware.
   private routersReady: boolean;
-  // How many times each thin-resource cause has been seen — see
+  // How many times each thin-resource cause has been seen - see
   // _degradeThinResource.
   private reportedThinResources: Map<string, number>;
 
@@ -309,7 +309,7 @@ export class LazyUrlService {
       }
       // primary_tag/primary_author are computed attributes the model
       // only attaches when `options.columns` names them, so they must
-      // be forced like scalar columns — the tags/authors relations
+      // be forced like scalar columns - the tags/authors relations
       // (via getRequiredRelations) alone don't surface them on a
       // `?fields=url` query.
       for (const computed of ['primary_tag', 'primary_author'] as const) {
@@ -354,8 +354,8 @@ export class LazyUrlService {
   }
 
   /**
-   * A thin resource — one missing a column its base filter or a router
-   * filter reads — is a caller bug: we cannot tell whether it routes. It is
+   * A thin resource - one missing a column its base filter or a router
+   * filter reads - is a caller bug: we cannot tell whether it routes. It is
    * reported and degraded to /404/ rather than thrown, because 500ing a page
    * that does route is worse than a 404 on one that may not.
    */
@@ -487,13 +487,13 @@ export class LazyUrlService {
   }
 
   // Reports which columns were missing alongside what the caller handed over
-  // — the resource's shape, and what the active routing config needs — so
+  // - the resource's shape, and what the active routing config needs - so
   // the fetch that under-fetched can be found from the log line alone.
   //
   // Reported on the first occurrence of each distinct cause, then at each
   // order of magnitude. A caller that under-fetches does so for every row it
   // serializes, so a browse over a large collection would otherwise emit one
-  // error per row — but reporting only once would hide that the problem is
+  // error per row - but reporting only once would hide that the problem is
   // still happening, and how widely. `occurrences` carries that instead.
   // Cleared on reset(), since a new routing config can make a previously
   // thin resource fine (or newly broken).
@@ -551,7 +551,7 @@ export class LazyUrlService {
   }
 
   // A resource that reaches URL generation must carry the columns its base
-  // filter reads (status for posts/pages, visibility for tags) — production
+  // filter reads (status for posts/pages, visibility for tags) - production
   // callers always do, via full models or the serializers' force-load.
   // Without them the filter can't be evaluated at all, so we cannot tell a
   // genuine miss from a caller that under-fetched.
@@ -581,7 +581,7 @@ export class LazyUrlService {
   }
 
   // Strips the columns a router/collection filter must not see, so an
-  // excluded column reads as absent (→ null in NQL) rather than its real
+  // excluded column reads as absent (-> null in NQL) rather than its real
   // value. Only affects filters that reference an excluded column; every
   // other filter sees an identical record.
   private _recordForRouterFilter(
@@ -657,7 +657,7 @@ export class LazyUrlService {
     if (/\bprimary_author\b/.test(config.filter) && r.primary_author === undefined) {
       missing.push('primary_author');
     }
-    // Excluded columns are never required — their filters match them as
+    // Excluded columns are never required - their filters match them as
     // absent, so a resource lacking one is not thin here.
     const excluded = this._excludedFilterFieldsFor(routerType);
     for (const field of filterScalarFields(config.filter)) {

@@ -24,7 +24,7 @@ export type ValidateFn = (redirects: RedirectConfig[]) => void;
 
 interface RedirectsServiceDeps {
   store: RedirectsStore;
-  /** Mutated across activations — never replaced — because `site.js` holds a reference to its `handleRequest`. */
+  /** Mutated across activations - never replaced - because `site.js` holds a reference to its `handleRequest`. */
   redirectManager: RedirectManagerLike;
   validate: ValidateFn;
   /** Override for tests; defaults to a fresh DynamicRedirectManager. */
@@ -86,7 +86,7 @@ export class RedirectsService {
   private _verifyAllLoadable(redirects: RedirectConfig[]): void {
     const dryRun = this.createDryRunManager();
     for (const redirect of redirects) {
-      // addRedirect signals rejection two ways — `null` for an
+      // addRedirect signals rejection two ways - `null` for an
       // invalid built regex, or a thrown error otherwise. Unify
       // into ValidationError so replace() returns 4xx not 500.
       let id: string | null;

@@ -80,7 +80,7 @@ class SiteMapManager {
       };
       this._routerEntries.push(entry);
       // A router registering after a build must not leave a
-      // zero-router index marked built — the CDN would pin it.
+      // zero-router index marked built - the CDN would pin it.
       this._invalidateIndex();
     });
 

@@ -121,7 +121,7 @@ class Bridge {
     };
 
     // Clear lazy router configs before re-registration so they don't pile
-    // up across reloads — but only once the settings read has resolved.
+    // up across reloads - but only once the settings read has resolved.
     // reset() also clears `routersReady`, which gates the maintenance
     // middleware, so doing this before the await 503s the site and the
     // Admin API for the length of a read that is a network round trip on

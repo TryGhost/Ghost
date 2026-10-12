@@ -16,22 +16,22 @@ export type PathSegment = string | number;
  *
  * The human-readable message is authored for the person editing the file and is
  * free to change; the code is the contract a caller can branch on. Every
- * validation error carries one — the default is the generic
+ * validation error carries one - the default is the generic
  * `INVALID_ROUTE_SETTINGS`.
  *
  * Codes name the *kind* of thing that is wrong, independent of which section it
  * was found in, so a caller can branch on the failure class without also
  * knowing whether it came from a route, a collection or a taxonomy:
  *
- * - `INVALID_ROUTE_SETTINGS` — the overall document/section shape is wrong (the
+ * - `INVALID_ROUTE_SETTINGS` - the overall document/section shape is wrong (the
  *   schema rejected it); also the default for anything not otherwise classified.
- * - `INVALID_PATH` — a mount path key (a `routes:`/`collections:` key) is malformed.
- * - `INVALID_PERMALINK` — a permalink value is missing or malformed, wherever it
+ * - `INVALID_PATH` - a mount path key (a `routes:`/`collections:` key) is malformed.
+ * - `INVALID_PERMALINK` - a permalink value is missing or malformed, wherever it
  *   appears (a collection `permalink` or a taxonomy permalink).
- * - `INVALID_TAXONOMY` — the taxonomy itself is not one Ghost supports (not tag/author).
- * - `INVALID_TEMPLATE` — a route/collection has no template, data or content type.
- * - `INVALID_RESOURCE` — a data entry names an unsupported resource.
- * - `INVALID_DATA` — a data definition's shape is otherwise invalid.
+ * - `INVALID_TAXONOMY` - the taxonomy itself is not one Ghost supports (not tag/author).
+ * - `INVALID_TEMPLATE` - a route/collection has no template, data or content type.
+ * - `INVALID_RESOURCE` - a data entry names an unsupported resource.
+ * - `INVALID_DATA` - a data definition's shape is otherwise invalid.
  */
 export const ROUTE_SETTINGS_ERROR_CODES = {
   INVALID_ROUTE_SETTINGS: 'INVALID_ROUTE_SETTINGS',
@@ -84,7 +84,8 @@ export function describeValue(value: unknown): string {
     return 'a map';
   }
   if (typeof value === 'string') {
-    const shown = value.length > MAX_SHOWN_LENGTH ? `${value.slice(0, MAX_SHOWN_LENGTH)}…` : value;
+    const shown =
+      value.length > MAX_SHOWN_LENGTH ? `${value.slice(0, MAX_SHOWN_LENGTH)}\u2026` : value;
     return `the text "${shown}"`;
   }
   if (typeof value === 'number' || typeof value === 'boolean') {
@@ -152,7 +153,7 @@ function lookup(table: Record<string, string>, key: PathSegment | undefined): st
 }
 
 /**
- * The key a failure belongs to — for a list entry that is the key holding the
+ * The key a failure belongs to - for a list entry that is the key holding the
  * list, not the index.
  */
 function fieldKey(path: readonly PathSegment[]): PathSegment | undefined {
@@ -260,7 +261,7 @@ export function validationError(
 
 /**
  * Turns a schema failure into an error that names the exact key in routes.yaml
- * and says what that key accepts — schema messages on their own only say
+ * and says what that key accepts - schema messages on their own only say
  * things like "Invalid input: expected string, received number".
  *
  * @param error  the schema failure
@@ -268,7 +269,7 @@ export function validationError(
  * @param value  that same value, used to describe what the author wrote
  * @param code   forces the code; omit to infer it from the failing key, which
  *               is what callers covering a whole section (a route, a
- *               collection) want — the failure could be about any field in it.
+ *               collection) want - the failure could be about any field in it.
  */
 export function toValidationError(
   error: z.ZodError,

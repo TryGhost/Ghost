@@ -23,7 +23,7 @@ const messages = {
   emailErrorPartialFailure:
     'An error occurred, and your newsletter was only partially sent. Please retry sending the remaining emails.',
   emailError: 'An unexpected error occurred, please retry sending your newsletter.',
-  submissionUncertain: 'We couldn’t confirm whether your newsletter finished sending.',
+  submissionUncertain: 'We couldn\u2019t confirm whether your newsletter finished sending.',
 };
 
 const MAX_SENDING_CONCURRENCY = 2;
@@ -192,7 +192,7 @@ class BatchSendingService {
   /**
    * Signals the batch workers to stop claiming new batches. Runs before the HTTP
    * server drain, so no batch is claimed in a window we can't finish it in.
-   * Synchronous — draining is onShutdown's job. Idempotent.
+   * Synchronous - draining is onShutdown's job. Idempotent.
    */
   onPreStop() {
     this.#shuttingDown = true;
@@ -314,7 +314,7 @@ class BatchSendingService {
           this.#sentry?.captureException(e);
         }
         logging.info(
-          `[Background Job] batch-sending-service-job send stopped because the container is shutting down — leaving email ${email.id} status=submitting so it can resume on next boot`,
+          `[Background Job] batch-sending-service-job send stopped because the container is shutting down \u2014 leaving email ${email.id} status=submitting so it can resume on next boot`,
         );
         return;
       }
@@ -1494,7 +1494,7 @@ class BatchSendingService {
     // An orphaned submitting batch has no recorded outcome. Preserve the existing
     // reconciliation path instead of claiming success or resubmitting it here.
     logging.error(
-      `Email batch ${batch.id} is stuck in status=${currentStatus} (orphan from a crashed worker); not re-sending — marking parent email as failed for operator review`,
+      `Email batch ${batch.id} is stuck in status=${currentStatus} (orphan from a crashed worker); not re-sending \u2014 marking parent email as failed for operator review`,
     );
     return false;
   }
@@ -1770,7 +1770,7 @@ class BatchSendingService {
         throw e;
       }
       options.signal?.throwIfAborted();
-      // Shutdown may have started while this attempt was pending — re-resolve so
+      // Shutdown may have started while this attempt was pending - re-resolve so
       // the collapsed budget decides whether we retry at all
       options = this.#resolveRetryOptions(options);
 
@@ -1807,7 +1807,7 @@ class BatchSendingService {
 
       // Budget is only checked after a failure, so recursing always spends another
       // attempt first. Re-check here, or a shutdown that began during the backoff
-      // gets one more go — a fresh Mailgun send well into a shutdown.
+      // gets one more go - a fresh Mailgun send well into a shutdown.
       const nextOptions = this.#resolveRetryOptions({
         ...options,
         retryCount: retryCount + 1,

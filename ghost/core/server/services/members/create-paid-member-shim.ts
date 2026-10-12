@@ -7,7 +7,7 @@ interface PaidMemberShim {
 }
 
 /**
- * Build a stand-in paid member for content gating — NOT a real member. It
+ * Build a stand-in paid member for content gating - NOT a real member. It
  * carries only the `status` and `products` that
  * `contentGating.checkPostAccess` / `checkGatedBlockAccess` read, letting previews
  * (`member_status=paid`) and gift-link reads reveal gated content without a
@@ -30,7 +30,7 @@ export async function createPaidMemberShim(tierSlug?: string): Promise<PaidMembe
       }));
     }
   } catch (error) {
-    // Fall back to no tiers rather than failing the render — still grants
+    // Fall back to no tiers rather than failing the render - still grants
     // status:paid/members content, just not tier-specific blocks.
     logging.error('Failed to build paid member shim tiers:', error);
   }

@@ -51,7 +51,8 @@ const messages = {
   },
   icons: {
     missingFile: 'Please select an icon.',
-    invalidFile: 'Icon must be a square .ico or .png file between 60px – 1,000px, under 100kb.',
+    invalidFile:
+      'Icon must be a square .ico or .png file between 60px \u2013 1,000px, under 100kb.',
   },
   media: {
     missingFile: 'Please select a media file.',

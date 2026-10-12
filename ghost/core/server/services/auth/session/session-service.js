@@ -238,7 +238,7 @@ module.exports = function createSessionService({
 
     const session = req.session;
     session.user_id = previousUserId;
-    // Verification is bound to the user who completed it — any other user
+    // Verification is bound to the user who completed it - any other user
     // (including sessions with no verified_user_id) must verify again
     const carryVerification = previousVerified === true && previousVerifiedUserId === user.id;
     session.verified = carryVerification ? true : undefined;

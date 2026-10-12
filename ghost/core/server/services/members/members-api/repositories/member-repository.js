@@ -1653,7 +1653,7 @@ module.exports = class MemberRepository {
       }
 
       // CASE: Record offer redemption when offer_id changes to a new non-null value
-      // This covers: null→new (free member upgrade), old→new (retention offer replacing expired signup offer)
+      // This covers: null->new (free member upgrade), old->new (retention offer replacing expired signup offer)
       if (
         !isIncomplete &&
         !subscriptionToRecord &&
@@ -2023,7 +2023,7 @@ module.exports = class MemberRepository {
 
     // Cancelling (or reactivating) touches no `members` column, so mark the
     // subscription relation as the change and carry its prior state. This lets the
-    // webhook payload express before/after — see `services/webhooks/serialize.js`.
+    // webhook payload express before/after - see `services/webhooks/serialize.js`.
     //
     // No explicit `emitChange` is needed, and adding one would emit twice: inside a
     // transaction `emitChange` queues onto the `committed` handler and defers its
@@ -2053,8 +2053,8 @@ module.exports = class MemberRepository {
           cancel_at_period_end: subscriptionBeforeCancelFlagChange.get('cancel_at_period_end'),
         },
       };
-      // `previous` must be the full collection — a member can have multiple
-      // subscriptions — with only the changed one swapped for its prior state
+      // `previous` must be the full collection - a member can have multiple
+      // subscriptions - with only the changed one swapped for its prior state
       updatedMember._previousRelations = {
         ...updatedMember._previousRelations,
         stripeSubscriptions: {
@@ -2138,7 +2138,7 @@ module.exports = class MemberRepository {
 
       if (best) {
         // The lookup table has a UNIQUE constraint on `subscription_id`
-        // — a sub can be at most one member's current. The view's
+        // - a sub can be at most one member's current. The view's
         // owning-member can change (member merges, Stripe customer
         // re-link, test fixtures reusing customer IDs), in which case
         // the lookup may still hold a stale row from the previous
@@ -2155,7 +2155,7 @@ module.exports = class MemberRepository {
           .onConflict('member_id')
           .merge();
       } else {
-        // No subscriptions remain — remove the lookup row
+        // No subscriptions remain - remove the lookup row
         await trx('members_current_subscription').where({ member_id: memberId }).del();
       }
     } catch (e) {
@@ -2813,8 +2813,8 @@ module.exports = class MemberRepository {
   /**
    * Removes all complimentary access for a member.
    * Handles two types:
-   * 1. Stripe-backed: Subscriptions with plan_nickname 'Complimentary' — cancelled via Stripe, then synced via linkSubscription
-   * 2. Ghost-only: Products in members_products not backed by any active Stripe subscription — removed directly
+   * 1. Stripe-backed: Subscriptions with plan_nickname 'Complimentary' - cancelled via Stripe, then synced via linkSubscription
+   * 2. Ghost-only: Products in members_products not backed by any active Stripe subscription - removed directly
    *
    * @param {{id: string}} data - member identifier
    * @param {Object} options

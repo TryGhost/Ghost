@@ -6,7 +6,7 @@ import { buildSignedJob } from '../../adapters/scheduling/build-signed-job';
 import type { SchedulingAdapter } from '../../adapters/scheduling/error-capture';
 import { getSchedulerIdempotencyKey } from '../../adapters/scheduling/get-scheduler-idempotency-key';
 
-// CJS-only modules — typed loosely below. models is the Bookshelf registry
+// CJS-only modules - typed loosely below. models is the Bookshelf registry
 // without TS declarations; the rest are JS modules without types.
 const models = require('../../models');
 const events = require('../../lib/common/events');

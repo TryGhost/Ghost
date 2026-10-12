@@ -8,7 +8,7 @@ export type WhereStrategy = Iterable<(qb: Knex.QueryBuilder) => void>;
 
 /**
  * Creates a where strategy that applies an NQL filter to the query builder.
- * Yields a single query modifier — no chunking.
+ * Yields a single query modifier - no chunking.
  */
 export function* byNQL(filter: string): WhereStrategy {
   yield (qb) => {

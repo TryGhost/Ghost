@@ -598,7 +598,7 @@ class OEmbedService {
       if (type === 'bookmark') {
         // metascraper-logo-favicon gathers anything matching link[rel*="icon"], which
         // includes apple-touch-icon, mask-icon (Safari pinned-tab silhouette), and
-        // fluid-icon (Fluid SSB) — none of those are the site's standard brand
+        // fluid-icon (Fluid SSB) - none of those are the site's standard brand
         // favicon, so skip them when picking what to show in a bookmark card.
         const standardIcons = sizes.filter(
           (item) => !/apple|mask-icon|fluid-icon/.test(item.rel ?? ''),
@@ -797,7 +797,7 @@ class OEmbedService {
         // into the admin editor preview (via srcdoc) and into public themes
         // and emails (via innerHTML). Known providers (YouTube, Twitter, etc.)
         // go through `knownProvider` with @extractus/oembed-extractor's
-        // allowlist — anything reaching here is an arbitrary site's
+        // allowlist - anything reaching here is an arbitrary site's
         // self-declared oEmbed endpoint, which we must not trust. Drop the
         // response and let the caller fall back to a bookmark card.
         if (oembed.type === 'video' || oembed.type === 'rich' || oembed.type === 'photo') {

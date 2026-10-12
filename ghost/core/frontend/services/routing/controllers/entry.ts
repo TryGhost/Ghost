@@ -45,7 +45,7 @@ function editRedirect(res: EntryResponse, next: NextFunction, entry: Entry) {
 }
 
 /**
- * The requested path no longer matches the entry's canonical url — happens with
+ * The requested path no longer matches the entry's canonical url - happens with
  * date permalinks after a publish date change.
  */
 function isPermalinkStale(req: Request, entry: Entry): boolean {

@@ -29,8 +29,8 @@ import { type RecordMetafieldAction, type RequestContext } from './actions';
 
 const TABLE = 'members_metafields';
 
-// Column limits come from the canonical schema — the same source the migration and
-// Bookshelf models read — so the service can never drift from the database. The
+// Column limits come from the canonical schema - the same source the migration and
+// Bookshelf models read - so the service can never drift from the database. The
 // name cap turns an over-long input into a clean 422 (not a DB error), and the key
 // base is capped so even the longest collision suffix stays within the column.
 const columns = require('../../data/schema').tables[TABLE];
@@ -40,7 +40,7 @@ const MAX_KEY_ITERATIONS = 1000;
 // Reserve room for a `_<n>` suffix (n up to MAX_KEY_ITERATIONS).
 const MAX_KEY_BASE_LENGTH = MAX_KEY_LENGTH - (String(MAX_KEY_ITERATIONS).length + 1);
 
-// A key becomes a property name on the plain objects that carry a member's values —
+// A key becomes a property name on the plain objects that carry a member's values -
 // on both sides of the wire, since `custom_fields` is JSON and a client gets a plain
 // object from JSON.parse. A key naming a member of Object.prototype reads back as
 // inherited rather than absent wherever one of those objects is indexed.
@@ -185,7 +185,7 @@ export class MetafieldDefinitionsService {
    * single transaction, so a name clash or the operational cap on the third item
    * leaves the first two unwritten rather than half-applying the request.
    *
-   * Running inside the transaction also makes a batch self-consistent for free —
+   * Running inside the transaction also makes a batch self-consistent for free -
    * `assertNameAvailable` and `mintKey` see the rows inserted earlier in the same
    * batch, so two items sharing a name are caught and two items deriving the same
    * key get distinct ones, exactly as if they had arrived as separate requests.
@@ -423,7 +423,7 @@ export class MetafieldDefinitionsService {
 
       // Ranks come from the request's order; the statements go out in key order, so
       // two concurrent reorders take their row locks in the same sequence and
-      // cannot deadlock. `updated_at` is left alone — the definitions did not
+      // cannot deadlock. `updated_at` is left alone - the definitions did not
       // change, the list around them did.
       const ranks = new Map(keys.map((key, rank) => [key, rank]));
       for (const key of [...keys].sort()) {
@@ -487,7 +487,7 @@ export class MetafieldDefinitionsService {
 
   /**
    * Pick a free key from the name's base: `base`, then `base_2`, `base_3`, ...
-   * Reads the keys already taken by that base — including archived fields, so a
+   * Reads the keys already taken by that base - including archived fields, so a
    * key is never reused once minted.
    */
   private async mintKey(db: Knex, base: string): Promise<string> {
@@ -516,7 +516,7 @@ export class MetafieldDefinitionsService {
 
   /**
    * Names are globally unique (across active and archived) so the label is
-   * never ambiguous — a unique index on `name` enforces it. This read gives a
+   * never ambiguous - a unique index on `name` enforces it. This read gives a
    * clean `property: name` 422 for the common case (the raw index violation
    * can't be told apart from a key clash); the index is the race backstop.
    *
@@ -748,7 +748,7 @@ function parseFilter(filter: string): Record<string, unknown> {
 }
 
 // Whether an NQL-parsed filter constrains `status` anywhere, including inside the
-// $and/$or/$nor combinators — so a status filter at any nesting counts as the
+// $and/$or/$nor combinators - so a status filter at any nesting counts as the
 // caller opting in to (or out of) archived fields.
 function filterReferencesStatus(query: Record<string, unknown>): boolean {
   return filterReferencesAttribute(query, 'status');

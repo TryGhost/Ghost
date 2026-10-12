@@ -1,5 +1,5 @@
 // Composition root for the webhook dispatch pipeline: builds the
-// serialize → payload → trigger chain and registers the model-event
+// serialize -> payload -> trigger chain and registers the model-event
 // listeners. Requires are deferred until listen() runs so the model layer
 // isn't loaded before boot wires it.
 module.exports = {

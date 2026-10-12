@@ -108,7 +108,7 @@ function createPublicFileMiddleware(location, file, mime, maxAge, options = {}) 
 
 /**
  * Card assets are assembled in memory from a build-time manifest, so there's no
- * file on disk to read — see services/assets-minification/card-assets.js
+ * file on disk to read - see services/assets-minification/card-assets.js
  *
  * @param {'css'|'js'} type
  * @param {string} mime

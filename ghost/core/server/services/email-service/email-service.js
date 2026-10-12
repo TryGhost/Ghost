@@ -251,8 +251,8 @@ class EmailService {
   /**
    * Boot-time scanner: recovers newsletter emails a previous container left without work.
    * Two shapes, both resumed through the normal emailJob path:
-   *   - `submitting` — the send was cut off mid-flight.
-   *   - `pending` — dispatch was dropped from the in-memory job queue before the job ever
+   *   - `submitting` - the send was cut off mid-flight.
+   *   - `pending` - dispatch was dropped from the in-memory job queue before the job ever
    *     started, so no batch work exists and nothing else will ever pick the row up.
    * Iterates sequentially; one failure does not skip others. Rows older than the configured
    * max-age are flipped to `failed` (not resumed) so stale content does not get sent to
@@ -277,7 +277,7 @@ class EmailService {
         );
         if (locked) {
           logging.warn(
-            `Email resume: ${email.id} created_at=${email.get('created_at') && new Date(email.get('created_at')).toISOString()} exceeds max age (${maxAgeMs}ms) — flipped to failed for operator review`,
+            `Email resume: ${email.id} created_at=${email.get('created_at') && new Date(email.get('created_at')).toISOString()} exceeds max age (${maxAgeMs}ms) \u2014 flipped to failed for operator review`,
           );
         }
       } catch (e) {
@@ -319,7 +319,7 @@ class EmailService {
 
     if (!sendable) {
       // Parent post was unpublished or deleted while the email was in flight.
-      // Can't resume — mark the email as failed so it stops showing as unsent.
+      // Can't resume - mark the email as failed so it stops showing as unsent.
       const locked = await this.#batchSendingService.updateStatusLock(
         this.#models.Email,
         email.id,
@@ -328,7 +328,7 @@ class EmailService {
       );
       if (locked) {
         logging.warn(
-          `Email resume: ${email.id} parent post status=${postStatus} is not sendable — marked email as failed`,
+          `Email resume: ${email.id} parent post status=${postStatus} is not sendable \u2014 marked email as failed`,
         );
       }
       return;
@@ -336,7 +336,7 @@ class EmailService {
 
     // `pending` is already what emailJob's status lock (['pending', 'failed']) admits, so
     // only `submitting` needs flipping. If updateStatusLock returns undefined, another path
-    // raced us — leave it to whoever won.
+    // raced us - leave it to whoever won.
     if (status === 'submitting') {
       const locked = await this.#batchSendingService.updateStatusLock(
         this.#models.Email,
@@ -346,7 +346,7 @@ class EmailService {
       );
       if (!locked) {
         logging.info(
-          `Email resume: ${email.id} status changed before lock could be taken — skipping`,
+          `Email resume: ${email.id} status changed before lock could be taken \u2014 skipping`,
         );
         return;
       }
@@ -356,7 +356,7 @@ class EmailService {
     const breadcrumb = await this.#buildResumeBreadcrumb(email);
     logging.warn(`Email resume: scheduling ${email.id} for re-send ${JSON.stringify(breadcrumb)}`);
 
-    // Skip checkLimits — this email already passed limits when first sent.
+    // Skip checkLimits - this email already passed limits when first sent.
     await this.#batchSendingService.scheduleEmail(email);
   }
 

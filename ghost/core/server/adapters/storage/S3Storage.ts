@@ -114,7 +114,7 @@ const configSchema = z
   })
   .refine(
     (config) => {
-      // accessKeyId and secretAccessKey must be supplied together (or not at all) —
+      // accessKeyId and secretAccessKey must be supplied together (or not at all) -
       // a partial pair would silently fall back to ambient AWS credentials.
       const hasAccessKey = Boolean(config.accessKeyId);
       const hasSecretKey = Boolean(config.secretAccessKey);
@@ -194,7 +194,7 @@ export default class S3Storage extends StorageBase {
       };
     }
 
-    // `s3Client` is a test-only injection seam — it never comes from config
+    // `s3Client` is a test-only injection seam - it never comes from config
     // (nconf holds static values), so it's read from the raw input rather
     // than the validated schema output.
     const injectedClient = (config as { s3Client?: S3Client } | null | undefined)?.s3Client;
@@ -352,7 +352,7 @@ export default class S3Storage extends StorageBase {
   /**
    * Converts a CDN URL to a relative path, stripping CDN URL, tenant prefix, and storagePath.
    *
-   * Example: 'https://cdn.example.com/tenant/content/files/2024/06/video.mp4' → '2024/06/video.mp4'
+   * Example: 'https://cdn.example.com/tenant/content/files/2024/06/video.mp4' -> '2024/06/video.mp4'
    */
   urlToPath(url: string): string {
     if (!url.startsWith(`${this.cdnUrl}/`)) {

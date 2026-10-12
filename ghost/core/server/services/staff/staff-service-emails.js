@@ -36,7 +36,7 @@ class StaffServiceEmails {
       const to = user.email;
       const memberData = this.getMemberData(member);
 
-      const subject = `🥳 Free member signup: ${memberData.name}`;
+      const subject = `\uD83E\uDD73 Free member signup: ${memberData.name}`;
 
       let attributionTitle = attribution?.title || '';
       // In case of a homepage attribution, we want to show the title as "Homepage" on email
@@ -86,7 +86,7 @@ class StaffServiceEmails {
       const to = user.email;
       const memberData = this.getMemberData(member);
 
-      const subject = `💸 Paid subscription started: ${memberData.name}`;
+      const subject = `\uD83D\uDCB8 Paid subscription started: ${memberData.name}`;
 
       const amount = this.getAmount(subscription?.amount);
       const formattedAmount = this.getFormattedAmount({ currency: subscription?.currency, amount });
@@ -162,7 +162,7 @@ class StaffServiceEmails {
     for (const user of users) {
       const to = user.email;
       const memberData = this.getMemberData(member);
-      const subject = `⚠️ Cancellation: ${memberData.name}`;
+      const subject = `\u26A0\uFE0F Cancellation: ${memberData.name}`;
 
       const amount = this.getAmount(subscription?.amount);
       const formattedAmount = this.getFormattedAmount({ currency: subscription?.currency, amount });
@@ -326,7 +326,7 @@ class StaffServiceEmails {
       amount: donationPaymentEvent.amount / 100,
     });
 
-    const subject = `💰 One-time payment received: ${formattedAmount} from ${donationPaymentEvent.name ?? donationPaymentEvent.email}`;
+    const subject = `\uD83D\uDCB0 One-time payment received: ${formattedAmount} from ${donationPaymentEvent.name ?? donationPaymentEvent.email}`;
     const memberData = donationPaymentEvent.memberId
       ? this.getMemberData({
           id: donationPaymentEvent.memberId,
@@ -378,7 +378,7 @@ class StaffServiceEmails {
     const formattedAmount = this.getFormattedAmount({ currency, amount: amount / 100 });
 
     const displayName = name ?? email;
-    const subject = `🎁 Gift subscription purchased: ${formattedAmount} from ${displayName}`;
+    const subject = `\uD83C\uDF81 Gift subscription purchased: ${formattedAmount} from ${displayName}`;
     const memberData = memberId
       ? this.getMemberData({
           id: memberId,
@@ -415,7 +415,7 @@ class StaffServiceEmails {
       name: memberName ?? null,
       email: memberEmail,
     });
-    const subject = `🎁 Gift subscription redeemed: ${memberData.name}`;
+    const subject = `\uD83C\uDF81 Gift subscription redeemed: ${memberData.name}`;
     const cadenceLabel = duration === 1 ? `1 ${cadence}` : `${duration} ${cadence}s`;
 
     await this.sendToStaff({

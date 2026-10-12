@@ -18,7 +18,7 @@ export interface RequestContext {
  *
  * Here rather than in each endpoint, because two resources now record metafield history
  * and a second reading of the same shape is a second chance to disagree about it. An
- * integration and a user are both actors; a request that is neither — a webhook, a job —
+ * integration and a user are both actors; a request that is neither - a webhook, a job -
  * has none, and the history says so rather than guessing.
  */
 export function actingContext(context: unknown): RequestContext {
@@ -80,9 +80,9 @@ export type MetafieldVerb = keyof typeof COMMANDS;
 // meta").
 //
 // A change to one field always passes its `primary_name` so the log reads as a human
-// label, not a bare key — this is what keeps the timeline legible after a hard delete,
+// label, not a bare key - this is what keeps the timeline legible after a hard delete,
 // when the row itself is gone. `key` rides alongside it because the key is how a field
-// is addressed publicly — its id never leaves the API.
+// is addressed publicly - its id never leaves the API.
 //
 // A reorder names no field: it carries the count and the word the feed reads it by.
 export type MetafieldActionDetails =

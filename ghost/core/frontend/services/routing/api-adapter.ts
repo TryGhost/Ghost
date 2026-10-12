@@ -21,7 +21,7 @@ export interface ApiCallSpec {
 }
 
 /**
- * The resource read that a data entry claims — the router that declares it owns
+ * The resource read that a data entry claims - the router that declares it owns
  * that slug, and other routers redirect to it.
  */
 export interface ResourceRead {
@@ -41,7 +41,7 @@ QUERY satisfies Record<DataShortFormResource, ResourceConfig>;
 
 /**
  * A superset: `previews` and `email` are internal routers with no `type`, so
- * nothing here resolves them — but the preview and email routers hand their
+ * nothing here resolves them - but the preview and email routers hand their
  * QUERY entry straight to a controller, so removing one still breaks them.
  */
 const RESOURCE_CONFIGS: Record<string, ResourceConfig | undefined> = QUERY;
@@ -120,7 +120,7 @@ function resolveLongForm(entry: DataLongFormEntry): ApiCallSpec {
 /**
  * Resolve a single route data entry into a Content API call.
  *
- * Resolves how a domain `resource` maps onto a Ghost API controller — routes.yaml
+ * Resolves how a domain `resource` maps onto a Ghost API controller - routes.yaml
  * talks about `tags`, the API is reached via `tagsPublic`. Callers work with the
  * domain model and never name a controller.
  *
@@ -138,7 +138,7 @@ export function resolveApiCall(entry: DataEntry): ApiCallSpec {
  * Resolve a route's whole `data` block, keyed the way the theme sees it.
  *
  * Top-level shorthand (`data: tag.food`) has no author-given name, so it is
- * keyed by its resource shorthand — `tag` — matching what themes already expect.
+ * keyed by its resource shorthand - `tag` - matching what themes already expect.
  */
 export function resolveRouteData(routeData?: RouteData): Record<string, ApiCallSpec> {
   if (!routeData) {

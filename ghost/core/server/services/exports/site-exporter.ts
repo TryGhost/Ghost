@@ -15,7 +15,7 @@ export interface SiteExporterDeps {
   /** Names of all installed themes. */
   listThemes(): string[];
   /**
-   * A single theme zipped to a temp file — the same artifact the theme
+   * A single theme zipped to a temp file - the same artifact the theme
    * download endpoint serves. The exporter calls `cleanup` once the
    * archive is closed.
    */
@@ -42,7 +42,7 @@ export class SiteExporter {
 
   /**
    * Builds a zip stream of the selected components; the caller pipes it to
-   * the response while it fills. Deflate-compressed — the nested theme zips
+   * the response while it fills. Deflate-compressed - the nested theme zips
    * opt out per-entry since they are already compressed.
    */
   createArchive(components: SyncExportComponent[]): Archiver {
@@ -134,15 +134,15 @@ export class SiteExporter {
 
   /**
    * Ties a streaming entry's lifecycle to the archive in both directions:
-   * a source error destroys the archive — archiver wraps sources with
+   * a source error destroys the archive - archiver wraps sources with
    * `.pipe()`, which never propagates errors, so the response would
-   * otherwise hang forever — and a closed archive destroys the source, so
+   * otherwise hang forever - and a closed archive destroys the source, so
    * a paused row stream releases its DB connection.
    */
   #appendStream(archive: Archiver, source: NodeJS.ReadableStream, name: string): void {
     const destroyable = source as NodeJS.ReadableStream & { destroy?: () => void };
 
-    // Closed while the source was being acquired — a 'close' listener
+    // Closed while the source was being acquired - a 'close' listener
     // registered now would never fire
     if (archive.destroyed) {
       destroyable.destroy?.();
@@ -161,8 +161,8 @@ export class SiteExporter {
   }
 
   /**
-   * One nested zip per theme — the exact artifact the theme upload UI
-   * restores from — staged as temp files and streamed off disk rather than
+   * One nested zip per theme - the exact artifact the theme upload UI
+   * restores from - staged as temp files and streamed off disk rather than
    * buffered. A theme that fails to zip is skipped so the rest still make
    * it into the bundle.
    */
@@ -175,7 +175,7 @@ export class SiteExporter {
       try {
         const { zipPath, cleanup } = await this.#deps.zipTheme(name);
 
-        // Closed while this theme was zipping — the close handler has
+        // Closed while this theme was zipping - the close handler has
         // already run the cleanups, so remove the temp file directly
         if (archive.destroyed) {
           cleanup().catch(() => {});

@@ -30,6 +30,13 @@ Ghost Core keeps a standalone configuration because its rule set does not fit
 a shared factory. Read that file directly. It can still import shared atoms such as `correctnessRules`, `nodeLibRules`,
 `localFilenamesPlugin`, and `strictLinterOptions` from `@internal/cfg-eslint`.
 
+`localSourcePlugin` provides `latin1-only`, which Ghost Core enables for its
+server code. V8 keeps every loaded file's source in memory for the life of the
+process, at two bytes per character when the file contains any character above
+U+00FF, so the rule rejects them. Its autofix replaces them with ASCII in
+comments and with `\u` escapes in strings, regular expressions and untagged
+templates.
+
 ## Plugin dependencies
 
 A workspace must declare every ESLint plugin that its configuration resolves.

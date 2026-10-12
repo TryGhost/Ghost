@@ -7,7 +7,7 @@ const errors = require('@tryghost/errors');
  * Callers name the extra columns they want back; everything else stays out of
  * memory. The columns URL computation itself needs (permalink fields, filter
  * columns, relations) are passed in by the URL service, which is the source of
- * truth for what the active routing config reads — so rows are never thin for
+ * truth for what the active routing config reads - so rows are never thin for
  * it.
  */
 
@@ -84,7 +84,7 @@ async function fetchRoutableResources(
 
   // Relations only when the active routing config reads them (e.g.
   // /:primary_tag/:slug/ permalinks, tag-filtered collections), and only for
-  // the types that have any — see canCarryRelations above.
+  // the types that have any - see canCarryRelations above.
   if (typeConfig.canCarryRelations && requiredRelations.length) {
     options.withRelated = requiredRelations;
     options.withRelatedFields = {};

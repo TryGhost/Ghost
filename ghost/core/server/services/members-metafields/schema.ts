@@ -36,8 +36,8 @@ type MetafieldRow = z.infer<typeof DbMetafield> & MetafieldRank;
 
 /**
  * How a value arrived, not who caused it: who edited a member's fields is already an
- * action, and Stripe is not a person. `type` is the namespace that makes `id` resolvable —
- * `users`, `integrations`, `members_metafield_bindings` — so the one writer that
+ * action, and Stripe is not a person. `type` is the namespace that makes `id` resolvable -
+ * `users`, `integrations`, `members_metafield_bindings` - so the one writer that
  * resolves in no table is the one with no id to give.
  */
 export const WrittenBy = z.discriminatedUnion('type', [

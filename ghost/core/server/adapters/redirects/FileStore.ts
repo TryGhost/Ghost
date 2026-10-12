@@ -45,7 +45,7 @@ export default class FileStore extends RedirectsStoreBase {
     const targetPath = path.join(this.basePath, JSON_FILENAME);
 
     // The ordering here keeps the canonical path readable across
-    // every failure mode. See the inline notes — the obvious
+    // every failure mode. See the inline notes - the obvious
     // backup-first, write-second sequence would wipe redirects on
     // a failed write.
 
@@ -60,10 +60,10 @@ export default class FileStore extends RedirectsStoreBase {
 
     await this._writeAtomic(targetPath, JSON.stringify(redirects));
 
-    // Different path (yaml → json): backup must happen AFTER the
+    // Different path (yaml -> json): backup must happen AFTER the
     // write so a failed write doesn't leave nothing at any canonical
     // path. If the backup itself fails, the legacy yaml takes
-    // precedence over the new json on next read — roll the new json
+    // precedence over the new json on next read - roll the new json
     // back so the operator sees a consistent old state.
     if (existingPath && existingPath !== targetPath) {
       try {
@@ -91,7 +91,7 @@ export default class FileStore extends RedirectsStoreBase {
 
   private async _backup(existingPath: string): Promise<void> {
     const backupPath = this.getBackupFilePath(existingPath);
-    // Per-second timestamp granularity → same-second writes collide.
+    // Per-second timestamp granularity -> same-second writes collide.
     // Overwrite rather than fail.
     await fs.move(existingPath, backupPath, { overwrite: true });
   }

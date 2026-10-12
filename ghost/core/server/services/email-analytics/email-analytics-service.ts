@@ -605,7 +605,7 @@ export class EmailAnalyticsService {
 
     // When we've consumed all available events (eventCount < maxEvents), advance the cursor by 1 second
     // to avoid re-fetching the same batch on the next cycle. When we hit the maxEvents budget mid-second,
-    // do NOT advance — the next pass needs to re-cover that second to pick up any remaining events.
+    // do NOT advance - the next pass needs to re-cover that second to pick up any remaining events.
     if (
       !error &&
       eventCount > 0 &&
@@ -619,7 +619,7 @@ export class EmailAnalyticsService {
         new Date(fetchData.lastEventTimestamp.getTime()),
       );
       if (eventCount < maxEvents) {
-        // Consumed everything in the window — advance to avoid re-fetching same batch
+        // Consumed everything in the window - advance to avoid re-fetching same batch
         fetchData.lastEventTimestamp = new Date(fetchData.lastEventTimestamp.getTime() + 1000);
       }
     } else {

@@ -108,7 +108,7 @@ export function matchPermalink(template: string, urlPath: string): PermalinkPara
 /**
  * Narrows a matched permalink down to the single unique column the DB is
  * queried by. matchPermalink guarantees a queryable column is present, so this
- * is total — there is no "no lookup column" case to handle.
+ * is total - there is no "no lookup column" case to handle.
  */
 export function toLookupParams(params: PermalinkParams): ResourceLookupParams {
   if ('id' in params) {

@@ -38,7 +38,7 @@ class AudienceFeedbackController {
    * Express handler for the durable, id-based feedback link in newsletters.
    * Resolves the post's *current* URL from its id and redirects to the Portal
    * feedback flow, so changing a post's slug never breaks feedback buttons.
-   * Authentication happens later when Portal submits to the feedback API — this
+   * Authentication happens later when Portal submits to the feedback API - this
    * endpoint only forwards the uuid/key through to the destination.
    */
   async redirectToPost(req, res, next) {
@@ -51,7 +51,7 @@ class AudienceFeedbackController {
       // Load the full post (with tags/authors) rather than passing an
       // id-only resource: the URL service needs status to apply the
       // published base filter and tags/authors to evaluate filtered
-      // routes — the URL service reports a bare {id} as thin.
+      // routes - the URL service reports a bare {id} as thin.
       const post = await this.#repository.getPostById(postId, { withRelated: ['tags', 'authors'] });
       const target = post
         ? this.#audienceFeedbackService.buildLink(uuid, post, score, key)

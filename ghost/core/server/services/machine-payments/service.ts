@@ -2,7 +2,7 @@
  * Protocol-agnostic machine payments orchestrator.
  *
  * Adapters implement canHandle / challenge / fulfill. Membership and content
- * gating stay outside this service — we only authorize emitting markdown bytes.
+ * gating stay outside this service - we only authorize emitting markdown bytes.
  */
 
 import logging from '@tryghost/logging';
@@ -207,7 +207,7 @@ export class MachinePaymentsService {
     options: ChallengeOrFulfillOptions,
   ): Promise<Response> {
     // Confirm we can deliver before settling. Charging first then failing the
-    // load burns the agent’s money and (with a ledger write) their credential.
+    // load burns the agent's money and (with a ledger write) their credential.
     const entry = await this.contentLoader.loadFullEntry(options.resourceType, options.entryId);
     if (!entry) {
       return this.#problemResponse({

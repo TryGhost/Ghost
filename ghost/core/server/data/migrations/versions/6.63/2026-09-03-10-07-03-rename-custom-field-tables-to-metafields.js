@@ -130,7 +130,7 @@ module.exports = createNonTransactionalMigration(
   async function up(connection) {
     // The whole migration hangs on the old definitions table being there. A fresh install
     // builds the new names straight from schema.js, and the replay suite runs this against
-    // that same final schema, so both reach here with nothing to rename — and must not
+    // that same final schema, so both reach here with nothing to rename - and must not
     // drop `products_checkout_fields`, which by then is already pointing at the new
     // bindings table.
     if (!(await connection.schema.hasTable('members_custom_fields'))) {
@@ -139,8 +139,8 @@ module.exports = createNonTransactionalMigration(
     }
 
     // Both loops walk a fixed list of four tables, in an order foreign keys dictate, so
-    // the usual objection to looping in a migration — that it scales with the rows a site
-    // happens to hold — does not apply.
+    // the usual objection to looping in a migration - that it scales with the rows a site
+    // happens to hold - does not apply.
     /* eslint-disable no-restricted-syntax */
     for (const name of DROP_ORDER) {
       if (await connection.schema.hasTable(name)) {

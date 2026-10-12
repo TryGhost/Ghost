@@ -316,7 +316,7 @@ async function initDynamicRouting({ frontend }) {
 
   // With a frontend, initFrontend has already called this to build the site
   // app's router. Without one there is nothing to mount, but the URL service
-  // still has to be handed to RouterManager before the routers register — so
+  // still has to be handed to RouterManager before the routers register - so
   // call the same init and discard the express router it returns.
   if (!frontend) {
     routing.routerManager.init({ urlService });

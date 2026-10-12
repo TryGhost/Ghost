@@ -74,8 +74,8 @@ export class MetafieldBindingsService {
   /**
    * Plans the values a processor collected on Ghost's behalf and sent back.
    *
-   * Nobody supplied these in a sense the site can name — a payment page asked, and a
-   * machine reported the answers — so what is recorded against them is the binding that
+   * Nobody supplied these in a sense the site can name - a payment page asked, and a
+   * machine reported the answers - so what is recorded against them is the binding that
    * routed each one. That resolves back to what it was collected as and the field it
    * landed in, which is everything worth knowing about how the value arrived.
    */
@@ -111,7 +111,7 @@ export class MetafieldBindingsService {
    * the rest. Attempting them all is this method's business: one refused answer must not
    * cost a publisher the address a courier needs, and the values have nothing to do with
    * each other beyond arriving together. Whether the failure is worth acting on is the
-   * caller's — a checkout webhook has already taken the money and must never fail, while
+   * caller's - a checkout webhook has already taken the money and must never fail, while
    * a member filling in a form is owed the news.
    */
   private async planThrough(

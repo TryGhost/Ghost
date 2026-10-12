@@ -72,10 +72,10 @@ function escapeHtml(unsafe) {
 function fixOutlookChars(html) {
   return html
     .replace(/&apos;/g, '&#39;')
-    .replace(/→/g, '&rarr;')
-    .replace(/–/g, '&ndash;')
-    .replace(/“/g, '&ldquo;')
-    .replace(/”/g, '&rdquo;');
+    .replace(/\u2192/g, '&rarr;')
+    .replace(/\u2013/g, '&ndash;')
+    .replace(/\u201C/g, '&ldquo;')
+    .replace(/\u201D/g, '&rdquo;');
 }
 
 /**
@@ -150,9 +150,9 @@ function getSegmentStatus(segment) {
 /**
  * Whether the members matched by a segment can read the post's gated content.
  * Delegates to the shared content-gating check so email and web gating stay in
- * sync. A null segment is an unsegmented render — the send pipeline only
+ * sync. A null segment is an unsegmented render - the send pipeline only
  * produces one for posts without gated content, and API previews without a
- * memberSegment expect the full body — so it always has access.
+ * memberSegment expect the full body - so it always has access.
  * @param {Post} post
  * @param {Segment} segment
  * @returns {boolean}
@@ -532,7 +532,7 @@ class EmailRenderer {
   /**
    * Interprets a member segment into the audience facts rendering needs.
    * Segments are persisted on email batches and arrive free-form via the
-   * preview APIs, so audience semantics must be derivable from the string —
+   * preview APIs, so audience semantics must be derivable from the string -
    * this is the only place that derives them; everything downstream reads the
    * descriptor instead of re-parsing the segment.
    * @param {Post} post
@@ -1232,14 +1232,14 @@ class EmailRenderer {
         }
         return plaintext.substring(0, 500);
       } else {
-        return `${postModel.get('title')} – `;
+        return `${postModel.get('title')} \u2013 `;
       }
     }
   }
 
   truncateText(text, maxLength) {
     if (text && text.length > maxLength) {
-      return text.substring(0, maxLength - 1).trim() + '…';
+      return text.substring(0, maxLength - 1).trim() + '\u2026';
     } else {
       return text ?? '';
     }
@@ -1260,9 +1260,9 @@ class EmailRenderer {
       let desktopEnd = text.length;
 
       if (text.length > maxLengthMobile && text.length <= maxLength) {
-        ellipsis = '<span class="hide-desktop">…</span>';
+        ellipsis = '<span class="hide-desktop">\u2026</span>';
       } else if (text.length > maxLength) {
-        ellipsis = '…';
+        ellipsis = '\u2026';
         desktopEnd = maxLength - 1;
       }
 
@@ -1332,7 +1332,7 @@ class EmailRenderer {
     const signupUrl = new URL(postUrl);
     signupUrl.hash = `/portal/signup`;
 
-    // Audience feedback — durable, id-based links resolved to the post's
+    // Audience feedback - durable, id-based links resolved to the post's
     // current URL at click time so they survive slug changes
     const positiveLink = this.#audienceFeedbackService.buildEmailLink(post, 1);
     const negativeLink = this.#audienceFeedbackService.buildEmailLink(post, 0);

@@ -19,7 +19,7 @@ export type Fulfillment = {
 
 /**
  * Protocol-agnostic payment rail. Adapters must return a concrete settlement
- * method string — MachinePaymentEvent.create() requires it.
+ * method string - MachinePaymentEvent.create() requires it.
  */
 export type PaymentAdapter = {
   name?: string;

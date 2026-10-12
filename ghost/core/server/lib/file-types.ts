@@ -31,9 +31,9 @@ const BROWSER_RENDERABLE_TYPES = new Set<string>([
  * Determines the content type to store/serve for a given filename.
  *
  * Three-tier resolution:
- * 1. Override map — forced to text/plain to prevent browser execution
- * 2. Browser-renderable — type preserved as safe for browser rendering
- * 3. Fallback — application/octet-stream to force download
+ * 1. Override map - forced to text/plain to prevent browser execution
+ * 2. Browser-renderable - type preserved as safe for browser rendering
+ * 3. Fallback - application/octet-stream to force download
  */
 function getStorageContentType(filename: string): string {
   const ext = path.extname(filename).toLowerCase();

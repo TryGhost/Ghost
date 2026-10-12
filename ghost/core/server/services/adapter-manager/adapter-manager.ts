@@ -162,7 +162,7 @@ export class AdapterManager<BaseClasses extends BaseClassMap = BaseClassMap> {
    * Resolve the active adapter class name and options for `name` from config,
    * then locate and load the adapter constructor from `pathsToAdapters`.
    *
-   * Does not instantiate the adapter or touch the instance cache — shared by
+   * Does not instantiate the adapter or touch the instance cache - shared by
    * `getAdapter` (which instantiates + caches) and `init` (which validates).
    */
   private loadAdapter(name: string): {
@@ -207,8 +207,8 @@ export class AdapterManager<BaseClasses extends BaseClassMap = BaseClassMap> {
    * Enumerates the active adapter for each registered type plus every
    * configured feature variant (e.g. `storage:media`), resolves each to a
    * distinct class + config, and calls the adapter's optional static
-   * `validate` when present. All failures — bad config or a failure to load a
-   * configured adapter — are aggregated into a single error so an operator
+   * `validate` when present. All failures - bad config or a failure to load a
+   * configured adapter - are aggregated into a single error so an operator
    * sees every problem at once. Types with no configured adapter are skipped;
    * presence is still enforced on use by `getAdapter`.
    */

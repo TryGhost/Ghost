@@ -10,7 +10,7 @@ const externalRequest = require('../request-external');
 // parallel cover/author/og/twitter/logo fetches in meta/image-dimensions.js
 // and routes them through the same SSRF protections as other external requests.
 // The returned promise exposes the underlying stream via `.stream` so callers
-// can destroy it on early abort — otherwise a pooled keep-alive socket leaks.
+// can destroy it on early abort - otherwise a pooled keep-alive socket leaks.
 function probe(url, options = {}, { probeImageSize: probeImageSizeFn = probeImageSize } = {}) {
   const stream = externalRequest.stream(url, {
     headers: options.headers,

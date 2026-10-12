@@ -12,7 +12,7 @@ const mapResponse = (docName, mappable, frame) => {
 };
 
 module.exports = {
-  // 204 No Content — see posts.js destroy
+  // 204 No Content - see posts.js destroy
   destroy(response, apiConfig, frame) {
     debug('destroy', apiConfig.docName);
 

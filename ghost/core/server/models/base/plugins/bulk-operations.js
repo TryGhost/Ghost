@@ -95,7 +95,7 @@ module.exports = function (Bookshelf) {
 
       /**
        * Edit rows matching a where strategy (e.g. byNQL, byIds, byColumnValues).
-       * Pure data operation — no action logging.
+       * Pure data operation - no action logging.
        *
        * @param {object} options
        * @param {object} options.data - Column values to set

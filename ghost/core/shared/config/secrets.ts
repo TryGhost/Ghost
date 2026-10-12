@@ -53,7 +53,7 @@ function loadSecretsFromEnv(
     const duplicate = seen.get(varName);
 
     if (duplicate) {
-      // env var names are case-sensitive on POSIX, so the same key can be set twice —
+      // env var names are case-sensitive on POSIX, so the same key can be set twice -
       // only a conflict if they disagree about which file to read
       if (duplicate.filePath !== filePath) {
         // eslint-disable-next-line ghost/ghost-custom/no-native-error

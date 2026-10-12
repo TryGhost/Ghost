@@ -82,7 +82,7 @@ class TaxonomyRouter extends ParentRouter {
       type: 'channel',
       name: this.taxonomyKey,
       permalinks: this.permalinks.getValue(),
-      // Route data in domain form — the API adapter resolves it to a
+      // Route data in domain form - the API adapter resolves it to a
       // controller call, and fetch-data fills `%s` in from the request.
       data: { [this.taxonomyKey]: { type: 'read', resource: this.getResourceType(), slug: '%s' } },
       filter: this.RESOURCE_CONFIG.TAXONOMIES[this.taxonomyKey].filter,

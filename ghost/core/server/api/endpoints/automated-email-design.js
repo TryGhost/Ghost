@@ -63,11 +63,11 @@ const controller = {
     async query(frame) {
       const data = frame.data.automated_email_design[0];
 
-      // Strip id from the payload — Bookshelf uses the options id
+      // Strip id from the payload - Bookshelf uses the options id
       // for the WHERE clause and a mismatched id causes "No Rows Updated"
       delete data.id;
 
-      // Reject slug changes — the slug is an immutable identifier
+      // Reject slug changes - the slug is an immutable identifier
       if ('slug' in data) {
         throw new errors.ValidationError({
           message: 'The slug field cannot be modified.',

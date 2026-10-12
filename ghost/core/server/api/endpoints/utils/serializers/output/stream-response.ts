@@ -5,13 +5,13 @@ import { InternalServerError } from '@tryghost/errors';
 interface StreamResponseOptions {
   /** Readable producing the response bytes (or rows, when a transform is given). */
   source: NodeJS.ReadableStream;
-  /** Optional transform between source and response (e.g. rows → CSV chunks). */
+  /** Optional transform between source and response (e.g. rows -> CSV chunks). */
   transform?: Transform;
   /** Filename to advertise in the `Content-Disposition` header. */
   filename: string;
   /** Value for the `Content-Type` header. */
   contentType: string;
-  /** Error message when `filename` is missing — format-specific for callers that pin it. */
+  /** Error message when `filename` is missing - format-specific for callers that pin it. */
   missingFilenameMessage?: string;
 }
 

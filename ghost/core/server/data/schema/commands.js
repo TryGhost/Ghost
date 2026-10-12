@@ -693,14 +693,14 @@ function deleteTable(table, transaction = db.knex) {
  * privileges of the querying user rather than binding to the DEFINER account
  * of whoever happened to run the migration. A DEFINER-bound view breaks when
  * the database is restored under a different MySQL user (Ghost(Pro) restores,
- * self-host server moves) — the view errors at query time because the original
- * account does not exist on the target — and it leaks the internal account name
+ * self-host server moves) - the view errors at query time because the original
+ * account does not exist on the target - and it leaks the internal account name
  * into every mysqldump. INVOKER avoids both problems.
  *
  * SQLite has no DEFINER / SQL SECURITY concept, so the plain knex builder is
  * used there (tests and local dev).
  *
- * All view creation — both `knex-migrator init` and versioned migrations —
+ * All view creation - both `knex-migrator init` and versioned migrations -
  * should go through this helper so every view is portable by default.
  *
  * @param {string} name - the view name

@@ -4,7 +4,7 @@ import type { InternalApiKey, InternalKeys } from '../../services/internal-keys'
 import { buildSignedJob } from './build-signed-job';
 
 // The default scheduling adapter can ping up to 50ms before the scheduled
-// time, and the flush queries truncate "now" to whole seconds — an exactly
+// time, and the flush queries truncate "now" to whole seconds - an exactly
 // on-time job could find nothing due and be consumed without sending
 // anything. Arming each job just past its second avoids that.
 const FLUSH_DELAY_MS = 1000;

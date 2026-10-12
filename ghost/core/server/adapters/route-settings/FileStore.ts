@@ -32,7 +32,7 @@ type FileStoreOptions = z.infer<typeof configSchema>;
 
 /**
  * Local-disk store for route settings. Reads and writes the user's
- * original `routes.yaml` verbatim — comments, ordering and formatting are
+ * original `routes.yaml` verbatim - comments, ordering and formatting are
  * preserved because we persist `settings.yamlSource` (the exact bytes the
  * domain model was parsed from) rather than a re-serialised model. Every
  * `replace` turns the previous file into a timestamped backup. When no
@@ -66,7 +66,7 @@ export default class FileStore extends RouteSettingsStoreBase {
     this.basePath = config.basePath;
     this.defaultSettingsBasePath = config.defaultSettingsBasePath;
 
-    // `getBackupFilePath` is a test-only injection seam — it never comes from
+    // `getBackupFilePath` is a test-only injection seam - it never comes from
     // config (nconf holds static values), so it's read from the raw input
     // rather than the validated schema output.
     this.getBackupFilePath =
@@ -97,8 +97,8 @@ export default class FileStore extends RouteSettingsStoreBase {
       await this.writeAtomic(this.getBackupFilePath(targetPath), existing);
     }
 
-    // Persist the exact YAML the operator authored — never a re-serialised
-    // model — so comments, key order and formatting survive a round-trip.
+    // Persist the exact YAML the operator authored - never a re-serialised
+    // model - so comments, key order and formatting survive a round-trip.
     await this.writeAtomic(targetPath, settings.yamlSource);
   }
 

@@ -21,7 +21,7 @@ function truncateDescription(value, maxLength = MAX_DESCRIPTION_LENGTH) {
     return collapsed;
   }
 
-  return `${collapsed.slice(0, maxLength - 1).trimEnd()}…`;
+  return `${collapsed.slice(0, maxLength - 1).trimEnd()}\u2026`;
 }
 
 function getMarkdownPath(pathname) {
@@ -113,7 +113,7 @@ function renderEntryMarkdownBody(entry) {
 
 /**
  * Visibility-appropriate notice matching content-cta.hbs wording.
- * For gated entries the notice carries the meaning — never emit
+ * For gated entries the notice carries the meaning - never emit
  * "_No content available._" when this is used.
  *
  * `resourceKind` must be passed by callers that know it: the content API

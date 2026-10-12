@@ -501,8 +501,8 @@ export class GiftService {
 
   private generateToken(): string {
     /**
-     * Combinations: 62^12 ≈ 3.23 × 10^21 (~3.23 sextillion)
-     * Entropy:      12 × log2(62) ≈ 71.45 bits
+     * Combinations: 62^12 ~ 3.23 × 10^21 (~3.23 sextillion)
+     * Entropy:      12 × log2(62) ~ 71.45 bits
      */
     const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
     let token = '';
@@ -523,7 +523,7 @@ export class GiftService {
   }
 
   // The publication timezone setting, falling back to UTC when unset or
-  // when the bundled tz data doesn't know the zone — an unknown name would
+  // when the bundled tz data doesn't know the zone - an unknown name would
   // otherwise resolve to the host's zone and date gift lifecycle values
   // against the wrong calendar.
   private siteZone(): string {
@@ -1472,14 +1472,14 @@ export class GiftService {
         }
 
         if (
-          // Gift must still be active — a concurrent refund or early consume can happen
+          // Gift must still be active - a concurrent refund or early consume can happen
           // between `findPendingReminder` and this re-read.
           locked.status !== 'redeemed' ||
           // Idempotency guard: another path (rerun, scheduler) may already have sent.
           locked.consumesSoonReminderSentAt !== null ||
-          // Narrows `redeemerMemberId` from `string | null` to `string` — always set for redeemed gifts.
+          // Narrows `redeemerMemberId` from `string | null` to `string` - always set for redeemed gifts.
           locked.redeemerMemberId === null ||
-          // Narrows `consumesAt` from `Date | null` to `Date` — always set for redeemed gifts.
+          // Narrows `consumesAt` from `Date | null` to `Date` - always set for redeemed gifts.
           locked.consumesAt === null
         ) {
           return null;

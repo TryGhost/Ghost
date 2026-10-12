@@ -21,8 +21,8 @@ const isChunkMap = (chunks) =>
  * chunks out of the manifest and concatenating them.
  *
  * Keeping this in memory (rather than minifying to content/public on first
- * request, as Ghost used to) means the bundle — and the content hash we put in
- * its ?v= — is identical for every process serving a given theme, so caches
+ * request, as Ghost used to) means the bundle - and the content hash we put in
+ * its ?v= - is identical for every process serving a given theme, so caches
  * survive restarts and are shared across instances.
  */
 module.exports = class CardAssets {
@@ -70,7 +70,7 @@ module.exports = class CardAssets {
     throw new errors.InternalServerError({
       message: `Could not use the card asset manifest at ${this.manifestPath}`,
       context: reason,
-      help: 'Card assets ship with Ghost — reinstall, or run `pnpm build:assets` when running from source',
+      help: 'Card assets ship with Ghost \u2014 reinstall, or run `pnpm build:assets` when running from source',
     });
   }
 

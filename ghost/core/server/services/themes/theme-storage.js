@@ -21,7 +21,7 @@ class ThemeStorage extends LocalStorageBase {
   }
 
   /**
-   * The single place a theme is turned into a zip — shared by the theme
+   * The single place a theme is turned into a zip - shared by the theme
    * download endpoint and the site export.
    *
    * @param {string} themeName

@@ -25,7 +25,7 @@ type ContentLoaderDeps = {
 
 /**
  * Loads full post/page HTML only after payment has been verified.
- * Bypasses Content API member gating intentionally — this is the privileged
+ * Bypasses Content API member gating intentionally - this is the privileged
  * unlock path for machine payments, not a membership grant.
  */
 export class ContentLoader {

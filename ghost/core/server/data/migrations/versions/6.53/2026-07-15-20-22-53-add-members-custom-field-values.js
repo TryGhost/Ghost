@@ -1,6 +1,6 @@
 const { addTable } = require('../../utils');
 
-// A member's value for one custom field definition — the table the definitions
+// A member's value for one custom field definition - the table the definitions
 // migration deferred. One row per (member, field); a field a member has no value
 // for simply has no row.
 module.exports = addTable('members_custom_field_values', {

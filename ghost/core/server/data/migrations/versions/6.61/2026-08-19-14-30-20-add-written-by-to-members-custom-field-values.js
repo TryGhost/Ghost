@@ -10,7 +10,7 @@ const TABLE = 'members_custom_field_values';
 // Who wrote the value that is here now: a type and an id, the way `actions` records an
 // actor. The type is required because it is the namespace the id resolves in, and a value
 // nobody can be traced to is not a record of provenance. The id is nullable for the one
-// writer that resolves in no table — an import, until runs are tracked.
+// writer that resolves in no table - an import, until runs are tracked.
 //
 // Existing rows have a writer nobody can recover, so they go rather than get backfilled:
 // the feature is behind the `membersCustomFields` flag with no released data, and adding

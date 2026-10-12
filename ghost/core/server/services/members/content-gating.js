@@ -32,7 +32,7 @@ const rejectUnknownKeys = (input) =>
 /**
  * Builds the NQL member filter describing which members have access to a post's
  * gated content, based purely on its `visibility`. This is the single source of
- * truth for "who can read this post" — shared between the web content gating
+ * truth for "who can read this post" - shared between the web content gating
  * (checkPostAccess) and the email sending pipeline (segmentation), so the two
  * can never drift apart.
  *
@@ -101,7 +101,7 @@ function checkPostAccess(post, member) {
 
 /**
  * The tier slugs a parsed member segment names positively. Negations are
- * skipped — they describe members who lack a tier, which adds nothing to the
+ * skipped - they describe members who lack a tier, which adds nothing to the
  * member shape checkSegmentPostAccess rebuilds.
  * @param {object} query - A parsed NQL query (after member expansions)
  * @returns {string[]}
@@ -127,7 +127,7 @@ function collectSegmentProductSlugs(query) {
 /**
  * Whether the audience matched by a member segment can read a post's gated
  * content. Emails are rendered per audience segment rather than per member,
- * so there is no member to hand to checkPostAccess — instead we rebuild the
+ * so there is no member to hand to checkPostAccess - instead we rebuild the
  * member the segment describes (status + the tiers it names) and reuse
  * checkPostAccess, keeping email and web gating from drifting apart. Mixed
  * audiences get the least-privileged member's view: a paid segment naming no
@@ -144,18 +144,18 @@ function checkSegmentPostAccess(post, segment) {
     nqlQuery = nql(segment, { expansions: MEMBER_NQL_EXPANSIONS, transformer: rejectUnknownKeys });
     parsedQuery = nqlQuery.parse();
   } catch (error) {
-    // segments arrive free-form from the API — unparseable ones get the
+    // segments arrive free-form from the API - unparseable ones get the
     // paywall, not a 500
     return BLOCK_ACCESS;
   }
 
   // a segment with only unknown keys parses to an empty query which would
-  // match every member — block, matching checkGatedBlockAccess semantics
+  // match every member - block, matching checkGatedBlockAccess semantics
   if (Object.keys(parsedQuery).length === 0) {
     return BLOCK_ACCESS;
   }
 
-  // a candidate only counts when it matches the segment — 'status:free'
+  // a candidate only counts when it matches the segment - 'status:free'
   // must never be evaluated as the paid member
   const slugs = collectSegmentProductSlugs(parsedQuery);
   const candidateMembers = [
@@ -168,7 +168,7 @@ function checkSegmentPostAccess(post, segment) {
     candidateMembers.push({ status: 'paid', products: [{ slug }] });
   }
 
-  // least privilege: every member the segment matches must have access —
+  // least privilege: every member the segment matches must have access -
   // a mixed segment like 'status:free,status:-free' gets the free view
   const matchingMembers = candidateMembers.filter((member) => nqlQuery.queryJSON(member));
   if (matchingMembers.length === 0) {

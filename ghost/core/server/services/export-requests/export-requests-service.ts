@@ -56,7 +56,7 @@ export class ExportRequestsService {
    *
    * The webhook is a shared channel that dispatches on the `type` field of
    * the event envelope, and the receiver is fire-and-forget (it always
-   * responds 200) — a 2xx means "delivered", not "validated".
+   * responds 200) - a 2xx means "delivered", not "validated".
    */
   async requestExport({
     components,

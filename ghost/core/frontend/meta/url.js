@@ -25,7 +25,7 @@ function getUrl(data, absolute) {
     // The serializer-attached url is authoritative: it was computed from
     // the full model, and the serialized post no longer carries the
     // columns needed to recompute it. /404/ means the URL service had
-    // nothing (unpublished or unrouted) — mirror the probe below without
+    // nothing (unpublished or unrouted) - mirror the probe below without
     // re-asking the service.
     if (typeof data.url === 'string') {
       if (data.url.endsWith('/404/') && data.status !== 'published') {

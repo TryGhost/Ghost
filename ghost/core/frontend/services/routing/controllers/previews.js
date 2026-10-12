@@ -51,7 +51,7 @@ module.exports = function previewController(req, res, next) {
       if (post.status === 'published') {
         // The URL service routes by resource type, and `previews` (the
         // preview router's resource) is not a routable type. Tag the
-        // resource with the post's own type — the previews serializer
+        // resource with the post's own type - the previews serializer
         // re-adds `type` (model.get('type')), so it is 'post' or 'page'.
         const type = post.type;
         return urlUtils.redirect301(

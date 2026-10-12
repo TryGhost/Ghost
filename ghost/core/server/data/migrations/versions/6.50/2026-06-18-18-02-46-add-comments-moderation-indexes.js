@@ -15,7 +15,7 @@ const { addIndex, dropIndex } = require('../../../schema/commands');
 //    cover of count.replies (parent_id selectivity + status filter in-index)
 //
 // InnoDB consolidates the auto-created single-column FK indexes on parent_id
-// and in_reply_to_id into the two composites above as soon as they exist —
+// and in_reply_to_id into the two composites above as soon as they exist -
 // down() has to recreate the single-column FK indexes before dropping the
 // composites or MySQL rejects the drop with "needed in a foreign key
 // constraint".

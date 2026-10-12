@@ -53,7 +53,7 @@ class DynamicRoutingService {
     try {
       return await this.store.get();
     } catch (err) {
-      // A stored-content error means the site's routes.yaml is invalid —
+      // A stored-content error means the site's routes.yaml is invalid -
       // either it fails validation or it isn't parseable YAML. Log a
       // targeted error so the failure is easy to spot in the logs, then
       // rethrow so the caller surfaces the genuine error rather than
@@ -88,7 +88,7 @@ class DynamicRoutingService {
     // so hoisting this would resolve to a half-initialised export.
     const bridge = require('../../../bridge');
 
-    // Parse and validate before anything is persisted — an invalid
+    // Parse and validate before anything is persisted - an invalid
     // upload is rejected here and never reaches the store.
     const next = parseRouteSettings(parseYaml(yamlContent), yamlContent);
 
@@ -96,7 +96,7 @@ class DynamicRoutingService {
 
     // Registration is synchronous inside the reload: RouterManager.start()
     // always mounts the static pages router, which has permalinks, so the
-    // URL service has routers again — and reports ready — by the time this
+    // URL service has routers again - and reports ready - by the time this
     // resolves. Nothing left to wait for.
     await bridge.reloadFrontend(this, urlService);
   }

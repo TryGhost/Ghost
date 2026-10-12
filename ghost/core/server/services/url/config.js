@@ -5,7 +5,7 @@
  * lean by dropping these columns from every cached record. A collection filter
  * referencing one therefore matched it as absent, which NQL reads as null. The
  * URL service loads full records and would see the real value, so it strips
- * these before evaluating a filter — otherwise routes.yaml files written
+ * these before evaluating a filter - otherwise routes.yaml files written
  * against the old behaviour would start routing differently.
  *
  * `lazy-find-resource` strips the same columns so a resolved resource has the

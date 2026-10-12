@@ -81,8 +81,8 @@ class CacheManager {
     // Memoized per-field calculated-field listeners, so reset() can remove the
     // exact function reference init() added. _updateCalculatedField() returns a
     // fresh closure each call, so the old removeListener() never matched and the
-    // listeners leaked across every boot (harmless in production — boot happens
-    // once — but accumulates in test runs that boot repeatedly).
+    // listeners leaked across every boot (harmless in production - boot happens
+    // once - but accumulates in test runs that boot repeatedly).
     this._calculatedFieldHandlers = new Map();
 
     this.get = this.get.bind(this);

@@ -19,7 +19,7 @@ module.exports.up = async (options) => {
 
   // Create views after tables exist. View creation is idempotent
   // (createViewOrReplace) so adding a new view to views.js does not require
-  // a new init script — and crucially, no init script can be added because
+  // a new init script - and crucially, no init script can be added because
   // that triggers knex-migrator's init() flow on upgrades, which records
   // all unapplied versioned migrations as applied WITHOUT running them.
   // Existing installs receive new views via versioned migrations.

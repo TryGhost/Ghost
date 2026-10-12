@@ -140,7 +140,7 @@ class MailgunEmailSuppressionList {
           logging.error(err);
           return;
         }
-        // Suppression already exists — still dispatch so any drifted
+        // Suppression already exists - still dispatch so any drifted
         // member state (e.g. email_disabled=false) gets corrected.
         logging.info(
           `Re-dispatching EmailSuppressedEvent for existing suppression (${reason}): ${event.email}`,

@@ -54,7 +54,7 @@ module.exports = {
   },
 
   /**
-   * @description Whether the response will carry a serialized `url` — true
+   * @description Whether the response will carry a serialized `url` - true
    * unless a `?fields` narrowing excludes it. Shared by the output
    * serializer's guard and the input serializers' force-load; a drift
    * between the two under-fetches and the lazy URL service rejects the

@@ -13,7 +13,7 @@ const DEEP_OFFSET_THRESHOLD = 1000;
 
 // The rewrite only applies to the plain single-table browse query. Joins,
 // group by, unions etc. at the top level of the statement mean some other
-// query shape — but the same keywords inside parens (NQL filters and search
+// query shape - but the same keywords inside parens (NQL filters and search
 // compile to `where members.id in (select ... join ...)`) are fine, so only
 // depth-0 SQL is inspected. Bindings are `?` placeholders, so no user data
 // appears in the inspected string.
@@ -42,8 +42,8 @@ function sqlOutsideParens(sql) {
 //
 // The query is inspected via its compiled SQL (`qb.toSQL()`, public knex API)
 // rather than knex's internal builder state. The prefix/suffix anchors below
-// mean anything unexpected — custom selects, a lock clause, missing
-// limit/offset — safely skips the rewrite.
+// mean anything unexpected - custom selects, a lock clause, missing
+// limit/offset - safely skips the rewrite.
 function applyDeferredJoinForDeepOffset(qb) {
   const { sql, bindings } = qb.toSQL();
 
@@ -378,12 +378,12 @@ const Member = ghostBookshelf.Model.extend(
 
     stripeSubscriptions() {
       // Bookshelf belongsToMany positional args:
-      //   1: target model — StripeCustomerSubscription
-      //   2: join table   — members_stripe_customers (one row per customer)
-      //   3: foreignKey   — joinTable.member_id refs the parent (members)
-      //   4: otherKey     — joinTable.customer_id is what target rows match against
-      //   5: parentKey    — column on `members` matched by foreignKey (members.id)
-      //   6: targetKey    — column on `members_stripe_customers_subscriptions` matched by otherKey (mscs.customer_id)
+      //   1: target model - StripeCustomerSubscription
+      //   2: join table   - members_stripe_customers (one row per customer)
+      //   3: foreignKey   - joinTable.member_id refs the parent (members)
+      //   4: otherKey     - joinTable.customer_id is what target rows match against
+      //   5: parentKey    - column on `members` matched by foreignKey (members.id)
+      //   6: targetKey    - column on `members_stripe_customers_subscriptions` matched by otherKey (mscs.customer_id)
       return this.belongsToMany(
         'StripeCustomerSubscription',
         'members_stripe_customers',
@@ -396,12 +396,12 @@ const Member = ghostBookshelf.Model.extend(
 
     currentSubscription() {
       // Bookshelf belongsToMany positional args:
-      //   1: target model — StripeCustomerSubscription
-      //   2: join table   — members_current_subscription (1:1 lookup)
-      //   3: foreignKey   — joinTable.member_id refs the parent (members)
-      //   4: otherKey     — joinTable.subscription_id refs the target sub
-      //   5: parentKey    — column on `members` matched by foreignKey (members.id)
-      //   6: targetKey    — column on `members_stripe_customers_subscriptions` matched by otherKey (mscs.id)
+      //   1: target model - StripeCustomerSubscription
+      //   2: join table   - members_current_subscription (1:1 lookup)
+      //   3: foreignKey   - joinTable.member_id refs the parent (members)
+      //   4: otherKey     - joinTable.subscription_id refs the target sub
+      //   5: parentKey    - column on `members` matched by foreignKey (members.id)
+      //   6: targetKey    - column on `members_stripe_customers_subscriptions` matched by otherKey (mscs.id)
       return this.belongsToMany(
         'StripeCustomerSubscription',
         'members_current_subscription',
@@ -438,7 +438,7 @@ const Member = ghostBookshelf.Model.extend(
 
       // `currentSubscription` is conceptually 1:1 (members_current_subscription
       // has member_id as its primary key) but bookshelf has no through-table
-      // 1:1 relation type — `belongsToMany` always returns a Collection.
+      // 1:1 relation type - `belongsToMany` always returns a Collection.
       // Flatten to a single object (or null) for the wire shape.
       if (defaultSerializedObject.currentSubscription !== undefined) {
         defaultSerializedObject.current_subscription = Array.isArray(

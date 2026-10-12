@@ -1087,7 +1087,7 @@ module.exports = {
       validations: { isIn: [['active', 'archived']] },
     },
     // These validations never run: they are applied by Bookshelf's onValidate hook,
-    // and this table has no Bookshelf model — the metafields service writes it through
+    // and this table has no Bookshelf model - the metafields service writes it through
     // knex, validating with MEMBER_ACCESS in that service instead. Recorded here to
     // describe the column, and duplicated because this static schema cannot import
     // TypeScript.
@@ -1160,15 +1160,15 @@ module.exports = {
     // One row, one value: a part a member has not filled in has no row at all. The
     // column stays nullable even so, because making it NOT NULL is only reachable
     // through knex's dropNullable, which rewrites the column on MySQL and widens
-    // TEXT to MEDIUMTEXT — a migrated site would then accept sixteen megabytes in a
+    // TEXT to MEDIUMTEXT - a migrated site would then accept sixteen megabytes in a
     // column a fresh install bounds at 65,535 bytes. The bound matching long_text's
     // exactly is worth more than the schema restating what the write path enforces.
     value_text: { type: 'text', maxlength: 65535, nullable: true },
     // Who wrote the value that is here now.
     //
     // Shaped like `actions`: a type and an id, no foreign key. A type because not every
-    // write comes through a binding — a person edits a member's fields, an import reads a
-    // file — and an id so the writer can be resolved back rather than merely named. A
+    // write comes through a binding - a person edits a member's fields, an import reads a
+    // file - and an id so the writer can be resolved back rather than merely named. A
     // binding id resolves to the port and the field it routed into, which is everything
     // worth knowing about how a value got here.
     //
@@ -1194,7 +1194,7 @@ module.exports = {
       },
     ],
     // What a segment filter looks up: every member holding a given value for a
-    // given part of a given field. The value itself is not in the index — it is
+    // given part of a given field. The value itself is not in the index - it is
     // TEXT, so MySQL would need a prefix length, and the schema's index builder
     // applies one length to every column in a composite index rather than to a
     // single chosen one.

@@ -27,7 +27,7 @@ const beforeSend = function (event, hint) {
         }
       }
 
-      // This is a mysql2 error — add some additional context
+      // This is a mysql2 error - add some additional context
       if (exception.sql) {
         const sql = exception.sql;
         const errno = exception.errno ?? null;

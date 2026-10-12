@@ -3,7 +3,7 @@ const mappers = require('./mappers');
 const tiersService = require('../../../../../services/tiers');
 
 module.exports = {
-  // 204 No Content — see posts.js destroy
+  // 204 No Content - see posts.js destroy
   destroy(models, apiConfig, frame) {
     debug('destroy');
 

@@ -41,11 +41,11 @@ function renderIntro(data: GiftPurchaseConfirmationData, t: Translate): string {
     };
     return gift.isMonthly
       ? t(
-          'Thank you for your support. Your gift — a {duration}-month {tierName} membership to {siteTitle} — will be sent to {recipientEmail} on {deliveryDate}. You can also share the link below yourself.',
+          'Thank you for your support. Your gift \u2014 a {duration}-month {tierName} membership to {siteTitle} \u2014 will be sent to {recipientEmail} on {deliveryDate}. You can also share the link below yourself.',
           scheduled,
         )
       : t(
-          'Thank you for your support. Your gift — a {duration}-year {tierName} membership to {siteTitle} — will be sent to {recipientEmail} on {deliveryDate}. You can also share the link below yourself.',
+          'Thank you for your support. Your gift \u2014 a {duration}-year {tierName} membership to {siteTitle} \u2014 will be sent to {recipientEmail} on {deliveryDate}. You can also share the link below yourself.',
           scheduled,
         );
   }
@@ -57,11 +57,11 @@ function renderIntro(data: GiftPurchaseConfirmationData, t: Translate): string {
     };
     return gift.isMonthly
       ? t(
-          'Thank you for your support. Your gift — a {duration}-month {tierName} membership to {siteTitle} — is on its way to {recipientEmail}. You can also share the link below yourself.',
+          'Thank you for your support. Your gift \u2014 a {duration}-month {tierName} membership to {siteTitle} \u2014 is on its way to {recipientEmail}. You can also share the link below yourself.',
           emailed,
         )
       : t(
-          'Thank you for your support. Your gift — a {duration}-year {tierName} membership to {siteTitle} — is on its way to {recipientEmail}. You can also share the link below yourself.',
+          'Thank you for your support. Your gift \u2014 a {duration}-year {tierName} membership to {siteTitle} \u2014 is on its way to {recipientEmail}. You can also share the link below yourself.',
           emailed,
         );
   }

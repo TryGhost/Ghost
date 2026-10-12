@@ -1,12 +1,12 @@
 // The event model doesn't reliably carry the relations the URL service reads
 // when routing (collection filters like tags:internal-tag), so under lazy
 // routing an under-loaded post 404s. Ask the URL service which relations it
-// needs and load only the ones missing — reloading a relation the event
+// needs and load only the ones missing - reloading a relation the event
 // already carries (e.g. authors) would strip its nested roles from the
 // payload. `getRequiredRelations()` is [] when the routing config reads
 // none, so this is a no-op on a default routes.yaml.
 // `model._changed` carries raw model keys, but `previous` is picked off the
-// API-serialized payload, where some keys are renamed (members `products` → `tiers`).
+// API-serialized payload, where some keys are renamed (members `products` -> `tiers`).
 const SERIALIZED_KEYS = {
   members: {
     products: 'tiers',

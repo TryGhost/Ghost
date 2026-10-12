@@ -8,7 +8,7 @@ interface ZipStreamResponseOptions {
 }
 
 /**
- * Builds the `frame.response` handler for a streaming zip download — the
+ * Builds the `frame.response` handler for a streaming zip download - the
  * shared header/piping wiring lives in `stream-response`.
  */
 export function createZipStreamResponse({ source, filename }: ZipStreamResponseOptions) {

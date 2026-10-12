@@ -13,7 +13,7 @@ function redirectAdminUrls(req, res, next) {
 
   if (ghostPathMatch) {
     // React Router's hash routes don't match a trailing slash. Strip one
-    // from the pathname only — slashes inside the query string (e.g.
+    // from the pathname only - slashes inside the query string (e.g.
     // `?next=/settings/`) must be preserved.
     const captured = ghostPathMatch[1];
     const queryIndex = captured.indexOf('?');

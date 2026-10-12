@@ -65,7 +65,7 @@ export const parseYaml = (content: string): RedirectConfig[] => {
 
   for (const statusCode of ['302', '301'] as const) {
     const section = configYaml[statusCode];
-    // `301:` / `302:` with no entries parses as null — tolerated.
+    // `301:` / `302:` with no entries parses as null - tolerated.
     if (section === undefined || section === null) {
       continue;
     }
@@ -95,7 +95,7 @@ export const parseYaml = (content: string): RedirectConfig[] => {
   return redirects;
 };
 
-// Round-trips through parseYaml to []. Avoids a "download → save →
+// Round-trips through parseYaml to []. Avoids a "download -> save ->
 // re-upload throws on empty body" footgun on fresh installs.
 const EMPTY_DOWNLOAD_TEMPLATE =
   '# See https://docs.ghost.org/themes/routing/#redirects\n301: {}\n302: {}\n';

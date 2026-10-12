@@ -20,7 +20,7 @@ module.exports = {
   },
 
   /**
-   * Methods backing the Admin API settings endpoint — delegate to the
+   * Methods backing the Admin API settings endpoint - delegate to the
    * service instance so the endpoint stays decoupled from service wiring.
    */
   api: {

@@ -14,7 +14,7 @@ module.exports = ({
   <head>
     <meta name="viewport" content="width=device-width">
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    <title>🔑 ${t('Your verification code for {siteTitle}', { siteTitle, interpolation: { escapeValue: false } })}</title>
+    <title>\uD83D\uDD11 ${t('Your verification code for {siteTitle}', { siteTitle, interpolation: { escapeValue: false } })}</title>
     <style>
     /* -------------------------------------
         RESPONSIVE AND MOBILE FRIENDLY STYLES

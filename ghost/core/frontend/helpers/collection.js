@@ -57,7 +57,7 @@ async function makeAPICall(resource, controllerName, action, apiOptions) {
 
       const apiResponse = controller[action](apiOptions);
       // consume rejections that happen after the timeout has already won
-      // the race — they'd otherwise crash the process as unhandled
+      // the race - they'd otherwise crash the process as unhandled
       apiResponse.catch(() => {});
 
       const timeout = new Promise((resolve) => {

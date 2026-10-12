@@ -7,7 +7,7 @@ class EmailServiceWrapper {
   getPostUrl(post) {
     const jsonModel = post.toJSON();
     // The URL service routes by resource type. Pages and posts share the
-    // Post model, so the page's own type must reach forPost — otherwise it
+    // Post model, so the page's own type must reach forPost - otherwise it
     // defaults to 'posts', matches no post collection, and 404s under the
     // lazy service.
     const type = jsonModel.type === 'page' ? 'pages' : 'posts';

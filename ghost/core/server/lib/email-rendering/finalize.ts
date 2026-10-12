@@ -29,10 +29,10 @@ const finalizeHtml = (html: string): string => {
   // Fix characters unsupported in some Outlook versions.
   html = $.html();
   html = html.replace(/&apos;/g, '&#39;');
-  html = html.replace(/→/g, '&rarr;');
-  html = html.replace(/–/g, '&ndash;');
-  html = html.replace(/“/g, '&ldquo;');
-  html = html.replace(/”/g, '&rdquo;');
+  html = html.replace(/\u2192/g, '&rarr;');
+  html = html.replace(/\u2013/g, '&ndash;');
+  html = html.replace(/\u201C/g, '&ldquo;');
+  html = html.replace(/\u201D/g, '&rdquo;');
 
   return html;
 };

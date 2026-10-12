@@ -117,7 +117,7 @@ async function cleanExpiredComped({
       });
 
       // SQLite >= 3.32.0 can support 32766 host parameters
-      // each row uses 5 variables so ⌊32766/5⌋ = 6553
+      // each row uses 5 variables so \u230A32766/5\u230B = 6553
       const chunkSize = 6553;
 
       for (const chunk of chunkArray(statusEvents, chunkSize)) {

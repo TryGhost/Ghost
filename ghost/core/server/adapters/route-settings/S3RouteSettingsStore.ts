@@ -121,7 +121,7 @@ export default class S3RouteSettingsStore extends RouteSettingsStoreBase {
       };
     }
 
-    // `s3Client` is a test-only injection seam — it never comes from config
+    // `s3Client` is a test-only injection seam - it never comes from config
     // (nconf holds static values), so it's read from the raw input rather
     // than the validated schema output.
     const injectedClient = (config as { s3Client?: S3Client } | null | undefined)?.s3Client;
@@ -205,7 +205,7 @@ export default class S3RouteSettingsStore extends RouteSettingsStoreBase {
 
   private _requestError(err: unknown): Error {
     // The only Ghost errors reaching here are this store's own, which are
-    // already safe to render — re-wrapping them would hide the reason.
+    // already safe to render - re-wrapping them would hide the reason.
     if (err instanceof errors.InternalServerError) {
       return err;
     }

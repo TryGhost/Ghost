@@ -58,7 +58,7 @@ export function buildFilter(filter: string | null | undefined): CompiledFilter |
 // lazily: `buildFilter` returns happily for a filter like `((`, and the parse
 // error surfaces here on the first `queryJSON`. So this catch is the only
 // thing standing between a bad routes.yaml filter and a site that cannot
-// route — do not narrow it on the assumption that compilation already
+// route - do not narrow it on the assumption that compilation already
 // failed somewhere upstream. Pinned in router-filter.test.js.
 export function filterMatches(
   compiledFilter: CompiledFilter | null,

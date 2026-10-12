@@ -17,8 +17,8 @@ module.exports = ({
     <meta name="supported-color-schemes" content="light">
     ${
       otc
-        ? `<title>🔑 ${t('Sign in to {siteTitle} with code {otc}', { siteTitle, otc, interpolation: { escapeValue: false } })}</title>`
-        : `<title>🔑 ${t('Secure sign in link for {siteTitle}', { siteTitle, interpolation: { escapeValue: false } })}</title>`
+        ? `<title>\uD83D\uDD11 ${t('Sign in to {siteTitle} with code {otc}', { siteTitle, otc, interpolation: { escapeValue: false } })}</title>`
+        : `<title>\uD83D\uDD11 ${t('Secure sign in link for {siteTitle}', { siteTitle, interpolation: { escapeValue: false } })}</title>`
     }
     <style>
     /* -------------------------------------

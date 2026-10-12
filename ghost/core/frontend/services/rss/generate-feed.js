@@ -40,7 +40,7 @@ const generateItem = function generateItem(post) {
       .remove();
     htmlContent(card).find('.kg-bookmark-description').wrap('<small></small>');
 
-    // Video card — strip custom player chrome, fall back to a native playable <video>
+    // Video card - strip custom player chrome, fall back to a native playable <video>
     htmlContent(card).find('.kg-video-overlay, .kg-video-player-container').remove();
     const videoPoster =
       htmlContent(card).attr('data-kg-custom-thumbnail') ||
@@ -51,7 +51,7 @@ const generateItem = function generateItem(post) {
     // The inline style was the old CSS-thumbnail mechanism; the real poster replaces it
     video.removeAttr('style');
 
-    // Audio card — strip chrome including the title; native playable <audio>
+    // Audio card - strip chrome including the title; native playable <audio>
     htmlContent(card).find('.kg-audio-thumbnail, .kg-audio-player, .kg-audio-title').remove();
     const audio = htmlContent(card).find('.kg-audio-card audio');
     audio.attr('controls', '');

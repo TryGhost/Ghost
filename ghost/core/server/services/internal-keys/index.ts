@@ -30,7 +30,7 @@ export type ApiKeyType = (typeof SLUG_KEY_TYPE)[InternalIntegrationSlug];
  */
 export type InternalKeys = AutoFillingMap<InternalIntegrationSlug, Promise<InternalApiKey>>;
 
-// models/index.js is the Bookshelf model registry — a JS module without
+// models/index.js is the Bookshelf model registry - a JS module without
 // TypeScript declarations. Use a typed require so we can call the model
 // method without polluting the file with `any`. The generic constrains
 // known internal slugs to their seeded type; arbitrary slugs accept any

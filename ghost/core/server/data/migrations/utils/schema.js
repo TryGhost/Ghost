@@ -9,7 +9,7 @@ const { createNonTransactionalMigration, createTransactionalMigration } = requir
  * Builds a migration that runs inside a transaction on MySQL but NOT on SQLite.
  *
  * SQLite implements a column nullability change by rebuilding the whole table,
- * which requires toggling `PRAGMA foreign_keys` — and that pragma is a no-op once
+ * which requires toggling `PRAGMA foreign_keys` - and that pragma is a no-op once
  * a transaction is open. So on SQLite the migration must run non-transactionally
  * (see applyNullableChange). MySQL alters the column in place and keeps the
  * transaction it has always used.

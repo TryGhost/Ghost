@@ -11,11 +11,11 @@ const messages = {
   invalidMemberStatus: "member_status must be 'free' or 'paid'.",
   invalidMemberTier: 'member_tier must be a single tier slug.',
   invalidMemberSegment:
-    "memberSegment is deprecated and only accepts 'status:free' or 'status:-free' — use member_status instead.",
+    "memberSegment is deprecated and only accepts 'status:free' or 'status:-free' \u2014 use member_status instead.",
 };
 
 // deprecated memberSegment values older clients send, mapped onto the
-// member_status vocabulary — production logs show nothing else in use
+// member_status vocabulary - production logs show nothing else in use
 const LEGACY_SEGMENT_STATUSES = {
   'status:free': 'free',
   'status:-free': 'paid',
@@ -43,7 +43,7 @@ class EmailController {
     // Bit absurd situation in email-previews endpoints that one endpoint is using options and other one is using data.
     // So we need to handle both cases.
 
-    // repeated query params / JSON arrays arrive as non-strings — reject
+    // repeated query params / JSON arrays arrive as non-strings - reject
     // rather than 500 downstream (the api-framework only validates
     // required/values, so the endpoint can't do this for us)
     const memberTier = frame.options.member_tier ?? frame.data?.member_tier ?? null;

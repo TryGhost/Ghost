@@ -16,7 +16,7 @@ export function renderText(data: NewGiftSubscriptionTextData): string {
 A gift subscription was redeemed
 
 Member: ${data.memberData.name}
-Tier: ${data.tierData.name}${data.tierData.details ? ` • ${data.tierData.details}` : ''}
+Tier: ${data.tierData.name}${data.tierData.details ? ` \u2022 ${data.tierData.details}` : ''}
 Gifted by: ${data.giftedByEmail}
 
 ---

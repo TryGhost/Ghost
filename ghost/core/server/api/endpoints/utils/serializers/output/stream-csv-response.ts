@@ -11,7 +11,7 @@ interface CSVStreamResponseOptions {
 }
 
 /**
- * Builds the `frame.response` handler for a streaming CSV download — the
+ * Builds the `frame.response` handler for a streaming CSV download - the
  * shared header/piping wiring lives in `stream-response`.
  */
 export function createCSVStreamResponse({ source, transform, filename }: CSVStreamResponseOptions) {

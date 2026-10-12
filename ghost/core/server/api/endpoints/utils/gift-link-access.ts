@@ -1,6 +1,6 @@
 /**
  * Gift-link access for the public posts/pages read endpoints. The raw token
- * arrives as internal read context from the frontend entry lookup — it has no
+ * arrives as internal read context from the frontend entry lookup - it has no
  * HTTP surface, so a `?gift` param on the Content API is ignored.
  */
 import type { Frame } from '@tryghost/api-framework';
@@ -31,7 +31,7 @@ function giftTokenFromFrame(frame: GiftAccessFrame): string | null {
  * Resolve the token to its post id and stash it for `applyGiftAccess`. Runs in
  * `generateCacheKeyData`, BEFORE the response cache is consulted, so
  * revocations take effect immediately. `present: true` keeps an unresolvable
- * token's key distinct from a plain read's — sharing that key would serve a
+ * token's key distinct from a plain read's - sharing that key would serve a
  * cached gated 200 where a miss 403s.
  */
 export async function generateGiftKeyData(
@@ -56,7 +56,7 @@ export async function generateGiftKeyData(
  * after the model fetch: a missing entry stays a 404 regardless of the token;
  * a token that doesn't verify is a 403 with `INVALID_GIFT_TOKEN`.
  *
- * Uses the resolution `generateGiftKeyData` stashed — and refuses to run
+ * Uses the resolution `generateGiftKeyData` stashed - and refuses to run
  * without it. Resolving here as a fallback would let an endpoint wire up
  * verification without the cache-key half, which no test environment can
  * catch (the response cache is disabled there) but which poisons the

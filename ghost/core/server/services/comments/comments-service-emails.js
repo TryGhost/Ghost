@@ -67,7 +67,7 @@ class CommentsServiceEmails {
       }
 
       const to = author.get('email');
-      const subject = '💬 New comment on your post: ' + post.get('title');
+      const subject = '\uD83D\uDCAC New comment on your post: ' + post.get('title');
 
       const memberName = member.get('name') || 'Anonymous';
 
@@ -135,7 +135,7 @@ class CommentsServiceEmails {
 
     const parentMemberEmail = parentMember.get('email');
     const subject =
-      '↪️ ' +
+      '\u21AA\uFE0F ' +
       t(`New reply to your comment on {siteTitle}`, {
         siteTitle: this.settingsCache.get('title'),
         interpolation: { escapeValue: false },
@@ -202,7 +202,7 @@ class CommentsServiceEmails {
 
     // For now we only send the report to the owner
     const to = owner.get('email');
-    const subject = '🚩 A comment has been reported on your post';
+    const subject = '\uD83D\uDEA9 A comment has been reported on your post';
 
     const memberName = member.get('name') || 'Anonymous';
 

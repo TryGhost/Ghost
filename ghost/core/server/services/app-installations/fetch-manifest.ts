@@ -39,7 +39,7 @@ function unreachable(manifestUrl: string, err: unknown) {
   logging.warn(`Could not load the app manifest at ${manifestUrl}`);
   logging.warn(err);
   return new errors.ValidationError({
-    message: 'Could not load the app’s manifest.',
+    message: 'Could not load the app\u2019s manifest.',
     code: 'APP_MANIFEST_UNREACHABLE',
     context: status ? `${manifestUrl} answered with HTTP ${status}` : manifestUrl,
   });
@@ -167,7 +167,7 @@ export function createManifestFetcher({
       const status = statusOf(err);
       if (tooLarge && (status === undefined || (status >= 200 && status < 300))) {
         throw new errors.ValidationError({
-          message: `The app’s manifest is larger than ${MANIFEST_MAX_BYTES / 1024} KB.`,
+          message: `The app\u2019s manifest is larger than ${MANIFEST_MAX_BYTES / 1024} KB.`,
           code: 'APP_MANIFEST_TOO_LARGE',
           context: manifestUrl,
         });
@@ -186,7 +186,7 @@ export function createManifestFetcher({
       };
     } catch {
       throw new errors.ValidationError({
-        message: 'The app’s manifest is not JSON.',
+        message: 'The app\u2019s manifest is not JSON.',
         code: 'APP_MANIFEST_NOT_JSON',
         context: manifestUrl,
       });
@@ -196,7 +196,7 @@ export function createManifestFetcher({
 
 function redirected(manifestUrl: string, target: URL) {
   return new errors.ValidationError({
-    message: 'The app’s manifest redirects to another host.',
+    message: 'The app\u2019s manifest redirects to another host.',
     code: 'APP_MANIFEST_REDIRECTED',
     context: `${manifestUrl} redirects to ${target.host}`,
   });

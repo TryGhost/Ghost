@@ -138,7 +138,7 @@ class ExternalMediaInliner {
     // If the file is heic or heif, attempt to convert it to jpeg
     if (extension === 'heic' || extension === 'heif') {
       // Lazy: pulls in libheif-js, a WASM codec costing ~50ms to load at boot.
-      // Deliberately outside the try — a missing codec is not a conversion error,
+      // Deliberately outside the try - a missing codec is not a conversion error,
       // and swallowing it would store an unconvertible .heic in its place.
       const convert = require('heic-convert');
 

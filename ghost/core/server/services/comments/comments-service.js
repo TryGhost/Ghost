@@ -245,7 +245,7 @@ class CommentsService {
    * Member-facing read: goes through `findOne` (not the lean primitive) so the
    * serializer's default relation graph (member, counts, in_reply_to, replies)
    * is loaded. Readable statuses are constrained in the query via an NQL filter,
-   * so a non-readable comment is never fetched and its relations never loaded — a
+   * so a non-readable comment is never fetched and its relations never loaded - a
    * missing or non-readable id is a 404. `status` stays selected for the
    * serializer's hidden/deleted redaction.
    */

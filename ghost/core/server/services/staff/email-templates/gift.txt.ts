@@ -17,7 +17,7 @@ export function renderText(data: GiftTextData): string {
 A gift subscription was purchased
 
 From: ${data.gift.name}
-Tier: ${data.gift.tierName} • ${data.gift.cadenceLabel}
+Tier: ${data.gift.tierName} \u2022 ${data.gift.cadenceLabel}
 Amount received: ${data.gift.amount}
 
 ---

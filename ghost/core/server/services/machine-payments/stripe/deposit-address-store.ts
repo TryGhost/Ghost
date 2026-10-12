@@ -76,11 +76,11 @@ export function createStripeDepositAddressClient(secretKey: string): StripeDepos
 
 /**
  * Durable per-network deposit-address store.
- * Persists a JSON map of network → address in settings so per-network deposit
+ * Persists a JSON map of network -> address in settings so per-network deposit
  * addresses cannot share a single chain address.
  *
  * Stripe's machine-payments docs recommend minting deposit addresses off the
- * request path via POST /v1/crypto/deposit_addresses — never by confirming a
+ * request path via POST /v1/crypto/deposit_addresses - never by confirming a
  * PaymentIntent from an anonymous GET.
  */
 export class DepositAddressStore {
@@ -177,7 +177,7 @@ export class DepositAddressStore {
           return parsed as Record<string, string>;
         }
       } catch {
-        // Legacy single-address string — treat as Tempo-only.
+        // Legacy single-address string - treat as Tempo-only.
       }
 
       return { tempo: raw };

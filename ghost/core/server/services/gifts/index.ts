@@ -17,7 +17,7 @@ export interface GiftServiceInitOptions {
 
 // Constructed by init() at boot, once the database and scheduling adapter are ready.
 // Under the dev/test loader (tsx) these compile to getter-only exports, so tests
-// can't assign to them — stub the module load instead (see
+// can't assign to them - stub the module load instead (see
 // test/unit/server/web/gift-preview/controller.test.js).
 export let controller: GiftController | undefined;
 export let service: GiftService | undefined;

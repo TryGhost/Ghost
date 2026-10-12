@@ -56,11 +56,11 @@ export const stringify = (email: Readonly<EmailAddress>): string => {
    * messages points us to https://support.google.com/mail/?p=BlockedMessage
    *
    * We've found that the following characters are problematic:
-   * - ✅ WHITE HEAVY CHECK MARK (U+2705)
-   * - ✓ CHECK MARK (U+2713)
-   * - ✔ HEAVY CHECK MARK (U+2714)
-   * - ☑ BALLOT BOX WITH CHECK (U+2611)
-   * - 🗸 LIGHT CHECK MARK (U+1F5F8)
+   * - \u2705 WHITE HEAVY CHECK MARK (U+2705)
+   * - ok CHECK MARK (U+2713)
+   * - ok HEAVY CHECK MARK (U+2714)
+   * - \u2611 BALLOT BOX WITH CHECK (U+2611)
+   * - \uD83D\uDDF8 LIGHT CHECK MARK (U+1F5F8)
    *
    * We remove these characters from the name.
    */

@@ -30,7 +30,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 
 /**
  * Values are rebuilt into plain objects, so a segment naming something every object
- * already has would reach the prototype instead of the value — and a write through
+ * already has would reach the prototype instead of the value - and a write through
  * `__proto__` reaches every object in the process. Paths come out of the database, so
  * this holds here rather than trusting whatever put them there.
  */

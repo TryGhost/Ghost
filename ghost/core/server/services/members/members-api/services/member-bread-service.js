@@ -119,7 +119,7 @@ module.exports = class MemberBREADService {
    * @private
    * Adds missing complimentary subscriptions to a member and makes sure the tier of all subscriptions is set correctly.
    * @param {Object} member JSON serialized member
-   * @param {Map<string, {cadence: 'month' | 'year', currency: string, amount: number}>} [giftMap] Map of memberId → active redeemed gift, used to populate real price details on synthetic gift subscriptions
+   * @param {Map<string, {cadence: 'month' | 'year', currency: string, amount: number}>} [giftMap] Map of memberId -> active redeemed gift, used to populate real price details on synthetic gift subscriptions
    */
   attachSubscriptionsToMember(member, giftMap = new Map()) {
     if (!member.products || !Array.isArray(member.products)) {
@@ -156,7 +156,7 @@ module.exports = class MemberBREADService {
           amount = gift.amount;
         } else {
           logging.warn(
-            `No active gift found for gift member ${member.id} — falling back to default subscription price details.`,
+            `No active gift found for gift member ${member.id} \u2014 falling back to default subscription price details.`,
           );
         }
       }
@@ -368,7 +368,7 @@ module.exports = class MemberBREADService {
    * @private
    * Fetches active redeemed gifts for any gift-status members in the input list.
    * @param {import('bookshelf').Model[]} members - Bookshelf member models
-   * @returns {Promise<Map<string, {cadence: 'month' | 'year', currency: string, amount: number}>>} keyed by member.id → stable gift presentation
+   * @returns {Promise<Map<string, {cadence: 'month' | 'year', currency: string, amount: number}>>} keyed by member.id -> stable gift presentation
    */
   async fetchActiveGiftsForMembers(members) {
     const giftMemberIds = members.filter((m) => m.get('status') === 'gift').map((m) => m.id);
@@ -407,7 +407,7 @@ module.exports = class MemberBREADService {
       'stripeSubscriptions.stripePrice',
       'stripeSubscriptions.stripePrice.stripeProduct',
       'stripeSubscriptions.stripePrice.stripeProduct.product',
-      // The resolved subscription itself — no nested loads, since the
+      // The resolved subscription itself - no nested loads, since the
       // FE finds price/product details in the already-loaded
       // `subscriptions` array via the matching id.
       'currentSubscription',
@@ -491,7 +491,7 @@ module.exports = class MemberBREADService {
     }
 
     // Every value reaching here was typed into the Admin API, so the writer is
-    // whoever made the request — the same pair the action log records, so the two
+    // whoever made the request - the same pair the action log records, so the two
     // agree about who did it rather than one saying only that it was "admin".
     //
     // The only route to this branch is the authenticated Admin API, so an anonymous
@@ -800,7 +800,7 @@ module.exports = class MemberBREADService {
       'stripeSubscriptions.stripePrice',
       'stripeSubscriptions.stripePrice.stripeProduct',
       'stripeSubscriptions.stripePrice.stripeProduct.product',
-      // The resolved subscription itself — no nested loads, since the
+      // The resolved subscription itself - no nested loads, since the
       // FE finds price/product details in the already-loaded
       // `subscriptions` array via the matching id.
       'currentSubscription',

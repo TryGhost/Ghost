@@ -195,7 +195,7 @@ class AttributionBuilder {
   }
 
   /**
-   * Last Post Algorithm™️
+   * Last Post Algorithm\u2122\uFE0F
    * @param {import('./url-history').UrlHistoryArray} history
    * @returns {Promise<Attribution>}
    */

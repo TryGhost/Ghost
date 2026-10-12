@@ -460,7 +460,7 @@ async function validateEmailLexical(actions: Automation['actions']) {
 }
 
 // Drafts may persist empty email steps, but an active automation must have a
-// complete subject and body for every email it sends — mirroring the editor's
+// complete subject and body for every email it sends - mirroring the editor's
 // publish-time validation.
 function validateActiveEmailSteps(status: Automation['status'], actions: Automation['actions']) {
   if (status !== 'active') {

@@ -28,7 +28,7 @@ type WriteFrame = Frame<{
 // a shoe size, and every signed-in member is already shown the whole list, so there is
 // nothing here to keep from staff. Defining one is the publisher's own, and with
 // `permissions: true` the framework would check against the Bookshelf model named after
-// the resource — these fields have no Bookshelf model, so each writing handler asks the
+// the resource - these fields have no Bookshelf model, so each writing handler asks the
 // permissions service directly.
 function canThis(frame: ReadFrame) {
   return permissionsService.canThis(frame.options.context);

@@ -95,7 +95,7 @@ export class MppAdapter implements PaymentAdapter {
     if (payment.status === 402) {
       return payment.challenge ?? null;
     }
-    // Unexpected success without credential — treat as challenge unavailable.
+    // Unexpected success without credential - treat as challenge unavailable.
     return null;
   }
 

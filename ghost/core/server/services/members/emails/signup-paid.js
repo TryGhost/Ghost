@@ -6,7 +6,7 @@ module.exports = ({ t, siteTitle, email, url, accentColor = '#15212A', siteDomai
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <meta name="color-scheme" content="light only">
     <meta name="supported-color-schemes" content="light">
-    <title>🙌 ${t('Thank you for signing up to {siteTitle}!', { siteTitle, interpolation: { escapeValue: false } })}</title>
+    <title>\uD83D\uDE4C ${t('Thank you for signing up to {siteTitle}!', { siteTitle, interpolation: { escapeValue: false } })}</title>
     <style>
     /* -------------------------------------
         RESPONSIVE AND MOBILE FRIENDLY STYLES

@@ -9,7 +9,7 @@ import type { ConfigInstance } from '../../../shared/config/loader';
  * Whether `filePath` resolves to a location inside `directory`.
  *
  * Both sides are resolved through `fs.realpathSync` before comparing, because
- * Node's module resolution returns realpaths — so a symlinked install (or macOS'
+ * Node's module resolution returns realpaths - so a symlinked install (or macOS'
  * `/var` -> `/private/var`) would otherwise look like an escape.
  */
 function isContainedBy(filePath: string, directory: string): boolean {
@@ -38,8 +38,8 @@ function isContainedBy(filePath: string, directory: string): boolean {
  *
  * An adapter installed into `content/adapters` can be a full module directory
  * with its own `package.json`. Node's CommonJS directory resolution honours
- * `main` but ignores `exports` — per spec, `exports` applies only to package
- * specifiers resolved through `node_modules`, never to directory paths — so a
+ * `main` but ignores `exports` - per spec, `exports` applies only to package
+ * specifiers resolved through `node_modules`, never to directory paths - so a
  * package declaring only `exports` would otherwise fail to resolve.
  *
  * We get native `exports` resolution by self-referencing: because the referrer
@@ -47,9 +47,9 @@ function isContainedBy(filePath: string, directory: string): boolean {
  * its own `name` makes Node resolve through that package's own `exports` field,
  * applying conditions, nesting and subpath rules for us.
  *
- * Anything that isn't a self-referencing module directory — a bare
+ * Anything that isn't a self-referencing module directory - a bare
  * `node_modules` specifier, a plain `index.js` adapter directory, or a package
- * declaring only `main` — is returned untouched so Node's own resolution
+ * declaring only `main` - is returned untouched so Node's own resolution
  * applies, preserving the behaviour of pre-existing adapters.
  *
  * @NOTE: `require` matches the `require`, `node` and `default` conditions but
@@ -61,8 +61,8 @@ function isContainedBy(filePath: string, directory: string): boolean {
  * would mean reading the `exports` field ourselves.
  */
 export function resolveAdapterEntryPoint(pathToAdapter: string): string {
-  // The node_modules lane passes a bare specifier rather than a path — Node
-  // already applies `exports` to those — and a relative read here would be
+  // The node_modules lane passes a bare specifier rather than a path - Node
+  // already applies `exports` to those - and a relative read here would be
   // resolved against the cwd, so only absolute directories are considered.
   if (!path.isAbsolute(pathToAdapter)) {
     return pathToAdapter;
@@ -89,7 +89,7 @@ export function resolveAdapterEntryPoint(pathToAdapter: string): string {
     // Self-referencing only kicks in when the package declares `exports`.
     // Without it, Node falls back to walking `node_modules` up the tree and
     // can resolve a *different*, same-named package from elsewhere in the
-    // install — silently loading an impostor instead of the operator's
+    // install - silently loading an impostor instead of the operator's
     // adapter. Only accept a result that actually lives in the adapter
     // directory; anything else falls back to Node's directory resolution.
     if (!isContainedBy(resolved, pathToAdapter)) {
@@ -98,7 +98,7 @@ export function resolveAdapterEntryPoint(pathToAdapter: string): string {
 
     return resolved;
   } catch {
-    // No usable `exports` entry — fall back to Node's directory resolution,
+    // No usable `exports` entry - fall back to Node's directory resolution,
     // which still handles `main` and `index.js`.
     return pathToAdapter;
   }
@@ -130,7 +130,7 @@ export function resolveAdapterExport(moduleExport: unknown): AdapterConstructor 
 /**
  * Locate and load an adapter constructor by type and class name, trying each of
  * `pathsToAdapters` in order. Shared by the adapter manager and by
- * bin/validate-adapters.ts, so a name resolves — and fails — identically at build
+ * bin/validate-adapters.ts, so a name resolves - and fails - identically at build
  * time and at runtime.
  */
 export function loadAdapterClass(
@@ -162,7 +162,7 @@ export function loadAdapterClass(
       }
 
       // Catch missing dependencies BUT NOT missing adapter.
-      // Only check the first line — Node appends a "Require stack"
+      // Only check the first line - Node appends a "Require stack"
       // that includes the adapter's own path, which would false-positive.
       const firstLine = err.message.split('\n')[0];
       if (!firstLine.includes(pathToAdapter)) {
@@ -269,8 +269,8 @@ export function normalizeAdapterConfig(config: ConfigInstance) {
  * `media: 'LocalMediaStorage'`) or carries inline feature config (an Object with
  * an `adapter` property, e.g. `media: {adapter: 'S3Storage', bucket: '...'}`).
  * Plain adapter-config objects keyed by class name (e.g. `LocalMediaStorage: {}`)
- * are not features — `resolveAdapterOptions` resolves those back to the active
- * adapter — so they're intentionally excluded here.
+ * are not features - `resolveAdapterOptions` resolves those back to the active
+ * adapter - so they're intentionally excluded here.
  */
 export function getConfiguredFeatures(settings: unknown): string[] {
   if (!settings || typeof settings !== 'object') {

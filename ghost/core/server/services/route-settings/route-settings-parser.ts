@@ -66,7 +66,7 @@ const LimitField = z
 const SHORTFORM_HELP = 'e.g. data: tag.recipes';
 
 /**
- * Shorthand data definitions look like `tag.recipes` — resource, dot, slug.
+ * Shorthand data definitions look like `tag.recipes` - resource, dot, slug.
  *
  * `%s` stands in for the slug: on channel routes and collections, fetch-data
  * substitutes it with the request's `slug` param at query time, which is how a
@@ -138,7 +138,7 @@ function parseDataEntry(value: unknown, path: PathSegment[]): DataEntry {
       const record = value as Record<string, unknown>;
 
       // A failed `type` discriminator surfaces as a union issue on that
-      // key — matched on the code rather than the wording, which zod
+      // key - matched on the code rather than the wording, which zod
       // is free to change.
       if (issue.code === 'invalid_union' && issue.path[0] === 'type') {
         if (record.type === undefined) {
@@ -175,7 +175,7 @@ function parseDataEntry(value: unknown, path: PathSegment[]): DataEntry {
       }
       throw toValidationError(result.error, path, value, ROUTE_SETTINGS_ERROR_CODES.INVALID_DATA);
     }
-    // Fields set to an explicitly empty value parse to undefined — drop the
+    // Fields set to an explicitly empty value parse to undefined - drop the
     // keys so "unset" means absent in the domain model and serialized output.
     const entry: Record<string, unknown> = result.data;
     for (const entryKey of Object.keys(entry)) {
@@ -264,7 +264,7 @@ const routeObjectSchema = (path: PathSegment[]) =>
           type: 'channel',
           templates,
         };
-        // Preserve rss only when the author set it explicitly — the domain model
+        // Preserve rss only when the author set it explicitly - the domain model
         // mirrors user intent (unset vs true vs false), so serializing never
         // writes back an `rss` key the author never wrote.
         if (val.rss !== undefined) {
@@ -340,13 +340,13 @@ const RouteSettingsSchema = z.object({
 });
 
 /**
- * Every path in routes.yaml — route paths, collection paths, permalinks and
- * taxonomy permalinks — follows the same rules, so they share one message set.
+ * Every path in routes.yaml - route paths, collection paths, permalinks and
+ * taxonomy permalinks - follows the same rules, so they share one message set.
  *
  * `allowParamNotation` is set for route and collection keys, which are mounted on
  * Express verbatim: nothing rewrites `{param}` to `:param` for them the way it
  * does for permalinks and taxonomies. So `/author/:slug/` is a working wildcard
- * route on live sites and `/author/{slug}/` would be a dead literal path —
+ * route on live sites and `/author/{slug}/` would be a dead literal path -
  * rejecting :param there would break the former, and the suggested rewrite would
  * silently produce the latter.
  */

@@ -95,7 +95,7 @@ module.exports = function (Bookshelf) {
           key.startsWith(PIVOT_PREFIX),
         );
 
-        // Iterate `_previousRelations` rather than `relationships` — a relation
+        // Iterate `_previousRelations` rather than `relationships` - a relation
         // can carry previous state without being managed by bookshelf-relations
         // (e.g. a member's stripeSubscriptions). Behaviour is unchanged for
         // relations that are in both.

@@ -87,7 +87,7 @@ type DepositAddressStoreLike = {
 };
 
 type FacilitatorClientLike = {
-  // @x402/core HTTPFacilitatorClient — kept loose for test doubles.
+  // @x402/core HTTPFacilitatorClient - kept loose for test doubles.
   [key: string]: unknown;
 };
 

@@ -199,8 +199,8 @@ const User = ghostBookshelf.Model.extend(
     /**
      * Replace this user's password with an opaque random value, and mark
      * them as locked unless they are already inactive (suspended). Suspended
-     * users must not be transitioned out of `inactive` — they retain the
-     * suspended-signin path — but their password is still rotated so a
+     * users must not be transitioned out of `inactive` - they retain the
+     * suspended-signin path - but their password is still rotated so a
      * compromised credential cannot survive a future unsuspend.
      */
     lock: function lock(options) {

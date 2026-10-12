@@ -63,7 +63,7 @@ module.exports = function renderer(req, res, data) {
     }
 
     // CASE: a {{#get}} or {{#collection}} helper aborted during rendering, so the
-    // page contains fallback content — cap public caching at 60s so the broken page recovers quickly.
+    // page contains fallback content - cap public caching at 60s so the broken page recovers quickly.
     if (res.locals?.degradedRender) {
       const cacheControl = res.get('Cache-Control') || '';
       if (cacheControl.includes('public') && !/no-store|no-cache|private/.test(cacheControl)) {

@@ -18,7 +18,7 @@ const { SafeString } = require('./handlebars');
 
 // sanitize-html over DOMPurify here: DOMPurify needs a DOM, and jsdom costs
 // ~116MB RSS to load. This module is on the boot path, so that was paid by
-// every process — including ones that never render a caption.
+// every process - including ones that never render a caption.
 const sanitizeHtml = require('sanitize-html');
 
 module.exports = {

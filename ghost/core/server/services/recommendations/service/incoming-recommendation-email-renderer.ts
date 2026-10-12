@@ -18,7 +18,7 @@ export class IncomingRecommendationEmailRenderer {
   }
 
   async renderSubject(recommendation: IncomingRecommendation) {
-    return `👍 New recommendation: ${recommendation.title}`;
+    return `\uD83D\uDC4D New recommendation: ${recommendation.title}`;
   }
 
   async renderHTML(recommendation: IncomingRecommendation, recipient: EmailRecipient) {

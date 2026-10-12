@@ -38,8 +38,8 @@ export default class SchedulingDefault extends SchedulingBase {
   // The HTTP client is held as an instance property so unit tests can
   // swap it for a deterministic stub. Doing the dependency injection in
   // the constructor (rather than `require`ing inside _pingUrl) avoids
-  // pulling `@tryghost/request`'s cacheable-lookup singleton — racy
-  // under nock + shared workers — into the unit-test path.
+  // pulling `@tryghost/request`'s cacheable-lookup singleton - racy
+  // under nock + shared workers - into the unit-test path.
   request = request;
 
   _addJob(job: SchedulerJob) {

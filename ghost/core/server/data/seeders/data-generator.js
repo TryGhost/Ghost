@@ -113,7 +113,7 @@ class DataGenerator {
     // adding it here, --clear-database leaves stale rows behind that
     // reference truncated members/subscriptions. Schema FK cascades
     // would normally take care of this, but FOREIGN_KEY_CHECKS is
-    // disabled in #run for performance — so we have to truncate it
+    // disabled in #run for performance - so we have to truncate it
     // explicitly. Conditional on existence so older DBs without our
     // migrations don't fail.
     if (await transaction.schema.hasTable('members_current_subscription')) {

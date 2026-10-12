@@ -85,14 +85,14 @@ function getMarkdownAlternateLink({ context, post, canonicalUrl }) {
  *
  * A `<script>` element is HTML *raw text*: the parser stops only at the literal
  * substring `</script`, and it never decodes HTML character references. So
- * HTML-entity escaping (e.g. `&lt;`) is the wrong tool here — worse than
+ * HTML-entity escaping (e.g. `&lt;`) is the wrong tool here - worse than
  * unnecessary, it corrupts the data, because JSON-LD consumers (Google's
  * structured-data parser and friends) read the block as JSON and never
  * HTML-decode it, so `Tom & Jerry` would be indexed as the literal
  * `Tom &amp; Jerry`.
  *
  * Instead we escape only the breakout-relevant characters as JSON `\u` escapes.
- * `JSON.parse` — and every conformant structured-data parser — decodes them
+ * `JSON.parse` - and every conformant structured-data parser - decodes them
  * back to the original character, so the data round-trips exactly while
  * `</script>` / `<!--` sequences can no longer form (both begin with `<`).
  *

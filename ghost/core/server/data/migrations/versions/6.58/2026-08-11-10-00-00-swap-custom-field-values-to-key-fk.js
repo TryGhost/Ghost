@@ -71,7 +71,7 @@ const ID_SHAPE = {
 // SQLite cannot alter a foreign key in place, so the column swap is a drop-and-recreate
 // rather than an ALTER. Existing rows are discarded either way: the feature is behind the
 // `membersCustomFields` flag with no released data, so a wipe is cheaper than a backfill.
-// Re-running after a mid-migration crash is safe — the table is dropped first if present.
+// Re-running after a mid-migration crash is safe - the table is dropped first if present.
 async function rebuild(knex, shape) {
   if (await knex.schema.hasTable(TABLE)) {
     await commands.deleteTable(TABLE, knex);

@@ -5,7 +5,7 @@ const localUtils = require('../../../index');
 const forPost = (id, attrs, frame, type = 'posts') => {
   // `forPost` is shared between the posts and pages mappers (pages.js
   // delegates to posts.js). The router-level resource type is passed in
-  // explicitly because `attrs.type` can't be relied on — `?fields=url`
+  // explicitly because `attrs.type` can't be relied on - `?fields=url`
   // strips every attribute except the requested ones, so deriving the
   // type from `attrs` would silently fall back to 'posts' for pages.
   // The mapper that owns the resource always knows which it is.
@@ -15,7 +15,7 @@ const forPost = (id, attrs, frame, type = 'posts') => {
   // name the resource when it reports a problem.
   //
   // When `url` was not requested (`?fields=id,title`), don't compute it at
-  // all — attrs is stripped to the requested columns, so the resource would
+  // all - attrs is stripped to the requested columns, so the resource would
   // reach the lazy URL service without the fields it needs (status,
   // tags/authors) and be rejected as thin. The value would only be deleted
   // at the end of this function anyway. forUser/forTag guard the same way.

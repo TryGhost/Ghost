@@ -6,7 +6,7 @@ import logging from '@tryghost/logging';
 const messages = {
   preparationError: 'An error occurred while preparing your newsletter. Please try again.',
   verificationError:
-    'An error occurred while checking your newsletter’s recipients. Sending has stopped.',
+    'An error occurred while checking your newsletter\u2019s recipients. Sending has stopped.',
 };
 
 export const RECIPIENT_VERIFICATION_CODE = 'BULK_EMAIL_RECIPIENT_VERIFICATION_FAILED';

@@ -1,14 +1,14 @@
 const _ = require('lodash');
 
 /**
- * Every registered router is a Ghost router — `ParentRouter` itself (the site
+ * Every registered router is a Ghost router - `ParentRouter` itself (the site
  * and apps routers) or one of its subclasses (Collection, StaticRoutes,
  * Taxonomy, StaticPages, Preview, Email, Unsubscribe). They wrap an Express
  * router, reachable via `.router()`, but are not one themselves: the registry's
  * own lookups read Ghost-side members (`.name`, `.routerName`, `.reset()`,
  * `.getRssUrl()`) that an Express router does not have.
  *
- * Type-only import — no runtime require, so this does not close a cycle with
+ * Type-only import - no runtime require, so this does not close a cycle with
  * `parent-router.js`, which requires this module.
  *
  * @typedef {import('./parent-router')} ParentRouter
@@ -19,7 +19,7 @@ const _ = require('lodash');
  *
  * Exported as a single shared instance so that every consumer
  * (`routing/index.js`, `parent-router.js`) operates on the same registry, the
- * same way the previous module-level state did — just held on an instance
+ * same way the previous module-level state did - just held on an instance
  * rather than in module-scoped `let` variables.
  */
 class Registry {

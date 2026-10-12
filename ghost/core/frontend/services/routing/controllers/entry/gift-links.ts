@@ -6,7 +6,7 @@ import type { EntryResponse } from '../entry';
 /**
  * Build this request's URL with `?gift` removed, preserving path, subdirectory
  * and other query params. Rebuilt from req.query (qs-parsed) so bracket forms
- * like `?gift[]=x` are dropped too — otherwise the stripped redirect would loop.
+ * like `?gift[]=x` are dropped too - otherwise the stripped redirect would loop.
  */
 function strippedGiftUrl(req: Request): string {
   const query = { ...req.query } as ParsedUrlQueryInput;

@@ -83,7 +83,7 @@ class AdapterCacheRedis extends CacheBase {
   /**
    * Underscore-private to survive api-framework's `_.cloneDeep` on the
    * controller (and this adapter). See the "survives deep cloning"
-   * suite — `#`-private methods break on clones.
+   * suite - `#`-private methods break on clones.
    */
   _metric(name, extra = {}) {
     const value = { ...extra };
@@ -174,7 +174,7 @@ class AdapterCacheRedis extends CacheBase {
    * Write through cache-manager with this adapter's own TTL. The TTL must be
    * passed per-call: with `reuseConnection` (the default) every Redis cache
    * adapter in the process shares one store, and the store-level TTL is
-   * whatever the first-instantiated adapter was configured with — so relying
+   * whatever the first-instantiated adapter was configured with - so relying
    * on it would silently apply that adapter's TTL to every feature.
    *
    * @param {string} internalKey
@@ -340,7 +340,7 @@ class AdapterCacheRedis extends CacheBase {
             }
           })
           .catch(() => {
-            // fetchData rejection — already logged by resultPromise
+            // fetchData rejection - already logged by resultPromise
           })
           .finally(() => {
             this.currentlyExecutingReads.delete(internalKey);

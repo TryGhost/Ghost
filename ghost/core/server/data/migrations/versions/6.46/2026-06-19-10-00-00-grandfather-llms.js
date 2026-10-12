@@ -6,7 +6,7 @@ const { createTransactionalMigration } = require('../../utils');
 // sites get the feature switched on. This migration only runs when an
 // existing site upgrades (fresh installs stamp migrations as complete
 // without executing them), so it flips the setting off for sites that
-// predate the feature being on by default — leaving new sites untouched.
+// predate the feature being on by default - leaving new sites untouched.
 module.exports = createTransactionalMigration(
   async function up(knex) {
     const setting = await knex('settings').where({ key: 'llms_enabled' }).first();

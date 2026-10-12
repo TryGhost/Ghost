@@ -94,7 +94,7 @@ const getMiddleware = async (
         maxAge: config.get('caching:frontend:maxAge'),
       })(req, res, next);
     }
-    // CASE: Site is not private and the request is not made by a member — cache the content
+    // CASE: Site is not private and the request is not made by a member - cache the content
     return shared.middleware.cacheControl('public', {
       maxAge: config.get('caching:frontend:maxAge'),
     })(req, res, next);

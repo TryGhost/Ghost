@@ -113,7 +113,7 @@ async function servePaidMarkdown(req: Request, res: EntryResponse, entry: Entry)
   const machinePaymentsService = getMachinePaymentsService(req);
 
   if (!machinePaymentsService?.isPurchasable(entry)) {
-    // access===true means entry.html is the full post — never cache that
+    // access===true means entry.html is the full post - never cache that
     // publicly. Fall back to the 403 stub for members who already have access.
     if (entry.access === true) {
       return refuseMembersOnlyMarkdown(res);
@@ -143,7 +143,7 @@ async function servePaidMarkdown(req: Request, res: EntryResponse, entry: Entry)
               llmsIndexUrl,
               notice: getGatedNotice(entry, resourceKind),
               cta: [
-                `Agents can purchase one-shot access to the full markdown for ${price} per request via MPP or x402 — see the WWW-Authenticate response header for payment terms.`,
+                `Agents can purchase one-shot access to the full markdown for ${price} per request via MPP or x402 \u2014 see the WWW-Authenticate response header for payment terms.`,
                 `Subscribe: ${urlUtils.urlFor({ relativeUrl: '/#/portal/signup' }, true)}`,
               ],
             });
@@ -175,7 +175,7 @@ export async function serveMdRequest(req: Request, res: EntryResponse, entry: En
   if (!isPublic(entry)) {
     // Member with access still holds full html on the entry. Serving it at
     // 200 with public cache headers would leak paid content to the CDN.
-    // Member `.md` unlock is out of scope — keep today's 403 / payment path.
+    // Member `.md` unlock is out of scope - keep today's 403 / payment path.
     if (entry.access === true) {
       if (entry.visibility === 'paid' || entry.visibility === 'tiers') {
         return await servePaidMarkdown(req, res, entry);

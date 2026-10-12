@@ -6,7 +6,7 @@ module.exports = createTransactionalMigration(
     // On very large sites this backfill can be run manually ahead of the
     // deploy (e.g. via the Stats-Service) so the boot-blocking migration
     // doesn't have to do the expensive scan+sort. If the table is already
-    // populated — by such a pre-run, or a previous run of this migration —
+    // populated - by such a pre-run, or a previous run of this migration -
     // verify and no-op, so re-running is safe and cheap.
     const alreadyPopulated = await knex('members_current_subscription').first();
     if (alreadyPopulated) {

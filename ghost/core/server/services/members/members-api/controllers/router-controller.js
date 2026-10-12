@@ -94,7 +94,7 @@ function removeReservedCheckoutMetadata(metadata) {
 /**
  * Validate that a candidate return URL (e.g. Stripe Checkout success/cancel URL) points back
  * to the configured Ghost site. Returns `undefined` when the candidate is missing, malformed,
- * on a different origin, or outside of the site's subpath (for subpath installs) — leaving
+ * on a different origin, or outside of the site's subpath (for subpath installs) - leaving
  * the downstream Stripe service to fall back to its configured default URL.
  *
  * This prevents the public checkout endpoints being abused as open-redirect surfaces.
@@ -1165,7 +1165,7 @@ module.exports = class RouterController {
     const requestedNewsletterNames = requestedNewsletters.map((newsletter) => newsletter.name);
     // Each name is embedded in a single-quoted item of an NQL `name:[...]`
     // array, so both quote characters are escaped (a name may contain either).
-    // NQL has no `\\` escape — a lone backslash is read literally — so we
+    // NQL has no `\\` escape - a lone backslash is read literally - so we
     // escape quotes only; doubling backslashes would corrupt names that
     // legitimately contain one. This keeps any injected operators inside the
     // quoted string, preventing filter breakout.
@@ -1334,7 +1334,7 @@ module.exports = class RouterController {
   }
 };
 
-// Stripe's limit on `custom_fields[].label.custom` — longer labels make session creation fail
+// Stripe's limit on `custom_fields[].label.custom` - longer labels make session creation fail
 const STRIPE_CUSTOM_FIELD_LABEL_MAX_LENGTH = 50;
 
 function parsePersonalNote(rawText) {

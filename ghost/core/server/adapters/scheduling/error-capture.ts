@@ -51,7 +51,7 @@ function report(err: unknown, operation: 'schedule' | 'unschedule', job: Schedul
 /**
  * Decorates a scheduling adapter so that failures from `schedule`/`unschedule`
  * are reported by Ghost rather than by each adapter. Adapters signal failure
- * however the contract permits — throwing, or rejecting the returned promise —
+ * however the contract permits - throwing, or rejecting the returned promise -
  * and both are handled here.
  *
  * Failures are reported rather than propagated because no caller awaits these:

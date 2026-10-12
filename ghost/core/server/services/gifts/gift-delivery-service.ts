@@ -150,7 +150,7 @@ export class GiftDeliveryService {
         deliveryId: delivery.id,
       });
       // The scheduled time can pass while the flush is being armed, in which
-      // case the armed check skipped the job — fall through and send
+      // case the armed check skipped the job - fall through and send
       // now rather than leaving the delivery for the daily backstop.
       if (delivery.scheduledAt.getTime() > Date.now()) {
         return { recipientEmail: delivery.recipientEmail, scheduledAt: delivery.scheduledAt };

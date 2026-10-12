@@ -45,7 +45,7 @@ export class Pricing {
 
   /**
    * SPT/card rails use configured fiat. Tempo USDC uses the same minor-unit
-   * amount as a USDC charge (documented product fence — not FX conversion).
+   * amount as a USDC charge (documented product fence - not FX conversion).
    */
   forSpt(terms: PaymentAmountTerms) {
     return {
