@@ -427,7 +427,11 @@ export function PostEditor({
   };
 
   return (
-    <div className="relative h-full min-h-0" data-editor-font={font} data-testid={postEditor}>
+    <div
+      className="editor-optical-sizing relative h-full min-h-0"
+      data-editor-font={font}
+      data-testid={postEditor}
+    >
       <div
         ref={scrollPaneRef}
         className="h-full scroll-pt-(--editor-overlap) overflow-x-hidden overflow-y-auto"
