@@ -29,6 +29,12 @@ describe('servedFrom', function () {
       true,
     );
   });
+
+  it('refuses a manifest without surfaces, which a valid one always has', function () {
+    assert.throws(() => servedFrom({ surfaces: [] } as unknown as AppManifest), {
+      message: 'The manifest has no surfaces',
+    });
+  });
 });
 
 describe('movedBetween', function () {
