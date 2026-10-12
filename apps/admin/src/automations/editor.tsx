@@ -541,6 +541,17 @@ const AutomationEditorContent: React.FC<{
       <AutomationCanvas
         actionErrors={actionErrors}
         automation={draft}
+        initialSidebar={
+          creation
+            ? 'settings'
+            : !draft || !configData
+              ? 'unknown'
+              : draft.status === 'active' &&
+                  automationRunAnalyticsEnabled &&
+                  configData.config.stats
+                ? 'performance'
+                : 'closed'
+        }
         isEmailNavigationBlocked={isEmailNavigationBlocked}
         isError={isEditorError}
         isLoading={isEditorLoading}

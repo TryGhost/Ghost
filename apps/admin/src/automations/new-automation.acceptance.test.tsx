@@ -49,6 +49,11 @@ describe('New automation', () => {
     await expect
       .element(page.getByText('Select a trigger', { exact: true }))
       .not.toBeInTheDocument();
+    await expect.element(button('Hide automation sidebar')).toBeVisible();
+    await expect
+      .element(page.getByRole('tab', { name: 'Settings' }))
+      .toHaveAttribute('data-state', 'active');
+    await button('Hide automation sidebar').click();
     await expect.poll(unsavedChangesGuarded).toBe(true);
     await page.getByRole('link', { name: 'Back to automations' }).click();
     await expect.element(page.getByRole('alertdialog')).toBeVisible();
@@ -62,6 +67,7 @@ describe('New automation', () => {
     await expect.poll(currentRoute).toBe('/automations/created');
     await expect.element(button('Save')).toBeDisabled();
     expect(input.element()).toBe(originalInput);
+    await expect.element(button('Show automation sidebar')).toBeVisible();
     expect(create.requests).toHaveLength(1);
     expect(create.requests[0].body).toMatchObject({
       automations: [
@@ -299,17 +305,24 @@ describe('New automation', () => {
         },
       });
       await expect.element(page.getByText('Select a trigger', { exact: true })).toBeVisible();
+      await expect.element(button('Hide automation sidebar')).not.toBeInTheDocument();
       await page.getByRole('button', { name: new RegExp(`^${title}`) }).click();
       if (scope === 'all_paid') {
         await expect
           .element(page.getByText('Triggered when a new or free member starts:', { exact: true }))
           .toBeVisible();
       }
+      await expect
+        .element(page.getByRole('tab', { name: 'Settings' }))
+        .toHaveAttribute('data-state', 'active');
+      await expect.element(page.getByRole('textbox', { name: 'Name', exact: true })).toBeVisible();
+      await button('Hide automation sidebar').click();
       await expect.element(button('Save')).toBeDisabled();
       expect(create.requests).toHaveLength(0);
       await addWait();
       await button('Save').click();
       await expect.poll(() => create.requests.length).toBe(1);
+      await expect.element(button('Show automation sidebar')).toBeVisible();
       expect(create.requests[0].body).toMatchObject({
         automations: [{ trigger_tier_scope: scope, trigger_tier_ids: null }],
       });

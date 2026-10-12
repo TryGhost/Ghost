@@ -1203,6 +1203,41 @@ describe('AutomationEditor', () => {
     expect(screen.getByRole('tab', { name: 'Performance' })).toBeInTheDocument();
   });
 
+  it('resolves the sidebar after loading and preserves user choices on later updates', async () => {
+    mockLabs.current = { automationRunAnalytics: true, automationsPerTier: true };
+    mockUseReadAutomation.mockReturnValue({
+      isLoading: true,
+      isError: false,
+    });
+    const { router } = renderEditor();
+    expect(
+      screen.queryByRole('button', { name: 'Hide automation sidebar' }),
+    ).not.toBeInTheDocument();
+
+    mockUseReadAutomation.mockReturnValue({
+      data: { automations: [automationDetail] },
+      isLoading: false,
+      isError: false,
+    });
+    await rerenderEditorRoute(router);
+    expect(screen.getByRole('button', { name: 'Hide automation sidebar' })).toBeVisible();
+    expect(screen.getByRole('tab', { name: 'Performance' })).toHaveAttribute(
+      'data-state',
+      'active',
+    );
+
+    fireEvent.mouseDown(screen.getByRole('tab', { name: 'Settings' }), {
+      button: 0,
+      ctrlKey: false,
+    });
+    expect(screen.getByRole('tab', { name: 'Settings' })).toHaveAttribute('data-state', 'active');
+    fireEvent.click(screen.getByRole('button', { name: 'Hide automation sidebar' }));
+    await rerenderEditorRoute(router);
+    expect(screen.getByRole('button', { name: 'Show automation sidebar' })).toBeVisible();
+    fireEvent.click(screen.getByRole('button', { name: 'Show automation sidebar' }));
+    expect(screen.getByRole('tab', { name: 'Settings' })).toHaveAttribute('data-state', 'active');
+  });
+
   it('renders styled canvas zoom controls without the interaction toggle', () => {
     mockUseReadAutomation.mockReturnValue({
       data: { automations: [automationDetail] },
