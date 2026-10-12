@@ -151,10 +151,10 @@ without treating its legacy placement or lifecycle shortcuts as requirements.
 New standalone service logic should be TypeScript unless it must extend an
 existing JavaScript module.
 
-The gifts, donations, and related services show the current transition pattern:
-domain logic uses TypeScript with named exports, while a thin CommonJS
-`index.js` or wrapper remains only where boot code or an existing `require()`
-boundary needs it.
+Donations uses a TypeScript default export for its service initializer, while
+its implementation keeps named exports. Existing CommonJS callers read
+`require('./donations').default`; a CommonJS wrapper is not needed merely
+because boot still uses `require()`.
 
 ## Initialization
 

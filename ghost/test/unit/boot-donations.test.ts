@@ -26,7 +26,7 @@ function createServicesHarness() {
     './shared/settings-cache': { get: () => 'site-id' },
     './server/services/adapter-manager': { default: { getAdapter: () => scheduler } },
     './server/adapters/scheduling/error-capture': { withErrorCapture: (value: unknown) => value },
-    './server/services/donations': donations,
+    './server/services/donations': { default: donations },
     './server/services/stripe': service,
     './server/services/identity-tokens': service,
     './server/services/members': { ...service, api: { members: {} }, handleImportJob() {} },
