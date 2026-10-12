@@ -20,12 +20,14 @@ export async function lockAutomationLimit(
     case 'inactive':
     case 'archived':
       return;
+    /* v8 ignore start -- @preserve */
     default: {
       const _exhaustive: never = status;
       throw new errors.InternalServerError({
         message: `Unknown automation status: ${_exhaustive}`,
       });
     }
+    /* v8 ignore stop -- @preserve */
   }
 
   if (!limitService.isLimited('limitAutomations')) {
