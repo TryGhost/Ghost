@@ -285,6 +285,8 @@ const buildGraph = ({
     {
       id: TRIGGER_CANVAS_ID,
       type: 'trigger',
+      // Keep the inline tier picker above downstream cards.
+      zIndex: 1,
       position: {
         x: nodeX,
         y: cursorY,
