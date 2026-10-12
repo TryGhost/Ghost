@@ -517,6 +517,34 @@ describe('Theme settings', () => {
     await expect(page.getByText('Theme not uploaded')).toHaveCount(0);
   });
 
+  it('keeps the existing theme listed when an overwriting upload fails', async () => {
+    fakeThemeWorld();
+    fakeAdminEndpoint(
+      'POST',
+      '/themes/upload/',
+      {
+        errors: [
+          { message: 'Theme is not compatible or contains errors.', details: 'Missing index.hbs' },
+        ],
+      },
+      { status: 422 },
+    );
+    const buffer = await archiveBuffer();
+    await renderAdminApp('/settings/design/change-theme');
+
+    await settingsScreen.themeModal().getByRole('button', { name: 'Upload theme' }).click();
+    await uploadThemeFile(new File([buffer], 'edition.zip', { type: 'application/zip' }));
+    await settingsScreen.confirmationModal().getByRole('button', { name: 'Overwrite' }).click();
+
+    const errorModal = settingsScreen.confirmationModal();
+    await expect.element(errorModal).toHaveTextContent('Theme not uploaded');
+    await errorModal.getByRole('button', { name: 'Cancel' }).click();
+    await expect(settingsScreen.confirmationModal()).toHaveCount(0);
+
+    await expect(settingsScreen.themeListItems()).toHaveCount(2);
+    await expect.element(installedTheme('edition')).toBeVisible();
+  });
+
   it('tells a blocking problem apart from the errors reported alongside it', async () => {
     fakeThemeWorld();
     fakeAdminEndpoint(
@@ -991,6 +1019,7 @@ describe('Theme settings', () => {
     await expect.element(settingsScreen.errorToast()).toHaveTextContent(/override the default/i);
     expect(installApi.requests).toHaveLength(1);
     await confirmModal.getByRole('button', { name: 'Cancel' }).click();
+    await expect(settingsScreen.confirmationModal()).toHaveCount(0);
 
     const modal = settingsScreen.themeModal();
     await modal.getByRole('button', { name: /Casper/ }).click();
@@ -998,6 +1027,24 @@ describe('Theme settings', () => {
     await expect
       .element(settingsScreen.confirmationModal())
       .toHaveTextContent(/Do you want to activate Casper/);
+  });
+
+  it('lists a theme once after reinstalling it from the marketplace', async () => {
+    const installed = fakeThemeWorld();
+    const edition = installed.find((item) => item.name === 'edition')!;
+    fakeAdminEndpoint('POST', /^\/themes\/install\/\?/, { themes: [edition] });
+    fakeAdminEndpoint('PUT', '/themes/edition/activate/', { themes: [edition] });
+    await renderAdminApp('/settings/theme/install?source=github&ref=TryGhost/Edition');
+
+    await settingsScreen.confirmationModal().getByRole('button', { name: 'Install' }).click();
+    await expect
+      .element(settingsScreen.successToast())
+      .toHaveTextContent(/edition is now your active theme/i);
+    await expect(settingsScreen.themeModal()).toHaveCount(0);
+
+    await settingsScreen.theme().getByRole('button', { name: 'Change theme' }).click();
+    await settingsScreen.themeModal().getByRole('tab', { name: 'Installed' }).click();
+    await expect(settingsScreen.themeListItems()).toHaveCount(2);
   });
 
   it('confirms before discarding editor changes', async () => {

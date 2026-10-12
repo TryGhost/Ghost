@@ -116,8 +116,7 @@ export const useDeleteTheme = createMutation<unknown, string>({
   },
 });
 
-// Installing or uploading can replace an existing theme, so swap it out by
-// name instead of appending a duplicate entry
+// Installs and uploads overwrite an existing theme with the same name
 function replaceThemesByName(newData: ThemesInstallResponseType, currentData: unknown) {
   return (
     currentData && {
