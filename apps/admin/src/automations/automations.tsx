@@ -106,7 +106,7 @@ const Automations: React.FC = () => {
           </ListPage.Header>
           <ListPage.Body>
             <AutomationsList
-              automations={filteredAutomations}
+              automations={filteredAutomations ?? []}
               automationsToShow={automationsToShow}
               canManage={archiveEnabled && !!currentUser && canManageAutomations(currentUser)}
               isLoading={isLoading}

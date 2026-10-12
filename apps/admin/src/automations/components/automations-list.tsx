@@ -68,7 +68,7 @@ const EMPTY_COPY = {
 };
 
 interface AutomationsListProps {
-  automations?: AutomationBrowseItem[];
+  automations: AutomationBrowseItem[];
   automationsToShow: AutomationsToShow;
   isLoading?: boolean;
   canManage: boolean;
@@ -115,7 +115,7 @@ const AutomationsListSkeleton: React.FC = () => {
 };
 
 const AutomationsList: React.FC<AutomationsListProps> = ({
-  automations = [],
+  automations,
   automationsToShow,
   isLoading = false,
   canManage,

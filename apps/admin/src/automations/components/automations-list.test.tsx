@@ -209,7 +209,12 @@ describe('AutomationsList', () => {
 
   it('renders a table skeleton while loading', () => {
     renderWithRouter(
-      <AutomationsList automationsToShow="non-archived" canManage={false} isLoading={true} />,
+      <AutomationsList
+        automations={[]}
+        automationsToShow="non-archived"
+        canManage={false}
+        isLoading={true}
+      />,
     );
 
     expect(screen.getByTestId('automations-list-loading')).toBeInTheDocument();
