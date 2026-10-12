@@ -5,8 +5,8 @@
 #   deploy — build the prod dependency closure + a self-contained /home/ghost
 #            (build-only stage, never shipped)
 #   report — per-package sizes of that closure, for CI (build-only, not shipped)
-#   sourcemaps — source maps for the dependency code compact-source.mts minified
-#                (build-only, not shipped)
+#   sourcemaps — source maps for the dependency code compact-source.mts
+#                minified (build-only, not shipped)
 #   core — server + production deps, no admin (Ghost-Pro base)
 #   full — core + built admin
 #   selfhost — full + the runtime contract of the Docker Official Image's `next`
@@ -93,18 +93,19 @@ RUN --mount=type=cache,target=/root/.local/share/pnpm/store,id=pnpm-store \
 # scales with file count: this removes roughly half of them.
 RUN node ghost/scripts/prune.mts /home/ghost --profile=image --report=/image-report.json
 
-# Rewrite the JavaScript the server loads so its source costs less heap: V8 keeps
+# Minify the dependency JavaScript (whitespace and comments only; names and
+# legal comments kept, ASCII output) so its source costs less heap: V8 keeps
 # every loaded file's source for the life of the process, at two bytes per
-# character if the file holds any character above U+00FF. `hybrid` minifies
-# node_modules (names and legal comments kept, a source map per file written to
-# /sourcemaps for the `sourcemaps` target) and only escapes those characters in
-# core, so Ghost's own stack frames keep their line numbers. Each rewrite is
-# checked against the original before it is kept; see ghost/scripts/compact-source.mts.
-# Runs after prune so the report above still describes the unrewritten tree.
-# On the Ghost(Pro) benchmark this took idle heap from 98 to 82 MB and idle RSS
-# from 192 to 174 MB. `none` turns it off.
-ARG GHOST_SOURCE_COMPACTION=hybrid
-RUN node ghost/scripts/compact-source.mts /home/ghost --mode="$GHOST_SOURCE_COMPACTION" --maps=/sourcemaps
+# character if the file holds any character above U+00FF. Ghost's own code is
+# left alone so its stack frames keep their line numbers. Source maps go to
+# /sourcemaps for the `sourcemaps` target; see ghost/scripts/compact-source.mts.
+# Runs after prune so the report above still describes the unminified tree.
+# GHOST_COMPACT_SOURCE=false turns it off.
+ARG GHOST_COMPACT_SOURCE=true
+RUN mkdir -p /sourcemaps && \
+    if [ "$GHOST_COMPACT_SOURCE" = "true" ]; then \
+      node ghost/scripts/compact-source.mts /home/ghost --maps=/sourcemaps; \
+    fi
 
 # Fail the build now if the native module didn't install correctly (missing/broken
 # prebuilt binary) rather than at container runtime.
