@@ -34,28 +34,31 @@ const read = (root, rel) => fs.readFile(path.join(root, rel), 'utf8');
 
 describe('compactFile', () => {
   it('minifies to ASCII, keeping names and legal comments, and links a positions-only map', () => {
-    const outcome = compactFile(MODULE, 'greet.js');
+    const outcome = compactFile(MODULE, '../lib/greet.js', '../maps/greet.js.map');
     assert.equal(outcome.status, 'changed');
     assert.doesNotMatch(outcome.code, /a comment/);
     assert.match(outcome.code, /keep me/);
     assert.match(outcome.code, /function greet\(name\)/);
     assert.match(outcome.code, /\\u2014/);
-    assert.match(outcome.code, /\/\/# sourceMappingURL=greet\.js\.map\n$/);
+    assert.match(outcome.code, /\/\/# sourceMappingURL=\.\.\/maps\/greet\.js\.map\n$/);
     assert.equal(heapCost(outcome.code), outcome.code.length);
     assert.equal(outcome.before, heapCost(MODULE));
     assert.equal(run(outcome.code), run(MODULE));
 
     const map = JSON.parse(outcome.map);
-    assert.deepEqual(map.sources, ['greet.js']);
+    assert.deepEqual(map.sources, ['../lib/greet.js']);
     assert.equal(map.sourcesContent, undefined);
   });
 
   it('leaves a file it cannot parse, or cannot shrink, as it was', () => {
-    assert.deepEqual(compactFile('const = ;', 'a.js'), {
+    assert.deepEqual(compactFile('const = ;', 'a.js', 'a.js.map'), {
       status: 'unchanged',
       reason: 'unparseable',
     });
-    assert.deepEqual(compactFile('a=1;', 'a.js'), { status: 'unchanged', reason: 'not smaller' });
+    assert.deepEqual(compactFile('a=1;', 'a.js', 'a.js.map'), {
+      status: 'unchanged',
+      reason: 'not smaller',
+    });
   });
 });
 
@@ -75,9 +78,13 @@ describe('compactSource', () => {
     assert.equal(result.changed, 2);
     assert.ok(result.mapBytes > 0);
     assert.doesNotMatch(await read(root, `${pkg}/index.js`), /a comment/);
-    assert.deepEqual(JSON.parse(await read(root, `${pkg}/index.js.map`)).sources, ['index.js']);
+    assert.deepEqual(JSON.parse(await read(root, `sourcemaps/${pkg}/index.js.map`)).sources, [
+      '../../../../../../node_modules/.pnpm/pkg@1.0.0/node_modules/pkg/index.js',
+    ]);
     assert.doesNotMatch(await read(root, 'core/server/a.js'), /a comment/);
-    assert.deepEqual(JSON.parse(await read(root, 'core/server/a.js.map')).sources, ['a.js']);
+    assert.deepEqual(JSON.parse(await read(root, 'sourcemaps/core/server/a.js.map')).sources, [
+      '../../../core/server/a.js',
+    ]);
     assert.equal(await read(root, 'content/themes/casper/assets/app.js'), MODULE);
   });
 
@@ -94,6 +101,27 @@ describe('compactSource', () => {
     assert.equal(result.files, 0);
     for (const rel of browserCode) {
       assert.equal(await read(root, rel), MODULE, rel);
+    }
+  });
+
+  it('keeps maps out of the code directories, which some loaders require wholesale', async (t) => {
+    // knex-migrator requires every file in a migrations directory.
+    const root = await fixture(t, {
+      'core/server/data/migrations/init/1-create-tables.js': MODULE,
+      'core/server/data/migrations/init/2-create-fixtures.js': MODULE,
+    });
+
+    await compactSource(root);
+
+    const dir = 'core/server/data/migrations/init';
+    assert.deepEqual((await fs.readdir(path.join(root, dir))).sort(), [
+      '1-create-tables.js',
+      '2-create-fixtures.js',
+    ]);
+    for (const file of await fs.readdir(path.join(root, dir))) {
+      const loaded = { exports: {} };
+      vm.runInNewContext(await read(root, `${dir}/${file}`), { module: loaded });
+      assert.equal(loaded.exports('x'), `${EM_DASH} x`);
     }
   });
 
@@ -145,8 +173,10 @@ describe('compactSource', () => {
 
     assert.deepEqual((await fs.readdir(path.join(root, 'node_modules/pkg'))).sort(), [
       'a.js',
-      'a.js.map',
       'b.js',
+    ]);
+    assert.deepEqual((await fs.readdir(path.join(root, 'sourcemaps/node_modules/pkg'))).sort(), [
+      'a.js.map',
       'b.js.map',
     ]);
   });

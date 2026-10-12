@@ -12,11 +12,13 @@
  * not renamed and legal comments are kept. A file is replaced only when the
  * result is smaller on the heap; one esbuild cannot parse is left as it was.
  *
- * Each minified file gets a source map next to it (`<file>.map`, linked by a
- * sourceMappingURL comment) holding positions only, not a copy of the original
- * source, which would more than double the size of node_modules. They cost
- * nothing at runtime; `node --enable-source-maps` maps stack frames back to
- * their original lines.
+ * Each minified file gets a source map holding positions only, not a copy of
+ * the original source, which would more than double the size of node_modules.
+ * The maps live in their own tree (`sourcemaps/<path>.map` under the target),
+ * not next to the code: loaders that require every file in a directory, like
+ * knex-migrator's, would otherwise try to run them. Each file links its map by
+ * a relative sourceMappingURL. They cost nothing at runtime;
+ * `node --enable-source-maps` maps stack frames back to their original lines.
  *
  * Code Ghost serves to browsers (core/built, core/frontend/public and
  * core/frontend/src) is left alone.
@@ -47,12 +49,16 @@ export type Outcome =
   | { status: 'unchanged'; reason: 'unparseable' | 'not smaller' }
   | { status: 'changed'; code: string; map: string; before: number; after: number };
 
+// Where the maps go, relative to the target.
+export const MAPS_DIR = 'sourcemaps';
+
 /**
- * Minify one file's source. Pure. `fileName` is the file's own name: the map
- * names it as the original source, so a mapped stack frame keeps the path it
- * has today, and the code links the map at `<fileName>.map`.
+ * Minify one file's source. Pure. `sourceFile` is how the map names the
+ * original source (the file's path relative to the map, so a mapped stack
+ * frame keeps the path it has today) and `mapUrl` is how the code links its
+ * map (the map's path relative to the file).
  */
-export function compactFile(source: string, fileName: string): Outcome {
+export function compactFile(source: string, sourceFile: string, mapUrl: string): Outcome {
   let result;
   try {
     result = transformSync(source, {
@@ -62,13 +68,13 @@ export function compactFile(source: string, fileName: string): Outcome {
       charset: 'ascii',
       sourcemap: 'external',
       sourcesContent: false,
-      sourcefile: fileName,
+      sourcefile: sourceFile,
       logLevel: 'silent',
     });
   } catch {
     return { status: 'unchanged', reason: 'unparseable' };
   }
-  const code = `${result.code}//# sourceMappingURL=${fileName}.map\n`;
+  const code = `${result.code}//# sourceMappingURL=${mapUrl}\n`;
   const before = heapCost(source);
   const after = heapCost(code);
   if (after >= before) {
@@ -155,7 +161,12 @@ export async function compactSource(
     for await (const rel of scripts(target, dir)) {
       result.files += 1;
       const absolute = path.join(target, rel);
-      const outcome = compactFile(await fs.readFile(absolute, 'utf8'), path.basename(rel));
+      const mapFile = path.join(target, MAPS_DIR, `${rel}.map`);
+      const outcome = compactFile(
+        await fs.readFile(absolute, 'utf8'),
+        path.relative(path.dirname(mapFile), absolute),
+        path.relative(path.dirname(absolute), mapFile),
+      );
       if (outcome.status === 'unchanged') {
         if (outcome.reason === 'unparseable') {
           result.unparseable.push(rel);
@@ -172,7 +183,8 @@ export async function compactSource(
       }
       const { mode } = await fs.stat(absolute);
       await replaceFile(absolute, outcome.code, mode);
-      await replaceFile(`${absolute}.map`, outcome.map);
+      await fs.mkdir(path.dirname(mapFile), { recursive: true });
+      await replaceFile(mapFile, outcome.map);
     }
   }
   return result;

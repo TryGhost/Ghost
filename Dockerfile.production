@@ -96,7 +96,8 @@ RUN node ghost/scripts/prune.mts /home/ghost --profile=image --report=/image-rep
 # so its source costs less heap: V8 keeps every loaded file's source for the
 # life of the process, at two bytes per character if the file holds any
 # character above U+00FF. Code Ghost serves to browsers is left alone. Each
-# minified file gets a positions-only source map next to it, so
+# minified file gets a positions-only source map under /home/ghost/sourcemaps
+# (kept out of the code directories, which some loaders require wholesale), so
 # `node --enable-source-maps` maps stack frames back to their original lines;
 # see ghost/scripts/compact-source.mts. Runs after prune so the report above
 # still describes the unminified tree. GHOST_COMPACT_SOURCE=false turns it off.
