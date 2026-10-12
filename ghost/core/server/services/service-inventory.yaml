@@ -2,7 +2,7 @@
 # Entry points are relative to this directory; evidence paths are relative to ghost.
 # An unverified facet is an open audit question, not an empty/no-op contract.
 summary:
-  total: 72
+  total: 71
   migrated: 2
 services:
   activitypub:
@@ -4912,132 +4912,6 @@ services:
         Decide cache ownership and invalidation for restart and external key changes before
         adding a lifecycle initializer. There is no automatic expiry, failure eviction or
         shutdown clear, and TypeScript slug types do not enforce valid keys at runtime.
-  invitations:
-    kind: directory
-    disposition: relocate
-    status: audited
-    auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
-    entryPoints:
-      - invitations/index.js
-    notes: >-
-      Move acceptance under invites ownership; preserve the transaction, token lookup and
-      HTTP validation boundary without adding a lifecycle to this stateless function.
-    contracts:
-      exports:
-        summary: >-
-          CommonJS exports an object with a lazy accept getter. It returns the cached accept
-          function, also available by deep import. Successful acceptance resolves undefined;
-          the API serializer supplies the success message. There is no init or shutdown.
-        sources:
-          - core/server/services/invitations/index.js
-          - core/server/services/invitations/accept.js
-          - core/server/api/endpoints/utils/serializers/output/authentication.js
-        tests: []
-      construction:
-        summary: >-
-          Accessing the getter imports shared models and security helpers. Each call decodes
-          the first invitation token, opens a transaction, locks a sent invite, checks expiry
-          and existing user, deletes the invite and creates the user in that order. Email and
-          role come from the stored invite, not request email; name and password come from
-          the request. There is no application instance or request state retained by the root.
-        sources:
-          - core/server/services/invitations/accept.js
-          - core/server/models/base/index.js
-          - core/server/models/base/plugins/events.js
-          - core/server/models/user.js
-        tests:
-          - test/unit/server/services/invitations/accept.test.js
-      consumers:
-        summary: >-
-          The authentication endpoint is the only production caller found. Its POST route
-          uses invitations.accept after input validation and setup checks. The separate GET
-          invitation lookup queries models directly and does not call this service. Unit
-          tests deep-import accept; HTTP tests use the real root through the endpoint.
-        sources:
-          - core/server/api/endpoints/authentication.js
-          - core/server/web/api/endpoints/admin/routes.js
-          - core/server/api/endpoints/utils/validators/input/invitations.js
-        tests:
-          - test/unit/server/services/invitations/accept.test.js
-          - test/legacy/api/admin/authentication.test.js
-      startup:
-        summary: >-
-          No explicit boot call initializes this module. Invocation needs the shared database
-          and models ready. HTTP requires completed setup and nonempty token, password and
-          name; direct callers bypass these API checks. Existing HTTP tests boot Ghost before
-          acceptance, but do not establish pre-boot or setup-disabled behavior for this root.
-        sources:
-          - core/boot.js
-          - core/server/services/invitations/accept.js
-          - core/server/api/endpoints/authentication.js
-          - core/server/api/endpoints/utils/validators/input/invitations.js
-        tests:
-          - test/legacy/api/admin/authentication.test.js
-      lifetime:
-        summary: >-
-          The module caches the function and shared models; invocation-local transaction,
-          invite and user variables are not shared. Persisted invite deletion provides the
-          successful-use boundary. There is no reset, replay cache or service-level retry.
-          Existing tests do not assert concurrent acceptance, token reuse or failed creation
-          leaving the invite available.
-        sources:
-          - core/server/services/invitations/index.js
-          - core/server/services/invitations/accept.js
-        tests: []
-      configuration:
-        summary: >-
-          The function reads the current clock and stored expiry at invocation. Only expires
-          strictly less than Date.now is rejected. It looks up the decoded token and sent
-          status without regenerating or verifying a token signature. DB configuration,
-          password policy and user defaults belong to the shared model layer; no root feature
-          flag or configuration snapshot exists.
-        sources:
-          - core/server/services/invitations/accept.js
-          - core/server/models/user.js
-          - core/server/data/db/index.js
-        tests: []
-      resources:
-        summary: >-
-          Each invocation borrows the shared database for one transaction and row locks;
-          the database transaction owns release. User creation and role attachment receive
-          the transaction. Model change events are deferred until commit; this function adds
-          no timers, subscriptions, transport, cancellation or drain hook. Unit tests replace
-          the transaction and prove call ordering and selected option forwarding, not actual
-          rollback, lock behavior, event delivery or shutdown while acceptance is pending.
-        sources:
-          - core/server/services/invitations/accept.js
-          - core/server/models/user.js
-          - core/server/models/base/bookshelf.js
-          - core/server/models/base/plugins/events.js
-          - core/server/ghost-server.ts
-        tests:
-          - test/unit/server/services/invitations/accept.test.js
-      failures:
-        summary: >-
-          Missing sent invite or expired invite produces NotFoundError; an existing user
-          produces ValidationError. Decode, database and user-validation errors propagate.
-          Errors inside the transaction reject it; the service does not catch or retry them.
-          HTTP tests assert missing-token-match 404, duplicate-user 422 and successful 200.
-          They do not prove expiry boundaries, malformed input, rollback after deletion,
-          emitted-event outcomes or successful staff role assignment.
-        sources:
-          - core/server/services/invitations/accept.js
-          - core/server/models/base/index.js
-          - core/server/api/endpoints/utils/validators/input/invitations.js
-        tests:
-          - test/legacy/api/admin/authentication.test.js
-    unverified: []
-    blockers:
-      - >-
-        Add real-database contracts for rollback when user creation or role attachment fails,
-        concurrent acceptance, token reuse and committed model events. Current units stub
-        the transaction and do not even assert destroy's options or forUpdate flags.
-      - >-
-        Assert decoded-token lookup, stored email/role authority, created user/password and
-        expiry boundary behavior. Current HTTP success assertions stop at the response.
-      - >-
-        Preserve lazy exports and API validation/setup checks during relocation; decide how
-        the invites owner exposes acceptance without request state or first-request setup.
   invites:
     kind: directory
     disposition: retain
@@ -5048,6 +4922,8 @@ services:
     notes: >-
       Move eager composition to boot while preserving invitation persistence, rendering and
       mail behavior. API-mail delegation and its transport ownership need a separate decision.
+      Acceptance is an invocation-local domain action kept under this owner; do not add a
+      lifecycle or change the sending instance as part of its relocation.
     contracts:
       exports:
         summary: >-
@@ -5055,9 +4931,17 @@ services:
           constructor also exposes mutable settingsCache, settingsHelpers, mailService and
           urlUtils fields. The deep invites.js module exports the constructor. There is no
           init, shutdown or reset; add resolves the edited Invite model.
+          Acceptance is a separate CommonJS function in accept.js, resolving undefined on
+          success; the API serializer supplies the success message. It adds no application
+          instance, init or shutdown. Its former lazy barrel is preserved at
+          https://github.com/TryGhost/Ghost/blob/bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e/ghost/core/core/server/services/invitations/index.js.
+          The authentication endpoint now imports the action directly; the Invites root's
+          instance and export shape are unchanged.
         sources:
           - core/server/services/invites/index.js
           - core/server/services/invites/invites.js
+          - core/server/services/invites/accept.js
+          - core/server/api/endpoints/utils/serializers/output/authentication.js
         tests: []
       construction:
         summary: >-
@@ -5065,26 +4949,45 @@ services:
           shared settings, helpers, mail library and URL utilities. Importing mail constructs
           a reusable content generator, not a GhostMailer. Each add receives API facade,
           Invite model, data, options and inviter; it does not own a transport directly.
+          Acceptance imports shared models and security helpers. Each call decodes the first
+          invitation token, opens a transaction, locks a sent invite, checks expiry and existing
+          user, deletes the invite and creates the user in that order. Email and role come from
+          the stored invite; name and password come from the request. No invocation state is
+          retained. Unit tests stub the transaction and selected model operations.
         sources:
           - core/server/services/invites/index.js
           - core/server/services/invites/invites.js
           - core/server/lib/mail/index.js
-        tests: []
+          - core/server/services/invites/accept.js
+          - core/server/models/base/index.js
+          - core/server/models/base/plugins/events.js
+          - core/server/models/user.js
+        tests:
+          - test/unit/server/services/invites/accept.test.js
       consumers:
         summary: >-
-          The invites endpoint is the only production consumer found. It retains the root
+          The invites endpoint retains the root
           and calls add for POST; browse, read and delete use models directly. Validation
           rejects an existing user and model permissions enforce role and staff limits.
           HTTP tests cover staff and integration-key invitation flows through real composition,
           stubbing GhostMailer.send; they assert send invocation, not rendered message contents.
+          The authentication endpoint calls accept.js after input validation and setup checks.
+          Its GET invitation lookup queries models directly. Acceptance units import the
+          function; legacy HTTP cases exercise it through the real endpoint, asserting
+          missing-invite 404, duplicate-user 422 and successful 200 responses.
         sources:
           - core/server/api/endpoints/invites.js
           - core/server/api/endpoints/utils/validators/input/invites.js
           - core/server/models/invite.js
+          - core/server/api/endpoints/authentication.js
+          - core/server/web/api/endpoints/admin/routes.js
+          - core/server/api/endpoints/utils/validators/input/invitations.js
         tests:
           - test/e2e-api/admin/invites.test.js
           - test/e2e-api/admin/host-limits.test.ts
           - test/unit/server/models/invite.test.js
+          - test/unit/server/services/invites/accept.test.js
+          - test/legacy/api/admin/authentication.test.js
       startup:
         summary: >-
           The instance is available at import with no explicit boot initialization. Calls
@@ -5092,13 +4995,21 @@ services:
           email-address service. The API mail handler lazily constructs its own shared mailer
           on first send. Real HTTP tests run after Ghost boot and replace send entirely, so
           do not establish the email-address/transport boundary or direct pre-boot invocation.
+          Acceptance has no explicit boot initialization and needs shared database/models
+          readiness. HTTP requires completed setup and nonempty token, password and name; direct
+          callers bypass those API checks. Existing HTTP cases boot Ghost, without establishing
+          direct pre-boot or setup-disabled acceptance behavior.
         sources:
           - core/boot.js
           - core/server/services/invites/index.js
           - core/server/api/endpoints/mail.js
           - core/server/lib/mail/ghost-mailer.js
+          - core/server/services/invites/accept.js
+          - core/server/api/endpoints/authentication.js
+          - core/server/api/endpoints/utils/validators/input/invitations.js
         tests:
           - test/e2e-api/admin/invites.test.js
+          - test/legacy/api/admin/authentication.test.js
       lifetime:
         summary: >-
           The eager instance and dependency references survive in the module cache. Each add
@@ -5107,9 +5018,14 @@ services:
           per-email concurrency guard or retry. API mail independently retains its mailer
           across calls with no reset. Existing tests reuse an email for successive role
           invitations but do not assert old-token invalidation or concurrent resend behavior.
+          Acceptance keeps its transaction, invite and user variables invocation-local.
+          Persisted invite deletion provides the successful-use boundary. It has no reset,
+          replay cache or retry. Existing acceptance cases do not assert concurrent acceptance,
+          token reuse or failed creation leaving the invite available.
         sources:
           - core/server/services/invites/invites.js
           - core/server/api/endpoints/mail.js
+          - core/server/services/invites/accept.js
         tests:
           - test/e2e-api/admin/invites.test.js
       configuration:
@@ -5119,12 +5035,20 @@ services:
           the encoded stored token. Templates are read per render. Invite creation reads
           current db_hash and assigns one-week expiry. API-mail transport configuration is
           captured when its mailer is constructed; sender policy stays live in GhostMailer.
+          Acceptance reads the current clock and stored expiry on invocation; only expires
+          strictly less than Date.now is rejected. It looks up the decoded token and sent status
+          without regenerating or checking a token signature. Database configuration, password
+          policy and user defaults belong to the models; the action has no feature flag or
+          configuration snapshot. These expiry/lookup details are source evidence.
         sources:
           - core/server/services/invites/invites.js
           - core/server/models/invite.js
           - core/server/lib/mail/email-content-generator.js
           - core/server/lib/mail/ghost-mailer.js
           - core/server/api/endpoints/mail.js
+          - core/server/services/invites/accept.js
+          - core/server/models/user.js
+          - core/server/data/db/index.js
         tests: []
       resources:
         summary: >-
@@ -5133,13 +5057,24 @@ services:
           no timers, subscriptions or cleanup hook. The nested API-mail handler owns the
           transport and can launch an unawaited warning notification on direct-mail failure;
           neither service supplies explicit transport cleanup or outstanding-send drainage.
+          Acceptance borrows the shared database for one transaction and row locks; the
+          transaction owns release. User creation and role attachment receive that transaction,
+          and model events are deferred until commit. It adds no timers, subscriptions,
+          transport or drain hook. Its units prove call order and selected transaction-option
+          forwarding, without testing actual rollback, locks, event delivery, destroy options or
+          forUpdate flags.
         sources:
           - core/server/services/invites/invites.js
           - core/server/api/endpoints/mail.js
           - core/server/lib/mail/ghost-mailer.js
           - core/server/lib/mail/email-content-generator.js
           - core/server/ghost-server.ts
-        tests: []
+          - core/server/services/invites/accept.js
+          - core/server/models/user.js
+          - core/server/models/base/bookshelf.js
+          - core/server/models/base/plugins/events.js
+        tests:
+          - test/unit/server/services/invites/accept.test.js
       failures:
         summary: >-
           Model, rendering and mail failures reject add. EmailError gets a resend-help suffix
@@ -5148,11 +5083,21 @@ services:
           a sent-status edit can fail after mail was delivered. An unbound add rejects inside
           the chain after persistence, when it first reads this. Malformed arguments or a
           synchronously throwing model lookup can fail before the catch. No retry or compensation exists.
+          Acceptance rejects missing sent invites and expired invites with NotFoundError, and
+          existing users with ValidationError. Decode, database and user-validation errors
+          propagate; transaction failures reject without a catch or retry. HTTP cases assert
+          missing-invite 404, duplicate-user 422 and successful 200, without proving expiry
+          boundaries, malformed input, rollback after deletion, emitted events or staff role
+          assignment.
         sources:
           - core/server/services/invites/invites.js
           - core/server/models/invite.js
           - core/server/api/endpoints/mail.js
-        tests: []
+          - core/server/services/invites/accept.js
+          - core/server/models/base/index.js
+          - core/server/api/endpoints/utils/validators/input/invitations.js
+        tests:
+          - test/legacy/api/admin/authentication.test.js
     unverified: []
     blockers:
       - >-
@@ -5168,6 +5113,13 @@ services:
         Resolve API-mail orchestration and transport ownership without moving business logic
         into HTTP. Preserve role/limit checks and successful behavior while introducing boot
         composition; test readiness and shutdown of pending work separately.
+      - >-
+        Add real-database contracts for rollback when user creation or role attachment fails,
+        concurrent acceptance, token reuse and committed model events. Current units stub
+        the transaction and do not even assert destroy's options or forUpdate flags.
+      - >-
+        Assert decoded-token lookup, stored email/role authority, created user/password and
+        expiry boundary behavior. Current HTTP success assertions stop at the response.
   jobs-service:
     kind: directory
     disposition: retain
