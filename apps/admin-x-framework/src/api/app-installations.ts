@@ -15,14 +15,13 @@ export interface AppInstallation {
   manifest: AppManifest;
   created_at: string;
   updated_at: string | null;
-  /** Only when read with `include=history`. */
+  /** Newest first. Only when read with `include=history`. */
   history?: AppInstallationHistoryEntry[];
 }
 
 /**
- * One thing that happened to an installation, newest first. Decisions by people name who
- * decided; what Ghost did by itself, applying an update or holding changes for approval,
- * has nobody.
+ * One event in an installation's history. `actor` is null when Ghost acted by itself, or
+ * when who acted wasn't recorded.
  */
 export interface AppInstallationHistoryEntry {
   id: string;
