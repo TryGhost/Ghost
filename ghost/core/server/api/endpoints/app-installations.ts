@@ -99,6 +99,19 @@ const controller = {
     },
   },
 
+  // Re-checks the app's manifest, at app session start. No body: the only address Ghost
+  // fetches is the one the publisher approved. Opening an app takes the same permission
+  // as reading its installation.
+  refresh: {
+    headers: noCacheInvalidation,
+    options: ['id'],
+    validation: { options: { id: { required: true } } },
+    permissions: { method: 'read' },
+    query(frame: ReadFrame) {
+      return service!.refresh(frame.options.id);
+    },
+  },
+
   destroy: {
     statusCode: 204,
     headers: noCacheInvalidation,
@@ -114,6 +127,7 @@ const controller = {
   read: ReadFrame;
   add: WriteFrame;
   edit: WriteFrame;
+  refresh: ReadFrame;
   destroy: ReadFrame;
 }>;
 
