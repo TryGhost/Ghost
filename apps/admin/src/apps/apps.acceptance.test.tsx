@@ -280,14 +280,31 @@ describe('Managing apps', () => {
   });
 
   it('says when an app page doesn’t exist', async () => {
+    const id = 'abcdefabcdefabcdefabcdef';
     fakeAdminEndpoint(
       'GET',
-      readPath('missing'),
+      readPath(id),
       () =>
         new Response(JSON.stringify({ errors: [{ message: 'App installation not found.' }] }), {
           status: 404,
           headers: { 'content-type': 'application/json' },
         }),
+    );
+
+    await renderAdminApp(`/apps/${id}`, { labs });
+
+    await expect.element(appsScreen.notInstalled()).toBeVisible();
+  });
+
+  it('says an app page address that isn’t an app’s doesn’t exist, rather than offering a retry', async () => {
+    fakeAdminEndpoint(
+      'GET',
+      readPath('missing'),
+      () =>
+        new Response(
+          JSON.stringify({ errors: [{ type: 'ValidationError', message: 'Validation error.' }] }),
+          { status: 422, headers: { 'content-type': 'application/json' } },
+        ),
     );
 
     await renderAdminApp('/apps/missing', { labs });
