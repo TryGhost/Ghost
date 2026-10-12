@@ -51,6 +51,8 @@ import { ScreenEntranceProvider } from '@/layout/screen-entrance-provider';
 import { useScreenEntrance } from '@/layout/screen-transition';
 import { EditorStatus } from './editor-status';
 import { EmailSizeWarning } from './email-size-warning';
+import { EditorFontPicker } from './editor-font-picker';
+import { useEditorFont } from './use-editor-font';
 import { PostEditor, type PostEditorHandle } from './post-editor';
 import type { EditorStatusRecord } from './post-status';
 import { buildPublishFlowPost } from './publish/flow-post';
@@ -344,11 +346,18 @@ function EditorContent({
   const editorImprovements = useFeatureFlag('admin7EditorImprovements', {
     requestOptions: EDITOR_REQUEST_OPTIONS,
   });
-  // The chrome stays while the settings panel is out or the status line reports
-  // a failed save or a failed newsletter.
+  const editorFont = useEditorFont(editorImprovements);
+  const [fontPickerOpen, setFontPickerOpen] = useState(false);
+  // The chrome stays while the settings panel is out, the font picker is open, or
+  // the status line reports a failed save or a failed newsletter.
   const writingFocus = useWritingFocus({
     enabled: editorImprovements,
-    blocked: settingsOpen || settingsMoving || session.state.kind === 'error' || didEmailFail,
+    blocked:
+      settingsOpen ||
+      settingsMoving ||
+      fontPickerOpen ||
+      session.state.kind === 'error' ||
+      didEmailFail,
     writingAreaRef,
   });
   const leaveGuard = useEditorLeaveGuard(session, postType);
@@ -475,6 +484,17 @@ function EditorContent({
                 cardConfig={currentCardConfig}
                 excerptError={settingsFieldErrorFor('custom_excerpt', session.settings)}
                 featureImage={featureImage}
+                font={editorFont.font}
+                fontPicker={
+                  editorImprovements ? (
+                    <EditorFontPicker
+                      className="max-sm:hidden"
+                      control={editorFont}
+                      open={fontPickerOpen}
+                      onOpenChange={setFontPickerOpen}
+                    />
+                  ) : undefined
+                }
                 handleRef={postEditorRef}
                 postType={postType}
                 settingsMoving={settingsMoving}
@@ -510,6 +530,7 @@ function EditorContent({
             postType={postType}
             reveal={settingsReveal}
             session={session}
+            showEditorHelp={editorImprovements}
             siteUrl={cardConfig.siteUrl}
           />
         ) : null}

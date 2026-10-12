@@ -33,6 +33,7 @@ again.
 | `email-size.ts`, `use-email-size.ts`             | The estimate of how large a post's newsletter would be, and when the editor makes it                                         |
 | `restore/`                                       | The `/restore` screen: lists this browser's local copies and creates a new draft from any of them                            |
 | `writing-focus.ts`, `use-writing-focus.ts`       | Hides the editor's chrome while the writer types and brings it back on a pointer move or scroll (`admin7EditorImprovements`) |
+| `editor-font.ts`, `use-editor-font.ts`           | The font the writer reads the post in while editing, and its [Aa] picker in the footer (`admin7EditorImprovements`)          |
 
 Two small modules are shared across all of the above. `request-options.ts`
 carries the editor's opt-out from the transport's session-expiry redirect, which
@@ -199,8 +200,8 @@ keeps its first line level with the back link's label and grows downward.
 
 Below Tailwind's `sm` breakpoint the status stays on the header row beside the
 back link, and the header's actions move to the bottom bar: the word count sits
-in the bottom-left corner, the actions in the bottom right, and the help link is
-hidden. The bar's rightmost action, Publish, Update or Save, is a primary
+in the bottom-left corner, the actions in the bottom right, and the help link,
+or the font picker that replaces it, is hidden. The bar's rightmost action, Publish, Update or Save, is a primary
 button there, and the bar names no shortcuts,
 which still work. `editor-header-actions.tsx` builds one list of controls and,
 below the breakpoint, portals them into a slot `post-editor.tsx` keeps in its
@@ -209,6 +210,32 @@ flows. Only the controls move; the flows they open stay mounted, so crossing
 the breakpoint keeps an open flow. A failed publish inputs load shows its
 message and Retry there too. While the on-screen keyboard is open the bar's
 actions are hidden with the word count.
+
+## Editor font
+
+Under `admin7EditorImprovements`, the footer's [Aa] button replaces the help
+link, which moves to the settings panel as "Using the editor". It opens a choice
+of three fonts to read the post in while editing: the editor's own serif
+(Georgia), sans (Inter) and mono (the system's monospace font: SF Mono on
+Apple devices, Consolas on Windows). Only the editor changes; the theme, the
+preview and the email never do.
+
+A choice applies at once, so the writer can compare with the popover open, and
+is saved when the popover closes, or the editor does, as `editor.bodyFont` in
+the user's preferences, so it follows the writer between browsers. A failed save
+keeps the choice for the visit and says so. A writer who never chose reads
+serif, and so does everyone with the flag off, whatever they saved.
+
+The font is set on the editor as `data-editor-font`. `index.css` maps each value
+to Koenig's content font variables (see the koenig-lexical README) and to the
+title and excerpt's own `--editor-display-*` ones. Sans sets the body in Inter
+and keeps the headings, title and excerpt as they are. Mono sets everything the
+writer writes in the monospace font: the title, the excerpt, the body, headings and the
+text of callout, toggle, header, product and call-to-action cards. Captions, alt
+text, buttons, bookmark previews and every control stay in Inter. Each font
+carries its own sizes, line height and tracking, since the three set very
+differently at the same size. The picker is hidden below `sm`, as the help link
+was, but the chosen font applies at every size.
 
 ## Link suggestions
 

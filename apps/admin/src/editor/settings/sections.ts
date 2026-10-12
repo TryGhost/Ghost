@@ -17,6 +17,7 @@ export const SETTINGS_SECTION_ORDER = [
   'x-card',
   'facebook-card',
   'keyboard-shortcuts',
+  'editor-help',
   'delete',
 ] as const;
 
