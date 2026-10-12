@@ -62,15 +62,9 @@ export const AppsListing: React.FC = () => {
             <PageHeader blurredBackground={false} sticky={false}>
               <PageHeader.Left>
                 <PageHeader.Title>
-                  {/* Same Beta badge as Automations. */}
                   <span className="inline-flex items-baseline gap-2">
                     Apps
-                    <Badge
-                      className="px-1 py-px text-[10px] leading-none tracking-wider uppercase"
-                      variant="secondary"
-                    >
-                      Beta
-                    </Badge>
+                    <Badge variant="secondary">Beta</Badge>
                   </span>
                 </PageHeader.Title>
               </PageHeader.Left>

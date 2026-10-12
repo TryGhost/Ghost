@@ -28,7 +28,6 @@ import { NotFound } from '@/shared/not-found';
 import { AccessIndicator } from './components/access-indicator';
 import { AppIcon } from './components/app-icon';
 import { AppsGate } from './components/apps-gate';
-import { DevelopmentBadge } from './components/development-badge';
 import { CapabilitySummary } from './components/surface-icon';
 import { UninstallDialog } from './components/uninstall-dialog';
 import { ACCOUNT_ACCESS } from './lib/access';
@@ -92,7 +91,7 @@ const Details: React.FC<{ installation: AppInstallation; timezone: string }> = (
               <Text as="h1" size="xl" weight="semibold">
                 {manifest.name}
               </Text>
-              {isDevelopmentApp(manifest) && <DevelopmentBadge />}
+              {isDevelopmentApp(manifest) && <Badge variant="secondary">Development</Badge>}
               {status === 'suspended' && <Badge variant="warning">Needs approval</Badge>}
               {status === 'uninstalled' && <Badge variant="secondary">Uninstalled</Badge>}
             </Inline>

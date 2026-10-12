@@ -17,7 +17,6 @@ import { LucideIcon } from '@tryghost/shade/utils';
 import { Link } from '@tryghost/admin-x-framework';
 import type { AppInstallation } from '@tryghost/admin-x-framework/api/app-installations';
 import { AppIcon } from './app-icon';
-import { DevelopmentBadge } from './development-badge';
 import { appDetailsRoute, appReviewRoute } from '@/apps/lib/routes';
 import { isDevelopmentApp } from '@/apps/lib/served-from';
 import { openRowLink, openRowLinkInNewTab } from '@/apps/lib/row-link';
@@ -52,7 +51,7 @@ const AppsList: React.FC<AppsListProps> = ({ installations, onUninstall }) => {
                       <Link className="text-md font-semibold" to={appDetailsRoute(id)}>
                         {manifest.name}
                       </Link>
-                      {isDevelopmentApp(manifest) && <DevelopmentBadge />}
+                      {isDevelopmentApp(manifest) && <Badge variant="secondary">Development</Badge>}
                       {status === 'suspended' && (
                         <Badge data-testid="app-needs-approval-badge" variant="warning">
                           Needs approval
