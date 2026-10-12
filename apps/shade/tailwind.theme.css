@@ -206,6 +206,7 @@
   --color-tab-hover: var(--tab-hover);
   --color-tab-active: var(--tab-active);
   --color-button-hover: var(--button-hover);
+  --color-button-ghost-hover: var(--button-ghost-hover);
   --color-interactive-hover: var(--interactive-hover);
   --color-filter-bar-background: var(--filter-bar-background);
   --color-filter-bar-item-hover: var(--filter-bar-item-hover);

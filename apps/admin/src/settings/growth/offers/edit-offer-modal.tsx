@@ -253,7 +253,6 @@ const Sidebar: React.FC<{
         {offer?.status === 'active' ? (
           <Button
             className="-ml-3"
-            size="sm"
             type="button"
             variant="destructive-ghost"
             onClick={confirmStatusChange}
@@ -261,13 +260,7 @@ const Sidebar: React.FC<{
             Archive offer
           </Button>
         ) : (
-          <Button
-            className="-ml-3"
-            size="sm"
-            type="button"
-            variant="ghost"
-            onClick={confirmStatusChange}
-          >
+          <Button className="-ml-3" type="button" variant="ghost" onClick={confirmStatusChange}>
             Reactivate offer
           </Button>
         )}
