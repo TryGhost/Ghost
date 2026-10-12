@@ -143,6 +143,6 @@ module.exports = {
   '{**/AGENTS.md,tools/scripts/check-agent-guidance.js}': () => 'pnpm lint:agent-guidance',
   '{.agents/skills/**,.claude/skills/**,tools/scripts/check-agent-skill-links.js}': () =>
     'pnpm lint:agent-skills',
-  '{package.json,pnpm-workspace.yaml,packages/**/package.json,packages/_template/**,tools/scripts/check-internal-packages.js,tools/scripts/create-package.js,tools/scripts/lib/constants.js,tools/scripts/lib/package-template.js}':
+  '{package.json,pnpm-workspace.yaml,packages/**/package.json,packages/_template/**,tools/scripts/check-internal-packages.js,tools/gx/**,tools/scripts/lib/constants.js}':
     () => 'pnpm lint:packages',
 };

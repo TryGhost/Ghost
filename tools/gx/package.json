@@ -1,0 +1,73 @@
+{
+  "name": "@tryghost/dev-tools",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Ghost developer tools",
+  "license": "MIT",
+  "author": "Ghost Foundation",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/TryGhost/Ghost.git",
+    "directory": "tools/gx"
+  },
+  "bin": {
+    "gx": "./src/cli.ts"
+  },
+  "files": [
+    "src",
+    "build"
+  ],
+  "type": "module",
+  "exports": {
+    "./package-template": "./src/generate/package-template.ts",
+    "./versioning-ignore": "./src/generate/versioning-ignore.ts"
+  },
+  "scripts": {
+    "build": "tsc",
+    "test:unit": "vitest run",
+    "test": "pnpm run '/^test:/'",
+    "test:types": "tsc --noEmit -p test/tsconfig.json",
+    "lint:code": "eslint src/ --cache",
+    "lint:test": "eslint test/ --cache",
+    "lint": "pnpm run '/^lint:/'",
+    "gx": "node src/cli.ts"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@internal/cfg-eslint": "workspace:*",
+    "@internal/cfg-typescript": "workspace:*",
+    "@internal/cfg-vitest": "workspace:*",
+    "@types/node": "catalog:",
+    "@typescript/native": "catalog:",
+    "@vitest/coverage-v8": "catalog:",
+    "eslint": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  },
+  "nx": {
+    "targets": {
+      "build": {
+        "outputs": [
+          "{projectRoot}/build"
+        ]
+      },
+      "test:unit": {
+        "inputs": [
+          "default",
+          "^default",
+          "generatorContracts",
+          {
+            "runtime": "node -v"
+          }
+        ]
+      }
+    },
+    "namedInputs": {
+      "generatorContracts": [
+        "{workspaceRoot}/packages/_template/**/*",
+        "{workspaceRoot}/tools/scripts/check-internal-packages.js",
+        "{workspaceRoot}/tools/scripts/lib/constants.js"
+      ]
+    }
+  }
+}

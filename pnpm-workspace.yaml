@@ -7,6 +7,7 @@ packages:
   - '!packages/_template'
   - 'tools/configs/*'
   - 'tools/scripts'
+  - 'tools/gx'
 
 strictDepBuilds: true
 catalogMode: strict
@@ -441,6 +442,7 @@ versioning:
     - '@tryghost/api-framework'
     - '@tryghost/app-contracts'
     - '@tryghost/checkout'
+    - '@tryghost/dev-tools'
     - '@tryghost/e2e'
     - '@tryghost/i18n'
     - '@tryghost/image-transform'

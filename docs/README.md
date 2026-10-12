@@ -48,7 +48,8 @@ Ghost/
 ├── packages/          # Shared libraries and adapter contracts
 ├── tools/             # Repository tooling workspaces
 │   ├── configs/       # Shared build, lint, test, and TypeScript config
-│   └── scripts/       # Repository automation
+│   ├── scripts/       # Repository automation
+│   └── gx/            # Contributor CLI and code generators
 ├── e2e/               # Browser end-to-end tests
 └── docker/            # Local development containers and services
 ```

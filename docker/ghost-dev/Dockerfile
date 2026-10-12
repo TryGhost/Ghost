@@ -48,6 +48,7 @@ COPY --parents \
     ghost/package.json \
     koenig/*/package.json \
     tools/configs/*/package.json \
+    tools/gx/package.json \
     packages/**/package.json \
     ./
 

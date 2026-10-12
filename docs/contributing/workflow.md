@@ -33,6 +33,12 @@ Keep unrelated changes on separate branches and in separate pull requests. If a
 larger effort needs a shared or release branch, agree that with the maintainers
 first; ordinary pull requests target `main`.
 
+## Generate an internal package
+
+Run `pnpm gx generate package <name>` to scaffold a private TypeScript package
+from the repository template. `pnpm gx --help` lists developer commands; the
+[Ghost Dev Tools README](../../tools/gx/README.md) explains options and verification.
+
 ## Make and validate the change
 
 Add or update automated tests when behavior changes. Run the most focused checks
