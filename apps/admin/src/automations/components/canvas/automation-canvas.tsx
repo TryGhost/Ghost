@@ -480,6 +480,7 @@ const getInitialViewport = (canvasWidth: number): { x: number; y: number; zoom: 
 });
 
 type AutomationCanvasProps = {
+  initialSidebar: 'unknown' | 'closed' | 'settings' | 'performance';
   actionErrors?: Record<string, string>;
   onWaitValidityChange: (stepId: string, valid: boolean) => void;
   automation?: AutomationDetail;
@@ -511,6 +512,7 @@ const hasAutomationEmailModalState = (state: unknown): state is { automationEmai
   typeof state.automationEmailModal === 'boolean';
 
 const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
+  initialSidebar,
   actionErrors = {},
   savedTriggerTierIds = [],
   onWaitValidityChange,
@@ -525,9 +527,6 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
   onEmailDirtyChange,
   onKeepEditingAfterBlockedEmailNavigation,
 }) => {
-  const [automationSidebarOpenOverride, setAutomationSidebarOpenOverride] = useState<
-    boolean | null
-  >(null);
   const layoutRef = useRef<HTMLElement>(null);
   const [nodeSizes, setNodeSizes] = useState<Record<string, { width: number; height: number }>>({});
   const handleNodesChange = useCallback((changes: NodeChange<AutomationFlowNode>[]) => {
@@ -735,10 +734,29 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
     automationRunAnalyticsEnabled &&
     Boolean(configQuery.data?.config.stats);
   const isAutomationSidebarAvailable = isPerformanceEnabled || automationsPerTierEnabled;
-  // Flow data arrives after mount. Use its status until the user chooses a panel state.
-  const isAutomationSidebarOpen =
-    isAutomationSidebarAvailable &&
-    (automationSidebarOpenOverride ?? (isPerformanceEnabled && automation?.status === 'active'));
+  const [sidebar, setSidebar] = useState<{
+    open: boolean;
+    tab: 'unknown' | 'settings' | 'performance';
+  }>({ open: false, tab: 'unknown' });
+  // Resolve once after loading; later updates must not override user choices.
+  if (sidebar.tab === 'unknown' && initialSidebar !== 'unknown') {
+    setSidebar({
+      open: initialSidebar !== 'closed',
+      tab:
+        initialSidebar === 'closed'
+          ? isPerformanceEnabled
+            ? 'performance'
+            : 'settings'
+          : initialSidebar,
+    });
+  }
+  const setAutomationSidebarOpen = useCallback((open: boolean) => {
+    setSidebar((current) => ({
+      open,
+      tab: current.tab === 'unknown' ? 'settings' : current.tab,
+    }));
+  }, []);
+  const isAutomationSidebarOpen = isAutomationSidebarAvailable && sidebar.open;
   const initialViewport = getInitialViewport(
     window.innerWidth - (isAutomationSidebarOpen && window.innerWidth >= 960 ? 480 : 0),
   );
@@ -756,7 +774,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
     onSelectRun(id);
     // Below the sidebar breakpoint, show either the member list or the canvas.
     if (layoutRef.current && layoutRef.current.clientWidth < 960) {
-      setAutomationSidebarOpenOverride(false);
+      setAutomationSidebarOpen(false);
     }
   };
 
@@ -793,7 +811,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
           automationRunAnalyticsEnabled && current?.id === id ? null : { id },
         );
         if (automationRunAnalyticsEnabled) {
-          setAutomationSidebarOpenOverride(false);
+          setAutomationSidebarOpen(false);
         }
       },
       newStepId,
@@ -848,7 +866,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
         if (isAutomationSidebarOpen) {
-          setAutomationSidebarOpenOverride(false);
+          setAutomationSidebarOpen(false);
         } else {
           handleCloseEmailPerformance();
         }
@@ -958,15 +976,17 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
           name={automation.name}
           performanceEnabled={isPerformanceEnabled}
           selectedRunId={selectedRunId}
+          selectedTab={sidebar.tab === 'unknown' ? 'settings' : sidebar.tab}
           triggerTierScope={automation.trigger_tier_scope}
           onDetailsChange={(details) => onChange({ ...automation, ...details })}
           onOpenChange={(open) => {
-            setAutomationSidebarOpenOverride(open);
+            setAutomationSidebarOpen(open);
             if (open) {
               clearDetail();
             }
           }}
           onSelectRun={handleSelectRun}
+          onTabChange={(tab) => setSidebar((current) => ({ ...current, tab }))}
         />
       )}
       <Box

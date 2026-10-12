@@ -167,7 +167,7 @@ describe('Automation sidebar defaults', () => {
   });
 
   it.each([false, true])(
-    'uses the published default while preserving an explicit close (%s)',
+    'keeps the sidebar closed when publishing an existing draft (%s)',
     async (explicitClose) => {
       prepare('first', 'inactive');
       const data = detail('first');
@@ -190,13 +190,7 @@ describe('Automation sidebar defaults', () => {
       await expect
         .element(page.getByRole('button', { name: 'Turn off', exact: true }))
         .toBeVisible();
-      await expect
-        .element(
-          explicitClose
-            ? automationsScreen.showAutomationSidebarButton()
-            : automationsScreen.hideAutomationSidebarButton(),
-        )
-        .toBeVisible();
+      await expect.element(automationsScreen.showAutomationSidebarButton()).toBeVisible();
       await page.getByRole('button', { name: 'Turn off', exact: true }).click();
       await page
         .getByRole('alertdialog')

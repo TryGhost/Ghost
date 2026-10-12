@@ -164,6 +164,8 @@ export const AutomationSidebar: React.FC<{
   performanceEnabled: boolean;
   metadata: AutomationMetadata;
   onDetailsChange: (details: { name: string; description: string }) => void;
+  selectedTab: AutomationSidebarTab;
+  onTabChange: (tab: AutomationSidebarTab) => void;
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
   selectedRunId: string | null;
@@ -178,14 +180,13 @@ export const AutomationSidebar: React.FC<{
   metadata,
   onDetailsChange,
   isOpen,
+  selectedTab,
+  onTabChange,
   onOpenChange,
   selectedRunId,
   onSelectRun,
   isRunSelectionDisabled,
 }) => {
-  const [selectedTab, setSelectedTab] = useState<AutomationSidebarTab>(
-    performanceEnabled ? 'performance' : 'settings',
-  );
   let activeTab: AutomationSidebarTab;
   switch (metadata) {
     case 'hidden':
@@ -287,7 +288,7 @@ export const AutomationSidebar: React.FC<{
             variant="button"
             onValueChange={(value) => {
               if (value === 'performance' || value === 'settings') {
-                setSelectedTab(value);
+                onTabChange(value);
               }
             }}
           >
