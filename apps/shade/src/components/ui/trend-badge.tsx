@@ -78,4 +78,4 @@ const TrendBadge = React.forwardRef<HTMLDivElement, TrendBadgeProps>(
 );
 TrendBadge.displayName = 'TrendBadge';
 
-export { TrendBadge, trendBadgeVariants };
+export { TrendBadge };

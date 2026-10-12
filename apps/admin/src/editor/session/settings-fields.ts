@@ -210,25 +210,80 @@ export function settingsFieldErrorFor(
   return overLength(fields[key], max) ? message : null;
 }
 
+/** Every field the save-time validator can refuse a save over. */
+export type InvalidFieldKey = 'title' | ValidatedSettingsFieldKey | 'published_at' | 'authors';
+
+/** The field a save would be refused over, and the rule it breaks. */
+export interface InvalidField {
+  key: InvalidFieldKey;
+  message: string;
+}
+
 /**
- * The first rule the settings fields break, in the post validator's order. A
- * post the server has not created yet is not held to the tier rule
+ * The first settings field that breaks its rule, in the post validator's order.
+ * A post the server has not created yet is not held to the tier rule
  * (validators/post.js `isNew`); its write leaves the pair out instead.
  */
+function invalidSettingsField(
+  fields: ValidatedSettingsFields,
+  isNew: boolean,
+  skip: ReadonlyArray<ValidatedSettingsFieldKey>,
+): InvalidField | null {
+  for (const key of VALIDATED_SETTINGS_FIELD_KEYS) {
+    if ((isNew && key === 'tiers') || skip.includes(key)) {
+      continue;
+    }
+    const message = settingsFieldErrorFor(key, fields);
+    if (message) {
+      return { key, message };
+    }
+  }
+  return null;
+}
+
+/** The first rule the settings fields break, worded as the save refuses it. */
 export function settingsFieldError(
   fields: ValidatedSettingsFields,
   isNew: boolean,
   /** Fields the save leaves for a later one, whose rules wait for it. */
   skip: ReadonlyArray<ValidatedSettingsFieldKey> = [],
 ): string | null {
-  for (const key of VALIDATED_SETTINGS_FIELD_KEYS) {
-    if ((isNew && key === 'tiers') || skip.includes(key)) {
-      continue;
-    }
-    const error = settingsFieldErrorFor(key, fields);
-    if (error) {
-      return error;
-    }
+  return invalidSettingsField(fields, isNew, skip)?.message ?? null;
+}
+
+/** What one save would write, as far as the validator reads it. */
+export interface DocumentUnderValidation {
+  /** Null for a save that leaves the title for Update. */
+  title: string | null;
+  fields: ValidatedSettingsFields;
+  /** A draft the server has not created yet. */
+  isNew: boolean;
+  /** Fields the save leaves for a later one, whose rules wait for it. */
+  skip?: ReadonlyArray<ValidatedSettingsFieldKey>;
+  /** The status and publish time the save writes, when its publish time is not the saved one. */
+  changedPublishTime: { status: PostStatus; publishedAt: string | null } | null;
+  /** The author list the save writes, when it writes one. */
+  authors: ReadonlyArray<unknown> | undefined;
+}
+
+/**
+ * The save-time validator: the field a save would be refused over, checked in
+ * the order the save checks it — the title, the settings fields, the publish
+ * time, then the author list. Saves and the header's refusals both read it.
+ */
+export function invalidField(document: DocumentUnderValidation): InvalidField | null {
+  const title = document.title === null ? null : titleError(document.title);
+  if (title) {
+    return { key: 'title', message: title };
   }
-  return null;
+  const settings = invalidSettingsField(document.fields, document.isNew, document.skip ?? []);
+  if (settings) {
+    return settings;
+  }
+  // Core validates the publish time for scheduled posts only; a saved future time stands.
+  const time = document.changedPublishTime;
+  if (time && publishedAtInFuture(time.status, time.publishedAt)) {
+    return { key: 'published_at', message: PUBLISHED_AT_MUST_BE_PAST };
+  }
+  return document.authors?.length === 0 ? { key: 'authors', message: AUTHORS_REQUIRED } : null;
 }

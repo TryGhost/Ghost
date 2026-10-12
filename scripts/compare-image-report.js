@@ -1,4 +1,4 @@
-// Diffs two image reports written by ghost/core/scripts/prune.mts --report and
+// Diffs two image reports written by ghost/scripts/prune.mts --report and
 // renders the result as markdown for a CI step summary.
 //
 // The reports measure what actually ships: per-package byte and file counts of

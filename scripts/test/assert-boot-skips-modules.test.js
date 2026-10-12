@@ -8,7 +8,7 @@ import { ROOT_DIR } from '../lib/constants.js';
 import { findLoadedModules, NOT_AT_BOOT } from '../lib/boot-modules.js';
 
 const PRELOAD = path.join(ROOT_DIR, 'scripts/assert-boot-skips-modules.js');
-const CORE_DIR = path.join(ROOT_DIR, 'ghost/core');
+const CORE_DIR = path.join(ROOT_DIR, 'ghost');
 
 const run = (code) =>
   spawnSync(process.execPath, ['--import', PRELOAD, '-e', code], {

@@ -1,18 +1,19 @@
 import IFrame from './iframe';
-import React, { useCallback, useState } from 'react';
 import styles from '../styles/iframe.css?inline';
 import { isMinimal } from '../utils/helpers';
 import { useAppContext } from '../app-context';
+import { useCallback, useLayoutEffect, useState } from 'preact/hooks';
+import type { ComponentChildren, JSX } from 'preact';
 
 type FrameProps = {
-  children: React.ReactNode;
+  children: ComponentChildren;
 };
 
 /**
  * This ResizableFrame takes the full width of the parent container
  */
-export const Frame: React.FC<FrameProps> = ({ children }) => {
-  const style: React.CSSProperties = {
+export const Frame = ({ children }: FrameProps) => {
+  const style: JSX.CSSProperties = {
     display: 'block', // iframe is by default inline, if we don't add this, the container will take up more height due to spaces, causing layout jumps
     width: '100%',
     height: '0px', // = default height
@@ -35,14 +36,14 @@ export const Frame: React.FC<FrameProps> = ({ children }) => {
 };
 
 type ResizableFrameProps = FrameProps & {
-  style: React.CSSProperties;
+  style: JSX.CSSProperties;
   title: string;
 };
 
 /**
  * This TailwindFrame has the same height as it contents and mimics a shadow DOM component
  */
-const ResizableFrame: React.FC<ResizableFrameProps> = ({ children, style, title }) => {
+const ResizableFrame = ({ children, style, title }: ResizableFrameProps) => {
   const [iframeStyle, setIframeStyle] = useState(style);
   const onResize = useCallback((iframeRoot: HTMLElement) => {
     setIframeStyle((current) => {
@@ -63,7 +64,7 @@ const ResizableFrame: React.FC<ResizableFrameProps> = ({ children, style, title 
 /**
  * This TailwindFrame has the same height as its container
  */
-const FullHeightFrame: React.FC<ResizableFrameProps> = ({ children, style, title }) => {
+const FullHeightFrame = ({ children, style, title }: ResizableFrameProps) => {
   const { scriptTag } = useAppContext();
   const [iframeStyle, setIframeStyle] = useState(style);
 
@@ -77,7 +78,7 @@ const FullHeightFrame: React.FC<ResizableFrameProps> = ({ children, style, title
     });
   }, []);
 
-  React.useEffect(() => {
+  useLayoutEffect(() => {
     const element = scriptTag.parentElement;
     if (!element) {
       return;
@@ -106,7 +107,7 @@ type TailwindFrameProps = ResizableFrameProps & {
 /**
  * Loads all the CSS styles inside an iFrame.
  */
-const TailwindFrame: React.FC<TailwindFrameProps> = ({ children, onResize, style, title }) => {
+const TailwindFrame = ({ children, onResize, style, title }: TailwindFrameProps) => {
   const head = (
     <>
       <style dangerouslySetInnerHTML={{ __html: styles }} />

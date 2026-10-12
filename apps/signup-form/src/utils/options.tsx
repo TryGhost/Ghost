@@ -1,8 +1,8 @@
-import React from 'react';
-import { SignupFormOptions } from '../app-context';
+import { useCallback, useLayoutEffect, useState } from 'preact/hooks';
+import type { SignupFormOptions } from '../app-context';
 
 export function useOptions(scriptTag: HTMLElement) {
-  const buildOptions = React.useCallback(() => {
+  const buildOptions = useCallback(() => {
     const labels = [];
 
     while (scriptTag.dataset[`label-${labels.length + 1}`]) {
@@ -23,9 +23,9 @@ export function useOptions(scriptTag: HTMLElement) {
     };
   }, [scriptTag]);
 
-  const [options, setOptions] = React.useState<SignupFormOptions>(buildOptions());
+  const [options, setOptions] = useState<SignupFormOptions>(buildOptions());
 
-  React.useEffect(() => {
+  useLayoutEffect(() => {
     const observer = new MutationObserver((mutationList) => {
       if (mutationList.some((mutation) => mutation.type === 'attributes')) {
         setOptions(buildOptions());

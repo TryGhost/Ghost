@@ -43,17 +43,23 @@ function fakeSession({
   locale = 'en',
   role = 'Owner',
   hostSettings,
+  settings,
   currentUserReady,
 }: {
   locale?: string;
   role?: StaffRoleName;
   hostSettings?: Record<string, unknown>;
+  settings?: Record<string, string>;
   currentUserReady?: Promise<void>;
 } = {}) {
   const config = configResponse();
   config.config.hostSettings = hostSettings;
   fakeAdminEndpoint('GET', /^\/config\/(?:\?.*)?$/, config);
-  fakeAdminEndpoint('GET', /^\/settings\/\?/, settingsResponse({ settings: { locale } }));
+  fakeAdminEndpoint(
+    'GET',
+    /^\/settings\/\?/,
+    settingsResponse({ settings: { locale, ...settings } }),
+  );
 
   const me = currentUserResponse();
   me.users[0].roles = [staffRole({ name: role })];
@@ -104,7 +110,7 @@ async function renderSearch(term = '') {
 type SearchHook = Awaited<ReturnType<typeof renderSearch>>;
 
 const groupNames = (hook: SearchHook) =>
-  hook.result.current.search.results.map((group) => group.groupName);
+  hook.result.current.search.results.map((group) => group.heading);
 
 async function settledGroupNames(hook: SearchHook) {
   await expect.poll(() => hook.result.current.search.isLoading).toBe(false);
@@ -123,7 +129,7 @@ describe('useGlobalSearch', () => {
 
     await hook.rerender({ term: 'first' });
 
-    expect(await settledGroupNames(hook)).toEqual(['Staff', 'Tags', 'Posts', 'Pages']);
+    expect(await settledGroupNames(hook)).toEqual(['Staff', 'Tags', 'Settings', 'Posts', 'Pages']);
     expect(index.posts.requests).toHaveLength(1);
   });
 
@@ -131,11 +137,11 @@ describe('useGlobalSearch', () => {
     fakeSession();
     const index = fakeSearchIndex();
     const hook = await renderSearch('first');
-    expect(await settledGroupNames(hook)).toHaveLength(4);
+    expect(await settledGroupNames(hook)).toHaveLength(5);
 
     await hook.rerender({ term: 'tag' });
 
-    expect(groupNames(hook)).toHaveLength(4);
+    expect(groupNames(hook)).toHaveLength(5);
     expect(hook.result.current.search.isLoading).toBe(true);
     expect(await settledGroupNames(hook)).toEqual(['Tags']);
     expect(index.posts.requests).toHaveLength(1);
@@ -146,7 +152,7 @@ describe('useGlobalSearch', () => {
     fakeSession();
     fakeSearchIndex();
     const hook = await renderSearch('first');
-    expect(await settledGroupNames(hook)).toHaveLength(4);
+    expect(await settledGroupNames(hook)).toHaveLength(5);
 
     await hook.rerender({ term: '' });
 
@@ -200,7 +206,7 @@ describe('useGlobalSearch', () => {
 
     reload.release();
 
-    expect(await settledGroupNames(hook)).toEqual(['Staff', 'Tags', 'Pages']);
+    expect(await settledGroupNames(hook)).toEqual(['Staff', 'Tags', 'Settings', 'Pages']);
   });
 
   it('applies a staff edit made in React without reloading the list', async () => {
@@ -228,7 +234,7 @@ describe('useGlobalSearch', () => {
     );
     const hook = await renderSearch('first');
 
-    expect(await settledGroupNames(hook)).toEqual(['Staff', 'Tags', 'Pages']);
+    expect(await settledGroupNames(hook)).toEqual(['Staff', 'Tags', 'Settings', 'Pages']);
     await expect.element(page.getByText('Posts are offline')).toBeVisible();
   });
 
@@ -295,6 +301,63 @@ describe('useGlobalSearch', () => {
       const hook = await renderSearch('plan');
 
       expect(await settledGroupNames(hook)).toEqual(['Acme Hosting']);
+    });
+  });
+
+  describe('settings results', () => {
+    const settingsTitles = (hook: SearchHook) =>
+      hook.result.current.search.results
+        .find(({ heading }) => heading === 'Settings')
+        ?.items.map(({ title }) => title);
+
+    it.each(['Owner', 'Administrator'] as const)('shows every section to an %s', async (role) => {
+      fakeSession({ role });
+      fakeSearchIndex();
+      const hook = await renderSearch('timezone');
+
+      expect(await settledGroupNames(hook)).toEqual(['Settings']);
+      expect(settingsTitles(hook)).toEqual(['Timezone']);
+    });
+
+    it.each(['Editor', 'Super Editor'] as const)('shows an %s only Staff', async (role) => {
+      fakeSession({ role });
+      fakeSearchIndex();
+      const timezone = await renderSearch('timezone');
+      expect(await settledGroupNames(timezone)).toEqual([]);
+
+      const staff = await renderSearch('staff');
+      expect(await settledGroupNames(staff)).toEqual(['Settings']);
+      expect(settingsTitles(staff)).toEqual(['Staff']);
+    });
+
+    it.each(['Author', 'Contributor'] as const)('shows an %s none', async (role) => {
+      fakeSession({ role });
+      fakeSearchIndex();
+      const hook = await renderSearch('staff');
+
+      expect(await settledGroupNames(hook)).toEqual([]);
+    });
+
+    it('hides sections the Settings sidebar hides', async () => {
+      fakeSession();
+      fakeSearchIndex();
+      const hook = await renderSearch('offers');
+
+      expect(await settledGroupNames(hook)).toEqual([]);
+    });
+
+    it('shows conditional sections once the site enables them', async () => {
+      fakeSession({
+        settings: {
+          stripe_connect_secret_key: 'sk_test',
+          stripe_connect_publishable_key: 'pk_test',
+        },
+      });
+      fakeSearchIndex();
+      const hook = await renderSearch('offers');
+
+      expect(await settledGroupNames(hook)).toEqual(['Settings']);
+      expect(settingsTitles(hook)).toEqual(['Offers']);
     });
   });
 });

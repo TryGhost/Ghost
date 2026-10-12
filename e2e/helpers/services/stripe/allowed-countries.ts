@@ -5,7 +5,7 @@
  * Kept here rather than imported from Ghost, because this package models Stripe and Ghost
  * is what it is modelling: a fake that shared the product's list could never catch the
  * product offering a country Stripe refuses. The two are held together by a test in
- * `ghost/core` that reads this file, so they cannot drift quietly.
+ * `ghost` that reads this file, so they cannot drift quietly.
  */
 export const STRIPE_ALLOWED_COUNTRIES = [
   'AC',

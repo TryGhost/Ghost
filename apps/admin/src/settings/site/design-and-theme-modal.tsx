@@ -7,6 +7,7 @@ import { useSettingsNavigation } from '@/settings/hooks/use-settings-navigation'
 import { useUpgradeRoute } from '@/settings/hooks/use-upgrade-route';
 import { parseEditingThemeRoute } from './theme/theme-editor-utils';
 import { useCheckThemeLimitError } from '@/settings/hooks/use-check-theme-limit-error';
+import { navigateTo } from '@/utils/navigation';
 
 const DesignAndThemeModal: React.FC = () => {
   const { route, updateRoute } = useSettingsNavigation();
@@ -29,7 +30,9 @@ const DesignAndThemeModal: React.FC = () => {
     (error: string) => {
       showLimit({
         prompt: error,
-        onOk: () => updateRoute({ route: upgradeRoute, isExternal: true }),
+        onOk: () => {
+          navigateTo(upgradeRoute);
+        },
       });
     },
     [showLimit, updateRoute, upgradeRoute],

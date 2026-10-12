@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { replayIntegration, type Event } from '@sentry/react';
+import { inboundFiltersIntegration, replayIntegration, type Event } from '@sentry/react';
 import { beforeBreadcrumb, beforeSend, getSentryConfig, type Integration } from './sentry-config';
 
 vi.mock('@sentry/react', async (importOriginal) => ({
@@ -8,7 +8,22 @@ vi.mock('@sentry/react', async (importOriginal) => ({
   debugIntegration: vi.fn(() => ({ name: 'Debug' })),
 }));
 
+const koenigVersion = vi.hoisted(() => vi.fn<() => string | undefined>());
+
+vi.mock('@/settings/components/koenig-loader', () => ({ loadedKoenigVersion: koenigVersion }));
+
+const LEXICAL_ERROR =
+  'Minified Lexical error #15; visit https://lexical.dev/docs/error?code=15 for the full message';
+
 const DSN = 'https://public@o0.ingest.sentry.io/1';
+
+function isIgnored(type: string, value: string): boolean {
+  const config = getSentryConfig({ dsn: DSN, environment: 'production', version: '6.1' });
+  const event: Event = { exception: { values: [{ type, value }] } };
+  const client = { getOptions: () => config } as never;
+
+  return inboundFiltersIntegration().processEvent?.(event, {}, client) === null;
+}
 
 function integrationNames(environment: string): string[] {
   const config = getSentryConfig({ dsn: DSN, environment, version: '6.1' });
@@ -24,22 +39,69 @@ describe('getSentryConfig', () => {
     expect(config).toMatchObject({ dsn: DSN, environment: 'production', release: 'ghost@6.1' });
   });
 
-  it('ignores browser, network and Ember noise', () => {
+  it('ignores browser and network noise', () => {
     const config = getSentryConfig({ dsn: DSN, environment: 'production', version: '6.1' });
 
     expect(config.ignoreErrors).toEqual([
       /The play\(\) request was interrupted.*/,
       /The request is not allowed by the user agent or the platform in the current context/,
       /Server was unreachable/,
-      /NetworkError when attempting to fetch resource./,
-      /Failed to fetch/,
-      /Load failed/,
-      /The operation was aborted./,
-      /^TransitionAborted$/,
+      /^NetworkError when attempting to fetch resource\.$/,
+      /^Failed to fetch$/,
+      /^Load failed$/,
+      /^(AbortError: )?The operation was aborted\. ?$/,
+      /^(AbortError: |InvalidStateError: )?Transition was (skipped|aborted because of invalid state)(\. [A-Za-z ]+)?$/,
+      /^(Skipping view transition because (skipTransition\(\) was called|viewport size changed)|View transition was skipped because document visibility state is hidden)\.$/,
+      /^Skipped ViewTransition due to (skipTransition\(\) call|document being hidden)$/,
       /^ResizeObserver loop completed with undelivered notifications/,
       /^ResizeObserver loop limit exceeded/,
-      'TaskCancelation',
     ]);
+  });
+
+  it.each([
+    ['TypeError', 'Failed to fetch'],
+    ['TypeError', 'Load failed'],
+    ['TypeError', 'NetworkError when attempting to fetch resource.'],
+    ['AbortError', 'The operation was aborted.'],
+    ['AbortError', 'The operation was aborted. '],
+    ['Error', 'AbortError: The operation was aborted.'],
+  ])('ignores the network error %s: %j', (type, value) => {
+    expect(isIgnored(type, value)).toBe(true);
+  });
+
+  it.each([
+    ['Error', 'InvalidStateError: Transition was aborted because of invalid state'],
+    [
+      'Error',
+      'InvalidStateError: Transition was aborted because of invalid state. Document hidden',
+    ],
+    ['AbortError', 'Transition was skipped'],
+    ['AbortError', 'Transition was skipped. Navigation aborted'],
+    [
+      'InvalidStateError',
+      'View transition was skipped because document visibility state is hidden.',
+    ],
+    ['AbortError', 'Skipping view transition because skipTransition() was called.'],
+    ['InvalidStateError', 'Skipping view transition because viewport size changed.'],
+    ['InvalidStateError', 'Skipped ViewTransition due to document being hidden'],
+    ['AbortError', 'Skipped ViewTransition due to skipTransition() call'],
+  ])('ignores the skipped view transition %s: %j', (type, value) => {
+    expect(isIgnored(type, value)).toBe(true);
+  });
+
+  it('reports an error that only starts like a skipped view transition', () => {
+    expect(isIgnored('Error', 'Skipped ViewTransition due to document being hidden: x')).toBe(
+      false,
+    );
+  });
+
+  it('reports a module that failed to load', () => {
+    expect(
+      isIgnored(
+        'TypeError',
+        'Failed to fetch dynamically imported module: https://example.com/ghost/assets/editor-Bx1.js',
+      ),
+    ).toBe(false);
   });
 
   it('buffers replays for errors and keeps deduping outside tests', () => {
@@ -56,11 +118,10 @@ describe('getSentryConfig', () => {
     getSentryConfig({ dsn: DSN, environment: 'production', version: '6.1' });
 
     expect(replayIntegration).toHaveBeenCalledExactlyOnceWith({
-      mask: ['.koenig-lexical', '.gh-dashboard', '[data-sentry-automations-mask]'],
+      mask: ['.koenig-lexical', '[data-sentry-automations-mask]'],
       unmask: [
         'body:not([data-sentry-automations-mask]) [role="menu"]',
         'body:not([data-sentry-automations-mask]) [data-testid="settings-panel"]',
-        'body:not([data-sentry-automations-mask]) .gh-nav',
       ],
       maskAllText: false,
       maskAllInputs: true,
@@ -88,12 +149,13 @@ describe('getSentryConfig', () => {
 describe('beforeSend', () => {
   afterEach(() => {
     document.body.removeAttribute('data-gr-ext-installed');
+    koenigVersion.mockReset();
   });
 
   it('should return an event', () => {
     const event = { message: 'test' } as Event;
 
-    expect(beforeSend(event, {})).toEqual(event);
+    expect(beforeSend(event)).toEqual(event);
   });
 
   it('tags events as not shown to the user by default', () => {
@@ -109,7 +171,13 @@ describe('beforeSend', () => {
   it('does not send the event if it was shown to the user', () => {
     const event = { tags: { shown_to_user: true } } as Event;
 
-    expect(beforeSend(event, {})).toBeNull();
+    expect(beforeSend(event)).toBeNull();
+  });
+
+  it('sends failures the publish flow showed the writer', () => {
+    const event = { tags: { shown_to_user: true, source: 'publish-flow' } } as Event;
+
+    expect(beforeSend(event)).toEqual(event);
   });
 
   it('removes post and page ids from the error message', () => {
@@ -117,9 +185,7 @@ describe('beforeSend', () => {
       exception: { values: [{ value: 'Something went wrong <post:123>' }] },
     } as Event;
 
-    expect(beforeSend(event, {})?.exception?.values?.[0]?.value).toBe(
-      'Something went wrong <post:ID>',
-    );
+    expect(beforeSend(event)?.exception?.values?.[0]?.value).toBe('Something went wrong <post:ID>');
   });
 
   it('removes page ids from the error message', () => {
@@ -127,80 +193,67 @@ describe('beforeSend', () => {
       exception: { values: [{ value: 'Could not save <page:abc123>' }] },
     } as Event;
 
-    expect(beforeSend(event, {})?.exception?.values?.[0]?.value).toBe('Could not save <page:ID>');
+    expect(beforeSend(event)?.exception?.values?.[0]?.value).toBe('Could not save <page:ID>');
+  });
+
+  it('tags an uncaught Lexical error with the loaded Koenig version', () => {
+    koenigVersion.mockReturnValue('1.2.3');
+    const event = { exception: { values: [{ value: LEXICAL_ERROR }] } } as Event;
+
+    const result = beforeSend(event);
+
+    expect(result?.tags?.lexical).toBe(true);
+    expect(result?.contexts?.koenig).toEqual({ version: '1.2.3' });
+  });
+
+  it('tags a Lexical error before Koenig has loaded without a version', () => {
+    const event = { exception: { values: [{ value: LEXICAL_ERROR }] } } as Event;
+
+    const result = beforeSend(event);
+
+    expect(result?.tags?.lexical).toBe(true);
+    expect(result?.contexts?.koenig).toBeUndefined();
+  });
+
+  it('keeps the context of a Lexical error the editor reported', () => {
+    koenigVersion.mockReturnValue('1.2.3');
+    const event = {
+      exception: { values: [{ value: LEXICAL_ERROR }] },
+      tags: { lexical: true, koenig_instance: 'secondary' },
+      contexts: { koenig: { version: '1.0.0' } },
+    } as Event;
+
+    const result = beforeSend(event);
+
+    expect(result?.tags).toMatchObject({ lexical: true, koenig_instance: 'secondary' });
+    expect(result?.contexts?.koenig).toEqual({ version: '1.0.0' });
+  });
+
+  it('does not tag other errors as Lexical', () => {
+    koenigVersion.mockReturnValue('1.2.3');
+    const event = { exception: { values: [{ value: 'Lexical node not found' }] } } as Event;
+
+    const result = beforeSend(event);
+
+    expect(result?.tags?.lexical).toBeUndefined();
+    expect(result?.contexts?.koenig).toBeUndefined();
   });
 
   it('returns the original event if there is an error', () => {
     const event = {
       exception: { values: [{ value: 'Failed' }] },
-    } as Event;
-    const hint = {
-      originalException: {
-        get payload(): never {
-          throw new Error('test');
-        },
+      get tags(): never {
+        throw new Error('test');
       },
-    };
-
-    expect(beforeSend(event, hint)).toBe(event);
-  });
-
-  it('returns the event even if the ajax error is missing values', () => {
-    const event = { exception: { values: [] } } as Event;
-    const hint = { originalException: { payload: { errors: [] } } };
-
-    expect(beforeSend(event, hint)).toEqual(event);
-  });
-
-  it('describes ember-ajax errors by their API error', () => {
-    const event = {
-      exception: { values: [{ type: 'AjaxError', value: 'Ajax operation failed' }] },
-      contexts: { ajax: { status: 422 } },
-      tags: { ajax_status: '422' },
     } as unknown as Event;
-    const hint = {
-      originalException: {
-        payload: {
-          errors: [{ type: 'ValidationError', context: 'Title too long', message: 'Invalid' }],
-        },
-      },
-    };
 
-    const result = beforeSend(event, hint);
-
-    expect(result?.exception?.values?.[0]).toEqual({
-      type: 'ValidationError: Title too long',
-      value: 'Invalid',
-      context: 'Title too long',
-    });
-    expect(result?.contexts?.ajax).toEqual({ status: 422 });
-    expect(result?.tags?.ajax_status).toBe('422');
-  });
-
-  it('removes ajax tags and context if it is not an ajax error', () => {
-    const event = {
-      tags: {
-        ajax_status: 'test status',
-        ajax_method: 'test method',
-        ajax_url: 'test url',
-      },
-      contexts: { ajax: { status: 'test context' } },
-    } as Event;
-    const hint = { originalException: { payload: { errors: [] } } };
-
-    const result = beforeSend(event, hint);
-
-    expect(result?.tags?.ajax_status).toBeUndefined();
-    expect(result?.tags?.ajax_method).toBeUndefined();
-    expect(result?.tags?.ajax_url).toBeUndefined();
-    expect(result?.contexts?.ajax).toBeUndefined();
+    expect(beforeSend(event)).toBe(event);
   });
 
   it('skips reporting e.ghost.org requests', () => {
     const event = { request: { url: 'https://e.ghost.org/pg/injest/i/v0/e/' } } as Event;
-    const hint = { originalException: { payload: { errors: [] } } };
 
-    expect(beforeSend(event, hint)).toBeNull();
+    expect(beforeSend(event)).toBeNull();
   });
 
   it('skips reporting plausible requests', () => {

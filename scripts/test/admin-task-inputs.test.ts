@@ -55,10 +55,28 @@ describe('Admin task inputs', () => {
     assert.equal(target.cache, false);
     assert.deepEqual(target.dependsOn, ['@tryghost/admin:test:types', '@tryghost/admin:test:unit']);
     assert.ok(target.transitiveTasks.includes('@tryghost/shade:build'));
-    assert.ok(!target.transitiveTasks.some((task) => task.startsWith('ghost-admin:')));
   });
 
-  it('builds Ember once for normal dev while retaining the React and Portal watchers', async () => {
+  it('runs normal dev with the Admin watcher and built public apps', async () => {
+    const target = await nxJson<{
+      dependsOn: string[];
+      transitiveTasks: string[];
+    }>(['show', 'target', 'ghost-monorepo:dev:host']);
+    const tasks = [...target.dependsOn, ...target.transitiveTasks];
+    for (const task of [
+      '@tryghost/admin:dev:host',
+      '@tryghost/admin:build:dev',
+      'ghost-monorepo:dev:env',
+      'ghost-monorepo:infra:up',
+      'ghost:build:assets',
+      '@tryghost/portal:build',
+    ]) {
+      assert.ok(tasks.includes(task), task);
+    }
+    assert.ok(!tasks.includes('@tryghost/portal:dev'));
+  });
+
+  it('keeps the containerised dev flow with the React and Portal watchers', async () => {
     const target = await nxJson<{
       dependsOn: string[];
       transitiveTasks: string[];
@@ -66,44 +84,16 @@ describe('Admin task inputs', () => {
     const tasks = [...target.dependsOn, ...target.transitiveTasks];
     for (const task of [
       '@tryghost/admin:dev',
-      '@tryghost/admin:build:dev',
-      'ghost-admin:build:dev',
       'ghost-monorepo:docker:up',
       'ghost:build:assets',
-      '@tryghost/admin-x-framework:dev',
-      '@tryghost/shade:dev',
       '@tryghost/portal:dev',
     ]) {
       assert.ok(tasks.includes(task), task);
     }
-    assert.deepEqual(
-      tasks.filter((task) => task.startsWith('ghost-admin:')),
-      ['ghost-admin:build:dev'],
-    );
-  });
-
-  it('keeps the Ember live-reload workflow available through dev:ember', async () => {
-    const target = await nxJson<{
-      dependsOn: string[];
-      transitiveTasks: string[];
-    }>(['show', 'target', 'ghost-monorepo:docker:dev:ember']);
-    const tasks = [...target.dependsOn, ...target.transitiveTasks];
-    for (const task of [
-      '@tryghost/admin:dev:ember',
-      'ghost-admin:dev',
-      'ghost-monorepo:docker:up',
-      '@tryghost/admin-x-framework:dev',
-      '@tryghost/shade:dev',
-      '@tryghost/portal:dev',
-    ]) {
-      assert.ok(tasks.includes(task), task);
-    }
-    assert.ok(!tasks.includes('ghost-admin:build:dev'));
-    assert.ok(!tasks.includes('ghost-admin:build'));
   });
 
   for (const target of ['test:unit', 'test:acceptance', 'test:types']) {
-    it(`${target} tracks React dependencies and fixtures without Ember source`, async () => {
+    it(`${target} tracks Admin dependencies and fixtures`, async () => {
       const { files } = await inputs(target);
       for (const prefix of [
         'apps/admin/src/',
@@ -127,14 +117,13 @@ describe('Admin task inputs', () => {
       ]) {
         assert.ok(files.includes(file), `${target}: ${file}`);
       }
-      assert.ok(!files.some((file) => file.startsWith('apps/ember-admin/')));
     });
   }
 
   it('keys browser and unit tests on their runtime and aliased card assets', async () => {
     for (const target of ['test:unit', 'test:acceptance']) {
       const { files, runtime, environment } = await inputs(target);
-      assert.ok(files.includes('ghost/core/core/frontend/src/cards/js/video.js'));
+      assert.ok(files.includes('ghost/core/frontend/src/cards/js/video.js'));
       assert.ok(files.includes('scripts/hash-vite-env.ts'));
       assert.ok(runtime.includes('node scripts/hash-vite-env.ts --directory=apps/admin'));
       assert.ok(runtime.includes('node -v'));
@@ -146,36 +135,29 @@ describe('Admin task inputs', () => {
     }
   });
 
-  it('keeps Ember source in the combined production build inputs', async () => {
+  it('keeps card assets in the production build inputs', async () => {
     const { files } = await inputs('build');
-    assert.ok(files.includes('apps/ember-admin/app/routes/posts.js'));
-    assert.ok(files.includes('apps/ember-admin/app/styles/components/modals.css'));
-    assert.ok(files.includes('ghost/core/core/frontend/src/cards/js/video.js'));
+    assert.ok(files.includes('ghost/core/frontend/src/cards/js/video.js'));
   });
 
-  it('runs the test lanes without Ember builds and caches the acceptance report', async () => {
+  it('caches the test lanes and the acceptance report', async () => {
     type Target = {
       cache: boolean;
       command: string;
       outputs: string[];
       dependsOn: string[];
-      transitiveTasks: string[];
     };
     for (const name of ['test:unit', 'test:acceptance', 'test:types']) {
       const target = await nxJson<Target>(['show', 'target', `@tryghost/admin:${name}`]);
       assert.equal(target.cache, true);
-      assert.ok(
-        ![...target.dependsOn, ...target.transitiveTasks].some((task) =>
-          task.startsWith('ghost-admin:'),
-        ),
-      );
-      assert.ok(target.dependsOn.includes('@tryghost/shade:build'));
+      assert.ok(target.dependsOn.includes('@tryghost/koenig-lexical:build'));
       if (name === 'test:acceptance') {
         assert.deepEqual(target.outputs, ['{projectRoot}/test-results/acceptance.json']);
       }
       if (name === 'test:types') {
         assert.equal(target.command, 'tsc -b');
         assert.deepEqual(target.outputs, []);
+        assert.ok(target.dependsOn.includes('@tryghost/shade:build'));
       }
     }
   });
@@ -188,11 +170,7 @@ describe('Admin task inputs', () => {
         'inputs',
         `@internal/scripts:${target}`,
       ]);
-      for (const file of [
-        'apps/admin/package.json',
-        'apps/ember-admin/package.json',
-        '.github/workflows/ci.yml',
-      ]) {
+      for (const file of ['apps/admin/package.json', '.github/workflows/ci.yml']) {
         assert.ok(files.includes(file), `${target}: ${file}`);
         const affected = await nxJson<string[]>([
           'show',

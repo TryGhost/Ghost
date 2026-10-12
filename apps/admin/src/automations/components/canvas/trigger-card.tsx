@@ -1,4 +1,4 @@
-import React, { useEffect, useId, useRef, useState } from 'react';
+import React, { useId, useState } from 'react';
 import type { AutomationTrigger } from '@tryghost/admin-x-framework/api/automations';
 import { useBrowseTiers } from '@tryghost/admin-x-framework/api/tiers';
 import {
@@ -14,6 +14,7 @@ import {
 import { Inline, Stack, Text } from '@tryghost/shade/primitives';
 import { LucideIcon, cn } from '@tryghost/shade/utils';
 import { AutomationCard, AutomationCardHeader } from './automation-card';
+import { useDismissOnOutsidePress } from './use-dismiss-on-outside-press';
 
 export type TriggerData = {
   scope: AutomationTrigger['trigger_tier_scope'];
@@ -28,28 +29,7 @@ const PaidTierPicker: React.FC<{ trigger: TriggerData; errorMessage?: string }> 
 }) => {
   const id = useId();
   const [open, setOpen] = useState(false);
-  const anchor = useRef<HTMLButtonElement>(null);
-  const content = useRef<HTMLDivElement>(null);
-  const dismissedOutside = useRef(false);
-
-  useEffect(() => {
-    if (!open) {
-      return;
-    }
-    const dismissOutside = (event: PointerEvent) => {
-      if (
-        event.target instanceof Node &&
-        !anchor.current?.contains(event.target) &&
-        !content.current?.contains(event.target)
-      ) {
-        dismissedOutside.current = true;
-        setOpen(false);
-      }
-    };
-    // React Flow consumes canvas events before Radix can dismiss the popover.
-    document.addEventListener('pointerdown', dismissOutside, true);
-    return () => document.removeEventListener('pointerdown', dismissOutside, true);
-  }, [open]);
+  const { triggerRef, contentRef, onCloseAutoFocus } = useDismissOnOutsidePress(open, setOpen);
 
   const { data, isLoading, isError, refetch } = useBrowseTiers({
     searchParams: { filter: 'type:paid', limit: 'all' },
@@ -116,7 +96,7 @@ const PaidTierPicker: React.FC<{ trigger: TriggerData; errorMessage?: string }> 
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <button
-            ref={anchor}
+            ref={triggerRef}
             aria-describedby={errorMessage ? `${id}-error` : undefined}
             aria-invalid={Boolean(errorMessage)}
             aria-label="Choose tiers"
@@ -134,17 +114,12 @@ const PaidTierPicker: React.FC<{ trigger: TriggerData; errorMessage?: string }> 
           </button>
         </PopoverTrigger>
         <PopoverContent
-          ref={content}
+          ref={contentRef}
           align="start"
           aria-labelledby={`${id}-label`}
           className="nodrag nopan nowheel w-(--radix-popover-trigger-width) p-3"
           updatePositionStrategy="always"
-          onCloseAutoFocus={(event) => {
-            if (dismissedOutside.current) {
-              event.preventDefault();
-            }
-            dismissedOutside.current = false;
-          }}
+          onCloseAutoFocus={onCloseAutoFocus}
         >
           <Stack gap="md">
             <RadioGroup

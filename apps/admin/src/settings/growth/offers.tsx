@@ -59,6 +59,7 @@ const Offers: React.FC<{ keywords: string[] }> = ({ keywords }) => {
       navid="offers"
       testId="offers"
       title="Offers"
+      onOpen={openOfferListModal}
     >
       {paidActiveTiers.length === 0 && signupOffers.length === 0 ? (
         <div>

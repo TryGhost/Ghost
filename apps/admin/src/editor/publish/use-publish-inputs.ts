@@ -6,7 +6,10 @@ import { useCallback, useEffect, useMemo } from 'react';
 import { z } from 'zod';
 import { newslettersSearchParams } from '@/editor/browse-params';
 import { EDITOR_REQUEST_OPTIONS } from '@/editor/request-options';
+import { isSessionInvalid } from '@/editor/session/error-mapping';
 import { useEditorSettings, useSiteTimezone } from '@/editor/use-editor-settings';
+import { SESSION_EXPIRED_RETRY_MESSAGE } from './completion-message';
+import { reportPublishFailure } from './report-publish-failure';
 import type { PublishSiteInput, PublishUserInput } from './publish-options';
 
 // Core's `all_blocked_email_domains` is array-valued, so a scalar-only union rejects a real response.
@@ -132,13 +135,31 @@ export interface PublishInputs {
   isReady: boolean;
   /** A query or validation failure that the caller can render in place. */
   error: Error | null;
+  /** The failure is an expired session: signing in again, then `retry()`, is the way back. */
+  sessionExpired: boolean;
   /** Retries each API input owned by this adapter. */
   retry: () => void;
+}
+
+// Several editor surfaces read the inputs; a failed read is reported once, not once per reader.
+const reportedInputErrors = new WeakSet<object>();
+
+function reportInputError(error: unknown): void {
+  if (typeof error !== 'object' || error === null || reportedInputErrors.has(error)) {
+    return;
+  }
+  reportedInputErrors.add(error);
+  reportPublishFailure('publish-inputs', 'The publish settings could not be loaded.', { error });
 }
 
 function publishInputError(error: unknown): Error | null {
   if (!error) {
     return null;
+  }
+
+  // The transport's "You are not authorised…" leaves the writer nowhere to go.
+  if (isSessionInvalid(error)) {
+    return new Error(SESSION_EXPIRED_RETRY_MESSAGE, { cause: error });
   }
 
   return error instanceof Error ? error : new Error('The publish settings could not be loaded.');
@@ -247,6 +268,17 @@ export function usePublishInputs(): PublishInputs {
     newslettersQuery.error,
     settingsQuery.error,
   ]);
+  const queryError =
+    settingsQuery.error ??
+    configQuery.error ??
+    newslettersQuery.error ??
+    currentUserQuery.error ??
+    memberCountError;
+
+  useEffect(() => {
+    reportInputError(queryError);
+  }, [queryError]);
+
   const retry = useCallback(() => {
     void Promise.all([
       settingsQuery.refetch(),
@@ -263,6 +295,7 @@ export function usePublishInputs(): PublishInputs {
     timezone,
     isReady: assembled.isValid && !isLoading && !error,
     error,
+    sessionExpired: Boolean(queryError) && isSessionInvalid(queryError),
     retry,
   };
 }

@@ -12,8 +12,6 @@ function getLabs(response: ReturnType<typeof settingsResponse>): Record<string, 
 describe('boot fixtures', () => {
   it('defaults labs flags to off, and GA flags to on, in settings and config', () => {
     const expected = {
-      postsListReact: true,
-      membersActivityReact: true,
       selfServeArchives: true,
       superEditors: false,
       editorExcerpt: false,

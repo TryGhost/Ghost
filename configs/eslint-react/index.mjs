@@ -37,8 +37,8 @@ import {
  * @typedef {object} ReactAppConfigOptions
  * @property {boolean} [typescript=true]
  *   When false: vanilla JS app, no typescript-eslint extends, no
- *   @typescript-eslint/* rules. LEGACY for sodo-search and announcement-bar
- *   (should migrate to TS eventually).
+ *   @typescript-eslint/* rules. LEGACY for announcement-bar (should migrate
+ *   to TS eventually).
  * @property {boolean} [reactRefresh=true]
  *   When false: skip eslint-plugin-react-refresh. Set false for UMD-bundled
  *   apps (comments-ui, signup-form) and vanilla JS apps — react-refresh is a
@@ -65,7 +65,7 @@ import {
  *   When true: block barrel imports of `@tryghost/shade` (force layered subpath
  *   imports). Only relevant for workspaces that import shade.
  * @property {boolean} [sortImports=false]
- *   When true: apply `ghost/sort-imports-es6-autofix/sort-imports-es6`.
+ *   When true: apply `sortImportsRule` (declaration and member order).
  * @property {boolean} [legacyJsTsSplit=false]
  *   LEGACY escape hatch for portal only. Portal is mid-TS-migration with both
  *   `.js` and `.ts` source files mixed in `src/`. When true, emits two src
@@ -339,7 +339,7 @@ export function reactAppConfig(options = {}) {
       },
     });
   } else {
-    // Vanilla JS (sodo-search, announcement-bar). LEGACY: should migrate to TS.
+    // Vanilla JS (announcement-bar). LEGACY: should migrate to TS.
     srcBlocks.push({
       files: srcGlobs ?? defaultJsSrcGlobs,
       ...js.configs.recommended,
@@ -396,9 +396,8 @@ export function reactAppConfig(options = {}) {
       plugins: basePlugins,
       settings: baseSettings,
       rules: {
-        ...(typescript
-          ? tsReactAppRules
-          : { ...js.configs.recommended.rules, ...reactFlat.rules, ...jsReactAppRules }),
+        ...js.configs.recommended.rules,
+        ...(typescript ? tsReactAppRules : { ...reactFlat.rules, ...jsReactAppRules }),
         ...mochaRulesOff(ghostPlugin),
         ...extraTestRules,
       },

@@ -1,6 +1,6 @@
 import ThumbsDownIcon from '../../../images/icons/thumbs-down.svg?react';
 import ThumbsUpIcon from '../../../images/icons/thumbs-up.svg?react';
-import { Comment, useAppContext } from '../../../app-context';
+import { type Comment, useAppContext } from '../../../app-context';
 import { useState } from 'react';
 
 type Props = {

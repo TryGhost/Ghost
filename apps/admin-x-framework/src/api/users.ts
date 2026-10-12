@@ -118,7 +118,6 @@ export const useEditUser = createMutation<UsersResponseType, User>({
   searchParams: () => ({ include: 'roles' }),
   updateQueries: {
     dataType,
-    emberUpdateType: 'createOrUpdate',
     update: updateQueryCache('users'),
   },
 });
@@ -128,7 +127,6 @@ export const useDeleteUser = createMutation<void, string>({
   path: (id) => `/users/${id}/`,
   updateQueries: {
     dataType,
-    emberUpdateType: 'delete',
     update: deleteFromQueryCache('users'),
   },
 });
@@ -160,7 +158,6 @@ export const useMakeOwner = createMutation<UsersResponseType, string>({
   }),
   updateQueries: {
     dataType,
-    emberUpdateType: 'createOrUpdate',
     update: updateQueryCache('users'),
   },
 });

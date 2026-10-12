@@ -1,5 +1,6 @@
 import { FONT_OPTIONS, getValidWeight } from './font-constants';
 import {
+  FieldTitle,
   Select,
   SelectContent,
   SelectItem,
@@ -16,7 +17,7 @@ export const HeadingFontField = () => {
   };
   return (
     <div className="flex items-center justify-between">
-      <span>Heading font</span>
+      <FieldTitle>Heading font</FieldTitle>
       <Select value={settings.title_font_category || 'sans_serif'} onValueChange={handleChange}>
         <SelectTrigger className="w-[180px]">
           <SelectValue />

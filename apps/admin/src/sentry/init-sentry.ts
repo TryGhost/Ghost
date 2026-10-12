@@ -13,6 +13,12 @@ export function initSentry(input: SentryConfigInput): void {
 
   Sentry.init(getSentryConfig(input));
   Sentry.addEventProcessor((event) => (fullRelease ? { ...event, release: fullRelease } : event));
+  Sentry.setTag('admin_build', getAdminBuild(import.meta.url));
+}
+
+/** Ghost(Pro) serves each Admin build from `/admin/<commit sha>/assets/`. */
+export function getAdminBuild(assetUrl: string): string | undefined {
+  return /\/admin\/([^/]+)\/assets\//.exec(new URL(assetUrl).pathname)?.[1];
 }
 
 /** `/site/` only carries the short version; `/config/` has the full one after sign-in. */

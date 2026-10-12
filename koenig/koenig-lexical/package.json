@@ -25,8 +25,8 @@
     "./style.css": "./dist/style.css"
   },
   "scripts": {
-    "dev": "concurrently \"vite --host --force\" \"pnpm build --watch --emptyOutDir=false\" \"pnpm preview -l silent --host\" \"pnpm --filter @tryghost/kg-default-nodes dev\" \"pnpm --filter @tryghost/kg-default-transforms dev\"",
-    "dev:integrated": "concurrently \"pnpm build --watch --emptyOutDir=false\" \"pnpm preview -l silent --host\" \"pnpm --filter @tryghost/kg-default-nodes dev\" \"pnpm --filter @tryghost/kg-default-transforms dev\"",
+    "dev": "concurrently \"vite --host --force\" \"pnpm --filter @tryghost/kg-default-nodes dev\" \"pnpm --filter @tryghost/kg-default-transforms dev\"",
+    "dev:integrated": "concurrently \"pnpm build --watch --emptyOutDir=false\" \"pnpm --filter @tryghost/kg-default-nodes dev\" \"pnpm --filter @tryghost/kg-default-transforms dev\"",
     "dev:multiplayer": "concurrently \"vite\" \"pnpm multiplayer\"",
     "dev:test": "node test/test-server.ts",
     "multiplayer": "HOST=localhost PORT=1234 npx y-websocket-server",
@@ -49,7 +49,7 @@
     "lint:css": "stylelint \"src/**/*.css\"",
     "lint:js": "eslint --cache demo src test",
     "typecheck": "tsc --noEmit -p tsconfig.typecheck.json",
-    "storybook": "catalog:",
+    "storybook": "storybook dev -p 6006 -h 127.0.0.1",
     "build-storybook": "storybook build"
   },
   "devDependencies": {
@@ -84,9 +84,9 @@
     "@storybook/addon-links": "catalog:",
     "@storybook/react": "10.4.6",
     "@storybook/react-vite": "catalog:",
-    "@testing-library/dom": "10.4.1",
+    "@testing-library/dom": "catalog:",
     "@testing-library/jest-dom": "catalog:",
-    "@testing-library/react": "16.3.2",
+    "@testing-library/react": "catalog:",
     "@tryghost/color-utils": "catalog:",
     "@tryghost/helpers": "catalog:",
     "@tryghost/kg-clean-basic-html": "workspace:~",
@@ -141,10 +141,10 @@
     "typescript": "catalog:",
     "typescript-eslint": "catalog:",
     "vite": "catalog:",
-    "vite-plugin-svgr": "5.2.0",
+    "vite-plugin-svgr": "catalog:",
     "vitest": "catalog:",
     "y-websocket": "3.0.0",
-    "yjs": "13.6.31"
+    "yjs": "13.6.33"
   },
   "nx": {
     "tags": [

@@ -10,6 +10,7 @@ const mocks = vi.hoisted(() => ({
 }));
 
 vi.mock('./editor-settings-port', () => ({
+  isNewPost: () => false,
   useEditorSettingsPort: () => mocks.port,
 }));
 

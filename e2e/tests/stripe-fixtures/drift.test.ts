@@ -24,7 +24,7 @@ function fixture(name: string): Record<string, unknown> {
 test('Stripe fixtures use the API version pinned by Ghost', () => {
   const manifest = fixture('manifest');
   const stripeApiSource = fs.readFileSync(
-    new URL('../../../ghost/core/core/server/services/stripe/stripe-api.js', import.meta.url),
+    new URL('../../../ghost/core/server/services/stripe/stripe-api.js', import.meta.url),
     'utf8',
   );
 

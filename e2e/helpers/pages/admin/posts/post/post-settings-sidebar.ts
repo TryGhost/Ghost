@@ -64,6 +64,7 @@ import {
   settingsTemplateSelect,
   settingsTemplateSlugMatch,
   settingsTiersError,
+  settingsTiersList,
   settingsTiersPicker,
   settingsUrlPreview,
   settingsVisibilitySelect,
@@ -78,7 +79,7 @@ import {
   xImageUnsplashButton,
 } from '@tryghost/test-data/selectors/editor';
 
-/** The React sidebar's sections, in the order it renders them. */
+/** The sidebar's sections, in the order it renders them. */
 export type PostSettingsSectionId =
   | 'url'
   | 'publish-date'
@@ -408,8 +409,13 @@ class AccessSection extends InlineSection {
     return this.visibilitySelect;
   }
 
+  /** The chip a tier the post grants is drawn as. */
   tier(name: string): Locator {
-    return this.tiersPicker.getByRole('checkbox', { name, exact: true });
+    return this.tiersPicker.getByRole('button', { name: `Remove ${name}`, exact: true });
+  }
+
+  tierOption(name: string): Locator {
+    return this.page.getByTestId(settingsTiersList).getByRole('option', { name, exact: true });
   }
 
   /** `label` is the option as the select shows it. */
@@ -417,13 +423,22 @@ class AccessSection extends InlineSection {
     await chooseSelectOption(this.page, this.visibilitySelect, label);
   }
 
-  /** Ticks a tier in the picker that `Specific tier(s)` shows. */
+  /** Picks a tier in the picker that `Specific tier(s)` shows, if the post does not grant it yet. */
   async selectTier(name: string): Promise<void> {
-    await this.tier(name).check();
+    await this.setTier(name, true);
   }
 
   async deselectTier(name: string): Promise<void> {
-    await this.tier(name).uncheck();
+    await this.setTier(name, false);
+  }
+
+  private async setTier(name: string, selected: boolean): Promise<void> {
+    await this.tiersPicker.getByRole('combobox').click();
+    const option = this.tierOption(name);
+    if ((await option.getAttribute('aria-selected')) !== String(selected)) {
+      await option.click();
+    }
+    await (selected ? this.tier(name).waitFor() : this.tier(name).waitFor({ state: 'detached' }));
   }
 }
 
@@ -839,7 +854,7 @@ class DeleteSection extends InlineSection {
   }
 }
 
-/** The React editor's post settings sidebar. */
+/** The editor's post settings sidebar. */
 export class PostSettingsSidebar {
   readonly root: Locator;
   /** A section's failed-browse notice, wherever the sidebar shows one. */

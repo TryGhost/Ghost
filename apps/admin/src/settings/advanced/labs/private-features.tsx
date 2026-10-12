@@ -50,15 +50,27 @@ const features: Feature[] = [
     flag: 'csvContentImporter',
   },
   {
+    title: 'Admin 7 · Design',
+    description: 'Preview the floating Admin 7 sidebar and its navigation layout.',
+    flag: 'admin7Design',
+  },
+  {
+    title: 'Admin 7 · Customize from View site',
+    description:
+      'Customize the site design from View site, with a live preview. Needs Admin 7 · Design.',
+    flag: 'admin7CustomizeFromViewSite',
+  },
+  {
+    title: 'Admin 7 · Editor improvements',
+    description:
+      'Hide the editor’s controls while you write; move the mouse or scroll to bring them back.',
+    flag: 'admin7EditorImprovements',
+  },
+  {
     title: 'Email Unique ID',
     description:
       'Enables {uniqueid} variable in emails for unique image URLs to bypass ESP image caching',
     flag: 'emailUniqueid',
-  },
-  {
-    title: 'Improve sending UI',
-    description: 'Enables improvements to email sending and delivery status for large email sends',
-    flag: 'improveSendingUI',
   },
   {
     title: 'Updated theme translation (beta)',
@@ -90,21 +102,15 @@ const features: Feature[] = [
     flag: 'stripeCheckoutCollection',
   },
   {
+    title: 'Stripe checkout design',
+    description:
+      'Let admins style the Stripe checkout page with their own button color, background color, corners and font',
+    flag: 'stripeCheckoutDesign',
+  },
+  {
     title: 'Paywall improvements',
     description: 'Enables paywall usability, discoverability and email customization improvements',
     flag: 'paywallImprovements',
-  },
-  {
-    title: 'React editor',
-    description:
-      'Serves the editor (/editor) from the React app instead of the Ember editor. Gates the migration behind a runtime toggle; the React side is an early placeholder.',
-    flag: 'editorReact',
-  },
-  {
-    title: 'React sign-in screens',
-    description:
-      'Serves sign in, 2FA verification, password reset, staff invite signup, setup and sign out from the React app instead of the Ember screens. Takes effect on the next page load.',
-    flag: 'authReact',
   },
   {
     title: 'Machine payments',
@@ -117,12 +123,6 @@ const features: Feature[] = [
     description:
       'Suggest pages, posts, offers and Portal links when editing navigation URLs in settings',
     flag: 'navigationUrlSuggestions',
-  },
-  {
-    title: 'React Ghost(Pro) billing',
-    description:
-      'Serves the Ghost(Pro) billing screen (/pro) and its background billing app connection from the React app instead of Ember.',
-    flag: 'billingReact',
   },
   {
     title: 'Apps',

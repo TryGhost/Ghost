@@ -4,18 +4,12 @@ Sign in, sign-in verification, password reset, staff invite signup, first-run
 setup and sign out, served at `/signin`, `/signin/verify`, `/reset/:token`,
 `/signup/:token`, `/setup` and `/signout`.
 
-## Who serves them
+## Signed-out shell
 
-The screens render before anyone is signed in, so the authenticated `/config/`
-Labs payload is unavailable. `useAuthScreensOwner` decides from inputs that are
-public: the `authReact` field of `GET /site/`, or an `authReact` Labs URL
-override (`/ghost/#/signin?labs=authReact`). A server without the field serves
-the Ember screens. The answer is held for the page's lifetime.
-
-When React owns them, a signed-out visitor gets `SignedOutApp` in place of the
-admin shell: auth routes render, any other route is remembered and replaced by
-`/signin`, and a site that has not been set up sends every auth screen except
-sign out to `/setup`. A signed-in visitor on an auth route goes home (with a
+A signed-out visitor gets `SignedOutApp` in place of the admin shell: auth
+routes render, any other route is remembered and replaced by `/signin`, and a
+site that has not been set up sends every auth screen except sign out to
+`/setup`. A signed-in visitor on an auth route goes home (with a
 warning on reset and signup), except `/signout`.
 
 ## The client contract
@@ -54,17 +48,16 @@ as the text to show, and the button is offered again. It is exported through
 ## Session changes reload the page
 
 Every successful sign in, verification, reset, signup and setup, and every
-sign out, ends in `reloadAdmin()`: the admin still boots a hidden Ember app
-for the screens it serves, and it has to boot with the new session. The
-reload lands directly on the destination: the route remembered in
-`sessionStorage['ghost-signin-redirect']` (written by whichever shell sent the
-visitor to sign in), `/` for role-based landing, `/?firstStart=true` after
+sign out, ends in `reloadAdmin()`, so the whole admin boots with the new
+session. The reload lands directly on the destination: the route remembered in
+`sessionStorage['ghost-signin-redirect']`, `/` for role-based landing,
+`/?firstStart=true` after
 setup, or `/signin` after signing out. A password reset leaves its confirmation
 in `sessionStorage` for the reloaded admin to show.
 
 ## Tests
 
-Acceptance specs boot signed out with `renderAdminApp(route, signedOut({authReact: true}))`
+Acceptance specs boot signed out with `renderAdminApp(route, signedOut())`
 and fake `/authentication/setup/` with `fakeSetupStatus()`; `reloadAdmin` is
 mocked. Signed-in specs live in their own file: once a page load has seen the
 session work, a later 403 would trigger the session-expiry redirect.

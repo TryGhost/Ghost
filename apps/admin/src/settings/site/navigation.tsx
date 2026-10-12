@@ -28,6 +28,7 @@ const Navigation: React.FC<{ keywords: string[] }> = ({ keywords }) => {
       navid="navigation"
       testId="navigation"
       title="Navigation"
+      onOpen={openPreviewModal}
     />
   );
 };

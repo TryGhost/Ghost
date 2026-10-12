@@ -7,13 +7,18 @@ import remarkGfm from 'remark-gfm';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
+// Storybook resolves addon and framework names from its own install location,
+// which pnpm's global virtual store isolates from this package's dependencies.
+const getAbsolutePath = (value: string): string =>
+  dirname(fileURLToPath(import.meta.resolve(`${value}/package.json`)));
+
 const config: StorybookConfig = {
   stories: ['../src/**/*.mdx', '../src/**/*.stories.@(js|jsx|ts|tsx)'],
 
   addons: [
-    '@storybook/addon-links',
+    getAbsolutePath('@storybook/addon-links'),
     {
-      name: '@storybook/addon-docs',
+      name: getAbsolutePath('@storybook/addon-docs'),
       options: {
         mdxPluginOptions: {
           mdxCompileOptions: {
@@ -26,7 +31,7 @@ const config: StorybookConfig = {
   ],
 
   framework: {
-    name: '@storybook/react-vite',
+    name: getAbsolutePath('@storybook/react-vite'),
     options: {},
   },
 

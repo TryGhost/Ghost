@@ -23,17 +23,6 @@
 	log_skip /__admin-dev__*
 	log_skip /ghost/auth-frame/*
 
-	# Ember live reload (runs on separate port 4201)
-	# This handles both the script injection and WebSocket connections
-	handle /ember-cli-live-reload.js {
-		reverse_proxy {env.ADMIN_LIVE_RELOAD_SERVER} {
-			header_up Host {http.reverse_proxy.upstream.hostport}
-			# Enable WebSocket support for live reload
-			header_up Connection {>Connection}
-			header_up Upgrade {>Upgrade}
-		}
-	}
-
 	# Ghost API - must go to Ghost backend, not admin dev server
 	handle /ghost/api/* {
 		reverse_proxy {env.GHOST_BACKEND} {
@@ -93,21 +82,6 @@
 		# Strip /ghost/assets/ prefix
 		uri strip_prefix /ghost/assets
 
-		# Koenig Lexical Editor (optional - started by "pnpm dev:lexical" at the
-		# repo root, which runs the koenig/koenig-lexical dev:integrated target
-		# and sets EDITOR_URL so admin loads the editor from here)
-		# Falls back to Ghost backend (built package) via handle_errors if dev server isn't running
-		@lexical path /koenig-lexical/*
-		handle @lexical {
-			uri strip_prefix /koenig-lexical
-			reverse_proxy {env.LEXICAL_DEV_SERVER} {
-				header_up Host {http.reverse_proxy.upstream.hostport}
-				# Fail quickly if dev server is down
-				fail_duration 1s
-				unhealthy_request_count 1
-			}
-		}
-
 		# Public app UMD bundles — served directly from each app's umd/
 		# build output. Vite's build:watch writes to disk on every source
 		# change, Caddy picks up the new file on next request. Replaces the
@@ -125,7 +99,7 @@
 		}
 
 		# Everything else under /ghost/assets/* goes to admin dev server.
-		# Vite serves admin/Ember assets under its dev base (/__admin-dev__/assets/),
+		# Vite serves admin assets under its dev base (/__admin-dev__/assets/),
 		# so we rewrite the request before proxying.
 		handle {
 			rewrite * /__admin-dev__/assets{path}
@@ -164,9 +138,9 @@
 	}
 
 	# Admin HTML entry — proxy to Vite, which serves the dev index.html.
-	# Matches `/ghost` and `/ghost/` exactly (deep links fall through to Ghost
-	# below so its redirect middleware turns them into hash URLs).
-	@admin_html path /ghost /ghost/
+	# Matches `/ghost/` exactly (bare `/ghost` and deep links fall through to
+	# Ghost below so its middleware adds the slash or turns them into hash URLs).
+	@admin_html path /ghost/
 	handle @admin_html {
 		rewrite * /__admin-dev__/
 		reverse_proxy {env.ADMIN_DEV_SERVER}
@@ -195,18 +169,6 @@
 
 	# Handle errors
 	handle_errors {
-		# Fallback for Lexical when dev server is unavailable (502/503/504)
-		# Forwards to Ghost backend which serves the built koenig-lexical package
-		@lexical_fallback `{http.request.orig_uri.path}.startsWith("/ghost/assets/koenig-lexical/")`
-		handle @lexical_fallback {
-			rewrite * {http.request.orig_uri.path}
-			reverse_proxy {env.GHOST_BACKEND} {
-				header_up Host {host}
-				header_up X-Forwarded-Proto https
-			}
-		}
-
-		# Default error response
 		respond "{err.status_code} {err.status_text}"
 	}
 }

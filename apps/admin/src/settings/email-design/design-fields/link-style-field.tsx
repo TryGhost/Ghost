@@ -1,12 +1,12 @@
 import { Bold, Type, Underline } from 'lucide-react';
-import { ToggleGroup, ToggleGroupItem } from '@tryghost/shade/components';
+import { FieldTitle, ToggleGroup, ToggleGroupItem } from '@tryghost/shade/components';
 import { useEmailDesign } from '@/settings/email-design/email-design-context';
 
 export const LinkStyleField = () => {
   const { settings, onSettingsChange } = useEmailDesign();
   return (
     <div className="flex items-center justify-between">
-      <span>Link style</span>
+      <FieldTitle>Link style</FieldTitle>
       <ToggleGroup
         type="single"
         value={settings.link_style || 'underline'}

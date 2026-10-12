@@ -68,6 +68,7 @@ const Portal: React.FC<{ keywords: string[] }> = ({ keywords }) => {
       navid="portal"
       testId="portal"
       title="Signup portal"
+      onOpen={openPreviewModal}
     >
       <div className="relative isolate -mx-5 -mb-5 hidden flex-col items-center justify-end overflow-hidden rounded-b-xl bg-gray-50 px-5 pt-6 text-black sm:visible! sm:flex! md:-mx-7 md:-mb-7">
         <div

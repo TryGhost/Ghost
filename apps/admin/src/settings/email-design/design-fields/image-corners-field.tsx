@@ -1,11 +1,11 @@
-import { ToggleGroup, ToggleGroupItem } from '@tryghost/shade/components';
+import { FieldTitle, ToggleGroup, ToggleGroupItem } from '@tryghost/shade/components';
 import { useEmailDesign } from '@/settings/email-design/email-design-context';
 
 export const ImageCornersField = () => {
   const { settings, onSettingsChange } = useEmailDesign();
   return (
     <div className="flex items-center justify-between">
-      <span>Image corners</span>
+      <FieldTitle>Image corners</FieldTitle>
       <ToggleGroup
         type="single"
         value={settings.image_corners || 'square'}

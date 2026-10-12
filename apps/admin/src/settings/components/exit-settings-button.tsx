@@ -1,27 +1,28 @@
 import React from 'react';
+import { Button } from '@tryghost/shade/components';
 import { DirtyConfirmDialog, useDirtyConfirmation } from '@tryghost/shade/patterns';
-import { useGlobalDirtyState } from '@tryghost/shade/utils';
-import { useNavigate } from '@tryghost/admin-x-framework';
-import { FullscreenCloseButton } from '@/shared/fullscreen-close-button';
+import { LucideIcon, useGlobalDirtyState } from '@tryghost/shade/utils';
+import { useExitSettings } from '@/settings/hooks/use-exit-settings';
 
 const ExitSettingsButton: React.FC = () => {
   const { isDirty } = useGlobalDirtyState();
   const { confirm, dialogProps } = useDirtyConfirmation();
-  const navigate = useNavigate();
-
-  const navigateAway = () => {
-    navigate('/');
-  };
+  const exitSettings = useExitSettings();
 
   return (
     <>
-      <FullscreenCloseButton
-        aria-label="Close settings"
+      <Button
+        aria-label="Back to app"
+        className="size-(--control-height) shrink-0 rounded-full"
         data-testid="exit-settings"
-        id="done-button"
-        title="Close (ESC)"
-        onClick={() => confirm(isDirty, navigateAway)}
-      />
+        size="icon"
+        title="Back to app (ESC)"
+        type="button"
+        variant="outline"
+        onClick={() => confirm(isDirty, exitSettings)}
+      >
+        <LucideIcon.ArrowLeft />
+      </Button>
       <DirtyConfirmDialog {...dialogProps} />
     </>
   );

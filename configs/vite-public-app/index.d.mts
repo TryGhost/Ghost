@@ -7,7 +7,7 @@ export interface PublicAppViteConfigOptions {
   packageName: string;
   /** Entry path relative to `packageRoot` (e.g. `'src/index.jsx'`) */
   entry: string;
-  /** Controls whether `@vitejs/plugin-react` is included. Default `'react'`. */
+  /** `'react'` adds `@vitejs/plugin-react`; `'preact'` compiles JSX against `preact`. Default `'react'`. */
   framework?: 'react' | 'preact';
   /** Include `vite-plugin-svgr`. Default `true`. */
   svgr?: boolean;

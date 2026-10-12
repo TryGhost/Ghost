@@ -39,4 +39,4 @@ compose.yml
 # leak into the core image.
 
 # Ignore local config files (.json and .jsonc)
-ghost/core/config.local.json*
+ghost/config.local.json*

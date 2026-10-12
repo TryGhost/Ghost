@@ -10,9 +10,9 @@ import type { PostResource } from '@/posts/list/post-resource';
 /**
  * Saved views for the posts list.
  *
- * Records are written in exactly Ember's shape — `{name, route, color,
- * filter}` where `filter` is the view URL params — so a view saved here shows
- * up correctly in the Ember sidebar and vice versa while both exist.
+ * Records keep the stored `shared_views` shape — `{name, route, color,
+ * filter}` where `filter` is the view URL params — so existing views keep
+ * matching.
  *
  * The generic save/delete plumbing is shared with members via
  * `@/members/api`; only the filter shape differs.

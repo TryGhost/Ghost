@@ -5,16 +5,16 @@ across the workspace dependency graph.
 
 ## Top-level directories
 
-| Directory     | Contains                                                                      |
-| ------------- | ----------------------------------------------------------------------------- |
-| `apps/`       | Admin applications, public browser apps, and frontend libraries               |
-| `ghost/core/` | The Ghost server, frontend rendering, migrations, and server tests            |
-| `koenig/`     | The Koenig editor and packages for storing, converting, and rendering content |
-| `packages/`   | Shared libraries, schemas, translations, test data, and adapter contracts     |
-| `configs/`    | Shared ESLint, TypeScript, Vite, and Vitest configuration                     |
-| `e2e/`        | Playwright tests for complete Admin and public-site journeys                  |
-| `docker/`     | Containers and supporting services for local development and CI               |
-| `scripts/`    | Repository setup, validation, build, and release tooling                      |
+| Directory   | Contains                                                                      |
+| ----------- | ----------------------------------------------------------------------------- |
+| `apps/`     | Admin applications, public browser apps, and frontend libraries               |
+| `ghost/`    | The Ghost server, frontend rendering, migrations, and server tests            |
+| `koenig/`   | The Koenig editor and packages for storing, converting, and rendering content |
+| `packages/` | Shared libraries, schemas, translations, test data, and adapter contracts     |
+| `configs/`  | Shared ESLint, TypeScript, Vite, and Vitest configuration                     |
+| `e2e/`      | Playwright tests for complete Admin and public-site journeys                  |
+| `docker/`   | Containers and supporting services for local development and CI               |
+| `scripts/`  | Repository setup, validation, build, and release tooling                      |
 
 [`pnpm-workspace.yaml`](../../pnpm-workspace.yaml) is the source of truth for
 which directories are workspaces. Read the README beside an app, package, or
@@ -25,8 +25,6 @@ service before changing it.
 `apps/` contains several types of frontend project:
 
 - `admin/` is the React Admin application.
-- `ember-admin/` is the legacy Ember Admin application. Routes are moving from
-  Ember to React over time.
 - `activitypub/` is a React application included in Admin.
 - `portal/`, `comments-ui/`, `signup-form/`, `sodo-search/`,
   `announcement-bar/`, and `admin-toolbar/` are public apps published to npm
@@ -38,28 +36,27 @@ The public apps build browser bundles loaded with script tags and read runtime
 configuration from data attributes. Ghost Core renders these integrations
 through theme helpers such as `{{ghost_head}}` and `{{comments}}`.
 
-Admin combines the React and Ember applications into one interface. See
-[`apps/admin/README.md`](../../apps/admin/README.md) for the current integration
-boundary.
+Admin is a single React application. See
+[`apps/admin/README.md`](../../apps/admin/README.md) for how it is organized.
 
 ## Ghost Core
 
-`ghost/core/` is the main `ghost` package. The most common paths are:
+`ghost/` is the main `ghost` package. The most common paths are:
 
-| Path                        | Contains                                                        |
-| --------------------------- | --------------------------------------------------------------- |
-| `ghost/core/core/server/`   | APIs, models, services, data access, and server startup         |
-| `ghost/core/core/frontend/` | Theme rendering, helpers, middleware, and public assets         |
-| `ghost/core/core/shared/`   | Configuration and code shared across server boundaries          |
-| `ghost/core/content/`       | Default themes, adapters, settings, images, and runtime content |
-| `ghost/core/test/`          | Unit, integration, and server E2E tests                         |
+| Path                   | Contains                                                        |
+| ---------------------- | --------------------------------------------------------------- |
+| `ghost/core/server/`   | APIs, models, services, data access, and server startup         |
+| `ghost/core/frontend/` | Theme rendering, helpers, middleware, and public assets         |
+| `ghost/core/shared/`   | Configuration and code shared across server boundaries          |
+| `ghost/content/`       | Default themes, adapters, settings, images, and runtime content |
+| `ghost/test/`          | Unit, integration, and server E2E tests                         |
 
-Built Admin assets are copied into `ghost/core/core/built/admin/` for the Ghost
+Built Admin assets are copied into `ghost/core/built/admin/` for the Ghost
 release. Treat `built/`, `build/`, `dist/`, and `umd/` as generated output unless
 a nearby README says otherwise.
 
 For conventions used when adding a Ghost Core service, see the
-[services README](../../ghost/core/core/server/services/README.md).
+[services README](../../ghost/core/server/services/README.md).
 
 ## Koenig
 

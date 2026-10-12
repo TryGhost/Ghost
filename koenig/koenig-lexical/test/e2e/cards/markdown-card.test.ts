@@ -50,8 +50,8 @@ test.describe('Markdown card', async () => {
     for (const dark of [false, true]) {
         test(`owns Markdown toolbar and selection colours in ${dark ? 'dark' : 'light'} mode`, async function () {
             await initialize({page, uri: `/#/?content=false&darkMode=${dark}`});
-            // No Ember stylesheet is loaded by the standalone demo. Poison the
-            // old inherited variables to catch an accidental dependency on them.
+            // Editor hosts don't define these variables. Poison them to catch an
+            // accidental dependency on them.
             await page.evaluate(() => {
                 for (const name of ['lightgrey', 'blue', 'yellow', 'orange']) {
                     document.documentElement.style.setProperty(`--${name}`, '#ff00ff');

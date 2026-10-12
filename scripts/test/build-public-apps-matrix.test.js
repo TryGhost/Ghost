@@ -7,7 +7,7 @@ import { PUBLIC_APPS } from '../lib/public-apps.js';
 
 const DEFAULTS = JSON.parse(
   await readFile(
-    resolve(import.meta.dirname, '../../ghost/core/core/shared/config/defaults.json'),
+    resolve(import.meta.dirname, '../../ghost/core/shared/config/defaults.json'),
     'utf8',
   ),
 );

@@ -38,10 +38,10 @@ export interface PublishFlowModalProps {
   tkCount?: number;
   /** The `paywallImprovements` lab; the public-preview gate is off without it. */
   paywallImprovements?: boolean;
-  /** The `improveSendingUI` lab; a publish that emails then completes without confirming the send. */
-  improveSendingUI?: boolean;
   /** The caller supplies the save engine's dispatch. */
   dispatch: PublishDispatcher;
+  /** Asks the writer to sign in again; resolves true once they have. */
+  requestReauth?: () => Promise<boolean>;
   onBeforePublish?: () => Promise<void>;
   onClose: () => void;
   /** Hears the flow's selected newsletter while it is open, and `undefined` once it closes. */
@@ -68,8 +68,8 @@ function KeyedPublishFlowModal({
   siteTitle,
   tkCount = 0,
   paywallImprovements = false,
-  improveSendingUI,
   dispatch,
+  requestReauth,
   onBeforePublish,
   onClose,
   onNewsletterChange,
@@ -116,10 +116,10 @@ function KeyedPublishFlowModal({
     <PublishFlowDialog
       animate={animate}
       dispatch={dispatch}
-      improveSendingUI={improveSendingUI}
       limits={limits}
       now={now}
       post={post}
+      requestReauth={requestReauth}
       showCompletion={showCompletion}
       site={site}
       siteTitle={siteTitle}
@@ -147,8 +147,8 @@ function PublishFlowDialog({
   now,
   timezone,
   siteTitle,
-  improveSendingUI,
   dispatch,
+  requestReauth,
   onBeforePublish,
   onClose,
   onNewsletterChange,
@@ -163,8 +163,8 @@ function PublishFlowDialog({
     limits,
     now,
     dispatch,
+    requestReauth,
     showCompletion,
-    improveSendingUI,
     onBeforePublish,
     onCompleted,
   });
@@ -176,7 +176,13 @@ function PublishFlowDialog({
     return () => onNewsletterChange?.(undefined);
   }, [newsletterSlug, onNewsletterChange]);
 
+  // While the publish request is in flight, closing would abandon its outcome
+  // unseen: a publish that lands would never navigate and one that fails would
+  // never say so. The request settles on its own, so close waits for it.
   const close = () => {
+    if (flow.publishInFlight) {
+      return;
+    }
     flow.cancel();
     onClose();
   };
@@ -197,7 +203,7 @@ function PublishFlowDialog({
           <PageHeader.ActionGroup>
             {step === 'complete' ? null : (
               <>
-                <Button variant="ghost" onClick={close}>
+                <Button disabled={flow.publishInFlight} variant="ghost" onClick={close}>
                   Close
                 </Button>
                 {flow.emailErrorMessage || !onPreview ? null : (
@@ -218,19 +224,22 @@ function PublishFlowDialog({
         <Stack className="mx-auto w-full max-w-156 px-6 pt-[max(9.6rem,18vh)] pb-16" gap="xl">
           {step === 'email-error' && flow.emailErrorMessage ? (
             <CompleteWithEmailErrorStep
+              canRetry={flow.canRetryEmail}
+              checkingEligibility={flow.checkingRetryEligibility}
+              eligibilityFailed={flow.retryEligibilityFailed}
               emailErrorMessage={flow.emailErrorMessage}
               mailgunConfigured={site.mailgunConfigured}
               post={post}
               retryFailure={flow.retryFailure}
               status={flow.retryStatus}
               willOnlyEmail={state.willOnlyEmail}
+              onCheckEligibility={flow.checkRetryEligibility}
               onRetry={() => void flow.retryEmail()}
             />
           ) : step === 'complete' ? (
             <CompleteStep
               captured={flow.captured}
               completedAt={flow.completedAt}
-              note={flow.emailNote}
               post={post}
               postCount={flow.postCount}
               siteTitle={siteTitle}

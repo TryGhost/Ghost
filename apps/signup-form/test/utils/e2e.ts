@@ -36,7 +36,12 @@ export async function initialize({
     });
   });
 
-  const url = `http://localhost:${E2E_PORT}/signup-form.min.js`;
+  // Served over https so WebKit doesn't block it as mixed content on the https test page
+  const url = 'https://signup-form.test/signup-form.min.js';
+  await page.route(url, async (route) => {
+    const response = await route.fetch({ url: `http://localhost:${E2E_PORT}/signup-form.min.js` });
+    await route.fulfill({ response });
+  });
   await page.setViewportSize({ width: 1000, height: 1000 });
 
   await page.goto(sitePath);

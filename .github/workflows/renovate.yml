@@ -157,7 +157,7 @@ jobs:
           echo "RENOVATE_FORCE=$force" >> "$GITHUB_ENV"
 
       - name: Self-hosted Renovate
-        uses: renovatebot/github-action@6d26fcf0275dc65624cbc3d51fe78bc773f98321 # v46.3.6
+        uses: renovatebot/github-action@230ce922b08968d0a4f6f70f295601daff09ef1d # v46.3.7
         with:
           token: ${{ steps.app-token.outputs.token }}
         env:

@@ -4,17 +4,7 @@ import { cleanup, renderHook } from '@testing-library/react';
 import * as Sentry from '@sentry/react';
 import { useSentry } from './use-sentry';
 
-const {
-  envelopes,
-  location,
-  replay,
-  site,
-  currentUser,
-  config,
-  routePattern,
-  editorOwner,
-  authOwner,
-} = vi.hoisted(() => ({
+const { envelopes, location, replay, site, currentUser, config, routePattern } = vi.hoisted(() => ({
   envelopes: [] as string[],
   location: { pathname: '/tags' },
   replay: vi.fn<() => FakeReplay | undefined>(),
@@ -22,8 +12,6 @@ const {
   currentUser: vi.fn<() => { roles: Array<{ name: string }> } | undefined>(),
   config: vi.fn<(options: { enabled?: boolean }) => { config: { version: string } } | undefined>(),
   routePattern: vi.fn<() => string | null>(),
-  editorOwner: vi.fn<() => 'react' | 'ember' | 'pending'>(),
-  authOwner: vi.fn<() => 'react' | 'ember' | 'pending'>(),
 }));
 
 vi.mock('@sentry/react', async (importOriginal) => {
@@ -56,8 +44,6 @@ vi.mock('@tryghost/admin-x-framework/api/config', () => ({
   useBrowseConfig: (options: { enabled?: boolean }) => ({ data: config(options) }),
 }));
 vi.mock('@/routes', () => ({ useRoutePattern: routePattern }));
-vi.mock('@/use-flag-gated-route-owner', () => ({ useFlagGatedRouteOwner: editorOwner }));
-vi.mock('@/auth/api', () => ({ useAuthScreensOwner: authOwner }));
 
 const DSN = 'https://public@o0.ingest.sentry.io/1';
 const MASK = 'data-sentry-automations-mask';
@@ -110,8 +96,6 @@ describe('useSentry', () => {
     currentUser.mockReturnValue(undefined);
     config.mockReturnValue(undefined);
     routePattern.mockReturnValue('/tags');
-    editorOwner.mockReturnValue('pending');
-    authOwner.mockReturnValue('pending');
   });
 
   afterEach(async () => {
@@ -154,38 +138,6 @@ describe('useSentry', () => {
     renderUseSentry();
 
     expect((await captureProbe())?.tags?.route).toBe('/tags');
-  });
-
-  it('tags events with the editor and auth screen owners once decided', async () => {
-    const { rerender } = renderUseSentry();
-
-    const pendingTags = (await captureProbe())?.tags;
-    expect(pendingTags).not.toHaveProperty('editor_owner');
-    expect(pendingTags).not.toHaveProperty('auth_owner');
-    expect(editorOwner).toHaveBeenCalledWith('editorReact');
-
-    editorOwner.mockReturnValue('react');
-    authOwner.mockReturnValue('ember');
-    rerender();
-    expect((await captureProbe())?.tags).toMatchObject({
-      editor_owner: 'react',
-      auth_owner: 'ember',
-    });
-
-    editorOwner.mockReturnValue('ember');
-    authOwner.mockReturnValue('react');
-    rerender();
-    expect((await captureProbe())?.tags).toMatchObject({
-      editor_owner: 'ember',
-      auth_owner: 'react',
-    });
-
-    editorOwner.mockReturnValue('pending');
-    authOwner.mockReturnValue('pending');
-    rerender();
-    const unsetTags = (await captureProbe())?.tags;
-    expect(unsetTags).not.toHaveProperty('editor_owner');
-    expect(unsetTags).not.toHaveProperty('auth_owner');
   });
 
   it('reports the full release and only the role once signed in', async () => {

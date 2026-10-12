@@ -28,7 +28,7 @@ import {
 import { ChevronDown, History, Pen, Plus, Trash2, X } from 'lucide-react';
 import { memberAvatarProps } from '@/members/api';
 import { Inline, Stack } from '@tryghost/shade/primitives';
-import { useParams } from '@tryghost/admin-x-framework';
+import { useNavigate, useParams } from '@tryghost/admin-x-framework';
 import { useSettingsNavigation } from '@/settings/hooks/use-settings-navigation';
 import { SettingsModal } from '@tryghost/shade/patterns';
 import { type User } from '@tryghost/admin-x-framework/api/users';
@@ -338,8 +338,11 @@ const HistoryFilter: React.FC<{
   );
 };
 
+const SETTINGS_ROUTE_PREFIX = '/settings/';
+
 const HistoryActionDescription: React.FC<{ action: Action }> = ({ action }) => {
   const { updateRoute } = useSettingsNavigation();
+  const navigate = useNavigate();
   const contextResource = getContextResource(action);
 
   if (
@@ -386,7 +389,12 @@ const HistoryActionDescription: React.FC<{ action: Action }> = ({ action }) => {
           className="cursor-pointer font-bold"
           onClick={(e) => {
             e.preventDefault();
-            updateRoute(linkTarget);
+            // updateRoute keeps the route Settings returns to
+            if (linkTarget.route.startsWith(SETTINGS_ROUTE_PREFIX)) {
+              updateRoute(linkTarget.route.slice(SETTINGS_ROUTE_PREFIX.length));
+            } else {
+              navigate(linkTarget.route);
+            }
           }}
         >
           {action.resource?.title || action.resource?.name}

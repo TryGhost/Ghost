@@ -22,16 +22,6 @@ const INTERACTIVE_CHALLENGE_TIMEOUT_MS = 4 * 60 * 1000;
 // 406/449 are NGWAF block status
 const EDGE_BLOCK_STATUSES = [406, 449];
 
-// Opt-in per browser while the flow is verified against live NGWAF rules. Fastly strips
-// non-`ghost-*` cookies before origin, so this never reaches Ghost or the cache key.
-//   enable:  document.cookie = 'waf_challenge=1; Max-Age=2592000; Path=/; SameSite=Lax'
-//   disable: document.cookie = 'waf_challenge=; Max-Age=0; Path=/'
-const FEATURE_FLAG_COOKIE = 'waf_challenge=1';
-
-export function isEdgeChallengeEnabled() {
-  return document.cookie.split('; ').includes(FEATURE_FLAG_COOKIE);
-}
-
 export const EDGE_CHALLENGE_FAILED_MESSAGE = 'Unable to verify your request, please try again';
 
 export class EdgeChallengeError extends HumanReadableError {
@@ -247,17 +237,12 @@ export function solveEdgeChallenge(
 
 /**
  * fetch() for members API endpoints that NGWAF may challenge. Solves a challenge and retries
- * once; throws EdgeChallengeError when the request is blocked or still challenged. A plain
- * fetch() unless the waf_challenge flag is set.
+ * once; throws EdgeChallengeError when the request is blocked or still challenged.
  * @param {string} url
  * @param {RequestInit} [options]
  * @returns {Promise<Response>}
  */
 export async function fetchWithEdgeChallenge(url, options) {
-  if (!isEdgeChallengeEnabled()) {
-    return fetch(url, options);
-  }
-
   const res = await fetch(url, options);
   if (isEdgeBlockResponse(res)) {
     throw new EdgeChallengeError();

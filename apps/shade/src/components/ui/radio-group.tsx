@@ -1,9 +1,9 @@
 import * as React from 'react';
 import * as RadioGroupPrimitive from '@radix-ui/react-radio-group';
 import { Check } from 'lucide-react';
-import { cva, type VariantProps } from 'class-variance-authority';
+import { type VariantProps } from 'class-variance-authority';
 
-import { inputSurface } from '@/components/ui/input-surface';
+import { radioGroupItemVariants } from '@/components/ui/radio-group-variants';
 import { cn } from '@/lib/utils';
 
 const RadioGroup = React.forwardRef<
@@ -18,25 +18,6 @@ const RadioGroup = React.forwardRef<
   />
 ));
 RadioGroup.displayName = RadioGroupPrimitive.Root.displayName;
-
-const radioGroupItemVariants = cva(
-  [
-    inputSurface('self'),
-    'peer grid size-4 shrink-0 place-content-center rounded-full border-border-strong p-0 text-primary enabled:hover:bg-interactive-hover data-[state=checked]:border-primary',
-  ],
-  {
-    variants: {
-      indicator: {
-        dot: '',
-        check:
-          'data-[state=checked]:border-primary data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground enabled:data-[state=checked]:hover:bg-primary',
-      },
-    },
-    defaultVariants: {
-      indicator: 'dot',
-    },
-  },
-);
 
 type RadioGroupItemProps = React.ComponentPropsWithoutRef<typeof RadioGroupPrimitive.Item> &
   VariantProps<typeof radioGroupItemVariants>;
@@ -65,4 +46,4 @@ const RadioGroupItem = React.forwardRef<
 ));
 RadioGroupItem.displayName = RadioGroupPrimitive.Item.displayName;
 
-export { RadioGroup, RadioGroupItem, radioGroupItemVariants };
+export { RadioGroup, RadioGroupItem };

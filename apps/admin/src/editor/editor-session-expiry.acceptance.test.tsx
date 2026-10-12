@@ -7,9 +7,11 @@ import {
   currentUserResponse,
   fakeAdminEndpoint,
   fakeEditorChrome,
+  fakeNewsletters,
   plainText,
   post,
   renderAdminApp,
+  settingsResponse,
   submittedPost,
   unsavedChangesGuarded,
   withFastAutosave,
@@ -20,11 +22,11 @@ import {
 import { alertsScreen } from '@/alerts/alerts.screen';
 import { reloadAdmin } from '@/auth/reload';
 import { editorScreen } from '@/editor/editor.screen';
+import { publishScreen } from '@/editor/publish/publish.screen';
 
 vi.mock('@/auth/reload', () => ({ reloadAdmin: vi.fn() }));
 
 const POST_ID = 'abc123';
-const FLAG_ON = withFastAutosave({ labs: { editorReact: true } });
 const LOADED_AT = '2026-01-01T00:00:00.000Z';
 const SAVED_AT = '2026-01-01T00:00:01.000Z';
 const POST_ROUTE = new RegExp(`^/posts/${POST_ID}/\\?`);
@@ -103,7 +105,7 @@ async function appendToBody(text: string) {
 
 /** Edits until the save fails and the dialog asks for the password. */
 async function expireDuringEdit() {
-  await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+  await renderAdminApp(`/editor/post/${POST_ID}`, withFastAutosave());
   await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
   await appendToBody(' and more');
   await expect.element(editorScreen.reauthDialog()).toHaveTextContent('Are you still here?');
@@ -270,7 +272,7 @@ describe('Post editor session expiry', () => {
     await editorScreen.cancelReauth().click();
 
     await expect(editorScreen.reauthDialog()).toHaveCount(0);
-    await expect.element(editorScreen.saveErrorBanner()).toHaveTextContent('session expired');
+    await expect.element(editorScreen.saveError()).toHaveTextContent('session expired');
     await expect.element(editorScreen.body()).toHaveTextContent('Hello from React and more');
     expect(saveApi.requests).toHaveLength(1);
 
@@ -288,9 +290,101 @@ describe('Post editor session expiry', () => {
     await userEvent.keyboard('{Escape}');
 
     await expect(editorScreen.reauthDialog()).toHaveCount(0);
-    await expect.element(editorScreen.saveErrorBanner()).toHaveTextContent('session expired');
+    await expect.element(editorScreen.saveError()).toHaveTextContent('session expired');
     await expect.element(editorScreen.body()).toHaveTextContent('Hello from React and more');
     expect(saveApi.requests).toHaveLength(1);
+  });
+
+  it('asks for the password when the publish settings find no session, then offers Publish', async () => {
+    fakeEditorChrome();
+    fakeAdminEndpoint('GET', POST_ROUTE, { posts: [loadedPost()] });
+    const newslettersApi = fakeAdminEndpoint('GET', /^\/newsletters\//, SESSION_GONE, {
+      status: 401,
+    });
+    fakeAdminEndpoint('POST', '/session/', () => 'Created', { status: 201 });
+    await renderAdminApp(`/editor/post/${POST_ID}`, withFastAutosave());
+
+    await expect.element(editorScreen.reauthDialog()).toHaveTextContent('Are you still here?');
+    expect(currentRoute()).toBe(`/editor/post/${POST_ID}`);
+    expect(newslettersApi.requests).toHaveLength(1);
+
+    // Declared after the expired fake, so the read after sign-in is answered.
+    fakeNewsletters([]);
+    await signIn(PASSWORD);
+
+    await expect(editorScreen.reauthDialog()).toHaveCount(0);
+    await expect.element(editorScreen.publishButton()).toBeEnabled();
+    await expect(editorScreen.publishInputsError()).toHaveCount(0);
+  });
+
+  it('says the publish settings need a sign-in when it is cancelled, and asks again on Retry', async () => {
+    fakeEditorChrome();
+    fakeAdminEndpoint('GET', POST_ROUTE, { posts: [loadedPost()] });
+    fakeAdminEndpoint('GET', /^\/newsletters\//, SESSION_GONE, { status: 401 });
+    await renderAdminApp(`/editor/post/${POST_ID}`, withFastAutosave());
+
+    await expect.element(editorScreen.reauthDialog()).toBeVisible();
+    await editorScreen.cancelReauth().click();
+
+    await expect(editorScreen.reauthDialog()).toHaveCount(0);
+    await expect
+      .element(editorScreen.publishInputsError())
+      .toHaveTextContent('Your session expired. Retry to sign in again.');
+    await expect.element(editorScreen.publishButton()).toBeDisabled();
+
+    await editorScreen.retryPublishInputs().click();
+    await expect.element(editorScreen.reauthDialog()).toHaveTextContent('Are you still here?');
+  });
+
+  it('does not ask again when a later read of the publish settings fails after the sign-in was cancelled', async () => {
+    fakeEditorChrome();
+    fakeAdminEndpoint('GET', POST_ROUTE, { posts: [loadedPost()] });
+    const newslettersApi = fakeAdminEndpoint('GET', /^\/newsletters\//, SESSION_GONE, {
+      status: 401,
+    });
+    const { queryClient } = await renderAdminApp(`/editor/post/${POST_ID}`, withFastAutosave());
+
+    await expect.element(editorScreen.reauthDialog()).toBeVisible();
+    await editorScreen.cancelReauth().click();
+    await expect(editorScreen.reauthDialog()).toHaveCount(0);
+    await expect.element(editorScreen.publishInputsError()).toBeVisible();
+    const reads = newslettersApi.requests.length;
+
+    // A background refetch the writer did not ask for fails the same way.
+    // Settled, then two frames so the failure's effects have run before the dialog is checked.
+    await queryClient.refetchQueries({ type: 'active' });
+    expect(newslettersApi.requests.length).toBeGreaterThan(reads);
+    await new Promise<void>((resolve) => {
+      requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
+    });
+
+    await expect(editorScreen.reauthDialog()).toHaveCount(0);
+    await expect.element(editorScreen.publishInputsError()).toBeVisible();
+  });
+
+  it('asks for the password over the publish flow when its limit check finds no session, then continues', async () => {
+    fakeEditorChrome();
+    fakeNewsletters([]);
+    fakeAdminEndpoint('GET', POST_ROUTE, { posts: [loadedPost()] });
+    await renderAdminApp(`/editor/post/${POST_ID}`, withFastAutosave());
+    await expect.element(editorScreen.publishButton()).toBeEnabled();
+
+    // Opening the flow refreshes the settings for its limit checks, which finds the session gone.
+    const settingsApi = fakeAdminEndpoint('GET', /^\/settings\//, SESSION_GONE, { status: 401 });
+    fakeAdminEndpoint('POST', '/session/', () => 'Created', { status: 201 });
+    await editorScreen.publishButton().click();
+
+    await expect.element(publishScreen.options()).toBeVisible();
+    await expect.element(editorScreen.reauthDialog()).toHaveTextContent('Are you still here?');
+    expect(settingsApi.requests.length).toBeGreaterThan(0);
+
+    // Declared after the expired fake, so the check after sign-in is answered.
+    fakeAdminEndpoint('GET', /^\/settings\//, settingsResponse());
+    await signIn(PASSWORD);
+
+    await expect(editorScreen.reauthDialog()).toHaveCount(0);
+    await expect.element(publishScreen.continueButton()).toBeEnabled();
+    await expect(publishScreen.limitsError()).toHaveCount(0);
   });
 
   it('stays on unsaved work when a request from elsewhere in Admin finds no session', async () => {
@@ -301,7 +395,6 @@ describe('Post editor session expiry', () => {
     await renderAdminApp(
       `/editor/post/${POST_ID}`,
       withoutAutosave({
-        labs: { editorReact: true },
         boot: { browseNotifications: { response: { notifications: [SERVER_NOTICE] } } },
       }),
     );
@@ -327,7 +420,7 @@ describe('Post editor session expiry', () => {
     fakeAdminEndpoint('GET', POST_ROUTE, { posts: [loadedPost()] });
     fakeAdminEndpoint('GET', /^\/slugs\/post\//, SESSION_GONE, { status: 401 });
     const saveApi = fakeAdminEndpoint('PUT', POST_ROUTE, SESSION_GONE, { status: 401 });
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`, withFastAutosave());
 
     await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
     await editorScreen.titleInput().fill('Brand New Name');
@@ -353,11 +446,29 @@ describe('Opening a post after the session expired', () => {
   ])('reloads onto the post when its first read is refused with %i', async (status, body) => {
     fakeEditorChrome();
     fakeAdminEndpoint('GET', POST_ROUTE, body, { status });
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`, withFastAutosave());
 
     await expect
       .poll(() => vi.mocked(reloadAdmin).mock.calls)
       .toEqual([[`/editor/post/${POST_ID}`]]);
     await expect(editorScreen.loadError()).toHaveCount(0);
+  });
+
+  it('reloads onto the post when the read that reopens it is refused, though a copy is cached', async () => {
+    fakeEditorChrome();
+    fakeAdminEndpoint('GET', POST_ROUTE, { posts: [loadedPost()] });
+    await renderAdminApp(`/editor/post/${POST_ID}`, withFastAutosave());
+    await expect.element(editorScreen.titleInput()).toHaveValue('Hello from React');
+    await editorScreen.backLink('post').click();
+    await expect.poll(currentRoute).toBe('/posts');
+    await expect(editorScreen.titleInput()).toHaveCount(0);
+
+    fakeAdminEndpoint('GET', POST_ROUTE, SESSION_GONE, { status: 401 });
+    window.location.hash = `#/editor/post/${POST_ID}`;
+
+    await expect
+      .poll(() => vi.mocked(reloadAdmin).mock.calls)
+      .toEqual([[`/editor/post/${POST_ID}`]]);
+    await expect(editorScreen.titleInput()).toHaveCount(0);
   });
 });

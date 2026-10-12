@@ -26,31 +26,18 @@ package is _not_ part of the root Vitest watcher (`pnpm test:watch`), which only
 covers Vitest-based projects.
 
 Tests that inspect Admin's Nx configuration and CI path filters read files
-outside this workspace. The `adminTestContracts` input includes the Admin and
-Ember manifests and CI workflow in both `test` and `test:unit`. Changes to these
+outside this workspace. The `adminTestContracts` input includes the Admin
+manifest and CI workflow in both `test` and `test:unit`. Changes to these
 files invalidate the tests' caches and select this workspace as affected,
 without introducing an Admin build prerequisite.
 
 ## Admin asset assembly
 
-`assemble-admin-assets.ts` combines the built React and Ember Admin, ActivityPub,
-and Koenig assets. Admin’s build invokes it after Vite; its separate
-`assemble:assets` task can rerun assembly from existing build outputs. The helper
-in `lib/admin-assets.ts` also prepares legacy assets for Ember’s standalone
-builds and live-reload server. Production assembly keeps the Koenig embed renderer
-outside Admin’s assets and normalizes Admin output permissions for Nx caches.
-
-Hybrid assembly remains the default. After producing a fresh React build without
-`emberAssetsPlugin`, run `pnpm --filter @tryghost/admin assemble:assets --without-ember`
-to assemble React, ActivityPub and Koenig without requiring any Ember output.
-The helper also accepts `{ includeEmber: false }`. This is an assembly option:
-it does not change the build prerequisites, development server or runtime feature
-flags. The normal Admin build still prepares and ships Ember.
-
-Both modes keep preview and Core Admin assets identical, ship the embed renderer
-separately and honor `EDITOR_URL`. React-only assembly rejects HTML containing
-Ember's environment metadata; rebuild Vite's output before switching modes so
-previously merged legacy assets are not reused.
+`assemble-admin-assets.ts` copies the built Admin into Core and the Koenig embed
+renderer next to it. Admin’s build invokes it after Vite; its separate
+`assemble:assets` task can rerun assembly from existing build outputs. Assembly
+keeps the embed renderer outside Admin’s assets and normalizes Admin output
+permissions for Nx caches.
 
 ## The `.cjs` files
 
@@ -68,7 +55,7 @@ Don't add new `.cjs` files.
 **`enforce-package-manager.js`** is the root `preinstall` hook, so it runs
 _before_ `node_modules` exists. It can never import anything — not even from
 `lib/` — and must stay runnable by plain `node` on a literal path. The
-devcontainer image copies it (and only it) out of this directory for the same
+ghost-dev image copies it (and only it) out of this directory for the same
 reason; see `docker/ghost-dev/Dockerfile`.
 
 **`.github/scripts/i18n-review`** is intentionally _not_ a workspace member and
@@ -81,7 +68,7 @@ See that directory's README before changing anything about how it's wired.
 
 Run `pnpm inventory:typescript --output /tmp/ghost-typescript` from the root to
 write `/tmp/ghost-typescript.json`. Ghost-Benchmarks renders this JSON as the
-interactive dashboard. Use `--scope ghost/core` (or another repository-relative
+interactive dashboard. Use `--scope ghost` (or another repository-relative
 directory) to focus the data. Resolution and dependent counts still consider
 the whole repository.
 
@@ -119,7 +106,7 @@ configuration is not tooling merely because its name contains `config`. Runner
 configs such as `e2e/playwright.config.mjs` are tooling; actual tests remain tests.
 
 Test support includes
-`test-utils`, `__fixtures__`, Mirage modules and `packages/testing/`; backend
+`test-utils`, `__fixtures__` and `packages/testing/`; backend
 schema fixtures remain backend code. JSON
 schema version 2 replaces the old `production` category with these two values.
 

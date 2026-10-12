@@ -41,6 +41,26 @@
   --border-subtle: var(--color-gray-200);
   --border-default: color-mix(in oklab, var(--color-gray-200), var(--color-gray-300));
   --border-strong: var(--color-gray-500);
+  /* Frosted glass (the floating sidebar): a faint translucent fill over a
+     backdrop blur, a light-catching outline, and a sheen along the top edge.
+     The two shadows have matching layers so one interpolates into the other. */
+  --surface-glass: rgb(248 248 248 / 0.5);
+  --border-glass: rgb(255 255 255 / 0.7);
+  --surface-glass-highlight: linear-gradient(
+    180deg,
+    rgb(255 255 255 / 0.22) 0%,
+    rgb(255 255 255 / 0) 18%,
+    rgb(255 255 255 / 0) 85%,
+    rgb(255 255 255 / 0.06) 100%
+  );
+  --shadow-glass-floating:
+    inset 0 1px 0 rgb(255 255 255 / 0.55), inset 0 -1px 0 rgb(255 255 255 / 0.12),
+    0 0 0 0.5px rgb(0 0 0 / 0.06), 0 40px 60px -15px rgb(0 0 0 / 0.18),
+    0 12px 24px -8px rgb(0 0 0 / 0.1), 0 3px 8px rgb(0 0 0 / 0.04);
+  --shadow-glass-docked:
+    inset 0 1px 0 rgb(255 255 255 / 0), inset 0 -1px 0 rgb(255 255 255 / 0),
+    0 0 0 1px rgb(0 0 0 / 0.06), 0 8px 24px -10px rgb(0 0 0 / 0), 0 4px 12px -4px rgb(0 0 0 / 0),
+    0 2px 6px rgb(0 0 0 / 0);
   --focus-ring: var(--color-gray-600);
   --state-info: var(--color-blue-500);
   --search-result-title: #1a0dab;
@@ -185,6 +205,15 @@
   --border-subtle: var(--color-gray-900);
   --border-default: var(--color-gray-950);
   --border-strong: var(--color-gray-700);
+  --surface-glass: rgb(32 32 34 / 0.55);
+  --border-glass: rgb(255 255 255 / 0.1);
+  --surface-glass-highlight: linear-gradient(
+    180deg,
+    rgb(255 255 255 / 0.066) 0%,
+    rgb(255 255 255 / 0) 18%,
+    rgb(255 255 255 / 0) 85%,
+    rgb(255 255 255 / 0.018) 100%
+  );
   --focus-ring: var(--color-gray-900);
   --state-info: var(--color-blue-400);
   --search-result-title: #8ab4f8;

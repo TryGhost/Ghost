@@ -1,13 +1,13 @@
-import React from 'react';
 import { FormView } from './form-view';
 import { isMinimal } from '../../utils/helpers';
 import { isValidEmail } from '../../utils/validator';
 import { useAppContext } from '../../app-context';
+import { useState } from 'preact/hooks';
 
-export const FormPage: React.FC = () => {
-  const [error, setError] = React.useState('');
-  const [loading, setLoading] = React.useState(false);
-  const [success, setSuccess] = React.useState(false);
+export const FormPage = () => {
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
   const { api, setPage, options, t } = useAppContext();
   const minimal = isMinimal(options);
 

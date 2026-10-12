@@ -26,7 +26,7 @@ import { defineConfig, mergeConfig } from 'vitest/config';
  * @param {string} opts.packageRoot — absolute root of the calling app (typically `import.meta.dirname`)
  * @param {string} opts.packageName — e.g. `'@tryghost/portal'`; sets the UMD/IIFE global name and output filename
  * @param {string} opts.entry — entry path relative to `packageRoot` (e.g. `'src/index.jsx'`)
- * @param {'react'|'preact'} [opts.framework='react'] — controls whether `@vitejs/plugin-react` is included
+ * @param {'react'|'preact'} [opts.framework='react'] — `'react'` adds `@vitejs/plugin-react`; `'preact'` compiles JSX against `preact`
  * @param {boolean} [opts.svgr=true] — include `vite-plugin-svgr`
  * @param {'umd'|'iife'} [opts.libFormat='umd']
  * @param {string} [opts.libName] — global var name override (default: `packageName`)
@@ -67,6 +67,7 @@ export function publicAppViteConfig(opts) {
       logLevel: process.env.CI ? 'info' : 'warn',
       clearScreen: false,
       plugins,
+      ...(framework === 'preact' && { oxc: { jsx: { importSource: 'preact' } } }),
       define: {
         'process.env.NODE_ENV': JSON.stringify(config.mode),
       },

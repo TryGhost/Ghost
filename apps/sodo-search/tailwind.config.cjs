@@ -109,6 +109,6 @@ module.exports = {
       },
     },
   },
-  content: ['./src/**/*.{js,jsx}'],
+  content: ['./src/**/*.{ts,tsx}'],
   plugins: [],
 };

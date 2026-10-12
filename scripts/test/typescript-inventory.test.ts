@@ -164,13 +164,13 @@ test('splits production by codebase area while preserving tests and tooling', ()
     'koenig/koenig-lexical/src/index.ts',
     'koenig/kg-simplemde/src/js/simplemde.js',
     'koenig/kg-unsplash-selector/src/index.tsx',
-    'ghost/core/core/frontend/public/private.js',
+    'ghost/core/frontend/public/private.js',
   ]) {
     assert.equal(category(file), 'frontend', file);
   }
   for (const file of [
-    'ghost/core/core/server/services/members/index.js',
-    'ghost/core/core/frontend/services/routing/index.js',
+    'ghost/core/server/services/members/index.js',
+    'ghost/core/frontend/services/routing/index.js',
     'packages/api-framework/src/index.ts',
     'koenig/kg-lexical-html-renderer/src/index.ts',
     'koenig/kg-default-nodes/src/index.ts',
@@ -179,7 +179,7 @@ test('splits production by codebase area while preserving tests and tooling', ()
   }
   assert.equal(category('apps/admin/src/app.test.tsx'), 'tests');
   assert.equal(category('koenig/kg-default-nodes/test/index.test.ts'), 'tests');
-  assert.equal(category('ghost/core/test/unit/frontend/public/private.test.js'), 'tests');
+  assert.equal(category('ghost/test/unit/frontend/public/private.test.js'), 'tests');
   assert.equal(category('apps/portal/vite.config.js'), 'tooling');
   assert.equal(category('koenig/koenig-lexical/scripts/build.js'), 'tooling');
 });
@@ -191,22 +191,20 @@ test('counts maintained fixture modules and classifies test support without hidi
     ['apps/admin/src/editor/engine/__fixtures__/after-load.test.tsx', 'tests'],
     ['apps/admin/src/editor/engine/__fixtures__/index.ts', 'tests'],
     ['apps/admin/test-utils/fixtures/query-client.tsx', 'tests'],
-    ['apps/ember-admin/mirage/fixtures/configs.js', 'tests'],
-    ['ghost/core/core/server/data/schema/fixtures/fixture-manager.js', 'backend'],
-    ['ghost/core/core/server/data/schema/fixtures/index.js', 'backend'],
-    ['ghost/core/test/unit/server/data/schema/fixtures/fixture-manager.test.js', 'tests'],
-    ['ghost/core/test/utils/fixtures/email-service/malformed-css.js', 'tests'],
+    ['ghost/core/server/data/schema/fixtures/fixture-manager.js', 'backend'],
+    ['ghost/core/server/data/schema/fixtures/index.js', 'backend'],
+    ['ghost/test/unit/server/data/schema/fixtures/fixture-manager.test.js', 'tests'],
+    ['ghost/test/utils/fixtures/email-service/malformed-css.js', 'tests'],
     ['packages/image-transform/test/integration/fixtures/index.ts', 'tests'],
     ['packages/testing/test-data/src/fixtures/data/config.ts', 'tests'],
     ['packages/testing/test-data/src/fixtures/index.ts', 'tests'],
   ];
   const excluded = [
-    'ghost/core/test/unit/frontend/services/assets-minification/fixtures/basic-cards/js/gallery.js',
-    'ghost/core/test/utils/fixtures/sloppy-config-writer.js',
-    'ghost/core/test/utils/fixtures/themes/casper/assets/built/casper.js',
-    'ghost/core/test/utils/fixtures/themes/source/assets/built/source.js',
-    'apps/ember-admin/vendor/keymaster/keymaster.js',
-    'ghost/core/core/frontend/public/admin-auth/admin-auth.min.js',
+    'ghost/test/unit/frontend/services/assets-minification/fixtures/basic-cards/js/gallery.js',
+    'ghost/test/utils/fixtures/sloppy-config-writer.js',
+    'ghost/test/utils/fixtures/themes/casper/assets/built/casper.js',
+    'ghost/test/utils/fixtures/themes/source/assets/built/source.js',
+    'ghost/core/frontend/public/admin-auth/admin-auth.min.js',
     'koenig/kg-simplemde/debug/simplemde.debug.js',
     'koenig/kg-simplemde/dist/simplemde.min.js',
     'packages/_template/src/index.ts',
@@ -235,17 +233,77 @@ test('counts maintained fixture modules and classifies test support without hidi
   const report = inventory(root);
   assert.equal(report.measurementVersion, 2);
   assert.equal(report.files.length, included.length);
-  assert.equal(report.summary.javascript, 5);
+  assert.equal(report.summary.javascript, 4);
   assert.equal(report.summary.typescript, 6);
   assert.deepEqual(report.excluded.sort(), excluded.sort());
   for (const [file, expected] of included) {
     assert.equal(report.files.find((entry) => entry.path === file)?.category, expected, file);
   }
-  assert.equal(excludedSource('ghost/core/test/utils/fixtures/themes/custom/index.ts'), false);
-  assert.equal(
-    excludedSource('ghost/core/test/utils/fixtures/sloppy-config-writer.test.ts'),
-    false,
-  );
+  assert.equal(excludedSource('ghost/test/utils/fixtures/themes/custom/index.ts'), false);
+  assert.equal(excludedSource('ghost/test/utils/fixtures/sloppy-config-writer.test.ts'), false);
+});
+
+test('classifies retired Ember tooling in revisions after its deletion', (t) => {
+  const root = mkdtempSync(path.join(os.tmpdir(), 'ghost-ts-inventory-history-'));
+  t.after(() => rmSync(root, { recursive: true, force: true }));
+  const git = (...args: string[]) => execFileSync('git', args, { cwd: root });
+  const put = (file: string) => {
+    mkdirSync(path.dirname(path.join(root, file)), { recursive: true });
+    writeFileSync(
+      path.join(root, file),
+      "throw new Error('Historical sources must not execute');\n",
+    );
+  };
+  const commit = (message: string) =>
+    git(
+      '-c',
+      'user.name=Test',
+      '-c',
+      'user.email=test@example.com',
+      '-c',
+      'core.hooksPath=/dev/null',
+      'commit',
+      '-m',
+      message,
+    );
+  const tooling = [
+    'apps/ember-admin/ember-cli-build.js',
+    'apps/ember-admin/testem.js',
+    'apps/ember-admin/config/coverage.js',
+    'apps/ember-admin/config/deprecation-workflow.js',
+    'apps/ember-admin/config/environment.js',
+    'apps/ember-admin/config/targets.js',
+    'apps/ember-admin/lib/asset-delivery/index.js',
+    'apps/ember-admin/lib/check-node-version.js',
+    'apps/ember-admin/lib/ember-power-calendar-moment/index.js',
+    'apps/ember-admin/lib/ember-power-calendar-utils/index.js',
+    'apps/admin/vite-ember-assets.ts',
+  ];
+  git('init');
+  for (const file of [
+    ...tooling,
+    'apps/ember-admin/app/services/config-manager.js',
+    'apps/ember-admin/lib/ember-power-calendar-utils/addon/index.js',
+    'apps/ember-admin/mirage/config/settings.js',
+    'apps/admin/src/config.ts',
+  ]) {
+    put(file);
+  }
+  git('add', '.');
+  commit('Added historical fixtures');
+  const beforeDeletion = inventoryAtRevision(root, 'HEAD');
+  git('rm', '-r', 'apps/ember-admin', 'apps/admin/vite-ember-assets.ts');
+  commit('Removed Ember fixtures');
+
+  const historical = inventoryAtRevision(root, 'HEAD^');
+  assert.deepEqual(historical.groups, beforeDeletion.groups);
+  assert.equal(historical.measurementVersion, 2);
+  assert.equal(historical.groups.category.tooling!.javascript, tooling.length - 1);
+  assert.equal(historical.groups.category.tooling!.typescript, 1);
+  assert.equal(historical.groups.category.frontend!.javascript, 2);
+  assert.equal(historical.groups.category.frontend!.typescript, 1);
+  assert.equal(historical.groups.category.tests!.javascript, 1);
+  assert.equal(inventoryAtRevision(root, 'HEAD').groups.category.tooling, undefined);
 });
 
 test('separates developer tooling from runtime configuration', () => {
@@ -253,31 +311,21 @@ test('separates developer tooling from runtime configuration', () => {
     '.lintstagedrc.cjs',
     '.lintstagedrc.cts',
     'lint-staged.config.ts',
-    'apps/ember-admin/lib/asset-delivery/index.js',
-    'apps/ember-admin/lib/check-node-version.js',
-    'apps/ember-admin/lib/ember-power-calendar-moment/index.js',
-    'apps/ember-admin/lib/ember-power-calendar-utils/index.js',
     '.pnpmfile.mjs',
     '.dependency-cruiser.cjs',
     'configs/eslint/index.mjs',
     'configs/eslint-react/index.mjs',
     'configs/vitest/index.mjs',
     'configs/vite-public-app/index.mjs',
-    'apps/ember-admin/.template-lintrc.js',
-    'apps/ember-admin/.lint-todorc.js',
-    'apps/ember-admin/ember-cli-build.js',
-    'apps/ember-admin/testem.js',
-    'apps/ember-admin/config/environment.js',
     'apps/admin/vite.shared.ts',
     'apps/admin/vite-backend-proxy.ts',
-    'apps/admin/vite-ember-assets.ts',
     'apps/comments-ui/vite-plugin-strip-fingerprinting.ts',
     'koenig/vitest.shared.ts',
     'packages/i18n/generate-context.js',
     'e2e/playwright.config.mjs',
     'e2e/eslint.config.js',
     'e2e/scripts/capture-stripe-fixtures.ts',
-    'ghost/core/vitest.config.db.ts',
+    'ghost/vitest.config.db.ts',
     'apps/admin/vitest.acceptance.config.ts',
     'apps/shade/.storybook/main.ts',
     'scripts/release.js',
@@ -285,20 +333,18 @@ test('separates developer tooling from runtime configuration', () => {
     assert.equal(category(file), 'tooling', file);
   }
   for (const file of [
-    'apps/ember-admin/lib/ember-power-calendar-utils/addon/index.js',
     'apps/admin/src/editor/card-config.ts',
     'apps/admin/src/sentry/sentry-config.ts',
     'apps/admin-toolbar/src/config.js',
-    'apps/ember-admin/app/services/config-manager.js',
     'apps/admin-x-framework/src/api/config.ts',
   ]) {
     assert.equal(category(file), 'frontend', file);
   }
   for (const file of [
-    'ghost/core/core/shared/config/index.ts',
-    'ghost/core/core/frontend/services/theme-engine/config/index.js',
-    'ghost/core/core/server/services/mail/config.js',
-    'ghost/core/MigratorConfig.js',
+    'ghost/core/shared/config/index.ts',
+    'ghost/core/frontend/services/theme-engine/config/index.js',
+    'ghost/core/server/services/mail/config.js',
+    'ghost/MigratorConfig.js',
   ]) {
     assert.equal(category(file), 'backend', file);
   }

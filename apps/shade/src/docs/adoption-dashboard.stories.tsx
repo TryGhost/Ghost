@@ -34,12 +34,6 @@ const NEITHER_COLOR = 'var(--chart-gray)';
 
 type AppRow = (typeof data.apps)[number];
 type ComponentCount = { name: string; count: number };
-type EmberReport = {
-  hbsFiles: number;
-  spiritUtilityFiles: number;
-  patternFiles: number;
-  componentCssFiles: number;
-};
 
 const formatPct = (value: number, total: number) => {
   if (total === 0) {
@@ -51,7 +45,6 @@ const formatPct = (value: number, total: number) => {
 const Dashboard = () => {
   const { snapshot, summary, apps, topShadeComponents, publicApps } = data;
   const adminXDsComponentsAggregate = data.adminXDsComponentsAggregate as ComponentCount[];
-  const ember = data.ember as EmberReport | null;
 
   const generatedAt = new Date(snapshot.generatedAt);
   const generatedLabel = generatedAt.toLocaleDateString(undefined, {
@@ -84,7 +77,7 @@ const Dashboard = () => {
 
       <section className="mb-8">
         <Card>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
             <KpiCardHeader>
               <KpiCardHeaderLabel>admin-x-DS files remaining</KpiCardHeaderLabel>
               <KpiCardHeaderValue diffDirection="hidden" value={adminXDsFilesRemaining} />
@@ -111,13 +104,6 @@ const Dashboard = () => {
               />
               <span className="text-xs text-muted-foreground">
                 unique admin-x-design-system exports still imported
-              </span>
-            </KpiCardHeader>
-            <KpiCardHeader>
-              <KpiCardHeaderLabel>Ember legacy surface</KpiCardHeaderLabel>
-              <KpiCardHeaderValue diffDirection="hidden" value={ember?.hbsFiles ?? 0} />
-              <span className="text-xs text-muted-foreground">
-                Handlebars templates still in <code>ghost/admin</code> (pre-React)
               </span>
             </KpiCardHeader>
           </div>
@@ -236,7 +222,7 @@ const Dashboard = () => {
         </Card>
       </section>
 
-      <section className="mb-8 grid grid-cols-1 gap-6 lg:grid-cols-2">
+      <section className="mb-8">
         <Card>
           <CardHeader>
             <CardTitle>Per-app breakdown</CardTitle>
@@ -269,37 +255,6 @@ const Dashboard = () => {
                 ))}
               </TableBody>
             </Table>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Ember legacy admin</CardTitle>
-            <CardDescription>
-              <code>apps/ember-admin</code> is the original Ember client. It doesn&apos;t use Shade
-              or any React design system — it&apos;s being migrated to React surface by surface.
-              Measured by file counts since there are no components to import.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <dl className="grid grid-cols-2 gap-4">
-              <div>
-                <dt className="text-xs text-muted-foreground">Handlebars templates</dt>
-                <dd className="font-mono text-2xl">{ember?.hbsFiles ?? 0}</dd>
-              </div>
-              <div>
-                <dt className="text-xs text-muted-foreground">Spirit utility CSS files</dt>
-                <dd className="font-mono text-2xl">{ember?.spiritUtilityFiles ?? 0}</dd>
-              </div>
-              <div>
-                <dt className="text-xs text-muted-foreground">Pattern CSS files</dt>
-                <dd className="font-mono text-2xl">{ember?.patternFiles ?? 0}</dd>
-              </div>
-              <div>
-                <dt className="text-xs text-muted-foreground">Component CSS files</dt>
-                <dd className="font-mono text-2xl">{ember?.componentCssFiles ?? 0}</dd>
-              </div>
-            </dl>
           </CardContent>
         </Card>
       </section>

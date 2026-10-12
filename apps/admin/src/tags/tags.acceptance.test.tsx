@@ -58,7 +58,7 @@ describe('Tags list', () => {
     await expect.element(tagsScreen.newTagLink()).toHaveAttribute('href', '#/tags/new');
     await tagsScreen.newTagLink().click();
 
-    // /tags/new is Ember-owned; the shell records the route and defers.
+    // /tags/new opens the tag detail screen in create mode.
     await expect.poll(currentRoute).toBe('/tags/new');
   });
 

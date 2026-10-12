@@ -1,4 +1,3 @@
-import { siteResponse } from '@tryghost/test-data';
 import type { RenderAdminAppOptions } from './render-admin-app';
 import { type EndpointCapture, fakeAdminEndpoint } from './worker';
 
@@ -15,12 +14,9 @@ const authorizationFailed = {
 
 /**
  * Boots as a visitor with no session: Core answers every signed-in read with
- * 403 "Authorization failed". `authReact` is the public site field that hands
- * the auth screens to React; leave it out to boot against a server that
- * predates it.
+ * 403 "Authorization failed".
  */
-export function signedOut({ authReact }: { authReact?: boolean } = {}): RenderAdminAppOptions {
-  const site = siteResponse();
+export function signedOut(): RenderAdminAppOptions {
   const forbidden = { response: authorizationFailed, responseStatus: 403 };
 
   return {
@@ -28,9 +24,6 @@ export function signedOut({ authReact }: { authReact?: boolean } = {}): RenderAd
       browseMe: forbidden,
       browseSettings: forbidden,
       browseConfig: forbidden,
-      browseSite: {
-        response: authReact === undefined ? site : { site: { ...site.site, authReact } },
-      },
     },
   };
 }

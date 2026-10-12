@@ -4,7 +4,7 @@ import {
   parseDunningConfig,
 } from '@tryghost/admin-x-framework/api/dunning';
 import { z } from 'zod';
-import type { SubscriptionState } from '@/ember-bridge';
+import type { SubscriptionState } from './subscription-status';
 
 export const BILLING_ROUTE_ROOT = '/pro';
 

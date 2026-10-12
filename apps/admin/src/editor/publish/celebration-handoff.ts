@@ -1,6 +1,5 @@
 /**
  * The editor→list handoff read by `apps/admin/src/posts/list/post-publish-celebration.ts`.
- * Key names and payload shape match `publish-flow.js#setCompleted` exactly.
  */
 
 const KEYS = {

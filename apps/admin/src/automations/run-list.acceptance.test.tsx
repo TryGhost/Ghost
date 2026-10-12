@@ -187,7 +187,7 @@ describe('Automation run list', () => {
     await expect.element(runsRegion().getByRole('status')).toHaveTextContent('No members match');
 
     const refresh = fakeAdminEndpoint('GET', endpoint, {}, { status: 500 });
-    // The app's authentication bridge can invalidate a previously successful query.
+    // A refetch can fail after a previously successful load.
     await queryClient.invalidateQueries();
     await expect.element(runsRegion().getByRole('alert')).toHaveTextContent('Could not load runs');
     expect(refresh.requests).toHaveLength(1);

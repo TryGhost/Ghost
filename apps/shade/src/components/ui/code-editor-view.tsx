@@ -19,7 +19,7 @@ import { FieldDescription, FieldLabel } from '@/components/ui/field';
 import { inputSurface } from '@/components/ui/input-surface';
 import { Stack } from '@/components/primitives/stack';
 import { cn } from '@/lib/utils';
-import { useFocusContext } from '@/providers/shade-provider';
+import { useFocusContext } from '@/providers/shade-context';
 import type { Extension } from '@codemirror/state';
 
 export interface CodeEditorProps extends Omit<

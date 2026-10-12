@@ -21,7 +21,7 @@
     "camelcase-keys": "10.0.3",
     "execa": "catalog:",
     "js-yaml": "catalog:",
-    "picomatch": "4.0.5",
+    "picomatch": "4.0.7",
     "semver": "catalog:",
     "typescript": "catalog:"
   },
@@ -36,7 +36,6 @@
     "namedInputs": {
       "adminTestContracts": [
         "{workspaceRoot}/apps/admin/package.json",
-        "{workspaceRoot}/apps/ember-admin/package.json",
         "{workspaceRoot}/.github/workflows/ci.yml"
       ],
       "adminSourceContracts": [

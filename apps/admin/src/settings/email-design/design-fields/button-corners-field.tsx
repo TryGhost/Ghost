@@ -1,11 +1,11 @@
-import { ToggleGroup, ToggleGroupItem } from '@tryghost/shade/components';
+import { FieldTitle, ToggleGroup, ToggleGroupItem } from '@tryghost/shade/components';
 import { useEmailDesign } from '@/settings/email-design/email-design-context';
 
 export const ButtonCornersField = () => {
   const { settings, onSettingsChange } = useEmailDesign();
   return (
     <div className="flex items-center justify-between">
-      <span>Button corners</span>
+      <FieldTitle>Button corners</FieldTitle>
       <ToggleGroup
         type="single"
         value={settings.button_corners || 'rounded'}

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import StepPicker, { type StepPickerType } from './step-picker';
+import { useDismissOnOutsidePress } from './use-dismiss-on-outside-press';
 import { BaseEdge, EdgeLabelRenderer, getSmoothStepPath } from '@xyflow/react';
 import type { EdgeProps } from '@xyflow/react';
 import { LucideIcon, cn } from '@tryghost/shade/utils';
@@ -37,6 +38,7 @@ const AddStepEdge: React.FC<EdgeProps> = ({
   data,
 }) => {
   const [open, setOpen] = useState(false);
+  const { triggerRef, contentRef, onCloseAutoFocus } = useDismissOnOutsidePress(open, setOpen);
   const edgeData = data as AddStepEdgeData | undefined;
 
   const [path, labelX, labelY] = getSmoothStepPath({
@@ -59,6 +61,7 @@ const AddStepEdge: React.FC<EdgeProps> = ({
 
   const button = (
     <button
+      ref={triggerRef}
       aria-label={edgeData.label ?? 'Insert step here'}
       className={cn(
         'flex size-8 items-center justify-center rounded-full border focus-visible:ring-1 focus-visible:ring-focus-ring focus-visible:outline-none',
@@ -92,10 +95,13 @@ const AddStepEdge: React.FC<EdgeProps> = ({
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>{button}</PopoverTrigger>
         <PopoverContent
+          ref={contentRef}
           align="center"
           className="border-0 p-0 shadow-lg"
           side="top"
           sideOffset={12}
+          updatePositionStrategy="always"
+          onCloseAutoFocus={onCloseAutoFocus}
         >
           <StepPicker onPick={handlePick} />
         </PopoverContent>

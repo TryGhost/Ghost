@@ -13,9 +13,9 @@ import { HostLimitError } from '@tryghost/admin-x-framework/errors';
 import { SettingGroupContent } from '@tryghost/shade/patterns';
 import { getSettingValues, isSettingReadOnly } from '@tryghost/admin-x-framework/api/settings';
 import { useLimiter } from '@tryghost/admin-x-framework/hooks';
-import { useSettingsNavigation } from '@/settings/hooks/use-settings-navigation';
 import { useUpgradeRoute } from '@/settings/hooks/use-upgrade-route';
 import { withErrorBoundary } from '@/settings/components/with-error-boundary';
+import { navigateTo } from '@/utils/navigation';
 
 const Analytics: React.FC<{ keywords: string[] }> = ({ keywords }) => {
   const {
@@ -47,7 +47,6 @@ const Analytics: React.FC<{ keywords: string[] }> = ({ keywords }) => {
 
   const [isWebAnalyticsLimited, setIsWebAnalyticsLimited] = useState(false);
   const limiter = useLimiter();
-  const { updateRoute } = useSettingsNavigation();
   const upgradeRoute = useUpgradeRoute();
 
   useEffect(() => {
@@ -108,10 +107,7 @@ const Analytics: React.FC<{ keywords: string[] }> = ({ keywords }) => {
           <span className="flex items-start gap-2">
             <span>
               Web analytics is available on the Publisher plan and above.{' '}
-              <span
-                className="cursor-pointer text-green"
-                onClick={() => updateRoute({ route: upgradeRoute, isExternal: true })}
-              >
+              <span className="cursor-pointer text-green" onClick={() => navigateTo(upgradeRoute)}>
                 Upgrade now &rarr;
               </span>
             </span>

@@ -3,7 +3,12 @@ import { describe, expect, it } from 'vitest';
 import { automationsScreen } from './automations.screen';
 import { page, userEvent } from 'vitest/browser';
 import { openAutomationSidebar } from './run-list.test-utils';
-import { fakeAdminEndpoint, renderAdminApp, settleTransitions } from '@test-utils/acceptance';
+import {
+  fakeAdminEndpoint,
+  renderAdminApp,
+  settleRequests,
+  settleTransitions,
+} from '@test-utils/acceptance';
 import { buildLexicalParagraph, settingsResponse } from '@tryghost/test-data';
 import type {
   AutomationDetail,
@@ -214,27 +219,6 @@ describe('Email performance sidebar', () => {
     },
   );
 
-  it('closes on Escape even when the Ember shell prevents the default action', async () => {
-    // The host's shortcuts mixin prevents default before dispatching closeMenus.
-    const handleShellShortcut = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        event.preventDefault();
-      }
-    };
-    document.addEventListener('keydown', handleShellShortcut);
-    try {
-      prepare([email('First')]);
-      fakeAdminEndpoint('GET', linksPath(), { automation_action_links: [] });
-      await boot();
-      await show();
-      await expect.element(panel()).toBeVisible();
-      await userEvent.keyboard('{Escape}');
-      await expect.element(panel()).not.toBeInTheDocument();
-    } finally {
-      document.removeEventListener('keydown', handleShellShortcut);
-    }
-  });
-
   it('reserves space for the panel without covering the selected card at 1024px', async () => {
     await page.viewport(1024, 900);
     try {
@@ -269,28 +253,38 @@ describe('Email performance sidebar', () => {
     fakeAdminEndpoint('GET', linksPath('Second'), {
       automation_action_links: [{ url: 'https://example.com/new', clicked_count: 10 }],
     });
-    await boot();
-    await show();
-    await expect.poll(() => first.requests.length).toBe(1);
-    await expect.element(panel().getByTestId('automation-action-links-loading')).toBeVisible();
-    const element = panel().element();
-    await show('Second');
-    await expect.element(panel().getByRole('heading', { name: 'Second' })).toBeVisible();
-    expect(panel().element()).toBe(element);
-    await expect.element(panel()).toHaveAttribute('data-state', 'open');
-    await expect.element(panel().getByRole('link', { name: 'example.com/new' })).toBeVisible();
-    resolve();
-    await expect
-      .element(panel().getByRole('link', { name: 'example.com/old' }))
-      .not.toBeInTheDocument();
-    await expect
-      .element(panel().getByTestId('email-performance-sent-ring'))
-      .not.toBeInTheDocument();
-    await expect.element(panel().getByText('200', { exact: true })).toBeVisible();
-    await expect.element(panel().getByText('75%', { exact: true })).toBeVisible();
-    await expect.element(panel().getByRole('textbox')).not.toBeInTheDocument();
-    await card('Second').getByRole('button', { name: 'Hide email analytics' }).click();
-    await expect.element(panel()).not.toBeInTheDocument();
+    try {
+      await boot();
+      await show();
+      await expect.poll(() => first.requests.length).toBe(1);
+      await expect.element(panel().getByTestId('automation-action-links-loading')).toBeVisible();
+      const element = panel().element();
+      // React Flow moves cards with a D3 animation, beyond CSS transitions.
+      // Keyboard activation keeps this request-ordering test independent of card position.
+      automationsScreen.viewEmailAnalyticsButton('Second').element().focus();
+      await userEvent.keyboard('{Enter}');
+      await expect.element(panel().getByRole('heading', { name: 'Second' })).toBeVisible();
+      expect(panel().element()).toBe(element);
+      await expect.element(panel()).toHaveAttribute('data-state', 'open');
+      await expect.element(panel().getByRole('link', { name: 'example.com/new' })).toBeVisible();
+      resolve();
+      await settleRequests();
+      await expect
+        .element(panel().getByRole('link', { name: 'example.com/old' }))
+        .not.toBeInTheDocument();
+      await expect
+        .element(panel().getByTestId('email-performance-sent-ring'))
+        .not.toBeInTheDocument();
+      await expect.element(panel().getByText('200', { exact: true })).toBeVisible();
+      await expect.element(panel().getByText('75%', { exact: true })).toBeVisible();
+      await expect.element(panel().getByRole('textbox')).not.toBeInTheDocument();
+      card('Second').getByRole('button', { name: 'Hide email analytics' }).element().focus();
+      await userEvent.keyboard('{Enter}');
+      await expect.element(panel()).not.toBeInTheDocument();
+    } finally {
+      // Teardown drains requests before the next test, including after a failed assertion.
+      resolve();
+    }
   });
 
   it('supports retry and closing without changing the draft', async () => {

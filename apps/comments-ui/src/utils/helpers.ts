@@ -1,4 +1,4 @@
-import { Comment, Member, TranslationFunction } from '../app-context';
+import type { Comment, Member, TranslationFunction } from '../app-context';
 
 // Canonical source for comment permalink hash format
 export const COMMENT_HASH_PREFIX = 'ghost-comments-';

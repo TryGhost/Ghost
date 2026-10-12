@@ -1,4 +1,4 @@
-import { useShade } from '@/providers/shade-provider';
+import { useShade } from '@/providers/shade-context';
 import * as React from 'react';
 import { cva, type VariantProps } from 'class-variance-authority';
 import * as TooltipPrimitive from '@radix-ui/react-tooltip';

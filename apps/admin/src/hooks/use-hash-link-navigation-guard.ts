@@ -2,7 +2,7 @@ import React from 'react';
 
 /**
  * Guards navigations that bypass react-router: plain `<a href="#/…">` anchors
- * (the admin sidebar, links into Ember-owned routes). Those clicks create a
+ * such as the admin sidebar's. Those clicks create a
  * browser-native history entry that reaches react-router as an untracked POP,
  * which `useBlocker` cannot intercept — so without this, a dirty screen is
  * silently abandoned.

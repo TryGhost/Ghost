@@ -20,17 +20,16 @@ export function createFrameworkProps(
         retry: false,
         networkMode: 'always',
       },
+      mutations: {
+        networkMode: 'always',
+      },
     },
   });
 
   return {
     ghostVersion: '',
-    externalNavigate: () => {},
     // Production shape, but without the real API key so tests never hit Unsplash
     unsplashConfig: { ...defaultUnsplashConfig, Authorization: '' },
-    onUpdate: () => {},
-    onInvalidate: () => {},
-    onDelete: () => {},
     ...overrides,
     queryClient: overrides.queryClient ?? queryClient,
   };

@@ -1,38 +1,22 @@
 import { describe, expect, it } from 'vitest';
 import {
-  confirmationResponseSchema,
+  postEmailResponseSchema,
   publishedPostCountResponseSchema,
 } from '@/editor/publish/api-response-schemas';
 
 describe('publish API response schemas', () => {
-  it('accepts the confirmation projection used by the email poller', () => {
+  it('accepts a post read with or without its email', () => {
     expect(
-      confirmationResponseSchema.parse({
-        posts: [
-          {
-            id: 'post-1',
-            status: 'published',
-            email: {
-              id: 'email-1',
-              email_count: 10,
-              opened_count: 2,
-              status: 'submitted',
-            },
-          },
-        ],
-      }),
-    ).toMatchObject({ posts: [{ status: 'published', email: { status: 'submitted' } }] });
+      postEmailResponseSchema.parse({ posts: [{ id: 'post-1', email: { id: 'email-1' } }] }),
+    ).toMatchObject({ posts: [{ email: { id: 'email-1' } }] });
+    expect(postEmailResponseSchema.parse({ posts: [{ id: 'post-1', email: null }] })).toBeTruthy();
   });
 
   it.each([
     ['an empty post collection', { posts: [] }],
-    ['an unknown post status', { posts: [{ status: 'publishing', email: null }] }],
-    [
-      'an incomplete email record',
-      { posts: [{ status: 'published', email: { id: 'email-1', status: 'submitted' } }] },
-    ],
+    ['an email without an id', { posts: [{ email: { status: 'failed' } }] }],
   ])('rejects %s', (_name, response) => {
-    expect(confirmationResponseSchema.safeParse(response).success).toBe(false);
+    expect(postEmailResponseSchema.safeParse(response).success).toBe(false);
   });
 
   it('accepts a non-negative published post total', () => {

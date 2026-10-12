@@ -45,7 +45,7 @@ export function MobileNavBar() {
   }
 
   return (
-    <div className="safe-area-inset-bottom fixed inset-x-0 bottom-0 z-50 h-[var(--mobile-navbar-height)] border-t border-sidebar-border bg-sidebar/80 backdrop-blur-md sidebar:hidden">
+    <div className="screen-exit-mobile-nav safe-area-inset-bottom fixed inset-x-0 bottom-0 z-50 h-[var(--mobile-navbar-height)] border-t border-sidebar-border bg-sidebar/80 backdrop-blur-md [view-transition-name:admin-mobile-nav] sidebar:hidden">
       <div className="mx-auto grid size-full max-w-[300px] grid-cols-4 items-center justify-items-center px-5">
         <MobileNavBarButton to="analytics" activeOnSubpath>
           <LucideIcon.TrendingUp strokeWidth={ICON_STROKE_WIDTH} />

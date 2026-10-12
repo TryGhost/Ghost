@@ -71,6 +71,9 @@ const EDITABLE_WAIT_NODE_HEIGHT = 144;
 const FIXED_TRIGGER_NODE_HEIGHT = 156;
 const EXIT_NODE_HEIGHT = 55;
 const INITIAL_VIEWPORT_Y = 40;
+// The pane reaches up behind the editor's header (h-14), so a header sliding in
+// reveals canvas rather than an empty band.
+const HEADER_UNDERLAP_Y = 56;
 // Rendered height of the tail node (h-12) — used to derive the content's bottom edge for the pan bound.
 const TAIL_NODE_HEIGHT = 48;
 const NODE_ENTER_ANIMATION_DURATION = 250;
@@ -470,7 +473,7 @@ const buildGraph = ({
 
 const getInitialViewport = (canvasWidth: number): { x: number; y: number; zoom: number } => ({
   x: Math.round(canvasWidth / 2 - NODE_COLUMN_CENTER_X),
-  y: INITIAL_VIEWPORT_Y,
+  y: INITIAL_VIEWPORT_Y + HEADER_UNDERLAP_Y,
   zoom: 1,
 });
 
@@ -909,10 +912,12 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
   if (isLoading) {
     return (
       <div
-        className="flex flex-1 items-center justify-center bg-surface-page"
+        className="-mt-14 flex flex-1 items-center justify-center bg-surface-page pt-14"
         data-testid="automation-canvas-loading"
       >
-        <LoadingIndicator size="lg" />
+        <div className="delayed-fade-in">
+          <LoadingIndicator size="lg" />
+        </div>
       </div>
     );
   }
@@ -937,7 +942,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
     <Inline
       ref={layoutRef}
       align="stretch"
-      className="@container/automation relative min-h-0 flex-1 overflow-hidden bg-background"
+      className="@container/automation relative min-h-0 flex-1 overflow-x-clip bg-background"
       data-testid="automation-canvas"
       gap="none"
     >
@@ -982,47 +987,50 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
           role="region"
           tabIndex={-1}
         >
-          <ReactFlow
-            className="[--xy-background-color:var(--preview-canvas)] [--xy-edge-stroke:var(--border-default)]"
-            defaultViewport={initialViewport}
-            edges={graph.edges}
-            edgesFocusable={false}
-            edgeTypes={edgeTypes}
-            maxZoom={CANVAS_ZOOM_CONFIG.maxZoom}
-            minZoom={CANVAS_ZOOM_CONFIG.minZoom}
-            nodes={graph.nodes}
-            nodesConnectable={false}
-            nodesDraggable={false}
-            nodesFocusable={false}
-            nodeTypes={nodeTypes}
-            proOptions={{ hideAttribution: true }}
-            translateExtent={viewport.translateExtent}
-            zoomOnDoubleClick={false}
-            zoomOnScroll={false}
-            panOnScroll
-            onInit={viewport.onInit}
-            onMove={viewport.onMove}
-            onNodeClick={(event, node) => {
-              if (event.button !== 0) {
-                return;
-              }
-              if (
-                node.id !== TAIL_CANVAS_ID &&
-                !(automationRunAnalyticsEnabled && node.id === TRIGGER_CANVAS_ID) &&
-                !('email' in node.data && node.data.email) &&
-                !('wait' in node.data && node.data.wait)
-              ) {
-                showWarningsForOtherSteps(node.id);
-                setSelectedStep({ id: node.id });
-              }
-            }}
-            onNodeDoubleClick={handleNodeDoubleClick}
-            onNodesChange={handleNodesChange}
-            onPaneClick={automationRunAnalyticsEnabled ? undefined : clearDetail}
-          >
-            <Background {...canvasBackground} variant={BackgroundVariant.Dots} />
-            <AutomationCanvasControls />
-          </ReactFlow>
+          {/* Only the pane reaches up behind the header; the region keeps the visible bounds */}
+          <Box className="absolute inset-x-0 -top-14 bottom-0">
+            <ReactFlow
+              className="[--xy-background-color:var(--preview-canvas)] [--xy-edge-stroke:var(--border-default)]"
+              defaultViewport={initialViewport}
+              edges={graph.edges}
+              edgesFocusable={false}
+              edgeTypes={edgeTypes}
+              maxZoom={CANVAS_ZOOM_CONFIG.maxZoom}
+              minZoom={CANVAS_ZOOM_CONFIG.minZoom}
+              nodes={graph.nodes}
+              nodesConnectable={false}
+              nodesDraggable={false}
+              nodesFocusable={false}
+              nodeTypes={nodeTypes}
+              proOptions={{ hideAttribution: true }}
+              translateExtent={viewport.translateExtent}
+              zoomOnDoubleClick={false}
+              zoomOnScroll={false}
+              panOnScroll
+              onInit={viewport.onInit}
+              onMove={viewport.onMove}
+              onNodeClick={(event, node) => {
+                if (event.button !== 0) {
+                  return;
+                }
+                if (
+                  node.id !== TAIL_CANVAS_ID &&
+                  !(automationRunAnalyticsEnabled && node.id === TRIGGER_CANVAS_ID) &&
+                  !('email' in node.data && node.data.email) &&
+                  !('wait' in node.data && node.data.wait)
+                ) {
+                  showWarningsForOtherSteps(node.id);
+                  setSelectedStep({ id: node.id });
+                }
+              }}
+              onNodeDoubleClick={handleNodeDoubleClick}
+              onNodesChange={handleNodesChange}
+              onPaneClick={automationRunAnalyticsEnabled ? undefined : clearDetail}
+            >
+              <Background {...canvasBackground} variant={BackgroundVariant.Dots} />
+              <AutomationCanvasControls />
+            </ReactFlow>
+          </Box>
         </Box>
         {isHistoryOpen && (
           <RunHistory

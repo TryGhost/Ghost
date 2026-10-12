@@ -130,7 +130,6 @@ export const useAddNewsletter = createMutation<
   }),
   updateQueries: {
     dataType,
-    emberUpdateType: 'createOrUpdate',
     update: insertToQueryCache('newsletters'),
   },
 });
@@ -150,7 +149,6 @@ export const useEditNewsletter = createMutation<NewslettersEditResponseType, New
   defaultSearchParams: { include: 'count.active_members,count.posts' },
   updateQueries: {
     dataType,
-    emberUpdateType: 'createOrUpdate',
     update: updateQueryCache('newsletters'),
   },
 });
@@ -165,7 +163,6 @@ export const useVerifyNewsletterEmail = createMutation<
   defaultSearchParams: { include: 'count.active_members,count.posts' },
   updateQueries: {
     dataType,
-    emberUpdateType: 'createOrUpdate',
     update: updateQueryCache('newsletters'),
   },
 });

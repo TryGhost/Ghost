@@ -65,7 +65,7 @@ function ShortcutRow({ shortcut }: { shortcut: Shortcut }) {
       gap="sm"
       justify="between"
     >
-      <dt className="float-none clear-none m-0 w-auto min-w-0 flex-1 overflow-visible text-left font-normal wrap-anywhere whitespace-normal">
+      <dt className="min-w-0 flex-1 wrap-anywhere">
         <Text as="span" className={shortcut.style && LABEL_CLASSES[shortcut.style]} size="sm">
           {shortcut.label}
         </Text>

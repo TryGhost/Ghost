@@ -4,7 +4,7 @@ import { DropdownMenuTrigger } from './dropdown-menu';
 
 import { cn } from '@/lib/utils';
 import { cva } from 'class-variance-authority';
-import { type ControlShape, useShade } from '@/providers/shade-provider';
+import { type ControlShape, useShade } from '@/providers/shade-context';
 
 type TabsVariant =
   | 'segmented'
@@ -29,24 +29,6 @@ const TabsContext = React.createContext<TabsContextValue>({
 export interface TabsProps extends React.ComponentPropsWithoutRef<typeof TabsPrimitive.Root> {
   variant?: TabsVariant;
 }
-
-const tabsVariants = cva('', {
-  variants: {
-    variant: {
-      segmented: '',
-      'segmented-sm': '',
-      button: '',
-      'button-sm': '',
-      underline: '',
-      navbar: '',
-      pill: '',
-      kpis: '',
-    },
-  },
-  defaultVariants: {
-    variant: 'segmented',
-  },
-});
 
 const Tabs = React.forwardRef<React.ElementRef<typeof TabsPrimitive.Root>, TabsProps>(
   ({ variant = 'segmented', ...props }, ref) => {
@@ -255,12 +237,4 @@ const TabsDropdownTrigger = React.forwardRef<HTMLButtonElement, TabsDropdownTrig
 );
 TabsDropdownTrigger.displayName = 'TabsDropdownTrigger';
 
-export {
-  Tabs,
-  TabsList,
-  TabsTrigger,
-  TabsTriggerCount,
-  TabsContent,
-  TabsDropdownTrigger,
-  tabsVariants,
-};
+export { Tabs, TabsList, TabsTrigger, TabsTriggerCount, TabsContent, TabsDropdownTrigger };

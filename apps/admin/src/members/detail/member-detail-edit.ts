@@ -223,9 +223,9 @@ export function getMemberSuppressionInfo(
  * `gh-member-settings-form.js:233-241`: keep only newsletters that opt in
  * via `subscribe_on_signup` AND are visible to member-tier subscribers
  * (`visibility: 'members'`). The result feeds the create-screen draft so
- * the toggles render as CHECKED — matching what the admin would see if
- * they'd opened the Ember screen — and the same list is included in the
- * POST payload so the server never has to fall back to its own default.
+ * the toggles render as CHECKED, as on Ember's create screen, and the same
+ * list is included in the POST payload so the server never has to fall back
+ * to its own default.
  */
 export function getDefaultNewsletterIdsForNewMember(
   newsletters:

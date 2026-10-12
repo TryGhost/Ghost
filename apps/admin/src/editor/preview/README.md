@@ -70,8 +70,8 @@ settings field. On desktop the input holds the custom subject, or the post title
 there is none, with the title cut to 40 characters as its placeholder. Edits are staged
 in the session as they are typed and committed on blur or Enter, like any settings field.
 A cleared subject is stored as no subject, so the email goes out under the title again.
-A subject over 300 characters is not committed and says so beside the field, where a
-failed save is also reported until the subject is edited; a collision or a deleted post
+A subject over 300 characters is not committed and says so beside the field, and the preview
+opens on its email tab while it stands, where a failed save is also reported until the subject is edited; a collision or a deleted post
 stays reported, because no later save can get past it. Test sending stays disabled
 while edits are unsaved or a save is pending. The mobile frame shows the subject, or the
 title, as text. Closing preview preserves unsaved subject edits. If those edits prevent

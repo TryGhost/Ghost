@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { TooltipProvider } from '@/components/ui/tooltip';
-import { useShade } from '@/providers/shade-provider';
+import { useShade } from '@/providers/shade-context';
 
 const HeaderTooltipContext = React.createContext(false);
 
