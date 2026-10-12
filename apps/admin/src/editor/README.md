@@ -216,9 +216,9 @@ actions are hidden with the word count.
 Under `admin7EditorImprovements`, the footer's [Aa] button replaces the help
 link, which moves to the settings panel as "Using the editor". It opens a choice
 of three fonts to read the post in while editing: the editor's own serif
-(Georgia), sans (Inter) and mono (Geist Mono, self-hosted under
-`assets/fonts/geist-mono/`). Only the editor changes; the theme, the preview and
-the email never do.
+(Georgia), sans (Inter) and mono (the system's monospace font: SF Mono on
+Apple devices, Consolas on Windows). Only the editor changes; the theme, the
+preview and the email never do.
 
 A choice applies at once, so the writer can compare with the popover open, and
 is saved when the popover closes, or the editor does, as `editor.bodyFont` in
@@ -230,7 +230,7 @@ The font is set on the editor as `data-editor-font`. `index.css` maps each value
 to Koenig's content font variables (see the koenig-lexical README) and to the
 title and excerpt's own `--editor-display-*` ones. Sans sets the body in Inter
 and keeps the headings, title and excerpt as they are. Mono sets everything the
-writer writes in Geist Mono: the title, the excerpt, the body, headings and the
+writer writes in the monospace font: the title, the excerpt, the body, headings and the
 text of callout, toggle, header, product and call-to-action cards. Captions, alt
 text, buttons, bookmark previews and every control stay in Inter. Each font
 carries its own sizes, line height and tracking, since the three set very
