@@ -12,6 +12,8 @@ import {
 import { H4 } from '@tryghost/shade/primitives';
 import { Link } from '@tryghost/admin-x-framework';
 import { LucideIcon, cn } from '@tryghost/shade/utils';
+import { getOutboundMigrationAvailability } from './account-migration/utils';
+import { useAccountMigrationForUser } from '@hooks/use-activity-pub-queries';
 import { useAppBasePath } from '@src/hooks/use-app-base-path';
 import { useNavigateWithBasePath } from '@src/hooks/use-navigate-with-base-path';
 
@@ -23,6 +25,7 @@ interface SettingsProps {
 const Settings: React.FC<SettingsProps> = ({ account, className = '' }) => {
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const navigate = useNavigateWithBasePath();
+  const outboundMigration = getOutboundMigrationAvailability(useAccountMigrationForUser('index'));
 
   return (
     <div className={`flex flex-col ${className}`}>
@@ -82,7 +85,9 @@ const Settings: React.FC<SettingsProps> = ({ account, className = '' }) => {
         <SettingHeader>
           <SettingTitle>Account migration</SettingTitle>
           <SettingDescription>
-            Move followers to this account, or from this account to somewhere else
+            {outboundMigration === 'available'
+              ? 'Move followers to this account, or from this account to somewhere else'
+              : 'Move another social web account to this one'}
           </SettingDescription>
         </SettingHeader>
         <SettingAction className="flex items-center gap-2">

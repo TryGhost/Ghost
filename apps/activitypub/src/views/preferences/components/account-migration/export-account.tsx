@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -41,16 +41,11 @@ const ExportAccount: React.FC = () => {
   const [copied, setCopied] = useState(false);
   const ownHandle = account?.handle?.trim() || '';
   const destinationHandle = migration?.targetHandle ?? null;
-  const normalizedDestination = normalizeHandle(targetHandle);
+  // The service only accepts a retry to the destination the move started with
+  const lockedDestination = migration?.targetApId ? destinationHandle : null;
+  const destination = lockedDestination ?? targetHandle;
+  const normalizedDestination = normalizeHandle(destination);
   const showDestinationForm = exportFormReady || Boolean(migration?.targetApId);
-
-  useEffect(() => {
-    if (!destinationHandle) {
-      return;
-    }
-
-    setTargetHandle((current) => current || destinationHandle);
-  }, [destinationHandle]);
 
   const handleCopy = async () => {
     if (!ownHandle) {
@@ -67,11 +62,11 @@ const ExportAccount: React.FC = () => {
     if (moveAccountMutation.isPending) {
       return;
     }
-    if (!HANDLE_REGEX.test(targetHandle.trim())) {
+    if (!HANDLE_REGEX.test(destination.trim())) {
       setMoveError('Enter a valid destination handle, like new@mastodon.social.');
       return;
     }
-    if (ownHandle && handlesEqual(targetHandle, ownHandle)) {
+    if (ownHandle && handlesEqual(destination, ownHandle)) {
       setMoveError('Enter a different account than this Ghost account.');
       return;
     }
@@ -85,7 +80,7 @@ const ExportAccount: React.FC = () => {
     }
     setMoveConfirmOpen(false);
     try {
-      await moveAccountMutation.mutateAsync(normalizeHandle(targetHandle));
+      await moveAccountMutation.mutateAsync(normalizedDestination);
     } catch (error) {
       setMoveError(getMoveErrorMessage(error));
     }
@@ -178,7 +173,8 @@ const ExportAccount: React.FC = () => {
                 disabled={moveAccountMutation.isPending}
                 id="account-migration-target-handle"
                 placeholder="username@domain"
-                value={targetHandle}
+                readOnly={Boolean(lockedDestination)}
+                value={destination}
                 onChange={(event) => {
                   setTargetHandle(event.target.value);
                   setMoveError(null);

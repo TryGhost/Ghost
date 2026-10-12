@@ -1,5 +1,6 @@
 import AccountMigration from '../../../src/views/preferences/components/account-migration';
 import React from 'react';
+import { getOutboundMigrationAvailability } from '../../../src/views/preferences/components/account-migration/utils';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 
@@ -103,9 +104,11 @@ describe('outbound account migration', () => {
   it.each([new Error('Network unavailable'), { message: 'Server error', statusCode: 500 }])(
     'offers retry after a temporary status failure',
     (error) => {
+      mocks.migration.data = undefined;
       mocks.migration.isError = true;
       mocks.migration.error = error;
       render(<AccountMigration />);
+      expect(screen.queryByText(/or from this account to somewhere else/)).toBeNull();
       goToExport();
       expect(screen.getByRole('alert').textContent).toContain('Could not load migration status');
       expect(screen.queryByLabelText('New account handle')).toBeNull();
@@ -113,6 +116,21 @@ describe('outbound account migration', () => {
       expect(mocks.migration.refetch).toHaveBeenCalledOnce();
     },
   );
+
+  it('only promises outbound moves once the migration status has loaded', () => {
+    mocks.migration = { ...mocks.migration, data: undefined, isLoading: true };
+    const { rerender } = render(<AccountMigration />);
+    expect(screen.queryByText(/or from this account to somewhere else/)).toBeNull();
+    expect(screen.getByRole('tab', { name: 'Move followers away' })).toBeTruthy();
+
+    mocks.migration = {
+      ...mocks.migration,
+      data: { targetApId: null, targetHandle: null, sent: false },
+      isLoading: false,
+    };
+    rerender(<AccountMigration />);
+    expect(screen.getByText(/or from this account to somewhere else/)).toBeTruthy();
+  });
 
   it('hides the destination form until confirmation is clicked', () => {
     render(<AccountMigration />);
@@ -251,7 +269,25 @@ describe('outbound account migration', () => {
     expect(screen.getByRole('status').textContent).toContain(
       'A move is still in progress. Enter the destination handle and try sending it again.',
     );
-    expect((screen.getByLabelText('New account handle') as HTMLInputElement).value).toBe('');
+    const input = screen.getByLabelText('New account handle') as HTMLInputElement;
+    expect(input.value).toBe('');
+    expect(input.readOnly).toBe(false);
+  });
+
+  it('retries a pending move to its stored destination', async () => {
+    mocks.migration.data = {
+      targetApId: 'https://misskey.io/users/9h5x0a1b2c',
+      targetHandle: '@new@misskey.io',
+      sent: false,
+    };
+    render(<AccountMigration />);
+    goToExport();
+    const input = screen.getByLabelText('New account handle') as HTMLInputElement;
+    expect(input.readOnly).toBe(true);
+    enterDestination('other@elsewhere.example');
+    expect(input.value).toBe('@new@misskey.io');
+    await confirmMove();
+    expect(mocks.move.mutateAsync).toHaveBeenCalledWith('@new@misskey.io');
   });
 
   it('falls back when the Ghost handle fails to load', () => {
@@ -269,5 +305,32 @@ describe('outbound account migration', () => {
     goToExport();
     expect(screen.queryByLabelText('New account handle')).toBeNull();
     expect(screen.queryByRole('button', { name: /I’ve added the alias/ })).toBeNull();
+  });
+});
+
+describe('getOutboundMigrationAvailability', () => {
+  const status = { targetApId: null, targetHandle: null, sent: false };
+
+  it('is available once the status has loaded', () => {
+    expect(getOutboundMigrationAvailability({ data: status, error: null })).toBe('available');
+  });
+
+  it('is unknown while loading or after a temporary failure', () => {
+    expect(getOutboundMigrationAvailability({ data: undefined, error: null })).toBe('unknown');
+    expect(
+      getOutboundMigrationAvailability({
+        data: undefined,
+        error: { message: 'Server error', statusCode: 500 },
+      }),
+    ).toBe('unknown');
+  });
+
+  it('is unavailable when forbidden, even with a cached status', () => {
+    expect(
+      getOutboundMigrationAvailability({
+        data: status,
+        error: { message: 'Forbidden', statusCode: 403 },
+      }),
+    ).toBe('unavailable');
   });
 });

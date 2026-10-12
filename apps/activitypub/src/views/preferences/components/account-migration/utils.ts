@@ -26,6 +26,29 @@ export function getAliasDisplayHandle(actorUri: string) {
     return actorUri;
   }
 }
+/**
+ * `unknown` covers loading and temporary failures: don't promise outbound moves
+ * yet, but keep the Export tab reachable so it can show its loading and retry states.
+ */
+export type OutboundMigrationAvailability = 'available' | 'unavailable' | 'unknown';
+
+// An older ActivityPub service without the migration API, or a staff user who isn't the Owner
+const UNAVAILABLE_STATUS_CODES = [401, 403, 404, 405, 501];
+
+export function getOutboundMigrationAvailability(migration: {
+  data?: unknown;
+  error: unknown;
+}): OutboundMigrationAvailability {
+  if (
+    isApiError(migration.error) &&
+    UNAVAILABLE_STATUS_CODES.includes(migration.error.statusCode)
+  ) {
+    return 'unavailable';
+  }
+
+  return migration.data ? 'available' : 'unknown';
+}
+
 export function getAliasErrorMessage(error: unknown) {
   if (isApiError(error)) {
     if (error.statusCode === 400) {
