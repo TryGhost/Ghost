@@ -97,6 +97,29 @@ describe('compactSource', () => {
     assert.notEqual(await read(root, 'node_modules/pkg/a.js'), MODULE);
   });
 
+  it('leaves no temporary files behind', async (t) => {
+    const root = await fixture(t, {
+      'node_modules/pkg/a.js': MODULE,
+      'node_modules/pkg/b.js': MODULE,
+    });
+
+    await compactSource(root);
+
+    assert.deepEqual((await fs.readdir(path.join(root, 'node_modules/pkg'))).sort(), [
+      'a.js',
+      'b.js',
+    ]);
+  });
+
+  it('does nothing for a tree without node_modules', async (t) => {
+    const root = await fixture(t, { 'core/server/a.js': MODULE });
+
+    const result = await compactSource(root);
+
+    assert.equal(result.files, 0);
+    assert.equal(await read(root, 'core/server/a.js'), MODULE);
+  });
+
   it('reports files esbuild cannot parse and leaves them alone', async (t) => {
     const root = await fixture(t, { 'node_modules/pkg/view.js': 'const v = <div />;\n' });
 

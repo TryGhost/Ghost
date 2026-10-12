@@ -24,6 +24,7 @@
  *   node scripts/compact-source.mts /home/ghost [--maps=<dir>] [--dry-run]
  */
 
+import { randomUUID } from 'node:crypto';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { parseArgs } from 'node:util';
@@ -75,8 +76,13 @@ async function* scripts(root: string, rel: string): AsyncGenerator<string> {
   let entries;
   try {
     entries = await fs.readdir(path.join(root, rel), { withFileTypes: true });
-  } catch {
-    return;
+  } catch (error) {
+    // A tree without node_modules has nothing to minify; anything else is a
+    // broken tree, and the build should stop rather than ship it half-done.
+    if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
+      return;
+    }
+    throw error;
   }
   for (const entry of entries) {
     const child = `${rel}/${entry.name}`;
@@ -124,9 +130,16 @@ export async function compactSource(
       continue;
     }
     // Replace the file rather than modifying an inode shared with pnpm's store.
+    // The temporary name is unique so an interrupted run can't leave one behind
+    // that a later run collides with.
     const { mode } = await fs.stat(absolute);
-    await fs.writeFile(`${absolute}.compact`, outcome.code, { mode, flag: 'wx' });
-    await fs.rename(`${absolute}.compact`, absolute);
+    const temporary = `${absolute}.${randomUUID()}.compact`;
+    try {
+      await fs.writeFile(temporary, outcome.code, { mode, flag: 'wx' });
+      await fs.rename(temporary, absolute);
+    } finally {
+      await fs.rm(temporary, { force: true });
+    }
     if (maps) {
       const mapFile = path.join(maps, `${rel}.map`);
       await fs.mkdir(path.dirname(mapFile), { recursive: true });
