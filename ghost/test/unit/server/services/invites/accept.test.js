@@ -1,9 +1,9 @@
 const assert = require('assert/strict');
 const sinon = require('sinon');
-const accept = require('../../../../../core/server/services/invitations/accept');
+const accept = require('../../../../../core/server/services/invites/accept');
 const models = require('../../../../../core/server/models');
 
-describe('Unit: services/invitations/accept', function () {
+describe('Unit: services/invites/accept', function () {
   let transactionStub;
   let findOneInviteStub;
   let findOneUserStub;
