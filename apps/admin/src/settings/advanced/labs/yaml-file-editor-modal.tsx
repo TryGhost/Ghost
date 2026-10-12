@@ -138,6 +138,7 @@ const YamlFileEditorModal: React.FC<YamlFileEditorModalProps> = ({
       cancelLabel="Close"
       footer={<></>}
       height="full"
+      scrolling={false}
       size="full"
       testId={testId}
       onClose={onClose}

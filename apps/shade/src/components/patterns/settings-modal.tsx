@@ -235,6 +235,7 @@ const SettingsModal = forwardRef<HTMLElement, SettingsModalProps>(
       'py-0',
       (size === 'full' || size === 'bleed' || height === 'full' || typeof height === 'number') &&
         'grow',
+      !scrolling && 'min-h-0',
       footer === false && 'pb-0',
     );
     const footerClasses = cn(
