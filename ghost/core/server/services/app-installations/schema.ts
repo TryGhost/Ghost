@@ -26,6 +26,9 @@ export const StoredManifest = DbJson(AppManifestSchema, {
   message: 'The stored manifest is not JSON.',
 });
 
+// Mirrors schema.js's `isIn` on the column, which is static config and cannot import this.
+export const AppInstallationManifestSource = z.enum(['install', 'approval', 'update']);
+
 /** A manifest an installation has run or been asked to approve, as the table holds it. */
 export const DbAppInstallationManifest = z.object({
   id: z.string(),
@@ -33,6 +36,7 @@ export const DbAppInstallationManifest = z.object({
   manifest_url: z.string(),
   manifest: StoredManifest,
   digest: z.string(),
+  source: AppInstallationManifestSource,
   requires_approval: DbBoolean,
   created_at: DbDate,
 });

@@ -6,6 +6,8 @@ import { actingContext, service } from '../../services/app-installations';
 interface InstallationOptions {
   id: string;
   context: unknown;
+  // The API framework passes `include` on as `withRelated`.
+  withRelated?: string[];
   [key: string]: unknown;
 }
 
@@ -62,11 +64,13 @@ const controller = {
 
   read: {
     headers: noCacheInvalidation,
-    options: ['id'],
-    validation: { options: { id: { required: true } } },
+    options: ['id', 'include'],
+    validation: { options: { id: { required: true }, include: { values: ['history'] } } },
     permissions: true,
     query(frame: ReadFrame) {
-      return service!.read(frame.options.id);
+      return service!.read(frame.options.id, {
+        withHistory: frame.options.withRelated?.includes('history') ?? false,
+      });
     },
   },
 

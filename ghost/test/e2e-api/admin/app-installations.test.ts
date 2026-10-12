@@ -443,6 +443,7 @@ describe('App installations Admin API', function () {
         manifest_url: MANIFEST_URL,
         manifest: serialised,
         digest: createHash('sha256').update(serialised).digest('hex'),
+        source: 'update',
         requires_approval: true,
         created_at: toDatabaseDate(new Date()),
       });
@@ -486,6 +487,8 @@ describe('App installations Admin API', function () {
         from_manifest_id: first.id,
         to_manifest_id: second.id,
       });
+      assert.equal(first.source, 'install');
+      assert.equal(second.source, 'approval');
     });
 
     it('changes nothing when approving what is already approved', async function () {
@@ -581,6 +584,12 @@ describe('App installations Admin API', function () {
       assert.equal((await manifestRows()).length, 2);
       const [, action] = await actions();
       assert.equal(JSON.parse(action.context).to_manifest_id, pendingId);
+
+      const { body } = await agent
+        .get(`apps/installations/${installed.id}/?include=history`)
+        .expectStatus(200);
+      const events = body.app_installations[0].history.map((entry: any) => entry.event);
+      assert.ok(events.includes('suspended'), `expected a suspended entry in ${events}`);
     });
 
     it('lets go of a pending manifest the app went back on, keeping no copy', async function () {
@@ -683,6 +692,69 @@ describe('App installations Admin API', function () {
       assert.equal(body.app_installations.length, 1);
       assert.equal(body.app_installations[0].id, installation.id);
       assert.equal(body.app_installations[0].status, 'uninstalled');
+    });
+
+    it('leaves out the history unless it is asked for', async function () {
+      const installation = await install();
+
+      const { body } = await agent.get(`apps/installations/${installation.id}/`).expectStatus(200);
+
+      assert.equal(body.app_installations[0].history, undefined);
+    });
+
+    it('tells what happened to the installation, newest first, and who decided', async function () {
+      const installed = await install();
+      serve(manifest({ name: 'Podcasts' }));
+      const { digest, installation } = await preview();
+      serve(manifest({ name: 'Podcasts' }));
+      await agent
+        .put(`apps/installations/${installed.id}/`)
+        .body({
+          app_installations: [
+            { manifest_url: MANIFEST_URL, digest, revision: installation.revision },
+          ],
+        })
+        .expectStatus(200);
+      await agent.delete(`apps/installations/${installed.id}/`).expectStatus(204);
+
+      const { body } = await agent
+        .get(`apps/installations/${installed.id}/?include=history`)
+        .expectStatus(200);
+
+      const { history } = body.app_installations[0];
+      assert.deepEqual(
+        history.map((entry: any) => [entry.event, entry.actor?.name]),
+        [
+          ['uninstalled', 'Joe Bloggs'],
+          ['changes_approved', 'Joe Bloggs'],
+          ['installed', 'Joe Bloggs'],
+        ],
+      );
+      assert.deepEqual(Object.keys(history[0]).sort(), ['actor', 'created_at', 'event', 'id']);
+      assert.equal(history[2].actor.id, owner.actor.id);
+      assert.match(history[0].created_at, /^\d{4}-\d{2}-\d{2}T/);
+    });
+
+    it('says where an approval moved the app to', async function () {
+      const installed = await install();
+      const movedTo = 'https://audio.example.org/ghost-app.json';
+      serve(manifest(), movedTo);
+      const { digest, installation } = await preview(movedTo);
+      serve(manifest(), movedTo);
+      await agent
+        .put(`apps/installations/${installed.id}/`)
+        .body({
+          app_installations: [{ manifest_url: movedTo, digest, revision: installation.revision }],
+        })
+        .expectStatus(200);
+
+      const { body } = await agent
+        .get(`apps/installations/${installed.id}/?include=history`)
+        .expectStatus(200);
+
+      const [approval] = body.app_installations[0].history;
+      assert.equal(approval.event, 'changes_approved');
+      assert.equal(approval.moved_to, 'audio.example.org');
     });
 
     it('answers 404 for an installation that does not exist', async function () {
