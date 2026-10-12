@@ -64,8 +64,8 @@ which are reported as errors.
 
 ### Automation run history
 
-With automation run analytics enabled, selecting a Performance row opens read-only
-history by run ID. Closing it restores the mounted editor and its unsaved draft.
+When analytics is configured, selecting a Performance row opens read-only history
+by run ID. Closing it restores the mounted editor and its unsaved draft.
 List filters, sorting, and pagination do not refresh the selected history. A new
 selection or Retry fetches it again; there is no polling or refresh control.
 

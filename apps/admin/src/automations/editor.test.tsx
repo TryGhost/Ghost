@@ -1060,7 +1060,7 @@ describe('AutomationEditor', () => {
     { status: 'active', label: 'Publish changes', nextStatus: 'active' },
     { status: 'active', label: 'Turn off', nextStatus: 'inactive' },
   ] as const)('saves settings only on explicit $label', async ({ status, label, nextStatus }) => {
-    mockLabs.current = { automationRunAnalytics: true, automationsPerTier: true };
+    mockLabs.current = { automationsPerTier: true };
     mockUseReadAutomation.mockReturnValue({
       data: { automations: [{ ...automationDetail, status }] },
       isLoading: false,
@@ -1111,7 +1111,7 @@ describe('AutomationEditor', () => {
   });
 
   it.each(['', '   '])('blocks saving blank name %j but allows empty description', (name) => {
-    mockLabs.current = { automationRunAnalytics: true, automationsPerTier: true };
+    mockLabs.current = { automationsPerTier: true };
     mockUseReadAutomation.mockReturnValue({
       data: { automations: [{ ...automationDetail, status: 'inactive' }] },
       isLoading: false,
@@ -1136,24 +1136,9 @@ describe('AutomationEditor', () => {
     );
   });
 
-  it('hides the Performance tab when run analytics is disabled', () => {
-    mockLabs.current = { automationRunAnalytics: false, automationsPerTier: true };
-    mockUseReadAutomation.mockReturnValue({
-      data: { automations: [automationDetail] },
-      isLoading: false,
-      isError: false,
-    });
-
-    renderEditor();
-    fireEvent.click(screen.getByRole('button', { name: 'Show automation sidebar' }));
-
-    expect(screen.queryByRole('tab', { name: 'Performance' })).not.toBeInTheDocument();
-  });
-
   it.each([false, true])(
     'keeps editing without performance when stats are unavailable (config loaded: %s)',
     (loaded) => {
-      mockLabs.current = { automationRunAnalytics: true };
       mockStats.current = undefined;
       mockStats.loaded = loaded;
       mockUseReadAutomation.mockReturnValue({
@@ -1173,8 +1158,7 @@ describe('AutomationEditor', () => {
     },
   );
 
-  it('opens performance for an active automation when run analytics is enabled', () => {
-    mockLabs.current = { automationRunAnalytics: true };
+  it('opens performance for an active automation when stats are configured', () => {
     mockUseReadAutomation.mockReturnValue({
       data: { automations: [automationDetail] },
       isLoading: false,
@@ -1188,7 +1172,7 @@ describe('AutomationEditor', () => {
   });
 
   it('resolves the sidebar after loading and preserves user choices on later updates', async () => {
-    mockLabs.current = { automationRunAnalytics: true, automationsPerTier: true };
+    mockLabs.current = { automationsPerTier: true };
     mockUseReadAutomation.mockReturnValue({
       isLoading: true,
       isError: false,

@@ -528,7 +528,6 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
   const [emailModalMode, setEmailModalMode] = useState<EmailModalMode>('edit');
   const [selectedStep, setSelectedStep] = useState<SelectedStep | null>(null);
   const [deleteConfirmationActionId, setDeleteConfirmationActionId] = useState<string | null>(null);
-  const automationRunAnalyticsEnabled = useFeatureFlag('automationRunAnalytics');
   const automationsPerTierEnabled = useFeatureFlag('automationsPerTier');
   const selectedStepId = selectedStep?.id ?? null;
   const emailModalStepId = searchParams.get(EMAIL_STEP_QUERY_PARAM);
@@ -701,10 +700,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
   );
   const automationAnalyticsEnabled = useFeatureFlag('automationAnalytics');
   const configQuery = useBrowseConfig();
-  const isPerformanceEnabled =
-    Boolean(automation?.id) &&
-    automationRunAnalyticsEnabled &&
-    Boolean(configQuery.data?.config.stats);
+  const isPerformanceEnabled = Boolean(automation?.id) && Boolean(configQuery.data?.config.stats);
   const isAutomationSidebarAvailable = isPerformanceEnabled || automationsPerTierEnabled;
   const [sidebar, setSidebar] = useState<{
     open: boolean;
@@ -732,14 +728,14 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
   const initialViewport = getInitialViewport(
     window.innerWidth - (isAutomationSidebarOpen && window.innerWidth >= 960 ? 480 : 0),
   );
-  const isHistoryOpen = automationRunAnalyticsEnabled && selectedRunId !== null;
+  const isHistoryOpen = selectedRunId !== null;
 
   useEffect(() => {
     // Opening an email via the URL returns to editing, including browser Back/Forward.
-    if ((!automationRunAnalyticsEnabled || emailModalStepId) && selectedRunId) {
+    if (emailModalStepId && selectedRunId) {
       onSelectRun(null);
     }
-  }, [automationRunAnalyticsEnabled, emailModalStepId, selectedRunId, onSelectRun]);
+  }, [emailModalStepId, selectedRunId, onSelectRun]);
 
   const handleSelectRun = (id: string, memberName: string) => {
     setSelectedMember({ runId: id, name: memberName });

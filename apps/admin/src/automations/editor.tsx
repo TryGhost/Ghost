@@ -100,7 +100,6 @@ const AutomationEditorContent: React.FC<{
   const { automation, isError: isReadError } = useAutomationForEditing(automationId);
 
   const editMutation = useEditAutomation();
-  const automationRunAnalyticsEnabled = useFeatureFlag('automationRunAnalytics');
   const automationsPerTierEnabled = useFeatureFlag('automationsPerTier');
   const [validationFeedback, setValidationFeedback] =
     React.useState<AutomationValidationAction | null>(null);
@@ -525,9 +524,7 @@ const AutomationEditorContent: React.FC<{
             ? 'settings'
             : !draft || !configData
               ? 'unknown'
-              : draft.status === 'active' &&
-                  automationRunAnalyticsEnabled &&
-                  configData.config.stats
+              : draft.status === 'active' && configData.config.stats
                 ? 'performance'
                 : 'closed'
         }
