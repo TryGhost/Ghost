@@ -29,7 +29,7 @@ fi
 
 printf -v project_args_string '%q ' "${project_args[@]}"
 
-# A planned test list (scripts/e2e-shards.ts) replaces Playwright's count-based --shard.
+# A planned test list (tools/scripts/e2e-shards.ts) replaces Playwright's count-based --shard.
 if [[ -n "${E2E_TEST_LIST:-}" ]]; then
     printf -v selection_args '%q ' "--test-list=${E2E_TEST_LIST}" --pass-with-no-tests
 else

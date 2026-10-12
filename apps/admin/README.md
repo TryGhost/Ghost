@@ -6,7 +6,7 @@ The React Ghost admin interface.
 
 The application uses `admin-x-framework` for API hooks and routing. Shade
 provides its application wrapper and design system. After Vite builds Admin,
-`pnpm assemble:assets` runs the standalone assembler in `scripts/` to copy
+`pnpm assemble:assets` runs the standalone assembler in `tools/scripts/` to copy
 `dist/` into `ghost/core/built/admin/`. It ships Koenig’s embed renderer
 separately in `ghost/core/built/embed-renderer/`.
 
@@ -167,7 +167,7 @@ pnpm nx run @tryghost/admin:build
 The assembler reads the individual build outputs, so it can also be rerun with
 `pnpm nx run @tryghost/admin:assemble:assets` after those builds. It does not run
 compilers or upload sourcemaps. See
-[Admin asset assembly](../../scripts/README.md#admin-asset-assembly) for the input
+[Admin asset assembly](../../tools/scripts/README.md#admin-asset-assembly) for the input
 requirements.
 
 This outputs to `apps/admin/dist/` and updates the assets in `ghost/core/built/admin/`.
