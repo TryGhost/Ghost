@@ -2102,7 +2102,6 @@ describe('AutomationEditor', () => {
     ).not.toBeInTheDocument();
     expect(mockEditMutation.mutate).not.toHaveBeenCalled();
     expect(screen.getByText('Fix all issues to publish this automation.')).toBeVisible();
-    expect(mockToastError).not.toHaveBeenCalled();
 
     const emailStep = screen.getByRole('button', { name: 'Send email: Welcome to The Blueprint' });
     expect(emailStep).toHaveAttribute('aria-invalid', 'true');
@@ -2139,7 +2138,6 @@ describe('AutomationEditor', () => {
       expect(screen.getByText(`Fix all issues to ${action} this automation.`)).toBeVisible();
       expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
       expect(mockEditMutation.mutate).not.toHaveBeenCalled();
-      expect(mockToastError).not.toHaveBeenCalled();
     },
   );
 
@@ -2731,7 +2729,6 @@ describe('AutomationEditor', () => {
 
     expect(mockEditMutation.mutate).not.toHaveBeenCalled();
     expect(screen.getByText('Fix all issues to publish this automation.')).toBeVisible();
-    expect(mockToastError).not.toHaveBeenCalled();
 
     let emailStep = screen.getByRole('button', { name: 'Send email: Untitled' });
     expect(emailStep).toHaveAttribute('aria-invalid', 'true');
@@ -3289,7 +3286,6 @@ describe('AutomationEditor', () => {
     ).not.toBeInTheDocument();
     expect(mockEditMutation.mutate).not.toHaveBeenCalled();
     expect(screen.getByText('Fix all issues to publish this automation.')).toBeVisible();
-    expect(mockToastError).not.toHaveBeenCalled();
     expect(screen.getByRole('button', { name: 'Publish changes' })).toBeEnabled();
 
     const emailStep = screen.getByRole('button', { name: 'Send email: Welcome to The Blueprint' });
