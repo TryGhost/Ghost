@@ -102,6 +102,39 @@ describe('GiftLinksService (integration)', function () {
     );
   });
 
+  for (const command of ['ensure', 'create'] as const) {
+    it(`rolls back ${command} when the live association cannot be saved`, async function () {
+      const existing = command === 'create' ? await service.create(CTX, postId) : undefined;
+      const before = await models.Base.knex('gift_links').where('post_id', postId);
+      const previousLiveLinks = await liveLinks(postId);
+      const recordAction = sinon.spy(models.Action, 'add');
+      // Fail the second write in the real transaction, after the history row
+      // has been inserted. A rejected transaction stub cannot prove rollback.
+      await models.Base.knex.raw(`
+        CREATE TRIGGER fail_gift_link_association
+        BEFORE INSERT ON post_gift_links FOR EACH ROW
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'live gift link write failed'
+      `);
+      try {
+        await assert.rejects(service[command](CTX, postId), /live gift link write failed/);
+      } finally {
+        await models.Base.knex.raw('DROP TRIGGER fail_gift_link_association');
+      }
+
+      assert.deepEqual(await models.Base.knex('gift_links').where('post_id', postId), before);
+      assert.deepEqual(await liveLinks(postId), previousLiveLinks);
+      sinon.assert.notCalled(recordAction);
+      if (existing) {
+        assert.equal((await service.getPostByToken(existing.giftLinks[0]!.token))?.id, postId);
+      }
+
+      // The failed command must not leave the connection or transaction stuck.
+      const recovered = await service[command](CTX, postId);
+      assert.equal((await liveLinks(postId))[0]?.token, recovered.giftLinks[0]?.token);
+      sinon.assert.calledOnce(recordAction);
+    });
+  }
+
   it('does not fail the command when recording the action throws', async function () {
     // Compose the port exactly as init() does, over a recorder that always fails:
     // the best-effort contract must hold through the wiring, not just in isolation.
