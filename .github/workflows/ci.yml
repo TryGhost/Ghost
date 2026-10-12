@@ -258,6 +258,7 @@ jobs:
             echo 'unit_test_projects_str=' >> "$GITHUB_OUTPUT"
             echo 'affected_i18n_projects=' >> "$GITHUB_OUTPUT"
             echo 'affected_playwright_matrix=[]' >> "$GITHUB_OUTPUT"
+            echo 'publish_projects=[]' >> "$GITHUB_OUTPUT"
             echo 'publish_public_apps_matrix=[]' >> "$GITHUB_OUTPUT"
             exit 0
           fi
@@ -327,6 +328,7 @@ jobs:
               PUBLISH_PROJECTS=$(pnpm nx show projects --affected --json)
             fi
           fi
+          echo "publish_projects=$PUBLISH_PROJECTS" >> "$GITHUB_OUTPUT"
           PUBLISH_PUBLIC_APPS_MATRIX=$(node tools/scripts/build-public-apps-matrix.js "$PUBLISH_PROJECTS")
           echo "publish_public_apps_matrix=$PUBLISH_PUBLIC_APPS_MATRIX" >> "$GITHUB_OUTPUT"
 
@@ -350,6 +352,7 @@ jobs:
       unit_test_projects_str: ${{ steps.affected.outputs.unit_test_projects_str }}
       unit_test_node_projects_str: ${{ steps.affected.outputs.unit_test_node_projects_str }}
       affected_playwright_matrix: ${{ steps.affected.outputs.affected_playwright_matrix }}
+      publish_projects: ${{ steps.affected.outputs.publish_projects }}
       publish_public_apps_matrix: ${{ steps.affected.outputs.publish_public_apps_matrix }}
       changed_i18n_apps: ${{ steps.affected.outputs.affected_i18n_projects != '' }}
       changed_core: ${{ steps.changed.outputs.core }}
@@ -2634,7 +2637,7 @@ jobs:
       && needs.job_lint.result == 'success'
       && (needs.job_typecheck.result == 'success' || needs.job_typecheck.result == 'skipped')
       && needs.job_unit-tests.result == 'success'
-      && contains(fromJSON(needs.job_setup.outputs.affected_projects), '@tryghost/shade')
+      && contains(fromJSON(needs.job_setup.outputs.publish_projects), '@tryghost/shade')
     runs-on: ubuntu-latest
     environment: npm-release
     concurrency:

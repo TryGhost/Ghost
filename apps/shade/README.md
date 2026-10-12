@@ -128,9 +128,10 @@ conditions are removed when packing.
 
 On `main`, CI builds and publishes Shade as `0.1.0-alpha.N` under npm's `next`
 tag after the normal checks pass. It uses the existing affected-project selection
-and version helper. The committed version selects the alpha series; npm supplies
-the latest counter. Dependency changes, CI changes and reruns can produce another
-alpha. Documentation-only changes follow the normal CI skip. No release commits
+and version helper. The committed version selects the alpha series;
+`tools/scripts/compute-next-app-version.cjs` increments the latest matching alpha
+published on npm. Dependency changes and reruns can produce another alpha.
+Documentation-only changes follow the normal CI skip. No release commits
 or Git tags are created.
 
 ## Notes
