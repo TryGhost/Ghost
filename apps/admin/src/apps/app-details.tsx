@@ -21,7 +21,9 @@ import {
   type AppInstallationHistoryEntry,
   useReadAppInstallation,
 } from '@tryghost/admin-x-framework/api/app-installations';
+import { useBrowseSettings } from '@tryghost/admin-x-framework/api/settings';
 import { APIError, getErrorMessage } from '@tryghost/admin-x-framework/errors';
+import { getSiteTimezone } from '@tryghost/admin-x-framework/utils/get-site-timezone';
 import { NotFound } from '@/shared/not-found';
 import { AccessIndicator } from './components/access-indicator';
 import { AppIcon } from './components/app-icon';
@@ -43,7 +45,10 @@ const Fact: React.FC<{ label: string; children: React.ReactNode }> = ({ label, c
   </div>
 );
 
-const History: React.FC<{ entries: AppInstallationHistoryEntry[] }> = ({ entries }) => {
+const History: React.FC<{ entries: AppInstallationHistoryEntry[]; timezone: string }> = ({
+  entries,
+  timezone,
+}) => {
   return (
     <ol className="m-0 list-none p-0" data-testid="app-history">
       {entries.map((entry) => (
@@ -62,7 +67,7 @@ const History: React.FC<{ entries: AppInstallationHistoryEntry[] }> = ({ entries
             )}
           </span>
           <Text as="span" className="shrink-0" size="sm" tone="secondary">
-            {formatDisplayDate(entry.created_at)}
+            {formatDisplayDate(entry.created_at, timezone)}
           </Text>
         </li>
       ))}
@@ -70,13 +75,16 @@ const History: React.FC<{ entries: AppInstallationHistoryEntry[] }> = ({ entries
   );
 };
 
-const Details: React.FC<{ installation: AppInstallation }> = ({ installation }) => {
+const Details: React.FC<{ installation: AppInstallation; timezone: string }> = ({
+  installation,
+  timezone,
+}) => {
   const { manifest, status, history = [] } = installation;
   const installer = installedBy(history);
 
   return (
-    <div className="flex flex-col gap-8 lg:flex-row lg:items-start lg:gap-12">
-      <aside className="flex w-full shrink-0 flex-col gap-6 lg:w-80">
+    <Stack className="lg:flex-row lg:items-start lg:gap-12" gap="2xl">
+      <Stack className="w-full shrink-0 lg:w-80" gap="xl">
         <Stack gap="md">
           <AppIcon manifest={manifest} size="xl" />
           <Stack gap="xs">
@@ -106,7 +114,7 @@ const Details: React.FC<{ installation: AppInstallation }> = ({ installation }) 
             </a>
           </Fact>
           <Fact label="Installed">
-            {formatDisplayDate(installation.created_at)}
+            {formatDisplayDate(installation.created_at, timezone)}
             {installer && (
               <Text as="span" tone="secondary">
                 {' '}
@@ -115,7 +123,7 @@ const Details: React.FC<{ installation: AppInstallation }> = ({ installation }) 
             )}
           </Fact>
         </div>
-      </aside>
+      </Stack>
 
       <Stack className="min-w-0 flex-1" gap="xl">
         {status === 'suspended' && (
@@ -143,29 +151,33 @@ const Details: React.FC<{ installation: AppInstallation }> = ({ installation }) 
           <Text as="h2" size="lg" weight="semibold">
             History
           </Text>
-          <History entries={history} />
+          <History entries={history} timezone={timezone} />
         </Stack>
       </Stack>
-    </div>
+    </Stack>
   );
 };
 
 export const AppDetails: React.FC = () => {
   const { installationId = '' } = useParams();
   const navigate = useNavigate();
-  const [uninstalling, setUninstalling] = useState<AppInstallation | null>(null);
+  const [uninstalling, setUninstalling] = useState(false);
+  const { data: settingsData } = useBrowseSettings({});
+  const timezone = getSiteTimezone(settingsData?.settings ?? []);
   const { data, error, isLoading, refetch } = useReadAppInstallation(installationId, {
     defaultErrorHandler: false,
   });
   const installation = data?.app_installations[0];
 
-  if (error instanceof APIError && error.response?.status === 404) {
+  // Ghost answers 422 rather than 404 for an id that isn't in its format, such as one typed
+  // into the address bar, and retrying can't help either way.
+  if (error instanceof APIError && [404, 422].includes(error.response?.status ?? 0)) {
     return <NotFound />;
   }
 
   let body: React.ReactNode;
   if (installation) {
-    body = <Details installation={installation} />;
+    body = <Details installation={installation} timezone={timezone} />;
   } else if (error) {
     body = (
       <Stack align="center" className="py-16" gap="md">
@@ -179,9 +191,9 @@ export const AppDetails: React.FC = () => {
     );
   } else if (isLoading) {
     body = (
-      <div className="flex justify-center py-16">
+      <Inline className="py-16" justify="center">
         <LoadingIndicator size="md" />
-      </div>
+      </Inline>
     );
   }
 
@@ -211,7 +223,7 @@ export const AppDetails: React.FC = () => {
               {installation && installation.status !== 'uninstalled' && (
                 <PageHeader.Actions>
                   <PageHeader.ActionGroup>
-                    <Button variant="outline" onClick={() => setUninstalling(installation)}>
+                    <Button variant="outline" onClick={() => setUninstalling(true)}>
                       Uninstall
                     </Button>
                   </PageHeader.ActionGroup>
@@ -223,8 +235,8 @@ export const AppDetails: React.FC = () => {
         </DetailPage>
       </Container>
       <UninstallDialog
-        installation={uninstalling}
-        onClose={() => setUninstalling(null)}
+        installation={uninstalling ? (installation ?? null) : null}
+        onClose={() => setUninstalling(false)}
         onUninstalled={() => navigate('/apps')}
       />
     </Box>

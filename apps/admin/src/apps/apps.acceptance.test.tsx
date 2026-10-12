@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { page } from 'vitest/browser';
+import { page, userEvent } from 'vitest/browser';
 import type {
   AppInstallation,
   AppInstallationHistoryEntry,
@@ -104,20 +104,22 @@ describe('Managing apps', () => {
   it('opens an app’s details in a new tab from a modified click on its row', async () => {
     fakeInstallations([installation()]);
     const openSpy = vi.spyOn(window, 'open').mockReturnValue(null);
+    try {
+      await renderAdminApp('/apps', { labs });
+      await appsScreen
+        .row('Podcast')
+        .getByText('Publish episodes and embed players.')
+        .click({ modifiers: ['ControlOrMeta'] });
 
-    await renderAdminApp('/apps', { labs });
-    await appsScreen
-      .row('Podcast')
-      .getByText('Publish episodes and embed players.')
-      .click({ modifiers: ['ControlOrMeta'] });
-
-    expect(openSpy).toHaveBeenCalledWith(
-      expect.stringMatching(/#\/apps\/details\/installation-1$/),
-      '_blank',
-      'noopener',
-    );
-    await expect.poll(currentRoute).toBe('/apps');
-    openSpy.mockRestore();
+      expect(openSpy).toHaveBeenCalledWith(
+        expect.stringMatching(/#\/apps\/details\/installation-1$/),
+        '_blank',
+        'noopener',
+      );
+      await expect.poll(currentRoute).toBe('/apps');
+    } finally {
+      openSpy.mockRestore();
+    }
   });
 
   it('shows who made the app, where it runs, who installed it, and its history', async () => {
@@ -230,6 +232,29 @@ describe('Managing apps', () => {
     await expect.element(appsScreen.uninstallDialog()).toBeVisible();
   });
 
+  it('keeps the dialog open while uninstalling, even on Escape', async () => {
+    fakeInstallations([installation()]);
+    let respond: (response: Response) => void = () => {};
+    fakeAdminEndpoint(
+      'DELETE',
+      '/apps/installations/installation-1/',
+      () =>
+        new Promise<Response>((resolve) => {
+          respond = resolve;
+        }),
+    );
+
+    await renderAdminApp('/apps', { labs });
+    await appsScreen.rowActions('Podcast').click();
+    await appsScreen.menuItem('Uninstall').click();
+    await appsScreen.uninstallDialog().getByRole('button', { name: 'Uninstall' }).click();
+    await userEvent.keyboard('{Escape}');
+
+    await expect.element(appsScreen.uninstallDialog()).toBeVisible();
+    respond(new Response(null, { status: 204 }));
+    await expect.element(appsScreen.uninstallDialog()).not.toBeInTheDocument();
+  });
+
   it('marks an app waiting for approval, and leads to the review', async () => {
     const suspended = installation({
       status: 'suspended',
@@ -299,14 +324,31 @@ describe('Managing apps', () => {
   });
 
   it('says when an app doesn’t exist', async () => {
+    const id = 'abcdefabcdefabcdefabcdef';
     fakeAdminEndpoint(
       'GET',
-      readPath('missing'),
+      readPath(id),
       () =>
         new Response(JSON.stringify({ errors: [{ message: 'App installation not found.' }] }), {
           status: 404,
           headers: { 'content-type': 'application/json' },
         }),
+    );
+
+    await renderAdminApp(`/apps/details/${id}`, { labs });
+
+    await expect.element(page.getByText('Page not found')).toBeVisible();
+  });
+
+  it('says an address that isn’t an app’s doesn’t exist, rather than offering a retry', async () => {
+    fakeAdminEndpoint(
+      'GET',
+      readPath('missing'),
+      () =>
+        new Response(
+          JSON.stringify({ errors: [{ type: 'ValidationError', message: 'Validation error.' }] }),
+          { status: 422, headers: { 'content-type': 'application/json' } },
+        ),
     );
 
     await renderAdminApp('/apps/details/missing', { labs });

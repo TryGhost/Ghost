@@ -61,7 +61,9 @@ export const UninstallDialog: React.FC<UninstallDialogProps> = ({
     <AlertDialog
       open={installation !== null}
       onOpenChange={(open) => {
-        if (!open) {
+        // Escape would otherwise close it mid-request, looking cancelled while the app is
+        // still uninstalled, and the late `onClose` could close another app's dialog.
+        if (!open && !isPending) {
           onClose();
         }
       }}
