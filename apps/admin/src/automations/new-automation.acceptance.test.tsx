@@ -34,7 +34,7 @@ describe('New automation', () => {
   it('creates a free draft locally, warns before leaving, then adds and edits without remounting', async () => {
     fakeAutomations([
       automation({ name: 'New Automation' }),
-      automation({ name: 'New Automation 3' }),
+      automation({ name: 'New Automation (3)' }),
     ]);
     const create = serveCreation();
     const edit = fakeAdminEndpoint('PUT', '/automations/created/', ({ body }) => ({
@@ -44,7 +44,7 @@ describe('New automation', () => {
     }));
     await renderAdminApp('/automations', { labs });
     await button('New automation').click();
-    await expect.element(page.getByText('New Automation 2', { exact: true })).toBeVisible();
+    await expect.element(page.getByText('New Automation (2)', { exact: true })).toBeVisible();
     await expect.element(button('Save')).toBeDisabled();
     await expect
       .element(page.getByText('Select a trigger', { exact: true }))
@@ -66,7 +66,7 @@ describe('New automation', () => {
     expect(create.requests[0].body).toMatchObject({
       automations: [
         {
-          name: 'New Automation 2',
+          name: 'New Automation (2)',
           trigger_tier_scope: 'free',
           status: 'inactive',
           actions: [{ type: 'wait' }],
