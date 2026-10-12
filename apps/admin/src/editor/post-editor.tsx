@@ -37,6 +37,7 @@ import { KoenigPostEditor } from './koenig-post-editor';
 import { textHasTk } from './tk';
 import { useOnscreenKeyboard } from './use-onscreen-keyboard';
 import type { FeatureImageBinding } from './session/feature-image-binding';
+import type { WritingFocus } from './writing-focus';
 
 export interface PostEditorProps {
   postType: PostType;
@@ -71,6 +72,8 @@ export interface PostEditorProps {
   handleRef?: React.Ref<PostEditorHandle>;
   /** From a settings panel toggle until everything moving with the panel has arrived. */
   settingsMoving?: boolean;
+  /** Whether the chrome here (the empty feature image bar and the footer) is hidden while the writer types. */
+  writingFocus?: WritingFocus;
 }
 
 export interface PostEditorHandle {
@@ -195,6 +198,7 @@ export function PostEditor({
   actionsSlotRef,
   handleRef,
   settingsMoving = false,
+  writingFocus,
 }: PostEditorProps) {
   const { darkMode, isAdmin7 } = useFocusContext();
   const isKeyboardOpen = useOnscreenKeyboard();
@@ -436,22 +440,25 @@ export function PostEditor({
           onMouseUp={focusEditorOnPaneClick}
         >
           <div className="relative mx-auto w-full max-w-[740px]">
-            <FeatureImage
-              alt={featureImage.featureImageAlt}
-              caption={featureImage.featureImageCaption}
-              captionKey={featureImage.featureImageCaptionKey}
-              cardConfig={cardConfig}
-              darkMode={darkMode}
-              faded={titleAndFeatureImageHidden}
-              image={featureImage.featureImage}
-              onAltChange={featureImage.onFeatureImageAltChange}
-              onCaptionBlur={featureImage.onFeatureImageCaptionBlur}
-              onCaptionChange={featureImage.onFeatureImageCaptionChange}
-              onCaptionFocus={featureImage.onFeatureImageCaptionFocus}
-              onImageChange={featureImage.onFeatureImageChange}
-              onImageClear={featureImage.onFeatureImageClear}
-              onTkCountChange={setFeatureImageTkCount}
-            />
+            {/* Only the bar offering an image is chrome; an image is the post's own. */}
+            <div data-writing-focus={hasFeatureImage ? undefined : writingFocus}>
+              <FeatureImage
+                alt={featureImage.featureImageAlt}
+                caption={featureImage.featureImageCaption}
+                captionKey={featureImage.featureImageCaptionKey}
+                cardConfig={cardConfig}
+                darkMode={darkMode}
+                faded={titleAndFeatureImageHidden}
+                image={featureImage.featureImage}
+                onAltChange={featureImage.onFeatureImageAltChange}
+                onCaptionBlur={featureImage.onFeatureImageCaptionBlur}
+                onCaptionChange={featureImage.onFeatureImageCaptionChange}
+                onCaptionFocus={featureImage.onFeatureImageCaptionFocus}
+                onImageChange={featureImage.onFeatureImageChange}
+                onImageClear={featureImage.onFeatureImageClear}
+                onTkCountChange={setFeatureImageTkCount}
+              />
+            </div>
             {titleAndFeatureImageHidden && hasFeatureImage && (
               <HiddenIndicator
                 className="-top-px"
@@ -558,59 +565,67 @@ export function PostEditor({
       {/* Below the small breakpoint the footer spans the screen: the word count at
           the left, the header's actions at the right, and no help link. Only its
           controls take pointer input, so the document between them stays reachable.
-          Actions that wrap grow upward, leaving the word count in the corner. */}
+          Actions that wrap grow upward, leaving the word count in the corner. The
+          footer moves with the settings panel and its contents fade while the
+          writer types, each on a transition of its own. */}
       <Inline
         align="end"
         className={cn(
-          'absolute right-[calc(var(--spacing)*(4+2*var(--editor-settings-progress,0)))] bottom-3 z-20 editor-settings-motion-[right] max-[500px]:inset-x-3 max-sm:pointer-events-none max-sm:*:pointer-events-auto min-[500px]:max-sm:left-4',
+          'pointer-events-none absolute right-[calc(var(--spacing)*(4+2*var(--editor-settings-progress,0)))] bottom-3 z-20 editor-settings-motion-[right] max-[500px]:inset-x-3 min-[500px]:max-sm:left-4',
           chromeEntrance && 'screen-enter-from-bottom',
         )}
-        gap="sm"
       >
-        {!isKeyboardOpen && (
-          <Text
-            as="span"
-            className={buttonVariants({
-              variant: null,
-              size: isAdmin7 ? 'default' : 'sm',
-              shape: 'pill',
-              isAdmin7,
-              className:
-                'bg-background/80 px-3 text-(length:--text-control) text-text-secondary backdrop-blur-sm',
-            })}
-            data-testid={editorWordCount}
-            tone="secondary"
-            weight="medium"
-          >
-            {formatNumber(wordCount)} {wordCount === 1 ? 'word' : 'words'}
-          </Text>
-        )}
-        {wordCountAccessory}
         <Inline
-          ref={actionsSlotRef}
-          // The on-screen keyboard would cover them, as it would the word count.
-          className={cn('ml-auto min-w-0 sm:hidden', isKeyboardOpen && 'hidden')}
-          justify="end"
-        />
-        <Button
-          className={cn(
-            'bg-background/80 text-text-secondary backdrop-blur-sm hover:text-foreground max-sm:hidden',
-            isAdmin7 && '[&_svg]:stroke-2!',
-          )}
-          shape="pill"
-          size={isAdmin7 ? 'icon' : 'icon-sm'}
-          variant="ghost"
-          asChild
+          align="end"
+          className="min-w-0 flex-1 max-sm:*:pointer-events-auto sm:pointer-events-auto"
+          data-writing-focus={writingFocus}
+          gap="sm"
         >
-          <a
-            aria-label="Editor help"
-            href="https://ghost.org/help/using-the-editor/"
-            rel="noopener noreferrer"
-            target="_blank"
+          {!isKeyboardOpen && (
+            <Text
+              as="span"
+              className={buttonVariants({
+                variant: null,
+                size: isAdmin7 ? 'default' : 'sm',
+                shape: 'pill',
+                isAdmin7,
+                className:
+                  'bg-background/80 px-3 text-(length:--text-control) text-text-secondary backdrop-blur-sm',
+              })}
+              data-testid={editorWordCount}
+              tone="secondary"
+              weight="medium"
+            >
+              {formatNumber(wordCount)} {wordCount === 1 ? 'word' : 'words'}
+            </Text>
+          )}
+          {wordCountAccessory}
+          <Inline
+            ref={actionsSlotRef}
+            // The on-screen keyboard would cover them, as it would the word count.
+            className={cn('ml-auto min-w-0 sm:hidden', isKeyboardOpen && 'hidden')}
+            justify="end"
+          />
+          <Button
+            className={cn(
+              'bg-background/80 text-text-secondary backdrop-blur-sm hover:text-foreground max-sm:hidden',
+              isAdmin7 && '[&_svg]:stroke-2!',
+            )}
+            shape="pill"
+            size={isAdmin7 ? 'icon' : 'icon-sm'}
+            variant="ghost"
+            asChild
           >
-            <LucideIcon.CircleHelp />
-          </a>
-        </Button>
+            <a
+              aria-label="Editor help"
+              href="https://ghost.org/help/using-the-editor/"
+              rel="noopener noreferrer"
+              target="_blank"
+            >
+              <LucideIcon.CircleHelp />
+            </a>
+          </Button>
+        </Inline>
       </Inline>
     </div>
   );

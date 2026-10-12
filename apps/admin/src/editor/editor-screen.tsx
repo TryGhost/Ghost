@@ -72,6 +72,7 @@ import {
 import { editorRead, useEditorSession } from './session/use-editor-session';
 import { usePostCardConfig } from './use-post-card-config';
 import { usePostSnippets } from './use-post-snippets';
+import { useWritingFocus } from './use-writing-focus';
 import type { EditorRecord } from './session/projection';
 
 function EditorLoadError({ message, onRetry }: { message: string; onRetry: () => void }) {
@@ -339,6 +340,17 @@ function EditorContent({
     return invalid;
   }, [session, settingsOpen, showExcerpt]);
   const featureImage = useFeatureImageBinding(session, session.loadedRecord, session.contentKey);
+  const writingAreaRef = useRef<HTMLDivElement>(null);
+  const editorImprovements = useFeatureFlag('admin7EditorImprovements', {
+    requestOptions: EDITOR_REQUEST_OPTIONS,
+  });
+  // The chrome stays while the settings panel is out or the status line reports
+  // a failed save or a failed newsletter.
+  const writingFocus = useWritingFocus({
+    enabled: editorImprovements,
+    blocked: settingsOpen || settingsMoving || session.state.kind === 'error' || didEmailFail,
+    writingAreaRef,
+  });
   const leaveGuard = useEditorLeaveGuard(session, postType);
   const liveVisibility = session.settings.visibility;
   const liveShowTitleAndFeatureImage = session.settings.show_title_and_feature_image;
@@ -417,6 +429,7 @@ function EditorContent({
               'screen-exit-chrome-top pointer-events-none relative z-20 shrink-0',
               chromeEntrance && 'screen-enter-from-top',
             )}
+            data-writing-focus={writingFocus}
           >
             <EditorHeader analyticsReturn={analyticsReturn} postType={postType}>
               {!analyticsReturn || didEmailFail || session.state.kind === 'error' ? (
@@ -452,7 +465,7 @@ function EditorContent({
             </EditorHeader>
           </Box>
           {/* The document reaches up behind the floating header. */}
-          <Box className="relative min-h-0 flex-1">
+          <Box ref={writingAreaRef} className="relative min-h-0 flex-1">
             <div className="-mt-(--editor-overlap) h-[calc(100%+var(--editor-overlap))] min-h-0">
               <PostEditor
                 key={session.contentKey}
@@ -471,6 +484,7 @@ function EditorContent({
                 }
                 titleError={titleError(session.bind.title)}
                 wordCountAccessory={<EmailSizeWarning post={publishPost} />}
+                writingFocus={writingFocus}
                 onExcerptBlur={session.commitField}
                 onTkCountChange={setTkCount}
               />
@@ -482,6 +496,7 @@ function EditorContent({
             'screen-exit-chrome-top absolute top-[calc(var(--spacing)*5+1px)] right-[calc(var(--spacing)*6+1px)] z-40 max-[500px]:top-3 max-[500px]:right-3',
             chromeEntrance && 'screen-enter-from-top',
           )}
+          data-writing-focus={writingFocus}
         >
           {settingsToggle}
         </Box>

@@ -17,21 +17,22 @@ again.
 
 ## The modules
 
-| Module                                           | What it is                                                                                                           |
-| ------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------- |
-| [`engine/`](engine/README.md)                    | The pure, React-free save engine, change tracker and slug machine. No React, no network, every effect through a port |
-| [`session/`](session/README.md)                  | The editing session that composes those three and is the editor's only writer                                        |
-| [`settings/`](settings/README.md)                | The settings panel beside the editor and the sections that edit a post's non-body fields                             |
-| [`publish/`](publish/README.md)                  | The publish options machine and the publish, update and email-failure flow                                           |
-| [`preview/`](preview/README.md)                  | The modal that shows a post as the site renders it or as the newsletter it would be sent as                          |
-| `editor-screen.tsx`                              | The route: loads the post, builds the session, and lays out the header, the surface and the sidebar                  |
-| `post-editor.tsx`, `koenig-post-editor.tsx`      | The title, excerpt and feature image around the Koenig instances, and the Koenig integration itself                  |
-| `editor-header-actions.tsx`, `editor-status.tsx` | The header's publish and preview controls, and the line saying where the post stands or why a save failed            |
-| `use-save-feedback.tsx`, `save-toast.ts`         | The toast and button progress that report an explicit save, and the pure copy they show                              |
-| `card-config.ts`, `use-post-card-config.ts`      | What Koenig's cards are told about the site and the post they are being edited in                                    |
-| `local-revisions.ts`                             | Browser-local copies of drafts holding unsaved work: how they are stored, trimmed and read back                      |
-| `email-size.ts`, `use-email-size.ts`             | The estimate of how large a post's newsletter would be, and when the editor makes it                                 |
-| `restore/`                                       | The `/restore` screen: lists this browser's local copies and creates a new draft from any of them                    |
+| Module                                           | What it is                                                                                                                   |
+| ------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------- |
+| [`engine/`](engine/README.md)                    | The pure, React-free save engine, change tracker and slug machine. No React, no network, every effect through a port         |
+| [`session/`](session/README.md)                  | The editing session that composes those three and is the editor's only writer                                                |
+| [`settings/`](settings/README.md)                | The settings panel beside the editor and the sections that edit a post's non-body fields                                     |
+| [`publish/`](publish/README.md)                  | The publish options machine and the publish, update and email-failure flow                                                   |
+| [`preview/`](preview/README.md)                  | The modal that shows a post as the site renders it or as the newsletter it would be sent as                                  |
+| `editor-screen.tsx`                              | The route: loads the post, builds the session, and lays out the header, the surface and the sidebar                          |
+| `post-editor.tsx`, `koenig-post-editor.tsx`      | The title, excerpt and feature image around the Koenig instances, and the Koenig integration itself                          |
+| `editor-header-actions.tsx`, `editor-status.tsx` | The header's publish and preview controls, and the line saying where the post stands or why a save failed                    |
+| `use-save-feedback.tsx`, `save-toast.ts`         | The toast and button progress that report an explicit save, and the pure copy they show                                      |
+| `card-config.ts`, `use-post-card-config.ts`      | What Koenig's cards are told about the site and the post they are being edited in                                            |
+| `local-revisions.ts`                             | Browser-local copies of drafts holding unsaved work: how they are stored, trimmed and read back                              |
+| `email-size.ts`, `use-email-size.ts`             | The estimate of how large a post's newsletter would be, and when the editor makes it                                         |
+| `restore/`                                       | The `/restore` screen: lists this browser's local copies and creates a new draft from any of them                            |
+| `writing-focus.ts`, `use-writing-focus.ts`       | Hides the editor's chrome while the writer types and brings it back on a pointer move or scroll (`admin7EditorImprovements`) |
 
 Two small modules are shared across all of the above. `request-options.ts`
 carries the editor's opt-out from the transport's session-expiry redirect, which
