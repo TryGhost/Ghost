@@ -53,7 +53,15 @@ describe('Identity tokens root', function () {
     originalModules = new Map(rootPaths.map((path) => [path, require.cache[path]]));
     rootPaths.forEach((path) => delete require.cache[path]);
     getSigningKey = sandbox.stub().resolves({ privateKey: keys[0].privateKey, kid: 'first' });
-    forPurpose = sandbox.stub(SigningKeyService.prototype, 'forPurpose').returns({ getSigningKey });
+    forPurpose = sandbox.stub(SigningKeyService.prototype, 'forPurpose').returns({
+      getSigningKey,
+      async getVerificationKey() {
+        throw new Error('Unexpected verification-key lookup');
+      },
+      async getJwks() {
+        throw new Error('Unexpected JWKS lookup');
+      },
+    });
     check = sandbox.stub(SigningKeyService.prototype, 'check').resolves();
     signingKeys = require(SIGNING_KEYS_PATH).default;
     sandbox
