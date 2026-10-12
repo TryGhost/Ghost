@@ -195,6 +195,8 @@ describe('Managing apps', () => {
     }
   });
 
+  // TODO(BER-3983): rests on the probe. With the bridge, a server that can't be reached is a
+  // handshake that never comes, so this becomes a timeout and the spec changes with it.
   it('calls an app unresponsive straight away when its server can’t be reached', async () => {
     fakeAdminEndpoint('GET', readPath('installation-1'), () => ({
       app_installations: [installation()],

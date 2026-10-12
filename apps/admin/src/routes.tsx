@@ -98,8 +98,9 @@ const appRoutes: RouteObject[] = [
     lazy: lazyComponent(lazyAppDetailsScreen),
   },
   {
-    // An installed app's page, in a sandboxed frame. `*` is left for the app's own
-    // pages, e.g. /apps/<id>/week, which the bridge passes on (BER-3983).
+    // An installed app's page, in a sandboxed frame.
+    // TODO(BER-3983): `*` is reserved for the app's own pages, e.g. /apps/<id>/week, which
+    // the bridge passes on. Nothing reads it yet.
     path: '/apps/:installationId/*',
     handle: { requiresAccess: canManageApps } satisfies AccessRouteHandle,
     lazy: lazyComponent(lazyAppPageScreen),

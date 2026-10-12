@@ -400,6 +400,9 @@ export function fakeEndpoint(
  * navigation there, which the service worker leaves to the browser and the Playwright
  * fakes in frames.ts take: the app page's reachability probe, in particular. `down` fails
  * every such request as a refused connection does.
+ *
+ * TODO(BER-3983): here for the app page's probe, which the bridge handshake replaces.
+ * Remove it then, unless another spec has come to rely on it.
  */
 export function fakeOriginRequests(
   origin: string,
