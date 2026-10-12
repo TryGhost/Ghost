@@ -198,6 +198,15 @@ body {
   --color-editor-placeholder: var(--editor-placeholder);
 }
 
+/* The editor is a reading surface, so Inter sets each size there in the design
+   made for it, as it does outside Admin: the body in its text design and the
+   title and headings in its finer display one. The rest of Admin pins Inter to
+   the text design (see the document root above). */
+.editor-optical-sizing {
+  font-optical-sizing: auto;
+  font-variation-settings: normal;
+}
+
 /* The writer's editor font (admin7EditorImprovements), set as `data-editor-font`
    on the editor. Koenig reads the --kg-font-* variables for the body and its
    headings; the title and excerpt read the --editor-display-* ones. Serif sets
@@ -210,15 +219,6 @@ body {
   --font-editor-sans: var(--font-sans);
   --font-editor-mono:
     ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace;
-}
-
-/* Inter carries a text design and a display design, and sets each size in the
-   one made for it when left to choose. Admin pins it to the text design; the
-   editor lets it choose, so the body reads in the text design and the title and
-   headings take the finer display one. */
-[data-editor-font] {
-  font-optical-sizing: auto;
-  font-variation-settings: normal;
 }
 
 [data-editor-font='sans'] {

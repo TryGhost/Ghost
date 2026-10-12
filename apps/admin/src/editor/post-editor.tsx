@@ -76,7 +76,7 @@ export interface PostEditorProps {
   settingsMoving?: boolean;
   /** Whether the chrome here (the empty feature image bar and the footer) is hidden while the writer types. */
   writingFocus?: WritingFocus;
-  /** The font the writer reads the post in, set on the canvas as `data-editor-font` (admin7EditorImprovements). */
+  /** The font the writer reads the post in, set on the canvas as `data-editor-font`. */
   font?: EditorFont;
   /** Takes the help link's place in the footer (admin7EditorImprovements). */
   fontPicker?: React.ReactNode;
@@ -427,7 +427,11 @@ export function PostEditor({
   };
 
   return (
-    <div className="relative h-full min-h-0" data-editor-font={font} data-testid={postEditor}>
+    <div
+      className="editor-optical-sizing relative h-full min-h-0"
+      data-editor-font={font}
+      data-testid={postEditor}
+    >
       <div
         ref={scrollPaneRef}
         className="h-full scroll-pt-(--editor-overlap) overflow-x-hidden overflow-y-auto"
