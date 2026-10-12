@@ -251,7 +251,11 @@ export const AppPage: React.FC = () => {
     body = <ActiveApp installation={installation} />;
   } else if (installation?.status === 'suspended') {
     body = <NeedsApproval installation={installation} />;
-  } else if (installation || (error instanceof APIError && error.response?.status === 404)) {
+  } else if (
+    installation ||
+    // Ghost returns 422, not 404, for a malformed id. Retrying won't help with either.
+    (error instanceof APIError && [404, 422].includes(error.response?.status ?? 0))
+  ) {
     body = <NotInstalled />;
   } else if (error) {
     body = (
