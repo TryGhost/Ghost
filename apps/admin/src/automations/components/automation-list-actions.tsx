@@ -1,6 +1,5 @@
 import { useRef, useState } from 'react';
 import { toast } from 'sonner';
-import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import {
   useSetAutomationStatus,
   type AutomationBrowseItem,
@@ -18,7 +17,6 @@ import AutomationStatusDialog from './automation-status-dialog';
 
 const AutomationListActions = ({ automation }: { automation: AutomationBrowseItem }) => {
   const mutation = useSetAutomationStatus();
-  const archiveEnabled = useFeatureFlag('automationsArchive');
   const triggerRef = useRef<HTMLButtonElement>(null);
   const [pendingStatus, setPendingStatus] = useState<'inactive' | null>(null);
 
@@ -34,10 +32,6 @@ const AutomationListActions = ({ automation }: { automation: AutomationBrowseIte
       },
     );
   };
-
-  if (automation.status !== 'active' && !archiveEnabled) {
-    return null;
-  }
 
   return (
     <>
@@ -66,21 +60,19 @@ const AutomationListActions = ({ automation }: { automation: AutomationBrowseIte
               Turn off
             </DropdownMenuItem>
           )}
-          {archiveEnabled && (
-            <DropdownMenuItem
-              disabled={mutation.isPending}
-              onSelect={() =>
-                changeStatus(automation.status === 'archived' ? 'inactive' : 'archived')
-              }
-            >
-              {automation.status === 'archived' ? (
-                <LucideIcon.ArchiveRestore className="size-4" />
-              ) : (
-                <LucideIcon.Archive className="size-4" />
-              )}
-              {automation.status === 'archived' ? 'Unarchive' : 'Archive'}
-            </DropdownMenuItem>
-          )}
+          <DropdownMenuItem
+            disabled={mutation.isPending}
+            onSelect={() =>
+              changeStatus(automation.status === 'archived' ? 'inactive' : 'archived')
+            }
+          >
+            {automation.status === 'archived' ? (
+              <LucideIcon.ArchiveRestore className="size-4" />
+            ) : (
+              <LucideIcon.Archive className="size-4" />
+            )}
+            {automation.status === 'archived' ? 'Unarchive' : 'Archive'}
+          </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
       <AutomationStatusDialog

@@ -126,23 +126,7 @@ describe('Automations', () => {
     mockUseCurrentUser.mockReturnValue({ data: { id: 'user-1', roles: [{ name: 'Owner' }] } });
   });
 
-  it.each([undefined, false])('hides "New automation" button when per-tier flag is %s', (flag) => {
-    mockUseBrowseConfig.mockReturnValue({
-      data: { config: { labs: { automationsPerTier: flag } } },
-      isLoading: false,
-    });
-
-    renderPage();
-
-    expect(screen.queryByRole('button', { name: 'New automation' })).not.toBeInTheDocument();
-  });
-
-  it('shows the "New automation" button when per-tier flag is enabled', () => {
-    mockUseBrowseConfig.mockReturnValue({
-      data: { config: { labs: { automationsPerTier: true } } },
-      isLoading: false,
-    });
-
+  it('shows the "New automation" button without optional labs flags', () => {
     renderPage();
 
     const button = screen.getByRole('button', { name: 'New automation' });
@@ -162,10 +146,6 @@ describe('Automations', () => {
     { role: 'Contributor', disabled: true },
     { role: undefined, disabled: true },
   ])('sets "New automation" disabled=$disabled for role=$role', ({ role, disabled }) => {
-    mockUseBrowseConfig.mockReturnValue({
-      data: { config: { labs: { automationsPerTier: true, automationsArchive: true } } },
-      isLoading: false,
-    });
     mockUseCurrentUser.mockReturnValue({
       data: role ? { id: 'user-1', roles: [{ name: role }] } : undefined,
     });
@@ -189,10 +169,6 @@ describe('Automations', () => {
     { count: 50, disabled: true },
     { count: 51, disabled: true },
   ])('sets "New automation" disabled=$disabled with count=$count', ({ count, disabled }) => {
-    mockUseBrowseConfig.mockReturnValue({
-      data: { config: { labs: { automationsPerTier: true } } },
-      isLoading: false,
-    });
     mockUseBrowseAutomations.mockReturnValue({
       data:
         count === undefined
@@ -219,7 +195,7 @@ describe('Automations', () => {
 
   it('counts hidden paid automations towards the limit', () => {
     mockUseBrowseConfig.mockReturnValue({
-      data: { config: { stripeDirect: true, labs: { automationsPerTier: true } } },
+      data: { config: { stripeDirect: true } },
       isLoading: false,
     });
     mockUseBrowseAutomations.mockReturnValue({

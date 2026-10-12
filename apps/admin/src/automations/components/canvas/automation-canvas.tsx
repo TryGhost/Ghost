@@ -44,7 +44,6 @@ import { type StepPickerType } from './step-picker';
 import { EmailPerformanceSidebar } from './email-performance-sidebar';
 import { isEmptyEmailLexical } from '@/automations/utils';
 import { useBrowseConfig } from '@tryghost/admin-x-framework/api/config';
-import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import { useLocation, useNavigate, useSearchParams } from '@tryghost/admin-x-framework';
 import type { EmailModalMode } from '@/automations/components/types';
 import { CANVAS_ZOOM_CONFIG, useCanvasViewport } from './use-canvas-viewport';
@@ -473,7 +472,6 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
   const [emailModalMode, setEmailModalMode] = useState<EmailModalMode>('edit');
   const [selectedStep, setSelectedStep] = useState<SelectedStep | null>(null);
   const [deleteConfirmationActionId, setDeleteConfirmationActionId] = useState<string | null>(null);
-  const automationsPerTierEnabled = useFeatureFlag('automationsPerTier');
   const triggerTierScope = automation?.trigger_tier_scope;
   let tiersEnabled: boolean;
   switch (triggerTierScope) {
@@ -676,7 +674,6 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
   );
   const configQuery = useBrowseConfig();
   const isPerformanceEnabled = Boolean(configQuery.data?.config.stats);
-  const isAutomationSidebarAvailable = isPerformanceEnabled || automationsPerTierEnabled;
   const [sidebar, setSidebar] = useState<{
     open: boolean;
     tab: 'unknown' | 'settings' | 'performance';
@@ -699,7 +696,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
       tab: current.tab === 'unknown' ? 'settings' : current.tab,
     }));
   }, []);
-  const isAutomationSidebarOpen = isAutomationSidebarAvailable && sidebar.open;
+  const isAutomationSidebarOpen = sidebar.open;
   const initialViewport = getInitialViewport(
     window.innerWidth - (isAutomationSidebarOpen && window.innerWidth >= 960 ? 480 : 0),
     initialTriggerTop,
@@ -914,31 +911,29 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
       data-testid="automation-canvas"
       gap="none"
     >
-      {isAutomationSidebarAvailable && (
-        <AutomationSidebar
-          automationId={automation.id}
-          description={automation.description}
-          isOpen={isAutomationSidebarOpen}
-          isRunSelectionDisabled={Boolean(emailModalAction) || Boolean(deleteConfirmationAction)}
-          metadata={!automationsPerTierEnabled ? 'hidden' : isHistoryOpen ? 'readonly' : 'editable'}
-          name={automation.name}
-          performanceEnabled={isPerformanceEnabled}
-          selectedRunId={selectedRunId}
-          selectedTab={sidebar.tab === 'unknown' ? 'settings' : sidebar.tab}
-          tiers={tierData?.tiers ?? []}
-          triggerTierIds={automation.trigger_tier_ids ?? []}
-          triggerTierScope={automation.trigger_tier_scope}
-          onDetailsChange={(details) => onChange({ ...automation, ...details })}
-          onOpenChange={(open) => {
-            setAutomationSidebarOpen(open);
-            if (open) {
-              clearDetail();
-            }
-          }}
-          onSelectRun={handleSelectRun}
-          onTabChange={(tab) => setSidebar((current) => ({ ...current, tab }))}
-        />
-      )}
+      <AutomationSidebar
+        automationId={automation.id}
+        description={automation.description}
+        isOpen={isAutomationSidebarOpen}
+        isRunSelectionDisabled={Boolean(emailModalAction) || Boolean(deleteConfirmationAction)}
+        metadata={isHistoryOpen ? 'readonly' : 'editable'}
+        name={automation.name}
+        performanceEnabled={isPerformanceEnabled}
+        selectedRunId={selectedRunId}
+        selectedTab={sidebar.tab === 'unknown' ? 'settings' : sidebar.tab}
+        tiers={tierData?.tiers ?? []}
+        triggerTierIds={automation.trigger_tier_ids ?? []}
+        triggerTierScope={automation.trigger_tier_scope}
+        onDetailsChange={(details) => onChange({ ...automation, ...details })}
+        onOpenChange={(open) => {
+          setAutomationSidebarOpen(open);
+          if (open) {
+            clearDetail();
+          }
+        }}
+        onSelectRun={handleSelectRun}
+        onTabChange={(tab) => setSidebar((current) => ({ ...current, tab }))}
+      />
       <Box
         ref={viewport.measureCanvas}
         className={cn(
