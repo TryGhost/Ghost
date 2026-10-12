@@ -10,6 +10,7 @@ import {
   hasErrorProblem,
 } from './theme-validation-issues';
 import { getHomepageUrl, useBrowseSite } from '@tryghost/admin-x-framework/api/site';
+import { Link } from '@tryghost/shade/components';
 import { toast } from 'sonner';
 import { useHandleError } from '@tryghost/admin-x-framework/hooks';
 
@@ -62,14 +63,9 @@ const ThemeInstalledModal: React.FC<ThemeInstalledModalProps & { onClose: () => 
         {homepageUrl ? (
           <>
             {' '}
-            <a
-              className="font-semibold text-foreground hover:underline"
-              href={homepageUrl}
-              rel="noreferrer"
-              target="_blank"
-            >
-              Take a look →
-            </a>
+            <Link href={homepageUrl} external>
+              Take a look
+            </Link>
           </>
         ) : null}
       </>

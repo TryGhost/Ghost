@@ -19,6 +19,7 @@ import {
   FieldGroup,
   FieldLabel,
   FieldSet,
+  Link,
   Select,
   SelectContent,
   SelectItem,
@@ -221,18 +222,13 @@ const DesignSettings: React.FC<{
           <FieldContent>
             <FieldLabel htmlFor="checkout-customize-design">Customize checkout design</FieldLabel>
             <FieldDescription>
-              {/* In a span, the link isn't a direct child, so FieldDescription's underline and
-                  hover styles don't apply to it. */}
+              {/* In a span, the link isn't a direct child, so FieldDescription's own link
+                  underline and hover styles don't override Link's. */}
               <span>
                 Overrides the{' '}
-                <a
-                  className="text-green"
-                  href="https://dashboard.stripe.com/settings/branding/checkout"
-                  rel="noopener noreferrer"
-                  target="_blank"
-                >
+                <Link href="https://dashboard.stripe.com/settings/branding/checkout" external>
                   checkout styling
-                </a>{' '}
+                </Link>{' '}
                 set in Stripe
               </span>
             </FieldDescription>

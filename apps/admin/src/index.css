@@ -254,11 +254,6 @@ body {
   pointer-events: auto;
 }
 
-/* Prose classes are for formatting arbitrary HTML that comes from the API */
-.gh-prose-links a {
-  color: #30cf43;
-}
-
 .dark .shade .gh-loading-orb-container {
   background-color: #000000;
 }

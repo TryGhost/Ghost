@@ -1,6 +1,6 @@
 import React from 'react';
 import TopLevelGroup from '@/settings/components/top-level-group';
-import { Button } from '@tryghost/shade/components';
+import { Button, Link } from '@tryghost/shade/components';
 import { checkStripeEnabled } from '@tryghost/admin-x-framework/api/settings';
 import { getPaidActiveTiers, useBrowseTiers } from '@tryghost/admin-x-framework/api/tiers';
 import { useBrowseOffers } from '@tryghost/admin-x-framework/api/offers';
@@ -45,14 +45,9 @@ const Offers: React.FC<{ keywords: string[] }> = ({ keywords }) => {
         <>
           Create discounts & coupons to boost new subscriptions and retain existing members.
           <span> </span>
-          <a
-            className="text-green"
-            href="https://ghost.org/help/offers"
-            rel="noopener noreferrer"
-            target="_blank"
-          >
+          <Link href="https://ghost.org/help/offers" external>
             Learn more
-          </a>
+          </Link>
         </>
       }
       keywords={keywords}
@@ -65,14 +60,11 @@ const Offers: React.FC<{ keywords: string[] }> = ({ keywords }) => {
         <div>
           <span>You must have an active tier to create an offer.</span>
           {` `}
-          <Button
-            className="h-auto p-1 font-normal"
-            type="button"
-            variant="link"
-            onClick={openTiers}
-          >
-            Manage tiers
-          </Button>
+          <Link asChild>
+            <button type="button" onClick={openTiers}>
+              Manage tiers
+            </button>
+          </Link>
         </div>
       ) : (
         ''
