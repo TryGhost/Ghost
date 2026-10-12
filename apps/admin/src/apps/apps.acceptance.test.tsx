@@ -312,6 +312,23 @@ describe('Managing apps', () => {
     await expect.element(appsScreen.notInstalled()).toBeVisible();
   });
 
+  it('says an app page couldn’t load in its own words, not the API’s', async () => {
+    fakeAdminEndpoint(
+      'GET',
+      readPath('installation-1'),
+      () =>
+        new Response(JSON.stringify({ errors: [{ message: 'Ghost is having a moment.' }] }), {
+          status: 500,
+          headers: { 'content-type': 'application/json' },
+        }),
+    );
+
+    await renderAdminApp(APP_ROUTE, { labs });
+
+    await expect.element(page.getByText('Couldn’t load this app. Please try again.')).toBeVisible();
+    await expect.element(page.getByText('Ghost is having a moment.')).not.toBeInTheDocument();
+  });
+
   it('opens an app in a new tab from a modified click on its row', async () => {
     fakeInstallations([installation()]);
     const openSpy = vi.spyOn(window, 'open').mockReturnValue(null);
