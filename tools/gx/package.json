@@ -1,0 +1,39 @@
+{
+  "name": "@internal/gx",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Ghost contributor CLI",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "lint": "eslint . --cache",
+    "test:unit": "node --test test/*.test.ts",
+    "test": "pnpm test:unit"
+  },
+  "dependencies": {
+    "@internal/scripts": "workspace:*"
+  },
+  "devDependencies": {
+    "@internal/cfg-eslint": "workspace:*",
+    "eslint": "catalog:"
+  },
+  "nx": {
+    "namedInputs": {
+      "packageTemplate": [
+        "{workspaceRoot}/packages/_template/**/*"
+      ]
+    },
+    "targets": {
+      "test:unit": {
+        "inputs": [
+          "default",
+          "^default",
+          "packageTemplate",
+          {
+            "runtime": "node -v"
+          }
+        ]
+      }
+    }
+  }
+}

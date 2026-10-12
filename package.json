@@ -25,7 +25,7 @@
     "dev:status": "node tools/scripts/dev-status.ts",
     "dev:gc": "node tools/scripts/dev-gc.ts",
     "fix": "pnpm store prune && node tools/scripts/clean.js && pnpm install",
-    "create-package": "node ./tools/scripts/create-package.js",
+    "create-package": "pnpm gx generate package",
     "knex-migrator": "cd ghost && pnpm exec node ../tools/scripts/with-ghost-dev-env.ts env NODE_OPTIONS='--conditions=source --import=tsx' knex-migrator",
     "bootstrap": "pnpm install && bash tools/scripts/init-submodules.sh && (test \"$(git config --local blame.ignoreRevsFile)\" = .git-blame-ignore-revs || git config --local blame.ignoreRevsFile .git-blame-ignore-revs)",
     "migrate:db": "cd ghost && pnpm exec node ../tools/scripts/with-ghost-dev-env.ts env NODE_OPTIONS='--conditions=source --import=tsx' knex-migrator migrate",
@@ -73,7 +73,8 @@
     "data:analytics:generate": "node tools/scripts/with-ghost-dev-env.ts node ghost/core/server/data/tinybird/scripts/docker-analytics-manager.js generate",
     "data:analytics:clear": "node tools/scripts/with-ghost-dev-env.ts node ghost/core/server/data/tinybird/scripts/docker-analytics-manager.js clear",
     "release": "node tools/scripts/release.js",
-    "inventory:typescript": "node tools/scripts/typescript-inventory.ts"
+    "inventory:typescript": "node tools/scripts/typescript-inventory.ts",
+    "gx": "node tools/gx/cli.ts"
   },
   "devDependencies": {
     "@playwright/test": "catalog:",

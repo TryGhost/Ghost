@@ -5,8 +5,8 @@ packages:
   - 'koenig/*'
   - 'packages/**'
   - '!packages/_template'
+  - 'tools/*'
   - 'tools/configs/*'
-  - 'tools/scripts'
 
 strictDepBuilds: true
 catalogMode: strict
@@ -430,6 +430,7 @@ versioning:
     - '@internal/cfg-typescript'
     - '@internal/cfg-vite-public-app'
     - '@internal/cfg-vitest'
+    - '@internal/gx'
     - '@internal/scripts'
     - '@tryghost/activitypub'
     - '@tryghost/adapter-base-jobs'

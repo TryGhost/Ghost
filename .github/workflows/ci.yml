@@ -171,9 +171,8 @@ jobs:
               - 'package.json'
               - 'pnpm-workspace.yaml'
               - 'tools/scripts/check-internal-packages.js'
-              - 'tools/scripts/create-package.js'
+              - 'tools/gx/**'
               - 'tools/scripts/lib/constants.js'
-              - 'tools/scripts/lib/package-template.js'
               - 'tools/scripts/test/check-internal-packages.test.js'
               - '.github/workflows/ci.yml'
             core:
