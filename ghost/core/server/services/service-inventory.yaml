@@ -1044,7 +1044,7 @@ services:
         tests:
           - test/unit/server/services/automations/automations-api.test.ts
           - test/unit/server/services/automations/service.test.ts
-          - test/e2e-api/admin/automations.test.js
+          - test/e2e-api/admin/automations.test.ts
           - test/integration/services/automations/database-automations-repository.test.ts
       construction:
         summary: >-
@@ -1122,7 +1122,7 @@ services:
           - test/unit/boot-email-analytics.test.ts
           - test/e2e-server/boot-readiness.isolated.test.ts
           - test/unit/server/services/automations/service.test.ts
-          - test/e2e-api/admin/automations.test.js
+          - test/e2e-api/admin/automations.test.ts
       lifetime:
         summary: >-
           Successful init keeps its original callbacks, scheduler, key owner and timer; there is
@@ -1175,7 +1175,7 @@ services:
           - test/unit/server/services/automations/fake-wait-hours-multiplier.test.ts
           - test/unit/server/services/automations/scheduler-poll-time.test.ts
           - test/unit/server/services/automations/poll.test.ts
-          - test/e2e-api/admin/automations.test.js
+          - test/e2e-api/admin/automations.test.ts
       resources:
         summary: >-
           The service owns two DomainEvents subscriptions and a referenced SoonestTimer with
@@ -1234,7 +1234,7 @@ services:
           - test/unit/server/services/automations/poll.test.ts
           - test/integration/services/automations/welcome-email-automation-poll.test.ts
           - test/e2e-api/admin/automation-run-history-execution.test.ts
-          - test/e2e-api/admin/automations.test.js
+          - test/e2e-api/admin/automations.test.ts
           - test/e2e-api/admin/automation-performance-stats.test.ts
           - test/e2e-api/admin/automation-runs.test.ts
     unverified: []
@@ -6557,7 +6557,7 @@ services:
         tests:
           - test/integration/services/member-welcome-emails.test.js
           - test/e2e-api/admin/automated-emails.test.ts
-          - test/e2e-api/admin/automations.test.js
+          - test/e2e-api/admin/automations.test.ts
       construction:
         summary: >-
           First init creates ghost-namespace i18n, subscribes to settings.locale.edited,
@@ -6608,7 +6608,7 @@ services:
           - core/server/data/seeders/importers/automations-importer.ts
         tests:
           - test/e2e-api/admin/automated-emails.test.ts
-          - test/e2e-api/admin/automations.test.js
+          - test/e2e-api/admin/automations.test.ts
           - test/integration/services/automations/welcome-email-automation-poll.test.ts
           - test/unit/server/services/automations/poll.test.ts
           - test/unit/server/services/stripe/services/webhooks/checkout-session-event-service.test.js
@@ -11414,7 +11414,7 @@ services:
         tests:
           - test/e2e-api/admin/stats.test.js
           - test/unit/server/services/explore-ping/explore-ping-service.test.js
-          - test/e2e-api/admin/automations.test.js
+          - test/e2e-api/admin/automations.test.ts
       startup:
         summary: >-
           After model/settings setup and awaited Stripe startup, boot calls stats.init in its
@@ -12611,7 +12611,7 @@ services:
           - core/server/services/automations/automation-member-search.ts
         tests:
           - test/e2e-api/admin/tinybird.test.js
-          - test/e2e-api/admin/automations.test.js
+          - test/e2e-api/admin/automations.test.ts
           - test/e2e-api/admin/automation-performance-stats.test.ts
           - test/e2e-api/admin/automation-runs.test.ts
           - test/e2e-api/admin/automation-member-search.test.ts
@@ -12636,7 +12636,7 @@ services:
           - core/server/services/automations/automations-api.ts
         tests:
           - test/unit/server/services/stats/stats.test.ts
-          - test/e2e-api/admin/automations.test.js
+          - test/e2e-api/admin/automations.test.ts
       lifetime:
         summary: >-
           Source establishes that root re-init/reset changes only the published reference,
@@ -12707,7 +12707,7 @@ services:
           - core/server/lib/request-external.js
         tests:
           - test/unit/server/services/stats/utils/tinybird.test.js
-          - test/e2e-api/admin/automations.test.js
+          - test/e2e-api/admin/automations.test.ts
           - test/e2e-api/admin/automation-member-search.test.ts
       failures:
         summary: >-
@@ -12733,7 +12733,7 @@ services:
         tests:
           - test/unit/server/services/tinybird/tinybird-service.test.js
           - test/unit/server/services/stats/utils/tinybird.test.js
-          - test/e2e-api/admin/automations.test.js
+          - test/e2e-api/admin/automations.test.ts
           - test/e2e-api/admin/automation-performance-stats.test.ts
           - test/e2e-api/admin/automation-runs.test.ts
     unverified: []
