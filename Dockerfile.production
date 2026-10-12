@@ -5,8 +5,6 @@
 #   deploy — build the prod dependency closure + a self-contained /home/ghost
 #            (build-only stage, never shipped)
 #   report — per-package sizes of that closure, for CI (build-only, not shipped)
-#   sourcemaps — source maps for the dependency code compact-source.mts
-#                minified (build-only, not shipped)
 #   core — server + production deps, no admin (Ghost-Pro base)
 #   full — core + built admin
 #   selfhost — full + the runtime contract of the Docker Official Image's `next`
@@ -97,14 +95,14 @@ RUN node ghost/scripts/prune.mts /home/ghost --profile=image --report=/image-rep
 # legal comments kept, ASCII output) so its source costs less heap: V8 keeps
 # every loaded file's source for the life of the process, at two bytes per
 # character if the file holds any character above U+00FF. Ghost's own code is
-# left alone so its stack frames keep their line numbers. Source maps go to
-# /sourcemaps for the `sourcemaps` target; see ghost/scripts/compact-source.mts.
-# Runs after prune so the report above still describes the unminified tree.
-# GHOST_COMPACT_SOURCE=false turns it off.
+# left alone so its stack frames keep their line numbers. Each minified file
+# gets a positions-only source map next to it, so `node --enable-source-maps`
+# can map dependency frames back to their original lines; see
+# ghost/scripts/compact-source.mts. Runs after prune so the report above still
+# describes the unminified tree. GHOST_COMPACT_SOURCE=false turns it off.
 ARG GHOST_COMPACT_SOURCE=true
-RUN mkdir -p /sourcemaps && \
-    if [ "$GHOST_COMPACT_SOURCE" = "true" ]; then \
-      node ghost/scripts/compact-source.mts /home/ghost --maps=/sourcemaps; \
+RUN if [ "$GHOST_COMPACT_SOURCE" = "true" ]; then \
+      node ghost/scripts/compact-source.mts /home/ghost; \
     fi
 
 # Fail the build now if the native module didn't install correctly (missing/broken
@@ -119,13 +117,6 @@ RUN cd /home/ghost && node -e "require('better-sqlite3'); console.log('better-sq
 FROM scratch AS report
 
 COPY --from=deploy /image-report.json /
-
-# ---- sourcemaps: maps for the minified dependency code (build-only) ----
-# For symbolicating dependency frames, e.g. uploading to Sentry. Not shipped:
-#   docker build --target=sourcemaps --output=type=local,dest=<dir> ...
-FROM scratch AS sourcemaps
-
-COPY --from=deploy /sourcemaps /
 
 # ---- Core: server + production deps ----
 FROM node:$NODE_VERSION-bookworm-slim AS core

@@ -9,9 +9,14 @@
  * stores it at two bytes per character when the file holds any character
  * above U+00FF. Every .js/.cjs/.mjs file under node_modules goes through
  * esbuild's whitespace and comment removal with ASCII output: identifiers are
- * not renamed, legal comments are kept, and with --maps a source map is written
- * per file. A file is replaced only when the result is smaller on the heap;
- * one esbuild cannot parse is left as it was.
+ * not renamed and legal comments are kept. A file is replaced only when the
+ * result is smaller on the heap; one esbuild cannot parse is left as it was.
+ *
+ * Each minified file gets a source map next to it (`<file>.map`, linked by a
+ * sourceMappingURL comment) holding positions only, not a copy of the original
+ * source, which would more than double the size of node_modules. They cost
+ * nothing at runtime; `node --enable-source-maps` maps dependency stack frames
+ * back to their original lines.
  *
  * Ghost's own code (core/) is not touched, so its stack frames keep their line
  * numbers; the local-source/latin1-only lint rule keeps it at one byte per
@@ -21,7 +26,7 @@
  * prune.mts. Unlike prune.mts it needs esbuild (a ghost devDependency), so it
  * does not ship in the release tarballs.
  *
- *   node scripts/compact-source.mts /home/ghost [--maps=<dir>] [--dry-run]
+ *   node scripts/compact-source.mts /home/ghost [--dry-run]
  */
 
 import { randomUUID } from 'node:crypto';
@@ -43,8 +48,12 @@ export type Outcome =
   | { status: 'unchanged'; reason: 'unparseable' | 'not smaller' }
   | { status: 'changed'; code: string; map: string; before: number; after: number };
 
-/** Minify one file's source. Pure; `sourcefile` only names the source map's source. */
-export function compactFile(source: string, sourcefile: string): Outcome {
+/**
+ * Minify one file's source. Pure. `fileName` is the file's own name: the map
+ * names it as the original source, so a mapped stack frame keeps the path it
+ * has today, and the code links the map at `<fileName>.map`.
+ */
+export function compactFile(source: string, fileName: string): Outcome {
   let result;
   try {
     result = transformSync(source, {
@@ -53,18 +62,20 @@ export function compactFile(source: string, sourcefile: string): Outcome {
       legalComments: 'inline',
       charset: 'ascii',
       sourcemap: 'external',
-      sourcefile,
+      sourcesContent: false,
+      sourcefile: fileName,
       logLevel: 'silent',
     });
   } catch {
     return { status: 'unchanged', reason: 'unparseable' };
   }
+  const code = `${result.code}//# sourceMappingURL=${fileName}.map\n`;
   const before = heapCost(source);
-  const after = heapCost(result.code);
+  const after = heapCost(code);
   if (after >= before) {
     return { status: 'unchanged', reason: 'not smaller' };
   }
-  return { status: 'changed', code: result.code, map: result.map, before, after };
+  return { status: 'changed', code, map: result.map, before, after };
 }
 
 /**
@@ -94,28 +105,49 @@ async function* scripts(root: string, rel: string): AsyncGenerator<string> {
   }
 }
 
+/**
+ * Write `content` to `file` by renaming a new file over it, never through an
+ * inode shared with pnpm's store. The temporary name is unique so an
+ * interrupted run can't leave one behind that a later run collides with.
+ */
+async function replaceFile(file: string, content: string, mode?: number): Promise<void> {
+  const temporary = `${file}.${randomUUID()}.compact`;
+  try {
+    await fs.writeFile(temporary, content, { mode, flag: 'wx' });
+    await fs.rename(temporary, file);
+  } finally {
+    await fs.rm(temporary, { force: true });
+  }
+}
+
 export interface CompactResult {
   files: number;
   changed: number;
   /** Heap cost of the changed files' source, before and after. */
   before: number;
   after: number;
+  /** Bytes of source maps written next to the changed files. */
+  mapBytes: number;
   unparseable: string[];
 }
 
 export async function compactSource(
   target: string,
-  { maps, dryRun = false }: { maps?: string; dryRun?: boolean } = {},
+  { dryRun = false }: { dryRun?: boolean } = {},
 ): Promise<CompactResult> {
-  const result: CompactResult = { files: 0, changed: 0, before: 0, after: 0, unparseable: [] };
-  if (maps && !dryRun) {
-    await fs.mkdir(maps, { recursive: true });
-  }
+  const result: CompactResult = {
+    files: 0,
+    changed: 0,
+    before: 0,
+    after: 0,
+    mapBytes: 0,
+    unparseable: [],
+  };
 
   for await (const rel of scripts(target, 'node_modules')) {
     result.files += 1;
     const absolute = path.join(target, rel);
-    const outcome = compactFile(await fs.readFile(absolute, 'utf8'), rel);
+    const outcome = compactFile(await fs.readFile(absolute, 'utf8'), path.basename(rel));
     if (outcome.status === 'unchanged') {
       if (outcome.reason === 'unparseable') {
         result.unparseable.push(rel);
@@ -126,25 +158,13 @@ export async function compactSource(
     result.changed += 1;
     result.before += outcome.before;
     result.after += outcome.after;
+    result.mapBytes += Buffer.byteLength(outcome.map);
     if (dryRun) {
       continue;
     }
-    // Replace the file rather than modifying an inode shared with pnpm's store.
-    // The temporary name is unique so an interrupted run can't leave one behind
-    // that a later run collides with.
     const { mode } = await fs.stat(absolute);
-    const temporary = `${absolute}.${randomUUID()}.compact`;
-    try {
-      await fs.writeFile(temporary, outcome.code, { mode, flag: 'wx' });
-      await fs.rename(temporary, absolute);
-    } finally {
-      await fs.rm(temporary, { force: true });
-    }
-    if (maps) {
-      const mapFile = path.join(maps, `${rel}.map`);
-      await fs.mkdir(path.dirname(mapFile), { recursive: true });
-      await fs.writeFile(mapFile, outcome.map);
-    }
+    await replaceFile(absolute, outcome.code, mode);
+    await replaceFile(`${absolute}.map`, outcome.map);
   }
   return result;
 }
@@ -154,7 +174,7 @@ const mib = (value: number): string => `${(value / 1024 / 1024).toFixed(1)} MiB`
 /** Print a summary. Callers embed this in their own build output. */
 export function reportCompact(result: CompactResult, { dryRun = false } = {}): void {
   console.log(
-    `  ${dryRun ? 'would minify' : 'minified'} ${result.changed} of ${result.files} scripts: heap cost of their source ${mib(result.before)} -> ${mib(result.after)}`,
+    `  ${dryRun ? 'would minify' : 'minified'} ${result.changed} of ${result.files} scripts: heap cost of their source ${mib(result.before)} -> ${mib(result.after)}, plus ${mib(result.mapBytes)} of source maps`,
   );
   if (result.unparseable.length) {
     console.log(`  left as they were (esbuild cannot parse them): ${result.unparseable.length}`);
@@ -168,21 +188,17 @@ if (import.meta.main) {
   const { values, positionals } = parseArgs({
     allowPositionals: true,
     options: {
-      maps: { type: 'string' },
       'dry-run': { type: 'boolean', default: false },
     },
   });
 
   const [target] = positionals;
   if (!target) {
-    console.error('Usage: compact-source.mts <target-dir> [--maps=<dir>] [--dry-run]');
+    console.error('Usage: compact-source.mts <target-dir> [--dry-run]');
     process.exit(1);
   }
 
   console.log(`Minifying dependency source in ${target}`);
-  const result = await compactSource(path.resolve(target), {
-    maps: values.maps,
-    dryRun: values['dry-run'],
-  });
+  const result = await compactSource(path.resolve(target), { dryRun: values['dry-run'] });
   reportCompact(result, { dryRun: values['dry-run'] });
 }

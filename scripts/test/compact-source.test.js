@@ -1,5 +1,6 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
+import { spawnSync } from 'node:child_process';
 import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
@@ -32,17 +33,21 @@ async function fixture(t, files) {
 const read = (root, rel) => fs.readFile(path.join(root, rel), 'utf8');
 
 describe('compactFile', () => {
-  it('minifies to ASCII, keeping names and legal comments, with a source map', () => {
+  it('minifies to ASCII, keeping names and legal comments, and links a positions-only map', () => {
     const outcome = compactFile(MODULE, 'greet.js');
     assert.equal(outcome.status, 'changed');
     assert.doesNotMatch(outcome.code, /a comment/);
     assert.match(outcome.code, /keep me/);
     assert.match(outcome.code, /function greet\(name\)/);
     assert.match(outcome.code, /\\u2014/);
+    assert.match(outcome.code, /\/\/# sourceMappingURL=greet\.js\.map\n$/);
     assert.equal(heapCost(outcome.code), outcome.code.length);
     assert.equal(outcome.before, heapCost(MODULE));
-    assert.equal(JSON.parse(outcome.map).sources[0], 'greet.js');
     assert.equal(run(outcome.code), run(MODULE));
+
+    const map = JSON.parse(outcome.map);
+    assert.deepEqual(map.sources, ['greet.js']);
+    assert.equal(map.sourcesContent, undefined);
   });
 
   it('leaves a file it cannot parse, or cannot shrink, as it was', () => {
@@ -55,25 +60,38 @@ describe('compactFile', () => {
 });
 
 describe('compactSource', () => {
-  it('minifies node_modules only, writing a map per file', async (t) => {
+  it('minifies node_modules only, writing a map next to each file', async (t) => {
+    const pkg = 'node_modules/.pnpm/pkg@1.0.0/node_modules/pkg';
     const root = await fixture(t, {
-      'node_modules/.pnpm/pkg@1.0.0/node_modules/pkg/index.js': MODULE,
-      'node_modules/.pnpm/pkg@1.0.0/node_modules/pkg/data.json': '{"a": 1}',
+      [`${pkg}/index.js`]: MODULE,
+      [`${pkg}/data.json`]: '{"a": 1}',
       'core/server/a.js': MODULE,
     });
-    const maps = `${root}-maps`;
-    t.after(() => fs.rm(maps, { recursive: true, force: true }));
 
-    const result = await compactSource(root, { maps });
+    const result = await compactSource(root);
 
     assert.equal(result.files, 1);
     assert.equal(result.changed, 1);
-    assert.doesNotMatch(
-      await read(root, 'node_modules/.pnpm/pkg@1.0.0/node_modules/pkg/index.js'),
-      /a comment/,
-    );
+    assert.ok(result.mapBytes > 0);
+    assert.doesNotMatch(await read(root, `${pkg}/index.js`), /a comment/);
+    assert.deepEqual(JSON.parse(await read(root, `${pkg}/index.js.map`)).sources, ['index.js']);
     assert.equal(await read(root, 'core/server/a.js'), MODULE);
-    await fs.access(path.join(maps, 'node_modules/.pnpm/pkg@1.0.0/node_modules/pkg/index.js.map'));
+  });
+
+  it('maps stack frames back to the original lines under --enable-source-maps', async (t) => {
+    const comment = '// enough comment text that minifying the file is worth it';
+    const lines = [comment, comment, comment, "throw new Error('boom');", ''];
+    const root = await fixture(t, { 'node_modules/pkg/fail.js': lines.join('\n') });
+
+    await compactSource(root);
+
+    const file = path.join(root, 'node_modules/pkg/fail.js');
+    const plain = spawnSync(process.execPath, [file], { encoding: 'utf8' });
+    const mapped = spawnSync(process.execPath, ['--enable-source-maps', file], {
+      encoding: 'utf8',
+    });
+    assert.match(plain.stderr, /fail\.js:1\b/);
+    assert.match(mapped.stderr, /fail\.js:4\b/);
   });
 
   it('skips symlinks and writes nothing on a dry run', async (t) => {
@@ -83,6 +101,7 @@ describe('compactSource', () => {
     const dry = await compactSource(root, { dryRun: true });
     assert.equal(dry.files, 1);
     assert.equal(dry.changed, 1);
+    assert.deepEqual(await fs.readdir(path.join(root, 'node_modules/pkg')), ['a.js']);
     assert.equal(await read(root, 'node_modules/pkg/a.js'), MODULE);
   });
 
@@ -107,7 +126,9 @@ describe('compactSource', () => {
 
     assert.deepEqual((await fs.readdir(path.join(root, 'node_modules/pkg'))).sort(), [
       'a.js',
+      'a.js.map',
       'b.js',
+      'b.js.map',
     ]);
   });
 
