@@ -208,9 +208,10 @@ export const PreviewModalContent: React.FC<PreviewModalProps> = ({
                         <LucideIcon.ChevronDown />
                       </Button>
                     </DropdownMenuTrigger>
+                    {/* legacy SettingsModal overlay is z-[1000]; keep the portalled menu above it */}
                     <DropdownMenuContent
                       align="end"
-                      className="min-w-[var(--radix-dropdown-menu-trigger-width)]"
+                      className="z-[9999] min-w-[var(--radix-dropdown-menu-trigger-width)]"
                     >
                       {siteLinkMenu.items.map((item) => (
                         <DropdownMenuItem key={item.key} onSelect={item.onSelect}>

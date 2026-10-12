@@ -1,5 +1,6 @@
 import CheckoutPreview from './checkout-preview';
 import ColorPickerField from '@/settings/components/color-picker-field';
+import FormSection from '@/settings/components/form-section';
 import IconToggleGroup from '@/settings/components/icon-toggle-group';
 import React, { useEffect, useState } from 'react';
 import ShippingSettings from './shipping-settings';
@@ -16,9 +17,8 @@ import {
   Field,
   FieldContent,
   FieldDescription,
-  FieldGroup,
   FieldLabel,
-  FieldSet,
+  FieldTitle,
   Link,
   Select,
   SelectContent,
@@ -216,108 +216,100 @@ const DesignSettings: React.FC<{
   ];
 
   return (
-    <FieldSet>
-      <FieldGroup>
-        <Field orientation="horizontal">
-          <FieldContent>
-            <FieldLabel htmlFor="checkout-customize-design">Customize checkout design</FieldLabel>
-            <FieldDescription>
-              {/* In a span, the link isn't a direct child, so FieldDescription's own link
-                  underline and hover styles don't override Link's. */}
-              <span>
-                Overrides the{' '}
-                <Link href="https://dashboard.stripe.com/settings/branding/checkout" external>
-                  checkout styling
-                </Link>{' '}
-                set in Stripe
-              </span>
-            </FieldDescription>
-          </FieldContent>
-          <Switch
-            checked={state.customize}
-            id="checkout-customize-design"
-            onCheckedChange={(customize) => onChange({ ...state, customize })}
+    <FormSection>
+      <Field orientation="horizontal">
+        <FieldContent>
+          <FieldLabel htmlFor="checkout-customize-design">Customize checkout design</FieldLabel>
+          <FieldDescription>
+            {/* In a span, the link isn't a direct child, so FieldDescription's own link
+                underline and hover styles don't override Link's. */}
+            <span>
+              Overrides the{' '}
+              <Link href="https://dashboard.stripe.com/settings/branding/checkout" external>
+                checkout styling
+              </Link>{' '}
+              set in Stripe
+            </span>
+          </FieldDescription>
+        </FieldContent>
+        <Switch
+          checked={state.customize}
+          id="checkout-customize-design"
+          onCheckedChange={(customize) => onChange({ ...state, customize })}
+        />
+      </Field>
+      {state.customize && (
+        <>
+          <ColorPickerField
+            direction="rtl"
+            swatches={backgroundSwatches}
+            title="Background color"
+            value={state.design.background_color}
+            onChange={(color) =>
+              setDesign('background_color', color ?? STRIPE_DEFAULT_DESIGN.background_color)
+            }
           />
-        </Field>
-        {state.customize && (
-          <>
-            <div className="mb-1">
-              <ColorPickerField
-                direction="rtl"
-                swatches={backgroundSwatches}
-                title="Background color"
-                value={state.design.background_color}
-                onChange={(color) =>
-                  setDesign('background_color', color ?? STRIPE_DEFAULT_DESIGN.background_color)
+          <ColorPickerField
+            direction="rtl"
+            swatches={[{ value: siteAccent, title: 'Site accent', hex: siteAccent }]}
+            title="Accent color"
+            value={state.design.button_color}
+            onChange={(color) =>
+              setDesign('button_color', color ?? STRIPE_DEFAULT_DESIGN.button_color)
+            }
+          />
+          <Inline className="w-full" gap="sm" justify="between">
+            <FieldTitle>Corners</FieldTitle>
+            <IconToggleGroup
+              label="Corners"
+              options={[
+                {
+                  value: 'rectangular',
+                  label: 'Squared',
+                  icon: <LucideIcon.Square className="size-3.5!" />,
+                },
+                {
+                  value: 'rounded',
+                  label: 'Rounded',
+                  icon: <LucideIcon.Squircle className="size-3.5!" />,
+                },
+                {
+                  value: 'pill',
+                  label: 'Pill',
+                  icon: <LucideIcon.Circle className="size-3.5!" />,
+                },
+              ]}
+              value={state.design.border_style}
+              onValueChange={(borderStyle) => setDesign('border_style', borderStyle)}
+            />
+          </Inline>
+          <Field className="justify-between" orientation="horizontal">
+            <FieldLabel htmlFor="checkout-font">Checkout font</FieldLabel>
+            <link href={STRIPE_FONTS_CSS} rel="stylesheet" />
+            <Select
+              value={state.design.font_family}
+              onValueChange={(value) => {
+                const font = STRIPE_FONT_OPTIONS.find((option) => option.value === value);
+                if (font) {
+                  setDesign('font_family', font.value);
                 }
-              />
-            </div>
-            <div className="mb-1">
-              <ColorPickerField
-                direction="rtl"
-                swatches={[{ value: siteAccent, title: 'Site accent', hex: siteAccent }]}
-                title="Accent color"
-                value={state.design.button_color}
-                onChange={(color) =>
-                  setDesign('button_color', color ?? STRIPE_DEFAULT_DESIGN.button_color)
-                }
-              />
-            </div>
-            <Inline className="w-full" gap="sm" justify="between">
-              <span>Corners</span>
-              <IconToggleGroup
-                label="Corners"
-                options={[
-                  {
-                    value: 'rectangular',
-                    label: 'Squared',
-                    icon: <LucideIcon.Square className="size-3.5!" />,
-                  },
-                  {
-                    value: 'rounded',
-                    label: 'Rounded',
-                    icon: <LucideIcon.Squircle className="size-3.5!" />,
-                  },
-                  {
-                    value: 'pill',
-                    label: 'Pill',
-                    icon: <LucideIcon.Circle className="size-3.5!" />,
-                  },
-                ]}
-                value={state.design.border_style}
-                onValueChange={(borderStyle) => setDesign('border_style', borderStyle)}
-              />
-            </Inline>
-            <Field className="justify-between" orientation="horizontal">
-              <FieldLabel className="font-normal" htmlFor="checkout-font">
-                Checkout font
-              </FieldLabel>
-              <link href={STRIPE_FONTS_CSS} rel="stylesheet" />
-              <Select
-                value={state.design.font_family}
-                onValueChange={(value) => {
-                  const font = STRIPE_FONT_OPTIONS.find((option) => option.value === value);
-                  if (font) {
-                    setDesign('font_family', font.value);
-                  }
-                }}
-              >
-                <SelectTrigger className="max-w-[200px]" id="checkout-font">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {STRIPE_FONT_OPTIONS.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
-                      <span style={{ fontFamily: fontFamilyOf(option.value) }}>{option.name}</span>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </Field>
-          </>
-        )}
-      </FieldGroup>
-    </FieldSet>
+              }}
+            >
+              <SelectTrigger className="max-w-[200px]" id="checkout-font">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {STRIPE_FONT_OPTIONS.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    <span style={{ fontFamily: fontFamilyOf(option.value) }}>{option.name}</span>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </Field>
+        </>
+      )}
+    </FormSection>
   );
 };
 
@@ -388,9 +380,7 @@ const CheckoutEditor: React.FC<{
           <TabsTrigger value="design">Design</TabsTrigger>
           <TabsTrigger value="fields">Fields</TabsTrigger>
         </TabsList>
-        <TabsContent className="mt-8" value="design">
-          {designSettings}
-        </TabsContent>
+        <TabsContent value="design">{designSettings}</TabsContent>
         <TabsContent className="mt-8" value="fields">
           <ShippingSettings
             errors={errors}

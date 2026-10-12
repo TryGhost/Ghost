@@ -1,23 +1,27 @@
-import { FieldTitle, ToggleGroup, ToggleGroupItem } from '@tryghost/shade/components';
+import IconToggleGroup from '@/settings/components/icon-toggle-group';
+import { FieldTitle } from '@tryghost/shade/components';
+import { Inline } from '@tryghost/shade/primitives';
+import { LucideIcon } from '@tryghost/shade/utils';
 import { useEmailDesign } from '@/settings/email-design/email-design-context';
 
 export const ImageCornersField = () => {
   const { settings, onSettingsChange } = useEmailDesign();
   return (
-    <div className="flex items-center justify-between">
+    <Inline className="w-full" gap="sm" justify="between">
       <FieldTitle>Image corners</FieldTitle>
-      <ToggleGroup
-        type="single"
+      <IconToggleGroup
+        label="Image corners"
+        options={[
+          { value: 'square', label: 'Squared', icon: <LucideIcon.Square className="size-3.5!" /> },
+          {
+            value: 'rounded',
+            label: 'Rounded',
+            icon: <LucideIcon.Squircle className="size-3.5!" />,
+          },
+        ]}
         value={settings.image_corners || 'square'}
-        onValueChange={(value: string) => value && onSettingsChange({ image_corners: value })}
-      >
-        <ToggleGroupItem aria-label="Square" value="square">
-          <span className="inline-block size-4 border-[1.5px] border-current" />
-        </ToggleGroupItem>
-        <ToggleGroupItem aria-label="Rounded" value="rounded">
-          <span className="inline-block size-4 rounded-sm border-[1.5px] border-current" />
-        </ToggleGroupItem>
-      </ToggleGroup>
-    </div>
+        onValueChange={(imageCorners) => onSettingsChange({ image_corners: imageCorners })}
+      />
+    </Inline>
   );
 };
