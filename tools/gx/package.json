@@ -1,5 +1,5 @@
 {
-  "name": "gx",
+  "name": "@internal/gx",
   "version": "0.0.0",
   "private": true,
   "description": "Ghost contributor CLI",

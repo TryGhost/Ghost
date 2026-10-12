@@ -14,7 +14,7 @@ helpers in `tools/scripts/lib/`. `pnpm create-package` remains a forwarding alia
 Run `pnpm install` after generating a package; custom destinations must be covered
 by the workspace globs.
 
-The `gx` workspace gives pnpm and Nx a unit for lint and tests. It runs directly
-from source and has no build or package exports. Run `pnpm --filter gx lint` and
-`pnpm --filter gx test` to validate it. Add further commands as focused migrations
+The `@internal/gx` workspace gives pnpm and Nx a unit for lint and tests. It runs directly
+from source and has no build or package exports. Run `pnpm --filter @internal/gx lint` and
+`pnpm --filter @internal/gx test` to validate it. Add further commands as focused migrations
 of existing tools.

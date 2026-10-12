@@ -5,9 +5,8 @@ packages:
   - 'koenig/*'
   - 'packages/**'
   - '!packages/_template'
+  - 'tools/*'
   - 'tools/configs/*'
-  - 'tools/scripts'
-  - 'tools/gx'
 
 strictDepBuilds: true
 catalogMode: strict
@@ -431,6 +430,7 @@ versioning:
     - '@internal/cfg-typescript'
     - '@internal/cfg-vite-public-app'
     - '@internal/cfg-vitest'
+    - '@internal/gx'
     - '@internal/scripts'
     - '@tryghost/activitypub'
     - '@tryghost/adapter-base-jobs'
@@ -450,7 +450,6 @@ versioning:
     - '@tryghost/nql-string'
     - '@tryghost/parse-email-address'
     - '@tryghost/shade'
-    - gx
     - '@tryghost/test-data'
 patchedDependencies:
   # The 8.x Elasticsearch client eagerly requires apache-arrow for two ES|QL
