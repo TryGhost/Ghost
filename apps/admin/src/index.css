@@ -6,7 +6,6 @@
 @import './element-styles.css';
 @import '@tryghost/shade/styles.css';
 @import './assets/fonts/inter-admin/fonts.css';
-@import './assets/fonts/inter/fonts.css';
 @import './pintura.css';
 
 /* Document root. Shade's spacing and type tokens assume a 10px rem. */
