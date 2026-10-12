@@ -393,7 +393,7 @@ describe('Automation sidebar request lifecycle', () => {
       ...flags,
       labs: { ...flags.labs, automationRunAnalytics: false },
     });
-    await expect.element(page.getByRole('button', { name: 'Wait: 1 day' })).toBeVisible();
+    await expect.element(page.getByRole('article', { name: 'Wait: 1 day' })).toBeVisible();
     expect(request.requests).toHaveLength(0);
     await expect.element(page.getByRole('tab', { name: 'Performance' })).not.toBeInTheDocument();
     await expect

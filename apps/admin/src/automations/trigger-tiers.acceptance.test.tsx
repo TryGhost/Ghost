@@ -315,13 +315,13 @@ describe('Automation trigger tiers', () => {
     await expect.element(picker()).not.toBeInTheDocument();
   });
 
-  it('keeps the old trigger UI and sends unchanged trigger fields when the flag is off', async () => {
+  it('keeps the tier picker and sends unchanged trigger fields when run analytics is absent', async () => {
     const save = serve({ trigger_tier_scope: 'selected_paid', trigger_tier_ids: ['bronze'] });
     await renderAdminApp('/automations/first', { labs: { automations: true } });
     await expect
-      .element(page.getByRole('button', { name: 'Trigger: Free member signed up' }))
+      .element(page.getByRole('article', { name: 'Paid subscription started' }))
       .toBeVisible();
-    await expect.element(picker()).not.toBeInTheDocument();
+    await expect.element(picker()).toBeVisible();
     await page.getByRole('button', { name: 'Publish', exact: true }).click();
     await page
       .getByRole('alertdialog')
