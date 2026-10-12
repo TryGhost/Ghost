@@ -19,8 +19,8 @@ export interface HistoryAction {
 }
 
 /**
- * The ids in an approval's context, each undefined when the context doesn't have it.
- * Approvals recorded before `inserted` was kept don't have it either.
+ * Manifest ids from the approval's context. Any of them can be missing.
+ * Older approvals never have `inserted`.
  */
 interface Approval {
   action: HistoryAction;
@@ -32,9 +32,9 @@ interface Approval {
 type Entry = AppInstallationHistoryEntry;
 
 /**
- * `manifests` must be oldest first, since the first one is the install. `manifestBodies`
- * holds the contents of the manifests approvals name, by id, which is all the history
- * reads them for: whether an approval moved the app.
+ * `manifests` must be oldest first, because the first one is the install.
+ * `manifestBodies` maps ids to manifest contents.
+ * It only needs the manifests that approvals point to.
  */
 export function buildHistory(
   manifests: HistoryManifest[],
@@ -51,7 +51,7 @@ export function buildHistory(
   ]);
 }
 
-/** The ids of the manifests approvals name, whose contents `buildHistory` needs. */
+/** The ids of the manifests that approvals point to. */
 export function manifestIdsApprovalsName(actions: HistoryAction[]): string[] {
   const ids = approvalsIn(actions).flatMap(({ from, to }) => [from, to]);
   return [...new Set(ids.filter((id): id is string => id !== undefined))];
@@ -74,10 +74,10 @@ function installOf(manifests: HistoryManifest[], actions: HistoryAction[]): Entr
 }
 
 /**
- * Every manifest after the first is a change Ghost picked up by itself: applied straight
- * away (`updated`) or held for an Administrator to approve (`suspended`). The exception is
- * a manifest an approval wrote itself, when the Administrator approved a newer version than
- * the one Ghost held: the approval's own entry covers that one.
+ * Each manifest after the first is a change Ghost picked up on its own.
+ * Ghost either applied it (`updated`) or held it for approval (`suspended`).
+ * Manifests created by an approval are skipped.
+ * The approval's own entry already covers them.
  */
 function updatesAndSuspensionsOf(manifests: HistoryManifest[], approvals: Approval[]): Entry[] {
   const writtenByApprovals = new Set(approvals.map(({ inserted }) => inserted));
@@ -137,9 +137,8 @@ function approvalsIn(actions: HistoryAction[]): Approval[] {
 }
 
 /**
- * Timestamps are only precise to the second, so entries from the same second are ordered
- * by id. Ghost's ObjectIds start with the time and end with a counter that goes up with
- * every id a Ghost process creates, so a later id was created later.
+ * Timestamps only go down to the second, so ties are broken by id.
+ * ObjectIds count up as Ghost creates them, so a higher id is newer.
  */
 function newestFirst(entries: Entry[]): Entry[] {
   return entries.sort(

@@ -36,9 +36,9 @@ export interface AppInstallationActionDetails {
   from_manifest_id?: string;
   to_manifest_id?: string;
   /**
-   * For an approval that wrote a new manifest row: that row's id. Approving the manifest
-   * that was waiting for approval, or going back to the approved one, writes no row, so
-   * the history knows not to hide those rows' own entries.
+   * The manifest row this approval created, if it created one.
+   * Some approvals reuse an existing row instead.
+   * The history uses this to know which entry to hide.
    */
   inserted_manifest_id?: string;
 }

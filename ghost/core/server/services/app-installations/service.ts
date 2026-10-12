@@ -190,8 +190,8 @@ export class AppInstallationsService {
   }
 
   /**
-   * Unlike `browse`, this also reads uninstalled installations, so their details can still
-   * be shown.
+   * Unlike `browse`, this also returns uninstalled apps.
+   * That way their details page still works.
    */
   async read(
     id: string,
@@ -220,7 +220,7 @@ export class AppInstallationsService {
         'created_at',
       );
     const actionRows = this.knex('actions as action')
-      // Left join, so a deleted user's actions stay in the history, without a name.
+      // Left join, so actions by deleted users still show, just without a name.
       .leftJoin('users as actor', 'actor.id', 'action.actor_id')
       .where({ 'action.resource_type': 'app_installation', 'action.resource_id': id })
       .orderBy('action.created_at', 'asc')
@@ -244,9 +244,9 @@ export class AppInstallationsService {
   }
 
   /**
-   * The contents of the manifests approvals name, which the history only needs to tell
-   * whether an approval moved the app. A row that no longer decodes, say after the
-   * manifest schema got stricter, is left out rather than failing the whole read.
+   * Loads the manifests that approvals point to.
+   * The history only uses them to tell if an approval moved the app.
+   * A row that no longer decodes is skipped, so one bad row can't break the page.
    */
   private async manifestBodies(ids: string[]): Promise<Map<string, AppManifest>> {
     if (ids.length === 0) {

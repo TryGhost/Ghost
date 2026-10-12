@@ -15,20 +15,20 @@ export interface AppInstallation {
   manifest: AppManifest;
   created_at: string;
   updated_at: string | null;
-  /** Newest first. Only when read with `include=history`. */
+  /** Newest first. Only included when read with `include=history`. */
   history?: AppInstallationHistoryEntry[];
 }
 
 /**
- * `actor` is null for changes Ghost made by itself (`updated`, `suspended`), and for an
- * install that staff history has no record of.
+ * `actor` is null when Ghost made the change itself.
+ * It's also null when there's no record of who installed the app.
  */
 export interface AppInstallationHistoryEntry {
   id: string;
   event: 'installed' | 'updated' | 'suspended' | 'changes_approved' | 'uninstalled';
   actor: { id: string; name: string | null } | null;
   created_at: string;
-  /** Set on a `changes_approved` entry when the approved changes moved the app to another host. */
+  /** The host the app moved to. Only set when an approval moved the app. */
   moved_to?: string;
 }
 
@@ -75,8 +75,8 @@ export interface ReviewedAppManifest {
 }
 
 const dataType = 'AppInstallationsResponseType';
-// Installing, approving and uninstalling each add an entry to staff history (Settings ›
-// History), so that list is refetched too.
+// These also add entries to staff history.
+// Refetch it so Settings › History stays up to date.
 const changedDataTypes = { dataType: [dataType, 'ActionsResponseType'] };
 
 export const useBrowseAppInstallations = createQuery<AppInstallationsResponseType>({
@@ -85,8 +85,8 @@ export const useBrowseAppInstallations = createQuery<AppInstallationsResponseTyp
 });
 
 /**
- * Unlike `useBrowseAppInstallations`, this also reads uninstalled installations, so an
- * uninstalled app's details page still loads.
+ * Unlike `useBrowseAppInstallations`, this also returns uninstalled apps.
+ * That way their details page still loads.
  */
 export const useReadAppInstallation = createQueryWithId<AppInstallationsResponseType>({
   dataType,

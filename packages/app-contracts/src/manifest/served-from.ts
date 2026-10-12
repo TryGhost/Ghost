@@ -5,8 +5,8 @@ function pageUrl(manifest: AppManifest): URL {
   const page =
     manifest.surfaces.find((surface) => surface.type === 'admin_page') ?? manifest.surfaces[0];
   if (!page) {
-    // Parsing rejects a manifest without surfaces, so this only throws on a bug. It's a
-    // plain Error because this package's root entry point has no dependencies.
+    // Parsing rejects manifests without surfaces, so this only happens on a bug.
+    // It's a plain Error because this entry point can't have dependencies.
     // eslint-disable-next-line ghost/ghost-custom/no-native-error
     throw new Error('The manifest has no surfaces');
   }
@@ -14,14 +14,14 @@ function pageUrl(manifest: AppManifest): URL {
 }
 
 /**
- * The host the app's page loads from, such as `podcast.example.com`. That's where the app
- * runs, which can differ from where its manifest is hosted.
+ * The host the app's page loads from, like `podcast.example.com`.
+ * This is where the app runs. It can differ from where the manifest is hosted.
  */
 export function servedFrom(manifest: AppManifest): string {
   return pageUrl(manifest).host;
 }
 
-/** Whether the app's page loads from localhost. Ghost only allows such apps in development. */
+/** True when the app's page is on localhost. Ghost only allows that in development. */
 export function isDevelopmentApp(manifest: AppManifest): boolean {
   return isLocalhost(pageUrl(manifest).hostname);
 }
@@ -37,9 +37,9 @@ export interface AppMove {
 }
 
 /**
- * Whether the app moved to another host between two versions, and from where to where. A
- * new page host counts first; otherwise a new manifest host does. A new path on the same
- * host isn't a move, because the same party still serves the app.
+ * Returns the old and new host if the app moved, or null if it didn't.
+ * A new page host counts first, then a new manifest host.
+ * A new path on the same host isn't a move.
  */
 export function movedBetween(approved: ServedManifest, reviewed: ServedManifest): AppMove | null {
   const pages = { from: servedFrom(approved.manifest), to: servedFrom(reviewed.manifest) };

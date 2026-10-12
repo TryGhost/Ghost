@@ -169,8 +169,8 @@ export const AppDetails: React.FC = () => {
   });
   const installation = data?.app_installations[0];
 
-  // Ghost answers 422 rather than 404 for an id that isn't in its format, such as one typed
-  // into the address bar, and retrying can't help either way.
+  // Ghost returns 422, not 404, for a malformed id.
+  // Both mean there's nothing to show, and retrying won't help.
   if (error instanceof APIError && [404, 422].includes(error.response?.status ?? 0)) {
     return <NotFound />;
   }

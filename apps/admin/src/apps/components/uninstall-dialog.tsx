@@ -21,8 +21,8 @@ import { AdminLink } from '@/shared/admin-link';
 interface UninstallDialogProps {
   installation: AppInstallation | null;
   /**
-   * Called whenever the dialog closes, including after a successful uninstall, just before
-   * `onUninstalled`.
+   * Called whenever the dialog closes.
+   * That includes after a successful uninstall, just before `onUninstalled`.
    */
   onClose: () => void;
   onUninstalled?: (installation: AppInstallation) => void;
@@ -34,8 +34,8 @@ export const UninstallDialog: React.FC<UninstallDialogProps> = ({
   onUninstalled,
 }) => {
   const { mutateAsync: uninstall, isPending } = useUninstallAppInstallation();
-  // `installation` is already null while the dialog animates closed, so keep the last one
-  // to still show its name in the title.
+  // `installation` turns null as soon as the dialog starts to close.
+  // Keep the last one so the title doesn't go blank during the animation.
   const [shown, setShown] = useState(installation);
   if (installation && installation !== shown) {
     setShown(installation);
@@ -61,8 +61,8 @@ export const UninstallDialog: React.FC<UninstallDialogProps> = ({
     <AlertDialog
       open={installation !== null}
       onOpenChange={(open) => {
-        // Escape would otherwise close it mid-request, looking cancelled while the app is
-        // still uninstalled, and the late `onClose` could close another app's dialog.
+        // Stay open while the request runs.
+        // Otherwise Escape makes it look cancelled when the app is still uninstalled.
         if (!open && !isPending) {
           onClose();
         }
