@@ -4,10 +4,7 @@ import path from 'node:path';
 import { promisify } from 'node:util';
 
 import { ROOT_DIR } from './lib/constants.js';
-import {
-  applyPackageTemplateTokens,
-  isValidPackageName,
-} from '@tryghost/dev-tools/package-template';
+import { applyPackageTemplateTokens, isValidPackageName } from './lib/package-template.js';
 
 const execFileAsync = promisify(execFile);
 

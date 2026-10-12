@@ -1,6 +1,16 @@
 import { nodeLibConfig } from '@internal/cfg-eslint';
 
-export default nodeLibConfig({
-  // Contributor commands report errors directly and run using Node built-ins.
-  extraSrcRules: { 'ghost/ghost-custom/no-native-error': 'off' },
-});
+const cliRules = {
+  // Executable commands use top-level await and report native errors directly.
+  'no-restricted-syntax': 'off',
+  'ghost/ghost-custom/no-native-error': 'off',
+};
+
+export default [
+  ...nodeLibConfig({ srcGlobs: ['cli.ts'], extraSrcRules: cliRules }),
+  ...nodeLibConfig({
+    typescript: false,
+    srcGlobs: ['create-package.js'],
+    extraSrcRules: cliRules,
+  }),
+];

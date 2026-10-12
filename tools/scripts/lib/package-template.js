@@ -1,13 +1,10 @@
 const PACKAGE_NAME_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
-export function isValidPackageName(name: string) {
+export function isValidPackageName(name) {
   return PACKAGE_NAME_PATTERN.test(name);
 }
 
-export function applyPackageTemplateTokens(
-  text: string,
-  { name, directory, description }: { name: string; directory: string; description: string },
-) {
+export function applyPackageTemplateTokens(text, { name, directory, description }) {
   return text
     .replaceAll('{{NAME}}', name)
     .replaceAll('{{DIRECTORY}}', directory)

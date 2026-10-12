@@ -184,7 +184,6 @@ Caddyfile
 /ghost/*/build
 /koenig/*/build
 /packages/**/build
-/tools/*/build
 # Typescript build artifacts
 tsconfig.tsbuildinfo
 

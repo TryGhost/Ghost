@@ -442,7 +442,6 @@ versioning:
     - '@tryghost/api-framework'
     - '@tryghost/app-contracts'
     - '@tryghost/checkout'
-    - '@tryghost/dev-tools'
     - '@tryghost/e2e'
     - '@tryghost/i18n'
     - '@tryghost/image-transform'
@@ -451,6 +450,7 @@ versioning:
     - '@tryghost/nql-string'
     - '@tryghost/parse-email-address'
     - '@tryghost/shade'
+    - gx
     - '@tryghost/test-data'
 patchedDependencies:
   # The 8.x Elasticsearch client eagerly requires apache-arrow for two ES|QL

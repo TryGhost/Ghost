@@ -18,7 +18,6 @@
     "@pnpm/releasing.versioning": "catalog:",
     "@pnpm/workspace.workspace-manifest-reader": "catalog:",
     "@sentry/bundler-plugin-core": "catalog:",
-    "@tryghost/dev-tools": "workspace:*",
     "camelcase-keys": "10.0.3",
     "execa": "catalog:",
     "js-yaml": "catalog:",
