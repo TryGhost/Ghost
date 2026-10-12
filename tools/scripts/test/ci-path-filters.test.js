@@ -27,13 +27,17 @@ describe('CI path filters', () => {
     }
   });
 
-  it('excludes Markdown and MDX after all positive core patterns', async () => {
+  it('excludes documentation after all positive core patterns', async () => {
     const patterns = await getFilterPatterns('core');
     const positivePatterns = patterns
       .map((pattern, index) => ({ pattern, index }))
       .filter(({ pattern }) => !pattern.startsWith('!'));
 
-    for (const exclusion of ['!**/*.md', '!**/*.mdx']) {
+    for (const exclusion of [
+      '!**/*.md',
+      '!**/*.mdx',
+      '!ghost/core/server/services/service-inventory.yaml',
+    ]) {
       const exclusionIndex = patterns.indexOf(exclusion);
       assert.notStrictEqual(exclusionIndex, -1);
       assert.ok(
@@ -54,6 +58,83 @@ describe('CI path filters', () => {
     assert.ok(anyCode.includes('!**/*.mdx'));
     assert.ok(e2e.includes('!**/*.md'));
     assert.ok(e2e.includes('!**/*.mdx'));
+  });
+
+  it('treats the service inventory as docs and keeps code checks for mixed changes', async () => {
+    const inventory = 'ghost/core/server/services/service-inventory.yaml';
+    const docs = await getFilterPatterns('docs');
+    assert.ok(docs.some((pattern) => picomatch(pattern, { dot: true })(inventory)));
+
+    for (const filterName of ['core', 'any-code', 'e2e']) {
+      const patterns = await getFilterPatterns(filterName);
+      const positives = patterns.filter((pattern) => !pattern.startsWith('!'));
+      const exclusions = patterns.filter((pattern) => pattern.startsWith('!'));
+      const matches = (path) =>
+        (positives.length === 0 ||
+          positives.some((pattern) => picomatch(pattern, { dot: true })(path))) &&
+        exclusions.every((pattern) => picomatch(pattern, { dot: true })(path));
+      const metadata = [inventory, 'ghost/core/server/services/README.md'];
+
+      assert.strictEqual(metadata.some(matches), false, filterName);
+      for (const runtime of [
+        'ghost/core/server/services/identity-tokens/index.ts',
+        'ghost/core/server/services/other-metadata.yaml',
+        '.github/workflows/ci.yml',
+      ]) {
+        assert.strictEqual([...metadata, runtime].some(matches), true, `${filterName}: ${runtime}`);
+      }
+    }
+
+    const anyCode = await getFilterPatterns('any-code');
+    assert.ok(
+      anyCode.every((pattern) =>
+        picomatch(pattern, { dot: true })(
+          'ghost/test/unit/server/services/service-inventory.test.ts',
+        ),
+      ),
+      'Changes to the inventory validator must still run code checks',
+    );
+  });
+
+  it('requires focused validation for inventory metadata, its test and configuration', async () => {
+    const patterns = await getFilterPatterns('service-inventory');
+    const matches = (path) => patterns.some((pattern) => picomatch(pattern, { dot: true })(path));
+    for (const path of [
+      'ghost/core/server/services/service-inventory.yaml',
+      'ghost/test/unit/server/services/service-inventory.test.ts',
+      'ghost/vitest.config.inventory.ts',
+      '.github/workflows/ci.yml',
+    ]) {
+      assert.strictEqual(matches(path), true, path);
+    }
+    assert.strictEqual(matches('ghost/core/server/services/README.md'), false);
+
+    const configPath = 'ghost/vitest.config.inventory.ts';
+    for (const filterName of ['core', 'e2e']) {
+      const filters = await getFilterPatterns(filterName);
+      assert.ok(filters.includes(`!${configPath}`), filterName);
+    }
+
+    const workflow = yaml.load(
+      await readFile(new URL('../../../.github/workflows/ci.yml', import.meta.url), 'utf8'),
+    );
+    assert.strictEqual(
+      workflow.jobs.job_setup.outputs.changed_service_inventory,
+      '${{ steps.changed.outputs.service-inventory }}',
+    );
+    const job = workflow.jobs.job_service_inventory;
+    assert.deepStrictEqual(job.needs, ['job_setup']);
+    assert.strictEqual(job.if, "needs.job_setup.outputs.changed_service_inventory == 'true'");
+    assert.ok(
+      job.steps.some(
+        (step) =>
+          step.run === 'pnpm --filter ghost exec vitest run --config vitest.config.inventory.ts',
+      ),
+    );
+    assert.ok(
+      workflow.jobs.job_required_tests.needs.includes('job_service_inventory'),
+      'Inventory validation failures must block the required-tests gate',
+    );
   });
 
   it('skips code checks and E2E for ownership and docs changes, but keeps mixed changes', async () => {
