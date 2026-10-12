@@ -2654,6 +2654,7 @@ jobs:
       - uses: ./.github/actions/setup-node-pnpm
         with:
           node-version: ${{ env.NODE_VERSION }}
+          install-args: --ignore-scripts
           trust-lockfile: 'true'
 
       - name: Determine release version

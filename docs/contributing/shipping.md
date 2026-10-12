@@ -47,8 +47,9 @@ release process.
 
 ## Shade prereleases
 
-Shade is a React library for Ghost apps. When selected by the normal CI checks
-on `main`, it publishes as `0.1.0-alpha.N` under npm's `next` tag after checks pass.
+Shade is a React library for Ghost apps. When affected on `main`, it publishes as
+`0.1.0-alpha.N` under npm's `next` tag after lint, type checks, unit tests and its
+library build pass.
 See the [Shade README](../../apps/shade/README.md#publishing) for publishing details.
 
 ## Public Ghost releases
