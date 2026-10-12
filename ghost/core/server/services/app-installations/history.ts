@@ -6,6 +6,7 @@ import type { AppInstallationHistoryEntry, HistoryActor } from './codec';
 export interface HistoryManifest {
   id: string;
   manifest_url: string;
+  source: 'install' | 'approval' | 'update';
   requires_approval: boolean;
   created_at: Date;
 }
@@ -22,21 +23,17 @@ export interface HistoryAction {
 const ApprovalContext = z.object({
   from_manifest_id: z.string(),
   to_manifest_id: z.string(),
-  inserted_manifest_id: z.string().optional(),
 });
 
-/** `inserted` is only set when the approval created a new manifest row. */
 interface Approval {
   action: HistoryAction;
   from: string;
   to: string;
-  inserted?: string;
 }
 
 type Entry = AppInstallationHistoryEntry;
 
 /**
- * `manifests` must be oldest first, because the first one is the install.
  * `manifestBodies` maps ids to manifest contents.
  * It only needs the manifests that approvals point to.
  */
@@ -49,7 +46,7 @@ export function buildHistory(
   const urls = new Map(manifests.map((manifest) => [manifest.id, manifest.manifest_url]));
   return newestFirst([
     ...installOf(manifests, actions),
-    ...updatesAndSuspensionsOf(manifests, approvals),
+    ...updatesAndSuspensionsOf(manifests),
     ...approvals.map((approval) => approvalEntry(approval, urls, manifestBodies)),
     ...uninstallsIn(actions),
   ]);
@@ -61,7 +58,7 @@ export function manifestIdsApprovalsName(actions: HistoryAction[]): string[] {
 }
 
 function installOf(manifests: HistoryManifest[], actions: HistoryAction[]): Entry[] {
-  const [installed] = manifests;
+  const installed = manifests.find(({ source }) => source === 'install');
   if (!installed) {
     return [];
   }
@@ -77,16 +74,12 @@ function installOf(manifests: HistoryManifest[], actions: HistoryAction[]): Entr
 }
 
 /**
- * Each manifest after the first is a change Ghost picked up on its own.
+ * A newer version Ghost picked up by itself.
  * Ghost either applied it (`updated`) or held it for approval (`suspended`).
- * Manifests created by an approval are skipped.
- * The approval's own entry already covers them.
  */
-function updatesAndSuspensionsOf(manifests: HistoryManifest[], approvals: Approval[]): Entry[] {
-  const writtenByApprovals = new Set(approvals.map(({ inserted }) => inserted));
+function updatesAndSuspensionsOf(manifests: HistoryManifest[]): Entry[] {
   return manifests
-    .slice(1)
-    .filter((manifest) => !writtenByApprovals.has(manifest.id))
+    .filter(({ source }) => source === 'update')
     .map((manifest) => ({
       id: manifest.id,
       event: manifest.requires_approval ? 'suspended' : 'updated',
@@ -134,7 +127,6 @@ function approvalsIn(actions: HistoryAction[]): Approval[] {
       action,
       from: context.from_manifest_id,
       to: context.to_manifest_id,
-      inserted: context.inserted_manifest_id,
     };
   });
 }

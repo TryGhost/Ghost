@@ -2634,6 +2634,9 @@ module.exports = {
   // A row is never deleted and never revived. Uninstalling ends it, and installing the same
   // app again adds a new row, so every past install stays on record. Who installed or
   // uninstalled an app, and when, is in `actions`.
+  //
+  // TODO: before these tables leave development, add an index on `actions` for
+  // `resource_type` and `resource_id`. An app's history reads `actions` by those columns.
   app_installations: {
     id: { type: 'string', maxlength: 24, nullable: false, primary: true },
     // The ID from the app's manifest. Kept on every row, installed or not.
@@ -2678,6 +2681,14 @@ module.exports = {
     manifest: { type: 'text', maxlength: 65535, nullable: false },
     // SHA-256 of `manifest`, in hex, so two manifests compare without parsing.
     digest: { type: 'string', maxlength: 64, nullable: false },
+    // How the row was added: when the app was installed, when an Administrator approved
+    // changes, or when Ghost picked up a newer version by itself.
+    source: {
+      type: 'string',
+      maxlength: 50,
+      nullable: false,
+      validations: { isIn: [['install', 'approval', 'update']] },
+    },
     // Whether this manifest had changes that needed approval when it was added.
     requires_approval: { type: 'boolean', nullable: false, defaultTo: false },
     created_at: { type: 'dateTime', nullable: false },

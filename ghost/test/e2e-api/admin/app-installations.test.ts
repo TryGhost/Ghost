@@ -443,6 +443,7 @@ describe('App installations Admin API', function () {
         manifest_url: MANIFEST_URL,
         manifest: serialised,
         digest: createHash('sha256').update(serialised).digest('hex'),
+        source: 'update',
         requires_approval: true,
         created_at: toDatabaseDate(new Date()),
       });
@@ -485,8 +486,9 @@ describe('App installations Admin API', function () {
         app_id: 'com.example.podcast',
         from_manifest_id: first.id,
         to_manifest_id: second.id,
-        inserted_manifest_id: second.id,
       });
+      assert.equal(first.source, 'install');
+      assert.equal(second.source, 'approval');
     });
 
     it('changes nothing when approving what is already approved', async function () {
@@ -582,7 +584,6 @@ describe('App installations Admin API', function () {
       assert.equal((await manifestRows()).length, 2);
       const [, action] = await actions();
       assert.equal(JSON.parse(action.context).to_manifest_id, pendingId);
-      assert.equal(JSON.parse(action.context).inserted_manifest_id, undefined);
 
       const { body } = await agent
         .get(`apps/installations/${installed.id}/?include=history`)
@@ -612,7 +613,6 @@ describe('App installations Admin API', function () {
       assert.equal(action.event, 'changes_approved');
       assert.equal(JSON.parse(action.context).from_manifest_id, row.manifest_id);
       assert.equal(JSON.parse(action.context).to_manifest_id, row.manifest_id);
-      assert.equal(JSON.parse(action.context).inserted_manifest_id, undefined);
     });
 
     it('does not lift a suspension that is not waiting for changes', async function () {

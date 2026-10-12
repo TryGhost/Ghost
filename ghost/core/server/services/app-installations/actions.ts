@@ -35,12 +35,6 @@ export interface AppInstallationActionDetails {
   /** For an approval: the manifest that was approved before, and the one approved now. */
   from_manifest_id?: string;
   to_manifest_id?: string;
-  /**
-   * The manifest row this approval created, if it created one.
-   * Some approvals reuse an existing row instead.
-   * The history uses this to know which entry to hide.
-   */
-  inserted_manifest_id?: string;
 }
 
 // `subject` is the installation's id. The app's name and ID ride along in the action's
