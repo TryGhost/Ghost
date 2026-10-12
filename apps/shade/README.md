@@ -21,9 +21,9 @@ export function Example() {
 
 ## Usage in standalone surfaces
 
-Shade requires React 18 and Tailwind CSS 4.1+ during the alpha. The app compiles
-Shade's `styles.css` together with its own styles using Tailwind's Vite or
-PostCSS integration. Shade does not ship a compiled stylesheet.
+Shade requires React 18 and Tailwind CSS 4.1+. The app compiles Shade's
+`styles.css` together with its own styles using Tailwind's Vite or PostCSS
+integration. Shade does not ship a compiled stylesheet.
 
 For an existing React/Vite app:
 
