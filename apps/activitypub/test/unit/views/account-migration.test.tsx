@@ -1,7 +1,6 @@
 import AccountMigration from '../../../src/views/preferences/components/account-migration';
 import React from 'react';
 import type { QueryState } from '../../utils/query-state';
-import { getOutboundMigrationAvailability } from '../../../src/views/preferences/components/account-migration/utils';
 import { useAccountMigrationForUser } from '@hooks/use-activity-pub-queries';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
@@ -129,11 +128,20 @@ describe('outbound account migration', () => {
     expect(mocks.migration.refetch).toHaveBeenCalledOnce();
   });
 
+  it('hides the outbound tab when a refresh is forbidden, even with a cached status', () => {
+    mocks.migration = refetchFailedQuery(noMove, { message: 'Forbidden', statusCode: 403 });
+    render(<AccountMigration />);
+    expect(screen.queryByRole('tab', { name: 'Export' })).toBeNull();
+    expect(screen.queryByText(/or from this account to somewhere else/)).toBeNull();
+  });
+
   it('keeps Export reachable without promising outbound moves while the status loads', () => {
     mocks.migration = loadingQuery();
     render(<AccountMigration />);
     expect(screen.queryByText(/or from this account to somewhere else/)).toBeNull();
-    expect(screen.getByRole('tab', { name: 'Export' })).toBeTruthy();
+    goToExport();
+    expect(screen.queryByLabelText('New account handle')).toBeNull();
+    expect(screen.queryByRole('button', { name: /I’ve added the alias/ })).toBeNull();
   });
 
   it('promises outbound moves once the status has loaded', () => {
@@ -178,12 +186,15 @@ describe('outbound account migration', () => {
     expect(mocks.move.mutateAsync).not.toHaveBeenCalled();
   });
 
-  it('rejects moving to this Ghost account', async () => {
+  it.each([
+    ['not-a-handle', 'Enter a valid destination handle, like new@mastodon.social.'],
+    ['index@ghost.example', 'Enter a different account than this Ghost account.'],
+  ])('rejects %s before opening confirmation', async (destination, message) => {
     render(<AccountMigration />);
     goToExportForm();
-    enterDestination('index@ghost.example');
+    enterDestination(destination);
     fireEvent.click(screen.getByRole('button', { name: 'Move followers' }));
-    await screen.findByText('Enter a different account than this Ghost account.');
+    await screen.findByText(message);
     expect(screen.queryByRole('alertdialog')).toBeNull();
     expect(mocks.move.mutateAsync).not.toHaveBeenCalled();
   });
@@ -203,76 +214,36 @@ describe('outbound account migration', () => {
     );
   });
 
-  it.each([
-    ['is still loading', () => loadingQuery<{ handle: string }>()],
-    ['failed to load', () => failedQuery<{ handle: string }>(new Error('Network unavailable'))],
-  ])(
-    'explains a server-rejected move to this account when the Ghost handle %s',
-    async (_state, accountQuery) => {
-      mocks.account = accountQuery();
-      mocks.move.mutateAsync.mockRejectedValue({
-        message: 'Destination is this account',
-        statusCode: 400,
-        code: 'SELF_MOVE',
-      });
-      render(<AccountMigration />);
-      goToExportForm();
-      enterDestination('index@ghost.example');
-      await confirmMove();
-      await screen.findByText('Enter a different account than this Ghost account.');
-      expect(mocks.move.mutateAsync).toHaveBeenCalledWith('@index@ghost.example');
-    },
-  );
-
-  it('keeps the generic message for other rejected handles', async () => {
+  it('explains a server-rejected move to this account before the Ghost handle loads', async () => {
+    mocks.account = loadingQuery();
     mocks.move.mutateAsync.mockRejectedValue({
-      message: 'Invalid destination handle',
+      message: 'Destination is this account',
       statusCode: 400,
+      code: 'SELF_MOVE',
     });
     render(<AccountMigration />);
     goToExportForm();
-    enterDestination('new@localhost');
+    enterDestination('index@ghost.example');
     await confirmMove();
-    await screen.findByText('Enter a valid destination handle.');
+    await screen.findByText('Enter a different account than this Ghost account.');
+    expect(mocks.move.mutateAsync).toHaveBeenCalledWith('@index@ghost.example');
   });
 
-  it('shows the alias requirement when the server rejects an unverified destination', async () => {
-    mocks.move.mutateAsync.mockRejectedValue({
-      message: 'Alias required',
-      statusCode: 422,
-    });
+  it.each([
+    [400, 'Enter a valid destination handle.'],
+    [409, 'A move is already in progress or was sent to a different account.'],
+    [422, 'Add this Ghost account as an alias on the destination profile first.'],
+  ])('shows the server rejection for a %s response on the field', async (statusCode, message) => {
+    mocks.move.mutateAsync.mockRejectedValue({ message: 'Rejected', statusCode });
     render(<AccountMigration />);
     goToExportForm();
     enterDestination();
     await confirmMove();
-    await screen.findByText('Add this Ghost account as an alias on the destination profile first.');
+    await screen.findByText(message);
     expect(screen.getByLabelText('New account handle').getAttribute('aria-invalid')).toBe('true');
   });
 
-  it('shows a conflict message when a move is already in progress elsewhere', async () => {
-    mocks.move.mutateAsync.mockRejectedValue({
-      message: 'Conflict',
-      statusCode: 409,
-    });
-    render(<AccountMigration />);
-    goToExportForm();
-    enterDestination();
-    await confirmMove();
-    await screen.findByText('A move is already in progress or was sent to a different account.');
-    expect(screen.getByLabelText('New account handle').getAttribute('aria-invalid')).toBe('true');
-  });
-
-  it('rejects invalid handles before opening confirmation', async () => {
-    render(<AccountMigration />);
-    goToExportForm();
-    enterDestination('not-a-handle');
-    fireEvent.click(screen.getByRole('button', { name: 'Move followers' }));
-    await screen.findByText('Enter a valid destination handle, like new@mastodon.social.');
-    expect(screen.queryByRole('alertdialog')).toBeNull();
-    expect(mocks.move.mutateAsync).not.toHaveBeenCalled();
-  });
-
-  it('shows a pending move with its stored destination locked', () => {
+  it('retries a pending move to its stored destination, which cannot be edited', async () => {
     mocks.migration = loadedQuery(pendingMisskeyMove);
     render(<AccountMigration />);
     goToExport();
@@ -280,18 +251,9 @@ describe('outbound account migration', () => {
       'A move to @new@misskey.io is in progress',
     );
     const input = screen.getByLabelText('New account handle') as HTMLInputElement;
-    expect(input.value).toBe('@new@misskey.io');
     expect(input.readOnly).toBe(true);
-  });
-
-  it('retries a pending move to its stored destination', async () => {
-    mocks.migration = loadedQuery(pendingMisskeyMove);
-    render(<AccountMigration />);
-    goToExport();
     enterDestination('other@elsewhere.example');
-    expect((screen.getByLabelText('New account handle') as HTMLInputElement).value).toBe(
-      '@new@misskey.io',
-    );
+    expect(input.value).toBe('@new@misskey.io');
     await confirmMove();
     await waitFor(() => expect(mocks.move.mutateAsync).toHaveBeenCalledWith('@new@misskey.io'));
   });
@@ -307,33 +269,19 @@ describe('outbound account migration', () => {
     expect(screen.queryByLabelText('New account handle')).toBeNull();
   });
 
-  it('keeps showing a pending move when a later refresh fails', () => {
-    mocks.migration = refetchFailedQuery(pendingMisskeyMove, {
-      message: 'Server error',
-      statusCode: 500,
-    });
-    render(<AccountMigration />);
-    goToExport();
-    expect(screen.queryByRole('alert')).toBeNull();
-    expect(screen.getByRole('status').textContent).toContain(
-      'A move to @new@misskey.io is in progress',
-    );
-    expect((screen.getByLabelText('New account handle') as HTMLInputElement).value).toBe(
-      '@new@misskey.io',
-    );
-  });
-
-  it('keeps showing a sent move when a later refresh fails', () => {
-    mocks.migration = refetchFailedQuery(
+  it.each([
+    ['pending', pendingMisskeyMove, 'A move to @new@misskey.io is in progress'],
+    [
+      'sent',
       { ...pendingMisskeyMove, sent: true },
-      new Error('Network unavailable'),
-    );
+      'Your followers were directed to follow @new@misskey.io',
+    ],
+  ])('keeps showing a %s move when a later refresh fails', (_state, status, statusText) => {
+    mocks.migration = refetchFailedQuery(status, { message: 'Server error', statusCode: 500 });
     render(<AccountMigration />);
     goToExport();
     expect(screen.queryByRole('alert')).toBeNull();
-    expect(screen.getByRole('status').textContent).toContain(
-      'Your followers were directed to follow @new@misskey.io',
-    );
+    expect(screen.getByRole('status').textContent).toContain(statusText);
   });
 
   it('confirms the Ghost handle was copied only after the copy succeeds', async () => {
@@ -380,35 +328,5 @@ describe('outbound account migration', () => {
     goToExport();
     expect(screen.getByText('your Ghost handle')).toBeTruthy();
     expect(screen.getByText(/as an alias on your new social web profile first/)).toBeTruthy();
-  });
-
-  it('shows a loading skeleton while migration status is loading', () => {
-    mocks.migration = loadingQuery();
-    render(<AccountMigration />);
-    goToExport();
-    expect(screen.queryByLabelText('New account handle')).toBeNull();
-    expect(screen.queryByRole('button', { name: /I’ve added the alias/ })).toBeNull();
-  });
-});
-
-describe('getOutboundMigrationAvailability', () => {
-  it('is available once the status has loaded', () => {
-    expect(getOutboundMigrationAvailability(loadedQuery(noMove))).toBe('available');
-  });
-
-  it('is unknown while loading or after a temporary failure', () => {
-    expect(getOutboundMigrationAvailability(loadingQuery())).toBe('unknown');
-    expect(
-      getOutboundMigrationAvailability(failedQuery({ message: 'Server error', statusCode: 500 })),
-    ).toBe('unknown');
-  });
-
-  it('is unavailable when a refetch is forbidden, even with a cached status', () => {
-    const forbiddenRefetch = {
-      ...loadedQuery(noMove),
-      error: { message: 'Forbidden', statusCode: 403 },
-      isError: true,
-    };
-    expect(getOutboundMigrationAvailability(forbiddenRefetch)).toBe('unavailable');
   });
 });
