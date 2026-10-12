@@ -84,6 +84,47 @@ describe('CI path filters', () => {
     );
   });
 
+  it('requires focused validation for inventory metadata, its test and configuration', async () => {
+    const patterns = await getFilterPatterns('service-inventory');
+    const matches = (path) => patterns.some((pattern) => picomatch(pattern, { dot: true })(path));
+    for (const path of [
+      'ghost/core/server/services/service-inventory.yaml',
+      'ghost/test/unit/server/services/service-inventory.test.ts',
+      'ghost/vitest.config.inventory.ts',
+      '.github/workflows/ci.yml',
+    ]) {
+      assert.strictEqual(matches(path), true, path);
+    }
+    assert.strictEqual(matches('ghost/core/server/services/README.md'), false);
+
+    const configPath = 'ghost/vitest.config.inventory.ts';
+    for (const filterName of ['core', 'e2e']) {
+      const filters = await getFilterPatterns(filterName);
+      assert.ok(filters.includes(`!${configPath}`), filterName);
+    }
+
+    const workflow = yaml.load(
+      await readFile(new URL('../../.github/workflows/ci.yml', import.meta.url), 'utf8'),
+    );
+    assert.strictEqual(
+      workflow.jobs.job_setup.outputs.changed_service_inventory,
+      '${{ steps.changed.outputs.service-inventory }}',
+    );
+    const job = workflow.jobs.job_service_inventory;
+    assert.deepStrictEqual(job.needs, ['job_setup']);
+    assert.strictEqual(job.if, "needs.job_setup.outputs.changed_service_inventory == 'true'");
+    assert.ok(
+      job.steps.some(
+        (step) =>
+          step.run === 'pnpm --filter ghost exec vitest run --config vitest.config.inventory.ts',
+      ),
+    );
+    assert.ok(
+      workflow.jobs.job_required_tests.needs.includes('job_service_inventory'),
+      'Inventory validation failures must block the required-tests gate',
+    );
+  });
+
   it('skips code checks and E2E for ownership and docs changes, but keeps mixed changes', async () => {
     for (const filterName of ['any-code', 'e2e']) {
       const patterns = await getFilterPatterns(filterName);
