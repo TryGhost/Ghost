@@ -46,14 +46,9 @@ const NotResponding: React.FC<{
       >
         <LucideIcon.CloudOff />
       </EmptyIndicator>
-      <details className="w-full border-t pt-3 text-left text-sm text-muted-foreground">
-        <summary className="cursor-pointer font-medium">Details</summary>
-        <div className="mt-2 rounded-md bg-muted px-3 py-2 font-mono text-xs leading-relaxed">
-          No response from {servedFrom(installation.manifest)}
-          <br />
-          Started {startedAt.toLocaleTimeString()}
-        </div>
-      </details>
+      <Text size="sm" tone="secondary">
+        No response from {servedFrom(installation.manifest)} since {startedAt.toLocaleTimeString()}.
+      </Text>
     </Stack>
   </Centered>
 );
@@ -277,6 +272,9 @@ export const AppPage: React.FC = () => {
         <LoadingIndicator size="md" />
       </Centered>
     );
+  } else {
+    // Answered, but with no installation: there is nothing to show but the way back.
+    body = <NotInstalled />;
   }
 
   // Ghost keeps only the nav and the page margin; the rest is the app's.

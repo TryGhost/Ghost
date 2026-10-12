@@ -45,6 +45,7 @@ export const appsScreen = {
   cancelButton: () => button(sel.cancelButton),
   uninstallButton: () => button(sel.uninstallButton),
   reviewChangesLink: () => page.getByRole('link', { name: sel.reviewChangesLink, exact: true }),
-  reviewChangesButton: () => button(sel.reviewChangesButton),
+  // The same words as the link, as a button where there is nothing to link to yet.
+  reviewChangesButton: () => button(sel.reviewChangesLink),
   openLink: () => page.getByRole('link', { name: sel.openButton, exact: true }),
 };
