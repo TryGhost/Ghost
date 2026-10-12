@@ -7,7 +7,7 @@ import type {
 } from '@tryghost/admin-x-framework/api/automations';
 import { detail, setup } from './run-history.test-utils';
 
-const flags = { labs: { automations: true, automationRunAnalytics: true } };
+const flags = { labs: { automations: true } };
 const picker = () => page.getByRole('combobox', { name: 'Tiers', exact: true });
 const scope = () => page.getByRole('combobox', { name: 'Paid tier scope', exact: true });
 const chips = () => page.getByRole('article', { name: 'Paid subscription started', exact: true });

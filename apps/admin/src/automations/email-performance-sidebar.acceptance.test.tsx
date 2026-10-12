@@ -67,11 +67,10 @@ const prepare = (
     ],
   });
 };
-const boot = (tracking = true, redesigned = true) =>
+const boot = (tracking = true) =>
   renderAdminApp('/automations/first', {
     labs: {
       automations: true,
-      automationRunAnalytics: redesigned,
       automationAnalytics: true,
     },
     boot: {
@@ -379,7 +378,7 @@ describe('Email performance sidebar', () => {
   it('hides analytics controls when email analytics is disabled', async () => {
     prepare();
     await renderAdminApp('/automations/first', {
-      labs: { automations: true, automationRunAnalytics: true, automationAnalytics: false },
+      labs: { automations: true, automationAnalytics: false },
     });
     await expect.element(card()).toBeVisible();
     await expect
@@ -397,19 +396,8 @@ describe('Email performance sidebar', () => {
       .not.toBeInTheDocument();
   });
 
-  it('opens email performance with run analytics disabled', async () => {
-    prepare([email('First')]);
-    fakeAdminEndpoint('GET', linksPath(), { automation_action_links: [] });
-    await boot(true, false);
-    await page.getByRole('button', { name: 'View email analytics' }).click();
-    await expect.element(panel()).toBeVisible();
-    await expect
-      .element(card().getByRole('textbox', { name: 'Subject line' }))
-      .toHaveValue('First');
-  });
-
   it.each(['subject', 'email body'])(
-    'keeps the workflow visible after editing the %s and saving with the redesign flag off',
+    'keeps the workflow visible after editing the %s and saving',
     async (field) => {
       prepare([email('First')]);
       fakeAdminEndpoint('GET', linksPath(), { automation_action_links: [] });
@@ -429,7 +417,7 @@ describe('Email performance sidebar', () => {
           },
         ],
       }));
-      await boot(true, false);
+      await boot();
       const emailCard = editingCanvas().getByRole('article', { name: /^Send email/ });
       if (field === 'subject') {
         await emailCard.getByRole('textbox', { name: 'Subject line' }).fill('Updated subject');

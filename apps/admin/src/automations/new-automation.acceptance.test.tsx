@@ -13,7 +13,7 @@ import {
 import type { AutomationDetail } from '@tryghost/admin-x-framework/api/automations';
 import { detail } from './run-history.test-utils';
 
-const labs = { automations: true, automationsPerTier: true, automationRunAnalytics: true };
+const labs = { automations: true, automationsPerTier: true };
 const button = (name: string) => page.getByRole('button', { name, exact: true });
 const addWait = async () => {
   await button('Add step').click();
