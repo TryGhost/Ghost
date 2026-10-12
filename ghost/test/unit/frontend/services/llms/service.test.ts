@@ -1,9 +1,65 @@
-const assert = require('node:assert/strict');
-const { createLlmsService } = require('../../../../../core/frontend/services/llms/service');
+import assert from 'node:assert/strict';
+import {
+  createLlmsService,
+  // @ts-expect-error This module lacks type definitions.
+} from '../../../../../core/frontend/services/llms/service';
+
+type Entry = {
+  id: string;
+  title: string;
+  slug?: string;
+  url?: string;
+  custom_excerpt?: string;
+  plaintext?: string;
+  html?: string;
+  type?: string;
+  updated_at?: string;
+  published_at?: string;
+  created_at?: string;
+  visibility?: string;
+};
+
+type BrowseOptions = {
+  limit?: number | 'all';
+  page?: number;
+  [key: string]: unknown;
+};
+
+type ReadOptions = {
+  id: string;
+  context?: { member: unknown };
+  [key: string]: unknown;
+};
+
+type ApiController = {
+  browse?: (options: BrowseOptions) => Promise<unknown>;
+  read?: (options: ReadOptions) => Promise<unknown>;
+};
+
+type FakeApi = {
+  pagesPublic?: ApiController;
+  postsPublic?: ApiController;
+};
+
+type BrowseCall = { key: string; options: BrowseOptions };
+
+type ServiceOptions = {
+  pages?: Entry[];
+  posts?: Entry[];
+  urlMap?: Record<string, string>;
+  settingsCache?: { get: (key: string) => unknown };
+  settingsOverrides?: Record<string, unknown>;
+  config?: { get: (key: string) => unknown };
+  urlUtils?: { urlFor: (options: { relativeUrl: string }, absolute: boolean) => string };
+  routing?: { registry: { getRssUrl: () => string | null } };
+  api?: FakeApi;
+  machinePaymentsService?: unknown;
+  fullTxtBudget?: number;
+};
 
 describe('Unit: frontend/services/llms/service', function () {
-  function createFakeSettingsCache(overrides = {}) {
-    const values = {
+  function createFakeSettingsCache(overrides: Record<string, unknown> = {}) {
+    const values: Record<string, unknown> = {
       description: 'Short description',
       is_private: false,
       llms_enabled: true,
@@ -13,7 +69,7 @@ describe('Unit: frontend/services/llms/service', function () {
     Object.assign(values, overrides);
 
     return {
-      get(key) {
+      get(key: string) {
         return values[key];
       },
     };
@@ -21,8 +77,8 @@ describe('Unit: frontend/services/llms/service', function () {
 
   function createFakeConfig() {
     return {
-      get(key) {
-        const map = {
+      get(key: string) {
+        const map: Record<string, string> = {
           url: 'http://127.0.0.1:2368',
         };
         return map[key];
@@ -30,9 +86,9 @@ describe('Unit: frontend/services/llms/service', function () {
     };
   }
 
-  function createFakeApi(pageData, postData, urlMap) {
-    function browse(responseKey, data) {
-      return async function (options) {
+  function createFakeApi(pageData: Entry[], postData: Entry[], urlMap: Record<string, string>) {
+    function browse(responseKey: 'pages' | 'posts', data: Entry[]) {
+      return async function (options: BrowseOptions) {
         const entries = data.map((item) => ({ ...item, url: urlMap[item.id] }));
         const limit = options.limit;
         const page = options.page || 1;
@@ -91,14 +147,14 @@ describe('Unit: frontend/services/llms/service', function () {
 
   function createFakeUrlUtils() {
     return {
-      urlFor(options, absolute) {
+      urlFor(options: { relativeUrl: string }, absolute: boolean) {
         const base = absolute ? 'http://127.0.0.1:2368' : '';
         return `${base}${options.relativeUrl}`;
       },
     };
   }
 
-  function createService(opts = {}) {
+  function createService(opts: ServiceOptions = {}) {
     const pages = opts.pages || [];
     const posts = opts.posts || [];
     const urlMap = opts.urlMap || {};
@@ -253,8 +309,11 @@ describe('Unit: frontend/services/llms/service', function () {
     );
 
     const api = createFakeApi([], posts, urlMap);
-    const postBrowseCalls = [];
+    const postBrowseCalls: BrowseOptions[] = [];
     const browsePosts = api.postsPublic.browse;
+    if (!browsePosts) {
+      throw new Error('expected postsPublic.browse to be available');
+    }
     api.postsPublic.browse = (options) => {
       postBrowseCalls.push(options);
       return browsePosts(options);
@@ -294,8 +353,8 @@ describe('Unit: frontend/services/llms/service', function () {
   });
 
   it('requests tiers relations for llms.txt index entries', async function () {
-    const calls = [];
-    const recordingBrowse = async (options) => {
+    const calls: BrowseOptions[] = [];
+    const recordingBrowse = async (options: BrowseOptions) => {
       calls.push(options);
       return { posts: [], pages: [], meta: { pagination: { next: null } } };
     };
@@ -314,8 +373,8 @@ describe('Unit: frontend/services/llms/service', function () {
   });
 
   it('requests tiers relations for llms-full.txt entries', async function () {
-    const calls = [];
-    const recordingBrowse = async (options) => {
+    const calls: BrowseOptions[] = [];
+    const recordingBrowse = async (options: BrowseOptions) => {
       calls.push(options);
       return { posts: [], pages: [], meta: { pagination: { next: null } } };
     };
@@ -335,16 +394,16 @@ describe('Unit: frontend/services/llms/service', function () {
 
   describe('fetchPublicEntry', function () {
     it('calls the correct controller for pages vs posts', async function () {
-      const calls = [];
+      const calls: { controller: string; opts: ReadOptions }[] = [];
       const fakeApi = {
         pagesPublic: {
-          read: async (opts) => {
+          read: async (opts: ReadOptions) => {
             calls.push({ controller: 'pages', opts });
             return { pages: [{ id: 'p1', title: 'Page' }] };
           },
         },
         postsPublic: {
-          read: async (opts) => {
+          read: async (opts: ReadOptions) => {
             calls.push({ controller: 'posts', opts });
             return { posts: [{ id: 'p2', title: 'Post' }] };
           },
@@ -366,10 +425,10 @@ describe('Unit: frontend/services/llms/service', function () {
     });
 
     it('forwards member context', async function () {
-      let capturedContext;
+      let capturedContext: ReadOptions['context'];
       const fakeApi = {
         postsPublic: {
-          read: async (opts) => {
+          read: async (opts: ReadOptions) => {
             capturedContext = opts.context;
             return { posts: [{ id: 'p1' }] };
           },
@@ -416,8 +475,8 @@ describe('Unit: frontend/services/llms/service', function () {
   });
 
   it('fetches index content through the public Posts/Pages API, not the model layer', async function () {
-    const calls = [];
-    const recordingBrowse = (key) => async (options) => {
+    const calls: BrowseCall[] = [];
+    const recordingBrowse = (key: 'pages' | 'posts') => async (options: BrowseOptions) => {
       calls.push({ key, options });
       return { [key]: [], meta: { pagination: { next: null } } };
     };
@@ -452,8 +511,8 @@ describe('Unit: frontend/services/llms/service', function () {
   });
 
   it('requests narrow fields and html for llms-full.txt entries', async function () {
-    const calls = [];
-    const recordingBrowse = (key) => async (options) => {
+    const calls: BrowseCall[] = [];
+    const recordingBrowse = (key: 'pages' | 'posts') => async (options: BrowseOptions) => {
       calls.push({ key, options });
       return { [key]: [], meta: { pagination: { next: null } } };
     };
