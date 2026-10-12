@@ -3,7 +3,7 @@
 # An unverified facet is an open audit question, not an empty/no-op contract.
 summary:
   total: 71
-  migrated: 2
+  migrated: 3
 services:
   activitypub:
     kind: directory
@@ -11018,47 +11018,59 @@ services:
     kind: directory
     disposition: retain
     status: audited
-    auditedAt: c2999f4e13da6360bceced808bb52c4a04b5ad03
+    auditedAt: ffda65ff64f78a7148f8cbf1d8c717d55bc5a65b
+    migrated: true
     entryPoints:
       - slack-ping/index.ts
     notes: >-
       Preserve live Slack settings, publish/test event behavior and request failure handling.
-      Retained listeners, shared HTTP resources and partial initialization need contracts before
-      changing ownership.
+      Failed initialization now rolls back its own subscriptions; normal restart, shutdown
+      and shared HTTP-resource ownership remain separate work.
     contracts:
       exports:
         summary: >-
-          TypeScript default-exports one eager wrapper with synchronous init and a public
-          optional service property; CommonJS boot reads .default. init returns no instance.
-          The named SlackPingService class exposes ping, settings/event methods and stable
-          listener references. Neither class supplies reset or shutdown.
+          TypeScript default-exports one defineService root; CommonJS boot reads .default.
+          init returns a shared Promise<void>, and the service getter throws IncorrectUsageError
+          until initialization succeeds. The named SlackPingService class exposes ping,
+          settings/event methods, stable listener references and unsubscribeEvents. The root
+          has no reset or shutdown. Root tests cover readiness and repeated/concurrent init;
+          the kernel tests cover the generic initializer contract.
         sources:
           - core/server/services/slack-ping/index.ts
           - core/server/services/slack-ping/slack-ping-service.ts
+          - core/kernel/define-service.ts
           - core/boot.js
-        tests: []
+        tests:
+          - test/unit/server/services/slack-ping/index.test.ts
+          - test/unit/kernel/define-service.test.ts
       construction:
         summary: >-
           First init obtains shared events, settings, URL helpers, blogIcon and request-external,
-          constructs SlackPingService, assigns service and subscribes it. The image-library
-          import also obtains image cache/storage adapters and constructs its shared helpers.
-          The wrapper is the only runtime SlackPingService constructor found; tests inject
-          collaborators directly. Initialization and subscription are not gated on a Slack URL.
+          constructs SlackPingService and subscribes it before returning the ready instance.
+          Initialization and subscription are not gated on a Slack URL. The root test checks
+          every wired dependency and listener identity. The root is the only runtime
+          SlackPingService constructor found; tests also inject collaborators directly.
+          Source-only: importing the image library obtains image cache/storage adapters and
+          constructs shared helpers whose lifetime remains outside Slack's factory.
         sources:
           - core/server/services/slack-ping/index.ts
           - core/server/services/slack-ping/slack-ping-service.ts
           - core/server/lib/image/index.js
           - core/server/lib/image/image-utils.js
           - core/server/lib/request-external.js
-        tests: []
+        tests:
+          - test/unit/server/services/slack-ping/index.test.ts
+          - test/unit/server/services/slack-ping/slack-ping-service.test.js
       consumers:
         summary: >-
-          Boot is the only direct root caller. The shared model emitter invokes post.published
-          with the post model and its authors/tags relations; imports are skipped. The authenticated Admin
-          slack/test endpoint emits slack.test, whose listener sends a fixed test message.
-          Both listeners discard the ping promise, so API/model completion does not establish
-          webhook delivery. No CLI, scheduled job or alternate runtime deep constructor was
-          found. Unit tests call handlers directly; the API test mocks event emission.
+          Boot is the only direct runtime root caller. The shared model emitter invokes
+          post.published with the post model; the listener forwards authors/tags and skips
+          imports. The authenticated Admin slack/test endpoint emits slack.test, whose listener
+          sends a fixed test message. Both listeners discard the ping promise. The isolated
+          HTTP suite boots Ghost, publishes a tagged post and calls slack/test through the
+          actual emitter and request-external client intercepted at HTTP; both requests finish
+          while webhook delivery remains pending. The older API test mocks event emission.
+          No CLI, scheduled job or alternate runtime constructor was found in the source search.
         sources:
           - core/boot.js
           - core/server/services/slack-ping/slack-ping-service.ts
@@ -11067,44 +11079,61 @@ services:
           - core/server/api/endpoints/slack.js
           - core/server/web/api/endpoints/admin/routes.js
         tests:
+          - test/unit/server/services/slack-ping/index.test.ts
           - test/unit/server/services/slack-ping/slack-ping-service.test.js
           - test/e2e-api/admin/slack.test.js
+          - test/e2e-server/slack-ping.isolated.test.ts
       startup:
         summary: >-
-          Required-service boot calls init while assembling Promise.all prerequisites, after
-          settings and dynamic routing and before readiness. Importing the wrapper does not
-          subscribe; init installs callbacks synchronously without checking webhook delivery.
-          A constructed service can receive events immediately; direct ping depends on its
-          injected settings/URL/image helpers rather than an explicit readiness guard.
+          Required-service boot awaits init in Promise.all after settings and dynamic routing
+          are initialized and before readiness. Root import does not subscribe. The factory
+          installs listeners synchronously when init is called, but callers must await init
+          before reading service; initialization does not send a webhook or await delivery.
+          Root tests cover import inactivity and the readiness guard. The isolated HTTP suite
+          reads the ready instance after boot and verifies that repeated init retains the
+          instance handling the test endpoint. Direct class users have no init guard and depend
+          on their injected collaborators being ready, as established by source.
         sources:
           - core/boot.js
+          - core/kernel/define-service.ts
           - core/server/services/slack-ping/index.ts
           - core/server/services/slack-ping/slack-ping-service.ts
-        tests: []
+        tests:
+          - test/unit/server/services/slack-ping/index.test.ts
+          - test/e2e-server/slack-ping.isolated.test.ts
       lifetime:
         summary: >-
-          Wrapper init returns early once service is assigned, retaining its dependencies and
-          listener identities across same-process boots. subscribeEvents removes/re-adds its
-          own bound post.published and slack.test callbacks; it cannot remove callbacks belonging
-          to another instance. Wrapper init does not restore listeners removed elsewhere.
-          There is no local queue, send deduplication or serialization, and server stop supplies
-          no Slack-ping reset or unsubscribe.
+          Successful init retains one instance, its dependencies and both bound listener
+          identities; repeated/concurrent calls do not duplicate subscriptions. Root tests
+          verify retention and single delivery for each event, including after failed-start
+          cleanup and retry. Source-only: subscribeEvents removes/re-adds only its own callbacks,
+          so it cannot replace another instance's listeners; init does not restore callbacks
+          removed elsewhere. Same-process restart retains the root. There is no local queue,
+          send deduplication or serialization, and server stop supplies no Slack reset or
+          unsubscribe. The new unsubscribeEvents method is called only for factory rollback.
         sources:
           - core/server/services/slack-ping/index.ts
           - core/server/services/slack-ping/slack-ping-service.ts
+          - core/kernel/define-service.ts
           - core/server/lib/common/events.js
           - core/boot.js
           - core/server/ghost-server.ts
-        tests: []
+        tests:
+          - test/unit/server/services/slack-ping/index.test.ts
+          - test/e2e-server/slack-ping.isolated.test.ts
       configuration:
         summary: >-
           Each ping reads Slack URL, username and site title; blank username falls back to Ghost.
-          URL/image/icon helpers resolve current routing and settings. Post URL/description work
-          happens before the missing-URL, page and default-slug gates. Descriptions prefer custom
-          excerpts, otherwise strip HTML before the members-only marker and keep three sentences.
-          request-external captures agent options and test hooks at import, but reads environment
-          and site URL during request checks; its default request timeout is 10 seconds, 5 under
-          the import-time test hook. Ping adds no local timeout or retry policy.
+          Root tests change URL/username on a retained instance and assert a disabled test ping
+          makes no request. The HTTP suite checks custom title/username/icon, custom excerpt,
+          collection-filtered post URLs, author URLs and feature-image URLs through real helpers.
+          Class tests cover the fallback username, page/welcome suppression and removal of
+          members-only content. Source-only: URL/description work precedes the missing-URL,
+          page and default-slug gates; excerpts otherwise strip HTML and keep three sentences.
+          request-external captures agent options and test hooks at import, reads environment
+          and site URL per request, and configures a 10-second request timeout or 5 seconds
+          under its test hook. Slack adds no local timeout or retry policy; the HTTP suite
+          uses test hooks and does not establish production DNS, agent or timeout policy.
         sources:
           - core/server/services/slack-ping/slack-ping-service.ts
           - core/server/services/slack-ping/constants.ts
@@ -11112,15 +11141,20 @@ services:
           - core/server/services/url/lazy-url-service.ts
           - core/server/lib/request-external.js
         tests:
+          - test/unit/server/services/slack-ping/index.test.ts
           - test/unit/server/services/slack-ping/slack-ping-service.test.js
+          - test/e2e-server/slack-ping.isolated.test.ts
       resources:
         summary: >-
-          The service owns two shared-emitter subscriptions and outbound requests, with no
-          cancellation or drain bookkeeping. The wrapper borrows shared settings, routing and
-          image helpers; image adapter lifetime remains outside this root. Production requests
-          use request-external's shared configurable HTTP/HTTPS agents, keep-alive by default,
-          DNS checks and per-request timeout. No Slack cleanup is registered and the helper
-          exposes no lifecycle disposal hook; stopping Ghost does not await these sends.
+          The service owns two shared-emitter subscriptions and initiates outbound requests.
+          If either registration throws, the factory removes only that instance's callbacks
+          before rejecting; root tests preserve unrelated listeners and retry without duplicates.
+          Root tests exercise overlapping pending sends, and the HTTP suite holds real client
+          responses while API/model requests finish. Source-only: no cancellation or drain
+          bookkeeping exists. Settings, routing and image helpers are borrowed; image-adapter
+          lifetime remains external. request-external uses shared configurable HTTP/HTTPS agents,
+          keep-alive by default, DNS checks and a request timeout. No Slack cleanup is registered,
+          the client exposes no lifecycle disposal hook, and server stop does not await sends.
         sources:
           - core/server/services/slack-ping/index.ts
           - core/server/services/slack-ping/slack-ping-service.ts
@@ -11129,54 +11163,55 @@ services:
           - core/boot.js
           - core/server/ghost-server.ts
         tests:
-          - test/unit/server/services/slack-ping/slack-ping-service.test.js
+          - test/unit/server/services/slack-ping/index.test.ts
+          - test/e2e-server/slack-ping.isolated.test.ts
       failures:
         summary: >-
-          Errors before service assignment permit a later init attempt; subscription errors
-          leave service assigned and can leave partial listeners, so later init skips retry.
-          Request promise rejection is wrapped in InternalServerError, logged and swallowed;
-          direct ping therefore resolves after a logged failure. Synchronous settings, model,
-          formatting, URL/icon or request-invocation errors occur outside that catch and can
-          propagate through the synchronous emitter, even after a post commit, interrupting later
-          callbacks without undoing persistence. The service itself provides no
-          retry/replay; successful slack/test API response does not report asynchronous failure.
+          Failed initialization rejects without publishing an instance and permits a later
+          explicit retry. Root tests make either registration throw after adding its listener,
+          verify rollback preserves unrelated callbacks, and verify successful retry delivery.
+          Request rejection is wrapped in InternalServerError, logged and swallowed: root tests
+          check both event paths, error context/help, original error and fulfilled ping promises;
+          the HTTP suite checks test-endpoint success followed by a logged delivery failure.
+          Synchronous request invocation errors escape both event listeners in root tests.
+          Source-only: malformed settings/models, formatting and URL/icon errors likewise occur
+          outside the catch and may interrupt later synchronous emitter callbacks, including
+          events emitted after transaction commit without undoing persistence. The service has
+          no automatic retry or replay, and slack/test success does not report later delivery errors.
         sources:
           - core/server/services/slack-ping/index.ts
           - core/server/services/slack-ping/slack-ping-service.ts
+          - core/kernel/define-service.ts
           - core/server/lib/common/events.js
           - core/server/models/base/plugins/events.js
           - core/server/api/endpoints/slack.js
         tests:
+          - test/unit/server/services/slack-ping/index.test.ts
           - test/unit/server/services/slack-ping/slack-ping-service.test.js
+          - test/e2e-server/slack-ping.isolated.test.ts
     unverified: []
     blockers:
       - >-
-        Add root export, construction, idempotence and partial-subscription failure contracts.
-        Existing tests construct the implementation; registration assertions check on calls
-        against a fake emitter, not removeListener, callback counts or repeated subscriptions.
-      - >-
-        Exercise real boot, post publication and slack/test through the actual emitter and
-        wrapper. The API test mocks emission; class tests use fake URL/image/cache dependencies
-        and inject @tryghost/request, while production injects request-external. They do not
-        establish real routing, constructor wiring, startup readiness or production HTTP policy.
-      - >-
-        Characterize changed settings on a retained instance, custom username/title/icon,
-        custom excerpts and default-slug suppression. The existing missing-URL case only checks
-        helper calls; it does not assert no request. Tag forwarding is tested against a stub,
-        not a real collection-filter route.
-      - >-
         Decide and test listener ownership across restart/replacement and externally cleared
-        emitters. Stable callbacks only prevent duplication for the same implementation object;
-        the wrapper guard cannot recover a cleared listener set or finish failed registration.
+        emitters. Stable callbacks prevent duplication only for one implementation object;
+        successful init does not restore externally removed callbacks. Failed-start rollback
+        and explicit retry are covered, but there is still no normal shutdown/reset contract.
       - >-
-        Characterize pending sends, overlapping events and shutdown with the real request helper.
-        The request-error test observes one log through an alternate injected transport; it
-        does not prove exact error context, direct-ping settlement, timeout behavior, cancellation
-        or shared-agent disposal. Keep per-request timeout distinct from an overall deadline.
+        Characterize shutdown with pending or overlapping sends through the real request helper,
+        plus production timeout, cancellation, DNS and shared-agent disposal behavior. The HTTP
+        suite verifies pending delivery and logged rejection under test hooks, and root tests
+        overlap stubbed requests; neither establishes shutdown draining or production HTTP policy.
+        Keep per-request timeout distinct from an overall deadline.
       - >-
         Add synchronous failure contracts for malformed models/settings and throwing URL/icon
-        or request dependencies. Those failures bypass the request rejection handler and can
-        escape model/API event emission even when Slack is disabled or the post is later skipped.
+        dependencies, including disabled Slack and skipped-post paths. The root tests cover
+        synchronous request throws, but not these earlier failures or their effect on later
+        callbacks and already-committed model changes.
+      - >-
+        Complete no-request coverage for every default slug and missing-URL post delivery,
+        and live title/icon changes on an already initialized instance. Existing tests cover
+        welcome/page suppression, disabling a test notification, changed URL/username, and
+        initial custom title/icon values, but not every live-setting and suppression case.
   staff:
     kind: directory
     disposition: retain
