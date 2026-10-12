@@ -6,7 +6,7 @@ import { actingContext, service } from '../../services/app-installations';
 interface InstallationOptions {
   id: string;
   context: unknown;
-  // The framework passes `include` on as `withRelated`.
+  // The API framework turns the `include` query parameter into `withRelated`.
   withRelated?: string[];
   [key: string]: unknown;
 }

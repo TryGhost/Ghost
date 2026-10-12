@@ -19,20 +19,20 @@ export const AppInstallationRow = z.object({
 
 export interface HistoryActor {
   id: string;
-  /** Null when the user no longer exists. */
+  /** Null when the user has since been deleted. */
   name: string | null;
 }
 
 /**
- * `actor` is null when Ghost acted by itself (`updated`, `suspended`), or when who acted
- * wasn't recorded.
+ * `actor` is null for changes Ghost made by itself (`updated`, `suspended`), and for an
+ * install that staff history has no record of.
  */
 export interface AppInstallationHistoryEntry {
   id: string;
   event: 'installed' | 'updated' | 'suspended' | 'changes_approved' | 'uninstalled';
   actor: HistoryActor | null;
   created_at: Date;
-  /** Only on a `changes_approved` entry that moved the app. */
+  /** Set on a `changes_approved` entry when the approved changes moved the app to another host. */
   moved_to?: string;
 }
 

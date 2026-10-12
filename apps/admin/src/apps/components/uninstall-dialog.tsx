@@ -20,7 +20,10 @@ import { AdminLink } from '@/shared/admin-link';
 
 interface UninstallDialogProps {
   installation: AppInstallation | null;
-  /** Also called after uninstalling, before `onUninstalled`. */
+  /**
+   * Called whenever the dialog closes, including after a successful uninstall, just before
+   * `onUninstalled`.
+   */
   onClose: () => void;
   onUninstalled?: (installation: AppInstallation) => void;
 }
@@ -31,7 +34,8 @@ export const UninstallDialog: React.FC<UninstallDialogProps> = ({
   onUninstalled,
 }) => {
   const { mutateAsync: uninstall, isPending } = useUninstallAppInstallation();
-  // The app last shown, so the dialog still names it while it closes.
+  // `installation` is already null while the dialog animates closed, so keep the last one
+  // to still show its name in the title.
   const [shown, setShown] = useState(installation);
   if (installation && installation !== shown) {
     setShown(installation);

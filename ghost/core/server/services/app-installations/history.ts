@@ -14,12 +14,16 @@ export interface HistoryAction {
   id: string;
   event: string;
   actor: HistoryActor;
-  /** Unparsed JSON. */
+  /** JSON text, not yet parsed. */
   context: string | null;
   created_at: Date;
 }
 
-/** `from` and `to` are missing when the action's context doesn't name an existing manifest. */
+/**
+ * The manifests the app ran before and after the approval, looked up by the ids in the
+ * action's context. Either is undefined when the context has no id for it, or the id
+ * matches no manifest row.
+ */
 interface Approval {
   action: HistoryAction;
   from?: HistoryManifest;
@@ -28,7 +32,10 @@ interface Approval {
 
 type Entry = AppInstallationHistoryEntry;
 
-/** Both inputs must be oldest first, so events in the same second keep their order. */
+/**
+ * Expects both lists oldest first. Timestamps are only precise to the second, so for events
+ * in the same second the input order is the only record of which came first.
+ */
 export function buildHistory(
   manifests: HistoryManifest[],
   actions: HistoryAction[],
@@ -58,7 +65,11 @@ function installOf(manifests: HistoryManifest[], actions: HistoryAction[]): Entr
   ];
 }
 
-/** A manifest an approval points at shows as that approval instead. */
+/**
+ * Every manifest after the first is a change Ghost picked up by itself: applied straight
+ * away (`updated`) or held for an Administrator to approve (`suspended`). The manifest an
+ * approval switched the app to is skipped, because the approval's own entry covers it.
+ */
 function updatesAndSuspensionsOf(manifests: HistoryManifest[], approvals: Approval[]): Entry[] {
   const approved = new Set(approvals.map(({ to }) => to?.id));
   return manifests
@@ -111,8 +122,9 @@ function approvalsIn(actions: HistoryAction[], manifests: HistoryManifest[]): Ap
 }
 
 /**
- * Reversing an ascending sort, unlike sorting descending, also puts entries from the same
- * second newest first.
+ * Sorts ascending and then reverses, rather than sorting descending. The sort is stable, so
+ * entries from the same second stay in input order (oldest first), and reversing then puts
+ * them newest first along with everything else.
  */
 function newestFirst(entries: Entry[]): Entry[] {
   return entries.sort((a, b) => a.created_at.getTime() - b.created_at.getTime()).reverse();

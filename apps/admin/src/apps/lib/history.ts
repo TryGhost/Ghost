@@ -1,6 +1,9 @@
 import type { AppInstallationHistoryEntry } from '@tryghost/admin-x-framework/api/app-installations';
 
-/** An event from a newer Ghost that this Admin doesn't know yet reads as "Changed". */
+/**
+ * Admin and Ghost deploy separately, so Ghost may send an event this Admin doesn't know yet.
+ * It shows as "Changed".
+ */
 export function historyTitle(entry: AppInstallationHistoryEntry): string {
   switch (entry.event) {
     case 'installed':

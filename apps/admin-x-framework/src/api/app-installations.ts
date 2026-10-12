@@ -19,13 +19,16 @@ export interface AppInstallation {
   history?: AppInstallationHistoryEntry[];
 }
 
-/** `actor` is null when Ghost acted by itself, or when who acted wasn't recorded. */
+/**
+ * `actor` is null for changes Ghost made by itself (`updated`, `suspended`), and for an
+ * install that staff history has no record of.
+ */
 export interface AppInstallationHistoryEntry {
   id: string;
   event: 'installed' | 'updated' | 'suspended' | 'changes_approved' | 'uninstalled';
   actor: { id: string; name: string | null } | null;
   created_at: string;
-  /** Only on a `changes_approved` entry that moved the app. */
+  /** Set on a `changes_approved` entry when the approved changes moved the app to another host. */
   moved_to?: string;
 }
 
@@ -72,7 +75,8 @@ export interface ReviewedAppManifest {
 }
 
 const dataType = 'AppInstallationsResponseType';
-// Installing, approving and uninstalling also add to staff history, so its cache is refetched too.
+// Installing, approving and uninstalling each add an entry to staff history (Settings ›
+// History), so that list is refetched too.
 const changedDataTypes = { dataType: [dataType, 'ActionsResponseType'] };
 
 export const useBrowseAppInstallations = createQuery<AppInstallationsResponseType>({
@@ -80,7 +84,10 @@ export const useBrowseAppInstallations = createQuery<AppInstallationsResponseTyp
   path: '/apps/installations/',
 });
 
-/** Unlike `useBrowseAppInstallations`, this also reads uninstalled installations. */
+/**
+ * Unlike `useBrowseAppInstallations`, this also reads uninstalled installations, so an
+ * uninstalled app's details page still loads.
+ */
 export const useReadAppInstallation = createQueryWithId<AppInstallationsResponseType>({
   dataType,
   path: (id) => `/apps/installations/${id}/`,

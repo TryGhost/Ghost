@@ -7,8 +7,9 @@ function linkOf(row: HTMLElement): HTMLAnchorElement | null {
 }
 
 /**
- * React bubbles clicks from portals, such as the row's menu, up through the row, so
- * `contains` leaves those alone.
+ * Lets a click anywhere on a table row open the link inside it. The `contains` check is
+ * needed because React bubbles events through portals: a click on an item in the row's
+ * dropdown menu, which renders outside the row, still reaches this handler.
  */
 export function openRowLink(event: React.MouseEvent<HTMLElement>): void {
   if (

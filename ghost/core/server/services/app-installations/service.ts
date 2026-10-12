@@ -188,7 +188,10 @@ export class AppInstallationsService {
     return rows.map((row) => z.decode(AppInstallationRow, row));
   }
 
-  /** Unlike `browse`, this also reads uninstalled installations. */
+  /**
+   * Unlike `browse`, this also reads uninstalled installations, so their details can still
+   * be shown.
+   */
   async read(
     id: string,
     { withHistory = false }: { withHistory?: boolean } = {},

@@ -91,7 +91,7 @@ const appRoutes: RouteObject[] = [
     lazy: lazyComponent(lazyAppInstallScreen),
   },
   {
-    // Not `/apps/:id`, which is left for the app's own pages.
+    // Under `/apps/details/` because `/apps/:id` is where an app's own pages open.
     path: '/apps/details/:installationId',
     handle: { requiresAccess: canManageApps } satisfies AccessRouteHandle,
     lazy: lazyComponent(lazyAppDetailsScreen),

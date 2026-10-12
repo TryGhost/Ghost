@@ -5,20 +5,23 @@ function pageUrl(manifest: AppManifest): URL {
   const page =
     manifest.surfaces.find((surface) => surface.type === 'admin_page') ?? manifest.surfaces[0];
   if (!page) {
-    // A plain Error: a valid manifest always has a surface, and the root entry point
-    // can't depend on @tryghost/errors.
+    // Parsing rejects a manifest without surfaces, so this only throws on a bug. It's a
+    // plain Error because this package's root entry point has no dependencies.
     // eslint-disable-next-line ghost/ghost-custom/no-native-error
     throw new Error('The manifest has no surfaces');
   }
   return new URL(page.url);
 }
 
-/** The page's host, which can differ from the host the manifest was read from. */
+/**
+ * The host the app's page loads from, such as `podcast.example.com`. That's where the app
+ * runs, which can differ from where its manifest is hosted.
+ */
 export function servedFrom(manifest: AppManifest): string {
   return pageUrl(manifest).host;
 }
 
-/** Ghost only allows these in development. */
+/** Whether the app's page loads from localhost. Ghost only allows such apps in development. */
 export function isDevelopmentApp(manifest: AppManifest): boolean {
   return isLocalhost(pageUrl(manifest).hostname);
 }
@@ -34,8 +37,9 @@ export interface AppMove {
 }
 
 /**
- * A new host for the page counts first, then one for the manifest. A different path on the
- * same host isn't a move, since the same party serves both.
+ * Whether the app moved to another host between two versions, and from where to where. A
+ * new page host counts first; otherwise a new manifest host does. A new path on the same
+ * host isn't a move, because the same party still serves the app.
  */
 export function movedBetween(approved: ServedManifest, reviewed: ServedManifest): AppMove | null {
   const pages = { from: servedFrom(approved.manifest), to: servedFrom(reviewed.manifest) };
