@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import type { AppManifest } from '@tryghost/app-contracts/manifest';
 import {
   buildHistory,
-  manifestIdsApprovalsName,
+  approvalManifestIds,
   type HistoryAction,
   type HistoryManifest,
 } from '../../../../../core/server/services/app-installations/history';
@@ -232,9 +232,9 @@ describe('buildHistory', function () {
   });
 });
 
-describe('manifestIdsApprovalsName', function () {
-  it('lists each manifest an approval names once', function () {
-    const ids = manifestIdsApprovalsName([
+describe('approvalManifestIds', function () {
+  it('lists the manifests before and after each approval, once each', function () {
+    const ids = approvalManifestIds([
       action('a1', 'installed', '2026-10-01T10:00:00.000Z'),
       action('a2', 'changes_approved', '2026-10-02T10:00:00.000Z', {
         from_manifest_id: 'm1',

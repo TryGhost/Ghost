@@ -20,7 +20,7 @@ import {
   type CurrentInstallation,
 } from './codec';
 import type { FetchManifest } from './fetch-manifest';
-import { buildHistory, manifestIdsApprovalsName, type HistoryAction } from './history';
+import { buildHistory, approvalManifestIds, type HistoryAction } from './history';
 import { DbAppInstallationManifest, StoredManifest, type AppInstallationStatus } from './schema';
 
 const INSTALLATIONS = 'app_installations';
@@ -34,7 +34,7 @@ const HistoryManifestRow = DbAppInstallationManifest.pick({
   created_at: true,
 });
 
-const HistoryManifestBody = DbAppInstallationManifest.pick({ id: true, manifest: true });
+const ManifestContentRow = DbAppInstallationManifest.pick({ id: true, manifest: true });
 
 const HistoryActionRow = z
   .object({
@@ -241,30 +241,29 @@ export class AppInstallationsService {
     return buildHistory(
       manifests,
       actions,
-      await this.manifestBodies(manifestIdsApprovalsName(actions)),
+      await this.loadManifestContents(approvalManifestIds(actions)),
     );
   }
 
   /**
-   * Loads the manifests that approvals point to.
-   * The history only uses them to tell if an approval moved the app.
+   * Loads the contents of these manifests, by id.
    * A row that no longer decodes is skipped, so one bad row can't break the page.
    */
-  private async manifestBodies(ids: string[]): Promise<Map<string, AppManifest>> {
+  private async loadManifestContents(ids: string[]): Promise<Map<string, AppManifest>> {
     if (ids.length === 0) {
       return new Map();
     }
     const rows = await this.knex(MANIFESTS)
       .whereIn('id', ids)
-      .select<z.input<typeof HistoryManifestBody>[]>('id', 'manifest');
-    const bodies = new Map<string, AppManifest>();
+      .select<z.input<typeof ManifestContentRow>[]>('id', 'manifest');
+    const contents = new Map<string, AppManifest>();
     for (const row of rows) {
-      const decoded = HistoryManifestBody.safeDecode(row);
+      const decoded = ManifestContentRow.safeDecode(row);
       if (decoded.success) {
-        bodies.set(decoded.data.id, decoded.data.manifest);
+        contents.set(decoded.data.id, decoded.data.manifest);
       }
     }
-    return bodies;
+    return contents;
   }
 
   /**

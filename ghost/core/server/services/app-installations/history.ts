@@ -34,26 +34,26 @@ interface Approval {
 type Entry = AppInstallationHistoryEntry;
 
 /**
- * `manifestBodies` maps ids to manifest contents.
- * It only needs the manifests that approvals point to.
+ * `manifestContents` holds the manifests before and after each approval, by id.
+ * They're only used to tell whether an approval moved the app.
  */
 export function buildHistory(
   manifests: HistoryManifest[],
   actions: HistoryAction[],
-  manifestBodies: Map<string, AppManifest>,
+  manifestContents: Map<string, AppManifest>,
 ): AppInstallationHistoryEntry[] {
   const approvals = approvalsIn(actions);
   const urls = new Map(manifests.map((manifest) => [manifest.id, manifest.manifest_url]));
   return newestFirst([
     ...installOf(manifests, actions),
     ...updatesAndSuspensionsOf(manifests),
-    ...approvals.map((approval) => approvalEntry(approval, urls, manifestBodies)),
+    ...approvals.map((approval) => approvalEntry(approval, urls, manifestContents)),
     ...uninstallsIn(actions),
   ]);
 }
 
-/** The ids of the manifests that approvals point to. */
-export function manifestIdsApprovalsName(actions: HistoryAction[]): string[] {
+/** The ids of the manifests before and after each approval. */
+export function approvalManifestIds(actions: HistoryAction[]): string[] {
   return [...new Set(approvalsIn(actions).flatMap(({ from, to }) => [from, to]))];
 }
 
@@ -91,10 +91,10 @@ function updatesAndSuspensionsOf(manifests: HistoryManifest[]): Entry[] {
 function approvalEntry(
   { action, from, to }: Approval,
   urls: Map<string, string>,
-  bodies: Map<string, AppManifest>,
+  contents: Map<string, AppManifest>,
 ): Entry {
-  const before = served(from, urls, bodies);
-  const after = served(to, urls, bodies);
+  const before = servedManifest(from, urls, contents);
+  const after = servedManifest(to, urls, contents);
   const move = before && after ? movedBetween(before, after) : null;
   return {
     id: action.id,
@@ -105,9 +105,9 @@ function approvalEntry(
   };
 }
 
-function served(id: string, urls: Map<string, string>, bodies: Map<string, AppManifest>) {
+function servedManifest(id: string, urls: Map<string, string>, contents: Map<string, AppManifest>) {
   const manifestUrl = urls.get(id);
-  const manifest = bodies.get(id);
+  const manifest = contents.get(id);
   return manifestUrl && manifest ? { manifestUrl, manifest } : undefined;
 }
 
