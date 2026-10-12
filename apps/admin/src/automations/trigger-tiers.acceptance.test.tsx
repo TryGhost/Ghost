@@ -10,7 +10,7 @@ import { detail, setup } from './run-history.test-utils';
 const flags = { labs: { automations: true, automationRunAnalytics: true } };
 const picker = () => page.getByRole('combobox', { name: 'Tiers', exact: true });
 const scope = () => page.getByRole('combobox', { name: 'Paid tier scope', exact: true });
-const chips = () => page.getByRole('article', { name: 'Paid subscription starts', exact: true });
+const chips = () => page.getByRole('article', { name: 'Paid subscription started', exact: true });
 const selectScope = async (name = 'Selected tier(s)') => {
   await scope().click();
   await page.getByRole('option', { name, exact: true }).click();
