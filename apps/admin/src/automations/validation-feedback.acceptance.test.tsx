@@ -84,7 +84,8 @@ describe('Automation action validation feedback', () => {
   for (const enabled of [false, true]) {
     for (const status of ['inactive', 'active'] as const) {
       it(
-        (enabled ? 'shows a text popover' : 'keeps the error toast') +
+        'shows a text popover with the flag ' +
+          (enabled ? 'on' : 'off') +
           ' when ' +
           status +
           ' publishing is blocked',
@@ -101,39 +102,36 @@ describe('Automation action validation feedback', () => {
             exact: true,
           });
           const toast = page.getByText('Automation needs a few details', { exact: true });
+          await expect.element(message).toBeVisible();
+          await expect.element(toast).not.toBeInTheDocument();
           if (enabled) {
-            await expect.element(message).toBeVisible();
-            await expect.element(toast).not.toBeInTheDocument();
             await expect
               .element(page.getByRole('button', { name: 'Why this step needs attention' }))
               .toBeVisible();
-            await userEvent.keyboard('{Escape}');
-            await expect.element(message).not.toBeInTheDocument();
-            await expect.element(publish).toHaveFocus();
-            await publish.click();
-            await expect.element(message).toBeVisible();
-            await page.getByRole('textbox', { name: 'Subject line' }).click();
-            await page.getByRole('textbox', { name: 'Subject line' }).fill('Fixed');
-            await expect
-              .element(page.getByRole('textbox', { name: 'Subject line' }))
-              .toHaveValue('Fixed');
-            await expect.element(page.getByRole('textbox', { name: 'Subject line' })).toHaveFocus();
-            await expect.element(message).not.toBeInTheDocument();
-            await publish.click();
-            await expect.element(page.getByRole('alertdialog')).toBeVisible();
-            await page
-              .getByRole('alertdialog')
-              .getByRole('button', { name: 'Cancel', exact: true })
-              .click();
-            await expect.element(page.getByRole('alertdialog')).not.toBeInTheDocument();
-            // The existing confirmation has no DialogTrigger and restores focus to body.
-            // Wait for that cleanup before mounting the next test's editor.
-            await expect.poll(() => document.activeElement === document.body).toBe(true);
-          } else {
-            await expect.element(toast).toBeVisible();
-            await expect.element(message).not.toBeInTheDocument();
-            await expect.element(page.getByRole('alertdialog')).not.toBeInTheDocument();
           }
+          await userEvent.keyboard('{Escape}');
+          await expect.element(message).not.toBeInTheDocument();
+          await expect.element(publish).toHaveFocus();
+          await publish.click();
+          await expect.element(message).toBeVisible();
+          const subject = enabled
+            ? page.getByRole('textbox', { name: 'Subject line' })
+            : page.getByPlaceholder('Subject line');
+          await subject.click();
+          await subject.fill('Fixed');
+          await expect.element(subject).toHaveValue('Fixed');
+          await expect.element(subject).toHaveFocus();
+          await expect.element(message).not.toBeInTheDocument();
+          await publish.click();
+          await expect.element(page.getByRole('alertdialog')).toBeVisible();
+          await page
+            .getByRole('alertdialog')
+            .getByRole('button', { name: 'Cancel', exact: true })
+            .click();
+          await expect.element(page.getByRole('alertdialog')).not.toBeInTheDocument();
+          // The existing confirmation has no DialogTrigger and restores focus to body.
+          // Wait for that cleanup before mounting the next test's editor.
+          await expect.poll(() => document.activeElement === document.body).toBe(true);
           expect(save.requests).toHaveLength(0);
         },
       );

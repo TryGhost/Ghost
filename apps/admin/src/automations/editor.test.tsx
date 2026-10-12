@@ -2101,15 +2101,47 @@ describe('AutomationEditor', () => {
       screen.queryByRole('alertdialog', { name: 'Start your automation?' }),
     ).not.toBeInTheDocument();
     expect(mockEditMutation.mutate).not.toHaveBeenCalled();
-    expect(mockToastError).toHaveBeenCalledWith('Automation needs a few details', {
-      description: 'Fix the highlighted steps and try again.',
-    });
+    expect(screen.getByText('Fix all issues to publish this automation.')).toBeVisible();
+    expect(mockToastError).not.toHaveBeenCalled();
 
     const emailStep = screen.getByRole('button', { name: 'Send email: Welcome to The Blueprint' });
     expect(emailStep).toHaveAttribute('aria-invalid', 'true');
     expect(emailStep).toHaveClass('border-destructive');
     expect(within(emailStep).getByText('Add an email body.')).toHaveClass('text-destructive');
   });
+
+  it.each([
+    { status: 'inactive', label: 'Save', action: 'save' },
+    { status: 'inactive', label: 'Publish', action: 'publish' },
+    { status: 'active', label: 'Turn off', action: 'turn off' },
+  ] as const)(
+    'blocks $label with no selected paid tiers even without run analytics',
+    async ({ status, label, action }) => {
+      mockUseReadAutomation.mockReturnValue({
+        data: {
+          automations: [
+            {
+              ...automationDetail,
+              status,
+              trigger_tier_scope: 'selected_paid',
+              trigger_tier_ids: [],
+            },
+          ],
+        },
+        isLoading: false,
+        isError: false,
+      });
+
+      renderEditor();
+      await stageLocalEdit();
+      fireEvent.click(screen.getByRole('button', { name: label, exact: true }));
+
+      expect(screen.getByText(`Fix all issues to ${action} this automation.`)).toBeVisible();
+      expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
+      expect(mockEditMutation.mutate).not.toHaveBeenCalled();
+      expect(mockToastError).not.toHaveBeenCalled();
+    },
+  );
 
   it('saves an inactive automation without publishing it', async () => {
     mockUseReadAutomation.mockReturnValue({
@@ -2682,7 +2714,7 @@ describe('AutomationEditor', () => {
     expect(screen.getByRole('button', { name: 'Publish changes' })).toBeEnabled();
   });
 
-  it('shows a toast and highlights email steps with missing content when publishing fails validation', async () => {
+  it('shows validation feedback and highlights email steps with missing content when publishing is blocked', async () => {
     mockUseReadAutomation.mockReturnValue({
       data: { automations: [{ ...automationDetail, status: 'inactive' }] },
       isLoading: false,
@@ -2698,9 +2730,8 @@ describe('AutomationEditor', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Publish' }));
 
     expect(mockEditMutation.mutate).not.toHaveBeenCalled();
-    expect(mockToastError).toHaveBeenCalledWith('Automation needs a few details', {
-      description: 'Fix the highlighted steps and try again.',
-    });
+    expect(screen.getByText('Fix all issues to publish this automation.')).toBeVisible();
+    expect(mockToastError).not.toHaveBeenCalled();
 
     let emailStep = screen.getByRole('button', { name: 'Send email: Untitled' });
     expect(emailStep).toHaveAttribute('aria-invalid', 'true');
@@ -3257,9 +3288,8 @@ describe('AutomationEditor', () => {
       screen.queryByRole('alertdialog', { name: 'Update your automation?' }),
     ).not.toBeInTheDocument();
     expect(mockEditMutation.mutate).not.toHaveBeenCalled();
-    expect(mockToastError).toHaveBeenCalledWith('Automation needs a few details', {
-      description: 'Fix the highlighted steps and try again.',
-    });
+    expect(screen.getByText('Fix all issues to publish this automation.')).toBeVisible();
+    expect(mockToastError).not.toHaveBeenCalled();
     expect(screen.getByRole('button', { name: 'Publish changes' })).toBeEnabled();
 
     const emailStep = screen.getByRole('button', { name: 'Send email: Welcome to The Blueprint' });
