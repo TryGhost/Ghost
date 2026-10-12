@@ -27,12 +27,12 @@ const action = (
   id: string,
   event: string,
   createdAt: string,
-  context: Record<string, string> | null = {},
+  context: Record<string, string> = {},
 ): HistoryAction => ({
   id,
   event,
   actor: jamie,
-  context: context && JSON.stringify(context),
+  context: JSON.stringify(context),
   created_at: new Date(createdAt),
 });
 
@@ -197,16 +197,6 @@ describe('buildHistory', function () {
       ['updated', 'changes_approved', 'installed'],
     );
   });
-
-  it('copes with an approval whose record is missing or unreadable', function () {
-    const history = buildHistory(
-      [manifestRow('m1', '2026-10-01T10:00:00.000Z')],
-      [action('a2', 'changes_approved', '2026-10-02T10:00:00.000Z', null)],
-      new Map(),
-    );
-
-    assert.deepEqual(summary(history)[0], ['changes_approved', 'Jamie Larson', null]);
-  });
 });
 
 describe('manifestIdsApprovalsName', function () {
@@ -221,7 +211,6 @@ describe('manifestIdsApprovalsName', function () {
         from_manifest_id: 'm2',
         to_manifest_id: 'm2',
       }),
-      action('a4', 'changes_approved', '2026-10-04T10:00:00.000Z', null),
     ]);
 
     assert.deepEqual(ids, ['m1', 'm2']);

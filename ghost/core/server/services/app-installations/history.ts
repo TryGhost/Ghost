@@ -1,4 +1,5 @@
 import { movedBetween, type AppManifest } from '@tryghost/app-contracts/manifest';
+import { z } from 'zod';
 import type { AppInstallationEvent } from './actions';
 import type { AppInstallationHistoryEntry, HistoryActor } from './codec';
 
@@ -18,14 +19,17 @@ export interface HistoryAction {
   created_at: Date;
 }
 
-/**
- * Manifest ids from the approval's context. Any of them can be missing.
- * Older approvals never have `inserted`.
- */
+const ApprovalContext = z.object({
+  from_manifest_id: z.string(),
+  to_manifest_id: z.string(),
+  inserted_manifest_id: z.string().optional(),
+});
+
+/** `inserted` is only set when the approval created a new manifest row. */
 interface Approval {
   action: HistoryAction;
-  from?: string;
-  to?: string;
+  from: string;
+  to: string;
   inserted?: string;
 }
 
@@ -53,8 +57,7 @@ export function buildHistory(
 
 /** The ids of the manifests that approvals point to. */
 export function manifestIdsApprovalsName(actions: HistoryAction[]): string[] {
-  const ids = approvalsIn(actions).flatMap(({ from, to }) => [from, to]);
-  return [...new Set(ids.filter((id): id is string => id !== undefined))];
+  return [...new Set(approvalsIn(actions).flatMap(({ from, to }) => [from, to]))];
 }
 
 function installOf(manifests: HistoryManifest[], actions: HistoryAction[]): Entry[] {
@@ -97,8 +100,8 @@ function approvalEntry(
   urls: Map<string, string>,
   bodies: Map<string, AppManifest>,
 ): Entry {
-  const before = from ? served(from, urls, bodies) : undefined;
-  const after = to ? served(to, urls, bodies) : undefined;
+  const before = served(from, urls, bodies);
+  const after = served(to, urls, bodies);
   const move = before && after ? movedBetween(before, after) : null;
   return {
     id: action.id,
@@ -126,12 +129,12 @@ function uninstallsIn(actions: HistoryAction[]): Entry[] {
 
 function approvalsIn(actions: HistoryAction[]): Approval[] {
   return actions.filter(withEvent('changes_approved')).map((action) => {
-    const context = contextOf(action);
+    const context = ApprovalContext.parse(JSON.parse(action.context ?? 'null'));
     return {
       action,
-      from: idIn(context, 'from_manifest_id'),
-      to: idIn(context, 'to_manifest_id'),
-      inserted: idIn(context, 'inserted_manifest_id'),
+      from: context.from_manifest_id,
+      to: context.to_manifest_id,
+      inserted: context.inserted_manifest_id,
     };
   });
 }
@@ -149,17 +152,3 @@ function newestFirst(entries: Entry[]): Entry[] {
 
 const withEvent = (event: AppInstallationEvent) => (action: HistoryAction) =>
   action.event === event;
-
-function contextOf(action: HistoryAction): Record<string, unknown> {
-  try {
-    const parsed: unknown = action.context ? JSON.parse(action.context) : null;
-    return parsed !== null && typeof parsed === 'object' ? (parsed as Record<string, unknown>) : {};
-  } catch {
-    return {};
-  }
-}
-
-function idIn(context: Record<string, unknown>, key: string): string | undefined {
-  const value = context[key];
-  return typeof value === 'string' ? value : undefined;
-}
