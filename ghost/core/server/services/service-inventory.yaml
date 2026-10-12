@@ -1,7 +1,9 @@
 # Temporary migration inventory. See README.md before updating.
 # Entry points are relative to this directory; evidence paths are relative to ghost.
 # An unverified facet is an open audit question, not an empty/no-op contract.
-version: 1
+summary:
+  total: 70
+  migrated: 3
 services:
   activitypub:
     kind: directory
@@ -1044,7 +1046,7 @@ services:
         tests:
           - test/unit/server/services/automations/automations-api.test.ts
           - test/unit/server/services/automations/service.test.ts
-          - test/e2e-api/admin/automations.test.js
+          - test/e2e-api/admin/automations.test.ts
           - test/integration/services/automations/database-automations-repository.test.ts
       construction:
         summary: >-
@@ -1122,7 +1124,7 @@ services:
           - test/unit/boot-email-analytics.test.ts
           - test/e2e-server/boot-readiness.isolated.test.ts
           - test/unit/server/services/automations/service.test.ts
-          - test/e2e-api/admin/automations.test.js
+          - test/e2e-api/admin/automations.test.ts
       lifetime:
         summary: >-
           Successful init keeps its original callbacks, scheduler, key owner and timer; there is
@@ -1175,7 +1177,7 @@ services:
           - test/unit/server/services/automations/fake-wait-hours-multiplier.test.ts
           - test/unit/server/services/automations/scheduler-poll-time.test.ts
           - test/unit/server/services/automations/poll.test.ts
-          - test/e2e-api/admin/automations.test.js
+          - test/e2e-api/admin/automations.test.ts
       resources:
         summary: >-
           The service owns two DomainEvents subscriptions and a referenced SoonestTimer with
@@ -1234,7 +1236,7 @@ services:
           - test/unit/server/services/automations/poll.test.ts
           - test/integration/services/automations/welcome-email-automation-poll.test.ts
           - test/e2e-api/admin/automation-run-history-execution.test.ts
-          - test/e2e-api/admin/automations.test.js
+          - test/e2e-api/admin/automations.test.ts
           - test/e2e-api/admin/automation-performance-stats.test.ts
           - test/e2e-api/admin/automation-runs.test.ts
     unverified: []
@@ -1749,14 +1751,14 @@ services:
           - core/frontend/web/site.js
           - core/server/api/endpoints/redirects.js
           - core/server/api/endpoints/exports.js
-          - core/server/services/exports/site-exporter.ts
+          - core/server/data/exporter/site-exporter.ts
           - core/server/adapters/redirects/FileStore.ts
           - core/server/adapters/redirects/S3RedirectsStore.ts
         tests:
           - test/legacy/api/admin/redirects.test.js
           - test/e2e-api/admin/redirects.test.js
           - test/e2e-api/admin/exports-download.test.js
-          - test/unit/server/services/exports/site-exporter.test.ts
+          - test/unit/server/data/exporter/site-exporter.test.ts
       startup:
         summary: >-
           Boot awaits custom redirects after route settings and before link redirection, themes,
@@ -1857,12 +1859,12 @@ services:
           - core/server/services/custom-redirects/redirect-config-parser.ts
           - core/server/adapters/redirects/FileStore.ts
           - core/server/adapters/redirects/S3RedirectsStore.ts
-          - core/server/services/exports/site-exporter.ts
+          - core/server/data/exporter/site-exporter.ts
           - core/server/api/endpoints/redirects.js
         tests:
           - test/unit/server/services/custom-redirects/redirects-service.test.ts
           - test/unit/server/adapters/redirects/file-store.test.ts
-          - test/unit/server/services/exports/site-exporter.test.ts
+          - test/unit/server/data/exporter/site-exporter.test.ts
           - test/unit/server/services/custom-redirects/redirect-config-parser.test.ts
     unverified: []
     blockers:
@@ -3358,7 +3360,7 @@ services:
           spoofing and invalid components. Staff-token behavior is source-only.
         sources:
           - core/server/api/endpoints/exports.js
-          - core/server/services/exports/export-components.ts
+          - core/server/data/exporter/export-components.ts
           - core/server/web/api/endpoints/admin/routes.js
           - core/server/web/api/endpoints/admin/middleware.js
           - core/server/api/endpoints/utils/permissions.js
@@ -3471,187 +3473,6 @@ services:
         failures without treating local 202 as completed export generation. There is no local
         job persistence, idempotency or compensation; the host's behavior is outside this
         repository and intercepted HTTP tests cannot prove remote completion.
-  exports:
-    kind: directory
-    disposition: relocate
-    status: audited
-    auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
-    entryPoints:
-      - exports/site-exporter.ts
-      - exports/export-components.ts
-    notes: >-
-      Relocate caller-constructed archive support to server/lib/site-export. Preserve
-      operation-owned streams, partial-export policy and temporary-file cleanup.
-    contracts:
-      exports:
-        summary: >-
-          There is no index. TypeScript exports the SiteExporter class, type-only dependencies,
-          and synchronous/asynchronous component arrays. as const is compile-time readonly;
-          the arrays are not frozen at runtime, and the async list is a separate initial copy
-          with media appended. Receiver-dependent createArchive returns a new Archiver stream
-          synchronously; no init/stop/reset exists. Units consume real archives from constructed
-          classes, but do not assert complete module shape or runtime constant mutation behavior.
-        sources:
-          - core/server/services/exports/site-exporter.ts
-          - core/server/services/exports/export-components.ts
-        tests:
-          - test/unit/server/services/exports/site-exporter.test.ts
-      construction:
-        summary: >-
-          SiteExporter retains the supplied dependency object without executing or validating
-          its callbacks. Each Admin download constructs it anew; createArchive lazily loads
-          Archiver, creates per-archive cleanup state and starts asynchronous population before
-          returning. The endpoint retains its own PostsService and other service wrappers, while
-          callbacks read current members/theme/route/redirect APIs. Units inject dependencies;
-          real download HTTP exercises current endpoint construction, not constructor timing,
-          dependency replacement or multiple archives on one retained exporter.
-        sources:
-          - core/server/services/exports/site-exporter.ts
-          - core/server/api/endpoints/exports.js
-          - core/server/services/posts/posts-service-instance.js
-        tests:
-          - test/unit/server/services/exports/site-exporter.test.ts
-          - test/e2e-api/admin/exports-download.test.js
-      consumers:
-        summary: >-
-          The exports endpoint is the sole production class consumer. Its response serializer
-          wraps the archive in the shared stream-response pipeline with zip/attachment headers
-          and no-transform. Export requests separately imports the asynchronous component list;
-          that provider request does not use SiteExporter. Real HTTP asserts selected full/subset
-          zip entries, JSON shape/posts, the members CSV header, analytics beyond the default page limit,
-          one valid nested theme zip and successful import-surface statuses. It does not compare
-          fully restored data. The members CSV split-count assertion can pass with only a header
-          and terminator; unit composition asserts filenames rather than all contents.
-        sources:
-          - core/server/api/endpoints/exports.js
-          - core/server/api/endpoints/utils/serializers/output/exports.js
-          - core/server/api/endpoints/utils/serializers/output/stream-zip-response.ts
-          - core/server/api/endpoints/utils/serializers/output/stream-response.ts
-          - core/server/services/export-requests/export-requests-service.ts
-        tests:
-          - test/e2e-api/admin/exports-download.test.js
-          - test/unit/server/services/exports/site-exporter.test.ts
-      startup:
-        summary: >-
-          There is no boot hook. The Admin endpoint is normally loaded through lazy router/API
-          getters and creates archives only on download. Callbacks require initialized member,
-          theme, route and redirect APIs plus database/URL/settings dependencies; a failed
-          component is ordinarily skipped. The HTTP route requires db.exportContent permission
-          without a feature flag. Existing HTTP tests assert editor 403 and selected validation
-          422 responses; successful real boot does not establish calls
-          before dependency readiness, restart or partially initialized component recovery.
-        sources:
-          - core/server/api/endpoints/index.js
-          - core/server/api/endpoints/exports.js
-          - core/server/web/api/endpoints/admin/routes.js
-          - core/server/web/api/app.js
-          - core/shared/express.js
-          - core/server/services/exports/site-exporter.ts
-        tests:
-          - test/e2e-api/admin/exports.test.js
-          - test/e2e-api/admin/exports-download.test.js
-      lifetime:
-        summary: >-
-          Every archive has a distinct selected-component Set and cleanup array. Population
-          follows the synchronous list order, deduplicating selection; acquiring/appending a
-          stream does not wait for its bytes to drain before later components are acquired.
-          Archive close destroys acquired sources and launches cleanup without awaiting it.
-          A source acquired after destruction is destroyed immediately; late theme staging
-          runs its cleanup directly. Tests manually destroy archives and assert a fake source
-          is destroyed and staged files disappear, including delayed theme acquisition. They
-          do not establish physical database release or real socket disconnect/shutdown behavior.
-        sources:
-          - core/server/services/exports/site-exporter.ts
-          - core/server/api/endpoints/utils/serializers/output/stream-response.ts
-        tests:
-          - test/unit/server/services/exports/site-exporter.test.ts
-      configuration:
-        summary: >-
-          No config is read by SiteExporter itself. The API defaults absent selection to all
-          synchronous components and rejects explicit empty/unknown/media selections. Routes
-          selects both routes.yaml and redirects.yaml. Nested callbacks request limit:all and
-          restricted post-field handling; members and posts capture reference/settings data
-          before streaming, while content reads selected tables sequentially without a shared
-          export transaction. Theme names are read when reached, and lazy ThemeStorage retains
-          its configured path. Tests pin subset filenames, repeated query acceptance and at
-          least twenty analytics rows, not a coherent cross-component snapshot or every limit.
-        sources:
-          - core/server/services/exports/export-components.ts
-          - core/server/services/exports/site-exporter.ts
-          - core/server/api/endpoints/exports.js
-          - core/server/services/members/import-export/export/exporter.ts
-          - core/server/services/posts/posts-exporter.js
-          - core/server/data/exporter/exporter.js
-          - core/server/services/themes/storage.js
-          - core/server/services/themes/theme-storage.js
-        tests:
-          - test/unit/server/services/exports/site-exporter.test.ts
-          - test/e2e-api/admin/exports.test.js
-          - test/e2e-api/admin/exports-download.test.js
-      resources:
-        summary: >-
-          Each operation owns a zip/compression stream, acquired CSV sources and theme staging
-          cleanup callbacks; it borrows service/database/filesystem capabilities. Endpoint
-          pipelines connect row streams to CSV transforms and the archive to HTTP. Members
-          uses a database stream; posts uses a paged async generator. Content JSON is fully
-          buffered and themes stage sequentially as files. Installed theme compression creates a
-          file stream without an output-error handler and ignores its finalization promise;
-          promise rejection does not itself destroy those streams. No root registry/cancel/drain tracks
-          pending callbacks or cleanup. Unit stream errors/disconnects use local streams/files;
-          full HTTP buffers the result. No slow-reader, bounded-memory, real DB-release or
-          cleanup-failure assertion establishes complete resource safety.
-        sources:
-          - core/server/services/exports/site-exporter.ts
-          - core/server/api/endpoints/exports.js
-          - core/server/api/endpoints/utils/serializers/output/stream-response.ts
-          - core/server/services/members/import-export/export/exporter.ts
-          - core/server/services/posts/posts-exporter.js
-          - core/server/data/exporter/exporter.js
-          - core/server/services/themes/theme-storage.js
-        tests:
-          - test/unit/server/services/exports/site-exporter.test.ts
-          - test/e2e-api/admin/exports-download.test.js
-      failures:
-        summary: >-
-          Component acquisition failures log and skip; individual theme/YAML failures preserve
-          siblings. Source-stream errors destroy the whole archive; population/finalization
-          rejection also destroys it. Shared HTTP pipeline forwards stream errors to next.
-          Cleanup promise rejections are swallowed; theme staging failures reaching its promise
-          rejection cause the endpoint to await removal,
-          whose failure can replace the original error. Pending JSON/YAML callbacks are not
-          cancelled on close. Units assert selected skipped files and mid-stream rejection;
-          CSV serializer tests assert response error identity through the same shared helper.
-          They do not prove log/cleanup-failure behavior or all zip-specific HTTP error paths.
-        sources:
-          - core/server/services/exports/site-exporter.ts
-          - core/server/api/endpoints/exports.js
-          - core/server/api/endpoints/utils/serializers/output/stream-response.ts
-        tests:
-          - test/unit/server/services/exports/site-exporter.test.ts
-          - test/unit/api/canary/utils/serializers/output/posts-export-csv.test.ts
-          - test/unit/api/canary/utils/serializers/output/members-export-csv.test.ts
-    unverified: []
-    blockers:
-      - >-
-        Preserve class/deep-import/component compatibility while relocating, and cover repeated
-        or overlapping archives plus retained callback dependencies. Successful download/import
-        statuses are not full round-trip data equality or a dependency-readiness contract.
-      - >-
-        Add real HTTP disconnect/slow-reader coverage through archive, CSV transforms and database
-        sources; pin late source acquisition, pending content/YAML work, multiple theme cleanups
-        and cleanup/finalization errors. Current manual archive destruction proves selected local
-        cleanup only; close does not await cleanup or cancel every nested operation.
-      - >-
-        Characterize component acquisition/drain ordering, partial-export reporting and coherent
-        export expectations under concurrent writes/settings changes. Content buffering and
-        multiple active streams have no global size/concurrency bound; endpoint temp-directory
-        creation and cleanup failure need explicit ownership before moving composition. Nested
-        theme-compression output errors, early stat failure and ignored finalization rejection
-        need characterization; endpoint rejection handling does not cover every acquired stream.
-      - >-
-        Strengthen artifact assertions where needed: exact nonempty member rows, complete selected
-        contents, sensitive-setting fixture preconditions and restored data. Existing HTTP checks
-        protect useful headers/archives and acceptance, not every field or leak-prevention branch.
   gift-links:
     kind: directory
     disposition: retain
@@ -4298,7 +4119,7 @@ services:
     kind: directory
     disposition: retain
     status: audited
-    auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
+    auditedAt: 5dae46983fe5423a900214dfc1906f5d14e637d2
     entryPoints:
       - identity-tokens/index.js
     notes: >-
@@ -4315,17 +4136,19 @@ services:
           - core/server/services/identity-tokens/index.js
           - core/server/services/identity-tokens/identity-token-service-wrapper.js
           - core/server/services/identity-tokens/identity-token-service.ts
-        tests: []
+        tests:
+          - test/unit/server/services/identity-tokens/index.test.ts
       construction:
         summary: >-
           The wrapper is the only production construction site found. First init captures the
-          absolute admin URL and signingKeys.getInstance().forPurpose(staff), then publishes
+          absolute admin URL and signingKeys.service.forPurpose(staff), then publishes
           IdentityTokenService synchronously within the async method. A truthy instance makes
           later calls return without reconstructing dependencies.
         sources:
           - core/server/services/identity-tokens/identity-token-service-wrapper.js
           - core/server/services/signing-keys/signing-key-service.ts
-        tests: []
+        tests:
+          - test/unit/server/services/identity-tokens/index.test.ts
       consumers:
         summary: >-
           Boot calls init. The authenticated identities endpoint reads the current instance
@@ -4334,6 +4157,8 @@ services:
           its initialization and uses it to sign an Owner token for remote configuration.
           Existing API tests verify Owner/Administrator JWTs through HTTP JWKS and reject an
           Editor; they do not cover wrapper replacement or ActivityPub's real token connection.
+          Root tests cover successful role loading through the identities controller; the
+          failed-role fallback and ActivityPub's dependency hand-off are source evidence.
         sources:
           - core/boot.js
           - core/server/api/endpoints/identities.js
@@ -4342,41 +4167,54 @@ services:
           - core/server/services/activitypub/activity-pub-service.ts
         tests:
           - test/legacy/api/admin/identities.test.js
+          - test/unit/server/services/identity-tokens/index.test.ts
       startup:
         summary: >-
           initCore awaits signing-key initialization before initServices awaits identity init
           with other prerequisites. ActivityPub background init checks instance and logs then
           returns if it is absent; the identities endpoint dereferences it without that guard.
           Importing this root alone does not initialize signing keys or issue a token.
+          Root tests cover import behavior, endpoint signing after explicit initialization,
+          and retry after missing signing keys or provider-selection failure. Production boot
+          ordering, ActivityPub's background startup guard and the endpoint's unguarded
+          pre-init access are source evidence.
         sources:
           - core/boot.js
           - core/server/services/identity-tokens/identity-token-service-wrapper.js
           - core/server/api/endpoints/identities.js
           - core/server/services/activitypub/activity-pub-service-wrapper.js
-        tests: []
+        tests:
+          - test/unit/server/services/identity-tokens/index.test.ts
       lifetime:
         summary: >-
           Normal repeated initialization retains one process-local instance, issuer and
           purpose provider, with no reset path. The provider closes over its SigningKeyService
           and reads that service's settings cache on use. Each token call allocates its own
-          claims object; no user or role is stored on the shared service.
+          claims object; no user or role is stored on the shared service. Root tests verify
+          retained instance, issuer and provider identity, with live signing-key lookups.
+          The absence of a reset path, the provider's settings-cache access and isolation
+          between calls for different users and roles are source evidence.
         sources:
           - core/server/services/identity-tokens/identity-token-service-wrapper.js
           - core/server/services/identity-tokens/identity-token-service.ts
           - core/server/services/signing-keys/signing-key-service.ts
-        tests: []
+        tests:
+          - test/unit/server/services/identity-tokens/index.test.ts
       configuration:
         summary: >-
           The issuer URL is captured at construction; the retained provider supplies a key
           per call. Tokens use email as sub, include role only for string arguments, and use
           RS256, a five-minute expiry and the provider's kid. The unit test verifies a token's
-          subject, role, issuer and kid, but not live rotation or exact expiry.
+          subject, role, issuer and kid. Root tests additionally verify a five-minute expiry,
+          omitted role, retained issuer and use of the provider's changed signing key through
+          a retained instance. This does not exercise a full signing-key rotation workflow.
         sources:
           - core/server/services/identity-tokens/identity-token-service-wrapper.js
           - core/server/services/identity-tokens/identity-token-service.ts
           - core/server/services/signing-keys/signing-key-service.ts
         tests:
           - test/unit/server/services/identity-tokens/identity-token-service.test.ts
+          - test/unit/server/services/identity-tokens/index.test.ts
       resources:
         summary: >-
           This service stores only issuer and provider references; it acquires no timer,
@@ -4395,56 +4233,69 @@ services:
           leaving a later call able to try again. Missing/invalid signing keys and JWT signing
           failures reject token issuance without a local retry or fallback. The endpoint only
           catches role lookup failures; ActivityPub catches token/request failures in its own
-          remote-configuration methods.
+          remote-configuration methods. Root tests assert missing-prerequisite and provider
+          selection retries, plus token lookup failure and later success on the same instance.
         sources:
           - core/server/services/identity-tokens/identity-token-service-wrapper.js
           - core/server/services/identity-tokens/identity-token-service.ts
           - core/server/api/endpoints/identities.js
           - core/server/services/activitypub/activity-pub-service.ts
-        tests: []
+        tests:
+          - test/unit/server/services/identity-tokens/index.test.ts
     unverified: []
     blockers:
       - >-
-        Add wrapper-level contracts for pre-init use, failed initialization/retry and retained
-        consumers across issuer changes, signing-key rotation and repeated boot without
-        reloading modules. Current constructor/API tests do not prove these lifetimes.
+        Preserve real boot ordering and retained consumers through a complete signing-key
+        rotation or same-process restart. Root tests now cover missing-prerequisite retry,
+        repeated init, captured issuer and a changed key returned by the retained provider;
+        they do not exercise the full rotation workflow or define restart ownership.
       - >-
-        Characterize optional-role and exact-expiry behavior, concurrent token calls and
-        signing failures through real consumers. ActivityPub's unit tests inject a fake token
-        service, so they cannot catch a broken root-to-provider connection.
+        Characterize concurrent token calls and ActivityPub's real token connection. The root
+        suite verifies the real identities controller response, optional role, exact expiry
+        and key lookup failure recovery. Actual JWT signing failure recovery remains untested;
+        ActivityPub's implementation tests use a fake token service.
+
   indexnow-ping:
     kind: directory
     disposition: retain
+    migrated: true
     status: audited
-    auditedAt: c2999f4e13da6360bceced808bb52c4a04b5ad03
+    auditedAt: 5dae46983fe5423a900214dfc1906f5d14e637d2
     entryPoints:
       - indexnow-ping/index.ts
     notes: >-
-      Preserve post-event gating, live settings and request error reporting. Root lifecycle,
-      verification-route compatibility and production retry behavior still need contracts.
+      Preserve post-event gating, live settings and request error reporting. Shared initialization
+      covers publication and retry; restart, request disposal and production retries remain open.
     contracts:
       exports:
         summary: >-
-          The TypeScript default export is one wrapper exposing synchronous init and a public
-          writable service field, initially undefined. CommonJS boot uses .default; init
-          returns no instance. The implementation exports IndexNowPingService for direct
-          construction and exposes its dependencies, bound listener and operation methods.
+          The TypeScript default export is a defineService root exposing init(): Promise<void>
+          and a read-only service getter. CommonJS boot uses .default; init resolves without an
+          instance. Reading service before publication throws IncorrectUsageError. The
+          implementation exports IndexNowPingService for direct construction and exposes its
+          dependencies, bound listener and operation methods. Root tests assert guarded access.
         sources:
           - core/server/services/indexnow-ping/index.ts
           - core/server/services/indexnow-ping/indexnow-ping-service.ts
+          - core/kernel/define-service.ts
           - core/boot.js
-        tests: []
+        tests:
+          - test/unit/server/services/indexnow-ping/index.test.ts
       construction:
         summary: >-
-          Import constructs only the wrapper. First init loads shared settings/config, URL
-          services, request, logging and model events, constructs the implementation, assigns
-          service, then subscribes. Later init calls skip construction and subscription.
-          The wrapper is the only runtime construction path found; class tests inject fakes
-          except for the real request helper.
+          Import creates only the root. First init loads shared settings/config, URL services,
+          request, logging and model events, constructs the implementation and subscribes before
+          publication. Concurrent calls share initialization; successful later calls reuse it.
+          The root is the only runtime construction path found. Root tests use the shared event
+          bus and request helper with stubbed settings/config/URL lookup; helper tests cover
+          concurrent initialization. Class tests inject fakes except for the request helper.
         sources:
           - core/server/services/indexnow-ping/index.ts
           - core/server/services/indexnow-ping/indexnow-ping-service.ts
-        tests: []
+          - core/kernel/define-service.ts
+        tests:
+          - test/unit/server/services/indexnow-ping/index.test.ts
+          - test/unit/kernel/define-service.test.ts
       consumers:
         summary: >-
           Boot is the only runtime root importer. Post model events invoke the listener for
@@ -4452,7 +4303,9 @@ services:
           Import events and events without changed SEO fields return early; others pass post
           JSON plus authors and tags to a detached ping. No runtime deep constructor or direct
           ping caller was found. The frontend key-verification middleware independently reads
-          the same setting; it does not import this service.
+          the same setting. Root tests cover event gating and relation forwarding; an HTTP test
+          publishes through an author/tag-filtered collection. Transaction rollback and HTTP
+          import suppression remain source-only here.
         sources:
           - core/boot.js
           - core/server/models/post.js
@@ -4463,37 +4316,50 @@ services:
           - core/frontend/web/middleware/serve-indexnow-key.js
         tests:
           - test/unit/server/services/indexnow-ping/indexnow-ping-service.test.js
+          - test/unit/server/services/indexnow-ping/index.test.ts
+          - test/e2e-server/indexnow-publishing.isolated.test.ts
       startup:
         summary: >-
-          Boot initializes settings and dynamic routing before calling init in its required
-          service Promise.all, before readiness, including backend-only boot. Subscription
-          completes synchronously without checking key availability or sending a request;
-          disabled/private/development configurations still subscribe. The settings model
-          generates the key as a default, and frontend middleware serves its matching path.
-          Synchronous init failure rejects required startup.
+          Boot initializes settings and dynamic routing before awaiting init in its required
+          service Promise.all, before readiness, including backend-only boot. Subscription runs
+          synchronously during init without checking keys or sending a request; publication and
+          init completion are asynchronous. Disabled/private/development configurations still
+          subscribe. The settings model generates the key as a default, and frontend middleware
+          serves its matching path. Initialization failure rejects required startup. Root tests
+          cover disabled first init; the HTTP test boots with the production key definition and
+          serves the generated key. Backend-only ordering remains source evidence.
         sources:
           - core/boot.js
           - core/server/services/indexnow-ping/index.ts
           - core/server/services/indexnow-ping/indexnow-ping-service.ts
+          - core/kernel/define-service.ts
           - core/server/models/settings.js
+          - core/server/data/schema/default-settings/default-settings.json
           - core/frontend/web/site.js
           - core/frontend/web/middleware/serve-indexnow-key.js
-        tests: []
+        tests:
+          - test/unit/server/services/indexnow-ping/index.test.ts
+          - test/e2e-server/indexnow-publishing.isolated.test.ts
       lifetime:
         summary: >-
-          The wrapper retains one implementation and its bound listener. Direct subscribeEvents
-          removes that same callback before registering it for each event, but cannot remove
-          another instance's callback. Repeated wrapper init does not restore externally
-          removed listeners. Neither wrapper nor implementation exposes reset, unsubscribe or
-          shutdown. EventEmitter delivery is synchronous; ping completion is detached, with no
-          serialization, deduplication of pending work or retained completion handle.
+          The root retains one implementation and its bound listener. Direct subscribeEvents
+          removes that callback before registering it for each event; unsubscribeEvents removes
+          only that instance's callbacks. Successful repeated init does not restore externally
+          removed listeners. Neither root nor implementation exposes reset or shutdown.
+          EventEmitter delivery is synchronous; ping completion is detached, with no
+          serialization, deduplication of pending work or retained completion handle. Root tests
+          assert retained identity, one callback per event and event delivery returning while a
+          ping is pending; the HTTP test completes publication before its request settles.
         sources:
           - core/server/services/indexnow-ping/index.ts
           - core/server/services/indexnow-ping/indexnow-ping-service.ts
+          - core/kernel/define-service.ts
           - core/server/lib/common/events.js
           - core/boot.js
           - core/server/ghost-server.ts
-        tests: []
+        tests:
+          - test/unit/server/services/indexnow-ping/index.test.ts
+          - test/e2e-server/indexnow-publishing.isolated.test.ts
       configuration:
         summary: >-
           Each ping reads live environment, site privacy, privacy.useIndexNow, key and URL
@@ -4501,8 +4367,10 @@ services:
           slugs skip delivery. SEO fields and the IndexNow endpoint are module constants.
           Requests carry url, key and keyLocation with a five-second request timeout. Key
           lookup accepts any truthy value, while the verification middleware requires an exact
-          matching 32-character lowercase hex path. Class tests cover representative gates
-          and the url query, but not live changes, keyLocation or the verification route.
+          matching 32-character lowercase hex path. Root tests cover live flags/key/URL changes
+          and complete query encoding through the request helper. The HTTP test verifies a
+          generated key, response headers and keyLocation on a subdirectory site; malformed
+          keys and verification-route changes remain untested here.
         sources:
           - core/server/services/indexnow-ping/indexnow-ping-service.ts
           - core/server/services/indexnow-ping/constants.ts
@@ -4510,10 +4378,14 @@ services:
           - core/server/models/settings.js
         tests:
           - test/unit/server/services/indexnow-ping/indexnow-ping-service.test.js
+          - test/unit/server/services/indexnow-ping/index.test.ts
+          - test/e2e-server/indexnow-publishing.isolated.test.ts
       resources:
         summary: >-
           The implementation owns two model-event registrations and starts untracked HTTP
-          requests. Boot registers no cleanup; no cancellation or drain is exposed. The shared
+          requests. The factory removes partial subscriptions after startup failure; root tests
+          assert cleanup preserves unrelated callbacks and retry installs one of each listener.
+          Boot registers no cleanup; no request cancellation or drain is exposed. The shared
           request dependency owns DNS lookup/cache state and unref'ed cache-maintenance timers;
           HTTP timeout and retry work belongs to that helper and Got. This root creates no
           database connection, dedicated HTTP agent, scheduler or durable queue. Its borrowed
@@ -4525,43 +4397,45 @@ services:
           - core/boot.js
           - core/server/ghost-server.ts
           - package.json
-        tests: []
+        tests:
+          - test/unit/server/services/indexnow-ping/index.test.ts
       failures:
         summary: >-
-          Subscription failure leaves service assigned, so another init skips retry.
-          Missing/unresolved URLs and absent keys warn and return; 200/202 log success, 429
-          logs rate_limited, 403/422 key_validation_failed and other errors ping_failed.
-          Ordinary URL-resolution/request errors are logged and swallowed. Model access in
-          the synchronous listener can throw; config gates precede ping's try and their
-          rejection is silently swallowed by the listener. Production GETs inherit Got
-          retries despite the no-retry comment; the request helper disables retries under
-          test environments. Class HTTP tests establish final classification, not production
-          attempts, timeout duration or event-to-persistence failure isolation.
+          Subscription failure rejects init without publication after removing partial listeners;
+          root tests assert the original error and a successful retry. Missing/unresolved URLs
+          and absent keys warn and return; 200/202 log success, 429 logs rate_limited, 403/422
+          key_validation_failed and other errors ping_failed. Ordinary URL-resolution/request
+          errors are logged and swallowed. Root tests assert synchronous model errors escape
+          and pre-try config rejections are swallowed by the listener. The HTTP test retains a
+          published post after a deferred transport failure. Production GETs inherit Got retries
+          despite the no-retry comment; the request helper disables retries under test
+          environments. These tests do not pin production attempts, timeout duration or logger
+          failure behavior.
         sources:
           - core/server/services/indexnow-ping/index.ts
           - core/server/services/indexnow-ping/indexnow-ping-service.ts
+          - core/kernel/define-service.ts
           - core/server/models/base/plugins/events.js
           - package.json
           - vitest.config.ts
         tests:
           - test/unit/server/services/indexnow-ping/indexnow-ping-service.test.js
+          - test/unit/server/services/indexnow-ping/index.test.ts
+          - test/e2e-server/indexnow-publishing.isolated.test.ts
     unverified: []
     blockers:
       - >-
-        Add root/boot contracts for exports, initialization identity, disabled first init,
-        partial subscription failure and restart after listener removal. The class subscription
-        test only checks event names and call count on a fake bus, not callback identity or
-        duplicate prevention. Decide listener disposal and pending-request drain ownership.
+        Decide listener disposal, restart after external listener removal and pending-request
+        drain ownership. Partial-startup cleanup and repeated init are covered; normal shutdown
+        has no cleanup hook. Backend-only startup and failed required boot still need coverage.
       - >-
-        Pin the real post-model/event/URL-service boundary, including transactional publication,
-        import suppression and author/tag-filtered routes. Current tests invoke the class with
-        fake models and URL services; no assertion establishes full publishing-path behavior.
-        Characterize synchronous model errors, pre-try config failures and logging failures.
+        Cover transaction rollback and import suppression through the real publishing path,
+        plus logging failures. The HTTP test covers successful filtered publication and a
+        later transport failure; event-gating tests use fake post models.
       - >-
-        Cover live setting changes, complete query encoding/keyLocation, subdirectory sites
-        and the actual key-verification route. The route and ping accept different key shapes;
-        existing getApiKey tests deliberately accept a non-hex key. Test the generated-key
-        contract before changing either side.
+        Cover malformed/missing verification keys and key changes through the HTTP route.
+        The route and ping accept different key shapes; the generated-key success case is
+        covered, but existing getApiKey tests also deliberately accept a non-hex key.
       - >-
         Resolve the no-retry comment against actual transport behavior: production Got GETs
         permit two retries for eligible statuses/errors, while test mode disables retries.
@@ -4753,7 +4627,8 @@ services:
           A cache miss calls Integration.getApiKeyBySlug with the fixed slug-to-type mapping
           and stores its returned promise immediately. The model joins integrations and
           api_keys and returns a flat id/secret object. No alternate runtime map construction
-          for this capability was found; tests inject their own maps.
+          for this capability was found. Root tests exercise the actual exported map with
+          controlled model lookups, including exact slug/type selection and shared promises.
         sources:
           - core/server/services/internal-keys/index.ts
           - core/server/lib/auto-filling-map.ts
@@ -4761,6 +4636,7 @@ services:
         tests:
           - test/unit/server/lib/auto-filling-map.test.ts
           - test/unit/server/models/integration.test.js
+          - test/unit/server/services/internal-keys/index.test.ts
       consumers:
         summary: >-
           Frontend proxy getFrontendKey exposes the content secret to content_api_key,
@@ -4784,6 +4660,7 @@ services:
           - test/unit/frontend/helpers/content-api-key.test.ts
           - test/unit/server/services/auth/reset-authentication.test.ts
           - test/unit/server/adapters/scheduling/signed-flush-scheduler.test.ts
+          - test/unit/server/services/internal-keys/index.test.ts
       startup:
         summary: >-
           This root has no readiness check. The first get needs initialized models/database and
@@ -4807,7 +4684,9 @@ services:
           makes later get calls reload but does not cancel an outstanding query or invalidate
           an already retained key object. A promise settling after clear does not repopulate
           the map. Server shutdown does not clear the map. Helper tests
-          prove memoized success and invalidation; auth tests use an injected map to check
+          prove memoized success and invalidation. Root tests additionally cover pending and
+          rejected promise retention, late completion after clear and a retained frontend
+          consumer reading the replacement key. Auth tests use an injected map to check
           previous-key forwarding and session-before-reschedule ordering, not successful
           cache invalidation or the real root's database connection.
         sources:
@@ -4818,6 +4697,7 @@ services:
         tests:
           - test/unit/server/lib/auto-filling-map.test.ts
           - test/unit/server/services/auth/reset-authentication.test.ts
+          - test/unit/server/services/internal-keys/index.test.ts
       configuration:
         summary: >-
           ghost-scheduler selects an admin key and ghost-internal-frontend selects a content
@@ -4831,6 +4711,7 @@ services:
         tests:
           - test/unit/server/models/integration.test.js
           - test/unit/server/services/auth/reset-authentication.test.ts
+          - test/unit/server/services/internal-keys/index.test.ts
       resources:
         summary: >-
           The map owns cached promises and their key objects and borrows the model/database
@@ -4864,147 +4745,23 @@ services:
         tests:
           - test/unit/server/models/integration.test.js
           - test/unit/server/services/auth/reset-authentication.test.ts
+          - test/unit/server/services/internal-keys/index.test.ts
     unverified: []
     blockers:
       - >-
-        Add real-root contracts for slug/type mapping, promise identity, rejected lookup
-        retention, pre-database access and repeated boot. Generic map/model tests and frontend
-        tests that set the exported map directly do not prove lazy root lookup wiring.
+        Preserve pre-database access and repeated boot behavior when assigning lifecycle
+        ownership. Actual-root tests now cover slug/type mapping, shared pending lookups,
+        rejection retention until invalidation and the retained frontend consumer.
       - >-
-        Test rotation through actual retained frontend and scheduler consumers, including a
-        pending lookup during invalidation and post-commit session/reschedule failures.
+        Test a full rotation through the retained scheduler consumer and post-commit
+        session/reschedule failures. Root tests cover frontend invalidation and a pending
+        lookup completing after clear, but not the auth transaction or job rebuilding.
         Existing reset tests inject their own cache; neither clear nor rotation revokes
         promises/key objects already held by callers or updates already signed jobs by itself.
       - >-
         Decide cache ownership and invalidation for restart and external key changes before
         adding a lifecycle initializer. There is no automatic expiry, failure eviction or
         shutdown clear, and TypeScript slug types do not enforce valid keys at runtime.
-  invitations:
-    kind: directory
-    disposition: relocate
-    status: audited
-    auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
-    entryPoints:
-      - invitations/index.js
-    notes: >-
-      Move acceptance under invites ownership; preserve the transaction, token lookup and
-      HTTP validation boundary without adding a lifecycle to this stateless function.
-    contracts:
-      exports:
-        summary: >-
-          CommonJS exports an object with a lazy accept getter. It returns the cached accept
-          function, also available by deep import. Successful acceptance resolves undefined;
-          the API serializer supplies the success message. There is no init or shutdown.
-        sources:
-          - core/server/services/invitations/index.js
-          - core/server/services/invitations/accept.js
-          - core/server/api/endpoints/utils/serializers/output/authentication.js
-        tests: []
-      construction:
-        summary: >-
-          Accessing the getter imports shared models and security helpers. Each call decodes
-          the first invitation token, opens a transaction, locks a sent invite, checks expiry
-          and existing user, deletes the invite and creates the user in that order. Email and
-          role come from the stored invite, not request email; name and password come from
-          the request. There is no application instance or request state retained by the root.
-        sources:
-          - core/server/services/invitations/accept.js
-          - core/server/models/base/index.js
-          - core/server/models/base/plugins/events.js
-          - core/server/models/user.js
-        tests:
-          - test/unit/server/services/invitations/accept.test.js
-      consumers:
-        summary: >-
-          The authentication endpoint is the only production caller found. Its POST route
-          uses invitations.accept after input validation and setup checks. The separate GET
-          invitation lookup queries models directly and does not call this service. Unit
-          tests deep-import accept; HTTP tests use the real root through the endpoint.
-        sources:
-          - core/server/api/endpoints/authentication.js
-          - core/server/web/api/endpoints/admin/routes.js
-          - core/server/api/endpoints/utils/validators/input/invitations.js
-        tests:
-          - test/unit/server/services/invitations/accept.test.js
-          - test/legacy/api/admin/authentication.test.js
-      startup:
-        summary: >-
-          No explicit boot call initializes this module. Invocation needs the shared database
-          and models ready. HTTP requires completed setup and nonempty token, password and
-          name; direct callers bypass these API checks. Existing HTTP tests boot Ghost before
-          acceptance, but do not establish pre-boot or setup-disabled behavior for this root.
-        sources:
-          - core/boot.js
-          - core/server/services/invitations/accept.js
-          - core/server/api/endpoints/authentication.js
-          - core/server/api/endpoints/utils/validators/input/invitations.js
-        tests:
-          - test/legacy/api/admin/authentication.test.js
-      lifetime:
-        summary: >-
-          The module caches the function and shared models; invocation-local transaction,
-          invite and user variables are not shared. Persisted invite deletion provides the
-          successful-use boundary. There is no reset, replay cache or service-level retry.
-          Existing tests do not assert concurrent acceptance, token reuse or failed creation
-          leaving the invite available.
-        sources:
-          - core/server/services/invitations/index.js
-          - core/server/services/invitations/accept.js
-        tests: []
-      configuration:
-        summary: >-
-          The function reads the current clock and stored expiry at invocation. Only expires
-          strictly less than Date.now is rejected. It looks up the decoded token and sent
-          status without regenerating or verifying a token signature. DB configuration,
-          password policy and user defaults belong to the shared model layer; no root feature
-          flag or configuration snapshot exists.
-        sources:
-          - core/server/services/invitations/accept.js
-          - core/server/models/user.js
-          - core/server/data/db/index.js
-        tests: []
-      resources:
-        summary: >-
-          Each invocation borrows the shared database for one transaction and row locks;
-          the database transaction owns release. User creation and role attachment receive
-          the transaction. Model change events are deferred until commit; this function adds
-          no timers, subscriptions, transport, cancellation or drain hook. Unit tests replace
-          the transaction and prove call ordering and selected option forwarding, not actual
-          rollback, lock behavior, event delivery or shutdown while acceptance is pending.
-        sources:
-          - core/server/services/invitations/accept.js
-          - core/server/models/user.js
-          - core/server/models/base/bookshelf.js
-          - core/server/models/base/plugins/events.js
-          - core/server/ghost-server.ts
-        tests:
-          - test/unit/server/services/invitations/accept.test.js
-      failures:
-        summary: >-
-          Missing sent invite or expired invite produces NotFoundError; an existing user
-          produces ValidationError. Decode, database and user-validation errors propagate.
-          Errors inside the transaction reject it; the service does not catch or retry them.
-          HTTP tests assert missing-token-match 404, duplicate-user 422 and successful 200.
-          They do not prove expiry boundaries, malformed input, rollback after deletion,
-          emitted-event outcomes or successful staff role assignment.
-        sources:
-          - core/server/services/invitations/accept.js
-          - core/server/models/base/index.js
-          - core/server/api/endpoints/utils/validators/input/invitations.js
-        tests:
-          - test/legacy/api/admin/authentication.test.js
-    unverified: []
-    blockers:
-      - >-
-        Add real-database contracts for rollback when user creation or role attachment fails,
-        concurrent acceptance, token reuse and committed model events. Current units stub
-        the transaction and do not even assert destroy's options or forUpdate flags.
-      - >-
-        Assert decoded-token lookup, stored email/role authority, created user/password and
-        expiry boundary behavior. Current HTTP success assertions stop at the response.
-      - >-
-        Preserve lazy exports and API validation/setup checks during relocation; decide how
-        the invites owner exposes acceptance without request state or first-request setup.
   invites:
     kind: directory
     disposition: retain
@@ -5015,6 +4772,8 @@ services:
     notes: >-
       Move eager composition to boot while preserving invitation persistence, rendering and
       mail behavior. API-mail delegation and its transport ownership need a separate decision.
+      Acceptance is an invocation-local domain action kept under this owner; do not add a
+      lifecycle or change the sending instance as part of its relocation.
     contracts:
       exports:
         summary: >-
@@ -5022,9 +4781,17 @@ services:
           constructor also exposes mutable settingsCache, settingsHelpers, mailService and
           urlUtils fields. The deep invites.js module exports the constructor. There is no
           init, shutdown or reset; add resolves the edited Invite model.
+          Acceptance is a separate CommonJS function in accept.js, resolving undefined on
+          success; the API serializer supplies the success message. It adds no application
+          instance, init or shutdown. Its former lazy barrel is preserved at
+          https://github.com/TryGhost/Ghost/blob/bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e/ghost/core/core/server/services/invitations/index.js.
+          The authentication endpoint now imports the action directly; the Invites root's
+          instance and export shape are unchanged.
         sources:
           - core/server/services/invites/index.js
           - core/server/services/invites/invites.js
+          - core/server/services/invites/accept.js
+          - core/server/api/endpoints/utils/serializers/output/authentication.js
         tests: []
       construction:
         summary: >-
@@ -5032,26 +4799,45 @@ services:
           shared settings, helpers, mail library and URL utilities. Importing mail constructs
           a reusable content generator, not a GhostMailer. Each add receives API facade,
           Invite model, data, options and inviter; it does not own a transport directly.
+          Acceptance imports shared models and security helpers. Each call decodes the first
+          invitation token, opens a transaction, locks a sent invite, checks expiry and existing
+          user, deletes the invite and creates the user in that order. Email and role come from
+          the stored invite; name and password come from the request. No invocation state is
+          retained. Unit tests stub the transaction and selected model operations.
         sources:
           - core/server/services/invites/index.js
           - core/server/services/invites/invites.js
           - core/server/lib/mail/index.js
-        tests: []
+          - core/server/services/invites/accept.js
+          - core/server/models/base/index.js
+          - core/server/models/base/plugins/events.js
+          - core/server/models/user.js
+        tests:
+          - test/unit/server/services/invites/accept.test.js
       consumers:
         summary: >-
-          The invites endpoint is the only production consumer found. It retains the root
+          The invites endpoint retains the root
           and calls add for POST; browse, read and delete use models directly. Validation
           rejects an existing user and model permissions enforce role and staff limits.
           HTTP tests cover staff and integration-key invitation flows through real composition,
           stubbing GhostMailer.send; they assert send invocation, not rendered message contents.
+          The authentication endpoint calls accept.js after input validation and setup checks.
+          Its GET invitation lookup queries models directly. Acceptance units import the
+          function; legacy HTTP cases exercise it through the real endpoint, asserting
+          missing-invite 404, duplicate-user 422 and successful 200 responses.
         sources:
           - core/server/api/endpoints/invites.js
           - core/server/api/endpoints/utils/validators/input/invites.js
           - core/server/models/invite.js
+          - core/server/api/endpoints/authentication.js
+          - core/server/web/api/endpoints/admin/routes.js
+          - core/server/api/endpoints/utils/validators/input/invitations.js
         tests:
           - test/e2e-api/admin/invites.test.js
           - test/e2e-api/admin/host-limits.test.ts
           - test/unit/server/models/invite.test.js
+          - test/unit/server/services/invites/accept.test.js
+          - test/legacy/api/admin/authentication.test.js
       startup:
         summary: >-
           The instance is available at import with no explicit boot initialization. Calls
@@ -5059,13 +4845,21 @@ services:
           email-address service. The API mail handler lazily constructs its own shared mailer
           on first send. Real HTTP tests run after Ghost boot and replace send entirely, so
           do not establish the email-address/transport boundary or direct pre-boot invocation.
+          Acceptance has no explicit boot initialization and needs shared database/models
+          readiness. HTTP requires completed setup and nonempty token, password and name; direct
+          callers bypass those API checks. Existing HTTP cases boot Ghost, without establishing
+          direct pre-boot or setup-disabled acceptance behavior.
         sources:
           - core/boot.js
           - core/server/services/invites/index.js
           - core/server/api/endpoints/mail.js
           - core/server/lib/mail/ghost-mailer.js
+          - core/server/services/invites/accept.js
+          - core/server/api/endpoints/authentication.js
+          - core/server/api/endpoints/utils/validators/input/invitations.js
         tests:
           - test/e2e-api/admin/invites.test.js
+          - test/legacy/api/admin/authentication.test.js
       lifetime:
         summary: >-
           The eager instance and dependency references survive in the module cache. Each add
@@ -5074,9 +4868,14 @@ services:
           per-email concurrency guard or retry. API mail independently retains its mailer
           across calls with no reset. Existing tests reuse an email for successive role
           invitations but do not assert old-token invalidation or concurrent resend behavior.
+          Acceptance keeps its transaction, invite and user variables invocation-local.
+          Persisted invite deletion provides the successful-use boundary. It has no reset,
+          replay cache or retry. Existing acceptance cases do not assert concurrent acceptance,
+          token reuse or failed creation leaving the invite available.
         sources:
           - core/server/services/invites/invites.js
           - core/server/api/endpoints/mail.js
+          - core/server/services/invites/accept.js
         tests:
           - test/e2e-api/admin/invites.test.js
       configuration:
@@ -5086,12 +4885,20 @@ services:
           the encoded stored token. Templates are read per render. Invite creation reads
           current db_hash and assigns one-week expiry. API-mail transport configuration is
           captured when its mailer is constructed; sender policy stays live in GhostMailer.
+          Acceptance reads the current clock and stored expiry on invocation; only expires
+          strictly less than Date.now is rejected. It looks up the decoded token and sent status
+          without regenerating or checking a token signature. Database configuration, password
+          policy and user defaults belong to the models; the action has no feature flag or
+          configuration snapshot. These expiry/lookup details are source evidence.
         sources:
           - core/server/services/invites/invites.js
           - core/server/models/invite.js
           - core/server/lib/mail/email-content-generator.js
           - core/server/lib/mail/ghost-mailer.js
           - core/server/api/endpoints/mail.js
+          - core/server/services/invites/accept.js
+          - core/server/models/user.js
+          - core/server/data/db/index.js
         tests: []
       resources:
         summary: >-
@@ -5100,13 +4907,24 @@ services:
           no timers, subscriptions or cleanup hook. The nested API-mail handler owns the
           transport and can launch an unawaited warning notification on direct-mail failure;
           neither service supplies explicit transport cleanup or outstanding-send drainage.
+          Acceptance borrows the shared database for one transaction and row locks; the
+          transaction owns release. User creation and role attachment receive that transaction,
+          and model events are deferred until commit. It adds no timers, subscriptions,
+          transport or drain hook. Its units prove call order and selected transaction-option
+          forwarding, without testing actual rollback, locks, event delivery, destroy options or
+          forUpdate flags.
         sources:
           - core/server/services/invites/invites.js
           - core/server/api/endpoints/mail.js
           - core/server/lib/mail/ghost-mailer.js
           - core/server/lib/mail/email-content-generator.js
           - core/server/ghost-server.ts
-        tests: []
+          - core/server/services/invites/accept.js
+          - core/server/models/user.js
+          - core/server/models/base/bookshelf.js
+          - core/server/models/base/plugins/events.js
+        tests:
+          - test/unit/server/services/invites/accept.test.js
       failures:
         summary: >-
           Model, rendering and mail failures reject add. EmailError gets a resend-help suffix
@@ -5115,11 +4933,21 @@ services:
           a sent-status edit can fail after mail was delivered. An unbound add rejects inside
           the chain after persistence, when it first reads this. Malformed arguments or a
           synchronously throwing model lookup can fail before the catch. No retry or compensation exists.
+          Acceptance rejects missing sent invites and expired invites with NotFoundError, and
+          existing users with ValidationError. Decode, database and user-validation errors
+          propagate; transaction failures reject without a catch or retry. HTTP cases assert
+          missing-invite 404, duplicate-user 422 and successful 200, without proving expiry
+          boundaries, malformed input, rollback after deletion, emitted events or staff role
+          assignment.
         sources:
           - core/server/services/invites/invites.js
           - core/server/models/invite.js
           - core/server/api/endpoints/mail.js
-        tests: []
+          - core/server/services/invites/accept.js
+          - core/server/models/base/index.js
+          - core/server/api/endpoints/utils/validators/input/invitations.js
+        tests:
+          - test/legacy/api/admin/authentication.test.js
     unverified: []
     blockers:
       - >-
@@ -5135,6 +4963,13 @@ services:
         Resolve API-mail orchestration and transport ownership without moving business logic
         into HTTP. Preserve role/limit checks and successful behavior while introducing boot
         composition; test readiness and shutdown of pending work separately.
+      - >-
+        Add real-database contracts for rollback when user creation or role attachment fails,
+        concurrent acceptance, token reuse and committed model events. Current units stub
+        the transaction and do not even assert destroy's options or forUpdate flags.
+      - >-
+        Assert decoded-token lookup, stored email/role authority, created user/password and
+        expiry boundary behavior. Current HTTP success assertions stop at the response.
   jobs-service:
     kind: directory
     disposition: retain
@@ -6557,7 +6392,7 @@ services:
         tests:
           - test/integration/services/member-welcome-emails.test.js
           - test/e2e-api/admin/automated-emails.test.ts
-          - test/e2e-api/admin/automations.test.js
+          - test/e2e-api/admin/automations.test.ts
       construction:
         summary: >-
           First init creates ghost-namespace i18n, subscribes to settings.locale.edited,
@@ -6608,7 +6443,7 @@ services:
           - core/server/data/seeders/importers/automations-importer.ts
         tests:
           - test/e2e-api/admin/automated-emails.test.ts
-          - test/e2e-api/admin/automations.test.js
+          - test/e2e-api/admin/automations.test.ts
           - test/integration/services/automations/welcome-email-automation-poll.test.ts
           - test/unit/server/services/automations/poll.test.ts
           - test/unit/server/services/stripe/services/webhooks/checkout-session-event-service.test.js
@@ -7010,7 +6845,7 @@ services:
           - core/server/services/members/jobs/clean-expired-comped-task.ts
           - core/server/services/jobs-service/jobs-service.ts
           - core/server/api/endpoints/utils/serializers/output/stream-response.ts
-          - core/server/services/exports/site-exporter.ts
+          - core/server/data/exporter/site-exporter.ts
           - core/server/lib/mail/ghost-mailer.js
           - package.json
         tests:
@@ -10664,23 +10499,26 @@ services:
   signing-keys:
     kind: directory
     disposition: retain
+    migrated: true
     status: audited
-    auditedAt: 82ba3d5b1133db2a042774e8bbc6f64fc540ac47
+    auditedAt: 5dae46983fe5423a900214dfc1906f5d14e637d2
     entryPoints:
       - signing-keys/index.ts
     notes: >-
       Publish only after the initial key check; preserve live key reads and purpose separation.
-      Recurrence ownership and restart remain migration blockers despite class-level rotation tests.
+      Shared initialization guards publication; recurrence, restart and drain ownership remain open.
     contracts:
       exports:
         summary: >-
-          Named runtime exports are async init, getInstance and scheduleCheckJob; the provider
-          and purpose exports are types only. getInstance throws IncorrectUsageError before
-          publication. The implementation exports SigningKeyService and rotation constants;
+          The default export is a defineService root with init(): Promise<void> and a read-only
+          service getter; scheduleCheckJob remains a named export. The provider and purpose
+          exports are types only. Reading service before publication throws IncorrectUsageError.
+          The implementation exports SigningKeyService and rotation constants;
           CheckSigningKeysJob is a separate class consumed by handler registration. Root tests
           assert pre-init access fails; the full export list is source evidence.
         sources:
           - core/server/services/signing-keys/index.ts
+          - core/kernel/define-service.ts
           - core/server/services/signing-keys/signing-key-service.ts
           - core/server/services/signing-keys/check-signing-keys-job.ts
           - core/server/services/jobs-service/register-job-handlers.ts
@@ -10691,13 +10529,14 @@ services:
           The root is the only production construction site found. init creates a service
           using the shared settings cache, Settings model, model transaction function,
           logging and a scheduling callback. It awaits check before publishing the service;
-          concurrent calls before publication have no shared promise guard. Importing the
-          module alone creates neither the service nor a recurring job. Root tests verify no
-          key check or published instance on import, publication after a held check completes,
-          and retry after rejection. Dependency assembly and concurrent construction remain
-          source evidence; the real rotation callback is exercised with storage doubles.
+          concurrent calls share one pending initialization. Importing the module alone creates
+          neither the service nor a recurring job. Root tests verify no key check or published
+          instance on import, publication after a held check completes, a shared promise and
+          single check for concurrent init, and retry after rejection. Dependency assembly
+          remains source evidence; the real rotation callback is exercised with storage doubles.
         sources:
           - core/server/services/signing-keys/index.ts
+          - core/kernel/define-service.ts
           - core/server/services/signing-keys/signing-key-service.ts
         tests:
           - test/unit/server/services/signing-keys/index.test.ts
@@ -10706,8 +10545,8 @@ services:
           Boot initializes the root and later supplies the jobs instance. Identity tokens and
           the staff JWKS app retain staff providers; members API construction retains a
           members provider for signing, verification and public keys. The check-signing-keys
-          job handler instead resolves getInstance for each run. Handler tests register before
-          root initialization, then verify deferred access, awaiting the check and propagation
+          job handler instead reads the root service getter for each run. Handler tests register
+          before root initialization, then verify deferred access, awaiting the check and propagation
           of its original rejection. Existing HTTP tests cover
           both JWKS responses and staff-token verification, not live rotation through those
           retained HTTP consumers.
@@ -10750,10 +10589,11 @@ services:
           forPurpose creates new provider objects whose closures retain the same service and
           read its current settings on each call. Integration tests retain a provider while
           promoting and retiring keys, and race separate class instances; they do not exercise
-          concurrent root init or jobs restart. Root tests additionally assert that sequential
-          successful init calls retain the checked instance without checking again.
+          root initialization or jobs restart. Root tests assert concurrent init shares one
+          pending check and successful later init retains the instance without checking again.
         sources:
           - core/server/services/signing-keys/index.ts
+          - core/kernel/define-service.ts
           - core/server/services/signing-keys/signing-key-service.ts
         tests:
           - test/integration/services/signing-keys.test.ts
@@ -10810,6 +10650,7 @@ services:
         sources:
           - core/boot.js
           - core/server/services/signing-keys/index.ts
+          - core/kernel/define-service.ts
           - core/server/services/signing-keys/signing-key-service.ts
           - core/server/services/jobs-service/register-job-handlers.ts
           - core/server/services/jobs-service/jobs-service.ts
@@ -10822,10 +10663,9 @@ services:
     unverified: []
     blockers:
       - >-
-        Concurrent root init has no in-flight guard. Add overlapping-call coverage before
-        changing this behavior; sequential init tests and class transaction-race tests do not
-        prove single root publication or partial-check cleanup. Sharing an in-flight init
-        would be a new guarantee, not established baseline behavior.
+        Characterize retry after a partially completed initial check. Concurrent publication
+        and retry after a rejected check are covered with a stubbed check; they do not prove
+        recovery when earlier rotation steps committed before a later step failed.
       - >-
         Characterize scheduling failure after a rotation commits, concurrent registration and
         recurrence restoration across jobs restart. The module keeps scheduled after shutdown
@@ -10997,47 +10837,59 @@ services:
     kind: directory
     disposition: retain
     status: audited
-    auditedAt: c2999f4e13da6360bceced808bb52c4a04b5ad03
+    auditedAt: ffda65ff64f78a7148f8cbf1d8c717d55bc5a65b
+    migrated: true
     entryPoints:
       - slack-ping/index.ts
     notes: >-
       Preserve live Slack settings, publish/test event behavior and request failure handling.
-      Retained listeners, shared HTTP resources and partial initialization need contracts before
-      changing ownership.
+      Failed initialization now rolls back its own subscriptions; normal restart, shutdown
+      and shared HTTP-resource ownership remain separate work.
     contracts:
       exports:
         summary: >-
-          TypeScript default-exports one eager wrapper with synchronous init and a public
-          optional service property; CommonJS boot reads .default. init returns no instance.
-          The named SlackPingService class exposes ping, settings/event methods and stable
-          listener references. Neither class supplies reset or shutdown.
+          TypeScript default-exports one defineService root; CommonJS boot reads .default.
+          init returns a shared Promise<void>, and the service getter throws IncorrectUsageError
+          until initialization succeeds. The named SlackPingService class exposes ping,
+          settings/event methods, stable listener references and unsubscribeEvents. The root
+          has no reset or shutdown. Root tests cover readiness and repeated/concurrent init;
+          the kernel tests cover the generic initializer contract.
         sources:
           - core/server/services/slack-ping/index.ts
           - core/server/services/slack-ping/slack-ping-service.ts
+          - core/kernel/define-service.ts
           - core/boot.js
-        tests: []
+        tests:
+          - test/unit/server/services/slack-ping/index.test.ts
+          - test/unit/kernel/define-service.test.ts
       construction:
         summary: >-
           First init obtains shared events, settings, URL helpers, blogIcon and request-external,
-          constructs SlackPingService, assigns service and subscribes it. The image-library
-          import also obtains image cache/storage adapters and constructs its shared helpers.
-          The wrapper is the only runtime SlackPingService constructor found; tests inject
-          collaborators directly. Initialization and subscription are not gated on a Slack URL.
+          constructs SlackPingService and subscribes it before returning the ready instance.
+          Initialization and subscription are not gated on a Slack URL. The root test checks
+          every wired dependency and listener identity. The root is the only runtime
+          SlackPingService constructor found; tests also inject collaborators directly.
+          Source-only: importing the image library obtains image cache/storage adapters and
+          constructs shared helpers whose lifetime remains outside Slack's factory.
         sources:
           - core/server/services/slack-ping/index.ts
           - core/server/services/slack-ping/slack-ping-service.ts
           - core/server/lib/image/index.js
           - core/server/lib/image/image-utils.js
           - core/server/lib/request-external.js
-        tests: []
+        tests:
+          - test/unit/server/services/slack-ping/index.test.ts
+          - test/unit/server/services/slack-ping/slack-ping-service.test.js
       consumers:
         summary: >-
-          Boot is the only direct root caller. The shared model emitter invokes post.published
-          with the post model and its authors/tags relations; imports are skipped. The authenticated Admin
-          slack/test endpoint emits slack.test, whose listener sends a fixed test message.
-          Both listeners discard the ping promise, so API/model completion does not establish
-          webhook delivery. No CLI, scheduled job or alternate runtime deep constructor was
-          found. Unit tests call handlers directly; the API test mocks event emission.
+          Boot is the only direct runtime root caller. The shared model emitter invokes
+          post.published with the post model; the listener forwards authors/tags and skips
+          imports. The authenticated Admin slack/test endpoint emits slack.test, whose listener
+          sends a fixed test message. Both listeners discard the ping promise. The isolated
+          HTTP suite boots Ghost, publishes a tagged post and calls slack/test through the
+          actual emitter and request-external client intercepted at HTTP; both requests finish
+          while webhook delivery remains pending. The older API test mocks event emission.
+          No CLI, scheduled job or alternate runtime constructor was found in the source search.
         sources:
           - core/boot.js
           - core/server/services/slack-ping/slack-ping-service.ts
@@ -11046,44 +10898,61 @@ services:
           - core/server/api/endpoints/slack.js
           - core/server/web/api/endpoints/admin/routes.js
         tests:
+          - test/unit/server/services/slack-ping/index.test.ts
           - test/unit/server/services/slack-ping/slack-ping-service.test.js
           - test/e2e-api/admin/slack.test.js
+          - test/e2e-server/slack-ping.isolated.test.ts
       startup:
         summary: >-
-          Required-service boot calls init while assembling Promise.all prerequisites, after
-          settings and dynamic routing and before readiness. Importing the wrapper does not
-          subscribe; init installs callbacks synchronously without checking webhook delivery.
-          A constructed service can receive events immediately; direct ping depends on its
-          injected settings/URL/image helpers rather than an explicit readiness guard.
+          Required-service boot awaits init in Promise.all after settings and dynamic routing
+          are initialized and before readiness. Root import does not subscribe. The factory
+          installs listeners synchronously when init is called, but callers must await init
+          before reading service; initialization does not send a webhook or await delivery.
+          Root tests cover import inactivity and the readiness guard. The isolated HTTP suite
+          reads the ready instance after boot and verifies that repeated init retains the
+          instance handling the test endpoint. Direct class users have no init guard and depend
+          on their injected collaborators being ready, as established by source.
         sources:
           - core/boot.js
+          - core/kernel/define-service.ts
           - core/server/services/slack-ping/index.ts
           - core/server/services/slack-ping/slack-ping-service.ts
-        tests: []
+        tests:
+          - test/unit/server/services/slack-ping/index.test.ts
+          - test/e2e-server/slack-ping.isolated.test.ts
       lifetime:
         summary: >-
-          Wrapper init returns early once service is assigned, retaining its dependencies and
-          listener identities across same-process boots. subscribeEvents removes/re-adds its
-          own bound post.published and slack.test callbacks; it cannot remove callbacks belonging
-          to another instance. Wrapper init does not restore listeners removed elsewhere.
-          There is no local queue, send deduplication or serialization, and server stop supplies
-          no Slack-ping reset or unsubscribe.
+          Successful init retains one instance, its dependencies and both bound listener
+          identities; repeated/concurrent calls do not duplicate subscriptions. Root tests
+          verify retention and single delivery for each event, including after failed-start
+          cleanup and retry. Source-only: subscribeEvents removes/re-adds only its own callbacks,
+          so it cannot replace another instance's listeners; init does not restore callbacks
+          removed elsewhere. Same-process restart retains the root. There is no local queue,
+          send deduplication or serialization, and server stop supplies no Slack reset or
+          unsubscribe. The new unsubscribeEvents method is called only for factory rollback.
         sources:
           - core/server/services/slack-ping/index.ts
           - core/server/services/slack-ping/slack-ping-service.ts
+          - core/kernel/define-service.ts
           - core/server/lib/common/events.js
           - core/boot.js
           - core/server/ghost-server.ts
-        tests: []
+        tests:
+          - test/unit/server/services/slack-ping/index.test.ts
+          - test/e2e-server/slack-ping.isolated.test.ts
       configuration:
         summary: >-
           Each ping reads Slack URL, username and site title; blank username falls back to Ghost.
-          URL/image/icon helpers resolve current routing and settings. Post URL/description work
-          happens before the missing-URL, page and default-slug gates. Descriptions prefer custom
-          excerpts, otherwise strip HTML before the members-only marker and keep three sentences.
-          request-external captures agent options and test hooks at import, but reads environment
-          and site URL during request checks; its default request timeout is 10 seconds, 5 under
-          the import-time test hook. Ping adds no local timeout or retry policy.
+          Root tests change URL/username on a retained instance and assert a disabled test ping
+          makes no request. The HTTP suite checks custom title/username/icon, custom excerpt,
+          collection-filtered post URLs, author URLs and feature-image URLs through real helpers.
+          Class tests cover the fallback username, page/welcome suppression and removal of
+          members-only content. Source-only: URL/description work precedes the missing-URL,
+          page and default-slug gates; excerpts otherwise strip HTML and keep three sentences.
+          request-external captures agent options and test hooks at import, reads environment
+          and site URL per request, and configures a 10-second request timeout or 5 seconds
+          under its test hook. Slack adds no local timeout or retry policy; the HTTP suite
+          uses test hooks and does not establish production DNS, agent or timeout policy.
         sources:
           - core/server/services/slack-ping/slack-ping-service.ts
           - core/server/services/slack-ping/constants.ts
@@ -11091,15 +10960,20 @@ services:
           - core/server/services/url/lazy-url-service.ts
           - core/server/lib/request-external.js
         tests:
+          - test/unit/server/services/slack-ping/index.test.ts
           - test/unit/server/services/slack-ping/slack-ping-service.test.js
+          - test/e2e-server/slack-ping.isolated.test.ts
       resources:
         summary: >-
-          The service owns two shared-emitter subscriptions and outbound requests, with no
-          cancellation or drain bookkeeping. The wrapper borrows shared settings, routing and
-          image helpers; image adapter lifetime remains outside this root. Production requests
-          use request-external's shared configurable HTTP/HTTPS agents, keep-alive by default,
-          DNS checks and per-request timeout. No Slack cleanup is registered and the helper
-          exposes no lifecycle disposal hook; stopping Ghost does not await these sends.
+          The service owns two shared-emitter subscriptions and initiates outbound requests.
+          If either registration throws, the factory removes only that instance's callbacks
+          before rejecting; root tests preserve unrelated listeners and retry without duplicates.
+          Root tests exercise overlapping pending sends, and the HTTP suite holds real client
+          responses while API/model requests finish. Source-only: no cancellation or drain
+          bookkeeping exists. Settings, routing and image helpers are borrowed; image-adapter
+          lifetime remains external. request-external uses shared configurable HTTP/HTTPS agents,
+          keep-alive by default, DNS checks and a request timeout. No Slack cleanup is registered,
+          the client exposes no lifecycle disposal hook, and server stop does not await sends.
         sources:
           - core/server/services/slack-ping/index.ts
           - core/server/services/slack-ping/slack-ping-service.ts
@@ -11108,54 +10982,55 @@ services:
           - core/boot.js
           - core/server/ghost-server.ts
         tests:
-          - test/unit/server/services/slack-ping/slack-ping-service.test.js
+          - test/unit/server/services/slack-ping/index.test.ts
+          - test/e2e-server/slack-ping.isolated.test.ts
       failures:
         summary: >-
-          Errors before service assignment permit a later init attempt; subscription errors
-          leave service assigned and can leave partial listeners, so later init skips retry.
-          Request promise rejection is wrapped in InternalServerError, logged and swallowed;
-          direct ping therefore resolves after a logged failure. Synchronous settings, model,
-          formatting, URL/icon or request-invocation errors occur outside that catch and can
-          propagate through the synchronous emitter, even after a post commit, interrupting later
-          callbacks without undoing persistence. The service itself provides no
-          retry/replay; successful slack/test API response does not report asynchronous failure.
+          Failed initialization rejects without publishing an instance and permits a later
+          explicit retry. Root tests make either registration throw after adding its listener,
+          verify rollback preserves unrelated callbacks, and verify successful retry delivery.
+          Request rejection is wrapped in InternalServerError, logged and swallowed: root tests
+          check both event paths, error context/help, original error and fulfilled ping promises;
+          the HTTP suite checks test-endpoint success followed by a logged delivery failure.
+          Synchronous request invocation errors escape both event listeners in root tests.
+          Source-only: malformed settings/models, formatting and URL/icon errors likewise occur
+          outside the catch and may interrupt later synchronous emitter callbacks, including
+          events emitted after transaction commit without undoing persistence. The service has
+          no automatic retry or replay, and slack/test success does not report later delivery errors.
         sources:
           - core/server/services/slack-ping/index.ts
           - core/server/services/slack-ping/slack-ping-service.ts
+          - core/kernel/define-service.ts
           - core/server/lib/common/events.js
           - core/server/models/base/plugins/events.js
           - core/server/api/endpoints/slack.js
         tests:
+          - test/unit/server/services/slack-ping/index.test.ts
           - test/unit/server/services/slack-ping/slack-ping-service.test.js
+          - test/e2e-server/slack-ping.isolated.test.ts
     unverified: []
     blockers:
       - >-
-        Add root export, construction, idempotence and partial-subscription failure contracts.
-        Existing tests construct the implementation; registration assertions check on calls
-        against a fake emitter, not removeListener, callback counts or repeated subscriptions.
-      - >-
-        Exercise real boot, post publication and slack/test through the actual emitter and
-        wrapper. The API test mocks emission; class tests use fake URL/image/cache dependencies
-        and inject @tryghost/request, while production injects request-external. They do not
-        establish real routing, constructor wiring, startup readiness or production HTTP policy.
-      - >-
-        Characterize changed settings on a retained instance, custom username/title/icon,
-        custom excerpts and default-slug suppression. The existing missing-URL case only checks
-        helper calls; it does not assert no request. Tag forwarding is tested against a stub,
-        not a real collection-filter route.
-      - >-
         Decide and test listener ownership across restart/replacement and externally cleared
-        emitters. Stable callbacks only prevent duplication for the same implementation object;
-        the wrapper guard cannot recover a cleared listener set or finish failed registration.
+        emitters. Stable callbacks prevent duplication only for one implementation object;
+        successful init does not restore externally removed callbacks. Failed-start rollback
+        and explicit retry are covered, but there is still no normal shutdown/reset contract.
       - >-
-        Characterize pending sends, overlapping events and shutdown with the real request helper.
-        The request-error test observes one log through an alternate injected transport; it
-        does not prove exact error context, direct-ping settlement, timeout behavior, cancellation
-        or shared-agent disposal. Keep per-request timeout distinct from an overall deadline.
+        Characterize shutdown with pending or overlapping sends through the real request helper,
+        plus production timeout, cancellation, DNS and shared-agent disposal behavior. The HTTP
+        suite verifies pending delivery and logged rejection under test hooks, and root tests
+        overlap stubbed requests; neither establishes shutdown draining or production HTTP policy.
+        Keep per-request timeout distinct from an overall deadline.
       - >-
         Add synchronous failure contracts for malformed models/settings and throwing URL/icon
-        or request dependencies. Those failures bypass the request rejection handler and can
-        escape model/API event emission even when Slack is disabled or the post is later skipped.
+        dependencies, including disabled Slack and skipped-post paths. The root tests cover
+        synchronous request throws, but not these earlier failures or their effect on later
+        callbacks and already-committed model changes.
+      - >-
+        Complete no-request coverage for every default slug and missing-URL post delivery,
+        and live title/icon changes on an already initialized instance. Existing tests cover
+        welcome/page suppression, disabling a test notification, changed URL/username, and
+        initial custom title/icon values, but not every live-setting and suppression case.
   staff:
     kind: directory
     disposition: retain
@@ -11414,7 +11289,7 @@ services:
         tests:
           - test/e2e-api/admin/stats.test.js
           - test/unit/server/services/explore-ping/explore-ping-service.test.js
-          - test/e2e-api/admin/automations.test.js
+          - test/e2e-api/admin/automations.test.ts
       startup:
         summary: >-
           After model/settings setup and awaited Stripe startup, boot calls stats.init in its
@@ -12131,7 +12006,7 @@ services:
           - core/server/api/endpoints/exports.js
           - core/server/web/api/endpoints/admin/routes.js
           - core/server/data/importer/importers/data/custom-theme-settings-importer.js
-          - core/server/services/exports/site-exporter.ts
+          - core/server/data/exporter/site-exporter.ts
           - core/server/web/api/middleware/upload.js
           - core/frontend/web/site.js
           - core/frontend/services/theme-engine/middleware/ensure-active-theme.js
@@ -12249,7 +12124,7 @@ services:
           - core/server/services/themes/installer.js
           - core/server/adapters/storage/LocalStorageBase.ts
           - core/server/api/endpoints/exports.js
-          - core/server/services/exports/site-exporter.ts
+          - core/server/data/exporter/site-exporter.ts
           - core/server/web/api/middleware/upload.js
           - core/bridge.js
           - core/frontend/services/theme-engine/engine.js
@@ -12257,7 +12132,7 @@ services:
           - core/frontend/services/theme-engine/i18next/theme-i18n.js
           - package.json
         tests:
-          - test/unit/server/services/exports/site-exporter.test.ts
+          - test/unit/server/data/exporter/site-exporter.test.ts
           - test/e2e-api/admin/themes.test.js
           - test/e2e-api/admin/exports-download.test.js
       failures:
@@ -12611,7 +12486,7 @@ services:
           - core/server/services/automations/automation-member-search.ts
         tests:
           - test/e2e-api/admin/tinybird.test.js
-          - test/e2e-api/admin/automations.test.js
+          - test/e2e-api/admin/automations.test.ts
           - test/e2e-api/admin/automation-performance-stats.test.ts
           - test/e2e-api/admin/automation-runs.test.ts
           - test/e2e-api/admin/automation-member-search.test.ts
@@ -12636,7 +12511,7 @@ services:
           - core/server/services/automations/automations-api.ts
         tests:
           - test/unit/server/services/stats/stats.test.ts
-          - test/e2e-api/admin/automations.test.js
+          - test/e2e-api/admin/automations.test.ts
       lifetime:
         summary: >-
           Source establishes that root re-init/reset changes only the published reference,
@@ -12707,7 +12582,7 @@ services:
           - core/server/lib/request-external.js
         tests:
           - test/unit/server/services/stats/utils/tinybird.test.js
-          - test/e2e-api/admin/automations.test.js
+          - test/e2e-api/admin/automations.test.ts
           - test/e2e-api/admin/automation-member-search.test.ts
       failures:
         summary: >-
@@ -12733,7 +12608,7 @@ services:
         tests:
           - test/unit/server/services/tinybird/tinybird-service.test.js
           - test/unit/server/services/stats/utils/tinybird.test.js
-          - test/e2e-api/admin/automations.test.js
+          - test/e2e-api/admin/automations.test.ts
           - test/e2e-api/admin/automation-performance-stats.test.ts
           - test/e2e-api/admin/automation-runs.test.ts
     unverified: []

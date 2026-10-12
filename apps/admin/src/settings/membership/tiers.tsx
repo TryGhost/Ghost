@@ -270,7 +270,7 @@ const Tiers: React.FC<{ keywords: string[] }> = ({ keywords }) => {
 
       {content}
       {isEnd === false && (
-        <Button type="button" variant="link" onClick={() => void fetchNextPage()}>
+        <Button size="sm" type="button" variant="outline" onClick={() => void fetchNextPage()}>
           {`Load more (showing ${formatNumber(tiers?.length || 0)}/${formatNumber(meta?.pagination.total || 0)} tiers)`}
         </Button>
       )}

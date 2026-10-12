@@ -1,12 +1,8 @@
 import { useState } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { FilterBar } from '@/components/patterns/filter-bar';
-import {
-  Filters,
-  createFilter,
-  type Filter,
-  type FilterFieldConfig,
-} from '@/components/patterns/filters';
+import { Filters, type Filter, type FilterFieldConfig } from '@/components/patterns/filters';
+import { createFilter } from '@/components/patterns/filters-helpers';
 import { Circle } from 'lucide-react';
 
 const meta = {

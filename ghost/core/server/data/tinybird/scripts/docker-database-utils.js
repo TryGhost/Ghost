@@ -13,7 +13,7 @@ class DockerDatabaseUtils {
     this.knex = null;
     this.initialized = false;
     const env = process.env;
-    // Ghost's database__connection__* settings come from scripts/with-ghost-dev-env.ts
+    // Ghost's database__connection__* settings come from tools/scripts/with-ghost-dev-env.ts
     this.options = {
       host: options.host || env.MYSQL_HOST || env.database__connection__host || 'localhost',
       port: options.port || env.MYSQL_PORT || env.database__connection__port || 3306,

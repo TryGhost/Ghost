@@ -110,22 +110,27 @@ local service, set `ACTIVITYPUB_PROXY_TARGET`, for example to `127.0.0.1:8080`.
 
 Press `Ctrl+C` in the development process to stop Ghost and the watchers. MySQL,
 Redis, and Mailpit keep running for other checkouts; `pnpm dev:down --all` stops
-them along with every checkout's Ghost. The database lives in a Docker volume,
-and uploaded content in `ghost/content`.
+them along with every checkout's Ghost. A checkout reuses them while they run, so
+a change to them in `compose.dev.yaml` applies after `pnpm dev:down --all`. The
+database lives in a Docker volume, and uploaded content in `ghost/content`.
 
 ### Worktrees
 
 Every checkout gets its own URL and database, assigned on its first `pnpm dev`
 and kept in `.ghost-dev.env` so URLs and sessions survive restarts. The main
 checkout uses `http://localhost:2368` and the `ghost_dev` database. A worktree
-gets a `<worktree>.localhost` hostname, a port pair between `2400` and `2998`,
-and a `dev_<worktree>` database, so several worktrees can run `pnpm dev` at once
-against the same MySQL, Redis, and Mailpit. Mailpit tags each message with the
-checkout's name.
+gets a `<worktree>.ghost.localhost` hostname, a port pair between `2400` and
+`2998`, and a `dev_<worktree>` database, so several worktrees can run `pnpm dev`
+at once against the same MySQL, Redis, and Mailpit. Mailpit tags each message
+with the checkout's name.
 
 Browsers share cookies between the ports of one hostname, so the hostname keeps
 each checkout's Admin sign-in separate. Browsers resolve `.localhost` hostnames
 to your machine without editing `/etc/hosts`. `pnpm dev` prints the URL.
+
+Password managers match sign-ins by domain, and every worktree shares
+`ghost.localhost`. Give your local Ghost login the websites `localhost` and
+`ghost.localhost` to fill it in the main checkout and every worktree.
 
 A worktree's database starts as a copy of `ghost_dev` with a new `site_uuid` and
 no sessions, so it skips setup and onboarding, and Ghost applies the branch's
@@ -144,16 +149,43 @@ pnpm dev:down    # stop this checkout's Ghost, however it was started; --all sto
 the checkout's ports are in use. Pass a variant's script name, such as
 `pnpm dev:up dev:analytics`, to start that instead; `dev:docker` can't run this
 way. `pnpm dev:status` finds each checkout's Ghost through the ports in its
-`.ghost-dev.env`, and `--json` prints the list for scripts. `pnpm dev:down`
+`.ghost-dev.env`, and `--json` prints the list for scripts. In a terminal the
+list stays open and refreshes, with each branch's pull request and checks from
+`gh`: pick a checkout with the arrow keys, then press `a` or `f` to open its
+Admin or site, `p` or `c` to open its pull request or checks, `l` to read its
+log, `s`, `r`, or `k` to start, restart, or stop it, and `q` to quit. `x` stops
+every running checkout whose pull request has merged. The list also flags a
+checkout that's partway through a rebase or merge, with its conflicts. A
+checkout whose nx exited but left tasks such as `vite build --watch` running
+shows as `orphaned`, even once its worktree is deleted; `k` and `x` stop those
+processes too, and `--json` lists each checkout's nx `processes`. Add `--prs` to
+`--json` for each branch's pull request, and `--git` for each checkout's
+`ahead`, its commits that aren't on `origin/main`, and `dirty`, its uncommitted
+changes. `pnpm dev:down`
 stops whatever holds this checkout's ports, including what a killed run left
-behind, and leaves MySQL, Redis, and Mailpit running.
+behind, and leaves MySQL, Redis, and Mailpit running. Ghost started by
+`pnpm dev:up` also stops itself within a few seconds of its worktree being
+deleted, its process group leader exiting, or its owning Claude Code or Codex
+session ending. Claude Code uses `CLAUDE_PID`; Codex uses a session marker and
+the repository's `SessionEnd` hook. Review and trust that hook in Codex before
+relying on session cleanup (in the CLI, use `/hooks`). Without hook trust,
+worktree deletion and leader-exit cleanup still work.
 
-`pnpm dev:gc` lists the `dev_*` databases of worktrees that no longer exist, and
-`pnpm dev:gc --yes` drops them.
+Codex runs `SessionEnd` when an open conversation is archived or deleted, when
+it closes normally, or after a conversation has been idle and closed in every
+client for 30 minutes. Finishing a turn or switching chats leaves Ghost running.
+See the [Codex hook lifecycle](https://learn.chatgpt.com/docs/hooks#sessionend).
+
+`pnpm dev:gc` lists what's left behind in the shared services: the `dev_*`
+databases of worktrees that no longer exist, the containers, databases and
+snapshots of their interrupted E2E runs, and the `ghost_testing_*` databases of
+DB test runs that were killed before their teardown. `pnpm dev:gc --yes` removes
+them.
 
 `pnpm dev:status --watch` redraws the list every two seconds.
 `pnpm dev:down --all` stops every checkout's Ghost and then the Docker services;
-the databases stay in their volume.
+the databases stay in their volume. `pnpm dev:down --orphans` stops only the
+orphaned processes, in every checkout or in the checkout paths you pass.
 
 Delete `.ghost-dev.env` to be assigned new values, or set `GHOST_DEV_HOSTNAME`,
 `GHOST_DEV_PORT`, `GHOST_DEV_BACKEND_PORT`, or `GHOST_DEV_DATABASE` to choose

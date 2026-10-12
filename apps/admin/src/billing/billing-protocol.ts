@@ -94,6 +94,7 @@ const ADMIN_DESTINATION_ROUTES: Record<string, string> = Object.freeze(
     theme: '/settings/design/change-theme',
     analytics: '/settings/analytics',
     staff: '/settings/staff',
+    automations: '/automations',
     stripe: '/settings/stripe-connect',
     integrations: '/settings/integrations',
   }),

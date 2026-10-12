@@ -3,7 +3,7 @@ import React, { type ReactNode, useEffect, useState } from 'react';
 import TopLevelGroup from '@/settings/components/top-level-group';
 import useQueryParams from '@/settings/hooks/use-query-params';
 import { APIError } from '@tryghost/admin-x-framework/errors';
-import { Button, Tabs, TabsContent, TabsList, TabsTrigger } from '@tryghost/shade/components';
+import { Button, Link, Tabs, TabsContent, TabsList, TabsTrigger } from '@tryghost/shade/components';
 import {
   useBrowseNewsletters,
   useVerifyNewsletterEmail,
@@ -30,17 +30,17 @@ const NavigateToNewsletter = ({
   const { updateRoute } = useSettingsNavigation();
 
   return (
-    <Button
-      className="h-auto p-0 text-green hover:text-green"
-      type="button"
-      variant="link"
-      onClick={() => {
-        updateRoute(`newsletters/${id}`);
-        onNavigate();
-      }}
-    >
-      {children}
-    </Button>
+    <Link asChild>
+      <button
+        type="button"
+        onClick={() => {
+          updateRoute(`newsletters/${id}`);
+          onNavigate();
+        }}
+      >
+        {children}
+      </button>
+    </Link>
   );
 };
 
@@ -183,7 +183,7 @@ const Newsletters: React.FC<{ keywords: string[] }> = ({ keywords }) => {
         </TabsContent>
       </Tabs>
       {isEnd === false && (
-        <Button type="button" variant="link" onClick={() => void fetchNextPage()}>
+        <Button size="sm" type="button" variant="outline" onClick={() => void fetchNextPage()}>
           Load more (showing {formatNumber(newsletters?.length || 0)}/
           {formatNumber(meta?.pagination.total || 0)} newsletters)
         </Button>

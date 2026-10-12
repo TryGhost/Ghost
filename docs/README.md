@@ -46,10 +46,11 @@ Ghost/
 │   └── test/           # Server tests
 ├── koenig/            # Editor and content-format packages
 ├── packages/          # Shared libraries and adapter contracts
-├── configs/           # Shared build, lint, test, and TypeScript config
+├── tools/             # Repository tooling workspaces
+│   ├── configs/       # Shared build, lint, test, and TypeScript config
+│   └── scripts/       # Repository automation
 ├── e2e/               # Browser end-to-end tests
-├── docker/            # Local development containers and services
-└── scripts/           # Repository tooling
+└── docker/            # Local development containers and services
 ```
 
 pnpm links the workspaces and Nx runs their tasks in dependency order. For more

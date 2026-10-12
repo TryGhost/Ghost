@@ -138,9 +138,9 @@
 	}
 
 	# Admin HTML entry — proxy to Vite, which serves the dev index.html.
-	# Matches `/ghost` and `/ghost/` exactly (deep links fall through to Ghost
-	# below so its redirect middleware turns them into hash URLs).
-	@admin_html path /ghost /ghost/
+	# Matches `/ghost/` exactly (bare `/ghost` and deep links fall through to
+	# Ghost below so its middleware adds the slash or turns them into hash URLs).
+	@admin_html path /ghost/
 	handle @admin_html {
 		rewrite * /__admin-dev__/
 		reverse_proxy {env.ADMIN_DEV_SERVER}

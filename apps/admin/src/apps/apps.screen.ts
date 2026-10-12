@@ -22,10 +22,22 @@ export const appsScreen = {
   unreachable: () => page.getByTestId(sel.appInstallUnreachable),
   changes: () => page.getByTestId(sel.appManifestChange),
 
+  sidebarLink: () =>
+    page.getByTestId('admin-sidebar').getByRole('link', { name: 'Apps', exact: true }),
+  rowActions: (name: string) => page.getByRole('button', { name: `More actions for ${name}` }),
+  menuItem: (name: string) => page.getByRole('menuitem', { name }),
+  details: () => page.getByTestId(sel.appDetails),
+  needsApproval: () => page.getByTestId(sel.appNeedsApproval),
+  historyEntries: () => page.getByTestId(sel.appHistoryEntry),
+  uninstallDialog: () => page.getByTestId(sel.appUninstallDialog),
+  integrationKeyNote: () => page.getByTestId(sel.appUninstallIntegrationKeyNote),
+
   installButton: () => button(sel.installButton),
   approveChangesButton: () => button(sel.approveChangesButton),
   tryAgainButton: () => button(sel.tryAgainButton),
   okButton: () => button(sel.okButton),
   doneButton: () => button(sel.doneButton),
   cancelButton: () => button(sel.cancelButton),
+  uninstallButton: () => button(sel.uninstallButton),
+  reviewChangesLink: () => page.getByRole('link', { name: sel.reviewChangesLink, exact: true }),
 };

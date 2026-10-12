@@ -1,5 +1,5 @@
 import type { AppManifest } from '@tryghost/app-contracts';
-import { createMutation, createQuery } from '../utils/api/hooks';
+import { createMutation, createQuery, createQueryWithId } from '../utils/api/hooks';
 
 export type { AppManifest } from '@tryghost/app-contracts';
 
@@ -15,6 +15,21 @@ export interface AppInstallation {
   manifest: AppManifest;
   created_at: string;
   updated_at: string | null;
+  /** Newest first. Only included when read with `include=history`. */
+  history?: AppInstallationHistoryEntry[];
+}
+
+/**
+ * `actor` is null when Ghost made the change itself.
+ * It's also null when there's no record of who installed the app.
+ */
+export interface AppInstallationHistoryEntry {
+  id: string;
+  event: 'installed' | 'updated' | 'suspended' | 'changes_approved' | 'uninstalled';
+  actor: { id: string; name: string | null } | null;
+  created_at: string;
+  /** The host the app moved to. Only set when an approval moved the app. */
+  moved_to?: string;
 }
 
 /** One field that differs from what was approved before. */
@@ -60,10 +75,23 @@ export interface ReviewedAppManifest {
 }
 
 const dataType = 'AppInstallationsResponseType';
+// These also add entries to staff history.
+// Refetch it so Settings › History stays up to date.
+const changedDataTypes = { dataType: [dataType, 'ActionsResponseType'] };
 
 export const useBrowseAppInstallations = createQuery<AppInstallationsResponseType>({
   dataType,
   path: '/apps/installations/',
+});
+
+/**
+ * Unlike `useBrowseAppInstallations`, this also returns uninstalled apps.
+ * That way their details page still loads.
+ */
+export const useReadAppInstallation = createQueryWithId<AppInstallationsResponseType>({
+  dataType,
+  path: (id) => `/apps/installations/${id}/`,
+  defaultSearchParams: { include: 'history' },
 });
 
 /** Has Ghost fetch and check an app's manifest. Stores nothing, so nothing is invalidated. */
@@ -83,7 +111,7 @@ export const useAddAppInstallation = createMutation<
   method: 'POST',
   path: () => '/apps/installations/',
   body: (reviewed) => ({ app_installations: [reviewed] }),
-  invalidateQueries: { dataType },
+  invalidateQueries: changedDataTypes,
 });
 
 /**
@@ -98,5 +126,11 @@ export const useApproveAppInstallation = createMutation<
   method: 'PUT',
   path: ({ id }) => `/apps/installations/${id}/`,
   body: ({ id: _id, ...reviewed }) => ({ app_installations: [reviewed] }),
-  invalidateQueries: { dataType },
+  invalidateQueries: changedDataTypes,
+});
+
+export const useUninstallAppInstallation = createMutation<unknown, string>({
+  method: 'DELETE',
+  path: (id) => `/apps/installations/${id}/`,
+  invalidateQueries: changedDataTypes,
 });

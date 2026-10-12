@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { cardVariants } from '@/components/ui/card-variants';
 import { cn } from '@/lib/utils';
 import { cva } from 'class-variance-authority';
 
@@ -8,18 +9,6 @@ const CardsVariantContext = React.createContext<CardsVariant>('outline');
 export interface CardProps extends React.ComponentPropsWithoutRef<'div'> {
   variant?: CardsVariant;
 }
-
-const cardVariants = cva('flex flex-col bg-card text-card-foreground', {
-  variants: {
-    variant: {
-      outline: 'rounded-xl border border-border-default transition-all hover:shadow-xs',
-      plain: '',
-    },
-  },
-  defaultVariants: {
-    variant: 'outline',
-  },
-});
 
 const Card = React.forwardRef<HTMLDivElement, CardProps>(
   ({ variant = 'outline', className, ...props }, ref) => (
@@ -129,13 +118,4 @@ const EmptyCard = React.forwardRef<HTMLDivElement, EmptyCardProps>(
 );
 EmptyCard.displayName = 'EmptyCard';
 
-export {
-  Card,
-  CardHeader,
-  CardFooter,
-  CardTitle,
-  CardDescription,
-  CardContent,
-  EmptyCard,
-  cardVariants,
-};
+export { Card, CardHeader, CardFooter, CardTitle, CardDescription, CardContent, EmptyCard };

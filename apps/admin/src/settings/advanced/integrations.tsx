@@ -95,13 +95,7 @@ const IntegrationItem: React.FC<IntegrationItemProps> = ({
       Upgrade
     </Button>
   ) : (
-    <Button
-      className="h-auto p-0 font-bold text-green hover:text-green/90 hover:no-underline"
-      size="sm"
-      type="button"
-      variant="link"
-      onClick={handleClick}
-    >
+    <Button size="sm" type="button" variant="ghost" onClick={handleClick}>
       Configure
     </Button>
   );

@@ -406,13 +406,13 @@ describe('ActivityPubService', function () {
     await knexInstance.destroy();
   });
 
-  it('Logs an error when the ActivityPub service returns no webhook secret', async function () {
+  it('Skips webhook setup with a warning when ActivityPub is unavailable', async function () {
     const knexInstance = await getKnexInstance();
     await addOwnerUser(knexInstance);
     await addActivityPubIntegration(knexInstance);
 
     const siteUrl = new URL('http://fake-site-url');
-    nock(siteUrl).get('/.ghost/activitypub/v1/site/').reply(403, { error: 'Forbidden' });
+    const scope = nock(siteUrl).get('/.ghost/activitypub/v1/site/').reply(502);
 
     const identityTokenService = {
       getTokenForUser(email: string, role: string) {
@@ -427,6 +427,43 @@ describe('ActivityPubService', function () {
     );
 
     await service.initialiseWebhooks();
+
+    assert(scope.isDone(), 'Expected the ActivityPub site endpoint to be called');
+
+    const webhooks = await knexInstance.select('*').from('webhooks');
+
+    assert.equal(webhooks.length, 0, 'There should be no webhooks');
+    assert.deepEqual(logging.warn.mock.calls, [
+      ['ActivityPub is unavailable (502) - skipping webhook setup'],
+    ]);
+    assert.equal(logging.error.mock.calls.length, 0);
+
+    await knexInstance.destroy();
+  });
+
+  it('Logs an error when the ActivityPub service returns no webhook secret', async function () {
+    const knexInstance = await getKnexInstance();
+    await addOwnerUser(knexInstance);
+    await addActivityPubIntegration(knexInstance);
+
+    const siteUrl = new URL('http://fake-site-url');
+    const scope = nock(siteUrl).get('/.ghost/activitypub/v1/site/').reply(200, {});
+
+    const identityTokenService = {
+      getTokenForUser(email: string, role: string) {
+        return `token:${email}:${role}`;
+      },
+    };
+    const service = new ActivityPubService(
+      knexInstance,
+      siteUrl,
+      logging,
+      identityTokenService as unknown as IdentityTokenService,
+    );
+
+    await service.initialiseWebhooks();
+
+    assert(scope.isDone(), 'Expected the ActivityPub site endpoint to be called');
 
     const webhooks = await knexInstance.select('*').from('webhooks');
 

@@ -3,7 +3,7 @@ import { Button, type ButtonProps } from '@/components/ui/button';
 import { Inline, type InlineProps } from '@/components/primitives/inline';
 import { FilterBarContext, useFilterBarContext } from '@/components/patterns/filter-bar-context';
 import { cn } from '@/lib/utils';
-import { useShade } from '@/providers/shade-provider';
+import { useShade } from '@/providers/shade-context';
 
 type FilterBarProps = React.PropsWithChildren & {
   className?: string;

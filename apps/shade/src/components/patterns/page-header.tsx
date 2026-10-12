@@ -1,5 +1,5 @@
 import { HeaderTooltipProvider } from '@/providers/header-tooltip-provider';
-import { useShade } from '@/providers/shade-provider';
+import { useShade } from '@/providers/shade-context';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,7 +14,9 @@ import { Inline, Stack, Text } from '@/components/primitives';
 import { cn } from '@/lib/utils';
 
 import React from 'react';
+import { createPortal } from 'react-dom';
 import { ListFilter } from 'lucide-react';
+import { PageHeaderLargeTitleContext } from './page-header-large-title';
 import { Slot } from '@radix-ui/react-slot';
 
 type PropsWithChildrenAndClassName = React.PropsWithChildren & {
@@ -229,6 +231,10 @@ function PageHeaderMeta({ className, children }: PropsWithChildrenAndClassName) 
  * below the heading.
  */
 function PageHeaderTitle({ className, children }: PropsWithChildrenAndClassName) {
+  const largeTitle = React.useContext(PageHeaderLargeTitleContext);
+  const registerLargeTitle = largeTitle?.registerTitle;
+  React.useLayoutEffect(() => registerLargeTitle?.(), [registerLargeTitle]);
+
   const headingChildren: React.ReactNode[] = [];
   const subTextChildren: React.ReactNode[] = [];
 
@@ -247,6 +253,40 @@ function PageHeaderTitle({ className, children }: PropsWithChildrenAndClassName)
         headingChildren.push(child);
     }
   });
+
+  // Shown large above the page's header, the title is that heading; the one
+  // in the header is a stand-in, fading in as the header takes over
+  if (largeTitle) {
+    return (
+      <>
+        <H1
+          aria-hidden="true"
+          className={cn(
+            'large-title-header-title text-lg font-semibold tracking-[0.1px] whitespace-nowrap',
+            className,
+          )}
+          data-page-header="title"
+        >
+          {headingChildren}
+        </H1>
+        {largeTitle.slot &&
+          createPortal(
+            <Stack data-page-header="large-title" gap="none">
+              <H1
+                className="flex items-baseline gap-3 font-medium tracking-[-0.03em] whitespace-nowrap [&_[data-page-header=count]]:tracking-normal"
+                data-large-title=""
+                // Inline, over Text's own line height
+                style={{ fontSize: 'var(--large-title-size)', lineHeight: 1.15 }}
+              >
+                {headingChildren}
+              </H1>
+              {subTextChildren}
+            </Stack>,
+            largeTitle.slot,
+          )}
+      </>
+    );
+  }
 
   const heading = (
     <H1

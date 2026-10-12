@@ -2,13 +2,22 @@ import * as React from 'react';
 import { Pin } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
+import {
+  FLOATING_SIDEBAR_CLOSED_SIZE,
+  FLOATING_SIDEBAR_INSET,
+  FLOATING_SIDEBAR_OPEN_WIDTH,
+  FLOATING_SIDEBAR_SPRING,
+  getFloatingSidebarGapWidth,
+  getFloatingSidebarTiming,
+  type FloatingSidebarMorphStyle,
+} from '@/components/ui/floating-sidebar-metrics';
 
 /*
  * A floating "liquid glass" sidebar: one capsule that morphs between three
  * states.
  *
  * - closed: a circle around an icon (e.g. the site icon)
- * - open: hovering the circle, the left-edge hot zone, focusing or clicking it
+ * - open: hovering the circle or the hot zone beneath it, focusing or clicking it
  *   grows the circle into a panel floating over the content, the header
  *   fading in beside the icon and the body unfurling beneath it
  * - pinned: the panel is docked at full height and a gap beside it offsets
@@ -23,92 +32,16 @@ import { cn } from '@/lib/utils';
  *
  * It only moves itself and its gap, which changes width at once as it pins and
  * unpins. Content that should glide to its new place, or keep clear of the
- * closed circle, does so itself with the metrics and timing exported below
- * (`FLOATING_SIDEBAR_INSET`, `getFloatingSidebarGapWidth`,
+ * closed circle, does so itself with the metrics and timing exported from
+ * floating-sidebar-metrics (`FLOATING_SIDEBAR_INSET`, `getFloatingSidebarGapWidth`,
  * `getFloatingSidebarTiming`…), driven by the same `pinned` it passes in.
  */
 
-/**
- * Capsule morph: a gentle overshoot so it grows a touch past size and settles
- * back (about 2.8% past its target, ~7px as the circle opens to the panel's
- * width). Its width, radius and shadow take it; its height eases in without
- * overshoot, as the body unfurls.
- */
-export const FLOATING_SIDEBAR_BUMP = 'cubic-bezier(0.34, 1.29, 0.5, 1)';
-/** Body unfurl, capsule height and content slide: a decelerating ease without overshoot. */
-export const FLOATING_SIDEBAR_SPRING = 'cubic-bezier(0.16, 1, 0.3, 1)';
-/** How long the capsule morphs and the content slides, in milliseconds. */
-export const FLOATING_SIDEBAR_DURATION = 520;
-/** The plain morph (`morphStyle="ease"`): an ease-out without overshoot, for the capsule and the content slide alike. */
-export const FLOATING_SIDEBAR_EASE = 'cubic-bezier(0.33, 1, 0.68, 1)';
-/** How long the plain morph takes, in milliseconds. */
-export const FLOATING_SIDEBAR_EASE_DURATION = 450;
-
-/** How the capsule morphs between states; see `morphStyle`. */
-type FloatingSidebarMorphStyle = 'bump' | 'ease';
-
-interface FloatingSidebarTiming {
-  /** How long the morph takes, in milliseconds. */
-  duration: number;
-  /**
-   * What moves with the capsule: its height, the icon, and content sliding in
-   * step with a pin change. A decelerating ease without overshoot.
-   */
-  easing: string;
-  /** The capsule's own shape (width, radius, shadow): the bump overshoots. */
-  shapeEasing: string;
-}
-
-/**
- * The timing of a morph in `morphStyle`, for content that animates in step
- * with the capsule as it pins and unpins.
- */
-export function getFloatingSidebarTiming(
-  morphStyle: FloatingSidebarMorphStyle = 'bump',
-): FloatingSidebarTiming {
-  return morphStyle === 'ease'
-    ? {
-        duration: FLOATING_SIDEBAR_EASE_DURATION,
-        easing: FLOATING_SIDEBAR_EASE,
-        shapeEasing: FLOATING_SIDEBAR_EASE,
-      }
-    : {
-        duration: FLOATING_SIDEBAR_DURATION,
-        easing: FLOATING_SIDEBAR_SPRING,
-        shapeEasing: FLOATING_SIDEBAR_BUMP,
-      };
-}
-
-/**
- * The capsule's distance from the viewport's top and left edges, and the gap
- * between the pinned panel and the content, in pixels.
- */
-export const FLOATING_SIDEBAR_INSET = 16;
-/** The closed circle's outer diameter, its 1px border included, in pixels. */
-export const FLOATING_SIDEBAR_CLOSED_SIZE = 50;
-/**
- * The room the closed circle takes from the content's top-left corner (inset +
- * diameter + inset), for content to keep clear of it while unpinned.
- */
-export const FLOATING_SIDEBAR_CLOSED_FOOTPRINT =
-  FLOATING_SIDEBAR_INSET + FLOATING_SIDEBAR_CLOSED_SIZE + FLOATING_SIDEBAR_INSET;
-/** The open and pinned panel's default width (`openWidth`), in pixels. */
-export const FLOATING_SIDEBAR_OPEN_WIDTH = 290;
-
-/**
- * The width of the gap that offsets the content beside the sidebar: the pinned
- * panel and the inset either side of it, or 0 unless pinned.
- */
-export function getFloatingSidebarGapWidth(
-  pinned: boolean,
-  openWidth: number = FLOATING_SIDEBAR_OPEN_WIDTH,
-): number {
-  return pinned ? FLOATING_SIDEBAR_INSET + openWidth + FLOATING_SIDEBAR_INSET : 0;
-}
-
 const UNFURL_DURATION = '450ms';
 // Forgiving, so a pointer drifting off the panel doesn't close it.
-const CLOSE_DELAY = 250;
+const CLOSE_DELAY = 400;
+// How long the pointer stays still to count as at rest (see `armHoverOnRest`).
+const REST_DELAY = 100;
 // After the morph's duration, when it's taken as finished though no
 // transitionend came (e.g. a height that didn't change)
 const MORPH_END_GRACE = 100;
@@ -137,8 +70,16 @@ const PADDING = 20;
 const PIN_BUTTON_SIZE = 28;
 // Puts the pin glyph PADDING from the panel's right edge.
 const PIN_BUTTON_RIGHT = 14;
+/*
+ * The capsule floats within the viewport, less any chrome framing the page
+ * around it: `--floating-sidebar-offset-top`, `-left` and `-bottom` (0 unless
+ * set on an ancestor) move its corner and shorten its panel by that much.
+ */
+const OFFSET_TOP = 'var(--floating-sidebar-offset-top, 0px)';
+const OFFSET_LEFT = 'var(--floating-sidebar-offset-left, 0px)';
+const OFFSET_BOTTOM = 'var(--floating-sidebar-offset-bottom, 0px)';
 // Pinned, and the most it grows to open.
-const PANEL_HEIGHT = `calc(100vh - ${INSET * 2}px)`;
+const PANEL_HEIGHT = `calc(100vh - ${OFFSET_TOP} - ${OFFSET_BOTTOM} - ${INSET * 2}px)`;
 
 /** Frosted body: a faint tint so the capsule reads as a surface, a light-catching outline and a backdrop blur. */
 const GLASS = 'border border-border-glass bg-surface-glass backdrop-blur-md backdrop-saturate-150';
@@ -155,9 +96,18 @@ const POPUP_TRIGGER_SELECTOR = '[aria-haspopup][aria-expanded=true]';
 const OVERLAY_SELECTOR =
   '[role=dialog], [role=alertdialog], [role=menu], [role=listbox], [data-radix-popper-content-wrapper]';
 
-/** The left-edge strip that opens the panel: the page gutter beside centred content, within limits. */
-function hotZoneWidth(viewportWidth: number): number {
-  return Math.min(160, Math.max(40, (viewportWidth - 1280) / 2 + 40));
+/**
+ * Whether a point is in the hot zone: the strip beneath the closed circle, as
+ * wide as its footprint, from the screen's left edge down to the bottom. With
+ * the circle, it's what opens the panel; nothing beside the circle does.
+ */
+function inHotZone(wrapper: HTMLElement | null, x: number, y: number): boolean {
+  if (!wrapper) {
+    return false;
+  }
+  // The capsule's corner, wherever its offsets put it
+  const { top, left } = wrapper.getBoundingClientRect();
+  return x < left + CLOSED_SIZE + INSET && y >= top + CLOSED_SIZE + INSET;
 }
 
 function useMediaQuery(query: string): boolean {
@@ -254,8 +204,15 @@ interface FloatingSidebarProps extends Omit<React.ComponentProps<'div'>, 'childr
    * mounting.
    */
   animate?: boolean;
-  /** Opens the panel when the pointer enters the left edge of the screen. */
+  /** Opens the panel when the pointer enters the strip beneath the closed circle. */
   hotZone?: boolean;
+  /**
+   * Hovering doesn't open the panel until the pointer first comes to rest,
+   * for a sidebar that reappears under a pointer on its way somewhere (e.g.
+   * back from a full-screen screen); resting over it then opens it. Read as
+   * it mounts.
+   */
+  armHoverOnRest?: boolean;
   /**
    * Changing it (e.g. to the route's path) cancels a pending close: a layout
    * shift inside the panel can fire a mouseleave though the pointer never left.
@@ -287,6 +244,7 @@ const FloatingSidebar = React.forwardRef<HTMLDivElement, FloatingSidebarProps>(
       disabled = false,
       animate = true,
       hotZone = true,
+      armHoverOnRest = false,
       resetKey,
       pinLabel = 'Pin sidebar',
       unpinLabel = 'Unpin sidebar',
@@ -374,11 +332,18 @@ const FloatingSidebar = React.forwardRef<HTMLDivElement, FloatingSidebarProps>(
     // circle is), and that shouldn't open it.
     const hover = React.useRef({ capsule: false, zone: false, any: false });
     const hoverArmed = React.useRef(false);
+    // With `armHoverOnRest`, the pointer passes over it freely until it stops
+    const [waitsForRest] = React.useState(armHoverOnRest);
+    const waitingForRest = React.useRef(waitsForRest);
+    const restTimer = React.useRef<number | undefined>(undefined);
     const updateHover = React.useCallback(
       (parts: Partial<Record<'capsule' | 'zone', boolean>>) => {
         const state = hover.current;
         Object.assign(state, parts);
         const any = state.capsule || state.zone;
+        if (waitingForRest.current) {
+          return;
+        }
         if (!hoverArmed.current) {
           hoverArmed.current = !any;
           return;
@@ -418,9 +383,21 @@ const FloatingSidebar = React.forwardRef<HTMLDivElement, FloatingSidebarProps>(
           parts.capsule = Boolean(wrapperRef.current?.contains(target));
         }
         if (hotZone) {
-          parts.zone = !overOverlay && event.clientX < hotZoneWidth(window.innerWidth);
+          parts.zone = !overOverlay && inHotZone(wrapperRef.current, event.clientX, event.clientY);
         }
         updateHover(parts);
+        if (waitingForRest.current) {
+          window.clearTimeout(restTimer.current);
+          restTimer.current = window.setTimeout(() => {
+            waitingForRest.current = false;
+            hoverArmed.current = true;
+            const state = hover.current;
+            state.any = state.capsule || state.zone;
+            if (state.any) {
+              show();
+            }
+          }, REST_DELAY);
+        }
       };
       const onPointerLeave = () => updateHover({ capsule: false, zone: false });
       document.addEventListener('pointermove', onPointerMove);
@@ -428,9 +405,10 @@ const FloatingSidebar = React.forwardRef<HTMLDivElement, FloatingSidebarProps>(
       return () => {
         document.removeEventListener('pointermove', onPointerMove);
         document.documentElement.removeEventListener('pointerleave', onPointerLeave);
+        window.clearTimeout(restTimer.current);
         hover.current.zone = false;
       };
-    }, [disabled, hotZone, updateHover]);
+    }, [disabled, hotZone, show, updateHover]);
 
     // Escape closes the floating panel, returning focus to the circle.
     const restoringFocus = React.useRef(false);
@@ -615,7 +593,11 @@ const FloatingSidebar = React.forwardRef<HTMLDivElement, FloatingSidebarProps>(
         <div
           ref={wrapperRef}
           className={cn('fixed z-40 flex items-stretch', className)}
-          style={{ top: INSET, left: INSET, ...style }}
+          style={{
+            top: `calc(${OFFSET_TOP} + ${INSET}px)`,
+            left: `calc(${OFFSET_LEFT} + ${INSET}px)`,
+            ...style,
+          }}
           onBlur={(event) => {
             onBlur?.(event);
             const next = event.relatedTarget;
@@ -841,4 +823,4 @@ const FloatingSidebar = React.forwardRef<HTMLDivElement, FloatingSidebarProps>(
 FloatingSidebar.displayName = 'FloatingSidebar';
 
 export { FloatingSidebar };
-export type { FloatingSidebarMorphStyle, FloatingSidebarProps, FloatingSidebarTiming };
+export type { FloatingSidebarProps };

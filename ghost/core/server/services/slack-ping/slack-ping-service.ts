@@ -109,7 +109,7 @@ export class SlackPingService {
     this.urlService = urlService;
     this.urlUtils = urlUtils;
 
-    // Stable references so removeListener() can de-register them across reboots.
+    // Stable references let this instance remove its own listeners.
     this.postListener = this.handlePostEvent.bind(this);
     this.testListener = this.handleTestEvent.bind(this);
   }
@@ -307,5 +307,10 @@ export class SlackPingService {
       .on('post.published', this.postListener);
 
     this.events.removeListener('slack.test', this.testListener).on('slack.test', this.testListener);
+  }
+
+  unsubscribeEvents(): void {
+    this.events.removeListener('post.published', this.postListener);
+    this.events.removeListener('slack.test', this.testListener);
   }
 }

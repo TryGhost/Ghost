@@ -9,10 +9,12 @@ import {
   CADDYFILE_PATHS,
   DEV_ENVIRONMENT,
   DEV_SHARED_CONFIG_VOLUME,
+  E2E_CONTAINER_PREFIX,
   EGRESS_MONITOR_ENABLED,
   REPO_ROOT,
   TEST_ENVIRONMENT,
   TINYBIRD,
+  gatewayHostPort,
 } from '@/helpers/environment/constants';
 import { EgressMonitor } from '@/helpers/environment/service-managers/egress-monitor';
 import { execFileSync } from 'node:child_process';
@@ -63,6 +65,7 @@ export class GhostManager {
   private readonly config: GhostManagerConfig;
   private ghostContainer: Container | null = null;
   private gatewayContainer: Container | null = null;
+  private gatewayPort: number | null = null;
   private egressMonitor: EgressMonitor | null = null;
 
   constructor(config: GhostManagerConfig) {
@@ -84,7 +87,10 @@ export class GhostManager {
   }
 
   getGatewayPort(): number {
-    return 30000 + this.config.workerIndex;
+    if (this.gatewayPort === null) {
+      throw new Error('Gateway container not initialized');
+    }
+    return this.gatewayPort;
   }
 
   /**
@@ -100,8 +106,8 @@ export class GhostManager {
       await this.verifyBuildImageExists();
     }
 
-    const ghostName = `ghost-e2e-worker-${this.config.workerIndex}`;
-    const gatewayName = `ghost-e2e-gateway-${this.config.workerIndex}`;
+    const ghostName = `${E2E_CONTAINER_PREFIX}-worker-${this.config.workerIndex}`;
+    const gatewayName = `${E2E_CONTAINER_PREFIX}-gateway-${this.config.workerIndex}`;
 
     // Start the egress monitor first so Ghost can use it as its DNS server.
     // Fail-open: if it doesn't come up, Ghost keeps Docker's default resolver.
@@ -111,6 +117,8 @@ export class GhostManager {
     this.gatewayContainer = await this.getOrCreateContainer(gatewayName, () =>
       this.createGatewayContainer(gatewayName, ghostName),
     );
+    const gatewayInfo = await this.gatewayContainer.inspect();
+    this.gatewayPort = Number(gatewayInfo.NetworkSettings.Ports['80/tcp'][0].HostPort);
     this.ghostContainer = await this.getOrCreateContainer(ghostName, () =>
       this.createGhostContainer(ghostName, database),
     );
@@ -473,7 +481,7 @@ export class GhostManager {
       ExposedPorts: { '80/tcp': {} },
       HostConfig: {
         Binds: binds,
-        PortBindings: { '80/tcp': [{ HostPort: String(this.getGatewayPort()) }] },
+        PortBindings: { '80/tcp': [{ HostPort: gatewayHostPort(this.config.workerIndex) }] },
         ExtraHosts: ['host.docker.internal:host-gateway'],
       },
       NetworkingConfig: {

@@ -104,7 +104,7 @@ jobs:
           store-cache: save
 
       # Replaced nrwl/nx-set-shas, which verified each candidate commit over the
-      # API and hid the errors — see scripts/nx-set-shas.js.
+      # API and hid the errors — see tools/scripts/nx-set-shas.js.
       - name: Set SHAs for Nx Commands
         if: env.IS_TAG != 'true'
         env:
@@ -114,7 +114,7 @@ jobs:
           # untested commits land, so there a lookup that comes up empty fails
           # the run rather than falling back to the previous commit.
           ON_MISSING: ${{ (env.IS_MAIN == 'true' && github.repository == 'TryGhost/Ghost') && 'error' || 'previous-commit' }}
-        run: node scripts/nx-set-shas.js --branch "$BRANCH" --head "$HEAD_COMMIT" --on-missing "$ON_MISSING"
+        run: node tools/scripts/nx-set-shas.js --branch "$BRANCH" --head "$HEAD_COMMIT" --on-missing "$ON_MISSING"
 
       - name: Determine changed packages
         if: env.IS_TAG != 'true'
@@ -128,7 +128,7 @@ jobs:
               # The @internal/scripts workspace sits outside .github but is
               # invoked by the workflows below, so it needs the same treatment
               # the '.github/**' glob used to give it when it lived there.
-              - 'scripts/**'
+              - 'tools/scripts/**'
               # Renovate config / workflow files have no Ghost
               # runtime/test impact. Anchored as &renovate_only and
               # referenced from every filter below so a PR touching
@@ -148,7 +148,7 @@ jobs:
               - *renovate_only
               - '.github/actions/**'
               - '.github/scripts/**'
-              - 'scripts/**'
+              - 'tools/scripts/**'
             docs:
               - '**/*.md'
               - '**/*.mdx'
@@ -156,19 +156,19 @@ jobs:
               - '.claude/**'
               - '.github/workflows/ci.yml'
               - 'package.json'
-              - 'scripts/check-agent-skill-links.js'
-              - 'scripts/test/check-agent-skill-links.test.js'
-              - 'scripts/check-agent-guidance.js'
-              - 'scripts/test/check-agent-guidance.test.js'
+              - 'tools/scripts/check-agent-skill-links.js'
+              - 'tools/scripts/test/check-agent-skill-links.test.js'
+              - 'tools/scripts/check-agent-guidance.js'
+              - 'tools/scripts/test/check-agent-guidance.test.js'
             package-standards:
               - 'packages/**'
               - 'package.json'
               - 'pnpm-workspace.yaml'
-              - 'scripts/check-internal-packages.js'
-              - 'scripts/create-package.js'
-              - 'scripts/lib/constants.js'
-              - 'scripts/lib/package-template.js'
-              - 'scripts/test/check-internal-packages.test.js'
+              - 'tools/scripts/check-internal-packages.js'
+              - 'tools/scripts/create-package.js'
+              - 'tools/scripts/lib/constants.js'
+              - 'tools/scripts/lib/package-template.js'
+              - 'tools/scripts/test/check-internal-packages.test.js'
               - '.github/workflows/ci.yml'
             core:
               - *shared
@@ -201,6 +201,7 @@ jobs:
             any-code:
               - '!**/*.md'
               - '!**/*.mdx'
+              - '!.github/CODEOWNERS'
               - '!.devcontainer/**'
               - '!.vscode/**'
               - *renovate_only
@@ -213,6 +214,7 @@ jobs:
             e2e:
               - '!**/*.md'
               - '!**/*.mdx'
+              - '!.github/CODEOWNERS'
               - '!.devcontainer/**'
               - '!.vscode/**'
               - '!ghost/test/**'
@@ -325,7 +327,7 @@ jobs:
               PUBLISH_PROJECTS=$(pnpm nx show projects --affected --json)
             fi
           fi
-          PUBLISH_PUBLIC_APPS_MATRIX=$(node scripts/build-public-apps-matrix.js "$PUBLISH_PROJECTS")
+          PUBLISH_PUBLIC_APPS_MATRIX=$(node tools/scripts/build-public-apps-matrix.js "$PUBLISH_PROJECTS")
           echo "publish_public_apps_matrix=$PUBLISH_PUBLIC_APPS_MATRIX" >> "$GITHUB_OUTPUT"
 
       # Per-file e2e durations saved by job_e2e_timings on main. Read once here so
@@ -410,7 +412,7 @@ jobs:
           PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
           PR_BASE_REF: ${{ github.event.pull_request.base.ref }}
           PR_COMPARE_SHA: ${{ github.event.pull_request.head.sha }}
-        run: node scripts/check-app-version-bump.js
+        run: node tools/scripts/check-app-version-bump.js
 
       # Fail the PR if a publishable package changed (source or a catalog entry
       # it consumes) but the branch adds no changeset covering it. Prototype of
@@ -420,10 +422,10 @@ jobs:
           PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
           PR_BASE_REF: ${{ github.event.pull_request.base.ref }}
           PR_COMPARE_SHA: ${{ github.event.pull_request.head.sha }}
-        run: node scripts/change-check.js
+        run: node tools/scripts/change-check.js
 
       - name: Check private packages are excluded from versioning
-        run: node scripts/check-versioning-ignore.js
+        run: node tools/scripts/check-versioning-ignore.js
 
   job_migration_integrity_check:
     name: Check migration integrity
@@ -450,7 +452,7 @@ jobs:
           PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
           PR_BASE_REF: ${{ github.event.pull_request.base.ref }}
           PR_COMPARE_SHA: ${{ github.event.pull_request.head.sha }}
-        run: node scripts/check-migration-integrity.cjs
+        run: node tools/scripts/check-migration-integrity.cjs
 
   job_lint:
     runs-on: ubuntu-latest
@@ -483,7 +485,7 @@ jobs:
       - name: Check formatting
         run: pnpm format:check
 
-      - uses: tryghost/actions/actions/slack-build@475df2e2aff4582e487742ba53bbfd7e46e96bc9 # main
+      - uses: tryghost/actions/actions/slack-build@bcd9d3edaa1250608a4394ebb5863e8db37c87d9 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -498,15 +500,15 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: ${{ env.NODE_VERSION }}
 
       - name: Lint documentation guidance
         run: |
-          node --test scripts/test/check-agent-guidance.test.js
-          node scripts/check-agent-skill-links.js
-          node scripts/check-agent-guidance.js
+          node --test tools/scripts/test/check-agent-guidance.test.js
+          node tools/scripts/check-agent-skill-links.js
+          node tools/scripts/check-agent-guidance.js
 
   job_lint_packages:
     name: Lint packages
@@ -524,10 +526,10 @@ jobs:
           store-cache: 'false'
 
       - name: Check internal package golden path
-        run: node scripts/check-internal-packages.js
+        run: node tools/scripts/check-internal-packages.js
 
       - name: Test internal package checker
-        run: node --test scripts/test/check-internal-packages.test.js
+        run: node --test tools/scripts/test/check-internal-packages.test.js
 
   job_i18n:
     runs-on: ubuntu-latest
@@ -588,10 +590,10 @@ jobs:
         run: hyperfine --show-output --warmup 3 'GHOST_CI_SHUTDOWN_AFTER_BOOT=1 node index.js' --export-json boot-perf.json
 
       # Native modules like sharp cost memory in every process, so they should
-      # load on first use. The list lives in scripts/lib/boot-modules.js
+      # load on first use. The list lives in tools/scripts/lib/boot-modules.js
       - name: Check boot skips lazy-loaded modules
         working-directory: ghost
-        run: GHOST_CI_SHUTDOWN_AFTER_BOOT=1 node --import ../scripts/assert-boot-skips-modules.js index.js
+        run: GHOST_CI_SHUTDOWN_AFTER_BOOT=1 node --import ../tools/scripts/assert-boot-skips-modules.js index.js
 
       - name: Report result
         uses: ./.github/actions/report-boot-benchmark
@@ -800,13 +802,13 @@ jobs:
 
       # Absent when ghost wasn't among the affected projects; Codecov
       # carries the unit-tests flag forward from the last report instead.
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         if: env.COVERAGE_ENABLED == 'true' && hashFiles('ghost/coverage-unit/cobertura-coverage.xml') != ''
         with:
           name: unit-coverage
           path: ghost/coverage-unit/cobertura-coverage.xml
 
-      - uses: tryghost/actions/actions/slack-build@475df2e2aff4582e487742ba53bbfd7e46e96bc9 # main
+      - uses: tryghost/actions/actions/slack-build@bcd9d3edaa1250608a4394ebb5863e8db37c87d9 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -833,7 +835,7 @@ jobs:
           FORCE_COLOR: 0
           NX_SKIP_LOG_GROUPING: true
 
-      - uses: tryghost/actions/actions/slack-build@475df2e2aff4582e487742ba53bbfd7e46e96bc9 # main
+      - uses: tryghost/actions/actions/slack-build@bcd9d3edaa1250608a4394ebb5863e8db37c87d9 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -954,7 +956,7 @@ jobs:
             exit 1
           fi
 
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         if: env.COVERAGE_ENABLED == 'true'
         with:
           name: e2e-coverage
@@ -962,7 +964,7 @@ jobs:
             ghost/coverage-e2e/cobertura-coverage.xml
             ghost/coverage-integration/cobertura-coverage.xml
 
-      - uses: tryghost/actions/actions/slack-build@475df2e2aff4582e487742ba53bbfd7e46e96bc9 # main
+      - uses: tryghost/actions/actions/slack-build@bcd9d3edaa1250608a4394ebb5863e8db37c87d9 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -1029,7 +1031,7 @@ jobs:
             exit 1
           fi
 
-      - uses: tryghost/actions/actions/slack-build@475df2e2aff4582e487742ba53bbfd7e46e96bc9 # main
+      - uses: tryghost/actions/actions/slack-build@bcd9d3edaa1250608a4394ebb5863e8db37c87d9 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -1144,7 +1146,7 @@ jobs:
 
       - name: Upload test results
         if: always() && steps.app_name.outputs.has_report == 'true'
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: ${{ steps.app_name.outputs.name }}-playwright-report-${{ matrix.shardIndex }}
           path: ${{ steps.app_name.outputs.root }}/playwright-report
@@ -1155,7 +1157,7 @@ jobs:
       # playwright-report; upload them so failures are debuggable from CI.
       - name: Upload failure screenshots
         if: failure()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: ${{ steps.app_name.outputs.name }}-failure-screenshots-${{ matrix.shardIndex }}
           path: ${{ steps.app_name.outputs.root }}/**/__screenshots__/**
@@ -1167,20 +1169,20 @@ jobs:
         # Reporting must not change the test step's result if the report is incomplete.
         continue-on-error: true
         run: |
-          node scripts/summarize-admin-acceptance.js \
+          node tools/scripts/summarize-admin-acceptance.js \
             --report=apps/admin/test-results/acceptance.json \
             --shard=${{ matrix.shardIndex }}/${{ matrix.shardTotal }} >> "$GITHUB_STEP_SUMMARY"
 
       - name: Upload Admin acceptance results
         if: always() && matrix.app == '@tryghost/admin'
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: admin-acceptance-results-${{ matrix.shardIndex }}
           path: apps/admin/test-results/acceptance.json
           if-no-files-found: ignore
           retention-days: 30
 
-      - uses: tryghost/actions/actions/slack-build@475df2e2aff4582e487742ba53bbfd7e46e96bc9 # main
+      - uses: tryghost/actions/actions/slack-build@bcd9d3edaa1250608a4394ebb5863e8db37c87d9 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -1210,7 +1212,7 @@ jobs:
           - scenario: latest-release
             node: ${{ needs.job_setup.outputs.node_version }}
     steps:
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         env:
           FORCE_COLOR: 0
         with:
@@ -1223,7 +1225,7 @@ jobs:
       # Ghost-CLI still requires the package/ prefix; switch this to
       # ghost-release-tarball once it accepts a prefix-free archive too.
       - name: Download npm tarball
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: ghost-npm-tarball
 
@@ -1234,7 +1236,7 @@ jobs:
 
       - name: Save Ghost CLI Debug Logs
         if: failure()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: ghost-cli-debug-logs-${{ matrix.scenario }}-${{ matrix.node }}
           path: /home/runner/.ghost/logs/
@@ -1272,7 +1274,7 @@ jobs:
         run: |
           [ -f ~/.ghost/logs/*.log ] && cat ~/.ghost/logs/*.log
 
-      - uses: tryghost/actions/actions/slack-build@475df2e2aff4582e487742ba53bbfd7e46e96bc9 # main
+      - uses: tryghost/actions/actions/slack-build@bcd9d3edaa1250608a4394ebb5863e8db37c87d9 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -1297,7 +1299,7 @@ jobs:
       - name: Check Stripe fixtures
         run: pnpm nx run @tryghost/e2e:test:fixtures
 
-      - uses: tryghost/actions/actions/slack-build@475df2e2aff4582e487742ba53bbfd7e46e96bc9 # main
+      - uses: tryghost/actions/actions/slack-build@bcd9d3edaa1250608a4394ebb5863e8db37c87d9 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -1349,7 +1351,7 @@ jobs:
         run: tar --exclude='*.map' -czf admin-build.tar.gz -C ghost/core/built admin embed-renderer
 
       - name: Upload admin build artifact
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: admin-build
           path: admin-build.tar.gz
@@ -1358,7 +1360,7 @@ jobs:
 
       - name: Upload admin artifact for CD
         id: upload-admin
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: admin-build-cd
           path: apps/admin/dist
@@ -1369,14 +1371,14 @@ jobs:
       # admin-build-cd.
       - name: Upload Koenig build for Sentry
         if: env.IS_SHIPPING == 'true'
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: koenig-build-sentry
           path: koenig/koenig-lexical/dist
           retention-days: 1
           if-no-files-found: error
 
-      - uses: tryghost/actions/actions/slack-build@475df2e2aff4582e487742ba53bbfd7e46e96bc9 # main
+      - uses: tryghost/actions/actions/slack-build@bcd9d3edaa1250608a4394ebb5863e8db37c87d9 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -1410,12 +1412,12 @@ jobs:
           install-args: --filter @internal/scripts
           store-cache: 'false'
 
-      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: admin-build-cd
           path: apps/admin/dist
 
-      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: koenig-build-sentry
           path: koenig/koenig-lexical/dist
@@ -1436,7 +1438,7 @@ jobs:
           if [ "$GITHUB_REF_TYPE" != "tag" ]; then
             VERSION="${VERSION}+${GITHUB_SHA:0:7}"
           fi
-          node scripts/upload-sentry-sourcemaps.ts --release "ghost@${VERSION}" apps/admin/dist koenig/koenig-lexical/dist
+          node tools/scripts/upload-sentry-sourcemaps.ts --release "ghost@${VERSION}" apps/admin/dist koenig/koenig-lexical/dist
 
   job_pack:
     name: Build Ghost-CLI archive
@@ -1484,7 +1486,7 @@ jobs:
           pnpm --filter ghost run build:assets
 
       - name: Download admin build
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: admin-build
 
@@ -1504,7 +1506,7 @@ jobs:
       # the release asset; the -npm one carries the package/ prefix npm and
       # today's Ghost-CLI need, and goes away with the npm publish in 7.0.
       - name: Upload release tarball
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: ghost-release-tarball
           path: |
@@ -1514,14 +1516,14 @@ jobs:
           if-no-files-found: error
 
       - name: Upload npm tarball
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: ghost-npm-tarball
           path: ghost/ghost-*-npm.tgz
           retention-days: 7
           if-no-files-found: error
 
-      - uses: tryghost/actions/actions/slack-build@475df2e2aff4582e487742ba53bbfd7e46e96bc9 # main
+      - uses: tryghost/actions/actions/slack-build@bcd9d3edaa1250608a4394ebb5863e8db37c87d9 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -1705,7 +1707,7 @@ jobs:
 
       - name: Upload core image artifact
         if: steps.strategy.outputs.use-artifact == 'true'
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: docker-image-core
           path: ${{ runner.temp }}/docker-image-core.tar.gz
@@ -1723,7 +1725,7 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Download admin build
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: admin-build
           # Outside the build context: a stray admin-build.tar.gz in the repo root
@@ -1777,7 +1779,7 @@ jobs:
 
       - name: Upload image artifact
         if: steps.strategy.outputs.use-artifact == 'true'
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: docker-image-production
           path: docker-image-production.tar.gz
@@ -1870,7 +1872,7 @@ jobs:
       # and let stray build output under apps/*/umd leak into the image.
       - name: Download public app artifacts (e2e)
         continue-on-error: ${{ startsWith(github.ref, 'refs/tags/v') }}
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: e2e-public-apps
           path: ${{ runner.temp }}/e2e-context
@@ -1954,7 +1956,7 @@ jobs:
       - name: Upload E2E image artifact
         if: steps.strategy.outputs.use-artifact == 'true'
         continue-on-error: ${{ startsWith(github.ref, 'refs/tags/v') }}
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: docker-image-e2e
           path: docker-image-e2e.tar.gz
@@ -2062,7 +2064,7 @@ jobs:
       - name: Upload dependency size report
         if: steps.strategy.outputs.should-push == 'true'
         continue-on-error: ${{ startsWith(github.ref, 'refs/tags/v') }}
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: image-report
           path: ${{ runner.temp }}/image-report/image-report.json
@@ -2073,7 +2075,7 @@ jobs:
       - name: Set up Node.js
         if: steps.strategy.outputs.should-push == 'true'
         continue-on-error: ${{ startsWith(github.ref, 'refs/tags/v') }}
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: ${{ env.NODE_VERSION }}
 
@@ -2103,7 +2105,7 @@ jobs:
             ARGS+=("--baseline=${RUNNER_TEMP}/baseline-report/image-report.json")
           fi
 
-          node scripts/compare-image-report.js "${ARGS[@]}" >> "$GITHUB_STEP_SUMMARY"
+          node tools/scripts/compare-image-report.js "${ARGS[@]}" >> "$GITHUB_STEP_SUMMARY"
 
     outputs:
       use-artifact: ${{ steps.strategy.outputs.use-artifact }}
@@ -2149,7 +2151,7 @@ jobs:
           ls -lh e2e-public-apps.tar.gz
 
       - name: Upload public app artifacts
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: e2e-public-apps
           path: e2e-public-apps.tar.gz
@@ -2347,7 +2349,7 @@ jobs:
           printf '%s' "$E2E_TIMINGS" > "$RUNNER_TEMP/e2e-timings.json"
           pnpm exec playwright test --list --project=main --reporter=json > "$RUNNER_TEMP/e2e-list.json"
           mkdir -p shard-plan
-          node ../scripts/e2e-shards.ts plan \
+          node ../tools/scripts/e2e-shards.ts plan \
             --list "$RUNNER_TEMP/e2e-list.json" \
             --timings "$RUNNER_TEMP/e2e-timings.json" \
             --shard-index "$SHARD_INDEX" \
@@ -2382,7 +2384,7 @@ jobs:
 
       - name: Upload blob report to GitHub Actions Artifacts
         if: failure()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: blob-report-${{ matrix.projectName }}-${{ matrix.shardIndex }}
           path: e2e/blob-report
@@ -2390,7 +2392,7 @@ jobs:
 
       - name: Upload test results artifacts
         if: failure()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: test-results-${{ matrix.projectName }}-${{ matrix.shardIndex }}
           path: e2e/test-results
@@ -2398,14 +2400,14 @@ jobs:
 
       - name: Upload JSON report for shard timings
         if: success() && matrix.projects == 'main' && github.event_name == 'push' && github.ref == 'refs/heads/main'
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: e2e-json-report-main-${{ matrix.shardIndex }}
           path: e2e/json-report/report.json
           retention-days: 1
           if-no-files-found: ignore
 
-      - uses: tryghost/actions/actions/slack-build@475df2e2aff4582e487742ba53bbfd7e46e96bc9 # main
+      - uses: tryghost/actions/actions/slack-build@bcd9d3edaa1250608a4394ebb5863e8db37c87d9 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -2433,7 +2435,7 @@ jobs:
           trust-lockfile: 'true'
 
       - name: Download blob reports from GitHub Actions Artifacts
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         continue-on-error: true
         with:
           path: e2e/all-blob-reports
@@ -2451,7 +2453,7 @@ jobs:
 
       - name: Download test results from GitHub Actions Artifacts
         if: steps.check.outputs.has_reports == 'true'
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           path: e2e/all-test-results
           pattern: test-results-*
@@ -2464,7 +2466,7 @@ jobs:
 
       - name: Upload HTML report
         if: steps.check.outputs.has_reports == 'true'
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: playwright-report
           path: e2e/playwright-report
@@ -2472,7 +2474,7 @@ jobs:
 
       - name: Upload merged test results
         if: steps.check.outputs.has_reports == 'true'
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: test-results
           path: e2e/all-test-results
@@ -2506,14 +2508,14 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-          sparse-checkout: scripts/e2e-shards.ts
+          sparse-checkout: tools/scripts/e2e-shards.ts
           sparse-checkout-cone-mode: false
 
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: ${{ env.NODE_VERSION }}
 
-      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           pattern: e2e-json-report-main-*
           path: e2e-reports
@@ -2528,7 +2530,7 @@ jobs:
       - name: Record e2e timings
         run: |
           mkdir -p e2e-reports
-          node scripts/e2e-shards.ts record \
+          node tools/scripts/e2e-shards.ts record \
             --reports e2e-reports \
             --timings e2e-timings.json \
             --complete "${{ needs.job_e2e_tests.result == 'success' }}" \
@@ -2549,7 +2551,7 @@ jobs:
 
       - name: Restore E2E coverage
         if: contains(needs.job_acceptance-tests.result, 'success')
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: e2e-coverage
           path: ghost
@@ -2567,7 +2569,7 @@ jobs:
       - name: Restore Unit coverage
         if: contains(needs.job_unit-tests.result, 'success')
         continue-on-error: true
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: unit-coverage
           path: ghost/coverage-unit
@@ -2667,7 +2669,7 @@ jobs:
         env:
           PACKAGE_NAME: ${{ matrix.package_name }}
         run: |
-          LATEST=$(node "$GITHUB_WORKSPACE/scripts/compute-next-app-version.cjs" --latest .)
+          LATEST=$(node "$GITHUB_WORKSPACE/tools/scripts/compute-next-app-version.cjs" --latest .)
           if [ -z "$LATEST" ]; then
             echo "No release in this major.minor line yet"
             echo "changed=true" >> "$GITHUB_OUTPUT"
@@ -2700,7 +2702,7 @@ jobs:
           # minor/major line). The patch digit in package.json is otherwise
           # unused — Ghost core resolves apps via <pkg>@~<major.minor> on
           # jsDelivr, so the newest published patch is what sites receive.
-          NEXT_VERSION=$(node "$GITHUB_WORKSPACE/scripts/compute-next-app-version.cjs" .)
+          NEXT_VERSION=$(node "$GITHUB_WORKSPACE/tools/scripts/compute-next-app-version.cjs" .)
           echo "Publishing ${{ matrix.package_name }}@${NEXT_VERSION}"
 
           # Write it before building so the version baked into the bundle
@@ -2831,12 +2833,12 @@ jobs:
       id-token: write
     steps:
       - name: Download npm tarball
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: ghost-npm-tarball
 
       - name: Set up Node.js
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: ${{ env.NODE_VERSION }}
           package-manager-cache: false
@@ -2914,7 +2916,7 @@ jobs:
         run: |
           PREV_TAG="${{ steps.prev_tag.outputs.tag }}"
           if [ -n "$PREV_TAG" ]; then
-            node scripts/lib/release-notes.js "$PREV_TAG" "${GITHUB_REF_NAME}" > /tmp/release-notes.md
+            node tools/scripts/lib/release-notes.js "$PREV_TAG" "${GITHUB_REF_NAME}" > /tmp/release-notes.md
           else
             echo "This release contains fixes for minor bugs and issues reported by Ghost users." > /tmp/release-notes.md
           fi
@@ -2924,7 +2926,7 @@ jobs:
       # npm client. Same build tree as the npm package, just without the
       # package/ wrapper dir.
       - name: Download release tarball
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: ghost-release-tarball
           path: release-assets

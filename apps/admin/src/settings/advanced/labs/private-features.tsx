@@ -55,6 +55,18 @@ const features: Feature[] = [
     flag: 'admin7Design',
   },
   {
+    title: 'Admin 7 · Customize from View site',
+    description:
+      'Customize the site design from View site, with a live preview. Needs Admin 7 · Design.',
+    flag: 'admin7CustomizeFromViewSite',
+  },
+  {
+    title: 'Admin 7 · Editor improvements',
+    description:
+      'Hide the editor’s controls while you write; move the mouse or scroll to bring them back.',
+    flag: 'admin7EditorImprovements',
+  },
+  {
     title: 'Email Unique ID',
     description:
       'Enables {uniqueid} variable in emails for unique image URLs to bypass ESP image caching',

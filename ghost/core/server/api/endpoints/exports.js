@@ -12,11 +12,11 @@ const customRedirects = require('../../services/custom-redirects');
 const { serializeToYaml } = require('../../services/custom-redirects/redirect-config-parser');
 const themeService = require('../../services/themes');
 const themeList = require('../../services/themes/list');
-const { SiteExporter } = require('../../services/exports/site-exporter');
+const { SiteExporter } = require('../../data/exporter/site-exporter');
 const {
   SYNC_EXPORT_COMPONENTS,
   ASYNC_EXPORT_COMPONENTS,
-} = require('../../services/exports/export-components');
+} = require('../../data/exporter/export-components');
 const { getExportFileName } = require('./utils/csv-export-filename');
 const { rejectAdminApiRestrictedFieldsTransformer } = require('./utils/api-filter-utils');
 const {

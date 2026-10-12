@@ -324,7 +324,8 @@ describe('Advanced settings', () => {
         .toHaveTextContent(new RegExp(`${kind} uploaded`, 'i'));
       expect(uploadApi.requests).toHaveLength(1);
 
-      await section.getByRole('button', { name: `Download current ${kind}` }).click();
+      await section.getByRole('button', { name: `More ${kind} actions` }).click();
+      await page.getByRole('menuitem', { name: 'Download file' }).click();
       await expect
         .poll(() => document.querySelector<HTMLIFrameElement>('iframe#iframeDownload')?.src)
         .toContain(downloadPath);

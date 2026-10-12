@@ -13,7 +13,7 @@ import {
 } from 'react';
 import { FieldError, Label, Separator, Switch, Textarea } from '@tryghost/shade/components';
 import { Box, Inline, Stack, Text } from '@tryghost/shade/primitives';
-import { cn } from '@tryghost/shade/utils';
+import { LucideIcon, cn } from '@tryghost/shade/utils';
 import {
   canAccessSettings,
   isAuthorOrContributor,
@@ -22,6 +22,7 @@ import {
 } from '@tryghost/admin-x-framework/api/users';
 import {
   postSettingsSidebar,
+  settingsEditorHelpRow,
   settingsExcerptInput,
   settingsFeaturedToggle,
 } from '@tryghost/test-data/selectors/editor';
@@ -35,6 +36,8 @@ import { CodeInjectionSection } from './code-injection-section';
 import { DeleteSection } from './delete-section';
 import { type EditorSettingsPort, isNewPost, useEditorSettingsPort } from './editor-settings-port';
 import { KeyboardShortcutsSection } from './keyboard-shortcuts-section';
+import { SettingsLinkRow } from './settings-navigation-row';
+import { EDITOR_HELP_URL } from '@/editor/editor-help';
 import { MetaDataSection } from './meta-data-section';
 import { PostHistorySection } from './post-history-section';
 import { focusSettingsField } from './focus-settings-field';
@@ -140,6 +143,8 @@ export interface PostSettingsSidebarProps {
   reveal?: SettingsFieldReveal | null;
   /** The panel's frame, whose width transition the screen waits on before unmounting it. */
   frameRef?: Ref<HTMLDivElement | null>;
+  /** The link to Ghost's guide to the editor, which leaves the footer under admin7EditorImprovements. */
+  showEditorHelp?: boolean;
 }
 
 /**
@@ -156,6 +161,7 @@ export function PostSettingsSidebar({
   hasInlineExcerpt = false,
   reveal,
   frameRef,
+  showEditorHelp = false,
 }: PostSettingsSidebarProps) {
   const ownFrameRef = useRef<HTMLDivElement>(null);
   const asideRef = useRef<HTMLElement>(null);
@@ -214,6 +220,11 @@ export function PostSettingsSidebar({
     'code-injection': <MemoCodeInjectionSection postType={postType} session={session} />,
     'meta-data': <MemoMetaDataSection session={session} siteUrl={siteUrl} />,
     'keyboard-shortcuts': <MemoKeyboardShortcutsSection />,
+    'editor-help': showEditorHelp ? (
+      <SettingsLinkRow href={EDITOR_HELP_URL} icon={<LucideIcon.CircleHelp />}>
+        {settingsEditorHelpRow}
+      </SettingsLinkRow>
+    ) : null,
     // The list's last entry, pushed to the panel's foot while the list is
     // shorter than the panel. A post with nothing to delete yet gets nothing,
     // not an empty wrapper.

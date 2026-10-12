@@ -51,7 +51,7 @@
     "generate-golden-email": "node bin/generate-golden-email.js",
     "query-parameter-policy:export": "node --import=tsx scripts/export-query-parameter-policy.ts",
     "migrate:create": "node bin/create-migration.js",
-    "migrate:rebuild-in-development-tables": "node ../scripts/with-ghost-dev-env.ts node --import=tsx bin/rebuild-in-development-tables.ts",
+    "migrate:rebuild-in-development-tables": "node ../tools/scripts/with-ghost-dev-env.ts node --import=tsx bin/rebuild-in-development-tables.ts",
     "build:assets:css": "postcss core/frontend/public/ghost.css --no-map --use cssnano -o core/frontend/public/ghost.min.css",
     "build:tsc": "tsc",
     "pretest": "pnpm build:assets",
@@ -72,11 +72,12 @@
     "test:leg:slow": "vitest run -c vitest.config.db.ts --project legacy --reporter=verbose",
     "test:types": "tsc --noEmit && tsc --noEmit -p test/tsconfig.json",
     "lint:server": "eslint 'core/server/**/*.{js,ts}' 'core/*.{js,ts}' '*.{js,ts}' 'bin/**/*.{js,ts}' 'scripts/**/*.{js,ts}' 'types/**/*.ts' --cache",
+    "lint:kernel": "eslint 'core/kernel/**/*.{js,ts}' --cache",
     "lint:shared": "eslint 'core/shared/**/*.{js,ts}' --cache",
     "lint:frontend": "eslint 'core/frontend/**/*.{js,ts}' --cache",
     "lint:test": "eslint 'test/**/*.{js,ts}' --cache",
-    "lint:code": "pnpm run '/^lint:(server|shared|frontend)$/'",
-    "lint": "pnpm run '/^lint:(server|shared|frontend|test)$/'"
+    "lint:code": "pnpm run '/^lint:(server|kernel|shared|frontend)$/'",
+    "lint": "pnpm run '/^lint:(server|kernel|shared|frontend|test)$/'"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "3.1079.0",
@@ -104,7 +105,6 @@
     "@tryghost/database-info": "2.3.16",
     "@tryghost/debug": "catalog:",
     "@tryghost/domain-events": "catalog:",
-    "@tryghost/email-mock-receiver": "2.3.16",
     "@tryghost/errors": "catalog:",
     "@tryghost/helpers": "catalog:",
     "@tryghost/html-to-plaintext": "1.0.12",
@@ -225,7 +225,7 @@
     "moment-timezone": "catalog:",
     "mppx": "catalog:",
     "multer": "2.4.0",
-    "mysql2": "3.24.4",
+    "mysql2": "3.24.5",
     "nconf": "0.13.0",
     "node-html-markdown": "catalog:",
     "nodemailer": "10.0.16",
@@ -253,6 +253,7 @@
   "devDependencies": {
     "@eslint/js": "catalog:",
     "@internal/cfg-eslint": "workspace:*",
+    "@tryghost/email-mock-receiver": "2.3.16",
     "@tryghost/express-test": "2.3.17",
     "@tryghost/webhook-mock-receiver": "2.3.16",
     "@types/bookshelf": "1.2.9",
@@ -283,7 +284,7 @@
     "cssnano": "7.1.9",
     "esbuild": "catalog:",
     "eslint": "catalog:",
-    "eslint-plugin-ghost": "3.5.0",
+    "eslint-plugin-ghost": "catalog:",
     "globals": "17.7.0",
     "html-validate": "11.5.5",
     "inquirer": "8.2.7",
@@ -338,11 +339,6 @@
       "dev": {
         "dependsOn": [
           "build:assets"
-        ]
-      },
-      "lint": {
-        "dependsOn": [
-          "^build"
         ]
       },
       "test:all": {

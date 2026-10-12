@@ -15,6 +15,7 @@ import {
   Button,
   Field,
   FieldLabel,
+  Link,
   LoadingIndicator,
   MultiSelectCombobox,
   NoValueLabel,
@@ -385,8 +386,7 @@ const HistoryActionDescription: React.FC<{ action: Action }> = ({ action }) => {
 
     if (linkTarget) {
       return (
-        <a
-          className="cursor-pointer font-bold"
+        <Link
           onClick={(e) => {
             e.preventDefault();
             // updateRoute keeps the route Settings returns to
@@ -398,7 +398,7 @@ const HistoryActionDescription: React.FC<{ action: Action }> = ({ action }) => {
           }}
         >
           {action.resource?.title || action.resource?.name}
-        </a>
+        </Link>
       );
     } else {
       return <>{action.resource?.title || action.resource?.name || action.context?.primary_name}</>;

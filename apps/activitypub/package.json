@@ -57,6 +57,7 @@
   "devDependencies": {
     "@internal/cfg-eslint-react": "workspace:*",
     "@playwright/test": "catalog:",
+    "@testing-library/dom": "catalog:",
     "@testing-library/react": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",

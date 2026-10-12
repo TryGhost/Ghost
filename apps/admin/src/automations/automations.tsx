@@ -62,12 +62,7 @@ const Automations: React.FC = () => {
                 <PageHeader.Title>
                   <span className="inline-flex items-baseline gap-2">
                     Automations
-                    <Badge
-                      className="px-1 py-px text-[10px] leading-none tracking-wider uppercase"
-                      variant="secondary"
-                    >
-                      Beta
-                    </Badge>
+                    <Badge variant="secondary">Beta</Badge>
                   </span>
                 </PageHeader.Title>
               </PageHeader.Left>

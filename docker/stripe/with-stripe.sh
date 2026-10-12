@@ -20,8 +20,8 @@ set -euo pipefail
 
 FUNNEL_PORT=443
 WEBHOOK_PATH=/members/webhooks/stripe
-# This checkout's Admin dev server hostname and port, assigned by scripts/ghost-dev-env.ts
-node scripts/ghost-dev-env.ts >/dev/null
+# This checkout's Admin dev server hostname and port, assigned by tools/scripts/ghost-dev-env.ts
+node tools/scripts/ghost-dev-env.ts >/dev/null
 GATEWAY_HOSTNAME=${GHOST_DEV_HOSTNAME:-$(sed -n 's/^GHOST_DEV_HOSTNAME=//p' .ghost-dev.env)}
 GATEWAY_PORT=${GHOST_DEV_PORT:-$(sed -n 's/^GHOST_DEV_PORT=//p' .ghost-dev.env)}
 

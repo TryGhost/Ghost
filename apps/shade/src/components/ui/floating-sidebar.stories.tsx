@@ -73,7 +73,7 @@ export const Unpinned: Story = {
     docs: {
       description: {
         story:
-          'The closed circle over the content. Hover it or the left edge, focus or click it to open the panel; its pin button docks it.',
+          'The closed circle over the content. Hover it or the strip beneath it, focus or click it to open the panel; its pin button docks it.',
       },
     },
   },

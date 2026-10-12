@@ -1,4 +1,4 @@
-import { useShade } from '@/providers/shade-provider';
+import { useShade } from '@/providers/shade-context';
 import * as DialogPrimitive from '@radix-ui/react-dialog';
 import { Check, Copy, Link, X } from 'lucide-react';
 import React, { useState } from 'react';

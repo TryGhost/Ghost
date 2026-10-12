@@ -45,6 +45,7 @@
     "eslint-plugin-react-hooks": "catalog:",
     "eslint-plugin-react-refresh": "catalog:",
     "eslint-plugin-tailwindcss": "catalog:tailwind3",
+    "jiti": "catalog:",
     "jsdom": "catalog:",
     "postcss": "catalog:",
     "postcss-import": "16.1.1",
@@ -53,7 +54,7 @@
     "typescript-eslint": "catalog:",
     "vite": "catalog:",
     "vite-plugin-dts": "5.0.3",
-    "vite-plugin-svgr": "5.2.0",
+    "vite-plugin-svgr": "catalog:",
     "vitest": "catalog:"
   },
   "peerDependencies": {

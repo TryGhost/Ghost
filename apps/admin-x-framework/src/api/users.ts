@@ -111,11 +111,17 @@ export const useGetUserBySlug = createQueryWithId<UsersResponseType>({
   defaultSearchParams: { include: 'roles' },
 });
 
-export const useEditUser = createMutation<UsersResponseType, User>({
+export type EditUserPayload = User & {
+  /** False when the caller handles an expired session itself instead of leaving the page. */
+  sessionExpiryRedirect?: boolean;
+};
+
+export const useEditUser = createMutation<UsersResponseType, EditUserPayload>({
   method: 'PUT',
   path: (user) => `/users/${user.id}/`,
-  body: (user) => ({ users: [user] }),
+  body: ({ sessionExpiryRedirect: _, ...user }) => ({ users: [user] }),
   searchParams: () => ({ include: 'roles' }),
+  requestOptions: ({ sessionExpiryRedirect }) => ({ sessionExpiryRedirect }),
   updateQueries: {
     dataType,
     update: updateQueryCache('users'),

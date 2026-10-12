@@ -1,9 +1,18 @@
 import FeatureToggle from './feature-toggle';
 import LabItem from './lab-item';
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import YamlFileEditorModal from './yaml-file-editor-modal';
-import { ActionList, Button, Dropzone } from '@tryghost/shade/components';
-import { Inline, Stack } from '@tryghost/shade/primitives';
+import {
+  ActionList,
+  Button,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  Link,
+} from '@tryghost/shade/components';
+import { Inline } from '@tryghost/shade/primitives';
+import { LucideIcon } from '@tryghost/shade/utils';
 import { downloadRedirects, useUploadRedirects } from '@tryghost/admin-x-framework/api/redirects';
 import { downloadRoutes, useUploadRoutes } from '@tryghost/admin-x-framework/api/routes';
 import { getSettingValue } from '@tryghost/admin-x-framework/api/settings';
@@ -13,6 +22,57 @@ import { useHandleError } from '@tryghost/admin-x-framework/hooks';
 import { DialogPortal } from '@/settings/providers/dialog-portal';
 
 const IS_AUTOMATIONS_BETA_ACTIVE = true;
+
+const YamlFileActions: React.FC<{
+  kind: 'redirects' | 'routes';
+  uploading: boolean;
+  onEdit: () => void;
+  onUpload: (file: File) => void;
+  onDownload: () => void;
+}> = ({ kind, uploading, onEdit, onUpload, onDownload }) => {
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  return (
+    <Inline gap="sm">
+      <Button size="sm" type="button" variant="secondary" onClick={onEdit}>
+        Edit
+      </Button>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button
+            aria-label={`More ${kind} actions`}
+            disabled={uploading}
+            size="icon-sm"
+            type="button"
+            variant="secondary"
+          >
+            <LucideIcon.Ellipsis />
+          </Button>
+        </DropdownMenuTrigger>
+        {/* legacy SettingsModal overlay is z-[1000]; keep the portalled menu above it */}
+        <DropdownMenuContent align="end" className="z-[9999]">
+          <DropdownMenuItem onSelect={() => inputRef.current?.click()}>
+            Upload file
+          </DropdownMenuItem>
+          <DropdownMenuItem onSelect={onDownload}>Download file</DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+      <input
+        ref={inputRef}
+        className="hidden"
+        id={`upload-${kind}`}
+        type="file"
+        onChange={(event) => {
+          const file = event.target.files?.[0];
+          event.target.value = '';
+          if (file) {
+            onUpload(file);
+          }
+        }}
+      />
+    </Inline>
+  );
+};
 
 const BetaFeatures: React.FC = () => {
   const { settings } = useGlobalData();
@@ -79,14 +139,9 @@ const BetaFeatures: React.FC = () => {
               <>
                 Build automated email flows for your members, and get early access to new automation
                 features as they ship.{' '}
-                <a
-                  className="text-green"
-                  href="https://ghost.org/help/automations-beta"
-                  rel="noopener noreferrer"
-                  target="_blank"
-                >
-                  Learn more &rarr;
-                </a>
+                <Link href="https://ghost.org/help/automations-beta" external>
+                  Learn more
+                </Link>
               </>
             }
             title="Automations (beta)"
@@ -112,14 +167,9 @@ const BetaFeatures: React.FC = () => {
           detail={
             <>
               Enable support for CashApp, iDEAL, Bancontact, and others.{' '}
-              <a
-                className="text-green"
-                href="https://ghost.org/help/payment-methods"
-                rel="noopener noreferrer"
-                target="_blank"
-              >
-                Learn more &rarr;
-              </a>
+              <Link href="https://ghost.org/help/payment-methods" external>
+                Learn more
+              </Link>
             </>
           }
           title="Additional payment methods"
@@ -136,41 +186,20 @@ const BetaFeatures: React.FC = () => {
         />
         <LabItem
           action={
-            <Stack align="end" gap="xs">
-              <Inline gap="sm">
-                <Dropzone
-                  inputId="upload-redirects"
-                  variant="buttonSecondary"
-                  onDropAccepted={([file]) => void uploadRedirectsFile(file)}
-                >
-                  {redirectsUploading ? 'Uploading ...' : 'Upload redirects file'}
-                </Dropzone>
-                <Button size="sm" type="button" variant="secondary" onClick={openRedirectsEditor}>
-                  Edit
-                </Button>
-              </Inline>
-              <Button
-                className="h-auto p-0 text-green hover:text-green"
-                size="sm"
-                type="button"
-                variant="link"
-                onClick={() => downloadRedirects()}
-              >
-                Download current redirects
-              </Button>
-            </Stack>
+            <YamlFileActions
+              kind="redirects"
+              uploading={redirectsUploading}
+              onDownload={() => downloadRedirects()}
+              onEdit={openRedirectsEditor}
+              onUpload={(file) => void uploadRedirectsFile(file)}
+            />
           }
           detail={
             <>
-              Configure redirects for old or moved content, <br /> more info in the{' '}
-              <a
-                className="text-green"
-                href="https://ghost.org/tutorials/implementing-redirects/"
-                rel="noopener noreferrer"
-                target="_blank"
-              >
+              Configure redirects for old or moved content, more info in the{' '}
+              <Link href="https://ghost.org/tutorials/implementing-redirects/" external>
                 docs
-              </a>
+              </Link>
             </>
           }
           testId="redirects"
@@ -178,29 +207,13 @@ const BetaFeatures: React.FC = () => {
         />
         <LabItem
           action={
-            <Stack align="end" gap="xs">
-              <Inline gap="sm">
-                <Dropzone
-                  inputId="upload-routes"
-                  variant="buttonSecondary"
-                  onDropAccepted={([file]) => void uploadRoutesFile(file)}
-                >
-                  {routesUploading ? 'Uploading ...' : 'Upload routes file'}
-                </Dropzone>
-                <Button size="sm" type="button" variant="secondary" onClick={openRoutesEditor}>
-                  Edit
-                </Button>
-              </Inline>
-              <Button
-                className="h-auto p-0 text-green hover:text-green"
-                size="sm"
-                type="button"
-                variant="link"
-                onClick={() => downloadRoutes()}
-              >
-                Download current routes
-              </Button>
-            </Stack>
+            <YamlFileActions
+              kind="routes"
+              uploading={routesUploading}
+              onDownload={() => downloadRoutes()}
+              onEdit={openRoutesEditor}
+              onUpload={(file) => void uploadRoutesFile(file)}
+            />
           }
           detail="Configure dynamic routing by modifying the routes.yaml file"
           testId="routes"
@@ -214,14 +227,9 @@ const BetaFeatures: React.FC = () => {
             hint={
               <>
                 Configure redirects for old or moved content. See the{' '}
-                <a
-                  className="text-green"
-                  href="https://ghost.org/tutorials/implementing-redirects/"
-                  rel="noopener noreferrer"
-                  target="_blank"
-                >
+                <Link href="https://ghost.org/tutorials/implementing-redirects/" external>
                   docs
-                </a>{' '}
+                </Link>{' '}
                 for the file format.
               </>
             }
@@ -241,14 +249,9 @@ const BetaFeatures: React.FC = () => {
             hint={
               <>
                 Configure dynamic routing by editing the routes.yaml file. See the{' '}
-                <a
-                  className="text-green"
-                  href="https://docs.ghost.org/themes/routing/"
-                  rel="noopener noreferrer"
-                  target="_blank"
-                >
+                <Link href="https://docs.ghost.org/themes/routing/" external>
                   docs
-                </a>{' '}
+                </Link>{' '}
                 for the file format.
               </>
             }

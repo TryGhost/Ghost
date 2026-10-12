@@ -45,7 +45,7 @@ Always use this command rather than creating or naming the file manually. It
 compares the current package version with the latest published Ghost tag to
 avoid placing a migration in a version that has already shipped. CI repeats
 these version and placement checks with
-[`scripts/check-migration-integrity.cjs`](../../scripts/check-migration-integrity.cjs).
+[`tools/scripts/check-migration-integrity.cjs`](../../tools/scripts/check-migration-integrity.cjs).
 
 ### Writing the migration
 

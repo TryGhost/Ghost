@@ -1,17 +1,15 @@
-import { cva } from 'class-variance-authority';
 import { X } from 'lucide-react';
 import React, { forwardRef, useEffect, useState } from 'react';
 
+import { settingsModalVariants } from '@/components/patterns/settings-modal-variants';
 import { Button, type ButtonProps } from '@/components/ui/button';
 import { LoadingIndicator } from '@/components/ui/loading-indicator';
 import { StickyFooter } from '@/components/ui/sticky-footer';
 import { Box } from '@/components/primitives/box';
 import { Inline } from '@/components/primitives/inline';
 import { Text } from '@/components/primitives/text';
-import {
-  DirtyConfirmDialog,
-  useDirtyConfirmation,
-} from '@/components/patterns/dirty-confirm-dialog';
+import { DirtyConfirmDialog } from '@/components/patterns/dirty-confirm-dialog';
+import { useDirtyConfirmation } from '@/components/patterns/use-dirty-confirmation';
 import useGlobalDirtyState from '@/hooks/use-global-dirty-state';
 import { cn } from '@/lib/utils';
 
@@ -63,41 +61,6 @@ export interface SettingsModalProps {
 }
 
 const MODAL_BACKDROP_CLASSES = 'bg-modal-backdrop backdrop-blur-[3px]';
-
-const settingsModalVariants = cva(
-  'relative z-50 flex max-h-full w-full flex-col justify-between overflow-x-hidden bg-background text-foreground',
-  {
-    variants: {
-      size: {
-        sm: 'max-w-[480px] rounded-lg',
-        md: 'max-w-[720px] rounded-lg',
-        lg: 'max-w-[1020px] rounded-lg',
-        xl: 'max-w-[1240px] rounded-lg',
-        full: 'h-full rounded-lg',
-        bleed: 'h-full',
-      },
-      align: {
-        center: 'mx-auto',
-        left: 'mr-auto',
-        right: 'ml-auto',
-      },
-      scrolling: {
-        true: 'overflow-y-auto',
-        false: 'overflow-y-hidden',
-      },
-      formSheet: {
-        true: 'shadow-md',
-        false: 'shadow-xl',
-      },
-    },
-    defaultVariants: {
-      size: 'md',
-      align: 'center',
-      scrolling: true,
-      formSheet: false,
-    },
-  },
-);
 
 const backdropPadding: Record<SettingsModalSize, string> = {
   sm: 'p-4 md:p-[8vmin]',
@@ -272,6 +235,7 @@ const SettingsModal = forwardRef<HTMLElement, SettingsModalProps>(
       'py-0',
       (size === 'full' || size === 'bleed' || height === 'full' || typeof height === 'number') &&
         'grow',
+      !scrolling && 'min-h-0',
       footer === false && 'pb-0',
     );
     const footerClasses = cn(
@@ -397,4 +361,4 @@ const SettingsModal = forwardRef<HTMLElement, SettingsModalProps>(
 
 SettingsModal.displayName = 'SettingsModal';
 
-export { SettingsModal, settingsModalVariants };
+export { SettingsModal };

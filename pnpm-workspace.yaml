@@ -5,8 +5,8 @@ packages:
   - 'koenig/*'
   - 'packages/**'
   - '!packages/_template'
-  - 'configs/*'
-  - 'scripts'
+  - 'tools/configs/*'
+  - 'tools/scripts'
 
 strictDepBuilds: true
 catalogMode: strict
@@ -31,7 +31,7 @@ allowBuilds:
   # Permitted builds are version-scoped. Adding or updating a permitted version
   # requires an explicit Platform security review.
   # sentry-cli's postinstall only downloads a fallback binary; CI's sourcemap
-  # upload (scripts/upload-sentry-sourcemaps.ts) uses the one from its platform
+  # upload (tools/scripts/upload-sentry-sourcemaps.ts) uses the one from its platform
   # optionalDependency.
   '@sentry/cli': false
   'better-sqlite3@12.11.1': true
@@ -87,9 +87,10 @@ catalog:
   '@tailwindcss/vite': 4.3.3
   '@tanstack/react-query': 5.101.4
   '@tanstack/react-virtual': 3.14.13
+  '@testing-library/dom': 10.4.1
   '@testing-library/jest-dom': 6.9.1
   '@testing-library/preact': 3.2.4
-  '@testing-library/react': 14.3.1
+  '@testing-library/react': 16.3.2
   '@tryghost/brute-knex': 3.2.2
   '@tryghost/color-utils': 0.2.21
   '@tryghost/custom-fonts': 1.0.12
@@ -135,7 +136,7 @@ catalog:
   chai: 4.5.0
   cheerio: 1.2.0
   clsx: 2.1.1
-  concurrently: 10.0.5
+  concurrently: 10.0.6
   country-flag-icons: 1.6.20
   dependency-cruiser: ^18.1.1
   dequal: 2.0.3
@@ -144,7 +145,7 @@ catalog:
   entities: 4.5.0
   esbuild: 0.28.2
   eslint: 9.39.5
-  eslint-plugin-ghost: 3.5.0
+  eslint-plugin-ghost: 4.0.0
   eslint-plugin-react: 7.37.5
   eslint-plugin-react-hooks: 5.2.0
   eslint-plugin-react-refresh: 0.5.7
@@ -155,6 +156,7 @@ catalog:
   globals: 17.7.0
   got: 16.0.0
   ipaddr.js: 2.5.0
+  jiti: 2.7.0
   jose: 6.2.12
   js-yaml: 4.3.2
   jsdom: 30.0.1
@@ -204,10 +206,10 @@ catalog:
   # `typescript: <7.x>` entry once typescript-eslint supports the TS7.1 API.
   typescript: 'npm:@typescript/typescript6@6.0.2'
   '@typescript/native': 'npm:typescript@7.0.2'
-  typescript-eslint: 8.71.0
+  typescript-eslint: 8.71.1
   validator: 13.15.35
   vite: 8.1.3
-  vite-plugin-svgr: 4.5.0
+  vite-plugin-svgr: 5.2.0
   vitest: 4.1.11
   vitest-browser-react: 2.2.0
   zod: 4.6.5
@@ -266,7 +268,8 @@ overrides:
   jackspeak: 4.2.3
   moment: 'catalog:'
   moment-timezone: 'catalog:'
-  'eslint-plugin-ghost>@typescript-eslint/eslint-plugin': 8.71.0
+  # @types/bookshelf asks for knex 0.21, which only its types read
+  '@types/bookshelf>knex': 'catalog:'
   # juice 11 pins cheerio 1.0.0 exactly. Point it at the catalog's 1.2.0 so juice
   # and ghost share one copy instead of keeping two parsers resident - both
   # only ever call `load`. See patchedDependencies for the matching slim import.
@@ -291,7 +294,6 @@ overrides:
   'esbuild@>=0.28.0': 'catalog:'
   # gscan pins handlebars exactly; lift every copy past the 4.7.10 security fixes
   'handlebars@<4.7.10': ^4.7.10
-  'micromatch@<4.0.8': ^4.0.8
   'minimatch@<3.1.4': ^3.1.4
   'smol-toml@<1.9.0': ^1.9.0
   supports-color: '10.2.2'
