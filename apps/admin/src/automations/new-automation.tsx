@@ -33,7 +33,6 @@ const TriggerPicker: React.FC<{
         saveButtonChildren="Save"
         saveButtonVariant="outline"
         validationFeedback={null}
-        validationFeedbackEnabled={false}
         onDismissValidationFeedback={() => {}}
         onPublish={() => {}}
         onSave={() => {}}

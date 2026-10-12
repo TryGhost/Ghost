@@ -2134,7 +2134,7 @@ describe('AutomationEditor', () => {
 
       renderEditor();
       await stageLocalEdit();
-      fireEvent.click(screen.getByRole('button', { name: label, exact: true }));
+      fireEvent.click(screen.getByRole('button', { name: label }));
 
       expect(screen.getByText(`Fix all issues to ${action} this automation.`)).toBeVisible();
       expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
