@@ -180,19 +180,14 @@ const ExportAccount: React.FC = () => {
                   setMoveError(null);
                 }}
               />
-              <Button
-                className="relative sm:w-auto"
-                disabled={moveAccountMutation.isPending}
-                type="submit"
-              >
-                <span className={moveAccountMutation.isPending ? 'invisible' : undefined}>
-                  Move followers
-                </span>
-                {moveAccountMutation.isPending && (
-                  <span className="absolute inset-0 flex items-center justify-center">
-                    <LoadingIndicator color="light" size="sm" />
+              <Button className="sm:w-auto" disabled={moveAccountMutation.isPending} type="submit">
+                {moveAccountMutation.isPending ? (
+                  <>
+                    <LoadingIndicator size="sm" />
                     <span className="sr-only">Moving...</span>
-                  </span>
+                  </>
+                ) : (
+                  'Move followers'
                 )}
               </Button>
             </div>
