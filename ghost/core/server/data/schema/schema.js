@@ -1330,7 +1330,7 @@ module.exports = {
     trial_end_at: { type: 'dateTime', nullable: true },
     /* Below fields are now redundant as we link stripe_price_id to stripe_prices table */
     plan_id: { type: 'string', maxlength: 255, nullable: false, unique: false },
-    plan_nickname: { type: 'string', maxlength: 50, nullable: false },
+    plan_nickname: { type: 'string', maxlength: 255, nullable: false },
     plan_interval: { type: 'string', maxlength: 50, nullable: false },
     plan_amount: { type: 'integer', nullable: false },
     // @note: this is longer than originally intended due to a bug - https://github.com/TryGhost/Ghost/pull/15606
