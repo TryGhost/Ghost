@@ -4338,6 +4338,8 @@ services:
           its initialization and uses it to sign an Owner token for remote configuration.
           Existing API tests verify Owner/Administrator JWTs through HTTP JWKS and reject an
           Editor; they do not cover wrapper replacement or ActivityPub's real token connection.
+          Root tests cover successful role loading through the identities controller; the
+          failed-role fallback and ActivityPub's dependency hand-off are source evidence.
         sources:
           - core/boot.js
           - core/server/api/endpoints/identities.js
@@ -4353,6 +4355,10 @@ services:
           with other prerequisites. ActivityPub background init checks instance and logs then
           returns if it is absent; the identities endpoint dereferences it without that guard.
           Importing this root alone does not initialize signing keys or issue a token.
+          Root tests cover import behavior, endpoint signing after explicit initialization,
+          and retry after missing signing keys or provider-selection failure. Production boot
+          ordering, ActivityPub's background startup guard and the endpoint's unguarded
+          pre-init access are source evidence.
         sources:
           - core/boot.js
           - core/server/services/identity-tokens/identity-token-service-wrapper.js
@@ -4365,7 +4371,10 @@ services:
           Normal repeated initialization retains one process-local instance, issuer and
           purpose provider, with no reset path. The provider closes over its SigningKeyService
           and reads that service's settings cache on use. Each token call allocates its own
-          claims object; no user or role is stored on the shared service.
+          claims object; no user or role is stored on the shared service. Root tests verify
+          retained instance, issuer and provider identity, with live signing-key lookups.
+          The absence of a reset path, the provider's settings-cache access and isolation
+          between calls for different users and roles are source evidence.
         sources:
           - core/server/services/identity-tokens/identity-token-service-wrapper.js
           - core/server/services/identity-tokens/identity-token-service.ts
