@@ -19,6 +19,7 @@ import {
 } from '@tryghost/shade/components';
 import { HANDLE_REGEX, getMoveErrorMessage, handlesEqual, normalizeHandle } from './utils';
 import { LucideIcon } from '@tryghost/shade/utils';
+import { toast } from 'sonner';
 import {
   useAccountForUser,
   useAccountMigrationForUser,
@@ -52,9 +53,13 @@ const ExportAccount: React.FC = () => {
       return;
     }
 
-    setCopied(true);
-    await navigator.clipboard.writeText(ownHandle);
-    window.setTimeout(() => setCopied(false), 2000);
+    try {
+      await navigator.clipboard.writeText(ownHandle);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 2000);
+    } catch {
+      toast.error('Failed to copy handle');
+    }
   };
 
   const handleMoveSubmit = (event: React.FormEvent<HTMLFormElement>) => {
@@ -86,7 +91,8 @@ const ExportAccount: React.FC = () => {
     }
   };
 
-  if (hasMigrationLoadError) {
+  // A failed refetch keeps the last status, which is still worth showing
+  if (hasMigrationLoadError && !migration) {
     return (
       <>
         <p role="alert">Could not load migration status. Please try again.</p>

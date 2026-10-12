@@ -5,7 +5,13 @@ import { getOutboundMigrationAvailability } from '../../../src/views/preferences
 import { useAccountMigrationForUser } from '@hooks/use-activity-pub-queries';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
-import { failedQuery, loadedQuery, loadingQuery } from '../../utils/query-state';
+import {
+  failedQuery,
+  loadedQuery,
+  loadingQuery,
+  refetchFailedQuery,
+} from '../../utils/query-state';
+import { toast } from 'sonner';
 
 type MigrationStatus = { targetApId: string | null; targetHandle: string | null; sent: boolean };
 
@@ -33,6 +39,8 @@ vi.mock('@hooks/use-activity-pub-queries', () => ({
   useMoveAccountMutationForUser: () => mocks.move,
 }));
 
+vi.mock('sonner', () => ({ toast: { error: vi.fn() } }));
+
 const noMove: MigrationStatus = { targetApId: null, targetHandle: null, sent: false };
 
 // Misskey actor URLs hold an internal ID rather than the username
@@ -42,7 +50,10 @@ const pendingMisskeyMove: MigrationStatus = {
   sent: false,
 };
 
-afterEach(cleanup);
+afterEach(() => {
+  cleanup();
+  Reflect.deleteProperty(navigator, 'clipboard');
+});
 beforeEach(() => {
   vi.clearAllMocks();
   mocks.account = loadedQuery({ handle: '@index@ghost.example' });
@@ -74,6 +85,10 @@ async function openMoveConfirmation() {
 async function confirmMove() {
   const dialog = await openMoveConfirmation();
   fireEvent.click(within(dialog).getByRole('button', { name: 'Move followers' }));
+}
+
+function stubClipboard(writeText: ReturnType<typeof vi.fn>) {
+  Object.defineProperty(navigator, 'clipboard', { configurable: true, value: { writeText } });
 }
 
 describe('outbound account migration', () => {
@@ -290,6 +305,57 @@ describe('outbound account migration', () => {
     );
     expect(screen.queryByText(/as an alias on your new social web profile first/)).toBeNull();
     expect(screen.queryByLabelText('New account handle')).toBeNull();
+  });
+
+  it('keeps showing a pending move when a later refresh fails', () => {
+    mocks.migration = refetchFailedQuery(pendingMisskeyMove, {
+      message: 'Server error',
+      statusCode: 500,
+    });
+    render(<AccountMigration />);
+    goToExport();
+    expect(screen.queryByRole('alert')).toBeNull();
+    expect(screen.getByRole('status').textContent).toContain(
+      'A move to @new@misskey.io is in progress',
+    );
+    expect((screen.getByLabelText('New account handle') as HTMLInputElement).value).toBe(
+      '@new@misskey.io',
+    );
+  });
+
+  it('keeps showing a sent move when a later refresh fails', () => {
+    mocks.migration = refetchFailedQuery(
+      { ...pendingMisskeyMove, sent: true },
+      new Error('Network unavailable'),
+    );
+    render(<AccountMigration />);
+    goToExport();
+    expect(screen.queryByRole('alert')).toBeNull();
+    expect(screen.getByRole('status').textContent).toContain(
+      'Your followers were directed to follow @new@misskey.io',
+    );
+  });
+
+  it('confirms the Ghost handle was copied only after the copy succeeds', async () => {
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    stubClipboard(writeText);
+    render(<AccountMigration />);
+    goToExport();
+    const copyButton = screen.getByRole('button', { name: 'Copy handle' });
+    fireEvent.click(copyButton);
+    await waitFor(() => expect(copyButton.querySelector('.lucide-check')).not.toBeNull());
+    expect(writeText).toHaveBeenCalledWith('@index@ghost.example');
+  });
+
+  it('reports a failed copy instead of confirming it', async () => {
+    stubClipboard(vi.fn().mockRejectedValue(new Error('Clipboard blocked')));
+    render(<AccountMigration />);
+    goToExport();
+    const copyButton = screen.getByRole('button', { name: 'Copy handle' });
+    fireEvent.click(copyButton);
+    await waitFor(() => expect(toast.error).toHaveBeenCalledWith('Failed to copy handle'));
+    expect(copyButton.querySelector('.lucide-check')).toBeNull();
+    expect(copyButton.querySelector('.lucide-copy')).not.toBeNull();
   });
 
   it('does not guess a handle from the actor URL when none was stored', () => {

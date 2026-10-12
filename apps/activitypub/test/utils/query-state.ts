@@ -20,3 +20,8 @@ export function loadedQuery<T>(data: T): QueryState<T> {
 export function failedQuery<T>(error: unknown): QueryState<T> {
   return { data: undefined, error, isError: true, isLoading: false, refetch: vi.fn() };
 }
+
+/** A refetch that failed after an earlier success keeps the cached data. */
+export function refetchFailedQuery<T>(data: T, error: unknown): QueryState<T> {
+  return { data, error, isError: true, isLoading: false, refetch: vi.fn() };
+}
