@@ -68,13 +68,30 @@ The temporary [service inventory](service-inventory.yaml) tracks this migration.
 Update it when adding, removing or renaming a root. It includes standalone
 files and supporting modules still awaiting relocation. Boot never reads it.
 
-The summary counts all inventory entries in `total` and entries marked
-`migrated: true` in `migrated`. Mark a root as migrated once it uses the
+Entries marked `migrated: true` use the
 [kernel's `defineService` initializer](../../kernel/README.md#service-initialization).
-IndexNow and signing keys are the first two. This tracks adoption of the
-initializer, independently of audit completeness or remaining lifecycle work.
-Update the summary when entries or migration markers change; the inventory test
-checks both counts.
+The inventory's `exemplaryMigration` points to IndexNow as the example to follow.
+The marker tracks adoption independently of audit completeness or remaining
+lifecycle work.
+
+Each entry also has a source-based `migration` assessment:
+
+- `complexity: straightforward` means bounded factory, export and boot-order changes.
+  `complex` means substantial ownership, dependency, failure or lifetime work;
+  unresolved service ownership belongs here too. `not-applicable` is reserved for
+  confirmed supporting code being relocated.
+- `modelImpact: fits` means one retained ready instance fits the capability, even
+  when migration is complex. `may-change` identifies a concrete model question,
+  such as restart, replacement or dependency cycles; it requires `complex`.
+  Non-services use `not-applicable` for both dimensions.
+- `reason` explains the decision; `sources` points to existing source or test files
+  relative to `ghost`. `reviewedAt` records the full source commit inspected for
+  this assessment, independently of the contract audit's `auditedAt`.
+
+These are migration estimates, not proof that the kernel must change or permission
+to redesign a service. Recheck the evidence before implementation. An assessment
+neither completes the contract audit nor establishes test coverage or passing tests.
+Migrated services cannot be classified as `not-applicable`.
 
 Each entry records its intended ownership and audit status. `pending` means
 the contract audit has not started; `auditing` means evidence is incomplete;
@@ -123,7 +140,7 @@ Record missing coverage and known bugs in `blockers`. Before changing a service,
 address the gaps relevant to that change; neither `audited` nor a passing
 inventory check proves that its behavior is protected against regressions.
 
-The unit test checks the inventory's shape, counts, paths and directory coverage. It
+The unit test checks the inventory's shape, example, paths and directory coverage. It
 does not import services or drive initialization. `README.md` and the inventory
 itself are the only metadata exclusions. Retire the inventory after migration;
 keep the behavioral tests and replace the legacy check with a check for the
