@@ -17,12 +17,11 @@ import { MANIFEST_URL, fakeInstallations, installation, labs, manifest } from '.
 
 const DETAILS_ROUTE = '/apps/details/installation-1';
 
-/** Reading one installation, whatever it includes. */
+/** The read endpoint for one installation, with or without a query string. */
 const readPath = (id: string) => new RegExp(`^/apps/installations/${id}/(\\?|$)`);
 
 const jamie = { id: 'user-1', name: 'Jamie Larson' };
 
-/** One thing that happened to the app, as its history lists it. */
 const entry = (
   id: string,
   event: AppInstallationHistoryEntry['event'],
@@ -38,11 +37,9 @@ const entry = (
 
 const installedOn = (createdAt: string) => entry('h1', 'installed', createdAt);
 
-/** One installation as the detail page reads it, with its history. */
 const fakeDetails = (read: AppInstallation) =>
   fakeAdminEndpoint('GET', readPath(read.id), () => ({ app_installations: [read] }));
 
-/** The review of a suspended app's changes, as the install screen fetches it. */
 const fakeReview = () =>
   fakeAdminEndpoint('POST', '/apps/installations/preview/', {
     app_installation_previews: [

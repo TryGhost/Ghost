@@ -1,8 +1,8 @@
 import type { AppInstallationHistoryEntry } from '@tryghost/admin-x-framework/api/app-installations';
 
 /**
- * What happened, in a few words, for the app's history on its detail page. A newer Ghost
- * may record something this Admin has no words for yet, which is still a change.
+ * A short title for a history entry. An event from a newer Ghost that this Admin doesn't
+ * know reads as "Changed".
  */
 export function historyTitle(entry: AppInstallationHistoryEntry): string {
   switch (entry.event) {
@@ -21,7 +21,6 @@ export function historyTitle(entry: AppInstallationHistoryEntry): string {
   }
 }
 
-/** Who installed the app, as its history records it. */
 export function installedBy(history: AppInstallationHistoryEntry[]): string | undefined {
   return history.find((entry) => entry.event === 'installed')?.actor?.name ?? undefined;
 }

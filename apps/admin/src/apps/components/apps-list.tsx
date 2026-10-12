@@ -27,10 +27,7 @@ interface AppsListProps {
   onUninstall: (installation: AppInstallation) => void;
 }
 
-/**
- * The site's installed apps, like Automations and Tags. A row leads to the app's details;
- * opening the app itself comes with app pages.
- */
+/** The site's installed apps. Each row links to the app's details. */
 const AppsList: React.FC<AppsListProps> = ({ installations, onUninstall }) => {
   return (
     <Table aria-label="Apps" className="table-auto" data-testid="apps-list">

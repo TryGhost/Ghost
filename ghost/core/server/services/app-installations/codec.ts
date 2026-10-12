@@ -17,7 +17,7 @@ export const AppInstallationRow = z.object({
   ...DbAppInstallationManifest.pick({ manifest_url: true, manifest: true }).shape,
 });
 
-/** The staff user who decided something in an installation's history. */
+/** The staff user who acted. */
 export interface HistoryActor {
   id: string;
   /** Null when the user no longer exists. */
@@ -25,23 +25,21 @@ export interface HistoryActor {
 }
 
 /**
- * One thing that happened to an installation, as the Admin API returns it with
- * `include=history`. Decisions by people (`installed`, `changes_approved`, `uninstalled`)
- * come from staff history and name who decided; what Ghost did by itself, applying an
- * update (`updated`) or holding changes for approval (`suspended`), has nobody.
+ * One event in an installation's history. `actor` is null when Ghost acted by itself
+ * (`updated`, `suspended`), or when who acted wasn't recorded.
  */
 export interface AppInstallationHistoryEntry {
   id: string;
   event: 'installed' | 'updated' | 'suspended' | 'changes_approved' | 'uninstalled';
   actor: HistoryActor | null;
   created_at: Date;
-  /** For an approval that moved the app: the host it is served from since. */
+  /** On a `changes_approved` entry that moved the app, the host it moved to. */
   moved_to?: string;
 }
 
 /** One site's approval of one app, as the Admin API returns it. */
 export type AppInstallation = z.output<typeof AppInstallationRow> & {
-  /** Only when asked for: what happened to the installation, newest first. */
+  /** Newest first. Only when read with `include=history`. */
   history?: AppInstallationHistoryEntry[];
 };
 

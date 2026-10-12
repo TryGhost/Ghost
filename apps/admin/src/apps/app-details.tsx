@@ -34,8 +34,6 @@ import { historyTitle, installedBy } from './lib/history';
 import { appReviewRoute } from './lib/routes';
 import { isDevelopmentApp } from './lib/served-from';
 
-// Not a definition list: Ember's stylesheet floats every `dl dt` and indents `dl dd`,
-// and it still applies to React pages.
 const Fact: React.FC<{ label: string; children: React.ReactNode }> = ({ label, children }) => (
   <div className="grid grid-cols-[8rem_1fr] gap-4 py-3" data-testid="app-fact">
     <Text as="span" tone="secondary">
@@ -77,8 +75,6 @@ const Details: React.FC<{ installation: AppInstallation }> = ({ installation }) 
   const installer = installedBy(history);
 
   return (
-    // Like a member's page: who the app is and what it does down the side, what it gets and
-    // what happened to it alongside.
     <div className="flex flex-col gap-8 lg:flex-row lg:items-start lg:gap-12">
       <aside className="flex w-full shrink-0 flex-col gap-6 lg:w-80">
         <Stack gap="md">
@@ -154,7 +150,6 @@ const Details: React.FC<{ installation: AppInstallation }> = ({ installation }) 
   );
 };
 
-/** One installed app: who it is, where it runs, what happened to it, and uninstalling it. */
 export const AppDetails: React.FC = () => {
   const { installationId = '' } = useParams();
   const navigate = useNavigate();
@@ -230,7 +225,6 @@ export const AppDetails: React.FC = () => {
       <UninstallDialog
         installation={uninstalling}
         onClose={() => setUninstalling(null)}
-        // Nothing is left to manage here once it has ended.
         onUninstalled={() => navigate('/apps')}
       />
     </Box>

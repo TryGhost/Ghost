@@ -6,7 +6,7 @@ import { actingContext, service } from '../../services/app-installations';
 interface InstallationOptions {
   id: string;
   context: unknown;
-  // What `include` asked for, as the framework passes it on.
+  // The framework passes `include` on as `withRelated`.
   withRelated?: string[];
   [key: string]: unknown;
 }

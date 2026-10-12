@@ -26,7 +26,6 @@ import { DbAppInstallationManifest, StoredManifest, type AppInstallationStatus }
 const INSTALLATIONS = 'app_installations';
 const MANIFESTS = 'app_installation_manifests';
 
-/** A manifest row as the history reads it. */
 const HistoryManifestRow = DbAppInstallationManifest.pick({
   id: true,
   manifest_url: true,
@@ -190,10 +189,7 @@ export class AppInstallationsService {
     return rows.map((row) => z.decode(AppInstallationRow, row));
   }
 
-  /**
-   * One installation by ID, whether it has ended or not, and on request what happened to
-   * it: installed, updated, held for approval, approved, moved, uninstalled.
-   */
+  /** One installation by ID, including an uninstalled one, with its history when asked. */
   async read(
     id: string,
     { withHistory = false }: { withHistory?: boolean } = {},
@@ -209,10 +205,6 @@ export class AppInstallationsService {
     return installation;
   }
 
-  /**
-   * The installation's history from its two records: the manifests it has run or been
-   * asked to approve, and staff history, where decisions by people are kept.
-   */
   private async historyOf(id: string): Promise<AppInstallation['history']> {
     const manifestRows = this.knex(MANIFESTS)
       .where({ installation_id: id })
@@ -226,7 +218,7 @@ export class AppInstallationsService {
         'created_at',
       );
     const actionRows = this.knex('actions as action')
-      // Only staff users act on installations, and a user's name is what the history says.
+      // Left join, so a deleted user's actions stay in the history, without a name.
       .leftJoin('users as actor', 'actor.id', 'action.actor_id')
       .where({ 'action.resource_type': 'app_installation', 'action.resource_id': id })
       .orderBy('action.created_at', 'asc')

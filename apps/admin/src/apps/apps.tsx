@@ -20,7 +20,7 @@ const Centered: React.FC<{ children: React.ReactNode }> = ({ children }) => (
 
 /** The site's apps, and where the install flow lands. */
 export const AppsListing: React.FC = () => {
-  // Failures are shown in place.
+  // Failures show in place of the list rather than as a toast.
   const { data, isLoading, error } = useBrowseAppInstallations({ defaultErrorHandler: false });
   const installations = data?.app_installations ?? [];
   const [uninstalling, setUninstalling] = useState<AppInstallation | null>(null);

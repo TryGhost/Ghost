@@ -28,7 +28,7 @@ export interface AppInstallationHistoryEntry {
   event: 'installed' | 'updated' | 'suspended' | 'changes_approved' | 'uninstalled';
   actor: { id: string; name: string | null } | null;
   created_at: string;
-  /** For an approval that moved the app: the host it is served from since. */
+  /** On a `changes_approved` entry that moved the app, the host it moved to. */
   moved_to?: string;
 }
 
@@ -75,7 +75,7 @@ export interface ReviewedAppManifest {
 }
 
 const dataType = 'AppInstallationsResponseType';
-// Installing, approving and uninstalling are all recorded in staff history.
+// Installing, approving and uninstalling also add to staff history, so its cache is refetched too.
 const changedDataTypes = { dataType: [dataType, 'ActionsResponseType'] };
 
 export const useBrowseAppInstallations = createQuery<AppInstallationsResponseType>({
@@ -83,7 +83,7 @@ export const useBrowseAppInstallations = createQuery<AppInstallationsResponseTyp
   path: '/apps/installations/',
 });
 
-/** One installation, ended or not, with what happened to it. */
+/** One installation, including an uninstalled one, with its history. */
 export const useReadAppInstallation = createQueryWithId<AppInstallationsResponseType>({
   dataType,
   path: (id) => `/apps/installations/${id}/`,
@@ -125,7 +125,7 @@ export const useApproveAppInstallation = createMutation<
   invalidateQueries: changedDataTypes,
 });
 
-/** Ends an installation. Ghost keeps the record, so it can still be read afterwards. */
+/** Uninstalls an app. The installation can still be read afterwards. */
 export const useUninstallAppInstallation = createMutation<unknown, string>({
   method: 'DELETE',
   path: (id) => `/apps/installations/${id}/`,

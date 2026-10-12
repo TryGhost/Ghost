@@ -4,7 +4,6 @@ import type {
 } from '@tryghost/admin-x-framework/api/app-installations';
 import { fakeAdminEndpoint } from '@test-utils/acceptance';
 
-/** Shared by the apps acceptance specs. */
 export const MANIFEST_URL = 'https://podcast.example.com/ghost-app.json';
 export const labs = { apps: true };
 
@@ -30,7 +29,7 @@ export const installation = (overrides: Partial<AppInstallation> = {}): AppInsta
   ...overrides,
 });
 
-/** The site's installations, as the Apps screen lists them; `set` changes what comes next. */
+/** Fakes the installations list. `set` changes what later reads return. */
 export function fakeInstallations(initial: AppInstallation[] = []) {
   let installed = initial;
   fakeAdminEndpoint('GET', '/apps/installations/', () => ({ app_installations: installed }));

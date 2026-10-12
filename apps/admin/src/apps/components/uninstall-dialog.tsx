@@ -21,13 +21,12 @@ import { AdminLink } from '@/shared/admin-link';
 interface UninstallDialogProps {
   /** The app to uninstall; the dialog is open while it's set. */
   installation: AppInstallation | null;
-  /** When the dialog is dismissed, or once the app has been uninstalled. */
+  /** Called when the dialog closes, including after uninstalling. */
   onClose: () => void;
-  /** After Ghost has ended the installation, such as to leave a page about the app. */
+  /** Called after the app has been uninstalled. */
   onUninstalled?: (installation: AppInstallation) => void;
 }
 
-/** Confirms uninstalling an app, which stops it straight away for everyone. */
 export const UninstallDialog: React.FC<UninstallDialogProps> = ({
   installation,
   onClose,
@@ -73,8 +72,6 @@ export const UninstallDialog: React.FC<UninstallDialogProps> = ({
             it for the first time.
           </AlertDialogDescription>
         </AlertDialogHeader>
-        {/* An integration key the app's backend holds outlives uninstalling, until
-            Permissions and auth replaces those keys. */}
         <Banner data-testid="app-uninstall-integration-key-note" size="md" variant="warning">
           <p className="m-0 text-sm text-foreground">
             If you gave this app an integration key, delete it in{' '}
