@@ -62,6 +62,17 @@ export interface AppManifestChange {
   requires_approval: boolean;
 }
 
+/**
+ * What starting an app session answers with: the installation as it stands, and the
+ * revision pinned for the session. Any change to the installation moves the revision on,
+ * which is how a session learns it has ended.
+ */
+export interface AppSession {
+  revision: number;
+  started_at: string;
+  installation: AppInstallation;
+}
+
 /** What a publisher reviews before installing an app, or before approving changes to one. */
 export interface AppInstallationPreview {
   manifest_url: string;
@@ -125,6 +136,11 @@ function uninstalled() {
   });
 }
 
+/** The installation has ended, so there is no app to open. */
+function notInstalled() {
+  return new errors.NotFoundError({ message: 'This app has been uninstalled.' });
+}
+
 /** The reviewed manifest belongs to some other app than the one installed. */
 function forAnotherApp(appId: string) {
   return new errors.ValidationError({
@@ -148,6 +164,8 @@ export class AppInstallationsService {
   private recordAction: RecordAppInstallationAction;
   private getManifestRules: () => ManifestRules;
   private fetchManifest: FetchManifest;
+  /** At most one refresh in flight per installation; concurrent session starts share it. */
+  private refreshing = new Map<string, Promise<AppInstallation>>();
 
   constructor({
     knex,
@@ -606,6 +624,172 @@ export class AppInstallationsService {
         },
       });
     }
+    return this.read(id);
+  }
+
+  /**
+   * Re-checks an installed app's manifest, at app session start. Fetches the approved
+   * `manifest_url` again with the same fetcher and validation as install, compares the
+   * result with the approved manifest, and:
+   *
+   * - leaves everything as it is when nothing changed, when the newer manifest is the
+   *   one already waiting for approval, or when the manifest is unreachable, invalid, too
+   *   large, not JSON or redirects to another host: the approved one keeps serving;
+   * - applies changes that need no approval, which also ends a suspension the app went
+   *   back on (a revert);
+   * - suspends the app on changes that need approval, keeping the newer manifest as the
+   *   one waiting, in place of an older pending one.
+   *
+   * Keyed on the installation ID, never the app ID, so a refresh that started before an
+   * uninstall can neither revive that installation nor touch a later one of the same app.
+   * The write is conditional on the revision the refresh read, like `approve`.
+   */
+  async refresh(id: string): Promise<AppInstallation> {
+    const inFlight = this.refreshing.get(id);
+    if (inFlight) {
+      return inFlight;
+    }
+    const run = this.refreshOnce(id).finally(() => this.refreshing.delete(id));
+    this.refreshing.set(id, run);
+    return run;
+  }
+
+  /**
+   * Starts a session of an installed app, which is what Admin asks for when an app page
+   * opens. The manifest is re-checked first, then the answer carries the installation as
+   * it stands and the revision the session pins; that answer alone decides what Admin
+   * shows. Nothing is stored and no token is issued yet: both come with the app's own
+   * credentials, and the answer grows then. An installation that has ended is not found.
+   */
+  async startSession(id: string): Promise<AppSession> {
+    try {
+      await this.refresh(id);
+    } catch (err) {
+      if (err instanceof errors.ConflictError && err.code === 'APP_INSTALLATION_UNINSTALLED') {
+        throw notInstalled();
+      }
+      throw err;
+    }
+    const current = await this.currentById(id);
+    if (!current) {
+      throw notInstalled();
+    }
+    return {
+      revision: current.revision,
+      started_at: new Date().toISOString(),
+      installation: await this.read(id),
+    };
+  }
+
+  private async currentById(
+    id: string,
+    db: Knex | Knex.Transaction = this.knex,
+  ): Promise<CurrentInstallation | undefined> {
+    const row = await db(`${INSTALLATIONS} as installation`)
+      .join(`${MANIFESTS} as approved`, 'approved.id', 'installation.manifest_id')
+      .where('installation.id', id)
+      .whereNot('installation.status', 'uninstalled')
+      .first<z.input<typeof CurrentInstallationRow> | undefined>(
+        'installation.id',
+        'installation.status',
+        'installation.manifest_id',
+        'installation.pending_manifest_id',
+        'installation.revision',
+        'approved.manifest_url',
+        'approved.manifest',
+      );
+    return row ? z.decode(CurrentInstallationRow, row) : undefined;
+  }
+
+  private async refreshOnce(id: string): Promise<AppInstallation> {
+    const installation = await this.read(id);
+    if (installation.status === 'uninstalled') {
+      throw uninstalled();
+    }
+    const before = await this.currentById(id);
+    if (!before) {
+      throw uninstalled();
+    }
+
+    let loaded: LoadedManifest;
+    try {
+      loaded = await this.fetchAndLoad(installation.manifest_url);
+    } catch (err) {
+      // The app's own problem, not the publisher's: the approved manifest keeps serving.
+      if (err instanceof errors.ValidationError) {
+        return installation;
+      }
+      throw err;
+    }
+    // A manifest for another app at the approved address is as good as an invalid one.
+    if (loaded.manifest.id !== installation.app_id) {
+      return installation;
+    }
+
+    await this.knex.transaction(async (trx) => {
+      await trx(INSTALLATIONS).where({ id }).forUpdate().first();
+      const current = await this.currentById(id, trx);
+      // Ended, or changed under the fetch: this refresh decides nothing. A session that
+      // starts after the change refreshes again from what is there now.
+      if (!current || current.revision !== before.revision) {
+        return;
+      }
+
+      const changes = this.changesFrom(current, loaded);
+      const needsApproval = changes.some((change) => change.requires_approval);
+      const pendingRow = current.pending_manifest_id
+        ? await trx(MANIFESTS)
+            .where({ id: current.pending_manifest_id })
+            .first<z.input<typeof PendingManifestRow> | undefined>('id', 'manifest_url', 'digest')
+        : undefined;
+      const pending = pendingRow ? z.decode(PendingManifestRow, pendingRow) : undefined;
+      const isPending =
+        pending !== undefined &&
+        pending.manifest_url === loaded.manifestUrl &&
+        pending.digest === loaded.digest;
+      const unchanged = changes.length === 0;
+
+      if (isPending || (unchanged && !pending)) {
+        return;
+      }
+
+      const now = toDatabaseDate(new Date());
+      // What changed is kept as its own row, whether it applies now or waits.
+      let manifestId = current.manifest_id;
+      if (!unchanged) {
+        manifestId = new ObjectId().toHexString();
+        await trx(MANIFESTS).insert({
+          id: manifestId,
+          installation_id: id,
+          manifest_url: loaded.manifestUrl,
+          manifest: loaded.serialised,
+          digest: loaded.digest,
+          source: 'update',
+          requires_approval: needsApproval,
+          created_at: now,
+        });
+      }
+      await trx(INSTALLATIONS)
+        .where({ id })
+        .update(
+          needsApproval
+            ? {
+                status: 'suspended',
+                pending_manifest_id: manifestId,
+                revision: trx.raw('?? + 1', ['revision']),
+                updated_at: now,
+              }
+            : {
+                // Silent changes apply, and so does going back on changes that waited.
+                status: current.status === 'suspended' ? 'active' : current.status,
+                manifest_id: manifestId,
+                pending_manifest_id: null,
+                revision: trx.raw('?? + 1', ['revision']),
+                updated_at: now,
+              },
+        );
+    });
+
     return this.read(id);
   }
 
