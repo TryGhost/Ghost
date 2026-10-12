@@ -76,7 +76,7 @@ const ImportAccount: React.FC = () => {
 
   return (
     <>
-      <div className="mt-3 text-base text-gray-800 dark:text-gray-600">
+      <div className="text-base text-gray-800 dark:text-gray-600">
         <p>
           You can move your followers from another social web account (eg.{' '}
           <a
@@ -87,12 +87,12 @@ const ImportAccount: React.FC = () => {
           >
             Mastodon
           </a>
-          ) to this one by creating an account alias. This action is harmless and reversible. The
-          account migration is initiated from the old account.
+          ) to this one by creating an account alias. You can remove the alias later. The move
+          itself is initiated from the old account and may not be reversible on every server.
         </p>
       </div>
 
-      <form className="mt-10" onSubmit={handleSubmit}>
+      <form className="mt-6" onSubmit={handleSubmit}>
         <Field data-invalid={handleError ? true : undefined}>
           <FieldLabel htmlFor="account-migration-source-handle">Old account handle</FieldLabel>
           <FieldDescription id="account-migration-source-handle-description">
@@ -115,7 +115,7 @@ const ImportAccount: React.FC = () => {
               onChange={(event) => setSourceHandle(event.target.value)}
             />
             <Button
-              className="relative h-9 text-sm sm:w-auto"
+              className="relative sm:w-auto"
               disabled={addAliasMutation.isPending}
               type="submit"
             >
