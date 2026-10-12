@@ -201,6 +201,7 @@ jobs:
             any-code:
               - '!**/*.md'
               - '!**/*.mdx'
+              - '!.github/CODEOWNERS'
               - '!.devcontainer/**'
               - '!.vscode/**'
               - *renovate_only
@@ -213,6 +214,7 @@ jobs:
             e2e:
               - '!**/*.md'
               - '!**/*.mdx'
+              - '!.github/CODEOWNERS'
               - '!.devcontainer/**'
               - '!.vscode/**'
               - '!ghost/test/**'

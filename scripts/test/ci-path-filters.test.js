@@ -44,6 +44,20 @@ describe('CI path filters', () => {
     assert.ok(e2e.includes('!**/*.mdx'));
   });
 
+  it('skips code checks and E2E for ownership and docs changes, but keeps mixed changes', async () => {
+    for (const filterName of ['any-code', 'e2e']) {
+      const patterns = await getFilterPatterns(filterName);
+      const matches = (path) =>
+        patterns.every((pattern) => picomatch(pattern, { dot: true })(path));
+      const docsPaths = ['.github/CODEOWNERS', 'ghost/core/kernel/README.md'];
+
+      assert.strictEqual(docsPaths.some(matches), false, filterName);
+      for (const path of ['ghost/core/index.js', '.github/workflows/ci.yml']) {
+        assert.strictEqual([...docsPaths, path].some(matches), true, `${filterName}: ${path}`);
+      }
+    }
+  });
+
   it('skips the build and E2E lane for Admin tests while keeping affected checks', async () => {
     const e2e = await getFilterPatterns('e2e');
     const anyCode = await getFilterPatterns('any-code');
