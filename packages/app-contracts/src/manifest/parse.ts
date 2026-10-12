@@ -22,16 +22,19 @@ export interface ManifestError {
 }
 
 export type ParseManifestResult =
+  | { success: true; manifest: AppManifest }
+  | { success: false; errors: ManifestError[] };
+
+export type ParseManifestUrlResult =
   | {
       success: true;
-      manifest: AppManifest;
       /**
-       * The manifest's URL as it was checked, which is the one to keep: the URL parser
-       * trims and normalises what it is given, so the string handed in may differ.
+       * The address to keep, as the URL parser reads it and without a fragment. The URL
+       * parser trims and normalises what it is given, so the string handed in may differ.
        */
       manifestUrl: string;
     }
-  | { success: false; errors: ManifestError[] };
+  | { success: false; error: string };
 
 function formatPath(path: PropertyKey[]): string {
   return path.reduce<string>((result, part) => {
@@ -42,20 +45,33 @@ function formatPath(path: PropertyKey[]): string {
   }, '');
 }
 
-/**
- * Checks the address a manifest is read from, by the same rules as the URLs inside it.
- * Returns what is wrong with it, or null. Run it before fetching, so Ghost never requests
- * an address it would refuse anyway (plain HTTP, or one carrying credentials).
- */
-export function checkManifestUrl(manifestUrl: string, allowLocalhost = false): string | null {
-  let url: URL;
-  try {
-    url = new URL(manifestUrl);
-  } catch {
+/** What is wrong with the address a manifest is read from, by the rules for the URLs in it. */
+function checkManifestUrl(manifestUrl: string, allowLocalhost: boolean): string | null {
+  if (!URL.canParse(manifestUrl)) {
     return 'Expected the manifest at a URL';
   }
-  const problem = checkResolvedUrl(url, allowLocalhost);
+  const problem = checkResolvedUrl(new URL(manifestUrl), allowLocalhost);
   return problem ? `${problem} for the manifest itself` : null;
+}
+
+/**
+ * Reads the address a manifest is to be read from, by the same rules as the URLs inside
+ * it. Run it before fetching, so Ghost never requests an address it would refuse anyway
+ * (plain HTTP, or one carrying credentials).
+ *
+ * The address it hands back is the one to keep: what is stored, fetched again later and
+ * compared with a later address, so each address has one spelling. A fragment never
+ * reaches the server, so two addresses that differ only there read the same file: it is
+ * no part of the address.
+ */
+export function parseManifestUrl(input: string, allowLocalhost = false): ParseManifestUrlResult {
+  const problem = checkManifestUrl(input, allowLocalhost);
+  if (problem) {
+    return { success: false, error: problem };
+  }
+  const url = new URL(input);
+  url.hash = '';
+  return { success: true, manifestUrl: url.href };
 }
 
 /**
@@ -85,7 +101,7 @@ export function parseManifest(input: unknown, options: ParseManifestOptions): Pa
 
   const result = manifestSchema({ base, ghostOrigins, allowLocalhost }).safeParse(input);
   if (result.success) {
-    return { success: true, manifest: result.data, manifestUrl: base.href };
+    return { success: true, manifest: result.data };
   }
   return {
     success: false,

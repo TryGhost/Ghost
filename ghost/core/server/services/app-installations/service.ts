@@ -4,9 +4,9 @@ import ObjectId from 'bson-objectid';
 import type { Knex } from 'knex';
 import { z } from 'zod';
 import {
-  checkManifestUrl,
   compareManifests,
   parseManifest,
+  parseManifestUrl,
   type AppManifest,
   type ParseManifestOptions,
 } from '@tryghost/app-contracts/manifest';
@@ -271,23 +271,19 @@ export class AppInstallationsService {
    * Ghost never requests an address it would refuse, and what it stores obeys the same
    * rules as the URLs inside a manifest, the length the column allows included.
    *
-   * Returns the address as the URL parser reads it, so one spelling of an address is one
-   * address: that is what gets stored, and what a later manifest is compared with.
+   * Returns the address to keep: that is what gets stored, and what a later manifest is
+   * compared with.
    */
-  private checkManifestUrl(manifestUrl: string): string {
-    const problem = checkManifestUrl(manifestUrl, this.getManifestRules().allowLocalhost);
-    if (problem) {
+  private parseManifestUrl(manifestUrl: string): string {
+    const parsed = parseManifestUrl(manifestUrl, this.getManifestRules().allowLocalhost);
+    if (!parsed.success) {
       throw new errors.ValidationError({
         message: 'The app manifest URL is not valid.',
         code: 'APP_MANIFEST_URL_INVALID',
-        context: problem,
+        context: parsed.error,
       });
     }
-    const url = new URL(manifestUrl);
-    // A fragment never reaches the server, so two addresses that differ only there read
-    // the same file: it is no part of the address kept.
-    url.hash = '';
-    return url.href;
+    return parsed.manifestUrl;
   }
 
   /**
@@ -319,7 +315,7 @@ export class AppInstallationsService {
   }
 
   private async fetchAndLoad(manifestUrl: string): Promise<LoadedManifest> {
-    const checked = this.checkManifestUrl(manifestUrl);
+    const checked = this.parseManifestUrl(manifestUrl);
     const fetched = await this.fetchManifest(checked);
     return this.load(checked, fetched.body, fetched.url);
   }
@@ -413,7 +409,7 @@ export class AppInstallationsService {
     context: RequestContext,
     { manifestUrl, manifest }: { manifestUrl: string; manifest: unknown },
   ): Promise<AppInstallation> {
-    return this.insert(context, this.load(this.checkManifestUrl(manifestUrl), manifest));
+    return this.insert(context, this.load(this.parseManifestUrl(manifestUrl), manifest));
   }
 
   /**

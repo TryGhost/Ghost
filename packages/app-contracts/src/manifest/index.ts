@@ -2,9 +2,9 @@
  * The app manifest: what an app tells Ghost about itself, and what a publisher agrees to
  * when installing it.
  *
- * Ghost core validates a manifest when it fetches one, and admin validates what it is
- * handed before acting on it. Both go through `parseManifest`, so they cannot disagree
- * about what a valid manifest is.
+ * Ghost core validates a manifest with `parseManifest` when it fetches one, and reads one
+ * it has kept back with `AppManifestSchema`. Admin validates nothing itself: it only acts
+ * on manifests Ghost has accepted, as the Admin API hands them over.
  *
  * The format is unversioned while only Ghost builds apps.
  */
@@ -19,11 +19,12 @@ export { APP_ID_MAX_LENGTH, isValidAppId } from './id.ts';
 export type { AppIcon } from './icon.ts';
 export { URL_MAX_LENGTH } from './limits.ts';
 export {
-  checkManifestUrl,
   parseManifest,
+  parseManifestUrl,
   type ManifestError,
   type ParseManifestOptions,
   type ParseManifestResult,
+  type ParseManifestUrlResult,
 } from './parse.ts';
 export {
   AppManifestSchema,
