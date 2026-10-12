@@ -34,6 +34,8 @@ and provider adapters as private implementation details.
 - Keep implementation used only by one service inside that service.
 - Put shared server libraries, reusable constructors, and provider clients in
   `server/lib/`, grouped by a specific capability.
+- Put data export implementations with the [data exporters](../data/exporter/README.md).
+  Caller-constructed archive builders belong there with their component definitions.
 - Put HTTP routing and middleware in the appropriate part of `server/web/`.
 - Keep API-specific support with its API owner rather than making it a service.
 

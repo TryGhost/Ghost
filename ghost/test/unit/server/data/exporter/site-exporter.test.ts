@@ -7,8 +7,8 @@ import { PassThrough, Readable, Writable, pipeline } from 'stream';
 import {
   SiteExporter,
   type SiteExporterDeps,
-} from '../../../../../core/server/services/exports/site-exporter';
-import { SYNC_EXPORT_COMPONENTS } from '../../../../../core/server/services/exports/export-components';
+} from '../../../../../core/server/data/exporter/site-exporter';
+import { SYNC_EXPORT_COMPONENTS } from '../../../../../core/server/data/exporter/export-components';
 
 // @tryghost/zip ships no types; only `extract` is used here
 const { extract } = require('@tryghost/zip') as {

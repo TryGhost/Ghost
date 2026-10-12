@@ -2,7 +2,7 @@
 # Entry points are relative to this directory; evidence paths are relative to ghost.
 # An unverified facet is an open audit question, not an empty/no-op contract.
 summary:
-  total: 71
+  total: 70
   migrated: 3
 services:
   activitypub:
@@ -1751,14 +1751,14 @@ services:
           - core/frontend/web/site.js
           - core/server/api/endpoints/redirects.js
           - core/server/api/endpoints/exports.js
-          - core/server/services/exports/site-exporter.ts
+          - core/server/data/exporter/site-exporter.ts
           - core/server/adapters/redirects/FileStore.ts
           - core/server/adapters/redirects/S3RedirectsStore.ts
         tests:
           - test/legacy/api/admin/redirects.test.js
           - test/e2e-api/admin/redirects.test.js
           - test/e2e-api/admin/exports-download.test.js
-          - test/unit/server/services/exports/site-exporter.test.ts
+          - test/unit/server/data/exporter/site-exporter.test.ts
       startup:
         summary: >-
           Boot awaits custom redirects after route settings and before link redirection, themes,
@@ -1859,12 +1859,12 @@ services:
           - core/server/services/custom-redirects/redirect-config-parser.ts
           - core/server/adapters/redirects/FileStore.ts
           - core/server/adapters/redirects/S3RedirectsStore.ts
-          - core/server/services/exports/site-exporter.ts
+          - core/server/data/exporter/site-exporter.ts
           - core/server/api/endpoints/redirects.js
         tests:
           - test/unit/server/services/custom-redirects/redirects-service.test.ts
           - test/unit/server/adapters/redirects/file-store.test.ts
-          - test/unit/server/services/exports/site-exporter.test.ts
+          - test/unit/server/data/exporter/site-exporter.test.ts
           - test/unit/server/services/custom-redirects/redirect-config-parser.test.ts
     unverified: []
     blockers:
@@ -3360,7 +3360,7 @@ services:
           spoofing and invalid components. Staff-token behavior is source-only.
         sources:
           - core/server/api/endpoints/exports.js
-          - core/server/services/exports/export-components.ts
+          - core/server/data/exporter/export-components.ts
           - core/server/web/api/endpoints/admin/routes.js
           - core/server/web/api/endpoints/admin/middleware.js
           - core/server/api/endpoints/utils/permissions.js
@@ -3473,187 +3473,6 @@ services:
         failures without treating local 202 as completed export generation. There is no local
         job persistence, idempotency or compensation; the host's behavior is outside this
         repository and intercepted HTTP tests cannot prove remote completion.
-  exports:
-    kind: directory
-    disposition: relocate
-    status: audited
-    auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
-    entryPoints:
-      - exports/site-exporter.ts
-      - exports/export-components.ts
-    notes: >-
-      Relocate caller-constructed archive support to server/lib/site-export. Preserve
-      operation-owned streams, partial-export policy and temporary-file cleanup.
-    contracts:
-      exports:
-        summary: >-
-          There is no index. TypeScript exports the SiteExporter class, type-only dependencies,
-          and synchronous/asynchronous component arrays. as const is compile-time readonly;
-          the arrays are not frozen at runtime, and the async list is a separate initial copy
-          with media appended. Receiver-dependent createArchive returns a new Archiver stream
-          synchronously; no init/stop/reset exists. Units consume real archives from constructed
-          classes, but do not assert complete module shape or runtime constant mutation behavior.
-        sources:
-          - core/server/services/exports/site-exporter.ts
-          - core/server/services/exports/export-components.ts
-        tests:
-          - test/unit/server/services/exports/site-exporter.test.ts
-      construction:
-        summary: >-
-          SiteExporter retains the supplied dependency object without executing or validating
-          its callbacks. Each Admin download constructs it anew; createArchive lazily loads
-          Archiver, creates per-archive cleanup state and starts asynchronous population before
-          returning. The endpoint retains its own PostsService and other service wrappers, while
-          callbacks read current members/theme/route/redirect APIs. Units inject dependencies;
-          real download HTTP exercises current endpoint construction, not constructor timing,
-          dependency replacement or multiple archives on one retained exporter.
-        sources:
-          - core/server/services/exports/site-exporter.ts
-          - core/server/api/endpoints/exports.js
-          - core/server/services/posts/posts-service-instance.js
-        tests:
-          - test/unit/server/services/exports/site-exporter.test.ts
-          - test/e2e-api/admin/exports-download.test.js
-      consumers:
-        summary: >-
-          The exports endpoint is the sole production class consumer. Its response serializer
-          wraps the archive in the shared stream-response pipeline with zip/attachment headers
-          and no-transform. Export requests separately imports the asynchronous component list;
-          that provider request does not use SiteExporter. Real HTTP asserts selected full/subset
-          zip entries, JSON shape/posts, the members CSV header, analytics beyond the default page limit,
-          one valid nested theme zip and successful import-surface statuses. It does not compare
-          fully restored data. The members CSV split-count assertion can pass with only a header
-          and terminator; unit composition asserts filenames rather than all contents.
-        sources:
-          - core/server/api/endpoints/exports.js
-          - core/server/api/endpoints/utils/serializers/output/exports.js
-          - core/server/api/endpoints/utils/serializers/output/stream-zip-response.ts
-          - core/server/api/endpoints/utils/serializers/output/stream-response.ts
-          - core/server/services/export-requests/export-requests-service.ts
-        tests:
-          - test/e2e-api/admin/exports-download.test.js
-          - test/unit/server/services/exports/site-exporter.test.ts
-      startup:
-        summary: >-
-          There is no boot hook. The Admin endpoint is normally loaded through lazy router/API
-          getters and creates archives only on download. Callbacks require initialized member,
-          theme, route and redirect APIs plus database/URL/settings dependencies; a failed
-          component is ordinarily skipped. The HTTP route requires db.exportContent permission
-          without a feature flag. Existing HTTP tests assert editor 403 and selected validation
-          422 responses; successful real boot does not establish calls
-          before dependency readiness, restart or partially initialized component recovery.
-        sources:
-          - core/server/api/endpoints/index.js
-          - core/server/api/endpoints/exports.js
-          - core/server/web/api/endpoints/admin/routes.js
-          - core/server/web/api/app.js
-          - core/shared/express.js
-          - core/server/services/exports/site-exporter.ts
-        tests:
-          - test/e2e-api/admin/exports.test.js
-          - test/e2e-api/admin/exports-download.test.js
-      lifetime:
-        summary: >-
-          Every archive has a distinct selected-component Set and cleanup array. Population
-          follows the synchronous list order, deduplicating selection; acquiring/appending a
-          stream does not wait for its bytes to drain before later components are acquired.
-          Archive close destroys acquired sources and launches cleanup without awaiting it.
-          A source acquired after destruction is destroyed immediately; late theme staging
-          runs its cleanup directly. Tests manually destroy archives and assert a fake source
-          is destroyed and staged files disappear, including delayed theme acquisition. They
-          do not establish physical database release or real socket disconnect/shutdown behavior.
-        sources:
-          - core/server/services/exports/site-exporter.ts
-          - core/server/api/endpoints/utils/serializers/output/stream-response.ts
-        tests:
-          - test/unit/server/services/exports/site-exporter.test.ts
-      configuration:
-        summary: >-
-          No config is read by SiteExporter itself. The API defaults absent selection to all
-          synchronous components and rejects explicit empty/unknown/media selections. Routes
-          selects both routes.yaml and redirects.yaml. Nested callbacks request limit:all and
-          restricted post-field handling; members and posts capture reference/settings data
-          before streaming, while content reads selected tables sequentially without a shared
-          export transaction. Theme names are read when reached, and lazy ThemeStorage retains
-          its configured path. Tests pin subset filenames, repeated query acceptance and at
-          least twenty analytics rows, not a coherent cross-component snapshot or every limit.
-        sources:
-          - core/server/services/exports/export-components.ts
-          - core/server/services/exports/site-exporter.ts
-          - core/server/api/endpoints/exports.js
-          - core/server/services/members/import-export/export/exporter.ts
-          - core/server/services/posts/posts-exporter.js
-          - core/server/data/exporter/exporter.js
-          - core/server/services/themes/storage.js
-          - core/server/services/themes/theme-storage.js
-        tests:
-          - test/unit/server/services/exports/site-exporter.test.ts
-          - test/e2e-api/admin/exports.test.js
-          - test/e2e-api/admin/exports-download.test.js
-      resources:
-        summary: >-
-          Each operation owns a zip/compression stream, acquired CSV sources and theme staging
-          cleanup callbacks; it borrows service/database/filesystem capabilities. Endpoint
-          pipelines connect row streams to CSV transforms and the archive to HTTP. Members
-          uses a database stream; posts uses a paged async generator. Content JSON is fully
-          buffered and themes stage sequentially as files. Installed theme compression creates a
-          file stream without an output-error handler and ignores its finalization promise;
-          promise rejection does not itself destroy those streams. No root registry/cancel/drain tracks
-          pending callbacks or cleanup. Unit stream errors/disconnects use local streams/files;
-          full HTTP buffers the result. No slow-reader, bounded-memory, real DB-release or
-          cleanup-failure assertion establishes complete resource safety.
-        sources:
-          - core/server/services/exports/site-exporter.ts
-          - core/server/api/endpoints/exports.js
-          - core/server/api/endpoints/utils/serializers/output/stream-response.ts
-          - core/server/services/members/import-export/export/exporter.ts
-          - core/server/services/posts/posts-exporter.js
-          - core/server/data/exporter/exporter.js
-          - core/server/services/themes/theme-storage.js
-        tests:
-          - test/unit/server/services/exports/site-exporter.test.ts
-          - test/e2e-api/admin/exports-download.test.js
-      failures:
-        summary: >-
-          Component acquisition failures log and skip; individual theme/YAML failures preserve
-          siblings. Source-stream errors destroy the whole archive; population/finalization
-          rejection also destroys it. Shared HTTP pipeline forwards stream errors to next.
-          Cleanup promise rejections are swallowed; theme staging failures reaching its promise
-          rejection cause the endpoint to await removal,
-          whose failure can replace the original error. Pending JSON/YAML callbacks are not
-          cancelled on close. Units assert selected skipped files and mid-stream rejection;
-          CSV serializer tests assert response error identity through the same shared helper.
-          They do not prove log/cleanup-failure behavior or all zip-specific HTTP error paths.
-        sources:
-          - core/server/services/exports/site-exporter.ts
-          - core/server/api/endpoints/exports.js
-          - core/server/api/endpoints/utils/serializers/output/stream-response.ts
-        tests:
-          - test/unit/server/services/exports/site-exporter.test.ts
-          - test/unit/api/canary/utils/serializers/output/posts-export-csv.test.ts
-          - test/unit/api/canary/utils/serializers/output/members-export-csv.test.ts
-    unverified: []
-    blockers:
-      - >-
-        Preserve class/deep-import/component compatibility while relocating, and cover repeated
-        or overlapping archives plus retained callback dependencies. Successful download/import
-        statuses are not full round-trip data equality or a dependency-readiness contract.
-      - >-
-        Add real HTTP disconnect/slow-reader coverage through archive, CSV transforms and database
-        sources; pin late source acquisition, pending content/YAML work, multiple theme cleanups
-        and cleanup/finalization errors. Current manual archive destruction proves selected local
-        cleanup only; close does not await cleanup or cancel every nested operation.
-      - >-
-        Characterize component acquisition/drain ordering, partial-export reporting and coherent
-        export expectations under concurrent writes/settings changes. Content buffering and
-        multiple active streams have no global size/concurrency bound; endpoint temp-directory
-        creation and cleanup failure need explicit ownership before moving composition. Nested
-        theme-compression output errors, early stat failure and ignored finalization rejection
-        need characterization; endpoint rejection handling does not cover every acquired stream.
-      - >-
-        Strengthen artifact assertions where needed: exact nonempty member rows, complete selected
-        contents, sensitive-setting fixture preconditions and restored data. Existing HTTP checks
-        protect useful headers/archives and acceptance, not every field or leak-prevention branch.
   gift-links:
     kind: directory
     disposition: retain
@@ -7026,7 +6845,7 @@ services:
           - core/server/services/members/jobs/clean-expired-comped-task.ts
           - core/server/services/jobs-service/jobs-service.ts
           - core/server/api/endpoints/utils/serializers/output/stream-response.ts
-          - core/server/services/exports/site-exporter.ts
+          - core/server/data/exporter/site-exporter.ts
           - core/server/lib/mail/ghost-mailer.js
           - package.json
         tests:
@@ -12187,7 +12006,7 @@ services:
           - core/server/api/endpoints/exports.js
           - core/server/web/api/endpoints/admin/routes.js
           - core/server/data/importer/importers/data/custom-theme-settings-importer.js
-          - core/server/services/exports/site-exporter.ts
+          - core/server/data/exporter/site-exporter.ts
           - core/server/web/api/middleware/upload.js
           - core/frontend/web/site.js
           - core/frontend/services/theme-engine/middleware/ensure-active-theme.js
@@ -12305,7 +12124,7 @@ services:
           - core/server/services/themes/installer.js
           - core/server/adapters/storage/LocalStorageBase.ts
           - core/server/api/endpoints/exports.js
-          - core/server/services/exports/site-exporter.ts
+          - core/server/data/exporter/site-exporter.ts
           - core/server/web/api/middleware/upload.js
           - core/bridge.js
           - core/frontend/services/theme-engine/engine.js
@@ -12313,7 +12132,7 @@ services:
           - core/frontend/services/theme-engine/i18next/theme-i18n.js
           - package.json
         tests:
-          - test/unit/server/services/exports/site-exporter.test.ts
+          - test/unit/server/data/exporter/site-exporter.test.ts
           - test/e2e-api/admin/themes.test.js
           - test/e2e-api/admin/exports-download.test.js
       failures:
