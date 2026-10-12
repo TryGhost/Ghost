@@ -161,6 +161,11 @@ jobs:
               - 'tools/scripts/test/check-agent-skill-links.test.js'
               - 'tools/scripts/check-agent-guidance.js'
               - 'tools/scripts/test/check-agent-guidance.test.js'
+            service-inventory:
+              - 'ghost/core/server/services/service-inventory.yaml'
+              - 'ghost/test/unit/server/services/service-inventory.test.ts'
+              - 'ghost/vitest.config.inventory.ts'
+              - '.github/workflows/ci.yml'
             package-standards:
               - 'packages/**'
               - 'package.json'
@@ -196,6 +201,7 @@ jobs:
               - '!**/*.mdx'
               # Migration metadata is documentation; boot never reads it.
               - '!ghost/core/server/services/service-inventory.yaml'
+              - '!ghost/vitest.config.inventory.ts'
             unit-test-globals:
               - 'vitest.config.mjs'
             core-unit-test-globals:
@@ -224,6 +230,7 @@ jobs:
               - '!.vscode/**'
               - '!ghost/test/**'
               - '!ghost/vitest.config.ts'
+              - '!ghost/vitest.config.inventory.ts'
               - '!koenig/*/test/**'
               - '!apps/admin/src/**/*.test.ts'
               - '!apps/admin/src/**/*.test.tsx'
@@ -360,6 +367,7 @@ jobs:
       changed_core: ${{ steps.changed.outputs.core }}
       changed_any_code: ${{ steps.changed.outputs.any-code }}
       changed_docs: ${{ steps.changed.outputs.docs }}
+      changed_service_inventory: ${{ steps.changed.outputs.service-inventory }}
       changed_package_standards: ${{ steps.changed.outputs.package-standards }}
       changed_tb_cli: ${{ steps.changed.outputs.tb-cli }}
       changed_tinybird_slim: ${{ steps.changed.outputs.tinybird-slim }}
@@ -514,6 +522,25 @@ jobs:
           node --test tools/scripts/test/check-agent-guidance.test.js
           node tools/scripts/check-agent-skill-links.js
           node tools/scripts/check-agent-guidance.js
+
+  job_service_inventory:
+    name: Validate service inventory
+    runs-on: ubuntu-slim
+    timeout-minutes: 10
+    needs: [job_setup]
+    if: needs.job_setup.outputs.changed_service_inventory == 'true'
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: ./.github/actions/setup-node-pnpm
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          trust-lockfile: 'true'
+          install-args: --filter ghost --ignore-scripts
+          store-cache: 'false'
+
+      - name: Validate service inventory
+        run: pnpm --filter ghost exec vitest run --config vitest.config.inventory.ts
 
   job_lint_packages:
     name: Lint packages
@@ -2596,6 +2623,7 @@ jobs:
         job_migration_integrity_check,
         job_lint,
         job_lint_docs,
+        job_service_inventory,
         job_lint_packages,
         job_stripe_fixtures,
         job_i18n,
