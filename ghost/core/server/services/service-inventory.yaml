@@ -4318,7 +4318,7 @@ services:
           - core/server/services/identity-tokens/identity-token-service-wrapper.js
           - core/server/services/identity-tokens/identity-token-service.ts
         tests:
-          - test/unit/server/services/identity-tokens/index.test.js
+          - test/unit/server/services/identity-tokens/index.test.ts
       construction:
         summary: >-
           The wrapper is the only production construction site found. First init captures the
@@ -4329,7 +4329,7 @@ services:
           - core/server/services/identity-tokens/identity-token-service-wrapper.js
           - core/server/services/signing-keys/signing-key-service.ts
         tests:
-          - test/unit/server/services/identity-tokens/index.test.js
+          - test/unit/server/services/identity-tokens/index.test.ts
       consumers:
         summary: >-
           Boot calls init. The authenticated identities endpoint reads the current instance
@@ -4346,7 +4346,7 @@ services:
           - core/server/services/activitypub/activity-pub-service.ts
         tests:
           - test/legacy/api/admin/identities.test.js
-          - test/unit/server/services/identity-tokens/index.test.js
+          - test/unit/server/services/identity-tokens/index.test.ts
       startup:
         summary: >-
           initCore awaits signing-key initialization before initServices awaits identity init
@@ -4359,7 +4359,7 @@ services:
           - core/server/api/endpoints/identities.js
           - core/server/services/activitypub/activity-pub-service-wrapper.js
         tests:
-          - test/unit/server/services/identity-tokens/index.test.js
+          - test/unit/server/services/identity-tokens/index.test.ts
       lifetime:
         summary: >-
           Normal repeated initialization retains one process-local instance, issuer and
@@ -4371,7 +4371,7 @@ services:
           - core/server/services/identity-tokens/identity-token-service.ts
           - core/server/services/signing-keys/signing-key-service.ts
         tests:
-          - test/unit/server/services/identity-tokens/index.test.js
+          - test/unit/server/services/identity-tokens/index.test.ts
       configuration:
         summary: >-
           The issuer URL is captured at construction; the retained provider supplies a key
@@ -4386,7 +4386,7 @@ services:
           - core/server/services/signing-keys/signing-key-service.ts
         tests:
           - test/unit/server/services/identity-tokens/identity-token-service.test.ts
-          - test/unit/server/services/identity-tokens/index.test.js
+          - test/unit/server/services/identity-tokens/index.test.ts
       resources:
         summary: >-
           This service stores only issuer and provider references; it acquires no timer,
@@ -4413,7 +4413,7 @@ services:
           - core/server/api/endpoints/identities.js
           - core/server/services/activitypub/activity-pub-service.ts
         tests:
-          - test/unit/server/services/identity-tokens/index.test.js
+          - test/unit/server/services/identity-tokens/index.test.ts
     unverified: []
     blockers:
       - >-
