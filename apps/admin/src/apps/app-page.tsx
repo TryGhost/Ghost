@@ -8,9 +8,10 @@ import {
   useReadAppInstallation,
 } from '@tryghost/admin-x-framework/api/app-installations';
 import { useBrowseSite } from '@tryghost/admin-x-framework/api/site';
-import { APIError, getErrorMessage } from '@tryghost/admin-x-framework/errors';
+import { APIError } from '@tryghost/admin-x-framework/errors';
 import { AppsGate } from './components/apps-gate';
 import { APP_FRAME_ALLOW, APP_FRAME_SANDBOX, appFrameTimeouts, isGhostOrigin } from './lib/frame';
+import { reportAppsError } from './lib/report-error';
 import { appReviewRoute } from './lib/routes';
 import { appPageUrl, servedFrom } from './lib/served-from';
 
@@ -171,16 +172,18 @@ const NotFramed: React.FC<{ installation: AppInstallation }> = ({ installation }
  */
 const ActiveApp: React.FC<{ installation: AppInstallation }> = ({ installation }) => {
   const { data: site, error, refetch } = useBrowseSite({ defaultErrorHandler: false });
+  useEffect(() => {
+    if (error) {
+      reportAppsError(error);
+    }
+  }, [error]);
   if (!site) {
     return (
       <Centered>
         {error ? (
           <Stack align="center" gap="md">
             <Text tone="secondary">
-              {getErrorMessage(
-                error,
-                'Couldn’t load the site’s address, which opening an app needs.',
-              )}
+              Couldn’t load the site’s address, which opening an app needs.
             </Text>
             <Button variant="outline" onClick={() => void refetch()}>
               Retry
@@ -245,25 +248,26 @@ export const AppPage: React.FC = () => {
     defaultErrorHandler: false,
   });
   const installation = data?.app_installations[0];
+  // Ghost returns 422, not 404, for a malformed id. Retrying won't help with either.
+  const notFound = error instanceof APIError && [404, 422].includes(error.response?.status ?? 0);
+  useEffect(() => {
+    if (error && !notFound) {
+      reportAppsError(error);
+    }
+  }, [error, notFound]);
 
   let body: React.ReactNode;
   if (installation?.status === 'active') {
     body = <ActiveApp installation={installation} />;
   } else if (installation?.status === 'suspended') {
     body = <NeedsApproval installation={installation} />;
-  } else if (
-    installation ||
-    // Ghost returns 422, not 404, for a malformed id. Retrying won't help with either.
-    (error instanceof APIError && [404, 422].includes(error.response?.status ?? 0))
-  ) {
+  } else if (installation || notFound) {
     body = <NotInstalled />;
   } else if (error) {
     body = (
       <Centered>
         <Stack align="center" gap="md">
-          <Text tone="secondary">
-            {getErrorMessage(error, 'Couldn’t load this app. Please try again.')}
-          </Text>
+          <Text tone="secondary">Couldn’t load this app. Please try again.</Text>
           <Button variant="outline" onClick={() => void refetch()}>
             Retry
           </Button>
