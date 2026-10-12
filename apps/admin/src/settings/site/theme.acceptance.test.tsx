@@ -1045,6 +1045,7 @@ describe('Theme settings', () => {
     await settingsScreen.theme().getByRole('button', { name: 'Change theme' }).click();
     await settingsScreen.themeModal().getByRole('tab', { name: 'Installed' }).click();
     await expect(settingsScreen.themeListItems()).toHaveCount(2);
+    await expect(installedTheme('edition')).toHaveCount(1);
   });
 
   it('confirms before discarding editor changes', async () => {
