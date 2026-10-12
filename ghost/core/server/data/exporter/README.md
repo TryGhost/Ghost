@@ -64,5 +64,17 @@ files does not constitute a new full contract audit. Still-open obligations are:
 - Strengthen artifact assertions: exact nonempty member rows, complete selected
   contents, sensitive-setting fixture preconditions and fully restored data.
 
-Run focused units from `ghost/` with `pnpm exec vitest run` and the file paths above.
-Run HTTP tests with `pnpm exec vitest run -c vitest.config.db.ts` and their paths.
+From `ghost/`, run the archive unit tests:
+
+```sh
+pnpm exec vitest run test/unit/server/data/exporter/site-exporter.test.ts
+```
+
+Run the HTTP tests from the same directory:
+
+```sh
+pnpm exec vitest run -c vitest.config.db.ts \
+  test/e2e-api/admin/exports-download.test.js \
+  test/e2e-api/admin/exports.test.js \
+  test/e2e-api/admin/exports-request.test.ts
+```
