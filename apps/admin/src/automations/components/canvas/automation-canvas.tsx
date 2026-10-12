@@ -30,12 +30,7 @@ import type {
 import { AutomationCanvasControls } from './controls';
 import { TAIL_CANVAS_ID, TRIGGER_CANVAS_ID } from './nodes';
 import { nodeTypes, toApiAnchor } from './node-helpers';
-import type {
-  AutomationFlowNode,
-  CanvasAnchor,
-  NodeContextMenuEntry,
-  StepNodeDisplayData,
-} from './nodes';
+import type { AutomationFlowNode, CanvasAnchor, NodeContextMenuEntry } from './nodes';
 import { Background, BackgroundVariant, ReactFlow } from '@xyflow/react';
 import type { Edge, NodeChange } from '@xyflow/react';
 import { cn, LucideIcon } from '@tryghost/shade/utils';
@@ -45,7 +40,6 @@ import { canvasBackground } from './canvas-background';
 import { AutomationSidebar } from './automation-sidebar';
 import { type StepPickerType } from './step-picker';
 import { EmailPerformanceSidebar } from './email-performance-sidebar';
-import { formatWait } from './format-wait';
 import { isEmptyEmailLexical } from '@/automations/utils';
 import { useBrowseConfig } from '@tryghost/admin-x-framework/api/config';
 import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
@@ -80,56 +74,22 @@ const edgeTypes = {
   'add-step-edge': AddStepEdge,
 };
 
-const buildActionData = (action: AutomationAction): StepNodeDisplayData => {
-  switch (action.type) {
-    case 'wait':
-      return { icon: LucideIcon.Clock, label: 'Wait', value: formatWait(action.data.wait_hours) };
-    case 'send_email':
-      return {
-        icon: LucideIcon.Mail,
-        isPlaceholderValue: !action.data.email_subject,
-        label: 'Send email',
-        stats: action.stats,
-        value: action.data.email_subject || 'Untitled',
-        warningMessage: isEmptyEmailLexical(action.data.email_lexical)
-          ? 'Empty email body'
-          : undefined,
-      };
-    default: {
-      const _exhaustive: never = action;
-      throw new Error(`Unknown automation action type: ${String(_exhaustive)}`);
-    }
-  }
-};
-
 const buildNodeContextMenuItems = ({
   canDelete = false,
-  canEditSettings = true,
   canEditEmailBody = false,
   onDelete,
   onEditEmailBody,
   onPreviewEmail,
-  onSelectStep,
   stepId,
 }: {
   canDelete?: boolean;
-  canEditSettings?: boolean;
   canEditEmailBody?: boolean;
   onDelete?: (deleteStepId: string) => void;
   onEditEmailBody?: (editEmailBodyStepId: string, mode?: EmailModalMode) => void;
   onPreviewEmail?: (previewEmailStepId: string) => void;
-  onSelectStep: (nextStepId: string) => void;
   stepId: string;
 }): NodeContextMenuEntry[] => {
-  const items: NodeContextMenuEntry[] = canEditSettings
-    ? [
-        {
-          icon: LucideIcon.Settings2,
-          label: 'Edit settings',
-          onSelect: () => onSelectStep(stepId),
-        },
-      ]
-    : [];
+  const items: NodeContextMenuEntry[] = [];
 
   if (canEditEmailBody && onEditEmailBody) {
     items.push({
@@ -264,12 +224,6 @@ const buildGraph = ({
   });
   const disabledReason = disabled ? DISABLED_REASON : undefined;
 
-  const lastActionId = ordered[ordered.length - 1]?.id;
-  const tailAnchor: CanvasAnchor = {
-    sourceId: lastActionId ?? TRIGGER_CANVAS_ID,
-    targetId: TAIL_CANVAS_ID,
-  };
-
   let cursorY = 0;
   const nodeWidth = EDITABLE_NODE_WIDTH;
   const nodeX = NODE_COLUMN_CENTER_X - nodeWidth / 2;
@@ -292,16 +246,6 @@ const buildGraph = ({
         },
         errorMessage: actionErrors[TRIGGER_CANVAS_ID],
         onInteract: () => onInteract(TRIGGER_CANVAS_ID),
-        contextMenuItems: buildNodeContextMenuItems({
-          onSelectStep,
-          stepId: TRIGGER_CANVAS_ID,
-        }),
-        icon: LucideIcon.Zap,
-        isNew: false,
-        label: 'Trigger',
-        value: 'Free member signed up',
-        selected: selectedStepId === TRIGGER_CANVAS_ID,
-        onSelect: () => onSelectStep(TRIGGER_CANVAS_ID),
       },
       ...nodeProps(TRIGGER_CANVAS_ID),
     },
@@ -310,7 +254,6 @@ const buildGraph = ({
     (nodeSizes[TRIGGER_CANVAS_ID]?.height ?? FIXED_TRIGGER_NODE_HEIGHT) + NODE_VISUAL_GAP_Y;
 
   ordered.forEach((action) => {
-    const displayData = buildActionData(action);
     const editableEmail = action.type === 'send_email';
     const editableWait = action.type === 'wait';
     const errorMessage = actionErrors[action.id];
@@ -322,7 +265,7 @@ const buildGraph = ({
       type: 'step',
       position: { x: nodeX, y: cursorY },
       data: {
-        ...displayData,
+        stats: action.type === 'send_email' ? action.stats : undefined,
         ...(editableEmail
           ? {
               email: {
@@ -350,20 +293,17 @@ const buildGraph = ({
             }
           : {}),
         contextMenuItems: buildNodeContextMenuItems({
-          canEditSettings: !editableWait && !editableEmail,
           canDelete: true,
           canEditEmailBody: action.type === 'send_email',
           onDelete,
           onEditEmailBody,
           onPreviewEmail: automation.id ? onPreviewEmail : undefined,
-          onSelectStep,
           stepId: action.id,
         }),
         errorMessage,
         isNew: newStepId === action.id,
         selected: selectedStepId === action.id,
         showStatsFooter,
-        onSelect: () => onSelectStep(action.id),
       },
       ...nodeProps(action.id),
     });
@@ -378,13 +318,7 @@ const buildGraph = ({
       x: nodeX,
       y: cursorY,
     },
-    data: {
-      disabled,
-      disabledReason,
-      onPick,
-      anchor: tailAnchor,
-      fixedExit: true,
-    },
+    data: {},
     ...nodeProps(TAIL_CANVAS_ID),
   });
   // Content bounds in flow coordinates, derived from node positions so the pan bound keeps
@@ -426,7 +360,8 @@ const buildGraph = ({
     target: TAIL_CANVAS_ID,
     type: 'add-step-edge',
     data: {
-      ...tailAnchor,
+      sourceId: ordered[ordered.length - 1]?.id ?? TRIGGER_CANVAS_ID,
+      targetId: TAIL_CANVAS_ID,
       disabled,
       disabledReason,
       onPick,
@@ -1025,7 +960,6 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
           />
         )}
       </Box>
-      {/* The redesigned editor exposes settings in its cards and performance in this panel. */}
       <Box className={isHistoryOpen ? 'hidden' : 'contents'}>
         {!isHistoryOpen && (
           <EmailPerformanceSidebar
