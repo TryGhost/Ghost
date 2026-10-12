@@ -381,17 +381,8 @@ const TagDetail: React.FC = () => {
   }
 
   const internalBadge = tag?.visibility === 'internal' && (
-    <Badge
-      className={
-        isAdmin7
-          ? 'leading-none tracking-wider'
-          : 'px-1 py-px text-[10px] leading-none tracking-wider'
-      }
-      data-testid="tag-detail-internal-badge"
-      size={isAdmin7 ? 'md' : 'default'}
-      variant="secondary"
-    >
-      {isAdmin7 ? 'Internal' : 'INTERNAL'}
+    <Badge data-testid="tag-detail-internal-badge" variant="secondary">
+      Internal
     </Badge>
   );
 
