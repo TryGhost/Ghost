@@ -12,7 +12,7 @@ import { AppInstallationsService } from './service';
 export type { RequestContext } from './actions';
 export { actingContext } from './actions';
 export type { AppInstallation } from './codec';
-export type { AppInstallationPreview } from './service';
+export type { AppInstallationPreview, AppSession } from './service';
 
 // Constructed by init() at boot, not at import: knex is only available once the DB has connected.
 export let service: AppInstallationsService | undefined;
