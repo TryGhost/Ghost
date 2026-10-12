@@ -971,6 +971,35 @@ describe('Theme settings', () => {
     replaceState.mockRestore();
   });
 
+  it('keeps a built-in theme activatable after its marketplace installation fails', async () => {
+    fakeThemeWorld();
+    const installApi = fakeAdminEndpoint(
+      'POST',
+      /^\/themes\/install\/\?/,
+      {
+        errors: [
+          { message: "Please rename your zip, it's not allowed to override the default theme." },
+        ],
+      },
+      { status: 422 },
+    );
+    await renderAdminApp('/settings/theme/install?source=github&ref=TryGhost/Casper');
+
+    const confirmModal = settingsScreen.confirmationModal();
+    await expect.element(confirmModal).toHaveTextContent(/overwrite your existing version/i);
+    await confirmModal.getByRole('button', { name: 'Install' }).click();
+    await expect.element(settingsScreen.errorToast()).toHaveTextContent(/override the default/i);
+    expect(installApi.requests).toHaveLength(1);
+    await confirmModal.getByRole('button', { name: 'Cancel' }).click();
+
+    const modal = settingsScreen.themeModal();
+    await modal.getByRole('button', { name: /Casper/ }).click();
+    await modal.getByRole('button', { name: 'Activate Casper' }).click();
+    await expect
+      .element(settingsScreen.confirmationModal())
+      .toHaveTextContent(/Do you want to activate Casper/);
+  });
+
   it('confirms before discarding editor changes', async () => {
     fakeThemeWorld();
     await fakeThemeDownload('edition');
