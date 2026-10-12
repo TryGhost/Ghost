@@ -1,7 +1,8 @@
-const assert = require('node:assert/strict');
-const MemoryTTLCache = require('../../../../../core/server/adapters/cache/AdapterCacheMemoryTTL');
+import assert from 'node:assert/strict';
+// @ts-expect-error This module lacks type definitions.
+import MemoryTTLCache from '../../../../../core/server/adapters/cache/AdapterCacheMemoryTTL';
 
-const sleep = (ms) =>
+const sleep = (ms: number): Promise<void> =>
   new Promise((resolve) => {
     setTimeout(resolve, ms);
   });
