@@ -1071,7 +1071,7 @@ describe('StripeAPI', function () {
       assert.equal(args.line_items[0].price_data.currency, 'usd');
       assert.equal(
         args.line_items[0].price_data.product_data.name,
-        'Gift subscription — Pro (1 year)',
+        'Gift subscription - Pro (1 year)',
       );
       assert.deepEqual(args.metadata, { ghost_gift_id: 'gift_123' });
       assert.deepEqual(mockStripe.checkout.sessions.create.firstCall.args[1], {
@@ -1112,7 +1112,7 @@ describe('StripeAPI', function () {
 
       assert.equal(
         args.line_items[0].price_data.product_data.name,
-        'Gift subscription — Basic (1 month)',
+        'Gift subscription - Basic (1 month)',
       );
     });
 
@@ -1132,7 +1132,7 @@ describe('StripeAPI', function () {
 
       assert.equal(
         args.line_items[0].price_data.product_data.name,
-        'Gift subscription — Pro (3 months)',
+        'Gift subscription - Pro (3 months)',
       );
     });
 

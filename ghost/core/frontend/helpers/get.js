@@ -101,7 +101,7 @@ function querySimplePath(obj, pathString) {
 
     if (!VALID_SEGMENT.test(part)) {
       throw new errors.IncorrectUsageError({
-        message: `{{#get}} helper \u2014 unsupported path segment "${part}" in "${pathString}"`,
+        message: `{{#get}} helper - unsupported path segment "${part}" in "${pathString}"`,
       });
     }
 

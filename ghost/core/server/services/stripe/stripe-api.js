@@ -981,7 +981,7 @@ module.exports = class StripeAPI {
             currency,
             unit_amount: amount,
             product_data: {
-              name: `${i18n.t('Gift subscription')} \u2014 ${tierName} (${cadenceLabel})`,
+              name: `${i18n.t('Gift subscription')} - ${tierName} (${cadenceLabel})`,
             },
           },
           quantity: 1,

@@ -156,7 +156,7 @@ module.exports = class MemberBREADService {
           amount = gift.amount;
         } else {
           logging.warn(
-            `No active gift found for gift member ${member.id} \u2014 falling back to default subscription price details.`,
+            `No active gift found for gift member ${member.id} - falling back to default subscription price details.`,
           );
         }
       }

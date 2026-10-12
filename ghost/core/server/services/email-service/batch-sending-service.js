@@ -314,7 +314,7 @@ class BatchSendingService {
           this.#sentry?.captureException(e);
         }
         logging.info(
-          `[Background Job] batch-sending-service-job send stopped because the container is shutting down \u2014 leaving email ${email.id} status=submitting so it can resume on next boot`,
+          `[Background Job] batch-sending-service-job send stopped because the container is shutting down - leaving email ${email.id} status=submitting so it can resume on next boot`,
         );
         return;
       }
@@ -1494,7 +1494,7 @@ class BatchSendingService {
     // An orphaned submitting batch has no recorded outcome. Preserve the existing
     // reconciliation path instead of claiming success or resubmitting it here.
     logging.error(
-      `Email batch ${batch.id} is stuck in status=${currentStatus} (orphan from a crashed worker); not re-sending \u2014 marking parent email as failed for operator review`,
+      `Email batch ${batch.id} is stuck in status=${currentStatus} (orphan from a crashed worker); not re-sending - marking parent email as failed for operator review`,
     );
     return false;
   }

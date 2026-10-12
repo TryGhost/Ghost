@@ -27,7 +27,7 @@ module.exports = createTransactionalMigration(
       );
     } else {
       logging.warn(
-        `Tried setting outbound_link_tagging to ${reuseValueOfSetting.value} \u2014 ${affectedRows} changes`,
+        `Tried setting outbound_link_tagging to ${reuseValueOfSetting.value} - ${affectedRows} changes`,
       );
     }
   },

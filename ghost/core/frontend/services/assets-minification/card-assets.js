@@ -70,7 +70,7 @@ module.exports = class CardAssets {
     throw new errors.InternalServerError({
       message: `Could not use the card asset manifest at ${this.manifestPath}`,
       context: reason,
-      help: 'Card assets ship with Ghost \u2014 reinstall, or run `pnpm build:assets` when running from source',
+      help: 'Card assets ship with Ghost - reinstall, or run `pnpm build:assets` when running from source',
     });
   }
 

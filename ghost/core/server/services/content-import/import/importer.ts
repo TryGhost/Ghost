@@ -49,7 +49,7 @@ type PrepareSource = (request: ImportRequest) => Promise<PreparedImportSource>;
 const messages = {
   unreadableFile: 'The file could not be parsed as a CSV file.',
   tooManyPosts:
-    'This file contains more than {max} posts. Imports are temporarily limited to {max} posts at a time \u2014 please split the file into smaller files and try again.',
+    'This file contains more than {max} posts. Imports are temporarily limited to {max} posts at a time - please split the file into smaller files and try again.',
   allWritesFailed: 'Content import failed to write all {count} attempted {postNoun}.',
   urlResolutionFailed: 'Content import could not resolve a URL for {count} imported {postNoun}.',
 };

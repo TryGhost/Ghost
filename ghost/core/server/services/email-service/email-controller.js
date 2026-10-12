@@ -11,7 +11,7 @@ const messages = {
   invalidMemberStatus: "member_status must be 'free' or 'paid'.",
   invalidMemberTier: 'member_tier must be a single tier slug.',
   invalidMemberSegment:
-    "memberSegment is deprecated and only accepts 'status:free' or 'status:-free' \u2014 use member_status instead.",
+    "memberSegment is deprecated and only accepts 'status:free' or 'status:-free' - use member_status instead.",
 };
 
 // deprecated memberSegment values older clients send, mapped onto the

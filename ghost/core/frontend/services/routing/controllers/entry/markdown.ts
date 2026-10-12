@@ -143,7 +143,7 @@ async function servePaidMarkdown(req: Request, res: EntryResponse, entry: Entry)
               llmsIndexUrl,
               notice: getGatedNotice(entry, resourceKind),
               cta: [
-                `Agents can purchase one-shot access to the full markdown for ${price} per request via MPP or x402 \u2014 see the WWW-Authenticate response header for payment terms.`,
+                `Agents can purchase one-shot access to the full markdown for ${price} per request via MPP or x402 - see the WWW-Authenticate response header for payment terms.`,
                 `Subscribe: ${urlUtils.urlFor({ relativeUrl: '/#/portal/signup' }, true)}`,
               ],
             });

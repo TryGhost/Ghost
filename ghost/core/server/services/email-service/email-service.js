@@ -277,7 +277,7 @@ class EmailService {
         );
         if (locked) {
           logging.warn(
-            `Email resume: ${email.id} created_at=${email.get('created_at') && new Date(email.get('created_at')).toISOString()} exceeds max age (${maxAgeMs}ms) \u2014 flipped to failed for operator review`,
+            `Email resume: ${email.id} created_at=${email.get('created_at') && new Date(email.get('created_at')).toISOString()} exceeds max age (${maxAgeMs}ms) - flipped to failed for operator review`,
           );
         }
       } catch (e) {
@@ -328,7 +328,7 @@ class EmailService {
       );
       if (locked) {
         logging.warn(
-          `Email resume: ${email.id} parent post status=${postStatus} is not sendable \u2014 marked email as failed`,
+          `Email resume: ${email.id} parent post status=${postStatus} is not sendable - marked email as failed`,
         );
       }
       return;
@@ -346,7 +346,7 @@ class EmailService {
       );
       if (!locked) {
         logging.info(
-          `Email resume: ${email.id} status changed before lock could be taken \u2014 skipping`,
+          `Email resume: ${email.id} status changed before lock could be taken - skipping`,
         );
         return;
       }

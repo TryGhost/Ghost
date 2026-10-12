@@ -48,7 +48,7 @@ export function renderText(data: GiftDeliveryEmailData, t: Translate): string {
         interpolation,
       });
   const message = data.personalMessage
-    ? `\n"${data.personalMessage}"\n\u2014 ${data.buyerName}\n`
+    ? `\n"${data.personalMessage}"\n- ${data.buyerName}\n`
     : '';
   const benefits = data.gift.benefits.length
     ? `\n${t("What's included:")}\n${data.gift.benefits.map((benefit) => `- ${benefit}`).join('\n')}\n`

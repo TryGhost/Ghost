@@ -1232,7 +1232,7 @@ class EmailRenderer {
         }
         return plaintext.substring(0, 500);
       } else {
-        return `${postModel.get('title')} \u2013 `;
+        return `${postModel.get('title')} - `;
       }
     }
   }
