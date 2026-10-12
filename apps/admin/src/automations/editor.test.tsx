@@ -1158,7 +1158,7 @@ describe('AutomationEditor', () => {
     },
   );
 
-  it('opens performance for an active automation when stats are configured', () => {
+  it('opens performance for an active automation when tinybird is configured', () => {
     mockUseReadAutomation.mockReturnValue({
       data: { automations: [automationDetail] },
       isLoading: false,
