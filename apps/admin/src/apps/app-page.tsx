@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Button, EmptyIndicator, LoadingIndicator } from '@tryghost/shade/components';
 import { Stack, Text } from '@tryghost/shade/primitives';
 import { LucideIcon } from '@tryghost/shade/utils';
@@ -6,6 +6,7 @@ import { Link, useNavigate, useParams } from '@tryghost/admin-x-framework';
 import {
   type AppInstallation,
   useReadAppInstallation,
+  useRefreshAppInstallation,
 } from '@tryghost/admin-x-framework/api/app-installations';
 import { useBrowseSite } from '@tryghost/admin-x-framework/api/site';
 import { APIError } from '@tryghost/admin-x-framework/errors';
@@ -239,15 +240,55 @@ const NotInstalled: React.FC = () => (
 );
 
 /**
- * `/apps/:installationId/*`. Only an active installation loads; the rest of the path is
- * left for the app's own pages, which the bridge will pass on (BER-3983).
+ * Has Ghost re-check the app's manifest once, when the page opens, before anything of the
+ * app is served (BER-4036). What it finds decides what the page shows: a silent change
+ * applies, a change that needs approval suspends the app. Ghost keeps the approved
+ * manifest when the app can't be reached, so a failed refresh falls back to what is read.
+ *
+ * TODO(BER-3983): a stand-in for the bridge's session start. Starting a session will call
+ * the refresh endpoint itself, pin the installation's revision it answers with, and end the
+ * session when the installation changes. When the bridge lands, this hook and `restart` go;
+ * the endpoint stays. Don't build on the hook.
+ */
+function useRefreshOnOpen(installationId: string): {
+  settled: boolean;
+  /** The installation as the refresh left it, when Ghost answered. */
+  refreshed?: AppInstallation;
+} {
+  const { mutateAsync: refresh } = useRefreshAppInstallation();
+  const [result, setResult] = useState<{ id: string; refreshed?: AppInstallation }>();
+  const started = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (!installationId || started.current === installationId) {
+      return;
+    }
+    started.current = installationId;
+    refresh(installationId)
+      .then((response) =>
+        setResult({ id: installationId, refreshed: response.app_installations[0] }),
+      )
+      .catch(() => setResult({ id: installationId }));
+  }, [installationId, refresh]);
+
+  return result?.id === installationId
+    ? { settled: true, refreshed: result.refreshed }
+    : { settled: false };
+}
+
+/**
+ * `/apps/:installationId/*`. Only an active installation loads, once its manifest has
+ * been re-checked; the rest of the path is left for the app's own pages, which the bridge
+ * will pass on (BER-3983).
  */
 export const AppPage: React.FC = () => {
   const { installationId = '' } = useParams();
+  const { settled, refreshed } = useRefreshOnOpen(installationId);
   const { data, error, isLoading, refetch } = useReadAppInstallation(installationId, {
     defaultErrorHandler: false,
   });
-  const installation = data?.app_installations[0];
+  // What the refresh found comes first: it is what Ghost will serve from now on.
+  const installation = refreshed ?? data?.app_installations[0];
   // Ghost returns 422, not 404, for a malformed id. Retrying won't help with either.
   const notFound = error instanceof APIError && [404, 422].includes(error.response?.status ?? 0);
   useEffect(() => {
@@ -257,7 +298,13 @@ export const AppPage: React.FC = () => {
   }, [error, notFound]);
 
   let body: React.ReactNode;
-  if (installation?.status === 'active') {
+  if (!settled && !notFound) {
+    body = (
+      <Centered>
+        <LoadingIndicator size="md" />
+      </Centered>
+    );
+  } else if (installation?.status === 'active') {
     body = <ActiveApp installation={installation} />;
   } else if (installation?.status === 'suspended') {
     body = <NeedsApproval installation={installation} />;
