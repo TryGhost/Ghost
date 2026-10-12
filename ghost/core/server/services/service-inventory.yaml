@@ -536,7 +536,8 @@ services:
       construction:
         summary: >-
           Boot calls synchronous init after database setup. It constructs one
-          AppInstallationsService from knex, the Action model and a manifest-rules getter;
+          AppInstallationsService from knex, the Action model and a manifest loader built
+          from the outbound request guard, a manifest-rules getter and the localhost alias;
           repeated init returns once the binding exists.
         sources:
           - core/server/services/app-installations/index.ts

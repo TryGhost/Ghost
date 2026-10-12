@@ -41,8 +41,6 @@ describe('App installations Admin API', function () {
   let owner: { actor: { id: string; type: 'user' } };
 
   const service = () => appInstallations.service!;
-  const install = (overrides: Record<string, unknown> = {}) =>
-    service().install(owner, { manifestUrl: MANIFEST_URL, manifest: manifest(overrides) });
   const MANIFEST_HOST = 'https://podcast.example.com';
   const MANIFEST_PATH = '/ghost-app.json';
   const serve = (body: unknown, url = MANIFEST_HOST + MANIFEST_PATH) => {
@@ -50,6 +48,17 @@ describe('App installations Admin API', function () {
     return nock(origin)
       .get(pathname)
       .reply(200, body as Record<string, unknown>);
+  };
+  /** Confirms an install of the app as served, with the digest the publisher reviewed. */
+  const installReviewed = (digest: string, overrides: Record<string, unknown> = {}) => {
+    serve(manifest(overrides));
+    return service().create(owner, { manifestUrl: MANIFEST_URL, digest });
+  };
+  /** Installs the app as a publisher would: previewed, then confirmed. */
+  const install = async (overrides: Record<string, unknown> = {}) => {
+    serve(manifest(overrides));
+    const { digest } = await service().preview(MANIFEST_URL);
+    return installReviewed(digest, overrides);
   };
   const preview = async (manifestUrl = MANIFEST_URL, status = 200) => {
     const { body } = await agent
@@ -120,51 +129,6 @@ describe('App installations Admin API', function () {
       assert.equal(installed.revision, 0);
     });
 
-    it('refuses a manifest that is not valid, and stores nothing', async function () {
-      await assert.rejects(install({ id: 'Podcast', allowed_origins: [] }), (err: any) => {
-        assert.equal(err.errorType, 'ValidationError');
-        assert.match(err.context, /id: /);
-        return true;
-      });
-      assert.equal((await service().browse()).length, 0);
-      assert.equal((await actions()).length, 0);
-    });
-
-    it('refuses an app served from the site itself', async function () {
-      const siteUrl = configUtils.config.get('url');
-      await assert.rejects(
-        install({ surfaces: [{ type: 'admin_page', url: `${siteUrl}/content/files/app.html` }] }),
-        { errorType: 'ValidationError' },
-      );
-    });
-
-    it('stores the manifest URL as it was checked, not as it was given', async function () {
-      const installation = await service().install(owner, {
-        manifestUrl: ' https://Podcast.Example.com/ghost-app.json\n',
-        manifest: manifest(),
-      });
-
-      assert.equal(installation.manifest_url, MANIFEST_URL);
-      const [stored] = await manifestRows();
-      assert.equal(stored.manifest_url, MANIFEST_URL);
-    });
-
-    it('keeps the manifest URL without its fragment, which no fetch ever sends', async function () {
-      const installation = await service().install(owner, {
-        manifestUrl: `${MANIFEST_URL}#v2`,
-        manifest: manifest(),
-      });
-
-      assert.equal(installation.manifest_url, MANIFEST_URL);
-    });
-
-    it('refuses a manifest URL longer than it can store', async function () {
-      const manifestUrl = `https://podcast.example.com/${'a'.repeat(2000)}`;
-      await assert.rejects(service().install(owner, { manifestUrl, manifest: manifest() }), {
-        errorType: 'ValidationError',
-      });
-    });
-
     it('refuses a second installation of an app that is already installed', async function () {
       await install();
       await assert.rejects(install(), { errorType: 'ConflictError' });
@@ -186,7 +150,14 @@ describe('App installations Admin API', function () {
     });
 
     it('lets only one of three simultaneous confirmations install the app', async function () {
-      const results = await Promise.allSettled([install(), install(), install()]);
+      serve(manifest());
+      const { digest } = await service().preview(MANIFEST_URL);
+
+      const results = await Promise.allSettled([
+        installReviewed(digest),
+        installReviewed(digest),
+        installReviewed(digest),
+      ]);
 
       assert.equal(results.filter((result) => result.status === 'fulfilled').length, 1);
       for (const result of results) {
@@ -341,6 +312,20 @@ describe('App installations Admin API', function () {
       assert.deepEqual(
         error.details.map(({ path }: { path: string }) => path),
         ['id'],
+      );
+    });
+
+    it('refuses an app served from the site itself', async function () {
+      const siteUrl = configUtils.config.get('url');
+      serve(
+        manifest({ surfaces: [{ type: 'admin_page', url: `${siteUrl}/content/files/app.html` }] }),
+      );
+
+      const error = await preview(MANIFEST_URL, 422);
+      assert.equal(error.code, 'APP_MANIFEST_INVALID');
+      assert.deepEqual(
+        error.details.map(({ path }: { path: string }) => path),
+        ['surfaces[0].url'],
       );
     });
   });

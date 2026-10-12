@@ -1,15 +1,8 @@
-import { createHash } from 'node:crypto';
 import errors from '@tryghost/errors';
 import ObjectId from 'bson-objectid';
 import type { Knex } from 'knex';
 import { z } from 'zod';
-import {
-  compareManifests,
-  parseManifest,
-  parseManifestUrl,
-  type AppManifest,
-  type ParseManifestOptions,
-} from '@tryghost/app-contracts/manifest';
+import { compareManifests, type AppManifest } from '@tryghost/app-contracts/manifest';
 import { DbDate, toDatabaseDate } from '../../lib/db-types/date';
 import type { RecordAppInstallationAction, RequestContext } from './actions';
 import {
@@ -19,9 +12,9 @@ import {
   type AppInstallation,
   type CurrentInstallation,
 } from './codec';
-import type { FetchManifest } from './fetch-manifest';
 import { buildHistory, approvalManifestIds, type HistoryAction } from './history';
-import { DbAppInstallationManifest, StoredManifest, type AppInstallationStatus } from './schema';
+import type { LoadedManifest, LoadManifest } from './load-manifest';
+import { DbAppInstallationManifest, type AppInstallationStatus } from './schema';
 
 const INSTALLATIONS = 'app_installations';
 const MANIFESTS = 'app_installation_manifests';
@@ -89,32 +82,6 @@ export interface AppInstallationPreview {
   } | null;
 }
 
-/** A manifest Ghost has fetched and validated, ready to store. */
-interface LoadedManifest {
-  manifestUrl: string;
-  manifest: AppManifest;
-  serialised: string;
-  /** Stored with the manifest, and what a publisher confirms. */
-  digest: string;
-}
-
-/**
- * The digest of a manifest together with the address it is read from: stored with the
- * manifest, and sent back when a publisher confirms what they reviewed.
- *
- * The address is part of it because two addresses can serve the same manifest once every
- * URL in it is absolute. Before #31466 the confirmed digest covered the manifest alone,
- * so a review of one address could confirm another serving the same bytes, and that
- * other address would then decide every future update.
- *
- * The same manifest always serialises the same way, as encoding builds it in the schema's
- * key order. The newline between the two cannot be mistaken for part of either: the URL
- * parser strips newlines from an address, and the encoded JSON has none.
- */
-function digestOf(manifestUrl: string, serialisedManifest: string): string {
-  return createHash('sha256').update(`${manifestUrl}\n${serialisedManifest}`).digest('hex');
-}
-
 /** The installation has ended, so there is nothing left to approve for it. */
 function uninstalled() {
   return new errors.ConflictError({
@@ -138,30 +105,23 @@ function isUniqueViolation(err: unknown): boolean {
   );
 }
 
-/** What the manifest is checked against: where Ghost is served from, and in which mode. */
-export type ManifestRules = Omit<ParseManifestOptions, 'manifestUrl'>;
-
 export class AppInstallationsService {
   private knex: Knex;
   private recordAction: RecordAppInstallationAction;
-  private getManifestRules: () => ManifestRules;
-  private fetchManifest: FetchManifest;
+  private loadManifest: LoadManifest;
 
   constructor({
     knex,
     recordAction,
-    getManifestRules,
-    fetchManifest,
+    loadManifest,
   }: {
     knex: Knex;
     recordAction: RecordAppInstallationAction;
-    getManifestRules: () => ManifestRules;
-    fetchManifest: FetchManifest;
+    loadManifest: LoadManifest;
   }) {
     this.knex = knex;
     this.recordAction = recordAction;
-    this.getManifestRules = getManifestRules;
-    this.fetchManifest = fetchManifest;
+    this.loadManifest = loadManifest;
   }
 
   /** Installations with the approved manifest each one runs. */
@@ -264,59 +224,6 @@ export class AppInstallationsService {
     return contents;
   }
 
-  /**
-   * Checks the address a manifest is read from before anything is fetched from it, so
-   * Ghost never requests an address it would refuse, and what it stores obeys the same
-   * rules as the URLs inside a manifest, the length the column allows included.
-   *
-   * Returns the address to keep: that is what gets stored, and what a later manifest is
-   * compared with.
-   */
-  private parseManifestUrl(manifestUrl: string): string {
-    const parsed = parseManifestUrl(manifestUrl, this.getManifestRules().allowLocalhost);
-    if (!parsed.success) {
-      throw new errors.ValidationError({
-        message: 'The app manifest URL is not valid.',
-        code: 'APP_MANIFEST_URL_INVALID',
-        context: parsed.error,
-      });
-    }
-    return parsed.manifestUrl;
-  }
-
-  /**
-   * Validates a manifest and resolves its URLs against `baseUrl`, where it was read from.
-   * `manifestUrl` is what gets stored: the address the install link pointed at, already
-   * checked, which later checks fetch again.
-   */
-  private load(manifestUrl: string, body: unknown, baseUrl = manifestUrl): LoadedManifest {
-    const parsed = parseManifest(body, { manifestUrl: baseUrl, ...this.getManifestRules() });
-    if (!parsed.success) {
-      throw new errors.ValidationError({
-        message: 'The app manifest is not valid.',
-        code: 'APP_MANIFEST_INVALID',
-        context: parsed.errors
-          .map(({ path, message }) => (path ? `${path}: ${message}` : message))
-          .join('; '),
-        // The same problems one by one, so Admin can list them for the app's developer.
-        errorDetails: parsed.errors,
-      });
-    }
-    const serialised = z.encode(StoredManifest, parsed.manifest);
-    return {
-      manifestUrl,
-      manifest: parsed.manifest,
-      serialised,
-      digest: digestOf(manifestUrl, serialised),
-    };
-  }
-
-  private async fetchAndLoad(manifestUrl: string): Promise<LoadedManifest> {
-    const checked = this.parseManifestUrl(manifestUrl);
-    const fetched = await this.fetchManifest(checked);
-    return this.load(checked, fetched.body, fetched.url);
-  }
-
   private async currentInstallation(
     appId: string,
     db: Knex | Knex.Transaction = this.knex,
@@ -370,7 +277,7 @@ export class AppInstallationsService {
 
   /** Fetches and checks an app's manifest, for the publisher to review. Stores nothing. */
   async preview(manifestUrl: string): Promise<AppInstallationPreview> {
-    return this.previewOf(await this.fetchAndLoad(manifestUrl));
+    return this.previewOf(await this.loadManifest(manifestUrl));
   }
 
   /**
@@ -379,7 +286,7 @@ export class AppInstallationsService {
    * review the new version instead.
    */
   private async fetchReviewed(manifestUrl: string, digest: string): Promise<LoadedManifest> {
-    const loaded = await this.fetchAndLoad(manifestUrl);
+    const loaded = await this.loadManifest(manifestUrl);
     if (loaded.digest !== digest) {
       throw new errors.ConflictError({
         message: 'The app changed while it was being reviewed.',
@@ -396,17 +303,6 @@ export class AppInstallationsService {
     { manifestUrl, digest }: { manifestUrl: string; digest: string },
   ): Promise<AppInstallation> {
     return this.insert(context, await this.fetchReviewed(manifestUrl, digest));
-  }
-
-  /**
-   * Installs an app from a manifest that has already been fetched, without a review. Only
-   * for code and the REPL: anything a publisher confirms goes through `create`.
-   */
-  async install(
-    context: RequestContext,
-    { manifestUrl, manifest }: { manifestUrl: string; manifest: unknown },
-  ): Promise<AppInstallation> {
-    return this.insert(context, this.load(this.parseManifestUrl(manifestUrl), manifest));
   }
 
   /**

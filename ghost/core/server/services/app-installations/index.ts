@@ -6,7 +6,7 @@ import {
   shouldCreateInDevelopmentTables,
 } from '../../data/schema/in-development';
 import { recordAppInstallationAction, type RecordAppInstallationAction } from './actions';
-import { createManifestFetcher } from './fetch-manifest';
+import { createManifestLoader } from './load-manifest';
 import { AppInstallationsService } from './service';
 
 export type { RequestContext } from './actions';
@@ -46,13 +46,13 @@ export function init(): void {
   service = new AppInstallationsService({
     knex,
     recordAction,
-    // Read per install, not once at boot: both are config, which tests change.
-    getManifestRules: () => ({
-      ghostUrls: [urlUtils.urlFor('home', true), urlUtils.urlFor('admin', true)],
-      allowLocalhost: config.get('env') === 'development',
-    }),
-    fetchManifest: createManifestFetcher({
+    loadManifest: createManifestLoader({
       request: externalRequest,
+      // Read per load, not once at boot: both are config, which tests change.
+      getManifestRules: () => ({
+        ghostUrls: [urlUtils.urlFor('home', true), urlUtils.urlFor('admin', true)],
+        allowLocalhost: config.get('env') === 'development',
+      }),
       getLocalhostAlias: localhostAlias,
     }),
   });
