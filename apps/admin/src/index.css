@@ -6,6 +6,7 @@
 @import './element-styles.css';
 @import '@tryghost/shade/styles.css';
 @import './assets/fonts/inter-admin/fonts.css';
+@import './assets/fonts/geist-mono/fonts.css';
 @import './pintura.css';
 
 /* Document root. Shade's spacing and type tokens assume a 10px rem. */
@@ -196,6 +197,40 @@ body {
 
 @theme inline {
   --color-editor-placeholder: var(--editor-placeholder);
+}
+
+/* The writer's editor font (admin7EditorImprovements), set as `data-editor-font`
+   on the editor. Koenig reads the --kg-font-* variables for the body and its
+   headings; the title and excerpt read the --editor-display-* ones. Serif sets
+   nothing, so the editor keeps its own typography. Sans sets the body in Inter;
+   mono sets everything the writer writes in Geist Mono, which is wider, so it
+   steps the sizes down and drops the negative tracking the display sizes use. */
+@theme inline {
+  --font-editor-serif: Georgia, Times, serif;
+  --font-editor-sans: var(--font-sans);
+  --font-editor-mono:
+    'Geist Mono Admin', ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace;
+}
+
+[data-editor-font='sans'] {
+  --kg-font-body: var(--font-editor-sans);
+  --kg-font-body-scale: 0.925;
+  --kg-font-body-line-height: 1.65em;
+  --kg-font-body-tracking: -0.011em;
+}
+
+[data-editor-font='mono'] {
+  --kg-font-body: var(--font-editor-mono);
+  --kg-font-body-scale: 0.85;
+  --kg-font-body-line-height: 1.75em;
+  --kg-font-body-tracking: -0.01em;
+  --kg-font-heading: var(--font-editor-mono);
+  --kg-font-heading-scale: 0.85;
+  --kg-font-heading-tracking-scale: 0;
+  --editor-display-font: var(--font-editor-mono);
+  --editor-title-scale: 0.85;
+  --editor-excerpt-scale: 0.9;
+  --editor-display-tracking-scale: 0;
 }
 
 /* Shared Koenig wrappers must retain their layout without Ember styles. */

@@ -32,13 +32,14 @@ function writingFocusOf(control: Locator) {
   return control.element().closest('[data-writing-focus]')?.getAttribute('data-writing-focus');
 }
 
-function chrome() {
+/** The footer's font picker takes the help link's place under the flag. */
+function chrome({ flag = true }: { flag?: boolean } = {}) {
   return [
     editorScreen.backLink('post'),
     editorScreen.publishButton(),
     editorScreen.settingsToggle(),
     editorScreen.wordCount(),
-    editorScreen.helpLink(),
+    flag ? editorScreen.fontToggle() : editorScreen.helpLink(),
     editorScreen.featureImageInput(),
   ];
 }
@@ -109,7 +110,7 @@ describe('Writing focus (admin7EditorImprovements)', () => {
     await userEvent.keyboard('More');
 
     await expect.element(editorScreen.body()).toHaveTextContent(/More/);
-    for (const control of chrome()) {
+    for (const control of chrome({ flag: false })) {
       expect(writingFocusOf(control)).toBeUndefined();
     }
   });

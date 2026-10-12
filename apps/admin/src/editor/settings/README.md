@@ -449,6 +449,14 @@ list styles cannot indent or truncate the labels. Shade's `KbdGroup` only
 lays out the individual `Kbd` caps; it does not draw another cap around them.
 The caps use `variant="contrast"` to stand out against the sidebar background.
 
+## Using the editor
+
+Under `admin7EditorImprovements`, a row after Keyboard shortcuts links to
+Ghost's guide to the editor, which the editor's footer linked to before the font
+picker took its place. Unlike the rows around it, it opens no pane: it opens the
+guide in a new tab, and ends in an outward arrow instead of a chevron to say so.
+Every role sees it.
+
 ## Delete
 
 Deleting is the one thing in the panel that does not go through the session: it

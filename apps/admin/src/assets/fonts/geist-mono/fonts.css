@@ -1,0 +1,18 @@
+/* Unmodified Geist Mono v1.7.2 variable fonts, under the SIL Open Font License
+   in OFL.txt. A browser fetches them only once text is set in them. */
+
+@font-face {
+  font-family: 'Geist Mono Admin';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url('./GeistMono-Variable.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Geist Mono Admin';
+  font-style: italic;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url('./GeistMono-Variable-Italic.woff2') format('woff2');
+}
