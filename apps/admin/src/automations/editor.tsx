@@ -31,6 +31,7 @@ import { dequal } from 'dequal';
 import { isEmptyEmailLexical } from './utils';
 import { toast } from 'sonner';
 import { useNavigate, useParams } from '@tryghost/admin-x-framework';
+import { navigateTo } from '@/utils/navigation';
 import { useUnsavedChangesGuard } from '@/hooks/use-unsaved-changes-guard';
 import type { AutomationEditState } from './types';
 import { isAutomationStatusActive } from './utils/is-automation-status-active';
@@ -576,7 +577,9 @@ const AutomationEditorContent: React.FC<{
             limitError.data?.errors[0]?.message ||
             limitError.message
           }
-          onOk={() => navigate(upgradeRoute(configData?.config), { crossApp: true })}
+          onOk={() => {
+            navigateTo(upgradeRoute(configData?.config));
+          }}
           onRemove={() => setLimitError(null)}
         />
       )}
