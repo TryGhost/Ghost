@@ -226,10 +226,11 @@ the user's preferences, so it follows the writer between browsers. A failed save
 keeps the choice for the visit and says so. A writer who never chose reads
 serif, and so does everyone with the flag off, whatever they saved.
 
-With the flag or without, the editor lets Inter choose its optical size: Admin pins
-Inter to its text design, while the editor sets the body in that design and the
-title and headings in the finer display one (`editor-optical-sizing` in
-`index.css`).
+With the flag or without, the editor lets Inter choose its optical size wherever
+it sets text in Inter: the title, the excerpt and headings always, and the body
+in sans. Admin pins Inter to its text design; in the editor, text at body size
+keeps that design and the title and headings take the finer display one
+(`editor-optical-sizing` in `index.css`).
 
 The font is set on the editor as `data-editor-font`. `index.css` maps each value
 to Koenig's content font variables (see the koenig-lexical README) and to the
