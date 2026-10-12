@@ -24,7 +24,19 @@ export { useKoenigFileUpload, koenigFileUploadTypes } from './hooks/use-koenig-f
 export { useKoenigFetchEmbed } from './hooks/use-koenig-fetch-embed';
 export { useKoenigLinkSuggestions } from './hooks/use-koenig-link-suggestions';
 export { useFeaturebase } from './hooks/use-featurebase';
-export { useDocsBot } from './hooks/use-docsbot';
+export {
+  useDocsBot,
+  formatDocsBotHistory,
+  normalizeDocsBotHistory,
+  normalizeDocsBotMetadata,
+  normalizeDocsBotTicket,
+} from './hooks/use-docsbot';
+export type {
+  DocsBotHistoryEntry,
+  DocsBotMetadata,
+  DocsBotSupportRequest,
+  DocsBotSupportTicket,
+} from './hooks/use-docsbot';
 
 // API status
 export { onUpgradeStatus } from './utils/api/upgrade-status';
