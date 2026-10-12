@@ -26,14 +26,6 @@ export function getAliasDisplayHandle(actorUri: string) {
     return actorUri;
   }
 }
-
-/** Only returns a value when the actor URI looks like a Mastodon-style handle we can put in the field. */
-export function getPrefillableHandle(actorUri: string) {
-  const display = getAliasDisplayHandle(actorUri);
-
-  return HANDLE_REGEX.test(display) ? display : null;
-}
-
 export function getAliasErrorMessage(error: unknown) {
   if (isApiError(error)) {
     if (error.statusCode === 400) {

@@ -9,9 +9,11 @@ const mocks = vi.hoisted(() => ({
     isLoading: false,
   },
   migration: {
-    data: { targetApId: null as string | null, sent: false } as
-      | { targetApId: string | null; sent: boolean }
-      | undefined,
+    data: {
+      targetApId: null as string | null,
+      targetHandle: null as string | null,
+      sent: false,
+    } as { targetApId: string | null; targetHandle: string | null; sent: boolean } | undefined,
     isError: false,
     isLoading: false,
     error: null as unknown,
@@ -45,7 +47,7 @@ beforeEach(() => {
     isLoading: false,
   };
   mocks.migration = {
-    data: { targetApId: null, sent: false },
+    data: { targetApId: null, targetHandle: null, sent: false },
     isError: false,
     isLoading: false,
     error: null,
@@ -162,6 +164,7 @@ describe('outbound account migration', () => {
     mocks.move.isPending = true;
     mocks.migration.data = {
       targetApId: 'https://elsewhere.example/users/new',
+      targetHandle: '@new@elsewhere.example',
       sent: false,
     };
     render(<AccountMigration />);
@@ -208,35 +211,39 @@ describe('outbound account migration', () => {
     expect(mocks.move.mutateAsync).not.toHaveBeenCalled();
   });
 
-  it('prefills a pending Mastodon-style destination and shows only status after sending', () => {
+  it('prefills a pending destination with its stored handle and shows only status after sending', () => {
+    // Misskey actor URLs hold an internal ID rather than the username
     mocks.migration.data = {
-      targetApId: 'https://elsewhere.example/users/new',
+      targetApId: 'https://misskey.io/users/9h5x0a1b2c',
+      targetHandle: '@new@misskey.io',
       sent: false,
     };
     const { rerender } = render(<AccountMigration />);
     goToExport();
     expect(screen.getByRole('status').textContent).toContain(
-      'A move to new@elsewhere.example is still in progress',
+      'A move to @new@misskey.io is still in progress',
     );
     expect((screen.getByLabelText('New account handle') as HTMLInputElement).value).toBe(
-      'new@elsewhere.example',
+      '@new@misskey.io',
     );
     mocks.migration.data = {
-      targetApId: 'https://elsewhere.example/users/new',
+      targetApId: 'https://misskey.io/users/9h5x0a1b2c',
+      targetHandle: '@new@misskey.io',
       sent: true,
     };
     rerender(<AccountMigration />);
     goToExport();
     expect(screen.getByRole('status').textContent).toContain(
-      'Your followers were asked to follow new@elsewhere.example',
+      'Your followers were asked to follow @new@misskey.io',
     );
     expect(screen.queryByText(/as an alias on your new social web profile first/)).toBeNull();
     expect(screen.queryByLabelText('New account handle')).toBeNull();
   });
 
-  it('does not prefill or show a non-Mastodon actor URI as a handle', () => {
+  it('does not guess a handle from the actor URL when none was stored', () => {
     mocks.migration.data = {
-      targetApId: 'https://ghost.example/.ghost/activitypub/users/index',
+      targetApId: 'https://elsewhere.example/users/new',
+      targetHandle: null,
       sent: false,
     };
     render(<AccountMigration />);
@@ -244,7 +251,6 @@ describe('outbound account migration', () => {
     expect(screen.getByRole('status').textContent).toContain(
       'A move is still in progress. Enter the destination handle and try sending it again.',
     );
-    expect(screen.getByRole('status').textContent).not.toContain('/.ghost/activitypub/users/');
     expect((screen.getByLabelText('New account handle') as HTMLInputElement).value).toBe('');
   });
 

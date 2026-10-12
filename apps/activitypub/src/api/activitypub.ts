@@ -118,6 +118,7 @@ export interface AccountAliasesResponse {
 const accountMigrationStatusSchema = z
   .object({
     targetApId: z.url().nullable(),
+    targetHandle: z.string().nullable().default(null),
     sent: z.boolean(),
   })
   .refine((status) => !status.sent || status.targetApId !== null, {

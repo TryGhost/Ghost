@@ -2104,6 +2104,7 @@ describe('ActivityPubAPI', function () {
       { targetApId: null, sent: 'false' },
       { targetApId: 42, sent: false },
       { targetApId: 'invalid-url', sent: false },
+      { targetApId: null, targetHandle: 42, sent: false },
       { targetApId: null, sent: true },
     ])('It rejects malformed migration responses for GET and POST: %j', async (response) => {
       const fakeFetch = Fetch({
@@ -2135,7 +2136,12 @@ describe('ActivityPubAPI', function () {
         'index',
         fakeFetch,
       );
-      await expect(api.getAccountMigration()).resolves.toEqual({ targetApId: null, sent: false });
+      // A service that predates targetHandle leaves it out
+      await expect(api.getAccountMigration()).resolves.toEqual({
+        targetApId: null,
+        targetHandle: null,
+        sent: false,
+      });
     });
 
     test('It sends an outbound account migration', async function () {
@@ -2150,6 +2156,7 @@ describe('ActivityPubAPI', function () {
           },
           response: JSONResponse({
             targetApId: 'https://mastodon.social/users/new',
+            targetHandle: '@new@mastodon.social',
             sent: true,
           }),
         },
@@ -2163,6 +2170,7 @@ describe('ActivityPubAPI', function () {
       );
       expect(await api.moveAccount('@new@mastodon.social')).toEqual({
         targetApId: 'https://mastodon.social/users/new',
+        targetHandle: '@new@mastodon.social',
         sent: true,
       });
     });

@@ -17,13 +17,7 @@ import {
   LoadingIndicator,
   Skeleton,
 } from '@tryghost/shade/components';
-import {
-  HANDLE_REGEX,
-  getMoveErrorMessage,
-  getPrefillableHandle,
-  handlesEqual,
-  normalizeHandle,
-} from './utils';
+import { HANDLE_REGEX, getMoveErrorMessage, handlesEqual, normalizeHandle } from './utils';
 import { LucideIcon } from '@tryghost/shade/utils';
 import {
   useAccountForUser,
@@ -46,24 +40,17 @@ const ExportAccount: React.FC = () => {
   const [moveError, setMoveError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const ownHandle = account?.handle?.trim() || '';
-  const destinationHandle = migration?.targetApId
-    ? getPrefillableHandle(migration.targetApId)
-    : null;
+  const destinationHandle = migration?.targetHandle ?? null;
   const normalizedDestination = normalizeHandle(targetHandle);
   const showDestinationForm = exportFormReady || Boolean(migration?.targetApId);
 
   useEffect(() => {
-    if (!migration?.targetApId) {
+    if (!destinationHandle) {
       return;
     }
 
-    const prefill = getPrefillableHandle(migration.targetApId);
-    if (!prefill) {
-      return;
-    }
-
-    setTargetHandle((current) => current || prefill);
-  }, [migration?.targetApId]);
+    setTargetHandle((current) => current || destinationHandle);
+  }, [destinationHandle]);
 
   const handleCopy = async () => {
     if (!ownHandle) {
