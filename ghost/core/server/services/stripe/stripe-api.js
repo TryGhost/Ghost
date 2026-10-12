@@ -696,13 +696,13 @@ module.exports = class StripeAPI {
    * @returns {import('stripe').Stripe.Event}
    */
   parseWebhook(body, signature, secret) {
-    debug(`parseWebhook(${body}, ${signature}, ${secret})`);
+    debug(`parseWebhook(${body}, ${signature}, ***)`);
     try {
       const event = this._stripe.webhooks.constructEvent(body, signature, secret);
-      debug(`parseWebhook(${body}, ${signature}, ${secret}) -> Success ${event.type}`);
+      debug(`parseWebhook(${body}, ${signature}, ***) -> Success ${event.type}`);
       return event;
     } catch (err) {
-      debug(`parseWebhook(${body}, ${signature}, ${secret}) -> ${err.type}`);
+      debug(`parseWebhook(${body}, ${signature}, ***) -> ${err.type}`);
       throw err;
     }
   }
