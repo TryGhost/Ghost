@@ -4317,7 +4317,8 @@ services:
           - core/server/services/identity-tokens/index.js
           - core/server/services/identity-tokens/identity-token-service-wrapper.js
           - core/server/services/identity-tokens/identity-token-service.ts
-        tests: []
+        tests:
+          - test/unit/server/services/identity-tokens/index.test.ts
       construction:
         summary: >-
           The wrapper is the only production construction site found. First init captures the
@@ -4327,7 +4328,8 @@ services:
         sources:
           - core/server/services/identity-tokens/identity-token-service-wrapper.js
           - core/server/services/signing-keys/signing-key-service.ts
-        tests: []
+        tests:
+          - test/unit/server/services/identity-tokens/index.test.ts
       consumers:
         summary: >-
           Boot calls init. The authenticated identities endpoint reads the current instance
@@ -4336,6 +4338,8 @@ services:
           its initialization and uses it to sign an Owner token for remote configuration.
           Existing API tests verify Owner/Administrator JWTs through HTTP JWKS and reject an
           Editor; they do not cover wrapper replacement or ActivityPub's real token connection.
+          Root tests cover successful role loading through the identities controller; the
+          failed-role fallback and ActivityPub's dependency hand-off are source evidence.
         sources:
           - core/boot.js
           - core/server/api/endpoints/identities.js
@@ -4344,41 +4348,54 @@ services:
           - core/server/services/activitypub/activity-pub-service.ts
         tests:
           - test/legacy/api/admin/identities.test.js
+          - test/unit/server/services/identity-tokens/index.test.ts
       startup:
         summary: >-
           initCore awaits signing-key initialization before initServices awaits identity init
           with other prerequisites. ActivityPub background init checks instance and logs then
           returns if it is absent; the identities endpoint dereferences it without that guard.
           Importing this root alone does not initialize signing keys or issue a token.
+          Root tests cover import behavior, endpoint signing after explicit initialization,
+          and retry after missing signing keys or provider-selection failure. Production boot
+          ordering, ActivityPub's background startup guard and the endpoint's unguarded
+          pre-init access are source evidence.
         sources:
           - core/boot.js
           - core/server/services/identity-tokens/identity-token-service-wrapper.js
           - core/server/api/endpoints/identities.js
           - core/server/services/activitypub/activity-pub-service-wrapper.js
-        tests: []
+        tests:
+          - test/unit/server/services/identity-tokens/index.test.ts
       lifetime:
         summary: >-
           Normal repeated initialization retains one process-local instance, issuer and
           purpose provider, with no reset path. The provider closes over its SigningKeyService
           and reads that service's settings cache on use. Each token call allocates its own
-          claims object; no user or role is stored on the shared service.
+          claims object; no user or role is stored on the shared service. Root tests verify
+          retained instance, issuer and provider identity, with live signing-key lookups.
+          The absence of a reset path, the provider's settings-cache access and isolation
+          between calls for different users and roles are source evidence.
         sources:
           - core/server/services/identity-tokens/identity-token-service-wrapper.js
           - core/server/services/identity-tokens/identity-token-service.ts
           - core/server/services/signing-keys/signing-key-service.ts
-        tests: []
+        tests:
+          - test/unit/server/services/identity-tokens/index.test.ts
       configuration:
         summary: >-
           The issuer URL is captured at construction; the retained provider supplies a key
           per call. Tokens use email as sub, include role only for string arguments, and use
           RS256, a five-minute expiry and the provider's kid. The unit test verifies a token's
-          subject, role, issuer and kid, but not live rotation or exact expiry.
+          subject, role, issuer and kid. Root tests additionally verify a five-minute expiry,
+          omitted role, retained issuer and use of the provider's changed signing key through
+          a retained instance. This does not exercise a full signing-key rotation workflow.
         sources:
           - core/server/services/identity-tokens/identity-token-service-wrapper.js
           - core/server/services/identity-tokens/identity-token-service.ts
           - core/server/services/signing-keys/signing-key-service.ts
         tests:
           - test/unit/server/services/identity-tokens/identity-token-service.test.ts
+          - test/unit/server/services/identity-tokens/index.test.ts
       resources:
         summary: >-
           This service stores only issuer and provider references; it acquires no timer,
@@ -4397,23 +4414,28 @@ services:
           leaving a later call able to try again. Missing/invalid signing keys and JWT signing
           failures reject token issuance without a local retry or fallback. The endpoint only
           catches role lookup failures; ActivityPub catches token/request failures in its own
-          remote-configuration methods.
+          remote-configuration methods. Root tests assert missing-prerequisite and provider
+          selection retries, plus token lookup failure and later success on the same instance.
         sources:
           - core/server/services/identity-tokens/identity-token-service-wrapper.js
           - core/server/services/identity-tokens/identity-token-service.ts
           - core/server/api/endpoints/identities.js
           - core/server/services/activitypub/activity-pub-service.ts
-        tests: []
+        tests:
+          - test/unit/server/services/identity-tokens/index.test.ts
     unverified: []
     blockers:
       - >-
-        Add wrapper-level contracts for pre-init use, failed initialization/retry and retained
-        consumers across issuer changes, signing-key rotation and repeated boot without
-        reloading modules. Current constructor/API tests do not prove these lifetimes.
+        Preserve real boot ordering and retained consumers through a complete signing-key
+        rotation or same-process restart. Root tests now cover missing-prerequisite retry,
+        repeated init, captured issuer and a changed key returned by the retained provider;
+        they do not exercise the full rotation workflow or define restart ownership.
       - >-
-        Characterize optional-role and exact-expiry behavior, concurrent token calls and
-        signing failures through real consumers. ActivityPub's unit tests inject a fake token
-        service, so they cannot catch a broken root-to-provider connection.
+        Characterize concurrent token calls and ActivityPub's real token connection. The root
+        suite verifies the real identities controller response, optional role, exact expiry
+        and key lookup failure recovery. Actual JWT signing failure recovery remains untested;
+        ActivityPub's implementation tests use a fake token service.
+
   indexnow-ping:
     kind: directory
     disposition: retain
@@ -4786,7 +4808,8 @@ services:
           A cache miss calls Integration.getApiKeyBySlug with the fixed slug-to-type mapping
           and stores its returned promise immediately. The model joins integrations and
           api_keys and returns a flat id/secret object. No alternate runtime map construction
-          for this capability was found; tests inject their own maps.
+          for this capability was found. Root tests exercise the actual exported map with
+          controlled model lookups, including exact slug/type selection and shared promises.
         sources:
           - core/server/services/internal-keys/index.ts
           - core/server/lib/auto-filling-map.ts
@@ -4794,6 +4817,7 @@ services:
         tests:
           - test/unit/server/lib/auto-filling-map.test.ts
           - test/unit/server/models/integration.test.js
+          - test/unit/server/services/internal-keys/index.test.ts
       consumers:
         summary: >-
           Frontend proxy getFrontendKey exposes the content secret to content_api_key,
@@ -4817,6 +4841,7 @@ services:
           - test/unit/frontend/helpers/content-api-key.test.ts
           - test/unit/server/services/auth/reset-authentication.test.ts
           - test/unit/server/adapters/scheduling/signed-flush-scheduler.test.ts
+          - test/unit/server/services/internal-keys/index.test.ts
       startup:
         summary: >-
           This root has no readiness check. The first get needs initialized models/database and
@@ -4840,7 +4865,9 @@ services:
           makes later get calls reload but does not cancel an outstanding query or invalidate
           an already retained key object. A promise settling after clear does not repopulate
           the map. Server shutdown does not clear the map. Helper tests
-          prove memoized success and invalidation; auth tests use an injected map to check
+          prove memoized success and invalidation. Root tests additionally cover pending and
+          rejected promise retention, late completion after clear and a retained frontend
+          consumer reading the replacement key. Auth tests use an injected map to check
           previous-key forwarding and session-before-reschedule ordering, not successful
           cache invalidation or the real root's database connection.
         sources:
@@ -4851,6 +4878,7 @@ services:
         tests:
           - test/unit/server/lib/auto-filling-map.test.ts
           - test/unit/server/services/auth/reset-authentication.test.ts
+          - test/unit/server/services/internal-keys/index.test.ts
       configuration:
         summary: >-
           ghost-scheduler selects an admin key and ghost-internal-frontend selects a content
@@ -4864,6 +4892,7 @@ services:
         tests:
           - test/unit/server/models/integration.test.js
           - test/unit/server/services/auth/reset-authentication.test.ts
+          - test/unit/server/services/internal-keys/index.test.ts
       resources:
         summary: >-
           The map owns cached promises and their key objects and borrows the model/database
@@ -4897,15 +4926,17 @@ services:
         tests:
           - test/unit/server/models/integration.test.js
           - test/unit/server/services/auth/reset-authentication.test.ts
+          - test/unit/server/services/internal-keys/index.test.ts
     unverified: []
     blockers:
       - >-
-        Add real-root contracts for slug/type mapping, promise identity, rejected lookup
-        retention, pre-database access and repeated boot. Generic map/model tests and frontend
-        tests that set the exported map directly do not prove lazy root lookup wiring.
+        Preserve pre-database access and repeated boot behavior when assigning lifecycle
+        ownership. Actual-root tests now cover slug/type mapping, shared pending lookups,
+        rejection retention until invalidation and the retained frontend consumer.
       - >-
-        Test rotation through actual retained frontend and scheduler consumers, including a
-        pending lookup during invalidation and post-commit session/reschedule failures.
+        Test a full rotation through the retained scheduler consumer and post-commit
+        session/reschedule failures. Root tests cover frontend invalidation and a pending
+        lookup completing after clear, but not the auth transaction or job rebuilding.
         Existing reset tests inject their own cache; neither clear nor rotation revokes
         promises/key objects already held by callers or updates already signed jobs by itself.
       - >-
