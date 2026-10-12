@@ -317,6 +317,10 @@ test('separates developer tooling from runtime configuration', () => {
     'configs/eslint-react/index.mjs',
     'configs/vitest/index.mjs',
     'configs/vite-public-app/index.mjs',
+    'tools/configs/eslint/index.mjs',
+    'tools/configs/eslint-react/index.mjs',
+    'tools/configs/vitest/index.mjs',
+    'tools/configs/vite-public-app/index.mjs',
     'apps/admin/vite.shared.ts',
     'apps/admin/vite-backend-proxy.ts',
     'apps/comments-ui/vite-plugin-strip-fingerprinting.ts',
@@ -350,7 +354,7 @@ test('separates developer tooling from runtime configuration', () => {
   }
   for (const file of [
     'scripts/test/config.test.ts',
-    'configs/eslint/test/rules.test.ts',
+    'tools/configs/eslint/test/rules.test.ts',
     'apps/ember-admin/mirage/config/settings.js',
     'e2e/data-factory/setup.ts',
     'packages/testing/test-data/src/fixtures/data/config.ts',

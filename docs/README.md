@@ -46,7 +46,8 @@ Ghost/
 │   └── test/           # Server tests
 ├── koenig/            # Editor and content-format packages
 ├── packages/          # Shared libraries and adapter contracts
-├── configs/           # Shared build, lint, test, and TypeScript config
+├── tools/             # Repository tooling workspaces
+│   └── configs/       # Shared build, lint, test, and TypeScript config
 ├── e2e/               # Browser end-to-end tests
 ├── docker/            # Local development containers and services
 └── scripts/           # Repository tooling

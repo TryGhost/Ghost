@@ -5,16 +5,16 @@ across the workspace dependency graph.
 
 ## Top-level directories
 
-| Directory   | Contains                                                                      |
-| ----------- | ----------------------------------------------------------------------------- |
-| `apps/`     | Admin applications, public browser apps, and frontend libraries               |
-| `ghost/`    | The Ghost server, frontend rendering, migrations, and server tests            |
-| `koenig/`   | The Koenig editor and packages for storing, converting, and rendering content |
-| `packages/` | Shared libraries, schemas, translations, test data, and adapter contracts     |
-| `configs/`  | Shared ESLint, TypeScript, Vite, and Vitest configuration                     |
-| `e2e/`      | Playwright tests for complete Admin and public-site journeys                  |
-| `docker/`   | Containers and supporting services for local development and CI               |
-| `scripts/`  | Repository setup, validation, build, and release tooling                      |
+| Directory        | Contains                                                                      |
+| ---------------- | ----------------------------------------------------------------------------- |
+| `apps/`          | Admin applications, public browser apps, and frontend libraries               |
+| `ghost/`         | The Ghost server, frontend rendering, migrations, and server tests            |
+| `koenig/`        | The Koenig editor and packages for storing, converting, and rendering content |
+| `packages/`      | Shared libraries, schemas, translations, test data, and adapter contracts     |
+| `tools/configs/` | Shared ESLint, TypeScript, Vite, and Vitest configuration                     |
+| `e2e/`           | Playwright tests for complete Admin and public-site journeys                  |
+| `docker/`        | Containers and supporting services for local development and CI               |
+| `scripts/`       | Repository setup, validation, build, and release tooling                      |
 
 [`pnpm-workspace.yaml`](../../pnpm-workspace.yaml) is the source of truth for
 which directories are workspaces. Read the README beside an app, package, or
@@ -80,9 +80,9 @@ Read [`packages/README.md`](../../packages/README.md) before adding or
 modernizing an internal package. New internal packages start from
 `packages/_template/`; the template itself is excluded from the workspace.
 
-`configs/` contains shared configuration packages. Workspaces depend on them by
+`tools/configs/` contains shared configuration packages. Workspaces depend on them by
 package name instead of copying configuration into each project.
-The [shared ESLint README](../../configs/eslint/README.md) explains the Node and
+The [shared ESLint README](../../tools/configs/eslint/README.md) explains the Node and
 React factories, standalone exceptions, and plugin dependency rules.
 
 ## Workspace dependencies
