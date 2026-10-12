@@ -150,16 +150,20 @@ const editAutomationStatusOnlySchema = z.strictObject({
   status: z.enum(['inactive', 'archived']),
 });
 
+const fakeWaitHoursMultiplier = parseFakeWaitHoursMultiplier(
+  config.get('automations:fakeWaitHoursMultiplier'),
+);
+
 const repository = createDatabaseAutomationsRepository({
   knex,
-  fakeWaitHoursMultiplier: parseFakeWaitHoursMultiplier(
-    config.get('automations:fakeWaitHoursMultiplier'),
-  ),
+  fakeWaitHoursMultiplier,
 });
 
 // NOTE: We are transitioning to this new API. This will be removed soon. See NY-1704.
 const automationsApi2 = createAutomationsApi2({
   domainEvents,
+  fakeWaitHoursMultiplier,
+  labs,
   repository: createDatabaseAutomationsRepository2({
     knex,
   }),
@@ -656,24 +660,7 @@ function throwValidationError(message: string, property?: string): never {
 
 export const requestPoll = automationsApi2.requestPoll.bind(automationsApi2);
 
-type TriggerOptions = Parameters<AutomationsRepository['trigger']>[0] & {
-  event: 'member_sign_up';
-};
-export async function trigger(options: TriggerOptions) {
-  if (options.event !== 'member_sign_up') {
-    throw new errors.IncorrectUsageError({
-      message: 'Member signup is the only supported event right now. More may be added later',
-    });
-  }
-
-  if (!labs.isSet('automations')) {
-    return;
-  }
-
-  await repository.trigger(options);
-
-  requestPoll();
-}
+export const trigger = automationsApi2.trigger.bind(automationsApi2);
 
 export async function fetchAndLockSteps(
   ...args: Parameters<AutomationsRepository['fetchAndLockSteps']>
