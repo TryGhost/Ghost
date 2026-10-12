@@ -3796,8 +3796,9 @@ services:
           The deep class requires its receiver: getPost/ensure/create return a post id plus
           giftLinks, getPostByToken returns that shape or null, and removeAll returns a number.
           Deep serializers map token/createdAt to gift_links token/created_at and removal count
-          to meta.count. Admin tests assert list/field allowlists, replacement and count shape;
-          no focused test pins root exports, detached calls or binding identity.
+          to meta.count. Admin tests assert list/field allowlists, replacement and count shape.
+          Root tests pin pre-init service access, init's return and retained binding identity;
+          detached calls remain untested.
         sources:
           - core/server/services/gift-links/index.ts
           - core/server/services/gift-links/service.ts
@@ -3807,15 +3808,17 @@ services:
         tests:
           - test/e2e-api/admin/gift-links.test.ts
           - test/integration/services/gift-links.test.ts
+          - test/unit/server/services/gift-links/index.test.ts
       construction:
         summary: >-
-          Import loads the class/action helper without constructing a service. First init reads
-          the shared database knex and models, partially applies the best-effort action recorder
-          and publishes one GiftLinksService retaining knex and the callback. Later init calls
-          preserve it. No separate production deep construction was found. The constructor
-          validates neither dependency nor database readiness; an early init can publish an
-          unusable captured dependency. Integration tests construct the class with real model
-          knex and matching recorder wiring; they do not enforce the root's deferred construction.
+          Import loads the class/action helper without constructing a service. First init reads the
+          shared database knex and models, partially applies the best-effort action recorder and
+          publishes one GiftLinksService retaining knex and the callback. Later init calls preserve
+          it. No separate production deep construction was found. The constructor validates neither
+          dependency nor database readiness; an early init can publish an unusable captured
+          dependency. Integration tests construct the class with real model knex and matching
+          recorder wiring. Root tests assert deferred acquisition and retained knex/instance across
+          init calls and exercise earlier public/Admin consumers.
         sources:
           - core/server/services/gift-links/index.ts
           - core/server/services/gift-links/service.ts
@@ -3824,6 +3827,7 @@ services:
           - core/server/data/db/connection.ts
         tests:
           - test/integration/services/gift-links.test.ts
+          - test/unit/server/services/gift-links/index.test.ts
       consumers:
         summary: >-
           Boot initializes the root. Admin posts/pages gift-link endpoints use the live binding
@@ -3856,6 +3860,8 @@ services:
           - test/e2e-frontend/gift-links.test.ts
           - test/e2e-frontend/gift-links-toast-override.test.ts
           - test/unit/api/endpoints/utils/gift-link-access.test.ts
+          - test/integration/services/gift-links.test.ts
+          - test/unit/server/services/gift-links/index.test.ts
       startup:
         summary: >-
           initCore calls init after database setup, settings, signing keys and i18n and before
@@ -3863,8 +3869,9 @@ services:
           consumers dereference service directly. Gift-access key resolution additionally needs
           the live-link tables, while the paid-member shim reads Product models. Root and deep
           codec/serializer imports do not need service initialization. Frontend/Admin suites
-          exercise booted composition, but no focused test covers pre-init access, failed/early
-          init, publication timing or booting again with a different database instance.
+          exercise booted composition. Root tests pin deferred database acquisition and publication
+          during init; premature consumer calls, failed/early init and a real repeated boot with
+          a different database instance remain untested.
         sources:
           - core/boot.js
           - core/server/services/gift-links/index.ts
@@ -3874,6 +3881,7 @@ services:
         tests:
           - test/e2e-api/admin/gift-links.test.ts
           - test/e2e-frontend/gift-links.test.ts
+          - test/unit/server/services/gift-links/index.test.ts
       lifetime:
         summary: >-
           Service and captured knex survive repeated init; no reset/stop/rebinding exists. Reads
@@ -3895,6 +3903,7 @@ services:
           - test/integration/services/gift-links.test.ts
           - test/e2e-api/admin/gift-links.test.ts
           - test/unit/api/endpoints/utils/gift-link-access.test.ts
+          - test/unit/server/services/gift-links/index.test.ts
       configuration:
         summary: >-
           The root/service read no feature config, settings or URL values. Database config is
@@ -3925,14 +3934,14 @@ services:
           - test/e2e-frontend/gift-links.test.ts
       resources:
         summary: >-
-          No owned client, timer, worker, listener or memory cache. The service borrows the
-          shared knex pool and owns per-mint transaction work; action history is a separate
-          awaited model write after the command's database change. Database rows carry token
-          history/live state, with foreign-key cascade deletion and no scheduled pruning here.
-          The public response cache belongs to posts-public, and rendering/analytics belong to
-          frontend consumers. There is no root drain or cleanup registration; shutdown depends
-          on shared HTTP/database ownership. Real DB tests enforce live uniqueness and removal,
-          not rollback, history retention/deletion cascades or in-flight shutdown.
+          No owned client, timer, worker, listener or memory cache. The service borrows the shared
+          knex pool and owns per-mint transaction work; action history is a separate awaited model
+          write after the command's database change. Database rows carry token history/live state,
+          with foreign-key cascade deletion and no scheduled pruning here. The public response cache
+          belongs to posts-public, and rendering/analytics belong to frontend consumers. There is no
+          root drain or cleanup registration; shutdown depends on shared HTTP/database ownership.
+          Real DB tests enforce live uniqueness, removal and rollback after a failed live-
+          association write; deletion cascades and in-flight shutdown remain untested.
         sources:
           - core/server/services/gift-links/service.ts
           - core/server/services/gift-links/actions.ts
@@ -3945,17 +3954,19 @@ services:
         tests:
           - test/integration/services/gift-links.test.ts
           - test/e2e-api/admin/gift-links.test.ts
+          - test/unit/server/services/gift-links/index.test.ts
       failures:
         summary: >-
-          Missing posts throw NotFound; unknown or no-longer-live tokens return null. Query,
-          codec, random generation and transaction errors propagate, without retries; action
-          writes run after persistence and the production recorder logs/swallows failures, skipping
-          writes when actor is absent. That boundary is enforced by action units and a real-DB
-          deep-service test with a failing recorder. Gift access refuses missing key-resolution
-          setup and rejects mismatched tokens; frontend strips invalid gifts with a 301 while
-          other failures reach normal error handling. Product lookup failure logs and grants a
-          paid shim with no tiers. Unit tests pin those helpers, but no forced mint rollback,
-          delete failure, root failure or cache-enabled revoked-token response test was found.
+          Missing posts throw NotFound; unknown or no-longer-live tokens return null. Query, codec,
+          random generation and transaction errors propagate, without retries; action writes run
+          after persistence and the production recorder logs/swallows failures, skipping writes when
+          actor is absent. That boundary is enforced by action units and a real-DB deep-service test
+          with a failing recorder. Gift access refuses missing key-resolution setup and rejects
+          mismatched tokens; frontend strips invalid gifts with a 301 while other failures reach
+          normal error handling. Product lookup failure logs and grants a paid shim with no tiers.
+          Units pin those helpers and root query-error propagation. Real DB tests pin mint rollback
+          and old-token retention for a failing live write, including retry; delete/codec failures
+          and cache-enabled revoked-token responses remain untested.
         sources:
           - core/server/services/gift-links/service.ts
           - core/server/services/gift-links/actions.ts
@@ -3972,17 +3983,20 @@ services:
           - test/unit/api/endpoints/utils/gift-link-access.test.ts
           - test/unit/server/services/members/create-paid-member-shim.test.ts
           - test/e2e-frontend/gift-links.test.ts
+          - test/unit/server/services/gift-links/index.test.ts
     unverified: []
     blockers:
       - >-
-        Pin deferred root construction, live binding/identity, early and failed init, and
-        repeated boot with shared database dependencies. Existing deep-service and booted HTTP
-        tests do not establish safe rebinding or recovery from initialization before DB readiness.
+        Characterize early or failed init and a real repeated boot with changed shared dependencies.
+        Root tests already assert deferred database acquisition, retained captured knex, earlier
+        public/Admin consumers and propagated query errors; they do not establish recovery from init
+        before DB readiness.
       - >-
-        Force transaction failures between history insertion and live-association upsert, and
-        characterize overlapping ensure/create/removeAll, token collision and history retention.
-        Concurrent HTTP ensures prove a single surviving returned token without forcing the race;
-        they do not guarantee all callers retain access or that failed mint leaves no history.
+        Characterize overlapping ensure/create/removeAll, token collision and history retention.
+        Real-database tests now force the live-association write to fail for ensure/create and
+        assert history rollback, old-token retention, no action write and a successful retry.
+        Concurrent HTTP ensures still do not force both reads before mint or guarantee that all
+        callers retain access.
       - >-
         Exercise real public cache population and token replacement/removal together, proving
         revoked/wrong-entry reads cannot use unlocked or anonymous cached responses. Current key
