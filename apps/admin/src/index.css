@@ -49,6 +49,30 @@ body {
   }
 }
 
+/* The editor's chrome while the writer types (admin7EditorImprovements): each
+   piece carries `data-writing-focus` and fades out, keeping its place so the
+   document never moves. Hidden controls take no pointer input but stay
+   focusable; focusing one brings the chrome back. */
+[data-writing-focus] {
+  transition: opacity 150ms var(--ease-standard);
+}
+
+[data-writing-focus='hidden'] {
+  opacity: 0;
+  transition-duration: 200ms;
+}
+
+[data-writing-focus='hidden'],
+[data-writing-focus='hidden'] * {
+  pointer-events: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-writing-focus] {
+    transition: none;
+  }
+}
+
 /* Koenig's wide and full cards are sized in viewport units less this width
    beside the writing area. The writing area declares it at the settings panel's
    resting state; while the panel moves, the editor writes it onto each card
