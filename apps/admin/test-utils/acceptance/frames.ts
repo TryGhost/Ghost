@@ -20,7 +20,11 @@ declare module 'vitest/browser' {
 export async function fakeFrameOrigin(origin: string, html: string, delayMs = 0): Promise<void> {
   await commands.fakeFrameOrigin(origin, html, delayMs);
   // The page's own requests there, such as the app page's probe, don't reach Playwright.
-  fakeOriginRequests(origin, { html });
+  // Admin's own origin is left alone: faking a same-origin preview frame mustn't answer
+  // Admin's API requests with the frame's HTML.
+  if (new URL(origin).origin !== window.location.origin) {
+    fakeOriginRequests(origin, { html });
+  }
 }
 
 /** Refuses every connection to `origin`, standing in for an external app that is down. */
