@@ -150,6 +150,7 @@ jobs:
               - '.github/scripts/**'
               - 'scripts/**'
             docs:
+              - 'ghost/core/server/services/service-inventory.yaml'
               - '**/*.md'
               - '**/*.mdx'
               - '.agents/**'
@@ -193,12 +194,15 @@ jobs:
               # positive pattern so micromatch cannot add docs files back.
               - '!**/*.md'
               - '!**/*.mdx'
+              # Migration metadata is documentation; boot never reads it.
+              - '!ghost/core/server/services/service-inventory.yaml'
             unit-test-globals:
               - 'vitest.config.mjs'
             core-unit-test-globals:
               - 'ghost/vitest.config.ts'
               - 'ghost/test/utils/vitest-*.ts'
             any-code:
+              - '!ghost/core/server/services/service-inventory.yaml'
               - '!**/*.md'
               - '!**/*.mdx'
               - '!.github/CODEOWNERS'
@@ -212,6 +216,7 @@ jobs:
             # React Admin tests still run through the affected unit, acceptance,
             # lint and typecheck targets; only the build + E2E lane is skipped.
             e2e:
+              - '!ghost/core/server/services/service-inventory.yaml'
               - '!**/*.md'
               - '!**/*.mdx'
               - '!.github/CODEOWNERS'

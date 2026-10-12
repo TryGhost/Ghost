@@ -97,3 +97,10 @@ their images are not published to GHCR.
 Ghost-Moya re-reads the PR's state, labels and head before changing anything, so a
 delayed or superseded request deploys the current head or nothing at all. GitHub
 deployments record the commit that was actually deployed.
+
+## Documentation changes
+
+CI treats `ghost/core/server/services/service-inventory.yaml` as documentation.
+Changes confined to it and other documentation skip code and E2E jobs. Changes
+to its validator still run code checks, and mixed runtime changes retain their
+normal checks.
