@@ -12,6 +12,7 @@ import {
   TableHeader,
   TableRow,
 } from '@tryghost/shade/components';
+import { Stack, Text } from '@tryghost/shade/primitives';
 import { cn, formatNumber, formatTimestamp } from '@tryghost/shade/utils';
 
 // Widths are scoped to `lg` because below that the stats lay out on the row's
@@ -49,8 +50,26 @@ const handleRowClick = (event: React.MouseEvent<HTMLTableRowElement>) => {
   event.currentTarget.querySelector('a')?.click();
 };
 
+export type AutomationsToShow = 'non-archived' | 'archived' | 'all';
+
+const EMPTY_COPY = {
+  'non-archived': {
+    title: 'No active automations',
+    description: 'Every automation you have is archived. Switch views to see them.',
+  },
+  archived: {
+    title: 'Nothing archived',
+    description: 'Archiving an automation takes it off your list without deleting it.',
+  },
+  all: {
+    title: 'No automations yet',
+    description: 'Automations you create will show up here.',
+  },
+};
+
 interface AutomationsListProps {
   automations?: AutomationBrowseItem[];
+  automationsToShow: AutomationsToShow;
   isLoading?: boolean;
   canManage: boolean;
 }
@@ -97,11 +116,27 @@ const AutomationsListSkeleton: React.FC = () => {
 
 const AutomationsList: React.FC<AutomationsListProps> = ({
   automations = [],
+  automationsToShow,
   isLoading = false,
   canManage,
 }) => {
   if (isLoading) {
     return <AutomationsListSkeleton />;
+  }
+
+  if (automations.length === 0) {
+    const { title, description } = EMPTY_COPY[automationsToShow];
+
+    return (
+      <Stack align="center" className="py-16 text-center" gap="xs">
+        <Text as="h3" weight="medium">
+          {title}
+        </Text>
+        <Text className="max-w-80 text-pretty" leading="tight" size="sm" tone="secondary">
+          {description}
+        </Text>
+      </Stack>
+    );
   }
 
   const showRunAnalytics = automations.every((automation) => automation.stats !== undefined);

@@ -1,5 +1,5 @@
 import AutomationsHelpCards from './components/automations-help-cards';
-import AutomationsList from './components/automations-list';
+import AutomationsList, { type AutomationsToShow } from './components/automations-list';
 import React from 'react';
 import { useNavigate } from '@tryghost/admin-x-framework';
 import { Badge, Select, SelectContent, SelectItem, SelectValue } from '@tryghost/shade/components';
@@ -19,8 +19,6 @@ function preloadAutomationEditor(): void {
   // A failure is left for the editor route's own load to surface.
   lazyAutomationEditorScreen().catch(() => undefined);
 }
-
-type AutomationsToShow = 'non-archived' | 'archived' | 'all';
 
 const Automations: React.FC = () => {
   const navigate = useNavigate();
@@ -109,6 +107,7 @@ const Automations: React.FC = () => {
           <ListPage.Body>
             <AutomationsList
               automations={filteredAutomations}
+              automationsToShow={automationsToShow}
               canManage={archiveEnabled && !!currentUser && canManageAutomations(currentUser)}
               isLoading={isLoading}
             />

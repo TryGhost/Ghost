@@ -263,6 +263,26 @@ describe('Automations', () => {
     expect(screen.queryByText('Paid member welcome flow')).not.toBeInTheDocument();
   });
 
+  it('shows active empty copy when every automation is archived', () => {
+    mockUseBrowseAutomations.mockReturnValue({
+      data: { automations: [{ ...automations[0], status: 'archived' }] },
+      isLoading: false,
+    });
+
+    renderPage();
+
+    expect(screen.getByRole('heading', { name: 'No active automations' })).toBeInTheDocument();
+    expect(
+      screen.getByText('Every automation you have is archived. Switch views to see them.'),
+    ).toBeInTheDocument();
+    fireEvent.keyDown(screen.getByRole('combobox', { name: 'Automations to show' }), {
+      key: 'Enter',
+    });
+    fireEvent.click(screen.getByRole('option', { name: 'Archived automations' }));
+    expect(screen.queryByText('No active automations')).not.toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Free member welcome flow' })).toBeInTheDocument();
+  });
+
   it('hides archived automations by default and shows the status filter', () => {
     mockUseBrowseAutomations.mockReturnValue({
       data: {
