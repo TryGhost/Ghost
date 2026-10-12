@@ -212,6 +212,15 @@ body {
     ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace;
 }
 
+/* Inter carries a text design and a display design, and sets each size in the
+   one made for it when left to choose. Admin pins it to the text design; the
+   editor lets it choose, so the body reads in the text design and the title and
+   headings take the finer display one. */
+[data-editor-font] {
+  font-optical-sizing: auto;
+  font-variation-settings: normal;
+}
+
 [data-editor-font='sans'] {
   --kg-font-body: var(--font-editor-sans);
   --kg-font-body-scale: 0.925;

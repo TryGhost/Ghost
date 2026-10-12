@@ -76,7 +76,7 @@ export interface PostEditorProps {
   settingsMoving?: boolean;
   /** Whether the chrome here (the empty feature image bar and the footer) is hidden while the writer types. */
   writingFocus?: WritingFocus;
-  /** The font the writer reads the post in, set on the canvas as `data-editor-font`. */
+  /** The font the writer reads the post in, set on the canvas as `data-editor-font` (admin7EditorImprovements). */
   font?: EditorFont;
   /** Takes the help link's place in the footer (admin7EditorImprovements). */
   fontPicker?: React.ReactNode;

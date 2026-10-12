@@ -110,7 +110,7 @@ describe('Editor font (admin7EditorImprovements)', () => {
     await renderAdminApp('/editor/post/abc123', editorOptions({ flag: false, saved: 'mono' }));
     await expect.element(editorScreen.body()).toBeVisible();
 
-    await expect.element(editorScreen.root()).toHaveAttribute('data-editor-font', 'serif');
+    await expect.element(editorScreen.root()).not.toHaveAttribute('data-editor-font');
     await expect.element(editorScreen.helpLink()).toHaveAttribute('href', EDITOR_HELP_URL);
     await expect.element(editorScreen.fontToggle()).not.toBeInTheDocument();
 

@@ -484,7 +484,7 @@ function EditorContent({
                 cardConfig={currentCardConfig}
                 excerptError={settingsFieldErrorFor('custom_excerpt', session.settings)}
                 featureImage={featureImage}
-                font={editorFont.font}
+                font={editorImprovements ? editorFont.font : undefined}
                 fontPicker={
                   editorImprovements ? (
                     <EditorFontPicker

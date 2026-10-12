@@ -226,7 +226,10 @@ the user's preferences, so it follows the writer between browsers. A failed save
 keeps the choice for the visit and says so. A writer who never chose reads
 serif, and so does everyone with the flag off, whatever they saved.
 
-The font is set on the editor as `data-editor-font`. `index.css` maps each value
+The font is set on the editor as `data-editor-font`, under the flag only. The
+editor also lets Inter choose its optical size there: Admin pins Inter to its
+text design, while the editor sets the body in that design and the title and
+headings in the display one, whichever font is chosen. `index.css` maps each value
 to Koenig's content font variables (see the koenig-lexical README) and to the
 title and excerpt's own `--editor-display-*` ones. Sans sets the body in Inter
 and keeps the headings, title and excerpt as they are. Mono sets everything the
