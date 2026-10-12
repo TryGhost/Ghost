@@ -75,8 +75,9 @@ jobs:
       - name: Output GitHub context
         if: env.RUNNER_DEBUG == '1'
         run: |
-          echo "GITHUB_EVENT_NAME: ${{ github.event_name }}"
-          echo "GITHUB_CONTEXT: ${{ toJson(github.event) }}"
+          echo "GITHUB_EVENT_NAME: $GITHUB_EVENT_NAME"
+          echo "GITHUB_CONTEXT:"
+          cat "$GITHUB_EVENT_PATH"
 
       # pnpm's cache dir, not the store dir that setup-node's `cache: pnpm`
       # already handles. On a hit `pnpm install` reuses the cached verdict and
