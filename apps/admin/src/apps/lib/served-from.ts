@@ -1,16 +1,13 @@
 import { type AppMove, movedBetween as movedBetweenVersions } from '@tryghost/app-contracts';
 import type { AppManifest } from '@tryghost/admin-x-framework/api/app-installations';
 
-// Shared with Ghost, which applies the same rules in an app's history.
 export { isDevelopmentApp, servedFrom } from '@tryghost/app-contracts';
 
-/** A manifest and where it was read from, as the Admin API returns them. */
 interface ManifestAt {
   manifest_url: string;
   manifest: AppManifest;
 }
 
-/** The hosts the app would move between if `reviewed` were approved, or null when it stays. */
 export function movedBetween(approved: ManifestAt, reviewed: ManifestAt): AppMove | null {
   return movedBetweenVersions(
     { manifestUrl: approved.manifest_url, manifest: approved.manifest },

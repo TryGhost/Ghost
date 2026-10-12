@@ -2,7 +2,6 @@ import { movedBetween, type AppManifest } from '@tryghost/app-contracts/manifest
 import type { AppInstallationEvent } from './actions';
 import type { AppInstallationHistoryEntry, HistoryActor } from './codec';
 
-/** A manifest row the history is built from. */
 export interface HistoryManifest {
   id: string;
   manifest_url: string;
@@ -11,17 +10,16 @@ export interface HistoryManifest {
   created_at: Date;
 }
 
-/** A staff history row for the installation, with who acted. */
 export interface HistoryAction {
   id: string;
   event: string;
   actor: HistoryActor;
-  /** The `context` column, still as the JSON it was written as. */
+  /** Unparsed JSON. */
   context: string | null;
   created_at: Date;
 }
 
-/** An approval, with the manifests it replaced and approved, when its record names them. */
+/** `from` and `to` are missing when the action's context doesn't name an existing manifest. */
 interface Approval {
   action: HistoryAction;
   from?: HistoryManifest;
@@ -30,11 +28,7 @@ interface Approval {
 
 type Entry = AppInstallationHistoryEntry;
 
-/**
- * An installation's history, newest first. People's decisions come from staff history;
- * updates and held changes come from the installation's manifests. Both inputs must be
- * oldest first, so events in the same second keep their order.
- */
+/** Both inputs must be oldest first, so events in the same second keep their order. */
 export function buildHistory(
   manifests: HistoryManifest[],
   actions: HistoryAction[],
@@ -48,7 +42,6 @@ export function buildHistory(
   ]);
 }
 
-/** The oldest manifest is the one installed, with whoever staff history says installed it. */
 function installOf(manifests: HistoryManifest[], actions: HistoryAction[]): Entry[] {
   const [installed] = manifests;
   if (!installed) {
@@ -65,10 +58,7 @@ function installOf(manifests: HistoryManifest[], actions: HistoryAction[]): Entr
   ];
 }
 
-/**
- * Every later manifest is an update Ghost applied or held for approval, except one an
- * approval points at, which shows as that approval instead.
- */
+/** A manifest an approval points at shows as that approval instead. */
 function updatesAndSuspensionsOf(manifests: HistoryManifest[], approvals: Approval[]): Entry[] {
   const approved = new Set(approvals.map(({ to }) => to?.id));
   return manifests
@@ -82,7 +72,6 @@ function updatesAndSuspensionsOf(manifests: HistoryManifest[], approvals: Approv
     }));
 }
 
-/** An approval, with the host it moved the app to, if it did. */
 function approvalEntry({ action, from, to }: Approval): Entry {
   const move =
     from && to
@@ -109,7 +98,6 @@ function uninstallsIn(actions: HistoryAction[]): Entry[] {
   }));
 }
 
-/** The approvals in staff history, each with the manifest rows its record names. */
 function approvalsIn(actions: HistoryAction[], manifests: HistoryManifest[]): Approval[] {
   const byId = new Map(manifests.map((manifest) => [manifest.id, manifest]));
   return actions.filter(withEvent('changes_approved')).map((action) => {
@@ -122,7 +110,10 @@ function approvalsIn(actions: HistoryAction[], manifests: HistoryManifest[]): Ap
   });
 }
 
-/** Sorts oldest first, which keeps same-second entries in input order, then reverses. */
+/**
+ * Reversing an ascending sort, unlike sorting descending, also puts entries from the same
+ * second newest first.
+ */
 function newestFirst(entries: Entry[]): Entry[] {
   return entries.sort((a, b) => a.created_at.getTime() - b.created_at.getTime()).reverse();
 }
@@ -130,7 +121,6 @@ function newestFirst(entries: Entry[]): Entry[] {
 const withEvent = (event: AppInstallationEvent) => (action: HistoryAction) =>
   action.event === event;
 
-/** The action's context, or an empty object when it's missing or not valid JSON. */
 function contextOf(action: HistoryAction): Record<string, unknown> {
   try {
     const parsed: unknown = action.context ? JSON.parse(action.context) : null;

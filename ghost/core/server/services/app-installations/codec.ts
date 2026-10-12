@@ -17,7 +17,6 @@ export const AppInstallationRow = z.object({
   ...DbAppInstallationManifest.pick({ manifest_url: true, manifest: true }).shape,
 });
 
-/** The staff user who acted. */
 export interface HistoryActor {
   id: string;
   /** Null when the user no longer exists. */
@@ -25,15 +24,15 @@ export interface HistoryActor {
 }
 
 /**
- * One event in an installation's history. `actor` is null when Ghost acted by itself
- * (`updated`, `suspended`), or when who acted wasn't recorded.
+ * `actor` is null when Ghost acted by itself (`updated`, `suspended`), or when who acted
+ * wasn't recorded.
  */
 export interface AppInstallationHistoryEntry {
   id: string;
   event: 'installed' | 'updated' | 'suspended' | 'changes_approved' | 'uninstalled';
   actor: HistoryActor | null;
   created_at: Date;
-  /** On a `changes_approved` entry that moved the app, the host it moved to. */
+  /** Only on a `changes_approved` entry that moved the app. */
   moved_to?: string;
 }
 

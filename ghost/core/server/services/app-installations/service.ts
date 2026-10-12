@@ -34,7 +34,6 @@ const HistoryManifestRow = DbAppInstallationManifest.pick({
   created_at: true,
 });
 
-/** A staff history row for an installation, joined with the user who acted. */
 const HistoryActionRow = z
   .object({
     id: z.string(),
@@ -189,7 +188,7 @@ export class AppInstallationsService {
     return rows.map((row) => z.decode(AppInstallationRow, row));
   }
 
-  /** One installation by ID, including an uninstalled one, with its history when asked. */
+  /** Unlike `browse`, this also reads uninstalled installations. */
   async read(
     id: string,
     { withHistory = false }: { withHistory?: boolean } = {},

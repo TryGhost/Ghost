@@ -19,16 +19,13 @@ export interface AppInstallation {
   history?: AppInstallationHistoryEntry[];
 }
 
-/**
- * One event in an installation's history. `actor` is null when Ghost acted by itself, or
- * when who acted wasn't recorded.
- */
+/** `actor` is null when Ghost acted by itself, or when who acted wasn't recorded. */
 export interface AppInstallationHistoryEntry {
   id: string;
   event: 'installed' | 'updated' | 'suspended' | 'changes_approved' | 'uninstalled';
   actor: { id: string; name: string | null } | null;
   created_at: string;
-  /** On a `changes_approved` entry that moved the app, the host it moved to. */
+  /** Only on a `changes_approved` entry that moved the app. */
   moved_to?: string;
 }
 
@@ -83,7 +80,7 @@ export const useBrowseAppInstallations = createQuery<AppInstallationsResponseTyp
   path: '/apps/installations/',
 });
 
-/** One installation, including an uninstalled one, with its history. */
+/** Unlike `useBrowseAppInstallations`, this also reads uninstalled installations. */
 export const useReadAppInstallation = createQueryWithId<AppInstallationsResponseType>({
   dataType,
   path: (id) => `/apps/installations/${id}/`,
@@ -125,7 +122,6 @@ export const useApproveAppInstallation = createMutation<
   invalidateQueries: changedDataTypes,
 });
 
-/** Uninstalls an app. The installation can still be read afterwards. */
 export const useUninstallAppInstallation = createMutation<unknown, string>({
   method: 'DELETE',
   path: (id) => `/apps/installations/${id}/`,

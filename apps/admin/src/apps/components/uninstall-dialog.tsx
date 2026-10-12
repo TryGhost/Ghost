@@ -19,11 +19,9 @@ import { getErrorMessage } from '@tryghost/admin-x-framework/errors';
 import { AdminLink } from '@/shared/admin-link';
 
 interface UninstallDialogProps {
-  /** The app to uninstall; the dialog is open while it's set. */
   installation: AppInstallation | null;
-  /** Called when the dialog closes, including after uninstalling. */
+  /** Also called after uninstalling, before `onUninstalled`. */
   onClose: () => void;
-  /** Called after the app has been uninstalled. */
   onUninstalled?: (installation: AppInstallation) => void;
 }
 

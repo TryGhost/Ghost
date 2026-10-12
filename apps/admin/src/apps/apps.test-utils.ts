@@ -29,7 +29,6 @@ export const installation = (overrides: Partial<AppInstallation> = {}): AppInsta
   ...overrides,
 });
 
-/** Fakes the installations list. `set` changes what later reads return. */
 export function fakeInstallations(initial: AppInstallation[] = []) {
   let installed = initial;
   fakeAdminEndpoint('GET', '/apps/installations/', () => ({ app_installations: installed }));

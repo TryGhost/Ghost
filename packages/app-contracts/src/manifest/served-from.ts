@@ -1,7 +1,6 @@
 import { isLocalhost } from './localhost.ts';
 import type { AppManifest } from './schema.ts';
 
-/** The URL of the page the app shows in Admin, which is where the app runs. */
 function pageUrl(manifest: AppManifest): URL {
   const page =
     manifest.surfaces.find((surface) => surface.type === 'admin_page') ?? manifest.surfaces[0];
@@ -14,35 +13,29 @@ function pageUrl(manifest: AppManifest): URL {
   return new URL(page.url);
 }
 
-/**
- * The host an app's page loads from, such as `podcast.example.com`. Not where its
- * manifest was read from, which may differ.
- */
+/** The page's host, which can differ from the host the manifest was read from. */
 export function servedFrom(manifest: AppManifest): string {
   return pageUrl(manifest).host;
 }
 
-/** An app served from the developer's own machine, which Ghost only allows in development. */
+/** Ghost only allows these in development. */
 export function isDevelopmentApp(manifest: AppManifest): boolean {
   return isLocalhost(pageUrl(manifest).hostname);
 }
 
-/** A manifest and where it was read from. */
 export interface ServedManifest {
   manifestUrl: string;
   manifest: AppManifest;
 }
 
-/** The hosts an app moved between. */
 export interface AppMove {
   from: string;
   to: string;
 }
 
 /**
- * The hosts an app moves between from `approved` to `reviewed`, or null when it stays. A
- * move is a new host for its page or, failing that, for its manifest. A different path on
- * the same host isn't a move, since the same party serves both.
+ * A new host for the page counts first, then one for the manifest. A different path on the
+ * same host isn't a move, since the same party serves both.
  */
 export function movedBetween(approved: ServedManifest, reviewed: ServedManifest): AppMove | null {
   const pages = { from: servedFrom(approved.manifest), to: servedFrom(reviewed.manifest) };

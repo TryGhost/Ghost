@@ -7,10 +7,8 @@ function linkOf(row: HTMLElement): HTMLAnchorElement | null {
 }
 
 /**
- * Makes a whole table row open the link it contains, like clicking the link itself. The
- * link stays a real link, so it can be focused, copied and opened in a new tab, and a
- * click with a modifier key opens the row's link in a new tab too. Clicks on the row's
- * other controls, and on content portalled out of the row such as a menu, are left alone.
+ * React bubbles clicks from portals, such as the row's menu, up through the row, so
+ * `contains` leaves those alone.
  */
 export function openRowLink(event: React.MouseEvent<HTMLElement>): void {
   if (
@@ -32,7 +30,6 @@ export function openRowLink(event: React.MouseEvent<HTMLElement>): void {
   link.click();
 }
 
-/** Opens the row's link in a new tab on a middle click, as a link would. */
 export function openRowLinkInNewTab(event: React.MouseEvent<HTMLElement>): void {
   if (
     event.button !== 1 ||

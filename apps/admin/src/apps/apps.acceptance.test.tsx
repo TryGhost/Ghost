@@ -17,7 +17,6 @@ import { MANIFEST_URL, fakeInstallations, installation, labs, manifest } from '.
 
 const DETAILS_ROUTE = '/apps/details/installation-1';
 
-/** The read endpoint for one installation, with or without a query string. */
 const readPath = (id: string) => new RegExp(`^/apps/installations/${id}/(\\?|$)`);
 
 const jamie = { id: 'user-1', name: 'Jamie Larson' };
