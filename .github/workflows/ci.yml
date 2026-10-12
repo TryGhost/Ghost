@@ -2606,6 +2606,7 @@ jobs:
         job_build_e2e_public_apps,
         job_e2e_tests,
         publish_public_apps,
+        publish_shade,
       ]
     if: always()
     runs-on: ubuntu-slim
@@ -2619,6 +2620,51 @@ jobs:
         if: contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled')
         run: |
           echo "One of the dependent jobs have failed or been cancelled. You may need to re-run it." && exit 1
+
+  # Automatic alphas for internal development, using the public-app release pattern.
+  publish_shade:
+    name: Publish Shade alpha
+    needs: [job_setup, job_lint, job_typecheck, job_unit-tests]
+    if: |
+      always()
+      && github.repository == 'TryGhost/Ghost'
+      && github.event_name == 'push'
+      && needs.job_setup.outputs.is_main == 'true'
+      && needs.job_setup.result == 'success'
+      && needs.job_lint.result == 'success'
+      && (needs.job_typecheck.result == 'success' || needs.job_typecheck.result == 'skipped')
+      && needs.job_unit-tests.result == 'success'
+      && contains(fromJSON(needs.job_setup.outputs.affected_projects), '@tryghost/shade')
+    runs-on: ubuntu-latest
+    environment: npm-release
+    concurrency:
+      group: publish-shade
+      cancel-in-progress: false
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: ./.github/actions/setup-node-pnpm
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          trust-lockfile: 'true'
+
+      - name: Determine release version
+        working-directory: apps/shade
+        run: |
+          NEXT_VERSION=$(node "$GITHUB_WORKSPACE/tools/scripts/compute-next-app-version.cjs" .)
+          pnpm pkg set version="$NEXT_VERSION"
+
+      - name: Build Shade
+        run: pnpm nx build @tryghost/shade
+
+      - name: Publish to npm
+        working-directory: apps/shade
+        run: pnpm publish --tag next --access public --provenance --no-git-checks
 
   # Publishes @tryghost/* public apps to npm via OIDC trusted publishing.
   # Runs only on push-to-main — never on pull_request — so the `id-token: write`

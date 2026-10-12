@@ -6,8 +6,12 @@ import { PUBLIC_APPS } from './lib/public-apps.js';
 import { readJson } from './lib/utils.js';
 
 // Published packages versioned outside `pnpm version`: Ghost core by the release
-// scripts, the public apps by release-apps.
-const EXTERNALLY_VERSIONED = new Set(['ghost', ...PUBLIC_APPS.map((app) => app.packageName)]);
+// scripts, public apps by their publish job, and Shade by its alpha publish job.
+const EXTERNALLY_VERSIONED = new Set([
+  'ghost',
+  '@tryghost/shade',
+  ...PUBLIC_APPS.map((app) => app.packageName),
+]);
 
 /**
  * `pnpm version -r` bumps private packages unless they are listed in

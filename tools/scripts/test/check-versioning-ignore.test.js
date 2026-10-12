@@ -19,21 +19,22 @@ describe('checkVersioningIgnore (against the live workspace)', () => {
 
   it('flags a private package missing from the list', async () => {
     const workspace = await workspaceWithIgnore((ignore) =>
-      ignore.filter((name) => name !== '@tryghost/shade'),
+      ignore.filter((name) => name !== '@tryghost/admin'),
     );
 
     assert.deepStrictEqual(await checkVersioningIgnore(workspace), [
-      '@tryghost/shade: private, but missing from versioning.ignore',
+      '@tryghost/admin: private, but missing from versioning.ignore',
     ]);
   });
 
   it('flags an externally versioned package missing from the list', async () => {
     const workspace = await workspaceWithIgnore((ignore) =>
-      ignore.filter((name) => name !== '@tryghost/portal'),
+      ignore.filter((name) => !['@tryghost/portal', '@tryghost/shade'].includes(name)),
     );
 
     assert.deepStrictEqual(await checkVersioningIgnore(workspace), [
       '@tryghost/portal: versioned by its own release scripts, but missing from versioning.ignore',
+      '@tryghost/shade: versioned by its own release scripts, but missing from versioning.ignore',
     ]);
   });
 

@@ -45,6 +45,12 @@ pinned by Ghost. The new line becomes the default when that change is included
 in a public Ghost release and the site upgrades. See the app's README for that
 release process.
 
+## Shade prereleases
+
+Shade is a React library for Ghost apps. When selected by the normal CI checks
+on `main`, it publishes as `0.1.0-alpha.N` under npm's `next` tag after checks pass.
+See the [Shade README](../../apps/shade/README.md#publishing) for publishing details.
+
 ## Public Ghost releases
 
 An automated workflow releases a new public Ghost version every Tuesday.

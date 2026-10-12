@@ -423,6 +423,8 @@ versioning:
     - '@tryghost/portal'
     - '@tryghost/signup-form'
     - '@tryghost/sodo-search'
+    # Shade alphas are versioned and published independently by CI
+    - '@tryghost/shade'
     # ignore private packages, which are never published. pnpm bumps them
     # otherwise; `pnpm lint:versioning` enforces this list
     - '@internal/cfg-eslint'
@@ -448,7 +450,6 @@ versioning:
     - '@tryghost/metafield-csv'
     - '@tryghost/nql-string'
     - '@tryghost/parse-email-address'
-    - '@tryghost/shade'
     - '@tryghost/test-data'
 patchedDependencies:
   # The 8.x Elasticsearch client eagerly requires apache-arrow for two ES|QL

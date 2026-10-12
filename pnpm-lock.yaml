@@ -1712,15 +1712,9 @@ importers:
       moment-timezone:
         specifier: 0.6.5
         version: 0.6.5
-      react:
-        specifier: 'catalog:'
-        version: 18.3.1
       react-day-picker:
         specifier: 9.14.0
         version: 9.14.0(@types/react@18.3.31)(react@18.3.1)
-      react-dom:
-        specifier: 'catalog:'
-        version: 18.3.1(react@18.3.1)
       react-dropzone:
         specifier: 14.4.1
         version: 14.4.1(@types/react@18.3.31)(react@18.3.1)
@@ -1736,6 +1730,9 @@ importers:
       tailwind-merge:
         specifier: 3.6.0
         version: 3.6.0
+      tw-animate-css:
+        specifier: 'catalog:'
+        version: 1.4.0
       zod:
         specifier: 'catalog:'
         version: 4.6.5
@@ -1785,6 +1782,12 @@ importers:
       postcss:
         specifier: 'catalog:'
         version: 8.5.26
+      react:
+        specifier: 'catalog:'
+        version: 18.3.1
+      react-dom:
+        specifier: 'catalog:'
+        version: 18.3.1(react@18.3.1)
       remark-gfm:
         specifier: 4.0.1
         version: 4.0.1(supports-color@10.2.2)
@@ -1800,9 +1803,6 @@ importers:
       tsx:
         specifier: 'catalog:'
         version: 4.23.15
-      tw-animate-css:
-        specifier: 'catalog:'
-        version: 1.4.0
       typescript:
         specifier: 'catalog:'
         version: '@typescript/typescript6@6.0.2'

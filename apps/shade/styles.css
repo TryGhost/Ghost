@@ -6,6 +6,10 @@
 
 @import './theme-variables.css';
 
+/* Scan components in both the workspace and the published package. */
+@source './src';
+@source './es';
+
 @layer base {
   /* Placeholder that only matches a locally installed Inter; Admin and Storybook load the font files */
   @font-face {

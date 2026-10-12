@@ -6,8 +6,9 @@ const { parseArgs } = require('node:util');
 const semver = require('semver');
 
 /**
- * Computes the next version to publish for a public app, treating npm as the
- * source of truth for the patch number.
+ * Computes the next version to publish, treating npm as the source of truth.
+ * Prereleases such as Shade's 0.1.0-alpha.N increment within the same
+ * major.minor.patch and prerelease identifier. Stable apps follow the rules below.
  *
  * Releases are patch-only and automated: the app's package.json pins the
  * major.minor "line" (a human-controlled floor that only moves for intentional
@@ -31,8 +32,12 @@ function computeNextVersion(currentVersion, publishedVersions) {
   const latest = latestVersionInLine(currentVersion, publishedVersions);
 
   if (!latest) {
-    // Fresh major.minor line — publish exactly what package.json declares.
+    // Fresh release line — publish exactly what package.json declares.
     return current.version;
+  }
+
+  if (current.prerelease.length) {
+    return semver.inc(latest, 'prerelease');
   }
 
   return `${current.major}.${current.minor}.${semver.patch(latest) + 1}`;
@@ -47,8 +52,8 @@ function parseCurrentVersion(currentVersion) {
 }
 
 /**
- * The highest stable version published in package.json's major.minor line, or
- * null when that line has no releases yet.
+ * The highest published version in package.json's release line, or null when
+ * that line has no releases yet.
  *
  * @param {string} currentVersion - the version field from the app's package.json
  * @param {string[]} publishedVersions - all versions published to npm for the app
@@ -57,29 +62,26 @@ function parseCurrentVersion(currentVersion) {
 function latestVersionInLine(currentVersion, publishedVersions) {
   const current = parseCurrentVersion(currentVersion);
 
-  const patchesInLine = publishedVersions
+  const versionsInLine = publishedVersions
     .map((version) => semver.parse(version))
-    // Ignore prereleases (e.g. 2.69.5-beta.1) — only stable patches in this
-    // major.minor line should drive the next patch number.
+    // Stable apps ignore prereleases; alpha/beta lines keep their patch and identifier.
     .filter(
       (version) =>
         version &&
         version.major === current.major &&
         version.minor === current.minor &&
-        version.prerelease.length === 0,
+        (current.prerelease.length
+          ? version.patch === current.patch && version.prerelease[0] === current.prerelease[0]
+          : version.prerelease.length === 0),
     )
-    .map((version) => version.patch);
+    .sort(semver.rcompare);
 
-  if (patchesInLine.length === 0) {
-    return null;
-  }
-
-  return `${current.major}.${current.minor}.${Math.max(...patchesInLine)}`;
+  return versionsInLine[0]?.version || null;
 }
 
 /**
  * Reads every version published to npm for a package. Returns an empty array
- * when the package has never been published (npm exits with E404).
+ * when the package has never been published (the registry returns E404).
  *
  * @param {string} packageName
  * @returns {string[]}
@@ -88,10 +90,16 @@ function getPublishedVersions(packageName) {
   let output;
 
   try {
-    output = execFileSync('npm', ['view', packageName, 'versions', '--json'], { encoding: 'utf8' });
+    output = execFileSync('pnpm', ['view', packageName, 'versions', '--json'], {
+      encoding: 'utf8',
+    });
   } catch (error) {
     const combined = `${error.stdout || ''}${error.stderr || ''}`;
-    if (combined.includes('E404') || combined.includes('404 Not Found')) {
+    if (
+      combined.includes('E404') ||
+      combined.includes('ERR_PNPM_FETCH_404') ||
+      combined.includes('404 Not Found')
+    ) {
       return [];
     }
     throw new Error(
@@ -105,7 +113,7 @@ function getPublishedVersions(packageName) {
   }
 
   const parsed = JSON.parse(trimmed);
-  // npm returns a bare string when only one version exists, an array otherwise.
+  // The CLI returns a bare string when only one version exists, an array otherwise.
   return Array.isArray(parsed) ? parsed : [parsed];
 }
 

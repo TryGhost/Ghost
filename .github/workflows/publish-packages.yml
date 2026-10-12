@@ -29,6 +29,10 @@ on:
         description: 'Optional package name to restrict the publish (e.g. @tryghost/kg-default-nodes). Blank publishes every pending package.'
         type: string
         required: false
+      tag:
+        description: 'Optional npm dist-tag (e.g. next). Blank uses each package’s configured tag or latest.'
+        type: string
+        required: false
       dry_run:
         description: 'Build and pack, skip the actual publish.'
         type: boolean
@@ -83,6 +87,7 @@ jobs:
         env:
           PUBLISH_PACKAGE: ${{ inputs.package }}
           PUBLISH_DRY_RUN: ${{ inputs.dry_run }}
+          PUBLISH_TAG: ${{ inputs.tag }}
           # Read-only, for the compare API call that asserts GITHUB_SHA is on
           # main — the replacement for pnpm's own (unusable here) branch check.
           GITHUB_TOKEN: ${{ github.token }}

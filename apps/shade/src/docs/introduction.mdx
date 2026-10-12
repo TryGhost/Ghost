@@ -31,6 +31,14 @@ If a control exists, use it. If it doesn't and you'll reuse it, [Layers](?path=/
 
 See **[Contributing](?path=/docs/overview-contributing--docs)** for the implementation and review checklist.
 
+## Using Shade in a standalone app
+
+Install `@tryghost/shade@next` with React 18 and Tailwind CSS 4.1+. Import
+`@tryghost/shade/styles.css` in the app stylesheet and wrap the app in `ShadeApp`.
+See the [Shade README](https://github.com/TryGhost/Ghost/blob/main/apps/shade/README.md#usage-in-standalone-surfaces)
+for the Vite setup example. Embedded Admin apps inherit Admin's stylesheet and
+wrapper instead.
+
 ## Admin 7 milestones
 
 Shade previews use the new controls by default. New screens use ordinary
