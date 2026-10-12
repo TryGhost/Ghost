@@ -67,7 +67,9 @@ export function getMoveErrorMessage(error: unknown) {
   if (isApiError(error)) {
     switch (error.statusCode) {
       case 400:
-        return 'Enter a valid destination handle.';
+        return error.code === 'SELF_MOVE'
+          ? 'Enter a different account than this Ghost account.'
+          : 'Enter a valid destination handle.';
       case 404:
         return 'Could not find the destination profile. Check its handle and try again.';
       case 409:

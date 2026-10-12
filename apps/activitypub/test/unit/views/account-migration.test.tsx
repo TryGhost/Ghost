@@ -193,6 +193,32 @@ describe('outbound account migration', () => {
     ).toBe(true);
   });
 
+  it('explains a server-rejected move to this account before the Ghost handle loads', async () => {
+    mocks.account.data = undefined;
+    mocks.move.mutateAsync.mockRejectedValue({
+      message: 'Destination is this account',
+      statusCode: 400,
+      code: 'SELF_MOVE',
+    });
+    render(<AccountMigration />);
+    goToExportForm();
+    enterDestination('index@ghost.example');
+    await confirmMove();
+    await screen.findByText('Enter a different account than this Ghost account.');
+  });
+
+  it('keeps the generic message for other rejected handles', async () => {
+    mocks.move.mutateAsync.mockRejectedValue({
+      message: 'Invalid destination handle',
+      statusCode: 400,
+    });
+    render(<AccountMigration />);
+    goToExportForm();
+    enterDestination('new@localhost');
+    await confirmMove();
+    await screen.findByText('Enter a valid destination handle.');
+  });
+
   it('shows the alias requirement when the server rejects an unverified destination', async () => {
     mocks.move.mutateAsync.mockRejectedValue({
       message: 'Alias required',
