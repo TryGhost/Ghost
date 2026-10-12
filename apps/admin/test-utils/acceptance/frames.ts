@@ -22,6 +22,8 @@ export async function fakeFrameOrigin(origin: string, html: string, delayMs = 0)
   // The page's own requests there, such as the app page's probe, don't reach Playwright.
   // Admin's own origin is left alone: faking a same-origin preview frame mustn't answer
   // Admin's API requests with the frame's HTML.
+  // TODO(BER-3983): the probe goes with the bridge handshake. Once it has, drop this unless
+  // a spec has come to make the page itself request a faked origin.
   if (new URL(origin).origin !== window.location.origin) {
     fakeOriginRequests(origin, { html });
   }

@@ -60,9 +60,13 @@ const NotResponding: React.FC<{
 
 /**
  * The app's page, loaded from its own URL in a sandboxed frame. Ready means the frame has
- * loaded; knowing the app itself is up comes with the bridge (BER-3983), which also
- * replaces this with a handshake. A page that can't be reached, or doesn't load in time,
- * gets the not-responding state, and the rest of Admin stays usable either way.
+ * loaded and the app answered a probe. A page that can't be reached, or doesn't load in
+ * time, gets the not-responding state, and the rest of Admin stays usable either way.
+ *
+ * TODO(BER-3983): the load event, the probe and `reached` stand in for the bridge's
+ * handshake, which says when the app itself is ready and times out when it never is.
+ * Replace them when the bridge lands; the not-responding state, the timeout and the retry
+ * stay. Don't build on the probe.
  */
 const AppFrame: React.FC<{ installation: AppInstallation }> = ({ installation }) => {
   const [attempt, setAttempt] = useState(0);
