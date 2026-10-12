@@ -142,6 +142,62 @@ describe('Automation host limits', () => {
     }
   });
 
+  it('checks capacity when direct edits give active legacy welcome emails their first graphs', async () => {
+    const free = await createWelcome('member-welcome-email-free', 'active');
+    const paid = await createWelcome('member-welcome-email-paid', 'active');
+    await capAtCurrentCount(1);
+    const freeGraph = { ...payload(), name: free.name };
+    await agent
+      .put(`automations/${free.id}`)
+      .body({ automations: [freeGraph] })
+      .expectStatus(200);
+    // An existing active graph keeps its slot even at cap.
+    await agent
+      .put(`automations/${free.id}`)
+      .body({ automations: [{ ...freeGraph, description: 'Edited active graph' }] })
+      .expectStatus(200);
+    const blocked = await agent
+      .put(`automations/${paid.id}`)
+      .body({ automations: [{ ...payload(), name: paid.name, description: 'Must roll back' }] })
+      .expectStatus(403);
+    assert.equal(blocked.body.errors[0].type, 'HostLimitError');
+    assert.equal(await countActiveAutomations(), 1);
+    assert.equal(
+      await db.knex('automation_actions').where('automation_id', paid.id).first(),
+      undefined,
+    );
+    const unchanged = await db.knex('automations').where('id', paid.id).first();
+    assert.equal(unchanged.status, 'active');
+    assert.notEqual(unchanged.description, 'Must roll back');
+  });
+
+  it.each(['legacy graph', 'modern activation'])(
+    'serializes first legacy graph creation with concurrent %s',
+    async (scenario) => {
+      const free = await createWelcome('member-welcome-email-free', 'active');
+      const paid = await createWelcome('member-welcome-email-paid', 'active');
+      await capAtCurrentCount(1);
+      const first = agent
+        .put(`automations/${free.id}`)
+        .body({ automations: [{ ...payload(), name: free.name }] });
+      const second =
+        scenario === 'legacy graph'
+          ? agent
+              .put(`automations/${paid.id}`)
+              .body({ automations: [{ ...payload(), name: paid.name }] })
+          : agent.post('automations').body({ automations: [payload()] });
+      const results = await Promise.all([first, second]);
+      assert.equal(
+        results.filter(({ statusCode }) => statusCode === 200 || statusCode === 201).length,
+        1,
+      );
+      const blocked = results.find(({ statusCode }) => statusCode === 403);
+      assert.ok(blocked);
+      assert.equal(blocked.body.errors[0].type, 'HostLimitError');
+      assert.equal(await countActiveAutomations(), 1);
+    },
+  );
+
   it('rejects legacy status changes once welcome emails are converted', async () => {
     const free = await createWelcome('member-welcome-email-free', 'active');
     await hostLimits.setHostLimits({ limitAutomations: { max: '0' } });

@@ -451,8 +451,19 @@ export function createDatabaseAutomationsRepository({
           return null;
         }
 
-        if (automation.status !== 'active' && data.status === 'active') {
-          await limitService.errorIfWouldGoOverLimit('limitAutomations', { transacting: trx });
+        if (data.status === 'active' && limitService.isLimited('limitAutomations')) {
+          // Active legacy welcome emails start consuming a slot when they gain a graph.
+          const addsFirstGraph =
+            automation.status === 'active' &&
+            (data.actions?.length ?? 0) > 0 &&
+            !(await trx('automation_actions')
+              .select('id')
+              .where('automation_id', id)
+              .whereNull('deleted_at')
+              .first());
+          if (automation.status !== 'active' || addsFirstGraph) {
+            await limitService.errorIfWouldGoOverLimit('limitAutomations', { transacting: trx });
+          }
         }
 
         const now = new Date();
