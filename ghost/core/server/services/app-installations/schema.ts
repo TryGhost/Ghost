@@ -22,10 +22,6 @@ export const DbAppInstallation = z.object({
   updated_at: DbDate.nullable(),
 });
 
-/**
- * The manifest as the table holds it, JSON text, against the manifest itself. The digest
- * is taken from this encoding, and the read decodes exactly it.
- */
 export const StoredManifest = DbJson(AppManifestSchema, {
   message: 'The stored manifest is not JSON.',
 });

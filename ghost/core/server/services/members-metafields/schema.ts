@@ -134,7 +134,6 @@ export type WriteOrigin =
 /** The fields an entry names. */
 export const MetafieldChangeEventFields = z.array(MetafieldChangeEventFieldSchema);
 
-/** The field list as the table holds it, JSON text, against the list itself. */
 export const StoredFieldList = DbJson(MetafieldChangeEventFields, {
   message: 'The stored field list is not JSON.',
 });
