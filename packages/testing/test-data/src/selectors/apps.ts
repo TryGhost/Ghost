@@ -38,7 +38,6 @@ export const doneButton = 'Done';
 export const cancelButton = 'Cancel';
 export const uninstallButton = 'Uninstall';
 export const reviewChangesLink = 'Review changes';
-export const reviewChangesButton = 'Review changes';
 export const openButton = 'Open';
 export const detailsMenuItem = 'Details';
 

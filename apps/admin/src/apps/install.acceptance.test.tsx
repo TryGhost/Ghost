@@ -123,6 +123,12 @@ describe('Installing an app', () => {
     expect(installApi.requests.map(({ body }) => body)).toEqual([
       { app_installations: [{ manifest_url: MANIFEST_URL, digest: 'digest-1' }] },
     ]);
+
+    // Back in Apps, the list already shows the new app.
+    await appsScreen.sidebarLink().click();
+    await expect.poll(currentRoute).toBe('/apps');
+    await expect(appsScreen.rows()).toHaveCount(1);
+    await expect.element(appsScreen.row('Podcast')).toHaveTextContent('Example Audio');
   });
 
   it('marks an app served from the developer’s machine', async () => {
