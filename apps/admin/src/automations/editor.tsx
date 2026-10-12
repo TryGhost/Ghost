@@ -525,9 +525,7 @@ const AutomationEditorContent: React.FC<{
             ? 'settings'
             : !draft || !configData
               ? 'unknown'
-              : draft.status === 'active' &&
-                  automationRunAnalyticsEnabled &&
-                  configData.config.stats
+              : draft.status === 'active' && configData.config.stats
                 ? 'performance'
                 : 'closed'
         }

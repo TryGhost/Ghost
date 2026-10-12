@@ -1162,7 +1162,7 @@ describe('AutomationEditor', () => {
   });
 
   it('resolves the sidebar after loading and preserves user choices on later updates', async () => {
-    mockLabs.current = { automationRunAnalytics: true, automationsPerTier: true };
+    mockLabs.current = { automationsPerTier: true };
     mockUseReadAutomation.mockReturnValue({
       isLoading: true,
       isError: false,
