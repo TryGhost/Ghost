@@ -170,7 +170,7 @@ describe('New automation', () => {
       );
       await refresh;
     }
-    await page.getByRole('button', { name: /^Paid subscription starts/ }).click();
+    await page.getByRole('button', { name: /^Paid subscription started/ }).click();
     await addWait();
     const input = page.getByRole('textbox', { name: 'Wait for', exact: true });
     await input.fill('3');
@@ -281,8 +281,8 @@ describe('New automation', () => {
   });
 
   for (const [title, scope] of [
-    ['Member signs up', 'free'],
-    ['Paid subscription starts', 'all_paid'],
+    ['Free member signed up', 'free'],
+    ['Paid subscription started', 'all_paid'],
   ] as const) {
     it(`selects ${scope} with Stripe connected`, async () => {
       fakeAutomations([]);
@@ -300,6 +300,11 @@ describe('New automation', () => {
       });
       await expect.element(page.getByText('Select a trigger', { exact: true })).toBeVisible();
       await page.getByRole('button', { name: new RegExp(`^${title}`) }).click();
+      if (scope === 'all_paid') {
+        await expect
+          .element(page.getByText('Triggered when a new or free member starts:', { exact: true }))
+          .toBeVisible();
+      }
       await expect.element(button('Save')).toBeDisabled();
       expect(create.requests).toHaveLength(0);
       await addWait();

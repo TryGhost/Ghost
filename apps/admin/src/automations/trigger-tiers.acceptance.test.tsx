@@ -97,7 +97,7 @@ describe('Automation trigger tiers', () => {
 
     await picker().click();
     await expect.element(page.getByRole('checkbox', { name: 'Bronze', exact: true })).toBeChecked();
-    await page.getByRole('heading', { name: 'Paid subscription starts' }).click();
+    await page.getByRole('heading', { name: 'Paid subscription started' }).click();
     await expect.element(options).not.toBeInTheDocument();
 
     await picker().click();
@@ -124,7 +124,7 @@ describe('Automation trigger tiers', () => {
       });
       await renderAdminApp('/automations/first', flags);
       await expect
-        .element(page.getByRole('heading', { name: 'Paid subscription starts' }))
+        .element(page.getByRole('heading', { name: 'Paid subscription started' }))
         .toBeVisible();
       await expect.element(picker()).toHaveTextContent('Any paid tier');
       await selectBronze();
@@ -289,7 +289,7 @@ describe('Automation trigger tiers', () => {
     const save = serve({ trigger_tier_scope: 'selected_paid', trigger_tier_ids: ['bronze'] });
     await renderAdminApp('/automations/first', { labs: { automations: true } });
     await expect
-      .element(page.getByRole('button', { name: 'Trigger: Member signs up' }))
+      .element(page.getByRole('button', { name: 'Trigger: Free member signed up' }))
       .toBeVisible();
     await expect.element(picker()).not.toBeInTheDocument();
     await page.getByRole('button', { name: 'Publish', exact: true }).click();

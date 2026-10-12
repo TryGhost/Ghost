@@ -69,7 +69,7 @@ describe('Automation action validation feedback', () => {
     await expect.element(warning).toBeVisible();
     await warning.click();
     await expect.element(warning).toBeVisible();
-    await page.getByRole('heading', { name: 'Member signs up', exact: true }).click();
+    await page.getByRole('heading', { name: 'Free member signed up', exact: true }).click();
     await expect.element(warning).not.toBeInTheDocument();
     await page.getByRole('button', { name: 'Why this step needs attention' }).click();
     await expect.element(warning).toBeVisible();
