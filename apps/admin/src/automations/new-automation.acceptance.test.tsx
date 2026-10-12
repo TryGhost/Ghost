@@ -276,7 +276,7 @@ describe('New automation', () => {
     fakeAutomations([]);
     await renderAdminApp('/automations/new', { labs: { automations: true } });
     await expect.poll(currentRoute).toBe('/automations');
-    await expect.element(page.getByRole('heading', { name: 'Automations' })).toBeVisible();
+    await expect.element(page.getByRole('heading', { name: /^Automations/ })).toBeVisible();
     await expect.element(button('New automation')).not.toBeInTheDocument();
   });
 
