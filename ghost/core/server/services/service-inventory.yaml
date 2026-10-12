@@ -1,15 +1,29 @@
 # Temporary migration inventory. See README.md before updating.
 # Entry points are relative to this directory; evidence paths are relative to ghost.
 # An unverified facet is an open audit question, not an empty/no-op contract.
-summary:
-  total: 71
-  migrated: 2
+exemplaryMigration: indexnow-ping
 services:
   activitypub:
     kind: directory
     disposition: retain
     status: audited
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
+    migration:
+      complexity: complex
+      modelImpact: fits
+      reason: >-
+        The retained instance fits the helper, but startup currently publishes it before
+        registering three settings listeners and launches enable/disable without awaiting
+        it. Define readiness as composition versus remote configuration explicitly, preserve
+        background boot, and add cleanup plus ordering for overlapping settings changes.
+        Dynamic enable/disable can remain service behavior rather than requiring instance
+        replacement.
+      reviewedAt: f276513ba32b7114fd5cc4f7b02d3f82c0c31e3e
+      sources:
+        - core/server/services/activitypub/activity-pub-service-wrapper.js
+        - core/server/services/activitypub/activity-pub-service.ts
+        - core/boot.js
+        - core/server/services/settings/settings-service.js
     entryPoints:
       - activitypub/index.js
     notes: >-
@@ -160,6 +174,22 @@ services:
     disposition: retain
     status: audited
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
+    migration:
+      complexity: complex
+      modelImpact: fits
+      reason: >-
+        One retained manager fits; the difficult work is moving eager adapter lookups behind
+        its readiness barrier across image helpers, scheduling, settings and other
+        consumers. Preserve lazy per-adapter caching and keep repeated configuration
+        validation distinct from one-time manager construction. Nested adapter lifetime is
+        owned separately and does not itself require replacing the manager.
+      reviewedAt: f276513ba32b7114fd5cc4f7b02d3f82c0c31e3e
+      sources:
+        - core/server/services/adapter-manager/index.ts
+        - core/server/services/adapter-manager/adapter-manager.ts
+        - core/server/lib/image/index.js
+        - core/server/services/post-scheduling/index.ts
+        - core/boot.js
     entryPoints:
       - adapter-manager/index.ts
     notes: >-
@@ -379,6 +409,21 @@ services:
     disposition: retain
     status: audited
     auditedAt: c2999f4e13da6360bceced808bb52c4a04b5ad03
+    migration:
+      complexity: complex
+      modelImpact: fits
+      reason: >-
+        Ownership must be decided before migration: this eager settings resolver has no boot
+        entry and currently serves the announcements endpoint. If retained as an
+        application-owned capability, construction and live settings callbacks fit the
+        helper. Do not add initialization solely to justify its location; the open placement
+        decision makes it unsuitable as the next simple pilot.
+      reviewedAt: 61ac1e5058fa4657def92d7b362e197314b1a88d
+      sources:
+        - core/server/services/announcement-bar-service/index.js
+        - core/server/services/announcement-bar-service/announcement-bar-settings.js
+        - core/server/api/endpoints/announcements.js
+        - core/server/services/README.md
     entryPoints:
       - announcement-bar-service/index.js
     notes: >-
@@ -518,6 +563,21 @@ services:
     kind: directory
     disposition: retain
     status: auditing
+    migration:
+      complexity: straightforward
+      modelImpact: fits
+      reason: >-
+        The guarded boot factory still composes one resource-free instance after database
+        readiness. Return that instance through the initializer and update endpoint access,
+        preserving schema gating and live manifest/configuration callbacks. The new history,
+        detail and uninstall behavior is per operation and adds no startup lifecycle.
+      reviewedAt: 61ac1e5058fa4657def92d7b362e197314b1a88d
+      sources:
+        - core/server/services/app-installations/index.ts
+        - core/server/services/app-installations/service.ts
+        - core/server/services/app-installations/history.ts
+        - core/server/api/endpoints/app-installations.ts
+        - core/boot.js
     entryPoints:
       - app-installations/index.ts
     notes: >-
@@ -563,6 +623,22 @@ services:
     disposition: retain
     status: audited
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
+    migration:
+      complexity: straightforward
+      modelImpact: fits
+      reason: >-
+        Compose and publish the repository, service and controller together, retaining their
+        identities. Boot must await this root before email rendering captures its service;
+        request consumers should read the ready composition. Constructors acquire no
+        subscriptions or background work, so the existing initializer is sufficient; avoid
+        the current partial publication before controller construction.
+      reviewedAt: f276513ba32b7114fd5cc4f7b02d3f82c0c31e3e
+      sources:
+        - core/server/services/audience-feedback/index.js
+        - core/server/services/audience-feedback/audience-feedback-service.js
+        - core/server/services/email-service/email-service-wrapper.js
+        - core/server/web/members/app.js
+        - core/boot.js
     entryPoints:
       - audience-feedback/index.js
     notes: >-
@@ -762,6 +838,23 @@ services:
     disposition: review
     status: audited
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
+    migration:
+      complexity: complex
+      modelImpact: fits
+      reason: >-
+        First settle the cohesive auth subsystem and the owners of its session service,
+        session store and member JWT middleware. Current composition spans import time, app
+        construction and asynchronous first-request initialization, with different
+        dependency barriers. The existing helper can construct those retained owners, but
+        wrapping the barrel would leave the real initialization scattered; relocation alone
+        will not solve it.
+      reviewedAt: f276513ba32b7114fd5cc4f7b02d3f82c0c31e3e
+      sources:
+        - core/server/services/auth/index.js
+        - core/server/services/auth/session/index.js
+        - core/server/services/auth/session/express-session.js
+        - core/server/services/auth/members/index.js
+        - core/boot.js
     entryPoints:
       - auth/index.js
       - auth/session/index.js
@@ -1014,6 +1107,23 @@ services:
     disposition: retain
     status: audited
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
+    migration:
+      complexity: complex
+      modelImpact: fits
+      reason: >-
+        The retained poller fits, but its two subscriptions, timer and scheduler
+        registration need failure cleanup before publication, while the API owns a separate
+        eager repository. Preserve startup after jobs are ready and separate first-poll work
+        from readiness. Retained API and analytics consumers must share the chosen
+        composition; these are ownership and ordering changes, not evidence that the helper
+        needs scheduler hooks.
+      reviewedAt: f276513ba32b7114fd5cc4f7b02d3f82c0c31e3e
+      sources:
+        - core/server/services/automations/index.ts
+        - core/server/services/automations/service.ts
+        - core/server/services/automations/automations-api.ts
+        - core/server/lib/soonest-timer.ts
+        - core/boot.js
     entryPoints:
       - automations/index.ts
       - automations/automations-api.ts
@@ -1267,6 +1377,22 @@ services:
     disposition: retain
     status: audited
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
+    migration:
+      complexity: straightforward
+      modelImpact: fits
+      reason: >-
+        The root only composes its API, controller, stats and mail collaborators during
+        boot; it has no startup subscriptions or worker. Publish that graph atomically and
+        update API/controller consumers, preserving member and email prerequisites. Make
+        retention across repeated init explicit instead of the current unconditional
+        replacement; notification persistence and delivery remain operation-level behavior.
+      reviewedAt: f276513ba32b7114fd5cc4f7b02d3f82c0c31e3e
+      sources:
+        - core/server/services/comments/index.js
+        - core/server/services/comments/comments-service.js
+        - core/server/services/comments/comments-service-emails.js
+        - core/server/api/endpoints/comments.js
+        - core/boot.js
     entryPoints:
       - comments/index.js
     notes: >-
@@ -1479,6 +1605,22 @@ services:
     disposition: retain
     status: audited
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
+    migration:
+      complexity: straightforward
+      modelImpact: fits
+      reason: >-
+        Already retains one boot-created importer and rejects use before init. Move that
+        composition behind the helper and adapt the request/job forwarding methods while
+        keeping validation at the boundary. Jobs and media are deliberately looked up when
+        work runs; per-import stores, staging and cleanup remain with the importer and do
+        not require a new root lifecycle.
+      reviewedAt: f276513ba32b7114fd5cc4f7b02d3f82c0c31e3e
+      sources:
+        - core/server/services/content-import/index.ts
+        - core/server/services/content-import/import/importer.ts
+        - core/server/services/jobs-service/register-job-handlers.ts
+        - core/boot.js
+        - test/unit/server/services/content-import/index.test.ts
     entryPoints:
       - content-import/index.ts
     notes: >-
@@ -1698,6 +1840,22 @@ services:
     disposition: retain
     status: audited
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
+    migration:
+      complexity: complex
+      modelImpact: fits
+      reason: >-
+        Each init rebuilds the redirect graph while mounted middleware retains its manager,
+        so lifetime and consumer identity need an explicit decision. A retained manager
+        already supports activate() for in-place reload; preserve that operation and the
+        difference between tolerant boot loading and strict uploads. This is coordinated
+        wiring and failure-policy work, with no demonstrated need to extend the helper.
+      reviewedAt: f276513ba32b7114fd5cc4f7b02d3f82c0c31e3e
+      sources:
+        - core/server/services/custom-redirects/index.js
+        - core/server/services/custom-redirects/redirects-service.ts
+        - core/frontend/web/site.js
+        - core/server/api/endpoints/redirects.js
+        - core/boot.js
     entryPoints:
       - custom-redirects/index.js
     notes: >-
@@ -1896,6 +2054,23 @@ services:
     disposition: retain
     status: audited
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
+    migration:
+      complexity: straightforward
+      modelImpact: fits
+      reason: >-
+        Construction only wires a model and shared cache; theme activation is already a
+        separate awaited operation used both at boot and after uploads. Return one retained
+        implementation, await its initializer before theme startup, and update api
+        consumers. Preserve activation on every boot and theme change rather than moving
+        activation into the one-time factory; current activation races are separate
+        behavioral gaps.
+      reviewedAt: f276513ba32b7114fd5cc4f7b02d3f82c0c31e3e
+      sources:
+        - core/server/services/custom-theme-settings.js
+        - core/shared/custom-theme-settings-cache/custom-theme-settings-service.js
+        - core/server/services/themes/activation-bridge.js
+        - core/server/services/themes/storage.js
+        - core/boot.js
     entryPoints:
       - custom-theme-settings.js
     notes: >-
@@ -2062,6 +2237,22 @@ services:
     disposition: retain
     status: audited
     auditedAt: c2999f4e13da6360bceced808bb52c4a04b5ad03
+    migration:
+      complexity: straightforward
+      modelImpact: fits
+      reason: >-
+        Already constructs and retains one repository without listeners or background work.
+        Replace the wrapper with the initializer, await it during boot and update Stripe's
+        late-bound repository getter so earlier Stripe construction does not read an unready
+        service. Existing root tests cover identity and the real Stripe consumer;
+        persistence and staff notification ordering should remain unchanged.
+      reviewedAt: f276513ba32b7114fd5cc4f7b02d3f82c0c31e3e
+      sources:
+        - core/server/services/donations/donation-service-wrapper.js
+        - core/server/services/donations/donation-bookshelf-repository.ts
+        - core/server/services/stripe/stripe-service.js
+        - core/boot.js
+        - test/unit/server/services/donations/index.test.ts
     entryPoints:
       - donations/index.js
     notes: >-
@@ -2239,6 +2430,22 @@ services:
     disposition: retain
     status: audited
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
+    migration:
+      complexity: straightforward
+      modelImpact: fits
+      reason: >-
+        Already retains one policy instance and reads configuration through live callbacks,
+        with no resources to start. Await its initializer before constructing dependants and
+        remove or adapt defensive synchronous init calls in welcome-email construction and
+        the automated-email endpoint. Keep parser helpers independent; existing wrapper
+        tests protect identity and live settings.
+      reviewedAt: f276513ba32b7114fd5cc4f7b02d3f82c0c31e3e
+      sources:
+        - core/server/services/email-address/email-address-service-wrapper.js
+        - core/server/services/member-welcome-emails/service.js
+        - core/server/api/endpoints/automated-email-design.js
+        - core/boot.js
+        - test/unit/server/services/email-address/wrapper.test.ts
     entryPoints:
       - email-address/index.js
     notes: >-
@@ -2425,6 +2632,23 @@ services:
     disposition: retain
     status: audited
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
+    migration:
+      complexity: complex
+      modelImpact: fits
+      reason: >-
+        Compose the newsletter, automation and gift executors as one ready aggregate instead
+        of publishing them sequentially behind only the newsletter guard. Failure after
+        metric registration or one executor must not leave an unretryable partial root.
+        Preserve explicit dependencies and the separate job scheduler; three executors and
+        independent cursors fit one returned composition without adding lifecycle hooks to
+        the helper.
+      reviewedAt: f276513ba32b7114fd5cc4f7b02d3f82c0c31e3e
+      sources:
+        - core/server/services/email-analytics/index.ts
+        - core/server/services/email-analytics/email-analytics-service-wrapper.ts
+        - core/server/services/email-analytics/jobs/index.js
+        - core/boot.js
+        - test/unit/server/services/email-analytics/index.test.ts
     entryPoints:
       - email-analytics/index.ts
       - email-analytics/jobs/index.js
@@ -2677,6 +2901,23 @@ services:
     disposition: retain
     status: audited
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
+    migration:
+      complexity: complex
+      modelImpact: may-change
+      reason: >-
+        Repeated init deliberately re-arms a stopped batch sender and registers
+        pre-stop/drain callbacks with the new GhostServer while retaining the delivery
+        graph. A once-only factory cannot silently replace that per-boot work. Decide how
+        construction, server attachment and restart are separated; also make partial
+        listener/controller construction retry-safe and await sibling dependencies before
+        capture. This is a concrete test of the model's lifecycle boundary.
+      reviewedAt: f276513ba32b7114fd5cc4f7b02d3f82c0c31e3e
+      sources:
+        - core/server/services/email-service/email-service-wrapper.js
+        - core/server/services/email-service/batch-sending-service.js
+        - core/server/services/email-service/README.md
+        - core/boot.js
+        - test/unit/server/services/email-service/batch-sending-service.test.js
     entryPoints:
       - email-service/index.js
       - email-service/newsletter-email-event-storage.js
@@ -2988,6 +3229,23 @@ services:
     disposition: retain
     status: audited
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
+    migration:
+      complexity: complex
+      modelImpact: fits
+      reason: >-
+        Move eager provider composition and two domain-event subscriptions into one owned
+        startup path. Members and analytics currently capture the eager instance before its
+        init, so preserve dependency order and adapt those consumers. Repeated init
+        duplicates handlers; introduce idempotent registration and partial-start cleanup
+        while retaining suppression failure behavior. A single retained instance fits once
+        those subscription responsibilities are explicit.
+      reviewedAt: f276513ba32b7114fd5cc4f7b02d3f82c0c31e3e
+      sources:
+        - core/server/services/email-suppression-list/service.js
+        - core/server/services/email-suppression-list/mailgun-email-suppression-list.js
+        - core/server/services/members/api.js
+        - core/server/services/email-analytics/index.ts
+        - core/boot.js
     entryPoints:
       - email-suppression-list/index.js
     notes: >-
@@ -3170,6 +3428,22 @@ services:
     disposition: retain
     status: audited
     auditedAt: c2999f4e13da6360bceced808bb52c4a04b5ad03
+    migration:
+      complexity: straightforward
+      modelImpact: fits
+      reason: >-
+        At this revision each eligible init constructs an instance and starts an unawaited
+        ping. Retaining the composition fits: boot should apply the environment gate, await
+        member/email/stat prerequisites, then start ping separately without waiting for the
+        request. Preserve payload behavior and explicitly handle detached failures; the
+        instance has no timers or subscriptions requiring a new model.
+      reviewedAt: f276513ba32b7114fd5cc4f7b02d3f82c0c31e3e
+      sources:
+        - core/server/services/explore-ping/index.ts
+        - core/server/services/explore-ping/explore-ping-service.ts
+        - core/server/services/posts/posts-service-instance.js
+        - core/boot.js
+        - test/e2e-server/boot-explore-ping.isolated.test.ts
     entryPoints:
       - explore-ping/index.ts
     notes: >-
@@ -3318,6 +3592,21 @@ services:
     disposition: retain
     status: audited
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
+    migration:
+      complexity: straightforward
+      modelImpact: fits
+      reason: >-
+        Move the eager singleton from the implementation module to a boot-owned default root
+        and update the exports endpoint to read its ready instance. The constructor only
+        captures dependencies; configuration, signing and delivery happen per request.
+        Preserve current validation, timeout and zero-retry behavior without turning the
+        remote export operation into startup work.
+      reviewedAt: f276513ba32b7114fd5cc4f7b02d3f82c0c31e3e
+      sources:
+        - core/server/services/export-requests/export-requests-service.ts
+        - core/server/api/endpoints/exports.js
+        - core/server/lib/signed-webhook.ts
+        - test/unit/server/services/export-requests/export-requests-service.test.ts
     entryPoints:
       - export-requests/export-requests-service.ts
     notes: >-
@@ -3478,6 +3767,21 @@ services:
     disposition: relocate
     status: audited
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
+    migration:
+      complexity: not-applicable
+      modelImpact: not-applicable
+      reason: >-
+        Caller-constructed archive support with per-export streams and cleanup, not an
+        application-owned instance. Move the exporter and component lists together to
+        lib/site-export, updating both the download endpoint and export-requests consumer;
+        do not add a service initializer.
+      reviewedAt: f276513ba32b7114fd5cc4f7b02d3f82c0c31e3e
+      sources:
+        - core/server/services/exports/site-exporter.ts
+        - core/server/services/exports/export-components.ts
+        - core/server/api/endpoints/exports.js
+        - core/server/services/export-requests/export-requests-service.ts
+        - test/unit/server/services/exports/site-exporter.test.ts
     entryPoints:
       - exports/site-exporter.ts
       - exports/export-components.ts
@@ -3659,6 +3963,21 @@ services:
     disposition: retain
     status: audited
     auditedAt: c2999f4e13da6360bceced808bb52c4a04b5ad03
+    migration:
+      complexity: straightforward
+      modelImpact: fits
+      reason: >-
+        Already constructs one graph after the database is ready and retains it. Wrap that
+        factory, await boot initialization and switch the two API consumers from the live
+        named export to the ready instance. Keep database transactions and token history in
+        the implementation; startup acquires no independent resources.
+      reviewedAt: f276513ba32b7114fd5cc4f7b02d3f82c0c31e3e
+      sources:
+        - core/server/services/gift-links/index.ts
+        - core/server/services/gift-links/service.ts
+        - core/boot.js
+        - core/server/api/endpoints/utils/gift-link-access.ts
+        - test/unit/server/services/gift-links/index.test.ts
     entryPoints:
       - gift-links/index.ts
     notes: >-
@@ -3874,6 +4193,22 @@ services:
     disposition: retain
     status: audited
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
+    migration:
+      complexity: complex
+      modelImpact: fits
+      reason: >-
+        The gift, delivery and controller composition fits one retained facade: member, tier
+        and staff dependencies are deferred until operations, and recovery already runs
+        after boot. Preserve those getters instead of reading unready services during
+        construction. Four domain subscriptions and partial publication need owned cleanup
+        before retry, but the source does not establish an initializer cycle.
+      reviewedAt: f276513ba32b7114fd5cc4f7b02d3f82c0c31e3e
+      sources:
+        - core/server/services/gifts/index.ts
+        - core/server/services/stripe/service.js
+        - core/server/services/members/api.js
+        - core/boot.js
+        - test/unit/boot-email-analytics.test.ts
     entryPoints:
       - gifts/index.ts
       - gifts/jobs/index.js
@@ -4123,6 +4458,21 @@ services:
     disposition: retain
     status: audited
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
+    migration:
+      complexity: straightforward
+      modelImpact: fits
+      reason: >-
+        One translator and one locale subscription fit the existing factory. Preserve the
+        retained t/dir delegates and live language changes, create after settings, and
+        remove only this factory's listener if startup fails. Repeated init currently
+        replaces the translator and adds listeners; changing that to retained identity needs
+        an explicit regression check, not a new helper feature.
+      reviewedAt: f276513ba32b7114fd5cc4f7b02d3f82c0c31e3e
+      sources:
+        - core/server/services/i18n.js
+        - core/boot.js
+        - core/server/services/gifts/index.ts
+        - test/unit/boot-signing-keys.test.ts
     entryPoints:
       - i18n.js
     notes: >-
@@ -4301,6 +4651,22 @@ services:
     disposition: retain
     status: audited
     auditedAt: 5dae46983fe5423a900214dfc1906f5d14e637d2
+    migration:
+      complexity: straightforward
+      modelImpact: fits
+      reason: >-
+        The guarded wrapper retains one token service with a captured issuer and live
+        signing-key provider, and owns no resources. Replace instance access with the ready
+        service, retain signing-keys-before-identity boot order, and update the identities
+        endpoint and ActivityPub consumer. The merged root tests now characterize retention,
+        live keys, pre-init access and retry after failed composition.
+      reviewedAt: 61ac1e5058fa4657def92d7b362e197314b1a88d
+      sources:
+        - core/server/services/identity-tokens/identity-token-service-wrapper.js
+        - core/server/services/identity-tokens/identity-token-service.ts
+        - core/server/api/endpoints/identities.js
+        - core/server/services/activitypub/activity-pub-service-wrapper.js
+        - test/unit/server/services/identity-tokens/index.test.ts
     entryPoints:
       - identity-tokens/index.js
     notes: >-
@@ -4442,6 +4808,20 @@ services:
     migrated: true
     status: audited
     auditedAt: 5dae46983fe5423a900214dfc1906f5d14e637d2
+    migration:
+      complexity: straightforward
+      modelImpact: fits
+      reason: >-
+        Already migrated: the factory creates one instance, registers its two listeners, and
+        removes partial registrations before allowing retry. Boot awaits publication. This
+        is the existing example for a bounded subscription-owning service; detached requests
+        and normal shutdown remain separate concerns.
+      reviewedAt: f276513ba32b7114fd5cc4f7b02d3f82c0c31e3e
+      sources:
+        - core/server/services/indexnow-ping/index.ts
+        - core/server/services/indexnow-ping/indexnow-ping-service.ts
+        - core/boot.js
+        - test/unit/server/services/indexnow-ping/index.test.ts
     entryPoints:
       - indexnow-ping/index.ts
     notes: >-
@@ -4627,6 +5007,20 @@ services:
     disposition: retain
     status: audited
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
+    migration:
+      complexity: straightforward
+      modelImpact: fits
+      reason: >-
+        Keep this business service. Its endpoint currently constructs one instance that only
+        retains model dependencies. Move that composition to a boot-owned factory and update
+        the endpoint to use the ready instance; editing and key-rotation behavior can stay
+        in the implementation without a lifecycle extension.
+      reviewedAt: f276513ba32b7114fd5cc4f7b02d3f82c0c31e3e
+      sources:
+        - core/server/services/integrations/integrations-service.js
+        - core/server/api/endpoints/integrations.js
+        - core/boot.js
+        - test/e2e-api/admin/integrations.test.js
     entryPoints:
       - integrations/integrations-service.js
     notes: >-
@@ -4785,6 +5179,22 @@ services:
     disposition: retain
     status: audited
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
+    migration:
+      complexity: straightforward
+      modelImpact: fits
+      reason: >-
+        Construct the eager key map during boot and update scheduling, authentication and
+        frontend consumers to retain the same ready map. Lazy database lookup and
+        clear/delete invalidation remain map operations, including caching rejected
+        promises. Merged tests characterize shared pending lookups, failure retention,
+        invalidation and the retained frontend consumer.
+      reviewedAt: 61ac1e5058fa4657def92d7b362e197314b1a88d
+      sources:
+        - core/server/services/internal-keys/index.ts
+        - core/server/services/post-scheduling/index.ts
+        - core/server/services/auth/reset-authentication.ts
+        - core/frontend/services/proxy.js
+        - test/unit/server/services/internal-keys/index.test.ts
     entryPoints:
       - internal-keys/index.ts
     notes: >-
@@ -4948,6 +5358,22 @@ services:
     disposition: retain
     status: audited
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
+    migration:
+      complexity: straightforward
+      modelImpact: fits
+      reason: >-
+        Move the eager Invites instance into a boot factory and change the endpoint to use
+        the ready instance. Its constructor only captures facades; invitation persistence,
+        rendering and API-mail delegation happen per call. Acceptance now lives under this
+        owner as an invocation-local action; preserve that separate function and its
+        transaction behavior.
+      reviewedAt: 61ac1e5058fa4657def92d7b362e197314b1a88d
+      sources:
+        - core/server/services/invites/index.js
+        - core/server/services/invites/invites.js
+        - core/server/services/invites/accept.js
+        - core/server/api/endpoints/invites.js
+        - core/server/api/endpoints/authentication.js
     entryPoints:
       - invites/index.js
     notes: >-
@@ -5156,6 +5582,22 @@ services:
     disposition: retain
     status: audited
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
+    migration:
+      complexity: complex
+      modelImpact: may-change
+      reason: >-
+        Initialization intentionally reuses the same object but clears handlers on every
+        boot; consumers retain it through shutdown, then boot registers handlers and starts
+        its backend again. Decide how one-time construction relates to per-boot reset,
+        readiness and restart. A memoized init alone would skip required reset, while
+        replacing the object would strand retained consumers.
+      reviewedAt: f276513ba32b7114fd5cc4f7b02d3f82c0c31e3e
+      sources:
+        - core/server/services/jobs-service/index.ts
+        - core/server/services/jobs-service/jobs-service.ts
+        - core/boot.js
+        - test/unit/server/services/jobs-service/index.test.js
+        - test/unit/server/services/jobs-service/retained-consumer.test.ts
     entryPoints:
       - jobs-service/index.ts
       - jobs-service/register-job-handlers.ts
@@ -5320,6 +5762,22 @@ services:
     disposition: retain
     status: audited
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
+    migration:
+      complexity: complex
+      modelImpact: fits
+      reason: >-
+        Models retain the eager policy instance and boot loads it before settings, so
+        construction and consumer ordering need coordinated changes. Keep policy reload as
+        an explicit operation on that retained instance and preserve tolerated
+        invalid-configuration behavior. These are boundary and error-policy decisions;
+        mutable policy does not require replacing the service or changing the helper.
+      reviewedAt: f276513ba32b7114fd5cc4f7b02d3f82c0c31e3e
+      sources:
+        - core/server/services/limits.ts
+        - core/server/models/integration.js
+        - core/boot.js
+        - test/utils/host-limits-utils.ts
+        - test/unit/server/services/limits.test.js
     entryPoints:
       - limits.ts
     notes: >-
@@ -5530,6 +5988,22 @@ services:
     disposition: retain
     status: audited
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
+    migration:
+      complexity: straightforward
+      modelImpact: fits
+      reason: >-
+        The guarded graph fits one factory after adapters/models and before link tracking.
+        Preserve the repository needed by link tracking and give its optional
+        cache-invalidation listener an identity and cleanup path before publishing. This is
+        bounded root/repository work; the borrowed cache and per-request redirect behavior
+        need no new kernel lifecycle.
+      reviewedAt: f276513ba32b7114fd5cc4f7b02d3f82c0c31e3e
+      sources:
+        - core/server/services/link-redirection/index.js
+        - core/server/services/link-redirection/link-redirect-repository.js
+        - core/server/services/link-tracking/index.js
+        - core/boot.js
+        - test/unit/server/services/link-redirection/link-redirect-repository.test.js
     entryPoints:
       - link-redirection/index.js
     notes: >-
@@ -5718,6 +6192,23 @@ services:
     disposition: retain
     status: audited
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
+    migration:
+      complexity: complex
+      modelImpact: fits
+      reason: >-
+        Shared initialization and retry already match defineService, but the graph exposes a
+        repository as well as the service, depends on redirection, and registers an
+        anonymous wrapped DomainEvents subscriber. Establish targeted rollback/disposal and
+        remove renderer-owned initialization while preserving newsletter and automation
+        consumers. The ready-instance model still fits; event-subscription ownership needs
+        implementation work.
+      reviewedAt: f276513ba32b7114fd5cc4f7b02d3f82c0c31e3e
+      sources:
+        - core/server/services/link-tracking/index.js
+        - core/server/services/link-tracking/link-click-tracking-service.js
+        - core/server/services/member-welcome-emails/member-welcome-email-renderer.js
+        - core/boot.js
+        - test/unit/server/services/link-tracking/index.test.ts
     entryPoints:
       - link-tracking/index.js
     notes: >-
@@ -5943,6 +6434,22 @@ services:
     disposition: retain
     status: audited
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
+    migration:
+      complexity: complex
+      modelImpact: fits
+      reason: >-
+        Unify boot and request-owned initialization, publish after adapter setup and
+        best-effort address prewarming, and decide the change from permanently cached
+        startup rejection to explicit retry. Keep pre-init false guards and live enablement
+        deliberate. One retained service already supports disabled operation; per-rail
+        availability, lazy SDKs and provider caches can stay inside it.
+      reviewedAt: f276513ba32b7114fd5cc4f7b02d3f82c0c31e3e
+      sources:
+        - core/server/services/machine-payments/index.js
+        - core/server/services/machine-payments/service.ts
+        - core/server/services/machine-payments/adapters/x402-adapter.ts
+        - core/frontend/web/site.js
+        - test/integration/services/machine-payments/orchestration.test.js
     entryPoints:
       - machine-payments/index.js
     notes: >-
@@ -6158,6 +6665,22 @@ services:
     disposition: retain
     status: audited
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
+    migration:
+      complexity: straightforward
+      modelImpact: fits
+      reason: >-
+        The constructor captures shared models and a storage-selection callback without
+        starting work or owning resources. Return one retained inliner after adapters are
+        ready, then register jobs with that instance and adapt getInstance consumers.
+        Current init replaces the object, but no production replacement requirement was
+        found; cover retention and per-call storage selection explicitly.
+      reviewedAt: f276513ba32b7114fd5cc4f7b02d3f82c0c31e3e
+      sources:
+        - core/server/services/media-inliner/service.js
+        - core/server/services/media-inliner/external-media-inliner.js
+        - core/server/services/jobs-service/register-job-handlers.ts
+        - core/boot.js
+        - test/unit/server/services/media-inliner/service.test.ts
     entryPoints:
       - media-inliner/index.js
     notes: >-
@@ -6335,6 +6858,22 @@ services:
     disposition: retain
     status: audited
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
+    migration:
+      complexity: straightforward
+      modelImpact: fits
+      reason: >-
+        One composition-only graph fits the helper. Preserve its attribution service,
+        builder and outbound tagger, and explicitly await initialization before Staff,
+        Members and Email capture them; the current Promise.all argument order relies on
+        synchronous publication. Live settings callbacks and per-call attribution data do
+        not require a lifecycle extension.
+      reviewedAt: f276513ba32b7114fd5cc4f7b02d3f82c0c31e3e
+      sources:
+        - core/server/services/member-attribution/index.js
+        - core/server/services/staff/index.js
+        - core/server/services/email-service/email-service-wrapper.js
+        - core/boot.js
+        - test/e2e-server/services/member-attribution.test.js
     entryPoints:
       - member-attribution/index.js
     notes: >-
@@ -6546,6 +7085,22 @@ services:
     disposition: retain
     status: audited
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
+    migration:
+      complexity: complex
+      modelImpact: fits
+      reason: >-
+        Move initialization out of endpoints, Stripe callbacks and both automation pollers
+        into boot, after its mail and tracking dependencies. Keep content/sender refresh
+        separate from instance readiness, preserve legacy and general-automation sends, and
+        roll back the locale listener and partial mail/template construction on failure. One
+        retained instance fits; caller and resource ownership need substantial work.
+      reviewedAt: f276513ba32b7114fd5cc4f7b02d3f82c0c31e3e
+      sources:
+        - core/server/services/member-welcome-emails/service.js
+        - core/server/services/member-welcome-emails/member-welcome-email-renderer.js
+        - core/server/services/automations/welcome-email-automation-poll.ts
+        - core/server/api/endpoints/automated-emails.js
+        - test/integration/services/member-welcome-emails.test.js
     entryPoints:
       - member-welcome-emails/index.js
       - member-welcome-emails/service.js
@@ -6788,6 +7343,22 @@ services:
     disposition: retain
     status: audited
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
+    migration:
+      complexity: complex
+      modelImpact: may-change
+      reason: >-
+        The root retains its API and verification trigger but rebuilds SSR, integrity-token
+        and import/export collaborators on each init. Other services capture its repository
+        during the same boot group, and nested constructors install listeners. Decide which
+        graph becomes ready once, which bindings need explicit refresh, and how failed
+        composition unwinds before applying one retained instance.
+      reviewedAt: f276513ba32b7114fd5cc4f7b02d3f82c0c31e3e
+      sources:
+        - core/server/services/members/service.js
+        - core/server/services/members/api.js
+        - core/server/services/members/members-api/members-api.js
+        - core/server/services/members/members-api/services/payments-service.js
+        - core/boot.js
     entryPoints:
       - members/index.js
       - members/jobs/index.js
@@ -7114,6 +7685,21 @@ services:
     disposition: retain
     status: audited
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
+    migration:
+      complexity: complex
+      modelImpact: fits
+      reason: >-
+        One retained cache/updater pair fits defineService, but the current DomainEvents API
+        wraps callbacks without exposing a disposer. Establish a removable subscription
+        boundary before promising cleanup and retry after partial registration. Preserve the
+        live members-API getter, optional click listener and existing cache identity; this
+        is dependency ownership work rather than a need for kernel cleanup hooks.
+      reviewedAt: f276513ba32b7114fd5cc4f7b02d3f82c0c31e3e
+      sources:
+        - core/server/services/members-events/index.js
+        - core/server/services/members-events/last-seen-at-updater.js
+        - core/server/services/members-events/last-seen-at-cache.js
+        - core/boot.js
     entryPoints:
       - members-events/index.js
     notes: >-
@@ -7294,6 +7880,22 @@ services:
     disposition: retain
     status: audited
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
+    migration:
+      complexity: straightforward
+      modelImpact: fits
+      reason: >-
+        Boot already builds definitions, values and bindings together before their
+        consumers; their constructors only store dependencies. Publish the completed
+        three-part facade atomically through defineService and update consumers of the named
+        instance exports. Preserve bindings' reference to values, live limit getters and the
+        separate constant/type exports.
+      reviewedAt: f276513ba32b7114fd5cc4f7b02d3f82c0c31e3e
+      sources:
+        - core/server/services/members-metafields/index.ts
+        - core/server/services/members-metafields/definitions-service.ts
+        - core/server/services/members-metafields/bindings-service.ts
+        - core/server/services/members/service.js
+        - core/boot.js
     entryPoints:
       - members-metafields/index.ts
     notes: >-
@@ -7500,6 +8102,22 @@ services:
     disposition: retain
     status: audited
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
+    migration:
+      complexity: complex
+      modelImpact: fits
+      reason: >-
+        A composite API/controller/sender must be published together and its six sender
+        listeners must unwind on failed startup. Recommendations currently reads
+        api/sendingService synchronously later in the same Promise.all expression, while
+        jobs retain the controller and sender. Explicit dependency ordering and owned
+        listener cleanup are required, but a single ready facade fits the helper.
+      reviewedAt: f276513ba32b7114fd5cc4f7b02d3f82c0c31e3e
+      sources:
+        - core/server/services/mentions/service.js
+        - core/server/services/mentions/mention-controller.js
+        - core/server/services/mentions/mention-sending-service.js
+        - core/server/services/recommendations/recommendation-service-wrapper.js
+        - core/boot.js
     entryPoints:
       - mentions/index.js
     notes: >-
@@ -7761,6 +8379,20 @@ services:
     disposition: retain
     status: audited
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
+    migration:
+      complexity: complex
+      modelImpact: fits
+      reason: >-
+        One retained API fits defineService, but initAndRun also creates a new background
+        timer on every call. Separate construction from scheduling and decide timer
+        ownership and failure policy: a rejected run currently leaves scheduleRun's outer
+        promise pending. Boot must keep milestone checks outside foreground readiness,
+        without accidentally making successful init imply check completion.
+      reviewedAt: f276513ba32b7114fd5cc4f7b02d3f82c0c31e3e
+      sources:
+        - core/server/services/milestones/service.js
+        - core/server/services/milestones/milestones-service.js
+        - core/boot.js
     entryPoints:
       - milestones/index.js
     notes: >-
@@ -7931,6 +8563,20 @@ services:
     disposition: retain
     status: audited
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
+    migration:
+      complexity: straightforward
+      modelImpact: fits
+      reason: >-
+        The root already exports one composition-only instance with no startup subscriptions
+        or query. Move its token/mailer/MagicLink wiring into the factory and initialize it
+        before Members captures it, preserving the email-address wrapper and current mail
+        configuration timing. No different instance lifetime is needed.
+      reviewedAt: f276513ba32b7114fd5cc4f7b02d3f82c0c31e3e
+      sources:
+        - core/server/services/newsletters/index.js
+        - core/server/services/newsletters/newsletters-service.js
+        - core/server/services/members/api.js
+        - core/boot.js
     entryPoints:
       - newsletters/index.js
     notes: >-
@@ -8124,6 +8770,22 @@ services:
     disposition: retain
     status: audited
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
+    migration:
+      complexity: complex
+      modelImpact: fits
+      reason: >-
+        The cached Notifications instance fits the helper, but its capability boundary is
+        split: the API persists transformed arrays, reads can start detached repair writes,
+        and update-check constructs a separate email helper. Settle which operations belong
+        on the ready notification facade and which helper stays caller-owned; preserve
+        persistence/error timing while moving construction behind boot.
+      reviewedAt: f276513ba32b7114fd5cc4f7b02d3f82c0c31e3e
+      sources:
+        - core/server/services/notifications/index.js
+        - core/server/services/notifications/notifications.js
+        - core/server/api/endpoints/notifications.js
+        - core/server/services/notifications/notification-email.ts
+        - core/server/services/update-check/index.js
     entryPoints:
       - notifications/index.js
       - notifications/notification-email.ts
@@ -8335,6 +8997,22 @@ services:
     disposition: retain
     status: audited
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
+    migration:
+      complexity: straightforward
+      modelImpact: fits
+      reason: >-
+        The root composes one shared implementation, image adapter and two ordered providers
+        without starting background work. Construct them after adapter setup and before
+        Mentions/Recommendations use the service, then update direct instance consumers.
+        Preserve NFT-before-Twitter registration, captured credentials and image-adapter
+        identity.
+      reviewedAt: f276513ba32b7114fd5cc4f7b02d3f82c0c31e3e
+      sources:
+        - core/server/services/oembed/service.js
+        - core/server/services/oembed/oembed-service.js
+        - core/server/services/mentions/webmention-metadata.js
+        - core/server/services/recommendations/recommendation-service-wrapper.js
+        - core/boot.js
     entryPoints:
       - oembed/index.js
     notes: >-
@@ -8548,6 +9226,22 @@ services:
     disposition: retain
     status: audited
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
+    migration:
+      complexity: complex
+      modelImpact: fits
+      reason: >-
+        Initialization publishes the API before awaiting initial redirect loading and
+        installs event listeners first; re-init replaces the graph while frontend middleware
+        and Members retain older objects. Build one API/redirect facade, await loading, and
+        give failed attempts exact subscription cleanup. The existing helper fits once
+        publication and retained-consumer behavior are made explicit.
+      reviewedAt: f276513ba32b7114fd5cc4f7b02d3f82c0c31e3e
+      sources:
+        - core/server/services/offers/service.js
+        - core/server/services/offers/offers-module.js
+        - core/frontend/web/site.js
+        - core/server/services/members/api.js
+        - core/boot.js
     entryPoints:
       - offers/index.js
     notes: >-
@@ -8754,6 +9448,22 @@ services:
     disposition: retain
     status: audited
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
+    migration:
+      complexity: straightforward
+      modelImpact: fits
+      reason: >-
+        Boot already awaits one action-map load and runtime callers then use
+        canThis/parseContext. A facade can own the loaded map while each authorization check
+        keeps its existing request-specific permission snapshot. Preserve the User model's
+        deferred import, empty-map behavior and any explicit test reload path instead of
+        treating repeated init as ordinary operation.
+      reviewedAt: f276513ba32b7114fd5cc4f7b02d3f82c0c31e3e
+      sources:
+        - core/server/services/permissions/index.js
+        - core/server/services/permissions/actions-map-cache.js
+        - core/server/services/permissions/can-this.js
+        - core/server/models/user.js
+        - core/boot.js
     entryPoints:
       - permissions/index.js
     notes: >-
@@ -8938,6 +9648,22 @@ services:
     disposition: retain
     status: audited
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
+    migration:
+      complexity: complex
+      modelImpact: fits
+      reason: >-
+        The constructor installs six listeners and registers itself with a shared adapter;
+        boot separately runs that adapter and later rebuilds jobs, while key rotation also
+        invokes the retained rescheduler. Move construction without merging those owners,
+        and define rollback of subscriptions/registration if startup fails. One retained
+        scheduler facade fits; job completion and normal adapter drain remain separate.
+      reviewedAt: f276513ba32b7114fd5cc4f7b02d3f82c0c31e3e
+      sources:
+        - core/server/services/post-scheduling/index.ts
+        - core/server/services/post-scheduling/post-scheduling.ts
+        - core/server/adapters/scheduling/error-capture.ts
+        - core/server/services/auth/reset-authentication.ts
+        - core/boot.js
     entryPoints:
       - post-scheduling/index.ts
     notes: >-
@@ -9141,6 +9867,23 @@ services:
     disposition: retain
     status: audited
     auditedAt: c2999f4e13da6360bceced808bb52c4a04b5ad03
+    migration:
+      complexity: complex
+      modelImpact: fits
+      reason: >-
+        This remains a business service. Several endpoints, the output mapper, Explore and
+        Lexical currently retain separately constructed graphs that capture email-service
+        immediately. Consolidate composition only after email readiness and verify retained
+        consumers. Export state is already per operation and the scheduling publisher owns a
+        separate process-wide guard, so neither needs to become shared mutable instance
+        state.
+      reviewedAt: f276513ba32b7114fd5cc4f7b02d3f82c0c31e3e
+      sources:
+        - core/server/services/posts/posts-service-instance.js
+        - core/server/services/posts/posts-service.js
+        - core/server/services/posts/posts-exporter.js
+        - core/server/services/posts/post-scheduling.js
+        - core/server/api/endpoints/utils/serializers/output/mappers/posts.js
     entryPoints:
       - posts/posts-service-instance.js
       - posts/post-scheduling.js
@@ -9390,6 +10133,20 @@ services:
     disposition: retain
     status: audited
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
+    migration:
+      complexity: straightforward
+      modelImpact: fits
+      reason: >-
+        The guarded initializer already retains one facade, including when caching is
+        disabled. Return that facade with its optional cache, update the endpoint's access,
+        and make the single site.changed listener removable after a failed attempt. Disabled
+        caching still yields a usable instance rather than requiring a separate disabled
+        service state.
+      reviewedAt: f276513ba32b7114fd5cc4f7b02d3f82c0c31e3e
+      sources:
+        - core/server/services/posts-public/service.js
+        - core/server/api/endpoints/posts-public.js
+        - core/boot.js
     entryPoints:
       - posts-public/index.js
     notes: >-
@@ -9611,6 +10368,22 @@ services:
     disposition: retain
     status: audited
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
+    migration:
+      complexity: complex
+      modelImpact: fits
+      reason: >-
+        A retained facade can own optional availability and the two background initializers,
+        but the root currently publishes repositories/controllers before startup finishes.
+        Define the foreground/background readiness split and clean up its mentions mapper,
+        event subscription and timers after partial failure. This is substantial ordering
+        and resource-ownership work without a demonstrated need to change the helper.
+      reviewedAt: f276513ba32b7114fd5cc4f7b02d3f82c0c31e3e
+      sources:
+        - core/server/services/recommendations/recommendation-service-wrapper.js
+        - core/server/services/recommendations/service/recommendation-service.ts
+        - core/server/services/recommendations/service/incoming-recommendation-service.ts
+        - core/server/services/mentions/webmention-metadata.js
+        - core/boot.js
     entryPoints:
       - recommendations/index.js
     notes: >-
@@ -9845,6 +10618,21 @@ services:
     disposition: retain
     status: audited
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
+    migration:
+      complexity: complex
+      modelImpact: may-change
+      reason: >-
+        The root deliberately supports inert init, later activation, and stop followed by a
+        fresh instance; it also returns before the first fetch finishes. defineService
+        retains the first successful instance forever. Decide whether a permanent facade
+        owns replaceable pollers or the lifecycle model must grow, including protection
+        against an old in-flight refresh writing after stop.
+      reviewedAt: f276513ba32b7114fd5cc4f7b02d3f82c0c31e3e
+      sources:
+        - core/server/services/remote-flags/index.ts
+        - core/server/services/remote-flags/remote-flags-service.ts
+        - core/shared/labs-flag-overrides.ts
+        - core/boot.js
     entryPoints:
       - remote-flags/index.ts
     notes: >-
@@ -10008,6 +10796,23 @@ services:
     disposition: retain
     status: audited
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
+    migration:
+      complexity: complex
+      modelImpact: may-change
+      reason: >-
+        The same instance becomes storage-ready during early boot, then routing-ready after
+        applications exist; uploads later reload the shared frontend/URL graph. Decide what
+        a ready instance promises and preserve deferred imports that avoid an API/bridge
+        cycle. A stable facade with explicit start/reload operations may fit, but folding
+        both stages into one initializer would change boot dependencies and failure
+        behavior.
+      reviewedAt: f276513ba32b7114fd5cc4f7b02d3f82c0c31e3e
+      sources:
+        - core/server/services/route-settings/index.js
+        - core/server/services/route-settings/dynamic-routing-service.js
+        - core/boot.js
+        - core/bridge.js
+        - core/server/api/endpoints/settings.js
     entryPoints:
       - route-settings/index.js
     notes: >-
@@ -10258,6 +11063,23 @@ services:
     disposition: retain
     status: audited
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
+    migration:
+      complexity: complex
+      modelImpact: may-change
+      reason: >-
+        Each init rebuilds the shared cache and calculated-field listeners while existing
+        cache/helper consumers retain their identities; reset and separately constructed
+        BREAD instances have other lifetimes. defineService's successful init cannot
+        silently replace this repeatable refresh contract. Decide whether refresh/reset
+        become service operations and coordinate partial cache publication and early-boot
+        consumers.
+      reviewedAt: f276513ba32b7114fd5cc4f7b02d3f82c0c31e3e
+      sources:
+        - core/server/services/settings/settings-service.js
+        - core/shared/settings-cache/cache-manager.js
+        - core/server/services/settings/settings-bread-service.js
+        - core/server/services/settings-helpers/index.js
+        - core/boot.js
     entryPoints:
       - settings/index.js
       - settings/settings-service.js
@@ -10465,6 +11287,22 @@ services:
     disposition: retain
     status: audited
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
+    migration:
+      complexity: straightforward
+      modelImpact: fits
+      reason: >-
+        This is one composition-only facade over shared cache, limits, config and URL
+        helpers, with no owned subscriptions or transport. Initialize the facade before
+        settings binds its calculated-field methods, without requiring populated settings at
+        construction. Preserve the exposed cache identity and live reads; cache refresh
+        stays owned by settings.
+      reviewedAt: f276513ba32b7114fd5cc4f7b02d3f82c0c31e3e
+      sources:
+        - core/server/services/settings-helpers/index.js
+        - core/server/services/settings-helpers/settings-helpers.js
+        - core/server/services/settings/settings-service.js
+        - core/frontend/services/proxy.js
+        - core/boot.js
     entryPoints:
       - settings-helpers/index.js
     notes: >-
@@ -10683,6 +11521,18 @@ services:
     migrated: true
     status: audited
     auditedAt: 5dae46983fe5423a900214dfc1906f5d14e637d2
+    migration:
+      complexity: straightforward
+      modelImpact: fits
+      reason: >-
+        Already migrated: the factory constructs one instance and awaits its initial key
+        check before publication. Background scheduling has a separate owner, demonstrating
+        that ready composition and recurring work need not share a lifecycle hook.
+      reviewedAt: f276513ba32b7114fd5cc4f7b02d3f82c0c31e3e
+      sources:
+        - core/server/services/signing-keys/index.ts
+        - core/kernel/define-service.ts
+        - core/boot.js
     entryPoints:
       - signing-keys/index.ts
     notes: >-
@@ -10866,6 +11716,20 @@ services:
     disposition: retain
     status: audited
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
+    migration:
+      complexity: complex
+      modelImpact: fits
+      reason: >-
+        The guarded notification instance fits the helper, but its anonymous domain-event
+        subscription has no disposer in the current event-bus API. Establish owned,
+        removable registration before relying on partial-start retry; preserve captured
+        notification configuration and logged delivery failures. This is subscription
+        ownership work rather than evidence for a kernel hook.
+      reviewedAt: f276513ba32b7114fd5cc4f7b02d3f82c0c31e3e
+      sources:
+        - core/server/services/slack-notifications/service.js
+        - core/server/services/slack-notifications/slack-notifications-service.js
+        - core/boot.js
     entryPoints:
       - slack-notifications/index.js
     notes: >-
@@ -11019,6 +11883,19 @@ services:
     disposition: retain
     status: audited
     auditedAt: c2999f4e13da6360bceced808bb52c4a04b5ad03
+    migration:
+      complexity: straightforward
+      modelImpact: fits
+      reason: >-
+        A bounded conversion from the guarded instance to a ready factory: await boot
+        initialization and roll back any partially registered listeners before retry. The
+        implementation already retains listener identities, and its live settings checks and
+        detached notification handling can remain unchanged.
+      reviewedAt: f276513ba32b7114fd5cc4f7b02d3f82c0c31e3e
+      sources:
+        - core/server/services/slack-ping/index.ts
+        - core/server/services/slack-ping/slack-ping-service.ts
+        - core/boot.js
     entryPoints:
       - slack-ping/index.ts
     notes: >-
@@ -11182,6 +12059,21 @@ services:
     disposition: retain
     status: audited
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
+    migration:
+      complexity: complex
+      modelImpact: fits
+      reason: >-
+        The retained mail/service composition fits, but four anonymous domain-event
+        subscriptions need an owned cleanup boundary that the event-bus API does not
+        currently provide. Await member attribution before construction and preserve
+        late-bound email consumers in Gifts and Stripe. Partial registration must not leave
+        duplicate notification handlers on retry.
+      reviewedAt: f276513ba32b7114fd5cc4f7b02d3f82c0c31e3e
+      sources:
+        - core/server/services/staff/index.js
+        - core/server/services/staff/staff-service.js
+        - core/server/services/gifts/index.ts
+        - core/boot.js
     entryPoints:
       - staff/index.js
     notes: >-
@@ -11366,6 +12258,21 @@ services:
     disposition: retain
     status: audited
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
+    migration:
+      complexity: complex
+      modelImpact: fits
+      reason: >-
+        Publish the stats API and optional cache atomically, and move nested Tinybird
+        initialization into an explicit boot dependency. Endpoints capture the cache at
+        module load while the API captures a Tinybird client during construction, so
+        consumer timing and identity need coordinated changes. One ready aggregate fits the
+        helper once those boundaries are explicit.
+      reviewedAt: f276513ba32b7114fd5cc4f7b02d3f82c0c31e3e
+      sources:
+        - core/server/services/stats/service.js
+        - core/server/services/stats/stats-service.js
+        - core/server/api/endpoints/stats.js
+        - core/server/services/tinybird/tinybird-service-wrapper.js
     entryPoints:
       - stats/index.js
       - stats/utils/tinybird.js
@@ -11587,6 +12494,20 @@ services:
     disposition: retain
     status: audited
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
+    migration:
+      complexity: complex
+      modelImpact: fits
+      reason: >-
+        The retained controller graph already owns configure, connect, disconnect and
+        shutdown operations. Preserve per-boot configuration, tolerated configuration
+        failures, ephemeral-webhook cleanup and deferred Members/Gifts/Staff access outside
+        one-time construction. This requires careful ordering and failure-policy work, but
+        reconfiguration of a stable owner does not itself require a kernel change.
+      reviewedAt: f276513ba32b7114fd5cc4f7b02d3f82c0c31e3e
+      sources:
+        - core/server/services/stripe/service.js
+        - core/server/services/stripe/stripe-service.js
+        - core/boot.js
     entryPoints:
       - stripe/index.js
     notes: >-
@@ -11842,6 +12763,21 @@ services:
     kind: directory
     disposition: retain
     status: auditing
+    migration:
+      complexity: straightforward
+      modelImpact: fits
+      reason: >-
+        Construct the config, preview and branding services as one ready aggregate after
+        member-metafield bindings, then update named runtime consumers. Preserve deferred
+        Stripe, tier and member callbacks so construction does not pull later boot
+        dependencies forward. The constructors own no startup resources; three outputs can
+        fit one returned composition.
+      reviewedAt: f276513ba32b7114fd5cc4f7b02d3f82c0c31e3e
+      sources:
+        - core/server/services/stripe-checkout-config/index.ts
+        - core/server/services/stripe-checkout-config/service.ts
+        - core/server/services/stripe-checkout-config/preview-service.ts
+        - core/boot.js
     entryPoints:
       - stripe-checkout-config/index.ts
     notes: >-
@@ -11884,6 +12820,19 @@ services:
     disposition: retain
     status: audited
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
+    migration:
+      complexity: straightforward
+      modelImpact: fits
+      reason: >-
+        A small factory can return the optional cache facade after acquiring the borrowed
+        adapter and registering cache invalidation. Retain a removable site.changed callback
+        for failed-start cleanup, and preserve endpoint access after boot plus the no-cache
+        case. There is no worker or replacement lifecycle to add to the helper.
+      reviewedAt: f276513ba32b7114fd5cc4f7b02d3f82c0c31e3e
+      sources:
+        - core/server/services/tags-public/service.js
+        - core/server/api/endpoints/tags-public.js
+        - core/boot.js
     entryPoints:
       - tags-public/index.js
     notes: >-
@@ -12069,6 +13018,23 @@ services:
     disposition: retain
     status: audited
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
+    migration:
+      complexity: complex
+      modelImpact: fits
+      reason: >-
+        Define a stable theme-management facade across the active theme, catalogue,
+        validation cache and frontend activation bridge. Initial theme activation
+        deliberately logs errors without preventing Admin from starting; preserve that
+        boundary and subsequent theme changes as operations on the retained owner. The
+        ownership and boot-mode work is substantial, but the active theme need not be the
+        immutable service instance.
+      reviewedAt: f276513ba32b7114fd5cc4f7b02d3f82c0c31e3e
+      sources:
+        - core/server/services/themes/index.js
+        - core/server/services/themes/activate.js
+        - core/server/services/themes/activation-bridge.js
+        - core/server/services/themes/validate.js
+        - core/boot.js
     entryPoints:
       - themes/index.js
       - themes/activate.js
@@ -12353,6 +13319,21 @@ services:
     disposition: retain
     status: audited
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
+    migration:
+      complexity: straightforward
+      modelImpact: fits
+      reason: >-
+        Await repository priming, construct the API and publish both together instead of
+        exposing the repository before API construction succeeds. The repository owns its
+        in-memory tier state but no startup subscriptions or worker. Preserve the retained
+        graph and update API consumers after boot readiness; the existing helper covers this
+        asynchronous factory.
+      reviewedAt: f276513ba32b7114fd5cc4f7b02d3f82c0c31e3e
+      sources:
+        - core/server/services/tiers/service.js
+        - core/server/services/tiers/tier-repository.js
+        - core/server/api/endpoints/tiers.js
+        - core/boot.js
     entryPoints:
       - tiers/index.js
       - tiers/service.js
@@ -12562,6 +13543,23 @@ services:
     disposition: retain
     status: audited
     auditedAt: c2999f4e13da6360bceced808bb52c4a04b5ad03
+    migration:
+      complexity: complex
+      modelImpact: may-change
+      reason: >-
+        The token endpoint replaces the client on every request, resetting its JWT cache,
+        while Stats retains an older client and reuses its tokens. Decide the shared
+        token/cache and disabled-to-enabled contract before adopting one retained instance;
+        this changes observable expiry reuse as well as dependency identity. A stable
+        reconfigurable facade may suffice, but simply memoizing current init would silently
+        change those behaviors.
+      reviewedAt: f276513ba32b7114fd5cc4f7b02d3f82c0c31e3e
+      sources:
+        - core/server/services/tinybird/tinybird-service-wrapper.js
+        - core/server/services/tinybird/tinybird-service.js
+        - core/server/services/stats/stats-service.js
+        - core/server/api/endpoints/tinybird.js
+        - core/server/services/stats/utils/tinybird.js
     entryPoints:
       - tinybird/index.js
     notes: >-
@@ -12783,6 +13781,21 @@ services:
     disposition: retain
     status: audited
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
+    migration:
+      complexity: straightforward
+      modelImpact: fits
+      reason: >-
+        Move eager factory composition into the initializer and await it before boot
+        captures the sync handler. Keep job scheduling separate, including disabled
+        scheduling and retry after registration failure; sync reads its configuration when
+        invoked. This follows the existing signing-key split between a ready instance and
+        jobs-owned recurring work.
+      reviewedAt: f276513ba32b7114fd5cc4f7b02d3f82c0c31e3e
+      sources:
+        - core/server/services/tinybird-sync/index.ts
+        - core/server/services/tinybird-sync/tinybird-sync-service.ts
+        - core/server/services/jobs-service/register-job-handlers.ts
+        - core/boot.js
     entryPoints:
       - tinybird-sync/index.ts
     notes: >-
@@ -12974,6 +13987,21 @@ services:
     disposition: review
     status: audited
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
+    migration:
+      complexity: not-applicable
+      modelImpact: not-applicable
+      reason: >-
+        This is an invocation-local checker and job definition, with a new mail/check graph
+        for each call, rather than a retained application instance. Move the cohesive
+        capability to server/lib/update-check as directory cleanup, keeping scheduling with
+        jobs. Do not turn the check operation into a once-only initializer; the older
+        disposition needs reconciliation during that cleanup.
+      reviewedAt: f276513ba32b7114fd5cc4f7b02d3f82c0c31e3e
+      sources:
+        - core/server/services/update-check/index.js
+        - core/server/services/update-check/jobs/update-check-job.ts
+        - core/server/services/jobs-service/register-job-handlers.ts
+        - core/boot.js
     entryPoints:
       - update-check/index.js
     notes: >-
@@ -13169,6 +14197,21 @@ services:
     disposition: retain
     status: audited
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
+    migration:
+      complexity: complex
+      modelImpact: may-change
+      reason: >-
+        The shared URL service must exist before routers are registered, becomes
+        routing-ready later, and resets routing state in place during frontend reload.
+        Decide how composition readiness relates to a usable router graph without breaking
+        retained consumers or the maintenance gate. A stable facade may suffice, but folding
+        both stages into one factory would create an ordering cycle.
+      reviewedAt: f276513ba32b7114fd5cc4f7b02d3f82c0c31e3e
+      sources:
+        - core/server/services/url/index.js
+        - core/server/services/url/lazy-url-service.ts
+        - core/boot.js
+        - core/bridge.js
     entryPoints:
       - url/index.js
     notes: >-
@@ -13393,6 +14436,20 @@ services:
     disposition: retain
     status: audited
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
+    migration:
+      complexity: straightforward
+      modelImpact: fits
+      reason: >-
+        Keep this business capability as a service and consolidate the two endpoint-owned
+        instances into one boot-owned composition. Its constructor captures dependencies;
+        mutable options, transactions and work stay per operation. Preserve those operation
+        contracts while removing unnecessary API-level composition dependencies; no resource
+        lifecycle or replacement model is apparent.
+      reviewedAt: 61ac1e5058fa4657def92d7b362e197314b1a88d
+      sources:
+        - core/server/services/users.js
+        - core/server/api/endpoints/users.js
+        - core/server/api/endpoints/authentication.js
     entryPoints:
       - users.js
     notes: >-
@@ -13564,6 +14621,20 @@ services:
     disposition: review
     status: audited
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
+    migration:
+      complexity: complex
+      modelImpact: fits
+      reason: >-
+        Settle the cohesive Members verification boundary with verification-trigger before
+        moving or wrapping this sender; ownership is still under review. The sender itself
+        is a small configured collaborator whose validation and request state are per call.
+        It can fit inside the chosen owner factory without a helper extension, but a
+        standalone migration would pre-empt that ownership decision.
+      reviewedAt: f276513ba32b7114fd5cc4f7b02d3f82c0c31e3e
+      sources:
+        - core/server/services/verification/verification-webhook-service.ts
+        - core/server/services/verification-trigger.js
+        - core/server/services/members/service.js
     entryPoints:
       - verification/verification-webhook-service.ts
     notes: >-
@@ -13731,6 +14802,20 @@ services:
     disposition: relocate
     status: audited
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
+    migration:
+      complexity: complex
+      modelImpact: fits
+      reason: >-
+        Review this together with the verification sender as a Members-owned capability, not
+        an independent initializer by default. Construction subscribes to member events,
+        Members retains the trigger, and Email captures it; partial Members startup must
+        clean up registration without breaking those consumers. The placement decision
+        remains open, while the retained collaborator itself fits an owner factory.
+      reviewedAt: f276513ba32b7114fd5cc4f7b02d3f82c0c31e3e
+      sources:
+        - core/server/services/verification-trigger.js
+        - core/server/services/members/service.js
+        - core/server/services/email-service/email-service-wrapper.js
     entryPoints:
       - verification-trigger.js
     notes: >-
@@ -13910,6 +14995,23 @@ services:
     disposition: retain
     status: audited
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
+    migration:
+      complexity: complex
+      modelImpact: fits
+      reason: >-
+        Unify the dispatch graph and separately constructed management API under a clear
+        root. Listener registration currently keeps existing named callbacks, so rebuilding
+        the trigger graph does not replace what those callbacks capture; preserve
+        intentional identity and remove only newly acquired registrations after a failed
+        start. One returned composition can fit, but consumer and listener ownership need
+        coordinated changes.
+      reviewedAt: f276513ba32b7114fd5cc4f7b02d3f82c0c31e3e
+      sources:
+        - core/server/services/webhooks/index.js
+        - core/server/services/webhooks/listen.js
+        - core/server/services/webhooks/webhooks-service.js
+        - core/server/api/endpoints/webhooks.js
+        - core/boot.js
     entryPoints:
       - webhooks/index.js
       - webhooks/webhooks-service.js
