@@ -14,7 +14,7 @@ across the workspace dependency graph.
 | `tools/configs/` | Shared ESLint, TypeScript, Vite, and Vitest configuration                     |
 | `e2e/`           | Playwright tests for complete Admin and public-site journeys                  |
 | `docker/`        | Containers and supporting services for local development and CI               |
-| `scripts/`       | Repository setup, validation, build, and release tooling                      |
+| `tools/scripts/` | Repository setup, validation, build, and release tooling                      |
 
 [`pnpm-workspace.yaml`](../../pnpm-workspace.yaml) is the source of truth for
 which directories are workspaces. Read the README beside an app, package, or

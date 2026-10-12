@@ -8,8 +8,8 @@ COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .pnpmfile.mjs ./
 COPY patches patches
 # Keep dependency installation cached when source files change. All workspace
 # manifests are needed to resolve E2E's workspace references from the lockfile.
-COPY --parents ghost/package.json apps/*/package.json koenig/*/package.json tools/configs/*/package.json packages/**/package.json e2e/package.json scripts/package.json ./
-COPY scripts/enforce-package-manager.js scripts/
+COPY --parents ghost/package.json apps/*/package.json koenig/*/package.json tools/configs/*/package.json packages/**/package.json e2e/package.json tools/scripts/package.json ./
+COPY tools/scripts/enforce-package-manager.js tools/scripts/
 COPY .github/hooks .github/hooks
 RUN corepack enable
 # node_modules must live in the image, not link into a pnpm store outside it
