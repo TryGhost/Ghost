@@ -94,26 +94,24 @@ interface LoadedManifest {
   manifestUrl: string;
   manifest: AppManifest;
   serialised: string;
-  /** Of the manifest alone, as stored with it. */
+  /** Stored with the manifest, and what a publisher confirms. */
   digest: string;
-  /** What a publisher reviews and confirms: the manifest and where it is read from. */
-  reviewed: string;
 }
 
 /**
- * The manifest's digest, as stored with it. The same manifest always serialises the same
- * way, as encoding builds it in the schema's key order.
+ * The digest of a manifest together with the address it is read from: stored with the
+ * manifest, and sent back when a publisher confirms what they reviewed.
+ *
+ * The address is part of it because two addresses can serve the same manifest once every
+ * URL in it is absolute. Before #31466 the confirmed digest covered the manifest alone,
+ * so a review of one address could confirm another serving the same bytes, and that
+ * other address would then decide every future update.
+ *
+ * The same manifest always serialises the same way, as encoding builds it in the schema's
+ * key order. The newline between the two cannot be mistaken for part of either: the URL
+ * parser strips newlines from an address, and the encoded JSON has none.
  */
-function digestOf(serialisedManifest: string): string {
-  return createHash('sha256').update(serialisedManifest).digest('hex');
-}
-
-/**
- * What a publisher reviews and confirms: the manifest and the address it is read from.
- * Two addresses can serve the same manifest, once every URL in it is absolute, so the
- * digest of the manifest alone would let a review of one address confirm the other.
- */
-function reviewedDigestOf(manifestUrl: string, serialisedManifest: string): string {
+function digestOf(manifestUrl: string, serialisedManifest: string): string {
   return createHash('sha256').update(`${manifestUrl}\n${serialisedManifest}`).digest('hex');
 }
 
@@ -309,8 +307,7 @@ export class AppInstallationsService {
       manifestUrl,
       manifest: parsed.manifest,
       serialised,
-      digest: digestOf(serialised),
-      reviewed: reviewedDigestOf(manifestUrl, serialised),
+      digest: digestOf(manifestUrl, serialised),
     };
   }
 
@@ -355,7 +352,7 @@ export class AppInstallationsService {
     return {
       manifest_url: loaded.manifestUrl,
       manifest: loaded.manifest,
-      digest: loaded.reviewed,
+      digest: loaded.digest,
       // The approved side comes from the same row the changes were worked out from, so the
       // publisher sees exactly the difference Ghost found.
       installation: current
@@ -383,7 +380,7 @@ export class AppInstallationsService {
    */
   private async fetchReviewed(manifestUrl: string, digest: string): Promise<LoadedManifest> {
     const loaded = await this.fetchAndLoad(manifestUrl);
-    if (loaded.reviewed !== digest) {
+    if (loaded.digest !== digest) {
       throw new errors.ConflictError({
         message: 'The app changed while it was being reviewed.',
         code: 'APP_MANIFEST_CHANGED',
@@ -542,14 +539,10 @@ export class AppInstallationsService {
       const pendingRow = current.pending_manifest_id
         ? await trx(MANIFESTS)
             .where({ id: current.pending_manifest_id })
-            .first<z.input<typeof PendingManifestRow> | undefined>('id', 'manifest_url', 'digest')
+            .first<z.input<typeof PendingManifestRow> | undefined>('id', 'digest')
         : undefined;
       const pending = pendingRow ? z.decode(PendingManifestRow, pendingRow) : undefined;
-      if (
-        pending &&
-        pending.manifest_url === loaded.manifestUrl &&
-        pending.digest === loaded.digest
-      ) {
+      if (pending && pending.digest === loaded.digest) {
         manifestId = pending.id;
       } else if (!sameManifest) {
         manifestId = new ObjectId().toHexString();

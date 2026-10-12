@@ -108,7 +108,10 @@ describe('App installations Admin API', function () {
       assert.equal(stored.installation_id, installation.id);
       assert.equal(stored.manifest_url, MANIFEST_URL);
       assert.deepEqual(JSON.parse(stored.manifest), installation.manifest);
-      assert.equal(stored.digest, createHash('sha256').update(stored.manifest).digest('hex'));
+      assert.equal(
+        stored.digest,
+        createHash('sha256').update(`${MANIFEST_URL}\n${stored.manifest}`).digest('hex'),
+      );
       assert.equal(Boolean(stored.requires_approval), false);
 
       const installed = await installationRow(installation.id);
@@ -358,10 +361,8 @@ describe('App installations Admin API', function () {
 
       assert.equal(body.app_installations[0].app_id, 'com.example.podcast');
       assert.equal(body.app_installations[0].status, 'active');
-      // What was confirmed covers the address too, so it is not the stored digest.
       const [stored] = await manifestRows();
-      assert.equal(stored.digest, createHash('sha256').update(stored.manifest).digest('hex'));
-      assert.notEqual(stored.digest, digest);
+      assert.equal(stored.digest, digest);
       assert.equal((await actions())[0].event, 'installed');
     });
 
@@ -436,13 +437,12 @@ describe('App installations Admin API', function () {
       serve(pending);
       const reviewed = await preview();
       const pendingId = new ObjectId().toHexString();
-      const serialised = JSON.stringify(reviewed.manifest);
       await models.Base.knex('app_installation_manifests').insert({
         id: pendingId,
         installation_id: id,
-        manifest_url: MANIFEST_URL,
-        manifest: serialised,
-        digest: createHash('sha256').update(serialised).digest('hex'),
+        manifest_url: reviewed.manifest_url,
+        manifest: JSON.stringify(reviewed.manifest),
+        digest: reviewed.digest,
         source: 'update',
         requires_approval: true,
         created_at: toDatabaseDate(new Date()),
