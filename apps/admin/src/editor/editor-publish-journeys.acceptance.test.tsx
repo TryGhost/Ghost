@@ -30,6 +30,7 @@ import {
 import { editorScreen } from '@/editor/editor.screen';
 import { previewScreen } from '@/editor/preview/preview.screen';
 import { publishScreen } from '@/editor/publish/publish.screen';
+import { postsListScreen } from '@/posts/list/posts-list.screen';
 import { deferred } from '@/utils/deferred';
 
 const POST_ID = 'abc123';
@@ -222,6 +223,30 @@ describe('Editor publish journeys', () => {
     await expect.poll(currentRoute).toBe(`/posts/analytics/${POST_ID}`);
     const params = new URL(saveApi.lastRequest?.url ?? '').searchParams;
     expect(params.get('email_segment')).toBe(`tier_id:${gold.id},label:vip`);
+  });
+
+  it('sends an editor who emails a post to the posts list, not post analytics', async () => {
+    publishChrome([WEEKLY]);
+    fakeTiers([]);
+    fakeLabels([]);
+    const saveApi = fakeSavableDraft();
+    const me = currentUserResponse();
+    me.users[0].roles = [staffRole({ name: 'Editor' })];
+    const site = emailSite();
+    await renderAdminApp(`/editor/post/${POST_ID}`, {
+      ...site,
+      boot: { ...site.boot, browseMe: { response: me } },
+    });
+
+    await expect.element(editorScreen.publishButton()).toBeEnabled();
+    await editorScreen.publishButton().click();
+    await publishScreen.continueButton().click();
+    await publishScreen.confirmButton().click();
+
+    await expect.poll(currentRoute).toBe('/posts');
+    await expect.element(postsListScreen.celebrationModal()).toBeVisible();
+    const params = new URL(saveApi.lastRequest?.url ?? '').searchParams;
+    expect(params.get('newsletter')).toBe('weekly');
   });
 
   it.each([

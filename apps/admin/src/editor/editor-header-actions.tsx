@@ -619,10 +619,11 @@ function PublishActions({
           onBeforePublish={saveBeforePublish}
           onClose={closeFlow}
           onCompleted={({ postId, isScheduled, hasEmail }) => {
+            // Post analytics is Owner and Administrator only.
             const destination =
               post.displayName === 'page'
                 ? '/pages'
-                : !isScheduled && (hasEmail || post.email || post.emailOnly)
+                : inputs.user.isAdmin && !isScheduled && (hasEmail || post.email || post.emailOnly)
                   ? `/posts/analytics/${postId}`
                   : '/posts';
             navigate(destination);
