@@ -1,25 +1,20 @@
 #!/usr/bin/env node
 // @ts-check
 
-const assert = require('node:assert/strict');
-const fs = require('node:fs');
-const path = require('node:path');
-const jwt = require('jsonwebtoken');
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import jwt from 'jsonwebtoken';
 
 const GHOST_URL = process.env.GHOST_URL || 'http://localhost:2368';
-const GOLDEN_POST_PATH = path.join(
-  __dirname,
-  '..',
-  'test',
-  'utils',
-  'fixtures',
-  'email-service',
-  'golden-post.json',
+const GOLDEN_POST_PATH = fileURLToPath(
+  new URL('../../ghost/test/utils/fixtures/email-service/golden-post.json', import.meta.url),
 );
 
 function usage() {
   console.error(
-    'Usage: GHOST_GOLDEN_POST_AUTH=id:secret pnpm generate-golden-email <segment> <output-path>',
+    'Usage: GHOST_GOLDEN_POST_AUTH=id:secret pnpm gx generate golden-email <segment> <output-path>',
   );
   console.error('');
   console.error('  segment:     Member segment filter, e.g. "status:free" or "status:-free"');
