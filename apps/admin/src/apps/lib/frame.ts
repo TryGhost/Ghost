@@ -41,17 +41,7 @@ export const APP_FRAME_ALLOW = [
 /**
  * Whether a page is on an origin Ghost itself is served from. Ghost refuses such a URL
  * when it accepts a manifest, but the site's or Admin's URL can change afterwards, and a
- * frame on Admin's own origin would be Admin, sandbox or not. So the check is made again
- * here, where the frame is made, against the origins Admin knows itself by.
+ * frame on Admin's own origin would be Admin, sandbox or not. So the same rule is asked
+ * again where the frame is made, against the origins Admin knows itself by.
  */
-export function isGhostOrigin(pageUrl: string, ghostUrls: string[]): boolean {
-  const origin = (value: string): string | null => {
-    try {
-      return new URL(value).origin;
-    } catch {
-      return null;
-    }
-  };
-  const page = origin(pageUrl);
-  return page === null || ghostUrls.some((url) => origin(url) === page);
-}
+export { isGhostOrigin } from '@tryghost/app-contracts';

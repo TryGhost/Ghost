@@ -9,6 +9,7 @@ describe('the root entry point', () => {
       'URL_MAX_LENGTH',
       'appPageUrl',
       'isDevelopmentApp',
+      'isGhostOrigin',
       'isLocalhost',
       'isValidAppId',
       'movedBetween',
