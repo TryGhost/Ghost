@@ -90,15 +90,17 @@ export async function getPublishablePackages(
  * @param baseCommit - The commit hash to compare against.
  * @param headCommit - The commit hash to compare to, defaults to HEAD.
  * @param rootDir - The workspace root.
+ * @param env - The environment to run git in.
  */
 export async function getPackagesWithChangset(
   baseCommit: string,
   headCommit = 'HEAD',
   rootDir = ROOT_DIR,
+  env = process.env,
 ): Promise<Set<string>> {
   const [changes, newChangesets] = await Promise.all([
     readChangeIntents(rootDir),
-    getChangedFiles(CHANGES_DIR, baseCommit, headCommit, true, rootDir),
+    getChangedFiles(CHANGES_DIR, baseCommit, headCommit, { onlyNew: true, cwd: rootDir, env }),
   ]);
 
   const newChangesetFiles = new Set(newChangesets.map((file) => resolve(rootDir, file)));
@@ -114,9 +116,9 @@ export async function getPackagesWithChangset(
   );
 }
 
-// The files pnpm itself reads to list projects and compare catalogs; every
-// other path is left out of a head checkout.
-const PNPM_INPUTS_RE = /(^|\/)package\.json$|^pnpm-workspace\.yaml$/;
+// The files read to list projects, compare catalogs and collect change
+// intents; every other path is left out of a head checkout.
+const CHECKOUT_RE = /(^|\/)package\.json$|^pnpm-workspace\.yaml$|^\.changeset\//;
 
 /**
  * Runs `fn` in a throwaway worktree whose working tree is `head` and whose HEAD
@@ -125,7 +127,7 @@ const PNPM_INPUTS_RE = /(^|\/)package\.json$|^pnpm-workspace\.yaml$/;
  * rejects a tree head, and fails whenever pnpm-workspace.yaml changed (it reads
  * the catalog from `<base>...<head>:pnpm-workspace.yaml`, as of pnpm 12.13).
  *
- * Only the files pnpm reads are checked out; the rest are marked skip-worktree,
+ * Only the files the check reads are checked out; the rest are marked skip-worktree,
  * so git diffs them from the index (head) instead of reporting them deleted.
  *
  * `fn` gets an env to run in the worktree with: a git hook (the pre-commit
@@ -153,7 +155,7 @@ async function withHeadCheckout<T>(
     const wt = $$({ cwd: dir, env, extendEnv: false });
     await wt`git read-tree ${tree}`;
     const { stdout: files } = await wt`git ls-files -z`;
-    const skipped = files.split('\0').filter((file) => file && !PNPM_INPUTS_RE.test(file));
+    const skipped = files.split('\0').filter((file) => file && !CHECKOUT_RE.test(file));
     await wt({ input: skipped.join('\0') })`git update-index -z --skip-worktree --stdin`;
     await wt`git checkout --quiet -- .`;
 
@@ -169,30 +171,46 @@ async function withHeadCheckout<T>(
 /**
  * Lists the workspace projects pnpm's `[since]` filter selects: those with a
  * changed file in their directory, or a dependency on a changed catalog entry.
+ * pnpm diffs a lone base against the working tree.
  */
 async function listChangedProjects(
   baseCommit: string,
-  headCommit: string,
   ignorePatterns: string[],
   rootDir: string,
+  env: NodeJS.ProcessEnv,
 ): Promise<Set<string>> {
-  const list = async (cwd: string, env: NodeJS.ProcessEnv = process.env) => {
-    const ignoreArgs = ignorePatterns.flatMap((pattern) => [
-      '--changed-files-ignore-pattern',
-      pattern,
-    ]);
-    const { stdout } = await $$({
-      cwd,
-      env,
-      extendEnv: false,
-    })`pnpm ls --recursive --depth -1 --json --ignore-pnpmfile --filter ${`[${baseCommit}]`} ${ignoreArgs}`;
-    const projects = JSON.parse(stdout || '[]') as { name?: string }[];
-    return new Set(projects.flatMap(({ name }) => (name ? [name] : [])));
-  };
+  const ignoreArgs = ignorePatterns.flatMap((pattern) => [
+    '--changed-files-ignore-pattern',
+    pattern,
+  ]);
+  const { stdout } = await $$({
+    cwd: rootDir,
+    env,
+    extendEnv: false,
+  })`pnpm ls --recursive --depth -1 --json --ignore-pnpmfile --filter ${`[${baseCommit}]`} ${ignoreArgs}`;
+  const projects = JSON.parse(stdout || '[]') as { name?: string }[];
+  return new Set(projects.flatMap(({ name }) => (name ? [name] : [])));
+}
 
-  // pnpm diffs a lone base against the working tree, which is what an empty
-  // head asks for.
-  return headCommit ? withHeadCheckout(baseCommit, headCommit, rootDir, list) : list(rootDir);
+/** findPackagesNeedingChangeset against the working tree of `rootDir`. */
+async function findInWorkingTree(
+  baseCommit: string,
+  ignorePatterns: string[],
+  rootDir: string,
+  env: NodeJS.ProcessEnv,
+): Promise<string[]> {
+  const workspace = await getWorkspace(rootDir);
+  if (!workspace) {
+    throw new Error('Could not load workspace manifest');
+  }
+
+  const [projects, changed, covered] = await Promise.all([
+    getPublishablePackages(workspace, rootDir),
+    listChangedProjects(baseCommit, ignorePatterns, rootDir, env),
+    getPackagesWithChangset(baseCommit, '', rootDir, env),
+  ]);
+
+  return projects.map(({ name }) => name).filter((name) => changed.has(name) && !covered.has(name));
 }
 
 export interface FindPackagesNeedingChangesetOptions {
@@ -218,16 +236,11 @@ export async function findPackagesNeedingChangeset(
   ignorePatterns: string[] = [],
   { rootDir = ROOT_DIR }: FindPackagesNeedingChangesetOptions = {},
 ): Promise<string[]> {
-  const workspace = await getWorkspace(rootDir);
-  if (!workspace) {
-    throw new Error('Could not load workspace manifest');
-  }
-
-  const [projects, changed, covered] = await Promise.all([
-    getPublishablePackages(workspace, rootDir),
-    listChangedProjects(baseCommit, headCommit, ignorePatterns, rootDir),
-    getPackagesWithChangset(baseCommit, headCommit, rootDir),
-  ]);
-
-  return projects.map(({ name }) => name).filter((name) => changed.has(name) && !covered.has(name));
+  // An explicit head is checked out, so the workspace, the package list, the
+  // change intents and pnpm's diff all read the same snapshot of it.
+  return headCommit
+    ? withHeadCheckout(baseCommit, headCommit, rootDir, (dir, env) =>
+        findInWorkingTree(baseCommit, ignorePatterns, dir, env),
+      )
+    : findInWorkingTree(baseCommit, ignorePatterns, rootDir, process.env);
 }

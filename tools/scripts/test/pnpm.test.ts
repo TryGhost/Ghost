@@ -137,6 +137,20 @@ describe('findPackagesNeedingChangeset (fixture repo)', () => {
     assert.deepStrictEqual(await check(tree), ['plain']);
   });
 
+  it('reads packages and change intents from head, not the working tree', async () => {
+    const head = fixture.commitOn(base, {
+      'packages/plain/index.js': 'changed',
+      '.changeset/plain-change.md': '---\n"plain": patch\n---\n\nChanged plain\n',
+      'packages/added/package.json': pkg('added'),
+    });
+    // What the pre-commit hook sees: head is the staged tree, and the working
+    // tree may not match it.
+    const tree = fixture.git(['rev-parse', `${head}^{tree}`]);
+    fixture.git(['checkout', '--quiet', '--detach', base]);
+
+    assert.deepStrictEqual(await check(tree), ['added']);
+  });
+
   it('compares against the working tree when head is empty', async () => {
     fixture.git(['checkout', '--quiet', '--detach', base]);
     assert.deepStrictEqual(await check(''), []);
