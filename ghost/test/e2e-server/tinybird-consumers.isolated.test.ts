@@ -76,7 +76,9 @@ describe('Tinybird provider consumers after boot', function () {
       total_run_count: 0,
       in_progress_run_count: 0,
     };
-    assert.deepEqual(initial.automations[0].stats, emptyStats);
+    assert.ok(
+      initial.automations.every((automation: object) => !Object.hasOwn(automation, 'stats')),
+    );
     const configFor = (token: string) => ({ stats: { endpoint, token, version: 'v2' } });
     const intercept = (token: string, count: number) =>
       nock(endpoint, { reqheaders: { authorization: `Bearer ${token}` } })
@@ -105,7 +107,10 @@ describe('Tinybird provider consumers after boot', function () {
     // Keep the same interceptor for the first browse after the token request.
     configUtils.set('tinybird', configFor('provider-a'));
     const first = intercept('provider-a', 7);
-    await assertCount(0);
+    const { body: uninitialized } = await get('automations');
+    assert.ok(
+      uninitialized.automations.every((automation: object) => !Object.hasOwn(automation, 'stats')),
+    );
     assert.equal(tinybird.instance, undefined);
     assert.equal(first.isDone(), false);
     const tokenA = await get('tinybird/token');
