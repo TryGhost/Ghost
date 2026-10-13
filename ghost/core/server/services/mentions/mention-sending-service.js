@@ -120,6 +120,21 @@ module.exports = class MentionSendingService {
   }
 
   /**
+   * @param {string|null} html
+   * @param {string|null} previousHtml
+   * @returns {string[]}
+   */
+  #getChangedLinks(html, previousHtml) {
+    const links = html ? this.getLinks(html) : new Set();
+    const previousLinks = previousHtml ? this.getLinks(previousHtml) : new Set();
+    // Only send for NEW or DELETED links (to avoid spamming when lots of small changes happen to a post)
+    return [
+      ...[...previousLinks].filter((link) => !links.has(link)),
+      ...[...links].filter((link) => !previousLinks.has(link)),
+    ];
+  }
+
+  /**
    * @param {{source: URL, target: URL, endpoint: URL}} options
    * @returns
    */
@@ -182,27 +197,7 @@ module.exports = class MentionSendingService {
    * @param {string|null} [resource.previousHtml]
    */
   async sendForHTMLResource(resource) {
-    let links = resource.html ? this.getLinks(resource.html) : [];
-    if (resource.previousHtml) {
-      // Only send for NEW or DELETED links (to avoid spamming when lots of small changes happen to a post)
-      const existingLinks = links;
-      links = [];
-      const oldLinks = this.getLinks(resource.previousHtml);
-
-      for (const link of oldLinks) {
-        if (!existingLinks.find((l) => l.href === link.href)) {
-          // Deleted link
-          links.push(link);
-        }
-      }
-
-      for (const link of existingLinks) {
-        if (!oldLinks.find((l) => l.href === link.href)) {
-          // New link
-          links.push(link);
-        }
-      }
-    }
+    const links = this.#getChangedLinks(resource.html, resource.previousHtml);
 
     if (links.length) {
       logging.info('[Webmention] Sending all webmentions for ' + resource.url.href);
@@ -210,7 +205,7 @@ module.exports = class MentionSendingService {
 
     await this.sendAll({
       url: resource.url,
-      links,
+      links: links.map((link) => new URL(link)),
     });
   }
 
@@ -239,12 +234,12 @@ module.exports = class MentionSendingService {
    * Get all external links in a HTML document.
    * Excludes the site's own domain.
    * @param {string} html
-   * @returns {URL[]}
+   * @returns {Set<string>}
    */
   getLinks(html) {
     const cheerio = require('cheerio/slim');
     const $ = cheerio.load(html);
-    const urls = [];
+    const links = new Set();
     const siteUrl = this.siteUrl;
 
     for (const el of $('a').toArray()) {
@@ -259,18 +254,14 @@ module.exports = class MentionSendingService {
             continue;
           }
 
-          if (
-            ['http:', 'https:'].includes(url.protocol) &&
-            !urls.find((u) => u.href === url.href)
-          ) {
-            // Ignore duplicate URLs
-            urls.push(url);
+          if (['http:', 'https:'].includes(url.protocol)) {
+            links.add(url.href);
           }
         } catch (e) {
           // Ignore invalid URLs
         }
       }
     }
-    return urls;
+    return links;
   }
 };

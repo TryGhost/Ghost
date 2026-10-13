@@ -490,11 +490,10 @@ describe('MentionSendingService', function () {
                     </body>
                 </html>
             `);
-      assert.deepEqual(links, [
-        new URL('https://example.com'),
-        new URL('https://example.org#fragment'),
-        new URL('http://example2.org'),
-      ]);
+      assert.deepEqual(
+        [...links],
+        ['https://example.com/', 'https://example.org/#fragment', 'http://example2.org/'],
+      );
     });
 
     it('Does not include invalid or local URLs', async function () {
@@ -502,7 +501,7 @@ describe('MentionSendingService', function () {
         getSiteUrl: () => new URL('https://site.com'),
       });
       const links = service.getLinks(`<a href="/">Example</a>`);
-      assert.deepEqual(links, []);
+      assert.deepEqual([...links], []);
     });
 
     it('Does not include non-http protocols', async function () {
@@ -510,7 +509,7 @@ describe('MentionSendingService', function () {
         getSiteUrl: () => new URL('https://site.com'),
       });
       const links = service.getLinks(`<a href="ftp://invalid.com">Example</a>`);
-      assert.deepEqual(links, []);
+      assert.deepEqual([...links], []);
     });
 
     it('Does not include invalid urls', async function () {
@@ -518,7 +517,7 @@ describe('MentionSendingService', function () {
         getSiteUrl: () => new URL('https://site.com'),
       });
       const links = service.getLinks(`<a href="()">Example</a>`);
-      assert.deepEqual(links, []);
+      assert.deepEqual([...links], []);
     });
 
     it('Does not include urls from site domain', async function () {
@@ -526,7 +525,7 @@ describe('MentionSendingService', function () {
         getSiteUrl: () => new URL('https://site.com'),
       });
       const links = service.getLinks(`<a href="http://site.com/test?123">Example</a>`);
-      assert.deepEqual(links, []);
+      assert.deepEqual([...links], []);
     });
 
     it('Ignores invalid site urls', async function () {
@@ -534,7 +533,7 @@ describe('MentionSendingService', function () {
         getSiteUrl: () => new URL('invalid()'),
       });
       const links = service.getLinks(`<a href="http://site.com/test?123">Example</a>`);
-      assert.deepEqual(links, [new URL('http://site.com/test?123')]);
+      assert.deepEqual([...links], ['http://site.com/test?123']);
     });
   });
 
