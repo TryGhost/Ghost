@@ -71,7 +71,7 @@ const PaidTierPicker: React.FC<{ trigger: TriggerData; errorMessage?: string }> 
         </SelectTrigger>
         <SelectContent className="nodrag nopan nowheel">
           <SelectItem value="all_paid">Any paid tier</SelectItem>
-          <SelectItem value="selected_paid">Selected tier(s)</SelectItem>
+          <SelectItem value="selected_paid">Specific tier(s)</SelectItem>
         </SelectContent>
       </Select>
       {trigger.scope === 'selected_paid' && (
