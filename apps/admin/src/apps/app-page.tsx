@@ -19,6 +19,7 @@ import {
 import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
 import { getSettingValue, useBrowseSettings } from '@tryghost/admin-x-framework/api/settings';
 import { type SiteData, useBrowseSite } from '@tryghost/admin-x-framework/api/site';
+import type { User } from '@tryghost/admin-x-framework/api/users';
 import { apiUrl } from '@tryghost/admin-x-framework/helpers';
 import { getSiteTimezone } from '@tryghost/admin-x-framework/utils/get-site-timezone';
 import { useThemeContext } from '@/providers/theme-context';
@@ -131,16 +132,16 @@ function useSessionEnd(session: AppSession, onEnded: () => void) {
 const AppFrame: React.FC<{
   session: AppSession;
   site: SiteData;
+  user: User;
   timezone: string;
   accentColor: string;
   onEnded: () => void;
-}> = ({ session, site, timezone, accentColor, onEnded }) => {
+}> = ({ session, site, user, timezone, accentColor, onEnded }) => {
   const { installation } = session;
   useSessionEnd(session, onEnded);
   const navigate = useNavigate();
   const location = useLocation();
   const { ghostVersion } = useFramework();
-  const { data: user } = useCurrentUser();
   const { resolvedTheme } = useThemeContext();
   const [attempt, setAttempt] = useState(0);
   const [status, setStatus] = useState<FrameStatus>('loading');
@@ -167,7 +168,7 @@ const AppFrame: React.FC<{
 
   const context: StartContext = {
     site: { url: site.url, title: site.title, timezone, locale: site.locale },
-    user: { id: user?.id ?? '', role: user?.roles[0]?.name ?? '' },
+    user: { id: user.id, role: user.roles[0]?.name ?? '' },
     theme,
     session: { revision: session.revision },
     path,
@@ -185,6 +186,14 @@ const AppFrame: React.FC<{
     () => createAdminApiFetch({ apiRoot: new URL(apiUrl('/')), ghostVersion }),
     [ghostVersion],
   );
+
+  // Loads the app's page again, in the same session: a fresh frame that starts afresh.
+  const restartFrame = useCallback(() => {
+    setStatus('loading');
+    setTitle(undefined);
+    setStartedAt(new Date());
+    setAttempt((value) => value + 1);
+  }, []);
 
   useEffect(() => {
     const frame = frameRef.current;
@@ -211,6 +220,10 @@ const AppFrame: React.FC<{
           }
         },
         open: (place) => navigateRef.current(placeRoute(place)),
+        // The page reloaded, or followed a link of its own, and took its channel with it.
+        // Its new document is started in a new frame, at the page's own address and with
+        // Admin's route, as a reload of Admin would.
+        reloaded: restartFrame,
       },
     });
     hostRef.current = host;
@@ -244,7 +257,7 @@ const AppFrame: React.FC<{
       host.dispose();
       hostRef.current = null;
     };
-  }, [adminApiFetch, attempt, id, surfaceOrigin]);
+  }, [adminApiFetch, attempt, id, restartFrame, surfaceOrigin]);
 
   // Back, forward or a link moved Admin within the app: the app follows, without reloading.
   useEffect(() => {
@@ -263,15 +276,10 @@ const AppFrame: React.FC<{
     }
   }, [theme]);
 
-  const retry = () => {
-    setStatus('loading');
-    setTitle(undefined);
-    setStartedAt(new Date());
-    setAttempt((value) => value + 1);
-  };
-
   if (status === 'failed') {
-    return <NotResponding installation={installation} startedAt={startedAt} onRetry={retry} />;
+    return (
+      <NotResponding installation={installation} startedAt={startedAt} onRetry={restartFrame} />
+    );
   }
 
   return (
@@ -324,8 +332,9 @@ const NotFramed: React.FC<{ installation: AppInstallation }> = ({ installation }
  * An active app loads in its frame, once its page is known to be somewhere other than
  * Ghost: Admin's own address, or the site's, which Admin may be served from too. Nothing
  * is framed until the site's address is known, so the check can't be skipped by timing,
- * or by the site's address failing to load. It's a check of the URL the frame starts
- * from; `isGhostOrigin` says what it doesn't cover.
+ * or by the site's address failing to load. Nor before the staff user is known, so the
+ * app never starts without knowing who is using it. The origin check is of the URL the
+ * frame starts from; `isGhostOrigin` says what it doesn't cover.
  */
 const ActiveApp: React.FC<{ session: AppSession; onEnded: () => void }> = ({
   session,
@@ -334,26 +343,38 @@ const ActiveApp: React.FC<{ session: AppSession; onEnded: () => void }> = ({
   const { installation } = session;
   const site = useBrowseSite({ defaultErrorHandler: false });
   const settings = useBrowseSettings({ defaultErrorHandler: false });
+  // Reports its own failure, as Admin's other screens rely on it doing.
+  const user = useCurrentUser();
   const error = site.error ?? settings.error;
   useEffect(() => {
     if (error) {
       reportAppsError(error);
     }
   }, [error]);
-  if (!site.data || !settings.data) {
+  if (!site.data || !settings.data || !user.data) {
+    let failure: { message: string; retry: () => unknown } | undefined;
+    if (site.error) {
+      failure = {
+        message: 'Couldn’t load the site’s address, which opening an app needs.',
+        retry: site.refetch,
+      };
+    } else if (settings.error) {
+      failure = {
+        message: 'Couldn’t load the site’s settings, which opening an app needs.',
+        retry: settings.refetch,
+      };
+    } else if (user.error) {
+      failure = {
+        message: 'Couldn’t load your account, which opening an app needs.',
+        retry: user.refetch,
+      };
+    }
     return (
       <Centered>
-        {error ? (
+        {failure ? (
           <Stack align="center" gap="md">
-            <Text tone="secondary">
-              {site.error
-                ? 'Couldn’t load the site’s address, which opening an app needs.'
-                : 'Couldn’t load the site’s settings, which opening an app needs.'}
-            </Text>
-            <Button
-              variant="outline"
-              onClick={() => void (site.error ? site.refetch() : settings.refetch())}
-            >
+            <Text tone="secondary">{failure.message}</Text>
+            <Button variant="outline" onClick={() => void failure.retry()}>
               Retry
             </Button>
           </Stack>
@@ -376,6 +397,7 @@ const ActiveApp: React.FC<{ session: AppSession; onEnded: () => void }> = ({
       session={session}
       site={site.data.site}
       timezone={getSiteTimezone(values)}
+      user={user.data}
       onEnded={onEnded}
     />
   );

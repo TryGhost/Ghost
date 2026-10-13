@@ -8,6 +8,9 @@ export function placeRoute(place: Place): string {
   if ('post' in place) {
     return `/editor/post/${place.post.id}`;
   }
+  if ('page' in place) {
+    return `/editor/page/${place.page.id}`;
+  }
   if ('member' in place) {
     return `/members/${place.member.id}`;
   }

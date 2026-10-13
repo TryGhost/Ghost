@@ -88,6 +88,7 @@ export {
   callHostRaw,
   failFrameOrigin,
   fakeFrameOrigin,
+  reloadFrame,
 } from './frames';
 export type {
   AppFrameFlags,
