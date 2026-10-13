@@ -40,7 +40,7 @@ describe('App installations Admin API', function () {
   };
   let owner: { actor: { id: string; type: 'user' } };
 
-  const service = () => appInstallations.service!;
+  const service = () => appInstallations.default.service;
   const install = (overrides: Record<string, unknown> = {}) =>
     service().install(owner, { manifestUrl: MANIFEST_URL, manifest: manifest(overrides) });
   const MANIFEST_HOST = 'https://podcast.example.com';

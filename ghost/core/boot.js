@@ -170,8 +170,8 @@ async function initCore({ ghostServer, config }) {
 
   // App installations service: knex-backed, wired once the DB is ready.
   debug('Begin: App Installations Service');
-  const appInstallationsService = require('./server/services/app-installations');
-  appInstallationsService.init();
+  const appInstallationsService = require('./server/services/app-installations').default;
+  await appInstallationsService.init();
   debug('End: App Installations Service');
 
   // Stripe Checkout config service: knex-backed, wired once the DB is ready.

@@ -24,7 +24,7 @@ function createCoreHarness() {
     './server/services/i18n': i18n,
     './server/services/gift-links': { init() {} },
     './server/services/members-metafields': { init() {} },
-    './server/services/app-installations': { init() {} },
+    './server/services/app-installations': { default: { init() {} } },
     './server/services/stripe-checkout-config': { init() {} },
   });
   return {

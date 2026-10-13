@@ -563,6 +563,7 @@ services:
     kind: directory
     disposition: retain
     status: auditing
+    migrated: true
     migration:
       complexity: straightforward
       modelImpact: fits
@@ -571,7 +572,7 @@ services:
         readiness. Return that instance through the initializer and update endpoint access,
         preserving schema gating and live manifest/configuration callbacks. The new history,
         detail and uninstall behavior is per operation and adds no startup lifecycle.
-      reviewedAt: 61ac1e5058fa4657def92d7b362e197314b1a88d
+      reviewedAt: 3754ca3a35265ab51ae2b0513ea13496c6918e23
       sources:
         - core/server/services/app-installations/index.ts
         - core/server/services/app-installations/service.ts
@@ -588,9 +589,10 @@ services:
     contracts:
       exports:
         summary: >-
-          Named exports are init, the mutable service binding, isAvailable and
-          actingContext. The service binding is undefined before init. The Express guard
-          that asks isAvailable lives with the Admin API routes in server/web.
+          The root default-exports the shared initializer with async init and a guarded
+          service getter. isAvailable and actingContext remain named exports. Reading
+          service before readiness throws. The Express guard that asks isAvailable lives
+          with the Admin API routes in server/web.
         sources:
           - core/server/services/app-installations/index.ts
         tests:
@@ -598,10 +600,10 @@ services:
           - test/unit/server/services/app-installations/index.test.ts
       construction:
         summary: >-
-          Boot calls synchronous init after database setup. It constructs one
+          Boot awaits initialization after database setup. The factory returns one
           AppInstallationsService from knex, the Action model and a manifest-rules getter;
-          repeated init returns once the binding exists. Root units prove no connection access
-          on import, one retained instance without queries/delivery, and no publication after
+          successful initialization retains that ready instance. Root units prove no connection
+          access on import, one retained instance without queries/delivery, and no publication after
           a failed connection acquisition followed by a successful retry.
         sources:
           - core/server/services/app-installations/index.ts
