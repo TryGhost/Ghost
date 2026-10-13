@@ -70,7 +70,7 @@ export function failAppFrame() {
 }
 
 /** Starting a session of one installation, which opening its page does. */
-export const sessionsPath = (id: string) => `/apps/installations/${id}/sessions/`;
+const sessionsPath = (id: string) => `/apps/installations/${id}/sessions/`;
 
 /**
  * Starting a session of the installation `id`, answered with `answer`: the installation as
