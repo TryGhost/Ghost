@@ -146,7 +146,7 @@ describe('packed package comparison', () => {
       const local = packAndExtract(directory, join(dirname(directory), 'changed'));
       assert.deepEqual(comparePackageDirectories(local, published), {
         changed: true,
-        reason: `Changed ${path}`,
+        reason: 'Packed package contents differ',
       });
     });
   }
@@ -163,7 +163,7 @@ describe('packed package comparison', () => {
       const local = packAndExtract(directory, join(dirname(directory), 'changed'));
       assert.deepEqual(comparePackageDirectories(local, published), {
         changed: true,
-        reason: `${operation} ${path}`,
+        reason: 'Packed package contents differ',
       });
     });
   }
@@ -185,10 +185,33 @@ describe('packed package comparison', () => {
         field === 'exports' ? { publishConfig: { exports: value } } : { [field]: value },
       );
       const local = packAndExtract(directory, join(dirname(directory), 'changed'));
-      assert.equal(comparePackageDirectories(local, published).changed, true);
-      assert.match(comparePackageDirectories(local, published).reason, /package.json/);
+      assert.deepEqual(comparePackageDirectories(local, published), {
+        changed: true,
+        reason: 'Packed package contents differ',
+      });
     });
   }
+
+  it('ignores nested metadata key order and keeps install hooks across repeated comparisons', (t) => {
+    const directory = temporaryDirectory(t);
+    const local = join(directory, 'local');
+    const previous = join(directory, 'published');
+    cpSync(published, local, { recursive: true });
+    cpSync(published, previous, { recursive: true });
+    updateManifest(local, {
+      config: { nested: { a: 1, b: 2 }, list: ['a', 'b'] },
+      scripts: { install: 'node install.js', test: 'local-test' },
+    });
+    updateManifest(previous, {
+      config: { list: ['a', 'b'], nested: { b: 2, a: 1 } },
+      scripts: { test: 'published-test', install: 'node install.js' },
+    });
+    assert.equal(comparePackageDirectories(local, previous).changed, false);
+    assert.equal(comparePackageDirectories(local, previous).changed, false);
+    updateManifest(local, { scripts: { install: 'node new-install.js' } });
+    assert.equal(comparePackageDirectories(local, previous).changed, true);
+    assert.equal(comparePackageDirectories(local, previous).changed, true);
+  });
 
   it('ignores dependency key order but preserves export condition order', (t) => {
     const local = temporaryDirectory(t);
@@ -200,7 +223,7 @@ describe('packed package comparison', () => {
     });
     assert.equal(
       comparePackageDirectories(local, published).reason,
-      'Changed package.json exports',
+      'Packed package contents differ',
     );
   });
 });

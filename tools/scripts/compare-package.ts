@@ -4,13 +4,12 @@ import {
   mkdirSync,
   mkdtempSync,
   readFileSync,
-  readdirSync,
   rmSync,
   writeFileSync,
 } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
-import { isDeepStrictEqual, parseArgs } from 'node:util';
+import { parseArgs } from 'node:util';
 
 type ComparisonMode = 'package' | 'umd';
 type Comparison = { changed: boolean; reason: string };
@@ -48,6 +47,20 @@ const CONSUMER_FIELDS = [
   'license',
 ];
 
+function sortObjectKeys(value: unknown): unknown {
+  if (Array.isArray(value)) {
+    return value.map(sortObjectKeys);
+  }
+  if (value && typeof value === 'object') {
+    return Object.fromEntries(
+      Object.entries(value)
+        .sort(([a], [b]) => a.localeCompare(b))
+        .map(([key, entry]) => [key, sortObjectKeys(entry)]),
+    );
+  }
+  return value;
+}
+
 function consumerManifest(contents: Buffer): Record<string, unknown> {
   const manifest = JSON.parse(contents.toString());
   const result: Record<string, unknown> = {};
@@ -55,32 +68,17 @@ function consumerManifest(contents: Buffer): Record<string, unknown> {
     if (Object.hasOwn(manifest, field)) {
       // Condition order affects resolution; ordinary JSON object order does not.
       result[field] = ['exports', 'imports', 'typesVersions'].includes(field)
-        ? JSON.stringify(manifest[field])
-        : manifest[field];
+        ? manifest[field]
+        : sortObjectKeys(manifest[field]);
     }
   }
   const scripts = manifest.scripts || {};
-  for (const name of ['preinstall', 'install', 'postinstall']) {
-    if (Object.hasOwn(scripts, name)) {
-      result[`scripts.${name}`] = scripts[name];
-    }
-  }
+  result.scripts = Object.fromEntries(
+    ['preinstall', 'install', 'postinstall']
+      .filter((name) => Object.hasOwn(scripts, name))
+      .map((name) => [name, scripts[name]]),
+  );
   return result;
-}
-
-function packageFiles(directory: string, prefix = ''): Map<string, Buffer> {
-  const files = new Map<string, Buffer>();
-  for (const entry of readdirSync(join(directory, prefix), { withFileTypes: true })) {
-    const path = join(prefix, entry.name);
-    if (entry.isDirectory()) {
-      for (const [name, contents] of packageFiles(directory, path)) {
-        files.set(name, contents);
-      }
-    } else {
-      files.set(path, readFileSync(join(directory, path)));
-    }
-  }
-  return files;
 }
 
 function compareUmdDirectories(localDirectory: string, publishedDirectory: string): Comparison {
@@ -100,32 +98,22 @@ function comparePackedPackageDirectories(
   localDirectory: string,
   publishedDirectory: string,
 ): Comparison {
-  const local = packageFiles(localDirectory);
-  const published = packageFiles(publishedDirectory);
-  const paths = [...new Set([...local.keys(), ...published.keys()])].sort();
-  for (const path of paths) {
-    const current = local.get(path);
-    const previous = published.get(path);
-    if (!current || !previous) {
-      return { changed: true, reason: `${current ? 'Added' : 'Removed'} ${path}` };
-    }
-    if (path === 'package.json') {
-      const currentManifest = consumerManifest(current);
-      const previousManifest = consumerManifest(previous);
-      const fields = new Set([...Object.keys(currentManifest), ...Object.keys(previousManifest)]);
-      for (const field of fields) {
-        if (!isDeepStrictEqual(currentManifest[field], previousManifest[field])) {
-          return { changed: true, reason: `Changed package.json ${field}` };
-        }
-      }
-    } else if (!current.equals(previous)) {
-      return { changed: true, reason: `Changed ${path}` };
-    }
+  for (const directory of [localDirectory, publishedDirectory]) {
+    const manifestPath = join(directory, 'package.json');
+    writeFileSync(manifestPath, JSON.stringify(consumerManifest(readFileSync(manifestPath))));
   }
-  return { changed: false, reason: 'Packed package contents match' };
+  const result = spawnSync('diff', ['-rq', publishedDirectory, localDirectory]);
+  if (result.status !== 0 && result.status !== 1) {
+    throw result.error || new Error(`Package comparison failed: ${result.stderr}`);
+  }
+  return {
+    changed: result.status !== 0,
+    reason:
+      result.status === 0 ? 'Packed package contents match' : 'Packed package contents differ',
+  };
 }
 
-/** Compare unpacked packages, or only their UMD directories for public apps. */
+/** Compare temporary unpacked packages, normalizing their manifests in place, or only UMD directories. */
 export function comparePackageDirectories(
   localDirectory: string,
   publishedDirectory: string,
