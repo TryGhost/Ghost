@@ -45,6 +45,8 @@ export interface PublishFlowOptions {
   limits?: PublishLimitPorts;
   /** The machine's clock, injected for tests. */
   now?: () => Date;
+  /** The newsletter remembered for a draft, read once when the machine is built. */
+  draftNewsletter?: string;
   dispatch: PublishDispatcher;
   /**
    * Asks the writer to sign in again, resolving true once they have. A limit check,
@@ -135,6 +137,7 @@ export function usePublishFlow({
   user,
   limits,
   now,
+  draftNewsletter,
   dispatch,
   requestReauth,
   showCompletion = true,
@@ -147,8 +150,8 @@ export function usePublishFlow({
 
   // The machine reads its inputs once, so it is keyed on the post rather than on
   // the identity of props a re-rendering caller rebuilds.
-  const inputs = useRef({ post, site, user, limits, now });
-  inputs.current = { post, site, user, limits, now };
+  const inputs = useRef({ post, site, user, limits, now, draftNewsletter });
+  inputs.current = { post, site, user, limits, now, draftNewsletter };
   const requestReauthRef = useRef(requestReauth);
   requestReauthRef.current = requestReauth;
   const activeRef = useRef(true);
@@ -188,6 +191,7 @@ export function usePublishFlow({
       user: current.user,
       limits: current.limits,
       now: current.now,
+      draftNewsletter: current.draftNewsletter,
     });
   }, [post.id]);
 

@@ -143,6 +143,11 @@ export interface PostSettingsSidebarProps {
   reveal?: SettingsFieldReveal | null;
   /** The panel's frame, whose width transition the screen waits on before unmounting it. */
   frameRef?: Ref<HTMLDivElement | null>;
+  /**
+   * The panel opens with the editor, restored as the writer left it, so it mounts
+   * already open rather than sliding in. Read only as the panel mounts.
+   */
+  opensInPlace?: boolean;
   /** The link to Ghost's guide to the editor, which leaves the footer under admin7EditorImprovements. */
   showEditorHelp?: boolean;
 }
@@ -161,6 +166,7 @@ export function PostSettingsSidebar({
   hasInlineExcerpt = false,
   reveal,
   frameRef,
+  opensInPlace = false,
   showEditorHelp = false,
 }: PostSettingsSidebarProps) {
   const ownFrameRef = useRef<HTMLDivElement>(null);
@@ -169,7 +175,8 @@ export function PostSettingsSidebar({
   // The panel mounts in the render that opens it, and a new element has no
   // earlier style to transition from. It renders closed first, its style is
   // read, and then it takes the shell's progress, so it opens like a reopen.
-  const [entering, setEntering] = useState(true);
+  // A panel restored with the editor skips this and is open from the first paint.
+  const [entering, setEntering] = useState(!opensInPlace);
   useLayoutEffect(() => {
     ownFrameRef.current?.getBoundingClientRect();
     setEntering(false);

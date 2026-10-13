@@ -34,6 +34,7 @@ again.
 | `restore/`                                       | The `/restore` screen: lists this browser's local copies and creates a new draft from any of them                            |
 | `writing-focus.ts`, `use-writing-focus.ts`       | Hides the editor's chrome while the writer types and brings it back on a pointer move or scroll (`admin7EditorImprovements`) |
 | `editor-font.ts`, `use-editor-font.ts`           | The font the writer reads the post in while editing, and its [Aa] picker in the footer (`admin7EditorImprovements`)          |
+| `settings-open.ts`, `use-settings-open.ts`       | Whether the settings panel opens with the editor, as the writer last left it (`admin7EditorImprovements`)                    |
 
 Two small modules are shared across all of the above. `request-options.ts`
 carries the editor's opt-out from the transport's session-expiry redirect, which
