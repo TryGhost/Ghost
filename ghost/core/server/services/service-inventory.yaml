@@ -3641,11 +3641,14 @@ services:
           request dependencies, retaining those dependency objects without sending a request.
           The exports endpoint destructures and retains that singleton. Repository searches
           found no other runtime constructor or direct consumer; tests construct isolated
-          instances with overrides. Construction timing and retained identity are source-only.
+          instances with overrides. Root units load the real endpoint, prove shared singleton
+          identity and no export-config reads/delivery during construction, then use that
+          retained endpoint with changed configuration. Lazy router timing remains source-only.
         sources:
           - core/server/services/export-requests/export-requests-service.ts
           - core/server/api/endpoints/exports.js
-        tests: []
+        tests:
+          - test/unit/server/services/export-requests/root.test.ts
       consumers:
         summary: >-
           POST /exports is the only runtime requestExport caller found. The endpoint validates
@@ -3664,6 +3667,7 @@ services:
           - core/server/api/endpoints/utils/permissions.js
         tests:
           - test/e2e-api/admin/exports-request.test.ts
+          - test/unit/server/services/export-requests/root.test.ts
       startup:
         summary: >-
           Boot does not initialize this root explicitly. Its normal import occurs while the
@@ -3692,13 +3696,15 @@ services:
           disposal hook and no mutable job state. Every call builds its own signed payload;
           overlapping or repeated calls can send independently with no deduplication, pending
           promise, local persistence or completion tracking. These lifetime boundaries are
-          established from source, not identity, concurrency or restart assertions.
+          partly source-derived: root units assert shared identity and held endpoint delivery;
+          concurrency, deduplication and repeated boot remain outside their coverage.
         sources:
           - core/server/services/export-requests/export-requests-service.ts
           - core/server/api/endpoints/exports.js
           - core/boot.js
           - core/server/ghost-server.ts
-        tests: []
+        tests:
+          - test/unit/server/services/export-requests/root.test.ts
       configuration:
         summary: >-
           Each call reads webhook URL, signing secret and site ID through the retained config
@@ -3707,7 +3713,8 @@ services:
           There is no captured configuration subtree. Later get calls observe a replacement
           tree, but config set/reset is test support rather than production hot reload.
           Public config omits the signing secret. Tests cover initial values, numeric IDs,
-          missing settings and secret omission, not explicit same-instance replacement.
+          missing settings and secret omission. Root units additionally replace configuration
+          between requests through one retained endpoint and verify each signed payload.
         sources:
           - core/server/services/export-requests/export-requests-service.ts
           - core/shared/config/validated.ts
@@ -3715,6 +3722,7 @@ services:
         tests:
           - test/unit/server/services/export-requests/export-requests-service.test.ts
           - test/e2e-api/admin/exports-request.test.ts
+          - test/unit/server/services/export-requests/root.test.ts
       resources:
         summary: >-
           The service creates no database record, worker or own timer. It awaits the shared
@@ -3722,7 +3730,8 @@ services:
           Installed dependency source shows shared DNS cache/timers and transport-owned
           requests; this root exposes no cancellation or disposal. HTTP shutdown bounds the
           incoming request drain but does not pass cancellation to the outbound delivery.
-          Unit tests assert retry options; HTTP tests intercept outbound transport. Timeout,
+          Unit tests assert retry/timeout options; root tests hold delivery and assert the
+          endpoint awaits it. HTTP tests intercept outbound transport. Actual timeout,
           redirects, DNS/socket cleanup and pending-delivery shutdown are not exercised.
         sources:
           - core/server/services/export-requests/export-requests-service.ts
@@ -3733,6 +3742,7 @@ services:
         tests:
           - test/unit/server/services/export-requests/export-requests-service.test.ts
           - test/e2e-api/admin/exports-request.test.ts
+          - test/unit/server/services/export-requests/root.test.ts
       failures:
         summary: >-
           Missing URL rejects with NotFoundError; missing secret/site ID logs and rejects with
@@ -3750,17 +3760,18 @@ services:
         tests:
           - test/unit/server/services/export-requests/export-requests-service.test.ts
           - test/e2e-api/admin/exports-request.test.ts
+          - test/unit/server/services/export-requests/root.test.ts
     unverified: []
     blockers:
       - >-
         Pin singleton publication, lazy Admin-router construction and retained endpoint identity
-        across repeated boot before changing composition. Existing HTTP tests use completed
-        boot and injected-class tests do not establish the module lifecycle. Cover partial
-        initialization separately.
+        across repeated boot before changing composition. Root tests now pin import identity,
+        idle construction and retained endpoint delivery; HTTP tests use completed boot.
+        An introduced boot readiness boundary still needs cold-boot validation during migration.
       - >-
-        Add same-instance configuration replacement tests, including changes while a request
-        is pending. Current test config set/reset rebuilds immutable trees; it does not
-        establish production hot reload. Pin staff-token authorization separately.
+        Root tests now pin same-instance configuration replacement between completed requests.
+        Changes during pending delivery and production hot reload remain separate questions.
+        Pin staff-token authorization separately.
       - >-
         Establish pending-delivery and shared transport ownership before adding disposal.
         Retry limit zero is asserted, but actual timeout, redirect and shutdown behavior is
