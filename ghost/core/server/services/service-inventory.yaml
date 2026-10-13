@@ -5244,8 +5244,8 @@ services:
           invitation token, opens a transaction, locks a sent invite, checks expiry and existing
           user, deletes the invite and creates the user in that order. Email and role come from
           the stored invite; name and password come from the request. No invocation state is
-          retained. Root units assert import identity/no invitation work and controlled add
-          operations through its actual collaborators. Acceptance units separately stub the
+          retained. Root units assert that import renders and sends nothing, and drive add
+          through its actual collaborators. Acceptance units separately stub the
           transaction and selected model operations.
         sources:
           - core/server/services/invites/index.js
@@ -5408,9 +5408,9 @@ services:
         Define concurrency/retry expectations before changing ownership.
       - >-
         Assert mail recipient, subject, reply-to, HTML/text and signup URL through the real
-        HTTP consumer for staff and integration invites. Root units now pin both payloads,
-        live settings and retained identity with controlled models/rendering/API mail; they
-        do not establish real provider delivery.
+        HTTP consumer for staff and integration invites. Root units now pin both payloads and
+        live settings read through the same imported instance across calls, with controlled
+        models/rendering/API mail; they do not establish real provider delivery.
       - >-
         Resolve API-mail orchestration and transport ownership without moving business logic
         into HTTP. Preserve role/limit checks and successful behavior while introducing boot
