@@ -3,14 +3,16 @@ import type {
   AppManifest,
 } from '@tryghost/admin-x-framework/api/app-installations';
 import {
+  type AppFrameFlags,
+  appFramePage,
   failFrameOrigin,
   fakeAdminEndpoint,
   fakeFrameOrigin,
-  fakeOriginRequests,
 } from '@test-utils/acceptance';
 
 export const MANIFEST_URL = 'https://podcast.example.com/ghost-app.json';
 export const APP_PAGE_URL = 'https://podcast.example.com/admin';
+export const APP_ORIGIN = 'https://podcast.example.com';
 export const labs = { apps: true };
 
 export const manifest = (overrides: Partial<AppManifest> = {}): AppManifest => ({
@@ -28,6 +30,7 @@ export const installation = (overrides: Partial<AppInstallation> = {}): AppInsta
   id: 'installation-1',
   app_id: 'com.example.podcast',
   status: 'active',
+  revision: 0,
   manifest_url: MANIFEST_URL,
   manifest: manifest(),
   created_at: '2026-10-01T10:00:00.000Z',
@@ -48,31 +51,66 @@ export function fakeInstallations(initial: AppInstallation[] = []) {
 export const readPath = (id: string) => new RegExp(`^/apps/installations/${id}/(\\?|$)`);
 
 /**
- * The app's page at its own URL: what its frame loads, and the answer to the probe Admin
- * sends there first. `delayMs` holds the page back, for an app that's slow to answer.
- *
- * TODO(BER-3983): the probe goes with the bridge handshake. Once it has, this is
- * `fakeFrameOrigin` alone, and `fakeOriginRequests` can go unless another spec needs it.
+ * The app's page at its own URL, which its frame loads: by default one that speaks the
+ * bridge (see `appFramePage`), with `flags` to tune it; `html` replaces it.
  */
-export async function fakeAppFrame({
-  html = '<h1>Podcast app</h1>',
-  delayMs = 0,
-}: { html?: string; delayMs?: number } = {}) {
-  await fakeFrameOrigin(APP_PAGE_URL, html, delayMs);
-  fakeOriginRequests(APP_PAGE_URL, { html });
+export async function fakeAppFrame({ html, flags }: { html?: string; flags?: AppFrameFlags } = {}) {
+  await fakeFrameOrigin(APP_PAGE_URL, html ?? (await appFramePage(flags)));
 }
 
-/** An app whose server can't be reached: neither the frame nor the probe gets an answer. */
-export async function failAppFrame() {
-  await failFrameOrigin(APP_PAGE_URL);
-  fakeOriginRequests(APP_PAGE_URL, { down: true });
+/** An app whose server can't be reached: its frame gets no answer. */
+export function failAppFrame() {
+  return failFrameOrigin(APP_PAGE_URL);
 }
 
-/** The app's page as Admin opens it: the installation it reads, and the page it frames. */
-export async function fakeAppPage(read: AppInstallation, html = '<h1>Podcast app</h1>') {
+/** Starting a session of one installation, which opening its page does. */
+export const sessionsPath = (id: string) => `/apps/installations/${id}/sessions/`;
+
+/**
+ * Starting a session of the installation `id`, answered with `answer`: the installation as
+ * Ghost found it, pinning its revision, or a `Response` such as an error. `set` changes the
+ * answer for the sessions that follow.
+ */
+export function fakeSessionStart(id: string, answer: AppInstallation | Response) {
+  let next = answer;
+  const capture = fakeAdminEndpoint('POST', sessionsPath(id), () =>
+    next instanceof Response
+      ? next
+      : {
+          app_sessions: [
+            { revision: next.revision, started_at: '2026-10-13T10:00:00.000Z', installation: next },
+          ],
+        },
+  );
+  return Object.assign(capture, {
+    set: (nextAnswer: AppInstallation | Response) => {
+      next = nextAnswer;
+    },
+  });
+}
+
+/**
+ * The app's page as Admin opens it: the session it starts, the installation it reads to
+ * tell when the session ends, and the page it frames, which by default speaks the bridge
+ * (see `appFramePage`). `html` replaces the page; `flags` tune the default one. `set`
+ * moves the installation on, for the sessions and reads that follow.
+ */
+export async function fakeAppPage(
+  read: AppInstallation,
+  { html, flags }: { html?: string; flags?: AppFrameFlags } = {},
+) {
+  let current = read;
+  const sessionsApi = fakeSessionStart(read.id, read);
   const readApi = fakeAdminEndpoint('GET', readPath(read.id), () => ({
-    app_installations: [read],
+    app_installations: [current],
   }));
-  await fakeAppFrame({ html });
-  return readApi;
+  await fakeAppFrame({ html, flags });
+  return {
+    sessionsApi,
+    readApi,
+    set: (next: AppInstallation) => {
+      current = next;
+      sessionsApi.set(next);
+    },
+  };
 }

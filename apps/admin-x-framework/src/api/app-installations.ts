@@ -11,6 +11,8 @@ export interface AppInstallation {
   id: string;
   app_id: string;
   status: AppInstallationStatus;
+  /** Moves on with every change to the installation, so a session can tell it has ended. */
+  revision: number;
   manifest_url: string;
   manifest: AppManifest;
   created_at: string;
@@ -64,6 +66,20 @@ export interface AppInstallationsResponseType {
   app_installations: AppInstallation[];
 }
 
+/**
+ * One session of an installed app: the installation as Ghost found it when the session
+ * started, and the revision the session is pinned to.
+ */
+export interface AppSession {
+  revision: number;
+  started_at: string;
+  installation: AppInstallation;
+}
+
+export interface AppSessionsResponseType {
+  app_sessions: AppSession[];
+}
+
 export interface AppInstallationPreviewsResponseType {
   app_installation_previews: AppInstallationPreview[];
 }
@@ -102,6 +118,19 @@ export const usePreviewAppInstallation = createMutation<
   method: 'POST',
   path: () => '/apps/installations/preview/',
   body: (manifestUrl) => ({ app_installation_previews: [{ manifest_url: manifestUrl }] }),
+});
+
+/**
+ * Starts a session of an installed app, which is what opening its page does. Ghost
+ * re-checks the app's manifest first, so a silent change applies and one that needs
+ * approval suspends the app, and answers with the installation as it stands: that answer
+ * alone decides whether the app loads. The session ends when the installation moves on
+ * from the revision it answers with. An app that isn't installed answers 404.
+ */
+export const useStartAppSession = createMutation<AppSessionsResponseType, string>({
+  method: 'POST',
+  path: (id) => `/apps/installations/${id}/sessions/`,
+  invalidateQueries: { dataType },
 });
 
 export const useAddAppInstallation = createMutation<

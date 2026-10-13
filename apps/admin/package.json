@@ -30,6 +30,7 @@
     "@dnd-kit/sortable": "catalog:",
     "@dnd-kit/utilities": "catalog:",
     "@floating-ui/react-dom": "catalog:",
+    "@quilted/threads": "catalog:",
     "@radix-ui/react-focus-guards": "catalog:",
     "@radix-ui/react-focus-scope": "catalog:",
     "@sentry/react": "catalog:",
