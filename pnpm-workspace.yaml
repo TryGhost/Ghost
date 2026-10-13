@@ -111,6 +111,7 @@ catalog:
   '@tryghost/timezone-data': 1.0.1
   '@tryghost/tpl': 2.3.16
   '@tryghost/url-utils': 5.4.0
+  '@types/csso': 5.0.5
   '@types/express': 4.17.25
   '@types/lodash': 4.17.25
   '@types/luxon': 3.7.4

@@ -1,6 +1,6 @@
 /**
  * ```
- * const Minifier = require('./minifier');
+ * const { Minifier } = require('./minifier');
  * const minifier = new Minifier({
  *     src: 'my/src/path',
  *     dest: 'my/dest/path'
@@ -14,18 +14,18 @@
  *
  * - Minfier constructor requires a src and a dest
  * - minify() function takes an object with destination file as the key and source glob as the value
- *    - globs can be anything tiny-glob supports
+ *    - globs can be anything fs.glob supports
  *    - destination files must end with .css or .js
  *    - src files will be minified according to their destination file extension
  */
 
-const errors = require('@tryghost/errors');
-const debug = require('@tryghost/debug')('minifier');
-const tpl = require('@tryghost/tpl');
-const glob = require('tiny-glob');
-const path = require('path');
-const fs = require('fs').promises;
-const isWin = process.platform === 'win32';
+import errors from '@tryghost/errors';
+import createDebug from '@tryghost/debug';
+import tpl from '@tryghost/tpl';
+import path from 'node:path';
+import fs from 'node:fs/promises';
+
+const debug = createDebug('minifier');
 
 const messages = {
   badDestination: {
@@ -43,9 +43,17 @@ const messages = {
   globalHelp: 'Refer to the README for Minifier for how to use this module',
 };
 
+type MinifyOptions = {
+  /** Key value pairs that should get replaced in the content before minifying */
+  replacements?: Record<string, string>;
+};
+
 // public API for minify hooks
-class Minifier {
-  constructor({ src, dest }) {
+export class Minifier {
+  srcPath: string;
+  destPath: string;
+
+  constructor({ src, dest }: { src?: string; dest?: string } = {}) {
     if (!src) {
       throw new errors.IncorrectUsageError({
         message: tpl(messages.missingConstructorOption.message, { opt: 'src' }),
@@ -64,25 +72,25 @@ class Minifier {
     this.destPath = dest;
   }
 
-  getFullSrc(src) {
+  getFullSrc(src: string): string {
     return path.join(this.srcPath, src);
   }
 
-  getFullDest(dest) {
+  getFullDest(dest: string): string {
     return path.join(this.destPath, dest);
   }
 
-  async minifyCSS(contents) {
-    const csso = require('csso');
-    const result = await csso.minify(contents);
+  async minifyCSS(contents: string): Promise<string | null> {
+    const csso: typeof import('csso') = require('csso');
+    const result = csso.minify(contents);
     if (result && result.css) {
       return result.css;
     }
     return null;
   }
 
-  async minifyJS(contents) {
-    const terser = require('terser');
+  async minifyJS(contents: string): Promise<string | null> {
+    const terser: typeof import('terser') = require('terser');
     const result = await terser.minify(contents);
     if (result && result.code) {
       return result.code;
@@ -90,15 +98,16 @@ class Minifier {
     return null;
   }
 
-  async getMatchingFiles(src) {
-    let fullSrc = this.getFullSrc(src);
-    if (isWin) {
-      fullSrc = fullSrc.replace(/\\/g, '/');
+  async getMatchingFiles(src: string): Promise<string[]> {
+    const files: string[] = [];
+    for await (const file of fs.glob(this.getFullSrc(src))) {
+      files.push(file);
     }
-    return await glob(fullSrc);
+    // Files are concatenated in this order, so keep it deterministic
+    return files.sort();
   }
 
-  async readFiles(files) {
+  async readFiles(files: string[]): Promise<string> {
     let mergedFiles = '';
     for (const file of files) {
       const contents = await fs.readFile(file, 'utf8');
@@ -108,23 +117,33 @@ class Minifier {
     return mergedFiles;
   }
 
-  async getSrcFileContents(src) {
-    try {
-      const files = await this.getMatchingFiles(src);
+  async getSrcFileContents(src: string): Promise<string> {
+    const badSource = new errors.IncorrectUsageError({
+      message: tpl(messages.badSource.message, { src }),
+      context: tpl(messages.badSource.context),
+      help: tpl(messages.globalHelp),
+    });
 
-      if (files) {
-        return await this.readFiles(files);
-      }
-    } catch (error) {
-      throw new errors.IncorrectUsageError({
-        message: tpl(messages.badSource.message, { src }),
-        context: tpl(messages.badSource.context),
-        help: tpl(messages.globalHelp),
-      });
+    let files: string[];
+    try {
+      files = await this.getMatchingFiles(src);
+    } catch {
+      throw badSource;
+    }
+
+    // fs.glob returns nothing for missing files and folders
+    if (!files.length) {
+      throw badSource;
+    }
+
+    try {
+      return await this.readFiles(files);
+    } catch {
+      throw badSource;
     }
   }
 
-  async writeFile(contents, dest) {
+  async writeFile(contents: string | null, dest: string): Promise<string | undefined> {
     if (contents) {
       const writePath = this.getFullDest(dest);
       // Ensure the output folder exists
@@ -138,23 +157,30 @@ class Minifier {
   /**
    * Minify files
    *
-   * @param {Object} globs An object in the form of
+   * @param globs An object in the form of
    * ```js
    * {
    *     'destination1.js': 'glob/*.js',
    *     'destination2.js': 'glob2/*.js'
    * }
    * ```
-   * @param {Object} [options]
-   * @param {Object} [options.replacements] Key value pairs that should get replaced in the content before minifying
-   * @returns {Promise<string[]>} List of minified files (keys of globs)
+   * @returns List of minified files (keys of globs)
    */
-  async minify(globs, options) {
+  async minify(globs: Record<string, string>, options?: MinifyOptions): Promise<string[]> {
     debug('Begin', globs);
     const destinations = Object.keys(globs);
-    const minifiedFiles = [];
+    const minifiedFiles: string[] = [];
 
     for (const dest of destinations) {
+      const isCSS = dest.endsWith('.css');
+      if (!isCSS && !dest.endsWith('.js')) {
+        throw new errors.IncorrectUsageError({
+          message: tpl(messages.badDestination.message, { dest }),
+          context: tpl(messages.badDestination.context),
+          help: tpl(messages.globalHelp),
+        });
+      }
+
       const src = globs[dest];
       let contents = await this.getSrcFileContents(src);
 
@@ -163,19 +189,10 @@ class Minifier {
           contents = contents.replace(key, options.replacements[key]);
         }
       }
-      let minifiedContents;
 
-      if (dest.endsWith('.css')) {
-        minifiedContents = await this.minifyCSS(contents);
-      } else if (dest.endsWith('.js')) {
-        minifiedContents = await this.minifyJS(contents);
-      } else {
-        throw new errors.IncorrectUsageError({
-          message: tpl(messages.badDestination.message, { dest }),
-          context: tpl(messages.badDestination.context),
-          help: tpl(messages.globalHelp),
-        });
-      }
+      const minifiedContents = isCSS
+        ? await this.minifyCSS(contents)
+        : await this.minifyJS(contents);
 
       const result = await this.writeFile(minifiedContents, dest);
       if (result) {
@@ -187,5 +204,3 @@ class Minifier {
     return minifiedFiles;
   }
 }
-
-module.exports = Minifier;

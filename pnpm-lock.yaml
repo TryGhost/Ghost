@@ -380,6 +380,9 @@ catalogs:
     '@tryghost/validator':
       specifier: 3.2.17
       version: 3.2.17
+    '@types/csso':
+      specifier: 5.0.5
+      version: 5.0.5
     '@types/express':
       specifier: 4.17.25
       version: 4.17.25
@@ -2511,9 +2514,6 @@ importers:
       terser:
         specifier: 5.48.0
         version: 5.48.0
-      tiny-glob:
-        specifier: 0.2.9
-        version: 0.2.9
       tldts:
         specifier: 'catalog:'
         version: 7.4.18
@@ -2551,6 +2551,9 @@ importers:
       '@types/common-tags':
         specifier: 1.8.4
         version: 1.8.4
+      '@types/csso':
+        specifier: 'catalog:'
+        version: 5.0.5
       '@types/express':
         specifier: 'catalog:'
         version: 4.17.25
@@ -8472,6 +8475,12 @@ packages:
   '@types/create-error@0.3.33':
     resolution: {integrity: sha512-KJW8os1BxoiY9MtyAS0NqSiH4eGDpCC0N/7tQZy3XN3l4YbLnpfFf91jnfW3HXFoyWyPQBTZ4FJICMIFBJ0tKA==}
 
+  '@types/css-tree@2.3.11':
+    resolution: {integrity: sha512-aEokibJOI77uIlqoBOkVbaQGC9zII0A+JH1kcTNKW2CwyYWD8KM6qdo+4c77wD3wZOQfJuNWAr9M4hdk+YhDIg==}
+
+  '@types/csso@5.0.5':
+    resolution: {integrity: sha512-Et/B3W1/1XMjG9SxwitiokWDabA9N8otVoTBJF2RmZ8itU0c5h7qmuZcTpp17BqfAnsdfkGQ3hwizff3nJvWSQ==}
+
   '@types/d3-array@3.2.2':
     resolution: {integrity: sha512-hOLWVbm7uRza0BYXpIIW5pxfrKe0W+D5lrFiAEYR+pb6w3N2SwSMaJbXdUfSEv+dT4MfHBLtn5js0LAWaO6otw==}
 
@@ -11377,9 +11386,6 @@ packages:
   globalthis@1.0.4:
     resolution: {integrity: sha512-DpLKbNU4WylpxJykQujfCcwYWiV/Jhm50Goo0wrVILAv5jOr9d+H+UR3PhSCD2rCCEIg0uc+G+muBTwD54JhDQ==}
     engines: {node: '>= 0.4'}
-
-  globalyzer@0.1.0:
-    resolution: {integrity: sha512-40oNTM9UfG6aBmuKxk/giHn5nQ8RVz/SS4Ir6zgzOv9/qC3kKZ9v4etGTcJbEl/NyVQH7FGU7d+X1egr57Md2Q==}
 
   globby@11.1.0:
     resolution: {integrity: sha512-jhIXaOzy1sb8IyocaruWSn1TjmnBVs8Ayhcy83rmxNJ8q2uWKCAj3CnJY+KpGSXCueAPc0i05kVvVKtP1t9S3g==}
@@ -15416,9 +15422,6 @@ packages:
   tildify@2.0.0:
     resolution: {integrity: sha512-Cc+OraorugtXNfs50hU9KS369rFXCfgGLpfCfvlc+Ud5u6VWmUQsOAa9HbTvheQdYnrdJqqv1e5oIqXppMYnSw==}
     engines: {node: '>=8'}
-
-  tiny-glob@0.2.9:
-    resolution: {integrity: sha512-g/55ssRPUjShh+xkfx9UPDXqhckHEsHr4Vd9zX55oSdGZc/MD0m3sferOkwWtp98bv+kcVfEHtRJgBVJzelrzg==}
 
   tiny-invariant@1.3.3:
     resolution: {integrity: sha512-+FbBPE1o9QAYvviau/qC5SE3caw21q3xkvWKBtja5vgqOWIHHJ3ioaq1VPfn/Szqctz2bU/oYeKd9/z5BL+PVg==}
@@ -20557,6 +20560,12 @@ snapshots:
 
   '@types/create-error@0.3.33': {}
 
+  '@types/css-tree@2.3.11': {}
+
+  '@types/csso@5.0.5':
+    dependencies:
+      '@types/css-tree': 2.3.11
+
   '@types/d3-array@3.2.2': {}
 
   '@types/d3-color@3.1.3': {}
@@ -23893,8 +23902,6 @@ snapshots:
     dependencies:
       define-properties: 1.2.1
       gopd: 1.2.0
-
-  globalyzer@0.1.0: {}
 
   globby@11.1.0:
     dependencies:
@@ -28769,11 +28776,6 @@ snapshots:
   through@2.3.8: {}
 
   tildify@2.0.0: {}
-
-  tiny-glob@0.2.9:
-    dependencies:
-      globalyzer: 0.1.0
-      globrex: 0.1.2
 
   tiny-invariant@1.3.3: {}
 
