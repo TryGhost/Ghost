@@ -8748,7 +8748,7 @@ services:
           per use, but the shared URL helper freezes site/subdirectory/admin URLs at
           import; this is not a URL hot-reload contract. Privacy is read from settings
           cache before enqueueing post events, not rechecked by sendWebmentions/sendAll.
-          Source URL and current/previous HTML are captured before dispatch. Helper
+          Source URL and changed links are captured before dispatch. Helper
           units assert missing-relation loading and post/page serializer selection;
           sender units assert fixed enablement gates, captured payload fields and
           destroyed-post previous data. Discovery/send/metadata request 15-second
@@ -8861,9 +8861,9 @@ services:
       - >-
         Characterize configuration timing through the real wrapper if callbacks or
         dependency capture change: frozen shared URLs, routing's init snapshot, current
-        privacy before enqueue, and source/HTML captured for jobs. Fixed fake getters and
-        test configuration replacement do not prove production hot reload or privacy
-        changes while jobs are pending.
+        privacy before enqueue, and source URL/changed links captured for jobs. Fixed
+        fake getters and test configuration replacement do not prove production hot
+        reload or privacy changes while jobs are pending.
       - >-
         Before changing repository or transport composition, add focused assertions for
         persisted revalidation counts and write/event failure ordering.

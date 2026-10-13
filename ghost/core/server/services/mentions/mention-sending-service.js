@@ -80,18 +80,17 @@ module.exports = class MentionSendingService {
         // Post should be or should have been published
         return;
       }
-      // make sure we have something to parse before we create a job
       const html = post.get('status') === 'published' ? post.get('html') : null;
       const previousHtml = post.previous('status') === 'published' ? post.previous('html') : null;
-      if (html || previousHtml) {
+      const links = this.#getChangedLinks(html, previousHtml);
+      if (links.length) {
         // Capture the source URL now, from the event's data, rather than
         // deferring the model into the job.
         const url = new URL(await this.#resolvePostUrl(post));
         await this.#jobsService.dispatch(
           new SendWebmentionsJob({
             sourceUrl: url.href,
-            html: html,
-            previousHtml: previousHtml,
+            links,
           }),
         );
       }
@@ -182,30 +181,10 @@ module.exports = class MentionSendingService {
    * @param {import('./send-webmentions-job').default} job
    */
   async sendWebmentions(job) {
-    await this.sendForHTMLResource({
-      url: new URL(job.sourceUrl),
-      html: job.html,
-      previousHtml: job.previousHtml,
-    });
-  }
-
-  /**
-   * Send a webmention call for the links in a resource.
-   * @param {object} resource
-   * @param {URL} resource.url
-   * @param {string|null} resource.html
-   * @param {string|null} [resource.previousHtml]
-   */
-  async sendForHTMLResource(resource) {
-    const links = this.#getChangedLinks(resource.html, resource.previousHtml);
-
-    if (links.length) {
-      logging.info('[Webmention] Sending all webmentions for ' + resource.url.href);
-    }
-
+    logging.info('[Webmention] Sending all webmentions for ' + job.sourceUrl);
     await this.sendAll({
-      url: resource.url,
-      links: links.map((link) => new URL(link)),
+      url: new URL(job.sourceUrl),
+      links: job.links.map((link) => new URL(link)),
     });
   }
 

@@ -318,8 +318,7 @@ describe('register-job-handlers', function () {
     const sendWebmentionsHandler = handlerFor('send-webmentions');
     const job = new SendWebmentionsJob({
       sourceUrl: 'https://site.com/post/',
-      html: '<a href="https://example.com/">link</a>',
-      previousHtml: null,
+      links: ['https://example.com/'],
     });
 
     await sendWebmentionsHandler(job);
