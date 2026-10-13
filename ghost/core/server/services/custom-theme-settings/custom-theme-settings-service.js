@@ -17,7 +17,7 @@ module.exports = class CustomThemeSettingsService {
   /**
    * @param {Object} options
    * @param {any} options.model - Bookshelf-like model instance for storing theme setting key/value pairs
-   * @param {import('./custom-theme-settings-cache')} options.cache - Instance of a custom key/value pair cache
+   * @param {import('../../../shared/custom-theme-settings-cache/custom-theme-settings-cache')} options.cache - Instance of a custom key/value pair cache
    */
   constructor({ model, cache }) {
     this.activeThemeName = null;

@@ -2070,8 +2070,8 @@ services:
         Define ownership of borrowed adapters and pending writes before shutdown/re-init; no root
         drain or S3-client disposal exists. Conditional storage integration coverage is not proof
         of wrapper behavior or safe teardown.
-  custom-theme-settings.js:
-    kind: file
+  custom-theme-settings:
+    kind: directory
     disposition: retain
     status: audited
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
@@ -2087,13 +2087,13 @@ services:
         behavioral gaps.
       reviewedAt: f276513ba32b7114fd5cc4f7b02d3f82c0c31e3e
       sources:
-        - core/server/services/custom-theme-settings.js
-        - core/shared/custom-theme-settings-cache/custom-theme-settings-service.js
+        - core/server/services/custom-theme-settings/index.js
+        - core/server/services/custom-theme-settings/custom-theme-settings-service.js
         - core/server/services/themes/activation-bridge.js
         - core/server/services/themes/storage.js
         - core/boot.js
     entryPoints:
-      - custom-theme-settings.js
+      - custom-theme-settings/index.js
     notes: >-
       Preserve boot-before-theme activation, API replacement and the shared render cache.
       Activation concurrency, partial writes and initial visibility handling need contracts.
@@ -2103,12 +2103,13 @@ services:
           CommonJS exports one wrapper with synchronous init returning undefined. Its public
           api appears only after init and exposes activateTheme, listSettings, updateSettings
           and copySettingsBetweenThemes plus mutable working state. There is no reset, stop
-          or drain export. The implementation and BREAD/cache classes are deep exports under
+          or drain export. The implementation and BREAD classes are deep exports under
+          services/custom-theme-settings; the shared value-cache class remains under
           shared/custom-theme-settings-cache.
         sources:
-          - core/server/services/custom-theme-settings.js
-          - core/shared/custom-theme-settings-cache/custom-theme-settings-service.js
-          - core/shared/custom-theme-settings-cache/custom-theme-settings-bread-service.js
+          - core/server/services/custom-theme-settings/index.js
+          - core/server/services/custom-theme-settings/custom-theme-settings-service.js
+          - core/server/services/custom-theme-settings/custom-theme-settings-bread-service.js
           - core/shared/custom-theme-settings-cache/custom-theme-settings-cache.js
         tests: []
       construction:
@@ -2119,8 +2120,8 @@ services:
           activation. No alternate runtime implementation construction was found. Unit tests
           inject a fake model and separate cache; API tests explicitly re-init and activate.
         sources:
-          - core/server/services/custom-theme-settings.js
-          - core/shared/custom-theme-settings-cache/custom-theme-settings-service.js
+          - core/server/services/custom-theme-settings/index.js
+          - core/server/services/custom-theme-settings/custom-theme-settings-service.js
           - core/shared/custom-theme-settings-cache/index.js
         tests:
           - test/e2e-api/admin/custom-theme-settings.test.js
@@ -2156,13 +2157,13 @@ services:
           activate a fixture definition rather than asserting this boot dependency.
         sources:
           - core/boot.js
-          - core/server/services/custom-theme-settings.js
+          - core/server/services/custom-theme-settings/index.js
           - core/server/services/themes/index.js
           - core/server/services/themes/activate.js
-          - core/shared/custom-theme-settings-cache/custom-theme-settings-service.js
+          - core/server/services/custom-theme-settings/custom-theme-settings-service.js
         tests:
           - test/e2e-api/admin/custom-theme-settings.test.js
-          - test/unit/shared/custom-theme-settings-cache/service.test.js
+          - test/unit/server/services/custom-theme-settings/service.test.js
       lifetime:
         summary: >-
           Re-init discards api state but reuses the shared value cache; retained old instances
@@ -2172,11 +2173,11 @@ services:
           another. listSettings returns shallow copies; nested definition objects remain
           shared. Cache getAll is also shallow, and no stop clears or drains this state.
         sources:
-          - core/server/services/custom-theme-settings.js
-          - core/shared/custom-theme-settings-cache/custom-theme-settings-service.js
+          - core/server/services/custom-theme-settings/index.js
+          - core/server/services/custom-theme-settings/custom-theme-settings-service.js
           - core/shared/custom-theme-settings-cache/custom-theme-settings-cache.js
         tests:
-          - test/unit/shared/custom-theme-settings-cache/service.test.js
+          - test/unit/server/services/custom-theme-settings/service.test.js
           - test/unit/shared/custom-theme-settings-cache/cache.test.ts
       configuration:
         summary: >-
@@ -2188,12 +2189,12 @@ services:
           booleans and image URLs. The wrapper reads no config; theme choice is supplied by
           callers and model URL conversion uses shared URL utilities.
         sources:
-          - core/shared/custom-theme-settings-cache/custom-theme-settings-service.js
+          - core/server/services/custom-theme-settings/custom-theme-settings-service.js
           - core/server/models/custom-theme-setting.js
           - core/server/data/schema/schema.js
           - core/server/services/themes/index.js
         tests:
-          - test/unit/shared/custom-theme-settings-cache/service.test.js
+          - test/unit/server/services/custom-theme-settings/service.test.js
           - test/unit/server/models/custom-theme-setting.test.js
           - test/legacy/models/base/overrides.test.js
       resources:
@@ -2205,13 +2206,13 @@ services:
           no encompassing transaction, and neither boot nor wrapper registers cancellation
           or pending-operation cleanup.
         sources:
-          - core/shared/custom-theme-settings-cache/custom-theme-settings-service.js
-          - core/shared/custom-theme-settings-cache/custom-theme-settings-bread-service.js
+          - core/server/services/custom-theme-settings/custom-theme-settings-service.js
+          - core/server/services/custom-theme-settings/custom-theme-settings-bread-service.js
           - core/shared/custom-theme-settings-cache/index.js
           - core/boot.js
           - core/server/ghost-server.ts
         tests:
-          - test/unit/shared/custom-theme-settings-cache/service.test.js
+          - test/unit/server/services/custom-theme-settings/service.test.js
       failures:
         summary: >-
           Unknown keys and invalid select/boolean/color values reject before writes; HTTP tests
@@ -2222,14 +2223,14 @@ services:
           stale. Copy failure rolls back via the transaction; tests use a fake rollback, while
           the theme-upload HTTP case proves successful copy and subsequent activation only.
         sources:
-          - core/shared/custom-theme-settings-cache/custom-theme-settings-service.js
-          - core/shared/custom-theme-settings-cache/custom-theme-settings-bread-service.js
+          - core/server/services/custom-theme-settings/custom-theme-settings-service.js
+          - core/server/services/custom-theme-settings/custom-theme-settings-bread-service.js
           - core/server/services/themes/activation-bridge.js
           - core/server/services/themes/activate.js
           - core/server/services/themes/storage.js
           - core/server/api/endpoints/custom-theme-settings.js
         tests:
-          - test/unit/shared/custom-theme-settings-cache/service.test.js
+          - test/unit/server/services/custom-theme-settings/service.test.js
           - test/e2e-api/admin/custom-theme-settings.test.js
           - test/e2e-api/admin/themes.test.js
     unverified: []
