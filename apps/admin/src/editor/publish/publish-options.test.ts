@@ -109,6 +109,7 @@ describe('normalizeRecipientFilter', () => {
     ['none', null],
     [null, null],
     ['label:vip', 'label:vip'],
+    ['66b68362d3360500077ad2d2,label:vip', 'tier_id:66b68362d3360500077ad2d2,label:vip'],
   ])('normalizes %j to %j', (filter, expected) => {
     expect(normalizeRecipientFilter(filter)).toBe(expected);
   });
@@ -321,6 +322,48 @@ describe('publish type availability', () => {
     }).getState();
 
     expect(state.newsletter?.slug).toBe('paid-only');
+  });
+
+  describe('with a newsletter remembered for the draft', () => {
+    const site = createSite({ newsletters: [WEEKLY, PAID_NEWSLETTER] });
+
+    it('starts with it over the default, as an unchanged choice', () => {
+      const state = create({ site, draftNewsletter: 'paid-only' }).getState();
+
+      expect(state.newsletter?.slug).toBe('paid-only');
+      expect(state.isDirty).toBe(false);
+    });
+
+    it('starts with the post’s own newsletter over it', () => {
+      const state = create({
+        post: createPost({ newsletter: 'weekly' }),
+        site,
+        draftNewsletter: 'paid-only',
+      }).getState();
+
+      expect(state.newsletter?.slug).toBe('weekly');
+    });
+
+    it('ignores it once it is no longer selectable', () => {
+      const state = create({
+        site: createSite({
+          newsletters: [WEEKLY, { ...PAID_NEWSLETTER, status: 'archived' }],
+        }),
+        draftNewsletter: 'paid-only',
+      }).getState();
+
+      expect(state.newsletter?.slug).toBe('weekly');
+    });
+
+    it('ignores it for a post that is not a draft', () => {
+      const state = create({
+        post: createPost({ status: 'published' }),
+        site,
+        draftNewsletter: 'paid-only',
+      }).getState();
+
+      expect(state.newsletter?.slug).toBe('weekly');
+    });
   });
 
   it('trusts a member count of zero only from an admin', () => {
@@ -632,6 +675,15 @@ describe('getDefaultRecipientFilter', () => {
         editorDefaultEmailRecipientsFilter: 'label:vip',
       },
       'label:vip',
+    ],
+    [
+      'explicit filter with a bare tier id',
+      { visibility: 'public' },
+      {
+        editorDefaultEmailRecipients: 'filter' as const,
+        editorDefaultEmailRecipientsFilter: '66b68362d3360500077ad2d2,label:vip',
+      },
+      'tier_id:66b68362d3360500077ad2d2,label:vip',
     ],
     [
       'usually nobody follows visibility',

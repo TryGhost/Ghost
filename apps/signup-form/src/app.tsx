@@ -1,11 +1,12 @@
 import * as i18nLibModule from '@tryghost/i18n/registry/signup-form';
-import React, { type ComponentProps } from 'react';
 import pages, { type Page, type PageName } from './pages';
 import { AppContextProvider, type AppContextType } from './app-context';
 import { ContentBox } from './components/content-box';
 import { Frame } from './components/frame';
 import { setupGhostApi } from './utils/api';
+import { useMemo, useState } from 'preact/hooks';
 import { useOptions } from './utils/options';
+import type { ComponentProps } from 'preact';
 
 const i18nLib = 'default' in i18nLibModule ? Reflect.get(i18nLibModule, 'default') : i18nLibModule;
 
@@ -13,15 +14,15 @@ type AppProps = {
   scriptTag: HTMLElement;
 };
 
-const App: React.FC<AppProps> = ({ scriptTag }) => {
+const App = ({ scriptTag }: AppProps) => {
   const options = useOptions(scriptTag);
 
-  const [page, setPage] = React.useState<Page>({
+  const [page, setPage] = useState<Page>({
     name: 'FormPage',
     data: {},
   });
 
-  const api = React.useMemo(() => {
+  const api = useMemo(() => {
     return setupGhostApi({ siteUrl: options.site });
   }, [options.site]);
 

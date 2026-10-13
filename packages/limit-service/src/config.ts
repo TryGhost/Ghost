@@ -11,6 +11,19 @@ const config: Record<string, LimitConfig> = {
             return result.count;
         }
     },
+    limitAutomations: {
+        currentCountQuery: async (knex: Knex) => {
+            // Legacy welcome emails have no action graph until conversion.
+            const result = await knex('automations')
+                .count('id', {as: 'count'})
+                .where('status', '=', 'active')
+                .whereExists(knex('automation_actions').select('id')
+                    .whereRaw('automation_id = automations.id')
+                    .whereNull('deleted_at'))
+                .first();
+            return result.count;
+        }
+    },
     newsletters: {
         currentCountQuery: async (knex: Knex) => {
             const result = await knex('newsletters')

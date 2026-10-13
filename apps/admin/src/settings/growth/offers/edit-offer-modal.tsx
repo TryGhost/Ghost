@@ -12,6 +12,7 @@ import {
   InputGroupAddon,
   InputGroupButton,
   InputGroupInput,
+  Link,
   Textarea,
 } from '@tryghost/shade/components';
 import { type ErrorMessages, useForm, useHandleError } from '@tryghost/admin-x-framework/hooks';
@@ -158,12 +159,7 @@ const Sidebar: React.FC<{
                 ) : null}
               </div>
               {offer?.redemption_count > 0 ? (
-                <a
-                  className="font-semibold text-green"
-                  href={createOfferRedemptionFilterUrl(offer?.id)}
-                >
-                  See members →
-                </a>
+                <Link href={createOfferRedemptionFilterUrl(offer?.id)}>See members</Link>
               ) : null}
             </div>
           </div>
@@ -256,20 +252,15 @@ const Sidebar: React.FC<{
       <div className="mb-2">
         {offer?.status === 'active' ? (
           <Button
-            className="h-auto p-0 text-destructive hover:text-destructive"
+            className="-ml-3"
             type="button"
-            variant="link"
+            variant="destructive-ghost"
             onClick={confirmStatusChange}
           >
             Archive offer
           </Button>
         ) : (
-          <Button
-            className="h-auto p-0 text-green hover:text-green"
-            type="button"
-            variant="link"
-            onClick={confirmStatusChange}
-          >
+          <Button className="-ml-3" type="button" variant="ghost" onClick={confirmStatusChange}>
             Reactivate offer
           </Button>
         )}

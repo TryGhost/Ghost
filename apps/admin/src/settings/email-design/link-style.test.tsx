@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { DEFAULT_EMAIL_DESIGN } from '@/settings/email-design/types';
 import { EmailDesignProvider } from '@/settings/email-design/email-design-provider';
 import { LinkStyleField } from '@/settings/email-design/design-fields/link-style-field';
+import { TooltipProvider } from '@tryghost/shade/components';
 import { render, screen } from '@testing-library/react';
 
 describe('Welcome email link styles', function () {
@@ -13,7 +14,9 @@ describe('Welcome email link styles', function () {
         settings={DEFAULT_EMAIL_DESIGN}
         onSettingsChange={() => {}}
       >
-        <LinkStyleField />
+        <TooltipProvider>
+          <LinkStyleField />
+        </TooltipProvider>
       </EmailDesignProvider>,
     );
 

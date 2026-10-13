@@ -1,6 +1,5 @@
 import PortalFrame from '@/settings/membership/portal/portal-frame';
 import {
-  Button,
   Field,
   FieldContent,
   FieldDescription,
@@ -10,6 +9,7 @@ import {
   Input,
   InputGroup,
   InputGroupAddon,
+  InputGroupButton,
   InputGroupInput,
   InputGroupText,
   RadioGroup,
@@ -402,36 +402,32 @@ const Sidebar: React.FC<SidebarProps> = ({
 
             <Field data-invalid={Boolean(errors.code) || undefined}>
               <FieldLabel htmlFor="offer-code">Offer code</FieldLabel>
-              <Input
-                aria-invalid={Boolean(errors.code) || undefined}
-                id="offer-code"
-                placeholder="black-friday"
-                value={overrides.code.value}
-                onChange={(e) => {
-                  handleCodeInput(e);
-                }}
-                onKeyDown={() => clearError('code')}
-              />
+              <InputGroup data-invalid={Boolean(errors.code) || undefined}>
+                <InputGroupInput
+                  aria-invalid={Boolean(errors.code) || undefined}
+                  id="offer-code"
+                  placeholder="black-friday"
+                  value={overrides.code.value}
+                  onChange={(e) => {
+                    handleCodeInput(e);
+                  }}
+                  onKeyDown={() => clearError('code')}
+                />
+                {overrides.code.value !== '' && (
+                  <InputGroupAddon align="inline-end">
+                    <InputGroupButton onClick={() => void handleCopyClick()}>
+                      {isCopied ? 'Copied!' : 'Copy link'}
+                    </InputGroupButton>
+                  </InputGroupAddon>
+                )}
+              </InputGroup>
               {errors.code ? (
                 <FieldError>{errors.code}</FieldError>
               ) : (
                 overrides.code.value !== '' && (
-                  <FieldDescription>
-                    <div className="flex items-center justify-between">
-                      <div>
-                        {homepageUrl}
-                        <span className="font-bold">{overrides.code.value}</span>
-                      </div>
-                      <Button
-                        className="h-auto p-0 text-sm text-green hover:text-green"
-                        size="sm"
-                        type="button"
-                        variant="link"
-                        onClick={() => void handleCopyClick()}
-                      >
-                        {isCopied ? 'Copied' : 'Copy'}
-                      </Button>
-                    </div>
+                  <FieldDescription className="truncate">
+                    {homepageUrl}
+                    <span className="font-bold text-foreground">{overrides.code.value}</span>
                   </FieldDescription>
                 )
               )}

@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/portal",
-  "version": "2.71.0",
+  "version": "2.72.0",
   "description": "Drop-in membership interface for Ghost sites",
   "license": "MIT",
   "author": "Ghost Foundation",
@@ -26,7 +26,7 @@
     "lint:types": "tsc --noEmit",
     "lint": "pnpm run '/^lint:/'",
     "preship": "pnpm lint",
-    "ship": "node ../../scripts/release-apps.js",
+    "ship": "node ../../tools/scripts/release-apps.ts",
     "prepublishOnly": "pnpm build"
   },
   "dependencies": {

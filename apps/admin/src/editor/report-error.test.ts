@@ -245,6 +245,38 @@ describe('reportSaveFailure', () => {
     );
   });
 
+  it('attaches the collision details the API gave with a collision', () => {
+    const collision = {
+      changedFields: ['lexical'],
+      clientUpdatedAt: '2026-10-08T20:30:00.000Z',
+      serverUpdatedAt: '2026-10-08T23:31:10.000Z',
+    };
+    const cause = new JSONError(new Response(null, { status: 409 }), {
+      errors: [
+        {
+          code: 'UPDATE_COLLISION',
+          context: 'Saving failed! Someone else is editing this post.',
+          // Core sends an object here, which the shared error type doesn't describe
+          details: collision as unknown as string,
+          ghostErrorCode: null,
+          help: '',
+          id: 'err-1',
+          message: 'Saving failed!',
+          property: null,
+          type: 'UpdateCollisionError',
+        },
+      ],
+    });
+    reportSaveFailure(
+      failure({ error: { kind: 'conflict', message: 'Something went wrong', cause } }),
+      'post',
+    );
+
+    expect(vi.mocked(Sentry.captureException).mock.calls[0][1]).toMatchObject({
+      extra: { post_id: 'post-1', duration_ms: 120, collision },
+    });
+  });
+
   it.each<[string, SaveError, string]>([
     [
       'a collision',
@@ -365,12 +397,6 @@ describe('reportSaveFailure', () => {
   it.each<[string, SaveError]>([
     ['a validation failure', { kind: 'validation', message: 'Title is too long' }],
     ['a host limit', { kind: 'host-limit', message: 'Upgrade required' }],
-    ['a writer who lost access', { kind: 'forbidden', message: 'Permission error' }],
-    // Signing in again is its recovery, abandoned or not.
-    [
-      'an expired session',
-      { kind: 'session-invalid', message: 'Unauthorized', cause: new Error('Unauthorized') },
-    ],
     [
       'an unreachable server',
       { kind: 'transport', message: 'Unreachable', cause: new ServerUnreachableError() },
@@ -380,6 +406,29 @@ describe('reportSaveFailure', () => {
 
     expect(Sentry.captureException).not.toHaveBeenCalled();
     expect(Sentry.captureMessage).not.toHaveBeenCalled();
+    // eslint-disable-next-line no-console
+    expect(console.error).not.toHaveBeenCalled();
+  });
+
+  it.each<[string, SaveError, string]>([
+    [
+      'a forbidden save',
+      { kind: 'forbidden', message: 'Permission error' },
+      'Save of page was forbidden',
+    ],
+    [
+      'an expired session the writer did not sign back in to',
+      { kind: 'session-invalid', message: 'Unauthorized', cause: new Error('Unauthorized') },
+      'Session expired while editing page',
+    ],
+  ])('notes %s as a message rather than an error', (_label, error, message) => {
+    reportSaveFailure(failure({ error }), 'page');
+
+    expect(Sentry.captureException).not.toHaveBeenCalled();
+    expect(Sentry.captureMessage).toHaveBeenCalledExactlyOnceWith(message, {
+      tags: { ...TAGS, post_type: 'page', save_error_kind: error.kind },
+      extra: { post_id: 'post-1' },
+    });
     // eslint-disable-next-line no-console
     expect(console.error).not.toHaveBeenCalled();
   });

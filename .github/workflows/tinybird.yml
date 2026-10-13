@@ -14,8 +14,8 @@ on:
     paths:
       - '.github/workflows/tinybird.yml'
       - 'compose.dev.analytics.yaml'
-      - 'ghost/core/core/server/data/tinybird/**'
-      - '!ghost/core/core/server/data/tinybird/**/*.md'
+      - 'ghost/core/server/data/tinybird/**'
+      - '!ghost/core/server/data/tinybird/**/*.md'
 
 permissions:
   contents: read
@@ -45,8 +45,8 @@ jobs:
             tinybird:
               - '.github/workflows/tinybird.yml'
               - 'compose.dev.analytics.yaml'
-              - 'ghost/core/core/server/data/tinybird/**'
-              - '!ghost/core/core/server/data/tinybird/**/*.md'
+              - 'ghost/core/server/data/tinybird/**'
+              - '!ghost/core/server/data/tinybird/**/*.md'
 
   tests:
     name: Tinybird Tests
@@ -55,7 +55,7 @@ jobs:
     if: github.event_name != 'pull_request' || needs.changes.outputs.tinybird == 'true'
     defaults:
       run:
-        working-directory: ghost/core/core/server/data/tinybird
+        working-directory: ghost/core/server/data/tinybird
     services:
       tinybird:
         image: tinybirdco/tinybird-local:latest@sha256:b2ce4910a5e92c97e0dbe77e08d3507c04837b8af88dd215715890dac54bff97
@@ -75,8 +75,8 @@ jobs:
         with:
           filters: |
             tinybird:
-              - 'ghost/core/core/server/data/tinybird/**'
-              - '!ghost/core/core/server/data/tinybird/**/*.md'
+              - 'ghost/core/server/data/tinybird/**'
+              - '!ghost/core/server/data/tinybird/**/*.md'
 
       # tinybird.co/install.sh always installs the latest CLI, so this job
       # silently tracked upstream. 4.6.14 ingests a nested JSON object into a

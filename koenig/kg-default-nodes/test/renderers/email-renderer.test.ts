@@ -26,12 +26,12 @@ describe('renderers/email-renderer', function () {
     });
 
     describe('email', function () {
-        it('matches snapshot for default test data', function () {
+        it('matches snapshot for default test data', async function () {
             const result = renderForEmail(getTestData());
 
             assert.ok(result.html);
 
-            assertPrettifiesTo(result.html, html`
+            await assertPrettifiesTo(result.html, html`
                 <p>Hello World</p>
             `);
         });
@@ -41,26 +41,26 @@ describe('renderers/email-renderer', function () {
             assert.equal(result.html, '');
         });
 
-        it('removes any extra consecutives whitespaces', function () {
+        it('removes any extra consecutives whitespaces', async function () {
             const result = renderForEmail(getTestData({html: '<p><span>Hey    you</span></p>'}));
 
-            assertPrettifiesTo(result.html, html`
+            await assertPrettifiesTo(result.html, html`
                 <p><span>Hey you</span></p>
             `);
         });
 
-        it('removes any linebreaks', function () {
+        it('removes any linebreaks', async function () {
             const result = renderForEmail(getTestData({html: '<p>\n<span>Hey \nyou</span>\n</p>'}));
 
-            assertPrettifiesTo(result.html, html`
+            await assertPrettifiesTo(result.html, html`
                 <p><span>Hey you</span></p>
             `);
         });
 
-        it('renders multiple paragraphs', function () {
+        it('renders multiple paragraphs', async function () {
             const result = renderForEmail(getTestData({html: '<p>First paragraph</p><p>Second paragraph</p><p>Third paragraph</p>'}));
 
-            assertPrettifiesTo(result.html, html`
+            await assertPrettifiesTo(result.html, html`
                 <p>First paragraph</p>
                 <p>Second paragraph</p>
                 <p>Third paragraph</p>
@@ -68,84 +68,84 @@ describe('renderers/email-renderer', function () {
         });
 
         describe('replacement strings', function () {
-            it('wraps {foo} in %%', function () {
+            it('wraps {foo} in %%', async function () {
                 const result = renderForEmail(getTestData({html: '<p>Hey {foo}</p>'}));
 
-                assertPrettifiesTo(result.html, html`
+                await assertPrettifiesTo(result.html, html`
                     <p>Hey %%{foo}%%</p>
                 `);
             });
 
-            it('wraps {foo, "default"} in %%', function () {
+            it('wraps {foo, "default"} in %%', async function () {
                 const result = renderForEmail(getTestData({html: '<p>Hey {foo, "default"}</p>'}));
 
-                assertPrettifiesTo(result.html, html`
+                await assertPrettifiesTo(result.html, html`
                     <p>Hey %%{foo, "default"}%%</p>
                 `);
             });
 
-            it('wraps {foo,  "default"} in %% (extra spaces)', function () {
+            it('wraps {foo,  "default"} in %% (extra spaces)', async function () {
                 const result = renderForEmail(getTestData({html: '<p>Hey {foo,  "default"}</p>'}));
 
-                assertPrettifiesTo(result.html, html`
+                await assertPrettifiesTo(result.html, html`
                     <p>Hey %%{foo,  "default"}%%</p>
                 `);
             });
 
-            it('wraps {foo "default"} in %% (missing comma)', function () {
+            it('wraps {foo "default"} in %% (missing comma)', async function () {
                 const result = renderForEmail(getTestData({html: '<p>Hey {foo "default"}</p>'}));
 
-                assertPrettifiesTo(result.html, html`
+                await assertPrettifiesTo(result.html, html`
                     <p>Hey %%{foo "default"}%%</p>
                 `);
             });
 
-            it('wraps {foo  "default"} in %% (extra space, missing comma)', function () {
+            it('wraps {foo  "default"} in %% (extra space, missing comma)', async function () {
                 const result = renderForEmail(getTestData({html: '<p>Hey {foo  "default"}</p>'}));
 
-                assertPrettifiesTo(result.html, html`
+                await assertPrettifiesTo(result.html, html`
                     <p>Hey %%{foo  "default"}%%</p>
                 `);
             });
 
-            it('does not wrap {invalid } in %% (invalid space at the end)', function () {
+            it('does not wrap {invalid } in %% (invalid space at the end)', async function () {
                 const result = renderForEmail(getTestData({html: '<p>Hey {foo}, you are {invalid }</p>'}));
 
-                assertPrettifiesTo(result.html, html`
+                await assertPrettifiesTo(result.html, html`
                     <p>Hey %%{foo}%%, you are {invalid }</p>
                 `);
             });
 
-            it('does not wrap { invalid} in %% (invalid space at the beginning)', function () {
+            it('does not wrap { invalid} in %% (invalid space at the beginning)', async function () {
                 const result = renderForEmail(getTestData({html: '<p>Hey {foo}, you are { invalid}</p>'}));
 
-                assertPrettifiesTo(result.html, html`
+                await assertPrettifiesTo(result.html, html`
                     <p>Hey %%{foo}%%, you are { invalid}</p>
                 `);
             });
 
-            it('does not wrap {foo invalid} in %% (two words, missing quotes)', function () {
+            it('does not wrap {foo invalid} in %% (two words, missing quotes)', async function () {
                 const result = renderForEmail(getTestData({html: '<p>Hey {foo invalid}</p>'}));
 
-                assertPrettifiesTo(result.html, html`
+                await assertPrettifiesTo(result.html, html`
                     <p>Hey {foo invalid}</p>
                 `);
             });
 
-            it('strips out <code> elements with placeholders', function () {
+            it('strips out <code> elements with placeholders', async function () {
                 const result = renderForEmail(getTestData({html: '<p>First paragraph</p><code>{placeholder}</code><p>Third paragraph</p>'}));
 
-                assertPrettifiesTo(result.html, html`
+                await assertPrettifiesTo(result.html, html`
                     <p>First paragraph</p>
                     %%{placeholder}%%
                     <p>Third paragraph</p>
                 `);
             });
 
-            it('leaves <code> elements when not used with a placeholder', function () {
+            it('leaves <code> elements when not used with a placeholder', async function () {
                 const result = renderForEmail(getTestData({html: '<p>First paragraph</p><code>Some code</code><p>Third paragraph</p><code>{helper, "test"}</code>'}));
 
-                assertPrettifiesTo(result.html, html`
+                await assertPrettifiesTo(result.html, html`
                     <p>First paragraph</p>
                     <code>Some code</code>
                     <p>Third paragraph</p>

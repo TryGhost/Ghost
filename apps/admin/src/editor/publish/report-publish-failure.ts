@@ -23,7 +23,7 @@ export function isExpectedRefusal(error: unknown): boolean {
 
 /**
  * Reports a failure the publish flow showed the writer, by the text they read.
- * Expected refusals are left out, as `reportSaveFailure` leaves them out of saves.
+ * Expected refusals (`isExpectedRefusal()`) are left out.
  */
 export function reportPublishFailure(
   kind: PublishFailureKind,

@@ -2,7 +2,7 @@ import { Button } from '@tryghost/shade/components';
 import { Box, Inline, Stack, Text } from '@tryghost/shade/primitives';
 import { PageHeader } from '@tryghost/shade/patterns';
 import { formatNumber } from '@tryghost/shade/utils';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   publicPreviewWarningDialog,
   publishFlowModal,
@@ -20,7 +20,12 @@ import { isEmailDisabledInSettings } from './publish-options';
 import { usePublishFlow } from './use-publish-flow';
 import type { PublishDispatcher } from './publish-options';
 import type { PublishFlowPost } from './flow-post';
-import type { PublishLimitPorts, PublishSiteInput, PublishUserInput } from './publish-options';
+import type {
+  NewsletterInput,
+  PublishLimitPorts,
+  PublishSiteInput,
+  PublishUserInput,
+} from './publish-options';
 
 export interface PublishFlowModalProps {
   post: PublishFlowPost;
@@ -32,6 +37,12 @@ export interface PublishFlowModalProps {
   limits?: PublishLimitPorts;
   /** The publish machine's clock, injected for tests. */
   now?: () => Date;
+  /**
+   * The newsletter remembered for a draft, selected over the default when the flow
+   * opens. A later change, such as a pick in the preview over the flow, switches the
+   * open flow to it; undefined switches it back to the default.
+   */
+  draftNewsletter?: string;
   timezone: string;
   siteTitle?: string;
   /** Gates the flow behind a reminder when the body still has TK markers. */
@@ -46,6 +57,8 @@ export interface PublishFlowModalProps {
   onClose: () => void;
   /** Hears the flow's selected newsletter while it is open, and `undefined` once it closes. */
   onNewsletterChange?: (slug: string | undefined) => void;
+  /** Hears a newsletter the writer picks in the options step. */
+  onNewsletterPick?: (slug: string) => void;
   onPreview?: () => void;
   onRevertToDraft?: () => void;
   onCompleted?: (info: { postId: string; isScheduled: boolean; hasEmail: boolean }) => void;
@@ -64,6 +77,7 @@ function KeyedPublishFlowModal({
   user,
   limits,
   now,
+  draftNewsletter,
   timezone,
   siteTitle,
   tkCount = 0,
@@ -73,6 +87,7 @@ function KeyedPublishFlowModal({
   onBeforePublish,
   onClose,
   onNewsletterChange,
+  onNewsletterPick,
   onPreview,
   onRevertToDraft,
   onCompleted,
@@ -116,6 +131,7 @@ function KeyedPublishFlowModal({
     <PublishFlowDialog
       animate={animate}
       dispatch={dispatch}
+      draftNewsletter={draftNewsletter}
       limits={limits}
       now={now}
       post={post}
@@ -129,6 +145,7 @@ function KeyedPublishFlowModal({
       onClose={onClose}
       onCompleted={onCompleted}
       onNewsletterChange={onNewsletterChange}
+      onNewsletterPick={onNewsletterPick}
       onPreview={onPreview}
       onRevertToDraft={onRevertToDraft}
     />
@@ -145,6 +162,7 @@ function PublishFlowDialog({
   user,
   limits,
   now,
+  draftNewsletter,
   timezone,
   siteTitle,
   dispatch,
@@ -152,6 +170,7 @@ function PublishFlowDialog({
   onBeforePublish,
   onClose,
   onNewsletterChange,
+  onNewsletterPick,
   onPreview,
   onRevertToDraft,
   onCompleted,
@@ -162,19 +181,44 @@ function PublishFlowDialog({
     user,
     limits,
     now,
+    draftNewsletter,
     dispatch,
     requestReauth,
     showCompletion,
     onBeforePublish,
     onCompleted,
   });
-  const { state, step } = flow;
+  const { state, step, setNewsletter } = flow;
   const newsletterSlug = state.newsletter?.slug;
 
   useEffect(() => {
     onNewsletterChange?.(newsletterSlug);
     return () => onNewsletterChange?.(undefined);
   }, [newsletterSlug, onNewsletterChange]);
+
+  // The flow opened on the draft's newsletter; only a later change to it, a pick in
+  // the preview over the flow, moves the selection.
+  const followedDraftNewsletter = useRef(draftNewsletter);
+  const { newsletters } = state;
+  useEffect(() => {
+    if (followedDraftNewsletter.current === draftNewsletter) {
+      return;
+    }
+    followedDraftNewsletter.current = draftNewsletter;
+    const next = draftNewsletter
+      ? newsletters.find((newsletter) => newsletter.slug === draftNewsletter)
+      : newsletters[0];
+    if (next && next.slug !== newsletterSlug) {
+      setNewsletter(next);
+    }
+  }, [draftNewsletter, newsletterSlug, newsletters, setNewsletter]);
+
+  const pickNewsletter = (newsletter: NewsletterInput | null) => {
+    setNewsletter(newsletter);
+    if (newsletter) {
+      onNewsletterPick?.(newsletter.slug);
+    }
+  };
 
   // While the publish request is in flight, closing would abandon its outcome
   // unseen: a publish that lands would never navigate and one that fails would
@@ -268,7 +312,7 @@ function PublishFlowDialog({
               timezone={timezone}
               onContinue={flow.toConfirm}
               onRetryLimits={flow.retryLimits}
-              onSetNewsletter={flow.setNewsletter}
+              onSetNewsletter={pickNewsletter}
               onSetPublishType={flow.setPublishType}
               onSetRecipientFilter={flow.setRecipientFilter}
               onSetScheduledAt={flow.setScheduledAt}

@@ -7,7 +7,6 @@ import { getSettingValue, useBrowseSettings } from '@tryghost/admin-x-framework/
 import type { UsersResponseType } from '@tryghost/admin-x-framework/api/users';
 import { apiUrl, getGhostPaths } from '@tryghost/admin-x-framework/helpers';
 import { useFeatureFlag, useFetchApi } from '@tryghost/admin-x-framework/hooks';
-import { useEmberOwnedRouteMatcher } from '@/routes';
 import { FullscreenCloseButton } from '@/shared/fullscreen-close-button';
 
 const MIGRATE_ORIGIN = 'https://migrate.ghost.org';
@@ -31,7 +30,6 @@ const Migrate = () => {
   const [src] = useState(() => migrateFrameUrl(platform || undefined));
   const frameRef = useRef<HTMLIFrameElement>(null);
   const navigate = useNavigate();
-  const isEmberOwned = useEmberOwnedRouteMatcher();
   const fetchApi = useFetchApi();
   const { data: configData } = useBrowseConfig();
   const { data: settingsData } = useBrowseSettings();
@@ -99,13 +97,13 @@ const Migrate = () => {
 
       const route = event.data?.route;
       if (typeof route === 'string') {
-        navigate(route, { crossApp: isEmberOwned(route) });
+        navigate(route);
       }
     };
 
     window.addEventListener('message', handleMessage);
     return () => window.removeEventListener('message', handleMessage);
-  }, [csvContentImporter, fetchApi, ghostVersion, isEmberOwned, navigate, stripe]);
+  }, [csvContentImporter, fetchApi, ghostVersion, navigate, stripe]);
 
   return (
     <div className="fixed inset-0 z-50 bg-background">

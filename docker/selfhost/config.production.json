@@ -1,0 +1,19 @@
+{
+  "url": "http://localhost:2368",
+  "server": {
+    "port": 2368,
+    "host": "::"
+  },
+  "mail": {
+    "transport": "Direct"
+  },
+  "logging": {
+    "transports": ["file", "stdout"]
+  },
+  "security": {
+    "staffDeviceVerification": true
+  },
+  "paths": {
+    "contentPath": "/home/ghost/content"
+  }
+}

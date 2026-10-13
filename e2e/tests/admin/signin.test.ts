@@ -11,7 +11,7 @@ test.describe('Ghost Admin - Signin Redirect', () => {
     await loginPage.logout();
   }
 
-  test('deep-linking to a React route while logged out redirects back after signin', async ({
+  test('deep-linking to tags while logged out redirects back after signin', async ({
     page,
     ghostAccountOwner,
   }) => {

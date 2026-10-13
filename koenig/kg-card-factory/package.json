@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/kg-card-factory",
-  "version": "5.2.6",
+  "version": "5.2.7",
   "description": "Card definition factory for Ghost's Mobiledoc renderer",
   "license": "MIT",
   "author": "Ghost Foundation",
@@ -10,7 +10,8 @@
     "directory": "koenig/kg-card-factory"
   },
   "files": [
-    "build"
+    "build",
+    "!build/**/*.tsbuildinfo"
   ],
   "main": "build/cjs/index.js",
   "module": "build/esm/index.js",

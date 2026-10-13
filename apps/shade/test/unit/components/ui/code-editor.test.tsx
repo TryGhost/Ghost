@@ -2,7 +2,8 @@ import assert from 'assert/strict';
 import { beforeEach, describe, it } from 'vitest';
 import { fireEvent, screen } from '@testing-library/react';
 
-import ShadeProvider, { useFocusContext } from '../../../../src/providers/shade-provider';
+import ShadeProvider from '../../../../src/providers/shade-provider';
+import { useFocusContext } from '../../../../src/providers/shade-context';
 import { CodeEditor } from '../../../../src/components/ui/code-editor';
 import { render } from '../../utils/test-utils';
 

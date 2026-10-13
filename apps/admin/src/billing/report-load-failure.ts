@@ -7,7 +7,7 @@ export function reportBillingLoadFailure({ billingMonitor, tags }: BillingAppLoa
     return;
   }
 
-  // Message, fingerprint and tags match Ember's billing monitor so both shells group into one issue
+  // Message, fingerprint and tags match Ember's billing monitor so events keep grouping into one issue
   Sentry.captureException('Billing app failed to become ready', {
     level: 'warning',
     fingerprint: [

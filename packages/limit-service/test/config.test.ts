@@ -27,6 +27,9 @@ describe('Config', function () {
             count: vi.fn(returnsChain),
             sum: vi.fn(returnsChain),
             where: vi.fn(returnsChain),
+            whereExists: vi.fn(returnsChain),
+            whereRaw: vi.fn(returnsChain),
+            whereNull: vi.fn(returnsChain),
             first: vi.fn().mockResolvedValue(options.firstResult || {count: 0}),
             select: vi.fn(returnsChain),
             leftJoin: vi.fn(returnsChain),
@@ -47,6 +50,23 @@ describe('Config', function () {
 
             assert.equal(result, 42);
             expect(knex).toHaveBeenCalledWith('members');
+        });
+    });
+
+    describe('limitAutomations', () => {
+        it('counts active automations with an action graph', async () => {
+            const knex = createMockKnex({firstResult: {count: 2}});
+            const countQuery = config.limitAutomations?.currentCountQuery;
+            assertExists(countQuery);
+            assert.equal(await countQuery(knex), 2);
+            expect(knex).toHaveBeenCalledWith('automations');
+            const chain = knex.mock.results[0]?.value;
+            assertExists(chain);
+            expect(chain.where).toHaveBeenCalledWith('status', '=', 'active');
+            expect(knex).toHaveBeenCalledWith('automation_actions');
+            expect(chain.whereExists).toHaveBeenCalled();
+            expect(chain.whereRaw).toHaveBeenCalledWith('automation_id = automations.id');
+            expect(chain.whereNull).toHaveBeenCalledWith('deleted_at');
         });
     });
 

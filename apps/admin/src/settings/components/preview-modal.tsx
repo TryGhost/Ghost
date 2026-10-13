@@ -1,5 +1,4 @@
 import React, { useEffect } from 'react';
-import { ExternalLink } from 'lucide-react';
 
 import {
   Box,
@@ -16,7 +15,6 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-  Separator,
 } from '@tryghost/shade/components';
 import {
   DirtyConfirmDialog,
@@ -202,42 +200,34 @@ export const PreviewModalContent: React.FC<PreviewModalProps> = ({
               <Inline align="center" className="absolute right-8 h-full" gap="md">
                 {deviceSelector}
                 {siteLinkMenu && (
-                  <>
-                    {deviceSelector && <Separator className="h-5!" orientation="vertical" />}
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button type="button" variant="outline">
-                          <LucideIcon.ExternalLink />
-                          {siteLinkMenu.label}
-                          <LucideIcon.ChevronDown />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent
-                        align="end"
-                        className="min-w-[var(--radix-dropdown-menu-trigger-width)]"
-                      >
-                        {siteLinkMenu.items.map((item) => (
-                          <DropdownMenuItem key={item.key} onSelect={item.onSelect}>
-                            {item.label}
-                          </DropdownMenuItem>
-                        ))}
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button type="button" variant="outline">
+                        <LucideIcon.ExternalLink />
+                        {siteLinkMenu.label}
+                        <LucideIcon.ChevronDown />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    {/* legacy SettingsModal overlay is z-[1000]; keep the portalled menu above it */}
+                    <DropdownMenuContent
+                      align="end"
+                      className="z-[9999] min-w-[var(--radix-dropdown-menu-trigger-width)]"
+                    >
+                      {siteLinkMenu.items.map((item) => (
+                        <DropdownMenuItem key={item.key} onSelect={item.onSelect}>
+                          {item.label}
+                        </DropdownMenuItem>
+                      ))}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 )}
                 {siteLink && !siteLinkMenu && (
-                  <>
-                    {deviceSelector && <Separator className="h-5!" orientation="vertical" />}
-                    <a
-                      className="inline-flex items-center gap-1 rounded-sm text-control font-medium text-foreground transition-colors hover:text-primary focus-visible:ring-1 focus-visible:ring-focus-ring focus-visible:outline-hidden"
-                      href={siteLink}
-                      rel="noopener noreferrer"
-                      target="_blank"
-                    >
+                  <Button variant="outline" asChild>
+                    <a href={siteLink} rel="noopener noreferrer" target="_blank">
+                      <LucideIcon.ExternalLink />
                       View site
-                      <ExternalLink className="size-3" />
                     </a>
-                  </>
+                  </Button>
                 )}
               </Inline>
             )}

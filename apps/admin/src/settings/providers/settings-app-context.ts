@@ -31,6 +31,11 @@ export interface UpgradeStatusType {
   message: string;
 }
 
+/** A section an `?open` link asked to open, waiting for that section to take it. */
+export interface OpenSectionRequest {
+  section: string;
+}
+
 export interface SettingsAppContextType {
   officialThemes: OfficialTheme[];
   zapierTemplates: ZapierTemplate[];
@@ -40,6 +45,8 @@ export interface SettingsAppContextType {
   setSortingState?: (sortingState: Sorting[]) => void;
   offersShowArchived: boolean;
   setOffersShowArchived: (show: boolean) => void;
+  openSectionRequest?: OpenSectionRequest;
+  setOpenSectionRequest: (request?: OpenSectionRequest) => void;
 }
 
 export const SettingsAppContext = createContext<SettingsAppContextType>({
@@ -60,6 +67,7 @@ export const SettingsAppContext = createContext<SettingsAppContextType>({
   sortingState: [],
   offersShowArchived: false,
   setOffersShowArchived: () => {},
+  setOpenSectionRequest: () => {},
 });
 
 export const useSettingsApp = () => useContext(SettingsAppContext);
@@ -78,4 +86,9 @@ export const useSortingState = () => {
 export const useOffersShowArchived = () => {
   const { offersShowArchived, setOffersShowArchived } = useSettingsApp();
   return { offersShowArchived, setOffersShowArchived };
+};
+
+export const useOpenSectionRequest = () => {
+  const { openSectionRequest, setOpenSectionRequest } = useSettingsApp();
+  return { openSectionRequest, setOpenSectionRequest };
 };

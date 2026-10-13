@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/app-contracts",
-  "version": "0.0.0",
+  "version": "private",
   "private": true,
   "description": "The contracts between Ghost and apps: formats, types and validation shared by Ghost core and admin",
   "license": "MIT",

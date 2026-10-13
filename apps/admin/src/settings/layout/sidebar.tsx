@@ -1,5 +1,5 @@
 import GhostLogo from '@/settings/assets/images/orb-pink.png';
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   Badge,
   InputGroup,
@@ -7,7 +7,6 @@ import {
   InputGroupButton,
   InputGroupInput,
   Kbd,
-  Separator,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
@@ -16,24 +15,17 @@ import { LucideIcon, cn } from '@tryghost/shade/utils';
 import { Box, Inline, Stack, Text } from '@tryghost/shade/primitives';
 import { useFocusContext } from '@tryghost/shade/app';
 
-import {
-  checkStripeEnabled,
-  getSettingValues,
-  useNewslettersEnabled,
-  usePaidMembersEnabled,
-} from '@tryghost/admin-x-framework/api/settings';
+import { getSettingValues } from '@tryghost/admin-x-framework/api/settings';
+import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 
 import { searchKeywords as advancedSearchKeywords } from '@/settings/advanced/search-keywords';
-import { searchKeywords as emailSearchKeywords } from '@/settings/email/search-keywords';
-import { searchKeywords as emailsSearchKeywords } from '@/settings/email/emails-search-keywords';
 import { searchKeywords as generalSearchKeywords } from '@/settings/general/search-keywords';
 import { searchKeywords as growthSearchKeywords } from '@/settings/growth/search-keywords';
 import { searchKeywords as membershipSearchKeywords } from '@/settings/membership/search-keywords';
 import { searchKeywords as siteSearchKeywords } from '@/settings/site/search-keywords';
 
-import { useCustomFieldsAvailable } from '@/shared/member-custom-fields/use-availability';
-import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import { useGlobalData } from '@/settings/providers/global-data-context';
+import { useSettingsSectionVisibility } from '@/settings/hooks/use-section-visibility';
 import { useSettingsNavigation } from '@/settings/hooks/use-settings-navigation';
 import { useScrollSectionContext, useScrollSectionNav } from '@/settings/hooks/use-scroll-section';
 import { useSearch } from '@/settings/providers/settings-app-context';
@@ -82,8 +74,6 @@ interface NavSectionProps {
 }
 
 const NavSection: React.FC<NavSectionProps> = ({ children, isVisible, title }) => {
-  const admin7Settings = useFeatureFlag('admin7settings');
-
   if (!isVisible) {
     return null;
   }
@@ -93,12 +83,7 @@ const NavSection: React.FC<NavSectionProps> = ({ children, isVisible, title }) =
       <Text as="h2" className="mb-4 ml-2 tracking-normal" size="md" weight="semibold" data-nav-row>
         {title}
       </Text>
-      {children && (
-        <>
-          <SidebarMenu className="-mt-1 mb-7 gap-0">{children}</SidebarMenu>
-          {!admin7Settings && <Separator className="mx-2 mb-7 w-auto bg-border-default" />}
-        </>
-      )}
+      {children && <SidebarMenu className="-mt-1 mb-7 gap-0">{children}</SidebarMenu>}
     </>
   );
 };
@@ -120,41 +105,21 @@ const PrivateBadge: React.FC = () => (
  */
 function useSearchResults() {
   const { filter, checkVisible, setNoResult } = useSearch();
-  const { settings, config } = useGlobalData();
-  const [hasTipsAndDonations] = getSettingValues(settings, ['donations_enabled']) as [boolean];
-  const paidMembersEnabled = usePaidMembersEnabled();
-  const hasStripeEnabled = checkStripeEnabled(settings || [], config || {});
-  const hasAutomations = useFeatureFlag('automations');
-  const hasCustomFields = useCustomFieldsAvailable();
-  const hasNewslettersEnabled = useNewslettersEnabled() === true;
-  const mailgunIsConfigured = Boolean(config.mailgunIsConfigured);
-  const hasMailgun = hasNewslettersEnabled && !mailgunIsConfigured;
+  const visibility = useSettingsSectionVisibility();
   const visibleMembershipSearchKeywords = React.useMemo(
     () =>
       [
         membershipSearchKeywords.access,
         membershipSearchKeywords.tiers,
         membershipSearchKeywords.portal,
-        ...(paidMembersEnabled ? [membershipSearchKeywords.giftSubscriptions] : []),
-        ...(hasAutomations ? [] : [membershipSearchKeywords.memberEmails]),
-        ...(hasTipsAndDonations && hasStripeEnabled ? [membershipSearchKeywords.tips] : []),
-        ...(hasCustomFields ? [membershipSearchKeywords.customFields] : []),
+        ...(visibility.giftSubscriptions ? [membershipSearchKeywords.giftSubscriptions] : []),
+        ...(visibility.welcomeEmails ? [membershipSearchKeywords.memberEmails] : []),
+        ...(visibility.tipsAndDonations ? [membershipSearchKeywords.tips] : []),
+        ...(visibility.customFields ? [membershipSearchKeywords.customFields] : []),
       ].flat(),
-    [hasStripeEnabled, hasTipsAndDonations, paidMembersEnabled, hasAutomations, hasCustomFields],
+    [visibility],
   );
-  const visibleEmailSearchKeywords = React.useMemo(() => {
-    const keywords = hasAutomations ? emailsSearchKeywords : emailSearchKeywords;
-    return [
-      keywords.enableNewsletters,
-      ...(hasNewslettersEnabled ? [keywords.defaultRecipients] : []),
-      ...(hasAutomations
-        ? [emailsSearchKeywords.emails]
-        : hasNewslettersEnabled
-          ? [emailSearchKeywords.newsletters]
-          : []),
-      ...(hasMailgun ? [keywords.mailgun] : []),
-    ].flat();
-  }, [hasAutomations, hasNewslettersEnabled, hasMailgun]);
+  const visibleEmailSearchKeywords = visibility.emailKeywords;
   const visibleGrowthSearchKeywords = React.useMemo(
     () =>
       [
@@ -162,9 +127,9 @@ function useSearchResults() {
         growthSearchKeywords.explore,
         growthSearchKeywords.recommendations,
         growthSearchKeywords.embedSignupForm,
-        ...(hasStripeEnabled ? [growthSearchKeywords.offers] : []),
+        ...(visibility.offers ? [growthSearchKeywords.offers] : []),
       ].flat(),
-    [hasStripeEnabled],
+    [visibility.offers],
   );
 
   useEffect(() => {
@@ -224,7 +189,6 @@ const SettingsSearchInput: React.FC<SettingsSearchInputProps> = ({
   inputRef: externalInputRef,
 }) => {
   const { filter, setFilter } = useSearch();
-  const admin7Settings = useFeatureFlag('admin7settings');
   const ownInputRef = useRef<HTMLInputElement | null>(null);
   const inputRef = externalInputRef ?? ownInputRef;
 
@@ -252,11 +216,7 @@ const SettingsSearchInput: React.FC<SettingsSearchInputProps> = ({
     setFilter(e.target.value);
 
     if (e.target.value) {
-      if (admin7Settings) {
-        document.getElementById('settings-scroller')?.scrollTo({ top: 0, left: 0 });
-      } else {
-        document.querySelector('.settings-app')?.scrollTo({ top: 0, left: 0 });
-      }
+      document.getElementById('settings-scroller')?.scrollTo({ top: 0, left: 0 });
     }
   };
 
@@ -304,28 +264,64 @@ interface SettingsHeaderProps {
   inputRef?: React.MutableRefObject<HTMLInputElement | null>;
 }
 
-/** The back button and search row that leads the admin7settings navigation. */
+/** The back button and search row that leads the Settings navigation. */
 export const SettingsHeader: React.FC<SettingsHeaderProps> = ({ className, inputRef }) => (
   <Inline align="center" className={className} gap="sm">
     <ExitSettingsButton />
     <SettingsSearchInput className="flex-1" inputRef={inputRef} />
   </Inline>
 );
+
+const FADE_HEIGHT = 48;
+
+/**
+ * Fades the scroller's foot while there's more below, over as much of it as
+ * is left to scroll. A mask, so it fades to whatever is behind the sidebar
+ * (the admin7Design sidebar is glass).
+ */
+function useScrollFade(scrollerRef: React.RefObject<HTMLElement>, enabled: boolean) {
+  const [remaining, setRemaining] = useState(0);
+
+  useEffect(() => {
+    const scroller = scrollerRef.current;
+    if (!enabled || !scroller) {
+      return;
+    }
+    const update = () =>
+      setRemaining(Math.max(0, scroller.scrollHeight - scroller.scrollTop - scroller.clientHeight));
+    const mutationObserver = new MutationObserver(update);
+    const resizeObserver = new ResizeObserver(update);
+    update();
+    scroller.addEventListener('scroll', update, { passive: true });
+    mutationObserver.observe(scroller, { childList: true, subtree: true });
+    resizeObserver.observe(scroller);
+    return () => {
+      scroller.removeEventListener('scroll', update);
+      mutationObserver.disconnect();
+      resizeObserver.disconnect();
+    };
+  }, [enabled, scrollerRef]);
+
+  const fade = Math.min(FADE_HEIGHT, remaining);
+  if (!enabled || fade <= 1) {
+    return undefined;
+  }
+  const mask = `linear-gradient(to bottom, #000 calc(100% - ${fade}px), transparent)`;
+  return { maskImage: mask, WebkitMaskImage: mask };
+}
+
 const Sidebar: React.FC = () => {
   const { filter, setFilter, checkVisible, noResult, setNoResult } = useSearch();
   const { updateRoute } = useSettingsNavigation();
   const searchInputRef = useRef<HTMLInputElement | null>(null);
+  const scrollerRef = useRef<HTMLElement>(null);
   const { isAnyTextFieldFocused } = useFocusContext();
-  const { settings, config } = useGlobalData();
-  const [hasTipsAndDonations, isPrivate] = getSettingValues(settings, [
-    'donations_enabled',
-    'is_private',
-  ]) as [boolean, boolean];
-  const paidMembersEnabled = usePaidMembersEnabled();
-  const hasStripeEnabled = checkStripeEnabled(settings || [], config || {});
-  const hasAutomations = useFeatureFlag('automations');
-  const admin7Settings = useFeatureFlag('admin7settings');
-  const hasCustomFields = useCustomFieldsAvailable();
+  const { settings } = useGlobalData();
+  const [isPrivate] = getSettingValues(settings, ['is_private']) as [boolean];
+  const visibility = useSettingsSectionVisibility();
+  // With admin7Design, the navigation sits in the floating sidebar's glass
+  const floatingSidebar = useFeatureFlag('admin7Design');
+  const scrollFade = useScrollFade(scrollerRef, floatingSidebar);
   const {
     visibleMembershipSearchKeywords,
     visibleEmailSearchKeywords,
@@ -359,6 +355,15 @@ const Sidebar: React.FC = () => {
 
   // Auto-focus on searchfield on page load
   useEffect(() => {
+    // Lazy content can mount the sidebar after a deep-linked modal has opened.
+    // Keep focus in the modal instead of moving it to the background search.
+    if (
+      document.getElementById('modal-backdrop') ||
+      document.querySelector(':is([role="dialog"], [role="alertdialog"])[data-state="open"]')
+    ) {
+      return;
+    }
+
     if (searchInputRef.current) {
       searchInputRef.current.focus();
     }
@@ -372,33 +377,19 @@ const Sidebar: React.FC = () => {
     }
   };
 
-  const navClasses = cn(
-    // pb-5 matches the sidebar's pt-5, so the last item rests as far from the
-    // bottom edge as the search row sits from the top.
-    admin7Settings
-      ? 'min-h-0 flex-1 overflow-y-auto px-5 pt-4 pb-5 [&>:last-child]:mb-0'
-      : 'hidden pt-10 tablet:visible! tablet:block!',
-  );
-
   return (
-    <Stack
-      className={admin7Settings ? 'min-h-0 flex-1' : 'ml-auto w-full pt-0 tablet:max-w-[240px]'}
-      data-testid="sidebar"
-      gap="none"
-    >
+    <Stack className="min-h-0 flex-1" data-testid="sidebar" gap="none">
       {/* data-nav-row marks the rows that cascade in when the shell swaps to this nav. */}
-      {admin7Settings ? (
-        <Box className="shrink-0 bg-sidebar px-5 pb-2" data-nav-row>
-          <SettingsHeader inputRef={searchInputRef} />
-        </Box>
-      ) : (
-        <div className="sticky top-0 flex content-stretch items-end tablet:h-20 tablet:bg-gray-50 xl:h-20 dark:bg-gray-950 dark:tablet:bg-[#101114]">
-          <SettingsSearchInput className="mr-8 tablet:mr-0" inputRef={searchInputRef} />
-        </div>
-      )}
+      <Box className={cn('shrink-0 px-5 pb-2', !floatingSidebar && 'bg-sidebar')} data-nav-row>
+        <SettingsHeader inputRef={searchInputRef} />
+      </Box>
       <nav
-        className={navClasses}
-        id={admin7Settings ? 'settings-sidebar-scroller' : 'settings-sidebar'}
+        ref={scrollerRef}
+        // pb-5 matches the sidebar's pt-5, so the last item rests as far from the
+        // bottom edge as the search row sits from the top.
+        className="min-h-0 flex-1 overflow-y-auto px-5 pt-4 pb-5 [&>:last-child]:mb-0"
+        id="settings-sidebar-scroller"
+        style={scrollFade}
       >
         {noResult && <NoSearchResult className="ml-2" />}
 
@@ -524,7 +515,7 @@ const Sidebar: React.FC = () => {
             title="Signup portal"
             onClick={handleSectionClick}
           />
-          {paidMembersEnabled && (
+          {visibility.giftSubscriptions && (
             <NavItem
               icon={<LucideIcon.Gift />}
               keywords={membershipSearchKeywords.giftSubscriptions}
@@ -533,7 +524,7 @@ const Sidebar: React.FC = () => {
               onClick={handleSectionClick}
             />
           )}
-          {!hasAutomations && (
+          {visibility.welcomeEmails && (
             <NavItem
               icon={<LucideIcon.MailPlus />}
               keywords={membershipSearchKeywords.memberEmails}
@@ -542,7 +533,7 @@ const Sidebar: React.FC = () => {
               onClick={handleSectionClick}
             />
           )}
-          {hasTipsAndDonations && hasStripeEnabled && (
+          {visibility.tipsAndDonations && (
             <NavItem
               icon={<LucideIcon.PiggyBank />}
               keywords={membershipSearchKeywords.tips}
@@ -551,7 +542,7 @@ const Sidebar: React.FC = () => {
               onClick={handleSectionClick}
             />
           )}
-          {hasCustomFields && (
+          {visibility.customFields && (
             <NavItem
               icon={<LucideIcon.TextCursorInput />}
               keywords={membershipSearchKeywords.customFields}
@@ -560,7 +551,7 @@ const Sidebar: React.FC = () => {
               onClick={handleSectionClick}
             />
           )}
-          {hasAutomations ? (
+          {visibility.hasAutomations ? (
             <NavItem
               icon={<LucideIcon.Mail />}
               keywords={visibleEmailSearchKeywords}
@@ -609,7 +600,7 @@ const Sidebar: React.FC = () => {
             title="Signup forms"
             onClick={handleSectionClick}
           />
-          {hasStripeEnabled && (
+          {visibility.offers && (
             <NavItem
               icon={<LucideIcon.Tag />}
               keywords={growthSearchKeywords.offers}
@@ -668,7 +659,7 @@ const Sidebar: React.FC = () => {
           />
         </NavSection>
 
-        {!filter && admin7Settings && (
+        {!filter && (
           <SidebarMenu>
             <SidebarMenuItem data-nav-row>
               <SidebarMenuButton
@@ -693,18 +684,6 @@ const Sidebar: React.FC = () => {
               </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>
-        )}
-        {!filter && !admin7Settings && (
-          <button
-            className="mt-1 mb-10 flex h-[38px] w-100 cursor-pointer items-center rounded-lg px-3 py-2 text-left text-[14px] font-medium text-gray-800 transition-all hover:bg-gray-200 focus:bg-gray-100 dark:text-gray-600 dark:hover:bg-gray-950 dark:focus:bg-gray-900"
-            type="button"
-            onClick={() => {
-              updateRoute('about');
-            }}
-          >
-            <img alt="Ghost Logo" className="mr-[7px] size-[18px]" src={GhostLogo} />
-            About Ghost
-          </button>
         )}
       </nav>
     </Stack>

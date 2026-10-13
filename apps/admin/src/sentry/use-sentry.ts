@@ -5,7 +5,6 @@ import { useBrowseConfig } from '@tryghost/admin-x-framework/api/config';
 import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
 import { useBrowseSite } from '@tryghost/admin-x-framework/api/site';
 import { useRoutePattern } from '@/routes';
-import { useFlagGatedRouteOwner } from '@/use-flag-gated-route-owner';
 import {
   AUTOMATIONS_REPLAY_SAMPLE_RATE,
   createAutomationsReplay,
@@ -20,7 +19,6 @@ export function useSentry(): void {
   const { data: configData } = useBrowseConfig({ enabled: Boolean(currentUser) });
   const { pathname } = useLocation();
   const routePattern = useRoutePattern();
-  const editorOwner = useFlagGatedRouteOwner('editorReact');
 
   const dsn = siteData?.site.sentry_dsn;
   const environment = siteData?.site.sentry_env;
@@ -69,12 +67,6 @@ export function useSentry(): void {
   }, [role]);
 
   useEffect(() => {
-    if (routePattern) {
-      setTag('route', routePattern);
-    }
+    setTag('route', routePattern);
   }, [routePattern]);
-
-  useEffect(() => {
-    setTag('editor_owner', editorOwner === 'pending' ? undefined : editorOwner);
-  }, [editorOwner]);
 }

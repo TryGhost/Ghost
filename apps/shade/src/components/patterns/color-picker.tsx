@@ -164,7 +164,7 @@ interface ColorPickerContextValue {
 
 const ColorPickerContext = createContext<ColorPickerContextValue | undefined>(undefined);
 
-export const useColorPicker = () => {
+const useColorPicker = () => {
   const context = useContext(ColorPickerContext);
 
   if (!context) {

@@ -3,17 +3,8 @@ import { Outlet } from '@tryghost/admin-x-framework';
 import { useBrowseSettings } from '@tryghost/admin-x-framework/api/settings';
 import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
 import { UnauthorizedError } from '@tryghost/admin-x-framework/errors';
-import { EmberProvider, EmberRoot } from './ember-bridge';
 import { AdminLayout } from './layout/admin-layout';
-import { useSyncEmberFullScreen } from './layout/sidebar-visibility';
-import { useEmberOwnedRouteMatcher, useSyncEmberRoutePattern } from './routes';
 import { BillingFrame } from './billing/api';
-import {
-  useEmberAuthSync,
-  useEmberDataSync,
-  useEmberListReturnSync,
-  useEmberNotificationsHost,
-} from './ember-bridge';
 import {
   AdminAlerts,
   createAlertsStore,
@@ -23,6 +14,8 @@ import {
 import { DocsBotWidgetHost } from './docsbot-widget-host';
 import { ClientExtensionScript } from './client-extension-script';
 import { usePreloadEditor } from './use-preload-editor';
+import { preloadSettings } from './settings/api';
+import { useIdlePreload } from './shared/use-idle-preload';
 import { useGlobalShortcuts } from './global-shortcuts/global-shortcuts';
 import { useAccentColorProperties } from './hooks/use-accent-color-properties';
 import { useDocumentTitle } from './hooks/use-document-title';
@@ -46,47 +39,31 @@ function App() {
   useAccentColorProperties();
   useDocumentTitle();
   usePrivateSiteLogin();
-  useEmberAuthSync();
-  useEmberDataSync();
-  useEmberListReturnSync();
-  useSyncEmberFullScreen();
-  useSyncEmberRoutePattern();
-  useEmberNotificationsHost(alerts);
   useServerNotifications(alerts);
   useUpgradeStatusAlerts(alerts);
   useAuthNotice(Boolean(currentUser));
   usePreloadEditor(Boolean(currentUser));
+  useIdlePreload(preloadSettings, Boolean(currentUser));
   useGlobalShortcuts(Boolean(currentUser));
-  const isEmberOwned = useEmberOwnedRouteMatcher();
 
   return (
-    <EmberProvider>
+    <>
       <AdminAlerts store={alerts} />
       {currentUser ? (
         <AdminLayout>
           <Outlet />
-          <EmberRoot />
-          <BillingFrame alerts={alerts} isEmberOwned={isEmberOwned} />
+          <BillingFrame alerts={alerts} />
           <DocsBotWidgetHost />
           <ClientExtensionScript />
         </AdminLayout>
       ) : bootError ? (
-        <>
-          <BootError error={bootError} />
-          <EmberRoot />
-        </>
+        <BootError error={bootError} />
       ) : isSignedOut ? (
-        <>
-          <SignedOutApp />
-          <EmberRoot />
-        </>
+        <SignedOutApp />
       ) : (
-        <>
-          <BootLoader />
-          <EmberRoot />
-        </>
+        <BootLoader />
       )}
-    </EmberProvider>
+    </>
   );
 }
 

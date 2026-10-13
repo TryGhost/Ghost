@@ -1,48 +1,9 @@
 import * as React from 'react';
 import { Accept, DropEvent, FileRejection, useDropzone } from 'react-dropzone';
-import { cva, type VariantProps } from 'class-variance-authority';
-import { buttonVariants } from '@/components/ui/button';
-import { inputSurface } from '@/components/ui/input-surface';
-import { useShade, type ControlShape } from '@/providers/shade-provider';
+import { type VariantProps } from 'class-variance-authority';
+import { dropzoneVariants } from '@/components/ui/dropzone-variants';
+import { useShade } from '@/providers/shade-context';
 import { cn } from '@/lib/utils';
-
-const dropzoneBaseVariants = cva(
-  'flex cursor-pointer flex-col items-center justify-center outline-hidden',
-  {
-    variants: {
-      variant: {
-        default: cn(
-          inputSurface('self'),
-          'border-2 border-dashed bg-transparent p-10 hover:border-border-strong',
-        ),
-        filled: cn(
-          inputSurface('self'),
-          'border-transparent bg-muted p-3 hover:bg-interactive-hover',
-        ),
-        button: 'flex-row',
-        buttonSecondary: 'flex-row',
-      },
-    },
-    defaultVariants: {
-      variant: 'default',
-    },
-  },
-);
-
-// Keep the exported recipe useful outside the component, with current defaults.
-function dropzoneVariants(
-  props: Parameters<typeof dropzoneBaseVariants>[0] = {},
-  isAdmin7 = true,
-  shape: ControlShape = isAdmin7 ? 'pill' : 'rounded',
-) {
-  return cn(
-    dropzoneBaseVariants(props),
-    props.variant === 'button' && buttonVariants({ isAdmin7, shape, variant: 'outline' }),
-    props.variant === 'buttonSecondary' &&
-      buttonVariants({ isAdmin7, shape, size: 'sm', variant: 'secondary' }),
-    props.className,
-  );
-}
 
 type DropzoneRenderProps = {
   isDragActive: boolean;
@@ -166,5 +127,3 @@ export const Dropzone = React.forwardRef<HTMLDivElement, DropzoneProps>(
 );
 
 Dropzone.displayName = 'Dropzone';
-
-export { dropzoneVariants };

@@ -7,6 +7,7 @@ import {
   ValidationError,
 } from '@tryghost/admin-x-framework/errors';
 import { reportEditorError, reportEditorNotice } from '@/editor/report-error';
+import { beforeSend } from '@/sentry/sentry-config';
 import { LimitCheckError } from './publish-options';
 import { reportPublishFailure } from './report-publish-failure';
 
@@ -31,6 +32,13 @@ describe('reportPublishFailure', () => {
       contexts: { ghost: { displayed_message: 'Retry failed' } },
       extra: { post_id: 'post-1' },
     });
+  });
+
+  it('is sent although the writer was shown it', () => {
+    reportPublishFailure('publish-request', 'Shown', { error: apiError(500) });
+
+    const [, context] = vi.mocked(reportEditorError).mock.lastCall ?? [];
+    expect(beforeSend({ tags: context?.tags })).not.toBeNull();
   });
 
   it('reports an outcome without an exception as a message', () => {

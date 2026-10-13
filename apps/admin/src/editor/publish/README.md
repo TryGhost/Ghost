@@ -18,7 +18,7 @@ Inputs are read once, at creation: the machine is built after the data it needs 
 
 `memberCount` is read for admins only, because nobody else can browse members. A count of `null` — not read, or not readable — counts as "has members" so email is never disabled for the wrong reason.
 
-Only newsletters with `status: 'active'` are selectable; they are ordered by `sortOrder`. The post's persisted active newsletter is selected initially when it is present, otherwise the first active newsletter is the default. A failed-email retry also retains its persisted newsletter even when it is no longer selectable. `onlyDefaultNewsletter` reports whether there is exactly one active newsletter, which is what decides whether the flow offers a newsletter picker at all.
+Only newsletters with `status: 'active'` are selectable; they are ordered by `sortOrder`. The post's persisted active newsletter is selected initially when it is present, then a draft's `draftNewsletter` input while it is selectable (see [Remembering a draft's newsletter](#remembering-a-drafts-newsletter)), otherwise the first active newsletter is the default. A failed-email retry also retains its persisted newsletter even when it is no longer selectable. `onlyDefaultNewsletter` reports whether there is exactly one active newsletter, which is what decides whether the flow offers a newsletter picker at all.
 
 ## Publish types
 
@@ -87,7 +87,7 @@ Following visibility maps a public or members-only post to everyone (`status:fre
 
 `setRecipientFilter(null)` is a real choice — "no recipients" — and is distinct from never having chosen. `missingRecipients` reports it while an email type is selected and email is on offer: Email only then cannot continue, and Publish and email publishes without an email. The options step says which under the recipients row, and the confirm step says the post won't be sent as a newsletter.
 
-Core represents the special segments as `all` and `none`. Inputs and explicit selections normalize those API sentinels to the editor's expanded everyone filter and `null`.
+Core represents the special segments as `all` and `none`. Inputs and explicit selections normalize those API sentinels to the editor's expanded everyone filter and `null`. A segment that is a bare tier id, which Core rejects, is rewritten to `tier_id:<id>`; the recipient picker shows and toggles it as that tier's `tier:<slug>` option.
 
 `fullRecipientFilter` is what the email service receives: the newsletter's own audience filter (subscribed to that newsletter, email not disabled, plus paid-only for a paid newsletter), AND-ed with the recipient filter when there is one. It is `null` while no newsletter is selected.
 
@@ -171,6 +171,19 @@ The flow is a four-way branch, taken in this order:
 
 `OptionsStep` is an accordion of the three settings — publish type, email recipients, publish time — with at most one section open, plus the read-only row describing a send the post already had, which is hidden while the site has newsletters or members turned off. While `willEmail` holds, the publish type row carries the email size warning when the post's email is estimated at 100kB or more; the estimate is the editor's, described in [the editor README](../README.md#email-size). Its continue button waits for `checkLimits()`, since a block landing late demotes the publish type and the user must not carry a stale choice into the review. `ConfirmStep` captures the publish intent on entry, so the copy on the button and in the sentence cannot change while the save is in flight. `CompleteStep` shows the post as a bookmark card and, for a schedule, offers the revert.
 
+## Remembering a draft's newsletter
+
+Behind `admin7EditorImprovements`, a draft remembers the newsletter last picked for it, since Core stores none until the post is sent or scheduled. `draft-newsletter.ts` holds the rules and `useDraftNewsletter()` the editor's copy; they keep one `ghost-editor-draft-newsletters` map of post id to slug in `localStorage`, capped at the 100 most recently written entries. Blocked, full or corrupt storage reads as nothing remembered.
+
+- Picking a newsletter in the options step or the preview's email tab remembers it at once, even if the flow then closes. Picking the default forgets it, so the draft follows the site's newsletter order again.
+- The flow and the preview start on the post's own newsletter, then the remembered one, then the default. An entry for a newsletter since archived or deleted is ignored and dropped. Only drafts read entries.
+- `draftNewsletter` seeds the options machine when the flow opens. A later change, a pick in the preview open over the flow, switches the open flow to match.
+- A send, or a schedule that will send, forgets the entry. Publishing without an email leaves it.
+- Unscheduling a post that had a newsletter and no email yet remembers that newsletter, so republishing offers it again.
+- Deleting the post from the settings panel forgets its entry.
+
+With the flag off nothing is read or written, and entries stay where they are.
+
 ## Gates
 
 Two interstitials can stand in front of the flow. A post with unresolved TK markers gets the TK reminder; a post whose public preview has no effect gets the public-preview warning, but only behind the `paywallImprovements` flag. They never stack: a TK count suppresses the preview warning. `getPublicPreviewWarning()` is the pure predicate behind the second one, and reads the editor's unsaved body when the caller passes it.
@@ -208,7 +221,7 @@ The email-error step offers the retry only when Core says the failed send is ret
 
 ## Reporting
 
-`reportPublishFailure()` reports to Sentry the unexpected failures the flow shows: a limit that could not be checked, a publish-input or retry-eligibility read that failed (the post reload behind "Check retry availability" included), a retry request that failed, a dispatch or pre-publish save that rejected, an Unpublish or Unschedule dispatch that rejected, and a publish with no command to dispatch. A pre-publish save that settled as failed is left to the session, which reports failed saves itself. It leaves out what `reportSaveFailure()` leaves out of saves, by the same `isExpectedSaveError()` rule: a validation refusal, a host limit, a writer who lost access, an expired session and a lost connection. A missing post, a collision, any other 4xx and a 5xx are reported.
+`reportPublishFailure()` reports to Sentry the unexpected failures the flow shows: a limit that could not be checked, a publish-input or retry-eligibility read that failed (the post reload behind "Check retry availability" included), a retry request that failed, a dispatch or pre-publish save that rejected, an Unpublish or Unschedule dispatch that rejected, and a publish with no command to dispatch. A pre-publish save that settled as failed is left to the session, which reports failed saves itself. It leaves out what the `isExpectedSaveError()` rule for saves counts as expected: a validation refusal, a host limit, a writer who lost access, an expired session and a lost connection. A missing post, a collision, any other 4xx and a 5xx are reported.
 
 ## Requests
 

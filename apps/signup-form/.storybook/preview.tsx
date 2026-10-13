@@ -1,7 +1,6 @@
 import * as i18nLibModule from '@tryghost/i18n/registry/signup-form';
-import React from 'react';
 
-import type { Preview } from '@storybook/react-vite';
+import type { Preview } from '@storybook/preact-vite';
 import './storybook.css';
 import { AppContextProvider, AppContextType } from '../src/app-context';
 

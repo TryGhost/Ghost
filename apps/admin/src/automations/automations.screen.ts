@@ -7,7 +7,7 @@ import {
 
 /** Automations screen locators for acceptance specs; no assertions. */
 export const automationsScreen = {
-  heading: () => page.getByTestId(automationsPage).getByRole('heading', { name: 'Automations' }),
+  heading: () => page.getByTestId(automationsPage).getByRole('heading', { name: /^Automations/ }),
   list: () => page.getByTestId(automationsList),
   columnHeader: (name: string) =>
     page.getByTestId(automationsList).getByRole('columnheader', { name }),

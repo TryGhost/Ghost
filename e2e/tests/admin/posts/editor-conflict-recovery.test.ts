@@ -36,8 +36,6 @@ async function editBody(editor: PostEditorPage, text: string, status: SavedPost[
 }
 
 test.describe('Ghost Admin - Editor conflict recovery', () => {
-  test.use({ labs: { editorReact: true } });
-
   for (const status of ['draft', 'published'] as const) {
     test(`${status} - preserves both writers' content until a confirmed reload, then saves again`, async ({
       page,

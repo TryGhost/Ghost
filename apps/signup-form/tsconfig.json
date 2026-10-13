@@ -1,7 +1,8 @@
 {
   "extends": "@internal/cfg-typescript/browser.json",
   "compilerOptions": {
-    "jsx": "react-jsx"
+    "jsx": "react-jsx",
+    "jsxImportSource": "preact"
   },
   "include": ["src"],
   "references": [{ "path": "./tsconfig.node.json" }]

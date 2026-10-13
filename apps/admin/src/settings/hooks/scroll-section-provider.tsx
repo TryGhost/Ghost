@@ -1,9 +1,8 @@
 import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
+import { useQueryClient } from '@tanstack/react-query';
 import { ScrollSectionContext } from './use-scroll-section';
 
-const LEGACY_SCROLL_MARGIN = 193;
-const ADMIN7_SETTINGS_SCROLL_MARGIN = 96;
+const SETTINGS_SCROLL_MARGIN = 96;
 
 const scrollToSection = (
   element: HTMLDivElement,
@@ -17,6 +16,60 @@ const scrollToSection = (
     behavior: doneInitialScroll ? 'smooth' : 'instant',
     top: top - scrollMargin,
   });
+};
+
+const HOLD_SETTLE_MS = 300;
+const HOLD_MAX_MS = 5000;
+const HOLD_RELEASE_EVENTS = ['wheel', 'touchstart', 'pointerdown', 'keydown'] as const;
+
+/**
+ * Pins a section under the scroll margin while sections above it are still
+ * fetching or loading images, until the page settles or the user takes over.
+ */
+const holdSectionInView = (
+  element: HTMLDivElement,
+  scrollMargin: number,
+  isFetching: () => boolean,
+) => {
+  const root = document.getElementById('settings-scroller');
+  if (!root) {
+    return () => {};
+  }
+
+  const pin = () => {
+    root.scrollTo({
+      behavior: 'instant',
+      top: element.getBoundingClientRect().top + root.scrollTop - scrollMargin,
+    });
+  };
+  const isSettled = () =>
+    !isFetching() && Array.from(root.querySelectorAll('img')).every((image) => image.complete);
+
+  let settleTimer: ReturnType<typeof setTimeout> | undefined;
+  const observer = new ResizeObserver(() => {
+    pin();
+    armSettle();
+  });
+  const release = () => {
+    clearTimeout(settleTimer);
+    clearTimeout(maxTimer);
+    observer.disconnect();
+    HOLD_RELEASE_EVENTS.forEach((event) => window.removeEventListener(event, release, true));
+  };
+  const armSettle = () => {
+    clearTimeout(settleTimer);
+    settleTimer = setTimeout(() => (isSettled() ? release() : armSettle()), HOLD_SETTLE_MS);
+  };
+  const maxTimer = setTimeout(release, HOLD_MAX_MS);
+
+  pin();
+  armSettle();
+  Array.from(root.children).forEach((child) => observer.observe(child));
+  HOLD_RELEASE_EVENTS.forEach((event) =>
+    window.addEventListener(event, release, { capture: true, passive: true }),
+  );
+
+  return release;
 };
 
 const scrollSidebarNav = (navElement: HTMLLIElement, doneInitialScroll: boolean) => {
@@ -126,8 +179,7 @@ const getIntersectingSections = (
 export const ScrollSectionProvider: React.FC<{
   children: ReactNode;
 }> = ({ children }) => {
-  const admin7Settings = useFeatureFlag('admin7settings');
-  const scrollMargin = admin7Settings ? ADMIN7_SETTINGS_SCROLL_MARGIN : LEGACY_SCROLL_MARGIN;
+  const scrollMargin = SETTINGS_SCROLL_MARGIN;
   const [navigatedSection, _setNavigatedSection] = useState<string | null>(null);
   const sectionElements = useRef<Record<string, HTMLDivElement>>({});
   const intersectionObserver = useRef<IntersectionObserver | null>(null);
@@ -205,13 +257,28 @@ export const ScrollSectionProvider: React.FC<{
     [scrollMargin],
   );
 
-  // Without the legacy 60vh bottom spacer, the last sections can't scroll into
-  // the observer's zone, so at the bottom the spy falls back to what's in view.
-  useEffect(() => {
-    if (!admin7Settings) {
-      return;
-    }
+  const queryClient = useQueryClient();
+  const releaseHold = useRef<() => void>();
+  const jumpTo = useCallback(
+    (id: string) => {
+      releaseHold.current?.();
+      const element = sectionElements.current[id];
+      if (element) {
+        releaseHold.current = holdSectionInView(
+          element,
+          scrollMargin,
+          () => queryClient.isFetching() > 0,
+        );
+      }
+    },
+    [queryClient, scrollMargin],
+  );
 
+  useEffect(() => () => releaseHold.current?.(), []);
+
+  // The last sections can't scroll into the observer's zone, so at the bottom
+  // the spy falls back to what's in view.
+  useEffect(() => {
     const handleScroll = (event: Event) => {
       if (event.target instanceof HTMLElement && event.target.id === 'settings-scroller') {
         setScrolledToBottom(isScrolledToBottom(event.target));
@@ -221,7 +288,7 @@ export const ScrollSectionProvider: React.FC<{
     // Capture on the document, since the scroller remounts with the settings content.
     document.addEventListener('scroll', handleScroll, { capture: true, passive: true });
     return () => document.removeEventListener('scroll', handleScroll, { capture: true });
-  }, [admin7Settings]);
+  }, []);
 
   const currentSection = useMemo(() => {
     const root = scrolledToBottom ? document.getElementById('settings-scroller') : null;
@@ -290,6 +357,7 @@ export const ScrollSectionProvider: React.FC<{
         currentSection,
         updateNavigatedSection: setNavigatedSection,
         scrollToSection: scrollTo,
+        jumpToSection: jumpTo,
       }}
     >
       {children}

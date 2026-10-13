@@ -24,7 +24,7 @@ Ghost redirect. A request to `/r/{redirectId}?m={memberUuid}` records the event
 and redirects the member to the destination.
 
 The implementation lives in
-[`services/link-tracking/`](../../ghost/core/core/server/services/link-tracking/).
+[`services/link-tracking/`](../../ghost/core/server/services/link-tracking/).
 
 Click tracking can be disabled in Admin or with the `email_track_clicks`
 setting.
@@ -45,7 +45,7 @@ position.
 
 Email analytics can be disabled with `emailAnalytics.enabled`. The service and
 its scheduled jobs live in
-[`services/email-analytics/`](../../ghost/core/core/server/services/email-analytics/).
+[`services/email-analytics/`](../../ghost/core/server/services/email-analytics/).
 
 The endpoints that combine web, member, and newsletter figures use
-[`posts-stats-service.js`](../../ghost/core/core/server/services/stats/posts-stats-service.js).
+[`posts-stats-service.js`](../../ghost/core/server/services/stats/posts-stats-service.js).

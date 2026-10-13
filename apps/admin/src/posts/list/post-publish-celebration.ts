@@ -1,11 +1,10 @@
 /**
  * The editor→list handoff for the post-publish celebration.
  *
- * The Ember editor writes a localStorage key on publish or schedule and then
- * navigates to the list; the list reads it on mount and shows the modal. The
- * editor stays Ember on both sides of the flag, so only the reader moves here.
+ * The editor writes a localStorage key on publish or schedule and then
+ * navigates to the list; the list reads it on mount and shows the modal.
  *
- * See `setCompleted` in `apps/ember-admin/app/components/editor/modals/publish-flow.js`.
+ * See `writePublishCelebration` in `@/editor/publish/celebration-handoff`.
  */
 
 const KEYS = {

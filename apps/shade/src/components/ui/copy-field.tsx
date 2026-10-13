@@ -4,7 +4,7 @@ import { Inline, Stack, Text } from '@/components/primitives';
 import { Button, type ButtonProps } from '@/components/ui/button';
 import { inputSurface } from '@/components/ui/input-surface';
 import { cn } from '@/lib/utils';
-import { useShade } from '@/providers/shade-provider';
+import { useShade } from '@/providers/shade-context';
 
 type CopyFieldContextValue = {
   copied: boolean;

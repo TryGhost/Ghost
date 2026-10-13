@@ -27,9 +27,9 @@ describe('parseDunningConfig', () => {
     expect(parseDunningConfig(config)).toBeNull();
   });
 
-  it('pins the storage keys both apps handshake through', () => {
-    // These literals are the on-the-wire contract between the React admin and
-    // the Ember billing service; renaming the constants must not change them.
+  it('pins the storage keys the dunning UI and billing screen exchange', () => {
+    // These literals persist in sessionStorage across reloads; renaming the
+    // constants must not change them.
     expect(DUNNING_PAY_RETURN_ROUTE_STORAGE_KEY).toBe('ghost-dunning-pay-return-route');
     expect(DUNNING_PAYMENT_SETTLED_STORAGE_KEY).toBe('ghost-dunning-payment-settled-for');
   });

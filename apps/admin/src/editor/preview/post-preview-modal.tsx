@@ -80,6 +80,8 @@ export interface PostPreviewModalProps {
   newsletterSlug?: string;
   /** Preselected when the post has no newsletter of its own, such as the publish flow's pick. */
   fallbackNewsletterSlug?: string;
+  /** Hears a newsletter the writer picks in the email preview. */
+  onNewsletterPick?: (slug: string) => void;
   /**
    * Awaited before the preview renders, so the caller can save the draft first.
    * A rejection's message is shown to the writer as the reason it could not.
@@ -104,6 +106,7 @@ export function PostPreviewModal({
   post,
   newsletterSlug,
   fallbackNewsletterSlug,
+  onNewsletterPick,
   onBeforeOpen,
   onPublish,
   publishDisabled = false,
@@ -329,6 +332,11 @@ export function PostPreviewModal({
   const showTierSelect = segment === 'tier' && tiers.length > 0;
   const showEmail = format === 'email' && emailAvailable;
 
+  const pickNewsletter = (slug: string) => {
+    setPickedNewsletterSlug(slug);
+    onNewsletterPick?.(slug);
+  };
+
   const changeFormat = (next: PreviewFormat) => {
     setFormat(next);
 
@@ -553,7 +561,7 @@ export function PostPreviewModal({
             postId={postId}
             subjectEditor={subjectEditor}
             tierName={selectedTier?.name}
-            onNewsletterChange={setPickedNewsletterSlug}
+            onNewsletterChange={pickNewsletter}
             onRetryNewsletterLookup={retryNewsletterLookup}
           />
         ) : (

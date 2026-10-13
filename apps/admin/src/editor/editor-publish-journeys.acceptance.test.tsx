@@ -52,7 +52,6 @@ const PASSWORD = 'hunter22';
 /** A site whose bulk email provider is configured, so the flow offers a send. */
 function emailSite(settings: Record<string, unknown> = {}) {
   return {
-    labs: { editorReact: true },
     boot: {
       browseSettings: {
         response: settingsResponse({
@@ -197,6 +196,32 @@ describe('Editor publish journeys', () => {
     const params = new URL(saveApi.lastRequest?.url ?? '').searchParams;
     expect(params.get('newsletter')).toBe('weekly');
     expect(params.get('email_segment')).toBe('tier:gold,label:vip');
+  });
+
+  it('publishes and sends to default recipients saved as a bare tier id', async () => {
+    publishChrome([WEEKLY]);
+    const gold = tier({ id: '66b68362d3360500077ad2d2', slug: 'gold', name: 'Gold', active: true });
+    fakeTiers([gold, tier({ slug: 'silver', name: 'Silver', active: true })]);
+    fakeLabels([label({ slug: 'vip', name: 'VIP' })]);
+    const saveApi = fakeSavableDraft();
+    await renderAdminApp(
+      `/editor/post/${POST_ID}`,
+      emailSite({
+        editor_default_email_recipients: 'filter',
+        editor_default_email_recipients_filter: `${gold.id},label:vip`,
+      }),
+    );
+
+    await expect.element(editorScreen.publishButton()).toBeEnabled();
+    await editorScreen.publishButton().click();
+    await publishScreen.setting('email-recipients').click();
+    await expect.element(page.getByRole('button', { name: 'Remove Gold' })).toBeVisible();
+    await publishScreen.continueButton().click();
+    await publishScreen.confirmButton().click();
+
+    await expect.poll(currentRoute).toBe(`/posts/analytics/${POST_ID}`);
+    const params = new URL(saveApi.lastRequest?.url ?? '').searchParams;
+    expect(params.get('email_segment')).toBe(`tier_id:${gold.id},label:vip`);
   });
 
   it.each([

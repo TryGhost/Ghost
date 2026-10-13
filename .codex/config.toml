@@ -1,0 +1,2 @@
+[shell_environment_policy]
+set = { NX_DEFAULT_OUTPUT_STYLE = "static-failures-only" }

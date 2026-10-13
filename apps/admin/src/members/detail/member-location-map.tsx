@@ -1,13 +1,12 @@
 // Country and US state backdrop for member detail pages.
 // Countries and US states share one Natural Earth projection; no member data leaves this app.
 import React, { useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
+import { useRevealOnMount } from '@/shared/use-reveal-on-mount';
 import { Box } from '@tryghost/shade/primitives';
 import { cn, LucideIcon } from '@tryghost/shade/utils';
 import { parseMemberGeolocation } from './member-detail-format';
 import { MemberMapContext } from './member-map-context';
-import type atlasData from './map-data/world-states.json';
-
-type MapAtlas = typeof atlasData;
+import { getLoadedMapAtlas, loadMapAtlas, type MapAtlas } from './map-atlas';
 type MapLocation = MapAtlas['countries'][number];
 
 function LocationMap({
@@ -117,26 +116,48 @@ function LocationMap({
   );
 }
 
+// Inset from the page's container, with rounded top corners
+const INSET_MAP_CLASS_NAME = [
+  '-mt-5 -mr-[calc((100cqw-100%)/2-8px)] -ml-[calc((100cqw-100%)/2-var(--member-map-left-inset,8px))] rounded-t-xl rounded-b-none pt-40 pr-[calc((100cqw-100%)/2-8px)] pb-5 pl-[calc((100cqw-100%)/2-var(--member-map-left-inset,8px))]',
+  'max-sm:[&_[data-page-header=actions]]:absolute max-sm:[&_[data-page-header=actions]]:top-4 max-sm:[&_[data-page-header=actions]]:right-4',
+  'max-sm:pt-49 max-sm:[&_[aria-label=breadcrumb]]:absolute max-sm:[&_[aria-label=breadcrumb]]:top-4 max-sm:[&_[aria-label=breadcrumb]]:right-40 max-sm:[&_[aria-label=breadcrumb]]:left-4 max-sm:[&_[aria-label=breadcrumb]>ol]:flex-nowrap max-sm:[&_[aria-label=breadcrumb]>ol>li:last-child]:min-w-0',
+].join(' ');
+
+// Full bleed: from the page column out to the scrollport's edges (the page's
+// container, `100cqw`, plus the layout's `--page-bleed-*`), padded back so the
+// header keeps its place. The detail header drops its top padding for it, so
+// the map reaches the top of the page.
+const FULL_BLEED_MAP_CLASS_NAME = [
+  '-mr-(--map-bleed-end) -ml-(--map-bleed-start) pt-42 pr-(--map-bleed-end) pb-5 pl-(--map-bleed-start) [--map-bleed-end:calc((100cqw_-_100%)/2_+_var(--page-bleed-end,0px))] [--map-bleed-start:calc((100cqw_-_100%)/2_+_var(--page-bleed-start,0px))]',
+  'max-sm:[&_[data-page-header=actions]]:absolute max-sm:[&_[data-page-header=actions]]:top-6 max-sm:[&_[data-page-header=actions]]:right-6',
+  'max-sm:pt-51 max-sm:[&_[aria-label=breadcrumb]]:absolute max-sm:[&_[aria-label=breadcrumb]]:top-6 max-sm:[&_[aria-label=breadcrumb]]:right-42 max-sm:[&_[aria-label=breadcrumb]]:left-6 max-sm:[&_[aria-label=breadcrumb]>ol]:flex-nowrap max-sm:[&_[aria-label=breadcrumb]>ol>li:last-child]:min-w-0',
+].join(' ');
+
 export default function MemberLocationMap({
+  fullBleed = false,
   geolocation,
   children,
-}: React.PropsWithChildren<{ geolocation?: string | null }>) {
+}: React.PropsWithChildren<{
+  /** Runs the map out to the content area's edges (admin7Design). */
+  fullBleed?: boolean;
+  geolocation?: string | null;
+}>) {
   const geo = parseMemberGeolocation(geolocation);
   const countryCode =
     typeof geo?.country_code === 'string' ? geo.country_code.trim().toLowerCase() : '';
-  const [atlas, setAtlas] = useState<MapAtlas | null>(null);
+  const [atlas, setAtlas] = useState<MapAtlas | null>(getLoadedMapAtlas);
 
   // Keep the header mounted while loading geometry. Swapping a Suspense
   // fallback for the map would reset open menus and dialogs in the header.
   useEffect(() => {
-    if (!countryCode) {
+    if (!countryCode || atlas) {
       return;
     }
     let active = true;
-    void import('./map-data/world-states.json').then(
-      (module) => {
+    loadMapAtlas().then(
+      (loaded) => {
         if (active) {
-          setAtlas(module.default);
+          setAtlas(loaded);
         }
       },
       () => {
@@ -146,33 +167,43 @@ export default function MemberLocationMap({
     return () => {
       active = false;
     };
-  }, [countryCode]);
+  }, [countryCode, atlas]);
   const country = atlas?.countries.find((item) => item.id === countryCode);
+  // The header takes the map's shape as soon as the member has a country, so the
+  // map fades into space already there instead of pushing the page down. It only
+  // falls back once the atlas proves it doesn't know the country.
+  const showsMap = Boolean(countryCode) && (!atlas || Boolean(country));
+  const revealMapRef = useRevealOnMount<HTMLDivElement>(true, 300);
 
   return (
     <Box
       className={cn(
-        'relative isolate overflow-hidden rounded-xl',
-        country
+        'relative isolate',
+        // The full-bleed map clips itself: it holds still as the page slides, out of this box
+        !(fullBleed && showsMap) && 'overflow-hidden rounded-xl',
+        showsMap
           ? '[&_[data-page-header=main]]:items-end'
           : '[&_[data-page-header=main]]:items-start',
-        country &&
-          '-mt-5 -mr-[calc((100cqw-100%)/2-8px)] -ml-[calc((100cqw-100%)/2-var(--member-map-left-inset,8px))] rounded-t-xl rounded-b-none pt-40 pr-[calc((100cqw-100%)/2-8px)] pb-5 pl-[calc((100cqw-100%)/2-var(--member-map-left-inset,8px))]',
-        country && '[&_[data-page-header=primary]]:ms-1',
-        country &&
-          'max-sm:[&_[data-page-header=actions]]:absolute max-sm:[&_[data-page-header=actions]]:top-4 max-sm:[&_[data-page-header=actions]]:right-4',
-        country &&
-          'max-sm:pt-49 max-sm:[&_[aria-label=breadcrumb]]:absolute max-sm:[&_[aria-label=breadcrumb]]:top-4 max-sm:[&_[aria-label=breadcrumb]]:right-40 max-sm:[&_[aria-label=breadcrumb]]:left-4 max-sm:[&_[aria-label=breadcrumb]>ol]:flex-nowrap max-sm:[&_[aria-label=breadcrumb]>ol>li:last-child]:min-w-0',
+        showsMap && (fullBleed ? FULL_BLEED_MAP_CLASS_NAME : INSET_MAP_CLASS_NAME),
+        showsMap && '[&_[data-page-header=primary]]:ms-1',
       )}
-      data-member-map-location={country ? 'known' : 'unknown'}
+      data-member-map-location={showsMap ? 'known' : 'unknown'}
       data-testid="member-location-map-header"
     >
-      {atlas && country && (
-        <Box className="pointer-events-none absolute inset-0 -z-10 overflow-hidden [mask-image:linear-gradient(to_bottom,black_70%,transparent)]">
-          <LocationMap atlas={atlas} country={country} region={geo?.region} />
-        </Box>
-      )}
-      <MemberMapContext.Provider value={!!country}>{children}</MemberMapContext.Provider>
+      {atlas &&
+        country && (
+          // Full bleed, a page backdrop: it runs beneath the pinned sidebar's
+          // glass, and holds still while the page slides as the sidebar pins and
+          // unpins.
+          <Box
+            ref={revealMapRef}
+            className="pointer-events-none absolute inset-0 -z-10 overflow-hidden [mask-image:linear-gradient(to_bottom,black_70%,transparent)]"
+            data-page-backdrop={fullBleed ? '' : undefined}
+          >
+            <LocationMap atlas={atlas} country={country} region={geo?.region} />
+          </Box>
+        )}
+      <MemberMapContext.Provider value={showsMap}>{children}</MemberMapContext.Provider>
     </Box>
   );
 }

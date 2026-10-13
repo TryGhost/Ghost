@@ -24,6 +24,7 @@ import {
   useHandleError,
   useLimiter,
 } from '@tryghost/admin-x-framework/hooks';
+import { navigateTo } from '@/utils/navigation';
 
 const AddNewsletterModal: React.FC = () => {
   const { updateRoute } = useSettingsNavigation();
@@ -100,7 +101,9 @@ const AddNewsletterModal: React.FC = () => {
     if (limitError) {
       showLimit({
         prompt: limitError.message || `Your current plan doesn't support more newsletters.`,
-        onOk: () => updateRoute({ route: upgradeRoute, isExternal: true }),
+        onOk: () => {
+          navigateTo(upgradeRoute);
+        },
       });
       updateRoute(returnRoute);
     }

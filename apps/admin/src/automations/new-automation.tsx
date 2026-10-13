@@ -33,7 +33,6 @@ const TriggerPicker: React.FC<{
         saveButtonChildren="Save"
         saveButtonVariant="outline"
         validationFeedback={null}
-        validationFeedbackEnabled={false}
         onDismissValidationFeedback={() => {}}
         onPublish={() => {}}
         onSave={() => {}}
@@ -62,14 +61,14 @@ const TriggerPicker: React.FC<{
                 [
                   'free',
                   LucideIcon.UserPlus,
-                  'Member signs up',
+                  'Free member signed up',
                   'When someone signs up as a free member',
                 ],
                 [
                   'all_paid',
                   LucideIcon.CreditCard,
-                  'Paid subscription starts',
-                  'When someone signs up as a paid member or upgrades',
+                  'Paid subscription started',
+                  'When a new or free member starts a paid subscription',
                 ],
               ] as const
             ).map(([scope, Icon, title, description]) => (
@@ -101,6 +100,14 @@ const TriggerPicker: React.FC<{
   );
 };
 
+const NewAutomationLoading: React.FC = () => {
+  return (
+    <div className="delayed-fade-in">
+      <LoadingIndicator size="lg" />
+    </div>
+  );
+};
+
 type NewAutomationProps = {
   children: (automation: AutomationDetail) => React.ReactNode;
 };
@@ -128,7 +135,7 @@ const NewAutomationSession: React.FC<
         trigger_tier_ids: null,
       });
     }
-    return <LoadingIndicator size="lg" />;
+    return <NewAutomationLoading />;
   }
   if (initialAutomation.trigger_tier_scope === null) {
     return (
@@ -157,7 +164,7 @@ const NewAutomation: React.FC<NewAutomationProps> = ({ children }) => {
     throw error instanceof Error ? error : new Error('Failed to load automations');
   }
   if (isLoading || !allAutomations) {
-    return <LoadingIndicator size="lg" />;
+    return <NewAutomationLoading />;
   }
   return (
     <NewAutomationSession

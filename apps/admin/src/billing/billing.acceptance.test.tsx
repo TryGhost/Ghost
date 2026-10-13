@@ -90,7 +90,7 @@ async function postFromBillingApp(messages: StandInMessage[], message: unknown) 
   frame.contentWindow?.postMessage({ relay: message }, BILLING_ORIGIN);
 }
 
-/** Resolves once Admin has handled every message the stand-in posted before now. */
+/** Waits for message dispatch; asynchronous handlers may still be running. */
 async function billingAppSettled(messages: StandInMessage[]) {
   // A ping to a frame still loading is dropped like any other message
   await expect.poll(() => loads(messages).length).toBeGreaterThan(0);
@@ -114,7 +114,6 @@ async function renderBilling(
     role = 'Owner',
     hostSettings = {},
     labs = {},
-    billingReact = true,
     appearance,
     sentryDsn,
   }: {
@@ -123,7 +122,6 @@ async function renderBilling(
     /** Read on every `/config/` request, so a function can change what a refetch returns. */
     hostSettings?: Record<string, unknown> | (() => Record<string, unknown>);
     labs?: Record<string, boolean>;
-    billingReact?: boolean;
     sentryDsn?: string;
   } = {},
 ) {
@@ -140,8 +138,8 @@ async function renderBilling(
   }
   const hostSettingsNow = typeof hostSettings === 'function' ? hostSettings : () => hostSettings;
 
-  await renderAdminApp(path, {
-    labs: { ...labs, billingReact },
+  return await renderAdminApp(path, {
+    labs,
     boot: {
       browseSite: { response: site },
       browseConfig: {
@@ -378,6 +376,20 @@ describe('Ghost(Pro) billing', () => {
     await expect.element(billingScreen.frame()).not.toBeVisible();
   });
 
+  it('opens automations directly from a billing requirement', async () => {
+    // The automations app owns its request graph; this spec asserts the handoff.
+    allowUnhandledRequests();
+    await fakeFrameOrigin(BILLING_ORIGIN, billingStandIn(READY));
+    const messages = standInMessages();
+    await renderBilling('/pro', { labs: { automations: true } });
+    await expect.element(billingScreen.frame()).toBeVisible();
+
+    await postFromBillingApp(messages, { request: 'navigateToAdmin', destination: 'automations' });
+
+    await expect.poll(currentRoute).toBe('/automations');
+    await expect.element(billingScreen.frame()).not.toBeVisible();
+  });
+
   it('returns to the page a payment started from', async () => {
     window.sessionStorage.setItem(DUNNING_PAY_RETURN_ROUTE_STORAGE_KEY, '/tags');
     fakeTags([]);
@@ -540,13 +552,15 @@ describe('Ghost(Pro) billing', () => {
     fakeTags([]);
     await fakeFrameOrigin(BILLING_ORIGIN, billingStandIn(READY));
     const messages = standInMessages();
-    await renderBilling('/pro', { hostSettings: { forceUpgrade: true } });
+    const { queryClient } = await renderBilling('/pro', { hostSettings: { forceUpgrade: true } });
     await expect.element(billingScreen.frame()).toBeVisible();
 
     await postFromBillingApp(messages, {
       subscription: { status: 'active', isActiveTrial: false, trial_end: null },
     });
     await billingAppSettled(messages);
+    // Subscription state is applied after the report's config refetch completes.
+    await expect.poll(() => queryClient.isFetching()).toBe(0);
     window.location.hash = '#/tags';
 
     await expect.element(tagsScreen.newTagLink()).toBeVisible();
@@ -557,13 +571,17 @@ describe('Ghost(Pro) billing', () => {
     fakeTags([]);
     await fakeFrameOrigin(BILLING_ORIGIN, billingStandIn(READY));
     const messages = standInMessages();
-    await renderBilling('/pro', { role: 'Administrator', hostSettings: { forceUpgrade: true } });
+    const { queryClient } = await renderBilling('/pro', {
+      role: 'Administrator',
+      hostSettings: { forceUpgrade: true },
+    });
     await expect.element(billingScreen.frame()).toBeVisible();
 
     await postFromBillingApp(messages, {
       subscription: { status: 'active', isActiveTrial: false, trial_end: null },
     });
     await billingAppSettled(messages);
+    await expect.poll(() => queryClient.isFetching()).toBe(0);
 
     expect(currentRoute()).toBe('/pro');
     await expect.element(billingScreen.frame()).toBeVisible();
@@ -683,7 +701,7 @@ describe('Ghost(Pro) billing', () => {
     expect(loads(messages)[0]?.searchParams.has('action')).toBe(false);
   });
 
-  it('holds the Ember editor on billing during a force upgrade', async () => {
+  it('holds the editor on billing during a force upgrade', async () => {
     await fakeFrameOrigin(BILLING_ORIGIN, billingStandIn(READY));
     await renderBilling('/editor/post', {
       role: 'Administrator',
@@ -747,14 +765,6 @@ describe('Ghost(Pro) billing', () => {
     await billingAppSettled(messages);
 
     expect(received(messages, 'query').filter(({ query }) => query === 'routeUpdate')).toEqual([]);
-  });
-
-  it('leaves billing to Ember while the flag is off', async () => {
-    await fakeFrameOrigin(BILLING_ORIGIN, billingStandIn(READY));
-    await renderBilling('/pro', { billingReact: false });
-
-    await expect.element(sidebarScreen.shellNav()).toBeVisible();
-    await expect.element(billingScreen.frame()).not.toBeInTheDocument();
   });
 
   describe('when the billing app never becomes ready', () => {

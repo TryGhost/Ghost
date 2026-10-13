@@ -27,14 +27,14 @@ export default defineConfig({
       // (even in headless mode)
       args: ['--use-gl=egl'],
     },
-    permissions: ['local-network-access'],
   },
 
   /* Configure projects for major browsers */
   projects: [
     {
       name: 'chromium',
-      use: { ...devices['Desktop Chrome'] },
+      // Chromium-only permission; Firefox and WebKit reject unknown permissions
+      use: { ...devices['Desktop Chrome'], permissions: ['local-network-access'] },
     },
 
     ...(process.env.ALL_BROWSERS

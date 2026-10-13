@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/admin-api-schema",
-  "version": "0.0.0",
+  "version": "private",
   "private": true,
   "description": "JSON schemas used to validate Ghost Admin API requests",
   "license": "MIT",

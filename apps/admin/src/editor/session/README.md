@@ -85,8 +85,8 @@ these requests may run.
 | `draft`                          | Saved by a field commit, or after the body debounce | Saved at once, with the whole document         |
 | `published`, `scheduled`, `sent` | Retained until an explicit save: Update or Cmd-S    | Saved at once, with the changed settings alone |
 
-Tier picks outside a draft are the one settings edit staged without a commit,
-as in Ember: every save of a published post writes a revision, so the picks go
+Tier picks outside a draft are the one settings edit staged without a commit:
+every save of a published post writes a revision, so the picks go
 out once, with the next settings save or Update, and count as unsaved work
 until then.
 
@@ -254,6 +254,16 @@ brings the session up to that version. A refused read is offered again
 whenever the engine moves on, so a read of a save that was in flight is adopted
 once that save's acknowledgement has landed and the session holds its token.
 
+An update that failed without the server refusing it, such as a lost response
+or a gateway error, may have committed. The engine has the session read the post
+before the next save. The read stands in for that update's acknowledgement only
+when it carries a later token, the status the update targeted, and exactly the
+saved copy with the update's projection written over it; then the next save
+carries the token the update landed at instead of colliding with it. A read
+carrying anything else, another writer's change included, leaves the token
+alone, so the next save collides as before. A read that fails fails the save
+with the read's error and sends nothing.
+
 Each acknowledged save also writes the record the server answered with into the
 screen's query, whole and in the shape a read has. Opening the post again reads
 it afresh, but when that read fails the editor opens the saved copy and its
@@ -354,7 +364,8 @@ The first change writes a copy at once. After that at most one copy a minute is
 written, carrying the newest draft, and a copy identical to the last one written
 is skipped. A copy still waiting for the minute is dropped once a save leaves
 nothing unsaved or the post leaves draft. A copy is written straight away when
-the page is hidden or closed, when the session is disposed holding unsaved work,
+the page is hidden or closed, when the editor unmounts or the session is disposed
+holding unsaved work,
 before a revision from the post's history replaces the body, and when a save
 stops on a conflict, a deleted post, a post the writer may no longer edit, an
 expired session or a crash; a conflict that failing saves keep re-entering is
@@ -524,12 +535,14 @@ Sentry receives these through the editor's own reporter, with the response
 status and URL when the transport answered. Validation failures, host limits, a
 refusal of a writer who may no longer edit the post, an expired session (signing
 in again is its recovery, whether or not the writer does) and an unreachable
-server are not sent: none of them is a fault in the editor. `isExpectedSaveError()`
-holds that rule, and the publish flow reports by it too. A failed request that took
+server are not sent as errors: none of them is a fault in the editor.
+`isExpectedSaveError()` holds that rule, and the publish flow reports by it too.
+A forbidden save, and an expired session the writer did not sign back in to,
+are still sent as messages carrying the save's tags. A failed request that took
 more than two seconds is sent as a second event with its timing. Every error
 the writer is shown — a failed save in the status line, a collision or a
-deleted post in its banner — is
-also sent once as a message carrying the text they read. A Koenig instance that
+deleted post in its banner — is also passed to Sentry as a message carrying the
+text they read, tagged `shown_to_user`, which Admin's `beforeSend` drops. A Koenig instance that
 crashes its error boundary is reported as a Lexical failure. Sentry stays
 optional: without a DSN the calls are no-ops, and an error is still logged to
 the console.

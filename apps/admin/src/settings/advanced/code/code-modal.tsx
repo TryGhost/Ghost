@@ -62,6 +62,7 @@ const CodeModal: React.FC<CodeModalProps> = ({ onClose }) => {
       cancelLabel="Close"
       footer={<></>}
       height="full"
+      scrolling={false}
       size="full"
       testId="modal-code-injection"
       onClose={onClose}

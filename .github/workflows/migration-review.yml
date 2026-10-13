@@ -3,8 +3,8 @@ on:
   pull_request_target:
     types: [opened]
     paths:
-      - 'ghost/core/core/server/data/schema/**'
-      - 'ghost/core/core/server/data/migrations/versions/**'
+      - 'ghost/core/server/data/schema/**'
+      - 'ghost/core/server/data/migrations/versions/**'
 permissions:
   contents: read
 jobs:

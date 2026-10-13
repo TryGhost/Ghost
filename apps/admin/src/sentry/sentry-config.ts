@@ -4,7 +4,6 @@ import {
   type Breadcrumb,
   type BrowserOptions,
   type Event,
-  type EventHint,
 } from '@sentry/react';
 import { loadedKoenigVersion } from '@/settings/components/koenig-loader';
 
@@ -42,20 +41,25 @@ export function getSentryConfig({
       /The play\(\) request was interrupted.*/,
       /The request is not allowed by the user agent or the platform in the current context/,
 
-      // Network errors that we don't control
+      // Network errors that we don't control, anchored so chunk-load failures
+      // ("Failed to fetch dynamically imported module: …") still report
       /Server was unreachable/,
-      /NetworkError when attempting to fetch resource./,
-      /Failed to fetch/,
-      /Load failed/,
-      /The operation was aborted./,
+      /^NetworkError when attempting to fetch resource\.$/,
+      /^Failed to fetch$/,
+      /^Load failed$/,
+      // Firefox's message ends with a space; Sentry prefixes Safari's stackless
+      // DOMException with its name
+      /^(AbortError: )?The operation was aborted\. ?$/,
 
-      // Ember-only; remove with Ember (https://github.com/emberjs/ember.js/issues/12505)
-      /^TransitionAborted$/,
+      // React Router leaves a skipped view transition's promises unhandled; the
+      // navigation still lands. Chromium, WebKit and Firefox messages in turn
+      /^(AbortError: |InvalidStateError: )?Transition was (skipped|aborted because of invalid state)(\. [A-Za-z ]+)?$/,
+      /^(Skipping view transition because (skipTransition\(\) was called|viewport size changed)|View transition was skipped because document visibility state is hidden)\.$/,
+      /^Skipped ViewTransition due to (skipTransition\(\) call|document being hidden)$/,
+
       // Harmless loop warnings, mostly from extensions and embedded content
       /^ResizeObserver loop completed with undelivered notifications/,
       /^ResizeObserver loop limit exceeded/,
-      // Ember-only; remove with Ember (ember-concurrency cancelation rejections)
-      'TaskCancelation',
     ],
     integrations: (defaultIntegrations) => [
       // Tests send identical events back to back
@@ -70,11 +74,10 @@ export function getSentryConfig({
     config.replaysOnErrorSampleRate = 0.5;
     extraIntegrations.push(
       replayIntegration({
-        mask: ['.koenig-lexical', '.gh-dashboard', `[${AUTOMATIONS_MASK_ATTRIBUTE}]`],
+        mask: ['.koenig-lexical', `[${AUTOMATIONS_MASK_ATTRIBUTE}]`],
         unmask: [
           `body:not([${AUTOMATIONS_MASK_ATTRIBUTE}]) [role="menu"]`,
           `body:not([${AUTOMATIONS_MASK_ATTRIBUTE}]) [data-testid="settings-panel"]`,
-          `body:not([${AUTOMATIONS_MASK_ATTRIBUTE}]) .gh-nav`,
         ],
         maskAllText: false,
         maskAllInputs: true,
@@ -98,20 +101,15 @@ export function beforeBreadcrumb(breadcrumb: Breadcrumb): Breadcrumb | null {
   return breadcrumb;
 }
 
-interface EmberAjaxPayloadError {
-  type?: string;
-  context?: string;
-  message?: string;
-}
-
-export function beforeSend(event: Event, hint?: EventHint): Event | null {
+export function beforeSend(event: Event): Event | null {
   try {
     event.contexts = event.contexts || {};
     event.tags = event.tags || {};
     event.tags.shown_to_user = event.tags.shown_to_user || false;
     event.tags.grammarly = !!document.querySelector('[data-gr-ext-installed]');
 
-    if (event.tags.shown_to_user === true) {
+    // The publish flow reports only the failures it did not expect
+    if (event.tags.shown_to_user === true && event.tags.source !== 'publish-flow') {
       return null;
     }
 
@@ -132,26 +130,6 @@ export function beforeSend(event: Event, hint?: EventHint): Event | null {
       if (version) {
         event.contexts.koenig = { version };
       }
-    }
-
-    // Ember-only; remove with Ember (ember-ajax errors carry the API error in `payload.errors`)
-    const originalException = hint?.originalException as
-      | { payload?: { errors?: unknown } }
-      | null
-      | undefined;
-    const ajaxErrors = originalException?.payload?.errors;
-    if (Array.isArray(ajaxErrors) && ajaxErrors.length) {
-      if (firstException) {
-        const error = ajaxErrors[0] as EmberAjaxPayloadError;
-        firstException.type = `${error.type}: ${error.context}`;
-        firstException.value = error.message;
-        Object.assign(firstException, { context: error.context });
-      }
-    } else {
-      delete event.contexts.ajax;
-      delete event.tags.ajax_status;
-      delete event.tags.ajax_method;
-      delete event.tags.ajax_url;
     }
 
     return event;

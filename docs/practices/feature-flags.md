@@ -26,7 +26,7 @@ backend capability and handle the older-server case separately.
 ## Flag stages
 
 Flags are camelCase keys registered in
-`ghost/core/core/shared/labs.js`:
+`ghost/core/shared/labs.js`:
 
 | List                   | Use                                         | Normal Admin surface                                    |
 | ---------------------- | ------------------------------------------- | ------------------------------------------------------- |
@@ -51,7 +51,7 @@ call site. It is a short cleanup step, not a permanent home for released flags.
 ## Add a flag
 
 1. Add the key to `PRIVATE_FEATURES` or `PUBLIC_BETA_FEATURES` in
-   `ghost/core/core/shared/labs.js`.
+   `ghost/core/shared/labs.js`.
 2. Add the matching toggle to
    `apps/admin/src/settings/advanced/labs/private-features.tsx` or
    `apps/admin/src/settings/advanced/labs/beta-features.tsx`.
@@ -79,14 +79,11 @@ Use `labs.enabledMiddleware('myFeature')` when an entire API route should return
 `@labs.myFeature`; a helper which must report a disabled-feature error can use
 `labs.enabledHelper(...)`.
 
-In React Admin, use `useFeatureFlag` from
+In Admin, use `useFeatureFlag` from
 `@tryghost/admin-x-framework/hooks`. It returns `true` when the server-computed
 value in the Admin config response is boolean `true` or the flag is enabled by
 an Admin session override. Without an override, it returns `false` while the
 response is missing or loading.
-
-In legacy Ember Admin, use the `feature` service. Existing Ember code reads a
-flag with `this.feature.get('myFeature')`.
 
 Keep the decision at the boundary that owns the behavior. Hiding a button does
 not protect a server endpoint, and rejecting an endpoint does not give Admin a
@@ -113,18 +110,47 @@ Test the flag boundary and preserve existing behavioral coverage. Styling-only
 changes need visual review, not tests that assert appearance. Keep permanent
 permission and backend capability checks independent of the temporary flag.
 
-The pill-controls milestone is generally available on React Admin routes. Admin
-no longer reads `admin7Pill`; route ownership alone determines Shade's
-`isAdmin7` value. Ember-owned routes retain the legacy appearance, and standalone
-ActivityPub uses Shade's current default. Core temporarily retains `admin7Pill`
-in `GA_FEATURES` so older Admin builds receive an enabled value during independent
-deployments. Remove that GA entry once those older builds are no longer supported.
+The pill-controls milestone is generally available in Admin. Standalone
+ActivityPub uses Shade's current default.
 
-The `admin7settings` milestone swaps the shell navigation for the Settings
+Settings navigation is generally available in Admin. It replaces the shell
 navigation on desktop. Mobile retains the full-screen Settings takeover, with
-its return control and search inside Settings. The flag-off path preserves the
-legacy Settings layout. Editors retain the app navigation because their Settings
-access is limited; Authors only receive their profile route.
+its return control and search inside Settings. Editors retain the app navigation
+because their Settings access is limited; Authors only receive their profile route.
+
+The `admin7Design` milestone replaces the docked desktop sidebar with Shade's
+`FloatingSidebar`: pinned beside the content by default, or unpinned into a
+circle around the site icon, stored as the `navigation.menu.mode` user
+preference. It also lists Ghost(Pro) with Settings, moves Help and Feedback to
+the account menu and runs the member map full bleed. On desktop, except for
+Contributors, the admin sits in a frame whose top bar holds the Ghost and View
+site places, search and the site's numbers (Online, Members and MRR, for staff
+with admin access), so View site and search leave the sidebar. The frame closes
+around the editor and automation editor, and its sides retract on View site. Inside the frame, list pages show their title
+large above a sticky header that takes it over as the page scrolls: Admin's
+layout turns this on through Shade's `PageChromeProvider` rather than
+`isAdmin7`, which stays on for the generally available pill controls.
+Settings, the editor, the automation editor, mobile and pages without a
+`PageHeader.Title` keep the usual header. Settings shows its
+navigation inside the same sidebar, pinned without changing the stored mode. Mobile keeps the sidebar sheet, and the flag-off path
+preserves the docked sidebar and the separate Settings sidebar.
+
+The `admin7CustomizeFromViewSite` experiment adds Customize to the frame's top
+bar on View site, opening the Design settings in a panel over a live, browsable
+preview of the site, with its state in the URL (`/site?customize`). It needs
+`admin7Design` for the frame and is only for staff who can edit the design, on
+desktop. It has its own flag because it may ship apart from Admin 7.
+
+The `admin7EditorImprovements` milestone collects improvements to the post and
+page editor, independent of `admin7Design`. While the writer types in the title,
+excerpt or body, the editor's chrome fades out: the header, the settings toggle,
+the word count, email size warning and help link, and the empty feature image
+bar. An existing feature image stays. Moving the pointer more than a few pixels,
+scrolling with a wheel or trackpad, focusing anything outside the writing area
+or an unused Esc brings it back.
+Nothing hides while the settings panel is open or moving, while the status line
+reports a failed save or newsletter, or on touch and small screens. The chrome
+keeps its place, stays focusable and takes no pointer input while hidden.
 
 ## How values are resolved
 
@@ -157,9 +183,9 @@ or parse failure keeps the last known good overrides.
 ## Admin session overrides
 
 To preview a flagged Admin feature, add `labs` to the query string inside the
-Admin hash route, for example `/ghost/#/editor/post?labs=editorReact`. Use
-comma-separated names (`?labs=editorReact,billingReact`) or repeated
-parameters (`?labs=editorReact&labs=billingReact`) to enable multiple flags.
+Admin hash route, for example `/ghost/#/members?labs=membersCustomFields`. Use
+comma-separated names (`?labs=membersCustomFields,apps`) or repeated
+parameters (`?labs=membersCustomFields&labs=apps`) to enable multiple flags.
 
 Admin stores the list in `sessionStorage` under `ghost-admin:labs-overrides`.
 It persists across navigation and reloads in the same tab for that browser
@@ -168,12 +194,10 @@ the whole list rather than adding to it. Visit a route with an empty value,
 such as `/ghost/#/posts?labs=`, to clear the overrides. Simply removing the
 parameter does not clear them.
 
-These overrides only force flags on. React's `useFeatureFlag` and legacy
-Ember's `feature` service honor them even when the server-computed value is
-`false`. There is no force-off syntax; clearing an override restores the normal
-value, which may still be `true`. If session storage is unavailable, the URL
-override still applies to the current React render, but cannot persist or be
-shared with Ember.
+These overrides only force flags on. `useFeatureFlag` honors them even when the
+server-computed value is `false`. There is no force-off syntax; clearing an
+override restores the normal value, which may still be `true`. If session storage is unavailable, the URL
+override still applies to the current render, but cannot persist.
 
 Session overrides are client-only: they do not update the site's stored Labs
 setting or change Ghost Core's flag resolution. They cannot enable a gated
@@ -203,8 +227,7 @@ The different test systems do not use the same Labs defaults:
 | Ghost Core unit tests                                                               | No flags are forced on; stub the value needed by the test                                      |
 | Ghost Core `integration` and `legacy` tests using `testUtils.setup()`               | Every registered private and public beta flag is forced on                                     |
 | Ghost Core `e2e`, `e2e-api`, and `e2e-isolated` tests using `fixtureManager.init()` | Every registered private and public beta flag is forced on                                     |
-| React Admin unit and acceptance tests using the shared test-data fixtures           | `labsDefaults` flags off, `GA_FEATURES` on; pass a `labs` override for the case under test     |
-| Ember Admin tests using Mirage                                                      | Labs defaults to an empty object; use `enableLabsFlag` or `disableLabsFlag`                    |
+| Admin unit and acceptance tests using the shared test-data fixtures                 | `labsDefaults` flags off, `GA_FEATURES` on; pass a `labs` override for the case under test     |
 | Top-level Playwright tests in `e2e/`                                                | Labs uses the new site's values; only flags passed through `test.use({labs: ...})` are changed |
 
 Ghost Core's common fixture initializer adds `labs:enabled` to every fixture
@@ -220,12 +243,8 @@ flag defaults off in production. Add explicit flag-off coverage where the old
 path matters. Flags in `GA_FEATURES` default to on in every runtime, including
 tests, until they are removed or overridden by configuration.
 
-The top-level Playwright suite pins `editorReact` on with `labs__editorReact=true`
-in `BASE_GHOST_ENV`. Configuration outranks the stored setting, so
-`test.use({labs: ...})` cannot turn that flag off.
-
 When adding, promoting, or removing a flag, update the affected snapshots from
-`ghost/core/`:
+`ghost/`:
 
 ```bash
 pnpm test:single test/e2e-api/admin/config.test.js -u

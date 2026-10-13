@@ -21,8 +21,7 @@ export function hasCancelableStripeSubscription(member: Pick<Member, 'subscripti
 /**
  * The confirm button label toggles based on the checkbox state — Ember calls
  * this out visually so the admin sees they're about to trigger *two* server
- * operations, not one. Keep the exact strings in sync with Ember
- * `delete-member.hbs:44`.
+ * operations, not one. Strings ported verbatim from Ember's `delete-member.hbs`.
  */
 export function getDeleteMemberButtonLabel(cancelStripeSubscription: boolean): string {
   return cancelStripeSubscription ? 'Delete member + Cancel subscription' : 'Delete member';

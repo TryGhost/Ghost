@@ -64,7 +64,6 @@ export const EmailPerformanceSidebar: React.FC<{
               actionId={displayedEmail.id}
               automationId={automationId}
               stats={displayedEmail.stats}
-              redesigned
             />
           </Box>
         </Box>

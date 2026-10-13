@@ -19,7 +19,6 @@ import {
 } from '@test-utils/acceptance';
 import { editorScreen } from '@/editor/editor.screen';
 
-const FLAG_ON = { labs: { editorReact: true } };
 const CURRENT_USER_ID = '1';
 
 function clipboardJson(text: string): string {
@@ -62,7 +61,7 @@ function fakeEditorWithSnippets(snippets: Snippet[]) {
 function bootAsContributor(): RenderAdminAppOptions {
   const me = currentUserResponse();
   me.users[0].roles = [staffRole({ name: 'Contributor' })];
-  return withoutAutosave({ ...FLAG_ON, boot: { browseMe: { response: me } } });
+  return withoutAutosave({ boot: { browseMe: { response: me } } });
 }
 
 function submittedSnippet(body: unknown): Partial<Snippet> {
@@ -104,7 +103,7 @@ async function selectBodyText(text: string) {
 describe('Editor snippets', () => {
   it('inserts a snippet from the card menu', async () => {
     fakeEditorWithSnippets([snippet('Signature')]);
-    await renderAdminApp('/editor/post/abc123', withoutAutosave(FLAG_ON));
+    await renderAdminApp('/editor/post/abc123', withoutAutosave());
     await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
 
     await openCardMenu();
@@ -118,7 +117,7 @@ describe('Editor snippets', () => {
     const addApi = fakeAdminEndpoint('POST', /^\/snippets\/\?/, ({ body }) => ({
       snippets: [{ ...snippet('Greeting'), ...submittedSnippet(body) }],
     }));
-    await renderAdminApp('/editor/post/abc123', withoutAutosave(FLAG_ON));
+    await renderAdminApp('/editor/post/abc123', withoutAutosave());
     await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
 
     await selectBodyText('Hello from React');
@@ -140,7 +139,7 @@ describe('Editor snippets', () => {
     const editApi = fakeAdminEndpoint('PUT', /^\/snippets\/snippet-Greeting\/\?/, ({ body }) => ({
       snippets: [{ ...existing, ...submittedSnippet(body) }],
     }));
-    await renderAdminApp('/editor/post/abc123', withoutAutosave(FLAG_ON));
+    await renderAdminApp('/editor/post/abc123', withoutAutosave());
     await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
 
     await selectBodyText('Hello from React');
@@ -163,7 +162,7 @@ describe('Editor snippets', () => {
   it('deletes a snippet from the card menu once confirmed', async () => {
     fakeEditorWithSnippets([snippet('Signature')]);
     const deleteApi = fakeAdminEndpoint('DELETE', '/snippets/snippet-Signature/', {});
-    await renderAdminApp('/editor/post/abc123', withoutAutosave(FLAG_ON));
+    await renderAdminApp('/editor/post/abc123', withoutAutosave());
     await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
 
     await openCardMenu();
@@ -199,7 +198,7 @@ describe('Editor snippets', () => {
   ])('offers and inserts %s without writing it back', async (_label, overrides, text) => {
     fakeEditorWithSnippets([snippet('Legacy', overrides)]);
     const writeApi = fakeAdminEndpoint('PUT', /^\/snippets\//, {});
-    await renderAdminApp('/editor/post/abc123', withoutAutosave(FLAG_ON));
+    await renderAdminApp('/editor/post/abc123', withoutAutosave());
     await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
 
     await openCardMenu();

@@ -46,9 +46,7 @@ export function currentRoute(): string {
 
 /**
  * Boots the real admin app (the same provider stack as src/main.tsx) at the
- * given hash route, e.g. "/tags" or "/members?filter=label:VIP". Cross-app
- * (Ember-owned) navigations are recorded on
- * `document.body.dataset.externalNavigate` instead of navigating. Resolves
+ * given hash route, e.g. "/tags" or "/members?filter=label:VIP". Resolves
  * with the render and the `queryClient` it booted.
  */
 export async function renderAdminApp(
@@ -84,14 +82,6 @@ export async function renderAdminApp(
     document.body.appendChild(rootElement);
   }
 
-  // EmberRoot expects the Ember host element to exist; there is no Ember
-  // app in the test page, so provide an empty stand-in.
-  if (!document.getElementById('ember-app')) {
-    const emberApp = document.createElement('div');
-    emberApp.id = 'ember-app';
-    document.body.appendChild(emberApp);
-  }
-
   // The framework RouterProvider is hash-based; set the initial route
   // before the router is created.
   window.location.hash = `#${route}`;
@@ -101,11 +91,7 @@ export async function renderAdminApp(
     '',
   );
 
-  const framework = createFrameworkProps({
-    externalNavigate: (link) => {
-      document.body.dataset.externalNavigate = JSON.stringify(link);
-    },
-  });
+  const framework = createFrameworkProps();
 
   const rendered = await render(<AdminAppRoot framework={framework} />, { container: rootElement });
   return Object.assign(rendered, { queryClient: framework.queryClient });

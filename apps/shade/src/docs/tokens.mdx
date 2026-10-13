@@ -49,6 +49,8 @@ Surfaces are ordered by how high they sit. Pick by what's behind the element, no
 
 In light mode all three flatten to near-white, so borders and shadows carry the visual elevation. In dark mode they're three distinct colours so layered surfaces stay legible without relying on borders alone.
 
+**Glass** is a separate, translucent surface for chrome that floats over the page (the `FloatingSidebar`): `--surface-glass` over a backdrop blur, outlined with `--border-glass`, with `--surface-glass-highlight` as its top-edge sheen and `--shadow-glass-floating` / `--shadow-glass-docked` as its two shadows (their layers match, so one transitions into the other). Use the set together rather than mixing glass with the solid surfaces.
+
 ## Interactive surfaces
 
 Hover, active, and selected states are their own tokens — don't reach for raw greys or apply `/30` opacity modifiers ad-hoc.
@@ -57,6 +59,7 @@ Hover, active, and selected states are their own tokens — don't reach for raw 
 | ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------- |
 | `--interactive-hover`          | Generic hover: dropdown items, menu items, list rows, filter options. The catch-all.                                                  |
 | `--button-hover`               | Outline / dropdown `Button` hover. Currently aliased to `--interactive-hover`; kept separate so the button surface can diverge later. |
+| `--button-ghost-hover`         | Ghost `Button` hover (Admin 7). Translucent in light mode so it stays visible on tinted surfaces like hovered list rows.              |
 | `--tab-hover` / `--tab-active` | `Tabs` (button, button-sm, pill, kpis), `PageMenu`, sidebar menu items, active `Toggle` (dark).                                       |
 | `--table-row-hover`            | Shade `Table` row hover. Also used by visually-table-like lists (analytics top posts, comments list, members sticky cell).            |
 

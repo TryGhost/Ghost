@@ -36,8 +36,7 @@ export interface ConfirmStepProps {
   onBack: () => void;
 }
 
-// Eases the running state in as the button greys out. Use `fade-in-0`, not
-// `fade-in`: Ember's ghost.css has its own `.fade-in` that leaves content at opacity 0.
+// Eases the running state in as the button greys out.
 const ENTER = 'animate-in fade-in-0 zoom-in-90 duration-200 ease-out motion-reduce:animate-none';
 
 export function ConfirmStep({

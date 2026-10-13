@@ -1,27 +1,28 @@
-import { Bold, Type, Underline } from 'lucide-react';
-import { ToggleGroup, ToggleGroupItem } from '@tryghost/shade/components';
+import IconToggleGroup from '@/settings/components/icon-toggle-group';
+import { FieldTitle } from '@tryghost/shade/components';
+import { Inline } from '@tryghost/shade/primitives';
+import { LucideIcon } from '@tryghost/shade/utils';
 import { useEmailDesign } from '@/settings/email-design/email-design-context';
 
 export const LinkStyleField = () => {
   const { settings, onSettingsChange } = useEmailDesign();
   return (
-    <div className="flex items-center justify-between">
-      <span>Link style</span>
-      <ToggleGroup
-        type="single"
+    <Inline className="w-full" gap="sm" justify="between">
+      <FieldTitle>Link style</FieldTitle>
+      <IconToggleGroup
+        label="Link style"
+        options={[
+          {
+            value: 'underline',
+            label: 'Underline',
+            icon: <LucideIcon.Underline className="size-3.5!" />,
+          },
+          { value: 'regular', label: 'Regular', icon: <LucideIcon.Type className="size-3.5!" /> },
+          { value: 'bold', label: 'Bold', icon: <LucideIcon.Bold className="size-3.5!" /> },
+        ]}
         value={settings.link_style || 'underline'}
-        onValueChange={(value: string) => value && onSettingsChange({ link_style: value })}
-      >
-        <ToggleGroupItem aria-label="Underline" value="underline">
-          <Underline className="size-4" />
-        </ToggleGroupItem>
-        <ToggleGroupItem aria-label="Regular" value="regular">
-          <Type className="size-4" />
-        </ToggleGroupItem>
-        <ToggleGroupItem aria-label="Bold" value="bold">
-          <Bold className="size-4" />
-        </ToggleGroupItem>
-      </ToggleGroup>
-    </div>
+        onValueChange={(linkStyle) => onSettingsChange({ link_style: linkStyle })}
+      />
+    </Inline>
   );
 };

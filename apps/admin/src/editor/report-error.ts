@@ -2,6 +2,7 @@ import * as Sentry from '@sentry/react';
 import type { ErrorInfo } from 'react';
 import {
   APIError,
+  JSONError,
   ServerUnreachableError,
   getErrorMessage,
 } from '@tryghost/admin-x-framework/errors';
@@ -87,6 +88,15 @@ function responseTags(error: SaveError): Record<string, TagValue | undefined> {
   };
 }
 
+/** Core's account of a collision: the fields that changed and both `updated_at` values. */
+function collisionExtra(error: SaveError): { collision?: unknown } {
+  const details =
+    error.kind === 'conflict' && error.cause instanceof JSONError
+      ? error.cause.data?.errors[0]?.details
+      : null;
+  return details ? { collision: details } : {};
+}
+
 /** Sentry titles and groups a failure by this error's name; the transport error is its cause. */
 function saveFailureError(error: SaveError): Error {
   const kind = error.kind.replace(/(?:^|-)(\w)/g, (_, letter: string) => letter.toUpperCase());
@@ -96,7 +106,7 @@ function saveFailureError(error: SaveError): Error {
 }
 
 /**
- * Whether a failure is not a fault in the editor, and so is not reported: a refusal
+ * Whether a failure is not a fault in the editor, and so is not reported as one: a refusal
  * the writer reads and acts on (validation, a host limit, a writer who lost access
  * to the post, an expired session, whose recovery is signing in again) or a
  * connection that never reached the server. A missing post, a collision, a 5xx, a
@@ -121,7 +131,7 @@ export function isExpectedFailure(error: unknown): boolean {
 /**
  * Reports a request that settled as failed, unless it was expected
  * (`isExpectedSaveError()`): every other failure is reported once, with what the
- * request was.
+ * request was. A forbidden save or an abandoned sign-in is noted as a message.
  */
 export function reportSaveFailure(failure: EditorSaveFailure, postType: PostType): void {
   const { command, error, persisted, durationMs, postId, status } = failure;
@@ -147,6 +157,15 @@ export function reportSaveFailure(failure: EditorSaveFailure, postType: PostType
     });
   }
 
+  if (error.kind === 'forbidden' || error.kind === 'session-invalid') {
+    const message =
+      error.kind === 'forbidden'
+        ? `Save of ${postType} was forbidden`
+        : `Session expired while editing ${postType}`;
+    reportEditorNotice(message, { tags, extra: { post_id: postId } });
+    return;
+  }
+
   if (isExpectedSaveError(error)) {
     return;
   }
@@ -161,7 +180,7 @@ export function reportSaveFailure(failure: EditorSaveFailure, postType: PostType
 
   reportEditorError(saveFailureError(error), {
     tags,
-    extra: { post_id: postId, duration_ms: durationMs },
+    extra: { post_id: postId, duration_ms: durationMs, ...collisionExtra(error) },
   });
 }
 
