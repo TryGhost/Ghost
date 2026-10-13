@@ -6,6 +6,7 @@ import React, {
   useState,
   useSyncExternalStore,
 } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Button, EmptyIndicator, LoadingIndicator } from '@tryghost/shade/components';
 import { Stack, Text } from '@tryghost/shade/primitives';
 import { LucideIcon, cn } from '@tryghost/shade/utils';
@@ -401,22 +402,18 @@ function useAppSession(installationId: string): {
   const fetchApi = useFetchApi();
   const { mutateAsync: start } = useStartAppSession();
   const [generation, setGeneration] = useState(0);
-  const [result, setResult] = useState<{ key: string; session?: AppSession; error?: unknown }>();
-  const started = useRef<string | null>(null);
-  const key = `${installationId}:${generation}`;
 
-  useEffect(() => {
-    if (started.current === key) {
-      return;
-    }
-    started.current = key;
-
-    const startSession = async (): Promise<AppSession | undefined> => {
+  // One start per open, and per restart: each is a query of its own that never goes stale,
+  // isn't retried, and is dropped once nothing shows it.
+  const { data, error, isPending } = useQuery({
+    queryKey: ['app-session', installationId, generation],
+    // `null` when there's nothing to open, as a query can't answer `undefined`.
+    queryFn: async (): Promise<AppSession | null> => {
       try {
-        return (await start(installationId)).app_sessions[0];
-      } catch (error) {
-        if (!isSessionsRouteMissing(error)) {
-          throw error;
+        return (await start(installationId)).app_sessions[0] ?? null;
+      } catch (startError) {
+        if (!isSessionsRouteMissing(startError)) {
+          throw startError;
         }
       }
 
@@ -428,17 +425,17 @@ function useAppSession(installationId: string): {
       );
       const installation = read.app_installations[0];
       // That Core's installations may not carry a revision either; theirs never moves on.
-      return installation && { revision: installation.revision ?? 0, installation };
-    };
-
-    startSession().then(
-      (session) => setResult({ key, session }),
-      (error: unknown) => setResult({ key, error }),
-    );
-  }, [fetchApi, installationId, key, start]);
+      return installation ? { revision: installation.revision ?? 0, installation } : null;
+    },
+    staleTime: Infinity,
+    gcTime: 0,
+    retry: false,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+  });
 
   const restart = useCallback(() => setGeneration((value) => value + 1), []);
-  return result?.key === key ? { settled: true, ...result, restart } : { settled: false, restart };
+  return { settled: !isPending, session: data ?? undefined, error: error ?? undefined, restart };
 }
 
 /**
