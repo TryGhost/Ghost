@@ -54,6 +54,14 @@ its `pull_request_target` job can install from a sparse checkout of `main`
 without the root lockfile, and so its CI-only deps never reach a dev's install.
 See that directory's README before changing anything about how it's wired.
 
+## Service dependency audit
+
+`pnpm audit:services` reports implementation dependencies across the services
+directory. Use `--json` for file-level evidence. It shares its dependency-cruiser
+policy with `lint:boundaries`, which enforces the migrated-service ratchet.
+The [services guide](../../ghost/core/server/services/README.md#dependency-boundaries)
+defines the boundary, allowlist and interpretation of findings.
+
 ## TypeScript inventory
 
 Run `pnpm inventory:typescript --output /tmp/ghost-typescript` from the root to

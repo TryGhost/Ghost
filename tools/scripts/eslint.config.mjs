@@ -18,4 +18,9 @@ export default [
     extraSrcRules: cliRules,
     extraTestRules: cliRules,
   }),
+  ...nodeLibConfig({
+    typescript: false,
+    srcGlobs: ['lib/**/*.mjs'],
+    extraSrcRules: cliRules,
+  }),
 ];

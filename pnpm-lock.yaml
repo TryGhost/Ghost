@@ -4405,6 +4405,9 @@ importers:
       camelcase-keys:
         specifier: 10.0.3
         version: 10.0.3
+      dependency-cruiser:
+        specifier: 'catalog:'
+        version: 18.1.1
       execa:
         specifier: 'catalog:'
         version: 10.0.1

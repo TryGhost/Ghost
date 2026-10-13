@@ -75,7 +75,8 @@
     "data:analytics:clear": "node tools/scripts/with-ghost-dev-env.ts node ghost/core/server/data/tinybird/scripts/docker-analytics-manager.js clear",
     "release": "node tools/scripts/release.ts",
     "inventory:typescript": "node tools/scripts/typescript-inventory.ts",
-    "gx": "node tools/gx/cli.ts"
+    "gx": "node tools/gx/cli.ts",
+    "audit:services": "node tools/scripts/audit-service-dependencies.ts"
   },
   "devDependencies": {
     "@playwright/test": "catalog:",
@@ -125,6 +126,8 @@
         "cache": true,
         "inputs": [
           "{workspaceRoot}/.dependency-cruiser.cjs",
+          "{workspaceRoot}/tools/scripts/lib/service-dependencies.ts",
+          "{workspaceRoot}/tools/scripts/lib/service-dependency-resolver.mjs",
           "{workspaceRoot}/ghost/core/**/*",
           "{workspaceRoot}/apps/**/*",
           "sharedGlobals"

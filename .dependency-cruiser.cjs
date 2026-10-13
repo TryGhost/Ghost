@@ -1,5 +1,17 @@
 'use strict';
 
+const {
+  readServiceInventory,
+  serviceDependencyRules,
+  serviceMigrationRules,
+  assertMigratedServiceSources,
+  serviceDependencySourceExclusions,
+} = require('./tools/scripts/lib/service-dependencies.ts');
+
+const services = readServiceInventory(__dirname);
+assertMigratedServiceSources(__dirname, services);
+const migrationRules = serviceMigrationRules(services);
+
 /*
  * Architectural boundary rules for the monorepo, enforced on the resolved
  * module graph (require AND import). Two sections:
@@ -23,7 +35,10 @@
  * @type {import('dependency-cruiser').IConfiguration}
  */
 module.exports = {
+  required: migrationRules.required,
   forbidden: [
+    ...serviceDependencyRules(services, 'migrated'),
+    ...migrationRules.forbidden,
     // Kernel primitives must be independent of the application they support.
     {
       name: 'kernel-not-application',
@@ -238,9 +253,18 @@ module.exports = {
     },
   ],
   options: {
+    // Use the CLI's supported resolver hook to inspect authored TypeScript,
+    // even when build:tsc has emitted adjacent JavaScript.
+    webpackConfig: { fileName: './tools/scripts/lib/service-dependency-resolver.mjs' },
     doNotFollow: { path: 'node_modules' },
     // Keeps edges into node_modules so rules can see npm packages, but skips
-    // our own tests and build output
-    exclude: { path: '^(apps|ghost|packages)/.*/(coverage|coverage-next|test|built|dist)/' },
+    // our own tests and build output. All source inside services stays visible:
+    // a nested directory name must not hide a production dependency.
+    exclude: {
+      path: [
+        '^(?!ghost/core/server/services/)(apps|ghost|packages)/.*/(coverage|coverage-next|test|built|dist)/',
+        ...serviceDependencySourceExclusions(__dirname),
+      ],
+    },
   },
 };
