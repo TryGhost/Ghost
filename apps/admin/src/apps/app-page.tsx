@@ -16,13 +16,11 @@ import {
   useLocation,
   useNavigate,
   useParams,
-  useQueryClient,
 } from '@tryghost/admin-x-framework';
 import {
   type AppInstallation,
   type AppInstallationsResponseType,
   type AppSession,
-  getAppInstallationQueryKey,
   useReadAppInstallation,
   useStartAppSession,
 } from '@tryghost/admin-x-framework/api/app-installations';
@@ -115,7 +113,10 @@ function useSessionEnd(session: AppSession, onEnded: () => void) {
     defaultErrorHandler: false,
     // Without the history the details page shows; this one has no use for it.
     searchParams: SESSION_END_SEARCH_PARAMS,
-    // Starting the session put the installation here, so there's nothing to read yet.
+    // The session came with the installation as it stands, so there's nothing to read yet:
+    // one request per open. It seeds an empty cache only; what a previous session left
+    // there was read before this one, and doesn't count.
+    initialData: { app_installations: [session.installation] },
     refetchOnMount: false,
     // Coming back to the tab is when a change made meanwhile shows up.
     refetchOnWindowFocus: 'always',
@@ -397,7 +398,6 @@ function useAppSession(installationId: string): {
   /** Ends this session and starts another, as after approving changes. */
   restart: () => void;
 } {
-  const queryClient = useQueryClient();
   const fetchApi = useFetchApi();
   const { mutateAsync: start } = useStartAppSession();
   const [generation, setGeneration] = useState(0);
@@ -410,20 +410,10 @@ function useAppSession(installationId: string): {
       return;
     }
     started.current = key;
-    const queryKey = getAppInstallationQueryKey(installationId, SESSION_END_SEARCH_PARAMS);
 
-    // The installation as it stands is what the session's end is told by, so it goes
-    // where that read looks: it is read again only when the tab comes back into focus.
-    // One request per open.
     const startSession = async (): Promise<AppSession | undefined> => {
       try {
-        const session = (await start(installationId)).app_sessions[0];
-        if (session) {
-          queryClient.setQueryData<AppInstallationsResponseType>(queryKey, {
-            app_installations: [session.installation],
-          });
-        }
-        return session;
+        return (await start(installationId)).app_sessions[0];
       } catch (error) {
         if (!isSessionsRouteMissing(error)) {
           throw error;
@@ -433,12 +423,9 @@ function useAppSession(installationId: string): {
       // Admin and Core deploy independently, so this Admin may be talking to a Core from
       // before app sessions, which has no route for them. The app opens as it did there:
       // on the installation as read, without a re-check, pinned to the revision read.
-      const [, url] = queryKey;
-      const read = await queryClient.fetchQuery({
-        queryKey,
-        queryFn: () => fetchApi<AppInstallationsResponseType>(url),
-        staleTime: 0,
-      });
+      const read = await fetchApi<AppInstallationsResponseType>(
+        apiUrl(`/apps/installations/${installationId}/`),
+      );
       const installation = read.app_installations[0];
       // That Core's installations may not carry a revision either; theirs never moves on.
       return installation && { revision: installation.revision ?? 0, installation };
@@ -448,7 +435,7 @@ function useAppSession(installationId: string): {
       (session) => setResult({ key, session }),
       (error: unknown) => setResult({ key, error }),
     );
-  }, [fetchApi, installationId, key, queryClient, start]);
+  }, [fetchApi, installationId, key, start]);
 
   const restart = useCallback(() => setGeneration((value) => value + 1), []);
   return result?.key === key ? { settled: true, ...result, restart } : { settled: false, restart };

@@ -1,5 +1,4 @@
 import type { AppManifest } from '@tryghost/app-contracts';
-import { apiUrl } from '../utils/api/fetch-api';
 import { createMutation, createQuery, createQueryWithId } from '../utils/api/hooks';
 
 export type { AppManifest } from '@tryghost/app-contracts';
@@ -105,22 +104,11 @@ export const useBrowseAppInstallations = createQuery<AppInstallationsResponseTyp
  * Unlike `useBrowseAppInstallations`, this also returns uninstalled apps.
  * That way their details page still loads.
  */
-const readPath = (id: string) => `/apps/installations/${id}/`;
-const readSearchParams = { include: 'history' };
-
 export const useReadAppInstallation = createQueryWithId<AppInstallationsResponseType>({
   dataType,
-  path: readPath,
-  defaultSearchParams: readSearchParams,
+  path: (id) => `/apps/installations/${id}/`,
+  defaultSearchParams: { include: 'history' },
 });
-
-/**
- * The cache key `useReadAppInstallation(id, { searchParams })` reads from, so an
- * installation Admin already has, such as the one a session answers with, can be put
- * there instead of read again. Lives here because `dataType` is private to this module.
- */
-export const getAppInstallationQueryKey = (id: string, searchParams?: Record<string, string>) =>
-  [dataType, apiUrl(readPath(id), searchParams || readSearchParams)] as const;
 
 /** Has Ghost fetch and check an app's manifest. Stores nothing, so nothing is invalidated. */
 export const usePreviewAppInstallation = createMutation<

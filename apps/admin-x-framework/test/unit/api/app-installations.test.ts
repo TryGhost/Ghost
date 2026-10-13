@@ -1,12 +1,10 @@
-import { act, waitFor } from '@testing-library/react';
+import { act } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
-import { createTestQueryClient, renderHookWithProviders } from '../../../src/test/test-utils';
+import { renderHookWithProviders } from '../../../src/test/test-utils';
 import {
-  getAppInstallationQueryKey,
   useAddAppInstallation,
   useApproveAppInstallation,
   usePreviewAppInstallation,
-  useReadAppInstallation,
   useStartAppSession,
 } from '../../../src/api/app-installations';
 import { withMockFetch } from '../../utils/mock-fetch';
@@ -97,25 +95,6 @@ describe('app installations api', () => {
       );
       expect(options.method).toBe('POST');
       expect(options.body).toBeUndefined();
-    });
-  });
-
-  it.each([
-    ['its history, by default', undefined],
-    ['the search params it was read with', {}],
-  ])('keys a read installation by its id and %s', async (_, searchParams) => {
-    const read = { app_installations: [{ id: 'installation-1' }] };
-    await withMockFetch(okResponse(read), async () => {
-      const queryClient = createTestQueryClient();
-      const { result } = renderHookWithProviders(
-        () => useReadAppInstallation('installation-1', { searchParams }),
-        { queryClient },
-      );
-
-      await waitFor(() => expect(result.current.isSuccess).toBe(true));
-      expect(
-        queryClient.getQueryData(getAppInstallationQueryKey('installation-1', searchParams)),
-      ).toEqual(read);
     });
   });
 });
