@@ -2,7 +2,7 @@ import errors from '@tryghost/errors';
 import ObjectId from 'bson-objectid';
 import type { Knex } from 'knex';
 import { z } from 'zod';
-import { compareManifests, type AppManifest } from '@tryghost/app-contracts/manifest';
+import type { AppManifest } from '@tryghost/app-contracts/manifest';
 import { DbDate, toDatabaseDate } from '../../lib/db-types/date';
 import type { RecordAppInstallationAction, RequestContext } from './actions';
 import {
@@ -12,6 +12,12 @@ import {
   type AppInstallation,
   type CurrentInstallation,
 } from './codec';
+import {
+  changesFrom,
+  decideOnManifest,
+  type AppManifestChange,
+  type ManifestDecision,
+} from './decide-on-manifest';
 import { buildHistory, approvalManifestIds, type HistoryAction } from './history';
 import type { LoadedManifest, LoadManifest } from './load-manifest';
 import { DbAppInstallationManifest, type AppInstallationStatus } from './schema';
@@ -47,13 +53,7 @@ const HistoryActionRow = z
   }));
 
 export type { AppInstallation, AppInstallationHistoryEntry } from './codec';
-
-/** One field that differs from what the publisher approved. */
-export interface AppManifestChange {
-  /** Where the change is: a path in the manifest, or `manifest_url` when the app moved. */
-  path: string;
-  requires_approval: boolean;
-}
+export type { AppManifestChange } from './decide-on-manifest';
 
 /** What a publisher reviews before installing an app, or before approving changes to one. */
 export interface AppInstallationPreview {
@@ -103,6 +103,124 @@ function isUniqueViolation(err: unknown): boolean {
   return (
     code === 'ER_DUP_ENTRY' || (typeof code === 'string' && code.startsWith('SQLITE_CONSTRAINT'))
   );
+}
+
+/**
+ * The current installation, by its own ID or by its app's, with the manifest it was
+ * approved with: what a newer manifest is compared against, and what keeping one replaces.
+ * An installation that has ended is never current, so it is not found either way.
+ */
+async function currentInstallation(
+  by: { id: string } | { appId: string },
+  db: Knex | Knex.Transaction,
+): Promise<CurrentInstallation | undefined> {
+  const query = db(`${INSTALLATIONS} as installation`).join(
+    `${MANIFESTS} as approved`,
+    'approved.id',
+    'installation.manifest_id',
+  );
+  if ('id' in by) {
+    query.where('installation.id', by.id).whereNotNull('installation.current_app_id');
+  } else {
+    query.where('installation.current_app_id', by.appId);
+  }
+  const row = await query.first<z.input<typeof CurrentInstallationRow> | undefined>(
+    'installation.id',
+    'installation.status',
+    'installation.manifest_id',
+    'installation.pending_manifest_id',
+    'installation.revision',
+    'approved.manifest_url',
+    'approved.manifest',
+  );
+  return row ? z.decode(CurrentInstallationRow, row) : undefined;
+}
+
+/** The manifest waiting for approval, if the installation has one. */
+async function pendingManifest(
+  trx: Knex.Transaction,
+  current: CurrentInstallation,
+): Promise<z.output<typeof PendingManifestRow> | null> {
+  if (current.pending_manifest_id === null) {
+    return null;
+  }
+  const row = await trx(MANIFESTS)
+    .where({ id: current.pending_manifest_id })
+    .first<z.input<typeof PendingManifestRow> | undefined>('id', 'digest');
+  return row ? z.decode(PendingManifestRow, row) : null;
+}
+
+/**
+ * Keeps a loaded manifest as `decision` says, inside the transaction that locked the
+ * installation and read `current`. The one write behind both an approval and the re-check
+ * at app session start, so the two cannot keep the same manifest differently.
+ *
+ * `source` says who decided. Ghost on its own (`update`) applies silent changes and lets
+ * changes that need approval wait, suspending the installation. A publisher's approval
+ * (`approval`) applies what they reviewed, whatever it needed.
+ *
+ * A manifest is kept as a row of its own, unless it already has one: the approved one
+ * when the app went back on changes that waited, or the pending one when that is what is
+ * approved. Every write moves the revision on. Returns the approved manifest before and
+ * after, or null when there was nothing to write.
+ */
+async function keepManifest(
+  trx: Knex.Transaction,
+  current: CurrentInstallation,
+  loaded: LoadedManifest,
+  decision: ManifestDecision,
+  source: 'approval' | 'update',
+): Promise<{ from: string; to: string } | null> {
+  if (decision === 'unchanged' || (decision === 'use_pending' && source === 'update')) {
+    return null;
+  }
+  const waits = decision === 'suspend' && source === 'update';
+  const now = toDatabaseDate(new Date());
+
+  let manifestId = current.manifest_id;
+  if (decision === 'use_pending' && current.pending_manifest_id !== null) {
+    manifestId = current.pending_manifest_id;
+  } else if (changesFrom(current, loaded).length > 0) {
+    manifestId = new ObjectId().toHexString();
+    await trx(MANIFESTS).insert({
+      id: manifestId,
+      installation_id: current.id,
+      manifest_url: loaded.manifestUrl,
+      manifest: loaded.serialised,
+      digest: loaded.digest,
+      source,
+      requires_approval: decision === 'suspend',
+      created_at: now,
+    });
+  }
+
+  if (waits) {
+    await trx(INSTALLATIONS)
+      .where({ id: current.id })
+      .update({
+        status: 'suspended',
+        pending_manifest_id: manifestId,
+        revision: trx.raw('?? + 1', ['revision']),
+        updated_at: now,
+      });
+    return { from: current.manifest_id, to: current.manifest_id };
+  }
+  await trx(INSTALLATIONS)
+    .where({ id: current.id })
+    .update({
+      // A suspended app runs again once nothing waits for approval any more. Suspended
+      // means exactly that today; should a suspension ever have another cause, keeping a
+      // manifest does not lift it.
+      status:
+        current.status === 'active' || current.pending_manifest_id !== null
+          ? 'active'
+          : current.status,
+      manifest_id: manifestId,
+      pending_manifest_id: null,
+      revision: trx.raw('?? + 1', ['revision']),
+      updated_at: now,
+    });
+  return { from: current.manifest_id, to: manifestId };
 }
 
 export class AppInstallationsService {
@@ -224,38 +342,8 @@ export class AppInstallationsService {
     return contents;
   }
 
-  private async currentInstallation(
-    appId: string,
-    db: Knex | Knex.Transaction = this.knex,
-  ): Promise<CurrentInstallation | undefined> {
-    const row = await db(`${INSTALLATIONS} as installation`)
-      .join(`${MANIFESTS} as approved`, 'approved.id', 'installation.manifest_id')
-      .where('installation.current_app_id', appId)
-      .first<z.input<typeof CurrentInstallationRow> | undefined>(
-        'installation.id',
-        'installation.status',
-        'installation.manifest_id',
-        'installation.pending_manifest_id',
-        'installation.revision',
-        'approved.manifest_url',
-        'approved.manifest',
-      );
-    return row ? z.decode(CurrentInstallationRow, row) : undefined;
-  }
-
-  private changesFrom(current: CurrentInstallation, loaded: LoadedManifest): AppManifestChange[] {
-    const { changes } = compareManifests(
-      { manifestUrl: current.manifest_url, manifest: current.manifest },
-      { manifestUrl: loaded.manifestUrl, manifest: loaded.manifest },
-    );
-    return changes.map(({ path, requiresApproval }) => ({
-      path,
-      requires_approval: requiresApproval,
-    }));
-  }
-
   private async previewOf(loaded: LoadedManifest): Promise<AppInstallationPreview> {
-    const current = await this.currentInstallation(loaded.manifest.id);
+    const current = await currentInstallation({ appId: loaded.manifest.id }, this.knex);
     return {
       manifest_url: loaded.manifestUrl,
       manifest: loaded.manifest,
@@ -269,7 +357,7 @@ export class AppInstallationsService {
             revision: current.revision,
             manifest_url: current.manifest_url,
             manifest: current.manifest,
-            changes: this.changesFrom(current, loaded),
+            changes: changesFrom(current, loaded),
           }
         : null,
     };
@@ -404,7 +492,7 @@ export class AppInstallationsService {
 
     const approved = await this.knex.transaction(async (trx) => {
       await trx(INSTALLATIONS).where({ id }).forUpdate().first();
-      const current = await this.currentInstallation(loaded.manifest.id, trx);
+      const current = await currentInstallation({ appId: loaded.manifest.id }, trx);
       // The reviewed manifest must belong to this installation, and it must still be
       // installed. The app has no current installation, or another one, either because
       // this one ended while the manifest was being fetched or because the manifest is
@@ -418,57 +506,15 @@ export class AppInstallationsService {
         return { stale: true } as const;
       }
 
-      // One reading of what differs, for the decision here and for the record: the preview
-      // lists changes from the same comparison, so approve cannot disagree with it.
-      const changes = this.changesFrom(current, loaded);
-      const sameManifest = changes.length === 0;
-      if (sameManifest && current.pending_manifest_id === null) {
-        return null;
-      }
-
-      const now = toDatabaseDate(new Date());
-      // The manifest the publisher just approved. When it is the approved one already,
-      // the app had changes waiting and then went back: there is nothing new to keep, only
-      // the pending manifest to let go of. When it is the pending one, that row is the
-      // approved one from now on rather than a copy of it.
-      let manifestId = current.manifest_id;
-      const pendingRow = current.pending_manifest_id
-        ? await trx(MANIFESTS)
-            .where({ id: current.pending_manifest_id })
-            .first<z.input<typeof PendingManifestRow> | undefined>('id', 'digest')
-        : undefined;
-      const pending = pendingRow ? z.decode(PendingManifestRow, pendingRow) : undefined;
-      if (pending && pending.digest === loaded.digest) {
-        manifestId = pending.id;
-      } else if (!sameManifest) {
-        manifestId = new ObjectId().toHexString();
-        await trx(MANIFESTS).insert({
-          id: manifestId,
-          installation_id: id,
-          manifest_url: loaded.manifestUrl,
-          manifest: loaded.serialised,
-          digest: loaded.digest,
-          source: 'approval',
-          requires_approval: changes.some((change) => change.requires_approval),
-          created_at: now,
-        });
-      }
-      await trx(INSTALLATIONS)
-        .where({ id })
-        .update({
-          // A suspended app runs again once the changes it was waiting for are approved.
-          // Suspended means exactly that today; should a suspension ever have another
-          // cause, approving a manifest does not lift it.
-          status:
-            current.status === 'active' || current.pending_manifest_id !== null
-              ? 'active'
-              : current.status,
-          manifest_id: manifestId,
-          pending_manifest_id: null,
-          revision: trx.raw('?? + 1', ['revision']),
-          updated_at: now,
-        });
-      return { stale: false, from: current.manifest_id, to: manifestId } as const;
+      // Decided from the same comparison the preview lists changes from, so approve cannot
+      // disagree with what the publisher reviewed.
+      const decision = decideOnManifest({
+        current,
+        pending: await pendingManifest(trx, current),
+        loaded,
+      });
+      const kept = await keepManifest(trx, current, loaded, decision, 'approval');
+      return kept ? ({ stale: false, ...kept } as const) : null;
     });
 
     if (approved?.stale) {
