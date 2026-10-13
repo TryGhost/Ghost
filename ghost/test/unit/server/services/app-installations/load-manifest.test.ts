@@ -321,7 +321,7 @@ describe('createManifestLoader', function () {
     });
   });
 
-  describe('what a publisher confirms', function () {
+  describe('the digest', function () {
     // Every URL absolute, so any address serves the very same manifest.
     const absolute = manifest({
       icon: { url: 'https://cdn.example.net/icon.svg' },
@@ -334,7 +334,7 @@ describe('createManifestLoader', function () {
       const loaded = await loader()(MANIFEST_URL);
 
       assert.equal(
-        loaded.reviewed,
+        loaded.digest,
         createHash('sha256').update(`${loaded.manifestUrl}\n${loaded.serialised}`).digest('hex'),
       );
       // So the newline between them cannot be mistaken for part of either.
@@ -350,7 +350,7 @@ describe('createManifestLoader', function () {
       const elsewhere = await loader()('https://audio.example.org/ghost-app.json');
 
       assert.equal(here.serialised, elsewhere.serialised);
-      assert.notEqual(here.reviewed, elsewhere.reviewed);
+      assert.notEqual(here.digest, elsewhere.digest);
     });
 
     it('stays the same however the app spells the same manifest', async function () {
@@ -365,7 +365,7 @@ describe('createManifestLoader', function () {
       const second = await loader()(MANIFEST_URL);
 
       assert.equal(second.serialised, first.serialised);
-      assert.equal(second.reviewed, first.reviewed);
+      assert.equal(second.digest, first.digest);
     });
   });
 });

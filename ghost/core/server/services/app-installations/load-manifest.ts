@@ -26,30 +26,28 @@ export interface LoadedManifest {
   manifestUrl: string;
   /** Parsed, with its URLs resolved against where it was read from after any redirects. */
   manifest: AppManifest;
-  /** Exactly the text that is stored. */
+  /** Exactly the text that is stored and digested. */
   serialised: string;
-  /** Of the manifest alone, as stored with it. */
+  /** Stored with the manifest, and what a publisher confirms. */
   digest: string;
-  /** What a publisher reviews and confirms: the manifest and where it is read from. */
-  reviewed: string;
 }
 
 export type LoadManifest = (manifestUrl: string) => Promise<LoadedManifest>;
 
 /**
- * The manifest's digest, as stored with it. The same manifest always serialises the same
- * way, as encoding builds it in the schema's key order.
+ * The digest of a manifest together with the address it is read from: stored with the
+ * manifest, and sent back when a publisher confirms what they reviewed.
+ *
+ * The address is part of it because two addresses can serve the same manifest once every
+ * URL in it is absolute: a digest of the manifest alone would let a review of one address
+ * confirm another serving the same bytes, and that other address would then decide every
+ * future update.
+ *
+ * The same manifest always serialises the same way, as encoding builds it in the schema's
+ * key order. The newline between the two cannot be mistaken for part of either: the URL
+ * parser strips newlines from an address, and the encoded JSON has none.
  */
-function digestOf(serialisedManifest: string): string {
-  return createHash('sha256').update(serialisedManifest).digest('hex');
-}
-
-/**
- * What a publisher reviews and confirms: the manifest and the address it is read from.
- * Two addresses can serve the same manifest, once every URL in it is absolute, so the
- * digest of the manifest alone would let a review of one address confirm the other.
- */
-function reviewedDigestOf(manifestUrl: string, serialisedManifest: string): string {
+function digestOf(manifestUrl: string, serialisedManifest: string): string {
   return createHash('sha256').update(`${manifestUrl}\n${serialisedManifest}`).digest('hex');
 }
 
@@ -111,8 +109,7 @@ export function createManifestLoader({
       manifestUrl,
       manifest: parsed.manifest,
       serialised,
-      digest: digestOf(serialised),
-      reviewed: reviewedDigestOf(manifestUrl, serialised),
+      digest: digestOf(manifestUrl, serialised),
     };
   };
 }

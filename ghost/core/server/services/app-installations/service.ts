@@ -259,7 +259,7 @@ export class AppInstallationsService {
     return {
       manifest_url: loaded.manifestUrl,
       manifest: loaded.manifest,
-      digest: loaded.reviewed,
+      digest: loaded.digest,
       // The approved side comes from the same row the changes were worked out from, so the
       // publisher sees exactly the difference Ghost found.
       installation: current
@@ -287,7 +287,7 @@ export class AppInstallationsService {
    */
   private async fetchReviewed(manifestUrl: string, digest: string): Promise<LoadedManifest> {
     const loaded = await this.loadManifest(manifestUrl);
-    if (loaded.reviewed !== digest) {
+    if (loaded.digest !== digest) {
       throw new errors.ConflictError({
         message: 'The app changed while it was being reviewed.',
         code: 'APP_MANIFEST_CHANGED',
@@ -435,14 +435,10 @@ export class AppInstallationsService {
       const pendingRow = current.pending_manifest_id
         ? await trx(MANIFESTS)
             .where({ id: current.pending_manifest_id })
-            .first<z.input<typeof PendingManifestRow> | undefined>('id', 'manifest_url', 'digest')
+            .first<z.input<typeof PendingManifestRow> | undefined>('id', 'digest')
         : undefined;
       const pending = pendingRow ? z.decode(PendingManifestRow, pendingRow) : undefined;
-      if (
-        pending &&
-        pending.manifest_url === loaded.manifestUrl &&
-        pending.digest === loaded.digest
-      ) {
+      if (pending && pending.digest === loaded.digest) {
         manifestId = pending.id;
       } else if (!sameManifest) {
         manifestId = new ObjectId().toHexString();

@@ -22,8 +22,7 @@ const loaded: LoadedManifest = {
   manifestUrl: 'https://podcast.example.com/ghost-app.json',
   manifest,
   serialised: JSON.stringify(manifest),
-  digest: 'stored-digest',
-  reviewed: 'reviewed-digest',
+  digest: 'reviewed-digest',
 };
 const deadlock = () => Object.assign(new Error('Deadlock victim'), { code: 'ER_LOCK_DEADLOCK' });
 
@@ -42,7 +41,7 @@ function setup() {
     loadManifest: vi.fn<LoadManifest>().mockResolvedValue(loaded),
   });
   const install = () =>
-    service.create({ actor: null }, { manifestUrl: loaded.manifestUrl, digest: loaded.reviewed });
+    service.create({ actor: null }, { manifestUrl: loaded.manifestUrl, digest: loaded.digest });
   return { install, insert, trx, transaction, recordAction };
 }
 
