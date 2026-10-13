@@ -93,12 +93,12 @@ catalog:
   '@testing-library/preact': 3.2.4
   '@testing-library/react': 16.3.2
   '@tryghost/brute-knex': 3.2.2
-  '@tryghost/color-utils': 0.2.21
-  '@tryghost/custom-fonts': 1.0.12
+  '@tryghost/color-utils': 0.2.23
+  '@tryghost/custom-fonts': 1.0.14
   '@tryghost/debug': 2.3.16
   '@tryghost/domain-events': 3.3.18
   '@tryghost/errors': 3.4.2
-  '@tryghost/helpers': 1.1.107
+  '@tryghost/helpers': 1.1.109
   '@tryghost/logging': 5.4.8
   '@tryghost/mg-clean-html': 0.12.6
   '@tryghost/metrics': 3.6.2
@@ -107,10 +107,10 @@ catalog:
   '@tryghost/nql-lang': 0.7.0
   '@tryghost/promise': 2.3.16
   '@tryghost/request': 4.0.10
-  '@tryghost/string': 0.3.6
-  '@tryghost/timezone-data': 1.0.1
+  '@tryghost/string': 0.3.8
+  '@tryghost/timezone-data': 1.0.3
   '@tryghost/tpl': 2.3.16
-  '@tryghost/url-utils': 5.4.0
+  '@tryghost/url-utils': 5.4.1
   '@types/csso': 5.0.5
   '@types/express': 4.17.25
   '@types/lodash': 4.17.25

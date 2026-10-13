@@ -336,11 +336,11 @@ catalogs:
       specifier: 3.2.2
       version: 3.2.2
     '@tryghost/color-utils':
-      specifier: 0.2.21
-      version: 0.2.21
+      specifier: 0.2.23
+      version: 0.2.23
     '@tryghost/custom-fonts':
-      specifier: 1.0.12
-      version: 1.0.12
+      specifier: 1.0.14
+      version: 1.0.14
     '@tryghost/debug':
       specifier: 2.3.16
       version: 2.3.16
@@ -348,8 +348,8 @@ catalogs:
       specifier: 3.3.18
       version: 3.3.18
     '@tryghost/helpers':
-      specifier: 1.1.107
-      version: 1.1.107
+      specifier: 1.1.109
+      version: 1.1.109
     '@tryghost/metrics':
       specifier: 3.6.2
       version: 3.6.2
@@ -366,17 +366,17 @@ catalogs:
       specifier: 4.0.10
       version: 4.0.10
     '@tryghost/string':
-      specifier: 0.3.6
-      version: 0.3.6
+      specifier: 0.3.8
+      version: 0.3.8
     '@tryghost/timezone-data':
-      specifier: 1.0.1
-      version: 1.0.1
+      specifier: 1.0.3
+      version: 1.0.3
     '@tryghost/tpl':
       specifier: 2.3.16
       version: 2.3.16
     '@tryghost/url-utils':
-      specifier: 5.4.0
-      version: 5.4.0
+      specifier: 5.4.1
+      version: 5.4.1
     '@tryghost/validator':
       specifier: 3.2.17
       version: 3.2.17
@@ -1031,10 +1031,10 @@ importers:
         version: link:../../packages/checkout
       '@tryghost/color-utils':
         specifier: 'catalog:'
-        version: 0.2.21
+        version: 0.2.23
       '@tryghost/custom-fonts':
         specifier: 'catalog:'
-        version: 1.0.12
+        version: 1.0.14
       '@tryghost/i18n':
         specifier: workspace:*
         version: link:../../packages/i18n
@@ -1067,10 +1067,10 @@ importers:
         version: link:../shade
       '@tryghost/string':
         specifier: 'catalog:'
-        version: 0.3.6
+        version: 0.3.8
       '@tryghost/timezone-data':
         specifier: 'catalog:'
-        version: 1.0.1
+        version: 1.0.3
       '@uiw/react-codemirror':
         specifier: 'catalog:'
         version: 4.25.12(@babel/runtime@7.29.7)(@codemirror/autocomplete@6.20.3)(@codemirror/language@6.12.4)(@codemirror/lint@6.9.7)(@codemirror/search@6.7.2)(@codemirror/state@6.7.6)(@codemirror/theme-one-dark@6.1.3)(@codemirror/view@6.43.13)(@types/react@18.3.31)(codemirror@6.0.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -1306,7 +1306,7 @@ importers:
         version: link:../shade
       '@tryghost/string':
         specifier: 'catalog:'
-        version: 0.3.6
+        version: 0.3.8
       bson-objectid:
         specifier: 'catalog:'
         version: 2.0.4
@@ -2105,13 +2105,13 @@ importers:
         version: link:../packages/checkout
       '@tryghost/color-utils':
         specifier: 'catalog:'
-        version: 0.2.21
+        version: 0.2.23
       '@tryghost/config-url-helpers':
-        specifier: 1.0.28
-        version: 1.0.28
+        specifier: 1.0.30
+        version: 1.0.30
       '@tryghost/custom-fonts':
         specifier: 'catalog:'
-        version: 1.0.12
+        version: 1.0.14
       '@tryghost/database-info':
         specifier: 2.3.16
         version: 2.3.16
@@ -2126,10 +2126,10 @@ importers:
         version: 3.4.2
       '@tryghost/helpers':
         specifier: 'catalog:'
-        version: 1.1.107
+        version: 1.1.109
       '@tryghost/html-to-plaintext':
-        specifier: 1.0.12
-        version: 1.0.12
+        specifier: 1.0.14
+        version: 1.0.14
       '@tryghost/i18n':
         specifier: workspace:*
         version: link:../packages/i18n
@@ -2209,8 +2209,8 @@ importers:
         specifier: 5.0.3
         version: 5.0.3(express@4.22.3(supports-color@10.2.2))(supports-color@10.2.2)
       '@tryghost/referrer-parser':
-        specifier: 0.1.22
-        version: 0.1.22
+        specifier: 0.1.25
+        version: 0.1.25
       '@tryghost/request':
         specifier: 'catalog:'
         version: 4.0.10
@@ -2221,17 +2221,17 @@ importers:
         specifier: 3.3.16
         version: 3.3.16
       '@tryghost/social-urls':
-        specifier: 0.1.64
-        version: 0.1.64
+        specifier: 0.1.66
+        version: 0.1.66
       '@tryghost/string':
         specifier: 'catalog:'
-        version: 0.3.6
+        version: 0.3.8
       '@tryghost/tpl':
         specifier: 'catalog:'
         version: 2.3.16
       '@tryghost/url-utils':
         specifier: 'catalog:'
-        version: 5.4.0
+        version: 5.4.1
       '@tryghost/validator':
         specifier: 'catalog:'
         version: 3.2.17
@@ -2797,10 +2797,10 @@ importers:
         version: link:../kg-utils
       '@tryghost/string':
         specifier: 'catalog:'
-        version: 0.3.6
+        version: 0.3.8
       '@tryghost/url-utils':
         specifier: 'catalog:'
-        version: 5.4.0
+        version: 5.4.1
       handlebars:
         specifier: 4.7.10
         version: 4.7.10
@@ -2861,7 +2861,7 @@ importers:
         version: 0.13.1(lexical@0.13.1)
       '@tryghost/color-utils':
         specifier: 'catalog:'
-        version: 0.2.21
+        version: 0.2.23
       '@tryghost/kg-clean-basic-html':
         specifier: workspace:~
         version: link:../kg-clean-basic-html
@@ -3393,10 +3393,10 @@ importers:
         version: 16.3.2(@testing-library/dom@10.4.1)(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@tryghost/color-utils':
         specifier: 'catalog:'
-        version: 0.2.21
+        version: 0.2.23
       '@tryghost/helpers':
         specifier: 'catalog:'
-        version: 1.1.107
+        version: 1.1.109
       '@tryghost/kg-clean-basic-html':
         specifier: workspace:~
         version: link:../kg-clean-basic-html
@@ -8276,14 +8276,14 @@ packages:
   '@tryghost/bunyan-rotating-filestream@0.0.22':
     resolution: {integrity: sha512-bK/WAmrL7Jb5C2aVelbLYakoF4HQZY2Kxm9ZSs8uGPeWCxm0ftbfSRkWChwW2KALakVr/0To83AZg1eFBHTl4g==}
 
-  '@tryghost/color-utils@0.2.21':
-    resolution: {integrity: sha512-em9ELsVlQkndYMztMvfVavpOiDbiAm59HFePW5EGHwK8+6X+EKDLUfuTdn1d3XQX/IZAuSCXT06h9kGmUlfHsw==}
+  '@tryghost/color-utils@0.2.23':
+    resolution: {integrity: sha512-ZGccAqroYjIdMcmx6nPHCOwp4QwQYTmU5+srynfGjuo3cxak/r/2mAm2xiQDranCB9uUFB6yhjH0PTzL1x0c2A==}
 
-  '@tryghost/config-url-helpers@1.0.28':
-    resolution: {integrity: sha512-66kkD9MDyNana+2ThBoFxvsb3NLPSnrRk47Kjjl+1RlwFBX88r1TVxT7rVuT2OmGlAMtbX+7rtT6RGu3NQo+ng==}
+  '@tryghost/config-url-helpers@1.0.30':
+    resolution: {integrity: sha512-ZC/rysQAcJJj5w7VEadB77Gb4fgin17A21UL8RnpTnw7wWU4H2bVTmHdMhKW0nqi/HHcnqjNgjzUdbzLhBkvJw==}
 
-  '@tryghost/custom-fonts@1.0.12':
-    resolution: {integrity: sha512-omEMGJx4V+HkOfEJOjZ2M8SRiMwn4z8eK4bJbkPHv98NK1VUVRiu9UGOhmM2IN+4hAGw2DdOWYKtZsEDVQa0Jg==}
+  '@tryghost/custom-fonts@1.0.14':
+    resolution: {integrity: sha512-Wr+wg9XX/OfzgSDJokM6Y9hVi78Zurujw+/XwEFrmtd2ojWQrPi2Owy/yGID/hCWU7jLqnf7+0emcucEdHdEwg==}
 
   '@tryghost/database-info@2.3.16':
     resolution: {integrity: sha512-fjJJhzPU+zuLJEPHGp37AkCOYJ5nmRWgzkPZRbcNlJQETsui5+neLtxqBYHQ/Agh3Bof+RzTlLORBGOfBwocug==}
@@ -8308,11 +8308,11 @@ packages:
     peerDependencies:
       express: 4.22.3
 
-  '@tryghost/helpers@1.1.107':
-    resolution: {integrity: sha512-vKZ3ubocx9f7bSaSbPYh0Bo6/dMQYvS3ZdMepoBqf+M6ulwco20DMmTix6kXrLxtyURzWGkTWj5ZnWome3+JFw==}
+  '@tryghost/helpers@1.1.109':
+    resolution: {integrity: sha512-HIx4njpC3Jg0xD0tGhx5wqq/i50T3+aZwAnoFmBJBxwf9TeoFLH3tazZpVnkhK4GALhC4L4zDpJ6gKaa6/C0cQ==}
 
-  '@tryghost/html-to-plaintext@1.0.12':
-    resolution: {integrity: sha512-eesKdrz6F/FhIoW0rnep/EOYkoSakE4g9uuWlD/gXN/QaA4fzPq7VnRjT0Al2Ivfz7noF0v85qhMj5aPe0+Yxg==}
+  '@tryghost/html-to-plaintext@1.0.14':
+    resolution: {integrity: sha512-L6MBg2cb83EnmtabhoShy+FiSfiJ5Bdp+u3xQEgQwqsjS1Jnvj7sX99fO1XHSHaTMLle6XXq1niICgeeb0D7Xg==}
 
   '@tryghost/http-cache-utils@2.3.16':
     resolution: {integrity: sha512-XinpSbb2wrV5PbovDs5iSCUwC+uq91Op+HfjaGJsoU3dVTFyVuiTEj5vtIbaka72eMIp9Snv4rLxZHTqH6BXGQ==}
@@ -8373,8 +8373,8 @@ packages:
   '@tryghost/promise@2.3.16':
     resolution: {integrity: sha512-UyPj0YiDZm/Rbe01NTirggnS6bM22qIZ6IpfVTm9ALzyU1a6L6zqmB/zQDkQkenf4dOHnIT8cbcogLii+ISV2w==}
 
-  '@tryghost/referrer-parser@0.1.22':
-    resolution: {integrity: sha512-c0T7PQl3w3JSbYZStx8RNclmWftfdNGPlqdFXXAm6Z2ykE18nRminnCBAixmkrbcRZujyRjkAH2f480Vf6BU9Q==}
+  '@tryghost/referrer-parser@0.1.25':
+    resolution: {integrity: sha512-MCN/qTnPg0HG/CAeGNGeZz0Dd8XeY3e0WpHMnJUaVOAhSVL4Dhb0MWDQJS/p+tozGXHgtCkykHj75CmiuRoJFg==}
     engines: {node: '>=16.0.0'}
 
   '@tryghost/request@4.0.10':
@@ -8387,21 +8387,21 @@ packages:
   '@tryghost/security@3.3.16':
     resolution: {integrity: sha512-syFY/e2utsp7oYcoILKyctdfRSsW9j8eND8/LiadN7Aq2pWYTGllkBy27bQXk+54NUdC+IK957tjy/HFOKbl+A==}
 
-  '@tryghost/social-urls@0.1.64':
-    resolution: {integrity: sha512-GXBKIeV4nnrrrwaEwn/EYqRTSuLN2tCVaBPEidvAUKuBcsT0HlvPYfsg7Fs93Diq3uyYCfqNpYFxbNKVjRrG8A==}
+  '@tryghost/social-urls@0.1.66':
+    resolution: {integrity: sha512-XcnhiRkvr1nhv+bq7pS78MrrLPCtJt/CzLq1FCUWRWAV+akIo2TT3Fo2WpCb0iLM4Zy+pwoGKDaXXebVww/3AQ==}
 
-  '@tryghost/string@0.3.6':
-    resolution: {integrity: sha512-aYlvmvicb4nj3QtvkIr8JsQqKks1mphlCWJVirNMAyxzKIHY6rJC1g4FjCOlTHUCtNDhJyxxUaT6UznVndY0ZQ==}
+  '@tryghost/string@0.3.8':
+    resolution: {integrity: sha512-Q73QaW9mTgfeuL3554SnUvu9gM1ISowKb683knajTamy1zZsuk3AjDSiEiEGi9BfzjW2RxBQ4rKnlFD9S2oqLg==}
 
-  '@tryghost/timezone-data@1.0.1':
-    resolution: {integrity: sha512-ppqbSaNfziN63yIn4TyXqvpTKVJvtkG6Y4IT6BOUxpPA9pb6zSH6UNDGTFizfspEu/KJ1l8qYrTX+eCV4J4yrA==}
+  '@tryghost/timezone-data@1.0.3':
+    resolution: {integrity: sha512-d4NKR4JD5Gvm1yfA76TBDZH1fY7wUxpItyPnFzewFmLPPwsfa4sgIG2uc7NFhQJApXnNBWSLs6QaR/H/eR+ztQ==}
     engines: {node: '>=18.0.0'}
 
   '@tryghost/tpl@2.3.16':
     resolution: {integrity: sha512-b453KdCWF9gKtsVpy9as3FiATdRDkrGh3f2+C9GSTiaa51zjBBTPOV1qqEMs/VCByxtWvpHev+dNg5ECQLAOMg==}
 
-  '@tryghost/url-utils@5.4.0':
-    resolution: {integrity: sha512-XEYx0kKnm7rYo8NG82MtWlJnI/eBNsxMLYR/1Anv+j6snTJskHpQYPje8Q5iuRQA3Rtt/3seVkHZlumwmhcG7w==}
+  '@tryghost/url-utils@5.4.1':
+    resolution: {integrity: sha512-njtdXgfJt4iMawUZG6vgaqNSUL+g/pVRpFb+3ZVWCzHENDnjXnYeoz1FgGmSXWNi8hzSjjZ/dhr11Gxwy8D2og==}
 
   '@tryghost/validator@3.2.17':
     resolution: {integrity: sha512-GUki6g7XrTF+YKTgMT5Ta8Q5MxQitLgcZvHbzKNCiaKRn5C3XjusXdw4xvKnDomwY+o9ExSFqiyprPj15FMF+A==}
@@ -20218,14 +20218,14 @@ snapshots:
     dependencies:
       long-timeout: 0.1.1
 
-  '@tryghost/color-utils@0.2.21':
+  '@tryghost/color-utils@0.2.23':
     dependencies:
       '@types/color': 4.2.1
       color: 3.2.1
 
-  '@tryghost/config-url-helpers@1.0.28': {}
+  '@tryghost/config-url-helpers@1.0.30': {}
 
-  '@tryghost/custom-fonts@1.0.12': {}
+  '@tryghost/custom-fonts@1.0.14': {}
 
   '@tryghost/database-info@2.3.16': {}
 
@@ -20264,11 +20264,11 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@tryghost/helpers@1.1.107':
+  '@tryghost/helpers@1.1.109':
     dependencies:
       lodash-es: 4.18.1
 
-  '@tryghost/html-to-plaintext@1.0.12':
+  '@tryghost/html-to-plaintext@1.0.14':
     dependencies:
       html-to-text: 8.2.1
       lodash: 4.18.1
@@ -20405,7 +20405,7 @@ snapshots:
 
   '@tryghost/promise@2.3.16': {}
 
-  '@tryghost/referrer-parser@0.1.22': {}
+  '@tryghost/referrer-parser@0.1.25': {}
 
   '@tryghost/request@4.0.10':
     dependencies:
@@ -20423,20 +20423,20 @@ snapshots:
 
   '@tryghost/security@3.3.16':
     dependencies:
-      '@tryghost/string': 0.3.6
+      '@tryghost/string': 0.3.8
       bcryptjs: 3.0.3
 
-  '@tryghost/social-urls@0.1.64': {}
+  '@tryghost/social-urls@0.1.66': {}
 
-  '@tryghost/string@0.3.6':
+  '@tryghost/string@0.3.8':
     dependencies:
       unidecode: 1.1.0
 
-  '@tryghost/timezone-data@1.0.1': {}
+  '@tryghost/timezone-data@1.0.3': {}
 
   '@tryghost/tpl@2.3.16': {}
 
-  '@tryghost/url-utils@5.4.0':
+  '@tryghost/url-utils@5.4.1':
     dependencies:
       cheerio: 1.2.0
       lodash: 4.18.1
