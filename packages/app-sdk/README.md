@@ -123,6 +123,10 @@ pnpm lint    # lint source and tests
 
 It follows the [internal package golden path](../README.md) except where it ships
 to browsers: its `build` also writes `dist/`, which is in `files` and in the Nx
-build outputs, so it is marked `exempt`. `@tryghost/app-contracts` is a
-devDependency used for types only; nothing of it ends up in `build/` or
-`dist/` at runtime.
+build outputs, so it is marked `exempt`.
+
+It depends on `@tryghost/app-contracts` at runtime, for the bridge's message
+types, limits and shape checks, so the SDK and Admin read paths, themes and
+start contexts by the same rules. It imports only the contracts' root entry
+point, which loads no `zod`. `build/` imports it; `dist/` inlines what it uses,
+so the bundle imports nothing.

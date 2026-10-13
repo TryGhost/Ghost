@@ -10,6 +10,7 @@ const rootDependsOnNothing = {
     'src/manifest/id.ts',
     'src/manifest/limits.ts',
     'src/manifest/localhost.ts',
+    'src/bridge/rules.ts',
   ],
   rules: {
     'no-restricted-imports': [

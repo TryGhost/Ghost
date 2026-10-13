@@ -122,6 +122,8 @@ describe('fetch', () => {
   it.each([
     ['a URL', 'https://site.example/ghost/api/admin/posts/', {}, 'invalid_path'],
     ['a path without a leading slash', 'posts/', {}, 'invalid_path'],
+    ['a protocol-relative URL', '//evil.example/posts/', {}, 'invalid_path'],
+    ['a path with a backslash', '/\\evil.example/posts/', {}, 'invalid_path'],
     ['a path that is not text', 42 as unknown as string, {}, 'invalid_path'],
     ['an unknown method', '/posts/', { method: 'TRACE' }, 'invalid_argument'],
     ['a body on a GET', '/posts/', { body: 'x' }, 'invalid_argument'],
@@ -264,6 +266,8 @@ describe('path', () => {
 
   it.each([
     ['a path without a leading slash', 'episodes', undefined, 'invalid_path'],
+    ['a path that names another host', '//evil.example', undefined, 'invalid_path'],
+    ['a path with a backslash', '/\\evil.example', undefined, 'invalid_path'],
     ['a path that is not text', 12 as unknown as string, undefined, 'invalid_path'],
     ['options that are not an object', '/a', true as never, 'invalid_argument'],
   ])('refuses %s without asking Admin', async (_label, path, options, code) => {
@@ -288,9 +292,11 @@ describe('path', () => {
 
   it('refuses a path from Admin it does not understand', async () => {
     const { admin: fake } = await started();
-    await expect(fake.thread.imports.pathChanged('nope')).rejects.toThrow(
-      "Ghost sent a path this SDK doesn't understand",
-    );
+    for (const path of ['nope', '//evil.example']) {
+      await expect(fake.thread.imports.pathChanged(path)).rejects.toThrow(
+        "Ghost sent a path this SDK doesn't understand",
+      );
+    }
   });
 });
 

@@ -1,7 +1,6 @@
 import { z } from 'zod';
 
-/** Long enough for any real page title, short enough that Admin's own name still shows. */
-export const TITLE_MAX_LENGTH = 200;
+import { TITLE_MAX_LENGTH } from './rules.ts';
 
 /**
  * The title of the app's page, which Admin shows as its own while the page is open. It is

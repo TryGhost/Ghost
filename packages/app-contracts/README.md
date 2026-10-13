@@ -16,11 +16,11 @@ validation only: nothing here fetches, stores or renders anything.
 
 Each contract is its own entry point, so a consumer only loads the one it uses.
 
-| Entry point                        | What it holds                                                      |
-| ---------------------------------- | ------------------------------------------------------------------ |
-| `@tryghost/app-contracts`          | Types, and rules and limits that depend on nothing (`isLocalhost`) |
-| `@tryghost/app-contracts/manifest` | The app manifest and its validation                                |
-| `@tryghost/app-contracts/bridge`   | The channel between Admin and an app's page, and its validation    |
+| Entry point                        | What it holds                                                                         |
+| ---------------------------------- | ------------------------------------------------------------------------------------- |
+| `@tryghost/app-contracts`          | Types, and rules and limits that depend on nothing (`isLocalhost`, `isContainedPath`) |
+| `@tryghost/app-contracts/manifest` | The app manifest and its validation                                                   |
+| `@tryghost/app-contracts/bridge`   | The channel between Admin and an app's page, and its validation                       |
 
 The root entry point must stay free of `zod`: some consumers ship to browsers
 that never validate anything. A lint rule enforces it.
@@ -163,6 +163,15 @@ what an app may ask of Admin (`fetch`, `titleChanged`, `pathChanged`, `open`),
 The frame is untrusted, so Admin parses every argument with the schemas here
 (`FetchRequestSchema`, `AppPathSchema`, `TitleSchema`, `PlaceSchema`, …) before
 acting. Nothing is versioned: Admin only adds calls and optional fields.
+
+The bridge's rules that depend on nothing live in `src/bridge/rules.ts` and are
+exported from the root entry point as well: the message types, `TITLE_MAX_LENGTH`,
+`FETCH_METHODS`, the statuses a fetch answer may have, `isContainedPath`, and
+guards for what Admin sends the page (`isTheme`, `isStartContext`,
+`isConnectMessage`, `isFetchResponse`). The SDK checks Admin's messages with
+them, without zod, and the schemas build on the same constants, so both sides
+read a path, a theme or a start context the same way. A test holds each guard
+and its schema to the same answers.
 
 `fetch` takes an Admin API path, never a URL. Admin resolves it with
 `resolveAdminApiPath(path, apiRoot)`, which returns `null` for anything that

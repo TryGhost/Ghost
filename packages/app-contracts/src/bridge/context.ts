@@ -1,18 +1,19 @@
 import { z } from 'zod';
 
 import { AppPathSchema } from './paths.ts';
+import { THEME_MODES } from './rules.ts';
 
 /**
  * What Admin tells an app's page when the session starts, and again when it changes.
  *
- * Admin is trusted, so the SDK checks only that the shapes are what it expects. Unknown fields
- * are dropped rather than refused, so a field a newer Admin adds does not stop an older SDK
+ * Admin is trusted, so the SDK checks only that the shapes are what it expects, with
+ * `isStartContext` and `isTheme`. Unknown fields are dropped rather than refused, so a field a newer Admin adds does not stop an older SDK
  * from starting.
  */
 
 /** The theme Admin is showing, so the page can match it. `mode` is resolved, never `system`. */
 export const ThemeSchema = z.object({
-  mode: z.enum(['light', 'dark']),
+  mode: z.enum(THEME_MODES),
   accent_color: z.string(),
 });
 

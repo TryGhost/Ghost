@@ -1,4 +1,4 @@
-import { TITLE_MAX_LENGTH } from './protocol.ts';
+import { TITLE_MAX_LENGTH } from '@tryghost/app-contracts';
 
 /** Trims a title to what Admin accepts, without splitting a character in two. */
 export function clampTitle(title: string): string {

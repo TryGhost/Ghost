@@ -8,6 +8,9 @@
  *
  * It also holds the rules Admin applies to the fetch escape hatch, `resolveAdminApiPath` and
  * `isBlockedAdminApiPath`, so what an app may reach is written down in one place.
+ *
+ * The rules that depend on nothing, the message types, limits and shape guards in `rules.ts`,
+ * are exported from the root entry point too, for the SDK to use without zod.
  */
 
 export {
@@ -19,18 +22,14 @@ export { StartContextSchema, ThemeSchema, type StartContext, type Theme } from '
 export type { AppExports, HostExports } from './exports.ts';
 export {
   FETCH_BODY_MAX_BYTES,
-  FETCH_METHODS,
   FETCH_PATH_MAX_LENGTH,
   FetchRequestSchema,
   FetchResponseSchema,
-  type FetchMethod,
   type FetchRequest,
   type FetchResponse,
 } from './fetch.ts';
 export {
-  CONNECT_MESSAGE_TYPE,
   ConnectMessageSchema,
-  HELLO_MESSAGE_TYPE,
   HelloMessageSchema,
   type ConnectMessage,
   type HelloMessage,
@@ -44,4 +43,19 @@ export {
 } from './paths.ts';
 export { PlaceSchema, type Place } from './places.ts';
 export { resolveAdminApiPath } from './resolve.ts';
-export { TITLE_MAX_LENGTH, TitleSchema } from './title.ts';
+export {
+  CONNECT_MESSAGE_TYPE,
+  FETCH_METHODS,
+  FETCH_RESPONSE_STATUS_MAX,
+  FETCH_RESPONSE_STATUS_MIN,
+  HELLO_MESSAGE_TYPE,
+  TITLE_MAX_LENGTH,
+  isConnectMessage,
+  isContainedPath,
+  isFetchResponse,
+  isRecord,
+  isStartContext,
+  isTheme,
+  type FetchMethod,
+} from './rules.ts';
+export { TitleSchema } from './title.ts';

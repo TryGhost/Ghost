@@ -14,6 +14,8 @@ describe('the bridge entry point', () => {
       'FETCH_BODY_MAX_BYTES',
       'FETCH_METHODS',
       'FETCH_PATH_MAX_LENGTH',
+      'FETCH_RESPONSE_STATUS_MAX',
+      'FETCH_RESPONSE_STATUS_MIN',
       'FetchRequestSchema',
       'FetchResponseSchema',
       'HELLO_MESSAGE_TYPE',
@@ -25,6 +27,12 @@ describe('the bridge entry point', () => {
       'ThemeSchema',
       'TitleSchema',
       'isBlockedAdminApiPath',
+      'isConnectMessage',
+      'isContainedPath',
+      'isFetchResponse',
+      'isRecord',
+      'isStartContext',
+      'isTheme',
       'resolveAdminApiPath',
     ]);
   });

@@ -1,7 +1,13 @@
-import type { FetchMethod, FetchRequest, FetchResponse } from '@tryghost/app-contracts/bridge';
+import {
+  FETCH_METHODS,
+  isContainedPath,
+  isFetchResponse,
+  isRecord,
+  type FetchMethod,
+  type FetchRequest,
+} from '@tryghost/app-contracts';
 
 import { GhostAppError, invalidArgument, invalidPath } from './errors.ts';
-import { FETCH_METHODS, isRecord } from './protocol.ts';
 import type { GhostFetchInit, JsonBody } from './types.ts';
 
 // The statuses a `Response` must be built without a body for, or its constructor throws.
@@ -33,10 +39,10 @@ function toHeaders(init: HeadersInit | undefined): Record<string, string> {
 
 /**
  * Turns `fetch(path, init)` into the plain request Admin takes. Only what is plainly wrong is
- * refused here, with the same rules `fetch` itself applies; Admin checks everything again.
+ * refused here, with the same rules Admin applies; Admin checks everything again.
  */
 export function toFetchRequest(path: string, init: GhostFetchInit = {}): FetchRequest {
-  if (typeof path !== 'string' || !path.startsWith('/')) {
+  if (!isContainedPath(path)) {
     throw invalidPath('Expected an Admin API path such as /posts/, not a URL');
   }
 
@@ -67,18 +73,6 @@ export function toFetchRequest(path: string, init: GhostFetchInit = {}): FetchRe
     request.headers = headers;
   }
   return request;
-}
-
-function isFetchResponse(value: unknown): value is FetchResponse {
-  return (
-    isRecord(value) &&
-    Number.isInteger(value.status) &&
-    (value.status as number) >= 200 &&
-    (value.status as number) <= 599 &&
-    typeof value.statusText === 'string' &&
-    isRecord(value.headers) &&
-    typeof value.body === 'string'
-  );
 }
 
 /** Rebuilds Admin's answer as the `Response` the app would have had from `fetch`. */

@@ -1,4 +1,4 @@
-import type { PathChangeOptions, Place, StartContext, Theme } from '@tryghost/app-contracts/bridge';
+import type { PathChangeOptions, Place, StartContext, Theme } from '@tryghost/app-contracts';
 
 import type { GhostAppError } from './errors.ts';
 

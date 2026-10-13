@@ -1,5 +1,5 @@
 import { FETCH_PATH_MAX_LENGTH } from './fetch.ts';
-import { isContainedPath } from './paths.ts';
+import { isContainedPath } from './rules.ts';
 
 // A separator written as an escape is one segment to the URL parser and possibly two to
 // whatever decodes it next.

@@ -35,13 +35,13 @@
     "lint": "pnpm run '/^lint:/'"
   },
   "dependencies": {
-    "@quilted/threads": "catalog:"
+    "@quilted/threads": "catalog:",
+    "@tryghost/app-contracts": "workspace:*"
   },
   "devDependencies": {
     "@internal/cfg-eslint": "workspace:*",
     "@internal/cfg-typescript": "workspace:*",
     "@internal/cfg-vitest": "workspace:*",
-    "@tryghost/app-contracts": "workspace:*",
     "@types/node": "catalog:",
     "@typescript/native": "catalog:",
     "@vitest/coverage-v8": "catalog:",

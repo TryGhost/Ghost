@@ -1,5 +1,7 @@
 import { z } from 'zod';
 
+import { CONNECT_MESSAGE_TYPE, HELLO_MESSAGE_TYPE } from './rules.ts';
+
 /**
  * The two window messages that set up the channel. Everything after them travels over the
  * `MessagePort` the connect message hands over, so these are the only messages either side
@@ -8,12 +10,6 @@ import { z } from 'zod';
  * Neither carries a protocol version. The hello names the SDK's own version for diagnostics
  * only, and nothing gates on it: Admin only ever adds exports and optional fields.
  */
-
-/** Posted by the app's page to `window.parent` once the SDK has loaded. */
-export const HELLO_MESSAGE_TYPE = 'ghost-app:hello';
-
-/** Posted by Admin to the frame that said hello, with the channel's port attached. */
-export const CONNECT_MESSAGE_TYPE = 'ghost-app:connect';
 
 const SDK_VERSION_MAX_LENGTH = 100;
 

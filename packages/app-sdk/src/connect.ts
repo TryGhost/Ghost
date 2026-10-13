@@ -1,5 +1,6 @@
+import { HELLO_MESSAGE_TYPE, isConnectMessage } from '@tryghost/app-contracts';
+
 import { GhostAppError, invalidArgument } from './errors.ts';
-import { HELLO_MESSAGE_TYPE, isConnectMessage } from './protocol.ts';
 import { Channel } from './session.ts';
 import type { ConnectOptions, Ghost } from './types.ts';
 import { SDK_VERSION } from './version.ts';

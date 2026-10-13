@@ -1,6 +1,11 @@
 import { z } from 'zod';
 
-import { isContainedPath } from './paths.ts';
+import {
+  FETCH_METHODS,
+  FETCH_RESPONSE_STATUS_MAX,
+  FETCH_RESPONSE_STATUS_MIN,
+  isContainedPath,
+} from './rules.ts';
 
 /** As long as an app's own path, which an Admin API path with its query easily fits. */
 export const FETCH_PATH_MAX_LENGTH = 2048;
@@ -10,9 +15,6 @@ export const FETCH_BODY_MAX_BYTES = 1024 * 1024;
 
 const FETCH_HEADERS_MAX_COUNT = 50;
 const FETCH_HEADER_VALUE_MAX_LENGTH = 8192;
-
-/** The methods the Admin API answers. Written in uppercase; the SDK normalises what apps pass. */
-export const FETCH_METHODS = ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'HEAD'] as const;
 
 // A header name is an HTTP token. Anything else would make the browser's fetch throw, so it is
 // refused here with a message rather than there with a TypeError.
@@ -90,15 +92,12 @@ export const FetchRequestSchema = z
 
 export type FetchRequest = z.infer<typeof FetchRequestSchema>;
 
-export type FetchMethod = (typeof FETCH_METHODS)[number];
-
 /**
- * The Admin API's answer, as plain data so it can cross the channel. The SDK turns it back
- * into a `Response`, which only accepts statuses from 200 to 599; fetch never hands script an
- * informational one.
+ * The Admin API's answer, as plain data so it can cross the channel, with a status the SDK
+ * can build a `Response` from.
  */
 export const FetchResponseSchema = z.object({
-  status: z.int().min(200).max(599),
+  status: z.int().min(FETCH_RESPONSE_STATUS_MIN).max(FETCH_RESPONSE_STATUS_MAX),
   statusText: z.string(),
   headers: z.record(z.string(), z.string()),
   body: z.string(),

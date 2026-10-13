@@ -1,12 +1,16 @@
 import { ThreadMessagePort } from '@quilted/threads';
-import type {
-  AppExports,
-  HostExports,
-  PathChangeOptions,
-  Place,
-  StartContext,
-  Theme,
-} from '@tryghost/app-contracts/bridge';
+import {
+  isContainedPath,
+  isRecord,
+  isStartContext,
+  isTheme,
+  type AppExports,
+  type HostExports,
+  type PathChangeOptions,
+  type Place,
+  type StartContext,
+  type Theme,
+} from '@tryghost/app-contracts';
 
 import {
   GhostAppError,
@@ -16,7 +20,6 @@ import {
   sessionEnded,
 } from './errors.ts';
 import { toFetchRequest, toResponse } from './fetch.ts';
-import { isPath, isRecord, isStartContext, isTheme } from './protocol.ts';
 import { watchTitle } from './title.ts';
 import type {
   Ghost,
@@ -134,7 +137,7 @@ export class Channel implements Ghost {
 
   #pathChanged(path: unknown) {
     this.#assertStarted();
-    if (!isPath(path)) {
+    if (!isContainedPath(path)) {
       throw invalidArgument("Ghost sent a path this SDK doesn't understand");
     }
     this.#path = path;
@@ -218,8 +221,8 @@ export class Channel implements Ghost {
         return current();
       },
       set: async (path: string, options?: PathChangeOptions): Promise<void> => {
-        if (!isPath(path)) {
-          throw invalidPath('Expected a path within the app, starting with /');
+        if (!isContainedPath(path)) {
+          throw invalidPath('Expected a path within the app, starting with a single /');
         }
         if (options !== undefined && !isRecord(options)) {
           throw invalidArgument('Expected options such as { replace: true }');

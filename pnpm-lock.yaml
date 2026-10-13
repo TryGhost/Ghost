@@ -3955,6 +3955,9 @@ importers:
       '@quilted/threads':
         specifier: 'catalog:'
         version: 4.1.0(@preact/signals-core@1.14.4)
+      '@tryghost/app-contracts':
+        specifier: workspace:*
+        version: link:../app-contracts
     devDependencies:
       '@internal/cfg-eslint':
         specifier: workspace:*
@@ -3965,9 +3968,6 @@ importers:
       '@internal/cfg-vitest':
         specifier: workspace:*
         version: link:../../tools/configs/vitest
-      '@tryghost/app-contracts':
-        specifier: workspace:*
-        version: link:../app-contracts
       '@types/node':
         specifier: 'catalog:'
         version: 22.20.1
