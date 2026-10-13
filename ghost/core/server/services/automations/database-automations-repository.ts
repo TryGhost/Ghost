@@ -46,6 +46,7 @@ import { getStaleLockCutoff } from './stale-lock-cutoff';
 import { limitService } from '../limits';
 import { lockAutomationLimit } from './automation-limit';
 import type { ExclusifyUnion, ReadonlyDeep } from 'type-fest';
+import { createDatabaseAutomationsRepository2 } from './database-automations-repository-2';
 
 // Keep within api_automation_run_search's complete-match run_ids limit.
 const MEMBER_SEARCH_PROBE_LIMIT = 2000;
@@ -258,6 +259,11 @@ export function createDatabaseAutomationsRepository({
   knex: Knex;
   fakeWaitHoursMultiplier: number | null;
 }): AutomationsRepository {
+  // NOTE: We are transitioning to this new API. This will be removed soon. See NY-1704.
+  const repository2 = createDatabaseAutomationsRepository2({
+    knex,
+  });
+
   return {
     async browse({ includeStats }: BrowseOptions): Promise<Page<AutomationBrowseResult>> {
       await knex.transaction(async (trx) => {
@@ -278,8 +284,9 @@ export function createDatabaseAutomationsRepository({
     },
 
     async getNumberOfAutomations() {
-      const result = await knex('automations').count({ count: '*' }).first();
-      return Number(result?.count ?? 0);
+      return await repository2.withConnection((connection) =>
+        repository2.getNumberOfAutomations(connection),
+      );
     },
 
     async exists(id) {
