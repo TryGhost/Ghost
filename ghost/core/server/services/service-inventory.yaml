@@ -1637,7 +1637,9 @@ services:
           mapping, recipient and run metadata; it is a job definition, not another root.
           Units assert the pre-init handler/drain path and injected job serialization. A
           separately imported root in HTTP tests checks pre-init import, two successful init
-          calls, schema errors and asynchronous unreadable-file rejection, not root identity.
+          calls, schema errors and asynchronous unreadable-file rejection. Root units also
+          assert pre-init request/job errors, harmless pre-init draining, validation before
+          forwarding and retained request/job/drain receivers.
         sources:
           - core/server/services/content-import/index.ts
           - core/server/services/content-import/import/schema.ts
@@ -1655,8 +1657,10 @@ services:
           PostMediaInliner/cache for that job. Dispatch resolves the current jobs instance;
           staging and removal each resolve the imports storage adapter. Class tests assert
           per-run converter/media construction and injected model transaction arguments;
-          filesystem tests exercise the stager with LocalStorageBase. No test pins real root
-          construction count, dependency retention or cleanup after acquisition failure.
+          filesystem tests exercise the stager with LocalStorageBase. Root units now pin one
+          importer across repeated init, no publication after failed mailer construction and
+          successful retry. Late jobs/media/storage lookups use controlled adapters with a
+          real CSV and importer. Partial resource-acquisition cleanup remains source-only.
         sources:
           - core/server/services/content-import/index.ts
           - core/server/services/content-import/import/importer.ts
@@ -1668,6 +1672,7 @@ services:
           - test/unit/server/services/content-import/import/importer.test.ts
           - test/unit/server/services/content-import/import/post-repository.test.ts
           - test/unit/server/services/content-import/import/staged-file.test.ts
+          - test/unit/server/services/content-import/index.test.ts
       consumers:
         summary: >-
           Boot owns init. The Admin posts upload endpoint retains the root, forwards upload
@@ -1691,6 +1696,7 @@ services:
           - test/e2e-api/admin/posts-importer.test.js
           - test/e2e-webhooks/posts-importer.test.ts
           - test/unit/server/services/jobs-service/register-job-handlers.test.ts
+          - test/unit/server/services/content-import/index.test.ts
       startup:
         summary: >-
           Boot invokes synchronous init in required services after DB setup and the call to
@@ -1700,8 +1706,9 @@ services:
           no caller email exists, readable local staging and settings for batch tags; jobs
           additionally need converters, models/storage and optional URL lookup. Real HTTP
           tests establish selected normal boot-to-job outcomes, while root/handler units
-          establish early errors. Explicit construction-order, held readiness, failed-init
-          retry and same-process boot contracts have no focused tests.
+          establish early errors. Root units additionally assert late dependency acquisition
+          and failed-construction retry; held boot readiness and same-process boot contracts
+          remain outside their coverage.
         sources:
           - core/boot.js
           - core/server/services/content-import/index.ts
@@ -1720,8 +1727,9 @@ services:
           runs. Media promises, including failed results, are cached by exact URL within one
           job, not across jobs. Store units assert retention/eviction and two-run release
           waiting; media units hold an import to prove sharing, and assert separate-instance
-          isolation. Root retention, duplicate/concurrent job handling and late admissions
-          during shutdown are source-only. The importer drain test awaits handle before
+          isolation. Root units retain the same request/job/drain receiver and complete a
+          queued run after repeated init. Duplicate/concurrent job handling and late admissions
+          during shutdown remain source-only. The importer drain test awaits handle before
           checking settlement, so it cannot establish the final cleanup boundary.
         sources:
           - core/server/services/content-import/index.ts
@@ -1732,6 +1740,7 @@ services:
           - test/unit/server/services/content-import/import/store.test.ts
           - test/unit/server/services/content-import/import/media.test.ts
           - test/unit/server/services/content-import/import/importer.test.ts
+          - test/unit/server/services/content-import/index.test.ts
       configuration:
         summary: >-
           Each request captures recipient, timezone-derived batch tags and mapping into its
@@ -1813,12 +1822,14 @@ services:
           - test/unit/server/services/content-import/import/importer.test.ts
           - test/unit/server/services/content-import/import/post-repository.test.ts
           - test/e2e-api/admin/posts-importer.test.js
+          - test/unit/server/services/content-import/index.test.ts
     unverified: []
     blockers:
       - >-
-        Before changing composition, pin real init identity, failed acquisition/retry,
-        retained mail/model collaborators versus late jobs/media/storage resolution, and
-        normal boot availability. Calling init twice without asserting identity is insufficient.
+        Root units now pin retained importer identity, failed construction/retry and late
+        jobs/media/storage resolution; HTTP tests cover normal boot availability. Keep those
+        contracts when changing composition. Retention across actual same-process boot and
+        partially acquired resource cleanup still need separate characterization.
       - >-
         Characterize the release-before-staged-deletion drain boundary with a held cleanup,
         then define root/job ownership for admission, cancellation, mail and filesystem drain.
@@ -1832,8 +1843,9 @@ services:
         persistence and second timestamp-write rollback if these paths change. Existing real
         relation rollback and sequential duplicate tests do not establish those contracts.
       - >-
-        Add focused retained-root settings/config and real dispatch-await coverage before
-        changing those boundaries. Broader import policy, validation and pre-existing storage
+        Add focused retained-root settings/config coverage before changing those boundaries.
+        Root units now hold dispatch to prove request acceptance waits, then process the
+        dispatched job through the real retained importer. Broader import policy, validation and pre-existing storage
         gaps belong to this service's later work and do not gate the eight-service pilot.
   custom-redirects:
     kind: directory
@@ -5223,7 +5235,10 @@ services:
       Move eager composition to boot while preserving invitation persistence, rendering and
       mail behavior. API-mail delegation and its transport ownership need a separate decision.
       Acceptance is an invocation-local domain action kept under this owner; do not add a
-      lifecycle or change the sending instance as part of its relocation.
+      lifecycle or change the sending instance as part of its relocation. Root units now use
+      the real composition with controlled models/rendering/API mail to assert payloads, live
+      settings, sequential resend, held mail delivery and step failures; these are not real
+      persistence rollback or provider-delivery tests.
     contracts:
       exports:
         summary: >-
@@ -5242,7 +5257,8 @@ services:
           - core/server/services/invites/invites.js
           - core/server/services/invites/accept.js
           - core/server/api/endpoints/utils/serializers/output/authentication.js
-        tests: []
+        tests:
+          - test/unit/server/services/invites/index.test.ts
       construction:
         summary: >-
           The root is the only production constructor found. Import creates Invites with
@@ -5253,7 +5269,9 @@ services:
           invitation token, opens a transaction, locks a sent invite, checks expiry and existing
           user, deletes the invite and creates the user in that order. Email and role come from
           the stored invite; name and password come from the request. No invocation state is
-          retained. Unit tests stub the transaction and selected model operations.
+          retained. Root units assert that import renders and sends nothing, and drive add
+          through its actual collaborators. Acceptance units separately stub the
+          transaction and selected model operations.
         sources:
           - core/server/services/invites/index.js
           - core/server/services/invites/invites.js
@@ -5264,6 +5282,7 @@ services:
           - core/server/models/user.js
         tests:
           - test/unit/server/services/invites/accept.test.js
+          - test/unit/server/services/invites/index.test.ts
       consumers:
         summary: >-
           The invites endpoint retains the root
@@ -5271,6 +5290,8 @@ services:
           rejects an existing user and model permissions enforce role and staff limits.
           HTTP tests cover staff and integration-key invitation flows through real composition,
           stubbing GhostMailer.send; they assert send invocation, not rendered message contents.
+          Root units separately assert staff/integration template data and the exact API-mail
+          payload, with controlled model and rendering collaborators.
           The authentication endpoint calls accept.js after input validation and setup checks.
           Its GET invitation lookup queries models directly. Acceptance units import the
           function; legacy HTTP cases exercise it through the real endpoint, asserting
@@ -5288,6 +5309,7 @@ services:
           - test/unit/server/models/invite.test.js
           - test/unit/server/services/invites/accept.test.js
           - test/legacy/api/admin/authentication.test.js
+          - test/unit/server/services/invites/index.test.ts
       startup:
         summary: >-
           The instance is available at import with no explicit boot initialization. Calls
@@ -5328,6 +5350,7 @@ services:
           - core/server/services/invites/accept.js
         tests:
           - test/e2e-api/admin/invites.test.js
+          - test/unit/server/services/invites/index.test.ts
       configuration:
         summary: >-
           add reads current title, admin URL and default email domain. Inviter name/email
@@ -5349,7 +5372,8 @@ services:
           - core/server/services/invites/accept.js
           - core/server/models/user.js
           - core/server/data/db/index.js
-        tests: []
+        tests:
+          - test/unit/server/services/invites/index.test.ts
       resources:
         summary: >-
           The root borrows models, template filesystem work and API-mail sending. It awaits
@@ -5375,6 +5399,7 @@ services:
           - core/server/models/base/plugins/events.js
         tests:
           - test/unit/server/services/invites/accept.test.js
+          - test/unit/server/services/invites/index.test.ts
       failures:
         summary: >-
           Model, rendering and mail failures reject add. EmailError gets a resend-help suffix
@@ -5398,6 +5423,7 @@ services:
           - core/server/api/endpoints/utils/validators/input/invitations.js
         tests:
           - test/legacy/api/admin/authentication.test.js
+          - test/unit/server/services/invites/index.test.ts
     unverified: []
     blockers:
       - >-
@@ -5407,8 +5433,9 @@ services:
         Define concurrency/retry expectations before changing ownership.
       - >-
         Assert mail recipient, subject, reply-to, HTML/text and signup URL through the real
-        consumer for staff and integration invites. Existing send stubs do not test payloads
-        or provider delivery; add live settings and retained-instance contracts.
+        HTTP consumer for staff and integration invites. Root units now pin both payloads and
+        live settings read through the same imported instance across calls, with controlled
+        models/rendering/API mail; they do not establish real provider delivery.
       - >-
         Resolve API-mail orchestration and transport ownership without moving business logic
         into HTTP. Preserve role/limit checks and successful behavior while introducing boot
