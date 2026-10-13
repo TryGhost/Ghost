@@ -1,18 +1,36 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Button, EmptyIndicator, LoadingIndicator } from '@tryghost/shade/components';
 import { Stack, Text } from '@tryghost/shade/primitives';
 import { LucideIcon, cn } from '@tryghost/shade/utils';
-import { Link, useNavigate, useParams } from '@tryghost/admin-x-framework';
+import type { StartContext, Theme } from '@tryghost/app-contracts/bridge';
+import {
+  Link,
+  useFramework,
+  useLocation,
+  useNavigate,
+  useParams,
+} from '@tryghost/admin-x-framework';
 import {
   type AppInstallation,
+  type AppSession,
   useReadAppInstallation,
+  useStartAppSession,
 } from '@tryghost/admin-x-framework/api/app-installations';
-import { useBrowseSite } from '@tryghost/admin-x-framework/api/site';
+import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
+import { getSettingValue, useBrowseSettings } from '@tryghost/admin-x-framework/api/settings';
+import { type SiteData, useBrowseSite } from '@tryghost/admin-x-framework/api/site';
+import { apiUrl } from '@tryghost/admin-x-framework/helpers';
+import { getSiteTimezone } from '@tryghost/admin-x-framework/utils/get-site-timezone';
+import { useThemeContext } from '@/providers/theme-context';
 import { AppsGate } from './components/apps-gate';
+import { InstallDialog } from './components/install-dialog/install-dialog';
+import { appPathFromLocation, appPathRoute, normaliseAppPath } from './lib/app-path';
+import { createAdminApiFetch } from './lib/bridge-fetch';
+import { type AppFrameHost, bindAppFrame } from './lib/bridge-host';
+import { placeRoute } from './lib/bridge-places';
 import { APP_FRAME_ALLOW, APP_FRAME_SANDBOX, appFrameTimeouts, isGhostOrigin } from './lib/frame';
 import { isInstallationNotFound } from './lib/not-found';
 import { reportAppsError } from './lib/report-error';
-import { appReviewRoute } from './lib/routes';
 import { appPageUrl, servedFrom } from './lib/served-from';
 
 type FrameStatus = 'loading' | 'ready' | 'failed';
@@ -55,63 +73,199 @@ const NotResponding: React.FC<{
 );
 
 /**
- * The app's page, loaded from its own URL in a sandboxed frame. Ready means the frame has
- * loaded and the app answered a probe. A page that can't be reached, or doesn't load in
- * time, gets the not-responding state, and the rest of Admin stays usable either way.
- *
- * TODO(BER-3983): the load event, the probe and `reached` stand in for the bridge's
- * handshake, which says when the app itself is ready and times out when it never is.
- * Replace them when the bridge lands; the not-responding state, the timeout and the retry
- * stay. Don't build on the probe.
+ * Shows the app's page title as Admin's own while the page is open, and puts Admin's
+ * back when it closes.
  */
-const AppFrame: React.FC<{ installation: AppInstallation }> = ({ installation }) => {
-  const [attempt, setAttempt] = useState(0);
-  const [loaded, setLoaded] = useState(false);
-  const [reached, setReached] = useState(false);
-  const [failed, setFailed] = useState(false);
-  const [startedAt, setStartedAt] = useState(() => new Date());
-  const url = appPageUrl(installation.manifest);
-  // Ready once the frame has loaded and the app is known to have answered.
-  const ready = loaded && reached;
-  const status: FrameStatus = failed ? 'failed' : ready ? 'ready' : 'loading';
-
-  // While the page is awaited: a clock, and a probe. Both stop the moment it's ready, so
-  // nothing can call the page unresponsive after that.
+function useAppTitle(appName: string, title: string | undefined) {
   useEffect(() => {
-    if (ready) {
+    if (title === undefined) {
       return;
     }
-    const timer = window.setTimeout(() => setFailed(true), appFrameTimeouts.ready);
-    // The frame's load event fires for the browser's own error page too, so it can't say
-    // whether the app answered. This request can: a server that can't be reached rejects
-    // it, while any answer at all, even a 405 to HEAD, resolves it opaque.
-    const probe = new AbortController();
-    // eslint-disable-next-line no-restricted-syntax -- the app's own page, not Ghost's API
-    fetch(url, {
-      method: 'HEAD',
-      mode: 'no-cors',
-      credentials: 'omit',
-      cache: 'no-store',
-      referrerPolicy: 'strict-origin-when-cross-origin',
-      signal: probe.signal,
-    }).then(
-      () => setReached(true),
+    const previous = document.title;
+    document.title = title ? `${title} · ${appName}` : appName;
+    return () => {
+      document.title = previous;
+    };
+  }, [appName, title]);
+}
+
+const sameTheme = (a: Theme | undefined, b: Theme) =>
+  a?.mode === b.mode && a.accent_color === b.accent_color;
+
+/**
+ * Ends the session when the installation moves on from the revision it was started
+ * against, as reading it again shows: the app is then running something nobody approved,
+ * or nothing at all. Only a read made during this session counts.
+ *
+ * This only sees changes this tab reads. Changes made in another tab, or by another staff
+ * user, are deferred to the app token in Permissions and auth.
+ */
+function useSessionEnd(session: AppSession, onEnded: () => void) {
+  const [since] = useState(() => Date.now());
+  const { data, dataUpdatedAt, isFetching } = useReadAppInstallation(session.installation.id, {
+    defaultErrorHandler: false,
+    // Without the history the details page shows; this one has no use for it.
+    searchParams: {},
+    // Coming back to the tab is when a change made meanwhile shows up.
+    refetchOnWindowFocus: 'always',
+  });
+  const revision = data?.app_installations[0]?.revision;
+  useEffect(() => {
+    if (
+      !isFetching &&
+      dataUpdatedAt >= since &&
+      revision !== undefined &&
+      revision !== session.revision
+    ) {
+      onEnded();
+    }
+  }, [dataUpdatedAt, isFetching, onEnded, revision, session.revision, since]);
+}
+
+/**
+ * The app's page, loaded from its own URL in a sandboxed frame and bound to Admin by the
+ * bridge. The frame stays hidden until the app has started, which is what ready means; a
+ * page that never says hello, or doesn't start in time, gets the not-responding state,
+ * and the rest of Admin stays usable either way.
+ */
+const AppFrame: React.FC<{
+  session: AppSession;
+  site: SiteData;
+  timezone: string;
+  accentColor: string;
+  onEnded: () => void;
+}> = ({ session, site, timezone, accentColor, onEnded }) => {
+  const { installation } = session;
+  useSessionEnd(session, onEnded);
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { ghostVersion } = useFramework();
+  const { data: user } = useCurrentUser();
+  const { resolvedTheme } = useThemeContext();
+  const [attempt, setAttempt] = useState(0);
+  const [status, setStatus] = useState<FrameStatus>('loading');
+  const [startedAt, setStartedAt] = useState(() => new Date());
+  const [title, setTitle] = useState<string>();
+  const frameRef = useRef<HTMLIFrameElement>(null);
+  const hostRef = useRef<AppFrameHost | null>(null);
+  const url = appPageUrl(installation.manifest);
+  const surfaceOrigin = new URL(url).origin;
+  const { id, manifest } = installation;
+
+  useAppTitle(manifest.name, title);
+
+  const path = appPathFromLocation(id, location);
+  const theme = useMemo<Theme>(
+    () => ({ mode: resolvedTheme, accent_color: accentColor }),
+    [resolvedTheme, accentColor],
+  );
+
+  // What the app was last told, or told Admin, so a change is passed on once and never
+  // echoed back to where it came from.
+  const appPath = useRef<string>();
+  const appTheme = useRef<Theme>();
+
+  const context: StartContext = {
+    site: { url: site.url, title: site.title, timezone, locale: site.locale },
+    user: { id: user?.id ?? '', role: user?.roles[0]?.name ?? '' },
+    theme,
+    session: { revision: session.revision },
+    path,
+  };
+  // Read when the page connects, so it starts with Admin as it is then.
+  const contextRef = useRef(context);
+  contextRef.current = context;
+  const pathRef = useRef(path);
+  pathRef.current = path;
+  // The session outlives navigations, so it mustn't depend on a navigate that may not.
+  const navigateRef = useRef(navigate);
+  navigateRef.current = navigate;
+
+  const adminApiFetch = useMemo(
+    () => createAdminApiFetch({ apiRoot: new URL(apiUrl('/')), ghostVersion }),
+    [ghostVersion],
+  );
+
+  useEffect(() => {
+    const frame = frameRef.current;
+    if (!frame) {
+      return;
+    }
+    let current = true;
+    const host = bindAppFrame({
+      frame,
+      surfaceOrigin,
+      context: () => {
+        appPath.current = contextRef.current.path;
+        appTheme.current = contextRef.current.theme;
+        return contextRef.current;
+      },
+      fetchAdminApi: adminApiFetch,
+      handlers: {
+        titleChanged: (next) => setTitle(next),
+        pathChanged: (next, { replace }) => {
+          const normalised = normaliseAppPath(next);
+          appPath.current = normalised;
+          if (normalised !== pathRef.current) {
+            navigateRef.current(appPathRoute(id, normalised), { replace });
+          }
+        },
+        open: (place) => navigateRef.current(placeRoute(place)),
+      },
+    });
+    hostRef.current = host;
+
+    const fail = () => {
+      if (current) {
+        host.dispose();
+        setTitle(undefined);
+        setStatus('failed');
+      }
+    };
+    // The clock runs from the frame's mount, and stops the moment the app has started, so
+    // nothing can call a started app unresponsive.
+    const timer = window.setTimeout(fail, appFrameTimeouts.ready);
+    host.ready.then(
       () => {
-        if (!probe.signal.aborted) {
-          setFailed(true);
+        window.clearTimeout(timer);
+        if (current) {
+          setStatus('ready');
         }
       },
+      () => {
+        window.clearTimeout(timer);
+        fail();
+      },
     );
+
     return () => {
+      current = false;
       window.clearTimeout(timer);
-      probe.abort();
+      host.dispose();
+      hostRef.current = null;
     };
-  }, [attempt, url, ready]);
+  }, [adminApiFetch, attempt, id, surfaceOrigin]);
+
+  // Back, forward or a link moved Admin within the app: the app follows, without reloading.
+  useEffect(() => {
+    const host = hostRef.current;
+    if (host?.connected && appPath.current !== path) {
+      appPath.current = path;
+      host.pathChanged(path);
+    }
+  }, [path]);
+
+  useEffect(() => {
+    const host = hostRef.current;
+    if (host?.connected && !sameTheme(appTheme.current, theme)) {
+      appTheme.current = theme;
+      host.themeChanged(theme);
+    }
+  }, [theme]);
 
   const retry = () => {
-    setFailed(false);
-    setLoaded(false);
-    setReached(false);
+    setStatus('loading');
+    setTitle(undefined);
     setStartedAt(new Date());
     setAttempt((value) => value + 1);
   };
@@ -129,6 +283,7 @@ const AppFrame: React.FC<{ installation: AppInstallation }> = ({ installation })
       )}
       <iframe
         key={attempt}
+        ref={frameRef}
         allow={APP_FRAME_ALLOW}
         aria-hidden={status !== 'ready'}
         // Hidden, not transparent: a frame that's still loading mustn't take focus or clicks.
@@ -139,8 +294,7 @@ const AppFrame: React.FC<{ installation: AppInstallation }> = ({ installation })
         referrerPolicy="strict-origin-when-cross-origin"
         sandbox={APP_FRAME_SANDBOX}
         src={url}
-        title={installation.manifest.name}
-        onLoad={() => setLoaded(true)}
+        title={manifest.name}
       />
     </div>
   );
@@ -173,22 +327,33 @@ const NotFramed: React.FC<{ installation: AppInstallation }> = ({ installation }
  * or by the site's address failing to load. It's a check of the URL the frame starts
  * from; `isGhostOrigin` says what it doesn't cover.
  */
-const ActiveApp: React.FC<{ installation: AppInstallation }> = ({ installation }) => {
-  const { data: site, error, refetch } = useBrowseSite({ defaultErrorHandler: false });
+const ActiveApp: React.FC<{ session: AppSession; onEnded: () => void }> = ({
+  session,
+  onEnded,
+}) => {
+  const { installation } = session;
+  const site = useBrowseSite({ defaultErrorHandler: false });
+  const settings = useBrowseSettings({ defaultErrorHandler: false });
+  const error = site.error ?? settings.error;
   useEffect(() => {
     if (error) {
       reportAppsError(error);
     }
   }, [error]);
-  if (!site) {
+  if (!site.data || !settings.data) {
     return (
       <Centered>
         {error ? (
           <Stack align="center" gap="md">
             <Text tone="secondary">
-              Couldn’t load the site’s address, which opening an app needs.
+              {site.error
+                ? 'Couldn’t load the site’s address, which opening an app needs.'
+                : 'Couldn’t load the site’s settings, which opening an app needs.'}
             </Text>
-            <Button variant="outline" onClick={() => void refetch()}>
+            <Button
+              variant="outline"
+              onClick={() => void (site.error ? site.refetch() : settings.refetch())}
+            >
               Retry
             </Button>
           </Stack>
@@ -198,29 +363,49 @@ const ActiveApp: React.FC<{ installation: AppInstallation }> = ({ installation }
       </Centered>
     );
   }
-  const ghostUrls = [window.location.href, site.site.url];
+  const ghostUrls = [window.location.href, site.data.site.url];
   if (isGhostOrigin(appPageUrl(installation.manifest), ghostUrls)) {
     return <NotFramed installation={installation} />;
   }
-  return <AppFrame key={installation.id} installation={installation} />;
+  const { settings: values } = settings.data;
+  return (
+    <AppFrame
+      accentColor={
+        getSettingValue<string>(values, 'accent_color') ?? site.data.site.accent_color ?? ''
+      }
+      session={session}
+      site={site.data.site}
+      timezone={getSiteTimezone(values)}
+      onEnded={onEnded}
+    />
+  );
 };
 
-/** A suspended app doesn't load: the page says why and leads to the review. */
-const NeedsApproval: React.FC<{ installation: AppInstallation }> = ({ installation }) => {
-  const navigate = useNavigate();
+/**
+ * A suspended app doesn't load: the review of its changes opens on top of the page straight
+ * away, and the page behind it says why, with a way back to the review once it's closed.
+ */
+const NeedsApproval: React.FC<{ installation: AppInstallation; onApproved: () => void }> = ({
+  installation,
+  onApproved,
+}) => {
+  const [reviewing, setReviewing] = useState(true);
   return (
     <Centered testId="app-needs-approval">
       <EmptyIndicator
-        actions={
-          <Button onClick={() => navigate(appReviewRoute(installation.manifest_url))}>
-            Review changes
-          </Button>
-        }
+        actions={<Button onClick={() => setReviewing(true)}>Review changes</Button>}
         description="It’s been updated and needs your approval before it can open."
         title={`${installation.manifest.name} needs approval`}
       >
         <LucideIcon.ShieldAlert />
       </EmptyIndicator>
+      {reviewing && (
+        <InstallDialog
+          manifestUrl={installation.manifest_url}
+          onClose={() => setReviewing(false)}
+          onDone={onApproved}
+        />
+      )}
     </Centered>
   );
 };
@@ -242,17 +427,46 @@ const NotInstalled: React.FC = () => (
 );
 
 /**
- * `/apps/:installationId/*`. Only an active installation loads; the rest of the path is
- * left for the app's own pages, which the bridge will pass on (BER-3983).
+ * Starts a session of the app when the page opens, and again on `restart`. Ghost re-checks
+ * the app's manifest first, and its answer alone decides what the page shows; nothing of
+ * the app loads before it.
+ */
+function useAppSession(installationId: string): {
+  settled: boolean;
+  session?: AppSession;
+  error?: unknown;
+  /** Ends this session and starts another, as after approving changes. */
+  restart: () => void;
+} {
+  const { mutateAsync: start } = useStartAppSession();
+  const [generation, setGeneration] = useState(0);
+  const [result, setResult] = useState<{ key: string; session?: AppSession; error?: unknown }>();
+  const started = useRef<string | null>(null);
+  const key = `${installationId}:${generation}`;
+
+  useEffect(() => {
+    if (started.current === key) {
+      return;
+    }
+    started.current = key;
+    start(installationId).then(
+      (response) => setResult({ key, session: response.app_sessions[0] }),
+      (error: unknown) => setResult({ key, error }),
+    );
+  }, [installationId, key, start]);
+
+  const restart = useCallback(() => setGeneration((value) => value + 1), []);
+  return result?.key === key ? { settled: true, ...result, restart } : { settled: false, restart };
+}
+
+/**
+ * `/apps/:installationId/*`. Only an active installation loads, in a session of its own;
+ * the rest of the path is the app's own route, which the bridge passes on.
  */
 export const AppPage: React.FC = () => {
   const { installationId = '' } = useParams();
-  const { data, error, isLoading, refetch } = useReadAppInstallation(installationId, {
-    defaultErrorHandler: false,
-    // Without the history the details page shows; this one has no use for it.
-    searchParams: {},
-  });
-  const installation = data?.app_installations[0];
+  const { settled, session, error, restart } = useAppSession(installationId);
+  const installation = session?.installation;
   const notFound = isInstallationNotFound(error);
   useEffect(() => {
     if (error && !notFound) {
@@ -261,31 +475,30 @@ export const AppPage: React.FC = () => {
   }, [error, notFound]);
 
   let body: React.ReactNode;
-  if (installation?.status === 'active') {
-    body = <ActiveApp installation={installation} />;
-  } else if (installation?.status === 'suspended') {
-    body = <NeedsApproval installation={installation} />;
-  } else if (installation || notFound) {
-    body = <NotInstalled />;
-  } else if (error) {
-    body = (
-      <Centered>
-        <Stack align="center" gap="md">
-          <Text tone="secondary">Couldn’t load this app. Please try again.</Text>
-          <Button variant="outline" onClick={() => void refetch()}>
-            Retry
-          </Button>
-        </Stack>
-      </Centered>
-    );
-  } else if (isLoading) {
+  if (!settled) {
     body = (
       <Centered>
         <LoadingIndicator size="md" />
       </Centered>
     );
+  } else if (session && installation?.status === 'active') {
+    body = <ActiveApp session={session} onEnded={restart} />;
+  } else if (installation?.status === 'suspended') {
+    body = <NeedsApproval installation={installation} onApproved={restart} />;
+  } else if (error && !notFound) {
+    body = (
+      <Centered>
+        <Stack align="center" gap="md">
+          <Text tone="secondary">Couldn’t load this app. Please try again.</Text>
+          <Button variant="outline" onClick={restart}>
+            Retry
+          </Button>
+        </Stack>
+      </Centered>
+    );
   } else {
-    // Answered, but with no installation: there is nothing to show but the way back.
+    // Not found, uninstalled, or answered with nothing: there is nothing to show but the
+    // way back.
     body = <NotInstalled />;
   }
 

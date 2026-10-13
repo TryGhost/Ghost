@@ -1,17 +1,18 @@
 /**
- * How long an app's page gets to load before Admin calls it unresponsive. Settable so
- * acceptance specs don't wait it out.
+ * How long an app's page gets, from the frame's mount, to say hello and start before Admin
+ * calls it unresponsive. Settable so acceptance specs don't wait it out.
  */
-export const appFrameTimeouts = { ready: 12_000 };
+export const appFrameTimeouts = { ready: 10_000 };
 
 /**
  * What the app's frame may do. The app runs on its own origin, checked when it was
  * installed to differ from Admin's, so with `allow-same-origin` the sandbox keeps it on
  * that origin rather than making it opaque. No popups and no top navigation: an app stays
- * in its frame and can't take the publisher elsewhere. Moving around Admin comes with the
- * bridge (BER-3983). No modals either, on purpose: `alert`, `confirm` and `prompt` would
- * be the browser's dialogs over Ghost's page, indistinguishable from Ghost's own, so an
- * app brings its own dialogs. In the frame they return at once, `confirm` with false.
+ * in its frame and can't take the publisher elsewhere; it asks Admin to, over the bridge,
+ * for the places Admin offers. No modals either, on purpose: `alert`, `confirm` and
+ * `prompt` would be the browser's dialogs over Ghost's page, indistinguishable from
+ * Ghost's own, so an app brings its own dialogs. In the frame they return at once,
+ * `confirm` with false.
  */
 export const APP_FRAME_SANDBOX = 'allow-scripts allow-same-origin allow-forms';
 
