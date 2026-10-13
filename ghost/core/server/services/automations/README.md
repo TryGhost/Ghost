@@ -18,17 +18,6 @@ Each check locks ready steps, then runs up to 100 at once. A `wait` action advan
 - [`poll.ts`](poll.ts) runs ready steps.
 - [`welcome-email-automation-poll.ts`](welcome-email-automation-poll.ts) processes older welcome email runs.
 
-## Browse statistics
-
-`GET /ghost/api/admin/automations/` loads run statistics exclusively from Tinybird.
-When Tinybird is unconfigured, a token is unavailable, client setup fails, or the
-request fails or returns invalid data, the automation list still loads but omits
-`stats`. Admin hides the metric columns when stats are omitted. No database run
-aggregation queries are issued, including on self-hosted sites without Tinybird.
-
-A valid Tinybird response with no row for an automation means no recorded runs:
-its counts are zero and its last-started date is null.
-
 ## Performance statistics
 
 `GET /ghost/api/admin/automations/:id/performance-stats/` requires permission to
@@ -204,8 +193,7 @@ follow the same cursor ordering as other candidates.
 
 The performance endpoint requires Tinybird configuration. Missing
 configuration/token, unavailable pipe, or invalid response produces an error.
-The automation list still loads but omits stats in those cases. See
-[Browse statistics](#browse-statistics) for its availability and empty-response behavior.
+The automation list still loads but omits stats in those cases.
 
 Admin shows automation performance when Tinybird stats are configured. See the
 [Tinybird storage notes](../../data/tinybird/README.md#automation-statistics)
