@@ -1,5 +1,6 @@
 import { z } from 'zod';
 
+import { isGhostOrigin } from './ghost-origin.ts';
 import { URL_MAX_LENGTH } from './limits.ts';
 import { isLocalhost } from './localhost.ts';
 
@@ -29,7 +30,8 @@ export function checkResolvedUrl(url: URL, allowLocalhost: boolean): string | nu
 
 export interface UrlRules {
   base: URL;
-  ghostOrigins: Set<string | null>;
+  /** The URLs Ghost itself is served from, which no loaded URL may share an origin with. */
+  ghostUrls: string[];
   allowLocalhost: boolean;
 }
 
@@ -44,7 +46,7 @@ export type UrlField = (linkOnly?: boolean) => z.ZodType<string, string>;
  * Ghost is served from. `linkOnly` lifts that last rule for a URL that is only ever
  * linked to, which a publisher's own app may well point at their own site.
  */
-export function urlField({ base, ghostOrigins, allowLocalhost }: UrlRules, linkOnly = false) {
+export function urlField({ base, ghostUrls, allowLocalhost }: UrlRules, linkOnly = false) {
   return z
     .string('Expected a URL, or a path relative to the manifest')
     .min(1, 'Expected a URL, or a path relative to the manifest')
@@ -64,7 +66,7 @@ export function urlField({ base, ghostOrigins, allowLocalhost }: UrlRules, linkO
         ctx.addIssue({ code: 'custom', message: problem });
         return z.NEVER;
       }
-      if (!linkOnly && ghostOrigins.has(url.origin)) {
+      if (!linkOnly && isGhostOrigin(url, ghostUrls)) {
         ctx.addIssue({
           code: 'custom',
           message: 'Expected an address other than the one Ghost itself is served from',

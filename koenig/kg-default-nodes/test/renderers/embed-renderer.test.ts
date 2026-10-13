@@ -55,12 +55,12 @@ describe('renderers/embed-renderer', function () {
     }
 
     describe('web', function () {
-        it('matches snapshot for default test data', function () {
+        it('matches snapshot for default test data', async function () {
             const result = renderForWeb(getTestData());
 
             assert.ok(result.html);
 
-            assertPrettifiesTo(result.html, html`
+            await assertPrettifiesTo(result.html, html`
                 <figure class="kg-card kg-embed-card">
                     <iframe
                         width="200"
@@ -80,10 +80,10 @@ describe('renderers/embed-renderer', function () {
             assert.equal(result.html, '');
         });
 
-        it('renders a twitter embed without tweet_data', function () {
+        it('renders a twitter embed without tweet_data', async function () {
             const result = renderForWeb(getTwitterTestData());
 
-            assertPrettifiesTo(result.html, html`
+            await assertPrettifiesTo(result.html, html`
                 <figure class="kg-card kg-embed-card kg-card-hascaption">
                     <blockquote class="twitter-tweet"><p lang="en" dir="ltr">Ghost 4.0 is out now! 🎉</p>— Ghost (@ghost) <a href="https://twitter.com/ghost/status/1395670367216619520?ref_src=twsrc%5Etfw">May 21, 2021</a></blockquote> <script async="" src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
                     <figcaption>caption text</figcaption>
@@ -124,12 +124,12 @@ describe('renderers/embed-renderer', function () {
     });
 
     describe('email', function () {
-        it('matches snapshot for default test data', function () {
+        it('matches snapshot for default test data', async function () {
             const result = renderForEmail(getTestData());
 
             assert.ok(result.html);
 
-            assertPrettifiesTo(result.html, html`
+            await assertPrettifiesTo(result.html, html`
                 <figure class="kg-card kg-embed-card">
                     <!--[if !mso !vml]-->
                     <a class="kg-video-preview" href="undefined" aria-label="Play video" style="mso-hide: all">

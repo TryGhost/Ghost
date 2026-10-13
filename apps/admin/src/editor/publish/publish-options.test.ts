@@ -324,6 +324,48 @@ describe('publish type availability', () => {
     expect(state.newsletter?.slug).toBe('paid-only');
   });
 
+  describe('with a newsletter remembered for the draft', () => {
+    const site = createSite({ newsletters: [WEEKLY, PAID_NEWSLETTER] });
+
+    it('starts with it over the default, as an unchanged choice', () => {
+      const state = create({ site, draftNewsletter: 'paid-only' }).getState();
+
+      expect(state.newsletter?.slug).toBe('paid-only');
+      expect(state.isDirty).toBe(false);
+    });
+
+    it('starts with the post’s own newsletter over it', () => {
+      const state = create({
+        post: createPost({ newsletter: 'weekly' }),
+        site,
+        draftNewsletter: 'paid-only',
+      }).getState();
+
+      expect(state.newsletter?.slug).toBe('weekly');
+    });
+
+    it('ignores it once it is no longer selectable', () => {
+      const state = create({
+        site: createSite({
+          newsletters: [WEEKLY, { ...PAID_NEWSLETTER, status: 'archived' }],
+        }),
+        draftNewsletter: 'paid-only',
+      }).getState();
+
+      expect(state.newsletter?.slug).toBe('weekly');
+    });
+
+    it('ignores it for a post that is not a draft', () => {
+      const state = create({
+        post: createPost({ status: 'published' }),
+        site,
+        draftNewsletter: 'paid-only',
+      }).getState();
+
+      expect(state.newsletter?.slug).toBe('weekly');
+    });
+  });
+
   it('trusts a member count of zero only from an admin', () => {
     const site = createSite({ memberCount: 0 });
 

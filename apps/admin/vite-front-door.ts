@@ -39,11 +39,20 @@ export function ghostFrontDoorPlugin(backend: string, devBase: string): Plugin {
           rewrite: stripPrefix(/^\/\.ghost\/analytics/),
         };
       }
-      // The ActivityPub project's local service, e.g. 127.0.0.1:8080. Without one, a 404
-      // tells Ghost that no ActivityPub service is routed to this site.
-      const activityPub = process.env.ACTIVITYPUB_PROXY_TARGET;
+      // The ActivityPub project's local service. Default matches the old Docker gateway.
+      // Without a listener, answer 404 so Ghost treats the site as having no
+      // ActivityPub service routed.
+      const activityPub = process.env.ACTIVITYPUB_PROXY_TARGET ?? '127.0.0.1:8080';
       for (const route of ['^/\\.ghost/activitypub/', '^/\\.well-known/(webfinger|nodeinfo)']) {
-        proxy[route] = activityPub ? { target: `http://${activityPub}` } : { bypass: () => false };
+        proxy[route] = {
+          target: `http://${activityPub}`,
+          configure: (p) =>
+            p.on('error', (_err, _req, res) => {
+              if ('writeHead' in res && !res.headersSent) {
+                res.writeHead(404).end();
+              }
+            }),
+        };
       }
       // Must stay last: Vite uses the first matching entry
       proxy[`^(?!${devBase})`] = { target: backend, xfwd: true, ws: true };

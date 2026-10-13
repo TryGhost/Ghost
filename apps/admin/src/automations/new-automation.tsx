@@ -33,7 +33,6 @@ const TriggerPicker: React.FC<{
         saveButtonChildren="Save"
         saveButtonVariant="outline"
         validationFeedback={null}
-        validationFeedbackEnabled={false}
         onDismissValidationFeedback={() => {}}
         onPublish={() => {}}
         onSave={() => {}}
@@ -62,14 +61,14 @@ const TriggerPicker: React.FC<{
                 [
                   'free',
                   LucideIcon.UserPlus,
-                  'Member signs up',
-                  'When someone signs up as a free member',
+                  'Free member signed up',
+                  'When someone signs up as a free member.',
                 ],
                 [
                   'all_paid',
                   LucideIcon.CreditCard,
-                  'Paid subscription starts',
-                  'When someone signs up as a paid member or upgrades',
+                  'Paid subscription started',
+                  'When a new or free member starts a paid subscription.',
                 ],
               ] as const
             ).map(([scope, Icon, title, description]) => (

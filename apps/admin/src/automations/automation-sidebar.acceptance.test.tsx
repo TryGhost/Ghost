@@ -167,7 +167,7 @@ describe('Automation sidebar defaults', () => {
   });
 
   it.each([false, true])(
-    'uses the published default while preserving an explicit close (%s)',
+    'keeps the sidebar closed when publishing an existing draft (%s)',
     async (explicitClose) => {
       prepare('first', 'inactive');
       const data = detail('first');
@@ -190,13 +190,7 @@ describe('Automation sidebar defaults', () => {
       await expect
         .element(page.getByRole('button', { name: 'Turn off', exact: true }))
         .toBeVisible();
-      await expect
-        .element(
-          explicitClose
-            ? automationsScreen.showAutomationSidebarButton()
-            : automationsScreen.hideAutomationSidebarButton(),
-        )
-        .toBeVisible();
+      await expect.element(automationsScreen.showAutomationSidebarButton()).toBeVisible();
       await page.getByRole('button', { name: 'Turn off', exact: true }).click();
       await page
         .getByRole('alertdialog')
@@ -391,21 +385,6 @@ describe('Automation sidebar request lifecycle', () => {
     await expect.element(statusCard('Completed')).toHaveTextContent('1,600');
     await expect.element(entries()).toHaveTextContent('1,772');
     await expect.poll(() => revisit.requests.length).toBe(1);
-  });
-
-  it('hides performance and does not fetch stats when run analytics is disabled', async () => {
-    const request = prepare();
-    await renderAdminApp('/automations/first', {
-      ...flags,
-      labs: { ...flags.labs, automationRunAnalytics: false },
-    });
-    await expect.element(page.getByRole('button', { name: 'Wait: 1 day' })).toBeVisible();
-    expect(request.requests).toHaveLength(0);
-    await expect.element(page.getByRole('tab', { name: 'Performance' })).not.toBeInTheDocument();
-    await expect
-      .element(page.getByRole('button', { name: 'Show automation sidebar' }))
-      .toBeVisible();
-    await expect.element(statuses()).not.toBeInTheDocument();
   });
 });
 

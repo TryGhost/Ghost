@@ -51,6 +51,7 @@ const PRIVATE_FEATURES = [
   'automations',
   'automationsArchive',
   'automationsPerTier',
+  'automationsLifecycleTriggers',
   'stripeAutomaticTax',
   'importMemberTier',
   'csvContentImporter',
@@ -66,7 +67,6 @@ const PRIVATE_FEATURES = [
   'stripeCheckoutDesign',
   'paywallImprovements',
   'machinePayments',
-  'navigationUrlSuggestions',
   'apps',
 ];
 

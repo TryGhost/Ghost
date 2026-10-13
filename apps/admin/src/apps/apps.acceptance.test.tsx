@@ -10,14 +10,26 @@ import {
   fakeAdminEndpoint,
   fakeTags,
   renderAdminApp,
+  siteResponse,
   staffRole,
 } from '@test-utils/acceptance';
+import { APP_FRAME_SANDBOX, appFrameTimeouts } from './lib/frame';
 import { appsScreen } from './apps.screen';
-import { MANIFEST_URL, fakeInstallations, installation, labs, manifest } from './apps.test-utils';
+import {
+  APP_PAGE_URL,
+  MANIFEST_URL,
+  failAppFrame,
+  fakeAppFrame,
+  fakeAppPage,
+  fakeInstallations,
+  installation,
+  labs,
+  manifest,
+  readPath,
+} from './apps.test-utils';
 
 const DETAILS_ROUTE = '/apps/details/installation-1';
-
-const readPath = (id: string) => new RegExp(`^/apps/installations/${id}/(\\?|$)`);
+const APP_ROUTE = '/apps/installation-1';
 
 const jamie = { id: 'user-1', name: 'Jamie Larson' };
 
@@ -90,18 +102,242 @@ describe('Managing apps', () => {
     await expect.element(appsScreen.sidebarLink()).not.toBeInTheDocument();
   });
 
-  it('opens an app’s details from the list', async () => {
+  it('opens an app from the list, in a sandboxed frame from the app’s own URL', async () => {
     fakeInstallations([installation()]);
-    fakeDetails(installation({ history: [installedOn('2026-10-01T10:00:00.000Z')] }));
+    await fakeAppPage(installation());
 
     await renderAdminApp('/apps', { labs });
     await appsScreen.row('Podcast').getByText('Publish episodes and embed players.').click();
 
-    await expect.poll(currentRoute).toBe(DETAILS_ROUTE);
-    await expect.element(appsScreen.details()).toHaveTextContent('Podcast');
+    await expect.poll(currentRoute).toBe(APP_ROUTE);
+    const frame = appsScreen.frame();
+    await expect.element(frame).toHaveAttribute('src', APP_PAGE_URL);
+    await expect.element(frame).toHaveAttribute('sandbox', APP_FRAME_SANDBOX);
+    await expect.element(frame).toHaveAttribute('allow', expect.stringContaining("camera 'none'"));
+    // On for every origin unless refused, so the frame must say so.
+    await expect
+      .element(frame)
+      .toHaveAttribute('allow', expect.stringContaining("browsing-topics 'none'"));
+    await expect
+      .element(frame)
+      .toHaveAttribute('referrerpolicy', 'strict-origin-when-cross-origin');
+    await expect.element(frame).toBeVisible();
   });
 
-  it('opens an app’s details in a new tab from a modified click on its row', async () => {
+  it('opens an app’s details from the row’s menu, and the app from its details', async () => {
+    fakeInstallations([installation()]);
+    fakeDetails(installation({ history: [installedOn('2026-10-01T10:00:00.000Z')] }));
+    await fakeAppFrame();
+
+    await renderAdminApp('/apps', { labs });
+    await appsScreen.rowActions('Podcast').click();
+    await appsScreen.detailsMenuItem().click();
+
+    await expect.poll(currentRoute).toBe(DETAILS_ROUTE);
+    await expect.element(appsScreen.details()).toHaveTextContent('Podcast');
+    await appsScreen.openLink().click();
+
+    await expect.poll(currentRoute).toBe(APP_ROUTE);
+    await expect.element(appsScreen.frame()).toBeVisible();
+  });
+
+  it('calls an app unresponsive when its page doesn’t load in time, and tries again', async () => {
+    fakeDetails(installation());
+    const previous = appFrameTimeouts.ready;
+    appFrameTimeouts.ready = 300;
+    try {
+      // A page that takes longer than Admin waits.
+      await fakeAppFrame({ delayMs: 5_000 });
+      await renderAdminApp(APP_ROUTE, { labs });
+
+      await expect
+        .element(appsScreen.notResponding())
+        .toHaveTextContent('Podcast isn’t responding');
+      await expect.element(appsScreen.frame()).not.toBeInTheDocument();
+
+      // The retry gets the usual time, so a slow runner can't fail it.
+      appFrameTimeouts.ready = previous;
+      await fakeAppFrame();
+      await appsScreen.tryAgainButton().click();
+
+      await expect.element(appsScreen.frame()).toBeVisible();
+    } finally {
+      appFrameTimeouts.ready = previous;
+    }
+  });
+
+  it('keeps a loading frame hidden until its page has loaded', async () => {
+    await fakeAppPage(installation());
+    await fakeAppFrame({ delayMs: 600 });
+
+    await renderAdminApp(APP_ROUTE, { labs });
+
+    // In the document, so it loads, but out of sight and reach while it does.
+    const frame = appsScreen.frame();
+    await expect.element(frame).toBeInTheDocument();
+    await expect.element(frame).toHaveAttribute('aria-hidden', 'true');
+    await expect.element(frame).not.toBeVisible();
+
+    await expect.element(frame).toBeVisible();
+    await expect.element(frame).toHaveAttribute('aria-hidden', 'false');
+  });
+
+  it('leaves a loaded app alone once the time it had to load is up', async () => {
+    const previous = appFrameTimeouts.ready;
+    // Short, so the spec doesn't wait long for it to pass, but with room for the frame and
+    // the probe to finish first on a slow runner.
+    appFrameTimeouts.ready = 1_000;
+    try {
+      await fakeAppPage(installation());
+      await renderAdminApp(APP_ROUTE, { labs });
+      await expect.element(appsScreen.frame()).toBeVisible();
+
+      await new Promise<void>((resolve) => {
+        setTimeout(resolve, 1_200);
+      });
+
+      await expect.element(appsScreen.frame()).toBeVisible();
+      await expect.element(appsScreen.notResponding()).not.toBeInTheDocument();
+    } finally {
+      appFrameTimeouts.ready = previous;
+    }
+  });
+
+  // TODO(BER-3983): rests on the probe. With the bridge, a server that can't be reached is a
+  // handshake that never comes, so this becomes a timeout and the spec changes with it.
+  it('calls an app unresponsive straight away when its server can’t be reached', async () => {
+    fakeAdminEndpoint('GET', readPath('installation-1'), () => ({
+      app_installations: [installation()],
+    }));
+    await failAppFrame();
+
+    // Well within the time Admin would otherwise wait for the frame.
+    await renderAdminApp(APP_ROUTE, { labs });
+
+    await expect.element(appsScreen.notResponding()).toHaveTextContent('Podcast isn’t responding');
+    await expect.element(appsScreen.frame()).not.toBeInTheDocument();
+  });
+
+  it('refuses to frame an app whose page is on Admin’s own address', async () => {
+    // Accepted before Admin moved here, say. Nothing of it loads: no frame, no page fetch.
+    const onAdmin = manifest({
+      surfaces: [{ type: 'admin_page', url: `${window.location.origin}/ghost/app/` }],
+    });
+    fakeAdminEndpoint('GET', readPath('installation-1'), () => ({
+      app_installations: [installation({ manifest: onAdmin })],
+    }));
+
+    await renderAdminApp(APP_ROUTE, { labs });
+
+    await expect.element(appsScreen.notFramed()).toHaveTextContent('Podcast can’t open here');
+    await expect.element(appsScreen.frame()).not.toBeInTheDocument();
+  });
+
+  it('refuses to frame an app whose page is on the site’s address', async () => {
+    // Admin isn't necessarily served from the site's address, so that one is read.
+    const site = siteResponse();
+    site.site.url = 'https://blog.example.com/';
+    const onSite = manifest({
+      surfaces: [{ type: 'admin_page', url: 'https://blog.example.com/app/' }],
+    });
+    fakeAdminEndpoint('GET', readPath('installation-1'), () => ({
+      app_installations: [installation({ manifest: onSite })],
+    }));
+
+    await renderAdminApp(APP_ROUTE, { labs, boot: { browseSite: { response: site } } });
+
+    await expect.element(appsScreen.notFramed()).toBeVisible();
+    await expect.element(appsScreen.frame()).not.toBeInTheDocument();
+  });
+
+  it('sends staff who can’t manage apps away from an app’s page, without reading it', async () => {
+    const me = currentUserResponse();
+    me.users[0].roles = [staffRole({ name: 'Editor' })];
+
+    // No installation is faked: a request to read it would fail the test.
+    await renderAdminApp(APP_ROUTE, { labs, boot: { browseMe: { response: me } } });
+
+    await expect.poll(currentRoute).toBe('/site');
+    await expect.element(appsScreen.frame()).not.toBeInTheDocument();
+  });
+
+  it('doesn’t load a suspended app, and leads to the review instead', async () => {
+    const suspended = installation({ status: 'suspended' });
+    fakeInstallations([suspended]);
+    fakeDetails(suspended);
+    fakeReview();
+
+    await renderAdminApp(APP_ROUTE, { labs });
+
+    await expect.element(appsScreen.needsApproval()).toHaveTextContent('Podcast needs approval');
+    await expect.element(appsScreen.frame()).not.toBeInTheDocument();
+    await appsScreen.reviewChangesButton().click();
+
+    await expect
+      .poll(currentRoute)
+      .toBe(`/apps/install?manifest=${encodeURIComponent(MANIFEST_URL)}`);
+  });
+
+  it('doesn’t load an uninstalled app', async () => {
+    fakeDetails(installation({ status: 'uninstalled' }));
+
+    await renderAdminApp(APP_ROUTE, { labs });
+
+    await expect.element(appsScreen.notInstalled()).toHaveTextContent('This app isn’t installed');
+    await expect.element(appsScreen.frame()).not.toBeInTheDocument();
+  });
+
+  it('says when an app page doesn’t exist', async () => {
+    const id = 'abcdefabcdefabcdefabcdef';
+    fakeAdminEndpoint(
+      'GET',
+      readPath(id),
+      () =>
+        new Response(JSON.stringify({ errors: [{ message: 'App installation not found.' }] }), {
+          status: 404,
+          headers: { 'content-type': 'application/json' },
+        }),
+    );
+
+    await renderAdminApp(`/apps/${id}`, { labs });
+
+    await expect.element(appsScreen.notInstalled()).toBeVisible();
+  });
+
+  it('says an app page address that isn’t an app’s doesn’t exist, rather than offering a retry', async () => {
+    fakeAdminEndpoint(
+      'GET',
+      readPath('missing'),
+      () =>
+        new Response(
+          JSON.stringify({ errors: [{ type: 'ValidationError', message: 'Validation error.' }] }),
+          { status: 422, headers: { 'content-type': 'application/json' } },
+        ),
+    );
+
+    await renderAdminApp('/apps/missing', { labs });
+
+    await expect.element(appsScreen.notInstalled()).toBeVisible();
+  });
+
+  it('says an app page couldn’t load in its own words, not the API’s', async () => {
+    fakeAdminEndpoint(
+      'GET',
+      readPath('installation-1'),
+      () =>
+        new Response(JSON.stringify({ errors: [{ message: 'Ghost is having a moment.' }] }), {
+          status: 500,
+          headers: { 'content-type': 'application/json' },
+        }),
+    );
+
+    await renderAdminApp(APP_ROUTE, { labs });
+
+    await expect.element(page.getByText('Couldn’t load this app. Please try again.')).toBeVisible();
+    await expect.element(page.getByText('Ghost is having a moment.')).not.toBeInTheDocument();
+  });
+
+  it('opens an app in a new tab from a modified click on its row', async () => {
     fakeInstallations([installation()]);
     const openSpy = vi.spyOn(window, 'open').mockReturnValue(null);
     try {
@@ -112,7 +348,7 @@ describe('Managing apps', () => {
         .click({ modifiers: ['ControlOrMeta'] });
 
       expect(openSpy).toHaveBeenCalledWith(
-        expect.stringMatching(/#\/apps\/details\/installation-1$/),
+        expect.stringMatching(/#\/apps\/installation-1$/),
         '_blank',
         'noopener',
       );
@@ -271,7 +507,8 @@ describe('Managing apps', () => {
     await expect
       .element(appsScreen.row('Podcast').getByTestId('app-needs-approval-badge'))
       .toHaveTextContent('Needs approval');
-    await appsScreen.row('Podcast').getByText('Publish episodes and embed players.').click();
+    await appsScreen.rowActions('Podcast').click();
+    await appsScreen.detailsMenuItem().click();
 
     await expect
       .element(appsScreen.needsApproval())

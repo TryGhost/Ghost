@@ -92,7 +92,7 @@ function buildOxfmtCommand(files) {
   const relativeFiles = files.map((file) => normalize(path.relative(ROOT, file)));
   // --no-error-on-unmatched-pattern: a staged set may consist entirely of
   // files the formatter config ignores, which is otherwise an error.
-  return `node tools/scripts/format.js --no-error-on-unmatched-pattern -- ${shellQuote(relativeFiles)}`;
+  return `node tools/scripts/format.ts --no-error-on-unmatched-pattern -- ${shellQuote(relativeFiles)}`;
 }
 
 function buildBoundaryCommand(files) {
@@ -140,9 +140,9 @@ module.exports = {
     (files) => buildBoundaryCommand(files),
   '*.{mjs,mts,cts,json,jsonc,json5,yml,yaml,css,mdx}': (files) => buildOxfmtCommand(files),
   '**/*.md': (files) => [buildOxfmtCommand(files), ...buildMarkdownCommands(files)],
-  '{**/AGENTS.md,tools/scripts/check-agent-guidance.js}': () => 'pnpm lint:agent-guidance',
-  '{.agents/skills/**,.claude/skills/**,tools/scripts/check-agent-skill-links.js}': () =>
+  '{**/AGENTS.md,tools/scripts/check-agent-guidance.ts}': () => 'pnpm lint:agent-guidance',
+  '{.agents/skills/**,.claude/skills/**,tools/scripts/check-agent-skill-links.ts}': () =>
     'pnpm lint:agent-skills',
-  '{package.json,pnpm-workspace.yaml,packages/**/package.json,packages/_template/**,tools/scripts/check-internal-packages.js,tools/scripts/create-package.js,tools/scripts/lib/constants.js,tools/scripts/lib/package-template.js}':
+  '{package.json,pnpm-workspace.yaml,packages/**/package.json,packages/_template/**,tools/scripts/check-internal-packages.ts,tools/gx/**,tools/scripts/lib/constants.ts}':
     () => 'pnpm lint:packages',
 };

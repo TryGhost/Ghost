@@ -30,9 +30,9 @@ const features: Feature[] = [
     flag: 'automationsPerTier',
   },
   {
-    title: 'Automation run analytics',
-    description: 'Track run-level analytics for automations.',
-    flag: 'automationRunAnalytics',
+    title: 'Automations lifecycle triggers',
+    description: 'Triggers for upgrades and downgrades.',
+    flag: 'automationsLifecycleTriggers',
   },
   {
     title: 'Stripe Automatic Tax (private beta)',
@@ -117,12 +117,6 @@ const features: Feature[] = [
     description:
       'Let AI agents pay for access to paid-members markdown (.md) URLs via Stripe Machine Payments Protocol',
     flag: 'machinePayments',
-  },
-  {
-    title: 'Navigation URL suggestions',
-    description:
-      'Suggest pages, posts, offers and Portal links when editing navigation URLs in settings',
-    flag: 'navigationUrlSuggestions',
   },
   {
     title: 'Apps',

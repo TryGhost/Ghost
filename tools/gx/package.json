@@ -1,0 +1,70 @@
+{
+  "name": "@internal/gx",
+  "version": "private",
+  "private": true,
+  "description": "Ghost contributor CLI",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "lint": "eslint . --cache",
+    "test:unit": "node --test test/*.test.ts",
+    "test": "pnpm run '/^test:/'",
+    "test:types": "tsc6 --noEmit && tsc6 --noEmit -p tsconfig.core.json"
+  },
+  "dependencies": {
+    "@internal/scripts": "workspace:*",
+    "@tryghost/logging": "catalog:",
+    "jsonwebtoken": "catalog:",
+    "semver": "catalog:",
+    "tsx": "catalog:"
+  },
+  "devDependencies": {
+    "@internal/cfg-eslint": "workspace:*",
+    "@internal/cfg-typescript": "workspace:*",
+    "@types/jsonwebtoken": "catalog:",
+    "@types/node": "catalog:",
+    "@types/semver": "catalog:",
+    "eslint": "catalog:",
+    "typescript": "catalog:"
+  },
+  "nx": {
+    "namedInputs": {
+      "packageTemplate": [
+        "{workspaceRoot}/packages/_template/**/*"
+      ],
+      "goldenEmailCommand": [
+        "{workspaceRoot}/ghost/test/utils/fixtures/email-service/golden-post.json"
+      ],
+      "developmentTablesCommand": [
+        "{workspaceRoot}/ghost/core/server/data/schema/in-development.ts",
+        "{workspaceRoot}/ghost/core/server/data/schema/schema.js",
+        "{workspaceRoot}/ghost/tsconfig.json",
+        "{workspaceRoot}/ghost/types/**/*.d.ts"
+      ]
+    },
+    "targets": {
+      "test:unit": {
+        "inputs": [
+          "default",
+          "^default",
+          "packageTemplate",
+          "developmentTablesCommand",
+          "goldenEmailCommand",
+          {
+            "runtime": "node -v"
+          }
+        ]
+      },
+      "test:types": {
+        "inputs": [
+          "default",
+          "^default",
+          "developmentTablesCommand",
+          {
+            "runtime": "node -v"
+          }
+        ]
+      }
+    }
+  }
+}

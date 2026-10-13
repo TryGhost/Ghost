@@ -6,6 +6,8 @@ const internalKeys: InternalKeys =
   require('../../../../../core/server/services/internal-keys').default;
 const models = require('../../../../../core/server/models');
 const { getFrontendKey } = require('../../../../../core/frontend/services/proxy');
+const { default: resetAuthentication } =
+  require('../../../../../core/server/services/auth/reset-authentication') as typeof import('../../../../../core/server/services/auth/reset-authentication');
 
 describe('Internal keys root', function () {
   const sandbox = sinon.createSandbox();
@@ -102,5 +104,72 @@ describe('Internal keys root', function () {
     assert.equal(await getFrontendKey(), 'after-rotation');
     sinon.assert.calledTwice(lookup);
     sinon.assert.alwaysCalledWithExactly(lookup, 'ghost-internal-frontend', 'content');
+  });
+
+  it('shares the default map with authentication rotation and rescheduling after commit', async function () {
+    const previousSchedulerKey = { id: 'scheduler-id', secret: 'before-rotation' };
+    const previousFrontendKey = { id: 'frontend-id', secret: 'before-rotation' };
+    const currentSchedulerKey = { id: 'scheduler-id', secret: 'after-rotation' };
+    const currentFrontendKey = { id: 'frontend-id', secret: 'after-rotation' };
+    lookup
+      .withArgs('ghost-scheduler', 'admin')
+      .onFirstCall()
+      .resolves(previousSchedulerKey)
+      .onSecondCall()
+      .resolves(currentSchedulerKey);
+    lookup
+      .withArgs('ghost-internal-frontend', 'content')
+      .onFirstCall()
+      .resolves(previousFrontendKey)
+      .onSecondCall()
+      .resolves(currentFrontendKey);
+    assert.equal(await getFrontendKey(), previousFrontendKey.secret);
+    assert.equal(await internalKeys.get('ghost-scheduler'), previousSchedulerKey);
+
+    const commit = Promise.withResolvers<void>();
+    const writesFinished = Promise.withResolvers<void>();
+    const domain = {
+      Base: {
+        transaction: async (write: (tx: object) => Promise<unknown>) => {
+          const result = await write({});
+          writesFinished.resolve();
+          await commit.promise;
+          return result;
+        },
+      },
+      ApiKey: { refreshAllSecrets: async () => ({ count: 2 }) },
+    };
+    const deleteAllSessions = sandbox.stub().resolves();
+    const rescheduleAll = sandbox.stub().callsFake(async ({ previousKey }) => {
+      assert.equal(previousKey, previousSchedulerKey);
+      assert.equal(await internalKeys.get('ghost-scheduler'), currentSchedulerKey);
+      assert.equal(await getFrontendKey(), currentFrontendKey.secret);
+    });
+    const rotation = resetAuthentication({
+      schedulerAdapter: { rescheduleAll },
+      userService: { lockAll: async () => ({ count: 1 }) },
+      options: {},
+      models: domain,
+      deleteAllSessions,
+      // Use the consumer's real default map rather than injecting a replacement.
+    });
+    try {
+      await Promise.race([writesFinished.promise, rotation]);
+      assert.equal(await getFrontendKey(), previousFrontendKey.secret);
+      assert.equal(await internalKeys.get('ghost-scheduler'), previousSchedulerKey);
+      sinon.assert.notCalled(deleteAllSessions);
+      sinon.assert.notCalled(rescheduleAll);
+    } finally {
+      commit.resolve();
+      await Promise.allSettled([rotation]);
+    }
+    assert.deepEqual(await rotation, { apiKeysRotated: 2, usersLocked: 1 });
+    sinon.assert.calledOnce(deleteAllSessions);
+    sinon.assert.calledOnce(rescheduleAll);
+    sinon.assert.callOrder(deleteAllSessions, rescheduleAll);
+    assert.equal(await getFrontendKey(), currentFrontendKey.secret);
+    sinon.assert.calledWithExactly(lookup, 'ghost-scheduler', 'admin');
+    sinon.assert.calledWithExactly(lookup, 'ghost-internal-frontend', 'content');
+    sinon.assert.callCount(lookup, 4);
   });
 });

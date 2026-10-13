@@ -13,7 +13,7 @@ import {
 import type { AutomationDetail } from '@tryghost/admin-x-framework/api/automations';
 import { detail } from './run-history.test-utils';
 
-const labs = { automations: true, automationsPerTier: true, automationRunAnalytics: true };
+const labs = { automations: true, automationsPerTier: true };
 const button = (name: string) => page.getByRole('button', { name, exact: true });
 const addWait = async () => {
   await button('Add step').click();
@@ -34,7 +34,7 @@ describe('New automation', () => {
   it('creates a free draft locally, warns before leaving, then adds and edits without remounting', async () => {
     fakeAutomations([
       automation({ name: 'New Automation' }),
-      automation({ name: 'New Automation 3' }),
+      automation({ name: 'New Automation (3)' }),
     ]);
     const create = serveCreation();
     const edit = fakeAdminEndpoint('PUT', '/automations/created/', ({ body }) => ({
@@ -44,11 +44,16 @@ describe('New automation', () => {
     }));
     await renderAdminApp('/automations', { labs });
     await button('New automation').click();
-    await expect.element(page.getByText('New Automation 2', { exact: true })).toBeVisible();
+    await expect.element(page.getByText('New Automation (2)', { exact: true })).toBeVisible();
     await expect.element(button('Save')).toBeDisabled();
     await expect
       .element(page.getByText('Select a trigger', { exact: true }))
       .not.toBeInTheDocument();
+    await expect.element(button('Hide automation sidebar')).toBeVisible();
+    await expect
+      .element(page.getByRole('tab', { name: 'Settings' }))
+      .toHaveAttribute('data-state', 'active');
+    await button('Hide automation sidebar').click();
     await expect.poll(unsavedChangesGuarded).toBe(true);
     await page.getByRole('link', { name: 'Back to automations' }).click();
     await expect.element(page.getByRole('alertdialog')).toBeVisible();
@@ -62,11 +67,12 @@ describe('New automation', () => {
     await expect.poll(currentRoute).toBe('/automations/created');
     await expect.element(button('Save')).toBeDisabled();
     expect(input.element()).toBe(originalInput);
+    await expect.element(button('Show automation sidebar')).toBeVisible();
     expect(create.requests).toHaveLength(1);
     expect(create.requests[0].body).toMatchObject({
       automations: [
         {
-          name: 'New Automation 2',
+          name: 'New Automation (2)',
           trigger_tier_scope: 'free',
           status: 'inactive',
           actions: [{ type: 'wait' }],
@@ -170,7 +176,7 @@ describe('New automation', () => {
       );
       await refresh;
     }
-    await page.getByRole('button', { name: /^Paid subscription starts/ }).click();
+    await page.getByRole('button', { name: /^Paid subscription started/ }).click();
     await addWait();
     const input = page.getByRole('textbox', { name: 'Wait for', exact: true });
     await input.fill('3');
@@ -276,13 +282,13 @@ describe('New automation', () => {
     fakeAutomations([]);
     await renderAdminApp('/automations/new', { labs: { automations: true } });
     await expect.poll(currentRoute).toBe('/automations');
-    await expect.element(page.getByRole('heading', { name: 'Automations' })).toBeVisible();
+    await expect.element(page.getByRole('heading', { name: /^Automations/ })).toBeVisible();
     await expect.element(button('New automation')).not.toBeInTheDocument();
   });
 
   for (const [title, scope] of [
-    ['Member signs up', 'free'],
-    ['Paid subscription starts', 'all_paid'],
+    ['Free member signed up', 'free'],
+    ['Paid subscription started', 'all_paid'],
   ] as const) {
     it(`selects ${scope} with Stripe connected`, async () => {
       fakeAutomations([]);
@@ -299,12 +305,24 @@ describe('New automation', () => {
         },
       });
       await expect.element(page.getByText('Select a trigger', { exact: true })).toBeVisible();
+      await expect.element(button('Hide automation sidebar')).not.toBeInTheDocument();
       await page.getByRole('button', { name: new RegExp(`^${title}`) }).click();
+      if (scope === 'all_paid') {
+        await expect
+          .element(page.getByText('Triggered when a new or free member starts:', { exact: true }))
+          .toBeVisible();
+      }
+      await expect
+        .element(page.getByRole('tab', { name: 'Settings' }))
+        .toHaveAttribute('data-state', 'active');
+      await expect.element(page.getByRole('textbox', { name: 'Name', exact: true })).toBeVisible();
+      await button('Hide automation sidebar').click();
       await expect.element(button('Save')).toBeDisabled();
       expect(create.requests).toHaveLength(0);
       await addWait();
       await button('Save').click();
       await expect.poll(() => create.requests.length).toBe(1);
+      await expect.element(button('Show automation sidebar')).toBeVisible();
       expect(create.requests[0].body).toMatchObject({
         automations: [{ trigger_tier_scope: scope, trigger_tier_ids: null }],
       });

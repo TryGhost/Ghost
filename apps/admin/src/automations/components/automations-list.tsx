@@ -12,6 +12,7 @@ import {
   TableHeader,
   TableRow,
 } from '@tryghost/shade/components';
+import { Stack, Text } from '@tryghost/shade/primitives';
 import { cn, formatNumber, formatTimestamp } from '@tryghost/shade/utils';
 
 // Widths are scoped to `lg` because below that the stats lay out on the row's
@@ -49,8 +50,26 @@ const handleRowClick = (event: React.MouseEvent<HTMLTableRowElement>) => {
   event.currentTarget.querySelector('a')?.click();
 };
 
+export type AutomationsToShow = 'non-archived' | 'archived' | 'all';
+
+const EMPTY_COPY = {
+  'non-archived': {
+    title: 'No active automations',
+    description: 'Every automation you have is archived. Switch views to see them.',
+  },
+  archived: {
+    title: 'Nothing archived',
+    description: 'Archiving an automation takes it off your list without deleting it.',
+  },
+  all: {
+    title: 'No automations yet',
+    description: 'Automations you create will show up here.',
+  },
+};
+
 interface AutomationsListProps {
-  automations?: AutomationBrowseItem[];
+  automations: AutomationBrowseItem[];
+  automationsToShow: AutomationsToShow;
   isLoading?: boolean;
   canManage: boolean;
 }
@@ -96,7 +115,8 @@ const AutomationsListSkeleton: React.FC = () => {
 };
 
 const AutomationsList: React.FC<AutomationsListProps> = ({
-  automations = [],
+  automations,
+  automationsToShow,
   isLoading = false,
   canManage,
 }) => {
@@ -104,7 +124,33 @@ const AutomationsList: React.FC<AutomationsListProps> = ({
     return <AutomationsListSkeleton />;
   }
 
-  const showRunAnalytics = automations.every((automation) => automation.stats !== undefined);
+  const filteredAutomations = automations.filter((automation) => {
+    if (automationsToShow === 'all') {
+      return true;
+    }
+    return automationsToShow === 'archived'
+      ? automation.status === 'archived'
+      : automation.status !== 'archived';
+  });
+
+  if (filteredAutomations.length === 0) {
+    const { title, description } = EMPTY_COPY[automations.length === 0 ? 'all' : automationsToShow];
+
+    return (
+      <Stack align="center" className="py-16 text-center" gap="xs">
+        <Text as="h3" weight="medium">
+          {title}
+        </Text>
+        <Text className="max-w-80 text-pretty" leading="tight" size="sm" tone="secondary">
+          {description}
+        </Text>
+      </Stack>
+    );
+  }
+
+  const showRunAnalytics = filteredAutomations.every(
+    (automation) => automation.stats !== undefined,
+  );
 
   return (
     <Table
@@ -139,7 +185,7 @@ const AutomationsList: React.FC<AutomationsListProps> = ({
         </TableHeader>
       )}
       <TableBody className="flex flex-col lg:table-row-group">
-        {automations.map((automation) => {
+        {filteredAutomations.map((automation) => {
           const description = automation.description.trim();
           const lastEntry = automation.stats?.last_run_created_at;
           const totalEntries = automation.stats?.total_run_count ?? 0;
@@ -176,7 +222,7 @@ const AutomationsList: React.FC<AutomationsListProps> = ({
               onClick={handleRowClick}
             >
               <TableHead
-                className="col-span-3 row-start-1 h-auto min-w-0 p-0 text-left text-base font-normal tracking-normal text-foreground lg:table-cell lg:p-4"
+                className="col-span-3 row-start-1 h-auto min-w-0 p-0 text-left text-base font-normal tracking-normal text-foreground lg:table-cell lg:max-w-0 lg:p-4"
                 scope="row"
               >
                 <Link
@@ -185,7 +231,9 @@ const AutomationsList: React.FC<AutomationsListProps> = ({
                 >
                   <span className="block text-md font-semibold">{automation.name}</span>
                 </Link>
-                {description && <span className="block text-muted-foreground">{description}</span>}
+                {description && (
+                  <span className="block truncate text-muted-foreground">{description}</span>
+                )}
               </TableHead>
               {showRunAnalytics &&
                 AUTOMATION_STAT_COLUMNS.map((column) => {

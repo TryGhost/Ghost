@@ -1,13 +1,13 @@
 {
   "name": "@internal/scripts",
-  "version": "0.0.0",
+  "version": "private",
   "private": true,
   "description": "Repo automation scripts, invoked from CI workflows and local pnpm aliases",
   "license": "MIT",
   "type": "module",
   "scripts": {
     "lint": "eslint . --cache",
-    "test:unit": "node --test test/*.test.js test/*.test.cjs test/*.test.ts",
+    "test:unit": "node --test test/*.test.ts",
     "test": "pnpm run '/^test:/'",
     "test:types": "tsc6 --noEmit"
   },
@@ -29,7 +29,10 @@
     "@internal/cfg-eslint": "workspace:*",
     "@internal/cfg-typescript": "workspace:*",
     "@playwright/test": "catalog:",
+    "@types/js-yaml": "catalog:",
     "@types/node": "catalog:",
+    "@types/picomatch": "catalog:",
+    "@types/semver": "catalog:",
     "eslint": "catalog:"
   },
   "nx": {

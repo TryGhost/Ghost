@@ -9,10 +9,12 @@
  * that never validate anything. Validation lives in the contract's own entry point.
  */
 
+export { isGhostOrigin } from './manifest/ghost-origin.ts';
 export { APP_ID_MAX_LENGTH, isValidAppId } from './manifest/id.ts';
 export { URL_MAX_LENGTH } from './manifest/limits.ts';
 export { isLocalhost } from './manifest/localhost.ts';
 export {
+  appPageUrl,
   isDevelopmentApp,
   movedBetween,
   servedFrom,

@@ -27,12 +27,12 @@ describe('renderers/bookmark-renderer', function () {
     }
 
     describe('web', function () {
-        it('matches snapshot for default test data', function () {
+        it('matches snapshot for default test data', async function () {
             const result = renderForWeb(getTestData());
 
             assert.ok(result.html);
 
-            assertPrettifiesTo(result.html, html`
+            await assertPrettifiesTo(result.html, html`
                 <figure class="kg-card kg-bookmark-card kg-card-hascaption">
                     <a class="kg-bookmark-container" href="https://www.ghost.org/">
                         <div class="kg-bookmark-content">
@@ -82,12 +82,12 @@ describe('renderers/bookmark-renderer', function () {
     });
 
     describe('email', function () {
-        it('matches snapshot for default test data', function () {
+        it('matches snapshot for default test data', async function () {
             const result = renderForEmail(getTestData());
 
             assert.ok(result.html);
 
-            assertPrettifiesTo(result.html, html`
+            await assertPrettifiesTo(result.html, html`
                 <div>
                     <!--[if !mso !vml]-->
                     <figure class="kg-card kg-bookmark-card kg-card-hascaption">

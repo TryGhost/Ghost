@@ -909,33 +909,43 @@ describe('automations repository', function () {
       }
     };
 
-    it('returns a list of automations, ordered by name', async function () {
-      await knex('automations').insert({
-        id: ObjectId().toHexString(),
-        created_at: toDatabaseDate(new Date()),
-        updated_at: toDatabaseDate(new Date()),
-        slug: 'alpha-flow',
-        name: 'Alpha flow',
-        description: '',
-        status: 'inactive',
+    for (const includeStats of [false, true]) {
+      it(`returns newest automations first with includeStats=${includeStats}`, async function () {
+        await knex('automations')
+          .where('name', 'Free member welcome flow')
+          .update({ created_at: toDatabaseDate('2020-01-01T00:00:00.000Z') });
+        await knex('automations')
+          .where('name', 'Paid member welcome flow')
+          .update({ created_at: toDatabaseDate('2021-01-01T00:00:00.000Z') });
+        await knex('automations').insert([
+          {
+            id: '000000000000000000000001',
+            created_at: toDatabaseDate('2022-01-01T00:00:00.000Z'),
+            updated_at: toDatabaseDate('2022-01-01T00:00:00.000Z'),
+            slug: 'alpha-flow',
+            name: 'Alpha flow',
+            description: '',
+            status: 'inactive',
+          },
+          {
+            id: '000000000000000000000002',
+            created_at: toDatabaseDate('2022-01-01T00:00:00.000Z'),
+            updated_at: toDatabaseDate('2022-01-01T00:00:00.000Z'),
+            slug: 'zulu-flow',
+            name: 'Zulu flow',
+            description: '',
+            status: 'inactive',
+          },
+        ]);
+
+        const result = await repo.browse({ includeStats });
+
+        assert.deepEqual(
+          result.data.map((automation) => automation.name),
+          ['Zulu flow', 'Alpha flow', 'Paid member welcome flow', 'Free member welcome flow'],
+        );
       });
-
-      const result = await repo.browse({ includeStats: false });
-
-      const names = result.data.map((automation) => automation.name);
-
-      assert.deepEqual(names, [
-        'Alpha flow',
-        'Free member welcome flow',
-        'Paid member welcome flow',
-      ]);
-      const descriptions = await knex('automations').orderBy('name').pluck('description');
-      assert.deepEqual(descriptions, [
-        '',
-        'Welcome new free members after they sign up.',
-        'Welcome new paid members after they start their subscription.',
-      ]);
-    });
+    }
 
     it('can omit stats', async function () {
       const result = await repo.browse({ includeStats: false });

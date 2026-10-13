@@ -2,9 +2,11 @@ import assert from 'node:assert/strict';
 import ObjectId from 'bson-objectid';
 import sinon from 'sinon';
 import { vi } from 'vitest';
-import { createDatabaseAutomationsRepository } from '../../../../../core/server/services/automations/database-automations-repository';
+// @ts-expect-error @tryghost/domain-events currently lacks type declarations.
+import domainEvents from '@tryghost/domain-events';
 
 import * as automationsApi from '../../../../../core/server/services/automations/automations-api';
+import { StartAutomationsPollEvent } from '../../../../../core/server/services/automations/events/start-automations-poll-event';
 import {
   EMPTY_EMAIL_LEXICAL,
   NON_EMPTY_EMAIL_LEXICAL,
@@ -28,8 +30,21 @@ vi.mock(
         ...actual.createDatabaseAutomationsRepository(options),
         add: repositoryAdd,
         edit: repositoryEdit,
-        getNumberOfAutomations: vi.fn().mockResolvedValue(20),
       })),
+    };
+  },
+);
+
+vi.mock(
+  '../../../../../core/server/services/automations/database-automations-repository-2',
+  async () => {
+    const { createTestAutomationsRepository2 } = await import('./test-automations-repository-2');
+    return {
+      createDatabaseAutomationsRepository2: vi.fn(() =>
+        createTestAutomationsRepository2({
+          getNumberOfAutomations: () => 20,
+        }),
+      ),
     };
   },
 );
@@ -66,8 +81,6 @@ describe('automations API', function () {
   describe('getNumberOfAutomations', function () {
     it('returns the repository count', async function () {
       assert.equal(await automationsApi.getNumberOfAutomations(), 20);
-      const repository = vi.mocked(createDatabaseAutomationsRepository).mock.results[0].value;
-      expect(repository.getNumberOfAutomations).toHaveBeenCalledOnce();
     });
   });
 
@@ -526,6 +539,19 @@ describe('automations API', function () {
           edges: [buildEdge(a, b), buildEdge(c, d), buildEdge(d, c)],
         }),
         /graph must be a single linear path/,
+      );
+    });
+  });
+
+  describe('requestPoll', function () {
+    it('dispatches a "start automations poll" event', function () {
+      const dispatchStub = sinon.stub(domainEvents, 'dispatch');
+
+      automationsApi.requestPoll();
+
+      sinon.assert.calledOnceWithExactly(
+        dispatchStub,
+        sinon.match.instanceOf(StartAutomationsPollEvent),
       );
     });
   });

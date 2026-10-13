@@ -55,7 +55,13 @@ const renderWithRoutes = () =>
     <MemoryRouter initialEntries={['/automations']}>
       <Routes>
         <Route
-          element={<AutomationsList automations={automations} canManage={false} />}
+          element={
+            <AutomationsList
+              automations={automations}
+              automationsToShow="non-archived"
+              canManage={false}
+            />
+          }
           path="/automations"
         />
         <Route element={<AutomationEditorRoute />} path="/automations/:id" />
@@ -73,8 +79,49 @@ describe('AutomationsList', () => {
     vi.useRealTimers();
   });
 
+  it.each([
+    [
+      'non-archived',
+      'No active automations',
+      'Every automation you have is archived. Switch views to see them.',
+    ],
+    [
+      'archived',
+      'Nothing archived',
+      'Archiving an automation takes it off your list without deleting it.',
+    ],
+    ['all', 'No automations yet', 'Automations you create will show up here.'],
+  ] as const)('shows empty copy for %s view', (automationsToShow, title, description) => {
+    renderWithRouter(
+      <AutomationsList
+        automations={
+          automationsToShow === 'all'
+            ? []
+            : [
+                {
+                  ...automations[0],
+                  status: automationsToShow === 'non-archived' ? 'archived' : 'active',
+                },
+              ]
+        }
+        automationsToShow={automationsToShow}
+        canManage={false}
+      />,
+    );
+
+    expect(screen.getByRole('heading', { name: title })).toBeInTheDocument();
+    expect(screen.getByText(description)).toBeInTheDocument();
+    expect(screen.queryByRole('table')).not.toBeInTheDocument();
+  });
+
   it('renders server descriptions and status labels', () => {
-    renderWithRouter(<AutomationsList automations={automations} canManage={false} />);
+    renderWithRouter(
+      <AutomationsList
+        automations={automations}
+        automationsToShow="non-archived"
+        canManage={false}
+      />,
+    );
 
     expect(screen.getAllByTestId('automation-list-row')).toHaveLength(3);
     expect(screen.getByText('Free member welcome flow')).toBeInTheDocument();
@@ -95,7 +142,13 @@ describe('AutomationsList', () => {
   });
 
   it('renders Never when an automation has no last entry', () => {
-    renderWithRouter(<AutomationsList automations={[automations[1]]} canManage={false} />);
+    renderWithRouter(
+      <AutomationsList
+        automations={[automations[1]]}
+        automationsToShow="non-archived"
+        canManage={false}
+      />,
+    );
 
     expect(screen.getByText('Never')).toBeInTheDocument();
   });
@@ -105,7 +158,13 @@ describe('AutomationsList', () => {
       ({ stats: _stats, ...automation }) => automation,
     );
 
-    renderWithRouter(<AutomationsList automations={automationsWithoutStats} canManage={false} />);
+    renderWithRouter(
+      <AutomationsList
+        automations={automationsWithoutStats}
+        automationsToShow="non-archived"
+        canManage={false}
+      />,
+    );
 
     expect(screen.queryByRole('columnheader', { name: 'Last started' })).not.toBeInTheDocument();
     expect(screen.queryByRole('columnheader', { name: 'Total runs' })).not.toBeInTheDocument();
@@ -114,7 +173,13 @@ describe('AutomationsList', () => {
   });
 
   it('links each row to the automation sequence by id', () => {
-    renderWithRouter(<AutomationsList automations={automations} canManage={false} />);
+    renderWithRouter(
+      <AutomationsList
+        automations={automations}
+        automationsToShow="non-archived"
+        canManage={false}
+      />,
+    );
 
     expect(screen.getByRole('table', { name: 'Automations' })).toBeInTheDocument();
     expect(screen.getAllByRole('rowheader')).toHaveLength(3);
@@ -156,8 +221,16 @@ describe('AutomationsList', () => {
   });
 
   it('renders a table skeleton while loading', () => {
-    renderWithRouter(<AutomationsList canManage={false} isLoading={true} />);
+    renderWithRouter(
+      <AutomationsList
+        automations={[]}
+        automationsToShow="non-archived"
+        canManage={false}
+        isLoading={true}
+      />,
+    );
 
     expect(screen.getByTestId('automations-list-loading')).toBeInTheDocument();
+    expect(screen.queryByText('No automations yet')).not.toBeInTheDocument();
   });
 });

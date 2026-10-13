@@ -38,12 +38,12 @@ describe('renderers/header-v2-renderer', function () {
     }
 
     describe('web', function () {
-        it('matches snapshot for default test data', function () {
+        it('matches snapshot for default test data', async function () {
             const result = renderForWeb(getTestData());
 
             assert.ok(result.html);
 
-            assertPrettifiesTo(result.html, html`
+            await assertPrettifiesTo(result.html, html`
                 <div
                     class="kg-card kg-header-card kg-v2 kg-width-full kg-content-wide"
                     data-background-color="#000000">
@@ -90,7 +90,7 @@ describe('renderers/header-v2-renderer', function () {
             assert.equal(result.element.querySelector('.kg-header-card-button'), null);
         });
 
-        it('renders without subheader', function () {
+        it('renders without subheader', async function () {
             const result = renderForWeb(getTestData({
                 backgroundImageSrc: '',
                 buttonEnabled: false,
@@ -98,7 +98,7 @@ describe('renderers/header-v2-renderer', function () {
                 subheader: ''
             }));
 
-            assertPrettifiesTo(result.html, html`
+            await assertPrettifiesTo(result.html, html`
                 <div
                     class="kg-card kg-header-card kg-v2 kg-width-full kg-content-wide"
                     style="background-color: #000000"
@@ -118,7 +118,7 @@ describe('renderers/header-v2-renderer', function () {
             `);
         });
 
-        it('renders with srcset', function () {
+        it('renders with srcset', async function () {
             const result = renderForWeb(getTestData({
                 backgroundImageSrc: '/content/images/2022/11/koenig-lexical.jpg',
                 backgroundImageWidth: 3840,
@@ -128,7 +128,7 @@ describe('renderers/header-v2-renderer', function () {
                 subheader: ''
             }));
 
-            assertPrettifiesTo(result.html, html`
+            await assertPrettifiesTo(result.html, html`
                 <div
                     class="kg-card kg-header-card kg-v2 kg-width-full kg-content-wide"
                     data-background-color="#000000">
@@ -155,12 +155,12 @@ describe('renderers/header-v2-renderer', function () {
     });
 
     describe('email', function () {
-        it('matches snapshot for default test data', function () {
+        it('matches snapshot for default test data', async function () {
             const result = renderForEmail(getTestData(), {feature: {}});
 
             assert.ok(result.html);
 
-            assertPrettifiesTo(result.html, html`
+            await assertPrettifiesTo(result.html, html`
                 <div
                     class="kg-header-card kg-v2 kg-header-card-dark-bg"
                     style="
@@ -245,10 +245,10 @@ describe('renderers/header-v2-renderer', function () {
             `);
         });
 
-        it('has expected button output for outline buttons', function () {
+        it('has expected button output for outline buttons', async function () {
             const result = renderForEmail(getTestData(), {design: {buttonStyle: 'outline'}, feature: {}});
 
-            assertPrettifiedIncludes(result.html, html`
+            await assertPrettifiedIncludes(result.html, html`
                 <td align="center" style="color: #ffffff !important; border: 1px solid #ffffff; border-color: currentColor; background-color: transparent;">
                     <a href="https://example.com/" style="color: #ffffff !important">The button</a>
                 </td>

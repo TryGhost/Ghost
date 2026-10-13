@@ -1,6 +1,6 @@
 import errors from '@tryghost/errors';
 import tpl from '@tryghost/tpl';
-import moment from 'moment';
+import { getUnixTime } from '../../../kernel/clock';
 
 import { messages, defaultPostSlugs } from './constants';
 
@@ -233,7 +233,7 @@ export class SlackPingService {
               ],
               footer: blogTitle,
               footer_icon: this.blogIcon.getIconUrl({ absolute: true }),
-              ts: moment().unix(),
+              ts: getUnixTime(),
             },
           ],
         };
