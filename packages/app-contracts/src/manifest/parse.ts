@@ -66,14 +66,18 @@ function checkManifestUrl(url: URL | null, allowLocalhost: boolean): CheckedMani
  * The address it hands back is the one to keep: what is stored, fetched again later and
  * compared with a later address, so each address has one spelling. A fragment never
  * reaches the server, so two addresses that differ only there read the same file: it is
- * no part of the address.
+ * no part of the address, and is left out before the address is checked, its length
+ * included.
  */
 export function parseManifestUrl(input: string, allowLocalhost = false): ParseManifestUrlResult {
-  const { url, problem } = checkManifestUrl(URL.parse(input), allowLocalhost);
+  const address = URL.parse(input);
+  if (address) {
+    address.hash = '';
+  }
+  const { url, problem } = checkManifestUrl(address, allowLocalhost);
   if (problem !== null) {
     return { success: false, error: problem };
   }
-  url.hash = '';
   return { success: true, manifestUrl: url.href };
 }
 

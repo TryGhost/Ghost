@@ -119,6 +119,11 @@ describe('parseManifestUrl', () => {
     );
   });
 
+  it('does not count the fragment against the length of the address', () => {
+    const address = `https://podcast.example.com/${'a'.repeat(1900)}`;
+    expect(manifestUrlOf(`${address}#${'b'.repeat(200)}`)).toBe(address);
+  });
+
   it('must be a URL', () => {
     expect(errorOf('podcast.example.com/app.json')).toBe('Expected the manifest at a URL');
   });
