@@ -83,7 +83,6 @@
     "@faker-js/faker": "catalog:",
     "@isaacs/ttlcache": "1.4.1",
     "@sentry/node": "7.120.4",
-    "@slack/webhook": "7.1.0",
     "@tryghost/adapter-base-cache": "workspace:*",
     "@tryghost/adapter-base-jobs": "workspace:*",
     "@tryghost/adapter-base-redirects": "workspace:*",
