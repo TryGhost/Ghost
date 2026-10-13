@@ -22,22 +22,15 @@ module.exports = /**/;
 
 const SLUG_PATTERN = /^[a-z0-9]+(-[a-z0-9]+)*$/;
 
-/**
- * @param {unknown} slug
- * @returns {slug is string}
- */
-function isValidSlug(slug) {
+function isValidSlug(slug: unknown): slug is string {
   return typeof slug === 'string' && SLUG_PATTERN.test(slug);
 }
 
 /**
  * Resolves the most recent stable tag (e.g. v6.34.0) from git.
  * Excludes prerelease tags so the answer reflects what's actually shipped.
- *
- * @param {string} cwd
- * @returns {string}
  */
-function readLastPublishedVersion(cwd) {
+function readLastPublishedVersion(cwd: string) {
   const tag = execSync(
     `git describe --tags --abbrev=0 --match 'v[0-9]*.[0-9]*.[0-9]*' --exclude 'v*-*'`,
     { cwd, encoding: 'utf8' },
@@ -45,11 +38,7 @@ function readLastPublishedVersion(cwd) {
   return tag.replace(/^v/, '');
 }
 
-/**
- * @param {string} version
- * @returns {string}
- */
-function minorOf(version) {
+function minorOf(version: string) {
   return `${semver.major(version)}.${semver.minor(version)}`;
 }
 
@@ -65,34 +54,34 @@ function minorOf(version) {
  *   package 6.34.1-rc.0 → folder 6.35   (needs promote)
  *   package 6.35.0-rc.0 → folder 6.35   (already promoted)
  *   package 6.34.0      → folder 6.35   (needs promote, e.g. fresh checkout)
- *
- * @param {string} packageVersion
- * @param {string} lastPublishedVersion
- * @returns {string}
  */
-function getTargetMigrationFolder(packageVersion, lastPublishedVersion) {
+function getTargetMigrationFolder(packageVersion: string, lastPublishedVersion: string) {
   const packageMinor = minorOf(packageVersion);
-  const nextAfterPublished = minorOf(semver.inc(lastPublishedVersion, 'minor'));
+  const nextVersion = semver.inc(lastPublishedVersion, 'minor');
+  if (nextVersion === null) {
+    throw new Error(`Invalid published version: ${lastPublishedVersion}`);
+  }
+  const nextAfterPublished = minorOf(nextVersion);
 
   return semver.gte(`${packageMinor}.0`, `${nextAfterPublished}.0`)
     ? packageMinor
     : nextAfterPublished;
 }
 
+type MigrationOptions = {
+  slug: string;
+  coreDir: string;
+  date?: Date;
+  lastPublishedVersion?: string;
+};
+
 /**
  * Creates a migration file and promotes package.json to the target minor RC
  * if needed. Promotion is required because knex-migrator filters out folders
  * whose version > package.json's major.minor — without it, the new migration
  * would be silently skipped on dev installs.
- *
- * @param {object} options
- * @param {string} options.slug - The migration name in kebab-case
- * @param {string} options.coreDir - Path to ghost directory
- * @param {Date}   [options.date] - Override the timestamp (for testing)
- * @param {string} [options.lastPublishedVersion] - Override the last published version (for testing)
- * @returns {{migrationPath: string, rcVersion: string|null}}
  */
-function createMigration({ slug, coreDir, date, lastPublishedVersion }) {
+function createMigration({ slug, coreDir, date, lastPublishedVersion }: MigrationOptions) {
   if (!isValidSlug(slug)) {
     throw new Error(`Invalid slug: "${slug}". Use kebab-case (e.g. add-column-to-posts)`);
   }
@@ -100,7 +89,15 @@ function createMigration({ slug, coreDir, date, lastPublishedVersion }) {
   const migrationsDir = path.join(coreDir, 'core', 'server', 'data', 'migrations', 'versions');
   const corePackagePath = path.join(coreDir, 'package.json');
 
-  const corePackage = JSON.parse(fs.readFileSync(corePackagePath, 'utf8'));
+  const corePackage: unknown = JSON.parse(fs.readFileSync(corePackagePath, 'utf8'));
+  if (
+    typeof corePackage !== 'object' ||
+    corePackage === null ||
+    !('version' in corePackage) ||
+    typeof corePackage.version !== 'string'
+  ) {
+    throw new Error(`Invalid package version: ${corePackagePath}`);
+  }
   const currentVersion = corePackage.version;
 
   const resolvedLastPublished = lastPublishedVersion || readLastPublishedVersion(coreDir);
@@ -119,13 +116,13 @@ function createMigration({ slug, coreDir, date, lastPublishedVersion }) {
   try {
     fs.writeFileSync(migrationPath, MIGRATION_TEMPLATE, { flag: 'wx' });
   } catch (err) {
-    if (err.code === 'EEXIST') {
+    if (err instanceof Error && 'code' in err && err.code === 'EEXIST') {
       throw new Error(`Migration already exists: ${migrationPath}`);
     }
     throw err;
   }
 
-  let rcVersion = null;
+  let rcVersion: string | null = null;
   if (minorOf(currentVersion) !== targetFolder) {
     rcVersion = `${targetFolder}.0-rc.0`;
 
@@ -134,8 +131,11 @@ function createMigration({ slug, coreDir, date, lastPublishedVersion }) {
 
     const adminPackagePath = path.resolve(coreDir, '..', 'admin', 'package.json');
     if (fs.existsSync(adminPackagePath)) {
-      const adminPackage = JSON.parse(fs.readFileSync(adminPackagePath, 'utf8'));
-      adminPackage.version = rcVersion;
+      const adminPackage: unknown = JSON.parse(fs.readFileSync(adminPackagePath, 'utf8'));
+      if (typeof adminPackage !== 'object' || adminPackage === null) {
+        throw new Error(`Invalid package: ${adminPackagePath}`);
+      }
+      Object.assign(adminPackage, { version: rcVersion });
       fs.writeFileSync(adminPackagePath, JSON.stringify(adminPackage, null, 2) + '\n');
     }
   }
@@ -161,7 +161,7 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
       console.log(`Bumped version to ${rcVersion}`);
     }
   } catch (err) {
-    console.error(err.message);
+    console.error(err instanceof Error ? err.message : String(err));
     process.exit(1);
   }
 }

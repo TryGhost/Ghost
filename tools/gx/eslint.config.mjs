@@ -18,8 +18,7 @@ export default [
     extraSrcRules: { ...cliRules, 'no-console': 'off' },
   }),
   ...nodeLibConfig({
-    typescript: false,
-    srcGlobs: ['create-migration.js'],
+    srcGlobs: ['create-migration.ts'],
     extraSrcRules: { ...cliRules, 'no-console': 'off' },
   }),
 ];

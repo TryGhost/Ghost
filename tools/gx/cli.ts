@@ -13,7 +13,7 @@ if (args[0] === 'generate' && args[1] === 'package') {
 } else if (args[0] === 'generate' && ['golden-email', 'migration'].includes(args[1] ?? '')) {
   const command = fileURLToPath(
     new URL(
-      args[1] === 'migration' ? './create-migration.js' : './generate-golden-email.ts',
+      args[1] === 'migration' ? './create-migration.ts' : './generate-golden-email.ts',
       import.meta.url,
     ),
   );
