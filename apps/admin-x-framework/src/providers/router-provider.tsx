@@ -5,6 +5,7 @@ import {
   createHashRouter,
   Link as ReactRouterLink,
   type LinkProps,
+  type Location,
   type RelativeRoutingType,
   resolvePath,
   RouteObject,
@@ -39,6 +40,8 @@ export interface RouterProviderProps {
 
   // Custom routing props
   errorElement?: React.ReactNode;
+  /** Recovers from a route error, e.g. by reloading, and returns true if it did; recovered errors go unreported. */
+  recoverFromError?: (error: unknown, location: Location) => boolean;
   children?: React.ReactNode;
 }
 
@@ -126,7 +129,13 @@ const reportRouteError: ClientOnErrorFunction = (error, { errorInfo }) => {
   }
 };
 
-export function RouterProvider({ routes, prefix, errorElement, children }: RouterProviderProps) {
+export function RouterProvider({
+  routes,
+  prefix,
+  errorElement,
+  recoverFromError,
+  children,
+}: RouterProviderProps) {
   // Memoize the router to avoid re-creating it on every render
   const router = useMemo(() => {
     // Ensure prefix has a leading slash and no double+ or trailing slashes
@@ -152,17 +161,19 @@ export function RouterProvider({ routes, prefix, errorElement, children }: Route
     });
   }, [routes, prefix, errorElement, children]);
 
-  return <ReactRouterProvider router={router} onError={reportRouteError} />;
+  const onError = useCallback<ClientOnErrorFunction>(
+    (error, info) => {
+      if (!recoverFromError?.(error, info.location)) {
+        reportRouteError(error, info);
+      }
+    },
+    [recoverFromError],
+  );
+
+  return <ReactRouterProvider router={router} onError={onError} />;
 }
 
-/**
- * Override the default navigate function to add the crossApp option. This is
- * used to determine if the navigate should be handled by the custom router, ie.
- * if we need to navigate outside of the current app in Ghost.
- */
-export interface NavigateOptions extends ReactRouterNavigateOptions {
-  crossApp?: boolean;
-}
+export type NavigateOptions = ReactRouterNavigateOptions;
 
 /**
  * Decides whether an in-router navigation to `pathname` (absolute, without the
@@ -178,6 +189,12 @@ export interface ViewTransitionController {
   beforeTransition?: (pathname: string) => Promise<boolean> | undefined;
   /** Runs once a transitioning navigation has settled, whether it landed or a blocker held it. */
   afterTransition?: (pathname: string) => void;
+  /**
+   * Whether a transitioning navigation runs as a browser view transition (the
+   * default), or only through `beforeTransition` and `afterTransition`, e.g.
+   * where the app animates the live page itself.
+   */
+  viewTransition?: (pathname: string) => boolean;
 }
 
 const ViewTransitionControllerContext = React.createContext<ViewTransitionController>({
@@ -211,7 +228,6 @@ function navigateAfterTransitionStart(
 
 export function useNavigate() {
   const navigate = useReactRouterNavigate();
-  const { externalNavigate } = useFramework();
   const controller = useContext(ViewTransitionControllerContext);
   const routePathname = useResolvedPath('.').pathname;
   const locationPathname = useLocation().pathname;
@@ -228,22 +244,20 @@ export function useNavigate() {
         return;
       }
 
-      if (options?.crossApp) {
-        externalNavigate({ route: to, isExternal: true, replace: options.replace });
-        return;
-      }
-
       const pathname = pathnameFor.current(to, options?.relative);
       if (options?.viewTransition === undefined && controller.shouldTransition(pathname)) {
         navigateAfterTransitionStart(controller, pathname, () =>
-          navigate(to, { ...options, viewTransition: true }),
+          navigate(to, {
+            ...options,
+            viewTransition: controller.viewTransition?.(pathname) ?? true,
+          }),
         );
         return;
       }
 
       navigate(to, options);
     },
-    [controller, navigate, externalNavigate],
+    [controller, navigate],
   );
 }
 
@@ -270,6 +284,9 @@ export const Link = React.forwardRef<HTMLAnchorElement, LinkProps>(function Link
   const transitions =
     viewTransition ??
     (!isAbsoluteUrl && !props.reloadDocument && controller.shouldTransition(pathname));
+  // Unless the caller set it, the controller may run the transition without a view transition
+  const browserTransition =
+    transitions && (viewTransition ?? controller.viewTransition?.(pathname) ?? true);
 
   const handleClick = (event: React.MouseEvent<HTMLAnchorElement>) => {
     onClick?.(event);
@@ -286,7 +303,13 @@ export const Link = React.forwardRef<HTMLAnchorElement, LinkProps>(function Link
     event.preventDefault();
     const { to, replace, state, preventScrollReset, relative } = props;
     navigateAfterTransitionStart(controller, pathname, () =>
-      navigate(to, { replace, state, preventScrollReset, relative, viewTransition: true }),
+      navigate(to, {
+        replace,
+        state,
+        preventScrollReset,
+        relative,
+        viewTransition: browserTransition,
+      }),
     );
   };
 
@@ -294,7 +317,7 @@ export const Link = React.forwardRef<HTMLAnchorElement, LinkProps>(function Link
     <ReactRouterLink
       ref={ref}
       {...props}
-      viewTransition={transitions || undefined}
+      viewTransition={browserTransition || undefined}
       onClick={handleClick}
     />
   );
@@ -309,31 +332,8 @@ interface CustomNavigateProps {
   to: string;
   replace?: boolean;
   state?: unknown;
-  crossApp?: boolean;
 }
 
-export function Navigate({ to, replace, state, crossApp }: CustomNavigateProps) {
-  const { externalNavigate } = useFramework();
-  const lastExternalNavigation = useRef<{ replace?: boolean; to: string } | null>(null);
-
-  useEffect(() => {
-    if (!crossApp) {
-      lastExternalNavigation.current = null;
-      return;
-    }
-
-    const previousNavigation = lastExternalNavigation.current;
-    if (previousNavigation?.to === to && previousNavigation.replace === replace) {
-      return;
-    }
-
-    lastExternalNavigation.current = { replace, to };
-    externalNavigate({ route: to, isExternal: true, replace });
-  }, [crossApp, externalNavigate, replace, to]);
-
-  if (crossApp) {
-    return null;
-  }
-
+export function Navigate({ to, replace, state }: CustomNavigateProps) {
   return <ReactRouterNavigate replace={replace} state={state} to={to} />;
 }

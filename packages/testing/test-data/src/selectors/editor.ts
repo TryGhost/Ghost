@@ -10,6 +10,7 @@ export const editorExcerptInput = 'editor-excerpt-input';
 export const editorBody = 'editor-body';
 export const editorSecondaryInstance = 'editor-secondary-instance';
 export const editorWordCount = 'editor-word-count';
+export const editorFontToggle = 'editor-font-toggle';
 export const editorEmailSizeWarning = 'editor-email-size-warning';
 export const editorEmailSizeDetails = 'editor-email-size-details';
 export const editorLoadError = 'editor-load-error';
@@ -225,6 +226,8 @@ export const settingsFacebookCardRow = 'Facebook card';
 export const settingsFacebookCardBackButton = 'Close Facebook card panel';
 export const settingsKeyboardShortcutsRow = 'Keyboard shortcuts';
 export const settingsKeyboardShortcutsBackButton = 'Close keyboard shortcuts panel';
+export const settingsEditorHelpRow = 'Using the editor';
+export const editorFontPickerLabel = 'Editor font';
 
 // text fragments
 export const settingsTagsCreateText = 'Create';

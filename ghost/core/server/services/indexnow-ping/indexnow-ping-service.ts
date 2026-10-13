@@ -333,4 +333,9 @@ export class IndexNowPingService {
       .removeListener('post.published.edited', this.listener)
       .on('post.published.edited', this.listener);
   }
+
+  unsubscribeEvents(): void {
+    this.events.removeListener('post.published', this.listener);
+    this.events.removeListener('post.published.edited', this.listener);
+  }
 }

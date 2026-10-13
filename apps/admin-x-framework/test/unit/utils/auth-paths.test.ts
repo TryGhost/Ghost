@@ -5,7 +5,7 @@ describe('isAuthPath', () => {
     '/signin',
     '/signin/',
     '/signin/verify',
-    '/signin?labs=editorReact',
+    '/signin?labs=someFlag',
     '/signout',
     '/signup/aW52aXRl',
     '/reset/cmVzZXQ/',

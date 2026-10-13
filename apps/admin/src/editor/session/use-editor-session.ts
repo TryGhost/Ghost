@@ -358,6 +358,7 @@ export function useEditorSession({
   }, [session]);
 
   // A closing or backgrounded tab never unmounts the editor, and a discarded one never fires `pagehide`.
+  // Unmounting flushes too: a reload can follow it before the deferred disposal runs.
   useEffect(() => {
     const flush = () => session.flushLocalRevision();
     const flushWhenHidden = () => {
@@ -370,6 +371,7 @@ export function useEditorSession({
     return () => {
       window.removeEventListener('pagehide', flush);
       document.removeEventListener('visibilitychange', flushWhenHidden);
+      flush();
     };
   }, [session]);
 

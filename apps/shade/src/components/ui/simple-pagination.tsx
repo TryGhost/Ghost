@@ -1,4 +1,4 @@
-import { useShade } from '@/providers/shade-provider';
+import { useShade } from '@/providers/shade-context';
 import { cn } from '@/lib/utils';
 import React from 'react';
 import { Button, ButtonProps } from './button';

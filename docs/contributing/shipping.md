@@ -35,7 +35,7 @@ These public apps are npm packages served through jsDelivr:
 - `@tryghost/admin-toolbar`
 
 The full list lives in
-[`scripts/public-apps.json`](../../scripts/public-apps.json). When one changes on
+[`tools/scripts/public-apps.json`](../../tools/scripts/public-apps.json). When one changes on
 `main`, CI publishes a new patch version to npm and clears the jsDelivr cache.
 Sites load the latest patch in the major/minor line configured by Ghost, so a
 patch can go live without a Ghost release.

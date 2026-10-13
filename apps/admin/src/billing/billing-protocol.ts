@@ -4,7 +4,7 @@ import {
   parseDunningConfig,
 } from '@tryghost/admin-x-framework/api/dunning';
 import { z } from 'zod';
-import type { SubscriptionState } from '@/ember-bridge';
+import type { SubscriptionState } from './subscription-status';
 
 export const BILLING_ROUTE_ROOT = '/pro';
 
@@ -94,6 +94,7 @@ const ADMIN_DESTINATION_ROUTES: Record<string, string> = Object.freeze(
     theme: '/settings/design/change-theme',
     analytics: '/settings/analytics',
     staff: '/settings/staff',
+    automations: '/automations',
     stripe: '/settings/stripe-connect',
     integrations: '/settings/integrations',
   }),

@@ -114,7 +114,7 @@ module.exports = class StripeService {
         return membersService.api.events;
       },
       get donationRepository() {
-        return donationService.repository;
+        return donationService.service;
       },
       get giftService() {
         return giftService.service;

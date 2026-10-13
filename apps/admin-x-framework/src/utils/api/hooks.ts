@@ -15,7 +15,6 @@ import { useCallback, useEffect, useMemo } from 'react';
 import useHandleError from '../../hooks/use-handle-error';
 import { usePermission } from '../../hooks/use-permissions';
 import { UserRoleType } from '../../api/roles';
-import { useFramework } from '../../providers/framework-provider';
 import { apiUrl, useFetchApi, type RequestOptions } from './fetch-api';
 
 export interface Meta {
@@ -223,7 +222,6 @@ interface MutationOptions<ResponseData, Payload>
       };
   updateQueries?: {
     dataType: string;
-    emberUpdateType: 'createOrUpdate' | 'delete' | 'skip';
     update: (newData: ResponseData, currentData: unknown, payload: Payload) => unknown;
   };
 }
@@ -271,7 +269,6 @@ export const createMutation =
   () => {
     const fetchApi = useFetchApi();
     const queryClient = useQueryClient();
-    const { onUpdate, onInvalidate, onDelete } = useFramework();
 
     const afterMutate = useCallback(
       (newData: ResponseData, payload: Payload) => {
@@ -284,7 +281,6 @@ export const createMutation =
               queryKey: [dataType],
               predicate: invalidateQueries.predicate,
             });
-            onInvalidate(dataType);
           }
         } else if (invalidateQueries) {
           queryClient.invalidateQueries(invalidateQueries.filters, invalidateQueries.options);
@@ -294,20 +290,9 @@ export const createMutation =
           queryClient.setQueriesData({ queryKey: [updateQueries.dataType] }, (data: unknown) =>
             updateQueries!.update(newData, data, payload),
           );
-          if (updateQueries.emberUpdateType === 'createOrUpdate') {
-            onUpdate(updateQueries.dataType, newData);
-          } else if (updateQueries.emberUpdateType === 'delete') {
-            if (typeof payload !== 'string') {
-              throw new Error(
-                'Expected delete mutation to have a string (ID) payload. Either change the payload or update the createMutation hook',
-              );
-            }
-
-            onDelete(updateQueries.dataType, payload);
-          }
         }
       },
-      [onInvalidate, onUpdate, onDelete, queryClient],
+      [queryClient],
     );
 
     return useMutation<ResponseData, unknown, Payload>({

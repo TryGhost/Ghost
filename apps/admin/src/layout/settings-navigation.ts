@@ -55,3 +55,12 @@ export const SettingsNavigationSlotContext = createContext<HTMLElement | null>(n
 export function useSettingsNavigationSlot(): HTMLElement | null {
   return useContext(SettingsNavigationSlotContext);
 }
+
+// Whether the floating sidebar is still growing to show the Settings
+// navigation: Settings holds its heavy sections back until it's done, so
+// rendering them doesn't stall the morph.
+export const SettingsSidebarMorphingContext = createContext(false);
+
+export function useSettingsSidebarMorphing(): boolean {
+  return useContext(SettingsSidebarMorphingContext);
+}

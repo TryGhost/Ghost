@@ -40,6 +40,12 @@ Each entrypoint barrel (`components.ts`, `primitives.ts`, `patterns.ts`, `page-t
 
 Always forward and merge `className` with `cn(...)`. Use `cva()` for variants.
 
+A component file exports only components and types, so React Fast Refresh can
+hot-update it; ESLint enforces this. Put an exported `cva()` config in a sibling
+`<name>-variants.ts`, and exported hooks, contexts or helpers in their own
+sibling module, such as `sidebar-context.ts`. These siblings belong to the
+component; they aren't Recipes.
+
 ## Imports
 
 Always use the layer-specific subpath:

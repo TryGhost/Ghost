@@ -1,5 +1,5 @@
 import { buildSignedWebhookRequest, sanitizeWebhookUrl } from '../../lib/signed-webhook';
-import { ASYNC_EXPORT_COMPONENTS } from '../exports/export-components';
+import { ASYNC_EXPORT_COMPONENTS } from '../../data/exporter/export-components';
 
 type AsyncExportComponents = Record<(typeof ASYNC_EXPORT_COMPONENTS)[number], boolean>;
 const logging = require('@tryghost/logging');

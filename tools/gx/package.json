@@ -1,0 +1,50 @@
+{
+  "name": "@internal/gx",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Ghost contributor CLI",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "lint": "eslint . --cache",
+    "test:unit": "node --test test/*.test.ts",
+    "test": "pnpm run '/^test:/'",
+    "test:types": "tsc6 --noEmit"
+  },
+  "dependencies": {
+    "@internal/scripts": "workspace:*",
+    "jsonwebtoken": "catalog:",
+    "semver": "catalog:"
+  },
+  "devDependencies": {
+    "@internal/cfg-eslint": "workspace:*",
+    "@internal/cfg-typescript": "workspace:*",
+    "@types/jsonwebtoken": "catalog:",
+    "@types/node": "catalog:",
+    "eslint": "catalog:",
+    "typescript": "catalog:"
+  },
+  "nx": {
+    "namedInputs": {
+      "packageTemplate": [
+        "{workspaceRoot}/packages/_template/**/*"
+      ],
+      "goldenEmailCommand": [
+        "{workspaceRoot}/ghost/test/utils/fixtures/email-service/golden-post.json"
+      ]
+    },
+    "targets": {
+      "test:unit": {
+        "inputs": [
+          "default",
+          "^default",
+          "packageTemplate",
+          "goldenEmailCommand",
+          {
+            "runtime": "node -v"
+          }
+        ]
+      }
+    }
+  }
+}

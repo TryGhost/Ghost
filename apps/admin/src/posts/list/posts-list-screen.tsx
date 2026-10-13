@@ -41,8 +41,7 @@ import {
 import { type PostResource, getPostResourceCopy } from './post-resource';
 import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
 import { usePostsFilterState } from './hooks/use-posts-filter-state';
-import { getPostListReturnUrl, rememberStickyPostFilters } from './posts-sticky-filters';
-import { syncEmberPostListQueryParams } from '@/ember-bridge';
+import { rememberStickyPostFilters } from './posts-sticky-filters';
 import {
   lazy,
   startTransition,
@@ -82,8 +81,6 @@ export function PostsListScreen({ resource }: { resource: PostResource }) {
 
   useEffect(() => {
     rememberStickyPostFilters(resource, location.search);
-    const search = getPostListReturnUrl(resource).split('?')[1];
-    return syncEmberPostListQueryParams(resource, Object.fromEntries(new URLSearchParams(search)));
   }, [resource, location.search]);
 
   // Scheduled times read in the site's timezone, not the browser's.
@@ -233,13 +230,11 @@ export function PostsListScreen({ resource }: { resource: PostResource }) {
     giftLinkPost && canCopyGiftLink({ user: currentUser, post: giftLinkPost })
       ? giftLinkPost.id
       : null;
-  // Opened from the context menu. Ember reaches the same React modal over the
-  // state bridge; here the list owns it directly, so there is one modal and
-  // one set of eligibility rules behind both implementations.
+  // Opened from the context menu.
   const [giftLinkPostId, setGiftLinkPostId] = useState<string | null>(null);
 
-  // The Ember editor writes a localStorage key on publish and navigates here;
-  // this reads it. The editor stays Ember on both sides of the flag.
+  // The editor writes a localStorage key on publish and navigates here; this
+  // reads it.
   const celebration = usePostPublishCelebration();
   const { data: siteData } = useBrowseSite();
 
@@ -389,9 +384,7 @@ export function PostsListScreen({ resource }: { resource: PostResource }) {
                 />
               </Stack>
             ) : (
-              // Same testids as the Ember list, deliberately —
-              // shared e2e page objects. They can never collide:
-              // the Ember route aborts when this screen renders.
+              // Testids are shared with the e2e page objects.
               <Stack ref={revealRef} gap="md">
                 <ul
                   // Held modifier: children take no pointer

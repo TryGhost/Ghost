@@ -1,9 +1,0 @@
-{{#if this.session.user.isAdmin}}
-<span
-    class="segment-totals"
-    {{did-insert (perform this.fetchTotalsTask)}}
-    {{did-update (perform this.fetchSegmentTotalTask) @segment}}
->
-    <strong>{{format-number this.segmentTotal}}</strong> {{gh-pluralize this.segmentTotal "member" without-count=true}}
-</span>
-{{/if}}

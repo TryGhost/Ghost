@@ -3,7 +3,6 @@ import type { Knex } from 'knex';
 import type { PrometheusClient } from '@tryghost/prometheus-metrics';
 import type { ConfigInstance } from '../../../shared/config/loader';
 import type { GhostMetrics } from '@tryghost/metrics';
-// @ts-expect-error This module lacks type definitions.
 import type SettingsCache from '../../../shared/settings-cache';
 import { EmailAnalyticsServiceWrapper } from './email-analytics-service-wrapper';
 // @ts-expect-error This module lacks type definitions.

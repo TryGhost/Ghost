@@ -1,7 +1,6 @@
 import tpl from '@tryghost/tpl';
 // @ts-expect-error This module lacks type definitions.
 import validator from '@tryghost/validator';
-// @ts-expect-error This module lacks type definitions.
 import settingsCache from '../../shared/settings-cache';
 import urlUtils from '../../shared/url-utils';
 
@@ -60,7 +59,10 @@ export function validatePassword(
   }
 
   // password must not match with site title
-  siteTitle = siteTitle || settingsCache.get('title');
+  if (!siteTitle) {
+    const cachedTitle = settingsCache.get('title');
+    siteTitle = typeof cachedTitle === 'string' ? cachedTitle : undefined;
+  }
   if (siteTitle && siteTitle.toLowerCase() === password.toLowerCase()) {
     return invalidValidationResult;
   }

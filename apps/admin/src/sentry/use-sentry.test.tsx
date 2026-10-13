@@ -4,18 +4,15 @@ import { cleanup, renderHook } from '@testing-library/react';
 import * as Sentry from '@sentry/react';
 import { useSentry } from './use-sentry';
 
-const { envelopes, location, replay, site, currentUser, config, routePattern, editorOwner } =
-  vi.hoisted(() => ({
-    envelopes: [] as string[],
-    location: { pathname: '/tags' },
-    replay: vi.fn<() => FakeReplay | undefined>(),
-    site: vi.fn<() => { site: Record<string, unknown> } | undefined>(),
-    currentUser: vi.fn<() => { roles: Array<{ name: string }> } | undefined>(),
-    config:
-      vi.fn<(options: { enabled?: boolean }) => { config: { version: string } } | undefined>(),
-    routePattern: vi.fn<() => string | null>(),
-    editorOwner: vi.fn<() => 'react' | 'ember' | 'pending'>(),
-  }));
+const { envelopes, location, replay, site, currentUser, config, routePattern } = vi.hoisted(() => ({
+  envelopes: [] as string[],
+  location: { pathname: '/tags' },
+  replay: vi.fn<() => FakeReplay | undefined>(),
+  site: vi.fn<() => { site: Record<string, unknown> } | undefined>(),
+  currentUser: vi.fn<() => { roles: Array<{ name: string }> } | undefined>(),
+  config: vi.fn<(options: { enabled?: boolean }) => { config: { version: string } } | undefined>(),
+  routePattern: vi.fn<() => string | null>(),
+}));
 
 vi.mock('@sentry/react', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@sentry/react')>();
@@ -47,7 +44,6 @@ vi.mock('@tryghost/admin-x-framework/api/config', () => ({
   useBrowseConfig: (options: { enabled?: boolean }) => ({ data: config(options) }),
 }));
 vi.mock('@/routes', () => ({ useRoutePattern: routePattern }));
-vi.mock('@/use-flag-gated-route-owner', () => ({ useFlagGatedRouteOwner: editorOwner }));
 
 const DSN = 'https://public@o0.ingest.sentry.io/1';
 const MASK = 'data-sentry-automations-mask';
@@ -100,7 +96,6 @@ describe('useSentry', () => {
     currentUser.mockReturnValue(undefined);
     config.mockReturnValue(undefined);
     routePattern.mockReturnValue('/tags');
-    editorOwner.mockReturnValue('pending');
   });
 
   afterEach(async () => {
@@ -143,25 +138,6 @@ describe('useSentry', () => {
     renderUseSentry();
 
     expect((await captureProbe())?.tags?.route).toBe('/tags');
-  });
-
-  it('tags events with the editor owner once decided', async () => {
-    const { rerender } = renderUseSentry();
-
-    expect((await captureProbe())?.tags).not.toHaveProperty('editor_owner');
-    expect(editorOwner).toHaveBeenCalledWith('editorReact');
-
-    editorOwner.mockReturnValue('react');
-    rerender();
-    expect((await captureProbe())?.tags).toMatchObject({ editor_owner: 'react' });
-
-    editorOwner.mockReturnValue('ember');
-    rerender();
-    expect((await captureProbe())?.tags).toMatchObject({ editor_owner: 'ember' });
-
-    editorOwner.mockReturnValue('pending');
-    rerender();
-    expect((await captureProbe())?.tags).not.toHaveProperty('editor_owner');
   });
 
   it('reports the full release and only the role once signed in', async () => {

@@ -161,8 +161,8 @@ export class BillingAppConnection {
     }
 
     // The first route the screen asks for after a cold deep link is the one the
-    // iframe is already loading: Ember queues it before its iframe exists and
-    // never sends it again, which would override the app's own first redirect
+    // iframe is already loading; sending it again would override the app's own
+    // first redirect
     const claimed =
       this.srcClaimsLocation && normalizeSubRoute(subRoute) === normalizeSubRoute(this.srcSubRoute);
     this.srcClaimsLocation = false;

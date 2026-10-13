@@ -23,8 +23,7 @@ function asRole(name: StaffRoleName) {
 
 /**
  * The filter bar. What matters most is that chips and the URL stay in lockstep:
- * the five params are what sidebar saved views persist, and the Ember screen
- * reads the same ones while both implementations exist.
+ * the five params are what sidebar saved views persist.
  */
 describe('Posts list filters', () => {
   // The author and tag fields hydrate their selected values as soon as the

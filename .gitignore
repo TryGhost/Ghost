@@ -65,6 +65,9 @@ typings/
 
 # dotenv environment variables file
 .env
+# Per-checkout ports and database for `pnpm dev`
+.ghost-dev.env
+.ghost-dev.sessions/
 
 # IDE
 .idea/
@@ -143,7 +146,6 @@ Caddyfile
 /test-results
 
 # Admin
-/apps/ember-admin/dist
 /apps/admin/test-results/
 
 # Admin Toolbar

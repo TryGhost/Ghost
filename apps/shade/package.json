@@ -137,6 +137,7 @@
     "@storybook/addon-links": "catalog:",
     "@storybook/react-vite": "catalog:",
     "@tailwindcss/postcss": "catalog:",
+    "@testing-library/dom": "catalog:",
     "@testing-library/react": "catalog:",
     "@types/node": "catalog:",
     "@typescript/native": "catalog:",

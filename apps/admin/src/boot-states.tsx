@@ -11,7 +11,7 @@ export function BootLoader() {
     <Stack
       align="center"
       aria-label="Loading Ghost Admin"
-      className="h-full pb-[8vh]"
+      className="fixed inset-0"
       justify="center"
       role="status"
     >
@@ -44,7 +44,6 @@ export function BootError({ error }: { error: Error }) {
       role="alert"
     >
       <Text tone="secondary">{getErrorMessage(error, error.message)}</Text>
-      {/* Reloads rather than refetching so the hidden Ember app boots again as well. */}
       <Button variant="outline" onClick={() => reloadAdmin(`${pathname}${search}`)}>
         Retry
       </Button>

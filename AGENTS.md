@@ -20,8 +20,15 @@ Start with:
   the catalogs in `pnpm-workspace.yaml`; workspace dependencies use
   `workspace:` versions.
 - Run `pnpm bootstrap` before other commands in a fresh checkout or worktree.
-- Use `pnpm check` as the default full validation command. Browser E2E and Ember
-  Admin tests run separately; follow the testing guide.
+- Run Ghost in the background with `pnpm dev:up`, `pnpm dev:status` and
+  `pnpm dev:down`, and give the user the URL they print as a markdown link.
+  Don't background `pnpm dev`: killing its pid leaves Ghost and the dev
+  servers running. Before you finish, stop a stack you started only to check
+  your own work with `pnpm dev:down`; leave running one the user asked for.
+  Subagents always stop theirs, which otherwise run until the parent session
+  exits.
+- Use `pnpm check` as the default full validation command. Browser E2E tests
+  run separately; follow the testing guide.
 - Read the nearest `AGENTS.md` and README before changing a package
   or subsystem. More specific guidance overrides this file.
 - When committing, load and follow `.agents/skills/commit/SKILL.md`.
@@ -59,7 +66,7 @@ migration, private feature flag, Shade component, or internal package.
   at existing `require()` boundaries. Boot owns service initialization; do not
   initialize on the first request.
 - **ESLint:** use the shared factories and dependency rules in the
-  [ESLint configuration README](configs/eslint/README.md). A hand-written config
+  [ESLint configuration README](tools/configs/eslint/README.md). A hand-written config
   must declare every plugin it imports locally.
 - **Analytics:** start with `pnpm dev:analytics` and follow the nearby Tinybird
   READMEs under `ghost/core/server/data/tinybird/`.

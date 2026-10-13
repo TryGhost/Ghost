@@ -6,18 +6,17 @@ import { randomUUID } from 'node:crypto';
 import ObjectId from 'bson-objectid';
 import sinon from 'sinon';
 import logging from '@tryghost/logging';
-const models = require('../../../core/server/models');
+// @ts-expect-error This module lacks type definitions.
+import models from '../../../core/server/models';
 import { createDatabaseAutomationsRepository } from '../../../core/server/services/automations/database-automations-repository';
-const { poll } = require('../../../core/server/services/automations/poll');
-const { MAX_ATTEMPTS } = require('../../../core/server/services/automations/constants');
-const {
-  MEMBER_WELCOME_EMAIL_SLUGS,
-} = require('../../../core/server/services/member-welcome-emails/constants');
+import { poll } from '../../../core/server/services/automations/poll';
+import { MAX_ATTEMPTS } from '../../../core/server/services/automations/constants';
+import { MEMBER_WELCOME_EMAIL_SLUGS } from '../../../core/server/services/member-welcome-emails/constants';
 import { agentProvider, fixtureManager, mockManager } from '../../utils/e2e-framework';
-const {
+import {
   setupAutomationsFixture,
   cleanupAutomationsFixture,
-} = require('../../utils/automations-fixtures');
+} from '../../utils/automations-fixtures';
 
 const db: Knex = models.Base.knex;
 

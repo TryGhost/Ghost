@@ -2,8 +2,7 @@
 // four copies of the same comma-split logic: `utils/publish-options.js`,
 // `components/gh-members-recipient-select.js`,
 // `components/editor/modals/publish-flow.js` and
-// `services/members-count-cache.js`. Behavior (including quirks) is preserved
-// so Ember and React screens classify and rebuild filters identically.
+// `services/members-count-cache.js`. Behavior (including quirks) is preserved.
 
 export const FREE_SEGMENT = 'status:free';
 export const PAID_SEGMENT = 'status:-free';

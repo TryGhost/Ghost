@@ -85,11 +85,9 @@ updates.
 
 ## Browser applications
 
-Admin is a browser application served at `/ghost/`. It currently combines the
-React application in `apps/admin/` with routes that still fall back to the
-legacy Ember application in `apps/ember-admin/`. Both use the Admin API. New
-Admin features are built in React using `admin-x-framework` and Shade; see the
-[Admin README](../../apps/admin/README.md) for the current boundary.
+Admin is the React application in `apps/admin/`, served at `/ghost/` and
+built on the Admin API. Admin features are built using `admin-x-framework` and
+Shade; see the [Admin README](../../apps/admin/README.md).
 
 Portal, Comments, Search, Signup Form, Announcement Bar, and Admin Toolbar are
 separate browser applications. Ghost adds their script configuration to public

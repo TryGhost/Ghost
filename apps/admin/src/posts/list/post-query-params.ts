@@ -89,7 +89,7 @@ function statusClause(statuses: PostStatus[]): string {
  * structure to be parsed.
  *
  * "Blank" matches Ember's `isBlank`, which counts whitespace-only strings, so
- * `?tag=%20%20` produces no clause in either implementation. These strings are
+ * `?tag=%20%20` produces no clause. These strings are
  * compared against saved views and run server-side by bulk delete, so they have
  * to agree exactly.
  */
@@ -104,8 +104,8 @@ function toFilterString(clauses: Array<[string, string | null | undefined]>): st
 }
 
 /**
- * Clause order is fixed (tag, visibility, status, featured, authors) so filters
- * built here compare equal to the ones Ember builds.
+ * Clause order is fixed (tag, visibility, status, featured, authors) so the
+ * same params always build the same filter.
  */
 function filterClauses(
   params: PostListParams,

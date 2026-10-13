@@ -14,13 +14,10 @@ response. Without a DSN nothing initialises and nothing is sent.
 - `admin_build` holds the commit sha of the Admin build the tab loaded, read
   from the `/admin/<sha>/assets/` path Ghost(Pro) serves it from. Admin and Core
   deploy separately, so it can differ from the release. It is absent when Ghost
-  serves Admin itself and in development. Ember's events carry it too.
+  serves Admin itself and in development.
 - Signed-in events carry the user's role as the only user field.
 - The `route` tag holds the matched React route pattern (`/tags/:tagSlug`),
   never the path's ids or slugs.
-- `editor_owner` and `auth_owner` (`react` or `ember`) say which implementation
-  serves the editor and the auth screens. They are absent until that is decided
-  and follow later changes. Ember's events carry them too, as both share one hub.
 - `beforeSend` tags `shown_to_user` (default `false`) and `grammarly`, drops
   events already shown to the user (except the publish flow's, which reports
   only unexpected failures) and events about analytics requests, and replaces

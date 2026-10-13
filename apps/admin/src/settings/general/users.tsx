@@ -83,9 +83,10 @@ const Owner: React.FC<OwnerProps> = ({ user }) => {
           {user.name} &mdash; <strong>Owner</strong>{' '}
           {hasAdminAccess(currentUser) && (
             <Button
-              className="ml-2 h-auto p-0 text-green group-hover:visible hover:text-green md:invisible"
+              className="ml-2 group-hover:visible md:invisible"
+              size="sm"
               type="button"
-              variant="link"
+              variant="ghost"
               onClick={(event) => {
                 event.stopPropagation();
                 showDetailModal();
@@ -179,10 +180,9 @@ const UsersList: React.FC<UsersListProps> = ({ users, groupname }) => {
             {canEdit && (
               <ActionListItemActions visibility="hover">
                 <Button
-                  className="h-auto p-0 font-bold text-green hover:text-green/90 hover:no-underline"
                   size="sm"
                   type="button"
-                  variant="link"
+                  variant="ghost"
                   onClick={() => showDetailModal(user)}
                 >
                   Edit
@@ -449,15 +449,17 @@ const Users: React.FC<{ keywords: string[]; highlight?: boolean }> = ({
 
       {hasNextPage && selectedTab !== 'invited' && (
         <Button
+          size="sm"
           type="button"
-          variant="link"
+          variant="outline"
           onClick={() => void fetchNextPage()}
         >{`Load more (showing ${formatNumber(users.length)}/${formatNumber(totalUsers)} users)`}</Button>
       )}
       {invitesHasNextPage && selectedTab === 'invited' && (
         <Button
+          size="sm"
           type="button"
-          variant="link"
+          variant="outline"
           onClick={() => void fetchNextInvitePage()}
         >{`Load more (showing ${formatNumber(invites.length)}/${formatNumber(totalInvites)} invites)`}</Button>
       )}

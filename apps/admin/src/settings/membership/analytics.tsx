@@ -6,6 +6,7 @@ import {
   FieldContent,
   FieldDescription,
   FieldLabel,
+  Link,
   Separator,
   Switch,
 } from '@tryghost/shade/components';
@@ -13,9 +14,9 @@ import { HostLimitError } from '@tryghost/admin-x-framework/errors';
 import { SettingGroupContent } from '@tryghost/shade/patterns';
 import { getSettingValues, isSettingReadOnly } from '@tryghost/admin-x-framework/api/settings';
 import { useLimiter } from '@tryghost/admin-x-framework/hooks';
-import { useSettingsNavigation } from '@/settings/hooks/use-settings-navigation';
 import { useUpgradeRoute } from '@/settings/hooks/use-upgrade-route';
 import { withErrorBoundary } from '@/settings/components/with-error-boundary';
+import { navigateTo } from '@/utils/navigation';
 
 const Analytics: React.FC<{ keywords: string[] }> = ({ keywords }) => {
   const {
@@ -47,7 +48,6 @@ const Analytics: React.FC<{ keywords: string[] }> = ({ keywords }) => {
 
   const [isWebAnalyticsLimited, setIsWebAnalyticsLimited] = useState(false);
   const limiter = useLimiter();
-  const { updateRoute } = useSettingsNavigation();
   const upgradeRoute = useUpgradeRoute();
 
   useEffect(() => {
@@ -84,14 +84,9 @@ const Analytics: React.FC<{ keywords: string[] }> = ({ keywords }) => {
             ) : (
               <>
                 Cookie-free, first party traffic analytics for your site, powered by{' '}
-                <a
-                  className="text-green"
-                  href="https://ghost.org/integrations/tinybird"
-                  rel="noopener noreferrer"
-                  target="_blank"
-                >
+                <Link href="https://ghost.org/integrations/tinybird" external>
                   Tinybird
-                </a>
+                </Link>
               </>
             )}
           </FieldDescription>
@@ -108,12 +103,11 @@ const Analytics: React.FC<{ keywords: string[] }> = ({ keywords }) => {
           <span className="flex items-start gap-2">
             <span>
               Web analytics is available on the Publisher plan and above.{' '}
-              <span
-                className="cursor-pointer text-green"
-                onClick={() => updateRoute({ route: upgradeRoute, isExternal: true })}
-              >
-                Upgrade now &rarr;
-              </span>
+              <Link asChild>
+                <button type="button" onClick={() => navigateTo(upgradeRoute)}>
+                  Upgrade now
+                </button>
+              </Link>
             </span>
           </span>
         </div>
@@ -122,23 +116,13 @@ const Analytics: React.FC<{ keywords: string[] }> = ({ keywords }) => {
           <span className="flex items-start gap-2">
             <span>
               Web analytics in Ghost is powered by{' '}
-              <a
-                className="font-medium text-green"
-                href="https://tbrd.co/ghost"
-                rel="noopener noreferrer"
-                target="_blank"
-              >
+              <Link href="https://tbrd.co/ghost" external>
                 Tinybird
-              </a>{' '}
+              </Link>{' '}
               and requires configuration to start collecting data.{' '}
-              <a
-                className="font-medium text-green"
-                href="https://docs.ghost.org/install/docker#tinybird-integration"
-                rel="noopener noreferrer"
-                target="_blank"
-              >
-                Get started &rarr;
-              </a>
+              <Link href="https://docs.ghost.org/install/docker#tinybird-integration" external>
+                Get started
+              </Link>
             </span>
           </span>
         </div>
@@ -220,14 +204,9 @@ const Analytics: React.FC<{ keywords: string[] }> = ({ keywords }) => {
     >
       {inputs}
       <div className="items-center-mt-1 flex justify-between">
-        <a
-          className="font-medium text-green"
-          href="https://ghost.org/help/post-analytics/"
-          rel="noopener noreferrer"
-          target="_blank"
-        >
+        <Link href="https://ghost.org/help/post-analytics/" external>
           Learn about analytics
-        </a>
+        </Link>
       </div>
     </TopLevelGroup>
   );

@@ -16,6 +16,7 @@ export {
   withoutUnsplash,
 } from './editor';
 export type { FakePintura } from './editor';
+export { failModuleLoads } from './module-loads';
 export { currentRoute, renderAdminApp } from './render-admin-app';
 export type { RenderAdminAppOptions } from './render-admin-app';
 export { InAppProviders, renderInApp } from './render-in-app';
@@ -61,6 +62,7 @@ export {
   allowUnhandledRequests,
   fakeAdminEndpoint,
   fakeEndpoint,
+  fakeOriginRequests,
   fakeSitePreview,
   settleRequests,
 } from './worker';
@@ -80,7 +82,7 @@ export {
 } from './tinybird';
 export type { TinybirdPipeCapture, TinybirdPipeQuery } from './tinybird';
 export { fakeAdminStats } from './stats';
-export { fakeFrameOrigin } from './frames';
+export { failFrameOrigin, fakeFrameOrigin } from './frames';
 export { unsavedChangesGuarded } from './unsaved-changes-guard';
 export { dragByPointer, settleTransitions, settleAnimations } from './pointer';
 

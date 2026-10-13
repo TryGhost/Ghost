@@ -7,20 +7,12 @@ ARG NODE_VERSION=22.23.3
 FROM node:$NODE_VERSION-bookworm-slim
 
 # Install system dependencies needed for building native modules.
-# watchman: ember-cli (ghost/admin's dev server) auto-detects and prefers it
-# over its default Node-based file watcher, which is far less efficient over
-# a large tree like this bind-mounted monorepo -- without it, ember serve's
-# idle watch mode pegs multiple CPU cores continuously (observed: ~240% CPU
-# at idle, not during an active build). Only benefits ghost-dev's own
-# container; the host-hybrid flow runs ember-cli on the developer's own
-# machine, not in this image, so this has no effect there either way.
 RUN apt-get update && \
     apt-get install -y \
     build-essential \
     curl \
     python3 \
-    git \
-    watchman && \
+    git && \
     rm -rf /var/lib/apt/lists/* && \
     apt clean
 
@@ -40,7 +32,7 @@ COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .pnpmfile.mjs ./
 COPY patches patches
 
 # Copy the manifests of the top-level dirs that hold ghost's dependency
-# closure — ghost itself, koenig/* (the kg-* packages), and configs/* (the
+# closure — ghost itself, koenig/* (the kg-* packages), and tools/configs/* (the
 # shared eslint config, a dev dep in the graph).
 # --parents preserves each file's directory structure (plain COPY globs would
 # flatten them); node_modules is excluded by .dockerignore. apps/* and e2e
@@ -55,20 +47,22 @@ COPY patches patches
 COPY --parents \
     ghost/package.json \
     koenig/*/package.json \
-    configs/*/package.json \
+    tools/configs/*/package.json \
     packages/**/package.json \
     ./
 
 # Copy root lifecycle scripts/hooks needed by `pnpm install`. Only the preinstall
-# hook is taken from the scripts/ workspace — copying the whole dir would bust
+# hook is taken from the tools/scripts/ workspace — copying the whole dir would bust
 # this layer (and the install below) whenever any unrelated script changes. Its
 # package.json comes along so the workspace member pnpm-workspace.yaml declares
 # actually exists; the filtered install below never builds it.
-COPY scripts/package.json scripts/enforce-package-manager.js scripts/
+COPY tools/scripts/package.json tools/scripts/enforce-package-manager.js tools/scripts/
 COPY .github/hooks .github/hooks
 
 # Enable corepack so it can read packageManager from package.json and provide pnpm
 RUN corepack enable
+# node_modules must live in the image, not link into a pnpm store outside it
+ENV pnpm_config_enable_global_virtual_store=false
 
 # Install ONLY ghost's workspace closure (its name is "ghost"; the trailing
 # "..." selects it plus every workspace dependency). Deps live in the shared

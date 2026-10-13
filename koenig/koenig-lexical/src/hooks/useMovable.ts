@@ -220,7 +220,7 @@ export default function useMovable({adjustOnResize, adjustOnDrag} = {}) {
             }
 
             for (const element of (e.path || e.composedPath())) {
-                if (element?.matches?.('input, .ember-basic-dropdown-trigger')) {
+                if (element?.matches?.('input')) {
                     break;
                 }
 

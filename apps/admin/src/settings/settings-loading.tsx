@@ -9,7 +9,9 @@ export function SettingsLoading() {
   return (
     <Stack
       align="center"
-      className={immediate ? 'h-full' : 'delayed-fade-in h-full'}
+      // Fill the positioned panel without relying on percentage heights through
+      // the shell's flex layout and Settings' wrappers.
+      className={immediate ? 'absolute inset-0' : 'delayed-fade-in absolute inset-0'}
       justify="center"
       role="status"
       onAnimationStart={markSettingsSpinnerShown}

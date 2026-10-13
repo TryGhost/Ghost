@@ -13,6 +13,7 @@ import {
 } from './worker';
 import { resetDeclaredResources } from './resources';
 import { guardFrameNavigations, resetFakeFrameOrigins } from './frames';
+import { resetFailedModuleLoads } from './module-loads';
 
 // At import, before the spec module (and the app) loads.
 trackIssuedRequests();
@@ -92,9 +93,13 @@ afterEach(async () => {
           localStorage.removeItem(key);
         }
       }
+      // Where the writer last left the editor's settings panel (admin7EditorImprovements).
+      localStorage.removeItem('ghost-editor-settings-open');
+      // Each draft's remembered newsletter (admin7EditorImprovements).
+      localStorage.removeItem('ghost-editor-draft-newsletters');
       window.location.hash = '';
       try {
-        await resetFakeFrameOrigins();
+        await Promise.all([resetFakeFrameOrigins(), resetFailedModuleLoads()]);
       } finally {
         verifyNoUnhandledRequests();
       }

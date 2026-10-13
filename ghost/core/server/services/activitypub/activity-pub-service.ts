@@ -104,7 +104,23 @@ export class ActivityPubService {
         },
       });
 
+      // The ActivityPub service never answers 404 here, so no service is routed to this site
+      if (res.status === 404) {
+        this.logging.info('No ActivityPub service found - skipping webhook setup');
+        return null;
+      }
+
+      if (!res.ok) {
+        this.logging.warn(`ActivityPub is unavailable (${res.status}) - skipping webhook setup`);
+        return null;
+      }
+
       const body = await res.json();
+
+      if (!body.webhook_secret) {
+        this.logging.error('No webhook secret found - cannot initialise');
+        return null;
+      }
 
       return body.webhook_secret;
     } catch (err: unknown) {
@@ -154,7 +170,6 @@ export class ActivityPubService {
     const secret = await this.getWebhookSecret();
 
     if (!secret) {
-      this.logging.error('No webhook secret found - cannot initialise');
       return;
     }
 

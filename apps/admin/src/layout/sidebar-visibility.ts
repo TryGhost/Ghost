@@ -1,11 +1,4 @@
-import { useEffect } from 'react';
-import { type AdminRouteHandle, useLocation, useMatches } from '@tryghost/admin-x-framework';
-import { useIsEmberOwnedRoute } from '@/routes';
-import {
-  syncEmberFullScreen,
-  useSidebarVisibility as useEmberSidebarVisibility,
-} from '@/ember-bridge';
-import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
+import { type AdminRouteHandle, useMatches } from '@tryghost/admin-x-framework';
 import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
 import { canAccessSettings, isEditorUser } from '@tryghost/admin-x-framework/api/users';
 import { useIsMobile } from '@tryghost/shade/utils';
@@ -28,46 +21,28 @@ function showsSettingsSidebar(handle: unknown): handle is AdminRouteHandle {
   );
 }
 
+/** Whether the current user gets the Settings navigation (Editors only see Staff). */
+export function useHasSettingsNavigation(): boolean {
+  const { data: currentUser } = useCurrentUser();
+  return !!currentUser && canAccessSettings(currentUser) && !isEditorUser(currentUser);
+}
+
 export function useIsSettingsSidebarRoute(): boolean {
   const matches = useMatches();
-  const admin7Settings = useFeatureFlag('admin7settings');
-  const { data: currentUser } = useCurrentUser();
-  const hasSettingsNavigation =
-    !!currentUser && canAccessSettings(currentUser) && !isEditorUser(currentUser);
+  const hasSettingsNavigation = useHasSettingsNavigation();
 
-  return (
-    admin7Settings &&
-    hasSettingsNavigation &&
-    matches.some((match) => showsSettingsSidebar(match.handle))
-  );
+  return hasSettingsNavigation && matches.some((match) => showsSettingsSidebar(match.handle));
 }
 
 export function useRouteHidesAdminSidebar(): boolean {
   const matches = useMatches();
-  const admin7Settings = useFeatureFlag('admin7settings');
   const isMobile = useIsMobile();
 
   return matches.some(
-    (match) =>
-      hidesAdminSidebar(match.handle) ||
-      ((!admin7Settings || isMobile) && showsSettingsSidebar(match.handle)),
+    (match) => hidesAdminSidebar(match.handle) || (isMobile && showsSettingsSidebar(match.handle)),
   );
 }
 
 export function useAdminSidebarVisibility(): boolean {
-  const { pathname } = useLocation();
-  const isEmberOwned = useIsEmberOwnedRoute(pathname);
-  const emberSidebarVisible = useEmberSidebarVisibility();
-  const routeHidesSidebar = useRouteHidesAdminSidebar();
-
-  // Ember can retain fullscreen state after handing navigation to React.
-  // Only let that state govern a screen Ember is currently serving.
-  return !routeHidesSidebar && (!isEmberOwned || emberSidebarVisible);
-}
-
-/** Publishes whether the current route hides the admin sidebar. */
-export function useSyncEmberFullScreen(): void {
-  const routeHidesSidebar = useRouteHidesAdminSidebar();
-
-  useEffect(() => syncEmberFullScreen(routeHidesSidebar), [routeHidesSidebar]);
+  return !useRouteHidesAdminSidebar();
 }

@@ -17,6 +17,7 @@ import { useConfirmation } from '@/settings/providers/confirmation-context';
 import { useSettingsNavigation } from '@/settings/hooks/use-settings-navigation';
 import { useUpgradeRoute } from '@/settings/hooks/use-upgrade-route';
 import { withErrorBoundary } from '@/settings/components/with-error-boundary';
+import { navigateTo } from '@/utils/navigation';
 
 const ChangeTheme: React.FC<{ keywords: string[] }> = ({ keywords }) => {
   const { checkThemeLimitError } = useCheckThemeLimitError();
@@ -32,7 +33,9 @@ const ChangeTheme: React.FC<{ keywords: string[] }> = ({ keywords }) => {
     if (limitError) {
       showLimit({
         prompt: limitError,
-        onOk: () => updateRoute({ route: upgradeRoute, isExternal: true }),
+        onOk: () => {
+          navigateTo(upgradeRoute);
+        },
       });
       return;
     }
@@ -50,7 +53,9 @@ const ChangeTheme: React.FC<{ keywords: string[] }> = ({ keywords }) => {
     if (limitError) {
       showLimit({
         prompt: limitError,
-        onOk: () => updateRoute({ route: upgradeRoute, isExternal: true }),
+        onOk: () => {
+          navigateTo(upgradeRoute);
+        },
       });
       return;
     }

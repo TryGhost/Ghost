@@ -97,8 +97,7 @@ function statusTone(post: PostListItem, isFailed: boolean): string {
 /**
  * The thumbnail, matched to the analytics dashboard's: a 16/10 landscape
  * thumbnail rather than the square this list used to draw, at the same widths
- * and corner radius. Ember's own list is 16/10 too, so this lands on both at
- * once.
+ * and corner radius, as Ember's list drew it.
  *
  * The empty state is analytics' shared placeholder component rather than a
  * restyle of it, so the two lists cannot drift apart.

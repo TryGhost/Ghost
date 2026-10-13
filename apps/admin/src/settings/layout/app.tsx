@@ -9,21 +9,22 @@ import {
 import { ConfirmationProvider } from '@/settings/providers/confirmation-provider';
 import { DialogPortalProvider } from '@/settings/providers/dialog-portal';
 import { Outlet, useLocation } from '@tryghost/admin-x-framework';
-import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import { Stack } from '@tryghost/shade/primitives';
-import { cn } from '@tryghost/shade/utils';
-import { useEffect, useState } from 'react';
+import { startTransition, useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useScrollSectionContext } from '@/settings/hooks/use-scroll-section';
 import { isOpenSectionRequest } from '@/settings/utils/open-section';
-import { useSettingsNavigationSlot } from '@/layout/settings-navigation';
+import {
+  useSettingsNavigationSlot,
+  useSettingsSidebarMorphing,
+} from '@/layout/settings-navigation';
 import { SettingsLoading } from '@/settings/settings-loading';
 
 import { useLazyComponent } from '@/shared/use-lazy-component';
+import { loadSettingsContent } from '@/settings/load-settings';
 
-// The sections are most of Settings' code; loading them separately lets the
-// navigation show first.
-const loadMainContent = () => import('./main-content');
+// Renders the sections even if the sidebar's morph never reports its end
+const SECTIONS_FALLBACK_DELAY = 1000;
 
 interface AppProps {
   upgradeStatus?: UpgradeStatusType;
@@ -84,24 +85,32 @@ function SettingsNavigationPortal() {
 }
 
 export function App({ upgradeStatus }: AppProps) {
-  const admin7Settings = useFeatureFlag('admin7settings');
-  const MainContent = useLazyComponent(loadMainContent);
+  const MainContent = useLazyComponent(loadSettingsContent);
+  // While the floating sidebar grows to show the navigation, the sections wait
+  // for it to finish (or a fallback), so rendering them doesn't stall the morph
+  const sidebarMorphing = useSettingsSidebarMorphing();
+  const [sectionsReady, setSectionsReady] = useState(!sidebarMorphing);
+  useEffect(() => {
+    if (sectionsReady) {
+      return;
+    }
+    const ready = () => startTransition(() => setSectionsReady(true));
+    if (!sidebarMorphing) {
+      ready();
+      return;
+    }
+    const timer = window.setTimeout(ready, SECTIONS_FALLBACK_DELAY);
+    return () => window.clearTimeout(timer);
+  }, [sectionsReady, sidebarMorphing]);
 
   return (
     <SettingsAppProvider upgradeStatus={upgradeStatus}>
-      <div
-        className={cn(
-          'settings-app',
-          admin7Settings && 'h-full min-h-0',
-          !admin7Settings &&
-            '[--color-focus-ring:var(--color-green-500)] [--focus-ring:var(--color-green-500)]',
-        )}
-      >
+      <div className="settings-app h-full min-h-0">
         <ConfirmationProvider>
           <DialogPortalProvider>
             <SettingsLocationSync />
-            {admin7Settings && <SettingsNavigationPortal />}
-            {MainContent ? <MainContent /> : <SettingsLoading />}
+            <SettingsNavigationPortal />
+            {sectionsReady && (MainContent ? <MainContent /> : <SettingsLoading />)}
             <Outlet />
             <DirtyNavigationGuard />
           </DialogPortalProvider>

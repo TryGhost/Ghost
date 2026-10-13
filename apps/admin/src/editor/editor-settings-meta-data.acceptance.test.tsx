@@ -28,7 +28,6 @@ import { publishScreen } from '@/editor/publish/publish.screen';
 const POST_ID = 'abc123';
 const LOADED_AT = '2026-01-01T00:00:00.000Z';
 const CURRENT_USER_ID = '1';
-const FLAG_ON = withoutAutosave({ labs: { editorReact: true } });
 const PUBLISHED_AT = '2025-12-01T10:00:00.000Z';
 const PLACEHOLDER =
   'Search engines will automatically show a custom preview of content related to the search term here if no custom meta description is set.';
@@ -40,7 +39,7 @@ type SavedPost = ReturnType<typeof post>;
 function asRole(name: StaffRoleName) {
   const me = currentUserResponse();
   me.users[0].roles = [staffRole({ name })];
-  return { ...FLAG_ON, boot: { browseMe: { response: me } } };
+  return withoutAutosave({ boot: { browseMe: { response: me } } });
 }
 
 function editorChrome() {
@@ -91,7 +90,7 @@ function countdownIsOver(): boolean {
 describe('Post settings meta data', () => {
   it('saves a canonical URL on the blur that ends the edit and previews it', async () => {
     const saveApi = fakeSavablePost();
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
     await openMetaData();
 
     await editorScreen.settingsCanonicalUrl().fill('https://original.example.com/story/');
@@ -107,7 +106,7 @@ describe('Post settings meta data', () => {
 
   it('changes the canonical URL a post already carries', async () => {
     const saveApi = fakeSavablePost({ canonical_url: 'https://original.example.com/story/' });
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
     await openMetaData();
 
     await expect
@@ -130,7 +129,7 @@ describe('Post settings meta data', () => {
 
   it('clears the canonical URL, and the preview returns to the post’s own address', async () => {
     const saveApi = fakeSavablePost({ canonical_url: 'https://original.example.com/story/' });
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
     await openMetaData();
 
     await editorScreen.settingsCanonicalUrl().fill('');
@@ -146,7 +145,7 @@ describe('Post settings meta data', () => {
     'refuses the canonical URL %s and saves nothing until it is corrected',
     async (invalidUrl) => {
       const saveApi = fakeSavablePost();
-      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+      await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
       await openMetaData();
 
       await editorScreen.settingsCanonicalUrl().fill(invalidUrl);
@@ -176,7 +175,7 @@ describe('Post settings meta data', () => {
 
   it('opens the pane over the section list and comes back from it', async () => {
     fakeSavablePost();
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
     await openMetaData();
 
     // The pane replaces the list it was opened from.
@@ -192,7 +191,7 @@ describe('Post settings meta data', () => {
 
   it('names the panel after the pane it is showing', async () => {
     fakeSavablePost();
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
     await openMetaData();
 
     await expect
@@ -205,7 +204,7 @@ describe('Post settings meta data', () => {
 
   it('closes the pane on Escape', async () => {
     fakeSavablePost();
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
     await openMetaData();
 
     await userEvent.keyboard('{Escape}');
@@ -216,7 +215,7 @@ describe('Post settings meta data', () => {
 
   it('leaves the pane open for an Escape the preview has already answered', async () => {
     fakeSavablePost();
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
     await openMetaData();
 
     await editorScreen.previewButton().click();
@@ -232,7 +231,7 @@ describe('Post settings meta data', () => {
     'saves the focused meta %s edit when Escape closes the pane',
     async (field) => {
       const saveApi = fakeSavablePost();
-      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+      await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
       await openMetaData();
 
       const input =
@@ -252,7 +251,7 @@ describe('Post settings meta data', () => {
 
   it('moves focus into the pane and back to the row it was opened from', async () => {
     fakeSavablePost();
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
     await openMetaData();
 
     await expect
@@ -276,7 +275,7 @@ describe('Post settings meta data', () => {
 
   it('reopens the sidebar on the section list rather than the pane', async () => {
     fakeSavablePost();
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
     await openMetaData();
 
     await editorScreen.settingsToggle().click();
@@ -290,7 +289,7 @@ describe('Post settings meta data', () => {
 
   it('persists a draft’s meta title and description on the blur that ends each edit', async () => {
     const saveApi = fakeSavablePost();
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
     await openMetaData();
 
     await editorScreen.settingsMetaTitle().fill('A better title for search');
@@ -310,7 +309,7 @@ describe('Post settings meta data', () => {
 
   it('saves a published post’s meta title on its own', async () => {
     const saveApi = fakeSavablePost({ status: 'published', published_at: PUBLISHED_AT });
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
     await openMetaData();
 
     await editorScreen.settingsMetaTitle().fill('A better title for search');
@@ -326,7 +325,7 @@ describe('Post settings meta data', () => {
 
   it('counts the characters used against the recommendation', async () => {
     fakeSavablePost();
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
     await openMetaData();
 
     await expect
@@ -348,7 +347,7 @@ describe('Post settings meta data', () => {
   it('refuses to save a meta title longer than the field holds', async () => {
     const saveApi = fakeSavablePost();
     fakeMembersTotal();
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
     await openMetaData();
 
     await editorScreen.settingsMetaTitle().fill('a'.repeat(301));
@@ -394,7 +393,7 @@ describe('Post settings meta data', () => {
     async ({ correctedTitle }) => {
       fakeSavablePost();
       fakeMembersTotal();
-      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+      await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
       await openMetaData();
 
       await editorScreen.settingsMetaTitle().fill('a'.repeat(301));
@@ -423,7 +422,7 @@ describe('Post settings meta data', () => {
 
   it('previews the post’s own title and excerpt until the meta fields carry their own', async () => {
     fakeSavablePost({ custom_excerpt: 'The excerpt this post already has' });
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
     await openMetaData();
 
     const preview = editorScreen.settingsSerpPreview();
@@ -442,7 +441,7 @@ describe('Post settings meta data', () => {
   it('keeps the preview in sync with the inline excerpt while published edits are staged', async () => {
     const saveApi = fakeSavablePost({ status: 'published', published_at: PUBLISHED_AT });
     await renderAdminApp(`/editor/post/${POST_ID}`, {
-      labs: { editorReact: true, editorExcerpt: true },
+      labs: { editorExcerpt: true },
     });
     await openMetaData();
 
@@ -464,7 +463,7 @@ describe('Post settings meta data', () => {
 
   it('explains the result a post with no description of its own gets', async () => {
     fakeSavablePost();
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
     await openMetaData();
 
     await expect.element(editorScreen.settingsSerpPreview()).toHaveTextContent(PLACEHOLDER);

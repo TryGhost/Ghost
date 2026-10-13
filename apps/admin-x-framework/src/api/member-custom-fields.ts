@@ -397,7 +397,6 @@ export const useCreateMemberCustomField = createMutation<
   // by the same token no list here is asked to take a field it did not ask for.
   updateQueries: {
     dataType,
-    emberUpdateType: 'skip',
     update: (newData, currentData) => {
       const current = currentData as MemberCustomFieldsResponseType | undefined;
       if (!current?.members_metafields) {
@@ -452,7 +451,6 @@ export const useReorderMemberCustomFields = createMutation<
   // written to assume they never see.
   updateQueries: {
     dataType,
-    emberUpdateType: 'skip',
     update: (newData, currentData) => {
       const current = currentData as MemberCustomFieldsResponseType | undefined;
       if (!current?.members_metafields) {

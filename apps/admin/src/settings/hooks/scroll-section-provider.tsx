@@ -1,10 +1,8 @@
 import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import { ScrollSectionContext } from './use-scroll-section';
 
-const LEGACY_SCROLL_MARGIN = 193;
-const ADMIN7_SETTINGS_SCROLL_MARGIN = 96;
+const SETTINGS_SCROLL_MARGIN = 96;
 
 const scrollToSection = (
   element: HTMLDivElement,
@@ -181,8 +179,7 @@ const getIntersectingSections = (
 export const ScrollSectionProvider: React.FC<{
   children: ReactNode;
 }> = ({ children }) => {
-  const admin7Settings = useFeatureFlag('admin7settings');
-  const scrollMargin = admin7Settings ? ADMIN7_SETTINGS_SCROLL_MARGIN : LEGACY_SCROLL_MARGIN;
+  const scrollMargin = SETTINGS_SCROLL_MARGIN;
   const [navigatedSection, _setNavigatedSection] = useState<string | null>(null);
   const sectionElements = useRef<Record<string, HTMLDivElement>>({});
   const intersectionObserver = useRef<IntersectionObserver | null>(null);
@@ -279,13 +276,9 @@ export const ScrollSectionProvider: React.FC<{
 
   useEffect(() => () => releaseHold.current?.(), []);
 
-  // Without the legacy 60vh bottom spacer, the last sections can't scroll into
-  // the observer's zone, so at the bottom the spy falls back to what's in view.
+  // The last sections can't scroll into the observer's zone, so at the bottom
+  // the spy falls back to what's in view.
   useEffect(() => {
-    if (!admin7Settings) {
-      return;
-    }
-
     const handleScroll = (event: Event) => {
       if (event.target instanceof HTMLElement && event.target.id === 'settings-scroller') {
         setScrolledToBottom(isScrolledToBottom(event.target));
@@ -295,7 +288,7 @@ export const ScrollSectionProvider: React.FC<{
     // Capture on the document, since the scroller remounts with the settings content.
     document.addEventListener('scroll', handleScroll, { capture: true, passive: true });
     return () => document.removeEventListener('scroll', handleScroll, { capture: true });
-  }, [admin7Settings]);
+  }, []);
 
   const currentSection = useMemo(() => {
     const root = scrolledToBottom ? document.getElementById('settings-scroller') : null;

@@ -8,7 +8,6 @@ import { z } from 'zod';
 import config from '../../../shared/config';
 // @ts-expect-error This module lacks type definitions.
 import labs from '../../../shared/labs';
-// @ts-expect-error This module lacks type definitions.
 import settingsCache from '../../../shared/settings-cache';
 import { knex } from '../../data/db';
 // @ts-expect-error This module lacks type definitions.

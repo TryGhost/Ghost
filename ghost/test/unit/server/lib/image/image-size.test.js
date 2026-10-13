@@ -438,6 +438,21 @@ describe('lib/image: image size', function () {
       );
     });
 
+    it('[success] requests URLs the validator rejects in development', async function () {
+      const url = 'http://localhost:2368/favicon.png';
+
+      const requestMock = nock('http://localhost:2368').get('/favicon.png').reply(200, GIF1x1);
+
+      const imageSize = createImageSize({
+        config: { get: (key) => (key === 'env' ? 'development' : undefined) },
+        validator: { isURL: () => false },
+      });
+      const res = await imageSize.getImageSizeFromUrl(url);
+
+      assert.equal(requestMock.isDone(), true);
+      assertImageObject(res, { url, width: 1, height: 1 });
+    });
+
     it('[failure] will handle responses timing out', async function () {
       const url =
         'https://static.wixstatic.com/media/355241_d31358572a2542c5a44738ddcb59e7ea.jpg_256';

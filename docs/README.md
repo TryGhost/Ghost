@@ -36,7 +36,6 @@ setup, development variants, and troubleshooting.
 Ghost/
 ├── apps/              # Admin and public frontend apps
 │   ├── admin/          # React Admin
-│   ├── ember-admin/    # Legacy Ember Admin
 │   ├── portal/         # Member Portal
 │   ├── comments-ui/    # Comments
 │   └── shade/          # Admin design system
@@ -47,10 +46,12 @@ Ghost/
 │   └── test/           # Server tests
 ├── koenig/            # Editor and content-format packages
 ├── packages/          # Shared libraries and adapter contracts
-├── configs/           # Shared build, lint, test, and TypeScript config
+├── tools/             # Repository tooling workspaces
+│   ├── configs/       # Shared build, lint, test, and TypeScript config
+│   ├── scripts/       # Repository automation
+│   └── gx/            # Contributor CLI and code generators
 ├── e2e/               # Browser end-to-end tests
-├── docker/            # Local development containers and services
-└── scripts/           # Repository tooling
+└── docker/            # Local development containers and services
 ```
 
 pnpm links the workspaces and Nx runs their tasks in dependency order. For more
@@ -129,11 +130,11 @@ For more detail, see the [contribution workflow](contributing/workflow.md).
 
 Use `pnpm check` as the default one-stop command for formatting checks, linting,
 and testing. Add tests at the closest layer to the behavior you changed. Browser
-end-to-end tests and Ember Admin tests run separately from `pnpm check`.
+end-to-end tests run separately from `pnpm check`.
 
 For more detail, see the [testing guide](contributing/testing.md) including how
-to choose a test suite, run focused tests, and use the separate browser and
-Ember Admin test lanes.
+to choose a test suite, run focused tests, and use the separate browser test
+lane.
 
 ### Shipping
 

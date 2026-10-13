@@ -31,7 +31,7 @@ describe('Settings layout', () => {
   it('returns to the route that opened settings', async () => {
     fakeSettingsScreens();
     fakeTags([]);
-    await renderAdminApp('/tags', { labs: { admin7settings: true } });
+    await renderAdminApp('/tags');
 
     await sidebarScreen.navLink('Settings').click();
     await expect.poll(currentRoute).toBe('/settings');
@@ -43,7 +43,7 @@ describe('Settings layout', () => {
   it('lets keyboard users reach Settings sections', async () => {
     fakeSettingsScreens();
     fakeAnalyticsOverview();
-    await renderAdminApp('/settings', { labs: { admin7settings: true } });
+    await renderAdminApp('/settings');
 
     await expect.element(settingsScreen.search()).toHaveFocus();
     await userEvent.tab();
@@ -62,7 +62,7 @@ describe('Settings layout', () => {
   it('keeps the Settings content scrollable inside the shell', async () => {
     fakeSettingsScreens();
     fakeAnalyticsOverview();
-    await renderAdminApp('/settings', { labs: { admin7settings: true } });
+    await renderAdminApp('/settings');
 
     const scroller = () => document.getElementById('settings-scroller');
     await expect.poll(scroller).not.toBeNull();
@@ -75,7 +75,7 @@ describe('Settings layout', () => {
   it('falls back to the landing route when nothing opened settings', async () => {
     fakeSettingsScreens();
     fakeAnalyticsOverview();
-    await renderAdminApp('/settings', { labs: { admin7settings: true } });
+    await renderAdminApp('/settings');
 
     await settingsScreen.exitButton().click();
     await expect.poll(currentRoute).toBe('/analytics');
@@ -84,7 +84,7 @@ describe('Settings layout', () => {
   it('returns to the opening route on ESC', async () => {
     fakeSettingsScreens();
     fakeTags([]);
-    await renderAdminApp('/tags', { labs: { admin7settings: true } });
+    await renderAdminApp('/tags');
 
     await sidebarScreen.navLink('Settings').click();
     await expect.poll(currentRoute).toBe('/settings');
@@ -95,45 +95,39 @@ describe('Settings layout', () => {
     await expect.poll(currentRoute).toBe('/tags');
   });
 
-  it.each([false, true])(
-    'can stay on or leave a dirty page with admin7settings %s',
-    async (admin7settings) => {
-      fakeSettingsScreens();
-      fakeAnalyticsOverview();
-      await renderAdminApp('/settings', { labs: { admin7settings } });
+  it('can stay on or leave a dirty page', async () => {
+    fakeSettingsScreens();
+    fakeAnalyticsOverview();
+    await renderAdminApp('/settings');
 
-      await settingsScreen.editTitle('New Site Title');
-      await settingsScreen.exitButton().click();
+    await settingsScreen.editTitle('New Site Title');
+    await settingsScreen.exitButton().click();
 
-      await expect.element(settingsScreen.confirmationModal()).toHaveTextContent(/leave/i);
-      await settingsScreen.confirmationAction('Stay').click();
-      await expect.poll(currentRoute).toBe('/settings');
-      await expect(settingsScreen.confirmationModal()).toHaveCount(0);
+    await expect.element(settingsScreen.confirmationModal()).toHaveTextContent(/leave/i);
+    await settingsScreen.confirmationAction('Stay').click();
+    await expect.poll(currentRoute).toBe('/settings');
+    await expect(settingsScreen.confirmationModal()).toHaveCount(0);
 
-      await settingsScreen.exitButton().click();
-      await settingsScreen.confirmationAction('Leave').click();
-      await expect.poll(currentRoute).toBe('/analytics');
-    },
-  );
+    await settingsScreen.exitButton().click();
+    await settingsScreen.confirmationAction('Leave').click();
+    await expect.poll(currentRoute).toBe('/analytics');
+  });
 
-  it.each([false, true])(
-    'confirms before leaving a dirty page with Escape and admin7settings %s',
-    async (admin7settings) => {
-      fakeSettingsScreens();
-      await renderAdminApp('/settings', { labs: { admin7settings } });
+  it('confirms before leaving a dirty page with Escape', async () => {
+    fakeSettingsScreens();
+    await renderAdminApp('/settings');
 
-      await settingsScreen.editTitle('New Site Title');
-      // Opening once synchronizes the page-level dirty-state effect; Stay
-      // preserves that dirty state for the Escape path under test.
-      await settingsScreen.exitButton().click();
-      await settingsScreen.confirmationAction('Stay').click();
-      await expect(settingsScreen.confirmationModal()).toHaveCount(0);
-      await userEvent.keyboard('{Escape}');
+    await settingsScreen.editTitle('New Site Title');
+    // Opening once synchronizes the page-level dirty-state effect; Stay
+    // preserves that dirty state for the Escape path under test.
+    await settingsScreen.exitButton().click();
+    await settingsScreen.confirmationAction('Stay').click();
+    await expect(settingsScreen.confirmationModal()).toHaveCount(0);
+    await userEvent.keyboard('{Escape}');
 
-      await expect.element(settingsScreen.confirmationModal()).toHaveTextContent(/leave/i);
-      await expect.poll(currentRoute).toBe('/settings');
-    },
-  );
+    await expect.element(settingsScreen.confirmationModal()).toHaveTextContent(/leave/i);
+    await expect.poll(currentRoute).toBe('/settings');
+  });
 
   it('closes a modal dropdown with Escape without closing the modal', async () => {
     fakeSettingsScreens();
@@ -176,7 +170,7 @@ describe('Settings layout on mobile', () => {
     fakeSettingsScreens();
     fakeTags([]);
     await page.viewport(390, 844);
-    await renderAdminApp('/tags', { labs: { admin7settings: true } });
+    await renderAdminApp('/tags');
 
     await toggleSidebar().click();
     await sheetLink('Settings').click();
@@ -203,7 +197,6 @@ describe('Settings layout on mobile', () => {
     const me = currentUserResponse();
     me.users[0].roles = [staffRole({ name: 'Editor' })];
     await renderAdminApp('/settings/staff', {
-      labs: { admin7settings: true },
       boot: { browseMe: { response: me } },
     });
 
@@ -221,7 +214,7 @@ describe('Settings layout on mobile', () => {
     fakeSettingsScreens();
     fakeAnalyticsOverview();
     await page.viewport(390, 844);
-    await renderAdminApp('/settings', { labs: { admin7settings: true } });
+    await renderAdminApp('/settings');
 
     await settingsScreen.search().fill('zzzz');
 
@@ -232,7 +225,7 @@ describe('Settings layout on mobile', () => {
   it('keeps unsaved edits and Settings controls across mobile and desktop', async () => {
     fakeSettingsScreens();
     fakeAnalyticsOverview();
-    await renderAdminApp('/settings', { labs: { admin7settings: true } });
+    await renderAdminApp('/settings');
 
     await settingsScreen.editTitle('Unsaved after resize');
 

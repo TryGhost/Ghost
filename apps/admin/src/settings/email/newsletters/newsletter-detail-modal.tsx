@@ -60,6 +60,7 @@ import { renderReplyToEmail, renderSenderEmail } from '@/settings/utils/newslett
 import { textColorForBackgroundColor } from '@tryghost/color-utils';
 import { toast } from 'sonner';
 import { useGlobalData } from '@/settings/providers/global-data-context';
+import { navigateTo } from '@/utils/navigation';
 
 const ReplyToEmailField: React.FC<{
   newsletter: Newsletter;
@@ -125,7 +126,6 @@ const Sidebar: React.FC<{
   clearError: (field: string) => void;
 }> = ({ newsletter, onlyOne, updateNewsletter, validate, errors, clearError }) => {
   type FontOption = { value: string; label: string; className?: string };
-  const { updateRoute } = useSettingsNavigation();
   const upgradeRoute = useUpgradeRoute();
   const { mutateAsync: editNewsletter } = useEditNewsletter();
   const limiter = useLimiter();
@@ -220,7 +220,9 @@ const Sidebar: React.FC<{
         if (error instanceof HostLimitError) {
           showLimit({
             prompt: error.message || `Your current plan doesn't support more newsletters.`,
-            onOk: () => updateRoute({ route: upgradeRoute, isExternal: true }),
+            onOk: () => {
+              navigateTo(upgradeRoute);
+            },
           });
           return;
         } else {

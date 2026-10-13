@@ -10,8 +10,8 @@ import type { SearchItem, SearchSource, SearchSourceContext } from './search-sou
 
 /**
  * Loads one `search-index/*` list. It's keyed under the resource's data type, so
- * the invalidation that follows most saves (in React or Ember) marks it stale
- * too; a React post or page edit writes the saved entry into it instead.
+ * the invalidation that follows most saves marks it stale too; a post or page
+ * edit writes the saved entry into it instead.
  */
 function useSearchIndex(key: SearchIndexKey, enabled: boolean) {
   const fetchApi = useFetchApi();

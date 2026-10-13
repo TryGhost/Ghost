@@ -55,11 +55,10 @@ const NewsletterItemContainer: React.FC<Partial<SortableItemContainerProps>> = (
       </ActionListItemContent>
       <ActionListItemActions>
         <Button
-          className="h-auto p-0 font-bold text-green hover:text-green/90 hover:no-underline"
           data-testid="edit-newsletter-button"
           size="sm"
           type="button"
-          variant="link"
+          variant="ghost"
           onClick={showDetails}
         >
           Edit

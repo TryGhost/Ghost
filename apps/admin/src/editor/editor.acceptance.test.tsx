@@ -18,38 +18,16 @@ import { editorScreen } from '@/editor/editor.screen';
 import { postsListScreen } from '@/posts/list/posts-list.screen';
 import { clearStickyPostFilters } from '@/posts/list/posts-sticky-filters';
 
-const FLAG_ON = { labs: { editorReact: true } };
-const FLAG_OFF = { labs: { editorReact: false } };
-
-/**
- * `EmberRoot` reparents the `#ember-app` stand-in out of `body` into its own
- * wrapper and leaves that wrapper `hidden` until a route registers an Ember
- * fallback, so both conditions have to hold — the stand-in is still parented to
- * `body` on a React route.
- */
-function emberShellShown(): boolean {
-  const app = document.getElementById('ember-app');
-  const emberRoot = app?.parentElement;
-  if (!app || !emberRoot || emberRoot === document.body) {
-    return false;
-  }
-  return !emberRoot.hidden && app.checkVisibility();
-}
-
-/**
- * The editor route mounts only when its feature flag is enabled. Disabled and
- * missing flags leave it unmounted.
- */
-describe('Editor flag', () => {
+describe('Editor route', () => {
   function fakeEditorWorld() {
     fakeEditorChrome();
     fakeAdminEndpoint('GET', /^\/posts\/abc123\/\?/, { posts: [post({ id: 'abc123' })] });
     fakeAdminEndpoint('GET', /^\/pages\/abc123\/\?/, { pages: [post({ id: 'abc123' })] });
   }
 
-  it('renders the React editor when the flag is on', async () => {
+  it('renders the editor for a post', async () => {
     fakeEditorWorld();
-    await renderAdminApp('/editor/post/abc123', FLAG_ON);
+    await renderAdminApp('/editor/post/abc123');
 
     await expect.element(editorScreen.root()).toBeVisible();
     await expect.element(editorScreen.backLink('post')).toHaveAttribute('href', '#/posts');
@@ -57,68 +35,37 @@ describe('Editor flag', () => {
 
   it('serves a new-post URL too', async () => {
     fakeEditorWorld();
-    await renderAdminApp('/editor/post', FLAG_ON);
+    await renderAdminApp('/editor/post');
 
     await expect.element(editorScreen.root()).toBeVisible();
   });
 
   it('returns page editors to the pages list', async () => {
     fakeEditorWorld();
-    await renderAdminApp('/editor/page/abc123', FLAG_ON);
+    await renderAdminApp('/editor/page/abc123');
 
     await expect.element(editorScreen.root()).toBeVisible();
     await expect.element(editorScreen.backLink('page')).toHaveAttribute('href', '#/pages');
   });
-
-  it('leaves the editor route to Ember when the flag is off', async () => {
-    fakeEditorChrome();
-    await renderAdminApp('/editor/post/abc123', FLAG_OFF);
-
-    await expect.poll(emberShellShown).toBe(true);
-    await expect(editorScreen.root()).toHaveCount(0);
-  });
-
-  it('leaves the editor route to Ember when the flag is absent', async () => {
-    fakeEditorChrome();
-    await renderAdminApp('/editor/post/abc123');
-
-    await expect.poll(emberShellShown).toBe(true);
-    await expect(editorScreen.root()).toHaveCount(0);
-  });
 });
 
-/**
- * A force upgrade sends the React editor to billing, as it does every other
- * React screen. Ember enforces it on its own editor.
- */
+/** A force upgrade sends the editor to billing, as it does every other screen. */
 describe('Editor force upgrade', () => {
-  function duringForceUpgrade({ labs }: { labs: Record<string, boolean> }) {
+  function duringForceUpgrade() {
     const config = configResponse();
     config.config.hostSettings = { forceUpgrade: true };
-    return { labs, boot: { browseConfig: { response: config } } };
+    return { boot: { browseConfig: { response: config } } };
   }
 
-  // Until the current user loads, the shell shows Ember outside the layout's `main`.
-  function emberRouteShown(): boolean {
-    return emberShellShown() && Boolean(document.getElementById('ember-app')?.closest('main'));
-  }
-
-  it('sends the React editor to billing', async () => {
+  it('sends the editor to billing', async () => {
     fakeEditorChrome();
     const postRead = fakeAdminEndpoint('GET', /^\/posts\/abc123\/\?/, {
       posts: [post({ id: 'abc123' })],
     });
-    await renderAdminApp('/editor/post/abc123', duringForceUpgrade(FLAG_ON));
+    await renderAdminApp('/editor/post/abc123', duringForceUpgrade());
 
     await expect.poll(currentRoute).toBe('/pro');
     expect(postRead.requests).toHaveLength(0);
-  });
-
-  it('leaves the redirect to Ember while Ember serves the editor', async () => {
-    await renderAdminApp('/editor/post/abc123', duringForceUpgrade(FLAG_OFF));
-
-    await expect.poll(emberRouteShown).toBe(true);
-    expect(currentRoute()).toBe('/editor/post/abc123');
   });
 });
 
@@ -154,7 +101,7 @@ describe('Editor analytics breadcrumb', () => {
     },
   ])('leads back to $from', async ({ editorReturn }) => {
     fakePublishedPost();
-    await renderAdminApp('/editor/post/abc123', { ...FLAG_ON, locationState: { editorReturn } });
+    await renderAdminApp('/editor/post/abc123', { locationState: { editorReturn } });
 
     await expect
       .element(editorScreen.analyticsBackLink())
@@ -165,7 +112,6 @@ describe('Editor analytics breadcrumb', () => {
   it('does not lead back to analytics for a new post', async () => {
     fakeEditorChrome();
     await renderAdminApp('/editor/post', {
-      ...FLAG_ON,
       locationState: { editorReturn: '/posts/analytics/abc123' },
     });
 
@@ -184,7 +130,7 @@ describe('Editor analytics breadcrumb', () => {
     '/posts/analytics/abc123/..',
   ])('ignores the return path %s', async (editorReturn) => {
     fakePublishedPost();
-    await renderAdminApp('/editor/post/abc123', { ...FLAG_ON, locationState: { editorReturn } });
+    await renderAdminApp('/editor/post/abc123', { locationState: { editorReturn } });
 
     await expect.element(editorScreen.backLink('post')).toHaveAttribute('href', '#/posts');
     await expect(editorScreen.analyticsBackLink()).toHaveCount(0);
@@ -193,7 +139,6 @@ describe('Editor analytics breadcrumb', () => {
   it('hides the status line unless the newsletter failed', async () => {
     fakePublishedPost();
     await renderAdminApp('/editor/post/abc123', {
-      ...FLAG_ON,
       locationState: { editorReturn: '/posts/analytics/abc123' },
     });
 
@@ -206,7 +151,6 @@ describe('Editor analytics breadcrumb', () => {
       email: { id: 'email-1', status: 'failed', email_count: 20, opened_count: 0 },
     });
     await renderAdminApp('/editor/post/abc123', {
-      ...FLAG_ON,
       locationState: { editorReturn: '/posts/analytics/abc123' },
     });
 
@@ -225,7 +169,6 @@ describe('Editor analytics breadcrumb', () => {
       { status: 500 },
     );
     await renderAdminApp('/editor/post/abc123', {
-      ...FLAG_ON,
       locationState: { editorReturn: '/posts/analytics/abc123' },
     });
 
@@ -261,7 +204,7 @@ describe('Editor list breadcrumb', () => {
         tags: [tag({ name: 'Engineering', slug: 'engineering' })],
       });
       const listUrl = `/${resource}?type=draft&tag=engineering&order=title+asc`;
-      await renderAdminApp(listUrl, { labs: { editorReact: true } });
+      await renderAdminApp(listUrl);
 
       await expect.element(postsListScreen.filterBar()).toHaveTextContent('Engineering');
       await postsListScreen.listItems().first().click();

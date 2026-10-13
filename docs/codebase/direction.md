@@ -13,11 +13,8 @@ focused guide exists, follow that guide for implementation details.
 
 ## Main priorities
 
-Our two most important priorities are:
-
-1. **React:** move Ghost Admin onto React and off Ember.
-2. **Type safety:** move the codebase to TypeScript and validate runtime
-   boundaries with Zod.
+Our most important priority is **type safety**: move the codebase to
+TypeScript and validate runtime boundaries with Zod.
 
 ## Status terms
 
@@ -32,7 +29,6 @@ Our two most important priorities are:
 
 | Area                 | Direction                                            | Status           |
 | -------------------- | ---------------------------------------------------- | ---------------- |
-| Admin UI             | Ember to React                                       | Active migration |
 | Application code     | JavaScript to TypeScript                             | Active migration |
 | Node.js modules      | CommonJS to ESM                                      | Active migration |
 | Runtime boundaries   | Validate unknown data with Zod                       | Exploring        |
@@ -77,12 +73,7 @@ that every migration path is settled:
 ### Build Admin features in React
 
 Build new Admin UI in [`apps/admin/`](../../apps/admin/) with
-`admin-x-framework` for API access and Shade for UI. Do not add a new Ember
-route or use Ember merely because an older version of the feature does.
-
-Migrate an existing Ember feature at a coherent product boundary. React and
-Ember still ship together, so preserve navigation, authentication, shared
-state, and older-server behavior across the bridge. The
+`admin-x-framework` for API access and Shade for UI. The
 [Admin README](../../apps/admin/README.md) describes the current integration.
 
 ### Use TypeScript

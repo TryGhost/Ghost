@@ -23,11 +23,8 @@ const schemaViews = schemaModule.views || {};
 //
 // MySQL restores via a same-server `SHOW CREATE TABLE` + `INSERT ... SELECT`.
 //
-// SCOPE: only the db.reset() provisioning path (agentProvider-based e2e / e2e-api
-// / e2e-* suites) uses this. The getFixtureOps `testUtils.setup()` path
-// (integration/legacy) opens Ghost's bookshelf connection BEFORE provisioning, so
-// that path still does a full init — those suites run isolate:true (a fresh
-// process per file), so the per-file boot, not provisioning, is their cost.
+// SCOPE: db-utils' reset() and teardown() provision from the template.
+// `testUtils.setup()` on a database that does not exist yet still runs a full init.
 
 const getResetTables = () => {
   return schemaTables.concat(['migrations']);
@@ -205,6 +202,7 @@ const dropRunDatabases = async (run) => {
 
 module.exports = {
   buildTemplate,
+  getForkTemplateDatabase,
   restoreFromTemplate,
   dropRunDatabases,
 };
