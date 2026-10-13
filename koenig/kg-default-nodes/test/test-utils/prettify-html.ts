@@ -1,10 +1,10 @@
-import Prettier from '@prettier/sync';
-import {minify} from './minify-html.js';
+import Prettier from 'prettier';
+import {minify} from 'html-minifier-next';
 
-export function prettifyHTML(html: string): string {
-    const minified = minify(html, {collapseWhitespace: true, collapseInlineTagWhitespace: true});
+export async function prettifyHTML(html: string): Promise<string> {
+    const minified = await minify(html, {collapseWhitespace: true, collapseInlineTagWhitespace: true});
     // Renderer comparisons ignore layout whitespace around inline elements.
-    const prettified = Prettier.format(minified, {parser: 'html', htmlWhitespaceSensitivity: 'ignore'});
+    const prettified = await Prettier.format(minified, {parser: 'html', htmlWhitespaceSensitivity: 'ignore'});
 
     return prettified;
 }

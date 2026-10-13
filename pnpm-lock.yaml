@@ -602,9 +602,6 @@ catalogs:
     luxon:
       specifier: 3.7.2
       version: 3.7.2
-    make-synchronized:
-      specifier: 0.8.0
-      version: 0.8.0
     markdownlint-cli2:
       specifier: 0.23.3
       version: 0.23.3
@@ -2907,9 +2904,6 @@ importers:
       '@lexical/html':
         specifier: 0.13.1
         version: 0.13.1(lexical@0.13.1)
-      '@prettier/sync':
-        specifier: 0.6.1
-        version: 0.6.1(prettier@3.9.9)
       '@types/jsdom':
         specifier: 'catalog:'
         version: 30.0.0
@@ -2937,9 +2931,6 @@ importers:
       jsdom:
         specifier: 'catalog:'
         version: 30.0.1(@noble/hashes@1.8.0)
-      make-synchronized:
-        specifier: 'catalog:'
-        version: 0.8.0(prettier@3.9.9)
       prettier:
         specifier: 'catalog:'
         version: 3.9.9
