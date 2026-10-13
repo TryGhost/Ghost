@@ -38,7 +38,6 @@ Run `pnpm gx db rebuild-development-tables` after editing development-only table
 schemas. This drops and recreates the listed tables, discarding their data.
 Start the development database first. gx uses the existing development-environment
 runner and the checkout's Ghost working directory; it does not start services.
-The Ghost `migrate:rebuild-in-development-tables` shortcut forwards to gx.
 
 The moved command uses `.cts` to preserve its CommonJS boundary with Core. It is
 checked with Core's TypeScript configuration; the other gx commands use the
