@@ -451,18 +451,25 @@ describe('Managing apps', () => {
   });
 
   it('ends the session when the installation moves on, and starts another', async () => {
-    const { sessionsApi, set } = await fakeAppPage(installation());
+    const { sessionsApi, readApi, set } = await fakeAppPage(installation());
     await renderAdminApp(APP_ROUTE, { labs });
     await expect.element(appsScreen.frame()).toBeVisible();
     expect((await appState()).context?.session).toEqual({ revision: 0 });
+    expect(readApi.requests).toHaveLength(0);
 
     // Changed while the publisher was away from the tab, which reads it again on return.
     set(installation({ revision: 1, manifest: manifest({ description: 'Episodes.' }) }));
+    // And again by the time the next session starts, so the read the last session left
+    // behind is behind this one too.
+    sessionsApi.set(installation({ revision: 2 }));
     window.dispatchEvent(new Event('visibilitychange'));
 
     await expect.poll(() => sessionsApi.requests.length).toBe(2);
     await expect.element(appsScreen.frame()).toBeVisible();
-    await expect.poll(async () => (await appState()).context?.session).toEqual({ revision: 1 });
+    await expect.poll(async () => (await appState()).context?.session).toEqual({ revision: 2 });
+    // The new session isn't ended by what the last one read, and reads nothing to start.
+    expect(sessionsApi.requests).toHaveLength(2);
+    expect(readApi.requests).toHaveLength(1);
   });
 
   it('starts the app afresh when its page reloads itself', async () => {
