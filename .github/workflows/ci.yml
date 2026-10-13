@@ -314,8 +314,8 @@ jobs:
           ]' <<< "$PLAYWRIGHT_PROJECTS")
           echo "affected_playwright_matrix=$PLAYWRIGHT_MATRIX" >> "$GITHUB_OUTPUT"
 
-          # Build the publish matrix for affected public apps. Matrix context
-          # isn't available in a job-level `if:`, so the publish job can't filter
+          # Select affected projects for Shade and public apps. Matrix context
+          # isn't available in a job-level `if:`, so the public-app job can't filter
           # itself per-app — instead we emit the matrix here and it skips when
           # the result is `[]`. The publish job's own is_main / event gates keep
           # tags and PRs from publishing regardless of what this lists.
@@ -2631,7 +2631,7 @@ jobs:
     if: |
       always()
       && github.repository == 'TryGhost/Ghost'
-      && github.event_name == 'push'
+      && github.event_name != 'pull_request'
       && needs.job_setup.outputs.is_main == 'true'
       && needs.job_setup.result == 'success'
       && needs.job_lint.result == 'success'
@@ -2655,20 +2655,59 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           install-args: --ignore-scripts
+          store-cache: 'false'
           trust-lockfile: 'true'
 
+      # Compare packed files at the live version, including runtime dependencies.
+      - name: Check for package changes
+        id: package
+        working-directory: apps/shade
+        run: |
+          LATEST=$(node "$GITHUB_WORKSPACE/tools/scripts/compute-next-app-version.cjs" --latest .)
+          if [ -z "$LATEST" ]; then
+            echo "No release in this alpha line yet"
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          pnpm pkg set version="$LATEST"
+          pnpm nx build @tryghost/shade
+
+          COMPARE_DIR="$RUNNER_TEMP/shade-compare"
+          mkdir -p "$COMPARE_DIR/current" "$COMPARE_DIR/published"
+          pnpm pack --out "$COMPARE_DIR/current.tgz"
+          curl -fsSL "$(pnpm view "@tryghost/shade@$LATEST" dist.tarball)" -o "$COMPARE_DIR/published.tgz"
+          tar -xzf "$COMPARE_DIR/current.tgz" -C "$COMPARE_DIR/current"
+          tar -xzf "$COMPARE_DIR/published.tgz" -C "$COMPARE_DIR/published"
+
+          # Dev tooling and commit metadata alone do not need a new release.
+          for package in "$COMPARE_DIR/current/package" "$COMPARE_DIR/published/package"; do
+            jq -S 'del(.devDependencies, .scripts, .nx, .gitHead)' "$package/package.json" > "$package/normalized.json"
+            mv "$package/normalized.json" "$package/package.json"
+          done
+
+          if diff -rq "$COMPARE_DIR/published/package" "$COMPARE_DIR/current/package"; then
+            echo "Package matches @tryghost/shade@$LATEST, skipping publish"
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Determine release version
+        if: steps.package.outputs.changed == 'true'
         working-directory: apps/shade
         run: |
           NEXT_VERSION=$(node "$GITHUB_WORKSPACE/tools/scripts/compute-next-app-version.cjs" .)
           pnpm pkg set version="$NEXT_VERSION"
 
       - name: Build Shade
+        if: steps.package.outputs.changed == 'true'
         run: pnpm nx build @tryghost/shade
 
       - name: Publish to npm
+        if: steps.package.outputs.changed == 'true'
         working-directory: apps/shade
-        run: pnpm publish --tag next --access public --provenance --no-git-checks
+        run: pnpm publish --provenance --no-git-checks
 
   # Publishes @tryghost/* public apps to npm via OIDC trusted publishing.
   # Runs only on push-to-main — never on pull_request — so the `id-token: write`

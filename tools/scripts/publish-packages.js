@@ -22,11 +22,10 @@ import { getWorkspace, getPublishablePackages } from './lib/pnpm.js';
  * pnpm-workspace.yaml `versioning.ignore`. Ghost itself is ignored there and
  * ships via its own tarball job.
  *
- * Usage: node tools/scripts/publish-packages.js [--dry-run] [--tag <tag>] [--package <name>]...
+ * Usage: node tools/scripts/publish-packages.js [--dry-run] [--package <name>]...
  *
  * --package restricts the run to the named package(s) — the escape hatch for
- * out-of-band publishes. --tag overrides the npm dist-tag for this run; omitted,
- * each package keeps its configured tag (or npm's default, latest).
+ * out-of-band publishes.
  */
 
 // Defaults fall back to PUBLISH_* env vars so CI can set them on the job and
@@ -42,11 +41,10 @@ const { values } = parseArgs({
   options: {
     'dry-run': { type: 'boolean', default: process.env.PUBLISH_DRY_RUN === 'true' },
     package: { type: 'string', multiple: true, default: envPackages },
-    tag: { type: 'string', default: process.env.PUBLISH_TAG || undefined },
   },
 });
 
-const { dryRun, package: packageFilter, tag } = camelcaseKeys(values);
+const { dryRun, package: packageFilter } = camelcaseKeys(values);
 
 const PUBLISH_BRANCH = 'main';
 
@@ -162,8 +160,5 @@ const publishArgs = [
 ];
 if (dryRun) {
   publishArgs.push('--dry-run');
-}
-if (tag) {
-  publishArgs.push('--tag', tag);
 }
 await pnpm`pnpm ${publishArgs}`;

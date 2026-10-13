@@ -130,7 +130,7 @@
     },
     "access": "public",
     "registry": "https://registry.npmjs.org/",
-    "tag": "next"
+    "tag": "latest"
   },
   "scripts": {
     "dev": "vite build --watch",

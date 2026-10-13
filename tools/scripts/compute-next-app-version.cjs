@@ -81,7 +81,7 @@ function latestVersionInLine(currentVersion, publishedVersions) {
 
 /**
  * Reads every version published to npm for a package. Returns an empty array
- * when the package has never been published (the registry returns E404).
+ * when the package has never been published (npm exits with E404).
  *
  * @param {string} packageName
  * @returns {string[]}
@@ -90,16 +90,10 @@ function getPublishedVersions(packageName) {
   let output;
 
   try {
-    output = execFileSync('pnpm', ['view', packageName, 'versions', '--json'], {
-      encoding: 'utf8',
-    });
+    output = execFileSync('npm', ['view', packageName, 'versions', '--json'], { encoding: 'utf8' });
   } catch (error) {
     const combined = `${error.stdout || ''}${error.stderr || ''}`;
-    if (
-      combined.includes('E404') ||
-      combined.includes('ERR_PNPM_FETCH_404') ||
-      combined.includes('404 Not Found')
-    ) {
+    if (combined.includes('E404') || combined.includes('404 Not Found')) {
       return [];
     }
     throw new Error(
@@ -113,7 +107,7 @@ function getPublishedVersions(packageName) {
   }
 
   const parsed = JSON.parse(trimmed);
-  // The CLI returns a bare string when only one version exists, an array otherwise.
+  // npm returns a bare string when only one version exists, an array otherwise.
   return Array.isArray(parsed) ? parsed : [parsed];
 }
 

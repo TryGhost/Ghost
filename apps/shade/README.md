@@ -28,7 +28,7 @@ integration. Shade does not ship a compiled stylesheet.
 For an existing React/Vite app:
 
 ```sh
-pnpm add @tryghost/shade@next react@18 react-dom@18
+pnpm add @tryghost/shade react@18 react-dom@18
 pnpm add -D tailwindcss@^4.1 @tailwindcss/vite@^4.1
 ```
 
@@ -45,12 +45,13 @@ export default defineConfig({
 });
 ```
 
-Import Shade and register your app's source directory in the app stylesheet:
+Import Shade and register the app and Shade sources in the app stylesheet:
 
 ```css
 /* src/styles.css */
 @import "@tryghost/shade/styles.css";
 @source "./";
+@source "../node_modules/@tryghost/shade/es";
 
 /* Shade's spacing and type scale assumes a 10px root rem. */
 html {
@@ -58,9 +59,10 @@ html {
 }
 ```
 
-Shade registers its own component sources and supplies the theme, utilities,
-animations and base styles. Do not also import `tailwindcss`. Load your preferred
-font separately; Shade uses Inter when available and falls back to system fonts.
+The `@source` paths are relative to this stylesheet. Shade supplies the theme,
+utilities, animations and base styles. Do not also import `tailwindcss`. Load your
+preferred font separately; Shade uses Inter when available and falls back to
+system fonts.
 
 Import the stylesheet once and wrap the app with `ShadeApp`:
 
@@ -126,14 +128,14 @@ conditions are removed when packing.
 
 ## Publishing
 
-On `main`, CI builds and publishes Shade as `0.1.0-alpha.N` under npm's `next`
+On `main`, CI builds and publishes Shade as `0.1.0-alpha.N` under npm's `latest`
 tag after lint, type checks and unit tests pass. It uses the existing
 affected-project selection and version helper. The committed version selects
 the alpha series;
 `tools/scripts/compute-next-app-version.cjs` increments the latest matching alpha
-published on npm. Dependency changes and reruns can produce another alpha.
-Documentation-only changes follow the normal CI skip. No release commits
-or Git tags are created.
+published on npm. CI skips publishing when the packed files and runtime metadata
+match the latest alpha. Documentation-only changes follow the normal CI skip.
+No release commits or Git tags are created.
 
 ## Notes
 

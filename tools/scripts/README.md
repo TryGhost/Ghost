@@ -9,12 +9,6 @@ New automation belongs here by default, whether it runs locally, in CI, or both.
 The old `.github/scripts` split tracked nothing real — `release-apps` is run by
 devs via `pnpm ship`, while `release.js` is run by a workflow.
 
-`publish-packages.js` accepts `--tag next` or `PUBLISH_TAG=next` to select an npm
-dist-tag. The **Publish Packages** manual workflow exposes the same `tag` input.
-Omitting it preserves each package's configured tag or npm's default `latest`.
-This selects the tag for new publishes; it does not change package versions or
-retag versions already on npm.
-
 ## Adding a script
 
 Write new scripts in TypeScript (`.ts`, ESM) and parse arguments with
