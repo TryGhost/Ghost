@@ -6,7 +6,7 @@ import {
   createMemberFactory,
   createPostFactory,
 } from '@/data-factory';
-import { CommentsPage, MemberDetailsPage, MembersPage } from '@/helpers/pages';
+import { CommentsPage, MemberDetailsPage, MembersListPage } from '@/helpers/pages';
 import { SettingsService } from '@/helpers/services/settings/settings-service';
 import { expect, test } from '@/helpers/playwright';
 
@@ -20,7 +20,7 @@ test.describe('Ghost Admin - Member Detail Disable Commenting', () => {
   test('disable commenting menu item appears in member actions', async ({ page }) => {
     const { name } = await memberFactory.create();
 
-    const membersPage = new MembersPage(page);
+    const membersPage = new MembersListPage(page);
     await membersPage.goto();
     await membersPage.getMemberByName(name!).click();
 
@@ -33,7 +33,7 @@ test.describe('Ghost Admin - Member Detail Disable Commenting', () => {
   test('clicking disable commenting opens confirmation modal', async ({ page }) => {
     const { name } = await memberFactory.create({ name: 'Test Member' });
 
-    const membersPage = new MembersPage(page);
+    const membersPage = new MembersListPage(page);
     await membersPage.goto();
     await membersPage.getMemberByName(name!).click();
 
@@ -55,7 +55,7 @@ test.describe('Ghost Admin - Member Detail Disable Commenting', () => {
   test('cancel button closes the modal', async ({ page }) => {
     const { name } = await memberFactory.create();
 
-    const membersPage = new MembersPage(page);
+    const membersPage = new MembersListPage(page);
     await membersPage.goto();
     await membersPage.getMemberByName(name!).click();
 
@@ -72,7 +72,7 @@ test.describe('Ghost Admin - Member Detail Disable Commenting', () => {
   test('hide comments checkbox appears in modal', async ({ page }) => {
     const { name } = await memberFactory.create();
 
-    const membersPage = new MembersPage(page);
+    const membersPage = new MembersListPage(page);
     await membersPage.goto();
     await membersPage.getMemberByName(name!).click();
 
@@ -86,7 +86,7 @@ test.describe('Ghost Admin - Member Detail Disable Commenting', () => {
   test('disabling commenting shows disabled indicator', async ({ page }) => {
     const { name } = await memberFactory.create();
 
-    const membersPage = new MembersPage(page);
+    const membersPage = new MembersListPage(page);
     await membersPage.goto();
     await membersPage.getMemberByName(name!).click();
 
@@ -103,7 +103,7 @@ test.describe('Ghost Admin - Member Detail Disable Commenting', () => {
     test('no disabled indicator shown by default', async ({ page }) => {
       const { name } = await memberFactory.create();
 
-      const membersPage = new MembersPage(page);
+      const membersPage = new MembersListPage(page);
       await membersPage.goto();
       await membersPage.getMemberByName(name!).click();
 
@@ -118,7 +118,7 @@ test.describe('Ghost Admin - Member Detail Disable Commenting', () => {
     test('disabling changes menu to show enable option', async ({ page }) => {
       const { name } = await memberFactory.create();
 
-      const membersPage = new MembersPage(page);
+      const membersPage = new MembersListPage(page);
       await membersPage.goto();
       await membersPage.getMemberByName(name!).click();
 
@@ -138,7 +138,7 @@ test.describe('Ghost Admin - Member Detail Disable Commenting', () => {
     test('re-enabling via menu removes indicator and restores menu', async ({ page }) => {
       const { name } = await memberFactory.create();
 
-      const membersPage = new MembersPage(page);
+      const membersPage = new MembersListPage(page);
       await membersPage.goto();
       await membersPage.getMemberByName(name!).click();
 
