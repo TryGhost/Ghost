@@ -222,7 +222,7 @@ const AutomationsList: React.FC<AutomationsListProps> = ({
               onClick={handleRowClick}
             >
               <TableHead
-                className="col-span-3 row-start-1 h-auto min-w-0 p-0 text-left text-base font-normal tracking-normal text-foreground lg:table-cell lg:p-4"
+                className="col-span-3 row-start-1 h-auto min-w-0 p-0 text-left text-base font-normal tracking-normal text-foreground lg:table-cell lg:max-w-0 lg:p-4"
                 scope="row"
               >
                 <Link
@@ -231,7 +231,9 @@ const AutomationsList: React.FC<AutomationsListProps> = ({
                 >
                   <span className="block text-md font-semibold">{automation.name}</span>
                 </Link>
-                {description && <span className="block text-muted-foreground">{description}</span>}
+                {description && (
+                  <span className="block truncate text-muted-foreground">{description}</span>
+                )}
               </TableHead>
               {showRunAnalytics &&
                 AUTOMATION_STAT_COLUMNS.map((column) => {
