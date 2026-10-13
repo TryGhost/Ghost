@@ -6,13 +6,13 @@ import type { ConnectOptions, Ghost } from './types.ts';
 import { SDK_VERSION } from './version.ts';
 
 /** Matches the clock Admin runs from mounting the frame to giving up on it. */
-export const DEFAULT_CONNECT_TIMEOUT = 10_000;
+const DEFAULT_CONNECT_TIMEOUT = 10_000;
 
 /**
  * How often the hello is said again until Admin answers. Admin may start listening only
  * after the page has loaded and said its first hello, so one is not enough.
  */
-export const HELLO_INTERVAL = 250;
+const HELLO_INTERVAL = 250;
 
 /**
  * The origin to address the hello to. Where the browser tells a frame who embeds it

@@ -1,7 +1,7 @@
 import { TITLE_MAX_LENGTH } from '@tryghost/app-contracts';
 
 /** Trims a title to what Admin accepts, without splitting a character in two. */
-export function clampTitle(title: string): string {
+function clampTitle(title: string): string {
   const trimmed = title.trim();
   if (trimmed.length <= TITLE_MAX_LENGTH) {
     return trimmed;
