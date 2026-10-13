@@ -74,6 +74,7 @@ import {
 import { editorRead, useEditorSession } from './session/use-editor-session';
 import { usePostCardConfig } from './use-post-card-config';
 import { usePostSnippets } from './use-post-snippets';
+import { useSettingsOpen } from './use-settings-open';
 import { useWritingFocus } from './use-writing-focus';
 import type { EditorRecord } from './session/projection';
 
@@ -221,9 +222,14 @@ function EditorContent({
     postType === 'post' &&
     (statusRecord?.status === 'published' || statusRecord?.status === 'sent') &&
     statusRecord.emailStatus === 'failed';
-  // Closed on every editor entry, as the menu it replaces was.
-  const [settingsOpen, setSettingsOpen] = useState(false);
-  const [settingsPresent, setSettingsPresent] = useState(false);
+  const editorImprovements = useFeatureFlag('admin7EditorImprovements', {
+    requestOptions: EDITOR_REQUEST_OPTIONS,
+  });
+  // Closed on every editor entry, as the menu it replaces was, unless the flag
+  // restores it as the writer left it: then it is open, in place, from the first paint.
+  const settingsMemory = useSettingsOpen(editorImprovements);
+  const [settingsOpen, setSettingsOpen] = useState(settingsMemory.openAtStart);
+  const [settingsPresent, setSettingsPresent] = useState(settingsMemory.openAtStart);
   const [settingsReveal, setSettingsReveal] = useState<SettingsFieldReveal | null>(null);
   // From a toggle until everything moving with the panel has arrived. Meanwhile
   // the editor sizes Koenig's breakout cards from the moving layout.
@@ -304,14 +310,17 @@ function EditorContent({
     observer.observe(header);
     return () => observer.disconnect();
   }, []);
+  const { toggled: settingsToggled } = settingsMemory;
   const toggleSettings = useCallback(() => {
     settingsToggleRef.current?.focus();
     // A manual toggle ends the reveal, so reopening starts on the section list.
     setSettingsReveal(null);
     setSettingsMoving(true);
     setSettingsPresent(true);
-    setSettingsOpen((open) => !open);
-  }, []);
+    // Only the writer's own toggle is remembered, never a reveal's open.
+    settingsToggled(!settingsOpen);
+    setSettingsOpen(!settingsOpen);
+  }, [settingsOpen, settingsToggled]);
   const postEditorRef = useRef<PostEditorHandle>(null);
   // Below the small breakpoint the header's controls sit in the editor's bottom bar.
   const [bottomBar, setBottomBar] = useState<HTMLDivElement | null>(null);
@@ -343,9 +352,6 @@ function EditorContent({
   }, [session, settingsOpen, showExcerpt]);
   const featureImage = useFeatureImageBinding(session, session.loadedRecord, session.contentKey);
   const writingAreaRef = useRef<HTMLDivElement>(null);
-  const editorImprovements = useFeatureFlag('admin7EditorImprovements', {
-    requestOptions: EDITOR_REQUEST_OPTIONS,
-  });
   const editorFont = useEditorFont(editorImprovements);
   const [fontPickerOpen, setFontPickerOpen] = useState(false);
   // The chrome stays while the settings panel is out, the font picker is open, or
@@ -527,6 +533,7 @@ function EditorContent({
             featureImage={featureImage.featureImage}
             frameRef={settingsFrameRef}
             hasInlineExcerpt={showExcerpt}
+            opensInPlace={settingsMemory.restored}
             postType={postType}
             reveal={settingsReveal}
             session={session}

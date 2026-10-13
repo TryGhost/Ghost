@@ -21,6 +21,8 @@ import { PublishFlowModal } from './publish/publish-flow-modal';
 import { UpdateFlowModal } from './publish/update-flow-modal';
 import type { PublishFlowPost } from './publish/flow-post';
 import { CompletionFailureError, describeCompletionFailure } from './publish/completion-message';
+import { scheduledNewsletterToRestore } from './publish/draft-newsletter';
+import { useDraftNewsletter } from './publish/use-draft-newsletter';
 import { usePublishInputs } from './publish/use-publish-inputs';
 import { usePublishLimits } from './publish/use-publish-limits';
 import { useEditorSettings } from './use-editor-settings';
@@ -403,6 +405,17 @@ function PublishActions({
     defaultErrorHandler: false,
     requestOptions: EDITOR_REQUEST_OPTIONS,
   });
+  const editorImprovements = useFeatureFlag('admin7EditorImprovements', {
+    requestOptions: EDITOR_REQUEST_OPTIONS,
+  });
+  // The preview and the publish flow start from the draft's remembered newsletter,
+  // and a pick in either is remembered for both.
+  const draftNewsletter = useDraftNewsletter({
+    enabled: editorImprovements,
+    postId: post.id,
+    status: post.status,
+    newsletters: inputs.isReady ? inputs.site.newsletters : null,
+  });
   // A refetch of any input must not unmount an open flow, so readiness latches once.
   const [everReady, setEverReady] = useState(false);
   const [openedFromPreview, setOpenedFromPreview] = useState(false);
@@ -420,6 +433,17 @@ function PublishActions({
     await requireSaved(session.saveExplicit());
   }, [session]);
   const { save, showReverted } = feedback;
+  // `post` is still the scheduled post here: the update flow calls back from the
+  // render its Unschedule was clicked in.
+  const { remember: rememberDraftNewsletter } = draftNewsletter;
+  const reverted = useCallback(() => {
+    // Republishing offers the newsletter the post was scheduled to send with.
+    const restored = scheduledNewsletterToRestore(post);
+    if (restored) {
+      rememberDraftNewsletter(restored);
+    }
+    showReverted();
+  }, [post, rememberDraftNewsletter, showReverted]);
   const update = useSaveButtonPhase(save, session.contentKey);
   const revertToDraft = useCallback(() => {
     onOpenFlow('none');
@@ -594,9 +618,10 @@ function PublishActions({
         <PostPreviewModal
           {...preview}
           animate={openFlow !== 'publish'}
-          fallbackNewsletterSlug={flowNewsletterSlug}
+          fallbackNewsletterSlug={flowNewsletterSlug ?? draftNewsletter.slug}
           publishDisabled={!inputs.isReady}
           onCloseAutoFocus={previewCloseAutoFocus}
+          onNewsletterPick={draftNewsletter.remember}
           onOpenChange={changePreviewOpen}
           onPublish={publishFromPreview}
         />
@@ -606,6 +631,7 @@ function PublishActions({
         <PublishFlowModal
           animate={!openedFromPreview}
           dispatch={session.dispatchPublish}
+          draftNewsletter={draftNewsletter.slug}
           limits={limits}
           paywallImprovements={paywallImprovements}
           post={post}
@@ -619,6 +645,10 @@ function PublishActions({
           onBeforePublish={saveBeforePublish}
           onClose={closeFlow}
           onCompleted={({ postId, isScheduled, hasEmail }) => {
+            // Sent or scheduled to send: the newsletter now lives on the post.
+            if (hasEmail) {
+              draftNewsletter.forget();
+            }
             const destination =
               post.displayName === 'page'
                 ? '/pages'
@@ -628,6 +658,7 @@ function PublishActions({
             navigate(destination);
           }}
           onNewsletterChange={setFlowNewsletterSlug}
+          onNewsletterPick={draftNewsletter.remember}
           onPreview={onPreview}
           onRevertToDraft={revertToDraft}
         />
@@ -641,7 +672,7 @@ function PublishActions({
           timezone={inputs.timezone}
           user={inputs.user}
           onClose={closeFlow}
-          onReverted={showReverted}
+          onReverted={reverted}
         />
       ) : null}
     </>
