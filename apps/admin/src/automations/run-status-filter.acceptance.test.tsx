@@ -151,7 +151,7 @@ describe('Automation run status filtering', () => {
     await expect.element(runsRegion()).toHaveTextContent('Keyboard member');
     await userEvent.keyboard('{Enter}');
     await expect.element(statusCard('Completed')).toHaveAttribute('aria-pressed', 'false');
-    await expect.element(runsRegion().getByRole('status')).toHaveTextContent('No members match');
+    await expect.element(runsRegion().getByRole('status')).toHaveTextContent('No members yet');
   });
 
   it('allows zero-count cards to show no matches and clear the filter', async () => {
@@ -176,7 +176,7 @@ describe('Automation run status filtering', () => {
     await expect.element(runsRegion().getByRole('status')).toHaveTextContent('No members match');
     await expect.element(statusCard('Completed')).toHaveAttribute('aria-pressed', 'true');
     await statusCard('Completed').click();
-    await expect.element(runsRegion().getByRole('status')).toHaveTextContent('No members match');
+    await expect.element(runsRegion().getByRole('status')).toHaveTextContent('No members yet');
   });
 
   it('refetches a failed filter on reselection and supports explicit retry while idle', async () => {
@@ -196,7 +196,7 @@ describe('Automation run status filtering', () => {
     await statusCard('Completed').click();
     await expect.element(runsRegion().getByRole('alert')).toHaveTextContent('Could not load runs');
     await statusCard('Completed').click();
-    await expect.element(runsRegion().getByRole('status')).toHaveTextContent('No members match');
+    await expect.element(runsRegion().getByRole('status')).toHaveTextContent('No members yet');
     await statusCard('Completed').click();
     await expect.element(runsRegion().getByRole('alert')).toBeVisible();
     expect(request.requests).toHaveLength(2);

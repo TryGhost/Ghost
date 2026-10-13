@@ -290,7 +290,7 @@ describe('Automation performance date filter', () => {
     }
   });
 
-  it('shows one empty message in the list for all time, a period, and a status filter', async () => {
+  it('shows the empty message in the list for all time, a period, and a status filter', async () => {
     fakeAdminEndpoint('GET', endpoint, ({ url }) =>
       response(params(url).date_from ? '2024-03-04' : '2023-12-01', [0, 0, 0]),
     );
@@ -299,12 +299,18 @@ describe('Automation performance date filter', () => {
     const expectEmpty = async (message: string) => {
       await expect.element(runs().getByRole('status')).toHaveTextContent(message);
       await expect(page.getByText(message, { exact: true })).toHaveCount(1);
-      await expect.element(entries()).not.toHaveTextContent('No members match');
+      await expect.element(entries()).not.toHaveTextContent(message);
       await expectCounts([0, 0, 0]);
     };
-    await expectEmpty('No members match');
+    await expectEmpty('No members yet');
+    await expect
+      .element(runs().getByRole('status'))
+      .toHaveTextContent("Once someone starts your automation, they'll show here");
     await selectRange('Last 7 days');
     await expectEmpty('No members match');
+    await expect
+      .element(runs().getByRole('status'))
+      .toHaveTextContent('Try a different search or filter');
     await card('Completed').click();
     await expectEmpty('No members match');
     await card('Completed').click();

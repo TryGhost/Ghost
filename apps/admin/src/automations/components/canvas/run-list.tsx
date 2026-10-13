@@ -6,6 +6,7 @@ import type {
 } from '@tryghost/admin-x-framework/api/automations';
 import {
   Button,
+  EmptyIndicator,
   Skeleton,
   Table,
   TableBody,
@@ -192,6 +193,7 @@ export const RunList: React.FC<{
     return () => window.clearTimeout(timeout);
   }, [isLoading]);
   const loadingVisible = isLoading && showLoading;
+  const isFiltered = !!search || status !== null || dateRange.value !== 'all';
 
   const SortIcon = direction === 'asc' ? LucideIcon.ArrowUp : LucideIcon.ArrowDown;
   const {
@@ -339,9 +341,18 @@ export const RunList: React.FC<{
           </Text>
         )}
         {!isLoading && !isError && !scanning && !isNextPageError && runs?.length === 0 && (
-          <Text className="px-4 py-6 text-center" role="status" size="sm" tone="secondary">
-            No members match
-          </Text>
+          <EmptyIndicator
+            className="px-4 py-12"
+            description={
+              isFiltered
+                ? 'Try a different search or filter'
+                : "Once someone starts your automation, they'll show here"
+            }
+            role="status"
+            title={isFiltered ? 'No members match' : 'No members yet'}
+          >
+            <LucideIcon.Users />
+          </EmptyIndicator>
         )}
         {isError && (
           <Stack className="px-4 py-6" gap="sm" role="alert">
