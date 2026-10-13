@@ -123,6 +123,7 @@ describe('Managing apps', () => {
   });
 
   it('shows who made the app, where it runs, who installed it, and its history', async () => {
+    fakeInstallations();
     const moved = manifest({
       surfaces: [{ type: 'admin_page', url: 'https://podcast.example.net/admin' }],
     });
@@ -304,6 +305,7 @@ describe('Managing apps', () => {
   });
 
   it('shows an uninstalled app’s record without offering to uninstall it again', async () => {
+    fakeInstallations();
     fakeDetails(
       installation({
         status: 'uninstalled',
@@ -324,6 +326,7 @@ describe('Managing apps', () => {
   });
 
   it('says when an app doesn’t exist', async () => {
+    fakeInstallations();
     const id = 'abcdefabcdefabcdefabcdef';
     fakeAdminEndpoint(
       'GET',
@@ -341,6 +344,7 @@ describe('Managing apps', () => {
   });
 
   it('says an address that isn’t an app’s doesn’t exist, rather than offering a retry', async () => {
+    fakeInstallations();
     fakeAdminEndpoint(
       'GET',
       readPath('missing'),

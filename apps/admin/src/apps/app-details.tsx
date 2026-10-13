@@ -19,6 +19,7 @@ import { Link, useNavigate, useParams } from '@tryghost/admin-x-framework';
 import {
   type AppInstallation,
   type AppInstallationHistoryEntry,
+  useBrowseAppInstallations,
   useReadAppInstallation,
 } from '@tryghost/admin-x-framework/api/app-installations';
 import { useBrowseSettings } from '@tryghost/admin-x-framework/api/settings';
@@ -27,12 +28,14 @@ import { getSiteTimezone } from '@tryghost/admin-x-framework/utils/get-site-time
 import { NotFound } from '@/shared/not-found';
 import { AccessIndicator } from './components/access-indicator';
 import { AppIcon } from './components/app-icon';
+import { AppPinButton } from './components/app-pin-button';
 import { AppsGate } from './components/apps-gate';
 import { CapabilitySummary } from './components/surface-icon';
 import { UninstallDialog } from './components/uninstall-dialog';
 import { ACCOUNT_ACCESS } from './lib/access';
 import { historyTitle, installedBy } from './lib/history';
 import { appReviewRoute } from './lib/routes';
+import { useAppPins } from './lib/use-app-pins';
 import { isDevelopmentApp } from './lib/served-from';
 
 const Fact: React.FC<{ label: string; children: React.ReactNode }> = ({ label, children }) => (
@@ -157,6 +160,8 @@ const Details: React.FC<{ installation: AppInstallation; timezone: string }> = (
   );
 };
 
+const NO_INSTALLATIONS: AppInstallation[] = [];
+
 export const AppDetails: React.FC = () => {
   const { installationId = '' } = useParams();
   const navigate = useNavigate();
@@ -167,6 +172,9 @@ export const AppDetails: React.FC = () => {
     defaultErrorHandler: false,
   });
   const installation = data?.app_installations[0];
+  const { data: installed } = useBrowseAppInstallations({ defaultErrorHandler: false });
+  const pins = useAppPins(installed?.app_installations ?? NO_INSTALLATIONS);
+  const pinned = installation ? pins.isPinned(installation.id) : false;
 
   // Ghost returns 422, not 404, for a malformed id.
   // Both mean there's nothing to show, and retrying won't help.
@@ -222,6 +230,13 @@ export const AppDetails: React.FC = () => {
               {installation && installation.status !== 'uninstalled' && (
                 <PageHeader.Actions>
                   <PageHeader.ActionGroup>
+                    {pins.isLoaded && installed && (
+                      <AppPinButton
+                        full={!pins.canPinMore}
+                        pinned={pinned}
+                        onPinnedChange={(pin) => pins.setPinned(installation.id, pin)}
+                      />
+                    )}
                     <Button variant="outline" onClick={() => setUninstalling(true)}>
                       Uninstall
                     </Button>

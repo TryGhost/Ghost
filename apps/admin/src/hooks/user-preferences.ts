@@ -58,6 +58,16 @@ export const NavigationPreferencesSchema = z.looseObject({
     // useSidebarMode falls back to "full".
     mode: z.enum(['full', 'compact']).optional().catch(undefined),
   }),
+  // Installation ids of the apps this user pinned to, or unpinned from, the
+  // sidebar. Apps in neither are pinned while there's room (see
+  // resolvePinnedApps). Optional, like menu.mode.
+  apps: z
+    .object({
+      pinned: z.array(z.string()).catch([]),
+      unpinned: z.array(z.string()).catch([]),
+    })
+    .optional()
+    .catch(undefined),
 });
 
 export const EDITOR_BODY_FONTS = ['serif', 'sans', 'mono'] as const;
