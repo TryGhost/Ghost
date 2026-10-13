@@ -312,6 +312,8 @@ overrides:
   'shell-quote@>=1.8.4 <1.11.0': ^1.11.0
   'source-map-js@<1.2.2': ^1.2.2
   'tinypool@<2.1.2': ^2.1.2
+  # nx 23.3.0 pins undici before the 7.29.1 security fixes
+  'nx>undici': 7.29.1
   # routing-related dependencies
   body-parser: 'catalog:'
   express: 'catalog:'
