@@ -45,13 +45,12 @@ export default defineConfig({
 });
 ```
 
-Import Shade and register the app and Shade sources in the app stylesheet:
+Import Shade and register the app's sources in the app stylesheet:
 
 ```css
 /* src/styles.css */
 @import "@tryghost/shade/styles.css";
 @source "./";
-@source "../node_modules/@tryghost/shade/es";
 
 /* Shade's spacing and type scale assumes a 10px root rem. */
 html {
@@ -59,8 +58,8 @@ html {
 }
 ```
 
-The `@source` paths are relative to this stylesheet. If your workspace hoists
-dependencies, adjust Shade's path to the installed package's `es` directory.
+The published stylesheet registers Shade's sources automatically. The app's
+`@source` path is relative to this stylesheet.
 
 Shade supplies the theme, utilities, animations and base styles. Do not also
 import `tailwindcss`. Load your preferred font separately; Shade uses Inter when
