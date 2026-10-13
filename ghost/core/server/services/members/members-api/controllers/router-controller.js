@@ -240,15 +240,12 @@ module.exports = class RouterController {
 
     const subscriptions = await member.related('stripeSubscriptions').fetch();
 
-    const activeSubscription = subscriptions.models.find((sub) => {
-      return ['active', 'trialing', 'unpaid', 'past_due'].includes(sub.get('status'));
-    });
-
-    let currency = activeSubscription?.get('plan_currency') || undefined;
-
+    let currency;
     let customer;
     if (!req.body.subscription_id) {
-      customer = await this._getCustomerForActiveSubscription(member, subscriptions);
+      const activeSubscription = await this._getActiveSubscription(member);
+      currency = activeSubscription?.get('plan_currency') || undefined;
+      customer = await this._getCustomerForSubscription(member, activeSubscription);
     } else {
       const subscription = subscriptions.models.find((sub) => {
         return sub.get('subscription_id') === req.body.subscription_id;
@@ -284,28 +281,34 @@ module.exports = class RouterController {
   }
 
   /**
-   * Members can end up with more than one Stripe customer. Without an explicit
-   * subscription, prefer the customer behind the member's active subscription so
-   * billing actions land on the right account, falling back to the first usable one.
+   * The current subscription ranks active statuses first, so it's only inactive when none are.
    *
    * @param {any} member
-   * @param {any} subscriptions
    */
-  async _getCustomerForActiveSubscription(member, subscriptions) {
-    const activeSubscription = subscriptions.models.find((sub) => {
-      return ['active', 'trialing', 'unpaid', 'past_due'].includes(sub.get('status'));
-    });
+  async _getActiveSubscription(member) {
+    const currentSubscriptions = await member.related('currentSubscription').fetch();
+    const subscription = currentSubscriptions.models[0];
+    const isActive = ['active', 'trialing', 'unpaid', 'past_due'].includes(
+      subscription?.get('status'),
+    );
+    return isActive ? subscription : undefined;
+  }
 
-    if (activeSubscription) {
+  /**
+   * @param {any} member
+   * @param {any} [subscription]
+   */
+  async _getCustomerForSubscription(member, subscription) {
+    if (subscription) {
       try {
-        const customer = await this._stripeAPIService.getCustomer(
-          activeSubscription.get('customer_id'),
-        );
+        const customer = await this._stripeAPIService.getCustomer(subscription.get('customer_id'));
         if (!customer.deleted) {
           return customer;
         }
       } catch (err) {
-        logging.warn(`Could not fetch Stripe customer for active subscription: ${err.message}`);
+        if (err?.code !== 'resource_missing') {
+          throw err;
+        }
       }
     }
 
@@ -341,7 +344,8 @@ module.exports = class RouterController {
 
     let customer;
     if (!req.body.subscription_id) {
-      customer = await this._getCustomerForActiveSubscription(member, subscriptions);
+      const activeSubscription = await this._getActiveSubscription(member);
+      customer = await this._getCustomerForSubscription(member, activeSubscription);
     } else {
       const subscription = subscriptions.models.find((sub) => {
         return sub.get('subscription_id') === req.body.subscription_id;
