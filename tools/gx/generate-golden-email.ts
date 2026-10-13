@@ -1,5 +1,4 @@
 #!/usr/bin/env node
-// @ts-check
 
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -7,12 +6,14 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import jwt from 'jsonwebtoken';
 
+type AdminApiKey = { id: string; secret: string };
+
 const GHOST_URL = process.env.GHOST_URL || 'http://localhost:2368';
 const GOLDEN_POST_PATH = fileURLToPath(
   new URL('../../ghost/test/utils/fixtures/email-service/golden-post.json', import.meta.url),
 );
 
-function usage() {
+function usage(): never {
   console.error(
     'Usage: GHOST_GOLDEN_POST_AUTH=id:secret pnpm gx generate golden-email <segment> <output-path>',
   );
@@ -25,10 +26,7 @@ function usage() {
   process.exit(1);
 }
 
-/**
- * @returns {{id: string, secret: string}}
- */
-function getAdminApiKey() {
+function getAdminApiKey(): AdminApiKey {
   const auth = process.env.GHOST_GOLDEN_POST_AUTH;
   if (!auth) {
     console.error('Error: GHOST_GOLDEN_POST_AUTH environment variable is required.');
@@ -43,11 +41,7 @@ function getAdminApiKey() {
   process.exit(1);
 }
 
-/**
- * @param {{id: string, secret: string}} apiKey
- * @returns {string}
- */
-function signToken(apiKey) {
+function signToken(apiKey: AdminApiKey): string {
   return jwt.sign({}, Buffer.from(apiKey.secret, 'hex'), {
     keyid: apiKey.id,
     algorithm: 'HS256',
@@ -56,14 +50,12 @@ function signToken(apiKey) {
   });
 }
 
-/**
- * @param {string} token
- * @param {string} method
- * @param {string} endpoint
- * @param {object} [body]
- * @returns {Promise<Record<string, unknown>>}
- */
-async function apiRequest(token, method, endpoint, body) {
+async function apiRequest(
+  token: string,
+  method: string,
+  endpoint: string,
+  body?: object,
+): Promise<unknown> {
   // god_mode bypasses the integration token endpoint allowlist in development
   const separator = endpoint.includes('?') ? '&' : '?';
   const url = `${GHOST_URL}/ghost/api/admin/${endpoint}${separator}god_mode=true`;
@@ -87,12 +79,16 @@ async function main() {
   if (args.length !== 2) {
     usage();
   }
-  const [segment, outputPath] = args;
+  const segment = args[0];
+  const outputPath = args[1];
+  if (segment === undefined || outputPath === undefined) {
+    usage();
+  }
 
   const apiKey = getAdminApiKey();
   const token = signToken(apiKey);
 
-  const goldenPost = JSON.parse(fs.readFileSync(GOLDEN_POST_PATH, 'utf8'));
+  const goldenPost: unknown = JSON.parse(fs.readFileSync(GOLDEN_POST_PATH, 'utf8'));
 
   const createRes = await apiRequest(token, 'POST', 'posts/', {
     posts: [
@@ -103,7 +99,11 @@ async function main() {
       },
     ],
   });
-  const postId = createRes.posts[0].id;
+  assert(createRes && typeof createRes === 'object' && 'posts' in createRes);
+  assert(Array.isArray(createRes.posts));
+  const post: unknown = createRes.posts[0];
+  assert(post && typeof post === 'object' && 'id' in post && typeof post.id === 'string');
+  const postId = post.id;
 
   try {
     const previewRes = await apiRequest(
@@ -111,7 +111,16 @@ async function main() {
       'GET',
       `email_previews/posts/${postId}/?memberSegment=${encodeURIComponent(segment)}`,
     );
-    const html = previewRes.email_previews[0].html;
+    assert(previewRes && typeof previewRes === 'object' && 'email_previews' in previewRes);
+    assert(Array.isArray(previewRes.email_previews));
+    const preview: unknown = previewRes.email_previews[0];
+    assert(
+      preview &&
+        typeof preview === 'object' &&
+        'html' in preview &&
+        typeof preview.html === 'string',
+    );
+    const html = preview.html;
 
     const resolvedPath = path.resolve(outputPath);
     fs.writeFileSync(resolvedPath, html, 'utf8');

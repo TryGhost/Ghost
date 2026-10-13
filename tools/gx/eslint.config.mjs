@@ -9,13 +9,11 @@ const cliRules = {
 export default [
   ...nodeLibConfig({ srcGlobs: ['cli.ts'], extraSrcRules: cliRules }),
   ...nodeLibConfig({
-    typescript: false,
-    srcGlobs: ['create-package.js'],
+    srcGlobs: ['create-package.ts'],
     extraSrcRules: cliRules,
   }),
   ...nodeLibConfig({
-    typescript: false,
-    srcGlobs: ['generate-golden-email.js'],
+    srcGlobs: ['generate-golden-email.ts'],
     // Preserve the migrated command's terminal output.
     extraSrcRules: { ...cliRules, 'no-console': 'off' },
   }),

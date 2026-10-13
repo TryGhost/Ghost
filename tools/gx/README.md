@@ -27,6 +27,7 @@ The command lives in `tools/gx`; its golden-post fixture remains under Ghost tes
 ## Validation
 
 The `@internal/gx` workspace gives pnpm and Nx a unit for lint and tests. It runs directly
-from source and has no build or package exports. Run `pnpm --filter @internal/gx lint` and
+from TypeScript source and has no build or package exports. Its `test` command
+checks types as well as running the command tests. Run `pnpm --filter @internal/gx lint` and
 `pnpm --filter @internal/gx test` to validate it. Add further commands as focused migrations
 of existing tools.
