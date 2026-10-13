@@ -62,7 +62,6 @@ export {
   allowUnhandledRequests,
   fakeAdminEndpoint,
   fakeEndpoint,
-  fakeOriginRequests,
   fakeSitePreview,
   settleRequests,
 } from './worker';
@@ -82,7 +81,21 @@ export {
 } from './tinybird';
 export type { TinybirdPipeCapture, TinybirdPipeQuery } from './tinybird';
 export { fakeAdminStats } from './stats';
-export { failFrameOrigin, fakeFrameOrigin } from './frames';
+export {
+  type AppFramePageKind,
+  appFramePage,
+  callAppFrame,
+  callHostRaw,
+  failFrameOrigin,
+  fakeFrameOrigin,
+  reloadFrame,
+} from './frames';
+export type {
+  AppFrameFlags,
+  AppFrameReceived,
+  AppFrameResult,
+  AppFrameState,
+} from './app-frame-stand-in';
 export { unsavedChangesGuarded } from './unsaved-changes-guard';
 export { dragByPointer, settleTransitions, settleAnimations } from './pointer';
 

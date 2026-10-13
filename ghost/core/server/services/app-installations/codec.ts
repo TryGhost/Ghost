@@ -11,6 +11,9 @@ export const AppInstallationRow = z.object({
     id: true,
     app_id: true,
     status: true,
+    // Every change to the installation moves it on, so Admin can tell that an app's
+    // session has ended by reading the installation again.
+    revision: true,
     created_at: true,
     updated_at: true,
   }).shape,

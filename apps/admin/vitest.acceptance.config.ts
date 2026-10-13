@@ -1,5 +1,7 @@
 import { availableParallelism } from 'node:os';
+import { fileURLToPath } from 'node:url';
 
+import { build, type Rolldown } from 'vite';
 import { defineConfig } from 'vitest/config';
 import type { BrowserCommand, BrowserCommandContext } from 'vitest/node';
 import { playwright } from '@vitest/browser-playwright';
@@ -86,6 +88,104 @@ const failFrameOrigin: BrowserCommand<[origin: string]> = async ({ page }, origi
   frameFakes.set(page, [...(frameFakes.get(page) ?? []), { matcher, handler }]);
 };
 
+// A script a faked frame runs, bundled into one module with what it imports, since the
+// frame is on another origin and can load nothing from the test server. Built once per
+// entry for the whole run.
+const frameScripts = new Map<string, Promise<string>>();
+
+async function buildFrameScript(entry: string): Promise<string> {
+  const root = fileURLToPath(new URL('.', import.meta.url));
+  const result = await build({
+    configFile: false,
+    root,
+    logLevel: 'silent',
+    publicDir: false,
+    resolve: sharedResolve,
+    build: {
+      write: false,
+      minify: false,
+      copyPublicDir: false,
+      lib: { entry, formats: ['es'], fileName: 'frame' },
+    },
+  });
+  const outputs = (Array.isArray(result) ? result : [result]) as Rolldown.RolldownOutput[];
+  const chunk = outputs
+    .flatMap(({ output }) => output)
+    .find((file): file is Rolldown.OutputChunk => file.type === 'chunk' && file.isEntry);
+  if (!chunk) {
+    throw new Error(`Bundling ${entry} for a frame produced no script`);
+  }
+  return chunk.code;
+}
+
+const bundleFrameScript: BrowserCommand<[entry: string]> = (_context, entry) => {
+  let script = frameScripts.get(entry);
+  if (!script) {
+    script = buildFrameScript(entry);
+    // A failed build is retried by the next spec rather than failing every one after it.
+    script.catch(() => frameScripts.delete(entry));
+    frameScripts.set(entry, script);
+  }
+  return script;
+};
+
+// How long `callInFrame` waits for Playwright to see a frame the page already shows. Another
+// origin's frame runs in a process of its own, which Playwright attaches to on its own time:
+// on a busy machine, after the page has heard from the frame.
+const FRAME_ATTACH_TIMEOUT_MS = 5000;
+
+// The newest frame on `origin`, waiting for Playwright to attach to it if it has yet to.
+async function newestFrameOn(page: BrowserPage, origin: string, purpose: string) {
+  const newestOnOrigin = () =>
+    page
+      .frames()
+      .filter(
+        (candidate) => URL.canParse(candidate.url()) && new URL(candidate.url()).origin === origin,
+      )
+      .at(-1);
+  const deadline = Date.now() + FRAME_ATTACH_TIMEOUT_MS;
+  let frame = newestOnOrigin();
+  while (!frame && Date.now() < deadline) {
+    await new Promise<void>((resolve) => {
+      setTimeout(resolve, 50);
+    });
+    frame = newestOnOrigin();
+  }
+  if (!frame) {
+    throw new Error(`No frame on ${origin} to ${purpose}`);
+  }
+  return frame;
+}
+
+// Calls a hook the script in a faked frame exposes on `window.__app`, in the newest frame
+// on `origin`: the frame is another origin's, so the spec can't reach into it itself.
+const callInFrame: BrowserCommand<[origin: string, hook: string, args: unknown[]]> = async (
+  { page },
+  origin,
+  hook,
+  args,
+) => {
+  const frame = await newestFrameOn(page, origin, `call ${hook} in`);
+  return frame.evaluate(
+    ([name, rest]) => {
+      const hooks = (globalThis as { __app?: Record<string, (...a: unknown[]) => unknown> }).__app;
+      if (!hooks?.[name]) {
+        throw new Error(`The frame has no ${name} hook`);
+      }
+      return hooks[name](...rest);
+    },
+    [hook, args] as const,
+  );
+};
+
+// Reloads the document in the newest frame on `origin`, as the page itself would, without
+// the frame's element changing. Scheduled, so the call returns before the document goes;
+// a string, as it runs in the frame, where this file's types don't.
+const reloadFrame: BrowserCommand<[origin: string]> = async ({ page }, origin) => {
+  const frame = await newestFrameOn(page, origin, 'reload');
+  await frame.evaluate('setTimeout(() => location.reload(), 0)');
+};
+
 const resetFakeFrameOrigins: BrowserCommand<[]> = async ({ page }) => {
   const fakes = frameFakes.get(page) ?? [];
   frameFakes.delete(page);
@@ -164,10 +264,13 @@ export default defineConfig({
       headless: true,
       provider: playwright(),
       commands: {
+        bundleFrameScript,
+        callInFrame,
         failFrameOrigin,
         failModuleLoads,
         fakeFrameOrigin,
         guardFrameNavigations,
+        reloadFrame,
         resetFailedModuleLoads,
         resetFakeFrameOrigins,
       },
