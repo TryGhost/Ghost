@@ -59,10 +59,12 @@ html {
 }
 ```
 
-The `@source` paths are relative to this stylesheet. Shade supplies the theme,
-utilities, animations and base styles. Do not also import `tailwindcss`. Load your
-preferred font separately; Shade uses Inter when available and falls back to
-system fonts.
+The `@source` paths are relative to this stylesheet. If your workspace hoists
+dependencies, adjust Shade's path to the installed package's `es` directory.
+
+Shade supplies the theme, utilities, animations and base styles. Do not also
+import `tailwindcss`. Load your preferred font separately; Shade uses Inter when
+available and falls back to system fonts.
 
 Import the stylesheet once and wrap the app with `ShadeApp`:
 

@@ -25,7 +25,13 @@ describe('buildMatrix', () => {
 
   it('includes Shade without Ghost-configured CDN assets', () => {
     assert.deepStrictEqual(buildMatrix(['@tryghost/shade']), [
-      { package_name: '@tryghost/shade', package_path: 'apps/shade', cdn_paths: '' },
+      {
+        package_name: '@tryghost/shade',
+        package_path: 'apps/shade',
+        cdn_paths: '',
+        install_args: '--ignore-scripts',
+        compare_path: '.',
+      },
     ]);
   });
 
@@ -33,7 +39,7 @@ describe('buildMatrix', () => {
     const apps = buildMatrix(allPackageNames);
     assert.deepStrictEqual(buildMatrix(['@tryghost/shade', ...allPackageNames]), [
       ...apps,
-      { package_name: '@tryghost/shade', package_path: 'apps/shade', cdn_paths: '' },
+      ...buildMatrix(['@tryghost/shade']),
     ]);
   });
 
@@ -42,6 +48,8 @@ describe('buildMatrix', () => {
     assert.strictEqual(matrix.length, 1);
     assert.strictEqual(matrix[0].package_name, '@tryghost/portal');
     assert.strictEqual(matrix[0].package_path, 'apps/portal');
+    assert.strictEqual(matrix[0].install_args, '');
+    assert.strictEqual(matrix[0].compare_path, 'umd');
   });
 
   it('preserves public-apps.json order regardless of affected order', () => {

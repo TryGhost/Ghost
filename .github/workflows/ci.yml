@@ -2118,10 +2118,8 @@ jobs:
     name: Build E2E Public App Assets
     needs: [job_setup]
     # Root of the build + browser-E2E lane (see run_e2e in job_setup).
-    # Doubles as public-app build verification and the gate for publish_public_apps:
-    # the `pnpm --filter @tryghost/e2e build:apps` step below is exactly the
-    # `nx run-many --target=build --projects='tag:public-app'` build the publish flow
-    # requires, so there's no separate build_public_apps job. Intentionally has no
+    # Builds public-app assets for E2E and verifies Shade's library build,
+    # providing the shared build gate for publish_public_apps. Intentionally has no
     # `id-token: write` — PR-controlled code (nx build) must never execute in a job
     # that can mint an npm OIDC token; the publish flows (publish_ghost here, and
     # publish-packages.yml) hold the privileged path.
@@ -2138,6 +2136,9 @@ jobs:
 
       - name: Build public apps for E2E
         run: pnpm --filter @tryghost/e2e build:apps
+
+      - name: Build Shade
+        run: pnpm nx build @tryghost/shade
 
       - name: Pack public app artifacts
         run: |
@@ -2643,7 +2644,7 @@ jobs:
       && needs.job_lint.result == 'success'
       && (needs.job_typecheck.result == 'success' || needs.job_typecheck.result == 'skipped')
       && needs.job_unit-tests.result == 'success'
-      && (needs.job_build_e2e_public_apps.result == 'success' || contains(fromJSON(needs.job_setup.outputs.publish_public_apps_matrix).*.package_name, '@tryghost/shade'))
+      && needs.job_build_e2e_public_apps.result == 'success'
       && needs.job_setup.outputs.publish_public_apps_matrix != '[]'
     permissions:
       contents: read
@@ -2655,25 +2656,24 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          persist-credentials: ${{ matrix.package_name != '@tryghost/shade' }}
+          persist-credentials: false
 
       - uses: ./.github/actions/setup-node-pnpm
         with:
           node-version: ${{ env.NODE_VERSION }}
           trust-lockfile: 'true'
-          install-args: ${{ matrix.package_name == '@tryghost/shade' && '--ignore-scripts' || '' }}
-          store-cache: ${{ matrix.package_name == '@tryghost/shade' && 'false' || 'restore' }}
+          install-args: ${{ matrix.install_args }}
+          store-cache: 'false'
 
       # nx marks an app affected for dependency changes that may not reach its
       # bundle (dev tooling, dedupes), so compare against what's live first.
       # Built with the live version so portal's baked-in version can't differ.
-      # Public apps still require their build gate; Shade has no UMD app build.
       - name: Check for package changes
-        if: matrix.package_name == '@tryghost/shade' || needs.job_build_e2e_public_apps.result == 'success'
         id: bundle
         working-directory: ${{ matrix.package_path }}
         env:
           PACKAGE_NAME: ${{ matrix.package_name }}
+          COMPARE_PATH: ${{ matrix.compare_path }}
         run: |
           LATEST=$(node "$GITHUB_WORKSPACE/tools/scripts/compute-next-app-version.cjs" --latest .)
           if [ -z "$LATEST" ]; then
@@ -2690,13 +2690,13 @@ jobs:
           npm pack "${PACKAGE_NAME}@${LATEST}" --pack-destination "$PUBLISHED_DIR"
           tar -xzf "$PUBLISHED_DIR"/*.tgz -C "$PUBLISHED_DIR"
 
-          PUBLISHED_PATH="$PUBLISHED_DIR/package/umd"
-          CURRENT_PATH="umd"
-          if [ "$PACKAGE_NAME" = '@tryghost/shade' ]; then
+          PUBLISHED_PATH="$PUBLISHED_DIR/package/$COMPARE_PATH"
+          CURRENT_PATH="$COMPARE_PATH"
+          if [ "$COMPARE_PATH" = '.' ]; then
             CURRENT_DIR="$RUNNER_TEMP/current"
             mkdir -p "$CURRENT_DIR"
-            pnpm pack --out "$CURRENT_DIR/shade.tgz"
-            tar -xzf "$CURRENT_DIR/shade.tgz" -C "$CURRENT_DIR"
+            pnpm pack --out "$CURRENT_DIR/package.tgz"
+            tar -xzf "$CURRENT_DIR/package.tgz" -C "$CURRENT_DIR"
             PUBLISHED_PATH="$PUBLISHED_DIR/package"
             CURRENT_PATH="$CURRENT_DIR/package"
 
