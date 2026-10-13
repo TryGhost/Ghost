@@ -17,7 +17,7 @@ async function fixture() {
   for (const file of ['cli.ts', 'create-package.ts']) {
     await cp(new URL(`../${file}`, import.meta.url), join(root, 'tools/gx', file));
   }
-  for (const file of ['constants.js', 'package-template.js']) {
+  for (const file of ['constants.ts', 'package-template.ts']) {
     await cp(
       new URL(`../../scripts/lib/${file}`, import.meta.url),
       join(root, 'tools/scripts/lib', file),

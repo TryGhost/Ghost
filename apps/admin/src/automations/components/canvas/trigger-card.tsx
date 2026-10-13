@@ -1,6 +1,6 @@
 import React, { useId } from 'react';
 import type { AutomationTrigger } from '@tryghost/admin-x-framework/api/automations';
-import { useBrowseTiers } from '@tryghost/admin-x-framework/api/tiers';
+import type { useBrowseTiers } from '@tryghost/admin-x-framework/api/tiers';
 import {
   Button,
   Label,
@@ -16,6 +16,7 @@ import { AutomationCard, AutomationCardHeader } from './automation-card';
 import { ChipPicker } from '@/shared/pickers/chip-picker';
 
 export type TriggerData = {
+  tierQuery: Pick<ReturnType<typeof useBrowseTiers>, 'data' | 'isLoading' | 'isError' | 'refetch'>;
   scope: AutomationTrigger['trigger_tier_scope'];
   tierIds: readonly string[];
   savedTierIds: readonly string[];
@@ -27,10 +28,7 @@ const PaidTierPicker: React.FC<{ trigger: TriggerData; errorMessage?: string }> 
   errorMessage,
 }) => {
   const id = useId();
-  const { data, isLoading, isError, refetch } = useBrowseTiers({
-    searchParams: { filter: 'type:paid', limit: 'all' },
-    defaultErrorHandler: false,
-  });
+  const { data, isLoading, isError, refetch } = trigger.tierQuery;
   const tiers = (data?.tiers ?? []).filter(
     (tier) =>
       tier.type === 'paid' &&

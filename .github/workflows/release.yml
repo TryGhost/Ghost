@@ -52,7 +52,7 @@ jobs:
           # branch protection and triggers downstream workflows (unlike GITHUB_TOKEN)
           #
           # Pinned to main, not a dispatch input: this job runs the checked-out
-          # tools/scripts/release.js with the deploy key and PAT loaded, so a
+          # tools/scripts/release.ts with the deploy key and PAT loaded, so a
           # releasable ref must be one that went through review.
           ref: main
           fetch-depth: 0
@@ -72,7 +72,7 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
       - name: Run release script
-        run: node tools/scripts/release.js
+        run: node tools/scripts/release.ts
         env:
           # release.js reads these RELEASE_* vars as its arg defaults. inputs.*
           # are empty on the schedule trigger, so fall back to the
