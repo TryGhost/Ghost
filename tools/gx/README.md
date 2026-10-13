@@ -23,9 +23,6 @@ and removes its temporary draft post. Output paths resolve from your current
 directory.
 
 The command lives in `tools/gx`; its golden-post fixture remains under Ghost tests.
-The existing
-`pnpm --filter ghost generate-golden-email <segment> <output-path>` alias still
-works with its existing working-directory behavior.
 
 ## Validation
 
