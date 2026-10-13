@@ -2064,9 +2064,6 @@ importers:
       '@sentry/node':
         specifier: 7.120.4
         version: 7.120.4
-      '@slack/webhook':
-        specifier: 7.1.0
-        version: 7.1.0(debug@2.6.9(supports-color@10.2.2))(supports-color@10.2.2)
       '@tryghost/adapter-base-cache':
         specifier: workspace:*
         version: link:../packages/adapters/cache-base
@@ -7763,14 +7760,6 @@ packages:
 
   '@sinonjs/samsam@10.0.2':
     resolution: {integrity: sha512-8lVwD1Df1BmzoaOLhMcGGcz/Jyr5QY2KSB75/YK1QgKzoabTeLdIVyhXNZK9ojfSKSdirbXqdbsXXqP9/Ve8+A==}
-
-  '@slack/types@2.21.1':
-    resolution: {integrity: sha512-I8vmSjNYWsaxuWPx6dz4yeh0h7vRBWbgAMK14LEmblbZ404BtrPbXs6jDPx4cYgGf8msDGF4A9opLZBu21FViQ==}
-    engines: {node: '>= 12.13.0', npm: '>= 6.12.0'}
-
-  '@slack/webhook@7.1.0':
-    resolution: {integrity: sha512-cVXjP1n5s9gF7EW0zi58gYhf9JQ+FDu9t0Tq4ufdJxSO6QkT4wBMjSWYGAz61Xi6eHaZlnyGu7RuzwpGERLYbw==}
-    engines: {node: '>= 18', npm: '>= 8.6.0'}
 
   '@smithy/core@3.33.3':
     resolution: {integrity: sha512-CsOeKq/9kA3y6VJHt+/+VTCtBaxJ4OTFpgrjIUhPpDIKxBci1k2bJaQASF2h/ELWrulGp+t97DZ0mevfAD8idg==}
@@ -19618,17 +19607,6 @@ snapshots:
     dependencies:
       '@sinonjs/commons': 3.0.1
       type-detect: 4.1.0
-
-  '@slack/types@2.21.1': {}
-
-  '@slack/webhook@7.1.0(debug@2.6.9(supports-color@10.2.2))(supports-color@10.2.2)':
-    dependencies:
-      '@slack/types': 2.21.1
-      '@types/node': 22.20.1
-      axios: 1.20.0(debug@2.6.9(supports-color@10.2.2))(supports-color@10.2.2)
-    transitivePeerDependencies:
-      - debug
-      - supports-color
 
   '@smithy/core@3.33.3':
     dependencies:

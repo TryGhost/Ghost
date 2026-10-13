@@ -18,7 +18,7 @@
       ]
     },
     "ghost": {
-      "ignoreDependencies": ["@slack/webhook", "bookshelf-relations", "mysql", "cssnano"]
+      "ignoreDependencies": ["cssnano"]
     },
     "apps/activitypub": {
       "ignoreDependencies": ["tailwindcss"]
