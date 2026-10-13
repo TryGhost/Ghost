@@ -138,6 +138,7 @@ it('allows same-service code, explicit types, approved libraries and root wiring
     [`${alpha}/index.ts`]: "import '../../../shared/config';",
     [`${alpha}/helper.ts`]: 'export const helper = true;',
     'ghost/core/server/lib/db-types/date.ts': 'export const date = true;',
+    'ghost/core/kernel/clock.ts': 'export const getUnixTime = () => 0; export const moment = {};',
     'ghost/core/server/lib/public-jwk.ts': 'export const key = true;',
     [`${services}/jobs-service/job.ts`]: 'export class Job {}',
     [`${alpha}/implementation.ts`]: `
@@ -146,6 +147,7 @@ it('allows same-service code, explicit types, approved libraries and root wiring
       import '@tryghost/errors'; import '@tryghost/errors/detail'; import '@tryghost/tpl'; import 'zod';
       import 'node:crypto'; import 'util'; import '../../lib/db-types/date';
       import '../../lib/public-jwk'; import '../jobs-service/job';
+      import {getUnixTime, moment} from '../../../kernel/clock';
     `,
   });
   for (const name of ['@tryghost/errors', '@tryghost/tpl', 'zod']) {
@@ -175,6 +177,7 @@ it('rejects outside dependencies, own roots and unresolved imports without folde
     'sibling.ts': "import '../alpha-extra/helper';",
     'package.ts': "import '@tryghost/errors-extra';",
     'shared.ts': "import '../../lib/db-types/other';",
+    'kernel.ts': "import '../../../kernel/clock-extra';",
   };
   const f = fixture(t, {
     ...Object.fromEntries(
@@ -186,6 +189,7 @@ it('rejects outside dependencies, own roots and unresolved imports without folde
     [`${alpha}/implementation.ts`]: "import './test/helper';",
     [`${services}/alpha-extra/helper.ts`]: 'export {};',
     'ghost/core/server/lib/db-types/other.ts': 'export {};',
+    'ghost/core/kernel/clock-extra.ts': 'export {};',
     'node_modules/@tryghost/errors-extra/package.json': '{"main":"index.js"}',
     'node_modules/@tryghost/errors-extra/index.js': 'module.exports = {};',
   });

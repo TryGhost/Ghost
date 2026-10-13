@@ -87,6 +87,10 @@ them to the implementation. Other files in that service may import:
 - The libraries and individual shared files in the
   [dependency-cruiser config](../../../../.dependency-cruiser.cjs).
 
+The shared [clock](../../kernel/clock.ts) is allowed directly, including its
+deprecated `moment` export for existing date logic. Service migration does not
+require rewriting those date operations.
+
 Logging, settings, models, event buses and other service instances belong in the
 root wiring. Nested `index.ts` files are implementation files, not extra wiring
 roots. The rule covers static imports, `require()`, literal dynamic imports and

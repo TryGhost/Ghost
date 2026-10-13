@@ -29,6 +29,7 @@ const serviceDependencyAllowlist = [
   '(^|/)node_modules/zod/|^zod$', // Schema construction and validation.
   '^(node:)?crypto$', // Cryptographic algorithms and key generation.
   '^(node:)?util$', // Node utilities, including promisify.
+  '^ghost/core/kernel/clock\\.ts$', // Shared clock helpers and legacy date compatibility.
   '^ghost/core/server/lib/db-types/date\\.ts$', // Database date codec.
   '^ghost/core/server/lib/public-jwk\\.ts$', // Key conversion and thumbprints; includes memoization.
   '^ghost/core/server/services/jobs-service/job\\.ts$', // Job base class, not the running service.
