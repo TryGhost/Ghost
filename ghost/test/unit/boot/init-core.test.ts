@@ -31,7 +31,7 @@ function createCoreHarness() {
     './server/services/app-installations': { init() {} },
     './server/services/stripe-checkout-config': { init() {} },
   };
-  const source = readFileSync(resolve(__dirname, '../../core/boot.js'), 'utf8');
+  const source = readFileSync(resolve(__dirname, '../../../core/boot.js'), 'utf8');
   const initCore = runInNewContext(`${source}\ninitCore;`, {
     require(name: string) {
       assert.ok(Object.hasOwn(modules, name), `Unexpected boot dependency: ${name}`);

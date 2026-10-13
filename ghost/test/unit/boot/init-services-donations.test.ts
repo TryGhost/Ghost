@@ -70,7 +70,7 @@ function createServicesHarness() {
     './server/services/tinybird-sync': {},
     './server/data/importer': { init: () => ({}) },
   };
-  const source = readFileSync(resolve(__dirname, '../../core/boot.js'), 'utf8');
+  const source = readFileSync(resolve(__dirname, '../../../core/boot.js'), 'utf8');
   const initServices = runInNewContext(`${source}\ninitServices;`, {
     require(name: string) {
       assert.ok(Object.hasOwn(modules, name), `Unexpected boot dependency: ${name}`);

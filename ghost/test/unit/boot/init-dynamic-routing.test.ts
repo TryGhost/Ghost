@@ -26,7 +26,7 @@ function createRoutingHarness(frontend: boolean) {
     module: { exports: {} },
   };
   // Exercise the production orchestration without booting unrelated services.
-  const source = readFileSync(resolve(__dirname, '../../core/boot.js'), 'utf8');
+  const source = readFileSync(resolve(__dirname, '../../../core/boot.js'), 'utf8');
   const initDynamicRouting = runInNewContext(`${source}\ninitDynamicRouting;`, context);
   return {
     init: (): Promise<void> => initDynamicRouting({ frontend }),

@@ -66,7 +66,7 @@ function createServicesHarness({ rescheduleOnBoot = true } = {}) {
     require: (name: string) => modules[name] ?? { ...genericService, default: genericService },
     module: { exports: {} },
   };
-  const source = readFileSync(resolve(__dirname, '../../core/boot.js'), 'utf8');
+  const source = readFileSync(resolve(__dirname, '../../../core/boot.js'), 'utf8');
   const initServices = runInNewContext(`${source}\ninitServices;`, context);
   return {
     initServices: (): Promise<void> =>
@@ -262,7 +262,7 @@ function createBackgroundHarness(environment = 'production') {
     module: { exports: {} },
     process: { env: { NODE_ENV: environment } },
   };
-  const source = readFileSync(resolve(__dirname, '../../core/boot.js'), 'utf8');
+  const source = readFileSync(resolve(__dirname, '../../../core/boot.js'), 'utf8');
   const initBackgroundServices = runInNewContext(`${source}\ninitBackgroundServices;`, context);
   return {
     init: (): Promise<void> => initBackgroundServices({ config: { get: () => true } }),
