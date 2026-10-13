@@ -163,6 +163,7 @@ catalog:
   globals: 17.7.0
   got: 16.0.0
   html-minifier-next: 8.10.7
+  html-to-text: 10.0.1
   ipaddr.js: 2.5.0
   jiti: 2.7.0
   jose: 6.2.12

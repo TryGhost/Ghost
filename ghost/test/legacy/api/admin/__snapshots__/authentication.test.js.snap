@@ -224,9 +224,11 @@ a {
 `;
 
 exports[`Authentication API Blog setup complete setup 4: [text 1] 1`] = `
-" [https://static.ghost.org/v4.0.0/images/ghost-orb-3.png] Hello!
+"[https://static.ghost.org/v4.0.0/images/ghost-orb-3.png]
 
-Good news! You've successfully created a brand new Ghost publication over on 
+Hello!
+
+Good news! You've successfully created a brand new Ghost publication over on
 http://127.0.0.1:2369/ [http://127.0.0.1:2369/]
 
 You can log in to your admin account with the following details:
@@ -241,7 +243,7 @@ xoxo
 
 Team Ghost – https://ghost.org [https://ghost.org]
 
-This email was sent from http://127.0.0.1:2369/ [http://127.0.0.1:2369/] to 
+This email was sent from http://127.0.0.1:2369/ [http://127.0.0.1:2369/] to
 test@example.com [test@example.com]"
 `;
 
@@ -514,9 +516,11 @@ a {
 `;
 
 exports[`Authentication API Blog setup complete setup with default theme 4: [text 1] 1`] = `
-" [https://static.ghost.org/v4.0.0/images/ghost-orb-3.png] Hello!
+"[https://static.ghost.org/v4.0.0/images/ghost-orb-3.png]
 
-Good news! You've successfully created a brand new Ghost publication over on 
+Hello!
+
+Good news! You've successfully created a brand new Ghost publication over on
 http://127.0.0.1:2369/ [http://127.0.0.1:2369/]
 
 You can log in to your admin account with the following details:
@@ -531,7 +535,7 @@ xoxo
 
 Team Ghost – https://ghost.org [https://ghost.org]
 
-This email was sent from http://127.0.0.1:2369/ [http://127.0.0.1:2369/] to 
+This email was sent from http://127.0.0.1:2369/ [http://127.0.0.1:2369/] to
 test@example.com [test@example.com]"
 `;
 
