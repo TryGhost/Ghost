@@ -43,7 +43,8 @@
   "files": [
     "LICENSE",
     "README.md",
-    "build"
+    "build",
+    "!build/**/*.tsbuildinfo"
   ],
   "publishConfig": {
     "access": "public"

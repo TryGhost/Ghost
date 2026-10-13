@@ -12,7 +12,8 @@
   "files": [
     "LICENSE",
     "README.md",
-    "build"
+    "build",
+    "!build/**/*.tsbuildinfo"
   ],
   "main": "build/cjs/index.js",
   "module": "build/esm/index.js",
