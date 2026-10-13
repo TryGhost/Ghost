@@ -4,20 +4,23 @@
  * such a URL when it accepts a manifest, and Admin asks again where it frames the page,
  * since the site's or Admin's address can change after an app is installed.
  *
- * A URL that can't be parsed counts as Ghost's, and a Ghost URL that can't be parsed
- * matches nothing: either doubt keeps the page out of the frame.
+ * Any doubt counts as Ghost's: a page URL that can't be parsed, a Ghost URL that can't be
+ * parsed, or no Ghost URLs at all. Either way the page stays out of the frame.
  */
 export function isGhostOrigin(url: string | URL, ghostUrls: Iterable<string | URL>): boolean {
   const origin = originOf(url);
   if (origin === null) {
     return true;
   }
+  let known = false;
   for (const ghostUrl of ghostUrls) {
-    if (originOf(ghostUrl) === origin) {
+    const ghostOrigin = originOf(ghostUrl);
+    if (ghostOrigin === null || ghostOrigin === origin) {
       return true;
     }
+    known = true;
   }
-  return false;
+  return !known;
 }
 
 function originOf(value: string | URL): string | null {

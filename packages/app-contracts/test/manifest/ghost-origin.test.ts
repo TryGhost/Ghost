@@ -23,8 +23,12 @@ describe('isGhostOrigin', function () {
     assert.equal(isGhostOrigin('not a url', ghostUrls), true);
   });
 
-  it('matches nothing against a Ghost URL that can’t be parsed', function () {
-    assert.equal(isGhostOrigin('https://app.example.com/', ['not a url']), false);
-    assert.equal(isGhostOrigin('https://app.example.com/', []), false);
+  it('counts a page as Ghost’s when a Ghost URL can’t be parsed, wherever it is', function () {
+    assert.equal(isGhostOrigin('https://app.example.com/', ['not a url']), true);
+    assert.equal(isGhostOrigin('https://app.example.com/', [...ghostUrls, 'not a url']), true);
+  });
+
+  it('counts a page as Ghost’s when there are no Ghost URLs to check against', function () {
+    assert.equal(isGhostOrigin('https://app.example.com/', []), true);
   });
 });
