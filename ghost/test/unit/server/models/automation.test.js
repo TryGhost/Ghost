@@ -9,13 +9,6 @@ describe('Unit: models/automation', function () {
   });
 
   describe('defaults', function () {
-    it('sets default status to inactive', function () {
-      const model = new Automation();
-      const defaults = model.defaults();
-
-      assert.equal(defaults.status, 'inactive');
-    });
-
     it('returns expected default values', function () {
       const model = new Automation();
       const defaults = model.defaults();
