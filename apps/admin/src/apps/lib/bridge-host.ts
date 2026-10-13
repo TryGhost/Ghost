@@ -23,6 +23,11 @@ export interface AppFrameHandlers {
   titleChanged(title: string): void;
   pathChanged(path: string, options: PathChangeOptions): void;
   open(place: Place): void;
+  /**
+   * The started app's frame holds a new document: the page reloaded or navigated, and its
+   * channel went with the old one. Called once; the host itself is of no further use.
+   */
+  reloaded(): void;
 }
 
 export interface BindAppFrameOptions {
@@ -52,7 +57,8 @@ const sessionEnded = () => new BridgeError('session_ended', 'The app’s session
  * Binds the bridge to an app's frame. The page speaks first: Admin waits for a hello sent
  * by that frame from the app's own origin, answers it alone with a `MessagePort`, and
  * starts the app over it. Anything else posted to Admin's window is ignored, as is a
- * second hello once connected.
+ * second hello while the app is starting. A hello once it has started comes from a new
+ * document in the frame, which `handlers.reloaded` hears about.
  *
  * Every argument the page sends is checked against the bridge's schemas before Admin
  * acts on it, since the frame is the app's and Admin trusts nothing in it.
@@ -65,6 +71,8 @@ export function bindAppFrame({
   handlers,
 }: BindAppFrameOptions): AppFrameHost {
   let disposed = false;
+  let started = false;
+  let reloaded = false;
   let thread: ThreadMessagePort<AppExports, HostExports> | undefined;
   let port: MessagePort | undefined;
   // Ends requests still in flight when the session does.
@@ -117,13 +125,22 @@ export function bindAppFrame({
 
   const onMessage = (event: MessageEvent) => {
     if (
-      thread ||
       disposed ||
       !frame.contentWindow ||
       event.source !== frame.contentWindow ||
       event.origin !== surfaceOrigin ||
       !HelloMessageSchema.safeParse(event.data).success
     ) {
+      return;
+    }
+    if (thread) {
+      // The SDK says hello until Admin answers, so hellos sent before the answer reached it
+      // may still arrive while the app starts. Once it has started, the SDK that started
+      // has stopped: a hello is a new document, whose SDK would wait on it forever.
+      if (started && !reloaded) {
+        reloaded = true;
+        handlers.reloaded();
+      }
       return;
     }
 
@@ -138,6 +155,7 @@ export function bindAppFrame({
     thread.imports.start(context()).then(
       () => {
         if (!disposed) {
+          started = true;
           resolveReady();
         }
       },

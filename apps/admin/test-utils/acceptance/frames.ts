@@ -10,6 +10,7 @@ declare module 'vitest/browser' {
     fakeFrameOrigin: (origin: string, html: string, delayMs?: number) => Promise<void>;
     failFrameOrigin: (origin: string) => Promise<void>;
     guardFrameNavigations: () => Promise<void>;
+    reloadFrame: (origin: string) => Promise<void>;
     resetFakeFrameOrigins: () => Promise<void>;
   }
 }
@@ -90,6 +91,14 @@ export function callHostRaw(
   return commands.callInFrame(new URL(origin).origin, 'call', [name, args]) as ReturnType<
     RawAppFrameHooks['call']
   >;
+}
+
+/**
+ * Reloads the page framed from `origin`, as the app's own `location.reload()` or a link
+ * within it would: a new document in the same frame.
+ */
+export function reloadFrame(origin: string): Promise<void> {
+  return commands.reloadFrame(new URL(origin).origin);
 }
 
 /** Answers unfaked external iframe navigations with a 418 so no spec reaches the network. */
