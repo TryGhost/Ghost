@@ -381,7 +381,11 @@ export function fakeEndpoint(
         return undefined;
       }
 
-      requests.push({ url: request.url, body: await parseRequestBody(request) });
+      requests.push({
+        url: request.url,
+        body: await parseRequestBody(request),
+        headers: Object.fromEntries(request.headers),
+      });
 
       return HttpResponse.json(response as Record<string, unknown>, { status });
     }),
@@ -395,29 +399,12 @@ export function fakeEndpoint(
   };
 }
 
-/**
- * Answers the page's own requests to an external origin, as opposed to a frame's
- * navigation there, which the service worker leaves to the browser and the Playwright
- * fakes in frames.ts take: the app page's reachability probe, in particular. `down` fails
- * every such request as a refused connection does.
- *
- * TODO(BER-3983): here for the app page's probe, which the bridge handshake replaces.
- * Remove it then, unless another spec has come to rely on it.
- */
-export function fakeOriginRequests(
-  origin: string,
-  { html = '', down = false }: { html?: string; down?: boolean } = {},
-): void {
-  const base = new URL(origin).origin;
-  runningWorker().use(
-    http.all(`${base}/*`, () => (down ? HttpResponse.error() : HttpResponse.html(html))),
-  );
-}
-
 export interface CapturedEndpointRequest {
   url: string;
   /** Parsed JSON, multipart fields, or plain text; undefined when there is no body. */
   body: unknown;
+  /** As the request was sent, with names in lowercase. */
+  headers: Record<string, string>;
 }
 
 export interface EndpointCapture {
@@ -501,6 +488,7 @@ export function fakeAdminEndpoint(
     const captured: CapturedEndpointRequest = {
       url: request.url,
       body: await parseRequestBody(request),
+      headers: Object.fromEntries(request.headers),
     };
     requests.push(captured);
 

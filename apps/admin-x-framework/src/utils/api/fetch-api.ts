@@ -186,6 +186,25 @@ const fetchWithXhr = (
     xhr.send(body);
   });
 
+/**
+ * The headers Admin sends with every request to Ghost's API, named in lowercase. Shared
+ * with requests Admin makes on an app's behalf, so those look like Admin's own.
+ */
+export const ghostApiRequestHeaders = ({
+  ghostVersion,
+  body,
+}: {
+  ghostVersion?: string;
+  body?: unknown;
+}): Record<string, string> => ({
+  'app-pragma': 'no-cache',
+  // Only include version header if ghostVersion is provided
+  // This allows forward admin deployments to skip version checks
+  ...(ghostVersion ? { 'x-ghost-version': ghostVersion } : {}),
+  // By default, we set the Content-Type header to application/json
+  ...(typeof body === 'string' ? { 'content-type': 'application/json' } : {}),
+});
+
 export const useFetchApi = () => {
   const { ghostVersion } = useFramework();
 
@@ -212,12 +231,7 @@ export const useFetchApi = () => {
       const requestInit: InternalRequestInit = {
         method,
         headers: {
-          'app-pragma': 'no-cache',
-          // Only include version header if ghostVersion is provided
-          // This allows forward admin deployments to skip version checks
-          ...(ghostVersion ? { 'x-ghost-version': ghostVersion } : {}),
-          // By default, we set the Content-Type header to application/json
-          ...(typeof body === 'string' ? { ['content-type']: 'application/json' } : {}),
+          ...ghostApiRequestHeaders({ ghostVersion, body }),
           ...headers,
         },
         credentials,
