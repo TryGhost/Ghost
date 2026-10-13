@@ -178,17 +178,21 @@ const AppFrame: React.FC<{
   const navigateRef = useRef(navigate);
   navigateRef.current = navigate;
 
-  // Made without side effects: those start when the frame mounts, and end when it does.
-  const frameSession = useMemo(
-    () =>
-      createAppFrameSession({
-        surfaceOrigin,
-        context: () => contextRef.current,
-        fetchAdminApi: createAdminApiFetch({ apiRoot: new URL(apiUrl('/')), ghostVersion }),
-        navigate: (next, { replace }) => navigateRef.current(appPathRoute(id, next), { replace }),
-        open: (place) => navigateRef.current(placeRoute(place)),
-      }),
-    [ghostVersion, id, surfaceOrigin],
+  // Made once, for the component's life: a session made again would bind to a frame whose
+  // page has already said hello, and would call the app unresponsive. What it's made from
+  // stays the same: a new installation or address is a new `AppFrame`, by its key, and
+  // Ghost's version doesn't change while Admin runs. Making it has no side effects; they
+  // start when the frame mounts and end when it unmounts, through `attach`, the frame's
+  // ref. Nothing calls `dispose` from an effect, as Strict Mode's double effects would
+  // then end a live session.
+  const [frameSession] = useState(() =>
+    createAppFrameSession({
+      surfaceOrigin,
+      context: () => contextRef.current,
+      fetchAdminApi: createAdminApiFetch({ apiRoot: new URL(apiUrl('/')), ghostVersion }),
+      navigate: (next, { replace }) => navigateRef.current(appPathRoute(id, next), { replace }),
+      open: (place) => navigateRef.current(placeRoute(place)),
+    }),
   );
   const { status, title, attempt, startedAt } = useSyncExternalStore(
     frameSession.subscribe,
@@ -318,8 +322,11 @@ const ActiveApp: React.FC<{ session: AppSession; onEnded: () => void }> = ({
     return <NotFramed installation={installation} />;
   }
   const { settings: values } = settings.data;
+  const surfaceOrigin = new URL(appPageUrl(installation.manifest)).origin;
   return (
     <AppFrame
+      // The frame's session is made for one installation at one address.
+      key={`${installation.id} ${surfaceOrigin}`}
       accentColor={
         getSettingValue<string>(values, 'accent_color') ?? site.data.site.accent_color ?? ''
       }
