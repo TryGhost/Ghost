@@ -26,17 +26,28 @@ const recordedContract = z
     tests: z.array(description),
   })
   .strict();
+const migration = z
+  .object({
+    complexity: z.enum(['straightforward', 'complex', 'not-applicable']),
+    modelImpact: z.enum(['fits', 'may-change', 'not-applicable']),
+    reason: description,
+    reviewedAt: z.string().regex(/^[0-9a-f]{40}$/),
+    sources: z.array(description).min(1),
+  })
+  .strict();
 const entry = z
   .object({
     kind: z.enum(['directory', 'file']),
     disposition: z.enum(['retain', 'relocate', 'review']),
     status: z.enum(['pending', 'auditing', 'audited']),
+    migrated: z.literal(true).optional(),
     auditedAt: z
       .string()
       .regex(/^[0-9a-f]{40}$/)
       .optional(),
     entryPoints: z.array(description).min(1),
     notes: description,
+    migration,
     contracts: z.partialRecord(facet, recordedContract),
     unverified: z.array(facet),
     blockers: z.array(description),
@@ -44,7 +55,7 @@ const entry = z
   .strict();
 const inventorySchema = z
   .object({
-    version: z.literal(1),
+    exemplaryMigration: description,
     services: z.record(description, entry),
   })
   .strict();
@@ -66,6 +77,12 @@ describe('service migration inventory', function () {
     yaml.load(readFileSync(path.join(servicesRoot, 'service-inventory.yaml'), 'utf8')),
   );
 
+  it('identifies a migrated service as the example to follow', function () {
+    const example = inventory.services[inventory.exemplaryMigration];
+    assert.ok(example, 'The exemplary migration must exist in the inventory');
+    assert.equal(example.migrated, true, 'The example must use defineService');
+  });
+
   it('accounts for every service directory and standalone file', function () {
     for (const name of metadata) {
       assertFileWithin(servicesRoot, name);
@@ -85,7 +102,37 @@ describe('service migration inventory', function () {
   });
 
   for (const [name, service] of Object.entries(inventory.services)) {
-    it(`${name} has valid evidence and explicit audit gaps`, function () {
+    it(`${name} has valid evidence, migration assessment and explicit audit gaps`, function () {
+      assert.equal(
+        service.migration.complexity === 'not-applicable',
+        service.migration.modelImpact === 'not-applicable',
+        'Non-service entries must use not-applicable for both migration dimensions',
+      );
+      if (service.migration.complexity === 'not-applicable') {
+        assert.equal(
+          service.disposition,
+          'relocate',
+          'Only supporting code marked for relocation can skip migration assessment',
+        );
+      }
+      if (service.migration.modelImpact === 'may-change') {
+        assert.equal(
+          service.migration.complexity,
+          'complex',
+          'An open model question requires a complex migration assessment',
+        );
+      }
+      if (service.migrated) {
+        assert.notEqual(
+          service.migration.complexity,
+          'not-applicable',
+          'A migrated service cannot be classified as a non-service',
+        );
+      }
+      for (const source of service.migration.sources) {
+        assertFileWithin(coreRoot, source);
+      }
+
       assert.equal(new Set(service.entryPoints).size, service.entryPoints.length);
       for (const entryPoint of service.entryPoints) {
         assert.ok(

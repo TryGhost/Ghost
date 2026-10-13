@@ -54,6 +54,9 @@ const PRIVATE_FEATURES = [
   'stripeAutomaticTax',
   'importMemberTier',
   'csvContentImporter',
+  'admin7Design',
+  'admin7CustomizeFromViewSite',
+  'admin7EditorImprovements',
   'emailUniqueid',
   'themeTranslation',
   'pictureImageFormats',
@@ -63,7 +66,6 @@ const PRIVATE_FEATURES = [
   'stripeCheckoutDesign',
   'paywallImprovements',
   'machinePayments',
-  'navigationUrlSuggestions',
   'apps',
 ];
 

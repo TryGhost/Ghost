@@ -17,8 +17,30 @@ export const AppInstallationRow = z.object({
   ...DbAppInstallationManifest.pick({ manifest_url: true, manifest: true }).shape,
 });
 
+export interface HistoryActor {
+  id: string;
+  /** Null if the user has been deleted. */
+  name: string | null;
+}
+
+/**
+ * `actor` is null when Ghost made the change itself.
+ * It's also null when there's no record of who installed the app.
+ */
+export interface AppInstallationHistoryEntry {
+  id: string;
+  event: 'installed' | 'updated' | 'suspended' | 'changes_approved' | 'uninstalled';
+  actor: HistoryActor | null;
+  created_at: Date;
+  /** The host the app moved to. Only set when an approval moved the app. */
+  moved_to?: string;
+}
+
 /** One site's approval of one app, as the Admin API returns it. */
-export type AppInstallation = z.output<typeof AppInstallationRow>;
+export type AppInstallation = z.output<typeof AppInstallationRow> & {
+  /** Newest first. Only included when read with `include=history`. */
+  history?: AppInstallationHistoryEntry[];
+};
 
 /**
  * The current installation of an app, with the manifest it was approved with: what a

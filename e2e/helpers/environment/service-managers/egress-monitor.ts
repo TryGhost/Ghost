@@ -2,6 +2,7 @@ import Docker from 'dockerode';
 import baseDebug from '@tryghost/debug';
 import {
   DEV_ENVIRONMENT,
+  E2E_CONTAINER_PREFIX,
   EGRESS_ALLOWLIST,
   EGRESS_COREFILE_PATH,
   EGRESS_DNS_IMAGE,
@@ -59,7 +60,7 @@ export class EgressMonitor {
   constructor(docker: Docker, config: EgressMonitorConfig) {
     this.docker = docker;
     this.config = config;
-    this.containerName = `ghost-e2e-egress-worker-${config.workerIndex}`;
+    this.containerName = `${E2E_CONTAINER_PREFIX}-egress-worker-${config.workerIndex}`;
   }
 
   /** IP the Ghost container should use as its DNS server, or null if unavailable. */

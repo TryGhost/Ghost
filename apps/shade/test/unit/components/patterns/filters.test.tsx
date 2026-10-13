@@ -1,8 +1,8 @@
 import { useMemo, useState } from 'react';
 import { act, fireEvent, render, screen, waitFor } from '../../utils/test-utils';
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
+import { createFilter } from '../../../../src/components/patterns/filters-helpers';
 import {
-  createFilter,
   Filter,
   FilterFieldConfig,
   Filters,

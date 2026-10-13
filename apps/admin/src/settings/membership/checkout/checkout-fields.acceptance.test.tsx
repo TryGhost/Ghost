@@ -71,4 +71,31 @@ describe('Checkout settings', () => {
         ],
       });
   });
+
+  it('shows the chosen corner style as on, beneath its tooltip', async () => {
+    fakeSettingsScreens();
+    fakeTiers([freeTier, paidTier]);
+    fakeAdminEndpoint('GET', '/stripe/checkout/config/', {
+      checkout_config: [{ design: { customize: false } }],
+    });
+    fakeAdminEndpoint('GET', '/custom_theme_settings/', { custom_theme_settings: [] });
+    fakeAdminEndpoint('GET', '/stripe/checkout/branding/', {
+      checkout_branding: [{ display_name: 'Dummy', design: null }],
+    });
+    await renderAdminApp('/settings/tiers/checkout', {
+      labs: { stripeCheckoutDesign: true },
+      boot: { browseSettings: { response: stripeSettings() } },
+    });
+
+    const modal = page.getByRole('region', { name: 'Checkout' });
+    await modal.getByRole('switch', { name: 'Customize checkout design' }).click();
+    const pill = modal.getByLabelText('Pill', { exact: true });
+
+    // The toggle's styling keys off data-state, which the tooltip trigger must not replace.
+    await expect
+      .element(modal.getByLabelText('Rounded', { exact: true }))
+      .toHaveAttribute('data-state', 'on');
+    await pill.click();
+    await expect.element(pill).toHaveAttribute('data-state', 'on');
+  });
 });

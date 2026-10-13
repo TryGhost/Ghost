@@ -141,7 +141,7 @@ function seedEmptyPostAnalyticsWorld() {
 }
 
 describe('Post analytics overview', () => {
-  it('shows sending progress and withholds newsletter figures with the URL override', async () => {
+  it('shows sending progress and refreshes newsletter figures when sending finishes', async () => {
     const postOverrides = {
       email: { id: EMAIL_ID, email_count: 0, opened_count: 0, status: 'submitting' },
     } as const;
@@ -225,7 +225,10 @@ describe('Post analytics overview', () => {
     await expect.element(postAnalyticsScreen.uniqueVisitors()).toHaveTextContent('250');
 
     await postAnalyticsScreen.newsletterTab().click();
-    await expect.poll(currentRoute).toBe(`/posts/analytics/${POST_ID}/newsletter`);
+    // The first visit loads the lazy Newsletter route; cold CI transforms can exceed 5s.
+    await expect
+      .poll(currentRoute, { timeout: 10_000 })
+      .toBe(`/posts/analytics/${POST_ID}/newsletter`);
     await expect.element(page.getByText('Newsletter clicks')).not.toBeInTheDocument();
     await expect
       .element(page.getByText("You'll see sends, opens and clicks here once it finishes"))

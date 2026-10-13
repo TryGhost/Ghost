@@ -5,14 +5,16 @@ import { Stack, Text } from '@tryghost/shade/primitives';
 import { StatusCards } from './status-cards';
 
 export const StatusCounts: React.FC<{
+  compact?: boolean;
   data?: AutomationStatusCardsData;
   isLoading: boolean;
   selectedStatus: AutomationRunStatusFilter | null;
   onStatusChange: (status: AutomationRunStatusFilter) => void;
-}> = ({ data, isLoading, selectedStatus, onStatusChange }) => {
+}> = ({ compact, data, isLoading, selectedStatus, onStatusChange }) => {
   return (
     <Stack aria-label="Automation status counts" className="@container" gap="sm" role="region">
       <StatusCards
+        compact={compact}
         data={data}
         isLoading={isLoading}
         selectedStatus={selectedStatus}

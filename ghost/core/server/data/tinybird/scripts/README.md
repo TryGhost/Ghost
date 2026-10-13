@@ -36,7 +36,7 @@ pnpm reset:data
 # 3. Generate analytics data
 pnpm data:analytics:generate
 
-# 4. View analytics in Ghost admin (a worktree uses the port in .ghost-dev.env)
+# 4. View analytics in Ghost admin (a worktree uses the URL that pnpm dev prints)
 # http://localhost:2368/ghost/#/analytics
 
 # 5. Clear analytics when needed
@@ -49,7 +49,7 @@ pnpm data:analytics:clear
 
 ### Database Connection
 
-The `pnpm` scripts run through `scripts/with-ghost-dev-env.ts`, so they use the
+The `pnpm` scripts run through `tools/scripts/with-ghost-dev-env.ts`, so they use the
 same database as the checkout's `pnpm dev`: `ghost_dev` in the main checkout and
 `dev_<worktree>` in a linked worktree. Override via environment variables:
 

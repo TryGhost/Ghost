@@ -1,6 +1,7 @@
 import MarketplaceBgImage from '@/settings/assets/images/footer-marketplace-bg.png';
 import React, { useEffect, useState } from 'react';
 import clsx from 'clsx';
+import { Link } from '@tryghost/shade/components';
 import { ModalPage } from '@tryghost/shade/page-templates';
 import {
   type OfficialTheme,
@@ -143,14 +144,13 @@ const OfficialThemes: React.FC<{
         }}
       >
         Find and buy third-party, premium themes from independent developers in the{' '}
-        <a
-          className="inline-block font-semibold text-lime"
+        <Link
+          className="text-inherit decoration-current/50 hover:decoration-current"
           href="https://ghost.org/themes/"
-          rel="noopener noreferrer"
-          target="_blank"
+          external
         >
-          Ghost Marketplace &rarr;
-        </a>
+          Ghost Marketplace
+        </Link>
       </div>
     </ModalPage>
   );

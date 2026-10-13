@@ -3,6 +3,8 @@
 This document is the source of truth for Node.js libraries created under
 `packages/` for use inside the Ghost monorepo. Start from [`_template`](./_template)
 and keep the resulting package aligned with these rules throughout its lifetime.
+Generate a package with `pnpm gx generate package <name>`; see
+[Ghost Dev Tools](../tools/gx/README.md) for options.
 
 These defaults do not automatically apply to browser applications, test-only
 source helpers, or packages that Ghost intentionally publishes for third-party

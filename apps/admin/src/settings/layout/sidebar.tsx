@@ -1,5 +1,5 @@
 import GhostLogo from '@/settings/assets/images/orb-pink.png';
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   Badge,
   InputGroup,
@@ -16,6 +16,7 @@ import { Box, Inline, Stack, Text } from '@tryghost/shade/primitives';
 import { useFocusContext } from '@tryghost/shade/app';
 
 import { getSettingValues } from '@tryghost/admin-x-framework/api/settings';
+import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 
 import { searchKeywords as advancedSearchKeywords } from '@/settings/advanced/search-keywords';
 import { searchKeywords as generalSearchKeywords } from '@/settings/general/search-keywords';
@@ -270,14 +271,57 @@ export const SettingsHeader: React.FC<SettingsHeaderProps> = ({ className, input
     <SettingsSearchInput className="flex-1" inputRef={inputRef} />
   </Inline>
 );
+
+const FADE_HEIGHT = 48;
+
+/**
+ * Fades the scroller's foot while there's more below, over as much of it as
+ * is left to scroll. A mask, so it fades to whatever is behind the sidebar
+ * (the admin7Design sidebar is glass).
+ */
+function useScrollFade(scrollerRef: React.RefObject<HTMLElement>, enabled: boolean) {
+  const [remaining, setRemaining] = useState(0);
+
+  useEffect(() => {
+    const scroller = scrollerRef.current;
+    if (!enabled || !scroller) {
+      return;
+    }
+    const update = () =>
+      setRemaining(Math.max(0, scroller.scrollHeight - scroller.scrollTop - scroller.clientHeight));
+    const mutationObserver = new MutationObserver(update);
+    const resizeObserver = new ResizeObserver(update);
+    update();
+    scroller.addEventListener('scroll', update, { passive: true });
+    mutationObserver.observe(scroller, { childList: true, subtree: true });
+    resizeObserver.observe(scroller);
+    return () => {
+      scroller.removeEventListener('scroll', update);
+      mutationObserver.disconnect();
+      resizeObserver.disconnect();
+    };
+  }, [enabled, scrollerRef]);
+
+  const fade = Math.min(FADE_HEIGHT, remaining);
+  if (!enabled || fade <= 1) {
+    return undefined;
+  }
+  const mask = `linear-gradient(to bottom, #000 calc(100% - ${fade}px), transparent)`;
+  return { maskImage: mask, WebkitMaskImage: mask };
+}
+
 const Sidebar: React.FC = () => {
   const { filter, setFilter, checkVisible, noResult, setNoResult } = useSearch();
   const { updateRoute } = useSettingsNavigation();
   const searchInputRef = useRef<HTMLInputElement | null>(null);
+  const scrollerRef = useRef<HTMLElement>(null);
   const { isAnyTextFieldFocused } = useFocusContext();
   const { settings } = useGlobalData();
   const [isPrivate] = getSettingValues(settings, ['is_private']) as [boolean];
   const visibility = useSettingsSectionVisibility();
+  // With admin7Design, the navigation sits in the floating sidebar's glass
+  const floatingSidebar = useFeatureFlag('admin7Design');
+  const scrollFade = useScrollFade(scrollerRef, floatingSidebar);
   const {
     visibleMembershipSearchKeywords,
     visibleEmailSearchKeywords,
@@ -336,14 +380,16 @@ const Sidebar: React.FC = () => {
   return (
     <Stack className="min-h-0 flex-1" data-testid="sidebar" gap="none">
       {/* data-nav-row marks the rows that cascade in when the shell swaps to this nav. */}
-      <Box className="shrink-0 bg-sidebar px-5 pb-2" data-nav-row>
+      <Box className={cn('shrink-0 px-5 pb-2', !floatingSidebar && 'bg-sidebar')} data-nav-row>
         <SettingsHeader inputRef={searchInputRef} />
       </Box>
       <nav
+        ref={scrollerRef}
         // pb-5 matches the sidebar's pt-5, so the last item rests as far from the
         // bottom edge as the search row sits from the top.
         className="min-h-0 flex-1 overflow-y-auto px-5 pt-4 pb-5 [&>:last-child]:mb-0"
         id="settings-sidebar-scroller"
+        style={scrollFade}
       >
         {noResult && <NoSearchResult className="ml-2" />}
 

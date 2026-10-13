@@ -1,17 +1,6 @@
 import { TriggerCard, type TriggerData } from './trigger-card';
-import React, { useRef, useState } from 'react';
-import StepPicker, { type StepPickerType } from './step-picker';
+import React from 'react';
 import { useEmailTrackingSettings } from '@/automations/hooks/use-email-tracking-settings';
-import {
-  ContextMenu,
-  ContextMenuContent,
-  ContextMenuItem,
-  ContextMenuSeparator,
-  ContextMenuTrigger,
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@tryghost/shade/components';
 import { Grid, Stack, Inline, Text } from '@tryghost/shade/primitives';
 import { AutomationCard } from './automation-card';
 import { Handle, Position } from '@xyflow/react';
@@ -32,19 +21,6 @@ export const TAIL_CANVAS_ID = '__tail__';
 // Translated to the API's `InsertActionAnchor` by `toApiAnchor` (in ./node-helpers) before reaching the data helpers.
 export type CanvasAnchor = { sourceId: string; targetId: string };
 
-export type StepNodeDisplayData = {
-  email?: EditableEmailData;
-  wait?: EditableWaitData;
-  errorMessage?: string;
-  icon: React.ElementType;
-  label: string;
-  isPlaceholderValue?: boolean;
-  showStatsFooter?: boolean;
-  stats?: AutomationEmailStats;
-  value?: string;
-  warningMessage?: string;
-};
-
 type NodeContextMenuItem = {
   icon?: React.ElementType;
   label: string;
@@ -60,26 +36,27 @@ type NodeContextMenuSeparator = {
 
 export type NodeContextMenuEntry = NodeContextMenuItem | NodeContextMenuSeparator;
 
-type StepNodeData = StepNodeDisplayData & {
-  trigger?: TriggerData;
-  onInteract?: () => void;
+type StepNodeData = {
+  email?: EditableEmailData;
+  wait?: EditableWaitData;
+  errorMessage?: string;
+  showStatsFooter: boolean;
+  stats?: AutomationEmailStats;
   contextMenuItems: NodeContextMenuEntry[];
   isNew: boolean;
   selected: boolean;
-  onSelect: () => void;
 };
 
-type TailNodeData = {
-  fixedExit?: boolean;
-  disabled: boolean;
-  disabledReason?: string;
-  onPick: (type: StepPickerType, anchor: CanvasAnchor) => void;
-  anchor: CanvasAnchor;
+type TriggerNodeData = {
+  trigger: TriggerData;
+  errorMessage?: string;
+  onInteract: () => void;
 };
 
-type StepFlowNode = Node<StepNodeData, 'trigger' | 'step'>;
-type TailFlowNode = Node<TailNodeData, 'tail'>;
-export type AutomationFlowNode = StepFlowNode | TailFlowNode;
+type StepFlowNode = Node<StepNodeData, 'step'>;
+type TriggerFlowNode = Node<TriggerNodeData, 'trigger'>;
+type TailFlowNode = Node<Record<string, never>, 'tail'>;
+export type AutomationFlowNode = StepFlowNode | TriggerFlowNode | TailFlowNode;
 
 const HIDDEN_HANDLE_STYLE: React.CSSProperties = {
   background: 'transparent',
@@ -97,191 +74,46 @@ const HiddenHandle: React.FC<{ type: 'source' | 'target'; position: Position }> 
   position,
 }) => <Handle isConnectable={false} position={position} style={HIDDEN_HANDLE_STYLE} type={type} />;
 
-const NodeShell: React.FC<
-  React.PropsWithChildren<{ className?: string; data: StepNodeData; footer?: React.ReactNode }>
-> = ({ children, className, data, footer }) => {
-  const ignoreNextClickRef = useRef(false);
-
-  return (
-    <ContextMenu
-      onOpenChange={(open) => {
-        if (!open) {
-          ignoreNextClickRef.current = false;
-        }
-      }}
-    >
-      <ContextMenuTrigger asChild>
-        <button
-          aria-invalid={Boolean(data.errorMessage)}
-          aria-label={data.value ? `${data.label}: ${data.value}` : data.label}
-          aria-pressed={data.selected}
-          className={cn(
-            'flex w-64 flex-col rounded-lg border border-transparent bg-surface-elevated p-3 text-left text-sm text-foreground shadow-sm transition-all focus-visible:border-border-strong focus-visible:outline-none',
-            !data.selected && 'hover:border-border-strong',
-            data.selected &&
-              !data.errorMessage &&
-              'border-gray-700 shadow-[inset_0_0_0_1px_var(--color-gray-700),0_1px_2px_0_rgb(0_0_0_/_0.05)]',
-            data.errorMessage && 'border-destructive',
-            !data.errorMessage && data.warningMessage && 'border-yellow-600',
-            data.isNew &&
-              'animate-in duration-250 ease-out fade-in-0 zoom-in-90 motion-reduce:animate-none',
-            className,
-          )}
-          type="button"
-          onClick={(event) => {
-            event.stopPropagation();
-            if (event.button !== 0 || ignoreNextClickRef.current) {
-              ignoreNextClickRef.current = false;
-              return;
-            }
-            data.onSelect();
-          }}
-          onContextMenu={(event) => {
-            ignoreNextClickRef.current = true;
-            event.stopPropagation();
-          }}
-          onPointerDown={(event) => {
-            if (event.button === 2) {
-              event.stopPropagation();
-            }
-          }}
-        >
-          <div
-            className={cn(
-              'flex w-full items-center gap-3',
-              (data.errorMessage || data.warningMessage) && 'items-start',
-            )}
-          >
-            {children}
-          </div>
-          {footer}
-        </button>
-      </ContextMenuTrigger>
-      <ContextMenuContent
-        className="w-44"
-        onClick={(event) => event.stopPropagation()}
-        onPointerDown={(event) => event.stopPropagation()}
-      >
-        {data.contextMenuItems.map((item) => {
-          if (item.type === 'separator') {
-            return <ContextMenuSeparator key={item.id} />;
-          }
-          const Icon = item.icon;
-          return (
-            <ContextMenuItem key={item.label} variant={item.variant} onSelect={item.onSelect}>
-              {Icon && <Icon className="size-4" />}
-              {item.label}
-            </ContextMenuItem>
-          );
-        })}
-      </ContextMenuContent>
-    </ContextMenu>
-  );
-};
-
-const StepNodeContent: React.FC<{ data: StepNodeData }> = ({ data }) => {
-  const Icon = data.icon;
-  const statusMessage = data.errorMessage || data.warningMessage;
-  return (
-    <>
-      <div
-        className={cn(
-          'flex size-8 shrink-0 items-center justify-center rounded-md bg-muted text-text-secondary',
-          statusMessage && 'mt-[3px]',
-        )}
-      >
-        <Icon className="size-4" />
-      </div>
-      <div className="flex min-w-0 flex-col text-left">
-        <span className="text-sm text-text-secondary">{data.label}</span>
-        {data.value && (
-          <span
-            className={cn(
-              'truncate text-base font-medium',
-              data.isPlaceholderValue && 'opacity-50',
-            )}
-          >
-            {data.value}
-          </span>
-        )}
-        {data.errorMessage && (
-          <span className="mt-1 text-xs text-destructive">{data.errorMessage}</span>
-        )}
-        {!data.errorMessage && data.warningMessage && (
-          <span className="mt-1 text-xs text-yellow-600">{data.warningMessage}</span>
-        )}
-      </div>
-    </>
-  );
-};
-
-type EmailStatsVariant = 'standard' | 'inline';
-
 const FooterMetric: React.FC<{
   label: string;
   tracked?: boolean;
-  variant?: EmailStatsVariant;
   children: React.ReactNode;
-}> = ({ label, tracked = true, variant = 'standard', children }) => (
-  <Stack className="text-left" gap={variant === 'inline' ? 'xs' : 'none'}>
+}> = ({ label, tracked = true, children }) => (
+  <Stack className="text-left" gap="xs">
     <span className={cn('text-xs', tracked ? 'text-text-secondary' : 'text-muted-foreground')}>
       {label}
     </span>
     {tracked ? (
-      <span
-        className={
-          variant === 'inline' ? 'font-mono text-md tabular-nums' : 'text-base font-medium'
-        }
-      >
-        {children}
-      </span>
+      <span className="font-mono text-md tabular-nums">{children}</span>
     ) : (
-      <OffValue className={variant === 'inline' ? 'text-md' : 'text-base'} />
+      <OffValue className="text-md" />
     )}
   </Stack>
 );
 
 const EmailStepStatsFooter: React.FC<{
   stats: AutomationEmailStats;
-  variant?: EmailStatsVariant;
-}> = ({ stats, variant = 'standard' }) => {
+}> = ({ stats }) => {
   const { emailTrackOpens, emailTrackClicks } = useEmailTrackingSettings();
 
   return (
-    <Grid
-      className={cn('w-full', variant === 'standard' && 'mt-3 border-t border-border-default pt-3')}
-      columns={3}
-      gap="md"
-    >
-      <FooterMetric label="Sent" variant={variant}>
-        {formatNumber(stats.email_sent_count)}
+    <Grid className="w-full" columns={3} gap="md">
+      <FooterMetric label="Sent">{formatNumber(stats.email_sent_count)}</FooterMetric>
+      <FooterMetric label="Opened" tracked={emailTrackOpens}>
+        {stats.opened_rate === null ? '—' : formatRate(stats.opened_rate)}
       </FooterMetric>
-      <FooterMetric label="Opened" tracked={emailTrackOpens} variant={variant}>
-        {variant === 'inline' && stats.opened_rate === null ? '—' : formatRate(stats.opened_rate)}
-      </FooterMetric>
-      <FooterMetric label="Clicked" tracked={emailTrackClicks} variant={variant}>
-        {variant === 'inline' && stats.clicked_rate === null ? '—' : formatRate(stats.clicked_rate)}
+      <FooterMetric label="Clicked" tracked={emailTrackClicks}>
+        {stats.clicked_rate === null ? '—' : formatRate(stats.clicked_rate)}
       </FooterMetric>
     </Grid>
   );
 };
 
-const TriggerNode = React.memo<NodeProps<StepFlowNode>>(({ data }) =>
-  data.trigger ? (
-    <TriggerCard
-      errorMessage={data.errorMessage}
-      trigger={data.trigger}
-      onInteract={data.onInteract}
-    >
-      <HiddenHandle position={Position.Bottom} type="source" />
-    </TriggerCard>
-  ) : (
-    <NodeShell data={data}>
-      <StepNodeContent data={data} />
-      <HiddenHandle position={Position.Bottom} type="source" />
-    </NodeShell>
-  ),
-);
+const TriggerNode = React.memo<NodeProps<TriggerFlowNode>>(({ data }) => (
+  <TriggerCard errorMessage={data.errorMessage} trigger={data.trigger} onInteract={data.onInteract}>
+    <HiddenHandle position={Position.Bottom} type="source" />
+  </TriggerCard>
+));
 TriggerNode.displayName = 'TriggerNode';
 
 const StepNode = React.memo<NodeProps<StepFlowNode>>(({ data }) => {
@@ -292,7 +124,7 @@ const StepNode = React.memo<NodeProps<StepFlowNode>>(({ data }) => {
         errorMessage={data.errorMessage}
         footer={
           data.showStatsFooter && data.stats ? (
-            <EmailStepStatsFooter stats={data.stats} variant="inline" />
+            <EmailStepStatsFooter stats={data.stats} />
           ) : undefined
         }
         isNew={data.isNew}
@@ -317,76 +149,22 @@ const StepNode = React.memo<NodeProps<StepFlowNode>>(({ data }) => {
       </EditableWaitCard>
     );
   }
-  return (
-    <NodeShell
-      data={data}
-      footer={
-        data.showStatsFooter && data.stats ? <EmailStepStatsFooter stats={data.stats} /> : undefined
-      }
-    >
-      <HiddenHandle position={Position.Top} type="target" />
-      <StepNodeContent data={data} />
-      <HiddenHandle position={Position.Bottom} type="source" />
-    </NodeShell>
-  );
+  return null;
 });
 StepNode.displayName = 'StepNode';
 
-const TailNode: React.FC<NodeProps<TailFlowNode>> = ({ data }) => {
-  const [open, setOpen] = useState(false);
-
-  if (data.fixedExit) {
-    return (
-      <Inline className="w-[400px]" justify="center">
-        <HiddenHandle position={Position.Top} type="target" />
-        <AutomationCard aria-label="Exit automation" className="w-auto p-4 text-muted-foreground">
-          <Inline gap="md">
-            <LucideIcon.LogOut aria-hidden="true" className="size-4 shrink-0" strokeWidth={2} />
-            <Text size="md" tone="secondary" weight="medium">
-              Exit automation
-            </Text>
-          </Inline>
-        </AutomationCard>
+const TailNode: React.FC<NodeProps<TailFlowNode>> = () => (
+  <Inline className="w-[400px]" justify="center">
+    <HiddenHandle position={Position.Top} type="target" />
+    <AutomationCard aria-label="Exit automation" className="w-auto p-4 text-muted-foreground">
+      <Inline gap="md">
+        <LucideIcon.LogOut aria-hidden="true" className="size-4 shrink-0" strokeWidth={2} />
+        <Text size="md" tone="secondary" weight="medium">
+          Exit automation
+        </Text>
       </Inline>
-    );
-  }
-
-  const handlePick = (type: StepPickerType) => {
-    setOpen(false);
-    data.onPick(type, data.anchor);
-  };
-
-  const triggerClassName =
-    'flex h-12 w-64 items-center justify-center rounded-lg border border-dashed border-border-default bg-surface-page transition-colors hover:border-border-strong focus-visible:border-border-strong focus-visible:outline-none';
-
-  if (data.disabled) {
-    return (
-      <div
-        className="flex h-12 w-64 items-center justify-center rounded-lg border border-border-default bg-[repeating-linear-gradient(135deg,var(--color-white)_0,var(--color-white)_12px,var(--color-gray-100)_12px,var(--color-gray-100)_24px)] text-sm font-medium text-text-secondary"
-        data-testid="step-limit-tail-node"
-      >
-        <HiddenHandle position={Position.Top} type="target" />
-        <LucideIcon.Milestone className="mr-2 size-4" strokeWidth={1.5} />
-        {data.disabledReason}
-      </div>
-    );
-  }
-
-  return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger
-        aria-label="Add step"
-        className={cn(triggerClassName, 'cursor-pointer')}
-        data-testid="add-step-tail-button"
-      >
-        <HiddenHandle position={Position.Top} type="target" />
-        <LucideIcon.Plus className="size-5 text-text-secondary" strokeWidth={1.5} />
-      </PopoverTrigger>
-      <PopoverContent align="center" className="border-0 p-0 shadow-lg" side="top" sideOffset={12}>
-        <StepPicker onPick={handlePick} />
-      </PopoverContent>
-    </Popover>
-  );
-};
+    </AutomationCard>
+  </Inline>
+);
 
 export { TriggerNode, StepNode, TailNode };

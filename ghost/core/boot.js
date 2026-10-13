@@ -72,6 +72,7 @@ function notifyServerReady(error) {
  *
  * @param {object} options
  * @param {object} options.config
+ * @returns {Promise<string|null>} a warning to log once boot completes
  */
 async function initDatabase({ config }) {
   const DatabaseStateManager = require('./server/data/db/database-state-manager');
@@ -82,6 +83,8 @@ async function initDatabase({ config }) {
 
   const databaseInfo = require('./server/data/db/info');
   await databaseInfo.init();
+
+  return dbStateManager.warning;
 }
 
 /**
@@ -144,7 +147,7 @@ async function initCore({ ghostServer, config }) {
 
   // Signing keys come from settings and must be ready before anything signs or serves a JWKS
   debug('Begin: signing keys');
-  const signingKeys = require('./server/services/signing-keys');
+  const signingKeys = require('./server/services/signing-keys').default;
   await signingKeys.init();
   debug('End: signing keys');
 
@@ -167,8 +170,8 @@ async function initCore({ ghostServer, config }) {
 
   // App installations service: knex-backed, wired once the DB is ready.
   debug('Begin: App Installations Service');
-  const appInstallationsService = require('./server/services/app-installations');
-  appInstallationsService.init();
+  const appInstallationsService = require('./server/services/app-installations').default;
+  await appInstallationsService.init();
   debug('End: App Installations Service');
 
   // Stripe Checkout config service: knex-backed, wired once the DB is ready.
@@ -371,7 +374,7 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
   const slackNotifications = require('./server/services/slack-notifications');
   const mediaInliner = require('./server/services/media-inliner');
   const contentImport = require('./server/services/content-import');
-  const donationService = require('./server/services/donations');
+  const donationService = require('./server/services/donations').default;
   const giftService = require('./server/services/gifts');
   const machinePaymentsService = require('./server/services/machine-payments');
   const recommendationsService = require('./server/services/recommendations');
@@ -731,7 +734,7 @@ async function bootGhost({ backend = true, frontend = true, server = true } = {}
 
     // Step 3 - Get the DB ready
     debug('Begin: Get DB ready');
-    await initDatabase({ config });
+    const databaseWarning = await initDatabase({ config });
     bootLogger.log('database ready');
     const connection = require('./server/data/db/connection');
     sentry.initQueryTracing(connection);
@@ -774,6 +777,10 @@ async function bootGhost({ backend = true, frontend = true, server = true } = {}
 
     // Step 6 - We are technically done here - let everyone know!
     bootLogger.log('booted');
+    // After boot, so the dev console's boot output doesn't scroll it away
+    if (databaseWarning) {
+      logging.warn(databaseWarning);
+    }
     bootLogger.metric('boot-time');
     notifyServerReady();
 

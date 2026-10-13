@@ -1,11 +1,8 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 
-import {
-  SettingsModal,
-  settingsModalVariants,
-  type SettingsModalSize,
-} from '@/components/patterns/settings-modal';
+import { SettingsModal, type SettingsModalSize } from '@/components/patterns/settings-modal';
+import { settingsModalVariants } from '@/components/patterns/settings-modal-variants';
 
 describe('SettingsModal', () => {
   it.each<SettingsModalSize>(['sm', 'md', 'lg', 'xl', 'full'])(

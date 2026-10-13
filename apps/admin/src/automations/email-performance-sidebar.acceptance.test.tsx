@@ -67,12 +67,10 @@ const prepare = (
     ],
   });
 };
-const boot = (tracking = true, redesigned = true) =>
+const boot = (tracking = true) =>
   renderAdminApp('/automations/first', {
     labs: {
       automations: true,
-      automationRunAnalytics: redesigned,
-      automationAnalytics: true,
     },
     boot: {
       ...performanceBoot,
@@ -376,18 +374,6 @@ describe('Email performance sidebar', () => {
     expect(links.requests).toHaveLength(0);
   });
 
-  it('hides analytics controls when email analytics is disabled', async () => {
-    prepare();
-    await renderAdminApp('/automations/first', {
-      labs: { automations: true, automationRunAnalytics: true, automationAnalytics: false },
-    });
-    await expect.element(card()).toBeVisible();
-    await expect
-      .element(page.getByRole('button', { name: 'View email analytics' }))
-      .not.toBeInTheDocument();
-    await expect.element(panel()).not.toBeInTheDocument();
-  });
-
   it('hides the analytics button for emails without stats', async () => {
     prepare([{ ...email('First'), stats: undefined }]);
     await boot();
@@ -397,19 +383,8 @@ describe('Email performance sidebar', () => {
       .not.toBeInTheDocument();
   });
 
-  it('retains the three-ring settings sidebar with the redesign flag off', async () => {
-    prepare([email('First')]);
-    fakeAdminEndpoint('GET', linksPath(), { automation_action_links: [] });
-    await boot(true, false);
-    await page.getByRole('button', { name: 'Send email: First' }).click();
-    const legacy = page.getByRole('complementary', { name: 'Step details' });
-    await expect.element(legacy.getByPlaceholder('Subject line')).toBeVisible();
-    await expect.element(legacy.getByTestId('email-performance-sent-ring')).toBeVisible();
-    await expect.element(panel()).not.toBeInTheDocument();
-  });
-
   it.each(['subject', 'email body'])(
-    'keeps the workflow visible after editing the %s and saving with the redesign flag off',
+    'keeps the workflow visible after editing the %s and saving',
     async (field) => {
       prepare([email('First')]);
       fakeAdminEndpoint('GET', linksPath(), { automation_action_links: [] });
@@ -429,13 +404,12 @@ describe('Email performance sidebar', () => {
           },
         ],
       }));
-      await boot(true, false);
-      await page.getByRole('button', { name: 'Send email: First' }).click();
-      const sidebar = page.getByRole('complementary', { name: 'Step details' });
+      await boot();
+      const emailCard = editingCanvas().getByRole('article', { name: /^Send email/ });
       if (field === 'subject') {
-        await sidebar.getByPlaceholder('Subject line').fill('Updated subject');
+        await emailCard.getByRole('textbox', { name: 'Subject line' }).fill('Updated subject');
       } else {
-        await sidebar.getByRole('button', { name: 'Edit email', exact: true }).click();
+        await emailCard.getByRole('button', { name: 'Edit email content', exact: true }).click();
         const dialog = page.getByRole('dialog', { name: 'Edit email', exact: true });
         await dialog.getByRole('textbox').fill('Updated message');
         await dialog.getByRole('button', { name: 'Save', exact: true }).click();
@@ -455,10 +429,10 @@ describe('Email performance sidebar', () => {
         await expect
           .element(page.getByRole('button', { name: 'Save', exact: true }))
           .toBeDisabled();
-        await expect.element(sidebar).toBeVisible();
+        await expect.element(emailCard).toBeVisible();
         await expect
           .element(
-            page.getByRole('button', {
+            page.getByRole('article', {
               name: `Send email: ${field === 'subject' ? 'Updated subject' : 'First'}`,
             }),
           )

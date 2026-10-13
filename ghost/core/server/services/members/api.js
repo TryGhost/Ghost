@@ -23,7 +23,7 @@ const commentsService = require('../comments');
 const emailAddressService = require('../email-address');
 const giftService = require('../gifts');
 const metafieldsService = require('../members-metafields');
-const signingKeys = require('../signing-keys');
+const signingKeys = require('../signing-keys').default;
 const { t } = require('../i18n');
 const sentry = require('../../../shared/sentry');
 
@@ -61,7 +61,7 @@ function createApiInstance(config) {
     urlService,
     tokenConfig: {
       issuer: config.getTokenIssuer(),
-      signingKeys: signingKeys.getInstance().forPurpose('members'),
+      signingKeys: signingKeys.service.forPurpose('members'),
     },
     auth: {
       getSigninURL: config.getSigninURL.bind(config),

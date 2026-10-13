@@ -51,6 +51,8 @@ import { ScreenEntranceProvider } from '@/layout/screen-entrance-provider';
 import { useScreenEntrance } from '@/layout/screen-transition';
 import { EditorStatus } from './editor-status';
 import { EmailSizeWarning } from './email-size-warning';
+import { EditorFontPicker } from './editor-font-picker';
+import { useEditorFont } from './use-editor-font';
 import { PostEditor, type PostEditorHandle } from './post-editor';
 import type { EditorStatusRecord } from './post-status';
 import { buildPublishFlowPost } from './publish/flow-post';
@@ -72,6 +74,8 @@ import {
 import { editorRead, useEditorSession } from './session/use-editor-session';
 import { usePostCardConfig } from './use-post-card-config';
 import { usePostSnippets } from './use-post-snippets';
+import { useSettingsOpen } from './use-settings-open';
+import { useWritingFocus } from './use-writing-focus';
 import type { EditorRecord } from './session/projection';
 
 function EditorLoadError({ message, onRetry }: { message: string; onRetry: () => void }) {
@@ -218,9 +222,14 @@ function EditorContent({
     postType === 'post' &&
     (statusRecord?.status === 'published' || statusRecord?.status === 'sent') &&
     statusRecord.emailStatus === 'failed';
-  // Closed on every editor entry, as the menu it replaces was.
-  const [settingsOpen, setSettingsOpen] = useState(false);
-  const [settingsPresent, setSettingsPresent] = useState(false);
+  const editorImprovements = useFeatureFlag('admin7EditorImprovements', {
+    requestOptions: EDITOR_REQUEST_OPTIONS,
+  });
+  // Closed on every editor entry, as the menu it replaces was, unless the flag
+  // restores it as the writer left it: then it is open, in place, from the first paint.
+  const settingsMemory = useSettingsOpen(editorImprovements);
+  const [settingsOpen, setSettingsOpen] = useState(settingsMemory.openAtStart);
+  const [settingsPresent, setSettingsPresent] = useState(settingsMemory.openAtStart);
   const [settingsReveal, setSettingsReveal] = useState<SettingsFieldReveal | null>(null);
   // From a toggle until everything moving with the panel has arrived. Meanwhile
   // the editor sizes Koenig's breakout cards from the moving layout.
@@ -301,14 +310,17 @@ function EditorContent({
     observer.observe(header);
     return () => observer.disconnect();
   }, []);
+  const { toggled: settingsToggled } = settingsMemory;
   const toggleSettings = useCallback(() => {
     settingsToggleRef.current?.focus();
     // A manual toggle ends the reveal, so reopening starts on the section list.
     setSettingsReveal(null);
     setSettingsMoving(true);
     setSettingsPresent(true);
+    // Only the writer's own toggle is remembered, never a reveal's open.
+    settingsToggled(!settingsOpen);
     setSettingsOpen((open) => !open);
-  }, []);
+  }, [settingsOpen, settingsToggled]);
   const postEditorRef = useRef<PostEditorHandle>(null);
   // Below the small breakpoint the header's controls sit in the editor's bottom bar.
   const [bottomBar, setBottomBar] = useState<HTMLDivElement | null>(null);
@@ -339,6 +351,21 @@ function EditorContent({
     return invalid;
   }, [session, settingsOpen, showExcerpt]);
   const featureImage = useFeatureImageBinding(session, session.loadedRecord, session.contentKey);
+  const writingAreaRef = useRef<HTMLDivElement>(null);
+  const editorFont = useEditorFont(editorImprovements);
+  const [fontPickerOpen, setFontPickerOpen] = useState(false);
+  // The chrome stays while the settings panel is out, the font picker is open, or
+  // the status line reports a failed save or a failed newsletter.
+  const writingFocus = useWritingFocus({
+    enabled: editorImprovements,
+    blocked:
+      settingsOpen ||
+      settingsMoving ||
+      fontPickerOpen ||
+      session.state.kind === 'error' ||
+      didEmailFail,
+    writingAreaRef,
+  });
   const leaveGuard = useEditorLeaveGuard(session, postType);
   const liveVisibility = session.settings.visibility;
   const liveShowTitleAndFeatureImage = session.settings.show_title_and_feature_image;
@@ -414,9 +441,10 @@ function EditorContent({
           <Box
             ref={headerRef}
             className={cn(
-              'pointer-events-none relative z-20 shrink-0',
+              'screen-exit-chrome-top pointer-events-none relative z-20 shrink-0',
               chromeEntrance && 'screen-enter-from-top',
             )}
+            data-writing-focus={writingFocus}
           >
             <EditorHeader analyticsReturn={analyticsReturn} postType={postType}>
               {!analyticsReturn || didEmailFail || session.state.kind === 'error' ? (
@@ -452,7 +480,7 @@ function EditorContent({
             </EditorHeader>
           </Box>
           {/* The document reaches up behind the floating header. */}
-          <Box className="relative min-h-0 flex-1">
+          <Box ref={writingAreaRef} className="relative min-h-0 flex-1">
             <div className="-mt-(--editor-overlap) h-[calc(100%+var(--editor-overlap))] min-h-0">
               <PostEditor
                 key={session.contentKey}
@@ -462,6 +490,17 @@ function EditorContent({
                 cardConfig={currentCardConfig}
                 excerptError={settingsFieldErrorFor('custom_excerpt', session.settings)}
                 featureImage={featureImage}
+                font={editorFont.font}
+                fontPicker={
+                  editorImprovements ? (
+                    <EditorFontPicker
+                      className="max-sm:hidden"
+                      control={editorFont}
+                      open={fontPickerOpen}
+                      onOpenChange={setFontPickerOpen}
+                    />
+                  ) : undefined
+                }
                 handleRef={postEditorRef}
                 postType={postType}
                 settingsMoving={settingsMoving}
@@ -471,6 +510,7 @@ function EditorContent({
                 }
                 titleError={titleError(session.bind.title)}
                 wordCountAccessory={<EmailSizeWarning post={publishPost} />}
+                writingFocus={writingFocus}
                 onExcerptBlur={session.commitField}
                 onTkCountChange={setTkCount}
               />
@@ -479,9 +519,10 @@ function EditorContent({
         </Stack>
         <Box
           className={cn(
-            'absolute top-[calc(var(--spacing)*5+1px)] right-[calc(var(--spacing)*6+1px)] z-40 max-[500px]:top-3 max-[500px]:right-3',
+            'screen-exit-chrome-top absolute top-[calc(var(--spacing)*5+1px)] right-[calc(var(--spacing)*6+1px)] z-40 max-[500px]:top-3 max-[500px]:right-3',
             chromeEntrance && 'screen-enter-from-top',
           )}
+          data-writing-focus={writingFocus}
         >
           {settingsToggle}
         </Box>
@@ -492,9 +533,11 @@ function EditorContent({
             featureImage={featureImage.featureImage}
             frameRef={settingsFrameRef}
             hasInlineExcerpt={showExcerpt}
+            opensInPlace={settingsMemory.restored}
             postType={postType}
             reveal={settingsReveal}
             session={session}
+            showEditorHelp={editorImprovements}
             siteUrl={cardConfig.siteUrl}
           />
         ) : null}

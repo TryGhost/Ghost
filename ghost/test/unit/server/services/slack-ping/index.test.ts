@@ -14,7 +14,7 @@ const { blogIcon } = require('../../../../../core/server/lib/image');
 const urlService = require('../../../../../core/server/services/url');
 const urlUtils = require('../../../../../core/shared/url-utils').default;
 const requestExternal = require('../../../../../core/server/lib/request-external');
-const { InternalServerError } = require('@tryghost/errors');
+const { IncorrectUsageError, InternalServerError } = require('@tryghost/errors');
 
 const postModel = {
   toJSON: () => ({ id: 'post-id', slug: 'a-post', title: 'A post', html: '<p>Hello.</p>' }),
@@ -55,10 +55,16 @@ describe('Slack ping root', function () {
     }
   });
 
-  it('synchronously wires the shared dependencies and subscribes once across repeated init calls', function () {
-    assert.equal(root.service, undefined);
-    assert.equal(root.init(), undefined);
-    const service = root.service!;
+  it('wires the shared dependencies once and exposes the instance only after initialization', async function () {
+    assert.throws(() => root.service, IncorrectUsageError);
+    assert.deepEqual(events.listeners('post.published'), []);
+    assert.deepEqual(events.listeners('slack.test'), []);
+
+    const initializing = root.init();
+    assert.equal(root.init(), initializing);
+    assert.throws(() => root.service, IncorrectUsageError);
+    await initializing;
+    const service = root.service;
 
     assert.ok(service instanceof SlackPingService);
     for (const [name, dependency] of Object.entries({
@@ -75,15 +81,15 @@ describe('Slack ping root', function () {
     assert.deepEqual(events.listeners('post.published'), [service.postListener]);
     assert.deepEqual(events.listeners('slack.test'), [service.testListener]);
 
-    assert.equal(root.init(), undefined);
+    await root.init();
     assert.equal(root.service, service);
     assert.deepEqual(events.listeners('post.published'), [service.postListener]);
     assert.deepEqual(events.listeners('slack.test'), [service.testListener]);
   });
 
   it('dispatches each real event once without waiting for transport and reads changed settings on the retained instance', async function () {
-    root.init();
-    const service = root.service!;
+    await root.init();
+    const service = root.service;
     const settings: Record<string, string> = {
       slack_url: 'https://hooks.slack.com/services/first',
       slack_username: 'First sender',
@@ -119,7 +125,7 @@ describe('Slack ping root', function () {
 
       settings.slack_url = 'https://hooks.slack.com/services/second';
       settings.slack_username = 'Second sender';
-      root.init();
+      await root.init();
       assert.equal(root.service, service);
       assert.equal(events.emit('slack.test'), true);
       sinon.assert.calledTwice(request);
@@ -150,8 +156,8 @@ describe('Slack ping root', function () {
 
   for (const eventName of ['post.published', 'slack.test']) {
     it(`propagates a synchronous transport throw through ${eventName} dispatch`, async function () {
-      root.init();
-      const service = root.service!;
+      await root.init();
+      const service = root.service;
       sandbox
         .stub(settingsCache, 'get')
         .withArgs('slack_url')
@@ -178,8 +184,8 @@ describe('Slack ping root', function () {
   }
 
   it('logs a wrapped asynchronous request failure and fulfills both event pings', async function () {
-    root.init();
-    const service = root.service!;
+    await root.init();
+    const service = root.service;
     sandbox
       .stub(settingsCache, 'get')
       .withArgs('slack_url')
@@ -217,28 +223,42 @@ describe('Slack ping root', function () {
     }
   });
 
-  it('retains the assigned instance and does not retry after a partial subscription failure', function () {
-    const failure = new Error('Cannot subscribe slack.test');
-    const originalOn = events.on.bind(events);
-    const on = sandbox.stub(events, 'on').callsFake((name, listener) => {
-      if (name === 'slack.test') {
-        throw failure;
+  for (const eventName of ['post.published', 'slack.test']) {
+    it(`removes its subscriptions when ${eventName} registration fails and allows an explicit retry`, async function () {
+      const unrelated = () => {};
+      for (const name of ['post.published', 'slack.test']) {
+        events.on(name, unrelated);
       }
-      return originalOn(name, listener);
-    });
+      const failure = new Error(`Cannot subscribe ${eventName}`);
+      const originalOn = events.on.bind(events);
+      const on = sandbox.stub(events, 'on').callsFake((name, listener) => {
+        originalOn(name, listener);
+        if (name === eventName) {
+          throw failure;
+        }
+        return events;
+      });
 
-    assert.throws(
-      () => root.init(),
-      (error) => error === failure,
-    );
-    const service = root.service!;
-    assert.ok(service instanceof SlackPingService);
-    assert.deepEqual(events.listeners('post.published'), [service.postListener]);
-    assert.deepEqual(events.listeners('slack.test'), []);
-    assert.equal(root.init(), undefined);
-    assert.equal(root.service, service);
-    sinon.assert.calledTwice(on);
-    assert.deepEqual(events.listeners('post.published'), [service.postListener]);
-    assert.deepEqual(events.listeners('slack.test'), []);
-  });
+      const initializing = root.init();
+      assert.equal(root.init(), initializing);
+      await assert.rejects(initializing, (error) => error === failure);
+      assert.throws(() => root.service, IncorrectUsageError);
+      assert.deepEqual(events.listeners('post.published'), [unrelated]);
+      assert.deepEqual(events.listeners('slack.test'), [unrelated]);
+
+      on.restore();
+      await root.init();
+      const service = root.service;
+      assert.ok(service instanceof SlackPingService);
+      assert.deepEqual(events.listeners('post.published'), [unrelated, service.postListener]);
+      assert.deepEqual(events.listeners('slack.test'), [unrelated, service.testListener]);
+      await root.init();
+      assert.equal(root.service, service);
+
+      const ping = sandbox.stub(service, 'ping');
+      events.emit('post.published', postModel);
+      events.emit('slack.test');
+      sinon.assert.calledTwice(ping);
+    });
+  }
 });

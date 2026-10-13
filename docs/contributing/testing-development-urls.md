@@ -29,9 +29,9 @@ for the forwarding domain. Tunnel this port rather than Ghost's own port or a
 public-app development server, so requests use the normal development routing.
 The tunnel agent must send `X-Forwarded-Proto`, as ngrok does.
 
-Ghost's configured URL is still `http://localhost:2368`, so the site renders
-but generated links point at `localhost`, and Admin rejects sign-in from the
-forwarding domain. To use Admin, or when the behaviour under test depends on
+Ghost's configured URL is still the checkout's own, such as
+`http://localhost:2368`, so the site renders but generated links point at that
+URL, and Admin rejects sign-in from the forwarding domain. To use Admin, or when the behaviour under test depends on
 absolute URLs, restart `pnpm dev` with the forwarding URL:
 
 ```bash
@@ -102,10 +102,10 @@ startup probe assumes the default root URL. Use the automated tests below for
 focused development, then use this manual environment for final browser
 verification.
 
-Press `Ctrl+C` to stop Caddy. Stop the Docker services with the same override:
+Press `Ctrl+C` to stop Caddy. Stop the Docker services, the override's included:
 
 ```bash
-DEV_COMPOSE_FILES="-f docker/dev-url-testing/compose.yaml" pnpm docker:down
+pnpm dev:down --all
 ```
 
 Delete `ghost/config.local.json` before returning to `pnpm dev`; otherwise

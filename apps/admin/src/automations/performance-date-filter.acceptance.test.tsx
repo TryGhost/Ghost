@@ -252,14 +252,16 @@ describe('Automation performance date filter', () => {
     try {
       await render();
       await expectCounts([10, 20, 30]);
-      const cards = labels.map((label) => card(label).element());
-      const chartCard = entries().element();
+      const cardHeights = labels.map(
+        (label) => card(label).element().getBoundingClientRect().height,
+      );
+      const chartHeight = entries().element().getBoundingClientRect().height;
       await selectRange('Last 7 days');
       await expect.element(entries().getByRole('status')).toHaveTextContent('Loading total runs');
-      expect(entries().element()).toBe(chartCard);
+      expect(entries().element().getBoundingClientRect().height).toBe(chartHeight);
       for (const [index, label] of labels.entries()) {
-        expect(card(label).element()).toBe(cards[index]);
-        expect(cards[index].querySelectorAll('.animate-pulse')).toHaveLength(1);
+        expect(card(label).element().getBoundingClientRect().height).toBe(cardHeights[index]);
+        expect(card(label).element().querySelectorAll('.animate-pulse')).toHaveLength(1);
       }
       await selectRange('Last 30 days');
       await expectCounts([4, 5, 6]);

@@ -45,7 +45,7 @@ reviews:
         instructions: |
           Fail if the PR adds a new .js/.jsx/.cjs/.mjs source file, unless it is: a DB
           migration (ghost/core/server/data/migrations/), a tool/config file,
-          under scripts/ or docker/, or generated/vendored code.
+          under tools/scripts/ or docker/, or generated/vendored code.
           Modifying pre-existing JS files never fails this check.
   path_instructions:
     - path: '**/*'
@@ -79,7 +79,7 @@ reviews:
     - path: '**/*.{js,jsx,cjs,mjs}'
       instructions: |
         New source files must be TypeScript: flag new JS files as a required change
-        unless exempt (DB migrations, tool/config files, scripts/, docker/,
+        unless exempt (DB migrations, tool/config files, tools/scripts/, docker/,
         generated code).
         Never request conversion of pre-existing JS files. If the PR substantially
         reworks one (rewritten logic or significant new functions — not renames or

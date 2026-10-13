@@ -7,6 +7,7 @@ import ThemePreview from './theme/theme-preview';
 import {
   Button,
   Dropzone,
+  Link,
   LoadingIndicator,
   Tabs,
   TabsList,
@@ -236,7 +237,10 @@ const ThemeToolbar: React.FC<ThemeToolbarProps> = ({ currentTab, setCurrentTab, 
         prompt: uploadConfig.error || (
           <>
             Your current plan only supports official themes. You can install them from the{' '}
-            <a href="https://ghost.org/marketplace/">Ghost theme marketplace</a>.
+            <Link href="https://ghost.org/marketplace/" external>
+              Ghost theme marketplace
+            </Link>
+            .
           </>
         ),
         onOk: () => {

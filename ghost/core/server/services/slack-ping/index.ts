@@ -1,35 +1,22 @@
+import { defineService } from '../../../kernel/define-service';
 import { SlackPingService } from './slack-ping-service';
 
-class SlackPingServiceWrapper {
-  service?: SlackPingService;
+export default defineService('Slack ping', () => {
+  const service = new SlackPingService({
+    blogIcon: require('../../lib/image').blogIcon,
+    events: require('../../lib/common/events'),
+    logging: require('@tryghost/logging'),
+    request: require('../../lib/request-external'),
+    settingsCache: require('../../../shared/settings-cache'),
+    urlService: require('../url'),
+    urlUtils: require('../../../shared/url-utils').default,
+  });
 
-  init(): void {
-    if (this.service) {
-      // Already done
-      return;
-    }
-
-    // Wire up all the dependencies
-    const { blogIcon } = require('../../lib/image');
-    const events = require('../../lib/common/events');
-    const logging = require('@tryghost/logging');
-    const request = require('../../lib/request-external');
-    const settingsCache = require('../../../shared/settings-cache');
-    const urlService = require('../url');
-    const urlUtils = require('../../../shared/url-utils').default;
-
-    this.service = new SlackPingService({
-      blogIcon,
-      events,
-      logging,
-      request,
-      settingsCache,
-      urlService,
-      urlUtils,
-    });
-
-    this.service.subscribeEvents();
+  try {
+    service.subscribeEvents();
+  } catch (error) {
+    service.unsubscribeEvents();
+    throw error;
   }
-}
-
-export default new SlackPingServiceWrapper();
+  return service;
+});

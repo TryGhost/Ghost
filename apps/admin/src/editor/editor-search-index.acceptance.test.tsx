@@ -10,7 +10,7 @@ import {
   fakeEditorPost,
   renderAdminApp,
   unsavedChangesGuarded,
-  withFastAutosave,
+  withoutAutosave,
 } from '@test-utils/acceptance';
 import { editorScreen } from '@/editor/editor.screen';
 import { searchIndexQueryOptions, type SearchIndexKey } from '@/shared/search-index';
@@ -94,11 +94,12 @@ describe('Post editor search index', () => {
     fakeSlugs();
     const saveApi = fakeEditorPost({ url: LISTED.url, visibility: 'public' });
     const list = fakeAdminEndpoint('GET', '/search-index/posts/', { posts: [OTHER, LISTED] });
-    const { queryClient } = await renderAdminApp(`/editor/post/${POST_ID}`, withFastAutosave());
+    const { queryClient } = await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
     await expect.element(editorScreen.titleInput()).toHaveValue('Hello from React');
     await readList(queryClient, 'posts');
 
     await appendToBody(' and more');
+    await userEvent.keyboard('{Meta>}s{/Meta}');
     await expect.poll(() => saveApi.requests.length).toBe(1);
     await expect.poll(unsavedChangesGuarded).toBe(false);
     await saveTitle('A new title');
@@ -118,7 +119,7 @@ describe('Post editor search index', () => {
     fakeSlugs();
     const saveApi = fakeEditorPage();
     const list = fakeAdminEndpoint('GET', '/search-index/pages/', { pages: [LISTED] });
-    const { queryClient } = await renderAdminApp(`/editor/page/${POST_ID}`, withFastAutosave());
+    const { queryClient } = await renderAdminApp(`/editor/page/${POST_ID}`, withoutAutosave());
     await expect.element(editorScreen.titleInput()).toHaveValue('Hello from React');
     await readList(queryClient, 'pages');
 
@@ -146,11 +147,12 @@ describe('Post editor search index', () => {
       tags: [tag(created)],
     }));
     const list = fakeAdminEndpoint('GET', '/search-index/tags/', { tags: [NEWS] });
-    const { queryClient } = await renderAdminApp(`/editor/post/${POST_ID}`, withFastAutosave());
+    const { queryClient } = await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
     await expect.element(editorScreen.titleInput()).toHaveValue('Hello from React');
     await readList(queryClient, 'tags');
 
     await appendToBody(' and more');
+    await userEvent.keyboard('{Meta>}s{/Meta}');
     await expect.poll(() => saveApi.requests.length).toBe(1);
     await expect.poll(unsavedChangesGuarded).toBe(false);
 

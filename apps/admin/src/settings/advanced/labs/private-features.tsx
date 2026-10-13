@@ -30,11 +30,6 @@ const features: Feature[] = [
     flag: 'automationsPerTier',
   },
   {
-    title: 'Automation run analytics',
-    description: 'Track run-level analytics for automations.',
-    flag: 'automationRunAnalytics',
-  },
-  {
     title: 'Stripe Automatic Tax (private beta)',
     description: 'Use Stripe Automatic Tax at Stripe Checkout. Needs to be enabled in Stripe',
     flag: 'stripeAutomaticTax',
@@ -48,6 +43,23 @@ const features: Feature[] = [
     title: 'CSV Content Importer',
     description: 'Enables importing posts from CSV files in the Universal Importer',
     flag: 'csvContentImporter',
+  },
+  {
+    title: 'Admin 7 · Design',
+    description: 'Preview the floating Admin 7 sidebar and its navigation layout.',
+    flag: 'admin7Design',
+  },
+  {
+    title: 'Admin 7 · Customize from View site',
+    description:
+      'Customize the site design from View site, with a live preview. Needs Admin 7 · Design.',
+    flag: 'admin7CustomizeFromViewSite',
+  },
+  {
+    title: 'Admin 7 · Editor improvements',
+    description:
+      'Hide the editor’s controls while you write; move the mouse or scroll to bring them back.',
+    flag: 'admin7EditorImprovements',
   },
   {
     title: 'Email Unique ID',
@@ -100,12 +112,6 @@ const features: Feature[] = [
     description:
       'Let AI agents pay for access to paid-members markdown (.md) URLs via Stripe Machine Payments Protocol',
     flag: 'machinePayments',
-  },
-  {
-    title: 'Navigation URL suggestions',
-    description:
-      'Suggest pages, posts, offers and Portal links when editing navigation URLs in settings',
-    flag: 'navigationUrlSuggestions',
   },
   {
     title: 'Apps',

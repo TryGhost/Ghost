@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { DEFAULT_EMAIL_DESIGN } from '@/settings/email-design/types';
 import { DesignTab } from '@/settings/membership/member-emails/welcome-email-customize-modal';
 import { EmailDesignProvider } from '@/settings/email-design/email-design-provider';
+import { TooltipProvider } from '@tryghost/shade/components';
 import { render, screen } from '@testing-library/react';
 
 describe('Section title color', function () {
@@ -13,7 +14,9 @@ describe('Section title color', function () {
         settings={DEFAULT_EMAIL_DESIGN}
         onSettingsChange={() => {}}
       >
-        <DesignTab />
+        <TooltipProvider>
+          <DesignTab />
+        </TooltipProvider>
       </EmailDesignProvider>,
     );
 

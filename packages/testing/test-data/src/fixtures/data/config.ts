@@ -16,10 +16,6 @@ export const configData = {
       apiKey: null,
       contentFilter: 'off',
     },
-    editor: {
-      url: 'http://editor.test/koenig-lexical.umd.js',
-      version: '',
-    },
     signupForm: {
       url: 'https://signup-form.test/signup-form.min.js',
       version: '0.2',

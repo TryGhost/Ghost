@@ -32,7 +32,7 @@ over SMTP. No Mailgun credentials or local configuration files are needed.
 
 The fake server listens on `127.0.0.1:4010`, and Ghost starts once Mailpit and
 fake Mailgun are healthy. Press `Ctrl+C` to stop Ghost; fake Mailgun keeps
-running with the other Docker services until `pnpm docker:down`. Run one
+running with the other Docker services until `pnpm dev:down --all`. Run one
 development variant at a time.
 
 ## Test with Mailgun

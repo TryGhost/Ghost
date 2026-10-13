@@ -65,8 +65,8 @@ Two modes:
   no Ghost required.
 - **Integrated** — `pnpm dev:lexical` from the monorepo root starts the full
   Ghost dev environment plus a rebuild watcher for the editor (and
-  kg-default-nodes / kg-default-transforms) with a preview server on port 4173. Ghost Admin at http://localhost:2368/ghost loads your local editor
-  build; changes appear after the few seconds it takes to rebuild.
+  kg-default-nodes / kg-default-transforms). Ghost Admin loads your local
+  editor build; changes appear after the few seconds it takes to rebuild.
 
 See [koenig-lexical/README.md](./koenig-lexical/README.md) for card-specific
 setup (Klipy API key for the gif card, CORS notes for bookmark/embed cards)
@@ -121,7 +121,7 @@ own publishing workflow. Release commits consume pending changesets and commit
 the resulting package versions before the tag is created.
 
 The workflow runs
-[`scripts/publish-packages.js`](../scripts/publish-packages.js), which:
+[`tools/scripts/publish-packages.js`](../tools/scripts/publish-packages.js), which:
 
 1. Selects every publishable workspace package, including the public Koenig
    packages.
