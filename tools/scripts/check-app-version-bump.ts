@@ -1,17 +1,23 @@
-// Verifies, on every PR touching a public UMD app, that the app's package.json
-// major.minor still matches the version pinned in defaults.json. See lib for
-// why that invariant matters.
+// Verifies, on every PR touching a CDN-served app, that the app's package.json
+// major.minor still matches the version pinned in defaults.json. See
+// lib/publish-manifest.ts for why that invariant matters.
 
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { execFileSync } from 'node:child_process';
 
-import { PUBLIC_APPS, DEFAULTS_PATH, DEFAULTS_REPO_PATH, majorMinor } from './lib/public-apps.ts';
+import {
+  CDN_PACKAGES,
+  DEFAULTS_PATH,
+  DEFAULTS_REPO_PATH,
+  majorMinor,
+  type ContinuousPackage,
+} from './lib/publish-manifest.ts';
 import { resolveBaseCommit } from './lib/pr-base.ts';
 
-type PublicApp = (typeof PUBLIC_APPS)[number];
+type PublicApp = ContinuousPackage;
 
-const MONITORED_APP_PATHS = PUBLIC_APPS.map((app) => app.path);
+const MONITORED_APP_PATHS = CDN_PACKAGES.map((app) => app.path);
 
 function errorMessage(error: unknown): string {
   return (error as Error).message;
@@ -69,7 +75,7 @@ function getChangedAppFiles(app: PublicApp, changedFiles: string[]): string[] {
 }
 
 function getChangedApps(changedFiles: string[]): PublicApp[] {
-  return PUBLIC_APPS.filter((app) => getChangedAppFiles(app, changedFiles).length > 0);
+  return CDN_PACKAGES.filter((app) => getChangedAppFiles(app, changedFiles).length > 0);
 }
 
 function getPrVersion(app: PublicApp): string {
@@ -98,10 +104,10 @@ function readVersionFromDefaults(
     throw new Error(`Unable to parse ${sourceLabel}: ${errorMessage(error)}`);
   }
 
-  const appDefaults = parsedDefaults[app.configKey];
+  const appDefaults = parsedDefaults[app.cdn!];
 
   if (!appDefaults || typeof appDefaults.version !== 'string') {
-    throw new Error(`${sourceLabel} does not contain a valid "${app.configKey}.version" field`);
+    throw new Error(`${sourceLabel} does not contain a valid "${app.cdn}.version" field`);
   }
 
   return appDefaults.version;
@@ -138,7 +144,7 @@ export function checkAppConsistency(
   const prMajorMinorVersion = majorMinor(prVersion);
 
   if (prDefaultsVersion !== prMajorMinorVersion) {
-    return `${app.configKey} (${app.packageName}): package.json is on ${prMajorMinorVersion} but defaults.json has ${app.configKey}.version set to ${prDefaultsVersion}. These must match — for a minor/major release run "pnpm ship" in ${app.path} (it updates both), otherwise align ${DEFAULTS_REPO_PATH} to ${prMajorMinorVersion}.`;
+    return `${app.cdn} (${app.name}): package.json is on ${prMajorMinorVersion} but defaults.json has ${app.cdn}.version set to ${prDefaultsVersion}. These must match — for a minor/major release run "pnpm ship" in ${app.path} (it updates both), otherwise align ${DEFAULTS_REPO_PATH} to ${prMajorMinorVersion}.`;
   }
 
   return null;
@@ -165,7 +171,7 @@ function main() {
   }
 
   console.log(
-    `Checking app version consistency for: ${changedApps.map((app) => app.configKey).join(', ')}`,
+    `Checking app version consistency for: ${changedApps.map((app) => app.cdn).join(', ')}`,
   );
 
   const failedApps: string[] = [];
@@ -179,7 +185,7 @@ function main() {
     }
 
     console.log(
-      `${app.configKey} version consistency check passed (package.json ${majorMinor(getPrVersion(app))} = defaults.json ${getPrDefaultsVersion(app)})`,
+      `${app.cdn} version consistency check passed (package.json ${majorMinor(getPrVersion(app))} = defaults.json ${getPrDefaultsVersion(app)})`,
     );
   }
 

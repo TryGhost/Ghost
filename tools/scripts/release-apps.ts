@@ -4,12 +4,12 @@ import semver from 'semver';
 
 import { execAsync, readJson, writeJson } from './lib/utils.ts';
 import {
-  appForPackageName,
+  continuousPackage,
   readDefaults,
   writeDefaults,
   DEFAULTS_PATH,
   majorMinor,
-} from './lib/public-apps.ts';
+} from './lib/publish-manifest.ts';
 
 const CURRENT_DIR = process.cwd();
 
@@ -23,12 +23,12 @@ const packageJson = (await readJson(packageJsonPath)) as {
 const APP_NAME = packageJson.name;
 const APP_VERSION = packageJson.version;
 
-const app = appForPackageName(APP_NAME);
+const app = continuousPackage(APP_NAME);
 
 async function ensureEnabledApp() {
-  if (!app) {
+  if (!app?.cdn) {
     console.error(
-      `${APP_NAME} is not a public app — add it to tools/scripts/public-apps.json to release it here`,
+      `${APP_NAME} is not a CDN-served app — give it a cdn key in tools/scripts/publish-manifest.json to release it here`,
     );
     process.exit(1);
   }
@@ -79,11 +79,11 @@ async function getNewVersion(): Promise<string> {
 }
 
 async function updateConfig(newVersion: string) {
-  const defaultConfig = (await readDefaults()) as Record<string, { version: string }>;
+  const defaultConfig = await readDefaults();
 
   // Must stay in lockstep with package.json — check-app-version-bump fails the
   // PR otherwise, and live sites would point at an unpublished version line.
-  defaultConfig[app.configKey]!.version = majorMinor(newVersion);
+  defaultConfig[app!.cdn!]!.version = majorMinor(newVersion);
 
   await writeDefaults(defaultConfig);
 }

@@ -1,21 +1,23 @@
-// Builds the publish matrix for public UMD apps, filtered to the apps affected
-// in the current run. The output (stdout, compact JSON array) feeds the
-// publish_public_apps job's `strategy.matrix.include` via fromJSON.
+// Builds the matrix for the continuous publish job, filtered to the manifest
+// packages affected in the current run. The output (stdout, compact JSON
+// array) feeds the job's `strategy.matrix.include` via fromJSON.
 //
 // Matrix context isn't available in a job-level `if:`, so the affected gate
 // can't live on the publish job — instead we compute the set here in job_setup
 // (mirroring the affected_playwright_matrix dynamic matrix) and the job skips
 // itself when the result is `[]`.
 //
-// public-apps.json says *which* apps are public (apps/ also holds admin, shade
-// and friends, which are not) and maps each to its defaults.json key. The URLs
-// to purge come from defaults.json itself — see cdnPathsFor.
+// The URLs to purge for a CDN package come from defaults.json itself — see
+// cdnPathsFor.
 
-import { PUBLIC_APPS, readDefaults } from './lib/public-apps.ts';
+import {
+  CONTINUOUS_PACKAGES,
+  readDefaults,
+  type DefaultsEntry,
+  type VersioningPolicy,
+} from './lib/publish-manifest.ts';
 
-type DefaultsEntry = Record<string, unknown>;
-
-const DEFAULTS = (await readDefaults()) as Record<string, DefaultsEntry | undefined>;
+const DEFAULTS = await readDefaults();
 
 // defaults.json pins each app to a major.minor and interpolates it into the
 // URLs as {version}. The publish job knows the version it just released, so we
@@ -33,47 +35,55 @@ const VERSION_PLACEHOLDER = '{version}';
  */
 export function cdnPathsFor(configEntry: DefaultsEntry): string[] {
   return Object.values(configEntry)
-    .filter((value): value is string => typeof value === 'string' && value.startsWith('https://'))
+    .filter((value) => typeof value === 'string' && value.startsWith('https://'))
     .map((url) => url.replaceAll(VERSION_PLACEHOLDER, 'CURRENT_MINOR'));
 }
 
 export interface MatrixEntry {
   package_name: string;
   package_path: string;
-  // Newline-delimited, as the publish job's purge step expects.
+  versioning: VersioningPolicy;
+  dist_tag: string;
+  /** Newline-delimited URLs to purge; empty for a package Ghost doesn't serve from a CDN. */
   cdn_paths: string;
+  install_args: string;
 }
 
-/** `affectedProjects` are the nx project names affected in this run. */
+/** @param affectedProjects - nx project names affected in this run */
 export function buildMatrix(affectedProjects: string[]): MatrixEntry[] {
   const affected = new Set(affectedProjects);
-  return PUBLIC_APPS.filter((app) => affected.has(app.packageName)).map((app) => {
-    const configEntry = DEFAULTS[app.configKey];
+  return CONTINUOUS_PACKAGES.filter((pkg) => affected.has(pkg.name)).map((pkg) => {
+    let cdnPaths: string[] = [];
 
-    // Both of these would otherwise degrade into an empty purge list,
-    // which reads as success and leaves jsDelivr serving the old bundle.
-    if (!configEntry) {
-      throw new Error(
-        `public-apps.json maps ${app.packageName} to configKey "${app.configKey}", which defaults.json does not define`,
-      );
-    }
+    if (pkg.cdn) {
+      const configEntry = DEFAULTS[pkg.cdn];
 
-    const cdnPaths = cdnPathsFor(configEntry);
-    if (!cdnPaths.length) {
-      throw new Error(
-        `defaults.json entry "${app.configKey}" (${app.packageName}) has no CDN URLs to purge`,
-      );
+      // Both of these would otherwise degrade into an empty purge list,
+      // which reads as success and leaves jsDelivr serving the old bundle.
+      if (!configEntry) {
+        throw new Error(
+          `publish-manifest.json maps ${pkg.name} to cdn key "${pkg.cdn}", which defaults.json does not define`,
+        );
+      }
+
+      cdnPaths = cdnPathsFor(configEntry);
+      if (!cdnPaths.length) {
+        throw new Error(`defaults.json entry "${pkg.cdn}" (${pkg.name}) has no CDN URLs to purge`);
+      }
     }
 
     return {
-      package_name: app.packageName,
-      package_path: app.path,
+      package_name: pkg.name,
+      package_path: pkg.path,
+      versioning: pkg.versioning,
+      dist_tag: pkg.distTag,
       cdn_paths: cdnPaths.join('\n'),
+      install_args: pkg.installArgs ?? '',
     };
   });
 }
 
-function main() {
+function main(): void {
   const raw = process.argv[2] || '[]';
 
   let affectedProjects: unknown;
@@ -88,7 +98,7 @@ function main() {
   }
 
   // Stdout is the contract — the workflow captures this into a job output.
-  process.stdout.write(JSON.stringify(buildMatrix(affectedProjects)));
+  process.stdout.write(JSON.stringify(buildMatrix(affectedProjects as string[])));
 }
 
 if (import.meta.main) {
