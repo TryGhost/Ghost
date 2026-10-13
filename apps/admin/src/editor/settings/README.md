@@ -96,7 +96,8 @@ Closing it returns focus to the picker button when that field is still present.
 ## Open and closed
 
 The toggle sits in the editor header, and the panel starts closed on every
-editor entry. There is no keyboard shortcut for it.
+editor entry unless it is restored open as described below. There is no
+keyboard shortcut for it.
 
 Below the `lg` breakpoint the panel overlays the editor from the right rather
 than narrowing it, and below 500px it takes the full width. Above it the panel
