@@ -2,8 +2,10 @@ import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import ObjectId from 'bson-objectid';
 import nock from 'nock';
+import { z } from 'zod';
 import { agentProvider, fixtureManager, mockManager } from '../../utils/e2e-framework';
 import { toDatabaseDate } from '../../../core/server/lib/db-types/date';
+import { StoredManifest } from '../../../core/server/services/app-installations/schema';
 
 // Required, not imported, so this is the same module instance Ghost initialised at boot.
 const appInstallations: typeof import('../../../core/server/services/app-installations') = require('../../../core/server/services/app-installations');
@@ -41,8 +43,6 @@ describe('App installations Admin API', function () {
   let owner: { actor: { id: string; type: 'user' } };
 
   const service = () => appInstallations.service!;
-  const install = (overrides: Record<string, unknown> = {}) =>
-    service().install(owner, { manifestUrl: MANIFEST_URL, manifest: manifest(overrides) });
   const MANIFEST_HOST = 'https://podcast.example.com';
   const MANIFEST_PATH = '/ghost-app.json';
   const serve = (body: unknown, url = MANIFEST_HOST + MANIFEST_PATH) => {
@@ -50,6 +50,17 @@ describe('App installations Admin API', function () {
     return nock(origin)
       .get(pathname)
       .reply(200, body as Record<string, unknown>);
+  };
+  /** Confirms an install of the app as served, with the digest the publisher reviewed. */
+  const installReviewed = (digest: string, overrides: Record<string, unknown> = {}) => {
+    serve(manifest(overrides));
+    return service().create(owner, { manifestUrl: MANIFEST_URL, digest });
+  };
+  /** Installs the app as a publisher would: previewed, then confirmed. */
+  const install = async (overrides: Record<string, unknown> = {}) => {
+    serve(manifest(overrides));
+    const { digest } = await service().preview(MANIFEST_URL);
+    return installReviewed(digest, overrides);
   };
   const preview = async (manifestUrl = MANIFEST_URL, status = 200) => {
     const { body } = await agent
@@ -108,58 +119,16 @@ describe('App installations Admin API', function () {
       assert.equal(stored.installation_id, installation.id);
       assert.equal(stored.manifest_url, MANIFEST_URL);
       assert.deepEqual(JSON.parse(stored.manifest), installation.manifest);
-      assert.equal(stored.digest, createHash('sha256').update(stored.manifest).digest('hex'));
+      assert.equal(
+        stored.digest,
+        createHash('sha256').update(`${MANIFEST_URL}\n${stored.manifest}`).digest('hex'),
+      );
       assert.equal(Boolean(stored.requires_approval), false);
 
       const installed = await installationRow(installation.id);
       assert.equal(installed.manifest_id, stored.id);
       assert.equal(installed.pending_manifest_id, null);
       assert.equal(installed.revision, 0);
-    });
-
-    it('refuses a manifest that is not valid, and stores nothing', async function () {
-      await assert.rejects(install({ id: 'Podcast', allowed_origins: [] }), (err: any) => {
-        assert.equal(err.errorType, 'ValidationError');
-        assert.match(err.context, /id: /);
-        return true;
-      });
-      assert.equal((await service().browse()).length, 0);
-      assert.equal((await actions()).length, 0);
-    });
-
-    it('refuses an app served from the site itself', async function () {
-      const siteUrl = configUtils.config.get('url');
-      await assert.rejects(
-        install({ surfaces: [{ type: 'admin_page', url: `${siteUrl}/content/files/app.html` }] }),
-        { errorType: 'ValidationError' },
-      );
-    });
-
-    it('stores the manifest URL as it was checked, not as it was given', async function () {
-      const installation = await service().install(owner, {
-        manifestUrl: ' https://Podcast.Example.com/ghost-app.json\n',
-        manifest: manifest(),
-      });
-
-      assert.equal(installation.manifest_url, MANIFEST_URL);
-      const [stored] = await manifestRows();
-      assert.equal(stored.manifest_url, MANIFEST_URL);
-    });
-
-    it('keeps the manifest URL without its fragment, which no fetch ever sends', async function () {
-      const installation = await service().install(owner, {
-        manifestUrl: `${MANIFEST_URL}#v2`,
-        manifest: manifest(),
-      });
-
-      assert.equal(installation.manifest_url, MANIFEST_URL);
-    });
-
-    it('refuses a manifest URL longer than it can store', async function () {
-      const manifestUrl = `https://podcast.example.com/${'a'.repeat(2000)}`;
-      await assert.rejects(service().install(owner, { manifestUrl, manifest: manifest() }), {
-        errorType: 'ValidationError',
-      });
     });
 
     it('refuses a second installation of an app that is already installed', async function () {
@@ -183,7 +152,14 @@ describe('App installations Admin API', function () {
     });
 
     it('lets only one of three simultaneous confirmations install the app', async function () {
-      const results = await Promise.allSettled([install(), install(), install()]);
+      serve(manifest());
+      const { digest } = await service().preview(MANIFEST_URL);
+
+      const results = await Promise.allSettled([
+        installReviewed(digest),
+        installReviewed(digest),
+        installReviewed(digest),
+      ]);
 
       assert.equal(results.filter((result) => result.status === 'fulfilled').length, 1);
       for (const result of results) {
@@ -340,6 +316,20 @@ describe('App installations Admin API', function () {
         ['id'],
       );
     });
+
+    it('refuses an app served from the site itself', async function () {
+      const siteUrl = configUtils.config.get('url');
+      serve(
+        manifest({ surfaces: [{ type: 'admin_page', url: `${siteUrl}/content/files/app.html` }] }),
+      );
+
+      const error = await preview(MANIFEST_URL, 422);
+      assert.equal(error.code, 'APP_MANIFEST_INVALID');
+      assert.deepEqual(
+        error.details.map(({ path }: { path: string }) => path),
+        ['surfaces[0].url'],
+      );
+    });
   });
 
   describe('POST /apps/installations/', function () {
@@ -358,10 +348,8 @@ describe('App installations Admin API', function () {
 
       assert.equal(body.app_installations[0].app_id, 'com.example.podcast');
       assert.equal(body.app_installations[0].status, 'active');
-      // What was confirmed covers the address too, so it is not the stored digest.
       const [stored] = await manifestRows();
-      assert.equal(stored.digest, createHash('sha256').update(stored.manifest).digest('hex'));
-      assert.notEqual(stored.digest, digest);
+      assert.equal(stored.digest, digest);
       assert.equal((await actions())[0].event, 'installed');
     });
 
@@ -408,6 +396,22 @@ describe('App installations Admin API', function () {
       assert.equal(body.errors[0].code, 'APP_ALREADY_INSTALLED');
     });
 
+    it('keeps the manifest URL as it was checked, not as it was confirmed', async function () {
+      const spelled = 'https://Podcast.Example.com/ghost-app.json#install';
+      serve(manifest());
+      const { digest } = await preview(spelled);
+      serve(manifest());
+
+      const { body } = await agent
+        .post('apps/installations/')
+        .body({ app_installations: [{ manifest_url: spelled, digest }] })
+        .expectStatus(201);
+
+      assert.equal(body.app_installations[0].manifest_url, MANIFEST_URL);
+      const [stored] = await manifestRows();
+      assert.equal(stored.manifest_url, MANIFEST_URL);
+    });
+
     it('needs the reviewed digest', async function () {
       await agent
         .post('apps/installations/')
@@ -432,17 +436,18 @@ describe('App installations Admin API', function () {
     // What the lifecycle's refetch will do once it exists: keep the newer manifest as the
     // one waiting for approval, and stop the app until an Administrator decides.
     const suspendWithPending = async (id: string, pending: Record<string, unknown>) => {
-      // Stored as Ghost would store it: parsed, with its URLs resolved, and digested.
+      // Stored as Ghost would store it: parsed, with its URLs resolved, encoded, and digested
+      // together with its manifest URL.
       serve(pending);
       const reviewed = await preview();
+      const serialised = z.encode(StoredManifest, reviewed.manifest);
       const pendingId = new ObjectId().toHexString();
-      const serialised = JSON.stringify(reviewed.manifest);
       await models.Base.knex('app_installation_manifests').insert({
         id: pendingId,
         installation_id: id,
         manifest_url: MANIFEST_URL,
         manifest: serialised,
-        digest: createHash('sha256').update(serialised).digest('hex'),
+        digest: createHash('sha256').update(`${MANIFEST_URL}\n${serialised}`).digest('hex'),
         source: 'update',
         requires_approval: true,
         created_at: toDatabaseDate(new Date()),

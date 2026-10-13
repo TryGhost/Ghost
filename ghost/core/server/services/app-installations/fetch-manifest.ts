@@ -4,11 +4,11 @@ import { isLocalhost } from '@tryghost/app-contracts/manifest';
 import type { Got } from 'got';
 
 // The manifest is stored in a TEXT column, so anything larger could not be kept anyway.
-export const MANIFEST_MAX_BYTES = 64 * 1024;
+const MANIFEST_MAX_BYTES = 64 * 1024;
 const TIMEOUT_MS = 5000;
 const MAX_REDIRECTS = 3;
 
-export interface FetchedManifest {
+interface FetchedManifest {
   /**
    * Where the manifest was finally read from, after any redirects on the same host. Its
    * relative URLs resolve against this, as they would in a browser.
@@ -17,7 +17,7 @@ export interface FetchedManifest {
   body: unknown;
 }
 
-export type FetchManifest = (manifestUrl: string) => Promise<FetchedManifest>;
+type FetchManifest = (manifestUrl: string) => Promise<FetchedManifest>;
 
 /** The HTTP status the app answered with, if it answered at all. */
 function statusOf(err: unknown): number | undefined {
