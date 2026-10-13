@@ -8,25 +8,13 @@
     "type": "git",
     "url": "https://github.com/TryGhost/Ghost/tree/main/apps/activitypub"
   },
-  "files": [
-    "LICENSE",
-    "README.md",
-    "dist/"
-  ],
   "type": "module",
-  "main": "./dist/activitypub.umd.cjs",
-  "module": "./dist/activitypub.js",
   "exports": {
-    ".": {
-      "import": "./dist/activitypub.js",
-      "require": "./dist/activitypub.umd.cjs"
-    },
     "./api": "./src/index.tsx"
   },
   "scripts": {
-    "dev": "vite build --watch",
     "dev:start": "vite",
-    "build": "tsc && vite build",
+    "build": "tsc -p tsconfig.declaration.json",
     "lint": "pnpm run '/^lint:/'",
     "lint:code": "eslint --cache src",
     "lint:test": "eslint --cache test",
@@ -34,8 +22,7 @@
     "test:unit": "tsc --noEmit && vitest run",
     "test:acceptance": "NODE_OPTIONS='--experimental-specifier-resolution=node --no-warnings' VITE_TEST=true playwright test",
     "test:acceptance:slowmo": "TIMEOUT=100000 PLAYWRIGHT_SLOWMO=100 pnpm test:acceptance --headed",
-    "test:acceptance:full": "ALL_BROWSERS=1 pnpm test:acceptance",
-    "preview": "vite preview"
+    "test:acceptance:full": "ALL_BROWSERS=1 pnpm test:acceptance"
   },
   "dependencies": {
     "@hookform/resolvers": "5.4.0",
@@ -72,11 +59,6 @@
   "nx": {
     "targets": {
       "build": {
-        "dependsOn": [
-          "^build"
-        ]
-      },
-      "dev": {
         "dependsOn": [
           "^build"
         ]
