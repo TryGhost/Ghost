@@ -50,7 +50,6 @@ describe('Job: Process webmention', function () {
       new ProcessWebmentionJob({
         source: sourceUrl.href,
         target: targetUrl.href,
-        payload: { withExtension: true },
       }),
     );
 

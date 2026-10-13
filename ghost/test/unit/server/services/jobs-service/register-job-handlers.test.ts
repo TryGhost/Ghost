@@ -298,7 +298,6 @@ describe('register-job-handlers', function () {
     const job = new ProcessWebmentionJob({
       source: 'https://source.com/post/',
       target: 'https://target.com/post/',
-      payload: {},
     });
 
     await processWebmentionHandler(job);

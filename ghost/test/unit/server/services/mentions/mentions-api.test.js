@@ -60,7 +60,6 @@ describe('MentionsAPI', function () {
     const mention = await api.processWebmention({
       source: new URL('https://source.com'),
       target: new URL('https://target.com'),
-      payload: {},
     });
 
     assert(mention instanceof Mention);
@@ -85,7 +84,6 @@ describe('MentionsAPI', function () {
     const mention = await api.processWebmention({
       source: new URL('https://source.com'),
       target: new URL('https://target.com'),
-      payload: {},
     });
 
     assert(mention instanceof Mention);
@@ -110,7 +108,6 @@ describe('MentionsAPI', function () {
     const mention = await api.processWebmention({
       source: new URL('https://source.com'),
       target: new URL('https://target.com'),
-      payload: {},
     });
 
     assert(mention instanceof Mention);
@@ -134,12 +131,10 @@ describe('MentionsAPI', function () {
     const mentionOne = await api.processWebmention({
       source: new URL('https://diff-source.com'),
       target: new URL('https://target.com'),
-      payload: {},
     });
     const mentionTwo = await api.processWebmention({
       source: new URL('https://source.com'),
       target: new URL('https://target.com'),
-      payload: {},
     });
 
     assert(mentionOne instanceof Mention);
@@ -166,7 +161,6 @@ describe('MentionsAPI', function () {
     const mentionOne = await api.processWebmention({
       source: new URL('https://source.com'),
       target: new URL('https://target.com'),
-      payload: {},
     });
 
     sinon.useFakeTimers(addMinutes(new Date(), 10).getTime());
@@ -174,7 +168,6 @@ describe('MentionsAPI', function () {
     const mentionTwo = await api.processWebmention({
       source: new URL('https://source2.com'),
       target: new URL('https://target.com'),
-      payload: {},
     });
 
     assert(mentionOne instanceof Mention);
@@ -208,7 +201,6 @@ describe('MentionsAPI', function () {
     const mentionOne = await api.processWebmention({
       source: new URL('https://source.com'),
       target: new URL('https://target.com'),
-      payload: {},
     });
 
     sinon.useFakeTimers(addMinutes(new Date(), 10).getTime());
@@ -216,7 +208,6 @@ describe('MentionsAPI', function () {
     const mentionTwo = await api.processWebmention({
       source: new URL('https://source2.com'),
       target: new URL('https://target.com'),
-      payload: {},
     });
 
     assert(mentionOne instanceof Mention);
@@ -262,7 +253,6 @@ describe('MentionsAPI', function () {
     await api.processWebmention({
       source: new URL('https://source.com'),
       target: new URL('https://target.com'),
-      payload: {},
     });
 
     sinon.useFakeTimers(addMinutes(new Date(), 10).getTime());
@@ -270,7 +260,6 @@ describe('MentionsAPI', function () {
     await api.processWebmention({
       source: new URL('https://source2.com'),
       target: new URL('https://target.com'),
-      payload: {},
     });
 
     let page = await api.listMentions({
@@ -321,7 +310,6 @@ describe('MentionsAPI', function () {
     await api.processWebmention({
       source: new URL('https://source.com'),
       target: new URL('https://target.com'),
-      payload: {},
     });
 
     await api.refreshMentions({ limit: 'all' });
@@ -349,7 +337,6 @@ describe('MentionsAPI', function () {
     await api.processWebmention({
       source: new URL('https://source.com'),
       target: new URL('https://target.com'),
-      payload: {},
     });
 
     await api.refreshMentions({ limit: 'all' });
@@ -378,7 +365,6 @@ describe('MentionsAPI', function () {
     await api.processWebmention({
       source: new URL('https://source.com'),
       target: new URL('https://target.com'),
-      payload: {},
     });
 
     // Two hard failures
@@ -412,15 +398,11 @@ describe('MentionsAPI', function () {
     const mentionOne = await api.processWebmention({
       source: new URL('https://source.com'),
       target: new URL('https://target.com'),
-      payload: {},
     });
 
     const mentionTwo = await api.processWebmention({
       source: new URL('https://source.com'),
       target: new URL('https://target.com'),
-      payload: {
-        new: 'info',
-      },
     });
 
     assert(mentionOne.id === mentionTwo.id);
@@ -468,7 +450,6 @@ describe('MentionsAPI', function () {
       await api.processWebmention({
         source: new URL('https://source.com'),
         target: new URL('https://target.com'),
-        payload: {},
       });
     } catch (err) {
       errored = true;
@@ -495,7 +476,6 @@ describe('MentionsAPI', function () {
     await api.processWebmention({
       source: new URL('https://source.com'),
       target: new URL('https://target.com'),
-      payload: {},
     });
   });
 
@@ -518,7 +498,6 @@ describe('MentionsAPI', function () {
     const mention = await api.processWebmention({
       source: new URL('https://source.com'),
       target: new URL('https://target.com'),
-      payload: {},
     });
 
     assert(mention instanceof Mention);
@@ -552,7 +531,6 @@ describe('MentionsAPI', function () {
       const mention = await api.processWebmention({
         source: new URL('https://source.com'),
         target: new URL('https://target.com'),
-        payload: {},
       });
 
       const page = await api.listMentions({
@@ -567,7 +545,6 @@ describe('MentionsAPI', function () {
       await api.processWebmention({
         source: new URL('https://source.com'),
         target: new URL('https://target.com'),
-        payload: {},
       });
 
       const page = await api.listMentions({
@@ -612,7 +589,6 @@ describe('MentionsAPI', function () {
       const mention = await api.processWebmention({
         source: new URL('https://source.com'),
         target: new URL('https://target.com'),
-        payload: {},
       });
 
       const page = await api.listMentions({
@@ -628,17 +604,14 @@ describe('MentionsAPI', function () {
       await api.processWebmention({
         source: new URL('https://source.com'),
         target: new URL('https://target.com'),
-        payload: {},
       });
       await api.processWebmention({
         source: new URL('https://source.com'),
         target: new URL('https://target.com'),
-        payload: {},
       });
       await api.processWebmention({
         source: new URL('https://source.com'),
         target: new URL('https://target.com'),
-        payload: {},
       });
 
       const page = await api.listMentions({
@@ -653,7 +626,6 @@ describe('MentionsAPI', function () {
       const mention = await api.processWebmention({
         source: new URL('https://source.com'),
         target: new URL('https://target.com'),
-        payload: {},
       });
 
       const page = await api.listMentions({
@@ -694,7 +666,6 @@ describe('MentionsAPI', function () {
       const mention = await api.processWebmention({
         source: new URL('https://source.com'),
         target: new URL('https://target.com'),
-        payload: {},
       });
 
       const page = await api.listMentions({
@@ -709,7 +680,6 @@ describe('MentionsAPI', function () {
       await api.processWebmention({
         source: new URL('https://source.com'),
         target: new URL('https://target.com'),
-        payload: {},
       });
 
       const page = await api.listMentions({
@@ -724,7 +694,6 @@ describe('MentionsAPI', function () {
       const mention = await api.processWebmention({
         source: new URL('https://source.com'),
         target: new URL('https://target.com'),
-        payload: {},
       });
 
       const page = await api.listMentions({
@@ -759,7 +728,6 @@ describe('MentionsAPI', function () {
       await api.processWebmention({
         source: new URL('https://source.com'),
         target: new URL('https://target.com'),
-        payload: {},
       });
     } catch (err) {
       error = err;

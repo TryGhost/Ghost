@@ -316,7 +316,6 @@ module.exports = class MentionsAPI {
    * @param {object} webmention
    * @param {URL} webmention.source
    * @param {URL} webmention.target
-   * @param {Object<string, any>} webmention.payload
    *
    * @returns {Promise<Mention>}
    */
