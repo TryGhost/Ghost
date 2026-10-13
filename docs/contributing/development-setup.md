@@ -122,9 +122,6 @@ tailscale funnel --bg 2368
 url=https://<your-tailnet-url>/ pnpm dev
 ```
 
-See [Testing development URLs](./testing-development-urls.md) for the same
-`url=` pattern with other tunnels.
-
 Press `Ctrl+C` in the development process to stop Ghost and the watchers. MySQL,
 Redis, and Mailpit keep running for other checkouts; `pnpm dev:down --all` stops
 them along with every checkout's Ghost. A checkout reuses them while they run, so
