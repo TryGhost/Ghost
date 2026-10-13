@@ -45,13 +45,17 @@ function formatPath(path: PropertyKey[]): string {
   }, '');
 }
 
-/** What is wrong with the address a manifest is read from, by the rules for the URLs in it. */
-function checkManifestUrl(manifestUrl: string, allowLocalhost: boolean): string | null {
-  if (!URL.canParse(manifestUrl)) {
-    return 'Expected the manifest at a URL';
+type CheckedManifestUrl = { url: URL; problem: null } | { url: null; problem: string };
+
+/** The address a manifest is read from, checked by the same rules as the URLs in it. */
+function checkManifestUrl(url: URL | null, allowLocalhost: boolean): CheckedManifestUrl {
+  if (!url) {
+    return { url: null, problem: 'Expected the manifest at a URL' };
   }
-  const problem = checkResolvedUrl(new URL(manifestUrl), allowLocalhost);
-  return problem ? `${problem} for the manifest itself` : null;
+  const problem = checkResolvedUrl(url, allowLocalhost);
+  return problem
+    ? { url: null, problem: `${problem} for the manifest itself` }
+    : { url, problem: null };
 }
 
 /**
@@ -65,11 +69,10 @@ function checkManifestUrl(manifestUrl: string, allowLocalhost: boolean): string 
  * no part of the address.
  */
 export function parseManifestUrl(input: string, allowLocalhost = false): ParseManifestUrlResult {
-  const problem = checkManifestUrl(input, allowLocalhost);
-  if (problem) {
+  const { url, problem } = checkManifestUrl(URL.parse(input), allowLocalhost);
+  if (problem !== null) {
     return { success: false, error: problem };
   }
-  const url = new URL(input);
   url.hash = '';
   return { success: true, manifestUrl: url.href };
 }
@@ -83,9 +86,7 @@ export function parseManifestUrl(input: string, allowLocalhost = false): ParseMa
  */
 export function parseManifest(input: unknown, options: ParseManifestOptions): ParseManifestResult {
   const allowLocalhost = options.allowLocalhost ?? false;
-  const ghostOrigins = new Set(
-    options.ghostUrls.map((url) => (URL.canParse(url) ? new URL(url).origin : null)),
-  );
+  const ghostOrigins = new Set(options.ghostUrls.map((url) => URL.parse(url)?.origin ?? null));
   if (ghostOrigins.size === 0 || ghostOrigins.has(null)) {
     return {
       success: false,
@@ -93,11 +94,10 @@ export function parseManifest(input: unknown, options: ParseManifestOptions): Pa
     };
   }
 
-  const baseProblem = checkManifestUrl(options.manifestUrl, allowLocalhost);
-  if (baseProblem) {
-    return { success: false, errors: [{ path: '', message: baseProblem }] };
+  const { url: base, problem } = checkManifestUrl(URL.parse(options.manifestUrl), allowLocalhost);
+  if (problem !== null) {
+    return { success: false, errors: [{ path: '', message: problem }] };
   }
-  const base = new URL(options.manifestUrl);
 
   const result = manifestSchema({ base, ghostOrigins, allowLocalhost }).safeParse(input);
   if (result.success) {
