@@ -908,6 +908,7 @@ describe('App installations Admin API', function () {
         'id',
         'manifest',
         'manifest_url',
+        'revision',
         'status',
         'updated_at',
       ]);
@@ -931,6 +932,12 @@ describe('App installations Admin API', function () {
       assert.equal(body.app_installations.length, 1);
       assert.equal(body.app_installations[0].id, installation.id);
       assert.equal(body.app_installations[0].status, 'uninstalled');
+      // Uninstalling moved the revision on, and the read shows it as stored.
+      assert.equal(
+        body.app_installations[0].revision,
+        (await installationRow(installation.id)).revision,
+      );
+      assert.equal(body.app_installations[0].revision, 1);
     });
 
     it('leaves out the history unless it is asked for', async function () {

@@ -192,6 +192,7 @@ export class AppInstallationsService {
         'installation.id',
         'installation.app_id',
         'installation.status',
+        'installation.revision',
         'approved.manifest_url',
         'approved.manifest',
         'installation.created_at',
@@ -452,6 +453,8 @@ export class AppInstallationsService {
       id,
       app_id: manifest.id,
       status: 'active',
+      // The column's default: a new installation has never changed.
+      revision: 0,
       manifest_url: loaded.manifestUrl,
       manifest: loaded.serialised,
       created_at: now,
