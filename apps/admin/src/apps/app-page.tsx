@@ -1,4 +1,11 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from 'react';
 import { Button, EmptyIndicator, LoadingIndicator } from '@tryghost/shade/components';
 import { Stack, Text } from '@tryghost/shade/primitives';
 import { LucideIcon, cn } from '@tryghost/shade/utils';
@@ -29,16 +36,14 @@ import { getSiteTimezone } from '@tryghost/admin-x-framework/utils/get-site-time
 import { useThemeContext } from '@/providers/theme-context';
 import { AppsGate } from './components/apps-gate';
 import { InstallDialog } from './components/install-dialog/install-dialog';
-import { appPathFromLocation, appPathRoute, normaliseAppPath } from './lib/app-path';
+import { createAppFrameSession } from './lib/app-frame-session';
+import { appPathFromLocation, appPathRoute } from './lib/app-path';
 import { createAdminApiFetch } from './lib/bridge-fetch';
-import { type AppFrameHost, bindAppFrame } from './lib/bridge-host';
 import { placeRoute } from './lib/bridge-places';
-import { APP_FRAME_ALLOW, APP_FRAME_SANDBOX, appFrameTimeouts, isGhostOrigin } from './lib/frame';
+import { APP_FRAME_ALLOW, APP_FRAME_SANDBOX, isGhostOrigin } from './lib/frame';
 import { isInstallationNotFound, isSessionsRouteMissing } from './lib/not-found';
 import { reportAppsError } from './lib/report-error';
 import { appPageUrl, servedFrom } from './lib/served-from';
-
-type FrameStatus = 'loading' | 'ready' | 'failed';
 
 const Centered: React.FC<{ children: React.ReactNode; testId?: string }> = ({
   children,
@@ -94,9 +99,6 @@ function useAppTitle(appName: string, title: string | undefined) {
   }, [appName, title]);
 }
 
-const sameTheme = (a: Theme | undefined, b: Theme) =>
-  a?.mode === b.mode && a.accent_color === b.accent_color;
-
 const SESSION_END_SEARCH_PARAMS: Record<string, string> = {};
 
 /**
@@ -135,7 +137,8 @@ function useSessionEnd(session: AppSession, onEnded: () => void) {
  * The app's page, loaded from its own URL in a sandboxed frame and bound to Admin by the
  * bridge. The frame stays hidden until the app has started, which is what ready means; a
  * page that never says hello, or doesn't start in time, gets the not-responding state,
- * and the rest of Admin stays usable either way.
+ * and the rest of Admin stays usable either way. `createAppFrameSession` runs all that;
+ * this shows it, and keeps it told where Admin is.
  */
 const AppFrame: React.FC<{
   session: AppSession;
@@ -151,28 +154,15 @@ const AppFrame: React.FC<{
   const location = useLocation();
   const { ghostVersion } = useFramework();
   const { resolvedTheme } = useThemeContext();
-  const [attempt, setAttempt] = useState(0);
-  const [status, setStatus] = useState<FrameStatus>('loading');
-  const [startedAt, setStartedAt] = useState(() => new Date());
-  const [title, setTitle] = useState<string>();
-  const frameRef = useRef<HTMLIFrameElement>(null);
-  const hostRef = useRef<AppFrameHost | null>(null);
   const url = appPageUrl(installation.manifest);
   const surfaceOrigin = new URL(url).origin;
   const { id, manifest } = installation;
-
-  useAppTitle(manifest.name, title);
 
   const path = appPathFromLocation(id, location);
   const theme = useMemo<Theme>(
     () => ({ mode: resolvedTheme, accent_color: accentColor }),
     [resolvedTheme, accentColor],
   );
-
-  // What the app was last told, or told Admin, so a change is passed on once and never
-  // echoed back to where it came from.
-  const appPath = useRef<string>();
-  const appTheme = useRef<Theme>();
 
   const context: StartContext = {
     site: { url: site.url, title: site.title, timezone, locale: site.locale },
@@ -184,109 +174,40 @@ const AppFrame: React.FC<{
   // Read when the page connects, so it starts with Admin as it is then.
   const contextRef = useRef(context);
   contextRef.current = context;
-  const pathRef = useRef(path);
-  pathRef.current = path;
   // The session outlives navigations, so it mustn't depend on a navigate that may not.
   const navigateRef = useRef(navigate);
   navigateRef.current = navigate;
 
-  const adminApiFetch = useMemo(
-    () => createAdminApiFetch({ apiRoot: new URL(apiUrl('/')), ghostVersion }),
-    [ghostVersion],
+  // Made without side effects: those start when the frame mounts, and end when it does.
+  const frameSession = useMemo(
+    () =>
+      createAppFrameSession({
+        surfaceOrigin,
+        context: () => contextRef.current,
+        fetchAdminApi: createAdminApiFetch({ apiRoot: new URL(apiUrl('/')), ghostVersion }),
+        navigate: (next, { replace }) => navigateRef.current(appPathRoute(id, next), { replace }),
+        open: (place) => navigateRef.current(placeRoute(place)),
+      }),
+    [ghostVersion, id, surfaceOrigin],
+  );
+  const { status, title, attempt, startedAt } = useSyncExternalStore(
+    frameSession.subscribe,
+    frameSession.getState,
   );
 
-  // Loads the app's page again, in the same session: a fresh frame that starts afresh.
-  const restartFrame = useCallback(() => {
-    setStatus('loading');
-    setTitle(undefined);
-    setStartedAt(new Date());
-    setAttempt((value) => value + 1);
-  }, []);
-
-  useEffect(() => {
-    const frame = frameRef.current;
-    if (!frame) {
-      return;
-    }
-    let current = true;
-    const host = bindAppFrame({
-      frame,
-      surfaceOrigin,
-      context: () => {
-        appPath.current = contextRef.current.path;
-        appTheme.current = contextRef.current.theme;
-        return contextRef.current;
-      },
-      fetchAdminApi: adminApiFetch,
-      handlers: {
-        titleChanged: (next) => setTitle(next),
-        pathChanged: (next, { replace }) => {
-          const normalised = normaliseAppPath(next);
-          appPath.current = normalised;
-          if (normalised !== pathRef.current) {
-            navigateRef.current(appPathRoute(id, normalised), { replace });
-          }
-        },
-        open: (place) => navigateRef.current(placeRoute(place)),
-        // The page reloaded, or followed a link of its own, and took its channel with it.
-        // Its new document is started in a new frame, at the page's own address and with
-        // Admin's route, as a reload of Admin would.
-        reloaded: restartFrame,
-      },
-    });
-    hostRef.current = host;
-
-    const fail = () => {
-      if (current) {
-        host.dispose();
-        setTitle(undefined);
-        setStatus('failed');
-      }
-    };
-    // The clock runs from the frame's mount, and stops the moment the app has started, so
-    // nothing can call a started app unresponsive.
-    const timer = window.setTimeout(fail, appFrameTimeouts.ready);
-    host.ready.then(
-      () => {
-        window.clearTimeout(timer);
-        if (current) {
-          setStatus('ready');
-        }
-      },
-      () => {
-        window.clearTimeout(timer);
-        fail();
-      },
-    );
-
-    return () => {
-      current = false;
-      window.clearTimeout(timer);
-      host.dispose();
-      hostRef.current = null;
-    };
-  }, [adminApiFetch, attempt, id, restartFrame, surfaceOrigin]);
+  useAppTitle(manifest.name, title);
 
   // Back, forward or a link moved Admin within the app: the app follows, without reloading.
-  useEffect(() => {
-    const host = hostRef.current;
-    if (host?.connected && appPath.current !== path) {
-      appPath.current = path;
-      host.pathChanged(path);
-    }
-  }, [path]);
-
-  useEffect(() => {
-    const host = hostRef.current;
-    if (host?.connected && !sameTheme(appTheme.current, theme)) {
-      appTheme.current = theme;
-      host.themeChanged(theme);
-    }
-  }, [theme]);
+  useEffect(() => frameSession.pathChanged(path), [frameSession, path]);
+  useEffect(() => frameSession.themeChanged(theme), [frameSession, theme]);
 
   if (status === 'failed') {
     return (
-      <NotResponding installation={installation} startedAt={startedAt} onRetry={restartFrame} />
+      <NotResponding
+        installation={installation}
+        startedAt={startedAt}
+        onRetry={frameSession.restart}
+      />
     );
   }
 
@@ -299,7 +220,7 @@ const AppFrame: React.FC<{
       )}
       <iframe
         key={attempt}
-        ref={frameRef}
+        ref={frameSession.attach}
         allow={APP_FRAME_ALLOW}
         aria-hidden={status !== 'ready'}
         // Hidden, not transparent: a frame that's still loading mustn't take focus or clicks.
