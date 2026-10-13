@@ -99,8 +99,7 @@ To apply a changed definition to your local database, rebuild the listed
 tables. This drops them and discards their data:
 
 ```bash
-cd ghost
-pnpm migrate:rebuild-in-development-tables
+pnpm gx db rebuild-development-tables
 ```
 
 Code that reads or writes the table must stay dormant wherever the table is not

@@ -4355,12 +4355,18 @@ importers:
       '@internal/scripts':
         specifier: workspace:*
         version: link:../scripts
+      '@tryghost/logging':
+        specifier: 5.4.8
+        version: 5.4.8(supports-color@10.2.2)
       jsonwebtoken:
         specifier: 'catalog:'
         version: 8.5.1
       semver:
         specifier: 'catalog:'
         version: 7.8.5
+      tsx:
+        specifier: 'catalog:'
+        version: 4.23.15
     devDependencies:
       '@internal/cfg-eslint':
         specifier: workspace:*

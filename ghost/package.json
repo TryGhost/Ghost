@@ -50,7 +50,7 @@
     "build:assets:cards": "node scripts/build-card-assets.mts",
     "query-parameter-policy:export": "node --import=tsx scripts/export-query-parameter-policy.ts",
     "migrate:create": "node ../tools/gx/cli.ts generate migration",
-    "migrate:rebuild-in-development-tables": "node ../tools/scripts/with-ghost-dev-env.ts node --import=tsx bin/rebuild-in-development-tables.ts",
+    "migrate:rebuild-in-development-tables": "node ../tools/gx/cli.ts db rebuild-development-tables",
     "build:assets:css": "postcss core/frontend/public/ghost.css --no-map --use cssnano -o core/frontend/public/ghost.min.css",
     "build:tsc": "tsc",
     "pretest": "pnpm build:assets",

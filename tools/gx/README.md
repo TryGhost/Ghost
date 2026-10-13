@@ -32,6 +32,18 @@ next minor-version folder and promotes package versions to RC when needed.
 See [database migrations](../../docs/practices/database-migrations.md) for the
 workflow. `pnpm --filter ghost migrate:create <slug>` remains a forwarding alias.
 
+## Rebuild development tables
+
+Run `pnpm gx db rebuild-development-tables` after editing development-only table
+schemas. This drops and recreates the listed tables, discarding their data.
+Start the development database first. gx uses the existing development-environment
+runner and the checkout's Ghost working directory; it does not start services.
+The Ghost `migrate:rebuild-in-development-tables` shortcut forwards to gx.
+
+The moved command uses `.cts` to preserve its CommonJS boundary with Core. It is
+checked with Core's TypeScript configuration; the other gx commands use the
+shared ESM configuration. The table-rebuilding logic remains in Core.
+
 ## Validation
 
 The `@internal/gx` workspace gives pnpm and Nx a unit for lint and tests. It runs directly

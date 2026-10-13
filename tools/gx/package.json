@@ -9,12 +9,14 @@
     "lint": "eslint . --cache",
     "test:unit": "node --test test/*.test.ts",
     "test": "pnpm run '/^test:/'",
-    "test:types": "tsc6 --noEmit"
+    "test:types": "tsc6 --noEmit && tsc6 --noEmit -p tsconfig.core.json"
   },
   "dependencies": {
     "@internal/scripts": "workspace:*",
+    "@tryghost/logging": "catalog:",
     "jsonwebtoken": "catalog:",
-    "semver": "catalog:"
+    "semver": "catalog:",
+    "tsx": "catalog:"
   },
   "devDependencies": {
     "@internal/cfg-eslint": "workspace:*",
@@ -31,6 +33,12 @@
       ],
       "goldenEmailCommand": [
         "{workspaceRoot}/ghost/test/utils/fixtures/email-service/golden-post.json"
+      ],
+      "developmentTablesCommand": [
+        "{workspaceRoot}/ghost/core/server/data/schema/in-development.ts",
+        "{workspaceRoot}/ghost/core/server/data/schema/schema.js",
+        "{workspaceRoot}/ghost/tsconfig.json",
+        "{workspaceRoot}/ghost/types/**/*.d.ts"
       ]
     },
     "targets": {
@@ -39,7 +47,18 @@
           "default",
           "^default",
           "packageTemplate",
+          "developmentTablesCommand",
           "goldenEmailCommand",
+          {
+            "runtime": "node -v"
+          }
+        ]
+      },
+      "test:types": {
+        "inputs": [
+          "default",
+          "^default",
+          "developmentTablesCommand",
           {
             "runtime": "node -v"
           }

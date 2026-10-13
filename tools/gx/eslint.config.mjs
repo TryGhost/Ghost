@@ -22,4 +22,8 @@ export default [
     srcGlobs: ['create-migration.js'],
     extraSrcRules: { ...cliRules, 'no-console': 'off' },
   }),
+  ...nodeLibConfig({
+    srcGlobs: ['rebuild-in-development-tables.cts'],
+    extraSrcRules: cliRules,
+  }),
 ];
