@@ -187,12 +187,15 @@ const AutomationsList: React.FC<AutomationsListProps> = ({
       <TableBody className="flex flex-col lg:table-row-group">
         {filteredAutomations.map((automation) => {
           const description = automation.description.trim();
+          const statsUnavailable = automation.stats === null;
           const lastEntry = automation.stats?.last_run_created_at;
           const totalEntries = automation.stats?.total_run_count ?? 0;
           const inProgressEntries = automation.stats?.in_progress_run_count ?? 0;
           const statCells = {
             lastEntry: {
-              content: lastEntry ? (
+              content: statsUnavailable ? (
+                '—'
+              ) : lastEntry ? (
                 <time dateTime={lastEntry}>{formatTimestamp(lastEntry)}</time>
               ) : (
                 'Never'
@@ -200,11 +203,11 @@ const AutomationsList: React.FC<AutomationsListProps> = ({
               isEmpty: !lastEntry,
             },
             totalEntries: {
-              content: formatNumber(totalEntries),
+              content: statsUnavailable ? '—' : formatNumber(totalEntries),
               isEmpty: totalEntries === 0,
             },
             inProgressEntries: {
-              content: formatNumber(inProgressEntries),
+              content: statsUnavailable ? '—' : formatNumber(inProgressEntries),
               isEmpty: inProgressEntries === 0,
             },
           };

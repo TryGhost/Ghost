@@ -153,7 +153,7 @@ describe('AutomationsList', () => {
     expect(screen.getByText('Never')).toBeInTheDocument();
   });
 
-  it('hides run analytics when stats are unavailable', () => {
+  it('hides run analytics when an older backend omits stats', () => {
     const automationsWithoutStats = automations.map(
       ({ stats: _stats, ...automation }) => automation,
     );
@@ -170,6 +170,27 @@ describe('AutomationsList', () => {
     expect(screen.queryByRole('columnheader', { name: 'Total runs' })).not.toBeInTheDocument();
     expect(screen.queryByRole('columnheader', { name: 'In progress' })).not.toBeInTheDocument();
     expect(screen.queryByText('1,432')).not.toBeInTheDocument();
+  });
+
+  it('shows unavailable metrics without implying there have been no runs', () => {
+    renderWithRouter(
+      <AutomationsList
+        automations={[{ ...automations[0], stats: null }]}
+        automationsToShow="non-archived"
+        canManage={false}
+      />,
+    );
+
+    expect(screen.getByRole('columnheader', { name: 'Last started' })).toBeInTheDocument();
+    expect(screen.getByRole('columnheader', { name: 'Total runs' })).toBeInTheDocument();
+    expect(screen.getByRole('columnheader', { name: 'In progress' })).toBeInTheDocument();
+    expect(screen.getAllByText('—')).toHaveLength(3);
+    expect(screen.queryByText('Never')).not.toBeInTheDocument();
+    expect(screen.queryByText('0')).not.toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Free member welcome flow' })).toHaveAttribute(
+      'href',
+      '/automations/automation-id-1',
+    );
   });
 
   it('links each row to the automation sequence by id', () => {

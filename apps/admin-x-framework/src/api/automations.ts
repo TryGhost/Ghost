@@ -31,7 +31,8 @@ export type AutomationStats = {
 };
 
 export type AutomationBrowseItem = Automation & {
-  stats?: AutomationStats;
+  // Omitted by older backends; null when metrics are temporarily unavailable.
+  stats?: AutomationStats | null;
 };
 
 export type AutomationWaitAction = {

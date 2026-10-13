@@ -13,7 +13,7 @@ export interface Automation {
     last_run_created_at: string | null;
     total_run_count: number;
     in_progress_run_count: number;
-  };
+  } | null;
 }
 
 export const automation = createBuilder<Automation>(() => {

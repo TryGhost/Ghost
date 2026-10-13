@@ -56,6 +56,26 @@ describe('Automations list', () => {
     await expect(automationsScreen.rows()).toHaveCount(1);
   });
 
+  it('keeps the automation list available when metrics cannot be loaded', async () => {
+    fakeAutomations([
+      automation({
+        name: 'Free member welcome flow',
+        slug: 'member-welcome-email-free',
+        status: 'active',
+        stats: null,
+      }),
+    ]);
+    await renderAdminApp('/automations', AUTOMATIONS_ENABLED);
+
+    await expect.element(automationsScreen.link('Free member welcome flow')).toBeVisible();
+    await expect.element(automationsScreen.columnHeader('Last started')).toBeVisible();
+    await expect.element(automationsScreen.columnHeader('Total runs')).toBeVisible();
+    await expect.element(automationsScreen.columnHeader('In progress')).toBeVisible();
+    await expect(automationsScreen.rows().getByRole('cell', { name: /^—/ })).toHaveCount(3);
+    await expect.element(automationsScreen.rows()).not.toHaveTextContent('Never');
+    await expect.element(automationsScreen.rows()).toHaveTextContent('Live');
+  });
+
   it('hides run analytics when the backend does not return stats', async () => {
     fakeAutomations([
       automation({
