@@ -1,7 +1,5 @@
 import { commands } from 'vitest/browser';
 
-import { fakeOriginRequests } from './worker';
-
 declare module 'vitest/browser' {
   interface BrowserCommands {
     fakeFrameOrigin: (origin: string, html: string, delayMs?: number) => Promise<void>;
@@ -15,24 +13,16 @@ declare module 'vitest/browser' {
  * Serves `html` to every iframe navigation to `origin`, standing in for an
  * external app a screen embeds. The stand-in can script the embedding
  * protocol through `window.parent`. `delayMs` holds the answer back, for a
- * frame that's slow to load.
+ * frame that's slow to load. Only the frame's own navigations: a request the
+ * page itself makes to that origin is the worker's business, as ever.
  */
-export async function fakeFrameOrigin(origin: string, html: string, delayMs = 0): Promise<void> {
-  await commands.fakeFrameOrigin(origin, html, delayMs);
-  // The page's own requests there, such as the app page's probe, don't reach Playwright.
-  // Admin's own origin is left alone: faking a same-origin preview frame mustn't answer
-  // Admin's API requests with the frame's HTML.
-  // TODO(BER-3983): the probe goes with the bridge handshake. Once it has, drop this unless
-  // a spec has come to make the page itself request a faked origin.
-  if (new URL(origin).origin !== window.location.origin) {
-    fakeOriginRequests(origin, { html });
-  }
+export function fakeFrameOrigin(origin: string, html: string, delayMs = 0): Promise<void> {
+  return commands.fakeFrameOrigin(origin, html, delayMs);
 }
 
-/** Refuses every connection to `origin`, standing in for an external app that is down. */
-export async function failFrameOrigin(origin: string): Promise<void> {
-  await commands.failFrameOrigin(origin);
-  fakeOriginRequests(origin, { down: true });
+/** Refuses every iframe navigation to `origin`, standing in for an external app that is down. */
+export function failFrameOrigin(origin: string): Promise<void> {
+  return commands.failFrameOrigin(origin);
 }
 
 /** Answers unfaked external iframe navigations with a 418 so no spec reaches the network. */

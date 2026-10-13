@@ -2,7 +2,12 @@ import type {
   AppInstallation,
   AppManifest,
 } from '@tryghost/admin-x-framework/api/app-installations';
-import { fakeAdminEndpoint, fakeFrameOrigin } from '@test-utils/acceptance';
+import {
+  failFrameOrigin,
+  fakeAdminEndpoint,
+  fakeFrameOrigin,
+  fakeOriginRequests,
+} from '@test-utils/acceptance';
 
 export const MANIFEST_URL = 'https://podcast.example.com/ghost-app.json';
 export const APP_PAGE_URL = 'https://podcast.example.com/admin';
@@ -42,11 +47,32 @@ export function fakeInstallations(initial: AppInstallation[] = []) {
 
 export const readPath = (id: string) => new RegExp(`^/apps/installations/${id}/(\\?|$)`);
 
+/**
+ * The app's page at its own URL: what its frame loads, and the answer to the probe Admin
+ * sends there first. `delayMs` holds the page back, for an app that's slow to answer.
+ *
+ * TODO(BER-3983): the probe goes with the bridge handshake. Once it has, this is
+ * `fakeFrameOrigin` alone, and `fakeOriginRequests` can go unless another spec needs it.
+ */
+export async function fakeAppFrame({
+  html = '<h1>Podcast app</h1>',
+  delayMs = 0,
+}: { html?: string; delayMs?: number } = {}) {
+  await fakeFrameOrigin(APP_PAGE_URL, html, delayMs);
+  fakeOriginRequests(APP_PAGE_URL, { html });
+}
+
+/** An app whose server can't be reached: neither the frame nor the probe gets an answer. */
+export async function failAppFrame() {
+  await failFrameOrigin(APP_PAGE_URL);
+  fakeOriginRequests(APP_PAGE_URL, { down: true });
+}
+
 /** The app's page as Admin opens it: the installation it reads, and the page it frames. */
 export async function fakeAppPage(read: AppInstallation, html = '<h1>Podcast app</h1>') {
   const readApi = fakeAdminEndpoint('GET', readPath(read.id), () => ({
     app_installations: [read],
   }));
-  await fakeFrameOrigin(APP_PAGE_URL, html);
+  await fakeAppFrame({ html });
   return readApi;
 }

@@ -7,9 +7,7 @@ import type {
 import {
   currentRoute,
   currentUserResponse,
-  failFrameOrigin,
   fakeAdminEndpoint,
-  fakeFrameOrigin,
   fakeTags,
   renderAdminApp,
   siteResponse,
@@ -20,6 +18,8 @@ import { appsScreen } from './apps.screen';
 import {
   APP_PAGE_URL,
   MANIFEST_URL,
+  failAppFrame,
+  fakeAppFrame,
   fakeAppPage,
   fakeInstallations,
   installation,
@@ -127,11 +127,11 @@ describe('Managing apps', () => {
   it('opens an app’s details from the row’s menu, and the app from its details', async () => {
     fakeInstallations([installation()]);
     fakeDetails(installation({ history: [installedOn('2026-10-01T10:00:00.000Z')] }));
-    await fakeFrameOrigin(APP_PAGE_URL, '<h1>Podcast app</h1>');
+    await fakeAppFrame();
 
     await renderAdminApp('/apps', { labs });
     await appsScreen.rowActions('Podcast').click();
-    await appsScreen.menuItem('Details').click();
+    await appsScreen.detailsMenuItem().click();
 
     await expect.poll(currentRoute).toBe(DETAILS_ROUTE);
     await expect.element(appsScreen.details()).toHaveTextContent('Podcast');
@@ -147,7 +147,7 @@ describe('Managing apps', () => {
     appFrameTimeouts.ready = 300;
     try {
       // A page that takes longer than Admin waits.
-      await fakeFrameOrigin(APP_PAGE_URL, '<h1>Podcast app</h1>', 5_000);
+      await fakeAppFrame({ delayMs: 5_000 });
       await renderAdminApp(APP_ROUTE, { labs });
 
       await expect
@@ -155,7 +155,9 @@ describe('Managing apps', () => {
         .toHaveTextContent('Podcast isn’t responding');
       await expect.element(appsScreen.frame()).not.toBeInTheDocument();
 
-      await fakeFrameOrigin(APP_PAGE_URL, '<h1>Podcast app</h1>');
+      // The retry gets the usual time, so a slow runner can't fail it.
+      appFrameTimeouts.ready = previous;
+      await fakeAppFrame();
       await appsScreen.tryAgainButton().click();
 
       await expect.element(appsScreen.frame()).toBeVisible();
@@ -166,7 +168,7 @@ describe('Managing apps', () => {
 
   it('keeps a loading frame hidden until its page has loaded', async () => {
     await fakeAppPage(installation());
-    await fakeFrameOrigin(APP_PAGE_URL, '<h1>Podcast app</h1>', 600);
+    await fakeAppFrame({ delayMs: 600 });
 
     await renderAdminApp(APP_ROUTE, { labs });
 
@@ -182,14 +184,16 @@ describe('Managing apps', () => {
 
   it('leaves a loaded app alone once the time it had to load is up', async () => {
     const previous = appFrameTimeouts.ready;
-    appFrameTimeouts.ready = 300;
+    // Short, so the spec doesn't wait long for it to pass, but with room for the frame and
+    // the probe to finish first on a slow runner.
+    appFrameTimeouts.ready = 1_000;
     try {
       await fakeAppPage(installation());
       await renderAdminApp(APP_ROUTE, { labs });
       await expect.element(appsScreen.frame()).toBeVisible();
 
       await new Promise<void>((resolve) => {
-        setTimeout(resolve, 500);
+        setTimeout(resolve, 1_200);
       });
 
       await expect.element(appsScreen.frame()).toBeVisible();
@@ -205,7 +209,7 @@ describe('Managing apps', () => {
     fakeAdminEndpoint('GET', readPath('installation-1'), () => ({
       app_installations: [installation()],
     }));
-    await failFrameOrigin(APP_PAGE_URL);
+    await failAppFrame();
 
     // Well within the time Admin would otherwise wait for the frame.
     await renderAdminApp(APP_ROUTE, { labs });
@@ -504,7 +508,7 @@ describe('Managing apps', () => {
       .element(appsScreen.row('Podcast').getByTestId('app-needs-approval-badge'))
       .toHaveTextContent('Needs approval');
     await appsScreen.rowActions('Podcast').click();
-    await appsScreen.menuItem('Details').click();
+    await appsScreen.detailsMenuItem().click();
 
     await expect
       .element(appsScreen.needsApproval())

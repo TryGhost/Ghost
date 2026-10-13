@@ -62,6 +62,7 @@ export {
   allowUnhandledRequests,
   fakeAdminEndpoint,
   fakeEndpoint,
+  fakeOriginRequests,
   fakeSitePreview,
   settleRequests,
 } from './worker';
