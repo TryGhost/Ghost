@@ -124,7 +124,6 @@
     "@testing-library/dom": "catalog:",
     "@testing-library/jest-dom": "catalog:",
     "@testing-library/react": "catalog:",
-    "@tryghost/koenig-lexical": "workspace:*",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
     "@typescript/native": "catalog:",
@@ -137,7 +136,6 @@
     "type-fest": "catalog:",
     "typescript": "catalog:",
     "vite": "catalog:",
-    "vite-plugin-css-injected-by-js": "3.5.2",
     "vite-plugin-svgr": "catalog:",
     "vitest": "catalog:"
   },

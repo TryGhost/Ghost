@@ -46,7 +46,6 @@ beforeEach(() => {
   write('koenig/koenig-lexical/dist/koenig.js', 'koenig');
   write('koenig/koenig-lexical/dist/embed-renderer/index.html', 'isolated renderer');
   write('koenig/koenig-lexical/dist/embed-renderer/assets/renderer.js', 'isolated script');
-  write('apps/activitypub/dist/activitypub.js', 'activitypub');
   write(
     'apps/admin/dist/index.html',
     '<script type="module" src="https://cdn.example/assets/react.js"></script>',

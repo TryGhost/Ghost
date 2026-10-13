@@ -27,11 +27,7 @@
       "ignoreDependencies": ["@tryghost/kg-unsplash-selector"]
     },
     "apps/admin-x-framework": {
-      "ignoreDependencies": [
-        "@playwright/test",
-        "@tryghost/koenig-lexical",
-        "vite-plugin-css-injected-by-js"
-      ],
+      "ignoreDependencies": ["@playwright/test"],
       "entry": [
         "src/index.ts",
         "src/errors.ts",
