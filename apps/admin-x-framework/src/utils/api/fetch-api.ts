@@ -115,6 +115,30 @@ const redirectOnSessionExpiry = () => {
   }
 };
 
+/**
+ * Leaves the page as `useFetchApi` does when a request finds the session expired, for
+ * requests made without it, such as the ones Admin makes for an app: an unauthorized
+ * answer from a Ghost API path other than the session endpoint, once this page load has
+ * seen the session work. Unauthorized is what `handleResponse` calls it: a 401, or the 403
+ * Ghost answers a request with no signed-in user. Reads a clone of `response`, so its body
+ * is still the caller's to read.
+ */
+export const handleSessionExpiry = async (
+  endpoint: string | URL,
+  response: Response,
+): Promise<void> => {
+  if (![401, 403].includes(response.status) || !isSessionExpiry(endpoint)) {
+    return;
+  }
+  const unauthorized = await handleResponse(response.clone()).then(
+    () => false,
+    (error: unknown) => error instanceof UnauthorizedError,
+  );
+  if (unauthorized) {
+    redirectOnSessionExpiry();
+  }
+};
+
 const fetchWithXhr = (
   onUploadProgress: (progress: number) => void,
   endpoint: string | URL,

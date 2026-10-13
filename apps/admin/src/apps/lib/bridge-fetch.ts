@@ -4,7 +4,7 @@ import {
   isBlockedAdminApiPath,
   resolveAdminApiPath,
 } from '@tryghost/app-contracts/bridge';
-import { ghostApiRequestHeaders } from '@tryghost/admin-x-framework/helpers';
+import { ghostApiRequestHeaders, handleSessionExpiry } from '@tryghost/admin-x-framework/helpers';
 import { BridgeError } from './bridge-error';
 
 /**
@@ -70,6 +70,10 @@ export function createAdminApiFetch({
       }
       throw new BridgeError('network_error', `Couldn’t reach the Admin API: ${String(error)}`);
     }
+
+    // The staff user's session expiring shows up here as anywhere else in Admin, which
+    // leaves for sign-in. The app gets its answer all the same.
+    await handleSessionExpiry(url, response);
 
     return {
       status: response.status,
