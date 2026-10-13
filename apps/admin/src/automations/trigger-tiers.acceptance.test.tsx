@@ -11,7 +11,7 @@ const flags = { labs: { automations: true } };
 const picker = () => page.getByRole('combobox', { name: 'Tiers', exact: true });
 const scope = () => page.getByRole('combobox', { name: 'Paid tier scope', exact: true });
 const chips = () => page.getByRole('article', { name: 'Paid subscription started', exact: true });
-const selectScope = async (name = 'Selected tier(s)') => {
+const selectScope = async (name = 'Specific tier(s)') => {
   await scope().click();
   await page.getByRole('option', { name, exact: true }).click();
 };
