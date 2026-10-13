@@ -1,0 +1,147 @@
+import assert from 'node:assert/strict';
+import sinon from 'sinon';
+import type { Knex } from 'knex';
+
+const rootPath = require.resolve('../../../../../core/server/services/app-installations');
+const endpointPaths = [
+  require.resolve('../../../../../core/server/api/endpoints/app-installations'),
+  require.resolve('../../../../../core/server/api/endpoints/app-installation-previews'),
+];
+const requestPath = require.resolve('../../../../../core/server/lib/request-external');
+// Load the real model registry before substituting the root's database connection.
+require('../../../../../core/server/models');
+const db = require('../../../../../core/server/data/db');
+const config = require('../../../../../core/shared/config');
+const urlUtils = require('../../../../../core/shared/url-utils').default;
+const { AppInstallationsService } =
+  require('../../../../../core/server/services/app-installations/service') as typeof import('../../../../../core/server/services/app-installations/service');
+type Root = typeof import('../../../../../core/server/services/app-installations');
+
+const manifest = {
+  id: 'com.example.podcast',
+  name: 'Podcast',
+  description: 'Publish episodes.',
+  author: { name: 'Example Audio', url: 'https://example.com' },
+  accent_color: '#ff5500',
+  icon: { name: 'audio-lines' },
+  surfaces: [{ type: 'admin_page', url: '/admin' }],
+};
+
+describe('App installations composition root', function () {
+  const sandbox = sinon.createSandbox();
+  let previousModules: Map<string, NodeJS.Module | undefined>;
+  let root: Root;
+  let readKnex: sinon.SinonStub;
+  let query: sinon.SinonStub;
+  let request: sinon.SinonStub;
+
+  beforeEach(function () {
+    previousModules = new Map(
+      [rootPath, ...endpointPaths].map((path) => [path, require.cache[path]]),
+    );
+    for (const path of previousModules.keys()) {
+      delete require.cache[path];
+    }
+    const builder = {
+      join: sandbox.stub().returnsThis(),
+      where: sandbox.stub().returnsThis(),
+      first: sandbox.stub().resolves(undefined),
+    };
+    query = sandbox.stub().returns(builder);
+    readKnex = sandbox.stub().returns(query as unknown as Knex);
+    sandbox.stub(db, 'knex').get(readKnex);
+    // Substitute only the outbound transport; keep the real fetcher and manifest validation.
+    require(requestPath);
+    request = sandbox.stub().callsFake(() => ({
+      on: () => {},
+      text: async () => JSON.stringify(manifest),
+    }));
+    sandbox.replace(require.cache[requestPath]!, 'exports', request);
+    root = require(rootPath);
+  });
+
+  afterEach(function () {
+    sandbox.restore();
+    for (const [path, previous] of previousModules) {
+      delete require.cache[path];
+      if (previous) {
+        require.cache[path] = previous;
+      }
+    }
+  });
+
+  it('acquires the database only at init and retains one instance without queries or requests', async function () {
+    assert.equal(require(rootPath).service, undefined);
+    sinon.assert.notCalled(readKnex);
+    root.init();
+    const service = root.service;
+    assert.ok(service instanceof AppInstallationsService);
+    root.init();
+    assert.equal(root.service, service);
+    sinon.assert.calledOnce(readKnex);
+    sinon.assert.notCalled(query);
+    sinon.assert.notCalled(request);
+  });
+
+  it('leaves the root unpublished after a dependency failure and permits a later init', function () {
+    const failure = new Error('Database is not ready');
+    readKnex.onFirstCall().throws(failure);
+    assert.throws(
+      () => root.init(),
+      (error) => error === failure,
+    );
+    assert.equal(require(rootPath).service, undefined);
+    root.init();
+    assert.ok(root.service instanceof AppInstallationsService);
+    sinon.assert.calledTwice(readKnex);
+  });
+
+  it('lets both controllers loaded before init use the initialized instance', async function () {
+    const installations = require(endpointPaths[0]);
+    const previews = require(endpointPaths[1]);
+    sinon.assert.notCalled(readKnex);
+    root.init();
+    const browse = sandbox.stub(AppInstallationsService.prototype, 'browse').resolves([]);
+    const preview = sandbox.spy(AppInstallationsService.prototype, 'preview');
+    sandbox.stub(config, 'get').withArgs('env').returns('production');
+    sandbox.stub(urlUtils, 'urlFor').returns('https://publication.example/');
+
+    assert.deepEqual(await installations.browse.query(), { data: [] });
+    const result = await previews.add.query({
+      data: {
+        app_installation_previews: [{ manifest_url: 'https://podcast.example/manifest.json' }],
+      },
+    });
+    assert.equal(result.manifest.id, manifest.id);
+    assert.equal(browse.firstCall.thisValue, root.service);
+    assert.equal(preview.firstCall.thisValue, root.service);
+  });
+
+  it('reads manifest rules and the development localhost alias per operation', async function () {
+    const getConfig = sandbox.stub(config, 'get').callThrough();
+    getConfig.withArgs('env').returns('development');
+    getConfig.withArgs('apps').returns({ localhostAlias: 'first-alias.example' });
+    const home = sandbox.stub(urlUtils, 'urlFor').returns('https://publication.example/');
+    root.init();
+    const service = root.service!;
+
+    await service.preview('http://localhost:8080/manifest.json');
+    assert.equal(request.lastCall.args[0].hostname, 'first-alias.example');
+    getConfig.withArgs('apps').returns({ localhostAlias: 'second-alias.example' });
+    await service.preview('http://localhost:8080/manifest.json');
+    assert.equal(request.lastCall.args[0].hostname, 'second-alias.example');
+
+    getConfig.withArgs('env').returns('production');
+    await assert.rejects(service.preview('http://localhost:8080/manifest.json'), {
+      errorType: 'ValidationError',
+    });
+    sinon.assert.calledTwice(request);
+    home.returns('https://podcast.example/');
+    await assert.rejects(service.preview('https://podcast.example/manifest.json'), {
+      errorType: 'ValidationError',
+    });
+    sinon.assert.calledThrice(request);
+    assert.equal(request.lastCall.args[0].hostname, 'podcast.example');
+    assert.equal(root.service, service);
+  });
+});
