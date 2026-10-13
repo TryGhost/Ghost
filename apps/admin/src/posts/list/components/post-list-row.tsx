@@ -31,6 +31,7 @@ interface PostListRowProps extends Omit<ComponentPropsWithoutRef<'li'>, 'onClick
   post: PostListItem;
   resource: PostResource;
   timezone?: string;
+  navigationPlacement?: 'primary' | 'secondary' | null;
   /**
    * Contributors get a link out to the live post instead of the editor, for
    * published posts they can no longer edit.
@@ -144,6 +145,7 @@ const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowComponentProps
       post,
       resource,
       timezone,
+      navigationPlacement,
       isContributor,
       hasAdminAccess,
       paidMembersEnabled,
@@ -300,6 +302,19 @@ const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowComponentProps
                   }
                 >
                   {displayedStatusLabel}
+                  {navigationPlacement && (
+                    <span
+                      className="ml-2 inline-flex items-center gap-1 border-l border-border-default pl-2"
+                      title={`In ${navigationPlacement} navigation`}
+                    >
+                      {navigationPlacement === 'primary' ? (
+                        <LucideIcon.PanelTop className="size-3" />
+                      ) : (
+                        <LucideIcon.PanelBottom className="size-3" />
+                      )}
+                      In {navigationPlacement} navigation
+                    </span>
+                  )}
                   {/* Mounted only while hovered, as Ember does. A CSS
                                   opacity fade would keep it in the DOM, so a screen
                                   reader would read every scheduled row's full

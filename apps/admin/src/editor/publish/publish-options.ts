@@ -6,6 +6,7 @@ import {
   normalizeRecipientFilter,
 } from '@tryghost/admin-x-framework/utils/recipient-filter';
 import type { PostStatus } from '@tryghost/admin-x-framework/api/posts';
+import type { NavigationPlacement } from '@tryghost/admin-x-framework/helpers';
 import type {
   PublishOptions as PublishCommandOptions,
   ScheduleOptions as ScheduleCommandOptions,
@@ -31,6 +32,20 @@ export interface PublishTypeOption {
   display: string;
   disabled: boolean;
 }
+
+export interface NavigationOption {
+  value: 'none' | 'primary' | 'secondary';
+  /** Shown in the expanded options list. */
+  label: string;
+  /** Shown in the collapsed option title. */
+  display: string;
+}
+
+export const NAVIGATION_OPTIONS: readonly NavigationOption[] = [
+  { value: 'none', label: 'None', display: 'Not in site navigation' },
+  { value: 'primary', label: 'Primary', display: 'Primary navigation' },
+  { value: 'secondary', label: 'Secondary', display: 'Secondary navigation' },
+];
 
 export interface PublishPostInput {
   status: PostStatus;
@@ -180,6 +195,12 @@ export interface PublishOptionsState {
   readonly missingRecipients: boolean;
   /** Draft-only, and false when email-only has no executable email. */
   readonly canPublish: boolean;
+  /** An admin is publishing a page now, not on a schedule, so its navigation placement is offered. */
+  readonly showNavigationOption: boolean;
+  /** Where the page will be listed; its current placement until one is chosen. */
+  readonly navigationPlacement: NavigationPlacement;
+  /** The placement is on offer and differs from the current one, so publishing writes it. */
+  readonly navigationPlacementChanged: boolean;
   readonly isDirty: boolean;
 }
 
@@ -198,6 +219,7 @@ export interface PublishOptionsMachine {
   resetPastScheduledAt(): void;
   setNewsletter(newsletter: NewsletterInput | null): void;
   setRecipientFilter(filter: string | null): void;
+  setNavigationPlacement(placement: NavigationPlacement): void;
   reset(): void;
   checkLimits(): Promise<PublishLimits>;
   /** Null when no safe status transition is on offer. */
@@ -210,6 +232,8 @@ export interface PublishOptionsInputs {
   site: PublishSiteInput;
   user: PublishUserInput;
   limits?: PublishLimitPorts;
+  /** The page's current navigation placement; absent when the site navigation cannot be changed. */
+  navigation?: { placement: NavigationPlacement } | null;
   now?: () => Date;
 }
 
@@ -367,6 +391,7 @@ export function createPublishOptions({
   site,
   user,
   limits = {},
+  navigation = null,
   now = () => new Date(),
 }: PublishOptionsInputs): PublishOptionsMachine {
   const newsletters = selectableNewsletters(site.newsletters);
@@ -409,6 +434,8 @@ export function createPublishOptions({
   let scheduledAtTouched = false;
   // `undefined` means "not chosen": the filter follows the post and the site default.
   let selectedRecipientFilter: string | null | undefined;
+  // `undefined` means "not chosen": the placement follows the page's current one.
+  let selectedNavigationPlacement: NavigationPlacement | undefined;
 
   const recipientFilter = (): string | null => {
     if (selectedRecipientFilter === undefined) {
@@ -474,7 +501,17 @@ export function createPublishOptions({
     ];
   };
 
+  const currentNavigationPlacement = navigation?.placement ?? null;
+  const navigationPlacement = (): NavigationPlacement =>
+    selectedNavigationPlacement === undefined
+      ? currentNavigationPlacement
+      : selectedNavigationPlacement;
+  // The page URL isn't live until a schedule lands, so scheduling hides the option.
+  const showNavigationOption = (): boolean =>
+    Boolean(post.isPage) && user.isAdmin && navigation !== null && !isScheduled;
+
   const isDirty = (): boolean =>
+    navigationPlacement() !== currentNavigationPlacement ||
     publishType !== initial.publishType ||
     isScheduled !== initial.isScheduled ||
     ((isScheduled || scheduledAtTouched) && scheduledAt !== initial.scheduledAt) ||
@@ -511,6 +548,10 @@ export function createPublishOptions({
       publishBlock,
       missingRecipients: missingRecipients(),
       canPublish: isDraft && (publishType !== 'send' || emails),
+      showNavigationOption: showNavigationOption(),
+      navigationPlacement: navigationPlacement(),
+      navigationPlacementChanged:
+        showNavigationOption() && navigationPlacement() !== currentNavigationPlacement,
       isDirty: isDirty(),
     };
   };
@@ -602,6 +643,10 @@ export function createPublishOptions({
       selectedRecipientFilter = normalizeRecipientFilter(filter);
     },
 
+    setNavigationPlacement(placement) {
+      selectedNavigationPlacement = placement;
+    },
+
     reset() {
       publishType = initial.publishType;
       publishTypeTouched = false;
@@ -611,6 +656,7 @@ export function createPublishOptions({
       scheduledAtTouched = false;
       newsletter = initialNewsletter;
       selectedRecipientFilter = undefined;
+      selectedNavigationPlacement = undefined;
     },
 
     async checkLimits() {

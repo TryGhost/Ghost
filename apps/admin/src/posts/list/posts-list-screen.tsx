@@ -57,6 +57,7 @@ import { isReturningFromScreen } from '@/layout/screen-transition';
 import { useRevealOnMount } from '@/shared/use-reveal-on-mount';
 import { usePostAnalyticsCounts } from './hooks/use-post-analytics-counts';
 import { usePostsList } from './hooks/use-posts-list';
+import { usePageNavigation } from './hooks/use-page-navigation';
 
 /**
  * The posts and pages list screens. One implementation, two resources — see
@@ -75,6 +76,7 @@ export function PostsListScreen({ resource }: { resource: PostResource }) {
     usePostsFilterState();
   const { data: currentUser } = useCurrentUser();
   const { data: settingsData } = useBrowseSettings();
+  const navigation = usePageNavigation();
 
   // Report the current filters so the sidebar and editor can return here.
   const location = useLocation();
@@ -218,8 +220,14 @@ export function PostsListScreen({ resource }: { resource: PostResource }) {
         // The gift link is filtered back in per row below, since it is the one
         // item that depends on *which* post rather than on the selection.
         canCopyGiftLink: true,
+        navigationPlacements:
+          resource === 'pages' && navigation.available
+            ? menuPosts.map(navigation.placementFor)
+            : undefined,
+        selectionCount: getPostSelectionCount(selectionState, totalItems),
+        navigationRunning: navigation.isRunning,
       }),
-    [menuPosts, resource, isAdmin, membersEnabled],
+    [menuPosts, resource, isAdmin, membersEnabled, navigation, selectionState, totalItems],
   );
 
   // Ember gates this on `isSingle` — one *selected* post — not on "one loaded
@@ -285,7 +293,30 @@ export function PostsListScreen({ resource }: { resource: PostResource }) {
     count: getPostSelectionCount(selectionState, totalItems),
   });
 
-  runPostActionRef.current = runPostAction;
+  runPostActionRef.current = (key) => {
+    if (
+      key === 'navigation-primary' ||
+      key === 'navigation-secondary' ||
+      key === 'navigation-remove'
+    ) {
+      if (
+        resource !== 'pages' ||
+        !isAdmin ||
+        menuPosts.length !== getPostSelectionCount(selectionState, totalItems)
+      ) {
+        return;
+      }
+      return navigation.update(
+        menuPosts,
+        key === 'navigation-primary'
+          ? 'primary'
+          : key === 'navigation-secondary'
+            ? 'secondary'
+            : null,
+      );
+    }
+    return runPostAction(key);
+  };
 
   const { visitorCounts, memberCounts } = usePostAnalyticsCounts({
     items,
@@ -422,6 +453,9 @@ export function PostsListScreen({ resource }: { resource: PostResource }) {
                       menuOnAction={stableRunPostAction}
                       menuOnOpenChange={selection.getContextMenuOpenHandler(item.id)}
                       metricsSettings={metricsSettings}
+                      navigationPlacement={
+                        resource === 'pages' ? navigation.placementFor(item) : null
+                      }
                       paidMembersEnabled={paidMembersEnabled}
                       post={item}
                       resource={resource}

@@ -7,6 +7,7 @@ import { parseRouteSettings } from '../../../../../core/server/services/route-se
 import { InMemoryStore } from '../../adapters/route-settings/helpers/in-memory-store';
 
 const DynamicRoutingService = require('../../../../../core/server/services/route-settings/dynamic-routing-service');
+const ParentRouter = require('../../../../../core/frontend/services/routing/parent-router');
 const bridge = require('../../../../../core/bridge');
 const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');
@@ -37,6 +38,48 @@ describe('DynamicRoutingService (store-backed)', function () {
 
   afterEach(function () {
     sinon.restore();
+  });
+
+  describe('pageRoutes', function () {
+    function router(path: string, data: unknown) {
+      const instance = new ParentRouter();
+      instance.route = { value: path };
+      instance.data = data;
+      return instance;
+    }
+
+    it('returns no mappings before routing is initialized', function () {
+      assert.deepEqual(service.pageRoutes, {});
+    });
+
+    it('uses the first active route claiming each page and respects redirect opt-outs', function () {
+      service.routerManager = {
+        registry: {
+          routers: {
+            homepage: router('/', 'page.home'),
+            about: router('/company/', { page: 'page.about' }),
+            contact: router('/contact-us/', {
+              page: { type: 'read', resource: 'pages', slug: 'contact' },
+            }),
+            duplicate: router('/landing/', 'page.home'),
+            optedOut: router('/extra/', {
+              page: { type: 'read', resource: 'pages', slug: 'extra', redirect: false },
+            }),
+            posts: router('/news/', 'post.news'),
+            browse: router('/pages/', { pages: { type: 'browse', resource: 'pages' } }),
+          },
+        },
+      };
+
+      assert.deepEqual(service.pageRoutes, {
+        home: '/',
+        about: '/company/',
+        contact: '/contact-us/',
+      });
+
+      service.routerManager.registry.routers = { moved: router('/welcome/', 'page.home') };
+      assert.deepEqual(service.pageRoutes, { home: '/welcome/' });
+    });
   });
 
   it('download returns the verbatim yaml source from the store', async function () {

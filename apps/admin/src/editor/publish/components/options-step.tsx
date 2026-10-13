@@ -16,15 +16,19 @@ import {
   publishFlowOptions,
   publishLimitsError,
   publishSettingEmailRecipients,
+  publishSettingNavigation,
   publishSettingPublishAt,
   publishSettingPublishType,
 } from '@tryghost/test-data/selectors/editor';
 import { EmailRecipientsOptions } from './email-recipients-options';
 import { PublishAtOptions } from './publish-at-options';
 import { LimitMessage } from './limit-message';
+import { NavigationOptions } from './navigation-options';
 import { PublishSetting, PublishSettingNote } from './publish-setting';
 import { PublishTypeOptions } from './publish-type-options';
 import { recipientsRowLabel, relativeTime } from '@/editor/publish/publish-copy';
+import { NAVIGATION_OPTIONS } from '@/editor/publish/publish-options';
+import type { NavigationPlacement } from '@tryghost/admin-x-framework/helpers';
 import type {
   NewsletterInput,
   PublishOptionsState,
@@ -32,7 +36,7 @@ import type {
 } from '@/editor/publish/publish-options';
 import type { PublishFlowPost } from '@/editor/publish/flow-post';
 
-type Section = 'publishType' | 'emailRecipients' | 'publishAt';
+type Section = 'publishType' | 'emailRecipients' | 'navigation' | 'publishAt';
 
 export interface OptionsStepProps {
   post: PublishFlowPost;
@@ -49,6 +53,7 @@ export interface OptionsStepProps {
   onSetRecipientFilter: (filter: string | null) => void;
   onToggleScheduled: (isScheduled: boolean) => void;
   onSetScheduledAt: (date: Date) => void;
+  onSetNavigationPlacement: (placement: NavigationPlacement) => void;
   onContinue: () => void;
   onRetryLimits: () => void;
 }
@@ -111,6 +116,7 @@ export function OptionsStep({
   onSetRecipientFilter,
   onToggleScheduled,
   onSetScheduledAt,
+  onSetNavigationPlacement,
   onContinue,
   onRetryLimits,
 }: OptionsStepProps) {
@@ -121,6 +127,9 @@ export function OptionsStep({
   const publishBlocked = state.publishBlock !== null;
   const selectedType = state.publishTypeOptions.find(
     (option) => option.value === state.publishType,
+  );
+  const selectedNavigation = NAVIGATION_OPTIONS.find(
+    (option) => option.value === (state.navigationPlacement ?? 'none'),
   );
   const historicEmail = post.email;
   const historicRecipientType = getRecipientType(normalizeRecipientFilter(post.emailSegment));
@@ -225,6 +234,21 @@ export function OptionsStep({
               .join(' ')}
             disabled
           />
+        ) : null}
+
+        {state.showNavigationOption ? (
+          <PublishSetting
+            icon={<LucideIcon.SquareMenu className="size-4" />}
+            open={openSection === 'navigation'}
+            testId={publishSettingNavigation}
+            title={selectedNavigation?.display}
+            onToggle={toggle('navigation')}
+          >
+            <NavigationOptions
+              placement={state.navigationPlacement}
+              onChange={onSetNavigationPlacement}
+            />
+          </PublishSetting>
         ) : null}
 
         <PublishSetting

@@ -20,6 +20,7 @@ import { isEmailDisabledInSettings } from './publish-options';
 import { usePublishFlow } from './use-publish-flow';
 import type { PublishDispatcher } from './publish-options';
 import type { PublishFlowPost } from './flow-post';
+import type { PublishNavigation } from './use-publish-navigation';
 import type { PublishLimitPorts, PublishSiteInput, PublishUserInput } from './publish-options';
 
 export interface PublishFlowModalProps {
@@ -30,6 +31,8 @@ export interface PublishFlowModalProps {
   site: PublishSiteInput;
   user: PublishUserInput;
   limits?: PublishLimitPorts;
+  /** The page's site navigation placement; absent when it cannot be changed. */
+  navigation?: PublishNavigation | null;
   /** The publish machine's clock, injected for tests. */
   now?: () => Date;
   timezone: string;
@@ -63,6 +66,7 @@ function KeyedPublishFlowModal({
   site,
   user,
   limits,
+  navigation,
   now,
   timezone,
   siteTitle,
@@ -117,6 +121,7 @@ function KeyedPublishFlowModal({
       animate={animate}
       dispatch={dispatch}
       limits={limits}
+      navigation={navigation}
       now={now}
       post={post}
       requestReauth={requestReauth}
@@ -144,6 +149,7 @@ function PublishFlowDialog({
   site,
   user,
   limits,
+  navigation,
   now,
   timezone,
   siteTitle,
@@ -161,6 +167,7 @@ function PublishFlowDialog({
     site,
     user,
     limits,
+    navigation,
     now,
     dispatch,
     requestReauth,
@@ -268,6 +275,7 @@ function PublishFlowDialog({
               timezone={timezone}
               onContinue={flow.toConfirm}
               onRetryLimits={flow.retryLimits}
+              onSetNavigationPlacement={flow.setNavigationPlacement}
               onSetNewsletter={flow.setNewsletter}
               onSetPublishType={flow.setPublishType}
               onSetRecipientFilter={flow.setRecipientFilter}
