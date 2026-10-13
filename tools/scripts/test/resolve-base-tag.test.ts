@@ -1,17 +1,18 @@
-const { describe, it, before, after } = require('node:test');
-const assert = require('node:assert');
-const os = require('node:os');
-const path = require('node:path');
-const fs = require('node:fs');
-const { execSync } = require('node:child_process');
-const semver = require('semver');
-const { resolveBaseTag } = require('../lib/resolve-base-tag.js');
+import { describe, it, before, after } from 'node:test';
+import assert from 'node:assert';
+import os from 'node:os';
+import path from 'node:path';
+import fs from 'node:fs';
+import { execSync } from 'node:child_process';
+import semver from 'semver';
+
+import { resolveBaseTag } from '../lib/resolve-base-tag.ts';
 
 /**
  * Create a temporary git repo with semver tags for testing.
  * Returns the repo path. Caller is responsible for cleanup.
  */
-function createTestRepo() {
+function createTestRepo(): string {
   const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'ghost-release-test-'));
 
   execSync(
@@ -44,7 +45,7 @@ function createTestRepo() {
 }
 
 describe('resolveBaseTag', () => {
-  let testRepo;
+  let testRepo: string;
 
   before(() => {
     testRepo = createTestRepo();
@@ -126,7 +127,7 @@ describe('resolveBaseTag', () => {
   });
 
   describe('prerelease excludes prerelease tags', () => {
-    let repoWithPrereleaseTag;
+    let repoWithPrereleaseTag: string;
 
     before(() => {
       // Create a repo that has both stable and prerelease tags

@@ -4,7 +4,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { afterEach, test } from 'node:test';
 
-import { checkAgentSkillLinks } from '../check-agent-skill-links.js';
+import { checkAgentSkillLinks } from '../check-agent-skill-links.ts';
 
 const temporaryDirectories = [];
 

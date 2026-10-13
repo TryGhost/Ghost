@@ -7,7 +7,7 @@
   "type": "module",
   "scripts": {
     "lint": "eslint . --cache",
-    "test:unit": "node --test test/*.test.js test/*.test.cjs test/*.test.ts",
+    "test:unit": "node --test test/*.test.ts",
     "test": "pnpm run '/^test:/'",
     "test:types": "tsc6 --noEmit"
   },

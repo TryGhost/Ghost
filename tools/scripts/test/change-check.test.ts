@@ -1,8 +1,8 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert';
 
-import { buildIgnoreMatcher } from '../lib/git.js';
-import { INTERNAL_DOCS_PATTERN } from '../lib/constants.js';
+import { buildIgnoreMatcher } from '../lib/git.ts';
+import { INTERNAL_DOCS_PATTERN } from '../lib/constants.ts';
 
 // The same matcher pathHasChanges builds, over paths as git reports them.
 const PACKAGE_DIR = 'koenig/kg-utils';

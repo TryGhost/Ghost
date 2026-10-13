@@ -1,9 +1,9 @@
 import { parseArgs } from 'node:util';
 import camelcaseKeys from 'camelcase-keys';
 
-import { findPackagesNeedingChangeset } from './lib/pnpm.js';
-import { resolveBaseCommit, rootAtMergeBase } from './lib/pr-base.js';
-import { INTERNAL_DOCS_PATTERN } from './lib/constants.js';
+import { findPackagesNeedingChangeset } from './lib/pnpm.ts';
+import { resolveBaseCommit, rootAtMergeBase } from './lib/pr-base.ts';
+import { INTERNAL_DOCS_PATTERN } from './lib/constants.ts';
 
 const { values, positionals } = parseArgs({
   options: {

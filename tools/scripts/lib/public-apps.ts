@@ -12,8 +12,8 @@ import { writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import semver from 'semver';
 
-import { ROOT_DIR, SCRIPTS_DIR } from './constants.js';
-import { readJson } from './utils.js';
+import { ROOT_DIR, SCRIPTS_DIR } from './constants.ts';
+import { readJson } from './utils.ts';
 
 /**
  * Which apps are public UMD apps, and the defaults.json key each maps to.

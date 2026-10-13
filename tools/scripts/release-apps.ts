@@ -2,14 +2,14 @@ import { join } from 'node:path';
 import { createInterface } from 'node:readline/promises';
 import semver from 'semver';
 
-import { execAsync, readJson, writeJson } from './lib/utils.js';
+import { execAsync, readJson, writeJson } from './lib/utils.ts';
 import {
   appForPackageName,
   readDefaults,
   writeDefaults,
   DEFAULTS_PATH,
   majorMinor,
-} from './lib/public-apps.js';
+} from './lib/public-apps.ts';
 
 const CURRENT_DIR = process.cwd();
 

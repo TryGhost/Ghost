@@ -1,7 +1,7 @@
 import { $ as $$ } from 'execa';
 import pm from 'picomatch';
 
-import { ROOT_DIR } from './constants.js';
+import { ROOT_DIR } from './constants.ts';
 
 // Always run git from the repo root so callers can pass repo-relative paths
 // regardless of the process working directory.

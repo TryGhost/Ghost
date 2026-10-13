@@ -1,7 +1,7 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert';
 
-import { getFileFromCommit } from '../lib/git.js';
+import { getFileFromCommit } from '../lib/git.ts';
 
 // These run against the live repo. git.js binds git to ROOT_DIR, so the paths
 // here are repo-relative regardless of the process working directory.

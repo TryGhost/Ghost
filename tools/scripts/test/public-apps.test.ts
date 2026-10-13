@@ -9,9 +9,9 @@ import {
   appForPackageName,
   majorMinor,
   readDefaults,
-} from '../lib/public-apps.js';
-import { readJson } from '../lib/utils.js';
-import { ROOT_DIR } from '../lib/constants.js';
+} from '../lib/public-apps.ts';
+import { readJson } from '../lib/utils.ts';
+import { ROOT_DIR } from '../lib/constants.ts';
 
 describe('majorMinor', () => {
   it('reduces a version to its major.minor line', () => {

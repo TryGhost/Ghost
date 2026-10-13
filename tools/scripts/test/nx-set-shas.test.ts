@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert';
-import { fetchSuccessfulRuns, resolveBase, selectBaseSha } from '../nx-set-shas.js';
+import { fetchSuccessfulRuns, resolveBase, selectBaseSha } from '../nx-set-shas.ts';
 
 const HEAD = 'head0000000000000000000000000000000000000';
 const GREEN = 'green000000000000000000000000000000000000';

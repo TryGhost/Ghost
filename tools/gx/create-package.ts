@@ -4,8 +4,8 @@ import { cp, readFile, writeFile, readdir, stat, rm, mkdir } from 'node:fs/promi
 import { existsSync } from 'node:fs';
 import { join, dirname, relative, resolve, sep } from 'node:path';
 
-import { ROOT_DIR } from '../scripts/lib/constants.js';
-import { applyPackageTemplateTokens, isValidPackageName } from '../scripts/lib/package-template.js';
+import { ROOT_DIR } from '../scripts/lib/constants.ts';
+import { applyPackageTemplateTokens, isValidPackageName } from '../scripts/lib/package-template.ts';
 
 const TEMPLATE_DIR = join(ROOT_DIR, 'packages', '_template');
 const PACKAGES_DIR = join(ROOT_DIR, 'packages');

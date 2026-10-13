@@ -4,10 +4,10 @@ import { spawnSync } from 'node:child_process';
 import { createRequire } from 'node:module';
 import path from 'node:path';
 
-import { ROOT_DIR } from '../lib/constants.js';
-import { findLoadedModules, NOT_AT_BOOT } from '../lib/boot-modules.js';
+import { ROOT_DIR } from '../lib/constants.ts';
+import { findLoadedModules, NOT_AT_BOOT } from '../lib/boot-modules.ts';
 
-const PRELOAD = path.join(ROOT_DIR, 'tools/scripts/assert-boot-skips-modules.js');
+const PRELOAD = path.join(ROOT_DIR, 'tools/scripts/assert-boot-skips-modules.ts');
 const CORE_DIR = path.join(ROOT_DIR, 'ghost');
 
 const run = (code) =>

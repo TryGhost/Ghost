@@ -2,8 +2,8 @@ import { describe, it } from 'node:test';
 import assert from 'node:assert';
 import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
-import { buildMatrix, cdnPathsFor } from '../build-public-apps-matrix.js';
-import { PUBLIC_APPS } from '../lib/public-apps.js';
+import { buildMatrix, cdnPathsFor } from '../build-public-apps-matrix.ts';
+import { PUBLIC_APPS } from '../lib/public-apps.ts';
 
 const DEFAULTS = JSON.parse(
   await readFile(

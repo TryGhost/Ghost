@@ -2,8 +2,8 @@ import { parseArgs } from 'node:util';
 import { $ } from 'execa';
 import camelcaseKeys from 'camelcase-keys';
 
-import { ROOT_DIR } from './lib/constants.js';
-import { getWorkspace, getPublishablePackages } from './lib/pnpm.js';
+import { ROOT_DIR } from './lib/constants.ts';
+import { getWorkspace, getPublishablePackages } from './lib/pnpm.ts';
 
 /**
  * publish-packages.js — publish the workspace's public packages to npm.
