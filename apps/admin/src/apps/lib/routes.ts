@@ -17,14 +17,13 @@ export function appReviewRoute(manifestUrl: string): string {
 }
 
 /**
- * Where opening an installed app goes. A suspended app opens the review of its
- * changes instead. Apps don't run in Admin yet (BER-3982), so an active app
- * opens its details page for now.
+ * Where opening an installed app goes: its page, or the review of its changes
+ * while it's suspended, as a suspended app doesn't load.
  */
 export function appOpenRoute(
   installation: Pick<AppInstallation, 'id' | 'status' | 'manifest_url'>,
 ): string {
   return installation.status === 'suspended'
     ? appReviewRoute(installation.manifest_url)
-    : appDetailsRoute(installation.id);
+    : appRoute(installation.id);
 }

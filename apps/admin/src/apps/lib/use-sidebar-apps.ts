@@ -13,7 +13,7 @@ const NO_INSTALLATIONS: AppInstallation[] = [];
 
 export interface SidebarApp {
   installation: AppInstallation;
-  /** Where the app opens: its review while it's suspended. */
+  /** Where the app opens: its page, or its review while it's suspended. */
   to: string;
   isActive: boolean;
   isPinned: boolean;
@@ -29,21 +29,24 @@ export interface SidebarApps {
   setPinned: (installationId: string, pinned: boolean) => void;
 }
 
-/** The installation whose page is open: its details, or the review of its changes. */
+/**
+ * The installation that's open: the app itself, at any of its pages, its
+ * details, or the review of its changes.
+ */
 function openInstallationId(
   pathname: string,
   search: string,
   installations: AppInstallation[],
 ): string | undefined {
-  const details = /^\/apps\/details\/([^/]+)\/?$/.exec(pathname);
-  if (details) {
-    return details[1];
-  }
   if (/^\/apps\/install\/?$/.test(pathname)) {
     const manifestUrl = new URLSearchParams(search).get('manifest');
     return installations.find((installation) => installation.manifest_url === manifestUrl)?.id;
   }
-  return undefined;
+  const details = /^\/apps\/details\/([^/]+)\/?$/.exec(pathname);
+  if (details) {
+    return details[1];
+  }
+  return /^\/apps\/([^/]+)(?:\/|$)/.exec(pathname)?.[1];
 }
 
 /**

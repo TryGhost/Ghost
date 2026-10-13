@@ -10,7 +10,14 @@ import {
   type RenderAdminAppOptions,
 } from '@test-utils/acceptance';
 import { appsScreen } from './apps.screen';
-import { MANIFEST_URL, fakeInstallations, installation, labs, manifest } from './apps.test-utils';
+import {
+  MANIFEST_URL,
+  fakeAppPage,
+  fakeInstallations,
+  installation,
+  labs,
+  manifest,
+} from './apps.test-utils';
 
 const app = (n: number, overrides: Partial<AppInstallation> = {}): AppInstallation =>
   installation({
@@ -98,32 +105,29 @@ describe('Apps in the sidebar', () => {
     await expect.poll(listedApps).toEqual(['App 1', 'App 2', 'App 3', 'App 4']);
   });
 
-  it('opens an app’s details from the sidebar', async () => {
+  it('opens an app from the sidebar', async () => {
     fakeTags([]);
-    fakeInstallations([app(1)]);
-    fakeAdminEndpoint('GET', /^\/apps\/installations\/installation-1\//, {
-      app_installations: [app(1, { history: [] })],
-    });
+    fakeInstallations([installation()]);
+    await fakeAppPage(installation());
     await renderAdminApp('/tags', withPins());
 
-    await appsScreen.sidebarApp('App 1').click();
+    await appsScreen.sidebarApp('Podcast').click();
 
-    await expect.poll(currentRoute).toBe('/apps/details/installation-1');
-    await expect.element(appsScreen.sidebarApp('App 1')).toHaveAttribute('aria-current', 'page');
+    await expect.poll(currentRoute).toBe('/apps/installation-1');
+    await expect.element(appsScreen.frame()).toBeVisible();
+    await expect.element(appsScreen.sidebarApp('Podcast')).toHaveAttribute('aria-current', 'page');
   });
 
   it('lists an open app that isn’t pinned while it’s open', async () => {
-    fakeInstallations([app(1), app(2)]);
-    fakeAdminEndpoint('GET', /^\/apps\/installations\/installation-2\//, {
-      app_installations: [app(2, { history: [] })],
-    });
+    fakeInstallations([app(2), installation()]);
+    await fakeAppPage(installation());
     await renderAdminApp(
-      '/apps/details/installation-2',
-      withPins({ pinned: ['installation-1'], unpinned: ['installation-2'] }),
+      '/apps/installation-1',
+      withPins({ pinned: ['installation-2'], unpinned: ['installation-1'] }),
     );
 
-    await expect.poll(listedApps).toEqual(['App 1', 'App 2']);
-    await expect.element(appsScreen.sidebarApp('App 2')).toHaveAttribute('aria-current', 'page');
+    await expect.poll(listedApps).toEqual(['App 2', 'Podcast']);
+    await expect.element(appsScreen.sidebarApp('Podcast')).toHaveAttribute('aria-current', 'page');
   });
 
   it('unpins an app from the sidebar, and pins it again from the Apps page', async () => {
