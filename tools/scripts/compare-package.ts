@@ -84,7 +84,7 @@ function packageFiles(directory: string, prefix = ''): Map<string, Buffer> {
 }
 
 function compareUmdDirectories(localDirectory: string, publishedDirectory: string): Comparison {
-  // Keep the existing diff semantics, including added/removed directories.
+  // Compare the whole UMD tree so added or removed directories also trigger a release.
   const result = spawnSync('diff', [
     '-rq',
     join(publishedDirectory, 'umd'),
