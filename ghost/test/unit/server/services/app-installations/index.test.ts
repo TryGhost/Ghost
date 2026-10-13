@@ -6,6 +6,7 @@ const rootPath = require.resolve('../../../../../core/server/services/app-instal
 const endpointPaths = [
   require.resolve('../../../../../core/server/api/endpoints/app-installations'),
   require.resolve('../../../../../core/server/api/endpoints/app-installation-previews'),
+  require.resolve('../../../../../core/server/api/endpoints/app-sessions'),
 ];
 const requestPath = require.resolve('../../../../../core/server/lib/request-external');
 // Load the real model registry before substituting the root's database connection.
@@ -94,13 +95,17 @@ describe('App installations composition root', function () {
     sinon.assert.calledTwice(readKnex);
   });
 
-  it('lets both controllers loaded before init use the initialized instance', async function () {
+  it('lets the controllers loaded before init use the initialized instance', async function () {
     const installations = require(endpointPaths[0]);
     const previews = require(endpointPaths[1]);
+    const sessions = require(endpointPaths[2]);
     sinon.assert.notCalled(readKnex);
     await root.init();
     const browse = sandbox.stub(AppInstallationsService.prototype, 'browse').resolves([]);
     const preview = sandbox.spy(AppInstallationsService.prototype, 'preview');
+    const startSession = sandbox
+      .stub(AppInstallationsService.prototype, 'startSession')
+      .resolves({ revision: 0 } as never);
     sandbox.stub(config, 'get').withArgs('env').returns('production');
     sandbox.stub(urlUtils, 'urlFor').returns('https://publication.example/');
 
@@ -113,6 +118,11 @@ describe('App installations composition root', function () {
     assert.equal(result.manifest.id, manifest.id);
     assert.equal(browse.firstCall.thisValue, root.service);
     assert.equal(preview.firstCall.thisValue, root.service);
+    assert.deepEqual(await sessions.start.query({ options: { id: 'installation-id' } }), {
+      revision: 0,
+    });
+    sinon.assert.calledOnceWithExactly(startSession, 'installation-id');
+    assert.equal(startSession.firstCall.thisValue, root.service);
   });
 
   it('reads manifest rules and the development localhost alias per operation', async function () {

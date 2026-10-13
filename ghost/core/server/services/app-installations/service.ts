@@ -82,6 +82,24 @@ export interface AppInstallationPreview {
   } | null;
 }
 
+/**
+ * What starting an app session answers with: the revision the session is pinned to, and
+ * the installation as it stands. Any change to the installation moves its revision on,
+ * which is how a session learns it has ended.
+ */
+export interface AppSession {
+  revision: number;
+  installation: AppInstallation;
+}
+
+/** The installation has ended, so there is no app to open. */
+function notInstalled() {
+  return new errors.NotFoundError({
+    message: 'This app is not installed.',
+    code: 'APP_NOT_INSTALLED',
+  });
+}
+
 /** The installation has ended, so there is nothing left to approve for it. */
 function uninstalled() {
   return new errors.ConflictError({
@@ -126,6 +144,7 @@ async function currentInstallation(
   }
   const row = await query.first<z.input<typeof CurrentInstallationRow> | undefined>(
     'installation.id',
+    'installation.app_id',
     'installation.status',
     'installation.manifest_id',
     'installation.pending_manifest_id',
@@ -227,6 +246,8 @@ export class AppInstallationsService {
   private knex: Knex;
   private recordAction: RecordAppInstallationAction;
   private loadManifest: LoadManifest;
+  /** At most one re-check in flight per installation: sessions starting together share it. */
+  private rechecking = new Map<string, Promise<void>>();
 
   constructor({
     knex,
@@ -250,6 +271,7 @@ export class AppInstallationsService {
         'installation.id',
         'installation.app_id',
         'installation.status',
+        'installation.revision',
         'approved.manifest_url',
         'approved.manifest',
         'installation.created_at',
@@ -411,6 +433,7 @@ export class AppInstallationsService {
       id,
       app_id: manifest.id,
       status: 'active',
+      revision: 0,
       manifest_url: loaded.manifestUrl,
       manifest: loaded.serialised,
       created_at: now,
@@ -538,6 +561,85 @@ export class AppInstallationsService {
       });
     }
     return this.read(id);
+  }
+
+  /**
+   * Starts a session of an installed app, which is what Admin asks for when an app page
+   * opens. The app's manifest is re-checked first, then the answer carries the installation
+   * as it stands and the revision the session is pinned to; that answer alone decides what
+   * Admin shows. Nothing is stored. An installation that has ended, or never existed, is not
+   * installed.
+   */
+  async startSession(id: string): Promise<AppSession> {
+    await this.recheck(id);
+    const installation = await this.read(id);
+    // Ended after the re-check, or while a re-check this one shared was out.
+    if (installation.status === 'uninstalled') {
+      throw notInstalled();
+    }
+    return { revision: installation.revision, installation };
+  }
+
+  private recheck(id: string): Promise<void> {
+    const inFlight = this.rechecking.get(id);
+    if (inFlight) {
+      return inFlight;
+    }
+    const run = this.recheckOnce(id).finally(() => this.rechecking.delete(id));
+    this.rechecking.set(id, run);
+    return run;
+  }
+
+  /**
+   * Loads an installed app's manifest again from its approved manifest URL and keeps what
+   * changed, as Ghost would by itself: silent changes apply, and changes that need approval
+   * wait as the pending manifest, suspending the app. Nobody decided this, so nothing is
+   * recorded in the staff history; the manifest rows tell it.
+   *
+   * A manifest Ghost cannot load (unreachable, invalid, too large, not JSON, redirected to
+   * another host), or one for another app, leaves the approved manifest running: that is
+   * the app's problem, not the publisher's.
+   *
+   * Keyed on the installation's ID, never its app's, so a re-check that started before an
+   * uninstall can neither revive that installation nor touch a later one of the same app.
+   * It decides nothing when the installation changed while the manifest was being loaded,
+   * since what it loaded may be older than what changed it.
+   */
+  private async recheckOnce(id: string): Promise<void> {
+    const before = await currentInstallation({ id }, this.knex);
+    if (!before) {
+      throw notInstalled();
+    }
+
+    let loaded: LoadedManifest;
+    try {
+      loaded = await this.loadManifest(before.manifest_url);
+    } catch (err) {
+      if (err instanceof errors.ValidationError) {
+        return;
+      }
+      throw err;
+    }
+    if (loaded.manifest.id !== before.app_id) {
+      return;
+    }
+
+    await this.knex.transaction(async (trx) => {
+      await trx(INSTALLATIONS).where({ id }).forUpdate().first();
+      const current = await currentInstallation({ id }, trx);
+      if (!current) {
+        throw notInstalled();
+      }
+      if (current.revision !== before.revision) {
+        return;
+      }
+      const decision = decideOnManifest({
+        current,
+        pending: await pendingManifest(trx, current),
+        loaded,
+      });
+      await keepManifest(trx, current, loaded, decision, 'update');
+    });
   }
 
   /**

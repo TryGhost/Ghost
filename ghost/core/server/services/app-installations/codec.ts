@@ -11,6 +11,7 @@ export const AppInstallationRow = z.object({
     id: true,
     app_id: true,
     status: true,
+    revision: true,
     created_at: true,
     updated_at: true,
   }).shape,
@@ -49,6 +50,7 @@ export type AppInstallation = z.output<typeof AppInstallationRow> & {
 export const CurrentInstallationRow = z.object({
   ...DbAppInstallation.pick({
     id: true,
+    app_id: true,
     status: true,
     manifest_id: true,
     pending_manifest_id: true,
