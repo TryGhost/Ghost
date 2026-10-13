@@ -232,17 +232,22 @@ describe('createManifestLoader', function () {
       assert.equal(err.code, 'APP_MANIFEST_REDIRECTED');
     });
 
-    it('follows a redirect to a path with characters outside ASCII', async function () {
+    it('follows a redirect to a path with characters outside ASCII, and resolves URLs from there', async function () {
       // On the wire the location is UTF-8 bytes, which Node hands over as latin1.
       nock('https://podcast.example.com')
         .get('/ghost-app.json')
-        .reply(302, '', { location: Buffer.from('/v2/manifést.json', 'utf8').toString('latin1') })
-        .get('/v2/manif%C3%A9st.json')
+        .reply(302, '', {
+          location: Buffer.from('/épisodes/ghost-app.json', 'utf8').toString('latin1'),
+        })
+        .get('/%C3%A9pisodes/ghost-app.json')
         .reply(200, manifest());
 
       const loaded = await loader()(MANIFEST_URL);
 
-      assert.equal(loaded.manifest.surfaces[0].url, 'https://podcast.example.com/v2/admin');
+      assert.equal(
+        loaded.manifest.surfaces[0].url,
+        'https://podcast.example.com/%C3%A9pisodes/admin',
+      );
     });
 
     it('reports a large error page as unreachable, with its status', async function () {

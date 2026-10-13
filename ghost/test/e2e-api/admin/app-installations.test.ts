@@ -2,8 +2,10 @@ import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import ObjectId from 'bson-objectid';
 import nock from 'nock';
+import { z } from 'zod';
 import { agentProvider, fixtureManager, mockManager } from '../../utils/e2e-framework';
 import { toDatabaseDate } from '../../../core/server/lib/db-types/date';
+import { StoredManifest } from '../../../core/server/services/app-installations/schema';
 
 // Required, not imported, so this is the same module instance Ghost initialised at boot.
 const appInstallations: typeof import('../../../core/server/services/app-installations') = require('../../../core/server/services/app-installations');
@@ -394,6 +396,22 @@ describe('App installations Admin API', function () {
       assert.equal(body.errors[0].code, 'APP_ALREADY_INSTALLED');
     });
 
+    it('keeps the manifest URL as it was checked, not as it was confirmed', async function () {
+      const spelled = 'https://Podcast.Example.com/ghost-app.json#install';
+      serve(manifest());
+      const { digest } = await preview(spelled);
+      serve(manifest());
+
+      const { body } = await agent
+        .post('apps/installations/')
+        .body({ app_installations: [{ manifest_url: spelled, digest }] })
+        .expectStatus(201);
+
+      assert.equal(body.app_installations[0].manifest_url, MANIFEST_URL);
+      const [stored] = await manifestRows();
+      assert.equal(stored.manifest_url, MANIFEST_URL);
+    });
+
     it('needs the reviewed digest', async function () {
       await agent
         .post('apps/installations/')
@@ -418,16 +436,18 @@ describe('App installations Admin API', function () {
     // What the lifecycle's refetch will do once it exists: keep the newer manifest as the
     // one waiting for approval, and stop the app until an Administrator decides.
     const suspendWithPending = async (id: string, pending: Record<string, unknown>) => {
-      // Stored as Ghost would store it: parsed, with its URLs resolved, and digested.
+      // Stored as Ghost would store it: parsed, with its URLs resolved, encoded, and digested
+      // together with its manifest URL.
       serve(pending);
       const reviewed = await preview();
+      const serialised = z.encode(StoredManifest, reviewed.manifest);
       const pendingId = new ObjectId().toHexString();
       await models.Base.knex('app_installation_manifests').insert({
         id: pendingId,
         installation_id: id,
-        manifest_url: reviewed.manifest_url,
-        manifest: JSON.stringify(reviewed.manifest),
-        digest: reviewed.digest,
+        manifest_url: MANIFEST_URL,
+        manifest: serialised,
+        digest: createHash('sha256').update(`${MANIFEST_URL}\n${serialised}`).digest('hex'),
         source: 'update',
         requires_approval: true,
         created_at: toDatabaseDate(new Date()),
