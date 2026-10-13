@@ -21,6 +21,10 @@
     "namedInputs": {
       "packageTemplate": [
         "{workspaceRoot}/packages/_template/**/*"
+      ],
+      "goldenEmailCommand": [
+        "{workspaceRoot}/ghost/bin/generate-golden-email.js",
+        "{workspaceRoot}/ghost/test/utils/fixtures/email-service/golden-post.json"
       ]
     },
     "targets": {
@@ -29,6 +33,7 @@
           "default",
           "^default",
           "packageTemplate",
+          "goldenEmailCommand",
           {
             "runtime": "node -v"
           }

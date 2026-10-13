@@ -19,7 +19,7 @@ const GOLDEN_POST_PATH = path.join(
 
 function usage() {
   console.error(
-    'Usage: GHOST_GOLDEN_POST_AUTH=id:secret pnpm generate-golden-email <segment> <output-path>',
+    'Usage: GHOST_GOLDEN_POST_AUTH=id:secret pnpm gx email golden <segment> <output-path>',
   );
   console.error('');
   console.error('  segment:     Member segment filter, e.g. "status:free" or "status:-free"');
