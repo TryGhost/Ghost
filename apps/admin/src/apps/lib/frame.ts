@@ -67,5 +67,10 @@ export const APP_FRAME_ALLOW = [...SELF_BY_DEFAULT, ...EVERYONE_BY_DEFAULT]
  * when it accepts a manifest, but the site's or Admin's URL can change afterwards, and a
  * frame on Admin's own origin would be Admin, sandbox or not. So the same rule is asked
  * again where the frame is made, against the origins Admin knows itself by.
+ *
+ * It covers the URL the frame is given, not where the frame goes from there: the app's
+ * server can redirect, and the page can set its own location, which the sandbox allows.
+ * What would load then is Ghost's own content, so the gap is small, but it's a gap.
+ * TODO(BER-3983): revisit with the bridge, which knows the frame's location.
  */
 export { isGhostOrigin } from '@tryghost/app-contracts';

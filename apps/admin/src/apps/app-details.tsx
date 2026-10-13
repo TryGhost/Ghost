@@ -22,7 +22,7 @@ import {
   useReadAppInstallation,
 } from '@tryghost/admin-x-framework/api/app-installations';
 import { useBrowseSettings } from '@tryghost/admin-x-framework/api/settings';
-import { APIError, getErrorMessage } from '@tryghost/admin-x-framework/errors';
+import { getErrorMessage } from '@tryghost/admin-x-framework/errors';
 import { getSiteTimezone } from '@tryghost/admin-x-framework/utils/get-site-timezone';
 import { NotFound } from '@/shared/not-found';
 import { AccessIndicator } from './components/access-indicator';
@@ -32,6 +32,7 @@ import { CapabilitySummary } from './components/surface-icon';
 import { UninstallDialog } from './components/uninstall-dialog';
 import { ACCOUNT_ACCESS } from './lib/access';
 import { historyTitle, installedBy } from './lib/history';
+import { isInstallationNotFound } from './lib/not-found';
 import { appReviewRoute, appRoute } from './lib/routes';
 import { isDevelopmentApp } from './lib/served-from';
 
@@ -168,9 +169,7 @@ export const AppDetails: React.FC = () => {
   });
   const installation = data?.app_installations[0];
 
-  // Ghost returns 422, not 404, for a malformed id.
-  // Both mean there's nothing to show, and retrying won't help.
-  if (error instanceof APIError && [404, 422].includes(error.response?.status ?? 0)) {
+  if (isInstallationNotFound(error)) {
     return <NotFound />;
   }
 

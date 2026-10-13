@@ -1,16 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import { Button, EmptyIndicator, LoadingIndicator } from '@tryghost/shade/components';
 import { Stack, Text } from '@tryghost/shade/primitives';
-import { LucideIcon } from '@tryghost/shade/utils';
+import { LucideIcon, cn } from '@tryghost/shade/utils';
 import { Link, useNavigate, useParams } from '@tryghost/admin-x-framework';
 import {
   type AppInstallation,
   useReadAppInstallation,
 } from '@tryghost/admin-x-framework/api/app-installations';
 import { useBrowseSite } from '@tryghost/admin-x-framework/api/site';
-import { APIError } from '@tryghost/admin-x-framework/errors';
 import { AppsGate } from './components/apps-gate';
 import { APP_FRAME_ALLOW, APP_FRAME_SANDBOX, appFrameTimeouts, isGhostOrigin } from './lib/frame';
+import { isInstallationNotFound } from './lib/not-found';
 import { reportAppsError } from './lib/report-error';
 import { appReviewRoute } from './lib/routes';
 import { appPageUrl, servedFrom } from './lib/served-from';
@@ -132,7 +132,9 @@ const AppFrame: React.FC<{ installation: AppInstallation }> = ({ installation })
         allow={APP_FRAME_ALLOW}
         aria-hidden={status !== 'ready'}
         // Hidden, not transparent: a frame that's still loading mustn't take focus or clicks.
-        className={status === 'ready' ? 'size-full' : 'invisible size-full'}
+        // A block, with no border: inline, the frame would sit on the text baseline and
+        // leave a gap under itself for the page to scroll.
+        className={cn('block size-full border-0', status !== 'ready' && 'invisible')}
         data-testid="app-frame"
         referrerPolicy="strict-origin-when-cross-origin"
         sandbox={APP_FRAME_SANDBOX}
@@ -168,7 +170,8 @@ const NotFramed: React.FC<{ installation: AppInstallation }> = ({ installation }
  * An active app loads in its frame, once its page is known to be somewhere other than
  * Ghost: Admin's own address, or the site's, which Admin may be served from too. Nothing
  * is framed until the site's address is known, so the check can't be skipped by timing,
- * or by the site's address failing to load.
+ * or by the site's address failing to load. It's a check of the URL the frame starts
+ * from; `isGhostOrigin` says what it doesn't cover.
  */
 const ActiveApp: React.FC<{ installation: AppInstallation }> = ({ installation }) => {
   const { data: site, error, refetch } = useBrowseSite({ defaultErrorHandler: false });
@@ -246,10 +249,11 @@ export const AppPage: React.FC = () => {
   const { installationId = '' } = useParams();
   const { data, error, isLoading, refetch } = useReadAppInstallation(installationId, {
     defaultErrorHandler: false,
+    // Without the history the details page shows; this one has no use for it.
+    searchParams: {},
   });
   const installation = data?.app_installations[0];
-  // Ghost returns 422, not 404, for a malformed id. Retrying won't help with either.
-  const notFound = error instanceof APIError && [404, 422].includes(error.response?.status ?? 0);
+  const notFound = isInstallationNotFound(error);
   useEffect(() => {
     if (error && !notFound) {
       reportAppsError(error);
