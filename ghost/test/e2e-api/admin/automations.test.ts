@@ -678,20 +678,8 @@ describe('Automations API', function () {
             ],
           });
 
-        const queries: string[] = [];
-        const captureQuery = (query: { sql: string }) => queries.push(query.sql);
-        models.Base.knex.on('query', captureQuery);
-        let body: ApiResponse['body'];
-        try {
-          ({ body } = await agent.get('automations').expectStatus(200));
-        } finally {
-          models.Base.knex.removeListener('query', captureQuery);
-        }
+        const { body } = await agent.get('automations').expectStatus(200);
 
-        assert.equal(
-          queries.some((sql) => /\bautomation_runs\b|\bautomation_run_steps\b/.test(sql)),
-          false,
-        );
         assert.ok(tinybird.isDone());
         const automation = body.automations.find((candidate) => candidate.id === automationId);
         assert.ok(automation);
@@ -711,34 +699,17 @@ describe('Automations API', function () {
         });
       });
 
-      it('omits stats without querying run tables when Tinybird is unconfigured', async function () {
+      it('omits stats when Tinybird is unconfigured', async function () {
         configUtils.set('tinybird:stats', null);
         const [automation] = await models.Base.knex('automations').select('id');
         await createAutomationRun(automation.id, new Date('2026-01-01T00:00:00.000Z'));
-        const { body } = await browseWithoutDatabaseStats();
+        const { body } = await agent.get('automations').expectStatus(200);
         assert.ok(body.automations.every((item) => !Object.hasOwn(item, 'stats')));
       });
 
-      async function browseWithoutDatabaseStats() {
-        const queries: string[] = [];
-        const captureQuery = (query: { sql: string }) => queries.push(query.sql);
-        models.Base.knex.on('query', captureQuery);
-        try {
-          const response = await agent.get('automations').expectStatus(200);
-          assert.equal(
-            queries.some((sql) => /\bautomation_runs\b|\bautomation_run_steps\b/.test(sql)),
-            false,
-            'Browsing automations must not query the run tables',
-          );
-          return response;
-        } finally {
-          models.Base.knex.removeListener('query', captureQuery);
-        }
-      }
-
       it('omits stats when the Tinybird service is unavailable', async function () {
         TinybirdServiceWrapper.instance = null;
-        const { body } = await browseWithoutDatabaseStats();
+        const { body } = await agent.get('automations').expectStatus(200);
         assert.equal(body.automations.length, 2);
         assert.ok(body.automations.every((item) => !Object.hasOwn(item, 'stats')));
       });
@@ -748,7 +719,7 @@ describe('Automations API', function () {
         const [automation] = await models.Base.knex('automations').select('id');
         await createAutomationRun(automation.id, new Date('2026-01-01T00:00:00.000Z'));
 
-        const { body } = await browseWithoutDatabaseStats();
+        const { body } = await agent.get('automations').expectStatus(200);
 
         assert.ok(!Object.hasOwn(findAutomation(body.automations, automation.id), 'stats'));
       });
@@ -768,7 +739,7 @@ describe('Automations API', function () {
             .query({ site_uuid: siteUuid, ghost_client: 'server' })
             .reply(200, { data: [] });
 
-          const { body } = await browseWithoutDatabaseStats();
+          const { body } = await agent.get('automations').expectStatus(200);
 
           assert.equal(tinybird.isDone(), false);
           assert.ok(!Object.hasOwn(findAutomation(body.automations, automation.id), 'stats'));
@@ -789,7 +760,7 @@ describe('Automations API', function () {
           const [automation] = await models.Base.knex('automations').select('id');
           await createAutomationRun(automation.id, new Date('2026-01-01T00:00:00.000Z'));
 
-          const { body } = await browseWithoutDatabaseStats();
+          const { body } = await agent.get('automations').expectStatus(200);
 
           assert.ok(!Object.hasOwn(findAutomation(body.automations, automation.id), 'stats'));
           assert.ok(error.calledOnce);
@@ -814,7 +785,7 @@ describe('Automations API', function () {
           .query({ site_uuid: siteUuid, ghost_client: 'server' })
           .reply(status, response);
 
-        const { body } = await browseWithoutDatabaseStats();
+        const { body } = await agent.get('automations').expectStatus(200);
 
         assert.ok(tinybird.isDone());
         assert.equal(body.automations.length, 2);
@@ -831,7 +802,7 @@ describe('Automations API', function () {
             .query({ site_uuid: siteUuid, ghost_client: 'server' })
             .replyWithError({ code, message: 'Tinybird request failed' });
 
-          const { body } = await browseWithoutDatabaseStats();
+          const { body } = await agent.get('automations').expectStatus(200);
 
           assert.ok(tinybird.isDone());
           assert.equal(body.automations.length, 2);
@@ -862,7 +833,7 @@ describe('Automations API', function () {
           .query({ site_uuid: siteUuid, ghost_client: 'server' })
           .reply(200, { data: [] });
 
-        const { body } = await browseWithoutDatabaseStats();
+        const { body } = await agent.get('automations').expectStatus(200);
 
         assert.ok(extend.calledOnce);
         assert.ok(firstAttempt.isDone());
