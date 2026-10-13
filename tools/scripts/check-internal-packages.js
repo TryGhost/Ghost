@@ -3,7 +3,7 @@ import { readdir, readFile, realpath, stat } from 'node:fs/promises';
 import path from 'node:path';
 import { promisify } from 'node:util';
 
-import { ROOT_DIR } from './lib/constants.js';
+import { ROOT_DIR, PRIVATE_PACKAGE_VERSION } from './lib/constants.js';
 import { applyPackageTemplateTokens, isValidPackageName } from './lib/package-template.js';
 
 const execFileAsync = promisify(execFile);
@@ -209,7 +209,7 @@ async function validateCompliantPackage({
   ) {
     errors.push(`${manifestPath}: name must use the @tryghost/<kebab-case-name> form`);
   }
-  addExactValueError(errors, manifestPath, manifest.version, '0.0.0', 'version');
+  addExactValueError(errors, manifestPath, manifest.version, PRIVATE_PACKAGE_VERSION, 'version');
   addExactValueError(errors, manifestPath, manifest.private, true, 'private');
   addExactValueError(errors, manifestPath, manifest.type, 'module', 'type');
   addExactValueError(errors, manifestPath, manifest.author, 'Ghost Foundation', 'author');

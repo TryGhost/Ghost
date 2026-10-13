@@ -1,7 +1,7 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert';
 
-import { checkVersioningIgnore } from '../check-versioning-ignore.js';
+import { checkVersioningIgnore, loadManifests } from '../check-versioning-ignore.js';
 import { getWorkspace } from '../lib/pnpm.js';
 
 async function workspaceWithIgnore(update) {
@@ -12,18 +12,32 @@ async function workspaceWithIgnore(update) {
   };
 }
 
+async function manifestsWith(name, update) {
+  const manifests = await loadManifests(await getWorkspace());
+  return manifests.map((manifest) =>
+    manifest.name === name ? { ...manifest, ...update } : manifest,
+  );
+}
+
 describe('checkVersioningIgnore (against the live workspace)', () => {
-  it('passes for the committed pnpm-workspace.yaml', async () => {
+  it('passes for the committed workspace', async () => {
     assert.deepStrictEqual(await checkVersioningIgnore(await getWorkspace()), []);
   });
 
-  it('flags a private package missing from the list', async () => {
-    const workspace = await workspaceWithIgnore((ignore) =>
-      ignore.filter((name) => name !== '@tryghost/shade'),
-    );
+  it('flags a private package carrying a semver version', async () => {
+    const workspace = await getWorkspace();
+    const manifests = await manifestsWith('@tryghost/shade', { version: '0.0.0' });
+
+    assert.deepStrictEqual(await checkVersioningIgnore(workspace, manifests), [
+      '@tryghost/shade: private, so its version must be "private" (found "0.0.0")',
+    ]);
+  });
+
+  it('flags a private package listed in the ignore list', async () => {
+    const workspace = await workspaceWithIgnore((ignore) => [...ignore, '@tryghost/shade']);
 
     assert.deepStrictEqual(await checkVersioningIgnore(workspace), [
-      '@tryghost/shade: private, but missing from versioning.ignore',
+      '@tryghost/shade: private, so it needs no versioning.ignore entry',
     ]);
   });
 
@@ -47,6 +61,15 @@ describe('checkVersioningIgnore (against the live workspace)', () => {
     assert.deepStrictEqual(await checkVersioningIgnore(workspace), [
       '@tryghost/koenig-lexical: published, but listed in versioning.ignore',
       '@tryghost/does-not-exist: listed in versioning.ignore, but not a workspace package',
+    ]);
+  });
+
+  it('flags a published package without a semver version', async () => {
+    const workspace = await getWorkspace();
+    const manifests = await manifestsWith('@tryghost/kg-utils', { version: 'private' });
+
+    assert.deepStrictEqual(await checkVersioningIgnore(workspace, manifests), [
+      '@tryghost/kg-utils: published, but its version "private" is not semver',
     ]);
   });
 });

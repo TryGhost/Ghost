@@ -35,7 +35,7 @@ async function createRepository() {
 function compliantManifest(directory = 'packages/example') {
   return {
     name: '@tryghost/example',
-    version: '0.0.0',
+    version: 'private',
     private: true,
     type: 'module',
     repository: {
@@ -197,7 +197,7 @@ test('reports manifest, export, config and source violations together', async ()
   await writeFile(path.join(packageDirectory, 'test', 'legacy.test.js'), 'export {};\n');
 
   const errors = await checkInternalPackages(rootDirectory);
-  assert.ok(errors.includes('packages/example/package.json: version must be "0.0.0"'));
+  assert.ok(errors.includes('packages/example/package.json: version must be "private"'));
   assert.ok(
     errors.includes(
       'packages/example/package.json: exports.. conditions must be source, types, default in that order',

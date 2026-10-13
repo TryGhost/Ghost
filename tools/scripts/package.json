@@ -1,6 +1,6 @@
 {
   "name": "@internal/scripts",
-  "version": "0.0.0",
+  "version": "private",
   "private": true,
   "description": "Repo automation scripts, invoked from CI workflows and local pnpm aliases",
   "license": "MIT",

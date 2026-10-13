@@ -17,7 +17,7 @@ async function fixture() {
   for (const file of ['cli.ts', 'create-package.ts']) {
     await cp(new URL(`../${file}`, import.meta.url), join(root, 'tools/gx', file));
   }
-  for (const file of ['constants.js', 'package-template.js', 'versioning-ignore.js']) {
+  for (const file of ['constants.js', 'package-template.js']) {
     await cp(
       new URL(`../../scripts/lib/${file}`, import.meta.url),
       join(root, 'tools/scripts/lib', file),
@@ -37,7 +37,7 @@ async function fixture() {
   );
   await writeFile(
     join(root, 'pnpm-workspace.yaml'),
-    "packages:\n  - 'packages/**'\n  - '!packages/_template'\nversioning:\n  ignore:\n    # ignore private packages\n    - '@tryghost/zzz'\n",
+    "packages:\n  - 'packages/**'\n  - '!packages/_template'\n",
   );
   return root;
 }
@@ -77,11 +77,9 @@ test('generates the existing template and registers a nested private package', a
   assert.equal(manifest.description, 'Example package.');
   assert.equal(manifest.repository.directory, 'packages/nested/example');
   assert.equal(manifest.private, true);
+  // The non-semver placeholder keeps the package out of `pnpm version`.
+  assert.equal(manifest.version, 'private');
   assert.equal(manifest.ghostPackage.goldenPath, 'compliant');
-  assert.match(
-    await readFile(join(root, 'pnpm-workspace.yaml'), 'utf8'),
-    /# ignore private packages\n {4}- '@tryghost\/example'\n {4}- '@tryghost\/zzz'/,
-  );
 });
 
 test('preserves the original invalid-name, outside-directory and existing-destination errors', async () => {
