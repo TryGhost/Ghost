@@ -13,7 +13,8 @@
   },
   "dependencies": {
     "@internal/scripts": "workspace:*",
-    "jsonwebtoken": "catalog:"
+    "jsonwebtoken": "catalog:",
+    "semver": "catalog:"
   },
   "devDependencies": {
     "@internal/cfg-eslint": "workspace:*",

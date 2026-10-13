@@ -27,11 +27,10 @@ migrations, understand the size and shape of the existing data first.
 
 ### Creating the migration file
 
-Create a migration file from `ghost`:
+Create a migration file from the repository root:
 
 ```bash
-cd ghost
-pnpm migrate:create <slug>
+pnpm gx generate migration <slug>
 ```
 
 The slug must be kebab-case, for example `add-column-to-posts`. The script:

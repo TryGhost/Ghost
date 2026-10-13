@@ -16,7 +16,7 @@ If you are adding a new table whose shape is still changing, consider marking it
 as in development instead of writing a migration yet; see "New tables still in
 development" in the guide.
 
-1. Create a new, empty migration file: `cd ghost && pnpm migrate:create <kebab-case-slug>`. IMPORTANT: do not create the migration file manually; always use this script to create the initial empty migration file. The slug must be kebab-case (e.g. `add-column-to-posts`).
+1. Create a new, empty migration file: `pnpm gx generate migration <kebab-case-slug>` from the repository root. IMPORTANT: do not create the migration file manually; always use this script to create the initial empty migration file. The slug must be kebab-case (e.g. `add-column-to-posts`).
 2. The above command will create a new directory in `ghost/core/server/data/migrations/versions` if needed, create the empty migration file with the appropriate name, and bump the core and admin package versions to RC if this is the first migration after a release.
 3. Update the migration file with the changes you want to make in the database, following the existing patterns in the codebase. Where appropriate, prefer to use the utility functions in `ghost/core/server/data/migrations/utils/*`.
 4. Update the schema definition file in `ghost/core/server/data/schema/schema.js`, and make sure it aligns with the latest changes from the migration.

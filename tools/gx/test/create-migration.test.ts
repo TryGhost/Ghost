@@ -1,15 +1,13 @@
+import { describe, it, beforeEach, afterEach, test } from 'node:test';
 import assert from 'node:assert/strict';
 import path from 'node:path';
 import fs from 'node:fs';
 import os from 'node:os';
-import {
-  isValidSlug,
-  getTargetMigrationFolder,
-  createMigration,
-  // @ts-expect-error This module lacks type definitions.
-} from '../../../bin/create-migration';
+import { execFileSync, spawnSync } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
+import { isValidSlug, getTargetMigrationFolder, createMigration } from '../create-migration.js';
 
-describe('bin/create-migration', function () {
+describe('gx/create-migration', function () {
   describe('isValidSlug', function () {
     it('accepts valid kebab-case slugs', function () {
       assert.ok(isValidSlug('add-column'));
@@ -85,14 +83,13 @@ describe('bin/create-migration', function () {
       const packageJson: unknown = JSON.parse(
         fs.readFileSync(path.join(dir, 'package.json'), 'utf8'),
       );
-      if (
-        typeof packageJson !== 'object' ||
-        packageJson === null ||
-        !('version' in packageJson) ||
-        typeof packageJson.version !== 'string'
-      ) {
-        throw new Error('Invalid package version');
-      }
+      assert(
+        typeof packageJson === 'object' &&
+          packageJson !== null &&
+          'version' in packageJson &&
+          typeof packageJson.version === 'string',
+        'Invalid package version',
+      );
       return packageJson.version;
     }
 
@@ -237,9 +234,80 @@ describe('bin/create-migration', function () {
       writePackageJson(coreDir, '6.34.1-rc.0');
 
       assert.throws(
-        () => createMigration({ slug: undefined, coreDir, lastPublishedVersion: '6.34.0' }),
+        // Exercise an untyped caller omitting the required slug.
+        () =>
+          Reflect.apply(createMigration, undefined, [{ coreDir, lastPublishedVersion: '6.34.0' }]),
         /Invalid slug/,
       );
     });
   });
+});
+
+test('gx migration uses stable tags and writes into its checkout from another directory', () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'gx-migration-cli-'));
+  try {
+    const gxDir = path.join(root, 'tools/gx');
+    fs.mkdirSync(gxDir, { recursive: true });
+    for (const file of ['cli.ts', 'create-migration.js']) {
+      fs.copyFileSync(new URL(`../${file}`, import.meta.url), path.join(gxDir, file));
+    }
+    fs.symlinkSync(
+      fileURLToPath(new URL('../node_modules', import.meta.url)),
+      path.join(gxDir, 'node_modules'),
+    );
+    fs.writeFileSync(path.join(root, 'package.json'), JSON.stringify({ type: 'module' }));
+    fs.mkdirSync(path.join(root, 'ghost'));
+    fs.writeFileSync(
+      path.join(root, 'ghost/package.json'),
+      JSON.stringify({ version: '6.34.1-rc.0' }),
+    );
+    execFileSync('git', ['init', '--quiet'], { cwd: root });
+    execFileSync(
+      'git',
+      [
+        '-c',
+        'user.name=Test',
+        '-c',
+        'user.email=test@example.com',
+        'commit',
+        '--allow-empty',
+        '--quiet',
+        '-m',
+        'fixture',
+      ],
+      { cwd: root },
+    );
+    execFileSync('git', ['tag', 'v6.34.0'], { cwd: root });
+    execFileSync('git', ['tag', 'v6.99.0-rc.0'], { cwd: root });
+    const cli = path.join(gxDir, 'cli.ts');
+    const result = spawnSync(process.execPath, [cli, 'generate', 'migration', 'add-example'], {
+      cwd: os.tmpdir(),
+      encoding: 'utf8',
+    });
+    assert.equal(result.status, 0, result.stderr);
+    const folder = path.join(root, 'ghost/core/server/data/migrations/versions/6.35');
+    assert.match(
+      fs.readdirSync(folder)[0] ?? '',
+      /^\d{4}-\d{2}-\d{2}-\d{2}-\d{2}-\d{2}-add-example\.js$/,
+    );
+    assert.equal(
+      JSON.parse(fs.readFileSync(path.join(root, 'ghost/package.json'), 'utf8')).version,
+      '6.35.0-rc.0',
+    );
+    const usage = spawnSync(process.execPath, [cli, 'generate', 'migration'], {
+      cwd: os.tmpdir(),
+      encoding: 'utf8',
+    });
+    assert.equal(usage.status, 1);
+    assert.match(usage.stderr, /pnpm gx generate migration/);
+    const invalid = spawnSync(process.execPath, [cli, 'generate', 'migration', 'INVALID'], {
+      cwd: os.tmpdir(),
+      encoding: 'utf8',
+    });
+    assert.equal(invalid.status, 1);
+    assert.match(invalid.stderr, /Invalid slug/);
+    assert.equal(fs.readdirSync(folder).length, 1);
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
 });
