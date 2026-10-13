@@ -20,12 +20,13 @@ Each contract is its own entry point, so a consumer only loads the one it uses.
 | ---------------------------------- | ------------------------------------------------------------------ |
 | `@tryghost/app-contracts`          | Types, and rules and limits that depend on nothing (`isLocalhost`) |
 | `@tryghost/app-contracts/manifest` | The app manifest and its validation                                |
+| `@tryghost/app-contracts/bridge`   | The channel between Admin and an app's page, and its validation    |
 
 The root entry point must stay free of `zod`: some consumers ship to browsers
 that never validate anything. A lint rule enforces it.
 
-A new contract, such as the bridge between admin and an app's page, gets its own
-folder under `src/` and its own entry point.
+A new contract, such as cards, gets its own folder under `src/` and its own
+entry point.
 
 ## The manifest
 
@@ -148,6 +149,34 @@ compareManifests(
 //   changes: [{ path: 'surfaces[0].url', requiresApproval: true }],
 //   requiresApproval: true,
 // }
+```
+
+## The bridge
+
+Admin frames an app's page and talks to it over a `MessagePort`. The page's SDK
+posts a `ghost-app:hello` to `window.parent`; Admin checks the sender is the
+frame and its origin is the surface's, and answers with a `ghost-app:connect`
+carrying the port. Over it, each side exposes named calls: `HostExports` are
+what an app may ask of Admin (`fetch`, `titleChanged`, `pathChanged`, `open`),
+`AppExports` what Admin tells the app (`start`, `themeChanged`, `pathChanged`).
+
+The frame is untrusted, so Admin parses every argument with the schemas here
+(`FetchRequestSchema`, `AppPathSchema`, `TitleSchema`, `PlaceSchema`, …) before
+acting. Nothing is versioned: Admin only adds calls and optional fields.
+
+`fetch` takes an Admin API path, never a URL. Admin resolves it with
+`resolveAdminApiPath(path, apiRoot)`, which returns `null` for anything that
+leaves the API root, and refuses what `isBlockedAdminApiPath(pathname)` blocks:
+the routes that hand out credentials, change who can sign in, or act on the
+whole site. `ADMIN_API_BLOCKLIST` lists them by category, each with its reason.
+
+```ts
+import { isBlockedAdminApiPath, resolveAdminApiPath } from '@tryghost/app-contracts/bridge';
+
+const root = new URL('https://site.example/ghost/api/admin/');
+const url = resolveAdminApiPath('/posts/?limit=5', root); // …/ghost/api/admin/posts/?limit=5
+const pathname = url && url.pathname.slice(root.pathname.length - 1); // /posts/
+const allowed = pathname !== null && !isBlockedAdminApiPath(pathname);
 ```
 
 ## Develop

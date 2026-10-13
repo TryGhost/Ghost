@@ -1,8 +1,9 @@
 /**
  * The contracts between Ghost and apps.
  *
- * Each contract is its own entry point (`@tryghost/app-contracts/manifest`, and later the
- * bridge, cards and live frames), so a consumer only loads the one it uses.
+ * Each contract is its own entry point (`@tryghost/app-contracts/manifest`,
+ * `@tryghost/app-contracts/bridge`, and later cards and live frames), so a consumer only
+ * loads the one it uses.
  *
  * This root entry point holds what every consumer can afford: types, and the rules that
  * depend on nothing. It must stay free of zod, because some consumers ship to browsers
@@ -31,3 +32,18 @@ export type {
   ParseManifestResult,
   ParseManifestUrlResult,
 } from './manifest/index.ts';
+export type {
+  AppExports,
+  AppPath,
+  BlockedAdminApiCategory,
+  ConnectMessage,
+  FetchMethod,
+  FetchRequest,
+  FetchResponse,
+  HelloMessage,
+  HostExports,
+  PathChangeOptions,
+  Place,
+  StartContext,
+  Theme,
+} from './bridge/index.ts';
