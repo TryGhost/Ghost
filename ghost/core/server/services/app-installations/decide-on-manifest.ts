@@ -43,7 +43,16 @@ export function changesFrom(approved: Approved, loaded: LoadedManifest): AppMani
  * This is what Ghost would do with a manifest it picked up by itself. An approval acts on
  * the same decision, but applies what the publisher reviewed whatever it needed.
  */
-export type ManifestDecision = 'unchanged' | 'use_pending' | 'apply' | 'suspend';
+export type ManifestDecisionKind = 'unchanged' | 'use_pending' | 'apply' | 'suspend';
+
+/**
+ * A decision, with what differs from the approved manifest that it was made from, so
+ * keeping the manifest doesn't compare the two again.
+ */
+export interface ManifestDecision {
+  kind: ManifestDecisionKind;
+  changes: AppManifestChange[];
+}
 
 export function decideOnManifest({
   current,
@@ -55,12 +64,15 @@ export function decideOnManifest({
   pending: { digest: string } | null;
   loaded: LoadedManifest;
 }): ManifestDecision {
-  if (pending && pending.digest === loaded.digest) {
-    return 'use_pending';
-  }
   const changes = changesFrom(current, loaded);
-  if (changes.length === 0) {
-    return pending ? 'apply' : 'unchanged';
+  if (pending && pending.digest === loaded.digest) {
+    return { kind: 'use_pending', changes };
   }
-  return changes.some((change) => change.requires_approval) ? 'suspend' : 'apply';
+  if (changes.length === 0) {
+    return { kind: pending ? 'apply' : 'unchanged', changes };
+  }
+  return {
+    kind: changes.some((change) => change.requires_approval) ? 'suspend' : 'apply',
+    changes,
+  };
 }

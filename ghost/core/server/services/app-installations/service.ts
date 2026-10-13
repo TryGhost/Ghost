@@ -170,9 +170,11 @@ async function pendingManifest(
 }
 
 /**
- * Keeps a loaded manifest as `decision` says, inside the transaction that locked the
- * installation and read `current`. The one write behind both an approval and the re-check
- * at app session start, so the two cannot keep the same manifest differently.
+ * Keeps a loaded manifest as the decision on it says, inside the transaction that locked
+ * the installation and read `current`. The decision was made from `current` there too, and
+ * carries the changes it found, so the manifests are compared once. The one write behind
+ * both an approval and the re-check at app session start, so the two cannot keep the same
+ * manifest differently.
  *
  * `source` says who decided. Ghost on its own (`update`) applies silent changes and lets
  * changes that need approval wait, suspending the installation. A publisher's approval
@@ -187,19 +189,19 @@ async function keepManifest(
   trx: Knex.Transaction,
   current: CurrentInstallation,
   loaded: LoadedManifest,
-  decision: ManifestDecision,
+  { kind, changes }: ManifestDecision,
   source: 'approval' | 'update',
 ): Promise<{ from: string; to: string } | null> {
-  if (decision === 'unchanged' || (decision === 'use_pending' && source === 'update')) {
+  if (kind === 'unchanged' || (kind === 'use_pending' && source === 'update')) {
     return null;
   }
-  const waits = decision === 'suspend' && source === 'update';
+  const waits = kind === 'suspend' && source === 'update';
   const now = toDatabaseDate(new Date());
 
   let manifestId = current.manifest_id;
-  if (decision === 'use_pending' && current.pending_manifest_id !== null) {
+  if (kind === 'use_pending' && current.pending_manifest_id !== null) {
     manifestId = current.pending_manifest_id;
-  } else if (changesFrom(current, loaded).length > 0) {
+  } else if (changes.length > 0) {
     manifestId = new ObjectId().toHexString();
     await trx(MANIFESTS).insert({
       id: manifestId,
@@ -208,7 +210,7 @@ async function keepManifest(
       manifest: loaded.serialised,
       digest: loaded.digest,
       source,
-      requires_approval: decision === 'suspend',
+      requires_approval: kind === 'suspend',
       created_at: now,
     });
   }
