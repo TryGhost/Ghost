@@ -20,7 +20,7 @@ function deleteBuildArtifacts() {
 // Other checkouts' worktrees inside this one, e.g. Claude Code's .claude/worktrees
 function nestedWorktrees() {
   try {
-    const git = (...args) => execFileSync('git', args, { encoding: 'utf8' }).trim();
+    const git = (...args: string[]) => execFileSync('git', args, { encoding: 'utf8' }).trim();
     const root = git('rev-parse', '--show-toplevel');
     return git('worktree', 'list', '--porcelain')
       .split('\n')

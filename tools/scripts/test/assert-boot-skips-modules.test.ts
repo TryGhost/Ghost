@@ -10,7 +10,7 @@ import { findLoadedModules, NOT_AT_BOOT } from '../lib/boot-modules.ts';
 const PRELOAD = path.join(ROOT_DIR, 'tools/scripts/assert-boot-skips-modules.ts');
 const CORE_DIR = path.join(ROOT_DIR, 'ghost');
 
-const run = (code) =>
+const run = (code: string) =>
   spawnSync(process.execPath, ['--import', PRELOAD, '-e', code], {
     cwd: CORE_DIR,
     encoding: 'utf8',

@@ -11,12 +11,31 @@
 import fs from 'node:fs/promises';
 import { parseArgs } from 'node:util';
 
-/**
- * @typedef {{files: number, bytes: number}} Stats
- * @typedef {{profile: string, total: Stats, packages: Record<string, Stats>}} Report
- */
+export interface Stats {
+  files: number;
+  bytes: number;
+}
 
-const EMPTY = { files: 0, bytes: 0 };
+export interface Report {
+  profile: string;
+  total: Stats;
+  packages: Record<string, Stats>;
+}
+
+export interface PackageDelta {
+  id: string;
+  bytes: number;
+  files: number;
+  status: 'added' | 'removed' | 'changed';
+}
+
+export interface DuplicateInstances {
+  identity: string;
+  instances: string[];
+  bytes: number;
+}
+
+const EMPTY: Stats = { files: 0, bytes: 0 };
 
 /** Packages listed individually in the diff table. */
 const TOP_N = 15;
@@ -30,10 +49,9 @@ const TOP_N = 15;
  * family carry one in the name — so find the version separator first. A scoped
  * name is written `@scope+pkg`, which puts its own `@` in front of the version's.
  *
- * @param {string} id - a virtual store directory name, e.g. `viem@2.55.11_zod@3.25.76`
- * @returns {string}
+ * `id` is a virtual store directory name, e.g. `viem@2.55.11_zod@3.25.76`.
  */
-export function identityOf(id) {
+export function identityOf(id: string): string {
   const versionAt = id.indexOf('@', id.startsWith('@') ? 1 : 0);
   if (versionAt === -1) {
     return id;
@@ -43,24 +61,18 @@ export function identityOf(id) {
   return suffixAt === -1 ? id : id.slice(0, suffixAt);
 }
 
-const mib = (bytes) => `${(bytes / 1024 / 1024).toFixed(1)} MiB`;
-const signed = (value, format) =>
+const mib = (bytes: number) => `${(bytes / 1024 / 1024).toFixed(1)} MiB`;
+const signed = (value: number, format: (value: number) => string) =>
   `${value > 0 ? '+' : value < 0 ? '−' : '±'}${format(Math.abs(value))}`;
-const signedMib = (bytes) => signed(bytes, mib);
-const signedCount = (count) => signed(count, String);
+const signedMib = (bytes: number) => signed(bytes, mib);
+const signedCount = (count: number) => signed(count, String);
 
-/**
- * Per-package deltas, largest absolute byte change first.
- *
- * @param {Report} current
- * @param {Report} baseline
- * @returns {Array<{id: string, bytes: number, files: number, status: 'added'|'removed'|'changed'}>}
- */
-export function diffPackages(current, baseline) {
+/** Per-package deltas, largest absolute byte change first. */
+export function diffPackages(current: Report, baseline: Report): PackageDelta[] {
   const ids = new Set([...Object.keys(current.packages), ...Object.keys(baseline.packages)]);
 
   return [...ids]
-    .map((id) => {
+    .map((id): PackageDelta => {
       const now = current.packages[id] ?? EMPTY;
       const before = baseline.packages[id] ?? EMPTY;
       const status = !(id in baseline.packages)
@@ -77,13 +89,9 @@ export function diffPackages(current, baseline) {
 /**
  * Packages unpacked more than once because a peer forked them. Reported for the
  * current build only — it is a standing property of the tree, not a delta.
- *
- * @param {Report} report
- * @returns {Array<{identity: string, instances: string[], bytes: number}>}
  */
-export function duplicateInstances(report) {
-  /** @type {Map<string, string[]>} */
-  const byIdentity = new Map();
+export function duplicateInstances(report: Report): DuplicateInstances[] {
+  const byIdentity = new Map<string, string[]>();
   for (const id of Object.keys(report.packages)) {
     if (id === '(app)') {
       continue;
@@ -99,7 +107,7 @@ export function duplicateInstances(report) {
       instances: instances.sort(),
       // What deduplicating would save: everything past the first copy.
       bytes: instances
-        .map((id) => report.packages[id].bytes)
+        .map((id) => report.packages[id]?.bytes ?? 0)
         .sort((a, b) => b - a)
         .slice(1)
         .reduce((sum, bytes) => sum + bytes, 0),
@@ -107,13 +115,11 @@ export function duplicateInstances(report) {
     .sort((a, b) => b.bytes - a.bytes);
 }
 
-/**
- * @param {Report} current
- * @param {Report | null} baseline
- * @param {{baselineLabel?: string}} [options]
- * @returns {string}
- */
-export function render(current, baseline, { baselineLabel = 'base' } = {}) {
+export function render(
+  current: Report,
+  baseline: Report | null,
+  { baselineLabel = 'base' }: { baselineLabel?: string | undefined } = {},
+): string {
   const lines = ['## Production dependency size', ''];
 
   if (baseline) {
@@ -178,7 +184,7 @@ export function render(current, baseline, { baselineLabel = 'base' } = {}) {
   return lines.join('\n');
 }
 
-const readReport = async (file) => {
+const readReport = async (file: string): Promise<Report | null> => {
   try {
     return JSON.parse(await fs.readFile(file, 'utf8'));
   } catch {

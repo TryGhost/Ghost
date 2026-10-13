@@ -8,7 +8,43 @@ import { applyPackageTemplateTokens, isValidPackageName } from './lib/package-te
 
 const execFileAsync = promisify(execFile);
 
-const GOLDEN_PATH_STATUSES = new Set(['compliant', 'migration', 'exempt']);
+// Shapes read from untrusted JSON; every field is validated before use.
+type JsonObject = Record<string, unknown>;
+
+interface PackageManifest {
+  name?: unknown;
+  version?: unknown;
+  private?: unknown;
+  type?: unknown;
+  author?: unknown;
+  license?: unknown;
+  repository?: { type?: unknown; url?: unknown; directory?: unknown };
+  publishConfig?: unknown;
+  files?: unknown;
+  exports?: unknown;
+  main?: unknown;
+  types?: unknown;
+  scripts?: JsonObject;
+  dependencies?: JsonObject;
+  devDependencies?: JsonObject;
+  optionalDependencies?: JsonObject;
+  peerDependencies?: JsonObject;
+  nx?: { targets?: { build?: { outputs?: unknown } } };
+  ghostPackage?: { goldenPath?: unknown; reason?: unknown };
+}
+
+interface TsConfig {
+  extends?: unknown;
+  compilerOptions?: { rootDir?: unknown; outDir?: unknown; noEmit?: unknown };
+  include?: unknown;
+}
+
+interface WorkspacePackage {
+  name?: string;
+  path: string;
+}
+
+const GOLDEN_PATH_STATUSES = new Set<unknown>(['compliant', 'migration', 'exempt']);
 // These expectations intentionally remain independent of packages/_template.
 // Deriving them from the template would allow accidental template drift to
 // redefine the contract and approve itself.
@@ -33,7 +69,7 @@ const REQUIRED_DEV_DEPENDENCIES = {
   vitest: 'catalog:',
 };
 
-async function exists(filePath) {
+async function exists(filePath: string): Promise<boolean> {
   try {
     await stat(filePath);
     return true;
@@ -42,20 +78,20 @@ async function exists(filePath) {
   }
 }
 
-async function readJson(filePath) {
+async function readJson(filePath: string): Promise<unknown> {
   return JSON.parse(await readFile(filePath, 'utf8'));
 }
 
-async function listWorkspacePackages(rootDirectory) {
+async function listWorkspacePackages(rootDirectory: string): Promise<WorkspacePackage[]> {
   const { stdout } = await execFileAsync('pnpm', ['m', 'ls', '--depth', '-1', '--json'], {
     cwd: rootDirectory,
     maxBuffer: 10 * 1024 * 1024,
   });
 
-  return JSON.parse(stdout);
+  return JSON.parse(stdout) as WorkspacePackage[];
 }
 
-function sameArray(actual, expected) {
+function sameArray(actual: unknown, expected: readonly unknown[]): boolean {
   return (
     Array.isArray(actual) &&
     actual.length === expected.length &&
@@ -63,13 +99,19 @@ function sameArray(actual, expected) {
   );
 }
 
-function addExactValueError(errors, manifestPath, actual, expected, field) {
+function addExactValueError(
+  errors: string[],
+  manifestPath: string,
+  actual: unknown,
+  expected: unknown,
+  field: string,
+) {
   if (actual !== expected) {
     errors.push(`${manifestPath}: ${field} must be ${JSON.stringify(expected)}`);
   }
 }
 
-function usesStandardConfigFactory(config, moduleName, factoryName) {
+function usesStandardConfigFactory(config: string, moduleName: string, factoryName: string) {
   const importPattern = new RegExp(
     `^\\s*import\\s*\\{\\s*${factoryName}\\s*\\}\\s*from\\s*['"]${moduleName}['"];?\\s*$`,
     'm',
@@ -78,12 +120,12 @@ function usesStandardConfigFactory(config, moduleName, factoryName) {
   return importPattern.test(config) && exportPattern.test(config);
 }
 
-async function findJavaScriptFiles(directory) {
+async function findJavaScriptFiles(directory: string): Promise<string[]> {
   if (!(await exists(directory))) {
     return [];
   }
 
-  const files = [];
+  const files: string[] = [];
   for (const entry of await readdir(directory, { withFileTypes: true })) {
     const entryPath = path.join(directory, entry.name);
     if (entry.isDirectory()) {
@@ -95,7 +137,11 @@ async function findJavaScriptFiles(directory) {
   return files;
 }
 
-async function validateConfigFiles(packageDirectory, manifestPath, errors) {
+async function validateConfigFiles(
+  packageDirectory: string,
+  manifestPath: string,
+  errors: string[],
+) {
   const tsconfigPath = path.join(packageDirectory, 'tsconfig.json');
   const testTsconfigPath = path.join(packageDirectory, 'test', 'tsconfig.json');
   const eslintPath = path.join(packageDirectory, 'eslint.config.mjs');
@@ -109,7 +155,7 @@ async function validateConfigFiles(packageDirectory, manifestPath, errors) {
 
   if (await exists(tsconfigPath)) {
     try {
-      const config = await readJson(tsconfigPath);
+      const config = (await readJson(tsconfigPath)) as TsConfig;
       addExactValueError(
         errors,
         manifestPath,
@@ -135,13 +181,13 @@ async function validateConfigFiles(packageDirectory, manifestPath, errors) {
         errors.push(`${manifestPath}: tsconfig.json include must be ["src/**/*"]`);
       }
     } catch (error) {
-      errors.push(`${manifestPath}: invalid tsconfig.json (${error.message})`);
+      errors.push(`${manifestPath}: invalid tsconfig.json (${(error as Error).message})`);
     }
   }
 
   if (await exists(testTsconfigPath)) {
     try {
-      const config = await readJson(testTsconfigPath);
+      const config = (await readJson(testTsconfigPath)) as TsConfig;
       addExactValueError(
         errors,
         manifestPath,
@@ -167,7 +213,7 @@ async function validateConfigFiles(packageDirectory, manifestPath, errors) {
         errors.push(`${manifestPath}: test/tsconfig.json include must be ["../src/**/*", "**/*"]`);
       }
     } catch (error) {
-      errors.push(`${manifestPath}: invalid test/tsconfig.json (${error.message})`);
+      errors.push(`${manifestPath}: invalid test/tsconfig.json (${(error as Error).message})`);
     }
   }
 
@@ -196,11 +242,17 @@ async function validateCompliantPackage({
   manifest,
   workspaceNames,
   packagePath: explicitPackagePath,
-}) {
+}: {
+  rootDirectory: string;
+  packageDirectory: string;
+  manifest: PackageManifest;
+  workspaceNames: Set<string>;
+  packagePath?: string;
+}): Promise<string[]> {
   const manifestPath = path.relative(rootDirectory, path.join(packageDirectory, 'package.json'));
   const packagePath =
     explicitPackagePath ?? path.relative(rootDirectory, packageDirectory).split(path.sep).join('/');
-  const errors = [];
+  const errors: string[] = [];
 
   if (
     typeof manifest.name !== 'string' ||
@@ -241,11 +293,12 @@ async function validateCompliantPackage({
   if (!exports || typeof exports !== 'object' || Array.isArray(exports)) {
     errors.push(`${manifestPath}: exports must define explicit entry points`);
   } else {
-    for (const [entryPoint, conditions] of Object.entries(exports)) {
-      if (!conditions || typeof conditions !== 'object' || Array.isArray(conditions)) {
+    for (const [entryPoint, entry] of Object.entries(exports)) {
+      if (!entry || typeof entry !== 'object' || Array.isArray(entry)) {
         errors.push(`${manifestPath}: exports.${entryPoint} must be an object`);
         continue;
       }
+      const conditions = entry as JsonObject;
 
       if (!sameArray(Object.keys(conditions), ['source', 'types', 'default'])) {
         errors.push(
@@ -260,14 +313,15 @@ async function validateCompliantPackage({
         }
       }
 
-      const sourceMatch =
-        typeof conditions.source === 'string' && /^\.\/src\/(.+)\.ts$/.exec(conditions.source);
-      if (!sourceMatch || sourceMatch[1].split('/').includes('..')) {
+      const sourceStem =
+        typeof conditions.source === 'string'
+          ? /^\.\/src\/(.+)\.ts$/.exec(conditions.source)?.[1]
+          : undefined;
+      if (sourceStem === undefined || sourceStem.split('/').includes('..')) {
         errors.push(`${manifestPath}: exports.${entryPoint}.source must point to ./src/<path>.ts`);
         continue;
       }
 
-      const sourceStem = sourceMatch[1];
       addExactValueError(
         errors,
         manifestPath,
@@ -282,14 +336,14 @@ async function validateCompliantPackage({
         `./build/${sourceStem}.js`,
         `exports.${entryPoint}.default`,
       );
-      if (!(await exists(path.join(packageDirectory, conditions.source)))) {
+      if (!(await exists(path.join(packageDirectory, conditions.source as string)))) {
         errors.push(
-          `${manifestPath}: exports.${entryPoint}.source does not exist (${conditions.source})`,
+          `${manifestPath}: exports.${entryPoint}.source does not exist (${conditions.source as string})`,
         );
       }
     }
 
-    const rootExport = exports['.'];
+    const rootExport = (exports as JsonObject)['.'] as JsonObject | undefined;
     if (!rootExport) {
       errors.push(`${manifestPath}: exports must define the "." entry point`);
     } else {
@@ -341,7 +395,7 @@ async function validateCompliantPackage({
     'devDependencies',
     'optionalDependencies',
     'peerDependencies',
-  ]) {
+  ] as const) {
     for (const [dependency, version] of Object.entries(manifest[section] ?? {})) {
       if (
         dependency !== manifest.name &&
@@ -369,33 +423,39 @@ async function validateCompliantPackage({
   return errors;
 }
 
-export async function checkInternalPackages(rootDirectory) {
+export async function checkInternalPackages(rootDirectory: string): Promise<string[]> {
   rootDirectory = await realpath(rootDirectory);
   const packagesDirectory = path.join(rootDirectory, 'packages');
   let workspacePackages;
   try {
     workspacePackages = await listWorkspacePackages(rootDirectory);
   } catch (error) {
-    const detail = error.stderr?.trim() || error.message;
+    const { stderr, message } = error as Error & { stderr?: string };
+    const detail = stderr?.trim() || message;
     return [`Unable to list pnpm workspace packages (${detail})`];
   }
   const packageDirectories = workspacePackages
     .map((workspace) => workspace.path)
     .filter((directory) => directory.startsWith(`${packagesDirectory}${path.sep}`))
     .sort();
-  const packages = [];
-  const errors = [];
+  const packages: { packageDirectory: string; manifest: PackageManifest }[] = [];
+  const errors: string[] = [];
 
   for (const packageDirectory of packageDirectories) {
     const manifestPath = path.join(packageDirectory, 'package.json');
     try {
-      packages.push({ packageDirectory, manifest: await readJson(manifestPath) });
+      packages.push({
+        packageDirectory,
+        manifest: (await readJson(manifestPath)) as PackageManifest,
+      });
     } catch (error) {
-      errors.push(`${path.relative(rootDirectory, manifestPath)}: invalid JSON (${error.message})`);
+      errors.push(
+        `${path.relative(rootDirectory, manifestPath)}: invalid JSON (${(error as Error).message})`,
+      );
     }
   }
 
-  const workspaceNames = new Set();
+  const workspaceNames = new Set<string>();
   for (const workspace of workspacePackages) {
     if (workspace.name) {
       workspaceNames.add(workspace.name);
@@ -427,7 +487,7 @@ export async function checkInternalPackages(rootDirectory) {
 
     if (status === 'migration' || status === 'exempt') {
       if (
-        typeof pkg.manifest.ghostPackage.reason !== 'string' ||
+        typeof pkg.manifest.ghostPackage?.reason !== 'string' ||
         pkg.manifest.ghostPackage.reason.trim().length === 0
       ) {
         errors.push(
@@ -448,7 +508,7 @@ export async function checkInternalPackages(rootDirectory) {
   }
 
   const templateManifestPath = path.join(packagesDirectory, '_template', 'package.json');
-  let templateManifest;
+  let templateManifest: PackageManifest | undefined;
   try {
     const templateManifestSource = await readFile(templateManifestPath, 'utf8');
     templateManifest = JSON.parse(
@@ -457,9 +517,11 @@ export async function checkInternalPackages(rootDirectory) {
         directory: 'packages/template',
         description: 'Template package',
       }),
-    );
+    ) as PackageManifest;
   } catch (error) {
-    errors.push(`packages/_template/package.json: unreadable or invalid JSON (${error.message})`);
+    errors.push(
+      `packages/_template/package.json: unreadable or invalid JSON (${(error as Error).message})`,
+    );
   }
 
   if (templateManifest) {

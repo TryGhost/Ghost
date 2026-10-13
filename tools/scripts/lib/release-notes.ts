@@ -10,7 +10,7 @@ const EMOJI_ORDER = ['💡', '🐛', '🎨', '✨', '🔒'];
 // User-facing emojis — only these are included in release notes
 const USER_FACING_EMOJIS = new Set(EMOJI_ORDER);
 
-function getCommitLog(fromTag, toTag) {
+function getCommitLog(fromTag: string, toTag: string): string[] {
   const range = `${fromTag}..${toTag}`;
   const format = '* %s - %an';
   // --first-parent keeps us on the mainline: PRs are squash-merged, so every
@@ -34,13 +34,13 @@ function getCommitLog(fromTag, toTag) {
   return log.split('\n').map((line) => line.trim());
 }
 
-function extractLeadingEmoji(line) {
+function extractLeadingEmoji(line: string): string {
   // Line format: * <message> - <author>
   const match = line.match(/^\* (.)/u);
-  return match ? match[1] : '';
+  return match?.[1] ?? '';
 }
 
-function filterAndSortByEmoji(lines) {
+function filterAndSortByEmoji(lines: string[]): string[] {
   const emojiLines = lines.filter((line) => {
     const emoji = extractLeadingEmoji(line);
     return USER_FACING_EMOJIS.has(emoji);
@@ -57,7 +57,7 @@ function filterAndSortByEmoji(lines) {
   return emojiLines;
 }
 
-export function generateReleaseNotes(fromTag, toTag) {
+export function generateReleaseNotes(fromTag: string, toTag: string): string {
   const lines = getCommitLog(fromTag, toTag);
   const filtered = filterAndSortByEmoji(lines);
 
@@ -74,12 +74,12 @@ export function generateReleaseNotes(fromTag, toTag) {
   return body;
 }
 
-// CLI: node release-notes.js <from-tag> <to-tag>
+// CLI: node release-notes.ts <from-tag> <to-tag>
 if (import.meta.main) {
   const [fromTag, toTag] = process.argv.slice(2);
 
   if (!fromTag || !toTag) {
-    console.error('Usage: node release-notes.js <from-tag> <to-tag>');
+    console.error('Usage: node release-notes.ts <from-tag> <to-tag>');
     process.exit(1);
   }
 

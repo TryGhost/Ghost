@@ -13,7 +13,9 @@
 
 import { PUBLIC_APPS, readDefaults } from './lib/public-apps.ts';
 
-const DEFAULTS = await readDefaults();
+type DefaultsEntry = Record<string, unknown>;
+
+const DEFAULTS = (await readDefaults()) as Record<string, DefaultsEntry | undefined>;
 
 // defaults.json pins each app to a major.minor and interpolates it into the
 // URLs as {version}. The publish job knows the version it just released, so we
@@ -28,23 +30,22 @@ const VERSION_PLACEHOLDER = '{version}';
  * list cannot silently fall behind: an app that starts shipping a stylesheet
  * has to be declared here or the feature breaks visibly. Every string field
  * holding a URL counts — `url` for all of them, plus `styles` for sodo-search.
- *
- * @param {Record<string, string>} configEntry - a defaults.json app entry
- * @returns {string[]}
  */
-export function cdnPathsFor(configEntry) {
+export function cdnPathsFor(configEntry: DefaultsEntry): string[] {
   return Object.values(configEntry)
-    .filter((value) => typeof value === 'string' && value.startsWith('https://'))
+    .filter((value): value is string => typeof value === 'string' && value.startsWith('https://'))
     .map((url) => url.replaceAll(VERSION_PLACEHOLDER, 'CURRENT_MINOR'));
 }
 
-/**
- * @param {string[]} affectedProjects - nx project names affected in this run
- * @returns {Array<{package_name: string, package_path: string, cdn_paths: string}>}
- *   matrix entries with cdn_paths flattened to the newline-delimited string the
- *   publish job's purge step expects.
- */
-export function buildMatrix(affectedProjects) {
+export interface MatrixEntry {
+  package_name: string;
+  package_path: string;
+  // Newline-delimited, as the publish job's purge step expects.
+  cdn_paths: string;
+}
+
+/** `affectedProjects` are the nx project names affected in this run. */
+export function buildMatrix(affectedProjects: string[]): MatrixEntry[] {
   const affected = new Set(affectedProjects);
   return PUBLIC_APPS.filter((app) => affected.has(app.packageName)).map((app) => {
     const configEntry = DEFAULTS[app.configKey];
@@ -75,11 +76,11 @@ export function buildMatrix(affectedProjects) {
 function main() {
   const raw = process.argv[2] || '[]';
 
-  let affectedProjects;
+  let affectedProjects: unknown;
   try {
     affectedProjects = JSON.parse(raw);
   } catch (error) {
-    throw new Error(`Invalid affected-projects JSON: ${error.message}`);
+    throw new Error(`Invalid affected-projects JSON: ${(error as Error).message}`);
   }
 
   if (!Array.isArray(affectedProjects)) {
@@ -94,7 +95,7 @@ if (import.meta.main) {
   try {
     main();
   } catch (error) {
-    console.error(error.message);
+    console.error((error as Error).message);
     process.exit(1);
   }
 }

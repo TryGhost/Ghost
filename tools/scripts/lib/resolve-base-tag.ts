@@ -1,6 +1,11 @@
 import { execSync } from 'node:child_process';
 import semver from 'semver';
 
+export interface BaseTag {
+  tag: string;
+  isPrerelease: boolean;
+}
+
 /**
  * Resolve the base git tag for diff/log comparisons during release preparation.
  *
@@ -8,11 +13,10 @@ import semver from 'semver';
  * For prerelease versions (e.g. "6.19.0-rc.0"), the tag "v6.19.0-rc.0" won't exist,
  * so we find the most recent stable version tag in HEAD's ancestry using git describe.
  *
- * @param {string} version - The current Ghost version from package.json
- * @param {string} repoDir - Path to the Ghost repo checkout
- * @returns {{tag: string, isPrerelease: boolean}}
+ * @param version - The current Ghost version from package.json
+ * @param repoDir - Path to the Ghost repo checkout
  */
-export function resolveBaseTag(version, repoDir) {
+export function resolveBaseTag(version: string, repoDir: string): BaseTag {
   if (semver.prerelease(version)) {
     const tag = execSync(
       `git describe --tags --abbrev=0 --match 'v[0-9]*.[0-9]*.[0-9]*' --exclude 'v*-*' HEAD`,

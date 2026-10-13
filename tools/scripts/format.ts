@@ -2,10 +2,10 @@
 // generic and call shapes) only stabilise on a second pass, so a single format
 // could pass the pre-commit hook and still fail `format:check` in CI. Format,
 // then re-format once more if a check of the same paths reports drift.
-import { spawnSync } from 'node:child_process';
+import { spawnSync, type StdioOptions } from 'node:child_process';
 
 const args = process.argv.slice(2);
-const oxfmt = (extraArgs, stdio) =>
+const oxfmt = (extraArgs: string[], stdio: StdioOptions) =>
   spawnSync('pnpm', ['exec', 'oxfmt', ...extraArgs, ...args], { stdio }).status ?? 1;
 
 let status = oxfmt([], 'inherit');

@@ -1,10 +1,36 @@
 import fs from 'node:fs/promises';
 import { parseArgs, stripVTControlCharacters } from 'node:util';
 
+// The subset of Vitest's JSON reporter output read here.
+export interface AssertionResult {
+  fullName: string;
+  status: string;
+  duration?: number | null;
+  failureMessages?: string[];
+}
+
+export interface TestFileResult {
+  name: string;
+  status: string;
+  message?: string;
+  startTime: number;
+  endTime: number;
+  assertionResults: AssertionResult[];
+}
+
+export interface VitestReport {
+  startTime: number;
+  numPassedTests: number;
+  numFailedTests: number;
+  numPendingTests: number;
+  numTodoTests: number;
+  testResults: TestFileResult[];
+}
+
 const LIMIT = 10;
-const seconds = (milliseconds) => `${(milliseconds / 1000).toFixed(1)}s`;
+const seconds = (milliseconds: number) => `${(milliseconds / 1000).toFixed(1)}s`;
 // Report content comes from the tests, including PR-authored names and errors.
-const cell = (value) =>
+const cell = (value: unknown) =>
   stripVTControlCharacters(String(value))
     .replaceAll('&', '&amp;')
     .replaceAll('<', '&lt;')
@@ -16,11 +42,11 @@ const cell = (value) =>
     .replaceAll('[', '&#91;')
     .replaceAll(']', '&#93;')
     .replace(/\s+/g, ' ');
-const relativeFile = (file) => file.replaceAll('\\', '/').split('/apps/admin/').at(-1);
-const duration = (assertion) => Math.max(0, assertion.duration ?? 0);
+const relativeFile = (file: string) => file.replaceAll('\\', '/').split('/apps/admin/').at(-1);
+const duration = (assertion: AssertionResult) => Math.max(0, assertion.duration ?? 0);
 
 /** Render Vitest's JSON report as a bounded GitHub Actions step summary. */
-export function render(report, shard = '') {
+export function render(report: VitestReport | null, shard = ''): string {
   const heading = `## React Admin acceptance${shard ? ` (shard ${cell(shard)})` : ''}`;
   if (!report) {
     return `${heading}\n\nNo JSON report was produced. Check the setup and test step logs.\n`;
@@ -119,11 +145,11 @@ if (import.meta.main) {
   if (!values.report) {
     throw new Error('Usage: summarize-admin-acceptance.js --report=<file> [--shard=<index/total>]');
   }
-  let report = null;
+  let report: VitestReport | null = null;
   try {
     report = JSON.parse(await fs.readFile(values.report, 'utf8'));
   } catch (error) {
-    if (error.code !== 'ENOENT') {
+    if ((error as NodeJS.ErrnoException).code !== 'ENOENT') {
       throw error;
     }
   }

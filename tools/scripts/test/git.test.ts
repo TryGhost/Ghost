@@ -3,7 +3,7 @@ import assert from 'node:assert';
 
 import { getFileFromCommit } from '../lib/git.ts';
 
-// These run against the live repo. git.js binds git to ROOT_DIR, so the paths
+// These run against the live repo. git.ts binds git to ROOT_DIR, so the paths
 // here are repo-relative regardless of the process working directory.
 const EXISTING_PATH = 'package.json'; // the repo-root manifest, present at HEAD
 const MISSING_PATH = 'this/path/does/not/exist.json';
@@ -12,7 +12,7 @@ const INVALID_COMMIT = 'not-a-real-ref-zzzzzz';
 describe('getFileFromCommit', () => {
   it('returns file contents for a path present in the commit', async () => {
     const contents = await getFileFromCommit('HEAD', EXISTING_PATH);
-    assert.match(contents, /"name"/);
+    assert.match(contents ?? '', /"name"/);
   });
 
   it('throws for a missing path by default', async () => {

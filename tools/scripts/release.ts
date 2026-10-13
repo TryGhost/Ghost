@@ -5,6 +5,7 @@ import { parseArgs as baseParseArgs } from 'node:util';
 import semver from 'semver';
 import camelcaseKeys from 'camelcase-keys';
 import { setTimeout } from 'node:timers/promises';
+import type { ExecSyncOptionsWithStringEncoding } from 'node:child_process';
 
 import { ROOT_DIR } from './lib/constants.ts';
 import { resolveBaseTag } from './lib/resolve-base-tag.ts';
@@ -49,31 +50,40 @@ function parseArgs() {
   return camelcaseKeys(values);
 }
 
+type ReleaseOptions = ReturnType<typeof parseArgs>;
+
+interface CheckRun {
+  status: string;
+  conclusion: string | null;
+  started_at: string;
+}
+
 // --- Helpers ---
 
-function run(cmd, opts = {}) {
+function run(cmd: string, opts: Partial<ExecSyncOptionsWithStringEncoding> = {}): string {
   const result = execSync(cmd, { cwd: ROOT_DIR, encoding: 'utf8', ...opts });
   return result.trim();
 }
 
 // No shell, so refs reach git as literal argv entries rather than syntax.
-function git(...args) {
+function git(...args: string[]): string {
   return execFileSync('git', args, { cwd: ROOT_DIR, encoding: 'utf8' }).trim();
 }
 
 // Single-quote a path for the shell.
-function quoteArg(path) {
+function quoteArg(path: string): string {
   return `'${path.replace(/'/g, `'\\''`)}'`;
 }
 
 // Parse `git status --porcelain=v1 -z`. R/C entries append a source path field
 // (destination first), so skip it.
-function parsePorcelainPaths(porcelain) {
+function parsePorcelainPaths(porcelain: string): { path: string; deleted: boolean }[] {
   const fields = porcelain.split('\0').filter(Boolean);
-  const entries = [];
+  const entries: { path: string; deleted: boolean }[] = [];
   for (let i = 0; i < fields.length; i++) {
-    const status = fields[i].slice(0, 2);
-    entries.push({ path: fields[i].slice(3), deleted: status.includes('D') });
+    const field = fields[i]!;
+    const status = field.slice(0, 2);
+    entries.push({ path: field.slice(3), deleted: status.includes('D') });
     if (status[0] === 'R' || status[0] === 'C') {
       i += 1;
     }
@@ -81,21 +91,21 @@ function parsePorcelainPaths(porcelain) {
   return entries;
 }
 
-function readPkgVersion(pkgPath) {
-  return readJsonSync(pkgPath).version;
+function readPkgVersion(pkgPath: string): string {
+  return (readJsonSync(pkgPath) as { version: string }).version;
 }
 
-function writePkgVersion(pkgPath, version) {
-  const pkg = readJsonSync(pkgPath);
+function writePkgVersion(pkgPath: string, version: string): void {
+  const pkg = readJsonSync(pkgPath) as { version: string };
   pkg.version = version;
   writeJsonSync(pkgPath, pkg);
 }
 
-function log(msg) {
+function log(msg: string): void {
   console.log(`  ${msg}`);
 }
 
-function logStep(msg) {
+function logStep(msg: string): void {
   console.log(`\n▸ ${msg}`);
 }
 
@@ -117,20 +127,20 @@ function applyChangesetVersions() {
 
 // --- Version detection ---
 
-function detectBumpType(baseTag, bumpType) {
+function detectBumpType(baseTag: string, bumpType: string): string {
   // Check for new migration files
   const migrationsPath = 'ghost/core/server/data/migrations/versions/';
   try {
     // No pathspec: a moved migrations directory only reads as renames when the
     // old paths are in the diff. A rename still counts as new unless it keeps its
     // path within the versions directory.
-    const versionsRelative = (file) => file.split('/migrations/versions/')[1] ?? null;
+    const versionsRelative = (file: string) => file.split('/migrations/versions/')[1] ?? null;
     const changes = run(`git diff --name-status --find-renames ${baseTag} HEAD`);
     const added = changes
       .split('\n')
       .map((line) => line.split('\t'))
       .some(
-        ([status, from, to]) =>
+        ([status, from = '', to = '']) =>
           (status === 'A' && from.startsWith(migrationsPath)) ||
           (status?.startsWith('R') &&
             to.startsWith(migrationsPath) &&
@@ -188,7 +198,7 @@ const REQUIRED_CHECK_NAME = 'All required tests passed or skipped';
 // the check-runs list (CI has ~30 checks and grows with every matrix entry);
 // the endpoint's default `filter=latest` already collapses re-runs, and the
 // sort makes the newest win if it ever returns more than one.
-async function fetchRequiredCheck(commit, token) {
+async function fetchRequiredCheck(commit: string, token: string): Promise<CheckRun | null> {
   const url = new URL(`https://api.github.com/repos/TryGhost/Ghost/commits/${commit}/check-runs`);
   url.searchParams.set('check_name', REQUIRED_CHECK_NAME);
   url.searchParams.set('per_page', '100');
@@ -204,11 +214,13 @@ async function fetchRequiredCheck(commit, token) {
     throw new Error(`GitHub API error: ${response.status} ${response.statusText}`);
   }
 
-  const { check_runs: checkRuns } = await response.json();
-  return [...checkRuns].sort((a, b) => new Date(b.started_at) - new Date(a.started_at))[0] ?? null;
+  const { check_runs: checkRuns } = (await response.json()) as { check_runs: CheckRun[] };
+  return (
+    [...checkRuns].sort((a, b) => Date.parse(b.started_at) - Date.parse(a.started_at))[0] ?? null
+  );
 }
 
-function remoteHead(branch) {
+function remoteHead(branch: string): string | null {
   const output = git('ls-remote', 'origin', `refs/heads/${branch}`);
   return output.split(/\s/)[0] || null;
 }
@@ -216,7 +228,7 @@ function remoteHead(branch) {
 // Move the checkout onto `sha`, but only as a fast-forward — anything else
 // means the branch was rewritten or we have local commits, and silently
 // resetting would drop work.
-function fastForwardTo(branch, sha) {
+function fastForwardTo(branch: string, sha: string): boolean {
   git('fetch', 'origin', branch);
   try {
     git('merge-base', '--is-ancestor', 'HEAD', sha);
@@ -234,7 +246,7 @@ function fastForwardTo(branch, sha) {
 // completes as cancelled/failure off cancelled dependencies. Either way the
 // commit's checks will never go green, so we retarget onto the new head — which
 // is what the release wanted anyway: the latest passing commit on the branch.
-async function waitForChecks(branch, initialSha) {
+async function waitForChecks(branch: string, initialSha: string): Promise<string> {
   let commit = initialSha;
   logStep(`Waiting for CI checks on ${commit.slice(0, 8)}...`);
 
@@ -296,7 +308,7 @@ async function waitForChecks(branch, initialSha) {
 
 // --- Theme submodule updates ---
 
-function updateThemeSubmodule(themeDir, themeName) {
+function updateThemeSubmodule(themeDir: string, themeName: string): boolean {
   if (!existsSync(themeDir)) {
     log(`${themeName} not present, skipping`);
     return false;
@@ -311,7 +323,7 @@ function updateThemeSubmodule(themeDir, themeName) {
       { cwd: themeDir, encoding: 'utf8', stdio: 'pipe' },
     );
   } catch (err) {
-    log(`Warning: failed to update ${themeName}: ${err.message}`);
+    log(`Warning: failed to update ${themeName}: ${(err as Error).message}`);
     return false;
   }
 
@@ -334,7 +346,7 @@ function updateThemeSubmodule(themeDir, themeName) {
 // cutting a tag, or advancing the RC. Publishing happens separately (the
 // "Publish Packages" workflow_dispatch, which publishes any committed version
 // missing from npm), so this only needs to land the bumps on the branch.
-async function runPackagesOnlyRelease(opts) {
+async function runPackagesOnlyRelease(opts: ReleaseOptions) {
   console.log('Ghost Packages-Only Release');
   console.log('===========================');
   log(`Branch: ${opts.branch}`);
@@ -391,7 +403,7 @@ async function runPackagesOnlyRelease(opts) {
 // Everything that reads the checked-out commit to decide what version we're
 // cutting. Re-run verbatim if the checkout moves while waiting for CI, since
 // the version, base tag and bump all come from the tree.
-function planRelease(bumpType) {
+function planRelease(bumpType: string): string {
   logStep('Reading current version');
   const currentVersion = readPkgVersion(GHOST_CORE_PKG);
   log(`Current version: ${currentVersion}`);
@@ -406,7 +418,7 @@ function planRelease(bumpType) {
 
   logStep('Detecting bump type');
   const resolvedBumpType = detectBumpType(baseTag, bumpType);
-  const newVersion = semver.inc(currentVersion, resolvedBumpType);
+  const newVersion = semver.inc(currentVersion, resolvedBumpType as semver.ReleaseType);
   if (!newVersion) {
     console.error(
       `Failed to calculate new version from ${currentVersion} with bump type ${resolvedBumpType}`,
@@ -481,7 +493,7 @@ async function main() {
   // 4b. Consume changesets → version the publishable workspace packages
   // (kg-*, packages/*, ...). These changes land in the Ghost release commit
   // below, tying every package version to the Ghost release that carries its
-  // content; publishing (tools/scripts/publish-packages.js) reads those off npm.
+  // content; publishing (tools/scripts/publish-packages.ts) reads those off npm.
   logStep('Applying changeset versions to publishable packages');
   applyChangesetVersions();
 
@@ -507,7 +519,7 @@ async function main() {
 
   // 7. Advance to next RC
   // Default to the next patch RC. If a migration lands during the cycle,
-  // tools/gx/create-migration.js promotes this to the next minor RC.
+  // tools/gx/create-migration.ts promotes this to the next minor RC.
   // detectBumpType resolves the actual bump (patch vs minor) at the next release.
   logStep('Advancing to next RC');
   const nextPatch = semver.inc(newVersion, 'patch');
@@ -527,7 +539,7 @@ async function main() {
   console.log(`\n✓ Release ${newVersion} complete`);
 }
 
-main().catch((err) => {
-  console.error(`\n✗ Release failed: ${err.message}`);
+main().catch((err: unknown) => {
+  console.error(`\n✗ Release failed: ${(err as Error).message}`);
   process.exit(1);
 });

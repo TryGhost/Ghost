@@ -116,8 +116,10 @@ catalog:
   '@types/luxon': 3.7.4
   '@types/jsdom': 30.0.0
   '@types/nconf': 0.10.7
+  '@types/js-yaml': 4.0.9
   '@types/jsonwebtoken': 9.0.10
   '@types/node': 22.20.1
+  '@types/picomatch': 4.0.3
   '@types/react': 18.3.31
   '@types/react-dom': 18.3.7
   '@types/sanitize-html': 2.16.1

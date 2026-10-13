@@ -14,7 +14,11 @@ import {
 const CURRENT_DIR = process.cwd();
 
 const packageJsonPath = join(CURRENT_DIR, 'package.json');
-const packageJson = await readJson(packageJsonPath);
+const packageJson = (await readJson(packageJsonPath)) as {
+  name: string;
+  version: string;
+  [key: string]: unknown;
+};
 
 const APP_NAME = packageJson.name;
 const APP_VERSION = packageJson.version;
@@ -49,7 +53,7 @@ async function ensureCleanGit() {
   }
 }
 
-async function getNewVersion() {
+async function getNewVersion(): Promise<string> {
   const rl = createInterface({ input: process.stdin, output: process.stdout });
   // Patch releases are published automatically on every merge to main (CI
   // computes the next patch from npm), so this script only drives intentional
@@ -60,26 +64,31 @@ async function getNewVersion() {
   const bumpTypeInput = await rl.question('Is this a minor or major release (minor)? ');
   rl.close();
   const bumpType = bumpTypeInput.trim().toLowerCase() || 'minor';
-  if (!['minor', 'major'].includes(bumpType)) {
+  if (bumpType !== 'minor' && bumpType !== 'major') {
     console.error(
       `Unknown bump type ${bumpTypeInput} - expected "minor" or "major" (patch releases are automated)`,
     );
     process.exit(1);
   }
-  return semver.inc(APP_VERSION, bumpType);
+  const newVersion = semver.inc(APP_VERSION, bumpType);
+  if (!newVersion) {
+    console.error(`Invalid version "${APP_VERSION}" in package.json`);
+    process.exit(1);
+  }
+  return newVersion;
 }
 
-async function updateConfig(newVersion) {
-  const defaultConfig = await readDefaults();
+async function updateConfig(newVersion: string) {
+  const defaultConfig = (await readDefaults()) as Record<string, { version: string }>;
 
   // Must stay in lockstep with package.json — check-app-version-bump fails the
   // PR otherwise, and live sites would point at an unpublished version line.
-  defaultConfig[app.configKey].version = majorMinor(newVersion);
+  defaultConfig[app.configKey]!.version = majorMinor(newVersion);
 
   await writeDefaults(defaultConfig);
 }
 
-async function updatePackageJson(newVersion) {
+async function updatePackageJson(newVersion: string) {
   const newPkg = { ...packageJson, version: newVersion };
   await writeJson(packageJsonPath, newPkg);
 }
@@ -109,7 +118,7 @@ async function main() {
   );
 }
 
-main().catch((err) => {
-  console.error(`\n✗ Release failed: ${err.message}`);
+main().catch((err: unknown) => {
+  console.error(`\n✗ Release failed: ${(err as Error).message}`);
   process.exit(1);
 });

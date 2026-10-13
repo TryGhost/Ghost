@@ -2,7 +2,12 @@ import { join } from 'node:path';
 import semver from 'semver';
 
 import { ROOT_DIR, PRIVATE_PACKAGE_VERSION } from './lib/constants.ts';
-import { getWorkspace, getWorkspacePackages } from './lib/pnpm.ts';
+import {
+  getWorkspace,
+  getWorkspacePackages,
+  type PackageManifest,
+  type WorkspaceManifest,
+} from './lib/pnpm.ts';
 import { PUBLIC_APPS } from './lib/public-apps.ts';
 import { readJson } from './lib/utils.ts';
 
@@ -10,16 +15,15 @@ import { readJson } from './lib/utils.ts';
 // scripts, the public apps by the publish job (npm holds the patch number).
 const EXTERNALLY_VERSIONED = new Set(['ghost', ...PUBLIC_APPS.map((app) => app.packageName)]);
 
-/**
- * Reads every workspace manifest, root included.
- *
- * @param {import('./lib/pnpm.ts').WorkspaceManifest} workspace
- */
-export async function loadManifests(workspace) {
+// Every manifest in this workspace is named.
+export type NamedManifest = PackageManifest & { name: string };
+
+/** Reads every workspace manifest, root included. */
+export async function loadManifests(workspace: WorkspaceManifest): Promise<NamedManifest[]> {
   return [
-    await readJson(join(ROOT_DIR, 'package.json')),
+    await readJson<PackageManifest>(join(ROOT_DIR, 'package.json')),
     ...(await getWorkspacePackages(workspace)).map((pkg) => pkg.manifest),
-  ];
+  ] as NamedManifest[];
 }
 
 /**
@@ -28,13 +32,15 @@ export async function loadManifests(workspace) {
  * Private packages opt out by carrying the non-semver placeholder version
  * instead, so the list holds exactly the externally versioned public packages.
  *
- * @param {import('./lib/pnpm.ts').WorkspaceManifest} workspace
- * @param {object[]} [manifests] - defaults to the workspace's manifests on disk
- * @returns {Promise<string[]>} - Error messages.
+ * `manifests` defaults to the workspace's manifests on disk. Returns error
+ * messages.
  */
-export async function checkVersioningIgnore(workspace, manifests) {
+export async function checkVersioningIgnore(
+  workspace: WorkspaceManifest,
+  manifests?: NamedManifest[],
+): Promise<string[]> {
   const ignored = new Set(workspace.versioning?.ignore ?? []);
-  const errors = [];
+  const errors: string[] = [];
 
   const sorted = (manifests ?? (await loadManifests(workspace))).toSorted((a, b) =>
     a.name.localeCompare(b.name),
@@ -74,7 +80,11 @@ export async function checkVersioningIgnore(workspace, manifests) {
 }
 
 if (import.meta.main) {
-  const errors = await checkVersioningIgnore(await getWorkspace());
+  const workspace = await getWorkspace();
+  if (!workspace) {
+    throw new Error('Could not load workspace manifest');
+  }
+  const errors = await checkVersioningIgnore(workspace);
   if (errors.length > 0) {
     console.error(`Package versioning config is out of date:\n\n${errors.join('\n')}`);
     process.exitCode = 1;

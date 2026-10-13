@@ -2,9 +2,7 @@
   "extends": "@internal/cfg-typescript/esm.json",
   "compilerOptions": {
     "noEmit": true,
-    "erasableSyntaxOnly": true,
-    // Shared automation helpers remain JavaScript; infer their existing interfaces.
-    "allowJs": true
+    "erasableSyntaxOnly": true
   },
   "include": ["*.ts", "test/**/*.ts"]
 }

@@ -46,10 +46,7 @@ if (values.help) {
   process.exit(0);
 }
 
-const name = positionals[0];
-if (!name) {
-  fail('Missing package name.');
-}
+const name = positionals[0] || fail('Missing package name.');
 if (!isValidPackageName(name)) {
   fail(
     `Invalid package name "${name}". Use lowercase kebab-case, e.g. "email-utils" (no @scope — it becomes @tryghost/${name}).`,

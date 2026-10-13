@@ -386,6 +386,9 @@ catalogs:
     '@types/express-brute':
       specifier: 1.0.6
       version: 1.0.6
+    '@types/js-yaml':
+      specifier: 4.0.9
+      version: 4.0.9
     '@types/jsdom':
       specifier: 30.0.0
       version: 30.0.0
@@ -404,6 +407,9 @@ catalogs:
     '@types/node':
       specifier: 22.20.1
       version: 22.20.1
+    '@types/picomatch':
+      specifier: 4.0.3
+      version: 4.0.3
     '@types/probability-distributions':
       specifier: 0.1.3
       version: 0.1.3
@@ -2558,7 +2564,7 @@ importers:
         specifier: 11.0.4
         version: 11.0.4
       '@types/js-yaml':
-        specifier: 4.0.9
+        specifier: 'catalog:'
         version: 4.0.9
       '@types/jsdom':
         specifier: 'catalog:'
@@ -4421,9 +4427,18 @@ importers:
       '@playwright/test':
         specifier: 'catalog:'
         version: 1.64.0
+      '@types/js-yaml':
+        specifier: 'catalog:'
+        version: 4.0.9
       '@types/node':
         specifier: 'catalog:'
         version: 22.20.1
+      '@types/picomatch':
+        specifier: 'catalog:'
+        version: 4.0.3
+      '@types/semver':
+        specifier: 'catalog:'
+        version: 7.8.0
       eslint:
         specifier: 'catalog:'
         version: 9.39.5(jiti@2.7.0)(supports-color@10.2.2)
@@ -8638,6 +8653,9 @@ packages:
 
   '@types/papaparse@5.5.2':
     resolution: {integrity: sha512-gFnFp/JMzLHCwRf7tQHrNnfhN4eYBVYYI897CGX4MY1tzY9l2aLkVyx2IlKZ/SAqDbB3I1AOZW5gTMGGsqWliA==}
+
+  '@types/picomatch@4.0.3':
+    resolution: {integrity: sha512-iG0T6+nYJ9FAPmx9SsUlnwcq1ZVRuCXcVEvWnntoPlrOpwtSTKNDC9uVAxTsC3PUvJ+99n4RpAcNgBbHX3JSnQ==}
 
   '@types/probability-distributions@0.1.3':
     resolution: {integrity: sha512-/mz4/PxCD3CtEjYsaEJOmkEogFJS+hCOm7PvjNZlTYBG7zXBjhDs0uCe3FKoHbw5Hz8xxJjl+RDXXaBolqEOhg==}
@@ -20743,6 +20761,8 @@ snapshots:
   '@types/papaparse@5.5.2':
     dependencies:
       '@types/node': 22.20.1
+
+  '@types/picomatch@4.0.3': {}
 
   '@types/probability-distributions@0.1.3': {}
 

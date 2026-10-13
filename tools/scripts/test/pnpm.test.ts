@@ -147,7 +147,7 @@ describe('resolvePackageCatalog', () => {
 describe('loadPackage (against the live repo)', () => {
   it('parses a package manifest present in the base commit', async () => {
     const manifest = await loadPackage('HEAD', 'package.json');
-    assert.strictEqual(typeof manifest.name, 'string');
+    assert.strictEqual(typeof manifest?.name, 'string');
   });
 
   it('returns null when the package is absent from the base commit (new package)', async () => {
@@ -159,6 +159,7 @@ describe('loadPackage (against the live repo)', () => {
 describe('getPublishablePackages (against the live workspace)', () => {
   it('returns publishable packages with the documented shape', async () => {
     const wksp = await getWorkspace();
+    assert.ok(wksp);
     const pkgs = await getPublishablePackages(wksp);
 
     assert.ok(pkgs.length > 0, 'expected at least one publishable package');
@@ -174,6 +175,7 @@ describe('getPublishablePackages (against the live workspace)', () => {
 
   it('excludes private and ignored packages', async () => {
     const wksp = await getWorkspace();
+    assert.ok(wksp);
     const pkgs = await getPublishablePackages(wksp);
     const names = new Set(pkgs.map((p) => p.name));
 

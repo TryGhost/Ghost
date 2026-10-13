@@ -5,7 +5,7 @@ import { resolve } from 'node:path';
 import { buildMatrix, cdnPathsFor } from '../build-public-apps-matrix.ts';
 import { PUBLIC_APPS } from '../lib/public-apps.ts';
 
-const DEFAULTS = JSON.parse(
+const DEFAULTS: Record<string, Record<string, unknown>> = JSON.parse(
   await readFile(
     resolve(import.meta.dirname, '../../../ghost/core/shared/config/defaults.json'),
     'utf8',
@@ -26,8 +26,8 @@ describe('buildMatrix', () => {
   it('filters to just the affected apps', () => {
     const matrix = buildMatrix(['@tryghost/portal', 'ghost']);
     assert.strictEqual(matrix.length, 1);
-    assert.strictEqual(matrix[0].package_name, '@tryghost/portal');
-    assert.strictEqual(matrix[0].package_path, 'apps/portal');
+    assert.strictEqual(matrix[0]?.package_name, '@tryghost/portal');
+    assert.strictEqual(matrix[0]?.package_path, 'apps/portal');
   });
 
   it('preserves public-apps.json order regardless of affected order', () => {
@@ -41,7 +41,7 @@ describe('buildMatrix', () => {
   it('flattens cdn_paths to a newline-delimited string for the purge step', () => {
     const [portal] = buildMatrix(['@tryghost/portal']);
     assert.strictEqual(
-      portal.cdn_paths,
+      portal?.cdn_paths,
       'https://cdn.jsdelivr.net/ghost/portal@~CURRENT_MINOR/umd/portal.min.js',
     );
   });
@@ -51,7 +51,7 @@ describe('buildMatrix', () => {
     // old hand-maintained cdnPaths list had to remember and derivation gets
     // for free.
     const [sodoSearch] = buildMatrix(['@tryghost/sodo-search']);
-    assert.deepStrictEqual(sodoSearch.cdn_paths.split('\n'), [
+    assert.deepStrictEqual(sodoSearch?.cdn_paths.split('\n'), [
       'https://cdn.jsdelivr.net/ghost/sodo-search@~CURRENT_MINOR/umd/sodo-search.min.js',
       'https://cdn.jsdelivr.net/ghost/sodo-search@~CURRENT_MINOR/umd/main.css',
     ]);
@@ -98,7 +98,7 @@ describe('public-apps.json <-> defaults.json contract', () => {
   it('every listed app yields at least one URL to purge', () => {
     for (const app of PUBLIC_APPS) {
       assert.ok(
-        cdnPathsFor(DEFAULTS[app.configKey]).length > 0,
+        cdnPathsFor(DEFAULTS[app.configKey] ?? {}).length > 0,
         `${app.packageName} would publish with an empty purge list`,
       );
     }
@@ -107,8 +107,9 @@ describe('public-apps.json <-> defaults.json contract', () => {
   it('purges exactly the URLs core serves, with only the version differing', () => {
     for (const entry of buildMatrix(allPackageNames)) {
       const app = PUBLIC_APPS.find((a) => a.packageName === entry.package_name);
-      const served = Object.values(DEFAULTS[app.configKey])
-        .filter((v) => typeof v === 'string' && v.startsWith('https://'))
+      assert.ok(app);
+      const served = Object.values(DEFAULTS[app.configKey] ?? {})
+        .filter((v): v is string => typeof v === 'string' && v.startsWith('https://'))
         .map((v) => v.replaceAll('{version}', 'CURRENT_MINOR'));
       assert.deepStrictEqual(entry.cdn_paths.split('\n'), served, entry.package_name);
     }

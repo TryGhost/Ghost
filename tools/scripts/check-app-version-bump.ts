@@ -9,12 +9,19 @@ import { execFileSync } from 'node:child_process';
 import { PUBLIC_APPS, DEFAULTS_PATH, DEFAULTS_REPO_PATH, majorMinor } from './lib/public-apps.ts';
 import { resolveBaseCommit } from './lib/pr-base.ts';
 
+type PublicApp = (typeof PUBLIC_APPS)[number];
+
 const MONITORED_APP_PATHS = PUBLIC_APPS.map((app) => app.path);
 
-function runGit(args) {
+function errorMessage(error: unknown): string {
+  return (error as Error).message;
+}
+
+function runGit(args: string[]): string {
   try {
     return execFileSync('git', args, { encoding: 'utf8' }).trim();
-  } catch (error) {
+  } catch (err) {
+    const error = err as Error & { stdout?: Buffer | string; stderr?: Buffer | string };
     const stderr = error.stderr ? error.stderr.toString().trim() : '';
     const stdout = error.stdout ? error.stdout.toString().trim() : '';
     const message = stderr || stdout || error.message;
@@ -22,13 +29,13 @@ function runGit(args) {
   }
 }
 
-function readVersionFromPackageJson(packageJsonContent, sourceLabel) {
-  let parsedPackageJson;
+function readVersionFromPackageJson(packageJsonContent: string, sourceLabel: string): string {
+  let parsedPackageJson: { version?: unknown };
 
   try {
     parsedPackageJson = JSON.parse(packageJsonContent);
   } catch (error) {
-    throw new Error(`Unable to parse ${sourceLabel}: ${error.message}`);
+    throw new Error(`Unable to parse ${sourceLabel}: ${errorMessage(error)}`);
   }
 
   if (!parsedPackageJson.version || typeof parsedPackageJson.version !== 'string') {
@@ -38,14 +45,14 @@ function readVersionFromPackageJson(packageJsonContent, sourceLabel) {
   return parsedPackageJson.version;
 }
 
-function getChangedFiles(baseSha, compareSha) {
-  let mergeBaseSha;
+function getChangedFiles(baseSha: string, compareSha: string): string[] {
+  let mergeBaseSha: string;
 
   try {
     mergeBaseSha = runGit(['merge-base', baseSha, compareSha]);
   } catch (error) {
     throw new Error(
-      `Unable to determine merge-base for ${baseSha} and ${compareSha}. Ensure the base branch history is available in the checkout.\n${error.message}`,
+      `Unable to determine merge-base for ${baseSha} and ${compareSha}. Ensure the base branch history is available in the checkout.\n${errorMessage(error)}`,
     );
   }
 
@@ -55,17 +62,17 @@ function getChangedFiles(baseSha, compareSha) {
     .filter(Boolean);
 }
 
-function getChangedAppFiles(app, changedFiles) {
+function getChangedAppFiles(app: PublicApp, changedFiles: string[]): string[] {
   return changedFiles.filter((file) => {
     return file === app.path || file.startsWith(`${app.path}/`);
   });
 }
 
-function getChangedApps(changedFiles) {
+function getChangedApps(changedFiles: string[]): PublicApp[] {
   return PUBLIC_APPS.filter((app) => getChangedAppFiles(app, changedFiles).length > 0);
 }
 
-function getPrVersion(app) {
+function getPrVersion(app: PublicApp): string {
   const packageJsonPath = join(import.meta.dirname, '../..', app.path, 'package.json');
 
   if (!existsSync(packageJsonPath)) {
@@ -78,13 +85,17 @@ function getPrVersion(app) {
   );
 }
 
-function readVersionFromDefaults(defaultsContent, app, sourceLabel) {
-  let parsedDefaults;
+function readVersionFromDefaults(
+  defaultsContent: string,
+  app: PublicApp,
+  sourceLabel: string,
+): string {
+  let parsedDefaults: Record<string, { version?: unknown } | undefined>;
 
   try {
     parsedDefaults = JSON.parse(defaultsContent);
   } catch (error) {
-    throw new Error(`Unable to parse ${sourceLabel}: ${error.message}`);
+    throw new Error(`Unable to parse ${sourceLabel}: ${errorMessage(error)}`);
   }
 
   const appDefaults = parsedDefaults[app.configKey];
@@ -96,7 +107,7 @@ function readVersionFromDefaults(defaultsContent, app, sourceLabel) {
   return appDefaults.version;
 }
 
-function getPrDefaultsVersion(app) {
+function getPrDefaultsVersion(app: PublicApp): string {
   if (!existsSync(DEFAULTS_PATH)) {
     throw new Error(`${DEFAULTS_REPO_PATH} does not exist in this PR`);
   }
@@ -117,9 +128,13 @@ function getPrDefaultsVersion(app) {
  * "pnpm ship") must move both in lockstep, or live sites would point at a
  * version line that never gets published.
  *
- * @returns {string|null} an error message when inconsistent, otherwise null
+ * Returns an error message when inconsistent, otherwise null.
  */
-export function checkAppConsistency(app, prVersion, prDefaultsVersion) {
+export function checkAppConsistency(
+  app: PublicApp,
+  prVersion: string,
+  prDefaultsVersion: string,
+): string | null {
   const prMajorMinorVersion = majorMinor(prVersion);
 
   if (prDefaultsVersion !== prMajorMinorVersion) {
@@ -153,7 +168,7 @@ function main() {
     `Checking app version consistency for: ${changedApps.map((app) => app.configKey).join(', ')}`,
   );
 
-  const failedApps = [];
+  const failedApps: string[] = [];
 
   for (const app of changedApps) {
     const error = checkAppConsistency(app, getPrVersion(app), getPrDefaultsVersion(app));
@@ -179,7 +194,7 @@ if (import.meta.main) {
   try {
     main();
   } catch (error) {
-    console.error(error.message);
+    console.error(errorMessage(error));
     process.exit(1);
   }
 }

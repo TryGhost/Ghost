@@ -29,7 +29,10 @@
     "@internal/cfg-eslint": "workspace:*",
     "@internal/cfg-typescript": "workspace:*",
     "@playwright/test": "catalog:",
+    "@types/js-yaml": "catalog:",
     "@types/node": "catalog:",
+    "@types/picomatch": "catalog:",
+    "@types/semver": "catalog:",
     "eslint": "catalog:"
   },
   "nx": {

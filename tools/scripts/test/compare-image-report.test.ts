@@ -1,8 +1,15 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert';
-import { diffPackages, duplicateInstances, identityOf, render } from '../compare-image-report.ts';
+import {
+  diffPackages,
+  duplicateInstances,
+  identityOf,
+  render,
+  type Report,
+  type Stats,
+} from '../compare-image-report.ts';
 
-const report = (packages) => ({
+const report = (packages: Record<string, Stats>): Report => ({
   profile: 'image',
   total: Object.values(packages).reduce(
     (acc, stats) => ({ files: acc.files + stats.files, bytes: acc.bytes + stats.bytes }),
@@ -64,9 +71,9 @@ describe('diffPackages', () => {
   it('marks packages missing from the current report as removed', () => {
     const [entry] = diffPackages(report({}), baseline);
 
-    assert.strictEqual(entry.status, 'removed');
-    assert.strictEqual(entry.bytes, -7 * MIB);
-    assert.strictEqual(entry.files, -2894);
+    assert.strictEqual(entry?.status, 'removed');
+    assert.strictEqual(entry?.bytes, -7 * MIB);
+    assert.strictEqual(entry?.files, -2894);
   });
 
   it('omits packages whose size and file count are unchanged', () => {
@@ -101,9 +108,9 @@ describe('duplicateInstances', () => {
     );
 
     assert.strictEqual(duplicates.length, 1);
-    assert.strictEqual(duplicates[0].identity, 'viem@2.55.11');
+    assert.strictEqual(duplicates[0]?.identity, 'viem@2.55.11');
     // Only the copies past the first are recoverable.
-    assert.strictEqual(duplicates[0].bytes, 7 * MIB);
+    assert.strictEqual(duplicates[0]?.bytes, 7 * MIB);
   });
 
   it('does not treat genuinely different versions as duplicates', () => {

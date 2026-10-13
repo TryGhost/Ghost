@@ -5,16 +5,29 @@ import { mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { render } from '../summarize-admin-acceptance.ts';
+import {
+  render,
+  type AssertionResult,
+  type TestFileResult,
+  type VitestReport,
+} from '../summarize-admin-acceptance.ts';
 
-const assertion = (fullName, duration, extra = {}) => ({
+const assertion = (
+  fullName: string,
+  duration: number | null | undefined,
+  extra: Partial<AssertionResult> = {},
+): AssertionResult => ({
   fullName,
   duration,
   status: 'passed',
   failureMessages: [],
   ...extra,
 });
-const file = (name, assertions, extra = {}) => ({
+const file = (
+  name: string,
+  assertions: AssertionResult[],
+  extra: Partial<TestFileResult> = {},
+): TestFileResult => ({
   name: `/home/runner/work/Ghost/Ghost/apps/admin/${name}`,
   startTime: 1000,
   endTime: 5000,
@@ -23,7 +36,7 @@ const file = (name, assertions, extra = {}) => ({
   assertionResults: assertions,
   ...extra,
 });
-const report = (files, extra = {}) => ({
+const report = (files: TestFileResult[], extra: Partial<VitestReport> = {}): VitestReport => ({
   startTime: 1000,
   numPassedTests: 2,
   numFailedTests: 0,
@@ -104,7 +117,7 @@ describe('Admin acceptance summary', () => {
     );
     assert.match(output, /4 more failed tests in the JSON artifact/);
     assert.doesNotMatch(output, /x{501}/);
-    const slowTests = output.split('### Slowest tests')[1];
+    const slowTests = output.split('### Slowest tests')[1] ?? '';
     assert.match(slowTests, /failure 13 \| 13\.0s/);
     assert.doesNotMatch(slowTests, /failure 0 \|/);
   });
@@ -112,7 +125,7 @@ describe('Admin acceptance summary', () => {
   it('handles an empty run and missing report without claiming success', () => {
     assert.match(render(null, '1/2'), /No JSON report was produced/);
     assert.match(render(report([], { numPassedTests: 0 })), /Suite elapsed:\*\* 0\.0s/);
-    assert.throws(() => render({}), /Invalid Vitest report/);
+    assert.throws(() => render({} as VitestReport), /Invalid Vitest report/);
   });
 
   it('does not invent timings for assertions that did not run', () => {

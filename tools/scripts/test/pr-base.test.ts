@@ -11,7 +11,7 @@ import { resolveBaseCommit, rootAtMergeBase } from '../lib/pr-base.ts';
 // carry `refs/remotes/origin/*` (a pull_request checkout fetches only the merge
 // ref), and fixture commits make the merge-base assertions deterministic.
 //
-// pr-base.js pins its git calls to the repo root, so the fixture is routed to
+// pr-base.ts pins its git calls to the repo root, so the fixture is routed to
 // them through GIT_DIR, which git honours over the working directory.
 const FIXTURE = mkdtempSync(join(tmpdir(), 'pr-base-fixture-'));
 
@@ -23,20 +23,20 @@ const GIT_ENV = {
   GIT_COMMITTER_EMAIL: 'fixture@example.com',
 };
 
-function fixtureGit(args) {
+function fixtureGit(args: string[]): string {
   return execFileSync('git', args, { cwd: FIXTURE, encoding: 'utf8', env: GIT_ENV }).trim();
 }
 
-function commit(message) {
+function commit(message: string): string {
   fixtureGit(['commit', '--allow-empty', '-m', message]);
   return fixtureGit(['rev-parse', 'HEAD']);
 }
 
-let forkPoint; // the commit both branches share
-let mainTip; // one commit of base-branch drift past the fork point
-let featureTip; // one branch commit past the fork point
-let featureTree; // what the pre-commit hook passes as head
-let orphanTip; // shares no history with anything
+let forkPoint: string; // the commit both branches share
+let mainTip: string; // one commit of base-branch drift past the fork point
+let featureTip: string; // one branch commit past the fork point
+let featureTree: string; // what the pre-commit hook passes as head
+let orphanTip: string; // shares no history with anything
 
 before(() => {
   fixtureGit(['init', '--initial-branch', 'main', '.']);

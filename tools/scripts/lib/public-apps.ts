@@ -15,6 +15,12 @@ import semver from 'semver';
 import { ROOT_DIR, SCRIPTS_DIR } from './constants.ts';
 import { readJson } from './utils.ts';
 
+export interface PublicApp {
+  packageName: string;
+  path: string;
+  configKey: string;
+}
+
 /**
  * Which apps are public UMD apps, and the defaults.json key each maps to.
  *
@@ -22,23 +28,20 @@ import { readJson } from './utils.ts';
  * admin-x packages, which are not published to the CDN — the filesystem can't
  * tell you which six are. And comments-ui camel-cases to `commentsUi`, but its
  * key is `comments`.
- *
- * @type {Array<{packageName: string, path: string, configKey: string}>}
  */
-export const PUBLIC_APPS = await readJson(join(SCRIPTS_DIR, 'public-apps.json'));
+export const PUBLIC_APPS = await readJson<PublicApp[]>(join(SCRIPTS_DIR, 'public-apps.json'));
 
 /** The Ghost core config pinning each app's major.minor and CDN URLs. */
 export const DEFAULTS_REPO_PATH = 'ghost/core/shared/config/defaults.json';
 export const DEFAULTS_PATH = join(ROOT_DIR, DEFAULTS_REPO_PATH);
 
-export const readDefaults = () => readJson(DEFAULTS_PATH);
+export const readDefaults = () => readJson<Record<string, unknown>>(DEFAULTS_PATH);
 
-/** @param {object} defaults - the full defaults.json object */
-export const writeDefaults = (defaults) =>
+/** @param defaults - the full defaults.json object */
+export const writeDefaults = (defaults: object) =>
   writeFile(DEFAULTS_PATH, JSON.stringify(defaults, null, 4) + '\n');
 
-/** @param {string} packageName */
-export function appForPackageName(packageName) {
+export function appForPackageName(packageName: string): PublicApp {
   const app = PUBLIC_APPS.find((a) => a.packageName === packageName);
   if (!app) {
     throw new Error(`App ${packageName} not found in public-apps.json`);
@@ -52,10 +55,9 @@ export function appForPackageName(packageName) {
  * jsDelivr resolves. Rejects a malformed version loudly rather than letting it
  * become a silently wrong CDN path.
  *
- * @param {string} version
- * @returns {string} e.g. "2.69"
+ * @returns e.g. "2.69"
  */
-export function majorMinor(version) {
+export function majorMinor(version: string): string {
   const parsed = semver.parse(version);
 
   if (!parsed) {
