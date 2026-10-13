@@ -114,6 +114,10 @@ describe('Managing apps', () => {
     await expect.element(frame).toHaveAttribute('src', APP_PAGE_URL);
     await expect.element(frame).toHaveAttribute('sandbox', APP_FRAME_SANDBOX);
     await expect.element(frame).toHaveAttribute('allow', expect.stringContaining("camera 'none'"));
+    // On for every origin unless refused, so the frame must say so.
+    await expect
+      .element(frame)
+      .toHaveAttribute('allow', expect.stringContaining("browsing-topics 'none'"));
     await expect
       .element(frame)
       .toHaveAttribute('referrerpolicy', 'strict-origin-when-cross-origin');

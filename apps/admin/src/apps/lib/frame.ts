@@ -16,11 +16,11 @@ export const appFrameTimeouts = { ready: 12_000 };
 export const APP_FRAME_SANDBOX = 'allow-scripts allow-same-origin allow-forms';
 
 /**
- * Which browser features the frame gets: none. Being cross-origin is what keeps them off,
- * as each of these defaults to the top document's own origin; this list says so
- * explicitly, so a feature can only be granted here, on purpose, with the app's origin.
+ * Features that default to the top document's own origin. Being cross-origin already
+ * keeps them from the frame; they're listed so that granting one is a deliberate change
+ * here, with the app's origin, rather than an omission.
  */
-export const APP_FRAME_ALLOW = [
+const SELF_BY_DEFAULT = [
   'autoplay',
   'camera',
   'display-capture',
@@ -29,12 +29,36 @@ export const APP_FRAME_ALLOW = [
   'microphone',
   'midi',
   'payment',
-  'picture-in-picture',
   'publickey-credentials-get',
   'screen-wake-lock',
   'usb',
   'web-share',
-]
+];
+
+/**
+ * Features that default to every origin, so a cross-origin frame has them unless they're
+ * refused here: the advertising and measurement APIs, cross-site storage, synchronous XHR
+ * and hardware the sandbox doesn't cover. Chromium's list, as of 152; the others have fewer.
+ */
+const EVERYONE_BY_DEFAULT = [
+  'attribution-reporting',
+  'browsing-topics',
+  'gamepad',
+  'join-ad-interest-group',
+  'picture-in-picture',
+  'private-aggregation',
+  'private-state-token-issuance',
+  'private-state-token-redemption',
+  'run-ad-auction',
+  'shared-storage',
+  'shared-storage-select-url',
+  'storage-access',
+  'sync-xhr',
+  'unload',
+];
+
+/** Which browser features the frame gets: none. */
+export const APP_FRAME_ALLOW = [...SELF_BY_DEFAULT, ...EVERYONE_BY_DEFAULT]
   .map((feature) => `${feature} 'none'`)
   .join('; ');
 
