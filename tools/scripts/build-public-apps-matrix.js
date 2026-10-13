@@ -1,5 +1,5 @@
-// Builds the publish matrix for public UMD apps, filtered to the apps affected
-// in the current run. The output (stdout, compact JSON array) feeds the
+// Builds the publish matrix for public UMD apps and Shade, filtered to affected
+// projects in the current run. The output (stdout, compact JSON array) feeds the
 // publish_public_apps job's `strategy.matrix.include` via fromJSON.
 //
 // Matrix context isn't available in a job-level `if:`, so the affected gate
@@ -7,9 +7,9 @@
 // (mirroring the affected_playwright_matrix dynamic matrix) and the job skips
 // itself when the result is `[]`.
 //
-// public-apps.json says *which* apps are public (apps/ also holds admin, shade
-// and friends, which are not) and maps each to its defaults.json key. The URLs
-// to purge come from defaults.json itself — see cdnPathsFor.
+// public-apps.json maps the UMD apps to their defaults.json keys. The URLs to
+// purge come from defaults.json itself — see cdnPathsFor. Shade is added
+// separately because it has no Ghost-configured CDN assets.
 
 import { PUBLIC_APPS, readDefaults } from './lib/public-apps.js';
 
@@ -46,7 +46,7 @@ export function cdnPathsFor(configEntry) {
  */
 export function buildMatrix(affectedProjects) {
   const affected = new Set(affectedProjects);
-  return PUBLIC_APPS.filter((app) => affected.has(app.packageName)).map((app) => {
+  const matrix = PUBLIC_APPS.filter((app) => affected.has(app.packageName)).map((app) => {
     const configEntry = DEFAULTS[app.configKey];
 
     // Both of these would otherwise degrade into an empty purge list,
@@ -70,6 +70,16 @@ export function buildMatrix(affectedProjects) {
       cdn_paths: cdnPaths.join('\n'),
     };
   });
+
+  if (affected.has('@tryghost/shade')) {
+    matrix.push({
+      package_name: '@tryghost/shade',
+      package_path: 'apps/shade',
+      cdn_paths: '',
+    });
+  }
+
+  return matrix;
 }
 
 function main() {

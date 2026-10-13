@@ -19,8 +19,22 @@ describe('buildMatrix', () => {
     assert.deepStrictEqual(buildMatrix([]), []);
   });
 
-  it('ignores affected projects that are not public apps', () => {
+  it('ignores other affected projects', () => {
     assert.deepStrictEqual(buildMatrix(['ghost', '@tryghost/admin']), []);
+  });
+
+  it('includes Shade without Ghost-configured CDN assets', () => {
+    assert.deepStrictEqual(buildMatrix(['@tryghost/shade']), [
+      { package_name: '@tryghost/shade', package_path: 'apps/shade', cdn_paths: '' },
+    ]);
+  });
+
+  it('keeps public-app entries unchanged when Shade is also affected', () => {
+    const apps = buildMatrix(allPackageNames);
+    assert.deepStrictEqual(buildMatrix(['@tryghost/shade', ...allPackageNames]), [
+      ...apps,
+      { package_name: '@tryghost/shade', package_path: 'apps/shade', cdn_paths: '' },
+    ]);
   });
 
   it('filters to just the affected apps', () => {

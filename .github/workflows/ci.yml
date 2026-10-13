@@ -258,7 +258,6 @@ jobs:
             echo 'unit_test_projects_str=' >> "$GITHUB_OUTPUT"
             echo 'affected_i18n_projects=' >> "$GITHUB_OUTPUT"
             echo 'affected_playwright_matrix=[]' >> "$GITHUB_OUTPUT"
-            echo 'publish_projects=[]' >> "$GITHUB_OUTPUT"
             echo 'publish_public_apps_matrix=[]' >> "$GITHUB_OUTPUT"
             exit 0
           fi
@@ -328,7 +327,6 @@ jobs:
               PUBLISH_PROJECTS=$(pnpm nx show projects --affected --json)
             fi
           fi
-          echo "publish_projects=$PUBLISH_PROJECTS" >> "$GITHUB_OUTPUT"
           PUBLISH_PUBLIC_APPS_MATRIX=$(node tools/scripts/build-public-apps-matrix.js "$PUBLISH_PROJECTS")
           echo "publish_public_apps_matrix=$PUBLISH_PUBLIC_APPS_MATRIX" >> "$GITHUB_OUTPUT"
 
@@ -352,7 +350,6 @@ jobs:
       unit_test_projects_str: ${{ steps.affected.outputs.unit_test_projects_str }}
       unit_test_node_projects_str: ${{ steps.affected.outputs.unit_test_node_projects_str }}
       affected_playwright_matrix: ${{ steps.affected.outputs.affected_playwright_matrix }}
-      publish_projects: ${{ steps.affected.outputs.publish_projects }}
       publish_public_apps_matrix: ${{ steps.affected.outputs.publish_public_apps_matrix }}
       changed_i18n_apps: ${{ steps.affected.outputs.affected_i18n_projects != '' }}
       changed_core: ${{ steps.changed.outputs.core }}
@@ -2609,7 +2606,6 @@ jobs:
         job_build_e2e_public_apps,
         job_e2e_tests,
         publish_public_apps,
-        publish_shade,
       ]
     if: always()
     runs-on: ubuntu-slim
@@ -2624,92 +2620,7 @@ jobs:
         run: |
           echo "One of the dependent jobs have failed or been cancelled. You may need to re-run it." && exit 1
 
-  # Automatic alphas for internal development, using the public-app release pattern.
-  publish_shade:
-    name: Publish Shade alpha
-    needs: [job_setup, job_lint, job_typecheck, job_unit-tests]
-    if: |
-      always()
-      && github.repository == 'TryGhost/Ghost'
-      && github.event_name != 'pull_request'
-      && needs.job_setup.outputs.is_main == 'true'
-      && needs.job_setup.result == 'success'
-      && needs.job_lint.result == 'success'
-      && (needs.job_typecheck.result == 'success' || needs.job_typecheck.result == 'skipped')
-      && needs.job_unit-tests.result == 'success'
-      && contains(fromJSON(needs.job_setup.outputs.publish_projects), '@tryghost/shade')
-    runs-on: ubuntu-latest
-    environment: npm-release
-    concurrency:
-      group: publish-shade
-      cancel-in-progress: false
-    permissions:
-      contents: read
-      id-token: write
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-
-      - uses: ./.github/actions/setup-node-pnpm
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          install-args: --ignore-scripts
-          store-cache: 'false'
-          trust-lockfile: 'true'
-
-      # Compare packed files at the live version, including runtime dependencies.
-      - name: Check for package changes
-        id: package
-        working-directory: apps/shade
-        run: |
-          LATEST=$(node "$GITHUB_WORKSPACE/tools/scripts/compute-next-app-version.cjs" --latest .)
-          if [ -z "$LATEST" ]; then
-            echo "No release in this alpha line yet"
-            echo "changed=true" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-
-          pnpm pkg set version="$LATEST"
-          pnpm nx build @tryghost/shade
-
-          COMPARE_DIR="$RUNNER_TEMP/shade-compare"
-          mkdir -p "$COMPARE_DIR/current" "$COMPARE_DIR/published"
-          pnpm pack --out "$COMPARE_DIR/current.tgz"
-          curl -fsSL "$(pnpm view "@tryghost/shade@$LATEST" dist.tarball)" -o "$COMPARE_DIR/published.tgz"
-          tar -xzf "$COMPARE_DIR/current.tgz" -C "$COMPARE_DIR/current"
-          tar -xzf "$COMPARE_DIR/published.tgz" -C "$COMPARE_DIR/published"
-
-          # Dev tooling and commit metadata alone do not need a new release.
-          for package in "$COMPARE_DIR/current/package" "$COMPARE_DIR/published/package"; do
-            jq -S 'del(.devDependencies, .scripts, .nx, .gitHead)' "$package/package.json" > "$package/normalized.json"
-            mv "$package/normalized.json" "$package/package.json"
-          done
-
-          if diff -rq "$COMPARE_DIR/published/package" "$COMPARE_DIR/current/package"; then
-            echo "Package matches @tryghost/shade@$LATEST, skipping publish"
-            echo "changed=false" >> "$GITHUB_OUTPUT"
-          else
-            echo "changed=true" >> "$GITHUB_OUTPUT"
-          fi
-
-      - name: Determine release version
-        if: steps.package.outputs.changed == 'true'
-        working-directory: apps/shade
-        run: |
-          NEXT_VERSION=$(node "$GITHUB_WORKSPACE/tools/scripts/compute-next-app-version.cjs" .)
-          pnpm pkg set version="$NEXT_VERSION"
-
-      - name: Build Shade
-        if: steps.package.outputs.changed == 'true'
-        run: pnpm nx build @tryghost/shade
-
-      - name: Publish to npm
-        if: steps.package.outputs.changed == 'true'
-        working-directory: apps/shade
-        run: pnpm publish --provenance --no-git-checks
-
-  # Publishes @tryghost/* public apps to npm via OIDC trusted publishing.
+  # Publishes public apps and Shade to npm via OIDC trusted publishing.
   # Runs only on push-to-main — never on pull_request — so the `id-token: write`
   # permission is never exposed to PR-controlled code (ref: ONC-1677).
   publish_public_apps:
@@ -2717,7 +2628,7 @@ jobs:
     name: Publish ${{ matrix.package_name }}
     runs-on: ubuntu-latest
     # Serialize per-app publishes so two quick main merges can't both compute the
-    # same next-patch number and collide on npm. Different apps still publish in
+    # same next version and collide on npm. Different apps still publish in
     # parallel; cancel-in-progress stays false so a queued publish isn't dropped.
     environment: npm-release
     concurrency:
@@ -2732,7 +2643,7 @@ jobs:
       && needs.job_lint.result == 'success'
       && (needs.job_typecheck.result == 'success' || needs.job_typecheck.result == 'skipped')
       && needs.job_unit-tests.result == 'success'
-      && needs.job_build_e2e_public_apps.result == 'success'
+      && (needs.job_build_e2e_public_apps.result == 'success' || contains(fromJSON(needs.job_setup.outputs.publish_public_apps_matrix).*.package_name, '@tryghost/shade'))
       && needs.job_setup.outputs.publish_public_apps_matrix != '[]'
     permissions:
       contents: read
@@ -2743,16 +2654,22 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: ${{ matrix.package_name != '@tryghost/shade' }}
 
       - uses: ./.github/actions/setup-node-pnpm
         with:
           node-version: ${{ env.NODE_VERSION }}
           trust-lockfile: 'true'
+          install-args: ${{ matrix.package_name == '@tryghost/shade' && '--ignore-scripts' || '' }}
+          store-cache: ${{ matrix.package_name == '@tryghost/shade' && 'false' || 'restore' }}
 
       # nx marks an app affected for dependency changes that may not reach its
       # bundle (dev tooling, dedupes), so compare against what's live first.
       # Built with the live version so portal's baked-in version can't differ.
-      - name: Check for bundle changes
+      # Public apps still require their build gate; Shade has no UMD app build.
+      - name: Check for package changes
+        if: matrix.package_name == '@tryghost/shade' || needs.job_build_e2e_public_apps.result == 'success'
         id: bundle
         working-directory: ${{ matrix.package_path }}
         env:
@@ -2760,7 +2677,7 @@ jobs:
         run: |
           LATEST=$(node "$GITHUB_WORKSPACE/tools/scripts/compute-next-app-version.cjs" --latest .)
           if [ -z "$LATEST" ]; then
-            echo "No release in this major.minor line yet"
+            echo "No release in this version line yet"
             echo "changed=true" >> "$GITHUB_OUTPUT"
             exit 0
           fi
@@ -2773,8 +2690,25 @@ jobs:
           npm pack "${PACKAGE_NAME}@${LATEST}" --pack-destination "$PUBLISHED_DIR"
           tar -xzf "$PUBLISHED_DIR"/*.tgz -C "$PUBLISHED_DIR"
 
-          if diff -rq "$PUBLISHED_DIR/package/umd" umd; then
-            echo "Bundle matches ${PACKAGE_NAME}@${LATEST}, skipping publish"
+          PUBLISHED_PATH="$PUBLISHED_DIR/package/umd"
+          CURRENT_PATH="umd"
+          if [ "$PACKAGE_NAME" = '@tryghost/shade' ]; then
+            CURRENT_DIR="$RUNNER_TEMP/current"
+            mkdir -p "$CURRENT_DIR"
+            pnpm pack --out "$CURRENT_DIR/shade.tgz"
+            tar -xzf "$CURRENT_DIR/shade.tgz" -C "$CURRENT_DIR"
+            PUBLISHED_PATH="$PUBLISHED_DIR/package"
+            CURRENT_PATH="$CURRENT_DIR/package"
+
+            # Include runtime dependencies and exports, but ignore dev metadata.
+            for package in "$PUBLISHED_PATH" "$CURRENT_PATH"; do
+              jq -S 'del(.devDependencies, .scripts, .nx, .gitHead)' "$package/package.json" > "$package/normalized.json"
+              mv "$package/normalized.json" "$package/package.json"
+            done
+          fi
+
+          if diff -rq "$PUBLISHED_PATH" "$CURRENT_PATH"; then
+            echo "Package matches ${PACKAGE_NAME}@${LATEST}, skipping publish"
             echo "changed=false" >> "$GITHUB_OUTPUT"
           else
             echo "changed=true" >> "$GITHUB_OUTPUT"
@@ -2785,6 +2719,7 @@ jobs:
         id: release
         working-directory: ${{ matrix.package_path }}
         run: |
+          # Shade increments its alpha counter; public apps follow the patch rule below.
           # npm is the source of truth for the patch number: compute the next
           # patch above what's already published in this app's major.minor line
           # (or publish package.json's exact version when starting a fresh
@@ -2819,7 +2754,7 @@ jobs:
           pnpm publish --access public --provenance --no-git-checks
 
       - name: Replace version placeholders in cdn-paths
-        if: steps.bundle.outputs.changed == 'true'
+        if: steps.bundle.outputs.changed == 'true' && matrix.cdn_paths != ''
         id: cdn_paths
         run: |
           cdn_paths="${{ matrix.cdn_paths }}"
@@ -2828,11 +2763,11 @@ jobs:
           echo "EOF" >> $GITHUB_OUTPUT
 
       - name: Print cdn_paths
-        if: steps.bundle.outputs.changed == 'true'
+        if: steps.bundle.outputs.changed == 'true' && matrix.cdn_paths != ''
         run: echo "${{ steps.cdn_paths.outputs.cdn_paths }}"
 
       - name: Purge jsDelivr cache
-        if: steps.bundle.outputs.changed == 'true'
+        if: steps.bundle.outputs.changed == 'true' && matrix.cdn_paths != ''
         uses: gacts/purge-jsdelivr-cache@8d92aea944f1a3e8ad70505379e1a8ac72d56b73 # v1.1.2
         with:
           url: ${{ steps.cdn_paths.outputs.cdn_paths }}
