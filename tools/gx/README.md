@@ -30,7 +30,7 @@ Run `pnpm gx generate migration <slug>` from the repository root. The slug must
 be kebab-case. The existing generator creates a timestamped migration in the
 next minor-version folder and promotes package versions to RC when needed.
 See [database migrations](../../docs/practices/database-migrations.md) for the
-workflow. `pnpm --filter ghost migrate:create <slug>` remains a forwarding alias.
+workflow.
 
 ## Rebuild development tables
 
