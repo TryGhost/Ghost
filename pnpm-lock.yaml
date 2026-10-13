@@ -4358,6 +4358,9 @@ importers:
       jsonwebtoken:
         specifier: 'catalog:'
         version: 8.5.1
+      semver:
+        specifier: 'catalog:'
+        version: 7.8.5
     devDependencies:
       '@internal/cfg-eslint':
         specifier: workspace:*

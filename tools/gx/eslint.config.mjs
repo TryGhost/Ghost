@@ -17,4 +17,9 @@ export default [
     // Preserve the migrated command's terminal output.
     extraSrcRules: { ...cliRules, 'no-console': 'off' },
   }),
+  ...nodeLibConfig({
+    typescript: false,
+    srcGlobs: ['create-migration.js'],
+    extraSrcRules: { ...cliRules, 'no-console': 'off' },
+  }),
 ];
