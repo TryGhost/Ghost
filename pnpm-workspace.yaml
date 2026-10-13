@@ -157,6 +157,7 @@ catalog:
   glob: 13.0.6
   globals: 17.7.0
   got: 16.0.0
+  html-minifier-next: 8.10.7
   ipaddr.js: 2.5.0
   jiti: 2.7.0
   jose: 6.2.12
@@ -171,6 +172,7 @@ catalog:
   lru-cache: 11.5.3
   luxon: 3.7.2
   lucide-react: 1.23.0
+  make-synchronized: 0.8.0
   mingo: 2.5.3
   moment: 2.31.0
   moment-timezone: 0.6.5

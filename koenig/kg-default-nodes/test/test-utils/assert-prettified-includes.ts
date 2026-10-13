@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {minify} from 'html-minifier';
+import {minify} from './minify-html.js';
 import {prettifyHTML} from './prettify-html.js';
 
 export function assertPrettifiedIncludes(actual: string, expected: string): void {
