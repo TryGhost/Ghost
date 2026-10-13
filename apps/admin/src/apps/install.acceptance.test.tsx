@@ -12,7 +12,14 @@ import {
   staffRole,
 } from '@test-utils/acceptance';
 import { appsScreen } from './apps.screen';
-import { MANIFEST_URL, fakeInstallations, installation, labs, manifest } from './apps.test-utils';
+import {
+  MANIFEST_URL,
+  fakeAppPage,
+  fakeInstallations,
+  installation,
+  labs,
+  manifest,
+} from './apps.test-utils';
 
 const INSTALL_ROUTE = `/apps/install?manifest=${encodeURIComponent(MANIFEST_URL)}`;
 
@@ -80,6 +87,7 @@ describe('Installing an app', () => {
       installations.set([installation()]);
       return { app_installations: [installation()] };
     });
+    await fakeAppPage(installation());
 
     await renderAdminApp(INSTALL_ROUTE, { labs });
 
@@ -108,13 +116,19 @@ describe('Installing an app', () => {
 
     await appsScreen.installButton().click();
 
-    await expect.poll(currentRoute).toBe('/apps');
-    await expect(appsScreen.rows()).toHaveCount(1);
-    await expect.element(appsScreen.row('Podcast')).toHaveTextContent('Example Audio');
+    // A fresh install opens the app.
+    await expect.poll(currentRoute).toBe('/apps/installation-1');
     await expect.element(page.getByText('Podcast installed')).toBeVisible();
+    await expect.element(appsScreen.appPage()).toBeVisible();
     expect(installApi.requests.map(({ body }) => body)).toEqual([
       { app_installations: [{ manifest_url: MANIFEST_URL, digest: 'digest-1' }] },
     ]);
+
+    // Back in Apps, the list already shows the new app.
+    await appsScreen.sidebarLink().click();
+    await expect.poll(currentRoute).toBe('/apps');
+    await expect(appsScreen.rows()).toHaveCount(1);
+    await expect.element(appsScreen.row('Podcast')).toHaveTextContent('Example Audio');
   });
 
   it('marks an app served from the developer’s machine', async () => {
@@ -149,6 +163,7 @@ describe('Installing an app', () => {
         ? { app_installations: [installation({ manifest: changed.manifest })] }
         : apiError(409, { type: 'ConflictError', code: 'APP_MANIFEST_CHANGED', details: changed });
     });
+    await fakeAppPage(installation({ manifest: changed.manifest }));
 
     await renderAdminApp(INSTALL_ROUTE, { labs });
     await appsScreen.installButton().click();
@@ -158,7 +173,7 @@ describe('Installing an app', () => {
 
     await appsScreen.installButton().click();
 
-    await expect.poll(currentRoute).toBe('/apps');
+    await expect.poll(currentRoute).toBe('/apps/installation-1');
     expect(
       installApi.requests.map(
         ({ body }) =>
@@ -455,6 +470,7 @@ describe('Installing an app', () => {
       installations.set([installation()]);
       return { app_installations: [installation()] };
     });
+    await fakeAppPage(installation());
 
     await renderAdminApp(INSTALL_ROUTE, { labs });
     await appsScreen.installButton().click();
@@ -468,7 +484,7 @@ describe('Installing an app', () => {
     await expect.element(appsScreen.installDialog()).not.toHaveTextContent('Loading app details');
     finishRetry();
 
-    await expect.poll(currentRoute).toBe('/apps');
+    await expect.poll(currentRoute).toBe('/apps/installation-1');
     expect(installApi.requests).toHaveLength(2);
     expect(previewApi.requests).toHaveLength(1);
   });

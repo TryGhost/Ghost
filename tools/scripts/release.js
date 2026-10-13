@@ -507,7 +507,7 @@ async function main() {
 
   // 7. Advance to next RC
   // Default to the next patch RC. If a migration lands during the cycle,
-  // ghost/bin/create-migration.js promotes this to the next minor RC.
+  // tools/gx/create-migration.js promotes this to the next minor RC.
   // detectBumpType resolves the actual bump (patch vs minor) at the next release.
   logStep('Advancing to next RC');
   const nextPatch = semver.inc(newVersion, 'patch');

@@ -28,7 +28,7 @@ Options:
 
 After scaffolding, run \`pnpm install\` so the new workspace member is linked.`;
 
-function fail(message) {
+function fail(message: string): never {
   process.stderr.write(`\n\x1b[31m${message}\x1b[0m\n\n${USAGE}\n`);
   process.exit(1);
 }
@@ -70,9 +70,9 @@ if (existsSync(targetDir)) {
 const description = values.description ?? `The ${name} package for Ghost.`;
 
 // Recursively collect every file path under a directory.
-async function walk(dir) {
+async function walk(dir: string): Promise<string[]> {
   const entries = await readdir(dir, { withFileTypes: true });
-  const files = [];
+  const files: string[] = [];
   for (const entry of entries) {
     const full = join(dir, entry.name);
     if (entry.isDirectory()) {
@@ -84,7 +84,7 @@ async function walk(dir) {
   return files;
 }
 
-function applyTokens(text) {
+function applyTokens(text: string): string {
   return applyPackageTemplateTokens(text, {
     name,
     directory: packageDir,

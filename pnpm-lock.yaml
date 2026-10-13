@@ -389,6 +389,9 @@ catalogs:
     '@types/jsdom':
       specifier: 30.0.0
       version: 30.0.0
+    '@types/jsonwebtoken':
+      specifier: 9.0.10
+      version: 9.0.10
     '@types/lodash':
       specifier: 4.17.25
       version: 4.17.25
@@ -4355,13 +4358,28 @@ importers:
       jsonwebtoken:
         specifier: 'catalog:'
         version: 8.5.1
+      semver:
+        specifier: 'catalog:'
+        version: 7.8.5
     devDependencies:
       '@internal/cfg-eslint':
         specifier: workspace:*
         version: link:../configs/eslint
+      '@internal/cfg-typescript':
+        specifier: workspace:*
+        version: link:../configs/typescript
+      '@types/jsonwebtoken':
+        specifier: 'catalog:'
+        version: 9.0.10
+      '@types/node':
+        specifier: 'catalog:'
+        version: 22.20.1
       eslint:
         specifier: 'catalog:'
         version: 9.39.5(jiti@2.7.0)(supports-color@10.2.2)
+      typescript:
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   tools/scripts:
     dependencies:

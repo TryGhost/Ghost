@@ -24,9 +24,18 @@ directory.
 
 The command lives in `tools/gx`; its golden-post fixture remains under Ghost tests.
 
+## Database migration generator
+
+Run `pnpm gx generate migration <slug>` from the repository root. The slug must
+be kebab-case. The existing generator creates a timestamped migration in the
+next minor-version folder and promotes package versions to RC when needed.
+See [database migrations](../../docs/practices/database-migrations.md) for the
+workflow. `pnpm --filter ghost migrate:create <slug>` remains a forwarding alias.
+
 ## Validation
 
 The `@internal/gx` workspace gives pnpm and Nx a unit for lint and tests. It runs directly
-from source and has no build or package exports. Run `pnpm --filter @internal/gx lint` and
+from TypeScript source and has no build or package exports. Its `test` command
+checks types as well as running the command tests. Run `pnpm --filter @internal/gx lint` and
 `pnpm --filter @internal/gx test` to validate it. Add further commands as focused migrations
 of existing tools.

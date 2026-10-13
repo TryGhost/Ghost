@@ -1,10 +1,10 @@
 #!/usr/bin/env node
-/* eslint-disable ghost/ghost-custom/no-native-error */
 
-const path = require('path');
-const fs = require('fs');
-const { execSync } = require('child_process');
-const semver = require('semver');
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import fs from 'node:fs';
+import { execSync } from 'node:child_process';
+import semver from 'semver';
 
 const MIGRATION_TEMPLATE = `const logging = require('@tryghost/logging');
 
@@ -143,17 +143,17 @@ function createMigration({ slug, coreDir, date, lastPublishedVersion }) {
   return { migrationPath, rcVersion };
 }
 
-if (require.main === module) {
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const slug = process.argv[2];
 
   if (!slug) {
-    console.error('Usage: pnpm migrate:create <slug>');
+    console.error('Usage: pnpm gx generate migration <slug>');
     console.error('  slug: kebab-case migration name (e.g. add-column-to-posts)');
     process.exit(1);
   }
 
   try {
-    const coreDir = path.resolve(__dirname, '..');
+    const coreDir = fileURLToPath(new URL('../../ghost', import.meta.url));
     const { migrationPath, rcVersion } = createMigration({ slug, coreDir });
 
     console.log(`Created migration: ${migrationPath}`);
@@ -166,4 +166,4 @@ if (require.main === module) {
   }
 }
 
-module.exports = { isValidSlug, getTargetMigrationFolder, createMigration };
+export { isValidSlug, getTargetMigrationFolder, createMigration };

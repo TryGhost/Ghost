@@ -1,5 +1,9 @@
 import type { AppInstallation } from '@tryghost/admin-x-framework/api/app-installations';
 
+export function appRoute(installationId: string): string {
+  return `/apps/${installationId}`;
+}
+
 export function appDetailsRoute(installationId: string): string {
   return `/apps/details/${installationId}`;
 }

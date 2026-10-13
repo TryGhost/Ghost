@@ -13,3 +13,4 @@ export { useSidebarApps, type SidebarApp } from './lib/use-sidebar-apps';
 export const lazyAppsScreen = () => import('./apps');
 export const lazyAppInstallScreen = () => import('./install');
 export const lazyAppDetailsScreen = () => import('./app-details');
+export const lazyAppPageScreen = () => import('./app-page');

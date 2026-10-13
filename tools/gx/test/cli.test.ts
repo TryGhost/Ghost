@@ -14,7 +14,7 @@ async function fixture() {
   roots.push(root);
   await mkdir(join(root, 'tools/gx'), { recursive: true });
   await mkdir(join(root, 'tools/scripts/lib'), { recursive: true });
-  for (const file of ['cli.ts', 'create-package.js']) {
+  for (const file of ['cli.ts', 'create-package.ts']) {
     await cp(new URL(`../${file}`, import.meta.url), join(root, 'tools/gx', file));
   }
   for (const file of ['constants.js', 'package-template.js', 'versioning-ignore.js']) {

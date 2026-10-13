@@ -4,8 +4,8 @@ const _ = require('lodash');
 const sinon = require('sinon');
 const nql = require('@tryghost/nql-lang');
 
-const Cache = require('../../../../core/shared/custom-theme-settings-cache/custom-theme-settings-cache');
-const Service = require('../../../../core/shared/custom-theme-settings-cache/custom-theme-settings-service');
+const Cache = require('../../../../../core/shared/custom-theme-settings-cache/custom-theme-settings-cache');
+const Service = require('../../../../../core/server/services/custom-theme-settings/custom-theme-settings-service');
 
 function makeModelInstance(data) {
   const instance = Object.assign({}, data, {

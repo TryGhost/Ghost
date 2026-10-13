@@ -1240,7 +1240,7 @@ services:
           - core/server/services/automations/database-automations-repository.ts
           - core/server/services/members/members-api/repositories/member-repository.js
         tests:
-          - test/unit/boot-email-analytics.test.ts
+          - test/unit/boot/init-services.test.ts
           - test/e2e-server/boot-readiness.isolated.test.ts
           - test/unit/server/services/automations/service.test.ts
           - test/e2e-api/admin/automations.test.ts
@@ -1493,7 +1493,7 @@ services:
           - core/server/services/comments/comments-service-emails.js
           - core/server/services/members/service.js
           - core/server/services/email-service/email-service-wrapper.js
-          - core/server/services/i18n.js
+          - core/server/services/i18n/index.js
           - core/server/lib/mail/ghost-mailer.js
         tests:
           - test/integration/services/comments-service.test.js
@@ -1533,7 +1533,7 @@ services:
           - core/server/services/comments/comments-service-email-renderer.js
           - core/server/services/comments/comments-stats-service.js
           - core/server/services/settings-helpers/settings-helpers.js
-          - core/server/services/i18n.js
+          - core/server/services/i18n/index.js
           - core/server/lib/mail/ghost-mailer.js
           - core/shared/config/SCHEMA.md
           - core/shared/url-utils.ts
@@ -1736,9 +1736,10 @@ services:
           runs. Media promises, including failed results, are cached by exact URL within one
           job, not across jobs. Store units assert retention/eviction and two-run release
           waiting; media units hold an import to prove sharing, and assert separate-instance
-          isolation. Root units retain the same request/job/drain receiver and complete a
-          queued run after repeated init. Duplicate/concurrent job handling and late admissions
-          during shutdown remain source-only. The importer drain test awaits handle before
+          isolation. Root units retain the same request/job/drain receiver and call handleJob
+          directly after repeated init. Dispatch is stubbed; the jobs backend queue is not
+          exercised. Duplicate/concurrent job handling and late admissions during shutdown
+          remain source-only. The importer drain test awaits handle before
           checking settlement, so it cannot establish the final cleanup boundary.
         sources:
           - core/server/services/content-import/index.ts
@@ -2070,8 +2071,8 @@ services:
         Define ownership of borrowed adapters and pending writes before shutdown/re-init; no root
         drain or S3-client disposal exists. Conditional storage integration coverage is not proof
         of wrapper behavior or safe teardown.
-  custom-theme-settings.js:
-    kind: file
+  custom-theme-settings:
+    kind: directory
     disposition: retain
     status: audited
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
@@ -2087,13 +2088,13 @@ services:
         behavioral gaps.
       reviewedAt: f276513ba32b7114fd5cc4f7b02d3f82c0c31e3e
       sources:
-        - core/server/services/custom-theme-settings.js
-        - core/shared/custom-theme-settings-cache/custom-theme-settings-service.js
+        - core/server/services/custom-theme-settings/index.js
+        - core/server/services/custom-theme-settings/custom-theme-settings-service.js
         - core/server/services/themes/activation-bridge.js
         - core/server/services/themes/storage.js
         - core/boot.js
     entryPoints:
-      - custom-theme-settings.js
+      - custom-theme-settings/index.js
     notes: >-
       Preserve boot-before-theme activation, API replacement and the shared render cache.
       Activation concurrency, partial writes and initial visibility handling need contracts.
@@ -2103,12 +2104,13 @@ services:
           CommonJS exports one wrapper with synchronous init returning undefined. Its public
           api appears only after init and exposes activateTheme, listSettings, updateSettings
           and copySettingsBetweenThemes plus mutable working state. There is no reset, stop
-          or drain export. The implementation and BREAD/cache classes are deep exports under
+          or drain export. The implementation and BREAD classes are deep exports under
+          services/custom-theme-settings; the shared value-cache class remains under
           shared/custom-theme-settings-cache.
         sources:
-          - core/server/services/custom-theme-settings.js
-          - core/shared/custom-theme-settings-cache/custom-theme-settings-service.js
-          - core/shared/custom-theme-settings-cache/custom-theme-settings-bread-service.js
+          - core/server/services/custom-theme-settings/index.js
+          - core/server/services/custom-theme-settings/custom-theme-settings-service.js
+          - core/server/services/custom-theme-settings/custom-theme-settings-bread-service.js
           - core/shared/custom-theme-settings-cache/custom-theme-settings-cache.js
         tests: []
       construction:
@@ -2119,8 +2121,8 @@ services:
           activation. No alternate runtime implementation construction was found. Unit tests
           inject a fake model and separate cache; API tests explicitly re-init and activate.
         sources:
-          - core/server/services/custom-theme-settings.js
-          - core/shared/custom-theme-settings-cache/custom-theme-settings-service.js
+          - core/server/services/custom-theme-settings/index.js
+          - core/server/services/custom-theme-settings/custom-theme-settings-service.js
           - core/shared/custom-theme-settings-cache/index.js
         tests:
           - test/e2e-api/admin/custom-theme-settings.test.js
@@ -2156,13 +2158,13 @@ services:
           activate a fixture definition rather than asserting this boot dependency.
         sources:
           - core/boot.js
-          - core/server/services/custom-theme-settings.js
+          - core/server/services/custom-theme-settings/index.js
           - core/server/services/themes/index.js
           - core/server/services/themes/activate.js
-          - core/shared/custom-theme-settings-cache/custom-theme-settings-service.js
+          - core/server/services/custom-theme-settings/custom-theme-settings-service.js
         tests:
           - test/e2e-api/admin/custom-theme-settings.test.js
-          - test/unit/shared/custom-theme-settings-cache/service.test.js
+          - test/unit/server/services/custom-theme-settings/service.test.js
       lifetime:
         summary: >-
           Re-init discards api state but reuses the shared value cache; retained old instances
@@ -2172,11 +2174,11 @@ services:
           another. listSettings returns shallow copies; nested definition objects remain
           shared. Cache getAll is also shallow, and no stop clears or drains this state.
         sources:
-          - core/server/services/custom-theme-settings.js
-          - core/shared/custom-theme-settings-cache/custom-theme-settings-service.js
+          - core/server/services/custom-theme-settings/index.js
+          - core/server/services/custom-theme-settings/custom-theme-settings-service.js
           - core/shared/custom-theme-settings-cache/custom-theme-settings-cache.js
         tests:
-          - test/unit/shared/custom-theme-settings-cache/service.test.js
+          - test/unit/server/services/custom-theme-settings/service.test.js
           - test/unit/shared/custom-theme-settings-cache/cache.test.ts
       configuration:
         summary: >-
@@ -2188,12 +2190,12 @@ services:
           booleans and image URLs. The wrapper reads no config; theme choice is supplied by
           callers and model URL conversion uses shared URL utilities.
         sources:
-          - core/shared/custom-theme-settings-cache/custom-theme-settings-service.js
+          - core/server/services/custom-theme-settings/custom-theme-settings-service.js
           - core/server/models/custom-theme-setting.js
           - core/server/data/schema/schema.js
           - core/server/services/themes/index.js
         tests:
-          - test/unit/shared/custom-theme-settings-cache/service.test.js
+          - test/unit/server/services/custom-theme-settings/service.test.js
           - test/unit/server/models/custom-theme-setting.test.js
           - test/legacy/models/base/overrides.test.js
       resources:
@@ -2205,13 +2207,13 @@ services:
           no encompassing transaction, and neither boot nor wrapper registers cancellation
           or pending-operation cleanup.
         sources:
-          - core/shared/custom-theme-settings-cache/custom-theme-settings-service.js
-          - core/shared/custom-theme-settings-cache/custom-theme-settings-bread-service.js
+          - core/server/services/custom-theme-settings/custom-theme-settings-service.js
+          - core/server/services/custom-theme-settings/custom-theme-settings-bread-service.js
           - core/shared/custom-theme-settings-cache/index.js
           - core/boot.js
           - core/server/ghost-server.ts
         tests:
-          - test/unit/shared/custom-theme-settings-cache/service.test.js
+          - test/unit/server/services/custom-theme-settings/service.test.js
       failures:
         summary: >-
           Unknown keys and invalid select/boolean/color values reject before writes; HTTP tests
@@ -2222,14 +2224,14 @@ services:
           stale. Copy failure rolls back via the transaction; tests use a fake rollback, while
           the theme-upload HTTP case proves successful copy and subsequent activation only.
         sources:
-          - core/shared/custom-theme-settings-cache/custom-theme-settings-service.js
-          - core/shared/custom-theme-settings-cache/custom-theme-settings-bread-service.js
+          - core/server/services/custom-theme-settings/custom-theme-settings-service.js
+          - core/server/services/custom-theme-settings/custom-theme-settings-bread-service.js
           - core/server/services/themes/activation-bridge.js
           - core/server/services/themes/activate.js
           - core/server/services/themes/storage.js
           - core/server/api/endpoints/custom-theme-settings.js
         tests:
-          - test/unit/shared/custom-theme-settings-cache/service.test.js
+          - test/unit/server/services/custom-theme-settings/service.test.js
           - test/e2e-api/admin/custom-theme-settings.test.js
           - test/e2e-api/admin/themes.test.js
     unverified: []
@@ -2359,7 +2361,7 @@ services:
         tests:
           - test/unit/server/services/donations/index.test.ts
           - test/e2e-api/members/donation-checkout-session.test.js
-          - test/unit/boot-donations.test.ts
+          - test/unit/boot/init-services.test.ts
       lifetime:
         summary: >-
           The initializer retains the repository after successful init, with no reset or
@@ -2783,7 +2785,8 @@ services:
           - core/server/services/email-analytics/jobs/email-analytics-job-scheduler.ts
           - core/server/services/jobs-service/register-job-handlers.ts
         tests:
-          - test/unit/boot-email-analytics.test.ts
+          - test/unit/boot/init-services.test.ts
+          - test/unit/boot/init-background-services.test.ts
           - test/e2e-server/boot-background.isolated.test.ts
           - test/unit/server/services/email-analytics/email-analytics-job-scheduler.test.ts
           - test/integration/services/email-analytics/jobs.test.ts
@@ -3065,7 +3068,8 @@ services:
           - core/server/services/email-service/email-service.js
           - core/server/services/jobs-service/register-job-handlers.ts
         tests:
-          - test/unit/boot-email-analytics.test.ts
+          - test/unit/boot/init-services.test.ts
+          - test/unit/boot/init-background-services.test.ts
           - test/e2e-server/boot-readiness.isolated.test.ts
           - test/e2e-server/boot-background.isolated.test.ts
           - test/unit/server/services/email-service/batch-sending-service.test.js
@@ -4068,7 +4072,7 @@ services:
         - core/server/services/stripe/service.js
         - core/server/services/members/api.js
         - core/boot.js
-        - test/unit/boot-email-analytics.test.ts
+        - test/unit/boot/init-services.test.ts
     entryPoints:
       - gifts/index.ts
       - gifts/jobs/index.js
@@ -4168,7 +4172,7 @@ services:
           - core/server/services/gifts/jobs/index.js
           - core/server/services/jobs-service/register-job-handlers.ts
         tests:
-          - test/unit/boot-email-analytics.test.ts
+          - test/unit/boot/init-services.test.ts
       lifetime:
         summary: >-
           The service guard preserves the first graph/options and four subscriptions. Bindings
@@ -4313,8 +4317,8 @@ services:
         Cover failed template/partial loads retained in renderer caches, real-root mail/config
         capture and delivery/analytics failure interaction. Existing policy/transport fakes and
         test config changes do not establish replacement behavior or production hot reload.
-  i18n.js:
-    kind: file
+  i18n:
+    kind: directory
     disposition: retain
     status: audited
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
@@ -4329,12 +4333,12 @@ services:
         an explicit regression check, not a new helper feature.
       reviewedAt: f276513ba32b7114fd5cc4f7b02d3f82c0c31e3e
       sources:
-        - core/server/services/i18n.js
+        - core/server/services/i18n/index.js
         - core/boot.js
         - core/server/services/gifts/index.ts
-        - test/unit/boot-signing-keys.test.ts
+        - test/unit/boot/init-core.test.ts
     entryPoints:
-      - i18n.js
+      - i18n/index.js
     notes: >-
       Preserve the live delegating functions and translation options while establishing
       ownership of repeated initialization and locale listeners. Other translation
@@ -4350,7 +4354,7 @@ services:
           tests assert translated nickname text, not the facade export shape, init return,
           receiver independence or dir behavior.
         sources:
-          - core/server/services/i18n.js
+          - core/server/services/i18n/index.js
           - package.json
         tests:
           - test/unit/server/services/members/members-api/services/payments-service.test.js
@@ -4363,7 +4367,7 @@ services:
           emails and theme translation construct independent package instances; they do
           not initialize or share this facade's private translator.
         sources:
-          - core/server/services/i18n.js
+          - core/server/services/i18n/index.js
           - core/boot.js
           - core/server/services/email-service/email-service-wrapper.js
           - core/server/services/member-welcome-emails/service.js
@@ -4407,7 +4411,7 @@ services:
           unit consumers manually init; signup HTTP tests exercise booted English output.
         sources:
           - core/boot.js
-          - core/server/services/i18n.js
+          - core/server/services/i18n/index.js
           - core/shared/settings-cache/cache-manager.js
           - package.json
         tests:
@@ -4423,7 +4427,7 @@ services:
           loaded locale bundles in the current translator. A library t returned through
           changeLanguage is bound to that instance, unlike the exported delegating t.
         sources:
-          - core/server/services/i18n.js
+          - core/server/services/i18n/index.js
           - core/server/lib/common/events.js
           - core/server/ghost-server.ts
           - package.json
@@ -4440,7 +4444,7 @@ services:
           nicknames, unescaped titles and English gift labels; Stripe's translated-label case
           stubs t. Locale loading/fallback and listener behavior here are source-only.
         sources:
-          - core/server/services/i18n.js
+          - core/server/services/i18n/index.js
           - core/server/data/schema/default-settings/default-settings.json
           - core/server/services/members/api.js
           - core/server/services/members/members-api/services/payments-service.js
@@ -4461,7 +4465,7 @@ services:
           or resets state; settings changes are delivered immediately or after transaction
           commit, with rolled-back changes suppressed by the model event layer.
         sources:
-          - core/server/services/i18n.js
+          - core/server/services/i18n/index.js
           - core/server/lib/common/events.js
           - core/server/models/settings.js
           - core/server/models/base/plugins/events.js
@@ -4479,7 +4483,7 @@ services:
           The current local-resource path changes language synchronously despite returning
           a promise. The facade adds no retry, rollback or error translation.
         sources:
-          - core/server/services/i18n.js
+          - core/server/services/i18n/index.js
           - core/server/lib/common/events.js
           - core/server/models/base/plugins/events.js
           - core/boot.js
@@ -5525,7 +5529,7 @@ services:
           - core/boot.js
           - core/server/services/jobs-service/jobs-service.ts
         tests:
-          - test/unit/boot-email-analytics.test.ts
+          - test/unit/boot/init-services.test.ts
           - test/e2e-server/boot-readiness.isolated.test.ts
       lifetime:
         summary: >-
@@ -8109,7 +8113,7 @@ services:
           - core/server/services/mentions/mention-controller.js
           - core/server/services/recommendations/recommendation-service-wrapper.js
         tests:
-          - test/unit/boot-email-analytics.test.ts
+          - test/unit/boot/init-services.test.ts
           - test/e2e-api/webmentions/webmentions.test.js
           - test/e2e-server/services/mentions.test.js
       lifetime:
@@ -8347,7 +8351,7 @@ services:
           - core/boot.js
           - core/server/services/milestones/service.js
         tests:
-          - test/unit/boot-email-analytics.test.ts
+          - test/unit/boot/init-background-services.test.ts
           - test/e2e-server/services/milestones.test.js
       lifetime:
         summary: >-
@@ -9638,7 +9642,7 @@ services:
           - core/server/services/post-scheduling/post-scheduling.ts
           - core/server/adapters/scheduling/error-capture.ts
         tests:
-          - test/unit/boot-email-analytics.test.ts
+          - test/unit/boot/init-services.test.ts
       lifetime:
         summary: >-
           Module caching preserves the first URL/adapter graph and six listeners. There is
@@ -10805,7 +10809,7 @@ services:
         tests:
           - test/e2e-server/boot-frontend-only.isolated.test.ts
           - test/e2e-server/boot-backend-only.isolated.test.ts
-          - test/unit/boot-dynamic-routing.test.ts
+          - test/unit/boot/init-dynamic-routing.test.ts
           - test/e2e-frontend/custom-routes.test.js
           - test/e2e-frontend/helpers/get.test.js
           - test/e2e-frontend/member-stats.test.js
@@ -10922,7 +10926,7 @@ services:
           - core/frontend/services/apps/index.js
           - core/boot.js
         tests:
-          - test/unit/boot-dynamic-routing.test.ts
+          - test/unit/boot/init-dynamic-routing.test.ts
           - test/unit/server/services/route-settings/dynamic-routing-service.test.ts
           - test/integration/services/route-settings/dynamic-routing-service.test.ts
           - test/unit/server/services/route-settings/validate-route-settings.test.ts
@@ -11504,8 +11508,8 @@ services:
           - core/server/services/signing-keys/signing-key-service.ts
         tests:
           - test/unit/server/services/signing-keys/index.test.ts
-          - test/unit/boot-signing-keys.test.ts
-          - test/unit/boot-email-analytics.test.ts
+          - test/unit/boot/init-core.test.ts
+          - test/unit/boot/init-background-services.test.ts
       lifetime:
         summary: >-
           service, jobs and scheduled survive repeated init with no reset/disposal hook.
@@ -11580,8 +11584,8 @@ services:
         tests:
           - test/unit/server/services/signing-keys/signing-key-service.test.ts
           - test/unit/server/services/signing-keys/index.test.ts
-          - test/unit/boot-signing-keys.test.ts
-          - test/unit/boot-email-analytics.test.ts
+          - test/unit/boot/init-core.test.ts
+          - test/unit/boot/init-background-services.test.ts
           - test/unit/server/services/jobs-service/register-job-handlers.test.ts
     unverified: []
     blockers:
@@ -12538,7 +12542,7 @@ services:
           - core/server/services/stripe/webhook-manager.js
           - core/server/services/stripe/billing-portal-manager.js
         tests:
-          - test/unit/boot-email-analytics.test.ts
+          - test/unit/boot/init-services.test.ts
           - test/e2e-api/members/webhooks.test.js
       lifetime:
         summary: >-
@@ -13084,7 +13088,7 @@ services:
           - core/frontend/services/theme-engine/active.js
           - core/frontend/services/theme-engine/middleware/ensure-active-theme.js
         tests:
-          - test/unit/boot-email-analytics.test.ts
+          - test/unit/boot/init-background-services.test.ts
           - test/unit/frontend/services/theme-engine/middleware.test.js
           - test/unit/frontend/services/theme-engine/active.test.js
           - test/e2e-api/admin/themes.test.js
@@ -13777,7 +13781,7 @@ services:
           - core/server/data/exporter/table-lists.js
         tests:
           - test/unit/server/services/jobs-service/register-job-handlers.test.ts
-          - test/unit/boot-email-analytics.test.ts
+          - test/unit/boot/init-background-services.test.ts
           - test/integration/exporter/exporter.test.js
       startup:
         summary: >-
@@ -13797,7 +13801,7 @@ services:
           - core/server/services/jobs-service/jobs-service.ts
         tests:
           - test/unit/server/services/tinybird-sync/index.test.ts
-          - test/unit/boot-email-analytics.test.ts
+          - test/unit/boot/init-background-services.test.ts
       lifetime:
         summary: >-
           The scheduled flag is set before registration; a second call rejects, while a rejected
@@ -13999,7 +14003,7 @@ services:
           - core/server/lib/mail/ghost-mailer.js
         tests:
           - test/unit/server/services/update-check/schedule-update-check.test.ts
-          - test/unit/boot-email-analytics.test.ts
+          - test/unit/boot/init-background-services.test.ts
           - test/integration/jobs/update-check.test.ts
       lifetime:
         summary: >-
@@ -14242,7 +14246,7 @@ services:
         tests:
           - test/e2e-server/boot-frontend-only.isolated.test.ts
           - test/e2e-server/boot-backend-only.isolated.test.ts
-          - test/unit/boot-dynamic-routing.test.ts
+          - test/unit/boot/init-dynamic-routing.test.ts
           - test/unit/server/services/url/lazy-url-service.test.ts
           - test/e2e-api/members-comments/comments-lazy-url-parity.test.js
           - test/e2e-frontend/sitemap-slug-rename.test.js

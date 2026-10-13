@@ -8,15 +8,21 @@
   "scripts": {
     "lint": "eslint . --cache",
     "test:unit": "node --test test/*.test.ts",
-    "test": "pnpm test:unit"
+    "test": "pnpm run '/^test:/'",
+    "test:types": "tsc6 --noEmit"
   },
   "dependencies": {
     "@internal/scripts": "workspace:*",
-    "jsonwebtoken": "catalog:"
+    "jsonwebtoken": "catalog:",
+    "semver": "catalog:"
   },
   "devDependencies": {
     "@internal/cfg-eslint": "workspace:*",
-    "eslint": "catalog:"
+    "@internal/cfg-typescript": "workspace:*",
+    "@types/jsonwebtoken": "catalog:",
+    "@types/node": "catalog:",
+    "eslint": "catalog:",
+    "typescript": "catalog:"
   },
   "nx": {
     "namedInputs": {

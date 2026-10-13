@@ -13,6 +13,10 @@ function pageUrl(manifest: AppManifest): URL {
   return new URL(page.url);
 }
 
+export function appPageUrl(manifest: AppManifest): string {
+  return pageUrl(manifest).href;
+}
+
 /**
  * The host the app's page loads from, like `podcast.example.com`.
  * This is where the app runs. It can differ from where the manifest is hosted.
