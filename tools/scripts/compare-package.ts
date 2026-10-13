@@ -83,24 +83,23 @@ function packageFiles(directory: string, prefix = ''): Map<string, Buffer> {
   return files;
 }
 
-/** Compare unpacked packages, or only their UMD directories for public apps. */
-export function comparePackageDirectories(
+function compareUmdDirectories(localDirectory: string, publishedDirectory: string): Comparison {
+  // Keep the existing diff semantics, including added/removed directories.
+  const result = spawnSync('diff', [
+    '-rq',
+    join(publishedDirectory, 'umd'),
+    join(localDirectory, 'umd'),
+  ]);
+  return {
+    changed: result.status !== 0,
+    reason: result.status === 0 ? 'UMD contents match' : 'UMD contents differ',
+  };
+}
+
+function comparePackedPackageDirectories(
   localDirectory: string,
   publishedDirectory: string,
-  mode: ComparisonMode = 'package',
 ): Comparison {
-  if (mode === 'umd') {
-    // Keep the existing diff semantics, including added/removed directories.
-    const result = spawnSync('diff', [
-      '-rq',
-      join(publishedDirectory, 'umd'),
-      join(localDirectory, 'umd'),
-    ]);
-    return {
-      changed: result.status !== 0,
-      reason: result.status === 0 ? 'UMD contents match' : 'UMD contents differ',
-    };
-  }
   const local = packageFiles(localDirectory);
   const published = packageFiles(publishedDirectory);
   const paths = [...new Set([...local.keys(), ...published.keys()])].sort();
@@ -124,6 +123,18 @@ export function comparePackageDirectories(
     }
   }
   return { changed: false, reason: 'Packed package contents match' };
+}
+
+/** Compare unpacked packages, or only their UMD directories for public apps. */
+export function comparePackageDirectories(
+  localDirectory: string,
+  publishedDirectory: string,
+  mode: ComparisonMode = 'package',
+): Comparison {
+  if (mode === 'umd') {
+    return compareUmdDirectories(localDirectory, publishedDirectory);
+  }
+  return comparePackedPackageDirectories(localDirectory, publishedDirectory);
 }
 
 export function packPackage(packageDirectory: string, destination: string): void {
