@@ -1,8 +1,9 @@
 import assert from 'node:assert/strict';
 import { afterEach, test } from 'node:test';
-import { cp, mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { cp, mkdir, mkdtemp, readFile, rm, symlink, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { spawnSync } from 'node:child_process';
 
 const roots: string[] = [];
@@ -14,6 +15,10 @@ async function fixture() {
   roots.push(root);
   await mkdir(join(root, 'tools/gx'), { recursive: true });
   await mkdir(join(root, 'tools/scripts/lib'), { recursive: true });
+  await symlink(
+    fileURLToPath(new URL('../node_modules', import.meta.url)),
+    join(root, 'tools/gx/node_modules'),
+  );
   for (const file of ['cli.ts', 'create-package.ts']) {
     await cp(new URL(`../${file}`, import.meta.url), join(root, 'tools/gx', file));
   }
@@ -50,12 +55,22 @@ function run(root: string, args: string[]) {
 
 test('shows root and generator help, and rejects unknown commands', async () => {
   const root = await fixture();
-  for (const args of [[], ['--help'], ['generate', 'package', '--help']]) {
+  for (const args of [[], ['--help'], ['-h'], ['generate', 'package', '--help']]) {
     const result = run(root, args);
     assert.equal(result.status, 0, result.stderr);
-    assert.match(result.stdout, /pnpm gx generate package/);
+    assert.match(result.stdout, /pnpm gx/);
+    assert.match(result.stdout, /package/);
   }
-  assert.equal(run(root, ['unknown']).status, 1);
+  for (const args of [
+    ['unknown'],
+    ['generate'],
+    ['generate', 'unknown'],
+    ['generate', '--help'],
+    ['--help', 'unknown'],
+    ['--version'],
+  ]) {
+    assert.equal(run(root, args).status, 1, args.join(' '));
+  }
 });
 
 test('generates the existing template and registers a nested private package', async () => {
@@ -87,6 +102,7 @@ test('preserves the original invalid-name, outside-directory and existing-destin
   const before = await readFile(join(root, 'pnpm-workspace.yaml'), 'utf8');
   for (const args of [
     ['generate', 'package'],
+    ['generate', 'package', 'valid', '--unknown-option'],
     ['generate', 'package', 'Bad_Name'],
     ['generate', 'package', 'valid', '--dir', '../outside'],
   ]) {

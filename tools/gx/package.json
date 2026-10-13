@@ -14,6 +14,7 @@
   "dependencies": {
     "@internal/scripts": "workspace:*",
     "@tryghost/logging": "catalog:",
+    "@tryghost/pretty-cli": "catalog:",
     "jsonwebtoken": "catalog:",
     "semver": "catalog:",
     "tsx": "catalog:"
