@@ -1,21 +1,15 @@
-const assert = require('node:assert/strict');
-const { assertExists } = require('../../../../utils/assertions');
+import assert from 'node:assert/strict';
+import path from 'node:path';
+import fs from 'node:fs/promises';
+import os from 'node:os';
+import { Minifier } from '../../../../../core/frontend/services/assets-minification/minifier';
 
-const path = require('path');
-const fs = require('fs').promises;
-const os = require('os');
-const Minifier = require('../../../../../core/frontend/services/assets-minification/minifier');
-
-// minifier.getMatchingFiles() returns paths relative to process.cwd(); build
-// the expected paths the same way so assertions do not assume the test runs
-// with process.cwd() === ghost (the unified `pnpm test:watch` runs from
-// the repo root).
-const expectedFixturePath = (file) =>
-  path.relative(process.cwd(), path.join(__dirname, 'fixtures', 'basic-cards', 'css', file));
+const expectedFixturePath = (file: string): string =>
+  path.join(__dirname, 'fixtures', 'basic-cards', 'css', file);
 
 describe('Minifier', function () {
-  let minifier;
-  let testDir;
+  let minifier: Minifier;
+  let testDir: string;
 
   beforeAll(async function () {
     testDir = await fs.mkdtemp(path.join(os.tmpdir(), 'minifier-tests-'));
@@ -34,36 +28,41 @@ describe('Minifier', function () {
     it('star glob e.g. css/*.css', async function () {
       const result = await minifier.getMatchingFiles('css/*.css');
 
-      assert(Array.isArray(result));
-      assert.equal(result.length, 3);
-      assert.equal(result[0], expectedFixturePath('bookmark.css'));
-      assert.equal(result[1], expectedFixturePath('empty.css'));
-      assert.equal(result[2], expectedFixturePath('gallery.css'));
+      assert.deepEqual(result, [
+        expectedFixturePath('bookmark.css'),
+        expectedFixturePath('empty.css'),
+        expectedFixturePath('gallery.css'),
+      ]);
     });
 
     it('match glob range e.g. css/bookmark.css and css/empty.css (css/@(bookmark|empty).css)', async function () {
       const result = await minifier.getMatchingFiles('css/@(bookmark|empty).css');
 
-      assert(Array.isArray(result));
-      assert.equal(result.length, 2);
-      assert.equal(result[0], expectedFixturePath('bookmark.css'));
-      assert.equal(result[1], expectedFixturePath('empty.css'));
+      assert.deepEqual(result, [
+        expectedFixturePath('bookmark.css'),
+        expectedFixturePath('empty.css'),
+      ]);
     });
 
     it('reverse match glob e.g. css/!(bookmark).css', async function () {
       const result = await minifier.getMatchingFiles('css/!(bookmark).css');
 
-      assert(Array.isArray(result));
-      assert.equal(result.length, 2);
-      assert.equal(result[0], expectedFixturePath('empty.css'));
-      assert.equal(result[1], expectedFixturePath('gallery.css'));
+      assert.deepEqual(result, [
+        expectedFixturePath('empty.css'),
+        expectedFixturePath('gallery.css'),
+      ]);
     });
+
     it('reverse match glob e.g. css/!(bookmark|gallery).css', async function () {
       const result = await minifier.getMatchingFiles('css/!(bookmark|gallery).css');
 
-      assert(Array.isArray(result));
-      assert.equal(result.length, 1);
-      assert.equal(result[0], expectedFixturePath('empty.css'));
+      assert.deepEqual(result, [expectedFixturePath('empty.css')]);
+    });
+
+    it('returns no files for a missing folder', async function () {
+      const result = await minifier.getMatchingFiles('ts/*.ts');
+
+      assert.deepEqual(result, []);
     });
   });
 
@@ -72,16 +71,16 @@ describe('Minifier', function () {
       const result = await minifier.minify({
         'card.min.js': 'js/*.js',
       });
-      assert(Array.isArray(result));
-      assert.equal(result.length, 1);
+
+      assert.deepEqual(result, ['card.min.js']);
     });
 
     it('single type, multi file', async function () {
       const result = await minifier.minify({
         'card.min.css': 'css/*.css',
       });
-      assert(Array.isArray(result));
-      assert.equal(result.length, 1);
+
+      assert.deepEqual(result, ['card.min.css']);
     });
 
     it('both css and js types + multiple files', async function () {
@@ -90,8 +89,7 @@ describe('Minifier', function () {
         'card.min.css': 'css/*.css',
       });
 
-      assert(Array.isArray(result));
-      assert.equal(result.length, 2);
+      assert.deepEqual(result, ['card.min.js', 'card.min.css']);
     });
 
     it('can replace the content', async function () {
@@ -105,8 +103,7 @@ describe('Minifier', function () {
           },
         },
       );
-      assert(Array.isArray(result));
-      assert.equal(result.length, 1);
+      assert.deepEqual(result, ['card.min.js']);
 
       const outputPath = minifier.getFullDest(result[0]);
       const content = await fs.readFile(outputPath, { encoding: 'utf8' });
@@ -134,30 +131,30 @@ describe('Minifier', function () {
     });
 
     it('can only handle css and js files', async function () {
-      try {
-        await minifier.minify({
+      await assert.rejects(
+        minifier.minify({
           'card.min.ts': 'js/*.ts',
-        });
-        assert.fail('Should have errored');
-      } catch (err) {
-        assertExists(err);
-        assert.equal(err.errorType, 'IncorrectUsageError');
-        assert.match(err.message, /Unexpected destination/);
-      }
+        }),
+        { errorType: 'IncorrectUsageError', message: /Unexpected destination/ },
+      );
     });
 
-    it('can handle missing files and folders gracefully', async function () {
-      try {
-        await minifier.minify({
-          'card.min.ts': 'ts/*.ts',
+    it('errors on a missing folder', async function () {
+      await assert.rejects(
+        minifier.minify({
+          'card.min.js': 'ts/*.ts',
+        }),
+        { errorType: 'IncorrectUsageError', message: /Unable to read/ },
+      );
+    });
+
+    it('errors on a missing file', async function () {
+      await assert.rejects(
+        minifier.minify({
           'card.min.js': 'js/fake.js',
-        });
-        assert.fail('Should have errored');
-      } catch (err) {
-        assertExists(err);
-        assert.equal(err.errorType, 'IncorrectUsageError');
-        assert.match(err.message, /Unable to read/);
-      }
+        }),
+        { errorType: 'IncorrectUsageError', message: /Unable to read/ },
+      );
     });
 
     it('can minify empty js correctly to no result', async function () {
