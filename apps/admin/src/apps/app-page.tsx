@@ -13,6 +13,7 @@ import {
 } from '@tryghost/admin-x-framework';
 import {
   type AppInstallation,
+  type AppInstallationsResponseType,
   type AppSession,
   getAppInstallationQueryKey,
   useReadAppInstallation,
@@ -23,6 +24,7 @@ import { getSettingValue, useBrowseSettings } from '@tryghost/admin-x-framework/
 import { type SiteData, useBrowseSite } from '@tryghost/admin-x-framework/api/site';
 import type { User } from '@tryghost/admin-x-framework/api/users';
 import { apiUrl } from '@tryghost/admin-x-framework/helpers';
+import { useFetchApi } from '@tryghost/admin-x-framework/hooks';
 import { getSiteTimezone } from '@tryghost/admin-x-framework/utils/get-site-timezone';
 import { useThemeContext } from '@/providers/theme-context';
 import { AppsGate } from './components/apps-gate';
@@ -32,7 +34,7 @@ import { createAdminApiFetch } from './lib/bridge-fetch';
 import { type AppFrameHost, bindAppFrame } from './lib/bridge-host';
 import { placeRoute } from './lib/bridge-places';
 import { APP_FRAME_ALLOW, APP_FRAME_SANDBOX, appFrameTimeouts, isGhostOrigin } from './lib/frame';
-import { isInstallationNotFound } from './lib/not-found';
+import { isInstallationNotFound, isSessionsRouteMissing } from './lib/not-found';
 import { reportAppsError } from './lib/report-error';
 import { appPageUrl, servedFrom } from './lib/served-from';
 
@@ -467,6 +469,7 @@ function useAppSession(installationId: string): {
   restart: () => void;
 } {
   const queryClient = useQueryClient();
+  const fetchApi = useFetchApi();
   const { mutateAsync: start } = useStartAppSession();
   const [generation, setGeneration] = useState(0);
   const [result, setResult] = useState<{ key: string; session?: AppSession; error?: unknown }>();
@@ -478,23 +481,45 @@ function useAppSession(installationId: string): {
       return;
     }
     started.current = key;
-    start(installationId).then(
-      (response) => {
-        const session = response.app_sessions[0];
+    const queryKey = getAppInstallationQueryKey(installationId, SESSION_END_SEARCH_PARAMS);
+
+    // The installation as it stands is what the session's end is told by, so it goes
+    // where that read looks: it is read again only when the tab comes back into focus.
+    // One request per open.
+    const startSession = async (): Promise<AppSession | undefined> => {
+      try {
+        const session = (await start(installationId)).app_sessions[0];
         if (session) {
-          // The answer is the installation as it stands, which is what the session's end
-          // is told by: it is read again only when the tab comes back into focus. One
-          // request per open.
-          queryClient.setQueryData(
-            getAppInstallationQueryKey(session.installation.id, SESSION_END_SEARCH_PARAMS),
-            { app_installations: [session.installation] },
-          );
+          queryClient.setQueryData<AppInstallationsResponseType>(queryKey, {
+            app_installations: [session.installation],
+          });
         }
-        setResult({ key, session });
-      },
+        return session;
+      } catch (error) {
+        if (!isSessionsRouteMissing(error)) {
+          throw error;
+        }
+      }
+
+      // Admin and Core deploy independently, so this Admin may be talking to a Core from
+      // before app sessions, which has no route for them. The app opens as it did there:
+      // on the installation as read, without a re-check, pinned to the revision read.
+      const [, url] = queryKey;
+      const read = await queryClient.fetchQuery({
+        queryKey,
+        queryFn: () => fetchApi<AppInstallationsResponseType>(url),
+        staleTime: 0,
+      });
+      const installation = read.app_installations[0];
+      // That Core's installations may not carry a revision either; theirs never moves on.
+      return installation && { revision: installation.revision ?? 0, installation };
+    };
+
+    startSession().then(
+      (session) => setResult({ key, session }),
       (error: unknown) => setResult({ key, error }),
     );
-  }, [installationId, key, queryClient, start]);
+  }, [fetchApi, installationId, key, queryClient, start]);
 
   const restart = useCallback(() => setGeneration((value) => value + 1), []);
   return result?.key === key ? { settled: true, ...result, restart } : { settled: false, restart };

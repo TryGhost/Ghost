@@ -137,7 +137,8 @@ export const usePreviewAppInstallation = createMutation<
  * re-checks the app's manifest first, so a silent change applies and one that needs
  * approval suspends the app, and answers with the installation as it stands: that answer
  * alone decides whether the app loads. The session ends when the installation moves on
- * from the revision it answers with. An app that isn't installed answers 404.
+ * from the revision it answers with. An app that isn't installed answers 404 with the code
+ * `APP_NOT_INSTALLED`; a Ghost from before app sessions answers its plain 404.
  */
 export const useStartAppSession = createMutation<AppSessionsResponseType, string>({
   method: 'POST',

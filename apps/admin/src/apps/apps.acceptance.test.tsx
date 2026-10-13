@@ -79,11 +79,32 @@ const fakeReview = () =>
     ],
   });
 
-const apiError = (status: number, message: string) =>
-  new Response(JSON.stringify({ errors: [{ message }] }), {
+const apiError = (status: number, message: string, code?: string) =>
+  new Response(JSON.stringify({ errors: [{ message, ...(code ? { code } : {}) }] }), {
     status,
     headers: { 'content-type': 'application/json' },
   });
+
+/** What Ghost answers a request for an Admin API route it doesn't have. */
+const routeNotFound = () =>
+  new Response(
+    JSON.stringify({
+      errors: [
+        {
+          message: 'Resource not found',
+          context: null,
+          type: 'NotFoundError',
+          details: null,
+          property: null,
+          help: null,
+          code: null,
+          id: 'b1e2c3d4-0000-4000-8000-000000000000',
+          ghostErrorCode: null,
+        },
+      ],
+    }),
+    { status: 404, headers: { 'content-type': 'application/json' } },
+  );
 
 /**
  * Holds `appFrameTimeouts.ready` at `ms` for the length of `run`, or until it calls
@@ -373,7 +394,7 @@ describe('Managing apps', () => {
   it('says when an app page doesn’t exist', async () => {
     fakeInstallations();
     const id = 'abcdefabcdefabcdefabcdef';
-    fakeSessionStart(id, apiError(404, 'App installation not found.'));
+    fakeSessionStart(id, apiError(404, 'This app is not installed.', 'APP_NOT_INSTALLED'));
 
     await renderAdminApp(`/apps/${id}`, { labs });
 
@@ -409,6 +430,24 @@ describe('Managing apps', () => {
 
     await expect.element(appsScreen.frame()).toBeVisible();
     expect(sessionsApi.requests).toHaveLength(2);
+  });
+
+  it('opens an app as it did before, on a Ghost that has no app sessions', async () => {
+    // Admin and Core deploy independently: a Ghost from before app sessions answers the
+    // start of one with its plain 404, and its installations have no revision.
+    const older: Partial<AppInstallation> = installation();
+    delete older.revision;
+    const { sessionsApi, readApi, set } = await fakeAppPage(installation());
+    set(older as AppInstallation);
+    sessionsApi.set(routeNotFound());
+
+    await renderAdminApp(APP_ROUTE, { labs });
+
+    await expect.element(appsScreen.frame()).toBeVisible();
+    expect((await appState()).context?.session).toEqual({ revision: 0 });
+    expect(sessionsApi.requests).toHaveLength(1);
+    // Read once, to open the app, without a re-check; and not again for the session's end.
+    expect(readApi.requests).toHaveLength(1);
   });
 
   it('ends the session when the installation moves on, and starts another', async () => {
