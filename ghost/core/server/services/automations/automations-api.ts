@@ -31,7 +31,6 @@ import type {
   EditAutomationData,
 } from './automations-repository';
 import { createDatabaseAutomationsRepository } from './database-automations-repository';
-import { StartAutomationsPollEvent } from './events/start-automations-poll-event';
 import { parseFakeWaitHoursMultiplier } from './fake-wait-hours-multiplier';
 import {
   EMPTY_AUTOMATION_STATS,
@@ -160,6 +159,7 @@ const repository = createDatabaseAutomationsRepository({
 
 // NOTE: We are transitioning to this new API. This will be removed soon. See NY-1704.
 const automationsApi2 = createAutomationsApi2({
+  domainEvents,
   repository: createDatabaseAutomationsRepository2({
     knex,
   }),
@@ -654,9 +654,7 @@ function throwValidationError(message: string, property?: string): never {
   });
 }
 
-export function requestPoll() {
-  domainEvents.dispatch(StartAutomationsPollEvent.create());
-}
+export const requestPoll = automationsApi2.requestPoll.bind(automationsApi2);
 
 type TriggerOptions = Parameters<AutomationsRepository['trigger']>[0] & {
   event: 'member_sign_up';
