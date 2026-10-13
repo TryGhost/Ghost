@@ -2665,43 +2665,16 @@ jobs:
           install-args: ${{ matrix.install_args }}
           store-cache: 'false'
 
-      # nx marks an app affected for dependency changes that may not reach its
-      # bundle (dev tooling, dedupes), so compare against what's live first.
-      # Built with the live version so portal's baked-in version can't differ.
-      - name: Check for bundle changes
+      # Affected projects may have unchanged outputs (dev tooling, dedupes).
+      # Compare builds at the live version so embedded versions cannot differ.
+      - name: Check for package changes
         id: bundle
         working-directory: ${{ matrix.package_path }}
         env:
-          PACKAGE_NAME: ${{ matrix.package_name }}
-          COMPARE_BUNDLE: ${{ matrix.compare_bundle }}
+          COMPARISON_MODE: ${{ matrix.comparison_mode }}
         run: |
-          # Shade publishes whenever it is affected.
-          if [ "$COMPARE_BUNDLE" = 'false' ]; then
-            echo "changed=true" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-
           LATEST=$(node "$GITHUB_WORKSPACE/tools/scripts/compute-next-app-version.cjs" --latest .)
-          if [ -z "$LATEST" ]; then
-            echo "No release in this major.minor line yet"
-            echo "changed=true" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-
-          npm pkg set version="$LATEST"
-          pnpm nx build "$PACKAGE_NAME"
-
-          PUBLISHED_DIR="$RUNNER_TEMP/published"
-          mkdir -p "$PUBLISHED_DIR"
-          npm pack "${PACKAGE_NAME}@${LATEST}" --pack-destination "$PUBLISHED_DIR"
-          tar -xzf "$PUBLISHED_DIR"/*.tgz -C "$PUBLISHED_DIR"
-
-          if diff -rq "$PUBLISHED_DIR/package/umd" umd; then
-            echo "Bundle matches ${PACKAGE_NAME}@${LATEST}, skipping publish"
-            echo "changed=false" >> "$GITHUB_OUTPUT"
-          else
-            echo "changed=true" >> "$GITHUB_OUTPUT"
-          fi
+          node "$GITHUB_WORKSPACE/tools/scripts/compare-package.ts" --latest "$LATEST" --mode "$COMPARISON_MODE"
 
       - name: Determine release version
         if: steps.bundle.outputs.changed == 'true'

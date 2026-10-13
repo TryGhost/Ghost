@@ -130,9 +130,12 @@ conditions are removed when packing.
 ## Publishing
 
 When affected on `main`, CI builds and publishes Shade as `0.1.0-alpha.N` under
-npm's `latest` tag after lint, type checks and unit tests pass. It uses the shared
-public-app publishing job, affected-project selection and version helper. The
-committed version selects the alpha series;
+npm's `latest` tag after lint, type checks and unit tests pass. CI skips publishing
+when the packed files and consumer-facing package metadata match the latest alpha.
+The comparison includes JavaScript, types, CSS, assets, exports and runtime/peer
+dependencies, while ignoring development-only and publish-generated metadata.
+It uses the shared public-app publishing job, affected-project selection and
+version helper. The committed version selects the alpha series;
 `tools/scripts/compute-next-app-version.cjs` increments the latest matching alpha
 published on npm. Documentation-only changes follow the normal CI skip.
 No release commits or Git tags are created.

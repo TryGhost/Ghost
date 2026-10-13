@@ -30,7 +30,7 @@ describe('buildMatrix', () => {
         package_path: 'apps/shade',
         cdn_paths: '',
         install_args: '--ignore-scripts',
-        compare_bundle: false,
+        comparison_mode: 'package',
       },
     ]);
   });
@@ -49,7 +49,7 @@ describe('buildMatrix', () => {
     assert.strictEqual(matrix[0].package_name, '@tryghost/portal');
     assert.strictEqual(matrix[0].package_path, 'apps/portal');
     assert.strictEqual(matrix[0].install_args, '');
-    assert.strictEqual(matrix[0].compare_bundle, true);
+    assert.strictEqual(matrix[0].comparison_mode, 'umd');
   });
 
   it('preserves public-apps.json order regardless of affected order', () => {
