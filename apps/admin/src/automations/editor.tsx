@@ -21,7 +21,7 @@ import {
   type ButtonProps,
   LoadingIndicator,
 } from '@tryghost/shade/components';
-import { DirtyConfirmDialog } from '@tryghost/shade/patterns';
+import { DirtyConfirmDialog, useDirtyConfirmation } from '@tryghost/shade/patterns';
 import { useAddAutomation, useEditAutomation } from '@tryghost/admin-x-framework/api/automations';
 import type {
   AutomationDetail,
@@ -97,6 +97,7 @@ const AutomationEditorContent: React.FC<{
   const limiter = useLimiter({ limits: AUTOMATION_LIMITS });
   const { data: configData } = useBrowseConfig();
   const [limitError, setLimitError] = React.useState<HostLimitError | null>(null);
+  const { confirm: confirmUpgrade, dialogProps: upgradeDialogProps } = useDirtyConfirmation();
   const { automation, isError: isReadError } = useAutomationForEditing(automationId);
 
   const editMutation = useEditAutomation();
@@ -556,6 +557,7 @@ const AutomationEditorContent: React.FC<{
       />
 
       <DirtyConfirmDialog {...discardDialogProps} />
+      <DirtyConfirmDialog {...upgradeDialogProps} />
 
       {limitError && (
         <LimitModalContent
@@ -565,7 +567,10 @@ const AutomationEditorContent: React.FC<{
             limitError.message
           }
           onOk={() => {
-            navigateTo(upgradeRoute(configData?.config));
+            setLimitError(null);
+            confirmUpgrade(hasUnsavedChanges || isEmailModalDirty, () => {
+              navigateTo(upgradeRoute(configData?.config));
+            });
           }}
           onRemove={() => setLimitError(null)}
         />
