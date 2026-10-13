@@ -2338,7 +2338,7 @@ services:
         tests:
           - test/unit/server/services/donations/index.test.ts
           - test/e2e-api/members/donation-checkout-session.test.js
-          - test/unit/boot/init-services-donations.test.ts
+          - test/unit/boot/init-services.test.ts
       lifetime:
         summary: >-
           The initializer retains the repository after successful init, with no reset or
@@ -2763,6 +2763,7 @@ services:
           - core/server/services/jobs-service/register-job-handlers.ts
         tests:
           - test/unit/boot/init-services.test.ts
+          - test/unit/boot/init-background-services.test.ts
           - test/e2e-server/boot-background.isolated.test.ts
           - test/unit/server/services/email-analytics/email-analytics-job-scheduler.test.ts
           - test/integration/services/email-analytics/jobs.test.ts
@@ -3045,6 +3046,7 @@ services:
           - core/server/services/jobs-service/register-job-handlers.ts
         tests:
           - test/unit/boot/init-services.test.ts
+          - test/unit/boot/init-background-services.test.ts
           - test/e2e-server/boot-readiness.isolated.test.ts
           - test/e2e-server/boot-background.isolated.test.ts
           - test/unit/server/services/email-service/batch-sending-service.test.js
@@ -8300,7 +8302,7 @@ services:
           - core/boot.js
           - core/server/services/milestones/service.js
         tests:
-          - test/unit/boot/init-services.test.ts
+          - test/unit/boot/init-background-services.test.ts
           - test/e2e-server/services/milestones.test.js
       lifetime:
         summary: >-
@@ -11458,7 +11460,7 @@ services:
         tests:
           - test/unit/server/services/signing-keys/index.test.ts
           - test/unit/boot/init-core.test.ts
-          - test/unit/boot/init-services.test.ts
+          - test/unit/boot/init-background-services.test.ts
       lifetime:
         summary: >-
           service, jobs and scheduled survive repeated init with no reset/disposal hook.
@@ -11534,7 +11536,7 @@ services:
           - test/unit/server/services/signing-keys/signing-key-service.test.ts
           - test/unit/server/services/signing-keys/index.test.ts
           - test/unit/boot/init-core.test.ts
-          - test/unit/boot/init-services.test.ts
+          - test/unit/boot/init-background-services.test.ts
           - test/unit/server/services/jobs-service/register-job-handlers.test.ts
     unverified: []
     blockers:
@@ -13037,7 +13039,7 @@ services:
           - core/frontend/services/theme-engine/active.js
           - core/frontend/services/theme-engine/middleware/ensure-active-theme.js
         tests:
-          - test/unit/boot/init-services.test.ts
+          - test/unit/boot/init-background-services.test.ts
           - test/unit/frontend/services/theme-engine/middleware.test.js
           - test/unit/frontend/services/theme-engine/active.test.js
           - test/e2e-api/admin/themes.test.js
@@ -13730,7 +13732,7 @@ services:
           - core/server/data/exporter/table-lists.js
         tests:
           - test/unit/server/services/jobs-service/register-job-handlers.test.ts
-          - test/unit/boot/init-services.test.ts
+          - test/unit/boot/init-background-services.test.ts
           - test/integration/exporter/exporter.test.js
       startup:
         summary: >-
@@ -13750,7 +13752,7 @@ services:
           - core/server/services/jobs-service/jobs-service.ts
         tests:
           - test/unit/server/services/tinybird-sync/index.test.ts
-          - test/unit/boot/init-services.test.ts
+          - test/unit/boot/init-background-services.test.ts
       lifetime:
         summary: >-
           The scheduled flag is set before registration; a second call rejects, while a rejected
@@ -13952,7 +13954,7 @@ services:
           - core/server/lib/mail/ghost-mailer.js
         tests:
           - test/unit/server/services/update-check/schedule-update-check.test.ts
-          - test/unit/boot/init-services.test.ts
+          - test/unit/boot/init-background-services.test.ts
           - test/integration/jobs/update-check.test.ts
       lifetime:
         summary: >-

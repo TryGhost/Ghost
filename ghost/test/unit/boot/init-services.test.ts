@@ -1,9 +1,7 @@
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
 import { setImmediate } from 'node:timers/promises';
-import { runInNewContext } from 'node:vm';
 import sinon from 'sinon';
+import { loadBootFunction } from './harness';
 
 function createServicesHarness({ rescheduleOnBoot = true } = {}) {
   const stripe = sinon.stub().resolves();
@@ -13,6 +11,7 @@ function createServicesHarness({ rescheduleOnBoot = true } = {}) {
   const mentions = sinon.stub().resolves();
   const media = sinon.stub().resolves();
   const email = sinon.stub().resolves();
+  const donations = sinon.stub().resolves();
   const register = sinon.stub();
   const start = sinon.stub().resolves();
   // Production init returns before its first poll. Poll behavior belongs to
@@ -28,46 +27,45 @@ function createServicesHarness({ rescheduleOnBoot = true } = {}) {
     service: {},
   };
   const scheduler = { run() {}, rescheduleOnBoot };
-  const modules: Record<string, unknown> = {
-    './server/overrides': {},
-    '@tryghost/debug': () => () => {},
-    'node:assert/strict': assert,
-    './server/services/adapter-manager': { default: { getAdapter: () => scheduler } },
-    './server/adapters/scheduling/error-capture': { withErrorCapture: (value: unknown) => value },
-    './shared/url-utils': { default: { urlFor: () => 'https://example.com/ghost/api/admin' } },
-    './shared/settings-cache': { get: () => 'site-id' },
-    './server/services/stripe': { init: stripe },
-    './server/services/gifts': {
-      init: gifts,
-      deliveryService: {},
-      service: {},
+  // Permissive: initServices has many dependencies, and only those listed here matter to these
+  // tests. Every other dependency gets a generic service.
+  const initServices = loadBootFunction(
+    'initServices',
+    {
+      'node:assert/strict': assert,
+      './server/services/adapter-manager': { default: { getAdapter: () => scheduler } },
+      './server/adapters/scheduling/error-capture': { withErrorCapture: (value: unknown) => value },
+      './shared/url-utils': { default: { urlFor: () => 'https://example.com/ghost/api/admin' } },
+      './shared/settings-cache': { get: () => 'site-id' },
+      './server/services/stripe': { init: stripe },
+      './server/services/gifts': {
+        init: gifts,
+        deliveryService: {},
+        service: {},
+      },
+      './server/services/mentions': {
+        init: mentions,
+        controller: {},
+        sendingService: {},
+      },
+      './server/services/email-analytics': {
+        getGifts: () => ({}),
+        getAutomations: () => ({}),
+        getNewsletters: () => ({}),
+        init: analytics,
+      },
+      './server/services/email-service': { init: email, service: {} },
+      './server/services/donations': { default: { init: donations } },
+      './server/services/media-inliner': {
+        init: media,
+        getInstance: () => ({}),
+      },
+      './server/services/post-scheduling': { default: { rescheduleAll: reschedule } },
+      './server/services/jobs-service/register-job-handlers': { default: register },
+      './server/services/automations': { automationsService: { init: automations } },
     },
-    './server/services/mentions': {
-      init: mentions,
-      controller: {},
-      sendingService: {},
-    },
-    './server/services/email-analytics': {
-      getGifts: () => ({}),
-      getAutomations: () => ({}),
-      getNewsletters: () => ({}),
-      init: analytics,
-    },
-    './server/services/email-service': { init: email, service: {} },
-    './server/services/media-inliner': {
-      init: media,
-      getInstance: () => ({}),
-    },
-    './server/services/post-scheduling': { default: { rescheduleAll: reschedule } },
-    './server/services/jobs-service/register-job-handlers': { default: register },
-    './server/services/automations': { automationsService: { init: automations } },
-  };
-  const context = {
-    require: (name: string) => modules[name] ?? { ...genericService, default: genericService },
-    module: { exports: {} },
-  };
-  const source = readFileSync(resolve(__dirname, '../../../core/boot.js'), 'utf8');
-  const initServices = runInNewContext(`${source}\ninitServices;`, context);
+    { fallback: () => ({ ...genericService, default: genericService }) },
+  );
   return {
     initServices: (): Promise<void> =>
       initServices({ config: {}, prometheusClient: null, jobsService }),
@@ -77,6 +75,7 @@ function createServicesHarness({ rescheduleOnBoot = true } = {}) {
     analytics,
     media,
     email,
+    donations,
     register,
     start,
     automations,
@@ -130,7 +129,7 @@ it('waits for Stripe initialization before initializing gifts and the other serv
   sinon.assert.calledOnce(boot.start);
 });
 
-for (const dependency of ['mentions', 'media', 'email'] as const) {
+for (const dependency of ['mentions', 'media', 'email', 'donations'] as const) {
   it(`waits for ${dependency} initialization to finish before registering or starting jobs`, async function () {
     const boot = createServicesHarness();
     const ready = Promise.withResolvers<void>();
@@ -212,193 +211,4 @@ it('propagates a synchronous automations init error without post rescheduling', 
   sinon.assert.calledOnce(boot.start);
   sinon.assert.calledOnce(boot.automations);
   sinon.assert.notCalled(boot.reschedule);
-});
-
-function createBackgroundHarness(environment = 'production') {
-  const emailAnalyticsJobs = {
-    scheduleRecurringNewslettersJob: sinon.stub().resolves(),
-    scheduleRecurringAutomationsJob: sinon.stub().resolves(),
-    scheduleRecurringGiftDeliveriesJob: sinon.stub().resolves(),
-  };
-  const recovery = sinon.stub().resolves();
-  const giftRecovery = sinon.stub().resolves();
-  const activity = sinon.stub().resolves();
-  const themes = { loadInactiveThemes: sinon.stub() };
-  const logging = { error: sinon.stub() };
-  const updateCheck = { scheduleJobs: sinon.stub().resolves() };
-  const tinybirdSync = { scheduleJob: sinon.stub().resolves() };
-  const milestones = { initAndRun: sinon.stub() };
-  const signingKeys = { scheduleCheckJob: sinon.stub().resolves() };
-  const jobsInstance = {};
-  const modules: Record<string, unknown> = {
-    './server/overrides': {},
-    '@tryghost/debug': () => () => {},
-    '@tryghost/logging': logging,
-    './server/services/email-analytics/jobs': emailAnalyticsJobs,
-    './server/services/themes': themes,
-    './server/services/email-service': { service: { resumeInterruptedSends: recovery } },
-    './server/services/gifts': { recoverPendingDeliveries: giftRecovery },
-    './server/services/gifts/jobs': {
-      scheduleGiftCleanupJob: async () => {},
-      scheduleGiftReminderJob: async () => {},
-    },
-    './server/services/members/jobs': {
-      scheduleTokenCleanupJob: async () => {},
-      scheduleExpiredCompCleanupJob: async () => {},
-    },
-    './server/services/signing-keys': signingKeys,
-    './server/services/jobs-service': { getInstance: () => jobsInstance },
-    './server/services/activitypub': { init: activity },
-    './server/services/tinybird-sync': tinybirdSync,
-    './server/services/update-check': updateCheck,
-    './server/services/remote-flags': { init() {} },
-    './server/services/milestones': milestones,
-  };
-  const context = {
-    require(name: string) {
-      assert.ok(Object.hasOwn(modules, name), `Unexpected boot dependency: ${name}`);
-      return modules[name];
-    },
-    module: { exports: {} },
-    process: { env: { NODE_ENV: environment } },
-  };
-  const source = readFileSync(resolve(__dirname, '../../../core/boot.js'), 'utf8');
-  const initBackgroundServices = runInNewContext(`${source}\ninitBackgroundServices;`, context);
-  return {
-    init: (): Promise<void> => initBackgroundServices({ config: { get: () => true } }),
-    themes,
-    recovery,
-    giftRecovery,
-    activity,
-    emailAnalyticsJobs,
-    logging,
-    updateCheck,
-    tinybirdSync,
-    milestones,
-    signingKeys,
-    jobsInstance,
-  };
-}
-
-for (const environment of ['test', 'testing', 'testing-mysql']) {
-  it(`loads inactive themes but skips interrupted-send recovery in ${environment}`, async function () {
-    const boot = createBackgroundHarness(environment);
-    await boot.init();
-
-    sinon.assert.calledOnce(boot.themes.loadInactiveThemes);
-    sinon.assert.notCalled(boot.recovery);
-    sinon.assert.notCalled(boot.giftRecovery);
-    sinon.assert.notCalled(boot.activity);
-    sinon.assert.notCalled(boot.milestones.initAndRun);
-  });
-}
-
-for (const environment of ['development', 'production']) {
-  it(`waits for interrupted-send recovery before continuing background startup in ${environment}`, async function () {
-    const boot = createBackgroundHarness(environment);
-    const release = Promise.withResolvers<void>();
-    boot.recovery.returns(release.promise);
-    const startup = boot.init();
-
-    try {
-      await setImmediate();
-      sinon.assert.calledOnce(boot.recovery);
-      sinon.assert.notCalled(boot.giftRecovery);
-      sinon.assert.notCalled(boot.activity);
-      sinon.assert.notCalled(boot.milestones.initAndRun);
-    } finally {
-      release.resolve();
-      await startup;
-    }
-
-    sinon.assert.calledOnce(boot.giftRecovery);
-    sinon.assert.calledOnce(boot.activity);
-    sinon.assert.calledOnce(boot.milestones.initAndRun);
-    sinon.assert.callOrder(
-      boot.recovery,
-      boot.giftRecovery,
-      boot.activity,
-      boot.milestones.initAndRun,
-    );
-  });
-}
-
-it('keeps starting background services when email analytics scheduling fails', async function () {
-  const boot = createBackgroundHarness();
-  const newsletterError = new Error('newsletter backend unavailable');
-  const giftError = new Error('gift lookup failed');
-  boot.emailAnalyticsJobs.scheduleRecurringNewslettersJob.rejects(newsletterError);
-  boot.emailAnalyticsJobs.scheduleRecurringGiftDeliveriesJob.rejects(giftError);
-  await boot.init();
-
-  sinon.assert.calledTwice(boot.logging.error);
-  sinon.assert.calledWithExactly(boot.logging.error, newsletterError);
-  sinon.assert.calledWithExactly(boot.logging.error, giftError);
-  sinon.assert.calledOnce(boot.updateCheck.scheduleJobs);
-  sinon.assert.calledOnce(boot.tinybirdSync.scheduleJob);
-  sinon.assert.calledOnce(boot.milestones.initAndRun);
-});
-
-it('awaits signing-key job registration before later background work using the shared jobs instance', async function () {
-  const boot = createBackgroundHarness();
-  const ready = Promise.withResolvers<void>();
-  boot.signingKeys.scheduleCheckJob.returns(ready.promise);
-  const startup = boot.init();
-
-  try {
-    await setImmediate();
-    sinon.assert.calledOnceWithExactly(
-      boot.signingKeys.scheduleCheckJob,
-      sinon.match.same(boot.jobsInstance),
-    );
-    sinon.assert.notCalled(boot.emailAnalyticsJobs.scheduleRecurringNewslettersJob);
-    sinon.assert.notCalled(boot.emailAnalyticsJobs.scheduleRecurringAutomationsJob);
-    sinon.assert.notCalled(boot.emailAnalyticsJobs.scheduleRecurringGiftDeliveriesJob);
-    sinon.assert.notCalled(boot.activity);
-    sinon.assert.notCalled(boot.tinybirdSync.scheduleJob);
-    sinon.assert.notCalled(boot.updateCheck.scheduleJobs);
-    sinon.assert.notCalled(boot.milestones.initAndRun);
-  } finally {
-    ready.resolve();
-    await Promise.allSettled([startup]);
-  }
-  await startup;
-
-  sinon.assert.calledOnce(boot.activity);
-  sinon.assert.calledOnceWithExactly(
-    boot.tinybirdSync.scheduleJob,
-    sinon.match.same(boot.jobsInstance),
-  );
-  sinon.assert.calledOnceWithExactly(
-    boot.updateCheck.scheduleJobs,
-    sinon.match.same(boot.jobsInstance),
-  );
-  sinon.assert.calledOnce(boot.milestones.initAndRun);
-});
-
-it('logs signing-key job registration failures and continues background startup', async function () {
-  const boot = createBackgroundHarness();
-  const failure = new Error('signing-key job registration failed');
-  boot.signingKeys.scheduleCheckJob.rejects(failure);
-
-  await boot.init();
-
-  sinon.assert.calledOnceWithExactly(
-    boot.signingKeys.scheduleCheckJob,
-    sinon.match.same(boot.jobsInstance),
-  );
-  sinon.assert.calledOnceWithExactly(boot.logging.error, failure);
-  sinon.assert.calledOnce(boot.emailAnalyticsJobs.scheduleRecurringNewslettersJob);
-  sinon.assert.calledOnce(boot.emailAnalyticsJobs.scheduleRecurringAutomationsJob);
-  sinon.assert.calledOnce(boot.emailAnalyticsJobs.scheduleRecurringGiftDeliveriesJob);
-  sinon.assert.calledOnce(boot.activity);
-  sinon.assert.calledOnceWithExactly(
-    boot.tinybirdSync.scheduleJob,
-    sinon.match.same(boot.jobsInstance),
-  );
-  sinon.assert.calledOnceWithExactly(
-    boot.updateCheck.scheduleJobs,
-    sinon.match.same(boot.jobsInstance),
-  );
-  sinon.assert.calledOnce(boot.milestones.initAndRun);
 });

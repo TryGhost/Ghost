@@ -1,9 +1,7 @@
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
 import { setImmediate } from 'node:timers/promises';
-import { runInNewContext } from 'node:vm';
 import sinon from 'sinon';
+import { loadBootFunction } from './harness';
 
 function createCoreHarness() {
   const settings = {
@@ -12,9 +10,7 @@ function createCoreHarness() {
   };
   const signingKeys = { init: sinon.stub().resolves() };
   const i18n = { init: sinon.stub().resolves() };
-  const modules: Record<string, unknown> = {
-    './server/overrides': {},
-    '@tryghost/debug': () => () => {},
+  const initCore = loadBootFunction('initCore', {
     './server/services/adapter-manager': { default: { init() {} } },
     './server/lib/image/image-decoders': { restrictImageDecoders() {} },
     './server/lib/image/image-content': {
@@ -30,14 +26,6 @@ function createCoreHarness() {
     './server/services/members-metafields': { init() {} },
     './server/services/app-installations': { init() {} },
     './server/services/stripe-checkout-config': { init() {} },
-  };
-  const source = readFileSync(resolve(__dirname, '../../../core/boot.js'), 'utf8');
-  const initCore = runInNewContext(`${source}\ninitCore;`, {
-    require(name: string) {
-      assert.ok(Object.hasOwn(modules, name), `Unexpected boot dependency: ${name}`);
-      return modules[name];
-    },
-    module: { exports: {} },
   });
   return {
     init: (): Promise<void> => initCore({ config: { get: () => ({}) } }),

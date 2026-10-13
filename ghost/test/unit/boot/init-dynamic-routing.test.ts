@@ -1,33 +1,20 @@
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
 import { setImmediate } from 'node:timers/promises';
-import { runInNewContext } from 'node:vm';
 import sinon from 'sinon';
+import { loadBootFunction } from './harness';
 
 function createRoutingHarness(frontend: boolean) {
   const start = sinon.stub().resolves();
   const routerManager = { init: sinon.stub() };
   const urlService = {};
   const bridge = { init: sinon.stub() };
-  const modules: Record<string, unknown> = {
-    './server/overrides': {},
-    '@tryghost/debug': () => () => {},
+  // Exercise the production orchestration without booting unrelated services.
+  const initDynamicRouting = loadBootFunction('initDynamicRouting', {
     './frontend/services/routing': { routerManager },
     './server/services/route-settings': { service: { start } },
     './server/services/url': urlService,
     './bridge': bridge,
-  };
-  const context = {
-    require: (name: string) => {
-      assert.ok(Object.hasOwn(modules, name), `Unexpected boot dependency: ${name}`);
-      return modules[name];
-    },
-    module: { exports: {} },
-  };
-  // Exercise the production orchestration without booting unrelated services.
-  const source = readFileSync(resolve(__dirname, '../../../core/boot.js'), 'utf8');
-  const initDynamicRouting = runInNewContext(`${source}\ninitDynamicRouting;`, context);
+  });
   return {
     init: (): Promise<void> => initDynamicRouting({ frontend }),
     start,
