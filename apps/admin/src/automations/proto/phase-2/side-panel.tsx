@@ -56,17 +56,25 @@ const SettingsFields: React.FC<SidePanelProps['settings']> = ({
   nameTaken,
   exits,
 }) => {
+  // The same two faults the header's title field reports, in the same words
+  // (see editable-title) — the title goes red for both, so this field has to
+  // be able to say why for both. Blank used to pass silently here.
+  const nameError = !values.name.trim()
+    ? 'Add an automation name.'
+    : nameTaken
+      ? 'An automation with this name already exists.'
+      : null;
   const [showError, setShowError] = useState(false);
   useEffect(() => {
-    if (!nameTaken) {
+    if (!nameError) {
       setShowError(false);
       return;
     }
     const timer = setTimeout(() => setShowError(true), ERROR_DEBOUNCE_MS);
     return () => clearTimeout(timer);
     // values.name restarts the timer on every keystroke — the message appears
-    // only once a colliding value has been LEFT there.
-  }, [nameTaken, values.name]);
+    // only once a bad value has been LEFT there.
+  }, [nameError, values.name]);
 
   return (
     // 2xl = gap-8, 32px between fields — the right-panel concept's settings spacing.
@@ -83,7 +91,7 @@ const SettingsFields: React.FC<SidePanelProps['settings']> = ({
             aria-live so it's announced without moving focus off the field. */}
         {showError && (
           <p aria-live="polite" className="text-xs text-destructive">
-            An automation with this name already exists.
+            {nameError}
           </p>
         )}
       </div>
