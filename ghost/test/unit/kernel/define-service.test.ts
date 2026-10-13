@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { IncorrectUsageError } from '@tryghost/errors';
 import sinon from 'sinon';
+import { expectTypeOf } from 'vitest';
 import { defineService } from '../../../core/kernel/define-service';
 
 describe('defineService', function () {
@@ -9,6 +10,7 @@ describe('defineService', function () {
     const create = sinon.stub().returns(instance);
     const root = defineService('Example', create);
 
+    assert.deepEqual(Object.keys(root).sort(), ['init', 'service']);
     sinon.assert.notCalled(create);
     assert.throws(() => root.service, {
       name: 'IncorrectUsageError',
@@ -23,6 +25,28 @@ describe('defineService', function () {
     await root.init();
     assert.equal(root.service, instance);
     sinon.assert.calledOnce(create);
+  });
+
+  it('exposes typed extras without constructing the service or evaluating its getter', async function () {
+    const instance = { value: 42 };
+    const create = sinon.stub().returns(instance);
+    const isAvailable = sinon.stub<[], boolean>().returns(true);
+    const extras = { isAvailable };
+    const root = defineService('Example', create, extras);
+
+    expectTypeOf(root.extras).toEqualTypeOf<typeof extras>();
+    assert.deepEqual(Object.keys(root).sort(), ['extras', 'init', 'service']);
+    assert.equal(root.extras, extras);
+    assert.equal(typeof Object.getOwnPropertyDescriptor(root, 'service')?.get, 'function');
+    assert.throws(() => root.service, IncorrectUsageError);
+    sinon.assert.notCalled(create);
+    sinon.assert.notCalled(isAvailable);
+    assert.equal(root.extras.isAvailable(), true);
+    sinon.assert.notCalled(create);
+
+    await root.init();
+    assert.equal(root.service, instance);
+    assert.equal(root.extras, extras);
   });
 
   it('shares pending initialization and publishes only the ready instance', async function () {

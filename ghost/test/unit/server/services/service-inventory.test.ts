@@ -35,12 +35,23 @@ const migration = z
     sources: z.array(description).min(1),
   })
   .strict();
+const extraSchema = z
+  .object({
+    purpose: description,
+    callers: z.array(description).min(1),
+    timing: description,
+    dependencies: z.array(description),
+    failurePolicy: description,
+    destination: description,
+  })
+  .strict();
 const entry = z
   .object({
     kind: z.enum(['directory', 'file']),
     disposition: z.enum(['retain', 'relocate', 'review']),
     status: z.enum(['pending', 'auditing', 'audited']),
     migrated: z.literal(true).optional(),
+    extras: z.record(description, extraSchema).optional(),
     auditedAt: z
       .string()
       .regex(/^[0-9a-f]{40}$/)
@@ -128,6 +139,11 @@ describe('service migration inventory', function () {
           'not-applicable',
           'A migrated service cannot be classified as a non-service',
         );
+      }
+      for (const extra of Object.values(service.extras ?? {})) {
+        for (const caller of extra.callers) {
+          assertFileWithin(coreRoot, caller);
+        }
       }
       for (const source of service.migration.sources) {
         assertFileWithin(coreRoot, source);
