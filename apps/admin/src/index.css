@@ -6,7 +6,6 @@
 @import './element-styles.css';
 @import '@tryghost/shade/styles.css';
 @import './assets/fonts/inter-admin/fonts.css';
-@import './assets/fonts/inter/fonts.css';
 @import './pintura.css';
 
 /* Document root. Shade's spacing and type tokens assume a 10px rem. */
@@ -199,6 +198,50 @@ body {
   --color-editor-placeholder: var(--editor-placeholder);
 }
 
+/* The editor is a reading surface, so Inter sets each size there in the design
+   made for it, as it does outside Admin: the body in its text design and the
+   title and headings in its finer display one. The rest of Admin pins Inter to
+   the text design (see the document root above). */
+.editor-optical-sizing {
+  font-optical-sizing: auto;
+  font-variation-settings: normal;
+}
+
+/* The writer's editor font (admin7EditorImprovements), set as `data-editor-font`
+   on the editor. Koenig reads the --kg-font-* variables for the body and its
+   headings; the title and excerpt read the --editor-display-* ones. Serif sets
+   nothing, so the editor keeps its own typography. Sans sets the body in Inter;
+   mono sets everything the writer writes in the system's monospace font (SF
+   Mono on Apple devices, Consolas on Windows), which is wider, so it steps the
+   sizes down and drops the negative tracking the display sizes use. */
+@theme inline {
+  --font-editor-serif: Georgia, Times, serif;
+  --font-editor-sans: var(--font-sans);
+  --font-editor-mono:
+    ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace;
+}
+
+[data-editor-font='sans'] {
+  --kg-font-body: var(--font-editor-sans);
+  --kg-font-body-scale: 0.925;
+  --kg-font-body-line-height: 1.65em;
+  --kg-font-body-tracking: -0.011em;
+}
+
+[data-editor-font='mono'] {
+  --kg-font-body: var(--font-editor-mono);
+  --kg-font-body-scale: 0.85;
+  --kg-font-body-line-height: 1.75em;
+  --kg-font-body-tracking: -0.01em;
+  --kg-font-heading: var(--font-editor-mono);
+  --kg-font-heading-scale: 0.85;
+  --kg-font-heading-tracking-scale: 0;
+  --editor-display-font: var(--font-editor-mono);
+  --editor-title-scale: 0.85;
+  --editor-excerpt-scale: 0.9;
+  --editor-display-tracking-scale: 0;
+}
+
 /* Shared Koenig wrappers must retain their layout without Ember styles. */
 .koenig-react-editor {
   max-width: 740px;
@@ -209,11 +252,6 @@ body {
    body pointer events, so body-level Koenig portals need to opt back in. */
 [data-kg-portal] {
   pointer-events: auto;
-}
-
-/* Prose classes are for formatting arbitrary HTML that comes from the API */
-.gh-prose-links a {
-  color: #30cf43;
 }
 
 .dark .shade .gh-loading-orb-container {

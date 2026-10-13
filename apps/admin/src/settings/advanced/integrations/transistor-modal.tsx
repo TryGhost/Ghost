@@ -9,6 +9,7 @@ import {
   FieldGroup,
   FieldLabel,
   FieldSet,
+  Link,
   Switch,
 } from '@tryghost/shade/components';
 import {
@@ -128,14 +129,9 @@ function TransistorModal() {
                 <FieldLabel htmlFor="transistor-enabled">Enable Transistor</FieldLabel>
                 <FieldDescription>
                   Connect your Ghost site with{' '}
-                  <a
-                    className="text-green"
-                    href="https://transistor.fm"
-                    rel="noopener noreferrer"
-                    target="_blank"
-                  >
+                  <Link href="https://transistor.fm" external>
                     Transistor.fm
-                  </a>{' '}
+                  </Link>{' '}
                   to offer members private podcasts.
                 </FieldDescription>
               </FieldContent>

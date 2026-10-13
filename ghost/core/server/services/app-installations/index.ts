@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { defineService } from '../../../kernel/define-service';
 import config from '../../../shared/config';
 import urlUtils from '../../../shared/url-utils';
 import {
@@ -14,9 +15,6 @@ export { actingContext } from './actions';
 export type { AppInstallation } from './codec';
 export type { AppInstallationPreview } from './service';
 
-// Constructed by init() at boot, not at import: knex is only available once the DB has connected.
-export let service: AppInstallationsService | undefined;
-
 /**
  * The apps slice of config, parsed here as the config guide asks of a feature's keys.
  * `localhostAlias` is set when Ghost runs in a container in development, where `localhost`
@@ -31,11 +29,8 @@ function localhostAlias(): string | null {
   return AppsConfig.parse(config.get('apps') ?? {}).localhostAlias;
 }
 
-export function init(): void {
-  if (service) {
-    return;
-  }
-
+// Constructed by init() at boot, not at import: knex is only available once the DB has connected.
+export default defineService('App Installations', () => {
   const { knex } = require('../../data/db');
   const models = require('../../models');
   const externalRequest = require('../../lib/request-external');
@@ -43,7 +38,7 @@ export function init(): void {
   const recordAction: RecordAppInstallationAction = (input) =>
     recordAppInstallationAction({ Action: models.Action, ...input });
 
-  service = new AppInstallationsService({
+  return new AppInstallationsService({
     knex,
     recordAction,
     // Read per install, not once at boot: both are config, which tests change.
@@ -56,7 +51,7 @@ export function init(): void {
       getLocalhostAlias: localhostAlias,
     }),
   });
-}
+});
 
 /**
  * Whether this database has the installations table.

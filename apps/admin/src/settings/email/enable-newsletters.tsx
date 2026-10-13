@@ -1,6 +1,6 @@
 import React from 'react';
 import TopLevelGroup from '@/settings/components/top-level-group';
-import { Banner, Switch } from '@tryghost/shade/components';
+import { Banner, Link, Switch } from '@tryghost/shade/components';
 import { Inline } from '@tryghost/shade/primitives';
 import { LucideIcon } from '@tryghost/shade/utils';
 import {
@@ -79,15 +79,16 @@ const EnableNewsletters: React.FC<{ keywords: string[] }> = ({ keywords }) => {
             {isDisabled && (
               <Banner className="mt-6" size="sm" variant="default">
                 Your{' '}
-                <button
-                  className="underline!"
-                  type="button"
-                  onClick={() => {
-                    updateRoute('members');
-                  }}
-                >
-                  Subscription access
-                </button>{' '}
+                <Link asChild>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      updateRoute('members');
+                    }}
+                  >
+                    Subscription access
+                  </button>
+                </Link>{' '}
                 is set to &lsquo;Nobody&rsquo;, which disables all newsletter sending. Change to
                 &lsquo;Invite-only&rsquo; to send newsletters to existing members without allowing
                 new signups.

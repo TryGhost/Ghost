@@ -13,6 +13,7 @@ import {
   FieldGroup,
   FieldLabel,
   Input,
+  Link,
   LoadingIndicator,
 } from '@tryghost/shade/components';
 import { useSearchParams } from '@tryghost/admin-x-framework';
@@ -258,14 +259,9 @@ const AddRecommendationModal: React.FC = () => {
           ) : (
             <FieldDescription>
               Need inspiration?{' '}
-              <a
-                className="text-green"
-                href="https://www.ghost.org/explore"
-                rel="noopener noreferrer"
-                target="_blank"
-              >
+              <Link href="https://www.ghost.org/explore" external>
                 Explore thousands of sites
-              </a>{' '}
+              </Link>{' '}
               to recommend
             </FieldDescription>
           )}

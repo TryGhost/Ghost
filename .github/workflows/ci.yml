@@ -75,8 +75,9 @@ jobs:
       - name: Output GitHub context
         if: env.RUNNER_DEBUG == '1'
         run: |
-          echo "GITHUB_EVENT_NAME: ${{ github.event_name }}"
-          echo "GITHUB_CONTEXT: ${{ toJson(github.event) }}"
+          echo "GITHUB_EVENT_NAME: $GITHUB_EVENT_NAME"
+          echo "GITHUB_CONTEXT:"
+          cat "$GITHUB_EVENT_PATH"
 
       # pnpm's cache dir, not the store dir that setup-node's `cache: pnpm`
       # already handles. On a hit `pnpm install` reuses the cached verdict and
@@ -104,7 +105,7 @@ jobs:
           store-cache: save
 
       # Replaced nrwl/nx-set-shas, which verified each candidate commit over the
-      # API and hid the errors — see scripts/nx-set-shas.js.
+      # API and hid the errors — see tools/scripts/nx-set-shas.js.
       - name: Set SHAs for Nx Commands
         if: env.IS_TAG != 'true'
         env:
@@ -114,7 +115,7 @@ jobs:
           # untested commits land, so there a lookup that comes up empty fails
           # the run rather than falling back to the previous commit.
           ON_MISSING: ${{ (env.IS_MAIN == 'true' && github.repository == 'TryGhost/Ghost') && 'error' || 'previous-commit' }}
-        run: node scripts/nx-set-shas.js --branch "$BRANCH" --head "$HEAD_COMMIT" --on-missing "$ON_MISSING"
+        run: node tools/scripts/nx-set-shas.js --branch "$BRANCH" --head "$HEAD_COMMIT" --on-missing "$ON_MISSING"
 
       - name: Determine changed packages
         if: env.IS_TAG != 'true'
@@ -128,7 +129,7 @@ jobs:
               # The @internal/scripts workspace sits outside .github but is
               # invoked by the workflows below, so it needs the same treatment
               # the '.github/**' glob used to give it when it lived there.
-              - 'scripts/**'
+              - 'tools/scripts/**'
               # Renovate config / workflow files have no Ghost
               # runtime/test impact. Anchored as &renovate_only and
               # referenced from every filter below so a PR touching
@@ -148,27 +149,32 @@ jobs:
               - *renovate_only
               - '.github/actions/**'
               - '.github/scripts/**'
-              - 'scripts/**'
+              - 'tools/scripts/**'
             docs:
+              - 'ghost/core/server/services/service-inventory.yaml'
               - '**/*.md'
               - '**/*.mdx'
               - '.agents/**'
               - '.claude/**'
               - '.github/workflows/ci.yml'
               - 'package.json'
-              - 'scripts/check-agent-skill-links.js'
-              - 'scripts/test/check-agent-skill-links.test.js'
-              - 'scripts/check-agent-guidance.js'
-              - 'scripts/test/check-agent-guidance.test.js'
+              - 'tools/scripts/check-agent-skill-links.js'
+              - 'tools/scripts/test/check-agent-skill-links.test.js'
+              - 'tools/scripts/check-agent-guidance.js'
+              - 'tools/scripts/test/check-agent-guidance.test.js'
+            service-inventory:
+              - 'ghost/core/server/services/service-inventory.yaml'
+              - 'ghost/test/unit/server/services/service-inventory.test.ts'
+              - 'ghost/vitest.config.inventory.ts'
+              - '.github/workflows/ci.yml'
             package-standards:
               - 'packages/**'
               - 'package.json'
               - 'pnpm-workspace.yaml'
-              - 'scripts/check-internal-packages.js'
-              - 'scripts/create-package.js'
-              - 'scripts/lib/constants.js'
-              - 'scripts/lib/package-template.js'
-              - 'scripts/test/check-internal-packages.test.js'
+              - 'tools/scripts/check-internal-packages.js'
+              - 'tools/gx/**'
+              - 'tools/scripts/lib/constants.js'
+              - 'tools/scripts/test/check-internal-packages.test.js'
               - '.github/workflows/ci.yml'
             core:
               - *shared
@@ -193,14 +199,19 @@ jobs:
               # positive pattern so micromatch cannot add docs files back.
               - '!**/*.md'
               - '!**/*.mdx'
+              # Migration metadata is documentation; boot never reads it.
+              - '!ghost/core/server/services/service-inventory.yaml'
+              - '!ghost/vitest.config.inventory.ts'
             unit-test-globals:
               - 'vitest.config.mjs'
             core-unit-test-globals:
               - 'ghost/vitest.config.ts'
               - 'ghost/test/utils/vitest-*.ts'
             any-code:
+              - '!ghost/core/server/services/service-inventory.yaml'
               - '!**/*.md'
               - '!**/*.mdx'
+              - '!.github/CODEOWNERS'
               - '!.devcontainer/**'
               - '!.vscode/**'
               - *renovate_only
@@ -211,12 +222,15 @@ jobs:
             # React Admin tests still run through the affected unit, acceptance,
             # lint and typecheck targets; only the build + E2E lane is skipped.
             e2e:
+              - '!ghost/core/server/services/service-inventory.yaml'
               - '!**/*.md'
               - '!**/*.mdx'
+              - '!.github/CODEOWNERS'
               - '!.devcontainer/**'
               - '!.vscode/**'
               - '!ghost/test/**'
               - '!ghost/vitest.config.ts'
+              - '!ghost/vitest.config.inventory.ts'
               - '!koenig/*/test/**'
               - '!apps/admin/src/**/*.test.ts'
               - '!apps/admin/src/**/*.test.tsx'
@@ -325,7 +339,7 @@ jobs:
               PUBLISH_PROJECTS=$(pnpm nx show projects --affected --json)
             fi
           fi
-          PUBLISH_PUBLIC_APPS_MATRIX=$(node scripts/build-public-apps-matrix.js "$PUBLISH_PROJECTS")
+          PUBLISH_PUBLIC_APPS_MATRIX=$(node tools/scripts/build-public-apps-matrix.js "$PUBLISH_PROJECTS")
           echo "publish_public_apps_matrix=$PUBLISH_PUBLIC_APPS_MATRIX" >> "$GITHUB_OUTPUT"
 
       # Per-file e2e durations saved by job_e2e_timings on main. Read once here so
@@ -353,6 +367,7 @@ jobs:
       changed_core: ${{ steps.changed.outputs.core }}
       changed_any_code: ${{ steps.changed.outputs.any-code }}
       changed_docs: ${{ steps.changed.outputs.docs }}
+      changed_service_inventory: ${{ steps.changed.outputs.service-inventory }}
       changed_package_standards: ${{ steps.changed.outputs.package-standards }}
       changed_tb_cli: ${{ steps.changed.outputs.tb-cli }}
       changed_tinybird_slim: ${{ steps.changed.outputs.tinybird-slim }}
@@ -410,7 +425,7 @@ jobs:
           PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
           PR_BASE_REF: ${{ github.event.pull_request.base.ref }}
           PR_COMPARE_SHA: ${{ github.event.pull_request.head.sha }}
-        run: node scripts/check-app-version-bump.js
+        run: node tools/scripts/check-app-version-bump.js
 
       # Fail the PR if a publishable package changed (source or a catalog entry
       # it consumes) but the branch adds no changeset covering it. Prototype of
@@ -420,10 +435,10 @@ jobs:
           PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
           PR_BASE_REF: ${{ github.event.pull_request.base.ref }}
           PR_COMPARE_SHA: ${{ github.event.pull_request.head.sha }}
-        run: node scripts/change-check.js
+        run: node tools/scripts/change-check.js
 
       - name: Check private packages are excluded from versioning
-        run: node scripts/check-versioning-ignore.js
+        run: node tools/scripts/check-versioning-ignore.js
 
   job_migration_integrity_check:
     name: Check migration integrity
@@ -450,7 +465,7 @@ jobs:
           PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
           PR_BASE_REF: ${{ github.event.pull_request.base.ref }}
           PR_COMPARE_SHA: ${{ github.event.pull_request.head.sha }}
-        run: node scripts/check-migration-integrity.cjs
+        run: node tools/scripts/check-migration-integrity.cjs
 
   job_lint:
     runs-on: ubuntu-latest
@@ -504,9 +519,28 @@ jobs:
 
       - name: Lint documentation guidance
         run: |
-          node --test scripts/test/check-agent-guidance.test.js
-          node scripts/check-agent-skill-links.js
-          node scripts/check-agent-guidance.js
+          node --test tools/scripts/test/check-agent-guidance.test.js
+          node tools/scripts/check-agent-skill-links.js
+          node tools/scripts/check-agent-guidance.js
+
+  job_service_inventory:
+    name: Validate service inventory
+    runs-on: ubuntu-slim
+    timeout-minutes: 10
+    needs: [job_setup]
+    if: needs.job_setup.outputs.changed_service_inventory == 'true'
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: ./.github/actions/setup-node-pnpm
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          trust-lockfile: 'true'
+          install-args: --filter ghost --ignore-scripts
+          store-cache: 'false'
+
+      - name: Validate service inventory
+        run: pnpm --filter ghost exec vitest run --config vitest.config.inventory.ts
 
   job_lint_packages:
     name: Lint packages
@@ -524,10 +558,10 @@ jobs:
           store-cache: 'false'
 
       - name: Check internal package golden path
-        run: node scripts/check-internal-packages.js
+        run: node tools/scripts/check-internal-packages.js
 
       - name: Test internal package checker
-        run: node --test scripts/test/check-internal-packages.test.js
+        run: node --test tools/scripts/test/check-internal-packages.test.js
 
   job_i18n:
     runs-on: ubuntu-latest
@@ -588,10 +622,10 @@ jobs:
         run: hyperfine --show-output --warmup 3 'GHOST_CI_SHUTDOWN_AFTER_BOOT=1 node index.js' --export-json boot-perf.json
 
       # Native modules like sharp cost memory in every process, so they should
-      # load on first use. The list lives in scripts/lib/boot-modules.js
+      # load on first use. The list lives in tools/scripts/lib/boot-modules.js
       - name: Check boot skips lazy-loaded modules
         working-directory: ghost
-        run: GHOST_CI_SHUTDOWN_AFTER_BOOT=1 node --import ../scripts/assert-boot-skips-modules.js index.js
+        run: GHOST_CI_SHUTDOWN_AFTER_BOOT=1 node --import ../tools/scripts/assert-boot-skips-modules.js index.js
 
       - name: Report result
         uses: ./.github/actions/report-boot-benchmark
@@ -1167,7 +1201,7 @@ jobs:
         # Reporting must not change the test step's result if the report is incomplete.
         continue-on-error: true
         run: |
-          node scripts/summarize-admin-acceptance.js \
+          node tools/scripts/summarize-admin-acceptance.js \
             --report=apps/admin/test-results/acceptance.json \
             --shard=${{ matrix.shardIndex }}/${{ matrix.shardTotal }} >> "$GITHUB_STEP_SUMMARY"
 
@@ -1436,7 +1470,7 @@ jobs:
           if [ "$GITHUB_REF_TYPE" != "tag" ]; then
             VERSION="${VERSION}+${GITHUB_SHA:0:7}"
           fi
-          node scripts/upload-sentry-sourcemaps.ts --release "ghost@${VERSION}" apps/admin/dist koenig/koenig-lexical/dist
+          node tools/scripts/upload-sentry-sourcemaps.ts --release "ghost@${VERSION}" apps/admin/dist koenig/koenig-lexical/dist
 
   job_pack:
     name: Build Ghost-CLI archive
@@ -2103,7 +2137,7 @@ jobs:
             ARGS+=("--baseline=${RUNNER_TEMP}/baseline-report/image-report.json")
           fi
 
-          node scripts/compare-image-report.js "${ARGS[@]}" >> "$GITHUB_STEP_SUMMARY"
+          node tools/scripts/compare-image-report.js "${ARGS[@]}" >> "$GITHUB_STEP_SUMMARY"
 
     outputs:
       use-artifact: ${{ steps.strategy.outputs.use-artifact }}
@@ -2347,7 +2381,7 @@ jobs:
           printf '%s' "$E2E_TIMINGS" > "$RUNNER_TEMP/e2e-timings.json"
           pnpm exec playwright test --list --project=main --reporter=json > "$RUNNER_TEMP/e2e-list.json"
           mkdir -p shard-plan
-          node ../scripts/e2e-shards.ts plan \
+          node ../tools/scripts/e2e-shards.ts plan \
             --list "$RUNNER_TEMP/e2e-list.json" \
             --timings "$RUNNER_TEMP/e2e-timings.json" \
             --shard-index "$SHARD_INDEX" \
@@ -2506,7 +2540,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-          sparse-checkout: scripts/e2e-shards.ts
+          sparse-checkout: tools/scripts/e2e-shards.ts
           sparse-checkout-cone-mode: false
 
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
@@ -2528,7 +2562,7 @@ jobs:
       - name: Record e2e timings
         run: |
           mkdir -p e2e-reports
-          node scripts/e2e-shards.ts record \
+          node tools/scripts/e2e-shards.ts record \
             --reports e2e-reports \
             --timings e2e-timings.json \
             --complete "${{ needs.job_e2e_tests.result == 'success' }}" \
@@ -2589,6 +2623,7 @@ jobs:
         job_migration_integrity_check,
         job_lint,
         job_lint_docs,
+        job_service_inventory,
         job_lint_packages,
         job_stripe_fixtures,
         job_i18n,
@@ -2667,7 +2702,7 @@ jobs:
         env:
           PACKAGE_NAME: ${{ matrix.package_name }}
         run: |
-          LATEST=$(node "$GITHUB_WORKSPACE/scripts/compute-next-app-version.cjs" --latest .)
+          LATEST=$(node "$GITHUB_WORKSPACE/tools/scripts/compute-next-app-version.cjs" --latest .)
           if [ -z "$LATEST" ]; then
             echo "No release in this major.minor line yet"
             echo "changed=true" >> "$GITHUB_OUTPUT"
@@ -2700,7 +2735,7 @@ jobs:
           # minor/major line). The patch digit in package.json is otherwise
           # unused — Ghost core resolves apps via <pkg>@~<major.minor> on
           # jsDelivr, so the newest published patch is what sites receive.
-          NEXT_VERSION=$(node "$GITHUB_WORKSPACE/scripts/compute-next-app-version.cjs" .)
+          NEXT_VERSION=$(node "$GITHUB_WORKSPACE/tools/scripts/compute-next-app-version.cjs" .)
           echo "Publishing ${{ matrix.package_name }}@${NEXT_VERSION}"
 
           # Write it before building so the version baked into the bundle
@@ -2914,7 +2949,7 @@ jobs:
         run: |
           PREV_TAG="${{ steps.prev_tag.outputs.tag }}"
           if [ -n "$PREV_TAG" ]; then
-            node scripts/lib/release-notes.js "$PREV_TAG" "${GITHUB_REF_NAME}" > /tmp/release-notes.md
+            node tools/scripts/lib/release-notes.js "$PREV_TAG" "${GITHUB_REF_NAME}" > /tmp/release-notes.md
           else
             echo "This release contains fixes for minor bugs and issues reported by Ghost users." > /tmp/release-notes.md
           fi

@@ -2,9 +2,12 @@ import assert from 'node:assert/strict';
 import ObjectId from 'bson-objectid';
 import sinon from 'sinon';
 import { vi } from 'vitest';
+// @ts-expect-error @tryghost/domain-events currently lacks type declarations.
+import domainEvents from '@tryghost/domain-events';
 import { createDatabaseAutomationsRepository } from '../../../../../core/server/services/automations/database-automations-repository';
 
 import * as automationsApi from '../../../../../core/server/services/automations/automations-api';
+import { StartAutomationsPollEvent } from '../../../../../core/server/services/automations/events/start-automations-poll-event';
 import {
   EMPTY_EMAIL_LEXICAL,
   NON_EMPTY_EMAIL_LEXICAL,
@@ -526,6 +529,19 @@ describe('automations API', function () {
           edges: [buildEdge(a, b), buildEdge(c, d), buildEdge(d, c)],
         }),
         /graph must be a single linear path/,
+      );
+    });
+  });
+
+  describe('requestPoll', function () {
+    it('dispatches a "start automations poll" event', function () {
+      const dispatchStub = sinon.stub(domainEvents, 'dispatch');
+
+      automationsApi.requestPoll();
+
+      sinon.assert.calledOnceWithExactly(
+        dispatchStub,
+        sinon.match.instanceOf(StartAutomationsPollEvent),
       );
     });
   });

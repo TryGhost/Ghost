@@ -5,8 +5,8 @@ packages:
   - 'koenig/*'
   - 'packages/**'
   - '!packages/_template'
-  - 'configs/*'
-  - 'scripts'
+  - 'tools/*'
+  - 'tools/configs/*'
 
 strictDepBuilds: true
 catalogMode: strict
@@ -31,7 +31,7 @@ allowBuilds:
   # Permitted builds are version-scoped. Adding or updating a permitted version
   # requires an explicit Platform security review.
   # sentry-cli's postinstall only downloads a fallback binary; CI's sourcemap
-  # upload (scripts/upload-sentry-sourcemaps.ts) uses the one from its platform
+  # upload (tools/scripts/upload-sentry-sourcemaps.ts) uses the one from its platform
   # optionalDependency.
   '@sentry/cli': false
   'better-sqlite3@12.11.1': true
@@ -115,6 +115,7 @@ catalog:
   '@types/luxon': 3.7.4
   '@types/jsdom': 30.0.0
   '@types/nconf': 0.10.7
+  '@types/jsonwebtoken': 9.0.10
   '@types/node': 22.20.1
   '@types/react': 18.3.31
   '@types/react-dom': 18.3.7
@@ -162,6 +163,7 @@ catalog:
   js-yaml: 4.3.2
   jsdom: 30.0.1
   jsonc-parser: 3.3.1
+  jsonwebtoken: 8.5.1
   juice: 11.1.1
   knex: 2.4.2
   knex-migrator: 6.2.1
@@ -430,6 +432,7 @@ versioning:
     - '@internal/cfg-typescript'
     - '@internal/cfg-vite-public-app'
     - '@internal/cfg-vitest'
+    - '@internal/gx'
     - '@internal/scripts'
     - '@tryghost/activitypub'
     - '@tryghost/adapter-base-jobs'

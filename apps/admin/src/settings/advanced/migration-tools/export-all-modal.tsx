@@ -8,6 +8,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
+  Link,
   LoadingIndicator,
 } from '@tryghost/shade/components';
 import { LucideIcon } from '@tryghost/shade/utils';
@@ -172,14 +173,13 @@ const ExportAllModal: React.FC<{
                   <>
                     Your export will be downloaded as a single zip file. Images, videos and files
                     are not included.{' '}
-                    <a
-                      className="font-medium whitespace-nowrap text-foreground hover:underline"
+                    <Link
+                      className="whitespace-nowrap"
                       href="https://docs.ghost.org/migration/ghost#images"
-                      rel="noopener noreferrer"
-                      target="_blank"
+                      external
                     >
-                      Learn more &rarr;
-                    </a>
+                      Learn more
+                    </Link>
                   </>
                 )}
               </DialogDescription>

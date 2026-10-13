@@ -1,5 +1,6 @@
 import React from 'react';
 import {
+  Badge,
   Banner,
   DialogDescription,
   DialogHeader,
@@ -9,7 +10,6 @@ import {
 import { Inline, Text } from '@tryghost/shade/primitives';
 import type { AppInstallationPreview } from '@tryghost/admin-x-framework/api/app-installations';
 import { AppBanner, AppIcon } from '@/apps/components/app-icon';
-import { DevelopmentBadge } from '@/apps/components/development-badge';
 import { isDevelopmentApp } from '@/apps/lib/served-from';
 
 /**
@@ -31,7 +31,11 @@ const AppIdentity: React.FC<{ preview: AppInstallationPreview }> = ({ preview })
           {manifest.author.name}
         </a>
       </Text>
-      {isDevelopmentApp(manifest) && <DevelopmentBadge />}
+      {isDevelopmentApp(manifest) && (
+        <Badge data-testid="app-development-badge" variant="secondary">
+          Development
+        </Badge>
+      )}
     </Inline>
   );
 };

@@ -12,10 +12,10 @@ module.exports = class IdentityTokenServiceWrapper {
     const urlUtils = require('../../../shared/url-utils').default;
     const issuer = urlUtils.urlFor('admin', true);
 
-    const signingKeys = require('../signing-keys');
+    const signingKeys = require('../signing-keys').default;
 
     IdentityTokenServiceWrapper.instance = new IdentityTokenService(
-      signingKeys.getInstance().forPurpose('staff'),
+      signingKeys.service.forPurpose('staff'),
       issuer,
     );
   }

@@ -55,18 +55,16 @@ describe('Advanced settings', () => {
     const section = settingsScreen.section('labs');
     await section.getByRole('button', { name: 'Open' }).click();
     await section.getByRole('tab', { name: 'Private features' }).click();
-    const toggle = section.getByRole('switch', { name: 'Navigation URL suggestions' });
+    const toggle = section.getByRole('switch', { name: 'Machine payments' });
     await expect.element(toggle).not.toBeChecked();
     await toggle.click();
     await expect(settingsApi).toHaveEditedSettings([
       {
         key: 'labs',
         value: String(
-          settingsResponse({ labs: { navigationUrlSuggestions: true } }).settings.find(
-            (setting) => {
-              return setting.key === 'labs';
-            },
-          )!.value,
+          settingsResponse({ labs: { machinePayments: true } }).settings.find((setting) => {
+            return setting.key === 'labs';
+          })!.value,
         ),
       },
     ]);
@@ -324,7 +322,8 @@ describe('Advanced settings', () => {
         .toHaveTextContent(new RegExp(`${kind} uploaded`, 'i'));
       expect(uploadApi.requests).toHaveLength(1);
 
-      await section.getByRole('button', { name: `Download current ${kind}` }).click();
+      await section.getByRole('button', { name: `More ${kind} actions` }).click();
+      await page.getByRole('menuitem', { name: 'Download file' }).click();
       await expect
         .poll(() => document.querySelector<HTMLIFrameElement>('iframe#iframeDownload')?.src)
         .toContain(downloadPath);

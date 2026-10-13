@@ -27,11 +27,10 @@ migrations, understand the size and shape of the existing data first.
 
 ### Creating the migration file
 
-Create a migration file from `ghost`:
+Create a migration file from the repository root:
 
 ```bash
-cd ghost
-pnpm migrate:create <slug>
+pnpm gx generate migration <slug>
 ```
 
 The slug must be kebab-case, for example `add-column-to-posts`. The script:
@@ -45,7 +44,7 @@ Always use this command rather than creating or naming the file manually. It
 compares the current package version with the latest published Ghost tag to
 avoid placing a migration in a version that has already shipped. CI repeats
 these version and placement checks with
-[`scripts/check-migration-integrity.cjs`](../../scripts/check-migration-integrity.cjs).
+[`tools/scripts/check-migration-integrity.cjs`](../../tools/scripts/check-migration-integrity.cjs).
 
 ### Writing the migration
 

@@ -102,7 +102,7 @@ const InputGroupButton = React.forwardRef<
       ref={ref}
       className={cn(
         inputGroupButtonVariants({ size }),
-        isAdmin7 ? 'text-(length:--text-control)' : 'text-control',
+        isAdmin7 ? (size === 'xs' ? 'text-sm!' : 'text-(length:--text-control)') : 'text-control',
         isAdmin7 &&
           (size === 'xs' || size === 'icon-xs') &&
           'data-[control-shape=rounded]:rounded-[calc(var(--radius-control)-(var(--control-height)-24px)/2)]',

@@ -35,12 +35,12 @@ running processes do not retain state from the old dataset.
 ## Generate a Custom Dataset
 
 Run the generator from `ghost/` when the prepared datasets do not cover the
-scenario. `scripts/with-ghost-dev-env.ts` points it at the checkout's database,
+scenario. `tools/scripts/with-ghost-dev-env.ts` points it at the checkout's database,
 as it does for the `reset:data` commands:
 
 ```bash
 cd ghost
-node ../scripts/with-ghost-dev-env.ts \
+node ../tools/scripts/with-ghost-dev-env.ts \
   node --conditions=source --import=tsx index.js generate-data \
   --clear-database --quantities members:10000,posts:500 --seed 123
 ```

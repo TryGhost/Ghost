@@ -1,5 +1,5 @@
 import AutomationsHelpCards from './components/automations-help-cards';
-import AutomationsList from './components/automations-list';
+import AutomationsList, { type AutomationsToShow } from './components/automations-list';
 import React from 'react';
 import { useNavigate } from '@tryghost/admin-x-framework';
 import { Badge, Select, SelectContent, SelectItem, SelectValue } from '@tryghost/shade/components';
@@ -20,8 +20,6 @@ function preloadAutomationEditor(): void {
   lazyAutomationEditorScreen().catch(() => undefined);
 }
 
-type AutomationsToShow = 'non-archived' | 'archived' | 'all';
-
 const Automations: React.FC = () => {
   const navigate = useNavigate();
   const { automations, automationCount, error, isError, isLoading } = useVisibleAutomations();
@@ -34,14 +32,6 @@ const Automations: React.FC = () => {
   const hasArchivedAutomations = automations?.some(
     (automation) => automation.status === 'archived',
   );
-  const filteredAutomations = automations?.filter((automation) => {
-    if (!hasArchivedAutomations || automationsToShow === 'all') {
-      return true;
-    }
-    return automationsToShow === 'archived'
-      ? automation.status === 'archived'
-      : automation.status !== 'archived';
-  });
   const canCreateNewAutomations =
     !!currentUser &&
     canManageAutomations(currentUser) &&
@@ -62,12 +52,7 @@ const Automations: React.FC = () => {
                 <PageHeader.Title>
                   <span className="inline-flex items-baseline gap-2">
                     Automations
-                    <Badge
-                      className="px-1 py-px text-[10px] leading-none tracking-wider uppercase"
-                      variant="secondary"
-                    >
-                      Beta
-                    </Badge>
+                    <Badge variant="secondary">Beta</Badge>
                   </span>
                 </PageHeader.Title>
               </PageHeader.Left>
@@ -113,7 +98,8 @@ const Automations: React.FC = () => {
           </ListPage.Header>
           <ListPage.Body>
             <AutomationsList
-              automations={filteredAutomations}
+              automations={automations ?? []}
+              automationsToShow={automationsToShow}
               canManage={archiveEnabled && !!currentUser && canManageAutomations(currentUser)}
               isLoading={isLoading}
             />

@@ -211,6 +211,11 @@ export interface PublishOptionsInputs {
   user: PublishUserInput;
   limits?: PublishLimitPorts;
   now?: () => Date;
+  /**
+   * The newsletter remembered for a draft (admin7EditorImprovements), selected over
+   * the default while it is selectable. The post's own newsletter still comes first.
+   */
+  draftNewsletter?: string | null;
 }
 
 function zeroMilliseconds(time: number): string {
@@ -368,6 +373,7 @@ export function createPublishOptions({
   user,
   limits = {},
   now = () => new Date(),
+  draftNewsletter: draftNewsletterSlug,
 }: PublishOptionsInputs): PublishOptionsMachine {
   const newsletters = selectableNewsletters(site.newsletters);
   const defaultNewsletter = newsletters[0] ?? null;
@@ -377,10 +383,14 @@ export function createPublishOptions({
     ? (site.newsletters.find((option) => option.slug === post.newsletter) ??
       (retryingFailedEmail ? { slug: post.newsletter } : null))
     : null;
+  const draftNewsletter =
+    isDraft && draftNewsletterSlug
+      ? (newsletters.find((option) => option.slug === draftNewsletterSlug) ?? null)
+      : null;
   const initialNewsletter =
     persistedNewsletter && (persistedNewsletter.status === 'active' || retryingFailedEmail)
       ? persistedNewsletter
-      : defaultNewsletter;
+      : (draftNewsletter ?? defaultNewsletter);
   // Only admins can browse members, so nobody else's count is trusted as a zero.
   const memberCount = user.isAdmin ? site.memberCount : null;
 

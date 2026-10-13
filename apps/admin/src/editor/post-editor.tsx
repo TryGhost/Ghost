@@ -38,6 +38,8 @@ import { textHasTk } from './tk';
 import { useOnscreenKeyboard } from './use-onscreen-keyboard';
 import type { FeatureImageBinding } from './session/feature-image-binding';
 import type { WritingFocus } from './writing-focus';
+import type { EditorFont } from './editor-font';
+import { EDITOR_HELP_URL } from './editor-help';
 
 export interface PostEditorProps {
   postType: PostType;
@@ -74,6 +76,10 @@ export interface PostEditorProps {
   settingsMoving?: boolean;
   /** Whether the chrome here (the empty feature image bar and the footer) is hidden while the writer types. */
   writingFocus?: WritingFocus;
+  /** The font the writer reads the post in, set on the canvas as `data-editor-font`. */
+  font?: EditorFont;
+  /** Takes the help link's place in the footer (admin7EditorImprovements). */
+  fontPicker?: React.ReactNode;
 }
 
 export interface PostEditorHandle {
@@ -199,6 +205,8 @@ export function PostEditor({
   handleRef,
   settingsMoving = false,
   writingFocus,
+  font,
+  fontPicker,
 }: PostEditorProps) {
   const { darkMode, isAdmin7 } = useFocusContext();
   const isKeyboardOpen = useOnscreenKeyboard();
@@ -419,7 +427,11 @@ export function PostEditor({
   };
 
   return (
-    <div className="relative h-full min-h-0" data-testid={postEditor}>
+    <div
+      className="editor-optical-sizing relative h-full min-h-0"
+      data-editor-font={font}
+      data-testid={postEditor}
+    >
       <div
         ref={scrollPaneRef}
         className="h-full scroll-pt-(--editor-overlap) overflow-x-hidden overflow-y-auto"
@@ -489,7 +501,8 @@ export function PostEditor({
                 autoFocus={autofocusTitle}
                 className={cn(
                   fieldClassName,
-                  'heading-font-features mb-4 pb-1 text-[4.8rem] leading-[1.1] font-bold tracking-[-0.017em] text-foreground placeholder:font-bold placeholder:text-editor-placeholder max-[769px]:text-[3.6rem] max-[501px]:text-[2.8rem]',
+                  // The --editor-display-* variables come from the writer's font (index.css).
+                  'heading-font-features mb-4 pb-1 font-(family-name:--editor-display-font) text-[length:calc(4.8rem*var(--editor-title-scale,1))] leading-[1.1] font-bold tracking-[calc(-0.017em*var(--editor-display-tracking-scale,1))] text-foreground placeholder:font-bold placeholder:text-editor-placeholder max-[769px]:text-[length:calc(3.6rem*var(--editor-title-scale,1))] max-[501px]:text-[length:calc(2.8rem*var(--editor-title-scale,1))]',
                   titleAndFeatureImageHidden && 'opacity-50 focus:opacity-100',
                 )}
                 data-testid={editorTitleInput}
@@ -523,7 +536,7 @@ export function PostEditor({
                   aria-label="Excerpt"
                   className={cn(
                     fieldClassName,
-                    'text-[2rem] leading-[1.5] font-[440] tracking-[-0.018em] text-foreground/90 placeholder:font-normal placeholder:text-editor-placeholder',
+                    'font-(family-name:--editor-display-font) text-[length:calc(2rem*var(--editor-excerpt-scale,1))] leading-[1.5] font-[440] tracking-[calc(-0.018em*var(--editor-display-tracking-scale,1))] text-foreground/90 placeholder:font-normal placeholder:text-editor-placeholder',
                   )}
                   data-testid={editorExcerptInput}
                   placeholder="Add an excerpt"
@@ -606,25 +619,27 @@ export function PostEditor({
             className={cn('ml-auto min-w-0 sm:hidden', isKeyboardOpen && 'hidden')}
             justify="end"
           />
-          <Button
-            className={cn(
-              'bg-background/80 text-text-secondary backdrop-blur-sm hover:text-foreground max-sm:hidden',
-              isAdmin7 && '[&_svg]:stroke-2!',
-            )}
-            shape="pill"
-            size={isAdmin7 ? 'icon' : 'icon-sm'}
-            variant="ghost"
-            asChild
-          >
-            <a
-              aria-label="Editor help"
-              href="https://ghost.org/help/using-the-editor/"
-              rel="noopener noreferrer"
-              target="_blank"
+          {fontPicker ?? (
+            <Button
+              className={cn(
+                'bg-background/80 text-text-secondary backdrop-blur-sm hover:text-foreground max-sm:hidden',
+                isAdmin7 && '[&_svg]:stroke-2!',
+              )}
+              shape="pill"
+              size={isAdmin7 ? 'icon' : 'icon-sm'}
+              variant="ghost"
+              asChild
             >
-              <LucideIcon.CircleHelp />
-            </a>
-          </Button>
+              <a
+                aria-label="Editor help"
+                href={EDITOR_HELP_URL}
+                rel="noopener noreferrer"
+                target="_blank"
+              >
+                <LucideIcon.CircleHelp />
+              </a>
+            </Button>
+          )}
         </Inline>
       </Inline>
     </div>

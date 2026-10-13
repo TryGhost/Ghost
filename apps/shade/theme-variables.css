@@ -102,6 +102,9 @@
   --tab-hover: var(--color-gray-100);
   --tab-active: color-mix(in oklab, var(--color-gray-700) 10%, transparent);
   --button-hover: var(--color-gray-100);
+  /* Translucent so a ghost Button hover darkens whatever it sits on - an opaque
+     gray-100 all but disappears on a --table-row-hover row. */
+  --button-ghost-hover: color-mix(in oklab, var(--color-gray-700) 10%, transparent);
   --interactive-hover: var(--button-hover);
   --filter-bar-background: var(--color-gray-100);
   --filter-bar-item-hover: var(--color-gray-50);
@@ -145,6 +148,7 @@
   --tab-hover: color-mix(in oklab, var(--color-gray-900) 30%, transparent);
   --tab-active: color-mix(in oklab, oklch(36.77% 0.006 248.2) 60%, transparent);
   --button-hover: color-mix(in oklab, var(--color-gray-900) 30%, transparent);
+  --button-ghost-hover: var(--accent);
   --interactive-hover: var(--button-hover);
   --filter-bar-background: var(--surface-elevated-2);
   --filter-bar-item-hover: var(--tab-hover);

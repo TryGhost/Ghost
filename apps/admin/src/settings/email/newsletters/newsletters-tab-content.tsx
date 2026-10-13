@@ -2,7 +2,7 @@ import NewslettersList from './newsletters-list';
 import React, { type ReactNode, useEffect } from 'react';
 import useQueryParams from '@/settings/hooks/use-query-params';
 import { APIError } from '@tryghost/admin-x-framework/errors';
-import { Button } from '@tryghost/shade/components';
+import { Button, Link } from '@tryghost/shade/components';
 import {
   useBrowseNewsletters,
   useVerifyNewsletterEmail,
@@ -29,17 +29,17 @@ const NavigateToNewsletter = ({
   const { updateRoute } = useSettingsNavigation();
 
   return (
-    <Button
-      className="h-auto p-0 text-green hover:text-green"
-      type="button"
-      variant="link"
-      onClick={() => {
-        updateRoute(`newsletters/${id}`);
-        onNavigate();
-      }}
-    >
-      {children}
-    </Button>
+    <Link asChild>
+      <button
+        type="button"
+        onClick={() => {
+          updateRoute(`newsletters/${id}`);
+          onNavigate();
+        }}
+      >
+        {children}
+      </button>
+    </Link>
   );
 };
 
@@ -164,7 +164,7 @@ const NewslettersTabContent: React.FC<NewslettersTabContentProps> = ({ filter })
         <NewslettersList isLoading={isLoading} newsletters={archivedNewsletters} />
       )}
       {isEnd === false && (
-        <Button type="button" variant="link" onClick={() => void fetchNextPage()}>
+        <Button size="sm" type="button" variant="outline" onClick={() => void fetchNextPage()}>
           Load more (showing {formatNumber(newsletters?.length || 0)}/
           {formatNumber(meta?.pagination.total || 0)} newsletters)
         </Button>

@@ -14,7 +14,7 @@
     {
       "label": "Ghost: Reset data (empty)",
       "type": "shell",
-      "command": "node ../scripts/with-ghost-dev-env.ts node index.js generate-data --clear-database --quantities members:0,posts:0 --seed 123",
+      "command": "node ../tools/scripts/with-ghost-dev-env.ts node index.js generate-data --clear-database --quantities members:0,posts:0 --seed 123",
       "options": { "cwd": "${workspaceFolder}/ghost" },
       "problemMatcher": []
     }

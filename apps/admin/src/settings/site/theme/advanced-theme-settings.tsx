@@ -11,6 +11,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  Link,
 } from '@tryghost/shade/components';
 import { JSONError } from '@tryghost/admin-x-framework/errors';
 import { LucideIcon } from '@tryghost/shade/utils';
@@ -117,10 +118,13 @@ const ThemeActions: React.FC<ThemeActionProps> = ({ theme }) => {
       prompt: (
         <>
           You are about to delete <strong>&quot;{theme.name}&quot;.</strong> This is permanent! We
-          warned you, k? Maybe download{' '}
-          <span className="cursor-pointer text-green-500" onClick={handleDownload}>
-            your theme before continuing
-          </span>
+          warned you, k? Maybe{' '}
+          <Link asChild>
+            <button type="button" onClick={handleDownload}>
+              download your theme
+            </button>
+          </Link>{' '}
+          before continuing.
         </>
       ),
       okLabel: 'Delete',

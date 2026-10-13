@@ -7,6 +7,7 @@ import {
   ActionListItem,
   ActionListItemContent,
   Button,
+  Link,
   LoadingIndicator,
   NoValueLabel,
   Tooltip,
@@ -119,9 +120,10 @@ const RecommendationList: React.FC<RecommendationListProps> = ({
         <div className="border-t border-border pt-2">
           {showMore?.hasMore && (
             <Button
-              className="mb-2 h-auto p-0 text-green hover:text-green"
+              className="mb-2"
+              size="sm"
               type="button"
-              variant="link"
+              variant="outline"
               onClick={showMore.loadMore}
             >
               Show all
@@ -129,14 +131,9 @@ const RecommendationList: React.FC<RecommendationListProps> = ({
           )}
           <div className="text-sm text-muted-foreground">
             Shared with new members after signup, or anytime using{' '}
-            <a
-              className="text-green hover:text-green-400"
-              href={recommendationsURL}
-              rel="noopener noreferrer"
-              target="_blank"
-            >
+            <Link href={recommendationsURL} external>
               this link
-            </a>
+            </Link>
             <TooltipProvider delayDuration={0}>
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -177,14 +174,9 @@ const RecommendationList: React.FC<RecommendationListProps> = ({
         </Button>
         <span className="mt-2 max-w-[40ch] text-center text-sm">
           Need inspiration?{' '}
-          <a
-            className="text-green hover:text-green-400"
-            href="https://ghost.org/explore"
-            rel="noopener noreferrer"
-            target="_blank"
-          >
+          <Link href="https://ghost.org/explore" external>
             Explore thousands of sites
-          </a>
+          </Link>
         </span>
       </NoValueLabel>
     );

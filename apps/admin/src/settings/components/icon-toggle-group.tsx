@@ -40,16 +40,21 @@ function IconToggleGroup<Value extends string>({
     >
       {options.map((option) => (
         <Tooltip key={option.value}>
+          {/* The trigger wraps the item rather than being it, as the tooltip's own data-state
+              would otherwise replace the item's data-state="on" and hide which one is chosen. */}
           <TooltipTrigger asChild>
-            <ToggleGroupItem
-              aria-label={option.label}
-              disabled={option.disabled}
-              value={option.value}
-            >
-              {option.icon}
-            </ToggleGroupItem>
+            <span className="inline-flex">
+              <ToggleGroupItem
+                aria-label={option.label}
+                disabled={option.disabled}
+                value={option.value}
+              >
+                {option.icon}
+              </ToggleGroupItem>
+            </span>
           </TooltipTrigger>
-          <TooltipContent>{option.label}</TooltipContent>
+          {/* legacy SettingsModal overlay is z-[1000]; keep the portalled tooltip above it */}
+          <TooltipContent className="z-[9999]">{option.label}</TooltipContent>
         </Tooltip>
       ))}
     </ToggleGroup>
