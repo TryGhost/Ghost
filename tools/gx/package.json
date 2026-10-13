@@ -21,6 +21,7 @@
     "@internal/cfg-typescript": "workspace:*",
     "@types/jsonwebtoken": "catalog:",
     "@types/node": "catalog:",
+    "@types/semver": "catalog:",
     "eslint": "catalog:",
     "typescript": "catalog:"
   },
