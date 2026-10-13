@@ -176,7 +176,6 @@ function getTinybirdClient() {
     }
     return createTinybirdClient({
       config,
-      // Do not retry failed analytics requests.
       request: requestExternal.extend({ retry: { limit: 0 } }),
       settingsCache,
       tinybirdService,
@@ -193,7 +192,6 @@ export async function browse() {
     repository.browse(),
     tinybirdClient ? fetchAutomationStats(tinybirdClient) : null,
   ]);
-  // Unavailable analytics must never shift run aggregation onto the database.
   if (stats === null) {
     return browseResult;
   }
