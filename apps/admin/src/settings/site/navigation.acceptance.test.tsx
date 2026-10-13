@@ -144,7 +144,8 @@ describe('Navigation settings', () => {
     await expect.element(added.getByLabelText('Label')).toHaveValue('Label');
     await expect.element(added.getByLabelText('URL')).toHaveValue('https://google.com/');
     await expect.element(item.getByLabelText('Label')).toHaveValue('');
-    await expect.element(item.getByLabelText('URL')).toHaveValue('http://test.com/');
+    // Suggestions are always on, so a new row starts empty rather than the site root
+    await expect.element(item.getByLabelText('URL')).toHaveValue('');
   });
 
   it('suggests site links, offers and content in the URL dropdown', async () => {
