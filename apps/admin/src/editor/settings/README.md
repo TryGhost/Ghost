@@ -108,10 +108,10 @@ writing area throughout the panel's motion.
 Under `admin7EditorImprovements`, the editor opens with the panel as the writer
 last left it with the toggle, one state for every post and page held in this
 browser's `localStorage` (`settings-open.ts`, `use-settings-open.ts`). A panel
-restored open is in place from the first paint, without sliding in. The open
-the editor makes itself to show a field a save refused is not remembered, nor
-is a toggle below `lg`, where the panel always starts closed so it never covers
-the post on arrival. Storage that is blocked, empty or unreadable starts the
+restored open is in place from the first paint, without sliding in. When a
+save is refused and the editor opens the panel to show the field, that open is
+not remembered. Nor is a toggle below `lg`, where the panel always starts
+closed so it never covers the post on arrival. Storage that is blocked, empty or unreadable starts the
 panel closed. With the flag off nothing is read or written and a remembered
 state waits for the flag.
 

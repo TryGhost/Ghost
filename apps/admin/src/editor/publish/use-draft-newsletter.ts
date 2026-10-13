@@ -74,16 +74,40 @@ export function useDraftNewsletter({
     setEntry({ key, slug: null });
   }, [enabled, key, postId, stale]);
 
+  const store = useCallback(
+    (slug: string, known: ReadonlyArray<NewsletterInput>) => {
+      const stored = draftNewsletterToStore(slug, known);
+      writeDraftNewsletter(draftNewsletterStorage(enabled), postId, stored);
+      setEntry({ key, slug: stored });
+    },
+    [enabled, key, postId],
+  );
+
+  // The preview can offer its own newsletter list before this one has loaded, and
+  // only the list says whether a pick is the default, so such a pick waits for it.
+  const [pendingPick, setPendingPick] = useState<{ key: string; slug: string } | null>(null);
+  useEffect(() => {
+    if (!pendingPick || !list) {
+      return;
+    }
+    if (pendingPick.key === key) {
+      store(pendingPick.slug, list);
+    }
+    setPendingPick(null);
+  }, [key, list, pendingPick, store]);
+
   const remember = useCallback(
     (slug: string) => {
       if (!enabled) {
         return;
       }
-      const stored = draftNewsletterToStore(slug, list ?? []);
-      writeDraftNewsletter(draftNewsletterStorage(enabled), postId, stored);
-      setEntry({ key, slug: stored });
+      if (!list) {
+        setPendingPick({ key, slug });
+        return;
+      }
+      store(slug, list);
     },
-    [enabled, key, list, postId],
+    [enabled, key, list, store],
   );
 
   const forget = useCallback(() => {
