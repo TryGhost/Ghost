@@ -319,7 +319,7 @@ function EditorContent({
     setSettingsPresent(true);
     // Only the writer's own toggle is remembered, never a reveal's open.
     settingsToggled(!settingsOpen);
-    setSettingsOpen(!settingsOpen);
+    setSettingsOpen((open) => !open);
   }, [settingsOpen, settingsToggled]);
   const postEditorRef = useRef<PostEditorHandle>(null);
   // Below the small breakpoint the header's controls sit in the editor's bottom bar.

@@ -177,4 +177,26 @@ describe('Remembered draft newsletter (admin7EditorImprovements)', () => {
     await expect.element(publishScreen.newsletterSelect()).toHaveTextContent('Weekly');
     expect(localStorage.getItem(DRAFT_NEWSLETTERS_KEY)).toBeNull();
   });
+
+  it('neither reads, moves nor forgets a remembered newsletter while the flag is off', async () => {
+    writeDraftNewsletter(localStorage, POST_ID, 'daily-brief', 1);
+    const remembered = localStorage.getItem(DRAFT_NEWSLETTERS_KEY);
+    const saveApi = fakeEmailDraft();
+    await renderAdminApp(`/editor/post/${POST_ID}`, editorOptions(false));
+    await openFlowNewsletters();
+    await expect.element(publishScreen.newsletterSelect()).toHaveTextContent('Weekly');
+
+    await publishScreen.newsletterSelect().click();
+    await page.getByRole('option', { name: /^Monthly roundup/ }).click();
+    // A pick in the preview over the flow leaves the flow where it was, as before the flag.
+    await publishScreen.previewButton().click();
+    await pickPreviewNewsletter('Weekly');
+    await previewScreen.publishButton().click();
+    await expect.element(publishScreen.newsletterSelect()).toHaveTextContent('Monthly roundup');
+
+    await publishScreen.continueButton().click();
+    await publishScreen.confirmButton().click();
+    await expect.poll(() => saveApi.lastRequest?.url).toContain('newsletter=monthly-roundup');
+    expect(localStorage.getItem(DRAFT_NEWSLETTERS_KEY)).toBe(remembered);
+  });
 });
