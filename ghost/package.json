@@ -251,7 +251,7 @@
     "@types/express": "catalog:",
     "@types/express-brute": "catalog:",
     "@types/fs-extra": "11.0.4",
-    "@types/js-yaml": "4.0.9",
+    "@types/js-yaml": "catalog:",
     "@types/jsdom": "catalog:",
     "@types/jsonwebtoken": "9.0.10",
     "@types/lodash": "4.17.25",

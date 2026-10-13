@@ -30,6 +30,11 @@ const features: Feature[] = [
     flag: 'automationsPerTier',
   },
   {
+    title: 'Automations lifecycle triggers',
+    description: 'Triggers for upgrades and downgrades.',
+    flag: 'automationsLifecycleTriggers',
+  },
+  {
     title: 'Stripe Automatic Tax (private beta)',
     description: 'Use Stripe Automatic Tax at Stripe Checkout. Needs to be enabled in Stripe',
     flag: 'stripeAutomaticTax',

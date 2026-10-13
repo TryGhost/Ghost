@@ -1,11 +1,5 @@
 import { nodeLibConfig } from '@internal/cfg-eslint';
 
-// This package is `type: module`, so `.js` is ESM and the not-yet-migrated
-// legacy files carry an explicit `.cjs`. Hence two passes over nodeLibConfig:
-// one per module system. Migrating a file is a rename from `.cjs` to `.js`
-// plus require->import — it moves between these blocks with no config change
-// here, and the block for `.cjs` disappears once the last one is converted.
-//
 // These are CLI entrypoints, not a library, so a few nodeLibConfig defaults
 // are relaxed below.
 const cliRules = {
@@ -24,21 +18,6 @@ export default [
   ...nodeLibConfig({
     srcGlobs: ['*.ts', 'lib/**/*.ts'],
     testGlobs: ['test/**/*.test.ts'],
-    extraSrcRules: cliRules,
-    extraTestRules: cliRules,
-  }),
-  ...nodeLibConfig({
-    typescript: false,
-    srcGlobs: ['*.js', 'lib/**/*.js'],
-    testGlobs: ['test/**/*.test.js'],
-    extraSrcRules: cliRules,
-    extraTestRules: cliRules,
-  }),
-  ...nodeLibConfig({
-    typescript: false,
-    commonjs: true,
-    srcGlobs: ['*.cjs', 'lib/**/*.cjs'],
-    testGlobs: ['test/**/*.test.cjs'],
     extraSrcRules: cliRules,
     extraTestRules: cliRules,
   }),
