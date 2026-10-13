@@ -8,9 +8,9 @@ import {
 } from '@pnpm/workspace.workspace-manifest-reader';
 import { readChangeIntents, CHANGES_DIR } from '@pnpm/releasing.versioning';
 
-import { ROOT_DIR } from './constants.js';
-import { getFileFromCommit, getChangedFiles, pathHasChanges } from './git.js';
-import { readJson } from './utils.js';
+import { ROOT_DIR } from './constants.ts';
+import { getFileFromCommit, getChangedFiles, pathHasChanges } from './git.ts';
+import { readJson } from './utils.ts';
 
 const WORKSPACE_MANIFEST_FILE = 'pnpm-workspace.yaml';
 

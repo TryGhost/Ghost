@@ -6,9 +6,9 @@ import semver from 'semver';
 import camelcaseKeys from 'camelcase-keys';
 import { setTimeout } from 'node:timers/promises';
 
-import { ROOT_DIR } from './lib/constants.js';
-import { resolveBaseTag } from './lib/resolve-base-tag.js';
-import { readJsonSync, writeJsonSync } from './lib/utils.js';
+import { ROOT_DIR } from './lib/constants.ts';
+import { resolveBaseTag } from './lib/resolve-base-tag.ts';
+import { readJsonSync, writeJsonSync } from './lib/utils.ts';
 
 const GHOST_CORE_PKG = join(ROOT_DIR, 'ghost/package.json');
 const CASPER_DIR = join(ROOT_DIR, 'ghost/content/themes/casper');

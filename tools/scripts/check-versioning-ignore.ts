@@ -1,10 +1,10 @@
 import { join } from 'node:path';
 import semver from 'semver';
 
-import { ROOT_DIR, PRIVATE_PACKAGE_VERSION } from './lib/constants.js';
-import { getWorkspace, getWorkspacePackages } from './lib/pnpm.js';
-import { PUBLIC_APPS } from './lib/public-apps.js';
-import { readJson } from './lib/utils.js';
+import { ROOT_DIR, PRIVATE_PACKAGE_VERSION } from './lib/constants.ts';
+import { getWorkspace, getWorkspacePackages } from './lib/pnpm.ts';
+import { PUBLIC_APPS } from './lib/public-apps.ts';
+import { readJson } from './lib/utils.ts';
 
 // Published packages versioned outside `pnpm version`: Ghost core by the release
 // scripts, the public apps by the publish job (npm holds the patch number).
@@ -13,7 +13,7 @@ const EXTERNALLY_VERSIONED = new Set(['ghost', ...PUBLIC_APPS.map((app) => app.p
 /**
  * Reads every workspace manifest, root included.
  *
- * @param {import('./lib/pnpm.js').WorkspaceManifest} workspace
+ * @param {import('./lib/pnpm.ts').WorkspaceManifest} workspace
  */
 export async function loadManifests(workspace) {
   return [
@@ -28,7 +28,7 @@ export async function loadManifests(workspace) {
  * Private packages opt out by carrying the non-semver placeholder version
  * instead, so the list holds exactly the externally versioned public packages.
  *
- * @param {import('./lib/pnpm.js').WorkspaceManifest} workspace
+ * @param {import('./lib/pnpm.ts').WorkspaceManifest} workspace
  * @param {object[]} [manifests] - defaults to the workspace's manifests on disk
  * @returns {Promise<string[]>} - Error messages.
  */

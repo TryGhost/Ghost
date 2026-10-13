@@ -5,7 +5,7 @@ import { mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { render } from '../summarize-admin-acceptance.js';
+import { render } from '../summarize-admin-acceptance.ts';
 
 const assertion = (fullName, duration, extra = {}) => ({
   fullName,
@@ -131,7 +131,7 @@ describe('Admin acceptance summary', () => {
     const directory = await mkdtemp(join(tmpdir(), 'admin-acceptance-summary-'));
     try {
       const entrypoint = fileURLToPath(
-        new URL('../summarize-admin-acceptance.js', import.meta.url),
+        new URL('../summarize-admin-acceptance.ts', import.meta.url),
       );
       const path = join(directory, 'acceptance.json');
       const missing = spawnSync(process.execPath, [entrypoint, `--report=${path}`], {

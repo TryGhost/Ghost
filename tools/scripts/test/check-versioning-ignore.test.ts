@@ -1,8 +1,8 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert';
 
-import { checkVersioningIgnore, loadManifests } from '../check-versioning-ignore.js';
-import { getWorkspace } from '../lib/pnpm.js';
+import { checkVersioningIgnore, loadManifests } from '../check-versioning-ignore.ts';
+import { getWorkspace } from '../lib/pnpm.ts';
 
 async function workspaceWithIgnore(update) {
   const workspace = await getWorkspace();

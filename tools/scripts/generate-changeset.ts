@@ -1,8 +1,8 @@
 import { parseArgs } from 'node:util';
 import { $ } from 'execa';
 
-import { ROOT_DIR } from './lib/constants.js';
-import { findPackagesNeedingChangeset } from './lib/pnpm.js';
+import { ROOT_DIR } from './lib/constants.ts';
+import { findPackagesNeedingChangeset } from './lib/pnpm.ts';
 
 /**
  * generate-changeset.js — auto-create a changeset for publishable packages that

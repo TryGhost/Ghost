@@ -105,7 +105,7 @@ jobs:
           store-cache: save
 
       # Replaced nrwl/nx-set-shas, which verified each candidate commit over the
-      # API and hid the errors — see tools/scripts/nx-set-shas.js.
+      # API and hid the errors — see tools/scripts/nx-set-shas.ts.
       - name: Set SHAs for Nx Commands
         if: env.IS_TAG != 'true'
         env:
@@ -115,7 +115,7 @@ jobs:
           # untested commits land, so there a lookup that comes up empty fails
           # the run rather than falling back to the previous commit.
           ON_MISSING: ${{ (env.IS_MAIN == 'true' && github.repository == 'TryGhost/Ghost') && 'error' || 'previous-commit' }}
-        run: node tools/scripts/nx-set-shas.js --branch "$BRANCH" --head "$HEAD_COMMIT" --on-missing "$ON_MISSING"
+        run: node tools/scripts/nx-set-shas.ts --branch "$BRANCH" --head "$HEAD_COMMIT" --on-missing "$ON_MISSING"
 
       - name: Determine changed packages
         if: env.IS_TAG != 'true'
@@ -158,10 +158,10 @@ jobs:
               - '.claude/**'
               - '.github/workflows/ci.yml'
               - 'package.json'
-              - 'tools/scripts/check-agent-skill-links.js'
-              - 'tools/scripts/test/check-agent-skill-links.test.js'
-              - 'tools/scripts/check-agent-guidance.js'
-              - 'tools/scripts/test/check-agent-guidance.test.js'
+              - 'tools/scripts/check-agent-skill-links.ts'
+              - 'tools/scripts/test/check-agent-skill-links.test.ts'
+              - 'tools/scripts/check-agent-guidance.ts'
+              - 'tools/scripts/test/check-agent-guidance.test.ts'
             service-inventory:
               - 'ghost/core/server/services/service-inventory.yaml'
               - 'ghost/test/unit/server/services/service-inventory.test.ts'
@@ -171,10 +171,10 @@ jobs:
               - 'packages/**'
               - 'package.json'
               - 'pnpm-workspace.yaml'
-              - 'tools/scripts/check-internal-packages.js'
+              - 'tools/scripts/check-internal-packages.ts'
               - 'tools/gx/**'
-              - 'tools/scripts/lib/constants.js'
-              - 'tools/scripts/test/check-internal-packages.test.js'
+              - 'tools/scripts/lib/constants.ts'
+              - 'tools/scripts/test/check-internal-packages.test.ts'
               - '.github/workflows/ci.yml'
             core:
               - *shared
@@ -339,7 +339,7 @@ jobs:
               PUBLISH_PROJECTS=$(pnpm nx show projects --affected --json)
             fi
           fi
-          PUBLISH_PUBLIC_APPS_MATRIX=$(node tools/scripts/build-public-apps-matrix.js "$PUBLISH_PROJECTS")
+          PUBLISH_PUBLIC_APPS_MATRIX=$(node tools/scripts/build-public-apps-matrix.ts "$PUBLISH_PROJECTS")
           echo "publish_public_apps_matrix=$PUBLISH_PUBLIC_APPS_MATRIX" >> "$GITHUB_OUTPUT"
 
       # Per-file e2e durations saved by job_e2e_timings on main. Read once here so
@@ -425,7 +425,7 @@ jobs:
           PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
           PR_BASE_REF: ${{ github.event.pull_request.base.ref }}
           PR_COMPARE_SHA: ${{ github.event.pull_request.head.sha }}
-        run: node tools/scripts/check-app-version-bump.js
+        run: node tools/scripts/check-app-version-bump.ts
 
       # Fail the PR if a publishable package changed (source or a catalog entry
       # it consumes) but the branch adds no changeset covering it. Prototype of
@@ -435,10 +435,10 @@ jobs:
           PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
           PR_BASE_REF: ${{ github.event.pull_request.base.ref }}
           PR_COMPARE_SHA: ${{ github.event.pull_request.head.sha }}
-        run: node tools/scripts/change-check.js
+        run: node tools/scripts/change-check.ts
 
       - name: Check private packages are excluded from versioning
-        run: node tools/scripts/check-versioning-ignore.js
+        run: node tools/scripts/check-versioning-ignore.ts
 
   job_migration_integrity_check:
     name: Check migration integrity
@@ -465,7 +465,7 @@ jobs:
           PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
           PR_BASE_REF: ${{ github.event.pull_request.base.ref }}
           PR_COMPARE_SHA: ${{ github.event.pull_request.head.sha }}
-        run: node tools/scripts/check-migration-integrity.cjs
+        run: node tools/scripts/check-migration-integrity.ts
 
   job_lint:
     runs-on: ubuntu-latest
@@ -519,9 +519,9 @@ jobs:
 
       - name: Lint documentation guidance
         run: |
-          node --test tools/scripts/test/check-agent-guidance.test.js
-          node tools/scripts/check-agent-skill-links.js
-          node tools/scripts/check-agent-guidance.js
+          node --test tools/scripts/test/check-agent-guidance.test.ts
+          node tools/scripts/check-agent-skill-links.ts
+          node tools/scripts/check-agent-guidance.ts
 
   job_service_inventory:
     name: Validate service inventory
@@ -558,10 +558,10 @@ jobs:
           store-cache: 'false'
 
       - name: Check internal package golden path
-        run: node tools/scripts/check-internal-packages.js
+        run: node tools/scripts/check-internal-packages.ts
 
       - name: Test internal package checker
-        run: node --test tools/scripts/test/check-internal-packages.test.js
+        run: node --test tools/scripts/test/check-internal-packages.test.ts
 
   job_i18n:
     runs-on: ubuntu-latest
@@ -622,10 +622,10 @@ jobs:
         run: hyperfine --show-output --warmup 3 'GHOST_CI_SHUTDOWN_AFTER_BOOT=1 node index.js' --export-json boot-perf.json
 
       # Native modules like sharp cost memory in every process, so they should
-      # load on first use. The list lives in tools/scripts/lib/boot-modules.js
+      # load on first use. The list lives in tools/scripts/lib/boot-modules.ts
       - name: Check boot skips lazy-loaded modules
         working-directory: ghost
-        run: GHOST_CI_SHUTDOWN_AFTER_BOOT=1 node --import ../tools/scripts/assert-boot-skips-modules.js index.js
+        run: GHOST_CI_SHUTDOWN_AFTER_BOOT=1 node --import ../tools/scripts/assert-boot-skips-modules.ts index.js
 
       - name: Report result
         uses: ./.github/actions/report-boot-benchmark
@@ -1201,7 +1201,7 @@ jobs:
         # Reporting must not change the test step's result if the report is incomplete.
         continue-on-error: true
         run: |
-          node tools/scripts/summarize-admin-acceptance.js \
+          node tools/scripts/summarize-admin-acceptance.ts \
             --report=apps/admin/test-results/acceptance.json \
             --shard=${{ matrix.shardIndex }}/${{ matrix.shardTotal }} >> "$GITHUB_STEP_SUMMARY"
 
@@ -2137,7 +2137,7 @@ jobs:
             ARGS+=("--baseline=${RUNNER_TEMP}/baseline-report/image-report.json")
           fi
 
-          node tools/scripts/compare-image-report.js "${ARGS[@]}" >> "$GITHUB_STEP_SUMMARY"
+          node tools/scripts/compare-image-report.ts "${ARGS[@]}" >> "$GITHUB_STEP_SUMMARY"
 
     outputs:
       use-artifact: ${{ steps.strategy.outputs.use-artifact }}
@@ -2702,7 +2702,7 @@ jobs:
         env:
           PACKAGE_NAME: ${{ matrix.package_name }}
         run: |
-          LATEST=$(node "$GITHUB_WORKSPACE/tools/scripts/compute-next-app-version.cjs" --latest .)
+          LATEST=$(node "$GITHUB_WORKSPACE/tools/scripts/compute-next-app-version.ts" --latest .)
           if [ -z "$LATEST" ]; then
             echo "No release in this major.minor line yet"
             echo "changed=true" >> "$GITHUB_OUTPUT"
@@ -2735,7 +2735,7 @@ jobs:
           # minor/major line). The patch digit in package.json is otherwise
           # unused — Ghost core resolves apps via <pkg>@~<major.minor> on
           # jsDelivr, so the newest published patch is what sites receive.
-          NEXT_VERSION=$(node "$GITHUB_WORKSPACE/tools/scripts/compute-next-app-version.cjs" .)
+          NEXT_VERSION=$(node "$GITHUB_WORKSPACE/tools/scripts/compute-next-app-version.ts" .)
           echo "Publishing ${{ matrix.package_name }}@${NEXT_VERSION}"
 
           # Write it before building so the version baked into the bundle
@@ -2949,7 +2949,7 @@ jobs:
         run: |
           PREV_TAG="${{ steps.prev_tag.outputs.tag }}"
           if [ -n "$PREV_TAG" ]; then
-            node tools/scripts/lib/release-notes.js "$PREV_TAG" "${GITHUB_REF_NAME}" > /tmp/release-notes.md
+            node tools/scripts/lib/release-notes.ts "$PREV_TAG" "${GITHUB_REF_NAME}" > /tmp/release-notes.md
           else
             echo "This release contains fixes for minor bugs and issues reported by Ghost users." > /tmp/release-notes.md
           fi

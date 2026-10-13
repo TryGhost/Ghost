@@ -11,7 +11,7 @@
 // and friends, which are not) and maps each to its defaults.json key. The URLs
 // to purge come from defaults.json itself — see cdnPathsFor.
 
-import { PUBLIC_APPS, readDefaults } from './lib/public-apps.js';
+import { PUBLIC_APPS, readDefaults } from './lib/public-apps.ts';
 
 const DEFAULTS = await readDefaults();
 

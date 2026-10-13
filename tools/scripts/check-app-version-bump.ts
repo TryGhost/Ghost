@@ -6,8 +6,8 @@ import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { execFileSync } from 'node:child_process';
 
-import { PUBLIC_APPS, DEFAULTS_PATH, DEFAULTS_REPO_PATH, majorMinor } from './lib/public-apps.js';
-import { resolveBaseCommit } from './lib/pr-base.js';
+import { PUBLIC_APPS, DEFAULTS_PATH, DEFAULTS_REPO_PATH, majorMinor } from './lib/public-apps.ts';
+import { resolveBaseCommit } from './lib/pr-base.ts';
 
 const MONITORED_APP_PATHS = PUBLIC_APPS.map((app) => app.path);
 

@@ -5,7 +5,7 @@ import {
   getPublishablePackages,
   loadPackage,
   resolvePackageCatalog,
-} from '../lib/pnpm.js';
+} from '../lib/pnpm.ts';
 
 // A minimal workspace manifest with both a default catalog and a named catalog,
 // mirroring the shape of pnpm-workspace.yaml that resolvePackageCatalog reads.

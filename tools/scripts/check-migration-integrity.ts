@@ -1,17 +1,31 @@
-const fs = require('fs');
-const path = require('path');
-const execFileSync = require('child_process').execFileSync;
+import { execFileSync } from 'node:child_process';
+import fs from 'node:fs';
+import path from 'node:path';
 
 const MIGRATIONS_PATH = 'ghost/core/server/data/migrations/versions';
 const VERSIONS_DIR = '/migrations/versions/';
 const PACKAGE_JSON_PATH = 'ghost/package.json';
+
+interface MinorVersion {
+  major: number;
+  minor: number;
+}
+
+interface SafeVersion extends MinorVersion {
+  raw: string;
+  safe: string;
+}
+
+interface PublishedVersion extends MinorVersion {
+  tag: string;
+}
 
 /**
  * Run a git command with the given arguments and return its trimmed stdout.
  * Throws an Error including stderr/stdout on failure so callers can surface a
  * useful message instead of an opaque exec error.
  */
-function runGit(args) {
+function runGit(args: string[]): string {
   try {
     // stderr piped, not inherited: the fallback below probes a ref that may
     // not exist, and git's complaint should reach the thrown error, not the log.
@@ -20,9 +34,10 @@ function runGit(args) {
       stdio: ['ignore', 'pipe', 'pipe'],
     }).trim();
   } catch (error) {
-    const stderr = error.stderr ? error.stderr.toString().trim() : '';
-    const stdout = error.stdout ? error.stdout.toString().trim() : '';
-    const message = stderr || stdout || error.message;
+    const failure = error as Error & { stderr?: string | Buffer; stdout?: string | Buffer };
+    const stderr = failure.stderr ? failure.stderr.toString().trim() : '';
+    const stdout = failure.stdout ? failure.stdout.toString().trim() : '';
+    const message = stderr || stdout || failure.message;
     throw new Error(`Failed to run "git ${args.join(' ')}": ${message}`);
   }
 }
@@ -30,7 +45,7 @@ function runGit(args) {
 /**
  * Parse a version folder name like "6.28" into {major, minor} numbers.
  */
-function parseVersionFolder(folder) {
+function parseVersionFolder(folder: string): MinorVersion | null {
   const match = folder.match(/^(\d+)\.(\d+)$/);
   if (!match) {
     return null;
@@ -42,9 +57,9 @@ function parseVersionFolder(folder) {
  * Extract the safe version (major.minor) from the package.json version string.
  * e.g. "6.28.0-rc.0" → {major: 6, minor: 28}
  */
-function getSafeVersion() {
-  const packageJsonPath = path.resolve(__dirname, '../../', PACKAGE_JSON_PATH);
-  const pkg = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
+function getSafeVersion(): SafeVersion {
+  const packageJsonPath = path.resolve(import.meta.dirname, '../../', PACKAGE_JSON_PATH);
+  const pkg = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8')) as { version: string };
   const match = pkg.version.match(/^(\d+)\.(\d+)/);
   if (!match) {
     throw new Error(`Unable to parse version from ${PACKAGE_JSON_PATH}: ${pkg.version}`);
@@ -62,8 +77,8 @@ function getSafeVersion() {
  * an add unless it keeps its path within the versions directory, so moving
  * the whole directory adds nothing but moving a file into a version folder does.
  */
-function addedMigrations(nameStatus) {
-  const versionsRelative = (file) => {
+function addedMigrations(nameStatus: string): string[] {
+  const versionsRelative = (file: string) => {
     const index = file.indexOf(VERSIONS_DIR);
     return index === -1 ? null : file.slice(index + VERSIONS_DIR.length);
   };
@@ -71,26 +86,27 @@ function addedMigrations(nameStatus) {
   return nameStatus
     .split('\n')
     .filter(Boolean)
-    .map((line) => line.split('\t'))
+    .map((line) => line.split('\t') as [status: string, from: string, to?: string])
     .filter(([status, from, to]) => {
       if (status === 'A') {
         return from.startsWith(MIGRATIONS_PATH + '/');
       }
       return (
         status.startsWith('R') &&
+        to !== undefined &&
         to.startsWith(MIGRATIONS_PATH + '/') &&
         versionsRelative(from) !== versionsRelative(to)
       );
     })
-    .map(([status, from, to]) => (status === 'A' ? from : to));
+    .map(([status, from, to]) => (status === 'A' ? from : to!));
 }
 
 /**
  * Resolve the last published stable version from git tags (matching the logic
- * used by tools/gx/create-migration.js). Returns null if no stable tag is
+ * used by tools/gx/create-migration.ts). Returns null if no stable tag is
  * found (e.g. a shallow checkout without tags).
  */
-function getLastPublishedMinor() {
+function getLastPublishedMinor(): PublishedVersion | null {
   try {
     const tag = runGit([
       'describe',
@@ -111,7 +127,7 @@ function getLastPublishedMinor() {
       tag,
     };
   } catch (error) {
-    console.log(`Unable to resolve last published tag: ${error.message}`);
+    console.log(`Unable to resolve last published tag: ${(error as Error).message}`);
     return null;
   }
 }
@@ -120,7 +136,7 @@ function getLastPublishedMinor() {
  * Compare two {major, minor} version objects.
  * Returns -1 if a < b, 0 if equal, 1 if a > b.
  */
-function compareVersions(a, b) {
+function compareVersions(a: MinorVersion, b: MinorVersion): number {
   if (a.major !== b.major) {
     return a.major > b.major ? 1 : -1;
   }
@@ -134,8 +150,8 @@ function compareVersions(a, b) {
  * Check 1: No migration version folders should exceed the package.json version.
  * This catches orphaned folders that knex-migrator would skip.
  */
-function checkOrphanedFolders(safeVersion) {
-  const migrationsDir = path.resolve(__dirname, '../../', MIGRATIONS_PATH);
+function checkOrphanedFolders(safeVersion: SafeVersion): string | null {
+  const migrationsDir = path.resolve(import.meta.dirname, '../../', MIGRATIONS_PATH);
   const folders = fs
     .readdirSync(migrationsDir)
     .filter((f) => fs.statSync(path.join(migrationsDir, f)).isDirectory())
@@ -149,7 +165,7 @@ function checkOrphanedFolders(safeVersion) {
   if (orphaned.length > 0) {
     return (
       `Migration folders exceed package.json version (${safeVersion.raw}, safe: ${safeVersion.safe}): ${orphaned.join(', ')}\n` +
-      'Run `pnpm gx generate migration <slug>` from the repository root (tools/gx/create-migration.js handles the version bump automatically), ' +
+      'Run `pnpm gx generate migration <slug>` from the repository root (tools/gx/create-migration.ts handles the version bump automatically), ' +
       'or manually bump package.json to the next minor rc.'
     );
   }
@@ -165,21 +181,26 @@ function checkOrphanedFolders(safeVersion) {
  * (e.g. dropping a 6.35/ migration into a PR after v6.35.0 has shipped) will
  * be silently skipped for any user who has already migrated past 6.35.
  *
- * This mirrors tools/gx/create-migration.js, which always targets at
+ * This mirrors tools/gx/create-migration.ts, which always targets at
  * least lastPublishedMinor + 1 when picking the folder for a new migration.
  *
  * Falls back to the package.json safe version as a floor if the last published
  * tag can't be resolved (e.g. a checkout without tags), which is the looser
  * pre-patch-RC check.
  */
-function checkStalePlacements(safeVersion, lastPublishedMinor, baseSha, compareSha) {
+function checkStalePlacements(
+  safeVersion: SafeVersion,
+  lastPublishedMinor: PublishedVersion | null,
+  baseSha: string,
+  compareSha: string,
+): string | null {
   let mergeBaseSha;
   try {
     mergeBaseSha = runGit(['merge-base', baseSha, compareSha]);
   } catch (error) {
     throw new Error(
       `Unable to determine merge-base for ${baseSha} and ${compareSha}. ` +
-        `Ensure the base branch history is available in the checkout.\n${error.message}`,
+        `Ensure the base branch history is available in the checkout.\n${(error as Error).message}`,
     );
   }
 
@@ -193,13 +214,13 @@ function checkStalePlacements(safeVersion, lastPublishedMinor, baseSha, compareS
     return null;
   }
 
-  const stale = [];
+  const stale: { file: string; folder: string }[] = [];
 
   for (const file of newFiles) {
     // Extract the version folder from the path
     // e.g. ghost/core/server/data/migrations/versions/6.27/some-migration.js → 6.27
     const relativePath = file.replace(MIGRATIONS_PATH + '/', '');
-    const folderName = relativePath.split('/')[0];
+    const folderName = relativePath.split('/')[0] ?? '';
     const folderVersion = parseVersionFolder(folderName);
 
     if (!folderVersion) {
@@ -243,7 +264,7 @@ function checkStalePlacements(safeVersion, lastPublishedMinor, baseSha, compareS
 function main() {
   const safeVersion = getSafeVersion();
   const lastPublishedMinor = getLastPublishedMinor();
-  const errors = [];
+  const errors: string[] = [];
 
   // Check 1: Orphaned folders (no git context needed)
   const orphanedError = checkOrphanedFolders(safeVersion);
@@ -287,9 +308,11 @@ function main() {
   );
 }
 
-try {
-  main();
-} catch (error) {
-  console.error(error.message);
-  process.exit(1);
+if (import.meta.main) {
+  try {
+    main();
+  } catch (error) {
+    console.error((error as Error).message);
+    process.exit(1);
+  }
 }

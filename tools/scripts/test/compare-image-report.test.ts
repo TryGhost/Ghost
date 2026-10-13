@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert';
-import { diffPackages, duplicateInstances, identityOf, render } from '../compare-image-report.js';
+import { diffPackages, duplicateInstances, identityOf, render } from '../compare-image-report.ts';
 
 const report = (packages) => ({
   profile: 'image',
