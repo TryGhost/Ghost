@@ -1,4 +1,5 @@
 import type { AppManifest } from '@tryghost/app-contracts';
+import { apiUrl } from '../utils/api/fetch-api';
 import { createMutation, createQuery, createQueryWithId } from '../utils/api/hooks';
 
 export type { AppManifest } from '@tryghost/app-contracts';
@@ -67,12 +68,12 @@ export interface AppInstallationsResponseType {
 }
 
 /**
- * One session of an installed app: the installation as Ghost found it when the session
- * started, and the revision the session is pinned to.
+ * One session of an installed app: the revision it is pinned to, and the installation as
+ * Ghost found it once the app's manifest was re-checked. The two revisions are the same
+ * when the session starts; the session ends once the installation's moves on.
  */
 export interface AppSession {
   revision: number;
-  started_at: string;
   installation: AppInstallation;
 }
 
@@ -104,11 +105,22 @@ export const useBrowseAppInstallations = createQuery<AppInstallationsResponseTyp
  * Unlike `useBrowseAppInstallations`, this also returns uninstalled apps.
  * That way their details page still loads.
  */
+const readPath = (id: string) => `/apps/installations/${id}/`;
+const readSearchParams = { include: 'history' };
+
 export const useReadAppInstallation = createQueryWithId<AppInstallationsResponseType>({
   dataType,
-  path: (id) => `/apps/installations/${id}/`,
-  defaultSearchParams: { include: 'history' },
+  path: readPath,
+  defaultSearchParams: readSearchParams,
 });
+
+/**
+ * The cache key `useReadAppInstallation(id, { searchParams })` reads from, so an
+ * installation Admin already has, such as the one a session answers with, can be put
+ * there instead of read again. Lives here because `dataType` is private to this module.
+ */
+export const getAppInstallationQueryKey = (id: string, searchParams?: Record<string, string>) =>
+  [dataType, apiUrl(readPath(id), searchParams || readSearchParams)] as const;
 
 /** Has Ghost fetch and check an app's manifest. Stores nothing, so nothing is invalidated. */
 export const usePreviewAppInstallation = createMutation<

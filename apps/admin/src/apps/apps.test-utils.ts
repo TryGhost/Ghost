@@ -82,11 +82,7 @@ export function fakeSessionStart(id: string, answer: AppInstallation | Response)
   const capture = fakeAdminEndpoint('POST', sessionsPath(id), () =>
     next instanceof Response
       ? next
-      : {
-          app_sessions: [
-            { revision: next.revision, started_at: '2026-10-13T10:00:00.000Z', installation: next },
-          ],
-        },
+      : { app_sessions: [{ revision: next.revision, installation: next }] },
   );
   return Object.assign(capture, {
     set: (nextAnswer: AppInstallation | Response) => {
