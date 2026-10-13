@@ -20,8 +20,8 @@ exports.t = (...args) => {
 
 exports.init = () => {
   const i18n = require('@tryghost/i18n').default;
-  const events = require('../lib/common/events');
-  const settingsCache = require('../../shared/settings-cache');
+  const events = require('../../lib/common/events');
+  const settingsCache = require('../../../shared/settings-cache');
 
   const locale = settingsCache.get('locale') || 'en';
 
