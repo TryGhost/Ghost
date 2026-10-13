@@ -49,6 +49,7 @@ export type TriggerType =
   | 'label_added'
   | 'paid_subscription_upgraded'
   | 'paid_subscription_ended'
+  | 'paid_subscription_changed'
   | 'segment_entered';
 
 // THE TWO LIFECYCLE TRIGGERS — `paid_subscription_upgraded` and
@@ -66,6 +67,37 @@ export type TriggerType =
 // end, a comp that expires, a publisher who removes it. A trigger named for the
 // cancel button would miss every member who left by the other roads, which for a
 // winback flow is most of the people it exists to reach.
+
+/**
+ * LIFECYCLE, AS ONE TRIGGER — `paid_subscription_changed`, for the v2 lane.
+ *
+ * The two lifecycle triggers above are one design; this is the other, kept
+ * side by side so they can be compared: a single "Paid subscription changed"
+ * trigger whose first field picks the change, and whose tier fields only exist
+ * for an upgrade. Everything downstream — tiers, stop conditions, the
+ * read canvas's sentence — goes through isUpgrade / isEnded, so the combined
+ * trigger behaves exactly like whichever separate one it is currently set to.
+ */
+export type SubscriptionChange = 'upgraded' | 'ended';
+
+export const CHANGE_OPTIONS: { value: SubscriptionChange; label: string }[] = [
+  { value: 'upgraded', label: 'Upgraded' },
+  { value: 'ended', label: 'Ended' },
+];
+
+/** The combined trigger's change. Starts on upgraded, the first option. */
+export const subscriptionChange = (config: Pick<TriggerConfig, 'change'>): SubscriptionChange =>
+  config.change ?? 'upgraded';
+
+type ChangeAware = Pick<TriggerConfig, 'type' | 'change'>;
+
+const isUpgrade = (config: ChangeAware): boolean =>
+  config.type === 'paid_subscription_upgraded' ||
+  (config.type === 'paid_subscription_changed' && subscriptionChange(config) === 'upgraded');
+
+const isEnded = (config: ChangeAware): boolean =>
+  config.type === 'paid_subscription_ended' ||
+  (config.type === 'paid_subscription_changed' && subscriptionChange(config) === 'ended');
 
 /**
  * WHAT ENDS A RUN — and why nobody chooses it.
@@ -113,8 +145,8 @@ export interface TriggerConfig {
    * Meaningless on `member_subscribes`, which has no settings; held as 'all'
    * there rather than as an optional field, so nothing has to null-check it.
    *
-   * Always 'selected' on `paid_subscription_upgraded`: that trigger names the
-   * tiers someone upgrades TO and has no "any" answer (see hasTierMode).
+   * An upgrade asks the same question in its own words — "Any higher tier" or
+   * "Specific tier(s)" — and stores the answer the same way.
    */
   tierMode: 'all' | 'selected';
   /**
@@ -152,6 +184,13 @@ export interface TriggerConfig {
    * offering it here would be a filter builder wearing a multi-select.
    */
   segmentId: string | null;
+  /**
+   * Which change `paid_subscription_changed` watches — the Lifecycle v2 lane's
+   * one trigger standing in for the upgraded and ended pair (see
+   * SubscriptionChange). Optional, and read through subscriptionChange(), so
+   * configs stored before it existed need no reseed.
+   */
+  change?: SubscriptionChange;
 }
 
 // ONE sentence stem per trigger, and every surface derives its copy from it —
@@ -187,6 +226,9 @@ const TRIGGER_SENTENCE_STEMS: Record<TriggerType, string> = {
   // the member moves to free" says where they end up, which is what separates
   // this from a tier change.
   paid_subscription_ended: 'a paid subscription expires and the member moves to free',
+  // For the picker row, which has to cover both changes. Once one is chosen the
+  // card and the read canvas say that change's own sentence.
+  paid_subscription_changed: 'a paid subscription is upgraded or ends',
   // The first trigger that watches a STATE rather than an event.
   //
   // Everything above it fires on something that happened at a moment you could
@@ -255,6 +297,14 @@ export const TRIGGER_OPTIONS: {
     description: `When ${TRIGGER_SENTENCE_STEMS.paid_subscription_ended}.`,
     icon: CreditCardX,
   },
+  // The v2 lane's single lifecycle trigger. No lane offers it alongside the two
+  // above — see shared/capabilities.
+  {
+    value: 'paid_subscription_changed',
+    label: 'Paid subscription changed',
+    description: `When ${TRIGGER_SENTENCE_STEMS.paid_subscription_changed}.`,
+    icon: LucideIcon.ArrowRightLeft,
+  },
   // Under the membership triggers: those are about what someone became, this
   // is about how they arrived. Offered in GA only — see shared/capabilities.
   {
@@ -309,6 +359,7 @@ export const SIMPLE_TRIGGER_LABELS: Record<TriggerType, string> = {
   label_added: 'Label added to member',
   paid_subscription_upgraded: 'Paid subscription upgraded',
   paid_subscription_ended: 'Paid subscription ended',
+  paid_subscription_changed: 'Paid subscription changed',
   segment_entered: 'Member enters segment',
 };
 
@@ -371,25 +422,16 @@ export const tierDisplayNames = (tierIds: string[], archivedTierIds: string[]): 
 export const isPaidTrigger = (config: Pick<TriggerConfig, 'type'>): boolean =>
   config.type === 'paid_subscription_starts' ||
   config.type === 'paid_subscription_upgraded' ||
-  config.type === 'paid_subscription_ended';
+  config.type === 'paid_subscription_ended' ||
+  config.type === 'paid_subscription_changed';
 
 /**
  * Triggers that carry a tier list. NOT the same set as the paid ones: the ended
  * trigger is paid — it needs Stripe — and carries no tiers at all, because a
  * subscription that ended has no tier left to name.
  */
-export const hasTiers = (config: Pick<TriggerConfig, 'type'>): boolean =>
-  config.type === 'paid_subscription_starts' || config.type === 'paid_subscription_upgraded';
-
-/**
- * Triggers whose tier list sits behind the "Any paid tier" / "Selected tier(s)"
- * choice. The started trigger only. The upgraded trigger goes straight to the
- * tiers: its card is one chip field, and its config is held at 'selected' (see
- * triggerConfigFor) so every reader of tierMode gets the right answer without
- * knowing which trigger it's looking at.
- */
-export const hasTierMode = (config: Pick<TriggerConfig, 'type'>): boolean =>
-  config.type === 'paid_subscription_starts';
+export const hasTiers = (config: ChangeAware): boolean =>
+  config.type === 'paid_subscription_starts' || isUpgrade(config);
 
 /**
  * Does this trigger ask a question of its own?
@@ -405,8 +447,12 @@ export const hasTierMode = (config: Pick<TriggerConfig, 'type'>): boolean =>
  * One list. A trigger that grows a field is now one entry here, and the two
  * readers cannot disagree.
  */
-export const triggerHasField = (config: Pick<TriggerConfig, 'type'>): boolean =>
-  hasTiers(config) || hasLabels(config) || hasSegment(config);
+export const triggerHasField = (config: ChangeAware): boolean =>
+  hasTiers(config) ||
+  hasLabels(config) ||
+  hasSegment(config) ||
+  // Always: its change field is there even when the tiers aren't.
+  config.type === 'paid_subscription_changed';
 
 /** Triggers that carry a segment. The segment trigger, and only it. */
 export const hasSegment = (config: Pick<TriggerConfig, 'type'>): boolean =>
@@ -479,7 +525,7 @@ export const hasMultipleTiers = (archivedTierIds: string[]): boolean =>
 // tierMode split exists to draw. Readers that name the audience should name
 // those tiers.
 export const hasTierFilter = (
-  config: Pick<TriggerConfig, 'type' | 'tierMode' | 'tierIds'>,
+  config: Pick<TriggerConfig, 'type' | 'tierMode' | 'tierIds' | 'change'>,
 ): boolean => hasTiers(config) && config.tierMode === 'selected' && config.tierIds.length > 0;
 
 /**
@@ -490,7 +536,7 @@ export const hasTierFilter = (
  * policy is the answer.
  */
 export const tiersUnanswered = (
-  config: Pick<TriggerConfig, 'type' | 'tierMode' | 'tierIds'>,
+  config: Pick<TriggerConfig, 'type' | 'tierMode' | 'tierIds' | 'change'>,
 ): boolean => hasTiers(config) && config.tierMode === 'selected' && config.tierIds.length === 0;
 
 /**
@@ -507,6 +553,31 @@ const orList = (items: string[]): string =>
     : items.length === 2
       ? `${items[0]} or ${items[1]}`
       : `${items.slice(0, -1).join(', ')}, or ${items[items.length - 1]}`;
+
+/**
+ * The tier half of the stop sentence. The "any" policy is said as the policy —
+ * in the trigger's own words, "any paid tier" or "any higher tier" — and named
+ * tiers are NAMED: "leave Bronze", "leave Bronze or Gold", "leave Bronze,
+ * Premium or Gold". It used to say "the selected tier(s)" and leave the reader
+ * to look them up on the trigger card, which Settings is nowhere near.
+ *
+ * Until a tier is named there's nothing to list, so it falls back to that
+ * phrase rather than ending the sentence on "leave".
+ */
+const tierExit = (
+  config: Pick<TriggerConfig, 'type' | 'tierMode' | 'tierIds' | 'change'>,
+): string => {
+  if (config.tierMode !== 'selected') {
+    return isUpgrade(config) ? 'leave any higher tier' : 'leave any paid tier';
+  }
+  const names = tierNames(config.tierIds);
+  if (names.length === 0) {
+    return 'leave the selected tier(s)';
+  }
+  return names.length === 1
+    ? `leave ${names[0]}`
+    : `leave ${names.slice(0, -1).join(', ')} or ${names[names.length - 1]}`;
+};
 
 /**
  * What ends a run, as one sentence. See the block above for why it's a sentence.
@@ -533,15 +604,12 @@ const orList = (items: string[]): string =>
  * deleted" into `unsubscribed` (see mock/types) — one fewer place the two models
  * disagree.
  *
- * The tiers aren't named — "the selected tier(s)" rather than "Bronze or Gold". The
- * field naming them is directly above this line, and a sentence that restated it
- * would have to be re-read every time the field changed.
- *
- * The paid sentence follows the tier mode: "leave any paid tier" under "Any paid
- * tier", "leave the selected tier(s)" under "Selected tier(s)". Cancelling isn't a
+ * The tier clause follows the tier choice (see tierExit). Cancelling isn't a
  * clause of its own any more — it is leaving the tier, so the tier clause covers it.
  */
-export const exitSentence = (config: Pick<TriggerConfig, 'type' | 'tierMode'>): string => {
+export const exitSentence = (
+  config: Pick<TriggerConfig, 'type' | 'tierMode' | 'tierIds' | 'change'>,
+): string => {
   // The label trigger takes the signup sentence, not a third one. Losing the
   // label looks like the tier clause's counterpart — but entry here happens at
   // SIGNUP, so the label is how someone arrived rather than a state they hold,
@@ -560,12 +628,7 @@ export const exitSentence = (config: Pick<TriggerConfig, 'type' | 'tierMode'>): 
   // paid and has no tier left to leave, so it takes the signup sentence. (It
   // used to add "start paying again" — a winback succeeding — which the design
   // dropped along with the rest of the derived paid exits.)
-  const parts = hasTiers(config)
-    ? [
-        'unsubscribe',
-        config.tierMode === 'selected' ? 'leave the selected tier(s)' : 'leave any paid tier',
-      ]
-    : ['unsubscribe'];
+  const parts = hasTiers(config) ? ['unsubscribe', tierExit(config)] : ['unsubscribe'];
   return `Members stop early if they ${orList(parts)}.`;
 };
 
@@ -589,9 +652,7 @@ export const triggerConfigFor = (type: TriggerType): TriggerConfig => ({
   // than arriving answered in a field nobody looked at. Unanswered still
   // exists — it's choosing 'selected' and naming nothing.
   //
-  // The upgraded trigger has no 'all' — it starts 'selected' and empty, which
-  // is unanswered until a tier is named.
-  tierMode: type === 'paid_subscription_upgraded' ? 'selected' : 'all',
+  tierMode: 'all',
   tierIds: [],
   // Null, and therefore unanswered, on a fresh label trigger — the opposite of
   // tierMode's 'all' default, and deliberately so. There's no policy answer to
@@ -631,8 +692,17 @@ export const triggerDescription = (config: Pick<TriggerConfig, 'type'>): string 
  * fused its explanation into the tiers field's label (PAID_TIERS_FIELD_LABEL,
  * below), so a written-out copy above the field would say the same fact twice.
  */
-export const triggerExplanation = (config: Pick<TriggerConfig, 'type'>): string =>
-  `Triggered when ${TRIGGER_SENTENCE_STEMS[config.type]}.`;
+export const triggerExplanation = (config: ChangeAware): string => {
+  // The combined trigger says the sentence of the change it's set to, not the
+  // both-at-once one its picker row carries.
+  const type =
+    config.type !== 'paid_subscription_changed'
+      ? config.type
+      : isEnded(config)
+        ? 'paid_subscription_ended'
+        : 'paid_subscription_upgraded';
+  return `Triggered when ${TRIGGER_SENTENCE_STEMS[type]}.`;
+};
 
 /**
  * The paid EDIT card's label, run into the tiers field: "…a new or free member
@@ -667,6 +737,14 @@ export const LABEL_FIELD_LABEL = 'Triggered when someone signs up with:';
  */
 export const UPGRADED_TIERS_FIELD_LABEL = 'Triggered when a paid member upgrades to:';
 
+/**
+ * The combined trigger's two labels. The sentence runs into the change field,
+ * and for an upgrade carries on into the tiers: "Triggered when a paid
+ * subscription is: Upgraded — To: Gold".
+ */
+export const CHANGE_FIELD_LABEL = 'Triggered when a paid subscription is:';
+export const CHANGE_TIERS_FIELD_LABEL = 'To:';
+
 /** The segment field's label — the same sentence-into-field shape as the rest. */
 export const SEGMENT_FIELD_LABEL = 'Triggered when a member enters:';
 
@@ -688,6 +766,8 @@ export const triggerReviewLabel = (config: TriggerConfig): string => {
       return 'Upgraded';
     case 'paid_subscription_ended':
       return 'Subscription ended';
+    case 'paid_subscription_changed':
+      return isEnded(config) ? 'Subscription ended' : 'Upgraded';
     case 'segment_entered':
       return 'Entered segment';
     case 'paid_subscription_starts':
@@ -706,7 +786,7 @@ export const triggerReviewLabel = (config: TriggerConfig): string => {
  * trigger is either any tier or the tiers you named.
  */
 export const audienceLabel = (
-  config: Pick<TriggerConfig, 'type' | 'tierMode' | 'tierIds' | 'labelId' | 'segmentId'>,
+  config: Pick<TriggerConfig, 'type' | 'tierMode' | 'tierIds' | 'labelId' | 'segmentId' | 'change'>,
 ): string => {
   if (hasLabels(config)) {
     // The named label, or the class it belongs to while the question is still
@@ -720,7 +800,7 @@ export const audienceLabel = (
     // what a segment IS. Falls back to the class while the question is open.
     return segmentName(config.segmentId) ?? 'Members in a segment';
   }
-  if (config.type === 'paid_subscription_ended') {
+  if (isEnded(config)) {
     // "Past members", because by the time the flow reaches them they aren't
     // paying any more — calling a winback's audience "Paid members" would name
     // the people it is specifically not for.

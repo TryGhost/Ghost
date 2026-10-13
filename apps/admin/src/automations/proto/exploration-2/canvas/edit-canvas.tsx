@@ -1017,6 +1017,9 @@ const triggerTitle = (
     }
     case 'paid_subscription_ended':
       return 'When a paid subscription ends';
+    // Not offered in this lane — the v2 lifecycle lane's combined trigger.
+    case 'paid_subscription_changed':
+      return 'When a paid subscription changes';
     case 'segment_entered': {
       const segment = segments.find((entry) => entry.id === config.segmentId)?.name;
       return segment ? `When a member enters ${segment}` : 'When a member enters a segment';

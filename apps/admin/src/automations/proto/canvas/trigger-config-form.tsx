@@ -13,19 +13,23 @@ import { LucideIcon } from '@tryghost/shade/utils';
 import { Stack } from '@tryghost/shade/primitives';
 import {
   ALL_TIER_IDS,
+  CHANGE_FIELD_LABEL,
+  CHANGE_OPTIONS,
+  CHANGE_TIERS_FIELD_LABEL,
   LABEL_FIELD_LABEL,
   SEGMENT_FIELD_LABEL,
   PAID_TIERS_FIELD_LABEL,
   SIMPLE_PAID_TIERS_FIELD_LABEL,
   UPGRADED_TIERS_FIELD_LABEL,
   TIER_OPTIONS,
+  type SubscriptionChange,
   type TriggerConfig,
   type TriggerType,
   availableTriggerOptions,
   hasLabels,
   hasSegment,
-  hasTierMode,
   hasTiers,
+  subscriptionChange,
   tierDisplayName,
   triggerConfigFor,
   exitSentence,
@@ -135,12 +139,18 @@ export const TriggerEmptyState: React.FC<{
   );
 };
 
-// The paid trigger's two modes, as the mode Select offers them. 'all' is a
+// The tier question's two modes, as the mode Select offers them. 'all' is a
 // policy (it follows tiers created later); 'selected' is a named list — see
-// TriggerConfig.tierMode.
-const TIER_MODE_OPTIONS: { value: TriggerConfig['tierMode']; label: string }[] = [
+// TriggerConfig.tierMode. One question, worded for what the trigger watches:
+// starting on a tier, or moving up to one.
+type TierModeOption = { value: TriggerConfig['tierMode']; label: string };
+const STARTED_TIER_MODES: TierModeOption[] = [
   { value: 'all', label: 'Any paid tier' },
   { value: 'selected', label: 'Selected tier(s)' },
+];
+const UPGRADED_TIER_MODES: TierModeOption[] = [
+  { value: 'all', label: 'Any higher tier' },
+  { value: 'selected', label: 'Specific tier(s)' },
 ];
 
 type TierOption = (typeof TIER_OPTIONS)[number];
@@ -180,16 +190,17 @@ export const TriggerFieldsForm: React.FC<TriggerConfigFormProps> = ({
   const tierIds = config.tierIds;
   const allMode = config.tierMode === 'all';
   const tierModeId = useId();
-  const tiersInputId = useId();
+  const changeId = useId();
   const tiersErrorId = useId();
   // Site state, read here like Stripe is in the empty-state picker: which
   // tiers have gone quiet decides what the field and its rows say.
   const archivedTierIds = useArchivedTierIds();
   const selectedTiers = TIER_OPTIONS.filter((tier) => tierIds.includes(tier.id));
   const showTiers = hasTiers(config);
-  // The started trigger asks "any or selected" first; the upgraded trigger goes
-  // straight to the tiers (see hasTierMode).
-  const showTierMode = hasTierMode(config);
+  const started = config.type === 'paid_subscription_starts';
+  // The v2 lifecycle lane's combined trigger: which change comes first, and the
+  // tiers below it only exist for an upgrade (hasTiers already knows that).
+  const showChange = config.type === 'paid_subscription_changed';
   // Label and segment: the same control, one with creation and one without —
   // see shared/searchable-select-field, which owns their search and dropdown.
   const showLabels = hasLabels(config);
@@ -242,50 +253,71 @@ export const TriggerFieldsForm: React.FC<TriggerConfigFormProps> = ({
                 the Select's continuation visually, the way it does in the
                 editor. The error and the exits sit under whichever field is
                 last. */}
+      {showChange && (
+        <div className="flex flex-col gap-2">
+          <Label className="leading-normal font-normal" htmlFor={changeId}>
+            {CHANGE_FIELD_LABEL}
+          </Label>
+          <Select
+            value={subscriptionChange(config)}
+            // The tiers belong to an upgrade, so changing the change clears them.
+            onValueChange={(change) =>
+              onChange({ ...config, change: change as SubscriptionChange, tierIds: [] })
+            }
+          >
+            <SelectTrigger id={changeId}>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {CHANGE_OPTIONS.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      )}
+
       {showTiers && (
         <div className="flex flex-col gap-2">
           {/* leading-normal / font-normal: Shade's Label is a one-line medium
                     caption by default, and this is a sentence that wraps and
                     matches the span labels the other trigger fields use. */}
-          {/* The upgraded trigger has no mode Select, so the same sentence
-                    label points at the chip field's own input instead. */}
-          <Label
-            className="leading-normal font-normal"
-            htmlFor={showTierMode ? tierModeId : tiersInputId}
-          >
-            {showTierMode
+          <Label className="leading-normal font-normal" htmlFor={tierModeId}>
+            {started
               ? simpleNames
                 ? SIMPLE_PAID_TIERS_FIELD_LABEL
                 : PAID_TIERS_FIELD_LABEL
-              : UPGRADED_TIERS_FIELD_LABEL}
+              : showChange
+                ? CHANGE_TIERS_FIELD_LABEL
+                : UPGRADED_TIERS_FIELD_LABEL}
           </Label>
-          {showTierMode && (
-            <Select
-              value={config.tierMode}
-              // Flipping mode clears the list either way: an answer given under
-              // one mode isn't an answer under the other, and "Selected tier(s)"
-              // starts EMPTY on purpose — pre-filling every tier would look like
-              // "any" without following tiers created later.
-              onValueChange={(mode) =>
-                onChange({ ...config, tierMode: mode as TriggerConfig['tierMode'], tierIds: [] })
-              }
+          <Select
+            value={config.tierMode}
+            // Flipping mode clears the list either way: an answer given under
+            // one mode isn't an answer under the other, and "Selected tier(s)"
+            // starts EMPTY on purpose — pre-filling every tier would look like
+            // "any" without following tiers created later.
+            onValueChange={(mode) =>
+              onChange({ ...config, tierMode: mode as TriggerConfig['tierMode'], tierIds: [] })
+            }
+          >
+            <SelectTrigger
+              // The mode can't be the unanswered half — only an empty chip
+              // field can — so the Select never wears the error itself.
+              id={tierModeId}
             >
-              <SelectTrigger
-                // The mode can't be the unanswered half — only an empty chip
-                // field can — so the Select never wears the error itself.
-                id={tierModeId}
-              >
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {TIER_MODE_OPTIONS.map((option) => (
-                  <SelectItem key={option.value} value={option.value}>
-                    {option.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          )}
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {(started ? STARTED_TIER_MODES : UPGRADED_TIER_MODES).map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
           {!allMode && (
             <ChipPicker<TierOption, TierOption>
               chipClassName={() => 'text-(length:--text-control)'}
@@ -294,7 +326,6 @@ export const TriggerFieldsForm: React.FC<TriggerConfigFormProps> = ({
               emptyMessage="No tiers found"
               getKey={(tier) => tier.id}
               getLabel={(tier) => tierDisplayName(tier.name, archivedTierIds.includes(tier.id))}
-              inputId={showTierMode ? undefined : tiersInputId}
               inputLabel="Tiers"
               invalid={Boolean(error)}
               matches={(tier, term) => tier.name.toLowerCase().includes(term.toLowerCase())}

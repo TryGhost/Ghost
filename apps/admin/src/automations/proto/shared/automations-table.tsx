@@ -61,23 +61,53 @@ const relRunDate = (iso: string | null): string => (iso ? startedLabel(iso) : 'N
 // the cell keeps the same p-4 every other cell has, so the column has to hold both.
 // At 48 the button overflowed its own padding and sat flush against the row's right
 // edge, touching the hover fill.
-const gridCols =
-  'grid grid-cols-[1fr_auto] lg:grid-cols-[minmax(0,1fr)_130px_130px_130px_130px_72px]';
+//
+// TWO layouts, the shipping list's own (see automations/components/
+// automations-list): a six-column table when there's room, and below that a
+// stacked row — name and description across the top with the status and menu at
+// its right, then the three figures on a second line, each over its own label,
+// since the column headers are gone.
+//
+// Chosen by the TABLE's width rather than the window's, which is the one place
+// this departs from the build. On the window's `lg`, a wide window with a narrow
+// table (beside the admin sidebar, or half the screen) kept the six columns, and
+// the five fixed ones squeezed the name — the only flexible column — to nothing.
+// 920px leaves the name about 240px. It's px, not a theme step: Admin's root
+// font size is 62.5%, so a rem breakpoint lands far narrower than its name.
+const WIDE_COLS = '@min-[920px]/table:grid-cols-[minmax(0,1fr)_130px_130px_130px_130px_72px]';
+const rowGrid = `grid grid-cols-[repeat(3,minmax(0,1fr))_auto_auto] gap-x-4 gap-y-3 px-2 py-6 @min-[920px]/table:gap-y-0 @min-[920px]/table:p-0 ${WIDE_COLS}`;
+
+// A cell's place in each layout. Stacked: explicit rows, no padding of its own
+// (the row carries it). Table: back to the grid's own flow, with the cell padding
+// every other table in the app has.
+const TABLE_CELL =
+  '@min-[920px]/table:col-span-1 @min-[920px]/table:col-start-auto @min-[920px]/table:row-start-auto @min-[920px]/table:p-4';
+const STAT_CELL = `row-start-2 flex min-w-0 flex-col p-0 @min-[920px]/table:block ${TABLE_CELL}`;
+
+// The figure's own label, for the stacked layout where there's no header row.
+const StatLabel: React.FC<{ children: string }> = ({ children }) => (
+  <span className="mt-0.5 font-sans text-sm leading-tight whitespace-nowrap text-muted-foreground @min-[920px]/table:hidden">
+    {children}
+  </span>
+);
 
 // text-right + font-mono + text-sm is how every numeric table column in the app
 // renders — analytics newsletters, analytics growth, growth sources and post
 // analytics all carry this exact string. Numbers that stack down a column are
 // read by comparing them, and mono's fixed advance is what lets the digits line
 // up to be compared; the headline figures elsewhere stay sans because they're
-// read once rather than against each other.
-const MetricCell: React.FC<{ value: number }> = ({ value }) => (
+// read once rather than against each other. In the stacked layout they aren't in
+// a column at all, so they read as plain figures there, as the build's do.
+const MetricCell: React.FC<{ value: number; label: string }> = ({ value, label }) => (
   <TableCell
     className={cn(
-      'hidden text-right font-mono text-sm lg:block lg:p-4',
+      STAT_CELL,
+      '@min-[920px]/table:text-right @min-[920px]/table:font-mono @min-[920px]/table:text-sm',
       value === 0 && 'text-muted-foreground',
     )}
   >
     {formatNumber(value)}
+    <StatLabel>{label}</StatLabel>
   </TableCell>
 );
 
@@ -187,12 +217,12 @@ const AutomationRow: React.FC<{
   const row = (
     <TableRow
       className={cn(
-        'relative w-full cursor-pointer items-center gap-x-4 p-2 hover:bg-table-row-hover lg:p-0',
-        gridCols,
+        'relative w-full cursor-pointer items-center hover:bg-table-row-hover',
+        rowGrid,
       )}
       data-testid="automation-list-row"
     >
-      <TableCell className="static min-w-0 lg:p-4">
+      <TableCell className={cn('static col-span-3 row-start-1 min-w-0 p-0', TABLE_CELL)}>
         {/* Mark, then the stacked name and description — the members list's own
                     row shape (size-8 mark, gap-3, text beside it), so a table of
                     automations scans the way the other tables in the app do.
@@ -224,21 +254,17 @@ const AutomationRow: React.FC<{
           </div>
         </div>
       </TableCell>
-      <TableCell
-        className={cn(
-          'hidden lg:block lg:p-4',
-          !metrics?.last_enrolled_at && 'text-muted-foreground',
-        )}
-      >
+      <TableCell className={cn(STAT_CELL, !metrics?.last_enrolled_at && 'text-muted-foreground')}>
         {relRunDate(metrics?.last_enrolled_at ?? null)}
+        <StatLabel>Last started</StatLabel>
       </TableCell>
       {/* Total runs is the number the detail page leads with, so the list
                 and the automation agree on the headline figure — that's the one people
                 cross-check. Completed dropped out to make room: how many are still
                 moving matters more at a glance than how many have finished. */}
-      <MetricCell value={metrics?.enrollments ?? 0} />
-      <MetricCell value={metrics?.in_progress ?? 0} />
-      <TableCell className="lg:p-4">
+      <MetricCell label="Total runs" value={metrics?.enrollments ?? 0} />
+      <MetricCell label="In progress" value={metrics?.in_progress ?? 0} />
+      <TableCell className={cn('col-start-4 row-start-1 p-0', TABLE_CELL)}>
         <StatusBadge archived={entry.archived} status={automation.status} />
       </TableCell>
       {/* Above the row's own click overlay (z-10) or the link would swallow the
@@ -253,7 +279,7 @@ const AutomationRow: React.FC<{
                 exists to make easier, so it belongs on the row you'd copy — and with
                 two items, the destructive one stops being the row's only action. */}
       <TableCell
-        className="relative z-20 flex justify-end lg:p-4"
+        className={cn('relative z-20 col-start-5 row-start-1 flex justify-end p-0', TABLE_CELL)}
         onClick={(e) => e.stopPropagation()}
       >
         {hasActions && (
@@ -340,35 +366,40 @@ export const AutomationsTable: React.FC<AutomationsTableProps> = ({
   publishBlocked,
   showTriggerIcon,
 }) => (
-  <Table className="flex flex-col" data-testid="automations-list">
-    <TableHeader className="hidden lg:flex lg:flex-col">
-      <TableRow
-        className={cn('w-full items-center gap-x-4 border-b hover:bg-transparent', gridCols)}
-      >
-        <TableHead className="lg:px-4">Automation</TableHead>
-        <TableHead className="lg:px-4">Last started</TableHead>
-        {/* Right-aligned to sit over the right-aligned figures below, the
+  <div className="@container/table">
+    <Table className="flex flex-col" data-testid="automations-list">
+      <TableHeader className="hidden @min-[920px]/table:flex @min-[920px]/table:flex-col">
+        <TableRow
+          className={cn(
+            'grid w-full items-center gap-x-4 border-b hover:bg-transparent',
+            WIDE_COLS,
+          )}
+        >
+          <TableHead className="px-4">Automation</TableHead>
+          <TableHead className="px-4">Last started</TableHead>
+          {/* Right-aligned to sit over the right-aligned figures below, the
                     same pairing the analytics tables use. */}
-        <TableHead className="text-right lg:px-4">Total runs</TableHead>
-        <TableHead className="text-right lg:px-4">In progress</TableHead>
-        <TableHead className="lg:px-4">Status</TableHead>
-        <TableHead className="lg:px-4" />
-      </TableRow>
-    </TableHeader>
-    <TableBody className="flex flex-col">
-      {automations.map((entry) => (
-        <AutomationRow
-          key={entry.automation.id}
-          basePath={basePath}
-          entry={entry}
-          publishBlocked={publishBlocked}
-          showTriggerIcon={showTriggerIcon}
-          onArchive={onArchive}
-          onDuplicate={onDuplicate}
-          onRename={onRename}
-          onToggleStatus={onToggleStatus}
-        />
-      ))}
-    </TableBody>
-  </Table>
+          <TableHead className="px-4 text-right">Total runs</TableHead>
+          <TableHead className="px-4 text-right">In progress</TableHead>
+          <TableHead className="px-4">Status</TableHead>
+          <TableHead className="px-4" />
+        </TableRow>
+      </TableHeader>
+      <TableBody className="flex flex-col">
+        {automations.map((entry) => (
+          <AutomationRow
+            key={entry.automation.id}
+            basePath={basePath}
+            entry={entry}
+            publishBlocked={publishBlocked}
+            showTriggerIcon={showTriggerIcon}
+            onArchive={onArchive}
+            onDuplicate={onDuplicate}
+            onRename={onRename}
+            onToggleStatus={onToggleStatus}
+          />
+        ))}
+      </TableBody>
+    </Table>
+  </div>
 );

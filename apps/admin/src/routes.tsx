@@ -37,6 +37,8 @@ import {
   lazyProtoPhase2List,
   lazyProtoPhase3Detail,
   lazyProtoPhase3List,
+  lazyProtoPhase4Detail,
+  lazyProtoPhase4List,
 } from './automations/api';
 import { lazyCommentsScreen } from './comments/api';
 import { lazyMigrateScreen } from './migrate/api';
@@ -164,6 +166,19 @@ const appRoutes: RouteObject[] = [
       requiresAccess: canManageAutomations,
     } satisfies AdminRouteHandle & AccessRouteHandle,
     lazy: lazyComponent(() => lazyProtoPhase3Detail()),
+  },
+  {
+    path: '/automations-proto/phase-4',
+    handle: { requiresAccess: canManageAutomations } satisfies AccessRouteHandle,
+    lazy: lazyComponent(() => lazyProtoPhase4List()),
+  },
+  {
+    path: '/automations-proto/phase-4/:id',
+    handle: {
+      hideAdminSidebar: true,
+      requiresAccess: canManageAutomations,
+    } satisfies AdminRouteHandle & AccessRouteHandle,
+    lazy: lazyComponent(() => lazyProtoPhase4Detail()),
   },
   {
     path: '/automations-proto/exploration-2',

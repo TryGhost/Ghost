@@ -63,6 +63,12 @@ export const LANE_CAPABILITIES: Record<LaneId, LaneCapabilities> = {
     triggers: [...MEMBERSHIP_TRIGGERS, 'paid_subscription_upgraded', 'paid_subscription_ended'],
     extraSteps: [],
   },
+  // The other lifecycle design, for comparison: phase 3's two triggers folded
+  // back into one, "Paid subscription changed", that asks which change first.
+  'phase-4': {
+    triggers: [...MEMBERSHIP_TRIGGERS, 'paid_subscription_changed'],
+    extraSteps: [],
+  },
   // GA (formerly the right-panel sandbox) carries the whole roadmap: the label
   // trigger (lead magnets), the upgraded and ended ones (lifecycle), the
   // segment one, and Update member — the first step that changes a member rather

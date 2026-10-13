@@ -1,14 +1,5 @@
 import React, { useEffect, useId, useRef, useState } from 'react';
-import {
-  Input,
-  Popover,
-  PopoverAnchor,
-  PopoverContent,
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@tryghost/shade/components';
+import { Input, Popover, PopoverAnchor, PopoverContent } from '@tryghost/shade/components';
 
 // The automation's name in the header, renamed where it's read.
 //
@@ -28,7 +19,8 @@ import {
 //
 // No standing pencil. The status badge sits straight after the name, and a
 // permanent icon between the two made the row read as three things. The hover
-// fill and tooltip carry the affordance instead.
+// fill carries the affordance instead. (A "Rename" tooltip was tried with it
+// and removed.)
 //
 // It's a second way in, not a second home: the Settings tab's Name field stays,
 // and the two are ONE value held by the screen — the raw text, bad values
@@ -92,7 +84,6 @@ export const EditableTitle: React.FC<EditableTitleProps> = ({
   // Whether the current text was last typed in THIS field — which is what
   // earns a bad value the popover once focus has left (see the note above).
   const [editedHere, setEditedHere] = useState(false);
-  const [tooltipOpen, setTooltipOpen] = useState(false);
   // The name when editing began — what Escape puts back.
   const original = useRef(value);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -103,7 +94,11 @@ export const EditableTitle: React.FC<EditableTitleProps> = ({
   const selectOnRelease = useRef(false);
   const errorId = useId();
 
-  const error = errorFor(value, isTaken);
+  const nameError = errorFor(value, isTaken);
+  // A blank typed HERE is never reported — leaving the field puts the name
+  // back, so there's nothing to fix. A blank that arrived from Settings still
+  // shows, since that field can be left empty.
+  const error = !value.trim() && (focused || editedHere) ? null : nameError;
   const [showError, setShowError] = useState(false);
   useEffect(() => {
     if (!error) {
@@ -127,16 +122,8 @@ export const EditableTitle: React.FC<EditableTitleProps> = ({
 
   return (
     <Popover open={invalid && (focused || editedHere)}>
-      <TooltipProvider delayDuration={300}>
-        <Tooltip
-          // "Rename" only while the field is at rest and well. Once the cursor
-          // is in it the hint is spent, and on a red field it's the wrong thing
-          // to be saying.
-          open={tooltipOpen && !focused && !invalid}
-          onOpenChange={setTooltipOpen}
-        >
-          <PopoverAnchor asChild>
-            {/* Sized by its own text: an invisible copy of the value sets the
+      <PopoverAnchor asChild>
+        {/* Sized by its own text: an invisible copy of the value sets the
                 width and the input fills it, so the field hugs the name and
                 the badge beside it doesn't move when the cursor lands.
 
@@ -144,83 +131,86 @@ export const EditableTitle: React.FC<EditableTitleProps> = ({
                 first letter stays on the column the plain title sat on, but
                 the right edge keeps the row's full gap — pulled in on that
                 side too, a focused field touched the status badge. */}
-            <div className="-ml-2 inline-grid max-w-full min-w-0">
-              <span
-                className={`invisible col-start-1 row-start-1 h-8 min-w-[4ch] overflow-hidden px-2 whitespace-pre ${TITLE_TYPE}`}
-                aria-hidden
-              >
-                {value}
-              </span>
-              <TooltipTrigger asChild>
-                <Input
-                  ref={inputRef}
-                  aria-describedby={invalid ? errorId : undefined}
-                  aria-invalid={invalid || undefined}
-                  aria-label="Automation name"
-                  // Shade's input surface, with its border and fill held back
-                  // until they mean something: the ghost button's hover fill
-                  // at rest, and the full control — surface, focus ring,
-                  // invalid red — once it's focused or wrong. px-[7px] plus
-                  // the 1px border is the copy's 8px.
-                  className={`col-start-1 row-start-1 h-8 min-w-0 border-transparent bg-transparent px-[7px] py-0 text-ellipsis hover:bg-accent focus-visible:bg-control-surface aria-[invalid=true]:bg-control-surface ${TITLE_TYPE}`}
-                  maxLength={191}
-                  size={1}
-                  value={value}
-                  onBlur={() => {
-                    setFocused(false);
-                    selectOnRelease.current = false;
-                    if (cancelling.current) {
-                      cancelling.current = false;
-                      return;
-                    }
-                    // A bad name STAYS — red, with its message under it —
-                    // until it's corrected or abandoned; quietly showing the
-                    // previous name would drop what was typed without saying
-                    // so. Leaving says it at once rather than after the wait.
-                    if (error) {
-                      setShowError(true);
-                    }
-                  }}
-                  onChange={(event) => {
-                    setEditedHere(true);
-                    onChange(event.target.value);
-                  }}
-                  onFocus={(event) => {
-                    setFocused(true);
-                    // What Escape puts back: the name as it was on the way in,
-                    // or — if that was already a bad value — the last good one.
-                    original.current = error ? appliedName : value;
-                    event.target.select();
-                    selectOnRelease.current = true;
-                  }}
-                  onKeyDown={(event) => {
-                    if (event.key === 'Enter') {
-                      event.preventDefault();
-                      if (error) {
-                        setShowError(true);
-                      } else {
-                        inputRef.current?.blur();
-                      }
-                    } else if (event.key === 'Escape') {
-                      event.preventDefault();
-                      onChange(original.current);
-                      cancelling.current = true;
-                      inputRef.current?.blur();
-                    }
-                  }}
-                  onMouseUp={(event) => {
-                    if (selectOnRelease.current) {
-                      selectOnRelease.current = false;
-                      event.currentTarget.select();
-                    }
-                  }}
-                />
-              </TooltipTrigger>
-            </div>
-          </PopoverAnchor>
-          <TooltipContent side="bottom">Rename</TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
+        <div className="-ml-2 inline-grid max-w-full min-w-0">
+          <span
+            className={`invisible col-start-1 row-start-1 h-8 min-w-[4ch] overflow-hidden px-2 whitespace-pre ${TITLE_TYPE}`}
+            aria-hidden
+          >
+            {value}
+          </span>
+          <Input
+            ref={inputRef}
+            aria-describedby={invalid ? errorId : undefined}
+            aria-invalid={invalid || undefined}
+            aria-label="Automation name"
+            // Shade's input surface, with its border and fill held back
+            // until they mean something: the ghost button's hover fill
+            // at rest, and the full control — surface, focus ring,
+            // invalid red — once it's focused or wrong. px-[7px] plus
+            // the 1px border is the copy's 8px.
+            className={`col-start-1 row-start-1 h-8 min-w-0 border-transparent bg-transparent px-[7px] py-0 text-ellipsis hover:bg-accent focus-visible:bg-control-surface aria-[invalid=true]:bg-control-surface ${TITLE_TYPE}`}
+            maxLength={191}
+            size={1}
+            value={value}
+            onBlur={() => {
+              setFocused(false);
+              selectOnRelease.current = false;
+              if (cancelling.current) {
+                cancelling.current = false;
+                return;
+              }
+              // Left blank, the title goes back to the name it had:
+              // there's nothing typed to lose, and a header with no
+              // name in it reads as broken.
+              if (!value.trim()) {
+                onChange(original.current);
+                return;
+              }
+              // A duplicate STAYS — red, with its message under it —
+              // until it's corrected or abandoned; quietly showing the
+              // previous name would drop what was typed without saying
+              // so. Leaving says it at once rather than after the wait.
+              if (nameError) {
+                setShowError(true);
+              }
+            }}
+            onChange={(event) => {
+              setEditedHere(true);
+              onChange(event.target.value);
+            }}
+            onFocus={(event) => {
+              setFocused(true);
+              // What Escape puts back: the name as it was on the way in,
+              // or — if that was already a bad value — the last good one.
+              original.current = nameError ? appliedName : value;
+              event.target.select();
+              selectOnRelease.current = true;
+            }}
+            onKeyDown={(event) => {
+              if (event.key === 'Enter') {
+                event.preventDefault();
+                // Blank is let through: blurring puts the name back.
+                if (nameError && value.trim()) {
+                  setShowError(true);
+                } else {
+                  inputRef.current?.blur();
+                }
+              } else if (event.key === 'Escape') {
+                event.preventDefault();
+                onChange(original.current);
+                cancelling.current = true;
+                inputRef.current?.blur();
+              }
+            }}
+            onMouseUp={(event) => {
+              if (selectOnRelease.current) {
+                selectOnRelease.current = false;
+                event.currentTarget.select();
+              }
+            }}
+          />
+        </div>
+      </PopoverAnchor>
       {/* Stays until the name is fixed: nothing dismisses it but a valid value
           or Escape. It never takes focus — the field is where the fix happens. */}
       <PopoverContent
