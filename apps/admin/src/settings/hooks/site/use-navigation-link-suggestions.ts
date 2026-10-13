@@ -3,7 +3,7 @@ import { getHomepageUrl } from '@tryghost/admin-x-framework/api/site';
 import { useBrowseOffers } from '@tryghost/admin-x-framework/api/offers';
 import { useCallback, useMemo, useRef } from 'react';
 import { apiUrl } from '@tryghost/admin-x-framework/helpers';
-import { useFeatureFlag, useFetchApi } from '@tryghost/admin-x-framework/hooks';
+import { useFetchApi } from '@tryghost/admin-x-framework/hooks';
 import { useGlobalData } from '@/settings/providers/global-data-context';
 import { buildAutocompleteLinks, buildOfferLinks } from '@/shared/autocomplete-links';
 import {
@@ -45,7 +45,6 @@ const matches = (suggestion: Suggestion, term: string) => {
 };
 
 const useNavigationLinkSuggestions = () => {
-  const enabled = useFeatureFlag('navigationUrlSuggestions');
   const { config, settings, siteData } = useGlobalData();
 
   const [paidMembersEnabled = false, donationsEnabled = false, recommendationsEnabled = false] =
@@ -65,7 +64,7 @@ const useNavigationLinkSuggestions = () => {
 
   // Offers need paid membership with Stripe, so there's nothing to fetch otherwise
   const { data: offersData } = useBrowseOffers({
-    enabled: enabled && paidMembersEnabled && stripeEnabled,
+    enabled: paidMembersEnabled && stripeEnabled,
   });
 
   const fetchApi = useFetchApi();
@@ -135,10 +134,6 @@ const useNavigationLinkSuggestions = () => {
 
   const loadSuggestions = useCallback(
     async (term: string): Promise<SuggestionGroup[]> => {
-      if (!enabled) {
-        return [];
-      }
-
       // A failed download only leaves out its own group
       const [pages, posts] = await Promise.all([
         loadIndex('pages').catch(() => []),
@@ -181,10 +176,10 @@ const useNavigationLinkSuggestions = () => {
 
       return [...filteredStaticGroups, ...contentGroups].filter((group) => group.items.length > 0);
     },
-    [enabled, loadIndex, staticGroups],
+    [loadIndex, staticGroups],
   );
 
-  return { enabled, loadSuggestions };
+  return { enabled: true, loadSuggestions };
 };
 
 export default useNavigationLinkSuggestions;
