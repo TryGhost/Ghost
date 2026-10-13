@@ -121,7 +121,9 @@ describe('App installations composition root', function () {
     const getConfig = sandbox.stub(config, 'get').callThrough();
     getConfig.withArgs('env').returns('development');
     getConfig.withArgs('apps').returns({ localhostAlias: 'first-alias.example' });
-    const home = sandbox.stub(urlUtils, 'urlFor').returns('https://publication.example/');
+    const urlFor = sandbox.stub(urlUtils, 'urlFor');
+    urlFor.withArgs('home', true).returns('https://publication.example/');
+    urlFor.withArgs('admin', true).returns('https://publication.example/ghost/');
     root.init();
     const service = root.service!;
 
@@ -136,12 +138,19 @@ describe('App installations composition root', function () {
       errorType: 'ValidationError',
     });
     sinon.assert.calledTwice(request);
-    home.returns('https://podcast.example/');
+    urlFor.withArgs('home', true).returns('https://podcast.example/');
     await assert.rejects(service.preview('https://podcast.example/manifest.json'), {
       errorType: 'ValidationError',
     });
     sinon.assert.calledThrice(request);
     assert.equal(request.lastCall.args[0].hostname, 'podcast.example');
+    // The Admin URL is a separate rule from the site URL.
+    urlFor.withArgs('admin', true).returns('https://admin.example/ghost/');
+    await assert.rejects(service.preview('https://admin.example/manifest.json'), {
+      errorType: 'ValidationError',
+    });
+    sinon.assert.callCount(request, 4);
+    assert.equal(request.lastCall.args[0].hostname, 'admin.example');
     assert.equal(root.service, service);
   });
 });

@@ -76,7 +76,8 @@ describe('Export requests root with its endpoint', function () {
   it('constructs without export config or delivery and the retained endpoint reads current config', async function () {
     sinon.assert.notCalled(request);
     assert.equal(getConfig.calledWith('hostSettings:export:webhookUrl'), false);
-    assert.equal(require(rootPath).exportRequestsService, root.exportRequestsService);
+    // The endpoint must call the root's singleton, not an instance of its own.
+    const requestExport = sandbox.spy(root.exportRequestsService, 'requestExport');
 
     for (const [host, secret, siteId] of [
       ['https://first.example/export/', 'first-test-secret', 'first-site'],
@@ -111,6 +112,7 @@ describe('Export requests root with its endpoint', function () {
       );
     }
     sinon.assert.calledTwice(request);
+    sinon.assert.calledTwice(requestExport);
   });
 
   it('makes the endpoint wait for delivery and preserves the generic 502 on failure', async function () {
