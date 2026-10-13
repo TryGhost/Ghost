@@ -61,7 +61,7 @@ function sortObjectKeys(value: unknown): unknown {
   return value;
 }
 
-function consumerManifest(contents: Buffer): Record<string, unknown> {
+function normalizeManifest(contents: Buffer): Record<string, unknown> {
   const manifest = JSON.parse(contents.toString());
   const result: Record<string, unknown> = {};
   for (const field of CONSUMER_FIELDS) {
@@ -100,7 +100,7 @@ function comparePackedPackageDirectories(
 ): Comparison {
   for (const directory of [localDirectory, publishedDirectory]) {
     const manifestPath = join(directory, 'package.json');
-    writeFileSync(manifestPath, JSON.stringify(consumerManifest(readFileSync(manifestPath))));
+    writeFileSync(manifestPath, JSON.stringify(normalizeManifest(readFileSync(manifestPath))));
   }
   const result = spawnSync('diff', ['-rq', publishedDirectory, localDirectory]);
   if (result.status !== 0 && result.status !== 1) {
