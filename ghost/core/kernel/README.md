@@ -14,6 +14,14 @@ must not import from elsewhere in the Ghost package, including `shared`.
 Helpers specific to a feature stay with that feature. Shared use alone does not
 make a helper part of the kernel.
 
+## Clock
+
+[`clock.ts`](clock.ts) exposes `getUnixTime()` for the current time in whole
+seconds. Services may import it directly. Its deprecated `moment` export keeps
+existing Moment Timezone operations available while services migrate; callers
+can change their import without rewriting date logic. It shares the existing
+library instance and leaves Ghost's timezone configuration unchanged.
+
 ## Service initialization
 
 [`defineService(name, create)`](define-service.ts) gives a service root `init()`

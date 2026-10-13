@@ -160,6 +160,7 @@ describe('Slack Ping', function () {
         slug: 'webhook-test',
         html: `<p>Hello World!</p><p>This is a test post.</p><!--members-only--><p>This is members only content.</p>`,
       });
+      const clock = sinon.useFakeTimers({ now: 1700000000000, toFake: ['Date'] });
       const { service, deps } = createService();
       const { requests, scope } = mockSlackWebhook();
 
@@ -168,7 +169,13 @@ describe('Slack Ping', function () {
         .withArgs(sinon.match({ id: post.id, type: 'posts' }), { absolute: true })
         .returns('http://myblog.com/' + post.slug + '/');
 
-      service.handlePostEvent(createPostModel(post));
+      clock.setSystemTime(1700000300999);
+      try {
+        service.handlePostEvent(createPostModel(post));
+      } finally {
+        // Restore Date before waitFor uses it to enforce its timeout.
+        clock.restore();
+      }
 
       await waitFor(() => scope.isDone());
 
@@ -181,6 +188,7 @@ describe('Slack Ping', function () {
       assert.equal(requestData.attachments[0].title, post.title);
       assert.equal(requestData.attachments[0].title_link, 'http://myblog.com/webhook-test/');
       assert.equal(requestData.attachments[0].fields[0].value, 'Hello World!This is a test post.');
+      assert.equal(requestData.attachments[1].ts, 1700000300);
       assert(!('author_name' in requestData.attachments[0]));
       assert.equal(requestData.icon_url, 'http://myblog.com/favicon.ico');
 

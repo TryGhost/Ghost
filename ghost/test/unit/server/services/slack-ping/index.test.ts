@@ -3,7 +3,7 @@ import type { EventEmitter } from 'node:events';
 import sinon from 'sinon';
 import type { SlackPingService as SlackPingServiceType } from '../../../../../core/server/services/slack-ping/slack-ping-service';
 
-const ROOT_PATH = require.resolve('../../../../../core/server/services/slack-ping');
+const ROOT_PATH = require.resolve('../../../../../core/server/services/slack-ping/index.ts');
 const {
   SlackPingService,
 }: typeof import('../../../../../core/server/services/slack-ping/slack-ping-service') = require('../../../../../core/server/services/slack-ping/slack-ping-service');
