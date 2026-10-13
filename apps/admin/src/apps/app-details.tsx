@@ -22,7 +22,7 @@ import {
   useReadAppInstallation,
 } from '@tryghost/admin-x-framework/api/app-installations';
 import { useBrowseSettings } from '@tryghost/admin-x-framework/api/settings';
-import { APIError, getErrorMessage } from '@tryghost/admin-x-framework/errors';
+import { getErrorMessage } from '@tryghost/admin-x-framework/errors';
 import { getSiteTimezone } from '@tryghost/admin-x-framework/utils/get-site-timezone';
 import { NotFound } from '@/shared/not-found';
 import { AccessIndicator } from './components/access-indicator';
@@ -32,7 +32,8 @@ import { CapabilitySummary } from './components/surface-icon';
 import { UninstallDialog } from './components/uninstall-dialog';
 import { ACCOUNT_ACCESS } from './lib/access';
 import { historyTitle, installedBy } from './lib/history';
-import { appReviewRoute } from './lib/routes';
+import { isInstallationNotFound } from './lib/not-found';
+import { appReviewRoute, appRoute } from './lib/routes';
 import { isDevelopmentApp } from './lib/served-from';
 
 const Fact: React.FC<{ label: string; children: React.ReactNode }> = ({ label, children }) => (
@@ -168,9 +169,7 @@ export const AppDetails: React.FC = () => {
   });
   const installation = data?.app_installations[0];
 
-  // Ghost returns 422, not 404, for a malformed id.
-  // Both mean there's nothing to show, and retrying won't help.
-  if (error instanceof APIError && [404, 422].includes(error.response?.status ?? 0)) {
+  if (isInstallationNotFound(error)) {
     return <NotFound />;
   }
 
@@ -225,6 +224,11 @@ export const AppDetails: React.FC = () => {
                     <Button variant="outline" onClick={() => setUninstalling(true)}>
                       Uninstall
                     </Button>
+                    {installation.status === 'active' && (
+                      <Button asChild>
+                        <Link to={appRoute(installation.id)}>Open</Link>
+                      </Button>
+                    )}
                   </PageHeader.ActionGroup>
                 </PageHeader.Actions>
               )}

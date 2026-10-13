@@ -15,6 +15,7 @@ export {
   type ManifestComparison,
   type ManifestVersion,
 } from './compare.ts';
+export { isGhostOrigin } from './ghost-origin.ts';
 export { APP_ID_MAX_LENGTH, isValidAppId } from './id.ts';
 export type { AppIcon } from './icon.ts';
 export { URL_MAX_LENGTH } from './limits.ts';
@@ -33,6 +34,7 @@ export {
 } from './schema.ts';
 export { isLocalhost } from './localhost.ts';
 export {
+  appPageUrl,
   isDevelopmentApp,
   movedBetween,
   servedFrom,
