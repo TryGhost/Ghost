@@ -1,6 +1,6 @@
 {
   "name": "@internal/cfg-vite-public-app",
-  "version": "0.0.0",
+  "version": "private",
   "private": true,
   "description": "Shared Vite config factory for Ghost's public UMD apps",
   "license": "MIT",

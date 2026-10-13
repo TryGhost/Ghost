@@ -146,7 +146,7 @@ catalog:
   entities: 4.5.0
   esbuild: 0.28.2
   eslint: 9.39.5
-  eslint-plugin-ghost: 4.0.0
+  eslint-plugin-ghost: 4.0.1
   eslint-plugin-react: 7.37.5
   eslint-plugin-react-hooks: 5.2.0
   eslint-plugin-react-refresh: 0.5.7
@@ -411,48 +411,21 @@ minimumReleaseAgeExclude:
   # of nx itself still gates them
   - '@nx/nx-*'
 
-# configuration for pnpm's changeset functionality
+# configuration for pnpm's native versioning (changesets). Private packages opt out
+# by carrying the non-semver placeholder version "private", so only published
+# packages that are versioned by their own release scripts are listed here.
+# `pnpm lint:versioning` enforces both.
 versioning:
   ignore:
-    # ignore root ghost-monorepo package
-    - ghost-monorepo
-    # ignore ghost since it's manually versioned by release scripts
+    # ghost is versioned by the release scripts
     - ghost
-    # ignore public apps since they're deployed outside pnpm's changelog versioning
+    # public apps are versioned from npm by the publish job
     - '@tryghost/announcement-bar'
     - '@tryghost/admin-toolbar'
     - '@tryghost/comments-ui'
     - '@tryghost/portal'
     - '@tryghost/signup-form'
     - '@tryghost/sodo-search'
-    # ignore private packages, which are never published. pnpm bumps them
-    # otherwise; `pnpm lint:versioning` enforces this list
-    - '@internal/cfg-eslint'
-    - '@internal/cfg-eslint-react'
-    - '@internal/cfg-typescript'
-    - '@internal/cfg-vite-public-app'
-    - '@internal/cfg-vitest'
-    - '@internal/gx'
-    - '@internal/scripts'
-    - '@tryghost/activitypub'
-    - '@tryghost/adapter-base-jobs'
-    - '@tryghost/adapter-base-redirects'
-    - '@tryghost/adapter-base-route-settings'
-    - '@tryghost/admin'
-    - '@tryghost/admin-api-schema'
-    - '@tryghost/admin-x-framework'
-    - '@tryghost/api-framework'
-    - '@tryghost/app-contracts'
-    - '@tryghost/checkout'
-    - '@tryghost/e2e'
-    - '@tryghost/i18n'
-    - '@tryghost/image-transform'
-    - '@tryghost/limit-service'
-    - '@tryghost/metafield-csv'
-    - '@tryghost/nql-string'
-    - '@tryghost/parse-email-address'
-    - '@tryghost/shade'
-    - '@tryghost/test-data'
 patchedDependencies:
   # The 8.x Elasticsearch client eagerly requires apache-arrow for two ES|QL
   # helpers Ghost never calls; the patch defers that require, as 9.x does. The

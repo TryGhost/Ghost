@@ -1,6 +1,6 @@
 {
   "name": "@internal/cfg-vitest",
-  "version": "0.0.0",
+  "version": "private",
   "private": true,
   "description": "Shared Vitest config for internal Ghost packages",
   "license": "MIT",

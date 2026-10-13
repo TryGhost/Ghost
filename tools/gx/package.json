@@ -1,6 +1,6 @@
 {
   "name": "@internal/gx",
-  "version": "0.0.0",
+  "version": "private",
   "private": true,
   "description": "Ghost contributor CLI",
   "license": "MIT",
