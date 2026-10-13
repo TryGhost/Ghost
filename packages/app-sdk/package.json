@@ -1,0 +1,68 @@
+{
+  "name": "@tryghost/app-sdk",
+  "version": "0.0.0",
+  "private": true,
+  "description": "The SDK apps use to talk to Ghost from inside Admin",
+  "license": "MIT",
+  "author": "Ghost Foundation",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/TryGhost/Ghost.git",
+    "directory": "packages/app-sdk"
+  },
+  "files": [
+    "build",
+    "dist"
+  ],
+  "type": "module",
+  "main": "build/index.js",
+  "types": "build/index.d.ts",
+  "exports": {
+    ".": {
+      "source": "./src/index.ts",
+      "types": "./build/index.d.ts",
+      "default": "./build/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc && vite build",
+    "build:bundle": "vite build",
+    "test:unit": "NODE_ENV=testing vitest run --coverage",
+    "test": "pnpm run '/^test:/'",
+    "test:types": "tsc --noEmit -p test/tsconfig.json",
+    "lint:code": "eslint src/ --cache",
+    "lint:test": "eslint test/ --cache",
+    "lint": "pnpm run '/^lint:/'"
+  },
+  "dependencies": {
+    "@quilted/threads": "catalog:"
+  },
+  "devDependencies": {
+    "@internal/cfg-eslint": "workspace:*",
+    "@internal/cfg-typescript": "workspace:*",
+    "@internal/cfg-vitest": "workspace:*",
+    "@tryghost/app-contracts": "workspace:*",
+    "@types/node": "catalog:",
+    "@typescript/native": "catalog:",
+    "@vitest/coverage-v8": "catalog:",
+    "eslint": "catalog:",
+    "jsdom": "catalog:",
+    "typescript": "catalog:",
+    "vite": "catalog:",
+    "vitest": "catalog:"
+  },
+  "ghostPackage": {
+    "goldenPath": "exempt",
+    "reason": "A browser SDK for third-party apps: besides the tsc build it ships a self-contained bundle in dist/, so its build script, files and Nx outputs differ from the golden path. Everything else follows it."
+  },
+  "nx": {
+    "targets": {
+      "build": {
+        "outputs": [
+          "{projectRoot}/build",
+          "{projectRoot}/dist"
+        ]
+      }
+    }
+  }
+}
