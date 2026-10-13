@@ -176,7 +176,7 @@ function getTinybirdClient() {
     }
     return createTinybirdClient({
       config,
-      // Fall back to MySQL after the first failed attempt.
+      // Do not retry failed analytics requests.
       request: requestExternal.extend({ retry: { limit: 0 } }),
       settingsCache,
       tinybirdService,
@@ -189,16 +189,13 @@ function getTinybirdClient() {
 
 export async function browse() {
   const tinybirdClient = getTinybirdClient();
-  if (!tinybirdClient) {
-    return await repository.browse({ includeStats: true });
-  }
-
   const [browseResult, stats] = await Promise.all([
-    repository.browse({ includeStats: false }),
-    fetchAutomationStats(tinybirdClient),
+    repository.browse(),
+    tinybirdClient ? fetchAutomationStats(tinybirdClient) : null,
   ]);
+  // Unavailable analytics must never shift run aggregation onto the database.
   if (stats === null) {
-    return await repository.browse({ includeStats: true });
+    return browseResult;
   }
 
   return {
