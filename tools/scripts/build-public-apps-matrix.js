@@ -40,7 +40,7 @@ export function cdnPathsFor(configEntry) {
 
 /**
  * @param {string[]} affectedProjects - nx project names affected in this run
- * @returns {Array<{package_name: string, package_path: string, cdn_paths: string, install_args: string, compare_path: string}>}
+ * @returns {Array<{package_name: string, package_path: string, cdn_paths: string, install_args: string, compare_bundle: boolean}>}
  *   matrix entries with cdn_paths flattened to the newline-delimited string the
  *   publish job's purge step expects.
  */
@@ -69,7 +69,7 @@ export function buildMatrix(affectedProjects) {
       package_path: app.path,
       cdn_paths: cdnPaths.join('\n'),
       install_args: '',
-      compare_path: 'umd',
+      compare_bundle: true,
     };
   });
 
@@ -79,7 +79,7 @@ export function buildMatrix(affectedProjects) {
       package_path: 'apps/shade',
       cdn_paths: '',
       install_args: '--ignore-scripts',
-      compare_path: '.',
+      compare_bundle: false,
     });
   }
 
