@@ -179,7 +179,7 @@ const useNavigationLinkSuggestions = () => {
     [loadIndex, staticGroups],
   );
 
-  return { enabled: true, loadSuggestions };
+  return { loadSuggestions };
 };
 
 export default useNavigationLinkSuggestions;
