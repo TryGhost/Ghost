@@ -1,18 +1,29 @@
 import assert from 'node:assert/strict';
 import type { Knex } from 'knex';
 import { vi } from 'vitest';
+import type { AppManifest } from '@tryghost/app-contracts/manifest';
 import { AppInstallationsService } from '../../../../../core/server/services/app-installations/service';
 import type { RecordAppInstallationAction } from '../../../../../core/server/services/app-installations/actions';
+import type {
+  LoadedManifest,
+  LoadManifest,
+} from '../../../../../core/server/services/app-installations/load-manifest';
 
-const manifestUrl = 'https://podcast.example.com/ghost-app.json';
-const manifest = {
+const manifest: AppManifest = {
   id: 'com.example.podcast',
   name: 'Podcast',
   description: 'Publish episodes.',
-  author: { name: 'Example Audio', url: 'https://example.com' },
+  author: { name: 'Example Audio', url: 'https://example.com/' },
   accent_color: '#ff5500',
   icon: { name: 'audio-lines' },
-  surfaces: [{ type: 'admin_page', url: '/admin' }],
+  surfaces: [{ type: 'admin_page', url: 'https://podcast.example.com/admin' }],
+};
+const loaded: LoadedManifest = {
+  manifestUrl: 'https://podcast.example.com/ghost-app.json',
+  manifest,
+  serialised: JSON.stringify(manifest),
+  digest: 'stored-digest',
+  reviewed: 'reviewed-digest',
 };
 const deadlock = () => Object.assign(new Error('Deadlock victim'), { code: 'ER_LOCK_DEADLOCK' });
 
@@ -28,10 +39,10 @@ function setup() {
   const service = new AppInstallationsService({
     knex: { transaction } as unknown as Knex,
     recordAction,
-    getManifestRules: () => ({ ghostUrls: ['https://site.example.com'] }),
-    fetchManifest: vi.fn(),
+    loadManifest: vi.fn<LoadManifest>().mockResolvedValue(loaded),
   });
-  const install = () => service.install({ actor: null }, { manifestUrl, manifest });
+  const install = () =>
+    service.create({ actor: null }, { manifestUrl: loaded.manifestUrl, digest: loaded.reviewed });
   return { install, insert, trx, transaction, recordAction };
 }
 

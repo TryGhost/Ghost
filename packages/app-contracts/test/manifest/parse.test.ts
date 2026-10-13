@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 
 import { describe, expect, it } from 'vitest';
 
-import { checkManifestUrl, parseManifest } from '../../src/manifest/index.ts';
+import { parseManifest, parseManifestUrl } from '../../src/manifest/index.ts';
 import { devOptions, errorsOf, manifest, manifestOf, options } from './helpers.ts';
 
 describe('parseManifest', () => {
@@ -46,30 +46,7 @@ describe('parseManifest', () => {
     expect(parsed.description).toBe('Episodes.');
   });
 
-  describe('the manifest URL', () => {
-    it('is handed back as it was checked, not as it was given', () => {
-      const result = parseManifest(manifest(), {
-        ...options,
-        manifestUrl: ' https://Podcast.Example.com/x\n/ghost-app.json\n',
-      });
-      assert(result.success);
-      expect(result.manifestUrl).toBe('https://podcast.example.com/x/ghost-app.json');
-    });
-
-    it('can be checked before the manifest is fetched', () => {
-      expect(checkManifestUrl('https://podcast.example.com/app.json')).toBeNull();
-      expect(checkManifestUrl('podcast.example.com/app.json')).toBe(
-        'Expected the manifest at a URL',
-      );
-      const withPassword = new URL('https://podcast.example.com/app.json');
-      withPassword.username = 'user';
-      withPassword.password = 'example';
-      expect(checkManifestUrl(withPassword.href)).toBe(
-        'Expected a URL without a username or password for the manifest itself',
-      );
-      expect(checkManifestUrl('http://localhost:8787/app.json', true)).toBeNull();
-    });
-
+  describe('the URL it was fetched from', () => {
     it('must be a URL', () => {
       expect(errorsOf(manifest(), { ...options, manifestUrl: '/ghost-app.json' })).toEqual([
         { path: '', message: 'Expected the manifest at a URL' },
@@ -108,5 +85,68 @@ describe('parseManifest', () => {
     expect(
       errorsOf(manifest(), { ...options, ghostUrls: ['https://site.example.com', 'admin'] }),
     ).toEqual(expected);
+  });
+});
+
+describe('parseManifestUrl', () => {
+  function manifestUrlOf(input: string, allowLocalhost?: boolean) {
+    const result = parseManifestUrl(input, allowLocalhost);
+    assert(result.success, 'Expected the manifest URL to be accepted');
+    return result.manifestUrl;
+  }
+
+  function errorOf(input: string, allowLocalhost?: boolean) {
+    const result = parseManifestUrl(input, allowLocalhost);
+    assert(!result.success, 'Expected the manifest URL to be rejected');
+    return result.error;
+  }
+
+  it('accepts an https address', () => {
+    expect(manifestUrlOf('https://podcast.example.com/ghost-app.json')).toBe(
+      'https://podcast.example.com/ghost-app.json',
+    );
+  });
+
+  it('hands the address back as the URL parser reads it, not as it was given', () => {
+    expect(manifestUrlOf(' https://Podcast.Example.com/x\n/ghost-app.json\n')).toBe(
+      'https://podcast.example.com/x/ghost-app.json',
+    );
+  });
+
+  it('leaves the fragment out of the address', () => {
+    expect(manifestUrlOf('https://podcast.example.com/ghost-app.json?v=2#install')).toBe(
+      'https://podcast.example.com/ghost-app.json?v=2',
+    );
+  });
+
+  it('does not count the fragment against the length of the address', () => {
+    const address = `https://podcast.example.com/${'a'.repeat(1900)}`;
+    expect(manifestUrlOf(`${address}#${'b'.repeat(200)}`)).toBe(address);
+  });
+
+  it('must be a URL', () => {
+    expect(errorOf('podcast.example.com/app.json')).toBe('Expected the manifest at a URL');
+  });
+
+  it('follows the same rules as the URLs inside a manifest', () => {
+    const withPassword = new URL('https://podcast.example.com/app.json');
+    withPassword.username = 'user';
+    withPassword.password = 'example';
+    expect(errorOf(withPassword.href)).toBe(
+      'Expected a URL without a username or password for the manifest itself',
+    );
+    expect(errorOf('http://podcast.example.com/app.json')).toBe(
+      'Expected an https URL for the manifest itself',
+    );
+    expect(errorOf(`https://podcast.example.com/${'a'.repeat(2000)}`)).toBe(
+      'Expected at most 2000 characters for the manifest itself',
+    );
+    expect(errorOf('http://localhost:8787/app.json')).toContain('development');
+  });
+
+  it('accepts localhost, over HTTP too, when Ghost runs in development', () => {
+    expect(manifestUrlOf('http://localhost:8787/app.json', true)).toBe(
+      'http://localhost:8787/app.json',
+    );
   });
 });

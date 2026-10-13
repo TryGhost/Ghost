@@ -2,7 +2,10 @@ import { manifestSchema, type AppManifest } from './schema.ts';
 import { checkResolvedUrl } from './url.ts';
 
 export interface ParseManifestOptions {
-  /** The URL the manifest was fetched from. Relative URLs in it resolve against this. */
+  /**
+   * Where the manifest was fetched from, after any redirects. Relative URLs in it resolve
+   * against this, as they would in a browser.
+   */
   manifestUrl: string;
   /**
    * The URLs Ghost itself is served from: the site and Admin. Nothing Ghost loads from a
@@ -22,16 +25,19 @@ export interface ManifestError {
 }
 
 export type ParseManifestResult =
+  | { success: true; manifest: AppManifest }
+  | { success: false; errors: ManifestError[] };
+
+export type ParseManifestUrlResult =
   | {
       success: true;
-      manifest: AppManifest;
       /**
-       * The manifest's URL as it was checked, which is the one to keep: the URL parser
-       * trims and normalises what it is given, so the string handed in may differ.
+       * The address to keep, as the URL parser reads it and without a fragment. The URL
+       * parser trims and normalises what it is given, so the string handed in may differ.
        */
       manifestUrl: string;
     }
-  | { success: false; errors: ManifestError[] };
+  | { success: false; error: string };
 
 function formatPath(path: PropertyKey[]): string {
   return path.reduce<string>((result, part) => {
@@ -42,20 +48,55 @@ function formatPath(path: PropertyKey[]): string {
   }, '');
 }
 
-/**
- * Checks the address a manifest is read from, by the same rules as the URLs inside it.
- * Returns what is wrong with it, or null. Run it before fetching, so Ghost never requests
- * an address it would refuse anyway (plain HTTP, or one carrying credentials).
- */
-export function checkManifestUrl(manifestUrl: string, allowLocalhost = false): string | null {
-  let url: URL;
+function readUrl(input: string): URL | null {
   try {
-    url = new URL(manifestUrl);
+    return new URL(input);
   } catch {
-    return 'Expected the manifest at a URL';
+    return null;
+  }
+}
+
+type CheckedManifestUrl = { url: URL; problem: null } | { url: null; problem: string };
+
+/** The address a manifest is read from, checked by the same rules as the URLs inside it. */
+function checkManifestUrl(url: URL | null, allowLocalhost: boolean): CheckedManifestUrl {
+  if (!url) {
+    return { url: null, problem: 'Expected the manifest at a URL' };
   }
   const problem = checkResolvedUrl(url, allowLocalhost);
-  return problem ? `${problem} for the manifest itself` : null;
+  return problem
+    ? { url: null, problem: `${problem} for the manifest itself` }
+    : { url, problem: null };
+}
+
+/**
+ * Reads the address a manifest is to be read from, by the same rules as the URLs inside
+ * it. Run it before fetching, so the first request never goes to an address Ghost would
+ * refuse (plain HTTP, or one carrying credentials). It cannot judge where that address
+ * redirects: the fetch decides which hops to follow, and `parseManifest` checks the
+ * address the manifest was finally read from once it has been fetched.
+ *
+ * The address it hands back is the one to keep: what is stored, fetched again later and
+ * compared with a later address. The URL parser settles most differences in spelling,
+ * such as the case of the host or stray whitespace, but not every one: a trailing dot on
+ * the host and the case of a percent-encoding stay as given. An address spelled one of
+ * those ways reads as a change of manifest URL, which needs the publisher's approval: the
+ * safe way to be wrong.
+ *
+ * A fragment never reaches the server, so two addresses that differ only there read the
+ * same file: it is no part of the address, and is left out before the address is checked,
+ * its length included.
+ */
+export function parseManifestUrl(input: string, allowLocalhost = false): ParseManifestUrlResult {
+  const address = readUrl(input);
+  if (address) {
+    address.hash = '';
+  }
+  const { url, problem } = checkManifestUrl(address, allowLocalhost);
+  if (problem !== null) {
+    return { success: false, error: problem };
+  }
+  return { success: true, manifestUrl: url.href };
 }
 
 /**
@@ -75,15 +116,14 @@ export function parseManifest(input: unknown, options: ParseManifestOptions): Pa
     };
   }
 
-  const baseProblem = checkManifestUrl(options.manifestUrl, allowLocalhost);
-  if (baseProblem) {
-    return { success: false, errors: [{ path: '', message: baseProblem }] };
+  const { url: base, problem } = checkManifestUrl(readUrl(options.manifestUrl), allowLocalhost);
+  if (problem !== null) {
+    return { success: false, errors: [{ path: '', message: problem }] };
   }
-  const base = new URL(options.manifestUrl);
 
   const result = manifestSchema({ base, ghostUrls, allowLocalhost }).safeParse(input);
   if (result.success) {
-    return { success: true, manifest: result.data, manifestUrl: base.href };
+    return { success: true, manifest: result.data };
   }
   return {
     success: false,
