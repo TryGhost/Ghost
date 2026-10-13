@@ -11,11 +11,12 @@ const requestPath = require.resolve('../../../../../core/server/lib/request-exte
 // Load the real model registry before substituting the root's database connection.
 require('../../../../../core/server/models');
 const db = require('../../../../../core/server/data/db');
+const { IncorrectUsageError } = require('@tryghost/errors');
 const config = require('../../../../../core/shared/config');
 const urlUtils = require('../../../../../core/shared/url-utils').default;
 const { AppInstallationsService } =
   require('../../../../../core/server/services/app-installations/service') as typeof import('../../../../../core/server/services/app-installations/service');
-type Root = typeof import('../../../../../core/server/services/app-installations');
+type Root = typeof import('../../../../../core/server/services/app-installations').default;
 
 const manifest = {
   id: 'com.example.podcast',
@@ -57,7 +58,7 @@ describe('App installations composition root', function () {
       text: async () => JSON.stringify(manifest),
     }));
     sandbox.replace(require.cache[requestPath]!, 'exports', request);
-    root = require(rootPath);
+    root = require(rootPath).default;
   });
 
   afterEach(function () {
@@ -71,27 +72,24 @@ describe('App installations composition root', function () {
   });
 
   it('acquires the database only at init and retains one instance without queries or requests', async function () {
-    assert.equal(require(rootPath).service, undefined);
+    assert.throws(() => root.service, IncorrectUsageError);
     sinon.assert.notCalled(readKnex);
-    root.init();
+    await root.init();
     const service = root.service;
     assert.ok(service instanceof AppInstallationsService);
-    root.init();
+    await root.init();
     assert.equal(root.service, service);
     sinon.assert.calledOnce(readKnex);
     sinon.assert.notCalled(query);
     sinon.assert.notCalled(request);
   });
 
-  it('leaves the root unpublished after a dependency failure and permits a later init', function () {
+  it('leaves the root unpublished after a dependency failure and permits a later init', async function () {
     const failure = new Error('Database is not ready');
     readKnex.onFirstCall().throws(failure);
-    assert.throws(
-      () => root.init(),
-      (error) => error === failure,
-    );
-    assert.equal(require(rootPath).service, undefined);
-    root.init();
+    await assert.rejects(root.init(), (error) => error === failure);
+    assert.throws(() => root.service, IncorrectUsageError);
+    await root.init();
     assert.ok(root.service instanceof AppInstallationsService);
     sinon.assert.calledTwice(readKnex);
   });
@@ -100,7 +98,7 @@ describe('App installations composition root', function () {
     const installations = require(endpointPaths[0]);
     const previews = require(endpointPaths[1]);
     sinon.assert.notCalled(readKnex);
-    root.init();
+    await root.init();
     const browse = sandbox.stub(AppInstallationsService.prototype, 'browse').resolves([]);
     const preview = sandbox.spy(AppInstallationsService.prototype, 'preview');
     sandbox.stub(config, 'get').withArgs('env').returns('production');
@@ -124,8 +122,8 @@ describe('App installations composition root', function () {
     const urlFor = sandbox.stub(urlUtils, 'urlFor');
     urlFor.withArgs('home', true).returns('https://publication.example/');
     urlFor.withArgs('admin', true).returns('https://publication.example/ghost/');
-    root.init();
-    const service = root.service!;
+    await root.init();
+    const service = root.service;
 
     await service.preview('http://localhost:8080/manifest.json');
     assert.equal(request.lastCall.args[0].hostname, 'first-alias.example');
