@@ -1,4 +1,5 @@
 import errors from '@tryghost/errors';
+import logging from '@tryghost/logging';
 import type { AutomationRunMember, AutomationsRepository } from './automations-repository';
 import { z } from 'zod';
 import {
@@ -120,6 +121,16 @@ export async function browseMemberSearch(
   });
   const probe = await repository.probeMemberSearch(scope.automation_id, query);
   if (probe !== null) {
+    logging.info(
+      {
+        system: {
+          event: 'automations.member_search.complete_id_set',
+          automation_id: scope.automation_id,
+          matching_run_count: probe.length,
+        },
+      },
+      'Automation member search: using complete ID set',
+    );
     if (probe.length === 0) {
       return result([], undefined, 'exhausted');
     }
@@ -138,6 +149,15 @@ export async function browseMemberSearch(
       more ? 'more' : 'exhausted',
     );
   }
+  logging.info(
+    {
+      system: {
+        event: 'automations.member_search.candidate_scan',
+        automation_id: scope.automation_id,
+      },
+    },
+    'Automation member search: scanning Tinybird candidates',
+  );
   const runs: SearchRun[] = [];
   let position = after;
   for (let batch = 0; batch < SEARCH_LIMITS.batches; batch++) {

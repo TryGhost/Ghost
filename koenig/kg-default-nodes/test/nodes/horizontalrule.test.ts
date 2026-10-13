@@ -15,11 +15,10 @@ describe('HorizontalNode', function () {
     // NOTE: all tests should use this function, without it you need manual
     // try/catch and done handling to avoid assertion failures not triggering
     // failed tests
-    const editorTest = (testFn: () => void) => () => new Promise<void>((resolve, reject) => {
+    const editorTest = (testFn: () => void | Promise<void>) => () => new Promise<void>((resolve, reject) => {
         editor.update(() => {
             try {
-                testFn();
-                resolve();
+                resolve(testFn());
             } catch (e) {
                 reject(e);
             }
@@ -42,12 +41,12 @@ describe('HorizontalNode', function () {
     }));
 
     describe('exportDOM', function () {
-        it('creates hr element', editorTest(function () {
+        it('creates hr element', editorTest(async function () {
             const hrNode = $createHorizontalRuleNode();
             const result = hrNode.exportDOM(editor, exportOptions);
 
             expect((result as unknown as {type?: string}).type!).toBe('inner');
-            assertPrettifiesTo((result.element as HTMLElement).innerHTML, html`
+            await assertPrettifiesTo((result.element as HTMLElement).innerHTML, html`
                 <hr />
             `);
         }));

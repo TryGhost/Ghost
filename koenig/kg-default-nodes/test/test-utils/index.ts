@@ -1,5 +1,4 @@
 import {JSDOM} from 'jsdom';
-import Prettier from '@prettier/sync';
 import {buildCallRenderer} from './build-call-renderer.js';
 
 export {assertPrettifiedIncludes} from './assert-prettified-includes.js';
@@ -16,7 +15,8 @@ export function html(partials: TemplateStringsArray, ...params: unknown[]) {
         }
     }
 
-    return Prettier.format(output, {parser: 'html'});
+    // Assertions handle formatting; constructing a DOM fixture stays synchronous.
+    return output;
 }
 
 export const dom = new JSDOM();

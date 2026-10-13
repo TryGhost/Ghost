@@ -19,12 +19,12 @@ describe('renderers/toggle-renderer', function () {
     }
 
     describe('web', function () {
-        it('matches snapshot for default test data', function () {
+        it('matches snapshot for default test data', async function () {
             const result = renderForWeb(getTestData());
 
             assert.ok(result.html);
 
-            assertPrettifiesTo(result.html, html`
+            await assertPrettifiesTo(result.html, html`
                 <div class="kg-card kg-toggle-card" data-kg-toggle-state="close">
                     <div class="kg-toggle-heading">
                         <h4 class="kg-toggle-heading-text">Toggle Heading</h4>
@@ -45,12 +45,12 @@ describe('renderers/toggle-renderer', function () {
     });
 
     describe('email', function () {
-        it('matches snapshot for default test data', function () {
+        it('matches snapshot for default test data', async function () {
             const result = renderForEmail(getTestData(), {feature: {}});
 
             assert.ok(result.html);
 
-            assertPrettifiesTo(result.html, html`
+            await assertPrettifiesTo(result.html, html`
                 <table cellspacing="0" cellpadding="0" border="0" width="100%" class="kg-toggle-card">
                     <tbody>
                         <tr>

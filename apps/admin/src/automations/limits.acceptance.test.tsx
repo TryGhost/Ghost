@@ -1,16 +1,17 @@
 import { describe, expect, it } from 'vitest';
 import { page } from 'vitest/browser';
-import { fakeAdminEndpoint, renderAdminApp } from '@test-utils/acceptance';
+import { currentRoute, fakeAdminEndpoint, renderAdminApp } from '@test-utils/acceptance';
 import { composeConfigBootOverrides } from '@test-utils/acceptance/boot';
 import { detail, setup, flags } from './run-history.test-utils';
 
 const limitMessage = 'Your plan allows {{max}} active automations.';
-const boot = (max: number | undefined) => ({
+const boot = (max: number | undefined, upgradeUrl?: string) => ({
   ...flags,
   boot: composeConfigBootOverrides(
     {
       hostSettings: {
         limits: max === undefined ? {} : { limitAutomations: { max, error: limitMessage } },
+        billing: { upgradeUrl },
       },
     },
     flags.boot,
@@ -26,6 +27,55 @@ const counts = (statuses: string[]) =>
   });
 
 describe('Automation plan limits', () => {
+  it.each([undefined, 'https://billing.example.com/upgrade'])(
+    'confirms upgrading to %s before leaving an unsaved new automation at the active limit',
+    async (upgradeUrl) => {
+      counts(['active']);
+      const create = fakeAdminEndpoint('POST', '/automations/', {
+        automations: [detail('created')],
+      });
+      await renderAdminApp('/automations/new', boot(1, upgradeUrl));
+      await page.getByRole('button', { name: 'Add step', exact: true }).click();
+      await page.getByTestId('step-picker').getByRole('button', { name: /^Wait/ }).click();
+      await publish();
+      await page
+        .getByTestId('limit-modal')
+        .getByRole('button', { name: 'Upgrade', exact: true })
+        .click();
+
+      const dialog = page.getByRole('alertdialog', {
+        name: 'Are you sure you want to leave this page?',
+      });
+      await expect.element(dialog).toBeVisible();
+      expect(currentRoute()).toBe('/automations/new');
+      expect(create.requests).toHaveLength(0);
+      await dialog.getByRole('button', { name: 'Stay', exact: true }).click();
+      await expect.element(dialog).not.toBeInTheDocument();
+      await expect.element(page.getByRole('article', { name: /^Wait:/ })).toBeVisible();
+      expect(currentRoute()).toBe('/automations/new');
+    },
+  );
+
+  it('continues to the configured upgrade route after confirming Leave', async () => {
+    setup();
+    counts(['active']);
+    await renderAdminApp('/automations/new', boot(1, '#/automations/first'));
+    await page.getByRole('button', { name: 'Add step', exact: true }).click();
+    await page.getByTestId('step-picker').getByRole('button', { name: /^Wait/ }).click();
+    await publish();
+    await page
+      .getByTestId('limit-modal')
+      .getByRole('button', { name: 'Upgrade', exact: true })
+      .click();
+    await page
+      .getByRole('alertdialog', {
+        name: 'Are you sure you want to leave this page?',
+      })
+      .getByRole('button', { name: 'Leave', exact: true })
+      .click();
+    await expect.poll(currentRoute).toBe('/automations/first');
+  });
+
   it.each([0, 1])('blocks activation at cap %s before sending edit', async (max) => {
     setup();
     counts(Array.from({ length: max }, () => 'active'));
