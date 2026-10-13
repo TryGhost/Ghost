@@ -11,6 +11,7 @@
   },
   "files": [
     "build",
+    "!build/**/*.tsbuildinfo",
     "LICENSE",
     "README.md"
   ],
