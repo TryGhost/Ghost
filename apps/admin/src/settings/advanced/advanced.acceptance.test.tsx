@@ -55,18 +55,16 @@ describe('Advanced settings', () => {
     const section = settingsScreen.section('labs');
     await section.getByRole('button', { name: 'Open' }).click();
     await section.getByRole('tab', { name: 'Private features' }).click();
-    const toggle = section.getByRole('switch', { name: 'Navigation URL suggestions' });
+    const toggle = section.getByRole('switch', { name: 'Machine payments' });
     await expect.element(toggle).not.toBeChecked();
     await toggle.click();
     await expect(settingsApi).toHaveEditedSettings([
       {
         key: 'labs',
         value: String(
-          settingsResponse({ labs: { navigationUrlSuggestions: true } }).settings.find(
-            (setting) => {
-              return setting.key === 'labs';
-            },
-          )!.value,
+          settingsResponse({ labs: { machinePayments: true } }).settings.find((setting) => {
+            return setting.key === 'labs';
+          })!.value,
         ),
       },
     ]);
