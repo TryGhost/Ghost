@@ -204,8 +204,8 @@ follow the same cursor ordering as other candidates.
 
 The performance endpoint requires Tinybird configuration. Missing
 configuration/token, unavailable pipe, or invalid response produces an error.
-The automation list retains its MySQL fallback for those cases; a successful
-empty Tinybird response still returns zero counts rather than falling back.
+The automation list still loads but omits stats in those cases. See
+[Browse statistics](#browse-statistics) for its availability and empty-response behavior.
 
 Admin shows automation performance when Tinybird stats are configured. See the
 [Tinybird storage notes](../../data/tinybird/README.md#automation-statistics)
