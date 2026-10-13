@@ -329,8 +329,11 @@ describe('sends', () => {
 
     vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout', 'Date'] });
     let publishing: Promise<void> = Promise.resolve();
-    act(() => {
+    // Async act, so the save's dispatch, past confirmPublish's first await,
+    // starts inside it.
+    await act(async () => {
       publishing = result.current.confirmPublish();
+      await Promise.resolve();
     });
 
     return { result, publishing, unmount };
@@ -447,7 +450,7 @@ describe('sends', () => {
 });
 
 describe('failed newsletter retry', () => {
-  it('keeps the last successful eligibility after a background read fails', () => {
+  it('keeps the last successful eligibility after a background read fails', async () => {
     const inputs = options();
     inputs.post = { ...inputs.post, status: 'published', email: FAILED_EMAIL };
     const { result, rerender } = renderHook(() => usePublishFlow(inputs), { wrapper });
@@ -462,6 +465,8 @@ describe('failed newsletter retry', () => {
       expect.anything(),
       expect.anything(),
     );
+    // The limit check resolves after render; let it land before the test ends.
+    await waitFor(() => expect(result.current.limitsChecked).toBe(true));
   });
 });
 
@@ -512,7 +517,7 @@ describe('a retry Core refuses', () => {
 });
 
 describe('retry eligibility that cannot be read', () => {
-  it('says so instead of hiding the retry', () => {
+  it('says so instead of hiding the retry', async () => {
     eligibility.isError = true;
     eligibility.hasData = false;
     const inputs = options();
@@ -526,15 +531,17 @@ describe('retry eligibility that cannot be read', () => {
       expect.stringContaining('Could not check'),
       expect.objectContaining({ postId: 'post-1' }),
     );
+    // The limit check resolves after render; let it land before the test ends.
+    await waitFor(() => expect(result.current.limitsChecked).toBe(true));
   });
 
-  it('reports a failure that stays on screen once, however often the read fails again', () => {
+  it('reports a failure that stays on screen once, however often the read fails again', async () => {
     eligibility.isError = true;
     eligibility.hasData = false;
     const inputs = options();
     inputs.post = { ...inputs.post, status: 'published', email: FAILED_EMAIL };
     // Each render's failed read is a new error object, as each failed refetch is.
-    const { rerender } = renderHook(() => usePublishFlow(inputs), { wrapper });
+    const { result, rerender } = renderHook(() => usePublishFlow(inputs), { wrapper });
     rerender();
     rerender();
 
@@ -542,6 +549,8 @@ describe('retry eligibility that cannot be read', () => {
       .mocked(reportPublishFailure)
       .mock.calls.filter(([source]) => source === 'retry-eligibility');
     expect(eligibilityReports).toHaveLength(1);
+    // The limit check resolves after render; let it land before the test ends.
+    await waitFor(() => expect(result.current.limitsChecked).toBe(true));
   });
 
   it('reloads the post for an email id it does not have', async () => {

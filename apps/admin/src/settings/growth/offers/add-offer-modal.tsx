@@ -193,13 +193,13 @@ const Sidebar: React.FC<SidebarProps> = ({
                 <FieldError>{errors.name}</FieldError>
               ) : (
                 <FieldDescription>
-                  <div className="flex justify-between">
+                  <span className="flex justify-between">
                     <span>Visible to members on Stripe Checkout page</span>
                     <strong>
                       <span className={nameLengthColor}>{formatNumber(nameLength)}</span> /{' '}
                       {formatNumber(40)}
                     </strong>
-                  </div>
+                  </span>
                 </FieldDescription>
               )}
             </Field>

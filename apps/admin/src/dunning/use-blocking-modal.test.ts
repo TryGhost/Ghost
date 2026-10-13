@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, test } from 'vitest';
-import { renderHook, waitFor } from '@testing-library/react';
+import { cleanup, renderHook, waitFor } from '@testing-library/react';
 
 import { useBlockingModal } from './use-blocking-modal';
 
@@ -15,6 +15,8 @@ describe('useBlockingModal', () => {
   };
 
   afterEach(() => {
+    // Unmount before removing markers, or the observer updates hooks outside act.
+    cleanup();
     added.splice(0).forEach((element) => element.remove());
     document.body.style.pointerEvents = '';
   });

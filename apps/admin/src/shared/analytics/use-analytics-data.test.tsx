@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { renderHook } from '@testing-library/react';
 import { useAnalyticsData } from '@/shared/analytics/use-analytics-data';
+import { allowConsoleError } from '@test-utils/console-error-gate';
 
 vi.mock('@tryghost/admin-x-framework/api/config', () => ({
   useBrowseConfig: vi.fn(),
@@ -86,6 +87,8 @@ describe('useAnalyticsData', () => {
 
   describe('error handling', () => {
     it('throws when a Ghost request fails', () => {
+      // React reports the error the hook throws while rendering.
+      allowConsoleError('The above error occurred in the <TestComponent> component');
       setup();
       mockUseBrowseSite.mockReturnValue(
         query({
@@ -97,6 +100,8 @@ describe('useAnalyticsData', () => {
     });
 
     it('throws when the Tinybird token request fails and Tinybird is provisioned', () => {
+      // React reports the error the hook throws while rendering.
+      allowConsoleError('The above error occurred in the <TestComponent> component');
       setup({ stats: { endpoint: 'https://tinybird.example' } });
       mockUseTinybirdToken.mockReturnValue({
         token: undefined,
