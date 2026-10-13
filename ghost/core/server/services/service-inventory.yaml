@@ -564,6 +564,24 @@ services:
     disposition: retain
     status: auditing
     migrated: true
+    extras:
+      actingContext:
+        purpose: Convert API authentication context into the staff actor recorded in installation history.
+        callers:
+          - core/server/api/endpoints/app-installations.ts
+        timing: Pure conversion when an API command runs; it does not require initialization.
+        dependencies: []
+        failurePolicy: A missing staff user or an integration yields a null actor; permission checks remain with the API.
+        destination: A normalized request actor supplied by the API framework Frame, with actor policy owned by the application.
+      isAvailable:
+        purpose: Keep the installation API dormant where the experimental database tables are not enabled.
+        callers:
+          - core/server/web/api/endpoints/admin/routes.js
+        timing: Read live configuration per request; no ready instance or database query is required.
+        dependencies:
+          - Development-table schema declarations and shared configuration.
+        failurePolicy: An ineligible environment returns false and the route answers 404; this is not a table-existence probe.
+        destination: A declared service or domain availability rule once that interface is established.
     migration:
       complexity: straightforward
       modelImpact: fits
@@ -590,7 +608,8 @@ services:
       exports:
         summary: >-
           The root default-exports the shared initializer with async init and a guarded
-          service getter. isAvailable and actingContext remain named exports. Reading
+          service getter and typed extras for isAvailable and actingContext. There are no
+          named runtime exports. Reading
           service before readiness throws. The Express guard that asks isAvailable lives
           with the Admin API routes in server/web.
         sources:

@@ -7,7 +7,8 @@ import { toDatabaseDate } from '../../../core/server/lib/db-types/date';
 import { StoredManifest } from '../../../core/server/services/app-installations/schema';
 
 // Required, not imported, so this is the same module instance Ghost initialised at boot.
-const appInstallations: typeof import('../../../core/server/services/app-installations') = require('../../../core/server/services/app-installations');
+const appInstallations: typeof import('../../../core/server/services/app-installations').default =
+  require('../../../core/server/services/app-installations').default;
 const models = require('../../../core/server/models');
 const configUtils = require('../../utils/config-utils');
 
@@ -41,7 +42,7 @@ describe('App installations Admin API', function () {
   };
   let owner: { actor: { id: string; type: 'user' } };
 
-  const service = () => appInstallations.default.service;
+  const service = () => appInstallations.service;
   const MANIFEST_HOST = 'https://podcast.example.com';
   const MANIFEST_PATH = '/ghost-app.json';
   const serve = (body: unknown, url = MANIFEST_HOST + MANIFEST_PATH) => {
@@ -889,7 +890,7 @@ describe('App installations Admin API', function () {
     it('answers 404 where in-development tables are not created', async function () {
       configUtils.set('createInDevelopmentTables', false);
 
-      assert.equal(appInstallations.isAvailable(), false);
+      assert.equal(appInstallations.extras.isAvailable(), false);
       await agent.get('apps/installations/').expectStatus(404);
     });
   });
