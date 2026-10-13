@@ -541,14 +541,17 @@ services:
           repeated init returns once the binding exists.
         sources:
           - core/server/services/app-installations/index.ts
+          - core/server/services/app-installations/load-manifest.ts
           - core/boot.js
         tests: []
       configuration:
         summary: >-
-          The site and Admin URLs and the development flag are read on every install, not
-          captured at construction. Availability is read per request from config.
+          The site and Admin URLs and the development flag are read every time a manifest
+          is loaded (preview, install and approval), not captured at construction.
+          Availability is read per request from config.
         sources:
           - core/server/services/app-installations/index.ts
+          - core/server/services/app-installations/load-manifest.ts
           - core/server/data/schema/in-development.ts
         tests:
           - test/e2e-api/admin/app-installations.test.ts

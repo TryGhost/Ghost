@@ -111,8 +111,10 @@ derive it where it is used, with `new URL(surface.url).origin`.
 
 `parseManifestUrl(input, allowLocalhost)` applies the same rules to the address a
 manifest is read from, so it can run before anything is fetched. It hands back the
-address to keep: as the URL parser reads it, so one address has one spelling, and
-without a fragment, which never reaches the server.
+address to keep, as the URL parser reads it and without a fragment, which never reaches
+the server. The parser settles most differences in spelling, but a trailing dot on the
+host or the case of a percent-encoding stays as given, so such an address reads as a
+change of manifest URL.
 
 ```ts
 import { parseManifestUrl } from '@tryghost/app-contracts/manifest';

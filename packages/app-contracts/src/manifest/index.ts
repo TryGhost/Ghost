@@ -2,9 +2,11 @@
  * The app manifest: what an app tells Ghost about itself, and what a publisher agrees to
  * when installing it.
  *
- * Ghost core validates a manifest with `parseManifest` when it fetches one, and reads one
- * it has kept back with `AppManifestSchema`. Admin validates nothing itself: it only acts
- * on manifests Ghost has accepted, as the Admin API hands them over.
+ * Ghost core validates every manifest it accepts with `parseManifest`, and reads one it
+ * has kept back with `AppManifestSchema`. Admin parses none: it acts on what the Admin API
+ * hands over, and re-checks only the rule the app's sandbox depends on. Where it frames an
+ * app's page, it checks the page is not on an origin Ghost is served from, as the site's
+ * or Admin's URL can change after a manifest was accepted.
  *
  * The format is unversioned while only Ghost builds apps.
  */

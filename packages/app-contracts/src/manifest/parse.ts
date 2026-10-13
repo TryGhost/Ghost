@@ -60,14 +60,21 @@ function checkManifestUrl(url: URL | null, allowLocalhost: boolean): CheckedMani
 
 /**
  * Reads the address a manifest is to be read from, by the same rules as the URLs inside
- * it. Run it before fetching, so Ghost never requests an address it would refuse anyway
- * (plain HTTP, or one carrying credentials).
+ * it. Run it before fetching, so the first request never goes to an address Ghost would
+ * refuse (plain HTTP, or one carrying credentials). It cannot judge where that address
+ * redirects: the fetch decides which hops to follow, and `parseManifest` checks the
+ * address the manifest was finally read from once it has been fetched.
  *
  * The address it hands back is the one to keep: what is stored, fetched again later and
- * compared with a later address, so each address has one spelling. A fragment never
- * reaches the server, so two addresses that differ only there read the same file: it is
- * no part of the address, and is left out before the address is checked, its length
- * included.
+ * compared with a later address. The URL parser settles most differences in spelling,
+ * such as the case of the host or stray whitespace, but not every one: a trailing dot on
+ * the host and the case of a percent-encoding stay as given. An address spelled one of
+ * those ways reads as a change of manifest URL, which needs the publisher's approval: the
+ * safe way to be wrong.
+ *
+ * A fragment never reaches the server, so two addresses that differ only there read the
+ * same file: it is no part of the address, and is left out before the address is
+ * checked, its length included.
  */
 export function parseManifestUrl(input: string, allowLocalhost = false): ParseManifestUrlResult {
   const address = URL.parse(input);

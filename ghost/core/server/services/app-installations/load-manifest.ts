@@ -53,8 +53,13 @@ function digestOf(manifestUrl: string, serialisedManifest: string): string {
 
 /**
  * Turns a manifest URL into a loaded manifest: checks the address before anything is
- * fetched from it, so Ghost never requests an address it would refuse, fetches the
- * manifest through `request`, and parses it against where it was read from.
+ * fetched from it, fetches the manifest through `request`, and parses it against where it
+ * was finally read from.
+ *
+ * The check before fetching means the first request never goes to an address Ghost would
+ * refuse. A redirect is judged only by whether it stays on the same host (or moves it from
+ * HTTP to HTTPS); the manifest rules are applied to where it ends once the manifest has
+ * been fetched, when parsing checks the address it was read from.
  *
  * Every problem is thrown as a Ghost error with an `APP_MANIFEST_*` code, which Admin
  * explains to the publisher.
