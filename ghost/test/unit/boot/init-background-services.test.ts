@@ -17,7 +17,7 @@ function createBackgroundHarness(environment = 'production') {
   const updateCheck = { scheduleJobs: sinon.stub().resolves() };
   const tinybirdSync = { scheduleJob: sinon.stub().resolves() };
   const milestones = { initAndRun: sinon.stub() };
-  const signingKeys = { scheduleCheckJob: sinon.stub().resolves() };
+  const signingKeys = { extras: { scheduleCheckJob: sinon.stub().resolves() } };
   const jobsInstance = {};
   const initBackgroundServices = loadBootFunction(
     'initBackgroundServices',
@@ -35,7 +35,7 @@ function createBackgroundHarness(environment = 'production') {
         scheduleTokenCleanupJob: async () => {},
         scheduleExpiredCompCleanupJob: async () => {},
       },
-      './server/services/signing-keys': signingKeys,
+      './server/services/signing-keys': { default: signingKeys },
       './server/services/jobs-service': { getInstance: () => jobsInstance },
       './server/services/activitypub': { init: activity },
       './server/services/tinybird-sync': tinybirdSync,
@@ -123,13 +123,13 @@ it('keeps starting background services when email analytics scheduling fails', a
 it('awaits signing-key job registration before later background work using the shared jobs instance', async function () {
   const boot = createBackgroundHarness();
   const ready = Promise.withResolvers<void>();
-  boot.signingKeys.scheduleCheckJob.returns(ready.promise);
+  boot.signingKeys.extras.scheduleCheckJob.returns(ready.promise);
   const startup = boot.init();
 
   try {
     await setImmediate();
     sinon.assert.calledOnceWithExactly(
-      boot.signingKeys.scheduleCheckJob,
+      boot.signingKeys.extras.scheduleCheckJob,
       sinon.match.same(boot.jobsInstance),
     );
     sinon.assert.notCalled(boot.emailAnalyticsJobs.scheduleRecurringNewslettersJob);
@@ -160,12 +160,12 @@ it('awaits signing-key job registration before later background work using the s
 it('logs signing-key job registration failures and continues background startup', async function () {
   const boot = createBackgroundHarness();
   const failure = new Error('signing-key job registration failed');
-  boot.signingKeys.scheduleCheckJob.rejects(failure);
+  boot.signingKeys.extras.scheduleCheckJob.rejects(failure);
 
   await boot.init();
 
   sinon.assert.calledOnceWithExactly(
-    boot.signingKeys.scheduleCheckJob,
+    boot.signingKeys.extras.scheduleCheckJob,
     sinon.match.same(boot.jobsInstance),
   );
   sinon.assert.calledOnceWithExactly(boot.logging.error, failure);

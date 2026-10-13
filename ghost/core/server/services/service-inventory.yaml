@@ -11171,6 +11171,16 @@ services:
     kind: directory
     disposition: retain
     migrated: true
+    extras:
+      scheduleCheckJob:
+        purpose: Attach the jobs backend and register recurring checks for an active or subsequent key rotation.
+        callers:
+          - core/boot.js
+        timing: Background boot after signing-key readiness and jobs startup; initialization alone does not register jobs.
+        dependencies:
+          - A ready signing-key instance and the supplied jobs backend.
+        failurePolicy: Registration errors propagate to background boot, which logs and continues; a later explicit call can retry.
+        destination: A declared domain jobs contribution or shared background-activation interface, preserving the rotation callback.
     status: audited
     auditedAt: 5dae46983fe5423a900214dfc1906f5d14e637d2
     migration:
@@ -11194,7 +11204,8 @@ services:
       exports:
         summary: >-
           The default export is a defineService root with init(): Promise<void> and a read-only
-          service getter; scheduleCheckJob remains a named export. The provider and purpose
+          service getter; extras.scheduleCheckJob groups background registration. There are no
+          named runtime exports. The provider and purpose
           exports are types only. Reading service before publication throws IncorrectUsageError.
           The implementation exports SigningKeyService and rotation constants;
           CheckSigningKeysJob is a separate class consumed by handler registration. Root tests
@@ -11249,7 +11260,7 @@ services:
         summary: >-
           initCore awaits init after settings and before token/JWKS consumers. check advances
           due rotation and initiates replacement of weak keys. After jobs startup,
-          background boot calls scheduleCheckJob, which stores the jobs reference and checks
+          background boot calls extras.scheduleCheckJob, which stores the jobs reference and checks
           rotation state. Registration is skipped in test environments, without jobs, or after
           a prior successful schedule; the guard is set only after registration resolves. Root
           tests cover idle/rotating state, test-environment suppression, registration awaiting,

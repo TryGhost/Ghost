@@ -584,8 +584,8 @@ async function initBackgroundServices({ config }) {
   }
 
   try {
-    const signingKeys = require('./server/services/signing-keys');
-    await signingKeys.scheduleCheckJob(jobsService);
+    const signingKeys = require('./server/services/signing-keys').default;
+    await signingKeys.extras.scheduleCheckJob(jobsService);
   } catch (err) {
     const logging = require('@tryghost/logging');
     logging.error(err);
