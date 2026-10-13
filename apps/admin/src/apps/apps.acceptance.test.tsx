@@ -151,7 +151,7 @@ describe('Managing apps', () => {
 
   it('opens an app from the list, in a sandboxed frame from the app’s own URL', async () => {
     fakeInstallations([installation()]);
-    const { sessionsApi } = await fakeAppPage(installation());
+    const { sessionsApi, readApi } = await fakeAppPage(installation());
 
     await renderAdminApp('/apps', { labs });
     await appsScreen.row('Podcast').getByText('Publish episodes and embed players.').click();
@@ -159,8 +159,10 @@ describe('Managing apps', () => {
     await expect.poll(currentRoute).toBe(APP_ROUTE);
     const frame = appsScreen.frame();
     await expect.element(frame).toBeVisible();
-    // Opening the page starts a session, which re-checks the app before any of it loads.
+    // Opening the page starts a session, which re-checks the app before any of it loads,
+    // and answers with the installation: nothing else is read to open it.
     expect(sessionsApi.requests).toHaveLength(1);
+    expect(readApi.requests).toHaveLength(0);
     await expect.element(frame).toHaveAttribute('src', APP_PAGE_URL);
     await expect.element(frame).toHaveAttribute('sandbox', APP_FRAME_SANDBOX);
     await expect.element(frame).toHaveAttribute('allow', expect.stringContaining("camera 'none'"));

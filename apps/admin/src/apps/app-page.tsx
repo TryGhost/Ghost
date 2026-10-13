@@ -9,10 +9,12 @@ import {
   useLocation,
   useNavigate,
   useParams,
+  useQueryClient,
 } from '@tryghost/admin-x-framework';
 import {
   type AppInstallation,
   type AppSession,
+  getAppInstallationQueryKey,
   useReadAppInstallation,
   useStartAppSession,
 } from '@tryghost/admin-x-framework/api/app-installations';
@@ -93,6 +95,8 @@ function useAppTitle(appName: string, title: string | undefined) {
 const sameTheme = (a: Theme | undefined, b: Theme) =>
   a?.mode === b.mode && a.accent_color === b.accent_color;
 
+const SESSION_END_SEARCH_PARAMS: Record<string, string> = {};
+
 /**
  * Ends the session when the installation moves on from the revision it was started
  * against, as reading it again shows: the app is then running something nobody approved,
@@ -106,7 +110,9 @@ function useSessionEnd(session: AppSession, onEnded: () => void) {
   const { data, dataUpdatedAt, isFetching } = useReadAppInstallation(session.installation.id, {
     defaultErrorHandler: false,
     // Without the history the details page shows; this one has no use for it.
-    searchParams: {},
+    searchParams: SESSION_END_SEARCH_PARAMS,
+    // Starting the session put the installation here, so there's nothing to read yet.
+    refetchOnMount: false,
     // Coming back to the tab is when a change made meanwhile shows up.
     refetchOnWindowFocus: 'always',
   });
@@ -460,6 +466,7 @@ function useAppSession(installationId: string): {
   /** Ends this session and starts another, as after approving changes. */
   restart: () => void;
 } {
+  const queryClient = useQueryClient();
   const { mutateAsync: start } = useStartAppSession();
   const [generation, setGeneration] = useState(0);
   const [result, setResult] = useState<{ key: string; session?: AppSession; error?: unknown }>();
@@ -472,10 +479,22 @@ function useAppSession(installationId: string): {
     }
     started.current = key;
     start(installationId).then(
-      (response) => setResult({ key, session: response.app_sessions[0] }),
+      (response) => {
+        const session = response.app_sessions[0];
+        if (session) {
+          // The answer is the installation as it stands, which is what the session's end
+          // is told by: it is read again only when the tab comes back into focus. One
+          // request per open.
+          queryClient.setQueryData(
+            getAppInstallationQueryKey(session.installation.id, SESSION_END_SEARCH_PARAMS),
+            { app_installations: [session.installation] },
+          );
+        }
+        setResult({ key, session });
+      },
       (error: unknown) => setResult({ key, error }),
     );
-  }, [installationId, key, start]);
+  }, [installationId, key, queryClient, start]);
 
   const restart = useCallback(() => setGeneration((value) => value + 1), []);
   return result?.key === key ? { settled: true, ...result, restart } : { settled: false, restart };
