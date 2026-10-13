@@ -62,13 +62,13 @@ const TriggerPicker: React.FC<{
                   'free',
                   LucideIcon.UserPlus,
                   'Free member signed up',
-                  'When someone signs up as a free member.',
+                  'When someone signs up as a free member',
                 ],
                 [
                   'all_paid',
                   LucideIcon.CreditCard,
                   'Paid subscription started',
-                  'When a new or free member starts a paid subscription.',
+                  'When a new or free member starts a paid subscription',
                 ],
               ] as const
             ).map(([scope, Icon, title, description]) => (
