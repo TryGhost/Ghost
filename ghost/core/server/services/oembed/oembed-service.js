@@ -5,7 +5,6 @@ const errors = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
 const logging = require('@tryghost/logging');
 const _ = require('lodash');
-const charset = require('charset');
 const iconv = require('iconv-lite');
 const path = require('path');
 const crypto = require('crypto');
@@ -38,6 +37,17 @@ const MAX_SVG_BYTES = 32 * 1024;
 const GZIP_MAGIC = [0x1f, 0x8b];
 
 const SVG_SNIFF_BYTES = 1024;
+
+const CHARSET_PATTERN = /(?:charset|encoding)\s{0,10}=\s{0,10}['"]? {0,10}([\w-]{1,100})/i;
+const CHARSET_SNIFF_BYTES = 512;
+
+// Content-Type header first, then a <meta charset> or XML declaration near the start
+const detectCharset = (headers, body) => {
+  const match =
+    CHARSET_PATTERN.exec(headers['content-type'] ?? '') ??
+    CHARSET_PATTERN.exec(body.subarray(0, CHARSET_SNIFF_BYTES).toString());
+  return match ? match[1].toLowerCase() : null;
+};
 
 const toBuffer = (bytes) => {
   return Buffer.isBuffer(bytes)
@@ -402,7 +412,7 @@ class OEmbedService {
     try {
       // Detect page encoding which might not be utf-8
       // and decode content
-      const encoding = charset(headers, body);
+      const encoding = detectCharset(headers, body);
 
       if (encoding === null) {
         return {

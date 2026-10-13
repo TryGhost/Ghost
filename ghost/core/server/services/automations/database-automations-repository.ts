@@ -3,9 +3,9 @@ import { z } from 'zod';
 import { AUTOMATION_STEP_TERMINAL_STATUSES } from './automations-repository';
 import tpl from '@tryghost/tpl';
 import crypto from 'node:crypto';
+import { isDeepStrictEqual } from 'node:util';
 import ObjectId from 'bson-objectid';
 import logging from '@tryghost/logging';
-import { dequal } from 'dequal';
 import { type Knex } from 'knex';
 import { DefaultMap } from '../../../shared/default-map';
 // @ts-expect-error This module currently lacks type definitions.
@@ -1921,7 +1921,7 @@ function shouldInsertActionRevision(
     return true;
   }
 
-  return !dequal(buildRevisionActionData(action, latestRevision), action.data);
+  return !isDeepStrictEqual(buildRevisionActionData(action, latestRevision), action.data);
 }
 
 function buildRevisionActionData(
