@@ -129,6 +129,11 @@ const bundleFrameScript: BrowserCommand<[entry: string]> = (_context, entry) => 
   return script;
 };
 
+// How long `callInFrame` waits for Playwright to see a frame the page already shows. Another
+// origin's frame runs in a process of its own, which Playwright attaches to on its own time:
+// on a busy machine, after the page has heard from the frame.
+const FRAME_ATTACH_TIMEOUT_MS = 5000;
+
 // Calls a hook the script in a faked frame exposes on `window.__app`, in the newest frame
 // on `origin`: the frame is another origin's, so the spec can't reach into it itself.
 const callInFrame: BrowserCommand<[origin: string, hook: string, args: unknown[]]> = async (
@@ -137,12 +142,21 @@ const callInFrame: BrowserCommand<[origin: string, hook: string, args: unknown[]
   hook,
   args,
 ) => {
-  const frame = page
-    .frames()
-    .filter(
-      (candidate) => URL.canParse(candidate.url()) && new URL(candidate.url()).origin === origin,
-    )
-    .at(-1);
+  const newestOnOrigin = () =>
+    page
+      .frames()
+      .filter(
+        (candidate) => URL.canParse(candidate.url()) && new URL(candidate.url()).origin === origin,
+      )
+      .at(-1);
+  const deadline = Date.now() + FRAME_ATTACH_TIMEOUT_MS;
+  let frame = newestOnOrigin();
+  while (!frame && Date.now() < deadline) {
+    await new Promise<void>((resolve) => {
+      setTimeout(resolve, 50);
+    });
+    frame = newestOnOrigin();
+  }
   if (!frame) {
     throw new Error(`No frame on ${origin} to call ${hook} in`);
   }
