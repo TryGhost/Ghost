@@ -267,15 +267,6 @@ body {
   filter: invert(100%);
 }
 
-/* Legacy utility compatibility (Spirit/Tachyons-style percentages). */
-.w-100 {
-  width: 100%;
-}
-
-.h-100 {
-  height: 100%;
-}
-
 /* Settings' raw h1-h5 still expect the 1.25em admin-x heading line-height; Shade's base gives 1.5.
    Remove once those headings carry an explicit leading. */
 .settings-app h1,

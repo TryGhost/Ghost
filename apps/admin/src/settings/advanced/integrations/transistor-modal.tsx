@@ -162,7 +162,7 @@ function TransistorModal() {
         {enabled && (
           <div className="mt-5 flex flex-col items-center">
             <a
-              className="flex w-100 flex-col items-stretch justify-between overflow-hidden rounded-md bg-gray-50 transition-all hover:border-gray-400 hover:bg-gray-100 md:flex-row dark:bg-gray-900 dark:hover:bg-gray-950"
+              className="flex w-full flex-col items-stretch justify-between overflow-hidden rounded-md bg-gray-50 transition-all hover:border-gray-400 hover:bg-gray-100 md:flex-row dark:bg-gray-900 dark:hover:bg-gray-950"
               href="https://ghost.org/integrations/transistor/"
               rel="noopener noreferrer"
               target="_blank"
