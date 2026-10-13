@@ -48,10 +48,10 @@ Development settings, version and publish-generated metadata do not trigger a
 release. pnpm resolves catalog/workspace dependencies and published export overrides
 before comparison. Export/import condition order remains significant.
 
-The `umd` mode preserves public apps' existing comparison of only the built `umd/`
-directory, including its CSS and other assets. It ignores other files and manifest
-changes. Shade uses `package` mode. The helper prints a concise explanation and
-writes `changed=true|false` to `GITHUB_OUTPUT` when running in CI.
+Public apps use `umd` mode to compare only the built `umd/` directory, including
+its CSS and other assets. It ignores other files and manifest changes. Shade uses
+`package` mode. The helper prints a concise explanation and writes
+`changed=true|false` to `GITHUB_OUTPUT` when running in CI.
 
 ## Admin asset assembly
 
