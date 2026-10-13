@@ -16,7 +16,7 @@ by the workspace globs.
 
 ## Golden email preview
 
-Run `pnpm gx email golden <segment> <output-path>` against a running Ghost dev
+Run `pnpm gx generate golden-email <segment> <output-path>` against a running Ghost dev
 instance. Set `GHOST_GOLDEN_POST_AUTH` to an Admin API key in `id:secret` format;
 `GHOST_URL` defaults to `http://localhost:2368`. The command writes preview HTML
 and removes its temporary draft post. Output paths resolve from your current

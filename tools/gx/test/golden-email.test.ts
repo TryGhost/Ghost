@@ -16,7 +16,7 @@ afterEach(async () => {
   await Promise.all(roots.splice(0).map((root) => rm(root, { recursive: true, force: true })));
 });
 async function run(args: string[], root: string, url: string, auth = `test-id:${secret}`) {
-  const child = spawn(process.execPath, [cli, 'email', 'golden', ...args], {
+  const child = spawn(process.execPath, [cli, 'generate', 'golden-email', ...args], {
     cwd: root,
     env: { GHOST_URL: url, GHOST_GOLDEN_POST_AUTH: auth },
     stdio: ['ignore', 'pipe', 'pipe'],
@@ -131,7 +131,7 @@ test('golden email preserves usage and missing-credential errors', async () => {
   roots.push(root);
   const usage = await run([], root, 'http://127.0.0.1:1', '');
   assert.equal(usage.code, 1);
-  assert.match(usage.stderr, /pnpm gx email golden/);
+  assert.match(usage.stderr, /pnpm gx generate golden-email/);
   const missingAuth = await run(['status:free', 'preview.html'], root, 'http://127.0.0.1:1', '');
   assert.equal(missingAuth.code, 1);
   assert.match(missingAuth.stderr, /environment variable is required/);
