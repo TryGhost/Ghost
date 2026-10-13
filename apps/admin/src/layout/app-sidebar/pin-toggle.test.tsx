@@ -30,6 +30,12 @@ describe('PinToggle', () => {
     expect(screen.getByRole('button').querySelector('svg')?.style.transform).toBe('rotate(45deg)');
   });
 
+  it('keeps its own state when a wrapping trigger passes one', () => {
+    render(<PinToggle {...labels} data-state="closed" pinned={true} onPinnedChange={vi.fn()} />);
+
+    expect(screen.getByRole('button').getAttribute('data-state')).toBe('pinned');
+  });
+
   it('stays focusable but does nothing with aria-disabled', () => {
     const onPinnedChange = vi.fn();
     render(<PinToggle {...labels} pinned={false} aria-disabled onPinnedChange={onPinnedChange} />);

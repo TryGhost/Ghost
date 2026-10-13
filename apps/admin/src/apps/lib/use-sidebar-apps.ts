@@ -1,15 +1,10 @@
 import { useLocation } from '@tryghost/admin-x-framework';
-import {
-  type AppInstallation,
-  useBrowseAppInstallations,
-} from '@tryghost/admin-x-framework/api/app-installations';
+import type { AppInstallation } from '@tryghost/admin-x-framework/api/app-installations';
 import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
 import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import { canManageApps } from '@/apps/permissions';
 import { appOpenRoute } from './routes';
-import { useAppPins } from './use-app-pins';
-
-const NO_INSTALLATIONS: AppInstallation[] = [];
+import { useInstalledApps } from './use-app-pins';
 
 export interface SidebarApp {
   installation: AppInstallation;
@@ -61,12 +56,7 @@ export function useSidebarApps(): SidebarApps {
   const { data: currentUser } = useCurrentUser();
   const canSeeApps = enabled && Boolean(currentUser && canManageApps(currentUser));
   // An older Ghost without the endpoint, or any failure, just hides the section.
-  const { data, isSuccess } = useBrowseAppInstallations({
-    enabled: canSeeApps,
-    defaultErrorHandler: false,
-  });
-  const installations = data?.app_installations ?? NO_INSTALLATIONS;
-  const pins = useAppPins(installations);
+  const { installations, pins } = useInstalledApps({ enabled: canSeeApps });
   const { pathname, search } = useLocation();
 
   const inApps = pathname === '/apps' || pathname.startsWith('/apps/');
@@ -81,7 +71,7 @@ export function useSidebarApps(): SidebarApps {
     : [...pinned, ...unpinned.filter((installation) => installation.id === openId)];
 
   return {
-    visible: canSeeApps && isSuccess && pins.isLoaded && (installations.length > 0 || inApps),
+    visible: canSeeApps && pins.isLoaded && (installations.length > 0 || inApps),
     onAppsPage,
     apps: listed.map((installation) => ({
       installation,

@@ -19,7 +19,6 @@ import { Link, useNavigate, useParams } from '@tryghost/admin-x-framework';
 import {
   type AppInstallation,
   type AppInstallationHistoryEntry,
-  useBrowseAppInstallations,
   useReadAppInstallation,
 } from '@tryghost/admin-x-framework/api/app-installations';
 import { useBrowseSettings } from '@tryghost/admin-x-framework/api/settings';
@@ -36,7 +35,7 @@ import { ACCOUNT_ACCESS } from './lib/access';
 import { historyTitle, installedBy } from './lib/history';
 import { isInstallationNotFound } from './lib/not-found';
 import { appReviewRoute, appRoute } from './lib/routes';
-import { useAppPins } from './lib/use-app-pins';
+import { useInstalledApps } from './lib/use-app-pins';
 import { isDevelopmentApp } from './lib/served-from';
 
 const Fact: React.FC<{ label: string; children: React.ReactNode }> = ({ label, children }) => (
@@ -161,8 +160,6 @@ const Details: React.FC<{ installation: AppInstallation; timezone: string }> = (
   );
 };
 
-const NO_INSTALLATIONS: AppInstallation[] = [];
-
 export const AppDetails: React.FC = () => {
   const { installationId = '' } = useParams();
   const navigate = useNavigate();
@@ -173,8 +170,7 @@ export const AppDetails: React.FC = () => {
     defaultErrorHandler: false,
   });
   const installation = data?.app_installations[0];
-  const { data: installed } = useBrowseAppInstallations({ defaultErrorHandler: false });
-  const pins = useAppPins(installed?.app_installations ?? NO_INSTALLATIONS);
+  const { pins } = useInstalledApps();
   const pinned = installation ? pins.isPinned(installation.id) : false;
 
   if (isInstallationNotFound(error)) {
@@ -229,7 +225,7 @@ export const AppDetails: React.FC = () => {
               {installation && installation.status !== 'uninstalled' && (
                 <PageHeader.Actions>
                   <PageHeader.ActionGroup>
-                    {pins.isLoaded && installed && (
+                    {pins.isLoaded && (
                       <AppPinButton
                         full={!pins.canPinMore}
                         pinned={pinned}

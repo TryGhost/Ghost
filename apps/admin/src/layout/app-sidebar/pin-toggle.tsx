@@ -21,6 +21,9 @@ interface PinToggleProps extends Omit<React.ComponentProps<'button'>, 'onChange'
 const PinToggle = React.forwardRef<HTMLButtonElement, PinToggleProps>(
   ({ pinned, onPinnedChange, pinLabel, unpinLabel, className, onClick, ...props }, ref) => (
     <button
+      // First, so a wrapping trigger (a tooltip's, say) can't replace the
+      // toggle's own state or label
+      {...props}
       ref={ref}
       aria-label={pinned ? unpinLabel : pinLabel}
       className={cn(
@@ -37,7 +40,6 @@ const PinToggle = React.forwardRef<HTMLButtonElement, PinToggleProps>(
           onPinnedChange(!pinned);
         }
       }}
-      {...props}
     >
       <LucideIcon.Pin
         aria-hidden="true"

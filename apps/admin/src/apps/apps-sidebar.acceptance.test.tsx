@@ -42,22 +42,55 @@ function withPins(pins?: { pinned: string[]; unpinned: string[] }): RenderAdminA
   return { labs, boot: { browseMe: { response: me } } };
 }
 
+/** The sidebar pins a preference write saves, if it saves any. */
+function pinsIn(body: unknown) {
+  const users = (body as { users: Array<{ accessibility: string }> }).users;
+  const preferences = JSON.parse(users[0].accessibility) as {
+    navigation?: { apps?: { pinned: string[]; unpinned: string[] } };
+  };
+  return preferences.navigation?.apps;
+}
+
 /** Echoes preference writes, so they persist, and reads back the pins they saved. */
 function fakePreferencesApi() {
   const api = fakeAdminEndpoint('PUT', /^\/users\/\w+\//, ({ body }) => body);
   return {
     savedPins: () => {
-      const last = api.requests.at(-1)?.body as
-        | { users: Array<{ accessibility: string }> }
-        | undefined;
-      if (!last) {
-        return undefined;
-      }
-      const preferences = JSON.parse(last.users[0].accessibility) as {
-        navigation?: { apps?: { pinned: string[]; unpinned: string[] } };
-      };
-      return preferences.navigation?.apps;
+      const last = api.requests.at(-1);
+      return last && pinsIn(last.body);
     },
+  };
+}
+
+/**
+ * Holds each write of the pins until the spec answers it, oldest first, so it
+ * can say what's on screen while saves are on their way. Other preference
+ * writes, like Admin's own on boot, go straight through.
+ */
+function holdPinSaves() {
+  const sent: unknown[] = [];
+  const waiting: Array<(response?: Response) => void> = [];
+  fakeAdminEndpoint('PUT', /^\/users\/\w+\//, ({ body }) => {
+    if (!pinsIn(body)) {
+      return body;
+    }
+    sent.push(body);
+    return new Promise((resolve) => {
+      // Echoed, unless answered with a response of its own
+      waiting.push((response) => resolve(response ?? body));
+    });
+  });
+  let answered = 0;
+  const answer = async (response?: Response) => {
+    // Saves are sent one after another, so the next only arrives once the last is answered
+    await expect.poll(() => sent.length).toBeGreaterThan(answered);
+    waiting[answered](response);
+    answered += 1;
+  };
+  return {
+    savedPins: () => (sent.length ? pinsIn(sent.at(-1)) : undefined),
+    save: () => answer(),
+    fail: () => answer(Response.json({ errors: [{ message: 'Failed' }] }, { status: 500 })),
   };
 }
 
@@ -153,6 +186,55 @@ describe('Apps in the sidebar', () => {
       .toEqual({ pinned: ['installation-2', 'installation-1'], unpinned: [] });
     await page.getByTestId('admin-sidebar').getByRole('link', { name: 'Tags' }).click();
     await expect.poll(listedApps).toEqual(['App 2', 'App 1']);
+  });
+
+  it('keeps changes made in quick succession, however their saves land', async () => {
+    fakeInstallations(FOUR_APPS);
+    const saves = holdPinSaves();
+    await renderAdminApp('/apps', withPins());
+    await expect.poll(listedApps).toEqual(['App 1', 'App 2', 'App 3', 'App 4']);
+
+    await appsScreen.sidebarApp('App 1').hover();
+    await appsScreen.pinToggle('Unpin App 1 from the sidebar').click();
+    await appsScreen.sidebarApp('App 2').hover();
+    await appsScreen.pinToggle('Unpin App 2 from the sidebar').click();
+    await expect.poll(listedApps).toEqual(['App 3', 'App 1', 'App 2', 'App 4']);
+
+    // The first save lands while the second is still on its way
+    await saves.save();
+    await expect.poll(listedApps).toEqual(['App 3', 'App 1', 'App 2', 'App 4']);
+    await appsScreen.sidebarApp('App 4').hover();
+    await appsScreen.pinToggle('Pin App 4 to the sidebar').click();
+    await expect.poll(listedApps).toEqual(['App 3', 'App 4', 'App 1', 'App 2']);
+
+    await saves.save();
+    await saves.save();
+    await expect.poll(saves.savedPins).toEqual({
+      pinned: ['installation-3', 'installation-4'],
+      unpinned: ['installation-1', 'installation-2'],
+    });
+    await expect.poll(listedApps).toEqual(['App 3', 'App 4', 'App 1', 'App 2']);
+  });
+
+  it('rolls back a change that didn’t save, even with another saved after it', async () => {
+    fakeInstallations(FOUR_APPS);
+    const saves = holdPinSaves();
+    await renderAdminApp('/apps', withPins());
+    await expect.poll(listedApps).toEqual(['App 1', 'App 2', 'App 3', 'App 4']);
+
+    await appsScreen.sidebarApp('App 1').hover();
+    await appsScreen.pinToggle('Unpin App 1 from the sidebar').click();
+    await appsScreen.sidebarApp('App 2').hover();
+    await appsScreen.pinToggle('Unpin App 2 from the sidebar').click();
+
+    await saves.fail();
+    await saves.save();
+
+    await expect.poll(saves.savedPins).toEqual({
+      pinned: ['installation-1', 'installation-3'],
+      unpinned: ['installation-2', 'installation-4'],
+    });
+    await expect.poll(listedApps).toEqual(['App 1', 'App 3', 'App 2', 'App 4']);
   });
 
   it('won’t pin a fourth app, and says why', async () => {
