@@ -4405,12 +4405,6 @@ importers:
       execa:
         specifier: 'catalog:'
         version: 10.0.1
-      js-yaml:
-        specifier: 'catalog:'
-        version: 4.3.2
-      picomatch:
-        specifier: 4.0.7
-        version: 4.0.7
       semver:
         specifier: 'catalog:'
         version: 7.8.5
@@ -4445,6 +4439,12 @@ importers:
       eslint:
         specifier: 'catalog:'
         version: 9.39.5(jiti@2.7.0)(supports-color@10.2.2)
+      js-yaml:
+        specifier: 'catalog:'
+        version: 4.3.2
+      picomatch:
+        specifier: 4.0.7
+        version: 4.0.7
 
 packages:
 
