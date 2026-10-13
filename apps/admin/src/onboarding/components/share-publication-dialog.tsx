@@ -52,11 +52,7 @@ export function SharePublicationDialog({
 
   return (
     <ShareModal.Root open={open} onOpenChange={onOpenChange}>
-      <ShareModal.Content
-        className="dark:bg-surface-elevated"
-        data-test-modal="onboarding-share"
-        data-testid="onboarding-share-modal"
-      >
+      <ShareModal.Content className="dark:bg-surface-elevated" data-testid="onboarding-share-modal">
         <ShareModal.Header className="flex-row items-center justify-between gap-4 space-y-0 text-left">
           <ShareModal.Title className="text-2xl">Share your publication</ShareModal.Title>
           <ShareModal.CloseButton id="ob-close-share-modal" onClick={() => onOpenChange(false)} />
