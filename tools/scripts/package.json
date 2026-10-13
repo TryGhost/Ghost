@@ -20,8 +20,6 @@
     "@sentry/bundler-plugin-core": "catalog:",
     "camelcase-keys": "10.0.3",
     "execa": "catalog:",
-    "js-yaml": "catalog:",
-    "picomatch": "4.0.7",
     "semver": "catalog:",
     "typescript": "catalog:",
     "zod": "catalog:"
@@ -34,7 +32,9 @@
     "@types/node": "catalog:",
     "@types/picomatch": "catalog:",
     "@types/semver": "catalog:",
-    "eslint": "catalog:"
+    "eslint": "catalog:",
+    "js-yaml": "catalog:",
+    "picomatch": "4.0.7"
   },
   "nx": {
     "namedInputs": {

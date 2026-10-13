@@ -1,24 +1,18 @@
-import { glob } from 'node:fs/promises';
-import { dirname, resolve } from 'node:path';
-import { isDeepStrictEqual } from 'node:util';
-import { load } from 'js-yaml';
+import { glob, mkdtemp, rm } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { dirname, join, resolve } from 'node:path';
+import { $ as $$ } from 'execa';
 import {
   readWorkspaceManifest,
-  validateWorkspaceManifest,
   type WorkspaceManifest,
 } from '@pnpm/workspace.workspace-manifest-reader';
 import { readChangeIntents, CHANGES_DIR } from '@pnpm/releasing.versioning';
 
 import { ROOT_DIR } from './constants.ts';
-import { getFileFromCommit, getChangedFiles, pathHasChanges } from './git.ts';
+import { getChangedFiles } from './git.ts';
 import { readJson } from './utils.ts';
 
-const WORKSPACE_MANIFEST_FILE = 'pnpm-workspace.yaml';
-
 export type { WorkspaceManifest };
-
-/** The workspace fields catalog resolution reads. */
-export type WorkspaceCatalogs = Pick<WorkspaceManifest, 'catalog' | 'catalogs'>;
 
 type DependencyMap = Record<string, string>;
 
@@ -43,107 +37,7 @@ export interface WorkspacePackage {
   dir: string;
 }
 
-export const getWorkspace = () => readWorkspaceManifest(ROOT_DIR);
-
-/**
- * Loads workspace manifest contents at a specific commit hash. An empty
- * manifest validates and yields undefined.
- */
-export async function loadWorkspace(commitHash: string): Promise<WorkspaceManifest | undefined> {
-  const fileContent = await getFileFromCommit(commitHash, WORKSPACE_MANIFEST_FILE);
-  if (!fileContent) {
-    throw new Error(`Could not find ${WORKSPACE_MANIFEST_FILE} in commit ${commitHash}`);
-  }
-
-  const workspace = load(fileContent);
-  validateWorkspaceManifest(workspace);
-  return workspace;
-}
-
-export async function loadPackage(
-  commitHash: string,
-  packagePath: string,
-): Promise<PackageManifest | null> {
-  // allowMissing: a package absent from the base commit is a new package, not
-  // an error. getFileFromCommit returns null and we treat it as such, so the
-  // caller follows the changeset-required path. Invalid commits still throw.
-  const fileContent = await getFileFromCommit(commitHash, packagePath, { allowMissing: true });
-  if (!fileContent) {
-    // file does not exist in this commit, return null to indicate that
-    // this is a new package
-    return null;
-  }
-
-  return JSON.parse(fileContent);
-}
-
-const packageSections = [
-  'dependencies',
-  'devDependencies',
-  'peerDependencies',
-  'optionalDependencies',
-] as const;
-const catalogRegex = /^catalog:([\w.-]+)?$/;
-
-/**
- * Resovles a version from the workspace catalog. Throws if not found in the catalog
- *
- * @returns The resolved version from the catalog, null if not a catalog dep
- */
-function resolveCatalogVersion(
-  workspace: WorkspaceCatalogs,
-  depName: string,
-  depVersion: string,
-): string | null {
-  const match = catalogRegex.exec(depVersion);
-  if (!match) {
-    return null;
-  }
-
-  const catalogName = match[1];
-  const version = catalogName
-    ? workspace.catalogs?.[catalogName]?.[depName]
-    : workspace.catalog?.[depName];
-
-  if (!version) {
-    throw new Error(
-      `Could not resolve catalog dependency ${depName} from catalog ${catalogName || 'default'}`,
-    );
-  }
-
-  return version;
-}
-
-/**
- * resolves the package dependencies from the pnpm-workspace.yaml file for a given
- * commit and package path.
- *
- * @returns The package.json object with resolved dependencies.
- */
-export function resolvePackageCatalog(
-  workspace: WorkspaceCatalogs,
-  pkg: PackageManifest,
-): PackageManifest {
-  const copied = { ...pkg };
-
-  for (const section of packageSections) {
-    const deps = pkg[section];
-    if (!deps) {
-      continue;
-    }
-
-    const resolved = Object.fromEntries(
-      Object.entries(deps).map(([depName, depVersion]) => [
-        depName,
-        resolveCatalogVersion(workspace, depName, depVersion) || depVersion,
-      ]),
-    );
-
-    copied[section] = resolved;
-  }
-
-  return copied;
-}
+export const getWorkspace = (rootDir = ROOT_DIR) => readWorkspaceManifest(rootDir);
 
 /**
  * Lists every package in the workspace by expanding the `packages` globs in
@@ -151,6 +45,7 @@ export function resolvePackageCatalog(
  */
 export async function getWorkspacePackages(
   workspace: WorkspaceManifest,
+  rootDir = ROOT_DIR,
 ): Promise<WorkspacePackage[]> {
   const { packages } = workspace;
 
@@ -160,11 +55,11 @@ export async function getWorkspacePackages(
   // `exclude`, not `ignore` — node:fs/promises.glob silently ignores unknown
   // options, so `ignore` would be a no-op and the negated workspace entries
   // wouldn't be pruned.
-  const files = await Array.fromAsync(glob(patterns, { exclude, cwd: ROOT_DIR }));
+  const files = await Array.fromAsync(glob(patterns, { exclude, cwd: rootDir }));
 
   return Promise.all(
     files.map(async (file) => {
-      const manifest = await readJson<WorkspacePackage['manifest']>(resolve(ROOT_DIR, file));
+      const manifest = await readJson<WorkspacePackage['manifest']>(resolve(rootDir, file));
       return {
         name: manifest.name,
         manifest,
@@ -181,9 +76,10 @@ export async function getWorkspacePackages(
  */
 export async function getPublishablePackages(
   workspace: WorkspaceManifest,
+  rootDir = ROOT_DIR,
 ): Promise<WorkspacePackage[]> {
   const ignoredPackages = new Set(workspace.versioning?.ignore ?? []);
-  const pkgs = await getWorkspacePackages(workspace);
+  const pkgs = await getWorkspacePackages(workspace, rootDir);
 
   return pkgs.filter((pkg) => !pkg.manifest.private && !ignoredPackages.has(pkg.name));
 }
@@ -193,17 +89,19 @@ export async function getPublishablePackages(
  *
  * @param baseCommit - The commit hash to compare against.
  * @param headCommit - The commit hash to compare to, defaults to HEAD.
+ * @param rootDir - The workspace root.
  */
 export async function getPackagesWithChangset(
   baseCommit: string,
   headCommit = 'HEAD',
+  rootDir = ROOT_DIR,
 ): Promise<Set<string>> {
   const [changes, newChangesets] = await Promise.all([
-    readChangeIntents(ROOT_DIR),
-    getChangedFiles(CHANGES_DIR, baseCommit, headCommit, true),
+    readChangeIntents(rootDir),
+    getChangedFiles(CHANGES_DIR, baseCommit, headCommit, true, rootDir),
   ]);
 
-  const newChangesetFiles = new Set(newChangesets.map((file) => resolve(ROOT_DIR, file)));
+  const newChangesetFiles = new Set(newChangesets.map((file) => resolve(rootDir, file)));
 
   return new Set(
     changes.flatMap((change) => {
@@ -216,60 +114,120 @@ export async function getPackagesWithChangset(
   );
 }
 
+// The files pnpm itself reads to list projects and compare catalogs; every
+// other path is left out of a head checkout.
+const PNPM_INPUTS_RE = /(^|\/)package\.json$|^pnpm-workspace\.yaml$/;
+
+/**
+ * Runs `fn` in a throwaway worktree whose working tree is `head` and whose HEAD
+ * is `base`, so pnpm's base-vs-working-tree `[since]` diff becomes a plain
+ * base-to-head tree diff. pnpm's `[<base>...<head>]` form can't do this: it
+ * rejects a tree head, and fails whenever pnpm-workspace.yaml changed (it reads
+ * the catalog from `<base>...<head>:pnpm-workspace.yaml`, as of pnpm 12.13).
+ *
+ * Only the files pnpm reads are checked out; the rest are marked skip-worktree,
+ * so git diffs them from the index (head) instead of reporting them deleted.
+ *
+ * `fn` gets an env to run in the worktree with: a git hook (the pre-commit
+ * check) sets GIT_INDEX_FILE and friends for the caller's repository, and
+ * inheriting them would rewrite the caller's index instead of the worktree's.
+ */
+async function withHeadCheckout<T>(
+  baseCommit: string,
+  head: string,
+  rootDir: string,
+  fn: (dir: string, env: NodeJS.ProcessEnv) => Promise<T>,
+): Promise<T> {
+  const git = $$({ cwd: rootDir });
+  const { stdout: localVars } = await git`git rev-parse --local-env-vars`;
+  const repoVars = new Set(localVars.split('\n'));
+  const env = Object.fromEntries(
+    Object.entries(process.env).filter(([name]) => !repoVars.has(name)),
+  );
+  const { stdout: tree } = await git`git rev-parse --verify ${`${head}^{tree}`}`;
+  const dir = await mkdtemp(join(tmpdir(), 'change-check-'));
+
+  try {
+    await git`git worktree add --quiet --detach --no-checkout ${dir} ${baseCommit}`;
+
+    const wt = $$({ cwd: dir, env, extendEnv: false });
+    await wt`git read-tree ${tree}`;
+    const { stdout: files } = await wt`git ls-files -z`;
+    const skipped = files.split('\0').filter((file) => file && !PNPM_INPUTS_RE.test(file));
+    await wt({ input: skipped.join('\0') })`git update-index -z --skip-worktree --stdin`;
+    await wt`git checkout --quiet -- .`;
+
+    return await fn(dir, env);
+  } finally {
+    await git`git worktree remove --force ${dir}`.catch(async () => {
+      await rm(dir, { recursive: true, force: true });
+      await git`git worktree prune`;
+    });
+  }
+}
+
+/**
+ * Lists the workspace projects pnpm's `[since]` filter selects: those with a
+ * changed file in their directory, or a dependency on a changed catalog entry.
+ */
+async function listChangedProjects(
+  baseCommit: string,
+  headCommit: string,
+  ignorePatterns: string[],
+  rootDir: string,
+): Promise<Set<string>> {
+  const list = async (cwd: string, env: NodeJS.ProcessEnv = process.env) => {
+    const ignoreArgs = ignorePatterns.flatMap((pattern) => [
+      '--changed-files-ignore-pattern',
+      pattern,
+    ]);
+    const { stdout } = await $$({
+      cwd,
+      env,
+      extendEnv: false,
+    })`pnpm ls --recursive --depth -1 --json --ignore-pnpmfile --filter ${`[${baseCommit}]`} ${ignoreArgs}`;
+    const projects = JSON.parse(stdout || '[]') as { name?: string }[];
+    return new Set(projects.flatMap(({ name }) => (name ? [name] : [])));
+  };
+
+  // pnpm diffs a lone base against the working tree, which is what an empty
+  // head asks for.
+  return headCommit ? withHeadCheckout(baseCommit, headCommit, rootDir, list) : list(rootDir);
+}
+
+export interface FindPackagesNeedingChangesetOptions {
+  /** The workspace root; tests point this at a fixture repository. */
+  rootDir?: string;
+}
+
 /**
  * Finds publishable packages that changed between two refs but have no changeset
- * covering them. A package counts as changed when a file in its directory
- * changed (respecting ignorePatterns), it is new (absent from the base commit),
+ * covering them. Change detection is pnpm's `[since]` filter: a package counts
+ * as changed when a file in its directory changed (respecting ignorePatterns)
  * or a catalog entry it references was bumped.
  *
- * @param baseCommit - The ref to compare against.
- * @param headCommit - The ref to compare to. Empty compares against the working
- *   tree (uncommitted changes).
- * @param ignorePatterns - Path globs that never warrant a release.
+ * @param baseCommit - The commit to compare against.
+ * @param headCommit - The commit or tree to compare to. Empty compares against
+ *   the working tree (uncommitted changes).
+ * @param ignorePatterns - Repo-relative path globs that never warrant a release.
  * @returns Names of packages missing a changeset.
  */
 export async function findPackagesNeedingChangeset(
   baseCommit: string,
   headCommit = 'HEAD',
   ignorePatterns: string[] = [],
+  { rootDir = ROOT_DIR }: FindPackagesNeedingChangesetOptions = {},
 ): Promise<string[]> {
-  const workspace = await getWorkspace();
+  const workspace = await getWorkspace(rootDir);
   if (!workspace) {
     throw new Error('Could not load workspace manifest');
   }
 
-  const projects = await getPublishablePackages(workspace);
-  if (!projects?.length) {
-    return [];
-  }
+  const [projects, changed, covered] = await Promise.all([
+    getPublishablePackages(workspace, rootDir),
+    listChangedProjects(baseCommit, headCommit, ignorePatterns, rootDir),
+    getPackagesWithChangset(baseCommit, headCommit, rootDir),
+  ]);
 
-  const baseWorkspace = await loadWorkspace(baseCommit);
-
-  const packageHasChanges = async (project: WorkspacePackage): Promise<boolean> => {
-    if (await pathHasChanges(project.dir, baseCommit, headCommit, ignorePatterns)) {
-      return true;
-    }
-
-    const basePkg = await loadPackage(baseCommit, project.pkgPath);
-    if (!basePkg) {
-      // no base package.json — this is a new package
-      return true;
-    }
-
-    // An empty base manifest has no catalog, so a catalog dep throws here.
-    const resolvedBase = resolvePackageCatalog(baseWorkspace!, basePkg);
-    const resolvedHead = resolvePackageCatalog(workspace, project.manifest);
-    return !isDeepStrictEqual(resolvedBase, resolvedHead);
-  };
-
-  const changedPackages = await getPackagesWithChangset(baseCommit, headCommit);
-
-  const results = await Promise.all(
-    projects.map(async (project) => {
-      const hasChanges = await packageHasChanges(project);
-      return hasChanges && !changedPackages.has(project.name) ? project.name : null;
-    }),
-  );
-
-  return results.filter((name): name is string => Boolean(name));
+  return projects.map(({ name }) => name).filter((name) => changed.has(name) && !covered.has(name));
 }
