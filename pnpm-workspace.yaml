@@ -120,7 +120,6 @@ catalog:
   '@types/nconf': 0.10.7
   '@types/js-yaml': 4.0.9
   '@types/jsonwebtoken': 9.0.10
-  '@types/js-yaml': 4.0.9
   '@types/node': 22.20.1
   '@types/picomatch': 4.0.3
   '@types/react': 18.3.31

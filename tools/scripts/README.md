@@ -57,8 +57,10 @@ See that directory's README before changing anything about how it's wired.
 ## Service dependency audit
 
 `pnpm audit:services` reports implementation dependencies across the services
-directory. Use `--json` for file-level evidence. It shares its dependency-cruiser
-policy with `lint:boundaries`, which enforces the migrated-service ratchet.
+directory using Dependency Cruiser's built-in Markdown report. Use
+`--output-type json` for its dependency graph and violations. The rules and
+allowlist live in the root `.dependency-cruiser.cjs`; `lint:boundaries` applies
+them to migrated services. There is no separate audit script.
 The [services guide](../../ghost/core/server/services/README.md#dependency-boundaries)
 defines the boundary, allowlist and interpretation of findings.
 

@@ -392,9 +392,6 @@ catalogs:
     '@types/express-brute':
       specifier: 1.0.6
       version: 1.0.6
-    '@types/js-yaml':
-      specifier: 4.0.9
-      version: 4.0.9
     '@types/jsdom':
       specifier: 30.0.0
       version: 30.0.0
@@ -845,6 +842,9 @@ importers:
       husky:
         specifier: 9.1.7
         version: 9.1.7
+      js-yaml:
+        specifier: 'catalog:'
+        version: 4.3.2
       knip:
         specifier: 'catalog:'
         version: 6.32.1
@@ -4405,9 +4405,6 @@ importers:
       camelcase-keys:
         specifier: 10.0.3
         version: 10.0.3
-      dependency-cruiser:
-        specifier: 'catalog:'
-        version: 18.1.1
       execa:
         specifier: 'catalog:'
         version: 10.0.1
@@ -4442,6 +4439,9 @@ importers:
       '@types/semver':
         specifier: 'catalog:'
         version: 7.8.0
+      dependency-cruiser:
+        specifier: 'catalog:'
+        version: 18.1.1
       eslint:
         specifier: 'catalog:'
         version: 9.39.5(jiti@2.7.0)(supports-color@10.2.2)

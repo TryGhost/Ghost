@@ -1,16 +1,38 @@
 'use strict';
 
-const {
-  readServiceInventory,
-  serviceDependencyRules,
-  serviceMigrationRules,
-  assertMigratedServiceSources,
-  serviceDependencySourceExclusions,
-} = require('./tools/scripts/lib/service-dependencies.ts');
+const { readFileSync } = require('node:fs');
+const path = require('node:path');
+const yaml = require('js-yaml');
+const { sourceExclusions } = require('./tools/scripts/lib/service-dependency-resolver.mjs');
 
-const services = readServiceInventory(__dirname);
-assertMigratedServiceSources(__dirname, services);
-const migrationRules = serviceMigrationRules(services);
+// Keep service policy here. The audit applies it to every service; normal lint
+// applies it only to entries marked migrated in the inventory.
+const servicesRoot = 'ghost/core/server/services';
+const auditServices = process.env.GHOST_SERVICE_DEPENDENCY_AUDIT === '1';
+const { services } = yaml.load(
+  readFileSync(path.join(__dirname, servicesRoot, 'service-inventory.yaml'), 'utf8'),
+);
+const migratedServices = Object.entries(services)
+  .filter(([, entry]) => entry.migrated === true)
+  .map(([name]) => name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
+  .join('|');
+const serviceImplementations = {
+  path: `^${servicesRoot}/(${auditServices ? '[^/]+' : migratedServices || '(?!)'})(?:/|$)`,
+  pathNot: `^${servicesRoot}/[^/]+/index\\.${auditServices ? '(?:js|ts)' : 'ts'}$`,
+};
+
+// Explicit code-library and contract allowances, not application instances.
+// Keep each package or file named individually and explain additions here.
+const serviceDependencyAllowlist = [
+  '(^|/)node_modules/@tryghost/errors/|^@tryghost/errors$', // Error classes and formatting.
+  '(^|/)node_modules/@tryghost/tpl/|^@tryghost/tpl$', // Message interpolation.
+  '(^|/)node_modules/zod/|^zod$', // Schema construction and validation.
+  '^(node:)?crypto$', // Cryptographic algorithms and key generation.
+  '^(node:)?util$', // Node utilities, including promisify.
+  '^ghost/core/server/lib/db-types/date\\.ts$', // Database date codec.
+  '^ghost/core/server/lib/public-jwk\\.ts$', // Key conversion and thumbprints; includes memoization.
+  '^ghost/core/server/services/jobs-service/job\\.ts$', // Job base class, not the running service.
+];
 
 /*
  * Architectural boundary rules for the monorepo, enforced on the resolved
@@ -35,10 +57,36 @@ const migrationRules = serviceMigrationRules(services);
  * @type {import('dependency-cruiser').IConfiguration}
  */
 module.exports = {
-  required: migrationRules.required,
   forbidden: [
-    ...serviceDependencyRules(services, 'migrated'),
-    ...migrationRules.forbidden,
+    {
+      name: 'service-dependencies',
+      comment:
+        'Wire application dependencies in the root index.ts and inject them into the implementation.',
+      severity: 'error',
+      from: serviceImplementations,
+      to: {
+        // $1 is the service name captured by from.path.
+        pathNot: [...serviceDependencyAllowlist, `^${servicesRoot}/$1/`],
+        dependencyTypesNot: ['type-only', 'type-import'],
+      },
+    },
+    {
+      name: 'service-own-root',
+      comment: 'Service implementations must not retrieve dependencies from their own wiring root.',
+      severity: 'error',
+      from: serviceImplementations,
+      to: {
+        path: `^${servicesRoot}/$1/index\\.(js|ts)$`,
+        dependencyTypesNot: ['type-only', 'type-import'],
+      },
+    },
+    {
+      name: 'service-unresolved',
+      comment: 'Resolve this runtime import so the service dependency rule can be checked.',
+      severity: 'error',
+      from: serviceImplementations,
+      to: { couldNotResolve: true, dependencyTypesNot: ['type-only', 'type-import'] },
+    },
     // Kernel primitives must be independent of the application they support.
     {
       name: 'kernel-not-application',
@@ -256,14 +304,14 @@ module.exports = {
     // Use the CLI's supported resolver hook to inspect authored TypeScript,
     // even when build:tsc has emitted adjacent JavaScript.
     webpackConfig: { fileName: './tools/scripts/lib/service-dependency-resolver.mjs' },
-    doNotFollow: { path: 'node_modules' },
+    doNotFollow: { path: auditServices ? `^(?!${servicesRoot}/)` : 'node_modules' },
     // Keeps edges into node_modules so rules can see npm packages, but skips
     // our own tests and build output. All source inside services stays visible:
     // a nested directory name must not hide a production dependency.
     exclude: {
       path: [
         '^(?!ghost/core/server/services/)(apps|ghost|packages)/.*/(coverage|coverage-next|test|built|dist)/',
-        ...serviceDependencySourceExclusions(__dirname),
+        ...sourceExclusions(__dirname),
       ],
     },
   },

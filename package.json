@@ -76,7 +76,7 @@
     "release": "node tools/scripts/release.ts",
     "inventory:typescript": "node tools/scripts/typescript-inventory.ts",
     "gx": "node tools/gx/cli.ts",
-    "audit:services": "node tools/scripts/audit-service-dependencies.ts"
+    "audit:services": "GHOST_SERVICE_DEPENDENCY_AUDIT=1 depcruise ghost/core/server/services --config .dependency-cruiser.cjs --output-type markdown"
   },
   "devDependencies": {
     "@playwright/test": "catalog:",
@@ -85,6 +85,7 @@
     "dependency-cruiser": "catalog:",
     "eslint": "catalog:",
     "husky": "9.1.7",
+    "js-yaml": "catalog:",
     "knip": "catalog:",
     "lint-staged": "catalog:",
     "markdownlint-cli2": "catalog:",
@@ -126,11 +127,13 @@
         "cache": true,
         "inputs": [
           "{workspaceRoot}/.dependency-cruiser.cjs",
-          "{workspaceRoot}/tools/scripts/lib/service-dependencies.ts",
           "{workspaceRoot}/tools/scripts/lib/service-dependency-resolver.mjs",
           "{workspaceRoot}/ghost/core/**/*",
           "{workspaceRoot}/apps/**/*",
-          "sharedGlobals"
+          "sharedGlobals",
+          {
+            "env": "GHOST_SERVICE_DEPENDENCY_AUDIT"
+          }
         ],
         "outputs": [],
         "options": {

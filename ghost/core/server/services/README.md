@@ -85,14 +85,13 @@ them to the implementation. Other files in that service may import:
 - Files within the same service, except its root `index.ts`.
 - Types, using explicit type-only imports.
 - The libraries and individual shared files in the
-  [dependency allowlist](../../../../tools/scripts/lib/service-dependencies.ts).
+  [dependency-cruiser config](../../../../.dependency-cruiser.cjs).
 
 Logging, settings, models, event buses and other service instances belong in the
 root wiring. Nested `index.ts` files are implementation files, not extra wiring
 roots. The rule covers static imports, `require()`, literal dynamic imports and
-re-exports. Computed module paths are rejected in migrated implementations
-because their targets cannot be checked statically. All implementation source
-inside a service is checked, including nested folders named `test` or `fixtures`.
+re-exports. All implementation source inside a service is checked, including
+nested folders named `test` or `fixtures`.
 
 Where JavaScript has a matching TypeScript sibling, the audit and boundary
 checks inspect the TypeScript source and resolve imports back to it. This keeps
@@ -100,35 +99,33 @@ adjacent `build:tsc` output out of the report; ordinary JavaScript implementatio
 remain checked.
 
 `pnpm lint:boundaries`, also run by `pnpm check` and CI, enforces these rules as
-errors for every entry marked `migrated: true`. It checks that migrated roots
-import the kernel initializer and rejects initializer imports from unmarked
-roots. New implementation files inherit the same rules. Removing the marker
-while keeping the initializer does not opt a service out.
+errors for every entry marked `migrated: true`. New implementation files inherit
+the same rules. Marking a service migrated opts it into enforcement; review
+changes to that marker as part of the migration.
 
-The allowlist names packages or individual files, with a reason for each. It
-allows code libraries and contracts, not application-instance lookup. Some
-libraries contain internal caching; this is not a claim that all allowed code
-is pure. Review any addition rather than allowing a whole shared directory or
-all `@tryghost/*` packages.
+The allowlist names individual packages or files, with a reason for each.
+Review additions individually; do not allow whole shared directories or all
+`@tryghost/*` packages.
 
 To inspect the remaining work across **all** entries:
 
 ```bash
 pnpm audit:services
-pnpm audit:services --json > /tmp/service-dependencies.json
+pnpm audit:services --output-type json > /tmp/service-dependencies.json
 ```
 
-The audit uses the same import rules but reports candidates without failing on
-legacy violations. It groups findings by service and labels migration and
-ownership status from the inventory, including entries with no findings.
-The JSON report marks root-wiring imports separately. Legacy root `index.js`
-files are treated as wiring candidates; imports there do not prove that their
-implementation or lifecycle is ready for migration. Supporting code marked for
-relocation is reported separately from services to retain.
+The command enables `GHOST_SERVICE_DEPENDENCY_AUDIT` to apply the same rules to
+all entries, including those absent from the inventory. It uses Dependency
+Cruiser's built-in Markdown or JSON reporter. These reporters return success
+even when they find violations; the normal lint reporter fails on violations
+in migrated services. Reports list source files and dependency targets, without
+custom inventory grouping. Legacy root `index.js` files are treated as wiring
+candidates; imports there do not prove readiness for migration.
 
-Counts describe dependency relationships, not required changes or migration
-effort. Review whether each dependency needs injection, a library allowance or
-an ownership change. Unresolved imports and computed paths need investigation;
+Counts describe rule violations; one import can appear under more than one
+rule. Review whether each dependency needs injection, a library allowance or
+an ownership change. Computed paths such as `require(name)` cannot be resolved
+by this static check and are not separately scanned. Unresolved imports,
 globals, runtime state and initialization behavior still need tests and review.
 
 ### Migration assessment

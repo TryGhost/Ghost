@@ -19,7 +19,6 @@
     "@pnpm/workspace.workspace-manifest-reader": "catalog:",
     "@sentry/bundler-plugin-core": "catalog:",
     "camelcase-keys": "10.0.3",
-    "dependency-cruiser": "catalog:",
     "execa": "catalog:",
     "semver": "catalog:",
     "typescript": "catalog:",
@@ -33,6 +32,7 @@
     "@types/node": "catalog:",
     "@types/picomatch": "catalog:",
     "@types/semver": "catalog:",
+    "dependency-cruiser": "catalog:",
     "eslint": "catalog:",
     "js-yaml": "catalog:",
     "picomatch": "4.0.7"
