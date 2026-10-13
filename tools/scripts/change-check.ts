@@ -22,7 +22,7 @@ const { values, positionals } = parseArgs({
 
 const { testPattern = [], changedFilesIgnorePattern = [] } = camelcaseKeys(values);
 // Positional args win; otherwise fall back to the PR_* env vars the sibling PR
-// checks use (check-app-version-bump.js, check-migration-integrity.cjs), so CI
+// checks use (check-app-version-bump.ts, check-migration-integrity.ts), so CI
 // can invoke this bare. Local runs with neither default to main..HEAD.
 // The comparison must be rooted at the PR's fork point, not at a tip of the
 // base branch: a tree-diff from the live tip charges the PR with every base

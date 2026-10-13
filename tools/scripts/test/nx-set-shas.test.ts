@@ -1,6 +1,13 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert';
-import { fetchSuccessfulRuns, resolveBase, selectBaseSha } from '../nx-set-shas.ts';
+import {
+  fetchSuccessfulRuns,
+  resolveBase,
+  selectBaseSha,
+  type RunsClient,
+  type RunsQuery,
+  type WorkflowRun,
+} from '../nx-set-shas.ts';
 
 const HEAD = 'head0000000000000000000000000000000000000';
 const GREEN = 'green000000000000000000000000000000000000';
@@ -9,25 +16,28 @@ const REBASED = 'gone0000000000000000000000000000000000000';
 const NOW = new Date('2026-10-01T10:00:00Z');
 const RECENT_RANGE = '2026-09-24T10:00:00Z..2026-10-01T10:00:00Z';
 const OLDER_RANGE = '<=2026-09-24T09:59:59Z';
-const recentRun = (sha) => ({ head_sha: sha, created_at: '2026-09-30T10:00:00Z' });
+const recentRun = (sha: string): WorkflowRun => ({
+  head_sha: sha,
+  created_at: '2026-09-30T10:00:00Z',
+});
 
 // The branch as CI sees it: HEAD plus the two commits behind it.
 const ancestors = new Set([HEAD, GREEN, OLDER]);
-const ancestorCheck = (sha) => ancestors.has(sha);
+const ancestorCheck = (sha: string) => ancestors.has(sha);
 
-function octokitWithPages(getRuns) {
-  const calls = [];
+function octokitWithPages(getRuns: (params: RunsQuery) => WorkflowRun[]) {
+  const calls: { route: string; params: RunsQuery }[] = [];
 
   return {
     calls,
-    request: async (route, params) => {
+    request: async (route: string, params: RunsQuery) => {
       calls.push({ route, params });
       return { data: { workflow_runs: getRuns(params) } };
     },
   };
 }
 
-function octokitReturning(shas) {
+function octokitReturning(shas: string[]) {
   return octokitWithPages(({ created }) => (created === RECENT_RANGE ? shas.map(recentRun) : []));
 }
 
@@ -63,11 +73,11 @@ describe('fetchSuccessfulRuns', () => {
     const { value: runs } = await pages.next();
 
     assert.deepStrictEqual(
-      runs.map((run) => run.head_sha),
+      runs?.map((run) => run.head_sha),
       [GREEN, OLDER],
     );
     assert.strictEqual(octokit.calls.length, 1);
-    assert.deepStrictEqual(octokit.calls[0].params, {
+    assert.deepStrictEqual(octokit.calls[0]?.params, {
       owner: 'TryGhost',
       repo: 'Ghost',
       workflow_id: 'ci.yml',
@@ -140,7 +150,7 @@ describe('resolveBase', () => {
   });
 
   it('checks duplicate successful-run commits only once across pages', async () => {
-    const checked = [];
+    const checked: string[] = [];
     const octokit = octokitWithPages(({ page }) =>
       page === 1
         ? Array.from({ length: 100 }, () => recentRun(REBASED))
@@ -149,7 +159,7 @@ describe('resolveBase', () => {
     const base = await resolveBase({
       ...pushRun,
       octokit,
-      ancestorCheck: (sha) => {
+      ancestorCheck: (sha: string) => {
         checked.push(sha);
         return ancestorCheck(sha);
       },
@@ -229,7 +239,7 @@ describe('resolveBase', () => {
 
   it('keeps API failures during the older search distinct from missing history', async () => {
     let calls = 0;
-    const octokit = {
+    const octokit: RunsClient = {
       request: async () => {
         calls += 1;
         if (calls === 1) {
@@ -257,7 +267,7 @@ describe('resolveBase', () => {
   });
 
   it('surfaces an API failure instead of treating it as no successful run', async () => {
-    const octokit = {
+    const octokit: RunsClient = {
       request: async () => {
         throw new Error('GitHub API responded 403');
       },

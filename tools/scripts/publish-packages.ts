@@ -6,11 +6,11 @@ import { ROOT_DIR } from './lib/constants.ts';
 import { getWorkspace, getPublishablePackages } from './lib/pnpm.ts';
 
 /**
- * publish-packages.js — publish the workspace's public packages to npm.
+ * publish-packages.ts — publish the workspace's public packages to npm.
  *
  * Runs in the release (tag) lane and via the packages-only workflow_dispatch.
  * The version of each package is whatever `pnpm version -r` wrote into
- * package.json when the release commit was cut (see tools/scripts/release.js), driven
+ * package.json when the release commit was cut (see tools/scripts/release.ts), driven
  * by the changesets in .changeset/. This script does no version computation and
  * no git diffing — it hands the publishable set to `pnpm publish`, which skips
  * any version already on npm, rewrites `workspace:` ranges, and orders the
@@ -22,7 +22,7 @@ import { getWorkspace, getPublishablePackages } from './lib/pnpm.ts';
  * pnpm-workspace.yaml `versioning.ignore`. Ghost itself is ignored there and
  * ships via its own tarball job.
  *
- * Usage: node tools/scripts/publish-packages.js [--dry-run] [--package <name>]...
+ * Usage: node tools/scripts/publish-packages.ts [--dry-run] [--package <name>]...
  *
  * --package restricts the run to the named package(s) — the escape hatch for
  * out-of-band publishes.
@@ -72,7 +72,7 @@ async function assertCommitOnPublishBranch() {
     return;
   }
 
-  const headers = {
+  const headers: Record<string, string> = {
     Accept: 'application/vnd.github+json',
     'X-GitHub-Api-Version': '2022-11-28',
   };
@@ -94,7 +94,7 @@ async function assertCommitOnPublishBranch() {
   // Comparing main...<sha>: "identical" means the commit is the branch tip,
   // "behind" means it's an earlier commit on the branch. "ahead"/"diverged"
   // mean it never landed on main.
-  const { status } = await response.json();
+  const { status } = (await response.json()) as { status?: string };
   if (status !== 'identical' && status !== 'behind') {
     throw new Error(
       `Refusing to publish: ${sha} is not on ${PUBLISH_BRANCH} (compare status: ${status})`,
@@ -107,6 +107,9 @@ async function assertCommitOnPublishBranch() {
 await assertCommitOnPublishBranch();
 
 const workspace = await getWorkspace();
+if (!workspace) {
+  throw new Error('Could not load workspace manifest');
+}
 let packages = await getPublishablePackages(workspace);
 
 if (packageFilter.length > 0) {

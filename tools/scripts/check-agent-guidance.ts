@@ -8,7 +8,7 @@ const execFileAsync = promisify(execFile);
 
 export const MAX_AGENT_GUIDANCE_LINES = 150;
 
-export async function listTrackedAgentGuidance(rootDirectory) {
+export async function listTrackedAgentGuidance(rootDirectory: string): Promise<string[]> {
   const { stdout } = await execFileAsync('git', ['ls-files', '-z', ':(glob)**/AGENTS.md'], {
     cwd: rootDirectory,
     encoding: 'utf8',
@@ -17,7 +17,7 @@ export async function listTrackedAgentGuidance(rootDirectory) {
   return stdout.split('\0').filter(Boolean);
 }
 
-export function countLines(content) {
+export function countLines(content: string): number {
   if (content.length === 0) {
     return 0;
   }
@@ -27,9 +27,12 @@ export function countLines(content) {
   return lineBreaks + (endsWithLineBreak ? 0 : 1);
 }
 
-export async function checkAgentGuidance(rootDirectory, maxLines = MAX_AGENT_GUIDANCE_LINES) {
+export async function checkAgentGuidance(
+  rootDirectory: string,
+  maxLines = MAX_AGENT_GUIDANCE_LINES,
+): Promise<string[]> {
   const files = await listTrackedAgentGuidance(rootDirectory);
-  const errors = [];
+  const errors: string[] = [];
 
   for (const file of files) {
     const content = await readFile(path.join(rootDirectory, file), 'utf8');

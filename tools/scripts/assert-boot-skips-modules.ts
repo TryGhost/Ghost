@@ -1,7 +1,7 @@
 /**
- * assert-boot-skips-modules.js — preload that fails a Ghost boot if a native
+ * assert-boot-skips-modules.ts — preload that fails a Ghost boot if a native
  * module that should load on first use got loaded. The modules are listed in
- * lib/boot-modules.js.
+ * lib/boot-modules.ts.
  *
  * CI boots Ghost with this preloaded:
  *
@@ -11,7 +11,8 @@ import process from 'node:process';
 import { findLoadedModules } from './lib/boot-modules.ts';
 
 process.on('exit', () => {
-  const loaded = findLoadedModules(process.report.getReport().sharedObjects);
+  const report = process.report.getReport() as { sharedObjects: string[] };
+  const loaded = findLoadedModules(report.sharedObjects);
 
   for (const { module, files } of loaded) {
     console.error(

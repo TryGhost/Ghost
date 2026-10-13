@@ -5,7 +5,7 @@ import { ROOT_DIR } from './lib/constants.ts';
 import { findPackagesNeedingChangeset } from './lib/pnpm.ts';
 
 /**
- * generate-changeset.js — auto-create a changeset for publishable packages that
+ * generate-changeset.ts — auto-create a changeset for publishable packages that
  * a dependency update touched.
  *
  * Wired into Renovate's postUpgradeTasks (.github/renovate.json5): when a bump
@@ -18,7 +18,7 @@ import { findPackagesNeedingChangeset } from './lib/pnpm.ts';
  * (empty head ref). The changeset lands in .changeset/ and Renovate commits it
  * via the fileFilters in its postUpgradeTasks config.
  *
- * Usage: node tools/scripts/generate-changeset.js [--bump <type>] [--summary <text>]
+ * Usage: node tools/scripts/generate-changeset.ts [--bump <type>] [--summary <text>]
  */
 
 const { values } = parseArgs({

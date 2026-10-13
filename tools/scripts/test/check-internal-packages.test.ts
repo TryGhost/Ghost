@@ -6,9 +6,30 @@ import { afterEach, test } from 'node:test';
 
 import { checkInternalPackages } from '../check-internal-packages.ts';
 
-const temporaryDirectories = [];
+interface TestManifest {
+  name: string;
+  description?: string;
+  version: string;
+  private: boolean;
+  type: string;
+  repository: { type: string; url: string; directory: string };
+  author: string;
+  license: string;
+  exports: Record<string, Record<string, unknown>>;
+  main: string;
+  types: string;
+  scripts: Partial<Record<string, string>>;
+  files: string[];
+  dependencies?: Record<string, string>;
+  devDependencies: Record<string, string>;
+  peerDependencies?: Record<string, string>;
+  nx: { targets: { build: { outputs: string[] } } };
+  ghostPackage?: { goldenPath: string; reason?: string };
+}
 
-async function writeJson(filePath, value) {
+const temporaryDirectories: string[] = [];
+
+async function writeJson(filePath: string, value: unknown) {
   await mkdir(path.dirname(filePath), { recursive: true });
   await writeFile(filePath, `${JSON.stringify(value, null, 2)}\n`);
 }
@@ -32,7 +53,7 @@ async function createRepository() {
   return rootDirectory;
 }
 
-function compliantManifest(directory = 'packages/example') {
+function compliantManifest(directory = 'packages/example'): TestManifest {
   return {
     name: '@tryghost/example',
     version: 'private',
@@ -83,7 +104,7 @@ const REQUIRED_DEV_DEPENDENCIES_FOR_TEST = {
 };
 
 async function createCompliantPackage(
-  rootDirectory,
+  rootDirectory: string,
   directory = 'packages/example',
   manifest = compliantManifest(directory),
 ) {
@@ -132,7 +153,7 @@ test('reports workspace discovery failures through the checker interface', async
   await writeFile(path.join(rootDirectory, 'pnpm-workspace.yaml'), 'packages: [invalid\n');
 
   assert.match(
-    (await checkInternalPackages(rootDirectory))[0],
+    (await checkInternalPackages(rootDirectory))[0] ?? '',
     /^Unable to list pnpm workspace packages/,
   );
 });
@@ -289,7 +310,7 @@ test('reports an unreadable package template accurately', async () => {
   await rm(path.join(rootDirectory, 'packages', '_template', 'package.json'));
 
   assert.match(
-    (await checkInternalPackages(rootDirectory))[0],
+    (await checkInternalPackages(rootDirectory))[0] ?? '',
     /^packages\/_template\/package\.json: unreadable or invalid JSON/,
   );
 });

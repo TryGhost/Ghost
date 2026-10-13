@@ -13,23 +13,32 @@ const $ = $$({ cwd: ROOT_DIR });
 // invalid commit ("invalid object name") or any other git failure.
 const MISSING_PATH_RE = /does not exist in|exists on disk, but not in/;
 
-function isMissingPathError(error) {
-  return MISSING_PATH_RE.test(`${error.stderr ?? ''}\n${error.message ?? ''}`);
+function isMissingPathError(error: unknown): boolean {
+  const { stderr, message } = error as { stderr?: unknown; message?: unknown };
+  return MISSING_PATH_RE.test(`${stderr ?? ''}\n${message ?? ''}`);
+}
+
+export interface GetFileFromCommitOptions {
+  /**
+   * When true, resolve to null if the path does not exist in the commit
+   * instead of throwing. Invalid commits and other git failures still throw.
+   */
+  allowMissing?: boolean;
 }
 
 /**
  * Retrieves the contents of a file from a specific commit in a Git repository.
  *
- * @param {string} commitHash - The hash of the commit to retrieve the file from.
- * @param {string} filePath - The path to the file within the repository.
- * @param {object} [options]
- * @param {boolean} [options.allowMissing=false] - When true, resolve to null if
- *   the path does not exist in the commit instead of throwing. Invalid commits
- *   and other git failures still throw.
- * @returns {Promise<string|null>} - The file contents, or null when the path is
- *   missing and allowMissing is set.
+ * @param commitHash - The hash of the commit to retrieve the file from.
+ * @param filePath - The path to the file within the repository.
+ * @returns The file contents, or null when the path is missing and allowMissing
+ *   is set.
  */
-export async function getFileFromCommit(commitHash, filePath, { allowMissing = false } = {}) {
+export async function getFileFromCommit(
+  commitHash: string,
+  filePath: string,
+  { allowMissing = false }: GetFileFromCommitOptions = {},
+): Promise<string | null> {
   try {
     const { stdout } = await $`git show ${commitHash}:${filePath}`;
     return stdout;
@@ -37,7 +46,7 @@ export async function getFileFromCommit(commitHash, filePath, { allowMissing = f
     if (allowMissing && isMissingPathError(error)) {
       return null;
     }
-    throw new Error(`Failed to retrieve file from commit: ${error.message}`);
+    throw new Error(`Failed to retrieve file from commit: ${(error as Error).message}`);
   }
 }
 
@@ -45,12 +54,17 @@ export async function getFileFromCommit(commitHash, filePath, { allowMissing = f
  * Gets the files changed between two commits for a specific path, optionally
  * filtered by a prefix.
  *
- * @param {string} path - The path to check for changes.
- * @param {string} baseCommit - The first commit hash to compare.
- * @param {string?} headCommit - The second commit hash to compare, defaults to HEAD if not provided.
- * @param {boolean?} onlyNew - If true, only returns files that are new in the head commit (not present in the base commit).
+ * @param path - The path to check for changes.
+ * @param baseCommit - The first commit hash to compare.
+ * @param headCommit - The second commit hash to compare, defaults to HEAD if not provided.
+ * @param onlyNew - If true, only returns files that are new in the head commit (not present in the base commit).
  */
-export async function getChangedFiles(path, baseCommit, headCommit = 'HEAD', onlyNew = false) {
+export async function getChangedFiles(
+  path: string,
+  baseCommit: string,
+  headCommit = 'HEAD',
+  onlyNew = false,
+): Promise<string[]> {
   try {
     // An empty headCommit diffs baseCommit against the working tree (git omits
     // the second ref), which is what the Renovate/pre-commit flows need —
@@ -61,7 +75,7 @@ export async function getChangedFiles(path, baseCommit, headCommit = 'HEAD', onl
 
     return stdout.trim().split('\n').filter(Boolean);
   } catch (error) {
-    throw new Error(`Failed to get changed files: ${error.message}`);
+    throw new Error(`Failed to get changed files: ${(error as Error).message}`);
   }
 }
 
@@ -70,11 +84,14 @@ export async function getChangedFiles(path, baseCommit, headCommit = 'HEAD', onl
  * directory while git reports repo-relative paths. Matches with `dot: true` so
  * `**` reaches into `.claude`-style directories.
  *
- * @param {string} path - The directory the patterns are relative to.
- * @param {string[]} ignorePatterns - Patterns relative to `path`.
- * @returns {(file: string) => boolean} - True when a repo-relative path is ignored.
+ * @param path - The directory the patterns are relative to.
+ * @param ignorePatterns - Patterns relative to `path`.
+ * @returns A matcher that is true when a repo-relative path is ignored.
  */
-export function buildIgnoreMatcher(path, ignorePatterns) {
+export function buildIgnoreMatcher(
+  path: string,
+  ignorePatterns: string[],
+): (file: string) => boolean {
   return pm(
     ignorePatterns.map((pattern) => `${path}/${pattern}`),
     { dot: true },
@@ -84,15 +101,19 @@ export function buildIgnoreMatcher(path, ignorePatterns) {
 /**
  * Checks if a given path has any changes between two commits
  *
- * @param {string} path - The path to check for changes.
- * @param {string} baseCommit - The first commit hash to compare.
- * @param {string} headCommit - The second commit hash to compare.
- * @param {string[]} [ignorePatterns] - Optional patterns to ignore, relative to
- *   `path`. See {@link buildIgnoreMatcher}.
- *
- * @returns {Promise<boolean>} - A promise that resolves to true if there are changes, false otherwise.
+ * @param path - The path to check for changes.
+ * @param baseCommit - The first commit hash to compare.
+ * @param headCommit - The second commit hash to compare.
+ * @param ignorePatterns - Optional patterns to ignore, relative to `path`. See
+ *   {@link buildIgnoreMatcher}.
+ * @returns True if there are changes, false otherwise.
  */
-export async function pathHasChanges(path, baseCommit, headCommit, ignorePatterns = []) {
+export async function pathHasChanges(
+  path: string,
+  baseCommit: string,
+  headCommit: string,
+  ignorePatterns: string[] = [],
+): Promise<boolean> {
   let changedFiles = await getChangedFiles(path, baseCommit, headCommit);
 
   if (ignorePatterns.length > 0) {

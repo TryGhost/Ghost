@@ -31,21 +31,57 @@ const RUNS_PER_PAGE = 100;
 // from the oldest returned creation time instead of silently dropping history.
 const MAX_RUN_PAGES = 10;
 
-function git(args) {
+export interface WorkflowRun {
+  head_sha: string;
+  created_at: string;
+}
+
+export interface RunsQuery {
+  owner: string;
+  repo: string;
+  workflow_id: string;
+  branch: string;
+  event: string;
+  status: 'success';
+  per_page: number;
+  page: number;
+  created: string;
+  exclude_pull_requests: boolean;
+}
+
+/** The slice of Octokit used here, so tests can pass a stub. */
+export interface RunsClient {
+  request(
+    route: 'GET /repos/{owner}/{repo}/actions/workflows/{workflow_id}/runs',
+    params: RunsQuery,
+  ): Promise<{ data: { workflow_runs: WorkflowRun[] } }>;
+}
+
+type AncestorCheck = (sha: string, headSha: string) => boolean;
+
+function git(args: string[]): { ok: boolean; stdout: string } {
   const { status, stdout } = spawnSync('git', args, { encoding: 'utf8' });
 
   return { ok: status === 0, stdout: (stdout ?? '').trim() };
 }
 
-function isAncestor(sha, headSha) {
+function isAncestor(sha: string, headSha: string): boolean {
   // Exits 128 rather than 1 when the commit isn't in the local history, which
   // for our purposes is the same answer: not a usable base.
   return git(['merge-base', '--is-ancestor', sha, headSha]).ok;
 }
 
-export function createOctokit({ token, baseUrl = process.env.GITHUB_API_URL } = {}) {
+export function createOctokit({
+  token,
+  baseUrl = process.env.GITHUB_API_URL,
+}: { token?: string; baseUrl?: string } = {}) {
   const CiOctokit = Octokit.plugin(retry, throttling);
-  const onLimit = (retryAfter, options, octokit, retryCount) => {
+  const onLimit = (
+    retryAfter: number,
+    options: { method: string; url: string },
+    octokit: Octokit,
+    retryCount: number,
+  ) => {
     octokit.log.warn(`Rate limited on ${options.method} ${options.url}, waiting ${retryAfter}s`);
 
     return retryAfter <= MAX_THROTTLE_WAIT_SECONDS && retryCount < MAX_THROTTLE_RETRIES;
@@ -63,15 +99,6 @@ export function createOctokit({ token, baseUrl = process.env.GITHUB_API_URL } = 
  * the past week first: unbounded queries have returned stale runs even when
  * date-filtered requests included more recent successes. Keep searching older
  * history for quiet branches and reruns of old commits.
- *
- * @param {object} options
- * @param {object} options.octokit
- * @param {string} options.repo - owner/name
- * @param {string} options.workflow - workflow file name, e.g. ci.yml
- * @param {string} options.branch
- * @param {string} [options.event] - the trigger to match, defaults to push
- * @param {Date} [options.now] - injectable for tests
- * @yields {object[]} successful workflow runs
  */
 export async function* fetchSuccessfulRuns({
   octokit,
@@ -80,11 +107,22 @@ export async function* fetchSuccessfulRuns({
   branch,
   event = 'push',
   now = new Date(),
-}) {
-  const [owner, name] = repo.split('/');
+}: {
+  octokit: RunsClient;
+  /** owner/name */
+  repo: string;
+  /** workflow file name, e.g. ci.yml */
+  workflow: string;
+  branch: string;
+  /** the trigger to match */
+  event?: string;
+  /** injectable for tests */
+  now?: Date;
+}): AsyncGenerator<WorkflowRun[], void> {
+  const [owner, name] = repo.split('/') as [string, string];
   const end = Math.floor(now.getTime() / 1000) * 1000;
   const recentStart = end - RECENT_RUN_WINDOW_MS;
-  const dateTime = (timestamp) => new Date(timestamp).toISOString().replace('.000Z', 'Z');
+  const dateTime = (timestamp: number) => new Date(timestamp).toISOString().replace('.000Z', 'Z');
 
   for (const start of [recentStart, null]) {
     let until = start === null ? recentStart - 1000 : end;
@@ -161,13 +199,12 @@ export async function* fetchSuccessfulRuns({
  * faster follow-up push have no successful run, so they're skipped over and
  * their changes stay inside the window rather than going untested.
  *
- * @param {string[]} shas - candidate SHAs, newest first
- * @param {object} options
- * @param {string} options.headSha
- * @param {Function} [options.ancestorCheck] - injectable for tests
- * @returns {string|null}
+ * `shas` are candidates, newest first; `ancestorCheck` is injectable for tests.
  */
-export function selectBaseSha(shas, { headSha, ancestorCheck = isAncestor }) {
+export function selectBaseSha(
+  shas: string[],
+  { headSha, ancestorCheck = isAncestor }: { headSha: string; ancestorCheck?: AncestorCheck },
+): string | null {
   for (const sha of shas) {
     if (sha !== headSha && ancestorCheck(sha, headSha)) {
       return sha;
@@ -177,7 +214,7 @@ export function selectBaseSha(shas, { headSha, ancestorCheck = isAncestor }) {
   return null;
 }
 
-function previousCommit(headSha) {
+function previousCommit(headSha: string): string {
   const previous = git(['rev-parse', `${headSha}~1`]);
 
   if (previous.ok && previous.stdout) {
@@ -188,7 +225,7 @@ function previousCommit(headSha) {
   return EMPTY_TREE_SHA;
 }
 
-function exportShas(base, head) {
+function exportShas(base: string, head: string): void {
   console.log(`NX_BASE=${base}`);
   console.log(`NX_HEAD=${head}`);
 
@@ -197,19 +234,6 @@ function exportShas(base, head) {
   }
 }
 
-/**
- * @param {object} options
- * @param {object} options.octokit
- * @param {string} options.branch - the PR's base branch, or the pushed branch
- * @param {string} options.headSha
- * @param {string} options.event - GITHUB_EVENT_NAME
- * @param {string} options.workflow
- * @param {string} options.repo
- * @param {string} options.onMissing - error | previous-commit
- * @param {Function} [options.ancestorCheck] - injectable for tests
- * @param {Date} [options.now] - injectable for tests
- * @returns {Promise<string>}
- */
 export async function resolveBase({
   octokit,
   branch,
@@ -220,7 +244,22 @@ export async function resolveBase({
   onMissing,
   ancestorCheck,
   now,
-}) {
+}: {
+  octokit: RunsClient;
+  /** the PR's base branch, or the pushed branch */
+  branch: string;
+  headSha: string;
+  /** GITHUB_EVENT_NAME */
+  event: string;
+  workflow: string;
+  repo: string;
+  /** error | previous-commit */
+  onMissing: string;
+  /** injectable for tests */
+  ancestorCheck?: AncestorCheck;
+  /** injectable for tests */
+  now?: Date;
+}): Promise<string> {
   if (PULL_REQUEST_EVENTS.has(event)) {
     const mergeBase = git(['merge-base', `origin/${branch}`, headSha]);
 
@@ -231,10 +270,10 @@ export async function resolveBase({
     return mergeBase.stdout;
   }
 
-  const shas = new Set();
+  const shas = new Set<string>();
 
   for await (const runs of fetchSuccessfulRuns({ octokit, repo, workflow, branch, now })) {
-    const candidates = [];
+    const candidates: WorkflowRun[] = [];
     for (const run of runs) {
       if (!shas.has(run.head_sha)) {
         shas.add(run.head_sha);
@@ -249,7 +288,7 @@ export async function resolveBase({
     if (base) {
       const run = candidates.find((candidate) => candidate.head_sha === base);
       console.log(
-        `Last successful ${workflow} run on ${branch}: ${base} (created ${run.created_at}; ${shas.size} candidate commits)`,
+        `Last successful ${workflow} run on ${branch}: ${base} (created ${run?.created_at}; ${shas.size} candidate commits)`,
       );
       return base;
     }
@@ -324,7 +363,7 @@ if (import.meta.main) {
   try {
     await main();
   } catch (error) {
-    console.error(error.message);
+    console.error(error instanceof Error ? error.message : error);
     process.exit(1);
   }
 }

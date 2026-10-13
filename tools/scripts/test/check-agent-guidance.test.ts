@@ -13,7 +13,7 @@ import {
 } from '../check-agent-guidance.ts';
 
 const execFileAsync = promisify(execFile);
-const temporaryDirectories = [];
+const temporaryDirectories: string[] = [];
 
 async function createRepository() {
   const rootDirectory = await mkdtemp(path.join(os.tmpdir(), 'ghost-agent-guidance-'));
@@ -22,7 +22,12 @@ async function createRepository() {
   return rootDirectory;
 }
 
-async function addFile(rootDirectory, file, content, { tracked = true } = {}) {
+async function addFile(
+  rootDirectory: string,
+  file: string,
+  content: string,
+  { tracked = true } = {},
+) {
   const filePath = path.join(rootDirectory, file);
   await mkdir(path.dirname(filePath), { recursive: true });
   await writeFile(filePath, content);

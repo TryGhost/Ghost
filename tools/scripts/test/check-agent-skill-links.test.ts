@@ -6,7 +6,7 @@ import { afterEach, test } from 'node:test';
 
 import { checkAgentSkillLinks } from '../check-agent-skill-links.ts';
 
-const temporaryDirectories = [];
+const temporaryDirectories: string[] = [];
 
 async function createRepository() {
   const rootDirectory = await mkdtemp(path.join(os.tmpdir(), 'ghost-agent-skills-'));
@@ -60,5 +60,5 @@ test('rejects a link with the wrong target', async () => {
   const rootDirectory = await createRepository();
   await symlink('../example', path.join(rootDirectory, '.claude', 'skills', 'example'));
 
-  assert.match((await checkAgentSkillLinks(rootDirectory))[0], /Incorrect Claude skill link/);
+  assert.match((await checkAgentSkillLinks(rootDirectory))[0] ?? '', /Incorrect Claude skill link/);
 });

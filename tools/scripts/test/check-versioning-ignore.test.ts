@@ -1,18 +1,28 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert';
 
-import { checkVersioningIgnore, loadManifests } from '../check-versioning-ignore.ts';
-import { getWorkspace } from '../lib/pnpm.ts';
+import {
+  checkVersioningIgnore,
+  loadManifests,
+  type NamedManifest,
+} from '../check-versioning-ignore.ts';
+import { getWorkspace as loadWorkspace, type WorkspaceManifest } from '../lib/pnpm.ts';
 
-async function workspaceWithIgnore(update) {
+async function getWorkspace(): Promise<WorkspaceManifest> {
+  const workspace = await loadWorkspace();
+  assert.ok(workspace, 'pnpm-workspace.yaml should load');
+  return workspace;
+}
+
+async function workspaceWithIgnore(update: (ignore: string[]) => string[]) {
   const workspace = await getWorkspace();
   return {
     ...workspace,
-    versioning: { ...workspace.versioning, ignore: update(workspace.versioning.ignore) },
+    versioning: { ...workspace.versioning, ignore: update(workspace.versioning?.ignore ?? []) },
   };
 }
 
-async function manifestsWith(name, update) {
+async function manifestsWith(name: string, update: Partial<Omit<NamedManifest, 'name'>>) {
   const manifests = await loadManifests(await getWorkspace());
   return manifests.map((manifest) =>
     manifest.name === name ? { ...manifest, ...update } : manifest,

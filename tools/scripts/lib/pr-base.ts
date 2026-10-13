@@ -2,10 +2,10 @@ import { execFileSync } from 'node:child_process';
 
 import { ROOT_DIR } from './constants.ts';
 
-// Stays in sync with lib/git.js: git always runs from the repo root, and a
+// Stays in sync with lib/git.ts: git always runs from the repo root, and a
 // child's stderr never leaks into the caller's output — the pre-commit hook
 // runs these checks on every commit.
-function git(args) {
+function git(args: string[]): string {
   return execFileSync('git', args, {
     cwd: ROOT_DIR,
     encoding: 'utf8',
@@ -22,10 +22,10 @@ function git(args) {
  * ref; fall back to the payload SHA when the ref was never fetched into this
  * checkout.
  *
- * @param {object} [env=process.env] - Source of PR_BASE_REF / PR_BASE_SHA.
- * @returns {string|undefined} - A commit SHA, or undefined outside PR context.
+ * @param env - Source of PR_BASE_REF / PR_BASE_SHA.
+ * @returns A commit SHA, or undefined outside PR context.
  */
-export function resolveBaseCommit(env = process.env) {
+export function resolveBaseCommit(env: NodeJS.ProcessEnv = process.env): string | undefined {
   if (env.PR_BASE_REF) {
     try {
       return git(['rev-parse', '--verify', `origin/${env.PR_BASE_REF}^{commit}`]);
@@ -47,12 +47,12 @@ export function resolveBaseCommit(env = process.env) {
  * back to a tip-rooted diff would reintroduce the drift-blaming this exists
  * to prevent.
  *
- * @param {string} base - A commit-ish to root the comparison at.
- * @param {string} head - A commit-ish or tree to compare to.
- * @returns {string} - The merge-base SHA, or `base` for a tree head.
+ * @param base - A commit-ish to root the comparison at.
+ * @param head - A commit-ish or tree to compare to.
+ * @returns The merge-base SHA, or `base` for a tree head.
  */
-export function rootAtMergeBase(base, head) {
-  let headType = null;
+export function rootAtMergeBase(base: string, head: string): string {
+  let headType: string | null = null;
   try {
     headType = git(['cat-file', '-t', String(head)]);
   } catch {
@@ -65,7 +65,8 @@ export function rootAtMergeBase(base, head) {
   try {
     return git(['merge-base', String(base), String(head)]);
   } catch (error) {
-    const stderr = error.stderr ? String(error.stderr).trim() : '';
+    const { stderr: rawStderr } = error as { stderr?: unknown };
+    const stderr = rawStderr ? String(rawStderr).trim() : '';
     throw new Error(
       `Unable to determine merge-base for ${base} and ${head}. ` +
         `Ensure the base branch history is available in the checkout.` +

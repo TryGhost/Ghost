@@ -61,15 +61,17 @@ describe('the major.minor invariant', () => {
   // If the repo ever violates it, one of those two is broken — or someone
   // hand-edited a version without running "pnpm ship".
   it('holds for every public app in the repo right now', async () => {
-    const defaults = await readDefaults();
+    const defaults = (await readDefaults()) as Record<string, { version: string }>;
 
     for (const app of PUBLIC_APPS) {
-      const { version } = await readJson(join(ROOT_DIR, app.path, 'package.json'));
+      const { version } = await readJson<{ version: string }>(
+        join(ROOT_DIR, app.path, 'package.json'),
+      );
 
       assert.strictEqual(
-        defaults[app.configKey].version,
+        defaults[app.configKey]?.version,
         majorMinor(version),
-        `${app.packageName}: package.json is ${version}, defaults.json says ${defaults[app.configKey].version}`,
+        `${app.packageName}: package.json is ${version}, defaults.json says ${defaults[app.configKey]?.version}`,
       );
     }
   });

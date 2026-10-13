@@ -1,4 +1,4 @@
-import { describe, it } from 'node:test';
+import { describe, it, type TestContext } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 import os from 'node:os';
@@ -11,7 +11,7 @@ const lineMap = '//# sourceMappingURL=data:application/json;charset=utf-8;base64
 const blockMap = '/*# sourceMappingURL=data:application/json;base64,e30= */';
 const code = 'module.exports = "café";\n';
 
-async function fixture(t, files) {
+async function fixture(t: TestContext, files: Record<string, string>): Promise<string> {
   const root = await fs.mkdtemp(path.join(os.tmpdir(), 'ghost-prune-'));
   t.after(() => fs.rm(root, { recursive: true, force: true }));
   for (const [rel, content] of Object.entries(files)) {
@@ -59,7 +59,7 @@ describe('image inline source-map pruning', () => {
     });
     assert.equal(result.bytes, removedBytes);
     assert.equal(
-      result.kept['example@1.0.0'].bytes,
+      result.kept?.['example@1.0.0']?.bytes,
       Object.entries(files)
         .filter(([name]) => name.startsWith('node_modules/'))
         .reduce((sum, [, value]) => sum + Buffer.byteLength(value), 0) - removedBytes,

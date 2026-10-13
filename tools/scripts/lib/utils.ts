@@ -5,20 +5,13 @@ import { promisify } from 'node:util';
 
 export const execAsync = promisify(execCallback);
 
-/** @param {string} filePath */
-export const readJson = async (filePath) => JSON.parse(await readFile(filePath, 'utf8'));
-/** @param {string} filePath */
-export const readJsonSync = (filePath) => JSON.parse(readFileSync(filePath, 'utf8'));
+// The type parameter is an unchecked assertion about the file's shape.
+export const readJson = async <T = unknown>(filePath: string): Promise<T> =>
+  JSON.parse(await readFile(filePath, 'utf8'));
+export const readJsonSync = <T = unknown>(filePath: string): T =>
+  JSON.parse(readFileSync(filePath, 'utf8'));
 
-/**
- * @param {string} filePath
- * @param {object} json
- */
-export const writeJson = async (filePath, json) =>
+export const writeJson = async (filePath: string, json: object) =>
   await writeFile(filePath, JSON.stringify(json, null, 2) + '\n', 'utf8');
-/**
- * @param {string} filePath
- * @param {object} json
- */
-export const writeJsonSync = (filePath, json) =>
+export const writeJsonSync = (filePath: string, json: object) =>
   writeFileSync(filePath, JSON.stringify(json, null, 2) + '\n', 'utf8');

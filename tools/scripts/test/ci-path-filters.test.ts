@@ -4,14 +4,39 @@ import { readFile } from 'node:fs/promises';
 import yaml from 'js-yaml';
 import picomatch from 'picomatch';
 
-async function getFilterPatterns(filterName) {
-  const workflow = yaml.load(
-    await readFile(new URL('../../../.github/workflows/ci.yml', import.meta.url), 'utf8'),
-  );
-  const filterStep = workflow.jobs.job_setup.steps.find((step) => step.id === 'changed');
-  const filters = yaml.load(filterStep.with.filters);
+// The parts of ci.yml these tests read.
+interface Step {
+  id?: string;
+  run?: string;
+  with?: Record<string, string>;
+}
 
-  return filters[filterName].flat(Infinity);
+interface Job {
+  needs: string[];
+  if?: string;
+  outputs: Record<string, string>;
+  steps: Step[];
+}
+
+interface Workflow {
+  jobs: Record<'job_setup' | 'job_service_inventory' | 'job_required_tests', Job>;
+}
+
+async function loadWorkflow(): Promise<Workflow> {
+  return yaml.load(
+    await readFile(new URL('../../../.github/workflows/ci.yml', import.meta.url), 'utf8'),
+  ) as Workflow;
+}
+
+async function getFilterPatterns(filterName: string): Promise<string[]> {
+  const workflow = await loadWorkflow();
+  const filterStep = workflow.jobs.job_setup.steps.find((step) => step.id === 'changed');
+  // Anchored filter groups nest, hence the flatten.
+  const filters = yaml.load(filterStep?.with?.filters ?? '') as Record<string, unknown[]>;
+  const patterns = filters[filterName];
+  assert.ok(patterns, `ci.yml has no ${filterName} filter`);
+
+  return patterns.flat(Infinity) as string[];
 }
 
 describe('CI path filters', () => {
@@ -69,7 +94,7 @@ describe('CI path filters', () => {
       const patterns = await getFilterPatterns(filterName);
       const positives = patterns.filter((pattern) => !pattern.startsWith('!'));
       const exclusions = patterns.filter((pattern) => pattern.startsWith('!'));
-      const matches = (path) =>
+      const matches = (path: string) =>
         (positives.length === 0 ||
           positives.some((pattern) => picomatch(pattern, { dot: true })(path))) &&
         exclusions.every((pattern) => picomatch(pattern, { dot: true })(path));
@@ -98,7 +123,8 @@ describe('CI path filters', () => {
 
   it('requires focused validation for inventory metadata, its test and configuration', async () => {
     const patterns = await getFilterPatterns('service-inventory');
-    const matches = (path) => patterns.some((pattern) => picomatch(pattern, { dot: true })(path));
+    const matches = (path: string) =>
+      patterns.some((pattern) => picomatch(pattern, { dot: true })(path));
     for (const path of [
       'ghost/core/server/services/service-inventory.yaml',
       'ghost/test/unit/server/services/service-inventory.test.ts',
@@ -115,9 +141,7 @@ describe('CI path filters', () => {
       assert.ok(filters.includes(`!${configPath}`), filterName);
     }
 
-    const workflow = yaml.load(
-      await readFile(new URL('../../../.github/workflows/ci.yml', import.meta.url), 'utf8'),
-    );
+    const workflow = await loadWorkflow();
     assert.strictEqual(
       workflow.jobs.job_setup.outputs.changed_service_inventory,
       '${{ steps.changed.outputs.service-inventory }}',
@@ -140,7 +164,7 @@ describe('CI path filters', () => {
   it('skips code checks and E2E for ownership and docs changes, but keeps mixed changes', async () => {
     for (const filterName of ['any-code', 'e2e']) {
       const patterns = await getFilterPatterns(filterName);
-      const matches = (path) =>
+      const matches = (path: string) =>
         patterns.every((pattern) => picomatch(pattern, { dot: true })(path));
       const docsPaths = ['.github/CODEOWNERS', 'ghost/core/kernel/README.md'];
 
@@ -160,7 +184,7 @@ describe('CI path filters', () => {
     for (const patterns of [e2e, anyCode]) {
       assert.ok(patterns.every((pattern) => pattern.startsWith('!')));
     }
-    const matches = (patterns, path) =>
+    const matches = (patterns: string[], path: string) =>
       patterns.every((pattern) => picomatch(pattern, { dot: true })(path));
     const testPaths = [
       'apps/admin/src/members/detail/member-event.test.ts',

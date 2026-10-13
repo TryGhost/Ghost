@@ -2,10 +2,10 @@ import { lstat, readdir, readlink, stat } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-export async function checkAgentSkillLinks(rootDirectory) {
+export async function checkAgentSkillLinks(rootDirectory: string): Promise<string[]> {
   const agentsDirectory = path.join(rootDirectory, '.agents', 'skills');
   const claudeDirectory = path.join(rootDirectory, '.claude', 'skills');
-  const errors = [];
+  const errors: string[] = [];
   const entries = await readdir(agentsDirectory, { withFileTypes: true });
 
   for (const entry of entries) {
