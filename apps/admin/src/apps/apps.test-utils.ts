@@ -4,6 +4,7 @@ import type {
 } from '@tryghost/admin-x-framework/api/app-installations';
 import {
   type AppFrameFlags,
+  type AppFramePageKind,
   appFramePage,
   failFrameOrigin,
   fakeAdminEndpoint,
@@ -51,11 +52,16 @@ export function fakeInstallations(initial: AppInstallation[] = []) {
 export const readPath = (id: string) => new RegExp(`^/apps/installations/${id}/(\\?|$)`);
 
 /**
- * The app's page at its own URL, which its frame loads: by default one that speaks the
- * bridge (see `appFramePage`), with `flags` to tune it; `html` replaces it.
+ * The app's page at its own URL, which its frame loads: by default one built on the SDK
+ * (see `appFramePage`), with `flags` to tune it. `kind: 'raw'` is one that speaks the
+ * bridge without the SDK, for `callHostRaw`; `html` replaces the page.
  */
-export async function fakeAppFrame({ html, flags }: { html?: string; flags?: AppFrameFlags } = {}) {
-  await fakeFrameOrigin(APP_PAGE_URL, html ?? (await appFramePage(flags)));
+export async function fakeAppFrame({
+  html,
+  flags,
+  kind,
+}: { html?: string; flags?: AppFrameFlags; kind?: AppFramePageKind } = {}) {
+  await fakeFrameOrigin(APP_PAGE_URL, html ?? (await appFramePage(flags, kind)));
 }
 
 /** An app whose server can't be reached: its frame gets no answer. */
@@ -91,20 +97,21 @@ export function fakeSessionStart(id: string, answer: AppInstallation | Response)
 
 /**
  * The app's page as Admin opens it: the session it starts, the installation it reads to
- * tell when the session ends, and the page it frames, which by default speaks the bridge
- * (see `appFramePage`). `html` replaces the page; `flags` tune the default one. `set`
- * moves the installation on, for the sessions and reads that follow.
+ * tell when the session ends, and the page it frames, which by default is built on the SDK
+ * (see `appFramePage`). `kind: 'raw'` frames one that speaks the bridge without the SDK,
+ * for `callHostRaw`; `html` replaces the page; `flags` tune the SDK's. `set` moves the
+ * installation on, for the sessions and reads that follow.
  */
 export async function fakeAppPage(
   read: AppInstallation,
-  { html, flags }: { html?: string; flags?: AppFrameFlags } = {},
+  { html, flags, kind }: { html?: string; flags?: AppFrameFlags; kind?: AppFramePageKind } = {},
 ) {
   let current = read;
   const sessionsApi = fakeSessionStart(read.id, read);
   const readApi = fakeAdminEndpoint('GET', readPath(read.id), () => ({
     app_installations: [current],
   }));
-  await fakeAppFrame({ html, flags });
+  await fakeAppFrame({ html, flags, kind });
   return {
     sessionsApi,
     readApi,
