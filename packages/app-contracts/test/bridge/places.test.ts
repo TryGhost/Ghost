@@ -5,8 +5,9 @@ import { PlaceSchema } from '../../src/bridge/index.ts';
 const ID = '5ddc9141c35e7700383b2937';
 
 describe('a place', () => {
-  it('names a post, a member or the apps list', () => {
+  it('names a post, a page, a member or the apps list', () => {
     expect(PlaceSchema.parse({ post: { id: ID } })).toEqual({ post: { id: ID } });
+    expect(PlaceSchema.parse({ page: { id: ID } })).toEqual({ page: { id: ID } });
     expect(PlaceSchema.parse({ member: { id: ID } })).toEqual({ member: { id: ID } });
     expect(PlaceSchema.parse({ apps: true })).toEqual({ apps: true });
   });
@@ -21,13 +22,14 @@ describe('a place', () => {
       { apps: false },
     ]) {
       expect(PlaceSchema.safeParse(place).error?.issues[0]?.message).toBe(
-        'Expected a place such as { post: { id } }, { member: { id } } or { apps: true }',
+        'Expected a place such as { post: { id } }, { page: { id } }, { member: { id } } or { apps: true }',
       );
     }
   });
 
   it('refuses an object naming more than one place', () => {
     expect(PlaceSchema.safeParse({ post: { id: ID }, apps: true }).success).toBe(false);
+    expect(PlaceSchema.safeParse({ post: { id: ID }, page: { id: ID } }).success).toBe(false);
     expect(PlaceSchema.safeParse({ post: { id: ID, slug: 'x' } }).success).toBe(false);
   });
 
@@ -41,6 +43,7 @@ describe('a place', () => {
       42,
     ]) {
       expect(PlaceSchema.safeParse({ post: { id } }).success).toBe(false);
+      expect(PlaceSchema.safeParse({ page: { id } }).success).toBe(false);
       expect(PlaceSchema.safeParse({ member: { id } }).success).toBe(false);
     }
   });

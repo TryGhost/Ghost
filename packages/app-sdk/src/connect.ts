@@ -26,7 +26,10 @@ function parentOrigin(): string {
   return origin && origin !== 'null' ? origin : '*';
 }
 
-function handshake({ timeout = DEFAULT_CONNECT_TIMEOUT }: ConnectOptions): Promise<Ghost> {
+function handshake(
+  { timeout = DEFAULT_CONNECT_TIMEOUT }: ConnectOptions,
+  onEnded: () => void,
+): Promise<Ghost> {
   if (typeof timeout !== 'number' || !(timeout > 0) || !Number.isFinite(timeout)) {
     return Promise.reject(invalidArgument('Expected a timeout in milliseconds, above 0'));
   }
@@ -76,7 +79,10 @@ function handshake({ timeout = DEFAULT_CONNECT_TIMEOUT }: ConnectOptions): Promi
           settled = true;
           resolve(ghost);
         },
-        ended: fail,
+        ended: (error) => {
+          fail(error);
+          onEnded();
+        },
       });
     };
 
@@ -98,17 +104,31 @@ function handshake({ timeout = DEFAULT_CONNECT_TIMEOUT }: ConnectOptions): Promi
 
 let connecting: Promise<Ghost> | undefined;
 
+// Only the connection still shared is forgotten: one that ended may report it after a
+// newer one has begun.
+function forget(attempt: Promise<Ghost>) {
+  if (connecting === attempt) {
+    connecting = undefined;
+  }
+}
+
 /**
  * Connects to Ghost Admin, which the page must be framed in, and resolves once Admin has
  * started the app. Safe to call as soon as the page loads.
  *
  * Every call shares the one connection; the options of the first call apply. After a
- * failure, the next call tries again.
+ * failure, or once the session has ended, the next call connects afresh: a page Admin
+ * starts again gets a new `Ghost`, never the one whose session is over.
  */
 export function connect(options: ConnectOptions = {}): Promise<Ghost> {
-  connecting ??= handshake(options).catch((error: unknown) => {
-    connecting = undefined;
-    throw error;
-  });
+  if (!connecting) {
+    const attempt: Promise<Ghost> = handshake(options, () => forget(attempt)).catch(
+      (error: unknown) => {
+        forget(attempt);
+        throw error;
+      },
+    );
+    connecting = attempt;
+  }
   return connecting;
 }

@@ -13,11 +13,13 @@ import {
   currentUserResponse,
   fakeAdminEndpoint,
   fakeTags,
+  reloadFrame,
   renderAdminApp,
   settingsResponse,
   siteResponse,
   staffRole,
 } from '@test-utils/acceptance';
+import { sidebarScreen } from '@/layout/sidebar.screen';
 import { APP_FRAME_SANDBOX, appFrameTimeouts } from './lib/frame';
 import { appsScreen } from './apps.screen';
 import {
@@ -419,6 +421,42 @@ describe('Managing apps', () => {
     await expect.poll(async () => (await appState()).context?.session).toEqual({ revision: 1 });
   });
 
+  it('starts the app afresh when its page reloads itself', async () => {
+    const { sessionsApi } = await fakeAppPage(installation());
+    await renderAdminApp(APP_ROUTE, { labs });
+    await expect.element(appsScreen.frame()).toBeVisible();
+    await callAppFrame(APP_ORIGIN, 'setPath', '/episodes/12');
+    await expect.poll(currentRoute).toBe(`${APP_ROUTE}/episodes/12`);
+    expect((await appState()).context?.path).toBe('/');
+
+    // The new document's SDK says hello, its channel gone with the old one.
+    await reloadFrame(APP_ORIGIN);
+
+    // Started again, in a new frame, at Admin's route for it, within the same session.
+    await expect.poll(async () => (await appState()).context?.path).toBe('/episodes/12');
+    await expect.element(appsScreen.frame()).toBeVisible();
+    expect(currentRoute()).toBe(`${APP_ROUTE}/episodes/12`);
+    expect(sessionsApi.requests).toHaveLength(1);
+  });
+
+  it('tells the app when Admin’s theme changes', async () => {
+    await fakeAppPage(installation());
+    await renderAdminApp(APP_ROUTE, { labs });
+    await expect.element(appsScreen.frame()).toBeVisible();
+    const accentColor = settingsResponse().settings.find(
+      (setting) => setting.key === 'accent_color',
+    )?.value;
+    expect((await appState()).theme).toEqual({ mode: 'light', accent_color: accentColor });
+
+    await sidebarScreen.selectAppearance('dark');
+
+    const dark = { mode: 'dark', accent_color: accentColor };
+    await expect
+      .poll(async () => (await appState()).received)
+      .toEqual([{ call: 'themeChanged', value: dark }]);
+    expect((await appState()).theme).toEqual(dark);
+  });
+
   describe('the app’s title', () => {
     it('shows the app’s page title as Admin’s while it is open, and puts Admin’s back after', async () => {
       fakeInstallations([installation()]);
@@ -486,6 +524,7 @@ describe('Managing apps', () => {
 
   describe('places the app opens', () => {
     const postId = '6500000000000000000000a1';
+    const pageId = '6500000000000000000000a3';
     const memberId = '6500000000000000000000b2';
 
     it('opens a post in the editor', async () => {
@@ -498,6 +537,18 @@ describe('Managing apps', () => {
       await callAppFrame(APP_ORIGIN, 'open', { post: { id: postId } });
 
       await expect.poll(currentRoute).toBe(`/editor/post/${postId}`);
+    });
+
+    it('opens a page in the editor', async () => {
+      // The editor owns its request graph.
+      allowUnhandledRequests();
+      await fakeAppPage(installation());
+      await renderAdminApp(APP_ROUTE, { labs });
+      await expect.element(appsScreen.frame()).toBeVisible();
+
+      await callAppFrame(APP_ORIGIN, 'open', { page: { id: pageId } });
+
+      await expect.poll(currentRoute).toBe(`/editor/page/${pageId}`);
     });
 
     it('opens a member', async () => {

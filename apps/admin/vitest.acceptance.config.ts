@@ -134,14 +134,8 @@ const bundleFrameScript: BrowserCommand<[entry: string]> = (_context, entry) => 
 // on a busy machine, after the page has heard from the frame.
 const FRAME_ATTACH_TIMEOUT_MS = 5000;
 
-// Calls a hook the script in a faked frame exposes on `window.__app`, in the newest frame
-// on `origin`: the frame is another origin's, so the spec can't reach into it itself.
-const callInFrame: BrowserCommand<[origin: string, hook: string, args: unknown[]]> = async (
-  { page },
-  origin,
-  hook,
-  args,
-) => {
+// The newest frame on `origin`, waiting for Playwright to attach to it if it has yet to.
+async function newestFrameOn(page: BrowserPage, origin: string, purpose: string) {
   const newestOnOrigin = () =>
     page
       .frames()
@@ -158,8 +152,20 @@ const callInFrame: BrowserCommand<[origin: string, hook: string, args: unknown[]
     frame = newestOnOrigin();
   }
   if (!frame) {
-    throw new Error(`No frame on ${origin} to call ${hook} in`);
+    throw new Error(`No frame on ${origin} to ${purpose}`);
   }
+  return frame;
+}
+
+// Calls a hook the script in a faked frame exposes on `window.__app`, in the newest frame
+// on `origin`: the frame is another origin's, so the spec can't reach into it itself.
+const callInFrame: BrowserCommand<[origin: string, hook: string, args: unknown[]]> = async (
+  { page },
+  origin,
+  hook,
+  args,
+) => {
+  const frame = await newestFrameOn(page, origin, `call ${hook} in`);
   return frame.evaluate(
     ([name, rest]) => {
       const hooks = (globalThis as { __app?: Record<string, (...a: unknown[]) => unknown> }).__app;
@@ -170,6 +176,14 @@ const callInFrame: BrowserCommand<[origin: string, hook: string, args: unknown[]
     },
     [hook, args] as const,
   );
+};
+
+// Reloads the document in the newest frame on `origin`, as the page itself would, without
+// the frame's element changing. Scheduled, so the call returns before the document goes;
+// a string, as it runs in the frame, where this file's types don't.
+const reloadFrame: BrowserCommand<[origin: string]> = async ({ page }, origin) => {
+  const frame = await newestFrameOn(page, origin, 'reload');
+  await frame.evaluate('setTimeout(() => location.reload(), 0)');
 };
 
 const resetFakeFrameOrigins: BrowserCommand<[]> = async ({ page }) => {
@@ -256,6 +270,7 @@ export default defineConfig({
         failModuleLoads,
         fakeFrameOrigin,
         guardFrameNavigations,
+        reloadFrame,
         resetFailedModuleLoads,
         resetFakeFrameOrigins,
       },

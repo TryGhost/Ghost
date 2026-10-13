@@ -18,6 +18,7 @@ import type {
   PathChangeOptions,
   Place,
   StartContext,
+  Theme,
 } from '@tryghost/app-contracts/bridge';
 
 /** Read from `window.__appFlags`, which the page sets before this runs. */
@@ -40,6 +41,8 @@ export interface AppFrameState {
   context: StartContext | undefined;
   /** The app's route now, `Ghost.path.current`. */
   path: string | undefined;
+  /** The theme now, `Ghost.theme`. */
+  theme: Theme | undefined;
   received: AppFrameReceived[];
 }
 
@@ -85,7 +88,7 @@ async function settle<Value>(call: (app: Ghost) => Promise<Value>): Promise<AppF
 }
 
 window.__app = {
-  state: () => ({ context, path: ghost?.path.current, received }),
+  state: () => ({ context, path: ghost?.path.current, theme: ghost?.theme, received }),
   fetch: ({ path, method, headers, body }) =>
     settle(async (app) => {
       const response = await app.fetch(path, { method, headers, body });

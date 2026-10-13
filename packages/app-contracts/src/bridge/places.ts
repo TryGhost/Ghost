@@ -14,14 +14,17 @@ const objectId = z
  *
  * Each entry is strict, so an object naming two places, or a place Admin does not know, is
  * refused rather than half-understood.
+ *
+ * `post` is for posts only: a page has an editor route of its own, so it is named as `page`.
  */
 export const PlaceSchema = z.union(
   [
     z.strictObject({ post: z.strictObject({ id: objectId }) }),
+    z.strictObject({ page: z.strictObject({ id: objectId }) }),
     z.strictObject({ member: z.strictObject({ id: objectId }) }),
     z.strictObject({ apps: z.literal(true) }),
   ],
-  'Expected a place such as { post: { id } }, { member: { id } } or { apps: true }',
+  'Expected a place such as { post: { id } }, { page: { id } }, { member: { id } } or { apps: true }',
 );
 
 export type Place = z.infer<typeof PlaceSchema>;
