@@ -1607,6 +1607,35 @@ describe('oembed-service', function () {
     });
   });
 
+  describe('findFallbackFavicon', function () {
+    it('returns the first match in priority order without waiting on later probes', async function () {
+      const service = new OembedService({ config: { get: () => 'testing' }, externalRequest: got });
+      const resolveFaviconUrl = sinon.stub(service, 'resolveFaviconUrl');
+      resolveFaviconUrl.callsFake(() => new Promise(() => {}));
+      resolveFaviconUrl.withArgs('https://blog.example.com/favicon.ico').resolves(undefined);
+      resolveFaviconUrl
+        .withArgs('https://blog.example.com/favicon.png')
+        .resolves({ url: 'https://blog.example.com/favicon.png' });
+
+      assert.equal(
+        await service.findFallbackFavicon('https://blog.example.com/post'),
+        'https://blog.example.com/favicon.png',
+      );
+      sinon.assert.callCount(resolveFaviconUrl, 4);
+    });
+
+    it('returns undefined when no probe finds a favicon', async function () {
+      const service = new OembedService({ config: { get: () => 'testing' }, externalRequest: got });
+      sinon.stub(service, 'resolveFaviconUrl').resolves(undefined);
+
+      assert.equal(await service.findFallbackFavicon('https://example.com/post'), undefined);
+    });
+
+    afterEach(function () {
+      sinon.restore();
+    });
+  });
+
   describe('fetchBookmarkData favicon selection', function () {
     // Icons declared as <link> tags are resolved directly from the HTML, so
     // these assertions exercise pickIcon without hitting the network favicon

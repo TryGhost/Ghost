@@ -524,13 +524,17 @@ class OEmbedService {
     const { getFaviconProbeUrls } = require('./extract-metadata');
 
     // Probe concurrently so hosts that drop these requests cost one timeout,
-    // not one per location, but keep the first match in priority order
-    const results = await Promise.all(
-      getFaviconProbeUrls(url).map(([faviconUrl, contentTypes]) =>
-        this.resolveFaviconUrl(faviconUrl, contentTypes),
-      ),
+    // not one per location, but take the first match in priority order
+    // without waiting on lower-priority probes
+    const probes = getFaviconProbeUrls(url).map(([faviconUrl, contentTypes]) =>
+      this.resolveFaviconUrl(faviconUrl, contentTypes).catch(() => undefined),
     );
-    return results.find(Boolean)?.url;
+    for (const probe of probes) {
+      const result = await probe;
+      if (result) {
+        return result.url;
+      }
+    }
   }
 
   /**
