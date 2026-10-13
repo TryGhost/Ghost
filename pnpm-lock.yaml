@@ -1904,9 +1904,6 @@ importers:
 
   apps/sodo-search:
     dependencies:
-      '@tryghost/i18n':
-        specifier: workspace:*
-        version: link:../../packages/i18n
       flexsearch:
         specifier: 0.8.212
         version: 0.8.212
@@ -1926,6 +1923,9 @@ importers:
       '@testing-library/preact':
         specifier: 'catalog:'
         version: 3.2.4(preact@10.29.8)
+      '@tryghost/i18n':
+        specifier: workspace:*
+        version: link:../../packages/i18n
       '@typescript/native':
         specifier: 'catalog:'
         version: typescript@7.0.2
