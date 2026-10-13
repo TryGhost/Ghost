@@ -299,6 +299,72 @@ describe('extractMetadata', function () {
   });
 });
 
+// Expected values are what metascraper 5.55.2 returned for the same HTML,
+// including behaviour that differed from its intent (e.g. its two-word author
+// check never ran), so bookmark cards don't change
+describe('extractMetadata parity with metascraper', function () {
+  const author = (head: string, body = '') =>
+    extractMetadata(page(`<title>T</title>${head}`, body), 'https://example.com/post').author;
+
+  it('keeps single-word authors from author elements', function () {
+    assert.equal(author('', '<span class="author">Banksy</span>'), 'Banksy');
+    assert.equal(author('', '<a href="/author/jdoe/">jdoe</a>'), 'jdoe');
+  });
+
+  it('keeps bylines that end in numbers', function () {
+    assert.equal(author('<meta name="author" content="Jane Doe 3">'), 'Jane Doe 3');
+    assert.equal(author('', '<div class="byline">Jane Doe, Issue 42</div>'), 'Jane Doe, Issue 42');
+    assert.equal(
+      author('', '<div class="byline">by Jane Doe in Section 3</div>'),
+      'Jane Doe in Section 3',
+    );
+  });
+
+  it('keeps dotted names that are not domains', function () {
+    for (const name of ['J.K.Rowling', 'j.doe', 'Dr.Strange']) {
+      assert.equal(author(`<meta name="author" content="${name}">`), name);
+    }
+  });
+
+  it('rejects authors that are URLs or domains', function () {
+    for (const value of [
+      'example.com',
+      'example.com/jane',
+      'https://example.com/jane',
+      '192.168.0.1',
+    ]) {
+      assert.equal(author(`<meta name="author" content="${value}">`), null);
+    }
+  });
+
+  it('only drops the fields whose rules fail', function () {
+    const depth = 20000;
+    const nested = '{"x":'.repeat(depth) + '{"name":"Deep"}' + '}'.repeat(depth);
+    const metadata = extractMetadata(
+      page(
+        `<title>Deep</title><meta name="description" content="desc"><script type="application/ld+json">{"@type":"Article","foo":${nested}}</script>`,
+      ),
+      'https://example.com/post',
+    );
+
+    assert.equal(metadata.title, 'Deep');
+    assert.equal(metadata.description, 'desc');
+    assert.equal(metadata.author, null);
+  });
+
+  it('strips credentials from extracted URLs', function () {
+    const imageUrl = new URL('https://cdn.example.com/a.png');
+    imageUrl.username = 'user';
+    imageUrl.password = 'pass';
+    const metadata = extractMetadata(
+      page(`<meta property="og:image" content="${imageUrl.href}">`),
+      'https://example.com/post',
+    );
+
+    assert.equal(metadata.image, 'https://cdn.example.com/a.png');
+  });
+});
+
 describe('isAmazonUrl', function () {
   it('matches on the registrable domain', function () {
     assert.equal(isAmazonUrl('https://www.amazon.com/dp/1'), true);

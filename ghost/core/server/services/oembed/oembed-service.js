@@ -523,12 +523,14 @@ class OEmbedService {
   async findFallbackFavicon(url) {
     const { getFaviconProbeUrls } = require('./extract-metadata');
 
-    for (const [faviconUrl, contentTypes] of getFaviconProbeUrls(url)) {
-      const result = await this.resolveFaviconUrl(faviconUrl, contentTypes);
-      if (result) {
-        return result.url;
-      }
-    }
+    // Probe concurrently so hosts that drop these requests cost one timeout,
+    // not one per location, but keep the first match in priority order
+    const results = await Promise.all(
+      getFaviconProbeUrls(url).map(([faviconUrl, contentTypes]) =>
+        this.resolveFaviconUrl(faviconUrl, contentTypes),
+      ),
+    );
+    return results.find(Boolean)?.url;
   }
 
   /**

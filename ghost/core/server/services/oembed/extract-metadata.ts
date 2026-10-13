@@ -31,7 +31,7 @@ import { load, type CheerioAPI } from 'cheerio/slim';
 import { parseDate } from 'chrono-node';
 import { decodeHTML } from 'entities';
 import { jsonrepair } from 'jsonrepair';
-import { getDomain } from 'tldts';
+import { getDomain, parse as parseDomain } from 'tldts';
 
 /**
  * Bookmark metadata extraction from a page's HTML.
@@ -78,9 +78,10 @@ type Rule = () => Value;
 const AUTHOR_MAX_LENGTH = 128;
 const REGEX_BY = /^[\s\n]*by[\s\n]+|@[\s\n]*/i;
 const REGEX_LOCATION = /^[A-Z\s]+\s+[-—–]\s+/;
-const REGEX_STRICT_AUTHOR = /^\S+\s+\S+/;
 const REGEX_TITLE_PUBLISHER = /^.*?[-|]\s+(.*)$/;
-const REGEX_LOOKS_LIKE_URL = /^(?:[a-z][a-z\d+.-]*:)?\/\/\S+$|^[^\s/]+\.[a-z]{2,}(?:\/\S*)?$/i;
+const REGEX_URL_SCHEME = /^(?:[a-z][a-z\d+.-]*:)?\/\//i;
+const REGEX_ISO_DATE =
+  /^\d{4}-\d{2}-\d{2}((T\d{2}:\d{2}(:\d{2})?)(\.\d{1,6})?(Z|(\+|-)\d{2}:\d{2})?)?$/;
 const REGEX_SIZE = /(\d+)\s*[x×]\s*(\d+)/i;
 // Includes metascraper's audio-extensions/video-extensions lists and mpga.
 const MEDIA_EXTENSIONS = new Set([
@@ -155,9 +156,16 @@ export const FAVICON_PROBES: ReadonlyArray<[string, string[]]> = [
   ['png', ['image/png']],
 ];
 
+// A rule that throws (e.g. on pathologically nested JSON-LD) is skipped
+// rather than failing the whole bookmark
 const first = (rules: Rule[]): string | null => {
   for (const rule of rules) {
-    const value = rule();
+    let value;
+    try {
+      value = rule();
+    } catch {
+      continue;
+    }
     if (value) {
       return value;
     }
@@ -180,11 +188,25 @@ const toDescription = (value: unknown) => {
   return condense(value.replace(REGEX_LOCATION, '')).replace(/\s?\.\.\.?$/, '…');
 };
 
+// Only values with a scheme or a real domain/IP count, so dotted names like
+// "J.K.Rowling" or "j.doe" are still authors
+const looksLikeUrl = (value: string) => {
+  if (REGEX_URL_SCHEME.test(value)) {
+    return true;
+  }
+  if (/\s/.test(value)) {
+    return false;
+  }
+  const { isIcann, isIp } = parseDomain(value);
+  return Boolean(isIcann || isIp);
+};
+
 const toAuthor = (value: unknown) => {
   if (typeof value !== 'string' || !value || value.length > AUTHOR_MAX_LENGTH) {
     return;
   }
-  if (!value.trim().startsWith('@') && REGEX_LOOKS_LIKE_URL.test(value.trim())) {
+  // social handles like @jane.bsky.social are domains, but still authors
+  if (!value.trim().startsWith('@') && looksLikeUrl(value.trim())) {
     return;
   }
   return condense(value.replace(REGEX_BY, ''));
@@ -203,6 +225,9 @@ const toUrl = (value: unknown, baseUrl: string) => {
     if (url.protocol !== 'http:' && url.protocol !== 'https:') {
       return;
     }
+    // browsers refuse to load images from URLs with credentials
+    url.username = '';
+    url.password = '';
     // Keep the raw query segments: URLSearchParams serialization changes
     // bare CGI queries into key=value pairs and rewrites URL encoding.
     const params = url.search.slice(1).split('&');
@@ -227,8 +252,12 @@ const toImage = (value: unknown, baseUrl: string) => {
 };
 
 // Byline containers can hold relative timestamps as well as calendar dates.
+// Date.parse isn't used as it accepts almost anything ending in a number,
+// e.g. "Jane Doe, Issue 42".
 const isLikelyDate = (value: string) =>
-  !Number.isNaN(Date.parse(value)) || parseDate(value) !== null;
+  (REGEX_ISO_DATE.test(value) && !Number.isNaN(Date.parse(value))) ||
+  /^\d{4}$/.test(value) ||
+  parseDate(value) !== null;
 
 export const isAmazonUrl = (url: string) => {
   const domain = getDomain(url);
@@ -495,8 +524,6 @@ export const extractMetadata = (html: string, pageUrl: string): PageMetadata => 
     }
   };
 
-  const strict = (value: Value) => (value && REGEX_STRICT_AUTHOR.test(value) ? value : undefined);
-
   // a JSON-LD logo only counts when it's square
   const jsonLdLogo = (path: string) => {
     const logo = jsonld(path) as { width?: unknown; height?: unknown; url?: unknown } | undefined;
@@ -558,19 +585,19 @@ export const extractMetadata = (html: string, pageUrl: string): PageMetadata => 
       () => toAuthor(text('[itemprop*="author" i] [itemprop="name"]')),
       () => toAuthor(text('[itemprop*="author" i]')),
       () => toAuthor(text('[rel="author"]')),
-      () => strict(toAuthor(text('a[class*="author" i]'))),
-      () => strict(toAuthor(text('[class*="author" i] a'))),
-      () => strict(toAuthor(text('a[href*="/author/" i]'))),
+      // metascraper meant these to require two words, but its check never ran
+      // in practice, so single-word authors like "Banksy" come through too
+      () => toAuthor(text('a[class*="author" i]')),
+      () => toAuthor(text('[class*="author" i] a')),
+      () => toAuthor(text('a[href*="/author/" i]')),
       () => toAuthor(text('a[class*="screenname" i]')),
-      () => strict(toAuthor(text('[class*="author" i]'))),
+      () => toAuthor(text('[class*="author" i]')),
       () =>
-        strict(
-          toAuthor(
-            text('[class*="byline" i]', (el) => {
-              const value = condense(el.text());
-              return !isLikelyDate(value) && value;
-            }),
-          ),
+        toAuthor(
+          text('[class*="byline" i]', (el) => {
+            const value = condense(el.text());
+            return !isLikelyDate(value) && value;
+          }),
         ),
     ]),
 
@@ -637,7 +664,13 @@ export const extractMetadata = (html: string, pageUrl: string): PageMetadata => 
       () => toImage(attr('img[src]:not([aria-hidden="true"])', 'src'), pageUrl),
     ]),
 
-    icons: getIcons($, pageUrl),
+    icons: (() => {
+      try {
+        return getIcons($, pageUrl);
+      } catch {
+        return [];
+      }
+    })(),
 
     logo: first([
       () => toImage(attr('meta[property="og:logo"]'), pageUrl),
