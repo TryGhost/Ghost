@@ -5198,7 +5198,10 @@ services:
       Move eager composition to boot while preserving invitation persistence, rendering and
       mail behavior. API-mail delegation and its transport ownership need a separate decision.
       Acceptance is an invocation-local domain action kept under this owner; do not add a
-      lifecycle or change the sending instance as part of its relocation.
+      lifecycle or change the sending instance as part of its relocation. Root units now use
+      the real composition with controlled models/rendering/API mail to assert payloads, live
+      settings, sequential resend, held mail delivery and step failures; these are not real
+      persistence rollback or provider-delivery tests.
     contracts:
       exports:
         summary: >-
@@ -5217,7 +5220,8 @@ services:
           - core/server/services/invites/invites.js
           - core/server/services/invites/accept.js
           - core/server/api/endpoints/utils/serializers/output/authentication.js
-        tests: []
+        tests:
+          - test/unit/server/services/invites/index.test.ts
       construction:
         summary: >-
           The root is the only production constructor found. Import creates Invites with
@@ -5228,7 +5232,9 @@ services:
           invitation token, opens a transaction, locks a sent invite, checks expiry and existing
           user, deletes the invite and creates the user in that order. Email and role come from
           the stored invite; name and password come from the request. No invocation state is
-          retained. Unit tests stub the transaction and selected model operations.
+          retained. Root units assert import identity/no invitation work and controlled add
+          operations through its actual collaborators. Acceptance units separately stub the
+          transaction and selected model operations.
         sources:
           - core/server/services/invites/index.js
           - core/server/services/invites/invites.js
@@ -5239,6 +5245,7 @@ services:
           - core/server/models/user.js
         tests:
           - test/unit/server/services/invites/accept.test.js
+          - test/unit/server/services/invites/index.test.ts
       consumers:
         summary: >-
           The invites endpoint retains the root
@@ -5246,6 +5253,8 @@ services:
           rejects an existing user and model permissions enforce role and staff limits.
           HTTP tests cover staff and integration-key invitation flows through real composition,
           stubbing GhostMailer.send; they assert send invocation, not rendered message contents.
+          Root units separately assert staff/integration template data and the exact API-mail
+          payload, with controlled model and rendering collaborators.
           The authentication endpoint calls accept.js after input validation and setup checks.
           Its GET invitation lookup queries models directly. Acceptance units import the
           function; legacy HTTP cases exercise it through the real endpoint, asserting
@@ -5263,6 +5272,7 @@ services:
           - test/unit/server/models/invite.test.js
           - test/unit/server/services/invites/accept.test.js
           - test/legacy/api/admin/authentication.test.js
+          - test/unit/server/services/invites/index.test.ts
       startup:
         summary: >-
           The instance is available at import with no explicit boot initialization. Calls
@@ -5303,6 +5313,7 @@ services:
           - core/server/services/invites/accept.js
         tests:
           - test/e2e-api/admin/invites.test.js
+          - test/unit/server/services/invites/index.test.ts
       configuration:
         summary: >-
           add reads current title, admin URL and default email domain. Inviter name/email
@@ -5324,7 +5335,8 @@ services:
           - core/server/services/invites/accept.js
           - core/server/models/user.js
           - core/server/data/db/index.js
-        tests: []
+        tests:
+          - test/unit/server/services/invites/index.test.ts
       resources:
         summary: >-
           The root borrows models, template filesystem work and API-mail sending. It awaits
@@ -5350,6 +5362,7 @@ services:
           - core/server/models/base/plugins/events.js
         tests:
           - test/unit/server/services/invites/accept.test.js
+          - test/unit/server/services/invites/index.test.ts
       failures:
         summary: >-
           Model, rendering and mail failures reject add. EmailError gets a resend-help suffix
@@ -5373,6 +5386,7 @@ services:
           - core/server/api/endpoints/utils/validators/input/invitations.js
         tests:
           - test/legacy/api/admin/authentication.test.js
+          - test/unit/server/services/invites/index.test.ts
     unverified: []
     blockers:
       - >-
@@ -5382,8 +5396,9 @@ services:
         Define concurrency/retry expectations before changing ownership.
       - >-
         Assert mail recipient, subject, reply-to, HTML/text and signup URL through the real
-        consumer for staff and integration invites. Existing send stubs do not test payloads
-        or provider delivery; add live settings and retained-instance contracts.
+        HTTP consumer for staff and integration invites. Root units now pin both payloads,
+        live settings and retained identity with controlled models/rendering/API mail; they
+        do not establish real provider delivery.
       - >-
         Resolve API-mail orchestration and transport ownership without moving business logic
         into HTTP. Preserve role/limit checks and successful behavior while introducing boot
