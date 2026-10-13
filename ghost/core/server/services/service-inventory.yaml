@@ -1493,7 +1493,7 @@ services:
           - core/server/services/comments/comments-service-emails.js
           - core/server/services/members/service.js
           - core/server/services/email-service/email-service-wrapper.js
-          - core/server/services/i18n.js
+          - core/server/services/i18n/index.js
           - core/server/lib/mail/ghost-mailer.js
         tests:
           - test/integration/services/comments-service.test.js
@@ -1533,7 +1533,7 @@ services:
           - core/server/services/comments/comments-service-email-renderer.js
           - core/server/services/comments/comments-stats-service.js
           - core/server/services/settings-helpers/settings-helpers.js
-          - core/server/services/i18n.js
+          - core/server/services/i18n/index.js
           - core/server/lib/mail/ghost-mailer.js
           - core/shared/config/SCHEMA.md
           - core/shared/url-utils.ts
@@ -4313,8 +4313,8 @@ services:
         Cover failed template/partial loads retained in renderer caches, real-root mail/config
         capture and delivery/analytics failure interaction. Existing policy/transport fakes and
         test config changes do not establish replacement behavior or production hot reload.
-  i18n.js:
-    kind: file
+  i18n:
+    kind: directory
     disposition: retain
     status: audited
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
@@ -4329,12 +4329,12 @@ services:
         an explicit regression check, not a new helper feature.
       reviewedAt: f276513ba32b7114fd5cc4f7b02d3f82c0c31e3e
       sources:
-        - core/server/services/i18n.js
+        - core/server/services/i18n/index.js
         - core/boot.js
         - core/server/services/gifts/index.ts
         - test/unit/boot-signing-keys.test.ts
     entryPoints:
-      - i18n.js
+      - i18n/index.js
     notes: >-
       Preserve the live delegating functions and translation options while establishing
       ownership of repeated initialization and locale listeners. Other translation
@@ -4350,7 +4350,7 @@ services:
           tests assert translated nickname text, not the facade export shape, init return,
           receiver independence or dir behavior.
         sources:
-          - core/server/services/i18n.js
+          - core/server/services/i18n/index.js
           - package.json
         tests:
           - test/unit/server/services/members/members-api/services/payments-service.test.js
@@ -4363,7 +4363,7 @@ services:
           emails and theme translation construct independent package instances; they do
           not initialize or share this facade's private translator.
         sources:
-          - core/server/services/i18n.js
+          - core/server/services/i18n/index.js
           - core/boot.js
           - core/server/services/email-service/email-service-wrapper.js
           - core/server/services/member-welcome-emails/service.js
@@ -4407,7 +4407,7 @@ services:
           unit consumers manually init; signup HTTP tests exercise booted English output.
         sources:
           - core/boot.js
-          - core/server/services/i18n.js
+          - core/server/services/i18n/index.js
           - core/shared/settings-cache/cache-manager.js
           - package.json
         tests:
@@ -4423,7 +4423,7 @@ services:
           loaded locale bundles in the current translator. A library t returned through
           changeLanguage is bound to that instance, unlike the exported delegating t.
         sources:
-          - core/server/services/i18n.js
+          - core/server/services/i18n/index.js
           - core/server/lib/common/events.js
           - core/server/ghost-server.ts
           - package.json
@@ -4440,7 +4440,7 @@ services:
           nicknames, unescaped titles and English gift labels; Stripe's translated-label case
           stubs t. Locale loading/fallback and listener behavior here are source-only.
         sources:
-          - core/server/services/i18n.js
+          - core/server/services/i18n/index.js
           - core/server/data/schema/default-settings/default-settings.json
           - core/server/services/members/api.js
           - core/server/services/members/members-api/services/payments-service.js
@@ -4461,7 +4461,7 @@ services:
           or resets state; settings changes are delivered immediately or after transaction
           commit, with rolled-back changes suppressed by the model event layer.
         sources:
-          - core/server/services/i18n.js
+          - core/server/services/i18n/index.js
           - core/server/lib/common/events.js
           - core/server/models/settings.js
           - core/server/models/base/plugins/events.js
@@ -4479,7 +4479,7 @@ services:
           The current local-resource path changes language synchronously despite returning
           a promise. The facade adds no retry, rollback or error translation.
         sources:
-          - core/server/services/i18n.js
+          - core/server/services/i18n/index.js
           - core/server/lib/common/events.js
           - core/server/models/base/plugins/events.js
           - core/boot.js
