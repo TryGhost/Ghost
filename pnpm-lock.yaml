@@ -1146,6 +1146,9 @@ importers:
       '@testing-library/react':
         specifier: 'catalog:'
         version: 16.3.2(@testing-library/dom@10.4.1)(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      '@tryghost/app-sdk':
+        specifier: workspace:*
+        version: link:../../packages/app-sdk
       '@tryghost/test-data':
         specifier: workspace:*
         version: link:../../packages/testing/test-data

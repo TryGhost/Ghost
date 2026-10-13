@@ -1,6 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
-import type { FetchResponse } from '@tryghost/app-contracts/bridge';
 import type {
   AppInstallation,
   AppInstallationHistoryEntry,
@@ -9,6 +8,7 @@ import {
   type AppFrameResult,
   allowUnhandledRequests,
   callAppFrame,
+  callHostRaw,
   currentRoute,
   currentUserResponse,
   fakeAdminEndpoint,
@@ -453,8 +453,9 @@ describe('Managing apps', () => {
       await expect.poll(currentRoute).toBe(`${APP_ROUTE}/episodes/13`);
 
       // Still the page that started at the app's first route, told nothing it said itself.
-      const { context, received } = await appState();
+      const { context, path, received } = await appState();
       expect(context?.path).toBe('/');
+      expect(path).toBe('/episodes/13');
       expect(received).toEqual([]);
       await expect.element(appsScreen.frame()).toHaveAttribute('src', APP_PAGE_URL);
 
@@ -463,18 +464,22 @@ describe('Managing apps', () => {
       await expect
         .poll(async () => (await appState()).received)
         .toEqual([{ call: 'pathChanged', value: '/' }]);
+      expect((await appState()).path).toBe('/');
     });
 
     it('refuses a route that would leave the app, and stays where it is', async () => {
-      await fakeAppPage(installation());
+      // Without the SDK, which refuses most of these itself: Admin can't count on it.
+      await fakeAppPage(installation(), { kind: 'raw' });
       await renderAdminApp(APP_ROUTE, { labs });
       await expect.element(appsScreen.frame()).toBeVisible();
 
       for (const path of ['//evil.example/', 'https://evil.example/', 'episodes']) {
-        expect(refusal(await callAppFrame(APP_ORIGIN, 'setPath', path))).toMatch(/^invalid_path: /);
+        expect(refusal(await callHostRaw(APP_ORIGIN, 'pathChanged', path))).toMatch(
+          /^invalid_path: /,
+        );
       }
       // `..` is resolved within the app's own routes, never Admin's.
-      await callAppFrame(APP_ORIGIN, 'setPath', '/../../settings');
+      await callHostRaw(APP_ORIGIN, 'pathChanged', '/../../settings');
       await expect.poll(currentRoute).toBe(`${APP_ROUTE}/settings`);
     });
   });
@@ -520,12 +525,12 @@ describe('Managing apps', () => {
     });
 
     it('opens nothing that isn’t a place Admin offers', async () => {
-      await fakeAppPage(installation());
+      await fakeAppPage(installation(), { kind: 'raw' });
       await renderAdminApp(APP_ROUTE, { labs });
       await expect.element(appsScreen.frame()).toBeVisible();
 
       for (const place of [{ settings: true }, { post: { id: '../settings' } }, '/settings']) {
-        expect(refusal(await callAppFrame(APP_ORIGIN, 'call', 'open', [place]))).toMatch(
+        expect(refusal(await callHostRaw(APP_ORIGIN, 'open', place))).toMatch(
           /^invalid_argument: /,
         );
       }
@@ -552,7 +557,7 @@ describe('Managing apps', () => {
         },
       });
 
-      const response = answer(result) as FetchResponse;
+      const response = answer(result);
       expect(response.status).toBe(200);
       expect(response.headers['content-type']).toContain('application/json');
       expect(JSON.parse(response.body)).toEqual({ posts: [{ id: 'post-1', title: 'Episode 1' }] });
@@ -576,7 +581,7 @@ describe('Managing apps', () => {
         body: JSON.stringify({ tags: [{ name: 'Podcast' }] }),
       });
 
-      expect((answer(result) as FetchResponse).status).toBe(201);
+      expect(answer(result).status).toBe(201);
       expect(tagsApi.requests[0].body).toEqual({ tags: [{ name: 'Podcast' }] });
       expect(tagsApi.requests[0].headers['content-type']).toBe('application/json');
     });
@@ -599,7 +604,8 @@ describe('Managing apps', () => {
     });
 
     it('refuses a path that would leave the Admin API, without sending it', async () => {
-      await fakeAppPage(installation());
+      // Without the SDK, which refuses a URL itself: Admin can't count on it.
+      await fakeAppPage(installation(), { kind: 'raw' });
       await renderAdminApp(APP_ROUTE, { labs });
       await expect.element(appsScreen.frame()).toBeVisible();
 
@@ -610,7 +616,7 @@ describe('Managing apps', () => {
         '//evil.example/posts/',
         'posts/',
       ]) {
-        expect(refusal(await callAppFrame(APP_ORIGIN, 'fetch', { path })), path).toMatch(
+        expect(refusal(await callHostRaw(APP_ORIGIN, 'fetch', { path })), path).toMatch(
           /^invalid_path: /,
         );
       }

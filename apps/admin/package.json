@@ -87,6 +87,7 @@
     "@testing-library/dom": "catalog:",
     "@testing-library/jest-dom": "catalog:",
     "@testing-library/react": "catalog:",
+    "@tryghost/app-sdk": "workspace:*",
     "@tryghost/test-data": "workspace:*",
     "@types/node": "catalog:",
     "@types/papaparse": "5.5.2",
@@ -223,6 +224,7 @@
               "@tryghost/activitypub",
               "@tryghost/admin-x-framework",
               "@tryghost/app-contracts",
+              "@tryghost/app-sdk",
               "@tryghost/checkout",
               "@tryghost/i18n",
               "@tryghost/kg-clean-basic-html",
@@ -304,6 +306,7 @@
             "projects": [
               "@tryghost/admin-x-framework",
               "@tryghost/app-contracts",
+              "@tryghost/app-sdk",
               "@tryghost/checkout",
               "@tryghost/kg-converters",
               "@tryghost/metafield-types",

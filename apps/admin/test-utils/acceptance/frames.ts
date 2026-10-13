@@ -1,5 +1,6 @@
 import { commands } from 'vitest/browser';
 
+import type { RawAppFrameHooks } from './app-frame-raw';
 import type { AppFrameFlags, AppFrameHooks } from './app-frame-stand-in';
 
 declare module 'vitest/browser' {
@@ -30,17 +31,27 @@ export function failFrameOrigin(origin: string): Promise<void> {
 }
 
 /**
- * The script an app's page runs: the one place that names it. A stand-in for an app built
- * on the SDK, which speaks the bridge and exposes the hooks `callAppFrame` calls.
+ * The scripts an app's page runs: the one place that names them. `sdk` is an app built on
+ * the SDK, the real one, exposing the hooks `callAppFrame` calls; `raw` speaks the bridge
+ * without it, for `callHostRaw`.
  */
-const APP_FRAME_SCRIPT = 'test-utils/acceptance/app-frame-stand-in.ts';
+const APP_FRAME_SCRIPTS = {
+  sdk: 'test-utils/acceptance/app-frame-stand-in.ts',
+  raw: 'test-utils/acceptance/app-frame-raw.ts',
+} as const;
+
+export type AppFramePageKind = keyof typeof APP_FRAME_SCRIPTS;
 
 /**
- * An app's page that speaks the bridge, for `fakeFrameOrigin`: `script`, by default the
- * stand-in, inlined into the page, with `flags` set for it to read first.
+ * An app's page that speaks the bridge, for `fakeFrameOrigin`: by default the SDK's (see
+ * app-frame-stand-in.ts), with `flags` set for it to read first; `raw` for one without the
+ * SDK (see app-frame-raw.ts), which takes no flags.
  */
-export async function appFramePage(flags: AppFrameFlags = {}, script?: string): Promise<string> {
-  const source = script ?? (await commands.bundleFrameScript(APP_FRAME_SCRIPT));
+export async function appFramePage(
+  flags: AppFrameFlags = {},
+  kind: AppFramePageKind = 'sdk',
+): Promise<string> {
+  const source = await commands.bundleFrameScript(APP_FRAME_SCRIPTS[kind]);
   return [
     '<!doctype html>',
     '<html><head><title>Podcast app</title>',
@@ -53,7 +64,7 @@ export async function appFramePage(flags: AppFrameFlags = {}, script?: string): 
 }
 
 /**
- * Calls one of the hooks of the app's page framed from `origin` (see
+ * Calls one of the hooks of the SDK's page framed from `origin` (see
  * app-frame-stand-in.ts), as the app itself would act. The frame is another origin's, so
  * the call goes through the browser driver.
  */
@@ -64,6 +75,20 @@ export function callAppFrame<Hook extends keyof AppFrameHooks>(
 ): Promise<Awaited<ReturnType<AppFrameHooks[Hook]>>> {
   return commands.callInFrame(new URL(origin).origin, hook, args) as Promise<
     Awaited<ReturnType<AppFrameHooks[Hook]>>
+  >;
+}
+
+/**
+ * Calls Admin's export `name` with `args` as given, from the raw page framed from `origin`
+ * (`appFramePage(flags, 'raw')`): what an app that skips the SDK could send.
+ */
+export function callHostRaw(
+  origin: string,
+  name: string,
+  ...args: unknown[]
+): ReturnType<RawAppFrameHooks['call']> {
+  return commands.callInFrame(new URL(origin).origin, 'call', [name, args]) as ReturnType<
+    RawAppFrameHooks['call']
   >;
 }
 
