@@ -566,6 +566,9 @@ catalogs:
     jsonc-parser:
       specifier: 3.3.1
       version: 3.3.1
+    jsonwebtoken:
+      specifier: 8.5.1
+      version: 8.5.1
     juice:
       specifier: 11.1.1
       version: 11.1.1
@@ -4349,6 +4352,9 @@ importers:
       '@internal/scripts':
         specifier: workspace:*
         version: link:../scripts
+      jsonwebtoken:
+        specifier: 'catalog:'
+        version: 8.5.1
     devDependencies:
       '@internal/cfg-eslint':
         specifier: workspace:*

@@ -13,4 +13,10 @@ export default [
     srcGlobs: ['create-package.js'],
     extraSrcRules: cliRules,
   }),
+  ...nodeLibConfig({
+    typescript: false,
+    srcGlobs: ['generate-golden-email.js'],
+    // Preserve the migrated command's terminal output.
+    extraSrcRules: { ...cliRules, 'no-console': 'off' },
+  }),
 ];

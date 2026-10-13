@@ -11,7 +11,8 @@
     "test": "pnpm test:unit"
   },
   "dependencies": {
-    "@internal/scripts": "workspace:*"
+    "@internal/scripts": "workspace:*",
+    "jsonwebtoken": "catalog:"
   },
   "devDependencies": {
     "@internal/cfg-eslint": "workspace:*",
@@ -23,7 +24,6 @@
         "{workspaceRoot}/packages/_template/**/*"
       ],
       "goldenEmailCommand": [
-        "{workspaceRoot}/ghost/bin/generate-golden-email.js",
         "{workspaceRoot}/ghost/test/utils/fixtures/email-service/golden-post.json"
       ]
     },

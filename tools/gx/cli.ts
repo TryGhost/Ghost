@@ -11,9 +11,7 @@ if (args[0] === 'generate' && args[1] === 'package') {
   process.argv = [...process.argv.slice(0, 2), ...args.slice(2)];
   await import('./create-package.js');
 } else if (args[0] === 'email' && args[1] === 'golden') {
-  const command = fileURLToPath(
-    new URL('../../ghost/bin/generate-golden-email.js', import.meta.url),
-  );
+  const command = fileURLToPath(new URL('./generate-golden-email.js', import.meta.url));
   const result = spawnSync(process.execPath, [command, ...args.slice(2)], { stdio: 'inherit' });
   if (result.error) {
     throw result.error;

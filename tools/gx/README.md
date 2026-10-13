@@ -22,7 +22,8 @@ instance. Set `GHOST_GOLDEN_POST_AUTH` to an Admin API key in `id:secret` format
 and removes its temporary draft post. Output paths resolve from your current
 directory.
 
-The implementation and fixture remain owned by Ghost. The existing
+The command lives in `tools/gx`; its golden-post fixture remains under Ghost tests.
+The existing
 `pnpm --filter ghost generate-golden-email <segment> <output-path>` alias still
 works with its existing working-directory behavior.
 
