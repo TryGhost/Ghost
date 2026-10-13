@@ -1240,7 +1240,7 @@ services:
           - core/server/services/automations/database-automations-repository.ts
           - core/server/services/members/members-api/repositories/member-repository.js
         tests:
-          - test/unit/boot-email-analytics.test.ts
+          - test/unit/boot/init-services.test.ts
           - test/e2e-server/boot-readiness.isolated.test.ts
           - test/unit/server/services/automations/service.test.ts
           - test/e2e-api/admin/automations.test.ts
@@ -2360,7 +2360,7 @@ services:
         tests:
           - test/unit/server/services/donations/index.test.ts
           - test/e2e-api/members/donation-checkout-session.test.js
-          - test/unit/boot-donations.test.ts
+          - test/unit/boot/init-services.test.ts
       lifetime:
         summary: >-
           The initializer retains the repository after successful init, with no reset or
@@ -2784,7 +2784,8 @@ services:
           - core/server/services/email-analytics/jobs/email-analytics-job-scheduler.ts
           - core/server/services/jobs-service/register-job-handlers.ts
         tests:
-          - test/unit/boot-email-analytics.test.ts
+          - test/unit/boot/init-services.test.ts
+          - test/unit/boot/init-background-services.test.ts
           - test/e2e-server/boot-background.isolated.test.ts
           - test/unit/server/services/email-analytics/email-analytics-job-scheduler.test.ts
           - test/integration/services/email-analytics/jobs.test.ts
@@ -3066,7 +3067,8 @@ services:
           - core/server/services/email-service/email-service.js
           - core/server/services/jobs-service/register-job-handlers.ts
         tests:
-          - test/unit/boot-email-analytics.test.ts
+          - test/unit/boot/init-services.test.ts
+          - test/unit/boot/init-background-services.test.ts
           - test/e2e-server/boot-readiness.isolated.test.ts
           - test/e2e-server/boot-background.isolated.test.ts
           - test/unit/server/services/email-service/batch-sending-service.test.js
@@ -4069,7 +4071,7 @@ services:
         - core/server/services/stripe/service.js
         - core/server/services/members/api.js
         - core/boot.js
-        - test/unit/boot-email-analytics.test.ts
+        - test/unit/boot/init-services.test.ts
     entryPoints:
       - gifts/index.ts
       - gifts/jobs/index.js
@@ -4169,7 +4171,7 @@ services:
           - core/server/services/gifts/jobs/index.js
           - core/server/services/jobs-service/register-job-handlers.ts
         tests:
-          - test/unit/boot-email-analytics.test.ts
+          - test/unit/boot/init-services.test.ts
       lifetime:
         summary: >-
           The service guard preserves the first graph/options and four subscriptions. Bindings
@@ -4333,7 +4335,7 @@ services:
         - core/server/services/i18n.js
         - core/boot.js
         - core/server/services/gifts/index.ts
-        - test/unit/boot-signing-keys.test.ts
+        - test/unit/boot/init-core.test.ts
     entryPoints:
       - i18n.js
     notes: >-
@@ -5526,7 +5528,7 @@ services:
           - core/boot.js
           - core/server/services/jobs-service/jobs-service.ts
         tests:
-          - test/unit/boot-email-analytics.test.ts
+          - test/unit/boot/init-services.test.ts
           - test/e2e-server/boot-readiness.isolated.test.ts
       lifetime:
         summary: >-
@@ -8110,7 +8112,7 @@ services:
           - core/server/services/mentions/mention-controller.js
           - core/server/services/recommendations/recommendation-service-wrapper.js
         tests:
-          - test/unit/boot-email-analytics.test.ts
+          - test/unit/boot/init-services.test.ts
           - test/e2e-api/webmentions/webmentions.test.js
           - test/e2e-server/services/mentions.test.js
       lifetime:
@@ -8348,7 +8350,7 @@ services:
           - core/boot.js
           - core/server/services/milestones/service.js
         tests:
-          - test/unit/boot-email-analytics.test.ts
+          - test/unit/boot/init-background-services.test.ts
           - test/e2e-server/services/milestones.test.js
       lifetime:
         summary: >-
@@ -9639,7 +9641,7 @@ services:
           - core/server/services/post-scheduling/post-scheduling.ts
           - core/server/adapters/scheduling/error-capture.ts
         tests:
-          - test/unit/boot-email-analytics.test.ts
+          - test/unit/boot/init-services.test.ts
       lifetime:
         summary: >-
           Module caching preserves the first URL/adapter graph and six listeners. There is
@@ -10806,7 +10808,7 @@ services:
         tests:
           - test/e2e-server/boot-frontend-only.isolated.test.ts
           - test/e2e-server/boot-backend-only.isolated.test.ts
-          - test/unit/boot-dynamic-routing.test.ts
+          - test/unit/boot/init-dynamic-routing.test.ts
           - test/e2e-frontend/custom-routes.test.js
           - test/e2e-frontend/helpers/get.test.js
           - test/e2e-frontend/member-stats.test.js
@@ -10923,7 +10925,7 @@ services:
           - core/frontend/services/apps/index.js
           - core/boot.js
         tests:
-          - test/unit/boot-dynamic-routing.test.ts
+          - test/unit/boot/init-dynamic-routing.test.ts
           - test/unit/server/services/route-settings/dynamic-routing-service.test.ts
           - test/integration/services/route-settings/dynamic-routing-service.test.ts
           - test/unit/server/services/route-settings/validate-route-settings.test.ts
@@ -11505,8 +11507,8 @@ services:
           - core/server/services/signing-keys/signing-key-service.ts
         tests:
           - test/unit/server/services/signing-keys/index.test.ts
-          - test/unit/boot-signing-keys.test.ts
-          - test/unit/boot-email-analytics.test.ts
+          - test/unit/boot/init-core.test.ts
+          - test/unit/boot/init-background-services.test.ts
       lifetime:
         summary: >-
           service, jobs and scheduled survive repeated init with no reset/disposal hook.
@@ -11581,8 +11583,8 @@ services:
         tests:
           - test/unit/server/services/signing-keys/signing-key-service.test.ts
           - test/unit/server/services/signing-keys/index.test.ts
-          - test/unit/boot-signing-keys.test.ts
-          - test/unit/boot-email-analytics.test.ts
+          - test/unit/boot/init-core.test.ts
+          - test/unit/boot/init-background-services.test.ts
           - test/unit/server/services/jobs-service/register-job-handlers.test.ts
     unverified: []
     blockers:
@@ -12539,7 +12541,7 @@ services:
           - core/server/services/stripe/webhook-manager.js
           - core/server/services/stripe/billing-portal-manager.js
         tests:
-          - test/unit/boot-email-analytics.test.ts
+          - test/unit/boot/init-services.test.ts
           - test/e2e-api/members/webhooks.test.js
       lifetime:
         summary: >-
@@ -13085,7 +13087,7 @@ services:
           - core/frontend/services/theme-engine/active.js
           - core/frontend/services/theme-engine/middleware/ensure-active-theme.js
         tests:
-          - test/unit/boot-email-analytics.test.ts
+          - test/unit/boot/init-background-services.test.ts
           - test/unit/frontend/services/theme-engine/middleware.test.js
           - test/unit/frontend/services/theme-engine/active.test.js
           - test/e2e-api/admin/themes.test.js
@@ -13778,7 +13780,7 @@ services:
           - core/server/data/exporter/table-lists.js
         tests:
           - test/unit/server/services/jobs-service/register-job-handlers.test.ts
-          - test/unit/boot-email-analytics.test.ts
+          - test/unit/boot/init-background-services.test.ts
           - test/integration/exporter/exporter.test.js
       startup:
         summary: >-
@@ -13798,7 +13800,7 @@ services:
           - core/server/services/jobs-service/jobs-service.ts
         tests:
           - test/unit/server/services/tinybird-sync/index.test.ts
-          - test/unit/boot-email-analytics.test.ts
+          - test/unit/boot/init-background-services.test.ts
       lifetime:
         summary: >-
           The scheduled flag is set before registration; a second call rejects, while a rejected
@@ -14000,7 +14002,7 @@ services:
           - core/server/lib/mail/ghost-mailer.js
         tests:
           - test/unit/server/services/update-check/schedule-update-check.test.ts
-          - test/unit/boot-email-analytics.test.ts
+          - test/unit/boot/init-background-services.test.ts
           - test/integration/jobs/update-check.test.ts
       lifetime:
         summary: >-
@@ -14243,7 +14245,7 @@ services:
         tests:
           - test/e2e-server/boot-frontend-only.isolated.test.ts
           - test/e2e-server/boot-backend-only.isolated.test.ts
-          - test/unit/boot-dynamic-routing.test.ts
+          - test/unit/boot/init-dynamic-routing.test.ts
           - test/unit/server/services/url/lazy-url-service.test.ts
           - test/e2e-api/members-comments/comments-lazy-url-parity.test.js
           - test/e2e-frontend/sitemap-slug-rename.test.js
