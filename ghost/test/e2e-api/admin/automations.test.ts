@@ -1008,8 +1008,13 @@ describe('Automations API', function () {
     it('returns the automation, ordered actions, and edges sourced from the database', async function () {
       const { body: browseBody } = await agent.get('automations').expectStatus(200);
 
+      const automation = browseBody.automations.find(
+        (candidate) => candidate.slug === MEMBER_WELCOME_EMAIL_SLUGS.free,
+      );
+      assert(automation);
+
       await agent
-        .get(`automations/${browseBody.automations[0].id}`)
+        .get(`automations/${automation.id}`)
         .expectStatus(200)
         .expect(cacheInvalidateHeaderNotSet())
         .matchBodySnapshot({

@@ -1671,7 +1671,8 @@ async function loadAutomation(
 async function loadAutomations(trx: Knex.Transaction): Promise<AutomationSummaryRow[]> {
   return await trx('automations')
     .select('id', 'slug', 'name', 'description', 'status', 'created_at', 'updated_at')
-    .orderBy('name');
+    .orderBy('created_at', 'desc')
+    .orderBy('id', 'desc');
 }
 
 async function loadAutomationsWithStats(trx: Knex.Transaction): Promise<AutomationBrowseRow[]> {
@@ -1701,7 +1702,8 @@ async function loadAutomationsWithStats(trx: Knex.Transaction): Promise<Automati
       'run_stats.in_progress_run_count',
     )
     .leftJoin(runStats, 'automations.id', 'run_stats.automation_id')
-    .orderBy('automations.name');
+    .orderBy('automations.created_at', 'desc')
+    .orderBy('automations.id', 'desc');
 }
 
 async function updateAutomation(
