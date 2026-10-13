@@ -175,6 +175,25 @@ describe('Theme settings', () => {
     await expect.poll(() => installApi.lastRequest?.url).toContain('ref=TryGhost%2FEdition');
   });
 
+  it('lists a theme once after updating it', async () => {
+    const installed = fakeThemeWorld();
+    const edition = installed.find((item) => item.name === 'edition')!;
+    fakeAdminEndpoint('POST', /^\/themes\/install\/\?/, { themes: [edition] });
+    await renderAdminApp('/settings/design/change-theme');
+
+    const modal = settingsScreen.themeModal();
+    await modal.getByRole('button', { name: /Edition/ }).click();
+    await modal.getByRole('button', { name: 'Update Edition' }).click();
+    await settingsScreen.confirmationModal().getByRole('button', { name: 'Overwrite' }).click();
+    await settingsScreen.confirmationModal().getByRole('button', { name: 'Close' }).click();
+    await expect(settingsScreen.confirmationModal()).toHaveCount(0);
+
+    await modal.getByRole('button', { name: 'Change theme' }).click();
+    await modal.getByRole('tab', { name: 'Installed' }).click();
+    await expect(settingsScreen.themeListItems()).toHaveCount(2);
+    await expect(installedTheme('edition')).toHaveCount(1);
+  });
+
   it('manages installed themes', async () => {
     const installed = fakeThemeWorld();
     const casper = installed.find((item) => item.name === 'casper')!;
@@ -1027,25 +1046,6 @@ describe('Theme settings', () => {
     await expect
       .element(settingsScreen.confirmationModal())
       .toHaveTextContent(/Do you want to activate Casper/);
-  });
-
-  it('lists a theme once after reinstalling it from the marketplace', async () => {
-    const installed = fakeThemeWorld();
-    const edition = installed.find((item) => item.name === 'edition')!;
-    fakeAdminEndpoint('POST', /^\/themes\/install\/\?/, { themes: [edition] });
-    fakeAdminEndpoint('PUT', '/themes/edition/activate/', { themes: [edition] });
-    await renderAdminApp('/settings/theme/install?source=github&ref=TryGhost/Edition');
-
-    await settingsScreen.confirmationModal().getByRole('button', { name: 'Install' }).click();
-    await expect
-      .element(settingsScreen.successToast())
-      .toHaveTextContent(/edition is now your active theme/i);
-    await expect(settingsScreen.themeModal()).toHaveCount(0);
-
-    await settingsScreen.theme().getByRole('button', { name: 'Change theme' }).click();
-    await settingsScreen.themeModal().getByRole('tab', { name: 'Installed' }).click();
-    await expect(settingsScreen.themeListItems()).toHaveCount(2);
-    await expect(installedTheme('edition')).toHaveCount(1);
   });
 
   it('confirms before discarding editor changes', async () => {
