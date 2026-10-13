@@ -67,10 +67,8 @@ export function checkManifestUrl(manifestUrl: string, allowLocalhost = false): s
  */
 export function parseManifest(input: unknown, options: ParseManifestOptions): ParseManifestResult {
   const allowLocalhost = options.allowLocalhost ?? false;
-  const ghostOrigins = new Set(
-    options.ghostUrls.map((url) => (URL.canParse(url) ? new URL(url).origin : null)),
-  );
-  if (ghostOrigins.size === 0 || ghostOrigins.has(null)) {
+  const { ghostUrls } = options;
+  if (ghostUrls.length === 0 || !ghostUrls.every((url) => URL.canParse(url))) {
     return {
       success: false,
       errors: [{ path: '', message: 'Expected the URLs Ghost itself is served from' }],
@@ -83,7 +81,7 @@ export function parseManifest(input: unknown, options: ParseManifestOptions): Pa
   }
   const base = new URL(options.manifestUrl);
 
-  const result = manifestSchema({ base, ghostOrigins, allowLocalhost }).safeParse(input);
+  const result = manifestSchema({ base, ghostUrls, allowLocalhost }).safeParse(input);
   if (result.success) {
     return { success: true, manifest: result.data, manifestUrl: base.href };
   }

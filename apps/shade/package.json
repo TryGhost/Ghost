@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/shade",
-  "version": "0.0.0",
+  "version": "private",
   "private": true,
   "author": "Ghost Foundation",
   "repository": "https://github.com/TryGhost/Ghost/tree/main/packages/shade",
@@ -137,6 +137,7 @@
     "@storybook/addon-links": "catalog:",
     "@storybook/react-vite": "catalog:",
     "@tailwindcss/postcss": "catalog:",
+    "@testing-library/dom": "catalog:",
     "@testing-library/react": "catalog:",
     "@types/node": "catalog:",
     "@typescript/native": "catalog:",

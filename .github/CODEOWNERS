@@ -13,6 +13,9 @@
 # @tryghost/parse-email-address
 /packages/parse-email-address/ @EvanHahn
 
+# Kernel
+/ghost/core/kernel/ @ErisDS
+
 # Inbox Links
 ghost/core/server/lib/get-inbox-links.ts @EvanHahn
 ghost/test/unit/server/lib/get-inbox-links.test.ts @EvanHahn

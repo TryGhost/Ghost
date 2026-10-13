@@ -3,6 +3,7 @@ import type { Knex } from 'knex';
 import { AppManifestSchema } from '@tryghost/app-contracts/manifest';
 import { DbBoolean } from '../../lib/db-types/boolean';
 import { DbDate } from '../../lib/db-types/date';
+import { DbJson } from '../../lib/db-types/json';
 
 // Mirrors schema.js's `isIn` on the column, which is static config and cannot import this.
 export const AppInstallationStatus = z.enum(['active', 'suspended', 'uninstalled']);
@@ -21,26 +22,12 @@ export const DbAppInstallation = z.object({
   updated_at: DbDate.nullable(),
 });
 
-/**
- * The manifest as the table holds it, JSON text, against the manifest itself. A codec
- * rather than a parse on the way out, so the write stores what the read accepts: the
- * digest is taken from this encoding, and the read decodes exactly it.
- */
-export const StoredManifest = z.codec(z.string(), AppManifestSchema, {
-  decode: (text, ctx) => {
-    try {
-      return JSON.parse(text);
-    } catch {
-      ctx.issues.push({
-        code: 'custom',
-        message: 'The stored manifest is not JSON.',
-        input: text,
-      });
-      return z.NEVER;
-    }
-  },
-  encode: (manifest) => JSON.stringify(manifest),
+export const StoredManifest = DbJson(AppManifestSchema, {
+  message: 'The stored manifest is not JSON.',
 });
+
+// Mirrors schema.js's `isIn` on the column, which is static config and cannot import this.
+export const AppInstallationManifestSource = z.enum(['install', 'approval', 'update']);
 
 /** A manifest an installation has run or been asked to approve, as the table holds it. */
 export const DbAppInstallationManifest = z.object({
@@ -49,6 +36,7 @@ export const DbAppInstallationManifest = z.object({
   manifest_url: z.string(),
   manifest: StoredManifest,
   digest: z.string(),
+  source: AppInstallationManifestSource,
   requires_approval: DbBoolean,
   created_at: DbDate,
 });

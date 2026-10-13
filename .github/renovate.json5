@@ -186,7 +186,7 @@
       postUpgradeTasks: {
         commands: [
           'pnpm install --no-frozen-lockfile --filter @internal/scripts --prod --ignore-scripts',
-          'node scripts/generate-changeset.js',
+          'node tools/scripts/generate-changeset.ts',
         ],
         fileFilters: ['.changeset/**'],
         executionMode: 'branch',

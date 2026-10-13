@@ -146,7 +146,6 @@ const GeneralTab: React.FC<GeneralTabProps> = ({
             <span className="font-medium">Publication icon</span>
             <Switch
               checked={generalSettings.showPublicationIcon}
-              size="sm"
               onCheckedChange={(checked) => onGeneralChange({ showPublicationIcon: checked })}
             />
           </div>
@@ -155,7 +154,6 @@ const GeneralTab: React.FC<GeneralTabProps> = ({
           <span className="font-medium">Publication title</span>
           <Switch
             checked={generalSettings.showPublicationTitle}
-            size="sm"
             onCheckedChange={(checked) => onGeneralChange({ showPublicationTitle: checked })}
           />
         </div>

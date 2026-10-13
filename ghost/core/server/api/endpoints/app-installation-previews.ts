@@ -1,7 +1,7 @@
 import type { Controller, Frame } from '@tryghost/api-framework';
 import errors from '@tryghost/errors';
 import { z } from 'zod';
-import { service } from '../../services/app-installations';
+import appInstallations from '../../services/app-installations';
 
 // The framework refuses a body without a non-empty `app_installation_previews` array
 // before any handler runs; what is inside it is checked here.
@@ -23,7 +23,7 @@ const controller = {
       if (!parsed.success) {
         throw new errors.ValidationError({ message: 'Expected the manifest_url to preview.' });
       }
-      return service!.preview(parsed.data.manifest_url);
+      return appInstallations.service.preview(parsed.data.manifest_url);
     },
   },
 } satisfies Controller<{ add: PreviewFrame }>;

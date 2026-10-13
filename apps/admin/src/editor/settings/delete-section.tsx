@@ -15,6 +15,7 @@ import { LucideIcon } from '@tryghost/shade/utils';
 import { useNavigate } from '@tryghost/admin-x-framework';
 import { getErrorMessage, SessionExpiredError } from '@tryghost/admin-x-framework/errors';
 import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
+import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import { pagesDataType, useDeletePage } from '@tryghost/admin-x-framework/api/pages';
 import { postsDataType, useDeletePost } from '@tryghost/admin-x-framework/api/posts';
 import { useQueryClient } from '@tanstack/react-query';
@@ -25,6 +26,7 @@ import {
 } from '@tryghost/test-data/selectors/editor';
 import type { PostType } from '@/editor/card-config';
 import { DEFAULT_TITLE } from '@/editor/engine/save-engine';
+import { draftNewsletterStorage, writeDraftNewsletter } from '@/editor/publish/draft-newsletter';
 import { EDITOR_REQUEST_OPTIONS } from '@/editor/request-options';
 import { ReauthDialog } from '@/editor/session/reauth-dialog';
 import type { EditorSettingsPort } from './editor-settings-port';
@@ -47,6 +49,9 @@ export function DeleteSection({ session, postType }: DeleteSectionProps) {
   const { mutateAsync: deletePost } = useDeletePost();
   const { mutateAsync: deletePage } = useDeletePage();
   const { data: currentUser } = useCurrentUser({ requestOptions: EDITOR_REQUEST_OPTIONS });
+  const editorImprovements = useFeatureFlag('admin7EditorImprovements', {
+    requestOptions: EDITOR_REQUEST_OPTIONS,
+  });
   const [isOpen, setIsOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [signingIn, setSigningIn] = useState(false);
@@ -89,6 +94,8 @@ export function DeleteSection({ session, postType }: DeleteSectionProps) {
     // Nothing may be written to a post that is gone. Ending the session aborts
     // the save in flight and drops every later one, including the leave guard's.
     session.dispose();
+    // A deleted draft's remembered newsletter would otherwise wait for the cap to drop it.
+    writeDraftNewsletter(draftNewsletterStorage(editorImprovements), postId, null);
 
     // The list would otherwise serve its cached page, deleted row and all.
     // `refetchType: 'none'`: the editor's own read of this post is still mounted.

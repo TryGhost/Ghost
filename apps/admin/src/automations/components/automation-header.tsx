@@ -33,7 +33,6 @@ interface AutomationHeaderProps {
   isTurnOffButtonEnabled: boolean;
   saveButtonChildren: React.ReactNode;
   publishButtonChildren: React.ReactNode;
-  validationFeedbackEnabled: boolean;
   validationFeedback: AutomationValidationAction | null;
   onDismissValidationFeedback: () => void;
   onSave: () => void;
@@ -51,7 +50,6 @@ const AutomationHeader: React.FC<AutomationHeaderProps> = ({
   isTurnOffButtonEnabled,
   saveButtonChildren,
   publishButtonChildren,
-  validationFeedbackEnabled,
   validationFeedback,
   onDismissValidationFeedback,
   onSave,
@@ -67,9 +65,6 @@ const AutomationHeader: React.FC<AutomationHeaderProps> = ({
     action: AutomationValidationAction,
     button: React.ReactElement,
   ) => {
-    if (!validationFeedbackEnabled) {
-      return button;
-    }
     return (
       <Popover
         open={validationFeedback === action}
@@ -135,7 +130,7 @@ const AutomationHeader: React.FC<AutomationHeaderProps> = ({
   return (
     <header
       className={cn(
-        'relative z-10 flex h-14 shrink-0 items-center justify-between border-b border-border-default bg-surface-elevated px-4',
+        'screen-exit-chrome-top relative z-10 flex h-14 shrink-0 items-center justify-between border-b border-border-default bg-surface-elevated px-4',
         entering && 'screen-enter-from-top',
       )}
     >

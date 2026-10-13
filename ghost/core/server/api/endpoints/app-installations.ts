@@ -1,11 +1,13 @@
 import type { Controller, Frame } from '@tryghost/api-framework';
 import errors from '@tryghost/errors';
 import { z } from 'zod';
-import { actingContext, service } from '../../services/app-installations';
+import appInstallations, { actingContext } from '../../services/app-installations';
 
 interface InstallationOptions {
   id: string;
   context: unknown;
+  // The API framework passes `include` on as `withRelated`.
+  withRelated?: string[];
   [key: string]: unknown;
 }
 
@@ -56,17 +58,19 @@ const controller = {
     headers: noCacheInvalidation,
     permissions: true,
     async query() {
-      return { data: await service!.browse() };
+      return { data: await appInstallations.service.browse() };
     },
   },
 
   read: {
     headers: noCacheInvalidation,
-    options: ['id'],
-    validation: { options: { id: { required: true } } },
+    options: ['id', 'include'],
+    validation: { options: { id: { required: true }, include: { values: ['history'] } } },
     permissions: true,
     query(frame: ReadFrame) {
-      return service!.read(frame.options.id);
+      return appInstallations.service.read(frame.options.id, {
+        withHistory: frame.options.withRelated?.includes('history') ?? false,
+      });
     },
   },
 
@@ -75,7 +79,7 @@ const controller = {
     headers: noCacheInvalidation,
     permissions: true,
     query(frame: WriteFrame) {
-      return service!.create(actingContext(frame.options.context), reviewed(frame));
+      return appInstallations.service.create(actingContext(frame.options.context), reviewed(frame));
     },
   },
 
@@ -87,7 +91,7 @@ const controller = {
     validation: { options: { id: { required: true } } },
     permissions: { method: 'add' },
     query(frame: WriteFrame) {
-      return service!.approve(
+      return appInstallations.service.approve(
         actingContext(frame.options.context),
         frame.options.id,
         reviewedChange(frame),
@@ -102,7 +106,10 @@ const controller = {
     validation: { options: { id: { required: true } } },
     permissions: true,
     query(frame: ReadFrame) {
-      return service!.uninstall(actingContext(frame.options.context), frame.options.id);
+      return appInstallations.service.uninstall(
+        actingContext(frame.options.context),
+        frame.options.id,
+      );
     },
   },
 } satisfies Controller<{

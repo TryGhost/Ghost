@@ -93,6 +93,10 @@ afterEach(async () => {
           localStorage.removeItem(key);
         }
       }
+      // Where the writer last left the editor's settings panel (admin7EditorImprovements).
+      localStorage.removeItem('ghost-editor-settings-open');
+      // Each draft's remembered newsletter (admin7EditorImprovements).
+      localStorage.removeItem('ghost-editor-draft-newsletters');
       window.location.hash = '';
       try {
         await Promise.all([resetFakeFrameOrigins(), resetFailedModuleLoads()]);

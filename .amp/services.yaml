@@ -16,6 +16,7 @@ services:
       done
       export url="$PUBLIC_URL"
       export GHOST_DEV_PORT="$PORT" GHOST_DEV_BACKEND_PORT="$((PORT + 1))"
+      export GHOST_DEV_LISTEN=0.0.0.0
       unset PORT
       exec pnpm dev
     port: 2370

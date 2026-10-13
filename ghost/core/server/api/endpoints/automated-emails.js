@@ -2,6 +2,7 @@ const _ = require('lodash');
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 const models = require('../../models');
+const { lockAutomationLimit } = require('../../services/automations/automation-limit');
 const memberWelcomeEmailService = require('../../services/member-welcome-emails/service');
 const emailAddressService = require('../../services/email-address');
 const {
@@ -25,6 +26,11 @@ const AUTOMATION_FIELDS = ['status', 'name', 'slug'];
 const TRIGGER_TIER_SCOPE_BY_SLUG = {
   [MEMBER_WELCOME_EMAIL_SLUGS.free]: 'free',
   [MEMBER_WELCOME_EMAIL_SLUGS.paid]: 'all_paid',
+};
+const DEFAULT_DESCRIPTION_BY_SLUG = {
+  [MEMBER_WELCOME_EMAIL_SLUGS.free]: 'Welcome new free members after they sign up.',
+  [MEMBER_WELCOME_EMAIL_SLUGS.paid]:
+    'Welcome new paid members after they start their subscription.',
 };
 const EMAIL_FIELDS = ['subject', 'lexical', 'email_design_setting_id'];
 const SENDER_FIELDS = ['sender_name', 'sender_email', 'sender_reply_to'];
@@ -163,6 +169,7 @@ const controller = {
       const emailData = _.pick(data, EMAIL_FIELDS);
       const senderData = _.pick(data, SENDER_FIELDS);
       const automationData = _.pick(data, AUTOMATION_FIELDS);
+      automationData.description = DEFAULT_DESCRIPTION_BY_SLUG[data.slug];
       automationData.trigger_tier_scope = TRIGGER_TIER_SCOPE_BY_SLUG[data.slug];
       emailAddressService.init();
       validateEmailSenderFields(emailAddressService.service, senderData);
@@ -211,6 +218,11 @@ const controller = {
       const automationData = _.pick(data, AUTOMATION_FIELDS);
 
       return models.Base.transaction(async (transacting) => {
+        // Serialize every legacy status write with conversion, including deactivation.
+        // The shared helper acquires no lock when the automation limit is absent.
+        if (Object.hasOwn(automationData, 'status')) {
+          await lockAutomationLimit(transacting, 'legacy');
+        }
         let automation = await models.Automation.findOne(
           { id: frame.options.id },
           {
@@ -225,6 +237,23 @@ const controller = {
           throw new errors.NotFoundError({
             message: tpl(messages.automatedEmailNotFound),
           });
+        }
+        if (
+          Object.hasOwn(automationData, 'status') &&
+          automationData.status !== automation.get('status')
+        ) {
+          const action = await transacting('automation_actions')
+            .select('id')
+            .where('automation_id', automation.id)
+            .whereNull('deleted_at')
+            .first();
+          if (action) {
+            throw new errors.ValidationError({
+              message:
+                'Welcome email has been converted to an automation. Change its status through the automations API.',
+              property: 'status',
+            });
+          }
         }
         if (Object.hasOwn(data, 'slug') && data.slug !== automation.get('slug')) {
           throw new errors.ValidationError({

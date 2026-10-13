@@ -7,10 +7,13 @@ const adapterManager = require('../../../../core/server/services/adapter-manager
 const events = require('../../../../core/server/lib/common/events');
 const MemoryCache = require('../../../../core/server/adapters/cache/MemoryCache');
 
-const services = {
-  tags: require('../../../../core/server/services/tags-public'),
-  posts: require('../../../../core/server/services/posts-public'),
-};
+function loadServices() {
+  return {
+    tags: require('../../../../core/server/services/tags-public'),
+    posts: require('../../../../core/server/services/posts-public'),
+  };
+}
+let services: ReturnType<typeof loadServices>;
 
 const endpointPaths = {
   tags: require.resolve('../../../../core/server/api/endpoints/tags-public'),
@@ -27,22 +30,25 @@ const resources: Resource[] = ['tags', 'posts'];
 // the wiring between them: flag -> service root -> endpoint binding.
 describe('Public response caches', function () {
   const sandbox = sinon.createSandbox();
-  let previousApis: Record<Resource, unknown>;
-  let previousEndpoints: Map<string, NodeModule | undefined>;
+  let previousModules: Map<string, NodeModule | undefined>;
   let previousListeners: Array<(...args: unknown[]) => void>;
   let caches: Record<Resource, InstanceType<typeof MemoryCache>>;
   let getAdapter: sinon.SinonStub;
 
   beforeEach(function () {
-    previousApis = { tags: services.tags.api, posts: services.posts.api };
-    previousEndpoints = new Map(
-      Object.values(endpointPaths).map((path) => [path, require.cache[path]]),
-    );
+    const paths = [
+      ...Object.values(endpointPaths),
+      require.resolve('../../../../core/server/services/tags-public'),
+      require.resolve('../../../../core/server/services/tags-public/service'),
+      require.resolve('../../../../core/server/services/posts-public'),
+      require.resolve('../../../../core/server/services/posts-public/service'),
+    ];
+    previousModules = new Map(paths.map((path) => [path, require.cache[path]]));
+    for (const path of paths) {
+      delete require.cache[path];
+    }
+    services = loadServices();
     previousListeners = events.rawListeners('site.changed');
-
-    // The roots initialize once; clear them so each test sees a first init.
-    services.tags.api = undefined;
-    services.posts.api = undefined;
 
     caches = { tags: new MemoryCache(), posts: new MemoryCache() };
     getAdapter = sandbox.stub(adapterManager, 'getAdapter');
@@ -52,14 +58,12 @@ describe('Public response caches', function () {
 
   afterEach(function () {
     sandbox.restore();
-    services.tags.api = previousApis.tags;
-    services.posts.api = previousApis.posts;
     for (const listener of events.rawListeners('site.changed')) {
       if (!previousListeners.includes(listener)) {
         events.removeListener('site.changed', listener);
       }
     }
-    for (const [path, previous] of previousEndpoints) {
+    for (const [path, previous] of previousModules) {
       delete require.cache[path];
       if (previous) {
         require.cache[path] = previous;

@@ -39,10 +39,20 @@ export function ghostFrontDoorPlugin(backend: string, devBase: string): Plugin {
           rewrite: stripPrefix(/^\/\.ghost\/analytics/),
         };
       }
-      // The ActivityPub project's local service
+      // The ActivityPub project's local service. Default matches the old Docker gateway.
+      // Without a listener, answer 404 so Ghost treats the site as having no
+      // ActivityPub service routed.
       const activityPub = process.env.ACTIVITYPUB_PROXY_TARGET ?? '127.0.0.1:8080';
       for (const route of ['^/\\.ghost/activitypub/', '^/\\.well-known/(webfinger|nodeinfo)']) {
-        proxy[route] = { target: `http://${activityPub}` };
+        proxy[route] = {
+          target: `http://${activityPub}`,
+          configure: (p) =>
+            p.on('error', (_err, _req, res) => {
+              if ('writeHead' in res && !res.headersSent) {
+                res.writeHead(404).end();
+              }
+            }),
+        };
       }
       // Must stay last: Vite uses the first matching entry
       proxy[`^(?!${devBase})`] = { target: backend, xfwd: true, ws: true };
@@ -87,13 +97,16 @@ export function ghostFrontDoorPlugin(backend: string, devBase: string): Plugin {
       watchForRestart();
       server.httpServer?.once('close', () => watcher?.destroy());
 
-      const printUrls = server.printUrls.bind(server);
+      // Vite's own URLs point at the internal dev base, not at Ghost
       server.printUrls = () => {
-        printUrls();
         logger.info('  Waiting for Ghost…');
-        void ready.then(() =>
-          logger.info(`  ➜  Ghost:   http://localhost:${server.config.server.port}/ghost/`),
-        );
+        const site = `http://${process.env.GHOST_DEV_HOSTNAME ?? 'localhost'}:${server.config.server.port}/`;
+        void ready.then(() => {
+          logger.info(`  ➜  Site:   ${site}`);
+          logger.info(`  ➜  Admin:  ${site}ghost/`);
+          // Mailpit's web interface, published by compose.dev.yaml and shared by every checkout
+          logger.info('  ➜  Email:  http://localhost:8025/');
+        });
       };
 
       server.middlewares.use((_req, _res, next) => {
@@ -117,7 +130,8 @@ export function ghostFrontDoorPlugin(backend: string, devBase: string): Plugin {
       // Registered here, before Vite's own middleware and proxy
       server.middlewares.use((req, res, next) => {
         const url = req.url ?? '';
-        if (url === '/ghost' || url === '/ghost/') {
+        // Bare `/ghost` goes to Ghost, which redirects it to `/ghost/`
+        if (url === '/ghost/') {
           req.url = `${devBase}/`;
           return next();
         }
@@ -132,9 +146,7 @@ export function ghostFrontDoorPlugin(backend: string, devBase: string): Plugin {
               res.end();
             });
           }
-          if (name !== 'koenig-lexical') {
-            req.url = `${devBase}/assets/${name}${rest}`;
-          }
+          req.url = `${devBase}/assets/${name}${rest}`;
         }
         next();
       });

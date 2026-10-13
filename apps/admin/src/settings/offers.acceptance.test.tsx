@@ -460,7 +460,7 @@ describe('Offers', () => {
         .element(monthlyModal)
         .toHaveTextContent(formatOfferDate('2026-02-19T12:00:00.000Z'));
       await expect
-        .element(monthlyModal.getByRole('link', { name: 'See members →' }))
+        .element(monthlyModal.getByRole('link', { name: 'See members' }))
         .toHaveAttribute(
           'href',
           expect.stringContaining(
@@ -487,7 +487,7 @@ describe('Offers', () => {
         .element(yearlyModal)
         .toHaveTextContent(formatOfferDate('2026-02-18T12:00:00.000Z'));
       await expect
-        .element(yearlyModal.getByRole('link', { name: 'See members →' }))
+        .element(yearlyModal.getByRole('link', { name: 'See members' }))
         .toHaveAttribute(
           'href',
           expect.stringContaining(

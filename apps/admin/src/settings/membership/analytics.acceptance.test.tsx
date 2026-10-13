@@ -169,7 +169,7 @@ describe('Analytics settings', () => {
       .element(section.getByText(/available on the Publisher plan and above/))
       .toBeVisible();
     await expect(section.getByText(/requires configuration/)).toHaveCount(0);
-    await section.getByText('Upgrade now →', { exact: true }).click();
+    await section.getByRole('button', { name: 'Upgrade now' }).click();
     await expect.poll(currentRoute).toBe('/pro');
   });
 

@@ -45,7 +45,6 @@ describe('Tinybird provider consumers after boot', function () {
       .returns(false);
     const featureFlags = sandbox.stub(labs, 'isSet').callThrough();
     featureFlags.withArgs('automations').returns(true);
-    featureFlags.withArgs('automationRunAnalytics').returns(false);
   });
 
   it('keeps automations on the last published provider across requests and a same-process reboot', async function () {

@@ -62,12 +62,7 @@ const TransactionalTabContent: React.FC = () => {
           </button>
         </ActionListItemContent>
         <ActionListItemActions>
-          <Button
-            className="h-auto p-0 font-bold text-green hover:text-green/90 hover:no-underline"
-            type="button"
-            variant="link"
-            onClick={openCustomizeModal}
-          >
+          <Button size="sm" type="button" variant="ghost" onClick={openCustomizeModal}>
             Edit
           </Button>
         </ActionListItemActions>

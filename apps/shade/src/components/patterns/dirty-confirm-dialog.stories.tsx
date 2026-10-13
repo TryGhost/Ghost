@@ -1,10 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { useState } from 'react';
 
-import {
-  DirtyConfirmDialog,
-  useDirtyConfirmation,
-} from '@/components/patterns/dirty-confirm-dialog';
+import { DirtyConfirmDialog } from '@/components/patterns/dirty-confirm-dialog';
+import { useDirtyConfirmation } from '@/components/patterns/use-dirty-confirmation';
 import { Button } from '@/components/ui/button';
 import { Inline, Text } from '@/components/primitives';
 

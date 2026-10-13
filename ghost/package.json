@@ -1,6 +1,6 @@
 {
   "name": "ghost",
-  "version": "6.70.0-rc.0",
+  "version": "6.70.1-rc.0",
   "description": "The professional publishing platform",
   "keywords": [
     "blog",
@@ -48,10 +48,7 @@
     "build:assets": "pnpm run '/^build:assets:/'",
     "build:assets:js": "node scripts/minify-assets.mts",
     "build:assets:cards": "node scripts/build-card-assets.mts",
-    "generate-golden-email": "node bin/generate-golden-email.js",
     "query-parameter-policy:export": "node --import=tsx scripts/export-query-parameter-policy.ts",
-    "migrate:create": "node bin/create-migration.js",
-    "migrate:rebuild-in-development-tables": "node --import=tsx bin/rebuild-in-development-tables.ts",
     "build:assets:css": "postcss core/frontend/public/ghost.css --no-map --use cssnano -o core/frontend/public/ghost.min.css",
     "build:tsc": "tsc",
     "pretest": "pnpm build:assets",
@@ -72,11 +69,12 @@
     "test:leg:slow": "vitest run -c vitest.config.db.ts --project legacy --reporter=verbose",
     "test:types": "tsc --noEmit && tsc --noEmit -p test/tsconfig.json",
     "lint:server": "eslint 'core/server/**/*.{js,ts}' 'core/*.{js,ts}' '*.{js,ts}' 'bin/**/*.{js,ts}' 'scripts/**/*.{js,ts}' 'types/**/*.ts' --cache",
+    "lint:kernel": "eslint 'core/kernel/**/*.{js,ts}' --cache",
     "lint:shared": "eslint 'core/shared/**/*.{js,ts}' --cache",
     "lint:frontend": "eslint 'core/frontend/**/*.{js,ts}' --cache",
     "lint:test": "eslint 'test/**/*.{js,ts}' --cache",
-    "lint:code": "pnpm run '/^lint:(server|shared|frontend)$/'",
-    "lint": "pnpm run '/^lint:(server|shared|frontend|test)$/'"
+    "lint:code": "pnpm run '/^lint:(server|kernel|shared|frontend)$/'",
+    "lint": "pnpm run '/^lint:(server|kernel|shared|frontend|test)$/'"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "3.1079.0",
@@ -104,7 +102,6 @@
     "@tryghost/database-info": "2.3.16",
     "@tryghost/debug": "catalog:",
     "@tryghost/domain-events": "catalog:",
-    "@tryghost/email-mock-receiver": "2.3.16",
     "@tryghost/errors": "catalog:",
     "@tryghost/helpers": "catalog:",
     "@tryghost/html-to-plaintext": "1.0.12",
@@ -158,6 +155,7 @@
     "chalk": "4.1.2",
     "charset": "1.0.1",
     "cheerio": "catalog:",
+    "chrono-node": "catalog:",
     "clsx": "catalog:",
     "common-tags": "1.8.2",
     "compression": "1.8.2",
@@ -201,6 +199,7 @@
     "js-yaml": "catalog:",
     "jsdom": "catalog:",
     "jsonc-parser": "catalog:",
+    "jsonrepair": "catalog:",
     "jsonwebtoken": "8.5.1",
     "juice": "catalog:",
     "knex": "2.4.2",
@@ -210,23 +209,13 @@
     "lru-cache": "catalog:",
     "luxon": "3.7.2",
     "mailgun.js": "10.4.0",
-    "metascraper": "5.55.2",
-    "metascraper-amazon": "5.55.2",
-    "metascraper-author": "5.55.2",
-    "metascraper-description": "5.55.2",
-    "metascraper-image": "5.55.2",
-    "metascraper-logo": "5.55.2",
-    "metascraper-logo-favicon": "5.55.2",
-    "metascraper-publisher": "5.55.2",
-    "metascraper-title": "5.55.2",
-    "metascraper-url": "5.55.2",
     "mime-types": "2.1.35",
     "mingo": "catalog:",
     "moment": "catalog:",
     "moment-timezone": "catalog:",
     "mppx": "catalog:",
     "multer": "2.4.0",
-    "mysql2": "3.24.4",
+    "mysql2": "3.24.5",
     "nconf": "0.13.0",
     "node-html-markdown": "catalog:",
     "nodemailer": "10.0.16",
@@ -254,6 +243,7 @@
   "devDependencies": {
     "@eslint/js": "catalog:",
     "@internal/cfg-eslint": "workspace:*",
+    "@tryghost/email-mock-receiver": "2.3.16",
     "@tryghost/express-test": "2.3.17",
     "@tryghost/webhook-mock-receiver": "2.3.16",
     "@types/bookshelf": "1.2.9",
@@ -261,7 +251,7 @@
     "@types/express": "catalog:",
     "@types/express-brute": "catalog:",
     "@types/fs-extra": "11.0.4",
-    "@types/js-yaml": "4.0.9",
+    "@types/js-yaml": "catalog:",
     "@types/jsdom": "catalog:",
     "@types/jsonwebtoken": "9.0.10",
     "@types/lodash": "4.17.25",
@@ -285,7 +275,7 @@
     "cssnano": "7.1.9",
     "esbuild": "catalog:",
     "eslint": "catalog:",
-    "eslint-plugin-ghost": "3.5.0",
+    "eslint-plugin-ghost": "catalog:",
     "globals": "17.7.0",
     "html-validate": "11.5.5",
     "inquirer": "8.2.7",
@@ -340,11 +330,6 @@
       "dev": {
         "dependsOn": [
           "build:assets"
-        ]
-      },
-      "lint": {
-        "dependsOn": [
-          "^build"
         ]
       },
       "test:all": {

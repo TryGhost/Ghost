@@ -4,7 +4,6 @@ import { FloatingSidebar, useSidebar } from '@tryghost/shade/components';
 import { useLocation } from '@tryghost/admin-x-framework';
 import { useBrowseSite } from '@tryghost/admin-x-framework/api/site';
 
-import AppSidebarHeader from './app-sidebar-header';
 import AppSidebarFooter from './app-sidebar-footer';
 import AppSidebarContent from './app-sidebar-content';
 import { SidebarBodySwap } from './sidebar-body-swap';
@@ -43,11 +42,11 @@ const FloatingAppSidebar = React.forwardRef<HTMLDivElement, FloatingAppSidebarPr
     const icon = React.useMemo(() => <SidebarSiteIcon />, []);
     const header = React.useMemo(() => <SidebarSiteIdentity variant="capsule" />, []);
     // In Settings the body drills in to its navigation; the account footer goes
-    // with the main navigation, as Settings never showed it.
+    // with the main navigation, as Settings never showed it. Search is in the
+    // frame's top bar, which is always there alongside this sidebar.
     const body = React.useMemo(
       () => (
         <SidebarBodySwap settings={settingsNavigation} settingsSlotRef={settingsNavigationRef}>
-          <AppSidebarHeader className="p-0" showSiteIdentity={false} />
           <AppSidebarContent floating />
           <AppSidebarFooter className="gap-0 p-0 [&_[data-sidebar=group]]:px-0 [&_[data-sidebar=group]]:pb-0" />
         </SidebarBodySwap>

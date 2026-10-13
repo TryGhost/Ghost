@@ -43,7 +43,10 @@ import {
   type DatabaseDate,
 } from '../../lib/db-types/date';
 import { getStaleLockCutoff } from './stale-lock-cutoff';
+import { limitService } from '../limits';
+import { lockAutomationLimit } from './automation-limit';
 import type { ExclusifyUnion, ReadonlyDeep } from 'type-fest';
+import { createDatabaseAutomationsRepository2 } from './database-automations-repository-2';
 
 // Keep within api_automation_run_search's complete-match run_ids limit.
 const MEMBER_SEARCH_PROBE_LIMIT = 2000;
@@ -256,10 +259,18 @@ export function createDatabaseAutomationsRepository({
   knex: Knex;
   fakeWaitHoursMultiplier: number | null;
 }): AutomationsRepository {
+  // NOTE: We are transitioning to this new API. This will be removed soon. See NY-1704.
+  const repository2 = createDatabaseAutomationsRepository2({
+    knex,
+  });
+
   return {
     async browse({ includeStats }: BrowseOptions): Promise<Page<AutomationBrowseResult>> {
-      return await knex.transaction(async (trx) => {
+      await knex.transaction(async (trx) => {
         await ensureDefaultAutomations(trx);
+      });
+
+      return await knex.transaction(async (trx) => {
         const data = includeStats
           ? (await loadAutomationsWithStats(trx)).map((row) => buildAutomationBrowseResult(row))
           : (await loadAutomations(trx)).map((row) => buildAutomationSummary(row));
@@ -273,8 +284,9 @@ export function createDatabaseAutomationsRepository({
     },
 
     async getNumberOfAutomations() {
-      const result = await knex('automations').count({ count: '*' }).first();
-      return Number(result?.count ?? 0);
+      return await repository2.withConnection((connection) =>
+        repository2.getNumberOfAutomations(connection),
+      );
     },
 
     async exists(id) {
@@ -377,6 +389,10 @@ export function createDatabaseAutomationsRepository({
 
     async add(data) {
       return await knex.transaction(async (trx) => {
+        await lockAutomationLimit(trx, data.status);
+        if (data.status === 'active') {
+          await limitService.errorIfWouldGoOverLimit('limitAutomations', { transacting: trx });
+        }
         const tierIds = data.trigger_tier_ids ?? [];
         if (tierIds.length > 0) {
           // Lock the products so they aren't archived or deleted while we're adding.
@@ -437,10 +453,27 @@ export function createDatabaseAutomationsRepository({
 
     async edit(id: string, data: EditAutomationData): Promise<Automation | null> {
       return await knex.transaction(async (trx) => {
+        await lockAutomationLimit(trx, data.status);
+
         const automation = await loadAutomation(trx, id);
 
         if (!automation) {
           return null;
+        }
+
+        if (data.status === 'active' && limitService.isLimited('limitAutomations')) {
+          // Active legacy welcome emails start consuming a slot when they gain a graph.
+          const addsFirstGraph =
+            automation.status === 'active' &&
+            (data.actions?.length ?? 0) > 0 &&
+            !(await trx('automation_actions')
+              .select('id')
+              .where('automation_id', id)
+              .whereNull('deleted_at')
+              .first());
+          if (automation.status !== 'active' || addsFirstGraph) {
+            await limitService.errorIfWouldGoOverLimit('limitAutomations', { transacting: trx });
+          }
         }
 
         const now = new Date();
@@ -913,9 +946,43 @@ async function lockNotYetOpened(
 }
 
 async function ensureDefaultAutomations(trx: Knex.Transaction): Promise<void> {
+  // Conversion may activate flows; acquire the lock before reading legacy statuses.
+  await lockAutomationLimit(trx, 'legacy');
+
+  // Existing welcome emails already have automation rows, but no action graph.
+  // Keep them inactive while building graphs, then allocate available activation slots.
+  const candidates = limitService.isLimited('limitAutomations')
+    ? await trx('automations')
+        .whereIn(
+          'slug',
+          DEFAULT_WELCOME_EMAIL_AUTOMATIONS.map(({ slug }) => slug),
+        )
+        .where('status', 'active')
+        .whereNotExists(
+          trx('automation_actions')
+            .select('id')
+            .whereRaw('automation_id = automations.id')
+            .whereNull('deleted_at'),
+        )
+        .whereExists(
+          trx('welcome_email_automated_emails')
+            .select('id')
+            .whereRaw('welcome_email_automation_id = automations.id'),
+        )
+        .pluck<string[]>('id')
+    : [];
+  await trx('automations').whereIn('id', candidates).update({ status: 'inactive' });
+
+  // Fixed free-then-paid order makes the subset deterministic.
   for (const defaults of DEFAULT_WELCOME_EMAIL_AUTOMATIONS) {
     const automation = await ensureAutomation(trx, defaults);
     await ensureWelcomeEmailAction(trx, automation.id);
+    if (
+      candidates.includes(automation.id) &&
+      !(await limitService.checkWouldGoOverLimit('limitAutomations', { transacting: trx }))
+    ) {
+      await trx('automations').where('id', automation.id).update({ status: 'active' });
+    }
   }
 }
 
@@ -1611,7 +1678,8 @@ async function loadAutomation(
 async function loadAutomations(trx: Knex.Transaction): Promise<AutomationSummaryRow[]> {
   return await trx('automations')
     .select('id', 'slug', 'name', 'description', 'status', 'created_at', 'updated_at')
-    .orderBy('name');
+    .orderBy('created_at', 'desc')
+    .orderBy('id', 'desc');
 }
 
 async function loadAutomationsWithStats(trx: Knex.Transaction): Promise<AutomationBrowseRow[]> {
@@ -1641,7 +1709,8 @@ async function loadAutomationsWithStats(trx: Knex.Transaction): Promise<Automati
       'run_stats.in_progress_run_count',
     )
     .leftJoin(runStats, 'automations.id', 'run_stats.automation_id')
-    .orderBy('automations.name');
+    .orderBy('automations.created_at', 'desc')
+    .orderBy('automations.id', 'desc');
 }
 
 async function updateAutomation(

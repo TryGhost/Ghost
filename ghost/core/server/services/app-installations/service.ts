@@ -10,7 +10,7 @@ import {
   type AppManifest,
   type ParseManifestOptions,
 } from '@tryghost/app-contracts/manifest';
-import { toDatabaseDate } from '../../lib/db-types/date';
+import { DbDate, toDatabaseDate } from '../../lib/db-types/date';
 import type { RecordAppInstallationAction, RequestContext } from './actions';
 import {
   AppInstallationRow,
@@ -20,12 +20,40 @@ import {
   type CurrentInstallation,
 } from './codec';
 import type { FetchManifest } from './fetch-manifest';
-import { StoredManifest, type AppInstallationStatus } from './schema';
+import { buildHistory, approvalManifestIds, type HistoryAction } from './history';
+import { DbAppInstallationManifest, StoredManifest, type AppInstallationStatus } from './schema';
 
 const INSTALLATIONS = 'app_installations';
 const MANIFESTS = 'app_installation_manifests';
 
-export type { AppInstallation } from './codec';
+const HistoryManifestRow = DbAppInstallationManifest.pick({
+  id: true,
+  manifest_url: true,
+  source: true,
+  requires_approval: true,
+  created_at: true,
+});
+
+const ManifestContentRow = DbAppInstallationManifest.pick({ id: true, manifest: true });
+
+const HistoryActionRow = z
+  .object({
+    id: z.string(),
+    event: z.string(),
+    actor_id: z.string(),
+    actor_name: z.string().nullable(),
+    context: z.string().nullable(),
+    created_at: DbDate,
+  })
+  .transform((row): HistoryAction => ({
+    id: row.id,
+    event: row.event,
+    context: row.context,
+    created_at: row.created_at,
+    actor: { id: row.actor_id, name: row.actor_name },
+  }));
+
+export type { AppInstallation, AppInstallationHistoryEntry } from './codec';
 
 /** One field that differs from what the publisher approved. */
 export interface AppManifestChange {
@@ -162,13 +190,80 @@ export class AppInstallationsService {
     return rows.map((row) => z.decode(AppInstallationRow, row));
   }
 
-  /** One installation by ID, whether it has ended or not. */
-  async read(id: string): Promise<AppInstallation> {
+  /**
+   * Unlike `browse`, this also returns uninstalled apps.
+   * That way their details page still works.
+   */
+  async read(
+    id: string,
+    { withHistory = false }: { withHistory?: boolean } = {},
+  ): Promise<AppInstallation> {
     const [row] = await this.withApprovedManifest().where('installation.id', id);
     if (!row) {
       throw new errors.NotFoundError({ message: 'App installation not found.' });
     }
-    return z.decode(AppInstallationRow, row);
+    const installation: AppInstallation = z.decode(AppInstallationRow, row);
+    if (withHistory) {
+      installation.history = await this.historyOf(id);
+    }
+    return installation;
+  }
+
+  private async historyOf(id: string): Promise<AppInstallation['history']> {
+    const manifestRows = this.knex(MANIFESTS)
+      .where({ installation_id: id })
+      .orderBy('created_at', 'asc')
+      .orderBy('id', 'asc')
+      .select<z.input<typeof HistoryManifestRow>[]>(
+        'id',
+        'manifest_url',
+        'source',
+        'requires_approval',
+        'created_at',
+      );
+    const actionRows = this.knex('actions as action')
+      // Left join, so actions by deleted users still show, just without a name.
+      .leftJoin('users as actor', 'actor.id', 'action.actor_id')
+      .where({ 'action.resource_type': 'app_installation', 'action.resource_id': id })
+      .orderBy('action.created_at', 'asc')
+      .orderBy('action.id', 'asc')
+      .select<z.input<typeof HistoryActionRow>[]>(
+        'action.id',
+        'action.event',
+        'action.actor_id',
+        'action.context',
+        'action.created_at',
+        'actor.name as actor_name',
+      );
+    const [manifestData, actionData] = await Promise.all([manifestRows, actionRows]);
+    const manifests = manifestData.map((row) => z.decode(HistoryManifestRow, row));
+    const actions = actionData.map((row) => z.decode(HistoryActionRow, row));
+    return buildHistory(
+      manifests,
+      actions,
+      await this.loadManifestContents(approvalManifestIds(actions)),
+    );
+  }
+
+  /**
+   * Loads the contents of these manifests, by id.
+   * A row that no longer decodes is skipped, so one bad row can't break the page.
+   */
+  private async loadManifestContents(ids: string[]): Promise<Map<string, AppManifest>> {
+    if (ids.length === 0) {
+      return new Map();
+    }
+    const rows = await this.knex(MANIFESTS)
+      .whereIn('id', ids)
+      .select<z.input<typeof ManifestContentRow>[]>('id', 'manifest');
+    const contents = new Map<string, AppManifest>();
+    for (const row of rows) {
+      const decoded = ManifestContentRow.safeDecode(row);
+      if (decoded.success) {
+        contents.set(decoded.data.id, decoded.data.manifest);
+      }
+    }
+    return contents;
   }
 
   /**
@@ -362,6 +457,7 @@ export class AppInstallationsService {
             manifest_url: written.manifest_url,
             manifest: loaded.serialised,
             digest: loaded.digest,
+            source: 'install',
             requires_approval: false,
             created_at: now,
           });
@@ -467,6 +563,7 @@ export class AppInstallationsService {
           manifest_url: loaded.manifestUrl,
           manifest: loaded.serialised,
           digest: loaded.digest,
+          source: 'approval',
           requires_approval: changes.some((change) => change.requires_approval),
           created_at: now,
         });

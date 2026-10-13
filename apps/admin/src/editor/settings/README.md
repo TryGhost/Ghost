@@ -96,13 +96,24 @@ Closing it returns focus to the picker button when that field is still present.
 ## Open and closed
 
 The toggle sits in the editor header, and the panel starts closed on every
-editor entry. There is no keyboard shortcut for it.
+editor entry unless it is restored open as described below. There is no
+keyboard shortcut for it.
 
 Below the `lg` breakpoint the panel overlays the editor from the right rather
 than narrowing it, and below 500px it takes the full width. Above it the panel
 sits in the flow beside the editor at a fixed 350px, including while a subview
 is open, and wide and full cards in the document keep fitting the narrowed
 writing area throughout the panel's motion.
+
+Under `admin7EditorImprovements`, the editor opens with the panel as the writer
+last left it with the toggle, one state for every post and page held in this
+browser's `localStorage` (`settings-open.ts`, `use-settings-open.ts`). A panel
+restored open is in place from the first paint, without sliding in. When a
+save is refused and the editor opens the panel to show the field, that open is
+not remembered. Nor is a toggle below `lg`, where the panel always starts
+closed so it never covers the post on arrival. Storage that is blocked, empty or unreadable starts the
+panel closed. With the flag off nothing is read or written and a remembered
+state waits for the flag.
 
 ## URL
 
@@ -448,6 +459,14 @@ and underlined group headings. Definition-list spacing is reset locally so inher
 list styles cannot indent or truncate the labels. Shade's `KbdGroup` only
 lays out the individual `Kbd` caps; it does not draw another cap around them.
 The caps use `variant="contrast"` to stand out against the sidebar background.
+
+## Using the editor
+
+Under `admin7EditorImprovements`, a row after Keyboard shortcuts links to
+Ghost's guide to the editor, which the editor's footer linked to before the font
+picker took its place. Unlike the rows around it, it opens no pane: it opens the
+guide in a new tab, and ends in an outward arrow instead of a chevron to say so.
+Every role sees it.
 
 ## Delete
 

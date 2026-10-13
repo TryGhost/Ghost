@@ -21,6 +21,9 @@ import {
   editorFeatureImageCaption,
   editorHeaderActions,
   editorHelpLink,
+  editorFontPickerLabel,
+  editorFontToggle,
+  settingsEditorHelpRow,
   editorLeaveDialog,
   editorLoadError,
   editorNewerVersionNotice,
@@ -150,6 +153,13 @@ export const editorScreen = {
   emailSizeWarning: () => page.getByTestId(editorEmailSizeWarning),
   emailSizeDetails: () => page.getByTestId(editorEmailSizeDetails),
   helpLink: () => page.getByRole('link', { name: editorHelpLink }),
+  /** The footer's [Aa] button (admin7EditorImprovements). */
+  fontToggle: () => page.getByTestId(editorFontToggle),
+  /** One of the open font picker's choices; `aria-checked` says whether it is the one in use. */
+  fontOption: (label: 'Serif' | 'Sans' | 'Mono') =>
+    page
+      .getByRole('radiogroup', { name: editorFontPickerLabel })
+      .getByRole('radio', { name: label, exact: true }),
   /** The document's own scroll surface, independent of the editor shell. */
   scrollPane: (): HTMLElement => {
     const root = page.getByTestId(postEditor).element();
@@ -362,6 +372,9 @@ export const editorScreen = {
   settingsSubviewRow: (label: string) =>
     page.getByTestId(postSettingsSidebar).getByRole('button', { name: label, exact: true }),
   settingsSubviewPane: () => page.getByTestId(settingsSubviewPane),
+  /** The settings panel's link to Ghost's guide to the editor (admin7EditorImprovements). */
+  settingsEditorHelp: () =>
+    page.getByTestId(postSettingsSidebar).getByRole('link', { name: settingsEditorHelpRow }),
   settingsSubviewBack: (label: string) => page.getByRole('button', { name: label, exact: true }),
   settingsMetaTitle: () => page.getByTestId(settingsMetaTitleInput),
   settingsMetaDescription: () => page.getByTestId(settingsMetaDescriptionInput),

@@ -1,20 +1,18 @@
 import assert from 'node:assert/strict';
 import { setImmediate } from 'node:timers/promises';
 import sinon from 'sinon';
-import type { DonationBookshelfRepository } from '../../../../../core/server/services/donations/donation-bookshelf-repository';
+import type donationsRoot from '../../../../../core/server/services/donations';
 import type { DonationPaymentEvent } from '../../../../../core/server/services/donations/donation-payment-event';
 
-// Keep the real CommonJS identities used by the wrapper and Stripe's composition.
+// Keep the real CommonJS identities used by the factory and Stripe's composition.
 const models = require('../../../../../core/server/models');
 const StripeService = require('../../../../../core/server/services/stripe/stripe-service');
 const labs = require('../../../../../core/shared/labs');
 const settingsCache = require('../../../../../core/shared/settings-cache');
 const ROOT_PATH = require.resolve('../../../../../core/server/services/donations');
+const { IncorrectUsageError } = require('@tryghost/errors');
 
-type DonationsRoot = {
-  init(): void;
-  repository?: DonationBookshelfRepository;
-};
+type DonationsRoot = typeof donationsRoot;
 
 function donationSession() {
   return {
@@ -46,7 +44,7 @@ describe('donations root with its Stripe consumer', function () {
     notifyDonationReceived = sandbox
       .stub<[{ donationPaymentEvent: DonationPaymentEvent }], Promise<void>>()
       .resolves();
-    root = require(ROOT_PATH);
+    root = require(ROOT_PATH).default;
 
     // Boot constructs Stripe before initializing donations. The consumer must
     // look up the repository later, when the checkout webhook arrives.
@@ -72,26 +70,26 @@ describe('donations root with its Stripe consumer', function () {
     }
   });
 
-  it('imports without a repository or writes, and keeps one repository across repeated init', function () {
-    assert.equal(require(ROOT_PATH), root);
-    assert.equal(root.repository, undefined);
+  it('constructs one ready repository during boot without writing or notifying staff', async function () {
+    assert.equal(require(ROOT_PATH).default, root);
+    assert.throws(() => root.service, IncorrectUsageError);
     sinon.assert.notCalled(add);
     sinon.assert.notCalled(notifyDonationReceived);
 
-    root.init();
-    const repository = root.repository;
-    assert.ok(repository);
-    root.init();
+    const initialization = root.init();
+    assert.equal(root.init(), initialization);
+    await initialization;
+    const repository = root.service;
+    await root.init();
 
-    assert.equal(root.repository, repository);
+    assert.equal(root.service, repository);
     sinon.assert.notCalled(add);
     sinon.assert.notCalled(notifyDonationReceived);
   });
 
   it('lets the earlier Stripe consumer save and notify through the initialized repository', async function () {
-    root.init();
-    assert.ok(root.repository);
-    const save = sandbox.spy(root.repository, 'save');
+    await root.init();
+    const save = sandbox.spy(root.service, 'save');
 
     const result =
       await stripe.webhookController.checkoutSessionEventService.handleEvent(donationSession());
@@ -130,7 +128,7 @@ describe('donations root with its Stripe consumer', function () {
       releaseWrite = resolve;
     });
     add.returns(write);
-    root.init();
+    await root.init();
 
     let completed = false;
     const handling: Promise<void> = stripe.webhookController.checkoutSessionEventService
@@ -160,7 +158,7 @@ describe('donations root with its Stripe consumer', function () {
   it('propagates the model write failure unchanged without notifying staff', async function () {
     const failure = new Error('The donation could not be saved');
     add.rejects(failure);
-    root.init();
+    await root.init();
 
     await assert.rejects(
       stripe.webhookController.checkoutSessionEventService.handleEvent(donationSession()),

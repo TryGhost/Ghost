@@ -260,7 +260,6 @@ export function getCommentInReplyToSnippet(comment: { html?: string | null }): s
 
   let text = tempDiv.textContent || '';
 
-  text = text.replace('\n', ' ');
   text = text.replace(/\s+/g, ' ');
   text = text.trim();
 

@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/kg-unsplash-selector",
-  "version": "0.4.7",
+  "version": "0.4.8",
   "description": "React Unsplash image picker for Ghost's Koenig editor",
   "license": "MIT",
   "author": "Ghost Foundation",
@@ -45,6 +45,7 @@
     "eslint-plugin-react-hooks": "catalog:",
     "eslint-plugin-react-refresh": "catalog:",
     "eslint-plugin-tailwindcss": "catalog:tailwind3",
+    "jiti": "catalog:",
     "jsdom": "catalog:",
     "postcss": "catalog:",
     "postcss-import": "16.1.1",
@@ -53,7 +54,7 @@
     "typescript-eslint": "catalog:",
     "vite": "catalog:",
     "vite-plugin-dts": "5.0.3",
-    "vite-plugin-svgr": "5.2.0",
+    "vite-plugin-svgr": "catalog:",
     "vitest": "catalog:"
   },
   "peerDependencies": {

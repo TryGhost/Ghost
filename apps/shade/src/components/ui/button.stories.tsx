@@ -9,7 +9,7 @@ import {
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Inline, Stack, Text } from '@/components/primitives';
 import ShadeApp from '@/shade-app';
-import { useShade } from '@/providers/shade-provider';
+import { useShade } from '@/providers/shade-context';
 import { ArrowUp, Smile } from 'lucide-react';
 
 const meta = {

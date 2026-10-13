@@ -1,8 +1,0 @@
-{
-  "extends": "@internal/cfg-typescript/esm.json",
-  "compilerOptions": {
-    "noEmit": true,
-    "erasableSyntaxOnly": true
-  },
-  "include": ["**/*.ts"]
-}

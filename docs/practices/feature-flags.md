@@ -122,9 +122,35 @@ The `admin7Design` milestone replaces the docked desktop sidebar with Shade's
 `FloatingSidebar`: pinned beside the content by default, or unpinned into a
 circle around the site icon, stored as the `navigation.menu.mode` user
 preference. It also lists Ghost(Pro) with Settings, moves Help and Feedback to
-the account menu and runs the member map full bleed. Settings shows its
+the account menu and runs the member map full bleed. On desktop, except for
+Contributors, the admin sits in a frame whose top bar holds the Ghost and View
+site places, search and the site's numbers (Online, Members and MRR, for staff
+with admin access), so View site and search leave the sidebar. The frame closes
+around the editor and automation editor, and its sides retract on View site. Inside the frame, list pages show their title
+large above a sticky header that takes it over as the page scrolls: Admin's
+layout turns this on through Shade's `PageChromeProvider` rather than
+`isAdmin7`, which stays on for the generally available pill controls.
+Settings, the editor, the automation editor, mobile and pages without a
+`PageHeader.Title` keep the usual header. Settings shows its
 navigation inside the same sidebar, pinned without changing the stored mode. Mobile keeps the sidebar sheet, and the flag-off path
 preserves the docked sidebar and the separate Settings sidebar.
+
+The `admin7CustomizeFromViewSite` experiment adds Customize to the frame's top
+bar on View site, opening the Design settings in a panel over a live, browsable
+preview of the site, with its state in the URL (`/site?customize`). It needs
+`admin7Design` for the frame and is only for staff who can edit the design, on
+desktop. It has its own flag because it may ship apart from Admin 7.
+
+The `admin7EditorImprovements` milestone collects improvements to the post and
+page editor, independent of `admin7Design`. While the writer types in the title,
+excerpt or body, the editor's chrome fades out: the header, the settings toggle,
+the word count, email size warning and help link, and the empty feature image
+bar. An existing feature image stays. Moving the pointer more than a few pixels,
+scrolling with a wheel or trackpad, focusing anything outside the writing area
+or an unused Esc brings it back.
+Nothing hides while the settings panel is open or moving, while the status line
+reports a failed save or newsletter, or on touch and small screens. The chrome
+keeps its place, stays focusable and takes no pointer input while hidden.
 
 ## How values are resolved
 

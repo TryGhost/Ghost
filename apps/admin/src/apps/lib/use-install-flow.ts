@@ -2,6 +2,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiUrl } from '@tryghost/admin-x-framework/helpers';
 import { useFetchApi } from '@tryghost/admin-x-framework/hooks';
 import {
+  type AppInstallation,
   type AppInstallationPreview,
   type AppInstallationPreviewsResponseType,
   useAddAppInstallation,
@@ -49,15 +50,19 @@ export function useInstallFlow(manifestUrl: string | null) {
     /** Takes the review Ghost sent back instead, when confirming found a newer version. */
     replace: (next: AppInstallationPreview) =>
       queryClient.setQueryData(previewKey(manifestUrl), next),
-    /** Installs, or approves changes to the site's installation, as reviewed. */
-    confirm: async (reviewed: AppInstallationPreview) => {
+    /**
+     * Installs, or approves changes to the site's installation, as reviewed. Returns the
+     * new installation on a fresh install, so the app can be opened.
+     */
+    confirm: async (reviewed: AppInstallationPreview): Promise<AppInstallation | undefined> => {
       const manifest = { manifest_url: reviewed.manifest_url, digest: reviewed.digest };
       if (reviewed.installation) {
         const { id, revision } = reviewed.installation;
         await approve.mutateAsync({ id, revision, ...manifest });
-      } else {
-        await install.mutateAsync(manifest);
+        return undefined;
       }
+      const response = await install.mutateAsync(manifest);
+      return response.app_installations[0];
     },
     isConfirming: install.isPending || approve.isPending,
   };

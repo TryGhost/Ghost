@@ -30,7 +30,7 @@
     "lint:code": "eslint src --cache",
     "lint:types": "pnpm test:types",
     "preship": "pnpm lint",
-    "ship": "node ../../scripts/release-apps.js",
+    "ship": "node ../../tools/scripts/release-apps.ts",
     "prepublishOnly": "pnpm build"
   },
   "dependencies": {
@@ -68,6 +68,7 @@
     "bson-objectid": "catalog:",
     "eslint": "catalog:",
     "eslint-plugin-tailwindcss": "catalog:tailwind3",
+    "jiti": "catalog:",
     "jsdom": "catalog:",
     "moment": "catalog:",
     "postcss": "catalog:",

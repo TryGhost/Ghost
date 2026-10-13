@@ -1,10 +1,14 @@
 import Docker from 'dockerode';
 import baseDebug from '@tryghost/debug';
 import logging from '@tryghost/logging';
+import { E2E_BASE_DATABASE, E2E_DATABASE_PREFIX } from '@/helpers/environment/constants';
 import { PassThrough } from 'stream';
 import type { Container } from 'dockerode';
 
 const debug = baseDebug('e2e:MySQLManager');
+
+// Every checkout's runs share the MySQL container's /tmp
+const SNAPSHOT_PATH = `/tmp/${E2E_BASE_DATABASE}.sql`;
 
 interface ContainerWithModem extends Container {
   modem: {
@@ -103,13 +107,13 @@ export class MySQLManager {
 
   /**
    * Used for cleanup of leftover databases from interrupted tests.
-   * This removes all e2e test databases ('ghost_e2e_%') except the base database.
+   * This removes this checkout's base database and its per-test databases, named by a site UUID.
    */
   async dropAllTestDatabases(): Promise<void> {
     try {
       debug('Finding all test databases to clean up...');
 
-      const query = `SELECT schema_name FROM information_schema.schemata WHERE schema_name LIKE 'ghost_e2e_%' AND schema_name <> 'ghost_e2e_base'`;
+      const query = `SELECT schema_name FROM information_schema.schemata WHERE schema_name REGEXP '^${E2E_DATABASE_PREFIX}(base|[0-9a-f]{8}(_[0-9a-f]{4}){3}_[0-9a-f]{12})$'`;
       const output = await this.exec(`mysql -uroot -proot -N -e "${query}"`);
 
       const databaseNames = this.parseDatabaseNames(output);
@@ -126,7 +130,7 @@ export class MySQLManager {
 
   async createSnapshot(
     sourceDatabase: string = 'ghost_testing',
-    outputPath: string = '/tmp/dump.sql',
+    outputPath: string = SNAPSHOT_PATH,
   ): Promise<void> {
     logging.info('Creating database snapshot...');
 
@@ -137,7 +141,7 @@ export class MySQLManager {
     logging.info('Database snapshot created');
   }
 
-  async deleteSnapshot(snapshotPath: string = '/tmp/dump.sql'): Promise<void> {
+  async deleteSnapshot(snapshotPath: string = SNAPSHOT_PATH): Promise<void> {
     try {
       debug('Deleting MySQL snapshot:', snapshotPath);
 
@@ -152,7 +156,7 @@ export class MySQLManager {
 
   async restoreDatabaseFromSnapshot(
     database: string,
-    snapshotPath: string = '/tmp/dump.sql',
+    snapshotPath: string = SNAPSHOT_PATH,
   ): Promise<void> {
     debug('Restoring database from snapshot:', database);
 

@@ -6,7 +6,7 @@ The React Ghost admin interface.
 
 The application uses `admin-x-framework` for API hooks and routing. Shade
 provides its application wrapper and design system. After Vite builds Admin,
-`pnpm assemble:assets` runs the standalone assembler in `scripts/` to copy
+`pnpm assemble:assets` runs the standalone assembler in `tools/scripts/` to copy
 `dist/` into `ghost/core/built/admin/`. It ships Koenig’s embed renderer
 separately in `ghost/core/built/embed-renderer/`.
 
@@ -64,8 +64,8 @@ which are reported as errors.
 
 ### Automation run history
 
-With automation run analytics enabled, selecting a Performance row opens read-only
-history by run ID. Closing it restores the mounted editor and its unsaved draft.
+When analytics is configured, selecting a Performance row opens read-only history
+by run ID. Closing it restores the mounted editor and its unsaved draft.
 List filters, sorting, and pagination do not refresh the selected history. A new
 selection or Retry fetches it again; there is no polling or refresh control.
 
@@ -110,14 +110,16 @@ access and Shade for UI rather than adding new `admin-x-design-system`
 components. Product copy belongs in the `ghost` namespace; follow the
 [internationalization guide](../../docs/practices/internationalization.md).
 
-`pnpm nx run @tryghost/admin:build:dev` prepares library outputs. The normal
-`pnpm dev` command uses this preparation before starting Admin's dev server.
+`pnpm dev` runs `pnpm nx run @tryghost/admin:build:dev` before starting Admin's
+dev server. It builds Koenig Lexical and the Unsplash selector, the only
+workspace packages the dev server loads from built output.
 
 Vite resolves Admin Framework and Shade through their `source` exports in
 development, production and tests. It tracks each package’s source and path aliases
 directly, and transforms Shade’s SVG icons with SVGR. The shared CSS lane stays
 in this app. Compiled library builds and watchers remain available for other
-consumers, and typechecks still use the library declarations.
+consumers. Typechecks and editors still use the library declarations, which
+`pnpm nx run @tryghost/admin:test:types` builds.
 
 The post editor is the largest area with documentation of its own — start at
 [src/editor/README.md](src/editor/README.md) before changing anything under
@@ -133,9 +135,11 @@ The post editor is the largest area with documentation of its own — start at
 From the monorepo root, use `pnpm nx run @tryghost/admin:test:unit` or
 `pnpm nx run @tryghost/admin:test:acceptance`, or
 `pnpm nx run @tryghost/admin:test:types` to build the required React
-libraries first. These targets do not boot Ghost. Their `dependsOn` lists, and
-the React library prerequisites of `build:dev`, explicitly name the React
-dependencies with a `build` target; update all four when adding one.
+libraries first. These targets do not boot Ghost. The `dependsOn` list of
+`test:types` explicitly names the React dependencies with a `build` target;
+update it when adding one. Add it to `build:dev`, `test:unit` and
+`test:acceptance` only if Vite loads its built output rather than its `source`
+export.
 
 Nx caches unit, acceptance and typecheck results. Their inputs include every
 transitive dependency's default inputs. Test inputs also include Core's aliased card assets, the lockfile and runtime
@@ -144,9 +148,9 @@ local `.env` and `.env.*` files covers Vite's mode-specific configuration withou
 printing their values. Shard and other
 CLI arguments get separate cache keys. Use `--skip-nx-cache` to force a fresh run.
 
-`pnpm test` and `pnpm check` at the root select Admin's aggregate `test` target.
-It schedules the same `test:unit` and `test:types` tasks and their prerequisites.
-Only those tasks are cached, so an outer cache cannot skip their input checks.
+`pnpm test` and `pnpm check` at the root run Admin's `test:unit` and `test:types`
+tasks and their prerequisites. Admin's aggregate `test` target schedules the same
+tasks and is not cached itself, so an outer cache cannot skip their input checks.
 
 CI changes confined to Admin's `*.test.ts(x)`, `*.screen.ts`, `test-utils/` or
 `vitest.acceptance.config.ts` skip the build, packaging and browser E2E lane.
@@ -163,7 +167,7 @@ pnpm nx run @tryghost/admin:build
 The assembler reads the individual build outputs, so it can also be rerun with
 `pnpm nx run @tryghost/admin:assemble:assets` after those builds. It does not run
 compilers or upload sourcemaps. See
-[Admin asset assembly](../../scripts/README.md#admin-asset-assembly) for the input
+[Admin asset assembly](../../tools/scripts/README.md#admin-asset-assembly) for the input
 requirements.
 
 This outputs to `apps/admin/dist/` and updates the assets in `ghost/core/built/admin/`.

@@ -34,8 +34,6 @@ function describe(failure: InstallFailure): string {
       return 'Send these details to the app’s developer.';
     case 'incomplete-link':
       return 'This install link doesn’t say which app to install. Ask whoever sent it for the full link.';
-    case 'unsupported':
-      return 'Apps need a newer version of Ghost.';
     case 'error':
       return failure.message;
   }
