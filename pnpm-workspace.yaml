@@ -35,14 +35,16 @@ allowBuilds:
   # optionalDependency.
   '@sentry/cli': false
   'better-sqlite3@12.11.1': true
-  cpu-features: false
   'esbuild@0.25.12 || 0.28.2': true
   'fsevents@2.3.2 || 2.3.3': true
-  'msw@2.14.6': true
   'nx@23.3.0': true
-  'protobufjs@7.6.6': true
   'sharp@0.35.5': true
+  # result of build step not used
+  msw: false
+  # pulled in via docker-modem, not used
   ssh2: false
+  cpu-features: false
+  protobufjs: false
 
 catalog:
   '@codemirror/autocomplete': 6.20.3
