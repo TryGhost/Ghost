@@ -433,6 +433,23 @@ describe('MentionsAPI', function () {
     assert(page.data[0].id === mentionOne.id);
   });
 
+  it('Gives new mentions an empty payload', async function () {
+    const repository = new InMemoryMentionRepository();
+    const api = new MentionsAPI({
+      repository,
+      routingService: mockRoutingService,
+      resourceService: mockResourceService,
+      webmentionMetadata: mockWebmentionMetadata,
+    });
+
+    const mention = await api.processWebmention({
+      source: new URL('https://source.com'),
+      target: new URL('https://target.com'),
+    });
+
+    assert.deepEqual(mention.payload, {});
+  });
+
   it('Will error if the target page does not exist', async function () {
     const repository = new InMemoryMentionRepository();
     const api = new MentionsAPI({
