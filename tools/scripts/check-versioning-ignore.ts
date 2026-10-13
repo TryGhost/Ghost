@@ -8,12 +8,12 @@ import {
   type PackageManifest,
   type WorkspaceManifest,
 } from './lib/pnpm.ts';
-import { PUBLIC_APPS } from './lib/public-apps.ts';
+import { CONTINUOUS_PACKAGES } from './lib/publish-manifest.ts';
 import { readJson } from './lib/utils.ts';
 
 // Published packages versioned outside `pnpm version`: Ghost core by the release
-// scripts, the public apps by the publish job (npm holds the patch number).
-const EXTERNALLY_VERSIONED = new Set(['ghost', ...PUBLIC_APPS.map((app) => app.packageName)]);
+// scripts, the continuous lane by its publish job (npm holds the moving part).
+const EXTERNALLY_VERSIONED = new Set(['ghost', ...CONTINUOUS_PACKAGES.map((pkg) => pkg.name)]);
 
 // Every manifest in this workspace is named.
 export type NamedManifest = PackageManifest & { name: string };

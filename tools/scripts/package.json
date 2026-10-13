@@ -23,7 +23,8 @@
     "js-yaml": "catalog:",
     "picomatch": "4.0.7",
     "semver": "catalog:",
-    "typescript": "catalog:"
+    "typescript": "catalog:",
+    "zod": "catalog:"
   },
   "devDependencies": {
     "@internal/cfg-eslint": "workspace:*",

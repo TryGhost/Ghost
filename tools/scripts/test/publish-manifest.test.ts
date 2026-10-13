@@ -3,13 +3,13 @@ import assert from 'node:assert';
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 import {
-  PUBLIC_APPS,
+  CDN_PACKAGES,
   DEFAULTS_PATH,
   DEFAULTS_REPO_PATH,
-  appForPackageName,
+  continuousPackage,
   majorMinor,
   readDefaults,
-} from '../lib/public-apps.ts';
+} from '../lib/publish-manifest.ts';
 import { readJson } from '../lib/utils.ts';
 import { ROOT_DIR } from '../lib/constants.ts';
 
@@ -36,13 +36,13 @@ describe('majorMinor', () => {
   });
 });
 
-describe('appForPackageName', () => {
-  it('finds a public app', () => {
-    assert.strictEqual(appForPackageName('@tryghost/comments-ui').configKey, 'comments');
+describe('continuousPackage', () => {
+  it('finds a manifest package', () => {
+    assert.strictEqual(continuousPackage('@tryghost/comments-ui')?.cdn, 'comments');
   });
 
-  it('throws for a package that is not an app', () => {
-    assert.throws(() => appForPackageName('@tryghost/admin'), /not found in public-apps/);
+  it('is undefined for a package outside the lane', () => {
+    assert.strictEqual(continuousPackage('@tryghost/admin'), undefined);
   });
 });
 
@@ -60,18 +60,18 @@ describe('the major.minor invariant', () => {
   // This is the rule release-apps writes and check-app-version-bump verifies.
   // If the repo ever violates it, one of those two is broken — or someone
   // hand-edited a version without running "pnpm ship".
-  it('holds for every public app in the repo right now', async () => {
-    const defaults = (await readDefaults()) as Record<string, { version: string }>;
+  it('holds for every CDN package in the repo right now', async () => {
+    const defaults = await readDefaults();
 
-    for (const app of PUBLIC_APPS) {
+    for (const pkg of CDN_PACKAGES) {
       const { version } = await readJson<{ version: string }>(
-        join(ROOT_DIR, app.path, 'package.json'),
+        join(ROOT_DIR, pkg.path, 'package.json'),
       );
 
       assert.strictEqual(
-        defaults[app.configKey]?.version,
+        defaults[pkg.cdn!]?.version,
         majorMinor(version),
-        `${app.packageName}: package.json is ${version}, defaults.json says ${defaults[app.configKey]?.version}`,
+        `${pkg.name}: package.json is ${version}, defaults.json says ${defaults[pkg.cdn!]?.version}`,
       );
     }
   });

@@ -19,7 +19,7 @@ arguments with `node:util`'s `parseArgs`. Declare any dependency in
 
 Put logic shared by several scripts in `lib/`. A script that is its own
 entrypoint can just export the parts worth testing and guard the CLI path with
-`import.meta.main` — see `build-public-apps-matrix.ts`. Either way, cover it in
+`import.meta.main` — see `build-publish-matrix.ts`. Either way, cover it in
 `test/`: tests use `node --test`. TypeScript runs directly on
 the pinned Node version; `test:types` checks source, renderer and tests with the
 shared strict configuration. Note this

@@ -1,0 +1,38 @@
+[
+  {
+    "name": "@tryghost/portal",
+    "path": "apps/portal",
+    "versioning": "patch",
+    "cdn": "portal"
+  },
+  {
+    "name": "@tryghost/sodo-search",
+    "path": "apps/sodo-search",
+    "versioning": "patch",
+    "cdn": "sodoSearch"
+  },
+  {
+    "name": "@tryghost/comments-ui",
+    "path": "apps/comments-ui",
+    "versioning": "patch",
+    "cdn": "comments"
+  },
+  {
+    "name": "@tryghost/signup-form",
+    "path": "apps/signup-form",
+    "versioning": "patch",
+    "cdn": "signupForm"
+  },
+  {
+    "name": "@tryghost/announcement-bar",
+    "path": "apps/announcement-bar",
+    "versioning": "patch",
+    "cdn": "announcementBar"
+  },
+  {
+    "name": "@tryghost/admin-toolbar",
+    "path": "apps/admin-toolbar",
+    "versioning": "patch",
+    "cdn": "adminToolbar"
+  }
+]

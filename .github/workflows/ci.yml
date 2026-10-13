@@ -270,7 +270,7 @@ jobs:
             echo 'unit_test_projects_str=' >> "$GITHUB_OUTPUT"
             echo 'affected_i18n_projects=' >> "$GITHUB_OUTPUT"
             echo 'affected_playwright_matrix=[]' >> "$GITHUB_OUTPUT"
-            echo 'publish_public_apps_matrix=[]' >> "$GITHUB_OUTPUT"
+            echo 'publish_matrix=[]' >> "$GITHUB_OUTPUT"
             exit 0
           fi
 
@@ -325,11 +325,12 @@ jobs:
           ]' <<< "$PLAYWRIGHT_PROJECTS")
           echo "affected_playwright_matrix=$PLAYWRIGHT_MATRIX" >> "$GITHUB_OUTPUT"
 
-          # Build the publish matrix for affected public apps. Matrix context
-          # isn't available in a job-level `if:`, so the publish job can't filter
-          # itself per-app — instead we emit the matrix here and it skips when
-          # the result is `[]`. The publish job's own is_main / event gates keep
-          # tags and PRs from publishing regardless of what this lists.
+          # Build the matrix for the continuous publish job (publish-manifest.json
+          # packages affected in this run). Matrix context isn't available in a
+          # job-level `if:`, so the publish job can't filter itself per package —
+          # instead we emit the matrix here and it skips when the result is `[]`.
+          # The publish job's own is_main / event gates keep tags and PRs from
+          # publishing regardless of what this lists.
           # Publishing always uses real affected-ness, even when a CI file change
           # widened the test lanes above to every project.
           PUBLISH_PROJECTS="$AFFECTED_PROJECTS"
@@ -339,8 +340,8 @@ jobs:
               PUBLISH_PROJECTS=$(pnpm nx show projects --affected --json)
             fi
           fi
-          PUBLISH_PUBLIC_APPS_MATRIX=$(node tools/scripts/build-public-apps-matrix.ts "$PUBLISH_PROJECTS")
-          echo "publish_public_apps_matrix=$PUBLISH_PUBLIC_APPS_MATRIX" >> "$GITHUB_OUTPUT"
+          PUBLISH_MATRIX=$(node tools/scripts/build-publish-matrix.ts "$PUBLISH_PROJECTS")
+          echo "publish_matrix=$PUBLISH_MATRIX" >> "$GITHUB_OUTPUT"
 
       # Per-file e2e durations saved by job_e2e_timings on main. Read once here so
       # every shard plans from the same timings, even if main saves newer ones mid-run.
@@ -362,7 +363,7 @@ jobs:
       unit_test_projects_str: ${{ steps.affected.outputs.unit_test_projects_str }}
       unit_test_node_projects_str: ${{ steps.affected.outputs.unit_test_node_projects_str }}
       affected_playwright_matrix: ${{ steps.affected.outputs.affected_playwright_matrix }}
-      publish_public_apps_matrix: ${{ steps.affected.outputs.publish_public_apps_matrix }}
+      publish_matrix: ${{ steps.affected.outputs.publish_matrix }}
       changed_i18n_apps: ${{ steps.affected.outputs.affected_i18n_projects != '' }}
       changed_core: ${{ steps.changed.outputs.core }}
       changed_any_code: ${{ steps.changed.outputs.any-code }}
@@ -2150,7 +2151,7 @@ jobs:
     name: Build E2E Public App Assets
     needs: [job_setup]
     # Root of the build + browser-E2E lane (see run_e2e in job_setup).
-    # Doubles as public-app build verification and the gate for publish_public_apps:
+    # Doubles as public-app build verification and the gate for publish_continuous:
     # the `pnpm --filter @tryghost/e2e build:apps` step below is exactly the
     # `nx run-many --target=build --projects='tag:public-app'` build the publish flow
     # requires, so there's no separate build_public_apps job. Intentionally has no
@@ -2638,7 +2639,7 @@ jobs:
         job_apps_acceptance-tests,
         job_build_e2e_public_apps,
         job_e2e_tests,
-        publish_public_apps,
+        publish_continuous,
       ]
     if: always()
     runs-on: ubuntu-slim
@@ -2653,19 +2654,22 @@ jobs:
         run: |
           echo "One of the dependent jobs have failed or been cancelled. You may need to re-run it." && exit 1
 
-  # Publishes @tryghost/* public apps to npm via OIDC trusted publishing.
-  # Runs only on push-to-main — never on pull_request — so the `id-token: write`
-  # permission is never exposed to PR-controlled code (ref: ONC-1677).
-  publish_public_apps:
+  # The continuous publish lane: publishes the publish-manifest.json packages
+  # (public apps, and anything else that ships on every change) to npm via OIDC
+  # trusted publishing. Runs only on push-to-main — never on pull_request — so
+  # the `id-token: write` permission is never exposed to PR-controlled code
+  # (ref: ONC-1677). The changeset lane (koenig/*, packages/*) is the separate
+  # publish-packages.yml, which runs off release tags.
+  publish_continuous:
     needs: [job_setup, job_lint, job_typecheck, job_unit-tests, job_build_e2e_public_apps]
     name: Publish ${{ matrix.package_name }}
     runs-on: ubuntu-latest
-    # Serialize per-app publishes so two quick main merges can't both compute the
-    # same next-patch number and collide on npm. Different apps still publish in
-    # parallel; cancel-in-progress stays false so a queued publish isn't dropped.
+    # Serialize per-package publishes so two quick main merges can't both compute
+    # the same next version and collide on npm. Different packages still publish
+    # in parallel; cancel-in-progress stays false so a queued publish isn't dropped.
     environment: npm-release
     concurrency:
-      group: publish-public-app-${{ matrix.package_name }}
+      group: publish-continuous-${{ matrix.package_name }}
       cancel-in-progress: false
     if: |
       always()
@@ -2677,93 +2681,85 @@ jobs:
       && (needs.job_typecheck.result == 'success' || needs.job_typecheck.result == 'skipped')
       && needs.job_unit-tests.result == 'success'
       && needs.job_build_e2e_public_apps.result == 'success'
-      && needs.job_setup.outputs.publish_public_apps_matrix != '[]'
+      && needs.job_setup.outputs.publish_matrix != '[]'
     permissions:
       contents: read
       id-token: write
     strategy:
       matrix:
-        include: ${{ fromJSON(needs.job_setup.outputs.publish_public_apps_matrix) }}
+        include: ${{ fromJSON(needs.job_setup.outputs.publish_matrix) }}
     steps:
       - name: Checkout code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - uses: ./.github/actions/setup-node-pnpm
         with:
           node-version: ${{ env.NODE_VERSION }}
           trust-lockfile: 'true'
+          install-args: ${{ matrix.install_args }}
 
-      # nx marks an app affected for dependency changes that may not reach its
-      # bundle (dev tooling, dedupes), so compare against what's live first.
-      # Built with the live version so portal's baked-in version can't differ.
-      - name: Check for bundle changes
-        id: bundle
+      # nx marks a package affected for dependency changes that may not reach
+      # what it ships (dev tooling, dedupes), so compare against what's live
+      # first. Built with the live version so anything that bakes the version
+      # into the output (portal's REACT_APP_VERSION) compares like for like.
+      - name: Compare against the published tarball
+        id: compare
         working-directory: ${{ matrix.package_path }}
-        env:
-          PACKAGE_NAME: ${{ matrix.package_name }}
         run: |
-          LATEST=$(node "$GITHUB_WORKSPACE/tools/scripts/compute-next-app-version.ts" --latest .)
+          LATEST=$(node "$GITHUB_WORKSPACE/tools/scripts/next-version.ts" --latest .)
           if [ -z "$LATEST" ]; then
-            echo "No release in this major.minor line yet"
+            echo "No release in this version line yet"
             echo "changed=true" >> "$GITHUB_OUTPUT"
             exit 0
           fi
 
           npm pkg set version="$LATEST"
-          pnpm nx build "$PACKAGE_NAME"
-
-          PUBLISHED_DIR="$RUNNER_TEMP/published"
-          mkdir -p "$PUBLISHED_DIR"
-          npm pack "${PACKAGE_NAME}@${LATEST}" --pack-destination "$PUBLISHED_DIR"
-          tar -xzf "$PUBLISHED_DIR"/*.tgz -C "$PUBLISHED_DIR"
-
-          if diff -rq "$PUBLISHED_DIR/package/umd" umd; then
-            echo "Bundle matches ${PACKAGE_NAME}@${LATEST}, skipping publish"
-            echo "changed=false" >> "$GITHUB_OUTPUT"
-          else
-            echo "changed=true" >> "$GITHUB_OUTPUT"
-          fi
+          pnpm nx build "${{ matrix.package_name }}"
+          node "$GITHUB_WORKSPACE/tools/scripts/compare-published.ts" --version "$LATEST" .
 
       - name: Determine release version
-        if: steps.bundle.outputs.changed == 'true'
+        if: steps.compare.outputs.changed == 'true'
         id: release
         working-directory: ${{ matrix.package_path }}
         run: |
-          # npm is the source of truth for the patch number: compute the next
-          # patch above what's already published in this app's major.minor line
-          # (or publish package.json's exact version when starting a fresh
-          # minor/major line). The patch digit in package.json is otherwise
-          # unused — Ghost core resolves apps via <pkg>@~<major.minor> on
-          # jsDelivr, so the newest published patch is what sites receive.
-          NEXT_VERSION=$(node "$GITHUB_WORKSPACE/tools/scripts/compute-next-app-version.ts" .)
+          # npm is the source of truth for the moving part of the version (the
+          # patch number, or the prerelease counter): see next-version.ts.
+          # package.json only pins the line the package lives in.
+          NEXT_VERSION=$(node "$GITHUB_WORKSPACE/tools/scripts/next-version.ts" .)
           echo "Publishing ${{ matrix.package_name }}@${NEXT_VERSION}"
 
-          # Write it before building so the version baked into the bundle
-          # (e.g. portal's REACT_APP_VERSION) matches what we publish.
+          # Write it before building so the version baked into the output
+          # matches what we publish.
           npm pkg set version="$NEXT_VERSION"
 
           echo "current_minor=$(echo "$NEXT_VERSION" | awk -F. '{print $1"."$2}')" >> $GITHUB_OUTPUT
           echo "current_major=$(echo "$NEXT_VERSION" | awk -F. '{print $1}')" >> $GITHUB_OUTPUT
 
       - name: Build the package
-        if: steps.bundle.outputs.changed == 'true'
+        if: steps.compare.outputs.changed == 'true'
         run: pnpm nx build ${{ matrix.package_name }}
 
       - name: Configure .npmrc
-        if: steps.bundle.outputs.changed == 'true'
+        if: steps.compare.outputs.changed == 'true'
         run: |
           echo "@tryghost:registry=https://registry.npmjs.org/" >> ~/.npmrc
 
       # --provenance is explicit rather than relying on pnpm's auto-detection,
-      # which degrades to a warning if it can't confirm visibility.
+      # which degrades to a warning if it can't confirm visibility. --tag is
+      # always passed: a prerelease must never land on `latest`, and OIDC
+      # trusted publishing can't retag afterwards.
       - name: Publish to npm
-        if: steps.bundle.outputs.changed == 'true'
+        if: steps.compare.outputs.changed == 'true'
         working-directory: ${{ matrix.package_path }}
         run: |
-          pnpm publish --access public --provenance --no-git-checks
+          pnpm publish --access public --provenance --no-git-checks --tag "${{ matrix.dist_tag }}"
 
+      # Ghost core serves CDN packages from jsDelivr version aliases
+      # (`~major.minor`), which only re-resolve on purge.
       - name: Replace version placeholders in cdn-paths
-        if: steps.bundle.outputs.changed == 'true'
+        if: steps.compare.outputs.changed == 'true' && matrix.cdn_paths != ''
         id: cdn_paths
         run: |
           cdn_paths="${{ matrix.cdn_paths }}"
@@ -2772,11 +2768,11 @@ jobs:
           echo "EOF" >> $GITHUB_OUTPUT
 
       - name: Print cdn_paths
-        if: steps.bundle.outputs.changed == 'true'
+        if: steps.compare.outputs.changed == 'true' && matrix.cdn_paths != ''
         run: echo "${{ steps.cdn_paths.outputs.cdn_paths }}"
 
       - name: Purge jsDelivr cache
-        if: steps.bundle.outputs.changed == 'true'
+        if: steps.compare.outputs.changed == 'true' && matrix.cdn_paths != ''
         uses: gacts/purge-jsdelivr-cache@8d92aea944f1a3e8ad70505379e1a8ac72d56b73 # v1.1.2
         with:
           url: ${{ steps.cdn_paths.outputs.cdn_paths }}
