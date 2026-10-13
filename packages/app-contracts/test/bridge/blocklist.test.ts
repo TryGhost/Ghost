@@ -5,12 +5,11 @@ import { ADMIN_API_BLOCKLIST, isBlockedAdminApiPath } from '../../src/bridge/ind
 describe('the Admin API blocklist', () => {
   it('gives every category a name, a reason and paths', () => {
     expect(ADMIN_API_BLOCKLIST.map((category) => category.name)).toEqual([
-      'staff_tokens',
+      'staff_accounts',
       'integrations',
       'identity_tokens',
       'sessions',
       'invites',
-      'password_and_ownership',
       'webhooks',
       'database',
       'third_party_tokens',
@@ -24,7 +23,15 @@ describe('the Admin API blocklist', () => {
 
   // One real route per category, as Ghost core's admin routes write them.
   const blocked: Record<string, string[]> = {
-    staff_tokens: ['/users/5ddc9141c35e7700383b2937/token/', '/users/1/token'],
+    staff_accounts: [
+      '/users/5ddc9141c35e7700383b2937/',
+      '/users/5ddc9141c35e7700383b2937/token/',
+      '/users/1/token',
+      '/users/me/',
+      '/users/slug/jamie/',
+      '/users/password/',
+      '/users/owner/',
+    ],
     integrations: [
       '/integrations/',
       '/integrations/abc/',
@@ -40,7 +47,6 @@ describe('the Admin API blocklist', () => {
       '/authentication',
     ],
     invites: ['/invites/', '/invites/abc/'],
-    password_and_ownership: ['/users/password/', '/users/owner/'],
     webhooks: ['/webhooks/', '/webhooks/abc/'],
     database: ['/db/', '/db/backup/', '/db/media/inline/', '/exports/', '/exports/download/'],
     third_party_tokens: ['/tinybird/token/', '/featurebase/token/', '/config/featurebase/'],
@@ -73,12 +79,9 @@ describe('the Admin API blocklist', () => {
       '/posts/abc/',
       '/members/',
       '/users/',
-      '/users/abc/',
-      '/users/me/',
-      '/users/abc/token/extra/',
-      '/users/abc/tokens/',
-      '/users/x/tokens-stats',
-      '/users/passwords/',
+      '/users/?filter=id:abc',
+      '/users/?filter=id:abc&include=roles',
+      '/tinybird/token/extra/',
       '/config/',
       '/site/',
       '/settings/',

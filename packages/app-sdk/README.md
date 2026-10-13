@@ -65,7 +65,7 @@ Call it as soon as the page loads; every call shares one connection.
 | `path.set(path, { replace })` | Tells Admin the app moved to another of its routes, so the address bar, reloads and the back button follow. It does not navigate the page.  |
 | `onPathChange(callback)`      | Called when Admin's address moves within the app: back, forward, a link. Not for the app's own `path.set`.                                  |
 | `fetch(path, init?)`          | Calls the Admin API as the staff user. `path` is relative to the API root (`/posts/?limit=5`), never a URL. Answers with a real `Response`. |
-| `open(place)`                 | Sends the publisher to `{ post: { id } }`, `{ member: { id } }` or `{ apps: true }`.                                                        |
+| `open(place)`                 | Sends the publisher to `{ post: { id } }`, `{ page: { id } }`, `{ member: { id } }` or `{ apps: true }`.                                    |
 | `connected`                   | `false` once the session has ended.                                                                                                         |
 | `onSessionEnd(callback)`      | Called once, with the `session_ended` error, when the session ends.                                                                         |
 

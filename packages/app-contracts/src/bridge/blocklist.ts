@@ -6,6 +6,11 @@
  * each one either hands out a credential that would outlive the app's session, changes who
  * can sign in, or acts on the whole site at once. The blocklist goes when the token arrives.
  *
+ * It covers credentials, sign-in and whole-site operations, and nothing more. Writes that
+ * leave code on the site stay open: code injection through `PUT /settings`, theme uploads
+ * (`POST /themes/upload`), and redirects and routes uploads. Whether apps may make those is
+ * for the security review before external developers (BER-3992).
+ *
  * A route is blocked whatever the method. Telling a harmless read from a dangerous write per
  * route is more rules to get wrong, and nothing here is a read an app needs.
  *
@@ -25,9 +30,10 @@ export interface BlockedAdminApiCategory {
 
 export const ADMIN_API_BLOCKLIST: readonly BlockedAdminApiCategory[] = [
   {
-    name: 'staff_tokens',
-    reason: "A staff token is a key to the Admin API as that person, outside the app's session.",
-    paths: ['/users/:id/token'],
+    name: 'staff_accounts',
+    reason:
+      "Editing a staff user can change their email or role, deleting one removes them, a staff token is a key to the Admin API as that person, and changing a password or the site's owner changes who controls the site. Reading a user goes through `/users/?filter=id:…`, which stays open.",
+    paths: ['/users/:id', '/users/:id/*', '/users/password', '/users/owner'],
   },
   {
     name: 'integrations',
@@ -48,11 +54,6 @@ export const ADMIN_API_BLOCKLIST: readonly BlockedAdminApiCategory[] = [
     name: 'invites',
     reason: 'An invite adds a staff user, who could then act without the app.',
     paths: ['/invites', '/invites/*'],
-  },
-  {
-    name: 'password_and_ownership',
-    reason: "Changing a password or the site's owner changes who controls the site.",
-    paths: ['/users/password', '/users/owner'],
   },
   {
     name: 'webhooks',

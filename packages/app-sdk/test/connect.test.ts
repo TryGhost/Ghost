@@ -203,6 +203,34 @@ describe('connect', () => {
     await expect(second).resolves.toBeDefined();
   });
 
+  it('connects afresh once the session has ended', async () => {
+    const parent = frame();
+    const first = admin();
+    const connecting = sdk.connect();
+    first.connect();
+    await first.start();
+    const ghost = await connecting;
+    const ended = new Promise((resolve) => {
+      ghost.onSessionEnd(resolve);
+    });
+    first.close();
+    await ended;
+
+    const hellos = parent.postMessage.mock.calls.length;
+    const second = admin();
+    const reconnecting = sdk.connect();
+    expect(reconnecting).not.toBe(connecting);
+    expect(parent.postMessage).toHaveBeenCalledTimes(hellos + 1);
+
+    second.connect();
+    await second.start(startContext({ session: { revision: 4 } }));
+    const next = await reconnecting;
+    expect(next).not.toBe(ghost);
+    expect(next.connected).toBe(true);
+    expect(next.session).toEqual({ revision: 4 });
+    expect(ghost.connected).toBe(false);
+  });
+
   it('refuses a start it does not understand', async () => {
     frame();
     const fake = admin();
