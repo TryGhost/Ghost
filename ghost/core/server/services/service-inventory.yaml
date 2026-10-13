@@ -1736,9 +1736,10 @@ services:
           runs. Media promises, including failed results, are cached by exact URL within one
           job, not across jobs. Store units assert retention/eviction and two-run release
           waiting; media units hold an import to prove sharing, and assert separate-instance
-          isolation. Root units retain the same request/job/drain receiver and complete a
-          queued run after repeated init. Duplicate/concurrent job handling and late admissions
-          during shutdown remain source-only. The importer drain test awaits handle before
+          isolation. Root units retain the same request/job/drain receiver and call handleJob
+          directly after repeated init. Dispatch is stubbed; the jobs backend queue is not
+          exercised. Duplicate/concurrent job handling and late admissions during shutdown
+          remain source-only. The importer drain test awaits handle before
           checking settlement, so it cannot establish the final cleanup boundary.
         sources:
           - core/server/services/content-import/index.ts
