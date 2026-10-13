@@ -38,6 +38,8 @@ import { Box, Inline } from '@tryghost/shade/primitives';
 import { RunHistory } from './run-history';
 import { canvasBackground } from './canvas-background';
 import { AutomationSidebar } from './automation-sidebar';
+import type { TriggerData } from './trigger-card';
+import { useBrowseTiers } from '@tryghost/admin-x-framework/api/tiers';
 import { type StepPickerType } from './step-picker';
 import { EmailPerformanceSidebar } from './email-performance-sidebar';
 import { isEmptyEmailLexical } from '@/automations/utils';
@@ -169,6 +171,7 @@ type BuildGraphParams = {
   actionErrors: Record<string, string>;
   automation: AutomationDetail;
   savedTriggerTierIds: readonly string[];
+  tierQuery: TriggerData['tierQuery'];
   onChange: (next: AutomationDetail) => void;
   nodeSizes: Record<string, { width: number; height: number }>;
   newEmailWithoutWarningsId: string | null;
@@ -190,6 +193,7 @@ const buildGraph = ({
   actionErrors,
   automation,
   savedTriggerTierIds,
+  tierQuery,
   onChange,
   nodeSizes,
   newEmailWithoutWarningsId,
@@ -237,6 +241,7 @@ const buildGraph = ({
       },
       data: {
         trigger: {
+          tierQuery,
           scope: automation.trigger_tier_scope,
           tierIds: automation.trigger_tier_ids ?? [],
           savedTierIds: savedTriggerTierIds,
@@ -458,6 +463,37 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
   const [selectedStep, setSelectedStep] = useState<SelectedStep | null>(null);
   const [deleteConfirmationActionId, setDeleteConfirmationActionId] = useState<string | null>(null);
   const automationsPerTierEnabled = useFeatureFlag('automationsPerTier');
+  const triggerTierScope = automation?.trigger_tier_scope;
+  let tiersEnabled: boolean;
+  switch (triggerTierScope) {
+    case 'all_paid':
+    case 'selected_paid':
+      tiersEnabled = true;
+      break;
+    case 'free':
+    case null:
+    case undefined:
+      tiersEnabled = false;
+      break;
+    default: {
+      const _exhaustive: never = triggerTierScope;
+      throw new Error(`Unknown automation trigger scope: ${String(_exhaustive)}`);
+    }
+  }
+  const {
+    data: tierData,
+    isLoading: tiersLoading,
+    isError: tiersError,
+    refetch: refetchTiers,
+  } = useBrowseTiers({
+    searchParams: { filter: 'type:paid', limit: 'all' },
+    defaultErrorHandler: false,
+    enabled: tiersEnabled,
+  });
+  const tierQuery = useMemo(
+    () => ({ data: tierData, isLoading: tiersLoading, isError: tiersError, refetch: refetchTiers }),
+    [tierData, tiersLoading, tiersError, refetchTiers],
+  );
   const selectedStepId = selectedStep?.id ?? null;
   const emailModalStepId = searchParams.get(EMAIL_STEP_QUERY_PARAM);
   const isRouterOpenedEmailModal =
@@ -687,6 +723,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
       actionErrors,
       automation,
       savedTriggerTierIds,
+      tierQuery,
       onChange,
       nodeSizes,
       newEmailWithoutWarningsId,
@@ -710,6 +747,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
   }, [
     actionErrors,
     savedTriggerTierIds,
+    tierQuery,
     onChange,
     automation,
     nodeSizes,
@@ -863,6 +901,8 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
           performanceEnabled={isPerformanceEnabled}
           selectedRunId={selectedRunId}
           selectedTab={sidebar.tab === 'unknown' ? 'settings' : sidebar.tab}
+          tiers={tierData?.tiers ?? []}
+          triggerTierIds={automation.trigger_tier_ids ?? []}
           triggerTierScope={automation.trigger_tier_scope}
           onDetailsChange={(details) => onChange({ ...automation, ...details })}
           onOpenChange={(open) => {
