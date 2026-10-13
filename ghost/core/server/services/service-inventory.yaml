@@ -9970,7 +9970,9 @@ services:
     notes: >-
       Preserve optional public response caching, endpoint binding and invalidation identity.
       Normal cold boot has consumer regression coverage; restart, adapter failures and
-      asynchronous invalidation remain separate obligations.
+      asynchronous invalidation remain separate obligations. Cache-root unit fixtures now
+      load fresh modules and restore original cache entries/listeners, without assigning
+      private api state; existing enabled/disabled, retention and endpoint assertions remain.
     contracts:
       exports:
         summary: >-
