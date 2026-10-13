@@ -167,7 +167,7 @@ export const TriggerCard: React.FC<
         <PaidTierPicker errorMessage={errorMessage} trigger={trigger} />
       ) : (
         <Text as="p" size="md" tone="secondary">
-          Triggered when someone signs up as a free member.
+          Triggered when someone signs up as a free member
         </Text>
       )}
       {children}

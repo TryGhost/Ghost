@@ -310,7 +310,7 @@ describe('Automation trigger tiers', () => {
     });
     await renderAdminApp('/automations/first', flags);
     await expect
-      .element(page.getByText('Triggered when someone signs up as a free member.'))
+      .element(page.getByText('Triggered when someone signs up as a free member'))
       .toBeVisible();
     await expect.element(picker()).not.toBeInTheDocument();
   });
