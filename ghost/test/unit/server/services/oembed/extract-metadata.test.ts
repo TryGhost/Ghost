@@ -326,12 +326,21 @@ describe('extractMetadata parity with metascraper', function () {
     }
   });
 
+  it('keeps single-word authors that are also domain endings', function () {
+    for (const name of ['Apple', 'BBC', 'Bloomberg', 'News', 'Team', 'Blog']) {
+      assert.equal(author(`<meta name="author" content="${name}">`), name);
+    }
+  });
+
   it('rejects authors that are URLs or domains', function () {
     for (const value of [
       'example.com',
       'example.com/jane',
       'https://example.com/jane',
+      'jane.bsky.social',
+      'co.uk',
       '192.168.0.1',
+      'localhost',
     ]) {
       assert.equal(author(`<meta name="author" content="${value}">`), null);
     }

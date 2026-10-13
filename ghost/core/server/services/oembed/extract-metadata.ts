@@ -188,8 +188,9 @@ const toDescription = (value: unknown) => {
   return condense(value.replace(REGEX_LOCATION, '')).replace(/\s?\.\.\.?$/, '…');
 };
 
-// Only values with a scheme or a real domain/IP count, so dotted names like
-// "J.K.Rowling" or "j.doe" are still authors
+// Only values with a scheme, a dotted ICANN domain, an IP or localhost count,
+// so dotted names like "J.K.Rowling" and single words that happen to be
+// domain endings like "Apple" or "News" are still authors
 const looksLikeUrl = (value: string) => {
   if (REGEX_URL_SCHEME.test(value)) {
     return true;
@@ -197,8 +198,8 @@ const looksLikeUrl = (value: string) => {
   if (/\s/.test(value)) {
     return false;
   }
-  const { isIcann, isIp } = parseDomain(value);
-  return Boolean(isIcann || isIp);
+  const { hostname, isIcann, isIp } = parseDomain(value);
+  return Boolean(isIp || hostname === 'localhost' || (isIcann && value.includes('.')));
 };
 
 const toAuthor = (value: unknown) => {
