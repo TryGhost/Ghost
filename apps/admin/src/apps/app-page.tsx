@@ -380,7 +380,8 @@ const NotInstalled: React.FC = () => (
 /**
  * Starts a session of the app when the page opens, and again on `restart`. Ghost re-checks
  * the app's manifest first, and its answer alone decides what the page shows; nothing of
- * the app loads before it.
+ * the app loads before it. A Ghost from before app sessions can't re-check, and the
+ * installation as read decides instead.
  */
 function useAppSession(installationId: string): {
   settled: boolean;
