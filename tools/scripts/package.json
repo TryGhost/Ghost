@@ -49,6 +49,10 @@
         "{workspaceRoot}/apps/admin/vitest.acceptance.config.ts",
         "{workspaceRoot}/apps/admin/tsconfig*.json",
         "{workspaceRoot}/apps/shade/tsconfig.json"
+      ],
+      "oxlintContracts": [
+        "{workspaceRoot}/.oxlintrc.json",
+        "{workspaceRoot}/tools/configs/oxlint/**/*"
       ]
     },
     "targets": {
@@ -60,7 +64,8 @@
           "adminSourceContracts",
           {
             "runtime": "node -v"
-          }
+          },
+          "oxlintContracts"
         ]
       },
       "test:unit": {
@@ -71,7 +76,8 @@
           "adminSourceContracts",
           {
             "runtime": "node -v"
-          }
+          },
+          "oxlintContracts"
         ]
       }
     }
