@@ -3,6 +3,7 @@ import { Kbd, KbdGroup, Tooltip, TooltipContent, TooltipTrigger } from '@tryghos
 import { Inline, Stack, Text } from '@tryghost/shade/primitives';
 import { LucideIcon, cn } from '@tryghost/shade/utils';
 import { settingsShortcutRow } from '@tryghost/test-data/selectors/editor';
+import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import { isMacPlatform } from '@/utils/is-mac-platform';
 import {
   keyboardShortcutGroups,
@@ -11,6 +12,7 @@ import {
   type ShortcutStyle,
 } from './keyboard-shortcuts';
 import { SettingsSubview } from './settings-subview';
+import { EDITOR_REQUEST_OPTIONS } from '@/editor/request-options';
 
 const LABEL_CLASSES: Record<ShortcutStyle, string> = {
   bold: 'font-semibold',
@@ -83,7 +85,13 @@ function ShortcutRow({ shortcut }: { shortcut: Shortcut }) {
 
 /** The editor's keyboard shortcuts, as a reference the writer reads rather than edits. */
 export function KeyboardShortcutsSection() {
-  const groups = useMemo(() => keyboardShortcutGroups(isMacPlatform()), []);
+  const editorImprovements = useFeatureFlag('admin7EditorImprovements', {
+    requestOptions: EDITOR_REQUEST_OPTIONS,
+  });
+  const groups = useMemo(
+    () => keyboardShortcutGroups(isMacPlatform(), { settingsShortcut: editorImprovements }),
+    [editorImprovements],
+  );
 
   return (
     <SettingsSubview
