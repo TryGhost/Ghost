@@ -131,8 +131,10 @@ function forget(attempt: Promise<Ghost>) {
  * started the app. Safe to call as soon as the page loads.
  *
  * Every call shares the one connection; the options of the first call apply. After a
- * failure, or once the session has ended, the next call connects afresh: a page Admin
- * starts again gets a new `Ghost`, never the one whose session is over.
+ * failure, the next call tries again. Once the session has ended there is nothing in this
+ * page to reconnect: Admin replaces the page rather than start it again, and the new page
+ * connects for itself. A call made anyway says hello afresh and never resolves with the
+ * `Ghost` whose session is over.
  */
 export function connect(options: ConnectOptions = {}): Promise<Ghost> {
   if (!connecting) {

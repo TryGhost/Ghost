@@ -226,7 +226,10 @@ describe('connect', () => {
     await expect(second).resolves.toBeDefined();
   });
 
-  it('connects afresh once the session has ended', async () => {
+  // Admin replaces a page whose session has ended rather than start it again, so this is the
+  // SDK's side of the contract, whatever the host: a call after the end never hands out the
+  // ended Ghost, and a host that does answer starts a new one.
+  it('says hello afresh once the session has ended, never reusing the ended Ghost', async () => {
     const parent = frame();
     const first = admin();
     const connecting = sdk.connect();
