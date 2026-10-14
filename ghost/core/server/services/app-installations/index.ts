@@ -22,8 +22,11 @@ export type { AppInstallationPreview } from './service';
  */
 const AppsConfig = z.object({ localhostAlias: z.string().min(1).nullable().default(null) });
 
+// Localhost manifest URLs, and the alias they are fetched through, are for development only.
+const isDevelopment = () => config.get('env') === 'development';
+
 function localhostAlias(): string | null {
-  if (config.get('env') !== 'development') {
+  if (!isDevelopment()) {
     return null;
   }
   return AppsConfig.parse(config.get('apps') ?? {}).localhostAlias;
@@ -46,7 +49,7 @@ export default defineService('App Installations', () => {
       // Read per load, not once at boot: both are config, which tests change.
       getManifestRules: () => ({
         ghostUrls: [urlUtils.urlFor('home', true), urlUtils.urlFor('admin', true)],
-        allowLocalhost: config.get('env') === 'development',
+        allowLocalhost: isDevelopment(),
       }),
       getLocalhostAlias: localhostAlias,
     }),
