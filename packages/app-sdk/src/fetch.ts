@@ -109,17 +109,21 @@ export function toFetchRequest(path: string, init: GhostFetchInit = {}): FetchRe
   return request;
 }
 
+const UNREADABLE_ANSWER = "Ghost answered with a response this SDK doesn't understand";
+
 /** Rebuilds Admin's answer as the `Response` the app would have had from `fetch`. */
 export function toResponse(answer: unknown): Response {
   if (!isFetchResponse(answer)) {
-    throw new GhostAppError(
-      'rejected',
-      "Ghost answered with a response this SDK doesn't understand",
-    );
+    throw new GhostAppError('rejected', UNREADABLE_ANSWER);
   }
-  return new Response(NULL_BODY_STATUSES.has(answer.status) ? null : answer.body, {
-    status: answer.status,
-    statusText: answer.statusText,
-    headers: answer.headers,
-  });
+  // A header name or status text a `Response` can't hold makes its constructor throw.
+  try {
+    return new Response(NULL_BODY_STATUSES.has(answer.status) ? null : answer.body, {
+      status: answer.status,
+      statusText: answer.statusText,
+      headers: answer.headers,
+    });
+  } catch (error) {
+    throw new GhostAppError('rejected', UNREADABLE_ANSWER, { cause: error });
+  }
 }

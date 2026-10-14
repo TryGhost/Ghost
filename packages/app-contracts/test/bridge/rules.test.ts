@@ -214,6 +214,8 @@ describe('a fetch response', () => {
       { ...response, status: '200' },
       { ...response, statusText: undefined },
       { ...response, headers: null },
+      { ...response, headers: ['content-type'] },
+      { ...response, headers: [['content-type', 'text/plain']] },
       { ...response, headers: { 'content-length': 2 } },
       { ...response, body: null },
     ]) {

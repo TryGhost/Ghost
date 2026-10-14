@@ -230,6 +230,12 @@ describe('fetch', () => {
     ['no headers', { status: 200, statusText: '', headers: null, body: '' }],
     ['a body that is not text', { status: 200, statusText: '', headers: {}, body: 1 }],
     ['no status text', { status: 200, headers: {}, body: '' }],
+    ['headers as a list', { status: 200, statusText: '', headers: ['a'], body: '' }],
+    [
+      'a header name fetch refuses',
+      { status: 200, statusText: '', headers: { 'a b': 'x' }, body: '' },
+    ],
+    ['status text fetch refuses', { status: 200, statusText: 'OK\n', headers: {}, body: '' }],
   ])('rejects an answer of %s', async (_label, answer) => {
     const host = hostExports();
     host.fetch.mockResolvedValue(answer as never);

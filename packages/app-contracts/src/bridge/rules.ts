@@ -327,6 +327,7 @@ export function isFetchResponse(value: unknown): value is FetchResponse {
     (value.status as number) <= FETCH_RESPONSE_STATUS_MAX &&
     typeof value.statusText === 'string' &&
     isRecord(value.headers) &&
+    !Array.isArray(value.headers) &&
     Object.values(value.headers).every((header) => typeof header === 'string') &&
     typeof value.body === 'string'
   );
