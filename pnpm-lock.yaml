@@ -392,6 +392,9 @@ catalogs:
     '@types/express-brute':
       specifier: 1.0.6
       version: 1.0.6
+    '@types/js-yaml':
+      specifier: 4.0.9
+      version: 4.0.9
     '@types/jsdom':
       specifier: 30.0.0
       version: 30.0.0

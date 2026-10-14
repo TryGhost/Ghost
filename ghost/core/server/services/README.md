@@ -91,6 +91,19 @@ The shared [clock](../../kernel/clock.ts) is allowed directly, including its
 deprecated `moment` export for existing date logic. Service migration does not
 require rewriting those date operations.
 
+Import allowlisted libraries directly where they are used; do not pass the
+library or its exports through the service's dependencies. Local use in the
+root is fine, including validating configuration with Zod and passing computed
+values such as `getUnixTime()`.
+
+`pnpm lint:oxlint` enforces direct constructor wiring with
+`ghost/no-injected-service-libraries`. In migrated root `index.ts` files, it
+rejects allowlisted imports and `const require()` bindings passed to constructors
+imported from within that service, including values in literal options objects
+and arrays. It reads the same allowlist and service scope as the boundary rule.
+Factories, forwarding callbacks, indirect aliases and separately assembled
+options objects still need review; this is not general data-flow analysis.
+
 Logging, settings, models, event buses and other service instances belong in the
 root wiring. Nested `index.ts` files are implementation files, not extra wiring
 roots. The rule covers static imports, `require()`, literal dynamic imports and

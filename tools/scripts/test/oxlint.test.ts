@@ -1,6 +1,14 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { cpSync, mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import {
+  cpSync,
+  mkdtempSync,
+  mkdirSync,
+  readFileSync,
+  rmSync,
+  symlinkSync,
+  writeFileSync,
+} from 'node:fs';
 import { createRequire } from 'node:module';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
@@ -20,14 +28,37 @@ interface Diagnostic {
   labels: { span: { line: number; column: number } }[];
 }
 
-function lint(code: string, filename: string, allOff = false, rules?: Record<string, unknown>) {
+function lint(
+  code: string,
+  filename: string,
+  allOff = false,
+  rules?: Record<string, unknown>,
+  boundarySource?: string,
+) {
   const cwd = mkdtempSync(path.join(tmpdir(), 'ghost-oxlint-'));
   try {
     const localConfig = structuredClone(config);
     // Run a standalone copy so an accidental ESLint plugin import cannot resolve.
-    cpSync(path.join(root, 'tools/configs/oxlint'), path.join(cwd, 'plugin'), { recursive: true });
+    cpSync(path.join(root, 'tools/configs/oxlint'), path.join(cwd, 'tools/configs/oxlint'), {
+      recursive: true,
+    });
+    const inventory = 'ghost/core/server/services/service-inventory.yaml';
+    mkdirSync(path.dirname(path.join(cwd, inventory)), { recursive: true });
+    writeFileSync(
+      path.join(cwd, inventory),
+      JSON.stringify({ services: { alpha: { migrated: true }, legacy: { migrated: false } } }),
+    );
+    writeFileSync(
+      path.join(cwd, '.dependency-cruiser.cjs'),
+      boundarySource ?? readFileSync(path.join(root, '.dependency-cruiser.cjs')),
+    );
+    const resolver = 'tools/scripts/lib/service-dependency-resolver.mjs';
+    mkdirSync(path.dirname(path.join(cwd, resolver)), { recursive: true });
+    cpSync(path.join(root, resolver), path.join(cwd, resolver));
+    mkdirSync(path.join(cwd, 'node_modules'), { recursive: true });
+    symlinkSync(path.join(root, 'node_modules/js-yaml'), path.join(cwd, 'node_modules/js-yaml'));
     for (const plugin of localConfig.jsPlugins) {
-      plugin.specifier = `./plugin/${path.basename(plugin.specifier)}`;
+      plugin.specifier = `./tools/configs/oxlint/${path.basename(plugin.specifier)}`;
     }
     if (rules) {
       localConfig.overrides = [{ files: ['**/*'], rules }];
@@ -55,6 +86,7 @@ function lint(code: string, filename: string, allOff = false, rules?: Record<str
     assert.ifError(result.error);
     assert.equal(result.stderr, '');
     assert.ok(result.status === 0 || result.status === 1, result.stdout);
+    assert.ok(result.stdout.trimStart().startsWith('{'), result.stdout);
     const output = JSON.parse(result.stdout) as {
       diagnostics: Diagnostic[];
       number_of_rules: number;
@@ -73,7 +105,6 @@ test('all categories are off and custom rules report JS/TS violations', () => {
   ] as const) {
     const result = lint(source, `ghost/core/server/example.${extension}`);
     assert.equal(result.status, 1);
-
     assert.equal(result.diagnostics.length, 1);
     assert.equal(result.diagnostics[0]?.code, 'ghost(ghost-custom/no-native-error)');
     assert.equal(result.diagnostics[0]?.severity, 'error');
@@ -381,4 +412,148 @@ test('global ignores and the member-attribution allow-back are preserved', () =>
     lint('new Error();', 'ghost/core/frontend/src/member-attribution/example.js').status,
     1,
   );
+});
+
+const serviceRoot = 'ghost/core/server/services/alpha/index.ts';
+const injectionCode = 'ghost(no-injected-service-libraries)';
+
+test('reports direct allowlisted bindings and members passed to local service constructors', () => {
+  const source = [
+    "import Service from './service';",
+    "import * as constructors from './constructors';",
+    "import tpl from '@tryghost/tpl';",
+    "import {z as schema} from 'zod';",
+    "import * as crypto from 'node:crypto';",
+    "import {getUnixTime as now} from '../../../kernel/clock.js';",
+    "const errors = require('@tryghost/errors');",
+    "const {promisify: promise} = require('node:util');",
+    "const legacy = require('../../../kernel/clock').moment;",
+    "const {OtherService} = require('./other-service');",
+    'new Service({tpl});',
+    'new Service(schema);',
+    'new Service({uuid: crypto.randomUUID});',
+    'new Service({now});',
+    'new Service({errors});',
+    'new Service({promise});',
+    'new Service({legacy});',
+    "new constructors.Service({tpl: require('@tryghost/tpl')});",
+    'new OtherService({nested: [tpl, {errors}]});',
+    'new Service({...errors});',
+    'new Service({tpl: tpl as unknown});',
+    'new Service({tpl: tpl satisfies Function});',
+    'new Service({tpl: tpl!});',
+  ].join('\n');
+  const result = lint(source, serviceRoot);
+  assert.equal(result.status, 1);
+  assert.equal(result.diagnostics.length, 14);
+  assert.ok(result.diagnostics.every((d) => d.code === injectionCode && d.severity === 'error'));
+  assert.deepEqual(
+    result.diagnostics.map((d) => d.labels[0]?.span.line).sort((a, b) => a! - b!),
+    [11, 12, 13, 14, 15, 16, 17, 18, 19, 19, 20, 21, 22, 23],
+  );
+  assert.ok(result.diagnostics.some((d) => d.message.includes('Import @tryghost/tpl directly')));
+});
+
+test('allows local library use, computed values, injected application dependencies and shadowed bindings', () => {
+  const result = lint(
+    `
+    import Service from './service';
+    import External from 'external-service';
+    import OtherService from '../other/service';
+    import errors from '@tryghost/errors';
+    import {z} from 'zod';
+    import {getUnixTime} from '../../../kernel/clock';
+    import tpl from '@tryghost/tpl';
+    import logging from '@tryghost/logging';
+    const schema = z.object({url: z.string()});
+    z.instanceof(errors.GhostError);
+    new Service({startedAt: getUnixTime(), message: tpl(messages.hello), logging});
+    new Service({error: new errors.GhostError({message: 'local'})});
+    new Service({getConfig: () => schema.parse({url: 'example'})});
+    new External({tpl});
+    new OtherService({tpl});
+    function make(tpl) { return new Service({tpl}); }
+    function customLoader(require) { return new Service({loader: require('@tryghost/tpl')}); }
+    function localConstructor(Service) { return new Service({tpl}); }
+  `,
+    serviceRoot,
+  );
+  assert.equal(result.status, 0);
+  assert.deepEqual(result.diagnostics, []);
+});
+
+test('limits injection enforcement to migrated TypeScript wiring roots', () => {
+  for (const filename of [
+    'ghost/core/server/services/legacy/index.ts',
+    'ghost/core/server/services/unlisted/index.ts',
+    'ghost/core/server/services/alpha/helper.ts',
+    'ghost/core/server/services/alpha/nested/index.ts',
+    'ghost/core/server/services/alpha/index.js',
+    'ghost/test/service.ts',
+  ]) {
+    const result = lint(
+      "import Service from './service'; import tpl from '@tryghost/tpl'; new Service({tpl});",
+      filename,
+    );
+    assert.equal(result.status, 0, filename);
+    assert.deepEqual(result.diagnostics, []);
+  }
+});
+
+test('shares the dependency-cruiser allowlist, including exact local files and package subpaths', () => {
+  const source = `
+    import Service from './service';
+    import errors from '@tryghost/errors/subpath';
+    import lookalike from '@tryghost/errors-extra';
+    import clock from '../../../kernel/clock-extra';
+    import os from 'node:os';
+    new Service({errors, lookalike, clock, os});
+  `;
+  const original = lint(source, serviceRoot);
+  assert.equal(original.diagnostics.length, 1);
+  assert.match(original.diagnostics[0]!.message, /@tryghost\/errors\/subpath/);
+  const changed = readFileSync(path.join(root, '.dependency-cruiser.cjs'), 'utf8').replace(
+    'const serviceDependencyAllowlist = [',
+    () => "const serviceDependencyAllowlist = ['^node:os$',",
+  );
+  const result = lint(source, serviceRoot, false, undefined, changed);
+  assert.equal(result.diagnostics.length, 2);
+  assert.ok(result.diagnostics.some((d) => d.message.includes('node:os')));
+});
+
+test('keeps the guard bounded to direct constructor wiring and supports explicit exceptions', () => {
+  const result = lint(
+    `
+    import Service from './service';
+    import createService from './factory';
+    import tpl from '@tryghost/tpl';
+    const options = {tpl};
+    new Service(options);
+    createService({tpl});
+    new Service({format: (...args) => tpl(...args)});
+    // oxlint-disable-next-line ghost/no-injected-service-libraries -- explicit test exception
+    new Service({tpl});
+  `,
+    serviceRoot,
+  );
+  assert.equal(result.status, 0);
+  assert.deepEqual(result.diagnostics, []);
+});
+
+test('handles TypeScript require imports and literal dynamic imports', () => {
+  const result = lint(
+    `
+    import Service = require('./service');
+    import tpl = require('@tryghost/tpl');
+    const {getUnixTime} = await import('../../../kernel/clock');
+    const {OtherService} = await import('./other-service');
+    new Service({tpl});
+    new OtherService({getUnixTime});
+    new Service({clock: await import('../../../kernel/clock')});
+  `,
+    serviceRoot,
+  );
+  assert.equal(result.status, 1);
+  assert.equal(result.diagnostics.length, 3);
+  assert.ok(result.diagnostics.every((d) => d.code === injectionCode));
 });

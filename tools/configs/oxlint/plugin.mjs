@@ -1,3 +1,4 @@
+import noInjectedServiceLibraries from './rules/no-injected-service-libraries.mjs';
 import noNativeError from './rules/no-native-error.mjs';
 import serviceRootShape from './rules/service-root-shape.mjs';
 import ghostErrorUsage from './rules/ghost-error-usage.mjs';
@@ -10,6 +11,8 @@ import nodeAssertStrict from './rules/node-assert-strict.mjs';
 
 export default {
   rules: {
+    'no-injected-service-libraries': noInjectedServiceLibraries,
+    // Preserve the existing rule name so its inline exceptions still apply.
     'ghost-custom/no-native-error': noNativeError,
     'service-root-shape': serviceRootShape,
     'ghost-custom/ghost-error-usage': ghostErrorUsage,
