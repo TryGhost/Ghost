@@ -1,6 +1,7 @@
 import type { ReadonlyDeep } from 'type-fest';
 import type { Knex } from 'knex';
 import type { AddAutomationData } from './automations-api';
+import type { AutomationTriggerTierScope } from './automations-repository-2';
 
 export type Pagination = {
   page: number;
@@ -134,8 +135,6 @@ export type RecordEmailSentOptions = Readonly<{
   trackOpens: boolean;
 }>;
 
-export type AutomationTriggerTierScope = 'free' | 'all_paid' | 'selected_paid';
-
 type AutomationStepBase = {
   id: string;
   locked_by: string;
@@ -243,14 +242,6 @@ export type AutomationsRepository = {
   ): Promise<AutomationActionLink[] | null>;
   add(data: AddAutomationData): Promise<Automation>;
   edit(id: string, data: EditAutomationData): Promise<Automation | null>;
-  trigger(
-    options: ReadonlyDeep<{
-      memberEmail: string;
-      memberId: string;
-      memberStatus: 'free' | 'paid';
-      memberTierIds: string[];
-    }>,
-  ): Promise<void>;
   /**
    * Select the steps we want to run and return the next time any remaining
    * pending step should be polled, if any.
