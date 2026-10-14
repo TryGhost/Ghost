@@ -14,6 +14,7 @@ import { canvasBackground } from './components/canvas/canvas-background';
 import { useVisibleAutomations } from './hooks/use-visible-automations';
 import { getNewAutomationName } from './utils/get-new-automation-name';
 import { useUnsavedChangesGuard } from '@/hooks/use-unsaved-changes-guard';
+import { ScreenEntranceContext } from '@/layout/screen-transition';
 
 const TriggerPicker: React.FC<{
   automation: AutomationDetail;
@@ -120,6 +121,7 @@ const NewAutomationSession: React.FC<
   }
 > = ({ children, automations, stripeEnabled, isStripeReady }) => {
   const [initialAutomation, setInitialAutomation] = React.useState<AutomationDetail | null>(null);
+  const [pickedTrigger, setPickedTrigger] = React.useState(false);
   if (!initialAutomation) {
     if (isStripeReady) {
       setInitialAutomation({
@@ -141,16 +143,25 @@ const NewAutomationSession: React.FC<
     return (
       <TriggerPicker
         automation={initialAutomation}
-        onPick={(scope) =>
+        onPick={(scope) => {
+          setPickedTrigger(true);
           setInitialAutomation({
             ...initialAutomation,
             trigger_tier_scope: scope,
-          })
-        }
+          });
+        }}
       />
     );
   }
-  return children(initialAutomation);
+  // The picker's header already played the screen's entrance; the editor's
+  // header replacing it shouldn't play it a second time in the same visit.
+  return pickedTrigger ? (
+    <ScreenEntranceContext.Provider value={false}>
+      {children(initialAutomation)}
+    </ScreenEntranceContext.Provider>
+  ) : (
+    children(initialAutomation)
+  );
 };
 
 const NewAutomation: React.FC<NewAutomationProps> = ({ children }) => {

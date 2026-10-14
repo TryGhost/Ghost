@@ -275,6 +275,28 @@ describe('New automation', () => {
     await expect.element(dialog.getByRole('tab', { name: 'Preview' })).toBeEnabled();
   });
 
+  it('plays the header entrance once, not again after a trigger is picked', async () => {
+    fakeAutomations([]);
+    fakeAdminEndpoint('GET', /\/tiers\/\?/, { tiers: [] });
+    const entering = () => document.querySelectorAll('header.screen-enter-from-top').length;
+    await renderAdminApp('/automations', {
+      labs,
+      boot: {
+        browseSettings: {
+          response: settingsResponse({
+            settings: { stripe_secret_key: 'sk_test', stripe_publishable_key: 'pk_test' },
+          }),
+        },
+      },
+    });
+    await button('New automation').click();
+    await expect.element(page.getByText('Select a trigger', { exact: true })).toBeVisible();
+    expect(entering()).toBe(1);
+    await page.getByRole('button', { name: /^Free member signed up/ }).click();
+    await expect.element(button('Show automation sidebar')).toBeVisible();
+    expect(entering()).toBe(0);
+  });
+
   it('offers Performance before the first save, without loading anything', async () => {
     fakeAutomations([]);
     const stats = fakeAdminEndpoint('GET', /\/automations\/[^/]*\/performance-stats\//, {});
