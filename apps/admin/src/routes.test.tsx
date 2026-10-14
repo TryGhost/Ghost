@@ -145,7 +145,7 @@ describe('app pages', () => {
 
   // A new Admin screen under /apps/ fails here unless the rule leaves its query to Admin.
   it.each(appsRoutes)('reads labs from the query on %s unless it is an app’s page', (pattern) => {
-    const path = pattern.replace(/:[^/]+/g, objectId).replace('*', 'week');
+    const path = pattern.replace(/:[^/]+/g, objectId).replaceAll('*', 'week');
     expect(matchedRoute(path)).toBe(pattern);
     expect(isAppPagePath(path)).toBe(pattern === APP_PAGE_ROUTE);
   });
