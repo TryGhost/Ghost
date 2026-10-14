@@ -1,120 +1,123 @@
 const assert = require('node:assert/strict');
-const _ = require('lodash');
+const path = require('node:path');
 const configUtils = require('../../../../core/shared/config/utils');
 
-let fakeConfig = {};
-const fakeNconf = {};
-let changedKey = [];
+const packageRoot = path.resolve(__dirname, '../../../../');
 
 describe('Config Utils', function () {
   describe('makePathsAbsolute', function () {
-    beforeEach(function () {
-      changedKey = [];
+    it('resolves relative paths against the package root', function () {
+      const paths = { contentPath: 'content/', nested: { appRoot: '.' } };
 
-      fakeNconf.get = (key) => {
-        key = key.replace(':', '');
-        return _.get(fakeConfig, key);
-      };
-      fakeNconf.set = function (key, value) {
-        changedKey.push([key, value]);
-      };
+      configUtils.makePathsAbsolute(paths);
+
+      assert.deepEqual(paths, {
+        contentPath: path.join(packageRoot, 'content/'),
+        nested: { appRoot: packageRoot },
+      });
     });
 
-    it('ensure we change paths only', function () {
-      fakeConfig.database = {
-        client: 'mysql',
-        connection: {
-          filename: 'content/data/ghost.db',
-        },
-      };
+    it('skips non strings and non paths', function () {
+      const paths = { count: 10, name: 'ghost' };
 
-      configUtils.makePathsAbsolute(fakeNconf, fakeConfig.database, 'database');
+      configUtils.makePathsAbsolute(paths);
 
-      assert.equal(changedKey.length, 1);
-      assert.equal(changedKey[0][0], 'database:connection:filename');
-      assert.notEqual(changedKey[0][1], 'content/data/ghost.db');
+      assert.deepEqual(paths, { count: 10, name: 'ghost' });
     });
 
-    it('ensure it skips non strings', function () {
-      fakeConfig.database = {
-        test: 10,
-      };
+    it("doesn't change absolute paths", function () {
+      const paths = { contentPath: '/content/' };
 
-      configUtils.makePathsAbsolute(fakeNconf, fakeConfig.database, 'database');
-      assert.equal(changedKey.length, 0);
+      configUtils.makePathsAbsolute(paths);
+
+      assert.deepEqual(paths, { contentPath: '/content/' });
     });
 
-    it("ensure we don't change absolute paths", function () {
-      fakeConfig.database = {
-        client: 'mysql',
-        connection: {
-          filename: '/content/data/ghost.db',
-        },
-      };
+    it('matches paths on windows', function () {
+      const paths = { contentPath: 'content\\data' };
 
-      configUtils.makePathsAbsolute(fakeNconf, fakeConfig.database, 'database');
-      assert.equal(changedKey.length, 0);
+      configUtils.makePathsAbsolute(paths);
+
+      assert.notEqual(paths.contentPath, 'content\\data');
     });
 
-    it('match paths on windows', function () {
-      fakeConfig.database = {
-        filename: 'content\\data\\ghost.db',
-      };
+    it('ignores a missing paths object', function () {
+      assert.doesNotThrow(() => configUtils.makePathsAbsolute(undefined));
+    });
+  });
 
-      configUtils.makePathsAbsolute(fakeNconf, fakeConfig.database, 'database');
-      assert.equal(changedKey.length, 1);
-      assert.equal(changedKey[0][0], 'database:filename');
-      assert.notEqual(changedKey[0][1], 'content\\data\\ghost.db');
+  describe('makeBundledDatabasePathsAbsolute', function () {
+    it('resolves a relative sqlite filename against the package root', function () {
+      const store = { database: { connection: { filename: 'content/data/ghost-dev.db' } } };
+
+      configUtils.makeBundledDatabasePathsAbsolute(store);
+
+      assert.equal(
+        store.database.connection.filename,
+        path.join(packageRoot, 'content/data/ghost-dev.db'),
+      );
+    });
+
+    it('ignores a store without database config', function () {
+      assert.doesNotThrow(() => configUtils.makeBundledDatabasePathsAbsolute({ url: 'http://x' }));
+      assert.doesNotThrow(() => configUtils.makeBundledDatabasePathsAbsolute(undefined));
     });
   });
 
   describe('sanitizeDatabaseProperties', function () {
-    let nconf;
-
-    beforeEach(function () {
-      nconf = {
-        get: (key) => _.get(fakeConfig, key.replace(/:/g, '.')),
-        set: (key, value) => _.set(fakeConfig, key.replace(/:/g, '.'), value),
-      };
-    });
-
-    it('normalizes mysql client to mysql2', function () {
-      fakeConfig = {
-        database: {
-          client: 'mysql',
-          connection: { host: 'localhost', user: 'root', password: 'pw', database: 'ghost' },
+    it('normalizes mysql client to mysql2 and drops the sqlite filename', function () {
+      const database = {
+        client: 'mysql',
+        connection: {
+          host: 'localhost',
+          user: 'root',
+          password: 'pw',
+          database: 'ghost',
+          filename: 'x/ghost.db',
         },
       };
 
-      configUtils.sanitizeDatabaseProperties(nconf);
+      configUtils.sanitizeDatabaseProperties(database);
 
-      assert.equal(nconf.get('database:client'), 'mysql2');
+      assert.deepEqual(database, {
+        client: 'mysql2',
+        connection: { host: 'localhost', user: 'root', password: 'pw', database: 'ghost' },
+      });
     });
 
-    it('normalizes sqlite3 client to better-sqlite3', function () {
-      fakeConfig = {
-        database: {
-          client: 'sqlite3',
-          connection: { filename: 'content/data/ghost.db' },
+    it('normalizes sqlite3 client to better-sqlite3 and drops the mysql keys', function () {
+      const database = {
+        client: 'sqlite3',
+        connection: {
+          host: 'localhost',
+          user: 'root',
+          password: 'pw',
+          database: 'ghost',
+          filename: 'content/data/ghost.db',
         },
       };
 
-      configUtils.sanitizeDatabaseProperties(nconf);
+      configUtils.sanitizeDatabaseProperties(database);
 
-      assert.equal(nconf.get('database:client'), 'better-sqlite3');
+      assert.deepEqual(database, {
+        client: 'better-sqlite3',
+        connection: { filename: 'content/data/ghost.db' },
+      });
     });
 
     it('leaves better-sqlite3 client unchanged', function () {
-      fakeConfig = {
-        database: {
-          client: 'better-sqlite3',
-          connection: { filename: 'content/data/ghost.db' },
-        },
+      const database = {
+        client: 'better-sqlite3',
+        connection: { filename: 'content/data/ghost.db' },
       };
 
-      configUtils.sanitizeDatabaseProperties(nconf);
+      configUtils.sanitizeDatabaseProperties(database);
 
-      assert.equal(nconf.get('database:client'), 'better-sqlite3');
+      assert.equal(database.client, 'better-sqlite3');
+    });
+
+    it('ignores a missing database object', function () {
+      assert.doesNotThrow(() => configUtils.sanitizeDatabaseProperties(undefined));
     });
   });
 });

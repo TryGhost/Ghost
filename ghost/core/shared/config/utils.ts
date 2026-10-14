@@ -3,37 +3,54 @@ import fs from 'node:fs';
 import * as jsonc from 'jsonc-parser';
 import type { Provider, IFormat } from 'nconf';
 
+type Tree = Record<string, unknown>;
+
+function isObject(value: unknown): value is Tree {
+  return value !== null && typeof value === 'object' && !Array.isArray(value);
+}
+
+const packageRoot = path.join(__dirname, '../../..');
+
 /**
- * transform all relative paths to absolute paths
- * @TODO: re-write this function a little bit so we don't have to add the parent path - that is hard to understand
+ * Resolve every relative path in `paths` against the package root, in place.
  *
- * Path must be string.
- * Path must match minimum one / or \
- * Path can be a "." to re-present current folder
+ * A value counts as a path if it contains a / or \ or is ".".
  */
-function makePathsAbsolute(nconf: Provider, obj: Record<string, unknown>, parent: string): void {
-  Object.entries(obj).forEach(([pathsKey, configValue]) => {
-    if (configValue && typeof configValue === 'object') {
-      makePathsAbsolute(nconf, configValue as Record<string, unknown>, parent + ':' + pathsKey);
+function makePathsAbsolute(paths: unknown): void {
+  if (!isObject(paths)) {
+    return;
+  }
+
+  for (const [key, value] of Object.entries(paths)) {
+    if (isObject(value)) {
+      makePathsAbsolute(value);
     } else if (
-      typeof configValue === 'string' &&
-      (configValue.match(/\/+|\\+/) || configValue === '.') &&
-      !path.isAbsolute(configValue)
+      typeof value === 'string' &&
+      (value.match(/\/+|\\+/) || value === '.') &&
+      !path.isAbsolute(value)
     ) {
-      nconf.set(
-        parent + ':' + pathsKey,
-        path.normalize(path.join(__dirname, '../../..', configValue)),
-      );
+      paths[key] = path.normalize(path.join(packageRoot, value));
     }
-  });
+  }
+}
+
+/**
+ * Resolve a relative sqlite filename in one of Ghost's bundled config files
+ * against the package root, in place. Filenames from user config, env or argv
+ * stay relative and resolve against the working directory, as they always have.
+ */
+function makeBundledDatabasePathsAbsolute(store: unknown): void {
+  if (isObject(store) && isObject(store.database)) {
+    makePathsAbsolute(store.database.connection);
+  }
 }
 
 /**
  * Unlike checkUrlProtocol, this is not duplicated by the schema: it touches the
  * filesystem, so it stays whatever happens to the strictness flag.
  */
-function doesContentPathExist(contentPath: string): void {
-  if (!fs.existsSync(contentPath)) {
+function doesContentPathExist(contentPath: unknown): void {
+  if (typeof contentPath !== 'string' || !fs.existsSync(contentPath)) {
     // new Error is allowed here, as we do not want config to depend on @tryghost/error
     // @TODO: revisit this decision when @tryghost/error is no longer dependent on all of ghost-ignition
     // eslint-disable-next-line ghost/ghost-custom/no-native-error
@@ -50,8 +67,8 @@ function doesContentPathExist(contentPath: string): void {
  * `url` rule in ./schema.ts, and has to stay while the flag exists at all,
  * since a deploy can still set it false - see isStrict() in ./validated.ts.
  */
-function checkUrlProtocol(url: string): void {
-  if (!url.match(/^https?:\/\//i)) {
+function checkUrlProtocol(url: unknown): void {
+  if (typeof url !== 'string' || !url.match(/^https?:\/\//i)) {
     // new Error is allowed here, as we do not want config to depend on @tryghost/error
     // @TODO: revisit this decision when @tryghost/error is no longer dependent on all of ghost-ignition
     // eslint-disable-next-line ghost/ghost-custom/no-native-error
@@ -60,44 +77,38 @@ function checkUrlProtocol(url: string): void {
 }
 
 /**
- * nconf merges all database keys together and this can be confusing
- * e.g. production default database is sqlite, but you override the configuration with mysql
+ * Normalize the client name and drop connection keys merged in from the other
+ * client, e.g. a sqlite default overridden with mysql. Edits in place.
  *
- * this.clear('key') does not work
- * https://github.com/indexzero/nconf/issues/235#issuecomment-257606507
+ * A relative sqlite `filename` from user config is deliberately left relative,
+ * see makeBundledDatabasePathsAbsolute.
  */
-function sanitizeDatabaseProperties(nconf: Provider): void {
-  if (nconf.get('database:client') === 'mysql') {
-    nconf.set('database:client', 'mysql2');
+function sanitizeDatabaseProperties(database: unknown): void {
+  if (!isObject(database)) {
+    return;
   }
 
-  if (nconf.get('database:client') === 'sqlite3') {
-    nconf.set('database:client', 'better-sqlite3');
+  if (database.client === 'mysql') {
+    database.client = 'mysql2';
   }
 
-  const database = nconf.get('database');
-  const client = nconf.get('database:client');
+  if (database.client === 'sqlite3') {
+    database.client = 'better-sqlite3';
+  }
 
-  if (client === 'mysql2') {
-    delete database.connection.filename;
+  const connection = database.connection;
+  if (!isObject(connection)) {
+    return;
+  }
+
+  if (database.client === 'mysql2') {
+    delete connection.filename;
   } else {
-    delete database.connection.host;
-    delete database.connection.user;
-    delete database.connection.password;
-    delete database.connection.database;
+    delete connection.host;
+    delete connection.user;
+    delete connection.password;
+    delete connection.database;
   }
-
-  nconf.set('database', database);
-
-  if (client === 'better-sqlite3') {
-    makePathsAbsolute(nconf, nconf.get('database:connection'), 'database:connection');
-  }
-}
-
-type Tree = Record<string, unknown>;
-
-function isObject(value: unknown): value is Tree {
-  return value !== null && typeof value === 'object' && !Array.isArray(value);
 }
 
 /**
@@ -172,6 +183,7 @@ const jsoncFormat: IFormat = {
 
 export {
   makePathsAbsolute,
+  makeBundledDatabasePathsAbsolute,
   doesContentPathExist,
   checkUrlProtocol,
   sanitizeDatabaseProperties,
