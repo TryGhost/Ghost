@@ -85,13 +85,10 @@ function fakeFrame() {
     get host() {
       return document.host;
     },
-    /**
-     * Says hello from the page, as its SDK does once loaded, naming the document. An SDK from
-     * before documents had names leaves it out (`{ named: false }`).
-     */
-    hello(origin = ORIGIN, { named = true } = {}) {
+    /** Says hello from the page, as its SDK does once loaded, naming the current document. */
+    hello(origin = ORIGIN, id = document.id) {
       const event = new MessageEvent('message', {
-        data: { type: HELLO_MESSAGE_TYPE, sdk: 'test', ...(named && { document: document.id }) },
+        data: { type: HELLO_MESSAGE_TYPE, sdk: 'test', document: id },
         origin,
       });
       Object.defineProperty(event, 'source', { value: contentWindow });
@@ -320,20 +317,6 @@ describe('createAppFrameSession', () => {
     expect(session.getState().title).toBe('Episodes');
   });
 
-  it('loads the page again when a started page whose SDK names no document says hello', async () => {
-    const frame = fakeFrame();
-    session.attach(frame.element);
-    frame.hello(ORIGIN, { named: false });
-    await vi.waitFor(() => expect(session.getState().status).toBe('ready'));
-
-    // Admin can't tell it from a new document's, which would wait on an answer forever.
-    frame.hello(ORIGIN, { named: false });
-
-    await vi.waitFor(() =>
-      expect(session.getState()).toMatchObject({ status: 'loading', attempt: 1 }),
-    );
-  });
-
   it('starts the app once when it says hello again while starting', async () => {
     const frame = fakeFrame();
     frame.app.start.mockImplementation(() => settle());
@@ -345,23 +328,6 @@ describe('createAppFrameSession', () => {
     await vi.waitFor(() => expect(session.getState().status).toBe('ready'));
     expect(session.getState().attempt).toBe(0);
     expect(frame.contentWindow.postMessage).toHaveBeenCalledTimes(1);
-    expect(frame.app.start).toHaveBeenCalledTimes(1);
-    await frame.host.titleChanged('Episodes');
-    expect(session.getState().title).toBe('Episodes');
-  });
-
-  it('starts the app once when an SDK that names no document says hello again', async () => {
-    const frame = fakeFrame();
-    frame.app.start.mockImplementation(() => settle());
-    session.attach(frame.element);
-
-    frame.hello(ORIGIN, { named: false });
-    frame.hello(ORIGIN, { named: false });
-
-    await vi.waitFor(() => expect(session.getState().status).toBe('ready'));
-    expect(session.getState().attempt).toBe(0);
-    // Each hello is answered, as it may be a new document's; the page takes the first.
-    expect(frame.contentWindow.postMessage).toHaveBeenCalledTimes(2);
     expect(frame.app.start).toHaveBeenCalledTimes(1);
     await frame.host.titleChanged('Episodes');
     expect(session.getState().title).toBe('Episodes');
@@ -382,6 +348,43 @@ describe('createAppFrameSession', () => {
     await vi.waitFor(() => expect(session.getState().status).toBe('ready'));
     expect(session.getState().attempt).toBe(0);
     expect(frame.app.start).toHaveBeenCalledWith(admin.context);
+  });
+
+  it('starts the latest of the documents that replace one starting in place', async () => {
+    const frame = await started();
+    frame.navigate();
+    frame.app.start.mockImplementation(() => new Promise<void>(() => {}));
+    frame.hello();
+    await vi.waitFor(() => expect(frame.app.start).toHaveBeenCalled());
+
+    // Reloaded before it could start.
+    const reloaded = frame.navigate();
+    frame.hello();
+
+    await vi.waitFor(() =>
+      expect(session.getState()).toMatchObject({ status: 'ready', attempt: 0 }),
+    );
+    await callUnheard(reloaded, 'Gone');
+    await frame.host.titleChanged('Saved');
+    expect(session.getState().title).toBe('Saved');
+  });
+
+  it('ignores a late hello from a document that has given way', async () => {
+    const frame = fakeFrame();
+    frame.app.start.mockImplementation(() => new Promise<void>(() => {}));
+    session.attach(frame.element);
+    frame.hello();
+    const first = frame.navigate();
+    frame.hello();
+    await vi.waitFor(() => expect(session.getState().status).toBe('ready'));
+
+    frame.hello(ORIGIN, first.id);
+    await settle();
+
+    expect(session.getState()).toMatchObject({ status: 'ready', attempt: 0 });
+    expect(frame.contentWindow.postMessage).toHaveBeenCalledTimes(2);
+    await frame.host.titleChanged('Episodes');
+    expect(session.getState().title).toBe('Episodes');
   });
 
   it('fails a page that keeps reloading while it starts, once its time is up', async () => {
