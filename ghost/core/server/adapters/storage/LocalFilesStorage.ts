@@ -15,12 +15,23 @@ const messages = {
   cannotRead: 'Could not read File: {file}',
 };
 
-const pinturaUrlSchema = z.string().min(1);
+const assetUrlSchema = z.string().min(1);
 
-const pinturaAssets = {
-  '.js': { setting: 'pintura_js_url', contentType: 'text/javascript' },
-  '.css': { setting: 'pintura_css_url', contentType: 'text/css' },
-} satisfies Record<string, { setting: string; contentType: string }>;
+const trustedAssets = {
+  '.js': { setting: 'pintura_js_url', configKey: 'url', contentType: 'text/javascript' },
+  '.css': { setting: 'pintura_css_url', configKey: 'styles', contentType: 'text/css' },
+} satisfies Record<string, { setting: string; configKey: string; contentType: string }>;
+
+// Frontend apps whose script and stylesheet URLs can be pointed at a
+// self-hosted copy through config, e.g. `portal:url` or `sodoSearch:styles`.
+const frontendApps = [
+  'portal',
+  'sodoSearch',
+  'comments',
+  'announcementBar',
+  'signupForm',
+  'adminToolbar',
+];
 
 class LocalFilesStorage extends LocalStorageBase {
   constructor() {
@@ -39,27 +50,46 @@ class LocalFilesStorage extends LocalStorageBase {
    * resolve it again here instead of letting express.static derive a
    * browser-executable type from the extension.
    *
-   * The Pintura script and stylesheet an admin uploaded in Settings are the
-   * exception: Admin loads them as a module and a stylesheet, which browsers
-   * refuse to do with an inert type.
+   * Scripts and stylesheets the site itself points at are the exception:
+   * the Pintura files an admin uploaded in Settings, and self-hosted
+   * frontend apps (Portal, Search, Comments, ...) configured in config.
+   * Browsers refuse to load those with an inert type.
    */
   setServeHeaders(res: Response, filePath: string): void {
     super.setServeHeaders(res, filePath);
 
     res.setHeader(
       'Content-Type',
-      this.getPinturaContentType(filePath) ?? getStorageContentType(filePath),
+      this.getTrustedAssetContentType(filePath) ?? getStorageContentType(filePath),
     );
   }
 
-  private getPinturaContentType(filePath: string): string | null {
+  private getTrustedAssetContentType(filePath: string): string | null {
     const extension = path.extname(filePath).toLowerCase();
     if (extension !== '.js' && extension !== '.css') {
       return null;
     }
 
-    const asset = pinturaAssets[extension];
-    const parsed = pinturaUrlSchema.safeParse(settingsCache.get(asset.setting));
+    const asset = trustedAssets[extension];
+    const assetUrls = [
+      settingsCache.get(asset.setting),
+      ...frontendApps.map((app) => {
+        const url = config.get(`${app}:${asset.configKey}`);
+        const version = config.get(`${app}:version`);
+        return typeof url === 'string' && typeof version === 'string'
+          ? url.replace('{version}', version)
+          : url;
+      }),
+    ];
+
+    const resolvedPath = path.resolve(filePath);
+    return assetUrls.some((url) => this.getStoragePath(url) === resolvedPath)
+      ? asset.contentType
+      : null;
+  }
+
+  private getStoragePath(url: unknown): string | null {
+    const parsed = assetUrlSchema.safeParse(url);
     if (!parsed.success) {
       return null;
     }
@@ -75,10 +105,9 @@ class LocalFilesStorage extends LocalStorageBase {
       // URL paths are encoded; serve-static passes a decoded filesystem path.
       // Strip query strings/fragments and validate containment before comparing.
       const relativePath = decodeURIComponent(assetUrl.pathname.slice(prefix.length));
-      const assetPath = this._resolveAndValidateStoragePath(relativePath);
-      return assetPath === path.resolve(filePath) ? asset.contentType : null;
+      return this._resolveAndValidateStoragePath(relativePath);
     } catch {
-      // Invalid, external, or out-of-storage settings retain the inert type.
+      // Invalid, external, or out-of-storage URLs retain the inert type.
       return null;
     }
   }
