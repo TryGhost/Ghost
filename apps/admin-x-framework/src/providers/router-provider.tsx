@@ -53,8 +53,7 @@ export interface RouterProviderProps {
 function FeatureFlagOverridesRouteProvider({ children }: { children: React.ReactNode }) {
   const { search } = useLocation();
   const { onFeatureFlagOverridesChange } = useFramework();
-  // A route whose query belongs to the page it shows, such as an installed app's, sets no
-  // overrides: `?labs=` there is the page's, not Admin's.
+  // See `AdminRouteHandle.ownsSearch`.
   const searchIsPages = useMatches().some(
     ({ handle }) => (handle as { ownsSearch?: unknown } | undefined)?.ownsSearch === true,
   );

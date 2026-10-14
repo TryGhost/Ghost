@@ -2,7 +2,7 @@ import { START_TIMEOUT_MS } from '@tryghost/app-contracts/bridge';
 
 /**
  * How long an app's page gets, from the frame's mount, to say hello and start before Admin
- * calls it unresponsive: the bridge's own budget, which the SDK waits out too. Settable so
+ * calls it unresponsive: the bridge's budget, which the SDK uses too. Settable so
  * acceptance specs don't wait it out.
  */
 export const appFrameTimeouts = { ready: START_TIMEOUT_MS };
@@ -75,14 +75,8 @@ export const APP_FRAME_ALLOW = [...SELF_BY_DEFAULT, ...EVERYONE_BY_DEFAULT]
  * It covers the URL the frame is given, not where the frame goes from there: the app's
  * server can redirect, and the page can set its own location, which the sandbox allows.
  * What would load then is Ghost's own content, so the gap is small, but it's a gap.
- * The bridge narrows it. Admin only answers a hello whose `event.origin` is the surface's
- * origin, so a frame that redirected or navigated to Ghost's own origin before its app
- * started never completes the handshake, stays hidden, and ends up not-responding. One
- * that leaves once its app has started is noticed when it lands on Admin's origin, which
- * loads the app's page afresh in a new frame, and when the new document says hello or is
- * the second the frame has loaded since the app connected, which hides it until it starts
- * in place, or loads the page afresh if it doesn't in time. An app that connected after
- * its page loaded and then leaves for an origin other than Admin's that never says hello,
- * the site's included, isn't noticed; `bindAppFrame` says why.
+ * The bridge narrows it: Admin only answers a hello from the app's origin, so a frame that
+ * leaves for Ghost's origin before its app starts stays hidden and ends up not-responding.
+ * `bindAppFrame` says which departures after the start are noticed, and which aren't.
  */
 export { isGhostOrigin } from '@tryghost/app-contracts';

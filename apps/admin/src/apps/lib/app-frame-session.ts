@@ -74,9 +74,8 @@ export interface AppFrameSession {
 
 /**
  * How many times within `RESTART_WINDOW_MS` Admin loads an app's page afresh on its own
- * before it calls the app unresponsive instead. A page that leaves, or reloads itself, each
- * time it starts would otherwise loop between the spinner and the app, never getting to
- * Try again.
+ * before calling it unresponsive. Otherwise a page that leaves each time it starts would
+ * loop between the spinner and the app, never reaching Try again.
  */
 const AUTOMATIC_RESTARTS = 3;
 const RESTART_WINDOW_MS = 60_000;
@@ -90,15 +89,13 @@ const sameTheme = (a: Theme | undefined, b: Theme) =>
 
 /**
  * The lifecycle of an app's frame, apart from how it's shown. Each load of the app's page
- * gets a frame of its own, bound to Admin by the bridge, and a clock: a page that doesn't
- * start in time (`appFrameTimeouts.ready`) has failed, one that has started stays started.
- * A started page whose frame holds a new document, after a reload, a form post or a link,
- * is hidden again while the new document starts in place, in the same frame and with the
- * same time to do it; one that doesn't, or that Admin can't start in place (see
- * `bindAppFrame`), is loaded afresh in a new frame, up to `AUTOMATIC_RESTARTS` times a
- * minute; after that it has failed, until Try again. Path and theme changes are passed on
- * in both directions, each once: what the app was last told, or told Admin, is never
- * echoed back to it, even when Admin is still catching up with routes it has since left.
+ * gets a frame of its own, bound by `bindAppFrame`, and `appFrameTimeouts.ready` to start
+ * in; once started, it stays started. A new document in a started frame is hidden while it
+ * starts in place, with the same time to do it. One that doesn't, or can't be started in
+ * place, is loaded afresh in a new frame, up to `AUTOMATIC_RESTARTS` times; after that it
+ * has failed until Try again. Path and theme changes pass both ways, each once: what the
+ * app was last told, or told Admin, is never echoed back to it, even while Admin is still
+ * catching up with routes the app has since left.
  */
 export function createAppFrameSession(options: AppFrameSessionOptions): AppFrameSession {
   let state: AppFrameState = { status: 'loading', attempt: 0, startedAt: new Date() };
@@ -173,8 +170,7 @@ export function createAppFrameSession(options: AppFrameSessionOptions): AppFrame
         adminPath = context.path;
         appPath = context.path;
         appTheme = context.theme;
-        // A new page starts where Admin is; where Admin is still headed for an old one is
-        // news to it.
+        // A new page starts where Admin is; a route Admin is still headed for is news to it.
         following = [];
         return context;
       },
@@ -199,8 +195,6 @@ export function createAppFrameSession(options: AppFrameSessionOptions): AppFrame
           }
         },
         open: (place) => options.open(place),
-        // The started page gave way to a new document, which is hidden until it has
-        // started in its place, and has as long to as the first had.
         documentChanged: () => {
           if (host === bound) {
             window.clearTimeout(timer);
@@ -214,8 +208,8 @@ export function createAppFrameSession(options: AppFrameSessionOptions): AppFrame
             update({ status: 'ready' });
           }
         },
-        // The frame holds a document Admin can't start in place. The page is started in a
-        // new frame, at its own address and with Admin's route, as a reload of Admin would.
+        // A new frame, at the page's own address and with Admin's route, as a reload of
+        // Admin would start it.
         reloaded: restartOnItsOwn,
       },
     });
@@ -227,8 +221,7 @@ export function createAppFrameSession(options: AppFrameSessionOptions): AppFrame
         update({ status: 'failed', title: undefined });
       }
     };
-    // The clock runs from the frame's mount, and stops the moment the app has started, so
-    // nothing can call a started app unresponsive.
+    // Stops the moment the app has started, so nothing calls a started app unresponsive.
     timer = window.setTimeout(fail, appFrameTimeouts.ready);
     bound.ready.then(
       () => {
@@ -272,9 +265,8 @@ export function createAppFrameSession(options: AppFrameSessionOptions): AppFrame
       adminPath = path;
       const caughtUp = following.findIndex((entry) => entry.move === move);
       if (caughtUp !== -1) {
-        // Admin arrived where the app went, or somewhere on its way there, past any moves
-        // a render folded into this one: the app has been there already, and needn't hear
-        // of it.
+        // Admin caught up with the app, past any moves a render folded into this one: the
+        // app has been there already.
         following = following.slice(caughtUp + 1);
         return;
       }

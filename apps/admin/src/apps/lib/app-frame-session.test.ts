@@ -269,14 +269,12 @@ describe('createAppFrameSession', () => {
     );
     frame.hello();
 
-    // Hidden while it starts, with Admin as it is now, in the same frame.
     await vi.waitFor(() => expect(frame.app.start).toHaveBeenCalledWith(admin.context));
     expect(session.getState()).toMatchObject({ status: 'loading', title: undefined, attempt: 0 });
     finishStarting();
     await vi.waitFor(() =>
       expect(session.getState()).toMatchObject({ status: 'ready', attempt: 0 }),
     );
-    // The old document's channel is closed; the new one's is the app's.
     await callUnheard(old, 'Old');
     await frame.host.titleChanged('Saved');
     expect(session.getState().title).toBe('Saved');
@@ -346,7 +344,6 @@ describe('createAppFrameSession', () => {
 
     await vi.waitFor(() => expect(session.getState().status).toBe('ready'));
     expect(session.getState().attempt).toBe(0);
-    // The document is answered once.
     expect(frame.contentWindow.postMessage).toHaveBeenCalledTimes(1);
     expect(frame.app.start).toHaveBeenCalledTimes(1);
     await frame.host.titleChanged('Episodes');
@@ -366,7 +363,6 @@ describe('createAppFrameSession', () => {
     // Each hello is answered, as it may be a new document's; the page takes the first.
     expect(frame.contentWindow.postMessage).toHaveBeenCalledTimes(2);
     expect(frame.app.start).toHaveBeenCalledTimes(1);
-    // The channel the page took is the one that stays.
     await frame.host.titleChanged('Episodes');
     expect(session.getState().title).toBe('Episodes');
   });

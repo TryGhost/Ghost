@@ -137,11 +137,11 @@ async function buildFrameScript(entry: string): Promise<string> {
 const bundleFrameScript: BrowserCommand<[entry: string]> = (_context, entry) =>
   buildOnce(`frame:${entry}`, () => buildFrameScript(entry));
 
-// The app SDK's browser bundle, built by the SDK's own build config, as `pnpm build` writes
-// it to packages/app-sdk/dist/app-sdk.js. Built here rather than read from there, so the
-// specs run the bundle as the checkout builds it, whether or not the SDK was built since.
-// Workspace packages resolve to their source, as everywhere in these specs, so the bundle
-// doesn't wait on app-contracts' build either.
+// The app SDK's browser bundle, built with the SDK's own build config, as `pnpm build`
+// writes it to packages/app-sdk/dist/app-sdk.js. Built here rather than read from there,
+// so the specs run the SDK as the checkout has it, built or not. Workspace packages
+// resolve to their source, as everywhere in these specs, so app-contracts needn't be
+// built either.
 const APP_SDK_ROOT = fileURLToPath(new URL('../../packages/app-sdk/', import.meta.url));
 
 async function buildAppSdk(): Promise<string> {

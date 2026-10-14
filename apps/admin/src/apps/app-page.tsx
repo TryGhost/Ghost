@@ -120,9 +120,8 @@ function useSessionEnd(session: AppSession, onEnded: () => void) {
     defaultErrorHandler: false,
     // Without the history the details page shows; this one has no use for it.
     searchParams: SESSION_END_SEARCH_PARAMS,
-    // The session came with the installation as it stands, so there's nothing to read yet:
-    // one request per open. It seeds an empty cache only; what a previous session left
-    // there was read before this one, and doesn't count.
+    // The session came with the installation as it stands, so opening reads nothing more.
+    // This seeds an empty cache only; what a previous session left there predates `since`.
     initialData: { app_installations: [session.installation] },
     refetchOnMount: false,
     // Coming back to the tab is when a change made meanwhile shows up.
@@ -200,13 +199,11 @@ const AppFrame: React.FC<{
     return true;
   };
 
-  // Made once, for the component's life: a session made again would bind to a frame whose
-  // page has already said hello, and would call the app unresponsive. What it's made from
-  // stays the same: a new installation or address is a new `AppFrame`, by its key, and
-  // Ghost's version doesn't change while Admin runs. Making it has no side effects; they
-  // start when the frame mounts and end when it unmounts, through `attach`, the frame's
-  // ref. Nothing calls `dispose` from an effect, as Strict Mode's double effects would
-  // then end a live session.
+  // Made once per `AppFrame`: one made again would bind to a frame whose page has already
+  // said hello, and call the app unresponsive. Its inputs don't change: a new installation
+  // or address remounts `AppFrame` by key, and Ghost's version is fixed while Admin runs.
+  // Side effects start and end with the frame, through `attach`, its ref. Nothing calls
+  // `dispose` from an effect, as Strict Mode's double effects would end a live session.
   const [frameSession] = useState(() =>
     createAppFrameSession({
       surfaceOrigin,
@@ -224,9 +221,8 @@ const AppFrame: React.FC<{
 
   useAppTitle(manifest.name, title);
 
-  // Back, forward or a link moved Admin within the app: the app follows, without reloading.
-  // Every location counts, by its key: React Router commits in a transition, which can fold
-  // the app's quick moves into one location on a route Admin was already on.
+  // Runs for every location, by its key: React Router commits in a transition, which can
+  // fold the app's quick moves into one location on a route Admin was already on.
   useEffect(() => frameSession.pathChanged(path, move), [frameSession, location.key, path, move]);
   useEffect(() => frameSession.themeChanged(theme), [frameSession, theme]);
 
