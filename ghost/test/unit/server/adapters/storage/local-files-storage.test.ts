@@ -243,5 +243,61 @@ describe('Local Files Storage', function () {
         await request(app).get(replacement).expect(200).expect('Content-Type', 'text/plain');
       });
     });
+
+    describe('Self-hosted frontend app assets', function () {
+      for (const appName of ['portal', 'sodoSearch', 'comments', 'announcementBar', 'signupForm']) {
+        it(`serves the script configured in ${appName}:url as JavaScript`, async function () {
+          const jsPath = await writeFile(`${appName}.min.js`, 'window.app = {};');
+          configUtils.set(`${appName}:url`, `${storage.staticFileUrl}${jsPath}`);
+
+          await request(app)
+            .get(jsPath)
+            .expect(200)
+            .expect('Content-Type', /^text\/javascript/)
+            .expect('X-Content-Type-Options', 'nosniff');
+        });
+      }
+
+      it('serves the stylesheet configured in sodoSearch:styles as CSS', async function () {
+        const cssPath = await writeFile('main.css', '.sodo-search {}');
+        configUtils.set('sodoSearch:styles', `${storage.staticFileUrl}${cssPath}`);
+
+        await request(app)
+          .get(cssPath)
+          .expect(200)
+          .expect('Content-Type', /^text\/css/);
+      });
+
+      it('resolves the {version} placeholder in configured URLs', async function () {
+        const jsPath = await writeFile('portal-2.72.min.js', 'window.portal = {};');
+        configUtils.set('portal:url', `${storage.staticFileUrl}/2026/09/portal-{version}.min.js`);
+        configUtils.set('portal:version', '2.72');
+
+        await request(app)
+          .get(jsPath)
+          .expect(200)
+          .expect('Content-Type', /^text\/javascript/);
+      });
+
+      it('keeps other scripts and stylesheets inert', async function () {
+        const portalPath = await writeFile('portal.min.js', 'window.portal = {};');
+        const otherJs = await writeFile('other.js', 'alert(1)');
+        const otherCss = await writeFile('other.css', 'body {}');
+        configUtils.set('portal:url', `${storage.staticFileUrl}${portalPath}`);
+
+        await request(app).get(otherJs).expect(200).expect('Content-Type', 'text/plain');
+        await request(app).get(otherCss).expect(200).expect('Content-Type', 'text/plain');
+      });
+
+      it('requires the matching config key for each asset type', async function () {
+        const cssPath = await writeFile('portal.css', '.portal {}');
+        const jsPath = await writeFile('search.js', 'window.search = {};');
+        configUtils.set('portal:url', `${storage.staticFileUrl}${cssPath}`);
+        configUtils.set('sodoSearch:styles', `${storage.staticFileUrl}${jsPath}`);
+
+        await request(app).get(cssPath).expect(200).expect('Content-Type', 'text/plain');
+        await request(app).get(jsPath).expect(200).expect('Content-Type', 'text/plain');
+      });
+    });
   });
 });
