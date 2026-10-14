@@ -17,25 +17,20 @@ describe('the window messages', () => {
     expect(START_TIMEOUT_MS).toBe(10_000);
   });
 
-  it('accepts a hello naming the SDK version', () => {
-    expect(HelloMessageSchema.parse({ type: 'ghost-app:hello', sdk: '1.2.3' })).toEqual({
-      type: 'ghost-app:hello',
-      sdk: '1.2.3',
-    });
-  });
-
-  it("accepts a hello naming the page's document, and one from an SDK that does not", () => {
+  it("accepts a hello naming the SDK version and the page's document", () => {
     const hello = { type: 'ghost-app:hello', sdk: '1.2.3', document: 'a1b2c3' };
     expect(HelloMessageSchema.parse(hello)).toEqual(hello);
-    expect(HelloMessageSchema.parse({ type: 'ghost-app:hello', sdk: '1.2.3' })).not.toHaveProperty(
-      'document',
-    );
   });
 
   it('drops fields a newer SDK adds to its hello rather than refusing it', () => {
     expect(
-      HelloMessageSchema.parse({ type: 'ghost-app:hello', sdk: '9.0.0', capabilities: [] }),
-    ).toEqual({ type: 'ghost-app:hello', sdk: '9.0.0' });
+      HelloMessageSchema.parse({
+        type: 'ghost-app:hello',
+        sdk: '9.0.0',
+        document: 'a1b2c3',
+        capabilities: [],
+      }),
+    ).toEqual({ type: 'ghost-app:hello', sdk: '9.0.0', document: 'a1b2c3' });
   });
 
   it('refuses anything else a window may be sent', () => {
@@ -43,9 +38,10 @@ describe('the window messages', () => {
       null,
       'ghost-app:hello',
       { type: 'ghost-app:connect', sdk: '1.0.0' },
-      { type: 'ghost-app:hello' },
-      { type: 'ghost-app:hello', sdk: 1 },
-      { type: 'ghost-app:hello', sdk: 'x'.repeat(101) },
+      { type: 'ghost-app:hello', document: 'a1b2c3' },
+      { type: 'ghost-app:hello', sdk: 1, document: 'a1b2c3' },
+      { type: 'ghost-app:hello', sdk: 'x'.repeat(101), document: 'a1b2c3' },
+      { type: 'ghost-app:hello', sdk: '1.0.0' },
       { type: 'ghost-app:hello', sdk: '1.0.0', document: 1 },
       { type: 'ghost-app:hello', sdk: '1.0.0', document: '' },
       { type: 'ghost-app:hello', sdk: '1.0.0', document: 'x'.repeat(65) },

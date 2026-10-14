@@ -31,8 +31,7 @@ export const HelloMessageSchema = z.object({
   /**
    * A random ID the SDK picks once per document and sends with every hello, so Admin can tell a
    * repeated hello from a document it has connected from a new document in the same frame,
-   * after a reload, a form post or a link. Optional: older SDKs leave it out, and Admin then
-   * cannot tell the two apart.
+   * after a reload, a form post or a link.
    */
   document: z
     .string('Expected the document ID as text')
@@ -40,8 +39,7 @@ export const HelloMessageSchema = z.object({
     .max(
       DOCUMENT_ID_MAX_LENGTH,
       `Expected a document ID of at most ${DOCUMENT_ID_MAX_LENGTH} characters`,
-    )
-    .optional(),
+    ),
 });
 
 export type HelloMessage = z.infer<typeof HelloMessageSchema>;
