@@ -21,6 +21,7 @@ import type { AdminApiFetch } from './bridge-fetch';
 /** What Admin does with what an app's page asks of it, once each request has been checked. */
 export interface AppFrameHandlers {
   titleChanged(title: string): void;
+  /** `path` comes in the one spelling Admin keeps app paths in, as `AppPathSchema` gives it. */
   pathChanged(path: string, options: PathChangeOptions): void;
   /** Takes the publisher to `place`, and says whether Admin went. */
   open(place: Place): boolean;
@@ -226,10 +227,9 @@ export function bindAppFrame({
 
     const channel = new MessageChannel();
     const ended = new AbortController();
+    const exports = exportsFor(ended.signal);
     const connection: Connection = {
-      thread: new ThreadMessagePort<AppExports, HostExports>(channel.port1, {
-        exports: exportsFor(ended.signal),
-      }),
+      thread: new ThreadMessagePort<AppExports, HostExports>(channel.port1, { exports }),
       port: channel.port1,
       ended,
       loadsAtConnect: loads,
@@ -238,7 +238,7 @@ export function bindAppFrame({
     current = connection;
     // Listening with addEventListener leaves a port closed until it is started.
     connection.port.start();
-    const connect: ConnectMessage = { type: CONNECT_MESSAGE_TYPE };
+    const connect: ConnectMessage = { type: CONNECT_MESSAGE_TYPE, exports: Object.keys(exports) };
     frame.contentWindow.postMessage(connect, surfaceOrigin, [channel.port2]);
 
     connection.thread.imports.start(context()).then(
