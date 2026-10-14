@@ -2,6 +2,7 @@ import {
   type FetchRequest,
   type FetchResponse,
   checkAdminApiPath,
+  isReservedRequestHeader,
 } from '@tryghost/app-contracts/bridge';
 import { ghostApiRequestHeaders, handleSessionExpiry } from '@tryghost/admin-x-framework/helpers';
 import { BridgeError, sessionEnded } from './bridge-error';
@@ -12,7 +13,8 @@ export type AdminApiFetch = (request: FetchRequest, signal: AbortSignal) => Prom
  * Makes the requests an app asks for, to the Admin API under `apiRoot` and nowhere else.
  * `request` is already validated, a header only Admin sets included; where its path leads
  * is checked here. A path that leaves the API, or one the blocklist closes, is refused
- * before anything reaches the network.
+ * before anything reaches the network. A header only Admin sets is dropped here all the
+ * same, so none of the app's can stand in for Admin's, whatever reaches this.
  */
 export function createAdminApiFetch({
   apiRoot,
@@ -33,7 +35,9 @@ export function createAdminApiFetch({
     const { url } = check;
 
     const appHeaders = Object.fromEntries(
-      Object.entries(request.headers ?? {}).map(([name, value]) => [name.toLowerCase(), value]),
+      Object.entries(request.headers ?? {})
+        .filter(([name]) => !isReservedRequestHeader(name))
+        .map(([name, value]) => [name.toLowerCase(), value]),
     );
 
     // A request the session's end aborted is refused as every call is then; anything else
