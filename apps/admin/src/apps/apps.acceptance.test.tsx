@@ -890,6 +890,28 @@ describe('Managing apps', () => {
       expect(tagsApi.requests[0].headers['content-type']).toBe('application/json');
     });
 
+    // Such a route wants a token in its URL, so it's unauthorized whatever the session.
+    it('stays with the app when its request is unauthorized while the session works', async () => {
+      await fakeAppPage(installation());
+      const path = '/schedules/posts/6500000000000000000000c3/';
+      fakeAdminEndpoint(
+        'PUT',
+        path,
+        { errors: [{ type: 'UnauthorizedError', message: 'Invalid token' }] },
+        { status: 401 },
+      );
+      const sessionCheck = fakeAdminEndpoint('GET', '/users/me/', currentUserResponse());
+      await renderAdminApp(APP_ROUTE, { labs });
+      await expect.element(appsScreen.frame()).toBeVisible();
+
+      const result = await callAppFrame(APP_ORIGIN, 'fetch', { path, method: 'PUT' });
+
+      expect(answer(result).status).toBe(401);
+      expect(sessionCheck.requests).toHaveLength(1);
+      expect(currentRoute()).toBe(APP_ROUTE);
+      await expect.element(appsScreen.frame()).toBeVisible();
+    });
+
     it('refuses a route the blocklist closes, without sending it', async () => {
       await fakeAppPage(installation());
       // Faked, so a request that got through would be seen rather than fail as unhandled.

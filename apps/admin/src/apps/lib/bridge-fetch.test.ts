@@ -131,7 +131,7 @@ describe('createAdminApiFetch', () => {
     );
   });
 
-  it('leaves for sign-in on an expired session, and still answers the app', async () => {
+  it('hands a failed answer to Admin’s session-expiry check, and still answers the app', async () => {
     const response = new Response('{"errors":[]}', { status: 401 });
     fetchMock.mockResolvedValue(response);
 
