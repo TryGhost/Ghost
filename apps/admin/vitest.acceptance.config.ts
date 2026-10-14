@@ -129,6 +129,43 @@ const bundleFrameScript: BrowserCommand<[entry: string]> = (_context, entry) => 
   return script;
 };
 
+// The app SDK's browser bundle, built by the SDK's own build config, as `pnpm build` writes
+// it to packages/app-sdk/dist/app-sdk.js. Built here rather than read from there, so the
+// specs run the bundle as the checkout builds it, whether or not the SDK was built since.
+// Workspace packages resolve to their source, as everywhere in these specs, so the bundle
+// doesn't wait on app-contracts' build either. Built once for the whole run.
+const APP_SDK_ROOT = fileURLToPath(new URL('../../packages/app-sdk/', import.meta.url));
+let appSdkBundle: Promise<string> | undefined;
+
+async function buildAppSdk(): Promise<string> {
+  const result = await build({
+    configFile: `${APP_SDK_ROOT}vite.config.ts`,
+    root: APP_SDK_ROOT,
+    logLevel: 'silent',
+    resolve: { conditions: sharedResolve.conditions },
+    build: { write: false, sourcemap: false },
+  });
+  const outputs = (Array.isArray(result) ? result : [result]) as Rolldown.RolldownOutput[];
+  const chunk = outputs
+    .flatMap(({ output }) => output)
+    .find((file): file is Rolldown.OutputChunk => file.type === 'chunk' && file.isEntry);
+  if (!chunk) {
+    throw new Error('Building the app SDK produced no bundle');
+  }
+  return chunk.code;
+}
+
+const bundleAppSdk: BrowserCommand<[]> = () => {
+  if (!appSdkBundle) {
+    appSdkBundle = buildAppSdk();
+    // A failed build is retried by the next spec rather than failing every one after it.
+    appSdkBundle.catch(() => {
+      appSdkBundle = undefined;
+    });
+  }
+  return appSdkBundle;
+};
+
 // How long `callInFrame` waits for Playwright to see a frame the page already shows. Another
 // origin's frame runs in a process of its own, which Playwright attaches to on its own time:
 // on a busy machine, after the page has heard from the frame.
@@ -281,6 +318,7 @@ export default defineConfig({
       headless: true,
       provider: playwright(),
       commands: {
+        bundleAppSdk,
         bundleFrameScript,
         callInFrame,
         delayModuleLoads,

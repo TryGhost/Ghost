@@ -5,6 +5,7 @@ import type { AppFrameFlags, AppFrameHooks } from './app-frame-stand-in';
 
 declare module 'vitest/browser' {
   interface BrowserCommands {
+    bundleAppSdk: () => Promise<string>;
     bundleFrameScript: (entry: string) => Promise<string>;
     callInFrame: (origin: string, hook: string, args: unknown[]) => Promise<unknown>;
     fakeFrameOrigin: (origin: string, html: string, delayMs?: number) => Promise<void>;
@@ -43,20 +44,27 @@ const APP_FRAME_SCRIPTS = {
 
 export type AppFramePageKind = keyof typeof APP_FRAME_SCRIPTS;
 
+/** A value as a script's literal, with nothing in it that could end the script early. */
+const scriptLiteral = (value: unknown) => JSON.stringify(value).replaceAll('</', '<\\/');
+
 /**
  * An app's page that speaks the bridge, for `fakeFrameOrigin`: by default the SDK's (see
- * app-frame-stand-in.ts), with `flags` set for it to read first; `raw` for one without the
- * SDK (see app-frame-raw.ts), which takes no flags.
+ * app-frame-stand-in.ts), with `flags` set for it to read first, and the SDK's built bundle
+ * for it to load; `raw` for one without the SDK (see app-frame-raw.ts), which takes no flags.
  */
 export async function appFramePage(
   flags: AppFrameFlags = {},
   kind: AppFramePageKind = 'sdk',
 ): Promise<string> {
   const source = await commands.bundleFrameScript(APP_FRAME_SCRIPTS[kind]);
+  const sdk = kind === 'sdk' ? await commands.bundleAppSdk() : undefined;
   return [
     '<!doctype html>',
     '<html><head><title>Podcast app</title>',
-    `<script>window.__appFlags = ${JSON.stringify(flags)};</script>`,
+    `<script>window.__appFlags = ${scriptLiteral(flags)};</script>`,
+    // The bundle as text, for the page to load as the module it is: inline, it couldn't
+    // be imported from.
+    sdk ? `<script>window.__appSdkSource = ${scriptLiteral(sdk)};</script>` : '',
     '</head><body><h1>Podcast app</h1>',
     // A closing tag inside the script would end it early.
     `<script type="module">${source.replaceAll('</script', '<\\/script')}</script>`,

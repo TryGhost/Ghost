@@ -4,14 +4,16 @@
  * `connect()` as the page loads, then the `Ghost` it resolves with. The SDK reports the
  * page's `<title>` itself.
  *
- * Bundled with the SDK's source into one module by the `bundleFrameScript` command, as the
- * frame can load nothing from the test server.
+ * The SDK is its built bundle, the one apps load, which the page holds as text (built by
+ * the `bundleAppSdk` command) and loads as a module. This script is bundled into one module
+ * by the `bundleFrameScript` command, as the frame can load nothing from the test server.
  *
  * A spec drives it through `window.__app`, with `callAppFrame` from frames.ts. Every hook
  * waits for the app to have connected, and answers `{ value }` or `{ error }`: the SDK's
  * `GhostAppError` as `code: message`, so a refusal can be asserted as data.
  */
-import { connect, type Ghost, GhostAppError } from '@tryghost/app-sdk';
+import type * as AppSdk from '@tryghost/app-sdk';
+import type { Ghost } from '@tryghost/app-sdk';
 import type {
   FetchRequest,
   FetchResponse,
@@ -59,11 +61,18 @@ export interface AppFrameHooks {
 declare global {
   interface Window {
     __appFlags?: AppFrameFlags;
+    /** The SDK's built bundle, as text. */
+    __appSdkSource?: string;
     __app?: AppFrameHooks;
   }
 }
 
 const flags = window.__appFlags ?? {};
+const sdk = import(
+  /* @vite-ignore */ URL.createObjectURL(
+    new Blob([window.__appSdkSource ?? ''], { type: 'text/javascript' }),
+  )
+) as Promise<typeof AppSdk>;
 const received: AppFrameReceived[] = [];
 let context: StartContext | undefined;
 let ghost: Ghost | undefined;
@@ -72,7 +81,8 @@ const connected = new Promise<Ghost>((resolve) => {
   markConnected = resolve;
 });
 
-const describeError = (error: unknown) => {
+const describeError = async (error: unknown) => {
+  const { GhostAppError } = await sdk;
   if (error instanceof GhostAppError) {
     return `${error.code}: ${error.message}`;
   }
@@ -83,7 +93,7 @@ async function settle<Value>(call: (app: Ghost) => Promise<Value>): Promise<AppF
   try {
     return { value: await call(await connected) };
   } catch (error) {
-    return { error: describeError(error) };
+    return { error: await describeError(error) };
   }
 }
 
@@ -109,6 +119,7 @@ window.__app = {
 };
 
 async function start() {
+  const { connect } = await sdk;
   const app = await connect();
   context = {
     site: app.site,
