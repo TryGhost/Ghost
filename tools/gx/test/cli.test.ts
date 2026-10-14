@@ -10,7 +10,7 @@ afterEach(async () => {
   await Promise.all(roots.splice(0).map((root) => rm(root, { recursive: true, force: true })));
 });
 async function fixture() {
-  const root = await mkdtemp(join(tmpdir(), 'gx-generator-'));
+  const root = await mkdtemp(join(import.meta.dirname, '../.gx-generator-'));
   roots.push(root);
   await mkdir(join(root, 'tools/gx'), { recursive: true });
   await mkdir(join(root, 'tools/scripts/lib'), { recursive: true });
@@ -50,12 +50,33 @@ function run(root: string, args: string[]) {
 
 test('shows root and generator help, and rejects unknown commands', async () => {
   const root = await fixture();
-  for (const args of [[], ['--help'], ['generate', 'package', '--help']]) {
+  for (const args of [[], ['--help'], ['-h'], ['generate', 'package', '--help']]) {
     const result = run(root, args);
     assert.equal(result.status, 0, result.stderr);
-    assert.match(result.stdout, /pnpm gx generate package/);
+    assert.match(result.stdout, /pnpm gx/);
+    assert.match(result.stdout, /package/);
+    if (args.length < 2) {
+      assert.match(result.stdout, /db/);
+    } else {
+      assert.match(result.stdout, /Usage: pnpm gx generate package <name> \[options\]/);
+    }
   }
-  assert.equal(run(root, ['unknown']).status, 1);
+  for (const args of [
+    ['unknown'],
+    ['generate'],
+    ['generate', 'unknown'],
+    ['generate', '--help'],
+    ['db'],
+    ['db', 'unknown'],
+    ['db', '--help'],
+    ['--help', 'unknown'],
+    ['--version'],
+  ]) {
+    const result = run(root, args);
+    assert.equal(result.status, 1, args.join(' '));
+    assert.equal(result.stdout, '');
+    assert.match(result.stderr, /Usage:\s+pnpm gx/);
+  }
 });
 
 test('generates the existing template and registers a nested private package', async () => {
@@ -87,10 +108,17 @@ test('preserves the original invalid-name, outside-directory and existing-destin
   const before = await readFile(join(root, 'pnpm-workspace.yaml'), 'utf8');
   for (const args of [
     ['generate', 'package'],
+    ['generate', 'package', 'valid', '--unknown-option'],
     ['generate', 'package', 'Bad_Name'],
     ['generate', 'package', 'valid', '--dir', '../outside'],
   ]) {
-    assert.equal(run(root, args).status, 1);
+    const result = run(root, args);
+    assert.equal(result.status, 1);
+    assert.equal(result.stdout, '');
+    assert.match(
+      result.stderr,
+      /Missing package name|Unknown option|Invalid package name|inside the repository/,
+    );
   }
   await mkdir(join(root, 'packages/existing'));
   await writeFile(join(root, 'packages/existing/keep.txt'), 'keep');

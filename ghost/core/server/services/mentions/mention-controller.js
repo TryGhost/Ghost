@@ -123,20 +123,19 @@ module.exports = class MentionController {
    */
   async receive(frame) {
     logging.info('[Webmention] ' + JSON.stringify(frame.data));
-    const { source, target, ...payload } = frame.data;
-    await this.#jobsService.dispatch(new ProcessWebmentionJob({ source, target, payload }));
+    const { source, target } = frame.data;
+    await this.#jobsService.dispatch(new ProcessWebmentionJob({ source, target }));
   }
 
   /**
    * @param {import('./process-webmention-job').default} job
    * @returns {Promise<void>}
    */
-  async processWebmention({ source, target, payload }) {
+  async processWebmention({ source, target }) {
     try {
       await this.#api.processWebmention({
         source: new URL(source),
         target: new URL(target),
-        payload,
       });
     } catch (err) {
       logging.error(err, '[Webmention] Failed processing webmention');

@@ -125,7 +125,7 @@ export function RevisionPreview({
             </figure>
           ) : null}
           <div
-            className="heading-font-features mb-4 pb-1 text-[4.8rem] leading-[1.1] font-bold tracking-[-0.017em] text-foreground max-[769px]:text-[3.6rem] max-[501px]:text-[2.8rem]"
+            className="heading-font-features mb-4 pb-1 text-[4.8rem] leading-[1.18] font-bold tracking-[-0.017em] text-foreground max-[769px]:text-[3.6rem] max-[501px]:text-[2.8rem]"
             data-testid={postHistoryPreviewTitle}
           >
             {title}

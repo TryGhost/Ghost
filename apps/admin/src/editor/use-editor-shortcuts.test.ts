@@ -1,6 +1,11 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { act, renderHook } from '@testing-library/react';
-import { usePreviewShortcut, usePublishShortcut, useSaveShortcut } from './use-editor-shortcuts';
+import {
+  usePreviewShortcut,
+  usePublishShortcut,
+  useSaveShortcut,
+  useSettingsShortcut,
+} from './use-editor-shortcuts';
 
 function pressSave(key = 's', modifiers: Partial<KeyboardEventInit> = { metaKey: true }) {
   const event = new KeyboardEvent('keydown', { key, cancelable: true, ...modifiers });
@@ -82,6 +87,25 @@ describe('preview and publish shortcuts', () => {
 
     expect(onError).not.toHaveBeenCalled();
     expect(preview).not.toHaveBeenCalled();
+  });
+});
+
+describe('useSettingsShortcut', () => {
+  it('toggles on Cmd-. and Ctrl-., and only while enabled', () => {
+    const onToggle = vi.fn();
+    const { rerender } = renderHook(({ enabled }) => useSettingsShortcut(onToggle, enabled), {
+      initialProps: { enabled: false },
+    });
+
+    expect(pressSave('.').defaultPrevented).toBe(false);
+    rerender({ enabled: true });
+    expect(pressSave('.').defaultPrevented).toBe(true);
+    expect(pressSave('.', { ctrlKey: true }).defaultPrevented).toBe(true);
+    expect(pressSave('.', { metaKey: true, repeat: true }).defaultPrevented).toBe(true);
+    expect(pressSave('.', {}).defaultPrevented).toBe(false);
+    expect(pressSave('.', { metaKey: true, shiftKey: true }).defaultPrevented).toBe(false);
+
+    expect(onToggle).toHaveBeenCalledTimes(2);
   });
 });
 

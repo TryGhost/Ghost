@@ -731,10 +731,10 @@
             border: 1px solid var(--grey-200);
             border-radius: 2px;
             color: var(--grey-900);
-            font-size: .8em;
+            font-size: var(--kg-font-code-size, .8em);
             line-height: 1em;
             padding: .4rem .4rem .2rem;
-            vertical-align: middle;
+            vertical-align: var(--kg-font-code-vertical-align, middle);
             white-space: pre-wrap;
         }
 

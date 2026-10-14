@@ -73,7 +73,6 @@ describe('jobs-service retained consumers', function () {
     sinon.assert.calledOnceWithExactly(api.processWebmention, {
       source: new URL('https://source.example/first/'),
       target: new URL('https://target.example/post/'),
-      payload: { extension: { sequence: 1 } },
     });
 
     const restartedService = jobsService.init();
@@ -110,7 +109,6 @@ describe('jobs-service retained consumers', function () {
       {
         source: new URL('https://source.example/second/'),
         target: new URL('https://target.example/post/'),
-        payload: { extension: { sequence: 2 } },
       },
     ]);
     sinon.assert.notCalled(logging.error);

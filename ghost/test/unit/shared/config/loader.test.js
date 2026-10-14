@@ -183,6 +183,44 @@ describe('Config Loader', function () {
         `Ghost config: ignoring \`admin\` in ${customConfigPath}: it is a string, but Ghost expects an object there.`,
       );
     });
+
+    it('leaves a relative sqlite filename relative to the working directory', function () {
+      process.env.database__client = 'sqlite3';
+      process.env.database__connection__filename = 'content/data/ghost.db';
+
+      customConfig = loader.loadNconf({
+        baseConfigPath: path.join(__dirname, '../../../utils/fixtures/config'),
+        customConfigPath: path.join(__dirname, '../../../utils/fixtures/config'),
+      });
+
+      assert.equal(customConfig.get('database:client'), 'better-sqlite3');
+      assert.equal(customConfig.get('database:connection:filename'), 'content/data/ghost.db');
+    });
+
+    it('resolves the bundled sqlite filename against the package root', function () {
+      process.env.NODE_ENV = 'development';
+
+      customConfig = loader.loadNconf({ customConfigPath: tmpDir });
+
+      assert.equal(
+        customConfig.get('database:connection:filename'),
+        path.join(path.resolve(__dirname, '../../../../'), 'content/data/ghost-dev.db'),
+      );
+    });
+
+    it('resolves relative paths from any source against the package root', function () {
+      process.env.paths__contentPath = 'content/';
+
+      customConfig = loader.loadNconf({
+        baseConfigPath: path.join(__dirname, '../../../utils/fixtures/config'),
+        customConfigPath: path.join(__dirname, '../../../utils/fixtures/config'),
+      });
+
+      assert.equal(
+        customConfig.get('paths:contentPath'),
+        path.join(path.resolve(__dirname, '../../../../'), 'content/'),
+      );
+    });
   });
 
   // Runs after the hierarchy tests above, which set, change and delete keys.
