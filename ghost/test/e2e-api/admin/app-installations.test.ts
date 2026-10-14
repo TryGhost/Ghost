@@ -914,6 +914,25 @@ describe('App installations Admin API', function () {
       assert.match(logged, /APP_MANIFEST_REDIRECTED: .*redirects to elsewhere\.example\.com\)$/);
     });
 
+    it('fails the session on an error that is not about the manifest, then tries again', async function () {
+      const installed = await install();
+      // A fault in Ghost, not the app, so the approved manifest is not quietly kept.
+      const load = sinon
+        .stub(service() as unknown as { loadManifest: () => Promise<unknown> }, 'loadManifest')
+        .rejects(new Error('Ghost broke'));
+      sinon.stub(logging, 'error');
+
+      await start(installed.id, 500);
+
+      assert.equal((await manifestRows()).length, 1);
+      assert.equal((await installationRow(installed.id)).revision, 0);
+      // The failed re-check is not shared with the next session.
+      load.restore();
+      serve(manifest({ description: 'Changed' }));
+      const { body } = await start(installed.id);
+      assert.equal(body.app_sessions[0].revision, 1);
+    });
+
     it('answers 404 for an installation that has been uninstalled, without fetching', async function () {
       const installed = await install();
       await agent.delete(`apps/installations/${installed.id}/`).expectStatus(204);
