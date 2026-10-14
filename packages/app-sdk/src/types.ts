@@ -35,7 +35,11 @@ export interface GhostFetchInit {
 
 /** The app's own route, mirrored in Admin's address. */
 export interface GhostPath {
-  /** The app's route, such as `/episodes/12`. `/` when Admin's address names none. */
+  /**
+   * The app's route, such as `/episodes/12`. `/` when Admin's address names none. Spelled as
+   * the URL parser spells it, as Admin keeps it: after `set('/search?q=a b')` it is
+   * `/search?q=a%20b`, and `..` is resolved.
+   */
   readonly current: string;
   /**
    * Tells Admin the app moved to another of its own routes, so the address bar, a reload

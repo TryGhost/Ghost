@@ -316,6 +316,17 @@ describe('path', () => {
     expect(ghost.path.current).toBe('/episodes/13');
   });
 
+  it('remembers the path spelled as Admin keeps it', async () => {
+    const { ghost, host } = await started();
+
+    await ghost.path.set('/search?q=a b');
+    expect(host.pathChanged).toHaveBeenLastCalledWith('/search?q=a b');
+    expect(ghost.path.current).toBe('/search?q=a%20b');
+
+    await ghost.path.set('/x/../episodes/1');
+    expect(ghost.path.current).toBe('/episodes/1');
+  });
+
   it('stays where it was when Admin refuses', async () => {
     const host = hostExports();
     host.pathChanged.mockRejectedValue(new Error('Expected a path within the app'));

@@ -6,6 +6,7 @@ import {
   isRecord,
   isStartContext,
   isTheme,
+  normaliseAppPath,
   type AppExports,
   type HostExports,
   type PathChangeOptions,
@@ -244,7 +245,9 @@ export class Channel implements Ghost {
         await (options === undefined
           ? this.#call('pathChanged', path)
           : this.#call('pathChanged', path, options));
-        this.#path = path;
+        // Kept as Admin keeps it, so it reads the same as the path Admin sends back after a
+        // reload or a move of its own.
+        this.#path = normaliseAppPath(path);
       },
     });
   }
