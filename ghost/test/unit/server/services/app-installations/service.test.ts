@@ -21,7 +21,9 @@ const manifest: AppManifest = {
 const loaded: LoadedManifest = {
   manifestUrl: 'https://podcast.example.com/ghost-app.json',
   manifest,
-  serialised: JSON.stringify(manifest),
+  // Not what re-encoding the manifest would give, so a test can tell the loader's text
+  // from a fresh serialisation of the parsed manifest.
+  serialised: JSON.stringify(manifest, null, 2),
   digest: 'reviewed-digest',
 };
 const deadlock = () => Object.assign(new Error('Deadlock victim'), { code: 'ER_LOCK_DEADLOCK' });
@@ -44,6 +46,29 @@ function setup() {
     service.create({ actor: null }, { manifestUrl: loaded.manifestUrl, digest: loaded.digest });
   return { install, insert, trx, transaction, recordAction };
 }
+
+describe('App installation storage', function () {
+  it('stores the manifest text and digest exactly as the loader produced them', async function () {
+    const { install, insert, trx } = setup();
+
+    const installed = await install();
+
+    assert.deepEqual(
+      trx.mock.calls.map(([table]) => table),
+      ['app_installations', 'app_installation_manifests'],
+    );
+    assert.deepEqual(insert.mock.calls[1][0], {
+      id: insert.mock.calls[0][0].manifest_id,
+      installation_id: installed.id,
+      manifest_url: loaded.manifestUrl,
+      manifest: loaded.serialised,
+      digest: loaded.digest,
+      source: 'install',
+      requires_approval: false,
+      created_at: insert.mock.calls[0][0].created_at,
+    });
+  });
+});
 
 describe('App installation transaction failures', function () {
   it('restarts the whole transaction when its manifest insert deadlocks', async function () {
