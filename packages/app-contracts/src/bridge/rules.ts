@@ -204,6 +204,21 @@ export type StartContext = {
   path: string;
 };
 
+/**
+ * A place in Admin an app can send the publisher to, by name. Written out here rather than
+ * inferred from `PlaceSchema`, so the SDK's types carry no zod; a test holds the two equal.
+ */
+export type Place =
+  | { post: { id: string } }
+  | { page: { id: string } }
+  | { member: { id: string } }
+  | { apps: true };
+
+/** How Admin records an app's new path in its history. Held equal to `PathChangeOptionsSchema`. */
+export type PathChangeOptions = {
+  replace?: boolean | undefined;
+};
+
 /** Admin's answer to a hello. The port travels in the message's transfer list, not its data. */
 export type ConnectMessage = {
   type: typeof CONNECT_MESSAGE_TYPE;

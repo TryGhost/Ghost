@@ -28,5 +28,3 @@ export const PlaceSchema = z.union(
   ],
   ARGUMENT_MESSAGES.place,
 );
-
-export type Place = z.infer<typeof PlaceSchema>;

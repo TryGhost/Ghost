@@ -1,10 +1,12 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, expectTypeOf, it } from 'vitest';
+import type { z } from 'zod';
 
 import {
   APP_PATH_MAX_LENGTH,
   AppPathSchema,
   PathChangeOptionsSchema,
   TITLE_MAX_LENGTH,
+  type PathChangeOptions,
   TitleSchema,
 } from '../../src/bridge/index.ts';
 
@@ -60,6 +62,10 @@ describe('an app path', () => {
 });
 
 describe('path change options', () => {
+  it('parse to the PathChangeOptions type, which is written out without zod', () => {
+    expectTypeOf<z.output<typeof PathChangeOptionsSchema>>().toEqualTypeOf<PathChangeOptions>();
+  });
+
   it('accepts replace, or nothing', () => {
     expect(PathChangeOptionsSchema.parse({})).toEqual({});
     expect(PathChangeOptionsSchema.parse({ replace: true })).toEqual({ replace: true });

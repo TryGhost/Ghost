@@ -1,10 +1,15 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, expectTypeOf, it } from 'vitest';
+import type { z } from 'zod';
 
-import { PlaceSchema } from '../../src/bridge/index.ts';
+import { PlaceSchema, type Place } from '../../src/bridge/index.ts';
 
 const ID = '5ddc9141c35e7700383b2937';
 
 describe('a place', () => {
+  it('parses to the Place type, which is written out without zod', () => {
+    expectTypeOf<z.output<typeof PlaceSchema>>().toEqualTypeOf<Place>();
+  });
+
   it('names a post, a page, a member or the apps list', () => {
     expect(PlaceSchema.parse({ post: { id: ID } })).toEqual({ post: { id: ID } });
     expect(PlaceSchema.parse({ page: { id: ID } })).toEqual({ page: { id: ID } });

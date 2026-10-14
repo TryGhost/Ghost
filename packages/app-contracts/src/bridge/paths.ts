@@ -33,5 +33,3 @@ export const PathChangeOptionsSchema = z.strictObject(
   },
   ARGUMENT_MESSAGES.pathChangeOptions,
 );
-
-export type PathChangeOptions = z.infer<typeof PathChangeOptionsSchema>;

@@ -24,9 +24,8 @@ export {
   AppPathSchema,
   PathChangeOptionsSchema,
   type AppPath,
-  type PathChangeOptions,
 } from './paths.ts';
-export { PlaceSchema, type Place } from './places.ts';
+export { PlaceSchema } from './places.ts';
 export { checkAdminApiPath, type AdminApiPathCheck } from './resolve.ts';
 export {
   APP_ERROR_CODES,
@@ -58,6 +57,8 @@ export {
   type FetchMethod,
   type FetchResponse,
   type HostErrorCode,
+  type PathChangeOptions,
+  type Place,
   type StartContext,
   type Theme,
 } from './rules.ts';
