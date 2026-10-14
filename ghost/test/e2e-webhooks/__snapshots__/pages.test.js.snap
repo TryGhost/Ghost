@@ -7,6 +7,7 @@ Object {
   "content-length": StringMatching /\\\\d\\+/,
   "content-type": "application/json",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "host": "test-webhook-receiver.com",
   "user-agent": StringMatching /Ghost\\\\/\\\\d\\+\\\\\\.\\\\d\\+\\(\\?:-\\(\\[0-9A-Za-z-\\]\\+\\(\\?:\\\\\\.\\[0-9A-Za-z-\\]\\+\\)\\*\\)\\)\\?\\\\s\\\\\\(https:\\\\/\\\\/github\\.com\\\\/TryGhost\\\\/Ghost\\\\\\)/,
 }
 `;
@@ -180,6 +181,7 @@ Object {
   "content-length": StringMatching /\\\\d\\+/,
   "content-type": "application/json",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "host": "test-webhook-receiver.com",
   "user-agent": StringMatching /Ghost\\\\/\\\\d\\+\\\\\\.\\\\d\\+\\(\\?:-\\(\\[0-9A-Za-z-\\]\\+\\(\\?:\\\\\\.\\[0-9A-Za-z-\\]\\+\\)\\*\\)\\)\\?\\\\s\\\\\\(https:\\\\/\\\\/github\\.com\\\\/TryGhost\\\\/Ghost\\\\\\)/,
 }
 `;
@@ -270,6 +272,7 @@ Object {
   "content-length": StringMatching /\\\\d\\+/,
   "content-type": "application/json",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "host": "test-webhook-receiver.com",
   "user-agent": StringMatching /Ghost\\\\/\\\\d\\+\\\\\\.\\\\d\\+\\(\\?:-\\(\\[0-9A-Za-z-\\]\\+\\(\\?:\\\\\\.\\[0-9A-Za-z-\\]\\+\\)\\*\\)\\)\\?\\\\s\\\\\\(https:\\\\/\\\\/github\\.com\\\\/TryGhost\\\\/Ghost\\\\\\)/,
 }
 `;
@@ -509,6 +512,7 @@ Object {
   "content-length": StringMatching /\\\\d\\+/,
   "content-type": "application/json",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "host": "test-webhook-receiver.com",
   "user-agent": StringMatching /Ghost\\\\/\\\\d\\+\\\\\\.\\\\d\\+\\(\\?:-\\(\\[0-9A-Za-z-\\]\\+\\(\\?:\\\\\\.\\[0-9A-Za-z-\\]\\+\\)\\*\\)\\)\\?\\\\s\\\\\\(https:\\\\/\\\\/github\\.com\\\\/TryGhost\\\\/Ghost\\\\\\)/,
 }
 `;
@@ -748,6 +752,7 @@ Object {
   "content-length": StringMatching /\\\\d\\+/,
   "content-type": "application/json",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "host": "test-webhook-receiver.com",
   "user-agent": StringMatching /Ghost\\\\/\\\\d\\+\\\\\\.\\\\d\\+\\(\\?:-\\(\\[0-9A-Za-z-\\]\\+\\(\\?:\\\\\\.\\[0-9A-Za-z-\\]\\+\\)\\*\\)\\)\\?\\\\s\\\\\\(https:\\\\/\\\\/github\\.com\\\\/TryGhost\\\\/Ghost\\\\\\)/,
 }
 `;
@@ -986,6 +991,7 @@ Object {
   "content-length": StringMatching /\\\\d\\+/,
   "content-type": "application/json",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "host": "test-webhook-receiver.com",
   "user-agent": StringMatching /Ghost\\\\/\\\\d\\+\\\\\\.\\\\d\\+\\(\\?:-\\(\\[0-9A-Za-z-\\]\\+\\(\\?:\\\\\\.\\[0-9A-Za-z-\\]\\+\\)\\*\\)\\)\\?\\\\s\\\\\\(https:\\\\/\\\\/github\\.com\\\\/TryGhost\\\\/Ghost\\\\\\)/,
 }
 `;
@@ -1224,6 +1230,7 @@ Object {
   "content-length": StringMatching /\\\\d\\+/,
   "content-type": "application/json",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "host": "test-webhook-receiver.com",
   "user-agent": StringMatching /Ghost\\\\/\\\\d\\+\\\\\\.\\\\d\\+\\(\\?:-\\(\\[0-9A-Za-z-\\]\\+\\(\\?:\\\\\\.\\[0-9A-Za-z-\\]\\+\\)\\*\\)\\)\\?\\\\s\\\\\\(https:\\\\/\\\\/github\\.com\\\\/TryGhost\\\\/Ghost\\\\\\)/,
 }
 `;
@@ -1463,6 +1470,7 @@ Object {
   "content-length": StringMatching /\\\\d\\+/,
   "content-type": "application/json",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "host": "test-webhook-receiver.com",
   "user-agent": StringMatching /Ghost\\\\/\\\\d\\+\\\\\\.\\\\d\\+\\(\\?:-\\(\\[0-9A-Za-z-\\]\\+\\(\\?:\\\\\\.\\[0-9A-Za-z-\\]\\+\\)\\*\\)\\)\\?\\\\s\\\\\\(https:\\\\/\\\\/github\\.com\\\\/TryGhost\\\\/Ghost\\\\\\)/,
 }
 `;
@@ -1746,6 +1754,7 @@ Object {
   "content-length": StringMatching /\\\\d\\+/,
   "content-type": "application/json",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "host": "test-webhook-receiver.com",
   "user-agent": StringMatching /Ghost\\\\/\\\\d\\+\\\\\\.\\\\d\\+\\(\\?:-\\(\\[0-9A-Za-z-\\]\\+\\(\\?:\\\\\\.\\[0-9A-Za-z-\\]\\+\\)\\*\\)\\)\\?\\\\s\\\\\\(https:\\\\/\\\\/github\\.com\\\\/TryGhost\\\\/Ghost\\\\\\)/,
 }
 `;
@@ -1969,6 +1978,7 @@ Object {
   "content-length": StringMatching /\\\\d\\+/,
   "content-type": "application/json",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "host": "test-webhook-receiver.com",
   "user-agent": StringMatching /Ghost\\\\/\\\\d\\+\\\\\\.\\\\d\\+\\(\\?:-\\(\\[0-9A-Za-z-\\]\\+\\(\\?:\\\\\\.\\[0-9A-Za-z-\\]\\+\\)\\*\\)\\)\\?\\\\s\\\\\\(https:\\\\/\\\\/github\\.com\\\\/TryGhost\\\\/Ghost\\\\\\)/,
 }
 `;
@@ -2207,6 +2217,7 @@ Object {
   "content-length": StringMatching /\\\\d\\+/,
   "content-type": "application/json",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "host": "test-webhook-receiver.com",
   "user-agent": StringMatching /Ghost\\\\/\\\\d\\+\\\\\\.\\\\d\\+\\(\\?:-\\(\\[0-9A-Za-z-\\]\\+\\(\\?:\\\\\\.\\[0-9A-Za-z-\\]\\+\\)\\*\\)\\)\\?\\\\s\\\\\\(https:\\\\/\\\\/github\\.com\\\\/TryGhost\\\\/Ghost\\\\\\)/,
 }
 `;
