@@ -94,19 +94,19 @@ hide text, such as direction marks, are left out of it.
 
 Everything rejects with a `GhostAppError`, whose `code` says why:
 
-| `code`             | Means                                                                                                                                                                                                                       |
-| ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `not_framed`       | The page is not inside a frame, so there is no Admin to talk to.                                                                                                                                                            |
-| `not_connected`    | Admin did not start the app before the timeout.                                                                                                                                                                             |
-| `duplicate_sdk`    | Another copy of the SDK in the page called `connect()` first: the page loads the SDK more than once. Load one copy, which the whole page shares.                                                                            |
-| `invalid_context`  | Admin started the app with a context this SDK cannot read. Updating the SDK usually fixes it.                                                                                                                               |
-| `session_ended`    | The channel to Admin has closed, usually because Admin is reloading the app. Every call fails from then on.                                                                                                                 |
-| `invalid_argument` | The app passed something that cannot be sent, such as a body on a `GET`.                                                                                                                                                    |
-| `invalid_path`     | A URL, or a path that leaves the Admin API, given to `fetch`, or one the Admin API only redirects, such as `/posts` without its trailing `/` (Admin API paths are lowercase and end in `/`); or a bad route for `path.set`. |
-| `unsupported`      | This site's Ghost is older than the call. The message names it.                                                                                                                                                             |
-| `blocked`          | An Admin API route apps may not reach, such as `/db/` or `/integrations/`.                                                                                                                                                  |
-| `network_error`    | Admin could not reach its own API.                                                                                                                                                                                          |
-| `rejected`         | Admin refused for another reason; the message says why.                                                                                                                                                                     |
+| `code`             | Means                                                                                                                                                                        |
+| ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `not_framed`       | The page is not inside a frame, so there is no Admin to talk to.                                                                                                             |
+| `not_connected`    | Admin did not start the app before the timeout.                                                                                                                              |
+| `duplicate_sdk`    | Another copy of the SDK in the page called `connect()` first: the page loads the SDK more than once. Load one copy, which the whole page shares.                             |
+| `invalid_context`  | Admin started the app with a context this SDK cannot read. Updating the SDK usually fixes it.                                                                                |
+| `session_ended`    | The channel to Admin has closed, usually because Admin is reloading the app. Every call fails from then on.                                                                  |
+| `invalid_argument` | The app passed something that cannot be sent, such as a body on a `GET`.                                                                                                     |
+| `invalid_path`     | A URL, or a path that leaves the Admin API, given to `fetch`, or one the Admin API only redirects, such as `/posts` without its trailing `/`; or a bad route for `path.set`. |
+| `unsupported`      | This site's Ghost is older than the call. The message names it.                                                                                                              |
+| `blocked`          | An Admin API route apps may not reach, such as `/db/` or `/integrations/`.                                                                                                   |
+| `network_error`    | Admin could not reach its own API.                                                                                                                                           |
+| `rejected`         | Admin refused for another reason; the message says why.                                                                                                                      |
 
 ## How it connects
 
