@@ -382,6 +382,67 @@ describe('Managing apps', () => {
     expect((await appState()).context?.session).toEqual({ revision: 2 });
   });
 
+  it('loads a suspended app once the review finds its changes approved already', async () => {
+    const suspended = installation({ status: 'suspended', revision: 1 });
+    const { sessionsApi } = await fakeAppPage(suspended);
+    // Approved in another tab meanwhile: the review has nothing left to approve.
+    const approved = installation({ revision: 2 });
+    fakeAdminEndpoint('POST', '/apps/installations/preview/', {
+      app_installation_previews: [
+        {
+          manifest_url: MANIFEST_URL,
+          manifest: manifest(),
+          digest: 'digest-2',
+          installation: {
+            id: 'installation-1',
+            status: 'active',
+            revision: 2,
+            manifest_url: MANIFEST_URL,
+            manifest: manifest(),
+            changes: [],
+          },
+        },
+      ],
+    });
+
+    await renderAdminApp(APP_ROUTE, { labs });
+    await expect.element(appsScreen.needsApproval()).toBeVisible();
+    sessionsApi.set(approved);
+
+    await expect
+      .element(appsScreen.installDialog())
+      .toHaveTextContent('Podcast is already installed');
+    await appsScreen.doneButton().click();
+
+    await expect.element(appsScreen.frame()).toBeVisible();
+    expect(currentRoute()).toBe(APP_ROUTE);
+    expect(sessionsApi.requests).toHaveLength(2);
+    expect((await appState()).context?.session).toEqual({ revision: 2 });
+  });
+
+  it('opens the new installation when the review installs an app uninstalled meanwhile', async () => {
+    const suspended = installation({ status: 'suspended', revision: 1 });
+    const { sessionsApi } = await fakeAppPage(suspended);
+    // Uninstalled in another tab meanwhile: the review offers a fresh install.
+    fakeAdminEndpoint('POST', '/apps/installations/preview/', {
+      app_installation_previews: [
+        { manifest_url: MANIFEST_URL, manifest: manifest(), digest: 'digest-2' },
+      ],
+    });
+    const reinstalled = installation({ id: 'installation-2' });
+    fakeAdminEndpoint('POST', '/apps/installations/', { app_installations: [reinstalled] });
+    const reinstalledSessionsApi = fakeSessionStart('installation-2', reinstalled);
+
+    await renderAdminApp(APP_ROUTE, { labs });
+    await expect.element(appsScreen.needsApproval()).toBeVisible();
+    await appsScreen.installButton().click();
+
+    await expect.poll(currentRoute).toBe('/apps/installation-2');
+    await expect.element(appsScreen.frame()).toBeVisible();
+    expect(sessionsApi.requests).toHaveLength(1);
+    expect(reinstalledSessionsApi.requests).toHaveLength(1);
+  });
+
   it('doesn’t load an uninstalled app', async () => {
     fakeSessionStart('installation-1', installation({ status: 'uninstalled' }));
 
