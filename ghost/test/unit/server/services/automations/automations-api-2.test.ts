@@ -81,8 +81,7 @@ describe('automations API', function () {
     let domainEvents: { dispatch: ReturnType<typeof vi.fn<(event: unknown) => unknown>> };
     let trigger: Parameters<ReturnType<typeof createApi>['trigger']>[0];
     let firstActions: FirstAction[];
-    let enteredAutomationIds: string[];
-    let runs: RunToInsert[];
+    let runs: Array<Pick<RunToInsert, 'id' | 'automation_id' | 'member_id'>>;
     let steps: RunStepToInsert[];
 
     const now = new Date('2026-01-02T03:04:05Z');
@@ -98,8 +97,8 @@ describe('automations API', function () {
     beforeEach(function () {
       vi.useFakeTimers();
       vi.setSystemTime(now);
+
       firstActions = [];
-      enteredAutomationIds = [];
       runs = [];
       steps = [];
       domainEvents = { dispatch: vi.fn<(event: unknown) => unknown>() };
@@ -110,11 +109,12 @@ describe('automations API', function () {
         memberStatus: 'free',
         memberTierIds: [],
       };
+
       repository = createTestAutomationsRepository2({
         lockMember: noop,
         findFirstActionRevisions: () => firstActions,
-        hasMemberEnteredAutomation: (_connection, automationId) =>
-          enteredAutomationIds.includes(automationId),
+        hasMemberEnteredAutomation: (_connection, automationId, memberId) =>
+          runs.some((run) => run.automation_id === automationId && run.member_id === memberId),
         insertRuns: (_connection, toInsert) => {
           runs.push(...toInsert);
         },
@@ -257,38 +257,25 @@ describe('automations API', function () {
       const entered = createFirstAction();
       const available = createFirstAction();
       firstActions = [entered, available];
-      enteredAutomationIds = [entered.automation_id];
-      const api = createApi({
-        repository: {
-          ...repository,
-          hasMemberEnteredAutomation: (_connection, automationId) =>
-            enteredAutomationIds.includes(automationId),
+      runs = [
+        {
+          id: ObjectId().toHexString(),
+          automation_id: entered.automation_id,
+          member_id: trigger.memberId,
         },
-        domainEvents,
-      });
-
-      await api.trigger(trigger);
-
-      expect(runs).toHaveLength(1);
-      expect(runs[0].automation_id).toBe(available.automation_id);
-      expect(steps).toHaveLength(1);
-      expect(steps[0].automation_action_revision_id).toBe(available.automation_action_revision_id);
-      expect(steps[0].automation_run_id).toBe(runs[0].id);
-    });
-
-    it('inserts no runs or steps when there are no matching automations', async function () {
+      ];
       const api = createApi({ repository, domainEvents });
 
       await api.trigger(trigger);
 
-      expect(runs).toHaveLength(0);
-      expect(steps).toHaveLength(0);
+      expect(runs).toHaveLength(2);
+      expect(runs[1]?.automation_id).toBe(available.automation_id);
+      expect(steps).toHaveLength(1);
+      expect(steps[0]?.automation_action_revision_id).toBe(available.automation_action_revision_id);
+      expect(steps[0]?.automation_run_id).toBe(runs[1]?.id);
     });
 
-    it('inserts no runs or steps when the member has entered every matching automation', async function () {
-      const entered = createFirstAction();
-      firstActions = [entered];
-      enteredAutomationIds = [entered.automation_id];
+    it('inserts no runs or steps when there are no matching automations', async function () {
       const api = createApi({ repository, domainEvents });
 
       await api.trigger(trigger);
