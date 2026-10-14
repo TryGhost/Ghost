@@ -929,7 +929,7 @@ describe('Managing apps', () => {
       expect(tokenApi.requests).toHaveLength(0);
     });
 
-    it('refuses a path the Admin API only redirects, saying how its paths are spelled', async () => {
+    it('refuses a path the Admin API only redirects, saying its paths end in /', async () => {
       await fakeAppPage(installation());
       // As Ghost answers a path without its trailing `/`.
       const postsApi = fakeAdminEndpoint(
@@ -941,7 +941,7 @@ describe('Managing apps', () => {
       await expect.element(appsScreen.frame()).toBeVisible();
 
       expect(refusal(await callAppFrame(APP_ORIGIN, 'fetch', { path: '/posts' }))).toBe(
-        'invalid_path: The Admin API answers /posts only with a redirect: its paths are in lowercase and end in /, such as /posts/',
+        'invalid_path: The Admin API answers /posts only with a redirect: its paths end in /, such as /posts/',
       );
       expect(postsApi.requests).toHaveLength(1);
     });

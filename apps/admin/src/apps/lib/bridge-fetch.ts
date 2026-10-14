@@ -59,8 +59,8 @@ export function createAdminApiFetch({
         // goes with it: until then, it is what keeps the session's keys from the app.
         credentials: 'include',
         // A redirect could lead off the API, where the app's path would no longer say
-        // where the request went, so none is followed. The ones the Admin API answers
-        // with are for a path spelled differently from its own, which the app can fix.
+        // where the request went, so none is followed. Most the Admin API answers with
+        // are for a path missing its trailing `/`, which the app can fix.
         redirect: 'manual',
         signal,
       });
@@ -69,9 +69,12 @@ export function createAdminApiFetch({
     }
 
     if (response.type === 'opaqueredirect') {
+      // A path with its `/` is spelled right; it redirects on purpose, as Stripe's connect does.
       throw new BridgeError(
         'invalid_path',
-        `The Admin API answers ${check.pathname} only with a redirect: its paths are in lowercase and end in /, such as /posts/`,
+        check.pathname.endsWith('/')
+          ? `The Admin API answers ${check.pathname} with a redirect, which apps can’t follow`
+          : `The Admin API answers ${check.pathname} only with a redirect: its paths end in /, such as ${check.pathname}/`,
       );
     }
 

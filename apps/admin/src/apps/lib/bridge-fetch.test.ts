@@ -85,13 +85,23 @@ describe('createAdminApiFetch', () => {
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
-  it('refuses a path the Admin API only redirects, saying how its paths are spelled', async () => {
+  it('refuses a path the Admin API only redirects, saying its paths end in /', async () => {
     fetchMock.mockResolvedValue(opaqueRedirect());
 
     await expect(adminApiFetch({ path: '/posts?limit=5' }, session.signal)).rejects.toThrow(
-      'invalid_path: The Admin API answers /posts only with a redirect: its paths are in lowercase and end in /, such as /posts/',
+      'invalid_path: The Admin API answers /posts only with a redirect: its paths end in /, such as /posts/',
     );
     expect(handleSessionExpiry).not.toHaveBeenCalled();
+  });
+
+  it('refuses a route that redirects on purpose, without blaming its spelling', async () => {
+    fetchMock.mockResolvedValue(opaqueRedirect());
+
+    await expect(
+      adminApiFetch({ path: '/members/stripe_connect/?mode=test' }, session.signal),
+    ).rejects.toThrow(
+      'invalid_path: The Admin API answers /members/stripe_connect/ with a redirect, which apps can’t follow',
+    );
   });
 
   it('says the Admin API couldn’t be reached when the request fails', async () => {
