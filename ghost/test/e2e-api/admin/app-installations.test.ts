@@ -625,7 +625,7 @@ describe('App installations Admin API', function () {
       const reviewed = await preview(NEW_URL);
       serve(absolute, NEW_URL);
 
-      await approve(installed.id, NEW_URL, reviewed.digest, 200);
+      await approve(installed.id, NEW_URL, reviewed.digest, 200, reviewed.installation.revision);
 
       const row = await installationRow(installed.id);
       assert.notEqual(row.manifest_id, pendingId);
