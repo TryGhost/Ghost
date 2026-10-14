@@ -10,7 +10,10 @@ export type { PathChangeOptions, Place, StartContext, Theme };
 /** The site the app is running in. */
 export type Site = Readonly<StartContext['site']>;
 
-/** Who is using the app, by ID and role. Ask the Admin API for anything more. */
+/**
+ * Who is using the app, by ID and role. Read anything more, such as their name, through
+ * `ghost.fetch(`/users/?filter=id:${ghost.user.id}`)`: `/users/:id/` is blocked.
+ */
 export type User = Readonly<StartContext['user']>;
 
 /** The session with Admin: the installation revision it was started against. */

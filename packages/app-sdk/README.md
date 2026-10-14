@@ -54,20 +54,20 @@ try {
 Call it as soon as the page loads; every call shares one connection.
 `options.timeout` is how long to wait, in milliseconds (10 seconds by default).
 
-| `Ghost`                       | What it is                                                                                                                                            |
-| ----------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `site`                        | `{ url, title, timezone, locale }`                                                                                                                    |
-| `user`                        | `{ id, role }` of the staff user. No name or email: ask the Admin API, where permissions apply.                                                       |
-| `theme`                       | `{ mode, accent_color }` Admin shows now. `mode` is `light` or `dark`, never `system`.                                                                |
-| `onThemeChange(callback)`     | Called with the new theme when the publisher switches. Returns a function that unsubscribes.                                                          |
-| `session`                     | `{ revision }`: the installation revision the session started against.                                                                                |
-| `path.current`                | The app's own route, such as `/episodes/12`, from Admin's address. `/` when it names none. Spelled as Admin keeps it, `..` resolved and escaped once. |
-| `path.set(path, { replace })` | Tells Admin the app moved to another of its routes, so the address bar, reloads and the back button follow. It does not navigate the page.            |
-| `onPathChange(callback)`      | Called when Admin's address moves within the app: back, forward, a link. Not for the app's own `path.set`.                                            |
-| `fetch(path, init?)`          | Calls the Admin API as the staff user. `path` is relative to the API root (`/posts/?limit=5`), never a URL. Answers with a real `Response`.           |
-| `open(place)`                 | Sends the publisher to `{ post: { id } }`, `{ page: { id } }`, `{ member: { id } }` or `{ apps: true }`.                                              |
-| `connected`                   | `false` once the session has ended.                                                                                                                   |
-| `onSessionEnd(callback)`      | Called once, with the `session_ended` error, when the session ends.                                                                                   |
+| `Ghost`                       | What it is                                                                                                                                                          |
+| ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `site`                        | `{ url, title, timezone, locale }`                                                                                                                                  |
+| `user`                        | `{ id, role }` of the staff user. No name or email: read them with `fetch('/users/?filter=id:' + user.id)` (`/users/:id/` is blocked), where app scopes will apply. |
+| `theme`                       | `{ mode, accent_color }` Admin shows now. `mode` is `light` or `dark`, never `system`.                                                                              |
+| `onThemeChange(callback)`     | Called with the new theme when the publisher switches. Returns a function that unsubscribes.                                                                        |
+| `session`                     | `{ revision }`: the installation revision the session started against.                                                                                              |
+| `path.current`                | The app's own route, such as `/episodes/12`, from Admin's address. `/` when it names none. Spelled as Admin keeps it, `..` resolved and escaped once.               |
+| `path.set(path, { replace })` | Tells Admin the app moved to another of its routes, so the address bar, reloads and the back button follow. It does not navigate the page.                          |
+| `onPathChange(callback)`      | Called when Admin's address moves within the app: back, forward, a link. Not for the app's own `path.set`.                                                          |
+| `fetch(path, init?)`          | Calls the Admin API as the staff user. `path` is relative to the API root (`/posts/?limit=5`), never a URL. Answers with a real `Response`.                         |
+| `open(place)`                 | Sends the publisher to `{ post: { id } }`, `{ page: { id } }`, `{ member: { id } }` or `{ apps: true }`.                                                            |
+| `connected`                   | `false` once the session has ended.                                                                                                                                 |
+| `onSessionEnd(callback)`      | Called once, with the `session_ended` error, when the session ends.                                                                                                 |
 
 `site`, `user`, `session` and `theme` are frozen, so no part of the page can
 change what the rest of it reads.

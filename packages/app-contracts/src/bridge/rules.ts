@@ -167,7 +167,8 @@ export type StartContext = {
   };
   /**
    * Who is using the app, by ID and role only. Name and email are left out on purpose: an
-   * app that needs more about a person asks the API, where permissions apply.
+   * app that needs more about a person asks the API, through `/users/?filter=id:…`, where
+   * app scopes will apply.
    */
   user: {
     id: string;
