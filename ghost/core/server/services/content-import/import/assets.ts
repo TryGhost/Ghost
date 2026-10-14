@@ -85,7 +85,7 @@ export class PreparedAssetBatch implements ImportAssetBatch {
       if (rollbackFailures.length > 0) {
         // AggregateError is the native error for preserving storage and rollback
         // failures; unlike GhostError it takes an iterable before its options.
-        // eslint-disable-next-line ghost/ghost-custom/ghost-error-usage
+        // oxlint-disable-next-line ghost/ghost-custom/ghost-error-usage
         throw new AggregateError(
           [failure.reason, ...rollbackFailures],
           'Asset storage failed and rollback was incomplete.',

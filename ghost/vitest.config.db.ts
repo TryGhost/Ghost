@@ -115,7 +115,7 @@ const COVERAGE_LANES: Record<string, CoverageLane> = {
 // skip the gate. An empty string is a bad value too, not "unset".
 const laneName = process.env.COVERAGE_LANE;
 if (laneName !== undefined && !Object.hasOwn(COVERAGE_LANES, laneName)) {
-  // eslint-disable-next-line ghost/ghost-custom/no-native-error
+  // oxlint-disable-next-line ghost/ghost-custom/no-native-error
   throw new Error(
     `Unknown COVERAGE_LANE '${laneName}' — expected one of: ${Object.keys(COVERAGE_LANES).join(', ')}`,
   );

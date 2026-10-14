@@ -10,7 +10,6 @@
 // Every rule is 'error' or 'off' — never 'warn'. Warnings get ignored by humans
 // and agents and just pollute lint output.
 
-import path from 'node:path';
 import js from '@eslint/js';
 import globals from 'globals';
 import ghostPlugin from 'eslint-plugin-ghost';
@@ -183,9 +182,10 @@ export const nodeLibRules = {
   ...correctnessRules,
   'no-var': 'error',
   'one-var': ['error', 'never'],
-  'ghost/ghost-custom/no-native-error': 'error',
-  'ghost/ghost-custom/ghost-error-usage': 'error',
-  'ghost/ghost-custom/ghost-tpl-usage': 'error',
+  // Custom rules are enforced by the root Oxlint check.
+  'ghost/ghost-custom/no-native-error': 'off',
+  'ghost/ghost-custom/ghost-error-usage': 'off',
+  'ghost/ghost-custom/ghost-tpl-usage': 'off',
 };
 
 // Ban top-level await in shipped Node-library source. It makes the ESM module
@@ -244,53 +244,6 @@ export function mochaRulesOff(plugin) {
 }
 
 // ============================================================================
-// === Plugins
-// ============================================================================
-
-// ESLint-9-compatible replacement for eslint-plugin-filenames-ts's match-regex
-// rule (the upstream calls context.getScope() which ESLint 9 removed).
-const filenamesMatchRegex = {
-  meta: {
-    type: 'problem',
-    schema: [{ type: 'string' }, { type: ['boolean', 'null'] }, { type: ['boolean', 'null'] }],
-  },
-  create(context) {
-    const pattern = new RegExp(context.options[0]);
-    const ignoreExporting = Boolean(context.options[1]);
-    return {
-      Program(node) {
-        if (ignoreExporting) {
-          const hasExport = node.body.some(
-            (stmt) =>
-              stmt.type === 'ExportDefaultDeclaration' ||
-              stmt.type === 'ExportNamedDeclaration' ||
-              (stmt.type === 'ExpressionStatement' &&
-                stmt.expression.type === 'AssignmentExpression' &&
-                stmt.expression.left.type === 'MemberExpression' &&
-                stmt.expression.left.object.type === 'Identifier' &&
-                stmt.expression.left.object.name === 'module' &&
-                stmt.expression.left.property.type === 'Identifier' &&
-                stmt.expression.left.property.name === 'exports'),
-          );
-          if (hasExport) return;
-        }
-        const filename = path.parse(context.filename).name;
-        if (!pattern.test(filename)) {
-          context.report({
-            node,
-            message: `Filename '${filename}' does not match the naming convention.`,
-          });
-        }
-      },
-    };
-  },
-};
-
-export const localFilenamesPlugin = {
-  rules: { 'match-regex': filenamesMatchRegex },
-};
-
-// ============================================================================
 // === Factory: nodeLibConfig (synchronous)
 // ============================================================================
 
@@ -303,12 +256,6 @@ export const localFilenamesPlugin = {
  *   When false: vanilla JS with jsUnusedVarsRule.
  * @property {boolean} [commonjs=false]
  *   When true: sourceType is 'commonjs' instead of 'module'.
- * @property {boolean} [legacyLocalFilenames=false]
- *   LEGACY escape hatch for packages/i18n. When true: register the
- *   localFilenamesPlugin and turn off `ghost/filenames/match-regex` so the
- *   workspace can use `local-filenames/match-regex` (its workspace-local
- *   variant) instead. Should be unified with the rest of the codebase
- *   eventually so we only have one filename-matching rule.
  * @property {string[]} [srcGlobs]
  *   Override src globs. Default depends on typescript flag.
  * @property {string[]} [testGlobs]
@@ -340,7 +287,6 @@ export const localFilenamesPlugin = {
 const NODE_LIB_PARAMS = new Set([
   'typescript',
   'commonjs',
-  'legacyLocalFilenames',
   'srcGlobs',
   'testGlobs',
   'ignores',
@@ -359,7 +305,6 @@ export function nodeLibConfig(options = {}) {
   const {
     typescript = true,
     commonjs = false,
-    legacyLocalFilenames = false,
     srcGlobs,
     testGlobs,
     ignores = ['build/**/*'],
@@ -379,14 +324,10 @@ export function nodeLibConfig(options = {}) {
   const baseRules = {
     ...nodeLibRules,
     ...unusedVarsRule,
-    // Turn off the eslint-plugin-ghost filename rule when using the
-    // local-filenames variant — they're equivalent in intent.
-    ...(legacyLocalFilenames ? { 'ghost/filenames/match-regex': 'off' } : {}),
   };
 
   const plugins = {
     ghost: ghostPlugin,
-    ...(legacyLocalFilenames && { 'local-filenames': localFilenamesPlugin }),
   };
 
   const srcLanguageOptions = {

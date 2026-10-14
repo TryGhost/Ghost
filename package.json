@@ -43,7 +43,7 @@
     "knip": "knip",
     "knip:fix": "knip --fix --allow-remove-files=false",
     "lint": "pnpm lint:oxlint && pnpm nx run-many -t lint lint:boundaries && pnpm lint:packages && pnpm lint:versioning && pnpm lint:docs",
-    "lint:oxlint": "oxlint --deny-warnings ghost/core/server",
+    "lint:oxlint": "oxlint --deny-warnings",
     "lint:agent-guidance": "node tools/scripts/check-agent-guidance.ts",
     "lint:agent-skills": "node tools/scripts/check-agent-skill-links.ts",
     "lint:doc-links": "git ls-files -z '*.md' ':(exclude,glob).changeset/**' ':(exclude,glob)**/fixture/**' ':(exclude,glob)**/fixtures/**' | xargs -0 remark --use remark-validate-links --frail --quiet",

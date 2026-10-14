@@ -69,7 +69,7 @@ export function guardReadOnly<T>(tree: T, path = ''): T {
     // A native TypeError on purpose: it is what a strict-mode write to a frozen
     // object throws, so guarded and frozen config fail the same way. Config also
     // must not depend on @tryghost/error.
-    // eslint-disable-next-line ghost/ghost-custom/ghost-error-usage
+    // oxlint-disable-next-line ghost/ghost-custom/ghost-error-usage
     throw new TypeError(
       `Ghost config is read-only: attempted write to \`${path ? `${path}:` : ''}${String(prop)}\`. ` +
         'Build a derived object instead - see core/shared/config/SCHEMA.md.',

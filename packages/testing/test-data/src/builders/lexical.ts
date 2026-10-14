@@ -79,7 +79,7 @@ function resolveCard(spec: CardSpec): CardNode {
     const defaults = CARD_DEFAULTS[spec];
     if (!defaults) {
       // Test-only builder failing fast; @tryghost/errors' HTTP semantics don't apply here
-      // eslint-disable-next-line ghost/ghost-custom/no-native-error
+      // oxlint-disable-next-line ghost/ghost-custom/no-native-error
       throw new Error(`Unknown card type: "${spec}". Register it in CARD_DEFAULTS in lexical.ts.`);
     }
     return { ...defaults };
@@ -89,7 +89,7 @@ function resolveCard(spec: CardSpec): CardNode {
   const defaults = CARD_DEFAULTS[cardType];
   if (!defaults) {
     // Test-only builder failing fast; @tryghost/errors' HTTP semantics don't apply here
-    // eslint-disable-next-line ghost/ghost-custom/no-native-error
+    // oxlint-disable-next-line ghost/ghost-custom/no-native-error
     throw new Error(
       `Unknown card type: "${cardType}". Register it in CARD_DEFAULTS in lexical.ts.`,
     );

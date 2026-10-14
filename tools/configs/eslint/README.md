@@ -45,18 +45,24 @@ A workspace must declare every ESLint plugin that its configuration resolves.
 Run the workspace's `pnpm lint` target after changing its config. Run the root
 lint when changing shared rule atoms or either factory.
 
-## Incremental Oxlint adoption
+## Custom rules in Oxlint
 
-`pnpm lint:oxlint` runs alongside ESLint in `pnpm lint` and CI. All built-in
-Oxlint categories are off. The first enabled rule is
-`ghost/ghost-custom/no-native-error`, scoped to `ghost/core/server/**/*.{js,ts}`.
-The rule implementation lives in `../oxlint/rules/no-native-error.mjs` and is
-registered by `../oxlint/plugin.mjs`. It has no ESLint plugin dependency and
-preserves the original behavior and rule name, including existing inline exceptions.
+`pnpm lint:oxlint` owns the eight `ghost-custom` rules and the three local rules
+(filename matching, Admin paths and E2E reset safety). Their standalone
+implementations live in `../oxlint/rules/`; they do not load ESLint plugins.
+The ESLint equivalents are off. Other rules supplied by `eslint-plugin-ghost`
+remain in ESLint.
 
-ESLint continues to enforce all existing rules and scopes. Enable further
-Oxlint rules individually, using only `error` or `off`, and verify parity before
-removing their ESLint equivalents. `--deny-warnings` rejects accidental warnings.
+The root `.oxlintrc.json` preserves the previous workspace scopes, options and
+exceptions. API line limits, assertion-method checks and assertion-parameter
+checks were already disabled and remain off. All built-in Oxlint categories
+are off; enable further rules individually as `error` or `off`.
+`--deny-warnings` rejects accidental warnings.
 
-Run the configuration and compatibility tests with
+Run `pnpm lint` from the repository root to run both linters. CI does the same
+checks. When adding a workspace or changing a source/test scope, update the
+Oxlint overrides as well as the workspace's ESLint config. Use `oxlint-disable`
+comments for custom-rule exceptions so ESLint does not report unused directives.
+
+Run the rule and scope regression tests with
 `pnpm --filter @internal/scripts exec node --test test/oxlint.test.ts`.
