@@ -106,13 +106,16 @@ export const useBrowseAppInstallations = createQuery<AppInstallationsResponseTyp
   path: '/apps/installations/',
 });
 
+/** The Admin API path that reads one installation, for a read made without the hook. */
+export const appInstallationPath = (id: string) => `/apps/installations/${id}/`;
+
 /**
  * Unlike `useBrowseAppInstallations`, this also returns uninstalled apps.
  * That way their details page still loads.
  */
 export const useReadAppInstallation = createQueryWithId<AppInstallationsResponseType>({
   dataType,
-  path: (id) => `/apps/installations/${id}/`,
+  path: appInstallationPath,
   defaultSearchParams: { include: 'history' },
 });
 

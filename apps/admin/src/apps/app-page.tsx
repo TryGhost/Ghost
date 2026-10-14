@@ -23,6 +23,7 @@ import {
   type AppInstallation,
   type AppInstallationsResponseType,
   type AppSession,
+  appInstallationPath,
   useReadAppInstallation,
   useStartAppSession,
 } from '@tryghost/admin-x-framework/api/app-installations';
@@ -456,7 +457,7 @@ function useAppSession(installationId: string): {
       // before app sessions, which has no route for them. The app opens as it did there:
       // on the installation as read, without a re-check, pinned to the revision read.
       const read = await fetchApi<AppInstallationsResponseType>(
-        apiUrl(`/apps/installations/${installationId}/`),
+        apiUrl(appInstallationPath(installationId)),
       );
       const installation = read.app_installations[0];
       // That Core's installations may not carry a revision either; theirs never moves on.

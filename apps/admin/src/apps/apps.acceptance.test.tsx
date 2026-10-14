@@ -751,13 +751,15 @@ describe('Managing apps', () => {
     });
 
     it('keeps a `labs` query in the app’s route from setting Admin’s Labs overrides', async () => {
-      await fakeAppPage(installation());
-      await renderAdminApp(APP_ROUTE, { labs });
+      // An ID as Ghost makes them, an ObjectId, which is how Admin tells an app's page.
+      const id = '6a1b2c3d4e5f60718293a4b5';
+      await fakeAppPage(installation({ id }));
+      await renderAdminApp(`/apps/${id}`, { labs });
       await expect.element(appsScreen.frame()).toBeVisible();
 
       answer(await callAppFrame(APP_ORIGIN, 'setPath', '/?labs=someFlag'));
 
-      await expect.poll(currentRoute).toBe(`${APP_ROUTE}?labs=someFlag`);
+      await expect.poll(currentRoute).toBe(`/apps/${id}?labs=someFlag`);
       expect(sessionStorage.getItem('ghost-admin:labs-overrides')).toBeNull();
     });
 
