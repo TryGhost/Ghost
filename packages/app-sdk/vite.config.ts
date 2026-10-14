@@ -24,11 +24,16 @@ const tidyRegionComments: Plugin = {
 // Vite turns a Node builtin, such as `node:crypto`, into an empty stub for the browser and
 // only warns about it, so a bundle that needs one would build, import nothing, and break the
 // page that called it. Anything the SDK or the contracts' root reaches must run in a page, so
-// a builtin fails the build instead.
+// a builtin fails the build instead: one named as `node:…`, or one Vite stubbed, which is
+// how a builtin named without the prefix shows. How Vite names its stub is its own affair, so
+// the prefix is checked first.
 const refuseNodeBuiltins: Plugin = {
   name: 'refuse-node-builtins',
   enforce: 'pre',
   async resolveId(source, importer, options) {
+    if (source.startsWith('node:')) {
+      this.error(`${importer} imports ${source}, a Node builtin no page can load`);
+    }
     const resolved = await this.resolve(source, importer, { ...options, skipSelf: true });
     if (resolved?.id.startsWith('__vite-browser-external')) {
       this.error(`${importer} imports ${source}, a Node builtin no page can load`);

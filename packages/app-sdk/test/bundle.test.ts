@@ -1,9 +1,12 @@
 // @vitest-environment node
 import { readFileSync } from 'node:fs';
+import { mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 import ts from 'typescript';
-import { parseAst } from 'vite';
+import { build, parseAst } from 'vite';
 import { describe, expect, inject, it } from 'vitest';
 
 // Built from the source under test by `test/build.ts`.
@@ -51,7 +54,29 @@ function exportsOf(file: string): string[] {
     .sort();
 }
 
-// Node builtins are refused by the build (vite.config.ts).
+describe('the build', () => {
+  // Vite would stub the builtin out, and the module would break the page that loaded it.
+  it.each(['production', 'bundle'])('refuses a Node builtin, in %s mode', async (mode) => {
+    const directory = await mkdtemp(join(tmpdir(), 'app-sdk-'));
+    const entry = join(directory, 'entry.js');
+    await writeFile(
+      entry,
+      "import { randomUUID } from 'node:crypto';\nexport const id = randomUUID();\n",
+    );
+    try {
+      const building = build({
+        root: fileURLToPath(new URL('..', import.meta.url)),
+        mode,
+        logLevel: 'silent',
+        build: { write: false, lib: { entry, formats: ['es'] } },
+      });
+      await expect(building).rejects.toThrow('node:crypto, a Node builtin no page can load');
+    } finally {
+      await rm(directory, { recursive: true, force: true });
+    }
+  });
+});
+
 describe('the browser bundle', () => {
   const bundle = join(built.bundle, 'app-sdk.js');
 
