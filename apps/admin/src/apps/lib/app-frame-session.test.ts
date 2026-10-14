@@ -7,6 +7,7 @@ import {
 } from '@tryghost/app-contracts/bridge';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { type AppFrameSession, createAppFrameSession } from './app-frame-session';
+import type { AdminApiFetch } from './bridge-fetch';
 import { appFrameTimeouts } from './frame';
 
 const ORIGIN = 'https://podcast.example.com';
@@ -107,6 +108,7 @@ describe('createAppFrameSession', () => {
   let admin: { context: StartContext };
   const navigate = vi.fn();
   const open = vi.fn();
+  const fetchAdminApi = vi.fn<AdminApiFetch>();
   const previousTimeout = appFrameTimeouts.ready;
 
   beforeEach(() => {
@@ -114,7 +116,7 @@ describe('createAppFrameSession', () => {
     session = createAppFrameSession({
       surfaceOrigin: ORIGIN,
       context: () => admin.context,
-      fetchAdminApi: vi.fn(),
+      fetchAdminApi,
       navigate,
       open,
     });
@@ -125,6 +127,7 @@ describe('createAppFrameSession', () => {
     appFrameTimeouts.ready = previousTimeout;
     vi.useRealTimers();
     vi.clearAllMocks();
+    fetchAdminApi.mockReset();
   });
 
   /** Has the page set its title over a channel Admin has let go of, which changes nothing. */
@@ -444,6 +447,50 @@ describe('createAppFrameSession', () => {
     await frame.host.open({ post: { id: '5ddc9141c35e7700383b2937' } });
 
     expect(open).toHaveBeenCalledExactlyOnceWith({ post: { id: '5ddc9141c35e7700383b2937' } });
+  });
+
+  it('makes the app’s request, checked, with a signal that ends with the session', async () => {
+    const frame = await started();
+    fetchAdminApi.mockResolvedValue({ status: 200, statusText: 'OK', headers: {}, body: '{}' });
+
+    await expect(frame.host.fetch({ path: '/posts/' })).resolves.toMatchObject({ status: 200 });
+
+    const [request, signal] = fetchAdminApi.mock.calls[0];
+    expect(request).toEqual({ path: '/posts/' });
+    expect(signal.aborted).toBe(false);
+    session.dispose();
+    expect(signal.aborted).toBe(true);
+  });
+
+  it('refuses a request that sets a header only Admin sets, without making it', async () => {
+    const frame = await started();
+
+    await expect(
+      frame.host.fetch({ path: '/posts/', headers: { Authorization: 'Ghost forged' } }),
+    ).rejects.toThrow('invalid_argument: Expected no Authorization header, which only Admin sets');
+    expect(fetchAdminApi).not.toHaveBeenCalled();
+  });
+
+  it('refuses a request still running when the session ends, as ended', async () => {
+    const frame = await started();
+    fetchAdminApi.mockImplementation(() => new Promise(() => {}));
+
+    const request = frame.host.fetch({ path: '/posts/' });
+    await vi.waitFor(() => expect(fetchAdminApi).toHaveBeenCalled());
+    session.dispose();
+
+    await expect(request).rejects.toThrow('session_ended: The app’s session ended');
+  });
+
+  it('refuses a request still running when the page loads again, as ended', async () => {
+    const frame = await started();
+    fetchAdminApi.mockImplementation(() => new Promise(() => {}));
+
+    const request = frame.host.fetch({ path: '/posts/' });
+    await vi.waitFor(() => expect(fetchAdminApi).toHaveBeenCalled());
+    session.restart();
+
+    await expect(request).rejects.toThrow('session_ended: The app’s session ended');
   });
 
   it('lets go of a frame that unmounts, before or after it started', async () => {
