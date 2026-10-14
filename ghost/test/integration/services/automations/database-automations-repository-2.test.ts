@@ -572,6 +572,33 @@ describe('database automations repository', function () {
     );
   });
 
+  describe('isRunAutomationActive', function () {
+    const isRunAutomationActive = async (status: string) => {
+      const repository = createDatabaseAutomationsRepository2({ knex });
+
+      const automation = { ...createAutomation(), status };
+      const member = createMember(ObjectId().toHexString());
+      const run = createRun(automation.id, member.id);
+
+      await knex('automations').insert(automation);
+      await knex('members').insert(member);
+      await repository.insertRuns(knex, [run]);
+
+      return await repository.isRunAutomationActive(knex, run.id);
+    };
+
+    it('resolves with true if the associated automation is active', async function () {
+      await expect(isRunAutomationActive('active')).resolves.toBe(true);
+    });
+
+    it.each(['inactive', 'archived'])(
+      'resolves with false if the associated automation is %s',
+      async function (status) {
+        await expect(isRunAutomationActive(status)).resolves.toBe(false);
+      },
+    );
+  });
+
   describe('lockMember', function () {
     let repository: ReturnType<typeof createDatabaseAutomationsRepository2>;
     let memberId: string;

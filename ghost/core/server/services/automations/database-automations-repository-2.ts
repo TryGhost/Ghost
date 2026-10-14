@@ -147,6 +147,15 @@ export const createDatabaseAutomationsRepository2 = ({
       return await selectExists(connection, query);
     },
 
+    async isRunAutomationActive(connection, automationRunId) {
+      const query = connection('automation_runs as run')
+        .select(connection.raw('1'))
+        .innerJoin('automations as automation', 'automation.id', 'run.automation_id')
+        .where('run.id', automationRunId)
+        .where('automation.status', 'active');
+      return await selectExists(connection, query);
+    },
+
     async lockMember(connection, memberId) {
       await connection('members').where('id', memberId).forUpdate().first('id');
     },
