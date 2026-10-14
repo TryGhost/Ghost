@@ -1,8 +1,11 @@
+import { START_TIMEOUT_MS } from '@tryghost/app-contracts/bridge';
+
 /**
  * How long an app's page gets, from the frame's mount, to say hello and start before Admin
- * calls it unresponsive. Settable so acceptance specs don't wait it out.
+ * calls it unresponsive: the bridge's own budget, which the SDK waits out too. Settable so
+ * acceptance specs don't wait it out.
  */
-export const appFrameTimeouts = { ready: 10_000 };
+export const appFrameTimeouts = { ready: START_TIMEOUT_MS };
 
 /**
  * What the app's frame may do. The app runs on its own origin, checked when it was

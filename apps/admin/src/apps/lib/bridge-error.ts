@@ -1,26 +1,16 @@
+import { type BridgeErrorCode, encodeBridgeError } from '@tryghost/app-contracts/bridge';
 import type { z } from 'zod';
 
 /**
- * What a call from an app's page can fail with. The SDK turns each into an error the app
- * can branch on.
- */
-export type BridgeErrorCode =
-  | 'invalid_argument'
-  | 'invalid_path'
-  | 'blocked'
-  | 'network_error'
-  | 'session_ended';
-
-/**
- * Only an error's message survives the channel: the structured clone that carries it drops
- * every other property, and any `name` but the built-in ones. So the code leads the
- * message, as `code: what went wrong`, for the SDK to read back.
+ * A call from an app's page that Admin refuses, with one of the bridge's codes, which the
+ * SDK turns into an error the app can branch on. Only an error's message survives the
+ * channel, so the code travels in it, encoded as the contract says.
  */
 export class BridgeError extends Error {
   readonly code: BridgeErrorCode;
 
   constructor(code: BridgeErrorCode, detail: string) {
-    super(`${code}: ${detail}`);
+    super(encodeBridgeError(code, detail));
     this.name = 'BridgeError';
     this.code = code;
   }
