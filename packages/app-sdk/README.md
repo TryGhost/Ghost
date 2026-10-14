@@ -72,7 +72,8 @@ Call it as soon as the page loads; every call shares one connection.
 `fetch` takes `method` (any case), `headers` (anything `Headers` takes) and
 `body`: text is sent as it is; an object or array is sent as JSON, with
 `content-type: application/json` unless the app set one. A body on `GET` or
-`HEAD`, or a binary body, is refused. Any status comes back as a `Response`;
+`HEAD`, or a binary body, is refused, and so are the headers only Admin sets:
+`cookie`, `authorization`, `x-ghost-*`, `origin` and the like. Any status comes back as a `Response`;
 `fetch` rejects only when Admin refuses to make the request.
 
 The page's title is reported for you: the SDK watches `<title>` and Admin shows

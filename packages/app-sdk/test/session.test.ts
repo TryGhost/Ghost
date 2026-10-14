@@ -151,6 +151,13 @@ describe('fetch', () => {
       'invalid_argument',
     ],
     ['an invalid header name', '/posts/', { headers: { 'bad name': 'x' } }, 'invalid_argument'],
+    ['a cookie', '/posts/', { headers: { Cookie: 'x' } }, 'invalid_argument'],
+    [
+      'an Admin marker',
+      '/posts/',
+      { headers: [['X-Ghost-Version', '6.0']] as HeadersInit },
+      'invalid_argument',
+    ],
   ])('refuses %s without asking Admin', async (_label, path, init, code) => {
     const { ghost, host } = await started();
     await expect(ghost.fetch(path, init)).rejects.toMatchObject({ code });
@@ -192,6 +199,10 @@ describe('a refused argument', () => {
       [ghost.fetch('posts/'), ARGUMENT_MESSAGES.fetchPath],
       [ghost.fetch('/posts/', { method: 'TRACE' }), ARGUMENT_MESSAGES.fetchMethod],
       [ghost.fetch('/posts/', { body: 'x' }), ARGUMENT_MESSAGES.fetchBody],
+      [
+        ghost.fetch('/posts/', { headers: { Authorization: 'x' } }),
+        ARGUMENT_MESSAGES.reservedHeader('authorization'),
+      ],
       [ghost.path.set('episodes'), ARGUMENT_MESSAGES.appPath],
       [ghost.path.set('/a', true as never), ARGUMENT_MESSAGES.pathChangeOptions],
       [ghost.open('/posts' as never), ARGUMENT_MESSAGES.place],

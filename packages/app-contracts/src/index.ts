@@ -48,6 +48,7 @@ export {
   isContainedPath,
   isFetchResponse,
   isRecord,
+  isReservedRequestHeader,
   isStartContext,
   isTheme,
   methodAllowsBody,

@@ -166,7 +166,9 @@ acting. Nothing is versioned: Admin only adds calls and optional fields.
 
 The bridge's rules that depend on nothing live in `src/bridge/rules.ts` and are
 exported from the root entry point as well: the message types, `TITLE_MAX_LENGTH`,
-`FETCH_METHODS`, the statuses a fetch answer may have, `isContainedPath`, the
+`FETCH_METHODS`, the statuses a fetch answer may have, `isContainedPath`,
+`isReservedRequestHeader` for the headers only Admin sets, the words both sides
+refuse an argument with (`ARGUMENT_MESSAGES`), the
 codes a refused call carries (`BRIDGE_ERROR_CODES`, written and read as
 `code: detail` by `encodeBridgeError` and `decodeBridgeError`), and guards for
 what Admin sends the page (`isTheme`, `isStartContext`,

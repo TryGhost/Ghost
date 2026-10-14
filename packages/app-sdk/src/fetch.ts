@@ -4,6 +4,7 @@ import {
   isContainedPath,
   isFetchResponse,
   isRecord,
+  isReservedRequestHeader,
   methodAllowsBody,
   type FetchMethod,
   type FetchRequest,
@@ -36,7 +37,12 @@ function toHeaders(init: HeadersInit | undefined): Record<string, string> {
     });
   }
   // Lowercased by `Headers`, so a content type the app set is found whatever its case.
-  return Object.fromEntries(headers.entries());
+  const entries = [...headers.entries()];
+  const reserved = entries.find(([name]) => isReservedRequestHeader(name));
+  if (reserved) {
+    throw invalidArgument(ARGUMENT_MESSAGES.reservedHeader(reserved[0]));
+  }
+  return Object.fromEntries(entries);
 }
 
 /**

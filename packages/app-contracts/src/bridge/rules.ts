@@ -43,6 +43,22 @@ export function methodAllowsBody(method: string): boolean {
   return method !== 'GET' && method !== 'HEAD';
 }
 
+// The headers Admin sets itself on a request it makes for an app: the credentials, which are
+// Admin's to send; Admin's own markers, which Ghost reads as Admin speaking; and the ones that
+// describe the connection, or the proxies on the way, rather than the request.
+const RESERVED_REQUEST_HEADER =
+  /^(?:cookie|authorization|x-ghost-.*|app-pragma|host|origin|referer|content-length|x-forwarded-.*|forwarded|x-real-ip|via)$/i;
+
+/**
+ * Whether an app may not set a request header, whatever its case. Admin refuses a request that
+ * sets one rather than dropping it, so an app learns it cannot rather than wondering why the
+ * header never arrived. The browser refuses some of these anyway; they are named so none of
+ * them depends on that.
+ */
+export function isReservedRequestHeader(name: string): boolean {
+  return RESERVED_REQUEST_HEADER.test(name);
+}
+
 /**
  * What Admin and the SDK say when they refuse an argument for the same reason, so an app hears
  * the same words whichever of them catches it. The SDK checks only what is plainly wrong, before
@@ -52,6 +68,7 @@ export const ARGUMENT_MESSAGES = {
   fetchPath: 'Expected an Admin API path such as /posts/, not a URL',
   fetchMethod: `Expected a method of: ${FETCH_METHODS.join(', ')}`,
   fetchBody: 'Expected no body on a GET or HEAD request',
+  reservedHeader: (name: string) => `Expected no ${name} header, which only Admin sets`,
   appPath: 'Expected a path within the app, starting with a single /',
   pathChangeOptions: 'Expected options such as { replace: true }',
   place:

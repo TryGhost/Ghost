@@ -14,6 +14,7 @@ import {
   isContainedPath,
   isFetchResponse,
   isRecord,
+  isReservedRequestHeader,
   isStartContext,
   isTheme,
   methodAllowsBody,
@@ -239,8 +240,31 @@ describe('the messages for a refused argument', () => {
     expect(ARGUMENT_MESSAGES.fetchMethod).toBe(
       'Expected a method of: GET, POST, PUT, DELETE, PATCH, HEAD',
     );
+    expect(ARGUMENT_MESSAGES.reservedHeader('cookie')).toBe(
+      'Expected no cookie header, which only Admin sets',
+    );
     for (const message of Object.values(ARGUMENT_MESSAGES)) {
-      expect(message).toMatch(/^Expected /);
+      expect(typeof message === 'string' ? message : message('x')).toMatch(/^Expected /);
+    }
+  });
+});
+
+describe('a reserved request header', () => {
+  it('is one only Admin sets, in any case', () => {
+    for (const name of [
+      'cookie',
+      'COOKIE',
+      'Authorization',
+      'x-ghost-anything',
+      'x-forwarded-host',
+    ]) {
+      expect(isReservedRequestHeader(name), name).toBe(true);
+    }
+  });
+
+  it('is no other', () => {
+    for (const name of ['content-type', 'accept', 'x-ghost', 'x-ghostly', 'cookies', 'hosts']) {
+      expect(isReservedRequestHeader(name), name).toBe(false);
     }
   });
 });

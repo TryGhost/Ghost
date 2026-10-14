@@ -85,6 +85,32 @@ describe('a fetch request', () => {
     ]);
   });
 
+  it('refuses the headers only Admin sets, rather than dropping them', () => {
+    for (const name of [
+      'Cookie',
+      'authorization',
+      'X-Ghost-Version',
+      'App-Pragma',
+      'Host',
+      'Origin',
+      'Referer',
+      'Content-Length',
+      'X-Forwarded-For',
+      'Forwarded',
+      'X-Real-IP',
+      'Via',
+    ]) {
+      expect(requestErrors({ path: '/posts/', headers: { [name]: 'x' } })).toEqual([
+        { path: ['headers', name], message: `Expected no ${name} header, which only Admin sets` },
+      ]);
+    }
+    for (const name of ['Accept', 'Content-Type', 'If-None-Match', 'X-Ghostly', 'X-Request-Id']) {
+      expect(
+        FetchRequestSchema.safeParse({ path: '/posts/', headers: { [name]: 'x' } }).success,
+      ).toBe(true);
+    }
+  });
+
   it('refuses too many headers', () => {
     const headers = Object.fromEntries(
       Array.from({ length: 51 }, (_, index) => [`X-Test-${index}`, 'a']),

@@ -6,6 +6,7 @@ import {
   FETCH_RESPONSE_STATUS_MAX,
   FETCH_RESPONSE_STATUS_MIN,
   isContainedPath,
+  isReservedRequestHeader,
   methodAllowsBody,
 } from './rules.ts';
 
@@ -70,6 +71,12 @@ export const FetchRequestSchema = z
             ctx.addIssue({
               code: 'custom',
               message: 'Expected header names made of letters, digits and -',
+              path: [name],
+            });
+          } else if (isReservedRequestHeader(name)) {
+            ctx.addIssue({
+              code: 'custom',
+              message: ARGUMENT_MESSAGES.reservedHeader(name),
               path: [name],
             });
           }
