@@ -41,15 +41,37 @@ describe('connect', () => {
     });
   });
 
-  it.each([0, -1, Number.NaN, Number.POSITIVE_INFINITY, '10' as unknown as number])(
-    'refuses a timeout of %s',
-    async (timeout) => {
-      frame();
-      const error = await sdk.connect({ timeout }).catch((caught: unknown) => caught);
-      expect(error).toBeInstanceOf(sdk.GhostAppError);
-      expect(error).toMatchObject({ code: 'invalid_argument' });
-    },
-  );
+  it.each([
+    0,
+    -1,
+    Number.NaN,
+    Number.POSITIVE_INFINITY,
+    // setTimeout would clamp it to nothing, and give up at once.
+    2 ** 31,
+    '10' as unknown as number,
+  ])('refuses a timeout of %s', async (timeout) => {
+    frame();
+    const error = await sdk.connect({ timeout }).catch((caught: unknown) => caught);
+    expect(error).toBeInstanceOf(sdk.GhostAppError);
+    expect(error).toMatchObject({ code: 'invalid_argument' });
+  });
+
+  it('waits as long as setTimeout can', async () => {
+    frame();
+    const fake = admin();
+    const connecting = sdk.connect({ timeout: 2 ** 31 - 1 });
+    fake.connect();
+    await fake.start();
+    await expect(connecting).resolves.toBeDefined();
+  });
+
+  it.each([null, 'fast', 10])('refuses options of %s', async (options) => {
+    frame();
+    await expect(sdk.connect(options as never)).rejects.toMatchObject({
+      name: 'GhostAppError',
+      code: 'invalid_argument',
+    });
+  });
 
   it('says hello to the parent and resolves once Admin has started the app', async () => {
     const parent = frame();

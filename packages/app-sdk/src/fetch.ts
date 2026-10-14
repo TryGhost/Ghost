@@ -13,6 +13,8 @@ import {
 import { GhostAppError, invalidArgument, invalidPath } from './errors.ts';
 import type { GhostFetchInit, JsonBody } from './types.ts';
 
+const JSON_BODY = 'Expected a body that can be sent as JSON';
+
 // The statuses a `Response` must be built without a body for, or its constructor throws.
 const NULL_BODY_STATUSES = new Set([204, 205, 304]);
 
@@ -25,6 +27,21 @@ function isJsonBody(value: unknown): value is JsonBody {
   }
   const prototype: unknown = Object.getPrototypeOf(value);
   return prototype === Object.prototype || prototype === null;
+}
+
+// A cycle or a BigInt makes `JSON.stringify` throw, and a `toJSON` that answers nothing
+// makes it answer nothing.
+function toJson(body: JsonBody): string {
+  let json: string | undefined;
+  try {
+    json = JSON.stringify(body) as string | undefined;
+  } catch (error) {
+    throw new GhostAppError('invalid_argument', JSON_BODY, { cause: error });
+  }
+  if (json === undefined) {
+    throw invalidArgument(JSON_BODY);
+  }
+  return json;
 }
 
 function toHeaders(init: HeadersInit | undefined): Record<string, string> {
@@ -53,8 +70,13 @@ export function toFetchRequest(path: string, init: GhostFetchInit = {}): FetchRe
   if (!isContainedPath(path)) {
     throw invalidPath(ARGUMENT_MESSAGES.fetchPath);
   }
+  // Typed away, but a page without TypeScript can pass anything.
+  if (typeof init !== 'object' || init === null) {
+    throw invalidArgument('Expected options such as { method, headers, body }');
+  }
 
-  const method = (init.method ?? 'GET').toUpperCase() as FetchMethod;
+  const { method: given = 'GET' } = init as { method?: unknown };
+  const method = (typeof given === 'string' ? given.toUpperCase() : given) as FetchMethod;
   if (!FETCH_METHODS.includes(method)) {
     throw invalidArgument(ARGUMENT_MESSAGES.fetchMethod);
   }
@@ -69,7 +91,7 @@ export function toFetchRequest(path: string, init: GhostFetchInit = {}): FetchRe
     if (typeof init.body === 'string') {
       request.body = init.body;
     } else if (isJsonBody(init.body)) {
-      request.body = JSON.stringify(init.body);
+      request.body = toJson(init.body);
       headers['content-type'] ??= 'application/json';
     } else {
       // Binary and streamed bodies cannot cross the channel as text.

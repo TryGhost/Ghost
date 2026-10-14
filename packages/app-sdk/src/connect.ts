@@ -1,4 +1,9 @@
-import { HELLO_MESSAGE_TYPE, START_TIMEOUT_MS, isConnectMessage } from '@tryghost/app-contracts';
+import {
+  HELLO_MESSAGE_TYPE,
+  START_TIMEOUT_MS,
+  isConnectMessage,
+  isRecord,
+} from '@tryghost/app-contracts';
 
 import { GhostAppError, invalidArgument } from './errors.ts';
 import { Channel } from './session.ts';
@@ -24,14 +29,23 @@ function parentOrigin(): string {
   return origin && origin !== 'null' ? origin : '*';
 }
 
-function handshake(
+/**
+ * The longest wait `setTimeout` keeps: anything longer it clamps to nothing, and the timeout
+ * would fire at once.
+ */
+const TIMEOUT_MAX = 2 ** 31 - 1;
+
+function handshake(options: ConnectOptions, onEnded: () => void): Promise<Ghost> {
+  if (!isRecord(options)) {
+    return Promise.reject(invalidArgument('Expected options such as { timeout: 10000 }'));
+  }
   // By default, as long as Admin gives the page: waiting longer would wait on a frame Admin
   // has given up on.
-  { timeout = START_TIMEOUT_MS }: ConnectOptions,
-  onEnded: () => void,
-): Promise<Ghost> {
-  if (typeof timeout !== 'number' || !(timeout > 0) || !Number.isFinite(timeout)) {
-    return Promise.reject(invalidArgument('Expected a timeout in milliseconds, above 0'));
+  const { timeout = START_TIMEOUT_MS } = options;
+  if (typeof timeout !== 'number' || !(timeout > 0) || !(timeout <= TIMEOUT_MAX)) {
+    return Promise.reject(
+      invalidArgument(`Expected a timeout in milliseconds, above 0 and at most ${TIMEOUT_MAX}`),
+    );
   }
   if (typeof window === 'undefined' || window.parent === window) {
     return Promise.reject(

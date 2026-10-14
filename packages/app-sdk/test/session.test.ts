@@ -43,6 +43,12 @@ async function started(
   return { admin, ghost: await connecting, host: exports as ReturnType<typeof hostExports> };
 }
 
+function circular(): Record<string, unknown> {
+  const body: Record<string, unknown> = {};
+  body.self = body;
+  return body;
+}
+
 describe('fetch', () => {
   it('sends the request Admin takes and rebuilds its answer as a Response', async () => {
     const { ghost, host } = await started();
@@ -151,6 +157,27 @@ describe('fetch', () => {
       'invalid_argument',
     ],
     ['an invalid header name', '/posts/', { headers: { 'bad name': 'x' } }, 'invalid_argument'],
+    ['options of null', '/posts/', null as never, 'invalid_argument'],
+    ['options that are text', '/posts/', 'POST' as never, 'invalid_argument'],
+    ['a method that is not text', '/posts/', { method: 1 as never }, 'invalid_argument'],
+    [
+      'a body that refers to itself',
+      '/posts/',
+      { method: 'POST', body: circular() },
+      'invalid_argument',
+    ],
+    [
+      'a body holding a BigInt',
+      '/posts/',
+      { method: 'POST', body: { count: 1n } },
+      'invalid_argument',
+    ],
+    [
+      'a body whose toJSON answers nothing',
+      '/posts/',
+      { method: 'POST', body: { toJSON: () => undefined } },
+      'invalid_argument',
+    ],
     ['a cookie', '/posts/', { headers: { Cookie: 'x' } }, 'invalid_argument'],
     [
       'an Admin marker',
@@ -160,7 +187,9 @@ describe('fetch', () => {
     ],
   ])('refuses %s without asking Admin', async (_label, path, init, code) => {
     const { ghost, host } = await started();
-    await expect(ghost.fetch(path, init)).rejects.toMatchObject({ code });
+    const error = await ghost.fetch(path, init).catch((caught: unknown) => caught);
+    expect(error).toBeInstanceOf(sdk.GhostAppError);
+    expect(error).toMatchObject({ code });
     expect(host.fetch).not.toHaveBeenCalled();
   });
 
