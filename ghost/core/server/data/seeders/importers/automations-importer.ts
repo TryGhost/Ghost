@@ -5,11 +5,12 @@ import type { Knex } from 'knex';
 import { TableImporter } from './table-importer';
 import { blogStartDate } from '../utils/blog-info';
 import { toDatabaseDate } from '../../../lib/db-types/date';
+import type { AutomationStatus } from '../../../services/automations/automations-repository';
 import { MEMBER_WELCOME_EMAIL_SLUGS } from '../../../services/member-welcome-emails/constants';
 
 type Automation = {
   id: string;
-  status: 'active' | 'inactive';
+  status: AutomationStatus;
   name: string;
   slug: string;
   description: string;
