@@ -33,6 +33,7 @@ export default {
     const helperImport = context.options[0].helperImport;
     const factories = new Set();
     const constants = new Map();
+    const aliases = [];
     const managed = new Set();
     const calls = [];
     const mutations = [];
@@ -139,13 +140,9 @@ export default {
         names.add(name);
         const value = unwrap(property.value);
         if (
-          ![
-            'Identifier',
-            'MemberExpression',
-            'ArrowFunctionExpression',
-            'FunctionExpression',
-            'Literal',
-          ].includes(value.type)
+          !['Identifier', 'ArrowFunctionExpression', 'FunctionExpression', 'Literal'].includes(
+            value.type,
+          )
         ) {
           report(property.value, 'value');
         }
@@ -167,8 +164,12 @@ export default {
         }
       },
       VariableDeclarator(node) {
-        if (node.parent.kind === 'const' && node.id.type === 'Identifier' && node.init) {
-          constants.set(variable(node.id), node.init);
+        if (node.id.type === 'Identifier' && node.init) {
+          const binding = variable(node.id);
+          aliases.push([binding, node.init]);
+          if (node.parent.kind === 'const') {
+            constants.set(binding, node.init);
+          }
         }
       },
       ExportDefaultDeclaration(node) {
@@ -194,6 +195,9 @@ export default {
         calls.push(node);
       },
       AssignmentExpression(node) {
+        if (node.operator === '=' && node.left.type === 'Identifier') {
+          aliases.push([variable(node.left), node.right]);
+        }
         mutations.push({ node, target: node.left });
       },
       UpdateExpression(node) {
@@ -234,11 +238,11 @@ export default {
             inspectExtras(extras);
           }
         }
-        // Follow local const aliases using ESLint's bindings, not identifier spellings.
+        // Follow aliases in every lexical scope using bindings, not identifier spellings.
         let changed = true;
         while (changed) {
           changed = false;
-          for (const [binding, value] of constants) {
+          for (const [binding, value] of aliases) {
             if (!managed.has(binding) && referencesManaged(value)) {
               managed.add(binding);
               changed = true;
@@ -251,7 +255,15 @@ export default {
           }
         }
         for (const { node, target } of mutations) {
-          if (managedMember(target)) {
+          if (
+            managedMember(target) &&
+            !(
+              node.type === 'AssignmentExpression' &&
+              target.type === 'Identifier' &&
+              node.operator === '=' &&
+              referencesManaged(node.right)
+            )
+          ) {
             report(node, 'mutation');
           }
         }

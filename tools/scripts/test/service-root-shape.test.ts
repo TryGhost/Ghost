@@ -241,6 +241,55 @@ test('rejects extras alias mutations, updates and spread arguments', () => {
   }
 });
 
+for (const kind of ['const', 'let', 'var']) {
+  for (const local of [false, true]) {
+    test(`rejects mutations through ${local ? 'function-local' : 'top-level'} ${kind} aliases`, () => {
+      for (const target of ['root', 'extras']) {
+        const declarations = `const extras = { helper }; const root = defineService('Example', create, extras);`;
+        const mutation = `${kind} first = ${target}; ${kind} second = first; second.other = helper;`;
+        const code =
+          prefix +
+          declarations +
+          (local ? `function run() { ${mutation} }` : mutation) +
+          'export default root;';
+        const result = lint(code);
+        assert.equal(result.status, 1, JSON.stringify(result.diagnostics));
+        assert.equal(result.diagnostics.length, 1);
+        assert.match(result.diagnostics[0]?.message ?? '', messages.mutation!);
+      }
+    });
+  }
+}
+
+test('rejects mutations through an alias assigned after its declaration', () => {
+  const result = lint(
+    prefix +
+      `const root = ${factory}; let alias; alias = root; alias.other = helper; export default root;`,
+  );
+  assert.equal(result.status, 1);
+  assert.equal(result.diagnostics.length, 1);
+  assert.match(result.diagnostics[0]?.message ?? '', messages.mutation!);
+});
+
+for (const value of ['config.value', "config['value']", 'config?.value']) {
+  test(`rejects import-time extras member access: ${value}`, () => {
+    const result = lint(
+      prefix +
+        `const config = { get value() { return helper; } }; export default defineService('Example', create, { helper: ${value} });`,
+    );
+    assert.equal(result.status, 1);
+    assert.equal(result.diagnostics.length, 1);
+    assert.match(result.diagnostics[0]?.message ?? '', messages.value!);
+  });
+}
+
+test('allows deferred extras member access inside a helper', () => {
+  const result = lint(
+    prefix + `export default defineService('Example', create, { helper: () => config.value });`,
+  );
+  assert.equal(result.status, 0, JSON.stringify(result.diagnostics));
+});
+
 test('reports the offending export position and supports Oxlint inline exceptions', () => {
   const source = prefix + `export default ${factory};\nexport const other = true;`;
   const result = lint(source);
