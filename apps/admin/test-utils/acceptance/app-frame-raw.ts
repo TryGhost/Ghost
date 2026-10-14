@@ -40,7 +40,10 @@ const hooks: RawAppFrameHooks = {
 };
 (window as unknown as { __app: RawAppFrameHooks }).__app = hooks;
 
-const hello = () => window.parent.postMessage({ type: 'ghost-app:hello', sdk: 'raw' }, '*');
+// Names the document as the SDK does.
+const documentId = String(performance.timeOrigin);
+const hello = () =>
+  window.parent.postMessage({ type: 'ghost-app:hello', sdk: 'raw', document: documentId }, '*');
 const helloTimer = window.setInterval(hello, 250);
 hello();
 
