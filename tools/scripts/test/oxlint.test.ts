@@ -40,6 +40,8 @@ function lint(code: string, filename: string, allOff = false) {
       [binary, '--deny-warnings', '--format', 'json', filename],
       {
         cwd,
+        // Nx may set both colour variables; JSON diagnostics need neither.
+        env: { ...process.env, FORCE_COLOR: undefined, NO_COLOR: '1' },
         encoding: 'utf8',
         timeout: 30_000,
       },
