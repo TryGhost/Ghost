@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from 'vitest';
-import { page } from 'vitest/browser';
+import { page, userEvent } from 'vitest/browser';
 
 import {
   fakeAdminEndpoint,
@@ -36,6 +36,11 @@ async function reopenEditor() {
   await expect(editorScreen.body()).toHaveCount(0);
   window.location.hash = `#${ROUTE}`;
   await expect.element(editorScreen.body()).toBeVisible();
+}
+
+async function pressSettingsShortcut() {
+  await userEvent.keyboard('{Meta>}.{/Meta}');
+  await settleTransitions();
 }
 
 async function toggleSettings() {
@@ -97,6 +102,22 @@ describe('Remembered settings panel (admin7EditorImprovements)', () => {
     expect(stored()).toBe('open');
   });
 
+  it('opens and closes the panel with Cmd-., leaving the writer typing', async () => {
+    fakeDraft();
+    await renderAdminApp(ROUTE, editorOptions());
+    await editorScreen.titleInput().click();
+
+    await pressSettingsShortcut();
+    await expect.element(editorScreen.settingsSidebar()).toBeVisible();
+    await expect.element(editorScreen.titleInput()).toHaveFocus();
+    expect(stored()).toBe('open');
+
+    await pressSettingsShortcut();
+    await expect(editorScreen.settingsSidebar()).toHaveCount(0);
+    await expect.element(editorScreen.titleInput()).toHaveFocus();
+    expect(stored()).toBe('closed');
+  });
+
   it('does not remember the panel the editor opens to show a refused field', async () => {
     fakeDraft({ meta_title: 'a'.repeat(301) });
     // The site's member total, which the publish inputs read before Publish is offered.
@@ -118,6 +139,9 @@ describe('Remembered settings panel (admin7EditorImprovements)', () => {
     localStorage.setItem(SETTINGS_OPEN_KEY, 'open');
     await renderAdminApp(ROUTE, editorOptions({ flag: false }));
     await expect.element(editorScreen.body()).toBeVisible();
+    await expect(editorScreen.settingsSidebar()).toHaveCount(0);
+
+    await pressSettingsShortcut();
     await expect(editorScreen.settingsSidebar()).toHaveCount(0);
 
     await toggleSettings();

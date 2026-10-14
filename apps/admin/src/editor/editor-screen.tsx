@@ -74,6 +74,7 @@ import {
 import { editorRead, useEditorSession } from './session/use-editor-session';
 import { usePostCardConfig } from './use-post-card-config';
 import { usePostSnippets } from './use-post-snippets';
+import { useSettingsShortcut } from './use-editor-shortcuts';
 import { useSettingsOpen } from './use-settings-open';
 import { useWritingFocus } from './use-writing-focus';
 import type { EditorRecord } from './session/projection';
@@ -311,8 +312,7 @@ function EditorContent({
     return () => observer.disconnect();
   }, []);
   const { toggled: settingsToggled } = settingsMemory;
-  const toggleSettings = useCallback(() => {
-    settingsToggleRef.current?.focus();
+  const flipSettings = useCallback(() => {
     // A manual toggle ends the reveal, so reopening starts on the section list.
     setSettingsReveal(null);
     setSettingsMoving(true);
@@ -321,6 +321,25 @@ function EditorContent({
     settingsToggled(!settingsOpen);
     setSettingsOpen((open) => !open);
   }, [settingsOpen, settingsToggled]);
+  const toggleSettings = useCallback(() => {
+    settingsToggleRef.current?.focus();
+    flipSettings();
+  }, [flipSettings]);
+  // The shortcut leaves focus where the writer is typing, unless closing the
+  // panel would take it away: then it lands on the toggle, as a click does.
+  useSettingsShortcut(
+    useCallback(() => {
+      // A modal dialog hides the editor from assistive technology while it is open.
+      if (shellRef.current?.closest('[aria-hidden="true"]')) {
+        return;
+      }
+      if (settingsOpen && settingsFrameRef.current?.contains(document.activeElement)) {
+        settingsToggleRef.current?.focus();
+      }
+      flipSettings();
+    }, [flipSettings, settingsOpen]),
+    editorImprovements && openFlow === 'none',
+  );
   const postEditorRef = useRef<PostEditorHandle>(null);
   // Below the small breakpoint the header's controls sit in the editor's bottom bar.
   const [bottomBar, setBottomBar] = useState<HTMLDivElement | null>(null);
@@ -479,8 +498,9 @@ function EditorContent({
               </PageHeader.ActionGroup>
             </EditorHeader>
           </Box>
-          {/* The document reaches up behind the floating header. */}
-          <Box ref={writingAreaRef} className="relative min-h-0 flex-1">
+          {/* The document reaches up behind the floating header. Isolated so a
+              selected card's z-index stays inside it, beneath the header. */}
+          <Box ref={writingAreaRef} className="relative isolate min-h-0 flex-1">
             <div className="-mt-(--editor-overlap) h-[calc(100%+var(--editor-overlap))] min-h-0">
               <PostEditor
                 key={session.contentKey}

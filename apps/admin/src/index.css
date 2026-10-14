@@ -210,10 +210,13 @@ body {
 /* The writer's editor font (admin7EditorImprovements), set as `data-editor-font`
    on the editor. Koenig reads the --kg-font-* variables for the body and its
    headings; the title and excerpt read the --editor-display-* ones. Serif sets
-   nothing, so the editor keeps its own typography. Sans sets the body in Inter;
-   mono sets everything the writer writes in the system's monospace font (SF
-   Mono on Apple devices, Consolas on Windows), which is wider, so it steps the
-   sizes down and drops the negative tracking the display sizes use. */
+   nothing, so the editor keeps its own typography. Sans sets the body in Inter,
+   whose larger x-height needs inline code a step bigger to match; mono sets
+   everything the writer writes in the system's monospace font (SF Mono on Apple
+   devices, Consolas on Windows), which is wider, so it steps the sizes down and
+   drops the negative tracking the title and excerpt use. Inline code is then
+   the body's own size, since it is set in the same kind of font, and sits on
+   its baseline rather than centred as the smaller code is. */
 @theme inline {
   --font-editor-serif: Georgia, Times, serif;
   --font-editor-sans: var(--font-sans);
@@ -226,16 +229,18 @@ body {
   --kg-font-body-scale: 0.925;
   --kg-font-body-line-height: 1.65em;
   --kg-font-body-tracking: -0.011em;
+  --kg-font-code-size: 0.875em;
 }
 
 [data-editor-font='mono'] {
   --kg-font-body: var(--font-editor-mono);
   --kg-font-body-scale: 0.85;
   --kg-font-body-line-height: 1.75em;
-  --kg-font-body-tracking: -0.01em;
+  --kg-font-body-tracking: -0.02em;
   --kg-font-heading: var(--font-editor-mono);
   --kg-font-heading-scale: 0.85;
-  --kg-font-heading-tracking-scale: 0;
+  --kg-font-code-size: 1em;
+  --kg-font-code-vertical-align: baseline;
   --editor-display-font: var(--font-editor-mono);
   --editor-title-scale: 0.85;
   --editor-excerpt-scale: 0.9;

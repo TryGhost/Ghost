@@ -94,7 +94,11 @@ const capitalize = (value: string) => value.charAt(0).toUpperCase() + value.slic
 const fieldClassName =
   'block w-full max-w-none min-w-0 min-h-0 resize-none overflow-hidden border-0 bg-transparent p-0 outline-none';
 
-function useAutosize(ref: React.RefObject<HTMLTextAreaElement | null>, value: string) {
+function useAutosize(
+  ref: React.RefObject<HTMLTextAreaElement | null>,
+  value: string,
+  font: EditorFont | undefined,
+) {
   const measure = useCallback(() => {
     const element = ref.current;
     if (!element) {
@@ -104,7 +108,9 @@ function useAutosize(ref: React.RefObject<HTMLTextAreaElement | null>, value: st
     element.style.height = `${element.scrollHeight}px`;
   }, [ref]);
 
-  useLayoutEffect(measure, [measure, value]);
+  // A new editor font rewraps the text without resizing the field, and a system
+  // font such as mono loads no web font to announce it
+  useLayoutEffect(measure, [measure, value, font]);
 
   useEffect(() => {
     const element = ref.current;
@@ -223,8 +229,8 @@ export function PostEditor({
   const [bodyTkCount, setBodyTkCount] = useState(0);
   const [featureImageTkCount, setFeatureImageTkCount] = useState(0);
 
-  useAutosize(titleRef, title);
-  useAutosize(excerptRef, excerpt);
+  useAutosize(titleRef, title, font);
+  useAutosize(excerptRef, excerpt, font);
 
   // Koenig's breakout cards are sized in viewport units less
   // `--kg-breakout-adjustment`, the width beside the writing area. The settings

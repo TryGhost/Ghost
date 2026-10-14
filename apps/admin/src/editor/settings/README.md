@@ -96,8 +96,11 @@ Closing it returns focus to the picker button when that field is still present.
 ## Open and closed
 
 The toggle sits in the editor header, and the panel starts closed on every
-editor entry unless it is restored open as described below. There is no
-keyboard shortcut for it.
+editor entry unless it is restored open as described below. Under
+`admin7EditorImprovements`, Cmd/Ctrl+. toggles it too, and Keyboard shortcuts
+lists it. The shortcut leaves focus where the writer is typing; closing the
+panel while focus is inside it moves focus to the toggle, as a click does. It
+does nothing while the publish flow or a modal dialog is open.
 
 Below the `lg` breakpoint the panel overlays the editor from the right rather
 than narrowing it, and below 500px it takes the full width. Above it the panel
