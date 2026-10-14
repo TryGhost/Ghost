@@ -106,14 +106,10 @@ export const createDatabaseAutomationsRepository2 = ({
     },
 
     async hasMemberEnteredAutomation(connection, automationId, memberId) {
-      const [{ hasEntered }] = await connection.select<{ hasEntered: number }[]>(
-        connection.raw('EXISTS ? AS hasEntered', [
-          connection('automation_runs')
-            .select('id')
-            .where({ automation_id: automationId, member_id: memberId }),
-        ]),
-      );
-      return Boolean(hasEntered);
+      const query = connection('automation_runs')
+        .select(connection.raw('1'))
+        .where({ automation_id: automationId, member_id: memberId });
+      return await selectExists(connection, query);
     },
 
     async insertRunSteps(connection, toInsert) {
