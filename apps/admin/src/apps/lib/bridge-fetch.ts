@@ -11,10 +11,10 @@ export type AdminApiFetch = (request: FetchRequest, signal: AbortSignal) => Prom
 
 /**
  * Makes the requests an app asks for, to the Admin API under `apiRoot` and nowhere else.
- * `request` is already validated, a header only Admin sets included; where its path leads
- * is checked here. A path that leaves the API, or one the blocklist closes, is refused
- * before anything reaches the network. A header only Admin sets is dropped here all the
- * same, so none of the app's can stand in for Admin's, whatever reaches this.
+ * `request` is already validated; where its path leads is checked here, and a path that
+ * leaves the API or that the blocklist closes is refused before anything reaches the
+ * network. Headers only Admin sets are dropped here too, so none of the app's can stand
+ * in for Admin's, whatever reaches this.
  */
 export function createAdminApiFetch({
   apiRoot,

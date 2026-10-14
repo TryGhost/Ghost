@@ -39,11 +39,9 @@ interface InstallDialogProps {
   /** Leaving without deciding. By default, back to the Apps list. */
   onClose?: () => void;
   /**
-   * After installing or approving, or finding there's nothing left to approve, with the
-   * installation that is active now: the one a fresh install made, the one approved, or the
-   * one the review found, which can be another than the one it was opened for. By default a
-   * fresh install opens the app, and the rest stays on the Apps list, where it was managed
-   * from.
+   * After installing, approving, or finding nothing left to approve, with the installation
+   * now active, which can be another than the one the review was opened for. By default a
+   * fresh install opens the app, and the rest go back to the Apps list.
    */
   onDone?: (done: InstallDone | undefined) => void;
 }

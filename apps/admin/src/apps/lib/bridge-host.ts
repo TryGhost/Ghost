@@ -24,18 +24,15 @@ export interface AppFrameHandlers {
   pathChanged(path: string, options: PathChangeOptions): void;
   open(place: Place): void;
   /**
-   * The started app's page gave way to a new document in the same frame, by a reload, a
-   * form post or a link within the app, and its channel went with it. Admin starts the new
-   * document in place once it says hello, as it did the first; until then, the app hasn't
-   * started.
+   * The started page gave way to a new document in the same frame (a reload, a form post,
+   * a link), and its channel closed. The app hasn't started until the new document has.
    */
   documentChanged(): void;
   /** The document that took the started one's place has started. */
   documentStarted(): void;
   /**
-   * The frame holds a document Admin can't start in place: one on Admin's own origin, one
-   * whose SDK names no document, or one that refused to start. The page needs loading
-   * afresh. Called once; the host itself is of no further use.
+   * The frame holds a document Admin can't start in place (see `bindAppFrame`), so the page
+   * needs loading afresh. Called once; the host is of no further use.
    */
   reloaded(): void;
 }
@@ -62,9 +59,8 @@ export interface AppFrameHost {
 }
 
 /**
- * How many hellos Admin answers from a frame whose app has yet to start, or to start again
- * in a new document. Each may come from a new document, so each is answered; a page that
- * reloads more often than this while it starts is left to run out of time.
+ * How many hellos Admin answers while the app has yet to start, or to start again in a new
+ * document. A page that reloads more often than this while starting runs out of time.
  */
 const MAX_CONNECTS = 10;
 
@@ -83,23 +79,19 @@ interface Connection {
  * by that frame from the app's own origin, answers it alone with a `MessagePort`, and
  * starts the app over it. Anything else posted to Admin's window is ignored.
  *
- * The SDK says hello until it hears back, so a hello may be one it sent before Admin's
- * answer reached it; or it may come from a new document, the page having reloaded or
- * navigated, which the old channel went with. Each hello names its document, so Admin
- * answers each document once and ignores the hellos it repeats. An SDK from before
- * documents had names leaves Admin to guess: until the app has started, every hello is
- * answered with a channel of its own, and the first to start is the app's, as the page
- * takes the first answer it hears and ignores the rest.
+ * The SDK says hello until it hears back, so a hello may repeat one Admin already answered,
+ * or come from a new document after a reload or navigation. Each hello names its document,
+ * so Admin answers each document once. An older SDK that names no document leaves Admin to
+ * guess: until the app has started, every hello gets a channel of its own, and the first
+ * to start is the app's, as the page takes the first answer it hears.
  *
- * Once the app has started, a new document in the frame ends the started one's channel,
- * as `handlers.documentChanged` hears, and is started in place, without the frame loading
- * the app's page again: a form post or a link in a page the app's server renders keeps
- * its result. A hello from a document Admin hasn't answered says a new document is there,
- * and so does the frame loading a second document since Admin answered the page, which
- * then has the time an app has to start to say hello: the first load may be the started
- * page's own, which can finish loading after it started. Where Admin can't tell a load
- * apart from the started page's own, it assumes it is: an app that connects once loaded
- * and then navigates to another origin, other than Admin's, isn't noticed unless the page
+ * Once the app has started, a new document in the frame is started in place, without
+ * loading the app's page again, so a form post or a link in a server-rendered page keeps
+ * its result. A new document shows itself by a hello from a document Admin hasn't answered,
+ * or by the frame loading a second document since Admin answered (the first may be the
+ * started page's own load, which can finish after it started). A load Admin can't tell
+ * apart from the started page's own is assumed to be it, so an app that connects once
+ * loaded and then navigates to an origin other than Admin's goes unnoticed unless the page
  * there says hello. Assuming otherwise would hold up, then restart, an app whose page is
  * reached by a redirect in script.
  *
@@ -109,7 +101,7 @@ interface Connection {
  * document that refuses to start.
  *
  * Every argument the page sends is checked against the bridge's schemas before Admin
- * acts on it, since the frame is the app's and Admin trusts nothing in it.
+ * acts on it: the frame is the app's, and Admin trusts nothing in it.
  */
 export function bindAppFrame({
   frame,
@@ -224,7 +216,7 @@ export function bindAppFrame({
     }
     const { document: documentId } = hello.data;
     if (documentId !== undefined && answered.has(documentId)) {
-      // Said again before Admin's answer reached the page, which takes the first.
+      // Repeated before Admin's answer reached the page.
       return;
     }
     if (started) {
@@ -306,9 +298,8 @@ export function bindAppFrame({
   };
   frame.addEventListener('load', onLoad);
 
-  // A change Admin couldn't tell the app about, say because its SDK predates the call,
-  // leaves the app as it was: nothing for Admin to do about it. Until the app has started,
-  // every channel that may be the app's hears it.
+  // A change the app couldn't hear, say because its SDK predates the call, leaves it as it
+  // was. Until the app has started, every channel that may be the app's hears it.
   const tell = (call: (app: Connection['thread']['imports']) => Promise<void>) => {
     if (!disposed) {
       for (const { thread } of connections) {

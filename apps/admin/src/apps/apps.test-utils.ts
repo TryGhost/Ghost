@@ -69,7 +69,6 @@ export function failAppFrame() {
   return failFrameOrigin(APP_PAGE_URL);
 }
 
-/** Starting a session of one installation, which opening its page does. */
 const sessionsPath = (id: string) => `/apps/installations/${id}/sessions/`;
 
 /**
@@ -93,10 +92,8 @@ export function fakeSessionStart(id: string, answer: AppInstallation | Response)
 
 /**
  * The app's page as Admin opens it: the session it starts, the installation it reads to
- * tell when the session ends, and the page it frames, which by default is built on the SDK
- * (see `appFramePage`). `kind: 'raw'` frames one that speaks the bridge without the SDK,
- * for `callHostRaw`; `html` replaces the page; `flags` tune the SDK's. `set` moves the
- * installation on, for the sessions and reads that follow.
+ * tell when the session ends, and the page it frames (options as for `fakeAppFrame`).
+ * `set` moves the installation on, for the sessions and reads that follow.
  */
 export async function fakeAppPage(
   read: AppInstallation,
