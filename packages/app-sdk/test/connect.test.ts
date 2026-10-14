@@ -79,7 +79,7 @@ describe('connect', () => {
     const connecting = sdk.connect();
 
     expect(parent.postMessage).toHaveBeenCalledWith(
-      { type: HELLO_MESSAGE_TYPE, sdk: '0.0.0' },
+      { type: HELLO_MESSAGE_TYPE, sdk: 'private' },
       '*',
     );
 

@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/app-sdk",
-  "version": "0.0.0",
+  "version": "private",
   "private": true,
   "description": "The SDK apps use to talk to Ghost from inside Admin",
   "license": "MIT",
