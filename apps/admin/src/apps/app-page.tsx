@@ -42,6 +42,7 @@ import { placeRoute } from './lib/bridge-places';
 import { APP_FRAME_ALLOW, APP_FRAME_SANDBOX, isGhostOrigin } from './lib/frame';
 import { isInstallationNotFound, isSessionsRouteMissing } from './lib/not-found';
 import { reportAppsError } from './lib/report-error';
+import { appRoute } from './lib/routes';
 import { appPageUrl, servedFrom } from './lib/served-from';
 
 const Centered: React.FC<{ children: React.ReactNode; testId?: string }> = ({
@@ -344,12 +345,24 @@ const ActiveApp: React.FC<{ session: AppSession; onEnded: () => void }> = ({
 /**
  * A suspended app doesn't load: the review of its changes opens on top of the page straight
  * away, and the page behind it says why, with a way back to the review once it's closed.
+ *
+ * Approving starts a new session, as does a review that finds the changes approved already,
+ * say from another tab. A review that finds the app uninstalled meanwhile offers to install
+ * it afresh, which makes another installation: the page opens that one instead.
  */
 const NeedsApproval: React.FC<{ installation: AppInstallation; onApproved: () => void }> = ({
   installation,
   onApproved,
 }) => {
+  const navigate = useNavigate();
   const [reviewing, setReviewing] = useState(true);
+  const onDone = (installed: AppInstallation | undefined) => {
+    if (installed && installed.id !== installation.id) {
+      navigate(appRoute(installed.id), { replace: true });
+    } else {
+      onApproved();
+    }
+  };
   return (
     <Centered testId="app-needs-approval">
       <EmptyIndicator
@@ -363,7 +376,7 @@ const NeedsApproval: React.FC<{ installation: AppInstallation; onApproved: () =>
         <InstallDialog
           manifestUrl={installation.manifest_url}
           onClose={() => setReviewing(false)}
-          onDone={onApproved}
+          onDone={onDone}
         />
       )}
     </Centered>

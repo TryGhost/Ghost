@@ -35,8 +35,9 @@ interface InstallDialogProps {
   /** Leaving without deciding. By default, back to the Apps list. */
   onClose?: () => void;
   /**
-   * After installing or approving. By default a fresh install opens the app, and approving
-   * changes stays on the Apps list, where it was managed from.
+   * After installing or approving, or finding there's nothing left to approve, with the
+   * installation a fresh install made. By default a fresh install opens the app, and the
+   * rest stays on the Apps list, where it was managed from.
    */
   onDone?: (installed: AppInstallation | undefined) => void;
 }
@@ -91,6 +92,9 @@ export const InstallDialog: React.FC<InstallDialogProps> = ({ manifestUrl, onClo
 
   let content: React.ReactNode;
   const reviewed = preview.data;
+  // Leaving a review that found nothing to approve is as done as approving: what was to be
+  // approved already has been.
+  let leave = close;
   if (!manifestUrl) {
     content = <Failed attempted="check" failure={{ kind: 'incomplete-link' }} onClose={close} />;
   } else if (preview.isFetching || !reviewed) {
@@ -135,7 +139,8 @@ export const InstallDialog: React.FC<InstallDialogProps> = ({ manifestUrl, onClo
       />
     );
   } else {
-    content = <AlreadyInstalled notice={notice} preview={reviewed} onClose={close} />;
+    leave = () => done(undefined);
+    content = <AlreadyInstalled notice={notice} preview={reviewed} onClose={leave} />;
   }
 
   return (
@@ -143,7 +148,7 @@ export const InstallDialog: React.FC<InstallDialogProps> = ({ manifestUrl, onClo
       open
       onOpenChange={(open) => {
         if (!open) {
-          close();
+          leave();
         }
       }}
     >
