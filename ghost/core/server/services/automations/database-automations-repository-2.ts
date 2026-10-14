@@ -112,6 +112,12 @@ export const createDatabaseAutomationsRepository2 = ({
       return await selectExists(connection, query);
     },
 
+    async insertActions(connection, toInsert) {
+      if (toInsert.length > 0) {
+        await connection('automation_actions').insert(toInsert);
+      }
+    },
+
     async insertRunSteps(connection, toInsert) {
       if (toInsert.length > 0) {
         await connection('automation_run_steps').insert(
