@@ -1001,7 +1001,27 @@ describe('App installations Admin API', function () {
 
     it('makes one fetch for two sessions started at the same time', async function () {
       const installed = await install();
-      const first = serve(manifest({ description: 'Changed' }));
+      // The app answers only once both sessions have started, so the second one starts
+      // while the first one's re-check is still out, however slow the second request is.
+      const startSession = service().startSession;
+      let started = 0;
+      let bothStarted!: () => void;
+      const bothStartedPromise = new Promise<void>((resolve) => {
+        bothStarted = resolve;
+      });
+      sinon.stub(service(), 'startSession').callsFake(function (id: string) {
+        started += 1;
+        if (started === 2) {
+          bothStarted();
+        }
+        return startSession.call(service(), id);
+      });
+      const first = nock(MANIFEST_HOST)
+        .get(MANIFEST_PATH)
+        .reply(200, async () => {
+          await bothStartedPromise;
+          return manifest({ description: 'Changed' });
+        });
       const second = serve(manifest({ description: 'Changed' }));
 
       const sessions = await Promise.all([start(installed.id), start(installed.id)]);
@@ -1016,8 +1036,41 @@ describe('App installations Admin API', function () {
       assert.equal((await installationRow(installed.id)).revision, 1);
     });
 
-    it('answers 404 for an installation that does not exist', async function () {
-      await start(new ObjectId().toHexString(), 404);
+    it('decides nothing when the installation changed while the manifest was being fetched', async function () {
+      const installed = await install();
+      serve(manifest({ name: 'Podcasts' }));
+      const reviewed = await service().preview(MANIFEST_URL);
+      nock(MANIFEST_HOST)
+        .get(MANIFEST_PATH)
+        .reply(200, async () => {
+          // A publisher approves a newer version while the re-check is out, so what the
+          // re-check loaded may be older than what is approved now.
+          serve(manifest({ name: 'Podcasts' }));
+          await service().approve(owner, installed.id, {
+            manifestUrl: MANIFEST_URL,
+            digest: reviewed.digest,
+            revision: 0,
+          });
+          return manifest();
+        });
+
+      const { body } = await start(installed.id);
+
+      const [session] = body.app_sessions;
+      assert.equal(session.revision, 1);
+      assert.equal(session.installation.status, 'active');
+      assert.equal(session.installation.manifest.name, 'Podcasts');
+      const row = await installationRow(installed.id);
+      assert.equal(row.revision, 1);
+      assert.equal(row.pending_manifest_id, null);
+      // The install and the approval, and nothing from the re-check.
+      assert.equal((await manifestRows()).length, 2);
+    });
+
+    it('answers 404 for an installation that does not exist, saying it is not installed', async function () {
+      const { body } = await start(new ObjectId().toHexString(), 404);
+
+      assert.equal(body.errors[0].code, 'APP_NOT_INSTALLED');
     });
   });
 
@@ -1204,7 +1257,10 @@ describe('App installations Admin API', function () {
 
       await agent.get('apps/installations/').expectStatus(404);
       await agent.get(`apps/installations/${installation.id}/`).expectStatus(404);
-      await agent.post(`apps/installations/${installation.id}/sessions/`).expectStatus(404);
+      // Admin tells a Ghost without app sessions from an app that is not installed by the
+      // code, so it must not be here.
+      const { body } = await start(installation.id, 404);
+      assert.notEqual(body.errors?.[0]?.code, 'APP_NOT_INSTALLED');
       await agent.delete(`apps/installations/${installation.id}/`).expectStatus(404);
       assert.equal((await service().read(installation.id)).status, 'active');
     });
