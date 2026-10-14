@@ -408,9 +408,13 @@ describe('path', () => {
     ['a path with a backslash', '/\\evil.example', undefined, 'invalid_path'],
     ['a path that is not text', 12 as unknown as string, undefined, 'invalid_path'],
     ['options that are not an object', '/a', true as never, 'invalid_argument'],
+    ['options holding a function', '/a', { replace: () => true } as never, 'invalid_argument'],
+    ['options holding a symbol', '/a', { replace: Symbol('x') } as never, 'invalid_argument'],
   ])('refuses %s without asking Admin', async (_label, path, options, code) => {
     const { ghost, host } = await started();
-    await expect(ghost.path.set(path, options)).rejects.toMatchObject({ code });
+    const error = await ghost.path.set(path, options).catch((caught: unknown) => caught);
+    expect(error).toBeInstanceOf(sdk.GhostAppError);
+    expect(error).toMatchObject({ code });
     expect(host.pathChanged).not.toHaveBeenCalled();
   });
 
@@ -445,11 +449,15 @@ describe('open', () => {
     expect(host.open).toHaveBeenCalledWith({ post: { id: POST_ID } });
   });
 
-  it('refuses a place that is not an object without asking Admin', async () => {
+  it.each([
+    ['not an object', '/posts'],
+    ['holding a function', { post: { id: () => POST_ID } }],
+    ['holding a symbol', { post: { id: Symbol(POST_ID) } }],
+  ])('refuses a place %s without asking Admin', async (_label, place) => {
     const { ghost, host } = await started();
-    await expect(ghost.open('/posts' as never)).rejects.toMatchObject({
-      code: 'invalid_argument',
-    });
+    const error = await ghost.open(place as never).catch((caught: unknown) => caught);
+    expect(error).toBeInstanceOf(sdk.GhostAppError);
+    expect(error).toMatchObject({ code: 'invalid_argument', message: ARGUMENT_MESSAGES.place });
     expect(host.open).not.toHaveBeenCalled();
   });
 });

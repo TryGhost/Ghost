@@ -61,6 +61,20 @@ function refusal(code: AppErrorCode, detail: string): Error {
   return new Error(encodeBridgeError(code, detail));
 }
 
+/**
+ * The copy of an argument that crosses the channel, or `invalid_argument` with `message` for
+ * one that can't. The structured clone that carries a call refuses a symbol or a DOM node only
+ * once the call is under way, and the channel would proxy a function, where nothing crossing
+ * the bridge is one; cloning first refuses all of them before Admin is asked.
+ */
+function cloneArgument<T>(value: T, message: string): T {
+  try {
+    return structuredClone(value);
+  } catch (error) {
+    throw new GhostAppError('invalid_argument', message, { cause: error });
+  }
+}
+
 function subscribe<T>(listeners: Set<T>, listener: T): Unsubscribe {
   listeners.add(listener);
   return () => {
@@ -276,7 +290,11 @@ export class Channel {
         const pathsFromAdmin = this.#pathsFromAdmin;
         await (options === undefined
           ? this.#call('pathChanged', path)
-          : this.#call('pathChanged', path, options));
+          : this.#call(
+              'pathChanged',
+              path,
+              cloneArgument(options, ARGUMENT_MESSAGES.pathChangeOptions),
+            ));
         // Admin may send where it is before answering, when it doesn't follow the app.
         if (this.#pathsFromAdmin === pathsFromAdmin) {
           // Kept as Admin keeps it, so it reads the same as the path Admin sends back after a
@@ -313,6 +331,6 @@ export class Channel {
     if (!isRecord(place)) {
       throw invalidArgument(ARGUMENT_MESSAGES.place);
     }
-    await this.#call('open', place);
+    await this.#call('open', cloneArgument(place, ARGUMENT_MESSAGES.place));
   }
 }
