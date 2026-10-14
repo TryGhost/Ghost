@@ -1,11 +1,17 @@
 // @vitest-environment node
-import { existsSync, readFileSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
+import ts from 'typescript';
 import { parseAst } from 'vite';
 import { describe, expect, it } from 'vitest';
 
-// Built by `pnpm build:bundle`, which `test:unit` runs first.
-const BUNDLE = new URL('../dist/app-sdk.js', import.meta.url);
+// Built by `pnpm build`, which `test:unit` runs first.
+const built = {
+  package: fileURLToPath(new URL('../build', import.meta.url)),
+  bundle: fileURLToPath(new URL('../dist', import.meta.url)),
+};
 
 /** Every node in a tree, so an `import()` nested anywhere is found. */
 function* nodes(value: unknown): Generator<{ type: string }> {
@@ -23,32 +29,117 @@ function* nodes(value: unknown): Generator<{ type: string }> {
   }
 }
 
-// A page loads the bundle with nothing to resolve a bare specifier against, so any import left
-// in it breaks every app. The source is parsed rather than searched, as comments inlined from
-// dependencies mention `import(` too. Node builtins are refused by the build (vite.config.ts).
-describe('the browser bundle', () => {
-  it('has been built', () => {
-    expect(existsSync(BUNDLE), 'run pnpm build:bundle first').toBe(true);
-  });
-
-  const program = existsSync(BUNDLE) ? parseAst(readFileSync(BUNDLE, 'utf8')) : undefined;
-
-  it('imports nothing', () => {
-    const imports = [...nodes(program)].filter(
+/**
+ * What a module imports, by specifier. The source is parsed rather than searched, as comments
+ * inlined from dependencies mention `import(` too.
+ */
+function importsOf(file: string): string[] {
+  return [...nodes(parseAst(readFileSync(file, 'utf8')))]
+    .filter(
       (node) =>
         node.type === 'ImportDeclaration' ||
         node.type === 'ImportExpression' ||
         node.type === 'ExportAllDeclaration' ||
         (node.type === 'ExportNamedDeclaration' && (node as { source?: unknown }).source),
-    );
-    expect(program).toBeDefined();
-    expect(imports).toEqual([]);
+    )
+    .map((node) => {
+      const { source } = node as { source?: { value?: unknown } };
+      return String(source?.value);
+    });
+}
+
+function exportsOf(file: string): string[] {
+  return [...nodes(parseAst(readFileSync(file, 'utf8')))]
+    .filter((node) => node.type === 'ExportSpecifier')
+    .map((node) => (node as unknown as { exported: { name: string } }).exported.name)
+    .sort();
+}
+
+// Node builtins are refused by the build (vite.config.ts).
+describe('the browser bundle', () => {
+  const bundle = join(built.bundle, 'app-sdk.js');
+
+  // A page loads it with nothing to resolve a bare specifier against, so any import left in
+  // it breaks every app.
+  it('imports nothing', () => {
+    expect(importsOf(bundle)).toEqual([]);
   });
 
   it('exports what the package does', () => {
-    const exported = [...nodes(program)]
-      .filter((node) => node.type === 'ExportSpecifier')
-      .map((node) => (node as unknown as { exported: { name: string } }).exported.name);
-    expect(exported.sort()).toEqual(['GhostAppError', 'connect']);
+    expect(exportsOf(bundle)).toEqual(['GhostAppError', 'connect']);
+  });
+});
+
+describe('the package', () => {
+  const code = join(built.package, 'index.js');
+  const declarations = join(built.package, 'index.d.ts');
+
+  // An app installs the SDK with @quilted/threads alone: what it uses of the contracts is
+  // written into it.
+  it('imports @quilted/threads and nothing else', () => {
+    expect(new Set(importsOf(code))).toEqual(new Set(['@quilted/threads']));
+  });
+
+  it('exports connect and its error', () => {
+    expect(exportsOf(code)).toEqual(['GhostAppError', 'connect']);
+  });
+
+  it('declares its types without importing or referring to any other package', () => {
+    const source = ts.createSourceFile(
+      declarations,
+      readFileSync(declarations, 'utf8'),
+      ts.ScriptTarget.ES2022,
+    );
+    const imports: string[] = [];
+    const visit = (node: ts.Node) => {
+      if ((ts.isImportDeclaration(node) || ts.isExportDeclaration(node)) && node.moduleSpecifier) {
+        imports.push(node.moduleSpecifier.getText(source));
+      } else if (ts.isImportTypeNode(node)) {
+        imports.push(node.argument.getText(source));
+      }
+      ts.forEachChild(node, visit);
+    };
+    visit(source);
+
+    expect(imports).toEqual([]);
+    expect(source.referencedFiles).toEqual([]);
+    expect(source.typeReferenceDirectives).toEqual([]);
+  });
+
+  it('declares every type it exports, with nothing missing', () => {
+    const program = ts.createProgram([declarations], {
+      strict: true,
+      noEmit: true,
+      types: [],
+      lib: ['lib.es2022.d.ts', 'lib.dom.d.ts'],
+    });
+    const diagnostics = ts
+      .getPreEmitDiagnostics(program)
+      .map((diagnostic) => ts.flattenDiagnosticMessageText(diagnostic.messageText, '\n'));
+    expect(diagnostics).toEqual([]);
+
+    const checker = program.getTypeChecker();
+    const module = checker.getSymbolAtLocation(program.getSourceFile(declarations) as ts.Node);
+    const exported = checker.getExportsOfModule(module as ts.Symbol).map((symbol) => symbol.name);
+    expect(exported.sort()).toEqual(
+      [
+        'ConnectOptions',
+        'Ghost',
+        'GhostAppError',
+        'GhostAppErrorCode',
+        'GhostFetchInit',
+        'GhostPath',
+        'JsonBody',
+        'PathChangeOptions',
+        'Place',
+        'Session',
+        'Site',
+        'StartContext',
+        'Theme',
+        'Unsubscribe',
+        'User',
+        'connect',
+      ].sort(),
+    );
   });
 });

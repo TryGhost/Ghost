@@ -25,9 +25,8 @@
     }
   },
   "scripts": {
-    "build": "tsc && vite build",
-    "build:bundle": "vite build",
-    "test:unit": "pnpm run build:bundle && NODE_ENV=testing vitest run --coverage",
+    "build": "vite build && vite build --mode bundle",
+    "test:unit": "pnpm run build && NODE_ENV=testing vitest run --coverage",
     "test": "pnpm run '/^test:/'",
     "test:types": "tsc --noEmit -p test/tsconfig.json",
     "lint:code": "eslint src/ --cache",
@@ -35,16 +34,17 @@
     "lint": "pnpm run '/^lint:/'"
   },
   "dependencies": {
-    "@quilted/threads": "catalog:",
-    "@tryghost/app-contracts": "workspace:*"
+    "@quilted/threads": "catalog:"
   },
   "devDependencies": {
     "@internal/cfg-eslint": "workspace:*",
     "@internal/cfg-typescript": "workspace:*",
     "@internal/cfg-vitest": "workspace:*",
+    "@tryghost/app-contracts": "workspace:*",
     "@types/node": "catalog:",
     "@typescript/native": "catalog:",
     "@vitest/coverage-v8": "catalog:",
+    "dts-bundle-generator": "catalog:",
     "eslint": "catalog:",
     "jsdom": "catalog:",
     "typescript": "catalog:",
@@ -53,7 +53,7 @@
   },
   "ghostPackage": {
     "goldenPath": "exempt",
-    "reason": "A browser SDK for third-party apps: besides the tsc build it ships a self-contained bundle in dist/, so its build script, files and Nx outputs differ from the golden path. Everything else follows it."
+    "reason": "A browser SDK for third-party apps: its build bundles with Vite, writing what it uses of the contracts into build/, and ships a self-contained bundle in dist/, so its build script, files and Nx outputs differ from the golden path. Everything else follows it."
   },
   "nx": {
     "targets": {

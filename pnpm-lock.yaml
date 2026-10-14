@@ -530,6 +530,9 @@ catalogs:
     dotenv:
       specifier: 17.4.2
       version: 17.4.2
+    dts-bundle-generator:
+      specifier: 9.5.1
+      version: 9.5.1
     entities:
       specifier: 4.5.0
       version: 4.5.0
@@ -805,6 +808,7 @@ overrides:
   moment-timezone: 0.6.5
   '@types/bookshelf>knex': 2.4.2
   juice>cheerio: 1.2.0
+  dts-bundle-generator>typescript: npm:@typescript/typescript6@6.0.2
   mppx>ox: 0.14.33
   '@tryghost/kg-default-cards': workspace:*
   '@babel/runtime@<7.26.10': ^7.26.10
@@ -3955,9 +3959,6 @@ importers:
       '@quilted/threads':
         specifier: 'catalog:'
         version: 4.1.0(@preact/signals-core@1.14.4)
-      '@tryghost/app-contracts':
-        specifier: workspace:*
-        version: link:../app-contracts
     devDependencies:
       '@internal/cfg-eslint':
         specifier: workspace:*
@@ -3968,6 +3969,9 @@ importers:
       '@internal/cfg-vitest':
         specifier: workspace:*
         version: link:../../tools/configs/vitest
+      '@tryghost/app-contracts':
+        specifier: workspace:*
+        version: link:../app-contracts
       '@types/node':
         specifier: 'catalog:'
         version: 22.20.1
@@ -3977,6 +3981,9 @@ importers:
       '@vitest/coverage-v8':
         specifier: 'catalog:'
         version: 4.1.11(@vitest/browser@4.1.11)(vitest@4.1.11)
+      dts-bundle-generator:
+        specifier: 'catalog:'
+        version: 9.5.1
       eslint:
         specifier: 'catalog:'
         version: 9.39.5(jiti@2.7.0)(supports-color@10.2.2)
@@ -10789,6 +10796,11 @@ packages:
 
   downsize-cjs@1.1.2:
     resolution: {integrity: sha512-WfytyidccC61hSKwiWeMXTO4WwWxjOHhl70cH+nbFEy8tkUyEBdz70FI2xc94uS5GL3cyPG3h5r4HH5cpFsUvw==}
+
+  dts-bundle-generator@9.5.1:
+    resolution: {integrity: sha512-DxpJOb2FNnEyOzMkG11sxO2dmxPjthoVWxfKqWYJ/bI/rT1rvTMktF5EKjAYrRZu6Z6t3NhOUZ0sZ5ZXevOfbA==}
+    engines: {node: '>=14.0.0'}
+    hasBin: true
 
   dunder-proto@1.0.1:
     resolution: {integrity: sha512-KIN/nDJBQRcXw0MLVhZE9iQHmG68qAVIBg9CqmUYjmQIhgij9U5MFvrqkUL5FbtyyzZuOeOt0zdeRe4UY7ct+A==}
@@ -23051,6 +23063,11 @@ snapshots:
   dotenv@17.4.2: {}
 
   downsize-cjs@1.1.2: {}
+
+  dts-bundle-generator@9.5.1:
+    dependencies:
+      typescript: '@typescript/typescript6@6.0.2'
+      yargs: 17.7.3
 
   dunder-proto@1.0.1:
     dependencies:

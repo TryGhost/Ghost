@@ -7,13 +7,16 @@ tells it about the site, the user and the theme, and lets it call the Admin API,
 follow Admin's address and send the publisher elsewhere in Admin.
 
 > **Unreleased.** The package is `private` and not on npm yet; the pre-release
-> removes that. Until then, use it from a Ghost checkout through a `file:` link,
-> or load its browser bundle.
+> removes that. Until then, build it in a Ghost checkout and use it from there
+> (see below), or load its browser bundle.
 
 ## Quick start
 
+Build the SDK in a Ghost checkout first, from `packages/app-sdk`, with
+`pnpm build`.
+
 Without a bundler, load the bundle, one ES module with everything inlined
-(`dist/app-sdk.js`, built by `pnpm build`):
+(`dist/app-sdk.js`):
 
 ```html
 <script type="module">
@@ -29,7 +32,10 @@ Without a bundler, load the bundle, one ES module with everything inlined
 </script>
 ```
 
-With a bundler:
+With a bundler, depend on the built package through a `file:` link, or run
+`pnpm link ../Ghost/packages/app-sdk` in the app. It brings the types and code it
+uses from Ghost's contracts with it, so its one dependency is
+`@quilted/threads`:
 
 ```json
 { "dependencies": { "@tryghost/app-sdk": "file:../Ghost/packages/app-sdk" } }
@@ -168,20 +174,23 @@ page in the frame, inside Admin.
 This is a workspace package in the Ghost monorepo. From the package directory:
 
 ```bash
-pnpm build   # tsc to build/, then the browser bundle to dist/ with Vite
+pnpm build   # the package to build/ and the browser bundle to dist/, with Vite
 pnpm test    # type-check + unit tests (jsdom, with a fake Admin on a real MessageChannel),
-             # after building dist/ to check the bundle imports nothing
+             # after building both to check what they import
 pnpm lint    # lint source and tests
 ```
 
 It follows the [internal package golden path](../README.md) except where it ships
-to browsers: its `build` also writes `dist/`, which is in `files` and in the Nx
-build outputs, so it is marked `exempt`.
+to apps: its `build` bundles with Vite rather than compiling with `tsc`, and
+also writes `dist/`, which is in `files` and in the Nx build outputs, so it is
+marked `exempt`.
 
-It depends on `@tryghost/app-contracts` at runtime, for the bridge's message
-types, limits and shape checks, so the SDK and Admin read paths, themes and
-start contexts by the same rules. It imports only the contracts' root entry
-point, which loads no `zod`. `build/` imports it; `dist/` inlines what it uses,
-so the bundle imports nothing, which `test/bundle.test.ts` checks on the built
-file. The bundle's build fails on a Node builtin, which Vite would otherwise
-replace with an empty stub.
+It uses `@tryghost/app-contracts` for the bridge's message types, limits and
+shape checks, so the SDK and Admin read paths, themes and start contexts by the
+same rules. It imports only the contracts' root entry point, which loads no
+`zod`, and the build writes what it uses into the SDK, so the contracts are a
+dev dependency: `build/index.js` imports only `@quilted/threads`,
+`build/index.d.ts` (bundled by `dts-bundle-generator`) imports nothing, and
+`dist/` imports nothing at all, which `test/bundle.test.ts` checks on the
+built files. The build fails on a Node builtin, which Vite would otherwise replace
+with an empty stub.

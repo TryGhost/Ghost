@@ -149,6 +149,7 @@ catalog:
   country-flag-icons: 1.6.20
   dependency-cruiser: ^18.1.1
   dequal: 2.0.3
+  dts-bundle-generator: 9.5.1
   dompurify: 3.4.16
   dotenv: 17.4.2
   entities: 4.5.0
@@ -293,6 +294,8 @@ overrides:
   # and ghost share one copy instead of keeping two parsers resident - both
   # only ever call `load`. See patchedDependencies for the matching slim import.
   'juice>cheerio': 'catalog:'
+  # dts-bundle-generator reads the compiler API, which TypeScript 7 no longer has
+  'dts-bundle-generator>typescript': 'catalog:'
   # mppx pins ox exactly; use viem's copy so Ghost ships one ox
   'mppx>ox': 0.14.33
   # mg-utils depends on the npm release of kg-default-cards, so the published

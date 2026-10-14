@@ -1,4 +1,7 @@
-import { defineConfig, type Plugin } from 'vite';
+import { join } from 'node:path';
+
+import { generateDtsBundle } from 'dts-bundle-generator';
+import { defineConfig, type Plugin, type UserConfig } from 'vite';
 
 // pnpm keeps dependencies in a store outside the repository, so the paths the bundler
 // writes into region comments and the source map lead through the machine that built it.
@@ -34,28 +37,71 @@ const refuseNodeBuiltins: Plugin = {
   },
 };
 
-// The browser bundle: one ES module with @quilted/threads inlined, for a page to load from a
-// <script type="module"> with no bundler of its own. Left unminified, with a source map,
-// so it reads well in devtools.
-export default defineConfig({
+// The package's type declarations, in one file beside its code, with the contract types the
+// SDK uses written into it, so an app needs nothing from @tryghost/app-contracts. Only the
+// types the entry point exports are exported.
+function bundleDeclarations(): Plugin {
+  let root = '';
+  return {
+    name: 'bundle-declarations',
+    configResolved(config) {
+      root = config.root;
+    },
+    generateBundle() {
+      const [declarations] = generateDtsBundle(
+        [
+          {
+            filePath: join(root, 'src/index.ts'),
+            libraries: { inlinedLibraries: ['@tryghost/app-contracts'] },
+            output: { noBanner: true, exportReferencedTypes: false },
+          },
+        ],
+        { preferredConfigPath: join(root, 'tsconfig.json') },
+      );
+      this.emitFile({ type: 'asset', fileName: 'index.d.ts', source: declarations });
+    },
+  };
+}
+
+const shared = {
+  target: 'es2022',
+  // Left unminified, with a source map, so it reads well in devtools.
+  minify: false,
+  sourcemap: true,
+  emptyOutDir: true,
+} as const;
+
+// What a bundler imports, in `build/`: one ES module with what the SDK uses from
+// @tryghost/app-contracts inlined, so the package depends on @quilted/threads alone.
+const packageBuild: UserConfig = {
+  plugins: [refuseNodeBuiltins, tidyRegionComments, bundleDeclarations()],
+  build: {
+    ...shared,
+    outDir: 'build',
+    lib: { entry: 'src/index.ts', formats: ['es'], fileName: () => 'index.js' },
+    rolldownOptions: {
+      external: [/^@quilted\/threads(?:\/|$)/],
+      output: { sourcemapPathTransform: fromNodeModules },
+      // Writing the declarations takes a TypeScript program, which is slow by design.
+      checks: { pluginTimings: false },
+    },
+  },
+};
+
+// The browser bundle, in `dist/`: one ES module with @quilted/threads inlined too, for a page
+// to load from a <script type="module"> with no bundler of its own.
+const browserBundle: UserConfig = {
   plugins: [refuseNodeBuiltins, tidyRegionComments],
   build: {
+    ...shared,
     outDir: 'dist',
-    emptyOutDir: true,
-    target: 'es2022',
-    minify: false,
-    sourcemap: true,
-    lib: {
-      entry: 'src/index.ts',
-      formats: ['es'],
-      fileName: () => 'app-sdk.js',
-    },
+    lib: { entry: 'src/index.ts', formats: ['es'], fileName: () => 'app-sdk.js' },
     rolldownOptions: {
       // Nothing is left for the page to provide.
       external: [],
-      output: {
-        sourcemapPathTransform: fromNodeModules,
-      },
+      output: { sourcemapPathTransform: fromNodeModules },
     },
   },
-});
+};
+
+export default defineConfig(({ mode }) => (mode === 'bundle' ? browserBundle : packageBuild));
