@@ -55,12 +55,18 @@ test('shows root and generator help, and rejects unknown commands', async () => 
     assert.equal(result.status, 0, result.stderr);
     assert.match(result.stdout, /pnpm gx/);
     assert.match(result.stdout, /package/);
+    if (args.length < 2) {
+      assert.match(result.stdout, /db/);
+    }
   }
   for (const args of [
     ['unknown'],
     ['generate'],
     ['generate', 'unknown'],
     ['generate', '--help'],
+    ['db'],
+    ['db', 'unknown'],
+    ['db', '--help'],
     ['--help', 'unknown'],
     ['--version'],
   ]) {

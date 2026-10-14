@@ -68,10 +68,19 @@ cli.command({
         commandRun = true;
         const ghostDir = fileURLToPath(new URL('../../ghost', import.meta.url));
         const runner = fileURLToPath(new URL('../scripts/with-ghost-dev-env.ts', import.meta.url));
-        const command = fileURLToPath(new URL('./rebuild-in-development-tables.cts', import.meta.url));
+        const command = fileURLToPath(
+          new URL('./rebuild-in-development-tables.cts', import.meta.url),
+        );
         const child = spawn(
           process.execPath,
-          [runner, process.execPath, '--import', import.meta.resolve('tsx'), command, ...args.slice(2)],
+          [
+            runner,
+            process.execPath,
+            '--import',
+            import.meta.resolve('tsx'),
+            command,
+            ...args.slice(2),
+          ],
           {
             cwd: ghostDir,
             stdio: 'inherit',
