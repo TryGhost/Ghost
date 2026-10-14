@@ -915,7 +915,8 @@ describe('App installations Admin API', function () {
       assert.equal(body.app_sessions[0].installation.status, 'active');
       assert.equal((await manifestRows()).length, 1);
       assert.equal((await installationRow(installed.id)).revision, 0);
-      // Loading the manifest logged this already.
+      // Loading the manifest logs this, so the re-check doesn't log it again.
+      assert.ok(warn.calledWith(`Could not load the app manifest at ${MANIFEST_URL}`));
       assert.deepEqual(keptLogged(warn), []);
     });
 
