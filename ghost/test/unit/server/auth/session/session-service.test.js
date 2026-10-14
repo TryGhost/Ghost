@@ -1,8 +1,8 @@
 const assert = require('node:assert/strict');
-const { assertExists } = require('../../../../../utils/assertions');
+const { assertExists } = require('../../../../utils/assertions');
 const sinon = require('sinon');
 const express = require('express');
-const SessionService = require('../../../../../../core/server/services/auth/session/session-service');
+const SessionService = require('../../../../../core/server/auth/session/session-service');
 
 // Mimics express-session, where regenerate swaps in a brand new session object
 function createGetSession(initialProps = {}) {

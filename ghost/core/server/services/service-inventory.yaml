@@ -262,7 +262,7 @@ services:
           - core/server/services/tags-public/service.js
           - core/server/services/link-redirection/index.js
           - core/server/services/post-scheduling/index.ts
-          - core/server/services/auth/session/index.js
+          - core/server/auth/session/index.js
           - core/server/services/route-settings/index.js
           - core/server/services/custom-redirects/index.js
           - core/server/services/media-inliner/service.js
@@ -844,275 +844,6 @@ services:
         slugs/routes, non-published/missing posts, subdirectory bases and encoded credentials.
         Unit URL tests and two HTTP Location patterns do not establish that whole contract or
         same-process restart/config capture. Keep any new reload behavior separate from migration.
-  auth:
-    kind: directory
-    disposition: review
-    status: audited
-    auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
-    migration:
-      complexity: complex
-      modelImpact: fits
-      reason: >-
-        First settle the cohesive auth subsystem and the owners of its session service,
-        session store and member JWT middleware. Current composition spans import time, app
-        construction and asynchronous first-request initialization, with different
-        dependency barriers. The existing helper can construct those retained owners, but
-        wrapping the barrel would leave the real initialization scattered; relocation alone
-        will not solve it.
-      reviewedAt: f276513ba32b7114fd5cc4f7b02d3f82c0c31e3e
-      sources:
-        - core/server/services/auth/index.js
-        - core/server/services/auth/session/index.js
-        - core/server/services/auth/session/express-session.js
-        - core/server/services/auth/members/index.js
-        - core/boot.js
-    entryPoints:
-      - auth/index.js
-      - auth/session/index.js
-      - auth/session/express-session.js
-      - auth/members/index.js
-    notes: >-
-      Review an interim auth subsystem outside services. Keep authentication policy outside
-      the HTTP layer and identify each nested instance owner. This records the current mixed
-      composition; investigating it does not establish readiness to relocate or reinitialize it.
-    contracts:
-      exports:
-        summary: >-
-          The CommonJS root exposes lazy getters for authorize, authenticate, session, setup,
-          passwordreset and resetAuthentication, with no root init or stop. Authentication exports
-          retained middleware arrays: Admin key then session, URL key alone, and Content key then
-          member token. Session exports HTTP middleware, a public sessionService, initSession,
-          getOriginOfRequest, a per-call createSessionFromToken factory and deleteAllSessions bound
-          to its private store. Session-service operations close over collaborators rather than
-          requiring a receiver. Workflow functions return promises, while setup assertion creation
-          and SSO middleware creation are synchronous. API-key units check successful request key
-          identity and selected error codes using fake model lookups; the member-token unit checks
-          the function and negative/fallthrough paths with a fake public configuration, not the
-          whole root shape, binding identity or a successful real member-token request.
-        sources:
-          - core/server/services/auth/index.js
-          - core/server/services/auth/authenticate.js
-          - core/server/services/auth/authorize.js
-          - core/server/services/auth/session/index.js
-          - core/server/services/auth/session/session-service.js
-          - core/server/services/auth/setup.js
-          - core/server/services/auth/passwordreset.js
-          - core/server/services/auth/reset-authentication.ts
-        tests:
-          - test/unit/server/services/auth/api-key/admin.test.js
-          - test/unit/server/services/auth/api-key/content.test.js
-          - test/unit/server/services/auth/members/index.test.js
-      construction:
-        summary: >-
-          Source shows several independent lifetimes. Loading session constructs a GhostMailer,
-          closure-based session service and HTTP middleware, and imports the eagerly constructed
-          SessionStore that retains models.Session. Express middleware is created and cached on
-          the first getSession call without an existing req.session; it captures the session
-          secret and cookie options then. Each member-token getter returns a new wrapper, sharing
-          middleware cached only after awaited creation, so concurrent first calls can construct
-          multiple instances. Each SSO factory call retrieves the shared adapter, replaces its
-          user repository and binds its methods into new middleware. The root provides no reset
-          of these private instances. Factory units inject collaborators; no cited test asserts
-          real root import, first-use identity, overlapping creation or construction failure.
-        sources:
-          - core/server/services/auth/session/index.js
-          - core/server/services/auth/session/express-session.js
-          - core/server/services/auth/session/session-store.js
-          - core/server/services/auth/session/session-from-token.ts
-          - core/server/services/auth/members/index.js
-          - core/server/services/adapter-manager/index.ts
-          - core/server/lib/mail/ghost-mailer.js
-        tests:
-          - test/unit/server/services/auth/session/session-service.test.js
-          - test/unit/server/services/auth/session-from-token.test.ts
-          - test/unit/server/services/auth/session/store.test.js
-      consumers:
-        summary: >-
-          Admin and Content router middleware retain auth arrays/functions when their modules
-          load. The backend constructs SSO middleware for /ghost; session, authentication and
-          users endpoints retain the root and access its session/workflow getters during work.
-          Authentication also retains a scheduling adapter and Users instance for reset; Users
-          receives auth as a currently unused collaborator. These bindings are source-checked.
-          Real HTTP tests assert login/logout access, emailed-code verification, cross-origin
-          refusal, fresh-session code refusal, password-change/reset invalidation of other and
-          cloned sessions, and successful reset of a locked account from an intercepted email.
-          SSO HTTP uses a substituted adapter with real user/session composition and asserts
-          active-owner access and inactive/missing-credential refusal. These tests do not prove
-          external SSO identity validation or preservation of retained callers across replacement.
-        sources:
-          - core/server/web/api/endpoints/admin/middleware.js
-          - core/server/web/api/endpoints/admin/routes.js
-          - core/server/web/api/endpoints/content/middleware.js
-          - core/server/web/parent/backend.js
-          - core/server/api/endpoints/session.js
-          - core/server/api/endpoints/authentication.js
-          - core/server/api/endpoints/users.js
-          - core/server/services/users.js
-        tests:
-          - test/e2e-api/admin/session.test.js
-          - test/e2e-api/admin/session-invalidation.test.js
-          - test/e2e-api/admin/authentication.test.js
-          - test/e2e-api/admin/sso.test.js
-      startup:
-        summary: >-
-          There is no boot-owned auth init. Boot prepares the database/core settings, then builds
-          Express apps before initServices and before mounting the full app. Backend construction
-          imports session and creates SSO middleware at that point; Admin/Content routers are
-          loaded lazily. Actual session middleware and member JWT middleware still initialize on
-          demand. Session needs cached settings when first created; member middleware needs
-          members.api.getPublicConfig, whose retained signing-key getter supplies verification
-          keys. Member middleware construction is awaited outside its request error catch.
-          Existing booted HTTP establishes successful normal composition, but no focused test
-          holds settings/members readiness, asserts import without acquisition, or tests early,
-          failed or overlapping first-use behavior. The SSO unit checks injected collaborator
-          arguments, not a real readiness barrier or its title's unasserted req.user/next claims.
-        sources:
-          - core/boot.js
-          - core/server/web/parent/backend.js
-          - core/server/services/auth/session/index.js
-          - core/server/services/auth/session/express-session.js
-          - core/server/services/auth/members/index.js
-          - core/server/services/members/members-api/members-api.js
-          - core/shared/express.js
-        tests:
-          - test/e2e-api/admin/session.test.js
-          - test/e2e-api/admin/sso.test.js
-          - test/unit/server/services/auth/session-from-token.test.ts
-      lifetime:
-        summary: >-
-          Root getters reuse module exports, while the two private middleware caches, session
-          store and mailer survive subsequent calls and same-process boot. Deleting sessions
-          truncates persisted rows without resetting middleware or captured cookie settings.
-          Session creation regenerates the identifier, binds verification to the user and avoids
-          transferring trust to a different user; logout clears user/challenge but can retain
-          same-user device trust unless email MFA is required. Injected session units assert
-          regeneration, same/different-user trust and legacy-marker handling; booted HTTP checks
-          sequential logout/login, code verification and old-cookie invalidation. These do not
-          establish restart cleanup, concurrent session writes, first-request cache sharing,
-          settings-secret replacement or an in-flight request racing session deletion. The
-          model's upsert is a find-then-edit/add sequence, not an atomic database upsert.
-        sources:
-          - core/server/services/auth/index.js
-          - core/server/services/auth/session/session-service.js
-          - core/server/services/auth/session/express-session.js
-          - core/server/services/auth/members/index.js
-          - core/server/models/session.js
-          - core/server/models/user.js
-        tests:
-          - test/unit/server/services/auth/session/session-service.test.js
-          - test/e2e-api/admin/session.test.js
-          - test/e2e-api/admin/session-invalidation.test.js
-      configuration:
-        summary: >-
-          First session creation captures admin_session_secret, sessionMaxAgeMs, subdirectory
-          and SSL-derived secure/SameSite cookie settings. Session-service callbacks separately
-          read current settings for secret/title/email-MFA and the config facade for staff device
-          verification; shared URL helpers hold frozen URL configuration and the mailer captures
-          transport options at construction. Member JWT middleware captures site origin/issuer
-          and a public-config key getter at first creation. Admin keys use HS256 and five-minute
-          maxAge except scheduler URL authentication; Content keys and limits are looked up per
-          request. TOTP uses six digits and a ten-minute window in each direction; the session
-          adds a five-minute random challenge and consumes it on successful verification. TOTP
-          units assert user/secret/context mismatch and positive ten/negative eleven-minute age;
-          session units assert single-use success. Admin units assert audience/maxAge cases with
-          real JWT signing and fake key rows. HTTP config changes use test mutation, not supported
-          production hot reload, and do not test all captured/live configuration boundaries.
-        sources:
-          - core/server/services/auth/session/index.js
-          - core/server/services/auth/session/express-session.js
-          - core/server/services/auth/session/session-service.js
-          - core/server/services/auth/totp.ts
-          - core/server/services/auth/members/index.js
-          - core/server/services/auth/api-key/admin.js
-          - core/server/services/auth/api-key/content.js
-          - core/shared/url-utils.ts
-          - core/server/lib/mail/ghost-mailer.js
-        tests:
-          - test/unit/server/services/auth/totp.test.ts
-          - test/unit/server/services/auth/session/session-service.test.js
-          - test/unit/server/services/auth/api-key/admin.test.js
-          - test/e2e-api/admin/session.test.js
-      resources:
-        summary: >-
-          Auth borrows the model connection and shared SSO adapter but owns the session store,
-          cached middleware and constructed mailer without a disposal/drain API. Installed
-          express-session registers store connect/disconnect listeners and saves modified sessions
-          through response-end callbacks; this store implements no touch, timer or expiry cleanup.
-          GhostMailer retains its transport. Device email geolocation uses raw Got with a 500ms
-          request timeout and test-only zero retries; installed production defaults permit GET
-          retries, so that is not a total completion bound. Setup can launch detached fixture
-          writes and welcome mail; reset uses shared scheduler resources, then the HTTP endpoint
-          destroys the current request session to prevent response-end persistence. Store units assert
-          fake-model get/set/destroy callbacks, not real response-end persistence, clear/expiry,
-          mail transport cleanup or request cancellation. HTTP mail interception does not prove
-          draining real transport or response work during shutdown.
-        sources:
-          - core/server/services/auth/session/session-store.js
-          - core/server/services/auth/session/express-session.js
-          - core/server/services/auth/session/session-service.js
-          - core/server/services/auth/session/index.js
-          - core/server/services/auth/setup.js
-          - core/server/services/auth/reset-authentication.ts
-          - core/server/api/endpoints/authentication.js
-          - core/server/lib/mail/ghost-mailer.js
-          - core/server/models/session.js
-          - package.json
-        tests:
-          - test/unit/server/services/auth/session/store.test.js
-          - test/unit/server/services/auth/session/session-service.test.js
-          - test/e2e-api/admin/session.test.js
-      failures:
-        summary: >-
-          Source separates store/CSRF errors from user lookup rejection, which becomes no user;
-          sending a code rotates its challenge before lookup/render/mail, and only mail rejection
-          is wrapped as EmailError. SSO construction uses callNextWithError false, so request
-          failures fall through. Setup is not one transaction: fixture callbacks and welcome mail
-          are detached, tier/newsletter failure is swallowed and theme failure is logged. Password
-          reset locks the user row and changes password/sessions/status in a transaction, but
-          endpoint session rotation follows commit. Reset-authentication commits key rotation,
-          locks and optional action first, then clears cached keys, deletes sessions and reschedules;
-          failure after commit cannot undo earlier writes and can skip later steps. Only after
-          that helper succeeds does the HTTP endpoint await current-request session destruction;
-          its failure can reject after all those effects. Unit reset tests assert counts/action data, old scheduler key, failure short-circuit and deletion
-          before rescheduling with a callback transaction fake, not real rollback. Legacy HTTP
-          asserts successful secret rotation, locked users, empty sessions after the logged-in
-          request completes, and audit action; it does not assert client cookie expiry. Other
-          session/password HTTP checks selected refusals, not mid-write or post-commit faults.
-        sources:
-          - core/server/services/auth/session/session-service.js
-          - core/server/services/auth/session/session-from-token.ts
-          - core/server/services/auth/setup.js
-          - core/server/services/auth/passwordreset.js
-          - core/server/services/auth/reset-authentication.ts
-          - core/server/api/endpoints/authentication.js
-          - core/server/models/user.js
-        tests:
-          - test/unit/server/services/auth/session/session-service.test.js
-          - test/unit/server/services/auth/reset-authentication.test.ts
-          - test/legacy/api/admin/authentication.test.js
-          - test/e2e-api/admin/authentication.test.js
-          - test/e2e-api/admin/session-invalidation.test.js
-    unverified: []
-    blockers:
-      - >-
-        Before relocating auth, choose owners for policy/workflows, HTTP middleware, persistent
-        sessions, mail and SSO. Preserve current lazy exports and each retained caller; do not
-        move business workflows into API as a consequence of this mixed directory.
-      - >-
-        Add focused import/first-use, dependency-readiness, concurrent member middleware creation,
-        failed construction/retry and same-process restart tests before changing initialization.
-        Pin captured session secret/cookies/issuer versus accessor reads and retained adapter
-        behavior; existing normal HTTP success does not establish replacement compatibility.
-      - >-
-        Preserve real middleware/store/response persistence and verification/invalidation contracts
-        through relocation. Test expiry/clear, in-flight save versus deletion, first-use failures,
-        successful member JWT composition, SSO fallthrough and transport cleanup where affected;
-        injected callbacks and intercepted mail do not cover these boundaries.
-      - >-
-        Add held-promise ordering and real transaction fault coverage before changing reset or
-        setup orchestration. Record partial/post-commit behavior, detached fixture/mail work,
-        challenge changes on send failure and scheduler failure without treating current gaps
-        as an unrelated prerequisite for the eight-service pilot.
   automations:
     kind: directory
     disposition: retain
@@ -4390,8 +4121,8 @@ services:
           - core/server/services/members/members-api/services/payments-service.js
           - core/server/services/comments/comments-service-emails.js
           - core/server/services/comments/comments-service-email-renderer.js
-          - core/server/services/auth/session/index.js
-          - core/server/services/auth/session/session-service.js
+          - core/server/auth/session/index.js
+          - core/server/auth/session/session-service.js
           - core/server/services/gifts/index.ts
           - core/server/services/gifts/gift-email-service.ts
           - core/server/services/gifts/gift-email-renderer.ts
@@ -5058,7 +4789,7 @@ services:
       sources:
         - core/server/services/internal-keys/index.ts
         - core/server/services/post-scheduling/index.ts
-        - core/server/services/auth/reset-authentication.ts
+        - core/server/auth/reset-authentication.ts
         - core/frontend/services/proxy.js
         - test/unit/server/services/internal-keys/index.test.ts
     entryPoints:
@@ -5112,10 +4843,10 @@ services:
           - core/server/services/gifts/index.ts
           - core/server/adapters/scheduling/signed-flush-scheduler.ts
           - core/server/services/automations/service.ts
-          - core/server/services/auth/reset-authentication.ts
+          - core/server/auth/reset-authentication.ts
         tests:
           - test/unit/frontend/helpers/content-api-key.test.ts
-          - test/unit/server/services/auth/reset-authentication.test.ts
+          - test/unit/server/auth/reset-authentication.test.ts
           - test/unit/server/adapters/scheduling/signed-flush-scheduler.test.ts
           - test/unit/server/services/internal-keys/index.test.ts
           - test/e2e-server/internal-keys.isolated.test.ts
@@ -5159,11 +4890,11 @@ services:
         sources:
           - core/server/services/internal-keys/index.ts
           - core/server/lib/auto-filling-map.ts
-          - core/server/services/auth/reset-authentication.ts
+          - core/server/auth/reset-authentication.ts
           - core/boot.js
         tests:
           - test/unit/server/lib/auto-filling-map.test.ts
-          - test/unit/server/services/auth/reset-authentication.test.ts
+          - test/unit/server/auth/reset-authentication.test.ts
           - test/unit/server/services/internal-keys/index.test.ts
           - test/e2e-server/internal-keys.isolated.test.ts
       configuration:
@@ -5175,10 +4906,10 @@ services:
         sources:
           - core/server/services/internal-keys/index.ts
           - core/server/models/integration.js
-          - core/server/services/auth/reset-authentication.ts
+          - core/server/auth/reset-authentication.ts
         tests:
           - test/unit/server/models/integration.test.js
-          - test/unit/server/services/auth/reset-authentication.test.ts
+          - test/unit/server/auth/reset-authentication.test.ts
           - test/unit/server/services/internal-keys/index.test.ts
           - test/e2e-server/internal-keys.isolated.test.ts
       resources:
@@ -5191,7 +4922,7 @@ services:
           - core/server/services/internal-keys/index.ts
           - core/server/lib/auto-filling-map.ts
           - core/server/models/integration.js
-          - core/server/services/auth/reset-authentication.ts
+          - core/server/auth/reset-authentication.ts
           - core/server/adapters/scheduling/signed-flush-scheduler.ts
         tests: []
       failures:
@@ -5210,10 +4941,10 @@ services:
           - core/server/services/post-scheduling/post-scheduling.ts
           - core/server/adapters/scheduling/signed-flush-scheduler.ts
           - core/server/services/automations/service.ts
-          - core/server/services/auth/reset-authentication.ts
+          - core/server/auth/reset-authentication.ts
         tests:
           - test/unit/server/models/integration.test.js
-          - test/unit/server/services/auth/reset-authentication.test.ts
+          - test/unit/server/auth/reset-authentication.test.ts
           - test/unit/server/services/internal-keys/index.test.ts
     unverified: []
     blockers:
@@ -5728,8 +5459,8 @@ services:
           - core/server/models/invite.js
           - core/server/models/integration.js
           - core/server/data/importer/importers/data/users-importer.js
-          - core/server/services/auth/api-key/admin.js
-          - core/server/services/auth/api-key/content.js
+          - core/server/auth/api-key/admin.js
+          - core/server/auth/api-key/content.js
           - core/server/services/webhooks/index.js
           - core/server/services/webhooks/webhook-trigger.js
           - core/server/services/newsletters/index.js
@@ -5843,7 +5574,7 @@ services:
         sources:
           - core/server/services/limits.ts
           - core/server/services/webhooks/webhook-trigger.js
-          - core/server/services/auth/api-key/content.js
+          - core/server/auth/api-key/content.js
           - core/server/api/endpoints/newsletters.js
           - core/server/api/endpoints/settings.js
         tests:
@@ -7350,7 +7081,7 @@ services:
           - core/server/web/members/app.js
           - core/server/web/members/account/routes.ts
           - core/server/web/comments/routes.js
-          - core/server/services/auth/members/index.js
+          - core/server/auth/members/index.js
           - core/server/services/stripe/stripe-service.js
           - core/server/services/gifts/index.ts
           - core/server/services/members-events/index.js
@@ -9558,7 +9289,7 @@ services:
         - core/server/services/post-scheduling/index.ts
         - core/server/services/post-scheduling/post-scheduling.ts
         - core/server/adapters/scheduling/error-capture.ts
-        - core/server/services/auth/reset-authentication.ts
+        - core/server/auth/reset-authentication.ts
         - core/boot.js
     entryPoints:
       - post-scheduling/index.ts
@@ -9618,7 +9349,7 @@ services:
           - core/server/models/post.js
           - core/server/models/base/plugins/events.js
           - core/server/services/post-scheduling/post-scheduling.ts
-          - core/server/services/auth/reset-authentication.ts
+          - core/server/auth/reset-authentication.ts
           - core/server/api/endpoints/authentication.js
           - core/server/web/api/endpoints/admin/routes.js
           - core/server/api/endpoints/schedules.js
@@ -9626,7 +9357,7 @@ services:
         tests:
           - test/legacy/api/admin/schedules.test.js
           - test/unit/server/services/post-scheduling/post-scheduling.test.js
-          - test/unit/server/services/auth/reset-authentication.test.ts
+          - test/unit/server/auth/reset-authentication.test.ts
       startup:
         summary: >-
           Boot validates adapters before importing this eager root in initServices. It later
@@ -9683,7 +9414,7 @@ services:
           - core/server/adapters/scheduling/get-scheduler-idempotency-key.ts
           - core/server/services/internal-keys/index.ts
           - core/server/lib/auto-filling-map.ts
-          - core/server/services/auth/reset-authentication.ts
+          - core/server/auth/reset-authentication.ts
           - core/shared/url-utils.ts
           - core/shared/config/loader.ts
         tests:
@@ -9728,7 +9459,7 @@ services:
           - core/server/adapters/scheduling/error-capture.ts
           - core/server/adapters/scheduling/scheduling-default.ts
           - core/server/adapters/scheduling/README.md
-          - core/server/services/auth/reset-authentication.ts
+          - core/server/auth/reset-authentication.ts
         tests:
           - test/unit/server/adapters/scheduling/error-capture.test.ts
           - test/unit/server/adapters/scheduling/scheduling-default.test.js
@@ -14424,14 +14155,14 @@ services:
         sources:
           - core/server/api/endpoints/users.js
           - core/server/api/endpoints/authentication.js
-          - core/server/services/auth/reset-authentication.ts
+          - core/server/auth/reset-authentication.ts
           - core/server/web/api/endpoints/admin/routes.js
           - core/server/services/users.js
         tests:
           - test/e2e-api/admin/users.test.js
           - test/legacy/api/admin/users.test.js
           - test/legacy/api/admin/authentication.test.js
-          - test/unit/server/services/auth/reset-authentication.test.ts
+          - test/unit/server/auth/reset-authentication.test.ts
       startup:
         summary: >-
           Users has no init or readiness guard and performs no I/O during construction. Endpoint
@@ -14521,10 +14252,10 @@ services:
         sources:
           - core/server/services/users.js
           - core/server/api/endpoints/users.js
-          - core/server/services/auth/reset-authentication.ts
+          - core/server/auth/reset-authentication.ts
           - core/server/api/endpoints/authentication.js
         tests:
-          - test/unit/server/services/auth/reset-authentication.test.ts
+          - test/unit/server/auth/reset-authentication.test.ts
           - test/e2e-api/admin/users.test.js
           - test/legacy/api/admin/authentication.test.js
     unverified: []

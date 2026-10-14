@@ -1,6 +1,6 @@
 const errors = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
-const auth = require('../../../../services/auth');
+const auth = require('../../../../auth');
 const shared = require('../../../shared');
 const apiMw = require('../../middleware');
 

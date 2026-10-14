@@ -1,10 +1,10 @@
 const assert = require('node:assert/strict');
-const { assertExists } = require('../../../../../utils/assertions');
+const { assertExists } = require('../../../../utils/assertions');
 const errors = require('@tryghost/errors');
 const jwt = require('jsonwebtoken');
 const sinon = require('sinon');
-const apiKeyAuth = require('../../../../../../core/server/services/auth/api-key');
-const { ApiKey } = require('../../../../../../core/server/models/api-key');
+const apiKeyAuth = require('../../../../../core/server/auth/api-key');
+const { ApiKey } = require('../../../../../core/server/models/api-key');
 
 describe('Admin API Key Auth', function () {
   const ADMIN_API_URL_VERSIONED = '/ghost/api/v4/admin/';

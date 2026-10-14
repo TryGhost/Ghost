@@ -4,10 +4,10 @@ const errors = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
 const moment = require('moment');
 
-const models = require('../../models');
-const ghostBookshelf = require('../../models/base');
-const urlUtils = require('../../../shared/url-utils').default;
-const mail = require('../../lib/mail');
+const models = require('../models');
+const ghostBookshelf = require('../models/base');
+const urlUtils = require('../../shared/url-utils').default;
+const mail = require('../lib/mail');
 
 const messages = {
   userNotFound: 'User not found.',

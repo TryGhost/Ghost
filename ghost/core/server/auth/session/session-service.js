@@ -56,9 +56,9 @@ const AUTH_CODE_CHALLENGE_BYTES = 16;
  * @param {(req: Req) => string} deps.getOriginOfRequest
  * @param {((key: 'require_email_mfa') => boolean) & ((key: 'admin_session_secret' | 'title') => string)} deps.getSettingsCache
  * @param {() => string} deps.getBlogLogo
- * @param {import('../../../lib/mail').GhostMailer} deps.mailer
- * @param {import('../../i18n').t} deps.t
- * @param {import('../../../../shared/url-utils').default} deps.urlUtils
+ * @param {import('../../lib/mail').GhostMailer} deps.mailer
+ * @param {import('../../services/i18n').t} deps.t
+ * @param {import('../../../shared/url-utils').default} deps.urlUtils
  * @param {() => boolean} deps.isStaffDeviceVerificationDisabled
  * @returns {SessionService}
  */
