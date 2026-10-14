@@ -5,6 +5,8 @@ import { CacheBase } from '@tryghost/adapter-base-cache';
 import { RedirectsStoreBase } from '@tryghost/adapter-base-redirects';
 import { RouteSettingsStoreBase } from '@tryghost/adapter-base-route-settings';
 import { JobsBackendBase } from '@tryghost/adapter-base-jobs';
+// @ts-expect-error This module lacks type definitions.
+import EmailProviderBase from '../../adapters/email/EmailProviderBase';
 
 import type { BaseClassMap } from './adapter-manager';
 
@@ -20,6 +22,7 @@ export const baseClasses = {
   redirects: RedirectsStoreBase,
   'route-settings': RouteSettingsStoreBase,
   jobs: JobsBackendBase,
+  email: EmailProviderBase,
 } satisfies BaseClassMap;
 
 /**
@@ -31,6 +34,8 @@ export const baseClasses = {
  *
  * Keyed by adapter type so `satisfies` demands an entry per type in
  * `baseClasses`; a unit test keeps the names matching the imports above.
+ * `email` has no entry: `EmailProviderBase` is imported locally rather than
+ * from a package, so there is no package copy to duplicate.
  */
 export const baseClassPackages = {
   storage: 'ghost-storage-base',
@@ -40,4 +45,4 @@ export const baseClassPackages = {
   redirects: '@tryghost/adapter-base-redirects',
   'route-settings': '@tryghost/adapter-base-route-settings',
   jobs: '@tryghost/adapter-base-jobs',
-} satisfies Record<keyof typeof baseClasses, string>;
+} satisfies Record<Exclude<keyof typeof baseClasses, 'email'>, string>;
