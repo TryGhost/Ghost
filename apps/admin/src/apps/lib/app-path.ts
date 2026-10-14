@@ -1,17 +1,5 @@
-import { AppPathSchema } from '@tryghost/app-contracts/bridge';
+import { AppPathSchema, normaliseAppPath } from '@tryghost/app-contracts/bridge';
 import { appRoute } from './routes';
-
-// Only parsed against, never requested: it gives a path the URL parser's own spelling.
-const BASE = 'https://app.invalid';
-
-/**
- * A path as the URL parser spells it, with what needs escaping escaped once, so a path the
- * app reported and the same path read back from Admin's address compare equal.
- */
-export function normaliseAppPath(path: string): string {
-  const url = new URL(path, BASE);
-  return `${url.pathname}${url.search}${url.hash}`;
-}
 
 /**
  * The app's own route in Admin's address: what follows `/apps/:installationId`, with the

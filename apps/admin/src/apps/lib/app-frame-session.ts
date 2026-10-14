@@ -1,5 +1,10 @@
-import type { PathChangeOptions, Place, StartContext, Theme } from '@tryghost/app-contracts/bridge';
-import { normaliseAppPath } from './app-path';
+import {
+  type PathChangeOptions,
+  type Place,
+  type StartContext,
+  type Theme,
+  normaliseAppPath,
+} from '@tryghost/app-contracts/bridge';
 import type { AdminApiFetch } from './bridge-fetch';
 import { type AppFrameHost, bindAppFrame } from './bridge-host';
 import { appFrameTimeouts } from './frame';

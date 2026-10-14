@@ -467,7 +467,7 @@ describe('createAppFrameSession', () => {
 
     await expect(
       frame.host.fetch({ path: '/posts/', headers: { Authorization: 'Ghost forged' } }),
-    ).rejects.toThrow('invalid_argument: Expected no Authorization header, which only Admin sets');
+    ).rejects.toThrow('invalid_argument: Expected no authorization header, which only Admin sets');
     expect(fetchAdminApi).not.toHaveBeenCalled();
   });
 
