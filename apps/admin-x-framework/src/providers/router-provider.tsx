@@ -14,7 +14,6 @@ import {
   NavigateOptions as ReactRouterNavigateOptions,
   useNavigate as useReactRouterNavigate,
   useLocation,
-  useMatches,
   useParams,
   useResolvedPath,
   Navigate as ReactRouterNavigate,
@@ -51,15 +50,13 @@ export interface RouterProviderProps {
 }
 
 function FeatureFlagOverridesRouteProvider({ children }: { children: React.ReactNode }) {
-  const { search } = useLocation();
+  const { pathname, search } = useLocation();
   const { onFeatureFlagOverridesChange } = useFramework();
-  // See `AdminRouteHandle.ownsSearch`.
-  const searchIsPages = useMatches().some(
-    ({ handle }) => (handle as { ownsSearch?: unknown } | undefined)?.ownsSearch === true,
-  );
+  // An installed app's page passes its query on to the app as it is, so `labs` there is the app's.
+  const isAppPage = pathname.startsWith('/apps/');
   const enabledFlags = useMemo(
-    () => (searchIsPages ? getStoredFeatureFlagOverrides() : syncFeatureFlagOverrides(search)),
-    [search, searchIsPages],
+    () => (isAppPage ? getStoredFeatureFlagOverrides() : syncFeatureFlagOverrides(search)),
+    [search, isAppPage],
   );
   const value = useMemo(() => ({ enabledFlags }), [enabledFlags]);
 

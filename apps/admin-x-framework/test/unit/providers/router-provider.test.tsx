@@ -42,16 +42,13 @@ describe('feature flag overrides', () => {
     await waitFor(() => expect(onFeatureFlagOverridesChange).toHaveBeenCalled());
   });
 
-  it('reads no overrides from a route whose query belongs to its page', async () => {
+  it('keeps the stored overrides on an app’s page, whose query is the app’s', async () => {
     sessionStorage.setItem('ghost-admin:labs-overrides', '["storedFlag"]');
-    window.history.replaceState(null, '', '/#/app?labs=');
+    window.history.replaceState(null, '', '/#/apps/podcast/?labs=');
 
     render(
       <TestWrapper>
-        <RouterProvider
-          prefix="/"
-          routes={[{ path: '/app', handle: { ownsSearch: true }, element: <div>App</div> }]}
-        >
+        <RouterProvider prefix="/" routes={[{ path: '/apps/:id/*', element: <div>App</div> }]}>
           <Outlet />
         </RouterProvider>
       </TestWrapper>,

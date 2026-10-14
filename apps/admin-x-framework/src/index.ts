@@ -87,11 +87,6 @@ export type AdminRouteHandle = {
   /** Marks a full-screen surface: navigating into or out of it runs a screen transition. */
   screenTransition?: boolean;
   settingsSidebar?: boolean;
-  /**
-   * The route's query belongs to the page it shows, such as an installed app's own route,
-   * so Admin reads nothing of its own from it: `?labs=` there sets no Labs overrides.
-   */
-  ownsSearch?: boolean;
 };
 export type { ViewTransitionController } from './providers/router-provider';
 export {
