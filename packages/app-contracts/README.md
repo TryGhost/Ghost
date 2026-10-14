@@ -177,6 +177,7 @@ exported from the root entry point as well:
 - `isContainedPath`, and `normaliseAppPath`, the one spelling both sides keep an
   app path in, with `..` resolved within the app;
 - `isReservedRequestHeader` for the headers only Admin sets,
+  `isMultipartContentType` for the uploads apps can't make yet,
   `methodAllowsBody`, and the words both sides refuse an argument with
   (`ARGUMENT_MESSAGES`);
 - the codes a refused call carries, written and read as `code: detail` by

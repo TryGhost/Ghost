@@ -54,6 +54,17 @@ export function isReservedRequestHeader(name: string): boolean {
   return RESERVED_REQUEST_HEADER.test(name);
 }
 
+const MULTIPART = /^\s*multipart\//i;
+
+/**
+ * Whether a request's content type is multipart, as an upload's is. Files stay out of the
+ * bridge for now, and a body is text, but an app could write a multipart body as text and
+ * reach an upload route, so a multipart content type is refused whatever the body.
+ */
+export function isMultipartContentType(value: string): boolean {
+  return MULTIPART.test(value);
+}
+
 /**
  * What Admin and the SDK say when they refuse an argument for the same reason, so an app hears
  * the same words whichever of them catches it. The SDK checks only what is plainly wrong, before
@@ -67,6 +78,7 @@ export const ARGUMENT_MESSAGES = {
   // so the name is lowercased here for both sides to say the same.
   reservedHeader: (name: string) =>
     `Expected no ${name.toLowerCase()} header, which only Admin sets`,
+  multipart: "Expected a content type other than multipart/*: apps can't upload files yet",
   appPath: 'Expected a path within the app, starting with a single /',
   pathChangeOptions: 'Expected options such as { replace: true }',
   place:

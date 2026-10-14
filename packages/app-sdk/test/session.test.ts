@@ -186,6 +186,16 @@ describe('fetch', () => {
       { headers: [['X-Ghost-Version', '6.0']] as HeadersInit },
       'invalid_argument',
     ],
+    [
+      'a multipart body',
+      '/files/upload/',
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'multipart/form-data; boundary=x' },
+        body: '--x--',
+      },
+      'invalid_argument',
+    ],
   ])('refuses %s without asking Admin', async (_label, path, init, code) => {
     const { ghost, host } = await started();
     const error = await ghost.fetch(path, init).catch((caught: unknown) => caught);
@@ -233,6 +243,14 @@ describe('a refused argument', () => {
         ghost.fetch('/posts/', { headers: { Authorization: 'x' } }),
         // As Admin words it for the app's own spelling of the name.
         ARGUMENT_MESSAGES.reservedHeader('Authorization'),
+      ],
+      [
+        ghost.fetch('/files/upload/', {
+          method: 'POST',
+          headers: { 'content-type': 'multipart/form-data' },
+          body: '',
+        }),
+        ARGUMENT_MESSAGES.multipart,
       ],
       [ghost.path.set('episodes'), ARGUMENT_MESSAGES.appPath],
       [ghost.path.set('/a', true as never), ARGUMENT_MESSAGES.pathChangeOptions],

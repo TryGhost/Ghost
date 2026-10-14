@@ -3,6 +3,7 @@ import {
   FETCH_METHODS,
   isContainedPath,
   isFetchResponse,
+  isMultipartContentType,
   isRecord,
   isReservedRequestHeader,
   methodAllowsBody,
@@ -58,6 +59,9 @@ function toHeaders(init: HeadersInit | undefined): Record<string, string> {
   const reserved = entries.find(([name]) => isReservedRequestHeader(name));
   if (reserved) {
     throw invalidArgument(ARGUMENT_MESSAGES.reservedHeader(reserved[0]));
+  }
+  if (isMultipartContentType(headers.get('content-type') ?? '')) {
+    throw invalidArgument(ARGUMENT_MESSAGES.multipart);
   }
   return Object.fromEntries(entries);
 }

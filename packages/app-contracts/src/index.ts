@@ -49,6 +49,7 @@ export {
   isConnectMessage,
   isContainedPath,
   isFetchResponse,
+  isMultipartContentType,
   isRecord,
   isReservedRequestHeader,
   isStartContext,

@@ -4,6 +4,7 @@ import {
   ARGUMENT_MESSAGES,
   FETCH_METHODS,
   isContainedPath,
+  isMultipartContentType,
   isReservedRequestHeader,
   methodAllowsBody,
 } from './rules.ts';
@@ -11,7 +12,7 @@ import {
 /** As long as an app's own path, which an Admin API path with its query easily fits. */
 export const FETCH_PATH_MAX_LENGTH = 2048;
 
-/** 1 MiB, in UTF-8 bytes. Bodies are JSON and text; uploads are out of scope. */
+/** 1 MiB, in UTF-8 bytes. Bodies are JSON and text; a multipart content type is refused. */
 export const FETCH_BODY_MAX_BYTES = 1024 * 1024;
 
 const FETCH_HEADERS_MAX_COUNT = 50;
@@ -61,14 +62,14 @@ export const FetchRequestSchema = z
         'Expected headers as an object of names to values',
       )
       .superRefine((headers, ctx) => {
-        const names = Object.keys(headers);
-        if (names.length > FETCH_HEADERS_MAX_COUNT) {
+        const entries = Object.entries(headers);
+        if (entries.length > FETCH_HEADERS_MAX_COUNT) {
           ctx.addIssue({
             code: 'custom',
             message: `Expected at most ${FETCH_HEADERS_MAX_COUNT} headers`,
           });
         }
-        for (const name of names) {
+        for (const [name, value] of entries) {
           if (!HEADER_NAME.test(name)) {
             ctx.addIssue({
               code: 'custom',
@@ -81,6 +82,8 @@ export const FetchRequestSchema = z
               message: ARGUMENT_MESSAGES.reservedHeader(name),
               path: [name],
             });
+          } else if (name.toLowerCase() === 'content-type' && isMultipartContentType(value)) {
+            ctx.addIssue({ code: 'custom', message: ARGUMENT_MESSAGES.multipart, path: [name] });
           }
         }
       })

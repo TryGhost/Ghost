@@ -12,6 +12,7 @@ import {
   isContainedPath,
   isFetchResponse,
   isRecord,
+  isMultipartContentType,
   isReservedRequestHeader,
   isStartContext,
   isTheme,
@@ -280,6 +281,30 @@ describe('the messages for a refused argument', () => {
     }
     for (const message of Object.values(ARGUMENT_MESSAGES)) {
       expect(typeof message === 'string' ? message : message('x')).toMatch(/^Expected /);
+    }
+  });
+});
+
+describe('a multipart content type', () => {
+  it('is any multipart type, in any case', () => {
+    for (const value of [
+      'multipart/form-data; boundary=x',
+      'Multipart/Mixed',
+      ' multipart/related',
+      'MULTIPART/FORM-DATA',
+    ]) {
+      expect(isMultipartContentType(value), value).toBe(true);
+    }
+  });
+
+  it('is no other', () => {
+    for (const value of [
+      'application/json',
+      'text/plain; x=multipart/form-data',
+      'multipart',
+      '',
+    ]) {
+      expect(isMultipartContentType(value), value).toBe(false);
     }
   });
 });

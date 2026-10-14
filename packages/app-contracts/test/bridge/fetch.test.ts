@@ -124,6 +124,29 @@ describe('a fetch request', () => {
     }
   });
 
+  it('refuses a multipart content type, as uploads are not for apps yet', () => {
+    for (const name of ['Content-Type', 'content-type']) {
+      expect(
+        requestErrors({
+          path: '/files/upload/',
+          method: 'POST',
+          headers: { [name]: 'multipart/form-data; boundary=x' },
+          body: '--x\r\n',
+        }),
+      ).toEqual([
+        {
+          path: ['headers', name],
+          message: "Expected a content type other than multipart/*: apps can't upload files yet",
+        },
+      ]);
+    }
+    // Only the content type says what the body is.
+    expect(
+      FetchRequestSchema.safeParse({ path: '/posts/', headers: { Accept: 'multipart/mixed' } })
+        .success,
+    ).toBe(true);
+  });
+
   it('refuses too many headers', () => {
     const headers = Object.fromEntries(
       Array.from({ length: 51 }, (_, index) => [`X-Test-${index}`, 'a']),
