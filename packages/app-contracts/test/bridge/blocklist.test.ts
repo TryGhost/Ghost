@@ -10,7 +10,7 @@ describe('the Admin API blocklist', () => {
       'identity_tokens',
       'sessions',
       'member_sign_in',
-      'site_access',
+      'settings',
       'invites',
       'webhooks',
       'database',
@@ -49,7 +49,15 @@ describe('the Admin API blocklist', () => {
       '/authentication',
     ],
     member_sign_in: ['/members/5ddc9141c35e7700383b2937/signin_urls/'],
-    site_access: ['/settings/access_code/regenerate/', '/settings/access_code/regenerate'],
+    settings: [
+      '/settings/',
+      '/settings',
+      '/settings/?group=site',
+      '/settings/access_code/regenerate/',
+      '/settings/routes/yaml/',
+      '/settings/stripe/connect/',
+      '/settings/verifications/',
+    ],
     invites: ['/invites/', '/invites/abc/'],
     webhooks: ['/webhooks/', '/webhooks/abc/'],
     database: ['/db/', '/db/backup/', '/db/media/inline/', '/exports/', '/exports/download/'],
@@ -88,8 +96,6 @@ describe('the Admin API blocklist', () => {
       '/tinybird/token/extra/',
       '/config/',
       '/site/',
-      '/settings/',
-      '/settings/access_code/',
       '/tinybird/',
       '/database/',
       '/dbx/',
@@ -100,6 +106,8 @@ describe('the Admin API blocklist', () => {
       '/members/abc/sessions/',
       '/members/abc/',
       '/members/signin_urls/',
+      '/custom_theme_settings/',
+      '/posts/settings/',
     ]) {
       expect(isBlockedAdminApiPath(path), path).toBe(false);
     }

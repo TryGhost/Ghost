@@ -3,24 +3,18 @@
  *
  * Apps call the Admin API with the staff user's own session, as a stand-in for an app-scoped
  * token with permissions; the blocklist goes when that token arrives. Until then it closes the
- * routes that hand out a credential outliving the app's session, change who can sign in, who
- * can read a private site or who the staff are, send site events elsewhere, import, export or
+ * routes that hand out a credential outliving the app's session, change who can sign in or who
+ * the staff are, change the site's settings, send site events elsewhere, import, export or
  * delete the whole site, or install and approve apps.
  *
  * It is not complete. These stay open until the security review before external developers
  * decides on them (BER-3992):
  *
- * - Who can sign in or read the site, through routes apps also need for everyday work:
- *   changing a member's email through `PUT /members/:id`, which lets whoever holds the new
- *   address sign in as that member, and reading a private site's access code, the `password`
- *   setting, through `GET /settings`. Blocking either route would close every member edit or
- *   every settings read.
- * - Settings that send data elsewhere for as long as they stay set: the Mailgun and Stripe
- *   keys and `slack_url` through `PUT /settings`, and connecting Stripe through
- *   `/members/stripe_connect`.
- * - Writes that leave code on the site: code injection through `PUT /settings`, theme uploads
- *   and installs (`POST /themes/upload`, `POST /themes/install?source=github`), and redirects
- *   and routes uploads.
+ * - Changing a member's email through `PUT /members/:id`, which lets whoever holds the new
+ *   address sign in as that member. Blocking it would close every member edit.
+ * - Connecting Stripe through `/members/stripe_connect`.
+ * - Writes that leave code on the site: theme uploads and installs (`POST /themes/upload`,
+ *   `POST /themes/install?source=github`) and redirects uploads.
  * - Bulk deletes, edits and exports: `DELETE /members?all=true`, `PUT /members/bulk`, the
  *   members CSV at `GET /members/upload`, `GET /posts/export`, `DELETE /posts`,
  *   `DELETE /pages` and the bulk edits of posts and pages.
@@ -74,10 +68,10 @@ export const ADMIN_API_BLOCKLIST: readonly BlockedAdminApiCategory[] = [
     paths: ['/members/:id/signin_urls'],
   },
   {
-    name: 'site_access',
+    name: 'settings',
     reason:
-      "A private site's access code is what its readers enter to see it, so replacing it shuts out everyone who holds the old one.",
-    paths: ['/settings/access_code/regenerate'],
+      "Settings decide who can read the site and sign in (a private site's access code, signup, staff two-factor), send data elsewhere (Mailgun, Stripe, Slack) and put code on every page (code injection, routes). An app reads the site facts it needs from the start context.",
+    paths: ['/settings', '/settings/*'],
   },
   {
     name: 'invites',
