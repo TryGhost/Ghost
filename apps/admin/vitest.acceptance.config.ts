@@ -88,11 +88,34 @@ const failFrameOrigin: BrowserCommand<[origin: string]> = async ({ page }, origi
   frameFakes.set(page, [...(frameFakes.get(page) ?? []), { matcher, handler }]);
 };
 
-// A script a faked frame runs, bundled into one module with what it imports, since the
-// frame is on another origin and can load nothing from the test server. Built once per
-// entry for the whole run.
-const frameScripts = new Map<string, Promise<string>>();
+// What a build answers with: its entry chunk's code, which is what a frame loads.
+function entryChunkCode(result: Awaited<ReturnType<typeof build>>, what: string): string {
+  const outputs = (Array.isArray(result) ? result : [result]) as Rolldown.RolldownOutput[];
+  const chunk = outputs
+    .flatMap(({ output }) => output)
+    .find((file): file is Rolldown.OutputChunk => file.type === 'chunk' && file.isEntry);
+  if (!chunk) {
+    throw new Error(`${what} produced no script`);
+  }
+  return chunk.code;
+}
 
+// Each build once for the whole run, by key. A failed one is built again by the next spec
+// that asks, rather than failing every spec after it.
+const builds = new Map<string, Promise<string>>();
+
+function buildOnce(key: string, run: () => Promise<string>): Promise<string> {
+  let built = builds.get(key);
+  if (!built) {
+    built = run();
+    built.catch(() => builds.delete(key));
+    builds.set(key, built);
+  }
+  return built;
+}
+
+// A script a faked frame runs, bundled into one module with what it imports, since the
+// frame is on another origin and can load nothing from the test server.
 async function buildFrameScript(entry: string): Promise<string> {
   const root = fileURLToPath(new URL('.', import.meta.url));
   const result = await build({
@@ -108,34 +131,18 @@ async function buildFrameScript(entry: string): Promise<string> {
       lib: { entry, formats: ['es'], fileName: 'frame' },
     },
   });
-  const outputs = (Array.isArray(result) ? result : [result]) as Rolldown.RolldownOutput[];
-  const chunk = outputs
-    .flatMap(({ output }) => output)
-    .find((file): file is Rolldown.OutputChunk => file.type === 'chunk' && file.isEntry);
-  if (!chunk) {
-    throw new Error(`Bundling ${entry} for a frame produced no script`);
-  }
-  return chunk.code;
+  return entryChunkCode(result, `Bundling ${entry} for a frame`);
 }
 
-const bundleFrameScript: BrowserCommand<[entry: string]> = (_context, entry) => {
-  let script = frameScripts.get(entry);
-  if (!script) {
-    script = buildFrameScript(entry);
-    // A failed build is retried by the next spec rather than failing every one after it.
-    script.catch(() => frameScripts.delete(entry));
-    frameScripts.set(entry, script);
-  }
-  return script;
-};
+const bundleFrameScript: BrowserCommand<[entry: string]> = (_context, entry) =>
+  buildOnce(`frame:${entry}`, () => buildFrameScript(entry));
 
 // The app SDK's browser bundle, built by the SDK's own build config, as `pnpm build` writes
 // it to packages/app-sdk/dist/app-sdk.js. Built here rather than read from there, so the
 // specs run the bundle as the checkout builds it, whether or not the SDK was built since.
 // Workspace packages resolve to their source, as everywhere in these specs, so the bundle
-// doesn't wait on app-contracts' build either. Built once for the whole run.
+// doesn't wait on app-contracts' build either.
 const APP_SDK_ROOT = fileURLToPath(new URL('../../packages/app-sdk/', import.meta.url));
-let appSdkBundle: Promise<string> | undefined;
 
 async function buildAppSdk(): Promise<string> {
   const result = await build({
@@ -145,26 +152,10 @@ async function buildAppSdk(): Promise<string> {
     resolve: { conditions: sharedResolve.conditions },
     build: { write: false, sourcemap: false },
   });
-  const outputs = (Array.isArray(result) ? result : [result]) as Rolldown.RolldownOutput[];
-  const chunk = outputs
-    .flatMap(({ output }) => output)
-    .find((file): file is Rolldown.OutputChunk => file.type === 'chunk' && file.isEntry);
-  if (!chunk) {
-    throw new Error('Building the app SDK produced no bundle');
-  }
-  return chunk.code;
+  return entryChunkCode(result, 'Building the app SDK');
 }
 
-const bundleAppSdk: BrowserCommand<[]> = () => {
-  if (!appSdkBundle) {
-    appSdkBundle = buildAppSdk();
-    // A failed build is retried by the next spec rather than failing every one after it.
-    appSdkBundle.catch(() => {
-      appSdkBundle = undefined;
-    });
-  }
-  return appSdkBundle;
-};
+const bundleAppSdk: BrowserCommand<[]> = () => buildOnce('app-sdk', buildAppSdk);
 
 // How long `callInFrame` waits for Playwright to see a frame the page already shows. Another
 // origin's frame runs in a process of its own, which Playwright attaches to on its own time:
@@ -250,15 +241,15 @@ const resetFakeFrameOrigins: BrowserCommand<[]> = async ({ page }) => {
 };
 
 // Module requests fail as a dropped connection would, or are held back as a slow one would
-// (test-utils/acceptance/module-loads.ts).
+// (test-utils/acceptance/module-loads.ts); the routes doing either, to undo after each spec.
 // Routed on the context: the page's routes never see what MSW's service worker fetches.
 type BrowserContext = BrowserCommandContext['context'];
-const failedModules = new WeakMap<BrowserContext, Array<(url: URL) => boolean>>();
+const routedModules = new WeakMap<BrowserContext, Array<(url: URL) => boolean>>();
 
 const failModuleLoads: BrowserCommand<[pathEnd: string]> = async ({ context }, pathEnd) => {
   const matcher = (url: URL) => url.pathname.endsWith(pathEnd);
   await context.route(matcher, (route) => route.abort('connectionreset'));
-  failedModules.set(context, [...(failedModules.get(context) ?? []), matcher]);
+  routedModules.set(context, [...(routedModules.get(context) ?? []), matcher]);
 };
 
 // What lets each module `holdModuleLoads` holds back go, by its path's end.
@@ -278,20 +269,20 @@ const holdModuleLoads: BrowserCommand<[pathEnd: string]> = async ({ context }, p
     // The spec may have ended meanwhile, and the request with it.
     await route.fallback().catch(() => {});
   });
-  failedModules.set(context, [...(failedModules.get(context) ?? []), matcher]);
+  routedModules.set(context, [...(routedModules.get(context) ?? []), matcher]);
 };
 
 const releaseModuleLoads: BrowserCommand<[pathEnd: string]> = ({ context }, pathEnd) => {
   heldModules.get(context)?.get(pathEnd)?.();
 };
 
-const resetFailedModuleLoads: BrowserCommand<[]> = async ({ context }) => {
+const resetModuleRoutes: BrowserCommand<[]> = async ({ context }) => {
   for (const release of heldModules.get(context)?.values() ?? []) {
     release();
   }
   heldModules.delete(context);
-  const matchers = failedModules.get(context) ?? [];
-  failedModules.delete(context);
+  const matchers = routedModules.get(context) ?? [];
+  routedModules.delete(context);
   await Promise.all(matchers.map((matcher) => context.unroute(matcher)));
 };
 
@@ -361,7 +352,7 @@ export default defineConfig({
         postFrameForm,
         releaseModuleLoads,
         reloadFrame,
-        resetFailedModuleLoads,
+        resetModuleRoutes,
         resetFakeFrameOrigins,
       },
       instances: [{ browser: 'chromium' }],

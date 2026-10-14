@@ -5,7 +5,7 @@ declare module 'vitest/browser' {
     failModuleLoads: (pathEnd: string) => Promise<void>;
     holdModuleLoads: (pathEnd: string) => Promise<void>;
     releaseModuleLoads: (pathEnd: string) => Promise<void>;
-    resetFailedModuleLoads: () => Promise<void>;
+    resetModuleRoutes: () => Promise<void>;
   }
 }
 
@@ -28,6 +28,6 @@ export async function holdModuleLoads(pathEnd: string): Promise<() => Promise<vo
   return () => commands.releaseModuleLoads(pathEnd);
 }
 
-export function resetFailedModuleLoads(): Promise<void> {
-  return commands.resetFailedModuleLoads();
+export function resetModuleRoutes(): Promise<void> {
+  return commands.resetModuleRoutes();
 }
