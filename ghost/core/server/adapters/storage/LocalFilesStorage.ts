@@ -75,8 +75,9 @@ class LocalFilesStorage extends LocalStorageBase {
       settingsCache.get(asset.setting),
       ...frontendApps.map((app) => {
         const url = config.get(`${app}:${asset.configKey}`);
-        return typeof url === 'string'
-          ? url.replace('{version}', config.get(`${app}:version`))
+        const version = config.get(`${app}:version`);
+        return typeof url === 'string' && typeof version === 'string'
+          ? url.replace('{version}', version)
           : url;
       }),
     ];
