@@ -9,6 +9,7 @@ describe('the Admin API blocklist', () => {
       'integrations',
       'identity_tokens',
       'sessions',
+      'member_sign_in',
       'invites',
       'webhooks',
       'database',
@@ -46,6 +47,7 @@ describe('the Admin API blocklist', () => {
       '/authentication/invitation/',
       '/authentication',
     ],
+    member_sign_in: ['/members/5ddc9141c35e7700383b2937/signin_urls/'],
     invites: ['/invites/', '/invites/abc/'],
     webhooks: ['/webhooks/', '/webhooks/abc/'],
     database: ['/db/', '/db/backup/', '/db/media/inline/', '/exports/', '/exports/download/'],
@@ -93,6 +95,8 @@ describe('the Admin API blocklist', () => {
       '/application/',
       '/posts/db/',
       '/members/abc/sessions/',
+      '/members/abc/',
+      '/members/signin_urls/',
     ]) {
       expect(isBlockedAdminApiPath(path), path).toBe(false);
     }

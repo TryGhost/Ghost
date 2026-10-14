@@ -51,6 +51,12 @@ export const ADMIN_API_BLOCKLIST: readonly BlockedAdminApiCategory[] = [
     paths: ['/session', '/session/*', '/authentication', '/authentication/*'],
   },
   {
+    name: 'member_sign_in',
+    reason:
+      "A member's sign-in link signs in as that member for as long as the link lasts, whatever becomes of the app's session.",
+    paths: ['/members/:id/signin_urls'],
+  },
+  {
     name: 'invites',
     reason: 'An invite adds a staff user, who could then act without the app.',
     paths: ['/invites', '/invites/*'],
