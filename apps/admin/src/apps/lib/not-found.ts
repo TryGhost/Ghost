@@ -1,4 +1,5 @@
 import { APIError } from '@tryghost/admin-x-framework/errors';
+import { apiErrorOf } from './install-failure';
 
 /**
  * Whether reading an installation failed because there is none to read. Ghost answers a
@@ -7,13 +8,6 @@ import { APIError } from '@tryghost/admin-x-framework/errors';
  */
 export function isInstallationNotFound(error: unknown): boolean {
   return error instanceof APIError && [404, 422].includes(error.response?.status ?? 0);
-}
-
-/** The code Ghost gives the error, if it gave one. */
-function errorCode(error: APIError): string | undefined {
-  const data = error.data as { errors?: Array<{ code?: unknown }> } | undefined;
-  const code = data?.errors?.[0]?.code;
-  return typeof code === 'string' ? code : undefined;
 }
 
 /**
@@ -25,6 +19,6 @@ export function isSessionsRouteMissing(error: unknown): boolean {
   return (
     error instanceof APIError &&
     error.response?.status === 404 &&
-    errorCode(error) !== 'APP_NOT_INSTALLED'
+    apiErrorOf(error)?.code !== 'APP_NOT_INSTALLED'
   );
 }
