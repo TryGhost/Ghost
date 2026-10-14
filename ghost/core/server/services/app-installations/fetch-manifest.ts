@@ -1,14 +1,12 @@
 import errors from '@tryghost/errors';
 import logging from '@tryghost/logging';
 import { isLocalhost } from '@tryghost/app-contracts/manifest';
-import type { Got } from 'got';
+import type { Got, PlainResponse } from 'got';
 
 // The manifest is stored in a TEXT column, so anything larger could not be kept anyway.
 const MANIFEST_MAX_BYTES = 64 * 1024;
 const TIMEOUT_MS = 5000;
 const MAX_REDIRECTS = 3;
-// The statuses got follows, and then only with a Location header.
-const REDIRECT_STATUSES = new Set([301, 302, 303, 307, 308]);
 
 interface FetchedManifest {
   /**
@@ -98,10 +96,22 @@ export function createManifestFetcher({
     };
     const hostHeader = (url: URL) => (isAliased(url) ? { host: url.host } : {});
 
+    // Where a response's Location header points, by the address the browser would use.
+    const locationOf = (response: PlainResponse): URL | undefined => {
+      const rawLocation = response.headers.location;
+      if (!rawLocation) {
+        return undefined;
+      }
+      // Headers arrive as latin1; got reads the location as UTF-8, and so does this.
+      const target = new URL(Buffer.from(rawLocation, 'binary').toString('utf8'), response.url);
+      // Undo the alias, so the redirect is judged by where the browser would go.
+      if (isAliased(current) && target.hostname === alias) {
+        target.hostname = current.hostname;
+      }
+      return target;
+    };
+
     let refusedRedirect: URL | undefined;
-    // What was decided for each redirect, so asking again about the same one gives the same
-    // answer without moving `current` a second time.
-    const decided = new WeakMap<object, boolean>();
     let tooLarge = false;
     const abort = new AbortController();
 
@@ -116,38 +126,28 @@ export function createManifestFetcher({
       // Decided here rather than in a redirect hook: got asks this before any hook runs,
       // so a redirect to another host is refused before the outbound guard looks its
       // target up, and Ghost never resolves a host it was always going to refuse.
+      //
+      // got asks about every response, a 200 included, and more than once about the same
+      // one, so this only judges; `current` moves in beforeRedirect. A Location off the
+      // host is refused whatever the status, so the rule holds whichever statuses got
+      // follows, but only a refused 3xx is reported: a Location on a manifest or an error
+      // page is ignored.
       followRedirect: (response) => {
-        // got asks on every response, a plain 200 included, not only on redirects, and
-        // more than once about the same one. Only a redirect got would follow is judged,
-        // so a Location header on any other response leaves where the manifest is read
-        // from alone, and each redirect is judged once.
-        const rawLocation = response.headers.location;
-        if (!rawLocation || !REDIRECT_STATUSES.has(response.statusCode)) {
+        const target = locationOf(response);
+        if (target === undefined || staysOnHost(current, target)) {
           return true;
         }
-        const earlier = decided.get(response);
-        if (earlier !== undefined) {
-          return earlier;
-        }
-        // Headers arrive as latin1; got reads the location as UTF-8, and so does this.
-        const location = Buffer.from(rawLocation, 'binary').toString('utf8');
-        const target = new URL(location, response.url);
-        // Undo the alias, so the redirect is judged by where the browser would go.
-        if (isAliased(current) && target.hostname === alias) {
-          target.hostname = current.hostname;
-        }
-        const follow = staysOnHost(current, target);
-        if (follow) {
-          current = target;
-        } else {
+        if (response.statusCode >= 300 && response.statusCode < 400) {
           refusedRedirect = target;
         }
-        decided.set(response, follow);
-        return follow;
+        return false;
       },
       hooks: {
         beforeRedirect: [
-          (options) => {
+          (options, response) => {
+            // got runs this once for each redirect it follows, after followRedirect has let
+            // it through, so its Location is on the same host.
+            current = locationOf(response)!;
             // Only an aliased hop needs its address rewritten; everywhere else got's own
             // reading of the redirect stands.
             if (isAliased(current)) {

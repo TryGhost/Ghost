@@ -234,6 +234,23 @@ describe('createManifestLoader', function () {
       assert.equal(err.context, `${MANIFEST_URL} redirects to elsewhere.example.net`);
     });
 
+    // Whichever statuses got follows, a Location to another host is never followed.
+    it.each([300, 301, 302, 303, 304, 305, 306, 307, 308, 399])(
+      'never follows a Location to another host on HTTP %i',
+      async function (status) {
+        nock('https://podcast.example.com')
+          .get('/ghost-app.json')
+          .reply(status, '', { location: 'https://elsewhere.example.net/ghost-app.json' });
+        const elsewhere = nock('https://elsewhere.example.net')
+          .get('/ghost-app.json')
+          .reply(200, manifest());
+
+        const err = await refusal(loader()(MANIFEST_URL));
+        assert.equal(err.code, 'APP_MANIFEST_REDIRECTED');
+        assert.equal(elsewhere.isDone(), false);
+      },
+    );
+
     it('refuses a redirect to another port on the same host', async function () {
       nock('http://localhost:8787')
         .get('/ghost-app.json')
