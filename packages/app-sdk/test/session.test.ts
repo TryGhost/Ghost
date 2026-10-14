@@ -653,10 +653,27 @@ describe('the end of the session', () => {
     });
 
     const late = vi.fn();
-    const unsubscribe = ghost.onSessionEnd(late);
-    unsubscribe();
+    ghost.onSessionEnd(late);
+    expect(late).not.toHaveBeenCalled();
     await settle();
     expect(late).toHaveBeenCalledWith(expect.objectContaining({ code: 'session_ended' }));
+  });
+
+  it('does not tell a late subscriber that left straight away', async () => {
+    const { admin: fake, ghost } = await started();
+    await new Promise((resolve) => {
+      ghost.onSessionEnd(resolve);
+      fake.close();
+    });
+
+    // As an effect that cleans up and runs again does.
+    const left = vi.fn();
+    ghost.onSessionEnd(left)();
+    const stayed = vi.fn();
+    ghost.onSessionEnd(stayed);
+    await settle();
+    expect(left).not.toHaveBeenCalled();
+    expect(stayed).toHaveBeenCalledTimes(1);
   });
 
   it('does not tell a subscriber that left', async () => {

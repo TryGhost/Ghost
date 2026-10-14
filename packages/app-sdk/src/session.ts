@@ -290,8 +290,16 @@ export class Channel {
   #onSessionEnd(callback: (error: GhostAppError) => void): Unsubscribe {
     const ended = this.#ended;
     if (ended) {
-      queueMicrotask(() => callback(ended));
-      return () => {};
+      // Told in a microtask, as a subscriber that came in time is, unless it has left by then.
+      let left = false;
+      queueMicrotask(() => {
+        if (!left) {
+          callback(ended);
+        }
+      });
+      return () => {
+        left = true;
+      };
     }
     return subscribe(this.#endListeners, callback);
   }
