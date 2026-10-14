@@ -23,6 +23,7 @@ export const createTestAutomationsRepository2 = (
       'findFirstActionRevisions',
       'getNumberOfAutomations',
       'hasMemberEnteredAutomation',
+      'insertActions',
       'insertRunSteps',
       'insertRuns',
       'isAutomationActiveForRun',

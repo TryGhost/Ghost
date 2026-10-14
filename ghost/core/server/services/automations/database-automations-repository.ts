@@ -35,6 +35,7 @@ import type {
   Page,
 } from './automations-repository';
 import type {
+  ActionToInsert,
   AutomationsRepository2,
   AutomationTriggerTierScope,
 } from './automations-repository-2';
@@ -228,13 +229,6 @@ type RevisionDataFor<ActionDataT> = {
 type WaitRevisionData = RevisionDataFor<WaitActionData>;
 type SendEmailRevisionData = RevisionDataFor<SendEmailActionData>;
 
-type ActionToInsert = {
-  id: string;
-  created_at: string;
-  updated_at: string;
-  automation_id: string;
-  type: AutomationAction['type'];
-};
 type ActionRevisionToInsert = {
   actionId: string;
   action: AutomationAction;
@@ -256,7 +250,7 @@ export function createDatabaseAutomationsRepository({
   return {
     async browse({ includeStats }: BrowseOptions): Promise<Page<AutomationBrowseResult>> {
       await knex.transaction(async (trx) => {
-        await ensureDefaultAutomations(trx);
+        await ensureDefaultAutomations(repository2, trx);
       });
 
       return await knex.transaction(async (trx) => {
@@ -434,7 +428,7 @@ export function createDatabaseAutomationsRepository({
           );
         }
 
-        await replaceAutomationGraph(trx, automation.id, data.actions, data.edges);
+        await replaceAutomationGraph(repository2, trx, automation.id, data.actions, data.edges);
 
         return await buildAutomation(trx, automation);
       });
@@ -508,7 +502,13 @@ export function createDatabaseAutomationsRepository({
         }
 
         if (data.actions !== undefined) {
-          await replaceAutomationGraph(trx, updatedAutomation.id, data.actions, data.edges);
+          await replaceAutomationGraph(
+            repository2,
+            trx,
+            updatedAutomation.id,
+            data.actions,
+            data.edges,
+          );
         }
 
         switch (updatedAutomation.status) {
@@ -918,7 +918,10 @@ async function lockNotYetOpened(
   return new Set(rows.map((row) => row.id));
 }
 
-async function ensureDefaultAutomations(trx: Knex.Transaction): Promise<void> {
+async function ensureDefaultAutomations(
+  repository2: AutomationsRepository2<Knex | Knex.Transaction>,
+  trx: Knex.Transaction,
+): Promise<void> {
   // Conversion may activate flows; acquire the lock before reading legacy statuses.
   await lockAutomationLimit(trx, 'legacy');
 
@@ -946,7 +949,7 @@ async function ensureDefaultAutomations(trx: Knex.Transaction): Promise<void> {
   // Fixed free-then-paid order makes the subset deterministic.
   for (const defaults of DEFAULT_WELCOME_EMAIL_AUTOMATIONS) {
     const automation = await ensureAutomation(trx, defaults);
-    await ensureWelcomeEmailAction(trx, automation.id);
+    await ensureWelcomeEmailAction(repository2, trx, automation.id);
     if (
       candidates.includes(automation.id) &&
       !(await limitService.checkWouldGoOverLimit('limitAutomations', { transacting: trx }))
@@ -992,6 +995,7 @@ async function ensureAutomation(
 }
 
 async function ensureWelcomeEmailAction(
+  repository2: AutomationsRepository2<Knex | Knex.Transaction>,
   trx: Knex.Transaction,
   automationId: string,
 ): Promise<void> {
@@ -1016,14 +1020,15 @@ async function ensureWelcomeEmailAction(
     return;
   }
 
-  const now = toDatabaseDate(new Date());
+  const nowDate = new Date();
+  const now = toDatabaseDate(nowDate);
   const actionId = ObjectId().toHexString();
 
-  await insertActions(trx, [
+  await repository2.insertActions(trx, [
     {
       id: actionId,
-      created_at: now,
-      updated_at: now,
+      created_at: nowDate,
+      updated_at: nowDate,
       automation_id: automationId,
       type: 'send_email',
     },
@@ -1548,6 +1553,7 @@ async function updateAutomation(
 }
 
 async function replaceAutomationGraph(
+  repository2: AutomationsRepository2<Knex | Knex.Transaction>,
   trx: Knex.Transaction,
   automationId: string,
   submittedActions: AutomationAction[],
@@ -1566,7 +1572,8 @@ async function replaceAutomationGraph(
       revision,
     ]),
   );
-  const now = toDatabaseDate(new Date());
+  const nowDate = new Date();
+  const now = toDatabaseDate(nowDate);
   const actionsToInsert: ActionToInsert[] = [];
   const revisionsToInsert: ActionRevisionToInsert[] = [];
 
@@ -1593,8 +1600,8 @@ async function replaceAutomationGraph(
 
       actionsToInsert.push({
         id: action.id,
-        created_at: now,
-        updated_at: now,
+        created_at: nowDate,
+        updated_at: nowDate,
         automation_id: automationId,
         type: action.type,
       });
@@ -1610,7 +1617,7 @@ async function replaceAutomationGraph(
     }
   }
 
-  await insertActions(trx, actionsToInsert);
+  await repository2.insertActions(trx, actionsToInsert);
   await insertActionRevisions(trx, revisionsToInsert);
 
   const actionIdsToSoftDelete = existingActions
@@ -1708,16 +1715,6 @@ async function loadActionIdsWithOwners(
   }
   const rows = await trx('automation_actions').select('id').whereIn('id', actionIds);
   return new Set(rows.map((row) => row.id));
-}
-
-async function insertActions(
-  trx: Knex.Transaction,
-  actions: ReadonlyArray<ActionToInsert>,
-): Promise<void> {
-  if (actions.length === 0) {
-    return;
-  }
-  await trx('automation_actions').insert(actions);
 }
 
 function shouldInsertActionRevision(

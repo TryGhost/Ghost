@@ -6,6 +6,14 @@ export type AutomationTriggerTierScope = 'free' | 'all_paid' | 'selected_paid';
 
 export type AddAutomationData = z.infer<typeof addAutomationDataSchema>;
 
+export type ActionToInsert = {
+  id: string;
+  created_at: Date;
+  updated_at: Date;
+  automation_id: string;
+  type: 'wait' | 'send_email';
+};
+
 export type RunStepToInsert = {
   id: string;
   created_at: Date;
@@ -55,6 +63,12 @@ export type AutomationsRepository2<Connection> = {
     automationId: string,
     memberId: string,
   ) => Promisable<boolean>;
+
+  /** Insert automation actions. */
+  insertActions: (
+    connection: Connection,
+    toInsert: ReadonlyArray<ActionToInsert>,
+  ) => Promisable<void>;
 
   /** Insert automation run steps. Typically coupled with the insertion of an equal number of runs. */
   insertRunSteps: (
