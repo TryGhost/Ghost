@@ -80,4 +80,21 @@ describe('a title', () => {
       'Expected a title of at most 200 characters',
     );
   });
+
+  it('is plain text, so it cannot reorder what Admin shows after it', () => {
+    for (const title of ['Episodes 🎙️', 'پادکست‌ها', '👩‍💻 Code', 'Épisodes · Saison 2']) {
+      expect(TitleSchema.parse(title)).toBe(title);
+    }
+    for (const title of [
+      '\u202Esedosipe',
+      'Episodes\u2066',
+      '\u200EEpisodes',
+      'a\u0000b',
+      'a\nb',
+    ]) {
+      expect(TitleSchema.safeParse(title).error?.issues[0]?.message, title).toBe(
+        'Expected a title of plain text on one line',
+      );
+    }
+  });
 });

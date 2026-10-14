@@ -77,7 +77,8 @@ Call it as soon as the page loads; every call shares one connection.
 `fetch` rejects only when Admin refuses to make the request.
 
 The page's title is reported for you: the SDK watches `<title>` and Admin shows
-it, up to 200 characters, while the page is open.
+it, up to 200 characters, while the page is open. Characters that reorder or
+hide text, such as direction marks, are left out of it.
 
 ## Errors
 

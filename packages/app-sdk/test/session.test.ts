@@ -453,6 +453,12 @@ describe('title', () => {
     expect(host.titleChanged).toHaveBeenLastCalledWith('b'.repeat(200));
   });
 
+  it('drops the characters Admin refuses in a title, rather than the title', async () => {
+    document.title = '\u200Fפודקאסט\u200F · \u202EEpisodes';
+    const { host } = await started();
+    expect(host.titleChanged).toHaveBeenCalledWith('פודקאסט · Episodes');
+  });
+
   it('watches a title outside a head, in a page that has none', async () => {
     document.head.remove();
     const title = document.createElement('title');

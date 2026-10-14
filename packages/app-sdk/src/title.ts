@@ -1,8 +1,12 @@
-import { TITLE_MAX_LENGTH } from '@tryghost/app-contracts';
+import { TITLE_MAX_LENGTH, toPlainText } from '@tryghost/app-contracts';
 
-/** Trims a title to what Admin accepts, without splitting a character in two. */
+/**
+ * Trims a title to what Admin accepts, without splitting a character in two. Admin refuses a
+ * title holding a character that reorders or hides text, so those are dropped rather than
+ * the whole title lost: a right-to-left title often carries a direction mark.
+ */
 function clampTitle(title: string): string {
-  const trimmed = title.trim();
+  const trimmed = toPlainText(title).trim();
   if (trimmed.length <= TITLE_MAX_LENGTH) {
     return trimmed;
   }

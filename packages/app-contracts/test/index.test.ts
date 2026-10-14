@@ -49,6 +49,7 @@ describe('the root entry point', () => {
       'isFetchResponse',
       'isGhostOrigin',
       'isLocalhost',
+      'isPlainText',
       'isRecord',
       'isReservedRequestHeader',
       'isStartContext',
@@ -57,6 +58,7 @@ describe('the root entry point', () => {
       'methodAllowsBody',
       'movedBetween',
       'servedFrom',
+      'toPlainText',
     ]);
   });
 
