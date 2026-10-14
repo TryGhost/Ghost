@@ -251,6 +251,19 @@ describe('createManifestLoader', function () {
       },
     );
 
+    it('reports a redirect to a Location that is not a URL as unreachable, with its status', async function () {
+      nock('https://podcast.example.com')
+        .get('/ghost-app.json')
+        .reply(302, '', { location: 'http://[bad' });
+
+      const err = await refusal(loader()(MANIFEST_URL));
+      assert.equal(err.code, 'APP_MANIFEST_UNREACHABLE');
+      assert.equal(
+        err.context,
+        `${MANIFEST_URL} answered with HTTP 302 and a Location that is not a URL`,
+      );
+    });
+
     it('refuses a redirect to another port on the same host', async function () {
       nock('http://localhost:8787')
         .get('/ghost-app.json')

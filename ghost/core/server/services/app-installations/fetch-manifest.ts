@@ -96,22 +96,23 @@ export function createManifestFetcher({
     };
     const hostHeader = (url: URL) => (isAliased(url) ? { host: url.host } : {});
 
-    // Where a response's Location header points, by the address the browser would use.
-    const locationOf = (response: PlainResponse): URL | undefined => {
+    // Where a response's Location header points, by the address the browser would use:
+    // undefined without one, null when it is not a URL.
+    const locationOf = (response: PlainResponse): URL | null | undefined => {
       const rawLocation = response.headers.location;
       if (!rawLocation) {
         return undefined;
       }
       // Headers arrive as latin1; got reads the location as UTF-8, and so does this.
-      const target = new URL(Buffer.from(rawLocation, 'binary').toString('utf8'), response.url);
+      const target = URL.parse(Buffer.from(rawLocation, 'binary').toString('utf8'), response.url);
       // Undo the alias, so the redirect is judged by where the browser would go.
-      if (isAliased(current) && target.hostname === alias) {
+      if (target && isAliased(current) && target.hostname === alias) {
         target.hostname = current.hostname;
       }
       return target;
     };
 
-    let refusedRedirect: URL | undefined;
+    let refusedRedirect: { status: number; target: URL | null } | undefined;
     let tooLarge = false;
     const abort = new AbortController();
 
@@ -129,16 +130,16 @@ export function createManifestFetcher({
       //
       // got asks about every response, a 200 included, and more than once about the same
       // one, so this only judges; `current` moves in beforeRedirect. A Location off the
-      // host is refused whatever the status, so the rule holds whichever statuses got
-      // follows, but only a refused 3xx is reported: a Location on a manifest or an error
-      // page is ignored.
+      // host, or one that is not a URL, is refused whatever the status, so the rule holds
+      // whichever statuses got follows, but only a refused 3xx is reported: a Location on
+      // a manifest or an error page is ignored.
       followRedirect: (response) => {
         const target = locationOf(response);
-        if (target === undefined || staysOnHost(current, target)) {
+        if (target === undefined || (target && staysOnHost(current, target))) {
           return true;
         }
         if (response.statusCode >= 300 && response.statusCode < 400) {
-          refusedRedirect = target;
+          refusedRedirect = { status: response.statusCode, target };
         }
         return false;
       },
@@ -146,7 +147,7 @@ export function createManifestFetcher({
         beforeRedirect: [
           (options, response) => {
             // got runs this once for each redirect it follows, after followRedirect has let
-            // it through, so its Location is on the same host.
+            // it through, so its Location is a URL on the same host.
             current = locationOf(response)!;
             // Only an aliased hop needs its address rewritten; everywhere else got's own
             // reading of the redirect stands.
@@ -173,7 +174,7 @@ export function createManifestFetcher({
       text = await pending.text();
     } catch (err) {
       if (refusedRedirect) {
-        throw redirected(manifestUrl, refusedRedirect);
+        throw refused(manifestUrl, refusedRedirect);
       }
       // Only a manifest is held to the limit: a large error page is still an error page,
       // reported with its status. The status is only known once the headers are in, so
@@ -189,7 +190,7 @@ export function createManifestFetcher({
       throw unreachable(manifestUrl, err);
     }
     if (refusedRedirect) {
-      throw redirected(manifestUrl, refusedRedirect);
+      throw refused(manifestUrl, refusedRedirect);
     }
 
     // A byte order mark is valid at the start of a JSON file, but JSON.parse rejects it.
@@ -208,7 +209,14 @@ export function createManifestFetcher({
   };
 }
 
-function redirected(manifestUrl: string, target: URL) {
+function refused(manifestUrl: string, { status, target }: { status: number; target: URL | null }) {
+  if (!target) {
+    return new errors.ValidationError({
+      message: 'Could not load the app’s manifest.',
+      code: 'APP_MANIFEST_UNREACHABLE',
+      context: `${manifestUrl} answered with HTTP ${status} and a Location that is not a URL`,
+    });
+  }
   return new errors.ValidationError({
     message: 'The app’s manifest redirects to another host.',
     code: 'APP_MANIFEST_REDIRECTED',
