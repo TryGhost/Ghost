@@ -125,7 +125,9 @@ function useSessionEnd(session: AppSession, onEnded: () => void) {
     // This seeds an empty cache only; what a previous session left there predates `since`.
     initialData: { app_installations: [session.installation] },
     refetchOnMount: false,
-    // Coming back to the tab is when a change made meanwhile shows up.
+    // Coming back to the tab is when a change made meanwhile shows up. TanStack Query
+    // hears the tab being shown again, not a window regaining focus, so a change made in
+    // another window side by side waits for the next open.
     refetchOnWindowFocus: 'always',
   });
   const revision = data?.app_installations[0]?.revision;
