@@ -246,21 +246,60 @@ describe('createAppFrameSession', () => {
     expect(session.getState().title).toBeUndefined();
   });
 
-  it('loads the page again when a new document in a started page’s frame says hello', async () => {
+  it('starts a new document in a started page’s frame in place, once it says hello', async () => {
+    let finishStarting!: () => void;
+    const frame = await started();
+    await frame.host.titleChanged('Episodes');
+    admin.context = context({ path: '/episodes/12' });
+
+    // A form post, say, whose result is a document of its own.
+    const old = frame.navigate();
+    frame.app.start.mockImplementation(
+      () =>
+        new Promise<void>((resolve) => {
+          finishStarting = resolve;
+        }),
+    );
+    frame.hello();
+
+    // Hidden while it starts, with Admin as it is now, in the same frame.
+    await vi.waitFor(() => expect(frame.app.start).toHaveBeenCalledWith(admin.context));
+    expect(session.getState()).toMatchObject({ status: 'loading', title: undefined, attempt: 0 });
+    finishStarting();
+    await vi.waitFor(() =>
+      expect(session.getState()).toMatchObject({ status: 'ready', attempt: 0 }),
+    );
+    // The old document's channel is closed; the new one's is the app's.
+    await callUnheard(old, 'Old');
+    await frame.host.titleChanged('Saved');
+    expect(session.getState().title).toBe('Saved');
+  });
+
+  it('ends the calls of a document that gave way to another', async () => {
+    const frame = await started();
+    fetchAdminApi.mockImplementation(() => new Promise(() => {}));
+    const request = frame.host.fetch({ path: '/posts/' });
+    await vi.waitFor(() => expect(fetchAdminApi).toHaveBeenCalled());
+    const [, signal] = fetchAdminApi.mock.calls[0];
+
+    frame.navigate();
+    frame.hello();
+
+    await expect(request).rejects.toThrow('session_ended: The app’s session ended');
+    expect(signal.aborted).toBe(true);
+    await vi.waitFor(() => expect(session.getState().status).toBe('ready'));
+  });
+
+  it('loads the page again when a new document refuses to start', async () => {
     const frame = await started();
 
-    const old = frame.navigate();
+    frame.navigate();
+    frame.app.start.mockRejectedValue(new Error('invalid_context: Expected a site'));
     frame.hello();
 
     await vi.waitFor(() =>
       expect(session.getState()).toMatchObject({ status: 'loading', attempt: 1 }),
     );
-    // The old document's channel is closed: the reloaded page is started in the next frame.
-    await callUnheard(old, 'Old');
-    const next = fakeFrame();
-    session.attach(next.element);
-    next.hello();
-    await vi.waitFor(() => expect(session.getState().status).toBe('ready'));
   });
 
   it('keeps a started page that says hello again, as its SDK can before it hears back', async () => {
@@ -357,19 +396,37 @@ describe('createAppFrameSession', () => {
     expect(session.getState().status).toBe('failed');
   });
 
-  it('loads the page again when a started page’s frame loads another document', async () => {
+  it('waits for a new document a started page’s frame loads to say hello, and starts it', async () => {
     const frame = await started();
     // Its own load, which can come after it started, is no news.
     frame.loaded();
     await settle();
     expect(session.getState()).toMatchObject({ status: 'ready', attempt: 0 });
 
-    // Navigated anywhere, say to an origin that never says hello.
     const left = frame.navigate();
     frame.loaded();
 
-    expect(session.getState()).toMatchObject({ status: 'loading', attempt: 1 });
+    expect(session.getState()).toMatchObject({ status: 'loading', attempt: 0 });
     await callUnheard(left, 'Gone');
+    frame.hello();
+    await vi.waitFor(() =>
+      expect(session.getState()).toMatchObject({ status: 'ready', attempt: 0 }),
+    );
+  });
+
+  it('loads the page again when a new document its frame loads doesn’t start in time', async () => {
+    const frame = await started();
+    frame.loaded();
+    vi.useFakeTimers();
+
+    // Navigated anywhere, say to an origin that never says hello.
+    frame.navigate();
+    frame.loaded();
+    vi.advanceTimersByTime(appFrameTimeouts.ready - 1);
+    expect(session.getState()).toMatchObject({ status: 'loading', attempt: 0 });
+    vi.advanceTimersByTime(1);
+
+    expect(session.getState()).toMatchObject({ status: 'loading', attempt: 1 });
   });
 
   it('loads the page again when a started page’s frame loads one of Admin’s own', async () => {

@@ -14,6 +14,7 @@ import {
   delayModuleLoads,
   fakeAdminEndpoint,
   fakeTags,
+  postFrameForm,
   reloadFrame,
   renderAdminApp,
   settingsResponse,
@@ -537,10 +538,11 @@ describe('Managing apps', () => {
     expect(readApi.requests).toHaveLength(1);
   });
 
-  it('starts the app afresh when its page reloads itself', async () => {
+  it('starts the app again in place when its page reloads itself', async () => {
     const { sessionsApi } = await fakeAppPage(installation());
     await renderAdminApp(APP_ROUTE, { labs });
     await expect.element(appsScreen.frame()).toBeVisible();
+    const frame = appsScreen.frame().element();
     await callAppFrame(APP_ORIGIN, 'setPath', '/episodes/12');
     await expect.poll(currentRoute).toBe(`${APP_ROUTE}/episodes/12`);
     expect((await appState()).context?.path).toBe('/');
@@ -548,10 +550,30 @@ describe('Managing apps', () => {
     // The new document's SDK says hello, its channel gone with the old one.
     await reloadFrame(APP_ORIGIN);
 
-    // Started again, in a new frame, at Admin's route for it, within the same session.
+    // Started again, in the same frame, at Admin's route for it, within the same session.
     await expect.poll(async () => (await appState()).context?.path).toBe('/episodes/12');
     await expect.element(appsScreen.frame()).toBeVisible();
+    expect(appsScreen.frame().element()).toBe(frame);
     expect(currentRoute()).toBe(`${APP_ROUTE}/episodes/12`);
+    expect(sessionsApi.requests).toHaveLength(1);
+  });
+
+  it('starts the document a form in the app loads in place, keeping where it went', async () => {
+    const { sessionsApi } = await fakeAppPage(installation());
+    await renderAdminApp(APP_ROUTE, { labs });
+    await expect.element(appsScreen.frame()).toBeVisible();
+    const frame = appsScreen.frame().element();
+    await callAppFrame(APP_ORIGIN, 'setPath', '/episodes/12');
+    await expect.poll(currentRoute).toBe(`${APP_ROUTE}/episodes/12`);
+
+    // A page the app's server renders posts a form; its answer is a new document.
+    await postFrameForm(APP_ORIGIN, '/episodes/12/save');
+
+    await expect.poll(async () => (await appState()).context?.path).toBe('/episodes/12');
+    await expect.element(appsScreen.frame()).toBeVisible();
+    // The answer is what shows, not the app's page loaded again.
+    expect((await appState()).address).toBe('/episodes/12/save');
+    expect(appsScreen.frame().element()).toBe(frame);
     expect(sessionsApi.requests).toHaveLength(1);
   });
 

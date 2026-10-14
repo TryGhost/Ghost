@@ -88,6 +88,7 @@ export {
   callHostRaw,
   failFrameOrigin,
   fakeFrameOrigin,
+  postFrameForm,
   reloadFrame,
 } from './frames';
 export type {

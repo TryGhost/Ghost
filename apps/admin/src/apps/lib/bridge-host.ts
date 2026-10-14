@@ -24,9 +24,18 @@ export interface AppFrameHandlers {
   pathChanged(path: string, options: PathChangeOptions): void;
   open(place: Place): void;
   /**
-   * The started app's frame holds a new document: the page reloaded or navigated, within
-   * the app or anywhere else, and its channel went with the old one. Called once; the host
-   * itself is of no further use.
+   * The started app's page gave way to a new document in the same frame, by a reload, a
+   * form post or a link within the app, and its channel went with it. Admin starts the new
+   * document in place once it says hello, as it did the first; until then, the app hasn't
+   * started.
+   */
+  documentChanged(): void;
+  /** The document that took the started one's place has started. */
+  documentStarted(): void;
+  /**
+   * The frame holds a document Admin can't start in place: one on Admin's own origin, one
+   * whose SDK names no document, or one that refused to start. The page needs loading
+   * afresh. Called once; the host itself is of no further use.
    */
   reloaded(): void;
 }
@@ -35,7 +44,7 @@ export interface BindAppFrameOptions {
   frame: HTMLIFrameElement;
   /** The origin of the app's page, the only one a hello is accepted from. */
   surfaceOrigin: string;
-  /** Read when the page connects, so the app starts with Admin as it is by then. */
+  /** Read when a page connects, so the app starts with Admin as it is by then. */
   context: () => StartContext;
   fetchAdminApi: AdminApiFetch;
   handlers: AppFrameHandlers;
@@ -44,7 +53,7 @@ export interface BindAppFrameOptions {
 export interface AppFrameHost {
   /** Resolves once the app has started; rejects if it fails to, or the host is disposed. */
   readonly ready: Promise<void>;
-  /** Whether the app has been sent its context, so changes since are for it to hear. */
+  /** Whether a page has been sent its context, so changes since are for it to hear. */
   readonly connected: boolean;
   themeChanged(theme: Theme): void;
   pathChanged(path: string): void;
@@ -53,9 +62,9 @@ export interface AppFrameHost {
 }
 
 /**
- * How many hellos Admin answers from a frame whose app has yet to start. Each may come from
- * a new document, so each is answered; a page that reloads more often than this while it
- * starts is left to run out of time.
+ * How many hellos Admin answers from a frame whose app has yet to start, or to start again
+ * in a new document. Each may come from a new document, so each is answered; a page that
+ * reloads more often than this while it starts is left to run out of time.
  */
 const MAX_CONNECTS = 10;
 
@@ -63,6 +72,8 @@ const MAX_CONNECTS = 10;
 interface Connection {
   thread: ThreadMessagePort<AppExports, HostExports>;
   port: MessagePort;
+  /** Ends the calls from the page still running when the channel closes. */
+  ended: AbortController;
   /** How many documents the frame had loaded when Admin answered. */
   loadsAtConnect: number;
 }
@@ -80,16 +91,22 @@ interface Connection {
  * answered with a channel of its own, and the first to start is the app's, as the page
  * takes the first answer it hears and ignores the rest.
  *
- * Once the app has started, a new document in the frame ends it, as `handlers.reloaded`
- * hears. A hello from a document Admin hasn't answered says so, as does any hello from an
- * SDK that names none. So does the frame loading a document on Admin's own origin, which
- * Admin can read and the app's never is. And so does the frame loading a second document
- * since Admin answered the page, on an origin that never says hello: the first may be the
- * started page's own, which can finish loading after it started. Where Admin can't tell a
- * load apart from the started page's own, it assumes it is: an app that connects once
- * loaded and then navigates to another origin, other than Admin's, isn't noticed unless
- * the page there says hello. Assuming otherwise would restart, forever, an app whose page
- * is reached by a redirect in script.
+ * Once the app has started, a new document in the frame ends the started one's channel,
+ * as `handlers.documentChanged` hears, and is started in place, without the frame loading
+ * the app's page again: a form post or a link in a page the app's server renders keeps
+ * its result. A hello from a document Admin hasn't answered says a new document is there,
+ * and so does the frame loading a second document since Admin answered the page, which
+ * then has the time an app has to start to say hello: the first load may be the started
+ * page's own, which can finish loading after it started. Where Admin can't tell a load
+ * apart from the started page's own, it assumes it is: an app that connects once loaded
+ * and then navigates to another origin, other than Admin's, isn't noticed unless the page
+ * there says hello. Assuming otherwise would hold up, then restart, an app whose page is
+ * reached by a redirect in script.
+ *
+ * Some documents can't be started in place, and `handlers.reloaded` hears of them: one on
+ * Admin's own origin, which Admin can read and the app's never is; a hello after start
+ * from an SDK that names no document, which may be the started page's own; and a new
+ * document that refuses to start.
  *
  * Every argument the page sends is checked against the bridge's schemas before Admin
  * acts on it, since the frame is the app's and Admin trusts nothing in it.
@@ -103,6 +120,8 @@ export function bindAppFrame({
 }: BindAppFrameOptions): AppFrameHost {
   let disposed = false;
   let reloaded = false;
+  // Whether a document has started, so whatever starts after is one taking its place.
+  let hasStarted = false;
   let connects = 0;
   let loads = 0;
   // The documents Admin has answered a hello from, by the ID each says hello with.
@@ -110,12 +129,6 @@ export function bindAppFrame({
   // Every channel answering a hello, until one starts; then that one alone.
   const connections = new Set<Connection>();
   let started: Connection | undefined;
-  // Ends requests still in flight when the session does.
-  const session = new AbortController();
-  const ended = new Promise<never>((_, reject) => {
-    session.signal.addEventListener('abort', () => reject(sessionEnded()), { once: true });
-  });
-  ended.catch(() => {});
 
   let resolveReady!: () => void;
   let rejectReady!: (error: unknown) => void;
@@ -126,40 +139,50 @@ export function bindAppFrame({
   // Whoever is waiting handles it; a host nobody waits on mustn't report it unhandled.
   ready.catch(() => {});
 
-  /** Runs one call from the page, unless the session has ended or ends first. */
-  const guarded =
-    <Args extends unknown[], Result>(call: (...args: Args) => Promise<Result> | Result) =>
-    (...args: Args): Promise<Result> => {
-      if (disposed) {
-        return Promise.reject(sessionEnded());
-      }
-      return Promise.race([Promise.resolve().then(() => call(...args)), ended]);
-    };
+  /** What Admin offers one channel's page: each call is ended along with the channel. */
+  const exportsFor = (ended: AbortSignal): HostExports => {
+    const refused = new Promise<never>((_, reject) => {
+      ended.addEventListener('abort', () => reject(sessionEnded()), { once: true });
+    });
+    refused.catch(() => {});
 
-  // No prototype, so the page can't call `constructor` or `toString` by name.
-  const exports: HostExports = Object.assign(Object.create(null) as object, {
-    fetch: guarded((request: unknown) =>
-      fetchAdminApi(
-        parseFromFrame(FetchRequestSchema, request, (path) =>
-          path[0] === 'path' ? 'invalid_path' : 'invalid_argument',
+    /** Runs one call from the page, unless the session has ended or ends first. */
+    const guarded =
+      <Args extends unknown[], Result>(call: (...args: Args) => Promise<Result> | Result) =>
+      (...args: Args): Promise<Result> => {
+        if (ended.aborted) {
+          return Promise.reject(sessionEnded());
+        }
+        return Promise.race([Promise.resolve().then(() => call(...args)), refused]);
+      };
+
+    // No prototype, so the page can't call `constructor` or `toString` by name.
+    return Object.assign(Object.create(null) as object, {
+      fetch: guarded((request: unknown) =>
+        fetchAdminApi(
+          parseFromFrame(FetchRequestSchema, request, (path) =>
+            path[0] === 'path' ? 'invalid_path' : 'invalid_argument',
+          ),
+          ended,
         ),
-        session.signal,
       ),
-    ),
-    titleChanged: guarded((title: unknown) => {
-      handlers.titleChanged(parseFromFrame(TitleSchema, title));
-    }),
-    pathChanged: guarded((path: unknown, options: unknown = {}) => {
-      const appPath = parseFromFrame(AppPathSchema, path, 'invalid_path');
-      handlers.pathChanged(appPath, parseFromFrame(PathChangeOptionsSchema, options));
-    }),
-    open: guarded((place: unknown) => {
-      handlers.open(parseFromFrame(PlaceSchema, place));
-    }),
-  });
+      titleChanged: guarded((title: unknown) => {
+        handlers.titleChanged(parseFromFrame(TitleSchema, title));
+      }),
+      pathChanged: guarded((path: unknown, options: unknown = {}) => {
+        const appPath = parseFromFrame(AppPathSchema, path, 'invalid_path');
+        handlers.pathChanged(appPath, parseFromFrame(PathChangeOptionsSchema, options));
+      }),
+      open: guarded((place: unknown) => {
+        handlers.open(parseFromFrame(PlaceSchema, place));
+      }),
+    });
+  };
 
   const close = (connection: Connection) => {
     connections.delete(connection);
+    // Refuses the page's calls still running, and aborts their requests.
+    connection.ended.abort();
     // Stops listening, and rejects Admin's own calls still waiting on the page.
     connection.thread.close();
     // The refusals of the page's calls still running are posted once their promises
@@ -167,7 +190,7 @@ export function bindAppFrame({
     window.setTimeout(() => connection.port.close(), 0);
   };
 
-  /** The started app's document is gone, so is its channel: it starts again elsewhere. */
+  /** The frame needs the app's page loaded afresh. */
   const left = () => {
     if (!reloaded) {
       reloaded = true;
@@ -175,9 +198,20 @@ export function bindAppFrame({
     }
   };
 
+  /** The started document gave way to another, which is started in its place. */
+  const documentChanged = () => {
+    if (started) {
+      close(started);
+      started = undefined;
+      connects = 0;
+      handlers.documentChanged();
+    }
+  };
+
   const onMessage = (event: MessageEvent) => {
     if (
       disposed ||
+      reloaded ||
       !frame.contentWindow ||
       event.source !== frame.contentWindow ||
       event.origin !== surfaceOrigin
@@ -194,10 +228,13 @@ export function bindAppFrame({
       return;
     }
     if (started) {
-      // A new document, whose SDK would wait on an answer forever, or one that names none,
-      // which Admin can't tell from one.
-      left();
-      return;
+      if (documentId === undefined) {
+        // A new document or the started one's, which Admin can't tell apart: starting it
+        // in place would leave a started page that said hello again without its channel.
+        left();
+        return;
+      }
+      documentChanged();
     }
     if (connects >= MAX_CONNECTS) {
       return;
@@ -208,9 +245,13 @@ export function bindAppFrame({
     }
 
     const channel = new MessageChannel();
+    const ended = new AbortController();
     const connection: Connection = {
-      thread: new ThreadMessagePort<AppExports, HostExports>(channel.port1, { exports }),
+      thread: new ThreadMessagePort<AppExports, HostExports>(channel.port1, {
+        exports: exportsFor(ended.signal),
+      }),
       port: channel.port1,
+      ended,
       loadsAtConnect: loads,
     };
     connections.add(connection);
@@ -221,7 +262,7 @@ export function bindAppFrame({
 
     connection.thread.imports.start(context()).then(
       () => {
-        if (disposed || started) {
+        if (disposed || reloaded || started || !connections.has(connection)) {
           return;
         }
         started = connection;
@@ -230,11 +271,21 @@ export function bindAppFrame({
             close(other);
           }
         }
-        resolveReady();
+        if (hasStarted) {
+          handlers.documentStarted();
+        } else {
+          hasStarted = true;
+          resolveReady();
+        }
       },
       (error: unknown) => {
         // A page that refuses to start has failed, unless another document already has.
-        if (!started) {
+        if (disposed || started) {
+          return;
+        }
+        if (hasStarted) {
+          left();
+        } else {
           rejectReady(error);
         }
       },
@@ -244,8 +295,13 @@ export function bindAppFrame({
 
   const onLoad = () => {
     loads += 1;
-    if (started && (frame.contentDocument || loads - started.loadsAtConnect > 1)) {
+    if (disposed || !hasStarted) {
+      return;
+    }
+    if (frame.contentDocument) {
       left();
+    } else if (started && loads - started.loadsAtConnect > 1) {
+      documentChanged();
     }
   };
   frame.addEventListener('load', onLoad);
@@ -276,8 +332,6 @@ export function bindAppFrame({
       window.removeEventListener('message', onMessage);
       frame.removeEventListener('load', onLoad);
       rejectReady(sessionEnded());
-      // Refuses the calls still running, and aborts their requests.
-      session.abort();
       for (const connection of connections) {
         close(connection);
       }

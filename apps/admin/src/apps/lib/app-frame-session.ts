@@ -62,10 +62,12 @@ const sameTheme = (a: Theme | undefined, b: Theme) =>
  * The lifecycle of an app's frame, apart from how it's shown. Each load of the app's page
  * gets a frame of its own, bound to Admin by the bridge, and a clock: a page that doesn't
  * start in time (`appFrameTimeouts.ready`) has failed, one that has started stays started.
- * A started page whose frame holds a new document has reloaded, and is loaded afresh. Path
- * and theme changes are passed on in both directions, each once: what the app was last
- * told, or told Admin, is never echoed back to it, even when Admin is still catching up
- * with routes it has since left.
+ * A started page whose frame holds a new document, after a reload, a form post or a link,
+ * is hidden again while the new document starts in place, in the same frame and with the
+ * same time to do it; one that doesn't, or that Admin can't start in place (see
+ * `bindAppFrame`), is loaded afresh in a new frame. Path and theme changes are passed on
+ * in both directions, each once: what the app was last told, or told Admin, is never
+ * echoed back to it, even when Admin is still catching up with routes it has since left.
  */
 export function createAppFrameSession(options: AppFrameSessionOptions): AppFrameSession {
   let state: AppFrameState = { status: 'loading', attempt: 0, startedAt: new Date() };
@@ -138,9 +140,23 @@ export function createAppFrameSession(options: AppFrameSessionOptions): AppFrame
           }
         },
         open: (place) => options.open(place),
-        // The page reloaded, or followed a link, and took its channel with it.
-        // Its new document is started in a new frame, at the page's own address and with
-        // Admin's route, as a reload of Admin would.
+        // The started page gave way to a new document, which is hidden until it has
+        // started in its place, and has as long to as the first had.
+        documentChanged: () => {
+          if (host === bound) {
+            window.clearTimeout(timer);
+            update({ status: 'loading', title: undefined, startedAt: new Date() });
+            timer = window.setTimeout(restart, appFrameTimeouts.ready);
+          }
+        },
+        documentStarted: () => {
+          if (host === bound) {
+            window.clearTimeout(timer);
+            update({ status: 'ready' });
+          }
+        },
+        // The frame holds a document Admin can't start in place. The page is started in a
+        // new frame, at its own address and with Admin's route, as a reload of Admin would.
         reloaded: restart,
       },
     });
