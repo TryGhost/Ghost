@@ -4350,6 +4350,9 @@ importers:
       '@tryghost/pretty-cli':
         specifier: 'catalog:'
         version: 3.3.18
+      bson-objectid:
+        specifier: 'catalog:'
+        version: 2.0.4
       jsonwebtoken:
         specifier: 'catalog:'
         version: 8.5.1
@@ -4359,6 +4362,9 @@ importers:
       tsx:
         specifier: 'catalog:'
         version: 4.23.15
+      zod:
+        specifier: 'catalog:'
+        version: 4.6.5
     devDependencies:
       '@internal/cfg-eslint':
         specifier: workspace:*

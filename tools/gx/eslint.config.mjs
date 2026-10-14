@@ -6,7 +6,7 @@ const cliRules = {
 };
 
 export default [
-  ...nodeLibConfig({ srcGlobs: ['cli.ts'], extraSrcRules: cliRules }),
+  ...nodeLibConfig({ srcGlobs: ['cli.ts', 'run-ghost-command.ts'], extraSrcRules: cliRules }),
   ...nodeLibConfig({
     srcGlobs: ['create-package.ts'],
     extraSrcRules: cliRules,
@@ -21,7 +21,7 @@ export default [
     extraSrcRules: { ...cliRules, 'no-console': 'off' },
   }),
   ...nodeLibConfig({
-    srcGlobs: ['rebuild-in-development-tables.cts'],
-    extraSrcRules: cliRules,
+    srcGlobs: ['rebuild-in-development-tables.cts', 'generate-data.cts', 'multi-sub-scenarios.cts'],
+    extraSrcRules: { ...cliRules, 'no-console': 'off' },
   }),
 ];

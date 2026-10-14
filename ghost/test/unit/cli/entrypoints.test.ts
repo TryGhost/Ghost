@@ -92,7 +92,7 @@ describe('Internal CLI entrypoints', function () {
         timeout: 5000,
       },
     );
-    assert.equal(result.error, undefined);
+    assert.equal(result.error, undefined, result.stdout + result.stderr);
     assert.equal(result.signal, null, result.stderr);
     assert.equal(result.status, 0, `${result.stdout}\n${result.stderr}`);
     return result.stdout;
@@ -109,26 +109,19 @@ describe('Internal CLI entrypoints', function () {
     });
   }
 
-  it('prints the data generator dependencies and exits before importing or booting', function () {
-    const output = run('generate-data', ['--print-dependencies', '--tables', 'posts_tags']);
-    assert.match(output, /Table dependencies:/);
-    const tables = [...output.matchAll(/^info\s+(\w+):([^\n]*)$/gm)].map(
-      ([, name, dependencies]) =>
-        [name, dependencies.trim() ? dependencies.trim().split(', ') : []] as const,
+  it('directs the retired generate-data entrypoint to gx without booting', function () {
+    const result = spawnSync(
+      process.execPath,
+      ['--require', preload, entrypoint, 'generate-data'],
+      {
+        cwd: directory,
+        env: { NODE_ENV: 'development', NO_COLOR: '1' },
+        encoding: 'utf8',
+      },
     );
-    assert.deepEqual(Object.fromEntries(tables), {
-      newsletters: [],
-      posts: ['newsletters'],
-      users: [],
-      tags: ['users'],
-      posts_tags: ['posts', 'tags'],
-    });
-    const names = tables.map(([name]) => name);
-    for (const [name, dependencies] of tables) {
-      for (const dependency of dependencies) {
-        assert.ok(names.indexOf(dependency) < names.indexOf(name), `${dependency} before ${name}`);
-      }
-    }
+    assert.equal(result.status, 1);
+    assert.equal(result.stdout, '');
+    assert.match(result.stderr, /pnpm gx data generate/);
   });
 
   it('loads the real models and database context before boot and restores it on REPL reset', function () {

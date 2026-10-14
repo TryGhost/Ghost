@@ -10,7 +10,7 @@
  *
  * Run after `pnpm dev` is up:
  *
- *   pnpm seed:multi-sub-scenarios
+ *   pnpm gx data multi-sub-scenarios
  *
  * Idempotent — re-running deletes and re-creates the same set of members.
  * Members use the `multisub-*@verify.test` email convention so they're easy
@@ -31,7 +31,7 @@
  *   2. Run this script. It seeds members + customers + subscriptions only;
  *      the lookup-table refresh step is skipped when the table is absent:
  *
- *          pnpm seed:multi-sub-scenarios
+ *          pnpm gx data multi-sub-scenarios
  *
  *   3. Apply the migrations forward. The backfill migration populates
  *      `members_current_subscription` from existing subscription data:
@@ -44,19 +44,32 @@
  *      backfill produced different values than the runtime path would.
  */
 
-const path = require('path');
-process.env.NODE_ENV = process.env.NODE_ENV || 'development';
-process.chdir(path.resolve(__dirname, '..'));
+import ObjectId from 'bson-objectid';
+import { parseArgs } from 'node:util';
+import type { knex as connection } from '../../ghost/core/server/data/db';
+let knex: typeof connection;
 
-const ObjectId = require('bson-objectid').default;
-const config = require('../core/shared/config');
-const db = require('../core/server/data/db');
-const knex = db.knex;
+type Subscription = {
+  id: string;
+  status: string;
+  daysAgo: number;
+  tier: string;
+  mrr: number;
+  daysFromNowStart?: number;
+};
+type Scenario = { name: string; email: string; subs: Subscription[]; expected: string | null };
+type StripePrice = {
+  stripe_price_id: string;
+  amount: number;
+  nickname: string | null;
+  interval: string | null;
+  currency: string | null;
+};
 
 // Each scenario locks in one of the rules of the resolution VIEW.
 // `subs` are listed oldest-first (older `created_at`), youngest last.
 // `expected` is the email-friendly subscription_id that should win.
-const SCENARIOS = [
+const SCENARIOS: Scenario[] = [
   {
     name: 'Sarah — active beats cancelled regardless of recency',
     email: 'multisub-sarah@verify.test',
@@ -153,17 +166,17 @@ const SCENARIOS = [
 
 const ACTIVE_STATUSES = ['active', 'trialing', 'past_due', 'unpaid'];
 
-function iso(date) {
+function iso(date: Date) {
   return date.toISOString().slice(0, 19).replace('T', ' ');
 }
 
-function daysAgo(n) {
+function daysAgo(n: number) {
   const d = new Date();
   d.setDate(d.getDate() - n);
   return d;
 }
 
-function daysFromNow(n) {
+function daysFromNow(n: number) {
   const d = new Date();
   d.setDate(d.getDate() + n);
   return d;
@@ -186,7 +199,7 @@ async function ensureProductAndPrice() {
   }
   const stripePrice = await knex('stripe_prices')
     .where({ stripe_product_id: stripeProduct.stripe_product_id, type: 'recurring' })
-    .first();
+    .first<StripePrice>();
   if (!stripePrice) {
     throw new Error('Could not find a recurring Stripe price. Run `pnpm reset:data` first.');
   }
@@ -220,7 +233,7 @@ async function deleteExistingScenarioMembers() {
   await knex('members').whereIn('id', ids).del();
 }
 
-async function seedScenario(scenario, { stripePrice }) {
+async function seedScenario(scenario: Scenario, { stripePrice }: { stripePrice: StripePrice }) {
   const memberId = ObjectId().toHexString();
   const now = new Date();
   await knex('members').insert({
@@ -277,7 +290,7 @@ async function seedScenario(scenario, { stripePrice }) {
   return memberId;
 }
 
-async function refreshLookupTable(memberIds) {
+async function refreshLookupTable(memberIds: string[]) {
   if (memberIds.length === 0) {
     return;
   }
@@ -287,6 +300,7 @@ async function refreshLookupTable(memberIds) {
     return;
   }
   // Use the same VIEW the production code does, scoped to our seeded members.
+  const { default: config } = await import('../../ghost/core/shared/config');
   const isMySQL = (config.get('database') && config.get('database').client) === 'mysql2';
   if (isMySQL) {
     await knex.raw(
@@ -350,8 +364,18 @@ async function summarise() {
 }
 
 async function main() {
+  const { values } = parseArgs({ options: { help: { type: 'boolean', short: 'h' } } });
+  if (values.help) {
+    console.log(
+      'Usage: pnpm gx data multi-sub-scenarios\n\nSeed named subscription-resolution scenarios. Requires an existing paid tier and Stripe price.',
+    );
+    return;
+  }
+  process.env.NODE_ENV ||= 'development';
+  const { default: db } = await import('../../ghost/core/server/data/db');
+  knex = db.knex;
   console.log('Connecting to database…');
-  const { stripeProduct, stripePrice } = await ensureProductAndPrice();
+  const { stripePrice } = await ensureProductAndPrice();
   console.log(
     `Using stripe price: ${stripePrice.stripe_price_id} (${stripePrice.nickname || 'Monthly'})`,
   );
@@ -362,7 +386,7 @@ async function main() {
   console.log('Seeding scenarios…');
   const memberIds = [];
   for (const scenario of SCENARIOS) {
-    const memberId = await seedScenario(scenario, { stripeProduct, stripePrice });
+    const memberId = await seedScenario(scenario, { stripePrice });
     memberIds.push(memberId);
   }
 
@@ -373,10 +397,8 @@ async function main() {
 }
 
 main()
-  .then(() => knex.destroy())
-  .then(() => process.exit(0))
-  .catch((err) => {
-    console.error(err);
-    knex.destroy();
-    process.exit(1);
-  });
+  .catch((error: unknown) => {
+    console.error(error);
+    process.exitCode = 1;
+  })
+  .finally(async () => knex?.destroy());

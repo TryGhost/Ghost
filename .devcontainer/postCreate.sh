@@ -13,6 +13,6 @@ git submodule update --init --recursive
 # absence above didn't affect that install) — a second pass here would just
 # re-walk the whole dependency graph for nothing.
 
-# `pnpm dev` loads @tryghost/parse-email-address from source, but commands that
-# run Ghost directly, such as `node index.js generate-data`, need its build.
+# `pnpm dev` and gx load @tryghost/parse-email-address from source. Legacy Core
+# commands such as `node index.js repl` still need its build.
 pnpm --filter @tryghost/parse-email-address build

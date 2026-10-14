@@ -16,8 +16,11 @@ const mode = argv[2];
 switch (mode) {
   case 'repl':
   case 'timetravel':
-  case 'generate-data':
     require('./core/cli/command').run(mode);
+    break;
+  case 'generate-data':
+    process.stderr.write('Use pnpm gx data generate instead of node index.js generate-data.\n');
+    process.exitCode = 1;
     break;
   default:
     require('./core/boot')();

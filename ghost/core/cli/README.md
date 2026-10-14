@@ -1,5 +1,9 @@
 # CLI Commands
 
+This legacy framework serves REPL and timetravel until they move to gx. New
+developer commands belong in [gx](../../../tools/gx/README.md); data generation
+is now `pnpm gx data generate`.
+
 ## Writing new commands
 
 Commands are classes which extend the base `Command` class (see [`command.js`](command.js)).

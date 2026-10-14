@@ -1,0 +1,97 @@
+import assert from 'node:assert/strict';
+import { test } from 'node:test';
+import { cp, mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { spawnSync } from 'node:child_process';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+test('the moved data command prints real Core dependencies without opening a database or network connection', async () => {
+  const directory = await mkdtemp(join(tmpdir(), 'gx-data-core-'));
+  try {
+    const contentPath = join(directory, 'content');
+    await mkdir(contentPath);
+    await cp(
+      new URL('../../../ghost/package.json', import.meta.url),
+      join(directory, 'package.json'),
+    );
+    await writeFile(
+      join(directory, 'config.development.json'),
+      JSON.stringify({
+        url: 'http://example.test',
+        paths: { contentPath },
+        database: {
+          client: 'better-sqlite3',
+          connection: { filename: ':memory:' },
+          useNullAsDefault: true,
+        },
+        sentry: { disabled: true },
+        logging: { level: 'error', transports: ['stdout'] },
+      }),
+    );
+    const guard = join(directory, 'guard.cjs');
+    await writeFile(
+      guard,
+      `
+const forbid = (message) => { process.stderr.write(message + '\\n'); process.exit(97); };
+const net = require('node:net');
+const connect = net.Socket.prototype.connect;
+net.Socket.prototype.connect = function (...args) {
+  const options = Array.isArray(args[0]) ? args[0][0] : args[0];
+  if (typeof options === 'string' || options?.path) return connect.apply(this, args);
+  forbid('must not open network connections');
+};
+net.Server.prototype.listen = () => forbid('must not listen for connections');
+const Module = require('node:module');
+const load = Module._load;
+Module._load = function (request, parent, isMain) {
+  if (request === 'better-sqlite3') return function () { forbid('must not open a database'); };
+  return load.call(this, request, parent, isMain);
+};
+`,
+    );
+    const result = spawnSync(
+      process.execPath,
+      [
+        '--require',
+        guard,
+        '--import',
+        import.meta.resolve('tsx'),
+        fileURLToPath(new URL('../generate-data.cts', import.meta.url)),
+        '--print-dependencies',
+        '--tables',
+        'posts_tags',
+      ],
+      {
+        cwd: directory,
+        env: { NODE_ENV: 'development', NO_COLOR: '1' },
+        encoding: 'utf8',
+        timeout: 5000,
+      },
+    );
+    assert.equal(result.error, undefined, result.stdout + result.stderr);
+    assert.equal(result.status, 0, result.stdout + result.stderr);
+    assert.match(result.stdout, /Table dependencies:/);
+    const tables = [...result.stdout.matchAll(/^info\s+(\w+):([^\n]*)$/gm)].map<[string, string[]]>(
+      ([, name, dependencies = '']) => {
+        assert(name);
+        return [name, dependencies.trim() ? dependencies.trim().split(', ') : []];
+      },
+    );
+    assert.deepEqual(Object.fromEntries(tables), {
+      newsletters: [],
+      posts: ['newsletters'],
+      users: [],
+      tags: ['users'],
+      posts_tags: ['posts', 'tags'],
+    });
+    const names = tables.map(([name]) => name);
+    for (const [name, dependencies] of tables) {
+      for (const dependency of dependencies) {
+        assert(names.indexOf(dependency) < names.indexOf(name));
+      }
+    }
+  } finally {
+    await rm(directory, { recursive: true, force: true });
+  }
+});

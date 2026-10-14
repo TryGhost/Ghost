@@ -13,7 +13,7 @@ for (const fails of [false, true]) {
       await mkdir(join(root, 'tools/gx'), { recursive: true });
       await mkdir(join(root, 'tools/scripts/lib'), { recursive: true });
       await mkdir(join(root, 'ghost/core/server/data/schema'), { recursive: true });
-      for (const file of ['cli.ts', 'rebuild-in-development-tables.cts']) {
+      for (const file of ['cli.ts', 'run-ghost-command.ts', 'rebuild-in-development-tables.cts']) {
         await cp(new URL(`../${file}`, import.meta.url), join(root, 'tools/gx', file));
       }
       await symlink(

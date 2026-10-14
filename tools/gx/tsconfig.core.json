@@ -4,5 +4,10 @@
     "noEmit": true,
     "incremental": false
   },
-  "include": ["rebuild-in-development-tables.cts", "../../ghost/types/**/*.d.ts"]
+  "include": [
+    "generate-data.cts",
+    "multi-sub-scenarios.cts",
+    "rebuild-in-development-tables.cts",
+    "../../ghost/types/**/*.d.ts"
+  ]
 }
