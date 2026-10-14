@@ -69,6 +69,12 @@ export const LANE_CAPABILITIES: Record<LaneId, LaneCapabilities> = {
     triggers: [...MEMBERSHIP_TRIGGERS, 'paid_subscription_changed'],
     extraSteps: [],
   },
+  // v2's combined trigger reshaped as a move: from a tier (or any paid tier) to
+  // another tier or to free.
+  'phase-5': {
+    triggers: [...MEMBERSHIP_TRIGGERS, 'paid_tier_changed'],
+    extraSteps: [],
+  },
   // GA (formerly the right-panel sandbox) carries the whole roadmap: the label
   // trigger (lead magnets), the upgraded and ended ones (lifecycle), the
   // segment one, and Update member — the first step that changes a member rather

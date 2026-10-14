@@ -1,7 +1,10 @@
 import React, { useId, useState } from 'react';
 import {
   Button,
+  Field,
+  FieldDescription,
   FieldError,
+  FieldLabel,
   Label,
   Select,
   SelectContent,
@@ -9,13 +12,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@tryghost/shade/components';
-import { LucideIcon } from '@tryghost/shade/utils';
+import { LucideIcon, cn } from '@tryghost/shade/utils';
 import { Stack } from '@tryghost/shade/primitives';
 import {
   ALL_TIER_IDS,
+  ANY_PAID_TIER_ID,
   CHANGE_FIELD_LABEL,
   CHANGE_OPTIONS,
   CHANGE_TIERS_FIELD_LABEL,
+  FREE_TIER_ID,
+  TRANSITION_FIELD_LABEL,
   LABEL_FIELD_LABEL,
   SEGMENT_FIELD_LABEL,
   PAID_TIERS_FIELD_LABEL,
@@ -30,6 +36,7 @@ import {
   hasSegment,
   hasTiers,
   subscriptionChange,
+  tierTransition,
   tierDisplayName,
   triggerConfigFor,
   exitSentence,
@@ -155,6 +162,102 @@ const UPGRADED_TIER_MODES: TierModeOption[] = [
 
 type TierOption = (typeof TIER_OPTIONS)[number];
 
+// The v3 trigger's From and To fields: the shared chip picker, unchanged, with
+// one extra option that stands for "all of them" — "Any paid tier" on From,
+// "Free" on To. That option and the tiers are either/or, so picking one replaces
+// the other. Both fields start empty, on the placeholder; empty is unanswered
+// (see transitionUnanswered).
+//
+// PROPOSED, demo only: the overall option shows as the field's plain value,
+// like a Select's, rather than as a chip. Done by dressing its chip as text —
+// no fill, no ×, the field's own type — so the shared picker stays untouched.
+// It is still a chip underneath (a button labelled "Remove …"); a real version
+// belongs in the picker itself.
+//
+// pl-[9px]: the field's own 3px inset plus this lands the text 12px in, where a
+// Select's value sits. The badge's focus ring is switched off — on a value that
+// reads as plain text it looked like a stray box. pointer-events-none lets a
+// click on the text reach the field behind it and open the list, as a click on
+// a Select's value does, instead of hitting the chip's own remove button.
+const OVERALL_AS_TEXT =
+  'pointer-events-none h-auto rounded-none bg-transparent pr-0 pl-[9px] text-(length:--text-control) font-normal text-foreground shadow-none hover:bg-transparent focus:ring-0 focus:ring-offset-0 [&>svg]:hidden';
+const ANY_PAID_TIER: TierOption = { id: ANY_PAID_TIER_ID, name: 'Any paid tier' };
+const FREE: TierOption = { id: FREE_TIER_ID, name: 'Free' };
+
+const TransitionField: React.FC<{
+  inputId: string;
+  inputLabel: string;
+  overall: TierOption;
+  others: TierOption[];
+  // Tier ids, or just the overall option's id. Empty: nothing chosen yet.
+  selectedIds: string[];
+  invalid: boolean;
+  onChange: (ids: string[]) => void;
+}> = ({ inputId, inputLabel, overall, others, selectedIds, invalid, onChange }) => {
+  // Highest first, as the tiers settings list them.
+  const tiers = [...others].reverse();
+  const overallChosen = selectedIds.includes(overall.id);
+  const selected = overallChosen
+    ? [overall]
+    : tiers.filter((tier) => selectedIds.includes(tier.id));
+  // Kept in the site's order however they're picked.
+  const ordered = (ids: string[]) => ALL_TIER_IDS.filter((id) => ids.includes(id));
+  // While the field shows its overall value as plain text it should read as a
+  // Select, so no blinking caret — until something is typed to search the list.
+  const [search, setSearch] = useState('');
+  const hideCaret = overallChosen && search === '';
+  // The overall option first, then the tiers under a "Specific tiers" heading —
+  // the picker's own group heading and separator, as Shade's lists draw them.
+  // The heading says the rule: the option above stands alone, these combine.
+  const sectionName = (tier: TierOption): string | undefined =>
+    tier.id === overall.id ? undefined : 'Specific tiers';
+  return (
+    <div
+      className={cn(
+        // The picker keeps 80px for its search input on the chips' line; with
+        // three tiers that doesn't fit, so the empty input wrapped onto a line
+        // of its own and the field grew. 24px still takes a click and a typed
+        // character.
+        '[&_input]:min-w-6',
+        hideCaret && '[&_input]:caret-transparent',
+      )}
+    >
+      <ChipPicker<TierOption, TierOption>
+        chipClassName={(chip) =>
+          chip.id === overall.id ? OVERALL_AS_TEXT : 'text-(length:--text-control)'
+        }
+        chipVariant={() => 'secondary'}
+        emptyMessage="No tiers found"
+        getGroup={sectionName}
+        getKey={(tier) => tier.id}
+        getLabel={(tier) => tier.name}
+        inputId={inputId}
+        inputLabel={inputLabel}
+        invalid={invalid && selectedIds.length === 0}
+        matches={(tier, term) => tier.name.toLowerCase().includes(term.toLowerCase())}
+        options={[overall, ...tiers]}
+        placeholder="Select tiers..."
+        renderOption={(tier, { chosen }) => (
+          <>
+            <span className="truncate">{tier.name}</span>
+            {chosen && <LucideIcon.Check className="ms-auto size-4 shrink-0 text-primary" />}
+          </>
+        )}
+        selected={selected}
+        onAdd={(tier) =>
+          onChange(
+            tier.id === overall.id
+              ? [overall.id]
+              : ordered([...selectedIds.filter((id) => id !== overall.id), tier.id]),
+          )
+        }
+        onRemove={(id) => onChange(selectedIds.filter((tierId) => tierId !== id))}
+        onSearchChange={setSearch}
+      />
+    </div>
+  );
+};
+
 interface TriggerConfigFormProps {
   config: TriggerConfig;
   onChange: (next: TriggerConfig) => void;
@@ -191,6 +294,9 @@ export const TriggerFieldsForm: React.FC<TriggerConfigFormProps> = ({
   const allMode = config.tierMode === 'all';
   const tierModeId = useId();
   const changeId = useId();
+  const fromId = useId();
+  const toId = useId();
+  const transitionLabelId = useId();
   const tiersErrorId = useId();
   // Site state, read here like Stripe is in the empty-state picker: which
   // tiers have gone quiet decides what the field and its rows say.
@@ -201,6 +307,9 @@ export const TriggerFieldsForm: React.FC<TriggerConfigFormProps> = ({
   // The v2 lifecycle lane's combined trigger: which change comes first, and the
   // tiers below it only exist for an upgrade (hasTiers already knows that).
   const showChange = config.type === 'paid_subscription_changed';
+  // The v3 lane's trigger: a move from one tier (or any) to another (or free).
+  const showTransition = config.type === 'paid_tier_changed';
+  const transition = tierTransition(config);
   // Label and segment: the same control, one with creation and one without —
   // see shared/searchable-select-field, which owns their search and dropdown.
   const showLabels = hasLabels(config);
@@ -253,6 +362,57 @@ export const TriggerFieldsForm: React.FC<TriggerConfigFormProps> = ({
                 the Select's continuation visually, the way it does in the
                 editor. The error and the exits sit under whichever field is
                 last. */}
+      {showTransition && (
+        <div aria-labelledby={transitionLabelId} className="flex flex-col gap-6" role="group">
+          <span className="text-control" id={transitionLabelId}>
+            {TRANSITION_FIELD_LABEL}
+          </span>
+          <Field>
+            <FieldLabel htmlFor={fromId}>From</FieldLabel>
+            <TransitionField
+              inputId={fromId}
+              inputLabel="From"
+              invalid={Boolean(error)}
+              others={TIER_OPTIONS}
+              overall={ANY_PAID_TIER}
+              selectedIds={transition.from}
+              onChange={(fromTierIds) =>
+                onChange({
+                  ...config,
+                  fromTierIds,
+                  // A tier can't be both where a member starts and where they go.
+                  toTierIds: transition.to.filter((id) => !fromTierIds.includes(id)),
+                })
+              }
+            />
+          </Field>
+          <Field>
+            <FieldLabel htmlFor={toId}>To</FieldLabel>
+            <TransitionField
+              inputId={toId}
+              inputLabel="To"
+              invalid={Boolean(error)}
+              others={TIER_OPTIONS.filter((tier) => !transition.from.includes(tier.id))}
+              overall={FREE}
+              selectedIds={transition.to}
+              onChange={(toTierIds) => onChange({ ...config, toTierIds })}
+            />
+            {/* Only for a move to free, where the timing is the surprise: the
+                trigger fires when the subscription actually ends, which can be
+                most of a year after the member cancels. For a move between
+                tiers the two fields already say everything this would. The
+                field's own description, Shade's standard help text (a grey
+                box, then warning and info Banners were tried first). */}
+            {transition.toFree && (
+              <FieldDescription>
+                Members start this automation when their subscription expires, not when they cancel.
+              </FieldDescription>
+            )}
+          </Field>
+          {error && <FieldError>{error}</FieldError>}
+        </div>
+      )}
+
       {showChange && (
         <div className="flex flex-col gap-2">
           <Label className="leading-normal font-normal" htmlFor={changeId}>

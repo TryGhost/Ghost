@@ -25,6 +25,7 @@ const FIELD_LABELS: Partial<Record<TriggerType, string>> = {
   label_added: 'Triggered when someone signs up with:',
   paid_subscription_upgraded: 'Triggered when a paid member upgrades to:',
   paid_subscription_changed: 'Triggered when a paid subscription is:',
+  paid_tier_changed: "Triggered when a member's subscription changes:",
   segment_entered: 'Triggered when a member enters:',
 };
 

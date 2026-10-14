@@ -13,6 +13,7 @@ import {
   labelUnanswered,
   segmentUnanswered,
   tiersUnanswered,
+  transitionUnanswered,
   triggerConfigFor,
 } from './trigger-config';
 import { lexicalHasContent } from '@/automations/proto/canvas/flow-utils';
@@ -624,7 +625,12 @@ export const canPublishAutomation = (
   if (!stripeConnected && needsStripe(trigger)) {
     return false;
   }
-  if (tiersUnanswered(trigger) || labelUnanswered(trigger) || segmentUnanswered(trigger)) {
+  if (
+    tiersUnanswered(trigger) ||
+    transitionUnanswered(trigger) ||
+    labelUnanswered(trigger) ||
+    segmentUnanswered(trigger)
+  ) {
     return false;
   }
   return !entry.automation.actions.some((action) => {

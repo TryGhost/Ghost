@@ -1,7 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useId, useState } from 'react';
 import {
+  Field,
+  FieldDescription,
+  FieldError,
+  FieldLabel,
   Input,
-  Label,
   Tabs,
   TabsContent,
   TabsList,
@@ -56,6 +59,7 @@ const SettingsFields: React.FC<SidePanelProps['settings']> = ({
   nameTaken,
   exits,
 }) => {
+  const nameErrorId = useId();
   const [showError, setShowError] = useState(false);
   useEffect(() => {
     if (!nameTaken) {
@@ -71,24 +75,21 @@ const SettingsFields: React.FC<SidePanelProps['settings']> = ({
   return (
     // 2xl = gap-8, 32px between fields — the right-panel concept's settings spacing.
     <Stack className="px-6 pb-6" gap="2xl">
-      <div className="flex flex-col gap-2">
-        <Label htmlFor="automation-name">Name</Label>
+      <Field data-invalid={showError || undefined}>
+        <FieldLabel htmlFor="automation-name">Name</FieldLabel>
         <Input
+          aria-describedby={showError ? nameErrorId : undefined}
           aria-invalid={showError || undefined}
           id="automation-name"
           value={values.name}
           onChange={(e) => onChange({ ...values, name: e.target.value })}
         />
-        {/* Present only while true — the row appearing is itself the signal.
-            aria-live so it's announced without moving focus off the field. */}
         {showError && (
-          <p aria-live="polite" className="text-xs text-destructive">
-            An automation with this name already exists.
-          </p>
+          <FieldError id={nameErrorId}>An automation with this name already exists.</FieldError>
         )}
-      </div>
-      <div className="flex flex-col gap-2">
-        <Label htmlFor="automation-description">Description</Label>
+      </Field>
+      <Field>
+        <FieldLabel htmlFor="automation-description">Description</FieldLabel>
         <Textarea
           id="automation-description"
           placeholder="What this automation is for"
@@ -96,19 +97,19 @@ const SettingsFields: React.FC<SidePanelProps['settings']> = ({
           value={values.description}
           onChange={(e) => onChange({ ...values, description: e.target.value })}
         />
-      </div>
+      </Field>
       {/* STOP CONDITIONS — an explanation, not a setting, this phase. The
           sentence is derived from the trigger (see exitSentence), and it used to
           sit under the trigger card's fields; it's here because when a run ends
           is a property of the automation, and Settings is where the rest of
           those live. Controls come in a later phase — the right-panel concept
           sketches them as a criteria table with goals. */}
-      <Stack gap="sm">
-        <Label>Stop conditions</Label>
-        <p className="text-control text-muted-foreground">
+      <Field>
+        <FieldLabel>Stop conditions</FieldLabel>
+        <FieldDescription>
           {exits ?? 'Choose a trigger to see when members stop early.'}
-        </p>
-      </Stack>
+        </FieldDescription>
+      </Field>
     </Stack>
   );
 };

@@ -72,6 +72,7 @@ import {
   labelUnanswered,
   segmentUnanswered,
   tiersUnanswered,
+  transitionUnanswered,
   triggerConfigFor,
   triggerExplanation,
   triggerIcon,
@@ -129,6 +130,10 @@ const UNANSWERED_FIELD_WARNINGS: {
 }[] = [
   {
     unanswered: tiersUnanswered,
+    message: 'Select at least 1 tier',
+  },
+  {
+    unanswered: transitionUnanswered,
     message: 'Select at least 1 tier',
   },
   {
@@ -1504,6 +1509,10 @@ export const EditCanvas: React.FC<EditCanvasProps> = ({
     built.push({
       id: TRIGGER_NODE_ID,
       type: 'step',
+      // Above the cards below it, so the trigger's dropdowns open over them —
+      // as the shipping canvas does. Each node is its own layer, and later
+      // nodes would otherwise paint over an earlier one's open list.
+      zIndex: 1,
       position: { x: 0, y: ys[0] },
       data: {
         kind: 'trigger',

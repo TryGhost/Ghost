@@ -1019,6 +1019,7 @@ const triggerTitle = (
       return 'When a paid subscription ends';
     // Not offered in this lane — the v2 lifecycle lane's combined trigger.
     case 'paid_subscription_changed':
+    case 'paid_tier_changed':
       return 'When a paid subscription changes';
     case 'segment_entered': {
       const segment = segments.find((entry) => entry.id === config.segmentId)?.name;
@@ -2225,6 +2226,10 @@ export const EditCanvas: React.FC<EditCanvasProps> = ({
     built.push({
       id: TRIGGER_NODE_ID,
       type: 'step',
+      // Above the cards below it, so the trigger's dropdowns open over them —
+      // as the shipping canvas does. Each node is its own layer, and later
+      // nodes would otherwise paint over an earlier one's open list.
+      zIndex: 1,
       position: { x: 0, y: ys[0] },
       data: {
         kind: 'trigger',
