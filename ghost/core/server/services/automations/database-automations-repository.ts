@@ -36,6 +36,7 @@ import type {
 } from './automations-repository';
 import type {
   ActionToInsert,
+  EdgeRow,
   AutomationsRepository2,
   AutomationTriggerTierScope,
 } from './automations-repository-2';
@@ -179,11 +180,6 @@ type ActionRevisionRow = {
   email_design_setting_id: string | null;
 };
 
-type EdgeRow = {
-  source_action_id: string;
-  target_action_id: string;
-};
-
 type StepToInsert = {
   id: string;
   created_at: DatabaseDate;
@@ -284,7 +280,7 @@ export function createDatabaseAutomationsRepository({
           return null;
         }
 
-        return await buildAutomation(trx, automation);
+        return await buildAutomation(repository2, trx, automation);
       });
     },
 
@@ -430,7 +426,7 @@ export function createDatabaseAutomationsRepository({
 
         await replaceAutomationGraph(repository2, trx, automation.id, data.actions, data.edges);
 
-        return await buildAutomation(trx, automation);
+        return await buildAutomation(repository2, trx, automation);
       });
     },
 
@@ -526,7 +522,7 @@ export function createDatabaseAutomationsRepository({
           }
         }
 
-        return await buildAutomation(trx, updatedAutomation);
+        return await buildAutomation(repository2, trx, updatedAutomation);
       });
     },
 
@@ -1901,6 +1897,7 @@ function requireAutomation(automation: AutomationRow | null, id: string): Automa
 }
 
 async function buildAutomation(
+  repository2: AutomationsRepository2<Knex | Knex.Transaction>,
   trx: Knex.Transaction,
   automation: AutomationRow,
 ): Promise<Automation> {
@@ -1909,7 +1906,7 @@ async function buildAutomation(
     trx,
     actionRows.map((row) => row.id),
   );
-  const edgeRows = await loadEdgeRows(trx, automation.id);
+  const edgeRows = await repository2.loadEdgeRows(trx, automation.id);
 
   let triggerData;
   switch (automation.trigger_tier_scope) {
@@ -2011,22 +2008,6 @@ async function loadActionStats(
     .groupBy('action_id');
 
   return new Map(rows.map((row) => [row.action_id, buildEmailStats(row)]));
-}
-
-async function loadEdgeRows(trx: Knex.Transaction, automationId: string): Promise<EdgeRow[]> {
-  return await trx('automation_action_edges as e')
-    .select('e.source_action_id', 'e.target_action_id')
-    .innerJoin('automation_actions as source_action', (join) => {
-      join.on('source_action.id', 'e.source_action_id').onNull('source_action.deleted_at');
-    })
-    .innerJoin('automation_actions as target_action', (join) => {
-      join
-        .on('target_action.id', 'e.target_action_id')
-        .onNull('target_action.deleted_at')
-        .on('target_action.automation_id', 'source_action.automation_id');
-    })
-    .where('source_action.automation_id', automationId)
-    .orderBy(['e.source_action_id', 'e.target_action_id']);
 }
 
 function buildActionPayload(row: ActionRow, stats: AutomationEmailStats | null): AutomationAction {

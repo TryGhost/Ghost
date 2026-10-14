@@ -28,6 +28,7 @@ export const createTestAutomationsRepository2 = (
       'insertRuns',
       'isAutomationActiveForRun',
       'isAutomationActiveForRunStep',
+      'loadEdgeRows',
       'lockMember',
     ]),
     ...overrides,
