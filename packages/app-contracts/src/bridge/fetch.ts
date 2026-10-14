@@ -73,7 +73,7 @@ export const FetchRequestSchema = z
           if (!HEADER_NAME.test(name)) {
             ctx.addIssue({
               code: 'custom',
-              message: 'Expected header names made of letters, digits and -',
+              message: "Expected header names of letters, digits and !#$%&'*+-.^_`|~ alone",
               path: [name],
             });
           } else if (isReservedRequestHeader(name)) {

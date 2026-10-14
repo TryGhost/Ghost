@@ -67,9 +67,14 @@ describe('a fetch request', () => {
     expect(requestErrors({ path: '/posts/', headers: { 'Bad Name': 'x', 'X-Ok': 'y' } })).toEqual([
       {
         path: ['headers', 'Bad Name'],
-        message: 'Expected header names made of letters, digits and -',
+        message: "Expected header names of letters, digits and !#$%&'*+-.^_`|~ alone",
       },
     ]);
+    // Any HTTP token is a header name.
+    expect(
+      FetchRequestSchema.safeParse({ path: '/posts/', headers: { "x_id!#$%&'*+-.^_`|~": 'y' } })
+        .success,
+    ).toBe(true);
     // A line break, a character fetch cannot send as a byte, or another control character.
     for (const value of ['a\r\nCookie: b', 'a\nb', '\u0000', '€', '😀', 'a\u0001b', '\u007f']) {
       expect(requestErrors({ path: '/posts/', headers: { 'X-Test': value } }), value).toEqual([
