@@ -51,7 +51,8 @@ try {
 ## API
 
 `connect(options?)` resolves with a `Ghost` once Admin has started the app.
-Call it as soon as the page loads; every call shares one connection.
+Call it as soon as the page loads; every call shares one connection. Load
+the SDK once per page: a second copy's `connect()` rejects with `duplicate_sdk`.
 `options.timeout` is how long to wait, in milliseconds (10 seconds by default).
 
 | `Ghost`                       | What it is                                                                                                                                                          |
@@ -91,6 +92,7 @@ Everything rejects with a `GhostAppError`, whose `code` says why:
 | ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `not_framed`       | The page is not inside a frame, so there is no Admin to talk to.                                                                                                                                                            |
 | `not_connected`    | Admin did not start the app before the timeout.                                                                                                                                                                             |
+| `duplicate_sdk`    | Another copy of the SDK in the page called `connect()` first: the page loads the SDK more than once. Load one copy, which the whole page shares.                                                                            |
 | `invalid_context`  | Admin started the app with a context this SDK cannot read. Updating the SDK usually fixes it.                                                                                                                               |
 | `session_ended`    | The channel to Admin has closed, usually because Admin is reloading the app. Every call fails from then on.                                                                                                                 |
 | `invalid_argument` | The app passed something that cannot be sent, such as a body on a `GET`.                                                                                                                                                    |

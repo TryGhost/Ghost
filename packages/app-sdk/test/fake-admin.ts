@@ -31,9 +31,13 @@ export interface FakeParent {
 }
 
 /** Puts the page in a frame: `window.parent` becomes a stand-in for Admin's window. */
-/** Makes the page a new document, with the time it began. Tests load the SDK afresh as well. */
+/**
+ * Makes the page a new document, with the time it began, and with no copy of the SDK
+ * having claimed it yet. Tests load the SDK afresh as well.
+ */
 export function freshPage(timeOrigin = 1_760_000_000_000.5) {
   vi.spyOn(performance, 'timeOrigin', 'get').mockReturnValue(timeOrigin);
+  delete (globalThis as unknown as Record<symbol, unknown>)[Symbol.for('@tryghost/app-sdk')];
 }
 
 export function frame(): FakeParent {

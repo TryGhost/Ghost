@@ -5,7 +5,7 @@ import {
 } from '@tryghost/app-contracts/bridge';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { FakeAdmin, frame, hostExports, settle, startContext } from './fake-admin.ts';
+import { FakeAdmin, frame, freshPage, hostExports, settle, startContext } from './fake-admin.ts';
 
 type Sdk = typeof import('../src/index.ts');
 
@@ -15,6 +15,7 @@ let sdk: Sdk;
 let admin: FakeAdmin | undefined;
 
 beforeEach(async () => {
+  freshPage();
   vi.resetModules();
   sdk = await import('../src/index.ts');
   if (!document.head) {

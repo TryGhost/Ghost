@@ -5,6 +5,7 @@ import { HOST_ERROR_CODES, decodeBridgeError, type BridgeErrorCode } from '@tryg
  *
  * - `not_framed`: the page is not inside Admin, so there is nobody to talk to.
  * - `not_connected`: Admin did not start the app in time.
+ * - `duplicate_sdk`: another copy of the SDK in the page has already connected, or tried to.
  * - `invalid_context`: Admin started the app with a context this SDK cannot read.
  * - `session_ended`: the channel to Admin is gone; the page is about to be replaced.
  * - `invalid_argument`: the app passed something that cannot be sent.
@@ -16,10 +17,10 @@ import { HOST_ERROR_CODES, decodeBridgeError, type BridgeErrorCode } from '@tryg
  * - `network_error`: Admin could not reach its own API.
  * - `rejected`: Admin refused for any other reason; the message says why.
  *
- * The first two describe the channel itself, which only the SDK knows about; the rest are the
+ * The first three describe the channel itself, which only the SDK knows about; the rest are the
  * bridge's codes, which cross it.
  */
-export type GhostAppErrorCode = 'not_framed' | 'not_connected' | BridgeErrorCode;
+export type GhostAppErrorCode = 'not_framed' | 'not_connected' | 'duplicate_sdk' | BridgeErrorCode;
 
 /** The one error the SDK rejects with, so an app can branch on `code`. */
 export class GhostAppError extends Error {

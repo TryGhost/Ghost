@@ -38,6 +38,20 @@ function documentIdentity(): string {
 }
 
 /**
+ * Where the first copy of the SDK to connect claims the page. A symbol from the global
+ * registry, so a second copy bundled into the same page finds the same key.
+ */
+const PAGE_CLAIM = Symbol.for('@tryghost/app-sdk');
+const thisCopy = Object.freeze({ sdk: SDK_VERSION });
+
+/** Claims the page for this copy of the SDK, unless another copy has; says whether it's ours. */
+function claimPage(): boolean {
+  const page = globalThis as unknown as Record<symbol, unknown>;
+  page[PAGE_CLAIM] ??= thisCopy;
+  return page[PAGE_CLAIM] === thisCopy;
+}
+
+/**
  * The longest wait `setTimeout` keeps: anything longer it clamps to nothing, and the timeout
  * would fire at once.
  */
@@ -142,12 +156,22 @@ function forget(attempt: Promise<Ghost>) {
  * Connects to Ghost Admin, which the page must be framed in, and resolves once Admin has
  * started the app. Safe to call as soon as the page loads.
  *
- * Every call shares the one connection; the options of the first call apply. After a
+ * Every call shares the one connection; the options of the first call apply. Only one copy
+ * of the SDK in a page can connect; another rejects with `duplicate_sdk`. After a
  * failure, the next call tries again. Once the session has ended, Admin replaces the page
  * rather than start it again; a call made anyway says hello afresh and never resolves with
  * the ended `Ghost`.
  */
 export function connect(options: ConnectOptions = {}): Promise<Ghost> {
+  // Both copies would say hello for the same document, and Admin answers a document once.
+  if (!claimPage()) {
+    return Promise.reject(
+      new GhostAppError(
+        'duplicate_sdk',
+        'This page loads the app SDK more than once; load one copy, which every part of the page shares',
+      ),
+    );
+  }
   if (!connecting) {
     const attempt: Promise<Ghost> = handshake(options, () => forget(attempt)).catch(
       (error: unknown) => {

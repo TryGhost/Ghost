@@ -186,6 +186,42 @@ describe('connect', () => {
     vi.advanceTimersByTime(100);
   });
 
+  it('refuses to connect a second copy of the SDK in the page', async () => {
+    const parent = frame();
+    const fake = admin();
+    const connecting = sdk.connect();
+    vi.resetModules();
+    const other: Sdk = await import('../src/index.ts');
+
+    const error = await other.connect().catch((caught: unknown) => caught);
+    expect(error).toBeInstanceOf(other.GhostAppError);
+    expect(error).toMatchObject({ code: 'duplicate_sdk' });
+    // Only the first copy says hello, and it still connects.
+    expect(parent.postMessage).toHaveBeenCalledTimes(1);
+    expect(sdk.connect()).toBe(connecting);
+    fake.connect();
+    await fake.start();
+    await expect(connecting).resolves.toBeDefined();
+  });
+
+  it('keeps the page for the copy that claimed it, after its connection failed', async () => {
+    vi.useFakeTimers({ toFake: ['setInterval', 'clearInterval', 'setTimeout', 'clearTimeout'] });
+    const parent = frame();
+    const failed = expect(sdk.connect({ timeout: 100 })).rejects.toMatchObject({
+      code: 'not_connected',
+    });
+    vi.advanceTimersByTime(100);
+    await failed;
+    vi.resetModules();
+    const other: Sdk = await import('../src/index.ts');
+
+    await expect(other.connect()).rejects.toMatchObject({ code: 'duplicate_sdk' });
+    const hellos = parent.postMessage.mock.calls.length;
+    sdk.connect().catch(() => {});
+    expect(parent.postMessage).toHaveBeenCalledTimes(hellos + 1);
+    vi.advanceTimersByTime(START_TIMEOUT_MS);
+  });
+
   it('ignores messages that are not Admin connecting', async () => {
     frame();
     const fake = admin();
