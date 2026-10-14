@@ -88,7 +88,7 @@ export const FETCH_RESPONSE_STATUS_MAX = 599;
  * as `blocked: Apps can't use /db/`, and the other side reads it back. Codes are only ever
  * added: an SDK that does not know one reads the whole message as a refusal.
  *
- * Admin refuses the page's calls with:
+ * Admin refuses the page's calls with these, the host codes:
  *
  * - `session_ended`: the session is over; the page is about to be replaced.
  * - `invalid_argument`: an argument Admin does not take.
@@ -98,13 +98,8 @@ export const FETCH_RESPONSE_STATUS_MAX = 599;
  * - `blocked`: an Admin API route apps may not reach.
  * - `network_error`: Admin could not reach its own API.
  * - `rejected`: anything else; the detail says why.
- *
- * The page refuses Admin's `start` with:
- *
- * - `invalid_context`: a start context the SDK cannot read, so Admin and the SDK disagree on
- *   what the bridge carries.
  */
-export const BRIDGE_ERROR_CODES = [
+export const HOST_ERROR_CODES = [
   'session_ended',
   'invalid_argument',
   'invalid_path',
@@ -112,29 +107,42 @@ export const BRIDGE_ERROR_CODES = [
   'blocked',
   'network_error',
   'rejected',
-  'invalid_context',
 ] as const;
+
+/** A code Admin may refuse a call from the page with. */
+export type HostErrorCode = (typeof HOST_ERROR_CODES)[number];
+
+/**
+ * Every code a refusal can carry: the host codes, and the one the page refuses Admin's
+ * `start` with, `invalid_context`, for a start context the SDK cannot read, so Admin and the
+ * SDK disagree on what the bridge carries. Admin never sends `invalid_context`, and the SDK
+ * reads it from no one but itself.
+ */
+export const BRIDGE_ERROR_CODES = [...HOST_ERROR_CODES, 'invalid_context'] as const;
 
 export type BridgeErrorCode = (typeof BRIDGE_ERROR_CODES)[number];
 
 const CODED_MESSAGE = /^([a-z_]+): ([\s\S]*)$/;
 
-/** The message a refusal crosses the channel as: `code: detail`. */
+/**
+ * The message a refusal crosses the channel as: `code: detail`. Admin passes only host
+ * codes; typing its refusals as `HostErrorCode` keeps it to them.
+ */
 export function encodeBridgeError(code: BridgeErrorCode, detail: string): string {
   return `${code}: ${detail}`;
 }
 
 /**
- * The code and detail a refusal's message carries, read back from `code: detail`. Answers
- * `undefined` for a message that leads with no code this side knows.
+ * The code and detail a refusal's message carries, read back from `code: detail`. Takes the
+ * codes the other side may send, `HOST_ERROR_CODES` for a refusal from Admin, and answers
+ * `undefined` for a message that leads with none of them.
  */
-export function decodeBridgeError(
+export function decodeBridgeError<Code extends BridgeErrorCode>(
   message: string,
-): { code: BridgeErrorCode; detail: string } | undefined {
+  codes: readonly Code[],
+): { code: Code; detail: string } | undefined {
   const [, code = '', detail = ''] = CODED_MESSAGE.exec(message) ?? [];
-  return (BRIDGE_ERROR_CODES as readonly string[]).includes(code)
-    ? { code: code as BridgeErrorCode, detail }
-    : undefined;
+  return (codes as readonly string[]).includes(code) ? { code: code as Code, detail } : undefined;
 }
 
 /** What Admin's theme can be. Resolved before it is sent, so never `system`. */

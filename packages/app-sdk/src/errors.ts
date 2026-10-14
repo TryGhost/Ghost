@@ -1,4 +1,4 @@
-import { decodeBridgeError, type BridgeErrorCode } from '@tryghost/app-contracts';
+import { HOST_ERROR_CODES, decodeBridgeError, type BridgeErrorCode } from '@tryghost/app-contracts';
 
 /**
  * Why something the SDK was asked to do did not happen:
@@ -15,7 +15,8 @@ import { decodeBridgeError, type BridgeErrorCode } from '@tryghost/app-contracts
  * - `rejected`: Admin refused for any other reason; the message says why.
  *
  * All but the first two are the bridge's own codes, which cross the channel; those two
- * describe the channel itself, which only the SDK can know about.
+ * describe the channel itself, which only the SDK can know about. `invalid_context` is the
+ * SDK's own refusal of Admin's start; the rest are what Admin refuses a call with.
  */
 export type GhostAppErrorCode = 'not_framed' | 'not_connected' | BridgeErrorCode;
 
@@ -45,8 +46,9 @@ export function fromHostError(error: unknown, operation: string): GhostAppError 
   if (message === undefined) {
     return new GhostAppError('rejected', `Ghost refused ${operation}`, { cause: error });
   }
-  // Admin leads its message with the code, as only the message survives the channel.
-  const coded = decodeBridgeError(message);
+  // Admin leads its message with the code, as only the message survives the channel. Only
+  // the codes Admin refuses with are read: anything else is part of what it said.
+  const coded = decodeBridgeError(message, HOST_ERROR_CODES);
   if (coded) {
     return new GhostAppError(coded.code, coded.detail, { cause: error });
   }

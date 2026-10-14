@@ -272,15 +272,19 @@ describe('when Admin refuses a call', () => {
     });
   });
 
-  it('treats a code the SDK does not know as part of the message', async () => {
-    const host = hostExports();
-    host.open.mockRejectedValue(new Error('not_framed: Odd'));
-    const { ghost } = await started(host);
-    await expect(ghost.open({ apps: true })).rejects.toMatchObject({
-      code: 'rejected',
-      message: 'not_framed: Odd',
-    });
-  });
+  // `not_framed` is the SDK's own, and `invalid_context` only the page refuses with.
+  it.each(['not_framed: Odd', 'invalid_context: Odd'])(
+    'treats a code Admin does not refuse with as part of the message: %s',
+    async (message) => {
+      const host = hostExports();
+      host.open.mockRejectedValue(new Error(message));
+      const { ghost } = await started(host);
+      await expect(ghost.open({ apps: true })).rejects.toMatchObject({
+        code: 'rejected',
+        message,
+      });
+    },
+  );
 
   it('names the call when Admin gives no message', async () => {
     const host = hostExports();

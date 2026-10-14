@@ -1,9 +1,11 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, expectTypeOf, it } from 'vitest';
 
 import {
   ARGUMENT_MESSAGES,
   AppPathSchema,
   BRIDGE_ERROR_CODES,
+  HOST_ERROR_CODES,
+  type HostErrorCode,
   decodeBridgeError,
   encodeBridgeError,
   isConnectMessage,
@@ -215,15 +217,14 @@ describe('a refusal', () => {
       "blocked: Apps can't use /db/",
     );
     for (const code of BRIDGE_ERROR_CODES) {
-      expect(decodeBridgeError(encodeBridgeError(code, 'Why: because\nso'))).toEqual({
-        code,
-        detail: 'Why: because\nso',
-      });
+      expect(
+        decodeBridgeError(encodeBridgeError(code, 'Why: because\nso'), BRIDGE_ERROR_CODES),
+      ).toEqual({ code, detail: 'Why: because\nso' });
     }
   });
 
   it('keeps the codes stable, as the SDK and older Admins read them', () => {
-    expect(BRIDGE_ERROR_CODES).toEqual([
+    expect(HOST_ERROR_CODES).toEqual([
       'session_ended',
       'invalid_argument',
       'invalid_path',
@@ -231,8 +232,19 @@ describe('a refusal', () => {
       'blocked',
       'network_error',
       'rejected',
-      'invalid_context',
     ]);
+    expect(BRIDGE_ERROR_CODES).toEqual([...HOST_ERROR_CODES, 'invalid_context']);
+  });
+
+  it('is read only with a code the other side may send', () => {
+    const fromAdmin = (message: string) => decodeBridgeError(message, HOST_ERROR_CODES);
+    expect(fromAdmin('blocked: No')).toEqual({ code: 'blocked', detail: 'No' });
+    // Only the page refuses with it, so from Admin it is no code at all.
+    expect(fromAdmin('invalid_context: Odd')).toBeUndefined();
+    expectTypeOf(fromAdmin).returns.toEqualTypeOf<
+      { code: HostErrorCode; detail: string } | undefined
+    >();
+    expectTypeOf<'invalid_context'>().not.toExtend<HostErrorCode>();
   });
 
   it('is not read from a message without a known code', () => {
@@ -244,7 +256,7 @@ describe('a refusal', () => {
       ' blocked: leading space',
       'Blocked: capitals',
     ]) {
-      expect(decodeBridgeError(message), message).toBeUndefined();
+      expect(decodeBridgeError(message, BRIDGE_ERROR_CODES), message).toBeUndefined();
     }
   });
 });

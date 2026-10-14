@@ -19,6 +19,7 @@ describe('the bridge entry point', () => {
       'FETCH_RESPONSE_STATUS_MIN',
       'FetchRequestSchema',
       'HELLO_MESSAGE_TYPE',
+      'HOST_ERROR_CODES',
       'HelloMessageSchema',
       'PathChangeOptionsSchema',
       'PlaceSchema',

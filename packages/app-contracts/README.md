@@ -174,8 +174,10 @@ exported from the root entry point as well:
 - `isReservedRequestHeader` for the headers only Admin sets,
   `methodAllowsBody`, and the words both sides refuse an argument with
   (`ARGUMENT_MESSAGES`);
-- the codes a refused call carries, `BRIDGE_ERROR_CODES`, written and read as
-  `code: detail` by `encodeBridgeError` and `decodeBridgeError`;
+- the codes a refused call carries, written and read as `code: detail` by
+  `encodeBridgeError` and `decodeBridgeError`: `HOST_ERROR_CODES` are those Admin
+  refuses the page's calls with, and `BRIDGE_ERROR_CODES` adds `invalid_context`,
+  which only the page sends, refusing a start context it cannot read;
 - the shapes Admin sends the page, `Theme`, `StartContext`, `ConnectMessage`
   and `FetchResponse`, with a guard for each (`isTheme`, `isStartContext`,
   `isConnectMessage`, `isFetchResponse`).

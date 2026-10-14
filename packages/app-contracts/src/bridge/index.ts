@@ -39,6 +39,7 @@ export {
   FETCH_RESPONSE_STATUS_MAX,
   FETCH_RESPONSE_STATUS_MIN,
   HELLO_MESSAGE_TYPE,
+  HOST_ERROR_CODES,
   START_TIMEOUT_MS,
   TITLE_MAX_LENGTH,
   decodeBridgeError,
@@ -56,6 +57,7 @@ export {
   type ConnectMessage,
   type FetchMethod,
   type FetchResponse,
+  type HostErrorCode,
   type StartContext,
   type Theme,
 } from './rules.ts';
