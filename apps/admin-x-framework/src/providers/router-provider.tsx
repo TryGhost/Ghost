@@ -14,6 +14,7 @@ import {
   NavigateOptions as ReactRouterNavigateOptions,
   useNavigate as useReactRouterNavigate,
   useLocation,
+  useMatches,
   useParams,
   useResolvedPath,
   Navigate as ReactRouterNavigate,
@@ -21,7 +22,10 @@ import {
 import { useFramework } from './framework-provider';
 import { NavigationStackProvider } from './navigation-stack-provider';
 import { ErrorPage } from '@tryghost/shade/primitives';
-import { syncFeatureFlagOverrides } from '../utils/feature-flag-overrides';
+import {
+  getStoredFeatureFlagOverrides,
+  syncFeatureFlagOverrides,
+} from '../utils/feature-flag-overrides';
 import { FeatureFlagOverridesContext } from './feature-flag-overrides-context';
 
 /**
@@ -49,7 +53,15 @@ export interface RouterProviderProps {
 function FeatureFlagOverridesRouteProvider({ children }: { children: React.ReactNode }) {
   const { search } = useLocation();
   const { onFeatureFlagOverridesChange } = useFramework();
-  const enabledFlags = useMemo(() => syncFeatureFlagOverrides(search), [search]);
+  // A route whose query belongs to the page it shows, such as an installed app's, sets no
+  // overrides: `?labs=` there is the page's, not Admin's.
+  const searchIsPages = useMatches().some(
+    ({ handle }) => (handle as { ownsSearch?: unknown } | undefined)?.ownsSearch === true,
+  );
+  const enabledFlags = useMemo(
+    () => (searchIsPages ? getStoredFeatureFlagOverrides() : syncFeatureFlagOverrides(search)),
+    [search, searchIsPages],
+  );
   const value = useMemo(() => ({ enabledFlags }), [enabledFlags]);
 
   useEffect(() => {
