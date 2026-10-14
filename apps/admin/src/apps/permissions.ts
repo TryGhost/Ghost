@@ -9,3 +9,8 @@ type HasRoles = Parameters<typeof isOwnerUser>[0];
 export function canManageApps(user: HasRoles) {
   return isOwnerUser(user) || isAdminUser(user);
 }
+
+/** Who Admin shows Apps to: those who can manage them, while the `apps` Labs flag is on. */
+export function canSeeApps(user: HasRoles | undefined, appsEnabled: boolean) {
+  return appsEnabled && Boolean(user && canManageApps(user));
+}
