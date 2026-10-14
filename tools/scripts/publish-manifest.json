@@ -34,5 +34,12 @@
     "path": "apps/admin-toolbar",
     "versioning": "patch",
     "cdn": "adminToolbar"
+  },
+  {
+    "name": "@tryghost/shade",
+    "path": "apps/shade",
+    "versioning": "prerelease",
+    "distTag": "alpha",
+    "installArgs": "--ignore-scripts"
   }
 ]

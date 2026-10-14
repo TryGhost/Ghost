@@ -429,11 +429,12 @@ versioning:
   ignore:
     # ghost is versioned by the release scripts
     - ghost
-    # public apps are versioned from npm by the publish job
+    # continuous-lane packages are versioned from npm by the publish job
     - '@tryghost/announcement-bar'
     - '@tryghost/admin-toolbar'
     - '@tryghost/comments-ui'
     - '@tryghost/portal'
+    - '@tryghost/shade'
     - '@tryghost/signup-form'
     - '@tryghost/sodo-search'
 patchedDependencies:
