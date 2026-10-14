@@ -2,7 +2,7 @@
 
 App Installations covers a site's record of the apps it has approved: what each
 one runs, what is waiting for approval, and who did what. Apps, manifests and
-changes are defined in App Contracts (`packages/app-contracts/CONTEXT.md`).
+changes are defined in [App Contracts](../../../../../packages/app-contracts/CONTEXT.md).
 
 ## Language
 
