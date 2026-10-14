@@ -70,9 +70,15 @@ describe('a fetch request', () => {
         message: 'Expected header names made of letters, digits and -',
       },
     ]);
-    expect(requestErrors({ path: '/posts/', headers: { 'X-Test': 'a\r\nCookie: b' } })).toEqual([
-      { path: ['headers', 'X-Test'], message: 'Expected header values on one line' },
-    ]);
+    // A line break, a character fetch cannot send as a byte, or another control character.
+    for (const value of ['a\r\nCookie: b', 'a\nb', '\u0000', '€', '😀', 'a\u0001b', '\u007f']) {
+      expect(requestErrors({ path: '/posts/', headers: { 'X-Test': value } }), value).toEqual([
+        {
+          path: ['headers', 'X-Test'],
+          message: 'Expected header values on one line, in Latin-1 and without control characters',
+        },
+      ]);
+    }
     expect(requestErrors({ path: '/posts/', headers: { 'X-Test': 1 } })).toEqual([
       { path: ['headers', 'X-Test'], message: 'Expected header values to be text' },
     ]);
@@ -82,6 +88,11 @@ describe('a fetch request', () => {
     expect(requestErrors({ path: '/posts/', headers: [['X-Test', 'a']] })).toEqual([
       { path: ['headers'], message: 'Expected headers as an object of names to values' },
     ]);
+  });
+
+  it('takes any Latin-1 text in a header value, tabs included', () => {
+    const headers = { 'X-Test': 'café\tnaïve ÿ ~' };
+    expect(FetchRequestSchema.parse({ path: '/posts/', headers }).headers).toEqual(headers);
   });
 
   it('refuses the headers only Admin sets, rather than dropping them', () => {

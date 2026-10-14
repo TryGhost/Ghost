@@ -21,8 +21,11 @@ const FETCH_HEADER_VALUE_MAX_LENGTH = 8192;
 // refused here with a message rather than there with a TypeError.
 const HEADER_NAME = /^[!#$%&'*+.^_`|~0-9a-z-]+$/i;
 
-// Line breaks and NUL are what header injection is made of, and fetch refuses them anyway.
-const HEADER_VALUE = /^[^\r\n\0]*$/;
+// A header value is what HTTP allows in one: Latin-1 text, as headers are bytes, with tabs
+// and no other control characters. Fetch throws a TypeError on a character beyond Latin-1, a
+// line break or NUL, which Admin could only report as failing to reach its own API, so they
+// are refused here with a message; line breaks are also what header injection is made of.
+const HEADER_VALUE = /^[\t\x20-\x7e\x80-\xff]*$/;
 
 const utf8 = new TextEncoder();
 
@@ -53,7 +56,10 @@ export const FetchRequestSchema = z
             FETCH_HEADER_VALUE_MAX_LENGTH,
             `Expected header values of at most ${FETCH_HEADER_VALUE_MAX_LENGTH} characters`,
           )
-          .regex(HEADER_VALUE, 'Expected header values on one line'),
+          .regex(
+            HEADER_VALUE,
+            'Expected header values on one line, in Latin-1 and without control characters',
+          ),
         'Expected headers as an object of names to values',
       )
       .superRefine((headers, ctx) => {
