@@ -289,6 +289,21 @@ describe('createManifestLoader', function () {
       sinon.assert.calledWith(warn, err.context);
     });
 
+    it('follows three redirects', async function () {
+      const scope = nock('https://podcast.example.com');
+      for (const hop of [1, 2, 3]) {
+        scope
+          .get(hop === 1 ? '/ghost-app.json' : `/${hop - 1}.json`)
+          .reply(302, '', { location: `/${hop}.json` });
+      }
+      scope.get('/3.json').reply(200, manifest());
+
+      const loaded = await loader()(MANIFEST_URL);
+
+      assert.equal(loaded.manifestUrl, MANIFEST_URL);
+      assert.equal(scope.isDone(), true);
+    });
+
     it('follows at most three redirects', async function () {
       const scope = nock('https://podcast.example.com');
       for (const hop of [1, 2, 3, 4]) {
