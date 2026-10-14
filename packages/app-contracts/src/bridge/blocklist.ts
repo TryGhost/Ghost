@@ -69,6 +69,12 @@ export const ADMIN_API_BLOCKLIST: readonly BlockedAdminApiCategory[] = [
     paths: ['/members/:id/signin_urls'],
   },
   {
+    name: 'gift_links',
+    reason:
+      "A gift link unlocks a paid post or page for whoever holds it, for as long as the link lasts, whatever becomes of the app's session; removing them all takes back every link the publisher has shared.",
+    paths: ['/posts/:id/gift_links', '/pages/:id/gift_links', '/gift_links', '/gift_links/*'],
+  },
+  {
     name: 'settings',
     reason:
       "Settings decide who can read the site and sign in (a private site's access code, signup, staff two-factor), send data elsewhere (Mailgun, Stripe, Slack) and put code on every page (code injection, routes). An app reads the site facts it needs from the start context.",

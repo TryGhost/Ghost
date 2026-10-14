@@ -10,6 +10,7 @@ describe('the Admin API blocklist', () => {
       'identity_tokens',
       'sessions',
       'member_sign_in',
+      'gift_links',
       'settings',
       'uploads',
       'invites',
@@ -50,6 +51,11 @@ describe('the Admin API blocklist', () => {
       '/authentication',
     ],
     member_sign_in: ['/members/5ddc9141c35e7700383b2937/signin_urls/'],
+    gift_links: [
+      '/posts/5ddc9141c35e7700383b2937/gift_links/',
+      '/pages/5ddc9141c35e7700383b2937/gift_links/',
+      '/gift_links/remove_all/',
+    ],
     settings: [
       '/settings/',
       '/settings',
@@ -126,6 +132,7 @@ describe('the Admin API blocklist', () => {
       '/themes/install/?source=github&ref=TryGhost/Casper',
       '/redirects/download/',
       '/posts/export/',
+      '/posts/gift_links/',
     ]) {
       expect(isBlockedAdminApiPath(path), path).toBe(false);
     }
