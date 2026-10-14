@@ -54,6 +54,11 @@ try {
 Call it as soon as the page loads; every call shares one connection. Load
 the SDK once per page: a second copy's `connect()` rejects with `duplicate_sdk`.
 `options.timeout` is how long to wait, in milliseconds (10 seconds by default).
+Admin connects each document in the frame once, so once it has answered, that
+connection is the page's only one: after it fails or its session ends, every
+`connect()` rejects with the error it ended with, until the page reloads. A
+failure before Admin answered, such as `not_framed` or a timeout with no answer,
+can be retried.
 
 | `Ghost`                       | What it is                                                                                                                                                          |
 | ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |

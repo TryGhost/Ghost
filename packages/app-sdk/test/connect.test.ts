@@ -302,10 +302,8 @@ describe('connect', () => {
     await expect(second).resolves.toBeDefined();
   });
 
-  // Admin replaces a page whose session has ended rather than start it again, so this is the
-  // SDK's side of the contract, whatever the host: a call after the end never hands out the
-  // ended Ghost, and a host that does answer starts a new one.
-  it('says hello afresh once the session has ended, never reusing the ended Ghost', async () => {
+  // Admin answers a document once, so the page's first answered connection is its only one.
+  it('rejects every call once the session has ended, with the error it ended with', async () => {
     const parent = frame();
     const first = admin();
     const connecting = sdk.connect();
@@ -316,21 +314,29 @@ describe('connect', () => {
       ghost.onSessionEnd(resolve);
     });
     first.close();
-    await ended;
+    const error = await ended;
 
     const hellos = parent.postMessage.mock.calls.length;
-    const second = admin();
-    const reconnecting = sdk.connect();
-    expect(reconnecting).not.toBe(connecting);
-    expect(parent.postMessage).toHaveBeenCalledTimes(hellos + 1);
-
-    second.connect();
-    await second.start(startContext({ session: { revision: 4 } }));
-    const next = await reconnecting;
-    expect(next).not.toBe(ghost);
-    expect(next.connected).toBe(true);
-    expect(next.session).toEqual({ revision: 4 });
+    await expect(sdk.connect()).rejects.toBe(error);
+    expect(error).toMatchObject({ code: 'session_ended' });
+    expect(parent.postMessage).toHaveBeenCalledTimes(hellos);
     expect(ghost.connected).toBe(false);
+  });
+
+  it('rejects every call once a connection Admin answered has failed', async () => {
+    vi.useFakeTimers({ toFake: ['setInterval', 'clearInterval', 'setTimeout', 'clearTimeout'] });
+    const parent = frame();
+    const fake = admin();
+    const connecting = sdk.connect({ timeout: 100 });
+    const failed = expect(connecting).rejects.toMatchObject({ code: 'not_connected' });
+    fake.connect();
+    vi.advanceTimersByTime(100);
+    await failed;
+
+    const hellos = parent.postMessage.mock.calls.length;
+    await expect(sdk.connect()).rejects.toMatchObject({ code: 'not_connected' });
+    vi.advanceTimersByTime(1000);
+    expect(parent.postMessage).toHaveBeenCalledTimes(hellos);
   });
 
   it('refuses a start it does not understand', async () => {

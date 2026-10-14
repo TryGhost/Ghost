@@ -57,7 +57,10 @@ function claimPage(): boolean {
  */
 const TIMEOUT_MAX = 2 ** 31 - 1;
 
-function handshake(options: ConnectOptions, onEnded: () => void): Promise<Ghost> {
+function handshake(
+  options: ConnectOptions,
+  onEnded: (error: GhostAppError) => void,
+): Promise<Ghost> {
   if (!isRecord(options)) {
     return Promise.reject(invalidArgument('Expected options such as { timeout: 10000 }'));
   }
@@ -116,7 +119,7 @@ function handshake(options: ConnectOptions, onEnded: () => void): Promise<Ghost>
         },
         ended: (error) => {
           fail(error);
-          onEnded();
+          onEnded(error);
         },
       });
     };
@@ -143,6 +146,8 @@ function handshake(options: ConnectOptions, onEnded: () => void): Promise<Ghost>
 }
 
 let connecting: Promise<Ghost> | undefined;
+// How the page's one connection ended, once Admin answered it: Admin answers a document once.
+let spent: GhostAppError | undefined;
 
 // Only the connection still shared is forgotten: one that ended may report it after a
 // newer one has begun.
@@ -157,10 +162,11 @@ function forget(attempt: Promise<Ghost>) {
  * started the app. Safe to call as soon as the page loads.
  *
  * Every call shares the one connection; the options of the first call apply. Only one copy
- * of the SDK in a page can connect; another rejects with `duplicate_sdk`. After a
- * failure, the next call tries again. Once the session has ended, Admin replaces the page
- * rather than start it again; a call made anyway says hello afresh and never resolves with
- * the ended `Ghost`.
+ * of the SDK in a page can connect; another rejects with `duplicate_sdk`. Admin answers a
+ * document once, so once it has, that connection is the page's only one: after it fails or
+ * its session ends, every call rejects with the error it ended with, and only a new
+ * document (a reload, say) connects again. A failure before Admin answered, such as a bad
+ * option or no answer in time, can be retried.
  */
 export function connect(options: ConnectOptions = {}): Promise<Ghost> {
   // Both copies would say hello for the same document, and Admin answers a document once.
@@ -172,13 +178,17 @@ export function connect(options: ConnectOptions = {}): Promise<Ghost> {
       ),
     );
   }
+  if (spent) {
+    return Promise.reject(spent);
+  }
   if (!connecting) {
-    const attempt: Promise<Ghost> = handshake(options, () => forget(attempt)).catch(
-      (error: unknown) => {
-        forget(attempt);
-        throw error;
-      },
-    );
+    const attempt: Promise<Ghost> = handshake(options, (error) => {
+      spent = error;
+      forget(attempt);
+    }).catch((error: unknown) => {
+      forget(attempt);
+      throw error;
+    });
     connecting = attempt;
   }
   return connecting;
