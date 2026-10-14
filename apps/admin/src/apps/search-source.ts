@@ -22,14 +22,12 @@ export function appsSearchItems(
     return [];
   }
 
-  return installations
-    .filter(({ status }) => status !== 'uninstalled')
-    .map((installation): SearchItem => ({
-      kind: 'navigate',
-      id: installation.id,
-      title: installation.manifest.name,
-      to: appOpenRoute(installation),
-    }));
+  return installations.map((installation): SearchItem => ({
+    kind: 'navigate',
+    id: installation.id,
+    title: installation.manifest.name,
+    to: appOpenRoute(installation),
+  }));
 }
 
 /** Shortcuts to installed apps, for whoever the sidebar shows Apps to. Loads on the first term. */

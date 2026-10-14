@@ -17,7 +17,6 @@ const installation = (id: string, name: string, status: AppInstallation['status'
 
 const podcast = installation('installation-1', 'Podcast');
 const newsletter = installation('installation-2', 'Newsletter tools', 'suspended');
-const removed = installation('installation-3', 'Removed', 'uninstalled');
 
 describe('appsSearchItems', () => {
   it('opens each installed app, in the list’s order', () => {
@@ -31,12 +30,6 @@ describe('appsSearchItems', () => {
     expect(appsSearchItems(admin, true, [newsletter])[0]).toMatchObject({
       to: `/apps/install?manifest=${encodeURIComponent(newsletter.manifest_url)}`,
     });
-  });
-
-  it('leaves out uninstalled apps', () => {
-    expect(appsSearchItems(admin, true, [podcast, removed]).map(({ id }) => id)).toEqual([
-      'installation-1',
-    ]);
   });
 
   it.each(['Owner', 'Administrator'])('lists apps for an %s', (role) => {

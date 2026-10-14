@@ -461,6 +461,7 @@ describe('Cmd-K search', () => {
 });
 
 describe('Apps search', () => {
+  const SUSPENDED_MANIFEST_URL = 'https://second.example.com/ghost-app.json';
   let installations: ReturnType<typeof fakeAdminEndpoint>;
 
   beforeEach(() => {
@@ -469,7 +470,12 @@ describe('Apps search', () => {
     installations = fakeAdminEndpoint('GET', '/apps/installations/', {
       app_installations: [
         installation(),
-        installation({ id: 'installation-2', manifest: manifest({ name: 'Second app' }) }),
+        installation({
+          id: 'installation-2',
+          status: 'suspended',
+          manifest_url: SUSPENDED_MANIFEST_URL,
+          manifest: manifest({ name: 'Second app' }),
+        }),
       ],
     });
   });
@@ -485,6 +491,19 @@ describe('Apps search', () => {
     await globalSearchScreen.option(/Podcast/).click();
 
     await expect.poll(currentRoute).toBe('/apps/installation-1');
+  });
+
+  it('opens a suspended app’s review rather than its page', async () => {
+    // the review fetches the app's latest manifest
+    allowUnhandledRequests();
+    await renderAdminApp('/tags', { labs });
+    await openAndSearch('second');
+
+    await globalSearchScreen.option(/Second app/).click();
+
+    await expect
+      .poll(currentRoute)
+      .toBe(`/apps/install?manifest=${encodeURIComponent(SUSPENDED_MANIFEST_URL)}`);
   });
 
   it('leaves Apps out, without loading them, for staff who can’t manage apps', async () => {
