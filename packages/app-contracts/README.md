@@ -169,7 +169,9 @@ exported from the root entry point as well:
 
 - the message types, `START_TIMEOUT_MS`, `TITLE_MAX_LENGTH`, `FETCH_METHODS` and
   the statuses a fetch answer may have;
-- `isContainedPath`, `isReservedRequestHeader` for the headers only Admin sets,
+- `isContainedPath`, and `normaliseAppPath`, the one spelling both sides keep an
+  app path in, with `..` resolved within the app;
+- `isReservedRequestHeader` for the headers only Admin sets,
   `methodAllowsBody`, and the words both sides refuse an argument with
   (`ARGUMENT_MESSAGES`);
 - the codes a refused call carries, `BRIDGE_ERROR_CODES`, written and read as

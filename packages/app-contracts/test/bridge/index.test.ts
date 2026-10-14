@@ -36,6 +36,7 @@ describe('the bridge entry point', () => {
       'isStartContext',
       'isTheme',
       'methodAllowsBody',
+      'normaliseAppPath',
     ]);
   });
 

@@ -57,6 +57,7 @@ describe('the root entry point', () => {
       'isValidAppId',
       'methodAllowsBody',
       'movedBetween',
+      'normaliseAppPath',
       'servedFrom',
       'toPlainText',
     ]);
@@ -83,6 +84,7 @@ describe('the root entry point', () => {
       'isStartContext',
       'isTheme',
       'methodAllowsBody',
+      'normaliseAppPath',
     ] as const) {
       expect(root[name], name).toBe(bridge[name]);
     }

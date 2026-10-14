@@ -53,6 +53,7 @@ export {
   isStartContext,
   isTheme,
   methodAllowsBody,
+  normaliseAppPath,
 } from './bridge/rules.ts';
 export type {
   AppExports,

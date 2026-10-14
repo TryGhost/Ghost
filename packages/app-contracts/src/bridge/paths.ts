@@ -11,6 +11,10 @@ export const APP_PATH_MAX_LENGTH = 2048;
 /**
  * A route within the app's own page, such as `/episodes/12`. Admin mirrors it into its own
  * address under `/apps/:installationId`, so it must not be able to name anything outside it.
+ *
+ * The schema holds it to a path rather than a URL or `//host`. What keeps it within the app
+ * is reading it through `normaliseAppPath`, which resolves `..` against the app's own root, so
+ * Admin normalises a path it has parsed before it uses it.
  */
 export const AppPathSchema = z
   .string('Expected a path')

@@ -14,6 +14,7 @@ import {
   isStartContext,
   isTheme,
   methodAllowsBody,
+  normaliseAppPath,
 } from '../../src/bridge/index.ts';
 
 // Each guard answers every case below as expected.
@@ -76,6 +77,30 @@ describe('a contained path', () => {
       undefined,
     ]) {
       check(path, false);
+    }
+  });
+});
+
+describe('a normalised app path', () => {
+  it('is spelled as the URL parser spells it, so the same route compares equal', () => {
+    expect(normaliseAppPath('/episodes/a b')).toBe('/episodes/a%20b');
+    expect(normaliseAppPath('/episodes/a%20b')).toBe('/episodes/a%20b');
+    expect(normaliseAppPath('/search?q=a b#notes 2')).toBe('/search?q=a%20b#notes%202');
+    expect(normaliseAppPath('/')).toBe('/');
+  });
+
+  it('resolves `.` and `..` within the app, so it can never climb out', () => {
+    expect(normaliseAppPath('/x/../episodes/1')).toBe('/episodes/1');
+    expect(normaliseAppPath('/../../settings')).toBe('/settings');
+    expect(normaliseAppPath('/%2e%2e/settings?x=1#y')).toBe('/settings?x=1#y');
+    expect(normaliseAppPath('/./a/.')).toBe('/a/');
+  });
+
+  it('stays as it is once normalised', () => {
+    for (const path of ['/episodes/a b', '/../x', '/search?q=ü#é', '/a:b', '/?', '/#']) {
+      const once = normaliseAppPath(path);
+      expect(normaliseAppPath(once), path).toBe(once);
+      expect(isContainedPath(once), path).toBe(true);
     }
   });
 });

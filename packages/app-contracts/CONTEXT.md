@@ -123,7 +123,9 @@ _Avoid_: connection, login, token
 **App path**:
 A route within an app's own page, such as `/episodes/12`, which Admin mirrors
 in its own address so a reload or a shared link lands on the same page. It
-starts with a single `/` and can never name anything outside the app.
+starts with a single `/` and can never name anything outside the app. Admin and
+the page keep it as the URL parser spells it, so the same route reads the same
+on both sides.
 _Avoid_: URL, location, deep link
 
 **Place**:

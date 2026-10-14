@@ -51,6 +51,7 @@ export {
   isStartContext,
   isTheme,
   methodAllowsBody,
+  normaliseAppPath,
   type BridgeErrorCode,
   type ConnectMessage,
   type FetchMethod,

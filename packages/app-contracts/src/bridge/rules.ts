@@ -212,6 +212,24 @@ export function isContainedPath(value: unknown): value is string {
   );
 }
 
+// Only parsed against, never requested: it gives a path the URL parser's own spelling.
+const APP_PATH_BASE = 'https://app.invalid';
+
+/**
+ * An app path as the URL parser spells it, the one spelling Admin and the SDK keep it in: `.`
+ * and `..` resolved within the app, so a path can never climb out of it, and what needs
+ * escaping escaped once, so a path the app reported and the same path read back from Admin's
+ * address compare equal. `/search?q=a b` becomes `/search?q=a%20b`, and `/x/../episodes/1`
+ * becomes `/episodes/1`.
+ *
+ * Takes a path `isContainedPath` accepts; anything else may not be a path within the app at
+ * all.
+ */
+export function normaliseAppPath(path: string): string {
+  const url = new URL(path, APP_PATH_BASE);
+  return `${url.pathname}${url.search}${url.hash}`;
+}
+
 /** An object, or an array: anything whose fields can be read. */
 export function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null;
