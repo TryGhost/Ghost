@@ -55,11 +55,14 @@ describe('App installations Admin API', function () {
     serve(manifest(overrides));
     return service().create(owner, { manifestUrl: MANIFEST_URL, digest });
   };
-  /** Installs the app as a publisher would: previewed, then confirmed. */
+  /**
+   * Installs the app as a publisher would: previewed, then confirmed. Hands back the
+   * installation with the digest the publisher confirmed.
+   */
   const install = async (overrides: Record<string, unknown> = {}) => {
     serve(manifest(overrides));
     const { digest } = await service().preview(MANIFEST_URL);
-    return installReviewed(digest, overrides);
+    return { ...(await installReviewed(digest, overrides)), digest };
   };
   const preview = async (manifestUrl = MANIFEST_URL, status = 200) => {
     const { body } = await agent
@@ -112,15 +115,13 @@ describe('App installations Admin API', function () {
     });
 
     it('keeps the manifest as the approved one, with its digest', async function () {
-      serve(manifest());
-      const { digest } = await service().preview(MANIFEST_URL);
-      const installation = await installReviewed(digest);
+      const installation = await install();
 
       const [stored] = await manifestRows();
       assert.equal(stored.installation_id, installation.id);
       assert.equal(stored.manifest_url, MANIFEST_URL);
       assert.deepEqual(JSON.parse(stored.manifest), installation.manifest);
-      assert.equal(stored.digest, digest);
+      assert.equal(stored.digest, installation.digest);
       assert.equal(Boolean(stored.requires_approval), false);
 
       const installed = await installationRow(installation.id);
