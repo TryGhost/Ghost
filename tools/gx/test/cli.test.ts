@@ -1,9 +1,8 @@
 import assert from 'node:assert/strict';
 import { afterEach, test } from 'node:test';
-import { cp, mkdir, mkdtemp, readFile, rm, symlink, writeFile } from 'node:fs/promises';
+import { cp, mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { fileURLToPath } from 'node:url';
 import { spawnSync } from 'node:child_process';
 
 const roots: string[] = [];
@@ -11,14 +10,10 @@ afterEach(async () => {
   await Promise.all(roots.splice(0).map((root) => rm(root, { recursive: true, force: true })));
 });
 async function fixture() {
-  const root = await mkdtemp(join(tmpdir(), 'gx-generator-'));
+  const root = await mkdtemp(join(import.meta.dirname, '../.gx-generator-'));
   roots.push(root);
   await mkdir(join(root, 'tools/gx'), { recursive: true });
   await mkdir(join(root, 'tools/scripts/lib'), { recursive: true });
-  await symlink(
-    fileURLToPath(new URL('../node_modules', import.meta.url)),
-    join(root, 'tools/gx/node_modules'),
-  );
   for (const file of ['cli.ts', 'create-package.ts']) {
     await cp(new URL(`../${file}`, import.meta.url), join(root, 'tools/gx', file));
   }
