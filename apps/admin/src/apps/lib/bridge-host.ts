@@ -15,7 +15,7 @@ import {
   AppPathSchema,
   TitleSchema,
 } from '@tryghost/app-contracts/bridge';
-import { BridgeError, parseFromFrame } from './bridge-error';
+import { parseFromFrame, sessionEnded } from './bridge-error';
 import type { AdminApiFetch } from './bridge-fetch';
 
 /** What Admin does with what an app's page asks of it, once each request has been checked. */
@@ -50,8 +50,6 @@ export interface AppFrameHost {
   /** Ends the session: the channel closes and every further call from the page is refused. */
   dispose(): void;
 }
-
-const sessionEnded = () => new BridgeError('session_ended', 'The app’s session ended');
 
 /**
  * Binds the bridge to an app's frame. The page speaks first: Admin waits for a hello sent

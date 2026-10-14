@@ -725,6 +725,23 @@ describe('Managing apps', () => {
       expect(tokenApi.requests).toHaveLength(0);
     });
 
+    it('refuses a path the Admin API only redirects, saying how its paths are spelled', async () => {
+      await fakeAppPage(installation());
+      // As Ghost answers a path without its trailing `/`.
+      const postsApi = fakeAdminEndpoint(
+        'GET',
+        '/posts',
+        () => new Response(null, { status: 301, headers: { location: '/ghost/api/admin/posts/' } }),
+      );
+      await renderAdminApp(APP_ROUTE, { labs });
+      await expect.element(appsScreen.frame()).toBeVisible();
+
+      expect(refusal(await callAppFrame(APP_ORIGIN, 'fetch', { path: '/posts' }))).toBe(
+        'invalid_path: The Admin API answers /posts only with a redirect: its paths are in lowercase and end in /, such as /posts/',
+      );
+      expect(postsApi.requests).toHaveLength(1);
+    });
+
     it('refuses a path that would leave the Admin API, without sending it', async () => {
       // Without the SDK, which refuses a URL itself: Admin can't count on it.
       await fakeAppPage(installation(), { kind: 'raw' });
