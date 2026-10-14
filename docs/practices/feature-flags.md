@@ -197,9 +197,8 @@ the whole list rather than adding to it. Visit a route with an empty value,
 such as `/ghost/#/posts?labs=`, to clear the overrides. Simply removing the
 parameter does not clear them.
 
-A route whose query belongs to the page it shows, marked `ownsSearch` in its
-route handle, reads no overrides: an installed app's page, `/ghost/#/apps/<id>/…`,
-mirrors the app's own query there, so `labs` in it is the app's.
+On an app's page (`/ghost/#/apps/<id>/…`) the query is the app's, and Ghost
+doesn't read `labs` from it; overrides already set stay in effect.
 
 These overrides only force flags on. `useFeatureFlag` honors them even when the
 server-computed value is `false`. There is no force-off syntax; clearing an
