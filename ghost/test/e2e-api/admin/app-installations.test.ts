@@ -280,6 +280,7 @@ describe('App installations Admin API', function () {
         'podcast.example.com/ghost-app.json',
         'http://podcast.example.com/ghost-app.json',
         Object.assign(new URL(MANIFEST_URL), { username: 'user', password: 'example' }).href,
+        `${MANIFEST_HOST}/${'a'.repeat(2000)}`,
       ]) {
         // Nothing is served for these, so a fetch would fail as unreachable instead.
         const error = await preview(manifestUrl, 422);
