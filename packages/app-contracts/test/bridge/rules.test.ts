@@ -2,10 +2,13 @@ import { describe, expect, it } from 'vitest';
 
 import {
   AppPathSchema,
+  BRIDGE_ERROR_CODES,
   ConnectMessageSchema,
   FetchResponseSchema,
   StartContextSchema,
   ThemeSchema,
+  decodeBridgeError,
+  encodeBridgeError,
   isConnectMessage,
   isContainedPath,
   isFetchResponse,
@@ -178,6 +181,46 @@ describe('a fetch response', () => {
       { ...response, body: null },
     ]) {
       check(value, false);
+    }
+  });
+});
+
+describe('a refusal', () => {
+  it('crosses the channel as its code and detail', () => {
+    expect(encodeBridgeError('blocked', "Apps can't use /db/")).toBe(
+      "blocked: Apps can't use /db/",
+    );
+    for (const code of BRIDGE_ERROR_CODES) {
+      expect(decodeBridgeError(encodeBridgeError(code, 'Why: because\nso'))).toEqual({
+        code,
+        detail: 'Why: because\nso',
+      });
+    }
+  });
+
+  it('keeps the codes stable, as the SDK and older Admins read them', () => {
+    expect(BRIDGE_ERROR_CODES).toEqual([
+      'session_ended',
+      'invalid_argument',
+      'invalid_path',
+      'unsupported',
+      'blocked',
+      'network_error',
+      'rejected',
+      'invalid_context',
+    ]);
+  });
+
+  it('is not read from a message without a known code', () => {
+    for (const message of [
+      '',
+      'Unknown place',
+      'not_framed: Odd',
+      'blocked:no space',
+      ' blocked: leading space',
+      'Blocked: capitals',
+    ]) {
+      expect(decodeBridgeError(message), message).toBeUndefined();
     }
   });
 });

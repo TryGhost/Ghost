@@ -1,8 +1,11 @@
+import { decodeBridgeError, type BridgeErrorCode } from '@tryghost/app-contracts';
+
 /**
  * Why something the SDK was asked to do did not happen:
  *
  * - `not_framed`: the page is not inside Admin, so there is nobody to talk to.
  * - `not_connected`: Admin did not start the app in time.
+ * - `invalid_context`: Admin started the app with a context this SDK cannot read.
  * - `session_ended`: the channel to Admin is gone; the page is about to be replaced.
  * - `invalid_argument`: the app passed something that cannot be sent.
  * - `invalid_path`: a path that is not an Admin API path, or not a route within the app.
@@ -10,17 +13,11 @@
  * - `blocked`: Admin refused on principle, such as an Admin API route apps may not reach.
  * - `network_error`: Admin could not reach its own API.
  * - `rejected`: Admin refused for any other reason; the message says why.
+ *
+ * All but the first two are the bridge's own codes, which cross the channel; those two
+ * describe the channel itself, which only the SDK can know about.
  */
-export type GhostAppErrorCode =
-  | 'not_framed'
-  | 'not_connected'
-  | 'session_ended'
-  | 'invalid_argument'
-  | 'invalid_path'
-  | 'unsupported'
-  | 'blocked'
-  | 'network_error'
-  | 'rejected';
+export type GhostAppErrorCode = 'not_framed' | 'not_connected' | BridgeErrorCode;
 
 /** The one error the SDK rejects with, so an app can branch on `code`. */
 export class GhostAppError extends Error {
@@ -32,22 +29,6 @@ export class GhostAppError extends Error {
     this.code = code;
   }
 }
-
-// The codes Admin itself may refuse a call with. The others describe the channel, which
-// only the SDK can know about.
-const HOST_CODES: ReadonlySet<string> = new Set<GhostAppErrorCode>([
-  'session_ended',
-  'invalid_argument',
-  'invalid_path',
-  'unsupported',
-  'blocked',
-  'network_error',
-  'rejected',
-]);
-
-// Only an error's message survives the structured clone that carries it across the
-// channel, so Admin leads it with the code: `blocked: Apps can't use /db/`.
-const CODED_MESSAGE = /^([a-z_]+): ([\s\S]*)$/;
 
 // What `@quilted/threads` throws on the other side when a call names nothing it exports.
 const MISSING_EXPORT = /^No '[^']*' method is exported from this thread$/;
@@ -64,9 +45,10 @@ export function fromHostError(error: unknown, operation: string): GhostAppError 
   if (message === undefined) {
     return new GhostAppError('rejected', `Ghost refused ${operation}`, { cause: error });
   }
-  const [, code = '', detail = ''] = CODED_MESSAGE.exec(message) ?? [];
-  if (HOST_CODES.has(code)) {
-    return new GhostAppError(code as GhostAppErrorCode, detail, { cause: error });
+  // Admin leads its message with the code, as only the message survives the channel.
+  const coded = decodeBridgeError(message);
+  if (coded) {
+    return new GhostAppError(coded.code, coded.detail, { cause: error });
   }
   if (MISSING_EXPORT.test(message)) {
     const unsupported = `This site's Ghost doesn't support ${operation} yet`;

@@ -166,8 +166,10 @@ acting. Nothing is versioned: Admin only adds calls and optional fields.
 
 The bridge's rules that depend on nothing live in `src/bridge/rules.ts` and are
 exported from the root entry point as well: the message types, `TITLE_MAX_LENGTH`,
-`FETCH_METHODS`, the statuses a fetch answer may have, `isContainedPath`, and
-guards for what Admin sends the page (`isTheme`, `isStartContext`,
+`FETCH_METHODS`, the statuses a fetch answer may have, `isContainedPath`, the
+codes a refused call carries (`BRIDGE_ERROR_CODES`, written and read as
+`code: detail` by `encodeBridgeError` and `decodeBridgeError`), and guards for
+what Admin sends the page (`isTheme`, `isStartContext`,
 `isConnectMessage`, `isFetchResponse`). The SDK checks Admin's messages with
 them, without zod, and the schemas build on the same constants, so both sides
 read a path, a theme or a start context the same way. A test holds each guard

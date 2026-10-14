@@ -30,6 +30,7 @@ describe('the root entry point', () => {
   it('exposes only what depends on nothing', () => {
     expect(Object.keys(root).sort()).toEqual([
       'APP_ID_MAX_LENGTH',
+      'BRIDGE_ERROR_CODES',
       'CONNECT_MESSAGE_TYPE',
       'FETCH_METHODS',
       'FETCH_RESPONSE_STATUS_MAX',
@@ -38,6 +39,8 @@ describe('the root entry point', () => {
       'TITLE_MAX_LENGTH',
       'URL_MAX_LENGTH',
       'appPageUrl',
+      'decodeBridgeError',
+      'encodeBridgeError',
       'isConnectMessage',
       'isContainedPath',
       'isDevelopmentApp',
@@ -55,12 +58,15 @@ describe('the root entry point', () => {
 
   it("shares the bridge's rules with the bridge entry point", () => {
     for (const name of [
+      'BRIDGE_ERROR_CODES',
       'CONNECT_MESSAGE_TYPE',
       'FETCH_METHODS',
       'FETCH_RESPONSE_STATUS_MAX',
       'FETCH_RESPONSE_STATUS_MIN',
       'HELLO_MESSAGE_TYPE',
       'TITLE_MAX_LENGTH',
+      'decodeBridgeError',
+      'encodeBridgeError',
       'isConnectMessage',
       'isContainedPath',
       'isFetchResponse',

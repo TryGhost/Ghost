@@ -1,5 +1,6 @@
 import { ThreadMessagePort } from '@quilted/threads';
 import {
+  encodeBridgeError,
   isContainedPath,
   isRecord,
   isStartContext,
@@ -106,13 +107,11 @@ export class Channel implements Ghost {
       return;
     }
     if (!isStartContext(context)) {
-      const error = new GhostAppError(
-        'not_connected',
-        "Ghost started the app with a context this SDK doesn't understand",
-      );
+      const detail = "Ghost started the app with a context this SDK doesn't understand";
       // Ended after Admin has had its answer, so it hears why rather than waiting it out.
-      setTimeout(() => this.end(error), 0);
-      throw error;
+      setTimeout(() => this.end(new GhostAppError('invalid_context', detail)), 0);
+      // Only the message reaches Admin, so it leads with the code, as Admin's own do.
+      throw new Error(encodeBridgeError('invalid_context', detail));
     }
     this.#context = context;
     this.#theme = Object.freeze({ ...context.theme });

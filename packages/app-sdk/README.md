@@ -86,6 +86,7 @@ Everything rejects with a `GhostAppError`, whose `code` says why:
 | ------------------ | ----------------------------------------------------------------------------------------------------------- |
 | `not_framed`       | The page is not inside a frame, so there is no Admin to talk to.                                            |
 | `not_connected`    | Admin did not start the app before the timeout.                                                             |
+| `invalid_context`  | Admin started the app with a context this SDK cannot read. Updating the SDK usually fixes it.               |
 | `session_ended`    | The channel to Admin has closed, usually because Admin is reloading the app. Every call fails from then on. |
 | `invalid_argument` | The app passed something that cannot be sent, such as a body on a `GET`.                                    |
 | `invalid_path`     | A URL, or a path that leaves the Admin API, given to `fetch`; or a bad route for `path.set`.                |
@@ -104,7 +105,10 @@ for the calls `@tryghost/app-contracts/bridge` defines; Admin then calls `start`
 
 Only an error's message survives the channel, so Admin leads it with the code,
 as in `blocked: Apps can't use /db/`; the SDK reads it back into `code` and
-`message`. A message without a known code arrives as `rejected`.
+`message`. A message without a known code arrives as `rejected`. The SDK codes
+its own refusal of a start context it cannot read the same way, as
+`invalid_context: …`. The codes and their format are defined once, in
+`@tryghost/app-contracts`.
 
 The session ends when the port closes (in browsers that report it, such as
 Chromium), when a message on it cannot be read, or when Admin refuses a call

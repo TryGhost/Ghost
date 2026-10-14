@@ -44,18 +44,22 @@ export {
 export { PlaceSchema, type Place } from './places.ts';
 export { resolveAdminApiPath } from './resolve.ts';
 export {
+  BRIDGE_ERROR_CODES,
   CONNECT_MESSAGE_TYPE,
   FETCH_METHODS,
   FETCH_RESPONSE_STATUS_MAX,
   FETCH_RESPONSE_STATUS_MIN,
   HELLO_MESSAGE_TYPE,
   TITLE_MAX_LENGTH,
+  decodeBridgeError,
+  encodeBridgeError,
   isConnectMessage,
   isContainedPath,
   isFetchResponse,
   isRecord,
   isStartContext,
   isTheme,
+  type BridgeErrorCode,
   type FetchMethod,
 } from './rules.ts';
 export { TitleSchema } from './title.ts';

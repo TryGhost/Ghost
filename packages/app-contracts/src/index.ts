@@ -33,12 +33,15 @@ export type {
   ParseManifestUrlResult,
 } from './manifest/index.ts';
 export {
+  BRIDGE_ERROR_CODES,
   CONNECT_MESSAGE_TYPE,
   FETCH_METHODS,
   FETCH_RESPONSE_STATUS_MAX,
   FETCH_RESPONSE_STATUS_MIN,
   HELLO_MESSAGE_TYPE,
   TITLE_MAX_LENGTH,
+  decodeBridgeError,
+  encodeBridgeError,
   isConnectMessage,
   isContainedPath,
   isFetchResponse,
@@ -50,6 +53,7 @@ export type {
   AppExports,
   AppPath,
   BlockedAdminApiCategory,
+  BridgeErrorCode,
   ConnectMessage,
   FetchMethod,
   FetchRequest,

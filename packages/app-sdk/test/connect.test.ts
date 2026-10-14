@@ -235,11 +235,15 @@ describe('connect', () => {
     frame();
     const fake = admin();
     const connecting = sdk.connect();
-    const failed = expect(connecting).rejects.toMatchObject({ code: 'not_connected' });
+    const failed = expect(connecting).rejects.toMatchObject({
+      code: 'invalid_context',
+      message: "Ghost started the app with a context this SDK doesn't understand",
+    });
     fake.connect();
 
+    // Admin hears why, coded the way it codes its own refusals.
     await expect(fake.start({ ...startContext(), theme: { mode: 'system' } })).rejects.toThrow(
-      "Ghost started the app with a context this SDK doesn't understand",
+      "invalid_context: Ghost started the app with a context this SDK doesn't understand",
     );
     await failed;
   });

@@ -35,6 +35,61 @@ export type FetchMethod = (typeof FETCH_METHODS)[number];
 export const FETCH_RESPONSE_STATUS_MIN = 200;
 export const FETCH_RESPONSE_STATUS_MAX = 599;
 
+/**
+ * The codes a refused call carries across the channel. Only an error's message survives the
+ * structured clone that carries it, so the side that refuses leads the message with the code,
+ * as `blocked: Apps can't use /db/`, and the other side reads it back. Codes are only ever
+ * added: an SDK that does not know one reads the whole message as a refusal.
+ *
+ * Admin refuses the page's calls with:
+ *
+ * - `session_ended`: the session is over; the page is about to be replaced.
+ * - `invalid_argument`: an argument Admin does not take.
+ * - `invalid_path`: a path that is not an Admin API path or a route within the app, or one
+ *   the Admin API answers only with a redirect, such as a path without its trailing `/`.
+ * - `unsupported`: this Admin does not have what the page asked for.
+ * - `blocked`: an Admin API route apps may not reach.
+ * - `network_error`: Admin could not reach its own API.
+ * - `rejected`: anything else; the detail says why.
+ *
+ * The page refuses Admin's `start` with:
+ *
+ * - `invalid_context`: a start context the SDK cannot read, so Admin and the SDK disagree on
+ *   what the bridge carries.
+ */
+export const BRIDGE_ERROR_CODES = [
+  'session_ended',
+  'invalid_argument',
+  'invalid_path',
+  'unsupported',
+  'blocked',
+  'network_error',
+  'rejected',
+  'invalid_context',
+] as const;
+
+export type BridgeErrorCode = (typeof BRIDGE_ERROR_CODES)[number];
+
+const CODED_MESSAGE = /^([a-z_]+): ([\s\S]*)$/;
+
+/** The message a refusal crosses the channel as: `code: detail`. */
+export function encodeBridgeError(code: BridgeErrorCode, detail: string): string {
+  return `${code}: ${detail}`;
+}
+
+/**
+ * The code and detail a refusal's message carries, read back from `code: detail`. Answers
+ * `undefined` for a message that leads with no code this side knows.
+ */
+export function decodeBridgeError(
+  message: string,
+): { code: BridgeErrorCode; detail: string } | undefined {
+  const [, code = '', detail = ''] = CODED_MESSAGE.exec(message) ?? [];
+  return (BRIDGE_ERROR_CODES as readonly string[]).includes(code)
+    ? { code: code as BridgeErrorCode, detail }
+    : undefined;
+}
+
 /** What Admin's theme can be. Resolved before it is sent, so never `system`. */
 export const THEME_MODES = ['light', 'dark'] as const;
 
