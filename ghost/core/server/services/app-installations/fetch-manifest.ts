@@ -112,7 +112,8 @@ export function createManifestFetcher({
       // so a redirect to another host is refused before the outbound guard looks its
       // target up, and Ghost never resolves a host it was always going to refuse.
       followRedirect: (response) => {
-        // got asks on every response, a plain 200 included, not only on redirects.
+        // got asks only about a redirect status that carries a location, so one is always
+        // here; the check is for the header's type.
         const rawLocation = response.headers.location;
         if (!rawLocation) {
           return true;
