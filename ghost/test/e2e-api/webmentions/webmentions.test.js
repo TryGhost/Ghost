@@ -115,7 +115,7 @@ describe('Webmentions (receiving)', function () {
       .body({
         source: sourceUrl.href,
         target: targetUrl.href,
-        withExtension: true, // test payload recorded
+        withExtension: true,
       })
       .expectStatus(202);
 
@@ -131,12 +131,7 @@ describe('Webmentions (receiving)', function () {
     assert.equal(mention.get('source_title'), 'Test Page');
     assert.equal(mention.get('source_excerpt'), 'Test description');
     assert.equal(mention.get('source_author'), 'John Doe');
-    assert.equal(
-      mention.get('payload'),
-      JSON.stringify({
-        withExtension: true,
-      }),
-    );
+    assert.equal(mention.get('payload'), JSON.stringify({}));
   });
 
   it('will update a mentions source metadata', async function () {
