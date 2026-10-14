@@ -13,8 +13,8 @@ const controller = {
   docName: 'app_installation_previews',
 
   // Fetches and checks an app's manifest so the publisher can review it before installing
-  // or approving it. Nothing is stored. Making Ghost fetch a URL is part of installing, so
-  // it takes the permission to install.
+  // or approving it. Nothing is stored. Making Ghost fetch a URL the caller names is part
+  // of installing, so it takes the permission to install.
   add: {
     headers: { cacheInvalidate: false },
     permissions: { docName: 'app_installations', method: 'add' },

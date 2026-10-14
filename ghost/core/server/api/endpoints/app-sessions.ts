@@ -7,8 +7,10 @@ const controller = {
   docName: 'app_sessions',
 
   // Admin starts a session when an app page opens. No body, as the only URL Ghost fetches
-  // is the one the publisher approved. Opening an app takes the same permission as reading
-  // its installation.
+  // is the one the publisher approved, and it keeps what it finds there as it would by
+  // itself. So opening an app takes the same permission as reading its installation, unlike
+  // previewing, where the caller names the URL. Granting `read` more widely also lets
+  // those callers make Ghost re-check an app, which can suspend it or apply silent changes.
   start: {
     headers: { cacheInvalidate: false },
     options: ['id'],
