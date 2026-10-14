@@ -11,9 +11,9 @@ import {
   callHostRaw,
   currentRoute,
   currentUserResponse,
-  delayModuleLoads,
   fakeAdminEndpoint,
   fakeTags,
+  holdModuleLoads,
   postFrameForm,
   reloadFrame,
   renderAdminApp,
@@ -706,8 +706,8 @@ describe('Managing apps', () => {
       // The pages list owns its request graph.
       allowUnhandledRequests();
       await fakeAppPage(installation());
-      // Pages loads slowly, so leaving for it takes a while.
-      await delayModuleLoads('/src/posts/list/pages-route.tsx', 1000);
+      // Pages loads slowly, so leaving for it takes until the spec lets it load.
+      const loadPages = await holdModuleLoads('/src/posts/list/pages-route.tsx');
       await renderAdminApp(APP_ROUTE, { labs });
       await expect.element(appsScreen.frame()).toBeVisible();
 
@@ -721,6 +721,7 @@ describe('Managing apps', () => {
         .poll(async () => (await appState()).received)
         .toEqual([{ call: 'pathChanged', value: '/' }]);
 
+      await loadPages();
       await expect.poll(currentRoute).toBe('/pages');
     });
 

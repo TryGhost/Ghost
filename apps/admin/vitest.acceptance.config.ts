@@ -261,23 +261,35 @@ const failModuleLoads: BrowserCommand<[pathEnd: string]> = async ({ context }, p
   failedModules.set(context, [...(failedModules.get(context) ?? []), matcher]);
 };
 
-const delayModuleLoads: BrowserCommand<[pathEnd: string, delayMs: number]> = async (
-  { context },
-  pathEnd,
-  delayMs,
-) => {
+// What lets each module `holdModuleLoads` holds back go, by its path's end.
+const heldModules = new WeakMap<BrowserContext, Map<string, () => void>>();
+
+const holdModuleLoads: BrowserCommand<[pathEnd: string]> = async ({ context }, pathEnd) => {
+  let release!: () => void;
+  const released = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+  const held = heldModules.get(context) ?? new Map<string, () => void>();
+  held.set(pathEnd, release);
+  heldModules.set(context, held);
   const matcher = (url: URL) => url.pathname.endsWith(pathEnd);
   await context.route(matcher, async (route) => {
-    await new Promise<void>((resolve) => {
-      setTimeout(resolve, delayMs);
-    });
+    await released;
     // The spec may have ended meanwhile, and the request with it.
     await route.fallback().catch(() => {});
   });
   failedModules.set(context, [...(failedModules.get(context) ?? []), matcher]);
 };
 
+const releaseModuleLoads: BrowserCommand<[pathEnd: string]> = ({ context }, pathEnd) => {
+  heldModules.get(context)?.get(pathEnd)?.();
+};
+
 const resetFailedModuleLoads: BrowserCommand<[]> = async ({ context }) => {
+  for (const release of heldModules.get(context)?.values() ?? []) {
+    release();
+  }
+  heldModules.delete(context);
   const matchers = failedModules.get(context) ?? [];
   failedModules.delete(context);
   await Promise.all(matchers.map((matcher) => context.unroute(matcher)));
@@ -341,12 +353,13 @@ export default defineConfig({
         bundleAppSdk,
         bundleFrameScript,
         callInFrame,
-        delayModuleLoads,
         failFrameOrigin,
         failModuleLoads,
         fakeFrameOrigin,
         guardFrameNavigations,
+        holdModuleLoads,
         postFrameForm,
+        releaseModuleLoads,
         reloadFrame,
         resetFailedModuleLoads,
         resetFakeFrameOrigins,

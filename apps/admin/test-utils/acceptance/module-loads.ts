@@ -2,8 +2,9 @@ import { commands } from 'vitest/browser';
 
 declare module 'vitest/browser' {
   interface BrowserCommands {
-    delayModuleLoads: (pathEnd: string, delayMs: number) => Promise<void>;
     failModuleLoads: (pathEnd: string) => Promise<void>;
+    holdModuleLoads: (pathEnd: string) => Promise<void>;
+    releaseModuleLoads: (pathEnd: string) => Promise<void>;
     resetFailedModuleLoads: () => Promise<void>;
   }
 }
@@ -17,13 +18,14 @@ export function failModuleLoads(pathEnd: string): Promise<void> {
 }
 
 /**
- * Holds requests for the module whose path ends with `pathEnd` back for `delayMs`, as a slow
- * connection would, so a navigation to a route it serves stays pending meanwhile. Once loaded,
- * the browser keeps it for the rest of the spec file, so only a module no earlier spec in the
- * file loads is held.
+ * Holds requests for the module whose path ends with `pathEnd` back, as a slow connection
+ * would, so a navigation to a route it serves stays pending until the spec calls the release
+ * this answers with; the spec's end releases it too. Once loaded, the browser keeps it for the
+ * rest of the spec file, so only a module no earlier spec in the file loads is held.
  */
-export function delayModuleLoads(pathEnd: string, delayMs: number): Promise<void> {
-  return commands.delayModuleLoads(pathEnd, delayMs);
+export async function holdModuleLoads(pathEnd: string): Promise<() => Promise<void>> {
+  await commands.holdModuleLoads(pathEnd);
+  return () => commands.releaseModuleLoads(pathEnd);
 }
 
 export function resetFailedModuleLoads(): Promise<void> {
