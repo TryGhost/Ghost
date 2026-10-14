@@ -59,7 +59,8 @@ const sameTheme = (a: Theme | undefined, b: Theme) =>
  * start in time (`appFrameTimeouts.ready`) has failed, one that has started stays started.
  * A started page whose frame holds a new document has reloaded, and is loaded afresh. Path
  * and theme changes are passed on in both directions, each once: what the app was last
- * told, or told Admin, is never echoed back to it.
+ * told, or told Admin, is never echoed back to it, even when Admin is still catching up
+ * with routes it has since left.
  */
 export function createAppFrameSession(options: AppFrameSessionOptions): AppFrameSession {
   let state: AppFrameState = { status: 'loading', attempt: 0, startedAt: new Date() };
@@ -74,6 +75,10 @@ export function createAppFrameSession(options: AppFrameSessionOptions): AppFrame
   let adminPath: string | undefined;
   let appPath: string | undefined;
   let appTheme: Theme | undefined;
+  // The routes Admin set out for to follow the app, in order, that it hasn't arrived at yet.
+  // The app can move again before Admin has, so where Admin is, as it says, can be a route
+  // the app has left: one of these is Admin catching up, not moving on its own.
+  let following: string[] = [];
 
   const update = (next: Partial<AppFrameState>) => {
     state = { ...state, ...next };
@@ -121,7 +126,9 @@ export function createAppFrameSession(options: AppFrameSessionOptions): AppFrame
         pathChanged: (next, { replace }) => {
           const normalised = normaliseAppPath(next);
           appPath = normalised;
-          if (normalised !== adminPath) {
+          // Where Admin is headed, if it's still following the app; where it is otherwise.
+          if (normalised !== (following.at(-1) ?? adminPath)) {
+            following.push(normalised);
             options.navigate(normalised, { replace });
           }
         },
@@ -179,6 +186,14 @@ export function createAppFrameSession(options: AppFrameSessionOptions): AppFrame
     restart,
     pathChanged: (path) => {
       adminPath = path;
+      const caughtUp = following.indexOf(path);
+      if (caughtUp !== -1) {
+        // Admin arrived where the app went, or somewhere on its way there: the app has
+        // been there already, and needn't hear of it.
+        following = following.slice(caughtUp + 1);
+        return;
+      }
+      following = [];
       if (host?.connected && appPath !== path) {
         appPath = path;
         host.pathChanged(path);
