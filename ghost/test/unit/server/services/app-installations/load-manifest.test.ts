@@ -1,7 +1,9 @@
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
+import logging from '@tryghost/logging';
 import got from 'got';
 import nock from 'nock';
+import sinon from 'sinon';
 import {
   createManifestLoader,
   type ManifestRules,
@@ -47,6 +49,7 @@ describe('createManifestLoader', function () {
 
   afterEach(function () {
     nock.cleanAll();
+    sinon.restore();
   });
 
   afterAll(function () {
@@ -270,6 +273,7 @@ describe('createManifestLoader', function () {
     );
 
     it('reports a redirect to a Location that is not a URL as unreachable, with its status', async function () {
+      const warn = sinon.stub(logging, 'warn');
       nock('https://podcast.example.com')
         .get('/ghost-app.json')
         .reply(302, '', { location: 'http://[bad' });
@@ -280,6 +284,9 @@ describe('createManifestLoader', function () {
         err.context,
         `${MANIFEST_URL} answered with HTTP 302 and a Location that is not a URL`,
       );
+      // Logged like every other unreachable manifest, so an operator can tell why.
+      sinon.assert.calledWith(warn, `Could not load the app manifest at ${MANIFEST_URL}`);
+      sinon.assert.calledWith(warn, err.context);
     });
 
     it('follows at most three redirects', async function () {

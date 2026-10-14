@@ -216,10 +216,14 @@ export function createManifestFetcher({
 
 function refused(manifestUrl: string, { status, target }: { status: number; target: URL | null }) {
   if (!target) {
+    // Reported as unreachable, so logged like every other unreachable manifest.
+    const context = `${manifestUrl} answered with HTTP ${status} and a Location that is not a URL`;
+    logging.warn(`Could not load the app manifest at ${manifestUrl}`);
+    logging.warn(context);
     return new errors.ValidationError({
       message: 'Could not load the app’s manifest.',
       code: 'APP_MANIFEST_UNREACHABLE',
-      context: `${manifestUrl} answered with HTTP ${status} and a Location that is not a URL`,
+      context,
     });
   }
   return new errors.ValidationError({
