@@ -83,7 +83,6 @@
     "@secretlint/secretlint-rule-preset-recommend": "catalog:",
     "dependency-cruiser": "catalog:",
     "eslint": "catalog:",
-    "eslint-plugin-ghost": "catalog:",
     "husky": "9.1.7",
     "knip": "catalog:",
     "lint-staged": "catalog:",

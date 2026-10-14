@@ -1,19 +1,17 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { cpSync, mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { test } from 'node:test';
 import { fileURLToPath } from 'node:url';
-import { Linter } from 'eslint';
 
 const root = fileURLToPath(new URL('../../..', import.meta.url));
 const requireRoot = createRequire(path.join(root, 'package.json'));
 const binary = path.join(path.dirname(requireRoot.resolve('oxlint/package.json')), 'bin/oxlint');
 const config = JSON.parse(readFileSync(path.join(root, '.oxlintrc.json'), 'utf8'));
 const ruleName = 'ghost/ghost-custom/no-native-error';
-const ghost = requireRoot('eslint-plugin-ghost');
 
 interface Diagnostic {
   code: string;
@@ -26,8 +24,10 @@ function lint(code: string, filename: string, allOff = false) {
   const cwd = mkdtempSync(path.join(tmpdir(), 'ghost-oxlint-'));
   try {
     const localConfig = structuredClone(config);
+    // Run a standalone copy so an accidental ESLint plugin import cannot resolve.
+    cpSync(path.join(root, 'tools/configs/oxlint'), path.join(cwd, 'plugin'), { recursive: true });
     for (const plugin of localConfig.jsPlugins) {
-      plugin.specifier = path.resolve(root, plugin.specifier);
+      plugin.specifier = './plugin/plugin.mjs';
     }
     if (allOff) {
       localConfig.overrides = [];
@@ -120,7 +120,7 @@ test('existing ESLint inline exceptions also suppress Oxlint diagnostics', () =>
   }
 });
 
-test('Oxlint preserves ESLint messages and source positions', () => {
+test('the migrated rule preserves constructor matching, messages and source positions', () => {
   const source = [
     "new Error('one');",
     'throw new Error();',
@@ -129,15 +129,17 @@ test('Oxlint preserves ESLint messages and source positions', () => {
     "new TypeError('not matched by the existing rule');",
     "new globalThis.Error('not matched by the existing rule');",
   ].join('\n');
-  const expected = new Linter().verify(source, [
-    { plugins: { ghost }, rules: { [ruleName]: 'error' } },
-  ]);
+  const message = 'Direct calls to new Error() are not allowed. Please use @tryghost/errors.';
   const actual = lint(source, 'ghost/core/server/example.js');
-  assert.equal(expected.length, 2);
+  assert.equal(actual.status, 1);
+  assert.equal(actual.diagnostics.length, 2);
   assert.deepEqual(
     actual.diagnostics
       .map((d) => [d.labels[0]?.span.line, d.labels[0]?.span.column, d.message])
       .sort(),
-    expected.map((d) => [d.line, d.column, d.message]).sort(),
+    [
+      [1, 1, message],
+      [2, 7, message],
+    ],
   );
 });

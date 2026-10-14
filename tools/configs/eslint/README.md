@@ -50,8 +50,9 @@ lint when changing shared rule atoms or either factory.
 `pnpm lint:oxlint` runs alongside ESLint in `pnpm lint` and CI. All built-in
 Oxlint categories are off. The first enabled rule is
 `ghost/ghost-custom/no-native-error`, scoped to `ghost/core/server/**/*.{js,ts}`.
-The plugin in `../oxlint/plugin.mjs` reuses the installed ESLint rule unchanged
-and preserves its name so existing inline ESLint exceptions also apply.
+The rule implementation lives in `../oxlint/rules/no-native-error.mjs` and is
+registered by `../oxlint/plugin.mjs`. It has no ESLint plugin dependency and
+preserves the original behavior and rule name, including existing inline exceptions.
 
 ESLint continues to enforce all existing rules and scopes. Enable further
 Oxlint rules individually, using only `error` or `off`, and verify parity before
