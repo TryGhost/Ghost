@@ -76,8 +76,9 @@ const shared = {
   emptyOutDir: true,
 } as const;
 
-// What a bundler imports, in `build/`: one ES module with what the SDK uses from
-// @tryghost/app-contracts inlined, so the package depends on @quilted/threads alone.
+// What a bundler imports, in `build/`, built with `--mode package`: one ES module with what
+// the SDK uses from @tryghost/app-contracts inlined, so the package depends on @quilted/threads
+// alone.
 const packageBuild: UserConfig = {
   plugins: [refuseNodeBuiltins, tidyRegionComments, bundleDeclarations()],
   build: {
@@ -93,8 +94,9 @@ const packageBuild: UserConfig = {
   },
 };
 
-// The browser bundle, in `dist/`: one ES module with @quilted/threads inlined too, for a page
-// to load from a <script type="module"> with no bundler of its own.
+// The browser bundle, in `dist/`, built by default: one ES module with @quilted/threads
+// inlined too, for a page to load from a <script type="module"> with no bundler of its own.
+// Admin's acceptance specs build it from this config to run the SDK in a frame.
 const browserBundle: UserConfig = {
   plugins: [refuseNodeBuiltins, tidyRegionComments],
   build: {
@@ -109,4 +111,4 @@ const browserBundle: UserConfig = {
   },
 };
 
-export default defineConfig(({ mode }) => (mode === 'bundle' ? browserBundle : packageBuild));
+export default defineConfig(({ mode }) => (mode === 'package' ? packageBuild : browserBundle));

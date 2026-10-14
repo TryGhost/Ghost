@@ -56,7 +56,7 @@ function exportsOf(file: string): string[] {
 
 describe('the build', () => {
   // Vite would stub the builtin out, and the module would break the page that loaded it.
-  it.each(['production', 'bundle'])('refuses a Node builtin, in %s mode', async (mode) => {
+  it.each(['package', 'production'])('refuses a Node builtin, in %s mode', async (mode) => {
     const directory = await mkdtemp(join(tmpdir(), 'app-sdk-'));
     const entry = join(directory, 'entry.js');
     await writeFile(

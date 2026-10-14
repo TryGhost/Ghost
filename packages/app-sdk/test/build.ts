@@ -23,8 +23,8 @@ export default async function setup(project: TestProject) {
   const directory = await mkdtemp(join(tmpdir(), 'app-sdk-'));
   const built = { package: join(directory, 'build'), bundle: join(directory, 'dist') };
   for (const [mode, outDir] of [
-    ['production', built.package],
-    ['bundle', built.bundle],
+    ['package', built.package],
+    ['production', built.bundle],
   ] as const) {
     await build({ root, mode, logLevel: 'warn', build: { outDir } });
   }
