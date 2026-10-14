@@ -39,6 +39,18 @@ function compare(approved: Approved, loaded: LoadedManifest) {
   };
 }
 
+/** What to do with a loaded manifest; `decideOnManifest` says what each one means. */
+export type ManifestDecisionKind = 'unchanged' | 'use_pending' | 'apply' | 'suspend';
+
+/**
+ * A decision, with what differs from the approved manifest that it was made from, so
+ * keeping the manifest doesn't compare the two again.
+ */
+export interface ManifestDecision {
+  kind: ManifestDecisionKind;
+  changes: AppManifestChange[];
+}
+
 /**
  * What to do with a loaded manifest, given the installation's approved manifest and the
  * one waiting for approval, if any:
@@ -52,19 +64,9 @@ function compare(approved: Approved, loaded: LoadedManifest) {
  *   any manifest waiting before.
  *
  * This is what Ghost would do with a manifest it picked up by itself. An approval acts on
- * the same decision, but applies what the publisher reviewed whatever it needed.
+ * the same decision, but applies what the publisher reviewed whatever it needed: keeping
+ * a `suspend` from an approval applies it rather than letting it wait.
  */
-export type ManifestDecisionKind = 'unchanged' | 'use_pending' | 'apply' | 'suspend';
-
-/**
- * A decision, with what differs from the approved manifest that it was made from, so
- * keeping the manifest doesn't compare the two again.
- */
-export interface ManifestDecision {
-  kind: ManifestDecisionKind;
-  changes: AppManifestChange[];
-}
-
 export function decideOnManifest({
   current,
   pending,
