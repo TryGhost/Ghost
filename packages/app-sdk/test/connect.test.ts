@@ -391,10 +391,10 @@ describe('connect', () => {
     fake.connect();
 
     await expect(fake.thread.imports.pathChanged('/x')).rejects.toThrow(
-      'The app has not been started yet',
+      'invalid_context: Ghost has not started the app yet',
     );
     await expect(
       fake.thread.imports.themeChanged({ mode: 'dark', accent_color: '#000000' }),
-    ).rejects.toThrow('The app has not been started yet');
+    ).rejects.toThrow('invalid_context: Ghost has not started the app yet');
   });
 });

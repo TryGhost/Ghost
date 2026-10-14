@@ -2,6 +2,7 @@ import { ThreadMessagePort } from '@quilted/threads';
 import {
   ARGUMENT_MESSAGES,
   encodeBridgeError,
+  type AppErrorCode,
   isContainedPath,
   isRecord,
   isStartContext,
@@ -50,6 +51,14 @@ function notify<T>(listeners: ReadonlySet<(value: T) => void>, value: T) {
       });
     }
   }
+}
+
+/**
+ * A refusal of one of Admin's calls. Only its message reaches Admin, so it leads with the
+ * code, as Admin's own refusals do.
+ */
+function refusal(code: AppErrorCode, detail: string): Error {
+  return new Error(encodeBridgeError(code, detail));
 }
 
 function subscribe<T>(listeners: Set<T>, listener: T): Unsubscribe {
@@ -124,8 +133,7 @@ export class Channel implements Ghost {
       const detail = "Ghost started the app with a context this SDK doesn't understand";
       // Ended after Admin has had its answer, so it hears why rather than waiting it out.
       setTimeout(() => this.end(new GhostAppError('invalid_context', detail)), 0);
-      // Only the message reaches Admin, so it leads with the code, as Admin's own do.
-      throw new Error(encodeBridgeError('invalid_context', detail));
+      throw refusal('invalid_context', detail);
     }
     this.#context = {
       site: Object.freeze({ ...context.site }),
@@ -149,7 +157,7 @@ export class Channel implements Ghost {
   #themeChanged(theme: unknown) {
     this.#assertStarted();
     if (!isTheme(theme)) {
-      throw invalidArgument("Ghost sent a theme this SDK doesn't understand");
+      throw refusal('invalid_argument', "Ghost sent a theme this SDK doesn't understand");
     }
     this.#theme = Object.freeze({ ...theme });
     notify(this.#themeListeners, this.#theme);
@@ -158,7 +166,7 @@ export class Channel implements Ghost {
   #pathChanged(path: unknown) {
     this.#assertStarted();
     if (!isContainedPath(path)) {
-      throw invalidArgument("Ghost sent a path this SDK doesn't understand");
+      throw refusal('invalid_argument', "Ghost sent a path this SDK doesn't understand");
     }
     this.#pathsFromAdmin += 1;
     this.#path = path;
@@ -167,7 +175,7 @@ export class Channel implements Ghost {
 
   #assertStarted() {
     if (!this.#context) {
-      throw new GhostAppError('not_connected', 'The app has not been started yet');
+      throw refusal('invalid_context', 'Ghost has not started the app yet');
     }
   }
 

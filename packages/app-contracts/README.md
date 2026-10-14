@@ -184,8 +184,9 @@ exported from the root entry point as well:
   (`ARGUMENT_MESSAGES`);
 - the codes a refused call carries, written and read as `code: detail` by
   `encodeBridgeError` and `decodeBridgeError`: `HOST_ERROR_CODES` are those Admin
-  refuses the page's calls with, and `BRIDGE_ERROR_CODES` adds `invalid_context`,
-  which only the page sends, refusing a start context it cannot read;
+  refuses the page's calls with, `APP_ERROR_CODES` (`invalid_context` and
+  `invalid_argument`) those the page refuses Admin's with, and
+  `BRIDGE_ERROR_CODES` all of them;
 - the shapes Admin sends the page, `Theme`, `StartContext`, `ConnectMessage`
   and `FetchResponse`, with a guard for each (`isTheme`, `isStartContext`,
   `isConnectMessage`, `isFetchResponse`).

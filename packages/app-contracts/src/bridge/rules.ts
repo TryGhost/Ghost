@@ -121,9 +121,18 @@ export const HOST_ERROR_CODES = [
 export type HostErrorCode = (typeof HOST_ERROR_CODES)[number];
 
 /**
- * Every code a refusal can carry: the host codes, and `invalid_context`, which only the page
- * sends, refusing Admin's `start` with a context the SDK cannot read.
+ * The page refuses Admin's calls with these, the app codes:
+ *
+ * - `invalid_context`: a start context the SDK cannot read, or a call before the app has
+ *   started.
+ * - `invalid_argument`: an argument the SDK does not take, such as a theme it cannot read.
  */
+export const APP_ERROR_CODES = ['invalid_context', 'invalid_argument'] as const;
+
+/** A code the page may refuse a call from Admin with. */
+export type AppErrorCode = (typeof APP_ERROR_CODES)[number];
+
+/** Every code a refusal can carry, in either direction. */
 export const BRIDGE_ERROR_CODES = [...HOST_ERROR_CODES, 'invalid_context'] as const;
 
 export type BridgeErrorCode = (typeof BRIDGE_ERROR_CODES)[number];
@@ -131,8 +140,8 @@ export type BridgeErrorCode = (typeof BRIDGE_ERROR_CODES)[number];
 const CODED_MESSAGE = /^([a-z_]+): ([\s\S]*)$/;
 
 /**
- * The message a refusal crosses the channel as: `code: detail`. Admin passes only host
- * codes; typing its refusals as `HostErrorCode` keeps it to them.
+ * The message a refusal crosses the channel as: `code: detail`. Each side passes only its
+ * own codes; typing its refusals as `HostErrorCode` or `AppErrorCode` keeps it to them.
  */
 export function encodeBridgeError(code: BridgeErrorCode, detail: string): string {
   return `${code}: ${detail}`;
@@ -140,8 +149,9 @@ export function encodeBridgeError(code: BridgeErrorCode, detail: string): string
 
 /**
  * The code and detail a refusal's message carries, read back from `code: detail`. Takes the
- * codes the other side may send, `HOST_ERROR_CODES` for a refusal from Admin, and answers
- * `undefined` for a message that leads with none of them.
+ * codes the other side may send, `HOST_ERROR_CODES` for a refusal from Admin and
+ * `APP_ERROR_CODES` for one from the page, and answers `undefined` for a message that leads
+ * with none of them.
  */
 export function decodeBridgeError<Code extends BridgeErrorCode>(
   message: string,

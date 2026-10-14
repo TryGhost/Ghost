@@ -123,9 +123,10 @@ Admin only ever adds calls, so an older Admin lacks the newer ones.
 
 Only an error's message survives the channel, so Admin leads it with the code,
 as in `blocked: Apps can't use /db/`; the SDK reads it back into `code` and
-`message`. A message without a known code arrives as `rejected`. The SDK codes
-its own refusal of a start context it cannot read the same way, as
-`invalid_context: …`. The codes and their format are defined once, in
+`message`. A message without a known code arrives as `rejected`. The SDK refuses
+Admin's calls the same way: `invalid_context: …` for a start context it cannot
+read or a call before the start, `invalid_argument: …` for a theme or path it
+cannot. The codes and their format are defined once, in
 `@tryghost/app-contracts`.
 
 The session ends when the port closes (in browsers that report it, such as

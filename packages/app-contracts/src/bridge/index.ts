@@ -29,6 +29,7 @@ export {
 export { PlaceSchema, type Place } from './places.ts';
 export { checkAdminApiPath, type AdminApiPathCheck } from './resolve.ts';
 export {
+  APP_ERROR_CODES,
   ARGUMENT_MESSAGES,
   BRIDGE_ERROR_CODES,
   CONNECT_MESSAGE_TYPE,
@@ -51,6 +52,7 @@ export {
   isTheme,
   methodAllowsBody,
   normaliseAppPath,
+  type AppErrorCode,
   type BridgeErrorCode,
   type ConnectMessage,
   type FetchMethod,

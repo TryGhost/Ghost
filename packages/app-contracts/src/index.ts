@@ -34,6 +34,7 @@ export type {
   ParseManifestUrlResult,
 } from './manifest/index.ts';
 export {
+  APP_ERROR_CODES,
   ARGUMENT_MESSAGES,
   BRIDGE_ERROR_CODES,
   CONNECT_MESSAGE_TYPE,
@@ -58,6 +59,7 @@ export {
   normaliseAppPath,
 } from './bridge/rules.ts';
 export type {
+  AppErrorCode,
   AppExports,
   AppPath,
   BlockedAdminApiCategory,

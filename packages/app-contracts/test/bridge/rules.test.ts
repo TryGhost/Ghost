@@ -1,10 +1,12 @@
 import { describe, expect, expectTypeOf, it } from 'vitest';
 
 import {
+  APP_ERROR_CODES,
   ARGUMENT_MESSAGES,
   AppPathSchema,
   BRIDGE_ERROR_CODES,
   HOST_ERROR_CODES,
+  type AppErrorCode,
   type HostErrorCode,
   decodeBridgeError,
   encodeBridgeError,
@@ -241,7 +243,9 @@ describe('a refusal', () => {
       'network_error',
       'rejected',
     ]);
+    expect(APP_ERROR_CODES).toEqual(['invalid_context', 'invalid_argument']);
     expect(BRIDGE_ERROR_CODES).toEqual([...HOST_ERROR_CODES, 'invalid_context']);
+    expect(new Set(BRIDGE_ERROR_CODES)).toEqual(new Set([...HOST_ERROR_CODES, ...APP_ERROR_CODES]));
   });
 
   it('is read only with a code the other side may send', () => {
@@ -253,6 +257,13 @@ describe('a refusal', () => {
       { code: HostErrorCode; detail: string } | undefined
     >();
     expectTypeOf<'invalid_context'>().not.toExtend<HostErrorCode>();
+
+    const fromPage = (message: string) => decodeBridgeError(message, APP_ERROR_CODES);
+    expect(fromPage('invalid_argument: Odd')).toEqual({ code: 'invalid_argument', detail: 'Odd' });
+    expect(fromPage('blocked: No')).toBeUndefined();
+    expectTypeOf(fromPage).returns.toEqualTypeOf<
+      { code: AppErrorCode; detail: string } | undefined
+    >();
   });
 
   it('is not read from a message without a known code', () => {

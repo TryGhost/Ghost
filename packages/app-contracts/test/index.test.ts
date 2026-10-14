@@ -29,6 +29,7 @@ describe('the root entry point', () => {
 
   it('exposes only what depends on nothing', () => {
     expect(Object.keys(root).sort()).toEqual([
+      'APP_ERROR_CODES',
       'APP_ID_MAX_LENGTH',
       'ARGUMENT_MESSAGES',
       'BRIDGE_ERROR_CODES',
@@ -67,6 +68,7 @@ describe('the root entry point', () => {
 
   it("shares the bridge's rules with the bridge entry point", () => {
     for (const name of [
+      'APP_ERROR_CODES',
       'ARGUMENT_MESSAGES',
       'BRIDGE_ERROR_CODES',
       'CONNECT_MESSAGE_TYPE',

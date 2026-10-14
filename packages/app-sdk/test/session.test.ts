@@ -432,7 +432,7 @@ describe('path', () => {
     const { admin: fake } = await started();
     for (const path of ['nope', '//evil.example']) {
       await expect(fake.thread.imports.pathChanged(path)).rejects.toThrow(
-        "Ghost sent a path this SDK doesn't understand",
+        "invalid_argument: Ghost sent a path this SDK doesn't understand",
       );
     }
   });
@@ -494,9 +494,9 @@ describe('theme', () => {
     const { admin: fake } = await started();
     await expect(
       fake.thread.imports.themeChanged({ mode: 'system' as never, accent_color: '#000000' }),
-    ).rejects.toThrow("Ghost sent a theme this SDK doesn't understand");
+    ).rejects.toThrow("invalid_argument: Ghost sent a theme this SDK doesn't understand");
     await expect(fake.thread.imports.themeChanged(null as never)).rejects.toThrow(
-      "Ghost sent a theme this SDK doesn't understand",
+      "invalid_argument: Ghost sent a theme this SDK doesn't understand",
     );
   });
 
