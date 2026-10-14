@@ -8,7 +8,9 @@ import { HOST_ERROR_CODES, decodeBridgeError, type BridgeErrorCode } from '@tryg
  * - `invalid_context`: Admin started the app with a context this SDK cannot read.
  * - `session_ended`: the channel to Admin is gone; the page is about to be replaced.
  * - `invalid_argument`: the app passed something that cannot be sent.
- * - `invalid_path`: a path that is not an Admin API path, or not a route within the app.
+ * - `invalid_path`: a path that is not an Admin API path, or not a route within the app; or
+ *   one the Admin API only redirects, such as a path without its trailing `/` or with
+ *   capitals, as Admin API paths are lowercase and end in `/`.
  * - `unsupported`: this site's Ghost is older than the call the app made.
  * - `blocked`: Admin refused on principle, such as an Admin API route apps may not reach.
  * - `network_error`: Admin could not reach its own API.
