@@ -4,8 +4,8 @@
  * Apps call the Admin API with the staff user's own session, as a stand-in for an app-scoped
  * token with permissions; the blocklist goes when that token arrives. Until then it closes the
  * routes that hand out a credential outliving the app's session, change who can sign in or who
- * the staff are, change the site's settings, send site events elsewhere, import, export or
- * delete the whole site, or install and approve apps.
+ * the staff are, change the site's settings, send site events elsewhere, take a file, import,
+ * export or delete the whole site, or install and approve apps.
  *
  * It is not complete. These stay open until the security review before external developers
  * decides on them (BER-3992):
@@ -13,11 +13,12 @@
  * - Changing a member's email through `PUT /members/:id`, which lets whoever holds the new
  *   address sign in as that member. Blocking it would close every member edit.
  * - Connecting Stripe through `/members/stripe_connect`.
- * - Writes that leave code on the site: theme uploads and installs (`POST /themes/upload`,
- *   `POST /themes/install?source=github`) and redirects uploads.
- * - Bulk deletes, edits and exports: `DELETE /members?all=true`, `PUT /members/bulk`, the
- *   members CSV at `GET /members/upload`, `GET /posts/export`, `DELETE /posts`,
- *   `DELETE /pages` and the bulk edits of posts and pages.
+ * - Writes that leave code on the site: installing a theme from GitHub
+ *   (`POST /themes/install?source=github`), and posts and pages, whose HTML cards Ghost serves
+ *   as written, so their script runs on the site's own origin.
+ * - Bulk deletes, edits and exports: `DELETE /members?all=true`, `PUT /members/bulk`,
+ *   `GET /posts/export`, `DELETE /posts`, `DELETE /pages` and the bulk edits of posts and
+ *   pages.
  *
  * Closing the bulk routes alone would gain little: an app acts with the staff user's own
  * authority, so it could do the same one request at a time.
@@ -72,6 +73,21 @@ export const ADMIN_API_BLOCKLIST: readonly BlockedAdminApiCategory[] = [
     reason:
       "Settings decide who can read the site and sign in (a private site's access code, signup, staff two-factor), send data elsewhere (Mailgun, Stripe, Slack) and put code on every page (code injection, routes). An app reads the site facts it needs from the start context.",
     paths: ['/settings', '/settings/*'],
+  },
+  {
+    name: 'uploads',
+    reason:
+      "Files stay out of the bridge for now. An uploaded file is served from the site's own origin, where an HTML file or a theme runs as the site, and a CSV import adds posts or members in bulk. The members export shares the import's address, so it is closed with it.",
+    paths: [
+      '/images/upload',
+      '/media/upload',
+      '/media/thumbnail/upload',
+      '/files/upload',
+      '/themes/upload',
+      '/redirects/upload',
+      '/posts/upload',
+      '/members/upload',
+    ],
   },
   {
     name: 'invites',

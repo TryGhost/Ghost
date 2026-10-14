@@ -11,6 +11,7 @@ describe('the Admin API blocklist', () => {
       'sessions',
       'member_sign_in',
       'settings',
+      'uploads',
       'invites',
       'webhooks',
       'database',
@@ -57,6 +58,17 @@ describe('the Admin API blocklist', () => {
       '/settings/routes/yaml/',
       '/settings/stripe/connect/',
       '/settings/verifications/',
+    ],
+    uploads: [
+      '/images/upload/',
+      '/media/upload/',
+      '/media/thumbnail/upload/',
+      '/files/upload/',
+      '/themes/upload/',
+      '/redirects/upload/',
+      '/posts/upload/',
+      '/members/upload/',
+      '/members/upload/?limit=all',
     ],
     invites: ['/invites/', '/invites/abc/'],
     webhooks: ['/webhooks/', '/webhooks/abc/'],
@@ -108,6 +120,12 @@ describe('the Admin API blocklist', () => {
       '/members/signin_urls/',
       '/custom_theme_settings/',
       '/posts/settings/',
+      '/images/',
+      '/files/',
+      '/themes/',
+      '/themes/install/?source=github&ref=TryGhost/Casper',
+      '/redirects/download/',
+      '/posts/export/',
     ]) {
       expect(isBlockedAdminApiPath(path), path).toBe(false);
     }
