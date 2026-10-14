@@ -53,6 +53,14 @@ class PostEmailHandler {
       return null;
     }
 
+    // An existing email won't be sent again unless it failed, so no validation is required
+    const existingEmail = await existingPost?.getLazyRelation('email', {
+      transacting: frame.options.transacting,
+    });
+    if (existingEmail && existingEmail.get('status') !== 'failed') {
+      return null;
+    }
+
     // A post keeps the newsletter and audience it already has, as the Post model does on save
     const emailRecipientFilter = existingNewsletterId
       ? existingPost.get('email_recipient_filter')
