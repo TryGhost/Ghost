@@ -613,6 +613,55 @@ describe('App installations Admin API', function () {
       assert.ok(events.includes('suspended'), `expected a suspended entry in ${events}`);
     });
 
+    it('approves a newer manifest than the one waiting, letting go of the one that waited', async function () {
+      const installed = await install();
+      const pendingId = await suspendWithPending(installed.id, manifest({ name: 'Podcasts' }));
+      serve(manifest({ name: 'Podcasts!' }));
+      const reviewed = await preview();
+      serve(manifest({ name: 'Podcasts!' }));
+
+      const { body } = await approve(
+        installed.id,
+        MANIFEST_URL,
+        reviewed.digest,
+        200,
+        reviewed.installation.revision,
+      );
+
+      assert.equal(body.app_installations[0].status, 'active');
+      assert.equal(body.app_installations[0].manifest.name, 'Podcasts!');
+      const [first, waited, approved] = await manifestRows();
+      assert.equal(waited.id, pendingId);
+      assert.equal(approved.source, 'approval');
+      assert.equal(Boolean(approved.requires_approval), true);
+      const row = await installationRow(installed.id);
+      assert.equal(row.manifest_id, approved.id);
+      assert.equal(row.pending_manifest_id, null);
+      assert.equal(row.revision, 2);
+      const [, action] = await actions();
+      assert.deepEqual(JSON.parse(action.context), {
+        primary_name: 'Podcasts!',
+        app_id: 'com.example.podcast',
+        from_manifest_id: first.id,
+        to_manifest_id: approved.id,
+      });
+
+      const { body: details } = await agent
+        .get(`apps/installations/${installed.id}/?include=history`)
+        .expectStatus(200);
+      assert.deepEqual(
+        details.app_installations[0].history.map((entry: any) => [
+          entry.event,
+          entry.actor?.name ?? null,
+        ]),
+        [
+          ['changes_approved', 'Joe Bloggs'],
+          ['suspended', null],
+          ['installed', 'Joe Bloggs'],
+        ],
+      );
+    });
+
     // A pending manifest is recognised by its digest alone, which covers the address too.
     it('does not approve the pending manifest when the same manifest is approved from another address', async function () {
       const absolute = manifest({

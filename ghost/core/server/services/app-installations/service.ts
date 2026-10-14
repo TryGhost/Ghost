@@ -190,7 +190,7 @@ async function pendingManifest(
  * on. Returns the approved manifest before and after, or null when there was nothing to
  * write.
  */
-async function keepManifest(
+export async function keepManifest(
   trx: Knex.Transaction,
   current: CurrentInstallation,
   loaded: LoadedManifest,

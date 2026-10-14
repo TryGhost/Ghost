@@ -2,8 +2,16 @@ import assert from 'node:assert/strict';
 import type { Knex } from 'knex';
 import { vi } from 'vitest';
 import type { AppManifest } from '@tryghost/app-contracts/manifest';
-import { AppInstallationsService } from '../../../../../core/server/services/app-installations/service';
+import {
+  AppInstallationsService,
+  keepManifest,
+} from '../../../../../core/server/services/app-installations/service';
 import type { RecordAppInstallationAction } from '../../../../../core/server/services/app-installations/actions';
+import type { CurrentInstallation } from '../../../../../core/server/services/app-installations/codec';
+import type {
+  AppManifestChange,
+  ManifestDecisionKind,
+} from '../../../../../core/server/services/app-installations/decide-on-manifest';
 import type {
   LoadedManifest,
   LoadManifest,
@@ -136,5 +144,177 @@ describe('App installation transaction failures', function () {
 
     assert.equal(transaction.mock.calls.length, 1);
     assert.equal(recordAction.mock.calls.length, 0);
+  });
+});
+
+describe('Keeping a manifest', function () {
+  const silent: AppManifestChange[] = [{ path: 'description', requires_approval: false }];
+  const required: AppManifestChange[] = [{ path: 'name', requires_approval: true }];
+
+  /** Keeps `loaded` as decided, answering what was written: manifest rows, then the installation. */
+  async function keep(
+    kind: ManifestDecisionKind,
+    source: 'approval' | 'update',
+    {
+      pending = null,
+      changes = [],
+    }: { pending?: string | null; changes?: AppManifestChange[] } = {},
+  ) {
+    const rows: Array<Record<string, unknown>> = [];
+    const installations: Array<Record<string, unknown>> = [];
+    const trx = Object.assign(
+      (table: string) => ({
+        insert: async (row: Record<string, unknown>) => {
+          assert.equal(table, 'app_installation_manifests');
+          rows.push(row);
+        },
+        where: (where: Record<string, unknown>) => ({
+          update: async (patch: Record<string, unknown>) => {
+            assert.equal(table, 'app_installations');
+            assert.deepEqual(where, { id: 'installation' });
+            installations.push(patch);
+          },
+        }),
+      }),
+      { raw: (sql: string, bindings: unknown[]) => ({ sql, bindings }) },
+    );
+    const current: CurrentInstallation = {
+      id: 'installation',
+      app_id: manifest.id,
+      status: pending ? 'suspended' : 'active',
+      manifest_id: 'approved',
+      pending_manifest_id: pending,
+      revision: 3,
+      manifest_url: loaded.manifestUrl,
+      manifest,
+    };
+    const kept = await keepManifest(
+      trx as unknown as Knex.Transaction,
+      current,
+      loaded,
+      { kind, changes },
+      source,
+    );
+    for (const installation of installations) {
+      assert.deepEqual(installation.revision, { sql: '?? + 1', bindings: ['revision'] });
+    }
+    return {
+      kept,
+      rows: rows.map((row) => [row.source, row.requires_approval]),
+      newRowId: rows[0]?.id,
+      installations: installations.map(({ status, manifest_id, pending_manifest_id }) => ({
+        status,
+        manifest_id,
+        pending_manifest_id,
+      })),
+    };
+  }
+
+  it('writes nothing for a manifest that is as approved, whoever decided', async function () {
+    for (const source of ['update', 'approval'] as const) {
+      assert.deepEqual(await keep('unchanged', source), {
+        kept: null,
+        rows: [],
+        newRowId: undefined,
+        installations: [],
+      });
+    }
+  });
+
+  it('writes nothing when Ghost finds the manifest already waiting for approval', async function () {
+    assert.deepEqual(
+      await keep('use_pending', 'update', { pending: 'pending', changes: required }),
+      {
+        kept: null,
+        rows: [],
+        newRowId: undefined,
+        installations: [],
+      },
+    );
+  });
+
+  it('approves the manifest waiting for approval as it is, adding no row', async function () {
+    const { kept, rows, installations } = await keep('use_pending', 'approval', {
+      pending: 'pending',
+      changes: required,
+    });
+
+    assert.deepEqual(kept, { from: 'approved', to: 'pending' });
+    assert.deepEqual(rows, []);
+    assert.deepEqual(installations, [
+      { status: 'active', manifest_id: 'pending', pending_manifest_id: null },
+    ]);
+  });
+
+  it('applies silent changes Ghost found as an update row', async function () {
+    const { kept, rows, newRowId, installations } = await keep('apply', 'update', {
+      changes: silent,
+    });
+
+    assert.deepEqual(rows, [['update', false]]);
+    assert.deepEqual(kept, { from: 'approved', to: newRowId });
+    assert.deepEqual(installations, [
+      { status: 'active', manifest_id: newRowId, pending_manifest_id: null },
+    ]);
+  });
+
+  it('keeps changes Ghost found that need approval waiting in an update row, suspending the app', async function () {
+    for (const pending of [null, 'older pending']) {
+      const { rows, newRowId, installations } = await keep('suspend', 'update', {
+        pending,
+        changes: required,
+      });
+
+      assert.deepEqual(rows, [['update', true]]);
+      assert.deepEqual(installations, [
+        { status: 'suspended', manifest_id: undefined, pending_manifest_id: newRowId },
+      ]);
+    }
+  });
+
+  it('runs a suspended app again in a resume row once the app goes back on the changes that waited', async function () {
+    // Exactly the approved manifest again, or with silent changes of its own.
+    for (const changes of [[], silent]) {
+      const { kept, rows, newRowId, installations } = await keep('apply', 'update', {
+        pending: 'pending',
+        changes,
+      });
+
+      assert.deepEqual(rows, [['resume', false]]);
+      assert.deepEqual(kept, { from: 'approved', to: newRowId });
+      assert.deepEqual(installations, [
+        { status: 'active', manifest_id: newRowId, pending_manifest_id: null },
+      ]);
+    }
+  });
+
+  it('applies what a publisher approved as an approval row, whatever it needed', async function () {
+    for (const [kind, changes, requiresApproval] of [
+      ['apply', silent, false],
+      ['suspend', required, true],
+    ] as const) {
+      for (const pending of [null, 'pending']) {
+        const { kept, rows, newRowId, installations } = await keep(kind, 'approval', {
+          pending,
+          changes,
+        });
+
+        assert.deepEqual(rows, [['approval', requiresApproval]]);
+        assert.deepEqual(kept, { from: 'approved', to: newRowId });
+        assert.deepEqual(installations, [
+          { status: 'active', manifest_id: newRowId, pending_manifest_id: null },
+        ]);
+      }
+    }
+  });
+
+  it('lets go of the changes that waited when a publisher approves the approved manifest, adding no row', async function () {
+    const { kept, rows, installations } = await keep('apply', 'approval', { pending: 'pending' });
+
+    assert.deepEqual(kept, { from: 'approved', to: 'approved' });
+    assert.deepEqual(rows, []);
+    assert.deepEqual(installations, [
+      { status: 'active', manifest_id: 'approved', pending_manifest_id: null },
+    ]);
   });
 });
