@@ -24,6 +24,14 @@ describe('the window messages', () => {
     });
   });
 
+  it("accepts a hello naming the page's document, and one from an SDK that does not", () => {
+    const hello = { type: 'ghost-app:hello', sdk: '1.2.3', document: 'a1b2c3' };
+    expect(HelloMessageSchema.parse(hello)).toEqual(hello);
+    expect(HelloMessageSchema.parse({ type: 'ghost-app:hello', sdk: '1.2.3' })).not.toHaveProperty(
+      'document',
+    );
+  });
+
   it('drops fields a newer SDK adds to its hello rather than refusing it', () => {
     expect(
       HelloMessageSchema.parse({ type: 'ghost-app:hello', sdk: '9.0.0', capabilities: [] }),
@@ -38,6 +46,9 @@ describe('the window messages', () => {
       { type: 'ghost-app:hello' },
       { type: 'ghost-app:hello', sdk: 1 },
       { type: 'ghost-app:hello', sdk: 'x'.repeat(101) },
+      { type: 'ghost-app:hello', sdk: '1.0.0', document: 1 },
+      { type: 'ghost-app:hello', sdk: '1.0.0', document: '' },
+      { type: 'ghost-app:hello', sdk: '1.0.0', document: 'x'.repeat(65) },
     ]) {
       expect(HelloMessageSchema.safeParse(data).success).toBe(false);
     }
