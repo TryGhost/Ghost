@@ -2277,9 +2277,6 @@ importers:
       chalk:
         specifier: 4.1.2
         version: 4.1.2
-      charset:
-        specifier: 1.0.1
-        version: 1.0.1
       cheerio:
         specifier: 'catalog:'
         version: 1.2.0
@@ -2316,9 +2313,6 @@ importers:
       csso:
         specifier: 5.0.5
         version: 5.0.5
-      dequal:
-        specifier: 'catalog:'
-        version: 2.0.3
       dompurify:
         specifier: 'catalog:'
         version: 3.4.16
@@ -2343,9 +2337,6 @@ importers:
       express-lazy-router:
         specifier: 1.0.6
         version: 1.0.6(express@4.22.3(supports-color@10.2.2))
-      express-query-boolean:
-        specifier: 2.0.0
-        version: 2.0.0
       express-session:
         specifier: 1.19.0
         version: 1.19.0(supports-color@10.2.2)
@@ -2388,9 +2379,6 @@ importers:
       html5parser:
         specifier: 2.0.2
         version: 2.0.2
-      human-number:
-        specifier: 3.0.0
-        version: 3.0.0
       iconv-lite:
         specifier: 0.7.3
         version: 0.7.3
@@ -9751,10 +9739,6 @@ packages:
   chardet@2.2.0:
     resolution: {integrity: sha512-rddelWYNPRrXq6PtNEN2S3f6t9ILzvqaN5pVgi4kqt9jHQaXIial9PznB5iSPVlQSLNaaH22ItWz3EJtQ10+OA==}
 
-  charset@1.0.1:
-    resolution: {integrity: sha512-6dVyOOYjpfFcL1Y4qChrAoQLRHvj2ziyhcm0QJlhOcAhykL/k1kTUPbeo+87MNRTRdk2OIIsIXbuF3x2wi5EXg==}
-    engines: {node: '>=4.0.0'}
-
   check-error@1.0.3:
     resolution: {integrity: sha512-iKEoDYaRmd1mxM90a2OEfWhjsjPpYPuQ+lMYsoxB126+t8fw7ySEO48nmDg5COTjxDI65/Y2OWpeEHk3ZOe8zg==}
 
@@ -10996,9 +10980,6 @@ packages:
     peerDependencies:
       express: 4.22.3
 
-  express-query-boolean@2.0.0:
-    resolution: {integrity: sha512-4dU/1HPm8lkTPR12+HFUXqCarcsC19OKOkb4otLOuADfPYrQMaugPJkSmxNsqwmWYjozvT6vdTiqkgeBHkzOow==}
-
   express-session@1.19.0:
     resolution: {integrity: sha512-0csaMkGq+vaiZTmSMMGkfdCOabYv192VbytFypcvI0MANrp+4i/7yEkJ0sbAEhycQjntaKGzYfjfXQyVb7BHMA==}
     engines: {node: '>= 0.8.0'}
@@ -11589,10 +11570,6 @@ packages:
   human-id@4.2.0:
     resolution: {integrity: sha512-K3GbkIWqyvvlpfhBPlbEvD97TtqBpAYA4kt+cn2lD2x2HuohzZCibcA2nOlnJT6exqvJLggoB5nv2dNf192nEA==}
     hasBin: true
-
-  human-number@3.0.0:
-    resolution: {integrity: sha512-2NZF6+oyQyaUtsxtsjKx7jEia9jp6bMrAkH+W7BxSFMu94piF+Fh5reAu1JNKRXzwu+y+a8BE9AOGPzlh8Gf0g==}
-    engines: {node: '>= 12'}
 
   human-signals@8.0.1:
     resolution: {integrity: sha512-eKCa6bwnJhvxj14kZk5NCPc6Hb6BdsU9DZcOnmQKSnO1VKrfV0zCvtttPZUsBvjmNDn8rpcJfpwSYnHBjc95MQ==}
@@ -21901,8 +21878,6 @@ snapshots:
 
   chardet@2.2.0: {}
 
-  charset@1.0.1: {}
-
   check-error@1.0.3:
     dependencies:
       get-func-name: 2.0.2
@@ -23355,8 +23330,6 @@ snapshots:
     dependencies:
       express: 4.22.3(supports-color@10.2.2)
 
-  express-query-boolean@2.0.0: {}
-
   express-session@1.19.0(supports-color@10.2.2):
     dependencies:
       cookie: 0.7.2
@@ -24117,8 +24090,6 @@ snapshots:
       - supports-color
 
   human-id@4.2.0: {}
-
-  human-number@3.0.0: {}
 
   human-signals@8.0.1: {}
 
