@@ -31,7 +31,6 @@ const HistoryManifestRow = DbAppInstallationManifest.pick({
   manifest_url: true,
   source: true,
   requires_approval: true,
-  digest: true,
   created_at: true,
 });
 
@@ -185,10 +184,11 @@ async function pendingManifest(
  *
  * A manifest is kept as a row of its own, unless it is the pending one being approved.
  * That includes Ghost lifting a suspension because the app went back on the changes that
- * waited: nobody decided this, so a row is all the history has to show the app running
- * again. A publisher's approval of the approved manifest needs no row; its staff history
- * entry tells it. Every write moves the revision on. Returns the approved manifest before
- * and after, or null when there was nothing to write.
+ * waited, with or without silent changes: nobody decided this, so a `resume` row is all
+ * the history has to show the app running again. A publisher's approval of the approved
+ * manifest needs no row; its staff history entry tells it. Every write moves the revision
+ * on. Returns the approved manifest before and after, or null when there was nothing to
+ * write.
  */
 async function keepManifest(
   trx: Knex.Transaction,
@@ -201,7 +201,7 @@ async function keepManifest(
     return null;
   }
   const waits = kind === 'suspend' && source === 'update';
-  // Ghost found the approved manifest again while changes waited for approval.
+  // Nothing waits for approval any more, as the app went back on the changes that waited.
   const resumes = kind === 'apply' && source === 'update' && current.pending_manifest_id !== null;
   const now = toDatabaseDate(new Date());
 
@@ -216,7 +216,7 @@ async function keepManifest(
       manifest_url: loaded.manifestUrl,
       manifest: loaded.serialised,
       digest: loaded.digest,
-      source,
+      source: resumes ? 'resume' : source,
       requires_approval: kind === 'suspend',
       created_at: now,
     });
@@ -324,7 +324,6 @@ export class AppInstallationsService {
         'manifest_url',
         'source',
         'requires_approval',
-        'digest',
         'created_at',
       );
     const actionRows = this.knex('actions as action')

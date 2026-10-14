@@ -110,8 +110,10 @@ _Avoid_: minor change, safe change
 
 **History**:
 The timeline of an installation, newest first: installed, updated, suspended,
-resumed (the app went back on the changes that waited), changes approved and
-uninstalled.
+resumed, changes approved and uninstalled. Each update, suspension and resume is
+one manifest row the re-check kept. Resumed means the app went back on the
+changes that waited, so Ghost ran it again, with any silent changes it brought
+applied.
 _Avoid_: audit log, activity
 
 **Actor**:

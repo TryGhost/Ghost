@@ -16,19 +16,16 @@ const manifestRow = (
     source = 'update',
     requiresApproval = false,
     host = 'podcast.example.com',
-    digest = `digest of ${id}`,
   }: {
     source?: HistoryManifest['source'];
     requiresApproval?: boolean;
     host?: string;
-    digest?: string;
   } = {},
 ): HistoryManifest => ({
   id,
   manifest_url: `https://${host}/ghost-app.json`,
   source,
   requires_approval: requiresApproval,
-  digest,
   created_at: new Date(createdAt),
 });
 
@@ -166,63 +163,27 @@ describe('buildHistory', function () {
     );
   });
 
-  it('tells the app going back on the changes that waited from an update', function () {
+  it('tells Ghost running a suspended app again from its resume row', function () {
     const history = buildHistory(
       [
         installed('m1', '2026-10-01T10:00:00.000Z'),
         manifestRow('m2', '2026-10-02T10:00:00.000Z', { requiresApproval: true }),
-        manifestRow('m3', '2026-10-03T10:00:00.000Z', { digest: 'digest of m1' }),
+        manifestRow('m3', '2026-10-03T10:00:00.000Z', { source: 'resume' }),
+        manifestRow('m4', '2026-10-04T10:00:00.000Z'),
       ],
       [],
       new Map(),
     );
 
+    assert.deepEqual(summary(history), [
+      ['updated', null, null],
+      ['resumed', null, null],
+      ['suspended', null, null],
+      ['installed', null, null],
+    ]);
     assert.deepEqual(
-      history.map(({ event }) => event),
-      ['resumed', 'suspended', 'installed'],
-    );
-  });
-
-  it('tells resuming from the manifest approved last, not an older one', function () {
-    const history = buildHistory(
-      [
-        installed('m1', '2026-10-01T10:00:00.000Z'),
-        manifestRow('m2', '2026-10-02T10:00:00.000Z'),
-        // Back to the install's manifest: a change from m2, so an update.
-        manifestRow('m3', '2026-10-03T10:00:00.000Z', { digest: 'digest of m1' }),
-        manifestRow('m4', '2026-10-04T10:00:00.000Z', { requiresApproval: true }),
-        manifestRow('m5', '2026-10-05T10:00:00.000Z', { digest: 'digest of m2' }),
-      ],
-      [],
-      new Map(),
-    );
-
-    assert.deepEqual(
-      history.map(({ event }) => event),
-      ['updated', 'suspended', 'updated', 'updated', 'installed'],
-    );
-  });
-
-  it('tells resuming from the manifest an approval ran', function () {
-    const history = buildHistory(
-      [
-        installed('m1', '2026-10-01T10:00:00.000Z'),
-        manifestRow('m2', '2026-10-02T10:00:00.000Z', { requiresApproval: true }),
-        manifestRow('m3', '2026-10-04T10:00:00.000Z', { requiresApproval: true }),
-        manifestRow('m4', '2026-10-05T10:00:00.000Z', { digest: 'digest of m2' }),
-      ],
-      [
-        action('a2', 'changes_approved', '2026-10-03T10:00:00.000Z', {
-          from_manifest_id: 'm1',
-          to_manifest_id: 'm2',
-        }),
-      ],
-      new Map(),
-    );
-
-    assert.deepEqual(
-      history.map(({ event }) => event),
-      ['resumed', 'suspended', 'changes_approved', 'suspended', 'installed'],
+      history.map(({ id }) => id),
+      ['m4', 'm3', 'm2', 'm1'],
     );
   });
 

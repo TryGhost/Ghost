@@ -2,14 +2,13 @@ import { movedBetween, type AppManifest } from '@tryghost/app-contracts/manifest
 import { z } from 'zod';
 import type { AppInstallationEvent } from './actions';
 import type { AppInstallationHistoryEntry, HistoryActor } from './codec';
+import type { AppInstallationManifestSource } from './schema';
 
 export interface HistoryManifest {
   id: string;
   manifest_url: string;
-  source: 'install' | 'approval' | 'update';
+  source: z.infer<typeof AppInstallationManifestSource>;
   requires_approval: boolean;
-  /** Covers the manifest and its address, so two rows with one digest hold the same manifest. */
-  digest: string;
   created_at: Date;
 }
 
@@ -48,7 +47,7 @@ export function buildHistory(
   const urls = new Map(manifests.map((manifest) => [manifest.id, manifest.manifest_url]));
   return newestFirst([
     ...installOf(manifests, actions),
-    ...updatesAndSuspensionsOf(manifests, new Set(approvals.map(({ to }) => to))),
+    ...updatesSuspensionsAndResumesOf(manifests),
     ...approvals.map((approval) => approvalEntry(approval, urls, manifestContents)),
     ...uninstallsIn(actions),
   ]);
@@ -76,36 +75,23 @@ function installOf(manifests: HistoryManifest[], actions: HistoryAction[]): Entr
 }
 
 /**
- * A newer version Ghost picked up by itself: applied (`updated`), held for approval
- * (`suspended`), or the approved manifest itself, which means the app went back on the
- * changes that waited (`resumed`).
- *
- * Which manifest was approved at each point follows from the rows, oldest first: every row
- * the app ran, which is all of them but the ones Ghost held for approval and no approval
- * ran (`approved` holds the ones approvals ran).
+ * What Ghost did by itself, one manifest row each: applied a newer version (`updated`),
+ * held one for approval (`suspended`), or ran a suspended app again (`resumed`).
  */
-function updatesAndSuspensionsOf(manifests: HistoryManifest[], approved: Set<string>): Entry[] {
-  const entries: Entry[] = [];
-  let approvedDigest: string | null = null;
-  for (const manifest of oldestFirst(manifests)) {
-    if (manifest.source === 'update') {
-      entries.push({
-        id: manifest.id,
-        event: manifest.requires_approval
-          ? 'suspended'
-          : manifest.digest === approvedDigest
-            ? 'resumed'
+function updatesSuspensionsAndResumesOf(manifests: HistoryManifest[]): Entry[] {
+  return manifests
+    .filter(({ source }) => source === 'update' || source === 'resume')
+    .map((manifest) => ({
+      id: manifest.id,
+      event:
+        manifest.source === 'resume'
+          ? 'resumed'
+          : manifest.requires_approval
+            ? 'suspended'
             : 'updated',
-        actor: null,
-        created_at: manifest.created_at,
-      });
-    }
-    const held = manifest.source === 'update' && manifest.requires_approval;
-    if (!held || approved.has(manifest.id)) {
-      approvedDigest = manifest.digest;
-    }
-  }
-  return entries;
+      actor: null,
+      created_at: manifest.created_at,
+    }));
 }
 
 function approvalEntry(
@@ -155,18 +141,11 @@ function approvalsIn(actions: HistoryAction[]): Approval[] {
  * Timestamps only go down to the second, so ties are broken by id.
  * ObjectIds count up as Ghost creates them, so a higher id is newer.
  */
-function byAge(a: { id: string; created_at: Date }, b: { id: string; created_at: Date }) {
-  return (
-    a.created_at.getTime() - b.created_at.getTime() || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0)
-  );
-}
-
-function oldestFirst<T extends { id: string; created_at: Date }>(rows: T[]): T[] {
-  return [...rows].sort(byAge);
-}
-
 function newestFirst(entries: Entry[]): Entry[] {
-  return entries.sort((a, b) => byAge(b, a));
+  return entries.sort(
+    (a, b) =>
+      b.created_at.getTime() - a.created_at.getTime() || (a.id < b.id ? 1 : a.id > b.id ? -1 : 0),
+  );
 }
 
 const withEvent = (event: AppInstallationEvent) => (action: HistoryAction) =>

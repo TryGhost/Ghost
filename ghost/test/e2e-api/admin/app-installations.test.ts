@@ -821,7 +821,7 @@ describe('App installations Admin API', function () {
       // resuming.
       const [approved, waited, resumed] = await manifestRows();
       assert.equal(row.manifest_id, resumed.id);
-      assert.equal(resumed.source, 'update');
+      assert.equal(resumed.source, 'resume');
       assert.equal(Boolean(resumed.requires_approval), false);
       assert.equal(resumed.digest, approved.digest);
       assert.notEqual(resumed.id, waited.id);
@@ -856,7 +856,19 @@ describe('App installations Admin API', function () {
       assert.equal(installation.status, 'active');
       assert.equal(installation.manifest.name, 'Podcast');
       assert.equal(installation.manifest.description, 'Episodes and players.');
-      assert.equal((await installationRow(installed.id)).pending_manifest_id, null);
+      const row = await installationRow(installed.id);
+      assert.equal(row.pending_manifest_id, null);
+      const resumed = (await manifestRows()).find((stored: any) => stored.id === row.manifest_id);
+      assert.equal(resumed.source, 'resume');
+      assert.equal(Boolean(resumed.requires_approval), false);
+
+      const { body: details } = await agent
+        .get(`apps/installations/${installed.id}/?include=history`)
+        .expectStatus(200);
+      assert.deepEqual(
+        details.app_installations[0].history.map((entry: any) => entry.event),
+        ['resumed', 'suspended', 'installed'],
+      );
     });
 
     it('keeps the approved manifest when the app cannot be reached', async function () {

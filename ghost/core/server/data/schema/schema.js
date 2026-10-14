@@ -2684,12 +2684,13 @@ module.exports = {
     // services/app-installations/load-manifest.ts.
     digest: { type: 'string', maxlength: 64, nullable: false },
     // How the row was added: when the app was installed, when an Administrator approved
-    // changes, or when Ghost picked up a newer version by itself.
+    // changes, when Ghost picked up a newer version by itself, or when Ghost ran a suspended
+    // app again because the app went back on the changes that waited.
     source: {
       type: 'string',
       maxlength: 50,
       nullable: false,
-      validations: { isIn: [['install', 'approval', 'update']] },
+      validations: { isIn: [['install', 'approval', 'update', 'resume']] },
     },
     // Whether this manifest had changes that needed approval when it was added.
     requires_approval: { type: 'boolean', nullable: false, defaultTo: false },
