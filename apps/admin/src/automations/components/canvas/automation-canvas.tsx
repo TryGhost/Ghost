@@ -39,6 +39,11 @@ import { RunHistory } from './run-history';
 import { canvasBackground } from './canvas-background';
 import { AutomationSidebar } from './automation-sidebar';
 import type { TriggerData } from './trigger-card';
+import {
+  getTriggerAudience,
+  isPaidSubscriptionChangedTrigger,
+  withTrigger,
+} from '@/automations/utils/automation-trigger';
 import { useBrowseTiers } from '@tryghost/admin-x-framework/api/tiers';
 import { type StepPickerType } from './step-picker';
 import { EmailPerformanceSidebar } from './email-performance-sidebar';
@@ -242,10 +247,9 @@ const buildGraph = ({
       data: {
         trigger: {
           tierQuery,
-          scope: automation.trigger_tier_scope,
-          tierIds: automation.trigger_tier_ids ?? [],
+          trigger: automation,
           savedTierIds: savedTriggerTierIds,
-          onUpdate: (trigger) => onChange({ ...automation, ...trigger }),
+          onUpdate: (trigger) => onChange(withTrigger(automation, trigger)),
         },
         errorMessage: actionErrors[TRIGGER_CANVAS_ID],
         onInteract: () => onInteract(TRIGGER_CANVAS_ID),
@@ -473,7 +477,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
     case 'free':
     case null:
     case undefined:
-      tiersEnabled = false;
+      tiersEnabled = automation ? isPaidSubscriptionChangedTrigger(automation) : false;
       break;
     default: {
       const _exhaustive: never = triggerTierScope;
@@ -902,8 +906,8 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
           selectedRunId={selectedRunId}
           selectedTab={sidebar.tab === 'unknown' ? 'settings' : sidebar.tab}
           tiers={tierData?.tiers ?? []}
-          triggerTierIds={automation.trigger_tier_ids ?? []}
-          triggerTierScope={automation.trigger_tier_scope}
+          triggerTierIds={getTriggerAudience(automation).trigger_tier_ids}
+          triggerTierScope={getTriggerAudience(automation).trigger_tier_scope}
           onDetailsChange={(details) => onChange({ ...automation, ...details })}
           onOpenChange={(open) => {
             setAutomationSidebarOpen(open);

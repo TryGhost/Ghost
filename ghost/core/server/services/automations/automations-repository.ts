@@ -1,6 +1,10 @@
 import type { ReadonlyDeep } from 'type-fest';
 import type { Knex } from 'knex';
 import type { AddAutomationData } from './automations-api';
+import type {
+  PaidSubscriptionChange,
+  PaidSubscriptionChangedTriggerOptions,
+} from './paid-subscription-changed-trigger';
 
 export type Pagination = {
   page: number;
@@ -77,19 +81,32 @@ export type AutomationBrowseResult = AutomationSummary & {
   };
 };
 
+export type AutomationTriggerType = 'member_sign_up' | 'paid_subscription_changed';
+
+export type AutomationTrigger =
+  | {
+      trigger_type: 'member_sign_up';
+      trigger_options: null;
+      trigger_tier_scope: null | 'free' | 'all_paid';
+      trigger_tier_ids: null;
+    }
+  | {
+      trigger_type: 'member_sign_up';
+      trigger_options: null;
+      trigger_tier_scope: 'selected_paid';
+      trigger_tier_ids: string[];
+    }
+  | {
+      trigger_type: 'paid_subscription_changed';
+      trigger_options: PaidSubscriptionChangedTriggerOptions;
+      trigger_tier_scope: null;
+      trigger_tier_ids: null;
+    };
+
 export type Automation = AutomationSummary & {
   actions: AutomationAction[];
   edges: AutomationEdge[];
-} & (
-    | {
-        trigger_tier_scope: null | 'free' | 'all_paid';
-        trigger_tier_ids: null;
-      }
-    | {
-        trigger_tier_scope: 'selected_paid';
-        trigger_tier_ids: string[];
-      }
-  );
+} & AutomationTrigger;
 
 export type EditAutomationData = {
   name?: string;
@@ -101,12 +118,22 @@ export type EditAutomationData = {
 ) &
   (
     | {
+        trigger_type?: 'member_sign_up';
+        trigger_options?: null;
         trigger_tier_scope?: null | 'free' | 'all_paid';
         trigger_tier_ids?: null;
       }
     | {
+        trigger_type?: 'member_sign_up';
+        trigger_options?: null;
         trigger_tier_scope: 'selected_paid';
         trigger_tier_ids: string[];
+      }
+    | {
+        trigger_type: 'paid_subscription_changed';
+        trigger_options?: PaidSubscriptionChangedTriggerOptions;
+        trigger_tier_scope?: null;
+        trigger_tier_ids?: null;
       }
   );
 
@@ -249,6 +276,17 @@ export type AutomationsRepository = {
       memberId: string;
       memberStatus: 'free' | 'paid';
       memberTierIds: string[];
+    }>,
+  ): Promise<void>;
+  /**
+   * Start runs for active `paid_subscription_changed` automations that match
+   * this change.
+   */
+  triggerPaidSubscriptionChanged(
+    options: ReadonlyDeep<{
+      memberEmail: string;
+      memberId: string;
+      change: PaidSubscriptionChange;
     }>,
   ): Promise<void>;
   /**

@@ -16,6 +16,7 @@ import type {
   AutomationTriggerTierScope,
 } from '../../../../../core/server/services/automations/automations-repository';
 import { fromDatabaseDate, toDatabaseDate } from '../../../../../core/server/lib/db-types/date';
+import type { PaidSubscriptionChangedTriggerOptions } from '../../../../../core/server/services/automations/paid-subscription-changed-trigger';
 
 const HOUR_MS = 60 * 60 * 1000;
 const FAKE_WAIT_HOURS_MULTIPLIER = 2500;
@@ -80,6 +81,7 @@ const createDatabase = async (): Promise<Knex> => {
     table.text('description').notNullable();
     table.text('status').notNullable();
     table.text('trigger_type').notNullable();
+    table.text('trigger_options').nullable();
     table.text('trigger_tier_scope');
   });
 
@@ -487,6 +489,7 @@ describe('automations repository', function () {
     assert(automationSummary);
     const automation = await repo.getById(automationSummary.id);
     assert(automation);
+    assert(automation.trigger_type === 'member_sign_up');
     return automation;
   };
 
@@ -1880,6 +1883,209 @@ describe('automations repository', function () {
       const runs = await knex('automation_runs').where('member_id', 'member_123');
       assert.equal(runs.length, 2);
       assert.notEqual(runs[0].automation_id, runs[1].automation_id);
+    });
+  });
+
+  describe('paid subscription changed trigger', function () {
+    const bronze = ObjectId().toHexString();
+    const silver = ObjectId().toHexString();
+    const gold = ObjectId().toHexString();
+
+    const buildData = (
+      triggerOptions: PaidSubscriptionChangedTriggerOptions,
+      name = `Changed ${ObjectId().toHexString()}`,
+    ) => {
+      const action = {
+        id: ObjectId().toHexString(),
+        type: 'wait' as const,
+        data: { wait_hours: 1 },
+      };
+      return {
+        status: 'active' as const,
+        actions: [action],
+        edges: [],
+        name,
+        description: '',
+        trigger_type: 'paid_subscription_changed' as const,
+        trigger_options: triggerOptions,
+      };
+    };
+
+    beforeEach(async function () {
+      await knex('products').insert(
+        [bronze, silver, gold].map((id) => ({ id, type: 'paid', active: true })),
+      );
+    });
+
+    it('stores options and derives who stays eligible', async function () {
+      const triggerOptions: PaidSubscriptionChangedTriggerOptions = {
+        from: { type: 'specific_tiers', tier_ids: [bronze] },
+        to: { type: 'specific_tiers', tier_ids: [silver, gold] },
+      };
+      const automation = await repo.add(buildData(triggerOptions));
+
+      assert.equal(automation.trigger_type, 'paid_subscription_changed');
+      assert.deepEqual(automation.trigger_options, triggerOptions);
+      assert.equal(automation.trigger_tier_scope, null);
+      assert.equal(automation.trigger_tier_ids, null);
+      assert.deepEqual(await repo.getById(automation.id), automation);
+
+      const row = await knex('automations').where({ id: automation.id }).first();
+      assert.equal(row.trigger_type, 'paid_subscription_changed');
+      assert.deepEqual(JSON.parse(row.trigger_options), triggerOptions);
+      assert.equal(row.trigger_tier_scope, 'selected_paid');
+      assert.deepEqual(
+        (
+          await knex('automation_trigger_tiers')
+            .where({ automation_id: automation.id })
+            .pluck('product_id')
+        ).sort(),
+        [silver, gold].sort(),
+      );
+    });
+
+    it('rejects options that reference inactive or unknown tiers', async function () {
+      await knex('products').where({ id: gold }).update({ active: false });
+      for (const tierId of [gold, ObjectId().toHexString()]) {
+        await assert.rejects(
+          repo.add(
+            buildData({
+              from: { type: 'specific_tiers', tier_ids: [tierId] },
+              to: { type: 'downgraded_to_free' },
+            }),
+          ),
+          { errorType: 'ValidationError', property: 'trigger_options' },
+        );
+      }
+    });
+
+    it('edits options, and keeps them when omitted', async function () {
+      const automation = await repo.add(
+        buildData({ from: { type: 'any_paid_tier' }, to: { type: 'canceled_auto_renew' } }),
+      );
+      const newOptions: PaidSubscriptionChangedTriggerOptions = {
+        from: { type: 'any_paid_tier' },
+        to: { type: 'downgraded_to_free' },
+      };
+
+      assert(automation.trigger_type === 'paid_subscription_changed');
+      const edited = await repo.edit(automation.id, { ...automation, trigger_options: newOptions });
+      assert(edited);
+      assert.deepEqual(edited.trigger_options, newOptions);
+      const row = await knex('automations').where({ id: automation.id }).first();
+      assert.equal(row.trigger_tier_scope, 'free');
+
+      const { trigger_options: _omitted, ...withoutOptions } = edited;
+      const editedAgain = await repo.edit(automation.id, {
+        ...withoutOptions,
+        description: 'Changed',
+      });
+      assert(editedAgain);
+      assert.deepEqual(editedAgain.trigger_options, newOptions);
+    });
+
+    it("rejects changes to an automation's trigger type", async function () {
+      const automation = await repo.add(
+        buildData({ from: { type: 'any_paid_tier' }, to: { type: 'canceled_auto_renew' } }),
+      );
+      await assert.rejects(
+        repo.edit(automation.id, {
+          status: automation.status,
+          actions: automation.actions,
+          edges: automation.edges,
+          trigger_tier_scope: 'free',
+        }),
+        { errorType: 'ValidationError', property: 'trigger_type' },
+      );
+
+      const signUp = await getAutomationBySlug('member-welcome-email-free');
+      await assert.rejects(
+        repo.edit(signUp.id, {
+          status: signUp.status,
+          actions: signUp.actions,
+          edges: signUp.edges,
+          trigger_type: 'paid_subscription_changed',
+          trigger_options: { from: { type: 'any_paid_tier' }, to: { type: 'canceled_auto_renew' } },
+        }),
+        { errorType: 'ValidationError', property: 'trigger_type' },
+      );
+    });
+
+    it('starts runs for matching active automations only', async function () {
+      const matching = await repo.add(
+        buildData({
+          from: { type: 'any_paid_tier' },
+          to: { type: 'specific_tiers', tier_ids: [silver, gold] },
+        }),
+      );
+      const otherTiers = await repo.add(
+        buildData({
+          from: { type: 'specific_tiers', tier_ids: [gold] },
+          to: { type: 'specific_tiers', tier_ids: [silver] },
+        }),
+      );
+      const otherChange = await repo.add(
+        buildData({ from: { type: 'any_paid_tier' }, to: { type: 'downgraded_to_free' } }),
+      );
+      const inactive = await repo.add({
+        ...buildData({
+          from: { type: 'any_paid_tier' },
+          to: { type: 'specific_tiers', tier_ids: [silver] },
+        }),
+        status: 'inactive',
+      });
+
+      await repo.triggerPaidSubscriptionChanged({
+        memberEmail: 'changed@example.com',
+        memberId: 'member_changed',
+        change: { type: 'tiers_changed', from_tier_ids: [bronze], to_tier_ids: [silver] },
+      });
+
+      const runs = await getRunsByMemberEmail('changed@example.com');
+      assert.deepEqual(
+        runs.map((run) => run.automation_id),
+        [matching.id],
+      );
+      assert(await getStepByRunId(runs[0].id));
+      for (const automation of [otherTiers, otherChange, inactive]) {
+        assert.equal(await getRunCountByAutomationId(automation.id), 0);
+      }
+    });
+
+    it('does not start runs for member signups', async function () {
+      const automation = await repo.add(
+        buildData({ from: { type: 'any_paid_tier' }, to: { type: 'canceled_auto_renew' } }),
+      );
+
+      await repo.trigger({
+        memberEmail: 'signup@example.com',
+        memberId: 'member_signup',
+        memberStatus: 'paid',
+        memberTierIds: [silver],
+      });
+
+      assert.equal(await getRunCountByAutomationId(automation.id), 0);
+    });
+
+    it('lets steps check eligibility with the derived tiers', async function () {
+      const automation = await repo.add(
+        buildData({
+          from: { type: 'any_paid_tier' },
+          to: { type: 'specific_tiers', tier_ids: [gold] },
+        }),
+      );
+      await repo.triggerPaidSubscriptionChanged({
+        memberEmail: 'eligible@example.com',
+        memberId: 'member_eligible',
+        change: { type: 'tiers_changed', from_tier_ids: [bronze], to_tier_ids: [gold] },
+      });
+      await knex('automation_run_steps').update({ ready_at: toDatabaseDate(new Date(0)) });
+
+      const { steps } = await repo.fetchAndLockSteps(100);
+      const step = steps.find((candidate) => candidate.automation_id === automation.id);
+      assert(step);
+      assert.equal(step.automation_trigger_tier_scope, 'selected_paid');
+      assert.deepEqual(step.automation_trigger_tier_ids, [gold]);
     });
   });
 

@@ -68,7 +68,20 @@ export type AutomationEdge = {
   target_action_id: string;
 };
 
-export type AutomationTrigger =
+export type PaidSubscriptionChangedTriggerOptions = {
+  from: { type: 'any_paid_tier' } | { type: 'specific_tiers'; tier_ids: readonly string[] };
+  to:
+    | { type: 'specific_tiers'; tier_ids: readonly string[] }
+    | { type: 'canceled_auto_renew' }
+    | { type: 'downgraded_to_free' };
+};
+
+// Older backends don't return `trigger_type` or `trigger_options`. Treat a
+// missing type as `member_sign_up`.
+export type MemberSignUpAutomationTrigger = {
+  trigger_type?: 'member_sign_up';
+  trigger_options?: null;
+} & (
   | {
       trigger_tier_scope: 'free' | 'all_paid' | null;
       trigger_tier_ids: null;
@@ -76,7 +89,19 @@ export type AutomationTrigger =
   | {
       trigger_tier_scope: 'selected_paid';
       trigger_tier_ids: readonly string[];
-    };
+    }
+);
+
+export type PaidSubscriptionChangedAutomationTrigger = {
+  trigger_type: 'paid_subscription_changed';
+  trigger_options: PaidSubscriptionChangedTriggerOptions;
+  trigger_tier_scope: null;
+  trigger_tier_ids: null;
+};
+
+export type AutomationTrigger =
+  | MemberSignUpAutomationTrigger
+  | PaidSubscriptionChangedAutomationTrigger;
 
 export type AutomationDetail = Automation &
   AutomationTrigger & {
@@ -325,6 +350,8 @@ const serializeEditableAction = (action: AutomationAction): AutomationAction => 
 const serializeEditableAutomation = ({
   name,
   description,
+  trigger_type: triggerType,
+  trigger_options: triggerOptions,
   trigger_tier_scope: triggerTierScope,
   trigger_tier_ids: triggerTierIds,
   status,
@@ -335,8 +362,11 @@ const serializeEditableAutomation = ({
     {
       name,
       description,
-      trigger_tier_scope: triggerTierScope,
-      trigger_tier_ids: triggerTierIds,
+      // Only send `trigger_type` and `trigger_options` for triggers that need
+      // them, because older backends reject unknown fields.
+      ...(triggerType === 'paid_subscription_changed'
+        ? { trigger_type: triggerType, trigger_options: triggerOptions }
+        : { trigger_tier_scope: triggerTierScope, trigger_tier_ids: triggerTierIds }),
       status,
       actions: actions?.map(serializeEditableAction),
       edges,

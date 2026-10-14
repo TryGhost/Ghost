@@ -26,7 +26,7 @@ describe('Automation settings', () => {
       saved = {
         ...saved,
         ...(body as { automations: EditAutomationPayload[] }).automations[0],
-      };
+      } as typeof saved;
       return { automations: [saved] };
     });
     await renderAdminApp('/automations/first', flags);

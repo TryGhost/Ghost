@@ -40,6 +40,10 @@ import {
 } from './tinybird-automation-stats';
 import { createDatabaseAutomationsRepository2 } from './database-automations-repository-2';
 import { createAutomationsApi2 } from './automations-api-2';
+import {
+  paidSubscriptionChangedTriggerOptionsSchema,
+  type PaidSubscriptionChange,
+} from './paid-subscription-changed-trigger';
 
 const MAX_AUTOMATION_ACTIONS = 50;
 const RUN_PAGE_SIZE = 50;
@@ -69,6 +73,7 @@ const messages = {
   emptyEmailSubjectWhenActive: 'Active automations require a subject line for every email.',
   emptyEmailBodyWhenActive: 'Active automations require a body for every email.',
   invalidEmailLexical: 'Email lexical must be a well-formed Lexical document.',
+  unsupportedTriggerType: 'This automation trigger type is not available.',
 };
 
 const objectIdSchema = z.string().refine((value) => ObjectId.isValid(value));
@@ -107,40 +112,85 @@ const automationShape = {
   edges: z.array(edgeSchema),
 };
 
+// `trigger_type` is optional for member signups so older Admin clients, which
+// don't send it, keep working.
+const memberSignUpTriggerShape = {
+  trigger_type: z.literal('member_sign_up').optional(),
+  trigger_options: z.null().optional(),
+};
 const defaultTriggerShape = {
+  ...memberSignUpTriggerShape,
   trigger_tier_scope: z.enum(['free', 'all_paid']).nullable().optional(),
   trigger_tier_ids: z.null().optional(),
 };
 const selectedPaidTriggerShape = {
+  ...memberSignUpTriggerShape,
   trigger_tier_scope: z.literal('selected_paid'),
   trigger_tier_ids: z
     .array(objectIdSchema)
     .min(1)
     .transform((ids) => [...new Set(ids)]),
 };
+const paidSubscriptionChangedTriggerShape = {
+  trigger_type: z.literal('paid_subscription_changed'),
+  trigger_options: paidSubscriptionChangedTriggerOptionsSchema,
+  trigger_tier_scope: z.null().optional(),
+  trigger_tier_ids: z.null().optional(),
+};
 
-const addAutomationDataSchema = z.discriminatedUnion('trigger_tier_scope', [
+const addMemberSignUpAutomationDataSchema = z.discriminatedUnion('trigger_tier_scope', [
   z.strictObject({ ...automationShape, ...defaultTriggerShape }),
   z.strictObject({
     ...automationShape,
     ...selectedPaidTriggerShape,
   }),
 ]);
+const addPaidSubscriptionChangedAutomationDataSchema = z.strictObject({
+  ...automationShape,
+  ...paidSubscriptionChangedTriggerShape,
+});
 
-export type AddAutomationData = z.infer<typeof addAutomationDataSchema>;
+export type AddAutomationData =
+  | z.infer<typeof addMemberSignUpAutomationDataSchema>
+  | z.infer<typeof addPaidSubscriptionChangedAutomationDataSchema>;
 
-const editAutomationDataSchema = z
-  .object({
-    ...automationShape,
-    name: automationShape.name.optional(),
-    description: automationShape.description.optional(),
-  })
+const editAutomationShape = {
+  ...automationShape,
+  name: automationShape.name.optional(),
+  description: automationShape.description.optional(),
+};
+const editMemberSignUpAutomationDataSchema = z
+  .object(editAutomationShape)
   .and(
     z.discriminatedUnion('trigger_tier_scope', [
       z.object(defaultTriggerShape),
       z.object(selectedPaidTriggerShape),
     ]),
   );
+const editPaidSubscriptionChangedAutomationDataSchema = z.object({
+  ...editAutomationShape,
+  ...paidSubscriptionChangedTriggerShape,
+  trigger_options: paidSubscriptionChangedTriggerShape.trigger_options.optional(),
+});
+
+/**
+ * Pick the schema for a payload's trigger type. Separate schemas keep
+ * field-level errors, which Zod loses with nested unions.
+ */
+function isPaidSubscriptionChangedPayload(data: unknown): boolean {
+  return (
+    typeof data === 'object' &&
+    data !== null &&
+    'trigger_type' in data &&
+    data.trigger_type === 'paid_subscription_changed'
+  );
+}
+
+function assertTriggerTypeIsEnabled(data: unknown) {
+  if (isPaidSubscriptionChangedPayload(data) && !labs.isSet('automationsLifecycleTriggers')) {
+    throwValidationError(messages.unsupportedTriggerType, 'trigger_type');
+  }
+}
 
 const editAutomationStatusOnlySchema = z.strictObject({
   // We disallow status-only activations because they could allow activations to
@@ -374,7 +424,11 @@ export async function browseActionLinks(automationId: string, actionId: string) 
 }
 
 export async function add(data: unknown) {
-  const result = addAutomationDataSchema.safeParse(data);
+  assertTriggerTypeIsEnabled(data);
+  const schema = isPaidSubscriptionChangedPayload(data)
+    ? addPaidSubscriptionChangedAutomationDataSchema
+    : addMemberSignUpAutomationDataSchema;
+  const result = schema.safeParse(data);
   if (!result.success) {
     const issue = result.error.issues[0];
     throwValidationError(
@@ -408,7 +462,14 @@ async function validateEditData(data: unknown): Promise<EditAutomationData> {
   // if we use its union types.
   const hasGraphField =
     typeof data === 'object' && data !== null && ('actions' in data || 'edges' in data);
-  const schema = hasGraphField ? editAutomationDataSchema : editAutomationStatusOnlySchema;
+  if (hasGraphField) {
+    assertTriggerTypeIsEnabled(data);
+  }
+  const schema = !hasGraphField
+    ? editAutomationStatusOnlySchema
+    : isPaidSubscriptionChangedPayload(data)
+      ? editPaidSubscriptionChangedAutomationDataSchema
+      : editMemberSignUpAutomationDataSchema;
   const result = schema.safeParse(data);
 
   if (!result.success) {
@@ -656,21 +717,38 @@ function throwValidationError(message: string, property?: string): never {
 
 export const requestPoll = automationsApi2.requestPoll.bind(automationsApi2);
 
-type TriggerOptions = Parameters<AutomationsRepository['trigger']>[0] & {
-  event: 'member_sign_up';
-};
+type TriggerOptions =
+  | (Parameters<AutomationsRepository['trigger']>[0] & {
+      event: 'member_sign_up';
+    })
+  | {
+      event: 'paid_subscription_changed';
+      memberEmail: string;
+      memberId: string;
+      change: PaidSubscriptionChange;
+    };
 export async function trigger(options: TriggerOptions) {
-  if (options.event !== 'member_sign_up') {
-    throw new errors.IncorrectUsageError({
-      message: 'Member signup is the only supported event right now. More may be added later',
-    });
-  }
-
   if (!labs.isSet('automations')) {
     return;
   }
 
-  await repository.trigger(options);
+  switch (options.event) {
+    case 'member_sign_up':
+      await repository.trigger(options);
+      break;
+    case 'paid_subscription_changed':
+      if (!labs.isSet('automationsLifecycleTriggers')) {
+        return;
+      }
+      await repository.triggerPaidSubscriptionChanged(options);
+      break;
+    default: {
+      const _exhaustive: never = options;
+      throw new errors.IncorrectUsageError({
+        message: `Unsupported automation event: ${JSON.stringify(_exhaustive)}`,
+      });
+    }
+  }
 
   requestPoll();
 }

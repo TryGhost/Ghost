@@ -2375,6 +2375,145 @@ describe('MemberRepository', function () {
       });
     });
 
+    describe('paid subscription changes', function () {
+      const flush = () =>
+        new Promise((resolve) => {
+          setImmediate(resolve);
+        });
+
+      function stubMember({ oldTierIds, newTierIds }) {
+        Member.findOne.resolves({
+          id: 'member_id_123',
+          get: sinon.stub().callsFake((key) => ({ email: 'test@example.com' })[key]),
+          related: (relation) => ({
+            models: [],
+            query: sinon.stub().returns({ fetchOne: sinon.stub().resolves({}) }),
+            toJSON: sinon
+              .stub()
+              .returns(relation === 'products' ? oldTierIds.map((id) => ({ id })) : {}),
+            fetch: sinon.stub().resolves({
+              toJSON: sinon
+                .stub()
+                .returns(relation === 'products' ? newTierIds.map((id) => ({ id })) : {}),
+              models: [],
+            }),
+          }),
+          toJSON: sinon.stub().returns({}),
+        });
+      }
+
+      function stubMemberStatusChange(fromStatus, toStatus) {
+        Member.edit.resolves({
+          attributes: { status: toStatus },
+          _previousAttributes: { status: fromStatus },
+          get: sinon.stub().callsFake((key) => ({ status: toStatus })[key]),
+          load: sinon.stub().resolvesThis(),
+          related: sinon.stub().returns({ models: [] }),
+        });
+      }
+
+      function stubGhostProduct(id) {
+        productRepository.get.resolves({
+          id,
+          get: sinon.stub().callsFake((key) => ({ id })[key]),
+          toJSON: sinon.stub().returns({ id }),
+        });
+      }
+
+      async function linkSubscription(repo, context = {}) {
+        await repo.linkSubscription(
+          { id: 'member_id_123', subscription: subscriptionData },
+          { transacting: { executionPromise: Promise.resolve() }, context },
+        );
+        await flush();
+      }
+
+      it('triggers when a paid member changes tiers', async function () {
+        stubMember({ oldTierIds: ['tier_bronze'], newTierIds: [] });
+        stubMemberStatusChange('paid', 'paid');
+        stubGhostProduct('tier_silver');
+        const repo = buildRepo();
+        sinon.stub(repo, 'getSubscriptionByStripeID').resolves(null);
+
+        await linkSubscription(repo);
+
+        sinon.assert.calledOnceWithExactly(automationsApi.trigger, {
+          event: 'paid_subscription_changed',
+          memberId: 'member_id_123',
+          memberEmail: 'test@example.com',
+          change: {
+            type: 'tiers_changed',
+            from_tier_ids: ['tier_bronze'],
+            to_tier_ids: ['tier_silver'],
+          },
+        });
+      });
+
+      it('triggers when a paid member is downgraded to free', async function () {
+        subscriptionData.status = 'canceled';
+        stubMember({ oldTierIds: ['tier_gold'], newTierIds: ['tier_gold'] });
+        stubMemberStatusChange('paid', 'free');
+        stubGhostProduct('tier_gold');
+        const repo = buildRepo();
+        sinon.stub(repo, 'getSubscriptionByStripeID').resolves(null);
+
+        await linkSubscription(repo);
+
+        sinon.assert.calledOnceWithExactly(automationsApi.trigger, {
+          event: 'paid_subscription_changed',
+          memberId: 'member_id_123',
+          memberEmail: 'test@example.com',
+          change: { type: 'downgraded_to_free', from_tier_ids: ['tier_gold'] },
+        });
+      });
+
+      it('triggers when a paid member cancels auto-renew', async function () {
+        subscriptionData.cancel_at_period_end = true;
+        stubMember({ oldTierIds: ['tier_silver'], newTierIds: ['tier_silver'] });
+        stubMemberStatusChange('paid', 'paid');
+        stubGhostProduct('tier_silver');
+        const subscriptionModel = (cancelAtPeriodEnd) => ({
+          id: 'stripe_sub_id_123',
+          get: sinon.stub().callsFake(
+            (key) =>
+              ({
+                status: 'active',
+                cancel_at_period_end: cancelAtPeriodEnd,
+                stripe_price_id: 'price_123',
+                plan_id: 'price_123',
+                mrr: 500,
+              })[key],
+          ),
+          load: sinon.stub().resolvesThis(),
+        });
+        StripeCustomerSubscription.edit.resolves(subscriptionModel(true));
+        const repo = buildRepo();
+        sinon.stub(repo, 'getSubscriptionByStripeID').resolves(subscriptionModel(false));
+
+        await linkSubscription(repo);
+
+        sinon.assert.calledOnceWithExactly(automationsApi.trigger, {
+          event: 'paid_subscription_changed',
+          memberId: 'member_id_123',
+          memberEmail: 'test@example.com',
+          change: { type: 'canceled_auto_renew', from_tier_ids: ['tier_silver'] },
+        });
+      });
+
+      it('does not trigger for imports', async function () {
+        subscriptionData.status = 'canceled';
+        stubMember({ oldTierIds: ['tier_gold'], newTierIds: ['tier_gold'] });
+        stubMemberStatusChange('paid', 'free');
+        stubGhostProduct('tier_gold');
+        const repo = buildRepo();
+        sinon.stub(repo, 'getSubscriptionByStripeID').resolves(null);
+
+        await linkSubscription(repo, { importer: true });
+
+        sinon.assert.notCalled(automationsApi.trigger);
+      });
+    });
+
     describe('legacy automations', function () {
       it('creates automation run when member status changes to paid', async function () {
         Member.edit.resolves({
@@ -2624,6 +2763,82 @@ describe('MemberRepository', function () {
 
         sinon.assert.notCalled(WelcomeEmailAutomationRun.add);
       });
+    });
+  });
+
+  describe('getPaidSubscriptionChanges', function () {
+    const { getPaidSubscriptionChanges } = MemberRepository;
+    const base = {
+      fromTierIds: ['bronze'],
+      toTierIds: ['bronze'],
+      canceledAutoRenewTierIds: null,
+    };
+
+    it('ignores members who were not paid', function () {
+      for (const fromStatus of ['free', 'comped', 'gift']) {
+        assert.deepEqual(
+          getPaidSubscriptionChanges({
+            ...base,
+            fromStatus,
+            toStatus: 'paid',
+            toTierIds: ['silver'],
+          }),
+          [],
+        );
+      }
+    });
+
+    it('reports downgrades to free', function () {
+      assert.deepEqual(
+        getPaidSubscriptionChanges({
+          ...base,
+          fromStatus: 'paid',
+          toStatus: 'free',
+          toTierIds: [],
+        }),
+        [{ type: 'downgraded_to_free', from_tier_ids: ['bronze'] }],
+      );
+    });
+
+    it('ignores changes to other statuses', function () {
+      assert.deepEqual(
+        getPaidSubscriptionChanges({ ...base, fromStatus: 'paid', toStatus: 'comped' }),
+        [],
+      );
+    });
+
+    it('reports new tiers, but not removed ones', function () {
+      assert.deepEqual(
+        getPaidSubscriptionChanges({
+          ...base,
+          fromStatus: 'paid',
+          toStatus: 'paid',
+          toTierIds: ['silver'],
+        }),
+        [{ type: 'tiers_changed', from_tier_ids: ['bronze'], to_tier_ids: ['silver'] }],
+      );
+      assert.deepEqual(
+        getPaidSubscriptionChanges({
+          ...base,
+          fromTierIds: ['bronze', 'silver'],
+          fromStatus: 'paid',
+          toStatus: 'paid',
+          toTierIds: ['silver'],
+        }),
+        [],
+      );
+    });
+
+    it('reports canceled auto-renewals', function () {
+      assert.deepEqual(
+        getPaidSubscriptionChanges({
+          ...base,
+          fromStatus: 'paid',
+          toStatus: 'paid',
+          canceledAutoRenewTierIds: ['bronze'],
+        }),
+        [{ type: 'canceled_auto_renew', from_tier_ids: ['bronze'] }],
+      );
     });
   });
 

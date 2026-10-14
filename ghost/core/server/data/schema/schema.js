@@ -2162,8 +2162,10 @@ module.exports = {
       type: 'string',
       maxlength: 50,
       nullable: false,
-      validations: { isIn: [['member_sign_up']] },
+      validations: { isIn: [['member_sign_up', 'paid_subscription_changed']] },
     },
+    // JSON options for triggers that need them, such as `paid_subscription_changed`.
+    trigger_options: { type: 'text', maxlength: 65535, nullable: true },
     name: { type: 'string', maxlength: 191, nullable: false, unique: true },
     description: { type: 'string', maxlength: 2000, nullable: false, defaultTo: '' },
     slug: { type: 'string', maxlength: 191, nullable: true, unique: true },

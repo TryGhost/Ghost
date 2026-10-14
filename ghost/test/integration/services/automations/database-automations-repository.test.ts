@@ -35,6 +35,7 @@ describe('database automations repository', function () {
       slug,
       name: `Test automation ${id}`,
       status: 'active',
+      trigger_type: 'member_sign_up',
       trigger_tier_scope: triggerTierScope,
       created_at: now,
       updated_at: now,
@@ -120,6 +121,8 @@ describe('database automations repository', function () {
           id: automation.id,
           slug: null,
           ...data,
+          trigger_type: 'member_sign_up',
+          trigger_options: null,
           created_at: automation.created_at,
           updated_at: automation.updated_at,
         });
@@ -189,6 +192,7 @@ describe('database automations repository', function () {
         slug: `duplicate-name-test-${otherId}`,
         name,
         status: 'inactive',
+        trigger_type: 'member_sign_up',
         created_at: now,
         updated_at: now,
       });
@@ -372,6 +376,47 @@ describe('database automations repository', function () {
         .where('automation_id', automationId)
         .whereIn('member_id', memberIds);
       assert.equal(runs.length, 2);
+    });
+  });
+
+  describe('triggerPaidSubscriptionChanged', function () {
+    it('starts runs for matching automations', async function () {
+      const repo = createDatabaseAutomationsRepository({ knex, fakeWaitHoursMultiplier: null });
+      const [silver, gold] = selectedTierIds;
+      const action = {
+        id: ObjectId().toHexString(),
+        type: 'wait' as const,
+        data: { wait_hours: 1 },
+      };
+      const automation = await repo.add({
+        status: 'active',
+        actions: [action],
+        edges: [],
+        name: `Upgraded to gold ${ObjectId().toHexString()}`,
+        description: '',
+        trigger_type: 'paid_subscription_changed',
+        trigger_options: {
+          from: { type: 'specific_tiers', tier_ids: [silver] },
+          to: { type: 'specific_tiers', tier_ids: [gold] },
+        },
+      });
+
+      const memberId = ObjectId().toHexString();
+      const memberEmail = await insertMember(memberId);
+      for (const fromTierId of [silver, ObjectId().toHexString()]) {
+        await repo.triggerPaidSubscriptionChanged({
+          memberId,
+          memberEmail,
+          change: { type: 'tiers_changed', from_tier_ids: [fromTierId], to_tier_ids: [gold] },
+        });
+      }
+
+      const runs = await knex('automation_runs').where({
+        automation_id: automation.id,
+        member_id: memberId,
+      });
+      assert.equal(runs.length, 1);
+      assert.deepEqual(await repo.getById(automation.id), automation);
     });
   });
 

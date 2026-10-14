@@ -6,15 +6,24 @@ import { vi } from 'vitest';
 import domainEvents from '@tryghost/domain-events';
 
 import * as automationsApi from '../../../../../core/server/services/automations/automations-api';
+// @ts-expect-error This module lacks type definitions.
+import labs from '../../../../../core/shared/labs';
 import { StartAutomationsPollEvent } from '../../../../../core/server/services/automations/events/start-automations-poll-event';
 import {
   EMPTY_EMAIL_LEXICAL,
   NON_EMPTY_EMAIL_LEXICAL,
 } from '../../../../utils/automations-fixtures';
 
-const { repositoryAdd, repositoryEdit } = vi.hoisted(() => ({
+const {
+  repositoryAdd,
+  repositoryEdit,
+  repositoryTrigger,
+  repositoryTriggerPaidSubscriptionChanged,
+} = vi.hoisted(() => ({
   repositoryAdd: vi.fn(),
   repositoryEdit: vi.fn(),
+  repositoryTrigger: vi.fn(),
+  repositoryTriggerPaidSubscriptionChanged: vi.fn(),
 }));
 
 vi.mock(
@@ -30,6 +39,8 @@ vi.mock(
         ...actual.createDatabaseAutomationsRepository(options),
         add: repositoryAdd,
         edit: repositoryEdit,
+        trigger: repositoryTrigger,
+        triggerPaidSubscriptionChanged: repositoryTriggerPaidSubscriptionChanged,
       })),
     };
   },
@@ -76,6 +87,8 @@ describe('automations API', function () {
     sinon.restore();
     repositoryAdd.mockReset();
     repositoryEdit.mockReset();
+    repositoryTrigger.mockReset();
+    repositoryTriggerPaidSubscriptionChanged.mockReset();
   });
 
   describe('getNumberOfAutomations', function () {
@@ -540,6 +553,144 @@ describe('automations API', function () {
         }),
         /graph must be a single linear path/,
       );
+    });
+  });
+
+  describe('paid subscription changed trigger', function () {
+    const tierId = ObjectId().toHexString();
+    const action = buildWaitAction();
+    const valid = {
+      name: 'Upgraded',
+      description: '',
+      status: 'active',
+      actions: [action],
+      edges: [],
+      trigger_type: 'paid_subscription_changed',
+      trigger_options: {
+        from: { type: 'any_paid_tier' },
+        to: { type: 'specific_tiers', tier_ids: [tierId, tierId] },
+      },
+    };
+    const expected = {
+      ...valid,
+      trigger_options: {
+        from: { type: 'any_paid_tier' },
+        to: { type: 'specific_tiers', tier_ids: [tierId] },
+      },
+    };
+
+    const stubLabs = (enabled: boolean) =>
+      sinon
+        .stub(labs, 'isSet')
+        .callsFake((flag: string) => flag !== 'automationsLifecycleTriggers' || enabled);
+
+    it('adds automations when the labs flag is enabled', async function () {
+      stubLabs(true);
+      repositoryAdd.mockResolvedValue(expected);
+
+      await automationsApi.add(valid);
+
+      expect(repositoryAdd).toHaveBeenCalledExactlyOnceWith(expected);
+    });
+
+    it('edits automations when the labs flag is enabled', async function () {
+      stubLabs(true);
+      repositoryEdit.mockResolvedValue(expected);
+
+      await automationsApi.edit(ObjectId().toHexString(), valid);
+
+      expect(repositoryEdit).toHaveBeenCalledExactlyOnceWith(expect.any(String), expected);
+    });
+
+    it('rejects automations when the labs flag is disabled', async function () {
+      stubLabs(false);
+
+      await assert.rejects(automationsApi.add(valid), {
+        errorType: 'ValidationError',
+        property: 'trigger_type',
+      });
+      await assert.rejects(automationsApi.edit(ObjectId().toHexString(), valid), {
+        errorType: 'ValidationError',
+        property: 'trigger_type',
+      });
+      expect(repositoryAdd).not.toHaveBeenCalled();
+      expect(repositoryEdit).not.toHaveBeenCalled();
+    });
+
+    it('allows status-only edits when the labs flag is disabled', async function () {
+      stubLabs(false);
+      repositoryEdit.mockResolvedValue(expected);
+
+      await automationsApi.edit(ObjectId().toHexString(), { status: 'inactive' });
+
+      expect(repositoryEdit).toHaveBeenCalledOnce();
+    });
+
+    it('rejects invalid trigger options', async function () {
+      stubLabs(true);
+      const invalidPayloads = [
+        { ...valid, trigger_options: undefined },
+        { ...valid, trigger_options: null },
+        { ...valid, trigger_options: { from: { type: 'any_paid_tier' } } },
+        {
+          ...valid,
+          trigger_options: {
+            ...valid.trigger_options,
+            to: { type: 'specific_tiers', tier_ids: [] },
+          },
+        },
+        { ...valid, trigger_tier_scope: 'free' },
+        { ...valid, trigger_tier_ids: [tierId] },
+      ];
+      for (const payload of invalidPayloads) {
+        await assert.rejects(automationsApi.add(payload), { errorType: 'ValidationError' });
+      }
+      await assert.rejects(automationsApi.add({ ...valid, trigger_type: 'unknown' }), {
+        errorType: 'ValidationError',
+      });
+      expect(repositoryAdd).not.toHaveBeenCalled();
+    });
+
+    it('rejects trigger options on member signup automations', async function () {
+      stubLabs(true);
+      await assert.rejects(
+        automationsApi.add({
+          ...valid,
+          trigger_type: 'member_sign_up',
+          trigger_tier_scope: 'free',
+        }),
+        { errorType: 'ValidationError' },
+      );
+    });
+
+    describe('trigger', function () {
+      const triggerOptions = {
+        event: 'paid_subscription_changed' as const,
+        memberEmail: 'member@example.com',
+        memberId: ObjectId().toHexString(),
+        change: { type: 'downgraded_to_free' as const, from_tier_ids: [tierId] },
+      };
+
+      it('starts matching automations and requests a poll', async function () {
+        stubLabs(true);
+        const dispatchStub = sinon.stub(domainEvents, 'dispatch');
+
+        await automationsApi.trigger(triggerOptions);
+
+        expect(repositoryTriggerPaidSubscriptionChanged).toHaveBeenCalledExactlyOnceWith(
+          triggerOptions,
+        );
+        expect(repositoryTrigger).not.toHaveBeenCalled();
+        sinon.assert.calledOnce(dispatchStub);
+      });
+
+      it('does nothing when the labs flag is disabled', async function () {
+        stubLabs(false);
+
+        await automationsApi.trigger(triggerOptions);
+
+        expect(repositoryTriggerPaidSubscriptionChanged).not.toHaveBeenCalled();
+      });
     });
   });
 

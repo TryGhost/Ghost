@@ -20,13 +20,13 @@ const serve = (
     (AutomationTrigger | { trigger_tier_scope?: never; trigger_tier_ids?: never }) = {},
 ) => {
   setup();
-  const automation: AutomationDetail = {
+  const automation = {
     ...detail('first'),
     slug: 'member-welcome-email-paid',
     trigger_tier_scope: 'all_paid',
     trigger_tier_ids: null,
     ...overrides,
-  };
+  } as AutomationDetail;
   fakeAdminEndpoint('GET', '/automations/first/', { automations: [automation] });
   fakeAdminEndpoint('GET', /\/tiers\/\?/, {
     tiers: [

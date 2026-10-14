@@ -26,7 +26,9 @@ import { useAddAutomation, useEditAutomation } from '@tryghost/admin-x-framework
 import type {
   AutomationDetail,
   AutomationStatus,
+  PaidSubscriptionChangedTriggerOptions,
 } from '@tryghost/admin-x-framework/api/automations';
+import { getTriggerError, getTriggerTierIds } from './utils/automation-trigger';
 import { dequal } from 'dequal';
 import { isEmptyEmailLexical } from './utils';
 import { toast } from 'sonner';
@@ -47,16 +49,25 @@ const editableSlice = (automation: AutomationDetail) => ({
   name: automation.name,
   description: automation.description,
   status: automation.status,
+  trigger_type: automation.trigger_type ?? 'member_sign_up',
+  trigger_options: automation.trigger_options
+    ? normalizeTriggerOptions(automation.trigger_options)
+    : null,
   trigger_tier_scope: automation.trigger_tier_scope,
   trigger_tier_ids: automation.trigger_tier_ids ? [...automation.trigger_tier_ids].sort() : null,
   actions: automation.actions,
   edges: automation.edges,
 });
 
-const getTriggerErrors = (automation: AutomationDetail): Record<string, string> =>
-  automation.trigger_tier_scope === 'selected_paid' && !automation.trigger_tier_ids.length
-    ? { [TRIGGER_CANVAS_ID]: 'Select at least one paid tier.' }
-    : {};
+const normalizeTriggerOptions = ({ from, to }: PaidSubscriptionChangedTriggerOptions) => ({
+  from: from.type === 'specific_tiers' ? { ...from, tier_ids: [...from.tier_ids].sort() } : from,
+  to: to.type === 'specific_tiers' ? { ...to, tier_ids: [...to.tier_ids].sort() } : to,
+});
+
+const getTriggerErrors = (automation: AutomationDetail): Record<string, string> => {
+  const error = getTriggerError(automation);
+  return error ? { [TRIGGER_CANVAS_ID]: error } : {};
+};
 
 const isFailedEditState = (editState: AutomationEditState): boolean => {
   return editState.phase === 'failed';
@@ -532,7 +543,7 @@ const AutomationEditorContent: React.FC<{
         isEmailNavigationBlocked={isEmailNavigationBlocked}
         isError={isEditorError}
         isLoading={isEditorLoading}
-        savedTriggerTierIds={savedAutomation?.trigger_tier_ids ?? []}
+        savedTriggerTierIds={savedAutomation ? getTriggerTierIds(savedAutomation) : []}
         selectedRunId={selectedRunId}
         onChange={onDraftChange}
         onDiscardBlockedEmailNavigation={(closeEmailModal) => {

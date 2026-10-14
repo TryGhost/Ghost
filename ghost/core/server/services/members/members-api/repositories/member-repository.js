@@ -27,6 +27,7 @@ const schema = require('../../../../data/schema');
 const labs = require('../../../../../shared/labs');
 /** @import {Knex} from 'knex' */
 /** @import * as automationsApi from '../../../automations/automations-api' */
+/** @import {PaidSubscriptionChange} from '../../../automations/paid-subscription-changed-trigger' */
 
 const messages = {
   noStripeConnection: 'Cannot {action} without a Stripe Connection',
@@ -132,6 +133,47 @@ const getMemberTierIds = async (member, memberStatus, bookshelfOptions) => {
       });
     }
   }
+};
+
+/**
+ * Work out how a paid member's subscription changed, for automations.
+ *
+ * @param {object} options
+ * @param {string} options.fromStatus
+ * @param {string} options.toStatus
+ * @param {string[]} options.fromTierIds
+ * @param {string[]} options.toTierIds
+ * @param {string[] | null} options.canceledAutoRenewTierIds tiers whose subscription stopped auto-renewing, if any
+ * @returns {PaidSubscriptionChange[]}
+ */
+const getPaidSubscriptionChanges = ({
+  fromStatus,
+  toStatus,
+  fromTierIds,
+  toTierIds,
+  canceledAutoRenewTierIds,
+}) => {
+  if (fromStatus !== 'paid') {
+    return [];
+  }
+
+  if (toStatus === 'free') {
+    return [{ type: 'downgraded_to_free', from_tier_ids: fromTierIds }];
+  }
+
+  if (toStatus !== 'paid') {
+    return [];
+  }
+
+  /** @type {PaidSubscriptionChange[]} */
+  const result = [];
+  if (toTierIds.some((tierId) => !fromTierIds.includes(tierId))) {
+    result.push({ type: 'tiers_changed', from_tier_ids: fromTierIds, to_tier_ids: toTierIds });
+  }
+  if (canceledAutoRenewTierIds) {
+    result.push({ type: 'canceled_auto_renew', from_tier_ids: canceledAutoRenewTierIds });
+  }
+  return result;
 };
 
 module.exports = class MemberRepository {
@@ -303,6 +345,41 @@ module.exports = class MemberRepository {
         logging.error({
           err,
           message: `Error triggering automation for member ${memberId}`,
+        });
+      });
+    } else {
+      await trigger();
+    }
+  }
+
+  /**
+   * Trigger automations for a change to a paid member's subscription, once the
+   * transaction commits.
+   *
+   * @param {MemberModel} member
+   * @param {PaidSubscriptionChange} change
+   * @param {object} bookshelfOptions
+   * @param {Knex.Transaction} [bookshelfOptions.transacting]
+   * @returns {Promise<void>}
+   */
+  async #triggerPaidSubscriptionChangedAutomation(member, change, bookshelfOptions) {
+    const memberId = member.id;
+    const memberEmail = member.get('email');
+
+    const trigger = async () => {
+      await this._automationsApi.trigger({
+        event: 'paid_subscription_changed',
+        memberId,
+        memberEmail,
+        change,
+      });
+    };
+
+    if (bookshelfOptions?.transacting) {
+      bookshelfOptions.transacting.executionPromise.then(trigger).catch((err) => {
+        logging.error({
+          err,
+          message: `Error triggering paid subscription changed automation for member ${memberId}`,
         });
       });
     } else {
@@ -2123,6 +2200,28 @@ module.exports = class MemberRepository {
       }
     }
 
+    // Imports replay history, so they shouldn't start automations.
+    if (this._resolveContextSource(options?.context || {}) !== 'import') {
+      const canceledAutoRenew =
+        subscriptionBeforeCancelFlagChange &&
+        !subscriptionBeforeCancelFlagChange.get('cancel_at_period_end') &&
+        subscriptionData.cancel_at_period_end;
+      const paidSubscriptionChanges = getPaidSubscriptionChanges({
+        fromStatus: updatedMember._previousAttributes.status,
+        toStatus: updatedMember.attributes.status,
+        fromTierIds: oldMemberProductIds,
+        toTierIds: newMemberProductIds,
+        canceledAutoRenewTierIds: canceledAutoRenew
+          ? ghostProduct
+            ? [ghostProduct.id]
+            : oldMemberProductIds
+          : null,
+      });
+      for (const change of paidSubscriptionChanges) {
+        await this.#triggerPaidSubscriptionChangedAutomation(memberModel, change, options);
+      }
+    }
+
     // Update the members_current_subscription lookup table
     await this._updateCurrentSubscription(data.id, options);
   }
@@ -2903,3 +3002,5 @@ module.exports = class MemberRepository {
     );
   }
 };
+
+module.exports.getPaidSubscriptionChanges = getPaidSubscriptionChanges;

@@ -1,10 +1,23 @@
 # Automations
 
-Automations run a series of actions for a member after signup. Each automation is currently one ordered path of `wait` and `send_email` actions. It can be active or inactive.
+Automations run a series of actions for a member after a trigger, such as signup. Each automation is currently one ordered path of `wait` and `send_email` actions. It can be active or inactive.
+
+## Triggers
+
+`automations.trigger_type` says which event starts a run:
+
+- `member_sign_up`: a member signs up. `trigger_tier_scope` (and `automation_trigger_tiers` for `selected_paid`) chooses free members, any paid member, or members on selected tiers.
+- `paid_subscription_changed`: a paid member's subscription changes. Behind the `automationsLifecycleTriggers` labs flag. `trigger_options` holds JSON with `from` (`any_paid_tier`, or `specific_tiers` with `tier_ids`) and `to` (`specific_tiers` with `tier_ids`, `canceled_auto_renew`, or `downgraded_to_free`). See [`paid-subscription-changed-trigger.ts`](paid-subscription-changed-trigger.ts) for matching rules. For example, "from any paid tier to Silver or Gold" matches Bronze to Silver, but not Silver to Gold.
+
+The member repository detects subscription changes in `linkSubscription()`. Tier changes count only from paid to paid. Canceling auto-renew counts as soon as the member cancels. Downgrading to free counts when the subscription ends. Imports never trigger automations.
+
+`trigger_tier_scope` and `automation_trigger_tiers` also decide who stays eligible while a run is in progress. Before each step runs, the poll stops the run if the member has left that audience. For `paid_subscription_changed`, these columns are derived from `to` when the automation is saved: specific tiers keep members on those tiers, canceling auto-renew keeps paid members, and downgrading keeps free members. The API returns them as null for this trigger type.
+
+An automation's trigger type can't change after it's created.
 
 ## How a run moves forward
 
-The member repository calls `trigger()` after signup.
+The member repository calls `trigger()` after signup or a paid subscription change.
 
 The database repository creates run(s) and queues their first step(s). Ghost's boot process starts the service, which checks for ready steps. It checks again when a new run starts or a later step becomes ready. An in-memory timer handles checks while Ghost is running; the scheduler can wake Ghost after a restart.
 

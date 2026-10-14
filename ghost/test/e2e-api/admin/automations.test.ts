@@ -54,6 +54,8 @@ type Automation = {
   slug: string;
   status: string;
   description: string | null;
+  trigger_type: string;
+  trigger_options: unknown;
   trigger_tier_scope: string;
   trigger_tier_ids: string[];
   edges: { source_action_id: string; target_action_id: string }[];
@@ -434,6 +436,86 @@ describe('Automations API', function () {
         await models.Base.knex('automations').where({ name: payload.name }).first(),
         undefined,
       );
+    });
+
+    describe('paid subscription changed automations', function () {
+      const triggerOptions = () => ({
+        from: { type: 'specific_tiers', tier_ids: [tierIds[0]] },
+        to: { type: 'specific_tiers', tier_ids: [tierIds[1]] },
+      });
+      const paidSubscriptionChangedPayload = () => {
+        const { trigger_tier_scope: _scope, ...rest } = payload;
+        return {
+          ...rest,
+          trigger_type: 'paid_subscription_changed',
+          trigger_options: triggerOptions(),
+        };
+      };
+
+      beforeEach(function () {
+        mockManager.mockLabsEnabled('automationsLifecycleTriggers');
+      });
+
+      it('creates, reads, and edits them', async function () {
+        const { body } = await agent
+          .post('automations')
+          .body({ automations: [paidSubscriptionChangedPayload()] })
+          .expectStatus(201);
+        const created = body.automations[0];
+        assert.equal(created.trigger_type, 'paid_subscription_changed');
+        assert.deepEqual(created.trigger_options, triggerOptions());
+        assert.equal(created.trigger_tier_scope, null);
+        assert.equal(created.trigger_tier_ids, null);
+
+        const { body: readBody } = await agent.get(`automations/${created.id}`).expectStatus(200);
+        assert.deepEqual(readBody.automations[0], created);
+
+        const editedOptions = {
+          from: { type: 'any_paid_tier' },
+          to: { type: 'downgraded_to_free' },
+        };
+        const { body: editBody } = await agent
+          .put(`automations/${created.id}`)
+          .body({
+            automations: [
+              {
+                ...paidSubscriptionChangedPayload(),
+                actions: created.actions,
+                edges: created.edges,
+                trigger_options: editedOptions,
+              },
+            ],
+          })
+          .expectStatus(200);
+        assert.deepEqual(editBody.automations[0].trigger_options, editedOptions);
+
+        await agent
+          .put(`automations/${created.id}`)
+          .body({
+            automations: [{ ...payload, actions: created.actions, edges: created.edges }],
+          })
+          .expectStatus(422);
+      });
+
+      it('rejects them when the labs flag is disabled', async function () {
+        mockManager.mockLabsDisabled('automationsLifecycleTriggers');
+        await agent
+          .post('automations')
+          .body({ automations: [paidSubscriptionChangedPayload()] })
+          .expectStatus(422);
+      });
+
+      it('rejects archived tiers atomically', async function () {
+        await models.Base.knex('products').where({ id: tierIds[1] }).update({ active: false });
+        await agent
+          .post('automations')
+          .body({ automations: [paidSubscriptionChangedPayload()] })
+          .expectStatus(422);
+        assert.equal(
+          await models.Base.knex('automations').where({ name: payload.name }).first(),
+          undefined,
+        );
+      });
     });
 
     it('rejects missing tiers atomically', async function () {

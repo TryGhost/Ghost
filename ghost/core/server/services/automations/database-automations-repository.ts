@@ -1,6 +1,7 @@
 import errors from '@tryghost/errors';
 import { z } from 'zod';
 import { AUTOMATION_STEP_TERMINAL_STATUSES } from './automations-repository';
+import type { AddAutomationData } from './automations-api';
 import tpl from '@tryghost/tpl';
 import crypto from 'node:crypto';
 import { isDeepStrictEqual } from 'node:util';
@@ -19,6 +20,7 @@ import type {
   AutomatedEmailEvents,
   Automation,
   AutomationBrowseResult,
+  AutomationTrigger,
   AutomationAction,
   AutomationEdge,
   AutomationEmailStats,
@@ -31,6 +33,7 @@ import type {
   AutomationStepTerminalStatus,
   AutomationStepToRun,
   AutomationTriggerTierScope,
+  AutomationTriggerType,
   AutomationsRepository,
   BrowseOptions,
   EditAutomationData,
@@ -47,6 +50,14 @@ import { limitService } from '../limits';
 import { lockAutomationLimit } from './automation-limit';
 import type { ExclusifyUnion, ReadonlyDeep } from 'type-fest';
 import { createDatabaseAutomationsRepository2 } from './database-automations-repository-2';
+import {
+  getPaidSubscriptionChangedAudience,
+  getPaidSubscriptionChangedTierIds,
+  matchesPaidSubscriptionChange,
+  paidSubscriptionChangedTriggerOptionsSchema,
+  type PaidSubscriptionChange,
+  type PaidSubscriptionChangedTriggerOptions,
+} from './paid-subscription-changed-trigger';
 
 // Keep within api_automation_run_search's complete-match run_ids limit.
 const MEMBER_SEARCH_PROBE_LIMIT = 2000;
@@ -109,8 +120,29 @@ type AutomationSummaryRow = {
 };
 
 type AutomationRow = AutomationSummaryRow & {
-  trigger_type: 'member_sign_up';
+  trigger_type: AutomationTriggerType;
+  /** JSON. Only set for `paid_subscription_changed`. */
+  trigger_options: string | null;
   trigger_tier_scope: AutomationTriggerTierScope | null;
+};
+
+/**
+ * Trigger columns as stored.
+ *
+ * `trigger_tier_scope` and `automation_trigger_tiers` describe who stays
+ * eligible while a run is in progress. For `member_sign_up`, they also select
+ * who enters. For `paid_subscription_changed`, `trigger_options` selects who
+ * enters, and the eligibility columns are derived from it.
+ */
+type StoredTrigger = {
+  trigger_type: AutomationTriggerType;
+  trigger_options: string | null;
+  trigger_tier_scope: AutomationTriggerTierScope | null;
+  trigger_tier_ids: readonly string[];
+  /** Every tier the trigger references, which must all be paid tiers. */
+  referenced_tier_ids: readonly string[];
+  /** The property to blame if a referenced tier is invalid. */
+  tier_ids_property: 'trigger_tier_ids' | 'trigger_options';
 };
 
 type AutomationBrowseRow = AutomationSummaryRow & {
@@ -394,19 +426,19 @@ export function createDatabaseAutomationsRepository({
         if (data.status === 'active') {
           await limitService.errorIfWouldGoOverLimit('limitAutomations', { transacting: trx });
         }
-        const tierIds = data.trigger_tier_ids ?? [];
-        if (tierIds.length > 0) {
+        const storedTrigger = getStoredTrigger(data);
+        if (storedTrigger.referenced_tier_ids.length > 0) {
           // Lock the products so they aren't archived or deleted while we're adding.
           const tiers = await trx('products')
             .select('id')
-            .whereIn('id', tierIds)
+            .whereIn('id', storedTrigger.referenced_tier_ids)
             .where({ type: 'paid', active: true })
             .orderBy('id')
             .forUpdate();
-          if (tiers.length !== tierIds.length) {
+          if (tiers.length !== storedTrigger.referenced_tier_ids.length) {
             throw new errors.ValidationError({
               message: 'Trigger tiers must all be active paid tiers.',
-              property: 'trigger_tier_ids',
+              property: storedTrigger.tier_ids_property,
             });
           }
         }
@@ -418,8 +450,9 @@ export function createDatabaseAutomationsRepository({
           name: data.name,
           description: data.description,
           status: data.status,
-          trigger_type: 'member_sign_up',
-          trigger_tier_scope: data.trigger_tier_scope ?? null,
+          trigger_type: storedTrigger.trigger_type,
+          trigger_options: storedTrigger.trigger_options,
+          trigger_tier_scope: storedTrigger.trigger_tier_scope,
           created_at: now,
           updated_at: now,
         };
@@ -441,9 +474,12 @@ export function createDatabaseAutomationsRepository({
           throw error;
         }
 
-        if (tierIds.length > 0) {
+        if (storedTrigger.trigger_tier_ids.length > 0) {
           await trx('automation_trigger_tiers').insert(
-            tierIds.map((productId) => ({ automation_id: automation.id, product_id: productId })),
+            storedTrigger.trigger_tier_ids.map((productId) => ({
+              automation_id: automation.id,
+              product_id: productId,
+            })),
           );
         }
 
@@ -480,18 +516,30 @@ export function createDatabaseAutomationsRepository({
 
         const now = new Date();
 
-        if (data.trigger_tier_scope === 'selected_paid') {
+        const requestedTriggerType =
+          data.trigger_type ??
+          (data.trigger_tier_scope === undefined ? automation.trigger_type : 'member_sign_up');
+        if (requestedTriggerType !== automation.trigger_type) {
+          throw new errors.ValidationError({
+            message: "An automation's trigger type cannot be changed.",
+            property: 'trigger_type',
+          });
+        }
+
+        const storedTrigger = getEditedStoredTrigger(data);
+
+        if (storedTrigger && storedTrigger.referenced_tier_ids.length > 0) {
           // Lock the products so they aren't deleted while we're editing.
           const tiers = await trx('products')
             .select('id')
-            .whereIn('id', data.trigger_tier_ids)
+            .whereIn('id', storedTrigger.referenced_tier_ids)
             .where('type', 'paid')
             .orderBy('id')
             .forUpdate();
-          if (tiers.length !== new Set(data.trigger_tier_ids).size) {
+          if (tiers.length !== storedTrigger.referenced_tier_ids.length) {
             throw new errors.ValidationError({
               message: 'Trigger tiers must all be paid tiers.',
-              property: 'trigger_tier_ids',
+              property: storedTrigger.tier_ids_property,
             });
           }
         }
@@ -501,18 +549,20 @@ export function createDatabaseAutomationsRepository({
           name: data.name ?? automation.name,
           description: data.description ?? automation.description,
           status: data.status,
-          trigger_tier_scope:
-            data.trigger_tier_scope === undefined
-              ? automation.trigger_tier_scope
-              : data.trigger_tier_scope,
+          ...(storedTrigger
+            ? {
+                trigger_options: storedTrigger.trigger_options,
+                trigger_tier_scope: storedTrigger.trigger_tier_scope,
+              }
+            : {}),
           updated_at: toDatabaseDate(now),
         });
 
-        if (data.trigger_tier_scope !== undefined) {
+        if (storedTrigger) {
           await trx('automation_trigger_tiers').where('automation_id', id).delete();
-          if (data.trigger_tier_scope === 'selected_paid') {
+          if (storedTrigger.trigger_tier_ids.length > 0) {
             await trx('automation_trigger_tiers').insert(
-              [...new Set(data.trigger_tier_ids)].map((productId) => ({
+              storedTrigger.trigger_tier_ids.map((productId) => ({
                 automation_id: id,
                 product_id: productId,
               })),
@@ -553,6 +603,15 @@ export function createDatabaseAutomationsRepository({
     ): Promise<void> {
       return await knex.transaction((trx) =>
         trigger(trx, {
+          ...options,
+          fakeWaitHoursMultiplier,
+        }),
+      );
+    },
+
+    async triggerPaidSubscriptionChanged(options) {
+      return await knex.transaction((trx) =>
+        triggerPaidSubscriptionChanged(trx, {
           ...options,
           fakeWaitHoursMultiplier,
         }),
@@ -1110,7 +1169,74 @@ async function trigger(
 
   await lockMemberForTriggering(trx, memberId);
 
-  const firstActions = await findFirstActionRevisions(trx, memberStatus, memberTierIds);
+  const firstActions = await findFirstActionRevisions(trx, (builder) => {
+    builder.where('automation.trigger_type', 'member_sign_up').where((scope) => {
+      scope.where(
+        'automation.trigger_tier_scope',
+        TRIGGER_TIER_SCOPE_BY_MEMBER_STATUS[memberStatus],
+      );
+      if (memberStatus === 'paid' && memberTierIds.length > 0) {
+        scope.orWhere((selected) => {
+          selected
+            .where('automation.trigger_tier_scope', 'selected_paid')
+            .whereExists(
+              trx('automation_trigger_tiers as trigger_tier')
+                .select('trigger_tier.automation_id')
+                .where('trigger_tier.automation_id', trx.ref('automation.id'))
+                .whereIn('trigger_tier.product_id', memberTierIds),
+            );
+        });
+      }
+    });
+  });
+
+  await startRuns(trx, { firstActions, memberEmail, memberId, fakeWaitHoursMultiplier });
+}
+
+async function triggerPaidSubscriptionChanged(
+  trx: Knex.Transaction,
+  options: ReadonlyDeep<{
+    memberEmail: string;
+    memberId: string;
+    change: PaidSubscriptionChange;
+    fakeWaitHoursMultiplier: number | null;
+  }>,
+): Promise<void> {
+  const { memberEmail, memberId, change, fakeWaitHoursMultiplier } = options;
+
+  await lockMemberForTriggering(trx, memberId);
+
+  const candidates: { id: string; trigger_options: string | null }[] = await trx('automations')
+    .select('id', 'trigger_options')
+    .where('trigger_type', 'paid_subscription_changed')
+    .where('status', 'active');
+  const matchingAutomationIds = candidates
+    .filter((candidate) => {
+      const triggerOptions = parseStoredTriggerOptions(candidate);
+      return triggerOptions !== null && matchesPaidSubscriptionChange(triggerOptions, change);
+    })
+    .map((candidate) => candidate.id);
+  if (matchingAutomationIds.length === 0) {
+    return;
+  }
+
+  const firstActions = await findFirstActionRevisions(trx, (builder) => {
+    builder.whereIn('automation.id', matchingAutomationIds);
+  });
+
+  await startRuns(trx, { firstActions, memberEmail, memberId, fakeWaitHoursMultiplier });
+}
+
+async function startRuns(
+  trx: Knex.Transaction,
+  options: ReadonlyDeep<{
+    firstActions: NextActionRevisionRow[];
+    memberEmail: string;
+    memberId: string;
+    fakeWaitHoursMultiplier: number | null;
+  }>,
+): Promise<void> {
+  const { firstActions, memberEmail, memberId, fakeWaitHoursMultiplier } = options;
 
   const runsToInsert: RunToInsert[] = [];
   const stepsToInsert: StepToInsert[] = [];
@@ -1383,8 +1509,7 @@ function buildStepToRun(
 
 async function findFirstActionRevisions(
   trx: Knex.Transaction,
-  memberStatus: 'free' | 'paid',
-  memberTierIds: readonly string[],
+  whereAutomationMatches: (builder: Knex.QueryBuilder) => void,
 ): Promise<NextActionRevisionRow[]> {
   return await trx('automations as automation')
     .select(
@@ -1396,24 +1521,7 @@ async function findFirstActionRevisions(
     )
     .innerJoin('automation_actions as actions', 'actions.automation_id', 'automation.id')
     .innerJoin('automation_action_revisions as revisions', 'revisions.action_id', 'actions.id')
-    .where((builder) => {
-      builder.where(
-        'automation.trigger_tier_scope',
-        TRIGGER_TIER_SCOPE_BY_MEMBER_STATUS[memberStatus],
-      );
-      if (memberStatus === 'paid' && memberTierIds.length > 0) {
-        builder.orWhere((selected) => {
-          selected
-            .where('automation.trigger_tier_scope', 'selected_paid')
-            .whereExists(
-              trx('automation_trigger_tiers as trigger_tier')
-                .select('trigger_tier.automation_id')
-                .where('trigger_tier.automation_id', trx.ref('automation.id'))
-                .whereIn('trigger_tier.product_id', memberTierIds),
-            );
-        });
-      }
-    })
+    .where(whereAutomationMatches)
     .where('automation.status', 'active')
     .whereNull('actions.deleted_at')
     .whereNotExists(
@@ -1670,6 +1778,7 @@ async function loadAutomation(
       'description',
       'status',
       'trigger_type',
+      'trigger_options',
       'trigger_tier_scope',
       'created_at',
       'updated_at',
@@ -1727,6 +1836,7 @@ async function updateAutomation(
         name: automation.name,
         description: automation.description,
         status: automation.status,
+        trigger_options: automation.trigger_options,
         trigger_tier_scope: automation.trigger_tier_scope,
         updated_at: automation.updated_at,
       })
@@ -2112,33 +2222,142 @@ async function buildAutomation(
   );
   const edgeRows = await loadEdgeRows(trx, automation.id);
 
-  let triggerData;
+  return {
+    ...buildAutomationSummary(automation),
+    ...(await buildAutomationTrigger(trx, automation)),
+    actions: actionRows.map((row) => buildActionPayload(row, actionStats.get(row.id) ?? null)),
+    edges: edgeRows.map((row) => buildEdgePayload(row)),
+  };
+}
+
+async function buildAutomationTrigger(
+  trx: Knex.Transaction,
+  automation: AutomationRow,
+): Promise<AutomationTrigger> {
+  switch (automation.trigger_type) {
+    case 'member_sign_up':
+      break;
+    case 'paid_subscription_changed': {
+      const triggerOptions = parseStoredTriggerOptions(automation);
+      if (!triggerOptions) {
+        throw new errors.InternalServerError({
+          message: `Automation ${automation.id} has invalid trigger options.`,
+        });
+      }
+      return {
+        trigger_type: automation.trigger_type,
+        trigger_options: triggerOptions,
+        trigger_tier_scope: null,
+        trigger_tier_ids: null,
+      };
+    }
+    default: {
+      const _exhaustive: never = automation.trigger_type;
+      throw new errors.InternalServerError({
+        message: `Unexpected trigger_type value from database: ${_exhaustive}`,
+      });
+    }
+  }
+
   switch (automation.trigger_tier_scope) {
     case null:
     case 'free':
     case 'all_paid':
-      triggerData = { trigger_tier_scope: automation.trigger_tier_scope, trigger_tier_ids: null };
-      break;
+      return {
+        trigger_type: 'member_sign_up',
+        trigger_options: null,
+        trigger_tier_scope: automation.trigger_tier_scope,
+        trigger_tier_ids: null,
+      };
     case 'selected_paid':
-      triggerData = {
+      return {
+        trigger_type: 'member_sign_up',
+        trigger_options: null,
         trigger_tier_scope: automation.trigger_tier_scope,
         trigger_tier_ids: await trx('automation_trigger_tiers')
           .where('automation_id', automation.id)
           .orderBy('product_id')
           .pluck<string[]>('product_id'),
       };
-      break;
     default:
       throw new errors.InternalServerError({
         message: `Unexpected trigger_tier_scope value from database: ${automation.trigger_tier_scope}`,
       });
   }
+}
 
+/**
+ * Parse stored `paid_subscription_changed` options. Returns null (and logs) if
+ * they're invalid, which shouldn't happen.
+ */
+function parseStoredTriggerOptions(
+  automation: Readonly<Pick<AutomationRow, 'id' | 'trigger_options'>>,
+): PaidSubscriptionChangedTriggerOptions | null {
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(automation.trigger_options ?? 'null');
+  } catch {
+    parsed = null;
+  }
+  const result = paidSubscriptionChangedTriggerOptionsSchema.safeParse(parsed);
+  if (!result.success) {
+    logging.error(`[AUTOMATIONS] Automation ${automation.id} has invalid trigger options`);
+    return null;
+  }
+  return result.data;
+}
+
+function getStoredTrigger(data: AddAutomationData): StoredTrigger {
+  if (data.trigger_type === 'paid_subscription_changed') {
+    return getPaidSubscriptionChangedStoredTrigger(data.trigger_options);
+  }
+  const tierIds = data.trigger_tier_ids ?? [];
   return {
-    ...buildAutomationSummary(automation),
-    ...triggerData,
-    actions: actionRows.map((row) => buildActionPayload(row, actionStats.get(row.id) ?? null)),
-    edges: edgeRows.map((row) => buildEdgePayload(row)),
+    trigger_type: 'member_sign_up',
+    trigger_options: null,
+    trigger_tier_scope: data.trigger_tier_scope ?? null,
+    trigger_tier_ids: tierIds,
+    referenced_tier_ids: tierIds,
+    tier_ids_property: 'trigger_tier_ids',
+  };
+}
+
+/**
+ * Get the trigger to store for an edit, or null if the edit keeps the current
+ * trigger.
+ */
+function getEditedStoredTrigger(data: EditAutomationData): StoredTrigger | null {
+  if (data.trigger_type === 'paid_subscription_changed') {
+    return data.trigger_options === undefined
+      ? null
+      : getPaidSubscriptionChangedStoredTrigger(data.trigger_options);
+  }
+  if (data.trigger_tier_scope === undefined) {
+    return null;
+  }
+  const tierIds =
+    data.trigger_tier_scope === 'selected_paid' ? [...new Set(data.trigger_tier_ids)] : [];
+  return {
+    trigger_type: 'member_sign_up',
+    trigger_options: null,
+    trigger_tier_scope: data.trigger_tier_scope,
+    trigger_tier_ids: tierIds,
+    referenced_tier_ids: tierIds,
+    tier_ids_property: 'trigger_tier_ids',
+  };
+}
+
+function getPaidSubscriptionChangedStoredTrigger(
+  triggerOptions: PaidSubscriptionChangedTriggerOptions,
+): StoredTrigger {
+  const audience = getPaidSubscriptionChangedAudience(triggerOptions);
+  return {
+    trigger_type: 'paid_subscription_changed',
+    trigger_options: JSON.stringify(triggerOptions),
+    trigger_tier_scope: audience.trigger_tier_scope,
+    trigger_tier_ids: audience.trigger_tier_ids,
+    referenced_tier_ids: getPaidSubscriptionChangedTierIds(triggerOptions),
+    tier_ids_property: 'trigger_options',
   };
 }
 

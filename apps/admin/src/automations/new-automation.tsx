@@ -1,6 +1,9 @@
 import React from 'react';
 import { Navigate } from '@tryghost/admin-x-framework';
-import type { AutomationDetail } from '@tryghost/admin-x-framework/api/automations';
+import type {
+  AutomationDetail,
+  AutomationTrigger,
+} from '@tryghost/admin-x-framework/api/automations';
 import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import { Button, LoadingIndicator } from '@tryghost/shade/components';
 import { DirtyConfirmDialog } from '@tryghost/shade/patterns';
@@ -13,12 +16,54 @@ import { CANVAS_ZOOM_CONFIG } from './components/canvas/use-canvas-viewport';
 import { canvasBackground } from './components/canvas/canvas-background';
 import { useVisibleAutomations } from './hooks/use-visible-automations';
 import { getNewAutomationName } from './utils/get-new-automation-name';
+import {
+  NEW_PAID_SUBSCRIPTION_CHANGED_TRIGGER,
+  hasPickedTrigger,
+  withTrigger,
+} from './utils/automation-trigger';
 import { useUnsavedChangesGuard } from '@/hooks/use-unsaved-changes-guard';
+
+type TriggerOption = {
+  key: string;
+  Icon: React.ComponentType<{ className?: string }>;
+  title: string;
+  description: string;
+  trigger: AutomationTrigger;
+};
+
+const getTriggerOptions = (lifecycleTriggersEnabled: boolean): TriggerOption[] => [
+  {
+    key: 'free',
+    Icon: LucideIcon.UserPlus,
+    title: 'Free member signed up',
+    description: 'When someone signs up as a free member',
+    trigger: { trigger_tier_scope: 'free', trigger_tier_ids: null },
+  },
+  {
+    key: 'all_paid',
+    Icon: LucideIcon.CreditCard,
+    title: 'Paid subscription started',
+    description: 'When a new or free member starts a paid subscription',
+    trigger: { trigger_tier_scope: 'all_paid', trigger_tier_ids: null },
+  },
+  ...(lifecycleTriggersEnabled
+    ? [
+        {
+          key: 'paid_subscription_changed',
+          Icon: LucideIcon.ArrowRightLeft,
+          title: 'Paid subscription changed',
+          description: 'When a paid member changes tiers, cancels, or downgrades to free',
+          trigger: NEW_PAID_SUBSCRIPTION_CHANGED_TRIGGER,
+        },
+      ]
+    : []),
+];
 
 const TriggerPicker: React.FC<{
   automation: AutomationDetail;
-  onPick: (scope: 'free' | 'all_paid') => void;
-}> = ({ automation, onPick }) => {
+  lifecycleTriggersEnabled: boolean;
+  onPick: (trigger: AutomationTrigger) => void;
+}> = ({ automation, lifecycleTriggersEnabled, onPick }) => {
   const { dialogProps } = useUnsavedChangesGuard({ when: true });
   return (
     <Stack className="fixed inset-0 z-50 bg-background" gap="none">
@@ -56,42 +101,29 @@ const TriggerPicker: React.FC<{
             gap="xl"
           >
             <Text weight="semibold">Select a trigger</Text>
-            {(
-              [
-                [
-                  'free',
-                  LucideIcon.UserPlus,
-                  'Free member signed up',
-                  'When someone signs up as a free member',
-                ],
-                [
-                  'all_paid',
-                  LucideIcon.CreditCard,
-                  'Paid subscription started',
-                  'When a new or free member starts a paid subscription',
-                ],
-              ] as const
-            ).map(([scope, Icon, title, description]) => (
-              <Button
-                key={scope}
-                className="-mx-2 h-auto justify-start px-2 text-left whitespace-normal"
-                shape="rounded"
-                variant="ghost"
-                onClick={() => onPick(scope)}
-              >
-                <Inline gap="md">
-                  <Inline className="size-9 shrink-0 rounded-md bg-muted" justify="center">
-                    <Icon className="size-4" />
+            {getTriggerOptions(lifecycleTriggersEnabled).map(
+              ({ key, Icon, title, description, trigger }) => (
+                <Button
+                  key={key}
+                  className="-mx-2 h-auto justify-start px-2 text-left whitespace-normal"
+                  shape="rounded"
+                  variant="ghost"
+                  onClick={() => onPick(trigger)}
+                >
+                  <Inline gap="md">
+                    <Inline className="size-9 shrink-0 rounded-md bg-muted" justify="center">
+                      <Icon className="size-4" />
+                    </Inline>
+                    <Stack gap="none">
+                      <Text weight="medium">{title}</Text>
+                      <Text size="sm" tone="secondary">
+                        {description}
+                      </Text>
+                    </Stack>
                   </Inline>
-                  <Stack gap="none">
-                    <Text weight="medium">{title}</Text>
-                    <Text size="sm" tone="secondary">
-                      {description}
-                    </Text>
-                  </Stack>
-                </Inline>
-              </Button>
-            ))}
+                </Button>
+              ),
+            )}
           </Stack>
         </Stack>
       </Box>
@@ -119,6 +151,7 @@ const NewAutomationSession: React.FC<
     isStripeReady: boolean;
   }
 > = ({ children, automations, stripeEnabled, isStripeReady }) => {
+  const lifecycleTriggersEnabled = useFeatureFlag('automationsLifecycleTriggers');
   const [initialAutomation, setInitialAutomation] = React.useState<AutomationDetail | null>(null);
   if (!initialAutomation) {
     if (isStripeReady) {
@@ -137,16 +170,12 @@ const NewAutomationSession: React.FC<
     }
     return <NewAutomationLoading />;
   }
-  if (initialAutomation.trigger_tier_scope === null) {
+  if (!hasPickedTrigger(initialAutomation)) {
     return (
       <TriggerPicker
         automation={initialAutomation}
-        onPick={(scope) =>
-          setInitialAutomation({
-            ...initialAutomation,
-            trigger_tier_scope: scope,
-          })
-        }
+        lifecycleTriggersEnabled={lifecycleTriggersEnabled}
+        onPick={(trigger) => setInitialAutomation(withTrigger(initialAutomation, trigger))}
       />
     );
   }
