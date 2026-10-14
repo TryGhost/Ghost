@@ -140,8 +140,8 @@ _Avoid_: proxy, API access, app token
 
 **Blocklist**:
 The Admin API routes the fetch escape hatch refuses whatever the method: those
-that hand out a credential outliving the session, change who can sign in or
-who the staff are, send site events elsewhere, or import, export or delete the
-whole site. It is a stopgap, not a complete list, and goes when the app token
+that hand out a credential outliving the session, change who can sign in, who
+can read a private site or who the staff are, send site events elsewhere, or
+import, export or delete the whole site. It is a stopgap, not a complete list, and goes when the app token
 arrives.
 _Avoid_: permissions, scopes, denylist

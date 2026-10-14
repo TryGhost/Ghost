@@ -187,8 +187,8 @@ a path, a header or a refusal the same way.
 `checkAdminApiPath(path, apiRoot)`, which resolves it against the Admin API root
 and answers with the URL to request, or with `invalid_path` for anything that
 leaves the root and `blocked` for what the blocklist closes: the routes that
-hand out credentials, change who can sign in, send site events elsewhere, or
-import, export or delete the whole site. `ADMIN_API_BLOCKLIST` lists them by
+hand out credentials, change who can sign in or read a private site, send site
+events elsewhere, or import, export or delete the whole site. `ADMIN_API_BLOCKLIST` lists them by
 category, each with its reason. It is a stopgap until apps have their own
 token, and its header names what it leaves open for the security review
 (BER-3992).

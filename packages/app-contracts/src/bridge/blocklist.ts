@@ -4,13 +4,18 @@
  * Apps call the Admin API with the staff user's own session for now, as a stand-in for the
  * app-scoped token that comes with permissions. Until then, these routes are closed to them:
  * each one hands out a credential that would outlive the app's session, changes who can sign
- * in or who the staff are, sends site events to an address of its choosing, imports, exports
- * or deletes the whole site through `/db`, or installs and approves apps. The blocklist goes
- * when the token arrives.
+ * in, who can read a private site or who the staff are, sends site events to an address of its
+ * choosing, imports, exports or deletes the whole site through `/db`, or installs and approves
+ * apps. The blocklist goes when the token arrives.
  *
  * It is not complete, and does not claim to be. These stay open until the security review
  * before external developers decides on them (BER-3992):
  *
+ * - Who can sign in or read the site, through routes apps also need for everyday work:
+ *   changing a member's email through `PUT /members/:id`, which lets whoever holds the new
+ *   address sign in as that member, and reading a private site's access code, the `password`
+ *   setting, through `GET /settings`. Blocking either route would close every member edit or
+ *   every settings read.
  * - Settings that send data elsewhere for as long as they stay set: the Mailgun and Stripe
  *   keys and `slack_url` through `PUT /settings`, and connecting Stripe through
  *   `/members/stripe_connect`.
@@ -66,8 +71,14 @@ export const ADMIN_API_BLOCKLIST: readonly BlockedAdminApiCategory[] = [
   {
     name: 'member_sign_in',
     reason:
-      "A member's sign-in link signs in as that member for as long as the link lasts, whatever becomes of the app's session.",
+      "A member's sign-in link signs in as that member for as long as the link lasts, whatever becomes of the app's session. This covers sign-in links only: changing a member's email, which ends the same way, stays open until BER-3992.",
     paths: ['/members/:id/signin_urls'],
+  },
+  {
+    name: 'site_access',
+    reason:
+      "A private site's access code is what its readers enter to see it, so replacing it shuts out everyone who holds the old one.",
+    paths: ['/settings/access_code/regenerate'],
   },
   {
     name: 'invites',
