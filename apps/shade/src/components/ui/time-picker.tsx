@@ -3,20 +3,23 @@ import { Clock } from 'lucide-react';
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group';
 import { cn } from '@/lib/utils';
 
-export interface TimePickerProps extends Omit<ComponentProps<'input'>, 'type' | 'size'> {
-  /** Optional trailing context, such as a timezone abbreviation. */
-  suffix?: ReactNode;
+export interface TimePickerProps extends Omit<ComponentProps<'input'>, 'type' | 'size' | 'prefix'> {
+  /**
+   * Optional leading context, such as a timezone abbreviation. It takes the
+   * clock icon's place, leaving a 12-hour locale's AM/PM room in narrow fields.
+   */
+  prefix?: ReactNode;
 }
 
 /** Native, keyboard-accessible time input. Values use HH:mm and remain consumer-owned. */
 export const TimePicker = forwardRef<HTMLInputElement, TimePickerProps>(function TimePicker(
-  { className, suffix, disabled, step = 60, ...props },
+  { className, prefix, disabled, step = 60, ...props },
   ref,
 ) {
   return (
     <InputGroup className={cn('min-w-0', className)} data-disabled={disabled}>
-      <InputGroupAddon>
-        <Clock aria-hidden="true" />
+      <InputGroupAddon className={prefix ? 'text-sm font-normal' : undefined}>
+        {prefix ?? <Clock aria-hidden="true" />}
       </InputGroupAddon>
       <InputGroupInput
         ref={ref}
@@ -26,11 +29,6 @@ export const TimePicker = forwardRef<HTMLInputElement, TimePickerProps>(function
         type="time"
         {...props}
       />
-      {suffix ? (
-        <InputGroupAddon align="inline-end" className="text-sm font-normal">
-          {suffix}
-        </InputGroupAddon>
-      ) : null}
     </InputGroup>
   );
 });
