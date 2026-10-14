@@ -20,8 +20,8 @@ export type ManifestRules = Omit<ParseManifestOptions, 'manifestUrl'>;
  */
 export interface LoadedManifest {
   /**
-   * The address the install link pointed at, as the URL parser reads it and before any
-   * redirect: what is stored, and fetched again later.
+   * The manifest URL it was loaded from, as the URL parser reads it and before any
+   * redirect: what is stored, and loaded again later.
    */
   manifestUrl: string;
   /** Parsed, with its URLs resolved against where it was read from after any redirects. */
