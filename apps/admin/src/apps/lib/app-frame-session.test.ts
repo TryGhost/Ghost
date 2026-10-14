@@ -9,6 +9,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   type AppFrameSession,
   type AppFrameSessionOptions,
+  MAX_SHORT_LIVED,
+  SHORT_LIVED_MS,
   createAppFrameSession,
 } from './app-frame-session';
 import type { AdminApiFetch } from './bridge-fetch';
@@ -451,7 +453,7 @@ describe('createAppFrameSession', () => {
     expect(session.getState()).toMatchObject({ status: 'loading', attempt: 1 });
   });
 
-  describe('a page that keeps leaving', () => {
+  describe('a page that keeps bringing documents that don’t stay', () => {
     /** Has the started page in `frame` leave for Admin's own origin, which Admin can read. */
     const leave = (frame: FakeFrame) => {
       frame.navigate();
@@ -459,29 +461,85 @@ describe('createAppFrameSession', () => {
       frame.loaded();
     };
 
-    it('is called unresponsive rather than loaded again and again', async () => {
-      for (let attempt = 1; attempt <= 3; attempt += 1) {
+    /** Has the started page in `frame` reload itself, and waits for the new one to start. */
+    const reload = async (frame: FakeFrame) => {
+      frame.navigate();
+      frame.hello();
+      await vi.waitFor(() => expect(session.getState().status).toBe('ready'));
+    };
+
+    it('is called unresponsive when it reloads itself as soon as it starts', async () => {
+      const frame = await started();
+      for (let count = 1; count <= MAX_SHORT_LIVED; count += 1) {
+        await reload(frame);
+      }
+
+      frame.navigate();
+      frame.hello();
+
+      expect(session.getState()).toMatchObject({ status: 'failed', attempt: 0 });
+      await settle();
+      expect(frame.contentWindow.postMessage).toHaveBeenCalledTimes(MAX_SHORT_LIVED + 1);
+    });
+
+    it('is called unresponsive when it leaves as soon as it starts, until Try again', async () => {
+      for (let attempt = 1; attempt <= MAX_SHORT_LIVED; attempt += 1) {
         leave(await started());
         expect(session.getState()).toMatchObject({ status: 'loading', attempt });
       }
 
       leave(await started());
 
-      expect(session.getState()).toMatchObject({ status: 'failed', attempt: 3 });
+      expect(session.getState()).toMatchObject({ status: 'failed', attempt: MAX_SHORT_LIVED });
       // Try again starts the count over.
       session.restart();
-      for (let attempt = 5; attempt <= 7; attempt += 1) {
+      for (let attempt = MAX_SHORT_LIVED + 2; attempt <= 2 * MAX_SHORT_LIVED + 1; attempt += 1) {
         leave(await started());
         expect(session.getState()).toMatchObject({ status: 'loading', attempt });
       }
     });
 
-    it('is loaded again when it leaves now and then', async () => {
+    it('counts the documents it starts in place and the loads afresh together', async () => {
+      const frame = await started();
+      for (let count = 1; count < MAX_SHORT_LIVED; count += 1) {
+        await reload(frame);
+      }
+      leave(frame);
+      expect(session.getState()).toMatchObject({ status: 'loading', attempt: 1 });
+
+      leave(await started());
+
+      expect(session.getState()).toMatchObject({ status: 'failed', attempt: 1 });
+    });
+
+    it('is never stopped while each document stays a while', async () => {
       vi.useFakeTimers({ toFake: ['Date'] });
-      for (let attempt = 1; attempt <= 6; attempt += 1) {
-        leave(await started());
+      const frame = await started();
+      // A publisher going through a server-rendered app, a page every few seconds.
+      for (let count = 1; count <= 3 * MAX_SHORT_LIVED; count += 1) {
+        vi.setSystemTime(Date.now() + SHORT_LIVED_MS);
+        await reload(frame);
+      }
+      // A document that stays a while starts the count over.
+      for (let count = 1; count <= MAX_SHORT_LIVED; count += 1) {
+        await reload(frame);
+      }
+      vi.setSystemTime(Date.now() + SHORT_LIVED_MS);
+      await reload(frame);
+      for (let count = 1; count <= MAX_SHORT_LIVED; count += 1) {
+        await reload(frame);
+      }
+
+      expect(session.getState()).toMatchObject({ status: 'ready', attempt: 0 });
+    });
+
+    it('is loaded again each time it leaves after staying a while', async () => {
+      vi.useFakeTimers({ toFake: ['Date'] });
+      for (let attempt = 1; attempt <= 2 * MAX_SHORT_LIVED; attempt += 1) {
+        const frame = await started();
+        vi.setSystemTime(Date.now() + SHORT_LIVED_MS);
+        leave(frame);
         expect(session.getState()).toMatchObject({ status: 'loading', attempt });
-        vi.setSystemTime(Date.now() + 30_000);
       }
     });
   });

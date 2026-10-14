@@ -96,7 +96,7 @@ interface Connection {
  * Some documents can't be started in place, and `handlers.reloaded` hears of them, so the
  * app's page is loaded afresh: one on Admin's own origin, which Admin can read and the
  * app's never is, and one that refuses to start. How long a document gets to start, and
- * how often the page is loaded afresh, is `createAppFrameSession`'s to decide.
+ * how many short-lived ones a page may bring, is `createAppFrameSession`'s to decide.
  *
  * Every argument the page sends is checked against the bridge's schemas before Admin
  * acts on it: the frame is the app's, and Admin trusts nothing in it.

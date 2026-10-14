@@ -73,12 +73,12 @@ export interface AppFrameSession {
 }
 
 /**
- * How many times within `RESTART_WINDOW_MS` Admin loads an app's page afresh on its own
- * before calling it unresponsive. Otherwise a page that leaves each time it starts would
- * loop between the spinner and the app, never reaching Try again.
+ * How long a document must stay started to count as one the publisher used, rather than
+ * one that left as soon as it started (see `createAppFrameSession`).
  */
-const AUTOMATIC_RESTARTS = 3;
-const RESTART_WINDOW_MS = 60_000;
+export const SHORT_LIVED_MS = 3_000;
+/** How many short-lived documents in a row a page may bring before it's called unresponsive. */
+export const MAX_SHORT_LIVED = 3;
 
 // Numbers the moves Admin makes for apps, from when Admin loaded, so a history entry made
 // before, which keeps the number it was made with, never matches a move made since.
@@ -89,13 +89,22 @@ const sameTheme = (a: Theme | undefined, b: Theme) =>
 
 /**
  * The lifecycle of an app's frame, apart from how it's shown. Each load of the app's page
- * gets a frame of its own, bound by `bindAppFrame`, and `appFrameTimeouts.ready` to start
- * in; once started, it stays started. A new document in a started frame is hidden while it
- * starts in place, with the same time to do it. One that doesn't, or can't be started in
- * place, is loaded afresh in a new frame, up to `AUTOMATIC_RESTARTS` times; after that it
- * has failed until Try again. Path and theme changes pass both ways, each once: what the
- * app was last told, or told Admin, is never echoed back to it, even while Admin is still
- * catching up with routes the app has since left.
+ * gets a frame of its own, bound by `bindAppFrame`, which says how documents come and go
+ * in it. The frame is hidden until a document has started. The first gets
+ * `appFrameTimeouts.ready` from the frame's mount, and has failed if it doesn't start in
+ * that time; each document that replaces a started one gets as long from its arrival, and
+ * the app's page is loaded afresh, in a new frame, if it doesn't start in it.
+ *
+ * A page that reloads or leaves each time it starts would loop between the spinner and the
+ * app, never reaching Try again, so short-lived documents are counted: each started one
+ * replaced within `SHORT_LIVED_MS` of starting, and each time Admin loads the page afresh on
+ * its own. A document that stays started longer starts the count over, as Try again does,
+ * so a publisher going from page to page of a server-rendered app is never stopped. Past
+ * `MAX_SHORT_LIVED` in a row, the app has failed until Try again.
+ *
+ * Path and theme changes pass both ways, each once: what the app was last told, or told
+ * Admin, is never echoed back to it, even while Admin is still catching up with routes the
+ * app has since left.
  */
 export function createAppFrameSession(options: AppFrameSessionOptions): AppFrameSession {
   let state: AppFrameState = { status: 'loading', attempt: 0, startedAt: new Date() };
@@ -105,8 +114,10 @@ export function createAppFrameSession(options: AppFrameSessionOptions): AppFrame
   let frame: HTMLIFrameElement | null = null;
   let host: AppFrameHost | null = null;
   let timer: number | undefined;
-  // When Admin loaded the page afresh on its own, within the last `RESTART_WINDOW_MS`.
-  let restarts: number[] = [];
+  // How many short-lived documents in a row the page has brought, and when the current
+  // document started, if it has.
+  let shortLived = 0;
+  let documentStartedAt: number | undefined;
 
   // Where Admin is within the app, and what the app last heard or said about where it is.
   let adminPath: string | undefined;
@@ -127,6 +138,7 @@ export function createAppFrameSession(options: AppFrameSessionOptions): AppFrame
   const detach = () => {
     window.clearTimeout(timer);
     timer = undefined;
+    documentStartedAt = undefined;
     host?.dispose();
     host = null;
     frame = null;
@@ -145,19 +157,38 @@ export function createAppFrameSession(options: AppFrameSessionOptions): AppFrame
     });
   };
 
-  /** Loads the page afresh because of something it did, unless it keeps making Admin. */
-  const restartOnItsOwn = () => {
-    if (disposed) {
-      return;
+  const started = () => {
+    window.clearTimeout(timer);
+    documentStartedAt = Date.now();
+    update({ status: 'ready' });
+  };
+
+  /**
+   * The current document is going, to another or to a fresh load of the page (`reload`).
+   * Says whether the page may carry on, or has brought too many short-lived documents.
+   */
+  const documentEnded = (reload: boolean): boolean => {
+    const lived = documentStartedAt === undefined ? 0 : Date.now() - documentStartedAt;
+    documentStartedAt = undefined;
+    if (lived >= SHORT_LIVED_MS) {
+      shortLived = 0;
     }
-    const now = Date.now();
-    restarts = [...restarts.filter((at) => now - at < RESTART_WINDOW_MS), now];
-    if (restarts.length > AUTOMATIC_RESTARTS) {
+    if (reload || lived < SHORT_LIVED_MS) {
+      shortLived += 1;
+    }
+    if (shortLived > MAX_SHORT_LIVED) {
       detach();
       update({ status: 'failed', title: undefined });
-      return;
+      return false;
     }
-    restart();
+    return true;
+  };
+
+  /** Loads the page afresh because of something it did, unless it keeps doing it. */
+  const restartOnItsOwn = () => {
+    if (!disposed && documentEnded(true)) {
+      restart();
+    }
   };
 
   const bind = (element: HTMLIFrameElement) => {
@@ -196,7 +227,7 @@ export function createAppFrameSession(options: AppFrameSessionOptions): AppFrame
         },
         open: (place) => options.open(place),
         documentChanged: () => {
-          if (host === bound) {
+          if (host === bound && documentEnded(false)) {
             window.clearTimeout(timer);
             update({ status: 'loading', title: undefined, startedAt: new Date() });
             timer = window.setTimeout(restartOnItsOwn, appFrameTimeouts.ready);
@@ -204,8 +235,7 @@ export function createAppFrameSession(options: AppFrameSessionOptions): AppFrame
         },
         documentStarted: () => {
           if (host === bound) {
-            window.clearTimeout(timer);
-            update({ status: 'ready' });
+            started();
           }
         },
         // A new frame, at the page's own address and with Admin's route, as a reload of
@@ -226,8 +256,7 @@ export function createAppFrameSession(options: AppFrameSessionOptions): AppFrame
     bound.ready.then(
       () => {
         if (host === bound) {
-          window.clearTimeout(timer);
-          update({ status: 'ready' });
+          started();
         }
       },
       () => {
@@ -258,7 +287,7 @@ export function createAppFrameSession(options: AppFrameSessionOptions): AppFrame
     },
     restart: () => {
       // The publisher asked: the count starts over.
-      restarts = [];
+      shortLived = 0;
       restart();
     },
     pathChanged: (path, move) => {
