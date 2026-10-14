@@ -120,13 +120,39 @@ const redirectOnSessionExpiry = () => {
   }
 };
 
+// One check of the session at a time, however many answers ask for one.
+let sessionCheck: Promise<boolean> | undefined;
+
+// Whether Ghost says the session has expired, asked of the current user's endpoint.
+const sessionHasExpired = (): Promise<boolean> => {
+  sessionCheck ??= (async () => {
+    const endpoint = apiUrl('/users/me/');
+    try {
+      const response = await fetch(endpoint, {
+        credentials: 'include',
+        headers: ghostApiRequestHeaders({}),
+      });
+      return await handleResponse(response).then(
+        () => false,
+        (error: unknown) => isExpiredSession(error, endpoint),
+      );
+    } catch {
+      return false;
+    }
+  })().finally(() => {
+    sessionCheck = undefined;
+  });
+  return sessionCheck;
+};
+
 /**
  * Leaves the page as `useFetchApi` does when a request finds the session expired, for
- * requests made without it, such as the ones Admin makes for an app: an unauthorized
- * answer from a Ghost API path other than the session endpoint, once this page load has
- * seen the session work. Unauthorized is what `handleResponse` calls it, as for any other
- * request. Reads a clone of a failed `response`, so its body is still the caller's to
- * read; a successful one isn't read at all.
+ * the requests Admin makes for an app. Their unauthorized answers can't be taken at their
+ * word, as an app can provoke one, say from a route that wants a token in its URL, so
+ * one only counts once Ghost says the session has expired, asked of `/users/me/`. As for
+ * any request, only a Ghost API path other than the session endpoint counts, and only
+ * once this page load has seen the session work. Reads a clone of a failed `response`,
+ * so its body is still the caller's to read; a successful one isn't read at all.
  */
 export const handleSessionExpiry = async (
   endpoint: string | URL,
@@ -139,7 +165,7 @@ export const handleSessionExpiry = async (
     () => false,
     (error: unknown) => isExpiredSession(error, endpoint),
   );
-  if (expired) {
+  if (expired && (await sessionHasExpired())) {
     redirectOnSessionExpiry();
   }
 };

@@ -76,7 +76,8 @@ export function createAdminApiFetch({
     }
 
     // The staff user's session expiring shows up here as anywhere else in Admin, which
-    // leaves for sign-in. The app gets its answer all the same.
+    // leaves for sign-in once Ghost confirms it, as an app can provoke an unauthorized
+    // answer of its own. The app gets its answer all the same.
     await handleSessionExpiry(url, response);
 
     let body: string;
