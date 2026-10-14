@@ -51,6 +51,7 @@ describe('billingSearchSource', () => {
     ['a blank group name', { groupName: '   ', items: [billingItem()] }],
     ['a built-in group name', { groupName: 'Posts', items: [billingItem()] }],
     ['a padded built-in group name', { groupName: ' Posts ', items: [billingItem()] }],
+    ['the Apps group name', { groupName: 'Apps', items: [billingItem()] }],
     ['no items', { groupName: 'Acme Hosting', items: [] }],
     ['a non-array items value', { groupName: 'Acme Hosting', items: billingItem() }],
   ])('has no items for %s', (_description, search) => {
