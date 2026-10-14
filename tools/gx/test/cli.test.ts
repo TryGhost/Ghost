@@ -57,6 +57,8 @@ test('shows root and generator help, and rejects unknown commands', async () => 
     assert.match(result.stdout, /package/);
     if (args.length < 2) {
       assert.match(result.stdout, /db/);
+    } else {
+      assert.match(result.stdout, /Usage: pnpm gx generate package <name> \[options\]/);
     }
   }
   for (const args of [
@@ -70,7 +72,10 @@ test('shows root and generator help, and rejects unknown commands', async () => 
     ['--help', 'unknown'],
     ['--version'],
   ]) {
-    assert.equal(run(root, args).status, 1, args.join(' '));
+    const result = run(root, args);
+    assert.equal(result.status, 1, args.join(' '));
+    assert.equal(result.stdout, '');
+    assert.match(result.stderr, /Usage:\s+pnpm gx/);
   }
 });
 
@@ -107,7 +112,13 @@ test('preserves the original invalid-name, outside-directory and existing-destin
     ['generate', 'package', 'Bad_Name'],
     ['generate', 'package', 'valid', '--dir', '../outside'],
   ]) {
-    assert.equal(run(root, args).status, 1);
+    const result = run(root, args);
+    assert.equal(result.status, 1);
+    assert.equal(result.stdout, '');
+    assert.match(
+      result.stderr,
+      /Missing package name|Unknown option|Invalid package name|inside the repository/,
+    );
   }
   await mkdir(join(root, 'packages/existing'));
   await writeFile(join(root, 'packages/existing/keep.txt'), 'keep');
