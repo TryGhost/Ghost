@@ -65,7 +65,10 @@ export const ARGUMENT_MESSAGES = {
   fetchPath: 'Expected an Admin API path such as /posts/, not a URL',
   fetchMethod: `Expected a method of: ${FETCH_METHODS.join(', ')}`,
   fetchBody: 'Expected no body on a GET or HEAD request',
-  reservedHeader: (name: string) => `Expected no ${name} header, which only Admin sets`,
+  // Header names are compared in any case, and `Headers` lowercases them on the SDK's side,
+  // so the name is lowercased here for both sides to say the same.
+  reservedHeader: (name: string) =>
+    `Expected no ${name.toLowerCase()} header, which only Admin sets`,
   appPath: 'Expected a path within the app, starting with a single /',
   pathChangeOptions: 'Expected options such as { replace: true }',
   place:

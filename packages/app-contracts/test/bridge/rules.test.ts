@@ -261,9 +261,12 @@ describe('the messages for a refused argument', () => {
     expect(ARGUMENT_MESSAGES.fetchMethod).toBe(
       'Expected a method of: GET, POST, PUT, DELETE, PATCH, HEAD',
     );
-    expect(ARGUMENT_MESSAGES.reservedHeader('cookie')).toBe(
-      'Expected no cookie header, which only Admin sets',
-    );
+    // In lowercase, whatever the case it was given in, as the SDK only ever has it that way.
+    for (const name of ['cookie', 'Cookie', 'COOKIE']) {
+      expect(ARGUMENT_MESSAGES.reservedHeader(name)).toBe(
+        'Expected no cookie header, which only Admin sets',
+      );
+    }
     for (const message of Object.values(ARGUMENT_MESSAGES)) {
       expect(typeof message === 'string' ? message : message('x')).toMatch(/^Expected /);
     }

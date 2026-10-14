@@ -111,7 +111,10 @@ describe('a fetch request', () => {
       'Via',
     ]) {
       expect(requestErrors({ path: '/posts/', headers: { [name]: 'x' } })).toEqual([
-        { path: ['headers', name], message: `Expected no ${name} header, which only Admin sets` },
+        {
+          path: ['headers', name],
+          message: `Expected no ${name.toLowerCase()} header, which only Admin sets`,
+        },
       ]);
     }
     for (const name of ['Accept', 'Content-Type', 'If-None-Match', 'X-Ghostly', 'X-Request-Id']) {
