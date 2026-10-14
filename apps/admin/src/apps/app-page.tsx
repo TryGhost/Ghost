@@ -115,8 +115,7 @@ const SESSION_END_SEARCH_PARAMS: Record<string, string> = {};
  */
 function useSessionEnd(session: AppSession, onEnded: () => void) {
   const [since] = useState(() => Date.now());
-  // Typed as always there, which it is on every Ghost that has app sessions.
-  const { revision: installationRevision } = session.installation as Partial<AppInstallation>;
+  const installationRevision = session.installation.revision;
   const { data, dataUpdatedAt, isFetching } = useReadAppInstallation(session.installation.id, {
     enabled: installationRevision !== undefined,
     defaultErrorHandler: false,
