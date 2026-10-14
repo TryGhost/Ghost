@@ -57,9 +57,9 @@ const sameTheme = (a: Theme | undefined, b: Theme) =>
  * The lifecycle of an app's frame, apart from how it's shown. Each load of the app's page
  * gets a frame of its own, bound to Admin by the bridge, and a clock: a page that doesn't
  * start in time (`appFrameTimeouts.ready`) has failed, one that has started stays started.
- * A started page that says hello again has reloaded, and is loaded afresh. Path and theme
- * changes are passed on in both directions, each once: what the app was last told, or
- * told Admin, is never echoed back to it.
+ * A started page whose frame holds a new document has reloaded, and is loaded afresh. Path
+ * and theme changes are passed on in both directions, each once: what the app was last
+ * told, or told Admin, is never echoed back to it.
  */
 export function createAppFrameSession(options: AppFrameSessionOptions): AppFrameSession {
   let state: AppFrameState = { status: 'loading', attempt: 0, startedAt: new Date() };
@@ -126,7 +126,7 @@ export function createAppFrameSession(options: AppFrameSessionOptions): AppFrame
           }
         },
         open: (place) => options.open(place),
-        // The page reloaded, or followed a link of its own, and took its channel with it.
+        // The page reloaded, or followed a link, and took its channel with it.
         // Its new document is started in a new frame, at the page's own address and with
         // Admin's route, as a reload of Admin would.
         reloaded: restart,

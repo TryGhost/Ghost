@@ -24,8 +24,9 @@ export interface AppFrameHandlers {
   pathChanged(path: string, options: PathChangeOptions): void;
   open(place: Place): void;
   /**
-   * The started app's frame holds a new document: the page reloaded or navigated, and its
-   * channel went with the old one. Called once; the host itself is of no further use.
+   * The started app's frame holds a new document: the page reloaded or navigated, within
+   * the app or anywhere else, and its channel went with the old one. Called once; the host
+   * itself is of no further use.
    */
   reloaded(): void;
 }
@@ -52,11 +53,40 @@ export interface AppFrameHost {
 }
 
 /**
+ * How many hellos Admin answers from a frame whose app has yet to start. Each may come from
+ * a new document, so each is answered; a page that reloads more often than this while it
+ * starts is left to run out of time.
+ */
+const MAX_CONNECTS = 10;
+
+/** A channel Admin opened to the frame, in answer to one hello. */
+interface Connection {
+  thread: ThreadMessagePort<AppExports, HostExports>;
+  port: MessagePort;
+  /** How many documents the frame had loaded when Admin answered. */
+  loadsAtConnect: number;
+}
+
+/**
  * Binds the bridge to an app's frame. The page speaks first: Admin waits for a hello sent
  * by that frame from the app's own origin, answers it alone with a `MessagePort`, and
- * starts the app over it. Anything else posted to Admin's window is ignored, as is a
- * second hello while the app is starting. A hello once it has started comes from a new
- * document in the frame, which `handlers.reloaded` hears about.
+ * starts the app over it. Anything else posted to Admin's window is ignored.
+ *
+ * Until the app has started, every hello is answered with a channel of its own, and the
+ * first to start is the app's. The SDK says hello until it hears back, so a hello may be
+ * one it sent before Admin's answer reached it, which it ignores; or it may come from a
+ * new document, the page having reloaded or navigated while it started, which the old
+ * channel went with. Telling them apart isn't needed: whichever starts is the page.
+ *
+ * Once the app has started, a new document in the frame ends it, as `handlers.reloaded`
+ * hears. A hello says so. So does the frame loading a document on Admin's own origin, which
+ * Admin can read and the app's never is. And so does the frame loading a second document
+ * since Admin answered the page, on an origin that never says hello: the first may be the
+ * started page's own, which can finish loading after it started. Where Admin can't tell a
+ * load apart from the started page's own, it assumes it is: an app that connects once
+ * loaded and then navigates to another origin, other than Admin's, isn't noticed unless
+ * the page there says hello. Assuming otherwise would restart, forever, an app whose page
+ * is reached by a redirect in script.
  *
  * Every argument the page sends is checked against the bridge's schemas before Admin
  * acts on it, since the frame is the app's and Admin trusts nothing in it.
@@ -69,10 +99,12 @@ export function bindAppFrame({
   handlers,
 }: BindAppFrameOptions): AppFrameHost {
   let disposed = false;
-  let started = false;
   let reloaded = false;
-  let thread: ThreadMessagePort<AppExports, HostExports> | undefined;
-  let port: MessagePort | undefined;
+  let connects = 0;
+  let loads = 0;
+  // Every channel answering a hello, until one starts; then that one alone.
+  const connections = new Set<Connection>();
+  let started: Connection | undefined;
   // Ends requests still in flight when the session does.
   const session = new AbortController();
   const ended = new Promise<never>((_, reject) => {
@@ -121,6 +153,23 @@ export function bindAppFrame({
     }),
   });
 
+  const close = (connection: Connection) => {
+    connections.delete(connection);
+    // Stops listening, and rejects Admin's own calls still waiting on the page.
+    connection.thread.close();
+    // The refusals of the page's calls still running are posted once their promises
+    // settle; the port stays open until they have been.
+    window.setTimeout(() => connection.port.close(), 0);
+  };
+
+  /** The started app's document is gone, so is its channel: it starts again elsewhere. */
+  const left = () => {
+    if (!reloaded) {
+      reloaded = true;
+      handlers.reloaded();
+    }
+  };
+
   const onMessage = (event: MessageEvent) => {
     if (
       disposed ||
@@ -131,67 +180,91 @@ export function bindAppFrame({
     ) {
       return;
     }
-    if (thread) {
-      // The SDK says hello until Admin answers, so hellos sent before the answer reached it
-      // may still arrive while the app starts. Once it has started, the SDK that started
-      // has stopped: a hello is a new document, whose SDK would wait on it forever.
-      if (started && !reloaded) {
-        reloaded = true;
-        handlers.reloaded();
-      }
+    if (started) {
+      // The SDK that started has stopped saying hello: this is a new document, whose SDK
+      // would wait on it forever.
+      left();
       return;
     }
+    if (connects >= MAX_CONNECTS) {
+      return;
+    }
+    connects += 1;
 
     const channel = new MessageChannel();
-    port = channel.port1;
-    thread = new ThreadMessagePort<AppExports, HostExports>(port, { exports });
+    const connection: Connection = {
+      thread: new ThreadMessagePort<AppExports, HostExports>(channel.port1, { exports }),
+      port: channel.port1,
+      loadsAtConnect: loads,
+    };
+    connections.add(connection);
     // Listening with addEventListener leaves a port closed until it is started.
-    port.start();
+    connection.port.start();
     const connect: ConnectMessage = { type: CONNECT_MESSAGE_TYPE };
     frame.contentWindow.postMessage(connect, surfaceOrigin, [channel.port2]);
 
-    thread.imports.start(context()).then(
+    connection.thread.imports.start(context()).then(
       () => {
-        if (!disposed) {
-          started = true;
-          resolveReady();
+        if (disposed || started) {
+          return;
+        }
+        started = connection;
+        for (const other of connections) {
+          if (other !== connection) {
+            close(other);
+          }
+        }
+        resolveReady();
+      },
+      (error: unknown) => {
+        // A page that refuses to start has failed, unless another document already has.
+        if (!started) {
+          rejectReady(error);
         }
       },
-      (error: unknown) => rejectReady(error),
     );
   };
   window.addEventListener('message', onMessage);
 
+  const onLoad = () => {
+    loads += 1;
+    if (started && (frame.contentDocument || loads - started.loadsAtConnect > 1)) {
+      left();
+    }
+  };
+  frame.addEventListener('load', onLoad);
+
   // A change Admin couldn't tell the app about, say because its SDK predates the call,
-  // leaves the app as it was: nothing for Admin to do about it.
-  const tell = (call: () => Promise<void>) => {
-    if (thread && !disposed) {
-      call().catch(() => {});
+  // leaves the app as it was: nothing for Admin to do about it. Until the app has started,
+  // every channel that may be the app's hears it.
+  const tell = (call: (app: Connection['thread']['imports']) => Promise<void>) => {
+    if (!disposed) {
+      for (const { thread } of connections) {
+        call(thread.imports).catch(() => {});
+      }
     }
   };
 
   return {
     ready,
     get connected() {
-      return thread !== undefined && !disposed;
+      return connections.size > 0 && !disposed;
     },
-    themeChanged: (theme) => tell(() => thread!.imports.themeChanged(theme)),
-    pathChanged: (path) => tell(() => thread!.imports.pathChanged(path)),
+    themeChanged: (theme) => tell((app) => app.themeChanged(theme)),
+    pathChanged: (path) => tell((app) => app.pathChanged(path)),
     dispose() {
       if (disposed) {
         return;
       }
       disposed = true;
       window.removeEventListener('message', onMessage);
+      frame.removeEventListener('load', onLoad);
       rejectReady(sessionEnded());
       // Refuses the calls still running, and aborts their requests.
       session.abort();
-      // Stops listening, and rejects Admin's own calls still waiting on the app.
-      thread?.close();
-      // The refusals above are posted once their promises settle; the port stays open
-      // until they have been.
-      const closing = port;
-      window.setTimeout(() => closing?.close(), 0);
+      for (const connection of connections) {
+        close(connection);
+      }
     },
   };
 }
