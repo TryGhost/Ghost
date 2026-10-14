@@ -24,10 +24,13 @@ export interface AppInstallation {
 /**
  * `actor` is null when Ghost made the change itself.
  * It's also null when there's no record of who installed the app.
+ *
+ * `resumed` is a suspended app going back to the manifest it was approved with, so the
+ * changes that waited for approval no longer do.
  */
 export interface AppInstallationHistoryEntry {
   id: string;
-  event: 'installed' | 'updated' | 'suspended' | 'changes_approved' | 'uninstalled';
+  event: 'installed' | 'updated' | 'suspended' | 'resumed' | 'changes_approved' | 'uninstalled';
   actor: { id: string; name: string | null } | null;
   created_at: string;
   /** The host the app moved to. Only set when an approval moved the app. */
