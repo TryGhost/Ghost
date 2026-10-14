@@ -117,6 +117,25 @@ Chromium), when a message on it cannot be read, or when Admin refuses a call
 with `session_ended`, which it does to every pending call as it lets go of the
 app. Elsewhere, a page Admin has let go of is removed with its frame.
 
+## Who can frame the page
+
+The SDK talks to whichever window frames the page. It cannot know a site's
+Admin origin in advance, so a page any site can frame can be fooled by any
+site: sent a start context of its choosing, with every `fetch` answered by it.
+No Ghost credential is ever in the page, but what the publisher types into it
+is, and what the app makes of the answers.
+
+Serve app pages with a `frame-ancestors` Content Security Policy that names the
+Ghost Admin origins of the sites using the app, so nothing else can frame them:
+
+```http
+Content-Security-Policy: frame-ancestors https://site.example
+```
+
+Admin is usually on the site's own origin, or on a separate Admin domain when
+the site has one. An app installed on many sites can build the list from its
+own record of where it is installed.
+
 ## Develop
 
 This is a workspace package in the Ghost monorepo. From the package directory:
