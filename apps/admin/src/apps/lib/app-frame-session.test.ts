@@ -6,7 +6,11 @@ import {
   type StartContext,
 } from '@tryghost/app-contracts/bridge';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { type AppFrameSession, createAppFrameSession } from './app-frame-session';
+import {
+  type AppFrameSession,
+  type AppFrameSessionOptions,
+  createAppFrameSession,
+} from './app-frame-session';
 import type { AdminApiFetch } from './bridge-fetch';
 import { appFrameTimeouts } from './frame';
 
@@ -111,7 +115,7 @@ type FakeFrame = ReturnType<typeof fakeFrame>;
 describe('createAppFrameSession', () => {
   let session: AppFrameSession;
   let admin: { context: StartContext };
-  const navigate = vi.fn();
+  const navigate = vi.fn<AppFrameSessionOptions['navigate']>();
   const open = vi.fn();
   const fetchAdminApi = vi.fn<AdminApiFetch>();
   const previousTimeout = appFrameTimeouts.ready;
@@ -134,6 +138,9 @@ describe('createAppFrameSession', () => {
     vi.clearAllMocks();
     fetchAdminApi.mockReset();
   });
+
+  /** The number of the `index`th move Admin made to follow the app, as its location carries. */
+  const moveOf = (index: number): number => navigate.mock.calls[index][1].move;
 
   /** Has the page set its title over a channel Admin has let go of, which changes nothing. */
   async function callUnheard(frame: Pick<FakeFrame, 'host'>, title: string) {
@@ -500,9 +507,12 @@ describe('createAppFrameSession', () => {
     const frame = await started();
 
     await frame.host.pathChanged('/episodes/12', { replace: true });
-    expect(navigate).toHaveBeenCalledExactlyOnceWith('/episodes/12', { replace: true });
+    expect(navigate).toHaveBeenCalledExactlyOnceWith('/episodes/12', {
+      replace: true,
+      move: moveOf(0),
+    });
     // Admin follows, which moves its address within the app to where the app already is.
-    session.pathChanged('/episodes/12');
+    session.pathChanged('/episodes/12', moveOf(0));
     await settle();
     expect(frame.app.pathChanged).not.toHaveBeenCalled();
 
@@ -517,12 +527,12 @@ describe('createAppFrameSession', () => {
     // Away and back again before Admin has followed either.
     await Promise.all([frame.host.pathChanged('/login'), frame.host.pathChanged('/')]);
     expect(navigate.mock.calls).toEqual([
-      ['/login', { replace: undefined }],
-      ['/', { replace: undefined }],
+      ['/login', { replace: undefined, move: moveOf(0) }],
+      ['/', { replace: undefined, move: moveOf(0) + 1 }],
     ]);
     // Admin arrives at each in turn, the route the app has left included.
-    session.pathChanged('/login');
-    session.pathChanged('/');
+    session.pathChanged('/login', moveOf(0));
+    session.pathChanged('/', moveOf(1));
     await settle();
     expect(frame.app.pathChanged).not.toHaveBeenCalled();
 
@@ -541,13 +551,44 @@ describe('createAppFrameSession', () => {
       frame.host.pathChanged('/b', { replace: true }),
     ]);
     // Only the last is rendered.
-    session.pathChanged('/b');
+    session.pathChanged('/b', moveOf(1));
     await settle();
     expect(frame.app.pathChanged).not.toHaveBeenCalled();
 
     // Back, to the route Admin skipped: Admin moving on its own now, which the app hears.
-    session.pathChanged('/a');
+    session.pathChanged('/a', moveOf(0));
     await vi.waitFor(() => expect(frame.app.pathChanged).toHaveBeenCalledExactlyOnceWith('/a'));
+  });
+
+  it('follows moves a render folds into one that ends where Admin was, and hears Back after', async () => {
+    const frame = await started();
+
+    // An auth guard's bounce: away and back before Admin has rendered either.
+    await Promise.all([frame.host.pathChanged('/login'), frame.host.pathChanged('/')]);
+    // Both commit as one location, the last move's, on the route Admin was already on.
+    session.pathChanged('/', moveOf(1));
+    await settle();
+    expect(frame.app.pathChanged).not.toHaveBeenCalled();
+
+    // Back, to the entry the first move made: Admin moving on its own, which the app hears.
+    session.pathChanged('/login', moveOf(0));
+    await vi.waitFor(() => expect(frame.app.pathChanged).toHaveBeenCalledExactlyOnceWith('/login'));
+  });
+
+  it('tells a new document of a route Admin was still headed for when it connected', async () => {
+    const frame = await started();
+    await frame.host.pathChanged('/episodes');
+
+    // A new document starts before Admin has arrived, where Admin still is.
+    frame.navigate();
+    frame.hello();
+    await vi.waitFor(() => expect(frame.app.start).toHaveBeenCalledWith(admin.context));
+    await vi.waitFor(() => expect(session.getState().status).toBe('ready'));
+    session.pathChanged('/episodes', moveOf(0));
+
+    await vi.waitFor(() =>
+      expect(frame.app.pathChanged).toHaveBeenCalledExactlyOnceWith('/episodes'),
+    );
   });
 
   it('doesn’t move Admin to the route it is already on', async () => {

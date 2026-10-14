@@ -57,6 +57,8 @@ export interface AppFrameHooks {
   /** Sets the page's own title, which the SDK reports to Admin. */
   setTitle(title: string): Promise<AppFrameResult<void>>;
   setPath(path: string, options?: PathChangeOptions): Promise<AppFrameResult<void>>;
+  /** Moves through `paths` at once, each `path.set` sent before the last is answered. */
+  setPaths(paths: string[]): Promise<AppFrameResult<void>>;
   open(place: Place): Promise<AppFrameResult<void>>;
 }
 
@@ -123,6 +125,10 @@ window.__app = {
       return Promise.resolve();
     }),
   setPath: (path, options) => settle((app) => app.path.set(path, options)),
+  setPaths: (paths) =>
+    settle(async (app) => {
+      await Promise.all(paths.map((path) => app.path.set(path)));
+    }),
   open: (place) => settle((app) => app.open(place)),
 };
 

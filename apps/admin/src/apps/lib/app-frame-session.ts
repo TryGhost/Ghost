@@ -22,6 +22,15 @@ export interface AppFrameState {
   startedAt: Date;
 }
 
+/** How Admin follows the app to one of its routes. */
+export interface AppMoveOptions extends PathChangeOptions {
+  /**
+   * The move's number, which the location Admin makes for it carries back to `pathChanged`,
+   * so the session can tell Admin arriving there from Admin moving on its own.
+   */
+  move: number;
+}
+
 export interface AppFrameSessionOptions {
   /** The origin of the app's page, the only one a hello is accepted from. */
   surfaceOrigin: string;
@@ -29,7 +38,7 @@ export interface AppFrameSessionOptions {
   context: () => StartContext;
   fetchAdminApi: AdminApiFetch;
   /** The app moved to another of its routes, which Admin isn't on yet: Admin follows. */
-  navigate: (path: string, options: PathChangeOptions) => void;
+  navigate: (path: string, options: AppMoveOptions) => void;
   /** The app asked for a place in Admin, already checked to be one Admin offers. */
   open: (place: Place) => void;
 }
@@ -47,8 +56,13 @@ export interface AppFrameSession {
   attach: (frame: HTMLIFrameElement | null) => void;
   /** Loads the app's page again, in a fresh frame, within the same session. */
   restart: () => void;
-  /** Admin moved within the app, by back, forward or a link: the app follows. */
-  pathChanged: (path: string) => void;
+  /**
+   * Admin's location within the app changed. `move` is the number of the app's move the
+   * location was made for, if it was; otherwise Admin moved on its own, by back, forward or
+   * a link, and the app follows. Called for every location Admin commits, as a render can
+   * fold several moves into one, ending where an earlier one did.
+   */
+  pathChanged: (path: string, move?: number) => void;
   /** Admin's theme changed: the app is told. */
   themeChanged: (theme: Theme) => void;
   /** Ends the session: the frame is let go of, and nothing further is heard from it. */
@@ -63,6 +77,10 @@ export interface AppFrameSession {
  */
 const AUTOMATIC_RESTARTS = 3;
 const RESTART_WINDOW_MS = 60_000;
+
+// Numbers the moves Admin makes for apps, from when Admin loaded, so a history entry made
+// before, which keeps the number it was made with, never matches a move made since.
+let lastMove = Date.now();
 
 const sameTheme = (a: Theme | undefined, b: Theme) =>
   a?.mode === b.mode && a.accent_color === b.accent_color;
@@ -94,10 +112,10 @@ export function createAppFrameSession(options: AppFrameSessionOptions): AppFrame
   let adminPath: string | undefined;
   let appPath: string | undefined;
   let appTheme: Theme | undefined;
-  // The routes Admin set out for to follow the app, in order, that it hasn't arrived at yet.
-  // The app can move again before Admin has, so where Admin is, as it says, can be a route
-  // the app has left: one of these is Admin catching up, not moving on its own.
-  let following: string[] = [];
+  // The moves Admin made to follow the app, in order, that it hasn't arrived at yet. The app
+  // can move again before Admin has, so where Admin is, as it says, can be a route the app
+  // has left: a location made for one of these is Admin catching up, not moving on its own.
+  let following: { path: string; move: number }[] = [];
 
   const update = (next: Partial<AppFrameState>) => {
     state = { ...state, ...next };
@@ -152,6 +170,9 @@ export function createAppFrameSession(options: AppFrameSessionOptions): AppFrame
         adminPath = context.path;
         appPath = context.path;
         appTheme = context.theme;
+        // A new page starts where Admin is; where Admin is still headed for an old one is
+        // news to it.
+        following = [];
         return context;
       },
       fetchAdminApi: options.fetchAdminApi,
@@ -161,9 +182,10 @@ export function createAppFrameSession(options: AppFrameSessionOptions): AppFrame
           const normalised = normaliseAppPath(next);
           appPath = normalised;
           // Where Admin is headed, if it's still following the app; where it is otherwise.
-          if (normalised !== (following.at(-1) ?? adminPath)) {
-            following.push(normalised);
-            options.navigate(normalised, { replace });
+          if (normalised !== (following.at(-1)?.path ?? adminPath)) {
+            lastMove += 1;
+            following.push({ path: normalised, move: lastMove });
+            options.navigate(normalised, { replace, move: lastMove });
           }
         },
         open: (place) => options.open(place),
@@ -236,12 +258,13 @@ export function createAppFrameSession(options: AppFrameSessionOptions): AppFrame
       restarts = [];
       restart();
     },
-    pathChanged: (path) => {
+    pathChanged: (path, move) => {
       adminPath = path;
-      const caughtUp = following.indexOf(path);
+      const caughtUp = following.findIndex((entry) => entry.move === move);
       if (caughtUp !== -1) {
-        // Admin arrived where the app went, or somewhere on its way there: the app has
-        // been there already, and needn't hear of it.
+        // Admin arrived where the app went, or somewhere on its way there, past any moves
+        // a render folded into this one: the app has been there already, and needn't hear
+        // of it.
         following = following.slice(caughtUp + 1);
         return;
       }
