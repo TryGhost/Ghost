@@ -79,7 +79,11 @@ describe('connect', () => {
     const connecting = sdk.connect();
 
     expect(parent.postMessage).toHaveBeenCalledWith(
-      { type: HELLO_MESSAGE_TYPE, sdk: 'private' },
+      {
+        type: HELLO_MESSAGE_TYPE,
+        sdk: 'private',
+        document: expect.stringMatching(/^[0-9a-f]{32}$/),
+      },
       '*',
     );
 
@@ -144,6 +148,32 @@ describe('connect', () => {
 
     await fake.start();
     await expect(connecting).resolves.toBeDefined();
+  });
+
+  it('names its document the same in every hello, connecting again included', async () => {
+    vi.useFakeTimers({ toFake: ['setInterval', 'clearInterval', 'setTimeout', 'clearTimeout'] });
+    const parent = frame();
+    const failed = expect(sdk.connect({ timeout: 600 })).rejects.toMatchObject({
+      code: 'not_connected',
+    });
+    vi.advanceTimersByTime(600);
+    await failed;
+    sdk.connect({ timeout: 100 }).catch(() => {});
+    vi.advanceTimersByTime(100);
+
+    const documents = parent.postMessage.mock.calls.map(
+      ([hello]) => (hello as { document: string }).document,
+    );
+    expect(documents.length).toBeGreaterThan(3);
+    expect(new Set(documents).size).toBe(1);
+
+    // A new document, as a reload makes, has a new one.
+    vi.resetModules();
+    const reloaded: Sdk = await import('../src/index.ts');
+    reloaded.connect({ timeout: 100 }).catch(() => {});
+    const [hello] = parent.postMessage.mock.lastCall ?? [];
+    expect((hello as { document: string }).document).not.toBe(documents[0]);
+    vi.advanceTimersByTime(100);
   });
 
   it('ignores messages that are not Admin connecting', async () => {

@@ -3,6 +3,7 @@ import {
   START_TIMEOUT_MS,
   isConnectMessage,
   isRecord,
+  type HelloMessage,
 } from '@tryghost/app-contracts';
 
 import { GhostAppError, invalidArgument } from './errors.ts';
@@ -27,6 +28,21 @@ const HELLO_INTERVAL = 250;
 function parentOrigin(): string {
   const origin = window.location.ancestorOrigins?.[0];
   return origin && origin !== 'null' ? origin : '*';
+}
+
+let documentId: string | undefined;
+
+/**
+ * A random ID for this document, said with every hello, so Admin can tell a hello repeated by
+ * a document it has connected from one by a new document in the same frame. Made the first
+ * time it is needed and kept for as long as the document is, across every `connect()`: a
+ * reload, a form post or a link makes a new document, and with it a new ID.
+ */
+function documentIdentity(): string {
+  documentId ??= Array.from(crypto.getRandomValues(new Uint8Array(16)), (byte) =>
+    byte.toString(16).padStart(2, '0'),
+  ).join('');
+  return documentId;
 }
 
 /**
@@ -100,8 +116,13 @@ function handshake(options: ConnectOptions, onEnded: () => void): Promise<Ghost>
       });
     };
 
+    const hello: HelloMessage = {
+      type: HELLO_MESSAGE_TYPE,
+      sdk: SDK_VERSION,
+      document: documentIdentity(),
+    };
     const sayHello = () => {
-      parent.postMessage({ type: HELLO_MESSAGE_TYPE, sdk: SDK_VERSION }, targetOrigin);
+      parent.postMessage(hello, targetOrigin);
     };
 
     let channel: Channel | undefined;
