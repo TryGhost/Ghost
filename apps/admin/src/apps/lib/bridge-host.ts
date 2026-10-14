@@ -92,7 +92,9 @@ interface Connection {
  * answered is a new document; a first is assumed to be its own. So an app that connects
  * once loaded and then navigates to an origin that never says hello goes unnoticed.
  * Assuming otherwise would hold up, then restart, an app whose page is reached by a
- * redirect in script.
+ * redirect in script. Nor can the hello say whether the page had loaded: the frame's
+ * `load` and the page's messages reach Admin in no order the HTML standard or browsers
+ * keep (whatwg/html#4730), so a load could still be due from a page that says it's done.
  *
  * Some documents can't be started in place, and `handlers.reloaded` hears of them, so the
  * app's page is loaded afresh: one on Admin's own origin, which Admin can read and the
