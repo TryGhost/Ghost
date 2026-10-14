@@ -48,14 +48,6 @@ function formatPath(path: PropertyKey[]): string {
   }, '');
 }
 
-function readUrl(input: string): URL | null {
-  try {
-    return new URL(input);
-  } catch {
-    return null;
-  }
-}
-
 type CheckedManifestUrl = { url: URL; problem: null } | { url: null; problem: string };
 
 /** The address a manifest is read from, checked by the same rules as the URLs inside it. */
@@ -88,7 +80,7 @@ function checkManifestUrl(url: URL | null, allowLocalhost: boolean): CheckedMani
  * its length included.
  */
 export function parseManifestUrl(input: string, allowLocalhost = false): ParseManifestUrlResult {
-  const address = readUrl(input);
+  const address = URL.parse(input);
   if (address) {
     address.hash = '';
   }
@@ -116,7 +108,7 @@ export function parseManifest(input: unknown, options: ParseManifestOptions): Pa
     };
   }
 
-  const { url: base, problem } = checkManifestUrl(readUrl(options.manifestUrl), allowLocalhost);
+  const { url: base, problem } = checkManifestUrl(URL.parse(options.manifestUrl), allowLocalhost);
   if (problem !== null) {
     return { success: false, errors: [{ path: '', message: problem }] };
   }
