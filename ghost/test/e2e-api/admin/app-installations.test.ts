@@ -817,8 +817,8 @@ describe('App installations Admin API', function () {
       const row = await installationRow(installed.id);
       assert.equal(row.pending_manifest_id, null);
       assert.equal(row.revision, 2);
-      // The approved manifest again, kept as a row of its own so the history shows the app
-      // running again: the same digest as the approved one is how it tells resuming.
+      // The approved manifest again, as a row of its own so the history can show the app
+      // resuming.
       const [approved, waited, resumed] = await manifestRows();
       assert.equal(row.manifest_id, resumed.id);
       assert.equal(resumed.source, 'update');

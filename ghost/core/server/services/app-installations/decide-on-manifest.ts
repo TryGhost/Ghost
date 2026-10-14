@@ -9,7 +9,6 @@ export interface AppManifestChange {
   requires_approval: boolean;
 }
 
-/** The approved side of a comparison: the approved manifest and where it is read from. */
 type Approved = Pick<CurrentInstallation, 'manifest_url' | 'manifest'>;
 
 /**
@@ -21,10 +20,6 @@ export function changesFrom(approved: Approved, loaded: LoadedManifest): AppMani
   return compare(approved, loaded).changes;
 }
 
-/**
- * The changes, and whether App Contracts says they need the publisher's approval, so Ghost
- * never decides that differently from what the publisher is shown.
- */
 function compare(approved: Approved, loaded: LoadedManifest) {
   const { changes, requiresApproval } = compareManifests(
     { manifestUrl: approved.manifest_url, manifest: approved.manifest },
@@ -42,10 +37,7 @@ function compare(approved: Approved, loaded: LoadedManifest) {
 /** What to do with a loaded manifest; `decideOnManifest` says what each one means. */
 export type ManifestDecisionKind = 'unchanged' | 'use_pending' | 'apply' | 'suspend';
 
-/**
- * A decision, with what differs from the approved manifest that it was made from, so
- * keeping the manifest doesn't compare the two again.
- */
+/** A decision, with the changes it was made from, so keeping it doesn't compare again. */
 export interface ManifestDecision {
   kind: ManifestDecisionKind;
   changes: AppManifestChange[];
@@ -63,9 +55,8 @@ export interface ManifestDecision {
  * - `suspend`: it has changes that need the publisher's approval, so it waits in place of
  *   any manifest waiting before.
  *
- * This is what Ghost would do with a manifest it picked up by itself. An approval acts on
- * the same decision, but applies what the publisher reviewed whatever it needed: keeping
- * a `suspend` from an approval applies it rather than letting it wait.
+ * This is what Ghost would do with a manifest it picked up by itself; an approval applies a
+ * `suspend` rather than letting it wait.
  */
 export function decideOnManifest({
   current,
@@ -73,7 +64,6 @@ export function decideOnManifest({
   loaded,
 }: {
   current: Approved;
-  /** The manifest waiting for approval. Its digest covers its address too. */
   pending: { digest: string } | null;
   loaded: LoadedManifest;
 }): ManifestDecision {

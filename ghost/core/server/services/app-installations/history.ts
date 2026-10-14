@@ -76,15 +76,13 @@ function installOf(manifests: HistoryManifest[], actions: HistoryAction[]): Entr
 }
 
 /**
- * A newer version Ghost picked up by itself.
- * Ghost either applied it (`updated`) or held it for approval (`suspended`).
- * Applying one after a suspension runs the app again. When what Ghost applied is the
- * approved manifest itself, the app went back on the changes that waited and nothing else
- * changed, so it shows as `resumed`.
+ * A newer version Ghost picked up by itself: applied (`updated`), held for approval
+ * (`suspended`), or the approved manifest itself, which means the app went back on the
+ * changes that waited (`resumed`).
  *
  * Which manifest was approved at each point follows from the rows, oldest first: every row
- * the app ran, which is all of them but the ones Ghost held for approval and nobody
- * approved (`approved` holds the ones approvals ran).
+ * the app ran, which is all of them but the ones Ghost held for approval and no approval
+ * ran (`approved` holds the ones approvals ran).
  */
 function updatesAndSuspensionsOf(manifests: HistoryManifest[], approved: Set<string>): Entry[] {
   const entries: Entry[] = [];

@@ -6,9 +6,7 @@ type SessionFrame = Frame<{ options: { id: string; [key: string]: unknown } }>;
 const controller = {
   docName: 'app_sessions',
 
-  // Starts a session of one installed app, which is what Admin asks for when an app page
-  // opens: Ghost re-checks the app's manifest, then answers with the revision the session
-  // is pinned to and the installation as it stands. No body, as the only URL Ghost fetches
+  // Admin starts a session when an app page opens. No body, as the only URL Ghost fetches
   // is the one the publisher approved. Opening an app takes the same permission as reading
   // its installation.
   start: {

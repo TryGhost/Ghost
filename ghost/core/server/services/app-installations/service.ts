@@ -85,16 +85,15 @@ export interface AppInstallationPreview {
 }
 
 /**
- * What starting an app session answers with: the revision the session is pinned to, and
- * the installation as it stands. Any change to the installation moves its revision on,
- * which is how a session learns it has ended.
+ * Any change to the installation moves its revision on, which is how a session pinned to a
+ * revision learns it has ended.
  */
 export interface AppSession {
   revision: number;
   installation: AppInstallation;
 }
 
-/** The installation has ended, so there is no app to open. */
+/** The installation has ended or never existed, so there is no app to open. */
 function notInstalled() {
   return new errors.NotFoundError({
     message: 'This app is not installed.',
@@ -125,7 +124,6 @@ function isUniqueViolation(err: unknown): boolean {
   );
 }
 
-/** Installations, each joined with the approved manifest it runs. */
 function joinApprovedManifest(db: Knex | Knex.Transaction) {
   return db(`${INSTALLATIONS} as installation`).join(
     `${MANIFESTS} as approved`,
@@ -135,13 +133,9 @@ function joinApprovedManifest(db: Knex | Knex.Transaction) {
 }
 
 /**
- * The current installation, by its own ID or by its app's, with the manifest it was
- * approved with: what a newer manifest is compared against, and what keeping one replaces.
- * An installation that has ended is never current, so it is not found either way.
- *
- * Ended means uninstalled, here as everywhere else. Only the app's ID is looked up by
- * `current_app_id` instead, which is what makes it current: uninstalling clears it in the
- * same update that sets the status, so the two always agree.
+ * The current installation, by its own ID or by its app's, with its approved manifest. An
+ * installation that has ended is never current, so it is not found either way: by ID its
+ * status tells, by app its `current_app_id`, which uninstalling clears in the same update.
  */
 async function currentInstallation(
   by: { id: string } | { appId: string },
@@ -166,7 +160,6 @@ async function currentInstallation(
   return row ? z.decode(CurrentInstallationRow, row) : undefined;
 }
 
-/** The manifest waiting for approval, if the installation has one. */
 async function pendingManifest(
   trx: Knex.Transaction,
   current: CurrentInstallation,
@@ -182,10 +175,9 @@ async function pendingManifest(
 
 /**
  * Keeps a loaded manifest as the decision on it says, inside the transaction that locked
- * the installation and read `current`. The decision was made from `current` there too, and
- * carries the changes it found, so the manifests are compared once. The one write behind
- * both an approval and the re-check at app session start, so the two cannot keep the same
- * manifest differently.
+ * the installation and read `current`, which the decision was made from. The one write
+ * behind both an approval and the re-check at app session start, so the two cannot keep
+ * the same manifest differently.
  *
  * `source` says who decided. Ghost on its own (`update`) applies silent changes and lets
  * changes that need approval wait, suspending the installation. A publisher's approval
@@ -193,11 +185,10 @@ async function pendingManifest(
  *
  * A manifest is kept as a row of its own, unless it is the pending one being approved.
  * That includes Ghost lifting a suspension because the app went back on the changes that
- * waited: the manifest is the approved one again, but nobody decided this, so a row is all
- * the history has to show the app running again. A publisher's approval of the approved
- * manifest needs no row; its staff history entry tells it. Every write moves the revision
- * on. Returns the approved manifest before and after, or null when there was nothing to
- * write.
+ * waited: nobody decided this, so a row is all the history has to show the app running
+ * again. A publisher's approval of the approved manifest needs no row; its staff history
+ * entry tells it. Every write moves the revision on. Returns the approved manifest before
+ * and after, or null when there was nothing to write.
  */
 async function keepManifest(
   trx: Knex.Transaction,
@@ -546,8 +537,6 @@ export class AppInstallationsService {
         return { stale: true } as const;
       }
 
-      // Decided from the same comparison the preview lists changes from, so approve cannot
-      // disagree with what the publisher reviewed.
       const decision = decideOnManifest({
         current,
         pending: await pendingManifest(trx, current),
@@ -581,11 +570,9 @@ export class AppInstallationsService {
   }
 
   /**
-   * Starts a session of an installed app, which is what Admin asks for when an app page
-   * opens. The app's manifest is re-checked first, then the answer carries the installation
-   * as it stands and the revision the session is pinned to; that answer alone decides what
-   * Admin shows. Nothing is stored. An installation that has ended, or never existed, is not
-   * installed.
+   * Starts a session of an installed app, when an app page opens: re-checks the app's
+   * manifest, then answers with the installation as it stands and the revision the session
+   * is pinned to, which alone decide what Admin shows. No session is stored.
    */
   async startSession(id: string): Promise<AppSession> {
     await this.recheck(id);
@@ -613,9 +600,8 @@ export class AppInstallationsService {
    * wait as the pending manifest, suspending the app. Nobody decided this, so nothing is
    * recorded in the staff history; the manifest rows tell it.
    *
-   * A manifest Ghost cannot load (unreachable, invalid, too large, not JSON, redirected to
-   * another host), or one for another app, leaves the approved manifest running: that is
-   * the app's problem, not the publisher's.
+   * A manifest Ghost cannot load, or one for another app, leaves the approved manifest
+   * running: that is the app's problem, not the publisher's.
    *
    * Keyed on the installation's ID, never its app's, so a re-check that started before an
    * uninstall can neither revive that installation nor touch a later one of the same app.
@@ -628,9 +614,8 @@ export class AppInstallationsService {
       throw notInstalled();
     }
 
-    // The app keeps running its approved manifest and nothing shows why, so an operator
-    // can read it in the log, down to what was wrong (the fields that are not valid, or the
-    // host it redirected to). Loading logs an app it cannot reach itself.
+    // Nothing else shows why the app keeps its approved manifest, so the log says, down to
+    // what was wrong. Loading already logs an app it cannot reach.
     const keptApproved = (code: string | null, message: string, reason?: string) =>
       logging.warn(
         `App installation ${id} (${before.app_id}) keeps its approved manifest. ${code}: ${message}${reason ? ` (${reason})` : ''}`,
