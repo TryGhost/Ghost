@@ -18,14 +18,25 @@ type Approved = Pick<CurrentInstallation, 'manifest_url' | 'manifest'>;
  * cannot disagree.
  */
 export function changesFrom(approved: Approved, loaded: LoadedManifest): AppManifestChange[] {
-  const { changes } = compareManifests(
+  return compare(approved, loaded).changes;
+}
+
+/**
+ * The changes, and whether App Contracts says they need the publisher's approval, so Ghost
+ * never decides that differently from what the publisher is shown.
+ */
+function compare(approved: Approved, loaded: LoadedManifest) {
+  const { changes, requiresApproval } = compareManifests(
     { manifestUrl: approved.manifest_url, manifest: approved.manifest },
     { manifestUrl: loaded.manifestUrl, manifest: loaded.manifest },
   );
-  return changes.map(({ path, requiresApproval }) => ({
-    path,
-    requires_approval: requiresApproval,
-  }));
+  return {
+    changes: changes.map(({ path, requiresApproval: requires }) => ({
+      path,
+      requires_approval: requires,
+    })),
+    requiresApproval,
+  };
 }
 
 /**
@@ -64,15 +75,12 @@ export function decideOnManifest({
   pending: { digest: string } | null;
   loaded: LoadedManifest;
 }): ManifestDecision {
-  const changes = changesFrom(current, loaded);
+  const { changes, requiresApproval } = compare(current, loaded);
   if (pending && pending.digest === loaded.digest) {
     return { kind: 'use_pending', changes };
   }
   if (changes.length === 0) {
     return { kind: pending ? 'apply' : 'unchanged', changes };
   }
-  return {
-    kind: changes.some((change) => change.requires_approval) ? 'suspend' : 'apply',
-    changes,
-  };
+  return { kind: requiresApproval ? 'suspend' : 'apply', changes };
 }
