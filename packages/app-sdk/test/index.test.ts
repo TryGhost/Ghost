@@ -15,6 +15,8 @@ describe('@tryghost/app-sdk', () => {
     expectTypeOf<sdk.Theme>().toEqualTypeOf<contracts.Theme>();
     expectTypeOf<sdk.Place>().toEqualTypeOf<contracts.Place>();
     expectTypeOf<sdk.Site>().toEqualTypeOf<contracts.StartContext['site']>();
+    expectTypeOf<sdk.User>().toEqualTypeOf<contracts.StartContext['user']>();
+    expectTypeOf<sdk.Session>().toEqualTypeOf<contracts.StartContext['session']>();
   });
 
   it('says hello with the version in package.json', () => {

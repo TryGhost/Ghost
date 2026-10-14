@@ -10,10 +10,8 @@ export type Site = StartContext['site'];
 /** Who is using the app, by ID and role. Ask the Admin API for anything more. */
 export type User = StartContext['user'];
 
-export interface Session {
-  /** The installation revision this session was started against. */
-  readonly revision: number;
-}
+/** The session with Admin: the installation revision it was started against. */
+export type Session = StartContext['session'];
 
 export interface ConnectOptions {
   /** How long to wait for Admin to start the app, in milliseconds. Defaults to 10 seconds. */
