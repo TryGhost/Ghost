@@ -115,7 +115,7 @@ describe('createAppFrameSession', () => {
   let session: AppFrameSession;
   let admin: { context: StartContext };
   const navigate = vi.fn<AppFrameSessionOptions['navigate']>(() => true);
-  const open = vi.fn();
+  const open = vi.fn<AppFrameSessionOptions['open']>(() => true);
   const fetchAdminApi = vi.fn<AdminApiFetch>();
   const previousTimeout = appFrameTimeouts.ready;
 
@@ -700,6 +700,15 @@ describe('createAppFrameSession', () => {
     await frame.host.open({ post: { id: '5ddc9141c35e7700383b2937' } });
 
     expect(open).toHaveBeenCalledExactlyOnceWith({ post: { id: '5ddc9141c35e7700383b2937' } });
+  });
+
+  it('refuses a place Admin doesn’t go to, as the publisher is leaving', async () => {
+    const frame = await started();
+    open.mockReturnValueOnce(false);
+
+    await expect(frame.host.open({ apps: true })).rejects.toThrow(
+      'rejected: The publisher is on their way elsewhere in Admin',
+    );
   });
 
   it('makes the app’s request, checked, with a signal that ends with the session', async () => {

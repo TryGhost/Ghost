@@ -42,8 +42,12 @@ export interface AppFrameSessionOptions {
    * says whether it did. It doesn't while the publisher is on their way out of the app.
    */
   navigate: (path: string, options: AppMoveOptions) => boolean;
-  /** The app asked for a place in Admin, already checked to be one Admin offers. */
-  open: (place: Place) => void;
+  /**
+   * The app asked for a place in Admin, already checked to be one Admin offers: Admin goes
+   * there, and says whether it did. It doesn't while the publisher is on their way out of
+   * the app.
+   */
+  open: (place: Place) => boolean;
 }
 
 export interface AppFrameSession {

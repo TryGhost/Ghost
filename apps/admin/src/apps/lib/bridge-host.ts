@@ -15,14 +15,15 @@ import {
   AppPathSchema,
   TitleSchema,
 } from '@tryghost/app-contracts/bridge';
-import { parseFromFrame, sessionEnded } from './bridge-error';
+import { BridgeError, parseFromFrame, sessionEnded } from './bridge-error';
 import type { AdminApiFetch } from './bridge-fetch';
 
 /** What Admin does with what an app's page asks of it, once each request has been checked. */
 export interface AppFrameHandlers {
   titleChanged(title: string): void;
   pathChanged(path: string, options: PathChangeOptions): void;
-  open(place: Place): void;
+  /** Takes the publisher to `place`, and says whether Admin went. */
+  open(place: Place): boolean;
   /**
    * The started page gave way to a new document in the same frame (a reload, a form post,
    * a link), and its channel closed. The app hasn't started until the new document has.
@@ -162,7 +163,9 @@ export function bindAppFrame({
         handlers.pathChanged(appPath, parseFromFrame(PathChangeOptionsSchema, options));
       }),
       open: guarded((place: unknown) => {
-        handlers.open(parseFromFrame(PlaceSchema, place));
+        if (!handlers.open(parseFromFrame(PlaceSchema, place))) {
+          throw new BridgeError('rejected', 'The publisher is on their way elsewhere in Admin');
+        }
       }),
     });
   };

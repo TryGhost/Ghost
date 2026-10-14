@@ -714,7 +714,9 @@ describe('Managing apps', () => {
       await sidebarScreen.navLink('Pages').click();
       // The app moves meanwhile, and asks for a place: neither takes the publisher back.
       answer(await callAppFrame(APP_ORIGIN, 'setPath', '/episodes/12'));
-      answer(await callAppFrame(APP_ORIGIN, 'open', { apps: true }));
+      expect(refusal(await callAppFrame(APP_ORIGIN, 'open', { apps: true }))).toBe(
+        'rejected: The publisher is on their way elsewhere in Admin',
+      );
       expect(currentRoute()).toBe(APP_ROUTE);
       // The app hears where Admin stays.
       await expect
