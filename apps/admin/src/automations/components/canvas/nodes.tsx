@@ -55,7 +55,7 @@ type TriggerNodeData = {
 
 type StepFlowNode = Node<StepNodeData, 'step'>;
 type TriggerFlowNode = Node<TriggerNodeData, 'trigger'>;
-type TailFlowNode = Node<Record<string, never>, 'tail'>;
+type TailFlowNode = Node<{ connectIn?: boolean }, 'tail'>;
 export type AutomationFlowNode = StepFlowNode | TriggerFlowNode | TailFlowNode;
 
 const HIDDEN_HANDLE_STYLE: React.CSSProperties = {
@@ -153,18 +153,42 @@ const StepNode = React.memo<NodeProps<StepFlowNode>>(({ data }) => {
 });
 StepNode.displayName = 'StepNode';
 
-const TailNode: React.FC<NodeProps<TailFlowNode>> = () => (
-  <Inline className="w-[400px]" justify="center">
-    <HiddenHandle position={Position.Top} type="target" />
-    <AutomationCard aria-label="Exit automation" className="w-auto p-4 text-muted-foreground">
-      <Inline gap="md">
-        <LucideIcon.LogOut aria-hidden="true" className="size-4 shrink-0" strokeWidth={2} />
-        <Text size="md" tone="secondary" weight="medium">
-          Exit automation
-        </Text>
-      </Inline>
-    </AutomationCard>
-  </Inline>
-);
+// Rises and fades in as the connector reaches it — a transition from a state flipped
+// after mount rather than a keyframe, which would start while React Flow still has
+// the node hidden for measuring.
+const CONNECT_IN_CLASS =
+  'transition-[opacity,translate] duration-180 [transition-delay:120ms] ease-[cubic-bezier(0.22,0.61,0.36,1)] motion-reduce:transition-none';
+
+const TailNode: React.FC<NodeProps<TailFlowNode>> = ({ data }) => {
+  const [connectIn] = React.useState(Boolean(data.connectIn));
+  const [shown, setShown] = React.useState(!connectIn);
+  React.useEffect(() => {
+    if (shown) {
+      return;
+    }
+    const frame = requestAnimationFrame(() => setShown(true));
+    return () => cancelAnimationFrame(frame);
+  }, [shown]);
+  return (
+    <Inline className="w-[400px]" justify="center">
+      <HiddenHandle position={Position.Top} type="target" />
+      <AutomationCard
+        aria-label="Exit automation"
+        className={cn(
+          'w-auto p-4 text-muted-foreground',
+          connectIn && CONNECT_IN_CLASS,
+          !shown && 'translate-y-2 opacity-0',
+        )}
+      >
+        <Inline gap="md">
+          <LucideIcon.LogOut aria-hidden="true" className="size-4 shrink-0" strokeWidth={2} />
+          <Text size="md" tone="secondary" weight="medium">
+            Exit automation
+          </Text>
+        </Inline>
+      </AutomationCard>
+    </Inline>
+  );
+};
 
 export { TriggerNode, StepNode, TailNode };

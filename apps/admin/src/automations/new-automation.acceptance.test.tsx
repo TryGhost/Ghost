@@ -324,6 +324,36 @@ describe('New automation', () => {
     await expect.poll(() => trigger()?.getBoundingClientRect().top).toBeCloseTo(pickerTop, 0);
   });
 
+  it('draws the connector and brings the exit card in once a trigger is picked', async () => {
+    fakeAutomations([]);
+    fakeAdminEndpoint('GET', /\/tiers\/\?/, { tiers: [] });
+    await renderAdminApp('/automations/new', {
+      labs,
+      boot: {
+        browseSettings: {
+          response: settingsResponse({
+            settings: { stripe_secret_key: 'sk_test', stripe_publishable_key: 'pk_test' },
+          }),
+        },
+      },
+    });
+    await page.getByRole('button', { name: /^Free member signed up/ }).click();
+    const lines = () => [...document.querySelectorAll<SVGPathElement>('.react-flow__edge-path')];
+    await expect.poll(() => lines().length).toBe(1);
+    expect(lines()[0].style.strokeDasharray).not.toBe('');
+    await expect.poll(() => lines()[0].style.strokeDashoffset).toBe('0');
+    const exit = page.getByLabelText('Exit automation');
+    await expect.poll(() => getComputedStyle(exit.element()).opacity).toBe('1');
+    await expect.element(button('Add step')).toBeVisible();
+    // Only the flow that first appears: a step added afterwards arrives as usual.
+    await new Promise((resolve) => {
+      setTimeout(resolve, 600);
+    });
+    await addWait();
+    await expect.poll(() => lines().length).toBe(2);
+    expect(lines().every((line) => line.style.strokeDasharray === '')).toBe(true);
+  });
+
   it('offers Performance before the first save, without loading anything', async () => {
     fakeAutomations([]);
     const stats = fakeAdminEndpoint('GET', /\/automations\/[^/]*\/performance-stats\//, {});

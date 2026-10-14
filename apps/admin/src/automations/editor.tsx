@@ -521,6 +521,7 @@ const AutomationEditorContent: React.FC<{
       <AutomationCanvas
         actionErrors={actionErrors}
         automation={draft}
+        connectIn={creation?.triggerTop !== undefined}
         initialSidebar={
           creation
             ? 'closed'

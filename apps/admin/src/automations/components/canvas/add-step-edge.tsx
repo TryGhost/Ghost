@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import StepPicker, { type StepPickerType } from './step-picker';
 import { useDismissOnOutsidePress } from './use-dismiss-on-outside-press';
 import { BaseEdge, EdgeLabelRenderer, getSmoothStepPath } from '@xyflow/react';
@@ -21,11 +21,15 @@ export type AddStepEdgeData = {
   disabled: boolean;
   disabledReason?: string;
   onPick: (type: StepPickerType, anchor: { sourceId: string; targetId: string }) => void;
+  // Draw the line in from its top, with the + appearing as it does.
+  connectIn?: boolean;
 };
 
 const INSERT_BUTTON_CLASSES =
   'border-dashed border-border-default bg-surface-page text-text-secondary shadow-sm hover:border-border-strong';
 const DEFAULT_EDGE_STROKE = 'var(--xy-edge-stroke)';
+const DRAW_CLASS =
+  'transition-[stroke-dashoffset] duration-180 ease-[cubic-bezier(0.22,0.61,0.36,1)] motion-reduce:transition-none';
 
 const AddStepEdge: React.FC<EdgeProps> = ({
   id,
@@ -40,6 +44,24 @@ const AddStepEdge: React.FC<EdgeProps> = ({
   const [open, setOpen] = useState(false);
   const { triggerRef, contentRef, onCloseAutoFocus } = useDismissOnOutsidePress(open, setOpen);
   const edgeData = data as AddStepEdgeData | undefined;
+  // A dash the length of the line, offset out of sight and slid back in. The line is a
+  // straight drop, so its length is the distance between its ends.
+  const drawLength = Math.abs(targetY - sourceY) + Math.abs(targetX - sourceX);
+  const [connectIn] = useState(Boolean(edgeData?.connectIn));
+  const [drawn, setDrawn] = useState(!connectIn);
+  // React Flow renders an edge before its ends are measured; drawing a zero-length
+  // line would finish instantly, so wait for a real one.
+  useEffect(() => {
+    if (drawn || drawLength === 0) {
+      return;
+    }
+    const frame = requestAnimationFrame(() => setDrawn(true));
+    return () => cancelAnimationFrame(frame);
+  }, [drawn, drawLength]);
+  const stroke: React.CSSProperties = {
+    stroke: DEFAULT_EDGE_STROKE,
+    ...(connectIn && { strokeDasharray: drawLength, strokeDashoffset: drawn ? 0 : drawLength }),
+  };
 
   const [path, labelX, labelY] = getSmoothStepPath({
     sourceX,
@@ -111,10 +133,14 @@ const AddStepEdge: React.FC<EdgeProps> = ({
 
   return (
     <>
-      <BaseEdge id={id} path={path} style={{ stroke: DEFAULT_EDGE_STROKE }} />
+      <BaseEdge className={connectIn ? DRAW_CLASS : undefined} id={id} path={path} style={stroke} />
       <EdgeLabelRenderer>
         <div
-          className="pointer-events-auto absolute"
+          className={cn(
+            'pointer-events-auto absolute',
+            connectIn && 'transition-opacity motion-reduce:transition-none',
+            !drawn && 'opacity-0',
+          )}
           style={{
             transform: `translate(-50%, -50%) translate(${labelX}px, ${labelY}px)`,
           }}

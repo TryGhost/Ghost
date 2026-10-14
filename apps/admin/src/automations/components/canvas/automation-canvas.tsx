@@ -169,6 +169,8 @@ const getInitialActionOrder = (automation: AutomationDetail): AutomationAction[]
 
 type BuildGraphParams = {
   actionErrors: Record<string, string>;
+  // Draw the line to the exit card and bring the card in, for a flow just created.
+  connectIn: boolean;
   automation: AutomationDetail;
   savedTriggerTierIds: readonly string[];
   tierQuery: TriggerData['tierQuery'];
@@ -191,6 +193,7 @@ type BuildGraphParams = {
 
 const buildGraph = ({
   actionErrors,
+  connectIn,
   automation,
   savedTriggerTierIds,
   tierQuery,
@@ -317,7 +320,7 @@ const buildGraph = ({
       x: nodeX,
       y: cursorY,
     },
-    data: {},
+    data: { connectIn },
     ...nodeProps(TAIL_CANVAS_ID),
   });
   // Content bounds in flow coordinates, derived from node positions so the pan bound keeps
@@ -365,6 +368,7 @@ const buildGraph = ({
       disabledReason,
       onPick,
       label: 'Add step',
+      connectIn,
     } satisfies AddStepEdgeData,
     focusable: false,
     style: { stroke: DEFAULT_EDGE_STROKE },
@@ -392,6 +396,8 @@ type AutomationCanvasProps = {
   initialSidebar: 'unknown' | 'closed' | 'settings' | 'performance';
   // A new automation opens with its trigger where the trigger picker's card was.
   initialTriggerTop?: number;
+  // Play the connector and exit card in, once, as the flow below a just-picked trigger appears.
+  connectIn?: boolean;
   actionErrors?: Record<string, string>;
   onWaitValidityChange: (stepId: string, valid: boolean) => void;
   automation?: AutomationDetail;
@@ -425,6 +431,7 @@ const hasAutomationEmailModalState = (state: unknown): state is { automationEmai
 const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
   initialSidebar,
   initialTriggerTop,
+  connectIn = false,
   actionErrors = {},
   savedTriggerTierIds = [],
   onWaitValidityChange,
@@ -722,12 +729,23 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
     requestAnimationFrame(() => editingCanvasRef.current?.focus());
   };
 
+  // Only for the edges and card that first appear; later ones arrive as usual.
+  const [connecting, setConnecting] = useState(connectIn);
+  useEffect(() => {
+    if (!connecting) {
+      return;
+    }
+    const timer = setTimeout(() => setConnecting(false), 500);
+    return () => clearTimeout(timer);
+  }, [connecting]);
+
   const graph = useMemo(() => {
     if (!automation) {
       return null;
     }
     return buildGraph({
       actionErrors,
+      connectIn: connecting,
       automation,
       savedTriggerTierIds,
       tierQuery,
@@ -753,6 +771,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
     });
   }, [
     actionErrors,
+    connecting,
     savedTriggerTierIds,
     tierQuery,
     onChange,
