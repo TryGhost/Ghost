@@ -162,6 +162,22 @@ export const createDatabaseAutomationsRepository2 = ({
       return await selectExists(connection, query);
     },
 
+    async loadEdgeRows(connection, automationId) {
+      return await connection('automation_action_edges as e')
+        .select('e.source_action_id', 'e.target_action_id')
+        .innerJoin('automation_actions as source_action', (join) => {
+          join.on('source_action.id', 'e.source_action_id').onNull('source_action.deleted_at');
+        })
+        .innerJoin('automation_actions as target_action', (join) => {
+          join
+            .on('target_action.id', 'e.target_action_id')
+            .onNull('target_action.deleted_at')
+            .on('target_action.automation_id', 'source_action.automation_id');
+        })
+        .where('source_action.automation_id', automationId)
+        .orderBy(['e.source_action_id', 'e.target_action_id']);
+    },
+
     async lockMember(connection, memberId) {
       await connection('members').where('id', memberId).forUpdate().first('id');
     },

@@ -6,6 +6,7 @@ import { fromDatabaseDate } from '../../../../core/server/lib/db-types/date';
 import { createDatabaseAutomationsRepository2 } from '../../../../core/server/services/automations/database-automations-repository-2';
 import type {
   ActionToInsert,
+  EdgeRow,
   RunStepToInsert,
 } from '../../../../core/server/services/automations/automations-repository-2';
 // @ts-expect-error This module lacks type definitions.
@@ -657,6 +658,79 @@ describe('database automations repository', function () {
         await expect(isRunAutomationActive(status)).resolves.toBe(false);
       },
     );
+  });
+
+  describe('loadEdgeRows', function () {
+    let repository: ReturnType<typeof createDatabaseAutomationsRepository2>;
+    let automationId: string;
+    let otherAutomationId: string;
+    let actions: ReturnType<typeof createAction>[];
+
+    const insertEdges = async (edges: ReadonlyArray<EdgeRow>) => {
+      await knex('automation_action_edges').insert(edges);
+    };
+
+    beforeEach(async function () {
+      repository = createDatabaseAutomationsRepository2({ knex });
+
+      automationId = ObjectId().toHexString();
+      otherAutomationId = ObjectId().toHexString();
+      actions = [
+        createAction(automationId),
+        createAction(automationId),
+        createAction(automationId),
+        createAction(otherAutomationId),
+        createAction(otherAutomationId),
+      ];
+
+      await knex('automations').insert([
+        createAutomation(automationId),
+        createAutomation(otherAutomationId),
+      ]);
+      await knex('automation_actions').insert(actions);
+    });
+
+    afterEach(async function () {
+      const actionIds = actions.map((action) => action.id);
+      await knex('automation_action_edges').whereIn('source_action_id', actionIds).delete();
+      await knex('automation_actions').whereIn('id', actionIds).delete();
+      await knex('automations').whereIn('id', [automationId, otherAutomationId]).delete();
+    });
+
+    it('returns an empty array when the automation has no edges', async function () {
+      await expect(repository.loadEdgeRows(knex, automationId)).resolves.toEqual([]);
+    });
+
+    it('returns edges scoped to the automation', async function () {
+      const [first, second, third] = actions;
+      const edges = [
+        { source_action_id: first.id, target_action_id: second.id },
+        { source_action_id: first.id, target_action_id: third.id },
+        { source_action_id: second.id, target_action_id: third.id },
+      ];
+      const excludedEdges = [
+        { source_action_id: actions[3].id, target_action_id: actions[4].id },
+        { source_action_id: first.id, target_action_id: actions[3].id },
+        { source_action_id: actions[3].id, target_action_id: first.id },
+      ];
+      await insertEdges([...edges, ...excludedEdges]);
+
+      const result = await repository.withConnection((connection) =>
+        repository.loadEdgeRows(connection, automationId),
+      );
+
+      const compareEdges = (a: Readonly<EdgeRow>, b: Readonly<EdgeRow>) =>
+        a.source_action_id.localeCompare(b.source_action_id) ||
+        a.target_action_id.localeCompare(b.target_action_id);
+      expect(result.toSorted(compareEdges)).toEqual(edges.toSorted(compareEdges));
+    });
+
+    it.each([0, 1])('excludes edges when action %i is soft-deleted', async function (index) {
+      await insertEdges([{ source_action_id: actions[0].id, target_action_id: actions[1].id }]);
+      await knex('automation_actions').where('id', actions[index].id).update({ deleted_at: now });
+
+      await expect(repository.loadEdgeRows(knex, automationId)).resolves.toEqual([]);
+    });
   });
 
   describe('lockMember', function () {
