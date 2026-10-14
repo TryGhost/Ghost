@@ -1,15 +1,14 @@
 /**
  * The Admin API routes an app may not reach through the fetch escape hatch.
  *
- * Apps call the Admin API with the staff user's own session for now, as a stand-in for the
- * app-scoped token that comes with permissions. Until then, these routes are closed to them:
- * each one hands out a credential that would outlive the app's session, changes who can sign
- * in, who can read a private site or who the staff are, sends site events to an address of its
- * choosing, imports, exports or deletes the whole site through `/db`, or installs and approves
- * apps. The blocklist goes when the token arrives.
+ * Apps call the Admin API with the staff user's own session, as a stand-in for an app-scoped
+ * token with permissions; the blocklist goes when that token arrives. Until then it closes the
+ * routes that hand out a credential outliving the app's session, change who can sign in, who
+ * can read a private site or who the staff are, send site events elsewhere, import, export or
+ * delete the whole site, or install and approve apps.
  *
- * It is not complete, and does not claim to be. These stay open until the security review
- * before external developers decides on them (BER-3992):
+ * It is not complete. These stay open until the security review before external developers
+ * decides on them (BER-3992):
  *
  * - Who can sign in or read the site, through routes apps also need for everyday work:
  *   changing a member's email through `PUT /members/:id`, which lets whoever holds the new
@@ -135,9 +134,8 @@ function matches(pattern: readonly string[], segments: readonly string[]): boole
 
 /**
  * Whether an Admin API path is closed to apps. Takes a pathname relative to the Admin API
- * root, such as `/users/abc/token/`, as `checkAdminApiPath` cuts it from the resolved URL:
- * the pathname, never the query string. Anything from a `?` or `#` on is ignored all the
- * same, so a query cannot be mistaken for a path.
+ * root, such as `/users/abc/token/`; anything from a `?` or `#` on is ignored, so a query
+ * cannot be mistaken for a path.
  *
  * Errs towards blocking wherever the path could be read more than one way. Ghost's router
  * ignores case and a trailing slash, so this does too. Percent-escapes are decoded and empty

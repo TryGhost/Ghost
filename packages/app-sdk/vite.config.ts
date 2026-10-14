@@ -36,7 +36,7 @@ const refuseNodeBuiltins: Plugin = {
 
 // The browser bundle: one ES module with @quilted/threads inlined, for a page to load from a
 // <script type="module"> with no bundler of its own. Left unminified, with a source map,
-// so it reads well in devtools while the SDK is young.
+// so it reads well in devtools.
 export default defineConfig({
   plugins: [refuseNodeBuiltins, tidyRegionComments],
   build: {

@@ -18,13 +18,11 @@ import { SDK_VERSION } from './version.ts';
 const HELLO_INTERVAL = 250;
 
 /**
- * The origin to address the hello to. Where the browser tells a frame who embeds it
- * (`location.ancestorOrigins`, in Chromium and WebKit), only Admin can read the hello.
- * Elsewhere it goes to `'*'`: it carries nothing but the SDK's version and the document's
- * random ID, which grants nothing, and what matters, the port, travels the other way,
- * addressed by Admin to this page's origin alone.
- * `document.referrer` is not used: once the page has navigated within itself, it names the
- * page's own origin, and a hello sent there would never arrive.
+ * The origin to address the hello to: the embedder's, where the browser exposes it
+ * (`location.ancestorOrigins`, in Chromium and WebKit), and `'*'` elsewhere. The hello grants
+ * nothing; the port travels the other way, addressed by Admin to this page's origin alone.
+ * `document.referrer` is no use: once the page has navigated within itself, it names the
+ * page's own origin.
  */
 function parentOrigin(): string {
   const origin = window.location.ancestorOrigins?.[0];
@@ -33,12 +31,7 @@ function parentOrigin(): string {
 
 let documentId: string | undefined;
 
-/**
- * A random ID for this document, said with every hello, so Admin can tell a hello repeated by
- * a document it has connected from one by a new document in the same frame. Made the first
- * time it is needed and kept for as long as the document is, across every `connect()`: a
- * reload, a form post or a link makes a new document, and with it a new ID.
- */
+/** The hello's `document` ID: made once and kept for the document's life, across `connect()`s. */
 function documentIdentity(): string {
   documentId ??= Array.from(crypto.getRandomValues(new Uint8Array(16)), (byte) =>
     byte.toString(16).padStart(2, '0'),
@@ -56,8 +49,7 @@ function handshake(options: ConnectOptions, onEnded: () => void): Promise<Ghost>
   if (!isRecord(options)) {
     return Promise.reject(invalidArgument('Expected options such as { timeout: 10000 }'));
   }
-  // By default, as long as Admin gives the page: waiting longer would wait on a frame Admin
-  // has given up on.
+  // Waiting longer than Admin gives the page would wait on a frame Admin has given up on.
   const { timeout = START_TIMEOUT_MS } = options;
   if (typeof timeout !== 'number' || !(timeout > 0) || !(timeout <= TIMEOUT_MAX)) {
     return Promise.reject(
@@ -153,10 +145,9 @@ function forget(attempt: Promise<Ghost>) {
  * started the app. Safe to call as soon as the page loads.
  *
  * Every call shares the one connection; the options of the first call apply. After a
- * failure, the next call tries again. Once the session has ended there is nothing in this
- * page to reconnect: Admin replaces the page rather than start it again, and the new page
- * connects for itself. A call made anyway says hello afresh and never resolves with the
- * `Ghost` whose session is over.
+ * failure, the next call tries again. Once the session has ended, Admin replaces the page
+ * rather than start it again; a call made anyway says hello afresh and never resolves with
+ * the ended `Ghost`.
  */
 export function connect(options: ConnectOptions = {}): Promise<Ghost> {
   if (!connecting) {

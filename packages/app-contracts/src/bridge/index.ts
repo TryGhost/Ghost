@@ -3,14 +3,11 @@
  *
  * Admin and the SDK talk over a `MessagePort` that Admin hands the frame once it has said
  * hello from the right origin. This entry point holds what both sides agree on: the two
- * window messages that set the channel up, the calls each side exposes, and the validation
- * Admin applies to every argument a frame sends, which it does not trust.
+ * window messages that set the channel up, the calls each side exposes, the validation Admin
+ * applies to every argument from the untrusted frame, and what the fetch escape hatch may
+ * reach (`checkAdminApiPath` and the blocklist).
  *
- * It also holds the rules Admin applies to the fetch escape hatch, `checkAdminApiPath` and the
- * blocklist behind it, so what an app may reach is written down in one place.
- *
- * The rules that depend on nothing, the message types, limits and shape guards in `rules.ts`,
- * are exported from the root entry point too, for the SDK to use without zod.
+ * The zod-free rules in `rules.ts` are also exported from the root entry point, for the SDK.
  */
 
 export { ADMIN_API_BLOCKLIST, type BlockedAdminApiCategory } from './blocklist.ts';

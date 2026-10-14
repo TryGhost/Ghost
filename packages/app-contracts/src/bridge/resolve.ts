@@ -17,8 +17,7 @@ export type AdminApiPathCheck =
 
 /**
  * Checks the path an app passes to `fetch` against the Admin API root, such as
- * `https://site.example/ghost/api/admin/`, and against the blocklist, in one step, so no
- * caller has to carry the resolved URL back into a path the blocklist can read.
+ * `https://site.example/ghost/api/admin/`, and against the blocklist, in one step.
  *
  * A leading `/` means the API root, not the origin, so `/posts/?limit=5` is
  * `https://site.example/ghost/api/admin/posts/?limit=5`. The root may be written with or

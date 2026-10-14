@@ -3,15 +3,14 @@ import { z } from 'zod';
 import { HELLO_MESSAGE_TYPE } from './rules.ts';
 
 /**
- * The two window messages that set up the channel. Everything after them travels over the
- * `MessagePort` the connect message hands over, so these are the only messages either side
- * reads from `window` itself.
+ * The two window messages that set up the channel; everything after them travels over the
+ * `MessagePort` the connect message hands over.
  *
- * Neither carries a protocol version. The hello names the SDK's own version for diagnostics
- * only, and nothing gates on it: Admin only ever adds exports and optional fields.
+ * Neither carries a protocol version. The hello names the SDK's version for diagnostics only,
+ * and nothing gates on it: Admin only ever adds exports and optional fields.
  *
- * Only the hello has a schema, as Admin reads it from a frame it does not trust. The connect
- * comes from Admin, which the SDK trusts, so `ConnectMessage` and its guard are in `rules.ts`.
+ * Only the hello has a schema, as Admin reads it from an untrusted frame. The connect comes
+ * from Admin, which the SDK trusts, so `ConnectMessage` and its guard are in `rules.ts`.
  */
 
 const SDK_VERSION_MAX_LENGTH = 100;
@@ -30,11 +29,10 @@ export const HelloMessageSchema = z.object({
       `Expected an SDK version of at most ${SDK_VERSION_MAX_LENGTH} characters`,
     ),
   /**
-   * A random ID the SDK picks once for the page's document and says with every hello. A frame
-   * says hello again until Admin answers, and keeps the same ID while it does, so Admin can tell
-   * a hello repeated by a document it has already connected from one by a new document in the
-   * same frame, after a reload, a form post or a link. Optional: an SDK from before it leaves
-   * it out, and Admin then cannot tell the two apart.
+   * A random ID the SDK picks once per document and sends with every hello, so Admin can tell a
+   * repeated hello from a document it has connected from a new document in the same frame,
+   * after a reload, a form post or a link. Optional: older SDKs leave it out, and Admin then
+   * cannot tell the two apart.
    */
   document: z
     .string('Expected the document ID as text')

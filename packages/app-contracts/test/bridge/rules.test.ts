@@ -19,7 +19,6 @@ import {
   normaliseAppPath,
 } from '../../src/bridge/index.ts';
 
-// Each guard answers every case below as expected.
 function holds(guard: (value: unknown) => boolean) {
   return (value: unknown, expected: boolean) => {
     expect(guard(value), JSON.stringify(value)).toBe(expected);

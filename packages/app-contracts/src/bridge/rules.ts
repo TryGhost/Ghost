@@ -1,14 +1,12 @@
 /**
- * The bridge's rules that depend on nothing: the values both sides agree on, and the shapes
- * Admin sends the app's page with guards for them. The root entry point exports them, so the
- * SDK carries them to the page without zod. The schemas in this folder build on them, so a
- * path or a refusal means the same thing to the SDK as to Admin.
+ * The bridge's rules that depend on nothing, exported from the root entry point so the SDK can
+ * use them without zod. The schemas in this folder build on them, so a path or a refusal means
+ * the same thing to the SDK as to Admin.
  *
- * What Admin sends has no schema: Admin builds it and never parses it, so its types are
- * declared here, beside the guards the SDK checks it with. The SDK trusts Admin, so the guards
- * check shape, and that a path stays within what it names, so a mistake shows up as a clear
- * error rather than as `undefined` somewhere in the app. Limits are left to the schemas,
- * which Admin applies to everything a frame sends it.
+ * What Admin sends the page has no schema, as Admin builds it and never parses it; its types
+ * are declared here beside the guards the SDK checks it with. The SDK trusts Admin, so the
+ * guards check shape and path containment, turning a mismatch into a clear error rather than
+ * `undefined` somewhere in the app. Limits are left to the schemas.
  */
 
 /** Posted by the app's page to `window.parent` once the SDK has loaded. */
@@ -113,10 +111,8 @@ export const HOST_ERROR_CODES = [
 export type HostErrorCode = (typeof HOST_ERROR_CODES)[number];
 
 /**
- * Every code a refusal can carry: the host codes, and the one the page refuses Admin's
- * `start` with, `invalid_context`, for a start context the SDK cannot read, so Admin and the
- * SDK disagree on what the bridge carries. Admin never sends `invalid_context`, and the SDK
- * reads it from no one but itself.
+ * Every code a refusal can carry: the host codes, and `invalid_context`, which only the page
+ * sends, refusing Admin's `start` with a context the SDK cannot read.
  */
 export const BRIDGE_ERROR_CODES = [...HOST_ERROR_CODES, 'invalid_context'] as const;
 
@@ -145,7 +141,6 @@ export function decodeBridgeError<Code extends BridgeErrorCode>(
   return (codes as readonly string[]).includes(code) ? { code: code as Code, detail } : undefined;
 }
 
-/** What Admin's theme can be. Resolved before it is sent, so never `system`. */
 const THEME_MODES = ['light', 'dark'] as const;
 
 /** The theme Admin is showing, so the page can match it. `mode` is resolved, never `system`. */

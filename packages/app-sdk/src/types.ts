@@ -4,8 +4,8 @@ import type { GhostAppError } from './errors.ts';
 
 export type { PathChangeOptions, Place, StartContext, Theme };
 
-// What the app is told about the site, the user, the session and the theme is read-only: the
-// SDK hands out frozen copies, so no part of a page can change what every other part reads.
+// The context is read-only: the SDK hands out frozen copies, so no part of a page can change
+// what every other part reads.
 
 /** The site the app is running in. */
 export type Site = Readonly<StartContext['site']>;

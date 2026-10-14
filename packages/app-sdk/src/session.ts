@@ -58,11 +58,7 @@ function subscribe<T>(listeners: Set<T>, listener: T): Unsubscribe {
   };
 }
 
-/**
- * What `start` keeps of the context Admin sent, as frozen copies, so no part of the page can
- * change what every other part reads. The theme and the path are kept apart, as Admin changes
- * them during the session.
- */
+/** What `start` keeps of Admin's context. The theme and path change, so they are kept apart. */
 interface StartedContext {
   site: Site;
   user: User;

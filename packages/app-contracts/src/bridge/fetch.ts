@@ -21,21 +21,19 @@ const FETCH_HEADER_VALUE_MAX_LENGTH = 8192;
 // refused here with a message rather than there with a TypeError.
 const HEADER_NAME = /^[!#$%&'*+.^_`|~0-9a-z-]+$/i;
 
-// A header value is what HTTP allows in one: Latin-1 text, as headers are bytes, with tabs
-// and no other control characters. Fetch throws a TypeError on a character beyond Latin-1, a
-// line break or NUL, which Admin could only report as failing to reach its own API, so they
-// are refused here with a message; line breaks are also what header injection is made of.
+// Latin-1 text with tabs and no other control characters, as HTTP allows. Fetch throws a
+// TypeError on anything else, which Admin could only report as failing to reach its own API,
+// and line breaks are what header injection is made of.
 const HEADER_VALUE = /^[\t\x20-\x7e\x80-\xff]*$/;
 
 const utf8 = new TextEncoder();
 
 /**
  * A request an app asks Admin to make to the Admin API on its behalf. The path is never a URL:
- * Admin resolves it against its own Admin API root and checks it against the blocklist, both
- * with `checkAdminApiPath`, before anything reaches the network.
+ * Admin resolves and checks it with `checkAdminApiPath` before anything reaches the network.
  *
- * Unknown fields are refused rather than ignored, so an option Admin does not support fails
- * loudly instead of the request going out without it.
+ * Unknown fields are refused, so an option Admin does not support fails loudly instead of the
+ * request going out without it.
  */
 export const FetchRequestSchema = z
   .strictObject({
