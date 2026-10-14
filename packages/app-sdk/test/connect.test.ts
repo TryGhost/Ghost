@@ -281,6 +281,9 @@ describe('connect', () => {
     vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
     frame();
     const fake = admin();
+    const closed = new Promise((resolve) => {
+      fake.channel.port1.addEventListener('close', resolve);
+    });
     const connecting = sdk.connect();
     const failed = expect(connecting).rejects.toMatchObject({ code: 'not_connected' });
     fake.connect();
@@ -288,6 +291,9 @@ describe('connect', () => {
     // As long as Admin gives the page, by default.
     vi.advanceTimersByTime(START_TIMEOUT_MS);
     await failed;
+    vi.useRealTimers();
+    // Admin's end hears the page let go, so it can't start a page that has given up.
+    expect(await pending(closed)).toBe(false);
   });
 
   it('shares one connection between calls, and tries again after a failure', async () => {
