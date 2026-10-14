@@ -124,6 +124,15 @@ function isUniqueViolation(err: unknown): boolean {
   );
 }
 
+/** Installations, each joined with the approved manifest it runs. */
+function joinApprovedManifest(db: Knex | Knex.Transaction) {
+  return db(`${INSTALLATIONS} as installation`).join(
+    `${MANIFESTS} as approved`,
+    'approved.id',
+    'installation.manifest_id',
+  );
+}
+
 /**
  * The current installation, by its own ID or by its app's, with the manifest it was
  * approved with: what a newer manifest is compared against, and what keeping one replaces.
@@ -133,11 +142,7 @@ async function currentInstallation(
   by: { id: string } | { appId: string },
   db: Knex | Knex.Transaction,
 ): Promise<CurrentInstallation | undefined> {
-  const query = db(`${INSTALLATIONS} as installation`).join(
-    `${MANIFESTS} as approved`,
-    'approved.id',
-    'installation.manifest_id',
-  );
+  const query = joinApprovedManifest(db);
   if ('id' in by) {
     query.where('installation.id', by.id).whereNotNull('installation.current_app_id');
   } else {
@@ -271,20 +276,18 @@ export class AppInstallationsService {
     this.loadManifest = loadManifest;
   }
 
-  /** Installations with the approved manifest each one runs. */
+  /** Installations with the approved manifest each one runs, as the Admin API returns them. */
   private withApprovedManifest() {
-    return this.knex(`${INSTALLATIONS} as installation`)
-      .join(`${MANIFESTS} as approved`, 'approved.id', 'installation.manifest_id')
-      .select<z.input<typeof AppInstallationRow>[]>(
-        'installation.id',
-        'installation.app_id',
-        'installation.status',
-        'installation.revision',
-        'approved.manifest_url',
-        'approved.manifest',
-        'installation.created_at',
-        'installation.updated_at',
-      );
+    return joinApprovedManifest(this.knex).select<z.input<typeof AppInstallationRow>[]>(
+      'installation.id',
+      'installation.app_id',
+      'installation.status',
+      'installation.revision',
+      'approved.manifest_url',
+      'approved.manifest',
+      'installation.created_at',
+      'installation.updated_at',
+    );
   }
 
   /** The apps installed on this site now, suspended ones included. Ended ones are not listed. */
