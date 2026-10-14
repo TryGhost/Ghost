@@ -3,6 +3,7 @@ name: Shade inputSurface recipe
 description: Use the inputSurface() recipe for form-control chrome (border, background, radius, focus ring, invalid state) — don't roll your own. Trigger when editing form-control-shaped files in Shade.
 autoTrigger:
   - fileEdit: "apps/shade/src/components/ui/{input,textarea,input-group,select,combobox,multi-select-combobox,dropzone,calendar,command}.tsx"
+  - fileEdit: "apps/shade/src/components/ui/{input-group,dropzone}-variants.ts"
 ---
 
 # Shade — `inputSurface` recipe

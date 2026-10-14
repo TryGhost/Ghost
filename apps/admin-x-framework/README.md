@@ -1,6 +1,6 @@
 # Admin X Framework
 
-Shared runtime for Ghost's React admin surfaces: the admin shell (`apps/admin`), the route-composed ActivityPub app (`apps/activitypub`), and the Koenig editor embedded in Ember Admin (`apps/ember-admin`). It provides the data layer (React Query factories and per-resource API modules), the `FrameworkProvider`/`RouterProvider` pair, and shared hooks.
+Shared runtime for Ghost's React admin surfaces: the admin shell (`apps/admin`) and the route-composed ActivityPub app (`apps/activitypub`). It provides the data layer (React Query factories and per-resource API modules), the `FrameworkProvider`/`RouterProvider` pair, and shared hooks.
 
 ## Pre-requisites
 
@@ -21,15 +21,13 @@ Admin’s Vite development, production and test configurations select the `sourc
 export condition to load this package directly from `src/`. Changes reach Vite
 without waiting for the library build. Consumers without that condition keep
 using the compiled exports; TypeScript continues using the generated declarations.
-The library build remains required for those consumers, including Ember.
+The library build remains required for those consumers.
 
 ### Admin theme controller
 
 `utils/admin-theme` provides the framework-independent appearance controller used
-by React Admin and standalone Ember Admin. It owns the root dark class, system
-appearance listener and transition suppression. An optional adapter can prepare
-legacy styles and receive the resolved theme. Destroy a controller before handing
-ownership to another shell; pending stylesheet work cannot apply after destruction.
+by Admin. It owns the root dark class, system appearance listener and transition
+suppression.
 
 ## Test
 

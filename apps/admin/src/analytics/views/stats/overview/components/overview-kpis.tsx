@@ -30,6 +30,7 @@ import { useShade } from '@tryghost/shade/app';
 import { upgradeRoute } from '@tryghost/admin-x-framework/api/config';
 import { useHostLimits } from '@tryghost/admin-x-framework/hooks';
 import { useNavigate } from '@tryghost/admin-x-framework';
+import { navigateTo } from '@/utils/navigation';
 
 interface OverviewKPICardProps {
   linkto: string;
@@ -248,10 +249,7 @@ const OverviewKPIs: React.FC<OverviewKPIsProps> = ({
           <CardContent className="flex h-full items-center justify-center p-6">
             <EmptyIndicator
               actions={
-                <Button
-                  variant="outline"
-                  onClick={() => navigate(upgradeRoute(config), { crossApp: true })}
-                >
+                <Button variant="outline" onClick={() => navigateTo(upgradeRoute(config))}>
                   Upgrade now
                 </Button>
               }

@@ -238,7 +238,7 @@ describe('session expiry handling', () => {
     '#/',
     '#/signin',
     '#/signin/verify',
-    '#/signin?labs=authReact',
+    '#/signin?labs=someFlag',
     '#/signout',
     '#/signup/invitation-token',
     '#/setup',

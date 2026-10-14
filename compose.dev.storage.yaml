@@ -67,6 +67,8 @@ services:
       storage__S3Storage__endpoint: http://versitygw:9000
       storage__S3Storage__accessKeyId: s3-user
       storage__S3Storage__secretAccessKey: s3-pass
+      storage__S3Storage__multipartUploadThresholdBytes: 10485760
+      storage__S3Storage__multipartChunkSizeBytes: 10485760
       urls__media: http://127.0.0.1:9000/ghost-dev/ab/ab1234567890abcdef1234567890abcd
       urls__files: http://127.0.0.1:9000/ghost-dev/ab/ab1234567890abcdef1234567890abcd
     depends_on:

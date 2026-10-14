@@ -1,26 +1,49 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-LOCAL_ADMIN_DEV_SERVER_URL="${LOCAL_ADMIN_DEV_SERVER_URL:-http://127.0.0.1:5174}"
+# `pnpm dev:docker` runs Admin's dev server on 5174; `pnpm dev` runs it in front
+# of Ghost on the checkout's port in .ghost-dev.env.
+if [[ -z "${LOCAL_ADMIN_DEV_SERVER_URL:-}" ]]; then
+  LOCAL_ADMIN_DEV_SERVER_URL="http://127.0.0.1:5174"
+  ghost_dev_env="$(dirname "${BASH_SOURCE[0]}")/../../.ghost-dev.env"
+  ghost_dev_port="$(sed -n 's/^GHOST_DEV_PORT=//p' "$ghost_dev_env" 2>/dev/null || true)"
+  if [[ -n "$ghost_dev_port" ]] && ! curl --silent --fail --max-time 1 "$LOCAL_ADMIN_DEV_SERVER_URL" >/dev/null 2>&1; then
+    LOCAL_ADMIN_DEV_SERVER_URL="http://127.0.0.1:${ghost_dev_port}/__admin-dev__/"
+  fi
+fi
+
+# Where dev-mode E2E gateways reach that server
+admin_dev_port="${LOCAL_ADMIN_DEV_SERVER_URL#*://*:}"
+export GHOST_E2E_ADMIN_DEV_SERVER="${GHOST_E2E_ADMIN_DEV_SERVER:-host.docker.internal:${admin_dev_port%%/*}}"
 
 resolve_e2e_mode() {
+  local mode
   if [[ -n "${GHOST_E2E_MODE:-}" ]]; then
     case "$GHOST_E2E_MODE" in
       dev|build)
-        printf '%s' "$GHOST_E2E_MODE"
-        return
+        mode="$GHOST_E2E_MODE"
         ;;
       *)
         echo "Invalid GHOST_E2E_MODE: '$GHOST_E2E_MODE'. Expected one of: dev, build." >&2
         return 1
         ;;
     esac
+  elif curl --silent --fail --max-time 1 "$LOCAL_ADMIN_DEV_SERVER_URL" >/dev/null 2>&1; then
+    mode=dev
+  else
+    mode=build
   fi
 
-  if curl --silent --fail --max-time 1 "$LOCAL_ADMIN_DEV_SERVER_URL" >/dev/null 2>&1; then
-    printf 'dev'
-    return
+  # Docker on Linux reaches the host through its bridge, which a dev server listening
+  # only on loopback refuses
+  if [[ "$mode" == dev && "$(uname -s)" == Linux && "$GHOST_E2E_ADMIN_DEV_SERVER" == host.docker.internal:* ]]; then
+    local bridge
+    bridge="$(ip -4 -o addr show docker0 2>/dev/null | awk '{ sub("/.*", "", $4); print $4; exit }')" || true
+    if [[ -n "$bridge" ]] && ! (exec 3<>"/dev/tcp/${bridge}/${GHOST_E2E_ADMIN_DEV_SERVER#*:}") 2>/dev/null; then
+      echo "Admin's dev server only listens on loopback, which e2e's containers can't reach on Linux. Restart it with GHOST_DEV_LISTEN=0.0.0.0 pnpm dev, or set GHOST_E2E_MODE=build." >&2
+      return 1
+    fi
   fi
 
-  printf 'build'
+  printf '%s' "$mode"
 }

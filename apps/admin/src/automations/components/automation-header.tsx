@@ -10,7 +10,8 @@ import {
   Skeleton,
 } from '@tryghost/shade/components';
 import { Link } from '@tryghost/admin-x-framework';
-import { LucideIcon } from '@tryghost/shade/utils';
+import { LucideIcon, cn } from '@tryghost/shade/utils';
+import { useScreenEntrance } from '@/layout/screen-transition';
 import { Inline, Text } from '@tryghost/shade/primitives';
 import type { AutomationDetail } from '@tryghost/admin-x-framework/api/automations';
 
@@ -32,7 +33,6 @@ interface AutomationHeaderProps {
   isTurnOffButtonEnabled: boolean;
   saveButtonChildren: React.ReactNode;
   publishButtonChildren: React.ReactNode;
-  validationFeedbackEnabled: boolean;
   validationFeedback: AutomationValidationAction | null;
   onDismissValidationFeedback: () => void;
   onSave: () => void;
@@ -50,7 +50,6 @@ const AutomationHeader: React.FC<AutomationHeaderProps> = ({
   isTurnOffButtonEnabled,
   saveButtonChildren,
   publishButtonChildren,
-  validationFeedbackEnabled,
   validationFeedback,
   onDismissValidationFeedback,
   onSave,
@@ -58,6 +57,7 @@ const AutomationHeader: React.FC<AutomationHeaderProps> = ({
   onTurnOff,
 }) => {
   const { isAdmin7 } = useShade();
+  const entering = useScreenEntrance();
   const name = automation?.name;
   const status = automation?.status;
 
@@ -65,9 +65,6 @@ const AutomationHeader: React.FC<AutomationHeaderProps> = ({
     action: AutomationValidationAction,
     button: React.ReactElement,
   ) => {
-    if (!validationFeedbackEnabled) {
-      return button;
-    }
     return (
       <Popover
         open={validationFeedback === action}
@@ -94,8 +91,49 @@ const AutomationHeader: React.FC<AutomationHeaderProps> = ({
     );
   };
 
+  let statusAction: React.ReactNode;
+  switch (status) {
+    case undefined:
+      statusAction = null;
+      break;
+    case 'active':
+      statusAction = withValidationFeedback(
+        'unpublish',
+        <Button
+          disabled={!isTurnOffButtonEnabled}
+          variant={isAdmin7 ? 'ghost' : 'outline'}
+          onClick={onTurnOff}
+        >
+          Turn off
+        </Button>,
+      );
+      break;
+    case 'inactive':
+    case 'archived':
+      statusAction = withValidationFeedback(
+        'save',
+        <Button
+          disabled={!isSaveButtonEnabled}
+          variant={isAdmin7 && saveButtonVariant === 'outline' ? 'ghost' : saveButtonVariant}
+          onClick={onSave}
+        >
+          {saveButtonChildren}
+        </Button>,
+      );
+      break;
+    default: {
+      const _exhaustive: never = status;
+      throw new Error(`Unhandled status: ${String(_exhaustive)}`);
+    }
+  }
+
   return (
-    <header className="relative z-10 flex h-14 shrink-0 items-center justify-between border-b border-border-default bg-surface-elevated px-4">
+    <header
+      className={cn(
+        'screen-exit-chrome-top relative z-10 flex h-14 shrink-0 items-center justify-between border-b border-border-default bg-surface-elevated px-4',
+        entering && 'screen-enter-from-top',
+      )}
+    >
       <Inline className="min-w-0" gap="sm">
         <Button size={isAdmin7 ? 'icon' : undefined} variant="ghost" asChild>
           <Link aria-label="Back to automations" to="/automations">
@@ -112,28 +150,7 @@ const AutomationHeader: React.FC<AutomationHeaderProps> = ({
         )}
       </Inline>
       <Inline className="shrink-0" gap="sm">
-        {status === 'active' &&
-          withValidationFeedback(
-            'unpublish',
-            <Button
-              disabled={!isTurnOffButtonEnabled}
-              variant={isAdmin7 ? 'ghost' : 'outline'}
-              onClick={onTurnOff}
-            >
-              Turn off
-            </Button>,
-          )}
-        {status === 'inactive' &&
-          withValidationFeedback(
-            'save',
-            <Button
-              disabled={!isSaveButtonEnabled}
-              variant={isAdmin7 && saveButtonVariant === 'outline' ? 'ghost' : saveButtonVariant}
-              onClick={onSave}
-            >
-              {saveButtonChildren}
-            </Button>,
-          )}
+        {statusAction}
         {withValidationFeedback(
           'publish',
           <Button

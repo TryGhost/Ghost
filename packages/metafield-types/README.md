@@ -62,7 +62,7 @@ green. So **`src/structure.ts` must not import anything** — an ESLint rule enf
 it, relative imports included, since anything reached through one is bundled too.
 Whatever needs an import belongs in `./index`, which is free to use them.
 
-`ghost/core` is CommonJS but consumes this package via `require()`, which works
+`ghost` is CommonJS but consumes this package via `require()`, which works
 on Ghost's Node version (22.13+/24) through Node's `require(esm)` support. That
 support has one hard constraint: **no top-level `await`** anywhere in this
 package's module graph — it makes the graph async and `require()` of it throws

@@ -1,9 +1,10 @@
 import {
   DUNNING_PAYMENT_SETTLED_STORAGE_KEY,
   DUNNING_PAY_RETURN_ROUTE_STORAGE_KEY,
+  parseDunningConfig,
 } from '@tryghost/admin-x-framework/api/dunning';
 import { z } from 'zod';
-import type { SubscriptionState } from '@/ember-bridge';
+import type { SubscriptionState } from './subscription-status';
 
 export const BILLING_ROUTE_ROOT = '/pro';
 
@@ -13,7 +14,6 @@ export interface BillingAppMessage {
   request?: unknown;
   route?: unknown;
   destination?: unknown;
-  checkoutRoute?: unknown;
   exceededLimits?: unknown;
 }
 
@@ -57,17 +57,13 @@ export function billingAdminPath(subRoute: string): string {
 /**
  * The billing app route the iframe loads for an Admin URL, as Ember's pro
  * routes queue it before the iframe exists: a child route loads without its
- * query, the overview keeps `?action=…`, and non-billing pages load the root.
+ * query, and non-billing pages load the root.
  */
-export function initialBillingSubRoute(pathname: string, search: string): string | null {
+export function initialBillingSubRoute(pathname: string): string | null {
   if (!isBillingPath(pathname)) {
     return null;
   }
-  const subRoute = billingSubRoute(pathname);
-  if (subRoute) {
-    return subRoute;
-  }
-  return new URLSearchParams(search).has('action') ? search : '/';
+  return billingSubRoute(pathname) ?? '/';
 }
 
 /**
@@ -98,6 +94,7 @@ const ADMIN_DESTINATION_ROUTES: Record<string, string> = Object.freeze(
     theme: '/settings/design/change-theme',
     analytics: '/settings/analytics',
     staff: '/settings/staff',
+    automations: '/automations',
     stripe: '/settings/stripe-connect',
     integrations: '/settings/integrations',
   }),
@@ -143,16 +140,48 @@ export function markDunningPaymentSettled(paymentFailedAt: Date): void {
   }
 }
 
+/** `paymentFailedAt` of the failure a completed payment settled this session. */
+export function readDunningPaymentSettledFor(): string | null {
+  try {
+    return window.sessionStorage.getItem(DUNNING_PAYMENT_SETTLED_STORAGE_KEY);
+  } catch {
+    return null;
+  }
+}
+
+export function activeDunning(
+  value: unknown,
+  {
+    subscriptionStatus,
+    paymentSettledFor,
+  }: {
+    subscriptionStatus: unknown;
+    paymentSettledFor: string | null;
+  },
+) {
+  const dunning = parseDunningConfig(value);
+
+  if (
+    !dunning ||
+    subscriptionStatus === 'active' ||
+    paymentSettledFor === dunning.paymentFailedAt.toISOString()
+  ) {
+    return null;
+  }
+
+  return dunning;
+}
+
 export const EXCEEDED_ALERT_KEY = 'billing.exceeded';
 
-export const EXCEEDED_ALERT_HTML = `Your audience has grown! To continue publishing, the site owner must <a href="#${BILLING_ROUTE_ROOT}?action=checkout">confirm pricing for this number of members</a>.`;
+export const EXCEEDED_ALERT_HTML = `Your audience has grown! To continue publishing, the site owner must <a href="#${BILLING_ROUTE_ROOT}/plans">confirm pricing for this number of members</a>.`;
 
-export function billingAlerts(message: { exceededLimits?: unknown; checkoutRoute?: unknown }): {
+export function billingAlerts(message: { exceededLimits?: unknown }): {
   exceeded: boolean;
 } {
   const exceededLimits = Array.isArray(message.exceededLimits) ? message.exceededLimits : [];
 
   return {
-    exceeded: exceededLimits.includes('members') && Boolean(message.checkoutRoute),
+    exceeded: exceededLimits.includes('members'),
   };
 }

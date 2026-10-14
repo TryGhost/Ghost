@@ -41,13 +41,22 @@ import {
 import { type PostResource, getPostResourceCopy } from './post-resource';
 import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
 import { usePostsFilterState } from './hooks/use-posts-filter-state';
-import { getPostListReturnUrl, rememberStickyPostFilters } from './posts-sticky-filters';
-import { syncEmberPostListQueryParams } from '@/ember-bridge';
-import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { rememberStickyPostFilters } from './posts-sticky-filters';
+import {
+  lazy,
+  startTransition,
+  Suspense,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { useLocation } from '@tryghost/admin-x-framework';
+import { isReturningFromScreen } from '@/layout/screen-transition';
+import { useRevealOnMount } from '@/shared/use-reveal-on-mount';
 import { usePostAnalyticsCounts } from './hooks/use-post-analytics-counts';
 import { usePostsList } from './hooks/use-posts-list';
-import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 
 /**
  * The posts and pages list screens. One implementation, two resources — see
@@ -66,15 +75,12 @@ export function PostsListScreen({ resource }: { resource: PostResource }) {
     usePostsFilterState();
   const { data: currentUser } = useCurrentUser();
   const { data: settingsData } = useBrowseSettings();
-  const improveSendingUI = useFeatureFlag('improveSendingUI');
 
   // Report the current filters so the sidebar and editor can return here.
   const location = useLocation();
 
   useEffect(() => {
     rememberStickyPostFilters(resource, location.search);
-    const search = getPostListReturnUrl(resource).split('?')[1];
-    return syncEmberPostListQueryParams(resource, Object.fromEntries(new URLSearchParams(search)));
   }, [resource, location.search]);
 
   // Scheduled times read in the site's timezone, not the browser's.
@@ -136,8 +142,28 @@ export function PostsListScreen({ resource }: { resource: PostResource }) {
   const isRestrictedAuthor = Boolean(currentUser && isAuthorOrContributor(currentUser));
   const ownAuthorSlug = currentUser && isRestrictedAuthor ? currentUser.slug : null;
 
-  const { items, isLoading, isError, hasNextPage, isFetchingNextPage, fetchNextPage, totalItems } =
-    usePostsList({ resource, params, context: { ownAuthorSlug } });
+  const {
+    items,
+    isLoading: isListLoading,
+    isError,
+    hasNextPage,
+    isFetchingNextPage,
+    fetchNextPage,
+    totalItems,
+  } = usePostsList({ resource, params, context: { ownAuthorSlug } });
+
+  // Returning from the editor, the first frame is just the header and a spinner so
+  // the screen transition doesn't wait on every row; they render right after.
+  const [rowsReady, setRowsReady] = useState(() => !isReturningFromScreen());
+  useEffect(() => {
+    if (!rowsReady) {
+      startTransition(() => setRowsReady(true));
+    }
+  }, [rowsReady]);
+  const isLoading = isListLoading || !rowsReady;
+  // Content that replaces the spinner fades in, so the reveal reads as the transition.
+  const [mountedLoading] = useState(isLoading);
+  const revealRef = useRevealOnMount<HTMLDivElement>(mountedLoading);
 
   useScrollRestoration({ parentRef: listRef, isLoading, resetOnNavigation: true });
 
@@ -204,13 +230,11 @@ export function PostsListScreen({ resource }: { resource: PostResource }) {
     giftLinkPost && canCopyGiftLink({ user: currentUser, post: giftLinkPost })
       ? giftLinkPost.id
       : null;
-  // Opened from the context menu. Ember reaches the same React modal over the
-  // state bridge; here the list owns it directly, so there is one modal and
-  // one set of eligibility rules behind both implementations.
+  // Opened from the context menu.
   const [giftLinkPostId, setGiftLinkPostId] = useState<string | null>(null);
 
-  // The Ember editor writes a localStorage key on publish and navigates here;
-  // this reads it. The editor stays Ember on both sides of the flag.
+  // The editor writes a localStorage key on publish and navigates here; this
+  // reads it.
   const celebration = usePostPublishCelebration();
   const { data: siteData } = useBrowseSite();
 
@@ -344,7 +368,7 @@ export function PostsListScreen({ resource }: { resource: PostResource }) {
           </ListPage.Header>
           <ListPage.Body>
             {isLoading ? (
-              <Stack align="center" className="flex-1" justify="center">
+              <Stack align="center" className="delayed-fade-in flex-1" justify="center">
                 <LoadingIndicator size="lg" />
               </Stack>
             ) : isError ? (
@@ -352,7 +376,7 @@ export function PostsListScreen({ resource }: { resource: PostResource }) {
                 <Text tone="secondary">Error loading {copy.title.toLowerCase()}</Text>
               </Stack>
             ) : items.length === 0 ? (
-              <Stack align="center" className="flex-1" justify="center">
+              <Stack ref={revealRef} align="center" className="flex-1" justify="center">
                 <PostsEmptyState
                   hasFilters={hasFilters}
                   resource={resource}
@@ -360,10 +384,8 @@ export function PostsListScreen({ resource }: { resource: PostResource }) {
                 />
               </Stack>
             ) : (
-              // Same testids as the Ember list, deliberately —
-              // shared e2e page objects. They can never collide:
-              // the Ember route aborts when this screen renders.
-              <Stack gap="md">
+              // Testids are shared with the e2e page objects.
+              <Stack ref={revealRef} gap="md">
                 <ul
                   // Held modifier: children take no pointer
                   // events, so clicks land on the row and not
@@ -393,7 +415,6 @@ export function PostsListScreen({ resource }: { resource: PostResource }) {
                       key={item.id}
                       getMenuItems={getMenuItems}
                       hasAdminAccess={isAdmin}
-                      improveSendingUI={improveSendingUI}
                       isContributor={isContributor}
                       isSelected={selection.isSelected(item.id)}
                       memberCounts={memberCounts}

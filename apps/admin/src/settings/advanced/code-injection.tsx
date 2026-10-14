@@ -26,6 +26,7 @@ const CodeInjection: React.FC<{ keywords: string[] }> = ({ keywords }) => {
       navid="code-injection"
       testId="code-injection"
       title="Code injection"
+      onOpen={() => setIsCodeModalOpen(true)}
     >
       {isCodeModalOpen && (
         <DialogPortal>

@@ -133,12 +133,12 @@ export function RevisionPreview({
           {showExcerpt ? (
             <>
               <div
-                className="text-xl leading-normal tracking-tight text-text-secondary"
+                className="text-[2rem] leading-[1.5] font-[440] tracking-[-0.018em] text-foreground/90"
                 data-testid={postHistoryPreviewExcerpt}
               >
                 {excerpt}
               </div>
-              {excerpt ? <hr className="mt-4 mb-6 border-border" /> : null}
+              {excerpt ? <hr className="mt-4 mb-12 border-border-default" /> : null}
             </>
           ) : null}
           {revision.lexical === null ? (

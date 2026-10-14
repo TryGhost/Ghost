@@ -6,7 +6,6 @@
 @import './element-styles.css';
 @import '@tryghost/shade/styles.css';
 @import './assets/fonts/inter-admin/fonts.css';
-@import './assets/fonts/inter/fonts.css';
 @import './pintura.css';
 
 /* Document root. Shade's spacing and type tokens assume a 10px rem. */
@@ -34,11 +33,55 @@ body {
   margin: 0;
 }
 
-/* One progress value keeps the settings panel and its vacated header slot in sync. */
-@property --editor-settings-progress {
-  syntax: '<number>';
+/* The editor settings panel's motion. `--editor-settings-progress` on the editor
+   shell is only ever 0 or 1; each element that moves with the panel transitions
+   its own property, named in brackets (`editor-settings-motion-[width]`), on this
+   one timing. Animating the inherited progress value itself would restyle the
+   whole document on every frame of the motion. */
+@utility editor-settings-motion-* {
+  transition-property: --value([*]);
+  transition-duration: 450ms;
+  transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+
+  @media (prefers-reduced-motion: reduce) {
+    transition-property: none;
+  }
+}
+
+/* The editor's chrome while the writer types (admin7EditorImprovements): each
+   piece carries `data-writing-focus` and fades out, keeping its place so the
+   document never moves. Hidden controls take no pointer input but stay
+   focusable; focusing one brings the chrome back. */
+[data-writing-focus] {
+  transition: opacity 150ms var(--ease-standard);
+}
+
+[data-writing-focus='hidden'] {
+  opacity: 0;
+  transition-duration: 200ms;
+}
+
+[data-writing-focus='hidden'],
+[data-writing-focus='hidden'] * {
+  pointer-events: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-writing-focus] {
+    transition: none;
+  }
+}
+
+/* Koenig's wide and full cards are sized in viewport units less this width
+   beside the writing area. The writing area declares it at the settings panel's
+   resting state; while the panel moves, the editor writes it onto each card
+   every frame instead, so only the cards restyle. Registered as a length so the
+   writing area's formula still computes to the pixels Koenig's card settings
+   panel parses. */
+@property --kg-breakout-adjustment {
+  syntax: '<length>';
   inherits: true;
-  initial-value: 0;
+  initial-value: 0px;
 }
 
 /* Shimmer for an active send's status line. The gradient is 300% wide so
@@ -73,18 +116,10 @@ body {
 }
 
 /* Admin overlays mount beside #root, so mirror typography into Shade portals
-   and the three legacy overlay hosts.
+   and the alerts host.
    Do not set body fonts or change component weights, sizes, or line heights. */
 .shade-admin,
-:where(body.react-admin:has(> #root .shade-admin))
-  > :is(
-    .shade.shade-admin,
-    #ember-basic-dropdown-wormhole,
-    #ember-modal-wormhole,
-    #ember-liquid-wormhole,
-    #admin-alerts,
-    #ember-notifications-wormhole
-  ) {
+:where(body.react-admin.react-admin-mounted) > :is(.shade.shade-admin, #admin-alerts) {
   --font-sans:
     'Inter Admin', Inter, -apple-system, BlinkMacSystemFont, avenir next, avenir, helvetica neue,
     helvetica, ubuntu, roboto, noto, segoe ui, arial, sans-serif;
@@ -99,36 +134,14 @@ body {
 
 /* Display alternates feel crowded at small sizes, so reserve them for
    semantic headings across both Admin screens and Settings overlays. */
-:where(
-    .shade-admin,
-    body.react-admin:has(> #root .shade-admin)
-      > :is(
-        .shade.shade-admin,
-        #ember-basic-dropdown-wormhole,
-        #ember-modal-wormhole,
-        #ember-liquid-wormhole,
-        #admin-alerts,
-        #ember-notifications-wormhole
-      )
-  )
+:where(.shade-admin, body.react-admin.react-admin-mounted > :is(.shade.shade-admin, #admin-alerts))
   :where(h1, h2, h3, h4, h5, h6) {
   font-feature-settings: var(--heading-font-feature-settings);
 }
 
 /* Browser form-control defaults can reset these inherited font properties.
    Keep the rule weaker than any explicit component typography choice. */
-:where(
-    .shade-admin,
-    body.react-admin:has(> #root .shade-admin)
-      > :is(
-        .shade.shade-admin,
-        #ember-basic-dropdown-wormhole,
-        #ember-modal-wormhole,
-        #ember-liquid-wormhole,
-        #admin-alerts,
-        #ember-notifications-wormhole
-      )
-  )
+:where(.shade-admin, body.react-admin.react-admin-mounted > :is(.shade.shade-admin, #admin-alerts))
   :where(button, input, optgroup, select, textarea) {
   font-family: inherit;
   font-feature-settings: inherit;
@@ -137,19 +150,8 @@ body {
 
 /* These components are visually headings but do not all use heading elements.
    Keep the display alternates scoped to their title text. */
-:where(
-    .shade-admin,
-    body.react-admin:has(> #root .shade-admin)
-      > :is(
-        .shade.shade-admin,
-        #ember-basic-dropdown-wormhole,
-        #ember-modal-wormhole,
-        #ember-liquid-wormhole,
-        #admin-alerts,
-        #ember-notifications-wormhole
-      )
-  )
-  :is(.heading-font-features, .gh-editor-title, .gh-publish-title) {
+:where(.shade-admin, body.react-admin.react-admin-mounted > :is(.shade.shade-admin, #admin-alerts))
+  .heading-font-features {
   font-feature-settings: var(--heading-font-feature-settings);
 }
 
@@ -180,6 +182,66 @@ body {
   --font-jetbrains-mono: JetBrains Mono;
 }
 
+/* The editor's title and excerpt placeholders read as the body's, which Koenig
+   draws in its own palette: text-grey-500 dark:text-grey-800 in koenig-lexical's
+   EditorPlaceholder. Shade's gray ramp starts from the same values but
+   desaturates in dark mode, so these are Koenig's, to stay exactly in step. */
+:root {
+  --editor-placeholder: #aeb7c1;
+}
+
+.dark {
+  --editor-placeholder: #626d79;
+}
+
+@theme inline {
+  --color-editor-placeholder: var(--editor-placeholder);
+}
+
+/* The editor is a reading surface, so Inter sets each size there in the design
+   made for it, as it does outside Admin: the body in its text design and the
+   title and headings in its finer display one. The rest of Admin pins Inter to
+   the text design (see the document root above). */
+.editor-optical-sizing {
+  font-optical-sizing: auto;
+  font-variation-settings: normal;
+}
+
+/* The writer's editor font (admin7EditorImprovements), set as `data-editor-font`
+   on the editor. Koenig reads the --kg-font-* variables for the body and its
+   headings; the title and excerpt read the --editor-display-* ones. Serif sets
+   nothing, so the editor keeps its own typography. Sans sets the body in Inter;
+   mono sets everything the writer writes in the system's monospace font (SF
+   Mono on Apple devices, Consolas on Windows), which is wider, so it steps the
+   sizes down and drops the negative tracking the display sizes use. */
+@theme inline {
+  --font-editor-serif: Georgia, Times, serif;
+  --font-editor-sans: var(--font-sans);
+  --font-editor-mono:
+    ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace;
+}
+
+[data-editor-font='sans'] {
+  --kg-font-body: var(--font-editor-sans);
+  --kg-font-body-scale: 0.925;
+  --kg-font-body-line-height: 1.65em;
+  --kg-font-body-tracking: -0.011em;
+}
+
+[data-editor-font='mono'] {
+  --kg-font-body: var(--font-editor-mono);
+  --kg-font-body-scale: 0.85;
+  --kg-font-body-line-height: 1.75em;
+  --kg-font-body-tracking: -0.01em;
+  --kg-font-heading: var(--font-editor-mono);
+  --kg-font-heading-scale: 0.85;
+  --kg-font-heading-tracking-scale: 0;
+  --editor-display-font: var(--font-editor-mono);
+  --editor-title-scale: 0.85;
+  --editor-excerpt-scale: 0.9;
+  --editor-display-tracking-scale: 0;
+}
+
 /* Shared Koenig wrappers must retain their layout without Ember styles. */
 .koenig-react-editor {
   max-width: 740px;
@@ -190,11 +252,6 @@ body {
    body pointer events, so body-level Koenig portals need to opt back in. */
 [data-kg-portal] {
   pointer-events: auto;
-}
-
-/* Prose classes are for formatting arbitrary HTML that comes from the API */
-.gh-prose-links a {
-  color: #30cf43;
 }
 
 .dark .shade .gh-loading-orb-container {
@@ -302,6 +359,56 @@ body.react-admin {
   overflow: hidden; /* Prevent body scroll */
 }
 
+/* The Admin 7 frame's insets (see AdminFrame), registered so they transition
+   as lengths rather than flip */
+@property --admin-frame-top {
+  syntax: '<length>';
+  inherits: true;
+  initial-value: 0px;
+}
+
+@property --admin-frame-side {
+  syntax: '<length>';
+  inherits: true;
+  initial-value: 0px;
+}
+
+@property --admin-frame-radius {
+  syntax: '<length>';
+  inherits: true;
+  initial-value: 0px;
+}
+
+/* View site's page fades in once the frame has opened out around it */
+@keyframes admin-frame-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* View site's Customize panel slides in from the right */
+@keyframes view-site-panel-in {
+  from {
+    opacity: 0;
+    transform: translateX(24px);
+  }
+}
+
+/* The top bar clock's colon */
+@keyframes admin-frame-blink {
+  0%,
+  50% {
+    opacity: 1;
+  }
+  51%,
+  100% {
+    opacity: 0;
+  }
+}
+
 /* Alerts show at the top and push content down */
 body.react-admin #admin-alerts {
   grid-row: 1;
@@ -322,11 +429,10 @@ body.react-admin #root .shade.shade-admin {
   overflow: hidden;
 }
 
-/* Keep the server-rendered loader visible while the React bundle boots. Once
-   React commits its mount marker, hide a still-detached Ember root until the
-   bridge relocates it into the shell. */
-body.react-admin:has(> #root [data-react-admin-mounted]) > #ember-app {
-  visibility: hidden;
+/* Keep the host page's loader visible while the React bundle boots, until
+   React mounts (app-root.tsx adds the body class). */
+body.react-admin.react-admin-mounted > #boot-splash {
+  display: none;
 }
 
 /* iOS safe area handling for mobile navbar */
@@ -334,27 +440,6 @@ body.react-admin .safe-area-inset-bottom {
   padding-bottom: env(safe-area-inset-bottom);
 }
 
-/* Ensure the Ember app renders in the correct position and takes full width/height */
-body.react-admin #ember-app {
-  width: 100%;
-  height: 100%;
-  /* Contain legacy Ember z-indexes (e.g. the billing overlay at 9999) so they can't
-       paint over React shell chrome like the mobile sidebar drawer (z-50). */
-  isolation: isolate;
-}
-
-/* Temporary overrides until Ember transition is finished */
-body.react-admin .gh-canvas-header {
-  padding-top: 20px;
-  padding-bottom: 20px;
-}
-
-body.react-admin .gh-canvas-breadcrumb + .gh-canvas-title {
-  padding-top: 0px;
-  margin-top: -4px;
-}
-
-body.react-admin .gh-canvas-title,
 body.react-admin [data-header='header-title'] {
   font-size: 15px;
   font-weight: 600;
@@ -372,20 +457,226 @@ body.react-admin [data-navbar='navbar'] {
   padding-bottom: 20px;
 }
 
-body.react-admin #ember-app .gh-viewport {
-  padding-bottom: 0px;
+/* Screen transitions. The router runs a view
+   transition only for a navigation into or out of a full-screen surface: the
+   old screen fades out while the sidebar or mobile nav leaves, then the new
+   screen fades in while it returns. A sidebar on both sides (Settings) keeps
+   its own live swap animation; the admin7Design desktop sidebar opens Settings
+   inside itself, so that runs no view transition at all (see
+   shouldRunScreenTransition). */
+::view-transition {
+  background-color: var(--background);
 }
 
-body.react-admin .gh-canvas-header {
-  z-index: 40;
+::view-transition-old(root) {
+  animation: screen-transition-fade-out 200ms var(--ease-standard) both;
 }
 
-body.react-admin .members-header {
-  position: relative;
+::view-transition-new(root) {
+  animation: screen-transition-fade-in 200ms var(--ease-standard) 200ms both;
 }
 
-body.react-admin [data-test-table='members'] thead,
-body.react-admin [data-test-table='members'] tr {
-  position: relative;
-  z-index: 30;
+::view-transition-group(admin-sidebar),
+::view-transition-group(admin-mobile-nav),
+::view-transition-new(admin-sidebar):not(:only-child),
+::view-transition-new(admin-mobile-nav):not(:only-child) {
+  animation: none;
+}
+
+::view-transition-old(admin-sidebar):not(:only-child),
+::view-transition-old(admin-mobile-nav):not(:only-child) {
+  display: none;
+}
+
+::view-transition-old(admin-sidebar):only-child {
+  animation: screen-transition-sidebar-out 200ms var(--ease-standard) both;
+}
+
+::view-transition-new(admin-sidebar):only-child {
+  animation: screen-transition-sidebar-in 250ms var(--ease-standard) 50ms both;
+}
+
+::view-transition-old(admin-mobile-nav):only-child {
+  animation: screen-transition-mobile-nav-out 200ms var(--ease-standard) both;
+}
+
+::view-transition-new(admin-mobile-nav):only-child {
+  animation: screen-transition-mobile-nav-in 200ms var(--ease-standard) 200ms both;
+}
+
+/* Most transitions fade the old screen out on the live page before navigating
+   (ScreenTransitionProvider), so a slow render of the next screen happens while
+   nothing is visible. The view transition then only reveals the new screen. */
+html[data-screen-exit] .screen-exit-content {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 200ms var(--ease-standard);
+}
+
+html[data-screen-exit='hide-sidebar'] .screen-exit-sidebar {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(-40px);
+  transition:
+    opacity 200ms var(--ease-standard),
+    transform 200ms var(--ease-standard);
+}
+
+html[data-screen-exit='hide-sidebar'] .screen-exit-mobile-nav {
+  transform: translateY(100%);
+  transition: transform 200ms var(--ease-standard);
+}
+
+/* Leaving a full-screen surface inside the admin7Design frame, its top chrome
+   slides away on the frame's timing while the page it returns to loads, and
+   the frame opens back out around that page. */
+html[data-screen-exit='chrome'] .screen-exit-chrome-top {
+  /* Back where screen-enter-from-top brings it in from */
+  transform: translateY(-80px);
+  transition: transform 520ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+html[data-screen-transition='after-exit']::view-transition-old(root) {
+  animation: none;
+}
+
+html[data-screen-transition='after-exit']::view-transition-old(admin-sidebar),
+html[data-screen-transition='after-exit']::view-transition-old(admin-mobile-nav) {
+  display: none;
+}
+
+html[data-screen-transition='after-exit']::view-transition-new(root) {
+  animation: screen-transition-fade-in 200ms var(--ease-standard) both;
+  mix-blend-mode: normal;
+}
+
+html[data-screen-transition='after-exit']::view-transition-new(admin-sidebar):only-child {
+  animation: screen-transition-sidebar-in 250ms var(--ease-standard) both;
+}
+
+html[data-screen-transition='after-exit']::view-transition-new(admin-mobile-nav):only-child {
+  animation: screen-transition-mobile-nav-in 200ms var(--ease-standard) both;
+}
+
+html[data-screen-transition='return']::view-transition-old(root) {
+  animation: screen-transition-fade-out 150ms var(--ease-standard) both;
+}
+
+html[data-screen-transition='return']::view-transition-new(root) {
+  animation: screen-transition-fade-in 150ms var(--ease-standard) both;
+}
+
+html[data-screen-transition='return']::view-transition-new(admin-sidebar):only-child {
+  animation: screen-transition-sidebar-in 250ms var(--ease-standard) both;
+}
+
+html[data-screen-transition='return']::view-transition-new(admin-mobile-nav):only-child {
+  animation: screen-transition-mobile-nav-in 200ms var(--ease-standard) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(root),
+  ::view-transition-old(admin-sidebar):only-child,
+  ::view-transition-old(admin-mobile-nav):only-child {
+    animation: screen-transition-fade-out var(--duration-fast) var(--ease-standard) both;
+  }
+
+  ::view-transition-new(root),
+  ::view-transition-new(admin-sidebar):only-child,
+  ::view-transition-new(admin-mobile-nav):only-child {
+    animation: screen-transition-fade-in var(--duration-fast) var(--ease-standard) both;
+  }
+}
+
+/* Entering the editor, the document rises into place and its floating chrome
+   follows in from the screen edges. Fill backwards only: a transform animation
+   that fills forwards makes its element the containing block for fixed descendants.
+   The top chrome waits longer inside the admin7Design frame, until the frame's
+   top bar has slid out of its way (--screen-enter-top-delay, set by AdminFrame). */
+.screen-enter-from-top {
+  animation: screen-chrome-from-top 450ms var(--ease-emphasized)
+    var(--screen-enter-top-delay, 150ms) backwards;
+}
+
+.screen-enter-from-bottom {
+  animation: screen-chrome-from-bottom 450ms var(--ease-emphasized) 150ms backwards;
+}
+
+.screen-enter-rise {
+  animation: screen-content-rise 450ms var(--ease-emphasized) backwards;
+}
+
+@keyframes screen-content-rise {
+  from {
+    transform: translateY(20px);
+  }
+}
+
+@keyframes screen-chrome-from-top {
+  from {
+    transform: translateY(-80px);
+  }
+}
+
+@keyframes screen-chrome-from-bottom {
+  from {
+    transform: translateY(80px);
+  }
+}
+
+/* Loading spinners wait before fading in, so a fast load never flashes one. */
+.delayed-fade-in {
+  animation: screen-transition-fade-in 200ms var(--ease-standard) 500ms both;
+}
+
+/* Reduced motion keeps the entrance still and the spinner's fade short. The
+   spinner keeps its delay: it stops a fast load flashing one, not motion. */
+@media (prefers-reduced-motion: reduce) {
+  .screen-enter-from-top,
+  .screen-enter-from-bottom,
+  .screen-enter-rise {
+    animation: none;
+  }
+
+  .delayed-fade-in {
+    animation-duration: var(--duration-fast);
+  }
+}
+
+@keyframes screen-transition-fade-out {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes screen-transition-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes screen-transition-sidebar-out {
+  to {
+    opacity: 0;
+    transform: translateX(-40px);
+  }
+}
+
+@keyframes screen-transition-sidebar-in {
+  from {
+    opacity: 0;
+    transform: translateX(-40px);
+  }
+}
+
+@keyframes screen-transition-mobile-nav-out {
+  to {
+    transform: translateY(100%);
+  }
+}
+
+@keyframes screen-transition-mobile-nav-in {
+  from {
+    transform: translateY(100%);
+  }
 }

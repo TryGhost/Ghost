@@ -34,7 +34,7 @@ describe('Inline card insertion', () => {
           automations: [detail('first')],
         });
         await renderAdminApp('/automations/first', {
-          labs: { ...flags.labs, automationAnalytics: true },
+          labs: flags.labs,
         });
         // Starting with performance open checks that insertion dismisses it.
         await page.getByRole('button', { name: 'View email analytics' }).click();
@@ -73,7 +73,7 @@ describe('Inline card insertion', () => {
       });
     }
 
-    it(`retains the settings sidebar when adding ${type} with the flag off`, async () => {
+    it(`edits a new ${type} inline with run analytics absent`, async () => {
       setup();
       await renderAdminApp('/automations/first', { labs: { automations: true } });
       await page.getByRole('button', { name: 'Add step', exact: true }).click();
@@ -81,15 +81,24 @@ describe('Inline card insertion', () => {
         .getByTestId('step-picker')
         .getByRole('button', { name: new RegExp(`^${type}`) })
         .click();
-      const sidebar = page.getByRole('complementary', { name: 'Step details' });
-      await expect.element(sidebar).toBeVisible();
+      const card = editingCanvas()
+        .getByRole('article', { name: type === 'Email' ? /^Send email/ : /^Wait:/ })
+        .last();
       await expect
         .element(
-          type === 'Email'
-            ? sidebar.getByPlaceholder('Subject line')
-            : sidebar.getByRole('textbox', { name: 'Wait for' }),
+          card.getByRole('textbox', { name: type === 'Email' ? 'Subject line' : 'Wait for' }),
         )
         .toBeVisible();
     });
   }
+
+  it('dismisses the step picker when pressing the canvas', async () => {
+    setup();
+    await renderAdminApp('/automations/first', flags);
+    await page.getByRole('button', { name: 'Add step', exact: true }).click();
+    const picker = page.getByTestId('step-picker');
+    await expect.element(picker).toBeVisible();
+    await editingCanvas().click({ position: { x: 20, y: 300 } });
+    await expect.element(picker).not.toBeInTheDocument();
+  });
 });

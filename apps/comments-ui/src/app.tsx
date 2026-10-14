@@ -7,7 +7,12 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import i18nLib from '@tryghost/i18n/registry/comments';
 import setupGhostApi from './utils/api';
 import { ActionHandler, SyncActionHandler, isSyncAction } from './actions';
-import { AppContext, Comment, DispatchActionType, EditableAppContext } from './app-context';
+import {
+  AppContext,
+  type Comment,
+  type DispatchActionType,
+  type EditableAppContext,
+} from './app-context';
 import { CommentsFrame } from './components/frame';
 import { setupAdminAPI } from './utils/admin-api';
 import { useOptions } from './utils/options';

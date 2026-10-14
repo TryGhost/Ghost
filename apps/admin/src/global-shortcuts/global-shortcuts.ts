@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
-import { useLocation, useNavigate } from '@tryghost/admin-x-framework';
+import { useNavigate } from '@tryghost/admin-x-framework';
 import { useAdminSidebarVisibility } from '@/layout/sidebar-visibility';
-import { useIsEmberOwnedRoute } from '@/routes';
+import { useSettingsReturnToState } from '@/layout/settings-navigation';
 import { isMacPlatform } from '@/utils/is-mac-platform';
 
 export type GlobalShortcut = 'openSettings' | 'save';
@@ -31,20 +31,15 @@ export function globalShortcut(
 }
 
 /**
- * On the screens React shows, Cmd/Ctrl+, opens settings while the admin
- * sidebar shows, and Cmd/Ctrl+S never opens the browser's save dialog.
+ * Cmd/Ctrl+, opens settings while the admin sidebar shows, and Cmd/Ctrl+S
+ * never opens the browser's save dialog.
  */
 export function useGlobalShortcuts(isSignedIn: boolean): void {
-  const { pathname } = useLocation();
-  const isEmberOwned = useIsEmberOwnedRoute(pathname);
   const canOpenSettings = useAdminSidebarVisibility() && isSignedIn;
   const navigate = useNavigate();
+  const settingsReturnToState = useSettingsReturnToState();
 
   useEffect(() => {
-    if (isEmberOwned) {
-      return;
-    }
-
     const onKeyDown = (event: KeyboardEvent) => {
       const shortcut = globalShortcut(event);
       if (!shortcut) {
@@ -52,11 +47,11 @@ export function useGlobalShortcuts(isSignedIn: boolean): void {
       }
       event.preventDefault();
       if (shortcut === 'openSettings' && canOpenSettings) {
-        navigate('/settings');
+        navigate('/settings', { state: settingsReturnToState });
       }
     };
 
     document.addEventListener('keydown', onKeyDown);
     return () => document.removeEventListener('keydown', onKeyDown);
-  }, [canOpenSettings, isEmberOwned, navigate]);
+  }, [canOpenSettings, navigate, settingsReturnToState]);
 }

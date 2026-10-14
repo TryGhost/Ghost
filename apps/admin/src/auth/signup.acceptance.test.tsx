@@ -26,7 +26,7 @@ beforeEach(() => {
 
 it('checks the invitation for the email in the link and prefills it', async () => {
   const invitationApi = fakeInvitation(true);
-  await renderAdminApp(`/signup/${token}`, signedOut({ authReact: true }));
+  await renderAdminApp(`/signup/${token}`, signedOut());
 
   await expect.element(authScreen.heading('Create your account.')).toBeVisible();
   await expect.element(authScreen.emailInput()).toHaveValue('staff@example.com');
@@ -35,7 +35,7 @@ it('checks the invitation for the email in the link and prefills it', async () =
 });
 
 it('sends a malformed link to sign in', async () => {
-  await renderAdminApp('/signup/not*a*token', signedOut({ authReact: true }));
+  await renderAdminApp('/signup/not*a*token', signedOut());
 
   await expect.poll(currentRoute).toBe('/signin');
   await expect.element(authScreen.text('Invalid token.')).toBeVisible();
@@ -43,7 +43,7 @@ it('sends a malformed link to sign in', async () => {
 
 it('sends a used or revoked invitation to sign in', async () => {
   fakeInvitation(false);
-  await renderAdminApp(`/signup/${token}`, signedOut({ authReact: true }));
+  await renderAdminApp(`/signup/${token}`, signedOut());
 
   await expect.poll(currentRoute).toBe('/signin');
   await expect
@@ -53,7 +53,7 @@ it('sends a used or revoked invitation to sign in', async () => {
 
 it('checks each field as it is left, and the whole form on submit', async () => {
   fakeInvitation(true);
-  await renderAdminApp(`/signup/${token}`, signedOut({ authReact: true }));
+  await renderAdminApp(`/signup/${token}`, signedOut());
 
   await authScreen.passwordInput().fill('short');
   (authScreen.passwordInput().element() as HTMLElement).blur();
@@ -75,7 +75,7 @@ it('creates the account, signs in and reloads', async () => {
     status: 201,
     contentType: 'text/plain; charset=utf-8',
   });
-  await renderAdminApp(`/signup/${token}`, signedOut({ authReact: true }));
+  await renderAdminApp(`/signup/${token}`, signedOut());
 
   await authScreen.fullNameInput().fill('  Jamie Larson  ');
   await authScreen.passwordInput().fill('correct horse battery');
@@ -114,7 +114,7 @@ it('reports why the invitation could not be accepted', async () => {
     },
     { status: 422 },
   );
-  await renderAdminApp(`/signup/${token}`, signedOut({ authReact: true }));
+  await renderAdminApp(`/signup/${token}`, signedOut());
 
   await authScreen.fullNameInput().fill('Jamie Larson');
   await authScreen.passwordInput().fill('correct horse battery');

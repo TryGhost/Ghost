@@ -1,0 +1,37 @@
+import { EventEmitter } from 'node:events';
+
+/**
+ * Raised by the four routers given a routerCreated callback: static routes,
+ * collections, static pages and taxonomies.
+ */
+type RouteRegistered = {
+  /**
+   * Route in domain notation, e.g. `/about/`.
+   * Null for routers with no route of their own: the static pages router,
+   * and taxonomies, which have no index route (`/tag/` does not exist).
+   */
+  path: string | null;
+  /** The kind of router, e.g. `CollectionRouter`. */
+  type: string;
+  /** The router's identifier. */
+  id: string;
+};
+
+type RoutingEventMap = {
+  RouteRegistered: [route: RouteRegistered];
+  RoutesReset: [];
+};
+
+/**
+ * Frontend-internal routing domain events.
+ *
+ * Carries `RouteRegistered` and `RoutesReset` — the latter has no payload and
+ * is raised before a reload clears the routers. Both are emitted by the router
+ * manager and consumed only inside the frontend (the sitemap keeps its route
+ * entries in sync from them). They used to ride the server's shared event bus
+ * purely for historical reasons — nothing server-side listens to them.
+ *
+ * The payloads are plain data, so a consumer never depends on the internals
+ * of the Express-backed router that happened to raise the event.
+ */
+export const routingEvents = new EventEmitter<RoutingEventMap>();

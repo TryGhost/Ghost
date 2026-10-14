@@ -72,7 +72,6 @@ export const useEditOffer = createMutation<OfferEditResponseType, Offer>({
   body: (offer) => ({ offers: [offer] }),
   updateQueries: {
     dataType,
-    emberUpdateType: 'createOrUpdate',
     update: updateQueryCache('offers'),
   },
 });
@@ -83,7 +82,6 @@ export const useAddOffer = createMutation<OfferAddResponseType, NewOffer>({
   body: (offer) => ({ offers: [offer] }),
   updateQueries: {
     dataType,
-    emberUpdateType: 'createOrUpdate',
     update: insertToQueryCache('offers'),
   },
 });

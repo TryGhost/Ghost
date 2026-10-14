@@ -27,11 +27,10 @@ migrations, understand the size and shape of the existing data first.
 
 ### Creating the migration file
 
-Create a migration file from `ghost/core`:
+Create a migration file from the repository root:
 
 ```bash
-cd ghost/core
-pnpm migrate:create <slug>
+pnpm gx generate migration <slug>
 ```
 
 The slug must be kebab-case, for example `add-column-to-posts`. The script:
@@ -45,15 +44,15 @@ Always use this command rather than creating or naming the file manually. It
 compares the current package version with the latest published Ghost tag to
 avoid placing a migration in a version that has already shipped. CI repeats
 these version and placement checks with
-[`scripts/check-migration-integrity.cjs`](../../scripts/check-migration-integrity.cjs).
+[`tools/scripts/check-migration-integrity.cjs`](../../tools/scripts/check-migration-integrity.cjs).
 
 ### Writing the migration
 
 1. Open the generated migration file in
    `core/server/data/migrations/versions/`.
 2. Add the database changes, using similar existing migrations as examples.
-3. Run the migration with `pnpm knex-migrator migrate` while following the
-   iteration guidance below.
+3. Run the migration with `pnpm knex-migrator migrate` from the repository
+   root while following the iteration guidance below.
 4. For schema changes, update `core/server/data/schema/schema.js` to match.
 5. Update the schema integrity tests and any other affected tests.
 
@@ -75,10 +74,13 @@ During development, run migrations with Ghost's custom
 [`knex-migrator`](https://github.com/TryGhost/knex-migrator):
 
 ```bash
-cd ghost/core
 pnpm knex-migrator migrate --v <version-directory> --force
 pnpm knex-migrator rollback --v <previous-version> --force
 ```
+
+Run these from the repository root. They run against the checkout's dev
+database (`ghost_dev`, or `dev_<worktree>` in a worktree), the same one
+`pnpm dev` uses.
 
 `migrate` calls the migration's `up()` method and `rollback` calls its `down()`
 method. You can use this workflow to iterate while `down()` restores the same
@@ -89,7 +91,7 @@ state that existed before `up()`.
 A new table's shape often changes several times before its feature is ready.
 Rather than writing a migration for each change, list the table in
 `IN_DEVELOPMENT_TABLES` in
-[`core/server/data/schema/in-development.ts`](../../ghost/core/core/server/data/schema/in-development.ts)
+[`core/server/data/schema/in-development.ts`](../../ghost/core/server/data/schema/in-development.ts)
 and define its schema in `schema.js` without adding a versioned migration. It
 is only created in development and testing databases.
 
@@ -97,7 +99,7 @@ To apply a changed definition to your local database, rebuild the listed
 tables. This drops them and discards their data:
 
 ```bash
-cd ghost/core
+cd ghost
 pnpm migrate:rebuild-in-development-tables
 ```
 
@@ -125,7 +127,7 @@ settings, or default routes. Update only the expected hash for the change you
 made:
 
 ```bash
-cd ghost/core
+cd ghost
 pnpm test:single test/unit/server/data/schema/integrity.test.js
 ```
 
@@ -133,7 +135,7 @@ Run the migration integration test to exercise initialization, rollback,
 forward migration, and idempotency:
 
 ```bash
-cd ghost/core
+cd ghost
 pnpm test:single test/integration/migrations/migration.test.js
 ```
 
@@ -209,7 +211,7 @@ and migration utilities directly instead.
 ### Use migration utilities
 
 Use the helpers in
-[`core/server/data/migrations/utils/`](../../ghost/core/core/server/data/migrations/utils/)
+[`core/server/data/migrations/utils/`](../../ghost/core/server/data/migrations/utils/)
 wherever possible. They contain tested implementations of common operations,
 including idempotency and logging protections.
 

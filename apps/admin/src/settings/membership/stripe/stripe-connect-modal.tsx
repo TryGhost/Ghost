@@ -13,6 +13,7 @@ import {
   FieldGroup,
   FieldLabel,
   Input,
+  Link,
   Switch,
   Textarea,
 } from '@tryghost/shade/components';
@@ -36,6 +37,7 @@ import { useGlobalData } from '@/settings/providers/global-data-context';
 import { useHandleError, useLimiter } from '@tryghost/admin-x-framework/hooks';
 import { useSettingsNavigation } from '@/settings/hooks/use-settings-navigation';
 import { useUpgradeRoute } from '@/settings/hooks/use-upgrade-route';
+import { navigateTo } from '@/utils/navigation';
 
 const RETRY_PRODUCT_SAVE_POLL_LENGTH = 1000;
 const RETRY_PRODUCT_SAVE_MAX_POLL = 15 * RETRY_PRODUCT_SAVE_POLL_LENGTH;
@@ -52,14 +54,9 @@ const Start: React.FC<{ onNext?: () => void }> = ({ onNext }) => {
       <div className="mt-6 mb-7 text-pretty">
         Stripe is our exclusive direct payments partner. Ghost collects <strong>no fees</strong> on
         any payments! If you don’t have a Stripe account yet, you can{' '}
-        <a
-          className="underline"
-          href="https://stripe.com"
-          rel="noopener noreferrer"
-          target="_blank"
-        >
-          sign up here
-        </a>
+        <Link href="https://stripe.com" external>
+          sign up for Stripe
+        </Link>
         .
       </div>
       <StripeButton label={<>I have a Stripe account, let&apos;s go &rarr;</>} onClick={onNext} />
@@ -398,7 +395,9 @@ const StripeConnectModal: React.FC = () => {
             updateRoute('tiers');
             showLimit({
               prompt: error.message || `Your current plan doesn't support Stripe Connect.`,
-              onOk: () => updateRoute({ route: upgradeRoute, isExternal: true }),
+              onOk: () => {
+                navigateTo(upgradeRoute);
+              },
             });
           }
         }

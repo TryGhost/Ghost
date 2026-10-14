@@ -6,6 +6,7 @@ import { useAddMember } from '@tryghost/admin-x-framework/api/members';
 import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
 import { Link } from '@tryghost/admin-x-framework';
 import { useHandleError } from '@tryghost/admin-x-framework/hooks';
+import { useSettingsReturnToState } from '@/layout/settings-navigation';
 
 interface MembersEmptyStateProps {
   membershipsEnabled: boolean;
@@ -19,6 +20,7 @@ const MembersEmptyState: React.FC<MembersEmptyStateProps> = ({
   const { data: currentUser, isLoading: isCurrentUserLoading } = useCurrentUser();
   const { mutateAsync: addMember, isPending: isAdding } = useAddMember();
   const handleError = useHandleError();
+  const settingsReturnToState = useSettingsReturnToState();
 
   const handleAddYourself = useCallback(async () => {
     if (!currentUser || isAdding) {
@@ -43,7 +45,9 @@ const MembersEmptyState: React.FC<MembersEmptyStateProps> = ({
         <EmptyIndicator
           actions={
             <Button variant="outline" asChild>
-              <a href="#/settings/members">Membership settings</a>
+              <Link state={settingsReturnToState} to="/settings/members">
+                Membership settings
+              </Link>
             </Button>
           }
           description="Adjust your membership settings to start adding members."

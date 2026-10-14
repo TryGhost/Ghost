@@ -2,10 +2,8 @@ import { createContext, lazy, Suspense, useContext, useEffect } from 'react';
 import { Navigate, Outlet, useLocation } from '@tryghost/admin-x-framework';
 import { isAuthPath } from '@tryghost/admin-x-framework/helpers';
 import { toast } from 'sonner';
-import { EmberFallback } from '@/ember-bridge';
 import { useSetupStatus } from './client/auth-client';
 import { rememberSigninRedirect } from './signin-redirect';
-import { useAuthScreensOwner } from './use-auth-screens-owner';
 
 const screens = {
   signin: lazy(() => import('./signin')),
@@ -39,18 +37,10 @@ function SignedInRedirect({ screen }: { screen: AuthScreen }) {
   return <Navigate to="/" replace />;
 }
 
-/** Serves an auth route from React or Ember, whichever owns the auth screens. */
 export function AuthRoute({ screen }: { screen: AuthScreen }) {
-  const owner = useAuthScreensOwner();
   const signedOut = useContext(SignedOutContext);
   const Screen = screens[screen];
 
-  if (owner === 'pending') {
-    return null;
-  }
-  if (owner === 'ember') {
-    return <EmberFallback />;
-  }
   if (!signedOut && screen !== 'signout') {
     return <SignedInRedirect screen={screen} />;
   }
@@ -62,10 +52,9 @@ export function AuthRoute({ screen }: { screen: AuthScreen }) {
 }
 
 /**
- * The whole app for a signed-out visitor while React owns the auth screens:
- * auth routes render, anything else is remembered for after sign in and
- * sends the visitor to sign in. A site that isn't set up yet sends every
- * auth screen but sign out to setup.
+ * The whole app for a signed-out visitor: auth routes render, anything else
+ * is remembered for after sign in and sends the visitor to sign in. A site
+ * that isn't set up yet sends every auth screen but sign out to setup.
  */
 export function SignedOutApp() {
   const { pathname, search } = useLocation();

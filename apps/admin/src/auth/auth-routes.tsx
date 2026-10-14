@@ -1,12 +1,9 @@
 import type { RouteObject } from '@tryghost/admin-x-framework';
 import { AuthRoute, type AuthScreen } from './auth-route';
 
-export type AuthRouteHandle = { authScreen: AuthScreen };
-
 const authRoute = (path: string, screen: AuthScreen): RouteObject => ({
   path,
   element: <AuthRoute screen={screen} />,
-  handle: { authScreen: screen } satisfies AuthRouteHandle,
 });
 
 export const authRoutes: RouteObject[] = [

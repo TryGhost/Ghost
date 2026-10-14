@@ -7,13 +7,6 @@ import { shadeLayeredImportsRule } from '@internal/cfg-eslint';
 // `no-restricted-imports` rule slot, so the boundary blocks must re-include it.
 const shadeRestrictedPaths = shadeLayeredImportsRule['no-restricted-imports'][1].paths;
 
-const emberBridgeImportPatterns = [
-  {
-    group: ['@/ember-bridge/*', '**/ember-bridge/ember-bridge'],
-    message: 'Import bridge helpers from the @/ember-bridge barrel, not the implementation module.',
-  },
-];
-
 const noHardcodedGhostPaths = {
   meta: {
     type: 'problem',
@@ -105,11 +98,11 @@ export default tseslint.config(
       'no-relative-import-paths/no-relative-import-paths': ['error', { allowSameFolder: true }],
     },
   },
-  // Boundary guardrails. Product code must reach react-router, the Ember
-  // bridge, and the Admin API through their owning layers.
+  // Boundary guardrails. Product code must reach react-router and the Admin
+  // API through their owning layers.
   {
     files: ['src/**/*.{ts,tsx}'],
-    ignores: ['src/**/*.test.*', 'src/ember-bridge/**'],
+    ignores: ['src/**/*.test.*'],
     rules: {
       'no-restricted-imports': [
         'error',
@@ -123,7 +116,6 @@ export default tseslint.config(
             },
           ],
           patterns: [
-            ...emberBridgeImportPatterns,
             {
               group: ['react-router/*'],
               message:
@@ -134,22 +126,6 @@ export default tseslint.config(
       ],
       'no-restricted-syntax': [
         'error',
-        {
-          selector: "MemberExpression[property.name='EmberBridge']",
-          message:
-            'Access Ember through the @/ember-bridge helpers, not window.EmberBridge directly.',
-        },
-        {
-          selector: "MemberExpression[property.value='EmberBridge']",
-          message:
-            'Access Ember through the @/ember-bridge helpers, not window.EmberBridge directly.',
-        },
-        {
-          selector:
-            "VariableDeclarator[init.name=/^(window|globalThis)$/] Property[key.name='EmberBridge']",
-          message:
-            'Access Ember through the @/ember-bridge helpers, not window.EmberBridge directly.',
-        },
         {
           selector: "CallExpression[callee.name='fetch']",
           message:
@@ -168,16 +144,11 @@ export default tseslint.config(
       ],
     },
   },
-  // Test files keep react-router scaffolding (MemoryRouter, createMemoryRouter)
-  // and window.EmberBridge stubs, but must still import the bridge barrel.
+  // Test files keep react-router scaffolding (MemoryRouter, createMemoryRouter).
   {
     files: ['src/**/*.test.*'],
-    ignores: ['src/ember-bridge/**'],
     rules: {
-      'no-restricted-imports': [
-        'error',
-        { paths: [...shadeRestrictedPaths], patterns: emberBridgeImportPatterns },
-      ],
+      'no-restricted-imports': ['error', { paths: [...shadeRestrictedPaths] }],
     },
   },
   // Advisory only — warnings do not fail CI (`eslint .` without --max-warnings).

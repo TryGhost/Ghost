@@ -22,14 +22,16 @@ export function truncateHtml(text: string, maxLength: number, maxLengthMobile?: 
 
     if (text && text.length > maxLengthMobile) {
         let ellipsis = '';
+        let desktopEnd = text.length;
 
         if (text.length > maxLengthMobile && text.length <= maxLength) {
             ellipsis = '<span class="hide-desktop">\u2026</span>';
         } else if (text.length > maxLength) {
             ellipsis = '\u2026';
+            desktopEnd = maxLength - 1;
         }
 
-        return escapeHtml(text.substring(0, maxLengthMobile - 1)) + '<span class="desktop-only">' + escapeHtml(text.substring(maxLengthMobile - 1, maxLength - 1)) + '</span>' + ellipsis;
+        return escapeHtml(text.substring(0, maxLengthMobile - 1)) + '<span class="desktop-only">' + escapeHtml(text.substring(maxLengthMobile - 1, desktopEnd)) + '</span>' + ellipsis;
     } else {
         return escapeHtml(text ?? '');
     }

@@ -47,12 +47,7 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps> {
         return this.props.fallback;
       }
       return (
-        <Banner
-          className="border border-state-danger/40 bg-state-danger/10 text-destructive"
-          role="alert"
-          size="sm"
-          variant="destructive"
-        >
+        <Banner className="text-destructive" role="alert" size="sm" variant="destructive">
           An error occurred loading {this.props.name}. Please refresh and try again.
         </Banner>
       );

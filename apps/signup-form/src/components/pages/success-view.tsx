@@ -1,12 +1,13 @@
-import EmailIcon from '../../../assets/icons/email.svg?react';
-import React from 'react';
+import { EmailIcon } from '../icons';
 import { useAppContext } from '../../app-context';
 
-export const SuccessView: React.FC<{
+type SuccessViewProps = {
   email: string;
   backgroundColor?: string;
   textColor?: string;
-}> = ({ backgroundColor, textColor }) => {
+};
+
+export const SuccessView = ({ backgroundColor, textColor }: SuccessViewProps) => {
   const { t } = useAppContext();
   return (
     <div

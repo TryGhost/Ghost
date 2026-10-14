@@ -20,6 +20,9 @@ export class LoginPage extends AdminPage {
   }
 
   async signIn(email: string, password: string) {
+    // A deep-link redirect can still show the previous sign-in form. Wait for
+    // the redirect before filling it, otherwise the remount clears the inputs.
+    await this.page.waitForURL(this.pageUrl);
     await this.emailAddressField.fill(email);
     await this.passwordField.fill(password);
     await this.signInButton.click();

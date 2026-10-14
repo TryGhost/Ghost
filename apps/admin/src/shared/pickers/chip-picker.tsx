@@ -14,7 +14,7 @@ import { arrayMove, rectSortingStrategy, SortableContext, useSortable } from '@d
 import { CSS } from '@dnd-kit/utilities';
 import { Badge, type BadgeProps, tokenFieldClasses } from '@tryghost/shade/components';
 import { cn, LucideIcon } from '@tryghost/shade/utils';
-import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
+import { Fragment, useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import type { CSSProperties, KeyboardEvent, ReactNode, RefObject } from 'react';
 
 /** Trailing and leading space is never part of what is picked. */
@@ -48,6 +48,8 @@ export interface ChipPickerProps<TOption, TChip> {
   /** Whether a row is a chip the field already carries. Keys are the default test. */
   isChosen?: (option: TOption, chip: TChip) => boolean;
   renderOption?: (option: TOption, state: { chosen: boolean }) => ReactNode;
+  /** Heads runs of rows that share a group; options should already be ordered by it. */
+  getGroup?: (option: TOption) => string | undefined;
   chipVariant?: (chip: TChip) => BadgeProps['variant'];
   chipClassName?: (chip: TChip) => string | undefined;
   onAdd: (option: TOption) => void;
@@ -88,6 +90,32 @@ type Row<TOption> =
   | { kind: 'option'; key: string; option: TOption; chosen: boolean }
   | { kind: 'create'; key: string };
 
+interface RowSection<TOption> {
+  group: string | undefined;
+  rows: Array<{ row: Row<TOption>; index: number }>;
+}
+
+/** Consecutive rows that share a group, each row keeping its place in the flat list the keyboard walks. */
+function sectionRows<TOption>(
+  rows: Row<TOption>[],
+  getGroup: ((option: TOption) => string | undefined) | undefined,
+): RowSection<TOption>[] {
+  const sections: RowSection<TOption>[] = [];
+
+  rows.forEach((row, index) => {
+    const group = row.kind === 'option' ? getGroup?.(row.option) : undefined;
+    const last = sections[sections.length - 1];
+
+    if (last && last.group === group) {
+      last.rows.push({ row, index });
+    } else {
+      sections.push({ group, rows: [{ row, index }] });
+    }
+  });
+
+  return sections;
+}
+
 /**
  * The chips-in-a-field picker: what the field carries drawn as removable chips,
  * and a list of what else it could carry under a search input.
@@ -103,6 +131,7 @@ export function ChipPicker<TOption, TChip>({
   getLabel,
   isChosen,
   renderOption,
+  getGroup,
   chipVariant,
   chipClassName,
   onAdd,
@@ -433,33 +462,60 @@ export function ChipPicker<TOption, TChip>({
             {!notice && rows.length === 0 && (
               <div className="px-2 py-1.5 text-sm text-muted-foreground">{emptyMessage}</div>
             )}
-            {rows.map((row, index) => {
-              const isHighlighted = index === highlightedIndex;
-              const chosen = row.kind === 'option' && row.chosen;
+            {sectionRows(rows, getGroup).map((section, sectionIndex) => {
+              // A section is never empty, and its first row's key is unique in the list.
+              const sectionKey = section.rows[0].row.key;
+              const items = section.rows.map(({ row, index }) => {
+                const isHighlighted = index === highlightedIndex;
+                const chosen = row.kind === 'option' && row.chosen;
+
+                return (
+                  <div
+                    key={row.key}
+                    aria-selected={chosen}
+                    className={cn(
+                      'flex cursor-pointer items-center gap-2 rounded-sm px-2 py-1.5 text-sm',
+                      isHighlighted && 'bg-accent text-accent-foreground',
+                    )}
+                    data-highlighted={isHighlighted}
+                    id={optionId(index)}
+                    role="option"
+                    onClick={() => choose(row)}
+                    // Keeps focus in the input, which clicking a plain div would
+                    // otherwise drop, so typing and Escape both still work after a pick.
+                    onMouseDown={(event) => event.preventDefault()}
+                    onMouseEnter={() => setHighlighted(index)}
+                  >
+                    {row.kind === 'create'
+                      ? createRow?.render(term)
+                      : (renderOption?.(row.option, { chosen }) ?? (
+                          <span className="truncate">{getLabel(row.option)}</span>
+                        ))}
+                  </div>
+                );
+              });
+
+              if (section.group === undefined) {
+                return <Fragment key={sectionKey}>{items}</Fragment>;
+              }
+
+              const headingId = `${listId}-group-${sectionIndex}`;
 
               return (
-                <div
-                  key={row.key}
-                  aria-selected={chosen}
-                  className={cn(
-                    'flex cursor-pointer items-center gap-2 rounded-sm px-2 py-1.5 text-sm',
-                    isHighlighted && 'bg-accent text-accent-foreground',
+                <Fragment key={sectionKey}>
+                  {sectionIndex > 0 && (
+                    <div className="-mx-1 my-1 h-px bg-border" role="separator" />
                   )}
-                  data-highlighted={isHighlighted}
-                  id={optionId(index)}
-                  role="option"
-                  onClick={() => choose(row)}
-                  // Keeps focus in the input, which clicking a plain div would
-                  // otherwise drop, so typing and Escape both still work after a pick.
-                  onMouseDown={(event) => event.preventDefault()}
-                  onMouseEnter={() => setHighlighted(index)}
-                >
-                  {row.kind === 'create'
-                    ? createRow?.render(term)
-                    : (renderOption?.(row.option, { chosen }) ?? (
-                        <span className="truncate">{getLabel(row.option)}</span>
-                      ))}
-                </div>
+                  <div aria-labelledby={headingId} role="group">
+                    <div
+                      className="px-2 py-1.5 text-xs font-medium text-muted-foreground"
+                      id={headingId}
+                    >
+                      {section.group}
+                    </div>
+                    {items}
+                  </div>
+                </Fragment>
               );
             })}
           </div>

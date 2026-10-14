@@ -1,6 +1,7 @@
 import Docker from 'dockerode';
 import baseDebug from '@tryghost/debug';
 import logging from '@tryghost/logging';
+import path from 'node:path';
 import {
   BASE_GHOST_ENV,
   BUILD_GATEWAY_IMAGE,
@@ -8,12 +9,15 @@ import {
   CADDYFILE_PATHS,
   DEV_ENVIRONMENT,
   DEV_SHARED_CONFIG_VOLUME,
+  E2E_CONTAINER_PREFIX,
   EGRESS_MONITOR_ENABLED,
   REPO_ROOT,
   TEST_ENVIRONMENT,
   TINYBIRD,
+  gatewayHostPort,
 } from '@/helpers/environment/constants';
 import { EgressMonitor } from '@/helpers/environment/service-managers/egress-monitor';
+import { execFileSync } from 'node:child_process';
 import { isTinybirdAvailable } from '@/helpers/environment/service-availability';
 import { readFile } from 'fs/promises';
 import type { Container, ContainerCreateOptions } from 'dockerode';
@@ -21,6 +25,9 @@ import type { EnvironmentMode } from '@/helpers/environment/environment-manager'
 import type { GhostConfig } from '@/helpers/playwright/fixture';
 
 const debug = baseDebug('e2e:GhostManager');
+
+// Backend source mounted into dev-mode Ghost containers
+const DEV_SOURCE_DIRS = ['ghost', 'koenig', 'configs', 'packages'];
 
 type GhostEnvOverrides = GhostConfig | Record<string, string>;
 const READINESS_POLL_INTERVAL_MS = 250;
@@ -58,6 +65,7 @@ export class GhostManager {
   private readonly config: GhostManagerConfig;
   private ghostContainer: Container | null = null;
   private gatewayContainer: Container | null = null;
+  private gatewayPort: number | null = null;
   private egressMonitor: EgressMonitor | null = null;
 
   constructor(config: GhostManagerConfig) {
@@ -79,7 +87,10 @@ export class GhostManager {
   }
 
   getGatewayPort(): number {
-    return 30000 + this.config.workerIndex;
+    if (this.gatewayPort === null) {
+      throw new Error('Gateway container not initialized');
+    }
+    return this.gatewayPort;
   }
 
   /**
@@ -95,8 +106,8 @@ export class GhostManager {
       await this.verifyBuildImageExists();
     }
 
-    const ghostName = `ghost-e2e-worker-${this.config.workerIndex}`;
-    const gatewayName = `ghost-e2e-gateway-${this.config.workerIndex}`;
+    const ghostName = `${E2E_CONTAINER_PREFIX}-worker-${this.config.workerIndex}`;
+    const gatewayName = `${E2E_CONTAINER_PREFIX}-gateway-${this.config.workerIndex}`;
 
     // Start the egress monitor first so Ghost can use it as its DNS server.
     // Fail-open: if it doesn't come up, Ghost keeps Docker's default resolver.
@@ -106,6 +117,8 @@ export class GhostManager {
     this.gatewayContainer = await this.getOrCreateContainer(gatewayName, () =>
       this.createGatewayContainer(gatewayName, ghostName),
     );
+    const gatewayInfo = await this.gatewayContainer.inspect();
+    this.gatewayPort = Number(gatewayInfo.NetworkSettings.Ports['80/tcp'][0].HostPort);
     this.ghostContainer = await this.getOrCreateContainer(ghostName, () =>
       this.createGhostContainer(ghostName, database),
     );
@@ -351,6 +364,7 @@ export class GhostManager {
       name,
       Image: image,
       Env: await this.buildEnvWithSchedulerUrl(database, extraConfig),
+      ...(mode === 'dev' ? { Volumes: this.getNodeModulesMasks() } : {}),
       ExposedPorts: { [`${TEST_ENVIRONMENT.ghost.port}/tcp`]: {} },
       Healthcheck: {
         // Same health check as compose.dev.yaml - Ghost is ready when it responds
@@ -368,6 +382,9 @@ export class GhostManager {
       HostConfig: {
         Binds: binds,
         ExtraHosts: ['host.docker.internal:host-gateway'],
+        // Disable inherited search domains: CI's resolver can otherwise append
+        // its Azure domain to external hosts and trigger false egress failures.
+        DnsSearch: ['.'],
         ...(dnsServerIp ? { Dns: [dnsServerIp] } : {}),
       },
       NetworkingConfig: {
@@ -399,19 +416,35 @@ export class GhostManager {
       // Whole-directory mounts covering the backend source graph, rather
       // than enumerating each server-graph workspace package. See the
       // matching rationale in compose.dev.yaml: `pnpm dev` runs in
-      // ghost/core and only its dependency closure is verified against
+      // ghost and only its dependency closure is verified against
       // the image's root node_modules, so the non-server packages these
       // dirs also expose don't trigger a workspace repair, and root
       // node_modules (never mounted) keeps its linux-built native modules.
-      binds.push(
-        `${REPO_ROOT}/ghost:/home/ghost/ghost`,
-        `${REPO_ROOT}/koenig:/home/ghost/koenig`,
-        `${REPO_ROOT}/configs:/home/ghost/configs`,
-        `${REPO_ROOT}/packages:/home/ghost/packages`,
-      );
+      binds.push(...DEV_SOURCE_DIRS.map((dir) => `${REPO_ROOT}/${dir}:/home/ghost/${dir}`));
     }
 
     return binds;
+  }
+
+  /**
+   * Anonymous volumes over each mounted workspace package's node_modules. pnpm's
+   * global virtual store links those to a store on the host the container can't see.
+   */
+  private getNodeModulesMasks(): Record<string, object> {
+    const projects = JSON.parse(
+      execFileSync('pnpm', ['ls', '--recursive', '--depth', '-1', '--json'], {
+        cwd: REPO_ROOT,
+        encoding: 'utf8',
+      }),
+    ) as { path: string }[];
+    const masks: Record<string, object> = {};
+    for (const project of projects) {
+      const dir = path.relative(REPO_ROOT, project.path);
+      if (DEV_SOURCE_DIRS.some((root) => dir === root || dir.startsWith(`${root}/`))) {
+        masks[`/home/ghost/${dir}/node_modules`] = {};
+      }
+    }
+    return masks;
   }
 
   private async createGatewayContainer(name: string, ghostBackend: string): Promise<Container> {
@@ -434,6 +467,9 @@ export class GhostManager {
       `GHOST_BACKEND=${ghostBackend}:${TEST_ENVIRONMENT.ghost.port}`,
       'ANALYTICS_PROXY_TARGET=ghost-dev-analytics:3000',
     ];
+    if (mode === 'dev' && process.env.GHOST_E2E_ADMIN_DEV_SERVER) {
+      env.push(`ADMIN_DEV_SERVER=${process.env.GHOST_E2E_ADMIN_DEV_SERVER}`);
+    }
 
     // Build mode can use stock Caddy (no custom plugin/image build required)
     const image = mode === 'build' ? BUILD_GATEWAY_IMAGE : TEST_ENVIRONMENT.gateway.image;
@@ -445,7 +481,7 @@ export class GhostManager {
       ExposedPorts: { '80/tcp': {} },
       HostConfig: {
         Binds: binds,
-        PortBindings: { '80/tcp': [{ HostPort: String(this.getGatewayPort()) }] },
+        PortBindings: { '80/tcp': [{ HostPort: gatewayHostPort(this.config.workerIndex) }] },
         ExtraHosts: ['host.docker.internal:host-gateway'],
       },
       NetworkingConfig: {
@@ -464,7 +500,7 @@ export class GhostManager {
 
   private async removeContainer(container: Container): Promise<void> {
     try {
-      await container.remove({ force: true });
+      await container.remove({ force: true, v: true });
     } catch {
       debug('Failed to remove container:', container.id);
     }
@@ -483,7 +519,7 @@ export class GhostManager {
       });
 
       const results = await Promise.allSettled(
-        containers.map((c) => this.docker.getContainer(c.Id).remove({ force: true })),
+        containers.map((c) => this.docker.getContainer(c.Id).remove({ force: true, v: true })),
       );
 
       for (const [index, result] of results.entries()) {

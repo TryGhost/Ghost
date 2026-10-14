@@ -26,7 +26,7 @@ it('asks a signed-out writer to sign in and reopens the post afterwards', async 
     status: 201,
     contentType: 'text/plain; charset=utf-8',
   });
-  await renderAdminApp('/editor/post/abc123', signedOut({ authReact: true }));
+  await renderAdminApp('/editor/post/abc123', signedOut());
 
   await expect.poll(currentRoute).toBe('/signin');
   await authScreen.signIn('owner@example.com', 'correct horse battery');

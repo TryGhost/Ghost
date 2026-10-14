@@ -1,6 +1,5 @@
 /*
- * We load Inter in Ember admin, so loading it explicitly here makes the final rendering
- * in Storybook match the final rendering when embedded in Ember
+ * Admin loads Inter, so loading it here makes Storybook render as Admin does.
  */
 @font-face {
   font-family: 'Inter';

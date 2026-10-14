@@ -93,7 +93,7 @@ export class SidebarPage extends AdminPage {
 
   constructor(page: Page) {
     super(page);
-    // The admin renders more than one navigation landmark (React screens
+    // The admin renders more than one navigation landmark (screens
     // carry a breadcrumb <nav aria-label="breadcrumb"> too), so anchor on
     // the site search control, which only the sidebar contains.
     this.sidebar = page

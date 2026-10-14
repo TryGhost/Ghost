@@ -6,6 +6,7 @@ import {
 import { FakeStripeServer } from './fake-stripe-server';
 import { WebhookClient } from './webhook-client';
 import {
+  buildCheckoutBranding,
   buildCheckoutSessionCompletedEvent,
   buildCustomer,
   buildDiscount,
@@ -21,6 +22,7 @@ import {
 } from './builders';
 import type {
   RecordedStripeCheckoutSession,
+  StripeCheckoutBranding,
   StripeCoupon,
   StripeCustomer,
   StripeDiscount,
@@ -70,6 +72,16 @@ export class StripeTestService {
 
   getCheckoutSessions(): RecordedStripeCheckoutSession[] {
     return this.server.getCheckoutSessions();
+  }
+
+  /** Sets the checkout branding in the Stripe dashboard; anything left out keeps Stripe's default. */
+  setCheckoutBranding(branding: Partial<StripeCheckoutBranding>): void {
+    this.server.setCheckoutBranding(buildCheckoutBranding(branding));
+  }
+
+  /** Makes Stripe report no checkout branding, so Ghost can't read it. */
+  hideCheckoutBranding(): void {
+    this.server.setCheckoutBranding(null);
   }
 
   /**

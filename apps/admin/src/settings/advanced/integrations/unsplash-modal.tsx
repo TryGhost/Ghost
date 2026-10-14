@@ -6,6 +6,7 @@ import {
   FieldDescription,
   FieldGroup,
   FieldLabel,
+  Link,
   Switch,
 } from '@tryghost/shade/components';
 import {
@@ -77,14 +78,9 @@ function UnsplashModal() {
               <FieldLabel htmlFor="unsplash-enabled">Enable Unsplash</FieldLabel>
               <FieldDescription>
                 Enable{' '}
-                <a
-                  className="text-green"
-                  href="https://unsplash.com"
-                  rel="noopener noreferrer"
-                  target="_blank"
-                >
+                <Link href="https://unsplash.com" external>
                   Unsplash
-                </a>{' '}
+                </Link>{' '}
                 image integration for your posts
               </FieldDescription>
             </FieldContent>

@@ -8,6 +8,7 @@ import {
   ActionListItemActions,
   ActionListItemContent,
   Button,
+  Link,
 } from '@tryghost/shade/components';
 import { LucideIcon } from '@tryghost/shade/utils';
 import { SettingsModal } from '@tryghost/shade/patterns';
@@ -76,17 +77,16 @@ function ZapierModal() {
       cancelLabel=""
       footer={
         <div className="mx-8 flex w-full items-center justify-between">
-          <a
-            className="mt-1 self-baseline font-bold"
-            href="https://zapier.com/apps/ghost/integrations?utm_medium=partner_api&utm_source=widget&utm_campaign=Widget"
-            rel="noopener noreferrer"
-            target="_blank"
-          >
-            View more Ghost integrations powered by{' '}
-            <span>
-              <img alt="Zapier" className="relative top-[-2px] inline-block" src={ZapierLogo} />
-            </span>
-          </a>
+          <span className="mt-1 self-baseline">
+            <Link
+              href="https://zapier.com/apps/ghost/integrations?utm_medium=partner_api&utm_source=widget&utm_campaign=Widget"
+              external
+            >
+              View more Ghost integrations
+            </Link>{' '}
+            powered by{' '}
+            <img alt="Zapier" className="relative top-[-2px] inline-block" src={ZapierLogo} />
+          </span>
           <Button
             type="button"
             onClick={() => {
@@ -159,15 +159,9 @@ function ZapierModal() {
               </div>
             </ActionListItemContent>
             <ActionListItemActions visibility="hover">
-              <Button
-                className="h-auto p-0 font-semibold whitespace-nowrap text-[#FF4A00] hover:text-[#FF4A00]"
-                variant="link"
-                asChild
-              >
-                <a href={template.url} rel="noopener noreferrer" target="_blank">
-                  Use this Zap
-                </a>
-              </Button>
+              <Link className="whitespace-nowrap" href={template.url} external>
+                Use this Zap
+              </Link>
             </ActionListItemActions>
           </ActionListItem>
         ))}

@@ -4,7 +4,8 @@ services:
   mysql:
     image: mysql:8.4.11@sha256:6ea90827b1100f8f2ae306a539f86d2c264a26ed435a2a9f75551dd5c3aeb242
     container_name: ghost-dev-mysql
-    command: --innodb-buffer-pool-size=1G --innodb-log-buffer-size=500M --innodb-change-buffer-max-size=50 --innodb-flush-log-at-trx_commit=0 --innodb-flush-method=O_DIRECT --log-error-verbosity=1
+    # Shared by every checkout's Ghost and DB test runs, which outgrow MySQL's default 151 connections
+    command: --innodb-buffer-pool-size=1G --innodb-log-buffer-size=500M --innodb-change-buffer-max-size=50 --innodb-flush-log-at-trx_commit=0 --innodb-flush-method=O_DIRECT --log-error-verbosity=1 --max-connections=1000
     ports:
       - '3306:3306'
     environment:
@@ -30,6 +31,7 @@ services:
       retries: 120
       timeout: 5s
       start_period: 10s
+      start_interval: 1s
 
   redis:
     image: redis:7.4@sha256:c6eabf748fc7a61dbb5a705c78bcf3d6377b1127a97d0ce965c11c44ba46896f
@@ -52,7 +54,8 @@ services:
   mailpit:
     image: axllent/mailpit@sha256:ed9b00c609e77e99c79b93f1178255ebc271868920f2c69a8d166bd5634ed10d
     container_name: ghost-dev-mailpit
-    command: ['--quiet']
+    # Tags each message with the SMTP username, which `pnpm dev` sets to the checkout's name
+    command: ['--quiet', '--smtp-auth-accept-any', '--smtp-auth-allow-insecure', '--tags-username']
     ports:
       - '1025:1025' # SMTP server
       - '8025:8025' # Web interface
@@ -63,19 +66,22 @@ services:
 
   # Main development Ghost instance
   # Additional instances can be created programmatically via E2E GhostManager
+  # `pnpm dev` runs Ghost and the dev servers on the host; these two services back
+  # `pnpm dev:docker` and the modes built on it, and e2e dev mode.
   ghost-dev:
+    profiles: ['docker-dev']
     build:
       context: ./
       dockerfile: docker/ghost-dev/Dockerfile
     container_name: ghost-dev
-    working_dir: /home/ghost/ghost/core
+    working_dir: /home/ghost/ghost
     command: ['pnpm', 'dev']
     # The entrypoint drains Ghost before exiting; give that longer than Docker's 10s
     stop_grace_period: 45s
     volumes:
       # Mount the backend source as whole-directory mounts instead of
       # enumerating each server-graph workspace package. `pnpm dev` runs in
-      # ghost/core, and pnpm's verify-deps-before-run only checks ghost/core's
+      # ghost, and pnpm's verify-deps-before-run only checks ghost's
       # own dependency closure — which is fully installed in the root
       # /home/ghost/node_modules baked into the image and never mounted over —
       # so the non-server packages these dirs also expose (e.g. koenig-lexical)
@@ -90,11 +96,11 @@ services:
       - ./configs:/home/ghost/configs
       - ./packages:/home/ghost/packages
       # Mount specific content subdirectories to preserve themes/adapters from source
-      - ghost-dev-data:/home/ghost/ghost/core/content/data
-      - ghost-dev-images:/home/ghost/ghost/core/content/images
-      - ghost-dev-media:/home/ghost/ghost/core/content/media
-      - ghost-dev-files:/home/ghost/ghost/core/content/files
-      - ghost-dev-logs:/home/ghost/ghost/core/content/logs
+      - ghost-dev-data:/home/ghost/ghost/content/data
+      - ghost-dev-images:/home/ghost/ghost/content/images
+      - ghost-dev-media:/home/ghost/ghost/content/media
+      - ghost-dev-files:/home/ghost/ghost/content/files
+      - ghost-dev-logs:/home/ghost/ghost/content/logs
       - shared-config:/mnt/shared-config:ro
     environment:
       NODE_ENV: development
@@ -116,6 +122,15 @@ services:
       # Redis cache (optional)
       adapters__cache__Redis__host: redis
       adapters__cache__Redis__port: 6379
+      # Apps under development run on the host machine, where `localhost` is not this
+      # container: Ghost fetches their manifests through this alias instead
+      apps__localhostAlias: host.docker.internal
+    # Docker Desktop and OrbStack provide host.docker.internal and forward it to the host's
+    # loopback. On Linux it needs this, and it reaches the docker bridge rather than
+    # loopback: an app that only listens on 127.0.0.1 (Vite's default) is not reachable
+    # through it, so bind the app to 0.0.0.0 while developing against this container.
+    extra_hosts:
+      - 'host.docker.internal:host-gateway'
     depends_on:
       mysql:
         condition: service_healthy
@@ -141,6 +156,7 @@ services:
   # Caddy reverse proxy for the main dev instance
   # Routes Ghost backend + proxies asset requests to host dev servers
   ghost-dev-gateway:
+    profiles: ['docker-dev']
     build:
       context: ./docker/dev-gateway
       dockerfile: Dockerfile
@@ -175,6 +191,9 @@ services:
     environment:
       - GHOST_URL=${GHOST_URL:-http://ghost-dev:2368}
       - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY:-}
+    # `pnpm dev:stripe --listen` forwards to the Admin dev server on the host
+    extra_hosts:
+      - 'host.docker.internal:host-gateway'
     healthcheck:
       test: ['CMD', 'test', '-f', '/mnt/shared-config/.env.stripe']
       interval: 1s

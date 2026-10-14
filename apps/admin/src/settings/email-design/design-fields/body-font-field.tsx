@@ -1,5 +1,6 @@
 import { FONT_OPTIONS } from './font-constants';
 import {
+  FieldTitle,
   Select,
   SelectContent,
   SelectItem,
@@ -12,7 +13,7 @@ export const BodyFontField = () => {
   const { settings, onSettingsChange } = useEmailDesign();
   return (
     <div className="flex items-center justify-between">
-      <span>Body font</span>
+      <FieldTitle>Body font</FieldTitle>
       <Select
         value={settings.body_font_category || 'sans_serif'}
         onValueChange={(value: string) => onSettingsChange({ body_font_category: value })}

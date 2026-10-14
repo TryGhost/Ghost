@@ -29,7 +29,7 @@ pnpm test
 
 If `GHOST_E2E_MODE` is unset, the e2e shell entrypoints auto-select:
 
-- `dev` when the local admin dev server is reachable on `http://127.0.0.1:5174`
+- `dev` when the Admin dev server from `pnpm dev` or `pnpm dev:docker` is reachable
 - `build` otherwise
 
 To use dev mode, start `pnpm dev` before running tests:
@@ -41,6 +41,9 @@ pnpm dev
 # Terminal 2: Run e2e tests (from e2e folder)
 pnpm test
 ```
+
+On Linux, start it with `GHOST_DEV_LISTEN=0.0.0.0 pnpm dev`: the test containers
+reach it through the Docker bridge, and it only listens on loopback by default.
 
 If infra is already running, `pnpm infra:up` is safe to run again.
 For dev-mode test runs, `infra:up` also ensures required local Ghost/gateway dev images exist.
@@ -75,10 +78,16 @@ GHOST_E2E_MODE=build pnpm --filter @tryghost/e2e infra:up
 GHOST_E2E_MODE=build GHOST_E2E_IMAGE=ghost-e2e:local pnpm --filter @tryghost/e2e test
 ```
 
-Build-mode E2E infra uses tmpfs-backed MySQL storage by default so database
-snapshot restore cycles stay fast and isolated from local development data.
-Set `GHOST_E2E_MYSQL_TMPFS=false` to use the normal Docker volume instead, or
-`GHOST_E2E_MYSQL_TMPFS_SIZE=4g` to adjust the tmpfs size.
+E2E shares the MySQL, Redis and Mailpit containers with `pnpm dev` and only
+touches `ghost_e2e_*` databases. Setup and teardown remove the checkout's own
+E2E containers and databases. A linked worktree adds a key from its path to
+their names and lets Docker pick its gateway ports, so worktrees and the main
+checkout can run E2E at the same time. Run one suite at a time per checkout.
+
+CI sets `GHOST_E2E_MYSQL_TMPFS=true` to put build-mode MySQL on tmpfs, which
+keeps snapshot restores fast (`GHOST_E2E_MYSQL_TMPFS_SIZE=4g` adjusts the size).
+Don't set it locally while any checkout uses that MySQL: it recreates the
+container without their databases.
 
 Set `GHOST_E2E_TINYBIRD_SLIM=true` to swap the Tinybird service for the distilled
 slim image (`ghcr.io/tryghost/tinybird-local-slim`): ~0.7GB pulled and ~2.4GB on
@@ -260,7 +269,7 @@ Tests run automatically in GitHub Actions on every PR and commit to `main`.
 2. **Build Assets**: Build server/admin assets and public app UMD bundles
 3. **Build E2E Image**: `pnpm --filter @tryghost/e2e build:docker` (layers public apps into Ghost's built admin assets, served from `/ghost/assets`)
 4. **Prepare E2E Runtime**: Pull Playwright/gateway images in parallel, start infra, and sync Tinybird state (`pnpm --filter @tryghost/e2e preflight:build`)
-5. **Shard Planning**: Split the `main` project's files across shards by recorded duration (`scripts/e2e-shards.ts`)
+5. **Shard Planning**: Split the `main` project's files across shards by recorded duration (`tools/scripts/e2e-shards.ts`)
 6. **Test Execution**: Run Playwright E2E tests inside the official Playwright container
 7. **Artifacts**: Upload Playwright traces and reports on failure
 
@@ -277,9 +286,8 @@ Within the e2e directory:
 # Run all tests
 pnpm test
 
-# Start/stop test infra (MySQL/Redis/Mailpit/Tinybird)
+# Start test infra (MySQL/Redis/Mailpit/Tinybird), shared with pnpm dev
 pnpm infra:up
-pnpm infra:down
 
 # CI-like preflight for build mode (pulls images + starts infra)
 pnpm preflight:build
@@ -317,7 +325,7 @@ would return. Those shapes were originally written from the docs rather than fro
 Stripe, so nothing checked them against the real API.
 
 `helpers/services/stripe/fixtures/` holds responses captured from Stripe test mode at
-API version `2020-08-27`, the version `ghost/core` pins. `pnpm test:fixtures` asserts
+API version `2020-08-27`, the version `ghost` pins. `pnpm test:fixtures` asserts
 the builders against them, and needs no Ghost, no Docker and no browser.
 
 Two failures are worth catching. A builder emitting a key Stripe does not return means

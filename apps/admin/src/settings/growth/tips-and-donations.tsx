@@ -17,6 +17,7 @@ import {
   InputGroupAddon,
   InputGroupButton,
   InputGroupInput,
+  Link,
   MultiSelectCombobox,
   Popover,
   PopoverContent,
@@ -212,17 +213,11 @@ const TipsAndDonations: React.FC<{ keywords: string[] }> = ({ keywords }) => {
           </CopyFieldContent>
         </CopyField>
       </SettingGroupContent>
-      <div className="items-center-mt-1 flex">
+      <div>
         All tips and donations are subject to Stripe&apos;s{' '}
-        <a
-          className="ml-1 font-medium text-green"
-          href="https://ghost.org/help/tips-donations/"
-          rel="noopener noreferrer"
-          target="_blank"
-        >
-          {' '}
+        <Link href="https://ghost.org/help/tips-donations/" external>
           tipping policy
-        </a>
+        </Link>
         .
       </div>
       <DirtyConfirmDialog {...dialogProps} />

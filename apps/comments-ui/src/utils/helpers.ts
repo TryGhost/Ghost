@@ -1,4 +1,4 @@
-import { Comment, Member, TranslationFunction } from '../app-context';
+import type { Comment, Member, TranslationFunction } from '../app-context';
 
 // Canonical source for comment permalink hash format
 export const COMMENT_HASH_PREFIX = 'ghost-comments-';
@@ -260,7 +260,6 @@ export function getCommentInReplyToSnippet(comment: { html?: string | null }): s
 
   let text = tempDiv.textContent || '';
 
-  text = text.replace('\n', ' ');
   text = text.replace(/\s+/g, ' ');
   text = text.trim();
 

@@ -60,8 +60,7 @@ function routeParams(): Record<string, string> {
 /**
  * Saved views span two surfaces: the list's save/edit popover writes the
  * shared `shared_views` setting, and the sidebar lists the views and marks the
- * one whose five params match the URL. Both are React-owned, so one render
- * covers the round trip.
+ * one whose five params match the URL. One render covers the round trip.
  */
 describe('Posts saved views', () => {
   let settingsApi: EditSettingsCapture;

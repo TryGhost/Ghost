@@ -5,7 +5,6 @@ import type { Config } from '@tryghost/admin-x-framework/api/config';
 const config = {
   version: '1.0.0',
   environment: 'development',
-  editor: { url: '', version: '' },
   signupForm: { url: '', version: '' },
   enableDeveloperExperiments: false,
   database: 'sqlite',

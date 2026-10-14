@@ -5,7 +5,7 @@ import {
   editorPublishButton,
   editorPublishInputsError,
   editorSaveButton,
-  editorSaveErrorBanner,
+  editorSaveError,
   editorScheduleCountdown,
   editorStatus,
   editorUnpublishButton,
@@ -14,13 +14,13 @@ import {
   postsBackLink,
 } from '@tryghost/test-data/selectors/editor';
 
-/** The React editor's header: the back link, the status line and the actions. */
+/** The editor's header: the back link, the status line and the actions. */
 export class EditorHeader {
   readonly actions: Locator;
   readonly backLink: Locator;
   readonly status: Locator;
   readonly scheduleCountdown: Locator;
-  readonly saveErrorBanner: Locator;
+  readonly saveError: Locator;
   readonly publishInputsError: Locator;
   readonly previewButton: Locator;
   readonly publishButton: Locator;
@@ -34,7 +34,7 @@ export class EditorHeader {
     this.backLink = page.getByRole('link', { name: postsBackLink, exact: true });
     this.status = page.getByTestId(editorStatus);
     this.scheduleCountdown = page.getByTestId(editorScheduleCountdown);
-    this.saveErrorBanner = page.getByTestId(editorSaveErrorBanner);
+    this.saveError = this.status.getByTestId(editorSaveError);
     this.publishInputsError = page.getByTestId(editorPublishInputsError);
     // The publish flow carries a Preview button of its own, so every action is
     // scoped to the header.

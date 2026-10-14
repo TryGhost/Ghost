@@ -121,9 +121,12 @@ describe('upcoming downstream steps', () => {
     expect(result.map(({ title }) => title)).toEqual(['Completed']);
   });
 
-  it('does not suggest more execution for an inactive automation', () => {
-    expect(mapUpcomingRunSteps(active, { ...plan, status: 'inactive' })).toEqual([]);
-  });
+  it.each(['inactive', 'archived'] as const)(
+    'does not suggest more execution for %s automations',
+    (status) => {
+      expect(mapUpcomingRunSteps(active, { ...plan, status })).toEqual([]);
+    },
+  );
 
   it.each([
     { status: 'completed', stepStatus: 'finished' },

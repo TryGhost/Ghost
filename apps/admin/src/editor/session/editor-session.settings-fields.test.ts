@@ -671,6 +671,63 @@ describe('createEditorSession', () => {
       expect(session.getFields().featured).toBe(false);
     });
 
+    describe('the field an explicit save would refuse', () => {
+      const FUTURE = '2999-01-01T00:00:00.000Z';
+
+      it('names nothing while the document breaks no rule', () => {
+        const { session } = sessionHarness({ record: record({ authors: [{ id: 'author-1' }] }) });
+
+        expect(session.invalidField()).toBeNull();
+      });
+
+      it('names the field and message the save itself refuses with', async () => {
+        const { session } = sessionHarness({ record: record({ authors: [{ id: 'author-1' }] }) });
+
+        session.patchFields({ meta_title: 'x'.repeat(META_TITLE_MAX + 1) });
+
+        expect(session.invalidField()).toEqual({ key: 'meta_title', message: META_TITLE_TOO_LONG });
+        expect(await session.dispatchExplicit()).toMatchObject({
+          kind: 'failed',
+          error: { kind: 'validation', message: META_TITLE_TOO_LONG },
+        });
+      });
+
+      it('names the title before any settings field, as the save checks them', () => {
+        const { session } = sessionHarness({ record: record({ authors: [{ id: 'author-1' }] }) });
+
+        session.patchFields({ meta_title: 'x'.repeat(META_TITLE_MAX + 1) });
+        session.patchTitle('x'.repeat(256));
+
+        expect(session.invalidField()?.key).toBe('title');
+      });
+
+      it('names an emptied author list', () => {
+        const { session } = sessionHarness({ record: record({ authors: [{ id: 'author-1' }] }) });
+
+        session.patchFields({ authors: [] });
+
+        expect(session.invalidField()).toEqual({
+          key: 'authors',
+          message: 'At least one author is required.',
+        });
+      });
+
+      it('names a staged publish time still to come, but not a saved one', () => {
+        const staged = sessionHarness({ record: record({ authors: [{ id: 'author-1' }] }) });
+        staged.session.editPublishedAt(FUTURE);
+
+        expect(staged.session.invalidField()).toEqual({
+          key: 'published_at',
+          message: 'Please choose a past date and time.',
+        });
+
+        const saved = sessionHarness({
+          record: record({ authors: [{ id: 'author-1' }], published_at: FUTURE }),
+        });
+        expect(saved.session.invalidField()).toBeNull();
+      });
+    });
+
     describe('authors', () => {
       const AUTHORS = [{ id: 'author-1' }, { id: 'author-2' }];
       const NAMED = [

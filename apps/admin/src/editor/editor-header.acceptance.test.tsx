@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it, onTestFinished } from 'vitest';
+import { afterEach, describe, expect, it, onTestFinished, vi } from 'vitest';
 import { page, userEvent, type Locator } from 'vitest/browser';
 import { buildLexicalParagraph } from '@tryghost/test-data';
 import { publishTypeError } from '@tryghost/test-data/selectors/editor';
@@ -21,19 +21,22 @@ import {
   post,
   renderAdminApp,
   settingsResponse,
+  settleTransitions,
   staffRole,
   submittedPost,
   withoutAutosave,
   type StaffRoleName,
 } from '@test-utils/acceptance';
 import { editorScreen } from '@/editor/editor.screen';
-import type { EmberDataChangeEvent } from '@/ember-bridge';
 import { deferred } from '@/utils/deferred';
 import { previewScreen } from '@/editor/preview/preview.screen';
 import { CONFLICT_MESSAGE, UNEXPECTED_MESSAGE } from '@/editor/publish/completion-message';
 import { publishScreen } from '@/editor/publish/publish.screen';
-import { POST_DELETED } from '@/editor/session/error-mapping';
+import { MIN_EMAIL_HANDOFF_LENGTH } from '@/editor/publish/use-publish-flow';
+import { ACCESS_LOST, POST_DELETED } from '@/editor/session/error-mapping';
 import {
+  AUTHORS_REQUIRED,
+  EMAIL_SUBJECT_TOO_LONG,
   EXCERPT_MAX,
   EXCERPT_TOO_LONG,
   TITLE_MAX,
@@ -42,7 +45,6 @@ import {
 
 const POST_ID = 'abc123';
 const POST_UUID = 'post-uuid';
-const FLAG_ON = { labs: { editorReact: true } };
 const LOADED_AT = '2026-01-01T00:00:00.000Z';
 const SITE_URL = 'http://test.com';
 
@@ -62,7 +64,6 @@ const MAILGUN_SETTINGS = {
 
 /** A site whose bulk email provider is configured, so the flow offers a send. */
 const MAILGUN_ON = {
-  ...FLAG_ON,
   boot: {
     browseSettings: { response: settingsResponse({ settings: MAILGUN_SETTINGS }) },
   },
@@ -210,36 +211,11 @@ function fakeSavablePost(
   return saveApi;
 }
 
-/**
- * The Ember half of the state bridge, which the app reads to invalidate the
- * React Query cache when Ember saves a model (src/ember-bridge/ember-bridge.tsx).
- * Returns a function that reports one such save.
- */
-function installEmberBridge(): (modelName: string) => void {
-  const handlers = new Set<(event: EmberDataChangeEvent) => void>();
-  const state = {
-    on: (event: string, callback: (event: EmberDataChangeEvent) => void) => {
-      if (event === 'emberDataChange') {
-        handlers.add(callback);
-      }
-    },
-    off: (_event: string, callback: (event: EmberDataChangeEvent) => void) => {
-      handlers.delete(callback);
-    },
-    sidebarVisible: true,
-  };
-  window.EmberBridge = { state } as unknown as typeof window.EmberBridge;
-
-  return (modelName: string) => {
-    handlers.forEach((handler) => handler({ operation: 'update', modelName, id: '1', data: null }));
-  };
-}
-
 /** The current user with one role, for the role matrix the header renders. */
 function asRole(name: StaffRoleName) {
   const me = currentUserResponse();
   me.users[0].roles = [staffRole({ name })];
-  return { ...FLAG_ON, boot: { browseMe: { response: me } } };
+  return { boot: { browseMe: { response: me } } };
 }
 
 /** The header reads the platform as it renders, so the agent has to be in place first. */
@@ -289,7 +265,6 @@ async function expectEditorOutOfReach(dialog: Locator, blankSpot: Locator) {
 afterEach(() => {
   localStorage.removeItem('ghost-last-published-post');
   localStorage.removeItem('ghost-last-scheduled-post');
-  delete window.EmberBridge;
 });
 
 /**
@@ -301,7 +276,7 @@ describe('Editor header actions', () => {
   it('returns to the post list after publishing without email', async () => {
     publishChrome();
     const saveApi = fakeSavablePost();
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`);
 
     await expect.element(editorScreen.publishButton()).toBeEnabled();
     await publishThroughFlow();
@@ -349,7 +324,7 @@ describe('Editor header actions', () => {
   it('schedules a draft for the time the flow chose', async () => {
     publishChrome();
     const saveApi = fakeSavablePost();
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`);
 
     await editorScreen.publishButton().click();
     await publishScreen.setting('publish-at').click();
@@ -381,7 +356,7 @@ describe('Editor header actions', () => {
   it.each([false, true])('returns pages to the page list (scheduled: %s)', async (scheduled) => {
     publishChrome();
     fakeSavablePost({}, { resource: 'pages' });
-    await renderAdminApp(`/editor/page/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/page/${POST_ID}`);
 
     await editorScreen.publishButton().click();
     if (scheduled) {
@@ -431,7 +406,7 @@ describe('Editor header actions', () => {
       status: 'published',
       published_at: '2026-02-01T10:00:00.000Z',
     });
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`);
 
     await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
     // A published post has nothing to update until it is edited.
@@ -447,13 +422,39 @@ describe('Editor header actions', () => {
     expect(saveApi.lastRequest?.url).toContain('save_revision=true');
   });
 
+  it('updates a published post the server holds no collision token for', async () => {
+    publishChrome();
+    const saveApi = fakeSavablePost({
+      status: 'published',
+      published_at: '2026-02-01T10:00:00.000Z',
+      // Core's schema allows a NULL updated_at; the builder types it as a string.
+      updated_at: null as unknown as string,
+    });
+    await renderAdminApp(`/editor/post/${POST_ID}`);
+    await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
+
+    await typeIntoBody(' and more');
+    await expect.element(editorScreen.updateButton()).toBeEnabled();
+    await editorScreen.updateButton().click();
+
+    await expect.poll(() => saveApi.requests.length, SAVE_POLL).toBe(1);
+    expect(submittedPost(saveApi)).toMatchObject({ id: POST_ID, updated_at: null });
+
+    await typeIntoBody(' again');
+    await expect.element(editorScreen.updateButton()).toBeEnabled();
+    await editorScreen.updateButton().click();
+
+    await expect.poll(() => saveApi.requests.length, SAVE_POLL).toBe(2);
+    expect(submittedPost(saveApi)).toMatchObject({ updated_at: '2026-01-01T00:00:01.000Z' });
+  });
+
   it('reverts a published post to a draft through the update flow', async () => {
     publishChrome();
     const saveApi = fakeSavablePost({
       status: 'published',
       published_at: '2026-02-01T10:00:00.000Z',
     });
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`);
 
     await editorScreen.unpublishButton().click();
     await expect.element(publishScreen.updateFlow()).toBeVisible();
@@ -471,7 +472,7 @@ describe('Editor header actions', () => {
       status: 'scheduled',
       published_at: '2030-02-01T10:00:00.000Z',
     });
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`);
 
     await editorScreen.unscheduleButton().click();
     await expect.element(publishScreen.updateFlow()).toBeVisible();
@@ -518,7 +519,7 @@ describe('Editor header actions', () => {
       { status: 'published', published_at: '2026-02-01T10:00:00.000Z' },
       { resource: 'pages' },
     );
-    await renderAdminApp(`/editor/page/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/page/${POST_ID}`);
 
     await editorScreen.unpublishButton().click();
     await publishScreen.revertToDraft().click();
@@ -533,7 +534,7 @@ describe('Editor header actions', () => {
       { status: 'published', published_at: '2026-02-01T10:00:00.000Z' },
       { holdFirstSave: held.promise },
     );
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`);
 
     await typeIntoBody(' and more');
     await editorScreen.updateButton().click();
@@ -557,7 +558,7 @@ describe('Editor header actions', () => {
       { status: 'published', published_at: '2026-02-01T10:00:00.000Z' },
       { failWith: 422 },
     );
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`);
 
     await typeIntoBody(' and more');
     await editorScreen.updateButton().click();
@@ -575,7 +576,6 @@ describe('Editor header actions', () => {
       email_segment: 'all',
     });
     await renderAdminApp(`/editor/post/${POST_ID}`, {
-      ...FLAG_ON,
       boot: {
         browseSettings: { response: settingsResponse({ settings: { timezone: 'Europe/Berlin' } }) },
       },
@@ -598,7 +598,7 @@ describe('Editor header actions', () => {
   it('reports a Cmd-S update without stepping the Update button', async () => {
     publishChrome();
     fakeSavablePost({ status: 'published', published_at: '2026-02-01T10:00:00.000Z' });
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`);
 
     await typeIntoBody(' and more');
     await userEvent.keyboard('{Meta>}s{/Meta}');
@@ -638,7 +638,7 @@ describe('Editor header actions', () => {
     publishChrome();
     const held = deferred<void>();
     const saveApi = fakeSavablePost({}, { holdFirstSave: held.promise });
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`);
 
     await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
     await typeIntoBody(' and more');
@@ -655,16 +655,18 @@ describe('Editor header actions', () => {
       .toHaveAttribute('src', `${SITE_URL}/p/${POST_UUID}/?member_status=free`);
   });
 
-  it('names the title limit when it stops the save before previewing, with no toast', async () => {
+  it('refuses the preview on an over-long title, naming the limit with no toast', async () => {
     publishChrome();
     const saveApi = fakeSavablePost();
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`);
 
     await editorScreen.titleInput().fill('a'.repeat(TITLE_MAX + 1));
+    await editorScreen.body().click();
     await editorScreen.previewButton().click();
 
-    await expect.element(previewScreen.saveFailed()).toHaveTextContent(TITLE_TOO_LONG);
-    await expect.element(previewScreen.emailSubject()).not.toHaveAccessibleDescription();
+    await expect.element(editorScreen.titleInput()).toHaveFocus();
+    await expect.element(editorScreen.saveError()).toHaveTextContent(TITLE_TOO_LONG);
+    await expect(previewScreen.modal()).toHaveCount(0);
     await expect(previewScreen.toastWithText(GENERIC_ERROR_TOAST)).toHaveCount(0);
     expect(saveApi.requests).toHaveLength(0);
   });
@@ -672,7 +674,7 @@ describe('Editor header actions', () => {
   it('shows the reason the server refused the save before previewing', async () => {
     publishChrome();
     fakeSavablePost({}, { failWith: 422, resource: 'pages' });
-    await renderAdminApp(`/editor/page/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/page/${POST_ID}`);
 
     await typeIntoBody(' and more');
     await editorScreen.previewButton().click();
@@ -688,7 +690,7 @@ describe('Editor header actions', () => {
     fakeSavablePost();
     // An answer without the post throws in the editor, not as an API error.
     fakeAdminEndpoint('PUT', new RegExp(`^/posts/${POST_ID}/\\?`), {});
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`);
 
     await typeIntoBody(' and more');
     await editorScreen.previewButton().click();
@@ -699,7 +701,7 @@ describe('Editor header actions', () => {
   it('toggles the preview with the keyboard shortcut', async () => {
     publishChrome();
     fakeSavablePost();
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`);
 
     await expect.element(editorScreen.previewButton()).toBeVisible();
     await userEvent.keyboard('{Meta>}p{/Meta}');
@@ -930,13 +932,21 @@ describe('Editor header actions', () => {
   it('keeps the failure in the publish flow and sends nothing more', async () => {
     publishChrome();
     const saveApi = fakeSavablePost({}, { failWith: 422 });
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`);
 
     await expect.element(editorScreen.publishButton()).toBeEnabled();
     await publishThroughFlow();
 
     await expect.element(publishScreen.confirmError()).toHaveTextContent('Validation failed');
     await expect(publishScreen.complete()).toHaveCount(0);
+    expect(saveApi.requests).toHaveLength(1);
+
+    // The status line reports the failure too, but a retry there would save the
+    // post without publishing it: the flow is where a publish is retried.
+    await userEvent.keyboard('{Escape}');
+    await expect(publishScreen.root()).toHaveCount(0);
+    await expect.element(editorScreen.saveError()).toHaveTextContent('Title cannot be that long.');
+    await expect(editorScreen.retrySave()).toHaveCount(0);
     expect(saveApi.requests).toHaveLength(1);
   });
 
@@ -945,17 +955,81 @@ describe('Editor header actions', () => {
     fakeSavablePost();
     // An answer without the post throws in the editor, not as an API error.
     fakeAdminEndpoint('PUT', new RegExp(`^/posts/${POST_ID}/\\?`), {});
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`);
 
     await expect.element(editorScreen.publishButton()).toBeEnabled();
     await publishThroughFlow();
 
     await expect.element(publishScreen.confirmError()).toHaveTextContent(UNEXPECTED_MESSAGE);
   });
+  // Core's error handler summarises `message` and moves its own sentence into `context`.
+  it('shows the reason Core gave for refusing to send the email', async () => {
+    publishChrome();
+    fakeSavablePost();
+    const refusedPublish = fakeAdminEndpoint(
+      'PUT',
+      new RegExp(`^/posts/${POST_ID}/\\?`),
+      {
+        errors: [
+          {
+            type: 'BadRequestError',
+            message: 'Request not understood error, cannot edit post.',
+            context: 'Cannot send email to archived newsletters',
+          },
+        ],
+      },
+      { status: 400 },
+    );
+    await renderAdminApp(`/editor/post/${POST_ID}`);
+
+    await expect.element(editorScreen.publishButton()).toBeEnabled();
+    await publishThroughFlow();
+
+    await expect
+      .element(publishScreen.confirmError())
+      .toHaveTextContent('Cannot send email to archived newsletters');
+    await expect.element(publishScreen.confirmError()).not.toHaveTextContent('while loading');
+    expect(refusedPublish.requests).toHaveLength(1);
+  });
+
+  it('keeps the post editable when Core refuses only the publish', async () => {
+    publishChrome();
+    fakeSavablePost();
+    fakeAdminEndpoint(
+      'PUT',
+      new RegExp(`^/posts/${POST_ID}/\\?`),
+      {
+        errors: [
+          {
+            type: 'NoPermissionError',
+            message: 'Permission error, cannot edit post.',
+            context: 'You do not have permission to perform this action',
+          },
+        ],
+      },
+      { status: 403 },
+    );
+    await renderAdminApp(`/editor/post/${POST_ID}`);
+
+    await expect.element(editorScreen.publishButton()).toBeEnabled();
+    await publishThroughFlow();
+
+    await expect
+      .element(publishScreen.confirmError())
+      .toHaveTextContent('You do not have permission to perform this action');
+    await userEvent.keyboard('{Escape}');
+    await expect(publishScreen.root()).toHaveCount(0);
+    await expect
+      .element(editorScreen.saveError())
+      .toHaveTextContent('You do not have permission to perform this action');
+    await expect.element(editorScreen.publishButton()).toBeEnabled();
+    await expect(page.getByText(ACCESS_LOST.message)).toHaveCount(0);
+  });
+
   it('offers no preview once the post has been published', async () => {
     publishChrome();
     fakeSavablePost({ status: 'published', published_at: '2026-02-01T10:00:00.000Z' });
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`);
 
     await expect.element(editorScreen.updateButton()).toBeVisible();
     await expect(editorScreen.previewButton()).toHaveCount(0);
@@ -968,7 +1042,7 @@ describe('Editor header actions', () => {
   it('opens the publish flow with the keyboard shortcut', async () => {
     publishChrome();
     fakeSavablePost();
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`);
 
     await expect.element(editorScreen.publishButton()).toBeEnabled();
     await userEvent.keyboard('{Meta>}{Shift>}p{/Shift}{/Meta}');
@@ -986,7 +1060,7 @@ describe('Editor header actions', () => {
       onPlatform(agent);
       publishChrome();
       fakeSavablePost();
-      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+      await renderAdminApp(`/editor/post/${POST_ID}`);
       await expect.element(editorScreen.publishButton()).toBeEnabled();
 
       // Header tooltips open on focus and describe the focused button.
@@ -1010,7 +1084,7 @@ describe('Editor header actions', () => {
   ])('focuses an over-long title instead of opening the flow from $opener', async ({ open }) => {
     publishChrome();
     const saveApi = fakeSavablePost();
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`);
     await expect.element(editorScreen.publishButton()).toBeEnabled();
 
     await editorScreen.titleInput().fill('a'.repeat(TITLE_MAX + 1));
@@ -1019,7 +1093,11 @@ describe('Editor header actions', () => {
 
     await expect.element(editorScreen.titleInput()).toHaveFocus();
     await expect.element(editorScreen.titleInput()).toHaveAccessibleDescription(TITLE_TOO_LONG);
-    await expect.element(editorScreen.saveErrorBanner()).toHaveTextContent(TITLE_TOO_LONG);
+    // The status line names the rule in place of the status; nothing else repeats it.
+    await expect.element(editorScreen.status()).toHaveTextContent(TITLE_TOO_LONG);
+    await expect.element(editorScreen.saveError()).toHaveTextContent(TITLE_TOO_LONG);
+    await expect.element(editorScreen.saveError()).toHaveClass('text-destructive');
+    await expect(editorScreen.retrySave()).toHaveCount(0);
     await expect(publishScreen.root()).toHaveCount(0);
     expect(saveApi.requests).toHaveLength(0);
 
@@ -1028,17 +1106,117 @@ describe('Editor header actions', () => {
     await expect.element(publishScreen.options()).toBeVisible();
   });
 
+  it('keeps the preview open and shows the subject’s rule when publishing from it', async () => {
+    publishChrome({ newsletters: 1 });
+    const saveApi = fakeSavablePost();
+    fakeAdminEndpoint('GET', /^\/email_previews\/posts\//, {
+      email_previews: [
+        { subject: 'Hello from React', html: '<p>Email body</p>', plaintext: 'Email body' },
+      ],
+    });
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave(MAILGUN_ON));
+    await expect.element(editorScreen.publishButton()).toBeEnabled();
+    await editorScreen.previewButton().click();
+    await previewScreen.emailTab().click();
+    await previewScreen.emailSubject().fill('a'.repeat(301));
+    await previewScreen.webTab().click();
+    await expect(previewScreen.emailSubject()).toHaveCount(0);
+
+    await previewScreen.publishButton().click();
+
+    // The subject is edited here, so the preview stays and turns to it rather than closing.
+    await expect.element(previewScreen.emailSubject()).toHaveAttribute('aria-invalid', 'true');
+    await expect.element(previewScreen.modal()).toHaveTextContent(EMAIL_SUBJECT_TOO_LONG);
+    await expect.element(previewScreen.modal()).toBeVisible();
+    await expect(publishScreen.root()).toHaveCount(0);
+    expect(saveApi.requests).toHaveLength(0);
+  });
+
+  it('refuses the preview while nobody is credited, taking the writer to Authors', async () => {
+    publishChrome();
+    const saveApi = fakeSavablePost({
+      authors: [{ id: CURRENT_USER_ID, name: 'Owner User', email: 'owner@test.com' }],
+    });
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
+    await expect.element(editorScreen.previewButton()).toBeEnabled();
+    await editorScreen.settingsToggle().click();
+    await editorScreen.removeAuthor('Owner User').click();
+    await expect.element(editorScreen.settingsAuthorsError()).toBeVisible();
+    await editorScreen.settingsToggle().click();
+    await expect(editorScreen.settingsSidebar()).toHaveCount(0);
+
+    await editorScreen.previewButton().click();
+
+    await expect.element(editorScreen.saveError()).toHaveTextContent(AUTHORS_REQUIRED);
+    await expect.element(editorScreen.settingsAuthorsInput()).toHaveFocus();
+    await expect(previewScreen.modal()).toHaveCount(0);
+    expect(saveApi.requests).toHaveLength(0);
+
+    // Its shortcut is refused the same way.
+    await editorScreen.body().click();
+    await userEvent.keyboard('{Meta>}p{/Meta}');
+    await expect.element(editorScreen.settingsAuthorsInput()).toHaveFocus();
+    await expect(previewScreen.modal()).toHaveCount(0);
+  });
+
+  it('opens the preview on the email tab for an over-long email subject', async () => {
+    publishChrome({ newsletters: 1 });
+    const saveApi = fakeSavablePost();
+    fakeAdminEndpoint('GET', /^\/email_previews\/posts\//, {
+      email_previews: [
+        { subject: 'Hello from React', html: '<p>Email body</p>', plaintext: 'Email body' },
+      ],
+    });
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave(MAILGUN_ON));
+    await editorScreen.previewButton().click();
+    await previewScreen.emailTab().click();
+    await previewScreen.emailSubject().fill('a'.repeat(301));
+    await previewScreen.webTab().click();
+    await previewScreen.closeButton().click();
+    await expect(previewScreen.modal()).toHaveCount(0);
+
+    await editorScreen.previewButton().click();
+
+    await expect.element(previewScreen.emailSubject()).toHaveAttribute('aria-invalid', 'true');
+    await expect.element(previewScreen.modal()).toHaveTextContent(EMAIL_SUBJECT_TOO_LONG);
+    expect(saveApi.requests).toHaveLength(0);
+  });
+
+  it('opens the preview on an over-long email subject instead of the publish flow', async () => {
+    publishChrome({ newsletters: 1 });
+    const saveApi = fakeSavablePost();
+    fakeAdminEndpoint('GET', /^\/email_previews\/posts\//, {
+      email_previews: [
+        { subject: 'Hello from React', html: '<p>Email body</p>', plaintext: 'Email body' },
+      ],
+    });
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave(MAILGUN_ON));
+    await editorScreen.previewButton().click();
+    await previewScreen.emailTab().click();
+    await previewScreen.emailSubject().fill('a'.repeat(301));
+    await previewScreen.closeButton().click();
+    await expect(previewScreen.modal()).toHaveCount(0);
+
+    await editorScreen.publishButton().click();
+
+    // The subject is edited in the preview, which names the rule beside it.
+    await expect.element(previewScreen.saveFailed()).toHaveTextContent(EMAIL_SUBJECT_TOO_LONG);
+    await expect.element(previewScreen.emailSubject()).toHaveAttribute('aria-invalid', 'true');
+    await expect(publishScreen.root()).toHaveCount(0);
+    expect(saveApi.requests).toHaveLength(0);
+  });
+
   it.each([
     {
       home: 'under the title',
-      options: { labs: { editorReact: true, editorExcerpt: true } },
+      options: { labs: { editorExcerpt: true } },
       excerpt: () => editorScreen.excerptInput(),
       show: async () => {},
       hide: async () => {},
     },
     {
       home: 'in the closed settings panel',
-      options: FLAG_ON,
+      options: {},
       excerpt: () => editorScreen.settingsExcerpt(),
       show: () => editorScreen.settingsToggle().click(),
       hide: async () => {
@@ -1061,13 +1239,36 @@ describe('Editor header actions', () => {
 
       await expect.element(excerpt()).toHaveFocus();
       await expect.element(excerpt()).toHaveAccessibleDescription(EXCERPT_TOO_LONG);
-      await expect.element(editorScreen.saveErrorBanner()).toHaveTextContent(EXCERPT_TOO_LONG);
+      await expect.element(editorScreen.saveError()).toHaveTextContent(EXCERPT_TOO_LONG);
       await expect(publishScreen.root()).toHaveCount(0);
       expect(saveApi.requests).toHaveLength(0);
 
       await excerpt().fill('An excerpt the server keeps');
       await editorScreen.publishButton().click();
       await expect.element(publishScreen.options()).toBeVisible();
+    },
+  );
+
+  it.each([
+    ['published', '2026-02-01T10:00:00.000Z', 'unpublishButton'],
+    ['scheduled', '2030-02-01T10:00:00.000Z', 'unscheduleButton'],
+  ] as const)(
+    'keeps the %s post’s update flow shut until the publish inputs load',
+    async (status, publishedAt, button) => {
+      publishChrome();
+      fakeSavablePost({ status, published_at: publishedAt });
+      failNewsletters();
+      await renderAdminApp(`/editor/post/${POST_ID}`);
+
+      await expect.element(editorScreen.publishInputsError()).toBeVisible();
+      await expect.element(editorScreen[button]()).toBeDisabled();
+
+      restoreNewsletters();
+      await editorScreen.retryPublishInputs().click();
+      await expect(editorScreen.publishInputsError()).toHaveCount(0);
+      // Nothing clicked earlier opens the flow unasked.
+      await expect(publishScreen.updateFlow()).toHaveCount(0);
+      await expect.element(editorScreen[button]()).toBeEnabled();
     },
   );
 
@@ -1079,14 +1280,14 @@ describe('Editor header actions', () => {
         status: 'published',
         published_at: '2026-02-01T10:00:00.000Z',
       });
-      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+      await renderAdminApp(`/editor/post/${POST_ID}`);
 
       await editorScreen.titleInput().fill('a'.repeat(TITLE_MAX + 1));
       await editorScreen.body().click();
       await editorScreen.headerButton(label).click();
 
       await expect.element(editorScreen.titleInput()).toHaveFocus();
-      await expect.element(editorScreen.saveErrorBanner()).toHaveTextContent(TITLE_TOO_LONG);
+      await expect.element(editorScreen.saveError()).toHaveTextContent(TITLE_TOO_LONG);
       await expect(publishScreen.updateFlow()).toHaveCount(0);
       expect(saveApi.requests).toHaveLength(0);
     },
@@ -1095,7 +1296,7 @@ describe('Editor header actions', () => {
   it('animates opening from the editor but switches fullscreen surfaces without animation', async () => {
     publishChrome();
     fakeSavablePost();
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`);
 
     await editorScreen.previewButton().click();
     await expect.element(previewScreen.modal()).toBeVisible();
@@ -1163,15 +1364,14 @@ describe('Editor header actions', () => {
       );
     });
     const saveApi = fakeSavablePost();
-    const emberSaved = installEmberBridge();
-    await renderAdminApp(`/editor/post/${POST_ID}`, MAILGUN_ON);
+    const { queryClient } = await renderAdminApp(`/editor/post/${POST_ID}`, MAILGUN_ON);
 
     await editorScreen.publishButton().click();
     await publishScreen.setting('publish-type').click();
     await page.getByLabelText('Publish only').click();
 
-    // Ember saving a newsletter invalidates the input the flow was built from.
-    emberSaved('newsletter');
+    // Another screen saving a newsletter invalidates the input the flow was built from.
+    void queryClient.invalidateQueries({ queryKey: ['NewslettersResponseType'] });
     await expect.poll(() => newsletterReads).toBe(2);
     await expect.element(publishScreen.options()).toBeVisible();
 
@@ -1188,7 +1388,7 @@ describe('Editor header actions', () => {
     publishChrome();
     fakeSavablePost();
     failNewsletters();
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`);
 
     await expect.element(editorScreen.publishInputsError()).toHaveTextContent('went wrong');
     await expect.element(editorScreen.publishInputsError()).toHaveAttribute('role', 'alert');
@@ -1216,7 +1416,7 @@ describe('Editor header actions', () => {
       },
     });
     failNewsletters();
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`);
 
     await expect.element(editorScreen.publishInputsError()).toHaveTextContent('went wrong');
     await expect.element(editorScreen.publishInputsError()).toHaveAttribute('role', 'alert');
@@ -1238,7 +1438,7 @@ describe('Editor header actions', () => {
       email: { id: 'email-1', status: 'submitted', email_count: 20, opened_count: 0 },
     });
     failNewsletters();
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`);
 
     await expect.element(editorScreen.publishInputsError()).toHaveTextContent('went wrong');
     await expect.element(editorScreen.sentStatusButton()).toBeDisabled();
@@ -1259,7 +1459,7 @@ describe('Editor header actions', () => {
       publishChrome();
       fakeSavablePost({ status, published_at: publishedAt });
       failNewsletters();
-      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+      await renderAdminApp(`/editor/post/${POST_ID}`);
 
       await expect.element(editorScreen.publishInputsError()).toHaveTextContent('went wrong');
       await expect.element(editorScreen.publishInputsError()).toHaveAttribute('role', 'alert');
@@ -1278,7 +1478,7 @@ describe('Editor header actions', () => {
     async (closeWith) => {
       publishChrome();
       fakeSavablePost();
-      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+      await renderAdminApp(`/editor/post/${POST_ID}`);
 
       await editorScreen.publishButton().click();
       await publishScreen.previewButton().click();
@@ -1353,7 +1553,7 @@ describe('Editor header actions', () => {
     publishChrome();
     const saveApi = fakeSavablePost();
     // Only the publish flow's explicit save should win this race, not the autosave timer.
-    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave(FLAG_ON));
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
 
     await expect.element(editorScreen.body()).toHaveTextContent('Hello from React');
     await typeIntoBody(' and more');
@@ -1370,7 +1570,7 @@ describe('Editor header actions', () => {
     publishChrome();
     const saveApi = fakeSavablePost({}, { failWith: 401 });
     const sessionApi = fakeAdminEndpoint('POST', '/session/', () => 'Created', { status: 201 });
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`);
 
     await expect.element(editorScreen.publishButton()).toBeEnabled();
     await publishThroughFlow();
@@ -1417,7 +1617,7 @@ describe('Editor header actions', () => {
   it('reports a collision in the publish flow and sends nothing more', async () => {
     publishChrome();
     const saveApi = fakeSavablePost({}, { failWith: 409 });
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`);
 
     await expect.element(editorScreen.publishButton()).toBeEnabled();
     await publishThroughFlow();
@@ -1432,7 +1632,7 @@ describe('Editor header actions', () => {
   it('returns focus to the Preview button when the preview closes', async () => {
     publishChrome();
     fakeSavablePost();
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`);
 
     await editorScreen.previewButton().click();
     await expect.element(previewScreen.modal()).toBeVisible();
@@ -1452,7 +1652,7 @@ describe('Editor header actions', () => {
     async (closeWith) => {
       publishChrome();
       fakeSavablePost();
-      await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+      await renderAdminApp(`/editor/post/${POST_ID}`);
 
       await expect.element(editorScreen.publishButton()).toBeEnabled();
       for (let opening = 0; opening < 2; opening += 1) {
@@ -1477,13 +1677,13 @@ describe('Editor header actions', () => {
   it('returns focus to Publish when closed during the publish settings refresh', async () => {
     publishChrome();
     fakeSavablePost();
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`);
     await expect.element(editorScreen.publishButton()).toBeEnabled();
 
     const refreshedSettings = deferred<void>();
     const settingsApi = fakeAdminEndpoint('GET', /^\/settings\//, async () => {
       await refreshedSettings.promise;
-      return settingsResponse({ labs: FLAG_ON.labs });
+      return settingsResponse();
     });
 
     try {
@@ -1503,7 +1703,7 @@ describe('Editor header actions', () => {
   it('returns focus to the Unpublish button when the update flow closes', async () => {
     publishChrome();
     fakeSavablePost({ status: 'published', published_at: '2026-02-01T10:00:00.000Z' });
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`);
 
     await editorScreen.unpublishButton().click();
     await expect.element(publishScreen.updateFlow()).toBeVisible();
@@ -1526,7 +1726,7 @@ describe('Editor header actions', () => {
       fakeNewsletters([newsletter({ slug: 'weekly', name: 'Weekly', status: 'archived' })]);
       fakeSavablePost();
       await renderAdminApp(`/editor/post/${POST_ID}`, {
-        labs: { ...FLAG_ON.labs, ...labs },
+        labs,
         boot: { ...MAILGUN_ON.boot, ...asRole(role).boot },
       });
 
@@ -1567,7 +1767,7 @@ describe('Editor header actions', () => {
   it('keeps focus and typing inside the publish flow', async () => {
     publishChrome();
     fakeSavablePost();
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`);
 
     await expect.element(editorScreen.publishButton()).toBeEnabled();
     await editorScreen.publishButton().click();
@@ -1581,7 +1781,7 @@ describe('Editor header actions', () => {
   it('keeps focus and typing inside the update flow', async () => {
     publishChrome();
     fakeSavablePost({ status: 'published', published_at: '2026-02-01T10:00:00.000Z' });
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`);
 
     await editorScreen.unpublishButton().click();
 
@@ -1718,6 +1918,38 @@ describe('Editor header actions', () => {
       expect(refusedPublish.requests).toHaveLength(1);
     });
 
+    it('links the upgrade when the save before a publish is refused over a limit', async () => {
+      publishChrome();
+      fakeEmailsSent(100);
+      fakeSavablePost();
+      const refusedSave = fakeAdminEndpoint(
+        'PUT',
+        new RegExp(`^/posts/${POST_ID}/\\?`),
+        {
+          errors: [
+            {
+              type: 'HostLimitError',
+              message: 'Host Limit error, cannot edit post.',
+              context: MEMBERS_LIMIT_MESSAGE,
+            },
+          ],
+        },
+        { status: 403 },
+      );
+      await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave(onHostPlan({ members: 20 })));
+
+      await expect.element(editorScreen.publishButton()).toBeEnabled();
+      await typeIntoBody(' and more');
+      await publishThroughFlow();
+
+      await expect
+        .element(publishScreen.confirmError().getByRole('link', { name: 'please upgrade' }))
+        .toHaveAttribute('href', '#/pro');
+      // The unsaved work was refused, so the publish it carries was never sent.
+      expect(submittedPost(refusedSave)).toMatchObject({ status: 'draft' });
+      expect(refusedSave.requests).toHaveLength(1);
+    });
+
     it('offers no email while a send would exceed the monthly emails limit', async () => {
       publishChrome({ newsletters: 1 });
       fakeEmailsSent(300);
@@ -1781,47 +2013,13 @@ describe('Editor header actions', () => {
     });
   });
 
-  describe('improveSendingUI', () => {
-    const SEND_ERROR = 'Mailgun rejected the batch.';
-    const SENDING_UI_ON = { ...MAILGUN_ON, labs: { ...FLAG_ON.labs, improveSendingUI: true } };
+  describe('sending hand-off', () => {
     const SENDS = [
-      {
-        send: 'a publish that emails',
-        emailOnly: false,
-        status: 'published',
-        failure: 'Your post has been published but the email failed to send.',
-      },
-      {
-        send: 'an email-only send',
-        emailOnly: true,
-        status: 'sent',
-        failure: 'Your post has been created but the email failed to send.',
-      },
+      { send: 'a publish that emails', emailOnly: false },
+      { send: 'an email-only send', emailOnly: true },
     ] as const;
 
-    /**
-     * The flow's email confirmation read, finding the send failed. Registered
-     * after the post's own fake, so it answers that read and no other.
-     */
-    function failSendOnConfirmation(status: 'published' | 'sent') {
-      return fakeAdminEndpoint('GET', new RegExp(`^/posts/${POST_ID}/\\?include=email$`), {
-        posts: [
-          {
-            id: POST_ID,
-            status,
-            email: {
-              id: 'email-1',
-              status: 'failed',
-              error: SEND_ERROR,
-              email_count: 20,
-              opened_count: 0,
-            },
-          },
-        ],
-      });
-    }
-
-    async function sendThroughFlow(emailOnly: boolean) {
+    async function openConfirmStep(emailOnly: boolean) {
       await expect.element(editorScreen.publishButton()).toBeEnabled();
       await editorScreen.publishButton().click();
       if (emailOnly) {
@@ -1829,42 +2027,64 @@ describe('Editor header actions', () => {
         await page.getByLabelText('Email only').click();
       }
       await publishScreen.continueButton().click();
+    }
+
+    async function sendThroughFlow(emailOnly: boolean) {
+      await openConfirmStep(emailOnly);
       await publishScreen.confirmButton().click();
     }
 
-    it.each(SENDS)('hands $send to post analytics once it saves', async ({ emailOnly, status }) => {
-      publishChrome({ newsletters: 1 });
-      fakeSavablePost();
-      const confirmationApi = failSendOnConfirmation(status);
-      await renderAdminApp(`/editor/post/${POST_ID}`, SENDING_UI_ON);
-
-      await sendThroughFlow(emailOnly);
-
-      await expect.poll(currentRoute).toBe(`/posts/analytics/${POST_ID}`);
-      await expect(editorScreen.root()).toHaveCount(0);
-      expect(confirmationApi.requests).toHaveLength(0);
-    });
-
     it.each(SENDS)(
-      'waits on $send without the flag and reports its failure',
-      async ({ emailOnly, status, failure }) => {
+      'hands $send to post analytics once its minimum running time ends',
+      async ({ emailOnly }) => {
         publishChrome({ newsletters: 1 });
-        fakeSavablePost();
-        failSendOnConfirmation(status);
+        const held = deferred<void>();
+        fakeSavablePost({}, { holdFirstSave: held.promise });
         await renderAdminApp(`/editor/post/${POST_ID}`, MAILGUN_ON);
+        await openConfirmStep(emailOnly);
 
-        await sendThroughFlow(emailOnly);
+        // Only the hold's clock is faked, from the click. Polled assertions advance
+        // a faked clock on each retry, so a zero interval leaves it to the test.
+        vi.useFakeTimers({
+          toFake: ['setTimeout', 'clearTimeout', 'Date'],
+          shouldClearNativeTimers: true,
+        });
+        const frozenClock = { interval: 0 };
+        try {
+          await publishScreen.confirmButton().click();
 
-        await expect.element(publishScreen.emailError()).toHaveTextContent(failure);
-        await expect.element(publishScreen.emailError()).toHaveTextContent(SEND_ERROR);
-        await expect.poll(currentRoute).toBe(`/editor/post/${POST_ID}`);
+          // Mid-save, the flow shows its running state.
+          await expect.element(publishScreen.confirmButton(), frozenClock).toBeDisabled();
+          await expect
+            .element(publishScreen.confirmButton(), frozenClock)
+            .toHaveTextContent(emailOnly ? 'Sending' : 'Publishing & sending');
+          expect(publishScreen.confirmButton().element().querySelector('svg')).not.toBeNull();
+          held.resolve();
+
+          // Once the save lands the flow still holds in its running state. The hand-off
+          // writes the list's celebration as it navigates, before the route can change.
+          await expect
+            .element(editorScreen.status(), frozenClock)
+            .toHaveTextContent('to 20 members');
+          await vi.advanceTimersByTimeAsync(MIN_EMAIL_HANDOFF_LENGTH - 1);
+          expect(localStorage.getItem('ghost-last-published-post')).toBeNull();
+          expect(currentRoute()).toBe(`/editor/post/${POST_ID}`);
+          await expect.element(publishScreen.confirmButton(), frozenClock).toBeDisabled();
+
+          await vi.advanceTimersByTimeAsync(1);
+        } finally {
+          vi.useRealTimers();
+        }
+
+        await expect.poll(currentRoute).toBe(`/posts/analytics/${POST_ID}`);
+        await expect(editorScreen.root()).toHaveCount(0);
       },
     );
 
     it('shows the send under way when the writer returns to the editor', async () => {
       publishChrome({ newsletters: 1 });
       fakeSavablePost();
-      await renderAdminApp(`/editor/post/${POST_ID}`, SENDING_UI_ON);
+      await renderAdminApp(`/editor/post/${POST_ID}`, MAILGUN_ON);
 
       await sendThroughFlow(false);
       await expect.poll(currentRoute).toBe(`/posts/analytics/${POST_ID}`);
@@ -1874,5 +2094,116 @@ describe('Editor header actions', () => {
         .element(editorScreen.status())
         .toHaveTextContent('Published and sending to 20 members');
     });
+  });
+});
+
+/**
+ * Below the small breakpoint the header's actions sit in the editor's bottom
+ * bar, each behaving as it does in the header.
+ */
+describe('Editor header actions on a small screen', () => {
+  afterEach(async () => {
+    await page.viewport(1280, 800);
+  });
+
+  it('opens the publish flow from the bottom bar’s Publish', async () => {
+    await page.viewport(390, 844);
+    publishChrome();
+    fakeSavablePost();
+    await renderAdminApp(`/editor/post/${POST_ID}`);
+    await expect.element(editorScreen.publishButton()).toBeEnabled();
+    expect(
+      editorScreen
+        .headerActions()
+        .getByRole('button')
+        .elements()
+        .map((b) => b.textContent),
+    ).toEqual(['Preview', 'Publish']);
+
+    await editorScreen.publishButton().click();
+    await expect.element(publishScreen.options()).toBeVisible();
+  });
+
+  it('refuses the bottom bar’s Publish on an over-long title, focusing the title', async () => {
+    await page.viewport(390, 844);
+    publishChrome();
+    const saveApi = fakeSavablePost();
+    await renderAdminApp(`/editor/post/${POST_ID}`);
+    await expect.element(editorScreen.publishButton()).toBeEnabled();
+
+    await editorScreen.titleInput().fill('a'.repeat(TITLE_MAX + 1));
+    await editorScreen.publishButton().click();
+
+    await expect.element(editorScreen.titleInput()).toHaveFocus();
+    await expect.element(editorScreen.saveError()).toHaveTextContent(TITLE_TOO_LONG);
+    await expect.element(editorScreen.saveError()).toHaveClass('text-destructive');
+    await expect(publishScreen.root()).toHaveCount(0);
+    expect(saveApi.requests).toHaveLength(0);
+  });
+
+  it.each([320, 390, 479, 480, 639, 640])(
+    'keeps save toasts clear of editor controls at %ipx after resizing',
+    async (width) => {
+      publishChrome();
+      fakeSavablePost({
+        status: 'published',
+        published_at: '2026-02-01T10:00:00.000Z',
+      });
+      await renderAdminApp(`/editor/post/${POST_ID}`);
+      await page.viewport(width, 844);
+
+      await typeIntoBody(' and more');
+      await editorScreen.updateButton().click();
+      const toast = editorScreen.saveToast('Post updated');
+      await expect.element(toast).toBeVisible();
+      // Sonner starts the enter transition only once it marks the toast mounted.
+      await expect.element(toast).toHaveAttribute('data-mounted', 'true');
+      await settleTransitions();
+
+      const toastRect = toast.element().getBoundingClientRect();
+      if (width < 480) {
+        expect(toastRect.top).toBeGreaterThan(
+          editorScreen.settingsToggle().element().getBoundingClientRect().bottom,
+        );
+        expect(toastRect.bottom).toBeLessThan(
+          editorScreen.headerActions().element().getBoundingClientRect().top,
+        );
+      } else {
+        expect(toastRect.top).toBeGreaterThan(844 / 2);
+      }
+
+      for (const control of [
+        editorScreen.unpublishButton(),
+        editorScreen.settingsToggle(),
+        editorScreen.backLink('post'),
+      ]) {
+        const element = control.element();
+        const rect = element.getBoundingClientRect();
+        const hit = document.elementFromPoint(rect.x + rect.width / 2, rect.y + rect.height / 2);
+        expect(element.contains(hit)).toBe(true);
+      }
+      await editorScreen.unpublishButton().click();
+      await expect.element(publishScreen.updateFlow()).toBeVisible();
+    },
+  );
+
+  it('offers a published post’s Unpublish and an Update that waits for a change', async () => {
+    await page.viewport(390, 844);
+    publishChrome();
+    const saveApi = fakeSavablePost({
+      status: 'published',
+      published_at: '2026-02-01T10:00:00.000Z',
+    });
+    await renderAdminApp(`/editor/post/${POST_ID}`);
+    await expect.element(editorScreen.unpublishButton()).toBeEnabled();
+    await expect.element(editorScreen.updateButton()).toBeDisabled();
+
+    await typeIntoBody(' and more');
+    await expect.element(editorScreen.updateButton()).toBeEnabled();
+    await editorScreen.updateButton().click();
+    await expect.poll(() => saveApi.requests.length, SAVE_POLL).toBe(1);
+
+    await editorScreen.unpublishButton().click();
+    await expect.element(publishScreen.updateFlow()).toBeVisible();
   });
 });

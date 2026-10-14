@@ -1,13 +1,20 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import * as Sentry from '@sentry/react';
-import { APIError, ServerUnreachableError } from '@tryghost/admin-x-framework/errors';
+import {
+  APIError,
+  JSONError,
+  MaintenanceError,
+  ServerUnreachableError,
+} from '@tryghost/admin-x-framework/errors';
 import { buildLexicalParagraph } from '@tryghost/test-data';
 import type { SaveCommand, SaveError } from '@/editor/engine/save-engine';
 import type { EditorSaveFailure } from '@/editor/session/editor-session';
 import { body, record, sessionHarness } from '@/editor/session/__test-utils__/session-harness';
 import { preloadKoenig } from '@/settings/components/koenig-loader';
 import {
+  koenigErrorReporters,
   reportEditorError,
+  reportEditorNotice,
   reportKoenigError,
   reportKoenigRenderError,
   reportLeaveConfirmation,
@@ -47,6 +54,16 @@ const TAGS = {
   save_persisted: true,
   save_status: 'draft',
 };
+
+/** The error the first exception report carried. */
+function reportedError(): Error {
+  return vi.mocked(Sentry.captureException).mock.calls[0][0] as Error;
+}
+
+/** The error Sentry titles with the given name, carrying the transport error as its cause. */
+function titled(name: string, message: string, cause: unknown) {
+  return expect.objectContaining({ name, message, cause }) as Error;
+}
 
 beforeEach(() => {
   vi.spyOn(console, 'error').mockImplementation(() => {});
@@ -93,6 +110,23 @@ describe('reportEditorError', () => {
   });
 });
 
+describe('reportEditorNotice', () => {
+  it('sends the message with the given tags, never as an exception', () => {
+    reportEditorNotice('LocalStorage quota exceeded. Removing old revisions.', {
+      tags: { localRevisions: 'quotaExceeded' },
+    });
+
+    expect(Sentry.captureMessage).toHaveBeenCalledTimes(1);
+    expect(Sentry.captureMessage).toHaveBeenCalledWith(
+      'LocalStorage quota exceeded. Removing old revisions.',
+      { tags: { localRevisions: 'quotaExceeded' } },
+    );
+    expect(Sentry.captureException).not.toHaveBeenCalled();
+    // eslint-disable-next-line no-console
+    expect(console.error).not.toHaveBeenCalled();
+  });
+});
+
 describe('reportKoenigRenderError', () => {
   it('tags a boundary crash as Lexical and keeps where in the tree it happened', async () => {
     await preloadKoenig();
@@ -110,6 +144,47 @@ describe('reportKoenigRenderError', () => {
   });
 });
 
+describe('koenigErrorReporters', () => {
+  it.each(['primary', 'secondary'] as const)(
+    'tags a Lexical failure in the %s instance with its role',
+    async (instance) => {
+      await preloadKoenig();
+      const error = new Error('lexical exploded');
+
+      koenigErrorReporters(instance).onError(error);
+
+      expect(Sentry.captureException).toHaveBeenCalledWith(error, {
+        tags: { lexical: true, koenig_instance: instance },
+        contexts: { koenig: { version: '1.2.3' } },
+      });
+    },
+  );
+
+  it('tags a boundary crash with the instance role and where in the tree', async () => {
+    await preloadKoenig();
+    const error = new Error('render exploded');
+
+    koenigErrorReporters('secondary').onRenderError(error, {
+      componentStack: '\n    at KoenigComposer',
+    });
+
+    expect(Sentry.captureException).toHaveBeenCalledWith(error, {
+      tags: { lexical: true, koenig_instance: 'secondary' },
+      contexts: {
+        koenig: { version: '1.2.3' },
+        react: { componentStack: '\n    at KoenigComposer' },
+      },
+    });
+  });
+
+  it('reports without a role for a Koenig instance outside the post body', () => {
+    reportKoenigError(new Error('caption exploded'));
+
+    const context = vi.mocked(Sentry.captureException).mock.calls[0][1] as { tags: object };
+    expect(context.tags).toStrictEqual({ lexical: true });
+  });
+});
+
 describe('reportSaveFailure', () => {
   it('reports the failing request with what it was and which post it was for', () => {
     const cause = new Error('Boom');
@@ -117,12 +192,15 @@ describe('reportSaveFailure', () => {
     reportSaveFailure(failure({ error: { kind: 'unknown', message: 'Boom', cause } }), 'post');
 
     expect(Sentry.captureException).toHaveBeenCalledTimes(1);
-    expect(Sentry.captureException).toHaveBeenCalledWith(cause, {
-      tags: TAGS,
-      extra: { post_id: 'post-1', duration_ms: 120 },
-    });
+    expect(Sentry.captureException).toHaveBeenCalledWith(
+      titled('SaveUnknownError', 'Boom', cause),
+      {
+        tags: TAGS,
+        extra: { post_id: 'post-1', duration_ms: 120 },
+      },
+    );
     // eslint-disable-next-line no-console
-    expect(console.error).toHaveBeenCalledWith(cause);
+    expect(console.error).toHaveBeenCalledWith(reportedError());
   });
 
   it('builds an error from the message when the failure has no cause', () => {
@@ -131,9 +209,112 @@ describe('reportSaveFailure', () => {
       'page',
     );
 
-    expect(Sentry.captureException).toHaveBeenCalledWith(new Error('No record came back'), {
-      tags: { ...TAGS, post_type: 'page' },
-      extra: { post_id: 'post-1', duration_ms: 120 },
+    expect(Sentry.captureException).toHaveBeenCalledWith(
+      titled('SaveUnknownError', 'No record came back', undefined),
+      {
+        tags: { ...TAGS, post_type: 'page' },
+        extra: { post_id: 'post-1', duration_ms: 120 },
+      },
+    );
+  });
+
+  it('titles a collision by the sentence the API gave for it', () => {
+    const cause = new JSONError(new Response(null, { status: 409 }), {
+      errors: [
+        {
+          code: 'UPDATE_COLLISION',
+          context: 'Saving failed! Someone else is editing this post.',
+          details: null,
+          ghostErrorCode: null,
+          help: '',
+          id: 'err-1',
+          message: 'Saving failed!',
+          property: null,
+          type: 'UpdateCollisionError',
+        },
+      ],
+    });
+    reportSaveFailure(
+      failure({ error: { kind: 'conflict', message: 'Something went wrong', cause } }),
+      'post',
+    );
+
+    expect(Sentry.captureException).toHaveBeenCalledWith(
+      titled('SaveConflictError', 'Saving failed! Someone else is editing this post.', cause),
+      expect.anything(),
+    );
+  });
+
+  it('attaches the collision details the API gave with a collision', () => {
+    const collision = {
+      changedFields: ['lexical'],
+      clientUpdatedAt: '2026-10-08T20:30:00.000Z',
+      serverUpdatedAt: '2026-10-08T23:31:10.000Z',
+    };
+    const cause = new JSONError(new Response(null, { status: 409 }), {
+      errors: [
+        {
+          code: 'UPDATE_COLLISION',
+          context: 'Saving failed! Someone else is editing this post.',
+          // Core sends an object here, which the shared error type doesn't describe
+          details: collision as unknown as string,
+          ghostErrorCode: null,
+          help: '',
+          id: 'err-1',
+          message: 'Saving failed!',
+          property: null,
+          type: 'UpdateCollisionError',
+        },
+      ],
+    });
+    reportSaveFailure(
+      failure({ error: { kind: 'conflict', message: 'Something went wrong', cause } }),
+      'post',
+    );
+
+    expect(vi.mocked(Sentry.captureException).mock.calls[0][1]).toMatchObject({
+      extra: { post_id: 'post-1', duration_ms: 120, collision },
+    });
+  });
+
+  it.each<[string, SaveError, string]>([
+    [
+      'a collision',
+      {
+        kind: 'conflict',
+        message: 'Something went wrong while loading posts, please try again.',
+        cause: new JSONError(new Response(null, { status: 409 })),
+      },
+      'SaveConflictError',
+    ],
+    [
+      'a server error',
+      {
+        kind: 'transport',
+        message: 'Ghost is currently undergoing maintenance, please wait a moment then retry.',
+        cause: new MaintenanceError(new Response(null, { status: 503 }), ''),
+      },
+      'SaveTransportError',
+    ],
+    [
+      'an unexplained failure',
+      {
+        kind: 'unknown',
+        message: 'Something went wrong while loading posts, please try again.',
+        cause: new APIError(new Response(null, { status: 500 })),
+      },
+      'SaveUnknownError',
+    ],
+  ])('titles %s by its kind with the transport error as the cause', (_label, error, name) => {
+    reportSaveFailure(failure({ error }), 'post');
+
+    expect(Sentry.captureException).toHaveBeenCalledTimes(1);
+    const reported = reportedError();
+    expect(reported.name).toBe(name);
+    expect(reported.message).toBe(error.message);
+    expect(reported.cause).toBe(error.cause);
+    expect(vi.mocked(Sentry.captureException).mock.calls[0][1]).toMatchObject({
+      tags: { ...TAGS, save_error_kind: error.kind },
     });
   });
 
@@ -163,29 +344,18 @@ describe('reportSaveFailure', () => {
       'post',
     );
 
-    expect(Sentry.captureException).toHaveBeenCalledWith(cause, {
-      tags: {
-        ...TAGS,
-        save_intent: 'explicit',
-        save_error_kind: 'conflict',
-        save_status: 'published',
+    expect(Sentry.captureException).toHaveBeenCalledWith(
+      titled('SaveConflictError', cause.message, cause),
+      {
+        tags: {
+          ...TAGS,
+          save_intent: 'explicit',
+          save_error_kind: 'conflict',
+          save_status: 'published',
+        },
+        extra: { post_id: 'post-1', duration_ms: 120 },
       },
-      extra: { post_id: 'post-1', duration_ms: 120 },
-    });
-  });
-
-  it('reports an abandoned re-authentication as the session failure it was', () => {
-    const cause = new Error('Unauthorized');
-
-    reportSaveFailure(
-      failure({ error: { kind: 'session-invalid', message: 'Unauthorized', cause } }),
-      'post',
     );
-
-    expect(Sentry.captureException).toHaveBeenCalledWith(cause, {
-      tags: { ...TAGS, save_error_kind: 'session-invalid' },
-      extra: { post_id: 'post-1', duration_ms: 120 },
-    });
   });
 
   it('reports a persisted post that is gone as a message carrying the post id', () => {
@@ -215,16 +385,18 @@ describe('reportSaveFailure', () => {
     );
 
     expect(Sentry.captureMessage).not.toHaveBeenCalled();
-    expect(Sentry.captureException).toHaveBeenCalledWith(cause, {
-      tags: { ...TAGS, save_error_kind: 'not-found', save_persisted: false },
-      extra: { post_id: null, duration_ms: 120 },
-    });
+    expect(Sentry.captureException).toHaveBeenCalledWith(
+      titled('SaveNotFoundError', 'Post not found', cause),
+      {
+        tags: { ...TAGS, save_error_kind: 'not-found', save_persisted: false },
+        extra: { post_id: null, duration_ms: 120 },
+      },
+    );
   });
 
   it.each<[string, SaveError]>([
     ['a validation failure', { kind: 'validation', message: 'Title is too long' }],
     ['a host limit', { kind: 'host-limit', message: 'Upgrade required' }],
-    ['a writer who lost access', { kind: 'forbidden', message: 'Permission error' }],
     [
       'an unreachable server',
       { kind: 'transport', message: 'Unreachable', cause: new ServerUnreachableError() },
@@ -234,6 +406,29 @@ describe('reportSaveFailure', () => {
 
     expect(Sentry.captureException).not.toHaveBeenCalled();
     expect(Sentry.captureMessage).not.toHaveBeenCalled();
+    // eslint-disable-next-line no-console
+    expect(console.error).not.toHaveBeenCalled();
+  });
+
+  it.each<[string, SaveError, string]>([
+    [
+      'a forbidden save',
+      { kind: 'forbidden', message: 'Permission error' },
+      'Save of page was forbidden',
+    ],
+    [
+      'an expired session the writer did not sign back in to',
+      { kind: 'session-invalid', message: 'Unauthorized', cause: new Error('Unauthorized') },
+      'Session expired while editing page',
+    ],
+  ])('notes %s as a message rather than an error', (_label, error, message) => {
+    reportSaveFailure(failure({ error }), 'page');
+
+    expect(Sentry.captureException).not.toHaveBeenCalled();
+    expect(Sentry.captureMessage).toHaveBeenCalledExactlyOnceWith(message, {
+      tags: { ...TAGS, post_type: 'page', save_error_kind: error.kind },
+      extra: { post_id: 'post-1' },
+    });
     // eslint-disable-next-line no-console
     expect(console.error).not.toHaveBeenCalled();
   });
@@ -295,10 +490,13 @@ describe('reportSaveFailure response tags', () => {
 
     reportSaveFailure(failure({ error: { kind: 'unknown', message: 'Boom', cause } }), 'post');
 
-    expect(Sentry.captureException).toHaveBeenCalledWith(cause, {
-      tags: { ...TAGS, api_response_status: 500 },
-      extra: { post_id: 'post-1', duration_ms: 120 },
-    });
+    expect(Sentry.captureException).toHaveBeenCalledWith(
+      titled('SaveUnknownError', 'Boom', cause),
+      {
+        tags: { ...TAGS, api_response_status: 500 },
+        extra: { post_id: 'post-1', duration_ms: 120 },
+      },
+    );
   });
 
   it('carries no response tags for a failure that never got an answer', () => {

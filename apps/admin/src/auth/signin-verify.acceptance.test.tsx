@@ -21,7 +21,7 @@ beforeEach(() => {
 });
 
 it('shows the new-device copy when opened directly', async () => {
-  await renderAdminApp('/signin/verify', signedOut({ authReact: true }));
+  await renderAdminApp('/signin/verify', signedOut());
 
   await expect.element(authScreen.heading("Verify it's really you")).toBeVisible();
   await expect.element(authScreen.text(/signing in from a new device/)).toBeVisible();
@@ -31,7 +31,7 @@ it.each([
   ['', 'Verification code is required'],
   ['12345', 'Verification code must be 6 numbers'],
 ])('checks the code %j before sending it', async (code, message) => {
-  await renderAdminApp('/signin/verify', signedOut({ authReact: true }));
+  await renderAdminApp('/signin/verify', signedOut());
 
   await authScreen.codeInput().fill(code);
   await authScreen.verifyButton().click();
@@ -46,7 +46,7 @@ it('says a rejected code is incorrect, and clears that when typing again', async
     status: 401,
     ...textReply,
   });
-  await renderAdminApp('/signin/verify', signedOut({ authReact: true }));
+  await renderAdminApp('/signin/verify', signedOut());
 
   await authScreen.codeInput().fill('123456');
   await authScreen.verifyButton().click();
@@ -60,7 +60,7 @@ it('says a rejected code is incorrect, and clears that when typing again', async
 it('verifies the code and reloads onto the remembered route', async () => {
   window.sessionStorage.setItem('ghost-signin-redirect', '/members');
   const verifyApi = fakeAdminEndpoint('PUT', '/session/verify/', plainText('OK'), textReply);
-  await renderAdminApp('/signin/verify', signedOut({ authReact: true }));
+  await renderAdminApp('/signin/verify', signedOut());
 
   await authScreen.codeInput().fill(' 123456 ');
   await authScreen.verifyButton().click();
@@ -71,7 +71,7 @@ it('verifies the code and reloads onto the remembered route', async () => {
 
 it('resends the code, then holds the button while the new one arrives', async () => {
   const resendApi = fakeAdminEndpoint('POST', '/session/verify/', plainText('OK'), textReply);
-  await renderAdminApp('/signin/verify', signedOut({ authReact: true }));
+  await renderAdminApp('/signin/verify', signedOut());
 
   await authScreen.resendButton().click();
 
@@ -86,7 +86,7 @@ it('shows why a resend failed', async () => {
     { errors: [{ type: 'TooManyRequestsError', message: 'Too many attempts.' }] },
     { status: 429 },
   );
-  await renderAdminApp('/signin/verify', signedOut({ authReact: true }));
+  await renderAdminApp('/signin/verify', signedOut());
 
   await authScreen.resendButton().click();
 

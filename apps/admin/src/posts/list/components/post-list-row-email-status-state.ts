@@ -11,13 +11,8 @@ export const SETTLED_POST_LIST_ROW_EMAIL_STATUS: PostListRowEmailStatusState = {
   status: 'settled',
 };
 
-export function hasInProgressEmail(
-  post: PostListItem,
-  resource: PostResource,
-  improveSendingUI: boolean,
-): boolean {
+export function hasInProgressEmail(post: PostListItem, resource: PostResource): boolean {
   return Boolean(
-    improveSendingUI &&
     resource === 'posts' &&
     (post.status === 'published' || post.status === 'sent') &&
     post.email?.id &&

@@ -45,7 +45,7 @@ const validateInputForm = ValidateInputForm as unknown as (data: {
   fields: GiftInputField[];
 }) => GiftFormErrors;
 
-// Mirrors GIFT_MAX_SCHEDULE_DAYS in ghost/core's gifts constants — change them together.
+// Mirrors GIFT_MAX_SCHEDULE_DAYS in ghost's gifts constants — change them together.
 const GIFT_MAX_SCHEDULE_DAYS = 365;
 
 interface GiftPageMember {

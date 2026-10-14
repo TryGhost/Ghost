@@ -27,7 +27,7 @@ const API_VERSION = '2020-08-27';
 // artefact currently claims rather than a copy of it that could already have drifted.
 const ALL_UNION_CODES: string[] = (() => {
   const types = new URL(
-    '../../ghost/core/node_modules/stripe/types/2020-08-27/Checkout/Sessions.d.ts',
+    '../../ghost/node_modules/stripe/types/2020-08-27/Checkout/Sessions.d.ts',
     import.meta.url,
   );
   const source = readFileSync(types, 'utf8');

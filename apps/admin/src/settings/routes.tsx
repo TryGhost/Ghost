@@ -57,6 +57,10 @@ export const settingsRouteChildren: RouteObject[] = [
   { path: 'portal/edit', lazy: lazyComponent(() => import('./membership/portal/portal-modal')) },
   { path: 'tiers/add', lazy: lazyComponent(() => import('./membership/tiers/tier-detail-modal')) },
   {
+    path: 'tiers/checkout',
+    lazy: lazyComponent(() => import('./membership/checkout/checkout-modal')),
+  },
+  {
     path: 'tiers/:tierId',
     lazy: lazyComponent(() => import('./membership/tiers/tier-detail-modal')),
   },

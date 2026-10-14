@@ -15,6 +15,7 @@ import {
   canManageMembers,
   canManageTags,
 } from '@tryghost/admin-x-framework/api/users';
+import { canManageApps } from '@/apps/api';
 import { NavMenuItem } from './nav-menu-item';
 import { useNavigationExpanded } from './hooks/use-navigation-preferences';
 import { NavSavedViews } from './nav-saved-views';
@@ -23,6 +24,7 @@ import { useMemberSidebarViews } from './member-sidebar-views';
 import { usePostNavigation } from './use-post-navigation';
 import { useIsActiveLink } from './use-is-active-link';
 import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
+import { AdminLink } from '@/shared/admin-link';
 
 function PostsNavItemContent({ isActive, to }: { isActive: boolean; to: string }) {
   return (
@@ -31,13 +33,13 @@ function PostsNavItemContent({ isActive, to }: { isActive: boolean; to: string }
         <LucideIcon.PenLine className="pointer-events-none opacity-0 transition-all sidebar:opacity-100 sidebar:group-hover/menu-item:opacity-0 sidebar:group-has-[button:focus-visible]/menu-item:opacity-0" />
         <NavMenuItem.Label>Posts</NavMenuItem.Label>
       </NavMenuItem.Link>
-      <a
+      <AdminLink
         aria-label="Create new post"
         className="absolute top-0 right-0 flex size-8 items-center justify-center rounded-full p-0 text-gray-700 ring-sidebar-ring outline-hidden transition-all hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 dark:text-gray-800 dark:hover:text-white"
-        href="#/editor/post"
+        to="/editor/post"
       >
         <LucideIcon.Plus className="mt-px stroke-[1.5px]!" size={20} />
-      </a>
+      </AdminLink>
     </>
   );
 }
@@ -83,12 +85,14 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
   const hasMemberViews = memberViews.length > 0;
   const memberCount = useMemberCount();
   const automationsEnabled = useFeatureFlag('automations');
+  const appsEnabled = useFeatureFlag('apps');
   const isMembersRouteActive = useIsActiveLink({ path: 'members', activeOnSubpath: true });
   const isMemberActivityActive = useIsActiveLink({ path: 'members-activity' });
 
   const showTags = currentUser && canManageTags(currentUser);
   const showMembers = currentUser && canManageMembers(currentUser);
   const showAutomations = currentUser && canManageAutomations(currentUser);
+  const showApps = appsEnabled && currentUser && canManageApps(currentUser);
   const commentsEnabled = getSettingValue<string>(settingsData?.settings, 'comments_enabled');
   const showComments = !!showMembers && commentsEnabled !== 'off';
   const postViews = [...postNavigation.defaultViews, ...postNavigation.customViews];
@@ -183,6 +187,15 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
               <NavMenuItem.Link to="automations" activeOnSubpath>
                 <LucideIcon.Zap />
                 <NavMenuItem.Label>Automations</NavMenuItem.Label>
+              </NavMenuItem.Link>
+            </NavMenuItem>
+          )}
+
+          {showApps && (
+            <NavMenuItem>
+              <NavMenuItem.Link to="apps" activeOnSubpath>
+                <LucideIcon.LayoutGrid />
+                <NavMenuItem.Label>Apps</NavMenuItem.Label>
               </NavMenuItem.Link>
             </NavMenuItem>
           )}

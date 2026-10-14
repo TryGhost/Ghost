@@ -3,8 +3,10 @@ import { Inline, Stack, Text } from '@tryghost/shade/primitives';
 import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
 import { hasAdminAccess } from '@tryghost/admin-x-framework/api/users';
 import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
+import { Link } from '@tryghost/admin-x-framework';
 import { publishTypeError as publishTypeErrorTestId } from '@tryghost/test-data/selectors/editor';
 import { EDITOR_REQUEST_OPTIONS } from '@/editor/request-options';
+import { useSettingsReturnToState } from '@/layout/settings-navigation';
 import type { PublishOptionsState, PublishType } from '@/editor/publish/publish-options';
 
 const MAILGUN_DOCS = 'https://docs.ghost.org/newsletters/#bulk-email-configuration';
@@ -20,12 +22,17 @@ function NoNewsletterNote() {
     defaultErrorHandler: false,
     requestOptions: EDITOR_REQUEST_OPTIONS,
   });
+  const settingsReturnToState = useSettingsReturnToState();
   // Editors can open Settings, but only admins see its newsletters.
   const newsletters =
     currentUser && hasAdminAccess(currentUser) ? (
-      <a className="underline" href={automations ? '#/settings/emails' : '#/settings/newsletters'}>
+      <Link
+        className="underline"
+        state={settingsReturnToState}
+        to={automations ? '/settings/emails' : '/settings/newsletters'}
+      >
         newsletters
-      </a>
+      </Link>
     ) : (
       'newsletters'
     );

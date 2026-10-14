@@ -19,7 +19,6 @@ import { editorScreen } from '@/editor/editor.screen';
 
 const POST_ID = 'abc123';
 const CURRENT_USER_ID = '1';
-const FLAG_ON = withoutAutosave({ labs: { editorReact: true } });
 const LOADED_AT = '2026-01-01T00:00:00.000Z';
 const PUBLISHED_AT = '2025-12-01T10:00:00.000Z';
 const ROUTE = new RegExp(`^/posts/${POST_ID}/\\?`);
@@ -33,7 +32,7 @@ type SavedPost = ReturnType<typeof post>;
 function asRole(name: StaffRoleName) {
   const me = currentUserResponse();
   me.users[0].roles = [staffRole({ name })];
-  return { ...FLAG_ON, boot: { browseMe: { response: me } } };
+  return withoutAutosave({ boot: { browseMe: { response: me } } });
 }
 
 function editorChrome() {
@@ -151,7 +150,7 @@ afterEach(async () => {
 describe('Post settings sidebar', () => {
   it('persists a draft’s Featured toggle on its own', async () => {
     const saveApi = fakeSavablePost();
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
     await openSidebar();
 
     await editorScreen.settingsFeatured().click();
@@ -162,7 +161,7 @@ describe('Post settings sidebar', () => {
 
   it('saves a published post’s Featured toggle on its own', async () => {
     const saveApi = fakeSavablePost({ status: 'published', published_at: PUBLISHED_AT });
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
     await openSidebar();
 
     await editorScreen.settingsFeatured().click();
@@ -178,7 +177,7 @@ describe('Post settings sidebar', () => {
 
   it('keeps a settings change through a collision and drops it on reload', async () => {
     const saveApi = fakeCollidingPost();
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
     await openSidebar();
 
     await editorScreen.settingsFeatured().click();
@@ -199,7 +198,7 @@ describe('Post settings sidebar', () => {
 
   it('saves the sidebar excerpt when the inline one is off', async () => {
     const saveApi = fakeSavablePost();
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
     await openSidebar();
 
     await editorScreen.settingsExcerpt().fill('From the sidebar');
@@ -211,7 +210,7 @@ describe('Post settings sidebar', () => {
   it('shows a field the acknowledgement adopted, with no refetch to carry it', async () => {
     // The writer never touches Featured; the server's copy arrives on the save.
     const saveApi = fakeAdoptingPost({ featured: true });
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
     await openSidebar();
 
     await expect
@@ -227,7 +226,7 @@ describe('Post settings sidebar', () => {
 
   it('shows the excerpt the acknowledgement normalized', async () => {
     const saveApi = fakeAdoptingPost({ custom_excerpt: 'From the server' });
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
     await openSidebar();
 
     await editorScreen.settingsExcerpt().fill('From the sidebar');
@@ -240,7 +239,7 @@ describe('Post settings sidebar', () => {
   it('leaves the excerpt out of the sidebar when it renders under the title', async () => {
     fakeSavablePost();
     await renderAdminApp(`/editor/post/${POST_ID}`, {
-      labs: { editorReact: true, editorExcerpt: true },
+      labs: { editorExcerpt: true },
     });
     await openSidebar();
 
@@ -251,7 +250,7 @@ describe('Post settings sidebar', () => {
   it('overlays the editor rather than narrowing it on a narrow viewport', async () => {
     fakeSavablePost();
     await page.viewport(900, 800);
-    await renderAdminApp(`/editor/post/${POST_ID}`, FLAG_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
     await expect.element(editorScreen.root()).toBeVisible();
 
     const editorWidth = editorWidthPx();

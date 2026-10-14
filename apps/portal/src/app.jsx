@@ -16,6 +16,7 @@ import ActionHandler from './actions';
 import { getGiftRedemptionErrorMessage } from './utils/gift-redemption-notification';
 import { GIFT_DURATION_CATALOGUE } from './utils/gift-subscriptions';
 import { clearGiftFormState } from './components/pages/gift/form-state';
+import { preloadGiftCardTextures } from './components/common/gift-card';
 import { fetchMemberCustomFields } from './utils/custom-fields';
 import './app.css';
 import {
@@ -800,6 +801,7 @@ export default class App extends React.Component {
         return {};
       }
 
+      preloadGiftCardTextures(site.url);
       const redemptionRequest = this.startGiftRedemptionRequest(decodedToken);
       const giftLinkData = await this.fetchGiftRedemptionData({
         token: decodedToken,
@@ -839,6 +841,10 @@ export default class App extends React.Component {
         removePortalLinkFromUrl();
 
         return {};
+      }
+
+      if (page === 'gift') {
+        preloadGiftCardTextures(site.url);
       }
 
       const lastPage = ['accountPlan', 'accountProfile'].includes(page) ? 'accountHome' : null;

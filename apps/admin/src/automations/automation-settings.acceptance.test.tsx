@@ -1,3 +1,4 @@
+import { composeConfigBootOverrides } from '@test-utils/acceptance/boot';
 import { describe, expect, it } from 'vitest';
 import { page } from 'vitest/browser';
 import { fakeAdminEndpoint, renderAdminApp } from '@test-utils/acceptance';
@@ -14,6 +15,7 @@ const descriptionField = () => page.getByRole('textbox', { name: 'Description', 
 describe('Automation settings', () => {
   it.each([
     { status: 'inactive' as const, button: 'Save', savedStatus: 'inactive' },
+    { status: 'archived' as const, button: 'Save', savedStatus: 'archived' },
     { status: 'active' as const, button: 'Publish changes', savedStatus: 'active' },
     { status: 'active' as const, button: 'Turn off', savedStatus: 'inactive' },
   ])('persists metadata through explicit $button', async ({ status, button, savedStatus }) => {
@@ -90,7 +92,8 @@ describe('Automation settings', () => {
       const { counts, list } = setup();
       await renderAdminApp('/automations/first', {
         ...flags,
-        labs: { ...flags.labs, automationRunAnalytics: performance, automationsPerTier: settings },
+        boot: performance ? flags.boot : composeConfigBootOverrides({ stats: undefined }),
+        labs: { ...flags.labs, automationsPerTier: settings },
       });
       await expect.element(page.getByTestId('automation-canvas')).toBeVisible();
       const toggle = page.getByRole('button', { name: 'Show automation sidebar' });
