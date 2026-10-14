@@ -172,8 +172,6 @@
     "@radix-ui/react-toggle": "1.1.13",
     "@radix-ui/react-toggle-group": "1.1.14",
     "@radix-ui/react-tooltip": "catalog:",
-    "@types/react": "catalog:",
-    "@types/react-dom": "catalog:",
     "@uiw/react-codemirror": "catalog:",
     "class-variance-authority": "0.7.1",
     "clsx": "catalog:",
@@ -200,6 +198,8 @@
     "@testing-library/dom": "catalog:",
     "@testing-library/react": "catalog:",
     "@types/node": "catalog:",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
     "@typescript/native": "catalog:",
     "@vitejs/plugin-react": "catalog:",
     "@vitest/coverage-v8": "catalog:",
@@ -220,9 +220,19 @@
     "vitest": "catalog:"
   },
   "peerDependencies": {
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "tailwindcss": "^4.1.0"
+  },
+  "peerDependenciesMeta": {
+    "@types/react": {
+      "optional": true
+    },
+    "@types/react-dom": {
+      "optional": true
+    }
   },
   "nx": {
     "targets": {
