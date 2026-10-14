@@ -159,4 +159,5 @@ types, limits and shape checks, so the SDK and Admin read paths, themes and
 start contexts by the same rules. It imports only the contracts' root entry
 point, which loads no `zod`. `build/` imports it; `dist/` inlines what it uses,
 so the bundle imports nothing, which `test/bundle.test.ts` checks on the built
-file.
+file. The bundle's build fails on a Node builtin, which Vite would otherwise
+replace with an empty stub.

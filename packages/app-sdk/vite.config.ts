@@ -18,11 +18,27 @@ const tidyRegionComments: Plugin = {
   },
 };
 
+// Vite turns a Node builtin, such as `node:crypto`, into an empty stub for the browser and
+// only warns about it, so a bundle that needs one would build, import nothing, and break the
+// page that called it. Anything the SDK or the contracts' root reaches must run in a page, so
+// a builtin fails the build instead.
+const refuseNodeBuiltins: Plugin = {
+  name: 'refuse-node-builtins',
+  enforce: 'pre',
+  async resolveId(source, importer, options) {
+    const resolved = await this.resolve(source, importer, { ...options, skipSelf: true });
+    if (resolved?.id.startsWith('__vite-browser-external')) {
+      this.error(`${importer} imports ${source}, a Node builtin no page can load`);
+    }
+    return resolved;
+  },
+};
+
 // The browser bundle: one ES module with @quilted/threads inlined, for a page to load from a
 // <script type="module"> with no bundler of its own. Left unminified, with a source map,
 // so it reads well in devtools while the SDK is young.
 export default defineConfig({
-  plugins: [tidyRegionComments],
+  plugins: [refuseNodeBuiltins, tidyRegionComments],
   build: {
     outDir: 'dist',
     emptyOutDir: true,

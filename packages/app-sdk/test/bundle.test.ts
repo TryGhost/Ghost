@@ -24,9 +24,10 @@ function* nodes(value: unknown): Generator<{ type: string }> {
 }
 
 // A page loads the bundle from a <script type="module"> with nothing to resolve a bare
-// specifier against, so a single import left in it, of a dependency or a `node:` builtin
-// pulled in through the contracts, breaks every app that uses it. The source is parsed rather
-// than searched, as comments inlined from dependencies mention `import(` too.
+// specifier against, so a single import left in it, of a dependency say, breaks every app
+// that uses it. The source is parsed rather than searched, as comments inlined from
+// dependencies mention `import(` too. A Node builtin would leave no import, as Vite stubs it
+// out, so the build itself refuses one (vite.config.ts).
 describe('the browser bundle', () => {
   it('has been built', () => {
     expect(existsSync(BUNDLE), 'run pnpm build:bundle first').toBe(true);
