@@ -678,6 +678,10 @@ describe('Managing apps', () => {
       answer(await callAppFrame(APP_ORIGIN, 'setPath', '/episodes/12'));
       answer(await callAppFrame(APP_ORIGIN, 'open', { apps: true }));
       expect(currentRoute()).toBe(APP_ROUTE);
+      // The app hears where Admin stays.
+      await expect
+        .poll(async () => (await appState()).received)
+        .toEqual([{ call: 'pathChanged', value: '/' }]);
 
       await expect.poll(currentRoute).toBe('/pages');
     });

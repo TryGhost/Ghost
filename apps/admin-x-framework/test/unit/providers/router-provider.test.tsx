@@ -1,7 +1,12 @@
 import * as Sentry from '@sentry/react';
 import { render, screen, waitFor } from '@testing-library/react';
-import { type Location, Outlet } from 'react-router';
-import { RouterProvider } from '../../../src/providers/router-provider';
+import {
+  type Location,
+  Outlet,
+  RouterProvider as ReactRouterProvider,
+  createMemoryRouter,
+} from 'react-router';
+import { RouterProvider, usePendingNavigation } from '../../../src/providers/router-provider';
 import { TestWrapper } from '../../../src/test/test-utils';
 
 vi.mock('@sentry/react', async (importOriginal) => ({
@@ -122,5 +127,27 @@ describe('route errors', () => {
 
     await screen.findByText('Route error');
     expect(Sentry.captureException).not.toHaveBeenCalled();
+  });
+});
+
+describe('usePendingNavigation', () => {
+  it('reads a navigation the moment it begins, before React has committed it', async () => {
+    let pendingNavigation: () => Location | undefined = () => undefined;
+    function Home() {
+      pendingNavigation = usePendingNavigation();
+      return <div>Home</div>;
+    }
+    const router = createMemoryRouter([
+      { path: '/', Component: Home },
+      // Loads slowly, so the navigation stays pending.
+      { path: '/slow', lazy: () => new Promise<never>(() => {}) },
+    ]);
+    render(<ReactRouterProvider router={router} />);
+    await screen.findByText('Home');
+    expect(pendingNavigation()).toBeUndefined();
+
+    void router.navigate('/slow');
+
+    expect(pendingNavigation()?.pathname).toBe('/slow');
   });
 });

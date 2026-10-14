@@ -115,7 +115,7 @@ type FakeFrame = ReturnType<typeof fakeFrame>;
 describe('createAppFrameSession', () => {
   let session: AppFrameSession;
   let admin: { context: StartContext };
-  const navigate = vi.fn<AppFrameSessionOptions['navigate']>();
+  const navigate = vi.fn<AppFrameSessionOptions['navigate']>(() => true);
   const open = vi.fn();
   const fetchAdminApi = vi.fn<AdminApiFetch>();
   const previousTimeout = appFrameTimeouts.ready;
@@ -589,6 +589,19 @@ describe('createAppFrameSession', () => {
     await vi.waitFor(() =>
       expect(frame.app.pathChanged).toHaveBeenCalledExactlyOnceWith('/episodes'),
     );
+  });
+
+  it('tells the app where Admin stays when Admin doesn’t follow it', async () => {
+    const frame = await started();
+    // The publisher is on their way out of the app.
+    navigate.mockReturnValueOnce(false);
+
+    await frame.host.pathChanged('/episodes');
+
+    await vi.waitFor(() => expect(frame.app.pathChanged).toHaveBeenCalledExactlyOnceWith('/'));
+    // Nothing for Admin to catch up with: a move of its own there is news to the app.
+    session.pathChanged('/episodes');
+    await vi.waitFor(() => expect(frame.app.pathChanged).toHaveBeenLastCalledWith('/episodes'));
   });
 
   it('doesn’t move Admin to the route it is already on', async () => {
