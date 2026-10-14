@@ -84,6 +84,12 @@ const NotResponding: React.FC<{
   </Centered>
 );
 
+/** The number of the app's move a location of Admin's was made for, if it was. */
+function appMoveOf(state: unknown): number | undefined {
+  const move = (state as { appMove?: unknown } | null)?.appMove;
+  return typeof move === 'number' ? move : undefined;
+}
+
 /**
  * Shows the app's page title as Admin's own while the page is open, once the page has given
  * one, and puts Admin's back when it closes.
@@ -161,6 +167,7 @@ const AppFrame: React.FC<{
   const { id, manifest } = installation;
 
   const path = appPathFromLocation(id, location);
+  const move = appMoveOf(location.state);
   const theme = useMemo<Theme>(
     () => ({ mode: resolvedTheme, accent_color: accentColor }),
     [resolvedTheme, accentColor],
@@ -184,7 +191,7 @@ const AppFrame: React.FC<{
   const navigation = useNavigation();
   const leavingRef = useRef(false);
   leavingRef.current = navigation.state !== 'idle' && !isAppLocation(id, navigation.location);
-  const navigateForApp = (to: string, options?: { replace?: boolean }) => {
+  const navigateForApp = (to: string, options?: { replace?: boolean; state?: unknown }) => {
     if (!leavingRef.current) {
       navigateRef.current(to, options);
     }
@@ -202,7 +209,8 @@ const AppFrame: React.FC<{
       surfaceOrigin,
       context: () => contextRef.current,
       fetchAdminApi: createAdminApiFetch({ apiRoot: new URL(apiUrl('/')), ghostVersion }),
-      navigate: (next, { replace }) => navigateForApp(appPathRoute(id, next), { replace }),
+      navigate: (next, { replace, move: appMove }) =>
+        navigateForApp(appPathRoute(id, next), { replace, state: { appMove } }),
       open: (place) => navigateForApp(placeRoute(place)),
     }),
   );
@@ -214,7 +222,9 @@ const AppFrame: React.FC<{
   useAppTitle(manifest.name, title);
 
   // Back, forward or a link moved Admin within the app: the app follows, without reloading.
-  useEffect(() => frameSession.pathChanged(path), [frameSession, path]);
+  // Every location counts, by its key: React Router commits in a transition, which can fold
+  // the app's quick moves into one location on a route Admin was already on.
+  useEffect(() => frameSession.pathChanged(path, move), [frameSession, location.key, path, move]);
   useEffect(() => frameSession.themeChanged(theme), [frameSession, theme]);
 
   if (status === 'failed') {

@@ -643,6 +643,27 @@ describe('Managing apps', () => {
       expect((await appState()).path).toBe('/');
     });
 
+    it('hears Back after the app bounced away and back faster than Admin renders', async () => {
+      await fakeAppPage(installation());
+      await renderAdminApp(APP_ROUTE, { labs });
+      await expect.element(appsScreen.frame()).toBeVisible();
+
+      // Which history entry Admin is on, as React Router numbers them.
+      const historyIndex = () => (window.history.state as { idx?: number } | null)?.idx ?? 0;
+      const start = historyIndex();
+
+      // An auth guard's bounce, say: both moves reach Admin before it has rendered either.
+      answer(await callAppFrame(APP_ORIGIN, 'setPaths', ['/login', '/']));
+      await expect.poll(historyIndex).toBe(start + 2);
+      expect(currentRoute()).toBe(APP_ROUTE);
+
+      window.history.back();
+      await expect.poll(currentRoute).toBe(`${APP_ROUTE}/login`);
+      await expect
+        .poll(async () => (await appState()).received)
+        .toEqual([{ call: 'pathChanged', value: '/login' }]);
+    });
+
     it('lets the publisher leave the app while the route they chose loads', async () => {
       // The pages list owns its request graph.
       allowUnhandledRequests();
