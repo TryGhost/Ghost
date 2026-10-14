@@ -135,7 +135,7 @@ export function decodeBridgeError(
 }
 
 /** What Admin's theme can be. Resolved before it is sent, so never `system`. */
-export const THEME_MODES = ['light', 'dark'] as const;
+const THEME_MODES = ['light', 'dark'] as const;
 
 /** The theme Admin is showing, so the page can match it. `mode` is resolved, never `system`. */
 export type Theme = {
