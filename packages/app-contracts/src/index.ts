@@ -39,6 +39,7 @@ export {
   FETCH_RESPONSE_STATUS_MAX,
   FETCH_RESPONSE_STATUS_MIN,
   HELLO_MESSAGE_TYPE,
+  START_TIMEOUT_MS,
   TITLE_MAX_LENGTH,
   decodeBridgeError,
   encodeBridgeError,

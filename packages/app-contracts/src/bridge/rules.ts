@@ -20,6 +20,13 @@ export const HELLO_MESSAGE_TYPE = 'ghost-app:hello';
 /** Posted by Admin to the frame that said hello, with the channel's port attached. */
 export const CONNECT_MESSAGE_TYPE = 'ghost-app:connect';
 
+/**
+ * How long an app's page has to start, in milliseconds: Admin gives up on a frame this long
+ * after mounting it, and the SDK waits this long for Admin to start it unless the app says
+ * otherwise. Long enough for a slow page on a slow connection to load and say hello.
+ */
+export const START_TIMEOUT_MS = 10_000;
+
 /** Long enough for any real page title, short enough that Admin's own name still shows. */
 export const TITLE_MAX_LENGTH = 200;
 

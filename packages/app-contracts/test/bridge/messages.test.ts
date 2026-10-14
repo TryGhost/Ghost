@@ -5,12 +5,17 @@ import {
   ConnectMessageSchema,
   HELLO_MESSAGE_TYPE,
   HelloMessageSchema,
+  START_TIMEOUT_MS,
 } from '../../src/bridge/index.ts';
 
 describe('the window messages', () => {
   it('keeps the message types stable', () => {
     expect(HELLO_MESSAGE_TYPE).toBe('ghost-app:hello');
     expect(CONNECT_MESSAGE_TYPE).toBe('ghost-app:connect');
+  });
+
+  it('gives a page ten seconds to start', () => {
+    expect(START_TIMEOUT_MS).toBe(10_000);
   });
 
   it('accepts a hello naming the SDK version', () => {

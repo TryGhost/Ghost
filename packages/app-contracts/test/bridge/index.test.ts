@@ -23,6 +23,7 @@ describe('the bridge entry point', () => {
       'HelloMessageSchema',
       'PathChangeOptionsSchema',
       'PlaceSchema',
+      'START_TIMEOUT_MS',
       'StartContextSchema',
       'TITLE_MAX_LENGTH',
       'ThemeSchema',

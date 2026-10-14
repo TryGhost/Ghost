@@ -1,4 +1,4 @@
-import { HELLO_MESSAGE_TYPE } from '@tryghost/app-contracts/bridge';
+import { HELLO_MESSAGE_TYPE, START_TIMEOUT_MS } from '@tryghost/app-contracts/bridge';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { ADMIN_ORIGIN, FakeAdmin, frame, postToPage, settle, startContext } from './fake-admin.ts';
@@ -181,7 +181,8 @@ describe('connect', () => {
     const failed = expect(connecting).rejects.toMatchObject({ code: 'not_connected' });
     fake.connect();
 
-    vi.advanceTimersByTime(10_000);
+    // As long as Admin gives the page, by default.
+    vi.advanceTimersByTime(START_TIMEOUT_MS);
     await failed;
   });
 

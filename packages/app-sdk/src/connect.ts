@@ -1,12 +1,9 @@
-import { HELLO_MESSAGE_TYPE, isConnectMessage } from '@tryghost/app-contracts';
+import { HELLO_MESSAGE_TYPE, START_TIMEOUT_MS, isConnectMessage } from '@tryghost/app-contracts';
 
 import { GhostAppError, invalidArgument } from './errors.ts';
 import { Channel } from './session.ts';
 import type { ConnectOptions, Ghost } from './types.ts';
 import { SDK_VERSION } from './version.ts';
-
-/** Matches the clock Admin runs from mounting the frame to giving up on it. */
-const DEFAULT_CONNECT_TIMEOUT = 10_000;
 
 /**
  * How often the hello is said again until Admin answers. Admin may start listening only
@@ -28,7 +25,9 @@ function parentOrigin(): string {
 }
 
 function handshake(
-  { timeout = DEFAULT_CONNECT_TIMEOUT }: ConnectOptions,
+  // By default, as long as Admin gives the page: waiting longer would wait on a frame Admin
+  // has given up on.
+  { timeout = START_TIMEOUT_MS }: ConnectOptions,
   onEnded: () => void,
 ): Promise<Ghost> {
   if (typeof timeout !== 'number' || !(timeout > 0) || !Number.isFinite(timeout)) {
