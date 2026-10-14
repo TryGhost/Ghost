@@ -4,6 +4,21 @@ App Installations covers a site's record of the apps it has approved: what each
 one runs, what is waiting for approval, and who did what. Apps, manifests and
 changes are defined in [App Contracts](../../../../../packages/app-contracts/CONTEXT.md).
 
+## Lifecycle
+
+1. **Install.** A publisher opens an install link, reviews the preview and
+   confirms it. The site gets a new installation, active and running that
+   manifest as its approved manifest.
+2. **Re-check.** Each time an app session starts, Ghost loads the manifest
+   again. Silent changes are applied straight away. Any other change becomes
+   the pending manifest and suspends the installation; a re-check that finds
+   only silent changes again, or the approved manifest, lifts the suspension.
+3. **Approval.** The publisher reviews the pending manifest, or the app at a
+   new manifest URL, and approves it. It becomes the approved manifest, and a
+   suspended installation is active again.
+4. **Uninstall.** The installation ends and is kept as a record. Installing the
+   app again starts a new installation.
+
 ## Language
 
 ### Installations
