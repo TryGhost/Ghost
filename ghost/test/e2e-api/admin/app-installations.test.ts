@@ -800,11 +800,35 @@ describe('App installations Admin API', function () {
       const { body } = await start(installed.id);
 
       assert.equal(body.app_sessions[0].installation.status, 'active');
+      assert.equal(body.app_sessions[0].installation.manifest.name, 'Podcast');
       const row = await installationRow(installed.id);
       assert.equal(row.pending_manifest_id, null);
       assert.equal(row.revision, 2);
-      // The approved one and the one it went back on: going back added nothing.
-      assert.equal((await manifestRows()).length, 2);
+      // The approved manifest again, kept as a row of its own so the history shows the app
+      // running again.
+      const [approved, waited, resumed] = await manifestRows();
+      assert.equal(row.manifest_id, resumed.id);
+      assert.equal(resumed.source, 'update');
+      assert.equal(Boolean(resumed.requires_approval), false);
+      assert.equal(resumed.digest, approved.digest);
+      assert.notEqual(resumed.id, waited.id);
+      // Nobody decided this, so staff history has nothing to say about it.
+      assert.equal((await actions()).length, 1);
+
+      const { body: details } = await agent
+        .get(`apps/installations/${installed.id}/?include=history`)
+        .expectStatus(200);
+      assert.deepEqual(
+        details.app_installations[0].history.map((entry: any) => [
+          entry.event,
+          entry.actor?.name ?? null,
+        ]),
+        [
+          ['updated', null],
+          ['suspended', null],
+          ['installed', 'Joe Bloggs'],
+        ],
+      );
     });
 
     it('applies a silent change that comes while other changes wait, letting go of them', async function () {

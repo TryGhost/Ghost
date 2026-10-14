@@ -76,6 +76,8 @@ function installOf(manifests: HistoryManifest[], actions: HistoryAction[]): Entr
 /**
  * A newer version Ghost picked up by itself.
  * Ghost either applied it (`updated`) or held it for approval (`suspended`).
+ * Applying one after a suspension runs the app again. That includes the app going back to
+ * the approved manifest, which Ghost keeps as a row of its own so it shows here.
  */
 function updatesAndSuspensionsOf(manifests: HistoryManifest[]): Entry[] {
   return manifests

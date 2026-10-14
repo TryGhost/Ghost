@@ -180,10 +180,13 @@ async function pendingManifest(
  * changes that need approval wait, suspending the installation. A publisher's approval
  * (`approval`) applies what they reviewed, whatever it needed.
  *
- * A manifest is kept as a row of its own, unless it already has one: the approved one
- * when the app went back on changes that waited, or the pending one when that is what is
- * approved. Every write moves the revision on. Returns the approved manifest before and
- * after, or null when there was nothing to write.
+ * A manifest is kept as a row of its own, unless it is the pending one being approved.
+ * That includes Ghost lifting a suspension because the app went back on the changes that
+ * waited: the manifest is the approved one again, but nobody decided this, so a row is all
+ * the history has to show the app running again. A publisher's approval of the approved
+ * manifest needs no row; its staff history entry tells it. Every write moves the revision
+ * on. Returns the approved manifest before and after, or null when there was nothing to
+ * write.
  */
 async function keepManifest(
   trx: Knex.Transaction,
@@ -196,12 +199,14 @@ async function keepManifest(
     return null;
   }
   const waits = kind === 'suspend' && source === 'update';
+  // Ghost found the approved manifest again while changes waited for approval.
+  const resumes = kind === 'apply' && source === 'update' && current.pending_manifest_id !== null;
   const now = toDatabaseDate(new Date());
 
   let manifestId = current.manifest_id;
   if (kind === 'use_pending' && current.pending_manifest_id !== null) {
     manifestId = current.pending_manifest_id;
-  } else if (changes.length > 0) {
+  } else if (changes.length > 0 || resumes) {
     manifestId = new ObjectId().toHexString();
     await trx(MANIFESTS).insert({
       id: manifestId,
