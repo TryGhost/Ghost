@@ -177,22 +177,23 @@ them, without zod, and the schemas build on the same constants, so both sides
 read a path, a theme or a start context the same way. A test holds each guard
 and its schema to the same answers.
 
-`fetch` takes an Admin API path, never a URL. Admin resolves it with
-`resolveAdminApiPath(path, apiRoot)`, which returns `null` for anything that
-leaves the API root, and refuses what `isBlockedAdminApiPath(pathname)` blocks:
-the routes that hand out credentials, change who can sign in, send site events
-elsewhere, or import, export or delete the whole site. `ADMIN_API_BLOCKLIST`
-lists them by category, each with its reason. It is a stopgap until apps have
-their own token, and its header names what it leaves open for the security
-review (BER-3992).
+`fetch` takes an Admin API path, never a URL. Admin checks it with
+`checkAdminApiPath(path, apiRoot)`, which resolves it against the Admin API root
+and answers with the URL to request, or with `invalid_path` for anything that
+leaves the root and `blocked` for what the blocklist closes: the routes that
+hand out credentials, change who can sign in, send site events elsewhere, or
+import, export or delete the whole site. `ADMIN_API_BLOCKLIST` lists them by
+category, each with its reason. It is a stopgap until apps have their own
+token, and its header names what it leaves open for the security review
+(BER-3992).
 
 ```ts
-import { isBlockedAdminApiPath, resolveAdminApiPath } from '@tryghost/app-contracts/bridge';
+import { checkAdminApiPath } from '@tryghost/app-contracts/bridge';
 
 const root = new URL('https://site.example/ghost/api/admin/');
-const url = resolveAdminApiPath('/posts/?limit=5', root); // …/ghost/api/admin/posts/?limit=5
-const pathname = url && url.pathname.slice(root.pathname.length - 1); // /posts/
-const allowed = pathname !== null && !isBlockedAdminApiPath(pathname);
+checkAdminApiPath('/posts/?limit=5', root); // { url: …/ghost/api/admin/posts/?limit=5, pathname: '/posts/' }
+checkAdminApiPath('/../content/', root); // { problem: 'invalid_path' }
+checkAdminApiPath('/db/', root); // { problem: 'blocked', pathname: '/db/' }
 ```
 
 ## Develop

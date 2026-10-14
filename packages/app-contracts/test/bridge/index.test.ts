@@ -29,9 +29,9 @@ describe('the bridge entry point', () => {
       'TITLE_MAX_LENGTH',
       'ThemeSchema',
       'TitleSchema',
+      'checkAdminApiPath',
       'decodeBridgeError',
       'encodeBridgeError',
-      'isBlockedAdminApiPath',
       'isConnectMessage',
       'isContainedPath',
       'isFetchResponse',
@@ -40,7 +40,6 @@ describe('the bridge entry point', () => {
       'isStartContext',
       'isTheme',
       'methodAllowsBody',
-      'resolveAdminApiPath',
     ]);
   });
 

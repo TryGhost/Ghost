@@ -30,8 +30,8 @@ const utf8 = new TextEncoder();
 
 /**
  * A request an app asks Admin to make to the Admin API on its behalf. The path is never a URL:
- * Admin resolves it against its own Admin API root with `resolveAdminApiPath` and checks it
- * against the blocklist before anything reaches the network.
+ * Admin resolves it against its own Admin API root and checks it against the blocklist, both
+ * with `checkAdminApiPath`, before anything reaches the network.
  *
  * Unknown fields are refused rather than ignored, so an option Admin does not support fails
  * loudly instead of the request going out without it.

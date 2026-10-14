@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { ADMIN_API_BLOCKLIST, isBlockedAdminApiPath } from '../../src/bridge/index.ts';
+import { ADMIN_API_BLOCKLIST, isBlockedAdminApiPath } from '../../src/bridge/blocklist.ts';
 
 describe('the Admin API blocklist', () => {
   it('gives every category a name, a reason and paths', () => {

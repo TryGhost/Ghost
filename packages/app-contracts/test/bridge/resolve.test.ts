@@ -1,14 +1,18 @@
 import { describe, expect, it } from 'vitest';
 
-import { isBlockedAdminApiPath, resolveAdminApiPath } from '../../src/bridge/index.ts';
+import { checkAdminApiPath } from '../../src/bridge/index.ts';
 
 const root = new URL('https://site.example/ghost/api/admin/');
 
+// The URL a path resolves to, or null when it is not an Admin API path. Every path here but
+// the ones about the blocklist is open to apps.
 function resolved(path: string, apiRoot = root) {
-  return resolveAdminApiPath(path, apiRoot)?.href ?? null;
+  const check = checkAdminApiPath(path, apiRoot);
+  expect(check.problem, path).not.toBe('blocked');
+  return check.problem ? null : check.url.href;
 }
 
-describe('resolving an Admin API path', () => {
+describe('checking an Admin API path', () => {
   it('resolves a leading / against the API root, not the origin', () => {
     expect(resolved('/posts/')).toBe('https://site.example/ghost/api/admin/posts/');
     expect(resolved('/posts/?limit=5&filter=tag:news')).toBe(
@@ -25,9 +29,15 @@ describe('resolving an Admin API path', () => {
   });
 
   it('returns a new URL, leaving the root alone', () => {
-    const url = resolveAdminApiPath('/posts/', root);
-    expect(url).not.toBe(root);
+    const check = checkAdminApiPath('/posts/', root);
+    expect(check.problem).toBeUndefined();
+    expect(check).not.toHaveProperty('url', root);
     expect(root.href).toBe('https://site.example/ghost/api/admin/');
+  });
+
+  it('names the path within the API, as the blocklist read it', () => {
+    expect(checkAdminApiPath('/posts/?limit=5', root)).toMatchObject({ pathname: '/posts/' });
+    expect(checkAdminApiPath('/', root)).toMatchObject({ pathname: '/' });
   });
 
   it('works with a root written without its trailing slash, a query or a fragment', () => {
@@ -100,9 +110,40 @@ describe('resolving an Admin API path', () => {
   });
 
   it('allows .. that stays within the root, so the blocklist sees where it lands', () => {
-    const url = resolveAdminApiPath('/posts/%2e%2e/users/password/', root);
-    expect(url?.href).toBe('https://site.example/ghost/api/admin/users/password/');
-    expect(isBlockedAdminApiPath(url!.pathname.slice(root.pathname.length - 1))).toBe(true);
+    expect(resolved('/posts/%2e%2e/tags/')).toBe('https://site.example/ghost/api/admin/tags/');
+    expect(checkAdminApiPath('/posts/%2e%2e/users/password/', root)).toEqual({
+      problem: 'blocked',
+      pathname: '/users/password/',
+    });
+  });
+
+  it('blocks what the blocklist closes, naming the path within the API', () => {
+    expect(checkAdminApiPath('/db/?include=all', root)).toEqual({
+      problem: 'blocked',
+      pathname: '/db/',
+    });
+    expect(checkAdminApiPath('/members/abc/signin_urls/', root)).toEqual({
+      problem: 'blocked',
+      pathname: '/members/abc/signin_urls/',
+    });
+  });
+
+  it('blocks the same paths whichever way the root is written', () => {
+    for (const apiRoot of [
+      'https://site.example/ghost/api/admin',
+      'https://site.example/ghost/api/admin/',
+      'https://site.example/ghost/api/admin/?a=b#c',
+      'https://site.example/',
+      'https://site.example',
+    ]) {
+      expect(checkAdminApiPath('/db/', new URL(apiRoot)), apiRoot).toEqual({
+        problem: 'blocked',
+        pathname: '/db/',
+      });
+      expect(checkAdminApiPath('/users/abc/token', new URL(apiRoot)), apiRoot).toMatchObject({
+        problem: 'blocked',
+      });
+    }
   });
 
   it('refuses escaped separators, which a later reader may decode', () => {
@@ -122,13 +163,13 @@ describe('resolving an Admin API path', () => {
   });
 
   it('refuses a path that is not text', () => {
-    expect(resolveAdminApiPath(42 as unknown as string, root)).toBeNull();
-    expect(resolveAdminApiPath(null as unknown as string, root)).toBeNull();
+    expect(resolved(42 as unknown as string)).toBeNull();
+    expect(resolved(null as unknown as string)).toBeNull();
   });
 
   it('cannot be moved to another origin', () => {
     for (const path of ['/@evil.example/', '/:443@evil.example/', '/%40evil.example']) {
-      expect(resolveAdminApiPath(path, root)?.origin).toBe('https://site.example');
+      expect(new URL(resolved(path)!).origin).toBe('https://site.example');
     }
   });
 });

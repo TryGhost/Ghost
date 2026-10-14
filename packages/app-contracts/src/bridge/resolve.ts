@@ -1,3 +1,4 @@
+import { isBlockedAdminApiPath } from './blocklist.ts';
 import { FETCH_PATH_MAX_LENGTH } from './fetch.ts';
 import { isContainedPath } from './rules.ts';
 
@@ -6,22 +7,32 @@ import { isContainedPath } from './rules.ts';
 const ENCODED_SEPARATOR = /%2f|%5c/i;
 
 /**
- * Resolves the path an app passes to `fetch` against the Admin API root, such as
- * `https://site.example/ghost/api/admin/`, and returns the URL only if it stays under that
- * root on the root's own origin. Anything else comes back `null`: absolute and
- * protocol-relative URLs, backslashes, `..` in any spelling the URL parser understands, and
- * escaped separators.
+ * What `checkAdminApiPath` makes of a path: the URL to request and the path within the API
+ * that the blocklist read, or the code Admin refuses the request with.
+ */
+export type AdminApiPathCheck =
+  | { readonly url: URL; readonly pathname: string; readonly problem?: undefined }
+  | { readonly problem: 'invalid_path' }
+  | { readonly problem: 'blocked'; readonly pathname: string };
+
+/**
+ * Checks the path an app passes to `fetch` against the Admin API root, such as
+ * `https://site.example/ghost/api/admin/`, and against the blocklist, in one step, so no
+ * caller has to carry the resolved URL back into a path the blocklist can read.
  *
  * A leading `/` means the API root, not the origin, so `/posts/?limit=5` is
- * `https://site.example/ghost/api/admin/posts/?limit=5`. A path that does not start with one
- * is refused, so there is only one way to write each request.
+ * `https://site.example/ghost/api/admin/posts/?limit=5`. The root may be written with or
+ * without its trailing `/`, and its query and fragment are ignored.
  *
- * Check what comes back with `isBlockedAdminApiPath` too: staying under the root says the
- * request is for the Admin API, not that an app may make it.
+ * The path is `invalid_path` unless it stays under the root on the root's own origin:
+ * absolute and protocol-relative URLs, a path that does not start with `/`, backslashes,
+ * `..` in any spelling the URL parser understands, and escaped separators all are. A path
+ * that stays under the root is then `blocked` if the blocklist closes where it lands, read
+ * as `pathname`: relative to the root, with its leading `/`, without the query.
  */
-export function resolveAdminApiPath(path: string, apiRoot: URL): URL | null {
+export function checkAdminApiPath(path: string, apiRoot: URL): AdminApiPathCheck {
   if (typeof path !== 'string' || path.length > FETCH_PATH_MAX_LENGTH || !isContainedPath(path)) {
-    return null;
+    return { problem: 'invalid_path' };
   }
 
   const root = new URL(apiRoot.href);
@@ -41,7 +52,14 @@ export function resolveAdminApiPath(path: string, apiRoot: URL): URL | null {
     !url.pathname.startsWith(root.pathname) ||
     ENCODED_SEPARATOR.test(url.pathname)
   ) {
-    return null;
+    return { problem: 'invalid_path' };
   }
-  return url;
+
+  // Cut against the root as normalised above, so a root written without its trailing `/`
+  // cannot shift the cut and slip a path past the blocklist.
+  const pathname = url.pathname.slice(root.pathname.length - 1);
+  if (isBlockedAdminApiPath(pathname)) {
+    return { problem: 'blocked', pathname };
+  }
+  return { url, pathname };
 }

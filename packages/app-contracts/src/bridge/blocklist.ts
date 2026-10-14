@@ -124,9 +124,9 @@ function matches(pattern: readonly string[], segments: readonly string[]): boole
 
 /**
  * Whether an Admin API path is closed to apps. Takes a pathname relative to the Admin API
- * root, such as `/users/abc/token/`, already resolved by `resolveAdminApiPath`: the caller
- * passes the pathname, never the query string. Anything from a `?` or `#` on is ignored all
- * the same, so a query cannot be mistaken for a path.
+ * root, such as `/users/abc/token/`, as `checkAdminApiPath` cuts it from the resolved URL:
+ * the pathname, never the query string. Anything from a `?` or `#` on is ignored all the
+ * same, so a query cannot be mistaken for a path.
  *
  * Errs towards blocking wherever the path could be read more than one way. Ghost's router
  * ignores case and a trailing slash, so this does too. Percent-escapes are decoded and empty

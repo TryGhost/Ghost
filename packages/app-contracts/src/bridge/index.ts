@@ -6,18 +6,14 @@
  * window messages that set the channel up, the calls each side exposes, and the validation
  * Admin applies to every argument a frame sends, which it does not trust.
  *
- * It also holds the rules Admin applies to the fetch escape hatch, `resolveAdminApiPath` and
- * `isBlockedAdminApiPath`, so what an app may reach is written down in one place.
+ * It also holds the rules Admin applies to the fetch escape hatch, `checkAdminApiPath` and the
+ * blocklist behind it, so what an app may reach is written down in one place.
  *
  * The rules that depend on nothing, the message types, limits and shape guards in `rules.ts`,
  * are exported from the root entry point too, for the SDK to use without zod.
  */
 
-export {
-  ADMIN_API_BLOCKLIST,
-  isBlockedAdminApiPath,
-  type BlockedAdminApiCategory,
-} from './blocklist.ts';
+export { ADMIN_API_BLOCKLIST, type BlockedAdminApiCategory } from './blocklist.ts';
 export { StartContextSchema, ThemeSchema, type StartContext, type Theme } from './context.ts';
 export type { AppExports, HostExports } from './exports.ts';
 export {
@@ -42,7 +38,7 @@ export {
   type PathChangeOptions,
 } from './paths.ts';
 export { PlaceSchema, type Place } from './places.ts';
-export { resolveAdminApiPath } from './resolve.ts';
+export { checkAdminApiPath, type AdminApiPathCheck } from './resolve.ts';
 export {
   ARGUMENT_MESSAGES,
   BRIDGE_ERROR_CODES,
