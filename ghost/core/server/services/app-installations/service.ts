@@ -31,6 +31,7 @@ const HistoryManifestRow = DbAppInstallationManifest.pick({
   manifest_url: true,
   source: true,
   requires_approval: true,
+  digest: true,
   created_at: true,
 });
 
@@ -328,6 +329,7 @@ export class AppInstallationsService {
         'manifest_url',
         'source',
         'requires_approval',
+        'digest',
         'created_at',
       );
     const actionRows = this.knex('actions as action')

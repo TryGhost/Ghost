@@ -110,7 +110,8 @@ _Avoid_: minor change, safe change
 
 **History**:
 The timeline of an installation, newest first: installed, updated, suspended,
-changes approved and uninstalled.
+resumed (the app went back on the changes that waited), changes approved and
+uninstalled.
 _Avoid_: audit log, activity
 
 **Actor**:

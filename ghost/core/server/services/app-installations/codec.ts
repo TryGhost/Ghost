@@ -30,7 +30,7 @@ export interface HistoryActor {
  */
 export interface AppInstallationHistoryEntry {
   id: string;
-  event: 'installed' | 'updated' | 'suspended' | 'changes_approved' | 'uninstalled';
+  event: 'installed' | 'updated' | 'suspended' | 'resumed' | 'changes_approved' | 'uninstalled';
   actor: HistoryActor | null;
   created_at: Date;
   /** The host the app moved to. Only set when an approval moved the app. */
