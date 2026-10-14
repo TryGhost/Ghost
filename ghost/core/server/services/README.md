@@ -128,20 +128,27 @@ To inspect the remaining work across **all** entries:
 
 ```bash
 pnpm audit:services
-pnpm audit:services --output-type json > /tmp/service-dependencies.json
+pnpm --silent audit:services:summary
+pnpm audit:services --output-type json --output-to /tmp/service-dependencies.json
 ```
 
 The command enables `GHOST_SERVICE_DEPENDENCY_AUDIT` to apply the same rules to
 all entries, including those absent from the inventory. It uses Dependency
-Cruiser's built-in Markdown or JSON reporter. These reporters return success
-even when they find violations; the normal lint reporter fails on violations
-in migrated services. Reports list source files and dependency targets, without
-custom inventory grouping. Legacy root `index.js` files are treated as wiring
+Cruiser's built-in terminal report, with Markdown and JSON also available.
+The audit returns success even when it finds violations; the normal lint
+command fails on violations in migrated services. Reports list source files and
+dependency targets, without custom inventory grouping. Legacy root `index.js`
+files are treated as wiring
 candidates; imports there do not prove readiness for migration.
 
-Counts describe rule violations; one import can appear under more than one
-rule. Review whether each dependency needs injection, a library allowance or
-an ownership change. Computed paths such as `require(name)` cannot be resolved
+The optional summary requires `jq`. It groups `service-dependencies` findings
+by dependency and counts distinct importing implementation files, largest first.
+Multiple imports of the same target in one file count once. It does not include
+unresolved-import or own-root findings; use the detailed audit for those.
+
+Counts in the detailed report describe rule violations; one import can appear
+under more than one rule. Review whether each dependency needs injection, a
+library allowance or an ownership change. Computed paths such as `require(name)` cannot be resolved
 by this static check and are not separately scanned. Unresolved imports,
 globals, runtime state and initialization behavior still need tests and review.
 

@@ -57,8 +57,12 @@ See that directory's README before changing anything about how it's wired.
 ## Service dependency audit
 
 `pnpm audit:services` reports implementation dependencies across the services
-directory using Dependency Cruiser's built-in Markdown report. Use
-`--output-type json` for its dependency graph and violations. The rules and
+directory using Dependency Cruiser's built-in terminal report. Use
+`--output-type markdown` or `--output-type json` for saved reports.
+`pnpm --silent audit:services:summary` uses `jq` to count distinct implementation files
+with forbidden imports of each dependency, largest counts first. It requires
+`jq` locally and only summarises the `service-dependencies` rule; use the detailed
+audit for unresolved imports and other findings. The rules and
 allowlist live in the root `.dependency-cruiser.cjs`; `lint:boundaries` applies
 them to migrated services. There is no separate audit script.
 The [services guide](../../ghost/core/server/services/README.md#dependency-boundaries)

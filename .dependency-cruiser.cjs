@@ -302,6 +302,10 @@ module.exports = {
     },
   ],
   options: {
+    reporterOptions: {
+      err: { showExternalModulesUnresolved: true },
+      markdown: { showExternalModulesUnresolved: true },
+    },
     // Use the CLI's supported resolver hook to inspect authored TypeScript,
     // even when build:tsc has emitted adjacent JavaScript.
     webpackConfig: { fileName: './tools/scripts/lib/service-dependency-resolver.mjs' },
