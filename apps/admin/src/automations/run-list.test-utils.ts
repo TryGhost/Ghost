@@ -6,6 +6,7 @@ import type {
   AutomationDetail,
   AutomationPerformanceStats,
   AutomationRun,
+  AutomationStatus,
 } from '@tryghost/admin-x-framework/api/automations';
 
 export const performanceBoot = composeConfigBootOverrides({
@@ -57,7 +58,7 @@ export const response = (
   };
   return { automation_performance_stats: [data] };
 };
-export const read = (id: string, status: AutomationDetail['status'] = 'active') =>
+export const read = (id: string, status: AutomationStatus = 'active') =>
   fakeAdminEndpoint('GET', `/automations/${id}/`, { automations: [{ ...detail(id), status }] });
 export const prepareStatuses = (id = 'first') => {
   read(id);

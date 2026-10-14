@@ -11,6 +11,7 @@ import type {
   AutomatedEmailEvents,
   AutomationAction,
   AutomationsRepository,
+  AutomationStatus,
   AutomationStepToRun,
   AutomationTriggerTierScope,
 } from '../../../../../core/server/services/automations/automations-repository';
@@ -556,7 +557,7 @@ describe('automations repository', function () {
     slug: null | string;
     triggerTierScope: null | AutomationTriggerTierScope;
     triggerTierIds?: string[];
-    status?: 'active' | 'inactive' | 'archived';
+    status?: AutomationStatus;
   }) => {
     const automationId = ObjectId().toHexString();
     const actionId = ObjectId().toHexString();

@@ -217,7 +217,7 @@ type StepToRunRow = {
   automation_run_id: string;
   automation_id: string;
   automation_trigger_tier_scope: null | AutomationTriggerTierScope;
-  automation_status: 'inactive' | 'active';
+  automation_status: AutomationStatus;
   member_id: string | null;
   member_email: string;
   action_id: string;
