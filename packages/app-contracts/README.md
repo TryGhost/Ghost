@@ -106,7 +106,10 @@ of the app's choosing. The author's link is exempt, since Ghost never loads it.
 
 There is no list of allowed origins in the manifest. The only origin that may
 talk to Ghost from a surface is the origin of that surface's resolved `url`;
-derive it where it is used, with `new URL(surface.url).origin`.
+derive it where it is used, with `new URL(surface.url).origin`. Everything on
+that origin speaks for the app: any page there that says hello from the app's
+frame gets the bridge, `fetch` as the staff user included, so the origin must
+serve only the app (the SDK's README says what to keep off it).
 
 ### The manifest URL
 

@@ -142,6 +142,16 @@ Admin is usually on the site's own origin, or on a separate Admin domain when
 the site has one. An app installed on many sites can build the list from its
 own record of where it is installed.
 
+## Serve only the app from its origin
+
+Admin answers whichever page on the app's origin says hello from the app's
+frame, and cannot tell the app's own pages from anything else served there. Any
+such page gets the whole bridge, `fetch` as the staff user with their session
+included. So the origin must serve only the app: keep user-generated content
+and third-party pages or widgets on another origin (a subdomain of its own is
+one). An open redirect is a risk too: a link through it puts another site's
+page in the frame, inside Admin.
+
 ## Develop
 
 This is a workspace package in the Ghost monorepo. From the package directory:
