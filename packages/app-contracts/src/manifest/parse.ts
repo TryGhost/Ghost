@@ -50,11 +50,21 @@ function formatPath(path: PropertyKey[]): string {
 
 type CheckedManifestUrl = { url: URL; problem: null } | { url: null; problem: string };
 
-/** The address a manifest is read from, checked by the same rules as the URLs inside it. */
-function checkManifestUrl(url: URL | null, allowLocalhost: boolean): CheckedManifestUrl {
+/**
+ * The address a manifest is read from, checked by the same rules as the URLs inside it.
+ *
+ * A fragment never reaches the server, so two addresses that differ only there read the
+ * same file: it is no part of the address, and is left out before the address is checked,
+ * its length included. That holds for the address the manifest was finally read from too,
+ * as a redirect can end in a fragment of any length, and URLs in the manifest resolve
+ * against that address the same with or without one.
+ */
+function checkManifestUrl(input: string, allowLocalhost: boolean): CheckedManifestUrl {
+  const url = URL.parse(input);
   if (!url) {
     return { url: null, problem: 'Expected the manifest at a URL' };
   }
+  url.hash = '';
   const problem = checkResolvedUrl(url, allowLocalhost);
   return problem
     ? { url: null, problem: `${problem} for the manifest itself` }
@@ -73,18 +83,10 @@ function checkManifestUrl(url: URL | null, allowLocalhost: boolean): CheckedMani
  * such as the case of the host or stray whitespace, but not every one: a trailing dot on
  * the host and the case of a percent-encoding stay as given. An address spelled one of
  * those ways reads as a change of manifest URL, which needs the publisher's approval: the
- * safe way to be wrong.
- *
- * A fragment never reaches the server, so two addresses that differ only there read the
- * same file: it is no part of the address, and is left out before the address is checked,
- * its length included.
+ * safe way to be wrong. A fragment is left out of it.
  */
 export function parseManifestUrl(input: string, allowLocalhost = false): ParseManifestUrlResult {
-  const address = URL.parse(input);
-  if (address) {
-    address.hash = '';
-  }
-  const { url, problem } = checkManifestUrl(address, allowLocalhost);
+  const { url, problem } = checkManifestUrl(input, allowLocalhost);
   if (problem !== null) {
     return { success: false, error: problem };
   }
@@ -108,7 +110,7 @@ export function parseManifest(input: unknown, options: ParseManifestOptions): Pa
     };
   }
 
-  const { url: base, problem } = checkManifestUrl(URL.parse(options.manifestUrl), allowLocalhost);
+  const { url: base, problem } = checkManifestUrl(options.manifestUrl, allowLocalhost);
   if (problem !== null) {
     return { success: false, errors: [{ path: '', message: problem }] };
   }

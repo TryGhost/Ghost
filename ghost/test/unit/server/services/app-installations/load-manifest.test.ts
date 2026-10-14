@@ -121,6 +121,19 @@ describe('createManifestLoader', function () {
       assert.equal(loaded.manifest.surfaces[0].url, 'https://podcast.example.com/v2/admin');
     });
 
+    it('does not count a fragment in a redirect against the length of where it ends', async function () {
+      nock('https://podcast.example.com')
+        .get('/ghost-app.json')
+        .reply(302, '', { location: `/v2/ghost-app.json#${'a'.repeat(2000)}` })
+        .get('/v2/ghost-app.json')
+        .reply(200, manifest());
+
+      const loaded = await loader()(MANIFEST_URL);
+
+      assert.equal(loaded.manifestUrl, MANIFEST_URL);
+      assert.equal(loaded.manifest.surfaces[0].url, 'https://podcast.example.com/v2/admin');
+    });
+
     it('reads a localhost manifest through the alias, keeping its own address', async function () {
       nock('http://host.docker.internal:8787', { reqheaders: { host: 'localhost:8787' } })
         .get('/ghost-app.json')

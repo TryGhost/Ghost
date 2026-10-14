@@ -69,6 +69,13 @@ describe('parseManifest', () => {
         { path: '', message: 'Expected at most 2000 characters for the manifest itself' },
       ]);
     });
+
+    it('leaves a fragment out of its length, as a redirect may end in one', () => {
+      const manifestUrl = `https://podcast.example.com/app.json#${'a'.repeat(2000)}`;
+      expect(manifestOf(manifest(), { ...options, manifestUrl }).surfaces).toEqual([
+        { type: 'admin_page', url: 'https://podcast.example.com/admin' },
+      ]);
+    });
   });
 
   it('accepts a site and an Admin served from the same place', () => {
