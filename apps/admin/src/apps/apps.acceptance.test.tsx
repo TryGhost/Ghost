@@ -641,7 +641,7 @@ describe('Managing apps', () => {
   });
 
   describe('the Admin API, on the app’s behalf', () => {
-    it('answers an app’s request, with Admin’s headers and none of the app’s credentials', async () => {
+    it('answers an app’s request, with Admin’s headers and the app’s own', async () => {
       await fakeAppPage(installation());
       const postsApi = fakeAdminEndpoint('GET', '/posts/?limit=5', {
         posts: [{ id: 'post-1', title: 'Episode 1' }],
@@ -651,12 +651,7 @@ describe('Managing apps', () => {
 
       const result = await callAppFrame(APP_ORIGIN, 'fetch', {
         path: '/posts/?limit=5',
-        headers: {
-          Authorization: 'Ghost forged-token',
-          'X-Ghost-Version': '0.0',
-          'App-Pragma': 'cache',
-          'X-Podcast-Trace': 'abc',
-        },
+        headers: { 'X-Podcast-Trace': 'abc' },
       });
 
       const response = answer(result);
@@ -665,10 +660,35 @@ describe('Managing apps', () => {
       expect(JSON.parse(response.body)).toEqual({ posts: [{ id: 'post-1', title: 'Episode 1' }] });
       expect(postsApi.requests).toHaveLength(1);
       const { headers } = postsApi.requests[0];
-      expect(headers.authorization).toBeUndefined();
-      expect(headers['x-ghost-version']).toBeUndefined();
       expect(headers['app-pragma']).toBe('no-cache');
       expect(headers['x-podcast-trace']).toBe('abc');
+    });
+
+    it('refuses a request that sets a header only Admin sets, without sending it', async () => {
+      // Without the SDK, which refuses these itself: Admin can't count on it.
+      await fakeAppPage(installation(), { kind: 'raw' });
+      // Faked, so a request that got through would be seen rather than fail as unhandled.
+      const postsApi = fakeAdminEndpoint('GET', '/posts/', { posts: [] });
+      await renderAdminApp(APP_ROUTE, { labs });
+      await expect.element(appsScreen.frame()).toBeVisible();
+
+      expect(
+        refusal(
+          await callHostRaw(APP_ORIGIN, 'fetch', {
+            path: '/posts/',
+            headers: { Authorization: 'Ghost forged-token' },
+          }),
+        ),
+      ).toBe('invalid_argument: Expected no Authorization header, which only Admin sets');
+      for (const name of ['X-Ghost-Version', 'App-Pragma', 'Cookie', 'X-Forwarded-For']) {
+        expect(
+          refusal(
+            await callHostRaw(APP_ORIGIN, 'fetch', { path: '/posts/', headers: { [name]: 'x' } }),
+          ),
+          name,
+        ).toMatch(/^invalid_argument: /);
+      }
+      expect(postsApi.requests).toHaveLength(0);
     });
 
     it('sends a write with its body, as JSON unless the app says otherwise', async () => {

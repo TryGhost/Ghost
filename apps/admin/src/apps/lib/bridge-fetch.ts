@@ -1,51 +1,39 @@
 import {
   type FetchRequest,
   type FetchResponse,
-  isBlockedAdminApiPath,
-  resolveAdminApiPath,
+  checkAdminApiPath,
 } from '@tryghost/app-contracts/bridge';
 import { ghostApiRequestHeaders, handleSessionExpiry } from '@tryghost/admin-x-framework/helpers';
 import { BridgeError } from './bridge-error';
-
-/**
- * Headers an app may not set on a request Admin makes for it: the credentials, which are
- * Admin's to send, Admin's own markers, which Ghost reads as Admin speaking, and the ones
- * that describe the connection rather than the request. The browser refuses some of these
- * anyway; they're named so none of them depends on that.
- */
-const STRIPPED_HEADER =
-  /^(?:cookie|authorization|x-ghost-.*|app-pragma|host|origin|referer|content-length)$/i;
 
 export type AdminApiFetch = (request: FetchRequest, signal: AbortSignal) => Promise<FetchResponse>;
 
 /**
  * Makes the requests an app asks for, to the Admin API under `apiRoot` and nowhere else.
- * `request` is already validated; what it names is checked here. A path that leaves the
- * API, or one the blocklist closes, is refused before anything reaches the network.
+ * `request` is already validated, a header only Admin sets included; where its path leads
+ * is checked here. A path that leaves the API, or one the blocklist closes, is refused
+ * before anything reaches the network.
  */
 export function createAdminApiFetch({
   apiRoot,
   ghostVersion,
 }: {
-  /** The Admin API's root URL, ending in `/`, as Admin's own requests use it. */
+  /** The Admin API's root URL, as Admin's own requests use it. */
   apiRoot: URL;
   ghostVersion?: string;
 }): AdminApiFetch {
   return async (request, signal) => {
-    const url = resolveAdminApiPath(request.path, apiRoot);
-    if (!url) {
+    const check = checkAdminApiPath(request.path, apiRoot);
+    if (check.problem === 'invalid_path') {
       throw new BridgeError('invalid_path', 'Expected an Admin API path within the Admin API');
     }
-    // The path relative to the API root, as the blocklist reads it, keeping its leading `/`.
-    const pathname = url.pathname.slice(apiRoot.pathname.length - 1);
-    if (isBlockedAdminApiPath(pathname)) {
-      throw new BridgeError('blocked', `Apps can’t use ${pathname}`);
+    if (check.problem === 'blocked') {
+      throw new BridgeError('blocked', `Apps can’t use ${check.pathname}`);
     }
+    const { url } = check;
 
     const appHeaders = Object.fromEntries(
-      Object.entries(request.headers ?? {})
-        .filter(([name]) => !STRIPPED_HEADER.test(name))
-        .map(([name, value]) => [name.toLowerCase(), value]),
+      Object.entries(request.headers ?? {}).map(([name, value]) => [name.toLowerCase(), value]),
     );
 
     let response: Response;
