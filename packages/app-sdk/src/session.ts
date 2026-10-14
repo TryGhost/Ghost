@@ -84,14 +84,14 @@ export interface ChannelEvents {
 
 /**
  * The channel to Admin over the port it handed the page, and the `Ghost` object the app
- * holds once Admin has called `start`.
+ * holds once Admin has called `start`. The channel itself stays inside the SDK.
  *
  * The channel ends when the port closes, which browsers that fire `close` on a port (and
  * Node) report when Admin closes its end or its document goes away; when a call fails
  * because the thread has closed; or when Admin rejects a call with `session_ended`. From
  * then on every call rejects with the one same error.
  */
-export class Channel implements Ghost {
+export class Channel {
   readonly #port: MessagePort;
   readonly #thread: ThreadMessagePort<HostExports, AppExports>;
   // What this Admin exports, from its connect message.
@@ -151,7 +151,7 @@ export class Channel implements Ghost {
         });
       });
     }
-    this.#events.started(this);
+    this.#events.started(this.ghost);
   }
 
   #themeChanged(theme: unknown) {
@@ -222,29 +222,43 @@ export class Channel implements Ghost {
     return error;
   }
 
-  // The `Ghost` the app holds. Only handed out once `start` has set the context.
+  /**
+   * The `Ghost` the app holds, handed out once `start` has set the context: only the members
+   * the type declares, so nothing of the channel, such as `end`, is in the app's reach.
+   */
+  readonly ghost: Ghost = this.#createGhost();
 
-  get site(): Site {
-    return (this.#context as StartedContext).site;
+  #createGhost(): Ghost {
+    const context = () => this.#context as StartedContext;
+    const theme = () => this.#theme as Readonly<Theme>;
+    const connected = () => this.#ended === undefined;
+    return Object.freeze({
+      get site(): Site {
+        return context().site;
+      },
+      get user(): User {
+        return context().user;
+      },
+      get theme(): Readonly<Theme> {
+        return theme();
+      },
+      get session(): Session {
+        return context().session;
+      },
+      get connected(): boolean {
+        return connected();
+      },
+      path: this.#createPath(),
+      onThemeChange: (callback: (theme: Readonly<Theme>) => void): Unsubscribe =>
+        subscribe(this.#themeListeners, callback),
+      onPathChange: (callback: (path: string) => void): Unsubscribe =>
+        subscribe(this.#pathListeners, callback),
+      onSessionEnd: (callback: (error: GhostAppError) => void): Unsubscribe =>
+        this.#onSessionEnd(callback),
+      fetch: (path: string, init?: GhostFetchInit): Promise<Response> => this.#fetch(path, init),
+      open: (place: Place): Promise<void> => this.#open(place),
+    });
   }
-
-  get user(): User {
-    return (this.#context as StartedContext).user;
-  }
-
-  get theme(): Readonly<Theme> {
-    return this.#theme as Readonly<Theme>;
-  }
-
-  get session(): Session {
-    return (this.#context as StartedContext).session;
-  }
-
-  get connected(): boolean {
-    return this.#ended === undefined;
-  }
-
-  readonly path: GhostPath = this.#createPath();
 
   #createPath(): GhostPath {
     const current = () => this.#path;
@@ -273,15 +287,7 @@ export class Channel implements Ghost {
     });
   }
 
-  onThemeChange(callback: (theme: Readonly<Theme>) => void): Unsubscribe {
-    return subscribe(this.#themeListeners, callback);
-  }
-
-  onPathChange(callback: (path: string) => void): Unsubscribe {
-    return subscribe(this.#pathListeners, callback);
-  }
-
-  onSessionEnd(callback: (error: GhostAppError) => void): Unsubscribe {
+  #onSessionEnd(callback: (error: GhostAppError) => void): Unsubscribe {
     const ended = this.#ended;
     if (ended) {
       queueMicrotask(() => callback(ended));
@@ -290,12 +296,12 @@ export class Channel implements Ghost {
     return subscribe(this.#endListeners, callback);
   }
 
-  async fetch(path: string, init?: GhostFetchInit): Promise<Response> {
+  async #fetch(path: string, init?: GhostFetchInit): Promise<Response> {
     const request = toFetchRequest(path, init);
     return toResponse(await this.#call('fetch', request));
   }
 
-  async open(place: Place): Promise<void> {
+  async #open(place: Place): Promise<void> {
     if (!isRecord(place)) {
       throw invalidArgument(ARGUMENT_MESSAGES.place);
     }

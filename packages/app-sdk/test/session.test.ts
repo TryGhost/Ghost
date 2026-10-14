@@ -454,6 +454,27 @@ describe('open', () => {
   });
 });
 
+describe('the Ghost an app holds', () => {
+  it('has only the members its type declares, none of the channel behind it', async () => {
+    const { ghost } = await started();
+    expect(Object.keys(ghost).sort()).toEqual([
+      'connected',
+      'fetch',
+      'onPathChange',
+      'onSessionEnd',
+      'onThemeChange',
+      'open',
+      'path',
+      'session',
+      'site',
+      'theme',
+      'user',
+    ]);
+    expect(Object.getPrototypeOf(ghost)).toBe(Object.prototype);
+    expect(Object.isFrozen(ghost)).toBe(true);
+  });
+});
+
 describe('the context', () => {
   it('is handed out as frozen copies, so no part of the page can change it for the rest', async () => {
     const { admin: fake, ghost } = await started();
