@@ -74,9 +74,10 @@ export const APP_FRAME_ALLOW = [...SELF_BY_DEFAULT, ...EVERYONE_BY_DEFAULT]
  *
  * It covers the URL the frame is given, not where the frame goes from there: the app's
  * server can redirect, and the page can set its own location, which the sandbox allows.
- * What would load then is Ghost's own content, so the gap is small, but it's a gap.
- * The bridge narrows it: Admin only answers a hello from the app's origin, so a frame that
- * leaves for Ghost's origin before its app starts stays hidden and ends up not-responding.
- * `bindAppFrame` says which departures after the start are noticed, and which aren't.
+ * A document from Admin's origin loaded that way, such as a post the app wrote a script
+ * into, is same-origin with Admin: it can reach `window.parent` and call the Admin API as
+ * the staff user, past the blocklist. The handshake only withholds the bridge from it, and
+ * Admin reloads the app once it notices, after that script has run. The fix is in Core,
+ * which can sandbox what it serves into another origin's frame (BER-3992).
  */
 export { isGhostOrigin } from '@tryghost/app-contracts';
