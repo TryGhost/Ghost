@@ -33,6 +33,7 @@ export type {
   ParseManifestUrlResult,
 } from './manifest/index.ts';
 export {
+  ARGUMENT_MESSAGES,
   BRIDGE_ERROR_CODES,
   CONNECT_MESSAGE_TYPE,
   FETCH_METHODS,
@@ -49,6 +50,7 @@ export {
   isRecord,
   isStartContext,
   isTheme,
+  methodAllowsBody,
 } from './bridge/rules.ts';
 export type {
   AppExports,

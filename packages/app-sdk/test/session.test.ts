@@ -1,4 +1,8 @@
-import type { HostExports, StartContext } from '@tryghost/app-contracts/bridge';
+import {
+  ARGUMENT_MESSAGES,
+  type HostExports,
+  type StartContext,
+} from '@tryghost/app-contracts/bridge';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { FakeAdmin, frame, hostExports, settle, startContext } from './fake-admin.ts';
@@ -178,6 +182,23 @@ describe('fetch', () => {
       code: 'rejected',
       message: "Ghost answered with a response this SDK doesn't understand",
     });
+  });
+});
+
+describe('a refused argument', () => {
+  it('is refused in the words Admin uses for it', async () => {
+    const { ghost } = await started();
+    const refusals: [Promise<unknown>, string][] = [
+      [ghost.fetch('posts/'), ARGUMENT_MESSAGES.fetchPath],
+      [ghost.fetch('/posts/', { method: 'TRACE' }), ARGUMENT_MESSAGES.fetchMethod],
+      [ghost.fetch('/posts/', { body: 'x' }), ARGUMENT_MESSAGES.fetchBody],
+      [ghost.path.set('episodes'), ARGUMENT_MESSAGES.appPath],
+      [ghost.path.set('/a', true as never), ARGUMENT_MESSAGES.pathChangeOptions],
+      [ghost.open('/posts' as never), ARGUMENT_MESSAGES.place],
+    ];
+    for (const [refusal, message] of refusals) {
+      await expect(refusal).rejects.toMatchObject({ message });
+    }
   });
 });
 

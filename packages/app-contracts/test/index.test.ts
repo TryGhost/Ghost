@@ -30,6 +30,7 @@ describe('the root entry point', () => {
   it('exposes only what depends on nothing', () => {
     expect(Object.keys(root).sort()).toEqual([
       'APP_ID_MAX_LENGTH',
+      'ARGUMENT_MESSAGES',
       'BRIDGE_ERROR_CODES',
       'CONNECT_MESSAGE_TYPE',
       'FETCH_METHODS',
@@ -52,6 +53,7 @@ describe('the root entry point', () => {
       'isStartContext',
       'isTheme',
       'isValidAppId',
+      'methodAllowsBody',
       'movedBetween',
       'servedFrom',
     ]);
@@ -59,6 +61,7 @@ describe('the root entry point', () => {
 
   it("shares the bridge's rules with the bridge entry point", () => {
     for (const name of [
+      'ARGUMENT_MESSAGES',
       'BRIDGE_ERROR_CODES',
       'CONNECT_MESSAGE_TYPE',
       'FETCH_METHODS',
@@ -75,6 +78,7 @@ describe('the root entry point', () => {
       'isRecord',
       'isStartContext',
       'isTheme',
+      'methodAllowsBody',
     ] as const) {
       expect(root[name], name).toBe(bridge[name]);
     }

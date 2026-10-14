@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+  ARGUMENT_MESSAGES,
   AppPathSchema,
   BRIDGE_ERROR_CODES,
   ConnectMessageSchema,
@@ -15,6 +16,7 @@ import {
   isRecord,
   isStartContext,
   isTheme,
+  methodAllowsBody,
 } from '../../src/bridge/index.ts';
 
 // The guards are what the SDK checks Admin's messages with, the schemas what Admin itself
@@ -221,6 +223,24 @@ describe('a refusal', () => {
       'Blocked: capitals',
     ]) {
       expect(decodeBridgeError(message), message).toBeUndefined();
+    }
+  });
+});
+
+describe('a body', () => {
+  it('goes with every method but GET and HEAD', () => {
+    expect(['POST', 'PUT', 'PATCH', 'DELETE'].every(methodAllowsBody)).toBe(true);
+    expect(['GET', 'HEAD'].some(methodAllowsBody)).toBe(false);
+  });
+});
+
+describe('the messages for a refused argument', () => {
+  it('name what was expected, with the methods spelled out', () => {
+    expect(ARGUMENT_MESSAGES.fetchMethod).toBe(
+      'Expected a method of: GET, POST, PUT, DELETE, PATCH, HEAD',
+    );
+    for (const message of Object.values(ARGUMENT_MESSAGES)) {
+      expect(message).toMatch(/^Expected /);
     }
   });
 });

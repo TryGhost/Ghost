@@ -1,5 +1,6 @@
 import { ThreadMessagePort } from '@quilted/threads';
 import {
+  ARGUMENT_MESSAGES,
   encodeBridgeError,
   isContainedPath,
   isRecord,
@@ -221,10 +222,10 @@ export class Channel implements Ghost {
       },
       set: async (path: string, options?: PathChangeOptions): Promise<void> => {
         if (!isContainedPath(path)) {
-          throw invalidPath('Expected a path within the app, starting with a single /');
+          throw invalidPath(ARGUMENT_MESSAGES.appPath);
         }
         if (options !== undefined && !isRecord(options)) {
-          throw invalidArgument('Expected options such as { replace: true }');
+          throw invalidArgument(ARGUMENT_MESSAGES.pathChangeOptions);
         }
         await (options === undefined
           ? this.#call('pathChanged', path)
@@ -258,7 +259,7 @@ export class Channel implements Ghost {
 
   async open(place: Place): Promise<void> {
     if (!isRecord(place)) {
-      throw invalidArgument('Expected a place such as { post: { id } }');
+      throw invalidArgument(ARGUMENT_MESSAGES.place);
     }
     await this.#call('open', place);
   }

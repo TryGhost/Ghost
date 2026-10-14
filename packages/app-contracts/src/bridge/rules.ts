@@ -36,6 +36,29 @@ export const FETCH_METHODS = ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'HEAD'] a
 export type FetchMethod = (typeof FETCH_METHODS)[number];
 
 /**
+ * Whether a request with this method may carry a body. Written for the uppercase methods in
+ * `FETCH_METHODS`: the Admin API reads no body on a `GET` or `HEAD`, and fetch refuses one.
+ */
+export function methodAllowsBody(method: string): boolean {
+  return method !== 'GET' && method !== 'HEAD';
+}
+
+/**
+ * What Admin and the SDK say when they refuse an argument for the same reason, so an app hears
+ * the same words whichever of them catches it. The SDK checks only what is plainly wrong, before
+ * anything crosses the channel; Admin's schemas check everything again.
+ */
+export const ARGUMENT_MESSAGES = {
+  fetchPath: 'Expected an Admin API path such as /posts/, not a URL',
+  fetchMethod: `Expected a method of: ${FETCH_METHODS.join(', ')}`,
+  fetchBody: 'Expected no body on a GET or HEAD request',
+  appPath: 'Expected a path within the app, starting with a single /',
+  pathChangeOptions: 'Expected options such as { replace: true }',
+  place:
+    'Expected a place such as { post: { id } }, { page: { id } }, { member: { id } } or { apps: true }',
+} as const;
+
+/**
  * The statuses an answer to `fetch` may have. The SDK turns it back into a `Response`, which
  * only accepts statuses from 200 to 599; fetch never hands script an informational one.
  */

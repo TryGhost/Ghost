@@ -1,5 +1,7 @@
 import { z } from 'zod';
 
+import { ARGUMENT_MESSAGES } from './rules.ts';
+
 // Ghost's IDs are ObjectIds, written in lowercase hex, so anything else names nothing.
 const OBJECT_ID = /^[0-9a-f]{24}$/;
 
@@ -24,7 +26,7 @@ export const PlaceSchema = z.union(
     z.strictObject({ member: z.strictObject({ id: objectId }) }),
     z.strictObject({ apps: z.literal(true) }),
   ],
-  'Expected a place such as { post: { id } }, { page: { id } }, { member: { id } } or { apps: true }',
+  ARGUMENT_MESSAGES.place,
 );
 
 export type Place = z.infer<typeof PlaceSchema>;

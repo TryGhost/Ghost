@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { isContainedPath } from './rules.ts';
+import { ARGUMENT_MESSAGES, isContainedPath } from './rules.ts';
 
 /**
  * The longest path an app may report for itself. It ends up in Admin's own address, so it
@@ -15,7 +15,7 @@ export const APP_PATH_MAX_LENGTH = 2048;
 export const AppPathSchema = z
   .string('Expected a path')
   .max(APP_PATH_MAX_LENGTH, `Expected a path of at most ${APP_PATH_MAX_LENGTH} characters`)
-  .refine(isContainedPath, 'Expected a path within the app, starting with a single /');
+  .refine(isContainedPath, ARGUMENT_MESSAGES.appPath);
 
 export type AppPath = z.infer<typeof AppPathSchema>;
 
@@ -27,7 +27,7 @@ export const PathChangeOptionsSchema = z.strictObject(
   {
     replace: z.boolean('Expected replace to be true or false').optional(),
   },
-  'Expected options such as { replace: true }',
+  ARGUMENT_MESSAGES.pathChangeOptions,
 );
 
 export type PathChangeOptions = z.infer<typeof PathChangeOptionsSchema>;

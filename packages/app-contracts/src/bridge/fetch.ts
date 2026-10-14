@@ -1,10 +1,12 @@
 import { z } from 'zod';
 
 import {
+  ARGUMENT_MESSAGES,
   FETCH_METHODS,
   FETCH_RESPONSE_STATUS_MAX,
   FETCH_RESPONSE_STATUS_MIN,
   isContainedPath,
+  methodAllowsBody,
 } from './rules.ts';
 
 /** As long as an app's own path, which an Admin API path with its query easily fits. */
@@ -41,8 +43,8 @@ export const FetchRequestSchema = z
         FETCH_PATH_MAX_LENGTH,
         `Expected an Admin API path of at most ${FETCH_PATH_MAX_LENGTH} characters`,
       )
-      .refine(isContainedPath, 'Expected an Admin API path such as /posts/, not a URL'),
-    method: z.enum(FETCH_METHODS, `Expected a method of: ${FETCH_METHODS.join(', ')}`).optional(),
+      .refine(isContainedPath, ARGUMENT_MESSAGES.fetchPath),
+    method: z.enum(FETCH_METHODS, ARGUMENT_MESSAGES.fetchMethod).optional(),
     headers: z
       .record(
         z.string(),
@@ -85,10 +87,10 @@ export const FetchRequestSchema = z
       )
       .optional(),
   })
-  .refine(
-    ({ method = 'GET', body }) => body === undefined || (method !== 'GET' && method !== 'HEAD'),
-    { message: 'Expected no body on a GET or HEAD request', path: ['body'] },
-  );
+  .refine(({ method = 'GET', body }) => body === undefined || methodAllowsBody(method), {
+    message: ARGUMENT_MESSAGES.fetchBody,
+    path: ['body'],
+  });
 
 export type FetchRequest = z.infer<typeof FetchRequestSchema>;
 

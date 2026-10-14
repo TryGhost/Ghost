@@ -1,8 +1,10 @@
 import {
+  ARGUMENT_MESSAGES,
   FETCH_METHODS,
   isContainedPath,
   isFetchResponse,
   isRecord,
+  methodAllowsBody,
   type FetchMethod,
   type FetchRequest,
 } from '@tryghost/app-contracts';
@@ -43,20 +45,20 @@ function toHeaders(init: HeadersInit | undefined): Record<string, string> {
  */
 export function toFetchRequest(path: string, init: GhostFetchInit = {}): FetchRequest {
   if (!isContainedPath(path)) {
-    throw invalidPath('Expected an Admin API path such as /posts/, not a URL');
+    throw invalidPath(ARGUMENT_MESSAGES.fetchPath);
   }
 
   const method = (init.method ?? 'GET').toUpperCase() as FetchMethod;
   if (!FETCH_METHODS.includes(method)) {
-    throw invalidArgument(`Expected a method of: ${FETCH_METHODS.join(', ')}`);
+    throw invalidArgument(ARGUMENT_MESSAGES.fetchMethod);
   }
 
   const headers = toHeaders(init.headers);
   const request: FetchRequest = { path, method };
 
   if (init.body !== undefined && init.body !== null) {
-    if (method === 'GET' || method === 'HEAD') {
-      throw invalidArgument('Expected no body on a GET or HEAD request');
+    if (!methodAllowsBody(method)) {
+      throw invalidArgument(ARGUMENT_MESSAGES.fetchBody);
     }
     if (typeof init.body === 'string') {
       request.body = init.body;

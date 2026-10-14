@@ -8,6 +8,7 @@ describe('the bridge entry point', () => {
     expect(Object.keys(bridge).sort()).toEqual([
       'ADMIN_API_BLOCKLIST',
       'APP_PATH_MAX_LENGTH',
+      'ARGUMENT_MESSAGES',
       'AppPathSchema',
       'BRIDGE_ERROR_CODES',
       'CONNECT_MESSAGE_TYPE',
@@ -37,6 +38,7 @@ describe('the bridge entry point', () => {
       'isRecord',
       'isStartContext',
       'isTheme',
+      'methodAllowsBody',
       'resolveAdminApiPath',
     ]);
   });
