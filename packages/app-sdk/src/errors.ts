@@ -12,15 +12,21 @@ import { HOST_ERROR_CODES, decodeBridgeError, type BridgeErrorCode } from '@tryg
  * - `invalid_path`: a path that is not an Admin API path, or not a route within the app; or
  *   one the Admin API only redirects, such as a path without its trailing `/` or with
  *   capitals, as Admin API paths are lowercase and end in `/`.
- * - `unsupported`: this site's Ghost is older than the call the app made.
+ * - `unsupported`: this site's Ghost is older than the call the app made, which the SDK
+ *   tells from the calls Admin listed when it connected.
  * - `blocked`: Admin refused on principle, such as an Admin API route apps may not reach.
  * - `network_error`: Admin could not reach its own API.
  * - `rejected`: Admin refused for any other reason; the message says why.
  *
- * The first three describe the channel itself, which only the SDK knows about; the rest are the
- * bridge's codes, which cross it.
+ * `not_framed`, `not_connected`, `duplicate_sdk` and `unsupported` are the SDK's own; the rest
+ * are the bridge's codes, which cross it.
  */
-export type GhostAppErrorCode = 'not_framed' | 'not_connected' | 'duplicate_sdk' | BridgeErrorCode;
+export type GhostAppErrorCode =
+  | 'not_framed'
+  | 'not_connected'
+  | 'duplicate_sdk'
+  | 'unsupported'
+  | BridgeErrorCode;
 
 /** The one error the SDK rejects with, so an app can branch on `code`. */
 export class GhostAppError extends Error {
@@ -33,12 +39,9 @@ export class GhostAppError extends Error {
   }
 }
 
-// What `@quilted/threads` throws on the other side when a call names nothing it exports.
-const MISSING_EXPORT = /^No '[^']*' method is exported from this thread$/;
-
 /**
  * Turns whatever a call to Admin rejected with into a `GhostAppError`: the code Admin gave,
- * `unsupported` when Admin has no such call, or else a refusal with Admin's message.
+ * or else a refusal with Admin's message.
  */
 export function fromHostError(error: unknown, operation: string): GhostAppError {
   const message =
@@ -53,10 +56,6 @@ export function fromHostError(error: unknown, operation: string): GhostAppError 
   if (coded) {
     return new GhostAppError(coded.code, coded.detail, { cause: error });
   }
-  if (MISSING_EXPORT.test(message)) {
-    const unsupported = `This site's Ghost doesn't support ${operation} yet`;
-    return new GhostAppError('unsupported', unsupported, { cause: error });
-  }
   return new GhostAppError('rejected', message, { cause: error });
 }
 
@@ -66,6 +65,10 @@ export function invalidArgument(message: string): GhostAppError {
 
 export function invalidPath(message: string): GhostAppError {
   return new GhostAppError('invalid_path', message);
+}
+
+export function unsupported(operation: string): GhostAppError {
+  return new GhostAppError('unsupported', `This site's Ghost doesn't support ${operation} yet`);
 }
 
 export function sessionEnded(): GhostAppError {

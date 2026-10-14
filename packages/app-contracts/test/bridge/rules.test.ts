@@ -171,13 +171,22 @@ describe('a start context', () => {
 describe('a connect message', () => {
   const check = holds(isConnectMessage);
 
-  it('is the connect type, whatever else it carries', () => {
-    check({ type: 'ghost-app:connect' }, true);
-    check({ type: 'ghost-app:connect', extra: true }, true);
+  it("is the connect type with the names of Admin's exports, whatever else it carries", () => {
+    check({ type: 'ghost-app:connect', exports: ['fetch', 'open'] }, true);
+    check({ type: 'ghost-app:connect', exports: [] }, true);
+    check({ type: 'ghost-app:connect', exports: ['fetch'], extra: true }, true);
   });
 
   it('is nothing else', () => {
-    for (const value of [null, 'ghost-app:connect', {}, { type: 'ghost-app:hello', sdk: '1' }]) {
+    for (const value of [
+      null,
+      'ghost-app:connect',
+      {},
+      { type: 'ghost-app:hello', sdk: '1' },
+      { type: 'ghost-app:connect' },
+      { type: 'ghost-app:connect', exports: 'fetch' },
+      { type: 'ghost-app:connect', exports: ['fetch', 1] },
+    ]) {
       check(value, false);
     }
   });
@@ -228,7 +237,6 @@ describe('a refusal', () => {
       'session_ended',
       'invalid_argument',
       'invalid_path',
-      'unsupported',
       'blocked',
       'network_error',
       'rejected',

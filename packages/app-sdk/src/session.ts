@@ -20,6 +20,7 @@ import {
   invalidArgument,
   invalidPath,
   sessionEnded,
+  unsupported,
 } from './errors.ts';
 import { toFetchRequest, toResponse } from './fetch.ts';
 import { watchTitle } from './title.ts';
@@ -84,6 +85,8 @@ export interface ChannelEvents {
 export class Channel implements Ghost {
   readonly #port: MessagePort;
   readonly #thread: ThreadMessagePort<HostExports, AppExports>;
+  // What this Admin exports, from its connect message.
+  readonly #hostExports: ReadonlySet<string>;
   readonly #events: ChannelEvents;
   readonly #themeListeners = new Set<(theme: Readonly<Theme>) => void>();
   readonly #pathListeners = new Set<(path: string) => void>();
@@ -96,8 +99,9 @@ export class Channel implements Ghost {
   #ended: GhostAppError | undefined;
   #stopWatchingTitle: (() => void) | undefined;
 
-  constructor(port: MessagePort, events: ChannelEvents) {
+  constructor(port: MessagePort, hostExports: readonly string[], events: ChannelEvents) {
     this.#port = port;
+    this.#hostExports = new Set(hostExports);
     this.#events = events;
     this.#thread = new ThreadMessagePort<HostExports, AppExports>(port, {
       exports: {
@@ -131,11 +135,14 @@ export class Channel implements Ghost {
     this.#theme = Object.freeze({ ...context.theme });
     this.#path = context.path;
     // Reported before `start` answers, so Admin has the title by the time it shows the page.
-    this.#stopWatchingTitle = watchTitle((title) => {
-      this.#call('titleChanged', title).catch(() => {
-        // An older Ghost without titles, or a title it refused, leaves Admin's own.
+    // An older Ghost without titles keeps its own.
+    if (this.#hostExports.has('titleChanged')) {
+      this.#stopWatchingTitle = watchTitle((title) => {
+        this.#call('titleChanged', title).catch(() => {
+          // A title Admin refused leaves Admin's own.
+        });
       });
-    });
+    }
     this.#events.started(this);
   }
 
@@ -170,6 +177,9 @@ export class Channel implements Ghost {
   ): Promise<Awaited<ReturnType<HostExports[K]>>> {
     if (this.#ended) {
       throw this.#ended;
+    }
+    if (!this.#hostExports.has(name)) {
+      throw unsupported(name);
     }
     try {
       const call = this.#thread.imports[name] as HostCall<K>;

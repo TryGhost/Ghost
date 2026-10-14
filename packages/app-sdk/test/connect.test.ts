@@ -231,6 +231,12 @@ describe('connect', () => {
     postToPage({ data: { type: 'something-else' }, ports: [fake.channel.port2] });
     postToPage({ data: 'ghost-app:connect' as never, ports: [fake.channel.port2] });
     postToPage({ data: null as never, ports: [fake.channel.port2] });
+    // A connect that doesn't name Admin's exports.
+    postToPage({ data: { type: 'ghost-app:connect' }, ports: [fake.channel.port2] });
+    postToPage({
+      data: { type: 'ghost-app:connect', exports: 'open' },
+      ports: [fake.channel.port2],
+    });
     postToPage({ ports: [] });
     expect(await pending(fake.start())).toBe(true);
 

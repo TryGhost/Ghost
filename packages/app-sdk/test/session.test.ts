@@ -1,11 +1,20 @@
 import {
   ARGUMENT_MESSAGES,
+  CONNECT_MESSAGE_TYPE,
   type HostExports,
   type StartContext,
 } from '@tryghost/app-contracts/bridge';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { FakeAdmin, frame, freshPage, hostExports, settle, startContext } from './fake-admin.ts';
+import {
+  FakeAdmin,
+  frame,
+  freshPage,
+  hostExports,
+  postToPage,
+  settle,
+  startContext,
+} from './fake-admin.ts';
 
 type Sdk = typeof import('../src/index.ts');
 
@@ -268,7 +277,6 @@ describe('when Admin refuses a call', () => {
     ['invalid_path', 'Expected an Admin API path within the Admin API'],
     ['invalid_argument', 'Expected a method of: GET'],
     ['network_error', 'Couldn’t reach the Admin API: TypeError'],
-    ['unsupported', 'Not here'],
     ['rejected', 'No: really, no'],
   ])('passes on the code %s that leads its message', async (code, detail) => {
     const host = hostExports();
@@ -291,8 +299,9 @@ describe('when Admin refuses a call', () => {
     });
   });
 
-  // `not_framed` is the SDK's own, and `invalid_context` only the page refuses with.
-  it.each(['not_framed: Odd', 'invalid_context: Odd'])(
+  // `not_framed` and `unsupported` are the SDK's own, and `invalid_context` only the page
+  // refuses with.
+  it.each(['not_framed: Odd', 'unsupported: Odd', 'invalid_context: Odd'])(
     'treats a code Admin does not refuse with as part of the message: %s',
     async (message) => {
       const host = hostExports();
@@ -315,7 +324,7 @@ describe('when Admin refuses a call', () => {
     });
   });
 
-  it("says when this site's Ghost does not have the call", async () => {
+  it("says when this site's Ghost does not have the call, from the calls Admin named", async () => {
     const { titleChanged, pathChanged, fetch } = hostExports();
     const { ghost } = await started({ titleChanged, pathChanged, fetch });
     await expect(ghost.open({ apps: true })).rejects.toMatchObject({
@@ -323,6 +332,28 @@ describe('when Admin refuses a call', () => {
       message: "This site's Ghost doesn't support open yet",
     });
     expect(ghost.connected).toBe(true);
+  });
+
+  it('reads nothing into the words of the library under the channel', async () => {
+    frame();
+    const { titleChanged, pathChanged, fetch } = hostExports();
+    admin = new FakeAdmin({ titleChanged, pathChanged, fetch });
+    const connecting = sdk.connect();
+    // Admin names a call it then turns out not to have.
+    postToPage({
+      data: {
+        type: CONNECT_MESSAGE_TYPE,
+        exports: ['titleChanged', 'pathChanged', 'fetch', 'open'],
+      },
+      ports: [admin.channel.port2],
+    });
+    await admin.start();
+    const ghost = await connecting;
+
+    await expect(ghost.open({ apps: true })).rejects.toMatchObject({
+      code: 'rejected',
+      message: expect.stringContaining("'open'"),
+    });
   });
 });
 
@@ -541,10 +572,20 @@ describe('title', () => {
   });
 
   it("leaves Admin's title alone on a Ghost without titles", async () => {
+    const observe = vi.spyOn(MutationObserver.prototype, 'observe');
     const { fetch, pathChanged, open } = hostExports();
     const { ghost } = await started({ fetch, pathChanged, open });
+    expect(observe).not.toHaveBeenCalled();
+    expect(ghost.connected).toBe(true);
+  });
+
+  it('keeps watching after Admin refuses a title', async () => {
+    const host = hostExports();
+    host.titleChanged.mockRejectedValueOnce(new Error('invalid_argument: Expected a title'));
+    const { ghost } = await started(host);
     document.title = 'Episodes';
     await settle();
+    expect(host.titleChanged.mock.calls).toEqual([['Podcast'], ['Episodes']]);
     expect(ghost.connected).toBe(true);
   });
 

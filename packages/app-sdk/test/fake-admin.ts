@@ -48,7 +48,7 @@ export function frame(): FakeParent {
 
 /** Delivers a window message the way a browser does, with the fields jsdom leaves out. */
 export function postToPage({
-  data = { type: CONNECT_MESSAGE_TYPE },
+  data = { type: CONNECT_MESSAGE_TYPE, exports: [] as string[] } as unknown,
   source = window.parent as unknown,
   origin = ADMIN_ORIGIN,
   ports = [] as MessagePort[],
@@ -87,9 +87,13 @@ export class FakeAdmin {
     this.channel.port1.start();
   }
 
-  /** Answers the hello, handing the page its end of the channel. */
+  /** Answers the hello, handing the page its end of the channel and naming its exports. */
   connect(options: { source?: unknown; origin?: string } = {}) {
-    postToPage({ ...options, ports: [this.channel.port2] });
+    postToPage({
+      data: { type: CONNECT_MESSAGE_TYPE, exports: Object.keys(this.exports) },
+      ...options,
+      ports: [this.channel.port2],
+    });
   }
 
   start(context: unknown = startContext()) {

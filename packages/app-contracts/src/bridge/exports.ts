@@ -7,8 +7,8 @@ import type { FetchResponse, StartContext, Theme } from './rules.ts';
  * What each side of the channel exposes to the other. Every call returns a promise, as every
  * call crosses a `MessagePort`, and no call takes a function, so nothing is ever proxied back.
  *
- * The channel is unversioned: Admin only adds exports and optional fields, and the SDK turns a
- * missing export into one clear error.
+ * The channel is unversioned: Admin only adds exports and optional fields. Its connect message
+ * lists the names it exports, so the SDK refuses a call this Admin lacks as `unsupported`.
  */
 
 /** What Admin exposes to an app's page. Admin validates every argument; the frame is untrusted. */

@@ -104,7 +104,6 @@ export const FETCH_RESPONSE_STATUS_MAX = 599;
  * - `invalid_argument`: an argument Admin does not take.
  * - `invalid_path`: a path that is not an Admin API path or a route within the app, or one
  *   the Admin API answers only with a redirect, such as a path without its trailing `/`.
- * - `unsupported`: this Admin does not have what the page asked for.
  * - `blocked`: an Admin API route apps may not reach.
  * - `network_error`: Admin could not reach its own API.
  * - `rejected`: anything else; the detail says why.
@@ -113,7 +112,6 @@ export const HOST_ERROR_CODES = [
   'session_ended',
   'invalid_argument',
   'invalid_path',
-  'unsupported',
   'blocked',
   'network_error',
   'rejected',
@@ -199,6 +197,11 @@ export type StartContext = {
 /** Admin's answer to a hello. The port travels in the message's transfer list, not its data. */
 export type ConnectMessage = {
   type: typeof CONNECT_MESSAGE_TYPE;
+  /**
+   * The names of the calls this Admin exports, its `HostExports`. An older Admin lacks the
+   * newer ones, so the SDK refuses a call missing here as `unsupported` without making it.
+   */
+  exports: string[];
 };
 
 /**
@@ -278,7 +281,12 @@ export function isStartContext(value: unknown): value is StartContext {
 }
 
 export function isConnectMessage(value: unknown): value is ConnectMessage {
-  return isRecord(value) && value.type === CONNECT_MESSAGE_TYPE;
+  return (
+    isRecord(value) &&
+    value.type === CONNECT_MESSAGE_TYPE &&
+    Array.isArray(value.exports) &&
+    value.exports.every((name) => typeof name === 'string')
+  );
 }
 
 export function isFetchResponse(value: unknown): value is FetchResponse {

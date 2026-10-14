@@ -159,7 +159,8 @@ compareManifests(
 Admin frames an app's page and talks to it over a `MessagePort`. The page's SDK
 posts a `ghost-app:hello` to `window.parent`, with an ID for its document (its
 `performance.timeOrigin`); Admin checks the sender is the frame and its origin
-is the surface's, and answers with a `ghost-app:connect` carrying the port. The
+is the surface's, and answers with a `ghost-app:connect` carrying the port and
+the names of the calls it exports. The
 ID tells a hello repeated by a document Admin has connected from a new
 document's. Over it, each side exposes named calls: `HostExports` are what an
 app may ask of Admin (`fetch`, `titleChanged`, `pathChanged`, `open`),
@@ -167,7 +168,8 @@ app may ask of Admin (`fetch`, `titleChanged`, `pathChanged`, `open`),
 
 The frame is untrusted, so Admin parses every argument with the schemas here
 (`FetchRequestSchema`, `AppPathSchema`, `TitleSchema`, `PlaceSchema`, …) before
-acting. Nothing is versioned: Admin only adds calls and optional fields.
+acting. Nothing is versioned: Admin only adds calls and optional fields, and the
+SDK refuses a call the connect doesn't name as `unsupported`, without making it.
 
 The bridge's rules that depend on nothing live in `src/bridge/rules.ts` and are
 exported from the root entry point as well:

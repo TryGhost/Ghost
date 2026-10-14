@@ -105,8 +105,9 @@ _Avoid_: handshake, ready, init
 
 **Connect**:
 Admin's answer to a hello from the frame it mounted and the surface origin,
-handing the page the port the rest of the session travels over. Only the first
-connect counts.
+handing the page the port the rest of the session travels over, and naming the
+calls this Admin exports, so the page knows which an older Admin lacks. Only
+the first connect counts.
 _Avoid_: ack, handshake
 
 **Start**:

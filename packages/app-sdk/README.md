@@ -111,13 +111,15 @@ Everything rejects with a `GhostAppError`, whose `code` says why:
 ## How it connects
 
 The SDK posts `{ type: 'ghost-app:hello', sdk: <version>, document: <id> }` to
-`window.parent` every 250 ms until Admin answers with `ghost-app:connect` and a
-`MessagePort`. `document` is the page's `performance.timeOrigin`, as text: it
+`window.parent` every 250 ms until Admin answers with `ghost-app:connect`, a
+`MessagePort` and the names of the calls it exports. `document` is the page's `performance.timeOrigin`, as text: it
 lasts as long as the document, so Admin can tell a hello repeated by a page it
 has connected from a new page's.
 It takes only the first answer, and only from the parent window. Over the port
 it uses [`@quilted/threads`](https://github.com/lemonmade/quilt/tree/main/packages/threads)
 for the calls `@tryghost/app-contracts/bridge` defines; Admin then calls `start`.
+A call the connect didn't name is refused as `unsupported` without being made:
+Admin only ever adds calls, so an older Admin lacks the newer ones.
 
 Only an error's message survives the channel, so Admin leads it with the code,
 as in `blocked: Apps can't use /db/`; the SDK reads it back into `code` and

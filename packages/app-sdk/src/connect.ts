@@ -111,7 +111,7 @@ function handshake(
       }
       clearInterval(helloTimer);
       window.removeEventListener('message', onMessage);
-      channel = new Channel(port, {
+      channel = new Channel(port, event.data.exports, {
         started: (ghost) => {
           stopWaiting();
           settled = true;
