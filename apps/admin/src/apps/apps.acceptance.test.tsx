@@ -486,7 +486,7 @@ describe('Managing apps', () => {
   it('doesn’t load an uninstalled app, on a Ghost that has no app sessions', async () => {
     // Ghost refuses to start a session of an uninstalled app, as the next spec has it. One
     // from before app sessions answers the start with its plain 404, and the read with the app.
-    const older: Partial<AppInstallation> = installation({ status: 'uninstalled' });
+    const older = installation({ status: 'uninstalled' });
     delete older.revision;
     fakeSessionStart('installation-1', routeNotFound());
     const readApi = fakeAdminEndpoint('GET', readPath('installation-1'), {
@@ -543,10 +543,10 @@ describe('Managing apps', () => {
   it('opens an app as it did before, on a Ghost that has no app sessions', async () => {
     // Admin and Core deploy independently: a Ghost from before app sessions answers the
     // start of one with its plain 404, and its installations have no revision.
-    const older: Partial<AppInstallation> = installation();
+    const older = installation();
     delete older.revision;
     const { sessionsApi, readApi, set } = await fakeAppPage(installation());
-    set(older as AppInstallation);
+    set(older);
     sessionsApi.set(routeNotFound());
 
     const { queryClient } = await renderAdminApp(APP_ROUTE, { labs });

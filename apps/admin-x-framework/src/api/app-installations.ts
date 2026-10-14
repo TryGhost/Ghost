@@ -11,8 +11,11 @@ export interface AppInstallation {
   id: string;
   app_id: string;
   status: AppInstallationStatus;
-  /** Moves on with every change to the installation, so a session can tell it has ended. */
-  revision: number;
+  /**
+   * Moves on with every change to the installation, so a session can tell it has ended.
+   * Missing on a Ghost from before app sessions.
+   */
+  revision?: number;
   manifest_url: string;
   manifest: AppManifest;
   created_at: string;
