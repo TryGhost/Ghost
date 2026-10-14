@@ -238,7 +238,7 @@ export interface ViewTransitionController {
   shouldTransition: (pathname: string) => boolean;
   /**
    * Runs before a transitioning navigation, which waits for the promise and is
-   * dropped when it resolves false. Returning nothing navigates at once.
+   * dropped when it resolves false or rejects. Returning nothing navigates at once.
    */
   beforeTransition?: (pathname: string) => Promise<boolean> | undefined;
   /** Runs once a transitioning navigation has settled, whether it landed or a blocker held it. */
@@ -280,14 +280,16 @@ function navigateAfterTransitionStart(
   if (held) {
     held.pathname = pathname;
   }
-  void ready.then((proceed) => {
-    if (held?.pathname === pathname) {
-      held.pathname = undefined;
-    }
-    if (proceed) {
-      navigateAndSettle();
-    }
-  });
+  void ready
+    .catch(() => false)
+    .then((proceed) => {
+      if (held?.pathname === pathname) {
+        held.pathname = undefined;
+      }
+      if (proceed) {
+        navigateAndSettle();
+      }
+    });
 }
 
 export function useNavigate() {
