@@ -69,6 +69,9 @@ Call it as soon as the page loads; every call shares one connection.
 | `connected`                   | `false` once the session has ended.                                                                                                         |
 | `onSessionEnd(callback)`      | Called once, with the `session_ended` error, when the session ends.                                                                         |
 
+`site`, `user`, `session` and `theme` are frozen, so no part of the page can
+change what the rest of it reads.
+
 `fetch` takes `method` (any case), `headers` (anything `Headers` takes) and
 `body`: text is sent as it is; an object or array is sent as JSON, with
 `content-type: application/json` unless the app set one. A body on `GET` or

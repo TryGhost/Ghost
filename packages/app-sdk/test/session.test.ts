@@ -377,6 +377,28 @@ describe('open', () => {
   });
 });
 
+describe('the context', () => {
+  it('is handed out as frozen copies, so no part of the page can change it for the rest', async () => {
+    const { admin: fake, ghost } = await started();
+    await fake.thread.imports.themeChanged({ mode: 'dark', accent_color: '#000000' });
+
+    const writes: [object, string][] = [
+      [ghost.site, 'title'],
+      [ghost.user, 'role'],
+      [ghost.session, 'revision'],
+      [ghost.theme, 'mode'],
+    ];
+    for (const [value, key] of writes) {
+      expect(Object.isFrozen(value), key).toBe(true);
+      expect(() => {
+        (value as Record<string, unknown>)[key] = 'changed';
+      }, key).toThrow(TypeError);
+    }
+    expect(ghost.site.title).toBe('Example');
+    expect(ghost.session.revision).toBe(3);
+  });
+});
+
 describe('theme', () => {
   it("follows Admin's theme and tells subscribers", async () => {
     const { admin: fake, ghost } = await started();

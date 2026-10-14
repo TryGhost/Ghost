@@ -10,7 +10,6 @@ import {
   type HostExports,
   type PathChangeOptions,
   type Place,
-  type StartContext,
   type Theme,
 } from '@tryghost/app-contracts';
 
@@ -58,6 +57,17 @@ function subscribe<T>(listeners: Set<T>, listener: T): Unsubscribe {
   };
 }
 
+/**
+ * What `start` keeps of the context Admin sent, as frozen copies, so no part of the page can
+ * change what every other part reads. The theme and the path are kept apart, as Admin changes
+ * them during the session.
+ */
+interface StartedContext {
+  site: Site;
+  user: User;
+  session: Session;
+}
+
 export interface ChannelEvents {
   /** Admin started the app: the connection is ready for it. */
   started(ghost: Ghost): void;
@@ -78,11 +88,11 @@ export class Channel implements Ghost {
   readonly #port: MessagePort;
   readonly #thread: ThreadMessagePort<HostExports, AppExports>;
   readonly #events: ChannelEvents;
-  readonly #themeListeners = new Set<(theme: Theme) => void>();
+  readonly #themeListeners = new Set<(theme: Readonly<Theme>) => void>();
   readonly #pathListeners = new Set<(path: string) => void>();
   readonly #endListeners = new Set<(error: GhostAppError) => void>();
-  #context: StartContext | undefined;
-  #theme: Theme | undefined;
+  #context: StartedContext | undefined;
+  #theme: Readonly<Theme> | undefined;
   #path = '/';
   #ended: GhostAppError | undefined;
   #stopWatchingTitle: (() => void) | undefined;
@@ -114,7 +124,11 @@ export class Channel implements Ghost {
       // Only the message reaches Admin, so it leads with the code, as Admin's own do.
       throw new Error(encodeBridgeError('invalid_context', detail));
     }
-    this.#context = context;
+    this.#context = {
+      site: Object.freeze({ ...context.site }),
+      user: Object.freeze({ ...context.user }),
+      session: Object.freeze({ ...context.session }),
+    };
     this.#theme = Object.freeze({ ...context.theme });
     this.#path = context.path;
     // Reported before `start` answers, so Admin has the title by the time it shows the page.
@@ -193,19 +207,19 @@ export class Channel implements Ghost {
   // The `Ghost` the app holds. Only handed out once `start` has set the context.
 
   get site(): Site {
-    return (this.#context as StartContext).site;
+    return (this.#context as StartedContext).site;
   }
 
   get user(): User {
-    return (this.#context as StartContext).user;
+    return (this.#context as StartedContext).user;
   }
 
-  get theme(): Theme {
-    return this.#theme as Theme;
+  get theme(): Readonly<Theme> {
+    return this.#theme as Readonly<Theme>;
   }
 
   get session(): Session {
-    return (this.#context as StartContext).session;
+    return (this.#context as StartedContext).session;
   }
 
   get connected(): boolean {
@@ -235,7 +249,7 @@ export class Channel implements Ghost {
     });
   }
 
-  onThemeChange(callback: (theme: Theme) => void): Unsubscribe {
+  onThemeChange(callback: (theme: Readonly<Theme>) => void): Unsubscribe {
     return subscribe(this.#themeListeners, callback);
   }
 

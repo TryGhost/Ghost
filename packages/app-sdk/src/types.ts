@@ -4,14 +4,17 @@ import type { GhostAppError } from './errors.ts';
 
 export type { PathChangeOptions, Place, StartContext, Theme };
 
+// What the app is told about the site, the user, the session and the theme is read-only: the
+// SDK hands out frozen copies, so no part of a page can change what every other part reads.
+
 /** The site the app is running in. */
-export type Site = StartContext['site'];
+export type Site = Readonly<StartContext['site']>;
 
 /** Who is using the app, by ID and role. Ask the Admin API for anything more. */
-export type User = StartContext['user'];
+export type User = Readonly<StartContext['user']>;
 
 /** The session with Admin: the installation revision it was started against. */
-export type Session = StartContext['session'];
+export type Session = Readonly<StartContext['session']>;
 
 export interface ConnectOptions {
   /** How long to wait for Admin to start the app, in milliseconds. Defaults to 10 seconds. */
@@ -49,13 +52,13 @@ export interface Ghost {
   readonly site: Site;
   readonly user: User;
   /** The theme Admin shows now. `mode` is always `light` or `dark`. */
-  readonly theme: Theme;
+  readonly theme: Readonly<Theme>;
   readonly session: Session;
   readonly path: GhostPath;
   /** False once the session has ended; every call then rejects with `session_ended`. */
   readonly connected: boolean;
   /** Called when the publisher switches Admin's theme. */
-  onThemeChange(callback: (theme: Theme) => void): Unsubscribe;
+  onThemeChange(callback: (theme: Readonly<Theme>) => void): Unsubscribe;
   /**
    * Called when Admin's address moves within the app, by back, forward or a link. Not
    * called for the app's own `path.set`.

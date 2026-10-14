@@ -14,9 +14,13 @@ describe('@tryghost/app-sdk', () => {
     expectTypeOf<sdk.StartContext>().toEqualTypeOf<contracts.StartContext>();
     expectTypeOf<sdk.Theme>().toEqualTypeOf<contracts.Theme>();
     expectTypeOf<sdk.Place>().toEqualTypeOf<contracts.Place>();
-    expectTypeOf<sdk.Site>().toEqualTypeOf<contracts.StartContext['site']>();
-    expectTypeOf<sdk.User>().toEqualTypeOf<contracts.StartContext['user']>();
-    expectTypeOf<sdk.Session>().toEqualTypeOf<contracts.StartContext['session']>();
+  });
+
+  it('hands the app the context read-only', () => {
+    expectTypeOf<sdk.Site>().toEqualTypeOf<Readonly<contracts.StartContext['site']>>();
+    expectTypeOf<sdk.User>().toEqualTypeOf<Readonly<contracts.StartContext['user']>>();
+    expectTypeOf<sdk.Session>().toEqualTypeOf<Readonly<contracts.StartContext['session']>>();
+    expectTypeOf<sdk.Ghost['theme']>().toEqualTypeOf<Readonly<contracts.Theme>>();
   });
 
   it('says hello with the version in package.json', () => {
