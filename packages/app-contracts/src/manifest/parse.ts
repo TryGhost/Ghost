@@ -53,11 +53,10 @@ type CheckedManifestUrl = { url: URL; problem: null } | { url: null; problem: st
 /**
  * The address a manifest is read from, checked by the same rules as the URLs inside it.
  *
- * A fragment never reaches the server, so two addresses that differ only there read the
- * same file: it is no part of the address, and is left out before the address is checked,
- * its length included. That holds for the address the manifest was finally read from too,
- * as a redirect can end in a fragment of any length, and URLs in the manifest resolve
- * against that address the same with or without one.
+ * A fragment never reaches the server, so it is no part of the address and is left out
+ * before the check, its length included. That goes for the address a redirect ends at
+ * too, which can carry a fragment of any length; URLs in the manifest resolve against it
+ * the same either way.
  */
 function checkManifestUrl(input: string, allowLocalhost: boolean): CheckedManifestUrl {
   const url = URL.parse(input);
@@ -75,15 +74,12 @@ function checkManifestUrl(input: string, allowLocalhost: boolean): CheckedManife
  * Reads the address a manifest is to be read from, by the same rules as the URLs inside
  * it. Run it before fetching, so the first request never goes to an address Ghost would
  * refuse (plain HTTP, or one carrying credentials). It cannot judge where that address
- * redirects: the fetch decides which hops to follow, and `parseManifest` checks the
- * address the manifest was finally read from once it has been fetched.
+ * redirects: `parseManifest` checks the address the manifest was finally read from.
  *
- * The address it hands back is the one to keep: what is stored, fetched again later and
- * compared with a later address. The URL parser settles most differences in spelling,
- * such as the case of the host or stray whitespace, but not every one: a trailing dot on
- * the host and the case of a percent-encoding stay as given. An address spelled one of
- * those ways reads as a change of manifest URL, which needs the publisher's approval: the
- * safe way to be wrong. A fragment is left out of it.
+ * The address it hands back, without a fragment, is the one to store and compare with a
+ * later one. The URL parser settles most differences in spelling, but not a trailing dot
+ * on the host or the case of a percent-encoding: an address spelled that way reads as a
+ * change of manifest URL, which needs the publisher's approval, the safe way to be wrong.
  */
 export function parseManifestUrl(input: string, allowLocalhost = false): ParseManifestUrlResult {
   const { url, problem } = checkManifestUrl(input, allowLocalhost);

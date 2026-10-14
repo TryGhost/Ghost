@@ -35,37 +35,27 @@ export interface LoadedManifest {
 export type LoadManifest = (manifestUrl: string) => Promise<LoadedManifest>;
 
 /**
- * The digest of a manifest together with the address it is read from: stored with the
- * manifest, and sent back when a publisher confirms what they reviewed.
+ * The address is part of the digest because two addresses can serve the same manifest once
+ * every URL in it is absolute: a review of one would otherwise confirm the other, and that
+ * other address would then decide every future update.
  *
- * The address is part of it because two addresses can serve the same manifest once every
- * URL in it is absolute: a digest of the manifest alone would let a review of one address
- * confirm another serving the same bytes, and that other address would then decide every
- * future update.
- *
- * The same manifest always serialises the same way, as encoding builds it in the schema's
- * key order. The newline between the two cannot be mistaken for part of either: the URL
- * parser strips newlines from an address, and the encoded JSON has none.
+ * Encoding builds the manifest in the schema's key order, so the same manifest always
+ * serialises the same way. The newline between address and manifest cannot be mistaken
+ * for part of either: the URL parser strips newlines, and the encoded JSON has none.
  */
 function digestOf(manifestUrl: string, serialisedManifest: string): string {
   return createHash('sha256').update(`${manifestUrl}\n${serialisedManifest}`).digest('hex');
 }
 
 /**
- * Turns a manifest URL into a loaded manifest: checks the address before anything is
- * fetched from it, fetches the manifest through `request`, and parses it against where it
- * was finally read from.
- *
- * The check before fetching means the first request never goes to an address Ghost would
- * refuse. A redirect is judged only by whether it stays on the same host (or moves it from
- * HTTP to HTTPS); the manifest rules are applied to where it ends once the manifest has
- * been fetched, when parsing checks the address it was read from.
+ * Checks a manifest URL before anything is fetched from it, fetches the manifest through
+ * `request`, and parses it against where it was finally read from. A redirect is judged
+ * only by whether it stays on the same host (or moves it from HTTP to HTTPS); the manifest
+ * rules apply to where it ends, when parsing checks that address.
  *
  * Every problem is thrown as a Ghost error with an `APP_MANIFEST_*` code, which Admin
- * explains to the publisher.
- *
- * `getManifestRules` and `getLocalhostAlias` are asked on every load, as both come from
- * config.
+ * explains to the publisher. `getManifestRules` and `getLocalhostAlias` are asked on every
+ * load, as both come from config.
  */
 export function createManifestLoader({
   request,

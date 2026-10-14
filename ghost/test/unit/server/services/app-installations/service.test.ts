@@ -21,8 +21,7 @@ const manifest: AppManifest = {
 const loaded: LoadedManifest = {
   manifestUrl: 'https://podcast.example.com/ghost-app.json',
   manifest,
-  // Not what re-encoding the manifest would give, so a test can tell the loader's text
-  // from a fresh serialisation of the parsed manifest.
+  // Not what re-encoding the manifest gives, so a test can tell the loader's text was kept.
   serialised: JSON.stringify(manifest, null, 2),
   digest: 'reviewed-digest',
 };

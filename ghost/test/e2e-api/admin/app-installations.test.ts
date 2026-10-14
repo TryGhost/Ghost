@@ -447,8 +447,7 @@ describe('App installations Admin API', function () {
     // What the lifecycle's refetch will do once it exists: keep the newer manifest as the
     // one waiting for approval, and stop the app until an Administrator decides.
     const suspendWithPending = async (id: string, pending: Record<string, unknown>) => {
-      // Stored as Ghost would store it: parsed, with its URLs resolved, encoded, and with the
-      // digest Ghost gave it.
+      // Stored as Ghost would store it, with the digest Ghost gave it.
       serve(pending);
       const reviewed = await preview();
       const pendingId = new ObjectId().toHexString();
