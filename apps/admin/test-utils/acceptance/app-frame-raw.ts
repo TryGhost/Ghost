@@ -5,10 +5,11 @@
  * else frames the SDK's page, app-frame-stand-in.ts.
  *
  * Bundled with its dependencies into one module by the `bundleFrameScript` command, as the
- * frame can load nothing from the test server. It runs in the frame, so it imports only
- * types from the workspace.
+ * frame can load nothing from the test server. It runs in the frame, so from the workspace
+ * it imports only the contracts' zod-free root entry point, and types.
  */
 import { ThreadMessagePort } from '@quilted/threads';
+import { CONNECT_MESSAGE_TYPE, HELLO_MESSAGE_TYPE } from '@tryghost/app-contracts';
 import type { AppExports, HostExports } from '@tryghost/app-contracts/bridge';
 
 import type { AppFrameResult } from './app-frame-stand-in';
@@ -43,13 +44,18 @@ const hooks: RawAppFrameHooks = {
 // Names the document as the SDK does.
 const documentId = String(performance.timeOrigin);
 const hello = () =>
-  window.parent.postMessage({ type: 'ghost-app:hello', sdk: 'raw', document: documentId }, '*');
+  window.parent.postMessage({ type: HELLO_MESSAGE_TYPE, sdk: 'raw', document: documentId }, '*');
 const helloTimer = window.setInterval(hello, 250);
 hello();
 
 window.addEventListener('message', (event: MessageEvent<{ type?: unknown } | null>) => {
   const [port] = event.ports;
-  if (host || !port || event.source !== window.parent || event.data?.type !== 'ghost-app:connect') {
+  if (
+    host ||
+    !port ||
+    event.source !== window.parent ||
+    event.data?.type !== CONNECT_MESSAGE_TYPE
+  ) {
     return;
   }
   window.clearInterval(helloTimer);
