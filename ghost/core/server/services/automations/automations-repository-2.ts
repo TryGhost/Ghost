@@ -68,6 +68,9 @@ export type AutomationsRepository2<Connection> = {
   /** Is this step's automation active? */
   isAutomationActiveForRunStep: (connection: Connection, runStepId: string) => Promisable<boolean>;
 
+  /** Is this run's automation active? */
+  isRunAutomationActive: (connection: Connection, automationRunId: string) => Promisable<boolean>;
+
   /**
    * Lock a member for the lifetime of this transaction. Useful to make sure a
    * member doesn't change during an operation.
