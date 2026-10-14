@@ -29,14 +29,12 @@ function parentOrigin(): string {
   return origin && origin !== 'null' ? origin : '*';
 }
 
-let documentId: string | undefined;
-
-/** The hello's `document` ID: made once and kept for the document's life, across `connect()`s. */
+/**
+ * The hello's `document` ID: when the page's document began, which a reload, a form post or a
+ * link renews.
+ */
 function documentIdentity(): string {
-  documentId ??= Array.from(crypto.getRandomValues(new Uint8Array(16)), (byte) =>
-    byte.toString(16).padStart(2, '0'),
-  ).join('');
-  return documentId;
+  return String(performance.timeOrigin);
 }
 
 /**

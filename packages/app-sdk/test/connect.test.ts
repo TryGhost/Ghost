@@ -1,7 +1,15 @@
 import { HELLO_MESSAGE_TYPE, START_TIMEOUT_MS } from '@tryghost/app-contracts/bridge';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { ADMIN_ORIGIN, FakeAdmin, frame, postToPage, settle, startContext } from './fake-admin.ts';
+import {
+  ADMIN_ORIGIN,
+  FakeAdmin,
+  frame,
+  freshPage,
+  postToPage,
+  settle,
+  startContext,
+} from './fake-admin.ts';
 
 type Sdk = typeof import('../src/index.ts');
 
@@ -16,6 +24,7 @@ function admin() {
 
 // `connect` shares one connection per page, so each test loads the SDK afresh.
 beforeEach(async () => {
+  freshPage();
   vi.resetModules();
   sdk = await import('../src/index.ts');
 });
@@ -82,7 +91,7 @@ describe('connect', () => {
       {
         type: HELLO_MESSAGE_TYPE,
         sdk: 'private',
-        document: expect.stringMatching(/^[0-9a-f]{32}$/),
+        document: '1760000000000.5',
       },
       '*',
     );
@@ -167,12 +176,13 @@ describe('connect', () => {
     expect(documents.length).toBeGreaterThan(3);
     expect(new Set(documents).size).toBe(1);
 
-    // A new document, as a reload makes, has a new one.
+    // A new document, as a reload makes, began later.
+    freshPage(1_760_000_000_250.25);
     vi.resetModules();
     const reloaded: Sdk = await import('../src/index.ts');
     reloaded.connect({ timeout: 100 }).catch(() => {});
     const [hello] = parent.postMessage.mock.lastCall ?? [];
-    expect((hello as { document: string }).document).not.toBe(documents[0]);
+    expect((hello as { document: string }).document).toBe('1760000000250.25');
     vi.advanceTimersByTime(100);
   });
 

@@ -157,13 +157,13 @@ compareManifests(
 ## The bridge
 
 Admin frames an app's page and talks to it over a `MessagePort`. The page's SDK
-posts a `ghost-app:hello` to `window.parent`, with a random ID for its
-document; Admin checks the sender is the frame and its origin is the surface's,
-and answers with a `ghost-app:connect` carrying the port. The ID tells a hello
-repeated by a document Admin has connected from a new document's. Over it,
-each side exposes named calls: `HostExports` are what an app may ask of Admin
-(`fetch`, `titleChanged`, `pathChanged`, `open`), `AppExports` what Admin tells
-the app (`start`, `themeChanged`, `pathChanged`).
+posts a `ghost-app:hello` to `window.parent`, with an ID for its document (its
+`performance.timeOrigin`); Admin checks the sender is the frame and its origin
+is the surface's, and answers with a `ghost-app:connect` carrying the port. The
+ID tells a hello repeated by a document Admin has connected from a new
+document's. Over it, each side exposes named calls: `HostExports` are what an
+app may ask of Admin (`fetch`, `titleChanged`, `pathChanged`, `open`),
+`AppExports` what Admin tells the app (`start`, `themeChanged`, `pathChanged`).
 
 The frame is untrusted, so Admin parses every argument with the schemas here
 (`FetchRequestSchema`, `AppPathSchema`, `TitleSchema`, `PlaceSchema`, …) before

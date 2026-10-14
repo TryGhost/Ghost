@@ -18,7 +18,7 @@ describe('the window messages', () => {
   });
 
   it("accepts a hello naming the SDK version and the page's document", () => {
-    const hello = { type: 'ghost-app:hello', sdk: '1.2.3', document: 'a1b2c3' };
+    const hello = { type: 'ghost-app:hello', sdk: '1.2.3', document: '1760000000000.5' };
     expect(HelloMessageSchema.parse(hello)).toEqual(hello);
   });
 
@@ -27,10 +27,10 @@ describe('the window messages', () => {
       HelloMessageSchema.parse({
         type: 'ghost-app:hello',
         sdk: '9.0.0',
-        document: 'a1b2c3',
+        document: '1760000000000.5',
         capabilities: [],
       }),
-    ).toEqual({ type: 'ghost-app:hello', sdk: '9.0.0', document: 'a1b2c3' });
+    ).toEqual({ type: 'ghost-app:hello', sdk: '9.0.0', document: '1760000000000.5' });
   });
 
   it('refuses anything else a window may be sent', () => {
@@ -38,9 +38,9 @@ describe('the window messages', () => {
       null,
       'ghost-app:hello',
       { type: 'ghost-app:connect', sdk: '1.0.0' },
-      { type: 'ghost-app:hello', document: 'a1b2c3' },
-      { type: 'ghost-app:hello', sdk: 1, document: 'a1b2c3' },
-      { type: 'ghost-app:hello', sdk: 'x'.repeat(101), document: 'a1b2c3' },
+      { type: 'ghost-app:hello', document: '1760000000000.5' },
+      { type: 'ghost-app:hello', sdk: 1, document: '1760000000000.5' },
+      { type: 'ghost-app:hello', sdk: 'x'.repeat(101), document: '1760000000000.5' },
       { type: 'ghost-app:hello', sdk: '1.0.0' },
       { type: 'ghost-app:hello', sdk: '1.0.0', document: 1 },
       { type: 'ghost-app:hello', sdk: '1.0.0', document: '' },

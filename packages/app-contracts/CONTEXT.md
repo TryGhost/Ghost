@@ -98,8 +98,9 @@ _Avoid_: postMessage API, iframe protocol, RPC
 **Hello**:
 The window message an app's page posts to Admin once the SDK has loaded, and
 repeats until Admin answers. It names the SDK's version, for diagnostics only,
-and a random ID for the page's document, so Admin can tell a hello repeated by
-a document it has connected from a new document's.
+and an ID for the page's document (when the document began, as
+`performance.timeOrigin`), so Admin can tell a hello repeated by a document it
+has connected from a new document's.
 _Avoid_: handshake, ready, init
 
 **Connect**:

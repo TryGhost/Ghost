@@ -29,9 +29,10 @@ export const HelloMessageSchema = z.object({
       `Expected an SDK version of at most ${SDK_VERSION_MAX_LENGTH} characters`,
     ),
   /**
-   * A random ID the SDK picks once per document and sends with every hello, so Admin can tell a
+   * An ID for the page's document, the same in every hello it sends, so Admin can tell a
    * repeated hello from a document it has connected from a new document in the same frame,
-   * after a reload, a form post or a link.
+   * after a reload, a form post or a link. The SDK sends the document's
+   * `performance.timeOrigin`, as text.
    */
   document: z
     .string('Expected the document ID as text')
