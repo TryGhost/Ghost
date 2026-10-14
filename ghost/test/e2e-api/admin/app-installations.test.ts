@@ -884,7 +884,7 @@ describe('App installations Admin API', function () {
       assert.equal((await manifestRows()).length, 1);
       const [logged] = keptLogged(warn);
       assert.ok(logged.includes(`${installed.id} (com.example.podcast)`), logged);
-      assert.match(logged, /APP_MANIFEST_INVALID/);
+      assert.match(logged, /APP_MANIFEST_INVALID: .*\(accent_color: /);
     });
 
     it('keeps the approved manifest when the address serves another app, and logs why', async function () {
@@ -900,15 +900,18 @@ describe('App installations Admin API', function () {
       assert.match(logged, /APP_MANIFEST_OTHER_APP: .* now serves com\.example\.other/);
     });
 
-    it('keeps the approved manifest when the address redirects to another host', async function () {
+    it('keeps the approved manifest when the address redirects to another host, and logs where', async function () {
       const installed = await install();
       nock(MANIFEST_HOST).get(MANIFEST_PATH).reply(302, undefined, {
         location: 'https://elsewhere.example.com/ghost-app.json',
       });
+      const warn = sinon.stub(logging, 'warn');
 
       await start(installed.id);
 
       assert.equal((await manifestRows()).length, 1);
+      const [logged] = keptLogged(warn);
+      assert.match(logged, /APP_MANIFEST_REDIRECTED: .*redirects to elsewhere\.example\.com\)$/);
     });
 
     it('answers 404 for an installation that has been uninstalled, without fetching', async function () {

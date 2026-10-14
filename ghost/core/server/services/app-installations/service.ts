@@ -623,10 +623,11 @@ export class AppInstallationsService {
     }
 
     // The app keeps running its approved manifest and nothing shows why, so an operator
-    // can read it in the log. Loading logs an app it cannot reach itself.
-    const keptApproved = (code: string | null, message: string) =>
+    // can read it in the log, down to what was wrong (the fields that are not valid, or the
+    // host it redirected to). Loading logs an app it cannot reach itself.
+    const keptApproved = (code: string | null, message: string, reason?: string) =>
       logging.warn(
-        `App installation ${id} (${before.app_id}) keeps its approved manifest. ${code}: ${message}`,
+        `App installation ${id} (${before.app_id}) keeps its approved manifest. ${code}: ${message}${reason ? ` (${reason})` : ''}`,
       );
     let loaded: LoadedManifest;
     try {
@@ -634,7 +635,7 @@ export class AppInstallationsService {
     } catch (err) {
       if (err instanceof errors.ValidationError) {
         if (err.code !== 'APP_MANIFEST_UNREACHABLE') {
-          keptApproved(err.code, err.message);
+          keptApproved(err.code, err.message, err.context);
         }
         return;
       }
