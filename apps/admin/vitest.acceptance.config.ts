@@ -223,6 +223,26 @@ const reloadFrame: BrowserCommand<[origin: string]> = async ({ page }, origin) =
   await frame.evaluate('setTimeout(() => location.reload(), 0)');
 };
 
+// Posts a form from the document in the newest frame on `origin` to `action`, as the page's
+// own form would, which loads the answer as a new document in the same frame. Scheduled and
+// a string, as `reloadFrame` is.
+const postFrameForm: BrowserCommand<[origin: string, action: string]> = async (
+  { page },
+  origin,
+  action,
+) => {
+  const frame = await newestFrameOn(page, origin, 'post a form in');
+  await frame.evaluate(
+    `setTimeout(() => {
+      const form = document.createElement('form');
+      form.method = 'post';
+      form.action = ${JSON.stringify(action)};
+      document.body.append(form);
+      form.submit();
+    }, 0)`,
+  );
+};
+
 const resetFakeFrameOrigins: BrowserCommand<[]> = async ({ page }) => {
   const fakes = frameFakes.get(page) ?? [];
   frameFakes.delete(page);
@@ -326,6 +346,7 @@ export default defineConfig({
         failModuleLoads,
         fakeFrameOrigin,
         guardFrameNavigations,
+        postFrameForm,
         reloadFrame,
         resetFailedModuleLoads,
         resetFakeFrameOrigins,

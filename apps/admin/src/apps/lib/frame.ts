@@ -78,7 +78,11 @@ export const APP_FRAME_ALLOW = [...SELF_BY_DEFAULT, ...EVERYONE_BY_DEFAULT]
  * The bridge narrows it. Admin only answers a hello whose `event.origin` is the surface's
  * origin, so a frame that redirected or navigated to Ghost's own origin before its app
  * started never completes the handshake, stays hidden, and ends up not-responding. One
- * that leaves once its app has started loads another document, which ends the session
- * and starts the app again in a new frame; `bindAppFrame` says what it can't tell.
+ * that leaves once its app has started is noticed when it lands on Admin's origin, which
+ * loads the app's page afresh in a new frame, and when the new document says hello or is
+ * the second the frame has loaded since the app connected, which hides it until it starts
+ * in place, or loads the page afresh if it doesn't in time. An app that connected after
+ * its page loaded and then leaves for an origin other than Admin's that never says hello,
+ * the site's included, isn't noticed; `bindAppFrame` says why.
  */
 export { isGhostOrigin } from '@tryghost/app-contracts';

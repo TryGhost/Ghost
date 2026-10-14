@@ -11,6 +11,7 @@ declare module 'vitest/browser' {
     fakeFrameOrigin: (origin: string, html: string, delayMs?: number) => Promise<void>;
     failFrameOrigin: (origin: string) => Promise<void>;
     guardFrameNavigations: () => Promise<void>;
+    postFrameForm: (origin: string, action: string) => Promise<void>;
     reloadFrame: (origin: string) => Promise<void>;
     resetFakeFrameOrigins: () => Promise<void>;
   }
@@ -107,6 +108,14 @@ export function callHostRaw(
  */
 export function reloadFrame(origin: string): Promise<void> {
   return commands.reloadFrame(new URL(origin).origin);
+}
+
+/**
+ * Posts a form from the page framed from `origin` to `action`, as a form in the page would:
+ * the answer, served as the page is, is a new document in the same frame.
+ */
+export function postFrameForm(origin: string, action: string): Promise<void> {
+  return commands.postFrameForm(new URL(origin).origin, action);
 }
 
 /** Answers unfaked external iframe navigations with a 418 so no spec reaches the network. */

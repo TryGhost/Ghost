@@ -43,6 +43,8 @@ export interface AppFrameState {
   context: StartContext | undefined;
   /** The app's route now, `Ghost.path.current`. */
   path: string | undefined;
+  /** The document's own address on the app's origin, its path and query. */
+  address: string;
   /** The theme now, `Ghost.theme`. */
   theme: Theme | undefined;
   received: AppFrameReceived[];
@@ -98,7 +100,13 @@ async function settle<Value>(call: (app: Ghost) => Promise<Value>): Promise<AppF
 }
 
 window.__app = {
-  state: () => ({ context, path: ghost?.path.current, theme: ghost?.theme, received }),
+  state: () => ({
+    context,
+    path: ghost?.path.current,
+    address: `${location.pathname}${location.search}`,
+    theme: ghost?.theme,
+    received,
+  }),
   fetch: ({ path, method, headers, body }) =>
     settle(async (app) => {
       const response = await app.fetch(path, { method, headers, body });
