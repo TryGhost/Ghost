@@ -55,6 +55,15 @@ export interface AppFrameSession {
   dispose: () => void;
 }
 
+/**
+ * How many times within `RESTART_WINDOW_MS` Admin loads an app's page afresh on its own
+ * before it calls the app unresponsive instead. A page that leaves, or reloads itself, each
+ * time it starts would otherwise loop between the spinner and the app, never getting to
+ * Try again.
+ */
+const AUTOMATIC_RESTARTS = 3;
+const RESTART_WINDOW_MS = 60_000;
+
 const sameTheme = (a: Theme | undefined, b: Theme) =>
   a?.mode === b.mode && a.accent_color === b.accent_color;
 
@@ -65,7 +74,8 @@ const sameTheme = (a: Theme | undefined, b: Theme) =>
  * A started page whose frame holds a new document, after a reload, a form post or a link,
  * is hidden again while the new document starts in place, in the same frame and with the
  * same time to do it; one that doesn't, or that Admin can't start in place (see
- * `bindAppFrame`), is loaded afresh in a new frame. Path and theme changes are passed on
+ * `bindAppFrame`), is loaded afresh in a new frame, up to `AUTOMATIC_RESTARTS` times a
+ * minute; after that it has failed, until Try again. Path and theme changes are passed on
  * in both directions, each once: what the app was last told, or told Admin, is never
  * echoed back to it, even when Admin is still catching up with routes it has since left.
  */
@@ -77,6 +87,8 @@ export function createAppFrameSession(options: AppFrameSessionOptions): AppFrame
   let frame: HTMLIFrameElement | null = null;
   let host: AppFrameHost | null = null;
   let timer: number | undefined;
+  // When Admin loaded the page afresh on its own, within the last `RESTART_WINDOW_MS`.
+  let restarts: number[] = [];
 
   // Where Admin is within the app, and what the app last heard or said about where it is.
   let adminPath: string | undefined;
@@ -115,6 +127,21 @@ export function createAppFrameSession(options: AppFrameSessionOptions): AppFrame
     });
   };
 
+  /** Loads the page afresh because of something it did, unless it keeps making Admin. */
+  const restartOnItsOwn = () => {
+    if (disposed) {
+      return;
+    }
+    const now = Date.now();
+    restarts = [...restarts.filter((at) => now - at < RESTART_WINDOW_MS), now];
+    if (restarts.length > AUTOMATIC_RESTARTS) {
+      detach();
+      update({ status: 'failed', title: undefined });
+      return;
+    }
+    restart();
+  };
+
   const bind = (element: HTMLIFrameElement) => {
     frame = element;
     const bound = bindAppFrame({
@@ -146,7 +173,7 @@ export function createAppFrameSession(options: AppFrameSessionOptions): AppFrame
           if (host === bound) {
             window.clearTimeout(timer);
             update({ status: 'loading', title: undefined, startedAt: new Date() });
-            timer = window.setTimeout(restart, appFrameTimeouts.ready);
+            timer = window.setTimeout(restartOnItsOwn, appFrameTimeouts.ready);
           }
         },
         documentStarted: () => {
@@ -157,7 +184,7 @@ export function createAppFrameSession(options: AppFrameSessionOptions): AppFrame
         },
         // The frame holds a document Admin can't start in place. The page is started in a
         // new frame, at its own address and with Admin's route, as a reload of Admin would.
-        reloaded: restart,
+        reloaded: restartOnItsOwn,
       },
     });
     host = bound;
@@ -204,7 +231,11 @@ export function createAppFrameSession(options: AppFrameSessionOptions): AppFrame
         bind(element);
       }
     },
-    restart,
+    restart: () => {
+      // The publisher asked: the count starts over.
+      restarts = [];
+      restart();
+    },
     pathChanged: (path) => {
       adminPath = path;
       const caughtUp = following.indexOf(path);

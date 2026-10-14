@@ -445,6 +445,41 @@ describe('createAppFrameSession', () => {
     expect(session.getState()).toMatchObject({ status: 'loading', attempt: 1 });
   });
 
+  describe('a page that keeps leaving', () => {
+    /** Has the started page in `frame` leave for Admin's own origin, which Admin can read. */
+    const leave = (frame: FakeFrame) => {
+      frame.navigate();
+      Object.assign(frame.element, { contentDocument: {} });
+      frame.loaded();
+    };
+
+    it('is called unresponsive rather than loaded again and again', async () => {
+      for (let attempt = 1; attempt <= 3; attempt += 1) {
+        leave(await started());
+        expect(session.getState()).toMatchObject({ status: 'loading', attempt });
+      }
+
+      leave(await started());
+
+      expect(session.getState()).toMatchObject({ status: 'failed', attempt: 3 });
+      // Try again starts the count over.
+      session.restart();
+      for (let attempt = 5; attempt <= 7; attempt += 1) {
+        leave(await started());
+        expect(session.getState()).toMatchObject({ status: 'loading', attempt });
+      }
+    });
+
+    it('is loaded again when it leaves now and then', async () => {
+      vi.useFakeTimers({ toFake: ['Date'] });
+      for (let attempt = 1; attempt <= 6; attempt += 1) {
+        leave(await started());
+        expect(session.getState()).toMatchObject({ status: 'loading', attempt });
+        vi.setSystemTime(Date.now() + 30_000);
+      }
+    });
+  });
+
   it('keeps a page reached by a redirect in script once it has started', async () => {
     const frame = fakeFrame();
     session.attach(frame.element);
