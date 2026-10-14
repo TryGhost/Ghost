@@ -62,6 +62,15 @@ describe('database automations repository', function () {
     updated_at: later,
   });
 
+  const createRunStep = (runId: string, revisionId: string): RunStepToInsert => ({
+    id: ObjectId().toHexString(),
+    automation_run_id: runId,
+    automation_action_revision_id: revisionId,
+    created_at: createdAt,
+    updated_at: updatedAt,
+    ready_at: readyAt,
+  });
+
   beforeAll(async function () {
     await dbUtils.reset({ truncate: true });
     await testUtils.setup('default')();
@@ -381,15 +390,6 @@ describe('database automations repository', function () {
     let revisionId: string;
     let runId: string;
 
-    const createRunStep = (): RunStepToInsert => ({
-      id: ObjectId().toHexString(),
-      automation_run_id: runId,
-      automation_action_revision_id: revisionId,
-      created_at: createdAt,
-      updated_at: updatedAt,
-      ready_at: readyAt,
-    });
-
     const findRunSteps = async () => {
       const rows = await knex('automation_run_steps')
         .select(
@@ -438,8 +438,8 @@ describe('database automations repository', function () {
 
     it('inserts multiple run steps', async function () {
       const steps = [
-        createRunStep(),
-        { ...createRunStep(), ready_at: new Date(readyAt.getTime() + 3600000) },
+        createRunStep(runId, revisionId),
+        { ...createRunStep(runId, revisionId), ready_at: new Date(readyAt.getTime() + 3600000) },
       ];
       await repository.withConnection((connection) => repository.insertRunSteps(connection, steps));
       await expect(findRunSteps()).resolves.toEqual(
@@ -449,7 +449,7 @@ describe('database automations repository', function () {
 
     it('truncates fractional seconds so readiness is not rounded into the future', async function () {
       const step = {
-        ...createRunStep(),
+        ...createRunStep(runId, revisionId),
         created_at: new Date(createdAt.getTime() + 900),
         updated_at: new Date(updatedAt.getTime() + 900),
         ready_at: new Date(readyAt.getTime() + 900),
@@ -465,7 +465,7 @@ describe('database automations repository', function () {
     });
 
     it('leaves existing run steps unchanged when given an empty array', async function () {
-      const step = createRunStep();
+      const step = createRunStep(runId, revisionId);
       await repository.withConnection((connection) =>
         repository.insertRunSteps(connection, [step]),
       );
@@ -537,6 +537,39 @@ describe('database automations repository', function () {
       await repository.withConnection((connection) => repository.insertRuns(connection, []));
       await expect(findRuns()).resolves.toHaveLength(1);
     });
+  });
+
+  describe('isAutomationActiveForRunStep', function () {
+    const isAutomationActiveForRunStep = async (status: string) => {
+      const repository = createDatabaseAutomationsRepository2({ knex });
+
+      const automation = { ...createAutomation(), status };
+      const member = createMember(ObjectId().toHexString());
+      const action = createAction(automation.id);
+      const revision = createRevision(action.id);
+      const run = createRun(automation.id, member.id);
+      const step = createRunStep(run.id, revision.id);
+
+      await knex('automations').insert(automation);
+      await knex('members').insert(member);
+      await knex('automation_actions').insert(action);
+      await knex('automation_action_revisions').insert(revision);
+      await repository.insertRuns(knex, [run]);
+      await repository.insertRunSteps(knex, [step]);
+
+      return await repository.isAutomationActiveForRunStep(knex, step.id);
+    };
+
+    it('resolves with true if the associated automation is active', async function () {
+      await expect(isAutomationActiveForRunStep('active')).resolves.toBe(true);
+    });
+
+    it.each(['inactive', 'archived'])(
+      'resolves with false if the associated automation is %s',
+      async function (status) {
+        await expect(isAutomationActiveForRunStep(status)).resolves.toBe(false);
+      },
+    );
   });
 
   describe('lockMember', function () {

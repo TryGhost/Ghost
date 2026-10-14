@@ -25,6 +25,7 @@ export const createTestAutomationsRepository2 = (
       'hasMemberEnteredAutomation',
       'insertRunSteps',
       'insertRuns',
+      'isAutomationActiveForRunStep',
       'lockMember',
     ]),
     ...overrides,
