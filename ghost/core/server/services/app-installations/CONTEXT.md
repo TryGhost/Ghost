@@ -94,6 +94,13 @@ _Avoid_: accept, update
 
 ### Keeping up with the app
 
+**App session**:
+Admin's run of an installed app, started when one of its pages opens. Starting
+one re-checks the app and answers with the installation and the revision the
+session is pinned to. Nothing is stored and no token is issued; the session
+ends when the installation's revision moves on.
+_Avoid_: login, token, connection
+
 **Re-check**:
 Ghost loading an installed app's manifest again from its approved manifest URL
 when an app session starts, and keeping what changed. A manifest Ghost cannot
