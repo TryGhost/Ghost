@@ -297,6 +297,33 @@ describe('New automation', () => {
     expect(entering()).toBe(0);
   });
 
+  it('opens the editor with the trigger where the picker card was', async () => {
+    fakeAutomations([]);
+    fakeAdminEndpoint('GET', /\/tiers\/\?/, { tiers: [] });
+    await renderAdminApp('/automations/new', {
+      labs,
+      boot: {
+        browseSettings: {
+          response: settingsResponse({
+            settings: { stripe_secret_key: 'sk_test', stripe_publishable_key: 'pk_test' },
+          }),
+        },
+      },
+    });
+    const heading = page.getByText('Select a trigger', { exact: true });
+    await expect.element(heading).toBeVisible();
+    const card = heading.element().parentElement as HTMLElement;
+    const pickerTop = card.getBoundingClientRect().top;
+    const region = card.parentElement?.parentElement as HTMLElement;
+    const regionTop = region.getBoundingClientRect().top;
+    // Slightly above centre, not pinned under the header.
+    expect(pickerTop - regionTop).toBeGreaterThan(48);
+    await page.getByRole('button', { name: /^Free member signed up/ }).click();
+    const trigger = () =>
+      document.querySelector<HTMLElement>('.react-flow__node[data-id="__trigger__"]');
+    await expect.poll(() => trigger()?.getBoundingClientRect().top).toBeCloseTo(pickerTop, 0);
+  });
+
   it('offers Performance before the first save, without loading anything', async () => {
     fakeAutomations([]);
     const stats = fakeAdminEndpoint('GET', /\/automations\/[^/]*\/performance-stats\//, {});

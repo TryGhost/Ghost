@@ -89,6 +89,7 @@ const AutomationEditorContent: React.FC<{
   automationId: string | null;
   creation?: {
     initialAutomation: AutomationDetail;
+    triggerTop?: number;
     onCreated: (id: string) => void;
   };
 }> = ({ automationId, creation }) => {
@@ -529,6 +530,7 @@ const AutomationEditorContent: React.FC<{
                 ? 'performance'
                 : 'closed'
         }
+        initialTriggerTop={creation?.triggerTop}
         isEmailNavigationBlocked={isEmailNavigationBlocked}
         isError={isEditorError}
         isLoading={isEditorLoading}
@@ -632,11 +634,12 @@ const AutomationEditor: React.FC = () => {
     <ScreenEntranceProvider>
       {automationId === 'new' || automationId === session.createdId ? (
         <NewAutomation key={session.key}>
-          {(initialAutomation) => (
+          {(initialAutomation, triggerTop) => (
             <AutomationEditorContent
               automationId={null}
               creation={{
                 initialAutomation,
+                triggerTop,
                 onCreated: (createdId) => setSession((current) => ({ ...current, createdId })),
               }}
             />

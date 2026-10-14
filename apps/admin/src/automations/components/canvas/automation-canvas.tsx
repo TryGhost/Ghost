@@ -379,14 +379,19 @@ const buildGraph = ({
   return { nodes: measuredNodes, edges, contentBounds };
 };
 
-const getInitialViewport = (canvasWidth: number): { x: number; y: number; zoom: number } => ({
+const getInitialViewport = (
+  canvasWidth: number,
+  triggerTop = INITIAL_VIEWPORT_Y,
+): { x: number; y: number; zoom: number } => ({
   x: Math.round(canvasWidth / 2 - NODE_COLUMN_CENTER_X),
-  y: INITIAL_VIEWPORT_Y + HEADER_UNDERLAP_Y,
+  y: triggerTop + HEADER_UNDERLAP_Y,
   zoom: 1,
 });
 
 type AutomationCanvasProps = {
   initialSidebar: 'unknown' | 'closed' | 'settings' | 'performance';
+  // A new automation opens with its trigger where the trigger picker's card was.
+  initialTriggerTop?: number;
   actionErrors?: Record<string, string>;
   onWaitValidityChange: (stepId: string, valid: boolean) => void;
   automation?: AutomationDetail;
@@ -419,6 +424,7 @@ const hasAutomationEmailModalState = (state: unknown): state is { automationEmai
 
 const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
   initialSidebar,
+  initialTriggerTop,
   actionErrors = {},
   savedTriggerTierIds = [],
   onWaitValidityChange,
@@ -691,6 +697,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
   const isAutomationSidebarOpen = isAutomationSidebarAvailable && sidebar.open;
   const initialViewport = getInitialViewport(
     window.innerWidth - (isAutomationSidebarOpen && window.innerWidth >= 960 ? 480 : 0),
+    initialTriggerTop,
   );
   const isHistoryOpen = selectedRunId !== null;
 
