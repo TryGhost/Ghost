@@ -1,6 +1,6 @@
 import { renderHook } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { matchRoutes } from '@tryghost/admin-x-framework';
+import { type RouteObject, isAppPagePath, matchRoutes } from '@tryghost/admin-x-framework';
 import { useAdminSidebarVisibility, useRouteHidesAdminSidebar } from '@/layout/sidebar-visibility';
 import { matchAdminRoutes, routes, useRoutePattern } from './routes';
 
@@ -117,4 +117,40 @@ describe('matchAdminRoutes', () => {
       expect(matchAdminRoutes(path)).toBe(matches);
     },
   );
+});
+
+describe('app pages', () => {
+  const APP_PAGE_ROUTE = '/apps/:installationId/*';
+  const objectId = '6a1b2c3d4e5f60718293a4b5';
+
+  /** Every route's full path pattern, as matchedRoutePattern joins them. */
+  function routePatterns(tree: RouteObject[], parent = ''): string[] {
+    return tree.flatMap((route) => {
+      if (route.path === undefined) {
+        return routePatterns(route.children ?? [], parent);
+      }
+      const pattern = route.path.startsWith('/') ? route.path : `${parent}/${route.path}`;
+      return [pattern, ...routePatterns(route.children ?? [], pattern)];
+    });
+  }
+
+  function matchedRoute(path: string): string {
+    pathnameMock.mockReturnValue(path);
+    return renderHook(() => useRoutePattern()).result.current;
+  }
+
+  const appsRoutes = routePatterns(routes).filter(
+    (pattern) => pattern === '/apps' || pattern.startsWith('/apps/'),
+  );
+
+  // A new Admin screen under /apps/ fails here unless the rule leaves its query to Admin.
+  it.each(appsRoutes)('reads labs from the query on %s unless it is an app’s page', (pattern) => {
+    const path = pattern.replace(/:[^/]+/g, objectId).replace('*', 'week');
+    expect(matchedRoute(path)).toBe(pattern);
+    expect(isAppPagePath(path)).toBe(pattern === APP_PAGE_ROUTE);
+  });
+
+  it('includes the app page among them', () => {
+    expect(appsRoutes).toContain(APP_PAGE_ROUTE);
+  });
 });

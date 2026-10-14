@@ -45,7 +45,7 @@ describe('feature flag overrides', () => {
 
   it('keeps the stored overrides on an app’s page, whose query is the app’s', async () => {
     sessionStorage.setItem('ghost-admin:labs-overrides', '["storedFlag"]');
-    window.history.replaceState(null, '', '/#/apps/podcast/?labs=');
+    window.history.replaceState(null, '', '/#/apps/6a1b2c3d4e5f60718293a4b5/?labs=');
 
     render(
       <TestWrapper>
@@ -57,6 +57,27 @@ describe('feature flag overrides', () => {
 
     await screen.findByText('App');
     expect(sessionStorage.getItem('ghost-admin:labs-overrides')).toBe('["storedFlag"]');
+  });
+
+  it('reads the overrides on Admin’s own screens under /apps/', async () => {
+    window.history.replaceState(null, '', '/#/apps/install?manifest=x&labs=apps');
+
+    render(
+      <TestWrapper>
+        <RouterProvider
+          prefix="/"
+          routes={[
+            { path: '/apps/install', element: <div>Install</div> },
+            { path: '/apps/:id/*', element: <div>App</div> },
+          ]}
+        >
+          <Outlet />
+        </RouterProvider>
+      </TestWrapper>,
+    );
+
+    await screen.findByText('Install');
+    expect(sessionStorage.getItem('ghost-admin:labs-overrides')).toBe('["apps"]');
   });
 });
 

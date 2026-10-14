@@ -22,6 +22,7 @@ import { NavigationStackProvider } from './navigation-stack-provider';
 import { ErrorPage } from '@tryghost/shade/primitives';
 import {
   getStoredFeatureFlagOverrides,
+  isAppPagePath,
   syncFeatureFlagOverrides,
 } from '../utils/feature-flag-overrides';
 import { FeatureFlagOverridesContext } from './feature-flag-overrides-context';
@@ -51,8 +52,7 @@ export interface RouterProviderProps {
 function FeatureFlagOverridesRouteProvider({ children }: { children: React.ReactNode }) {
   const { pathname, search } = useLocation();
   const { onFeatureFlagOverridesChange } = useFramework();
-  // An installed app's page passes its query on to the app as it is, so `labs` there is the app's.
-  const isAppPage = pathname.startsWith('/apps/');
+  const isAppPage = isAppPagePath(pathname);
   const enabledFlags = useMemo(
     () => (isAppPage ? getStoredFeatureFlagOverrides() : syncFeatureFlagOverrides(search)),
     [search, isAppPage],
