@@ -29,6 +29,22 @@ describe('createAdminApiFetch', () => {
 
   const adminApiFetch = createAdminApiFetch({ apiRoot: new URL(API_ROOT), ghostVersion: '6.0' });
 
+  it('sends Admin’s own headers, never one an app set in their place', async () => {
+    fetchMock.mockResolvedValue(new Response('{}'));
+
+    // The schema refuses these before a request gets here; this doesn't count on it.
+    await adminApiFetch(
+      {
+        path: '/posts/',
+        headers: { 'App-Pragma': 'cache', 'x-ghost-version': '0.1', Authorization: 'Ghost forged' },
+      },
+      session.signal,
+    );
+
+    const [, init] = fetchMock.mock.calls[0];
+    expect(init?.headers).toEqual({ 'app-pragma': 'no-cache', 'x-ghost-version': '6.0' });
+  });
+
   it('answers with the Admin API’s response as plain data, sent with Admin’s headers', async () => {
     fetchMock.mockResolvedValue(
       new Response('{"posts":[]}', {
