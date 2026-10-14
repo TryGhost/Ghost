@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest';
 
 import {
   CONNECT_MESSAGE_TYPE,
-  ConnectMessageSchema,
   HELLO_MESSAGE_TYPE,
   HelloMessageSchema,
   START_TIMEOUT_MS,
@@ -42,14 +41,5 @@ describe('the window messages', () => {
     ]) {
       expect(HelloMessageSchema.safeParse(data).success).toBe(false);
     }
-  });
-
-  it('accepts a connect and refuses a hello in its place', () => {
-    expect(ConnectMessageSchema.parse({ type: 'ghost-app:connect' })).toEqual({
-      type: 'ghost-app:connect',
-    });
-    expect(ConnectMessageSchema.safeParse({ type: 'ghost-app:hello', sdk: '1' }).success).toBe(
-      false,
-    );
   });
 });

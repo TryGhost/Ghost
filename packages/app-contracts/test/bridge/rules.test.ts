@@ -4,10 +4,6 @@ import {
   ARGUMENT_MESSAGES,
   AppPathSchema,
   BRIDGE_ERROR_CODES,
-  ConnectMessageSchema,
-  FetchResponseSchema,
-  StartContextSchema,
-  ThemeSchema,
   decodeBridgeError,
   encodeBridgeError,
   isConnectMessage,
@@ -20,15 +16,10 @@ import {
   methodAllowsBody,
 } from '../../src/bridge/index.ts';
 
-// The guards are what the SDK checks Admin's messages with, the schemas what Admin itself
-// applies. Each case below is checked against both, so the two cannot drift apart.
-function agree(
-  guard: (value: unknown) => boolean,
-  schema: { safeParse(value: unknown): { success: boolean } },
-) {
+// Each guard answers every case below as expected.
+function holds(guard: (value: unknown) => boolean) {
   return (value: unknown, expected: boolean) => {
-    expect(guard(value), `guard on ${JSON.stringify(value)}`).toBe(expected);
-    expect(schema.safeParse(value).success, `schema on ${JSON.stringify(value)}`).toBe(expected);
+    expect(guard(value), JSON.stringify(value)).toBe(expected);
   };
 }
 
@@ -55,7 +46,12 @@ const response = {
 };
 
 describe('a contained path', () => {
-  const check = agree(isContainedPath, AppPathSchema);
+  // The SDK checks an app path with the guard and Admin with the schema built on it, so
+  // both are held to every case.
+  const check = (value: unknown, expected: boolean) => {
+    holds(isContainedPath)(value, expected);
+    expect(AppPathSchema.safeParse(value).success, JSON.stringify(value)).toBe(expected);
+  };
 
   it('is a path within something', () => {
     for (const path of ['/', '/episodes/12', '/search?q=a%20b', '/a:b', '/tab#details']) {
@@ -95,7 +91,7 @@ describe('a record', () => {
 });
 
 describe('a theme', () => {
-  const check = agree(isTheme, ThemeSchema);
+  const check = holds(isTheme);
 
   it('is light or dark, with an accent colour', () => {
     check(theme, true);
@@ -118,7 +114,7 @@ describe('a theme', () => {
 });
 
 describe('a start context', () => {
-  const check = agree(isStartContext, StartContextSchema);
+  const check = holds(isStartContext);
 
   it('is what Admin sends, whatever a newer Admin adds', () => {
     check(context, true);
@@ -146,7 +142,7 @@ describe('a start context', () => {
 });
 
 describe('a connect message', () => {
-  const check = agree(isConnectMessage, ConnectMessageSchema);
+  const check = holds(isConnectMessage);
 
   it('is the connect type, whatever else it carries', () => {
     check({ type: 'ghost-app:connect' }, true);
@@ -161,7 +157,7 @@ describe('a connect message', () => {
 });
 
 describe('a fetch response', () => {
-  const check = agree(isFetchResponse, FetchResponseSchema);
+  const check = holds(isFetchResponse);
 
   it('carries a status a Response can be built with', () => {
     check(response, true);

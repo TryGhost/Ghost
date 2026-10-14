@@ -1,7 +1,7 @@
-import type { StartContext, Theme } from './context.ts';
-import type { FetchRequest, FetchResponse } from './fetch.ts';
+import type { FetchRequest } from './fetch.ts';
 import type { PathChangeOptions } from './paths.ts';
 import type { Place } from './places.ts';
+import type { FetchResponse, StartContext, Theme } from './rules.ts';
 
 /**
  * What each side of the channel exposes to the other. Every call returns a promise, as every

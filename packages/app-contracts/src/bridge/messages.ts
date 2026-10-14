@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { CONNECT_MESSAGE_TYPE, HELLO_MESSAGE_TYPE } from './rules.ts';
+import { HELLO_MESSAGE_TYPE } from './rules.ts';
 
 /**
  * The two window messages that set up the channel. Everything after them travels over the
@@ -9,6 +9,9 @@ import { CONNECT_MESSAGE_TYPE, HELLO_MESSAGE_TYPE } from './rules.ts';
  *
  * Neither carries a protocol version. The hello names the SDK's own version for diagnostics
  * only, and nothing gates on it: Admin only ever adds exports and optional fields.
+ *
+ * Only the hello has a schema, as Admin reads it from a frame it does not trust. The connect
+ * comes from Admin, which the SDK trusts, so `ConnectMessage` and its guard are in `rules.ts`.
  */
 
 const SDK_VERSION_MAX_LENGTH = 100;
@@ -28,10 +31,3 @@ export const HelloMessageSchema = z.object({
 });
 
 export type HelloMessage = z.infer<typeof HelloMessageSchema>;
-
-/** The port travels in the message's transfer list, not in its data. */
-export const ConnectMessageSchema = z.object({
-  type: z.literal(CONNECT_MESSAGE_TYPE),
-});
-
-export type ConnectMessage = z.infer<typeof ConnectMessageSchema>;

@@ -1,17 +1,14 @@
-import type { StartContext, Theme } from './context.ts';
-import type { FetchResponse } from './fetch.ts';
-import type { ConnectMessage } from './messages.ts';
-
 /**
- * The bridge's rules that depend on nothing: the values both sides agree on, and guards for
- * the shapes Admin sends the app's page. The root entry point exports them, so the SDK carries
- * them to the page without zod. The schemas in this folder build on them, so a path, a theme
- * or a start context means the same thing to the SDK as to Admin.
+ * The bridge's rules that depend on nothing: the values both sides agree on, and the shapes
+ * Admin sends the app's page with guards for them. The root entry point exports them, so the
+ * SDK carries them to the page without zod. The schemas in this folder build on them, so a
+ * path or a refusal means the same thing to the SDK as to Admin.
  *
- * The guards are for what Admin sends, which the SDK trusts: they check shape, and that a path
- * stays within what it names, so a mistake shows up as a clear error rather than as
- * `undefined` somewhere in the app. Limits are left to the schemas, which Admin applies to
- * everything a frame sends it.
+ * What Admin sends has no schema: Admin builds it and never parses it, so its types are
+ * declared here, beside the guards the SDK checks it with. The SDK trusts Admin, so the guards
+ * check shape, and that a path stays within what it names, so a mistake shows up as a clear
+ * error rather than as `undefined` somewhere in the app. Limits are left to the schemas,
+ * which Admin applies to everything a frame sends it.
  */
 
 /** Posted by the app's page to `window.parent` once the SDK has loaded. */
@@ -139,6 +136,62 @@ export function decodeBridgeError(
 
 /** What Admin's theme can be. Resolved before it is sent, so never `system`. */
 export const THEME_MODES = ['light', 'dark'] as const;
+
+/** The theme Admin is showing, so the page can match it. `mode` is resolved, never `system`. */
+export type Theme = {
+  mode: (typeof THEME_MODES)[number];
+  accent_color: string;
+};
+
+/**
+ * What Admin tells an app's page when the session starts. Fields a newer Admin adds are
+ * ignored rather than refused, so they do not stop an older SDK from starting.
+ */
+export type StartContext = {
+  site: {
+    url: string;
+    title: string;
+    timezone: string;
+    locale: string;
+  };
+  /**
+   * Who is using the app, by ID and role only. Name and email are left out on purpose: an
+   * app that needs more about a person asks the API, where permissions apply.
+   */
+  user: {
+    id: string;
+    role: string;
+  };
+  theme: Theme;
+  /**
+   * The installation revision this session was started against. Admin ends the session when
+   * the installation moves on, so an app never runs against a revision nobody approved.
+   */
+  session: {
+    revision: number;
+  };
+  /**
+   * The app's own route, from Admin's address, so a reload or a shared link lands on the
+   * same page. `/` when Admin's address names none.
+   */
+  path: string;
+};
+
+/** Admin's answer to a hello. The port travels in the message's transfer list, not its data. */
+export type ConnectMessage = {
+  type: typeof CONNECT_MESSAGE_TYPE;
+};
+
+/**
+ * The Admin API's answer to `fetch`, as plain data so it can cross the channel, with a status
+ * the SDK can build a `Response` from.
+ */
+export type FetchResponse = {
+  status: number;
+  statusText: string;
+  headers: Record<string, string>;
+  body: string;
+};
 
 // Control characters are stripped or refused unevenly by URL parsers and routers, so a path
 // holding one can mean something different to each of them.

@@ -14,22 +14,14 @@
  */
 
 export { ADMIN_API_BLOCKLIST, type BlockedAdminApiCategory } from './blocklist.ts';
-export { StartContextSchema, ThemeSchema, type StartContext, type Theme } from './context.ts';
 export type { AppExports, HostExports } from './exports.ts';
 export {
   FETCH_BODY_MAX_BYTES,
   FETCH_PATH_MAX_LENGTH,
   FetchRequestSchema,
-  FetchResponseSchema,
   type FetchRequest,
-  type FetchResponse,
 } from './fetch.ts';
-export {
-  ConnectMessageSchema,
-  HelloMessageSchema,
-  type ConnectMessage,
-  type HelloMessage,
-} from './messages.ts';
+export { HelloMessageSchema, type HelloMessage } from './messages.ts';
 export {
   APP_PATH_MAX_LENGTH,
   AppPathSchema,
@@ -60,6 +52,10 @@ export {
   isTheme,
   methodAllowsBody,
   type BridgeErrorCode,
+  type ConnectMessage,
   type FetchMethod,
+  type FetchResponse,
+  type StartContext,
+  type Theme,
 } from './rules.ts';
 export { TitleSchema } from './title.ts';

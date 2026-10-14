@@ -3,8 +3,6 @@ import { z } from 'zod';
 import {
   ARGUMENT_MESSAGES,
   FETCH_METHODS,
-  FETCH_RESPONSE_STATUS_MAX,
-  FETCH_RESPONSE_STATUS_MIN,
   isContainedPath,
   isReservedRequestHeader,
   methodAllowsBody,
@@ -100,16 +98,3 @@ export const FetchRequestSchema = z
   });
 
 export type FetchRequest = z.infer<typeof FetchRequestSchema>;
-
-/**
- * The Admin API's answer, as plain data so it can cross the channel, with a status the SDK
- * can build a `Response` from.
- */
-export const FetchResponseSchema = z.object({
-  status: z.int().min(FETCH_RESPONSE_STATUS_MIN).max(FETCH_RESPONSE_STATUS_MAX),
-  statusText: z.string(),
-  headers: z.record(z.string(), z.string()),
-  body: z.string(),
-});
-
-export type FetchResponse = z.infer<typeof FetchResponseSchema>;

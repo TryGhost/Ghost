@@ -4,7 +4,6 @@ import {
   FETCH_BODY_MAX_BYTES,
   FETCH_PATH_MAX_LENGTH,
   FetchRequestSchema,
-  FetchResponseSchema,
 } from '../../src/bridge/index.ts';
 
 function requestErrors(request: unknown) {
@@ -156,25 +155,5 @@ describe('a fetch request', () => {
   it('refuses options it does not support rather than ignoring them', () => {
     expect(requestErrors({ path: '/posts/', credentials: 'include' })?.[0]?.path).toEqual([]);
     expect(FetchRequestSchema.safeParse(null).success).toBe(false);
-  });
-});
-
-describe('a fetch response', () => {
-  it('carries what a Response is built from', () => {
-    const response = {
-      status: 200,
-      statusText: 'OK',
-      headers: { 'content-type': 'application/json' },
-      body: '{"posts":[]}',
-    };
-    expect(FetchResponseSchema.parse(response)).toEqual(response);
-  });
-
-  it('only carries statuses a Response can be built with', () => {
-    const response = { statusText: '', headers: {}, body: '' };
-    expect(FetchResponseSchema.safeParse({ ...response, status: 599 }).success).toBe(true);
-    for (const status of [0, 101, 199, 600, 200.5]) {
-      expect(FetchResponseSchema.safeParse({ ...response, status }).success).toBe(false);
-    }
   });
 });

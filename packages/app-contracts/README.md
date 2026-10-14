@@ -165,17 +165,23 @@ The frame is untrusted, so Admin parses every argument with the schemas here
 acting. Nothing is versioned: Admin only adds calls and optional fields.
 
 The bridge's rules that depend on nothing live in `src/bridge/rules.ts` and are
-exported from the root entry point as well: the message types, `TITLE_MAX_LENGTH`,
-`FETCH_METHODS`, the statuses a fetch answer may have, `isContainedPath`,
-`isReservedRequestHeader` for the headers only Admin sets, the words both sides
-refuse an argument with (`ARGUMENT_MESSAGES`), the
-codes a refused call carries (`BRIDGE_ERROR_CODES`, written and read as
-`code: detail` by `encodeBridgeError` and `decodeBridgeError`), and guards for
-what Admin sends the page (`isTheme`, `isStartContext`,
-`isConnectMessage`, `isFetchResponse`). The SDK checks Admin's messages with
-them, without zod, and the schemas build on the same constants, so both sides
-read a path, a theme or a start context the same way. A test holds each guard
-and its schema to the same answers.
+exported from the root entry point as well:
+
+- the message types, `START_TIMEOUT_MS`, `TITLE_MAX_LENGTH`, `FETCH_METHODS` and
+  the statuses a fetch answer may have;
+- `isContainedPath`, `isReservedRequestHeader` for the headers only Admin sets,
+  `methodAllowsBody`, and the words both sides refuse an argument with
+  (`ARGUMENT_MESSAGES`);
+- the codes a refused call carries, `BRIDGE_ERROR_CODES`, written and read as
+  `code: detail` by `encodeBridgeError` and `decodeBridgeError`;
+- the shapes Admin sends the page, `Theme`, `StartContext`, `ConnectMessage`
+  and `FetchResponse`, with a guard for each (`isTheme`, `isStartContext`,
+  `isConnectMessage`, `isFetchResponse`).
+
+The SDK checks what it sends and what Admin sends it with these, without zod.
+What Admin sends has no schema, as Admin builds it and never parses it; what a
+page sends does, and those schemas build on the same rules, so both sides read
+a path, a header or a refusal the same way.
 
 `fetch` takes an Admin API path, never a URL. Admin checks it with
 `checkAdminApiPath(path, apiRoot)`, which resolves it against the Admin API root
