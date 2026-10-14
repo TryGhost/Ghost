@@ -204,9 +204,12 @@ export type StartContext = {
   path: string;
 };
 
+// `Place` and `PathChangeOptions` are written out rather than inferred from their schemas, so
+// the SDK's declarations, which carry them, carry no zod. Tests hold each equal to its schema.
+
 /**
- * A place in Admin an app can send the publisher to, by name. Written out here rather than
- * inferred from `PlaceSchema`, so the SDK's types carry no zod; a test holds the two equal.
+ * A place in Admin an app can send the publisher to: a post, a page or a member by its ID, or
+ * the apps list.
  */
 export type Place =
   | { post: { id: string } }
@@ -214,8 +217,9 @@ export type Place =
   | { member: { id: string } }
   | { apps: true };
 
-/** How Admin records an app's new path in its history. Held equal to `PathChangeOptionsSchema`. */
+/** How Admin records an app's new path in its history. */
 export type PathChangeOptions = {
+  /** For a redirect within the app, so the back button doesn't return to the path it left. */
   replace?: boolean | undefined;
 };
 
