@@ -36,7 +36,7 @@ import { getSiteTimezone } from '@tryghost/admin-x-framework/utils/get-site-time
 import { usePageTitle } from '@/hooks/use-document-title';
 import { useThemeContext } from '@/providers/theme-context';
 import { AppsGate } from './components/apps-gate';
-import { InstallDialog } from './components/install-dialog/install-dialog';
+import { InstallDialog, type InstallDone } from './components/install-dialog/install-dialog';
 import { createAppFrameSession } from './lib/app-frame-session';
 import { appPathFromLocation, appPathRoute, isAppLocation } from './lib/app-path';
 import { createAdminApiFetch } from './lib/bridge-fetch';
@@ -370,7 +370,8 @@ const ActiveApp: React.FC<{ session: AppSession; onEnded: () => void }> = ({
  *
  * Approving starts a new session, as does a review that finds the changes approved already,
  * say from another tab. A review that finds the app uninstalled meanwhile offers to install
- * it afresh, which makes another installation: the page opens that one instead.
+ * it afresh, which makes another installation, and one that finds it installed afresh
+ * meanwhile has found another: either way, the page opens that one instead.
  */
 const NeedsApproval: React.FC<{ installation: AppInstallation; onApproved: () => void }> = ({
   installation,
@@ -378,9 +379,9 @@ const NeedsApproval: React.FC<{ installation: AppInstallation; onApproved: () =>
 }) => {
   const navigate = useNavigate();
   const [reviewing, setReviewing] = useState(true);
-  const onDone = (installed: AppInstallation | undefined) => {
-    if (installed && installed.id !== installation.id) {
-      navigate(appRoute(installed.id), { replace: true });
+  const onDone = (done: InstallDone | undefined) => {
+    if (done && done.installationId !== installation.id) {
+      navigate(appRoute(done.installationId), { replace: true });
     } else {
       onApproved();
     }
