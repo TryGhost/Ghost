@@ -366,6 +366,45 @@ describe('createAppFrameSession', () => {
     await vi.waitFor(() => expect(frame.app.pathChanged).toHaveBeenCalledExactlyOnceWith('/'));
   });
 
+  it('follows routes the app moves through quickly to the last, telling it nothing back', async () => {
+    const frame = await started();
+
+    // Away and back again before Admin has followed either.
+    await Promise.all([frame.host.pathChanged('/login'), frame.host.pathChanged('/')]);
+    expect(navigate.mock.calls).toEqual([
+      ['/login', { replace: undefined }],
+      ['/', { replace: undefined }],
+    ]);
+    // Admin arrives at each in turn, the route the app has left included.
+    session.pathChanged('/login');
+    session.pathChanged('/');
+    await settle();
+    expect(frame.app.pathChanged).not.toHaveBeenCalled();
+
+    // Then moves on its own, which the app hears about.
+    session.pathChanged('/episodes');
+    await vi.waitFor(() =>
+      expect(frame.app.pathChanged).toHaveBeenCalledExactlyOnceWith('/episodes'),
+    );
+  });
+
+  it('follows the app to its last route when Admin skips one it moved through', async () => {
+    const frame = await started();
+
+    await Promise.all([
+      frame.host.pathChanged('/a'),
+      frame.host.pathChanged('/b', { replace: true }),
+    ]);
+    // Only the last is rendered.
+    session.pathChanged('/b');
+    await settle();
+    expect(frame.app.pathChanged).not.toHaveBeenCalled();
+
+    // Back, to the route Admin skipped: Admin moving on its own now, which the app hears.
+    session.pathChanged('/a');
+    await vi.waitFor(() => expect(frame.app.pathChanged).toHaveBeenCalledExactlyOnceWith('/a'));
+  });
+
   it('doesn’t move Admin to the route it is already on', async () => {
     const frame = await started();
 
