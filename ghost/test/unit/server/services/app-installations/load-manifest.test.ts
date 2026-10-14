@@ -264,6 +264,20 @@ describe('createManifestLoader', function () {
       );
     });
 
+    it('follows at most three redirects', async function () {
+      const scope = nock('https://podcast.example.com');
+      for (const hop of [1, 2, 3, 4]) {
+        scope
+          .get(hop === 1 ? '/ghost-app.json' : `/${hop - 1}.json`)
+          .reply(302, '', { location: `/${hop}.json` });
+      }
+      const end = nock('https://podcast.example.com').get('/4.json').reply(200, manifest());
+
+      const err = await refusal(loader()(MANIFEST_URL));
+      assert.equal(err.code, 'APP_MANIFEST_UNREACHABLE');
+      assert.equal(end.isDone(), false);
+    });
+
     it('refuses a redirect to another port on the same host', async function () {
       nock('http://localhost:8787')
         .get('/ghost-app.json')
