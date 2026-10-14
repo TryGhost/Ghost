@@ -666,21 +666,6 @@ describe('App installations Admin API', function () {
       assert.equal(JSON.parse(action.context).to_manifest_id, row.manifest_id);
     });
 
-    it('does not lift a suspension that is not waiting for changes', async function () {
-      const installed = await install();
-      await models.Base.knex('app_installations')
-        .where({ id: installed.id })
-        .update({ status: 'suspended' });
-      serve(manifest({ name: 'Podcasts' }));
-      const { digest } = await preview();
-      serve(manifest({ name: 'Podcasts' }));
-
-      const { body } = await approve(installed.id, MANIFEST_URL, digest, 200);
-
-      assert.equal(body.app_installations[0].status, 'suspended');
-      assert.equal(body.app_installations[0].manifest.name, 'Podcasts');
-    });
-
     it('refuses a manifest for a different app', async function () {
       const installed = await install();
       serve(manifest({ id: 'com.example.other' }), NEW_URL);

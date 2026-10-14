@@ -236,13 +236,8 @@ async function keepManifest(
   await trx(INSTALLATIONS)
     .where({ id: current.id })
     .update({
-      // A suspended app runs again once nothing waits for approval any more. Suspended
-      // means exactly that today; should a suspension ever have another cause, keeping a
-      // manifest does not lift it.
-      status:
-        current.status === 'active' || current.pending_manifest_id !== null
-          ? 'active'
-          : current.status,
+      // Suspended means waiting for approval, so once nothing waits the app runs again.
+      status: 'active',
       manifest_id: manifestId,
       pending_manifest_id: null,
       revision: trx.raw('?? + 1', ['revision']),
