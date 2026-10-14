@@ -113,7 +113,6 @@ export {
   matchRoutes,
   useMatch,
   useMatches,
-  useNavigation,
   useViewTransitionState,
 } from 'react-router';
 export type { BlockerFunction } from 'react-router';
