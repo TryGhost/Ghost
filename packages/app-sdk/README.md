@@ -209,7 +209,8 @@ app, is started in place: Admin hides the frame until the new document's SDK
 has connected, and starts it with Admin's route as it stands, so the page shows
 what the form or link loaded. The old document's session ends with it. A new
 document must connect within the same 10 seconds, or Admin loads the app's page
-afresh.
+afresh. A page that reloads or leaves within a few seconds of starting, again
+and again, is shown as not responding.
 
 ## Who can frame the page
 
