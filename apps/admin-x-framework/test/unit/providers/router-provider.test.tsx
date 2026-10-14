@@ -249,6 +249,25 @@ describe('useRouterDestination', () => {
     await waitFor(() => expect(destination()).toBe('/'));
   });
 
+  it('lets go of a held navigation whose transition fails', async () => {
+    let fail!: (error: Error) => void;
+    await renderRouter({
+      controller: {
+        shouldTransition: () => true,
+        beforeTransition: () =>
+          new Promise<boolean>((_, reject) => {
+            fail = reject;
+          }),
+      },
+    });
+
+    navigate('/slow');
+    expect(destination()).toBe('/slow');
+
+    fail(new Error('transition failed'));
+    await waitFor(() => expect(destination()).toBe('/'));
+  });
+
   it('reads nothing outside the framework’s router', () => {
     function Outside() {
       destination = useRouterDestination();
