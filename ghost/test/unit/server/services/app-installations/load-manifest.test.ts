@@ -263,6 +263,53 @@ describe('createManifestLoader', function () {
       );
     });
 
+    // got asks whether to follow on every response, so a Location header on one it does not
+    // follow must not be read as a redirect.
+    it('resolves URLs from where it was read when a manifest carries a Location header', async function () {
+      nock('https://podcast.example.com')
+        .get('/ghost-app.json')
+        .reply(200, manifest(), { location: '/v2/ghost-app.json' });
+
+      const loaded = await loader()(MANIFEST_URL);
+
+      assert.equal(loaded.manifest.surfaces[0].url, 'https://podcast.example.com/admin');
+    });
+
+    it('does not refuse a manifest that carries a Location header on another host', async function () {
+      nock('https://podcast.example.com')
+        .get('/ghost-app.json')
+        .reply(200, manifest(), { location: 'https://elsewhere.example.net/ghost-app.json' });
+
+      const loaded = await loader()(MANIFEST_URL);
+
+      assert.equal(loaded.manifest.surfaces[0].url, 'https://podcast.example.com/admin');
+    });
+
+    it('reports an error page with a Location header on another host as unreachable', async function () {
+      nock('https://podcast.example.com')
+        .get('/ghost-app.json')
+        .reply(404, '', { location: 'https://elsewhere.example.net/ghost-app.json' });
+
+      const err = await refusal(loader()(MANIFEST_URL));
+      assert.equal(err.code, 'APP_MANIFEST_UNREACHABLE');
+      assert.equal(err.context, `${MANIFEST_URL} answered with HTTP 404`);
+    });
+
+    it('resolves URLs from where a redirect through the alias ends, whatever Location the manifest carries', async function () {
+      nock('http://host.docker.internal:8787', { reqheaders: { host: 'localhost:8787' } })
+        .get('/ghost-app.json')
+        .reply(302, '', { location: '/v2/ghost-app.json' })
+        .get('/v2/ghost-app.json')
+        .reply(200, manifest(), { location: '/v3/ghost-app.json' });
+
+      const loaded = await loader({ alias: 'host.docker.internal', rules: DEV_RULES })(
+        'http://localhost:8787/ghost-app.json',
+      );
+
+      assert.equal(loaded.manifestUrl, 'http://localhost:8787/ghost-app.json');
+      assert.equal(loaded.manifest.surfaces[0].url, 'http://localhost:8787/v2/admin');
+    });
+
     it('reports a large error page as unreachable, with its status', async function () {
       nock('https://podcast.example.com')
         .get('/ghost-app.json')

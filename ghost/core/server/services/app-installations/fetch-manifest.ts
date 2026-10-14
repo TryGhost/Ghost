@@ -7,6 +7,8 @@ import type { Got } from 'got';
 const MANIFEST_MAX_BYTES = 64 * 1024;
 const TIMEOUT_MS = 5000;
 const MAX_REDIRECTS = 3;
+// The statuses got follows, and then only with a Location header.
+const REDIRECT_STATUSES = new Set([301, 302, 303, 307, 308]);
 
 interface FetchedManifest {
   /**
@@ -97,6 +99,9 @@ export function createManifestFetcher({
     const hostHeader = (url: URL) => (isAliased(url) ? { host: url.host } : {});
 
     let refusedRedirect: URL | undefined;
+    // What was decided for each redirect, so asking again about the same one gives the same
+    // answer without moving `current` a second time.
+    const decided = new WeakMap<object, boolean>();
     let tooLarge = false;
     const abort = new AbortController();
 
@@ -112,10 +117,17 @@ export function createManifestFetcher({
       // so a redirect to another host is refused before the outbound guard looks its
       // target up, and Ghost never resolves a host it was always going to refuse.
       followRedirect: (response) => {
-        // got asks on every response, a plain 200 included, not only on redirects.
+        // got asks on every response, a plain 200 included, not only on redirects, and
+        // more than once about the same one. Only a redirect got would follow is judged,
+        // so a Location header on any other response leaves where the manifest is read
+        // from alone, and each redirect is judged once.
         const rawLocation = response.headers.location;
-        if (!rawLocation) {
+        if (!rawLocation || !REDIRECT_STATUSES.has(response.statusCode)) {
           return true;
+        }
+        const earlier = decided.get(response);
+        if (earlier !== undefined) {
+          return earlier;
         }
         // Headers arrive as latin1; got reads the location as UTF-8, and so does this.
         const location = Buffer.from(rawLocation, 'binary').toString('utf8');
@@ -124,12 +136,14 @@ export function createManifestFetcher({
         if (isAliased(current) && target.hostname === alias) {
           target.hostname = current.hostname;
         }
-        if (!staysOnHost(current, target)) {
+        const follow = staysOnHost(current, target);
+        if (follow) {
+          current = target;
+        } else {
           refusedRedirect = target;
-          return false;
         }
-        current = target;
-        return true;
+        decided.set(response, follow);
+        return follow;
       },
       hooks: {
         beforeRedirect: [
