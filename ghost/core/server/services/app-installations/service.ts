@@ -138,6 +138,10 @@ function joinApprovedManifest(db: Knex | Knex.Transaction) {
  * The current installation, by its own ID or by its app's, with the manifest it was
  * approved with: what a newer manifest is compared against, and what keeping one replaces.
  * An installation that has ended is never current, so it is not found either way.
+ *
+ * Ended means uninstalled, here as everywhere else. Only the app's ID is looked up by
+ * `current_app_id` instead, which is what makes it current: uninstalling clears it in the
+ * same update that sets the status, so the two always agree.
  */
 async function currentInstallation(
   by: { id: string } | { appId: string },
@@ -145,7 +149,7 @@ async function currentInstallation(
 ): Promise<CurrentInstallation | undefined> {
   const query = joinApprovedManifest(db);
   if ('id' in by) {
-    query.where('installation.id', by.id).whereNotNull('installation.current_app_id');
+    query.where('installation.id', by.id).whereNot('installation.status', 'uninstalled');
   } else {
     query.where('installation.current_app_id', by.appId);
   }
@@ -682,6 +686,7 @@ export class AppInstallationsService {
       .where({ id })
       .whereNot('status', 'uninstalled')
       .update({
+        // Together, so the app has no current installation exactly when this one has ended.
         current_app_id: null,
         status: 'uninstalled',
         revision: this.knex.raw('?? + 1', ['revision']),
