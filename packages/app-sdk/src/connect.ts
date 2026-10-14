@@ -20,8 +20,9 @@ const HELLO_INTERVAL = 250;
 /**
  * The origin to address the hello to. Where the browser tells a frame who embeds it
  * (`location.ancestorOrigins`, in Chromium and WebKit), only Admin can read the hello.
- * Elsewhere it goes to `'*'`: it carries nothing but the SDK's version, and what matters,
- * the port, travels the other way, addressed by Admin to this page's origin alone.
+ * Elsewhere it goes to `'*'`: it carries nothing but the SDK's version and the document's
+ * random ID, which grants nothing, and what matters, the port, travels the other way,
+ * addressed by Admin to this page's origin alone.
  * `document.referrer` is not used: once the page has navigated within itself, it names the
  * page's own origin, and a hello sent there would never arrive.
  */
