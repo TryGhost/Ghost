@@ -99,6 +99,11 @@ const isSessionExpiry = (endpoint: string | URL) => {
   return GHOST_API_REQUEST.test(url) && !SESSION_API_REQUEST.test(url);
 };
 
+// Whether what a request to `endpoint` failed with means the session expired: the
+// one rule for every request Admin makes, through `useFetchApi` or not.
+const isExpiredSession = (error: unknown, endpoint: string | URL): error is UnauthorizedError =>
+  error instanceof UnauthorizedError && isSessionExpiry(endpoint);
+
 // Replace to the admin root at most once across concurrent failures, unless
 // Admin is already on an unauthenticated route or a screen holds it
 const redirectOnSessionExpiry = () => {
@@ -119,22 +124,22 @@ const redirectOnSessionExpiry = () => {
  * Leaves the page as `useFetchApi` does when a request finds the session expired, for
  * requests made without it, such as the ones Admin makes for an app: an unauthorized
  * answer from a Ghost API path other than the session endpoint, once this page load has
- * seen the session work. Unauthorized is what `handleResponse` calls it: a 401, or the 403
- * Ghost answers a request with no signed-in user. Reads a clone of `response`, so its body
- * is still the caller's to read.
+ * seen the session work. Unauthorized is what `handleResponse` calls it, as for any other
+ * request. Reads a clone of a failed `response`, so its body is still the caller's to
+ * read; a successful one isn't read at all.
  */
 export const handleSessionExpiry = async (
   endpoint: string | URL,
   response: Response,
 ): Promise<void> => {
-  if (![401, 403].includes(response.status) || !isSessionExpiry(endpoint)) {
+  if (response.ok) {
     return;
   }
-  const unauthorized = await handleResponse(response.clone()).then(
+  const expired = await handleResponse(response.clone()).then(
     () => false,
-    (error: unknown) => error instanceof UnauthorizedError,
+    (error: unknown) => isExpiredSession(error, endpoint),
   );
-  if (unauthorized) {
+  if (expired) {
     redirectOnSessionExpiry();
   }
 };
@@ -344,7 +349,7 @@ export const useFetchApi = () => {
               throw new TimeoutError();
             }
 
-            if (error instanceof UnauthorizedError && isSessionExpiry(endpoint)) {
+            if (isExpiredSession(error, endpoint)) {
               if (sessionExpiryRedirect) {
                 redirectOnSessionExpiry();
               }

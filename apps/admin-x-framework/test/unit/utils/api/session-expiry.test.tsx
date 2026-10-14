@@ -399,6 +399,19 @@ describe('handling session expiry for a response', () => {
     expect(window.location.replace).not.toHaveBeenCalled();
   });
 
+  it('leaves a successful response unread', async () => {
+    const handleSessionExpiry = await signedIn();
+    const response = new Response('{"posts":[]}', {
+      headers: { 'content-type': 'application/json' },
+    });
+    const clone = vi.spyOn(response, 'clone');
+
+    await handleSessionExpiry(POSTS, response);
+
+    expect(clone).not.toHaveBeenCalled();
+    expect(response.bodyUsed).toBe(false);
+  });
+
   it('stays on the page while a screen holds the redirect', async () => {
     const { handleSessionExpiry, holdSessionExpiryRedirect, useFetchApi } = await loadModules();
     const { result } = renderHook(() => useFetchApi());
