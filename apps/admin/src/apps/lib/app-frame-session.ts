@@ -37,8 +37,11 @@ export interface AppFrameSessionOptions {
   /** Admin as it is now. Read when the page connects, so the app starts with it. */
   context: () => StartContext;
   fetchAdminApi: AdminApiFetch;
-  /** The app moved to another of its routes, which Admin isn't on yet: Admin follows. */
-  navigate: (path: string, options: AppMoveOptions) => void;
+  /**
+   * The app moved to another of its routes, which Admin isn't on yet: Admin follows, and
+   * says whether it did. It doesn't while the publisher is on their way out of the app.
+   */
+  navigate: (path: string, options: AppMoveOptions) => boolean;
   /** The app asked for a place in Admin, already checked to be one Admin offers. */
   open: (place: Place) => void;
 }
@@ -180,12 +183,19 @@ export function createAppFrameSession(options: AppFrameSessionOptions): AppFrame
         titleChanged: (title) => update({ title }),
         pathChanged: (next, { replace }) => {
           const normalised = normaliseAppPath(next);
-          appPath = normalised;
           // Where Admin is headed, if it's still following the app; where it is otherwise.
-          if (normalised !== (following.at(-1)?.path ?? adminPath)) {
-            lastMove += 1;
+          if (normalised === (following.at(-1)?.path ?? adminPath)) {
+            appPath = normalised;
+            return;
+          }
+          lastMove += 1;
+          if (options.navigate(normalised, { replace, move: lastMove })) {
             following.push({ path: normalised, move: lastMove });
-            options.navigate(normalised, { replace, move: lastMove });
+            appPath = normalised;
+          } else if (adminPath !== undefined) {
+            // Admin stays where it is, for now, and the app hears where that is.
+            appPath = adminPath;
+            host?.pathChanged(adminPath);
           }
         },
         open: (place) => options.open(place),

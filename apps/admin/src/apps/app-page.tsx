@@ -16,8 +16,8 @@ import {
   useFramework,
   useLocation,
   useNavigate,
-  useNavigation,
   useParams,
+  usePendingNavigation,
 } from '@tryghost/admin-x-framework';
 import {
   type AppInstallation,
@@ -186,15 +186,18 @@ const AppFrame: React.FC<{
   // The session outlives navigations, so it mustn't depend on a navigate that may not.
   const navigateRef = useRef(navigate);
   navigateRef.current = navigate;
-  // Whether Admin is on its way away from the app, to a route still loading: the
-  // publisher's own move, which the app mustn't override by moving Admin itself.
-  const navigation = useNavigation();
-  const leavingRef = useRef(false);
-  leavingRef.current = navigation.state !== 'idle' && !isAppLocation(id, navigation.location);
+  // Where Admin is on its way to, as the app asks to move it. One away from the app, to a
+  // route still loading, is the publisher's own move, which the app mustn't override by
+  // moving Admin itself. Read from the router when the app asks, as React may not have
+  // rendered a navigation that has begun; the router's the same for the session's life.
+  const pendingNavigation = usePendingNavigation();
   const navigateForApp = (to: string, options?: { replace?: boolean; state?: unknown }) => {
-    if (!leavingRef.current) {
-      navigateRef.current(to, options);
+    const pending = pendingNavigation();
+    if (pending && !isAppLocation(id, pending)) {
+      return false;
     }
+    navigateRef.current(to, options);
+    return true;
   };
 
   // Made once, for the component's life: a session made again would bind to a frame whose

@@ -9,6 +9,7 @@ import {
   type RelativeRoutingType,
   resolvePath,
   RouteObject,
+  UNSAFE_DataRouterContext as DataRouterContext,
   RouterProvider as ReactRouterProvider,
   NavigateOptions as ReactRouterNavigateOptions,
   useNavigate as useReactRouterNavigate,
@@ -174,6 +175,20 @@ export function RouterProvider({
 }
 
 export type NavigateOptions = ReactRouterNavigateOptions;
+
+/**
+ * Reads, when called, where the router is on its way to, if anywhere. The router knows the
+ * moment a navigation begins, while `useNavigation` shows it only once React has committed
+ * the router's state, which it does in a transition: code that runs between the two, such as
+ * a message from a frame, would otherwise read a navigation under way as none.
+ */
+export function usePendingNavigation(): () => Location | undefined {
+  const dataRouter = useContext(DataRouterContext);
+  return useCallback(() => {
+    const navigation = dataRouter?.router.state.navigation;
+    return navigation?.state === 'idle' ? undefined : navigation?.location;
+  }, [dataRouter]);
+}
 
 /**
  * Decides whether an in-router navigation to `pathname` (absolute, without the
