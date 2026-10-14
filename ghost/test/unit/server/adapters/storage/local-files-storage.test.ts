@@ -245,7 +245,14 @@ describe('Local Files Storage', function () {
     });
 
     describe('Self-hosted frontend app assets', function () {
-      for (const appName of ['portal', 'sodoSearch', 'comments', 'announcementBar', 'signupForm']) {
+      for (const appName of [
+        'portal',
+        'sodoSearch',
+        'comments',
+        'announcementBar',
+        'signupForm',
+        'adminToolbar',
+      ]) {
         it(`serves the script configured in ${appName}:url as JavaScript`, async function () {
           const jsPath = await writeFile(`${appName}.min.js`, 'window.app = {};');
           configUtils.set(`${appName}:url`, `${storage.staticFileUrl}${jsPath}`);
