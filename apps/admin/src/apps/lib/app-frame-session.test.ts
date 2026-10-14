@@ -27,28 +27,57 @@ const settle = () =>
   });
 
 /**
- * A frame holding an app's page, as far as Admin can see one: a window that Admin posts the
- * connect message to, and that says hello. The page's side of the channel answers with
- * `app`, which a spec can hold back; `host` is Admin's side, as the page calls it.
+ * A document in an app's frame, as far as Admin can see one: the page's side of the channel,
+ * which answers with `app`, which a spec can hold back. Like the SDK, it takes the first
+ * connect it's sent and ignores the rest. `host` is Admin's side, as the page calls it.
  */
-function fakeFrame() {
+function fakeDocument() {
   const app = {
     start: vi.fn<AppExports['start']>(async () => {}),
     themeChanged: vi.fn<AppExports['themeChanged']>(async () => {}),
     pathChanged: vi.fn<AppExports['pathChanged']>(async () => {}),
   };
   let thread: ThreadMessagePort<HostExports, AppExports> | undefined;
-  const contentWindow = {
-    postMessage: vi.fn((_message: unknown, _origin: string, transfer: Transferable[] = []) => {
-      const port = transfer[0] as MessagePort;
+  return {
+    app,
+    connect(port: MessagePort) {
+      if (thread) {
+        return;
+      }
       thread = new ThreadMessagePort<HostExports, AppExports>(port, { exports: app });
       port.start();
+    },
+    get host() {
+      if (!thread) {
+        throw new Error('Not connected');
+      }
+      return thread.imports;
+    },
+  };
+}
+
+/**
+ * A frame holding an app's page, as far as Admin can see one: a window that Admin posts the
+ * connect message to, and that says hello, and an element that says when it has loaded a
+ * document. `app` and `host` are the current document's (see `fakeDocument`).
+ */
+function fakeFrame() {
+  let document = fakeDocument();
+  const contentWindow = {
+    postMessage: vi.fn((_message: unknown, _origin: string, transfer: Transferable[] = []) => {
+      document.connect(transfer[0] as MessagePort);
     }),
   };
+  const element = Object.assign(new EventTarget(), { contentWindow });
   return {
-    element: { contentWindow } as unknown as HTMLIFrameElement,
-    app,
+    element: element as unknown as HTMLIFrameElement,
     contentWindow,
+    get app() {
+      return document.app;
+    },
+    get host() {
+      return document.host;
+    },
     /** Says hello from the page, as its SDK does once loaded. */
     hello(origin = ORIGIN) {
       const event = new MessageEvent('message', {
@@ -58,11 +87,15 @@ function fakeFrame() {
       Object.defineProperty(event, 'source', { value: contentWindow });
       window.dispatchEvent(event);
     },
-    get host() {
-      if (!thread) {
-        throw new Error('Not connected');
-      }
-      return thread.imports;
+    /** The current document has finished loading, as the frame's `load` says. */
+    loaded() {
+      element.dispatchEvent(new Event('load'));
+    },
+    /** Replaces the document, as a reload or navigation does. Answers the one it replaced. */
+    navigate() {
+      const previous = document;
+      document = fakeDocument();
+      return previous;
     },
   };
 }
@@ -95,7 +128,7 @@ describe('createAppFrameSession', () => {
   });
 
   /** Has the page set its title over a channel Admin has let go of, which changes nothing. */
-  async function callUnheard(frame: FakeFrame, title: string) {
+  async function callUnheard(frame: Pick<FakeFrame, 'host'>, title: string) {
     frame.host.titleChanged(title).catch(() => {});
     await settle();
     expect(session.getState().title).not.toBe(title);
@@ -221,7 +254,7 @@ describe('createAppFrameSession', () => {
     await vi.waitFor(() => expect(session.getState().status).toBe('ready'));
   });
 
-  it('ignores a hello sent again while the app is starting', async () => {
+  it('starts the app once when it says hello again while starting', async () => {
     const frame = fakeFrame();
     frame.app.start.mockImplementation(() => settle());
     session.attach(frame.element);
@@ -231,7 +264,91 @@ describe('createAppFrameSession', () => {
 
     await vi.waitFor(() => expect(session.getState().status).toBe('ready'));
     expect(session.getState().attempt).toBe(0);
-    expect(frame.contentWindow.postMessage).toHaveBeenCalledTimes(1);
+    // Each hello is answered, as it may be a new document's; the page takes the first.
+    expect(frame.contentWindow.postMessage).toHaveBeenCalledTimes(2);
+    expect(frame.app.start).toHaveBeenCalledTimes(1);
+    // The channel the page took is the one that stays.
+    await frame.host.titleChanged('Episodes');
+    expect(session.getState().title).toBe('Episodes');
+  });
+
+  it('starts the page that loaded while the last one was starting, in the time left', async () => {
+    vi.useFakeTimers();
+    const frame = fakeFrame();
+    // The first document never starts: it reloads before it can.
+    frame.app.start.mockImplementation(() => new Promise<void>(() => {}));
+    session.attach(frame.element);
+    frame.hello();
+    await vi.advanceTimersByTimeAsync(appFrameTimeouts.ready / 2);
+
+    frame.navigate();
+    frame.hello();
+
+    await vi.waitFor(() => expect(session.getState().status).toBe('ready'));
+    expect(session.getState().attempt).toBe(0);
+    expect(frame.app.start).toHaveBeenCalledWith(admin.context);
+  });
+
+  it('fails a page that keeps reloading while it starts, once its time is up', async () => {
+    vi.useFakeTimers();
+    const frame = fakeFrame();
+    session.attach(frame.element);
+    for (let load = 0; load < 20; load += 1) {
+      frame.navigate();
+      frame.app.start.mockImplementation(() => new Promise<void>(() => {}));
+      frame.hello();
+    }
+
+    await vi.advanceTimersByTimeAsync(appFrameTimeouts.ready);
+
+    expect(session.getState().status).toBe('failed');
+  });
+
+  it('loads the page again when a started page’s frame loads another document', async () => {
+    const frame = await started();
+    // Its own load, which can come after it started, is no news.
+    frame.loaded();
+    await settle();
+    expect(session.getState()).toMatchObject({ status: 'ready', attempt: 0 });
+
+    // Navigated anywhere, say to an origin that never says hello.
+    const left = frame.navigate();
+    frame.loaded();
+
+    expect(session.getState()).toMatchObject({ status: 'loading', attempt: 1 });
+    await callUnheard(left, 'Gone');
+  });
+
+  it('loads the page again when a started page’s frame loads one of Admin’s own', async () => {
+    const frame = fakeFrame();
+    session.attach(frame.element);
+    // Loaded before it connected, so the next load is the first since.
+    frame.loaded();
+    frame.hello();
+    await vi.waitFor(() => expect(session.getState().status).toBe('ready'));
+
+    frame.navigate();
+    // Admin can read a document on its own origin.
+    Object.assign(frame.element, { contentDocument: {} });
+    frame.loaded();
+
+    expect(session.getState()).toMatchObject({ status: 'loading', attempt: 1 });
+  });
+
+  it('keeps a page reached by a redirect in script once it has started', async () => {
+    const frame = fakeFrame();
+    session.attach(frame.element);
+    // The frame's first document loads, and sends it on to the app's page in script.
+    frame.loaded();
+    frame.navigate();
+    frame.hello();
+    await vi.waitFor(() => expect(session.getState().status).toBe('ready'));
+
+    // The app's page finishes loading after it started.
+    frame.loaded();
+    await settle();
+
+    expect(session.getState()).toMatchObject({ status: 'ready', attempt: 0 });
   });
 
   it('follows the app’s route without telling it back where it went', async () => {

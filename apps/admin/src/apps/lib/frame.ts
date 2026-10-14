@@ -75,8 +75,10 @@ export const APP_FRAME_ALLOW = [...SELF_BY_DEFAULT, ...EVERYONE_BY_DEFAULT]
  * It covers the URL the frame is given, not where the frame goes from there: the app's
  * server can redirect, and the page can set its own location, which the sandbox allows.
  * What would load then is Ghost's own content, so the gap is small, but it's a gap.
- * The bridge resolves it: Admin only answers a hello whose `event.origin` is the surface's
- * origin, so a frame that redirected or navigated to Ghost's own origin can never complete
- * the handshake and ends up not-responding.
+ * The bridge narrows it. Admin only answers a hello whose `event.origin` is the surface's
+ * origin, so a frame that redirected or navigated to Ghost's own origin before its app
+ * started never completes the handshake, stays hidden, and ends up not-responding. One
+ * that leaves once its app has started loads another document, which ends the session
+ * and starts the app again in a new frame; `bindAppFrame` says what it can't tell.
  */
 export { isGhostOrigin } from '@tryghost/app-contracts';
