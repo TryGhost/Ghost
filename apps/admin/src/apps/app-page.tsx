@@ -33,6 +33,7 @@ import type { User } from '@tryghost/admin-x-framework/api/users';
 import { apiUrl } from '@tryghost/admin-x-framework/helpers';
 import { useFetchApi } from '@tryghost/admin-x-framework/hooks';
 import { getSiteTimezone } from '@tryghost/admin-x-framework/utils/get-site-timezone';
+import { usePageTitle } from '@/hooks/use-document-title';
 import { useThemeContext } from '@/providers/theme-context';
 import { AppsGate } from './components/apps-gate';
 import { InstallDialog } from './components/install-dialog/install-dialog';
@@ -84,20 +85,11 @@ const NotResponding: React.FC<{
 );
 
 /**
- * Shows the app's page title as Admin's own while the page is open, and puts Admin's
- * back when it closes.
+ * Shows the app's page title as Admin's own while the page is open, once the page has given
+ * one, and puts Admin's back when it closes.
  */
 function useAppTitle(appName: string, title: string | undefined) {
-  useEffect(() => {
-    if (title === undefined) {
-      return;
-    }
-    const previous = document.title;
-    document.title = title ? `${title} · ${appName}` : appName;
-    return () => {
-      document.title = previous;
-    };
-  }, [appName, title]);
+  usePageTitle(title === undefined ? undefined : title ? `${title} · ${appName}` : appName);
 }
 
 const SESSION_END_SEARCH_PARAMS: Record<string, string> = {};
