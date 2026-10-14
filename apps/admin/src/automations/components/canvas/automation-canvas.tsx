@@ -394,10 +394,9 @@ const getInitialViewport = (
 
 type AutomationCanvasProps = {
   initialSidebar: 'unknown' | 'closed' | 'settings' | 'performance';
-  // A new automation opens with its trigger where the trigger picker's card was.
+  // Set when a trigger was just picked: the canvas opens with the trigger where the
+  // picker's card was, and the flow below it plays in.
   initialTriggerTop?: number;
-  // Play the connector and exit card in, once, as the flow below a just-picked trigger appears.
-  connectIn?: boolean;
   actionErrors?: Record<string, string>;
   onWaitValidityChange: (stepId: string, valid: boolean) => void;
   automation?: AutomationDetail;
@@ -431,7 +430,6 @@ const hasAutomationEmailModalState = (state: unknown): state is { automationEmai
 const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
   initialSidebar,
   initialTriggerTop,
-  connectIn = false,
   actionErrors = {},
   savedTriggerTierIds = [],
   onWaitValidityChange,
@@ -730,7 +728,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
   };
 
   // Only for the edges and card that first appear; later ones arrive as usual.
-  const [connecting, setConnecting] = useState(connectIn);
+  const [connecting, setConnecting] = useState(initialTriggerTop !== undefined);
   useEffect(() => {
     if (!connecting) {
       return;

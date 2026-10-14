@@ -11,6 +11,7 @@ import { formatRate } from './format-stats';
 import { EditableWaitCard, type EditableWaitData } from './editable-wait-card';
 import { EditableEmailCard, type EditableEmailData } from './editable-email-card';
 import { OffValue } from './off-value';
+import { ENTRANCE_EASE, useRevealAfterMount } from './use-reveal-after-mount';
 
 // React Flow node IDs for the trigger and tail nodes. The canvas builds the visual graph using
 // these; they are not action IDs and never reach the API.
@@ -156,19 +157,11 @@ StepNode.displayName = 'StepNode';
 // Rises and fades in as the connector reaches it — a transition from a state flipped
 // after mount rather than a keyframe, which would start while React Flow still has
 // the node hidden for measuring.
-const CONNECT_IN_CLASS =
-  'transition-[opacity,translate] duration-180 [transition-delay:120ms] ease-[cubic-bezier(0.22,0.61,0.36,1)] motion-reduce:transition-none';
+const CONNECT_IN_CLASS = `transition-[opacity,translate] duration-180 [transition-delay:120ms] ${ENTRANCE_EASE} motion-reduce:transition-none`;
 
 const TailNode: React.FC<NodeProps<TailFlowNode>> = ({ data }) => {
   const [connectIn] = React.useState(Boolean(data.connectIn));
-  const [shown, setShown] = React.useState(!connectIn);
-  React.useEffect(() => {
-    if (shown) {
-      return;
-    }
-    const frame = requestAnimationFrame(() => setShown(true));
-    return () => cancelAnimationFrame(frame);
-  }, [shown]);
+  const shown = useRevealAfterMount(connectIn);
   return (
     <Inline className="w-[400px]" justify="center">
       <HiddenHandle position={Position.Top} type="target" />

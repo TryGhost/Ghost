@@ -39,6 +39,8 @@ import {
 
 type AutomationSidebarTab = 'performance' | 'settings';
 
+type AutomationMetadata = 'hidden' | 'editable' | 'readonly';
+
 // What the server reports for an automation nobody has started: every count at
 // zero and today's empty day. An unsaved automation can't be asked, so it shows this.
 const unstartedStats = (): AutomationPerformanceStats => {
@@ -82,7 +84,6 @@ const UnsavedPerformance: React.FC = () => {
     </Stack>
   );
 };
-type AutomationMetadata = 'hidden' | 'editable' | 'readonly';
 
 const PerformanceContent: React.FC<{
   automationId: string;
@@ -390,11 +391,7 @@ export const AutomationSidebar: React.FC<{
               value="performance"
               forceMount
             >
-              {performanceEnabled &&
-                !automationId && (
-                  // An automation that hasn't been saved has nothing to look up yet.
-                  <UnsavedPerformance />
-                )}
+              {performanceEnabled && !automationId && <UnsavedPerformance />}
               {performanceEnabled && automationId && hasOpened && (
                 <Stack className="mt-4 min-h-0 flex-1" gap="none">
                   <PerformanceContent

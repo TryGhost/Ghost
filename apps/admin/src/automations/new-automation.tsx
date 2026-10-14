@@ -22,7 +22,6 @@ const TriggerPicker: React.FC<{
   onPick: (scope: 'free' | 'all_paid', cardTop: number) => void;
 }> = ({ automation, onPick }) => {
   const { dialogProps } = useUnsavedChangesGuard({ when: true });
-  const regionRef = React.useRef<HTMLDivElement>(null);
   const cardRef = React.useRef<HTMLDivElement>(null);
   return (
     <Stack className="fixed inset-0 z-50 bg-background" gap="none">
@@ -42,7 +41,7 @@ const TriggerPicker: React.FC<{
         onSave={() => {}}
         onTurnOff={() => {}}
       />
-      <Box ref={regionRef} className="relative min-h-0 flex-1">
+      <Box className="relative min-h-0 flex-1">
         <ReactFlow
           className="[--xy-background-color:var(--preview-canvas)]"
           edges={[]}
@@ -54,7 +53,7 @@ const TriggerPicker: React.FC<{
           <Background {...canvasBackground} />
           <AutomationCanvasControls />
         </ReactFlow>
-        {/* Slightly above centre: 40% of the spare height above the card, 60% below. */}
+        {/* Slightly above center: 40% of the spare height above the card, 60% below. */}
         <Stack align="center" className="pointer-events-none absolute inset-0" gap="none">
           <Box className="min-h-12 flex-[2]" />
           <Stack
@@ -84,13 +83,7 @@ const TriggerPicker: React.FC<{
                 className="-mx-2 h-auto justify-start px-2 text-left whitespace-normal"
                 shape="rounded"
                 variant="ghost"
-                onClick={() =>
-                  onPick(
-                    scope,
-                    (cardRef.current?.getBoundingClientRect().top ?? 0) -
-                      (regionRef.current?.getBoundingClientRect().top ?? 0),
-                  )
-                }
+                onClick={() => onPick(scope, cardRef.current?.offsetTop ?? 0)}
               >
                 <Inline gap="md">
                   <Inline className="size-9 shrink-0 rounded-md bg-muted" justify="center">

@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import StepPicker, { type StepPickerType } from './step-picker';
 import { useDismissOnOutsidePress } from './use-dismiss-on-outside-press';
+import { ENTRANCE_EASE, useRevealAfterMount } from './use-reveal-after-mount';
 import { BaseEdge, EdgeLabelRenderer, getSmoothStepPath } from '@xyflow/react';
 import type { EdgeProps } from '@xyflow/react';
 import { LucideIcon, cn } from '@tryghost/shade/utils';
@@ -28,8 +29,7 @@ export type AddStepEdgeData = {
 const INSERT_BUTTON_CLASSES =
   'border-dashed border-border-default bg-surface-page text-text-secondary shadow-sm hover:border-border-strong';
 const DEFAULT_EDGE_STROKE = 'var(--xy-edge-stroke)';
-const DRAW_CLASS =
-  'transition-[stroke-dashoffset] duration-180 ease-[cubic-bezier(0.22,0.61,0.36,1)] motion-reduce:transition-none';
+const DRAW_CLASS = `transition-[stroke-dashoffset] duration-180 ${ENTRANCE_EASE} motion-reduce:transition-none`;
 
 const AddStepEdge: React.FC<EdgeProps> = ({
   id,
@@ -48,16 +48,9 @@ const AddStepEdge: React.FC<EdgeProps> = ({
   // straight drop, so its length is the distance between its ends.
   const drawLength = Math.abs(targetY - sourceY) + Math.abs(targetX - sourceX);
   const [connectIn] = useState(Boolean(edgeData?.connectIn));
-  const [drawn, setDrawn] = useState(!connectIn);
   // React Flow renders an edge before its ends are measured; drawing a zero-length
   // line would finish instantly, so wait for a real one.
-  useEffect(() => {
-    if (drawn || drawLength === 0) {
-      return;
-    }
-    const frame = requestAnimationFrame(() => setDrawn(true));
-    return () => cancelAnimationFrame(frame);
-  }, [drawn, drawLength]);
+  const drawn = useRevealAfterMount(connectIn, drawLength > 0);
   const stroke: React.CSSProperties = {
     stroke: DEFAULT_EDGE_STROKE,
     ...(connectIn && { strokeDasharray: drawLength, strokeDashoffset: drawn ? 0 : drawLength }),
