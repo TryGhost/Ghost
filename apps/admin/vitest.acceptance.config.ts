@@ -192,7 +192,8 @@ const resetFakeFrameOrigins: BrowserCommand<[]> = async ({ page }) => {
   await Promise.all(fakes.map(({ matcher, handler }) => page.unroute(matcher, handler)));
 };
 
-// Module requests fail as a dropped connection would (test-utils/acceptance/module-loads.ts).
+// Module requests fail as a dropped connection would, or are held back as a slow one would
+// (test-utils/acceptance/module-loads.ts).
 // Routed on the context: the page's routes never see what MSW's service worker fetches.
 type BrowserContext = BrowserCommandContext['context'];
 const failedModules = new WeakMap<BrowserContext, Array<(url: URL) => boolean>>();
@@ -200,6 +201,22 @@ const failedModules = new WeakMap<BrowserContext, Array<(url: URL) => boolean>>(
 const failModuleLoads: BrowserCommand<[pathEnd: string]> = async ({ context }, pathEnd) => {
   const matcher = (url: URL) => url.pathname.endsWith(pathEnd);
   await context.route(matcher, (route) => route.abort('connectionreset'));
+  failedModules.set(context, [...(failedModules.get(context) ?? []), matcher]);
+};
+
+const delayModuleLoads: BrowserCommand<[pathEnd: string, delayMs: number]> = async (
+  { context },
+  pathEnd,
+  delayMs,
+) => {
+  const matcher = (url: URL) => url.pathname.endsWith(pathEnd);
+  await context.route(matcher, async (route) => {
+    await new Promise<void>((resolve) => {
+      setTimeout(resolve, delayMs);
+    });
+    // The spec may have ended meanwhile, and the request with it.
+    await route.fallback().catch(() => {});
+  });
   failedModules.set(context, [...(failedModules.get(context) ?? []), matcher]);
 };
 
@@ -266,6 +283,7 @@ export default defineConfig({
       commands: {
         bundleFrameScript,
         callInFrame,
+        delayModuleLoads,
         failFrameOrigin,
         failModuleLoads,
         fakeFrameOrigin,

@@ -28,6 +28,12 @@ export function appPathFromLocation(
   return AppPathSchema.safeParse(path).success ? normaliseAppPath(path) : '/';
 }
 
+/** Whether a location of Admin's is the app's page, on any of the app's own routes. */
+export function isAppLocation(installationId: string, { pathname }: { pathname: string }): boolean {
+  const prefix = appRoute(installationId);
+  return pathname === prefix || pathname.startsWith(`${prefix}/`);
+}
+
 /** Where Admin shows an app on one of its own routes. The app's `/` is the app's page. */
 export function appPathRoute(installationId: string, path: string): string {
   const rest =

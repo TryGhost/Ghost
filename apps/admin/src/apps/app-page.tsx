@@ -16,6 +16,7 @@ import {
   useFramework,
   useLocation,
   useNavigate,
+  useNavigation,
   useParams,
 } from '@tryghost/admin-x-framework';
 import {
@@ -36,7 +37,7 @@ import { useThemeContext } from '@/providers/theme-context';
 import { AppsGate } from './components/apps-gate';
 import { InstallDialog } from './components/install-dialog/install-dialog';
 import { createAppFrameSession } from './lib/app-frame-session';
-import { appPathFromLocation, appPathRoute } from './lib/app-path';
+import { appPathFromLocation, appPathRoute, isAppLocation } from './lib/app-path';
 import { createAdminApiFetch } from './lib/bridge-fetch';
 import { placeRoute } from './lib/bridge-places';
 import { APP_FRAME_ALLOW, APP_FRAME_SANDBOX, isGhostOrigin } from './lib/frame';
@@ -180,6 +181,16 @@ const AppFrame: React.FC<{
   // The session outlives navigations, so it mustn't depend on a navigate that may not.
   const navigateRef = useRef(navigate);
   navigateRef.current = navigate;
+  // Whether Admin is on its way away from the app, to a route still loading: the
+  // publisher's own move, which the app mustn't override by moving Admin itself.
+  const navigation = useNavigation();
+  const leavingRef = useRef(false);
+  leavingRef.current = navigation.state !== 'idle' && !isAppLocation(id, navigation.location);
+  const navigateForApp = (to: string, options?: { replace?: boolean }) => {
+    if (!leavingRef.current) {
+      navigateRef.current(to, options);
+    }
+  };
 
   // Made once, for the component's life: a session made again would bind to a frame whose
   // page has already said hello, and would call the app unresponsive. What it's made from
@@ -193,8 +204,8 @@ const AppFrame: React.FC<{
       surfaceOrigin,
       context: () => contextRef.current,
       fetchAdminApi: createAdminApiFetch({ apiRoot: new URL(apiUrl('/')), ghostVersion }),
-      navigate: (next, { replace }) => navigateRef.current(appPathRoute(id, next), { replace }),
-      open: (place) => navigateRef.current(placeRoute(place)),
+      navigate: (next, { replace }) => navigateForApp(appPathRoute(id, next), { replace }),
+      open: (place) => navigateForApp(placeRoute(place)),
     }),
   );
   const { status, title, attempt, startedAt } = useSyncExternalStore(
