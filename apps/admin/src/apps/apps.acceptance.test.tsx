@@ -762,7 +762,7 @@ describe('Managing apps', () => {
             headers: { Authorization: 'Ghost forged-token' },
           }),
         ),
-      ).toBe('invalid_argument: Expected no Authorization header, which only Admin sets');
+      ).toBe('invalid_argument: Expected no authorization header, which only Admin sets');
       for (const name of ['X-Ghost-Version', 'App-Pragma', 'Cookie', 'X-Forwarded-For']) {
         expect(
           refusal(

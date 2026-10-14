@@ -1,4 +1,4 @@
-import { type BridgeErrorCode, encodeBridgeError } from '@tryghost/app-contracts/bridge';
+import { type HostErrorCode, encodeBridgeError } from '@tryghost/app-contracts/bridge';
 import type { z } from 'zod';
 
 /**
@@ -7,9 +7,9 @@ import type { z } from 'zod';
  * channel, so the code travels in it, encoded as the contract says.
  */
 export class BridgeError extends Error {
-  readonly code: BridgeErrorCode;
+  readonly code: HostErrorCode;
 
-  constructor(code: BridgeErrorCode, detail: string) {
+  constructor(code: HostErrorCode, detail: string) {
     super(encodeBridgeError(code, detail));
     this.name = 'BridgeError';
     this.code = code;
@@ -27,7 +27,7 @@ export const sessionEnded = () => new BridgeError('session_ended', 'The app’s 
 export function parseFromFrame<Schema extends z.ZodType>(
   schema: Schema,
   value: unknown,
-  code: BridgeErrorCode | ((path: PropertyKey[]) => BridgeErrorCode) = 'invalid_argument',
+  code: HostErrorCode | ((path: PropertyKey[]) => HostErrorCode) = 'invalid_argument',
 ): z.output<Schema> {
   const result = schema.safeParse(value);
   if (result.success) {
