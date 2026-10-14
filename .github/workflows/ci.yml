@@ -493,6 +493,9 @@ jobs:
           NX_BASE: ${{ needs.job_setup.outputs.nx_base }}
           NX_HEAD: ${{ env.HEAD_COMMIT }}
 
+      - name: Lint with Oxlint
+        run: pnpm lint:oxlint
+
       - name: Lint boundaries
         run: pnpm nx run ghost-monorepo:lint:boundaries
 

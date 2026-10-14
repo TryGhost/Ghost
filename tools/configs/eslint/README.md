@@ -44,3 +44,18 @@ A workspace must declare every ESLint plugin that its configuration resolves.
 
 Run the workspace's `pnpm lint` target after changing its config. Run the root
 lint when changing shared rule atoms or either factory.
+
+## Incremental Oxlint adoption
+
+`pnpm lint:oxlint` runs alongside ESLint in `pnpm lint` and CI. All built-in
+Oxlint categories are off. The first enabled rule is
+`ghost/ghost-custom/no-native-error`, scoped to `ghost/core/server/**/*.{js,ts}`.
+The plugin in `../oxlint/plugin.mjs` reuses the installed ESLint rule unchanged
+and preserves its name so existing inline ESLint exceptions also apply.
+
+ESLint continues to enforce all existing rules and scopes. Enable further
+Oxlint rules individually, using only `error` or `off`, and verify parity before
+removing their ESLint equivalents. `--deny-warnings` rejects accidental warnings.
+
+Run the configuration and compatibility tests with
+`pnpm --filter @internal/scripts exec node --test test/oxlint.test.ts`.
