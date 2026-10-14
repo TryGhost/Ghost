@@ -1087,16 +1087,13 @@ describe('App installations Admin API', function () {
       // The wait is bounded, so a second session that never starts fails the check below
       // with a reason, rather than the test by timing out.
       let gaveUp = false;
-      let giveUp: ReturnType<typeof setTimeout> | undefined;
+      let giveUpWaiting!: () => void;
       const secondStartedOrGaveUp = Promise.race([
         bothStartedPromise,
         new Promise<void>((resolve) => {
-          giveUp = setTimeout(() => {
-            gaveUp = true;
-            resolve();
-          }, 2000);
+          giveUpWaiting = resolve;
         }),
-      ]).finally(() => clearTimeout(giveUp));
+      ]);
       const first = nock(MANIFEST_HOST)
         .get(MANIFEST_PATH)
         .reply(200, async () => {
@@ -1105,7 +1102,13 @@ describe('App installations Admin API', function () {
         });
       const second = serve(manifest({ description: 'Changed' }));
 
-      const sessions = await Promise.all([start(installed.id), start(installed.id)]);
+      // Calling `then` sends a request, so the bound starts once both are sent.
+      const sending = Promise.all([start(installed.id).then(), start(installed.id).then()]);
+      const giveUp = setTimeout(() => {
+        gaveUp = true;
+        giveUpWaiting();
+      }, 2000);
+      const sessions = await sending.finally(() => clearTimeout(giveUp));
 
       assert.equal(gaveUp, false, 'The second session never started while the re-check was out');
       assert.equal(first.isDone(), true);
