@@ -11,6 +11,7 @@ import {
   callHostRaw,
   currentRoute,
   currentUserResponse,
+  delayModuleLoads,
   fakeAdminEndpoint,
   fakeTags,
   reloadFrame,
@@ -615,6 +616,24 @@ describe('Managing apps', () => {
         .poll(async () => (await appState()).received)
         .toEqual([{ call: 'pathChanged', value: '/' }]);
       expect((await appState()).path).toBe('/');
+    });
+
+    it('lets the publisher leave the app while the route they chose loads', async () => {
+      // The pages list owns its request graph.
+      allowUnhandledRequests();
+      await fakeAppPage(installation());
+      // Pages loads slowly, so leaving for it takes a while.
+      await delayModuleLoads('/src/posts/list/pages-route.tsx', 1000);
+      await renderAdminApp(APP_ROUTE, { labs });
+      await expect.element(appsScreen.frame()).toBeVisible();
+
+      await sidebarScreen.navLink('Pages').click();
+      // The app moves meanwhile, and asks for a place: neither takes the publisher back.
+      answer(await callAppFrame(APP_ORIGIN, 'setPath', '/episodes/12'));
+      answer(await callAppFrame(APP_ORIGIN, 'open', { apps: true }));
+      expect(currentRoute()).toBe(APP_ROUTE);
+
+      await expect.poll(currentRoute).toBe('/pages');
     });
 
     it('refuses a route that would leave the app, and stays where it is', async () => {

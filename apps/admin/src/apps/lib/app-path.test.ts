@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { appPathFromLocation, appPathRoute, normaliseAppPath } from './app-path';
+import { appPathFromLocation, appPathRoute, isAppLocation, normaliseAppPath } from './app-path';
 
 const at = (pathname: string, search = '', hash = '') => ({ pathname, search, hash });
 
@@ -35,5 +35,14 @@ describe('appPathRoute', () => {
     expect(appPathRoute('abc', '/episodes/12')).toBe('/apps/abc/episodes/12');
     expect(appPathRoute('abc', '/')).toBe('/apps/abc');
     expect(appPathRoute('abc', '/?tab=notes')).toBe('/apps/abc?tab=notes');
+  });
+});
+
+describe('isAppLocation', () => {
+  it('is the app’s page on any of its routes, and no other app’s', () => {
+    expect(isAppLocation('abc', at('/apps/abc'))).toBe(true);
+    expect(isAppLocation('abc', at('/apps/abc/episodes/12'))).toBe(true);
+    expect(isAppLocation('abc', at('/apps/abcdef'))).toBe(false);
+    expect(isAppLocation('abc', at('/tags'))).toBe(false);
   });
 });
