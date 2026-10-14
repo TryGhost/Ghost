@@ -1,4 +1,5 @@
 import errors from '@tryghost/errors';
+import logging from '@tryghost/logging';
 import ObjectId from 'bson-objectid';
 import type { Knex } from 'knex';
 import { z } from 'zod';
@@ -618,16 +619,29 @@ export class AppInstallationsService {
       throw notInstalled();
     }
 
+    // The app keeps running its approved manifest and nothing shows why, so an operator
+    // can read it in the log. Loading logs an app it cannot reach itself.
+    const keptApproved = (code: string | null, message: string) =>
+      logging.warn(
+        `App installation ${id} (${before.app_id}) keeps its approved manifest. ${code}: ${message}`,
+      );
     let loaded: LoadedManifest;
     try {
       loaded = await this.loadManifest(before.manifest_url);
     } catch (err) {
       if (err instanceof errors.ValidationError) {
+        if (err.code !== 'APP_MANIFEST_UNREACHABLE') {
+          keptApproved(err.code, err.message);
+        }
         return;
       }
       throw err;
     }
     if (loaded.manifest.id !== before.app_id) {
+      keptApproved(
+        'APP_MANIFEST_OTHER_APP',
+        `${before.manifest_url} now serves ${loaded.manifest.id}.`,
+      );
       return;
     }
 

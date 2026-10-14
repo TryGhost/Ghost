@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict';
+import logging from '@tryghost/logging';
 import ObjectId from 'bson-objectid';
 import nock from 'nock';
+import sinon from 'sinon';
 import { z } from 'zod';
 import { agentProvider, fixtureManager, mockManager } from '../../utils/e2e-framework';
 import { toDatabaseDate } from '../../../core/server/lib/db-types/date';
@@ -92,6 +94,7 @@ describe('App installations Admin API', function () {
   });
 
   afterEach(async function () {
+    sinon.restore();
     nock.cleanAll();
     mockManager.restore();
     await configUtils.restore();
@@ -697,6 +700,11 @@ describe('App installations Admin API', function () {
   describe('POST /apps/installations/:id/sessions/', function () {
     const start = (id: string, status = 200) =>
       agent.post(`apps/installations/${id}/sessions/`).expectStatus(status);
+    /** What the re-check logged about keeping the approved manifest. */
+    const keptLogged = (warn: sinon.SinonStub) =>
+      warn.args
+        .map(([message]) => message)
+        .filter((message) => typeof message === 'string' && message.includes('keeps its approved'));
     const pendingOf = async (id: string) => {
       const row = await installationRow(id);
       return row.pending_manifest_id
@@ -878,32 +886,42 @@ describe('App installations Admin API', function () {
     it('keeps the approved manifest when the app cannot be reached', async function () {
       const installed = await install();
       nock(MANIFEST_HOST).get(MANIFEST_PATH).reply(503);
+      const warn = sinon.stub(logging, 'warn');
 
       const { body } = await start(installed.id);
 
       assert.equal(body.app_sessions[0].installation.status, 'active');
       assert.equal((await manifestRows()).length, 1);
       assert.equal((await installationRow(installed.id)).revision, 0);
+      // Loading the manifest logged this already.
+      assert.deepEqual(keptLogged(warn), []);
     });
 
-    it('keeps the approved manifest when the fetched one is not valid', async function () {
+    it('keeps the approved manifest when the fetched one is not valid, and logs why', async function () {
       const installed = await install();
       serve(manifest({ accent_color: 'red' }));
+      const warn = sinon.stub(logging, 'warn');
 
       const { body } = await start(installed.id);
 
       assert.equal(body.app_sessions[0].installation.manifest.accent_color, '#ff5500');
       assert.equal((await manifestRows()).length, 1);
+      const [logged] = keptLogged(warn);
+      assert.ok(logged.includes(`${installed.id} (com.example.podcast)`), logged);
+      assert.match(logged, /APP_MANIFEST_INVALID/);
     });
 
-    it('keeps the approved manifest when the address serves another app', async function () {
+    it('keeps the approved manifest when the address serves another app, and logs why', async function () {
       const installed = await install();
       serve(manifest({ id: 'com.example.other' }));
+      const warn = sinon.stub(logging, 'warn');
 
       const { body } = await start(installed.id);
 
       assert.equal(body.app_sessions[0].installation.app_id, 'com.example.podcast');
       assert.equal((await manifestRows()).length, 1);
+      const [logged] = keptLogged(warn);
+      assert.match(logged, /APP_MANIFEST_OTHER_APP: .* now serves com\.example\.other/);
     });
 
     it('keeps the approved manifest when the address redirects to another host', async function () {
