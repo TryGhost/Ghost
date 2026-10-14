@@ -332,6 +332,17 @@ describe('path', () => {
     expect(ghost.path.current).toBe('/episodes/1');
   });
 
+  it("keeps a path Admin sent while answering the app's move", async () => {
+    const host = hostExports();
+    host.pathChanged.mockImplementation(async () => {
+      await admin?.thread.imports.pathChanged('/inbox');
+    });
+    const { ghost } = await started(host);
+
+    await ghost.path.set('/a');
+    expect(ghost.path.current).toBe('/inbox');
+  });
+
   it('stays where it was when Admin refuses', async () => {
     const host = hostExports();
     host.pathChanged.mockRejectedValue(new Error('Expected a path within the app'));

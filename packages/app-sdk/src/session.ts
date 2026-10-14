@@ -91,6 +91,8 @@ export class Channel implements Ghost {
   #context: StartedContext | undefined;
   #theme: Readonly<Theme> | undefined;
   #path = '/';
+  // Counts the paths Admin has sent, so a `path.set` answered after one keeps Admin's.
+  #pathsFromAdmin = 0;
   #ended: GhostAppError | undefined;
   #stopWatchingTitle: (() => void) | undefined;
 
@@ -151,6 +153,7 @@ export class Channel implements Ghost {
     if (!isContainedPath(path)) {
       throw invalidArgument("Ghost sent a path this SDK doesn't understand");
     }
+    this.#pathsFromAdmin += 1;
     this.#path = path;
     notify(this.#pathListeners, path);
   }
@@ -238,12 +241,16 @@ export class Channel implements Ghost {
         if (options !== undefined && !isRecord(options)) {
           throw invalidArgument(ARGUMENT_MESSAGES.pathChangeOptions);
         }
+        const pathsFromAdmin = this.#pathsFromAdmin;
         await (options === undefined
           ? this.#call('pathChanged', path)
           : this.#call('pathChanged', path, options));
-        // Kept as Admin keeps it, so it reads the same as the path Admin sends back after a
-        // reload or a move of its own.
-        this.#path = normaliseAppPath(path);
+        // Admin may send where it is before answering, when it doesn't follow the app.
+        if (this.#pathsFromAdmin === pathsFromAdmin) {
+          // Kept as Admin keeps it, so it reads the same as the path Admin sends back after a
+          // reload or a move of its own.
+          this.#path = normaliseAppPath(path);
+        }
       },
     });
   }
