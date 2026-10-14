@@ -1,5 +1,4 @@
 import assert from 'node:assert/strict';
-import { createHash } from 'node:crypto';
 import ObjectId from 'bson-objectid';
 import nock from 'nock';
 import { z } from 'zod';
@@ -113,16 +112,15 @@ describe('App installations Admin API', function () {
     });
 
     it('keeps the manifest as the approved one, with its digest', async function () {
-      const installation = await install();
+      serve(manifest());
+      const { digest } = await service().preview(MANIFEST_URL);
+      const installation = await installReviewed(digest);
 
       const [stored] = await manifestRows();
       assert.equal(stored.installation_id, installation.id);
       assert.equal(stored.manifest_url, MANIFEST_URL);
       assert.deepEqual(JSON.parse(stored.manifest), installation.manifest);
-      assert.equal(
-        stored.digest,
-        createHash('sha256').update(`${MANIFEST_URL}\n${stored.manifest}`).digest('hex'),
-      );
+      assert.equal(stored.digest, digest);
       assert.equal(Boolean(stored.requires_approval), false);
 
       const installed = await installationRow(installation.id);
@@ -436,18 +434,17 @@ describe('App installations Admin API', function () {
     // What the lifecycle's refetch will do once it exists: keep the newer manifest as the
     // one waiting for approval, and stop the app until an Administrator decides.
     const suspendWithPending = async (id: string, pending: Record<string, unknown>) => {
-      // Stored as Ghost would store it: parsed, with its URLs resolved, encoded, and digested
-      // together with its manifest URL.
+      // Stored as Ghost would store it: parsed, with its URLs resolved, encoded, and with the
+      // digest Ghost gave it.
       serve(pending);
       const reviewed = await preview();
-      const serialised = z.encode(StoredManifest, reviewed.manifest);
       const pendingId = new ObjectId().toHexString();
       await models.Base.knex('app_installation_manifests').insert({
         id: pendingId,
         installation_id: id,
         manifest_url: MANIFEST_URL,
-        manifest: serialised,
-        digest: createHash('sha256').update(`${MANIFEST_URL}\n${serialised}`).digest('hex'),
+        manifest: z.encode(StoredManifest, reviewed.manifest),
+        digest: reviewed.digest,
         source: 'update',
         requires_approval: true,
         created_at: toDatabaseDate(new Date()),
