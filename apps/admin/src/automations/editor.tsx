@@ -522,7 +522,7 @@ const AutomationEditorContent: React.FC<{
         automation={draft}
         initialSidebar={
           creation
-            ? 'settings'
+            ? 'closed'
             : !draft || !configData
               ? 'unknown'
               : draft.status === 'active' && configData.config.stats

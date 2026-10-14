@@ -3,11 +3,16 @@ import { useAutomationPerformanceStats } from '@/automations/hooks/use-automatio
 import type { Tier } from '@tryghost/admin-x-framework/api/tiers';
 import React, { useId, useState } from 'react';
 import type {
+  AutomationPerformanceStats,
   AutomationRunStatusFilter,
   AutomationTrigger,
 } from '@tryghost/admin-x-framework/api/automations';
+import { formatQueryDate, getRangeDates } from '@/shared/analytics/chart-helpers';
+import { mapAutomationEntryStats } from '@/automations/utils/automation-entry-stats';
+import { mapAutomationStatusStats } from '@/automations/utils/automation-status-stats';
 import {
   Button,
+  EmptyIndicator,
   Field,
   FieldLabel,
   FieldDescription,
@@ -33,6 +38,50 @@ import {
 } from '@/automations/utils/performance-date-range';
 
 type AutomationSidebarTab = 'performance' | 'settings';
+
+// What the server reports for an automation nobody has started: every count at
+// zero and today's empty day. An unsaved automation can't be asked, so it shows this.
+const unstartedStats = (): AutomationPerformanceStats => {
+  const { endDate, timezone } = getRangeDates(1);
+  const today = formatQueryDate(endDate);
+  return {
+    automation_id: '',
+    total_run_count: 0,
+    in_progress_run_count: 0,
+    completed_run_count: 0,
+    exited_early_run_count: 0,
+    entries: [{ date: today, count: 0 }],
+    entry_window: {
+      date_from: today,
+      date_to: new Date(Date.parse(today) + 86_400_000).toISOString().slice(0, 10),
+      bucket: 'day',
+      timezone,
+    },
+  };
+};
+
+const UnsavedPerformance: React.FC = () => {
+  const [stats] = useState(unstartedStats);
+  return (
+    <Stack className="mt-4" gap="md">
+      <TotalEntries chart={mapAutomationEntryStats(stats)} isLoading={false} />
+      <StatusCounts
+        data={mapAutomationStatusStats(stats)}
+        isLoading={false}
+        selectedStatus={null}
+        onStatusChange={() => {}}
+      />
+      <EmptyIndicator
+        className="px-4 py-12"
+        description="Once someone starts your automation, they'll show here"
+        role="status"
+        title="No members yet"
+      >
+        <LucideIcon.Users />
+      </EmptyIndicator>
+    </Stack>
+  );
+};
 type AutomationMetadata = 'hidden' | 'editable' | 'readonly';
 
 const PerformanceContent: React.FC<{
@@ -309,7 +358,7 @@ export const AutomationSidebar: React.FC<{
                 {performanceEnabled && <TabsTrigger value="performance">Performance</TabsTrigger>}
                 {metadata !== 'hidden' && <TabsTrigger value="settings">Settings</TabsTrigger>}
               </TabsList>
-              {activeTab === 'performance' && (
+              {activeTab === 'performance' && automationId && (
                 <>
                   <MemberSearch
                     open={searchOpen}
@@ -341,7 +390,12 @@ export const AutomationSidebar: React.FC<{
               value="performance"
               forceMount
             >
-              {performanceEnabled && hasOpened && (
+              {performanceEnabled &&
+                !automationId && (
+                  // An automation that hasn't been saved has nothing to look up yet.
+                  <UnsavedPerformance />
+                )}
+              {performanceEnabled && automationId && hasOpened && (
                 <Stack className="mt-4 min-h-0 flex-1" gap="none">
                   <PerformanceContent
                     automationId={automationId}

@@ -12,6 +12,7 @@ import {
 } from '@test-utils/acceptance';
 import type { AutomationDetail } from '@tryghost/admin-x-framework/api/automations';
 import { detail } from './run-history.test-utils';
+import { performanceBoot } from './run-list.test-utils';
 
 const labs = { automations: true, automationsPerTier: true };
 const button = (name: string) => page.getByRole('button', { name, exact: true });
@@ -49,11 +50,7 @@ describe('New automation', () => {
     await expect
       .element(page.getByText('Select a trigger', { exact: true }))
       .not.toBeInTheDocument();
-    await expect.element(button('Hide automation sidebar')).toBeVisible();
-    await expect
-      .element(page.getByRole('tab', { name: 'Settings' }))
-      .toHaveAttribute('data-state', 'active');
-    await button('Hide automation sidebar').click();
+    await expect.element(button('Show automation sidebar')).toBeVisible();
     await expect.poll(unsavedChangesGuarded).toBe(true);
     await page.getByRole('link', { name: 'Back to automations' }).click();
     await expect.element(page.getByRole('alertdialog')).toBeVisible();
@@ -278,6 +275,34 @@ describe('New automation', () => {
     await expect.element(dialog.getByRole('tab', { name: 'Preview' })).toBeEnabled();
   });
 
+  it('offers Performance before the first save, without loading anything', async () => {
+    fakeAutomations([]);
+    const stats = fakeAdminEndpoint('GET', /\/automations\/[^/]*\/performance-stats\//, {});
+    const runs = fakeAdminEndpoint('GET', /\/automations\/[^/]*\/runs\//, {});
+    // Without Stripe there's no trigger to pick: the draft starts as a free one.
+    await renderAdminApp('/automations/new', { labs, boot: performanceBoot });
+    await button('Show automation sidebar').click();
+    await expect
+      .element(page.getByRole('tab', { name: 'Settings' }))
+      .toHaveAttribute('data-state', 'active');
+    await page.getByRole('tab', { name: 'Performance' }).click();
+    await expect
+      .element(page.getByRole('region', { name: 'Total runs' }))
+      .toHaveTextContent('Total runs loaded: 0.');
+    const counts = page.getByRole('region', { name: 'Automation status counts' });
+    for (const label of ['In progress', 'Completed', 'Stopped']) {
+      await expect
+        .element(counts.getByRole('button', { name: label, exact: true }))
+        .toHaveTextContent('0');
+    }
+    await expect
+      .element(page.getByRole('status').filter({ hasText: 'No members yet' }))
+      .toHaveTextContent("Once someone starts your automation, they'll show here");
+    await expect.element(button('Search members')).not.toBeInTheDocument();
+    expect(stats.requests).toHaveLength(0);
+    expect(runs.requests).toHaveLength(0);
+  });
+
   it('does not offer creation when its flag is off', async () => {
     fakeAutomations([]);
     await renderAdminApp('/automations/new', { labs: { automations: true } });
@@ -312,6 +337,8 @@ describe('New automation', () => {
           .element(page.getByText('Triggered when a new or free member starts:', { exact: true }))
           .toBeVisible();
       }
+      await expect.element(button('Show automation sidebar')).toBeVisible();
+      await button('Show automation sidebar').click();
       await expect
         .element(page.getByRole('tab', { name: 'Settings' }))
         .toHaveAttribute('data-state', 'active');

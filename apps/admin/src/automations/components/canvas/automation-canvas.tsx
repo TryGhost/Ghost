@@ -664,7 +664,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
     null,
   );
   const configQuery = useBrowseConfig();
-  const isPerformanceEnabled = Boolean(automation?.id) && Boolean(configQuery.data?.config.stats);
+  const isPerformanceEnabled = Boolean(configQuery.data?.config.stats);
   const isAutomationSidebarAvailable = isPerformanceEnabled || automationsPerTierEnabled;
   const [sidebar, setSidebar] = useState<{
     open: boolean;
@@ -676,7 +676,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
       open: initialSidebar !== 'closed',
       tab:
         initialSidebar === 'closed'
-          ? isPerformanceEnabled
+          ? isPerformanceEnabled && automation?.id
             ? 'performance'
             : 'settings'
           : initialSidebar,
