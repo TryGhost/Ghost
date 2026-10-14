@@ -33,6 +33,7 @@ const settle = () =>
  * connect it's sent and ignores the rest. `host` is Admin's side, as the page calls it.
  */
 function fakeDocument() {
+  const id = crypto.randomUUID().replaceAll('-', '');
   const app = {
     start: vi.fn<AppExports['start']>(async () => {}),
     themeChanged: vi.fn<AppExports['themeChanged']>(async () => {}),
@@ -40,6 +41,7 @@ function fakeDocument() {
   };
   let thread: ThreadMessagePort<HostExports, AppExports> | undefined;
   return {
+    id,
     app,
     connect(port: MessagePort) {
       if (thread) {
@@ -79,10 +81,13 @@ function fakeFrame() {
     get host() {
       return document.host;
     },
-    /** Says hello from the page, as its SDK does once loaded. */
-    hello(origin = ORIGIN) {
+    /**
+     * Says hello from the page, as its SDK does once loaded, naming the document. An SDK from
+     * before documents had names leaves it out (`{ named: false }`).
+     */
+    hello(origin = ORIGIN, { named = true } = {}) {
       const event = new MessageEvent('message', {
-        data: { type: HELLO_MESSAGE_TYPE, sdk: 'test' },
+        data: { type: HELLO_MESSAGE_TYPE, sdk: 'test', ...(named && { document: document.id }) },
         origin,
       });
       Object.defineProperty(event, 'source', { value: contentWindow });
@@ -241,20 +246,48 @@ describe('createAppFrameSession', () => {
     expect(session.getState().title).toBeUndefined();
   });
 
-  it('loads the page again when a started page says hello again, as a reload does', async () => {
+  it('loads the page again when a new document in a started page’s frame says hello', async () => {
     const frame = await started();
 
+    const old = frame.navigate();
     frame.hello();
 
     await vi.waitFor(() =>
       expect(session.getState()).toMatchObject({ status: 'loading', attempt: 1 }),
     );
-    // The old frame's channel is closed: the reloaded page is started in the next frame.
-    await callUnheard(frame, 'Old');
+    // The old document's channel is closed: the reloaded page is started in the next frame.
+    await callUnheard(old, 'Old');
     const next = fakeFrame();
     session.attach(next.element);
     next.hello();
     await vi.waitFor(() => expect(session.getState().status).toBe('ready'));
+  });
+
+  it('keeps a started page that says hello again, as its SDK can before it hears back', async () => {
+    const frame = await started();
+
+    // Sent before Admin's answer reached the page, and heard after the app started.
+    frame.hello();
+    await settle();
+
+    expect(session.getState()).toMatchObject({ status: 'ready', attempt: 0 });
+    expect(frame.contentWindow.postMessage).toHaveBeenCalledTimes(1);
+    await frame.host.titleChanged('Episodes');
+    expect(session.getState().title).toBe('Episodes');
+  });
+
+  it('loads the page again when a started page whose SDK names no document says hello', async () => {
+    const frame = fakeFrame();
+    session.attach(frame.element);
+    frame.hello(ORIGIN, { named: false });
+    await vi.waitFor(() => expect(session.getState().status).toBe('ready'));
+
+    // Admin can't tell it from a new document's, which would wait on an answer forever.
+    frame.hello(ORIGIN, { named: false });
+
+    await vi.waitFor(() =>
+      expect(session.getState()).toMatchObject({ status: 'loading', attempt: 1 }),
+    );
   });
 
   it('starts the app once when it says hello again while starting', async () => {
@@ -264,6 +297,23 @@ describe('createAppFrameSession', () => {
 
     frame.hello();
     frame.hello();
+
+    await vi.waitFor(() => expect(session.getState().status).toBe('ready'));
+    expect(session.getState().attempt).toBe(0);
+    // The document is answered once.
+    expect(frame.contentWindow.postMessage).toHaveBeenCalledTimes(1);
+    expect(frame.app.start).toHaveBeenCalledTimes(1);
+    await frame.host.titleChanged('Episodes');
+    expect(session.getState().title).toBe('Episodes');
+  });
+
+  it('starts the app once when an SDK that names no document says hello again', async () => {
+    const frame = fakeFrame();
+    frame.app.start.mockImplementation(() => settle());
+    session.attach(frame.element);
+
+    frame.hello(ORIGIN, { named: false });
+    frame.hello(ORIGIN, { named: false });
 
     await vi.waitFor(() => expect(session.getState().status).toBe('ready'));
     expect(session.getState().attempt).toBe(0);

@@ -72,14 +72,17 @@ interface Connection {
  * by that frame from the app's own origin, answers it alone with a `MessagePort`, and
  * starts the app over it. Anything else posted to Admin's window is ignored.
  *
- * Until the app has started, every hello is answered with a channel of its own, and the
- * first to start is the app's. The SDK says hello until it hears back, so a hello may be
- * one it sent before Admin's answer reached it, which it ignores; or it may come from a
- * new document, the page having reloaded or navigated while it started, which the old
- * channel went with. Telling them apart isn't needed: whichever starts is the page.
+ * The SDK says hello until it hears back, so a hello may be one it sent before Admin's
+ * answer reached it; or it may come from a new document, the page having reloaded or
+ * navigated, which the old channel went with. Each hello names its document, so Admin
+ * answers each document once and ignores the hellos it repeats. An SDK from before
+ * documents had names leaves Admin to guess: until the app has started, every hello is
+ * answered with a channel of its own, and the first to start is the app's, as the page
+ * takes the first answer it hears and ignores the rest.
  *
  * Once the app has started, a new document in the frame ends it, as `handlers.reloaded`
- * hears. A hello says so. So does the frame loading a document on Admin's own origin, which
+ * hears. A hello from a document Admin hasn't answered says so, as does any hello from an
+ * SDK that names none. So does the frame loading a document on Admin's own origin, which
  * Admin can read and the app's never is. And so does the frame loading a second document
  * since Admin answered the page, on an origin that never says hello: the first may be the
  * started page's own, which can finish loading after it started. Where Admin can't tell a
@@ -102,6 +105,8 @@ export function bindAppFrame({
   let reloaded = false;
   let connects = 0;
   let loads = 0;
+  // The documents Admin has answered a hello from, by the ID each says hello with.
+  const answered = new Set<string>();
   // Every channel answering a hello, until one starts; then that one alone.
   const connections = new Set<Connection>();
   let started: Connection | undefined;
@@ -175,14 +180,22 @@ export function bindAppFrame({
       disposed ||
       !frame.contentWindow ||
       event.source !== frame.contentWindow ||
-      event.origin !== surfaceOrigin ||
-      !HelloMessageSchema.safeParse(event.data).success
+      event.origin !== surfaceOrigin
     ) {
       return;
     }
+    const hello = HelloMessageSchema.safeParse(event.data);
+    if (!hello.success) {
+      return;
+    }
+    const { document: documentId } = hello.data;
+    if (documentId !== undefined && answered.has(documentId)) {
+      // Said again before Admin's answer reached the page, which takes the first.
+      return;
+    }
     if (started) {
-      // The SDK that started has stopped saying hello: this is a new document, whose SDK
-      // would wait on it forever.
+      // A new document, whose SDK would wait on an answer forever, or one that names none,
+      // which Admin can't tell from one.
       left();
       return;
     }
@@ -190,6 +203,9 @@ export function bindAppFrame({
       return;
     }
     connects += 1;
+    if (documentId !== undefined) {
+      answered.add(documentId);
+    }
 
     const channel = new MessageChannel();
     const connection: Connection = {
