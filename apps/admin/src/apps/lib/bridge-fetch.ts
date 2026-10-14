@@ -4,7 +4,7 @@ import {
   checkAdminApiPath,
 } from '@tryghost/app-contracts/bridge';
 import { ghostApiRequestHeaders, handleSessionExpiry } from '@tryghost/admin-x-framework/helpers';
-import { BridgeError } from './bridge-error';
+import { BridgeError, sessionEnded } from './bridge-error';
 
 export type AdminApiFetch = (request: FetchRequest, signal: AbortSignal) => Promise<FetchResponse>;
 
@@ -36,6 +36,13 @@ export function createAdminApiFetch({
       Object.entries(request.headers ?? {}).map(([name, value]) => [name.toLowerCase(), value]),
     );
 
+    // A request the session's end aborted is refused as every call is then; anything else
+    // that stops it is the network's doing.
+    const failed = (what: string, error: unknown) =>
+      signal.aborted
+        ? sessionEnded()
+        : new BridgeError('network_error', `${what}: ${String(error)}`);
+
     let response: Response;
     try {
       // eslint-disable-next-line no-restricted-syntax -- a raw request, answered to the app as it is
@@ -48,26 +55,37 @@ export function createAdminApiFetch({
         // goes with it: until then, it is what keeps the session's keys from the app.
         credentials: 'include',
         // A redirect could lead off the API, where the app's path would no longer say
-        // where the request went. The Admin API answers none an app needs.
-        redirect: 'error',
+        // where the request went, so none is followed. The ones the Admin API answers
+        // with are for a path spelled differently from its own, which the app can fix.
+        redirect: 'manual',
         signal,
       });
     } catch (error) {
-      if (signal.aborted) {
-        throw new BridgeError('session_ended', 'The app’s session ended');
-      }
-      throw new BridgeError('network_error', `Couldn’t reach the Admin API: ${String(error)}`);
+      throw failed('Couldn’t reach the Admin API', error);
+    }
+
+    if (response.type === 'opaqueredirect') {
+      throw new BridgeError(
+        'invalid_path',
+        `The Admin API answers ${check.pathname} only with a redirect: its paths are in lowercase and end in /, such as /posts/`,
+      );
     }
 
     // The staff user's session expiring shows up here as anywhere else in Admin, which
     // leaves for sign-in. The app gets its answer all the same.
     await handleSessionExpiry(url, response);
 
+    let body: string;
+    try {
+      body = await response.text();
+    } catch (error) {
+      throw failed('Couldn’t read the Admin API’s answer', error);
+    }
     return {
       status: response.status,
       statusText: response.statusText,
       headers: Object.fromEntries(response.headers),
-      body: await response.text(),
+      body,
     };
   };
 }

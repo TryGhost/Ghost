@@ -16,6 +16,9 @@ export class BridgeError extends Error {
   }
 }
 
+/** What every call still running, or made after, is refused with once the session ends. */
+export const sessionEnded = () => new BridgeError('session_ended', 'The app’s session ended');
+
 /**
  * Parses what a frame sent, which Admin never trusts, refusing it with the schema's first
  * message. `code` says what a refusal is called, from the part of the value at fault, so
