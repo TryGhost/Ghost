@@ -27,7 +27,7 @@
   "scripts": {
     "build": "tsc && vite build",
     "build:bundle": "vite build",
-    "test:unit": "NODE_ENV=testing vitest run --coverage",
+    "test:unit": "pnpm run build:bundle && NODE_ENV=testing vitest run --coverage",
     "test": "pnpm run '/^test:/'",
     "test:types": "tsc --noEmit -p test/tsconfig.json",
     "lint:code": "eslint src/ --cache",

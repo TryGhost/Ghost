@@ -122,7 +122,8 @@ This is a workspace package in the Ghost monorepo. From the package directory:
 
 ```bash
 pnpm build   # tsc to build/, then the browser bundle to dist/ with Vite
-pnpm test    # type-check + unit tests (jsdom, with a fake Admin on a real MessageChannel)
+pnpm test    # type-check + unit tests (jsdom, with a fake Admin on a real MessageChannel),
+             # after building dist/ to check the bundle imports nothing
 pnpm lint    # lint source and tests
 ```
 
@@ -134,4 +135,5 @@ It depends on `@tryghost/app-contracts` at runtime, for the bridge's message
 types, limits and shape checks, so the SDK and Admin read paths, themes and
 start contexts by the same rules. It imports only the contracts' root entry
 point, which loads no `zod`. `build/` imports it; `dist/` inlines what it uses,
-so the bundle imports nothing.
+so the bundle imports nothing, which `test/bundle.test.ts` checks on the built
+file.
