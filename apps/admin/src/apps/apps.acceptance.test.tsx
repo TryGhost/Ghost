@@ -483,17 +483,24 @@ describe('Managing apps', () => {
     expect(reinstalledSessionsApi.requests).toHaveLength(1);
   });
 
-  it('doesn’t load an uninstalled app', async () => {
-    fakeSessionStart('installation-1', installation({ status: 'uninstalled' }));
+  it('doesn’t load an uninstalled app, on a Ghost that has no app sessions', async () => {
+    // Ghost refuses to start a session of an uninstalled app, as the next spec has it. One
+    // from before app sessions answers the start with its plain 404, and the read with the app.
+    const older: Partial<AppInstallation> = installation({ status: 'uninstalled' });
+    delete older.revision;
+    fakeSessionStart('installation-1', routeNotFound());
+    const readApi = fakeAdminEndpoint('GET', readPath('installation-1'), {
+      app_installations: [older],
+    });
 
     await renderAdminApp(APP_ROUTE, { labs });
 
     await expect.element(appsScreen.notInstalled()).toHaveTextContent('This app isn’t installed');
     await expect.element(appsScreen.frame()).not.toBeInTheDocument();
+    expect(readApi.requests).toHaveLength(1);
   });
 
-  it('says when an app page doesn’t exist', async () => {
-    fakeInstallations();
+  it('says when an app page’s app isn’t installed, or never was', async () => {
     const id = 'abcdefabcdefabcdefabcdef';
     fakeSessionStart(id, apiError(404, 'This app is not installed.', 'APP_NOT_INSTALLED'));
 
