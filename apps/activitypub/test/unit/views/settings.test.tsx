@@ -10,10 +10,19 @@ type MigrationStatus = { targetApId: string | null; targetHandle: string | null;
 
 const mocks = vi.hoisted(() => ({
   migration: undefined as unknown as QueryState<MigrationStatus>,
+  outboundMoveEnabled: true,
 }));
 
 vi.mock('@hooks/use-activity-pub-queries', () => ({
   useAccountMigrationForUser: vi.fn(() => mocks.migration),
+}));
+
+vi.mock('@src/lib/feature-flags', () => ({
+  useFeatureFlags: () => ({
+    isEnabled: (flag: string) => (flag === 'outboundMove' ? mocks.outboundMoveEnabled : false),
+    flags: { outboundMove: mocks.outboundMoveEnabled },
+    allFlags: ['outboundMove'] as const,
+  }),
 }));
 
 vi.mock('@src/views/preferences/components/edit-profile', () => ({
@@ -50,6 +59,7 @@ const noMove: MigrationStatus = { targetApId: null, targetHandle: null, sent: fa
 afterEach(cleanup);
 beforeEach(() => {
   vi.clearAllMocks();
+  mocks.outboundMoveEnabled = true;
   mocks.migration = loadedQuery(noMove);
 });
 
@@ -68,6 +78,13 @@ describe('account migration setting', () => {
   it('describes moves in both directions once outbound moves are available', () => {
     render(<Settings />);
     expect(getMigrationRow().textContent).toContain('Move followers in or out of this account');
+  });
+
+  it('only describes moving followers in when the outboundMove feature flag is off', () => {
+    mocks.outboundMoveEnabled = false;
+    render(<Settings />);
+    expect(getMigrationRow().textContent).toContain('Move followers into this account');
+    expect(getMigrationRow().textContent).not.toContain('in or out');
   });
 
   it.each([

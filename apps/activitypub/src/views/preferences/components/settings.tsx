@@ -15,6 +15,7 @@ import { LucideIcon, cn } from '@tryghost/shade/utils';
 import { getOutboundMigrationAvailability } from './account-migration/utils';
 import { useAccountMigrationForUser } from '@hooks/use-activity-pub-queries';
 import { useAppBasePath } from '@src/hooks/use-app-base-path';
+import { useFeatureFlags } from '@src/lib/feature-flags';
 import { useNavigateWithBasePath } from '@src/hooks/use-navigate-with-base-path';
 
 interface SettingsProps {
@@ -25,7 +26,9 @@ interface SettingsProps {
 const Settings: React.FC<SettingsProps> = ({ account, className = '' }) => {
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const navigate = useNavigateWithBasePath();
+  const { isEnabled } = useFeatureFlags();
   const outboundMigration = getOutboundMigrationAvailability(useAccountMigrationForUser('index'));
+  const showOutboundMigration = isEnabled('outboundMove') && outboundMigration === 'available';
 
   return (
     <div className={`flex flex-col ${className}`}>
@@ -85,7 +88,7 @@ const Settings: React.FC<SettingsProps> = ({ account, className = '' }) => {
         <SettingHeader>
           <SettingTitle>Account migration</SettingTitle>
           <SettingDescription>
-            {outboundMigration === 'available'
+            {showOutboundMigration
               ? 'Move followers in or out of this account'
               : 'Move followers into this account'}
           </SettingDescription>

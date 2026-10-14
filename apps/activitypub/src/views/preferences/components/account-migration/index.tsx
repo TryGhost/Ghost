@@ -6,10 +6,13 @@ import { H2 } from '@tryghost/shade/primitives';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@tryghost/shade/components';
 import { getOutboundMigrationAvailability } from './utils';
 import { useAccountMigrationForUser } from '@hooks/use-activity-pub-queries';
+import { useFeatureFlags } from '@src/lib/feature-flags';
 
 const AccountMigration: React.FC = () => {
+  const { isEnabled } = useFeatureFlags();
   const outboundMigration = getOutboundMigrationAvailability(useAccountMigrationForUser('index'));
-  const showExportTab = outboundMigration !== 'unavailable';
+  const outboundMoveEnabled = isEnabled('outboundMove');
+  const showExportTab = outboundMoveEnabled && outboundMigration !== 'unavailable';
 
   return (
     <Layout>
@@ -18,7 +21,7 @@ const AccountMigration: React.FC = () => {
           <H2>Account migration</H2>
         </div>
         <p className="mt-3 text-base text-gray-800 dark:text-gray-600">
-          {outboundMigration === 'available'
+          {outboundMoveEnabled && outboundMigration === 'available'
             ? 'Move your followers to this Ghost account, or from this account to somewhere else.'
             : 'Move your followers from another social web account to this Ghost account.'}
         </p>

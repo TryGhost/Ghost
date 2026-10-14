@@ -18,6 +18,7 @@ const mocks = vi.hoisted(() => ({
   account: undefined as unknown as QueryState<{ handle: string }>,
   migration: undefined as unknown as QueryState<MigrationStatus>,
   move: undefined as unknown as { mutateAsync: ReturnType<typeof vi.fn>; isPending: boolean },
+  outboundMoveEnabled: true,
 }));
 
 vi.mock('@src/components/layout', () => ({
@@ -38,6 +39,14 @@ vi.mock('@hooks/use-activity-pub-queries', () => ({
   useMoveAccountMutationForUser: () => mocks.move,
 }));
 
+vi.mock('@src/lib/feature-flags', () => ({
+  useFeatureFlags: () => ({
+    isEnabled: (flag: string) => (flag === 'outboundMove' ? mocks.outboundMoveEnabled : false),
+    flags: { outboundMove: mocks.outboundMoveEnabled },
+    allFlags: ['outboundMove'] as const,
+  }),
+}));
+
 vi.mock('sonner', () => ({ toast: { error: vi.fn() } }));
 
 const noMove: MigrationStatus = { targetApId: null, targetHandle: null, sent: false };
@@ -55,6 +64,7 @@ afterEach(() => {
 });
 beforeEach(() => {
   vi.clearAllMocks();
+  mocks.outboundMoveEnabled = true;
   mocks.account = loadedQuery({ handle: '@index@ghost.example' });
   mocks.migration = loadedQuery(noMove);
   mocks.move = { mutateAsync: vi.fn().mockResolvedValue({ sent: true }), isPending: false };
@@ -96,6 +106,14 @@ describe('outbound account migration', () => {
     const handles = vi.mocked(useAccountMigrationForUser).mock.calls.map(([handle]) => handle);
     expect(handles.length).toBeGreaterThan(0);
     expect(new Set(handles)).toEqual(new Set(['index']));
+  });
+
+  it('hides the Export tab when the outboundMove feature flag is off', () => {
+    mocks.outboundMoveEnabled = false;
+    render(<AccountMigration />);
+    expect(screen.queryByRole('tab', { name: 'Export' })).toBeNull();
+    expect(screen.getByLabelText('Old account handle')).toBeTruthy();
+    expect(screen.queryByText(/or from this account to somewhere else/)).toBeNull();
   });
 
   it.each([401, 403, 404, 405, 501])(
