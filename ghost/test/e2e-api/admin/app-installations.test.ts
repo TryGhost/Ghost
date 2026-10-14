@@ -384,6 +384,19 @@ describe('App installations Admin API', function () {
       assert.equal((await service().browse()).length, 0);
     });
 
+    it('refuses a manifest that is not valid, and stores nothing', async function () {
+      serve(manifest());
+      const { digest } = await preview();
+      serve(manifest({ id: 'Podcast' }));
+
+      const { body } = await confirm(digest, 422);
+
+      assert.equal(body.errors[0].code, 'APP_MANIFEST_INVALID');
+      assert.equal((await models.Base.knex('app_installations')).length, 0);
+      assert.equal((await manifestRows()).length, 0);
+      assert.equal((await actions()).length, 0);
+    });
+
     it('refuses to install an app that is already installed', async function () {
       await install();
       serve(manifest());
