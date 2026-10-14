@@ -3,7 +3,6 @@ import {
   type Place,
   type StartContext,
   type Theme,
-  normaliseAppPath,
 } from '@tryghost/app-contracts/bridge';
 import type { AdminApiFetch } from './bridge-fetch';
 import { type AppFrameHost, bindAppFrame } from './bridge-host';
@@ -213,16 +212,15 @@ export function createAppFrameSession(options: AppFrameSessionOptions): AppFrame
       handlers: {
         titleChanged: (title) => update({ title }),
         pathChanged: (next, { replace }) => {
-          const normalised = normaliseAppPath(next);
           // Where Admin is headed, if it's still following the app; where it is otherwise.
-          if (normalised === (following.at(-1)?.path ?? adminPath)) {
-            appPath = normalised;
+          if (next === (following.at(-1)?.path ?? adminPath)) {
+            appPath = next;
             return;
           }
           lastMove += 1;
-          if (options.navigate(normalised, { replace, move: lastMove })) {
-            following.push({ path: normalised, move: lastMove });
-            appPath = normalised;
+          if (options.navigate(next, { replace, move: lastMove })) {
+            following.push({ path: next, move: lastMove });
+            appPath = next;
           } else if (adminPath !== undefined) {
             // Admin stays where it is, for now, and the app hears where that is.
             appPath = adminPath;

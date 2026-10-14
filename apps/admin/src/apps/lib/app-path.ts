@@ -1,4 +1,4 @@
-import { AppPathSchema, normaliseAppPath } from '@tryghost/app-contracts/bridge';
+import { AppPathSchema } from '@tryghost/app-contracts/bridge';
 import { appRoute } from './routes';
 
 /**
@@ -13,7 +13,7 @@ export function appPathFromLocation(
   const prefix = appRoute(installationId);
   const rest = pathname.startsWith(`${prefix}/`) ? pathname.slice(prefix.length) : '/';
   const path = `${rest}${search}${hash}`;
-  return AppPathSchema.safeParse(path).success ? normaliseAppPath(path) : '/';
+  return AppPathSchema.safeParse(path).data ?? '/';
 }
 
 /** Whether a location of Admin's is the app's page, on any of the app's own routes. */
