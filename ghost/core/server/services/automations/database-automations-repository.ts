@@ -34,7 +34,10 @@ import type {
   EditAutomationData,
   Page,
 } from './automations-repository';
-import type { AutomationTriggerTierScope } from './automations-repository-2';
+import type {
+  AutomationsRepository2,
+  AutomationTriggerTierScope,
+} from './automations-repository-2';
 import {
   DbDate,
   fromDatabaseDate,
@@ -551,7 +554,7 @@ export function createDatabaseAutomationsRepository({
     },
 
     async retryStep(step: AutomationStepToRun, retryAt: Date): Promise<boolean> {
-      return await knex.transaction((trx) => retryStep(trx, step, retryAt));
+      return await knex.transaction((trx) => retryStep(repository2, trx, step, retryAt));
     },
 
     async recordEmailSent(options): Promise<void> {
@@ -1343,11 +1346,12 @@ async function markStepTerminal(
 }
 
 async function retryStep(
+  repository2: AutomationsRepository2<Knex | Knex.Transaction>,
   trx: Knex.Transaction,
   step: Pick<AutomationStepToRun, 'id' | 'locked_by'>,
   retryAt: Readonly<Date>,
 ): Promise<boolean> {
-  if (!(await isStepRunAutomationActive(trx, step.id))) {
+  if (!(await repository2.isAutomationActiveForRunStep(trx, step.id))) {
     await markStepTerminal(trx, step, 'automation disabled');
     return false;
   }
@@ -1415,16 +1419,6 @@ async function cancelCancelablePendingStepsForAutomation(
     .where((builder) => {
       builder.whereNull('locked_by').orWhere('locked_at', '<', staleLockCutoff);
     });
-}
-
-async function isStepRunAutomationActive(trx: Knex.Transaction, stepId: string): Promise<boolean> {
-  const query = trx('automation_run_steps as step')
-    .select(trx.raw('1'))
-    .innerJoin('automation_runs as run', 'run.id', 'step.automation_run_id')
-    .innerJoin('automations as automation', 'automation.id', 'run.automation_id')
-    .where('step.id', stepId)
-    .where('automation.status', 'active');
-  return await selectExists(trx, query);
 }
 
 async function isRunAutomationActive(
