@@ -31,7 +31,7 @@ describe('checking an Admin API path', () => {
   it('returns a new URL, leaving the root alone', () => {
     const check = checkAdminApiPath('/posts/', root);
     expect(check.problem).toBeUndefined();
-    expect(check).not.toHaveProperty('url', root);
+    expect((check as { url: URL }).url).not.toBe(root);
     expect(root.href).toBe('https://site.example/ghost/api/admin/');
   });
 
