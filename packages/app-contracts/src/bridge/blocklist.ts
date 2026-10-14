@@ -3,13 +3,26 @@
  *
  * Apps call the Admin API with the staff user's own session for now, as a stand-in for the
  * app-scoped token that comes with permissions. Until then, these routes are closed to them:
- * each one either hands out a credential that would outlive the app's session, changes who
- * can sign in, or acts on the whole site at once. The blocklist goes when the token arrives.
+ * each one hands out a credential that would outlive the app's session, changes who can sign
+ * in or who the staff are, sends site events to an address of its choosing, imports, exports
+ * or deletes the whole site through `/db`, or installs and approves apps. The blocklist goes
+ * when the token arrives.
  *
- * It covers credentials, sign-in and whole-site operations, and nothing more. Writes that
- * leave code on the site stay open: code injection through `PUT /settings`, theme uploads
- * (`POST /themes/upload`), and redirects and routes uploads. Whether apps may make those is
- * for the security review before external developers (BER-3992).
+ * It is not complete, and does not claim to be. These stay open until the security review
+ * before external developers decides on them (BER-3992):
+ *
+ * - Settings that send data elsewhere for as long as they stay set: the Mailgun and Stripe
+ *   keys and `slack_url` through `PUT /settings`, and connecting Stripe through
+ *   `/members/stripe_connect`.
+ * - Writes that leave code on the site: code injection through `PUT /settings`, theme uploads
+ *   and installs (`POST /themes/upload`, `POST /themes/install?source=github`), and redirects
+ *   and routes uploads.
+ * - Bulk deletes, edits and exports: `DELETE /members?all=true`, `PUT /members/bulk`, the
+ *   members CSV at `GET /members/upload`, `GET /posts/export`, `DELETE /posts`,
+ *   `DELETE /pages` and the bulk edits of posts and pages.
+ *
+ * Closing the bulk routes alone would gain little: an app acts with the staff user's own
+ * authority, so it could do the same one request at a time.
  *
  * A route is blocked whatever the method. Telling a harmless read from a dangerous write per
  * route is more rules to get wrong, and nothing here is a read an app needs.

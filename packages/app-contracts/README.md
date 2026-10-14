@@ -176,8 +176,11 @@ and its schema to the same answers.
 `fetch` takes an Admin API path, never a URL. Admin resolves it with
 `resolveAdminApiPath(path, apiRoot)`, which returns `null` for anything that
 leaves the API root, and refuses what `isBlockedAdminApiPath(pathname)` blocks:
-the routes that hand out credentials, change who can sign in, or act on the
-whole site. `ADMIN_API_BLOCKLIST` lists them by category, each with its reason.
+the routes that hand out credentials, change who can sign in, send site events
+elsewhere, or import, export or delete the whole site. `ADMIN_API_BLOCKLIST`
+lists them by category, each with its reason. It is a stopgap until apps have
+their own token, and its header names what it leaves open for the security
+review (BER-3992).
 
 ```ts
 import { isBlockedAdminApiPath, resolveAdminApiPath } from '@tryghost/app-contracts/bridge';
