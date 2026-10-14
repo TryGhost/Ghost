@@ -89,6 +89,7 @@
     "@tryghost/adapter-base-route-settings": "workspace:*",
     "@tryghost/adapter-base-scheduling": "workspace:*",
     "@tryghost/adapter-base-sso": "workspace:*",
+    "@tryghost/adapter-base-upgrade": "workspace:*",
     "@tryghost/admin-api-schema": "workspace:*",
     "@tryghost/api-framework": "workspace:*",
     "@tryghost/app-contracts": "workspace:*",
@@ -230,6 +231,7 @@
     "tldts": "catalog:",
     "type-fest": "catalog:",
     "ua-parser-js": "1.0.41",
+    "undici": "catalog:",
     "unidecode": "catalog:",
     "zod": "catalog:"
   },
