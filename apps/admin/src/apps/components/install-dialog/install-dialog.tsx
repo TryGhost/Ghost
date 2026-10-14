@@ -2,10 +2,7 @@ import React, { useState } from 'react';
 import { Dialog, DialogContent } from '@tryghost/shade/components';
 import { toast } from 'sonner';
 import { useNavigate } from '@tryghost/admin-x-framework';
-import type {
-  AppInstallation,
-  AppInstallationPreview,
-} from '@tryghost/admin-x-framework/api/app-installations';
+import type { AppInstallationPreview } from '@tryghost/admin-x-framework/api/app-installations';
 import { AlreadyInstalled } from './already-installed';
 import { ApproveReview } from './approve-review';
 import { Failed } from './failed';
@@ -30,16 +27,25 @@ function isPreview(value: unknown): value is AppInstallationPreview {
   );
 }
 
+/** How a review ended well: with the installation now active, and whether it is new. */
+export interface InstallDone {
+  installationId: string;
+  /** Whether confirming installed the app afresh, rather than approving it or finding it so. */
+  installed: boolean;
+}
+
 interface InstallDialogProps {
   manifestUrl: string | null;
   /** Leaving without deciding. By default, back to the Apps list. */
   onClose?: () => void;
   /**
    * After installing or approving, or finding there's nothing left to approve, with the
-   * installation a fresh install made. By default a fresh install opens the app, and the
-   * rest stays on the Apps list, where it was managed from.
+   * installation that is active now: the one a fresh install made, the one approved, or the
+   * one the review found, which can be another than the one it was opened for. By default a
+   * fresh install opens the app, and the rest stays on the Apps list, where it was managed
+   * from.
    */
-  onDone?: (installed: AppInstallation | undefined) => void;
+  onDone?: (done: InstallDone | undefined) => void;
 }
 
 /**
@@ -57,8 +63,8 @@ export const InstallDialog: React.FC<InstallDialogProps> = ({ manifestUrl, onClo
   const close = onClose ?? (() => navigate('/apps', { replace: true }));
   const done =
     onDone ??
-    ((installed: AppInstallation | undefined) =>
-      navigate(installed ? appRoute(installed.id) : '/apps', { replace: true }));
+    ((result: InstallDone | undefined) =>
+      navigate(result?.installed ? appRoute(result.installationId) : '/apps', { replace: true }));
 
   const confirmReviewed = async (reviewed: AppInstallationPreview) => {
     setConfirmFailure(undefined);
@@ -66,7 +72,8 @@ export const InstallDialog: React.FC<InstallDialogProps> = ({ manifestUrl, onClo
       const installed = await confirm(reviewed);
       const { name } = reviewed.manifest;
       toast.success(reviewed.installation ? `Changes to ${name} approved` : `${name} installed`);
-      done(installed);
+      const active = installed ?? reviewed.installation;
+      done(active ? { installationId: active.id, installed: installed !== undefined } : undefined);
     } catch (error) {
       const apiError = apiErrorOf(error);
       const code = apiError?.code;
@@ -139,7 +146,8 @@ export const InstallDialog: React.FC<InstallDialogProps> = ({ manifestUrl, onClo
       />
     );
   } else {
-    leave = () => done(undefined);
+    const installationId = reviewed.installation.id;
+    leave = () => done({ installationId, installed: false });
     content = <AlreadyInstalled notice={notice} preview={reviewed} onClose={leave} />;
   }
 
