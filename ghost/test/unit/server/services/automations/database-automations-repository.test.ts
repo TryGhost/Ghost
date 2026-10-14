@@ -3176,11 +3176,13 @@ describe('automations repository', function () {
       await knex('automated_email_recipients').insert([
         {
           id: 'matching-recipient-1',
+          member_id: 'member_123',
           automation_action_revision_id: firstRevision.id,
           mailgun_message_id: 'matching-message-1',
         },
         {
           id: 'matching-recipient-2',
+          member_id: 'member_123',
           automation_action_revision_id: secondRevision.id,
           mailgun_message_id: 'matching-message-2',
         },
@@ -3207,11 +3209,13 @@ describe('automations repository', function () {
         [
           {
             id: 'matching-recipient-1',
+            member_id: 'member_123',
             automation_action_revision_id: firstRevision.id,
             mailgun_message_id: 'matching-message-1',
           },
           {
             id: 'matching-recipient-2',
+            member_id: 'member_123',
             automation_action_revision_id: secondRevision.id,
             mailgun_message_id: 'matching-message-2',
           },
