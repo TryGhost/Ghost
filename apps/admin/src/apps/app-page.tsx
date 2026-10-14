@@ -109,10 +109,16 @@ const SESSION_END_SEARCH_PARAMS: Record<string, string> = {};
  *
  * This only sees changes this tab reads. Changes made in another tab, or by another staff
  * user, are deferred to the app token in Permissions and auth.
+ *
+ * A Ghost from before app sessions gives its installations no revision, so there's none to
+ * move on from, and nothing is read.
  */
 function useSessionEnd(session: AppSession, onEnded: () => void) {
   const [since] = useState(() => Date.now());
+  // Typed as always there, which it is on every Ghost that has app sessions.
+  const { revision: installationRevision } = session.installation as Partial<AppInstallation>;
   const { data, dataUpdatedAt, isFetching } = useReadAppInstallation(session.installation.id, {
+    enabled: installationRevision !== undefined,
     defaultErrorHandler: false,
     // Without the history the details page shows; this one has no use for it.
     searchParams: SESSION_END_SEARCH_PARAMS,

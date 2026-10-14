@@ -503,12 +503,15 @@ describe('Managing apps', () => {
     set(older as AppInstallation);
     sessionsApi.set(routeNotFound());
 
-    await renderAdminApp(APP_ROUTE, { labs });
+    const { queryClient } = await renderAdminApp(APP_ROUTE, { labs });
 
     await expect.element(appsScreen.frame()).toBeVisible();
     expect((await appState()).context?.session).toEqual({ revision: 0 });
     expect(sessionsApi.requests).toHaveLength(1);
-    // Read once, to open the app, without a re-check; and not again for the session's end.
+    // Read once, to open the app, without a re-check; and not again for the session's end,
+    // which a revision that never moves on can't show, coming back to the tab included.
+    window.dispatchEvent(new Event('visibilitychange'));
+    await expect.poll(() => queryClient.isFetching()).toBe(0);
     expect(readApi.requests).toHaveLength(1);
   });
 
