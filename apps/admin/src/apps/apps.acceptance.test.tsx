@@ -583,6 +583,22 @@ describe('Managing apps', () => {
     expect(readApi.requests).toHaveLength(1);
   });
 
+  it('doesn’t end the session on a read showing an earlier revision', async () => {
+    // As a read sent before the session started, and answered after it had, shows.
+    const { sessionsApi, readApi } = await fakeAppPage(installation({ revision: 1 }));
+    sessionsApi.set(installation({ revision: 2 }));
+    const { queryClient } = await renderAdminApp(APP_ROUTE, { labs });
+    await expect.element(appsScreen.frame()).toBeVisible();
+
+    window.dispatchEvent(new Event('visibilitychange'));
+    await expect.poll(() => readApi.requests.length).toBe(1);
+    await expect.poll(() => queryClient.isFetching()).toBe(0);
+
+    expect(sessionsApi.requests).toHaveLength(1);
+    expect((await appState()).context?.session).toEqual({ revision: 2 });
+    await expect.element(appsScreen.frame()).toBeVisible();
+  });
+
   it('starts the app again in place when its page reloads itself', async () => {
     const { sessionsApi } = await fakeAppPage(installation());
     await renderAdminApp(APP_ROUTE, { labs });

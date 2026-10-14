@@ -103,7 +103,9 @@ const SESSION_END_SEARCH_PARAMS: Record<string, string> = {};
 /**
  * Ends the session when the installation moves on from the revision it was started
  * against, as reading it again shows: the app is then running something nobody approved,
- * or nothing at all. Only a read made during this session counts.
+ * or nothing at all. Only a read made during this session counts. Revisions only go up,
+ * so only a later one does: a read sent before the session started, that lands after,
+ * shows an earlier one.
  *
  * This only sees changes this tab reads. Changes made in another tab, or by another staff
  * user, are deferred to the app token in Permissions and auth.
@@ -133,7 +135,7 @@ function useSessionEnd(session: AppSession, onEnded: () => void) {
       !isFetching &&
       dataUpdatedAt >= since &&
       revision !== undefined &&
-      revision !== session.revision
+      revision > session.revision
     ) {
       onEnded();
     }
