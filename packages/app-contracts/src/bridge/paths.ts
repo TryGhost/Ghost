@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { ARGUMENT_MESSAGES, isContainedPath } from './rules.ts';
+import { ARGUMENT_MESSAGES, isContainedPath, normaliseAppPath } from './rules.ts';
 
 /**
  * The longest path an app may report for itself. It ends up in Admin's own address, so it
@@ -12,15 +12,16 @@ export const APP_PATH_MAX_LENGTH = 2048;
  * A route within the app's own page, such as `/episodes/12`. Admin mirrors it into its own
  * address under `/apps/:installationId`, so it must not be able to name anything outside it.
  *
- * The schema only holds it to a path rather than a URL or `//host`; Admin must also pass it
- * through `normaliseAppPath`, which resolves `..` within the app, before using it.
+ * Parsing holds it to a path rather than a URL or `//host`, and answers with it as
+ * `normaliseAppPath` spells it, `..` resolved within the app, ready to use as it is.
  */
 export const AppPathSchema = z
   .string('Expected a path')
   .max(APP_PATH_MAX_LENGTH, `Expected a path of at most ${APP_PATH_MAX_LENGTH} characters`)
-  .refine(isContainedPath, ARGUMENT_MESSAGES.appPath);
+  .refine(isContainedPath, ARGUMENT_MESSAGES.appPath)
+  .transform(normaliseAppPath);
 
-export type AppPath = z.infer<typeof AppPathSchema>;
+export type AppPath = z.output<typeof AppPathSchema>;
 
 /**
  * How Admin records an app's new path in its history. `replace` is for a redirect within the

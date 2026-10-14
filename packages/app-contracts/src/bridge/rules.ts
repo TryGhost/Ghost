@@ -255,7 +255,8 @@ const APP_PATH_BASE = 'https://app.invalid';
  * becomes `/episodes/1`.
  *
  * Takes a path `isContainedPath` accepts; anything else may not be a path within the app at
- * all.
+ * all. `AppPathSchema` answers with this spelling, so Admin never calls it itself; the SDK,
+ * which loads no zod, does.
  */
 export function normaliseAppPath(path: string): string {
   const url = new URL(path, APP_PATH_BASE);

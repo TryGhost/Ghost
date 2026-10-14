@@ -21,6 +21,13 @@ describe('an app path', () => {
     }
   });
 
+  it('answers with the one spelling Admin and the SDK keep it in', () => {
+    expect(AppPathSchema.parse('/search?q=a b')).toBe('/search?q=a%20b');
+    expect(AppPathSchema.parse('/x/../episodes/1')).toBe('/episodes/1');
+    expect(AppPathSchema.parse('/../../settings/')).toBe('/settings/');
+    expect(AppPathSchema.parse('/%2e%2e/settings?x=1#y')).toBe('/settings?x=1#y');
+  });
+
   it('refuses anything that names a place outside the app', () => {
     for (const path of [
       '',

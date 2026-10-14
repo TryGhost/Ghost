@@ -177,7 +177,8 @@ exported from the root entry point as well:
 - the message types, `START_TIMEOUT_MS`, `TITLE_MAX_LENGTH`, `FETCH_METHODS` and
   the statuses a fetch answer may have;
 - `isContainedPath`, and `normaliseAppPath`, the one spelling both sides keep an
-  app path in, with `..` resolved within the app;
+  app path in, with `..` resolved within the app (`AppPathSchema` answers with
+  it, so Admin needn't call it);
 - `isReservedRequestHeader` for the headers only Admin sets,
   `isMultipartContentType` for the uploads apps can't make yet,
   `methodAllowsBody`, and the words both sides refuse an argument with
