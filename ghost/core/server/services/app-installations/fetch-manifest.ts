@@ -148,7 +148,12 @@ export function createManifestFetcher({
           (options, response) => {
             // got runs this once for each redirect it follows, after followRedirect has let
             // it through, so its Location is a URL on the same host.
-            current = locationOf(response)!;
+            const target = locationOf(response)!;
+            // got follows a Location without the credentials it carries, as a browser
+            // would, so the manifest is not read from an address with them either.
+            target.username = '';
+            target.password = '';
+            current = target;
             // Only an aliased hop needs its address rewritten; everywhere else got's own
             // reading of the redirect stands.
             if (isAliased(current)) {

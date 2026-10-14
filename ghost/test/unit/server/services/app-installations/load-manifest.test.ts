@@ -121,6 +121,24 @@ describe('createManifestLoader', function () {
       assert.equal(loaded.manifest.surfaces[0].url, 'https://podcast.example.com/v2/admin');
     });
 
+    it('follows a redirect that carries credentials, and resolves URLs from there without them', async function () {
+      const location = Object.assign(new URL('https://podcast.example.com/v2/ghost-app.json'), {
+        username: 'user',
+        password: 'example',
+      }).href;
+      nock('https://podcast.example.com')
+        .get('/ghost-app.json')
+        .reply(302, '', { location })
+        .get('/v2/ghost-app.json')
+        .reply(200, manifest({ icon: { url: 'icon.svg' } }));
+
+      const loaded = await loader()(MANIFEST_URL);
+
+      assert.equal(loaded.manifestUrl, MANIFEST_URL);
+      assert.equal(loaded.manifest.surfaces[0].url, 'https://podcast.example.com/v2/admin');
+      assert.deepEqual(loaded.manifest.icon, { url: 'https://podcast.example.com/v2/icon.svg' });
+    });
+
     it('does not count a fragment in a redirect against the length of where it ends', async function () {
       nock('https://podcast.example.com')
         .get('/ghost-app.json')
