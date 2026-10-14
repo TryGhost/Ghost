@@ -606,6 +606,30 @@ describe('App installations Admin API', function () {
       assert.ok(events.includes('suspended'), `expected a suspended entry in ${events}`);
     });
 
+    // A pending manifest is recognised by its digest alone, which covers the address too.
+    it('does not approve the pending manifest when the same manifest is approved from another address', async function () {
+      const absolute = manifest({
+        name: 'Podcasts',
+        surfaces: [{ type: 'admin_page', url: 'https://podcast.example.com/admin' }],
+      });
+      const installed = await install();
+      const pendingId = await suspendWithPending(installed.id, absolute);
+      serve(absolute, NEW_URL);
+      const reviewed = await preview(NEW_URL);
+      serve(absolute, NEW_URL);
+
+      await approve(installed.id, NEW_URL, reviewed.digest, 200);
+
+      const row = await installationRow(installed.id);
+      assert.notEqual(row.manifest_id, pendingId);
+      const rows = await manifestRows();
+      const pending = rows.find((r: { id: string }) => r.id === pendingId);
+      const approved = rows.find((r: { id: string }) => r.id === row.manifest_id);
+      assert.equal(approved.manifest, pending.manifest);
+      assert.equal(approved.manifest_url, NEW_URL);
+      assert.equal(approved.source, 'approval');
+    });
+
     it('lets go of a pending manifest the app went back on, keeping no copy', async function () {
       const installed = await install();
       await suspendWithPending(installed.id, manifest({ name: 'Podcasts' }));
