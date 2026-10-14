@@ -176,7 +176,7 @@ This is a workspace package in the Ghost monorepo. From the package directory:
 ```bash
 pnpm build   # the package to build/ and the browser bundle to dist/, with Vite
 pnpm test    # type-check + unit tests (jsdom, with a fake Admin on a real MessageChannel),
-             # after building both to check what they import
+             # which build both afresh to check what they import
 pnpm lint    # lint source and tests
 ```
 
@@ -191,6 +191,6 @@ same rules. It imports only the contracts' root entry point, which loads no
 `zod`, and the build writes what it uses into the SDK, so the contracts are a
 dev dependency: `build/index.js` imports only `@quilted/threads`,
 `build/index.d.ts` (bundled by `dts-bundle-generator`) imports nothing, and
-`dist/` imports nothing at all, which `test/bundle.test.ts` checks on the
-built files. The build fails on a Node builtin, which Vite would otherwise replace
+`dist/` imports nothing at all, which `test/bundle.test.ts` checks on a fresh
+build. The build fails on a Node builtin, which Vite would otherwise replace
 with an empty stub.

@@ -1,17 +1,13 @@
 // @vitest-environment node
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { fileURLToPath } from 'node:url';
 
 import ts from 'typescript';
 import { parseAst } from 'vite';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, inject, it } from 'vitest';
 
-// Built by `pnpm build`, which `test:unit` runs first.
-const built = {
-  package: fileURLToPath(new URL('../build', import.meta.url)),
-  bundle: fileURLToPath(new URL('../dist', import.meta.url)),
-};
+// Built from the source under test by `test/build.ts`.
+const built = inject('built');
 
 /** Every node in a tree, so an `import()` nested anywhere is found. */
 function* nodes(value: unknown): Generator<{ type: string }> {
