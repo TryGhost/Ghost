@@ -1,12 +1,13 @@
 import * as Sentry from '@sentry/react';
 import { render, screen, waitFor } from '@testing-library/react';
+import { type Location, Outlet } from 'react-router';
 import {
-  type Location,
-  Outlet,
-  RouterProvider as ReactRouterProvider,
-  createMemoryRouter,
-} from 'react-router';
-import { RouterProvider, usePendingNavigation } from '../../../src/providers/router-provider';
+  RouterProvider,
+  type ViewTransitionController,
+  ViewTransitionControllerProvider,
+  useNavigate as useFrameworkNavigate,
+  useRouterDestination,
+} from '../../../src/providers/router-provider';
 import { TestWrapper } from '../../../src/test/test-utils';
 
 vi.mock('@sentry/react', async (importOriginal) => ({
@@ -146,24 +147,94 @@ describe('route errors', () => {
   });
 });
 
-describe('usePendingNavigation', () => {
-  it('reads a navigation the moment it begins, before React has committed it', async () => {
-    let pendingNavigation: () => Location | undefined = () => undefined;
-    function Home() {
-      pendingNavigation = usePendingNavigation();
-      return <div>Home</div>;
-    }
-    const router = createMemoryRouter([
-      { path: '/', Component: Home },
-      // Loads slowly, so the navigation stays pending.
-      { path: '/slow', lazy: () => new Promise<never>(() => {}) },
-    ]);
-    render(<ReactRouterProvider router={router} />);
+describe('useRouterDestination', () => {
+  let destination: () => string | undefined;
+  let navigate: (path: string) => void;
+
+  function Home() {
+    destination = useRouterDestination();
+    const frameworkNavigate = useFrameworkNavigate();
+    navigate = (path) => frameworkNavigate(path);
+    return <div>Home</div>;
+  }
+
+  /** A router whose `/slow` route loads slowly, so a navigation to it stays under way. */
+  async function renderRouter({
+    prefix = '/',
+    controller = { shouldTransition: () => false },
+  }: { prefix?: string; controller?: ViewTransitionController } = {}) {
+    render(
+      <TestWrapper>
+        <RouterProvider
+          prefix={prefix}
+          routes={[
+            { path: '/', Component: Home },
+            { path: '/slow', lazy: () => new Promise<never>(() => {}) },
+          ]}
+        >
+          <ViewTransitionControllerProvider value={controller}>
+            <Outlet />
+          </ViewTransitionControllerProvider>
+        </RouterProvider>
+      </TestWrapper>,
+    );
     await screen.findByText('Home');
-    expect(pendingNavigation()).toBeUndefined();
+  }
 
-    void router.navigate('/slow');
+  beforeEach(() => {
+    window.history.replaceState(null, '', '/');
+  });
 
-    expect(pendingNavigation()?.pathname).toBe('/slow');
+  afterEach(() => {
+    window.history.replaceState(null, '', '/');
+  });
+
+  it('reads a navigation the moment it begins, before React has committed it', async () => {
+    await renderRouter();
+    expect(destination()).toBe('/');
+
+    navigate('/slow');
+
+    expect(destination()).toBe('/slow');
+  });
+
+  it('reads the pathname within the router, without its basename', async () => {
+    window.history.replaceState(null, '', '/#/admin/');
+    await renderRouter({ prefix: 'admin' });
+    expect(destination()).toBe('/');
+
+    navigate('/slow');
+
+    expect(destination()).toBe('/slow');
+  });
+
+  it('reads a navigation a screen transition holds back', async () => {
+    let release!: (proceed: boolean) => void;
+    await renderRouter({
+      controller: {
+        shouldTransition: () => true,
+        beforeTransition: () =>
+          new Promise<boolean>((resolve) => {
+            release = resolve;
+          }),
+      },
+    });
+
+    navigate('/slow');
+    expect(destination()).toBe('/slow');
+
+    // Dropped by the transition, so the router stays where it is.
+    release(false);
+    await waitFor(() => expect(destination()).toBe('/'));
+  });
+
+  it('reads nothing outside the framework’s router', () => {
+    function Outside() {
+      destination = useRouterDestination();
+      return null;
+    }
+    render(<Outside />);
+
+    expect(destination()).toBeUndefined();
   });
 });

@@ -93,7 +93,7 @@ export {
   Link,
   RouterProvider,
   useNavigate,
-  usePendingNavigation,
+  useRouterDestination,
   ViewTransitionControllerProvider,
   useRouteHasParams,
   resetScrollPosition,
