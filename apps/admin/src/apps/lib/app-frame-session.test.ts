@@ -533,6 +533,21 @@ describe('createAppFrameSession', () => {
       expect(session.getState()).toMatchObject({ status: 'ready', attempt: 0 });
     });
 
+    it('counts each load afresh, even one after a document that stayed', async () => {
+      vi.useFakeTimers({ toFake: ['Date'] });
+      const frame = await started();
+      vi.setSystemTime(Date.now() + SHORT_LIVED_MS);
+      leave(frame);
+      for (let attempt = 2; attempt <= MAX_SHORT_LIVED; attempt += 1) {
+        leave(await started());
+        expect(session.getState()).toMatchObject({ status: 'loading', attempt });
+      }
+
+      leave(await started());
+
+      expect(session.getState()).toMatchObject({ status: 'failed', attempt: MAX_SHORT_LIVED });
+    });
+
     it('is loaded again each time it leaves after staying a while', async () => {
       vi.useFakeTimers({ toFake: ['Date'] });
       for (let attempt = 1; attempt <= 2 * MAX_SHORT_LIVED; attempt += 1) {
