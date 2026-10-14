@@ -143,11 +143,12 @@ Record missing coverage and known bugs in `blockers`. Before changing a service,
 address the gaps relevant to that change; neither `audited` nor a passing
 inventory check proves that its behavior is protected against regressions.
 
-The unit test checks the inventory's shape, example, paths and directory coverage. It
-does not import services or drive initialization. `README.md` and the inventory
+The unit test checks the inventory's shape, example, paths, directory coverage
+and extras catalogue. It reads declared extras without importing services or
+driving initialization. Oxlint separately enforces the public root shape. `README.md` and the inventory
 itself are the only metadata exclusions. Retire the inventory after migration;
-keep the behavioral tests and replace the legacy check with a check for the
-established service convention.
+keep the behavioral tests and carry the established service convention check
+forward independently of the catalogue.
 
 Follow an existing service in the same area when extending established code,
 without treating its legacy placement or lifecycle shortcuts as requirements.
@@ -158,6 +159,47 @@ Donations uses a TypeScript default export for its service initializer, while
 its implementation keeps named exports. Existing CommonJS callers read
 `require('./donations').default`; a CommonJS wrapper is not needed merely
 because boot still uses `require()`.
+
+## Migrated root contract
+
+Roots marked `migrated: true` default-export a `defineService` initializer with
+`init`, a guarded `service` getter, and optional typed `extras`. Type-only named
+exports are allowed; other runtime exports belong in `extras` during migration.
+Implementation files may still export their classes and supporting contracts.
+
+Use the kernel helper directly, or default-export a local `const` created by it:
+
+```ts
+const extras = { isAvailable };
+export default defineService('Example', createService, extras);
+```
+
+Declare extras as an explicit object literal, directly or through a local `const`.
+Use named helper references or function definitions; do not invoke helpers or
+construct extra instances on import. Do not mutate declared extras or spread, reconstruct or extend an
+initializer: spreading it evaluates the guarded getter before initialization.
+
+Extras are a temporary home for concerns whose shared interfaces are not yet
+established. They do not imply readiness or automatic invocation by boot.
+Availability, request identity conversion and later background activation have
+different callers and timing requirements; putting them in one object does not
+change their behaviour or ownership.
+
+Catalogue every member under the service's `extras` inventory entry, recording:
+
+- `purpose` and production `callers` (paths relative to `ghost`).
+- `timing`, including whether a ready instance is needed and whether configuration
+  is read live or at startup.
+- `dependencies` and `failurePolicy`, including retry and background-failure behaviour.
+- `destination`: the intended future owner or the interface still to be decided.
+
+The Oxlint rule `ghost/service-root-shape` enforces default initializers,
+explicit extras and the absence of other runtime exports or container mutations.
+Its configuration lists migrated roots explicitly; a tooling test keeps that list
+in sync with `migrated: true` in the inventory. Update `.oxlintrc.json` when marking
+a root migrated. Legacy roots remain outside the rule until migrated. The separate inventory test requires declared extras
+names to match the catalogue exactly. Behavioural tests still establish readiness,
+boot ordering, resource cleanup and each extra's semantics.
 
 ## Initialization
 

@@ -54,7 +54,8 @@
         "{workspaceRoot}/.oxlintrc.json",
         "{workspaceRoot}/tools/configs/oxlint/**/*",
         "{workspaceRoot}/**/eslint.config.*",
-        "{workspaceRoot}/tools/configs/eslint*/**/*.mjs"
+        "{workspaceRoot}/tools/configs/eslint*/**/*.mjs",
+        "{workspaceRoot}/ghost/core/server/services/service-inventory.yaml"
       ]
     },
     "targets": {

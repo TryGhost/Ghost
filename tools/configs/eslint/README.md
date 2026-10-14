@@ -60,6 +60,12 @@ checks were already disabled and remain off. All built-in Oxlint categories
 are off; enable further rules individually as `error` or `off`.
 `--deny-warnings` rejects accidental warnings.
 
+The `ghost/service-root-shape` rule checks only the migrated service roots listed
+in `.oxlintrc.json`. Its standalone implementation is
+`../oxlint/rules/service-root-shape.mjs`. Update the configured paths when marking
+a root migrated; a tooling test compares them with the service inventory.
+Catalogue metadata validation remains separate from linting.
+
 Run `pnpm lint` from the repository root to run both linters. CI does the same
 checks. When adding a workspace or changing a source/test scope, update the
 Oxlint overrides as well as the workspace's ESLint config. Use `oxlint-disable`
@@ -67,3 +73,6 @@ comments for custom-rule exceptions so ESLint does not report unused directives.
 
 Run the rule and scope regression tests with
 `pnpm --filter @internal/scripts exec node --test test/oxlint.test.ts`.
+
+Run service-root compatibility and migration-scope tests with
+`pnpm --filter @internal/scripts exec node --test test/service-root-shape.test.ts`.
