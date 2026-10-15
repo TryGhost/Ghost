@@ -4,6 +4,7 @@ import { cp, mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { spawnSync } from 'node:child_process';
+import { stripVTControlCharacters } from 'node:util';
 
 const roots: string[] = [];
 afterEach(async () => {
@@ -75,7 +76,7 @@ test('shows root and generator help, and rejects unknown commands', async () => 
     const result = run(root, args);
     assert.equal(result.status, 1, args.join(' '));
     assert.equal(result.stdout, '');
-    assert.match(result.stderr, /Usage:\s+pnpm gx/);
+    assert.match(stripVTControlCharacters(result.stderr), /Usage:\s+pnpm gx/);
   }
 });
 
