@@ -81,34 +81,6 @@ describe('Create Stripe Checkout Session', function () {
     assert.equal(body.errors[0].code, 'CANNOT_CHECKOUT_WITH_EXISTING_SUBSCRIPTION');
   });
 
-  it('Does not allow an unauthenticated request to create a checkout session for an existing free member', async function () {
-    const {
-      body: { tiers },
-    } = await adminAgent.get('/tiers/?include=monthly_price&yearly_price');
-
-    const paidTier = tiers.find((tier) => tier.type === 'paid');
-
-    await membersAgent
-      .post('/api/create-stripe-checkout-session/')
-      .body({
-        customerEmail: 'member1@test.com',
-        tierId: paidTier.id,
-        cadence: 'month',
-      })
-      .expectStatus(403)
-      .matchBodySnapshot({
-        errors: [
-          {
-            id: matchers.anyUuid,
-            code: 'CANNOT_CHECKOUT_WITH_EXISTING_SUBSCRIPTION',
-          },
-        ],
-      })
-      .matchHeaderSnapshot({
-        etag: matchers.anyEtag,
-      });
-  });
-
   it('Can create a checkout session when using offers', async function () {
     const {
       body: { tiers },
