@@ -5,11 +5,9 @@ const models = require('../../models');
 
 const actionsMap = require('./actions-map-cache');
 
-const init = function init(options) {
-  options = options || {};
-
+const init = function init() {
   // Load all the permissions
-  return models.Permission.findAll(options).then(function (permissionsCollection) {
+  return models.Permission.findAll().then(function (permissionsCollection) {
     const permissions = permissionsCollection.models.map(function (perm) {
       return {
         action_type: perm.get('action_type'),
