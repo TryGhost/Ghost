@@ -27,6 +27,7 @@ export default [
       'multi-sub-scenarios.ts',
       'repl.ts',
       'shift-dates.ts',
+      'benchmark-recipient-preparation.ts',
     ],
     extraSrcRules: { ...cliRules, 'no-console': 'off' },
   }),

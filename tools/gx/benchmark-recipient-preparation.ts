@@ -1,11 +1,18 @@
+#!/usr/bin/env node
 // Synthetic preparation benchmark. Creates and drops its own database on local MySQL.
-// Run from ghost with NODE_OPTIONS=--conditions=source and --expose-gc.
-const path = require('node:path');
-const crypto = require('node:crypto');
-const { createRequire } = require('node:module');
-const root = path.resolve(__dirname, '..');
-const req = createRequire(path.join(root, 'package.json'));
-req('tsx/cjs');
+import { fileURLToPath } from 'node:url';
+import crypto from 'node:crypto';
+import errors from '@tryghost/errors';
+import knexModule from 'knex';
+
+const knexFactory = knexModule.default;
+
+const root = fileURLToPath(new URL('../../ghost', import.meta.url));
+const usage = 'Usage: pnpm gx benchmark recipient-preparation [members=500000] [concurrency=2]';
+if (['--help', '-h'].includes(process.argv[2] ?? '')) {
+  process.stdout.write(`${usage}\n`);
+  process.exit(0);
+}
 const size = Number(process.argv[2] || 500000);
 const concurrency = Number(process.argv[3] || 2);
 if (
@@ -14,36 +21,33 @@ if (
   !Number.isSafeInteger(concurrency) ||
   concurrency < 1
 ) {
-  throw new (req('@tryghost/errors').IncorrectUsageError)({
-    message:
-      'Usage: node --expose-gc scripts/benchmark-recipient-preparation.js [members=500000] [concurrency=2]',
-  });
+  throw new errors.IncorrectUsageError({ message: usage });
 }
 const database = `ghost_preparation_bench_${process.pid}_${crypto.randomBytes(3).toString('hex')}`;
 process.env.NODE_ENV = 'testing-mysql';
 process.env.database__client = 'mysql2';
-process.env.database__connection__host = '127.0.0.1';
-process.env.database__connection__port = '3306';
+process.env.database__connection__host ||= '127.0.0.1';
+process.env.database__connection__port ||= '3306';
 process.env.database__connection__user ||= 'root';
 process.env.database__connection__password ??= 'root';
 process.env.database__connection__database = database;
 process.env.database__pool__min = '0';
 process.env.database__pool__max = '5';
 process.env.logging__level = 'error';
-const knexFactory = req('knex');
 const admin = knexFactory({
   client: 'mysql2',
   connection: {
-    host: '127.0.0.1',
+    host: process.env.database__connection__host,
+    port: Number(process.env.database__connection__port),
     user: process.env.database__connection__user,
     password: process.env.database__connection__password,
   },
   pool: { min: 0, max: 1 },
 });
-let db;
+let db: typeof import('../../ghost/core/server/data/db/index.js') | undefined;
 let created = false;
 const started = Date.now();
-const print = (data) => process.stdout.write(JSON.stringify(data) + '\n');
+const print = (data: unknown) => process.stdout.write(JSON.stringify(data) + '\n');
 async function main() {
   await admin.raw('CREATE DATABASE ??', [database]);
   created = true;
@@ -51,32 +55,62 @@ async function main() {
     'SELECT VERSION() AS version, @@innodb_buffer_pool_size AS buffer_pool_bytes, @@innodb_flush_log_at_trx_commit AS flush_log_at_commit, @@transaction_isolation AS isolation',
   );
   print({ phase: 'database', ...server[0] });
-  req('./core/server/overrides');
-  const KnexMigrator = req('knex-migrator');
+  // @ts-expect-error Core's JavaScript overrides have no type declarations.
+  await import('../../ghost/core/server/overrides.js');
+  const { default: KnexMigrator } = await import('knex-migrator');
   const migrator = new KnexMigrator({ knexMigratorFilePath: root });
   await migrator.init();
-  db = req('./core/server/data/db');
-  const models = req('./core/server/models');
-  const BatchSendingService = req('./core/server/services/email-service/batch-sending-service');
-  const ObjectID = req('bson-objectid').default;
-  const logging = req('@tryghost/logging');
-  let metrics = {};
+  const { default: coreDb } = await import('../../ghost/core/server/data/db/index.js');
+  db = coreDb;
+  const knex = coreDb.knex;
+  // @ts-expect-error Core's JavaScript models have no type declarations.
+  const { default: models } = await import('../../ghost/core/server/models/index.js');
+  const { default: BatchSendingService } =
+    // @ts-expect-error This JavaScript service has no type declarations.
+    await import('../../ghost/core/server/services/email-service/batch-sending-service.js');
+  const { default: bsonObjectId } = await import('bson-objectid');
+  const ObjectID = bsonObjectId.default;
+  const { default: logging } = await import('@tryghost/logging');
+  type Metrics = {
+    discard_ms?: number;
+    sweep_ms?: number;
+    batches?: number;
+    member_lookup_ms?: number;
+    member_lookup_queries?: number;
+    member_lookup_rows?: number;
+  };
+  let metrics: Metrics = {};
   let measureStart = 0;
-  logging.info = (event) => {
-    if (event?.event?.name === 'email.preparation.discarded') {
+  logging.info = (event: unknown) => {
+    if (!event || typeof event !== 'object' || !('event' in event)) {
+      return;
+    }
+    const detail = event.event;
+    if (!detail || typeof detail !== 'object' || !('name' in detail)) {
+      return;
+    }
+    if (detail.name === 'email.preparation.discarded') {
       metrics.discard_ms = Date.now() - measureStart;
     }
-    if (event?.event?.name === 'email.preparation.swept') {
+    if (
+      detail.name === 'email.preparation.swept' &&
+      'duration_ms' in event &&
+      typeof event.duration_ms === 'number'
+    ) {
       metrics.sweep_ms = event.duration_ms;
     }
-    if (event?.event?.name === 'email.batches.created') {
+    if (
+      detail.name === 'email.batches.created' &&
+      'batches_total' in event &&
+      typeof event.batches_total === 'number'
+    ) {
       metrics.batches = event.batches_total;
     }
   };
   logging.warn = () => {};
-  const newsletter = await db.knex('newsletters').first();
+  const newsletter = await knex('newsletters').first();
   const labelId = ObjectID().toHexString();
-  await db.knex('labels').insert({
+  await knex('labels').insert({
     id: labelId,
     name: 'benchmark-label',
     slug: 'benchmark-label',
@@ -93,8 +127,8 @@ async function main() {
       created_at: new Date(),
       updated_at: new Date(),
     }));
-    await db.knex('members').insert(members);
-    await db.knex('members_newsletters').insert(
+    await knex('members').insert(members);
+    await knex('members_newsletters').insert(
       members.map((m) => ({
         id: ObjectID().toHexString(),
         member_id: m.id,
@@ -102,18 +136,19 @@ async function main() {
       })),
     );
     const labelled = members.filter((_, i) => (offset + i) % 5 === 0);
-    await db
-      .knex('members_labels')
-      .insert(
-        labelled.map((m) => ({ id: ObjectID().toHexString(), member_id: m.id, label_id: labelId })),
-      );
+    await knex('members_labels').insert(
+      labelled.map((m) => ({ id: ObjectID().toHexString(), member_id: m.id, label_id: labelId })),
+    );
     if ((offset + 1000) % 100000 === 0) {
       print({ phase: 'seed', members: offset + 1000, elapsed_ms: Date.now() - started });
     }
   }
-  const segmenter = new (req('./core/server/services/email-service/email-segmenter'))({});
+  const { default: EmailSegmenter } =
+    // @ts-expect-error This JavaScript service has no type declarations.
+    await import('../../ghost/core/server/services/email-service/email-segmenter.js');
+  const segmenter = new EmailSegmenter({});
   const service = new BatchSendingService({
-    db,
+    db: coreDb,
     models,
     batchCreationConcurrency: concurrency,
     emailRenderer: { getSegments: async () => ['status:free', 'status:-free'] },
@@ -123,14 +158,15 @@ async function main() {
     BEFORE_RETRY_CONFIG: { maxRetries: 0 },
   });
   let queries = 0;
-  const memberLookupStarts = new Map();
-  db.knex.on('query', (query) => {
+  type Query = { sql: string; __knexQueryUid: string };
+  const memberLookupStarts = new Map<string, number>();
+  knex.on('query', (query: Query) => {
     queries += 1;
     if (query.sql.includes('`uuid`') && query.sql.includes('from `members`')) {
       memberLookupStarts.set(query.__knexQueryUid, performance.now());
     }
   });
-  db.knex.on('query-response', (rows, query) => {
+  knex.on('query-response', (rows: unknown[], query: Query) => {
     const startedAt = memberLookupStarts.get(query.__knexQueryUid);
     if (startedAt !== undefined) {
       metrics.member_lookup_ms = (metrics.member_lookup_ms ?? 0) + performance.now() - startedAt;
@@ -139,7 +175,7 @@ async function main() {
       memberLookupStarts.delete(query.__knexQueryUid);
     }
   });
-  async function measure(email, phase) {
+  async function measure(email: { id: string; get: (key: string) => unknown }, phase: string) {
     global.gc?.();
     const baseline = process.memoryUsage();
     let peakRss = baseline.rss;
@@ -193,8 +229,7 @@ async function main() {
     await measure(email, `prepare:${filter}`);
     if (filter === 'all') {
       // Model a crash after every pending batch committed but before the preparation marker.
-      await db
-        .knex('emails')
+      await knex('emails')
         .where({ id: email.id })
         .update({ prepared_at: null, candidate_count: null, preparation_excluded_count: null });
       await email.refresh();
@@ -203,8 +238,8 @@ async function main() {
   }
 }
 main()
-  .catch((error) => {
-    print({ error: error.stack });
+  .catch((error: unknown) => {
+    print({ error: error instanceof Error ? error.stack : String(error) });
     process.exitCode = 1;
   })
   .finally(async () => {
