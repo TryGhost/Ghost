@@ -79,6 +79,9 @@ describe('createAdminApiFetch', () => {
     await expect(adminApiFetch({ path: '/db/' }, session.signal)).rejects.toThrow(
       'blocked: Apps can’t use /db/',
     );
+    await expect(
+      adminApiFetch({ path: '/posts/?filter=tag:news', method: 'DELETE' }, session.signal),
+    ).rejects.toThrow('blocked: Apps can’t use /posts/');
     await expect(adminApiFetch({ path: '/../content/' }, session.signal)).rejects.toThrow(
       /^invalid_path: /,
     );
@@ -97,10 +100,8 @@ describe('createAdminApiFetch', () => {
   it('refuses a route that redirects on purpose, without blaming the path', async () => {
     fetchMock.mockResolvedValue(opaqueRedirect());
 
-    await expect(
-      adminApiFetch({ path: '/members/stripe_connect/?mode=test' }, session.signal),
-    ).rejects.toThrow(
-      'invalid_path: The Admin API answers /members/stripe_connect/ with a redirect, which apps can’t follow',
+    await expect(adminApiFetch({ path: '/oembed/?url=x' }, session.signal)).rejects.toThrow(
+      'invalid_path: The Admin API answers /oembed/ with a redirect, which apps can’t follow',
     );
   });
 

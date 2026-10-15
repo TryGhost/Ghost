@@ -24,7 +24,8 @@ export function createAdminApiFetch({
   ghostVersion?: string;
 }): AdminApiFetch {
   return async (request, signal) => {
-    const check = checkAdminApiPath(request.path, apiRoot);
+    const method = request.method ?? 'GET';
+    const check = checkAdminApiPath(request.path, method, apiRoot);
     if (check.problem === 'invalid_path') {
       throw new BridgeError('invalid_path', 'Expected an Admin API path within the Admin API');
     }
@@ -50,7 +51,7 @@ export function createAdminApiFetch({
     try {
       // eslint-disable-next-line no-restricted-syntax -- a raw request, returned to the app as is
       response = await fetch(url, {
-        method: request.method ?? 'GET',
+        method,
         headers: { ...ghostApiRequestHeaders({ ghostVersion, body: request.body }), ...appHeaders },
         body: request.body,
         // The request carries the staff user's own session. That stands in for the app-scoped token
