@@ -1,3 +1,5 @@
+import type { CreateRule, ESTree } from '@oxlint/plugins';
+
 const resetEnvironmentStaleFixtures = [
   'baseURL',
   'ghostAccountOwner',
@@ -5,7 +7,7 @@ const resetEnvironmentStaleFixtures = [
   'pageWithAuthenticatedUser',
 ];
 
-function isBeforeEachHookCall(node) {
+function isBeforeEachHookCall(node: ESTree.Node) {
   if (node.type !== 'CallExpression') {
     return false;
   }
@@ -21,7 +23,9 @@ function isBeforeEachHookCall(node) {
   );
 }
 
-function isFunctionNode(node) {
+function isFunctionNode(
+  node: ESTree.Node,
+): node is ESTree.Function | ESTree.ArrowFunctionExpression {
   return (
     node.type === 'ArrowFunctionExpression' ||
     node.type === 'FunctionExpression' ||
@@ -29,13 +33,15 @@ function isFunctionNode(node) {
   );
 }
 
-function getDestructuredFixtureNames(functionNode) {
+function getDestructuredFixtureNames(
+  functionNode: ESTree.Function | ESTree.ArrowFunctionExpression,
+) {
   const [firstParam] = functionNode.params;
   if (!firstParam || firstParam.type !== 'ObjectPattern') {
-    return new Set();
+    return new Set<string>();
   }
 
-  const fixtureNames = new Set();
+  const fixtureNames = new Set<string>();
   for (const property of firstParam.properties) {
     if (property.type !== 'Property') {
       continue;
@@ -49,7 +55,7 @@ function getDestructuredFixtureNames(functionNode) {
   return fixtureNames;
 }
 
-export default {
+export const noUnsafeResetEnvironment: CreateRule = {
   meta: {
     type: 'problem',
     docs: {
@@ -96,7 +102,10 @@ export default {
           return;
         }
 
-        const ancestors = context.sourceCode.getAncestors(node);
+        const ancestors: ESTree.Node[] = [];
+        for (let ancestor: ESTree.Node | null = node.parent; ancestor; ancestor = ancestor.parent) {
+          ancestors.unshift(ancestor);
+        }
         const enclosingBeforeEachHook = [...ancestors]
           .reverse()
           .find(

@@ -1,3 +1,5 @@
+import type { CreateRule, ESTree, Scope, Variable } from '@oxlint/plugins';
+
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import boundaries from '../../../../.dependency-cruiser.cjs';
@@ -22,22 +24,21 @@ const libraries = boundary.to.pathNot
   .filter((pattern) => !pattern.includes('$1'))
   .map((pattern) => new RegExp(pattern));
 
-function unwrap(node) {
+function unwrap(node: ESTree.Node | null | undefined) {
   while (
-    [
-      'TSAsExpression',
-      'TSSatisfiesExpression',
-      'TSNonNullExpression',
-      'TSTypeAssertion',
-      'AwaitExpression',
-    ].includes(node?.type)
+    node &&
+    (node.type === 'TSAsExpression' ||
+      node.type === 'TSSatisfiesExpression' ||
+      node.type === 'TSNonNullExpression' ||
+      node.type === 'TSTypeAssertion' ||
+      node.type === 'AwaitExpression')
   ) {
     node = node.type === 'AwaitExpression' ? node.argument : node.expression;
   }
   return node;
 }
 
-export default {
+export const noInjectedServiceLibraries: CreateRule = {
   meta: {
     type: 'problem',
     docs: {
@@ -60,19 +61,26 @@ export default {
     const directory = path.posix.dirname(filename);
     const sourceCode = context.sourceCode;
 
-    function variable(identifier) {
-      for (let scope = sourceCode.getScope(identifier); scope; scope = scope.upper) {
+    function variable(
+      identifier: Extract<ESTree.Node, { type: 'Identifier' }>,
+    ): Variable | undefined {
+      for (let scope: Scope | null = sourceCode.getScope(identifier); scope; scope = scope.upper) {
         const binding = scope.set.get(identifier.name);
         if (binding) return binding;
       }
+      return undefined;
     }
 
     // Follow imported bindings and literal require() calls, not arbitrary value flow.
-    function importedFrom(expression) {
+    function importedFrom(expression: ESTree.Node | null | undefined): string | undefined {
       const node = unwrap(expression);
       if (!node) return;
       if (node.type === 'MemberExpression') return importedFrom(node.object);
-      if (node.type === 'ImportExpression' && node.source.type === 'Literal')
+      if (
+        node.type === 'ImportExpression' &&
+        node.source.type === 'Literal' &&
+        typeof node.source.value === 'string'
+      )
         return node.source.value;
       if (
         node.type === 'CallExpression' &&
@@ -94,23 +102,34 @@ export default {
       const definition = binding?.defs[0];
       if (
         definition?.type === 'ImportBinding' &&
-        definition.parent?.importKind !== 'type' &&
-        definition.node.importKind !== 'type'
+        (definition.parent && 'importKind' in definition.parent
+          ? definition.parent.importKind
+          : undefined) !== 'type' &&
+        ('importKind' in definition.node ? definition.node.importKind : undefined) !== 'type'
       ) {
-        return (
-          definition.parent?.source?.value ?? definition.node.moduleReference?.expression?.value
-        );
+        if (definition.parent?.type === 'ImportDeclaration') return definition.parent.source.value;
+        if (
+          definition.node.type === 'TSImportEqualsDeclaration' &&
+          definition.node.moduleReference.type === 'TSExternalModuleReference'
+        )
+          return definition.node.moduleReference.expression.value;
       }
       // const require bindings cannot be reassigned; aliases and mutable bags need review.
-      if (definition?.type === 'Variable' && definition.parent.kind === 'const') {
+      if (
+        definition?.type === 'Variable' &&
+        definition.parent?.type === 'VariableDeclaration' &&
+        definition.parent.kind === 'const' &&
+        definition.node.type === 'VariableDeclarator'
+      ) {
         let initializer = unwrap(definition.node.init);
         while (initializer?.type === 'MemberExpression') initializer = unwrap(initializer.object);
-        if (['CallExpression', 'ImportExpression'].includes(initializer?.type))
+        if (initializer?.type === 'CallExpression' || initializer?.type === 'ImportExpression')
           return importedFrom(initializer);
       }
+      return undefined;
     }
 
-    function isLibrary(specifier) {
+    function isLibrary(specifier: string) {
       // Match the same explicit paths without depending on emitted JS or pnpm's store layout.
       const target = specifier.startsWith('.')
         ? path.posix.normalize(path.posix.join(directory, specifier))
@@ -121,7 +140,7 @@ export default {
       return libraries.some((pattern) => candidates.some((candidate) => pattern.test(candidate)));
     }
 
-    function checkArgument(expression) {
+    function checkArgument(expression: ESTree.Node | null | undefined) {
       const node = unwrap(expression);
       if (!node) return;
       if (node.type === 'ObjectExpression') {

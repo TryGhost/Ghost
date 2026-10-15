@@ -12,15 +12,15 @@
   "jsPlugins": [
     {
       "name": "ghost",
-      "specifier": "./tools/configs/oxlint/plugin.mjs"
+      "specifier": "./tools/configs/oxlint/plugin.ts"
     },
     {
       "name": "local",
-      "specifier": "./tools/configs/oxlint/local-plugin.mjs"
+      "specifier": "./tools/configs/oxlint/local-plugin.ts"
     },
     {
       "name": "local-filenames",
-      "specifier": "./tools/configs/oxlint/filenames-plugin.mjs"
+      "specifier": "./tools/configs/oxlint/filenames-plugin.ts"
     }
   ],
   "overrides": [

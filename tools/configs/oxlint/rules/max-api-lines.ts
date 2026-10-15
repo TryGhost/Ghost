@@ -1,3 +1,5 @@
+import type { CreateRule, ESTree, Comment } from '@oxlint/plugins';
+
 // Migrated from eslint-plugin-ghost. Preserve its matching behavior.
 
 const DEFAULT_MAX_LINES = 11;
@@ -9,11 +11,11 @@ const DEFAULT_MAX_LINES = 11;
  * @param {string} filename
  * @returns
  */
-function getAPIVersionAndEndpointName(filename) {
+function getAPIVersionAndEndpointName(filename: string) {
   let nameParts = filename.split('/api/');
-  let usefulPath = nameParts[1].split('/');
-  let version;
-  let endpoint;
+  let usefulPath = (nameParts[1] ?? '').split('/');
+  let version: string | undefined;
+  let endpoint: string | undefined;
 
   usefulPath.forEach((pathPart) => {
     if (pathPart.startsWith('v') || pathPart === 'canary') {
@@ -28,9 +30,13 @@ function getAPIVersionAndEndpointName(filename) {
   return { version, endpoint };
 }
 
-function getNameForReport(filename, funcNode) {
+function getNameForReport(filename: string, funcNode: ESTree.Node) {
   let api = getAPIVersionAndEndpointName(filename);
-  let method = funcNode.parent.parent.parent.key.name;
+  const methodNode = funcNode.parent?.parent?.parent;
+  const method =
+    methodNode && 'key' in methodNode && methodNode.key.type === 'Identifier'
+      ? methodNode.key.name
+      : undefined;
 
   return `${api.version} API ${api.endpoint}.${method}() query method`;
 }
@@ -40,8 +46,8 @@ function getNameForReport(filename, funcNode) {
  * @param {Array} comments An array of comment nodes.
  * @returns {Map.<string,Node>} A map with numeric keys (source code line numbers) and comment token values.
  */
-function getCommentLineNumbers(comments) {
-  const map = new Map();
+function getCommentLineNumbers(comments: Comment[]) {
+  const map = new Map<number, Comment>();
 
   comments.forEach((comment) => {
     for (let i = comment.loc.start.line; i <= comment.loc.end.line; i++) {
@@ -55,7 +61,7 @@ function getCommentLineNumbers(comments) {
 // Rule Definition
 //------------------------------------------------------------------------------
 
-export default {
+export const maxApiLines: CreateRule = {
   meta: {
     docs: {
       description: 'Enforce light API endpoint files',
@@ -104,7 +110,7 @@ export default {
       return {};
     }
 
-    if (typeof option === 'object') {
+    if (typeof option === 'object' && option !== null && !Array.isArray(option)) {
       maxLines = typeof option.max === 'number' ? option.max : DEFAULT_MAX_LINES;
     } else if (typeof option === 'number') {
       maxLines = option;
@@ -123,7 +129,7 @@ export default {
      * @param {ASTNode} comment The comment to remove
      * @returns {boolean} If the comment covers the entire line
      */
-    function isFullLineComment(line, lineNumber, comment) {
+    function isFullLineComment(line: string, lineNumber: number, comment: Comment) {
       const start = comment.loc.start;
       const end = comment.loc.end;
       const isFirstTokenOnLine = start.line === lineNumber && !line.slice(0, start.column).trim();
@@ -142,17 +148,15 @@ export default {
      * @returns {void}
      * @private
      */
-    function processFunction(node) {
+    function processFunction(node: ESTree.Node) {
       let lineCount = 0;
 
       for (let i = node.loc.start.line - 1; i < node.loc.end.line; ++i) {
-        const line = lines[i];
+        const line = lines[i] ?? '';
+        const comment = commentLineNumbers.get(i + 1);
 
         // Do skip comments
-        if (
-          commentLineNumbers.has(i + 1) &&
-          isFullLineComment(line, i + 1, commentLineNumbers.get(i + 1))
-        ) {
+        if (comment && isFullLineComment(line, i + 1, comment)) {
           continue;
         }
 
@@ -179,7 +183,12 @@ export default {
     return {
       FunctionExpression(funcNode) {
         // if this is a query function - e.g. the main part of an API
-        if (funcNode.parent && funcNode.parent.key && funcNode.parent.key.name === 'query') {
+        if (
+          funcNode.parent &&
+          'key' in funcNode.parent &&
+          funcNode.parent.key.type === 'Identifier' &&
+          funcNode.parent.key.name === 'query'
+        ) {
           return processFunction(funcNode);
         }
 

@@ -1,5 +1,7 @@
+import type { CreateRule } from '@oxlint/plugins';
+
 // Migrated from eslint-plugin-ghost. Preserve its matching behavior.
-export default {
+export const ghostErrorUsage: CreateRule = {
   meta: {
     docs: {
       description: 'Enforce correct usage of @tryghost/errors',

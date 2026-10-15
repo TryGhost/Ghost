@@ -1,5 +1,7 @@
+import type { CreateRule, ESTree, Scope, Variable } from '@oxlint/plugins';
+
 /** Enforces the public source shape of migrated service roots. */
-export default {
+export const serviceRootShape: CreateRule = {
   meta: {
     type: 'problem',
     docs: {
@@ -30,41 +32,50 @@ export default {
   },
   create(context) {
     const sourceCode = context.sourceCode;
-    const helperImport = context.options[0].helperImport;
-    const factories = new Set();
-    const constants = new Map();
-    const aliases = [];
-    const managed = new Set();
-    const calls = [];
-    const mutations = [];
-    let defaultExport;
+    const option = context.options[0];
+    const helperImport =
+      option && typeof option === 'object' && !Array.isArray(option)
+        ? option.helperImport
+        : undefined;
+    const factories = new Set<Variable | undefined>();
+    const constants = new Map<Variable | undefined, ESTree.Node>();
+    const aliases: [Variable | undefined, ESTree.Node][] = [];
+    const managed = new Set<Variable | undefined>();
+    const calls: ESTree.CallExpression[] = [];
+    const mutations: { node: ESTree.Node; target: ESTree.Node }[] = [];
+    let defaultExport: ESTree.ExportDefaultDeclaration | undefined;
 
-    function variable(identifier) {
-      for (let scope = sourceCode.getScope(identifier); scope; scope = scope.upper) {
+    function variable(
+      identifier: Extract<ESTree.Node, { type: 'Identifier' }>,
+    ): Variable | undefined {
+      for (let scope: Scope | null = sourceCode.getScope(identifier); scope; scope = scope.upper) {
         const found = scope.set.get(identifier.name);
         if (found) {
           return found;
         }
       }
+      return undefined;
     }
-    function unwrap(node) {
+    function unwrap(node: ESTree.Node) {
       while (
-        [
-          'TSAsExpression',
-          'TSTypeAssertion',
-          'TSNonNullExpression',
-          'TSSatisfiesExpression',
-          'ChainExpression',
-        ].includes(node.type)
+        node.type === 'TSAsExpression' ||
+        node.type === 'TSTypeAssertion' ||
+        node.type === 'TSNonNullExpression' ||
+        node.type === 'TSSatisfiesExpression' ||
+        node.type === 'ChainExpression'
       ) {
         node = node.expression;
       }
       return node;
     }
-    function report(node, messageId) {
+    function report(node: ESTree.Node, messageId: string) {
       context.report({ node, messageId });
     }
-    function resolve(node, bindings, seen = new Set()) {
+    function resolve(
+      node: ESTree.Node,
+      bindings: Set<Variable | undefined>,
+      seen = new Set<Variable | undefined>(),
+    ): ESTree.Node | undefined {
       node = unwrap(node);
       if (node.type !== 'Identifier') {
         return node;
@@ -79,7 +90,7 @@ export default {
       bindings.add(binding);
       return resolve(value, bindings, seen);
     }
-    function propertyName(node) {
+    function propertyName(node: ESTree.Node) {
       if (node.type !== 'MemberExpression') {
         return;
       }
@@ -89,8 +100,9 @@ export default {
       if (node.computed && node.property.type === 'Literal') {
         return node.property.value;
       }
+      return undefined;
     }
-    function referencesManaged(node) {
+    function referencesManaged(node: ESTree.Node): boolean {
       node = unwrap(node);
       if (node.type === 'Identifier') {
         const binding = variable(node);
@@ -99,35 +111,40 @@ export default {
           (node.name === 'exports' && (!binding || binding.defs.length === 0))
         );
       }
-      if (propertyName(node) === 'extras' && referencesManaged(node.object)) {
+      if (
+        node.type === 'MemberExpression' &&
+        propertyName(node) === 'extras' &&
+        referencesManaged(node.object)
+      ) {
         return true;
       }
       return (
+        node.type === 'MemberExpression' &&
         propertyName(node) === 'exports' &&
         node.object.type === 'Identifier' &&
         node.object.name === 'module' &&
-        (!variable(node.object) || variable(node.object).defs.length === 0)
+        (!variable(node.object) || variable(node.object)?.defs.length === 0)
       );
     }
-    function managedMember(node) {
+    function managedMember(node: ESTree.Node) {
       node = unwrap(node);
       return (
         referencesManaged(node) ||
         (node.type === 'MemberExpression' && referencesManaged(node.object))
       );
     }
-    function inspectExtras(object) {
+    function inspectExtras(object: ESTree.Node) {
       if (object.type !== 'ObjectExpression') {
         report(object, 'explicitExtras');
         return;
       }
-      const names = new Set();
+      const names = new Set<string>();
       for (const property of object.properties) {
         if (
           property.type !== 'Property' ||
           property.computed ||
           property.kind !== 'init' ||
-          !['Identifier', 'Literal'].includes(property.key.type) ||
+          (property.key.type !== 'Identifier' && property.key.type !== 'Literal') ||
           (property.key.type === 'Literal' && typeof property.key.value !== 'string')
         ) {
           report(property, 'property');
@@ -156,6 +173,7 @@ export default {
             if (
               specifier.type === 'ImportSpecifier' &&
               specifier.importKind !== 'type' &&
+              specifier.imported.type === 'Identifier' &&
               specifier.imported.name === 'defineService'
             ) {
               factories.add(variable(specifier.local));
@@ -167,7 +185,7 @@ export default {
         if (node.id.type === 'Identifier' && node.init) {
           const binding = variable(node.id);
           aliases.push([binding, node.init]);
-          if (node.parent.kind === 'const') {
+          if (node.parent.type === 'VariableDeclaration' && node.parent.kind === 'const') {
             constants.set(binding, node.init);
           }
         }

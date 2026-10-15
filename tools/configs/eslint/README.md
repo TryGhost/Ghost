@@ -50,6 +50,11 @@ lint when changing shared rule atoms or either factory.
 `pnpm lint:oxlint` owns the eight `ghost-custom` rules and the three local rules
 (filename matching, Admin paths and E2E reset safety). Their standalone
 implementations live in `../oxlint/rules/`; they do not load ESLint plugins.
+The TypeScript plugins run directly on the pinned Node version. Their strict
+type check runs as part of `pnpm test`, or separately with
+`pnpm --filter @internal/cfg-oxlint test:types`. Oxlint API types come from
+`@oxlint/plugins` through type-only imports.
+
 The ESLint entries are removed, except for overrides that disable rules inherited
 from presets. `eslint-plugin-ghost` still supplies other checks, including import
 sorting, filename conventions and Mocha rules, so it remains installed.
@@ -62,7 +67,7 @@ are off; enable further rules individually as `error` or `off`.
 
 The `ghost/service-root-shape` rule checks only the migrated service roots listed
 in `.oxlintrc.json`. Its standalone implementation is
-`../oxlint/rules/service-root-shape.mjs`. Update the configured paths when marking
+`../oxlint/rules/service-root-shape.ts`. Update the configured paths when marking
 a root migrated; a tooling test compares them with the service inventory.
 Catalogue metadata validation remains separate from linting.
 

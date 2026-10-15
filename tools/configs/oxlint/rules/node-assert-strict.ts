@@ -1,5 +1,7 @@
+import type { CreateRule } from '@oxlint/plugins';
+
 // Migrated from eslint-plugin-ghost. Preserve its matching behavior.
-export default {
+export const nodeAssertStrict: CreateRule = {
   meta: {
     docs: {
       description: 'Enforce strict mode when using node:assert',
@@ -22,11 +24,13 @@ export default {
           if (
             init &&
             init.type === 'CallExpression' &&
+            init.callee.type === 'Identifier' &&
             init.callee.name === 'require' &&
             init.arguments.length === 1 &&
+            init.arguments[0]?.type === 'Literal' &&
             init.arguments[0].value === 'assert' &&
-            !node.parent.generator &&
-            !node.parent.async
+            !('generator' in node.parent && node.parent.generator) &&
+            !('async' in node.parent && node.parent.async)
           ) {
             // Report violation of strict mode
             context.report({
@@ -43,8 +47,8 @@ export default {
           source &&
           source.type === 'Literal' &&
           source.value === 'assert' &&
-          !node.parent.generator &&
-          !node.parent.async
+          !('generator' in node.parent && node.parent.generator) &&
+          !('async' in node.parent && node.parent.async)
         ) {
           // Report violation of strict mode
           context.report({
@@ -68,7 +72,10 @@ export default {
         }
 
         // Method names we check
-        if (assertFns.includes(node.callee.property.name)) {
+        if (
+          node.callee.property.type === 'Identifier' &&
+          assertFns.includes(node.callee.property.name)
+        ) {
           context.report({ node, messageId: 'noStrictMethod' });
         }
 

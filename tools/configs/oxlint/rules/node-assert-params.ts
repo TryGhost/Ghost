@@ -1,5 +1,7 @@
+import type { CreateRule } from '@oxlint/plugins';
+
 // Migrated from eslint-plugin-ghost. Preserve its matching behavior.
-export default {
+export const nodeAssertParams: CreateRule = {
   meta: {
     docs: {
       description: 'Enforce correct order of params in node:assert methods',
@@ -40,11 +42,15 @@ export default {
         // Method names we check
         // @TODO use eslint community utils here
         // ref: https://github.com/sindresorhus/eslint-plugin-unicorn/blob/main/rules/prefer-json-parse-buffer.js#L127
-        if (!assertFns.includes(node.callee.property.name)) {
+        if (
+          node.callee.property.type !== 'Identifier' ||
+          !assertFns.includes(node.callee.property.name)
+        ) {
           return;
         }
 
         const firstArg = node.arguments[0];
+        if (!firstArg) return;
 
         // The first argument must not be a Literal, or an Idenfier with the name "undefined"
         if (

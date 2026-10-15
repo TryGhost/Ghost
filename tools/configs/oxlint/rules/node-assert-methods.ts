@@ -1,5 +1,7 @@
+import type { CreateRule } from '@oxlint/plugins';
+
 // Migrated from eslint-plugin-ghost. Preserve its matching behavior.
-export default {
+export const nodeAssertMethods: CreateRule = {
   meta: {
     docs: {
       description: 'Enforce using methods with node:assert',
@@ -13,7 +15,7 @@ export default {
   create(context) {
     return {
       'CallExpression[callee.name=assert]': function (node) {
-        if (node.parent.type !== 'MemberExpression') {
+        if (node.parent?.type !== 'MemberExpression') {
           // Report invalid usage of assert()
           context.report({
             node: node,
