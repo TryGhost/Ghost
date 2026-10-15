@@ -27,8 +27,8 @@ const byRole = new Map<string, Permission[]>(
 
 /**
  * Every permission granted to any of the given roles, without duplicates.
- * Unknown roles, and Owner (which has no permission rows and is handled as a
- * bypass in canThis), contribute nothing.
+ * Unknown roles, and Owner (which has no permissions of its own and is handled
+ * as a bypass in canThis), contribute nothing.
  *
  * The permission objects are shared by every caller, so they are frozen.
  */
@@ -60,7 +60,7 @@ export function all(): Permission[] {
 
 /**
  * The roles the map knows about. Owner is not among them: it has no
- * permission rows and is handled as a bypass in canThis.
+ * permissions of its own and is handled as a bypass in canThis.
  */
 export function roleNames(): string[] {
   return [...byRole.keys()];
