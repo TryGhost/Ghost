@@ -42,6 +42,7 @@ class LinkTrackingServiceWrapper {
 
     // Wire up all the dependencies
     const models = require('../../models');
+    const db = require('../../data/db');
     const { MemberLinkClickEvent } = require('../../../shared/events');
     const DomainEvents = require('@tryghost/domain-events');
 
@@ -50,6 +51,7 @@ class LinkTrackingServiceWrapper {
     const postLinkRepository = new PostLinkRepository({
       LinkRedirect: models.Redirect,
       linkRedirectRepository: linkRedirection.linkRedirectRepository,
+      knex: db.knex,
     });
 
     const linkClickRepository = new LinkClickRepository({
