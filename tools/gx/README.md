@@ -103,3 +103,6 @@ from TypeScript source and has no build or package exports. Its `test` command
 checks types as well as running the command tests. Run `pnpm --filter @internal/gx lint` and
 `pnpm --filter @internal/gx test` to validate it. Add further commands as focused migrations
 of existing tools.
+
+See [tooling ownership](../README.md) before adding a command or relocating its
+implementation, shared helpers or installed-release functionality.
