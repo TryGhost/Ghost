@@ -61,3 +61,20 @@ See the [service-author example](../server/services/README.md#initialization)
 for IndexNow's partial-subscription cleanup and its test. This failure handling
 is separate from normal shutdown. Shutdown and background job registration
 remain with their existing owners; `defineService` does not provide those hooks.
+
+### Transitional extras
+
+An optional third argument preserves helpers that still accompany a service root:
+
+```ts
+const example = defineService('Example', createService, { isAvailable });
+example.extras.isAvailable();
+```
+
+The supplied object and its member types are retained. Without that argument the
+root exposes only `init` and `service`. The helper never invokes extras or assigns
+them lifecycle meaning. They do not change readiness, initialization retries or
+resource ownership; each caller must respect the extra's documented timing.
+
+This is a temporary migration interface. The [services guide](../server/services/README.md)
+describes how to catalogue extras while their eventual ownership is established.
