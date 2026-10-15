@@ -36,6 +36,9 @@
     "typescript": "catalog:"
   },
   "nx": {
+    "implicitDependencies": [
+      "ghost"
+    ],
     "namedInputs": {
       "packageTemplate": [
         "{workspaceRoot}/packages/_template/**/*"
@@ -59,12 +62,7 @@
       "test:unit": {
         "dependsOn": [
           "build",
-          {
-            "projects": [
-              "ghost"
-            ],
-            "target": "build:tsc"
-          }
+          "^build"
         ],
         "inputs": [
           "default",
