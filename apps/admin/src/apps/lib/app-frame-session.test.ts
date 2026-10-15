@@ -88,13 +88,16 @@ function fakeFrame() {
     get host() {
       return document.host;
     },
-    /** Sends a hello with the current document's ID from the page, as the SDK does once loaded. */
-    hello(origin = ORIGIN, id = document.id) {
+    /**
+     * Sends a hello with the current document's ID from the page, as the SDK does once loaded.
+     * `source` is the window it comes from: the frame's own, unless a test says otherwise.
+     */
+    hello(origin = ORIGIN, id = document.id, source: object = contentWindow) {
       const event = new MessageEvent('message', {
         data: { type: HELLO_MESSAGE_TYPE, sdk: 'test', document: id },
         origin,
       });
-      Object.defineProperty(event, 'source', { value: contentWindow });
+      Object.defineProperty(event, 'source', { value: source });
       window.dispatchEvent(event);
     },
     /** Fires the frame's `load` event, as when the current document finishes loading. */
@@ -202,6 +205,20 @@ describe('createAppFrameSession', () => {
     await settle();
 
     expect(frame.contentWindow.postMessage).not.toHaveBeenCalled();
+  });
+
+  it('ignores a hello from the app’s origin that comes from another window', async () => {
+    const frame = fakeFrame();
+    session.attach(frame.element);
+    // Such as a popup the app opened, on the app's own origin.
+    const popup = { postMessage: vi.fn() };
+
+    frame.hello(ORIGIN, undefined, popup);
+    await settle();
+
+    expect(popup.postMessage).not.toHaveBeenCalled();
+    expect(frame.contentWindow.postMessage).not.toHaveBeenCalled();
+    expect(session.getState().status).toBe('loading');
   });
 
   it('fails a page that doesn’t start in time, and notifies subscribers', () => {
