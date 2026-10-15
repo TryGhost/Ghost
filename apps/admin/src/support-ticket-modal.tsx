@@ -16,14 +16,10 @@ import {
   Textarea,
 } from '@tryghost/shade/components';
 import { Stack } from '@tryghost/shade/primitives';
-import { type DocsBotSupportRequest, formatDocsBotHistory } from '@tryghost/admin-x-framework';
 import { useBrowseSite } from '@tryghost/admin-x-framework/api/site';
 import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
 import { useForm, useHandleError } from '@tryghost/admin-x-framework/hooks';
-import {
-  DOCSBOT_SUPPORT_TICKET_THANKS_MESSAGE,
-  submitDocsBotSupportTicket,
-} from './docsbot-support-ticket';
+import { type SupportTicketDraft, submitSupportTicket } from './support-ticket';
 
 interface FormState {
   name: string;
@@ -32,50 +28,43 @@ interface FormState {
   message: string;
 }
 
-interface DocsBotSupportTicketModalProps {
+interface SupportTicketModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  supportRequest: DocsBotSupportRequest;
-  addBotMessage: (message: string) => Promise<unknown>;
-  openWidget: () => Promise<unknown>;
+  draft: SupportTicketDraft;
+  onSent?: () => void;
 }
 
 function initialFormState(
-  supportRequest: DocsBotSupportRequest,
+  draft: SupportTicketDraft,
   currentUser?: { name?: string; email?: string },
 ): FormState {
   return {
-    name: supportRequest.metadata.name || currentUser?.name || '',
-    email: supportRequest.metadata.email || currentUser?.email || '',
-    subject: supportRequest.ticket?.subject || '',
-    message: supportRequest.ticket?.message || '',
+    name: draft.name || currentUser?.name || '',
+    email: draft.email || currentUser?.email || '',
+    subject: draft.subject || '',
+    message: draft.message || '',
   };
 }
 
-export function DocsBotSupportTicketModal({
-  open,
-  onOpenChange,
-  supportRequest,
-  addBotMessage,
-  openWidget,
-}: DocsBotSupportTicketModalProps) {
+export function SupportTicketModal({ open, onOpenChange, draft, onSent }: SupportTicketModalProps) {
   const handleError = useHandleError();
   const { data: currentUser } = useCurrentUser();
   const { data: siteData } = useBrowseSite();
 
   const { formState, updateForm, handleSave, saveState, errors, clearError } = useForm<FormState>({
-    initialState: initialFormState(supportRequest, currentUser),
+    initialState: initialFormState(draft, currentUser),
     onSave: async (state) => {
-      await submitDocsBotSupportTicket({
+      await submitSupportTicket({
         name: state.name.trim(),
         email: state.email.trim(),
         subject: state.subject.trim(),
         message: state.message.trim(),
-        history: formatDocsBotHistory(supportRequest.history),
-        rawHistory: supportRequest.history,
+        source: draft.source,
         siteUrl: siteData?.site.url ?? '',
-        currentUrl: supportRequest.currentUrl,
-        metadata: supportRequest.metadata,
+        pageUrl: draft.pageUrl,
+        conversationUrl: draft.conversationUrl || null,
+        transcript: draft.transcript || null,
       });
     },
     onSaveError: handleError,
@@ -116,15 +105,8 @@ export function DocsBotSupportTicketModal({
       return;
     }
 
-    try {
-      await addBotMessage(DOCSBOT_SUPPORT_TICKET_THANKS_MESSAGE);
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error('[DocsBot] Failed to add confirmation message:', error);
-    }
-
     onOpenChange(false);
-    void openWidget();
+    onSent?.();
   };
 
   return (
@@ -137,7 +119,7 @@ export function DocsBotSupportTicketModal({
         onOpenChange(next);
       }}
     >
-      <DialogContent data-testid="docsbot-support-ticket-modal">
+      <DialogContent data-testid="support-ticket-modal">
         <DialogHeader>
           <DialogTitle>Contact support</DialogTitle>
           <DialogDescription>
@@ -146,11 +128,11 @@ export function DocsBotSupportTicketModal({
         </DialogHeader>
         <Stack gap="lg">
           <Field data-invalid={Boolean(errors.name) || undefined}>
-            <FieldLabel htmlFor="docsbot-support-name">Name</FieldLabel>
+            <FieldLabel htmlFor="support-ticket-name">Name</FieldLabel>
             <Input
               aria-invalid={Boolean(errors.name) || undefined}
               disabled={isSubmitting}
-              id="docsbot-support-name"
+              id="support-ticket-name"
               value={formState.name}
               onChange={(event) => updateForm((state) => ({ ...state, name: event.target.value }))}
               onKeyDown={() => clearError('name')}
@@ -158,11 +140,11 @@ export function DocsBotSupportTicketModal({
             {errors.name && <FieldError>{errors.name}</FieldError>}
           </Field>
           <Field data-invalid={Boolean(errors.email) || undefined}>
-            <FieldLabel htmlFor="docsbot-support-email">Email</FieldLabel>
+            <FieldLabel htmlFor="support-ticket-email">Email</FieldLabel>
             <Input
               aria-invalid={Boolean(errors.email) || undefined}
               disabled={isSubmitting}
-              id="docsbot-support-email"
+              id="support-ticket-email"
               type="email"
               value={formState.email}
               onChange={(event) => updateForm((state) => ({ ...state, email: event.target.value }))}
@@ -171,11 +153,11 @@ export function DocsBotSupportTicketModal({
             {errors.email && <FieldError>{errors.email}</FieldError>}
           </Field>
           <Field data-invalid={Boolean(errors.subject) || undefined}>
-            <FieldLabel htmlFor="docsbot-support-subject">Subject</FieldLabel>
+            <FieldLabel htmlFor="support-ticket-subject">Subject</FieldLabel>
             <Input
               aria-invalid={Boolean(errors.subject) || undefined}
               disabled={isSubmitting}
-              id="docsbot-support-subject"
+              id="support-ticket-subject"
               value={formState.subject}
               onChange={(event) =>
                 updateForm((state) => ({ ...state, subject: event.target.value }))
@@ -185,11 +167,11 @@ export function DocsBotSupportTicketModal({
             {errors.subject && <FieldError>{errors.subject}</FieldError>}
           </Field>
           <Field data-invalid={Boolean(errors.message) || undefined}>
-            <FieldLabel htmlFor="docsbot-support-message">Message</FieldLabel>
+            <FieldLabel htmlFor="support-ticket-message">Message</FieldLabel>
             <Textarea
               aria-invalid={Boolean(errors.message) || undefined}
               disabled={isSubmitting}
-              id="docsbot-support-message"
+              id="support-ticket-message"
               rows={6}
               value={formState.message}
               onChange={(event) =>
@@ -197,10 +179,9 @@ export function DocsBotSupportTicketModal({
               }
               onKeyDown={() => clearError('message')}
             />
-            <FieldDescription>
-              Add any extra context before sending. The DocsBot conversation will be attached
-              automatically.
-            </FieldDescription>
+            {draft.transcript && (
+              <FieldDescription>Your conversation will be attached automatically.</FieldDescription>
+            )}
             {errors.message && <FieldError>{errors.message}</FieldError>}
           </Field>
         </Stack>
@@ -214,7 +195,7 @@ export function DocsBotSupportTicketModal({
             Cancel
           </Button>
           <Button
-            data-testid="docsbot-support-send"
+            data-testid="support-ticket-send"
             disabled={isSubmitting}
             type="button"
             onClick={() => void onSubmit()}
