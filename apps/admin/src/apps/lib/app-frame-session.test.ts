@@ -516,7 +516,7 @@ describe('createAppFrameSession', () => {
       expect(session.getState()).toMatchObject({ status: 'failed', attempt: 1 });
     });
 
-    it('is never stopped while each document stays open for a while', async () => {
+    it('isn’t stopped while each document stays open for a while', async () => {
       vi.useFakeTimers({ toFake: ['Date'] });
       const frame = await started();
       // A publisher moving through a server-rendered app, one page every few seconds.
@@ -534,6 +534,29 @@ describe('createAppFrameSession', () => {
         await reload(frame);
       }
 
+      expect(session.getState()).toMatchObject({ status: 'ready', attempt: 0 });
+    });
+
+    it('isn’t stopped by a publisher clicking through a few pages, each in under three seconds', async () => {
+      vi.useFakeTimers({ toFake: ['Date'] });
+      const frame = await started();
+      // Two seconds a page, as a publisher who knows where they're going might.
+      const nextPage = async () => {
+        vi.setSystemTime(Date.now() + 2_000);
+        await reload(frame);
+      };
+      // Five pages, as the cap is meant to allow; a cap of three would stop them.
+      for (let page = 1; page <= 5; page += 1) {
+        await nextPage();
+      }
+      expect(session.getState()).toMatchObject({ status: 'ready', attempt: 0 });
+
+      // They stop to read a page, then click on through five more.
+      vi.setSystemTime(Date.now() + 30_000);
+      await reload(frame);
+      for (let page = 1; page <= 5; page += 1) {
+        await nextPage();
+      }
       expect(session.getState()).toMatchObject({ status: 'ready', attempt: 0 });
     });
 

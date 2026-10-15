@@ -86,9 +86,10 @@ export interface AppFrameSession {
 export const SHORT_LIVED_MS = 3_000;
 /**
  * How many short-lived documents in a row a page may load before Admin treats the app as
- * unresponsive.
+ * unresponsive. High enough that a publisher clicking quickly through a few pages of a multi-page
+ * app isn't stopped.
  */
-export const MAX_SHORT_LIVED = 3;
+export const MAX_SHORT_LIVED = 5;
 
 // Numbers the navigations Admin makes to follow apps. Numbering starts at the time Admin loaded, so
 // a history entry from before this load keeps its old number and never matches a newer navigation.
@@ -109,9 +110,10 @@ const sameTheme = (a: Theme | undefined, b: Theme) =>
  * app, and never reach Try again. To prevent that, the session counts short-lived documents: each
  * started document that is replaced within `SHORT_LIVED_MS` of starting, and each reload of the
  * page that Admin makes without the publisher asking. A document that stays started longer resets
- * the count, as Try again does, so a publisher moving between pages of a server-rendered app is
- * never stopped. After more than `MAX_SHORT_LIVED` in a row, the app has failed until the publisher
- * clicks Try again.
+ * the count, as Try again does. After more than `MAX_SHORT_LIVED` in a row, the app has failed until
+ * the publisher clicks Try again. A publisher moving between pages of a multi-page app trips it only
+ * by leaving more than `MAX_SHORT_LIVED` pages in a row, each within `SHORT_LIVED_MS` of it
+ * starting.
  *
  * Admin follows the app's moves by replacing its URL, never by adding to its history: the frame
  * keeps its own history, so each route the app pushes is already a step back takes, and back within
