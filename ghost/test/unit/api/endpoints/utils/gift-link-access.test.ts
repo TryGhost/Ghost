@@ -11,7 +11,6 @@ const {
   applyGiftAccess,
 } = require('../../../../../core/server/api/endpoints/utils/gift-link-access');
 const { Product } = require('../../../../../core/server/models/product');
-const postsPublicController = require('../../../../../core/server/api/endpoints/posts-public');
 const pagesPublicController = require('../../../../../core/server/api/endpoints/pages-public');
 
 function frameWithGift(giftToken?: string) {
@@ -19,6 +18,10 @@ function frameWithGift(giftToken?: string) {
 }
 
 describe('Gift link access', function () {
+  beforeAll(async function () {
+    await require('../../../../../core/server/services/posts-public').default.init();
+  });
+
   let getPostByTokenStub: sinon.SinonStub;
 
   beforeEach(function () {
@@ -43,12 +46,13 @@ describe('Gift link access', function () {
   // Pages has no response cache yet, but its key must stay paired with the
   // applyGiftAccess call in its read so a future cache can't poison the
   // anonymous key with unlocked content.
-  for (const [docName, controller] of [
-    ['posts', postsPublicController],
-    ['pages', pagesPublicController],
-  ] as const) {
+  for (const docName of ['posts', 'pages'] as const) {
     describe(`${docName}-public read cache key`, function () {
       function readKey(giftToken?: string) {
+        const controller =
+          docName === 'posts'
+            ? require('../../../../../core/server/api/endpoints/posts-public')
+            : pagesPublicController;
         return controller.read.generateCacheKeyData({
           options: {},
           original: { context: { giftToken } },

@@ -258,7 +258,7 @@ services:
           - core/server/services/settings/settings-service.js
           - core/server/services/themes/validate.js
           - core/server/services/stats/service.js
-          - core/server/services/posts-public/service.js
+          - core/server/services/posts-public/index.ts
           - core/server/services/tags-public/service.js
           - core/server/services/link-redirection/index.js
           - core/server/services/post-scheduling/index.ts
@@ -3773,7 +3773,7 @@ services:
           - core/server/data/db/connection.ts
           - core/server/data/schema/schema.js
           - core/server/models/action.js
-          - core/server/services/posts-public/service.js
+          - core/server/services/posts-public/index.ts
           - core/server/ghost-server.ts
           - core/boot.js
         tests:
@@ -9805,56 +9805,58 @@ services:
     kind: directory
     disposition: retain
     status: audited
+    migrated: true
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
     migration:
       complexity: straightforward
       modelImpact: fits
       reason: >-
-        The guarded initializer already retains one facade, including when caching is
-        disabled. Return that facade with its optional cache, update the endpoint's access,
-        and make the single site.changed listener removable after a failed attempt. Disabled
-        caching still yields a usable instance rather than requiring a separate disabled
-        service state.
-      reviewedAt: f276513ba32b7114fd5cc4f7b02d3f82c0c31e3e
+        The boot-owned default root returns one facade with an optional cache. Disabled
+        caching still yields a ready instance. The endpoint captures service.cache after
+        initialization, preserving adapter identity and the single site.changed listener.
+        Registration remains the final resource acquisition; no new lifecycle hook is needed.
+      reviewedAt: c538745fe27d8782fc3a6d847bb626d2b6ff130e
       sources:
-        - core/server/services/posts-public/service.js
+        - core/server/services/posts-public/index.ts
         - core/server/api/endpoints/posts-public.js
         - core/boot.js
     entryPoints:
-      - posts-public/index.js
+      - posts-public/index.ts
     notes: >-
-      Preserve optional public response caching, endpoint binding and invalidation identity.
-      Normal cold boot has consumer regression coverage; restart, adapter failures and
-      asynchronous invalidation remain separate obligations. Cache-root unit fixtures now
-      load fresh modules and restore original cache entries/listeners, without assigning
-      private api state; existing enabled/disabled, retention and endpoint assertions remain.
+      The prior auditedAt records the pre-migration baseline. The bounded migration was
+      inspected on main c538745fe27d8782fc3a6d847bb626d2b6ff130e; its existing root/binding,
+      member/gift-key and isolated cold-boot HTTP tests passed before production changes.
+      The default initializer replaces the wrapper without extras. Cache configuration,
+      identity and invalidation are unchanged; early controller imports now fail through
+      the readiness guard. Restart, adapter failures and asynchronous invalidation remain
+      separate obligations below. Feature-local boolean parsing preserves legacy truthiness
+      without tightening accepted configuration.
     contracts:
       exports:
         summary: >-
-          CommonJS index forwards one PostsPublicServiceWrapper. Import exposes init but no
-          api until initialization; init is receiver-dependent and resolves undefined. After
-          init, api is a mutable object containing cache, including an undefined cache when
-          disabled. The root has no query, reset or shutdown method. Units assert enabled and
-          disabled api.cache values and endpoint identity, not exact export shape or returns.
+          The TypeScript root default-exports a defineService initializer with init and
+          a guarded service getter; there are no extras. The ready service is one facade
+          containing cache, including undefined when disabled. It has no query, reset or
+          shutdown method. Unit assertions cover enabled/disabled cache values and endpoint
+          identity; generic readiness, shared initialization and retry belong to kernel tests.
         sources:
-          - core/server/services/posts-public/index.js
-          - core/server/services/posts-public/service.js
+          - core/kernel/define-service.ts
+          - core/server/services/posts-public/index.ts
           - core/server/api/endpoints/posts-public.js
         tests:
           - test/unit/server/services/public-response-caches.test.ts
       construction:
         summary: >-
-          Import constructs the wrapper only. First init requires the shared adapter manager,
-          config facade and common event bus; a truthy postsPublicCache flag obtains
-          cache:postsPublic and registers its reset listener before publishing api. The async
-          method has no await, so this construction/publication runs synchronously. The manager
-          caches adapters by requested name and class. No other production root construction
-          or deep consumer was found. The endpoint separately constructs a PostsService via
-          posts-service-instance; that is a posts composition, not this root's cache. Units
-          inject the adapter and assert its exact name, identity and absence when disabled.
+          Import declares the root without resolving runtime collaborators. First init
+          requires the shared adapter manager, config facade and common event bus. A truthy
+          postsPublicCache flag obtains cache:postsPublic and registers its reset listener
+          as the final resource acquisition before returning the facade. Boot awaits init
+          before the guarded service is ready. The manager caches adapters by requested name
+          and class. No other production construction or deep consumer was found. The
+          endpoint's separate PostsService composition remains unchanged. Units inject the
+          adapter and assert its exact name, identity and absence when disabled.
         sources:
-          - core/server/services/posts-public/index.js
-          - core/server/services/posts-public/service.js
+          - core/server/services/posts-public/index.ts
           - core/server/services/adapter-manager/index.ts
           - core/server/services/adapter-manager/adapter-manager.ts
           - core/server/api/endpoints/posts-public.js
@@ -9863,7 +9865,7 @@ services:
           - test/unit/server/services/public-response-caches.test.ts
       consumers:
         summary: >-
-          Boot initializes the root. Posts browse/read capture api.cache at endpoint module
+          Boot initializes the root. Posts browse/read capture service.cache at endpoint module
           evaluation; the shared API pipeline preserves that adapter identity and caches its
           controller wrapper. Content routes, frontend data/entry lookup, get/collection and
           prev_post/next_post helpers, and llms all reach these endpoint methods. Pages have
@@ -9896,17 +9898,17 @@ services:
           - test/e2e-api/content/gift-links.test.ts
       startup:
         summary: >-
-          Boot validates adapters and prepares models/config before calling init in its awaited
-          service group, before mounting the full app. Content router construction is lazy;
-          endpoint getters normally load the controller after initialization. The isolated
-          HTTP suite exercises a cold boot with both cache flags enabled. Source-only: loading
-          the endpoint too early captures undefined permanently for that descriptor/pipeline;
-          later init cannot repair it. The root does not initialize on a request, await cache
-          readiness or register cleanup. No test injects root construction failure or a later
-          boot failure after this listener has been installed.
+          Boot validates adapters and prepares models/config before awaiting init in the
+          existing service group, before mounting the full app. Content router construction
+          is lazy; endpoint getters normally load the controller after initialization. The
+          isolated HTTP suite exercises a cold boot with both cache flags enabled. Reading
+          service while importing the controller before readiness now throws rather than
+          silently binding no cache. The root does not initialize on a request, await cache
+          readiness or register cleanup. No service-specific test injects construction failure
+          or a later boot failure after this listener has been installed.
         sources:
           - core/boot.js
-          - core/server/services/posts-public/service.js
+          - core/server/services/posts-public/index.ts
           - core/server/services/adapter-manager/adapter-manager.ts
           - core/server/api/endpoints/index.js
           - core/server/api/endpoints/posts-public.js
@@ -9918,17 +9920,17 @@ services:
           - test/e2e-server/public-response-caches.isolated.test.ts
       lifetime:
         summary: >-
-          Any truthy api short-circuits later init, including disabled initialization. The same
-          module retains its API, adapter, entries and listener; there is no listener disposer
-          or supported API reset. Clearing the manager's cache does not update retained root,
-          listener or endpoint references. MemoryCache stores/returns response references and
-          replaces its backing object on reset. Units assert repeat enabled init preserves
-          cache identity and entries with one listener, and invoke only the newly installed
-          reset callback. Isolated HTTP tests additionally emit on the real bus. Same-module
-          stop/restart, forced re-init, reference mutation and overlapping reads/reset are
-          source-only risks, not covered by those assertions.
+          Successful init retains the same facade, adapter, entries and listener, including
+          a facade with no cache when disabled. There is no listener disposer or supported
+          service reset. Clearing the manager cache does not update retained root, listener
+          or endpoint references. MemoryCache stores/returns response references and replaces
+          its backing object on reset. Units assert repeated enabled init preserves cache
+          identity and entries with one listener, and invoke only the newly installed reset
+          callback. Isolated HTTP tests additionally emit on the real bus. Same-module restart,
+          forced re-init, reference mutation and overlapping reads/reset remain source-only
+          risks beyond those assertions.
         sources:
-          - core/server/services/posts-public/service.js
+          - core/server/services/posts-public/index.ts
           - core/server/api/endpoints/posts-public.js
           - core/server/services/adapter-manager/adapter-manager.ts
           - core/server/adapters/cache/MemoryCache.js
@@ -9939,8 +9941,9 @@ services:
           - test/e2e-server/public-response-caches.isolated.test.ts
       configuration:
         summary: >-
-          The root reads hostSettings:postsPublicCache:enabled only on first init, without a
-          feature schema; missing/falsy disables. The manager resolves cache feature options
+          The root reads hostSettings:postsPublicCache:enabled only on first init through a
+          feature-local coercing boolean schema. It preserves legacy truthiness; missing/falsy
+          disables. The manager resolves cache feature options
           and defaults to MemoryCache, retaining a constructed adapter for the same name/class.
           Config is frozen; test overrides do not establish hot reload. Request key data reads
           current options, member UUID, a free-status boolean and sorted tier slugs, plus read identifiers and resolved
@@ -9952,7 +9955,7 @@ services:
           resolving to the same post, with stubbed resolution rather than cached revocation. Exact option normalization is source-only beyond the HTTP
           fields-variant assertion.
         sources:
-          - core/server/services/posts-public/service.js
+          - core/server/services/posts-public/index.ts
           - core/server/services/adapter-manager/utils.ts
           - core/server/services/adapter-manager/adapter-manager.ts
           - core/shared/config/defaults.json
@@ -9977,7 +9980,7 @@ services:
           Redis timeout, refresh and reset results; these do not cover a real posts endpoint
           using those adapters, resource disposal or completion at server shutdown.
         sources:
-          - core/server/services/posts-public/service.js
+          - core/server/services/posts-public/index.ts
           - core/server/services/adapter-manager/adapter-manager.ts
           - core/server/adapters/cache/MemoryCache.js
           - core/server/adapters/cache/AdapterCacheMemoryTTL.js
@@ -9992,18 +9995,21 @@ services:
       failures:
         summary: >-
           Source-only root behavior: dependency/adapter/listener-registration errors reject
-          init before api publication; no rollback disposes a constructed adapter. A synchronous
-          reset error escapes event emission and an async reset rejection is not observed by
-          the listener. The pipeline propagates key/query/cache errors unless the adapter
-          swallows them; a truthy cache hit bypasses query/serialization/permission stages.
-          Redis logs/swallowing differs by operation: loader rejection can return undefined,
-          causing the pipeline to run its response loader again; reset errors are logged and
-          swallowed. Fake-store adapter units assert selected failures, not this combined
-          request path. Content HTTP asserts 400 for missing public identifiers; gift units
-          assert missing-key IncorrectUsage and mismatched-post 403 with no member mutation.
-          Root failure/retry, asynchronous invalidation and stale in-flight writes are untested.
+          init before service publication. defineService allows a later explicit retry;
+          no rollback disposes the borrowed adapter. Registration is the final acquisition.
+          A synchronous reset error escapes event emission and an async reset rejection is
+          not observed by the listener. The pipeline propagates key/query/cache errors unless
+          the adapter swallows them; a truthy cache hit bypasses query/serialization/permission
+          stages. Redis logs/swallowing differs by operation: loader rejection can return
+          undefined, causing the pipeline to run its response loader again; reset errors are
+          logged and swallowed. Fake-store adapter units assert selected failures, not this
+          combined request path. Content HTTP asserts 400 for missing public identifiers;
+          gift units assert missing-key IncorrectUsage and mismatched-post 403 with no member
+          mutation. Service-specific retry, asynchronous invalidation and stale in-flight
+          writes are untested.
         sources:
-          - core/server/services/posts-public/service.js
+          - core/kernel/define-service.ts
+          - core/server/services/posts-public/index.ts
           - core/server/services/adapter-manager/adapter-manager.ts
           - core/server/api/endpoints/posts-public.js
           - core/server/api/endpoints/utils/gift-link-access.ts

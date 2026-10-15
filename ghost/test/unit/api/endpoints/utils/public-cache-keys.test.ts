@@ -4,7 +4,6 @@ import assert from 'node:assert/strict';
 const { pipeline } = require('@tryghost/api-framework');
 const MemoryCache = require('../../../../../core/server/adapters/cache/MemoryCache');
 const gating = require('../../../../../core/server/api/endpoints/utils/serializers/output/utils/post-gating');
-const postsController = require('../../../../../core/server/api/endpoints/posts-public');
 const pagesController = require('../../../../../core/server/api/endpoints/pages-public');
 
 interface Member {
@@ -29,20 +28,32 @@ interface Frame {
 const embed = '<iframe src="https://partner.transistor.fm/ghost/embed/%7Buuid%7D"></iframe>';
 
 describe('Public post response cache member isolation', function () {
+  beforeAll(async function () {
+    await require('../../../../../core/server/services/posts-public').default.init();
+  });
+
   // Pages does not cache responses today, but its read key shares the helper
   // and must stay safe if a response cache is attached later.
-  for (const [docName, method, endpoint] of [
-    ['posts', 'browse', postsController.browse],
-    ['posts', 'read', postsController.read],
-    ['pages', 'read', pagesController.read],
+  for (const [docName, method] of [
+    ['posts', 'browse'],
+    ['posts', 'read'],
+    ['pages', 'read'],
   ] as const) {
     describe(`${docName} ${method}`, function () {
+      function endpoint() {
+        const controller =
+          docName === 'posts'
+            ? require('../../../../../core/server/api/endpoints/posts-public')
+            : pagesController;
+        return controller[method];
+      }
+
       function cachedRequest(visibility = 'paid', initialCache?: InstanceType<typeof MemoryCache>) {
         let queryCalls = 0;
         const controller = {
           docName,
           [method]: {
-            ...endpoint,
+            ...endpoint(),
             cache: initialCache || new MemoryCache(),
             // Isolate the real cache and output gating from database access.
             validation() {},
@@ -122,7 +133,7 @@ describe('Public post response cache member isolation', function () {
 
       it('does not let UUID-less shims reuse personalized entries written before member isolation', async function () {
         const member = { status: 'paid', products: [{ slug: 'silver' }] };
-        const keyData = await endpoint.generateCacheKeyData({
+        const keyData = await endpoint().generateCacheKeyData({
           options: { context: { member } },
           original: { context: { member } },
           data: { slug: 'cached-post' },

@@ -5,7 +5,7 @@ const config = require('../../../core/shared/config');
 const moment = require('moment');
 const testUtils = require('../../utils');
 const models = require('../../../core/server/models');
-const postsPublicService = require('../../../core/server/services/posts-public');
+const postsPublicService = require('../../../core/server/services/posts-public').default;
 const api = require('../../../core/server/api/endpoints');
 const urlUtilsHelper = require('../../utils/url-utils');
 
@@ -343,7 +343,7 @@ describe('Posts Content API', function () {
         { plaintext: 'not-the-stored-body' },
       ]) {
         // A prior successful response must not hide an unsafe lookup behind the cache.
-        await postsPublicService.api.cache?.reset();
+        await postsPublicService.service.cache?.reset();
         const { body } = await agent
           .get(`posts/${post.id}/?fields=id,slug,uuid`, { body: { ...identifier, ...selectors } })
           .expectStatus(200);
@@ -360,7 +360,7 @@ describe('Posts Content API', function () {
       { locale: 'fr' },
       { newsletter_id: fixtureManager.get('newsletters', 0).id },
     ]) {
-      await postsPublicService.api.cache?.reset();
+      await postsPublicService.service.cache?.reset();
       await agent.get(`posts/${post.id}/`, { body }).expectStatus(400);
     }
   });
