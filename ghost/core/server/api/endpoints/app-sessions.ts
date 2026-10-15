@@ -6,11 +6,11 @@ type SessionFrame = Frame<{ options: { id: string; [key: string]: unknown } }>;
 const controller = {
   docName: 'app_sessions',
 
-  // Admin starts a session when an app page opens. No body, as the only URL Ghost fetches
-  // is the one the publisher approved, and it keeps what it finds there as it would by
-  // itself. So opening an app takes the same permission as reading its installation, unlike
-  // previewing, where the caller names the URL. Granting `read` more widely also lets
-  // those callers make Ghost re-check an app, which can suspend it or apply silent changes.
+  // Admin starts a session when it opens an app page. There's no body: the re-check only
+  // fetches the approved manifest URL, never one from the request. So this needs the same
+  // permission as reading the installation, unlike previewing, which fetches a URL from the
+  // request and needs `add`. Anyone with `read` can trigger a re-check, which can suspend
+  // the app or apply silent changes.
   start: {
     headers: { cacheInvalidate: false },
     options: ['id'],

@@ -52,7 +52,7 @@ const summary = (entries: ReturnType<typeof buildHistory>) =>
   entries.map(({ event, actor, moved_to }) => [event, actor?.name ?? null, moved_to ?? null]);
 
 describe('buildHistory', function () {
-  it('tells installing from the install manifest, with who installed it', function () {
+  it('shows the install from the install manifest row, with who installed the app', function () {
     const history = buildHistory(
       [installed('m1', '2026-10-01T10:00:00.000Z')],
       [action('a1', 'installed', '2026-10-01T10:00:00.000Z')],
@@ -63,7 +63,7 @@ describe('buildHistory', function () {
     assert.equal(history[0].id, 'a1');
   });
 
-  it('still tells the install when staff history has no record of it', function () {
+  it('still shows the install when staff history has no record of it', function () {
     const history = buildHistory([installed('m1', '2026-10-01T10:00:00.000Z')], [], new Map());
 
     assert.deepEqual(summary(history), [['installed', null, null]]);
@@ -101,7 +101,7 @@ describe('buildHistory', function () {
     ]);
   });
 
-  it('keeps the changes Ghost held when the approval approves exactly those', function () {
+  it('keeps the suspension when an approval approves exactly the pending changes', function () {
     const history = buildHistory(
       [
         installed('m1', '2026-10-01T10:00:00.000Z'),
@@ -122,7 +122,7 @@ describe('buildHistory', function () {
     );
   });
 
-  it('keeps an earlier update when an approval goes back to the approved manifest', function () {
+  it('keeps an earlier update when an approval keeps the approved manifest', function () {
     const history = buildHistory(
       [
         installed('m1', '2026-10-01T10:00:00.000Z'),
@@ -144,7 +144,7 @@ describe('buildHistory', function () {
     );
   });
 
-  it('never shows a manifest an approval added as waiting, even if the approval went unrecorded', function () {
+  it('never shows a manifest added by an approval as pending, even without a staff history entry', function () {
     const history = buildHistory(
       [
         installed('m1', '2026-10-01T10:00:00.000Z'),
@@ -163,7 +163,7 @@ describe('buildHistory', function () {
     );
   });
 
-  it('tells Ghost running a suspended app again from its resume row', function () {
+  it('shows a resume row as the app resuming', function () {
     const history = buildHistory(
       [
         installed('m1', '2026-10-01T10:00:00.000Z'),
@@ -236,7 +236,7 @@ describe('buildHistory', function () {
     assert.deepEqual(summary(history)[0], ['changes_approved', 'Jamie Larson', null]);
   });
 
-  it('orders what happened in the same second by when its id was created', function () {
+  it('orders entries in the same second by id', function () {
     const second = '2026-10-01T10:00:00.000Z';
     const history = buildHistory(
       [

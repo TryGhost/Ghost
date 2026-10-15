@@ -75,8 +75,9 @@ function installOf(manifests: HistoryManifest[], actions: HistoryAction[]): Entr
 }
 
 /**
- * What Ghost did by itself, one manifest row each: applied a newer version (`updated`),
- * held one for approval (`suspended`), or ran a suspended app again (`resumed`).
+ * Entries for changes the re-check made, one per manifest row: applied a newer manifest
+ * (`updated`), suspended the app for approval (`suspended`), or lifted a suspension
+ * (`resumed`).
  */
 function updatesSuspensionsAndResumesOf(manifests: HistoryManifest[]): Entry[] {
   return manifests
@@ -139,7 +140,7 @@ function approvalsIn(actions: HistoryAction[]): Approval[] {
 
 /**
  * Timestamps only go down to the second, so ties are broken by id.
- * ObjectIds count up as Ghost creates them, so a higher id is newer.
+ * ObjectIds increase over time, so a higher id is newer.
  */
 function newestFirst(entries: Entry[]): Entry[] {
   return entries.sort(

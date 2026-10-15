@@ -12,9 +12,8 @@ export interface AppManifestChange {
 type Approved = Pick<CurrentInstallation, 'manifest_url' | 'manifest'>;
 
 /**
- * What differs between the approved manifest and a loaded one. The preview lists these
- * and the decision is made from them, so what a publisher reviews and what Ghost does
- * cannot disagree.
+ * Lists what differs between the approved manifest and a loaded one. The preview shows
+ * this list and decisions are made from it, so a review always matches what happens.
  */
 export function changesFrom(approved: Approved, loaded: LoadedManifest): AppManifestChange[] {
   return compare(approved, loaded).changes;
@@ -34,29 +33,28 @@ function compare(approved: Approved, loaded: LoadedManifest) {
   };
 }
 
-/** What to do with a loaded manifest; `decideOnManifest` says what each one means. */
+/** What to do with a loaded manifest. `decideOnManifest` describes each kind. */
 export type ManifestDecisionKind = 'unchanged' | 'use_pending' | 'apply' | 'suspend';
 
-/** A decision, with the changes it was made from, so keeping it doesn't compare again. */
+/** A decision with the changes it was based on, so `keepManifest` doesn't compare again. */
 export interface ManifestDecision {
   kind: ManifestDecisionKind;
   changes: AppManifestChange[];
 }
 
 /**
- * What to do with a loaded manifest, given the installation's approved manifest and the
- * one waiting for approval, if any:
+ * Decides what to do with a loaded manifest, given the approved manifest and the pending
+ * one, if any:
  *
- * - `unchanged`: it is the approved manifest and nothing waits, so there is nothing to do;
- * - `use_pending`: it is the manifest already waiting for approval;
- * - `apply`: it differs from the approved one only in silent changes, or not at all while
- *   another manifest waits, which means the app went back on the changes that wait. Either
- *   way it becomes the approved manifest and nothing waits any more;
- * - `suspend`: it has changes that need the publisher's approval, so it waits in place of
- *   any manifest waiting before.
+ * - `unchanged`: it's the approved manifest and nothing is pending. Nothing to do.
+ * - `use_pending`: it's the pending manifest.
+ * - `apply`: it differs from the approved manifest only in silent changes, or it's the
+ *   approved manifest while something is pending, meaning the app reverted the pending
+ *   changes. It becomes the approved manifest and clears the pending one.
+ * - `suspend`: it has changes that need approval, so it replaces any pending manifest.
  *
- * This is what Ghost would do with a manifest it picked up by itself; an approval applies a
- * `suspend` rather than letting it wait.
+ * These are the outcomes for the re-check. An approval applies a `suspend` decision
+ * instead of leaving it pending.
  */
 export function decideOnManifest({
   current,

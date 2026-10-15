@@ -51,8 +51,8 @@ type AppInstallationInsert = Omit<
 > &
   Partial<Pick<z.input<typeof DbAppInstallation>, 'revision' | 'pending_manifest_id'>>;
 
-// `revision` is only ever moved on in the database itself, as a raw expression, so two
-// changes at once cannot both write the same number.
+// `revision` is only incremented in SQL (`revision + 1`), so two concurrent changes can't
+// write the same number.
 type AppInstallationUpdate = Partial<
   Omit<z.input<typeof DbAppInstallation>, 'revision'> & { revision: Knex.Raw<number> }
 >;

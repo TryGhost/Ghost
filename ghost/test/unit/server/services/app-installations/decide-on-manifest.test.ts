@@ -17,7 +17,7 @@ const approvedManifest: AppManifest = {
 
 const current = { manifest_url: MANIFEST_URL, manifest: approvedManifest };
 
-/** A loaded manifest, as the loader would hand it over: its digest names its contents. */
+/** A loaded manifest as the loader returns it, with a digest made from its URL and contents. */
 function loaded(overrides: Partial<AppManifest> = {}, manifestUrl = MANIFEST_URL): LoadedManifest {
   const manifest = { ...approvedManifest, ...overrides };
   const serialised = JSON.stringify(manifest);
@@ -28,7 +28,7 @@ const silent = { description: 'Episodes and players.' };
 const needsApproval = { name: 'Podcasts' };
 
 describe('decideOnManifest', function () {
-  it('carries the changes it was decided from', function () {
+  it('returns the changes the decision was based on', function () {
     assert.deepEqual(
       decideOnManifest({ current, pending: null, loaded: loaded({ ...silent, ...needsApproval }) })
         .changes,
@@ -40,8 +40,8 @@ describe('decideOnManifest', function () {
     assert.deepEqual(decideOnManifest({ current, pending: null, loaded: loaded() }).changes, []);
   });
 
-  describe('with nothing waiting for approval', function () {
-    it('leaves the approved manifest alone when it is loaded again', function () {
+  describe('with nothing pending', function () {
+    it('does nothing when the approved manifest is loaded again', function () {
       assert.equal(
         decideOnManifest({ current, pending: null, loaded: loaded() }).kind,
         'unchanged',
@@ -73,7 +73,7 @@ describe('decideOnManifest', function () {
       );
     });
 
-    it('suspends when the same manifest is read from another address', function () {
+    it('suspends when the same manifest comes from another URL', function () {
       assert.equal(
         decideOnManifest({
           current,
@@ -85,32 +85,32 @@ describe('decideOnManifest', function () {
     });
   });
 
-  describe('with a manifest waiting for approval', function () {
+  describe('with a pending manifest', function () {
     const pending = { digest: loaded(needsApproval).digest };
 
-    it('uses the waiting manifest when that is the one loaded', function () {
+    it('uses the pending manifest when it is the one loaded', function () {
       assert.equal(
         decideOnManifest({ current, pending, loaded: loaded(needsApproval) }).kind,
         'use_pending',
       );
     });
 
-    it('applies the approved manifest again when the app went back on the changes', function () {
+    it('applies the approved manifest again when the app reverts the pending changes', function () {
       assert.equal(decideOnManifest({ current, pending, loaded: loaded() }).kind, 'apply');
     });
 
-    it('applies a silent change, which lets go of the changes that waited', function () {
+    it('applies a silent change and clears the pending changes', function () {
       assert.equal(decideOnManifest({ current, pending, loaded: loaded(silent) }).kind, 'apply');
     });
 
-    it('suspends on other changes that need approval, in place of the waiting ones', function () {
+    it('suspends on different changes that need approval, replacing the pending ones', function () {
       assert.equal(
         decideOnManifest({ current, pending, loaded: loaded({ name: 'Podcasts!' }) }).kind,
         'suspend',
       );
     });
 
-    it('tells the waiting manifest apart by its address too', function () {
+    it('matches the pending manifest by URL as well as contents', function () {
       assert.equal(
         decideOnManifest({
           current,

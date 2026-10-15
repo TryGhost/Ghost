@@ -29,7 +29,7 @@ const manifest: AppManifest = {
 const loaded: LoadedManifest = {
   manifestUrl: 'https://podcast.example.com/ghost-app.json',
   manifest,
-  // Not what re-encoding the manifest gives, so a test can tell the loader's text was kept.
+  // Differs from what re-encoding the manifest gives, so a test can check the loader's text is stored.
   serialised: JSON.stringify(manifest, null, 2),
   digest: 'reviewed-digest',
 };
@@ -147,11 +147,11 @@ describe('App installation transaction failures', function () {
   });
 });
 
-describe('Keeping a manifest', function () {
+describe('keepManifest', function () {
   const silent: AppManifestChange[] = [{ path: 'description', requires_approval: false }];
   const required: AppManifestChange[] = [{ path: 'name', requires_approval: true }];
 
-  /** Keeps `loaded` as decided, answering what was written: manifest rows, then the installation. */
+  /** Runs `keepManifest` on `loaded` and returns what was written: manifest rows, then the installation. */
   async function keep(
     kind: ManifestDecisionKind,
     source: 'approval' | 'update',
@@ -210,7 +210,7 @@ describe('Keeping a manifest', function () {
     };
   }
 
-  it('writes nothing for a manifest that is as approved, whoever decided', async function () {
+  it('writes nothing for the approved manifest, from either source', async function () {
     for (const source of ['update', 'approval'] as const) {
       assert.deepEqual(await keep('unchanged', source), {
         kept: null,
@@ -221,7 +221,7 @@ describe('Keeping a manifest', function () {
     }
   });
 
-  it('writes nothing when Ghost finds the manifest already waiting for approval', async function () {
+  it('writes nothing when the re-check loads the pending manifest', async function () {
     assert.deepEqual(
       await keep('use_pending', 'update', { pending: 'pending', changes: required }),
       {
@@ -233,7 +233,7 @@ describe('Keeping a manifest', function () {
     );
   });
 
-  it('approves the manifest waiting for approval as it is, adding no row', async function () {
+  it('approves the pending manifest without adding a row', async function () {
     const { kept, rows, installations } = await keep('use_pending', 'approval', {
       pending: 'pending',
       changes: required,
@@ -246,7 +246,7 @@ describe('Keeping a manifest', function () {
     ]);
   });
 
-  it('applies silent changes Ghost found as an update row', async function () {
+  it('applies silent changes from the re-check as an update row', async function () {
     const { kept, rows, newRowId, installations } = await keep('apply', 'update', {
       changes: silent,
     });
@@ -258,7 +258,7 @@ describe('Keeping a manifest', function () {
     ]);
   });
 
-  it('keeps changes Ghost found that need approval waiting in an update row, suspending the app', async function () {
+  it('stores changes from the re-check that need approval as a pending update row, suspending the app', async function () {
     for (const pending of [null, 'older pending']) {
       const { rows, newRowId, installations } = await keep('suspend', 'update', {
         pending,
@@ -272,8 +272,8 @@ describe('Keeping a manifest', function () {
     }
   });
 
-  it('runs a suspended app again in a resume row once the app goes back on the changes that waited', async function () {
-    // Exactly the approved manifest again, or with silent changes of its own.
+  it('lifts a suspension with a resume row when the app reverts the pending changes', async function () {
+    // The approved manifest again, with or without silent changes.
     for (const changes of [[], silent]) {
       const { kept, rows, newRowId, installations } = await keep('apply', 'update', {
         pending: 'pending',
@@ -288,7 +288,7 @@ describe('Keeping a manifest', function () {
     }
   });
 
-  it('applies what a publisher approved as an approval row, whatever it needed', async function () {
+  it('applies an approved manifest as an approval row, whatever changed', async function () {
     for (const [kind, changes, requiresApproval] of [
       ['apply', silent, false],
       ['suspend', required, true],
@@ -308,7 +308,7 @@ describe('Keeping a manifest', function () {
     }
   });
 
-  it('lets go of the changes that waited when a publisher approves the approved manifest, adding no row', async function () {
+  it('clears the pending changes without adding a row when a publisher approves the approved manifest', async function () {
     const { kept, rows, installations } = await keep('apply', 'approval', { pending: 'pending' });
 
     assert.deepEqual(kept, { from: 'approved', to: 'approved' });

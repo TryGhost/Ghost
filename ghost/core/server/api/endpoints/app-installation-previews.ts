@@ -3,8 +3,8 @@ import errors from '@tryghost/errors';
 import { z } from 'zod';
 import appInstallations from '../../services/app-installations';
 
-// The framework refuses a body without a non-empty `app_installation_previews` array
-// before any handler runs; what is inside it is checked here.
+// The framework rejects a body without a non-empty `app_installation_previews` array
+// before the handler runs. The handler checks what's inside.
 type PreviewFrame = Frame<{ data: { app_installation_previews: Array<Record<string, unknown>> } }>;
 
 const PreviewRequest = z.object({ manifest_url: z.string() });
@@ -13,8 +13,8 @@ const controller = {
   docName: 'app_installation_previews',
 
   // Fetches and checks an app's manifest so the publisher can review it before installing
-  // or approving it. Nothing is stored. Making Ghost fetch a URL the caller names is part
-  // of installing, so it takes the permission to install.
+  // or approving it. Nothing is stored. It fetches a URL from the request, so it needs the
+  // permission to install.
   add: {
     headers: { cacheInvalidate: false },
     permissions: { docName: 'app_installations', method: 'add' },

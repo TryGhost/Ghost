@@ -9,10 +9,11 @@ changes are defined in [App Contracts](../../../../../packages/app-contracts/CON
 1. **Install.** A publisher opens an install link, reviews the preview and
    confirms it. The site gets a new installation, active and running that
    manifest as its approved manifest.
-2. **Re-check.** Each time an app session starts, Ghost loads the manifest
+2. **Re-check.** Each time an app session starts, the manifest is fetched
    again. Silent changes are applied straight away. Any other change becomes
    the pending manifest and suspends the installation; a re-check that finds
-   only silent changes again, or the approved manifest, lifts the suspension.
+   only silent changes, or the approved manifest, lifts the suspension. A
+   manifest that can't be used makes the app unavailable until it can.
 3. **Approval.** The publisher reviews the pending manifest, or the app at a
    new manifest URL, and approves it. It becomes the approved manifest, and a
    suspended installation is active again.
@@ -29,25 +30,25 @@ new installation, never the old one brought back.
 _Avoid_: app, install record
 
 **Current installation**:
-The installation of an app that has not ended. A site has at most one per app
-ID.
+The installation of an app that hasn't been uninstalled. A site has at most one
+per app ID.
 
 **Approved manifest**:
 The manifest an installation runs: the version the publisher last approved, or
-one Ghost applied by itself because it held only silent changes.
+a newer one the re-check applied because it had only silent changes.
 _Avoid_: active manifest, current manifest
 
 **Pending manifest**:
-A newer manifest Ghost picked up for an installation that waits for the
-publisher's approval. An installation has at most one; a newer one replaces it.
+A newer manifest the re-check found that needs the publisher's approval. An
+installation has at most one; a newer one replaces it.
 _Avoid_: draft, staged manifest
 
 **Active**:
 An installation that runs its approved manifest.
 
 **Suspended**:
-An installation held from running until its pending manifest is approved, or
-until the app goes back on the changes.
+An installation that doesn't run until its pending manifest is approved, or
+until the app reverts the pending changes.
 _Avoid_: paused, disabled
 
 **Uninstalled**:
@@ -55,9 +56,9 @@ An installation that has ended. It is kept as a record and never runs again.
 _Avoid_: deleted, removed
 
 **Revision**:
-The installation's change counter. Any change to the installation moves it on:
-a review is shown against one revision, and an app session started at one ends
-when it moves.
+The installation's change counter. Every change to the installation increments
+it. An approval fails if the revision changed since the review, and an app
+session ends when the revision changes.
 _Avoid_: version
 
 ### Reviewing
@@ -67,9 +68,9 @@ An Admin link that carries a manifest URL and opens a publisher's review of
 that app.
 
 **Loaded manifest**:
-A manifest Ghost has fetched from its manifest URL itself and parsed, ready to
-preview, compare or keep. A manifest is only ever acted on in this form, never
-as a browser handed it over.
+A manifest fetched server-side from its manifest URL and parsed, ready to
+preview, compare or store. A manifest is only ever used in this form, never as
+the browser sent it.
 _Avoid_: intake, fetched manifest, raw manifest
 
 **Preview**:
@@ -79,8 +80,8 @@ _Avoid_: dry run
 
 **Digest**:
 The fingerprint of a manifest together with its manifest URL. Confirming sends
-it back, so only what the publisher reviewed is installed or approved, and it
-is what tells a pending manifest apart from another.
+it back, so only what the publisher reviewed is installed or approved. It also
+identifies the pending manifest.
 _Avoid_: hash, checksum, token
 
 **Install**:
@@ -89,23 +90,23 @@ of.
 
 **Approval**:
 Confirming a reviewed manifest for an app the site already has: its pending
-changes, or the same app served from somewhere new.
+changes, or the same app at a new manifest URL.
 _Avoid_: accept, update
 
 ### Keeping up with the app
 
 **App session**:
-Admin's run of an installed app, started when one of its pages opens. Starting
-one re-checks the app and answers with the installation and the revision the
-session is pinned to. Nothing is stored and no token is issued; the session
-ends when the installation's revision moves on.
+One run of an installed app in Admin, started when Admin opens one of its
+pages. Starting a session re-checks the app and returns the installation and
+its current revision. Nothing is stored and no token is issued; the session
+ends when the installation's revision changes.
 _Avoid_: login, token, connection
 
 **Re-check**:
-Ghost loading an installed app's manifest again from its approved manifest URL
-when an app session starts, and keeping what changed. A manifest Ghost cannot
-load, or one for another app, makes the app unavailable: the session fails and
-nothing is kept, so the app opens again once its manifest is back.
+Fetching an installed app's manifest again from its approved manifest URL when
+an app session starts, and storing what changed. A manifest that can't be
+loaded, or one for another app, makes the app unavailable: the session fails
+and nothing is stored, so the app opens again once its manifest is back.
 _Avoid_: refresh, sync, poll
 
 **Silent change**:
@@ -119,12 +120,11 @@ _Avoid_: minor change, safe change
 **History**:
 The timeline of an installation, newest first: installed, updated, suspended,
 resumed, changes approved and uninstalled. Each update, suspension and resume is
-one manifest row the re-check kept. Resumed means the app went back on the
-changes that waited, so Ghost ran it again, with any silent changes it brought
-applied.
+one manifest row the re-check stored. Resumed means the app reverted the pending
+changes, so the re-check lifted the suspension, applying any silent changes.
 _Avoid_: audit log, activity
 
 **Actor**:
 The staff member who made a change in an installation's history. There is none
-when Ghost made the change itself, as with a re-check.
+for changes the re-check made.
 _Avoid_: author, user
