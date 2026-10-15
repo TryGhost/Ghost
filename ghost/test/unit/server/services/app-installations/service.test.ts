@@ -275,7 +275,7 @@ describe('keepManifest', function () {
   it('lifts a suspension with a resume row when the app reverts the pending changes', async function () {
     // The approved manifest again, with or without silent changes.
     for (const changes of [[], silent]) {
-      const { kept, rows, newRowId, installations } = await keep('apply', 'update', {
+      const { kept, rows, newRowId, installations } = await keep('resume', 'update', {
         pending: 'pending',
         changes,
       });
@@ -289,11 +289,12 @@ describe('keepManifest', function () {
   });
 
   it('applies an approved manifest as an approval row, whatever changed', async function () {
-    for (const [kind, changes, requiresApproval] of [
-      ['apply', silent, false],
-      ['suspend', required, true],
+    for (const [kind, changes, requiresApproval, pendings] of [
+      ['apply', silent, false, [null]],
+      ['resume', silent, false, ['pending']],
+      ['suspend', required, true, [null, 'pending']],
     ] as const) {
-      for (const pending of [null, 'pending']) {
+      for (const pending of pendings) {
         const { kept, rows, newRowId, installations } = await keep(kind, 'approval', {
           pending,
           changes,
@@ -309,7 +310,7 @@ describe('keepManifest', function () {
   });
 
   it('clears the pending changes without adding a row when a publisher approves the approved manifest', async function () {
-    const { kept, rows, installations } = await keep('apply', 'approval', { pending: 'pending' });
+    const { kept, rows, installations } = await keep('resume', 'approval', { pending: 'pending' });
 
     assert.deepEqual(kept, { from: 'approved', to: 'approved' });
     assert.deepEqual(rows, []);

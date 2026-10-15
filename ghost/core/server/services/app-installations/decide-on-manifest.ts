@@ -34,7 +34,7 @@ function compare(approved: Approved, loaded: LoadedManifest) {
 }
 
 /** What to do with a loaded manifest. `decideOnManifest` describes each kind. */
-export type ManifestDecisionKind = 'unchanged' | 'use_pending' | 'apply' | 'suspend';
+export type ManifestDecisionKind = 'unchanged' | 'use_pending' | 'apply' | 'resume' | 'suspend';
 
 /** A decision with the changes it was based on, so `keepManifest` doesn't compare again. */
 export interface ManifestDecision {
@@ -48,9 +48,11 @@ export interface ManifestDecision {
  *
  * - `unchanged`: it's the approved manifest and nothing is pending. Nothing to do.
  * - `use_pending`: it's the pending manifest.
- * - `apply`: it differs from the approved manifest only in silent changes, or it's the
- *   approved manifest while something is pending, meaning the app reverted the pending
- *   changes. It becomes the approved manifest and clears the pending one.
+ * - `apply`: it differs from the approved manifest only in silent changes, and nothing is
+ *   pending. It becomes the approved manifest.
+ * - `resume`: it's the approved manifest, with or without silent changes, while something
+ *   is pending, meaning the app reverted the pending changes. It becomes the approved
+ *   manifest and clears the pending one, which lifts the suspension.
  * - `suspend`: it has changes that need approval, so it replaces any pending manifest.
  *
  * These are the outcomes for the re-check. An approval applies a `suspend` decision
@@ -69,8 +71,11 @@ export function decideOnManifest({
   if (pending && pending.digest === loaded.digest) {
     return { kind: 'use_pending', changes };
   }
-  if (changes.length === 0) {
-    return { kind: pending ? 'apply' : 'unchanged', changes };
+  if (requiresApproval) {
+    return { kind: 'suspend', changes };
   }
-  return { kind: requiresApproval ? 'suspend' : 'apply', changes };
+  if (pending) {
+    return { kind: 'resume', changes };
+  }
+  return { kind: changes.length === 0 ? 'unchanged' : 'apply', changes };
 }

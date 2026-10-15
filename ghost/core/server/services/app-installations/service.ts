@@ -216,8 +216,8 @@ export async function keepManifest(
     return null;
   }
   const waits = kind === 'suspend' && source === 'update';
-  // The app reverted the changes that were waiting for approval.
-  const resumes = kind === 'apply' && source === 'update' && current.pending_manifest_id !== null;
+  // An approval that resolves to `resume` is recorded as an approval, not a resume.
+  const resumes = kind === 'resume' && source === 'update';
   const now = toDatabaseDate(new Date());
 
   let manifestId = current.manifest_id;

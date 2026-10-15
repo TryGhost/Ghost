@@ -96,11 +96,11 @@ describe('decideOnManifest', function () {
     });
 
     it('applies the approved manifest again when the app reverts the pending changes', function () {
-      assert.equal(decideOnManifest({ current, pending, loaded: loaded() }).kind, 'apply');
+      assert.equal(decideOnManifest({ current, pending, loaded: loaded() }).kind, 'resume');
     });
 
     it('applies a silent change and clears the pending changes', function () {
-      assert.equal(decideOnManifest({ current, pending, loaded: loaded(silent) }).kind, 'apply');
+      assert.equal(decideOnManifest({ current, pending, loaded: loaded(silent) }).kind, 'resume');
     });
 
     it('suspends on different changes that need approval, replacing the pending ones', function () {
