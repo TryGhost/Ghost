@@ -15324,6 +15324,67 @@ services:
         work, including shutdown timeout and late completion. Existing tests do not prove
         transport release or cancellation, and the one-second request option is not evidence
         of an overall deadline or of dependency-level retry/socket cleanup behavior.
+  upgrades:
+    kind: directory
+    disposition: retain
+    status: auditing
+    migrated: true
+    migration:
+      complexity: straightforward
+      modelImpact: fits
+      reason: >-
+        Added on the shared initializer. The factory composes one resource-free service that
+        resolves the configured upgrade adapter per call, so boot never contacts the host.
+      reviewedAt: 1b10a390b8a23a60509e1a118da6186c3d584846
+      sources:
+        - core/server/services/upgrades/index.ts
+        - core/server/services/upgrades/upgrade-service.ts
+        - core/server/api/endpoints/upgrades.ts
+        - core/boot.js
+    entryPoints:
+      - upgrades/index.ts
+    notes: >-
+      Composition-only boundary between the Admin API and a host-owned upgrade adapter.
+      Ghost validates adapter output and maps adapter rejections; it never executes updates.
+    contracts:
+      exports:
+        summary: >-
+          The TypeScript default export is a defineService root with async init and a guarded
+          service getter. The implementation exports UpgradeService for direct construction.
+        sources:
+          - core/server/services/upgrades/index.ts
+          - core/server/services/upgrades/upgrade-service.ts
+        tests:
+          - test/unit/server/services/upgrades/index.test.ts
+          - test/unit/server/services/upgrades/upgrade-service.test.ts
+      construction:
+        summary: >-
+          Boot awaits init in its required service Promise.all. The factory constructs one
+          UpgradeService from an adapter getter and a logger, without adapter or host I/O.
+        sources:
+          - core/server/services/upgrades/index.ts
+          - core/boot.js
+        tests:
+          - test/unit/server/services/upgrades/index.test.ts
+      configuration:
+        summary: >-
+          Every call asks the adapter manager for the active adapters.upgrade adapter, so
+          switching adapters applies without re-initializing. The manager caches each
+          instance with its construction-time options, so option changes apply only after
+          its cache is cleared.
+        sources:
+          - core/server/services/upgrades/index.ts
+          - core/server/services/adapter-manager/index.ts
+        tests:
+          - test/unit/server/services/adapter-manager/upgrade-wiring.test.ts
+          - test/e2e-api/admin/upgrades.test.ts
+    unverified:
+      - consumers
+      - startup
+      - lifetime
+      - resources
+      - failures
+    blockers: []
   url:
     kind: directory
     disposition: retain

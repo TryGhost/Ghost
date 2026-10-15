@@ -204,6 +204,7 @@ catalog:
   sharp: 0.35.5
   sinon: 22.1.0
   sirv: 3.0.2
+  snakecase-keys: 9.0.2
   sonner: 2.0.8
   storybook: 10.4.6
   stylelint: 17.14.1

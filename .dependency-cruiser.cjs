@@ -30,6 +30,7 @@ const serviceDependencyAllowlist = [
   '(^|/)node_modules/zod/|^zod$', // Schema construction and validation.
   '(^|/)node_modules/bson-objectid/|^bson-objectid$', // ObjectId generation and conversion.
   '^@tryghost/app-contracts/manifest$|^packages/app-contracts/(src|build)/manifest/index\\.(ts|js)$', // Shared manifest schemas and validation.
+  '^@tryghost/adapter-base-upgrade$|^packages/adapters/upgrade-base/(src|build)/index\\.(ts|js)$', // Upgrade adapter contract schemas and error class.
   '^(node:)?crypto$', // Cryptographic algorithms and key generation.
   '^(node:)?util$', // Node utilities, including promisify.
   '^ghost/core/kernel/clock\\.ts$', // Shared clock helpers and legacy date compatibility.
