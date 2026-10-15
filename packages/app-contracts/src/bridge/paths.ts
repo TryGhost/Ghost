@@ -26,3 +26,6 @@ export const AppPathSchema = z
   .pipe(z.string().max(APP_PATH_MAX_LENGTH, tooLong));
 
 export type AppPath = z.output<typeof AppPathSchema>;
+
+/** How Admin records an app's move: see `PathMove`. */
+export const PathMoveSchema = z.enum(['push', 'replace'], ARGUMENT_MESSAGES.pathMove);

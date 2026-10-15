@@ -1,5 +1,5 @@
 import type { FetchRequest } from './fetch.ts';
-import type { FetchResponse, Place, StartContext, Theme } from './rules.ts';
+import type { FetchResponse, PathMove, Place, StartContext, Theme } from './rules.ts';
 
 /**
  * The calls each side of the channel exposes to the other. Every call returns a promise,
@@ -28,12 +28,13 @@ export interface HostExports {
   /** Reports a new page title. Admin shows it as its own title while the page is open. */
   titleChanged(title: string): Promise<void>;
   /**
-   * Reports that the app moved to another of its own routes, including back and forward
-   * within the frame. Admin mirrors it by replacing its own URL, so the frame's history entry is
-   * the only one the move adds. Resolves with the app's path as Admin now has it: `path`
-   * normalised, or Admin's current path when Admin didn't follow the move.
+   * Reports that the app moved to another of its own routes. Admin owns the history: it pushes
+   * an entry for a `push` and replaces its current one for a `replace`, while the frame keeps
+   * a single entry. The SDK decides which from the call the app made (`history.pushState`, a
+   * link, or `history.replaceState`); the app never chooses. Resolves with the app's path as
+   * Admin now has it: `path` normalised, or Admin's current path when Admin didn't follow.
    */
-  pathChanged(path: string): Promise<string>;
+  pathChanged(path: string, move: PathMove): Promise<string>;
   /** Sends the publisher to a named place in Admin. */
   open(place: Place): Promise<void>;
 }
@@ -44,8 +45,8 @@ export interface AppExports {
   start(context: StartContext): Promise<void>;
   themeChanged(theme: Theme): Promise<void>;
   /**
-   * Admin moved the app to another of its routes, through a link in Admin or Admin's own
-   * history. The page follows without adding a history entry.
+   * Admin moved the app to another of its routes: back or forward in Admin's history, or one
+   * of Admin's own links. The page follows without adding a history entry.
    */
   pathChanged(path: string): Promise<void>;
 }

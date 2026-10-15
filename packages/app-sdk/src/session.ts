@@ -9,6 +9,7 @@ import {
   isTheme,
   type AppExports,
   type HostExports,
+  type PathMove,
   type Place,
   type Theme,
 } from '@tryghost/app-contracts';
@@ -17,11 +18,11 @@ import {
   GhostAppError,
   fromHostError,
   invalidArgument,
-  invalidPath,
   sessionEnded,
   unsupported,
 } from './errors.ts';
 import { toFetchRequest, toResponse } from './fetch.ts';
+import { currentRoute, watchHistory, type HistoryWatch } from './history.ts';
 import { watchTitle } from './title.ts';
 import type {
   Ghost,
@@ -121,6 +122,9 @@ export class Channel {
   #path = '/';
   #ended: GhostAppError | undefined;
   #stopWatchingTitle: (() => void) | undefined;
+  #history: HistoryWatch | undefined;
+  // Counts the page's moves, so an answer to one the page has since moved on from is ignored.
+  #moves = 0;
 
   constructor(port: MessagePort, hostExports: readonly string[], events: ChannelEvents) {
     this.#port = port;
@@ -156,7 +160,14 @@ export class Channel {
       session: Object.freeze({ ...context.session }),
     };
     this.#theme = Object.freeze({ ...context.theme });
-    this.#path = context.path;
+    // Admin owns the history from here on. The page's own address is its route: Admin loads a
+    // new frame at its own path, so the two differ only when the page's server redirected it or
+    // a form or link loaded another page in place, and then Admin follows the page.
+    this.#history = watchHistory((route, move) => this.#moved(route, move));
+    this.#path = currentRoute();
+    if (this.#path !== context.path) {
+      void this.#moved(this.#path, 'replace');
+    }
     // Report the title before `start` returns, so Admin has it by the time it shows the page.
     // An older Admin without `titleChanged` keeps its own title.
     if (this.#hostExports.has('titleChanged')) {
@@ -184,7 +195,29 @@ export class Channel {
       throw refusal('invalid_argument', "Ghost sent a path this SDK doesn't understand");
     }
     this.#path = path;
+    this.#history?.follow(path);
     notify(this.#pathListeners, path);
+  }
+
+  /**
+   * Reports a move the page made. Resolves once Admin has answered, with the path Admin now has
+   * for the app, or has refused; a refused move leaves the page where it is.
+   */
+  async #moved(route: string, move: PathMove): Promise<void> {
+    this.#path = route;
+    this.#moves += 1;
+    const thisMove = this.#moves;
+    try {
+      const adminPath = await this.#call('pathChanged', route, move);
+      // Admin's answer, rather than `route`: it's Admin's own path when Admin didn't follow
+      // the move, such as when the publisher is leaving the app, and Admin then moves the page
+      // back with `pathChanged`. An answer to an earlier move is out of date.
+      if (thisMove === this.#moves && isContainedPath(adminPath)) {
+        this.#path = adminPath;
+      }
+    } catch {
+      // Refused, or the session ended: either way there's nothing for the page to do.
+    }
   }
 
   #assertStarted() {
@@ -228,6 +261,7 @@ export class Channel {
     }
     this.#ended = error;
     this.#stopWatchingTitle?.();
+    this.#history?.stop();
     this.#thread.close();
     this.#port.close();
     this.#events.ended(error);
@@ -279,22 +313,6 @@ export class Channel {
     return Object.freeze({
       get current(): string {
         return current();
-      },
-      set: async (path: string): Promise<void> => {
-        if (!isContainedPath(path)) {
-          throw invalidPath(ARGUMENT_MESSAGES.appPath);
-        }
-        const adminPath = await this.#call('pathChanged', path);
-        if (!isContainedPath(adminPath)) {
-          throw new GhostAppError(
-            'rejected',
-            "Ghost answered with a path this SDK doesn't understand",
-          );
-        }
-        // Admin's answer, rather than `path`: it's normalised the way Admin stores paths, and
-        // it's Admin's own path when Admin didn't follow the move, such as when the publisher
-        // pressed back as the app moved.
-        this.#path = adminPath;
       },
     });
   }

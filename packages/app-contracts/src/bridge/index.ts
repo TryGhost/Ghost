@@ -19,7 +19,7 @@ export {
   type FetchRequest,
 } from './fetch.ts';
 export { HelloMessageSchema, type HelloMessage } from './messages.ts';
-export { APP_PATH_MAX_LENGTH, AppPathSchema, type AppPath } from './paths.ts';
+export { APP_PATH_MAX_LENGTH, AppPathSchema, PathMoveSchema, type AppPath } from './paths.ts';
 export { PlaceSchema } from './places.ts';
 export {
   checkAdminApiRequest,
@@ -55,6 +55,7 @@ export {
   type FetchMethod,
   type FetchResponse,
   type HostErrorCode,
+  type PathMove,
   type Place,
   type StartContext,
   type Theme,

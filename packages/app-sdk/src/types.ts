@@ -36,22 +36,17 @@ export interface GhostFetchInit {
   body?: string | JsonBody | null;
 }
 
-/** The app's own route, mirrored in Admin's URL. */
+/**
+ * The app's route, mirrored in Admin's URL. The SDK keeps it in step with the page's own
+ * history: the app routes with `history.pushState` and links as it would anywhere, and the SDK
+ * reports each move to Admin, which keeps the history.
+ */
 export interface GhostPath {
   /**
-   * The app's route, such as `/episodes/12`, or `/` when Admin's URL has no app route. It is
-   * in the URL parser's normalised form, as Admin stores it: after `set('/search?q=a b')` it
-   * is `/search?q=a%20b`, and `..` is resolved.
+   * The app's route: the path, query and fragment of the page's URL, such as `/episodes/12`, in
+   * the URL parser's normalised form, as Admin stores it (`/search?q=a%20b`, `..` resolved).
    */
   readonly current: string;
-  /**
-   * Tells Admin the app moved to another of its own routes, so Admin's address and a reload
-   * follow it. Call it for every route change, including back and forward within the app.
-   * Admin replaces its current address rather than adding a history entry: the entry the back
-   * button returns to is the app's own. The app does its own routing; this does not navigate
-   * the page.
-   */
-  set(path: string): Promise<void>;
 }
 
 export type Unsubscribe = () => void;
@@ -69,10 +64,10 @@ export interface Ghost {
   /** Called when the publisher switches Admin's theme. */
   onThemeChange(callback: (theme: Readonly<Theme>) => void): Unsubscribe;
   /**
-   * Called when Admin moves the app to another of its routes, such as through a link in Admin
-   * or back and forward across Admin's own history. Follow it without adding a history entry:
-   * `history.replaceState`, or `location.replace` in a multi-page app. Not called for the
-   * app's own `path.set`.
+   * Called when Admin moves the app to another of its routes: back or forward in Admin's
+   * history, or one of Admin's own links. The SDK has already put the page's URL there and
+   * dispatched `popstate`, which a router follows. A multi-page app, with no router to render
+   * the new address, loads it: `location.replace(path)`. Not called for the app's own moves.
    */
   onPathChange(callback: (path: string) => void): Unsubscribe;
   /**

@@ -46,7 +46,7 @@ import { connect, GhostAppError } from '@tryghost/app-sdk';
 
 try {
   const ghost = await connect();
-  await ghost.path.set('/episodes/12'); // the app routed itself; Admin's address follows
+  history.pushState(null, '', '/episodes/12'); // or your router's navigate(); Admin's address follows
 } catch (error) {
   if (error instanceof GhostAppError && error.code === 'not_framed') {
     // Opened outside Admin: show a link to the site's Admin instead.
@@ -66,20 +66,19 @@ connection is the page's only one: after it fails or its session ends, every
 failure before Admin answered, such as `not_framed` or a timeout with no answer,
 can be retried.
 
-| `Ghost`                   | What it is                                                                                                                                                             |
-| ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `site`                    | `{ url, title, timezone, locale }`                                                                                                                                     |
-| `user`                    | `{ id, role }` of the staff user. No name or email: read them with `fetch('/users/?filter=id:' + user.id)` (`/users/:id/` isn't allowed), where app scopes will apply. |
-| `theme`                   | `{ mode, accent_color }` Admin shows now. `mode` is `light` or `dark`, never `system`.                                                                                 |
-| `onThemeChange(callback)` | Called with the new theme when the publisher switches. Returns a function that unsubscribes.                                                                           |
-| `session`                 | `{ revision }`: the installation revision the session started against.                                                                                                 |
-| `path.current`            | The app's own route, such as `/episodes/12`, from Admin's address. `/` when it names none. Spelled as Admin keeps it, `..` resolved and escaped once.                  |
-| `path.set(path)`          | Tells Admin the app moved to another of its routes, back and forward within the app included, so Admin's address and reloads follow. It does not navigate the page.    |
-| `onPathChange(callback)`  | Called when Admin moves the app to another of its routes: a link in Admin, or Admin's own back and forward. Follow it without adding a history entry (see below).      |
-| `fetch(path, init?)`      | Calls the Admin API as the staff user. `path` is relative to the API root (`/posts/?limit=5`), never a URL. Answers with a real `Response`.                            |
-| `open(place)`             | Sends the publisher to `{ post: { id } }`, `{ page: { id } }`, `{ member: { id } }` or `{ apps: true }`.                                                               |
-| `connected`               | `false` once the session has ended.                                                                                                                                    |
-| `onSessionEnd(callback)`  | Called once, with the `session_ended` error, when this document leaves the app session (a reload, form post or link) or the session ends.                              |
+| `Ghost`                   | What it is                                                                                                                                                                           |
+| ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `site`                    | `{ url, title, timezone, locale }`                                                                                                                                                   |
+| `user`                    | `{ id, role }` of the staff user. No name or email: read them with `fetch('/users/?filter=id:' + user.id)` (`/users/:id/` isn't allowed), where app scopes will apply.               |
+| `theme`                   | `{ mode, accent_color }` Admin shows now. `mode` is `light` or `dark`, never `system`.                                                                                               |
+| `onThemeChange(callback)` | Called with the new theme when the publisher switches. Returns a function that unsubscribes.                                                                                         |
+| `session`                 | `{ revision }`: the installation revision the session started against.                                                                                                               |
+| `path.current`            | The app's route: the path, query and fragment of the page's URL, such as `/episodes/12`, spelled as Admin keeps it (`..` resolved, escaped once).                                    |
+| `onPathChange(callback)`  | Called when Admin moves the app: back or forward in Admin, or one of Admin's links. The page's URL is already there and `popstate` has fired; a multi-page app loads it (see below). |
+| `fetch(path, init?)`      | Calls the Admin API as the staff user. `path` is relative to the API root (`/posts/?limit=5`), never a URL. Answers with a real `Response`.                                          |
+| `open(place)`             | Sends the publisher to `{ post: { id } }`, `{ page: { id } }`, `{ member: { id } }` or `{ apps: true }`.                                                                             |
+| `connected`               | `false` once the session has ended.                                                                                                                                                  |
+| `onSessionEnd(callback)`  | Called once, with the `session_ended` error, when this document leaves the app session (a reload, form post or link) or the session ends.                                            |
 
 `site`, `user`, `session` and `theme` are frozen, so no part of the page can
 change what the rest of it reads.
@@ -129,20 +128,27 @@ in `blocked: Apps can't send codeinjection_head to PUT /posts/…/`.
 
 ### Routes and history
 
-The app's frame keeps its own history, as any frame does: each route the app
-pushes is a step the browser's back button takes. So Admin never adds history
-entries of its own for the app's moves:
+Admin keeps the history, and the app routes as it would anywhere: with
+`history.pushState` and `history.replaceState`, which any router uses, and with
+links. The SDK turns each into a single entry in Admin's history:
 
-- Report every route change with `path.set`, including the browser's back and
-  forward within the app (`popstate`) and every page of a multi-page app. Admin
-  replaces its own address to match.
-- Follow `onPathChange` without adding a history entry: `history.replaceState`
-  with your router's replace option, or `location.replace` in a multi-page app.
-  Admin calls it when it moves the app itself, such as for a link in Admin.
+- `pushState` and a click on a link to the app's own origin add an entry in
+  Admin; `replaceState` replaces Admin's current one. The frame itself keeps a
+  single entry, so back and forward are always Admin's.
+- A link loads its page in place of the frame's entry, after Admin has recorded
+  the move. A link with a `target`, a `download` or a modifier key is left alone,
+  and so is one a router has already handled.
+- When the publisher goes back or forward, or Admin moves the app itself, the
+  SDK puts the page's URL there, with the state the app last gave that route,
+  and dispatches `popstate`, so a router shows it. A multi-page app, with no
+  router, loads it: `ghost.onPathChange((path) => location.replace(path))`.
+- Admin opens the app's page at its route, so each route must load directly, as
+  with any app that uses browser history. If the page ends up elsewhere, through
+  a redirect from its server or a form's result, Admin follows the page.
 
-Pushing an entry for a move Admin made, or Admin pushing one for the app's,
-would add two steps for one move, and back would then go between two pages
-forever.
+Not intercepted, so each still adds an entry of the frame's own, which back
+steps through without Admin: a form that posts, a change to `location.hash`,
+and the Navigation API. Route with the History API rather than the hash.
 
 ### The frame
 
@@ -164,19 +170,19 @@ hide text, such as direction marks, are left out of it.
 
 Everything rejects with a `GhostAppError`, whose `code` says why:
 
-| `code`             | Means                                                                                                                                                                        |
-| ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `not_framed`       | The page is not inside a frame, so there is no Admin to talk to.                                                                                                             |
-| `not_connected`    | Admin did not start the app before the timeout.                                                                                                                              |
-| `duplicate_sdk`    | Another copy of the SDK in the page called `connect()` first: the page loads the SDK more than once. Load one copy, which the whole page shares.                             |
-| `invalid_context`  | Admin started the app with a context this SDK cannot read. Updating the SDK usually fixes it.                                                                                |
-| `session_ended`    | The channel to Admin has closed, usually because Admin is reloading the app. Every call fails from then on.                                                                  |
-| `invalid_argument` | The app passed something that cannot be sent, such as a body on a `GET`.                                                                                                     |
-| `invalid_path`     | A URL, or a path that leaves the Admin API, given to `fetch`, or one the Admin API only redirects, such as `/posts` without its trailing `/`; or a bad route for `path.set`. |
-| `unsupported`      | This site's Ghost is older than the call. The message names it.                                                                                                              |
-| `blocked`          | A request the allowlist doesn't allow, such as `GET /db/`, or a write that could send email or carry script (see Admin API access).                                          |
-| `network_error`    | Admin could not reach its own API.                                                                                                                                           |
-| `rejected`         | Admin refused for another reason; the message says why.                                                                                                                      |
+| `code`             | Means                                                                                                                                            |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `not_framed`       | The page is not inside a frame, so there is no Admin to talk to.                                                                                 |
+| `not_connected`    | Admin did not start the app before the timeout.                                                                                                  |
+| `duplicate_sdk`    | Another copy of the SDK in the page called `connect()` first: the page loads the SDK more than once. Load one copy, which the whole page shares. |
+| `invalid_context`  | Admin started the app with a context this SDK cannot read. Updating the SDK usually fixes it.                                                    |
+| `session_ended`    | The channel to Admin has closed, usually because Admin is reloading the app. Every call fails from then on.                                      |
+| `invalid_argument` | The app passed something that cannot be sent, such as a body on a `GET`.                                                                         |
+| `invalid_path`     | A URL, or a path that leaves the Admin API, given to `fetch`, or one the Admin API only redirects, such as `/posts` without its trailing `/`.    |
+| `unsupported`      | This site's Ghost is older than the call. The message names it.                                                                                  |
+| `blocked`          | A request the allowlist doesn't allow, such as `GET /db/`, or a write that could send email or carry script (see Admin API access).              |
+| `network_error`    | Admin could not reach its own API.                                                                                                               |
+| `rejected`         | Admin refused for another reason; the message says why.                                                                                          |
 
 ## How it connects
 

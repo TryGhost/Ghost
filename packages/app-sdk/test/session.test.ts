@@ -34,9 +34,12 @@ beforeEach(async () => {
   document.title = 'Podcast';
 });
 
-afterEach(() => {
+afterEach(async () => {
   admin?.close();
   admin = undefined;
+  // Lets the page see its channel close, so the SDK gives back the page's history and links
+  // before the next test starts another copy.
+  await settle();
   vi.restoreAllMocks();
   vi.unstubAllGlobals();
 });
@@ -254,7 +257,6 @@ describe('a refused argument', () => {
         }),
         ARGUMENT_MESSAGES.reservedHeader('content-type'),
       ],
-      [ghost.path.set('episodes'), ARGUMENT_MESSAGES.appPath],
       [ghost.open('/posts' as never), ARGUMENT_MESSAGES.place],
     ];
     for (const [refusal, message] of refusals) {
@@ -350,25 +352,37 @@ describe('when Admin refuses a call', () => {
 });
 
 describe('path', () => {
-  it('tells Admin when the app moves, and stores the current path', async () => {
+  beforeEach(() => {
+    window.history.replaceState(null, '', '/');
+  });
+
+  it('reports the app’s pushState and replaceState to Admin as a push and a replace', async () => {
     const { ghost, host } = await started();
+    const entries = window.history.length;
 
-    await ghost.path.set('/episodes/12');
-    await ghost.path.set('/episodes/13');
+    window.history.pushState({ n: 1 }, '', '/episodes/12');
+    window.history.replaceState({ n: 2 }, '', '/episodes/13');
+    await settle();
 
-    expect(host.pathChanged.mock.calls).toEqual([['/episodes/12'], ['/episodes/13']]);
+    expect(host.pathChanged.mock.calls).toEqual([
+      ['/episodes/12', 'push'],
+      ['/episodes/13', 'replace'],
+    ]);
+    expect(window.history.length).toBe(entries);
     expect(ghost.path.current).toBe('/episodes/13');
   });
 
-  it('stores the path in the normalised form Admin uses', async () => {
-    const { ghost, host } = await started();
+  it('reports a click on a link to its own origin as a push before the page loads it', async () => {
+    const { host } = await started();
+    const link = document.createElement('a');
+    link.href = '/episodes/12';
+    document.body.append(link);
 
-    await ghost.path.set('/search?q=a b');
-    expect(host.pathChanged).toHaveBeenLastCalledWith('/search?q=a b');
-    expect(ghost.path.current).toBe('/search?q=a%20b');
+    link.click();
+    link.remove();
+    await settle();
 
-    await ghost.path.set('/x/../episodes/1');
-    expect(ghost.path.current).toBe('/episodes/1');
+    expect(host.pathChanged).toHaveBeenCalledExactlyOnceWith('/episodes/12', 'push');
   });
 
   it('stores the path Admin answers with when Admin did not follow the move', async () => {
@@ -376,64 +390,78 @@ describe('path', () => {
     host.pathChanged.mockResolvedValue('/inbox');
     const { ghost } = await started(host);
 
-    await ghost.path.set('/a');
-    expect(ghost.path.current).toBe('/inbox');
+    window.history.pushState(null, '', '/a');
+    await vi.waitFor(() => expect(ghost.path.current).toBe('/inbox'));
   });
 
-  it('stores the path Admin answers with after sending one of its own', async () => {
-    // The publisher pressed back as the app moved: Admin sends its path, then follows the app.
+  it('keeps the latest move when Admin answers an earlier one after it', async () => {
     const host = hostExports();
-    host.pathChanged.mockImplementation(async (path) => {
-      await admin?.thread.imports.pathChanged('/x');
-      return path;
-    });
+    let answerFirst = (_path: string) => {};
+    host.pathChanged.mockImplementationOnce(
+      () =>
+        new Promise<string>((resolve) => {
+          answerFirst = resolve;
+        }),
+    );
     const { ghost } = await started(host);
 
-    await ghost.path.set('/a');
+    window.history.pushState(null, '', '/episodes/12');
+    window.history.replaceState(null, '', '/episodes/13');
+    await settle();
+    answerFirst('/episodes/12');
+    await settle();
+
+    expect(ghost.path.current).toBe('/episodes/13');
+  });
+
+  it('stays where the page is when Admin refuses the move, or answers with something else', async () => {
+    const host = hostExports();
+    host.pathChanged
+      .mockRejectedValueOnce(new Error('Expected a path within the app'))
+      .mockResolvedValueOnce(undefined as never);
+    const { ghost } = await started(host);
+
+    window.history.pushState(null, '', '/a');
+    await settle();
     expect(ghost.path.current).toBe('/a');
+    window.history.pushState(null, '', '/b');
+    await settle();
+    expect(ghost.path.current).toBe('/b');
   });
 
-  it('refuses an answer that is not a path within the app, keeping the current path', async () => {
-    const host = hostExports();
-    host.pathChanged.mockResolvedValue(undefined as never);
-    const { ghost } = await started(host);
+  it('reports where the page is when it starts somewhere other than Admin’s path', async () => {
+    // A form's result, or a redirect from the page's server.
+    window.history.replaceState(null, '', '/episodes/12/saved');
+    const { ghost, host } = await started(hostExports(), startContext({ path: '/episodes/12' }));
+    await settle();
 
-    await expect(ghost.path.set('/a')).rejects.toMatchObject({ code: 'rejected' });
-    expect(ghost.path.current).toBe('/');
+    expect(host.pathChanged).toHaveBeenCalledExactlyOnceWith('/episodes/12/saved', 'replace');
+    expect(ghost.path.current).toBe('/episodes/12/saved');
   });
 
-  it('keeps the current path when Admin refuses', async () => {
-    const host = hostExports();
-    host.pathChanged.mockRejectedValue(new Error('Expected a path within the app'));
-    const { ghost } = await started(host);
+  it('reports nothing when it starts on Admin’s path', async () => {
+    window.history.replaceState(null, '', '/episodes/12');
+    const { host } = await started(hostExports(), startContext({ path: '/episodes/12' }));
+    await settle();
 
-    await expect(ghost.path.set('/a')).rejects.toMatchObject({ code: 'rejected' });
-    expect(ghost.path.current).toBe('/');
-  });
-
-  it.each([
-    ['a path without a leading slash', 'episodes'],
-    ['a path that names another host', '//evil.example'],
-    ['a path with a backslash', '/\\evil.example'],
-    ['a path that is not text', 12 as unknown as string],
-  ])('refuses %s without asking Admin', async (_label, path) => {
-    const { ghost, host } = await started();
-    const error = await ghost.path.set(path).catch((caught: unknown) => caught);
-    expect(error).toBeInstanceOf(sdk.GhostAppError);
-    expect(error).toMatchObject({ code: 'invalid_path' });
     expect(host.pathChanged).not.toHaveBeenCalled();
   });
 
-  it("follows Admin's URL and notifies subscribers", async () => {
+  it("follows Admin's moves, with popstate for the app's router, and notifies subscribers", async () => {
     const { admin: fake, ghost, host } = await started();
     const seen: string[] = [];
     const unsubscribe = ghost.onPathChange((path) => seen.push(path));
+    const popped = vi.fn();
+    window.addEventListener('popstate', popped);
 
     await fake.thread.imports.pathChanged('/episodes/1');
     unsubscribe();
     await fake.thread.imports.pathChanged('/episodes/2');
+    window.removeEventListener('popstate', popped);
 
     expect(seen).toEqual(['/episodes/1']);
+    expect(popped).toHaveBeenCalledTimes(2);
+    expect(window.location.pathname).toBe('/episodes/2');
     expect(ghost.path.current).toBe('/episodes/2');
     expect(host.pathChanged).not.toHaveBeenCalled();
   });
@@ -656,7 +684,8 @@ describe('the end of the session', () => {
     expect(ends).toEqual([error]);
     expect(ghost.connected).toBe(false);
     await expect(ghost.open({ apps: true })).rejects.toBe(error);
-    await expect(ghost.path.set('/a')).rejects.toBe(error);
+    // The page has its own history back.
+    expect(window.history.pushState).toBe(History.prototype.pushState);
   });
 
   it('notifies a subscriber that joins after the session has ended', async () => {

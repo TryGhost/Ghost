@@ -76,6 +76,7 @@ export const ARGUMENT_MESSAGES = {
     `Expected no ${name.toLowerCase()} header, which only Admin sets`,
   jsonBody: 'Expected the body as JSON text',
   appPath: 'Expected a path within the app, starting with a single /',
+  pathMove: 'Expected a move of push or replace',
   place:
     'Expected a place such as { post: { id } }, { page: { id } }, { member: { id } } or { apps: true }',
 } as const;
@@ -194,8 +195,9 @@ export type StartContext = {
     revision: number;
   };
   /**
-   * The app's own route, taken from Admin's URL, so a reload or a shared link opens the same
-   * page. `/` when Admin's URL has no app route.
+   * The app's route, taken from Admin's URL, so a reload or a shared link opens the same page:
+   * the path, query and fragment of the frame's URL on the app's origin. Admin loads a new
+   * frame at it, so it's where the page already is, unless the page's server redirected it.
    */
   path: string;
 };
@@ -212,6 +214,12 @@ export type Place =
   | { page: { id: string } }
   | { member: { id: string } }
   | { apps: true };
+
+/**
+ * How Admin records an app's move in its history: as a new entry, or in place of the current
+ * one. The SDK sets it from the call the app made, not the app.
+ */
+export type PathMove = 'push' | 'replace';
 
 /** Admin's answer to a hello. The port travels in the message's transfer list, not its data. */
 export type ConnectMessage = {

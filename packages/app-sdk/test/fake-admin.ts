@@ -37,6 +37,11 @@ export interface FakeParent {
  */
 export function freshPage() {
   delete (globalThis as unknown as Record<symbol, unknown>)[Symbol.for('@tryghost/app-sdk')];
+  // A copy of the SDK that started takes over the page's history methods; a new document has
+  // its own.
+  Reflect.deleteProperty(window.history, 'pushState');
+  Reflect.deleteProperty(window.history, 'replaceState');
+  window.history.replaceState(null, '', '/');
 }
 
 /** Puts the page in a frame: `window.parent` becomes a stand-in for Admin's window. */

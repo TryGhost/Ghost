@@ -127,13 +127,14 @@ user's sign-in session.
 _Avoid_: session, connection, login, token
 
 **App path**:
-A route within an app's own page, such as `/episodes/12`, which Admin mirrors
-in its own URL so a reload or a shared link opens the same page. Admin mirrors
-each move by replacing its URL, so the frame's own history entry is the only
-one a move adds; a move Admin makes, the page follows the same way. It starts with
-a single `/` and can never point outside the app. Admin and the page both store
-it in the URL parser's normalised form, so the same route is identical on both
-sides.
+A route within an app's own page, such as `/episodes/12`: the path, query and
+fragment of the page's URL on the app's origin. Admin mirrors it in its own URL
+so a reload or a shared link opens the same page, and loads the app's page at
+it. Admin owns the history: the SDK turns each `pushState`, link and
+`replaceState` into a push or a replace in Admin's history, and the frame keeps
+a single entry. It starts with a single `/` and can never point outside the
+app. Admin and the page both store it in the URL parser's normalised form, so
+the same route is identical on both sides.
 _Avoid_: URL, location, deep link
 
 **Place**:

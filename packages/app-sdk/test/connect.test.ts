@@ -99,6 +99,8 @@ describe('connect', () => {
     fake.connect();
     expect(await pending(connecting)).toBe(true);
 
+    // Admin loads the page at its path, so the page is already there.
+    window.history.replaceState(null, '', '/episodes/12');
     const context = startContext({ path: '/episodes/12' });
     await fake.start(context);
     const ghost = await connecting;

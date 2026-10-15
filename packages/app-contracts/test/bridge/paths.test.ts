@@ -1,10 +1,13 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, expectTypeOf, it } from 'vitest';
+import type { z } from 'zod';
 
 import {
   APP_PATH_MAX_LENGTH,
   AppPathSchema,
+  PathMoveSchema,
   TITLE_MAX_LENGTH,
   TitleSchema,
+  type PathMove,
 } from '../../src/bridge/index.ts';
 
 function pathError(value: unknown) {
@@ -92,6 +95,22 @@ describe('a title', () => {
     ]) {
       expect(TitleSchema.safeParse(title).error?.issues[0]?.message, title).toBe(
         'Expected a title of plain text on one line',
+      );
+    }
+  });
+});
+
+describe('a path move', () => {
+  it('parses to the PathMove type, which is written out without zod', () => {
+    expectTypeOf<z.output<typeof PathMoveSchema>>().toEqualTypeOf<PathMove>();
+  });
+
+  it('is push or replace', () => {
+    expect(PathMoveSchema.parse('push')).toBe('push');
+    expect(PathMoveSchema.parse('replace')).toBe('replace');
+    for (const move of ['PUSH', 'back', true, undefined, { replace: true }]) {
+      expect(PathMoveSchema.safeParse(move).error?.issues[0]?.message, String(move)).toBe(
+        'Expected a move of push or replace',
       );
     }
   });

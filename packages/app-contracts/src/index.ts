@@ -70,6 +70,7 @@ export type {
   HelloMessage,
   HostErrorCode,
   HostExports,
+  PathMove,
   Place,
   StartContext,
   Theme,
