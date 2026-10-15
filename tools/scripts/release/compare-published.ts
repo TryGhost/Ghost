@@ -23,7 +23,7 @@ import { join, resolve } from 'node:path';
 import { parseArgs } from 'node:util';
 import { $ } from 'execa';
 
-import { readJson } from './lib/utils.ts';
+import { readJson } from '../lib/utils.ts';
 
 /** The SRI string npm records for a tarball, e.g. "sha512-…". */
 export function integrityOf(bytes: Buffer): string {

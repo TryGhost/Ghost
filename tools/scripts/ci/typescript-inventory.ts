@@ -7,7 +7,7 @@ import type {
   SourceFile,
   Counts,
   Inventory,
-} from './lib/typescript-inventory-types.ts';
+} from './typescript-inventory-types.ts';
 import { execFileSync } from 'node:child_process';
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { isBuiltin } from 'node:module';
@@ -537,7 +537,7 @@ if (import.meta.main) {
     } else {
       const root = values.root
         ? path.resolve(values.root)
-        : path.resolve(import.meta.dirname, '../..');
+        : path.resolve(import.meta.dirname, '../../..');
       const scope = values.scope.replace(/\/$/, '');
       const report = values.revision
         ? inventoryAtRevision(root, values.revision, scope)

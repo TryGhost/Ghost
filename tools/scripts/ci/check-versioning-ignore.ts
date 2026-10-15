@@ -1,15 +1,15 @@
 import { join } from 'node:path';
 import semver from 'semver';
 
-import { ROOT_DIR, PRIVATE_PACKAGE_VERSION } from './lib/constants.ts';
+import { ROOT_DIR, PRIVATE_PACKAGE_VERSION } from '../lib/constants.ts';
 import {
   getWorkspace,
   getWorkspacePackages,
   type PackageManifest,
   type WorkspaceManifest,
-} from './lib/pnpm.ts';
-import { CONTINUOUS_PACKAGES } from './lib/publish-manifest.ts';
-import { readJson } from './lib/utils.ts';
+} from '../lib/pnpm.ts';
+import { CONTINUOUS_PACKAGES } from '../lib/publish-manifest.ts';
+import { readJson } from '../lib/utils.ts';
 
 // Published packages versioned outside `pnpm version`: Ghost core by the release
 // scripts, the continuous lane by its publish job (npm holds the moving part).

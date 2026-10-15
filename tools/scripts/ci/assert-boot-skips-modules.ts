@@ -5,10 +5,10 @@
  *
  * CI boots Ghost with this preloaded:
  *
- *   GHOST_CI_SHUTDOWN_AFTER_BOOT=1 node --import ../tools/scripts/assert-boot-skips-modules.ts index.js
+ *   GHOST_CI_SHUTDOWN_AFTER_BOOT=1 node --import ../tools/scripts/ci/assert-boot-skips-modules.ts index.js
  */
 import process from 'node:process';
-import { findLoadedModules } from './lib/boot-modules.ts';
+import { findLoadedModules } from './boot-modules.ts';
 
 process.on('exit', () => {
   const report = process.report.getReport() as { sharedObjects: string[] };

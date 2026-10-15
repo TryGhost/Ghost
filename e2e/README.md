@@ -269,7 +269,7 @@ Tests run automatically in GitHub Actions on every PR and commit to `main`.
 2. **Build Assets**: Build server/admin assets and public app UMD bundles
 3. **Build E2E Image**: `pnpm --filter @tryghost/e2e build:docker` (layers public apps into Ghost's built admin assets, served from `/ghost/assets`)
 4. **Prepare E2E Runtime**: Pull Playwright/gateway images in parallel, start infra, and sync Tinybird state (`pnpm --filter @tryghost/e2e preflight:build`)
-5. **Shard Planning**: Split the `main` project's files across shards by recorded duration (`tools/scripts/e2e-shards.ts`)
+5. **Shard Planning**: Split the `main` project's files across shards by recorded duration (`tools/scripts/ci/e2e-shards.ts`)
 6. **Test Execution**: Run Playwright E2E tests inside the official Playwright container
 7. **Artifacts**: Upload Playwright traces and reports on failure
 

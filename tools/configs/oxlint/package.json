@@ -21,7 +21,7 @@
           "default",
           "^default",
           "{workspaceRoot}/.dependency-cruiser.cjs",
-          "{workspaceRoot}/tools/scripts/lib/service-dependency-resolver.mjs"
+          "{workspaceRoot}/tools/scripts/ci/service-dependency-resolver.mjs"
         ]
       }
     }

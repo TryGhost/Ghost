@@ -3,8 +3,8 @@ import { readdir, readFile, realpath, stat } from 'node:fs/promises';
 import path from 'node:path';
 import { promisify } from 'node:util';
 
-import { ROOT_DIR, PRIVATE_PACKAGE_VERSION } from './lib/constants.ts';
-import { applyPackageTemplateTokens, isValidPackageName } from './lib/package-template.ts';
+import { ROOT_DIR, PRIVATE_PACKAGE_VERSION } from '../lib/constants.ts';
+import { applyPackageTemplateTokens, isValidPackageName } from '../lib/package-template.ts';
 
 const execFileAsync = promisify(execFile);
 

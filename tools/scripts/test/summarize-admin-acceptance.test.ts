@@ -10,7 +10,7 @@ import {
   type AssertionResult,
   type TestFileResult,
   type VitestReport,
-} from '../summarize-admin-acceptance.ts';
+} from '../ci/summarize-admin-acceptance.ts';
 
 const assertion = (
   fullName: string,
@@ -144,7 +144,7 @@ describe('Admin acceptance summary', () => {
     const directory = await mkdtemp(join(tmpdir(), 'admin-acceptance-summary-'));
     try {
       const entrypoint = fileURLToPath(
-        new URL('../summarize-admin-acceptance.ts', import.meta.url),
+        new URL('../ci/summarize-admin-acceptance.ts', import.meta.url),
       );
       const path = join(directory, 'acceptance.json');
       const missing = spawnSync(process.execPath, [entrypoint, `--report=${path}`], {
