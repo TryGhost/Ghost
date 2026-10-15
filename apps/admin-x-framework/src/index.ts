@@ -31,12 +31,7 @@ export {
   normalizeDocsBotMetadata,
   normalizeDocsBotTicket,
 } from './hooks/use-docsbot';
-export type {
-  DocsBotHistoryEntry,
-  DocsBotMetadata,
-  DocsBotSupportRequest,
-  DocsBotSupportTicket,
-} from './hooks/use-docsbot';
+export type { DocsBotSupportRequest, DocsBotSupportTicket } from './hooks/use-docsbot';
 
 // API status
 export { onUpgradeStatus } from './utils/api/upgrade-status';

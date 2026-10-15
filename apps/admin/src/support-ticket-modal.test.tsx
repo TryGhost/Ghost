@@ -1,9 +1,8 @@
 import type { ComponentProps } from 'react';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { DocsBotSupportRequest } from '@tryghost/admin-x-framework';
-import { DocsBotSupportTicketModal } from './docsbot-support-ticket-modal';
-import { DOCSBOT_SUPPORT_TICKET_THANKS_MESSAGE } from './docsbot-support-ticket';
+import { SupportTicketModal } from './support-ticket-modal';
+import type { SupportTicketDraft } from './support-ticket';
 
 const { mockSubmit, mockHandleError, mockUseBrowseSite, mockUseCurrentUser } = vi.hoisted(() => ({
   mockSubmit: vi.fn(),
@@ -12,13 +11,11 @@ const { mockSubmit, mockHandleError, mockUseBrowseSite, mockUseCurrentUser } = v
   mockUseCurrentUser: vi.fn(),
 }));
 
-vi.mock('./docsbot-support-ticket', async () => {
-  const actual = await vi.importActual<typeof import('./docsbot-support-ticket')>(
-    './docsbot-support-ticket',
-  );
+vi.mock('./support-ticket', async () => {
+  const actual = await vi.importActual<typeof import('./support-ticket')>('./support-ticket');
   return {
     ...actual,
-    submitDocsBotSupportTicket: mockSubmit,
+    submitSupportTicket: mockSubmit,
   };
 });
 
@@ -52,44 +49,35 @@ vi.mock('@tryghost/admin-x-framework/api/current-user', async () => {
   };
 });
 
-const supportRequest: DocsBotSupportRequest = {
-  history: [
-    { Human: 'I cannot publish a post', timestamp: '2025-05-08T22:56:28.514357' },
-    { AI: 'Have you checked your permissions?', timestamp: '2025-05-08T22:56:30.645700' },
-  ],
-  metadata: {
-    name: 'Ada Lovelace',
-    email: 'ada@example.com',
-    conversationId: 'conv-1',
-    conversationUrl: 'https://docsbot.ai/conversation/conv-1',
-  },
-  ticket: {
-    subject: 'Cannot publish a post',
-    message: 'I still cannot publish after checking permissions.',
-  },
-  currentUrl: 'http://localhost:2368/ghost/#/posts',
+const draft: SupportTicketDraft = {
+  name: 'Ada Lovelace',
+  email: 'ada@example.com',
+  subject: 'Cannot publish a post',
+  message: 'I still cannot publish after checking permissions.',
+  source: 'chat-provider',
+  pageUrl: 'http://localhost:2368/ghost/#/posts',
+  conversationUrl: 'https://chat.example.com/conversation/conv-1',
+  transcript: '**User**\nI cannot publish a post',
 };
 
-function renderModal(overrides: Partial<ComponentProps<typeof DocsBotSupportTicketModal>> = {}) {
-  const addBotMessage = vi.fn().mockResolvedValue(undefined);
-  const openWidget = vi.fn().mockResolvedValue(undefined);
+function renderModal(overrides: Partial<ComponentProps<typeof SupportTicketModal>> = {}) {
+  const onSent = vi.fn();
   const onOpenChange = vi.fn();
 
   render(
-    <DocsBotSupportTicketModal
-      addBotMessage={addBotMessage}
-      openWidget={openWidget}
-      supportRequest={supportRequest}
+    <SupportTicketModal
+      draft={draft}
       open
       onOpenChange={onOpenChange}
+      onSent={onSent}
       {...overrides}
     />,
   );
 
-  return { addBotMessage, openWidget, onOpenChange };
+  return { onSent, onOpenChange };
 }
 
-describe('DocsBotSupportTicketModal', () => {
+describe('SupportTicketModal', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockSubmit.mockResolvedValue(undefined);
@@ -101,7 +89,7 @@ describe('DocsBotSupportTicketModal', () => {
     });
   });
 
-  it('prefills name, email, subject, and message from metadata and ticket', () => {
+  it('prefills name, email, subject, and message from the draft', () => {
     renderModal();
 
     expect(screen.getByLabelText('Name')).toHaveValue('Ada Lovelace');
@@ -112,30 +100,31 @@ describe('DocsBotSupportTicketModal', () => {
     );
   });
 
-  it('falls back to the current user when metadata has no identity', () => {
+  it('falls back to the current user when the draft has no identity', () => {
     renderModal({
-      supportRequest: {
-        ...supportRequest,
-        metadata: { conversationId: 'conv-1' },
-      },
+      draft: { ...draft, name: undefined, email: undefined },
     });
 
     expect(screen.getByLabelText('Name')).toHaveValue('Fallback Name');
     expect(screen.getByLabelText('Email')).toHaveValue('fallback@example.com');
   });
 
+  it('only mentions the attached conversation when there is a transcript', () => {
+    renderModal({ draft: { ...draft, transcript: undefined } });
+
+    expect(
+      screen.queryByText('Your conversation will be attached automatically.'),
+    ).not.toBeInTheDocument();
+  });
+
   it('validates empty fields and an invalid email', async () => {
     mockUseCurrentUser.mockReturnValue({ data: undefined });
 
     renderModal({
-      supportRequest: {
-        ...supportRequest,
-        metadata: {},
-        ticket: null,
-      },
+      draft: { source: 'chat-provider', pageUrl: draft.pageUrl },
     });
 
-    fireEvent.click(screen.getByTestId('docsbot-support-send'));
+    fireEvent.click(screen.getByTestId('support-ticket-send'));
 
     expect(await screen.findByText('Enter your name')).toBeInTheDocument();
     expect(screen.getByText('Enter your email')).toBeInTheDocument();
@@ -147,19 +136,19 @@ describe('DocsBotSupportTicketModal', () => {
     fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'not-an-email' } });
     fireEvent.change(screen.getByLabelText('Subject'), { target: { value: 'Help' } });
     fireEvent.change(screen.getByLabelText('Message'), { target: { value: 'Please help' } });
-    fireEvent.click(screen.getByTestId('docsbot-support-send'));
+    fireEvent.click(screen.getByTestId('support-ticket-send'));
 
     expect(await screen.findByText('Enter a valid email address')).toBeInTheDocument();
     expect(mockSubmit).not.toHaveBeenCalled();
   });
 
-  it('submits the visible fields plus hidden conversation context', async () => {
-    const { addBotMessage, openWidget, onOpenChange } = renderModal();
+  it('submits the visible fields plus the draft context', async () => {
+    const { onSent, onOpenChange } = renderModal();
 
     fireEvent.change(screen.getByLabelText('Message'), {
       target: { value: 'I still cannot publish after checking permissions.\n\nUsing Chrome.' },
     });
-    fireEvent.click(screen.getByTestId('docsbot-support-send'));
+    fireEvent.click(screen.getByTestId('support-ticket-send'));
 
     await waitFor(() => {
       expect(mockSubmit).toHaveBeenCalledTimes(1);
@@ -170,20 +159,26 @@ describe('DocsBotSupportTicketModal', () => {
       email: 'ada@example.com',
       subject: 'Cannot publish a post',
       message: 'I still cannot publish after checking permissions.\n\nUsing Chrome.',
-      history: [
-        '**User** (8 May 2025, 22:56)',
-        'I cannot publish a post',
-        '',
-        '**Assistant** (8 May 2025, 22:56)',
-        'Have you checked your permissions?',
-      ].join('\n'),
-      rawHistory: supportRequest.history,
+      source: 'chat-provider',
       siteUrl: 'https://example.com/',
-      currentUrl: 'http://localhost:2368/ghost/#/posts',
-      metadata: supportRequest.metadata,
+      pageUrl: 'http://localhost:2368/ghost/#/posts',
+      conversationUrl: 'https://chat.example.com/conversation/conv-1',
+      transcript: '**User**\nI cannot publish a post',
     });
-    expect(addBotMessage).toHaveBeenCalledWith(DOCSBOT_SUPPORT_TICKET_THANKS_MESSAGE);
     expect(onOpenChange).toHaveBeenCalledWith(false);
-    expect(openWidget).toHaveBeenCalledTimes(1);
+    expect(onSent).toHaveBeenCalledTimes(1);
+  });
+
+  it('keeps the modal open and does not call onSent when sending fails', async () => {
+    mockSubmit.mockRejectedValue(new Error('Something went wrong'));
+    const { onSent, onOpenChange } = renderModal();
+
+    fireEvent.click(screen.getByTestId('support-ticket-send'));
+
+    await waitFor(() => {
+      expect(mockHandleError).toHaveBeenCalledTimes(1);
+    });
+    expect(onOpenChange).not.toHaveBeenCalled();
+    expect(onSent).not.toHaveBeenCalled();
   });
 });
