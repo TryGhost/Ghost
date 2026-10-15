@@ -233,7 +233,8 @@ function unmountDocsBotWidget(): void {
     if (!widgetMounted) {
       return;
     }
-    await window.DocsBotAI?.unmount?.();
+    // DocsBot's unmount() promise never resolves, so awaiting it would block the queue
+    void window.DocsBotAI?.unmount?.();
     widgetMounted = false;
   });
 }
