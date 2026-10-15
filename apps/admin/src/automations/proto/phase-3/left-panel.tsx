@@ -710,20 +710,34 @@ export const LeftPanel: React.FC<Phase3LeftPanelProps> = ({
                         one thing here that isn't one. A sibling under the header keeps
                         the columns readable above it and owes the table nothing.
 
-                        Title only, no subcopy. "Members will appear here as they
-                        enter" was restating what an empty table under a Member column
-                        already says. Two empties still get their own words: nothing
-                        has ENTERED is a fact about the automation, nothing MATCHED is
-                        a fact about the filters — "no member entries" at someone whose
-                        filters are the problem would hide the way out. */}
+                        Two empties, two sets of words: nobody has been THROUGH is a
+                        fact about the automation, nothing MATCHED is a fact about
+                        the filters. Telling someone whose filters are the problem
+                        that there are no members would hide the way out.
+
+                        One line for the first, whatever state the automation is in.
+                        It briefly had a line per state — unpublished, live, turned
+                        off — but the screen can't tell two of those apart, and one
+                        sentence that's true in all three beats three that each need
+                        explaining. It follows the rest of Admin's shape: "No ⟨things⟩
+                        yet", then "Once ⟨event⟩, they'll show here". */}
             {sorted.length === 0 && (
               <div className="py-12">
                 {noData ? (
-                  <EmptyIndicator title="No member runs">
+                  <EmptyIndicator
+                    description="Once someone starts your automation, they'll show here"
+                    title="No members yet"
+                  >
+                    {/* Members, not runs: the cards above count runs, but this
+                        table lists the people in them — its first column is
+                        Member — so its empty state speaks of who's missing. */}
                     <LucideIcon.Users />
                   </EmptyIndicator>
                 ) : (
-                  <EmptyIndicator title="No members match">
+                  <EmptyIndicator
+                    description="Try a different search or filter."
+                    title="No members match"
+                  >
                     <LucideIcon.Search />
                   </EmptyIndicator>
                 )}

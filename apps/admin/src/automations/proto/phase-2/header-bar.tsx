@@ -4,7 +4,6 @@ import { Inline } from '@tryghost/shade/primitives';
 import { LucideIcon, cn } from '@tryghost/shade/utils';
 import { StatusBadge } from '@/automations/proto/shared/status-badge';
 import { PROTO_EASE } from '@/automations/proto/shared/motion';
-import { EditableTitle } from './editable-title';
 
 // PHASE 2 — the screen's header, docked: its own elevated surface with a rule under
 // it. Two zones on one row: navigation and identity at the left — back arrow and
@@ -24,10 +23,12 @@ import { EditableTitle } from './editable-title';
 // lets you do. There's no overflow menu — archiving belongs to the list, where
 // the automation is a row among others rather than the thing you're inside.
 //
-// The title is EDITABLE IN PLACE (see editable-title). It's been a button
+// The title is PLAIN TEXT with a persistent gear beside it. It's been a button
 // wearing a hover pencil (opening a dialog, then a popover from the title
-// itself), then plain text with a gear, then plain text with renaming in the
-// Settings tab — which is where people couldn't find it.
+// itself) — retired with the settings sheet: a hidden affordance was the
+// standing complaint, and with a visible gear owning "open settings", a second
+// clickable thing doing the same job would be two controls for one act. The
+// gear is muted, always there, and sized like every icon control on this row.
 //
 // A centred "Automations / <name>" breadcrumb has now been tried here twice and
 // rejected twice, on the same ground both times: it puts the automation's name at
@@ -38,13 +39,7 @@ import { EditableTitle } from './editable-title';
 // navigation, and a crumb that doubles as the way back still reads as a label
 // first. If it comes up a third time, this is the objection to answer.
 interface HeaderBarProps {
-  // The name field's raw text — what the title shows, bad values included —
-  // and the last valid name beneath it. See editable-title for both, and for
-  // renaming from the title.
   title: string;
-  appliedTitle: string;
-  isNameTaken: (name: string) => boolean;
-  onRename: (name: string) => void;
   // Rendered as a badge beside the title, as in phase 1. It spent a while at
   // the head of the right-side group, reading as the subject of the buttons;
   // it came back when the panel toggle joined that group.
@@ -78,9 +73,6 @@ interface HeaderBarProps {
 
 export const HeaderBar: React.FC<HeaderBarProps> = ({
   title,
-  appliedTitle,
-  isNameTaken,
-  onRename,
   status,
   onBack,
   actions,
@@ -140,14 +132,12 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                 text-md it was a step BELOW the pane heading beneath it, which inverted
                 the hierarchy — the region label outranking the thing it reports on.
 
-                Renamed in place — the Settings tab's Name field is the same
-                value, reached the long way. */}
-        <EditableTitle
-          appliedName={appliedTitle}
-          isTaken={isNameTaken}
-          value={title}
-          onChange={onRename}
-        />
+                Plain text — renaming lives in the side panel's Settings tab,
+                not the title. The title-as-button era (hover pencil, dialog, then
+                a popover hung from it) is in this file's history; it ended when
+                the head of UX asked for a real settings area and the hidden
+                affordance was the standing complaint. */}
+        <span className="min-w-0 truncate text-lg font-semibold">{title}</span>
         {/* The status beside the name it describes. It sat at the head of the
             actions for a while — state, then what to do about it — but with the
             panel toggle joining that group the right side grew busy, and a

@@ -624,16 +624,12 @@ const AutomationFloat: React.FC = () => {
 
   // Seeded on the way IN from what the screen is currently showing — the pending
   // details if they've been edited this session, the saved ones otherwise — so
-  // the field never shows a name the header doesn't. A blanked or colliding
-  // name is the exception: the header keeps showing it, in red, until it's
-  // fixed, so the field keeps it too.
+  // the field never shows a name the header doesn't. That's also what makes
+  // abandoning a blanked or colliding name safe: coming back shows the name that
+  // actually applied.
   const handlePaneTabChange = (next: PaneTab) => {
     if (next === 'settings' && paneTab !== 'settings') {
-      // A blank or duplicate name is kept: the header is showing it in red,
-      // and the field has to show what the header does.
-      const name = settingsDraft.name.trim();
-      const nameInvalid = !name || isNameTaken(name, id);
-      setSettingsDraft(nameInvalid ? { ...draftDetails, name: settingsDraft.name } : draftDetails);
+      setSettingsDraft(draftDetails);
     }
     setPaneTab(next);
   };
@@ -794,20 +790,13 @@ const AutomationFloat: React.FC = () => {
       <div className="flex min-w-0 flex-1 flex-col">
         <HeaderBar
           actions={chromeActions}
-          // The last VALID name — what Save would commit.
-          appliedTitle={draftDetails.name}
-          isNameTaken={(name) => isNameTaken(name, id)}
           paneOpen={!paneCollapsed}
           status={liveStatus}
-          // The name field's raw text, the same string the Settings tab's Name
-          // field holds: a rename shows here the moment it's typed, in either
-          // place, and a blank or duplicate one shows too — in red — rather
-          // than the title stopping at the last letter that was still valid.
-          title={settingsDraft.name}
+          // The pending name, not the saved one: a rename shows here the moment
+          // it's typed in the Settings tab, the way a canvas edit shows on the
+          // canvas — on screen now, committed by Save.
+          title={draftDetails.name}
           onBack={goBack}
-          // The Settings field's own path, so the two can't disagree: the raw
-          // text goes to that field, and only a valid name reaches the draft.
-          onRename={(name) => handleDetailsChange({ name, description: settingsDraft.description })}
         />
         <div className="relative flex min-h-0 flex-1 overflow-hidden">
           {/* Canvas fills the remaining viewport (bounded, not full-bleed), so the flow

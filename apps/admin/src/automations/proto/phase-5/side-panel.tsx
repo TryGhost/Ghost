@@ -1,10 +1,8 @@
-import React, { useEffect, useId, useState } from 'react';
+import React, { useId, useState } from 'react';
 import {
   Field,
   FieldDescription,
-  FieldError,
   FieldLabel,
-  Input,
   Tabs,
   TabsContent,
   TabsList,
@@ -37,66 +35,35 @@ interface SidePanelProps extends LeftPanelProps {
   settings: {
     values: { name: string; description: string };
     onChange: (next: { name: string; description: string }) => void;
-    // Whether the CURRENT field text names another automation — the screen's
-    // live check. The screen keeps a colliding name off the draft; this only
-    // drives what the field says about it.
-    nameTaken: boolean;
     // When a member's run ends early, as a sentence — the trigger card's exit
     // sentence, moved here. null while no trigger is chosen.
     exits: string | null;
   };
 }
 
-// How long a collision has to hold still before the field says so. Extending an
-// existing name passes THROUGH a collision — typing "Welcome series 2" is
-// momentarily "Welcome series" — and an error on that keystroke scolds people
-// mid-thought. Only the message waits; the guard is per keystroke.
-const ERROR_DEBOUNCE_MS = 450;
-
-const SettingsFields: React.FC<SidePanelProps['settings']> = ({
-  values,
-  onChange,
-  nameTaken,
-  exits,
-}) => {
-  const nameErrorId = useId();
-  const [showError, setShowError] = useState(false);
-  useEffect(() => {
-    if (!nameTaken) {
-      setShowError(false);
-      return;
-    }
-    const timer = setTimeout(() => setShowError(true), ERROR_DEBOUNCE_MS);
-    return () => clearTimeout(timer);
-    // values.name restarts the timer on every keystroke — the message appears
-    // only once a colliding value has been LEFT there.
-  }, [nameTaken, values.name]);
-
+// No Name field: the header's title is where an automation is renamed (see
+// editable-title), so the name has one home.
+const SettingsFields: React.FC<SidePanelProps['settings']> = ({ values, onChange, exits }) => {
+  const descriptionHelpId = useId();
   return (
     // 2xl = gap-8, 32px between fields — the right-panel concept's settings spacing.
     <Stack className="px-6 pb-6" gap="2xl">
-      <Field data-invalid={showError || undefined}>
-        <FieldLabel htmlFor="automation-name">Name</FieldLabel>
-        <Input
-          aria-describedby={showError ? nameErrorId : undefined}
-          aria-invalid={showError || undefined}
-          id="automation-name"
-          value={values.name}
-          onChange={(e) => onChange({ ...values, name: e.target.value })}
-        />
-        {showError && (
-          <FieldError id={nameErrorId}>An automation with this name already exists.</FieldError>
-        )}
-      </Field>
+      {/* No placeholder: the name already says what the automation is for, and
+          teams use this for whatever they need — decisions, constraints, notes.
+          The help line says who sees it, since elsewhere in Ghost a description
+          is often shown to members. */}
       <Field>
         <FieldLabel htmlFor="automation-description">Description</FieldLabel>
         <Textarea
+          aria-describedby={descriptionHelpId}
           id="automation-description"
-          placeholder="What this automation is for"
           rows={3}
           value={values.description}
           onChange={(e) => onChange({ ...values, description: e.target.value })}
         />
+        <FieldDescription id={descriptionHelpId}>
+          Only visible to you and your team.
+        </FieldDescription>
       </Field>
       {/* STOP CONDITIONS — an explanation, not a setting, this phase. The
           sentence is derived from the trigger (see exitSentence), and it used to
@@ -127,7 +94,7 @@ export const SidePanel: React.FC<SidePanelProps> = ({ tab, onTabChange, settings
     <Tabs
       className="flex min-h-0 flex-1 flex-col"
       value={tab}
-      variant="button"
+      variant="underline"
       onValueChange={(next) => onTabChange(next as PaneTab)}
     >
       {/* One row, one tab bar, for both tabs. It used to be a copy per tab,
@@ -136,13 +103,29 @@ export const SidePanel: React.FC<SidePanelProps> = ({ tab, onTabChange, settings
           triggers animated the new one in: the shift. Mounted once here, it
           never moves; only the slot's contents change.
 
-          h-9 holds the row at the 36px of Performance's icon buttons even on
-          Settings, where the slot is empty; with py-3.5 that's 64px, centred the
-          way the header centres its row, so the tabs sit on its line and the
-          pinned toggle lines up with both. */}
-      <div className="flex shrink-0 items-center px-6 py-3.5">
-        <div className="flex h-9 min-w-0 flex-1 items-center gap-2">
-          <TabsList className={cn(searchOpen && tab === 'performance' && 'hidden')}>
+          Underline tabs, as Settings → Design & branding → Customize has them
+          (Brand / Theme). Shade's underline list draws its own rule, but here
+          the rule has to run under the whole row — tabs, Performance's search
+          and filter, the toggle's footprint — so the row draws it and the list
+          gives its own up. overflow-visible because the list scrolls sideways
+          by default, which clips the active tab's bar where it overlaps the
+          rule.
+
+          No fixed height: the row takes its 36px from the triggers and
+          Performance's icon buttons, with the rule under that — a fixed h-9
+          would count the rule inside it and leave the active bar a pixel low.
+          pt-3.5 centres the row on the header's line (14 + 18 = 32px), so the
+          tabs sit on its line and the pinned toggle lines up with both.
+          pb-6 is the 24px between the rule and the tab's content — neither
+          tab's content brings top spacing of its own. */}
+      <div className="shrink-0 px-6 pt-3.5 pb-6">
+        <div className="flex min-w-0 items-center gap-2 border-b border-border-default">
+          <TabsList
+            className={cn(
+              'w-auto overflow-visible border-b-0',
+              searchOpen && tab === 'performance' && 'hidden',
+            )}
+          >
             <TabsTrigger value="performance">Performance</TabsTrigger>
             <TabsTrigger value="settings">Settings</TabsTrigger>
           </TabsList>

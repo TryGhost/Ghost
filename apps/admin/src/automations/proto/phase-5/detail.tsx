@@ -183,6 +183,8 @@ const AutomationFloat: React.FC = () => {
   // the automation can't go live. One piece of state serves both lifecycle
   // states' primaries; only one of them is ever rendered.
   const [publishBlocked, setPublishBlocked] = useState(false);
+  // Bumped when Save is refused over the name — see refuseOverName.
+  const [titleFocusRequest, setTitleFocusRequest] = useState(0);
   // Closing it on a press anywhere else has to be done by hand for the canvas.
   // Radix dismisses on a bubble-phase pointerdown at the document, and React
   // Flow's pan handler (d3-zoom) stops that event before it gets there — so a
@@ -567,6 +569,9 @@ const AutomationFloat: React.FC = () => {
   // taking them live. Same promotion as publishing — with nothing running, the
   // difference between the two is entirely whether liveStatus moves.
   const handleSave = () => {
+    if (refuseOverName()) {
+      return;
+    }
     // Read before promoteDraft navigates the sentinel away: the first save is
     // the creation, and the toast has to say the thing that actually happened.
     const created = isNew;
@@ -579,7 +584,7 @@ const AutomationFloat: React.FC = () => {
   // at the press — a popover on the button, and the canvas showing every warning
   // it holds.
   const handlePublishAttempt = () => {
-    if (!canGoLive) {
+    if (!readyToPublish) {
       // The refusal is a popover on the button that was pressed — an error
       // toast was tried and sat too far away, bottom-left — and the canvas
       // reveals every highlight it holds, grace periods included.
@@ -595,7 +600,7 @@ const AutomationFloat: React.FC = () => {
   // stays ungated — a draft is allowed to be unfinished; publishing is where it
   // has to hold up.)
   const handlePublishChangesClick = () => {
-    if (!canGoLive) {
+    if (!readyToPublish) {
       // The refusal is a popover on the button that was pressed — an error
       // toast was tried and sat too far away, bottom-left — and the canvas
       // reveals every highlight it holds, grace periods included.
@@ -628,15 +633,34 @@ const AutomationFloat: React.FC = () => {
   // guard below reads it to keep a colliding name off the draft, and the
   // Settings tab debounces what it SAYS about it (see side-panel).
   const nameCollides = isNameTaken(settingsDraft.name, id);
+  // Publishing answers for everything at once: a taken name is one more issue
+  // alongside the canvas's, refused by the same "Fix all issues" popover on
+  // the button. Refusing over the name first (focusing the title, opening its
+  // message) hid the canvas's warnings behind it — the press answered one
+  // question and left the rest for the next press. The title shows its own
+  // red icon by then; the popover says there's more than one thing to fix.
+  const readyToPublish = canGoLive && !nameCollides;
+  // Save has only the name to fail on (a draft may be unfinished), so its
+  // refusal goes straight to the title, which says why.
+  const refuseOverName = () => {
+    if (nameCollides) {
+      setTitleFocusRequest((request) => request + 1);
+    }
+    return nameCollides;
+  };
 
   // Seeded on the way IN from what the screen is currently showing — the pending
   // details if they've been edited this session, the saved ones otherwise — so
-  // the field never shows a name the header doesn't. That's also what makes
-  // abandoning a blanked or colliding name safe: coming back shows the name that
-  // actually applied.
+  // the field never shows a name the header doesn't. A blanked or colliding
+  // name is the exception: the header keeps showing it, in red, until it's
+  // fixed, so the field keeps it too.
   const handlePaneTabChange = (next: PaneTab) => {
     if (next === 'settings' && paneTab !== 'settings') {
-      setSettingsDraft(draftDetails);
+      // A blank or duplicate name is kept: the header is showing it in red,
+      // and the field has to show what the header does.
+      const name = settingsDraft.name.trim();
+      const nameInvalid = !name || isNameTaken(name, id);
+      setSettingsDraft(nameInvalid ? { ...draftDetails, name: settingsDraft.name } : draftDetails);
     }
     setPaneTab(next);
   };
@@ -718,12 +742,14 @@ const AutomationFloat: React.FC = () => {
   // plumbing rather than to anything the publisher can act on.
 
   // The shipping header's validation popover (components/automation-header,
-  // withValidationFeedback), markup and message verbatim: opened by a refused
+  // withValidationFeedback), markup verbatim. The message isn't: "highlighted"
+  // points at the marked fields — the title's icon and the canvas's warnings —
+  // since the refusal now covers both (see readyToPublish). Opened by a refused
   // press rather than by the trigger, dismissed by Escape or an outside click,
   // and gone on its own once the automation can go live.
   const withPublishBlocked = (button: React.ReactElement) => (
     <Popover
-      open={publishBlocked && !canGoLive}
+      open={publishBlocked && !readyToPublish}
       onOpenChange={(open) => {
         if (!open) {
           setPublishBlocked(false);
@@ -741,7 +767,7 @@ const AutomationFloat: React.FC = () => {
         onOpenAutoFocus={(event) => event.preventDefault()}
       >
         <Text role="status" size="md">
-          Fix all issues to publish this automation.
+          Fix all highlighted issues to publish
         </Text>
       </PopoverContent>
     </Popover>
@@ -797,13 +823,17 @@ const AutomationFloat: React.FC = () => {
       <div className="flex min-w-0 flex-1 flex-col">
         <HeaderBar
           actions={chromeActions}
+          // The last valid name — what Save commits.
+          appliedTitle={draftDetails.name}
+          isNameTaken={(name) => isNameTaken(name, id)}
           paneOpen={!paneCollapsed}
           status={liveStatus}
-          // The pending name, not the saved one: a rename shows here the moment
-          // it's typed in the Settings tab, the way a canvas edit shows on the
-          // canvas — on screen now, committed by Save.
-          title={draftDetails.name}
+          // The title's raw text: a duplicate shows here, in red, and stays off
+          // the draft (see handleDetailsChange).
+          title={settingsDraft.name}
+          titleFocusRequest={titleFocusRequest}
           onBack={goBack}
+          onRename={(name) => handleDetailsChange({ name, description: settingsDraft.description })}
         />
         <div className="relative flex min-h-0 flex-1 overflow-hidden">
           {/* Canvas fills the remaining viewport (bounded, not full-bleed), so the flow
@@ -1029,7 +1059,6 @@ const AutomationFloat: React.FC = () => {
             settings={{
               values: settingsDraft,
               onChange: handleDetailsChange,
-              nameTaken: nameCollides,
               // The draft's trigger, so the sentence follows a trigger change
               // before it's saved, as the card's did.
               exits: triggerConfig ? exitSentence(triggerConfig) : null,
