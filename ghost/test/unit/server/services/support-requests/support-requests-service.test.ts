@@ -148,7 +148,12 @@ describe('SupportRequestsService', function () {
   it('logs a sanitized URL and throws a generic 502 when the request fails', async function () {
     const { service, errorMessages } = createService({
       request: async () => {
-        throw new Error('Response code 500 (Internal Server Error)');
+        throw Object.assign(
+          new Error(
+            'Request failed with status code 500 (Internal Server Error): POST https://support.example.com/secret-path?token=abc',
+          ),
+          { code: 'ERR_NON_2XX_3XX_RESPONSE', response: { statusCode: 500 } },
+        );
       },
     });
 
@@ -157,7 +162,7 @@ describe('SupportRequestsService', function () {
       message: 'Failed to send the support request. Please try again later.',
     });
     assert.deepEqual(errorMessages, [
-      'Failed to send support request to "https://support.example.com": Response code 500 (Internal Server Error)',
+      'Failed to send support request to "https://support.example.com": HTTP 500',
     ]);
   });
 });
