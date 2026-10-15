@@ -623,8 +623,11 @@ describe('createAppFrameSession', () => {
     const frame = await started();
 
     // Answers with the path Admin now has for the app, which the page stores.
-    await expect(frame.host.pathChanged('/episodes/12')).resolves.toBe('/episodes/12');
-    expect(navigate).toHaveBeenCalledExactlyOnceWith('/episodes/12', { move: moveOf(0) });
+    await expect(frame.host.pathChanged('/episodes/12', 'push')).resolves.toBe('/episodes/12');
+    expect(navigate).toHaveBeenCalledExactlyOnceWith('/episodes/12', {
+      replace: false,
+      move: moveOf(0),
+    });
     // Admin follows, which changes Admin's path within the app to the app's current path.
     session.pathChanged('/episodes/12', moveOf(0));
     await settle();
@@ -635,14 +638,27 @@ describe('createAppFrameSession', () => {
     await vi.waitFor(() => expect(frame.app.pathChanged).toHaveBeenCalledExactlyOnceWith('/'));
   });
 
+  it('refuses a move that is neither a push nor a replace', async () => {
+    const frame = await started();
+
+    await expect(frame.host.pathChanged('/a', 'sideways' as never)).rejects.toThrow(
+      'invalid_argument: Expected a move of push or replace',
+    );
+    expect(navigate).not.toHaveBeenCalled();
+  });
+
   it('follows the app quickly through several routes to the last one, sending nothing back', async () => {
     const frame = await started();
 
     // The app moves away and back before Admin has followed either move.
-    await Promise.all([frame.host.pathChanged('/login'), frame.host.pathChanged('/')]);
+    // Such as an auth guard's bounce, which replaces the route it came from.
+    await Promise.all([
+      frame.host.pathChanged('/login', 'push'),
+      frame.host.pathChanged('/', 'replace'),
+    ]);
     expect(navigate.mock.calls).toEqual([
-      ['/login', { move: moveOf(0) }],
-      ['/', { move: moveOf(0) + 1 }],
+      ['/login', { replace: false, move: moveOf(0) }],
+      ['/', { replace: true, move: moveOf(0) + 1 }],
     ]);
     // Admin arrives at each route in turn, including the one the app has left.
     session.pathChanged('/login', moveOf(0));
@@ -660,7 +676,7 @@ describe('createAppFrameSession', () => {
   it('follows the app to its last route when Admin skips one in between', async () => {
     const frame = await started();
 
-    await Promise.all([frame.host.pathChanged('/a'), frame.host.pathChanged('/b')]);
+    await Promise.all([frame.host.pathChanged('/a', 'push'), frame.host.pathChanged('/b', 'push')]);
     // Only the last route is rendered.
     session.pathChanged('/b', moveOf(1));
     await settle();
@@ -676,7 +692,10 @@ describe('createAppFrameSession', () => {
     const frame = await started();
 
     // An auth guard's bounce: the app moves away and back before Admin has rendered either move.
-    await Promise.all([frame.host.pathChanged('/login'), frame.host.pathChanged('/')]);
+    await Promise.all([
+      frame.host.pathChanged('/login', 'push'),
+      frame.host.pathChanged('/', 'push'),
+    ]);
     // Both commit as one location, with the last move's number, on the route Admin was already on.
     session.pathChanged('/', moveOf(1));
     await settle();
@@ -689,7 +708,7 @@ describe('createAppFrameSession', () => {
 
   it('sends a new document the route Admin was still navigating to when it connected', async () => {
     const frame = await started();
-    await frame.host.pathChanged('/episodes');
+    await frame.host.pathChanged('/episodes', 'push');
 
     // A new document starts at Admin's current path, before Admin has arrived.
     frame.navigate();
@@ -708,7 +727,7 @@ describe('createAppFrameSession', () => {
     // The publisher is leaving the app.
     navigate.mockReturnValueOnce(false);
 
-    await expect(frame.host.pathChanged('/episodes')).resolves.toBe('/');
+    await expect(frame.host.pathChanged('/episodes', 'push')).resolves.toBe('/');
 
     await vi.waitFor(() => expect(frame.app.pathChanged).toHaveBeenCalledExactlyOnceWith('/'));
     // Admin has nothing to catch up with, so navigating there is sent to the app.
@@ -719,7 +738,7 @@ describe('createAppFrameSession', () => {
   it('doesn’t navigate Admin to the route it is already on', async () => {
     const frame = await started();
 
-    await frame.host.pathChanged('/');
+    await frame.host.pathChanged('/', 'push');
 
     expect(navigate).not.toHaveBeenCalled();
   });

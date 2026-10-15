@@ -6,6 +6,8 @@ import {
   FetchRequestSchema,
   HelloMessageSchema,
   type HostExports,
+  type PathMove,
+  PathMoveSchema,
   type Place,
   PlaceSchema,
   type StartContext,
@@ -21,9 +23,10 @@ export interface AppFrameHandlers {
   titleChanged(title: string): void;
   /**
    * `path` is already normalised by `AppPathSchema`, the single form Admin stores app paths in.
-   * Returns the app's path as Admin now has it: `path`, or Admin's own when it didn't follow.
+   * `move` says whether Admin adds a history entry for it or replaces its current one. Returns
+   * the app's path as Admin now has it: `path`, or Admin's own when it didn't follow.
    */
-  pathChanged(path: string): string;
+  pathChanged(path: string, move: PathMove): string;
   /** Takes the publisher to `place`, and returns whether Admin navigated there. */
   open(place: Place): boolean;
   /**
@@ -166,8 +169,11 @@ export function bindAppFrame({
       titleChanged: guarded((title: unknown) => {
         handlers.titleChanged(parseFromFrame(TitleSchema, title));
       }),
-      pathChanged: guarded((path: unknown) =>
-        handlers.pathChanged(parseFromFrame(AppPathSchema, path, 'invalid_path')),
+      pathChanged: guarded((path: unknown, move: unknown) =>
+        handlers.pathChanged(
+          parseFromFrame(AppPathSchema, path, 'invalid_path'),
+          parseFromFrame(PathMoveSchema, move),
+        ),
       ),
       open: guarded((place: unknown) => {
         if (!handlers.open(parseFromFrame(PlaceSchema, place))) {
