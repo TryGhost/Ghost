@@ -16,10 +16,10 @@ import {
   Textarea,
 } from '@tryghost/shade/components';
 import { Stack } from '@tryghost/shade/primitives';
-import { useBrowseSite } from '@tryghost/admin-x-framework/api/site';
 import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
+import { useSendSupportRequest } from '@tryghost/admin-x-framework/api/support-requests';
 import { useForm, useHandleError } from '@tryghost/admin-x-framework/hooks';
-import { type SupportRequestDraft, submitSupportRequest } from './support-request';
+import type { SupportRequestDraft } from './support-request';
 
 interface FormState {
   name: string;
@@ -55,18 +55,17 @@ export function SupportRequestModal({
 }: SupportRequestModalProps) {
   const handleError = useHandleError();
   const { data: currentUser } = useCurrentUser();
-  const { data: siteData } = useBrowseSite();
+  const { mutateAsync: sendSupportRequest } = useSendSupportRequest();
 
   const { formState, updateForm, handleSave, saveState, errors, clearError } = useForm<FormState>({
     initialState: initialFormState(draft, currentUser),
     onSave: async (state) => {
-      await submitSupportRequest({
+      await sendSupportRequest({
         name: state.name.trim(),
         email: state.email.trim(),
         subject: state.subject.trim(),
         message: state.message.trim(),
         source: draft.source,
-        siteUrl: siteData?.site.url ?? '',
         pageUrl: draft.pageUrl,
         conversationUrl: draft.conversationUrl || null,
         transcript: draft.transcript || null,
