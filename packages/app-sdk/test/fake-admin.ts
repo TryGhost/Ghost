@@ -1,6 +1,7 @@
 import { ThreadMessagePort } from '@quilted/threads';
 import {
   CONNECT_MESSAGE_TYPE,
+  normaliseAppPath,
   type AppExports,
   type FetchResponse,
   type HostExports,
@@ -31,11 +32,10 @@ export interface FakeParent {
 }
 
 /**
- * Makes the page a new document, with a new start time and no copy of the SDK claiming it yet.
- * Tests also reload the SDK.
+ * Makes the page a new document, with no copy of the SDK claiming it yet. Tests also reload the
+ * SDK.
  */
-export function freshPage(timeOrigin = 1_760_000_000_000.5) {
-  vi.spyOn(performance, 'timeOrigin', 'get').mockReturnValue(timeOrigin);
+export function freshPage() {
   delete (globalThis as unknown as Record<symbol, unknown>)[Symbol.for('@tryghost/app-sdk')];
 }
 
@@ -70,7 +70,8 @@ export function hostExports(): HostMocks {
       body: '{"posts":[]}',
     })),
     titleChanged: vi.fn<HostExports['titleChanged']>(async () => {}),
-    pathChanged: vi.fn<HostExports['pathChanged']>(async () => {}),
+    // Follows every move, as Admin does when the publisher isn't navigating elsewhere.
+    pathChanged: vi.fn<HostExports['pathChanged']>(async (path) => normaliseAppPath(path)),
     open: vi.fn<HostExports['open']>(async () => {}),
   };
 }

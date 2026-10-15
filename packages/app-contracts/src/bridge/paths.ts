@@ -13,13 +13,17 @@ export const APP_PATH_MAX_LENGTH = 2048;
  * under `/apps/:installationId`, so it must not be able to point outside that.
  *
  * Parsing accepts only a path, not a URL or `//host`, and returns it normalised by
- * `normaliseAppPath`, with `..` resolved within the app, so it is ready to use.
+ * `normaliseAppPath`, with `..` resolved within the app, so it is ready to use. The length is
+ * checked before normalising, so a long input isn't normalised at all, and again after, as
+ * percent-encoding can make a path up to three times longer.
  */
+const tooLong = `Expected a path of at most ${APP_PATH_MAX_LENGTH} characters`;
 export const AppPathSchema = z
   .string('Expected a path')
-  .max(APP_PATH_MAX_LENGTH, `Expected a path of at most ${APP_PATH_MAX_LENGTH} characters`)
+  .max(APP_PATH_MAX_LENGTH, tooLong)
   .refine(isContainedPath, ARGUMENT_MESSAGES.appPath)
-  .transform(normaliseAppPath);
+  .transform(normaliseAppPath)
+  .pipe(z.string().max(APP_PATH_MAX_LENGTH, tooLong));
 
 export type AppPath = z.output<typeof AppPathSchema>;
 

@@ -22,9 +22,10 @@ export interface HostExports {
   titleChanged(title: string): Promise<void>;
   /**
    * Reports that the app moved to another of its own routes. Admin mirrors it in its own URL
-   * without reloading the frame.
+   * without reloading the frame. Resolves with the app's path as Admin now has it: `path`
+   * normalised, or Admin's current path when Admin didn't follow the move.
    */
-  pathChanged(path: string, options?: PathChangeOptions): Promise<void>;
+  pathChanged(path: string, options?: PathChangeOptions): Promise<string>;
   /** Sends the publisher to a named place in Admin. */
   open(place: Place): Promise<void>;
 }

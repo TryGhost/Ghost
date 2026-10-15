@@ -91,7 +91,7 @@ describe('connect', () => {
       {
         type: HELLO_MESSAGE_TYPE,
         sdk: 'private',
-        document: '1760000000000.5',
+        document: expect.stringMatching(/^[0-9a-z]+-[0-9a-z]+$/),
       },
       '*',
     );
@@ -176,13 +176,13 @@ describe('connect', () => {
     expect(documents.length).toBeGreaterThan(3);
     expect(new Set(documents).size).toBe(1);
 
-    // A new document, as after a reload, has a later start time.
-    freshPage(1_760_000_000_250.25);
+    // A new document, as after a reload, sends a new ID, even within the same millisecond.
+    freshPage();
     vi.resetModules();
     const reloaded: Sdk = await import('../src/index.ts');
     reloaded.connect({ timeout: 100 }).catch(() => {});
     const [hello] = parent.postMessage.mock.lastCall ?? [];
-    expect((hello as { document: string }).document).toBe('1760000000250.25');
+    expect((hello as { document: string }).document).not.toBe(documents[0]);
     vi.advanceTimersByTime(100);
   });
 

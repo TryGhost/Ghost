@@ -34,7 +34,7 @@ export const HelloMessageSchema = z.object({
    * An ID for the page's document. It stays the same in every hello the document sends.
    * Admin uses it to tell whether a hello comes from the document it already connected or
    * from a new document in the same frame, loaded by a reload, a form post or a link. The SDK
-   * sends the document's `performance.timeOrigin` as text.
+   * makes a random one when it loads.
    */
   document: z
     .string('Expected the document ID as text')

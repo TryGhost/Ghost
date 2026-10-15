@@ -59,6 +59,13 @@ describe('an app path', () => {
       'Expected a path of at most 2048 characters',
     );
   });
+
+  it('refuses a path that only becomes too long once normalised', () => {
+    // Each space is encoded as three characters.
+    const spaces = `/s?q=${' '.repeat(1000)}x`;
+    expect(spaces.length).toBeLessThan(APP_PATH_MAX_LENGTH);
+    expect(pathError(spaces)).toBe('Expected a path of at most 2048 characters');
+  });
 });
 
 describe('path change options', () => {

@@ -388,15 +388,35 @@ describe('path', () => {
     expect(ghost.path.current).toBe('/episodes/1');
   });
 
-  it("keeps a path Admin sent before answering the app's move", async () => {
+  it('stores the path Admin answers with when Admin did not follow the move', async () => {
     const host = hostExports();
-    host.pathChanged.mockImplementation(async () => {
-      await admin?.thread.imports.pathChanged('/inbox');
-    });
+    host.pathChanged.mockResolvedValue('/inbox');
     const { ghost } = await started(host);
 
     await ghost.path.set('/a');
     expect(ghost.path.current).toBe('/inbox');
+  });
+
+  it('stores the path Admin answers with after sending one of its own', async () => {
+    // The publisher pressed back as the app moved: Admin sends its path, then follows the app.
+    const host = hostExports();
+    host.pathChanged.mockImplementation(async (path) => {
+      await admin?.thread.imports.pathChanged('/x');
+      return path;
+    });
+    const { ghost } = await started(host);
+
+    await ghost.path.set('/a');
+    expect(ghost.path.current).toBe('/a');
+  });
+
+  it('refuses an answer that is not a path within the app, keeping the current path', async () => {
+    const host = hostExports();
+    host.pathChanged.mockResolvedValue(undefined as never);
+    const { ghost } = await started(host);
+
+    await expect(ghost.path.set('/a')).rejects.toMatchObject({ code: 'rejected' });
+    expect(ghost.path.current).toBe('/');
   });
 
   it('keeps the current path when Admin refuses', async () => {

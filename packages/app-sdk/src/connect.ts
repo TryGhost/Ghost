@@ -31,19 +31,23 @@ function parentOrigin(): string {
 }
 
 /**
- * The hello's `document` ID: the time the page's document was created. A reload, a form post
- * or a link creates a new document, and with it a new ID.
- */
-function documentIdentity(): string {
-  return String(performance.timeOrigin);
-}
-
-/**
  * The global key where the first copy of the SDK to connect claims the page. It is a symbol
  * from the global registry, so a second copy bundled into the same page finds the same key.
  */
 const PAGE_CLAIM = Symbol.for('@tryghost/app-sdk');
-const thisCopy = Object.freeze({ sdk: SDK_VERSION });
+
+/**
+ * The claim also holds the hello's `document` ID. It's made when the SDK loads, so every
+ * `connect()` in a document sends the same ID, and a new document (after a reload, a form post
+ * or a link) gets a new one. It's random rather than `performance.timeOrigin`, which some
+ * privacy-focused browsers round to 16–100 ms, so two documents loaded in quick succession
+ * could share it. `Math.random` is enough here, and unlike `crypto.randomUUID` it works on the
+ * plain HTTP origins apps use in development.
+ */
+const thisCopy = Object.freeze({
+  sdk: SDK_VERSION,
+  document: `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`,
+});
 
 /** Claims the page for this copy of the SDK unless another copy has. Returns whether it did. */
 function claimPage(): boolean {
@@ -83,20 +87,17 @@ function handshake(
   const targetOrigin = parentOrigin();
 
   return new Promise<Ghost>((resolve, reject) => {
-    let settled = false;
-
     const stopWaiting = () => {
       clearInterval(helloTimer);
       clearTimeout(timeoutTimer);
       window.removeEventListener('message', onMessage);
     };
 
+    // A promise ignores `reject` once it has settled, so a failure after `started` changes
+    // nothing.
     const fail = (error: GhostAppError) => {
       stopWaiting();
-      if (!settled) {
-        settled = true;
-        reject(error);
-      }
+      reject(error);
     };
 
     // The channel is bound to the first valid answer from the parent window. The listener is
@@ -116,7 +117,6 @@ function handshake(
       channel = new Channel(port, event.data.exports, {
         started: (ghost) => {
           stopWaiting();
-          settled = true;
           resolve(ghost);
         },
         ended: (error) => {
@@ -129,7 +129,7 @@ function handshake(
     const hello: HelloMessage = {
       type: HELLO_MESSAGE_TYPE,
       sdk: SDK_VERSION,
-      document: documentIdentity(),
+      document: thisCopy.document,
     };
     const sayHello = () => {
       parent.postMessage(hello, targetOrigin);

@@ -157,8 +157,8 @@ compareManifests(
 ## The bridge
 
 Admin frames an app's page and talks to it over a `MessagePort`. The page's SDK
-posts a `ghost-app:hello` to `window.parent`, with an ID for its document (its
-`performance.timeOrigin`); Admin checks the sender is the frame and its origin
+posts a `ghost-app:hello` to `window.parent`, with an ID for its document
+(random, made when the SDK loads); Admin checks the sender is the frame and its origin
 is the surface's, and answers with a `ghost-app:connect` carrying the port and
 the names of the calls it exports. The ID lets Admin tell whether a hello comes
 from a document it already connected or from a new document. Over the port,

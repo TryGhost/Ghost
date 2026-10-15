@@ -98,31 +98,33 @@ _Avoid_: postMessage API, iframe protocol, RPC
 **Hello**:
 The window message the SDK in an app's page posts to Admin once it has loaded,
 repeating it until Admin answers. It contains the SDK's version, for
-diagnostics only, and an ID for the page's document (the time the document was
-created, as `performance.timeOrigin`). Admin uses the ID to tell whether a hello
+diagnostics only, and an ID for the page's document (random, made when the SDK
+loads). Admin uses the ID to tell whether a hello
 comes from a document it already connected or from a new document.
 _Avoid_: handshake, ready, init
 
 **Connect**:
 Admin's answer to a hello that comes from the frame Admin mounted and from the
-surface origin. It hands the page the port that carries the rest of the
+surface origin. It hands the page the port that carries the rest of the app
 session, and lists the calls this Admin exports, so the page knows which calls
 an older Admin lacks. Only the first connect counts.
 _Avoid_: ack, handshake
 
 **Start**:
 Admin's first call over the bridge. It sends the page the site, the staff
-user's ID and role, the theme, the session's revision and the app path. Admin
+user's ID and role, the theme, the app session's revision and the app path. Admin
 shows the page once the page has responded.
 _Avoid_: init, boot, launch
 
-**Session**:
-The page's connection to Admin, from connect until the page or Admin closes
-it. It starts at one installation revision, and Admin ends it when the
-installation's revision changes, so an app never runs against an unapproved
-revision. Every call fails once the session has ended; a page Admin starts
-again gets a new session. Not the staff user's sign-in session.
-_Avoid_: connection, login, token
+**App session**:
+One run of an installed app in Admin, as App Installations defines it: it
+starts when Admin opens the app's page, and is pinned to the installation's
+revision at that point. Each document in the frame joins it over a channel of
+its own when Admin answers the document's hello. Admin ends the app session
+when the installation's revision changes, so an app never runs against an
+unapproved revision, and every call fails once it has ended. Not the staff
+user's sign-in session.
+_Avoid_: session, connection, login, token
 
 **App path**:
 A route within an app's own page, such as `/episodes/12`, which Admin mirrors

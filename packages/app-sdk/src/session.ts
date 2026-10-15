@@ -7,7 +7,6 @@ import {
   isRecord,
   isStartContext,
   isTheme,
-  normaliseAppPath,
   type AppExports,
   type HostExports,
   type PathChangeOptions,
@@ -121,9 +120,6 @@ export class Channel {
   #context: StartedContext | undefined;
   #theme: Readonly<Theme> | undefined;
   #path = '/';
-  // Counts the paths Admin has sent, so that if Admin sends a path before answering a
-  // `path.set`, the SDK keeps Admin's path.
-  #pathsFromAdmin = 0;
   #ended: GhostAppError | undefined;
   #stopWatchingTitle: (() => void) | undefined;
 
@@ -188,7 +184,6 @@ export class Channel {
     if (!isContainedPath(path)) {
       throw refusal('invalid_argument', "Ghost sent a path this SDK doesn't understand");
     }
-    this.#pathsFromAdmin += 1;
     this.#path = path;
     notify(this.#pathListeners, path);
   }
@@ -293,21 +288,23 @@ export class Channel {
         if (options !== undefined && !isRecord(options)) {
           throw invalidArgument(ARGUMENT_MESSAGES.pathChangeOptions);
         }
-        const pathsFromAdmin = this.#pathsFromAdmin;
-        await (options === undefined
+        const adminPath = await (options === undefined
           ? this.#call('pathChanged', path)
           : this.#call(
               'pathChanged',
               path,
               cloneArgument(options, ARGUMENT_MESSAGES.pathChangeOptions),
             ));
-        // Admin may send its current path before answering, when it doesn't follow the app's
-        // move.
-        if (this.#pathsFromAdmin === pathsFromAdmin) {
-          // Stored in the normalised form Admin uses, so it matches the path Admin sends back
-          // after a reload or its own navigation.
-          this.#path = normaliseAppPath(path);
+        if (!isContainedPath(adminPath)) {
+          throw new GhostAppError(
+            'rejected',
+            "Ghost answered with a path this SDK doesn't understand",
+          );
         }
+        // Admin's answer, rather than `path`: it's normalised the way Admin stores paths, and
+        // it's Admin's own path when Admin didn't follow the move, such as when the publisher
+        // pressed back as the app moved.
+        this.#path = adminPath;
       },
     });
   }
