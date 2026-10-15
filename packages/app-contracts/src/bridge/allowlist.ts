@@ -19,8 +19,9 @@ import type { FetchMethod } from './rules.ts';
  * - The search index of posts, pages and tags, and slug generation, which Admin's own editor
  *   uses to pick a slug before saving.
  *
- * A post or page write refuses the `newsletter`, `email_segment` and `source` parameters, so it
- * can't send the post as email or turn HTML into the post as it is.
+ * Writes of posts, pages and tags are checked further (`refusedContent`), so they can't send
+ * email or carry script, and a post or page write refuses the `newsletter`, `email_segment` and
+ * `source` parameters.
  *
  * What the security review before opening apps to outside developers (BER-3992) must look at
  * in this set:
@@ -29,7 +30,8 @@ import type { FetchMethod } from './rules.ts';
  *   can read it (`visibility`, `tiers`), with no confirmation from the publisher. Publishing a
  *   scheduled post that already has a newsletter sends its email then, with no parameter.
  * - Staff emails: `GET /users/` returns every staff user's email.
- * - Script in what a post, page or tag write sends.
+ * - Anything in a post, page or tag that renders as HTML or script which `refusedContent` doesn't
+ *   catch, and any Lexical node Ghost adds later.
  *
  * Routes are written as `METHOD /path`, in path segments. `:id` matches only an object ID: 24
  * lowercase hexadecimal characters. Any other `:name` matches any one segment, such as a slug.
@@ -46,6 +48,8 @@ export interface AdminApiScope {
   readonly routes: readonly string[];
   /** Query parameters a request in this scope must not carry, whatever their value. */
   readonly refusedParameters?: readonly string[];
+  /** The kind of content a write in this scope sends, which `refusedContent` checks. */
+  readonly content?: 'posts' | 'pages' | 'tags';
 }
 
 // `newsletter` and `email_segment` send a post as email, and `source=html` turns HTML into the
@@ -63,6 +67,7 @@ export const ADMIN_API_ALLOWLIST: readonly AdminApiScope[] = [
     description: 'Create, edit and delete posts, one at a time, without email or script.',
     routes: ['POST /posts', 'PUT /posts/:id', 'DELETE /posts/:id'],
     refusedParameters: POST_WRITE_PARAMETERS,
+    content: 'posts',
   },
   {
     name: 'pages:read',
@@ -74,6 +79,7 @@ export const ADMIN_API_ALLOWLIST: readonly AdminApiScope[] = [
     description: 'Create, edit and delete pages, one at a time, without script.',
     routes: ['POST /pages', 'PUT /pages/:id', 'DELETE /pages/:id'],
     refusedParameters: POST_WRITE_PARAMETERS,
+    content: 'pages',
   },
   {
     name: 'tags:read',
@@ -84,6 +90,7 @@ export const ADMIN_API_ALLOWLIST: readonly AdminApiScope[] = [
     name: 'tags:write',
     description: 'Create, edit and delete tags, one at a time, without script.',
     routes: ['POST /tags', 'PUT /tags/:id', 'DELETE /tags/:id'],
+    content: 'tags',
   },
   {
     name: 'users:read',

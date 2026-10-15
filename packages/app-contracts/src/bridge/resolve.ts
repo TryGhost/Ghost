@@ -1,4 +1,5 @@
 import { findAllowedAdminApiRoute, type AdminApiScope } from './allowlist.ts';
+import { refusedContent } from './content.ts';
 import { FETCH_PATH_MAX_LENGTH } from './fetch.ts';
 import { isContainedPath, type FetchMethod } from './rules.ts';
 
@@ -21,6 +22,7 @@ const decodeEscapes = (text: string) =>
 export interface AdminApiRequest {
   readonly path: string;
   readonly method?: FetchMethod | undefined;
+  readonly body?: string | undefined;
 }
 
 /**
@@ -52,11 +54,11 @@ export type AdminApiRequestCheck =
  *
  * A path that stays under the root is `blocked` unless the allowlist has a route for where it
  * resolves to, with this method. It's also `blocked` when its path or query mentions `ghost/api`,
- * or its first segment is an old API version (`v4`), whatever the allowlist says, and when it
- * carries a query parameter its scope refuses.
+ * or its first segment is an old API version (`v4`), whatever the allowlist says; when it carries
+ * a query parameter its scope refuses; or when its body is content its scope refuses.
  */
 export function checkAdminApiRequest(request: AdminApiRequest, apiRoot: URL): AdminApiRequestCheck {
-  const { path, method = 'GET' } = request;
+  const { path, method = 'GET', body } = request;
   if (typeof path !== 'string' || path.length > FETCH_PATH_MAX_LENGTH || !isContainedPath(path)) {
     return { problem: 'invalid_path' };
   }
@@ -107,6 +109,19 @@ export function checkAdminApiRequest(request: AdminApiRequest, apiRoot: URL): Ad
     const parameter = (name.split('[', 1)[0] as string).toLowerCase();
     if (scope.refusedParameters?.includes(parameter)) {
       return blocked(`Apps can't use the ${parameter} parameter on ${method} ${pathname}`);
+    }
+  }
+
+  if (scope.content && body !== undefined) {
+    let content: unknown;
+    try {
+      content = JSON.parse(body);
+    } catch {
+      return blocked(`Apps can only send JSON to ${method} ${pathname}`);
+    }
+    const refused = refusedContent(scope.content, content);
+    if (refused) {
+      return blocked(`Apps can't send ${refused} to ${method} ${pathname}`);
     }
   }
 

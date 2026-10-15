@@ -5,8 +5,8 @@ import type { FetchMethod } from '../../src/bridge/rules.ts';
 
 const root = new URL('https://site.example/ghost/api/admin/');
 
-const check = (path: string, method: FetchMethod = 'GET', apiRoot = root) =>
-  checkAdminApiRequest({ path, method }, apiRoot);
+const check = (path: string, method: FetchMethod = 'GET', apiRoot = root, body?: string) =>
+  checkAdminApiRequest({ path, method, body }, apiRoot);
 
 // The URL a path resolves to, or null when it is not an Admin API path. Every path these tests
 // resolve is one apps can reach, except in the tests about the allowlist.
@@ -209,6 +209,22 @@ describe('checking an Admin API request', () => {
     expect(check('/posts/?filter=newsletter:weekly').problem).toBeUndefined();
     // Only writes refuse them.
     expect(check('/posts/?source=html').problem).toBeUndefined();
+  });
+
+  it('checks the content a write sends', () => {
+    expect(check('/posts/', 'POST', root, '{"posts":[{"title":"Hello"}]}').problem).toBeUndefined();
+    expect(
+      check('/posts/', 'POST', root, '{"posts":[{"codeinjection_head":"<script></script>"}]}'),
+    ).toEqual({
+      problem: 'blocked',
+      pathname: '/posts/',
+      detail: "Apps can't send codeinjection_head to POST /posts/",
+    });
+    expect(check('/posts/', 'POST', root, 'posts[0][title]=x')).toEqual({
+      problem: 'blocked',
+      pathname: '/posts/',
+      detail: 'Apps can only send JSON to POST /posts/',
+    });
   });
 
   it('refuses escaped separators, which a later reader may decode', () => {
