@@ -1,6 +1,5 @@
 import { type Knex } from 'knex';
 import { z } from 'zod';
-import { toDatabaseDate } from '../../lib/db-types/date';
 import type {
   AutomationsRepository2,
   AutomationTriggerTierScope,
@@ -114,9 +113,9 @@ export const createDatabaseAutomationsRepository2 = ({
         await connection('automation_run_steps').insert(
           toInsert.map((step) => ({
             ...step,
-            created_at: toDatabaseDate(step.created_at),
-            updated_at: toDatabaseDate(step.updated_at),
-            ready_at: toDatabaseDate(step.ready_at),
+            created_at: step.created_at,
+            updated_at: step.updated_at,
+            ready_at: step.ready_at,
           })),
         );
       }
@@ -127,8 +126,8 @@ export const createDatabaseAutomationsRepository2 = ({
         await connection('automation_runs').insert(
           toInsert.map((run) => ({
             ...run,
-            created_at: toDatabaseDate(run.created_at),
-            updated_at: toDatabaseDate(run.updated_at),
+            created_at: run.created_at,
+            updated_at: run.updated_at,
           })),
         );
       }
