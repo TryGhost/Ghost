@@ -24,6 +24,7 @@ import {
   type AppInstallationsResponseType,
   type AppSession,
   appInstallationPath,
+  useBrowseAppInstallations,
   useReadAppInstallation,
   useStartAppSession,
 } from '@tryghost/admin-x-framework/api/app-installations';
@@ -43,7 +44,7 @@ import { appPathFromLocation, appPathRoute, isAppLocation } from './lib/app-path
 import { createAdminApiFetch } from './lib/bridge-fetch';
 import { placeRoute } from './lib/bridge-places';
 import { APP_FRAME_ALLOW, APP_FRAME_SANDBOX, isGhostOrigin } from './lib/frame';
-import { isInstallationNotFound, isSessionsRouteMissing } from './lib/not-found';
+import { isAppUnavailable, isInstallationNotFound, isSessionsRouteMissing } from './lib/not-found';
 import { reportAppsError } from './lib/report-error';
 import { appRoute } from './lib/routes';
 import { appPageUrl, servedFrom } from './lib/served-from';
@@ -84,6 +85,36 @@ const NotResponding: React.FC<{
     </Stack>
   </Centered>
 );
+
+/**
+ * Ghost couldn't use the app's manifest when the session started. The session answered with
+ * no installation, so its name comes from the list the sidebar reads.
+ */
+const Unavailable: React.FC<{ installationId: string; onRetry: () => void }> = ({
+  installationId,
+  onRetry,
+}) => {
+  const { data } = useBrowseAppInstallations({ defaultErrorHandler: false });
+  const installation = data?.app_installations.find(({ id }) => id === installationId);
+  return (
+    <Centered testId="app-unavailable">
+      <EmptyIndicator
+        actions={
+          <>
+            <Button variant="outline" asChild>
+              <Link to="/apps">Back to Apps</Link>
+            </Button>
+            <Button onClick={onRetry}>Try again</Button>
+          </>
+        }
+        description={`Ghost couldn’t confirm the app’s details${installation ? ` at ${servedFrom(installation.manifest)}` : ''}. It might be down, or no longer serve the app you installed. Your site isn’t affected.`}
+        title={`${installation?.manifest.name ?? 'This app'} isn’t available`}
+      >
+        <LucideIcon.TriangleAlert />
+      </EmptyIndicator>
+    </Centered>
+  );
+};
 
 /** The number of the app's move a location of Admin's was made for, if it was. */
 function appMoveOf(state: unknown): number | undefined {
@@ -483,11 +514,12 @@ export const AppPage: React.FC = () => {
   const { settled, session, error, restart } = useAppSession(installationId);
   const installation = session?.installation;
   const notFound = isInstallationNotFound(error);
+  const unavailable = isAppUnavailable(error);
   useEffect(() => {
-    if (error && !notFound) {
+    if (error && !notFound && !unavailable) {
       reportAppsError(error);
     }
-  }, [error, notFound]);
+  }, [error, notFound, unavailable]);
 
   let body: React.ReactNode;
   if (!settled) {
@@ -500,6 +532,8 @@ export const AppPage: React.FC = () => {
     body = <ActiveApp session={session} onEnded={restart} />;
   } else if (installation?.status === 'suspended') {
     body = <NeedsApproval installation={installation} onApproved={restart} />;
+  } else if (unavailable) {
+    body = <Unavailable installationId={installationId} onRetry={restart} />;
   } else if (error && !notFound) {
     body = (
       <Centered>

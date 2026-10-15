@@ -22,3 +22,16 @@ export function isSessionsRouteMissing(error: unknown): boolean {
     apiErrorOf(error)?.code !== 'APP_NOT_INSTALLED'
   );
 }
+
+/**
+ * Whether starting a session failed because Ghost couldn't use the app's manifest: it
+ * couldn't be loaded, or it was for another app. The app's fault, not Admin's, and nothing
+ * changed, so trying again opens the app once its manifest is back.
+ */
+export function isAppUnavailable(error: unknown): boolean {
+  return (
+    error instanceof APIError &&
+    error.response?.status === 409 &&
+    apiErrorOf(error)?.code === 'APP_UNAVAILABLE'
+  );
+}
