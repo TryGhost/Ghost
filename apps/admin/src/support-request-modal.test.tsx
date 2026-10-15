@@ -124,6 +124,20 @@ describe('SupportRequestModal', () => {
     expect(mockSubmit).not.toHaveBeenCalled();
   });
 
+  it('rejects fields longer than the endpoint accepts', async () => {
+    renderModal();
+
+    fireEvent.change(screen.getByLabelText('Subject'), { target: { value: 'a'.repeat(256) } });
+    fireEvent.change(screen.getByLabelText('Message'), { target: { value: 'a'.repeat(10_001) } });
+    fireEvent.click(screen.getByTestId('support-request-send'));
+
+    expect(
+      await screen.findByText('Subject cannot be longer than 255 characters'),
+    ).toBeInTheDocument();
+    expect(screen.getByText('Message cannot be longer than 10,000 characters')).toBeInTheDocument();
+    expect(mockSubmit).not.toHaveBeenCalled();
+  });
+
   it('submits the visible fields plus the draft context', async () => {
     const { onSent, onOpenChange } = renderModal();
 
