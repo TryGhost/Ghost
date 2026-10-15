@@ -61,6 +61,9 @@
       "FileStore": {},
       "S3RouteSettingsStore": {}
     },
+    "upgrade": {
+      "active": "NoopUpgradeAdapter"
+    },
     "jobs": {
       "active": "InMemoryJobsBackend",
       "InMemoryJobsBackend": {

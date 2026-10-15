@@ -224,6 +224,7 @@ catalog:
   typescript: 'npm:@typescript/typescript6@6.0.2'
   '@typescript/native': 'npm:typescript@7.0.2'
   typescript-eslint: 8.71.1
+  undici: 8.11.0
   validator: 13.15.35
   vite: 8.1.3
   vite-plugin-svgr: 5.2.0
@@ -438,6 +439,7 @@ versioning:
     # ghost is versioned by the release scripts
     - ghost
     # continuous-lane packages are versioned from npm by the publish job
+    - '@tryghost/adapter-base-upgrade'
     - '@tryghost/announcement-bar'
     - '@tryghost/admin-toolbar'
     - '@tryghost/comments-ui'

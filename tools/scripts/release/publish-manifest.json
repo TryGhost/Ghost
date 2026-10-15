@@ -41,5 +41,11 @@
     "versioning": "prerelease",
     "distTag": "alpha",
     "installArgs": "--ignore-scripts"
+  },
+  {
+    "name": "@tryghost/adapter-base-upgrade",
+    "path": "packages/adapters/upgrade-base",
+    "versioning": "prerelease",
+    "distTag": "alpha"
   }
 ]
