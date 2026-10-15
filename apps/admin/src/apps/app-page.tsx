@@ -146,9 +146,9 @@ const SESSION_END_SEARCH_PARAMS: Record<string, string> = {};
  */
 function useSessionEnd(session: AppSession, onEnded: () => void) {
   const [since] = useState(() => Date.now());
-  const installationRevision = session.installation.revision;
+  const started = session.installation.revision;
   const { data, dataUpdatedAt, isFetching } = useReadAppInstallation(session.installation.id, {
-    enabled: installationRevision !== undefined,
+    enabled: started !== undefined,
     defaultErrorHandler: false,
     // Without the history the details page shows; this one has no use for it.
     searchParams: SESSION_END_SEARCH_PARAMS,
@@ -167,12 +167,13 @@ function useSessionEnd(session: AppSession, onEnded: () => void) {
     if (
       !isFetching &&
       dataUpdatedAt >= since &&
+      started !== undefined &&
       revision !== undefined &&
-      revision > session.revision
+      revision > started
     ) {
       onEnded();
     }
-  }, [dataUpdatedAt, isFetching, onEnded, revision, session.revision, since]);
+  }, [dataUpdatedAt, isFetching, onEnded, revision, started, since]);
 }
 
 /**
@@ -211,7 +212,7 @@ const AppFrame: React.FC<{
     site: { url: site.url, title: site.title, timezone, locale: site.locale },
     user: { id: user.id, role: user.roles[0]?.name ?? '' },
     theme,
-    session: { revision: session.revision },
+    session: { revision: installation.revision ?? 0 },
     path,
   };
   // Read when the page connects, so the app starts with Admin's context at that moment.
@@ -493,8 +494,9 @@ function useAppSession(installationId: string): {
         apiUrl(appInstallationPath(installationId)),
       );
       const installation = read.app_installations[0];
-      // That Core's installations may not have a revision either, in which case it never changes.
-      return installation ? { revision: installation.revision ?? 0, installation } : null;
+      // That Core's installations may not have a revision either. The app then gets revision 0,
+      // which never changes.
+      return installation ? { installation } : null;
     },
     staleTime: Infinity,
     gcTime: 0,
