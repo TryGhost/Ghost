@@ -110,11 +110,15 @@ object ID, 24 lowercase hexadecimal characters; a slug is one path segment.
 | `newsletters:read` | `GET /newsletters/`                                                                    |
 | `slugs:read`       | `GET /slugs/:type/:name/`, `GET /slugs/:type/:name/:id/`                               |
 
-Writes can't send email or carry script, as Ghost serves a post's content on the
-site's own origin:
+An app can't ask Ghost to email a post, or put script on the site, which serves
+a post's content on its own origin. The one exception: publishing a post that a
+staff member already scheduled with a newsletter sends its email, as it would
+have at the scheduled time.
 
-- Posts and pages refuse the `newsletter`, `email_segment` and `source` query
-  parameters.
+- A write may carry only the query parameters its scope lists: `include`,
+  `formats` and `save_revision` for posts and pages, and `include` for tags.
+  Any other name is refused, `newsletter`, `email_segment` and `source`
+  included, however it's written.
 - `codeinjection_head` and `codeinjection_foot` are refused with any value, even
   `null`, on posts, pages and tags: leave them out of the body.
 - `mobiledoc` must be `null` or left out, and `feature_image_caption` can't hold
@@ -122,6 +126,24 @@ site's own origin:
 - `lexical` may hold only text: paragraphs, headings (`h1` to `h6`), lists,
   quotes, asides, links to `http`, `https`, `mailto` or `tel` URLs, line breaks,
   tabs and horizontal rules. Every card is refused, images included.
+- The SDK and Admin set the body's content type themselves; an app can't set
+  `content-type` or `content-encoding`.
+
+To edit a post, send `updated_at` and only the fields you change, never the
+object you read: it comes back with `codeinjection_head` and
+`codeinjection_foot` as `null`, which are refused even as `null`. Leave out
+`lexical` unless you're rewriting the content as text.
+
+```ts
+const { posts } = await (await ghost.fetch(`/posts/${id}/`)).json();
+await ghost.fetch(`/posts/${id}/`, {
+  method: 'PUT',
+  body: { posts: [{ updated_at: posts[0].updated_at, title: 'New title' }] },
+});
+```
+
+These checks are a stopgap for the private beta. They're reviewed again before
+anyone outside the team gets access, and app scopes replace them.
 
 The refusal names the method and path, or what in the request was refused, as
 in `blocked: Apps can't send codeinjection_head to PUT /posts/…/`.
