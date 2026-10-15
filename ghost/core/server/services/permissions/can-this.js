@@ -155,7 +155,6 @@ class CanThisResult {
       post: models.Post,
       role: models.Role,
       user: models.User,
-      permission: models.Permission,
       setting: models.Settings,
       invite: models.Invite,
       integration: models.Integration,
