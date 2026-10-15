@@ -1,5 +1,9 @@
-const legacyApiPathMatch = require('./legacy-api-path-match');
 const urlUtils = require('../../../../../shared/url-utils').default;
+
+// req.url is relative to the API mount, so a legacy versioned URL always starts
+// with a /<version>/<api> segment pair. Only that leading pair carries a
+// version; a version-like string later in the path or in the query does not.
+const LEGACY_VERSION_PREFIX = /^\/(v2|v3|v4|canary)\/(?=(?:admin|content)(?:[/?]|$))/;
 
 /**
  * If there is a version in the URL, and this is a valid API URL containing admin/content
@@ -9,14 +13,15 @@ const urlUtils = require('../../../../../shared/url-utils').default;
  * @param {import('express').NextFunction} next
  */
 module.exports = function mwVersionRewrites(req, res, next) {
-  let { version } = legacyApiPathMatch(req.url);
+  const match = LEGACY_VERSION_PREFIX.exec(req.url);
 
   // If we don't match a valid version, carry on
-  if (!version) {
+  if (!match) {
     return next();
   }
 
-  const versionlessUrl = req.url.replace(`${version}/`, '');
+  let version = match[1];
+  const versionlessUrl = req.url.replace(LEGACY_VERSION_PREFIX, '/');
 
   // Always send the explicit, numeric version in headers
   if (version === 'canary') {
