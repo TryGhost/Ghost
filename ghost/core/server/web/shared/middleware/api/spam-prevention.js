@@ -31,6 +31,7 @@ const messages = {
   webmentionsBlock: 'Too many mention attempts',
   emailPreviewBlock: 'Only 10 test emails can be sent per hour',
   upgradeBlock: 'Too many update requests. Try again in a minute.',
+  supportRequestBlock: 'Too many support requests. Please try again later.',
 };
 let spamPrivateBlock = spam.private_block || {};
 let spamGlobalBlock = spam.global_block || {};
@@ -47,6 +48,7 @@ const spamWebmentionsBlock = spam.webmentions_block || {};
 const spamEmailPreviewBlock = spam.email_preview_block || {};
 let spamUpgradeBlock = spam.upgrade_block || {};
 let spamUpgradeApiBlock = spam.upgrade_api_block || {};
+const spamSupportRequestBlock = spam.support_request_block || {};
 let spamOtcVerificationEnumeration = spam.otc_verification_enumeration || {};
 let spamOtcVerification = spam.otc_verification || {};
 
@@ -68,6 +70,7 @@ let contentApiKeyInstance;
 let emailPreviewBlockInstance;
 let upgradeBlockInstance;
 let upgradeApiBlockInstance;
+let supportRequestBlockInstance;
 let otcVerificationEnumerationInstance;
 let otcVerificationInstance;
 
@@ -321,6 +324,42 @@ const upgradeApiBlock = () => {
     );
 
   return upgradeApiBlockInstance;
+};
+
+const supportRequestBlock = () => {
+  const ExpressBrute = require('express-brute');
+  const BruteKnex = require('@tryghost/brute-knex');
+  const db = require('../../../../data/db');
+
+  store =
+    store ||
+    new BruteKnex({
+      tablename: 'brute',
+      createTable: false,
+      knex: db.knex,
+    });
+
+  supportRequestBlockInstance =
+    supportRequestBlockInstance ||
+    new ExpressBrute(
+      store,
+      extend(
+        {
+          attachResetToRequest: false,
+          failCallback(req, res, next) {
+            return next(
+              new errors.TooManyRequestsError({
+                message: messages.supportRequestBlock,
+              }),
+            );
+          },
+          handleStoreError: handleStoreError,
+        },
+        pick(spamSupportRequestBlock, spamConfigKeys),
+      ),
+    );
+
+  return supportRequestBlockInstance;
 };
 
 const membersAuth = () => {
@@ -810,6 +849,7 @@ module.exports = {
   contentApiKey: contentApiKey,
   webmentionsBlock: webmentionsBlock,
   emailPreviewBlock: emailPreviewBlock,
+  supportRequestBlock: supportRequestBlock,
   reset: () => {
     upgradeBlockInstance = undefined;
     upgradeApiBlockInstance = undefined;
