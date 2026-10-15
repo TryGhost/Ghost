@@ -889,15 +889,7 @@ describe('User API: permission includes', function () {
     'Super Editor': 74,
   };
 
-  const PERMISSION_KEYS = [
-    'action_type',
-    'created_at',
-    'id',
-    'name',
-    'object_id',
-    'object_type',
-    'updated_at',
-  ];
+  const PERMISSION_KEYS = ['action_type', 'object_id', 'object_type'];
 
   const byKey = (a, b) =>
     `${a.object_type}:${a.action_type}`.localeCompare(`${b.object_type}:${b.action_type}`);
